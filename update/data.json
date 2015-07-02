@@ -7,7 +7,7 @@
 			code: 1023,
 			minVersion: 1,
 			maxVersion: 1,
-			length: 0,
+			length: 806871,
 			source: '/Mishiranu/Dashchan/master/update/package/Dashchan.apk'
 		}
 	],
@@ -18,7 +18,7 @@
 			name: '1.0',
 			code: 1,
 			version: 1,
-			length: 0,
+			length: 54586,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanArchiveMoe.apk'
 		}
 	],
@@ -29,7 +29,7 @@
 			name: '1.0',
 			code: 1,
 			version: 1,
-			length: 0,
+			length: 59619,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanArhivach.apk'
 		}
 	],
@@ -40,7 +40,7 @@
 			name: '1.0',
 			code: 1,
 			version: 1,
-			length: 0,
+			length: 60000,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanChiochan.apk'
 		}
 	],
@@ -51,7 +51,7 @@
 			name: '1.0',
 			code: 1,
 			version: 1,
-			length: 0,
+			length: 60401,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanCirno.apk'
 		}
 	],
@@ -62,7 +62,7 @@
 			name: '1.0',
 			code: 1,
 			version: 1,
-			length: 0,
+			length: 59448,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanDobrochan.apk'
 		}
 	],
@@ -73,7 +73,7 @@
 			name: '1.0',
 			code: 1,
 			version: 1,
-			length: 0,
+			length: 63637,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanDvach.apk'
 		}
 	],
@@ -84,7 +84,7 @@
 			name: '1.0',
 			code: 1,
 			version: 1,
-			length: 1,
+			length: 58831,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanFourchan.apk'
 		}
 	],
@@ -95,7 +95,7 @@
 			name: '1.0',
 			code: 1,
 			version: 1,
-			length: 1,
+			length: 62218,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanInfinite.apk'
 		}
 	],
@@ -106,7 +106,7 @@
 			name: '1.0',
 			code: 1,
 			version: 1,
-			length: 1,
+			length: 58771,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanKrautchan.apk'
 		}
 	],
@@ -117,7 +117,7 @@
 			name: '1.0',
 			code: 1,
 			version: 1,
-			length: 1,
+			length: 57190,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanNowai.apk'
 		}
 	]
