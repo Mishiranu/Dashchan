@@ -11,6 +11,61 @@
 			source: '/Mishiranu/Dashchan/master/update/package/Dashchan.apk'
 		}
 	],
+	archivemoe:
+	[
+		{
+			title: 'Release',
+			name: '1.0',
+			code: 1,
+			version: 1,
+			length: 0,
+			source: '/Mishiranu/Dashchan/master/update/package/DashchanArchiveMoe.apk'
+		}
+	],
+	arhivach:
+	[
+		{
+			title: 'Release',
+			name: '1.0',
+			code: 1,
+			version: 1,
+			length: 0,
+			source: '/Mishiranu/Dashchan/master/update/package/DashchanArhivach.apk'
+		}
+	],
+	chiochan:
+	[
+		{
+			title: 'Release',
+			name: '1.0',
+			code: 1,
+			version: 1,
+			length: 0,
+			source: '/Mishiranu/Dashchan/master/update/package/DashchanChiochan.apk'
+		}
+	],
+	cirno:
+	[
+		{
+			title: 'Release',
+			name: '1.0',
+			code: 1,
+			version: 1,
+			length: 0,
+			source: '/Mishiranu/Dashchan/master/update/package/DashchanCirno.apk'
+		}
+	],
+	dobrochan:
+	[
+		{
+			title: 'Release',
+			name: '1.0',
+			code: 1,
+			version: 1,
+			length: 0,
+			source: '/Mishiranu/Dashchan/master/update/package/DashchanDobrochan.apk'
+		}
+	],
 	dvach:
 	[
 		{
@@ -33,7 +88,7 @@
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanFourchan.apk'
 		}
 	],
-	arhivach:
+	infinite:
 	[
 		{
 			title: 'Release',
@@ -41,7 +96,29 @@
 			code: 1,
 			version: 1,
 			length: 1,
-			source: '/Mishiranu/Dashchan/master/update/package/DashchanArhivach.apk'
+			source: '/Mishiranu/Dashchan/master/update/package/DashchanInfinite.apk'
+		}
+	],
+	krautchan:
+	[
+		{
+			title: 'Release',
+			name: '1.0',
+			code: 1,
+			version: 1,
+			length: 1,
+			source: '/Mishiranu/Dashchan/master/update/package/DashchanKrautchan.apk'
+		}
+	],
+	nowai:
+	[
+		{
+			title: 'Release',
+			name: '1.0',
+			code: 1,
+			version: 1,
+			length: 1,
+			source: '/Mishiranu/Dashchan/master/update/package/DashchanNowai.apk'
 		}
 	]
 }
