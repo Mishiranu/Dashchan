@@ -1,1 +1,47 @@
-{}
+{
+	client:
+	[
+		{
+			title: 'Release',
+			name: '2.0.0',
+			code: 1023,
+			minVersion: 1,
+			maxVersion: 1,
+			length: 0,
+			source: '/Mishiranu/Dashchan/master/update/package/Dashchan.apk'
+		}
+	],
+	dvach:
+	[
+		{
+			title: 'Release',
+			name: '1.0',
+			code: 1,
+			version: 1,
+			length: 0,
+			source: '/Mishiranu/Dashchan/master/update/package/DashchanDvach.apk'
+		}
+	],
+	fourchan:
+	[
+		{
+			title: 'Release',
+			name: '1.0',
+			code: 1,
+			version: 1,
+			length: 1,
+			source: '/Mishiranu/Dashchan/master/update/package/DashchanFourchan.apk'
+		}
+	],
+	arhivach:
+	[
+		{
+			title: 'Release',
+			name: '1.0',
+			code: 1,
+			version: 1,
+			length: 1,
+			source: '/Mishiranu/Dashchan/master/update/package/DashchanArhivach.apk'
+		}
+	]
+}
