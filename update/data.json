@@ -59,10 +59,10 @@
 	[
 		{
 			title: 'Release',
-			name: '1.0',
+			name: '1.1',
 			code: 1,
 			version: 1,
-			length: 59448,
+			length: 59445,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanDobrochan.apk'
 		}
 	],
