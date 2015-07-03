@@ -1,0 +1,1 @@
+Stored in [Dashchan Extensions](https://github.com/Mishiranu/Dashchan-Extensions) repository.
