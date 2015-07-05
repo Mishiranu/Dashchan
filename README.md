@@ -1,6 +1,8 @@
 # Dashchan
 
-This repository is designed to store updating data.
+Dashchan is imageboards client for Android.
+
+This repository is designed to store Dashchan updating data.
 
 The source code of extensions with API will be available soon.
 
@@ -20,6 +22,7 @@ Client application: [Dashchan.apk](https://github.com/Mishiranu/Dashchan-Extensi
 | infinite        | 8ch.net              | [DashchanInfinite.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanInfinite.apk)               |
 | krautchan       | krautchan.net        | [DashchanKrautchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanKrautchan.apk)             |
 | nowai           | nowai.ru             | [DashchanNowai.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNowai.apk)                     |
+| nowere          | nowere.net           | [DashchanNowere.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNowere.apk)                   |
 
 # Installation Guide
 
