@@ -6,7 +6,9 @@ The source code of extensions with API will be available soon.
 
 # Packages List
 
-| Chan Name       | Host                 | Package Link                                                                                                               |
+Client application: [Dashchan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/Dashchan.apk).
+
+| Chan Name       | Host                 | Extension Package Link                                                                                                     |
 | :-------------: | :------------------: | :------------------------------------------------------------------------------------------------------------------------- |
 | archivemoe      | archive.moe          | [DashchanArchiveMoe.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanArchiveMoe.apk)           |
 | arhivach        | arhivach.org         | [DashchanArhivach.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanArhivach.apk)               |
@@ -18,3 +20,10 @@ The source code of extensions with API will be available soon.
 | infinite        | 8ch.net              | [DashchanInfinite.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanInfinite.apk)               |
 | krautchan       | krautchan.net        | [DashchanKrautchan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanKrautchan.apk)             |
 | nowai           | nowai.ru             | [DashchanNowai.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanNowai.apk)                     |
+
+# Installation Guide
+
+1. Install extension packages
+2. Install client application
+
+Remember that every time you install a new extension, you must restart the client application.
