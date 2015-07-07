@@ -1,0 +1,4310 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
+<title>
+
+  ChanConfiguration - Dashchan API Reference |
+
+Doclava
+
+</title>
+<link href="../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
+<link href="../../../assets/customizations.css" rel="stylesheet" type="text/css" />
+<script src="../../../assets/search_autocomplete.js" type="text/javascript"></script>
+<script src="../../../assets/jquery-resizable.min.js" type="text/javascript"></script>
+<script src="../../../assets/doclava-developer-docs.js" type="text/javascript"></script>
+<script src="../../../assets/prettify.js" type="text/javascript"></script>
+<script type="text/javascript">
+  setToRoot("../../../");
+</script>
+<script src="../../../assets/doclava-developer-reference.js" type="text/javascript"></script>
+<script src="../../../navtree_data.js" type="text/javascript"></script>
+<script src="../../../assets/customizations.js" type="text/javascript"></script>
+<noscript>
+  <style type="text/css">
+    html,body{overflow:auto;}
+    #body-content{position:relative; top:0;}
+    #doc-content{overflow:visible;border-left:3px solid #666;}
+    #side-nav{padding:0;}
+    #side-nav .toggle-list ul {display:block;}
+    #resize-packages-nav{border-bottom:3px solid #666;}
+  </style>
+</noscript>
+</head>
+
+<body class="" itemscope itemtype="http://schema.org/Article">
+
+<div id="header">
+    <div id="headerLeft">
+      
+    </div>
+    <div id="headerRight">
+        
+  <div id="search" >
+      <div id="searchForm">
+          <form accept-charset="utf-8" class="gsc-search-box" 
+                onsubmit="return submit_search()">
+            <table class="gsc-search-box" cellpadding="0" cellspacing="0"><tbody>
+                <tr>
+                  <td class="gsc-input">
+                    <input id="search_autocomplete" class="gsc-input" type="text" size="33" autocomplete="off"
+                      title="search developer docs" name="q"
+                      value="search developer docs"
+                      onFocus="search_focus_changed(this, true)"
+                      onBlur="search_focus_changed(this, false)"
+                      onkeydown="return search_changed(event, true, '../../../')"
+                      onkeyup="return search_changed(event, false, '../../../')" />
+                  <div id="search_filtered_div" class="no-display">
+                      <table id="search_filtered" cellspacing=0>
+                      </table>
+                  </div>
+                  </td>
+                  <td class="gsc-search-button">
+                    <input type="submit" value="Search" title="search" id="search-button" class="gsc-search-button" />
+                  </td>
+                  <td class="gsc-clear-button">
+                    <div title="clear results" class="gsc-clear-button">&nbsp;</div>
+                  </td>
+                </tr></tbody>
+              </table>
+          </form>
+      </div><!-- searchForm -->
+  </div><!-- search -->
+    </div><!-- headerRight -->
+</div><!-- header -->
+
+
+  <div class="g-section g-tpl-240" id="body-content">
+    <div class="g-unit g-first side-nav-resizable" id="side-nav">
+      <div id="swapper">
+        <div id="nav-panels">
+          <div id="resize-packages-nav">
+            <div id="packages-nav">
+              <div id="index-links"><nobr>
+                <a href="../../../reference/packages.html"  >Package Index</a> | 
+                <a href="../../../reference/classes.html" >Class Index</a></nobr>
+              </div>
+              <ul>
+                
+    <li class="selected api apilevel-">
+  <a href="../../../reference/chan/content/package-summary.html">chan.content</a></li>
+    <li class="api apilevel-">
+  <a href="../../../reference/chan/content/model/package-summary.html">chan.content.model</a></li>
+    <li class="api apilevel-">
+  <a href="../../../reference/chan/http/package-summary.html">chan.http</a></li>
+    <li class="api apilevel-">
+  <a href="../../../reference/chan/text/package-summary.html">chan.text</a></li>
+    <li class="api apilevel-">
+  <a href="../../../reference/chan/util/package-summary.html">chan.util</a></li>
+              </ul><br/>
+            </div> <!-- end packages -->
+          </div> <!-- end resize-packages -->
+          <div id="classes-nav">
+            <ul>
+              
+              
+    <li><h2>Classes</h2>
+      <ul>
+          <li class="selected api apilevel-"><a href="../../../reference/chan/content/ChanConfiguration.html">ChanConfiguration</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanConfiguration.Archivation.html">ChanConfiguration.Archivation</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanConfiguration.Authorization.html">ChanConfiguration.Authorization</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanConfiguration.Captcha.html">ChanConfiguration.Captcha</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanConfiguration.Deleting.html">ChanConfiguration.Deleting</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanConfiguration.Posting.html">ChanConfiguration.Posting</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanConfiguration.Reporting.html">ChanConfiguration.Reporting</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanLocator.html">ChanLocator</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanLocator.NavigationData.html">ChanLocator.NavigationData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanMarkup.SimpleChanMarkup.html">ChanMarkup.SimpleChanMarkup</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.html">ChanPerformer</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.AddToArchiveData.html">ChanPerformer.AddToArchiveData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.AddToArchiveResult.html">ChanPerformer.AddToArchiveResult</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.CaptchaData.html">ChanPerformer.CaptchaData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.CaptchaResult.html">ChanPerformer.CaptchaResult</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.CheckAuthorizationData.html">ChanPerformer.CheckAuthorizationData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.DeletePostsData.html">ChanPerformer.DeletePostsData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.ReadBoardsData.html">ChanPerformer.ReadBoardsData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaData.html">ChanPerformer.ReadCaptchaData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.ReadContentData.html">ChanPerformer.ReadContentData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.ReadGlobalThreadsData.html">ChanPerformer.ReadGlobalThreadsData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.ReadPostsCountData.html">ChanPerformer.ReadPostsCountData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.ReadPostsData.html">ChanPerformer.ReadPostsData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.ReadSearchPostsData.html">ChanPerformer.ReadSearchPostsData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.ReadSinglePostData.html">ChanPerformer.ReadSinglePostData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.ReadThreadsData.html">ChanPerformer.ReadThreadsData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.SendPostData.html">ChanPerformer.SendPostData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.SendPostData.Attachment.html">ChanPerformer.SendPostData.Attachment</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.SendPostResult.html">ChanPerformer.SendPostResult</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.SendReportData.html">ChanPerformer.SendReportData</a></li>
+      </ul>
+    </li>
+              
+    <li><h2>Enums</h2>
+      <ul>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanConfiguration.BumpLimitMode.html">ChanConfiguration.BumpLimitMode</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanConfiguration.Captcha.Input.html">ChanConfiguration.Captcha.Input</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanConfiguration.Captcha.Validity.html">ChanConfiguration.Captcha.Validity</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.CaptchaState.html">ChanPerformer.CaptchaState</a></li>
+      </ul>
+    </li>
+              
+    <li><h2>Exceptions</h2>
+      <ul>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ApiException.html">ApiException</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ThreadRedirectException.html">ThreadRedirectException</a></li>
+      </ul>
+    </li>
+              
+            </ul><br/>
+          </div><!-- end classes -->
+        </div><!-- end nav-panels -->
+        <div id="nav-tree" style="display:none">
+          <div id="index-links"><nobr>
+            <a href="../../../reference/packages.html"  >Package Index</a> | 
+            <a href="../../../reference/classes.html" >Class Index</a></nobr>
+          </div>
+        </div><!-- end nav-tree -->
+      </div><!-- end swapper -->
+    </div> <!-- end side-nav -->
+    <script>
+      if (!isMobile) {
+        $("<a href='#' id='nav-swap' onclick='swapNav();return false;' style='font-size:10px;line-height:9px;margin-left:1em;text-decoration:none;'><span id='tree-link'>Use Tree Navigation</span><span id='panel-link' style='display:none'>Use Panel Navigation</span></a>").appendTo("#side-nav");
+        chooseDefaultNav();
+        if ($("#nav-tree").is(':visible')) {
+          init_default_navtree("../../../");
+        } else {
+          addLoadEvent(function() {
+            scrollIntoView("packages-nav");
+            scrollIntoView("classes-nav");
+          });
+        }
+        $("#swapper").css({borderBottom:"2px solid #aaa"});
+      } else {
+        swapNav(); // tree view should be used on mobile
+      }
+    </script>
+
+
+
+<div class="g-unit" id="doc-content">
+
+<div id="api-info-block">
+
+
+
+  
+   
+  
+  
+  
+  
+
+
+<div class="sum-details-links">
+
+Summary:
+
+  <a href="#nestedclasses">Nested Classes</a>
+  
+
+
+
+
+
+
+
+  &#124; <a href="#lfields">Fields</a>
+  
+
+
+
+  &#124; <a href="#pubctors">Ctors</a>
+  
+
+
+
+  &#124; <a href="#pubmethods">Methods</a>
+  
+
+
+
+  &#124; <a href="#inhmethods">Inherited Methods</a>
+
+&#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
+
+</div><!-- end sum-details-links -->
+<div class="api-level">
+  
+  
+  
+
+</div>
+</div><!-- end api-info-block -->
+
+
+<!-- ======== START OF CLASS DATA ======== -->
+
+<div id="jd-header">
+    public
+     
+     
+    
+    class
+<h1 itemprop="name">ChanConfiguration</h1>
+
+
+
+  
+    extends Object<br/>
+  
+  
+  
+
+  
+  
+  
+
+
+</div><!-- end header -->
+
+<div id="naMessage"></div>
+
+<div id="jd-content" class="api apilevel-">
+<table class="jd-inheritance-table">
+
+
+    <tr>
+         	
+        <td colspan="2" class="jd-inheritance-class-cell">java.lang.Object</td>
+    </tr>
+    
+
+    <tr>
+        
+            <td class="jd-inheritance-space">&nbsp;&nbsp;&nbsp;&#x21b3;</td>
+         	
+        <td colspan="1" class="jd-inheritance-class-cell">chan.content.ChanConfiguration</td>
+    </tr>
+    
+
+</table>
+
+
+
+
+
+
+
+<div class="jd-descr">
+
+
+<h2>Class Overview</h2>
+<p itemprop="articleBody"><p>Provides extension configuration.</p>
+ 
+ <p>During construction you can request the following features using <code><a href="../../../reference/chan/content/ChanConfiguration.html#requestFeature(int)">requestFeature(int)</a></code>
+ and <code><a href="../../../reference/chan/content/ChanConfiguration.html#requestFeatureWithCondition(int, java.lang.String, boolean)">requestFeatureWithCondition(int, String, boolean)</a></code> methods:</p>
+ 
+ <ul>
+ <li><code><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_HTTPS">FEATURE_HTTPS</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_PARTIAL_THREAD_LOADING">FEATURE_PARTIAL_THREAD_LOADING</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_SEND_POST">FEATURE_SEND_POST</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_SEARCH">FEATURE_SEARCH</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_CATALOG">FEATURE_CATALOG</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_SINGLE_BOARD_MODE">FEATURE_SINGLE_BOARD_MODE</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_READ_SINGLE_POST">FEATURE_READ_SINGLE_POST</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_CAPTCHA_PASS">FEATURE_CAPTCHA_PASS</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_WATCHER">FEATURE_WATCHER</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_UNMARK">FEATURE_UNMARK</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_DELETE_POSTS">FEATURE_DELETE_POSTS</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_SEND_REPORT">FEATURE_SEND_REPORT</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_USER_BOARDS">FEATURE_USER_BOARDS</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_POPULAR_THREADS">FEATURE_POPULAR_THREADS</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_USER_AUTHORIZATION">FEATURE_USER_AUTHORIZATION</a></code></li>
+ </ul>
+ 
+ <p><h3>Static configuration</h3></p>
+ 
+ <p>This configuration remains in RAM only while client is launched. You must configure these settings
+ during construction.</p>
+ 
+ <p>You can configure poster's default name using <code><a href="../../../reference/chan/content/ChanConfiguration.html#setDefaultName(java.lang.String)">setDefaultName(String)</a></code> and
+ <code><a href="../../../reference/chan/content/ChanConfiguration.html#setDefaultName(java.lang.String, java.lang.String)">setDefaultName(String, String)</a></code>.</p>
+ 
+ <p>You can configure board title and description using <code><a href="../../../reference/chan/content/ChanConfiguration.html#setBoardTitle(java.lang.String, java.lang.String)">setBoardTitle(String, String)</a></code> and
+ <code><a href="../../../reference/chan/content/ChanConfiguration.html#setBoardDescription(java.lang.String, java.lang.String)">setBoardDescription(String, String)</a></code>.</p>
+ 
+ <p>You can configure bump limit using <code><a href="../../../reference/chan/content/ChanConfiguration.html#setBumpLimit(int)">setBumpLimit(int)</a></code> and
+ <code><a href="../../../reference/chan/content/ChanConfiguration.html#setBumpLimit(java.lang.String, int)">setBumpLimit(String, int)</a></code>. You can change bump limit mode using
+ <code><a href="../../../reference/chan/content/ChanConfiguration.html#setBumpLimitMode(chan.content.ChanConfiguration.BumpLimitMode)">setBumpLimitMode(BumpLimitMode)</a></code>.</p>
+ 
+ <p>You can configure pages count using <code><a href="../../../reference/chan/content/ChanConfiguration.html#setPagesCount(java.lang.String, int)">setPagesCount(String, int)</a></code>.</p>
+ 
+ <p>You can add supported captchas using <code><a href="../../../reference/chan/content/ChanConfiguration.html#addCaptchaType(java.lang.String)">addCaptchaType(String)</a></code>.</p>
+ 
+ <p><h3>Dynamic configuration</h3></p>
+ 
+ <p>This configuration writes to client's preferences and read every time client launches.</p>
+ 
+ <p>You can store poster's default name using <code><a href="../../../reference/chan/content/ChanConfiguration.html#storeDefaultName(java.lang.String, java.lang.String)">storeDefaultName(String, String)</a></code>.</p>
+ 
+ <p>You can store board title and description using <code><a href="../../../reference/chan/content/ChanConfiguration.html#storeBoardTitle(java.lang.String, java.lang.String)">storeBoardTitle(String, String)</a></code> and
+ <code><a href="../../../reference/chan/content/ChanConfiguration.html#storeBoardDescription(java.lang.String, java.lang.String)">storeBoardDescription(String, String)</a></code>.</p>
+ 
+ <p>You can store bump limit using <code><a href="../../../reference/chan/content/ChanConfiguration.html#storeBumpLimit(java.lang.String, int)">storeBumpLimit(String, int)</a></code>.</p>
+ 
+ <p>You can store pages count using <code><a href="../../../reference/chan/content/ChanConfiguration.html#storePagesCount(java.lang.String, int)">storePagesCount(String, int)</a></code>.</p>
+ 
+ <p>You can store any another properties using
+ <code><a href="../../../reference/chan/content/ChanConfiguration.html#set(android.content.SharedPreferences.Editor, java.lang.String, java.lang.String, boolean)">set(android.content.SharedPreferences.Editor, String, String, boolean)</a></code>,
+ <code><a href="../../../reference/chan/content/ChanConfiguration.html#set(android.content.SharedPreferences.Editor, java.lang.String, java.lang.String, int)">set(android.content.SharedPreferences.Editor, String, String, int)</a></code> and
+ <code><a href="../../../reference/chan/content/ChanConfiguration.html#set(android.content.SharedPreferences.Editor, java.lang.String, java.lang.String, java.lang.String)">set(android.content.SharedPreferences.Editor, String, String, String)</a></code> methods. You
+ can obtain <code>editor</code> with <code><a href="../../../reference/chan/content/ChanConfiguration.html#edit()">edit()</a></code>.</p>
+ 
+ <p>You can get stored properties using <code><a href="../../../reference/chan/content/ChanConfiguration.html#get(java.lang.String, java.lang.String, boolean)">{@link ChanConfiguration#get(String, String, int)</a></code> and <code><a href="../../../reference/chan/content/ChanConfiguration.html#get(java.lang.String, java.lang.String, java.lang.String)">get(String, String, String)</a></code>
+ methods.</p>
+ 
+ <p><h3>Configuring actions</h3></p>
+ 
+ <p>You can configure captcha using <code><a href="../../../reference/chan/content/ChanConfiguration.html#obtainCustomCaptchaConfiguation(java.lang.String)">obtainCustomCaptchaConfiguation(String)</a></code>.</p>
+ 
+ <p>You can configure posting using <code><a href="../../../reference/chan/content/ChanConfiguration.html#obtainPostingConfiguration(java.lang.String)">obtainPostingConfiguration(String)</a></code>.</p>
+ 
+ <p>You can configure posts deleting using <code><a href="../../../reference/chan/content/ChanConfiguration.html#obtainDeletingConfiguration(java.lang.String)">obtainDeletingConfiguration(String)</a></code>.</p>
+ 
+ <p>You can configure reporting using <code><a href="../../../reference/chan/content/ChanConfiguration.html#obtainReportingConfiguration(java.lang.String)">obtainReportingConfiguration(String)</a></code>.</p>
+ 
+ <p>You can configure captcha pass using <code><a href="../../../reference/chan/content/ChanConfiguration.html#obtainCaptchaPassConfiguration()">obtainCaptchaPassConfiguration()</a></code>.</p>
+ 
+ <p>You can configure authorization using <code><a href="../../../reference/chan/content/ChanConfiguration.html#obtainUserAuthorizationConfiguration()">obtainUserAuthorizationConfiguration()</a></code>.</p>
+ 
+ <p>You can configure archivation using <code><a href="../../../reference/chan/content/ChanConfiguration.html#obtainArchivationConfiguration()">obtainArchivationConfiguration()</a></code>.</p>
+ 
+ <p><h3>Additional features</h3></p>
+ 
+ <p>You can store cookies using <code><a href="../../../reference/chan/content/ChanConfiguration.html#storeCookie(java.lang.String, java.lang.String, java.lang.String)">storeCookie(String, String, String)</a></code>. Later you can
+ get it using <code><a href="../../../reference/chan/content/ChanConfiguration.html#getCookie(java.lang.String)">getCookie(String)</a></code>.</p>
+ 
+ <p>You can get chan's resources using <code><a href="../../../reference/chan/content/ChanConfiguration.html#getResources()">getResources()</a></code>.</p>
+</p>
+
+
+
+
+
+</div><!-- jd-descr -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="jd-descr">
+
+
+<h2>Summary</h2>
+
+
+
+<!-- ======== NESTED CLASS SUMMARY ======== -->
+<table id="nestedclasses" class="jd-sumtable"><tr><th colspan="12">Nested Classes</th></tr>
+
+
+  
+    <tr class="alt-color api apilevel-" >
+      <td class="jd-typecol"><nobr>
+        
+         
+         
+        
+        class</nobr></td>
+      <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.Archivation.html">ChanConfiguration.Archivation</a></td>
+      <td class="jd-descrcol" width="100%"><p>Archivation configuration holder.&nbsp;</td>
+    </tr>
+    
+    
+    <tr class=" api apilevel-" >
+      <td class="jd-typecol"><nobr>
+        
+         
+         
+        
+        class</nobr></td>
+      <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.Authorization.html">ChanConfiguration.Authorization</a></td>
+      <td class="jd-descrcol" width="100%"><p>Authorization configuration holder.&nbsp;</td>
+    </tr>
+    
+    
+    <tr class="alt-color api apilevel-" >
+      <td class="jd-typecol"><nobr>
+        
+         
+         
+        
+        enum</nobr></td>
+      <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.BumpLimitMode.html">ChanConfiguration.BumpLimitMode</a></td>
+      <td class="jd-descrcol" width="100%"><p>Mode of bump limit handling.&nbsp;</td>
+    </tr>
+    
+    
+    <tr class=" api apilevel-" >
+      <td class="jd-typecol"><nobr>
+        
+         
+         
+        
+        class</nobr></td>
+      <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.Captcha.html">ChanConfiguration.Captcha</a></td>
+      <td class="jd-descrcol" width="100%"><p>Captcha configuration holder.&nbsp;</td>
+    </tr>
+    
+    
+    <tr class="alt-color api apilevel-" >
+      <td class="jd-typecol"><nobr>
+        
+         
+         
+        
+        class</nobr></td>
+      <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.Deleting.html">ChanConfiguration.Deleting</a></td>
+      <td class="jd-descrcol" width="100%"><p>Deleting configuration holder.&nbsp;</td>
+    </tr>
+    
+    
+    <tr class=" api apilevel-" >
+      <td class="jd-typecol"><nobr>
+        
+         
+         
+        
+        class</nobr></td>
+      <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.Posting.html">ChanConfiguration.Posting</a></td>
+      <td class="jd-descrcol" width="100%"><p>Posting configuration holder.&nbsp;</td>
+    </tr>
+    
+    
+    <tr class="alt-color api apilevel-" >
+      <td class="jd-typecol"><nobr>
+        
+         
+         
+        
+        class</nobr></td>
+      <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.Reporting.html">ChanConfiguration.Reporting</a></td>
+      <td class="jd-descrcol" width="100%"><p>Reporting configuration holder.&nbsp;</td>
+    </tr>
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- =========== FIELD SUMMARY =========== -->
+<table id="lfields" class="jd-sumtable"><tr><th colspan="12">Fields</th></tr>
+
+
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          String</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.html#CAPTCHA_TYPE_RECAPTCHA_1">CAPTCHA_TYPE_RECAPTCHA_1</a></td>
+          <td class="jd-descrcol" width="100%"></td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          String</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.html#CAPTCHA_TYPE_RECAPTCHA_2">CAPTCHA_TYPE_RECAPTCHA_2</a></td>
+          <td class="jd-descrcol" width="100%"></td>
+      </tr>
+      
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          String</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.html#CAPTCHA_TYPE_YANDEX_NUMERIC">CAPTCHA_TYPE_YANDEX_NUMERIC</a></td>
+          <td class="jd-descrcol" width="100%"></td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          String</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.html#CAPTCHA_TYPE_YANDEX_TEXTUAL">CAPTCHA_TYPE_YANDEX_TEXTUAL</a></td>
+          <td class="jd-descrcol" width="100%"></td>
+      </tr>
+      
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_CAPTCHA_PASS">FEATURE_CAPTCHA_PASS</a></td>
+          <td class="jd-descrcol" width="100%"><p>Allows user to enter authorization data and skip the captcha.</td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_CATALOG">FEATURE_CATALOG</a></td>
+          <td class="jd-descrcol" width="100%"><p>Allows client to download catalog of threads.</td>
+      </tr>
+      
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_DELETE_POSTS">FEATURE_DELETE_POSTS</a></td>
+          <td class="jd-descrcol" width="100%"><p>Allows client to delete posts.</td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_HTTPS">FEATURE_HTTPS</a></td>
+          <td class="jd-descrcol" width="100%"><p>Allows user to choice between HTTP and HTTPS schemes.</td>
+      </tr>
+      
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_PARTIAL_THREAD_LOADING">FEATURE_PARTIAL_THREAD_LOADING</a></td>
+          <td class="jd-descrcol" width="100%"><p>Allows client to download thread partially.</td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_POPULAR_THREADS">FEATURE_POPULAR_THREADS</a></td>
+          <td class="jd-descrcol" width="100%"><p>Allows client to download popular threads.</td>
+      </tr>
+      
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_READ_SINGLE_POST">FEATURE_READ_SINGLE_POST</a></td>
+          <td class="jd-descrcol" width="100%"><p>Allows client to download single post knowing it's board name and post number.</td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_SEARCH">FEATURE_SEARCH</a></td>
+          <td class="jd-descrcol" width="100%"><p>Allows client to search threads.</td>
+      </tr>
+      
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_SEND_POST">FEATURE_SEND_POST</a></td>
+          <td class="jd-descrcol" width="100%"><p>Allows client to send posts.</td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_SEND_REPORT">FEATURE_SEND_REPORT</a></td>
+          <td class="jd-descrcol" width="100%"><p>Allows client to report threads and posts.</td>
+      </tr>
+      
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_SINGLE_BOARD_MODE">FEATURE_SINGLE_BOARD_MODE</a></td>
+          <td class="jd-descrcol" width="100%"><p>Allows client to use only one board.</td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_UNMARK">FEATURE_UNMARK</a></td>
+          <td class="jd-descrcol" width="100%"><p>Allows user to get post's markup.</td>
+      </tr>
+      
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_USER_AUTHORIZATION">FEATURE_USER_AUTHORIZATION</a></td>
+          <td class="jd-descrcol" width="100%"><p>Allows user to enter authorization data to access some features.</td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_USER_BOARDS">FEATURE_USER_BOARDS</a></td>
+          <td class="jd-descrcol" width="100%"><p>Allows client to download user boards.</td>
+      </tr>
+      
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_WATCHER">FEATURE_WATCHER</a></td>
+          <td class="jd-descrcol" width="100%"><p>Allows client to download posts count.</td>
+      </tr>
+      
+    
+
+</table>
+
+
+
+
+
+
+
+<!-- ======== CONSTRUCTOR SUMMARY ======== -->
+<table id="pubctors" class="jd-sumtable"><tr><th colspan="12">Public Constructors</th></tr>
+
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            </nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#ChanConfiguration()">ChanConfiguration</a></span>()</nobr>
+        
+  </td></tr>
+
+
+
+</table>
+
+
+
+
+
+
+<!-- ========== METHOD SUMMARY =========== -->
+<table id="pubmethods" class="jd-sumtable"><tr><th colspan="12">Public Methods</th></tr>
+
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#addCaptchaType(java.lang.String)">addCaptchaType</a></span>(String captchaType)</nobr>
+        
+        <div class="jd-descrdiv"><p>Add captcha type to list of supported capthas.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            SharedPreferences.Editor</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#edit()">edit</a></span>()</nobr>
+        
+        <div class="jd-descrdiv"><p>Returns preferences editor.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            String</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#get(java.lang.String, java.lang.String, java.lang.String)">get</a></span>(String boardName, String key, String defaultValue)</nobr>
+        
+        <div class="jd-descrdiv"><p>Returns stored string value.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            static
+            &lt;T&nbsp;extends&nbsp;<a href="../../../reference/chan/content/ChanConfiguration.html">ChanConfiguration</a>&gt;
+            T</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#get(java.lang.Object)">get</a></span>(Object linkage)</nobr>
+        
+        <div class="jd-descrdiv"><p>Return linked <code><a href="../../../reference/chan/content/ChanConfiguration.html">ChanConfiguration</a></code> instance.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            int</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#get(java.lang.String, java.lang.String, int)">get</a></span>(String boardName, String key, int defaultValue)</nobr>
+        
+        <div class="jd-descrdiv"><p>Returns stored int value.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#get(java.lang.String, java.lang.String, boolean)">get</a></span>(String boardName, String key, boolean defaultValue)</nobr>
+        
+        <div class="jd-descrdiv"><p>Returns stored boolean value.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            String</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#getCookie(java.lang.String)">getCookie</a></span>(String cookie)</nobr>
+        
+        <div class="jd-descrdiv"><p>Returns stored cookie.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            Resources</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#getResources()">getResources</a></span>()</nobr>
+        
+        <div class="jd-descrdiv"><p>Returns resources from chan APK file.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            String</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#getTitle()">getTitle</a></span>()</nobr>
+        
+        <div class="jd-descrdiv"><p>Returns a chan title.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            String[]</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#getUserAuthorizationData()">getUserAuthorizationData</a></span>()</nobr>
+        
+        <div class="jd-descrdiv"><p>Returns user authorization data.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            <a href="../../../reference/chan/content/ChanConfiguration.Archivation.html">ChanConfiguration.Archivation</a></nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#obtainArchivationConfiguration()">obtainArchivationConfiguration</a></span>()</nobr>
+        
+        <div class="jd-descrdiv"><p>Calls every time client request archivation configuration.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            <a href="../../../reference/chan/content/ChanConfiguration.Authorization.html">ChanConfiguration.Authorization</a></nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#obtainCaptchaPassConfiguration()">obtainCaptchaPassConfiguration</a></span>()</nobr>
+        
+        <div class="jd-descrdiv"><p>Calls every time client request captcha pass configuration.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            <a href="../../../reference/chan/content/ChanConfiguration.Captcha.html">ChanConfiguration.Captcha</a></nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#obtainCustomCaptchaConfiguation(java.lang.String)">obtainCustomCaptchaConfiguation</a></span>(String captchaType)</nobr>
+        
+        <div class="jd-descrdiv"><p>Calls every time client request custom captcha configuration.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            <a href="../../../reference/chan/content/ChanConfiguration.Deleting.html">ChanConfiguration.Deleting</a></nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#obtainDeletingConfiguration(java.lang.String)">obtainDeletingConfiguration</a></span>(String boardName)</nobr>
+        
+        <div class="jd-descrdiv"><p>Calls every time client request deleting configuration.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            <a href="../../../reference/chan/content/ChanConfiguration.Posting.html">ChanConfiguration.Posting</a></nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#obtainPostingConfiguration(java.lang.String)">obtainPostingConfiguration</a></span>(String boardName)</nobr>
+        
+        <div class="jd-descrdiv"><p>Calls every time client request posting configuration.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            <a href="../../../reference/chan/content/ChanConfiguration.Reporting.html">ChanConfiguration.Reporting</a></nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#obtainReportingConfiguration(java.lang.String)">obtainReportingConfiguration</a></span>(String boardName)</nobr>
+        
+        <div class="jd-descrdiv"><p>Calls every time client request reporting configuration.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            <a href="../../../reference/chan/content/ChanConfiguration.Authorization.html">ChanConfiguration.Authorization</a></nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#obtainUserAuthorizationConfiguration()">obtainUserAuthorizationConfiguration</a></span>()</nobr>
+        
+        <div class="jd-descrdiv"><p>Calls every time client request user authorization configuration.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#requestFeature(int)">requestFeature</a></span>(int feature)</nobr>
+        
+        <div class="jd-descrdiv"><p>Requests given <code>feature</code>.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#requestFeatureWithCondition(int, java.lang.String, boolean)">requestFeatureWithCondition</a></span>(int feature, String key, boolean defaultValue)</nobr>
+        
+        <div class="jd-descrdiv"><p>Requests given <code>feature</code> only when <code>key</code> is <code>true</code>.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#set(android.content.SharedPreferences.Editor, java.lang.String, java.lang.String, int)">set</a></span>(SharedPreferences.Editor editor, String boardName, String key, int value)</nobr>
+        
+        <div class="jd-descrdiv"><p>Stores int value.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#set(android.content.SharedPreferences.Editor, java.lang.String, java.lang.String, boolean)">set</a></span>(SharedPreferences.Editor editor, String boardName, String key, boolean value)</nobr>
+        
+        <div class="jd-descrdiv"><p>Stores boolean value.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#set(android.content.SharedPreferences.Editor, java.lang.String, java.lang.String, java.lang.String)">set</a></span>(SharedPreferences.Editor editor, String boardName, String key, String value)</nobr>
+        
+        <div class="jd-descrdiv"><p>Stores string value.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#setBoardDescription(java.lang.String, java.lang.String)">setBoardDescription</a></span>(String boardName, String description)</nobr>
+        
+        <div class="jd-descrdiv"><p>Set <code>description</code> for board with given <code>boardName</code>.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#setBoardTitle(java.lang.String, java.lang.String)">setBoardTitle</a></span>(String boardName, String title)</nobr>
+        
+        <div class="jd-descrdiv"><p>Set <code>title</code> for board with given <code>boardName</code>.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#setBumpLimit(java.lang.String, int)">setBumpLimit</a></span>(String boardName, int bumpLimit)</nobr>
+        
+        <div class="jd-descrdiv"><p>Set <code>bumpLimit</code> for specified <code>boardName</code>.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#setBumpLimit(int)">setBumpLimit</a></span>(int bumpLimit)</nobr>
+        
+        <div class="jd-descrdiv"><p>Set <code>bumpLimit</code> for all boards.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#setBumpLimitMode(chan.content.ChanConfiguration.BumpLimitMode)">setBumpLimitMode</a></span>(<a href="../../../reference/chan/content/ChanConfiguration.BumpLimitMode.html">ChanConfiguration.BumpLimitMode</a> mode)</nobr>
+        
+        <div class="jd-descrdiv"><p>Set specified <code><a href="../../../reference/chan/content/ChanConfiguration.BumpLimitMode.html">ChanConfiguration.BumpLimitMode</a></code>.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#setDefaultName(java.lang.String)">setDefaultName</a></span>(String defaultName)</nobr>
+        
+        <div class="jd-descrdiv"><p>Set poster's <code>defaultName</code> for all boards.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#setDefaultName(java.lang.String, java.lang.String)">setDefaultName</a></span>(String boardName, String defaultName)</nobr>
+        
+        <div class="jd-descrdiv"><p>Set poster's <code>defaultName</code> for specified <code>boardName</code>.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#setPagesCount(java.lang.String, int)">setPagesCount</a></span>(String boardName, int pagesCount)</nobr>
+        
+        <div class="jd-descrdiv"><p>Set <code>pagesCount</code> for <code>boardName</code>.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#setSingleBoardName(java.lang.String)">setSingleBoardName</a></span>(String boardName)</nobr>
+        
+        <div class="jd-descrdiv"><p>Set <code>boardName</code> argument for all requests when <code><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_SINGLE_BOARD_MODE">FEATURE_SINGLE_BOARD_MODE</a></code> requested.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#storeBoardDescription(android.content.SharedPreferences.Editor, java.lang.String, java.lang.String)">storeBoardDescription</a></span>(SharedPreferences.Editor editor, String boardName, String description)</nobr>
+        
+        <div class="jd-descrdiv"><p>Store <code>description</code> for board with given <code>boardName</code>.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#storeBoardDescription(java.lang.String, java.lang.String)">storeBoardDescription</a></span>(String boardName, String description)</nobr>
+        
+        <div class="jd-descrdiv"><p>Store <code>description</code> for board with given <code>boardName</code>.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#storeBoardTitle(java.lang.String, java.lang.String)">storeBoardTitle</a></span>(String boardName, String title)</nobr>
+        
+        <div class="jd-descrdiv"><p>Store <code>title</code> for board with given <code>boardName</code>.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#storeBoardTitle(android.content.SharedPreferences.Editor, java.lang.String, java.lang.String)">storeBoardTitle</a></span>(SharedPreferences.Editor editor, String boardName, String title)</nobr>
+        
+        <div class="jd-descrdiv"><p>Store <code>title</code> for board with given <code>boardName</code>.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#storeBumpLimit(android.content.SharedPreferences.Editor, java.lang.String, int)">storeBumpLimit</a></span>(SharedPreferences.Editor editor, String boardName, int bumpLimit)</nobr>
+        
+        <div class="jd-descrdiv"><p>Store <code>bumpLimit</code> for specified <code>boardName</code>.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#storeBumpLimit(java.lang.String, int)">storeBumpLimit</a></span>(String boardName, int bumpLimit)</nobr>
+        
+        <div class="jd-descrdiv"><p>Store <code>bumpLimit</code> for specified <code>boardName</code>.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#storeCookie(java.lang.String, java.lang.String, java.lang.String)">storeCookie</a></span>(String cookie, String value, String displayName)</nobr>
+        
+        <div class="jd-descrdiv"><p>Stores cookie.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#storeDefaultName(android.content.SharedPreferences.Editor, java.lang.String, java.lang.String)">storeDefaultName</a></span>(SharedPreferences.Editor editor, String boardName, String defaultName)</nobr>
+        
+        <div class="jd-descrdiv"><p>Store poster's <code>defaultName</code> for specified <code>boardName</code>.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#storeDefaultName(java.lang.String, java.lang.String)">storeDefaultName</a></span>(String boardName, String defaultName)</nobr>
+        
+        <div class="jd-descrdiv"><p>Store poster's <code>defaultName</code> for specified <code>boardName</code>.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#storePagesCount(android.content.SharedPreferences.Editor, java.lang.String, int)">storePagesCount</a></span>(SharedPreferences.Editor editor, String boardName, int pagesCount)</nobr>
+        
+        <div class="jd-descrdiv"><p>Store <code>pagesCount</code> for <code>boardName</code>.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#storePagesCount(java.lang.String, int)">storePagesCount</a></span>(String boardName, int pagesCount)</nobr>
+        
+        <div class="jd-descrdiv"><p>Store <code>pagesCount</code> for <code>boardName</code>.</div>
+  
+  </td></tr>
+
+
+
+</table>
+
+
+
+
+
+
+
+<!-- ========== METHOD SUMMARY =========== -->
+<table id="inhmethods" class="jd-sumtable"><tr><th>
+  <a href="#" class="toggle-all" onclick="return toggleAllInherited(this, null)">[Expand]</a>
+  <div style="clear:left;">Inherited Methods</div></th></tr>
+
+
+<tr class="api apilevel-" >
+<td colspan="12">
+  <a href="#" onclick="return toggleInherited(this, null)" id="inherited-methods-java.lang.Object" class="jd-expando-trigger closed"
+          ><img id="inherited-methods-java.lang.Object-trigger"
+          src="../../../assets/images/triangle-closed.png"
+          class="jd-expando-trigger-img" /></a>
+From class
+
+  java.lang.Object
+
+<div id="inherited-methods-java.lang.Object">
+  <div id="inherited-methods-java.lang.Object-list"
+        class="jd-inheritedlinks">
+  </div>
+  <div id="inherited-methods-java.lang.Object-summary" style="display: none;">
+    <table class="jd-sumtable-expando">
+    
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">equals</span>(Object arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            Class&lt;?&gt;</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">getClass</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            int</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">hashCode</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">notify</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">notifyAll</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            String</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">toString</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">wait</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">wait</span>(long arg0, int arg1)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">wait</span>(long arg0)</nobr>
+        
+  </td></tr>
+
+
+</table>
+  </div>
+</div>
+</td></tr>
+
+
+</table>
+
+
+</div><!-- jd-descr (summary) -->
+
+<!-- Details -->
+
+
+
+
+
+
+
+
+<!-- XML Attributes -->
+
+
+<!-- Enum Values -->
+
+
+<!-- Constants -->
+
+
+<!-- Fields -->
+
+
+<!-- ========= FIELD DETAIL ======== -->
+<h2>Fields</h2>
+
+
+
+
+<A NAME="CAPTCHA_TYPE_RECAPTCHA_1"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        String
+      </span>
+        CAPTCHA_TYPE_RECAPTCHA_1
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p></p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="CAPTCHA_TYPE_RECAPTCHA_2"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        String
+      </span>
+        CAPTCHA_TYPE_RECAPTCHA_2
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p></p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="CAPTCHA_TYPE_YANDEX_NUMERIC"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        String
+      </span>
+        CAPTCHA_TYPE_YANDEX_NUMERIC
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p></p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="CAPTCHA_TYPE_YANDEX_TEXTUAL"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        String
+      </span>
+        CAPTCHA_TYPE_YANDEX_TEXTUAL
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p></p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="FEATURE_CAPTCHA_PASS"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        FEATURE_CAPTCHA_PASS
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Allows user to enter authorization data and skip the captcha.
+ With entered data you will receive <code><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaData.html#captchaPass">captchaPass</a></code> argument.
+ You can perform authorization and save cookies or another data that represents authorization state.
+ Then you can use them to skip captcha.</p>
+ 
+ <p>If you request this feature, you <strong>must</strong> implement
+ <code><a href="../../../reference/chan/content/ChanPerformer.html#checkCaptchaPass(chan.content.ChanPerformer.CheckAuthorizationData)">checkCaptchaPass(chan.content.ChanPerformer.CheckAuthorizationData)</a></code>.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">See Also</h5>
+      <ul class="nolist"><li><code><a href="../../../reference/chan/content/ChanPerformer.CaptchaState.html#SKIP">SKIP</a></code></li>
+      </ul>
+  </div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="FEATURE_CATALOG"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        FEATURE_CATALOG
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Allows client to download catalog of threads.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">See Also</h5>
+      <ul class="nolist"><li><code><a href="../../../reference/chan/content/ChanPerformer.html#readThreads(chan.content.ChanPerformer.ReadThreadsData)">readThreads(chan.content.ChanPerformer.ReadThreadsData)</a></code></li>
+      </ul>
+  </div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="FEATURE_DELETE_POSTS"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        FEATURE_DELETE_POSTS
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Allows client to delete posts.</p>
+ 
+ <p>If you request this feature, you <strong>must</strong> implement
+ <code><a href="../../../reference/chan/content/ChanPerformer.html#sendDeletePosts(chan.content.ChanPerformer.DeletePostsData)">sendDeletePosts(chan.content.ChanPerformer.DeletePostsData)</a></code>.</p>
+ 
+ <p>You should also implement <code><a href="../../../reference/chan/content/ChanConfiguration.html#obtainDeletingConfiguration(java.lang.String)">obtainDeletingConfiguration(String)</a></code>.</p>
+ 
+ <p><strong>You can request this feature for certain boards.</strong></p>
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="FEATURE_HTTPS"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        FEATURE_HTTPS
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Allows user to choice between HTTP and HTTPS schemes.</p>
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="FEATURE_PARTIAL_THREAD_LOADING"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        FEATURE_PARTIAL_THREAD_LOADING
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Allows client to download thread partially.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">See Also</h5>
+      <ul class="nolist"><li><code><a href="../../../reference/chan/content/ChanPerformer.html#readPosts(chan.content.ChanPerformer.ReadPostsData)">readPosts(chan.content.ChanPerformer.ReadPostsData)</a></code></li>
+      </ul>
+  </div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="FEATURE_POPULAR_THREADS"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        FEATURE_POPULAR_THREADS
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Allows client to download popular threads.</p>
+ 
+ <p>If you request this feature, you <strong>must</strong> implement
+ <code><a href="../../../reference/chan/content/ChanPerformer.html#readGlobalThreads(chan.content.ChanPerformer.ReadGlobalThreadsData)">readGlobalThreads(chan.content.ChanPerformer.ReadGlobalThreadsData)</a></code>.</p>
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="FEATURE_READ_SINGLE_POST"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        FEATURE_READ_SINGLE_POST
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Allows client to download single post knowing it's board name and post number.</p>
+ 
+ <p>If you request this feature, you <strong>must</strong> implement
+ <code><a href="../../../reference/chan/content/ChanPerformer.html#readSinglePost(chan.content.ChanPerformer.ReadSinglePostData)">readSinglePost(chan.content.ChanPerformer.ReadSinglePostData)</a></code>.</p>
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="FEATURE_SEARCH"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        FEATURE_SEARCH
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Allows client to search threads.</p>
+ 
+ <p>If you request this feature, you <strong>must</strong> implement
+ <code><a href="../../../reference/chan/content/ChanPerformer.html#readSearchPosts(chan.content.ChanPerformer.ReadSearchPostsData)">readSearchPosts(chan.content.ChanPerformer.ReadSearchPostsData)</a></code>.</p>
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="FEATURE_SEND_POST"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        FEATURE_SEND_POST
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Allows client to send posts.</p>
+ 
+ <p>If you request this feature, you <strong>must</strong> implement
+ <code><a href="../../../reference/chan/content/ChanPerformer.html#sendPost(chan.content.ChanPerformer.SendPostData)">sendPost(chan.content.ChanPerformer.SendPostData)</a></code>.</p>
+ 
+ <p>You should also implement <code><a href="../../../reference/chan/content/ChanConfiguration.html#obtainPostingConfiguration(java.lang.String)">obtainPostingConfiguration(String)</a></code>.</p>
+ 
+ <p><strong>You can request this feature for certain boards.</strong></p>
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="FEATURE_SEND_REPORT"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        FEATURE_SEND_REPORT
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Allows client to report threads and posts.</p>
+ 
+ <p>If you request this feature, you <strong>must</strong> implement
+ <code><a href="../../../reference/chan/content/ChanPerformer.html#sendReport(chan.content.ChanPerformer.SendReportData)">sendReport(chan.content.ChanPerformer.SendReportData)</a></code>.</p>
+ 
+ <p>You should also implement <code><a href="../../../reference/chan/content/ChanConfiguration.html#obtainReportingConfiguration(java.lang.String)">obtainReportingConfiguration(String)</a></code>.</p>
+ 
+ <p><strong>You can request this feature for certain boards.</strong></p>
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="FEATURE_SINGLE_BOARD_MODE"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        FEATURE_SINGLE_BOARD_MODE
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Allows client to use only one board. That exempts you from obligation to override
+ <code><a href="../../../reference/chan/content/ChanPerformer.html#readBoards(chan.content.ChanPerformer.ReadBoardsData)">readBoards(chan.content.ChanPerformer.ReadBoardsData)</a></code> method.</p>
+ 
+ <p>The <code>boardName</code> argument in all methods will be equal to <code>null</code>. You can change this argument
+ using <code><a href="../../../reference/chan/content/ChanConfiguration.html#setSingleBoardName(java.lang.String)">setSingleBoardName(String)</a></code> method.</p>
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="FEATURE_UNMARK"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        FEATURE_UNMARK
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Allows user to get post's markup. With this feature you must be sure that <code><a href="../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a></code>
+ can do this correctly or provide markup with <code><a href="../../../reference/chan/content/model/PostModel.html#getCommentMarkup()">getCommentMarkup()</a></code>.</p>
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="FEATURE_USER_AUTHORIZATION"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        FEATURE_USER_AUTHORIZATION
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Allows user to enter authorization data to access some features.
+ You can obtain authorization data using <code><a href="../../../reference/chan/content/ChanConfiguration.html#getUserAuthorizationData()">getUserAuthorizationData()</a></code>.
+ With this data you can perform authorization and save cookies or another data that represents authorization
+ state. Then you can grant user rights to read some threads or something like this.</p>
+ 
+ <p>If you request this feature, you <strong>must</strong> implement
+ <code><a href="../../../reference/chan/content/ChanPerformer.html#checkUserAuthorization(chan.content.ChanPerformer.CheckAuthorizationData)">checkUserAuthorization(chan.content.ChanPerformer.CheckAuthorizationData)</a></code>.</p>
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="FEATURE_USER_BOARDS"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        FEATURE_USER_BOARDS
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Allows client to download user boards.</p>
+ 
+ <p>If you request this feature, you <strong>must</strong> implement
+ <code><a href="../../../reference/chan/content/ChanPerformer.html#readUserBoards(chan.content.ChanPerformer.ReadBoardsData)">readUserBoards(chan.content.ChanPerformer.ReadBoardsData)</a></code>.</p>
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="FEATURE_WATCHER"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        FEATURE_WATCHER
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Allows client to download posts count.</p>
+ 
+ <p>If you request this feature, you <strong>must</strong> implement
+ <code><a href="../../../reference/chan/content/ChanPerformer.html#readPostsCount(chan.content.ChanPerformer.ReadPostsCountData)">readPostsCount(chan.content.ChanPerformer.ReadPostsCountData)</a></code>.</p>
+ 
+ <p>You should also implement <code><a href="../../../reference/chan/content/ChanConfiguration.html#obtainCaptchaPassConfiguration()">obtainCaptchaPassConfiguration()</a></code>.</p>
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+
+<!-- Public ctors -->
+
+
+<!-- ========= CONSTRUCTOR DETAIL ======== -->
+<h2>Public Constructors</h2>
+
+
+
+<A NAME="ChanConfiguration()"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        
+      </span>
+      <span class="sympad">ChanConfiguration</span>
+      <span class="normal">()</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p></p></div>
+
+    </div>
+</div>
+
+
+
+
+
+<!-- ========= CONSTRUCTOR DETAIL ======== -->
+<!-- Protected ctors -->
+
+
+
+<!-- ========= METHOD DETAIL ======== -->
+<!-- Public methdos -->
+
+<h2>Public Methods</h2>
+
+
+
+<A NAME="addCaptchaType(java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">addCaptchaType</span>
+      <span class="normal">(String captchaType)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Add captcha type to list of supported capthas. User may choose captcha in application preferences.
+ Client will obtain configuration of custom captchas with <code><a href="../../../reference/chan/content/ChanConfiguration.html#obtainCustomCaptchaConfiguation(java.lang.String)">obtainCustomCaptchaConfiguation(String)</a></code>.</p>
+ 
+ <p>There is a list of default captcha types: <code><a href="../../../reference/chan/content/ChanConfiguration.html#CAPTCHA_TYPE_RECAPTCHA_1">CAPTCHA_TYPE_RECAPTCHA_1</a></code>,
+ <code><a href="../../../reference/chan/content/ChanConfiguration.html#CAPTCHA_TYPE_RECAPTCHA_2">CAPTCHA_TYPE_RECAPTCHA_2</a></code>, <code><a href="../../../reference/chan/content/ChanConfiguration.html#CAPTCHA_TYPE_YANDEX_TEXTUAL">CAPTCHA_TYPE_YANDEX_TEXTUAL</a></code> and <code><a href="../../../reference/chan/content/ChanConfiguration.html#CAPTCHA_TYPE_YANDEX_NUMERIC">CAPTCHA_TYPE_YANDEX_NUMERIC</a></code>.
+ Client may handle these captchas my itself.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>captchaType</td>
+          <td>Captcha type string.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="edit()"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        SharedPreferences.Editor
+      </span>
+      <span class="sympad">edit</span>
+      <span class="normal">()</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Returns preferences editor. You must <code>commit</code> changes after editing preferences.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li>Preferences editor.
+</li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="get(java.lang.String, java.lang.String, java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        String
+      </span>
+      <span class="sympad">get</span>
+      <span class="normal">(String boardName, String key, String defaultValue)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Returns stored string value.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>boardName</td>
+          <td>Board name part of real key.</td>
+        </tr>
+        <tr>
+          <th>key</td>
+          <td>Key name.</td>
+        </tr>
+        <tr>
+          <th>defaultValue</td>
+          <td>Value to return if this preference does not exist.</td>
+        </tr>
+      </table>
+  </div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li>Stored value.
+</li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="get(java.lang.Object)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+         
+         
+         
+        T
+      </span>
+      <span class="sympad">get</span>
+      <span class="normal">(Object linkage)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Return linked <code><a href="../../../reference/chan/content/ChanConfiguration.html">ChanConfiguration</a></code> instance.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>linkage</td>
+          <td>Linkage object: <code><a href="../../../reference/chan/content/ChanPerformer.html">ChanPerformer</a></code>, <code><a href="../../../reference/chan/content/ChanLocator.html">ChanLocator</a></code> or <code><a href="../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a></code>.</td>
+        </tr>
+      </table>
+  </div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li><code><a href="../../../reference/chan/content/ChanConfiguration.html">ChanConfiguration</a></code> instance.
+</li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="get(java.lang.String, java.lang.String, int)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        int
+      </span>
+      <span class="sympad">get</span>
+      <span class="normal">(String boardName, String key, int defaultValue)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Returns stored int value.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>boardName</td>
+          <td>Board name part of real key.</td>
+        </tr>
+        <tr>
+          <th>key</td>
+          <td>Key name.</td>
+        </tr>
+        <tr>
+          <th>defaultValue</td>
+          <td>Value to return if this preference does not exist.</td>
+        </tr>
+      </table>
+  </div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li>Stored value.
+</li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="get(java.lang.String, java.lang.String, boolean)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        boolean
+      </span>
+      <span class="sympad">get</span>
+      <span class="normal">(String boardName, String key, boolean defaultValue)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Returns stored boolean value.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>boardName</td>
+          <td>Board name part of real key.</td>
+        </tr>
+        <tr>
+          <th>key</td>
+          <td>Key name.</td>
+        </tr>
+        <tr>
+          <th>defaultValue</td>
+          <td>Value to return if this preference does not exist.</td>
+        </tr>
+      </table>
+  </div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li>Stored value.
+</li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="getCookie(java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        String
+      </span>
+      <span class="sympad">getCookie</span>
+      <span class="normal">(String cookie)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Returns stored cookie.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>cookie</td>
+          <td>Cookie name.</td>
+        </tr>
+      </table>
+  </div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li>Cookie value or null if cookie not found.
+</li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="getResources()"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        Resources
+      </span>
+      <span class="sympad">getResources</span>
+      <span class="normal">()</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Returns resources from chan APK file.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li>Resources bound to chan.
+</li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="getTitle()"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        String
+      </span>
+      <span class="sympad">getTitle</span>
+      <span class="normal">()</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Returns a chan title. This title is display name used in client/</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li>Chan title.
+</li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="getUserAuthorizationData()"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        String[]
+      </span>
+      <span class="sympad">getUserAuthorizationData</span>
+      <span class="normal">()</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Returns user authorization data. User can specify authorization data when <code><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_USER_AUTHORIZATION">FEATURE_USER_AUTHORIZATION</a></code>
+ requested.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li>User authorization fields values. 
+</li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="obtainArchivationConfiguration()"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        <a href="../../../reference/chan/content/ChanConfiguration.Archivation.html">ChanConfiguration.Archivation</a>
+      </span>
+      <span class="sympad">obtainArchivationConfiguration</span>
+      <span class="normal">()</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Calls every time client request archivation configuration. You must return new instance of
+ <code><a href="../../../reference/chan/content/ChanConfiguration.Archivation.html">ChanConfiguration.Archivation</a></code> with archivation configuration.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li>Archivation configuration.
+</li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="obtainCaptchaPassConfiguration()"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        <a href="../../../reference/chan/content/ChanConfiguration.Authorization.html">ChanConfiguration.Authorization</a>
+      </span>
+      <span class="sympad">obtainCaptchaPassConfiguration</span>
+      <span class="normal">()</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Calls every time client request captcha pass configuration. You must return new instance of
+ <code><a href="../../../reference/chan/content/ChanConfiguration.Authorization.html">ChanConfiguration.Authorization</a></code> with captcha pass configuration.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li>Captcha pass configuration.
+</li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="obtainCustomCaptchaConfiguation(java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        <a href="../../../reference/chan/content/ChanConfiguration.Captcha.html">ChanConfiguration.Captcha</a>
+      </span>
+      <span class="sympad">obtainCustomCaptchaConfiguation</span>
+      <span class="normal">(String captchaType)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Calls every time client request custom captcha configuration. You must return new instance of <code><a href="../../../reference/chan/content/ChanConfiguration.Captcha.html">ChanConfiguration.Captcha</a></code>
+ with configuration for given <code>captchaType</code>.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>captchaType</td>
+          <td>Captcha type string.</td>
+        </tr>
+      </table>
+  </div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li>Captcha configuration.
+</li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="obtainDeletingConfiguration(java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        <a href="../../../reference/chan/content/ChanConfiguration.Deleting.html">ChanConfiguration.Deleting</a>
+      </span>
+      <span class="sympad">obtainDeletingConfiguration</span>
+      <span class="normal">(String boardName)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Calls every time client request deleting configuration. You must return new instance of <code><a href="../../../reference/chan/content/ChanConfiguration.Deleting.html">ChanConfiguration.Deleting</a></code>
+ with configuration for given <code>boardName</code>.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>boardName</td>
+          <td>Board name string.</td>
+        </tr>
+      </table>
+  </div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li>Deleting configuration.
+</li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="obtainPostingConfiguration(java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        <a href="../../../reference/chan/content/ChanConfiguration.Posting.html">ChanConfiguration.Posting</a>
+      </span>
+      <span class="sympad">obtainPostingConfiguration</span>
+      <span class="normal">(String boardName)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Calls every time client request posting configuration. You must return new instance of <code><a href="../../../reference/chan/content/ChanConfiguration.Posting.html">ChanConfiguration.Posting</a></code>
+ with configuration for given <code>boardName</code>.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>boardName</td>
+          <td>Board name string.</td>
+        </tr>
+      </table>
+  </div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li>Posting configuration.
+</li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="obtainReportingConfiguration(java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        <a href="../../../reference/chan/content/ChanConfiguration.Reporting.html">ChanConfiguration.Reporting</a>
+      </span>
+      <span class="sympad">obtainReportingConfiguration</span>
+      <span class="normal">(String boardName)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Calls every time client request reporting configuration. You must return new instance of <code><a href="../../../reference/chan/content/ChanConfiguration.Reporting.html">ChanConfiguration.Reporting</a></code>
+ with configuration for given <code>boardName</code>.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>boardName</td>
+          <td>Board name string.</td>
+        </tr>
+      </table>
+  </div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li>Reporting configuration.
+</li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="obtainUserAuthorizationConfiguration()"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        <a href="../../../reference/chan/content/ChanConfiguration.Authorization.html">ChanConfiguration.Authorization</a>
+      </span>
+      <span class="sympad">obtainUserAuthorizationConfiguration</span>
+      <span class="normal">()</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Calls every time client request user authorization configuration. You must return new instance of
+ <code><a href="../../../reference/chan/content/ChanConfiguration.Authorization.html">ChanConfiguration.Authorization</a></code> with user authorization configuration.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li>User authorization configuration.
+</li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="requestFeature(int)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        void
+      </span>
+      <span class="sympad">requestFeature</span>
+      <span class="normal">(int feature)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Requests given <code>feature</code>.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>feature</td>
+          <td>Feature to request.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="requestFeatureWithCondition(int, java.lang.String, boolean)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        void
+      </span>
+      <span class="sympad">requestFeatureWithCondition</span>
+      <span class="normal">(int feature, String key, boolean defaultValue)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Requests given <code>feature</code> only when <code>key</code> is <code>true</code>. You can pass <code>defaultValue</code>.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>feature</td>
+          <td>Feature to request.</td>
+        </tr>
+        <tr>
+          <th>key</td>
+          <td>Key for boolean value to check.</td>
+        </tr>
+        <tr>
+          <th>defaultValue</td>
+          <td>Default value if preference does not exist.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="set(android.content.SharedPreferences.Editor, java.lang.String, java.lang.String, int)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        void
+      </span>
+      <span class="sympad">set</span>
+      <span class="normal">(SharedPreferences.Editor editor, String boardName, String key, int value)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Stores int value.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>editor</td>
+          <td>Preferences editor instance.</td>
+        </tr>
+        <tr>
+          <th>boardName</td>
+          <td>Board name part of key.</td>
+        </tr>
+        <tr>
+          <th>key</td>
+          <td>Key name.</td>
+        </tr>
+        <tr>
+          <th>value</td>
+          <td>Value to store.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="set(android.content.SharedPreferences.Editor, java.lang.String, java.lang.String, boolean)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        void
+      </span>
+      <span class="sympad">set</span>
+      <span class="normal">(SharedPreferences.Editor editor, String boardName, String key, boolean value)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Stores boolean value.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>editor</td>
+          <td>Preferences editor instance.</td>
+        </tr>
+        <tr>
+          <th>boardName</td>
+          <td>Board name part of key.</td>
+        </tr>
+        <tr>
+          <th>key</td>
+          <td>Key name.</td>
+        </tr>
+        <tr>
+          <th>value</td>
+          <td>Value to store.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="set(android.content.SharedPreferences.Editor, java.lang.String, java.lang.String, java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        void
+      </span>
+      <span class="sympad">set</span>
+      <span class="normal">(SharedPreferences.Editor editor, String boardName, String key, String value)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Stores string value.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>editor</td>
+          <td>Preferences editor instance.</td>
+        </tr>
+        <tr>
+          <th>boardName</td>
+          <td>Board name part of key.</td>
+        </tr>
+        <tr>
+          <th>key</td>
+          <td>Key name.</td>
+        </tr>
+        <tr>
+          <th>value</td>
+          <td>Value to store.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="setBoardDescription(java.lang.String, java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        void
+      </span>
+      <span class="sympad">setBoardDescription</span>
+      <span class="normal">(String boardName, String description)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Set <code>description</code> for board with given <code>boardName</code>.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>boardName</td>
+          <td>Board name.</td>
+        </tr>
+        <tr>
+          <th>description</td>
+          <td>Board description.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="setBoardTitle(java.lang.String, java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        void
+      </span>
+      <span class="sympad">setBoardTitle</span>
+      <span class="normal">(String boardName, String title)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Set <code>title</code> for board with given <code>boardName</code>.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>boardName</td>
+          <td>Board name.</td>
+        </tr>
+        <tr>
+          <th>title</td>
+          <td>Board title.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="setBumpLimit(java.lang.String, int)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        void
+      </span>
+      <span class="sympad">setBumpLimit</span>
+      <span class="normal">(String boardName, int bumpLimit)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Set <code>bumpLimit</code> for specified <code>boardName</code>.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>boardName</td>
+          <td>Board name.</td>
+        </tr>
+        <tr>
+          <th>bumpLimit</td>
+          <td>Bump limit value.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="setBumpLimit(int)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        void
+      </span>
+      <span class="sympad">setBumpLimit</span>
+      <span class="normal">(int bumpLimit)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Set <code>bumpLimit</code> for all boards.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>bumpLimit</td>
+          <td>Bump limit value.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="setBumpLimitMode(chan.content.ChanConfiguration.BumpLimitMode)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        void
+      </span>
+      <span class="sympad">setBumpLimitMode</span>
+      <span class="normal">(<a href="../../../reference/chan/content/ChanConfiguration.BumpLimitMode.html">ChanConfiguration.BumpLimitMode</a> mode)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Set specified <code><a href="../../../reference/chan/content/ChanConfiguration.BumpLimitMode.html">ChanConfiguration.BumpLimitMode</a></code>.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>mode</td>
+          <td>Bump limit mode.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="setDefaultName(java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        void
+      </span>
+      <span class="sympad">setDefaultName</span>
+      <span class="normal">(String defaultName)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Set poster's <code>defaultName</code> for all boards.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>defaultName</td>
+          <td>Default name.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="setDefaultName(java.lang.String, java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        void
+      </span>
+      <span class="sympad">setDefaultName</span>
+      <span class="normal">(String boardName, String defaultName)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Set poster's <code>defaultName</code> for specified <code>boardName</code>.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>boardName</td>
+          <td>Board name.</td>
+        </tr>
+        <tr>
+          <th>defaultName</td>
+          <td>Default name.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="setPagesCount(java.lang.String, int)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        void
+      </span>
+      <span class="sympad">setPagesCount</span>
+      <span class="normal">(String boardName, int pagesCount)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Set <code>pagesCount</code> for <code>boardName</code>.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>boardName</td>
+          <td>Board name.</td>
+        </tr>
+        <tr>
+          <th>pagesCount</td>
+          <td>Pages count value.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="setSingleBoardName(java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        void
+      </span>
+      <span class="sympad">setSingleBoardName</span>
+      <span class="normal">(String boardName)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Set <code>boardName</code> argument for all requests when <code><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_SINGLE_BOARD_MODE">FEATURE_SINGLE_BOARD_MODE</a></code> requested.
+ That allow you disable this feature in future when chan add multiple boards for example.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>boardName</td>
+          <td>Default board name string.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="storeBoardDescription(android.content.SharedPreferences.Editor, java.lang.String, java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        void
+      </span>
+      <span class="sympad">storeBoardDescription</span>
+      <span class="normal">(SharedPreferences.Editor editor, String boardName, String description)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Store <code>description</code> for board with given <code>boardName</code>.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>editor</td>
+          <td>Preferences editor.</td>
+        </tr>
+        <tr>
+          <th>boardName</td>
+          <td>Board name.</td>
+        </tr>
+        <tr>
+          <th>description</td>
+          <td>Board description.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="storeBoardDescription(java.lang.String, java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        void
+      </span>
+      <span class="sympad">storeBoardDescription</span>
+      <span class="normal">(String boardName, String description)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Store <code>description</code> for board with given <code>boardName</code>.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>boardName</td>
+          <td>Board name.</td>
+        </tr>
+        <tr>
+          <th>description</td>
+          <td>Board description.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="storeBoardTitle(java.lang.String, java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        void
+      </span>
+      <span class="sympad">storeBoardTitle</span>
+      <span class="normal">(String boardName, String title)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Store <code>title</code> for board with given <code>boardName</code>.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>boardName</td>
+          <td>Board name.</td>
+        </tr>
+        <tr>
+          <th>title</td>
+          <td>Board title.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="storeBoardTitle(android.content.SharedPreferences.Editor, java.lang.String, java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        void
+      </span>
+      <span class="sympad">storeBoardTitle</span>
+      <span class="normal">(SharedPreferences.Editor editor, String boardName, String title)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Store <code>title</code> for board with given <code>boardName</code>.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>editor</td>
+          <td>Preferences editor.</td>
+        </tr>
+        <tr>
+          <th>boardName</td>
+          <td>Board name.</td>
+        </tr>
+        <tr>
+          <th>title</td>
+          <td>Board title.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="storeBumpLimit(android.content.SharedPreferences.Editor, java.lang.String, int)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        void
+      </span>
+      <span class="sympad">storeBumpLimit</span>
+      <span class="normal">(SharedPreferences.Editor editor, String boardName, int bumpLimit)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Store <code>bumpLimit</code> for specified <code>boardName</code>.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>editor</td>
+          <td>Preferences editor.</td>
+        </tr>
+        <tr>
+          <th>boardName</td>
+          <td>Board name.</td>
+        </tr>
+        <tr>
+          <th>bumpLimit</td>
+          <td>Bump limit value.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="storeBumpLimit(java.lang.String, int)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        void
+      </span>
+      <span class="sympad">storeBumpLimit</span>
+      <span class="normal">(String boardName, int bumpLimit)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Store <code>bumpLimit</code> for specified <code>boardName</code>.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>boardName</td>
+          <td>Board name.</td>
+        </tr>
+        <tr>
+          <th>bumpLimit</td>
+          <td>Bump limit value.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="storeCookie(java.lang.String, java.lang.String, java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        void
+      </span>
+      <span class="sympad">storeCookie</span>
+      <span class="normal">(String cookie, String value, String displayName)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Stores cookie. You can specify human-friendly displayName of cookie.
+ User can remove this cookie using cookie manager.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>cookie</td>
+          <td>Cookie name.</td>
+        </tr>
+        <tr>
+          <th>value</td>
+          <td>Cookie value. Set this param to null to remove the cookie.</td>
+        </tr>
+        <tr>
+          <th>displayName</td>
+          <td>Human-friendly name of cookie.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="storeDefaultName(android.content.SharedPreferences.Editor, java.lang.String, java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        void
+      </span>
+      <span class="sympad">storeDefaultName</span>
+      <span class="normal">(SharedPreferences.Editor editor, String boardName, String defaultName)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Store poster's <code>defaultName</code> for specified <code>boardName</code>.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>editor</td>
+          <td>Preferences editor.</td>
+        </tr>
+        <tr>
+          <th>boardName</td>
+          <td>Board name.</td>
+        </tr>
+        <tr>
+          <th>defaultName</td>
+          <td>Default name.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="storeDefaultName(java.lang.String, java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        void
+      </span>
+      <span class="sympad">storeDefaultName</span>
+      <span class="normal">(String boardName, String defaultName)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Store poster's <code>defaultName</code> for specified <code>boardName</code>.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>boardName</td>
+          <td>Board name.</td>
+        </tr>
+        <tr>
+          <th>defaultName</td>
+          <td>Default name.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="storePagesCount(android.content.SharedPreferences.Editor, java.lang.String, int)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        void
+      </span>
+      <span class="sympad">storePagesCount</span>
+      <span class="normal">(SharedPreferences.Editor editor, String boardName, int pagesCount)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Store <code>pagesCount</code> for <code>boardName</code>.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>editor</td>
+          <td>Preferences editor.</td>
+        </tr>
+        <tr>
+          <th>boardName</td>
+          <td>Board name.</td>
+        </tr>
+        <tr>
+          <th>pagesCount</td>
+          <td>Pages count value.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="storePagesCount(java.lang.String, int)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        void
+      </span>
+      <span class="sympad">storePagesCount</span>
+      <span class="normal">(String boardName, int pagesCount)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Store <code>pagesCount</code> for <code>boardName</code>.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>boardName</td>
+          <td>Board name.</td>
+        </tr>
+        <tr>
+          <th>pagesCount</td>
+          <td>Pages count value.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+
+
+
+<!-- ========= METHOD DETAIL ======== -->
+
+
+
+<!-- ========= END OF CLASS DATA ========= -->
+<A NAME="navbar_top"></A>
+
+<div id="footer">
+
+</div> <!-- end footer -->
+
+</div> <!-- jd-content -->
+
+</div><!-- end doc-content -->
+
+</div> <!-- end body-content --> 
+
+<script type="text/javascript">
+init(); /* initialize android-developer-docs.js */
+</script>
+
+</body>
+</html>

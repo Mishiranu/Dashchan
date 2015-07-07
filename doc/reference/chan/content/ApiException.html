@@ -1,0 +1,2198 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
+<title>
+
+  ApiException - Dashchan API Reference |
+
+Doclava
+
+</title>
+<link href="../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
+<link href="../../../assets/customizations.css" rel="stylesheet" type="text/css" />
+<script src="../../../assets/search_autocomplete.js" type="text/javascript"></script>
+<script src="../../../assets/jquery-resizable.min.js" type="text/javascript"></script>
+<script src="../../../assets/doclava-developer-docs.js" type="text/javascript"></script>
+<script src="../../../assets/prettify.js" type="text/javascript"></script>
+<script type="text/javascript">
+  setToRoot("../../../");
+</script>
+<script src="../../../assets/doclava-developer-reference.js" type="text/javascript"></script>
+<script src="../../../navtree_data.js" type="text/javascript"></script>
+<script src="../../../assets/customizations.js" type="text/javascript"></script>
+<noscript>
+  <style type="text/css">
+    html,body{overflow:auto;}
+    #body-content{position:relative; top:0;}
+    #doc-content{overflow:visible;border-left:3px solid #666;}
+    #side-nav{padding:0;}
+    #side-nav .toggle-list ul {display:block;}
+    #resize-packages-nav{border-bottom:3px solid #666;}
+  </style>
+</noscript>
+</head>
+
+<body class="" itemscope itemtype="http://schema.org/Article">
+
+<div id="header">
+    <div id="headerLeft">
+      
+    </div>
+    <div id="headerRight">
+        
+  <div id="search" >
+      <div id="searchForm">
+          <form accept-charset="utf-8" class="gsc-search-box" 
+                onsubmit="return submit_search()">
+            <table class="gsc-search-box" cellpadding="0" cellspacing="0"><tbody>
+                <tr>
+                  <td class="gsc-input">
+                    <input id="search_autocomplete" class="gsc-input" type="text" size="33" autocomplete="off"
+                      title="search developer docs" name="q"
+                      value="search developer docs"
+                      onFocus="search_focus_changed(this, true)"
+                      onBlur="search_focus_changed(this, false)"
+                      onkeydown="return search_changed(event, true, '../../../')"
+                      onkeyup="return search_changed(event, false, '../../../')" />
+                  <div id="search_filtered_div" class="no-display">
+                      <table id="search_filtered" cellspacing=0>
+                      </table>
+                  </div>
+                  </td>
+                  <td class="gsc-search-button">
+                    <input type="submit" value="Search" title="search" id="search-button" class="gsc-search-button" />
+                  </td>
+                  <td class="gsc-clear-button">
+                    <div title="clear results" class="gsc-clear-button">&nbsp;</div>
+                  </td>
+                </tr></tbody>
+              </table>
+          </form>
+      </div><!-- searchForm -->
+  </div><!-- search -->
+    </div><!-- headerRight -->
+</div><!-- header -->
+
+
+  <div class="g-section g-tpl-240" id="body-content">
+    <div class="g-unit g-first side-nav-resizable" id="side-nav">
+      <div id="swapper">
+        <div id="nav-panels">
+          <div id="resize-packages-nav">
+            <div id="packages-nav">
+              <div id="index-links"><nobr>
+                <a href="../../../reference/packages.html"  >Package Index</a> | 
+                <a href="../../../reference/classes.html" >Class Index</a></nobr>
+              </div>
+              <ul>
+                
+    <li class="selected api apilevel-">
+  <a href="../../../reference/chan/content/package-summary.html">chan.content</a></li>
+    <li class="api apilevel-">
+  <a href="../../../reference/chan/content/model/package-summary.html">chan.content.model</a></li>
+    <li class="api apilevel-">
+  <a href="../../../reference/chan/http/package-summary.html">chan.http</a></li>
+    <li class="api apilevel-">
+  <a href="../../../reference/chan/text/package-summary.html">chan.text</a></li>
+    <li class="api apilevel-">
+  <a href="../../../reference/chan/util/package-summary.html">chan.util</a></li>
+              </ul><br/>
+            </div> <!-- end packages -->
+          </div> <!-- end resize-packages -->
+          <div id="classes-nav">
+            <ul>
+              
+              
+    <li><h2>Classes</h2>
+      <ul>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanConfiguration.html">ChanConfiguration</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanConfiguration.Archivation.html">ChanConfiguration.Archivation</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanConfiguration.Authorization.html">ChanConfiguration.Authorization</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanConfiguration.Captcha.html">ChanConfiguration.Captcha</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanConfiguration.Deleting.html">ChanConfiguration.Deleting</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanConfiguration.Posting.html">ChanConfiguration.Posting</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanConfiguration.Reporting.html">ChanConfiguration.Reporting</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanLocator.html">ChanLocator</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanLocator.NavigationData.html">ChanLocator.NavigationData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanMarkup.SimpleChanMarkup.html">ChanMarkup.SimpleChanMarkup</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.html">ChanPerformer</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.AddToArchiveData.html">ChanPerformer.AddToArchiveData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.AddToArchiveResult.html">ChanPerformer.AddToArchiveResult</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.CaptchaData.html">ChanPerformer.CaptchaData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.CaptchaResult.html">ChanPerformer.CaptchaResult</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.CheckAuthorizationData.html">ChanPerformer.CheckAuthorizationData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.DeletePostsData.html">ChanPerformer.DeletePostsData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.ReadBoardsData.html">ChanPerformer.ReadBoardsData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaData.html">ChanPerformer.ReadCaptchaData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.ReadContentData.html">ChanPerformer.ReadContentData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.ReadGlobalThreadsData.html">ChanPerformer.ReadGlobalThreadsData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.ReadPostsCountData.html">ChanPerformer.ReadPostsCountData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.ReadPostsData.html">ChanPerformer.ReadPostsData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.ReadSearchPostsData.html">ChanPerformer.ReadSearchPostsData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.ReadSinglePostData.html">ChanPerformer.ReadSinglePostData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.ReadThreadsData.html">ChanPerformer.ReadThreadsData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.SendPostData.html">ChanPerformer.SendPostData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.SendPostData.Attachment.html">ChanPerformer.SendPostData.Attachment</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.SendPostResult.html">ChanPerformer.SendPostResult</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.SendReportData.html">ChanPerformer.SendReportData</a></li>
+      </ul>
+    </li>
+              
+    <li><h2>Enums</h2>
+      <ul>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanConfiguration.BumpLimitMode.html">ChanConfiguration.BumpLimitMode</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanConfiguration.Captcha.Input.html">ChanConfiguration.Captcha.Input</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanConfiguration.Captcha.Validity.html">ChanConfiguration.Captcha.Validity</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.CaptchaState.html">ChanPerformer.CaptchaState</a></li>
+      </ul>
+    </li>
+              
+    <li><h2>Exceptions</h2>
+      <ul>
+          <li class="selected api apilevel-"><a href="../../../reference/chan/content/ApiException.html">ApiException</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ThreadRedirectException.html">ThreadRedirectException</a></li>
+      </ul>
+    </li>
+              
+            </ul><br/>
+          </div><!-- end classes -->
+        </div><!-- end nav-panels -->
+        <div id="nav-tree" style="display:none">
+          <div id="index-links"><nobr>
+            <a href="../../../reference/packages.html"  >Package Index</a> | 
+            <a href="../../../reference/classes.html" >Class Index</a></nobr>
+          </div>
+        </div><!-- end nav-tree -->
+      </div><!-- end swapper -->
+    </div> <!-- end side-nav -->
+    <script>
+      if (!isMobile) {
+        $("<a href='#' id='nav-swap' onclick='swapNav();return false;' style='font-size:10px;line-height:9px;margin-left:1em;text-decoration:none;'><span id='tree-link'>Use Tree Navigation</span><span id='panel-link' style='display:none'>Use Panel Navigation</span></a>").appendTo("#side-nav");
+        chooseDefaultNav();
+        if ($("#nav-tree").is(':visible')) {
+          init_default_navtree("../../../");
+        } else {
+          addLoadEvent(function() {
+            scrollIntoView("packages-nav");
+            scrollIntoView("classes-nav");
+          });
+        }
+        $("#swapper").css({borderBottom:"2px solid #aaa"});
+      } else {
+        swapNav(); // tree view should be used on mobile
+      }
+    </script>
+
+
+
+<div class="g-unit" id="doc-content">
+
+<div id="api-info-block">
+
+
+
+  
+  
+  
+  
+
+  
+   
+  
+  
+  
+  
+
+  
+   
+  
+  
+  
+  
+
+  
+  
+  
+  
+
+
+<div class="sum-details-links">
+
+Summary:
+
+
+
+
+
+
+
+  <a href="#lfields">Fields</a>
+  
+
+
+
+  &#124; <a href="#pubctors">Ctors</a>
+  
+
+
+
+
+
+  &#124; <a href="#inhmethods">Inherited Methods</a>
+
+&#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
+
+</div><!-- end sum-details-links -->
+<div class="api-level">
+  
+  
+  
+
+</div>
+</div><!-- end api-info-block -->
+
+
+<!-- ======== START OF CLASS DATA ======== -->
+
+<div id="jd-header">
+    public
+     
+     
+    
+    class
+<h1 itemprop="name">ApiException</h1>
+
+
+
+  
+  
+  
+
+  
+  
+  
+
+  
+    extends Exception<br/>
+  
+  
+  
+
+  
+  
+  
+
+
+</div><!-- end header -->
+
+<div id="naMessage"></div>
+
+<div id="jd-content" class="api apilevel-">
+<table class="jd-inheritance-table">
+
+
+    <tr>
+         	
+        <td colspan="4" class="jd-inheritance-class-cell">java.lang.Object</td>
+    </tr>
+    
+
+    <tr>
+        
+            <td class="jd-inheritance-space">&nbsp;&nbsp;&nbsp;&#x21b3;</td>
+         	
+        <td colspan="3" class="jd-inheritance-class-cell">java.lang.Throwable</td>
+    </tr>
+    
+
+    <tr>
+        
+            <td class="jd-inheritance-space">&nbsp;</td>
+        
+            <td class="jd-inheritance-space">&nbsp;&nbsp;&nbsp;&#x21b3;</td>
+         	
+        <td colspan="2" class="jd-inheritance-class-cell">java.lang.Exception</td>
+    </tr>
+    
+
+    <tr>
+        
+            <td class="jd-inheritance-space">&nbsp;</td>
+        
+            <td class="jd-inheritance-space">&nbsp;</td>
+        
+            <td class="jd-inheritance-space">&nbsp;&nbsp;&nbsp;&#x21b3;</td>
+         	
+        <td colspan="1" class="jd-inheritance-class-cell">chan.content.ApiException</td>
+    </tr>
+    
+
+</table>
+
+
+
+
+
+
+
+<div class="jd-descr">
+
+
+<h2>Class Overview</h2>
+<p itemprop="articleBody"><p>Thrown by sending methods from <code><a href="../../../reference/chan/content/ChanPerformer.html">ChanPerformer</a></code>.</p>
+</p>
+
+
+
+
+
+</div><!-- jd-descr -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="jd-descr">
+
+
+<h2>Summary</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- =========== FIELD SUMMARY =========== -->
+<table id="lfields" class="jd-sumtable"><tr><th colspan="12">Fields</th></tr>
+
+
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ApiException.html#ARCHIVE_ERROR_TOO_OFTEN">ARCHIVE_ERROR_TOO_OFTEN</a></td>
+          <td class="jd-descrcol" width="100%">User sends archive requests too often.</td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ApiException.html#ARCHIVE_NO_ACCESS">ARCHIVE_NO_ACCESS</a></td>
+          <td class="jd-descrcol" width="100%">No access to archive thread: unsupported or canceled operation.</td>
+      </tr>
+      
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ApiException.html#DELETE_ERROR_NOT_FOUND">DELETE_ERROR_NOT_FOUND</a></td>
+          <td class="jd-descrcol" width="100%">Deleted post was not found.</td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ApiException.html#DELETE_ERROR_PASSWORD">DELETE_ERROR_PASSWORD</a></td>
+          <td class="jd-descrcol" width="100%">User entered invalid password.</td>
+      </tr>
+      
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ApiException.html#DELETE_ERROR_TOO_NEW">DELETE_ERROR_TOO_NEW</a></td>
+          <td class="jd-descrcol" width="100%">User must wait before deleting new posts.</td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ApiException.html#DELETE_ERROR_TOO_OFTEN">DELETE_ERROR_TOO_OFTEN</a></td>
+          <td class="jd-descrcol" width="100%">User sends delete post requests too often.</td>
+      </tr>
+      
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ApiException.html#DELETE_ERROR_TOO_OLD">DELETE_ERROR_TOO_OLD</a></td>
+          <td class="jd-descrcol" width="100%">The post is too old to delete.</td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ApiException.html#DELETE_NO_ACCESS">DELETE_NO_ACCESS</a></td>
+          <td class="jd-descrcol" width="100%">No access to delete posts: unsupported or canceled operation.</td>
+      </tr>
+      
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ApiException.html#REPORT_ERROR_EMPTY_COMMENT">REPORT_ERROR_EMPTY_COMMENT</a></td>
+          <td class="jd-descrcol" width="100%">User must specify comment to send report.</td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ApiException.html#REPORT_ERROR_TOO_OFTEN">REPORT_ERROR_TOO_OFTEN</a></td>
+          <td class="jd-descrcol" width="100%">User sends report post requests too often.</td>
+      </tr>
+      
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ApiException.html#REPORT_NO_ACCESS">REPORT_NO_ACCESS</a></td>
+          <td class="jd-descrcol" width="100%">No access to report post: unsupported or canceled operation.</td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ApiException.html#SEND_ERROR_BANNED">SEND_ERROR_BANNED</a></td>
+          <td class="jd-descrcol" width="100%">User's IP banned.</td>
+      </tr>
+      
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ApiException.html#SEND_ERROR_CAPTCHA">SEND_ERROR_CAPTCHA</a></td>
+          <td class="jd-descrcol" width="100%">Mistyped or empty captcha.</td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ApiException.html#SEND_ERROR_CLOSED">SEND_ERROR_CLOSED</a></td>
+          <td class="jd-descrcol" width="100%">Thread closed.</td>
+      </tr>
+      
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ApiException.html#SEND_ERROR_EMPTY_COMMENT">SEND_ERROR_EMPTY_COMMENT</a></td>
+          <td class="jd-descrcol" width="100%">User must specify comment to send post.</td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ApiException.html#SEND_ERROR_EMPTY_FILE">SEND_ERROR_EMPTY_FILE</a></td>
+          <td class="jd-descrcol" width="100%">User must attach file to send post.</td>
+      </tr>
+      
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ApiException.html#SEND_ERROR_EMPTY_SUBJECT">SEND_ERROR_EMPTY_SUBJECT</a></td>
+          <td class="jd-descrcol" width="100%">User must specify subject to send post.</td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ApiException.html#SEND_ERROR_FIELD_TOO_LONG">SEND_ERROR_FIELD_TOO_LONG</a></td>
+          <td class="jd-descrcol" width="100%">Comment or another field exceeds limit.</td>
+      </tr>
+      
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ApiException.html#SEND_ERROR_FILES_LIMIT">SEND_ERROR_FILES_LIMIT</a></td>
+          <td class="jd-descrcol" width="100%">Reached maximum files count in thread.</td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ApiException.html#SEND_ERROR_FILES_TOO_MANY">SEND_ERROR_FILES_TOO_MANY</a></td>
+          <td class="jd-descrcol" width="100%">Too many files attached to post.</td>
+      </tr>
+      
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ApiException.html#SEND_ERROR_FILE_EXISTS">SEND_ERROR_FILE_EXISTS</a></td>
+          <td class="jd-descrcol" width="100%">File with the same hash sum exists on server.</td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ApiException.html#SEND_ERROR_FILE_NOT_SUPPORTED">SEND_ERROR_FILE_NOT_SUPPORTED</a></td>
+          <td class="jd-descrcol" width="100%">File type is not supported.</td>
+      </tr>
+      
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ApiException.html#SEND_ERROR_FILE_TOO_BIG">SEND_ERROR_FILE_TOO_BIG</a></td>
+          <td class="jd-descrcol" width="100%">File size exceeds limit.</td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ApiException.html#SEND_ERROR_NO_ACCESS">SEND_ERROR_NO_ACCESS</a></td>
+          <td class="jd-descrcol" width="100%">No access to post on this board or thread.</td>
+      </tr>
+      
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ApiException.html#SEND_ERROR_NO_BOARD">SEND_ERROR_NO_BOARD</a></td>
+          <td class="jd-descrcol" width="100%">Board not exists error.</td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ApiException.html#SEND_ERROR_NO_THREAD">SEND_ERROR_NO_THREAD</a></td>
+          <td class="jd-descrcol" width="100%">Thread not exists error.</td>
+      </tr>
+      
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ApiException.html#SEND_ERROR_SPAM_LIST">SEND_ERROR_SPAM_LIST</a></td>
+          <td class="jd-descrcol" width="100%">Comment or another field contains a word from spam list.</td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ApiException.html#SEND_ERROR_TOO_FAST">SEND_ERROR_TOO_FAST</a></td>
+          <td class="jd-descrcol" width="100%">User sends posts too fast.</td>
+      </tr>
+      
+    
+
+</table>
+
+
+
+
+
+
+
+<!-- ======== CONSTRUCTOR SUMMARY ======== -->
+<table id="pubctors" class="jd-sumtable"><tr><th colspan="12">Public Constructors</th></tr>
+
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            </nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ApiException.html#ApiException(int)">ApiException</a></span>(int errorType)</nobr>
+        
+        <div class="jd-descrdiv"><p>Constructor for an <code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code>.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            </nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ApiException.html#ApiException(java.lang.String)">ApiException</a></span>(String detailMessage)</nobr>
+        
+        <div class="jd-descrdiv"><p>Constructor for an <code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code>.</div>
+  
+  </td></tr>
+
+
+
+</table>
+
+
+
+
+
+
+
+
+
+
+
+<!-- ========== METHOD SUMMARY =========== -->
+<table id="inhmethods" class="jd-sumtable"><tr><th>
+  <a href="#" class="toggle-all" onclick="return toggleAllInherited(this, null)">[Expand]</a>
+  <div style="clear:left;">Inherited Methods</div></th></tr>
+
+
+
+
+<tr class="api apilevel-" >
+<td colspan="12">
+  <a href="#" onclick="return toggleInherited(this, null)" id="inherited-methods-java.lang.Throwable" class="jd-expando-trigger closed"
+          ><img id="inherited-methods-java.lang.Throwable-trigger"
+          src="../../../assets/images/triangle-closed.png"
+          class="jd-expando-trigger-img" /></a>
+From class
+
+  java.lang.Throwable
+
+<div id="inherited-methods-java.lang.Throwable">
+  <div id="inherited-methods-java.lang.Throwable-list"
+        class="jd-inheritedlinks">
+  </div>
+  <div id="inherited-methods-java.lang.Throwable-summary" style="display: none;">
+    <table class="jd-sumtable-expando">
+    
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            synchronized
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">addSuppressed</span>(Throwable arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            synchronized
+            
+            
+            
+            Throwable</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">fillInStackTrace</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            synchronized
+            
+            
+            
+            Throwable</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">getCause</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            String</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">getLocalizedMessage</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            String</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">getMessage</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            StackTraceElement[]</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">getStackTrace</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            synchronized
+            final
+            
+            
+            Throwable[]</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">getSuppressed</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            synchronized
+            
+            
+            
+            Throwable</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">initCause</span>(Throwable arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">printStackTrace</span>(PrintStream arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">printStackTrace</span>(PrintWriter arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">printStackTrace</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">setStackTrace</span>(StackTraceElement[] arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            String</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">toString</span>()</nobr>
+        
+  </td></tr>
+
+
+</table>
+  </div>
+</div>
+</td></tr>
+
+
+
+<tr class="api apilevel-" >
+<td colspan="12">
+  <a href="#" onclick="return toggleInherited(this, null)" id="inherited-methods-java.lang.Object" class="jd-expando-trigger closed"
+          ><img id="inherited-methods-java.lang.Object-trigger"
+          src="../../../assets/images/triangle-closed.png"
+          class="jd-expando-trigger-img" /></a>
+From class
+
+  java.lang.Object
+
+<div id="inherited-methods-java.lang.Object">
+  <div id="inherited-methods-java.lang.Object-list"
+        class="jd-inheritedlinks">
+  </div>
+  <div id="inherited-methods-java.lang.Object-summary" style="display: none;">
+    <table class="jd-sumtable-expando">
+    
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">equals</span>(Object arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            Class&lt;?&gt;</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">getClass</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            int</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">hashCode</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">notify</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">notifyAll</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            String</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">toString</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">wait</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">wait</span>(long arg0, int arg1)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">wait</span>(long arg0)</nobr>
+        
+  </td></tr>
+
+
+</table>
+  </div>
+</div>
+</td></tr>
+
+
+
+
+</table>
+
+
+</div><!-- jd-descr (summary) -->
+
+<!-- Details -->
+
+
+
+
+
+
+
+
+<!-- XML Attributes -->
+
+
+<!-- Enum Values -->
+
+
+<!-- Constants -->
+
+
+<!-- Fields -->
+
+
+<!-- ========= FIELD DETAIL ======== -->
+<h2>Fields</h2>
+
+
+
+
+<A NAME="ARCHIVE_ERROR_TOO_OFTEN"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        ARCHIVE_ERROR_TOO_OFTEN
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>User sends archive requests too often.
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="ARCHIVE_NO_ACCESS"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        ARCHIVE_NO_ACCESS
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>No access to archive thread: unsupported or canceled operation.
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="DELETE_ERROR_NOT_FOUND"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        DELETE_ERROR_NOT_FOUND
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>Deleted post was not found.
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="DELETE_ERROR_PASSWORD"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        DELETE_ERROR_PASSWORD
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>User entered invalid password.
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="DELETE_ERROR_TOO_NEW"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        DELETE_ERROR_TOO_NEW
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>User must wait before deleting new posts.
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="DELETE_ERROR_TOO_OFTEN"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        DELETE_ERROR_TOO_OFTEN
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>User sends delete post requests too often.
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="DELETE_ERROR_TOO_OLD"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        DELETE_ERROR_TOO_OLD
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>The post is too old to delete.
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="DELETE_NO_ACCESS"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        DELETE_NO_ACCESS
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>No access to delete posts: unsupported or canceled operation.
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="REPORT_ERROR_EMPTY_COMMENT"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        REPORT_ERROR_EMPTY_COMMENT
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>User must specify comment to send report.
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="REPORT_ERROR_TOO_OFTEN"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        REPORT_ERROR_TOO_OFTEN
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>User sends report post requests too often.
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="REPORT_NO_ACCESS"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        REPORT_NO_ACCESS
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>No access to report post: unsupported or canceled operation.
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="SEND_ERROR_BANNED"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        SEND_ERROR_BANNED
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>User's IP banned.
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="SEND_ERROR_CAPTCHA"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        SEND_ERROR_CAPTCHA
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>Mistyped or empty captcha.
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="SEND_ERROR_CLOSED"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        SEND_ERROR_CLOSED
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>Thread closed.
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="SEND_ERROR_EMPTY_COMMENT"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        SEND_ERROR_EMPTY_COMMENT
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>User must specify comment to send post.
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="SEND_ERROR_EMPTY_FILE"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        SEND_ERROR_EMPTY_FILE
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>User must attach file to send post.
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="SEND_ERROR_EMPTY_SUBJECT"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        SEND_ERROR_EMPTY_SUBJECT
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>User must specify subject to send post.
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="SEND_ERROR_FIELD_TOO_LONG"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        SEND_ERROR_FIELD_TOO_LONG
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>Comment or another field exceeds limit.
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="SEND_ERROR_FILES_LIMIT"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        SEND_ERROR_FILES_LIMIT
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>Reached maximum files count in thread.
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="SEND_ERROR_FILES_TOO_MANY"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        SEND_ERROR_FILES_TOO_MANY
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>Too many files attached to post.
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="SEND_ERROR_FILE_EXISTS"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        SEND_ERROR_FILE_EXISTS
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>File with the same hash sum exists on server.
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="SEND_ERROR_FILE_NOT_SUPPORTED"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        SEND_ERROR_FILE_NOT_SUPPORTED
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>File type is not supported.
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="SEND_ERROR_FILE_TOO_BIG"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        SEND_ERROR_FILE_TOO_BIG
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>File size exceeds limit.
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="SEND_ERROR_NO_ACCESS"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        SEND_ERROR_NO_ACCESS
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>No access to post on this board or thread.
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="SEND_ERROR_NO_BOARD"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        SEND_ERROR_NO_BOARD
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>Board not exists error.
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="SEND_ERROR_NO_THREAD"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        SEND_ERROR_NO_THREAD
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>Thread not exists error.
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="SEND_ERROR_SPAM_LIST"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        SEND_ERROR_SPAM_LIST
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>Comment or another field contains a word from spam list.
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="SEND_ERROR_TOO_FAST"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        SEND_ERROR_TOO_FAST
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>User sends posts too fast.
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+
+<!-- Public ctors -->
+
+
+<!-- ========= CONSTRUCTOR DETAIL ======== -->
+<h2>Public Constructors</h2>
+
+
+
+<A NAME="ApiException(int)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        
+      </span>
+      <span class="sympad">ApiException</span>
+      <span class="normal">(int errorType)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Constructor for an <code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code>.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>errorType</td>
+          <td>Error type constant value.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="ApiException(java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        
+      </span>
+      <span class="sympad">ApiException</span>
+      <span class="normal">(String detailMessage)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Constructor for an <code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code>.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>detailMessage</td>
+          <td>Error message.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+
+
+
+<!-- ========= CONSTRUCTOR DETAIL ======== -->
+<!-- Protected ctors -->
+
+
+
+<!-- ========= METHOD DETAIL ======== -->
+<!-- Public methdos -->
+
+
+
+<!-- ========= METHOD DETAIL ======== -->
+
+
+
+<!-- ========= END OF CLASS DATA ========= -->
+<A NAME="navbar_top"></A>
+
+<div id="footer">
+
+</div> <!-- end footer -->
+
+</div> <!-- jd-content -->
+
+</div><!-- end doc-content -->
+
+</div> <!-- end body-content --> 
+
+<script type="text/javascript">
+init(); /* initialize android-developer-docs.js */
+</script>
+
+</body>
+</html>

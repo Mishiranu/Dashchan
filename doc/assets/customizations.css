@@ -1,0 +1,7 @@
+#header {
+  border-bottom: 3px solid #ff6600;
+}
+
+#search_filtered .jd-selected {
+  background-color: #ff6600;
+}

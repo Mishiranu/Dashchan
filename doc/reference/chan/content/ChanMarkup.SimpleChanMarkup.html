@@ -1,0 +1,1614 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
+<title>
+
+  ChanMarkup.SimpleChanMarkup - Dashchan API Reference |
+
+Doclava
+
+</title>
+<link href="../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
+<link href="../../../assets/customizations.css" rel="stylesheet" type="text/css" />
+<script src="../../../assets/search_autocomplete.js" type="text/javascript"></script>
+<script src="../../../assets/jquery-resizable.min.js" type="text/javascript"></script>
+<script src="../../../assets/doclava-developer-docs.js" type="text/javascript"></script>
+<script src="../../../assets/prettify.js" type="text/javascript"></script>
+<script type="text/javascript">
+  setToRoot("../../../");
+</script>
+<script src="../../../assets/doclava-developer-reference.js" type="text/javascript"></script>
+<script src="../../../navtree_data.js" type="text/javascript"></script>
+<script src="../../../assets/customizations.js" type="text/javascript"></script>
+<noscript>
+  <style type="text/css">
+    html,body{overflow:auto;}
+    #body-content{position:relative; top:0;}
+    #doc-content{overflow:visible;border-left:3px solid #666;}
+    #side-nav{padding:0;}
+    #side-nav .toggle-list ul {display:block;}
+    #resize-packages-nav{border-bottom:3px solid #666;}
+  </style>
+</noscript>
+</head>
+
+<body class="" itemscope itemtype="http://schema.org/Article">
+
+<div id="header">
+    <div id="headerLeft">
+      
+    </div>
+    <div id="headerRight">
+        
+  <div id="search" >
+      <div id="searchForm">
+          <form accept-charset="utf-8" class="gsc-search-box" 
+                onsubmit="return submit_search()">
+            <table class="gsc-search-box" cellpadding="0" cellspacing="0"><tbody>
+                <tr>
+                  <td class="gsc-input">
+                    <input id="search_autocomplete" class="gsc-input" type="text" size="33" autocomplete="off"
+                      title="search developer docs" name="q"
+                      value="search developer docs"
+                      onFocus="search_focus_changed(this, true)"
+                      onBlur="search_focus_changed(this, false)"
+                      onkeydown="return search_changed(event, true, '../../../')"
+                      onkeyup="return search_changed(event, false, '../../../')" />
+                  <div id="search_filtered_div" class="no-display">
+                      <table id="search_filtered" cellspacing=0>
+                      </table>
+                  </div>
+                  </td>
+                  <td class="gsc-search-button">
+                    <input type="submit" value="Search" title="search" id="search-button" class="gsc-search-button" />
+                  </td>
+                  <td class="gsc-clear-button">
+                    <div title="clear results" class="gsc-clear-button">&nbsp;</div>
+                  </td>
+                </tr></tbody>
+              </table>
+          </form>
+      </div><!-- searchForm -->
+  </div><!-- search -->
+    </div><!-- headerRight -->
+</div><!-- header -->
+
+
+  <div class="g-section g-tpl-240" id="body-content">
+    <div class="g-unit g-first side-nav-resizable" id="side-nav">
+      <div id="swapper">
+        <div id="nav-panels">
+          <div id="resize-packages-nav">
+            <div id="packages-nav">
+              <div id="index-links"><nobr>
+                <a href="../../../reference/packages.html"  >Package Index</a> | 
+                <a href="../../../reference/classes.html" >Class Index</a></nobr>
+              </div>
+              <ul>
+                
+    <li class="selected api apilevel-">
+  <a href="../../../reference/chan/content/package-summary.html">chan.content</a></li>
+    <li class="api apilevel-">
+  <a href="../../../reference/chan/content/model/package-summary.html">chan.content.model</a></li>
+    <li class="api apilevel-">
+  <a href="../../../reference/chan/http/package-summary.html">chan.http</a></li>
+    <li class="api apilevel-">
+  <a href="../../../reference/chan/text/package-summary.html">chan.text</a></li>
+    <li class="api apilevel-">
+  <a href="../../../reference/chan/util/package-summary.html">chan.util</a></li>
+              </ul><br/>
+            </div> <!-- end packages -->
+          </div> <!-- end resize-packages -->
+          <div id="classes-nav">
+            <ul>
+              
+              
+    <li><h2>Classes</h2>
+      <ul>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanConfiguration.html">ChanConfiguration</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanConfiguration.Archivation.html">ChanConfiguration.Archivation</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanConfiguration.Authorization.html">ChanConfiguration.Authorization</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanConfiguration.Captcha.html">ChanConfiguration.Captcha</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanConfiguration.Deleting.html">ChanConfiguration.Deleting</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanConfiguration.Posting.html">ChanConfiguration.Posting</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanConfiguration.Reporting.html">ChanConfiguration.Reporting</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanLocator.html">ChanLocator</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanLocator.NavigationData.html">ChanLocator.NavigationData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a></li>
+          <li class="selected api apilevel-"><a href="../../../reference/chan/content/ChanMarkup.SimpleChanMarkup.html">ChanMarkup.SimpleChanMarkup</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.html">ChanPerformer</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.AddToArchiveData.html">ChanPerformer.AddToArchiveData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.AddToArchiveResult.html">ChanPerformer.AddToArchiveResult</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.CaptchaData.html">ChanPerformer.CaptchaData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.CaptchaResult.html">ChanPerformer.CaptchaResult</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.CheckAuthorizationData.html">ChanPerformer.CheckAuthorizationData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.DeletePostsData.html">ChanPerformer.DeletePostsData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.ReadBoardsData.html">ChanPerformer.ReadBoardsData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaData.html">ChanPerformer.ReadCaptchaData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.ReadContentData.html">ChanPerformer.ReadContentData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.ReadGlobalThreadsData.html">ChanPerformer.ReadGlobalThreadsData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.ReadPostsCountData.html">ChanPerformer.ReadPostsCountData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.ReadPostsData.html">ChanPerformer.ReadPostsData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.ReadSearchPostsData.html">ChanPerformer.ReadSearchPostsData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.ReadSinglePostData.html">ChanPerformer.ReadSinglePostData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.ReadThreadsData.html">ChanPerformer.ReadThreadsData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.SendPostData.html">ChanPerformer.SendPostData</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.SendPostData.Attachment.html">ChanPerformer.SendPostData.Attachment</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.SendPostResult.html">ChanPerformer.SendPostResult</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.SendReportData.html">ChanPerformer.SendReportData</a></li>
+      </ul>
+    </li>
+              
+    <li><h2>Enums</h2>
+      <ul>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanConfiguration.BumpLimitMode.html">ChanConfiguration.BumpLimitMode</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanConfiguration.Captcha.Input.html">ChanConfiguration.Captcha.Input</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanConfiguration.Captcha.Validity.html">ChanConfiguration.Captcha.Validity</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.CaptchaState.html">ChanPerformer.CaptchaState</a></li>
+      </ul>
+    </li>
+              
+    <li><h2>Exceptions</h2>
+      <ul>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ApiException.html">ApiException</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/ThreadRedirectException.html">ThreadRedirectException</a></li>
+      </ul>
+    </li>
+              
+            </ul><br/>
+          </div><!-- end classes -->
+        </div><!-- end nav-panels -->
+        <div id="nav-tree" style="display:none">
+          <div id="index-links"><nobr>
+            <a href="../../../reference/packages.html"  >Package Index</a> | 
+            <a href="../../../reference/classes.html" >Class Index</a></nobr>
+          </div>
+        </div><!-- end nav-tree -->
+      </div><!-- end swapper -->
+    </div> <!-- end side-nav -->
+    <script>
+      if (!isMobile) {
+        $("<a href='#' id='nav-swap' onclick='swapNav();return false;' style='font-size:10px;line-height:9px;margin-left:1em;text-decoration:none;'><span id='tree-link'>Use Tree Navigation</span><span id='panel-link' style='display:none'>Use Panel Navigation</span></a>").appendTo("#side-nav");
+        chooseDefaultNav();
+        if ($("#nav-tree").is(':visible')) {
+          init_default_navtree("../../../");
+        } else {
+          addLoadEvent(function() {
+            scrollIntoView("packages-nav");
+            scrollIntoView("classes-nav");
+          });
+        }
+        $("#swapper").css({borderBottom:"2px solid #aaa"});
+      } else {
+        swapNav(); // tree view should be used on mobile
+      }
+    </script>
+
+
+
+<div class="g-unit" id="doc-content">
+
+<div id="api-info-block">
+
+
+
+  
+   
+  
+  
+  
+   
+  
+  
+
+  
+   
+  
+  
+  
+  
+
+  
+   
+  
+  
+  
+  
+
+
+<div class="sum-details-links">
+
+Summary:
+
+
+
+
+
+
+
+
+  <a href="#inhfields">Inherited Fields</a>
+  
+
+
+  &#124; <a href="#pubctors">Ctors</a>
+  
+
+
+
+  &#124; <a href="#pubmethods">Methods</a>
+  
+
+
+
+  &#124; <a href="#inhmethods">Inherited Methods</a>
+
+&#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
+
+</div><!-- end sum-details-links -->
+<div class="api-level">
+  
+  
+  
+
+</div>
+</div><!-- end api-info-block -->
+
+
+<!-- ======== START OF CLASS DATA ======== -->
+
+<div id="jd-header">
+    public
+    static 
+     
+    
+    class
+<h1 itemprop="name">ChanMarkup.SimpleChanMarkup</h1>
+
+
+
+  
+  
+  
+
+  
+    extends <a href="../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a><br/>
+  
+  
+  
+
+  
+  
+  
+
+
+</div><!-- end header -->
+
+<div id="naMessage"></div>
+
+<div id="jd-content" class="api apilevel-">
+<table class="jd-inheritance-table">
+
+
+    <tr>
+         	
+        <td colspan="3" class="jd-inheritance-class-cell">java.lang.Object</td>
+    </tr>
+    
+
+    <tr>
+        
+            <td class="jd-inheritance-space">&nbsp;&nbsp;&nbsp;&#x21b3;</td>
+         	
+        <td colspan="2" class="jd-inheritance-class-cell"><a href="../../../reference/chan/content/ChanMarkup.html">chan.content.ChanMarkup</a></td>
+    </tr>
+    
+
+    <tr>
+        
+            <td class="jd-inheritance-space">&nbsp;</td>
+        
+            <td class="jd-inheritance-space">&nbsp;&nbsp;&nbsp;&#x21b3;</td>
+         	
+        <td colspan="1" class="jd-inheritance-class-cell">chan.content.ChanMarkup.SimpleChanMarkup</td>
+    </tr>
+    
+
+</table>
+
+
+
+
+
+
+
+<div class="jd-descr">
+
+
+<h2>Class Overview</h2>
+<p itemprop="articleBody"><p>Simple implementation of <code><a href="../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a></code>. In most cases you can extend this class instead of
+ <code><a href="../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a></code> directly. It provides methods to handle tags and their CSS classes automatically.</p>
+</p>
+
+
+
+
+
+</div><!-- jd-descr -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="jd-descr">
+
+
+<h2>Summary</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- =========== FIELD SUMMARY =========== -->
+<table id="inhfields" class="jd-sumtable"><tr><th>
+  <a href="#" class="toggle-all" onclick="return toggleAllInherited(this, null)">[Expand]</a>
+  <div style="clear:left;">Inherited Fields</div></th></tr>
+
+
+<tr class="api apilevel-" >
+<td colspan="12">
+
+  <a href="#" onclick="return toggleInherited(this, null)" id="inherited-fields-chan.content.ChanMarkup" class="jd-expando-trigger closed"
+          ><img id="inherited-fields-chan.content.ChanMarkup-trigger"
+          src="../../../assets/images/triangle-closed.png"
+          class="jd-expando-trigger-img" /></a>From class
+<a href="../../../reference/chan/content/ChanMarkup.html">chan.content.ChanMarkup</a>
+<div id="inherited-fields-chan.content.ChanMarkup">
+  <div id="inherited-fields-chan.content.ChanMarkup-list"
+        class="jd-inheritedlinks">
+  </div>
+  <div id="inherited-fields-chan.content.ChanMarkup-summary" style="display: none;">
+    <table class="jd-sumtable-expando">
+    
+
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanMarkup.html#TAG_BOLD">TAG_BOLD</a></td>
+          <td class="jd-descrcol" width="100%">Bold tag constant value.</td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanMarkup.html#TAG_CODE">TAG_CODE</a></td>
+          <td class="jd-descrcol" width="100%">Code tag constant value.</td>
+      </tr>
+      
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanMarkup.html#TAG_ITALIC">TAG_ITALIC</a></td>
+          <td class="jd-descrcol" width="100%">Italic tag constant value.</td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanMarkup.html#TAG_QUOTE">TAG_QUOTE</a></td>
+          <td class="jd-descrcol" width="100%">Quote tag constant value.</td>
+      </tr>
+      
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanMarkup.html#TAG_SPOILER">TAG_SPOILER</a></td>
+          <td class="jd-descrcol" width="100%">Spoiler tag constant value.</td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanMarkup.html#TAG_STRIKE">TAG_STRIKE</a></td>
+          <td class="jd-descrcol" width="100%">Strikethrough tag constant value.</td>
+      </tr>
+      
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanMarkup.html#TAG_SUBSCRIPT">TAG_SUBSCRIPT</a></td>
+          <td class="jd-descrcol" width="100%">Subscript tag constant value.</td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanMarkup.html#TAG_SUPERSCRIPT">TAG_SUPERSCRIPT</a></td>
+          <td class="jd-descrcol" width="100%">Superscript tag constant value.</td>
+      </tr>
+      
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanMarkup.html#TAG_UNDERLINE">TAG_UNDERLINE</a></td>
+          <td class="jd-descrcol" width="100%">Underline tag constant value.</td>
+      </tr>
+      
+    
+</table>
+  </div>
+</div>
+</td></tr>
+
+
+
+
+
+
+</table>
+
+
+
+
+<!-- ======== CONSTRUCTOR SUMMARY ======== -->
+<table id="pubctors" class="jd-sumtable"><tr><th colspan="12">Public Constructors</th></tr>
+
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            </nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.SimpleChanMarkup.html#ChanMarkup.SimpleChanMarkup()">ChanMarkup.SimpleChanMarkup</a></span>()</nobr>
+        
+        <div class="jd-descrdiv"><p>Default constructor for <code><a href="../../../reference/chan/content/ChanMarkup.SimpleChanMarkup.html">ChanMarkup.SimpleChanMarkup</a></code>.</div>
+  
+  </td></tr>
+
+
+
+</table>
+
+
+
+
+
+
+<!-- ========== METHOD SUMMARY =========== -->
+<table id="pubmethods" class="jd-sumtable"><tr><th colspan="12">Public Methods</th></tr>
+
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.SimpleChanMarkup.html#addBlock(java.lang.String, int)">addBlock</a></span>(String tag, int lines)</nobr>
+        
+        <div class="jd-descrdiv"><p>Marks given <code>tag</code> as block tag.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.SimpleChanMarkup.html#addBlock(java.lang.String)">addBlock</a></span>(String tag)</nobr>
+        
+        <div class="jd-descrdiv"><p>Marks given <code>tag</code> as block tag.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.SimpleChanMarkup.html#addColorable(java.lang.String)">addColorable</a></span>(String tag)</nobr>
+        
+        <div class="jd-descrdiv"><p>Marks given <code>tag</code> as tag that may contain color attribute or CSS style.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.SimpleChanMarkup.html#addPreformatted(java.lang.String)">addPreformatted</a></span>(String tag)</nobr>
+        
+        <div class="jd-descrdiv"><p>Marks given <code>tag</code> as preformatted tag.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.SimpleChanMarkup.html#addTag(java.lang.String, java.lang.String, chan.text.HtmlParser.SpanType)">addTag</a></span>(String tag, String cssClass, <a href="../../../reference/chan/text/HtmlParser.SpanType.html">HtmlParser.SpanType</a> spanType)</nobr>
+        
+        <div class="jd-descrdiv"><p>Add tag to handle.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.SimpleChanMarkup.html#handleTagEnd(chan.text.HtmlParser, java.lang.StringBuilder, java.lang.String)">handleTagEnd</a></span>(<a href="../../../reference/chan/text/HtmlParser.html">HtmlParser</a> parser, StringBuilder builder, String tag)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.SimpleChanMarkup.html#handleTagStart(chan.text.HtmlParser, java.lang.StringBuilder, java.lang.String, org.xml.sax.Attributes)">handleTagStart</a></span>(<a href="../../../reference/chan/text/HtmlParser.html">HtmlParser</a> parser, StringBuilder builder, String tag, Attributes attributes)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            Pair&lt;String,&nbsp;String&gt;</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.SimpleChanMarkup.html#obtainPostLinkThreadPostNumbers(chan.text.HtmlParser, java.lang.String)">obtainPostLinkThreadPostNumbers</a></span>(<a href="../../../reference/chan/text/HtmlParser.html">HtmlParser</a> parser, String url)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.SimpleChanMarkup.html#onStartEnd(chan.text.HtmlParser, java.lang.StringBuilder, boolean)">onStartEnd</a></span>(<a href="../../../reference/chan/text/HtmlParser.html">HtmlParser</a> parser, StringBuilder builder, boolean end)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.SimpleChanMarkup.html#setListsEnabled(boolean)">setListsEnabled</a></span>(boolean enabled)</nobr>
+        
+        <div class="jd-descrdiv"><p>Switches lists handling mode.</div>
+  
+  </td></tr>
+
+
+
+</table>
+
+
+
+
+
+
+
+<!-- ========== METHOD SUMMARY =========== -->
+<table id="inhmethods" class="jd-sumtable"><tr><th>
+  <a href="#" class="toggle-all" onclick="return toggleAllInherited(this, null)">[Expand]</a>
+  <div style="clear:left;">Inherited Methods</div></th></tr>
+
+
+<tr class="api apilevel-" >
+<td colspan="12">
+  <a href="#" onclick="return toggleInherited(this, null)" id="inherited-methods-chan.content.ChanMarkup" class="jd-expando-trigger closed"
+          ><img id="inherited-methods-chan.content.ChanMarkup-trigger"
+          src="../../../assets/images/triangle-closed.png"
+          class="jd-expando-trigger-img" /></a>
+From class
+
+  <a href="../../../reference/chan/content/ChanMarkup.html">chan.content.ChanMarkup</a>
+
+<div id="inherited-methods-chan.content.ChanMarkup">
+  <div id="inherited-methods-chan.content.ChanMarkup-list"
+        class="jd-inheritedlinks">
+  </div>
+  <div id="inherited-methods-chan.content.ChanMarkup-summary" style="display: none;">
+    <table class="jd-sumtable-expando">
+    
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            static
+            &lt;T&nbsp;extends&nbsp;<a href="../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a>&gt;
+            T</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#get(java.lang.Object)">get</a></span>(Object linkage)</nobr>
+        
+        <div class="jd-descrdiv"><p>Return linked <code><a href="../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a></code> instance.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            <a href="../../../reference/chan/text/CommentEditor.html">CommentEditor</a></nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#getCommentEditor()">getCommentEditor</a></span>()</nobr>
+        
+        <div class="jd-descrdiv"><p>Calls when client want to show posting activity.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#isTagSupported(java.lang.String, int)">isTagSupported</a></span>(String boardName, int tag)</nobr>
+        
+        <div class="jd-descrdiv"><p>Calls when client want to determine tag's supportability.</div>
+  
+  </td></tr>
+
+
+</table>
+  </div>
+</div>
+</td></tr>
+
+
+
+<tr class="api apilevel-" >
+<td colspan="12">
+  <a href="#" onclick="return toggleInherited(this, null)" id="inherited-methods-java.lang.Object" class="jd-expando-trigger closed"
+          ><img id="inherited-methods-java.lang.Object-trigger"
+          src="../../../assets/images/triangle-closed.png"
+          class="jd-expando-trigger-img" /></a>
+From class
+
+  java.lang.Object
+
+<div id="inherited-methods-java.lang.Object">
+  <div id="inherited-methods-java.lang.Object-list"
+        class="jd-inheritedlinks">
+  </div>
+  <div id="inherited-methods-java.lang.Object-summary" style="display: none;">
+    <table class="jd-sumtable-expando">
+    
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">equals</span>(Object arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            Class&lt;?&gt;</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">getClass</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            int</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">hashCode</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">notify</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">notifyAll</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            String</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">toString</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">wait</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">wait</span>(long arg0, int arg1)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">wait</span>(long arg0)</nobr>
+        
+  </td></tr>
+
+
+</table>
+  </div>
+</div>
+</td></tr>
+
+
+
+<tr class="api apilevel-" >
+<td colspan="12">
+  <a href="#" onclick="return toggleInherited(this, null)" id="inherited-methods-chan.text.HtmlParser.Markup" class="jd-expando-trigger closed"
+          ><img id="inherited-methods-chan.text.HtmlParser.Markup-trigger"
+          src="../../../assets/images/triangle-closed.png"
+          class="jd-expando-trigger-img" /></a>
+From interface
+
+  <a href="../../../reference/chan/text/HtmlParser.Markup.html">chan.text.HtmlParser.Markup</a>
+
+<div id="inherited-methods-chan.text.HtmlParser.Markup">
+  <div id="inherited-methods-chan.text.HtmlParser.Markup-list"
+        class="jd-inheritedlinks">
+  </div>
+  <div id="inherited-methods-chan.text.HtmlParser.Markup-summary" style="display: none;">
+    <table class="jd-sumtable-expando">
+    
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            abstract
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/text/HtmlParser.Markup.html#handleTagEnd(chan.text.HtmlParser, java.lang.StringBuilder, java.lang.String)">handleTagEnd</a></span>(<a href="../../../reference/chan/text/HtmlParser.html">HtmlParser</a> parser, StringBuilder builder, String tag)</nobr>
+        
+        <div class="jd-descrdiv"><p>This method is called when tag ends.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            abstract
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/text/HtmlParser.Markup.html#handleTagStart(chan.text.HtmlParser, java.lang.StringBuilder, java.lang.String, org.xml.sax.Attributes)">handleTagStart</a></span>(<a href="../../../reference/chan/text/HtmlParser.html">HtmlParser</a> parser, StringBuilder builder, String tag, Attributes attributes)</nobr>
+        
+        <div class="jd-descrdiv"><p>This method is called when new tag starts.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            abstract
+            
+            
+            
+            
+            Pair&lt;String,&nbsp;String&gt;</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/text/HtmlParser.Markup.html#obtainPostLinkThreadPostNumbers(chan.text.HtmlParser, java.lang.String)">obtainPostLinkThreadPostNumbers</a></span>(<a href="../../../reference/chan/text/HtmlParser.html">HtmlParser</a> parser, String url)</nobr>
+        
+        <div class="jd-descrdiv"><p>This method is called every time parser finds links started with >>.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            abstract
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/text/HtmlParser.Markup.html#onStartEnd(chan.text.HtmlParser, java.lang.StringBuilder, boolean)">onStartEnd</a></span>(<a href="../../../reference/chan/text/HtmlParser.html">HtmlParser</a> parser, StringBuilder builder, boolean end)</nobr>
+        
+        <div class="jd-descrdiv"><p>This method is called every time parser starts or ends parsing.</div>
+  
+  </td></tr>
+
+
+</table>
+  </div>
+</div>
+</td></tr>
+
+
+</table>
+
+
+</div><!-- jd-descr (summary) -->
+
+<!-- Details -->
+
+
+
+
+
+
+
+
+<!-- XML Attributes -->
+
+
+<!-- Enum Values -->
+
+
+<!-- Constants -->
+
+
+<!-- Fields -->
+
+
+<!-- Public ctors -->
+
+
+<!-- ========= CONSTRUCTOR DETAIL ======== -->
+<h2>Public Constructors</h2>
+
+
+
+<A NAME="ChanMarkup.SimpleChanMarkup()"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        
+      </span>
+      <span class="sympad">ChanMarkup.SimpleChanMarkup</span>
+      <span class="normal">()</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Default constructor for <code><a href="../../../reference/chan/content/ChanMarkup.SimpleChanMarkup.html">ChanMarkup.SimpleChanMarkup</a></code>.</p>
+</p></div>
+
+    </div>
+</div>
+
+
+
+
+
+<!-- ========= CONSTRUCTOR DETAIL ======== -->
+<!-- Protected ctors -->
+
+
+
+<!-- ========= METHOD DETAIL ======== -->
+<!-- Public methdos -->
+
+<h2>Public Methods</h2>
+
+
+
+<A NAME="addBlock(java.lang.String, int)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">addBlock</span>
+      <span class="normal">(String tag, int lines)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Marks given <code>tag</code> as block tag. Parser will append lines around block if necessary.
+ The number of lines specified with <code>lines</code> argument.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>tag</td>
+          <td>Tag to handle.</td>
+        </tr>
+        <tr>
+          <th>lines</td>
+          <td>Lines count.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="addBlock(java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">addBlock</span>
+      <span class="normal">(String tag)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Marks given <code>tag</code> as block tag. Parser will append 1 line around block if necessary.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>tag</td>
+          <td>Tag to handle.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="addColorable(java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">addColorable</span>
+      <span class="normal">(String tag)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Marks given <code>tag</code> as tag that may contain color attribute or CSS style. Parser will handle
+ this cases automatically.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>tag</td>
+          <td>Tag to handle.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="addPreformatted(java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">addPreformatted</span>
+      <span class="normal">(String tag)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Marks given <code>tag</code> as preformatted tag. Parser will not remove line breaks inside this tag.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>tag</td>
+          <td>Tag to handle.</td>
+        </tr>
+      </table>
+  </div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">See Also</h5>
+      <ul class="nolist"><li><code><a href="../../../reference/chan/text/HtmlParser.html#setPreformattedModeEnabled(boolean)">setPreformattedModeEnabled(boolean)</a></code></li>
+      </ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="addTag(java.lang.String, java.lang.String, chan.text.HtmlParser.SpanType)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">addTag</span>
+      <span class="normal">(String tag, String cssClass, <a href="../../../reference/chan/text/HtmlParser.SpanType.html">HtmlParser.SpanType</a> spanType)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Add tag to handle. Given <code>tag</code> will be replaced with given <code>spanType</code>. You can specify
+ <code>cssClass</code> of tag.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>tag</td>
+          <td>Tag to handle.</td>
+        </tr>
+        <tr>
+          <th>cssClass</td>
+          <td>CSS class of tag. May be null.</td>
+        </tr>
+        <tr>
+          <th>spanType</td>
+          <td>Span type.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="handleTagEnd(chan.text.HtmlParser, java.lang.StringBuilder, java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">handleTagEnd</span>
+      <span class="normal">(<a href="../../../reference/chan/text/HtmlParser.html">HtmlParser</a> parser, StringBuilder builder, String tag)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p></p></div>
+
+    </div>
+</div>
+
+
+<A NAME="handleTagStart(chan.text.HtmlParser, java.lang.StringBuilder, java.lang.String, org.xml.sax.Attributes)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">handleTagStart</span>
+      <span class="normal">(<a href="../../../reference/chan/text/HtmlParser.html">HtmlParser</a> parser, StringBuilder builder, String tag, Attributes attributes)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p></p></div>
+
+    </div>
+</div>
+
+
+<A NAME="obtainPostLinkThreadPostNumbers(chan.text.HtmlParser, java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        Pair&lt;String,&nbsp;String&gt;
+      </span>
+      <span class="sympad">obtainPostLinkThreadPostNumbers</span>
+      <span class="normal">(<a href="../../../reference/chan/text/HtmlParser.html">HtmlParser</a> parser, String url)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p></p></div>
+
+    </div>
+</div>
+
+
+<A NAME="onStartEnd(chan.text.HtmlParser, java.lang.StringBuilder, boolean)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">onStartEnd</span>
+      <span class="normal">(<a href="../../../reference/chan/text/HtmlParser.html">HtmlParser</a> parser, StringBuilder builder, boolean end)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p></p></div>
+
+    </div>
+</div>
+
+
+<A NAME="setListsEnabled(boolean)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">setListsEnabled</span>
+      <span class="normal">(boolean enabled)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Switches lists handling mode. When lists enabled parser will handle ol, ul and li tags automatically.
+ Disabled by default.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>enabled</td>
+          <td>True to enable lists handling, false to disable one.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+
+
+
+<!-- ========= METHOD DETAIL ======== -->
+
+
+
+<!-- ========= END OF CLASS DATA ========= -->
+<A NAME="navbar_top"></A>
+
+<div id="footer">
+
+</div> <!-- end footer -->
+
+</div> <!-- jd-content -->
+
+</div><!-- end doc-content -->
+
+</div> <!-- end body-content --> 
+
+<script type="text/javascript">
+init(); /* initialize android-developer-docs.js */
+</script>
+
+</body>
+</html>
