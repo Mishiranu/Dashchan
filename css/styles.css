@@ -1,0 +1,36 @@
+body
+{
+	background-color: #eeeeee;
+	color: #333333;
+	font-family: Verdana, sans-serif;
+	font-size: 10.8pt;
+	padding: 0px;
+}
+
+a
+{
+	color: #ff6600;
+}
+
+div.header
+{
+	font-size: 1.8rem;
+	font-weight: bold;
+	text-align: center;
+	color: #ff6600;
+	padding: 32px;
+}
+
+.subheader
+{
+	font-size: 0.8rem;
+}
+
+div.content
+{
+	width: 800px;
+	margin: 0px auto;
+	background: #dddddd;
+	border: 1px solid #cccccc;
+	padding: 16px;
+}
