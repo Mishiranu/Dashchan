@@ -1,6 +1,12 @@
+
+/* API LEVEL TOGGLE */
+<?cs if:reference.apilevels ?>
+addLoadEvent(changeApiLevel);
+<?cs /if ?>
+
 var API_LEVEL_ENABLED_COOKIE = "api_level_enabled";
-var API_LEVEL_INDEX_COOKIE = "api_level_index";
-var minLevelIndex = 0;
+var API_LEVEL_COOKIE = "api_level";
+var minLevel = 1;
 
 function toggleApiLevelSelector(checkbox) {
   var date = new Date();
@@ -19,9 +25,11 @@ function toggleApiLevelSelector(checkbox) {
 }
 
 function buildApiLevelSelector() {
+  var maxLevel = SINCE_DATA.length;
   var userApiLevelEnabled = readCookie(API_LEVEL_ENABLED_COOKIE);
-  var userApiLevelIndex = readCookie(API_LEVEL_INDEX_COOKIE); // No cookie (zero) is the same as maxLevel.
-  
+  var userApiLevel = readCookie(API_LEVEL_COOKIE);
+  userApiLevel = userApiLevel == 0 ? maxLevel : userApiLevel; // If there's no cookie (zero), use the max by default
+
   if (userApiLevelEnabled == 0) {
     $("#apiLevelSelector").attr("disabled","disabled");
   } else {
@@ -29,80 +37,60 @@ function buildApiLevelSelector() {
     $("#api-level-toggle label").removeClass("disabled");
   }
   
-  minLevelValue = $("body").attr("class");
-  minLevelIndex = apiKeyToIndex(minLevelValue);
+  minLevel = $("body").attr("class");
   var select = $("#apiLevelSelector").html("").change(changeApiLevel);
-  for (var i = SINCE_DATA.length-1; i >= 0; i--) {
-    var option = $("<option />").attr("value",""+SINCE_DATA[i]).append(""+SINCE_LABELS[i]);
+  for (var i = maxLevel-1; i >= 0; i--) {
+    var option = $("<option />").attr("value",""+SINCE_DATA[i]).append(""+SINCE_DATA[i]);
+  //  if (SINCE_DATA[i] < minLevel) option.addClass("absent"); // always false for strings (codenames)
     select.append(option);
   }
   
   // get the DOM element and use setAttribute cuz IE6 fails when using jquery .attr('selected',true)
-  var selectedLevelItem = $("#apiLevelSelector option").get(SINCE_DATA.length - userApiLevelIndex - 1);
+  var selectedLevelItem = $("#apiLevelSelector option[value='"+userApiLevel+"']").get(0);
   selectedLevelItem.setAttribute('selected',true);
 }
 
 function changeApiLevel() {
+  var maxLevel = SINCE_DATA.length;
   var userApiLevelEnabled = readCookie(API_LEVEL_ENABLED_COOKIE);
-  var selectedLevelIndex = SINCE_DATA.length - 1;
+  var selectedLevel = maxLevel;
   
   if (userApiLevelEnabled == 0) {
-    toggleVisisbleApis(selectedLevelIndex, "body");
+    toggleVisisbleApis(selectedLevel, "body");
   } else {
-    selectedLevelIndex = getSelectedLevelIndex();
-    toggleVisisbleApis(selectedLevelIndex, "body");
+    selectedLevel = $("#apiLevelSelector option:selected").val();
+    toggleVisisbleApis(selectedLevel, "body");
     
     var date = new Date();
     date.setTime(date.getTime()+(10*365*24*60*60*1000)); // keep this for 10 years
     var expiration = date.toGMTString();
-    writeCookie(API_LEVEL_INDEX_COOKIE, selectedLevelIndex, null, expiration);
+    writeCookie(API_LEVEL_COOKIE, selectedLevel, null, expiration);
   }
   
-  var thing = ($("#jd-header").html().indexOf("package") != -1) ? "package" : "class";
-  showApiWarning(thing, selectedLevelIndex, minLevelIndex);
-}
-
-function showApiWarning(thing, selectedLevelIndex, minLevelIndex) {
-  if (selectedLevelIndex < minLevelIndex) {
-	  $("#naMessage").show().html("<div><p><strong>This " + thing
-		  + " is not available with API version "
-		  + SINCE_LABELS[selectedLevelIndex] + ".</strong></p>"
-	      + "<p>To reveal this "
-	      + "document, change the value in the API filter above.</p>");
+  if (selectedLevel < minLevel) {
+    var thing = ($("#jd-header").html().indexOf("package") != -1) ? "package" : "class";
+    $("#naMessage").show().html("<div><p><strong>This " + thing + " is not available with API Level " + selectedLevel + ".</strong></p>"
+                              + "<p>To use this " + thing + ", your application must specify API Level " + minLevel + " or higher in its manifest "
+                              + "and be compiled against a version of the library that supports an equal or higher API Level. To reveal this "
+                              + "document, change the value of the API Level filter above.</p>"
+                              + "<p><a href='" +toRoot+ "guide/appendix/api-levels.html'>What is the API Level?</a></p></div>");
   } else {
     $("#naMessage").hide();
   }
 }
 
-function toggleVisisbleApis(selectedLevelIndex, context) {
+function toggleVisisbleApis(selectedLevel, context) {
   var apis = $(".api",context);
   apis.each(function(i) {
     var obj = $(this);
     var className = obj.attr("class");
-    var apiLevelPos = className.lastIndexOf("-")+1;
-    var apiLevelEndPos = className.indexOf(" ", apiLevelPos);
-    apiLevelEndPos = apiLevelEndPos != -1 ? apiLevelEndPos : className.length;
-    var apiLevelName = className.substring(apiLevelPos, apiLevelEndPos);
-    var apiLevelIndex = apiKeyToIndex(apiLevelName);
-    if (apiLevelIndex > selectedLevelIndex) {
-      obj.addClass("absent").attr("title","Requires API Level "+SINCE_LABELS[apiLevelIndex]+" or higher");
-    } else {
-      obj.removeClass("absent").removeAttr("title");
-    }
+    var apiLevelIndex = className.lastIndexOf("-")+1;
+    var apiLevelEndIndex = className.indexOf(" ", apiLevelIndex);
+    apiLevelEndIndex = apiLevelEndIndex != -1 ? apiLevelEndIndex : className.length;
+    var apiLevel = className.substring(apiLevelIndex, apiLevelEndIndex);
+    if (apiLevel > selectedLevel) obj.addClass("absent").attr("title","Requires API Level "+apiLevel+" or higher");
+    else obj.removeClass("absent").removeAttr("title");
   });
-}
-
-function apiKeyToIndex(key) {
-  for (i = 0; i < SINCE_DATA.length; i++) {
-    if (SINCE_DATA[i] == key) {
-      return i;
-    }
-  }
-  return -1;
-}
-
-function getSelectedLevelIndex() {
-  return SINCE_DATA.length - $("#apiLevelSelector").attr("selectedIndex") - 1;
 }
 
 /* NAVTREE */
@@ -136,7 +124,7 @@ function new_node(me, mom, text, link, children_data, api_level)
     node.expand_toggle.onclick = function() {
           if (node.expanded) {
             $(node.get_children_ul()).slideUp("fast");
-            node.plus_img.src = toAssets + "images/triangle-closed-small.png";
+            node.plus_img.src = me.toroot + "assets/images/triangle-closed-small.png";
             node.expanded = false;
           } else {
             expand_node(me, node);
@@ -145,7 +133,7 @@ function new_node(me, mom, text, link, children_data, api_level)
     node.label_div.appendChild(node.expand_toggle);
 
     node.plus_img = document.createElement("img");
-    node.plus_img.src = toAssets + "images/triangle-closed-small.png";
+    node.plus_img.src = me.toroot + "assets/images/triangle-closed-small.png";
     node.plus_img.className = "plus";
     node.plus_img.border = "0";
     node.expand_toggle.appendChild(node.plus_img);
@@ -164,7 +152,9 @@ function new_node(me, mom, text, link, children_data, api_level)
       a.className = "nolink";
       a.href = "javascript:void(0)";
       a.onclick = node.expand_toggle.onclick;
-      // This next line shouldn't be necessary.
+      // This next line shouldn't be necessary.  I'll buy a beer for the first
+      // person who figures out how to remove this line and have the link
+      // toggle shut on the first try. --joeo@android.com
       node.expanded = false;
     }
   }
@@ -194,11 +184,11 @@ function expand_node(me, node)
       if ($(node.label_div).hasClass("absent")) $(node.get_children_ul()).addClass("absent");
       $(node.get_children_ul()).slideDown("fast");
     }
-    node.plus_img.src = toAssets + "images/triangle-opened-small.png";
+    node.plus_img.src = me.toroot + "assets/images/triangle-opened-small.png";
     node.expanded = true;
     
     // perform api level toggling because new nodes are new to the DOM
-    var selectedLevel = $("#apiLevelSelector").attr("selectedIndex");
+    var selectedLevel = $("#apiLevelSelector option:selected").val();
     toggleVisisbleApis(selectedLevel, "#side-nav");
   }
 }
@@ -259,10 +249,10 @@ function find_page(url, data)
   return null;
 }
 
-function load_navtree_data() {
+function load_navtree_data(toroot) {
   var navtreeData = document.createElement("script");
   navtreeData.setAttribute("type","text/javascript");
-  navtreeData.setAttribute("src", toAssets + "navtree_data.js");
+  navtreeData.setAttribute("src", toroot+"navtree_data.js");
   $("head").append($(navtreeData));
 }
 
@@ -270,7 +260,7 @@ function init_default_navtree(toroot) {
   init_navtree("nav-tree", toroot, NAVTREE_DATA);
   
   // perform api level toggling because because the whole tree is new to the DOM
-  var selectedLevel = $("#apiLevelSelector").attr("selectedIndex");
+  var selectedLevel = $("#apiLevelSelector option:selected").val();
   toggleVisisbleApis(selectedLevel, "#side-nav");
 }
 
@@ -323,13 +313,13 @@ function toggleInherited(linkObj, expand) {
     if ( (expand == null && a.hasClass("closed")) || expand ) {
         list.style.display = "none";
         summary.style.display = "block";
-        trigger.src = toAssets + "images/triangle-opened.png";
+        trigger.src = toRoot + "assets/images/triangle-opened.png";
         a.removeClass("closed");
         a.addClass("opened");
     } else if ( (expand == null && a.hasClass("opened")) || (expand == false) ) {
         list.style.display = "block";
         summary.style.display = "none";
-        trigger.src = toAssets + "images/triangle-closed.png";
+        trigger.src = toRoot + "assets/images/triangle-closed.png";
         a.removeClass("opened");
         a.addClass("closed");
     }

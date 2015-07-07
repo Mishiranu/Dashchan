@@ -5,7 +5,6 @@ var gLastText = "";
 var ROW_COUNT = 20;
 var gInitialized = false;
 var DEFAULT_TEXT = "search developer docs";
-var HAS_SEARCH_PAGE = false;
 
 function set_row_selected(row, selected)
 {
@@ -114,12 +113,7 @@ function search_changed(e, kd, toroot)
             window.location = toroot + gMatches[gSelectedIndex].link;
             return false;
         } else if (gSelectedIndex < 0) {
-            if (HAS_SEARCH_PAGE) {
-                return true;
-            } else {
-                sync_selection_table(toroot);
-                return false;
-            }
+            return true;
         }
     }
     // 38 -- arrow up
@@ -266,9 +260,7 @@ function search_focus_changed(obj, focused)
 }
 
 function submit_search() {
-  if (HAS_SEARCH_PAGE) {
-    var query = document.getElementById('search_autocomplete').value;
-    document.location = toRoot + 'search.html#q=' + query + '&t=0';
-  }
+  var query = document.getElementById('search_autocomplete').value;
+  document.location = toRoot + 'search.html#q=' + query + '&t=0';
   return false;
 }
