@@ -323,14 +323,13 @@ Summary:
  
  <p>For the first you must override the following methods:</p>
  
- <p><table><th>Method</th><th>Description</th></tr>
- <tr><td><code><a href="../../../../reference/chan/content/model/PostModel.html#getParent()">getParent()</a></code></td><td>Return number of parent thread. If this is original post
- you must return <code>null</code>, <code>"0"</code> or the same value as post number.</td></tr>
- <tr><td><code><a href="../../../../reference/chan/content/model/PostModel.html#getNumber()">getNumber()</a></code></td><td>Return unique post number.</td></tr>
- <tr><td><code><a href="../../../../reference/chan/content/model/PostModel.html#getTimestamp()">getTimestamp()</a></code></td><td>Return a time when post was written.</td></tr>
- <tr><td><code><a href="../../../../reference/chan/content/model/PostModel.html#getComment()">getComment()</a></code></td><td>Return a comment of post.</td></tr>
- <tr><td><code><a href="../../../../reference/chan/content/model/PostModel.html#setComment(java.lang.String)">setComment(String)</a></code></td><td>Sometimes client can update comment field. You must
- provide your comment field updating on this method.</td></tr></table></p>
+ <ul>
+ <li><code><a href="../../../../reference/chan/content/model/PostModel.html#getParent()">getParent()</a></code></li>
+ <li><code><a href="../../../../reference/chan/content/model/PostModel.html#getNumber()">getNumber()</a></code></li>
+ <li><code><a href="../../../../reference/chan/content/model/PostModel.html#getTimestamp()">getTimestamp()</a></code></li>
+ <li><code><a href="../../../../reference/chan/content/model/PostModel.html#getComment()">getComment()</a></code></li>
+ <li><code><a href="../../../../reference/chan/content/model/PostModel.html#setComment(java.lang.String)">setComment(String)</a></code></li>
+ </ul>
  
  <p>You also can override the rest methods. Read their description to understand the rules.</p>
  
@@ -1947,7 +1946,7 @@ From class
       <table class="jd-tagtable">
         <tr>
           <th>comment</td>
-          <td>Unparset HTML post comment string.
+          <td>Unparsed HTML post comment string.
 </td>
         </tr>
       </table>

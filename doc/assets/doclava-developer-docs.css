@@ -284,7 +284,6 @@
 
 /* summary tables for reference pages */
 .jd-sumtable {
-  margin: .5em 1em 1em 1em;
   width:100%; /* consistent table widths; within IE's quirks */
   font-size:.9em;
 }
