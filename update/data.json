@@ -3,11 +3,11 @@
 	[
 		{
 			title: 'Release',
-			name: '2.0.2',
+			name: '2.0.3',
 			code: 1023,
 			minVersion: 1,
 			maxVersion: 1,
-			length: 808333,
+			length: 809010,
 			source: '/Mishiranu/Dashchan/master/update/package/Dashchan.apk'
 		}
 	],

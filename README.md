@@ -1,6 +1,6 @@
 # Dashchan
 
-Dashchan is imageboard client for Android.
+Dashchan is imageboards client for Android.
 
 This repository is designed to store Dashchan updating data.
 
