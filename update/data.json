@@ -37,10 +37,10 @@
 	[
 		{
 			title: 'Release',
-			name: '1.0',
+			name: '1.1',
 			code: 1,
 			version: 1,
-			length: 60000,
+			length: 60230,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanChiochan.apk'
 		}
 	],
