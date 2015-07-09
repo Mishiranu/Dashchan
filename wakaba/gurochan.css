@@ -1,0 +1,119 @@
+html, body {
+  font-size:10pt;
+  background:#EDDAD2;
+  color:#000000;
+}
+* {
+  font-family: "Trebuchet MS", Tahoma, Verdana, Arial, sans-serif;
+  font-size: 10pt;
+}
+input, textarea {
+  background-color: #E6CBC0;
+  border: 1px solid #CA927B;
+}
+a {
+  background:inherit;
+  color:#34345C;
+}
+a:visited {
+  background:inherit;
+  color:#34345C;
+}
+a:hover {
+  color:#DD0000;
+  background:inherit;
+}
+a.quotelink {
+  background:inherit;
+  color:#DD0000;
+}
+.logo {
+  clear:both;
+  text-align:center;
+  background:inherit;
+  font-size:24pt;
+  color:#AF0A0F;
+  width:100%;
+}
+.postarea {
+  background:inherit;
+}
+.postblock {
+  background: #D9AF9E;
+  border: 1px solid #CA927B;
+  color: black;
+  font-weight: bold;
+  padding: 2px 5px 2px 5px;
+}
+.footer {
+  text-align:center;
+  font-size:12px;
+}
+.unkfunc {
+	background:inert;
+	color:#789922;
+}
+.filesize {
+	text-decoration:none;
+}
+.filetitle {
+	background:inherit;
+	color:#0F0C5D;
+	font-weight:800;
+}
+.postername {
+  background:inherit;
+  font-size:11pt;
+  color:#117743;
+  font-weight: bold;
+}
+.postertrip {
+	background:inherit;
+	color:#228854;
+}
+.oldpost {
+  background:inherit;
+  color:#0F0C5D;
+  font-weight:800;
+}
+.omittedposts {
+  background:inherit;
+  color:#070707;
+}
+.reply {
+	background:#D9AF9E;
+	color:#000000;
+	border:1px solid #CA927B;
+}
+.replyhl {
+	background:#D6BAD0;
+	color:#000000;
+}
+.doubledash {
+ 	vertical-align:top;
+	clear:both;
+	float:left;
+}
+.replytitle {
+	background:inherit;
+	font-size:18px;
+  color:#0F0C5D;
+  font-weight:800;
+}
+.commentpostername {
+  background:inherit;
+  font-size:11pt;
+  color:#117743;
+  font-weight: bold;
+}
+a.quotejs {
+  color:#000000;
+	text-decoration: none;
+}
+a.quotejs:hover {
+  font-weight:bold;
+}
+
+.adminbar {
+  text-align: center;
+}
