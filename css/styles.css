@@ -10,6 +10,12 @@ body
 a
 {
 	color: #ff6600;
+	text-decoration: none;
+}
+
+a:hover
+{
+	text-decoration: underline;
 }
 
 div.header
@@ -33,4 +39,9 @@ div.content
 	background: #dddddd;
 	border: 1px solid #cccccc;
 	padding: 16px;
+}
+
+.inlinecode
+{
+	font-family: monospace;
 }

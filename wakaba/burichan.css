@@ -117,7 +117,7 @@ a:hover {
 }
 .postername {
 	background:inherit;
-	font-size:12px;
+	font-size:15px;
 	font-family:serif;
 	color:#117743;
 	font-weight:800;
@@ -155,7 +155,7 @@ a:hover {
 }
 .commentpostername {
         background:inherit;
-        font-size:12px;
+        font-size:15px;
         font-family:serif;
         color:#117743;
         font-weight:800;

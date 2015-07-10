@@ -1,9 +1,5 @@
 
 /* API LEVEL TOGGLE */
-<?cs if:reference.apilevels ?>
-addLoadEvent(changeApiLevel);
-<?cs /if ?>
-
 var API_LEVEL_ENABLED_COOKIE = "api_level_enabled";
 var API_LEVEL_COOKIE = "api_level";
 var minLevel = 1;
