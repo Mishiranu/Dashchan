@@ -241,9 +241,12 @@ Summary:
 
 
 
+  <a href="#pubctors">Ctors</a>
+  
 
 
-  <a href="#pubmethods">Methods</a>
+
+  &#124; <a href="#pubmethods">Methods</a>
   
 
 
@@ -370,6 +373,33 @@ Summary:
 
 
 
+<!-- ======== CONSTRUCTOR SUMMARY ======== -->
+<table id="pubctors" class="jd-sumtable"><tr><th colspan="12">Public Constructors</th></tr>
+
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            </nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/HttpResponse.html#HttpResponse(byte[])">HttpResponse</a></span>(byte[] bytes)</nobr>
+        
+        <div class="jd-descrdiv"><p>Constructor for <code><a href="../../../reference/chan/http/HttpResponse.html">HttpResponse</a></code>.</div>
+  
+  </td></tr>
+
+
+
+</table>
+
+
 
 
 
@@ -392,7 +422,7 @@ Summary:
         <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad"><a href="../../../reference/chan/http/HttpResponse.html#getBitmap()">getBitmap</a></span>()</nobr>
         
-        <div class="jd-descrdiv"><p>Decode and return response as <code>Bitmap</code>.</div>
+        <div class="jd-descrdiv"><p>Decodes and returns response as <code>Bitmap</code>.</div>
   
   </td></tr>
 
@@ -405,12 +435,12 @@ Summary:
             
             
             
-            JSONArray</nobr>
+            byte[]</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/http/HttpResponse.html#getJsonArray()">getJsonArray</a></span>()</nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/HttpResponse.html#getBytes()">getBytes</a></span>()</nobr>
         
-        <div class="jd-descrdiv"><p>Decode and return response as <code>JSONArray</code>.</div>
+        <div class="jd-descrdiv"><p>Returns raw response as string.</div>
   
   </td></tr>
 
@@ -423,12 +453,12 @@ Summary:
             
             
             
-            JSONObject</nobr>
+            JSONArray</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/http/HttpResponse.html#getJsonObject()">getJsonObject</a></span>()</nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/HttpResponse.html#getJsonArray()">getJsonArray</a></span>()</nobr>
         
-        <div class="jd-descrdiv"><p>Decode and return response as <code>JSONObject</code>.</div>
+        <div class="jd-descrdiv"><p>Decodes and returns response as <code>JSONArray</code>.</div>
   
   </td></tr>
 
@@ -441,12 +471,30 @@ Summary:
             
             
             
+            JSONObject</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/HttpResponse.html#getJsonObject()">getJsonObject</a></span>()</nobr>
+        
+        <div class="jd-descrdiv"><p>Decodes and returns response as <code>JSONObject</code>.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
             String</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad"><a href="../../../reference/chan/http/HttpResponse.html#getString()">getString</a></span>()</nobr>
         
-        <div class="jd-descrdiv"><p>Decode and return response as string.</div>
+        <div class="jd-descrdiv"><p>Decodes and returns response as string.</div>
   
   </td></tr>
 
@@ -664,6 +712,52 @@ From class
 <!-- Public ctors -->
 
 
+<!-- ========= CONSTRUCTOR DETAIL ======== -->
+<h2>Public Constructors</h2>
+
+
+
+<A NAME="HttpResponse(byte[])"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        
+      </span>
+      <span class="sympad">HttpResponse</span>
+      <span class="normal">(byte[] bytes)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Constructor for <code><a href="../../../reference/chan/http/HttpResponse.html">HttpResponse</a></code>.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>bytes</td>
+          <td>Byte array of data.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+
+
 
 <!-- ========= CONSTRUCTOR DETAIL ======== -->
 <!-- Protected ctors -->
@@ -700,10 +794,44 @@ From class
       </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Decode and return response as <code>Bitmap</code>.</p></p></div>
+  <div class="jd-tagdata jd-tagdescr"><p><p>Decodes and returns response as <code>Bitmap</code>.</p></p></div>
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Returns</h5>
       <ul class="nolist"><li>Bitmap response or <code>null</code> if response is not bitmap.
+</li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="getBytes()"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        byte[]
+      </span>
+      <span class="sympad">getBytes</span>
+      <span class="normal">()</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Returns raw response as string.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li>Byte array response.
 </li></ul>
   </div>
 
@@ -734,7 +862,7 @@ From class
       </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Decode and return response as <code>JSONArray</code>.</p></p></div>
+  <div class="jd-tagdata jd-tagdescr"><p><p>Decodes and returns response as <code>JSONArray</code>.</p></p></div>
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Returns</h5>
       <ul class="nolist"><li>JSON array response or <code>null</code> if response is not JSON array.
@@ -768,7 +896,7 @@ From class
       </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Decode and return response as <code>JSONObject</code>.</p></p></div>
+  <div class="jd-tagdata jd-tagdescr"><p><p>Decodes and returns response as <code>JSONObject</code>.</p></p></div>
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Returns</h5>
       <ul class="nolist"><li>JSON object response or <code>null</code> if response is not JSON object.
@@ -802,7 +930,7 @@ From class
       </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Decode and return response as string.</p></p></div>
+  <div class="jd-tagdata jd-tagdescr"><p><p>Decodes and returns response as string.</p></p></div>
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Returns</h5>
       <ul class="nolist"><li>String response.

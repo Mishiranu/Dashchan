@@ -373,7 +373,7 @@ Summary:
  <p>In usual cases you also <strong>must</strong> override these methods:</p>
  
  <ul>
- <li><code><a href="../../../reference/chan/content/ChanLocator.html#createImageUri(java.lang.String)">createImageUri(String)</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanLocator.html#createFileUri(java.lang.String)">createFileUri(String)</a></code></li>
  <li><code><a href="../../../reference/chan/content/ChanLocator.html#createThumbnailUri(java.lang.String)">createThumbnailUri(String)</a></code></li>
  </ul>
  
@@ -664,7 +664,7 @@ Summary:
             Uri</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ChanLocator.html#createImageUri(java.lang.String)">createImageUri</a></span>(String imageData)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanLocator.html#createFileUri(java.lang.String)">createFileUri</a></span>(String fileData)</nobr>
         
         <div class="jd-descrdiv"><p>Calls when client intend to create image URI.</div>
   
@@ -1715,7 +1715,7 @@ From class
 </div>
 
 
-<A NAME="createImageUri(java.lang.String)"></A>
+<A NAME="createFileUri(java.lang.String)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -1727,8 +1727,8 @@ From class
          
         Uri
       </span>
-      <span class="sympad">createImageUri</span>
-      <span class="normal">(String imageData)</span>
+      <span class="sympad">createFileUri</span>
+      <span class="normal">(String fileData)</span>
     </h4>
       <div class="api-level">
         <div></div>
@@ -1744,8 +1744,8 @@ From class
       <h5 class="jd-tagtitle">Parameters</h5>
       <table class="jd-tagtable">
         <tr>
-          <th>imageData</td>
-          <td>data, obtained from <code><a href="../../../reference/chan/content/model/FileModel.html#getImageData(java.lang.String, java.lang.String)">getImageData(String, String)</a></code></td>
+          <th>fileData</td>
+          <td>data, obtained from <code><a href="../../../reference/chan/content/model/FileModel.html#getFileData(java.lang.String, java.lang.String)">getFileData(String, String)</a></code></td>
         </tr>
       </table>
   </div>

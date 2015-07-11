@@ -319,7 +319,7 @@ Summary:
 <h2>Class Overview</h2>
 <p itemprop="articleBody"><p>Extendable model containing file data.</p>
  
- <p>You must override <code><a href="../../../../reference/chan/content/model/FileModel.html#getImageData(java.lang.String, java.lang.String)">getImageData(String, String)</a></code> for the first.</p>
+ <p>You must override <code><a href="../../../../reference/chan/content/model/FileModel.html#getFileData(java.lang.String, java.lang.String)">getFileData(String, String)</a></code> for the first.</p>
  
  <p>If this file has extension, you can override <code><a href="../../../../reference/chan/content/model/FileModel.html#getThumbnailData(java.lang.String, java.lang.String)">getThumbnailData(String, String)</a></code>.
  If this file is not image or video, it's better to leave them without thumbnail.</p>
@@ -328,7 +328,7 @@ Summary:
  <code><a href="../../../../reference/chan/content/model/FileModel.html#getHeight()">getHeight()</a></code> and <code><a href="../../../../reference/chan/content/model/FileModel.html#getSize()">getSize()</a></code> respectively.</p>
  
  <p>If this file is embedded frame like YouTube or Vocaroo, you can provide embedded code with
- <code><a href="../../../../reference/chan/content/model/FileModel.html#getImageData(java.lang.String, java.lang.String)">getImageData(String, String)</a></code>. Then you must override <code><a href="../../../../reference/chan/content/model/FileModel.html#isEmbedded()">isEmbedded()</a></code> and
+ <code><a href="../../../../reference/chan/content/model/FileModel.html#getFileData(java.lang.String, java.lang.String)">getFileData(String, String)</a></code>. Then you must override <code><a href="../../../../reference/chan/content/model/FileModel.html#isEmbedded()">isEmbedded()</a></code> and
  return <code>true</code> with this method.</p>
  
  <p>You must mark all editable fields as <code><a href="../../../../reference/chan/content/model/Editable.html">Editable</a></code>. Usually you must mark all field.</p>
@@ -424,12 +424,12 @@ Summary:
             
             
             
-            int</nobr>
+            String</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../../reference/chan/content/model/FileModel.html#getHeight()">getHeight</a></span>()</nobr>
+        <span class="sympad"><a href="../../../../reference/chan/content/model/FileModel.html#getFileData(java.lang.String, java.lang.String)">getFileData</a></span>(String boardName, String threadNumber)</nobr>
         
-        <div class="jd-descrdiv"><p>Returns image or video height.</div>
+        <div class="jd-descrdiv"><p>Returns file data associated with this file.</div>
   
   </td></tr>
 
@@ -442,12 +442,12 @@ Summary:
             
             
             
-            String</nobr>
+            int</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../../reference/chan/content/model/FileModel.html#getImageData(java.lang.String, java.lang.String)">getImageData</a></span>(String boardName, String threadNumber)</nobr>
+        <span class="sympad"><a href="../../../../reference/chan/content/model/FileModel.html#getHeight()">getHeight</a></span>()</nobr>
         
-        <div class="jd-descrdiv"><p>Returns image data associated with this file.</div>
+        <div class="jd-descrdiv"><p>Returns image or video height.</div>
   
   </td></tr>
 
@@ -806,6 +806,58 @@ From class
 
 
 
+<A NAME="getFileData(java.lang.String, java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        String
+      </span>
+      <span class="sympad">getFileData</span>
+      <span class="normal">(String boardName, String threadNumber)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Returns file data associated with this file. It might be file URI (absolute or relative) or another
+ string that represents file's location. Later you'll handle it later with
+ <code><a href="../../../../reference/chan/content/ChanLocator.html#createFileUri(java.lang.String)">createFileUri(String)</a></code>.</p>
+ 
+ <p>If file is embedded (YouTube, for example), you might override and return true width <code><a href="../../../../reference/chan/content/model/FileModel.html#isEmbedded()">isEmbedded()</a></code>.
+ In this case this method might return embedded data. It can be URI or embedded HTML code.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>boardName</td>
+          <td>Board name where file used.</td>
+        </tr>
+        <tr>
+          <th>threadNumber</td>
+          <td>Thread number where file used.</td>
+        </tr>
+      </table>
+  </div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li>File data string.
+</li></ul>
+  </div>
+
+    </div>
+</div>
+
+
 <A NAME="getHeight()"></A>
 
 <div class="jd-details api apilevel-"> 
@@ -833,58 +885,6 @@ From class
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Returns</h5>
       <ul class="nolist"><li>File height.
-</li></ul>
-  </div>
-
-    </div>
-</div>
-
-
-<A NAME="getImageData(java.lang.String, java.lang.String)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public 
-         
-         
-         
-         
-        String
-      </span>
-      <span class="sympad">getImageData</span>
-      <span class="normal">(String boardName, String threadNumber)</span>
-    </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
-    <div class="jd-details-descr">
-      
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns image data associated with this file. It might be image URI (absolute or relative) or another
- string that represents image's location. Later you'll handle it later with
- <code><a href="../../../../reference/chan/content/ChanLocator.html#createImageUri(java.lang.String)">createImageUri(String)</a></code>.</p>
- 
- <p>If file is embedded (YouTube, for example), you might override and return true width <code><a href="../../../../reference/chan/content/model/FileModel.html#isEmbedded()">isEmbedded()</a></code>.
- In this case this method might return embedded data. It can be URI or embedded HTML code.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>boardName</td>
-          <td>Board name where image used.</td>
-        </tr>
-        <tr>
-          <th>threadNumber</td>
-          <td>Thread number where image used.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Image data string.
 </li></ul>
   </div>
 
@@ -991,17 +991,17 @@ From class
       <table class="jd-tagtable">
         <tr>
           <th>boardName</td>
-          <td>Board name where image used.</td>
+          <td>Board name where file used.</td>
         </tr>
         <tr>
           <th>threadNumber</td>
-          <td>Thread number where image used.</td>
+          <td>Thread number where file used.</td>
         </tr>
       </table>
   </div>
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Image data string.
+      <ul class="nolist"><li>Thumbnail data string.
 </li></ul>
   </div>
 
@@ -1066,7 +1066,7 @@ From class
       </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether file is embedded (YouTube for example). In this case <code><a href="../../../../reference/chan/content/model/FileModel.html#getImageData(java.lang.String, java.lang.String)">getImageData(String, String)</a></code>
+  <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether file is embedded (YouTube for example). In this case <code><a href="../../../../reference/chan/content/model/FileModel.html#getFileData(java.lang.String, java.lang.String)">getFileData(String, String)</a></code>
  might return embedded data.</p></p></div>
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Returns</h5>
