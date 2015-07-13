@@ -3,11 +3,11 @@
 	[
 		{
 			title: 'Release',
-			name: '2.0.3',
+			name: '2.0.4',
 			code: 1023,
 			minVersion: 1,
 			maxVersion: 1,
-			length: 809010,
+			length: 812830,
 			source: '/Mishiranu/Dashchan/master/update/package/Dashchan.apk'
 		}
 	],
@@ -37,10 +37,10 @@
 	[
 		{
 			title: 'Release',
-			name: '1.1',
+			name: '1.2',
 			code: 1,
 			version: 1,
-			length: 60230,
+			length: 59910,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanChiochan.apk'
 		}
 	],
@@ -48,10 +48,10 @@
 	[
 		{
 			title: 'Release',
-			name: '1.2',
+			name: '1.3',
 			code: 1,
 			version: 1,
-			length: 60566,
+			length: 60546,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanCirno.apk'
 		}
 	],
@@ -81,10 +81,10 @@
 	[
 		{
 			title: 'Release',
-			name: '1.0',
+			name: '1.1',
 			code: 1,
 			version: 1,
-			length: 58831,
+			length: 58864,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanFourchan.apk'
 		}
 	],
@@ -114,10 +114,10 @@
 	[
 		{
 			title: 'Release',
-			name: '1.0',
+			name: '1.1',
 			code: 1,
 			version: 1,
-			length: 57190,
+			length: 57194,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanNowai.apk'
 		}
 	],
@@ -125,11 +125,22 @@
 	[
 		{
 			title: 'Release',
+			name: '1.1',
+			code: 1,
+			version: 1,
+			length: 58554,
+			source: '/Mishiranu/Dashchan/master/update/package/DashchanNowere.apk'
+		}
+	],
+	ponychan:
+	[
+		{
+			title: 'Release',
 			name: '1.0',
 			code: 1,
 			version: 1,
-			length: 58452,
-			source: '/Mishiranu/Dashchan/master/update/package/DashchanNowere.apk'
+			length: 58917,
+			source: '/Mishiranu/Dashchan/master/update/package/DashchanPonychan.apk'
 		}
 	]
 }
