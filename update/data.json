@@ -3,11 +3,11 @@
 	[
 		{
 			title: 'Release',
-			name: '2.0.4',
+			name: '2.0.5',
 			code: 1023,
 			minVersion: 1,
 			maxVersion: 1,
-			length: 812830,
+			length: 813304,
 			source: '/Mishiranu/Dashchan/master/update/package/Dashchan.apk'
 		}
 	],
@@ -136,10 +136,10 @@
 	[
 		{
 			title: 'Release',
-			name: '1.0',
+			name: '1.1',
 			code: 1,
 			version: 1,
-			length: 58917,
+			length: 59110,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanPonychan.apk'
 		}
 	]
