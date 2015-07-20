@@ -125,10 +125,10 @@
 	[
 		{
 			title: 'Release',
-			name: '1.1',
+			name: '1.2',
 			code: 1,
 			version: 1,
-			length: 58554,
+			length: 58885,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanNowere.apk'
 		}
 	],
