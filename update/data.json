@@ -59,10 +59,10 @@
 	[
 		{
 			title: 'Release',
-			name: '1.1',
+			name: '1.2',
 			code: 1,
 			version: 1,
-			length: 59445,
+			length: 59790,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanDobrochan.apk'
 		}
 	],
@@ -136,10 +136,10 @@
 	[
 		{
 			title: 'Release',
-			name: '1.2',
+			name: '1.3',
 			code: 1,
 			version: 1,
-			length: 59466,
+			length: 59475,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanPonychan.apk'
 		}
 	]
