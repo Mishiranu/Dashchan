@@ -13,6 +13,7 @@ Client application: [Dashchan.apk](https://github.com/Mishiranu/Dashchan-Extensi
 | Chan Name       | Host                 | Extension Package Link                                                                                                                |
 | :-------------: | :------------------: | :-----------------------------------------------------------------------------------------------------------------------------------: |
 | archivemoe      | archive.moe          | [DashchanArchiveMoe.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanArchiveMoe.apk)           |
+| archiverbt      | rbt.asia             | [DashchanArchiveRbt.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanArchiveRbt.apk)           |
 | arhivach        | arhivach.org         | [DashchanArhivach.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanArhivach.apk)               |
 | chiochan        | 410chan.org          | [DashchanChiochan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanChiochan.apk)               |
 | cirno           | iichan.hk            | [DashchanCirno.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanCirno.apk)                     |
@@ -21,6 +22,7 @@ Client application: [Dashchan.apk](https://github.com/Mishiranu/Dashchan-Extensi
 | fourchan        | 4chan.org            | [DashchanFourchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanFourchan.apk)               |
 | infinite        | 8ch.net              | [DashchanInfinite.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanInfinite.apk)               |
 | krautchan       | krautchan.net        | [DashchanKrautchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanKrautchan.apk)             |
+| local           | ( local archive )    | [DashchanLocal.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanLocal.apk)                     |
 | nowai           | nowai.ru             | [DashchanNowai.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNowai.apk)                     |
 | nowere          | nowere.net           | [DashchanNowere.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNowere.apk)                   |
 | ponychan        | ponychan.net         | [DashchanPonychan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanPonychan.apk)               |
