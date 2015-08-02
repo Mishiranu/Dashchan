@@ -156,6 +156,7 @@
     <li><h2>Interfaces</h2>
       <ul>
           <li class="api apilevel-"><a href="../../../reference/chan/http/HttpRequest.Preset.html">HttpRequest.Preset</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a></li>
       </ul>
     </li>
               
@@ -174,7 +175,7 @@
               
     <li><h2>Enums</h2>
       <ul>
-          <li class="api apilevel-"><a href="../../../reference/chan/http/HttpRequest.Redirect.html">HttpRequest.Redirect</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html">HttpRequest.RedirectHandler.Action</a></li>
       </ul>
     </li>
               
@@ -253,12 +254,6 @@ Summary:
 &#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
 
 </div><!-- end sum-details-links -->
-<div class="api-level">
-  
-  
-  
-
-</div>
 </div><!-- end api-info-block -->
 
 
@@ -459,12 +454,12 @@ Summary:
             
             
             
-            String</nobr>
+            Uri</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/http/HttpHolder.html#getRedirectedUrl()">getRedirectedUrl</a></span>()</nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/HttpHolder.html#getRedirectedUri()">getRedirectedUri</a></span>()</nobr>
         
-        <div class="jd-descrdiv"><p>Returns redirected URL string from header.</div>
+        <div class="jd-descrdiv"><p>Returns redirected URI from <code>Location</code> header.</div>
   
   </td></tr>
 
@@ -800,12 +795,6 @@ From class
       <span class="sympad">checkResponseCode</span>
       <span class="normal">()</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>This method will throw <code><a href="../../../reference/chan/http/HttpException.html">HttpException</a></code> if response code != <code>200 (OK)</code>.</p>
@@ -839,12 +828,6 @@ From class
       <span class="sympad">disconnect</span>
       <span class="normal">()</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Disconnect from server.</p>
@@ -869,12 +852,6 @@ From class
       <span class="sympad">getCookieValue</span>
       <span class="normal">(String name)</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Decodes and returns cookie by given <code>name</code>.</p></p></div>
@@ -912,12 +889,6 @@ From class
       <span class="sympad">getHeaderFields</span>
       <span class="normal">()</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Returns map of all HTTP header fields.</p></p></div>
@@ -931,7 +902,7 @@ From class
 </div>
 
 
-<A NAME="getRedirectedUrl()"></A>
+<A NAME="getRedirectedUri()"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -941,23 +912,17 @@ From class
          
          
          
-        String
+        Uri
       </span>
-      <span class="sympad">getRedirectedUrl</span>
+      <span class="sympad">getRedirectedUri</span>
       <span class="normal">()</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns redirected URL string from header.</p></p></div>
+  <div class="jd-tagdata jd-tagdescr"><p><p>Returns redirected URI from <code>Location</code> header.</p></p></div>
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>redirected URL string.
+      <ul class="nolist"><li>Redirected URI.
 </li></ul>
   </div>
 
@@ -980,12 +945,6 @@ From class
       <span class="sympad">getResponseCode</span>
       <span class="normal">()</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Returns response code from last connection.</p></p></div>
@@ -1014,12 +973,6 @@ From class
       <span class="sympad">getResponseMessage</span>
       <span class="normal">()</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Returns response message from last connection.</p></p></div>
@@ -1048,12 +1001,6 @@ From class
       <span class="sympad">getValidator</span>
       <span class="normal">()</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Returns <code><a href="../../../reference/chan/http/HttpValidator.html">HttpValidator</a></code> instance, decoded from header.</p></p></div>
@@ -1086,12 +1033,6 @@ From class
       <span class="sympad">read</span>
       <span class="normal">()</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Reads <code><a href="../../../reference/chan/http/HttpResponse.html">HttpResponse</a></code> from server.</p>
@@ -1125,12 +1066,6 @@ From class
       <span class="sympad">reset</span>
       <span class="normal">()</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Removes old connection from holder.</p>

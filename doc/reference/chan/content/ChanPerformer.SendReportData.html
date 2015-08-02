@@ -166,7 +166,6 @@
           <li class="api apilevel-"><a href="../../../reference/chan/content/ChanLocator.html">ChanLocator</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/content/ChanLocator.NavigationData.html">ChanLocator.NavigationData</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a></li>
-          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanMarkup.SimpleChanMarkup.html">ChanMarkup.SimpleChanMarkup</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.html">ChanPerformer</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.AddToArchiveData.html">ChanPerformer.AddToArchiveData</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.AddToArchiveResult.html">ChanPerformer.AddToArchiveResult</a></li>
@@ -281,12 +280,6 @@ Summary:
 &#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
 
 </div><!-- end sum-details-links -->
-<div class="api-level">
-  
-  
-  
-
-</div>
 </div><!-- end api-info-block -->
 
 
@@ -442,13 +435,24 @@ Summary:
           public
           
           final
-          String</nobr></td>
-          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.SendReportData.html#postNumber">postNumber</a></td>
-          <td class="jd-descrcol" width="100%"><p>Post number argument.</td>
+          List&lt;String&gt;</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.SendReportData.html#options">options</a></td>
+          <td class="jd-descrcol" width="100%"><p>List of reporting options argument.</td>
       </tr>
       
     
       <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          
+          final
+          List&lt;String&gt;</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.SendReportData.html#postNumbers">postNumbers</a></td>
+          <td class="jd-descrcol" width="100%"><p>List of reporting post numbers.</td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
           <td class="jd-typecol"><nobr>
           public
           
@@ -459,14 +463,14 @@ Summary:
       </tr>
       
     
-      <tr class=" api apilevel-" >
+      <tr class="alt-color api apilevel-" >
           <td class="jd-typecol"><nobr>
           public
           
           final
           String</nobr></td>
           <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.SendReportData.html#type">type</a></td>
-          <td class="jd-descrcol" width="100%"><p>Report type argument.</td>
+          <td class="jd-descrcol" width="100%"><p>Reporting type argument.</td>
       </tr>
       
     
@@ -709,12 +713,6 @@ From class
       </span>
         boardName
     </h4>
-      <div class="api-level">
-        
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Board name argument.</p>
@@ -738,12 +736,6 @@ From class
       </span>
         comment
     </h4>
-      <div class="api-level">
-        
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Comment argument.</p>
@@ -767,12 +759,6 @@ From class
       </span>
         holder
     </h4>
-      <div class="api-level">
-        
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>HTTP holder. You must use it when building new <code><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></code>.</p>
@@ -784,7 +770,7 @@ From class
 
 
 
-<A NAME="postNumber"></A>
+<A NAME="options"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -792,19 +778,36 @@ From class
         public 
          
         final 
-        String
+        List&lt;String&gt;
       </span>
-        postNumber
+        options
     </h4>
-      <div class="api-level">
-        
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Post number argument.</p>
+  <div class="jd-tagdata jd-tagdescr"><p><p>List of reporting options argument.</p>
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="postNumbers"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+        List&lt;String&gt;
+      </span>
+        postNumbers
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>List of reporting post numbers.</p>
 </p></div>
 
     
@@ -825,12 +828,6 @@ From class
       </span>
         threadNumber
     </h4>
-      <div class="api-level">
-        
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Thread number argument.</p>
@@ -854,15 +851,9 @@ From class
       </span>
         type
     </h4>
-      <div class="api-level">
-        
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Report type argument.</p>
+  <div class="jd-tagdata jd-tagdescr"><p><p>Reporting type argument.</p>
 </p></div>
 
     

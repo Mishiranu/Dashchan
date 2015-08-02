@@ -166,7 +166,6 @@
           <li class="api apilevel-"><a href="../../../reference/chan/content/ChanLocator.html">ChanLocator</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/content/ChanLocator.NavigationData.html">ChanLocator.NavigationData</a></li>
           <li class="selected api apilevel-"><a href="../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a></li>
-          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanMarkup.SimpleChanMarkup.html">ChanMarkup.SimpleChanMarkup</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.html">ChanPerformer</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.AddToArchiveData.html">ChanPerformer.AddToArchiveData</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.AddToArchiveResult.html">ChanPerformer.AddToArchiveResult</a></li>
@@ -263,16 +262,13 @@
 
 Summary:
 
-  <a href="#nestedclasses">Nested Classes</a>
-  
 
 
 
 
 
 
-
-  &#124; <a href="#lfields">Fields</a>
+  <a href="#lfields">Fields</a>
   
 
 
@@ -292,12 +288,6 @@ Summary:
 &#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
 
 </div><!-- end sum-details-links -->
-<div class="api-level">
-  
-  
-  
-
-</div>
 </div><!-- end api-info-block -->
 
 
@@ -356,37 +346,6 @@ Summary:
 
 
 
-<table class="jd-sumtable jd-sumtable-subclasses"><tr><td colspan="12" style="border:none;margin:0;padding:0;">
-
-  <a href="#" onclick="return toggleInherited(this, null)" id="subclasses-direct" class="jd-expando-trigger closed"
-          ><img id="subclasses-direct-trigger"
-          src="../../../assets/images/triangle-closed.png"
-          class="jd-expando-trigger-img" /></a>Known Direct Subclasses
-
-  <div id="subclasses-direct">
-      <div id="subclasses-direct-list"
-              class="jd-inheritedlinks"
-              
-              >
-          
-            
-              <a href="../../../reference/chan/content/ChanMarkup.SimpleChanMarkup.html">ChanMarkup.SimpleChanMarkup</a>
-            
-          
-      </div>
-      <div id="subclasses-direct-summary"
-              style="display: none;"
-              >
-  <table class="jd-sumtable-expando">
-        <tr class="alt-color api apilevel-" >
-              <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanMarkup.SimpleChanMarkup.html">ChanMarkup.SimpleChanMarkup</a></td>
-              <td class="jd-descrcol" width="100%"><p>Simple implementation of <code><a href="../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a></code>.&nbsp;</td>
-          </tr>
-  </table>
-      </div>
-  </div>
-</td></tr></table>
-
 
 
 
@@ -396,15 +355,15 @@ Summary:
 <h2>Class Overview</h2>
 <p itemprop="articleBody"><p>Provides HTML posts handling and post editing.</p>
  
- <p>If your chan supports posting, you must implement <code><a href="../../../reference/chan/content/ChanMarkup.html#getCommentEditor()">getCommentEditor()</a></code>.</p>
+ <p>If your chan supports posting, you must implement <code><a href="../../../reference/chan/content/ChanMarkup.html#obtainCommentEditor(java.lang.String)">obtainCommentEditor(String)</a></code>.</p>
  
- <p>You must handle HTML tags by yourself. HTML parser uses the following cycle:</p>
- <p>1. Calls <code><a href="../../../reference/chan/text/HtmlParser.Markup.html#onStartEnd(chan.text.HtmlParser, java.lang.StringBuilder, boolean)">onStartEnd(HtmlParser, StringBuilder, boolean)</a></code> with <code>false</code> last argument.<br>
- 2. Calls <code><a href="../../../reference/chan/text/HtmlParser.Markup.html#handleTagStart(chan.text.HtmlParser, java.lang.StringBuilder, java.lang.String, org.xml.sax.Attributes)">handleTagStart(HtmlParser, StringBuilder, String, Attributes)</a></code> every time parser reaches
+ <p>HTML parser uses the following cycle:</p>
+ <p>1. Calls <code><a href="../../../reference/chan/content/ChanMarkup.html#onStartEnd(chan.text.HtmlParser, java.lang.StringBuilder, boolean)">onStartEnd(HtmlParser, StringBuilder, boolean)</a></code> with <code>false</code> last argument.<br>
+ 2. Calls <code><a href="../../../reference/chan/content/ChanMarkup.html#handleTagStart(chan.text.HtmlParser, java.lang.StringBuilder, java.lang.String, org.xml.sax.Attributes)">handleTagStart(HtmlParser, StringBuilder, String, Attributes)</a></code> every time parser reaches
  tag opening.<br>
- 3. Calls <code><a href="../../../reference/chan/text/HtmlParser.Markup.html#handleTagEnd(chan.text.HtmlParser, java.lang.StringBuilder, java.lang.String)">handleTagEnd(HtmlParser, StringBuilder, String)</a></code> every time parser reaches
+ 3. Calls <code><a href="../../../reference/chan/content/ChanMarkup.html#handleTagEnd(chan.text.HtmlParser, java.lang.StringBuilder, java.lang.String)">handleTagEnd(HtmlParser, StringBuilder, String)</a></code> every time parser reaches
  tag closing.<br>
- 4. Calls <code><a href="../../../reference/chan/text/HtmlParser.Markup.html#onStartEnd(chan.text.HtmlParser, java.lang.StringBuilder, boolean)">onStartEnd(HtmlParser, StringBuilder, boolean)</a></code> with <code>true</code> last argument.</p>
+ 4. Calls <code><a href="../../../reference/chan/content/ChanMarkup.html#onStartEnd(chan.text.HtmlParser, java.lang.StringBuilder, boolean)">onStartEnd(HtmlParser, StringBuilder, boolean)</a></code> with <code>true</code> last argument.</p>
  
  <p>At the 1st step you can reset your markup handler state.<p>
  
@@ -412,10 +371,9 @@ Summary:
  call <code><a href="../../../reference/chan/text/HtmlParser.html#add(chan.text.HtmlParser.SpanType, java.lang.Object, int)">add(chan.text.HtmlParser.SpanType, Object, int)</a></code> to add span with specified <code>spanType</code>.
  This action will save span's start position.</p>
  
- <p>The 3rd step provides you information about HTML tag closing. You chan get last span with given <code>spanType</code>
- using <code><a href="../../../reference/chan/text/HtmlParser.html#getLastSpan(chan.text.HtmlParser.SpanType)">getLastSpan(chan.text.HtmlParser.SpanType)</a></code> or with given set of <code>spanTypes</code> using
- <code><a href="../../../reference/chan/text/HtmlParser.html#getLastSpan(java.util.Collection<chan.text.HtmlParser.SpanType>)">getLastSpan(java.util.Collection)</a></code>. Then you can close this span with
- <code><a href="../../../reference/chan/text/HtmlParser.SpanContainer.html#close(int)">close(int)</a></code> specifying an end index of span.</p>
+ <p>The 3rd step provides you information about HTML tag closing. You chan get last span using
+ <code><a href="../../../reference/chan/text/HtmlParser.html#getLastSpan()">getLastSpan()</a></code> or <code><a href="../../../reference/chan/text/HtmlParser.html#getLastSpan(chan.text.HtmlParser.SpanType)">getLastSpan(chan.text.HtmlParser.SpanType)</a></code>.
+ Then you can close this span with <code><a href="../../../reference/chan/text/HtmlParser.SpanContainer.html#close(int)">close(int)</a></code> specifying an end index of span.</p>
  
  <p>If your chan supports <code><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_UNMARK">FEATURE_UNMARK</a></code>, you must handle unmark action using
  <code><a href="../../../reference/chan/text/HtmlParser.html#isUnmarkMode()">isUnmarkMode()</a></code>. In this case you can <code><a href="../../../reference/chan/text/HtmlParser.SpanContainer.html#deny()">deny()</a></code> spans instead
@@ -423,7 +381,16 @@ Summary:
  at start and end positions. For example, when <code>strong</code> tag opens, you append <code>**</code>. When <code>strong</code>
  tag closes, you append <code>**</code> again.</p>
  
- <p>This class has simplified implementation of these actions - <code><a href="../../../reference/chan/content/ChanMarkup.SimpleChanMarkup.html">ChanMarkup.SimpleChanMarkup</a></code>.</p>
+ <p>This class can do the most of these actions by itself. You can configure class behavior using these methods:<p>
+ 
+ <ul>
+ <li><code><a href="../../../reference/chan/content/ChanMarkup.html#addTag(java.lang.String, chan.text.HtmlParser.SpanType)">addTag(String, chan.text.HtmlParser.SpanType)</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanMarkup.html#addTag(java.lang.String, java.lang.String, chan.text.HtmlParser.SpanType)">addTag(String, String, chan.text.HtmlParser.SpanType)</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanMarkup.html#addTag(java.lang.String, java.lang.String, java.lang.String, chan.text.HtmlParser.SpanType)">addTag(String, String, String, chan.text.HtmlParser.SpanType)</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanMarkup.html#addBlock(java.lang.String, boolean)">addBlock(String, boolean)</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanMarkup.html#addPreformatted(java.lang.String)">addPreformatted(String)</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanMarkup.html#addColorable(java.lang.String)">addColorable(String)</a></code></li>
+ </ul>
 </p>
 
 
@@ -451,26 +418,6 @@ Summary:
 
 
 <h2>Summary</h2>
-
-
-
-<!-- ======== NESTED CLASS SUMMARY ======== -->
-<table id="nestedclasses" class="jd-sumtable"><tr><th colspan="12">Nested Classes</th></tr>
-
-
-  
-    <tr class="alt-color api apilevel-" >
-      <td class="jd-typecol"><nobr>
-        
-         
-         
-        
-        class</nobr></td>
-      <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanMarkup.SimpleChanMarkup.html">ChanMarkup.SimpleChanMarkup</a></td>
-      <td class="jd-descrcol" width="100%"><p>Simple implementation of <code><a href="../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a></code>.&nbsp;</td>
-    </tr>
-    
-    
 
 
 
@@ -642,6 +589,114 @@ Summary:
             
             
             
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#addBlock(java.lang.String, boolean)">addBlock</a></span>(String tag, boolean spaced)</nobr>
+        
+        <div class="jd-descrdiv"><p>Marks given <code>tag</code> as block tag.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#addColorable(java.lang.String)">addColorable</a></span>(String tag)</nobr>
+        
+        <div class="jd-descrdiv"><p>Marks given <code>tag</code> as tag that may contain color attribute or CSS style.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#addPreformatted(java.lang.String)">addPreformatted</a></span>(String tag)</nobr>
+        
+        <div class="jd-descrdiv"><p>Marks given <code>tag</code> as preformatted.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#addTag(java.lang.String, java.lang.String, java.lang.String, chan.text.HtmlParser.SpanType)">addTag</a></span>(String tag, String attribute, String value, <a href="../../../reference/chan/text/HtmlParser.SpanType.html">HtmlParser.SpanType</a> spanType)</nobr>
+        
+        <div class="jd-descrdiv"><p>Add tag to handle.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#addTag(java.lang.String, java.lang.String, chan.text.HtmlParser.SpanType)">addTag</a></span>(String tag, String cssClass, <a href="../../../reference/chan/text/HtmlParser.SpanType.html">HtmlParser.SpanType</a> spanType)</nobr>
+        
+        <div class="jd-descrdiv"><p>Add tag to handle.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#addTag(java.lang.String, chan.text.HtmlParser.SpanType)">addTag</a></span>(String tag, <a href="../../../reference/chan/text/HtmlParser.SpanType.html">HtmlParser.SpanType</a> spanType)</nobr>
+        
+        <div class="jd-descrdiv"><p>Add tag to handle.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
             static
             &lt;T&nbsp;extends&nbsp;<a href="../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a>&gt;
             T</nobr>
@@ -662,12 +717,12 @@ Summary:
             
             
             
-            <a href="../../../reference/chan/text/CommentEditor.html">CommentEditor</a></nobr>
+            void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#getCommentEditor()">getCommentEditor</a></span>()</nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#handleTagEnd(chan.text.HtmlParser, java.lang.StringBuilder, java.lang.String)">handleTagEnd</a></span>(<a href="../../../reference/chan/text/HtmlParser.html">HtmlParser</a> parser, StringBuilder builder, String tag)</nobr>
         
-        <div class="jd-descrdiv"><p>Calls when client want to show posting activity.</div>
+        <div class="jd-descrdiv"><p>This method is called when tag ends.</div>
   
   </td></tr>
 
@@ -680,12 +735,84 @@ Summary:
             
             
             
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#handleTagStart(chan.text.HtmlParser, java.lang.StringBuilder, java.lang.String, org.xml.sax.Attributes)">handleTagStart</a></span>(<a href="../../../reference/chan/text/HtmlParser.html">HtmlParser</a> parser, StringBuilder builder, String tag, Attributes attributes)</nobr>
+        
+        <div class="jd-descrdiv"><p>This method is called when new tag starts.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
             boolean</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#isTagSupported(java.lang.String, int)">isTagSupported</a></span>(String boardName, int tag)</nobr>
         
         <div class="jd-descrdiv"><p>Calls when client want to determine tag's supportability.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            <a href="../../../reference/chan/text/CommentEditor.html">CommentEditor</a></nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#obtainCommentEditor(java.lang.String)">obtainCommentEditor</a></span>(String boardName)</nobr>
+        
+        <div class="jd-descrdiv"><p>Calls when client want to show posting activity.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            Pair&lt;String,&nbsp;String&gt;</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#obtainPostLinkThreadPostNumbers(chan.text.HtmlParser, java.lang.String)">obtainPostLinkThreadPostNumbers</a></span>(<a href="../../../reference/chan/text/HtmlParser.html">HtmlParser</a> parser, String url)</nobr>
+        
+        <div class="jd-descrdiv"><p>This method is called every time parser finds links started with >>.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#onStartEnd(chan.text.HtmlParser, java.lang.StringBuilder, boolean)">onStartEnd</a></span>(<a href="../../../reference/chan/text/HtmlParser.html">HtmlParser</a> parser, StringBuilder builder, boolean end)</nobr>
+        
+        <div class="jd-descrdiv"><p>This method is called every time parser starts or ends parsing.</div>
   
   </td></tr>
 
@@ -1016,12 +1143,6 @@ From interface
       </span>
         TAG_BOLD
     </h4>
-      <div class="api-level">
-        
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p>Bold tag constant value.
@@ -1045,12 +1166,6 @@ From interface
       </span>
         TAG_CODE
     </h4>
-      <div class="api-level">
-        
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p>Code tag constant value.
@@ -1074,12 +1189,6 @@ From interface
       </span>
         TAG_ITALIC
     </h4>
-      <div class="api-level">
-        
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p>Italic tag constant value.
@@ -1103,12 +1212,6 @@ From interface
       </span>
         TAG_QUOTE
     </h4>
-      <div class="api-level">
-        
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p>Quote tag constant value.
@@ -1132,12 +1235,6 @@ From interface
       </span>
         TAG_SPOILER
     </h4>
-      <div class="api-level">
-        
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p>Spoiler tag constant value.
@@ -1161,12 +1258,6 @@ From interface
       </span>
         TAG_STRIKE
     </h4>
-      <div class="api-level">
-        
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p>Strikethrough tag constant value.
@@ -1190,12 +1281,6 @@ From interface
       </span>
         TAG_SUBSCRIPT
     </h4>
-      <div class="api-level">
-        
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p>Subscript tag constant value.
@@ -1219,12 +1304,6 @@ From interface
       </span>
         TAG_SUPERSCRIPT
     </h4>
-      <div class="api-level">
-        
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p>Superscript tag constant value.
@@ -1248,12 +1327,6 @@ From interface
       </span>
         TAG_UNDERLINE
     </h4>
-      <div class="api-level">
-        
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p>Underline tag constant value.
@@ -1289,12 +1362,6 @@ From interface
       <span class="sympad">ChanMarkup</span>
       <span class="normal">()</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p></p></div>
@@ -1318,6 +1385,237 @@ From interface
 
 
 
+<A NAME="addBlock(java.lang.String, boolean)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">addBlock</span>
+      <span class="normal">(String tag, boolean spaced)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Marks given <code>tag</code> as block tag. If block is <code>spaced</code>, parser will add a line around block.
+ There are some tags which are block: "blockquote", "p", etc. Some of them are spaced by default.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>tag</td>
+          <td>Tag to handle.</td>
+        </tr>
+        <tr>
+          <th>spaced</td>
+          <td>True to enable spacing.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="addColorable(java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">addColorable</span>
+      <span class="normal">(String tag)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Marks given <code>tag</code> as tag that may contain color attribute or CSS style. Parser will handle
+ this cases automatically.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>tag</td>
+          <td>Tag to handle.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="addPreformatted(java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">addPreformatted</span>
+      <span class="normal">(String tag)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Marks given <code>tag</code> as preformatted. In this mode all spaces and line breaks
+ will be taken into account. This action is default for "pre" tag.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>tag</td>
+          <td>Tag to handle.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="addTag(java.lang.String, java.lang.String, java.lang.String, chan.text.HtmlParser.SpanType)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">addTag</span>
+      <span class="normal">(String tag, String attribute, String value, <a href="../../../reference/chan/text/HtmlParser.SpanType.html">HtmlParser.SpanType</a> spanType)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Add tag to handle. Given <code>tag</code> will be replaced with given <code>spanType</code>
+ if tag contains <code>attribute</code> that exactly equals <code>value</code>.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>tag</td>
+          <td>Tag to handle.</td>
+        </tr>
+        <tr>
+          <th>attribute</td>
+          <td>Tag attribute.</td>
+        </tr>
+        <tr>
+          <th>value</td>
+          <td>Attribute value.</td>
+        </tr>
+        <tr>
+          <th>spanType</td>
+          <td>Span type.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="addTag(java.lang.String, java.lang.String, chan.text.HtmlParser.SpanType)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">addTag</span>
+      <span class="normal">(String tag, String cssClass, <a href="../../../reference/chan/text/HtmlParser.SpanType.html">HtmlParser.SpanType</a> spanType)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Add tag to handle. Given <code>tag</code> will be replaced with given <code>spanType</code>
+ if tag contains <code>cssClass</code> in class attribute.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>tag</td>
+          <td>Tag to handle.</td>
+        </tr>
+        <tr>
+          <th>cssClass</td>
+          <td>Tag CSS class.</td>
+        </tr>
+        <tr>
+          <th>spanType</td>
+          <td>Span type.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="addTag(java.lang.String, chan.text.HtmlParser.SpanType)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">addTag</span>
+      <span class="normal">(String tag, <a href="../../../reference/chan/text/HtmlParser.SpanType.html">HtmlParser.SpanType</a> spanType)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Add tag to handle. Given <code>tag</code> will be replaced with given <code>spanType</code>.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>tag</td>
+          <td>Tag to handle.</td>
+        </tr>
+        <tr>
+          <th>spanType</td>
+          <td>Span type.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
 <A NAME="get(java.lang.Object)"></A>
 
 <div class="jd-details api apilevel-"> 
@@ -1333,12 +1631,6 @@ From interface
       <span class="sympad">get</span>
       <span class="normal">(Object linkage)</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Return linked <code><a href="../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a></code> instance.</p></div>
@@ -1361,7 +1653,7 @@ From interface
 </div>
 
 
-<A NAME="getCommentEditor()"></A>
+<A NAME="handleTagEnd(chan.text.HtmlParser, java.lang.StringBuilder, java.lang.String)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -1371,25 +1663,76 @@ From interface
          
          
          
-        <a href="../../../reference/chan/text/CommentEditor.html">CommentEditor</a>
+        void
       </span>
-      <span class="sympad">getCommentEditor</span>
-      <span class="normal">()</span>
+      <span class="sympad">handleTagEnd</span>
+      <span class="normal">(<a href="../../../reference/chan/text/HtmlParser.html">HtmlParser</a> parser, StringBuilder builder, String tag)</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls when client want to show posting activity. You <strong>must</strong> override this method if chan
- supports feature <code><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_SEND_POST">FEATURE_SEND_POST</a></code>.</p></p></div>
+  <div class="jd-tagdata jd-tagdescr"><p><p>This method is called when tag ends.</p></p></div>
   <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li><code><a href="../../../reference/chan/text/CommentEditor.html">CommentEditor</a></code> instance.
-</li></ul>
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>parser</td>
+          <td>Parser instance.</td>
+        </tr>
+        <tr>
+          <th>builder</td>
+          <td>String builder with parsed text.</td>
+        </tr>
+        <tr>
+          <th>tag</td>
+          <td>Name of tag.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="handleTagStart(chan.text.HtmlParser, java.lang.StringBuilder, java.lang.String, org.xml.sax.Attributes)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">handleTagStart</span>
+      <span class="normal">(<a href="../../../reference/chan/text/HtmlParser.html">HtmlParser</a> parser, StringBuilder builder, String tag, Attributes attributes)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>This method is called when new tag starts.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>parser</td>
+          <td>Parser instance.</td>
+        </tr>
+        <tr>
+          <th>builder</td>
+          <td>String builder with parsed text.</td>
+        </tr>
+        <tr>
+          <th>tag</td>
+          <td>Name of tag.</td>
+        </tr>
+        <tr>
+          <th>attributes</td>
+          <td>Tag's attributes.
+</td>
+        </tr>
+      </table>
   </div>
 
     </div>
@@ -1411,12 +1754,6 @@ From interface
       <span class="sympad">isTagSupported</span>
       <span class="normal">(String boardName, int tag)</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Calls when client want to determine tag's supportability. This method must return whether board support
@@ -1438,6 +1775,128 @@ From interface
       <h5 class="jd-tagtitle">Returns</h5>
       <ul class="nolist"><li>True if tag is supported, false otherwise.
 </li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="obtainCommentEditor(java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        <a href="../../../reference/chan/text/CommentEditor.html">CommentEditor</a>
+      </span>
+      <span class="sympad">obtainCommentEditor</span>
+      <span class="normal">(String boardName)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Calls when client want to show posting activity. You <strong>must</strong> override this method if chan
+ supports feature <code><a href="../../../reference/chan/content/ChanConfiguration.html#FEATURE_SEND_POST">FEATURE_SEND_POST</a></code>.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>boardName</td>
+          <td>Board name string.</td>
+        </tr>
+      </table>
+  </div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li><code><a href="../../../reference/chan/text/CommentEditor.html">CommentEditor</a></code> instance.
+</li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="obtainPostLinkThreadPostNumbers(chan.text.HtmlParser, java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        Pair&lt;String,&nbsp;String&gt;
+      </span>
+      <span class="sympad">obtainPostLinkThreadPostNumbers</span>
+      <span class="normal">(<a href="../../../reference/chan/text/HtmlParser.html">HtmlParser</a> parser, String url)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>This method is called every time parser finds links started with >>. You must extract thread number
+ and post number from this and pass it to result.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>parser</td>
+          <td>Parser instance.</td>
+        </tr>
+        <tr>
+          <th>url</td>
+          <td>URL encoded to link tag.</td>
+        </tr>
+      </table>
+  </div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li><code>Pair</code> with thread number and post number, encoded in <code>url</code>.
+</li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="onStartEnd(chan.text.HtmlParser, java.lang.StringBuilder, boolean)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">onStartEnd</span>
+      <span class="normal">(<a href="../../../reference/chan/text/HtmlParser.html">HtmlParser</a> parser, StringBuilder builder, boolean end)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>This method is called every time parser starts or ends parsing. You can reset callback's fields with
+ this method.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>parser</td>
+          <td>Parser instance.</td>
+        </tr>
+        <tr>
+          <th>builder</td>
+          <td>String builder with parsed text.</td>
+        </tr>
+        <tr>
+          <th>end</td>
+          <td>True if parser ends parsing, false otherwise.
+</td>
+        </tr>
+      </table>
   </div>
 
     </div>

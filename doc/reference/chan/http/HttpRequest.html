@@ -156,6 +156,7 @@
     <li><h2>Interfaces</h2>
       <ul>
           <li class="api apilevel-"><a href="../../../reference/chan/http/HttpRequest.Preset.html">HttpRequest.Preset</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a></li>
       </ul>
     </li>
               
@@ -174,7 +175,7 @@
               
     <li><h2>Enums</h2>
       <ul>
-          <li class="api apilevel-"><a href="../../../reference/chan/http/HttpRequest.Redirect.html">HttpRequest.Redirect</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html">HttpRequest.RedirectHandler.Action</a></li>
       </ul>
     </li>
               
@@ -259,12 +260,6 @@ Summary:
 &#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
 
 </div><!-- end sum-details-links -->
-<div class="api-level">
-  
-  
-  
-
-</div>
 </div><!-- end api-info-block -->
 
 
@@ -379,9 +374,9 @@ Summary:
          
          
         
-        enum</nobr></td>
-      <td class="jd-linkcol"><a href="../../../reference/chan/http/HttpRequest.Redirect.html">HttpRequest.Redirect</a></td>
-      <td class="jd-descrcol" width="100%"><p>Redirection handler type.&nbsp;</td>
+        interface</nobr></td>
+      <td class="jd-linkcol"><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a></td>
+      <td class="jd-descrcol" width="100%"><p>Redirection handler interface.&nbsp;</td>
     </tr>
     
     
@@ -617,9 +612,9 @@ Summary:
             <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/http/HttpRequest.html#setRedirectsHandler(chan.http.HttpRequest.Redirect)">setRedirectsHandler</a></span>(<a href="../../../reference/chan/http/HttpRequest.Redirect.html">HttpRequest.Redirect</a> redirect)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/HttpRequest.html#setRedirectHandler(chan.http.HttpRequest.RedirectHandler)">setRedirectHandler</a></span>(<a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a> redirectHandler)</nobr>
         
-        <div class="jd-descrdiv"><p>Configures redirect handling with <code><a href="../../../reference/chan/http/HttpRequest.Redirect.html">HttpRequest.Redirect</a></code>.</div>
+        <div class="jd-descrdiv"><p>Configures redirect handling with <code><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a></code>.</div>
   
   </td></tr>
 
@@ -911,12 +906,6 @@ From class
       <span class="sympad">HttpRequest</span>
       <span class="normal">(Uri uri, <a href="../../../reference/chan/http/HttpHolder.html">HttpHolder</a> holder)</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Constructor for <code><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></code>.</p></p></div>
@@ -969,12 +958,6 @@ From class
       <span class="sympad">addCookie</span>
       <span class="normal">(String name, String value)</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Add a cookie with given <code>name</code> and <code>value</code>.</p></p></div>
@@ -1020,12 +1003,6 @@ From class
       <span class="sympad">addCookie</span>
       <span class="normal">(<a href="../../../reference/chan/http/CookieBuilder.html">CookieBuilder</a> builder)</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Add a <code><a href="../../../reference/chan/http/CookieBuilder.html">CookieBuilder</a></code> and concatenate it with existing one.</p></p></div>
@@ -1067,12 +1044,6 @@ From class
       <span class="sympad">addCookie</span>
       <span class="normal">(String cookie)</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Add a cookie string.</p></p></div>
@@ -1114,12 +1085,6 @@ From class
       <span class="sympad">addHeader</span>
       <span class="normal">(String name, String value)</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Add a header with given <code>name</code> and <code>value</code>.</p></p></div>
@@ -1161,12 +1126,6 @@ From class
       <span class="sympad">execute</span>
       <span class="normal">()</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Executes HTTP request. This make available response headers with returned <code><a href="../../../reference/chan/http/HttpHolder.html">HttpHolder</a></code>.
@@ -1205,12 +1164,6 @@ From class
       <span class="sympad">read</span>
       <span class="normal">()</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Executes HTTP request and reads response.</p></p></div>
@@ -1252,12 +1205,6 @@ From class
       <span class="sympad">setAllowOnlyOk</span>
       <span class="normal">(boolean onlyOk)</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Configures response code handling. The <code><a href="../../../reference/chan/http/HttpHolder.html#checkResponseCode()">checkResponseCode()</a></code> will be called automatically
@@ -1277,7 +1224,7 @@ From class
   </div>
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">See Also</h5>
-      <ul class="nolist"><li><code><a href="../../../reference/chan/http/HttpRequest.html#setRedirectsHandler(chan.http.HttpRequest.Redirect)">setRedirectsHandler(Redirect)</a></code></li>
+      <ul class="nolist"><li><code><a href="../../../">ERROR(/HttpRequest#setRedirectsHandler(Redirect))</a></code></li>
       </ul>
   </div>
 
@@ -1300,12 +1247,6 @@ From class
       <span class="sympad">setKeepAlive</span>
       <span class="normal">(boolean keepAlive)</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Enabled or disables connection pooling. Enabled by default.</p></p></div>
@@ -1343,12 +1284,6 @@ From class
       <span class="sympad">setPost</span>
       <span class="normal">(boolean post, <a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a> entity)</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Configures request method and request entity.</p></p></div>
@@ -1375,7 +1310,7 @@ From class
 </div>
 
 
-<A NAME="setRedirectsHandler(chan.http.HttpRequest.Redirect)"></A>
+<A NAME="setRedirectHandler(chan.http.HttpRequest.RedirectHandler)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -1387,27 +1322,22 @@ From class
          
         <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a>
       </span>
-      <span class="sympad">setRedirectsHandler</span>
-      <span class="normal">(<a href="../../../reference/chan/http/HttpRequest.Redirect.html">HttpRequest.Redirect</a> redirect)</span>
+      <span class="sympad">setRedirectHandler</span>
+      <span class="normal">(<a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a> redirectHandler)</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Configures redirect handling with <code><a href="../../../reference/chan/http/HttpRequest.Redirect.html">HttpRequest.Redirect</a></code>.</p>
+  <div class="jd-tagdata jd-tagdescr"><p><p>Configures redirect handling with <code><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a></code>.</p>
  
  <p>Don't forget to disable response handling with <code><a href="../../../reference/chan/http/HttpRequest.html#setAllowOnlyOk(boolean)">setAllowOnlyOk(boolean)</a></code> if you use
- <code><a href="../../../reference/chan/http/HttpRequest.Redirect.html#NONE">NONE</a></code>! Otherwise redirects will throw <code><a href="../../../reference/chan/http/HttpException.html">HttpException</a></code>.</p></p></div>
+ <code><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html#NONE">NONE</a></code> or another handler that returns <code><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html#CANCEL">CANCEL</a></code>!
+ Otherwise redirects will throw <code><a href="../../../reference/chan/http/HttpException.html">HttpException</a></code>.</p></p></div>
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Parameters</h5>
       <table class="jd-tagtable">
         <tr>
-          <th>redirect</td>
-          <td>Redirect handler type.</td>
+          <th>redirectHandler</td>
+          <td>Redirect handler interface.</td>
         </tr>
       </table>
   </div>
@@ -1436,12 +1366,6 @@ From class
       <span class="sympad">setTimeouts</span>
       <span class="normal">(int connectTimeout, int readTimeout)</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Sets the timeouts of connection.</p></p></div>
@@ -1483,12 +1407,6 @@ From class
       <span class="sympad">setValidator</span>
       <span class="normal">(<a href="../../../reference/chan/http/HttpValidator.html">HttpValidator</a> validator)</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Sets the <code><a href="../../../reference/chan/http/HttpValidator.html">HttpValidator</a></code> to handle data changes with <code>304 Not Modified</code>.</p></p></div>
@@ -1526,12 +1444,6 @@ From class
       <span class="sympad">with</span>
       <span class="normal">(<a href="../../../reference/chan/http/HttpRequest.Preset.html">HttpRequest.Preset</a> preset)</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Configures request with given <code><a href="../../../reference/chan/http/HttpRequest.Preset.html">HttpRequest.Preset</a></code>.</p></p></div>

@@ -166,7 +166,6 @@
           <li class="api apilevel-"><a href="../../../reference/chan/content/ChanLocator.html">ChanLocator</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/content/ChanLocator.NavigationData.html">ChanLocator.NavigationData</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a></li>
-          <li class="api apilevel-"><a href="../../../reference/chan/content/ChanMarkup.SimpleChanMarkup.html">ChanMarkup.SimpleChanMarkup</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.html">ChanPerformer</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.AddToArchiveData.html">ChanPerformer.AddToArchiveData</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/content/ChanPerformer.AddToArchiveResult.html">ChanPerformer.AddToArchiveResult</a></li>
@@ -279,12 +278,6 @@ Summary:
 &#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
 
 </div><!-- end sum-details-links -->
-<div class="api-level">
-  
-  
-  
-
-</div>
 </div><!-- end api-info-block -->
 
 
@@ -406,6 +399,28 @@ Summary:
           
           
           boolean</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.Reporting.html#multiplePosts">multiplePosts</a></td>
+          <td class="jd-descrcol" width="100%"><p>Set <code>true</code> to allow user to choose multiple posts for report.</td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          
+          final
+          List&lt;Pair&lt;String,&nbsp;String&gt;&gt;</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.Reporting.html#options">options</a></td>
+          <td class="jd-descrcol" width="100%"><p>Reporting options.</td>
+      </tr>
+      
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          
+          
+          boolean</nobr></td>
           <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.Reporting.html#textField">textField</a></td>
           <td class="jd-descrcol" width="100%"><p>Set <code>true</code> to allow user to enter comment.</td>
       </tr>
@@ -417,8 +432,8 @@ Summary:
           
           final
           List&lt;Pair&lt;String,&nbsp;String&gt;&gt;</nobr></td>
-          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.Reporting.html#type">type</a></td>
-          <td class="jd-descrcol" width="100%"><p>Report types.</td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.Reporting.html#types">types</a></td>
+          <td class="jd-descrcol" width="100%"><p>Reporting types.</td>
       </tr>
       
     
@@ -674,6 +689,53 @@ From class
 
 
 
+<A NAME="multiplePosts"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+        boolean
+      </span>
+        multiplePosts
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Set <code>true</code> to allow user to choose multiple posts for report.</p>
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="options"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+        List&lt;Pair&lt;String,&nbsp;String&gt;&gt;
+      </span>
+        options
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Reporting options. The <code>first</code> field in pair is value, the <code>second</code> one is display name.
+ You will receive user's selected value from <code><a href="../../../reference/chan/content/ChanPerformer.SendReportData.html#options">options</a></code>.</p>
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
 <A NAME="textField"></A>
 
 <div class="jd-details api apilevel-"> 
@@ -686,12 +748,6 @@ From class
       </span>
         textField
     </h4>
-      <div class="api-level">
-        
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Set <code>true</code> to allow user to enter comment.</p>
@@ -703,7 +759,7 @@ From class
 
 
 
-<A NAME="type"></A>
+<A NAME="types"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -713,17 +769,11 @@ From class
         final 
         List&lt;Pair&lt;String,&nbsp;String&gt;&gt;
       </span>
-        type
+        types
     </h4>
-      <div class="api-level">
-        
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Report types. The <code>first</code> field in pair is value, the <code>second</code> one is dispay name.
+  <div class="jd-tagdata jd-tagdescr"><p><p>Reporting types. The <code>first</code> field in pair is value, the <code>second</code> one is display name.
  You will receive user's selected value from <code><a href="../../../reference/chan/content/ChanPerformer.SendReportData.html#type">type</a></code>.</p>
 </p></div>
 
@@ -757,12 +807,6 @@ From class
       <span class="sympad">ChanConfiguration.Reporting</span>
       <span class="normal">()</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Default constructor for <code><a href="../../../reference/chan/content/ChanConfiguration.Reporting.html">ChanConfiguration.Reporting</a></code>.</p>

@@ -56,7 +56,7 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
 <title>
 
-  GroupParser - Dashchan API Reference
+  HttpRequest.RedirectHandler.Action - Dashchan API Reference
 
 </title>
 <link href="../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
@@ -141,9 +141,9 @@
   <a href="../../../reference/chan/content/package-summary.html">chan.content</a></li>
     <li class="api apilevel-">
   <a href="../../../reference/chan/content/model/package-summary.html">chan.content.model</a></li>
-    <li class="api apilevel-">
-  <a href="../../../reference/chan/http/package-summary.html">chan.http</a></li>
     <li class="selected api apilevel-">
+  <a href="../../../reference/chan/http/package-summary.html">chan.http</a></li>
+    <li class="api apilevel-">
   <a href="../../../reference/chan/text/package-summary.html">chan.text</a></li>
     <li class="api apilevel-">
   <a href="../../../reference/chan/util/package-summary.html">chan.util</a></li>
@@ -155,35 +155,33 @@
               
     <li><h2>Interfaces</h2>
       <ul>
-          <li class="api apilevel-"><a href="../../../reference/chan/text/GroupParser.Callback.html">GroupParser.Callback</a></li>
-          <li class="api apilevel-"><a href="../../../reference/chan/text/GroupParser.TextCallback.html">GroupParser.TextCallback</a></li>
-          <li class="api apilevel-"><a href="../../../reference/chan/text/HtmlParser.Characters.html">HtmlParser.Characters</a></li>
-          <li class="api apilevel-"><a href="../../../reference/chan/text/HtmlParser.Markup.html">HtmlParser.Markup</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/http/HttpRequest.Preset.html">HttpRequest.Preset</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a></li>
       </ul>
     </li>
               
     <li><h2>Classes</h2>
       <ul>
-          <li class="api apilevel-"><a href="../../../reference/chan/text/CommentEditor.html">CommentEditor</a></li>
-          <li class="api apilevel-"><a href="../../../reference/chan/text/CommentEditor.AsteriskWakabaMarkCommentEditor.html">CommentEditor.AsteriskWakabaMarkCommentEditor</a></li>
-          <li class="api apilevel-"><a href="../../../reference/chan/text/CommentEditor.BulletinBoardCodeCommentEditor.html">CommentEditor.BulletinBoardCodeCommentEditor</a></li>
-          <li class="api apilevel-"><a href="../../../reference/chan/text/CommentEditor.FormatResult.html">CommentEditor.FormatResult</a></li>
-          <li class="api apilevel-"><a href="../../../reference/chan/text/CommentEditor.WakabaMarkCommentEditor.html">CommentEditor.WakabaMarkCommentEditor</a></li>
-          <li class="selected api apilevel-"><a href="../../../reference/chan/text/GroupParser.html">GroupParser</a></li>
-          <li class="api apilevel-"><a href="../../../reference/chan/text/HtmlParser.html">HtmlParser</a></li>
-          <li class="api apilevel-"><a href="../../../reference/chan/text/HtmlParser.SpanContainer.html">HtmlParser.SpanContainer</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/http/CookieBuilder.html">CookieBuilder</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/http/HttpHolder.html">HttpHolder</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/http/HttpResponse.html">HttpResponse</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/http/HttpValidator.html">HttpValidator</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/http/MultipartEntity.html">MultipartEntity</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/http/UrlEncodedEntity.html">UrlEncodedEntity</a></li>
       </ul>
     </li>
               
     <li><h2>Enums</h2>
       <ul>
-          <li class="api apilevel-"><a href="../../../reference/chan/text/HtmlParser.SpanType.html">HtmlParser.SpanType</a></li>
+          <li class="selected api apilevel-"><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html">HttpRequest.RedirectHandler.Action</a></li>
       </ul>
     </li>
               
     <li><h2>Exceptions</h2>
       <ul>
-          <li class="api apilevel-"><a href="../../../reference/chan/text/ParseException.html">ParseException</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/http/HttpException.html">HttpException</a></li>
       </ul>
     </li>
               
@@ -231,16 +229,35 @@
   
   
 
+  
+   
+  
+  
+  
+  
+
+  
+   
+  
+  
+  
+  
+
+  
+  
+  
+  
+
 
 <div class="sum-details-links">
 
 Summary:
 
-  <a href="#nestedclasses">Nested Classes</a>
+
+
+
+  <a href="#enumconstants">Enums</a>
   
-
-
-
 
 
 
@@ -266,16 +283,20 @@ Summary:
 
 <div id="jd-header">
     public
-     
-     
+    static 
+    final 
     
-    class
-<h1 itemprop="name">GroupParser</h1>
+    enum
+<h1 itemprop="name">HttpRequest.RedirectHandler.Action</h1>
 
 
 
   
-    extends Object<br/>
+  
+  
+
+  
+    extends Enum&lt;<a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html">HttpRequest.RedirectHandler.Action</a>&gt;<br/>
   
   
   
@@ -295,7 +316,7 @@ Summary:
 
     <tr>
          	
-        <td colspan="2" class="jd-inheritance-class-cell">java.lang.Object</td>
+        <td colspan="3" class="jd-inheritance-class-cell">java.lang.Object</td>
     </tr>
     
 
@@ -303,7 +324,17 @@ Summary:
         
             <td class="jd-inheritance-space">&nbsp;&nbsp;&nbsp;&#x21b3;</td>
          	
-        <td colspan="1" class="jd-inheritance-class-cell">chan.text.GroupParser</td>
+        <td colspan="2" class="jd-inheritance-class-cell">java.lang.Enum&lt;<a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html">chan.http.HttpRequest.RedirectHandler.Action</a>&gt;</td>
+    </tr>
+    
+
+    <tr>
+        
+            <td class="jd-inheritance-space">&nbsp;</td>
+        
+            <td class="jd-inheritance-space">&nbsp;&nbsp;&nbsp;&#x21b3;</td>
+         	
+        <td colspan="1" class="jd-inheritance-class-cell">chan.http.HttpRequest.RedirectHandler.Action</td>
     </tr>
     
 
@@ -319,14 +350,7 @@ Summary:
 
 
 <h2>Class Overview</h2>
-<p itemprop="articleBody"><p>HTML text parser. Can work in two modes: linear and group.</p>
- 
- <p>In linear mode, parser will call <code><a href="../../../reference/chan/text/GroupParser.Callback.html#onStartElement(chan.text.GroupParser, java.lang.String, java.lang.String)">onStartElement(GroupParser, String, String)</a></code> every
- time parser reaches new tag. This method has boolean result, and when this method returns true - parser switches
- to group mode.</p>
- 
- <p>In group mode parser will handle all text inside started tag. Then it call
- <code><a href="../../../reference/chan/text/GroupParser.Callback.html#onGroupComplete(chan.text.GroupParser, java.lang.String)">onGroupComplete(GroupParser, String)</a></code> with all text inside tag.</p>
+<p itemprop="articleBody"><p>Redirection handler result.</p>
 </p>
 
 
@@ -357,44 +381,39 @@ Summary:
 
 
 
-<!-- ======== NESTED CLASS SUMMARY ======== -->
-<table id="nestedclasses" class="jd-sumtable"><tr><th colspan="12">Nested Classes</th></tr>
 
 
-  
+
+
+
+
+
+
+<!-- =========== ENUM CONSTANT SUMMARY =========== -->
+<table id="enumconstants" class="jd-sumtable"><tr><th colspan="12">Enum Values</th></tr>
+
+    
     <tr class="alt-color api apilevel-" >
-      <td class="jd-typecol"><nobr>
-        
-         
-         
-        
-        interface</nobr></td>
-      <td class="jd-linkcol"><a href="../../../reference/chan/text/GroupParser.Callback.html">GroupParser.Callback</a></td>
-      <td class="jd-descrcol" width="100%"><p>Callback for <code><a href="../../../reference/chan/text/GroupParser.html">GroupParser</a></code>.&nbsp;</td>
+        <td class="jd-descrcol"><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html">HttpRequest.RedirectHandler.Action</a>&nbsp;</td>
+        <td class="jd-linkcol">CANCEL&nbsp;</td>
+        <td class="jd-descrcol" width="100%"><p>Cancel redirect handling.&nbsp;</td>
     </tr>
     
     
     <tr class=" api apilevel-" >
-      <td class="jd-typecol"><nobr>
-        
-         
-         
-        
-        interface</nobr></td>
-      <td class="jd-linkcol"><a href="../../../reference/chan/text/GroupParser.TextCallback.html">GroupParser.TextCallback</a></td>
-      <td class="jd-descrcol" width="100%"><p>Additional callback for <code><a href="../../../reference/chan/text/GroupParser.html">GroupParser</a></code>.&nbsp;</td>
+        <td class="jd-descrcol"><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html">HttpRequest.RedirectHandler.Action</a>&nbsp;</td>
+        <td class="jd-linkcol">GET&nbsp;</td>
+        <td class="jd-descrcol" width="100%"><p>Follow redirect with GET method.&nbsp;</td>
     </tr>
     
     
-
-
-
-
-
-
-
-
-
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-descrcol"><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html">HttpRequest.RedirectHandler.Action</a>&nbsp;</td>
+        <td class="jd-linkcol">RETRANSMIT&nbsp;</td>
+        <td class="jd-descrcol" width="100%"><p>Follow redirect with previous method including data retransmission for POST.&nbsp;</td>
+    </tr>
+    
+    
 
 
 
@@ -424,51 +443,13 @@ Summary:
             
             
             
-            
-            
-            String</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/text/GroupParser.html#getAttr(java.lang.String, java.lang.String)">getAttr</a></span>(String attrs, String attr)</nobr>
-        
-        <div class="jd-descrdiv"><p>Decodes attribute from encoded string.</div>
-  
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/text/GroupParser.html#mark()">mark</a></span>()</nobr>
-        
-        <div class="jd-descrdiv"><p>Stores parser's position.</div>
-  
-  </td></tr>
-
-
-	 
-    <tr class="alt-color api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            
             static
             
-            void</nobr>
+            <a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html">HttpRequest.RedirectHandler.Action</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/text/GroupParser.html#parse(java.lang.String, chan.text.GroupParser.Callback)">parse</a></span>(String source, <a href="../../../reference/chan/text/GroupParser.Callback.html">GroupParser.Callback</a> callback)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html#valueOf(java.lang.String)">valueOf</a></span>(String name)</nobr>
         
-        <div class="jd-descrdiv"><p>Start a new parsing process.</div>
-  
   </td></tr>
 
 
@@ -477,16 +458,14 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
+            final
+            static
             
-            
-            
-            void</nobr>
+            <a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html">Action[]</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/text/GroupParser.html#reset()">reset</a></span>()</nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html#values()">values</a></span>()</nobr>
         
-        <div class="jd-descrdiv"><p>Resets parser's position to last marked one.</div>
-  
   </td></tr>
 
 
@@ -503,6 +482,176 @@ Summary:
 <table id="inhmethods" class="jd-sumtable"><tr><th>
   <a href="#" class="toggle-all" onclick="return toggleAllInherited(this, null)">[Expand]</a>
   <div style="clear:left;">Inherited Methods</div></th></tr>
+
+
+<tr class="api apilevel-" >
+<td colspan="12">
+  <a href="#" onclick="return toggleInherited(this, null)" id="inherited-methods-java.lang.Enum" class="jd-expando-trigger closed"
+          ><img id="inherited-methods-java.lang.Enum-trigger"
+          src="../../../assets/images/triangle-closed.png"
+          class="jd-expando-trigger-img" /></a>
+From class
+
+  java.lang.Enum
+
+<div id="inherited-methods-java.lang.Enum">
+  <div id="inherited-methods-java.lang.Enum-list"
+        class="jd-inheritedlinks">
+  </div>
+  <div id="inherited-methods-java.lang.Enum-summary" style="display: none;">
+    <table class="jd-sumtable-expando">
+    
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            int</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">compareTo</span>(Object arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            int</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">compareTo</span>(<a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html">HttpRequest.RedirectHandler.Action</a> arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">equals</span>(Object arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            Class&lt;<a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html">HttpRequest.RedirectHandler.Action</a>&gt;</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">getDeclaringClass</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            int</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">hashCode</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            String</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">name</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            int</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">ordinal</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            String</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">toString</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            static
+            &lt;T&nbsp;extends&nbsp;Enum&lt;T&gt;&gt;
+            T</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">valueOf</span>(Class&lt;T&gt; arg0, String arg1)</nobr>
+        
+  </td></tr>
+
+
+</table>
+  </div>
+</div>
+</td></tr>
+
 
 
 <tr class="api apilevel-" >
@@ -674,6 +823,50 @@ From class
 </td></tr>
 
 
+
+<tr class="api apilevel-" >
+<td colspan="12">
+  <a href="#" onclick="return toggleInherited(this, null)" id="inherited-methods-java.lang.Comparable" class="jd-expando-trigger closed"
+          ><img id="inherited-methods-java.lang.Comparable-trigger"
+          src="../../../assets/images/triangle-closed.png"
+          class="jd-expando-trigger-img" /></a>
+From interface
+
+  java.lang.Comparable
+
+<div id="inherited-methods-java.lang.Comparable">
+  <div id="inherited-methods-java.lang.Comparable-list"
+        class="jd-inheritedlinks">
+  </div>
+  <div id="inherited-methods-java.lang.Comparable-summary" style="display: none;">
+    <table class="jd-sumtable-expando">
+    
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            abstract
+            
+            
+            
+            
+            int</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">compareTo</span>(<a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html">HttpRequest.RedirectHandler.Action</a> arg0)</nobr>
+        
+  </td></tr>
+
+
+</table>
+  </div>
+</div>
+</td></tr>
+
+
+
+
 </table>
 
 
@@ -692,6 +885,82 @@ From class
 
 
 <!-- Enum Values -->
+
+
+<!-- ========= ENUM CONSTANTS DETAIL ======== -->
+<h2>Enum Values</h2>
+
+
+
+
+<A NAME="CANCEL"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        <a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html">HttpRequest.RedirectHandler.Action</a>
+      </span>
+        CANCEL
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Cancel redirect handling.</p>
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="GET"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        <a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html">HttpRequest.RedirectHandler.Action</a>
+      </span>
+        GET
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Follow redirect with GET method.</p>
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="RETRANSMIT"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        <a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html">HttpRequest.RedirectHandler.Action</a>
+      </span>
+        RETRANSMIT
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Follow redirect with previous method including data retransmission for POST.</p>
+</p></div>
+
+    
+    </div>
+</div>
+
+
 
 
 <!-- Constants -->
@@ -716,73 +985,7 @@ From class
 
 
 
-<A NAME="getAttr(java.lang.String, java.lang.String)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public 
-         
-         
-         
-         
-        String
-      </span>
-      <span class="sympad">getAttr</span>
-      <span class="normal">(String attrs, String attr)</span>
-    </h4>
-    <div class="jd-details-descr">
-      
-  <div class="jd-tagdata jd-tagdescr"><p><p>Decodes attribute from encoded string. You can use it to handle <code>attrs</code> argument in
- <code><a href="../../../reference/chan/text/GroupParser.Callback.html#onStartElement(chan.text.GroupParser, java.lang.String, java.lang.String)">onStartElement(GroupParser, String, String)</a></code> method.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>attrs</td>
-          <td>Encoded string.</td>
-        </tr>
-        <tr>
-          <th>attr</td>
-          <td>Attribute name.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Attribute value if it exists or <code>null</code>.
-</li></ul>
-  </div>
-
-    </div>
-</div>
-
-
-<A NAME="mark()"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public 
-         
-         
-         
-         
-        void
-      </span>
-      <span class="sympad">mark</span>
-      <span class="normal">()</span>
-    </h4>
-    <div class="jd-details-descr">
-      
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores parser's position. Later you can come back with <code><a href="../../../reference/chan/text/GroupParser.html#reset()">reset()</a></code> method.</p>
-</p></div>
-
-    </div>
-</div>
-
-
-<A NAME="parse(java.lang.String, chan.text.GroupParser.Callback)"></A>
+<A NAME="valueOf(java.lang.String)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -792,61 +995,37 @@ From class
          
          
          
-        void
+        <a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html">HttpRequest.RedirectHandler.Action</a>
       </span>
-      <span class="sympad">parse</span>
-      <span class="normal">(String source, <a href="../../../reference/chan/text/GroupParser.Callback.html">GroupParser.Callback</a> callback)</span>
+      <span class="sympad">valueOf</span>
+      <span class="normal">(String name)</span>
     </h4>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Start a new parsing process.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>source</td>
-          <td>String to parse.</td>
-        </tr>
-        <tr>
-          <th>callback</td>
-          <td>Callback to handle parsed data.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Throws</h5>
-      <table class="jd-tagtable">  
-        <tr>
-            <th><a href="../../../reference/chan/text/ParseException.html">ParseException</a></td>
-            <td>when parsing process was interrupted.
-</td>
-        </tr>
-      </table>
-  </div>
+  <div class="jd-tagdata jd-tagdescr"><p></p></div>
 
     </div>
 </div>
 
 
-<A NAME="reset()"></A>
+<A NAME="values()"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
         public 
+        static 
+        final 
          
          
-         
-         
-        void
+        <a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html">Action[]</a>
       </span>
-      <span class="sympad">reset</span>
+      <span class="sympad">values</span>
       <span class="normal">()</span>
     </h4>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Resets parser's position to last marked one.</p>
-</p></div>
+  <div class="jd-tagdata jd-tagdescr"><p></p></div>
 
     </div>
 </div>

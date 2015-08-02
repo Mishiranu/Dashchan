@@ -262,12 +262,6 @@ Summary:
 &#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
 
 </div><!-- end sum-details-links -->
-<div class="api-level">
-  
-  
-  
-
-</div>
 </div><!-- end api-info-block -->
 
 
@@ -511,6 +505,24 @@ Summary:
             
             
             
+            static
+            
+            String</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/text/HtmlParser.html#escape(java.lang.String)">escape</a></span>(String source)</nobr>
+        
+        <div class="jd-descrdiv"><p>Removes all HTML tags and transforms mnemonics.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
             
             
             Integer</nobr>
@@ -524,7 +536,7 @@ Summary:
 
 
 	 
-    <tr class=" api apilevel-" >
+    <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -542,7 +554,7 @@ Summary:
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -552,15 +564,15 @@ Summary:
             <a href="../../../reference/chan/text/HtmlParser.SpanContainer.html">HtmlParser.SpanContainer</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/text/HtmlParser.html#getLastSpan(java.util.Collection<chan.text.HtmlParser.SpanType>)">getLastSpan</a></span>(Collection&lt;<a href="../../../reference/chan/text/HtmlParser.SpanType.html">HtmlParser.SpanType</a>&gt; spanTypes)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/text/HtmlParser.html#getLastSpan()">getLastSpan</a></span>()</nobr>
         
-        <div class="jd-descrdiv"><p>Gets last open span with span type from <code>spanTypes</code> set.</div>
+        <div class="jd-descrdiv"><p>Gets last open span.</div>
   
   </td></tr>
 
 
 	 
-    <tr class=" api apilevel-" >
+    <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -573,24 +585,6 @@ Summary:
         <span class="sympad"><a href="../../../reference/chan/text/HtmlParser.html#isUnmarkMode()">isUnmarkMode</a></span>()</nobr>
         
         <div class="jd-descrdiv"><p>Returns whether unmark mode is enabled.</div>
-  
-  </td></tr>
-
-
-	 
-    <tr class="alt-color api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/text/HtmlParser.html#setPreformattedModeEnabled(boolean)">setPreformattedModeEnabled</a></span>(boolean enabled)</nobr>
-        
-        <div class="jd-descrdiv"><p>Changed preformatted mode state.</div>
   
   </td></tr>
 
@@ -828,12 +822,6 @@ From class
       <span class="sympad">HtmlParser</span>
       <span class="normal">()</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p></p></div>
@@ -872,12 +860,6 @@ From class
       <span class="sympad">add</span>
       <span class="normal">(<a href="../../../reference/chan/text/HtmlParser.SpanType.html">HtmlParser.SpanType</a> spanType, Object extra, int start)</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Add a new <code><a href="../../../reference/chan/text/HtmlParser.SpanContainer.html">HtmlParser.SpanContainer</a></code> for parser. This method will make</p></p></div>
@@ -923,15 +905,9 @@ From class
       <span class="sympad">clear</span>
       <span class="normal">(String source)</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Removes all HTML tags and transforms mnemonics.</p></p></div>
+  <div class="jd-tagdata jd-tagdescr"><p><p>Removes all HTML tags and transforms mnemonics. This method will handle spaces and line breaks.</p></p></div>
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Parameters</h5>
       <table class="jd-tagtable">
@@ -944,6 +920,43 @@ From class
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Returns</h5>
       <ul class="nolist"><li>Cleared <code>source</code> string.
+</li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="escape(java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+         
+         
+         
+        String
+      </span>
+      <span class="sympad">escape</span>
+      <span class="normal">(String source)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Removes all HTML tags and transforms mnemonics. This method will not handle spaces and line breaks.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>source</td>
+          <td>Source string.</td>
+        </tr>
+      </table>
+  </div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li>Escaped <code>source</code> string.
 </li></ul>
   </div>
 
@@ -966,12 +979,6 @@ From class
       <span class="sympad">getColorAttribute</span>
       <span class="normal">(Attributes attributes)</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Parse color from given <code>attributes</code>.</p></p></div>
@@ -1009,15 +1016,9 @@ From class
       <span class="sympad">getLastSpan</span>
       <span class="normal">(<a href="../../../reference/chan/text/HtmlParser.SpanType.html">HtmlParser.SpanType</a> spanType)</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Gets last open span with given <code>spanType</code>.</p></div>
+  <div class="jd-tagdata jd-tagdescr"><p><p>Gets last open span with given <code>spanType</code>.</p></p></div>
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Parameters</h5>
       <table class="jd-tagtable">
@@ -1037,7 +1038,7 @@ From class
 </div>
 
 
-<A NAME="getLastSpan(java.util.Collection<chan.text.HtmlParser.SpanType>)"></A>
+<A NAME="getLastSpan()"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -1050,26 +1051,11 @@ From class
         <a href="../../../reference/chan/text/HtmlParser.SpanContainer.html">HtmlParser.SpanContainer</a>
       </span>
       <span class="sympad">getLastSpan</span>
-      <span class="normal">(Collection&lt;<a href="../../../reference/chan/text/HtmlParser.SpanType.html">HtmlParser.SpanType</a>&gt; spanTypes)</span>
+      <span class="normal">()</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Gets last open span with span type from <code>spanTypes</code> set.</p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>spanTypes</td>
-          <td>Set of span types.</td>
-        </tr>
-      </table>
-  </div>
+  <div class="jd-tagdata jd-tagdescr"><p><p>Gets last open span.</p></p></div>
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Returns</h5>
       <ul class="nolist"><li><code><a href="../../../reference/chan/text/HtmlParser.SpanContainer.html">HtmlParser.SpanContainer</a></code> instance or null.
@@ -1095,12 +1081,6 @@ From class
       <span class="sympad">isUnmarkMode</span>
       <span class="normal">()</span>
     </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether unmark mode is enabled.</p></p></div>
@@ -1108,46 +1088,6 @@ From class
       <h5 class="jd-tagtitle">Returns</h5>
       <ul class="nolist"><li>True if unmark mode is enabled.
 </li></ul>
-  </div>
-
-    </div>
-</div>
-
-
-<A NAME="setPreformattedModeEnabled(boolean)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public 
-         
-         
-         
-         
-        void
-      </span>
-      <span class="sympad">setPreformattedModeEnabled</span>
-      <span class="normal">(boolean enabled)</span>
-    </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
-    <div class="jd-details-descr">
-      
-  <div class="jd-tagdata jd-tagdescr"><p><p>Changed preformatted mode state. If this mode enabled, parser will skip all line breaks.
- Enabled by default.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>enabled</td>
-          <td>State of preformatted mode.
-</td>
-        </tr>
-      </table>
   </div>
 
     </div>

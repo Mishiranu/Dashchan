@@ -56,7 +56,7 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
 <title>
 
-  CookieBuilder - Dashchan API Reference
+  HttpRequest.RedirectHandler - Dashchan API Reference
 
 </title>
 <link href="../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
@@ -156,13 +156,13 @@
     <li><h2>Interfaces</h2>
       <ul>
           <li class="api apilevel-"><a href="../../../reference/chan/http/HttpRequest.Preset.html">HttpRequest.Preset</a></li>
-          <li class="api apilevel-"><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a></li>
+          <li class="selected api apilevel-"><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a></li>
       </ul>
     </li>
               
     <li><h2>Classes</h2>
       <ul>
-          <li class="selected api apilevel-"><a href="../../../reference/chan/http/CookieBuilder.html">CookieBuilder</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/http/CookieBuilder.html">CookieBuilder</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/http/HttpHolder.html">HttpHolder</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/http/HttpResponse.html">HttpResponse</a></li>
@@ -222,39 +222,8 @@
 
 
 
-  
-   
-  
-  
-  
-  
-
 
 <div class="sum-details-links">
-
-Summary:
-
-
-
-
-
-
-
-
-
-  <a href="#pubctors">Ctors</a>
-  
-
-
-
-  &#124; <a href="#pubmethods">Methods</a>
-  
-
-
-
-  &#124; <a href="#inhmethods">Inherited Methods</a>
-
-&#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
 
 </div><!-- end sum-details-links -->
 </div><!-- end api-info-block -->
@@ -264,19 +233,13 @@ Summary:
 
 <div id="jd-header">
     public
-     
+    static 
      
     
-    class
-<h1 itemprop="name">CookieBuilder</h1>
+    interface
+<h1 itemprop="name">HttpRequest.RedirectHandler</h1>
 
 
-
-  
-    extends Object<br/>
-  
-  
-  
 
   
   
@@ -293,15 +256,7 @@ Summary:
 
     <tr>
          	
-        <td colspan="2" class="jd-inheritance-class-cell">java.lang.Object</td>
-    </tr>
-    
-
-    <tr>
-        
-            <td class="jd-inheritance-space">&nbsp;&nbsp;&nbsp;&#x21b3;</td>
-         	
-        <td colspan="1" class="jd-inheritance-class-cell">chan.http.CookieBuilder</td>
+        <td colspan="1" class="jd-inheritance-class-cell">chan.http.HttpRequest.RedirectHandler</td>
     </tr>
     
 
@@ -317,11 +272,15 @@ Summary:
 
 
 <h2>Class Overview</h2>
-<p itemprop="articleBody"><p>Provides easy cookie building.</p>
-</p>
+<p itemprop="articleBody"><p>Redirection handler interface.</p></p>
 
 
 
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">See Also</h5>
+      <ul class="nolist"><li><code><a href="../../../reference/chan/http/HttpRequest.html#setRedirectHandler(chan.http.HttpRequest.RedirectHandler)">setRedirectHandler(RedirectHandler)</a></code></li>
+      </ul>
+  </div>
 
 
 </div><!-- jd-descr -->
@@ -348,49 +307,86 @@ Summary:
 
 
 
+<!-- ======== NESTED CLASS SUMMARY ======== -->
+<table id="nestedclasses" class="jd-sumtable"><tr><th colspan="12">Nested Classes</th></tr>
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!-- ======== CONSTRUCTOR SUMMARY ======== -->
-<table id="pubctors" class="jd-sumtable"><tr><th colspan="12">Public Constructors</th></tr>
-
-
-
-	 
+  
     <tr class="alt-color api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            
-            
-            
-            </nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/http/CookieBuilder.html#CookieBuilder()">CookieBuilder</a></span>()</nobr>
+      <td class="jd-typecol"><nobr>
         
-  </td></tr>
+         
+         
+        
+        enum</nobr></td>
+      <td class="jd-linkcol"><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html">HttpRequest.RedirectHandler.Action</a></td>
+      <td class="jd-descrcol" width="100%"><p>Redirection handler result.&nbsp;</td>
+    </tr>
+    
+    
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- =========== FIELD SUMMARY =========== -->
+<table id="lfields" class="jd-sumtable"><tr><th colspan="12">Fields</th></tr>
+
+
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          <a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a></nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html#BROWSER">BROWSER</a></td>
+          <td class="jd-descrcol" width="100%"><p><code><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a></code> implementation.</td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          <a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a></nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html#NONE">NONE</a></td>
+          <td class="jd-descrcol" width="100%"><p><code><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a></code> implementation.</td>
+      </tr>
+      
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          <a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a></nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html#STRICT">STRICT</a></td>
+          <td class="jd-descrcol" width="100%"><p><code><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a></code> implementation.</td>
+      </tr>
+      
+    
 
 </table>
+
+
+
+
+
 
 
 
@@ -405,35 +401,17 @@ Summary:
 	 
     <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
+            abstract
             
             
             
             
-            
-            <a href="../../../reference/chan/http/CookieBuilder.html">CookieBuilder</a></nobr>
+            <a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html">HttpRequest.RedirectHandler.Action</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/http/CookieBuilder.html#append(java.lang.String, java.lang.String)">append</a></span>(String name, String value)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html#onRedirectReached(int, android.net.Uri, android.net.Uri, chan.http.HttpHolder)">onRedirectReached</a></span>(int responseCode, Uri requestedUri, Uri redirectedUri, <a href="../../../reference/chan/http/HttpHolder.html">HttpHolder</a> holder)</nobr>
         
-        <div class="jd-descrdiv"><p>Append cookie with given <code>name</code> and <code>value</code>.</div>
-  
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            
-            
-            
-            String</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/http/CookieBuilder.html#build()">build</a></span>()</nobr>
-        
-        <div class="jd-descrdiv"><p>Constructs cookie string.</div>
+        <div class="jd-descrdiv"><p>HTTP client will call this method every time it reaches redirect response code.</div>
   
   </td></tr>
 
@@ -445,184 +423,6 @@ Summary:
 
 
 
-
-
-<!-- ========== METHOD SUMMARY =========== -->
-<table id="inhmethods" class="jd-sumtable"><tr><th>
-  <a href="#" class="toggle-all" onclick="return toggleAllInherited(this, null)">[Expand]</a>
-  <div style="clear:left;">Inherited Methods</div></th></tr>
-
-
-<tr class="api apilevel-" >
-<td colspan="12">
-  <a href="#" onclick="return toggleInherited(this, null)" id="inherited-methods-java.lang.Object" class="jd-expando-trigger closed"
-          ><img id="inherited-methods-java.lang.Object-trigger"
-          src="../../../assets/images/triangle-closed.png"
-          class="jd-expando-trigger-img" /></a>
-From class
-
-  java.lang.Object
-
-<div id="inherited-methods-java.lang.Object">
-  <div id="inherited-methods-java.lang.Object-list"
-        class="jd-inheritedlinks">
-  </div>
-  <div id="inherited-methods-java.lang.Object-summary" style="display: none;">
-    <table class="jd-sumtable-expando">
-    
-
-
-	 
-    <tr class="alt-color api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            
-            
-            
-            boolean</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">equals</span>(Object arg0)</nobr>
-        
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            final
-            
-            
-            Class&lt;?&gt;</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">getClass</span>()</nobr>
-        
-  </td></tr>
-
-
-	 
-    <tr class="alt-color api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            
-            
-            
-            int</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">hashCode</span>()</nobr>
-        
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            final
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">notify</span>()</nobr>
-        
-  </td></tr>
-
-
-	 
-    <tr class="alt-color api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            final
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">notifyAll</span>()</nobr>
-        
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            
-            
-            
-            String</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">toString</span>()</nobr>
-        
-  </td></tr>
-
-
-	 
-    <tr class="alt-color api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            final
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">wait</span>()</nobr>
-        
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            final
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">wait</span>(long arg0, int arg1)</nobr>
-        
-  </td></tr>
-
-
-	 
-    <tr class="alt-color api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            final
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">wait</span>(long arg0)</nobr>
-        
-  </td></tr>
-
-
-</table>
-  </div>
-</div>
-</td></tr>
-
-
-</table>
 
 
 </div><!-- jd-descr (summary) -->
@@ -648,37 +448,84 @@ From class
 <!-- Fields -->
 
 
-<!-- Public ctors -->
-
-
-<!-- ========= CONSTRUCTOR DETAIL ======== -->
-<h2>Public Constructors</h2>
+<!-- ========= FIELD DETAIL ======== -->
+<h2>Fields</h2>
 
 
 
-<A NAME="CookieBuilder()"></A>
+
+<A NAME="BROWSER"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
         public 
-         
-         
-         
-         
-        
+        static 
+        final 
+        <a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a>
       </span>
-      <span class="sympad">CookieBuilder</span>
-      <span class="normal">()</span>
+        BROWSER
     </h4>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p></p></div>
+  <div class="jd-tagdata jd-tagdescr"><p><p><code><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a></code> implementation. This handler will follow all redirects with GET method.</p>
+</p></div>
 
+    
     </div>
 </div>
 
 
+
+<A NAME="NONE"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        <a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a>
+      </span>
+        NONE
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p><code><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a></code> implementation. This handler will not follow any redirects.</p>
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="STRICT"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        <a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a>
+      </span>
+        STRICT
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p><code><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a></code> implementation. This handler will follow <code>301</code> and <code>302</code> redirects
+ with previous method. The rest will be followed with GET method.</p>
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
+
+<!-- Public ctors -->
 
 
 
@@ -694,7 +541,7 @@ From class
 
 
 
-<A NAME="append(java.lang.String, java.lang.String)"></A>
+<A NAME="onRedirectReached(int, android.net.Uri, android.net.Uri, chan.http.HttpHolder)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -702,60 +549,41 @@ From class
         public 
          
          
+        abstract 
          
-         
-        <a href="../../../reference/chan/http/CookieBuilder.html">CookieBuilder</a>
+        <a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html">HttpRequest.RedirectHandler.Action</a>
       </span>
-      <span class="sympad">append</span>
-      <span class="normal">(String name, String value)</span>
+      <span class="sympad">onRedirectReached</span>
+      <span class="normal">(int responseCode, Uri requestedUri, Uri redirectedUri, <a href="../../../reference/chan/http/HttpHolder.html">HttpHolder</a> holder)</span>
     </h4>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Append cookie with given <code>name</code> and <code>value</code>.</p></p></div>
+  <div class="jd-tagdata jd-tagdescr"><p><p>HTTP client will call this method every time it reaches redirect response code.
+ You must return the most suitable <code><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html">HttpRequest.RedirectHandler.Action</a></code> type for this response.</p></p></div>
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Parameters</h5>
       <table class="jd-tagtable">
         <tr>
-          <th>name</td>
-          <td>Cookie name.</td>
+          <th>responseCode</td>
+          <td>Response code.</td>
         </tr>
         <tr>
-          <th>value</td>
-          <td>Cookie value.</td>
+          <th>requestedUri</td>
+          <td>Requested URI.</td>
+        </tr>
+        <tr>
+          <th>redirectedUri</td>
+          <td>URI decoded from <code>Location</code> header.</td>
+        </tr>
+        <tr>
+          <th>holder</td>
+          <td>HTTP holder instance.</td>
         </tr>
       </table>
   </div>
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This builder.
-</li></ul>
-  </div>
-
-    </div>
-</div>
-
-
-<A NAME="build()"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public 
-         
-         
-         
-         
-        String
-      </span>
-      <span class="sympad">build</span>
-      <span class="normal">()</span>
-    </h4>
-    <div class="jd-details-descr">
-      
-  <div class="jd-tagdata jd-tagdescr"><p><p>Constructs cookie string.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Cookie string.
+      <ul class="nolist"><li><code><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html">HttpRequest.RedirectHandler.Action</a></code> type.
 </li></ul>
   </div>
 
