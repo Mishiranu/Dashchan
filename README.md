@@ -22,6 +22,7 @@ Client application: [Dashchan.apk](https://github.com/Mishiranu/Dashchan-Extensi
 | fourchan        | 4chan.org            | [DashchanFourchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanFourchan.apk)               |
 | infinite        | 8ch.net              | [DashchanInfinite.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanInfinite.apk)               |
 | krautchan       | krautchan.net        | [DashchanKrautchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanKrautchan.apk)             |
+| lainchan        | lainchan.org         | [DashchanLainchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanLainchan.apk)               |
 | local           | ( local archive )    | [DashchanLocal.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanLocal.apk)                     |
 | nowai           | nowai.ru             | [DashchanNowai.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNowai.apk)                     |
 | nowere          | nowere.net           | [DashchanNowere.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNowere.apk)                   |
