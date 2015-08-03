@@ -59,10 +59,10 @@
 	[
 		{
 			title: 'Release',
-			name: '1.3',
+			name: '1.4',
 			code: 1,
 			version: 1,
-			length: 60546,
+			length: 60873,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanCirno.apk'
 		}
 	],
@@ -158,10 +158,10 @@
 	[
 		{
 			title: 'Release',
-			name: '1.2',
+			name: '1.3',
 			code: 1,
 			version: 1,
-			length: 58885,
+			length: 59064,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanNowere.apk'
 		}
 	],
