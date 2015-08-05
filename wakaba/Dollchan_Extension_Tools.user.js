@@ -6504,8 +6504,8 @@ var _slicedToArray = function (arr, i) { if (Array.isArray(arr)) { return arr; }
 					if (!$q("audio[src=\"" + src + "\"]", el)) {
 						el.insertAdjacentHTML("beforeend", "<p><audio src=\"" + src + "\" preload=\"none\" controls></audio></p>");
 						link = el.lastChild.firstChild;
-						link.addEventListener("play", updater.addPlayingTag, false);
-						link.addEventListener("pause", updater.removePlayingTag, false);
+						//link.addEventListener("play", updater.addPlayingTag, false);
+						//link.addEventListener("pause", updater.removePlayingTag, false);
 					}
 				} else if (!$q("object[FlashVars*=\"" + src + "\"]", el)) {
 					el.insertAdjacentHTML("beforeend", "<object data=\"http://junglebook2007.narod.ru/audio/player.swf\" type=\"application/x-shockwave-flash\" wmode=\"transparent\" width=\"220\" height=\"16\" FlashVars=\"playerID=1&amp;bg=0x808080&amp;leftbg=0xB3B3B3&amp;lefticon=0x000000&amp;rightbg=0x808080&amp;rightbghover=0x999999&amp;rightcon=0x000000&amp;righticonhover=0xffffff&amp;text=0xffffff&amp;slider=0x222222&amp;track=0xf5f5dc&amp;border=0x666666&amp;loader=0x7fc7ff&amp;loop=yes&amp;autostart=no&amp;soundFile=" + src + "\"><br>");
