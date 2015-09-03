@@ -12,6 +12,7 @@ Client application: [Dashchan.apk](https://github.com/Mishiranu/Dashchan/raw/mas
 
 | Chan Name       | Host                 | Extension Package Link                                                                                                     |
 | :-------------: | :------------------: | :------------------------------------------------------------------------------------------------------------------------- |
+| archivefgts     | fgts.jp              | [DashchanArchiveFgts.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanArchiveFgts.apk)         |
 | archivemoe      | archive.moe          | [DashchanArchiveMoe.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanArchiveMoe.apk)           |
 | archiverbt      | rbt.asia             | [DashchanArchiveRbt.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanArchiveRbt.apk)           |
 | arhivach        | arhivach.org         | [DashchanArhivach.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanArhivach.apk)               |
@@ -26,7 +27,10 @@ Client application: [Dashchan.apk](https://github.com/Mishiranu/Dashchan/raw/mas
 | local           | ( local archive )    | [DashchanLocal.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanLocal.apk)                     |
 | nowai           | nowai.ru             | [DashchanNowai.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanNowai.apk)                     |
 | nowere          | nowere.net           | [DashchanNowere.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanNowere.apk)                   |
+| owlchan         | owlchan.ru           | [DashchanOwlchan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanOwlchan.apk)                 |
 | ponychan        | ponychan.net         | [DashchanPonychan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanPonychan.apk)               |
+| sevenchan       | 7chan.org            | [DashchanSevenchan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanSevenchan.apk)             |
+| taima           | 420chan.org          | [DashchanTaima.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanTaima.apk)                     |
 
 # Installation Guide
 

@@ -3,22 +3,33 @@
 	[
 		{
 			title: 'Release',
-			name: '2.1.3',
-			code: 1024,
+			name: '2.2.0',
+			code: 1025,
 			minVersion: 1,
 			maxVersion: 1,
-			length: 847574,
+			length: 882478,
 			source: '/Mishiranu/Dashchan/master/update/package/Dashchan.apk'
 		}
 	],
-	archivemoe:
+	archivefgts:
 	[
 		{
 			title: 'Release',
 			name: '1.0',
 			code: 1,
 			version: 1,
-			length: 54586,
+			length: 54023,
+			source: '/Mishiranu/Dashchan/master/update/package/DashchanArchiveFgts.apk'
+		}
+	],
+	archivemoe:
+	[
+		{
+			title: 'Release',
+			name: '1.1',
+			code: 1,
+			version: 1,
+			length: 54305,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanArchiveMoe.apk'
 		}
 	],
@@ -26,10 +37,10 @@
 	[
 		{
 			title: 'Release',
-			name: '1.0',
+			name: '1.1',
 			code: 1,
 			version: 1,
-			length: 54575,
+			length: 54652,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanArchiveRbt.apk'
 		}
 	],
@@ -37,10 +48,10 @@
 	[
 		{
 			title: 'Release',
-			name: '1.1',
+			name: '1.2',
 			code: 1,
 			version: 1,
-			length: 59934,
+			length: 60089,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanArhivach.apk'
 		}
 	],
@@ -48,10 +59,10 @@
 	[
 		{
 			title: 'Release',
-			name: '1.2',
+			name: '1.3',
 			code: 1,
 			version: 1,
-			length: 59910,
+			length: 60127,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanChiochan.apk'
 		}
 	],
@@ -103,10 +114,10 @@
 	[
 		{
 			title: 'Release',
-			name: '1.1',
+			name: '1.2',
 			code: 1,
 			version: 1,
-			length: 63121,
+			length: 62796,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanInfinite.apk'
 		}
 	],
@@ -136,10 +147,10 @@
 	[
 		{
 			title: 'Release',
-			name: '1.1',
+			name: '1.2',
 			code: 1,
 			version: 1,
-			length: 53893,
+			length: 55177,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanLocal.apk'
 		}
 	],
@@ -165,6 +176,17 @@
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanNowere.apk'
 		}
 	],
+	owlchan:
+	[
+		{
+			title: 'Release',
+			name: '1.0',
+			code: 1,
+			version: 1,
+			length: 58471,
+			source: '/Mishiranu/Dashchan/master/update/package/DashchanOwlchan.apk'
+		}
+	],
 	ponychan:
 	[
 		{
@@ -174,6 +196,28 @@
 			version: 1,
 			length: 60243,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanPonychan.apk'
+		}
+	],
+	sevenchan:
+	[
+		{
+			title: 'Release',
+			name: '1.0',
+			code: 1,
+			version: 1,
+			length: 59827,
+			source: '/Mishiranu/Dashchan/master/update/package/DashchanSevenchan.apk'
+		}
+	],
+	taima:
+	[
+		{
+			title: 'Release',
+			name: '1.0',
+			code: 1,
+			version: 1,
+			length: 60085,
+			source: '/Mishiranu/Dashchan/master/update/package/DashchanTaima.apk'
 		}
 	]
 }
