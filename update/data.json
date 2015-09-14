@@ -3,11 +3,11 @@
 	[
 		{
 			title: 'Release',
-			name: '2.2.0',
+			name: '2.2.1',
 			code: 1025,
 			minVersion: 1,
 			maxVersion: 1,
-			length: 882478,
+			length: 884535,
 			source: '/Mishiranu/Dashchan/master/update/package/Dashchan.apk'
 		}
 	],
@@ -92,10 +92,10 @@
 	[
 		{
 			title: 'Release',
-			name: '1.1',
+			name: '1.2',
 			code: 1,
 			version: 1,
-			length: 63909,
+			length: 74905,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanDvach.apk'
 		}
 	],
