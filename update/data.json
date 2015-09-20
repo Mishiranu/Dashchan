@@ -3,11 +3,11 @@
 	[
 		{
 			title: 'Release',
-			name: '2.2.1',
+			name: '2.2.2',
 			code: 1025,
 			minVersion: 1,
 			maxVersion: 1,
-			length: 884535,
+			length: 887703,
 			source: '/Mishiranu/Dashchan/master/update/package/Dashchan.apk'
 		}
 	],
@@ -92,10 +92,10 @@
 	[
 		{
 			title: 'Release',
-			name: '1.2',
+			name: '1.3',
 			code: 1,
 			version: 1,
-			length: 74905,
+			length: 90613,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanDvach.apk'
 		}
 	],
@@ -103,21 +103,32 @@
 	[
 		{
 			title: 'Release',
-			name: '1.1',
+			name: '1.2',
 			code: 1,
 			version: 1,
-			length: 58864,
+			length: 58526,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanFourchan.apk'
+		}
+	],
+	horochan:
+	[
+		{
+			title: 'Release',
+			name: '1.0',
+			code: 1,
+			version: 1,
+			length: 54498,
+			source: '/Mishiranu/Dashchan/master/update/package/DashchanHorochan.apk'
 		}
 	],
 	infinite:
 	[
 		{
 			title: 'Release',
-			name: '1.2',
+			name: '1.3',
 			code: 1,
 			version: 1,
-			length: 62796,
+			length: 64382,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanInfinite.apk'
 		}
 	],
