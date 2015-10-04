@@ -28,6 +28,7 @@ Client application: [Dashchan.apk](https://github.com/Mishiranu/Dashchan-Extensi
 | local           | ( local archive )    | [DashchanLocal.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanLocal.apk)                     |
 | nowai           | nowai.ru             | [DashchanNowai.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNowai.apk)                     |
 | nowere          | nowere.net           | [DashchanNowere.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNowere.apk)                   |
+| nullcc          | 0chan.cc             | [DashchanNullcc.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNullcc.apk)                   |
 | owlchan         | owlchan.ru           | [DashchanOwlchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanOwlchan.apk)                 |
 | ponychan        | ponychan.net         | [DashchanPonychan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanPonychan.apk)               |
 | sevenchan       | 7chan.org            | [DashchanSevenchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanSevenchan.apk)             |
