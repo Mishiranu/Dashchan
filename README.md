@@ -13,11 +13,11 @@ Client application: [Dashchan.apk](https://github.com/Mishiranu/Dashchan/raw/mas
 | Chan Name       | Host                 | Extension Package Link                                                                                                     |
 | :-------------: | :------------------: | :------------------------------------------------------------------------------------------------------------------------- |
 | archivefgts     | fgts.jp              | [DashchanArchiveFgts.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanArchiveFgts.apk)         |
-| archivemoe      | archive.moe          | [DashchanArchiveMoe.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanArchiveMoe.apk)           |
 | archiverbt      | rbt.asia             | [DashchanArchiveRbt.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanArchiveRbt.apk)           |
 | arhivach        | arhivach.org         | [DashchanArhivach.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanArhivach.apk)               |
 | chiochan        | 410chan.org          | [DashchanChiochan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanChiochan.apk)               |
 | cirno           | iichan.hk            | [DashchanCirno.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanCirno.apk)                     |
+| desustorage     | desustorage.org      | [DashchanDesustorage.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanDesustorage.apk)         |
 | dobrochan       | dobrochan.com        | [DashchanDobrochan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanDobrochan.apk)             |
 | dvach           | 2ch.hk               | [DashchanDvach.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanDvach.apk)                     |
 | fourchan        | 4chan.org            | [DashchanFourchan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanFourchan.apk)               |
@@ -26,7 +26,6 @@ Client application: [Dashchan.apk](https://github.com/Mishiranu/Dashchan/raw/mas
 | krautchan       | krautchan.net        | [DashchanKrautchan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanKrautchan.apk)             |
 | lainchan        | lainchan.org         | [DashchanLainchan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanLainchan.apk)               |
 | local           | ( local archive )    | [DashchanLocal.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanLocal.apk)                     |
-| nowai           | nowai.ru             | [DashchanNowai.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanNowai.apk)                     |
 | nowere          | nowere.net           | [DashchanNowere.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanNowere.apk)                   |
 | nullcc          | 0chan.cc             | [DashchanNullcc.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanNullcc.apk)                   |
 | owlchan         | owlchan.ru           | [DashchanOwlchan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanOwlchan.apk)                 |

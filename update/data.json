@@ -22,17 +22,6 @@
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanArchiveFgts.apk'
 		}
 	],
-	archivemoe:
-	[
-		{
-			title: 'Release',
-			name: '1.1',
-			code: 1,
-			version: 1,
-			length: 54305,
-			source: '/Mishiranu/Dashchan/master/update/package/DashchanArchiveMoe.apk'
-		}
-	],
 	archiverbt:
 	[
 		{
@@ -75,6 +64,17 @@
 			version: 1,
 			length: 61530,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanCirno.apk'
+		}
+	],
+	desustorage:
+	[
+		{
+			title: 'Release',
+			name: '1.0',
+			code: 1,
+			version: 1,
+			length: 53642,
+			source: '/Mishiranu/Dashchan/master/update/package/DashchanDesustorage.apk'
 		}
 	],
 	dobrochan:
@@ -163,17 +163,6 @@
 			version: 1,
 			length: 55177,
 			source: '/Mishiranu/Dashchan/master/update/package/DashchanLocal.apk'
-		}
-	],
-	nowai:
-	[
-		{
-			title: 'Release',
-			name: '1.1',
-			code: 1,
-			version: 1,
-			length: 57194,
-			source: '/Mishiranu/Dashchan/master/update/package/DashchanNowai.apk'
 		}
 	],
 	nowere:
