@@ -1,234 +1,234 @@
 {
-	client:
+	"client":
 	[
 		{
-			title: 'Release',
-			name: '2.3.1',
-			code: 1026,
-			minVersion: 1,
-			maxVersion: 1,
-			length: 905225,
-			source: '/Mishiranu/Dashchan/master/update/package/Dashchan.apk'
+			"title": "Release",
+			"name": "2.3.2",
+			"code": 1026,
+			"minVersion": 1,
+			"maxVersion": 1,
+			"length": 907731,
+			"source": "/Mishiranu/Dashchan/master/update/package/Dashchan.apk"
 		}
 	],
-	archivefgts:
+	"archivefgts":
 	[
 		{
-			title: 'Release',
-			name: '1.0',
-			code: 1,
-			version: 1,
-			length: 54023,
-			source: '/Mishiranu/Dashchan/master/update/package/DashchanArchiveFgts.apk'
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"length": 54023,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanArchiveFgts.apk"
 		}
 	],
-	archiverbt:
+	"archiverbt":
 	[
 		{
-			title: 'Release',
-			name: '1.2',
-			code: 1,
-			version: 1,
-			length: 53954,
-			source: '/Mishiranu/Dashchan/master/update/package/DashchanArchiveRbt.apk'
+			"title": "Release",
+			"name": "1.2",
+			"code": 1,
+			"version": 1,
+			"length": 53954,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanArchiveRbt.apk"
 		}
 	],
-	arhivach:
+	"arhivach":
 	[
 		{
-			title: 'Release',
-			name: '1.2',
-			code: 1,
-			version: 1,
-			length: 60089,
-			source: '/Mishiranu/Dashchan/master/update/package/DashchanArhivach.apk'
+			"title": "Release",
+			"name": "1.2",
+			"code": 1,
+			"version": 1,
+			"length": 60089,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanArhivach.apk"
 		}
 	],
-	chiochan:
+	"chiochan":
 	[
 		{
-			title: 'Release',
-			name: '1.4',
-			code: 1,
-			version: 1,
-			length: 59860,
-			source: '/Mishiranu/Dashchan/master/update/package/DashchanChiochan.apk'
+			"title": "Release",
+			"name": "1.4",
+			"code": 1,
+			"version": 1,
+			"length": 59860,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanChiochan.apk"
 		}
 	],
-	cirno:
+	"cirno":
 	[
 		{
-			title: 'Release',
-			name: '1.6',
-			code: 1,
-			version: 1,
-			length: 61530,
-			source: '/Mishiranu/Dashchan/master/update/package/DashchanCirno.apk'
+			"title": "Release",
+			"name": "1.6",
+			"code": 1,
+			"version": 1,
+			"length": 61530,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanCirno.apk"
 		}
 	],
-	desustorage:
+	"desustorage":
 	[
 		{
-			title: 'Release',
-			name: '1.0',
-			code: 1,
-			version: 1,
-			length: 53642,
-			source: '/Mishiranu/Dashchan/master/update/package/DashchanDesustorage.apk'
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"length": 53642,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanDesustorage.apk"
 		}
 	],
-	dobrochan:
+	"dobrochan":
 	[
 		{
-			title: 'Release',
-			name: '1.6',
-			code: 1,
-			version: 1,
-			length: 60211,
-			source: '/Mishiranu/Dashchan/master/update/package/DashchanDobrochan.apk'
+			"title": "Release",
+			"name": "1.6",
+			"code": 1,
+			"version": 1,
+			"length": 60211,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanDobrochan.apk"
 		}
 	],
-	dvach:
+	"dvach":
 	[
 		{
-			title: 'Release',
-			name: '1.5',
-			code: 1,
-			version: 1,
-			length: 114088,
-			source: '/Mishiranu/Dashchan/master/update/package/DashchanDvach.apk'
+			"title": "Release",
+			"name": "1.6",
+			"code": 1,
+			"version": 1,
+			"length": 114486,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanDvach.apk"
 		}
 	],
-	fourchan:
+	"fourchan":
 	[
 		{
-			title: 'Release',
-			name: '1.2',
-			code: 1,
-			version: 1,
-			length: 58526,
-			source: '/Mishiranu/Dashchan/master/update/package/DashchanFourchan.apk'
+			"title": "Release",
+			"name": "1.2",
+			"code": 1,
+			"version": 1,
+			"length": 58526,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanFourchan.apk"
 		}
 	],
-	horochan:
+	"horochan":
 	[
 		{
-			title: 'Release',
-			name: '1.1',
-			code: 1,
-			version: 1,
-			length: 54135,
-			source: '/Mishiranu/Dashchan/master/update/package/DashchanHorochan.apk'
+			"title": "Release",
+			"name": "1.1",
+			"code": 1,
+			"version": 1,
+			"length": 54135,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanHorochan.apk"
 		}
 	],
-	infinite:
+	"infinite":
 	[
 		{
-			title: 'Release',
-			name: '1.4',
-			code: 1,
-			version: 1,
-			length: 63984,
-			source: '/Mishiranu/Dashchan/master/update/package/DashchanInfinite.apk'
+			"title": "Release",
+			"name": "1.4",
+			"code": 1,
+			"version": 1,
+			"length": 63984,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanInfinite.apk"
 		}
 	],
-	krautchan:
+	"krautchan":
 	[
 		{
-			title: 'Release',
-			name: '1.2',
-			code: 1,
-			version: 1,
-			length: 59799,
-			source: '/Mishiranu/Dashchan/master/update/package/DashchanKrautchan.apk'
+			"title": "Release",
+			"name": "1.2",
+			"code": 1,
+			"version": 1,
+			"length": 59799,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanKrautchan.apk"
 		}
 	],
-	lainchan:
+	"lainchan":
 	[
 		{
-			title: 'Release',
-			name: '1.0',
-			code: 1,
-			version: 1,
-			length: 58257,
-			source: '/Mishiranu/Dashchan/master/update/package/DashchanLainchan.apk'
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"length": 58257,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanLainchan.apk"
 		}
 	],
-	local:
+	"local":
 	[
 		{
-			title: 'Release',
-			name: '1.3',
-			code: 1,
-			version: 1,
-			length: 54878,
-			source: '/Mishiranu/Dashchan/master/update/package/DashchanLocal.apk'
+			"title": "Release",
+			"name": "1.3",
+			"code": 1,
+			"version": 1,
+			"length": 54878,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanLocal.apk"
 		}
 	],
-	nowere:
+	"nowere":
 	[
 		{
-			title: 'Release',
-			name: '1.4',
-			code: 1,
-			version: 1,
-			length: 58336,
-			source: '/Mishiranu/Dashchan/master/update/package/DashchanNowere.apk'
+			"title": "Release",
+			"name": "1.4",
+			"code": 1,
+			"version": 1,
+			"length": 58336,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanNowere.apk"
 		}
 	],
-	nullcc:
+	"nullcc":
 	[
 		{
-			title: 'Release',
-			name: '1.0',
-			code: 1,
-			version: 1,
-			length: 61711,
-			source: '/Mishiranu/Dashchan/master/update/package/DashchanNullcc.apk'
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"length": 61711,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanNullcc.apk"
 		}
 	],
-	owlchan:
+	"owlchan":
 	[
 		{
-			title: 'Release',
-			name: '1.1',
-			code: 1,
-			version: 1,
-			length: 58160,
-			source: '/Mishiranu/Dashchan/master/update/package/DashchanOwlchan.apk'
+			"title": "Release",
+			"name": "1.1",
+			"code": 1,
+			"version": 1,
+			"length": 58160,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanOwlchan.apk"
 		}
 	],
-	ponychan:
+	"ponychan":
 	[
 		{
-			title: 'Release',
-			name: '1.4',
-			code: 1,
-			version: 1,
-			length: 60243,
-			source: '/Mishiranu/Dashchan/master/update/package/DashchanPonychan.apk'
+			"title": "Release",
+			"name": "1.4",
+			"code": 1,
+			"version": 1,
+			"length": 60243,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanPonychan.apk"
 		}
 	],
-	sevenchan:
+	"sevenchan":
 	[
 		{
-			title: 'Release',
-			name: '1.0',
-			code: 1,
-			version: 1,
-			length: 59827,
-			source: '/Mishiranu/Dashchan/master/update/package/DashchanSevenchan.apk'
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"length": 59827,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanSevenchan.apk"
 		}
 	],
-	taima:
+	"taima":
 	[
 		{
-			title: 'Release',
-			name: '1.0',
-			code: 1,
-			version: 1,
-			length: 60085,
-			source: '/Mishiranu/Dashchan/master/update/package/DashchanTaima.apk'
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"length": 60085,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanTaima.apk"
 		}
 	]
 }
