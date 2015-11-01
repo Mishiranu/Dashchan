@@ -19,8 +19,10 @@ Client application: [Dashchan.apk](https://github.com/Mishiranu/Dashchan-Extensi
 | cirno           | iichan.hk            | [DashchanCirno.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanCirno.apk)                     | No        |
 | desustorage     | desustorage.org      | [DashchanDesustorage.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanDesustorage.apk)         | Yes       |
 | dobrochan       | dobrochan.com        | [DashchanDobrochan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanDobrochan.apk)             | No        |
+| desyach         | 10ch.ru              | [DashchanDesyach.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanDesyach.apk)                 | No        |
 | dvach           | 2ch.hk               | [DashchanDvach.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanDvach.apk)                     | No        |
 | fourchan        | 4chan.org            | [DashchanFourchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanFourchan.apk)               | No        |
+| haruhichan      | haruhichan.ru        | [DashchanHaruhichan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanHaruhichan.apk)           | No        |
 | horochan        | horochan.ru          | [DashchanHorochan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanHorochan.apk)               | No        |
 | infinite        | 8ch.net              | [DashchanInfinite.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanInfinite.apk)               | No        |
 | krautchan       | krautchan.net        | [DashchanKrautchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanKrautchan.apk)             | No        |
