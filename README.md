@@ -18,7 +18,7 @@ Client application: [Dashchan.apk](https://github.com/Mishiranu/Dashchan/raw/mas
 | chiochan        | 410chan.org          | [DashchanChiochan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanChiochan.apk)               | No        |
 | cirno           | iichan.hk            | [DashchanCirno.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanCirno.apk)                     | No        |
 | desustorage     | desustorage.org      | [DashchanDesustorage.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanDesustorage.apk)         | Yes       |
-| desyach         | 10ch.net             | [DashchanDesyach.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanDesyach.apk)                 | No        |
+| desyach         | 10ch.ru              | [DashchanDesyach.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanDesyach.apk)                 | No        |
 | dobrochan       | dobrochan.com        | [DashchanDobrochan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanDobrochan.apk)             | No        |
 | dvach           | 2ch.hk               | [DashchanDvach.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanDvach.apk)                     | No        |
 | fourchan        | 4chan.org            | [DashchanFourchan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanFourchan.apk)               | No        |
