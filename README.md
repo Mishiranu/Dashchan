@@ -17,6 +17,7 @@ Client application: [Dashchan.apk](https://github.com/Mishiranu/Dashchan/raw/mas
 | arhivach        | arhivach.org         | [DashchanArhivach.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanArhivach.apk)               | Yes       |
 | chiochan        | 410chan.org          | [DashchanChiochan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanChiochan.apk)               | No        |
 | cirno           | iichan.hk            | [DashchanCirno.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanCirno.apk)                     | No        |
+| claire          | claire.ws            | [DashchanClaire.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanClaire.apk)                   | No        |
 | desustorage     | desustorage.org      | [DashchanDesustorage.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanDesustorage.apk)         | Yes       |
 | desyach         | 10ch.ru              | [DashchanDesyach.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanDesyach.apk)                 | No        |
 | dobrochan       | dobrochan.com        | [DashchanDobrochan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanDobrochan.apk)             | No        |

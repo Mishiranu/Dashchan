@@ -66,6 +66,17 @@
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanCirno.apk"
 		}
 	],
+	"claire":
+	[
+		{
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"length": 60539,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanClaire.apk"
+		}
+	],
 	"desustorage":
 	[
 		{
@@ -84,7 +95,7 @@
 			"name": "1.0",
 			"code": 1,
 			"version": 1,
-			"length": 60842,
+			"length": 60843,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanDesyach.apk"
 		}
 	],
@@ -202,10 +213,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.0",
+			"name": "1.1",
 			"code": 1,
 			"version": 1,
-			"length": 61711,
+			"length": 61935,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanNullcc.apk"
 		}
 	],
