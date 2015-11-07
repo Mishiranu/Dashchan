@@ -158,10 +158,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.4",
+			"name": "1.5",
 			"code": 1,
 			"version": 1,
-			"length": 63984,
+			"length": 64018,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanInfinite.apk"
 		}
 	],
@@ -180,10 +180,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.0",
+			"name": "1.1",
 			"code": 1,
 			"version": 1,
-			"length": 58257,
+			"length": 57712,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanLainchan.apk"
 		}
 	],
@@ -235,10 +235,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.4",
+			"name": "1.5",
 			"code": 1,
 			"version": 1,
-			"length": 60243,
+			"length": 59974,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanPonychan.apk"
 		}
 	],
