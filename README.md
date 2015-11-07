@@ -45,6 +45,6 @@ Remember that every time you install a new extension, you must restart the clien
 
 # Updating Guide
 
-Go to Preferences -> About -> Check for updates. After fetching updating data you can view a number of updates in title bar. Usually you just need to click on the download button and wait until downloading ends.
+Go to Preferences ⇒ About ⇒ Check for updates. After fetching updating data you can view a number of updates in title bar. Usually you just need to click on the download button and wait until downloading ends.
 
 It is better to install extension packages and then install application package. If you download only an extension, don't forget to restart the application after updating.
