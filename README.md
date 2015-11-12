@@ -6,6 +6,8 @@ This repository is designed to store Dashchan updating data.
 
 The source code of extensions with API will be available soon.
 
+Read the [project wiki](https://github.com/Mishiranu/Dashchan/wiki) for further information.
+
 # Packages List
 
 Client application: [Dashchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/Dashchan.apk).
@@ -32,6 +34,7 @@ Client application: [Dashchan.apk](https://github.com/Mishiranu/Dashchan-Extensi
 | nowere          | nowere.net           | [DashchanNowere.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNowere.apk)                   | No        |
 | nullcc          | 0chan.cc             | [DashchanNullcc.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNullcc.apk)                   | No        |
 | owlchan         | owlchan.ru           | [DashchanOwlchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanOwlchan.apk)                 | No        |
+| ponyach         | ponyach.ru           | [DashchanPonyach.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanPonyach.apk)                 | No        |
 | ponychan        | ponychan.net         | [DashchanPonychan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanPonychan.apk)               | No        |
 | sevenchan       | 7chan.org            | [DashchanSevenchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanSevenchan.apk)             | No        |
 | taima           | 420chan.org          | [DashchanTaima.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanTaima.apk)                     | No        |
