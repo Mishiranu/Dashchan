@@ -25,6 +25,7 @@ Client application: [Dashchan.apk](https://github.com/Mishiranu/Dashchan/raw/mas
 | dobrochan       | dobrochan.com        | [DashchanDobrochan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanDobrochan.apk)             | No        |
 | dvach           | 2ch.hk               | [DashchanDvach.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanDvach.apk)                     | No        |
 | fourchan        | 4chan.org            | [DashchanFourchan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanFourchan.apk)               | No        |
+| fourplebs       | 4plebs.org           | [DashchanFourplebs.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanFourplebs.apk)             | Yes       |
 | haruhichan      | haruhichan.ru        | [DashchanHaruhichan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanHaruhichan.apk)           | No        |
 | horochan        | horochan.ru          | [DashchanHorochan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanHorochan.apk)               | No        |
 | infinite        | 8ch.net              | [DashchanInfinite.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanInfinite.apk)               | No        |

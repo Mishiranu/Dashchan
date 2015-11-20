@@ -132,6 +132,17 @@
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanFourchan.apk"
 		}
 	],
+	"fourplebs":
+	[
+		{
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"length": 54656,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanFourplebs.apk"
+		}
+	],
 	"haruhichan":
 	[
 		{
