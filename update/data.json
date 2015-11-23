@@ -3,11 +3,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "2.4.0",
+			"name": "2.4.1",
 			"code": 1027,
 			"minVersion": 1,
 			"maxVersion": 1,
-			"length": 947751,
+			"length": 952339,
 			"source": "/Mishiranu/Dashchan/master/update/package/Dashchan.apk"
 		}
 	],
@@ -268,10 +268,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.0",
+			"name": "1.1",
 			"code": 1,
 			"version": 1,
-			"length": 59827,
+			"length": 59792,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanSevenchan.apk"
 		}
 	],
@@ -279,10 +279,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.0",
+			"name": "1.1",
 			"code": 1,
 			"version": 1,
-			"length": 60085,
+			"length": 59797,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanTaima.apk"
 		}
 	]
