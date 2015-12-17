@@ -14,10 +14,12 @@ Client application: [Dashchan.apk](https://github.com/Mishiranu/Dashchan/raw/mas
 
 | Chan Name       | Host                 | Extension Package Link                                                                                                     | Read Only |
 | :-------------: | :------------------: | :------------------------------------------------------------------------------------------------------------------------- | :-------: |
+| allchan         | allchan.su           | [DashchanAllchan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanAllchan.apk)                 | No        |
 | archivefgts     | fgts.jp              | [DashchanArchiveFgts.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanArchiveFgts.apk)         | Yes       |
 | archiverbt      | rbt.asia             | [DashchanArchiveRbt.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanArchiveRbt.apk)           | Yes       |
 | arhivach        | arhivach.org         | [DashchanArhivach.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanArhivach.apk)               | Yes       |
 | chiochan        | 410chan.org          | [DashchanChiochan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanChiochan.apk)               | No        |
+| chuckdfwk       | chuck.dfwk.ru        | [DashchanChuckDfwk.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanChuckDfwk.apk)             | No        |
 | cirno           | iichan.hk            | [DashchanCirno.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanCirno.apk)                     | No        |
 | claire          | claire.ws            | [DashchanClaire.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanClaire.apk)                   | No        |
 | desustorage     | desustorage.org      | [DashchanDesustorage.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanDesustorage.apk)         | Yes       |

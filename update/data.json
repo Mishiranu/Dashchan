@@ -11,6 +11,17 @@
 			"source": "/Mishiranu/Dashchan/master/update/package/Dashchan.apk"
 		}
 	],
+	"allchan":
+	[
+		{
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"length": 58073,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanAllchan.apk"
+		}
+	],
 	"archivefgts":
 	[
 		{
@@ -53,6 +64,17 @@
 			"version": 1,
 			"length": 61039,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanChiochan.apk"
+		}
+	],
+	"chuckdfwk":
+	[
+		{
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"length": 59052,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanChuckDfwk.apk"
 		}
 	],
 	"cirno":
