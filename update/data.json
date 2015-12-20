@@ -297,6 +297,17 @@
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanSevenchan.apk"
 		}
 	],
+	"shanachan":
+	[
+		{
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"length": 57435,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanShanachan.apk"
+		}
+	],
 	"taima":
 	[
 		{

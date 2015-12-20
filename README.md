@@ -40,6 +40,7 @@ Client application: [Dashchan.apk](https://github.com/Mishiranu/Dashchan/raw/mas
 | ponyach         | ponyach.ru           | [DashchanPonyach.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanPonyach.apk)                 | No        |
 | ponychan        | ponychan.net         | [DashchanPonychan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanPonychan.apk)               | No        |
 | sevenchan       | 7chan.org            | [DashchanSevenchan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanSevenchan.apk)             | No        |
+| shanachan       | shanachan.org        | [DashchanShanachan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanShanachan.apk)             | No        |
 | taima           | 420chan.org          | [DashchanTaima.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanTaima.apk)                     | No        |
 
 # Installation Guide
