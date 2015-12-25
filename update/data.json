@@ -92,10 +92,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.1",
+			"name": "1.2",
 			"code": 1,
 			"version": 1,
-			"length": 60259,
+			"length": 63129,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanClaire.apk"
 		}
 	],
@@ -207,6 +207,17 @@
 			"version": 1,
 			"length": 59799,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanKrautchan.apk"
+		}
+	],
+	"kurisach":
+	[
+		{
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"length": 63143,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanKurisach.apk"
 		}
 	],
 	"lainchan":

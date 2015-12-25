@@ -32,6 +32,7 @@ Client application: [Dashchan.apk](https://github.com/Mishiranu/Dashchan/raw/mas
 | horochan        | horochan.ru          | [DashchanHorochan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanHorochan.apk)               | No        |
 | infinite        | 8ch.net              | [DashchanInfinite.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanInfinite.apk)               | No        |
 | krautchan       | krautchan.net        | [DashchanKrautchan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanKrautchan.apk)             | No        |
+| kurisach        | kurisa.ch            | [DashchanKurisach.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanKurisach.apk)               | No        |
 | lainchan        | lainchan.org         | [DashchanLainchan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanLainchan.apk)               | No        |
 | local           | ( local archive )    | [DashchanLocal.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanLocal.apk)                     | Yes       |
 | nowere          | nowere.net           | [DashchanNowere.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanNowere.apk)                   | No        |
