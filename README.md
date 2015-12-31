@@ -15,6 +15,7 @@ Client application: [Dashchan.apk](https://github.com/Mishiranu/Dashchan-Extensi
 | Chan Name       | Host                 | Extension Package Link                                                                                                                | Read Only |
 | :-------------: | :------------------: | :-----------------------------------------------------------------------------------------------------------------------------------: | :-------: |
 | allchan         | allchan.su           | [DashchanAllchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanAllchan.apk)                 | No        |
+| apachan         | apachan.net          | [DashchanApachan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanApachan.apk)                 | No        |
 | archivefgts     | fgts.jp              | [DashchanArchiveFgts.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanArchiveFgts.apk)         | Yes       |
 | archiverbt      | rbt.asia             | [DashchanArchiveRbt.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanArchiveRbt.apk)           | Yes       |
 | arhivach        | arhivach.org         | [DashchanArhivach.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanArhivach.apk)               | Yes       |
@@ -40,6 +41,7 @@ Client application: [Dashchan.apk](https://github.com/Mishiranu/Dashchan-Extensi
 | owlchan         | owlchan.ru           | [DashchanOwlchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanOwlchan.apk)                 | No        |
 | ponyach         | ponyach.ru           | [DashchanPonyach.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanPonyach.apk)                 | No        |
 | ponychan        | ponychan.net         | [DashchanPonychan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanPonychan.apk)               | No        |
+| rulet           | 2-chru.net           | [DashchanRulet.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanRulet.apk)                     | No        |
 | sevenchan       | 7chan.org            | [DashchanSevenchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanSevenchan.apk)             | No        |
 | shanachan       | shanachan.org        | [DashchanShanachan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanShanachan.apk)             | No        |
 | taima           | 420chan.org          | [DashchanTaima.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanTaima.apk)                     | No        |
