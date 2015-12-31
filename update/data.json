@@ -3,11 +3,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "2.4.3",
+			"name": "2.4.4",
 			"code": 1027,
 			"minVersion": 1,
 			"maxVersion": 1,
-			"length": 955350,
+			"length": 956868,
 			"source": "/Mishiranu/Dashchan/master/update/package/Dashchan.apk"
 		}
 	],
@@ -20,6 +20,17 @@
 			"version": 1,
 			"length": 58072,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanAllchan.apk"
+		}
+	],
+	"apachan":
+	[
+		{
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"length": 62245,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanApachan.apk"
 		}
 	],
 	"archivefgts":
@@ -295,6 +306,17 @@
 			"version": 1,
 			"length": 59974,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanPonychan.apk"
+		}
+	],
+	"rulet":
+	[
+		{
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"length": 64008,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanRulet.apk"
 		}
 	],
 	"sevenchan":
