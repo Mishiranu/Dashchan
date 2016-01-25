@@ -3,11 +3,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "2.4.4",
-			"code": 1027,
+			"name": "2.5.0",
+			"code": 1028,
 			"minVersion": 1,
 			"maxVersion": 1,
-			"length": 956868,
+			"length": 1017931,
 			"source": "/Mishiranu/Dashchan/master/update/package/Dashchan.apk"
 		}
 	],
@@ -26,10 +26,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.0",
+			"name": "1.1",
 			"code": 1,
 			"version": 1,
-			"length": 62245,
+			"length": 62129,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanApachan.apk"
 		}
 	],
@@ -37,10 +37,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.0",
+			"name": "1.1",
 			"code": 1,
 			"version": 1,
-			"length": 54023,
+			"length": 53361,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanArchiveFgts.apk"
 		}
 	],
@@ -147,10 +147,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.7",
+			"name": "1.8",
 			"code": 1,
 			"version": 1,
-			"length": 114471,
+			"length": 114851,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanDvach.apk"
 		}
 	],
@@ -158,10 +158,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.3",
+			"name": "1.4",
 			"code": 1,
 			"version": 1,
-			"length": 59316,
+			"length": 58717,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanFourchan.apk"
 		}
 	],
@@ -246,10 +246,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.3",
+			"name": "1.4",
 			"code": 1,
 			"version": 1,
-			"length": 54878,
+			"length": 53601,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanLocal.apk"
 		}
 	],
@@ -290,10 +290,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.0",
+			"name": "1.1",
 			"code": 1,
 			"version": 1,
-			"length": 61400,
+			"length": 60527,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanPonyach.apk"
 		}
 	],
@@ -312,10 +312,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.0",
+			"name": "1.1",
 			"code": 1,
 			"version": 1,
-			"length": 64008,
+			"length": 63142,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanRulet.apk"
 		}
 	],
@@ -350,6 +350,17 @@
 			"version": 1,
 			"length": 59797,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanTaima.apk"
+		}
+	],
+	"webm":
+	[
+		{
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"length": 2677883,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanWebm.apk"
 		}
 	]
 }
