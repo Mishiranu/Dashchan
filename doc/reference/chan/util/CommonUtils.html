@@ -295,7 +295,7 @@ Summary:
 
 
 <h2>Class Overview</h2>
-<p itemprop="articleBody"><p>Provides some utilities to work with flags and JSON objects.</p>
+<p itemprop="articleBody"><p>Provides some utilities to work with JSON objects, bitmaps and logging.</p>
 </p>
 
 
@@ -388,24 +388,6 @@ Summary:
             
             static
             
-            boolean</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/util/CommonUtils.html#get(int, int)">get</a></span>(int flags, int flag)</nobr>
-        
-        <div class="jd-descrdiv"><p>Returns whether <code>flags</code> contains specified <code>flag</code>.</div>
-  
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            
-            static
-            
             String</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
@@ -418,7 +400,7 @@ Summary:
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -437,7 +419,7 @@ Summary:
 
 
 	 
-    <tr class=" api apilevel-" >
+    <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -456,25 +438,25 @@ Summary:
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
             
             static
             
-            int</nobr>
+            String</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/util/CommonUtils.html#set(int, int, boolean)">set</a></span>(int flags, int flag, boolean value)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/util/CommonUtils.html#restoreCloudFlareProtectedEmails(java.lang.String)">restoreCloudFlareProtectedEmails</a></span>(String string)</nobr>
         
-        <div class="jd-descrdiv"><p>Encodes <code>value</code> for specified <code>flag</code> in <code>flags</code>.</div>
+        <div class="jd-descrdiv"><p>Restores emails from HTML string protected by CloudFlare.</div>
   
   </td></tr>
 
 
 	 
-    <tr class=" api apilevel-" >
+    <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -487,6 +469,42 @@ Summary:
         <span class="sympad"><a href="../../../reference/chan/util/CommonUtils.html#sleepMaxTime(long, long)">sleepMaxTime</a></span>(long startTime, long interval)</nobr>
         
         <div class="jd-descrdiv"><p>Wait time = <code>interval</code> - (current time - <code>startTime</code>).</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            static
+            
+            Bitmap</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/util/CommonUtils.html#trimBitmap(android.graphics.Bitmap, int)">trimBitmap</a></span>(Bitmap bitmap, int backgroundColor)</nobr>
+        
+        <div class="jd-descrdiv"><p>Trims bitmap removing empty lines on the edges of image.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            static
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/util/CommonUtils.html#writeLog(java.lang.Object...)">writeLog</a></span>(Object... data)</nobr>
+        
+        <div class="jd-descrdiv"><p>Convenient method to write all objects to log file with client tag.</div>
   
   </td></tr>
 
@@ -747,47 +765,6 @@ From class
 
 
 
-<A NAME="get(int, int)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public 
-        static 
-         
-         
-         
-        boolean
-      </span>
-      <span class="sympad">get</span>
-      <span class="normal">(int flags, int flag)</span>
-    </h4>
-    <div class="jd-details-descr">
-      
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether <code>flags</code> contains specified <code>flag</code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>flags</td>
-          <td>Variable with encoded flags.</td>
-        </tr>
-        <tr>
-          <th>flag</td>
-          <td>Specified flag.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>True if flags variable contains specified flag.
-</li></ul>
-  </div>
-
-    </div>
-</div>
-
-
 <A NAME="getJsonString(org.json.JSONObject, java.lang.String)"></A>
 
 <div class="jd-details api apilevel-"> 
@@ -923,7 +900,7 @@ From class
 </div>
 
 
-<A NAME="set(int, int, boolean)"></A>
+<A NAME="restoreCloudFlareProtectedEmails(java.lang.String)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -933,34 +910,26 @@ From class
          
          
          
-        int
+        String
       </span>
-      <span class="sympad">set</span>
-      <span class="normal">(int flags, int flag, boolean value)</span>
+      <span class="sympad">restoreCloudFlareProtectedEmails</span>
+      <span class="normal">(String string)</span>
     </h4>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Encodes <code>value</code> for specified <code>flag</code> in <code>flags</code>.</p></p></div>
+  <div class="jd-tagdata jd-tagdescr"><p><p>Restores emails from HTML string protected by CloudFlare.</p></p></div>
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Parameters</h5>
       <table class="jd-tagtable">
         <tr>
-          <th>flags</td>
-          <td>Variable with encoded flags.</td>
-        </tr>
-        <tr>
-          <th>flag</td>
-          <td>Specified flag.</td>
-        </tr>
-        <tr>
-          <th>value</td>
-          <td>Value to encode.</td>
+          <th>string</td>
+          <td>HTML string.</td>
         </tr>
       </table>
   </div>
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>New encoded flags value.
+      <ul class="nolist"><li>HTML string with restored emails.
 </li></ul>
   </div>
 
@@ -1004,6 +973,81 @@ From class
       <h5 class="jd-tagtitle">Returns</h5>
       <ul class="nolist"><li>True if thread was interrupted.
 </li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="trimBitmap(android.graphics.Bitmap, int)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+         
+         
+         
+        Bitmap
+      </span>
+      <span class="sympad">trimBitmap</span>
+      <span class="normal">(Bitmap bitmap, int backgroundColor)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Trims bitmap removing empty lines on the edges of image. May return <code>null</code> bitmap.
+ If bitmap wasn't trimmed, this method will return original bitmap.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>bitmap</td>
+          <td>Bitmap to trim.</td>
+        </tr>
+        <tr>
+          <th>backgroundColor</td>
+          <td>Background color.</td>
+        </tr>
+      </table>
+  </div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li>Trimmed bitmap. 
+</li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="writeLog(java.lang.Object...)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">writeLog</span>
+      <span class="normal">(Object... data)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Convenient method to write all objects to log file with client tag.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>data</td>
+          <td>Array of objects to write.
+</td>
+        </tr>
+      </table>
   </div>
 
     </div>

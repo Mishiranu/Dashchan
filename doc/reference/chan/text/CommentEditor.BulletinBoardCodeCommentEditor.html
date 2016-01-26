@@ -156,30 +156,18 @@
     <li><h2>Interfaces</h2>
       <ul>
           <li class="api apilevel-"><a href="../../../reference/chan/text/GroupParser.Callback.html">GroupParser.Callback</a></li>
-          <li class="api apilevel-"><a href="../../../reference/chan/text/GroupParser.TextCallback.html">GroupParser.TextCallback</a></li>
-          <li class="api apilevel-"><a href="../../../reference/chan/text/HtmlParser.Characters.html">HtmlParser.Characters</a></li>
-          <li class="api apilevel-"><a href="../../../reference/chan/text/HtmlParser.Markup.html">HtmlParser.Markup</a></li>
       </ul>
     </li>
               
     <li><h2>Classes</h2>
       <ul>
           <li class="api apilevel-"><a href="../../../reference/chan/text/CommentEditor.html">CommentEditor</a></li>
-          <li class="api apilevel-"><a href="../../../reference/chan/text/CommentEditor.AsteriskWakabaMarkCommentEditor.html">CommentEditor.AsteriskWakabaMarkCommentEditor</a></li>
           <li class="selected api apilevel-"><a href="../../../reference/chan/text/CommentEditor.BulletinBoardCodeCommentEditor.html">CommentEditor.BulletinBoardCodeCommentEditor</a></li>
-          <li class="api apilevel-"><a href="../../../reference/chan/text/CommentEditor.FormatResult.html">CommentEditor.FormatResult</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/text/CommentEditor.WakabaMarkCommentEditor.html">CommentEditor.WakabaMarkCommentEditor</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/text/GroupParser.html">GroupParser</a></li>
-          <li class="api apilevel-"><a href="../../../reference/chan/text/HtmlParser.html">HtmlParser</a></li>
-          <li class="api apilevel-"><a href="../../../reference/chan/text/HtmlParser.SpanContainer.html">HtmlParser.SpanContainer</a></li>
       </ul>
     </li>
               
-    <li><h2>Enums</h2>
-      <ul>
-          <li class="api apilevel-"><a href="../../../reference/chan/text/HtmlParser.SpanType.html">HtmlParser.SpanType</a></li>
-      </ul>
-    </li>
               
     <li><h2>Exceptions</h2>
       <ul>
@@ -229,6 +217,8 @@
   
   
   
+   
+  
   
 
   
@@ -250,8 +240,11 @@ Summary:
 
 
 
+  <a href="#inhfields">Inherited Fields</a>
+  
 
-  <a href="#pubctors">Ctors</a>
+
+  &#124; <a href="#pubctors">Ctors</a>
   
 
 
@@ -400,6 +393,51 @@ Summary:
 
 
 
+<!-- =========== FIELD SUMMARY =========== -->
+<table id="inhfields" class="jd-sumtable"><tr><th>
+  <a href="#" class="toggle-all" onclick="return toggleAllInherited(this, null)">[Expand]</a>
+  <div style="clear:left;">Inherited Fields</div></th></tr>
+
+
+<tr class="api apilevel-" >
+<td colspan="12">
+
+  <a href="#" onclick="return toggleInherited(this, null)" id="inherited-fields-chan.text.CommentEditor" class="jd-expando-trigger closed"
+          ><img id="inherited-fields-chan.text.CommentEditor-trigger"
+          src="../../../assets/images/triangle-closed.png"
+          class="jd-expando-trigger-img" /></a>From class
+<a href="../../../reference/chan/text/CommentEditor.html">chan.text.CommentEditor</a>
+<div id="inherited-fields-chan.text.CommentEditor">
+  <div id="inherited-fields-chan.text.CommentEditor-list"
+        class="jd-inheritedlinks">
+  </div>
+  <div id="inherited-fields-chan.text.CommentEditor-summary" style="display: none;">
+    <table class="jd-sumtable-expando">
+    
+
+    
+      <tr class="alt-color api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/text/CommentEditor.html#FLAG_ONE_LINE">FLAG_ONE_LINE</a></td>
+          <td class="jd-descrcol" width="100%"><p>Flag for tags that work only being in one line.</td>
+      </tr>
+      
+    
+</table>
+  </div>
+</div>
+</td></tr>
+
+
+
+
+</table>
+
+
 
 
 <!-- ======== CONSTRUCTOR SUMMARY ======== -->
@@ -466,15 +504,15 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
+            
             
             
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/text/CommentEditor.html#addSimilarDependency(int, int)">addSimilarDependency</a></span>(int what, int similar)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/text/CommentEditor.html#addTag(int, java.lang.String, java.lang.String)">addTag</a></span>(int what, String open, String close)</nobr>
         
-        <div class="jd-descrdiv"><p>Add a new similar dependency.</div>
+        <div class="jd-descrdiv"><p>Add a new tag to handle.</div>
   
   </td></tr>
 
@@ -490,7 +528,7 @@ From class
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/text/CommentEditor.html#addTag(int, java.lang.String, java.lang.String)">addTag</a></span>(int what, String open, String close)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/text/CommentEditor.html#addTag(int, java.lang.String, java.lang.String, int)">addTag</a></span>(int what, String open, String close, int flags)</nobr>
         
         <div class="jd-descrdiv"><p>Add a new tag to handle.</div>
   
@@ -505,12 +543,30 @@ From class
             
             
             
-            <a href="../../../reference/chan/text/CommentEditor.FormatResult.html">CommentEditor.FormatResult</a></nobr>
+            void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/text/CommentEditor.html#formatSelectedText(android.text.Editable, int, int, int)">formatSelectedText</a></span>(Editable editable, int what, int start, int end)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/text/CommentEditor.html#setOrderedListMark(java.lang.String)">setOrderedListMark</a></span>(String mark)</nobr>
         
-        <div class="jd-descrdiv"><p>This method calls every time user click to markup button.</div>
+        <div class="jd-descrdiv"><p>Sets a ordered list mark.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/text/CommentEditor.html#setUnorderedListMark(java.lang.String)">setUnorderedListMark</a></span>(String mark)</nobr>
+        
+        <div class="jd-descrdiv"><p>Sets a unordered list mark.</div>
   
   </td></tr>
 

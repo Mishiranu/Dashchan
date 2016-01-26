@@ -391,9 +391,9 @@ Summary:
             String</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/util/StringUtils.html#emptyIfNull(java.lang.CharSequence)">emptyIfNull</a></span>(CharSequence s)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/util/StringUtils.html#clearHtml(java.lang.String)">clearHtml</a></span>(String string)</nobr>
         
-        <div class="jd-descrdiv"><p>Returns <code>s.toString</code> if s is null or empty string.</div>
+        <div class="jd-descrdiv"><p>Removes all HTML tags and transforms mnemonics.</div>
   
   </td></tr>
 
@@ -406,10 +406,28 @@ Summary:
             
             static
             
+            String</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/util/StringUtils.html#emptyIfNull(java.lang.CharSequence)">emptyIfNull</a></span>(CharSequence string)</nobr>
+        
+        <div class="jd-descrdiv"><p>Returns <code>string.toString()</code> if <code>string</code> is not <code>null</code>, otherwise returns empty string.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            static
+            
             boolean</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/util/StringUtils.html#equals(java.lang.String, java.lang.String)">equals</a></span>(String s1, String s2)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/util/StringUtils.html#equals(java.lang.String, java.lang.String)">equals</a></span>(String first, String second)</nobr>
         
         <div class="jd-descrdiv"><p>Returns whether strings are equals.</div>
   
@@ -417,6 +435,24 @@ Summary:
 
 
 	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            static
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/util/StringUtils.html#isEmpty(java.lang.CharSequence)">isEmpty</a></span>(CharSequence string)</nobr>
+        
+        <div class="jd-descrdiv"><p>Returns whether <code>string</code> is <code>null</code> or empty.</div>
+  
+  </td></tr>
+
+
+	 
     <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
@@ -427,9 +463,9 @@ Summary:
             boolean</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/util/StringUtils.html#isEmpty(java.lang.CharSequence)">isEmpty</a></span>(CharSequence s)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/util/StringUtils.html#isEmptyOrWhitespace(java.lang.CharSequence)">isEmptyOrWhitespace</a></span>(CharSequence string)</nobr>
         
-        <div class="jd-descrdiv"><p>Returns whether string is null or empty.</div>
+        <div class="jd-descrdiv"><p>Returns whether <code>string</code> is <code>null</code>, empty or contains only whitespaces.</div>
   
   </td></tr>
 
@@ -442,28 +478,10 @@ Summary:
             
             static
             
-            boolean</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/util/StringUtils.html#isEmptyOrWhitespace(java.lang.CharSequence)">isEmptyOrWhitespace</a></span>(CharSequence s)</nobr>
-        
-        <div class="jd-descrdiv"><p>Returns whether string is null, empty or contains only whitespaces.</div>
-  
-  </td></tr>
-
-
-	 
-    <tr class="alt-color api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            
-            static
-            
             String</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/util/StringUtils.html#linkify(java.lang.String)">linkify</a></span>(String text)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/util/StringUtils.html#linkify(java.lang.String)">linkify</a></span>(String string)</nobr>
         
         <div class="jd-descrdiv"><p>Append HTML links to text.</div>
   
@@ -471,6 +489,60 @@ Summary:
 
 
 	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            static
+            
+            int</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/util/StringUtils.html#nearestIndexOf(java.lang.String, int, java.lang.String...)">nearestIndexOf</a></span>(String string, int start, String... what)</nobr>
+        
+        <div class="jd-descrdiv"><p>Returns the next index of the nearest of given <code>what</code> string array in <code>string</code>, or -1.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            static
+            
+            int</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/util/StringUtils.html#nearestIndexOf(java.lang.String, int, char...)">nearestIndexOf</a></span>(String string, int start, char... what)</nobr>
+        
+        <div class="jd-descrdiv"><p>Returns the next index of the nearest of given <code>what</code> char array in <code>string</code>, or -1.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            static
+            
+            String</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/util/StringUtils.html#nullIfEmpty(java.lang.String)">nullIfEmpty</a></span>(String string)</nobr>
+        
+        <div class="jd-descrdiv"><p>Returns <code>null</code> if <code>string</code> is empty, otherwise returns <code>string</code>.</div>
+  
+  </td></tr>
+
+
+	 
     <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
@@ -481,9 +553,9 @@ Summary:
             String</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/util/StringUtils.html#nullIfEmpty(java.lang.String)">nullIfEmpty</a></span>(String s)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/util/StringUtils.html#unescapeHtml(java.lang.String)">unescapeHtml</a></span>(String string)</nobr>
         
-        <div class="jd-descrdiv"><p>Returns null if string is empty.</div>
+        <div class="jd-descrdiv"><p>Removes all HTML tags and transforms mnemonics.</div>
   
   </td></tr>
 
@@ -744,6 +816,43 @@ From class
 
 
 
+<A NAME="clearHtml(java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+         
+         
+         
+        String
+      </span>
+      <span class="sympad">clearHtml</span>
+      <span class="normal">(String string)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Removes all HTML tags and transforms mnemonics. This method will handle spaces and line breaks.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>string</td>
+          <td>Source string.</td>
+        </tr>
+      </table>
+  </div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li>Cleared <code>source</code> string.
+</li></ul>
+  </div>
+
+    </div>
+</div>
+
+
 <A NAME="emptyIfNull(java.lang.CharSequence)"></A>
 
 <div class="jd-details api apilevel-"> 
@@ -757,16 +866,16 @@ From class
         String
       </span>
       <span class="sympad">emptyIfNull</span>
-      <span class="normal">(CharSequence s)</span>
+      <span class="normal">(CharSequence string)</span>
     </h4>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns <code>s.toString</code> if s is null or empty string.</p></p></div>
+  <div class="jd-tagdata jd-tagdescr"><p><p>Returns <code>string.toString()</code> if <code>string</code> is not <code>null</code>, otherwise returns empty string.</p></p></div>
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Parameters</h5>
       <table class="jd-tagtable">
         <tr>
-          <th>s</td>
+          <th>string</td>
           <td>String instance.</td>
         </tr>
       </table>
@@ -798,7 +907,7 @@ From class
         boolean
       </span>
       <span class="sympad">equals</span>
-      <span class="normal">(String s1, String s2)</span>
+      <span class="normal">(String first, String second)</span>
     </h4>
     <div class="jd-details-descr">
       
@@ -807,11 +916,11 @@ From class
       <h5 class="jd-tagtitle">Parameters</h5>
       <table class="jd-tagtable">
         <tr>
-          <th>s1</td>
+          <th>first</td>
           <td>String instance.</td>
         </tr>
         <tr>
-          <th>s2</td>
+          <th>second</td>
           <td>String instance.</td>
         </tr>
       </table>
@@ -839,16 +948,16 @@ From class
         boolean
       </span>
       <span class="sympad">isEmpty</span>
-      <span class="normal">(CharSequence s)</span>
+      <span class="normal">(CharSequence string)</span>
     </h4>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether string is null or empty.</p></p></div>
+  <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether <code>string</code> is <code>null</code> or empty.</p></p></div>
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Parameters</h5>
       <table class="jd-tagtable">
         <tr>
-          <th>s</td>
+          <th>string</td>
           <td>String instance.</td>
         </tr>
       </table>
@@ -876,16 +985,16 @@ From class
         boolean
       </span>
       <span class="sympad">isEmptyOrWhitespace</span>
-      <span class="normal">(CharSequence s)</span>
+      <span class="normal">(CharSequence string)</span>
     </h4>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether string is null, empty or contains only whitespaces.</p></p></div>
+  <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether <code>string</code> is <code>null</code>, empty or contains only whitespaces.</p></p></div>
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Parameters</h5>
       <table class="jd-tagtable">
         <tr>
-          <th>s</td>
+          <th>string</td>
           <td>String instance.</td>
         </tr>
       </table>
@@ -913,7 +1022,7 @@ From class
         String
       </span>
       <span class="sympad">linkify</span>
-      <span class="normal">(String text)</span>
+      <span class="normal">(String string)</span>
     </h4>
     <div class="jd-details-descr">
       
@@ -922,7 +1031,7 @@ From class
       <h5 class="jd-tagtitle">Parameters</h5>
       <table class="jd-tagtable">
         <tr>
-          <th>text</td>
+          <th>string</td>
           <td>Text to append links.</td>
         </tr>
       </table>
@@ -930,6 +1039,96 @@ From class
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Returns</h5>
       <ul class="nolist"><li>Text with links.
+</li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="nearestIndexOf(java.lang.String, int, java.lang.String...)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+         
+         
+         
+        int
+      </span>
+      <span class="sympad">nearestIndexOf</span>
+      <span class="normal">(String string, int start, String... what)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Returns the next index of the nearest of given <code>what</code> string array in <code>string</code>, or -1.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>string</td>
+          <td>Where to search.</td>
+        </tr>
+        <tr>
+          <th>start</td>
+          <td>Start offset.</td>
+        </tr>
+        <tr>
+          <th>what</td>
+          <td>String array to search.</td>
+        </tr>
+      </table>
+  </div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li>True if strings are equals.
+</li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="nearestIndexOf(java.lang.String, int, char...)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+         
+         
+         
+        int
+      </span>
+      <span class="sympad">nearestIndexOf</span>
+      <span class="normal">(String string, int start, char... what)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Returns the next index of the nearest of given <code>what</code> char array in <code>string</code>, or -1.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>string</td>
+          <td>Where to search.</td>
+        </tr>
+        <tr>
+          <th>start</td>
+          <td>Start offset.</td>
+        </tr>
+        <tr>
+          <th>what</td>
+          <td>Char array to search.</td>
+        </tr>
+      </table>
+  </div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li>True if strings are equals.
 </li></ul>
   </div>
 
@@ -950,16 +1149,16 @@ From class
         String
       </span>
       <span class="sympad">nullIfEmpty</span>
-      <span class="normal">(String s)</span>
+      <span class="normal">(String string)</span>
     </h4>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns null if string is empty.</p></p></div>
+  <div class="jd-tagdata jd-tagdescr"><p><p>Returns <code>null</code> if <code>string</code> is empty, otherwise returns <code>string</code>.</p></p></div>
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Parameters</h5>
       <table class="jd-tagtable">
         <tr>
-          <th>s</td>
+          <th>string</td>
           <td>String instance.</td>
         </tr>
       </table>
@@ -972,6 +1171,43 @@ From class
       <h5 class="jd-tagtitle">See Also</h5>
       <ul class="nolist"><li><code><a href="../../../reference/chan/util/StringUtils.html#isEmpty(java.lang.CharSequence)">isEmpty(CharSequence)</a></code></li>
       </ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="unescapeHtml(java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+         
+         
+         
+        String
+      </span>
+      <span class="sympad">unescapeHtml</span>
+      <span class="normal">(String string)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Removes all HTML tags and transforms mnemonics. This method will not handle spaces and line breaks.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>string</td>
+          <td>Source string.</td>
+        </tr>
+      </table>
+  </div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li>Escaped <code>source</code> string.
+</li></ul>
   </div>
 
     </div>

@@ -221,6 +221,24 @@
         </tr>
     
     
+        <tr class=" api apilevel-" >
+            <td class="jd-linkcol"><a href="../reference/chan/content/ApiException.BanExtra.html">ApiException.BanExtra</a></td>
+            <td class="jd-descrcol" width="100%"><p><code><a href="../reference/chan/content/ApiException.html#SEND_ERROR_BANNED">SEND_ERROR_BANNED</a></code> extra holder.&nbsp;</td>
+        </tr>
+    
+    
+        <tr class="alt-color api apilevel-" >
+            <td class="jd-linkcol"><a href="../reference/chan/content/ApiException.WordsExtra.html">ApiException.WordsExtra</a></td>
+            <td class="jd-descrcol" width="100%"><p><code><a href="../reference/chan/content/ApiException.html#SEND_ERROR_SPAM_LIST">SEND_ERROR_SPAM_LIST</a></code> extra holder.&nbsp;</td>
+        </tr>
+    
+    
+        <tr class=" api apilevel-" >
+            <td class="jd-linkcol"><a href="../reference/chan/content/model/Attachment.html">Attachment</a></td>
+            <td class="jd-descrcol" width="100%"><p>Basic attachment interface.&nbsp;</td>
+        </tr>
+    
+    
 </table>
 
 
@@ -229,14 +247,14 @@
     
     
         <tr class="alt-color api apilevel-" >
-            <td class="jd-linkcol"><a href="../reference/chan/content/model/BoardCategoryModel.html">BoardCategoryModel</a></td>
-            <td class="jd-descrcol" width="100%"><p>Model containing board category data: category title and array of <code><a href="../reference/chan/content/model/BoardModel.html">BoardModel</a></code>.&nbsp;</td>
+            <td class="jd-linkcol"><a href="../reference/chan/content/model/Board.html">Board</a></td>
+            <td class="jd-descrcol" width="100%"><p>Model containing board data: board name, title and description.&nbsp;</td>
         </tr>
     
     
         <tr class=" api apilevel-" >
-            <td class="jd-linkcol"><a href="../reference/chan/content/model/BoardModel.html">BoardModel</a></td>
-            <td class="jd-descrcol" width="100%"><p>Model containing board data: board name and thread data.&nbsp;</td>
+            <td class="jd-linkcol"><a href="../reference/chan/content/model/BoardCategory.html">BoardCategory</a></td>
+            <td class="jd-descrcol" width="100%"><p>Model containing board category data: category title and array of <code><a href="../reference/chan/content/model/Board.html">Board</a></code>.&nbsp;</td>
         </tr>
     
     
@@ -266,26 +284,38 @@
     
     
         <tr class=" api apilevel-" >
+            <td class="jd-linkcol"><a href="../reference/chan/content/ChanConfiguration.Board.html">ChanConfiguration.Board</a></td>
+            <td class="jd-descrcol" width="100%"><p>Board configuration holder.&nbsp;</td>
+        </tr>
+    
+    
+        <tr class="alt-color api apilevel-" >
             <td class="jd-linkcol"><a href="../reference/chan/content/ChanConfiguration.BumpLimitMode.html">ChanConfiguration.BumpLimitMode</a></td>
             <td class="jd-descrcol" width="100%"><p>Mode of bump limit handling.&nbsp;</td>
         </tr>
     
     
-        <tr class="alt-color api apilevel-" >
+        <tr class=" api apilevel-" >
             <td class="jd-linkcol"><a href="../reference/chan/content/ChanConfiguration.Captcha.html">ChanConfiguration.Captcha</a></td>
             <td class="jd-descrcol" width="100%"><p>Captcha configuration holder.&nbsp;</td>
         </tr>
     
     
-        <tr class=" api apilevel-" >
+        <tr class="alt-color api apilevel-" >
             <td class="jd-linkcol"><a href="../reference/chan/content/ChanConfiguration.Captcha.Input.html">ChanConfiguration.Captcha.Input</a></td>
             <td class="jd-descrcol" width="100%"><p>Captcha input mode.&nbsp;</td>
         </tr>
     
     
-        <tr class="alt-color api apilevel-" >
+        <tr class=" api apilevel-" >
             <td class="jd-linkcol"><a href="../reference/chan/content/ChanConfiguration.Captcha.Validity.html">ChanConfiguration.Captcha.Validity</a></td>
             <td class="jd-descrcol" width="100%"><p>Captcha validity mode.&nbsp;</td>
+        </tr>
+    
+    
+        <tr class="alt-color api apilevel-" >
+            <td class="jd-linkcol"><a href="../reference/chan/content/ChanConfiguration.CustomPreference.html">ChanConfiguration.CustomPreference</a></td>
+            <td class="jd-descrcol" width="100%"><p>Custom preference configuration holder.&nbsp;</td>
         </tr>
     
     
@@ -308,8 +338,20 @@
     
     
         <tr class="alt-color api apilevel-" >
+            <td class="jd-linkcol"><a href="../reference/chan/content/ChanConfiguration.Statistics.html">ChanConfiguration.Statistics</a></td>
+            <td class="jd-descrcol" width="100%"><p>Statistics configuration holder.&nbsp;</td>
+        </tr>
+    
+    
+        <tr class=" api apilevel-" >
             <td class="jd-linkcol"><a href="../reference/chan/content/ChanLocator.html">ChanLocator</a></td>
             <td class="jd-descrcol" width="100%"><p>Provides URI handling and building.&nbsp;</td>
+        </tr>
+    
+    
+        <tr class="alt-color api apilevel-" >
+            <td class="jd-linkcol"><a href="../reference/chan/content/ChanLocator.HttpsMode.html">ChanLocator.HttpsMode</a></td>
+            <td class="jd-descrcol" width="100%"><p>HTTPS mode, used in <code><a href="../reference/chan/content/ChanLocator.html#setHttpsMode(chan.content.ChanLocator.HttpsMode)">setHttpsMode(HttpsMode)</a></code> method.&nbsp;</td>
         </tr>
     
     
@@ -332,106 +374,176 @@
     
     
         <tr class="alt-color api apilevel-" >
-            <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.AddToArchiveData.html">ChanPerformer.AddToArchiveData</a></td>
-            <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../reference/chan/content/ChanPerformer.html#sendAddToArchive(chan.content.ChanPerformer.AddToArchiveData)">sendAddToArchive(AddToArchiveData)</a></code>.&nbsp;</td>
-        </tr>
-    
-    
-        <tr class=" api apilevel-" >
-            <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.AddToArchiveResult.html">ChanPerformer.AddToArchiveResult</a></td>
-            <td class="jd-descrcol" width="100%"><p>Result for <code><a href="../reference/chan/content/ChanPerformer.html#sendAddToArchive(chan.content.ChanPerformer.AddToArchiveData)">sendAddToArchive(AddToArchiveData)</a></code>.&nbsp;</td>
-        </tr>
-    
-    
-        <tr class="alt-color api apilevel-" >
             <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.CaptchaData.html">ChanPerformer.CaptchaData</a></td>
             <td class="jd-descrcol" width="100%"><p>Captcha data map.&nbsp;</td>
         </tr>
     
     
         <tr class=" api apilevel-" >
-            <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.CaptchaResult.html">ChanPerformer.CaptchaResult</a></td>
-            <td class="jd-descrcol" width="100%"><p>Captcha result for <code><a href="../reference/chan/content/ChanPerformer.html#readCaptcha(chan.content.ChanPerformer.ReadCaptchaData)">readCaptcha(ReadCaptchaData)</a></code>.&nbsp;</td>
-        </tr>
-    
-    
-        <tr class="alt-color api apilevel-" >
             <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.CaptchaState.html">ChanPerformer.CaptchaState</a></td>
-            <td class="jd-descrcol" width="100%"><p>Captcha states for <code><a href="../reference/chan/content/ChanPerformer.html#readCaptcha(chan.content.ChanPerformer.ReadCaptchaData)">readCaptcha(ReadCaptchaData)</a></code>.&nbsp;</td>
-        </tr>
-    
-    
-        <tr class=" api apilevel-" >
-            <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.CheckAuthorizationData.html">ChanPerformer.CheckAuthorizationData</a></td>
-            <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../reference/chan/content/ChanPerformer.html#checkCaptchaPass(chan.content.ChanPerformer.CheckAuthorizationData)">checkCaptchaPass(CheckAuthorizationData)</a></code> and
- <code><a href="../reference/chan/content/ChanPerformer.html#checkUserAuthorization(chan.content.ChanPerformer.CheckAuthorizationData)">checkUserAuthorization(CheckAuthorizationData)</a></code>.&nbsp;</td>
+            <td class="jd-descrcol" width="100%"><p>Captcha states for <code><a href="../reference/chan/content/ChanPerformer.html#performReadCaptcha(chan.content.ChanPerformer.ReadCaptchaData)">performReadCaptcha(ReadCaptchaData)</a></code>.&nbsp;</td>
         </tr>
     
     
         <tr class="alt-color api apilevel-" >
-            <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.DeletePostsData.html">ChanPerformer.DeletePostsData</a></td>
-            <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../reference/chan/content/ChanPerformer.html#sendDeletePosts(chan.content.ChanPerformer.DeletePostsData)">sendDeletePosts(DeletePostsData)</a></code>.&nbsp;</td>
+            <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.CheckAuthorizationData.html">ChanPerformer.CheckAuthorizationData</a></td>
+            <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../reference/chan/content/ChanPerformer.html#performCheckAuthorization(chan.content.ChanPerformer.CheckAuthorizationData)">performCheckAuthorization(CheckAuthorizationData)</a></code>.&nbsp;</td>
         </tr>
     
     
         <tr class=" api apilevel-" >
+            <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.CheckAuthorizationResult.html">ChanPerformer.CheckAuthorizationResult</a></td>
+            <td class="jd-descrcol" width="100%"><p>Result holder for <code><a href="../reference/chan/content/ChanPerformer.html#performCheckAuthorization(chan.content.ChanPerformer.CheckAuthorizationData)">performCheckAuthorization(CheckAuthorizationData)</a></code>.&nbsp;</td>
+        </tr>
+    
+    
+        <tr class="alt-color api apilevel-" >
             <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.ReadBoardsData.html">ChanPerformer.ReadBoardsData</a></td>
-            <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../reference/chan/content/ChanPerformer.html#readBoards(chan.content.ChanPerformer.ReadBoardsData)">readBoards(ReadBoardsData)</a></code> and
- <code><a href="../reference/chan/content/ChanPerformer.html#readUserBoards(chan.content.ChanPerformer.ReadBoardsData)">readUserBoards(ReadBoardsData)</a></code>.&nbsp;</td>
+            <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../reference/chan/content/ChanPerformer.html#performReadBoards(chan.content.ChanPerformer.ReadBoardsData)">performReadBoards(ReadBoardsData)</a></code>.&nbsp;</td>
+        </tr>
+    
+    
+        <tr class=" api apilevel-" >
+            <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.ReadBoardsResult.html">ChanPerformer.ReadBoardsResult</a></td>
+            <td class="jd-descrcol" width="100%"><p>Result holder for <code><a href="../reference/chan/content/ChanPerformer.html#performReadBoards(chan.content.ChanPerformer.ReadBoardsData)">performReadBoards(ReadBoardsData)</a></code>.&nbsp;</td>
         </tr>
     
     
         <tr class="alt-color api apilevel-" >
             <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.ReadCaptchaData.html">ChanPerformer.ReadCaptchaData</a></td>
-            <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../reference/chan/content/ChanPerformer.html#readCaptcha(chan.content.ChanPerformer.ReadCaptchaData)">readCaptcha(ReadCaptchaData)</a></code>.&nbsp;</td>
+            <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../reference/chan/content/ChanPerformer.html#performReadCaptcha(chan.content.ChanPerformer.ReadCaptchaData)">performReadCaptcha(ReadCaptchaData)</a></code>.&nbsp;</td>
         </tr>
     
     
         <tr class=" api apilevel-" >
-            <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.ReadContentData.html">ChanPerformer.ReadContentData</a></td>
-            <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../reference/chan/content/ChanPerformer.html#readContent(chan.content.ChanPerformer.ReadContentData)">readContent(ReadContentData)</a></code>.&nbsp;</td>
+            <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.ReadCaptchaResult.html">ChanPerformer.ReadCaptchaResult</a></td>
+            <td class="jd-descrcol" width="100%"><p>Captcha result for <code><a href="../reference/chan/content/ChanPerformer.html#performReadCaptcha(chan.content.ChanPerformer.ReadCaptchaData)">performReadCaptcha(ReadCaptchaData)</a></code>.&nbsp;</td>
         </tr>
     
     
         <tr class="alt-color api apilevel-" >
-            <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.ReadGlobalThreadsData.html">ChanPerformer.ReadGlobalThreadsData</a></td>
-            <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../reference/chan/content/ChanPerformer.html#readGlobalThreads(chan.content.ChanPerformer.ReadGlobalThreadsData)">readGlobalThreads(ReadGlobalThreadsData)</a></code>.&nbsp;</td>
+            <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.ReadContentData.html">ChanPerformer.ReadContentData</a></td>
+            <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../reference/chan/content/ChanPerformer.html#performReadContent(chan.content.ChanPerformer.ReadContentData)">performReadContent(ReadContentData)</a></code>.&nbsp;</td>
         </tr>
     
     
         <tr class=" api apilevel-" >
+            <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.ReadContentResult.html">ChanPerformer.ReadContentResult</a></td>
+            <td class="jd-descrcol" width="100%"><p>Result holder for <code><a href="../reference/chan/content/ChanPerformer.html#performReadContent(chan.content.ChanPerformer.ReadContentData)">performReadContent(ReadContentData)</a></code>.&nbsp;</td>
+        </tr>
+    
+    
+        <tr class="alt-color api apilevel-" >
             <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.ReadPostsCountData.html">ChanPerformer.ReadPostsCountData</a></td>
-            <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../reference/chan/content/ChanPerformer.html#readPostsCount(chan.content.ChanPerformer.ReadPostsCountData)">readPostsCount(ReadPostsCountData)</a></code>.&nbsp;</td>
+            <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../reference/chan/content/ChanPerformer.html#performReadPostsCount(chan.content.ChanPerformer.ReadPostsCountData)">performReadPostsCount(ReadPostsCountData)</a></code>.&nbsp;</td>
+        </tr>
+    
+    
+        <tr class=" api apilevel-" >
+            <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.ReadPostsCountResult.html">ChanPerformer.ReadPostsCountResult</a></td>
+            <td class="jd-descrcol" width="100%"><p>Result holder for <code><a href="../reference/chan/content/ChanPerformer.html#performReadPostsCount(chan.content.ChanPerformer.ReadPostsCountData)">performReadPostsCount(ReadPostsCountData)</a></code>.&nbsp;</td>
         </tr>
     
     
         <tr class="alt-color api apilevel-" >
             <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.ReadPostsData.html">ChanPerformer.ReadPostsData</a></td>
-            <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../reference/chan/content/ChanPerformer.html#readPosts(chan.content.ChanPerformer.ReadPostsData)">readPosts(ReadPostsData)</a></code>.&nbsp;</td>
+            <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../reference/chan/content/ChanPerformer.html#performReadPosts(chan.content.ChanPerformer.ReadPostsData)">performReadPosts(ReadPostsData)</a></code>.&nbsp;</td>
         </tr>
     
     
         <tr class=" api apilevel-" >
+            <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.ReadPostsResult.html">ChanPerformer.ReadPostsResult</a></td>
+            <td class="jd-descrcol" width="100%"><p>Result holder for <code><a href="../reference/chan/content/ChanPerformer.html#performReadPosts(chan.content.ChanPerformer.ReadPostsData)">performReadPosts(ReadPostsData)</a></code>.&nbsp;</td>
+        </tr>
+    
+    
+        <tr class="alt-color api apilevel-" >
             <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.ReadSearchPostsData.html">ChanPerformer.ReadSearchPostsData</a></td>
-            <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../reference/chan/content/ChanPerformer.html#readSearchPosts(chan.content.ChanPerformer.ReadSearchPostsData)">readSearchPosts(ReadSearchPostsData)</a></code>.&nbsp;</td>
+            <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../reference/chan/content/ChanPerformer.html#performReadSearchPosts(chan.content.ChanPerformer.ReadSearchPostsData)">performReadSearchPosts(ReadSearchPostsData)</a></code>.&nbsp;</td>
+        </tr>
+    
+    
+        <tr class=" api apilevel-" >
+            <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.ReadSearchPostsResult.html">ChanPerformer.ReadSearchPostsResult</a></td>
+            <td class="jd-descrcol" width="100%"><p>Result holder for <code><a href="../reference/chan/content/ChanPerformer.html#performReadSearchPosts(chan.content.ChanPerformer.ReadSearchPostsData)">performReadSearchPosts(ReadSearchPostsData)</a></code>.&nbsp;</td>
         </tr>
     
     
         <tr class="alt-color api apilevel-" >
             <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.ReadSinglePostData.html">ChanPerformer.ReadSinglePostData</a></td>
-            <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../reference/chan/content/ChanPerformer.html#readSinglePost(chan.content.ChanPerformer.ReadSinglePostData)">readSinglePost(ReadSinglePostData)</a></code>.&nbsp;</td>
+            <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../reference/chan/content/ChanPerformer.html#performReadSinglePost(chan.content.ChanPerformer.ReadSinglePostData)">performReadSinglePost(ReadSinglePostData)</a></code>.&nbsp;</td>
         </tr>
     
     
         <tr class=" api apilevel-" >
+            <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.ReadSinglePostResult.html">ChanPerformer.ReadSinglePostResult</a></td>
+            <td class="jd-descrcol" width="100%"><p>Result holder for <code><a href="../reference/chan/content/ChanPerformer.html#performReadSinglePost(chan.content.ChanPerformer.ReadSinglePostData)">performReadSinglePost(ReadSinglePostData)</a></code>.&nbsp;</td>
+        </tr>
+    
+    
+        <tr class="alt-color api apilevel-" >
             <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.ReadThreadsData.html">ChanPerformer.ReadThreadsData</a></td>
-            <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../reference/chan/content/ChanPerformer.html#readThreads(chan.content.ChanPerformer.ReadThreadsData)">readThreads(ReadThreadsData)</a></code>.&nbsp;</td>
+            <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../reference/chan/content/ChanPerformer.html#performReadThreads(chan.content.ChanPerformer.ReadThreadsData)">performReadThreads(ReadThreadsData)</a></code>.&nbsp;</td>
+        </tr>
+    
+    
+        <tr class=" api apilevel-" >
+            <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.ReadThreadsResult.html">ChanPerformer.ReadThreadsResult</a></td>
+            <td class="jd-descrcol" width="100%"><p>Result holder for <code><a href="../reference/chan/content/ChanPerformer.html#performReadThreads(chan.content.ChanPerformer.ReadThreadsData)">performReadThreads(ReadThreadsData)</a></code>.&nbsp;</td>
+        </tr>
+    
+    
+        <tr class="alt-color api apilevel-" >
+            <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.ReadThreadSummariesData.html">ChanPerformer.ReadThreadSummariesData</a></td>
+            <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../reference/chan/content/ChanPerformer.html#performReadThreadSummaries(chan.content.ChanPerformer.ReadThreadSummariesData)">performReadThreadSummaries(ReadThreadSummariesData)</a></code>.&nbsp;</td>
+        </tr>
+    
+    
+        <tr class=" api apilevel-" >
+            <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.ReadThreadSummariesResult.html">ChanPerformer.ReadThreadSummariesResult</a></td>
+            <td class="jd-descrcol" width="100%"><p>Result holder for <code><a href="../reference/chan/content/ChanPerformer.html#performReadThreadSummaries(chan.content.ChanPerformer.ReadThreadSummariesData)">performReadThreadSummaries(ReadThreadSummariesData)</a></code>.&nbsp;</td>
+        </tr>
+    
+    
+        <tr class="alt-color api apilevel-" >
+            <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.ReadUserBoardsData.html">ChanPerformer.ReadUserBoardsData</a></td>
+            <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../reference/chan/content/ChanPerformer.html#performReadUserBoards(chan.content.ChanPerformer.ReadUserBoardsData)">performReadUserBoards(ReadUserBoardsData)</a></code>.&nbsp;</td>
+        </tr>
+    
+    
+        <tr class=" api apilevel-" >
+            <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.ReadUserBoardsResult.html">ChanPerformer.ReadUserBoardsResult</a></td>
+            <td class="jd-descrcol" width="100%"><p>Result holder for <code><a href="../reference/chan/content/ChanPerformer.html#performReadUserBoards(chan.content.ChanPerformer.ReadUserBoardsData)">performReadUserBoards(ReadUserBoardsData)</a></code>.&nbsp;</td>
+        </tr>
+    
+    
+        <tr class="alt-color api apilevel-" >
+            <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.SendAddToArchiveData.html">ChanPerformer.SendAddToArchiveData</a></td>
+            <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../reference/chan/content/ChanPerformer.html#performSendAddToArchive(chan.content.ChanPerformer.SendAddToArchiveData)">performSendAddToArchive(SendAddToArchiveData)</a></code>.&nbsp;</td>
+        </tr>
+    
+    
+        <tr class=" api apilevel-" >
+            <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.SendAddToArchiveResult.html">ChanPerformer.SendAddToArchiveResult</a></td>
+            <td class="jd-descrcol" width="100%"><p>Result for <code><a href="../reference/chan/content/ChanPerformer.html#performSendAddToArchive(chan.content.ChanPerformer.SendAddToArchiveData)">performSendAddToArchive(SendAddToArchiveData)</a></code>.&nbsp;</td>
+        </tr>
+    
+    
+        <tr class="alt-color api apilevel-" >
+            <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.SendDeletePostsData.html">ChanPerformer.SendDeletePostsData</a></td>
+            <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../reference/chan/content/ChanPerformer.html#performSendDeletePosts(chan.content.ChanPerformer.SendDeletePostsData)">performSendDeletePosts(SendDeletePostsData)</a></code>.&nbsp;</td>
+        </tr>
+    
+    
+        <tr class=" api apilevel-" >
+            <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.SendDeletePostsResult.html">ChanPerformer.SendDeletePostsResult</a></td>
+            <td class="jd-descrcol" width="100%"><p>Result for <code><a href="../reference/chan/content/ChanPerformer.html#performSendDeletePosts(chan.content.ChanPerformer.SendDeletePostsData)">performSendDeletePosts(SendDeletePostsData)</a></code>.&nbsp;</td>
         </tr>
     
     
         <tr class="alt-color api apilevel-" >
             <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.SendPostData.html">ChanPerformer.SendPostData</a></td>
-            <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../reference/chan/content/ChanPerformer.html#sendPost(chan.content.ChanPerformer.SendPostData)">sendPost(SendPostData)</a></code>.&nbsp;</td>
+            <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../reference/chan/content/ChanPerformer.html#performSendPost(chan.content.ChanPerformer.SendPostData)">performSendPost(SendPostData)</a></code>.&nbsp;</td>
         </tr>
     
     
@@ -443,25 +555,25 @@
     
         <tr class="alt-color api apilevel-" >
             <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.SendPostResult.html">ChanPerformer.SendPostResult</a></td>
-            <td class="jd-descrcol" width="100%"><p>Result for <code><a href="../reference/chan/content/ChanPerformer.html#sendPost(chan.content.ChanPerformer.SendPostData)">sendPost(SendPostData)</a></code>.&nbsp;</td>
+            <td class="jd-descrcol" width="100%"><p>Result for <code><a href="../reference/chan/content/ChanPerformer.html#performSendPost(chan.content.ChanPerformer.SendPostData)">performSendPost(SendPostData)</a></code>.&nbsp;</td>
         </tr>
     
     
         <tr class=" api apilevel-" >
-            <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.SendReportData.html">ChanPerformer.SendReportData</a></td>
-            <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../reference/chan/content/ChanPerformer.html#sendReport(chan.content.ChanPerformer.SendReportData)">sendReport(SendReportData)</a></code>.&nbsp;</td>
+            <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.SendReportPostsData.html">ChanPerformer.SendReportPostsData</a></td>
+            <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../reference/chan/content/ChanPerformer.html#performSendReportPosts(chan.content.ChanPerformer.SendReportPostsData)">performSendReportPosts(SendReportPostsData)</a></code>.&nbsp;</td>
         </tr>
     
     
         <tr class="alt-color api apilevel-" >
-            <td class="jd-linkcol"><a href="../reference/chan/text/CommentEditor.html">CommentEditor</a></td>
-            <td class="jd-descrcol" width="100%"><p>This class is used to handle comment input when user writes new post.&nbsp;</td>
+            <td class="jd-linkcol"><a href="../reference/chan/content/ChanPerformer.SendReportPostsResult.html">ChanPerformer.SendReportPostsResult</a></td>
+            <td class="jd-descrcol" width="100%"><p>Result for <code><a href="../reference/chan/content/ChanPerformer.html#performSendReportPosts(chan.content.ChanPerformer.SendReportPostsData)">performSendReportPosts(SendReportPostsData)</a></code>.&nbsp;</td>
         </tr>
     
     
         <tr class=" api apilevel-" >
-            <td class="jd-linkcol"><a href="../reference/chan/text/CommentEditor.AsteriskWakabaMarkCommentEditor.html">CommentEditor.AsteriskWakabaMarkCommentEditor</a></td>
-            <td class="jd-descrcol" width="100%"><p>Implementation of <code><a href="../reference/chan/text/CommentEditor.html">CommentEditor</a></code>.&nbsp;</td>
+            <td class="jd-linkcol"><a href="../reference/chan/text/CommentEditor.html">CommentEditor</a></td>
+            <td class="jd-descrcol" width="100%"><p>This class is used to handle comment input when user writes new post.&nbsp;</td>
         </tr>
     
     
@@ -472,24 +584,18 @@
     
     
         <tr class=" api apilevel-" >
-            <td class="jd-linkcol"><a href="../reference/chan/text/CommentEditor.FormatResult.html">CommentEditor.FormatResult</a></td>
-            <td class="jd-descrcol" width="100%"><p>This class provides information about format result.&nbsp;</td>
-        </tr>
-    
-    
-        <tr class="alt-color api apilevel-" >
             <td class="jd-linkcol"><a href="../reference/chan/text/CommentEditor.WakabaMarkCommentEditor.html">CommentEditor.WakabaMarkCommentEditor</a></td>
             <td class="jd-descrcol" width="100%"><p>Implementation of <code><a href="../reference/chan/text/CommentEditor.html">CommentEditor</a></code>.&nbsp;</td>
         </tr>
     
     
-        <tr class=" api apilevel-" >
+        <tr class="alt-color api apilevel-" >
             <td class="jd-linkcol"><a href="../reference/chan/util/CommonUtils.html">CommonUtils</a></td>
-            <td class="jd-descrcol" width="100%"><p>Provides some utilities to work with flags and JSON objects.&nbsp;</td>
+            <td class="jd-descrcol" width="100%"><p>Provides some utilities to work with JSON objects, bitmaps and logging.&nbsp;</td>
         </tr>
     
     
-        <tr class="alt-color api apilevel-" >
+        <tr class=" api apilevel-" >
             <td class="jd-linkcol"><a href="../reference/chan/http/CookieBuilder.html">CookieBuilder</a></td>
             <td class="jd-descrcol" width="100%"><p>Provides easy cookie building.&nbsp;</td>
         </tr>
@@ -503,8 +609,14 @@
     
     
         <tr class="alt-color api apilevel-" >
-            <td class="jd-linkcol"><a href="../reference/chan/content/model/Editable.html">Editable</a></td>
-            <td class="jd-descrcol" width="100%"><p>Marks model's field as editable.&nbsp;</td>
+            <td class="jd-linkcol"><a href="../reference/chan/content/model/EmbeddedAttachment.html">EmbeddedAttachment</a></td>
+            <td class="jd-descrcol" width="100%"><p>This class can handle some embedded links.&nbsp;</td>
+        </tr>
+    
+    
+        <tr class=" api apilevel-" >
+            <td class="jd-linkcol"><a href="../reference/chan/content/model/EmbeddedAttachment.ContentType.html">EmbeddedAttachment.ContentType</a></td>
+            <td class="jd-descrcol" width="100%">Embedded file content type.&nbsp;</td>
         </tr>
     
     
@@ -516,8 +628,8 @@
     
     
         <tr class="alt-color api apilevel-" >
-            <td class="jd-linkcol"><a href="../reference/chan/content/model/FileModel.html">FileModel</a></td>
-            <td class="jd-descrcol" width="100%"><p>Extendable model containing file data.&nbsp;</td>
+            <td class="jd-linkcol"><a href="../reference/chan/content/model/FileAttachment.html">FileAttachment</a></td>
+            <td class="jd-descrcol" width="100%"><p>Model containing attached file data.&nbsp;</td>
         </tr>
     
     
@@ -529,26 +641,14 @@
     
     
         <tr class="alt-color api apilevel-" >
-            <td class="jd-linkcol"><a href="../reference/chan/content/model/GlobalThreadModel.html">GlobalThreadModel</a></td>
-            <td class="jd-descrcol" width="100%"><p>Model containing global thread data: board name, thread number and short description.&nbsp;</td>
-        </tr>
-    
-    
-        <tr class=" api apilevel-" >
             <td class="jd-linkcol"><a href="../reference/chan/text/GroupParser.html">GroupParser</a></td>
             <td class="jd-descrcol" width="100%"><p>HTML text parser.&nbsp;</td>
         </tr>
     
     
-        <tr class="alt-color api apilevel-" >
+        <tr class=" api apilevel-" >
             <td class="jd-linkcol"><a href="../reference/chan/text/GroupParser.Callback.html">GroupParser.Callback</a></td>
             <td class="jd-descrcol" width="100%"><p>Callback for <code><a href="../reference/chan/text/GroupParser.html">GroupParser</a></code>.&nbsp;</td>
-        </tr>
-    
-    
-        <tr class=" api apilevel-" >
-            <td class="jd-linkcol"><a href="../reference/chan/text/GroupParser.TextCallback.html">GroupParser.TextCallback</a></td>
-            <td class="jd-descrcol" width="100%"><p>Additional callback for <code><a href="../reference/chan/text/GroupParser.html">GroupParser</a></code>.&nbsp;</td>
         </tr>
     
     
@@ -560,78 +660,48 @@
     
     
         <tr class="alt-color api apilevel-" >
-            <td class="jd-linkcol"><a href="../reference/chan/text/HtmlParser.html">HtmlParser</a></td>
-            <td class="jd-descrcol" width="100%"><p>HTML text parser.&nbsp;</td>
-        </tr>
-    
-    
-        <tr class=" api apilevel-" >
-            <td class="jd-linkcol"><a href="../reference/chan/text/HtmlParser.Characters.html">HtmlParser.Characters</a></td>
-            <td class="jd-descrcol" width="100%"><p>Additional callback for <code><a href="../reference/chan/text/HtmlParser.html">HtmlParser</a></code>.&nbsp;</td>
-        </tr>
-    
-    
-        <tr class="alt-color api apilevel-" >
-            <td class="jd-linkcol"><a href="../reference/chan/text/HtmlParser.Markup.html">HtmlParser.Markup</a></td>
-            <td class="jd-descrcol" width="100%"><p>Callback for <code><a href="../reference/chan/text/HtmlParser.html">HtmlParser</a></code>.&nbsp;</td>
-        </tr>
-    
-    
-        <tr class=" api apilevel-" >
-            <td class="jd-linkcol"><a href="../reference/chan/text/HtmlParser.SpanContainer.html">HtmlParser.SpanContainer</a></td>
-            <td class="jd-descrcol" width="100%"><p>This class contains information about span.&nbsp;</td>
-        </tr>
-    
-    
-        <tr class="alt-color api apilevel-" >
-            <td class="jd-linkcol"><a href="../reference/chan/text/HtmlParser.SpanType.html">HtmlParser.SpanType</a></td>
-            <td class="jd-descrcol" width="100%"><p>Possible span types.&nbsp;</td>
-        </tr>
-    
-    
-        <tr class=" api apilevel-" >
             <td class="jd-linkcol"><a href="../reference/chan/http/HttpException.html">HttpException</a></td>
             <td class="jd-descrcol" width="100%"><p>Thrown by HTTP client and <code><a href="../reference/chan/content/ChanPerformer.html">ChanPerformer</a></code> methods.&nbsp;</td>
         </tr>
     
     
-        <tr class="alt-color api apilevel-" >
+        <tr class=" api apilevel-" >
             <td class="jd-linkcol"><a href="../reference/chan/http/HttpHolder.html">HttpHolder</a></td>
             <td class="jd-descrcol" width="100%"><p>HTTP connection holder.&nbsp;</td>
         </tr>
     
     
-        <tr class=" api apilevel-" >
+        <tr class="alt-color api apilevel-" >
             <td class="jd-linkcol"><a href="../reference/chan/http/HttpRequest.html">HttpRequest</a></td>
             <td class="jd-descrcol" width="100%"><p>HTTP request builder and executor.&nbsp;</td>
         </tr>
     
     
-        <tr class="alt-color api apilevel-" >
+        <tr class=" api apilevel-" >
             <td class="jd-linkcol"><a href="../reference/chan/http/HttpRequest.Preset.html">HttpRequest.Preset</a></td>
             <td class="jd-descrcol" width="100%"><p>Client's preset with timeout settings, listeners, etc.&nbsp;</td>
         </tr>
     
     
-        <tr class=" api apilevel-" >
+        <tr class="alt-color api apilevel-" >
             <td class="jd-linkcol"><a href="../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a></td>
             <td class="jd-descrcol" width="100%"><p>Redirection handler interface.&nbsp;</td>
         </tr>
     
     
-        <tr class="alt-color api apilevel-" >
+        <tr class=" api apilevel-" >
             <td class="jd-linkcol"><a href="../reference/chan/http/HttpRequest.RedirectHandler.Action.html">HttpRequest.RedirectHandler.Action</a></td>
             <td class="jd-descrcol" width="100%"><p>Redirection handler result.&nbsp;</td>
         </tr>
     
     
-        <tr class=" api apilevel-" >
+        <tr class="alt-color api apilevel-" >
             <td class="jd-linkcol"><a href="../reference/chan/http/HttpResponse.html">HttpResponse</a></td>
             <td class="jd-descrcol" width="100%"><p>HTTP response holder.&nbsp;</td>
         </tr>
     
     
-        <tr class="alt-color api apilevel-" >
+        <tr class=" api apilevel-" >
             <td class="jd-linkcol"><a href="../reference/chan/http/HttpValidator.html">HttpValidator</a></td>
             <td class="jd-descrcol" width="100%"><p>Provides handling and holding Last-Modified and ETag HTTP headers.&nbsp;</td>
         </tr>
@@ -645,6 +715,12 @@
     
     
         <tr class="alt-color api apilevel-" >
+            <td class="jd-linkcol"><a href="../reference/chan/content/model/Icon.html">Icon</a></td>
+            <td class="jd-descrcol" width="100%"><p>Model containing post icon.&nbsp;</td>
+        </tr>
+    
+    
+        <tr class=" api apilevel-" >
             <td class="jd-linkcol"><a href="../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></td>
             <td class="jd-descrcol" width="100%"><p>Thrown then unknown or incorrect data read.&nbsp;</td>
         </tr>
@@ -677,14 +753,14 @@
     
     
         <tr class=" api apilevel-" >
-            <td class="jd-linkcol"><a href="../reference/chan/content/model/PostModel.html">PostModel</a></td>
-            <td class="jd-descrcol" width="100%"><p>Extendable model containing post data.&nbsp;</td>
+            <td class="jd-linkcol"><a href="../reference/chan/content/model/Post.html">Post</a></td>
+            <td class="jd-descrcol" width="100%"><p>Model containing post data.&nbsp;</td>
         </tr>
     
     
         <tr class="alt-color api apilevel-" >
-            <td class="jd-linkcol"><a href="../reference/chan/content/model/PostsModel.html">PostsModel</a></td>
-            <td class="jd-descrcol" width="100%"><p>Extendable model containing posts data.&nbsp;</td>
+            <td class="jd-linkcol"><a href="../reference/chan/content/model/Posts.html">Posts</a></td>
+            <td class="jd-descrcol" width="100%"><p>Model containing posts data.&nbsp;</td>
         </tr>
     
     
@@ -722,20 +798,20 @@
     
     
         <tr class="alt-color api apilevel-" >
-            <td class="jd-linkcol"><a href="../reference/chan/content/model/ThreadModel.html">ThreadModel</a></td>
-            <td class="jd-descrcol" width="100%"><p>Extendable model containing post data.&nbsp;</td>
-        </tr>
-    
-    
-        <tr class=" api apilevel-" >
             <td class="jd-linkcol"><a href="../reference/chan/content/ThreadRedirectException.html">ThreadRedirectException</a></td>
             <td class="jd-descrcol" width="100%"><p>Thrown to inform client about thread redirection.&nbsp;</td>
         </tr>
     
     
+        <tr class=" api apilevel-" >
+            <td class="jd-linkcol"><a href="../reference/chan/content/model/Threads.html">Threads</a></td>
+            <td class="jd-descrcol" width="100%"><p>Model containing threads data.&nbsp;</td>
+        </tr>
+    
+    
         <tr class="alt-color api apilevel-" >
-            <td class="jd-linkcol"><a href="../reference/chan/content/model/ThreadsModel.html">ThreadsModel</a></td>
-            <td class="jd-descrcol" width="100%"><p>Extendable model containing threads data.&nbsp;</td>
+            <td class="jd-linkcol"><a href="../reference/chan/content/model/ThreadSummary.html">ThreadSummary</a></td>
+            <td class="jd-descrcol" width="100%"><p>Model containing thread summary: board name, thread number and short description.&nbsp;</td>
         </tr>
     
     

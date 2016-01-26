@@ -153,20 +153,31 @@
           <div id="classes-nav">
             <ul>
               
-              
-    <li><h2>Classes</h2>
+    <li><h2>Interfaces</h2>
       <ul>
-        <li class="api apilevel-"><a href="../../../../reference/chan/content/model/BoardCategoryModel.html">BoardCategoryModel</a></li>
-        <li class="api apilevel-"><a href="../../../../reference/chan/content/model/BoardModel.html">BoardModel</a></li>
-        <li class="api apilevel-"><a href="../../../../reference/chan/content/model/FileModel.html">FileModel</a></li>
-        <li class="api apilevel-"><a href="../../../../reference/chan/content/model/GlobalThreadModel.html">GlobalThreadModel</a></li>
-        <li class="api apilevel-"><a href="../../../../reference/chan/content/model/PostModel.html">PostModel</a></li>
-        <li class="api apilevel-"><a href="../../../../reference/chan/content/model/PostsModel.html">PostsModel</a></li>
-        <li class="api apilevel-"><a href="../../../../reference/chan/content/model/ThreadModel.html">ThreadModel</a></li>
-        <li class="api apilevel-"><a href="../../../../reference/chan/content/model/ThreadsModel.html">ThreadsModel</a></li>
+        <li class="api apilevel-"><a href="../../../../reference/chan/content/model/Attachment.html">Attachment</a></li>
       </ul>
     </li>
               
+    <li><h2>Classes</h2>
+      <ul>
+        <li class="api apilevel-"><a href="../../../../reference/chan/content/model/Board.html">Board</a></li>
+        <li class="api apilevel-"><a href="../../../../reference/chan/content/model/BoardCategory.html">BoardCategory</a></li>
+        <li class="api apilevel-"><a href="../../../../reference/chan/content/model/EmbeddedAttachment.html">EmbeddedAttachment</a></li>
+        <li class="api apilevel-"><a href="../../../../reference/chan/content/model/FileAttachment.html">FileAttachment</a></li>
+        <li class="api apilevel-"><a href="../../../../reference/chan/content/model/Icon.html">Icon</a></li>
+        <li class="api apilevel-"><a href="../../../../reference/chan/content/model/Post.html">Post</a></li>
+        <li class="api apilevel-"><a href="../../../../reference/chan/content/model/Posts.html">Posts</a></li>
+        <li class="api apilevel-"><a href="../../../../reference/chan/content/model/Threads.html">Threads</a></li>
+        <li class="api apilevel-"><a href="../../../../reference/chan/content/model/ThreadSummary.html">ThreadSummary</a></li>
+      </ul>
+    </li>
+              
+    <li><h2>Enums</h2>
+      <ul>
+        <li class="api apilevel-"><a href="../../../../reference/chan/content/model/EmbeddedAttachment.ContentType.html">EmbeddedAttachment.ContentType</a></li>
+      </ul>
+    </li>
               
               
             </ul><br/>
@@ -222,6 +233,17 @@
 
 
   
+    <h2>Interfaces</h2>
+    <div class="jd-sumtable">
+    
+  <table class="jd-sumtable-expando">
+        <tr class="alt-color api apilevel-" >
+              <td class="jd-linkcol"><a href="../../../../reference/chan/content/model/Attachment.html">Attachment</a></td>
+              <td class="jd-descrcol" width="100%"><p>Basic attachment interface.&nbsp;</td>
+          </tr>
+  </table>
+    </div>
+  
 
 
   
@@ -230,42 +252,57 @@
     
   <table class="jd-sumtable-expando">
         <tr class="alt-color api apilevel-" >
-              <td class="jd-linkcol"><a href="../../../../reference/chan/content/model/BoardCategoryModel.html">BoardCategoryModel</a></td>
-              <td class="jd-descrcol" width="100%"><p>Model containing board category data: category title and array of <code><a href="../../../../reference/chan/content/model/BoardModel.html">BoardModel</a></code>.&nbsp;</td>
+              <td class="jd-linkcol"><a href="../../../../reference/chan/content/model/Board.html">Board</a></td>
+              <td class="jd-descrcol" width="100%"><p>Model containing board data: board name, title and description.&nbsp;</td>
           </tr>
         <tr class=" api apilevel-" >
-              <td class="jd-linkcol"><a href="../../../../reference/chan/content/model/BoardModel.html">BoardModel</a></td>
-              <td class="jd-descrcol" width="100%"><p>Model containing board data: board name and thread data.&nbsp;</td>
+              <td class="jd-linkcol"><a href="../../../../reference/chan/content/model/BoardCategory.html">BoardCategory</a></td>
+              <td class="jd-descrcol" width="100%"><p>Model containing board category data: category title and array of <code><a href="../../../../reference/chan/content/model/Board.html">Board</a></code>.&nbsp;</td>
           </tr>
         <tr class="alt-color api apilevel-" >
-              <td class="jd-linkcol"><a href="../../../../reference/chan/content/model/FileModel.html">FileModel</a></td>
-              <td class="jd-descrcol" width="100%"><p>Extendable model containing file data.&nbsp;</td>
+              <td class="jd-linkcol"><a href="../../../../reference/chan/content/model/EmbeddedAttachment.html">EmbeddedAttachment</a></td>
+              <td class="jd-descrcol" width="100%"><p>This class can handle some embedded links.&nbsp;</td>
           </tr>
         <tr class=" api apilevel-" >
-              <td class="jd-linkcol"><a href="../../../../reference/chan/content/model/GlobalThreadModel.html">GlobalThreadModel</a></td>
-              <td class="jd-descrcol" width="100%"><p>Model containing global thread data: board name, thread number and short description.&nbsp;</td>
+              <td class="jd-linkcol"><a href="../../../../reference/chan/content/model/FileAttachment.html">FileAttachment</a></td>
+              <td class="jd-descrcol" width="100%"><p>Model containing attached file data.&nbsp;</td>
           </tr>
         <tr class="alt-color api apilevel-" >
-              <td class="jd-linkcol"><a href="../../../../reference/chan/content/model/PostModel.html">PostModel</a></td>
-              <td class="jd-descrcol" width="100%"><p>Extendable model containing post data.&nbsp;</td>
+              <td class="jd-linkcol"><a href="../../../../reference/chan/content/model/Icon.html">Icon</a></td>
+              <td class="jd-descrcol" width="100%"><p>Model containing post icon.&nbsp;</td>
           </tr>
         <tr class=" api apilevel-" >
-              <td class="jd-linkcol"><a href="../../../../reference/chan/content/model/PostsModel.html">PostsModel</a></td>
-              <td class="jd-descrcol" width="100%"><p>Extendable model containing posts data.&nbsp;</td>
+              <td class="jd-linkcol"><a href="../../../../reference/chan/content/model/Post.html">Post</a></td>
+              <td class="jd-descrcol" width="100%"><p>Model containing post data.&nbsp;</td>
           </tr>
         <tr class="alt-color api apilevel-" >
-              <td class="jd-linkcol"><a href="../../../../reference/chan/content/model/ThreadModel.html">ThreadModel</a></td>
-              <td class="jd-descrcol" width="100%"><p>Extendable model containing post data.&nbsp;</td>
+              <td class="jd-linkcol"><a href="../../../../reference/chan/content/model/Posts.html">Posts</a></td>
+              <td class="jd-descrcol" width="100%"><p>Model containing posts data.&nbsp;</td>
           </tr>
         <tr class=" api apilevel-" >
-              <td class="jd-linkcol"><a href="../../../../reference/chan/content/model/ThreadsModel.html">ThreadsModel</a></td>
-              <td class="jd-descrcol" width="100%"><p>Extendable model containing threads data.&nbsp;</td>
+              <td class="jd-linkcol"><a href="../../../../reference/chan/content/model/Threads.html">Threads</a></td>
+              <td class="jd-descrcol" width="100%"><p>Model containing threads data.&nbsp;</td>
+          </tr>
+        <tr class="alt-color api apilevel-" >
+              <td class="jd-linkcol"><a href="../../../../reference/chan/content/model/ThreadSummary.html">ThreadSummary</a></td>
+              <td class="jd-descrcol" width="100%"><p>Model containing thread summary: board name, thread number and short description.&nbsp;</td>
           </tr>
   </table>
     </div>
   
 
 
+  
+    <h2>Enums</h2>
+    <div class="jd-sumtable">
+    
+  <table class="jd-sumtable-expando">
+        <tr class="alt-color api apilevel-" >
+              <td class="jd-linkcol"><a href="../../../../reference/chan/content/model/EmbeddedAttachment.ContentType.html">EmbeddedAttachment.ContentType</a></td>
+              <td class="jd-descrcol" width="100%">Embedded file content type.&nbsp;</td>
+          </tr>
+  </table>
+    </div>
   
 
 

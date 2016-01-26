@@ -157,6 +157,7 @@
       <ul>
           <li class="api apilevel-"><a href="../../../reference/chan/http/HttpRequest.Preset.html">HttpRequest.Preset</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a></li>
       </ul>
     </li>
               
@@ -168,7 +169,6 @@
           <li class="api apilevel-"><a href="../../../reference/chan/http/HttpResponse.html">HttpResponse</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/http/HttpValidator.html">HttpValidator</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/http/MultipartEntity.html">MultipartEntity</a></li>
-          <li class="api apilevel-"><a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/http/UrlEncodedEntity.html">UrlEncodedEntity</a></li>
       </ul>
     </li>
@@ -419,7 +419,7 @@ Summary:
             </nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/http/HttpRequest.html#HttpRequest(android.net.Uri, chan.http.HttpHolder)">HttpRequest</a></span>(Uri uri, <a href="../../../reference/chan/http/HttpHolder.html">HttpHolder</a> holder)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/HttpRequest.html#HttpRequest(android.net.Uri, chan.http.HttpHolder, chan.http.HttpRequest.Preset)">HttpRequest</a></span>(Uri uri, <a href="../../../reference/chan/http/HttpHolder.html">HttpHolder</a> holder, <a href="../../../reference/chan/http/HttpRequest.Preset.html">HttpRequest.Preset</a> preset)</nobr>
         
         <div class="jd-descrdiv"><p>Constructor for <code><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></code>.</div>
   
@@ -558,9 +558,45 @@ Summary:
             <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/http/HttpRequest.html#setAllowOnlyOk(boolean)">setAllowOnlyOk</a></span>(boolean onlyOk)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/HttpRequest.html#setDelay(int)">setDelay</a></span>(int delay)</nobr>
         
-        <div class="jd-descrdiv"><p>Configures response code handling.</div>
+        <div class="jd-descrdiv"><p>Sets the delay before opening previous and this connection.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/HttpRequest.html#setGetMethod()">setGetMethod</a></span>()</nobr>
+        
+        <div class="jd-descrdiv"><p>Sets HTTP request method to GET.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/HttpRequest.html#setHeadMethod()">setHeadMethod</a></span>()</nobr>
+        
+        <div class="jd-descrdiv"><p>Sets HTTP request method to HEAD.</div>
   
   </td></tr>
 
@@ -594,9 +630,9 @@ Summary:
             <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/http/HttpRequest.html#setPost(boolean, chan.http.RequestEntity)">setPost</a></span>(boolean post, <a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a> entity)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/HttpRequest.html#setPostMethod(chan.http.RequestEntity)">setPostMethod</a></span>(<a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a> entity)</nobr>
         
-        <div class="jd-descrdiv"><p>Configures request method and request entity.</div>
+        <div class="jd-descrdiv"><p>Sets HTTP request method to POST with request entity.</div>
   
   </td></tr>
 
@@ -630,9 +666,9 @@ Summary:
             <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/http/HttpRequest.html#setTimeouts(int, int)">setTimeouts</a></span>(int connectTimeout, int readTimeout)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/HttpRequest.html#setSuccessOnly(boolean)">setSuccessOnly</a></span>(boolean successOnly)</nobr>
         
-        <div class="jd-descrdiv"><p>Sets the timeouts of connection.</div>
+        <div class="jd-descrdiv"><p>Configures response code handling.</div>
   
   </td></tr>
 
@@ -648,9 +684,9 @@ Summary:
             <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/http/HttpRequest.html#setValidator(chan.http.HttpValidator)">setValidator</a></span>(<a href="../../../reference/chan/http/HttpValidator.html">HttpValidator</a> validator)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/HttpRequest.html#setTimeouts(int, int)">setTimeouts</a></span>(int connectTimeout, int readTimeout)</nobr>
         
-        <div class="jd-descrdiv"><p>Sets the <code><a href="../../../reference/chan/http/HttpValidator.html">HttpValidator</a></code> to handle data changes with <code>304 Not Modified</code>.</div>
+        <div class="jd-descrdiv"><p>Sets the timeouts of connection.</div>
   
   </td></tr>
 
@@ -666,9 +702,9 @@ Summary:
             <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/http/HttpRequest.html#with(chan.http.HttpRequest.Preset)">with</a></span>(<a href="../../../reference/chan/http/HttpRequest.Preset.html">HttpRequest.Preset</a> preset)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/HttpRequest.html#setValidator(chan.http.HttpValidator)">setValidator</a></span>(<a href="../../../reference/chan/http/HttpValidator.html">HttpValidator</a> validator)</nobr>
         
-        <div class="jd-descrdiv"><p>Configures request with given <code><a href="../../../reference/chan/http/HttpRequest.Preset.html">HttpRequest.Preset</a></code>.</div>
+        <div class="jd-descrdiv"><p>Sets the <code><a href="../../../reference/chan/http/HttpValidator.html">HttpValidator</a></code> to handle data changes with <code>304 Not Modified</code>.</div>
   
   </td></tr>
 
@@ -891,7 +927,7 @@ From class
 
 
 
-<A NAME="HttpRequest(android.net.Uri, chan.http.HttpHolder)"></A>
+<A NAME="HttpRequest(android.net.Uri, chan.http.HttpHolder, chan.http.HttpRequest.Preset)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -904,7 +940,7 @@ From class
         
       </span>
       <span class="sympad">HttpRequest</span>
-      <span class="normal">(Uri uri, <a href="../../../reference/chan/http/HttpHolder.html">HttpHolder</a> holder)</span>
+      <span class="normal">(Uri uri, <a href="../../../reference/chan/http/HttpHolder.html">HttpHolder</a> holder, <a href="../../../reference/chan/http/HttpRequest.Preset.html">HttpRequest.Preset</a> preset)</span>
     </h4>
     <div class="jd-details-descr">
       
@@ -920,6 +956,10 @@ From class
           <th>holder</td>
           <td><code><a href="../../../reference/chan/http/HttpHolder.html">HttpHolder</a></code> instance. May be null.
 </td>
+        </tr>
+        <tr>
+          <th>preset</td>
+          <td>Preset with configuration.</td>
         </tr>
       </table>
   </div>
@@ -1190,7 +1230,7 @@ From class
 </div>
 
 
-<A NAME="setAllowOnlyOk(boolean)"></A>
+<A NAME="setDelay(int)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -1202,30 +1242,82 @@ From class
          
         <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a>
       </span>
-      <span class="sympad">setAllowOnlyOk</span>
-      <span class="normal">(boolean onlyOk)</span>
+      <span class="sympad">setDelay</span>
+      <span class="normal">(int delay)</span>
     </h4>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Configures response code handling. The <code><a href="../../../reference/chan/http/HttpHolder.html#checkResponseCode()">checkResponseCode()</a></code> will be called automatically
- if this handling enabled. Enabled by default.</p></p></div>
+  <div class="jd-tagdata jd-tagdescr"><p><p>Sets the delay before opening previous and this connection.
+ May be helpful in adjusting connection frequency.</p></p></div>
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Parameters</h5>
       <table class="jd-tagtable">
         <tr>
-          <th>onlyOk</td>
-          <td>True to enable handling, false to disable one.</td>
+          <th>delay</td>
+          <td>Delay in milliseconds.</td>
         </tr>
       </table>
   </div>
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This builder.</li></ul>
+      <ul class="nolist"><li>This builder.
+</li></ul>
   </div>
+
+    </div>
+</div>
+
+
+<A NAME="setGetMethod()"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a>
+      </span>
+      <span class="sympad">setGetMethod</span>
+      <span class="normal">()</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Sets HTTP request method to GET.</p></p></div>
   <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">See Also</h5>
-      <ul class="nolist"><li><code><a href="../../../">ERROR(/HttpRequest#setRedirectsHandler(Redirect))</a></code></li>
-      </ul>
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li>This builder.
+</li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="setHeadMethod()"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a>
+      </span>
+      <span class="sympad">setHeadMethod</span>
+      <span class="normal">()</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Sets HTTP request method to HEAD.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li>This builder.
+</li></ul>
   </div>
 
     </div>
@@ -1269,7 +1361,7 @@ From class
 </div>
 
 
-<A NAME="setPost(boolean, chan.http.RequestEntity)"></A>
+<A NAME="setPostMethod(chan.http.RequestEntity)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -1281,19 +1373,15 @@ From class
          
         <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a>
       </span>
-      <span class="sympad">setPost</span>
-      <span class="normal">(boolean post, <a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a> entity)</span>
+      <span class="sympad">setPostMethod</span>
+      <span class="normal">(<a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a> entity)</span>
     </h4>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Configures request method and request entity.</p></p></div>
+  <div class="jd-tagdata jd-tagdescr"><p><p>Sets HTTP request method to POST with request entity.</p></p></div>
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Parameters</h5>
       <table class="jd-tagtable">
-        <tr>
-          <th>post</td>
-          <td>True for POST method, false for GET one.</td>
-        </tr>
         <tr>
           <th>entity</td>
           <td><code><a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a></code> instance.</td>
@@ -1327,17 +1415,51 @@ From class
     </h4>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Configures redirect handling with <code><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a></code>.</p>
- 
- <p>Don't forget to disable response handling with <code><a href="../../../reference/chan/http/HttpRequest.html#setAllowOnlyOk(boolean)">setAllowOnlyOk(boolean)</a></code> if you use
- <code><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html#NONE">NONE</a></code> or another handler that returns <code><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html#CANCEL">CANCEL</a></code>!
- Otherwise redirects will throw <code><a href="../../../reference/chan/http/HttpException.html">HttpException</a></code>.</p></p></div>
+  <div class="jd-tagdata jd-tagdescr"><p><p>Configures redirect handling with <code><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a></code>.</p></p></div>
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Parameters</h5>
       <table class="jd-tagtable">
         <tr>
           <th>redirectHandler</td>
           <td>Redirect handler interface.</td>
+        </tr>
+      </table>
+  </div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li>This builder.
+</li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="setSuccessOnly(boolean)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a>
+      </span>
+      <span class="sympad">setSuccessOnly</span>
+      <span class="normal">(boolean successOnly)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Configures response code handling. The <code><a href="../../../reference/chan/http/HttpHolder.html#checkResponseCode()">checkResponseCode()</a></code> will be called automatically
+ if this handling enabled. Enabled by default.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>successOnly</td>
+          <td>True to enable handling, false to disable one.</td>
         </tr>
       </table>
   </div>
@@ -1374,11 +1496,11 @@ From class
       <table class="jd-tagtable">
         <tr>
           <th>connectTimeout</td>
-          <td>TCP handshake timeout.</td>
+          <td>TCP handshake timeout in milliseconds.</td>
         </tr>
         <tr>
           <th>readTimeout</td>
-          <td>Max delay between reading data.</td>
+          <td>Max delay in milliseconds between reading data.</td>
         </tr>
       </table>
   </div>
@@ -1416,43 +1538,6 @@ From class
         <tr>
           <th>validator</td>
           <td><code><a href="../../../reference/chan/http/HttpValidator.html">HttpValidator</a></code> instance. May be null.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This builder.
-</li></ul>
-  </div>
-
-    </div>
-</div>
-
-
-<A NAME="with(chan.http.HttpRequest.Preset)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public 
-         
-         
-         
-         
-        <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a>
-      </span>
-      <span class="sympad">with</span>
-      <span class="normal">(<a href="../../../reference/chan/http/HttpRequest.Preset.html">HttpRequest.Preset</a> preset)</span>
-    </h4>
-    <div class="jd-details-descr">
-      
-  <div class="jd-tagdata jd-tagdescr"><p><p>Configures request with given <code><a href="../../../reference/chan/http/HttpRequest.Preset.html">HttpRequest.Preset</a></code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>preset</td>
-          <td>Preset with configuration.</td>
         </tr>
       </table>
   </div>

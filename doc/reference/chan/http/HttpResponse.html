@@ -157,6 +157,7 @@
       <ul>
           <li class="api apilevel-"><a href="../../../reference/chan/http/HttpRequest.Preset.html">HttpRequest.Preset</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a></li>
       </ul>
     </li>
               
@@ -168,7 +169,6 @@
           <li class="selected api apilevel-"><a href="../../../reference/chan/http/HttpResponse.html">HttpResponse</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/http/HttpValidator.html">HttpValidator</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/http/MultipartEntity.html">MultipartEntity</a></li>
-          <li class="api apilevel-"><a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/http/UrlEncodedEntity.html">UrlEncodedEntity</a></li>
       </ul>
     </li>
@@ -490,6 +490,24 @@ Summary:
         <span class="sympad"><a href="../../../reference/chan/http/HttpResponse.html#getString()">getString</a></span>()</nobr>
         
         <div class="jd-descrdiv"><p>Decodes and returns response as string.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/HttpResponse.html#setEncoding(java.lang.String)">setEncoding</a></span>(String charsetName)</nobr>
+        
+        <div class="jd-descrdiv"><p>Sets encoding for this instance.</div>
   
   </td></tr>
 
@@ -893,6 +911,34 @@ From class
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Returns</h5>
       <ul class="nolist"><li>String response.
+</li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="setEncoding(java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">setEncoding</span>
+      <span class="normal">(String charsetName)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Sets encoding for this instance. UTF-8 is used by default.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li>charsetName Charset name.
 </li></ul>
   </div>
 

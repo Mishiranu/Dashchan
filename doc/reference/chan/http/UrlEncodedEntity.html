@@ -157,6 +157,7 @@
       <ul>
           <li class="api apilevel-"><a href="../../../reference/chan/http/HttpRequest.Preset.html">HttpRequest.Preset</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a></li>
       </ul>
     </li>
               
@@ -168,7 +169,6 @@
           <li class="api apilevel-"><a href="../../../reference/chan/http/HttpResponse.html">HttpResponse</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/http/HttpValidator.html">HttpValidator</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/http/MultipartEntity.html">MultipartEntity</a></li>
-          <li class="api apilevel-"><a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a></li>
           <li class="selected api apilevel-"><a href="../../../reference/chan/http/UrlEncodedEntity.html">UrlEncodedEntity</a></li>
       </ul>
     </li>
@@ -280,16 +280,17 @@ Summary:
 
 
   
-  
-  
-
-  
-    extends <a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a><br/>
+    extends Object<br/>
   
   
   
 
   
+  
+      implements 
+      
+        <a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a> 
+      
   
   
 
@@ -304,21 +305,11 @@ Summary:
 
     <tr>
          	
-        <td colspan="3" class="jd-inheritance-class-cell">java.lang.Object</td>
+        <td colspan="2" class="jd-inheritance-class-cell">java.lang.Object</td>
     </tr>
     
 
     <tr>
-        
-            <td class="jd-inheritance-space">&nbsp;&nbsp;&nbsp;&#x21b3;</td>
-         	
-        <td colspan="2" class="jd-inheritance-class-cell"><a href="../../../reference/chan/http/RequestEntity.html">chan.http.RequestEntity</a></td>
-    </tr>
-    
-
-    <tr>
-        
-            <td class="jd-inheritance-space">&nbsp;</td>
         
             <td class="jd-inheritance-space">&nbsp;&nbsp;&nbsp;&#x21b3;</td>
          	
@@ -508,6 +499,24 @@ Summary:
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/UrlEncodedEntity.html#setEncoding(java.lang.String)">setEncoding</a></span>(String charsetName)</nobr>
+        
+        <div class="jd-descrdiv"><p>Changes encoding type for this entity.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad"><a href="../../../reference/chan/http/UrlEncodedEntity.html#write(java.io.OutputStream)">write</a></span>(OutputStream output)</nobr>
         
         <div class="jd-descrdiv"><p>Writes entity to given <code>output</code>.</div>
@@ -528,104 +537,6 @@ Summary:
 <table id="inhmethods" class="jd-sumtable"><tr><th>
   <a href="#" class="toggle-all" onclick="return toggleAllInherited(this, null)">[Expand]</a>
   <div style="clear:left;">Inherited Methods</div></th></tr>
-
-
-<tr class="api apilevel-" >
-<td colspan="12">
-  <a href="#" onclick="return toggleInherited(this, null)" id="inherited-methods-chan.http.RequestEntity" class="jd-expando-trigger closed"
-          ><img id="inherited-methods-chan.http.RequestEntity-trigger"
-          src="../../../assets/images/triangle-closed.png"
-          class="jd-expando-trigger-img" /></a>
-From class
-
-  <a href="../../../reference/chan/http/RequestEntity.html">chan.http.RequestEntity</a>
-
-<div id="inherited-methods-chan.http.RequestEntity">
-  <div id="inherited-methods-chan.http.RequestEntity-list"
-        class="jd-inheritedlinks">
-  </div>
-  <div id="inherited-methods-chan.http.RequestEntity-summary" style="display: none;">
-    <table class="jd-sumtable-expando">
-    
-
-
-	 
-    <tr class="alt-color api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            abstract
-            
-            
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/http/RequestEntity.html#add(java.lang.String, java.lang.String)">add</a></span>(String name, String value)</nobr>
-        
-        <div class="jd-descrdiv"><p>Add string field to entity with given <code>name</code> and <code>value</code>.</div>
-  
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            abstract
-            
-            
-            
-            
-            long</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/http/RequestEntity.html#getContentLength()">getContentLength</a></span>()</nobr>
-        
-        <div class="jd-descrdiv"><p>Returns a content length of entity.</div>
-  
-  </td></tr>
-
-
-	 
-    <tr class="alt-color api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            abstract
-            
-            
-            
-            
-            String</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/http/RequestEntity.html#getContentType()">getContentType</a></span>()</nobr>
-        
-        <div class="jd-descrdiv"><p>Returns a content type of entity.</div>
-  
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            abstract
-            
-            
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/http/RequestEntity.html#write(java.io.OutputStream)">write</a></span>(OutputStream output)</nobr>
-        
-        <div class="jd-descrdiv"><p>Writes entity to given <code>output</code>.</div>
-  
-  </td></tr>
-
-
-</table>
-  </div>
-</div>
-</td></tr>
-
 
 
 <tr class="api apilevel-" >
@@ -788,6 +699,104 @@ From class
         <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad">wait</span>(long arg0)</nobr>
         
+  </td></tr>
+
+
+</table>
+  </div>
+</div>
+</td></tr>
+
+
+
+<tr class="api apilevel-" >
+<td colspan="12">
+  <a href="#" onclick="return toggleInherited(this, null)" id="inherited-methods-chan.http.RequestEntity" class="jd-expando-trigger closed"
+          ><img id="inherited-methods-chan.http.RequestEntity-trigger"
+          src="../../../assets/images/triangle-closed.png"
+          class="jd-expando-trigger-img" /></a>
+From interface
+
+  <a href="../../../reference/chan/http/RequestEntity.html">chan.http.RequestEntity</a>
+
+<div id="inherited-methods-chan.http.RequestEntity">
+  <div id="inherited-methods-chan.http.RequestEntity-list"
+        class="jd-inheritedlinks">
+  </div>
+  <div id="inherited-methods-chan.http.RequestEntity-summary" style="display: none;">
+    <table class="jd-sumtable-expando">
+    
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            abstract
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/RequestEntity.html#add(java.lang.String, java.lang.String)">add</a></span>(String name, String value)</nobr>
+        
+        <div class="jd-descrdiv"><p>Add string field to entity with given <code>name</code> and <code>value</code>.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            abstract
+            
+            
+            
+            
+            long</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/RequestEntity.html#getContentLength()">getContentLength</a></span>()</nobr>
+        
+        <div class="jd-descrdiv"><p>Returns a content length of entity.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            abstract
+            
+            
+            
+            
+            String</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/RequestEntity.html#getContentType()">getContentType</a></span>()</nobr>
+        
+        <div class="jd-descrdiv"><p>Returns a content type of entity.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            abstract
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/RequestEntity.html#write(java.io.OutputStream)">write</a></span>(OutputStream output)</nobr>
+        
+        <div class="jd-descrdiv"><p>Writes entity to given <code>output</code>.</div>
+  
   </td></tr>
 
 
@@ -990,6 +999,39 @@ From class
       <h5 class="jd-tagtitle">Returns</h5>
       <ul class="nolist"><li>Content type.
 </li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="setEncoding(java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">setEncoding</span>
+      <span class="normal">(String charsetName)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Changes encoding type for this entity. By default UTF-8 is used.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>charsetName</td>
+          <td>Charset name.
+</td>
+        </tr>
+      </table>
   </div>
 
     </div>
