@@ -10,7 +10,8 @@ Read the [project wiki](https://github.com/Mishiranu/Dashchan/wiki) for further 
 
 # Packages List
 
-Client application: [Dashchan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/Dashchan.apk).
+Client application: [Dashchan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/Dashchan.apk).  
+Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanWebm.apk).
 
 | Chan Name       | Host                 | Extension Package Link                                                                                                     | Read Only |
 | :-------------: | :------------------: | :------------------------------------------------------------------------------------------------------------------------- | :-------: |
