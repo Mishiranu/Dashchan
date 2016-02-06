@@ -4,8 +4,6 @@ Dashchan is imageboards client for Android.
 
 This repository is designed to store Dashchan updating data.
 
-The source code of extensions with API will be available soon.
-
 Read the [project wiki](https://github.com/Mishiranu/Dashchan/wiki) for further information.
 
 # Packages List
@@ -45,6 +43,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | rulet           | 2-chru.net           | [DashchanRulet.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanRulet.apk)                     | No        |
 | sevenchan       | 7chan.org            | [DashchanSevenchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanSevenchan.apk)             | No        |
 | shanachan       | shanachan.org        | [DashchanShanachan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanShanachan.apk)             | No        |
+| sharechan       | sharechan.org        | [DashchanSharechan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanSharechan.apk)             | No        |
 | taima           | 420chan.org          | [DashchanTaima.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanTaima.apk)                     | No        |
 
 # Installation Guide
