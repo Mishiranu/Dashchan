@@ -363,6 +363,17 @@
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanTaima.apk"
 		}
 	],
+	"tiretirech":
+	[
+		{
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"length": 56794,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanTiretirech.apk"
+		}
+	],
 	"webm":
 	[
 		{
