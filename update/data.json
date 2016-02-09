@@ -3,11 +3,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "2.5.1",
+			"name": "2.5.2",
 			"code": 1028,
 			"minVersion": 1,
 			"maxVersion": 1,
-			"length": 1021787,
+			"length": 1024266,
 			"source": "/Mishiranu/Dashchan/master/update/package/Dashchan.apk"
 		}
 	],
@@ -15,10 +15,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.0",
+			"name": "1.1",
 			"code": 1,
 			"version": 1,
-			"length": 58072,
+			"length": 57714,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanAllchan.apk"
 		}
 	],
@@ -59,10 +59,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.2",
+			"name": "1.3",
 			"code": 1,
 			"version": 1,
-			"length": 60089,
+			"length": 59467,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanArhivach.apk"
 		}
 	],
@@ -147,10 +147,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.8",
+			"name": "1.9",
 			"code": 1,
 			"version": 1,
-			"length": 114851,
+			"length": 114880,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanDvach.apk"
 		}
 	],
@@ -246,10 +246,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.4",
+			"name": "1.5",
 			"code": 1,
 			"version": 1,
-			"length": 53601,
+			"length": 53669,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanLocal.apk"
 		}
 	],
