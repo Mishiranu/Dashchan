@@ -92,10 +92,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.7",
+			"name": "1.8",
 			"code": 1,
 			"version": 1,
-			"length": 61799,
+			"length": 61306,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanCirno.apk"
 		}
 	],
@@ -273,6 +273,17 @@
 			"version": 1,
 			"length": 63394,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanNullcc.apk"
+		}
+	],
+	"nulldvachin":
+	[
+		{
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"length": 57895,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanNulldvachin.apk"
 		}
 	],
 	"owlchan":
