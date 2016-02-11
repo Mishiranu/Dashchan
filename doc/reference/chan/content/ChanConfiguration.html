@@ -365,7 +365,7 @@ Summary:
 <h2>Class Overview</h2>
 <p itemprop="articleBody"><p>Provides extension configuration.</p>
  
- <p>During construction you can configure the following options using <code><a href="../../../reference/chan/content/ChanConfiguration.html#setOption(java.lang.String, boolean)">setOption(String, boolean)</a></code> method:</p>
+ <p>During construction you can enable the following options using <code><a href="../../../reference/chan/content/ChanConfiguration.html#request(java.lang.String)">request(String)</a></code> method:</p>
  
  <ul>
  <li><code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_SINGLE_BOARD_MODE">OPTION_SINGLE_BOARD_MODE</a></code></li>
@@ -961,6 +961,24 @@ Summary:
             final
             
             
+            File</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#getDownloadDirectory()">getDownloadDirectory</a></span>()</nobr>
+        
+        <div class="jd-descrdiv"><p>Returns download directory.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
             Resources</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
@@ -972,7 +990,7 @@ Summary:
 
 
 	 
-    <tr class=" api apilevel-" >
+    <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -990,7 +1008,7 @@ Summary:
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -1008,7 +1026,7 @@ Summary:
 
 
 	 
-    <tr class=" api apilevel-" >
+    <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -1026,7 +1044,7 @@ Summary:
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -1044,7 +1062,7 @@ Summary:
 
 
 	 
-    <tr class=" api apilevel-" >
+    <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -1062,7 +1080,7 @@ Summary:
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -1080,7 +1098,7 @@ Summary:
 
 
 	 
-    <tr class=" api apilevel-" >
+    <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -1098,7 +1116,7 @@ Summary:
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -1116,7 +1134,7 @@ Summary:
 
 
 	 
-    <tr class=" api apilevel-" >
+    <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -1134,7 +1152,7 @@ Summary:
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -1152,7 +1170,7 @@ Summary:
 
 
 	 
-    <tr class=" api apilevel-" >
+    <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -1170,7 +1188,7 @@ Summary:
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -1183,6 +1201,24 @@ Summary:
         <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#obtainUserAuthorizationConfiguration()">obtainUserAuthorizationConfiguration</a></span>()</nobr>
         
         <div class="jd-descrdiv"><p>Calls every time client requests user authorization configuration.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            final
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#request(java.lang.String)">request</a></span>(String option)</nobr>
+        
+        <div class="jd-descrdiv"><p>Requests <code>option</code>.</div>
   
   </td></tr>
 
@@ -1378,24 +1414,6 @@ Summary:
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#setOption(java.lang.String, boolean)">setOption</a></span>(String option, boolean enabled)</nobr>
-        
-        <div class="jd-descrdiv"><p>Changes <code>option</code> configuration.</div>
-  
-  </td></tr>
-
-
-	 
-    <tr class="alt-color api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            final
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#setPagesCount(java.lang.String, int)">setPagesCount</a></span>(String boardName, int pagesCount)</nobr>
         
         <div class="jd-descrdiv"><p>Set <code>pagesCount</code> for <code>boardName</code>.</div>
@@ -1404,7 +1422,7 @@ Summary:
 
 
 	 
-    <tr class=" api apilevel-" >
+    <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -1422,7 +1440,7 @@ Summary:
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -1440,7 +1458,7 @@ Summary:
 
 
 	 
-    <tr class=" api apilevel-" >
+    <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -1458,7 +1476,7 @@ Summary:
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -1476,7 +1494,7 @@ Summary:
 
 
 	 
-    <tr class=" api apilevel-" >
+    <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -1494,7 +1512,7 @@ Summary:
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -1512,7 +1530,7 @@ Summary:
 
 
 	 
-    <tr class=" api apilevel-" >
+    <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -1875,7 +1893,7 @@ From class
  Then you can use them to skip captcha.</p>
  
  <p>If you enable this option, you <strong>must</strong> implement
- <code><a href="../../../reference/chan/content/ChanPerformer.html#performCheckAuthorization(chan.content.ChanPerformer.CheckAuthorizationData)">performCheckAuthorization(chan.content.ChanPerformer.CheckAuthorizationData)</a></code>.</p>
+ <code><a href="../../../reference/chan/content/ChanPerformer.html#onCheckAuthorization(chan.content.ChanPerformer.CheckAuthorizationData)">onCheckAuthorization(chan.content.ChanPerformer.CheckAuthorizationData)</a></code>.</p>
  
  <p>You should also implement <code><a href="../../../reference/chan/content/ChanConfiguration.html#obtainCaptchaPassConfiguration()">obtainCaptchaPassConfiguration()</a></code>.</p></p></div>
   <div class="jd-tagdata">
@@ -1910,7 +1928,7 @@ From class
  state. Then you can grant user rights to read some threads or something like this.</p>
  
  <p>If you enable this option, you <strong>must</strong> implement
- <code><a href="../../../reference/chan/content/ChanPerformer.html#performCheckAuthorization(chan.content.ChanPerformer.CheckAuthorizationData)">performCheckAuthorization(chan.content.ChanPerformer.CheckAuthorizationData)</a></code>.</p>
+ <code><a href="../../../reference/chan/content/ChanPerformer.html#onCheckAuthorization(chan.content.ChanPerformer.CheckAuthorizationData)">onCheckAuthorization(chan.content.ChanPerformer.CheckAuthorizationData)</a></code>.</p>
  
  <p>You should also implement <code><a href="../../../reference/chan/content/ChanConfiguration.html#obtainUserAuthorizationConfiguration()">obtainUserAuthorizationConfiguration()</a></code>.</p>
 </p></div>
@@ -1938,7 +1956,7 @@ From class
   <div class="jd-tagdata jd-tagdescr"><p><p>Allows client to download popular threads.</p>
  
  <p>If you enable this option, you <strong>must</strong> implement
- <code><a href="../../../reference/chan/content/ChanPerformer.html#performReadThreadSummaries(chan.content.ChanPerformer.ReadThreadSummariesData)">performReadThreadSummaries(chan.content.ChanPerformer.ReadThreadSummariesData)</a></code> of
+ <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadThreadSummaries(chan.content.ChanPerformer.ReadThreadSummariesData)">onReadThreadSummaries(chan.content.ChanPerformer.ReadThreadSummariesData)</a></code> of
  <code><a href="../../../reference/chan/content/ChanPerformer.ReadThreadSummariesData.html#TYPE_POPULAR_THREADS">TYPE_POPULAR_THREADS</a></code> type.</p>
 </p></div>
 
@@ -1965,7 +1983,7 @@ From class
   <div class="jd-tagdata jd-tagdescr"><p><p>Allows client to download posts count in thread. This option is necessary for threads watcher.</p>
  
  <p>If you enable this option, you <strong>must</strong> implement
- <code><a href="../../../reference/chan/content/ChanPerformer.html#performReadPostsCount(chan.content.ChanPerformer.ReadPostsCountData)">performReadPostsCount(chan.content.ChanPerformer.ReadPostsCountData)</a></code>.</p>
+ <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadPostsCount(chan.content.ChanPerformer.ReadPostsCountData)">onReadPostsCount(chan.content.ChanPerformer.ReadPostsCountData)</a></code>.</p>
 </p></div>
 
     
@@ -1991,7 +2009,7 @@ From class
   <div class="jd-tagdata jd-tagdescr"><p><p>Allows client to download single post knowing it's board name and post number.</p>
  
  <p>If you enable this option, you <strong>must</strong> implement
- <code><a href="../../../reference/chan/content/ChanPerformer.html#performReadSinglePost(chan.content.ChanPerformer.ReadSinglePostData)">performReadSinglePost(chan.content.ChanPerformer.ReadSinglePostData)</a></code>.</p>
+ <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadSinglePost(chan.content.ChanPerformer.ReadSinglePostData)">onReadSinglePost(chan.content.ChanPerformer.ReadSinglePostData)</a></code>.</p>
 </p></div>
 
     
@@ -2017,7 +2035,7 @@ From class
   <div class="jd-tagdata jd-tagdescr"><p><p>Allows client to download thread partially.</p></p></div>
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">See Also</h5>
-      <ul class="nolist"><li><code><a href="../../../reference/chan/content/ChanPerformer.html#performReadPosts(chan.content.ChanPerformer.ReadPostsData)">performReadPosts(chan.content.ChanPerformer.ReadPostsData)</a></code></li>
+      <ul class="nolist"><li><code><a href="../../../reference/chan/content/ChanPerformer.html#onReadPosts(chan.content.ChanPerformer.ReadPostsData)">onReadPosts(chan.content.ChanPerformer.ReadPostsData)</a></code></li>
       </ul>
   </div>
 
@@ -2044,7 +2062,7 @@ From class
   <div class="jd-tagdata jd-tagdescr"><p><p>Allows client to download user boards.</p>
  
  <p>If you enable this option, you <strong>must</strong> implement
- <code><a href="../../../reference/chan/content/ChanPerformer.html#performReadUserBoards(chan.content.ChanPerformer.ReadUserBoardsData)">performReadUserBoards(chan.content.ChanPerformer.ReadUserBoardsData)</a></code>.</p>
+ <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadUserBoards(chan.content.ChanPerformer.ReadUserBoardsData)">onReadUserBoards(chan.content.ChanPerformer.ReadUserBoardsData)</a></code>.</p>
 </p></div>
 
     
@@ -2068,7 +2086,7 @@ From class
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Allows client to use only one board. That exempts you from obligation to override
- <code><a href="../../../reference/chan/content/ChanPerformer.html#performReadBoards(chan.content.ChanPerformer.ReadBoardsData)">performReadBoards(chan.content.ChanPerformer.ReadBoardsData)</a></code> method.</p>
+ <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadBoards(chan.content.ChanPerformer.ReadBoardsData)">onReadBoards(chan.content.ChanPerformer.ReadBoardsData)</a></code> method.</p>
  
  <p>The <code>boardName</code> argument in all methods will be equal to <code>null</code>. You can change this argument
  using <code><a href="../../../reference/chan/content/ChanConfiguration.html#setSingleBoardName(java.lang.String)">setSingleBoardName(String)</a></code> method.</p>
@@ -2394,12 +2412,8 @@ From class
     </h4>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns application context.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Application context.
-</li></ul>
-  </div>
+  <div class="jd-tagdata jd-tagdescr"><p><p>Returns application context.</p>
+</p></div>
 
     </div>
 </div>
@@ -2442,6 +2456,30 @@ From class
 </div>
 
 
+<A NAME="getDownloadDirectory()"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        File
+      </span>
+      <span class="sympad">getDownloadDirectory</span>
+      <span class="normal">()</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Returns download directory.</p> 
+</p></div>
+
+    </div>
+</div>
+
+
 <A NAME="getResources()"></A>
 
 <div class="jd-details api apilevel-"> 
@@ -2459,12 +2497,8 @@ From class
     </h4>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns resources from chan APK file.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Resources bound to chan.
-</li></ul>
-  </div>
+  <div class="jd-tagdata jd-tagdescr"><p><p>Returns resources from chan APK file.</p>
+</p></div>
 
     </div>
 </div>
@@ -2541,12 +2575,8 @@ From class
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Calls every time client requests archivation configuration. You must return new instance of
- <code><a href="../../../reference/chan/content/ChanConfiguration.Archivation.html">ChanConfiguration.Archivation</a></code> with archivation configuration.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Archivation configuration.
-</li></ul>
-  </div>
+ <code><a href="../../../reference/chan/content/ChanConfiguration.Archivation.html">ChanConfiguration.Archivation</a></code> with archivation configuration.</p>
+</p></div>
 
     </div>
 </div>
@@ -2579,14 +2609,10 @@ From class
       <table class="jd-tagtable">
         <tr>
           <th>boardName</td>
-          <td>Board name string.</td>
+          <td>Board name string.
+</td>
         </tr>
       </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Board configuration.
-</li></ul>
   </div>
 
     </div>
@@ -2611,12 +2637,8 @@ From class
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Calls every time client requests captcha pass configuration. You must return new instance of
- <code><a href="../../../reference/chan/content/ChanConfiguration.Authorization.html">ChanConfiguration.Authorization</a></code> with captcha pass configuration.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Captcha pass configuration.
-</li></ul>
-  </div>
+ <code><a href="../../../reference/chan/content/ChanConfiguration.Authorization.html">ChanConfiguration.Authorization</a></code> with captcha pass configuration.</p>
+</p></div>
 
     </div>
 </div>
@@ -2646,14 +2668,10 @@ From class
       <table class="jd-tagtable">
         <tr>
           <th>captchaType</td>
-          <td>Captcha type string.</td>
+          <td>Captcha type string.
+</td>
         </tr>
       </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Captcha configuration.
-</li></ul>
   </div>
 
     </div>
@@ -2684,14 +2702,10 @@ From class
       <table class="jd-tagtable">
         <tr>
           <th>key</td>
-          <td>Custom preference key.</td>
+          <td>Custom preference key.
+</td>
         </tr>
       </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Custom preference configuration.
-</li></ul>
   </div>
 
     </div>
@@ -2725,14 +2739,10 @@ From class
       <table class="jd-tagtable">
         <tr>
           <th>boardName</td>
-          <td>Board name string.</td>
+          <td>Board name string.
+</td>
         </tr>
       </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Deleting configuration.
-</li></ul>
   </div>
 
     </div>
@@ -2770,14 +2780,10 @@ From class
         </tr>
         <tr>
           <th>newThread</td>
-          <td>True if user starts new thread.</td>
+          <td>True if user starts new thread.
+</td>
         </tr>
       </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Posting configuration.
-</li></ul>
   </div>
 
     </div>
@@ -2811,14 +2817,10 @@ From class
       <table class="jd-tagtable">
         <tr>
           <th>boardName</td>
-          <td>Board name string.</td>
+          <td>Board name string.
+</td>
         </tr>
       </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Reporting configuration.
-</li></ul>
   </div>
 
     </div>
@@ -2843,12 +2845,8 @@ From class
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Calls every time client requests statistics configuration. You must return new instance of
- <code><a href="../../../reference/chan/content/ChanConfiguration.Statistics.html">ChanConfiguration.Statistics</a></code> with statistics configuration.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Statistics configuration.
-</li></ul>
-  </div>
+ <code><a href="../../../reference/chan/content/ChanConfiguration.Statistics.html">ChanConfiguration.Statistics</a></code> with statistics configuration.</p>
+</p></div>
 
     </div>
 </div>
@@ -2872,11 +2870,40 @@ From class
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Calls every time client requests user authorization configuration. You must return new instance of
- <code><a href="../../../reference/chan/content/ChanConfiguration.Authorization.html">ChanConfiguration.Authorization</a></code> with user authorization configuration.</p></p></div>
+ <code><a href="../../../reference/chan/content/ChanConfiguration.Authorization.html">ChanConfiguration.Authorization</a></code> with user authorization configuration.</p>
+</p></div>
+
+    </div>
+</div>
+
+
+<A NAME="request(java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+         
+         
+        void
+      </span>
+      <span class="sympad">request</span>
+      <span class="normal">(String option)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Requests <code>option</code>. You can do it only during construction.</p></p></div>
   <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>User authorization configuration.
-</li></ul>
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>option</td>
+          <td>Option to request.
+</td>
+        </tr>
+      </table>
   </div>
 
     </div>
@@ -3244,43 +3271,6 @@ From class
         <tr>
           <th>defaultName</td>
           <td>Default name.
-</td>
-        </tr>
-      </table>
-  </div>
-
-    </div>
-</div>
-
-
-<A NAME="setOption(java.lang.String, boolean)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public 
-         
-        final 
-         
-         
-        void
-      </span>
-      <span class="sympad">setOption</span>
-      <span class="normal">(String option, boolean enabled)</span>
-    </h4>
-    <div class="jd-details-descr">
-      
-  <div class="jd-tagdata jd-tagdescr"><p><p>Changes <code>option</code> configuration. You can do it only during construction.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>option</td>
-          <td>Option to configure.</td>
-        </tr>
-        <tr>
-          <th>enabled</td>
-          <td>True to enable option, false otherwise.
 </td>
         </tr>
       </table>

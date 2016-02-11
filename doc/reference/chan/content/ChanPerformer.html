@@ -365,44 +365,44 @@ Summary:
  <p>By default you must implement the following methods:</p>
  
  <ul>
- <li><code><a href="../../../reference/chan/content/ChanPerformer.html#performReadThreads(chan.content.ChanPerformer.ReadThreadsData)">performReadThreads(ReadThreadsData)</a></code></li>
- <li><code><a href="../../../reference/chan/content/ChanPerformer.html#performReadPosts(chan.content.ChanPerformer.ReadPostsData)">performReadPosts(ReadPostsData)</a></code></li>
- <li><code><a href="../../../reference/chan/content/ChanPerformer.html#performReadBoards(chan.content.ChanPerformer.ReadBoardsData)">performReadBoards(ReadBoardsData)</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanPerformer.html#onReadThreads(chan.content.ChanPerformer.ReadThreadsData)">onReadThreads(ReadThreadsData)</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanPerformer.html#onReadPosts(chan.content.ChanPerformer.ReadPostsData)">onReadPosts(ReadPostsData)</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanPerformer.html#onReadBoards(chan.content.ChanPerformer.ReadBoardsData)">onReadBoards(ReadBoardsData)</a></code></li>
  </ul>
  
  <p>Depending one the <code><a href="../../../reference/chan/content/ChanConfiguration.Board.html">ChanConfiguration.Board</a></code> configuration you must implement the following methods:</p>
  
  <p><table><tr><th>Option</th><th>Method</th></tr>
  <tr><td><code><a href="../../../reference/chan/content/ChanConfiguration.Board.html#allowSearch">allowSearch</a></code></td>
- <td><code><a href="../../../reference/chan/content/ChanPerformer.html#performReadSearchPosts(chan.content.ChanPerformer.ReadSearchPostsData)">performReadSearchPosts(ReadSearchPostsData)</a></code></td></tr>
+ <td><code><a href="../../../reference/chan/content/ChanPerformer.html#onReadSearchPosts(chan.content.ChanPerformer.ReadSearchPostsData)">onReadSearchPosts(ReadSearchPostsData)</a></code></td></tr>
  <tr><td><code><a href="../../../reference/chan/content/ChanConfiguration.Board.html#allowCatalog">allowCatalog</a></code></td>
- <td><code><a href="../../../reference/chan/content/ChanPerformer.html#performReadThreads(chan.content.ChanPerformer.ReadThreadsData)">performReadThreads(ReadThreadsData)</a></code> (see description)</td></tr>
+ <td><code><a href="../../../reference/chan/content/ChanPerformer.html#onReadThreads(chan.content.ChanPerformer.ReadThreadsData)">onReadThreads(ReadThreadsData)</a></code> (see description)</td></tr>
  <tr><td><code><a href="../../../reference/chan/content/ChanConfiguration.Board.html#allowArchive">allowArchive</a></code></td>
- <td><code><a href="../../../reference/chan/content/ChanPerformer.html#performReadThreadSummaries(chan.content.ChanPerformer.ReadThreadSummariesData)">performReadThreadSummaries(ReadThreadSummariesData)</a></code></td></tr>
+ <td><code><a href="../../../reference/chan/content/ChanPerformer.html#onReadThreadSummaries(chan.content.ChanPerformer.ReadThreadSummariesData)">onReadThreadSummaries(ReadThreadSummariesData)</a></code></td></tr>
  <tr><td><code><a href="../../../reference/chan/content/ChanConfiguration.Board.html#allowPosting">allowPosting</a></code></td>
- <td><code><a href="../../../reference/chan/content/ChanPerformer.html#performReadCaptcha(chan.content.ChanPerformer.ReadCaptchaData)">performReadCaptcha(ReadCaptchaData)</a></code></td></tr>
+ <td><code><a href="../../../reference/chan/content/ChanPerformer.html#onReadCaptcha(chan.content.ChanPerformer.ReadCaptchaData)">onReadCaptcha(ReadCaptchaData)</a></code></td></tr>
  <tr><td><code><a href="../../../reference/chan/content/ChanConfiguration.Board.html#allowPosting">allowPosting</a></code></td>
- <td><code><a href="../../../reference/chan/content/ChanPerformer.html#performSendPost(chan.content.ChanPerformer.SendPostData)">performSendPost(SendPostData)</a></code></td></tr>
+ <td><code><a href="../../../reference/chan/content/ChanPerformer.html#onSendPost(chan.content.ChanPerformer.SendPostData)">onSendPost(SendPostData)</a></code></td></tr>
  <tr><td><code><a href="../../../reference/chan/content/ChanConfiguration.Board.html#allowDeleting">allowDeleting</a></code></td>
- <td><code><a href="../../../reference/chan/content/ChanPerformer.html#performSendDeletePosts(chan.content.ChanPerformer.SendDeletePostsData)">performSendDeletePosts(SendDeletePostsData)</a></code></td></tr>
+ <td><code><a href="../../../reference/chan/content/ChanPerformer.html#onSendDeletePosts(chan.content.ChanPerformer.SendDeletePostsData)">onSendDeletePosts(SendDeletePostsData)</a></code></td></tr>
  <tr><td><code><a href="../../../reference/chan/content/ChanConfiguration.Board.html#allowReporting">allowReporting</a></code></td>
- <td><code><a href="../../../reference/chan/content/ChanPerformer.html#performSendReportPosts(chan.content.ChanPerformer.SendReportPostsData)">performSendReportPosts(SendReportPostsData)</a></code></td></tr></table></p>
+ <td><code><a href="../../../reference/chan/content/ChanPerformer.html#onSendReportPosts(chan.content.ChanPerformer.SendReportPostsData)">onSendReportPosts(SendReportPostsData)</a></code></td></tr></table></p>
  
  <p>If you configure some options, you also must implement the following methods:</p>
  
  <p><table><tr><th>Option</th><th>Method</th></tr>
  <tr><td><code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_READ_SINGLE_POST">OPTION_READ_SINGLE_POST</a></code></td>
- <td><code><a href="../../../reference/chan/content/ChanPerformer.html#performReadSinglePost(chan.content.ChanPerformer.ReadSinglePostData)">performReadSinglePost(ReadSinglePostData)</a></code></td></tr>
+ <td><code><a href="../../../reference/chan/content/ChanPerformer.html#onReadSinglePost(chan.content.ChanPerformer.ReadSinglePostData)">onReadSinglePost(ReadSinglePostData)</a></code></td></tr>
  <tr><td><code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_READ_POSTS_COUNT">OPTION_READ_POSTS_COUNT</a></code></td>
- <td><code><a href="../../../reference/chan/content/ChanPerformer.html#performReadPostsCount(chan.content.ChanPerformer.ReadPostsCountData)">performReadPostsCount(ReadPostsCountData)</a></code></td></tr>
+ <td><code><a href="../../../reference/chan/content/ChanPerformer.html#onReadPostsCount(chan.content.ChanPerformer.ReadPostsCountData)">onReadPostsCount(ReadPostsCountData)</a></code></td></tr>
  <tr><td><code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_READ_USER_BOARDS">OPTION_READ_USER_BOARDS</a></code></td>
- <td><code><a href="../../../reference/chan/content/ChanPerformer.html#performReadUserBoards(chan.content.ChanPerformer.ReadUserBoardsData)">performReadUserBoards(ReadUserBoardsData)</a></code></td></tr>
+ <td><code><a href="../../../reference/chan/content/ChanPerformer.html#onReadUserBoards(chan.content.ChanPerformer.ReadUserBoardsData)">onReadUserBoards(ReadUserBoardsData)</a></code></td></tr>
  <tr><td><code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_READ_POPULAR_THREADS">OPTION_READ_POPULAR_THREADS</a></code></td>
- <td><code><a href="../../../reference/chan/content/ChanPerformer.html#performReadThreadSummaries(chan.content.ChanPerformer.ReadThreadSummariesData)">performReadThreadSummaries(ReadThreadSummariesData)</a></code></td></tr>
+ <td><code><a href="../../../reference/chan/content/ChanPerformer.html#onReadThreadSummaries(chan.content.ChanPerformer.ReadThreadSummariesData)">onReadThreadSummaries(ReadThreadSummariesData)</a></code></td></tr>
  <tr><td><code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_ALLOW_CAPTCHA_PASS">OPTION_ALLOW_CAPTCHA_PASS</a></code></td>
- <td><code><a href="../../../reference/chan/content/ChanPerformer.html#performCheckAuthorization(chan.content.ChanPerformer.CheckAuthorizationData)">performCheckAuthorization(CheckAuthorizationData)</a></code></td></tr>
+ <td><code><a href="../../../reference/chan/content/ChanPerformer.html#onCheckAuthorization(chan.content.ChanPerformer.CheckAuthorizationData)">onCheckAuthorization(CheckAuthorizationData)</a></code></td></tr>
  <tr><td><code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_ALLOW_USER_AUTHORIZATION">OPTION_ALLOW_USER_AUTHORIZATION</a></code></td>
- <td><code><a href="../../../reference/chan/content/ChanPerformer.html#performCheckAuthorization(chan.content.ChanPerformer.CheckAuthorizationData)">performCheckAuthorization(CheckAuthorizationData)</a></code></td></tr></table></p>
+ <td><code><a href="../../../reference/chan/content/ChanPerformer.html#onCheckAuthorization(chan.content.ChanPerformer.CheckAuthorizationData)">onCheckAuthorization(CheckAuthorizationData)</a></code></td></tr></table></p>
 </p>
 
 
@@ -458,7 +458,7 @@ Summary:
         
         enum</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.CaptchaState.html">ChanPerformer.CaptchaState</a></td>
-      <td class="jd-descrcol" width="100%"><p>Captcha states for <code><a href="../../../reference/chan/content/ChanPerformer.html#performReadCaptcha(chan.content.ChanPerformer.ReadCaptchaData)">performReadCaptcha(ReadCaptchaData)</a></code>.&nbsp;</td>
+      <td class="jd-descrcol" width="100%"><p>Captcha states for <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadCaptcha(chan.content.ChanPerformer.ReadCaptchaData)">onReadCaptcha(ReadCaptchaData)</a></code>.&nbsp;</td>
     </tr>
     
     
@@ -470,7 +470,7 @@ Summary:
         
         class</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.CheckAuthorizationData.html">ChanPerformer.CheckAuthorizationData</a></td>
-      <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#performCheckAuthorization(chan.content.ChanPerformer.CheckAuthorizationData)">performCheckAuthorization(CheckAuthorizationData)</a></code>.&nbsp;</td>
+      <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#onCheckAuthorization(chan.content.ChanPerformer.CheckAuthorizationData)">onCheckAuthorization(CheckAuthorizationData)</a></code>.&nbsp;</td>
     </tr>
     
     
@@ -482,7 +482,7 @@ Summary:
         
         class</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.CheckAuthorizationResult.html">ChanPerformer.CheckAuthorizationResult</a></td>
-      <td class="jd-descrcol" width="100%"><p>Result holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#performCheckAuthorization(chan.content.ChanPerformer.CheckAuthorizationData)">performCheckAuthorization(CheckAuthorizationData)</a></code>.&nbsp;</td>
+      <td class="jd-descrcol" width="100%"><p>Result holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#onCheckAuthorization(chan.content.ChanPerformer.CheckAuthorizationData)">onCheckAuthorization(CheckAuthorizationData)</a></code>.&nbsp;</td>
     </tr>
     
     
@@ -494,7 +494,7 @@ Summary:
         
         class</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.ReadBoardsData.html">ChanPerformer.ReadBoardsData</a></td>
-      <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#performReadBoards(chan.content.ChanPerformer.ReadBoardsData)">performReadBoards(ReadBoardsData)</a></code>.&nbsp;</td>
+      <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadBoards(chan.content.ChanPerformer.ReadBoardsData)">onReadBoards(ReadBoardsData)</a></code>.&nbsp;</td>
     </tr>
     
     
@@ -506,7 +506,7 @@ Summary:
         
         class</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.ReadBoardsResult.html">ChanPerformer.ReadBoardsResult</a></td>
-      <td class="jd-descrcol" width="100%"><p>Result holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#performReadBoards(chan.content.ChanPerformer.ReadBoardsData)">performReadBoards(ReadBoardsData)</a></code>.&nbsp;</td>
+      <td class="jd-descrcol" width="100%"><p>Result holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadBoards(chan.content.ChanPerformer.ReadBoardsData)">onReadBoards(ReadBoardsData)</a></code>.&nbsp;</td>
     </tr>
     
     
@@ -518,7 +518,7 @@ Summary:
         
         class</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaData.html">ChanPerformer.ReadCaptchaData</a></td>
-      <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#performReadCaptcha(chan.content.ChanPerformer.ReadCaptchaData)">performReadCaptcha(ReadCaptchaData)</a></code>.&nbsp;</td>
+      <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadCaptcha(chan.content.ChanPerformer.ReadCaptchaData)">onReadCaptcha(ReadCaptchaData)</a></code>.&nbsp;</td>
     </tr>
     
     
@@ -530,7 +530,7 @@ Summary:
         
         class</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html">ChanPerformer.ReadCaptchaResult</a></td>
-      <td class="jd-descrcol" width="100%"><p>Captcha result for <code><a href="../../../reference/chan/content/ChanPerformer.html#performReadCaptcha(chan.content.ChanPerformer.ReadCaptchaData)">performReadCaptcha(ReadCaptchaData)</a></code>.&nbsp;</td>
+      <td class="jd-descrcol" width="100%"><p>Captcha result for <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadCaptcha(chan.content.ChanPerformer.ReadCaptchaData)">onReadCaptcha(ReadCaptchaData)</a></code>.&nbsp;</td>
     </tr>
     
     
@@ -542,7 +542,7 @@ Summary:
         
         class</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.ReadContentData.html">ChanPerformer.ReadContentData</a></td>
-      <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#performReadContent(chan.content.ChanPerformer.ReadContentData)">performReadContent(ReadContentData)</a></code>.&nbsp;</td>
+      <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadContent(chan.content.ChanPerformer.ReadContentData)">onReadContent(ReadContentData)</a></code>.&nbsp;</td>
     </tr>
     
     
@@ -554,7 +554,7 @@ Summary:
         
         class</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.ReadContentResult.html">ChanPerformer.ReadContentResult</a></td>
-      <td class="jd-descrcol" width="100%"><p>Result holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#performReadContent(chan.content.ChanPerformer.ReadContentData)">performReadContent(ReadContentData)</a></code>.&nbsp;</td>
+      <td class="jd-descrcol" width="100%"><p>Result holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadContent(chan.content.ChanPerformer.ReadContentData)">onReadContent(ReadContentData)</a></code>.&nbsp;</td>
     </tr>
     
     
@@ -566,7 +566,7 @@ Summary:
         
         class</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.ReadPostsCountData.html">ChanPerformer.ReadPostsCountData</a></td>
-      <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#performReadPostsCount(chan.content.ChanPerformer.ReadPostsCountData)">performReadPostsCount(ReadPostsCountData)</a></code>.&nbsp;</td>
+      <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadPostsCount(chan.content.ChanPerformer.ReadPostsCountData)">onReadPostsCount(ReadPostsCountData)</a></code>.&nbsp;</td>
     </tr>
     
     
@@ -578,7 +578,7 @@ Summary:
         
         class</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.ReadPostsCountResult.html">ChanPerformer.ReadPostsCountResult</a></td>
-      <td class="jd-descrcol" width="100%"><p>Result holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#performReadPostsCount(chan.content.ChanPerformer.ReadPostsCountData)">performReadPostsCount(ReadPostsCountData)</a></code>.&nbsp;</td>
+      <td class="jd-descrcol" width="100%"><p>Result holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadPostsCount(chan.content.ChanPerformer.ReadPostsCountData)">onReadPostsCount(ReadPostsCountData)</a></code>.&nbsp;</td>
     </tr>
     
     
@@ -590,7 +590,7 @@ Summary:
         
         class</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.ReadPostsData.html">ChanPerformer.ReadPostsData</a></td>
-      <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#performReadPosts(chan.content.ChanPerformer.ReadPostsData)">performReadPosts(ReadPostsData)</a></code>.&nbsp;</td>
+      <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadPosts(chan.content.ChanPerformer.ReadPostsData)">onReadPosts(ReadPostsData)</a></code>.&nbsp;</td>
     </tr>
     
     
@@ -602,7 +602,7 @@ Summary:
         
         class</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.ReadPostsResult.html">ChanPerformer.ReadPostsResult</a></td>
-      <td class="jd-descrcol" width="100%"><p>Result holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#performReadPosts(chan.content.ChanPerformer.ReadPostsData)">performReadPosts(ReadPostsData)</a></code>.&nbsp;</td>
+      <td class="jd-descrcol" width="100%"><p>Result holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadPosts(chan.content.ChanPerformer.ReadPostsData)">onReadPosts(ReadPostsData)</a></code>.&nbsp;</td>
     </tr>
     
     
@@ -614,7 +614,7 @@ Summary:
         
         class</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.ReadSearchPostsData.html">ChanPerformer.ReadSearchPostsData</a></td>
-      <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#performReadSearchPosts(chan.content.ChanPerformer.ReadSearchPostsData)">performReadSearchPosts(ReadSearchPostsData)</a></code>.&nbsp;</td>
+      <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadSearchPosts(chan.content.ChanPerformer.ReadSearchPostsData)">onReadSearchPosts(ReadSearchPostsData)</a></code>.&nbsp;</td>
     </tr>
     
     
@@ -626,7 +626,7 @@ Summary:
         
         class</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.ReadSearchPostsResult.html">ChanPerformer.ReadSearchPostsResult</a></td>
-      <td class="jd-descrcol" width="100%"><p>Result holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#performReadSearchPosts(chan.content.ChanPerformer.ReadSearchPostsData)">performReadSearchPosts(ReadSearchPostsData)</a></code>.&nbsp;</td>
+      <td class="jd-descrcol" width="100%"><p>Result holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadSearchPosts(chan.content.ChanPerformer.ReadSearchPostsData)">onReadSearchPosts(ReadSearchPostsData)</a></code>.&nbsp;</td>
     </tr>
     
     
@@ -638,7 +638,7 @@ Summary:
         
         class</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.ReadSinglePostData.html">ChanPerformer.ReadSinglePostData</a></td>
-      <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#performReadSinglePost(chan.content.ChanPerformer.ReadSinglePostData)">performReadSinglePost(ReadSinglePostData)</a></code>.&nbsp;</td>
+      <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadSinglePost(chan.content.ChanPerformer.ReadSinglePostData)">onReadSinglePost(ReadSinglePostData)</a></code>.&nbsp;</td>
     </tr>
     
     
@@ -650,7 +650,7 @@ Summary:
         
         class</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.ReadSinglePostResult.html">ChanPerformer.ReadSinglePostResult</a></td>
-      <td class="jd-descrcol" width="100%"><p>Result holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#performReadSinglePost(chan.content.ChanPerformer.ReadSinglePostData)">performReadSinglePost(ReadSinglePostData)</a></code>.&nbsp;</td>
+      <td class="jd-descrcol" width="100%"><p>Result holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadSinglePost(chan.content.ChanPerformer.ReadSinglePostData)">onReadSinglePost(ReadSinglePostData)</a></code>.&nbsp;</td>
     </tr>
     
     
@@ -662,7 +662,7 @@ Summary:
         
         class</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.ReadThreadSummariesData.html">ChanPerformer.ReadThreadSummariesData</a></td>
-      <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#performReadThreadSummaries(chan.content.ChanPerformer.ReadThreadSummariesData)">performReadThreadSummaries(ReadThreadSummariesData)</a></code>.&nbsp;</td>
+      <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadThreadSummaries(chan.content.ChanPerformer.ReadThreadSummariesData)">onReadThreadSummaries(ReadThreadSummariesData)</a></code>.&nbsp;</td>
     </tr>
     
     
@@ -674,7 +674,7 @@ Summary:
         
         class</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.ReadThreadSummariesResult.html">ChanPerformer.ReadThreadSummariesResult</a></td>
-      <td class="jd-descrcol" width="100%"><p>Result holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#performReadThreadSummaries(chan.content.ChanPerformer.ReadThreadSummariesData)">performReadThreadSummaries(ReadThreadSummariesData)</a></code>.&nbsp;</td>
+      <td class="jd-descrcol" width="100%"><p>Result holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadThreadSummaries(chan.content.ChanPerformer.ReadThreadSummariesData)">onReadThreadSummaries(ReadThreadSummariesData)</a></code>.&nbsp;</td>
     </tr>
     
     
@@ -686,7 +686,7 @@ Summary:
         
         class</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.ReadThreadsData.html">ChanPerformer.ReadThreadsData</a></td>
-      <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#performReadThreads(chan.content.ChanPerformer.ReadThreadsData)">performReadThreads(ReadThreadsData)</a></code>.&nbsp;</td>
+      <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadThreads(chan.content.ChanPerformer.ReadThreadsData)">onReadThreads(ReadThreadsData)</a></code>.&nbsp;</td>
     </tr>
     
     
@@ -698,7 +698,7 @@ Summary:
         
         class</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.ReadThreadsResult.html">ChanPerformer.ReadThreadsResult</a></td>
-      <td class="jd-descrcol" width="100%"><p>Result holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#performReadThreads(chan.content.ChanPerformer.ReadThreadsData)">performReadThreads(ReadThreadsData)</a></code>.&nbsp;</td>
+      <td class="jd-descrcol" width="100%"><p>Result holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadThreads(chan.content.ChanPerformer.ReadThreadsData)">onReadThreads(ReadThreadsData)</a></code>.&nbsp;</td>
     </tr>
     
     
@@ -710,7 +710,7 @@ Summary:
         
         class</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.ReadUserBoardsData.html">ChanPerformer.ReadUserBoardsData</a></td>
-      <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#performReadUserBoards(chan.content.ChanPerformer.ReadUserBoardsData)">performReadUserBoards(ReadUserBoardsData)</a></code>.&nbsp;</td>
+      <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadUserBoards(chan.content.ChanPerformer.ReadUserBoardsData)">onReadUserBoards(ReadUserBoardsData)</a></code>.&nbsp;</td>
     </tr>
     
     
@@ -722,7 +722,7 @@ Summary:
         
         class</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.ReadUserBoardsResult.html">ChanPerformer.ReadUserBoardsResult</a></td>
-      <td class="jd-descrcol" width="100%"><p>Result holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#performReadUserBoards(chan.content.ChanPerformer.ReadUserBoardsData)">performReadUserBoards(ReadUserBoardsData)</a></code>.&nbsp;</td>
+      <td class="jd-descrcol" width="100%"><p>Result holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadUserBoards(chan.content.ChanPerformer.ReadUserBoardsData)">onReadUserBoards(ReadUserBoardsData)</a></code>.&nbsp;</td>
     </tr>
     
     
@@ -734,7 +734,7 @@ Summary:
         
         class</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.SendAddToArchiveData.html">ChanPerformer.SendAddToArchiveData</a></td>
-      <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#performSendAddToArchive(chan.content.ChanPerformer.SendAddToArchiveData)">performSendAddToArchive(SendAddToArchiveData)</a></code>.&nbsp;</td>
+      <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#onSendAddToArchive(chan.content.ChanPerformer.SendAddToArchiveData)">onSendAddToArchive(SendAddToArchiveData)</a></code>.&nbsp;</td>
     </tr>
     
     
@@ -746,7 +746,7 @@ Summary:
         
         class</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.SendAddToArchiveResult.html">ChanPerformer.SendAddToArchiveResult</a></td>
-      <td class="jd-descrcol" width="100%"><p>Result for <code><a href="../../../reference/chan/content/ChanPerformer.html#performSendAddToArchive(chan.content.ChanPerformer.SendAddToArchiveData)">performSendAddToArchive(SendAddToArchiveData)</a></code>.&nbsp;</td>
+      <td class="jd-descrcol" width="100%"><p>Result for <code><a href="../../../reference/chan/content/ChanPerformer.html#onSendAddToArchive(chan.content.ChanPerformer.SendAddToArchiveData)">onSendAddToArchive(SendAddToArchiveData)</a></code>.&nbsp;</td>
     </tr>
     
     
@@ -758,7 +758,7 @@ Summary:
         
         class</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.SendDeletePostsData.html">ChanPerformer.SendDeletePostsData</a></td>
-      <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#performSendDeletePosts(chan.content.ChanPerformer.SendDeletePostsData)">performSendDeletePosts(SendDeletePostsData)</a></code>.&nbsp;</td>
+      <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#onSendDeletePosts(chan.content.ChanPerformer.SendDeletePostsData)">onSendDeletePosts(SendDeletePostsData)</a></code>.&nbsp;</td>
     </tr>
     
     
@@ -770,7 +770,7 @@ Summary:
         
         class</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.SendDeletePostsResult.html">ChanPerformer.SendDeletePostsResult</a></td>
-      <td class="jd-descrcol" width="100%"><p>Result for <code><a href="../../../reference/chan/content/ChanPerformer.html#performSendDeletePosts(chan.content.ChanPerformer.SendDeletePostsData)">performSendDeletePosts(SendDeletePostsData)</a></code>.&nbsp;</td>
+      <td class="jd-descrcol" width="100%"><p>Result for <code><a href="../../../reference/chan/content/ChanPerformer.html#onSendDeletePosts(chan.content.ChanPerformer.SendDeletePostsData)">onSendDeletePosts(SendDeletePostsData)</a></code>.&nbsp;</td>
     </tr>
     
     
@@ -782,7 +782,7 @@ Summary:
         
         class</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.SendPostData.html">ChanPerformer.SendPostData</a></td>
-      <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#performSendPost(chan.content.ChanPerformer.SendPostData)">performSendPost(SendPostData)</a></code>.&nbsp;</td>
+      <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#onSendPost(chan.content.ChanPerformer.SendPostData)">onSendPost(SendPostData)</a></code>.&nbsp;</td>
     </tr>
     
     
@@ -794,7 +794,7 @@ Summary:
         
         class</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.SendPostResult.html">ChanPerformer.SendPostResult</a></td>
-      <td class="jd-descrcol" width="100%"><p>Result for <code><a href="../../../reference/chan/content/ChanPerformer.html#performSendPost(chan.content.ChanPerformer.SendPostData)">performSendPost(SendPostData)</a></code>.&nbsp;</td>
+      <td class="jd-descrcol" width="100%"><p>Result for <code><a href="../../../reference/chan/content/ChanPerformer.html#onSendPost(chan.content.ChanPerformer.SendPostData)">onSendPost(SendPostData)</a></code>.&nbsp;</td>
     </tr>
     
     
@@ -806,7 +806,7 @@ Summary:
         
         class</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.SendReportPostsData.html">ChanPerformer.SendReportPostsData</a></td>
-      <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#performSendReportPosts(chan.content.ChanPerformer.SendReportPostsData)">performSendReportPosts(SendReportPostsData)</a></code>.&nbsp;</td>
+      <td class="jd-descrcol" width="100%"><p>Arguments holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#onSendReportPosts(chan.content.ChanPerformer.SendReportPostsData)">onSendReportPosts(SendReportPostsData)</a></code>.&nbsp;</td>
     </tr>
     
     
@@ -818,7 +818,7 @@ Summary:
         
         class</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.SendReportPostsResult.html">ChanPerformer.SendReportPostsResult</a></td>
-      <td class="jd-descrcol" width="100%"><p>Result for <code><a href="../../../reference/chan/content/ChanPerformer.html#performSendReportPosts(chan.content.ChanPerformer.SendReportPostsData)">performSendReportPosts(SendReportPostsData)</a></code>.&nbsp;</td>
+      <td class="jd-descrcol" width="100%"><p>Result for <code><a href="../../../reference/chan/content/ChanPerformer.html#onSendReportPosts(chan.content.ChanPerformer.SendReportPostsData)">onSendReportPosts(SendReportPostsData)</a></code>.&nbsp;</td>
     </tr>
     
     
@@ -908,7 +908,7 @@ Summary:
             <a href="../../../reference/chan/content/ChanPerformer.CheckAuthorizationResult.html">ChanPerformer.CheckAuthorizationResult</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.html#performCheckAuthorization(chan.content.ChanPerformer.CheckAuthorizationData)">performCheckAuthorization</a></span>(<a href="../../../reference/chan/content/ChanPerformer.CheckAuthorizationData.html">ChanPerformer.CheckAuthorizationData</a> data)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.html#onCheckAuthorization(chan.content.ChanPerformer.CheckAuthorizationData)">onCheckAuthorization</a></span>(<a href="../../../reference/chan/content/ChanPerformer.CheckAuthorizationData.html">ChanPerformer.CheckAuthorizationData</a> data)</nobr>
         
         <div class="jd-descrdiv"><p>Calls when application requests chan to check authorization data.</div>
   
@@ -926,7 +926,7 @@ Summary:
             <a href="../../../reference/chan/content/ChanPerformer.ReadBoardsResult.html">ChanPerformer.ReadBoardsResult</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.html#performReadBoards(chan.content.ChanPerformer.ReadBoardsData)">performReadBoards</a></span>(<a href="../../../reference/chan/content/ChanPerformer.ReadBoardsData.html">ChanPerformer.ReadBoardsData</a> data)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.html#onReadBoards(chan.content.ChanPerformer.ReadBoardsData)">onReadBoards</a></span>(<a href="../../../reference/chan/content/ChanPerformer.ReadBoardsData.html">ChanPerformer.ReadBoardsData</a> data)</nobr>
         
         <div class="jd-descrdiv"><p>Calls when application requests chan to download boards list.</div>
   
@@ -944,7 +944,7 @@ Summary:
             <a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html">ChanPerformer.ReadCaptchaResult</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.html#performReadCaptcha(chan.content.ChanPerformer.ReadCaptchaData)">performReadCaptcha</a></span>(<a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaData.html">ChanPerformer.ReadCaptchaData</a> data)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.html#onReadCaptcha(chan.content.ChanPerformer.ReadCaptchaData)">onReadCaptcha</a></span>(<a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaData.html">ChanPerformer.ReadCaptchaData</a> data)</nobr>
         
         <div class="jd-descrdiv"><p>Calls when application requests chan to read captcha.</div>
   
@@ -962,7 +962,7 @@ Summary:
             <a href="../../../reference/chan/content/ChanPerformer.ReadContentResult.html">ChanPerformer.ReadContentResult</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.html#performReadContent(chan.content.ChanPerformer.ReadContentData)">performReadContent</a></span>(<a href="../../../reference/chan/content/ChanPerformer.ReadContentData.html">ChanPerformer.ReadContentData</a> data)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.html#onReadContent(chan.content.ChanPerformer.ReadContentData)">onReadContent</a></span>(<a href="../../../reference/chan/content/ChanPerformer.ReadContentData.html">ChanPerformer.ReadContentData</a> data)</nobr>
         
         <div class="jd-descrdiv"><p>Calls when application requests chan to download thumbnail, image, etc.</div>
   
@@ -980,7 +980,7 @@ Summary:
             <a href="../../../reference/chan/content/ChanPerformer.ReadPostsResult.html">ChanPerformer.ReadPostsResult</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.html#performReadPosts(chan.content.ChanPerformer.ReadPostsData)">performReadPosts</a></span>(<a href="../../../reference/chan/content/ChanPerformer.ReadPostsData.html">ChanPerformer.ReadPostsData</a> data)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.html#onReadPosts(chan.content.ChanPerformer.ReadPostsData)">onReadPosts</a></span>(<a href="../../../reference/chan/content/ChanPerformer.ReadPostsData.html">ChanPerformer.ReadPostsData</a> data)</nobr>
         
         <div class="jd-descrdiv"><p>Calls when application requests chan to download posts list.</div>
   
@@ -998,7 +998,7 @@ Summary:
             <a href="../../../reference/chan/content/ChanPerformer.ReadPostsCountResult.html">ChanPerformer.ReadPostsCountResult</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.html#performReadPostsCount(chan.content.ChanPerformer.ReadPostsCountData)">performReadPostsCount</a></span>(<a href="../../../reference/chan/content/ChanPerformer.ReadPostsCountData.html">ChanPerformer.ReadPostsCountData</a> data)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.html#onReadPostsCount(chan.content.ChanPerformer.ReadPostsCountData)">onReadPostsCount</a></span>(<a href="../../../reference/chan/content/ChanPerformer.ReadPostsCountData.html">ChanPerformer.ReadPostsCountData</a> data)</nobr>
         
         <div class="jd-descrdiv"><p>Calls when application requests chan to download posts count.</div>
   
@@ -1016,7 +1016,7 @@ Summary:
             <a href="../../../reference/chan/content/ChanPerformer.ReadSearchPostsResult.html">ChanPerformer.ReadSearchPostsResult</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.html#performReadSearchPosts(chan.content.ChanPerformer.ReadSearchPostsData)">performReadSearchPosts</a></span>(<a href="../../../reference/chan/content/ChanPerformer.ReadSearchPostsData.html">ChanPerformer.ReadSearchPostsData</a> data)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.html#onReadSearchPosts(chan.content.ChanPerformer.ReadSearchPostsData)">onReadSearchPosts</a></span>(<a href="../../../reference/chan/content/ChanPerformer.ReadSearchPostsData.html">ChanPerformer.ReadSearchPostsData</a> data)</nobr>
         
         <div class="jd-descrdiv"><p>Calls when application requests chan to download search posts list.</div>
   
@@ -1034,7 +1034,7 @@ Summary:
             <a href="../../../reference/chan/content/ChanPerformer.ReadSinglePostResult.html">ChanPerformer.ReadSinglePostResult</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.html#performReadSinglePost(chan.content.ChanPerformer.ReadSinglePostData)">performReadSinglePost</a></span>(<a href="../../../reference/chan/content/ChanPerformer.ReadSinglePostData.html">ChanPerformer.ReadSinglePostData</a> data)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.html#onReadSinglePost(chan.content.ChanPerformer.ReadSinglePostData)">onReadSinglePost</a></span>(<a href="../../../reference/chan/content/ChanPerformer.ReadSinglePostData.html">ChanPerformer.ReadSinglePostData</a> data)</nobr>
         
         <div class="jd-descrdiv"><p>Calls when application requests chan to download single post.</div>
   
@@ -1052,7 +1052,7 @@ Summary:
             <a href="../../../reference/chan/content/ChanPerformer.ReadThreadSummariesResult.html">ChanPerformer.ReadThreadSummariesResult</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.html#performReadThreadSummaries(chan.content.ChanPerformer.ReadThreadSummariesData)">performReadThreadSummaries</a></span>(<a href="../../../reference/chan/content/ChanPerformer.ReadThreadSummariesData.html">ChanPerformer.ReadThreadSummariesData</a> data)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.html#onReadThreadSummaries(chan.content.ChanPerformer.ReadThreadSummariesData)">onReadThreadSummaries</a></span>(<a href="../../../reference/chan/content/ChanPerformer.ReadThreadSummariesData.html">ChanPerformer.ReadThreadSummariesData</a> data)</nobr>
         
         <div class="jd-descrdiv"><p>Calls when application requests chan to download thread summaries.</div>
   
@@ -1070,7 +1070,7 @@ Summary:
             <a href="../../../reference/chan/content/ChanPerformer.ReadThreadsResult.html">ChanPerformer.ReadThreadsResult</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.html#performReadThreads(chan.content.ChanPerformer.ReadThreadsData)">performReadThreads</a></span>(<a href="../../../reference/chan/content/ChanPerformer.ReadThreadsData.html">ChanPerformer.ReadThreadsData</a> data)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.html#onReadThreads(chan.content.ChanPerformer.ReadThreadsData)">onReadThreads</a></span>(<a href="../../../reference/chan/content/ChanPerformer.ReadThreadsData.html">ChanPerformer.ReadThreadsData</a> data)</nobr>
         
         <div class="jd-descrdiv"><p>Calls when application requests chan to download threads list.</div>
   
@@ -1088,7 +1088,7 @@ Summary:
             <a href="../../../reference/chan/content/ChanPerformer.ReadUserBoardsResult.html">ChanPerformer.ReadUserBoardsResult</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.html#performReadUserBoards(chan.content.ChanPerformer.ReadUserBoardsData)">performReadUserBoards</a></span>(<a href="../../../reference/chan/content/ChanPerformer.ReadUserBoardsData.html">ChanPerformer.ReadUserBoardsData</a> data)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.html#onReadUserBoards(chan.content.ChanPerformer.ReadUserBoardsData)">onReadUserBoards</a></span>(<a href="../../../reference/chan/content/ChanPerformer.ReadUserBoardsData.html">ChanPerformer.ReadUserBoardsData</a> data)</nobr>
         
         <div class="jd-descrdiv"><p>Calls when application requests chan to download user boards list.</div>
   
@@ -1106,7 +1106,7 @@ Summary:
             <a href="../../../reference/chan/content/ChanPerformer.SendAddToArchiveResult.html">ChanPerformer.SendAddToArchiveResult</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.html#performSendAddToArchive(chan.content.ChanPerformer.SendAddToArchiveData)">performSendAddToArchive</a></span>(<a href="../../../reference/chan/content/ChanPerformer.SendAddToArchiveData.html">ChanPerformer.SendAddToArchiveData</a> data)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.html#onSendAddToArchive(chan.content.ChanPerformer.SendAddToArchiveData)">onSendAddToArchive</a></span>(<a href="../../../reference/chan/content/ChanPerformer.SendAddToArchiveData.html">ChanPerformer.SendAddToArchiveData</a> data)</nobr>
         
         <div class="jd-descrdiv"><p>Calls when application requests chan to add thread to archive.</div>
   
@@ -1124,7 +1124,7 @@ Summary:
             <a href="../../../reference/chan/content/ChanPerformer.SendDeletePostsResult.html">ChanPerformer.SendDeletePostsResult</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.html#performSendDeletePosts(chan.content.ChanPerformer.SendDeletePostsData)">performSendDeletePosts</a></span>(<a href="../../../reference/chan/content/ChanPerformer.SendDeletePostsData.html">ChanPerformer.SendDeletePostsData</a> data)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.html#onSendDeletePosts(chan.content.ChanPerformer.SendDeletePostsData)">onSendDeletePosts</a></span>(<a href="../../../reference/chan/content/ChanPerformer.SendDeletePostsData.html">ChanPerformer.SendDeletePostsData</a> data)</nobr>
         
         <div class="jd-descrdiv"><p>Calls when application requests chan to delete posts.</div>
   
@@ -1142,7 +1142,7 @@ Summary:
             <a href="../../../reference/chan/content/ChanPerformer.SendPostResult.html">ChanPerformer.SendPostResult</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.html#performSendPost(chan.content.ChanPerformer.SendPostData)">performSendPost</a></span>(<a href="../../../reference/chan/content/ChanPerformer.SendPostData.html">ChanPerformer.SendPostData</a> data)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.html#onSendPost(chan.content.ChanPerformer.SendPostData)">onSendPost</a></span>(<a href="../../../reference/chan/content/ChanPerformer.SendPostData.html">ChanPerformer.SendPostData</a> data)</nobr>
         
         <div class="jd-descrdiv"><p>Calls when application requests chan to send post.</div>
   
@@ -1160,7 +1160,7 @@ Summary:
             <a href="../../../reference/chan/content/ChanPerformer.SendReportPostsResult.html">ChanPerformer.SendReportPostsResult</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.html#performSendReportPosts(chan.content.ChanPerformer.SendReportPostsData)">performSendReportPosts</a></span>(<a href="../../../reference/chan/content/ChanPerformer.SendReportPostsData.html">ChanPerformer.SendReportPostsData</a> data)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.html#onSendReportPosts(chan.content.ChanPerformer.SendReportPostsData)">onSendReportPosts</a></span>(<a href="../../../reference/chan/content/ChanPerformer.SendReportPostsData.html">ChanPerformer.SendReportPostsData</a> data)</nobr>
         
         <div class="jd-descrdiv"><p>Calls when application requests chan to send report.</div>
   
@@ -1515,7 +1515,7 @@ From class
 </div>
 
 
-<A NAME="performCheckAuthorization(chan.content.ChanPerformer.CheckAuthorizationData)"></A>
+<A NAME="onCheckAuthorization(chan.content.ChanPerformer.CheckAuthorizationData)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -1527,7 +1527,7 @@ From class
          
         <a href="../../../reference/chan/content/ChanPerformer.CheckAuthorizationResult.html">ChanPerformer.CheckAuthorizationResult</a>
       </span>
-      <span class="sympad">performCheckAuthorization</span>
+      <span class="sympad">onCheckAuthorization</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanPerformer.CheckAuthorizationData.html">ChanPerformer.CheckAuthorizationData</a> data)</span>
     </h4>
     <div class="jd-details-descr">
@@ -1572,7 +1572,7 @@ From class
 </div>
 
 
-<A NAME="performReadBoards(chan.content.ChanPerformer.ReadBoardsData)"></A>
+<A NAME="onReadBoards(chan.content.ChanPerformer.ReadBoardsData)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -1584,7 +1584,7 @@ From class
          
         <a href="../../../reference/chan/content/ChanPerformer.ReadBoardsResult.html">ChanPerformer.ReadBoardsResult</a>
       </span>
-      <span class="sympad">performReadBoards</span>
+      <span class="sympad">onReadBoards</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanPerformer.ReadBoardsData.html">ChanPerformer.ReadBoardsData</a> data)</span>
     </h4>
     <div class="jd-details-descr">
@@ -1625,7 +1625,7 @@ From class
 </div>
 
 
-<A NAME="performReadCaptcha(chan.content.ChanPerformer.ReadCaptchaData)"></A>
+<A NAME="onReadCaptcha(chan.content.ChanPerformer.ReadCaptchaData)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -1637,7 +1637,7 @@ From class
          
         <a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html">ChanPerformer.ReadCaptchaResult</a>
       </span>
-      <span class="sympad">performReadCaptcha</span>
+      <span class="sympad">onReadCaptcha</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaData.html">ChanPerformer.ReadCaptchaData</a> data)</span>
     </h4>
     <div class="jd-details-descr">
@@ -1692,7 +1692,7 @@ From class
 </div>
 
 
-<A NAME="performReadContent(chan.content.ChanPerformer.ReadContentData)"></A>
+<A NAME="onReadContent(chan.content.ChanPerformer.ReadContentData)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -1704,7 +1704,7 @@ From class
          
         <a href="../../../reference/chan/content/ChanPerformer.ReadContentResult.html">ChanPerformer.ReadContentResult</a>
       </span>
-      <span class="sympad">performReadContent</span>
+      <span class="sympad">onReadContent</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanPerformer.ReadContentData.html">ChanPerformer.ReadContentData</a> data)</span>
     </h4>
     <div class="jd-details-descr">
@@ -1742,7 +1742,7 @@ From class
 </div>
 
 
-<A NAME="performReadPosts(chan.content.ChanPerformer.ReadPostsData)"></A>
+<A NAME="onReadPosts(chan.content.ChanPerformer.ReadPostsData)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -1754,7 +1754,7 @@ From class
          
         <a href="../../../reference/chan/content/ChanPerformer.ReadPostsResult.html">ChanPerformer.ReadPostsResult</a>
       </span>
-      <span class="sympad">performReadPosts</span>
+      <span class="sympad">onReadPosts</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanPerformer.ReadPostsData.html">ChanPerformer.ReadPostsData</a> data)</span>
     </h4>
     <div class="jd-details-descr">
@@ -1802,7 +1802,7 @@ From class
 </div>
 
 
-<A NAME="performReadPostsCount(chan.content.ChanPerformer.ReadPostsCountData)"></A>
+<A NAME="onReadPostsCount(chan.content.ChanPerformer.ReadPostsCountData)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -1814,14 +1814,14 @@ From class
          
         <a href="../../../reference/chan/content/ChanPerformer.ReadPostsCountResult.html">ChanPerformer.ReadPostsCountResult</a>
       </span>
-      <span class="sympad">performReadPostsCount</span>
+      <span class="sympad">onReadPostsCount</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanPerformer.ReadPostsCountData.html">ChanPerformer.ReadPostsCountData</a> data)</span>
     </h4>
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Calls when application requests chan to download posts count.</p>
  
- <p>This method is not the same as <code><a href="../../../reference/chan/content/ChanPerformer.html#performReadPosts(chan.content.ChanPerformer.ReadPostsData)">performReadPosts(ReadPostsData)</a></code>. This method must download
+ <p>This method is not the same as <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadPosts(chan.content.ChanPerformer.ReadPostsData)">onReadPosts(ReadPostsData)</a></code>. This method must download
  and parse data quickly as possible.</p>
  
  <p>This method <strong>must</strong> be overridden if option
@@ -1858,7 +1858,7 @@ From class
 </div>
 
 
-<A NAME="performReadSearchPosts(chan.content.ChanPerformer.ReadSearchPostsData)"></A>
+<A NAME="onReadSearchPosts(chan.content.ChanPerformer.ReadSearchPostsData)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -1870,7 +1870,7 @@ From class
          
         <a href="../../../reference/chan/content/ChanPerformer.ReadSearchPostsResult.html">ChanPerformer.ReadSearchPostsResult</a>
       </span>
-      <span class="sympad">performReadSearchPosts</span>
+      <span class="sympad">onReadSearchPosts</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanPerformer.ReadSearchPostsData.html">ChanPerformer.ReadSearchPostsData</a> data)</span>
     </h4>
     <div class="jd-details-descr">
@@ -1911,7 +1911,7 @@ From class
 </div>
 
 
-<A NAME="performReadSinglePost(chan.content.ChanPerformer.ReadSinglePostData)"></A>
+<A NAME="onReadSinglePost(chan.content.ChanPerformer.ReadSinglePostData)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -1923,7 +1923,7 @@ From class
          
         <a href="../../../reference/chan/content/ChanPerformer.ReadSinglePostResult.html">ChanPerformer.ReadSinglePostResult</a>
       </span>
-      <span class="sympad">performReadSinglePost</span>
+      <span class="sympad">onReadSinglePost</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanPerformer.ReadSinglePostData.html">ChanPerformer.ReadSinglePostData</a> data)</span>
     </h4>
     <div class="jd-details-descr">
@@ -1964,7 +1964,7 @@ From class
 </div>
 
 
-<A NAME="performReadThreadSummaries(chan.content.ChanPerformer.ReadThreadSummariesData)"></A>
+<A NAME="onReadThreadSummaries(chan.content.ChanPerformer.ReadThreadSummariesData)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -1976,7 +1976,7 @@ From class
          
         <a href="../../../reference/chan/content/ChanPerformer.ReadThreadSummariesResult.html">ChanPerformer.ReadThreadSummariesResult</a>
       </span>
-      <span class="sympad">performReadThreadSummaries</span>
+      <span class="sympad">onReadThreadSummaries</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanPerformer.ReadThreadSummariesData.html">ChanPerformer.ReadThreadSummariesData</a> data)</span>
     </h4>
     <div class="jd-details-descr">
@@ -2022,7 +2022,7 @@ From class
 </div>
 
 
-<A NAME="performReadThreads(chan.content.ChanPerformer.ReadThreadsData)"></A>
+<A NAME="onReadThreads(chan.content.ChanPerformer.ReadThreadsData)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -2034,7 +2034,7 @@ From class
          
         <a href="../../../reference/chan/content/ChanPerformer.ReadThreadsResult.html">ChanPerformer.ReadThreadsResult</a>
       </span>
-      <span class="sympad">performReadThreads</span>
+      <span class="sympad">onReadThreads</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanPerformer.ReadThreadsData.html">ChanPerformer.ReadThreadsData</a> data)</span>
     </h4>
     <div class="jd-details-descr">
@@ -2077,7 +2077,7 @@ From class
 </div>
 
 
-<A NAME="performReadUserBoards(chan.content.ChanPerformer.ReadUserBoardsData)"></A>
+<A NAME="onReadUserBoards(chan.content.ChanPerformer.ReadUserBoardsData)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -2089,7 +2089,7 @@ From class
          
         <a href="../../../reference/chan/content/ChanPerformer.ReadUserBoardsResult.html">ChanPerformer.ReadUserBoardsResult</a>
       </span>
-      <span class="sympad">performReadUserBoards</span>
+      <span class="sympad">onReadUserBoards</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanPerformer.ReadUserBoardsData.html">ChanPerformer.ReadUserBoardsData</a> data)</span>
     </h4>
     <div class="jd-details-descr">
@@ -2130,7 +2130,7 @@ From class
 </div>
 
 
-<A NAME="performSendAddToArchive(chan.content.ChanPerformer.SendAddToArchiveData)"></A>
+<A NAME="onSendAddToArchive(chan.content.ChanPerformer.SendAddToArchiveData)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -2142,7 +2142,7 @@ From class
          
         <a href="../../../reference/chan/content/ChanPerformer.SendAddToArchiveResult.html">ChanPerformer.SendAddToArchiveResult</a>
       </span>
-      <span class="sympad">performSendAddToArchive</span>
+      <span class="sympad">onSendAddToArchive</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanPerformer.SendAddToArchiveData.html">ChanPerformer.SendAddToArchiveData</a> data)</span>
     </h4>
     <div class="jd-details-descr">
@@ -2189,7 +2189,7 @@ From class
 </div>
 
 
-<A NAME="performSendDeletePosts(chan.content.ChanPerformer.SendDeletePostsData)"></A>
+<A NAME="onSendDeletePosts(chan.content.ChanPerformer.SendDeletePostsData)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -2201,7 +2201,7 @@ From class
          
         <a href="../../../reference/chan/content/ChanPerformer.SendDeletePostsResult.html">ChanPerformer.SendDeletePostsResult</a>
       </span>
-      <span class="sympad">performSendDeletePosts</span>
+      <span class="sympad">onSendDeletePosts</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanPerformer.SendDeletePostsData.html">ChanPerformer.SendDeletePostsData</a> data)</span>
     </h4>
     <div class="jd-details-descr">
@@ -2252,7 +2252,7 @@ From class
 </div>
 
 
-<A NAME="performSendPost(chan.content.ChanPerformer.SendPostData)"></A>
+<A NAME="onSendPost(chan.content.ChanPerformer.SendPostData)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -2264,7 +2264,7 @@ From class
          
         <a href="../../../reference/chan/content/ChanPerformer.SendPostResult.html">ChanPerformer.SendPostResult</a>
       </span>
-      <span class="sympad">performSendPost</span>
+      <span class="sympad">onSendPost</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanPerformer.SendPostData.html">ChanPerformer.SendPostData</a> data)</span>
     </h4>
     <div class="jd-details-descr">
@@ -2308,7 +2308,7 @@ From class
 </div>
 
 
-<A NAME="performSendReportPosts(chan.content.ChanPerformer.SendReportPostsData)"></A>
+<A NAME="onSendReportPosts(chan.content.ChanPerformer.SendReportPostsData)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -2320,7 +2320,7 @@ From class
          
         <a href="../../../reference/chan/content/ChanPerformer.SendReportPostsResult.html">ChanPerformer.SendReportPostsResult</a>
       </span>
-      <span class="sympad">performSendReportPosts</span>
+      <span class="sympad">onSendReportPosts</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanPerformer.SendReportPostsData.html">ChanPerformer.SendReportPostsData</a> data)</span>
     </h4>
     <div class="jd-details-descr">
@@ -2385,7 +2385,7 @@ From class
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Suspends this thread and shows captcha dialog for user. Captcha will be loaded with
- <code><a href="../../../reference/chan/content/ChanPerformer.html#performReadCaptcha(chan.content.ChanPerformer.ReadCaptchaData)">performReadCaptcha(ReadCaptchaData)</a></code>. You can specify <code>requirement</code> for differen behaviors.</p></p></div>
+ <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadCaptcha(chan.content.ChanPerformer.ReadCaptchaData)">onReadCaptcha(ReadCaptchaData)</a></code>. You can specify <code>requirement</code> for differen behaviors.</p></p></div>
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Parameters</h5>
       <table class="jd-tagtable">

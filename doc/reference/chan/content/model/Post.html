@@ -937,7 +937,7 @@ Summary:
             <a href="../../../../reference/chan/content/model/Post.html">Post</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../../reference/chan/content/model/Post.html#setAttachments(java.util.Collection<chan.content.model.Attachment>)">setAttachments</a></span>(Collection&lt;<a href="../../../../reference/chan/content/model/Attachment.html">Attachment</a>&gt; attachments)</nobr>
+        <span class="sympad"><a href="../../../../reference/chan/content/model/Post.html#setAttachments(java.util.Collection<? extends chan.content.model.Attachment>)">setAttachments</a></span>(Collection&lt;?&nbsp;extends&nbsp;<a href="../../../../reference/chan/content/model/Attachment.html">Attachment</a>&gt; attachments)</nobr>
         
         <div class="jd-descrdiv"><p>Stores attachments in this model.</div>
   
@@ -1081,7 +1081,7 @@ Summary:
             <a href="../../../../reference/chan/content/model/Post.html">Post</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../../reference/chan/content/model/Post.html#setIcons(java.util.Collection<chan.content.model.Icon>)">setIcons</a></span>(Collection&lt;<a href="../../../../reference/chan/content/model/Icon.html">Icon</a>&gt; icons)</nobr>
+        <span class="sympad"><a href="../../../../reference/chan/content/model/Post.html#setIcons(chan.content.model.Icon...)">setIcons</a></span>(<a href="../../../../reference/chan/content/model/Icon.html">Icon...</a> icons)</nobr>
         
         <div class="jd-descrdiv"><p>Stores icons in this model.</div>
   
@@ -1099,7 +1099,7 @@ Summary:
             <a href="../../../../reference/chan/content/model/Post.html">Post</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../../reference/chan/content/model/Post.html#setIcons(chan.content.model.Icon...)">setIcons</a></span>(<a href="../../../../reference/chan/content/model/Icon.html">Icon...</a> icons)</nobr>
+        <span class="sympad"><a href="../../../../reference/chan/content/model/Post.html#setIcons(java.util.Collection<? extends chan.content.model.Icon>)">setIcons</a></span>(Collection&lt;?&nbsp;extends&nbsp;<a href="../../../../reference/chan/content/model/Icon.html">Icon</a>&gt; icons)</nobr>
         
         <div class="jd-descrdiv"><p>Stores icons in this model.</div>
   
@@ -2340,7 +2340,7 @@ From interface
 </div>
 
 
-<A NAME="setAttachments(java.util.Collection<chan.content.model.Attachment>)"></A>
+<A NAME="setAttachments(java.util.Collection<? extends chan.content.model.Attachment>)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -2353,7 +2353,7 @@ From interface
         <a href="../../../../reference/chan/content/model/Post.html">Post</a>
       </span>
       <span class="sympad">setAttachments</span>
-      <span class="normal">(Collection&lt;<a href="../../../../reference/chan/content/model/Attachment.html">Attachment</a>&gt; attachments)</span>
+      <span class="normal">(Collection&lt;?&nbsp;extends&nbsp;<a href="../../../../reference/chan/content/model/Attachment.html">Attachment</a>&gt; attachments)</span>
     </h4>
     <div class="jd-details-descr">
       
@@ -2640,43 +2640,6 @@ From interface
 </div>
 
 
-<A NAME="setIcons(java.util.Collection<chan.content.model.Icon>)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public 
-         
-         
-         
-         
-        <a href="../../../../reference/chan/content/model/Post.html">Post</a>
-      </span>
-      <span class="sympad">setIcons</span>
-      <span class="normal">(Collection&lt;<a href="../../../../reference/chan/content/model/Icon.html">Icon</a>&gt; icons)</span>
-    </h4>
-    <div class="jd-details-descr">
-      
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores icons in this model.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>icons</td>
-          <td>Collection of <code><a href="../../../../reference/chan/content/model/Icon.html">Icon</a></code>.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
-
-    </div>
-</div>
-
-
 <A NAME="setIcons(chan.content.model.Icon...)"></A>
 
 <div class="jd-details api apilevel-"> 
@@ -2701,6 +2664,43 @@ From interface
         <tr>
           <th>icons</td>
           <td>Array of <code><a href="../../../../reference/chan/content/model/Icon.html">Icon</a></code>.</td>
+        </tr>
+      </table>
+  </div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li>This model.
+</li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="setIcons(java.util.Collection<? extends chan.content.model.Icon>)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        <a href="../../../../reference/chan/content/model/Post.html">Post</a>
+      </span>
+      <span class="sympad">setIcons</span>
+      <span class="normal">(Collection&lt;?&nbsp;extends&nbsp;<a href="../../../../reference/chan/content/model/Icon.html">Icon</a>&gt; icons)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Stores icons in this model.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>icons</td>
+          <td>Collection of <code><a href="../../../../reference/chan/content/model/Icon.html">Icon</a></code>.</td>
         </tr>
       </table>
   </div>
