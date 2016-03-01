@@ -3,11 +3,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "2.5.3",
+			"name": "2.5.4",
 			"code": 1028,
 			"minVersion": 1,
 			"maxVersion": 1,
-			"length": 1025716,
+			"length": 1030722,
 			"source": "/Mishiranu/Dashchan/master/update/package/Dashchan.apk"
 		}
 	],
@@ -92,10 +92,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.8",
+			"name": "1.9",
 			"code": 1,
 			"version": 1,
-			"length": 61306,
+			"length": 61362,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanCirno.apk"
 		}
 	],
@@ -158,10 +158,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.6",
+			"name": "1.7",
 			"code": 1,
 			"version": 1,
-			"length": 61587,
+			"length": 61609,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanFourchan.apk"
 		}
 	],
