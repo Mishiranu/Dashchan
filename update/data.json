@@ -154,6 +154,17 @@
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanDvach.apk"
 		}
 	],
+	"fiftyfive":
+	[
+		{
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"length": 57071,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanFiftyfive.apk"
+		}
+	],
 	"fourchan":
 	[
 		{

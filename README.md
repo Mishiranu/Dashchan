@@ -24,6 +24,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | desustorage     | desustorage.org      | [DashchanDesustorage.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanDesustorage.apk)         | Yes       |
 | dobrochan       | dobrochan.com        | [DashchanDobrochan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanDobrochan.apk)             | No        |
 | dvach           | 2ch.hk               | [DashchanDvach.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanDvach.apk)                     | No        |
+| fiftyfive       | 55chan.org           | [DashchanFiftyfive.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanFiftyfive.apk)             | No        |
 | fourchan        | 4chan.org            | [DashchanFourchan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanFourchan.apk)               | No        |
 | fourplebs       | 4plebs.org           | [DashchanFourplebs.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanFourplebs.apk)             | Yes       |
 | haruhichan      | haruhichan.ru        | [DashchanHaruhichan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanHaruhichan.apk)           | No        |
