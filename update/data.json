@@ -3,11 +3,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "2.5.4",
+			"name": "2.5.5",
 			"code": 1028,
 			"minVersion": 1,
 			"maxVersion": 1,
-			"length": 1030722,
+			"length": 1059880,
 			"source": "/Mishiranu/Dashchan/master/update/package/Dashchan.apk"
 		}
 	],
@@ -400,10 +400,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.0",
+			"name": "1.1",
 			"code": 1,
 			"version": 1,
-			"length": 2677883,
+			"length": 2836585,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanWebm.apk"
 		}
 	]
