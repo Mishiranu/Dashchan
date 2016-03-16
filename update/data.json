@@ -213,10 +213,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.5",
+			"name": "1.6",
 			"code": 1,
 			"version": 1,
-			"length": 64018,
+			"length": 64983,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanInfinite.apk"
 		}
 	],
@@ -235,10 +235,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.2",
+			"name": "1.3",
 			"code": 1,
 			"version": 1,
-			"length": 62758,
+			"length": 62883,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanKurisach.apk"
 		}
 	],
