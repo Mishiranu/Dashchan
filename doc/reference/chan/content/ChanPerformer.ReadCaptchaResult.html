@@ -280,15 +280,15 @@ Summary:
 
 
 
-  <a href="#lfields">Fields</a>
+
+
+  <a href="#pubctors">Ctors</a>
   
 
 
 
-  &#124; <a href="#pubctors">Ctors</a>
+  &#124; <a href="#pubmethods">Methods</a>
   
-
-
 
 
 
@@ -403,59 +403,6 @@ Summary:
 
 
 
-<!-- =========== FIELD SUMMARY =========== -->
-<table id="lfields" class="jd-sumtable"><tr><th colspan="12">Fields</th></tr>
-
-
-    
-      <tr class="alt-color api apilevel-" >
-          <td class="jd-typecol"><nobr>
-          public
-          
-          final
-          <a href="../../../reference/chan/content/ChanPerformer.CaptchaData.html">ChanPerformer.CaptchaData</a></nobr></td>
-          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html#captchaData">captchaData</a></td>
-          <td class="jd-descrcol" width="100%"><p>Resulting captcha data map.</td>
-      </tr>
-      
-    
-      <tr class=" api apilevel-" >
-          <td class="jd-typecol"><nobr>
-          public
-          
-          final
-          <a href="../../../reference/chan/content/ChanPerformer.CaptchaState.html">ChanPerformer.CaptchaState</a></nobr></td>
-          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html#captchaState">captchaState</a></td>
-          <td class="jd-descrcol" width="100%"><p>Resulting captcha state.</td>
-      </tr>
-      
-    
-      <tr class="alt-color api apilevel-" >
-          <td class="jd-typecol"><nobr>
-          public
-          
-          
-          Bitmap</nobr></td>
-          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html#image">image</a></td>
-          <td class="jd-descrcol" width="100%"><p>Resulting captcha image.</td>
-      </tr>
-      
-    
-      <tr class=" api apilevel-" >
-          <td class="jd-typecol"><nobr>
-          public
-          
-          
-          <a href="../../../reference/chan/content/ChanConfiguration.Captcha.Validity.html">ChanConfiguration.Captcha.Validity</a></nobr></td>
-          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html#validity">validity</a></td>
-          <td class="jd-descrcol" width="100%"><p>Captcha validity.</td>
-      </tr>
-      
-    
-
-</table>
-
-
 
 
 
@@ -484,6 +431,37 @@ Summary:
   </td></tr>
 
 
+
+</table>
+
+
+
+
+
+
+<!-- ========== METHOD SUMMARY =========== -->
+<table id="pubmethods" class="jd-sumtable"><tr><th colspan="12">Public Methods</th></tr>
+
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            <a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html">ChanPerformer.ReadCaptchaResult</a></nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html#setImage(android.graphics.Bitmap)">setImage</a></span>(Bitmap image)</nobr>
+        
+        <div class="jd-descrdiv"><p>Stores resulting captcha image.</div>
+  
+  </td></tr>
+
+
 	 
     <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
@@ -492,22 +470,18 @@ Summary:
             
             
             
-            </nobr>
+            <a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html">ChanPerformer.ReadCaptchaResult</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html#ChanPerformer.ReadCaptchaResult(chan.content.ChanPerformer.CaptchaState, chan.content.ChanPerformer.CaptchaData, android.graphics.Bitmap)">ChanPerformer.ReadCaptchaResult</a></span>(<a href="../../../reference/chan/content/ChanPerformer.CaptchaState.html">ChanPerformer.CaptchaState</a> captchaState, <a href="../../../reference/chan/content/ChanPerformer.CaptchaData.html">ChanPerformer.CaptchaData</a> captchaData, Bitmap image)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html#setValidity(chan.content.ChanConfiguration.Captcha.Validity)">setValidity</a></span>(<a href="../../../reference/chan/content/ChanConfiguration.Captcha.Validity.html">ChanConfiguration.Captcha.Validity</a> validity)</nobr>
         
-        <div class="jd-descrdiv"><p>Constructor for <code><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html">ChanPerformer.ReadCaptchaResult</a></code>.</div>
+        <div class="jd-descrdiv"><p>Overrides captcha validity from configuration.</div>
   
   </td></tr>
 
 
 
 </table>
-
-
-
-
 
 
 
@@ -716,107 +690,6 @@ From class
 <!-- Fields -->
 
 
-<!-- ========= FIELD DETAIL ======== -->
-<h2>Fields</h2>
-
-
-
-
-<A NAME="captchaData"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public 
-         
-        final 
-        <a href="../../../reference/chan/content/ChanPerformer.CaptchaData.html">ChanPerformer.CaptchaData</a>
-      </span>
-        captchaData
-    </h4>
-    <div class="jd-details-descr">
-      
-  <div class="jd-tagdata jd-tagdescr"><p><p>Resulting captcha data map.</p>
-</p></div>
-
-    
-    </div>
-</div>
-
-
-
-<A NAME="captchaState"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public 
-         
-        final 
-        <a href="../../../reference/chan/content/ChanPerformer.CaptchaState.html">ChanPerformer.CaptchaState</a>
-      </span>
-        captchaState
-    </h4>
-    <div class="jd-details-descr">
-      
-  <div class="jd-tagdata jd-tagdescr"><p><p>Resulting captcha state.</p>
-</p></div>
-
-    
-    </div>
-</div>
-
-
-
-<A NAME="image"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public 
-         
-         
-        Bitmap
-      </span>
-        image
-    </h4>
-    <div class="jd-details-descr">
-      
-  <div class="jd-tagdata jd-tagdescr"><p><p>Resulting captcha image. You must set this field with <code><a href="../../../reference/chan/content/ChanPerformer.CaptchaState.html#CAPTCHA">CAPTCHA</a></code> result
- and captcha is custom.</p>
-</p></div>
-
-    
-    </div>
-</div>
-
-
-
-<A NAME="validity"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public 
-         
-         
-        <a href="../../../reference/chan/content/ChanConfiguration.Captcha.Validity.html">ChanConfiguration.Captcha.Validity</a>
-      </span>
-        validity
-    </h4>
-    <div class="jd-details-descr">
-      
-  <div class="jd-tagdata jd-tagdescr"><p><p>Captcha validity. With this field you can override captcha validity from configuration. It might be useful
- when captcha valid in thread, but with captcha pass captcha valid in all chan for example.</p>
-</p></div>
-
-    
-    </div>
-</div>
-
-
-
-
 <!-- Public ctors -->
 
 
@@ -852,48 +725,7 @@ From class
         </tr>
         <tr>
           <th>captchaData</td>
-          <td>Resulting captcha data.
-</td>
-        </tr>
-      </table>
-  </div>
-
-    </div>
-</div>
-
-
-<A NAME="ChanPerformer.ReadCaptchaResult(chan.content.ChanPerformer.CaptchaState, chan.content.ChanPerformer.CaptchaData, android.graphics.Bitmap)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public 
-         
-         
-         
-         
-        
-      </span>
-      <span class="sympad">ChanPerformer.ReadCaptchaResult</span>
-      <span class="normal">(<a href="../../../reference/chan/content/ChanPerformer.CaptchaState.html">ChanPerformer.CaptchaState</a> captchaState, <a href="../../../reference/chan/content/ChanPerformer.CaptchaData.html">ChanPerformer.CaptchaData</a> captchaData, Bitmap image)</span>
-    </h4>
-    <div class="jd-details-descr">
-      
-  <div class="jd-tagdata jd-tagdescr"><p><p>Constructor for <code><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html">ChanPerformer.ReadCaptchaResult</a></code>. This constructor allows to make new object and set image.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>captchaState</td>
-          <td>Resulting captcha state.</td>
-        </tr>
-        <tr>
-          <th>captchaData</td>
-          <td>Resulting captcha data.</td>
-        </tr>
-        <tr>
-          <th>image</td>
-          <td>Resulting captcha image.
+          <td>Resulting captcha data map.
 </td>
         </tr>
       </table>
@@ -913,6 +745,86 @@ From class
 
 <!-- ========= METHOD DETAIL ======== -->
 <!-- Public methdos -->
+
+<h2>Public Methods</h2>
+
+
+
+<A NAME="setImage(android.graphics.Bitmap)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        <a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html">ChanPerformer.ReadCaptchaResult</a>
+      </span>
+      <span class="sympad">setImage</span>
+      <span class="normal">(Bitmap image)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Stores resulting captcha image. You must set this field with <code><a href="../../../reference/chan/content/ChanPerformer.CaptchaState.html#CAPTCHA">CAPTCHA</a></code> result.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>image</td>
+          <td>Captcha image bitmap.</td>
+        </tr>
+      </table>
+  </div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li>This object.
+</li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="setValidity(chan.content.ChanConfiguration.Captcha.Validity)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        <a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html">ChanPerformer.ReadCaptchaResult</a>
+      </span>
+      <span class="sympad">setValidity</span>
+      <span class="normal">(<a href="../../../reference/chan/content/ChanConfiguration.Captcha.Validity.html">ChanConfiguration.Captcha.Validity</a> validity)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Overrides captcha validity from configuration. It might be useful when captcha valid in thread,
+ but with captcha pass captcha valid in all chan for example.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>validity</td>
+          <td>Captcha validity.</td>
+        </tr>
+      </table>
+  </div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li>This object.
+</li></ul>
+  </div>
+
+    </div>
+</div>
+
+
 
 
 

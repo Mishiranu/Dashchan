@@ -1649,7 +1649,8 @@ From class
  
  <p>This method must return <code><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html">ChanPerformer.ReadCaptchaResult</a></code> with captcha data.</p>
  
- <p>If your chan uses custom captcha, the result must hold <code><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html#image">image</a></code>.</p>
+ <p>If your chan uses custom captcha, you must specify a resulting image using
+ <code><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html#setImage(android.graphics.Bitmap)">setImage(Bitmap)</a></code>.</p>
  
  <p>In the case of Yandex Captcha, resulting <code>captchaData</code> must contain challenge string by
  <code><a href="../../../reference/chan/content/ChanPerformer.CaptchaData.html#CHALLENGE">CHALLENGE</a></code>. key</p>
