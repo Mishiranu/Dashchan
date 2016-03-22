@@ -3,11 +3,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "2.5.5",
+			"name": "2.5.6",
 			"code": 1028,
 			"minVersion": 1,
 			"maxVersion": 1,
-			"length": 1059880,
+			"length": 1066823,
 			"source": "/Mishiranu/Dashchan/master/update/package/Dashchan.apk"
 		}
 	],
@@ -279,10 +279,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.5",
+			"name": "1.6",
 			"code": 1,
 			"version": 1,
-			"length": 63190,
+			"length": 63236,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanNullcc.apk"
 		}
 	],
