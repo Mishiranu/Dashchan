@@ -297,6 +297,17 @@
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanNulldvachin.apk"
 		}
 	],
+	"nulleu":
+	[
+		{
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"length": 61844,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanNulleu.apk"
+		}
+	],
 	"owlchan":
 	[
 		{

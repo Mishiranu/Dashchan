@@ -37,6 +37,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | nowere          | nowere.net           | [DashchanNowere.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanNowere.apk)                   | No        |
 | nullcc          | 0chan.cc             | [DashchanNullcc.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanNullcc.apk)                   | No        |
 | nulldvachin     | 02ch.in              | [DashchanNulldvachin.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanNulldvachin.apk)         | No        |
+| nulleu          | 0chan.eu             | [DashchanNulleu.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanNulleu.apk)                   | No        |
 | owlchan         | owlchan.ru           | [DashchanOwlchan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanOwlchan.apk)                 | No        |
 | ponyach         | ponyach.ru           | [DashchanPonyach.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanPonyach.apk)                 | No        |
 | ponychan        | ponychan.net         | [DashchanPonychan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanPonychan.apk)               | No        |
