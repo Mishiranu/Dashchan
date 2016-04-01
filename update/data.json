@@ -3,11 +3,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "2.5.6",
+			"name": "2.5.7",
 			"code": 1028,
 			"minVersion": 1,
 			"maxVersion": 1,
-			"length": 1066833,
+			"length": 1069387,
 			"source": "/Mishiranu/Dashchan/master/update/package/Dashchan.apk"
 		}
 	],
