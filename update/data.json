@@ -169,10 +169,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.7",
+			"name": "1.8",
 			"code": 1,
 			"version": 1,
-			"length": 61609,
+			"length": 61622,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanFourchan.apk"
 		}
 	],
@@ -323,10 +323,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.1",
+			"name": "1.2",
 			"code": 1,
 			"version": 1,
-			"length": 60527,
+			"length": 60577,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanPonyach.apk"
 		}
 	],
@@ -400,10 +400,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.0",
+			"name": "1.1",
 			"code": 1,
 			"version": 1,
-			"length": 56794,
+			"length": 56929,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanTiretirech.apk"
 		}
 	],
