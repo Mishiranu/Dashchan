@@ -136,10 +136,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.9",
+			"name": "1.10",
 			"code": 1,
 			"version": 1,
-			"length": 60245,
+			"length": 60095,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanDobrochan.apk"
 		}
 	],
@@ -147,10 +147,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.10",
+			"name": "1.11",
 			"code": 1,
 			"version": 1,
-			"length": 114681,
+			"length": 114698,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanDvach.apk"
 		}
 	],
