@@ -46,6 +46,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | sevenchan       | 7chan.org            | [DashchanSevenchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanSevenchan.apk)             | No        |
 | shanachan       | shanachan.org        | [DashchanShanachan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanShanachan.apk)             | No        |
 | sharechan       | sharechan.org        | [DashchanSharechan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanSharechan.apk)             | No        |
+| synch           | syn-ch.com           | [DashchanSynch.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanSynch.apk)                     | No        |
 | taima           | 420chan.org          | [DashchanTaima.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanTaima.apk)                     | No        |
 | tiretirech      | 2--ch.ru             | [DashchanTiretirech.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanTiretirech.apk)           | No        |
 
