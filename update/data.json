@@ -147,10 +147,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.11",
+			"name": "1.12",
 			"code": 1,
 			"version": 1,
-			"length": 114698,
+			"length": 114744,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanDvach.apk"
 		}
 	],
@@ -158,10 +158,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.0",
+			"name": "1.2",
 			"code": 1,
 			"version": 1,
-			"length": 57220,
+			"length": 57298,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanFiftyfive.apk"
 		}
 	],
