@@ -385,6 +385,17 @@
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanSharechan.apk"
 		}
 	],
+	"synch":
+	[
+		{
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"length": 57407,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanSynch.apk"
+		}
+	],
 	"taima":
 	[
 		{
