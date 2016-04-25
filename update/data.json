@@ -70,10 +70,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.6",
+			"name": "1.7",
 			"code": 1,
 			"version": 1,
-			"length": 61039,
+			"length": 60327,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanChiochan.apk"
 		}
 	],
@@ -180,10 +180,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.0",
+			"name": "1.1",
 			"code": 1,
 			"version": 1,
-			"length": 54656,
+			"length": 54095,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanFourplebs.apk"
 		}
 	],
@@ -246,10 +246,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.1",
+			"name": "1.2",
 			"code": 1,
 			"version": 1,
-			"length": 57712,
+			"length": 57236,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanLainchan.apk"
 		}
 	],
@@ -268,10 +268,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.5",
+			"name": "1.6",
 			"code": 1,
 			"version": 1,
-			"length": 59085,
+			"length": 58657,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanNowere.apk"
 		}
 	],
@@ -323,10 +323,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.1",
+			"name": "1.2",
 			"code": 1,
 			"version": 1,
-			"length": 58160,
+			"length": 57498,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanOwlchan.apk"
 		}
 	],
