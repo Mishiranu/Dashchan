@@ -264,6 +264,17 @@
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanLocal.apk"
 		}
 	],
+	"makabapaid":
+	[
+		{
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"length": 60444,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanMakabaPaid.apk"
+		}
+	],
 	"nowere":
 	[
 		{
