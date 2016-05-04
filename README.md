@@ -35,6 +35,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | kurisach        | kurisa.ch            | [DashchanKurisach.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanKurisach.apk)               | No        |
 | lainchan        | lainchan.org         | [DashchanLainchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanLainchan.apk)               | No        |
 | local           | ( local archive )    | [DashchanLocal.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanLocal.apk)                     | Yes       |
+| makabapaid      | 2channel.hk          | [DashchanMakabaPaid.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanMakabaPaid.apk)           | No        |
 | nowere          | nowere.net           | [DashchanNowere.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNowere.apk)                   | No        |
 | nullcc          | 0chan.cc             | [DashchanNullcc.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNullcc.apk)                   | No        |
 | nulldvachin     | 02ch.in              | [DashchanNulldvachin.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNulldvachin.apk)         | No        |
