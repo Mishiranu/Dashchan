@@ -147,10 +147,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.11",
+			"name": "1.12",
 			"code": 1,
 			"version": 1,
-			"length": 60093,
+			"length": 60332,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanDobrochan.apk"
 		}
 	],
@@ -279,10 +279,10 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.0",
+			"name": "1.1",
 			"code": 1,
 			"version": 1,
-			"length": 60444,
+			"length": 60950,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanMakabaPaid.apk"
 		}
 	],
