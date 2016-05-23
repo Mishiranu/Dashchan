@@ -7,6 +7,7 @@
 			"code": 1029,
 			"minVersion": 1,
 			"maxVersion": 1,
+			"minSdk": 14,
 			"length": 1086267,
 			"source": "/Mishiranu/Dashchan/master/update/package/Dashchan.apk"
 		}
@@ -18,6 +19,7 @@
 			"name": "1.2",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 57719,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanAllchan.apk"
 		}
@@ -29,6 +31,7 @@
 			"name": "1.2",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 62153,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanApachan.apk"
 		}
@@ -40,6 +43,7 @@
 			"name": "1.1",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 53361,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanArchiveFgts.apk"
 		}
@@ -51,6 +55,7 @@
 			"name": "1.0",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 52636,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanArchiveLiom.apk"
 		}
@@ -62,6 +67,7 @@
 			"name": "1.4",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 53532,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanArchiveRbt.apk"
 		}
@@ -73,6 +79,7 @@
 			"name": "1.5",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 60203,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanArhivach.apk"
 		}
@@ -84,6 +91,7 @@
 			"name": "1.7",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 60327,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanChiochan.apk"
 		}
@@ -95,6 +103,7 @@
 			"name": "1.0",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 59032,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanChuckDfwk.apk"
 		}
@@ -106,6 +115,7 @@
 			"name": "1.10",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 61709,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanCirno.apk"
 		}
@@ -117,6 +127,7 @@
 			"name": "1.2",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 63129,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanClaire.apk"
 		}
@@ -128,6 +139,7 @@
 			"name": "1.0",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 53642,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanDesustorage.apk"
 		}
@@ -139,6 +151,7 @@
 			"name": "1.0",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 60843,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanDesyach.apk"
 		}
@@ -150,6 +163,7 @@
 			"name": "1.12",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 60332,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanDobrochan.apk"
 		}
@@ -161,6 +175,7 @@
 			"name": "1.12",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 114744,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanDvach.apk"
 		}
@@ -172,6 +187,7 @@
 			"name": "1.2",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 58276,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanFiftyfive.apk"
 		}
@@ -183,6 +199,7 @@
 			"name": "1.8",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 61622,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanFourchan.apk"
 		}
@@ -194,6 +211,7 @@
 			"name": "1.1",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 54095,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanFourplebs.apk"
 		}
@@ -205,6 +223,7 @@
 			"name": "1.1",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 57970,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanHaruhichan.apk"
 		}
@@ -216,6 +235,7 @@
 			"name": "1.2",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 54451,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanHorochan.apk"
 		}
@@ -227,6 +247,7 @@
 			"name": "1.6",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 64983,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanInfinite.apk"
 		}
@@ -238,6 +259,7 @@
 			"name": "1.3",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 59576,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanKrautchan.apk"
 		}
@@ -249,6 +271,7 @@
 			"name": "1.4",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 62987,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanKurisach.apk"
 		}
@@ -260,6 +283,7 @@
 			"name": "1.2",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 57236,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanLainchan.apk"
 		}
@@ -271,6 +295,7 @@
 			"name": "1.6",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 53719,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanLocal.apk"
 		}
@@ -282,6 +307,7 @@
 			"name": "1.1",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 60950,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanMakabaPaid.apk"
 		}
@@ -293,19 +319,9 @@
 			"name": "1.6",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 58657,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanNowere.apk"
-		}
-	],
-	"nullcc":
-	[
-		{
-			"title": "Release",
-			"name": "1.6",
-			"code": 1,
-			"version": 1,
-			"length": 63236,
-			"source": "/Mishiranu/Dashchan/master/update/package/DashchanNullcc.apk"
 		}
 	],
 	"nulldvachin":
@@ -315,6 +331,7 @@
 			"name": "1.1",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 58621,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanNulldvachin.apk"
 		}
@@ -326,6 +343,7 @@
 			"name": "1.3",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 63124,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanNulleu.apk"
 		}
@@ -337,6 +355,7 @@
 			"name": "1.0",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 60425,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanNulltirech.apk"
 		}
@@ -348,6 +367,7 @@
 			"name": "1.2",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 57498,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanOwlchan.apk"
 		}
@@ -359,6 +379,7 @@
 			"name": "1.2",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 60577,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanPonyach.apk"
 		}
@@ -370,6 +391,7 @@
 			"name": "1.7",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 59417,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanPonychan.apk"
 		}
@@ -381,6 +403,7 @@
 			"name": "1.2",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 63449,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanRulet.apk"
 		}
@@ -392,6 +415,7 @@
 			"name": "1.1",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 59792,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanSevenchan.apk"
 		}
@@ -403,6 +427,7 @@
 			"name": "1.0",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 57440,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanShanachan.apk"
 		}
@@ -414,6 +439,7 @@
 			"name": "1.0",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 55673,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanSharechan.apk"
 		}
@@ -425,6 +451,7 @@
 			"name": "1.0",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 57407,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanSynch.apk"
 		}
@@ -436,6 +463,7 @@
 			"name": "1.2",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 59298,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanTaima.apk"
 		}
@@ -447,6 +475,7 @@
 			"name": "1.1",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 56929,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanTiretirech.apk"
 		}
@@ -458,6 +487,7 @@
 			"name": "1.1",
 			"code": 1,
 			"version": 1,
+			"minSdk": 14,
 			"length": 2836585,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanWebm.apk"
 		}
