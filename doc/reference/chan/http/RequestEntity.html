@@ -169,6 +169,7 @@
           <li class="api apilevel-"><a href="../../../reference/chan/http/HttpResponse.html">HttpResponse</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/http/HttpValidator.html">HttpValidator</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/http/MultipartEntity.html">MultipartEntity</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/http/SimpleEntity.html">SimpleEntity</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/http/UrlEncodedEntity.html">UrlEncodedEntity</a></li>
       </ul>
     </li>
@@ -302,6 +303,8 @@ Summary:
             
               <a href="../../../reference/chan/http/MultipartEntity.html">MultipartEntity</a>,
             
+              <a href="../../../reference/chan/http/SimpleEntity.html">SimpleEntity</a>,
+            
               <a href="../../../reference/chan/http/UrlEncodedEntity.html">UrlEncodedEntity</a>
             
           
@@ -315,6 +318,10 @@ Summary:
               <td class="jd-descrcol" width="100%"><p>Multipart Form Data implementation of <code><a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a></code>.&nbsp;</td>
           </tr>
         <tr class=" api apilevel-" >
+              <td class="jd-linkcol"><a href="../../../reference/chan/http/SimpleEntity.html">SimpleEntity</a></td>
+              <td class="jd-descrcol" width="100%"><p>Simple implementation of <code><a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a></code>.&nbsp;</td>
+          </tr>
+        <tr class="alt-color api apilevel-" >
               <td class="jd-linkcol"><a href="../../../reference/chan/http/UrlEncodedEntity.html">UrlEncodedEntity</a></td>
               <td class="jd-descrcol" width="100%"><p>URL Encoded implementation of <code><a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a></code>.&nbsp;</td>
           </tr>
@@ -414,6 +421,24 @@ Summary:
             
             
             
+            <a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a></nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/RequestEntity.html#copy()">copy</a></span>()</nobr>
+        
+        <div class="jd-descrdiv"><p>Returns a deep copy of this <code>RequestEntity</code> instance.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            abstract
+            
+            
+            
+            
             long</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
@@ -425,7 +450,7 @@ Summary:
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             abstract
             
@@ -443,7 +468,7 @@ Summary:
 
 
 	 
-    <tr class=" api apilevel-" >
+    <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             abstract
             
@@ -539,6 +564,34 @@ Summary:
 </td>
         </tr>
       </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="copy()"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+        abstract 
+         
+        <a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a>
+      </span>
+      <span class="sympad">copy</span>
+      <span class="normal">()</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Returns a deep copy of this <code>RequestEntity</code> instance.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li>Copy of this entity.
+</li></ul>
   </div>
 
     </div>

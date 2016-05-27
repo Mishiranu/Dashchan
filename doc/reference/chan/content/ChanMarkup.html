@@ -370,9 +370,15 @@ Summary:
  <li><code><a href="../../../reference/chan/content/ChanMarkup.html#addTag(java.lang.String, int)">addTag(String, int)</a></code></li>
  <li><code><a href="../../../reference/chan/content/ChanMarkup.html#addTag(java.lang.String, java.lang.String, int)">addTag(String, String, int)</a></code></li>
  <li><code><a href="../../../reference/chan/content/ChanMarkup.html#addTag(java.lang.String, java.lang.String, java.lang.String, int)">addTag(String, String, String, int)</a></code></li>
- <li><code><a href="../../../reference/chan/content/ChanMarkup.html#addBlock(java.lang.String, boolean)">addBlock(String, boolean)</a></code></li>
- <li><code><a href="../../../reference/chan/content/ChanMarkup.html#addPreformatted(java.lang.String)">addPreformatted(String)</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanMarkup.html#addBlock(java.lang.String, boolean, boolean)">addBlock(String, boolean, boolean)</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanMarkup.html#addBlock(java.lang.String, java.lang.String, boolean, boolean)">addBlock(String, String, boolean, boolean)</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanMarkup.html#addBlock(java.lang.String, java.lang.String, java.lang.String, boolean, boolean)">addBlock(String, String, String, boolean, boolean)</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanMarkup.html#addPreformatted(java.lang.String, boolean)">addPreformatted(String, boolean)</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanMarkup.html#addPreformatted(java.lang.String, java.lang.String, boolean)">addPreformatted(String, String, boolean)</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanMarkup.html#addPreformatted(java.lang.String, java.lang.String, java.lang.String, boolean)">addPreformatted(String, String, String, boolean)</a></code></li>
  <li><code><a href="../../../reference/chan/content/ChanMarkup.html#addColorable(java.lang.String)">addColorable(String)</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanMarkup.html#addColorable(java.lang.String, java.lang.String)">addColorable(String, String)</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanMarkup.html#addColorable(java.lang.String, java.lang.String, java.lang.String)">addColorable(String, String, String)</a></code></li>
  </ul>
 </p>
 
@@ -430,12 +436,23 @@ Summary:
           static
           final
           int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanMarkup.html#TAG_ASCII_ART">TAG_ASCII_ART</a></td>
+          <td class="jd-descrcol" width="100%">Ascii art tag constant value.</td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          int</nobr></td>
           <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanMarkup.html#TAG_BOLD">TAG_BOLD</a></td>
           <td class="jd-descrcol" width="100%">Bold tag constant value.</td>
       </tr>
       
     
-      <tr class=" api apilevel-" >
+      <tr class="alt-color api apilevel-" >
           <td class="jd-typecol"><nobr>
           public
           static
@@ -446,7 +463,7 @@ Summary:
       </tr>
       
     
-      <tr class="alt-color api apilevel-" >
+      <tr class=" api apilevel-" >
           <td class="jd-typecol"><nobr>
           public
           static
@@ -457,7 +474,7 @@ Summary:
       </tr>
       
     
-      <tr class=" api apilevel-" >
+      <tr class="alt-color api apilevel-" >
           <td class="jd-typecol"><nobr>
           public
           static
@@ -468,7 +485,7 @@ Summary:
       </tr>
       
     
-      <tr class="alt-color api apilevel-" >
+      <tr class=" api apilevel-" >
           <td class="jd-typecol"><nobr>
           public
           static
@@ -479,7 +496,7 @@ Summary:
       </tr>
       
     
-      <tr class=" api apilevel-" >
+      <tr class="alt-color api apilevel-" >
           <td class="jd-typecol"><nobr>
           public
           static
@@ -490,7 +507,7 @@ Summary:
       </tr>
       
     
-      <tr class="alt-color api apilevel-" >
+      <tr class=" api apilevel-" >
           <td class="jd-typecol"><nobr>
           public
           static
@@ -501,7 +518,7 @@ Summary:
       </tr>
       
     
-      <tr class=" api apilevel-" >
+      <tr class="alt-color api apilevel-" >
           <td class="jd-typecol"><nobr>
           public
           static
@@ -512,7 +529,7 @@ Summary:
       </tr>
       
     
-      <tr class="alt-color api apilevel-" >
+      <tr class=" api apilevel-" >
           <td class="jd-typecol"><nobr>
           public
           static
@@ -523,7 +540,7 @@ Summary:
       </tr>
       
     
-      <tr class=" api apilevel-" >
+      <tr class="alt-color api apilevel-" >
           <td class="jd-typecol"><nobr>
           public
           static
@@ -534,7 +551,7 @@ Summary:
       </tr>
       
     
-      <tr class="alt-color api apilevel-" >
+      <tr class=" api apilevel-" >
           <td class="jd-typecol"><nobr>
           public
           static
@@ -599,7 +616,25 @@ Summary:
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#addBlock(java.lang.String, boolean)">addBlock</a></span>(String tagName, boolean spaced)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#addBlock(java.lang.String, java.lang.String, boolean, boolean)">addBlock</a></span>(String tagName, String cssClass, boolean block, boolean spaced)</nobr>
+        
+        <div class="jd-descrdiv"><p>Marks given <code>tagName</code> as block tag if tag contains <code>cssClass</code> in class attribute.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#addBlock(java.lang.String, boolean, boolean)">addBlock</a></span>(String tagName, boolean block, boolean spaced)</nobr>
         
         <div class="jd-descrdiv"><p>Marks given <code>tagName</code> as block tag.</div>
   
@@ -607,7 +642,44 @@ Summary:
 
 
 	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#addBlock(java.lang.String, java.lang.String, java.lang.String, boolean, boolean)">addBlock</a></span>(String tagName, String attribute, String value, boolean block, boolean spaced)</nobr>
+        
+        <div class="jd-descrdiv"><p>Marks given <code>tagName</code> as block tag if tag contains <code>attribute</code> that exactly equals <code>value</code>.</div>
+  
+  </td></tr>
+
+
+	 
     <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#addColorable(java.lang.String, java.lang.String)">addColorable</a></span>(String tagName, String cssClass)</nobr>
+        
+        <div class="jd-descrdiv"><p>Marks given <code>tagName</code> as tag that may contain color attribute or CSS style if tag contains
+ <code>cssClass</code> in class attribute.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -625,6 +697,25 @@ Summary:
 
 
 	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#addColorable(java.lang.String, java.lang.String, java.lang.String)">addColorable</a></span>(String tagName, String attribute, String value)</nobr>
+        
+        <div class="jd-descrdiv"><p>Marks given <code>tagName</code> as tag that may contain color attribute or CSS style if tag contains
+ <code>attribute</code> that exactly equals <code>value</code>.</div>
+  
+  </td></tr>
+
+
+	 
     <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
@@ -635,7 +726,44 @@ Summary:
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#addPreformatted(java.lang.String)">addPreformatted</a></span>(String tagName)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#addPreformatted(java.lang.String, java.lang.String, java.lang.String, boolean)">addPreformatted</a></span>(String tagName, String attribute, String value, boolean preformatted)</nobr>
+        
+        <div class="jd-descrdiv"><p>Marks given <code>tagName</code> as preformatted if tag contains <code>attribute</code> that exactly
+ equals <code>value</code>.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#addPreformatted(java.lang.String, java.lang.String, boolean)">addPreformatted</a></span>(String tagName, String cssClass, boolean preformatted)</nobr>
+        
+        <div class="jd-descrdiv"><p>Marks given <code>tagName</code> as preformatted if tag contains <code>cssClass</code> in class attribute.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#addPreformatted(java.lang.String, boolean)">addPreformatted</a></span>(String tagName, boolean preformatted)</nobr>
         
         <div class="jd-descrdiv"><p>Marks given <code>tagName</code> as preformatted.</div>
   
@@ -653,7 +781,7 @@ Summary:
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#addTag(java.lang.String, java.lang.String, int)">addTag</a></span>(String tagName, String cssClass, int tag)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#addTag(java.lang.String, int)">addTag</a></span>(String tagName, int tag)</nobr>
         
         <div class="jd-descrdiv"><p>Add tag to handle.</div>
   
@@ -671,7 +799,7 @@ Summary:
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#addTag(java.lang.String, int)">addTag</a></span>(String tagName, int tag)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#addTag(java.lang.String, java.lang.String, int)">addTag</a></span>(String tagName, String cssClass, int tag)</nobr>
         
         <div class="jd-descrdiv"><p>Add tag to handle.</div>
   
@@ -984,6 +1112,29 @@ From class
 
 
 
+<A NAME="TAG_ASCII_ART"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        int
+      </span>
+        TAG_ASCII_ART
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>Ascii art tag constant value.
+</p></div>
+
+    
+    </div>
+</div>
+
+
+
 <A NAME="TAG_BOLD"></A>
 
 <div class="jd-details api apilevel-"> 
@@ -1284,7 +1435,7 @@ From class
 
 
 
-<A NAME="addBlock(java.lang.String, boolean)"></A>
+<A NAME="addBlock(java.lang.String, java.lang.String, boolean, boolean)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -1297,12 +1448,12 @@ From class
         void
       </span>
       <span class="sympad">addBlock</span>
-      <span class="normal">(String tagName, boolean spaced)</span>
+      <span class="normal">(String tagName, String cssClass, boolean block, boolean spaced)</span>
     </h4>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Marks given <code>tagName</code> as block tag. If block is <code>spaced</code>, parser will add a line around block.
- There are some tags which are block: "blockquote", "p", etc. Some of them are spaced by default.</p></p></div>
+  <div class="jd-tagdata jd-tagdescr"><p><p>Marks given <code>tagName</code> as block tag if tag contains <code>cssClass</code> in class attribute.
+ For <code>spaced</code> blocks parser will add empty lines around.</p></p></div>
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Parameters</h5>
       <table class="jd-tagtable">
@@ -1311,8 +1462,145 @@ From class
           <td>Tag to handle.</td>
         </tr>
         <tr>
+          <th>cssClass</td>
+          <td>Tag CSS class.</td>
+        </tr>
+        <tr>
+          <th>block</td>
+          <td>True to enable block tag.</td>
+        </tr>
+        <tr>
           <th>spaced</td>
           <td>True to enable spacing.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="addBlock(java.lang.String, boolean, boolean)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">addBlock</span>
+      <span class="normal">(String tagName, boolean block, boolean spaced)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Marks given <code>tagName</code> as block tag. For <code>spaced</code> blocks parser will add empty lines around.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>tagName</td>
+          <td>Tag to handle.</td>
+        </tr>
+        <tr>
+          <th>block</td>
+          <td>True to enable block tag.</td>
+        </tr>
+        <tr>
+          <th>spaced</td>
+          <td>True to enable spacing.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="addBlock(java.lang.String, java.lang.String, java.lang.String, boolean, boolean)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">addBlock</span>
+      <span class="normal">(String tagName, String attribute, String value, boolean block, boolean spaced)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Marks given <code>tagName</code> as block tag if tag contains <code>attribute</code> that exactly equals <code>value</code>.
+ For <code>spaced</code> blocks parser will add empty lines around.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>tagName</td>
+          <td>Tag to handle.</td>
+        </tr>
+        <tr>
+          <th>attribute</td>
+          <td>Tag attribute.</td>
+        </tr>
+        <tr>
+          <th>value</td>
+          <td>Attribute value.</td>
+        </tr>
+        <tr>
+          <th>block</td>
+          <td>True to enable block tag.</td>
+        </tr>
+        <tr>
+          <th>spaced</td>
+          <td>True to enable spacing.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="addColorable(java.lang.String, java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">addColorable</span>
+      <span class="normal">(String tagName, String cssClass)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Marks given <code>tagName</code> as tag that may contain color attribute or CSS style if tag contains
+ <code>cssClass</code> in class attribute. Parser will handle these cases automatically.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>tagName</td>
+          <td>Tag to handle.</td>
+        </tr>
+        <tr>
+          <th>cssClass</td>
+          <td>Tag CSS class.
 </td>
         </tr>
       </table>
@@ -1340,7 +1628,7 @@ From class
     <div class="jd-details-descr">
       
   <div class="jd-tagdata jd-tagdescr"><p><p>Marks given <code>tagName</code> as tag that may contain color attribute or CSS style. Parser will handle
- this cases automatically.</p></p></div>
+ these cases automatically.</p></p></div>
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Parameters</h5>
       <table class="jd-tagtable">
@@ -1356,7 +1644,49 @@ From class
 </div>
 
 
-<A NAME="addPreformatted(java.lang.String)"></A>
+<A NAME="addColorable(java.lang.String, java.lang.String, java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">addColorable</span>
+      <span class="normal">(String tagName, String attribute, String value)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Marks given <code>tagName</code> as tag that may contain color attribute or CSS style if tag contains
+ <code>attribute</code> that exactly equals <code>value</code>. Parser will handle these cases automatically.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>tagName</td>
+          <td>Tag to handle.</td>
+        </tr>
+        <tr>
+          <th>attribute</td>
+          <td>Tag attribute.</td>
+        </tr>
+        <tr>
+          <th>value</td>
+          <td>Attribute value.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="addPreformatted(java.lang.String, java.lang.String, java.lang.String, boolean)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -1369,18 +1699,147 @@ From class
         void
       </span>
       <span class="sympad">addPreformatted</span>
-      <span class="normal">(String tagName)</span>
+      <span class="normal">(String tagName, String attribute, String value, boolean preformatted)</span>
     </h4>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Marks given <code>tagName</code> as preformatted. In this mode all spaces and line breaks
- will be taken into account. This action is default for "pre" tag.</p></p></div>
+  <div class="jd-tagdata jd-tagdescr"><p><p>Marks given <code>tagName</code> as preformatted if tag contains <code>attribute</code> that exactly
+ equals <code>value</code>. In this mode all tabs, spaces and line breaks will be taken into account.</p></p></div>
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Parameters</h5>
       <table class="jd-tagtable">
         <tr>
           <th>tagName</td>
-          <td>Tag to handle.
+          <td>Tag to handle.</td>
+        </tr>
+        <tr>
+          <th>attribute</td>
+          <td>Tag attribute.</td>
+        </tr>
+        <tr>
+          <th>value</td>
+          <td>Attribute value.</td>
+        </tr>
+        <tr>
+          <th>preformatted</td>
+          <td>True to enable preformatted tag.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="addPreformatted(java.lang.String, java.lang.String, boolean)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">addPreformatted</span>
+      <span class="normal">(String tagName, String cssClass, boolean preformatted)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Marks given <code>tagName</code> as preformatted if tag contains <code>cssClass</code> in class attribute.
+ In this mode all tabs, spaces and line breaks will be taken into account.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>tagName</td>
+          <td>Tag to handle.</td>
+        </tr>
+        <tr>
+          <th>cssClass</td>
+          <td>Tag CSS class.</td>
+        </tr>
+        <tr>
+          <th>preformatted</td>
+          <td>True to enable preformatted tag.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="addPreformatted(java.lang.String, boolean)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">addPreformatted</span>
+      <span class="normal">(String tagName, boolean preformatted)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Marks given <code>tagName</code> as preformatted. In this mode all tabs, spaces and line breaks
+ will be taken into account.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>tagName</td>
+          <td>Tag to handle.</td>
+        </tr>
+        <tr>
+          <th>preformatted</td>
+          <td>True to enable preformatted tag.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="addTag(java.lang.String, int)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">addTag</span>
+      <span class="normal">(String tagName, int tag)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Add tag to handle. Given <code>tagName</code> will be replaced with span defined by <code>tag</code>.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>tagName</td>
+          <td>Tag to handle.</td>
+        </tr>
+        <tr>
+          <th>tag</td>
+          <td>Tag type.
 </td>
         </tr>
       </table>
@@ -1419,43 +1878,6 @@ From class
         <tr>
           <th>cssClass</td>
           <td>Tag CSS class.</td>
-        </tr>
-        <tr>
-          <th>tag</td>
-          <td>Tag type.
-</td>
-        </tr>
-      </table>
-  </div>
-
-    </div>
-</div>
-
-
-<A NAME="addTag(java.lang.String, int)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public 
-         
-         
-         
-         
-        void
-      </span>
-      <span class="sympad">addTag</span>
-      <span class="normal">(String tagName, int tag)</span>
-    </h4>
-    <div class="jd-details-descr">
-      
-  <div class="jd-tagdata jd-tagdescr"><p><p>Add tag to handle. Given <code>tagName</code> will be replaced with span defined by <code>tag</code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>tagName</td>
-          <td>Tag to handle.</td>
         </tr>
         <tr>
           <th>tag</td>

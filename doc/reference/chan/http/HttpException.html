@@ -169,6 +169,7 @@
           <li class="api apilevel-"><a href="../../../reference/chan/http/HttpResponse.html">HttpResponse</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/http/HttpValidator.html">HttpValidator</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/http/MultipartEntity.html">MultipartEntity</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/http/SimpleEntity.html">SimpleEntity</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/http/UrlEncodedEntity.html">UrlEncodedEntity</a></li>
       </ul>
     </li>
@@ -438,24 +439,6 @@ Summary:
   </td></tr>
 
 
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            
-            
-            
-            </nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/http/HttpException.html#HttpException(int, java.lang.String, java.lang.Throwable)">HttpException</a></span>(int responseCode, String detailMessage, Throwable throwable)</nobr>
-        
-        <div class="jd-descrdiv"><p>Constructor for a <code><a href="../../../reference/chan/http/HttpException.html">HttpException</a></code> with response code, message and cause.</div>
-  
-  </td></tr>
-
-
 
 </table>
 
@@ -502,6 +485,42 @@ Summary:
         <span class="sympad"><a href="../../../reference/chan/http/HttpException.html#getResponseCode()">getResponseCode</a></span>()</nobr>
         
         <div class="jd-descrdiv"><p>Returns response code.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/HttpException.html#isHttpException()">isHttpException</a></span>()</nobr>
+        
+        <div class="jd-descrdiv"><p>Returns whether exception is HTTP protocol exception.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/HttpException.html#isSocketException()">isSocketException</a></span>()</nobr>
+        
+        <div class="jd-descrdiv"><p>Returns whether exception is socket level exception.</div>
   
   </td></tr>
 
@@ -999,43 +1018,6 @@ From class
 </div>
 
 
-<A NAME="HttpException(int, java.lang.String, java.lang.Throwable)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public 
-         
-         
-         
-         
-        
-      </span>
-      <span class="sympad">HttpException</span>
-      <span class="normal">(int responseCode, String detailMessage, Throwable throwable)</span>
-    </h4>
-    <div class="jd-details-descr">
-      
-  <div class="jd-tagdata jd-tagdescr"><p><p>Constructor for a <code><a href="../../../reference/chan/http/HttpException.html">HttpException</a></code> with response code, message and cause.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>responseCode</td>
-          <td>Response code.</td>
-        </tr>
-        <tr>
-          <th>detailMessage</td>
-          <td>Response message.
-</td>
-        </tr>
-      </table>
-  </div>
-
-    </div>
-</div>
-
-
 
 
 
@@ -1103,6 +1085,54 @@ From class
       <ul class="nolist"><li>Response code.
 </li></ul>
   </div>
+
+    </div>
+</div>
+
+
+<A NAME="isHttpException()"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        boolean
+      </span>
+      <span class="sympad">isHttpException</span>
+      <span class="normal">()</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether exception is HTTP protocol exception.</p>
+</p></div>
+
+    </div>
+</div>
+
+
+<A NAME="isSocketException()"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        boolean
+      </span>
+      <span class="sympad">isSocketException</span>
+      <span class="normal">()</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether exception is socket level exception.</p>
+</p></div>
 
     </div>
 </div>

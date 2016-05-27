@@ -56,7 +56,7 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
 <title>
 
-  CookieBuilder - Dashchan API Reference
+  SimpleEntity - Dashchan API Reference
 
 </title>
 <link href="../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
@@ -163,13 +163,13 @@
               
     <li><h2>Classes</h2>
       <ul>
-          <li class="selected api apilevel-"><a href="../../../reference/chan/http/CookieBuilder.html">CookieBuilder</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/http/CookieBuilder.html">CookieBuilder</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/http/HttpHolder.html">HttpHolder</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/http/HttpResponse.html">HttpResponse</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/http/HttpValidator.html">HttpValidator</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/http/MultipartEntity.html">MultipartEntity</a></li>
-          <li class="api apilevel-"><a href="../../../reference/chan/http/SimpleEntity.html">SimpleEntity</a></li>
+          <li class="selected api apilevel-"><a href="../../../reference/chan/http/SimpleEntity.html">SimpleEntity</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/http/UrlEncodedEntity.html">UrlEncodedEntity</a></li>
       </ul>
     </li>
@@ -230,6 +230,13 @@
   
   
 
+  
+   
+  
+  
+  
+  
+
 
 <div class="sum-details-links">
 
@@ -269,7 +276,7 @@ Summary:
      
     
     class
-<h1 itemprop="name">CookieBuilder</h1>
+<h1 itemprop="name">SimpleEntity</h1>
 
 
 
@@ -280,6 +287,11 @@ Summary:
   
 
   
+  
+      implements 
+      
+        <a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a> 
+      
   
   
 
@@ -302,7 +314,7 @@ Summary:
         
             <td class="jd-inheritance-space">&nbsp;&nbsp;&nbsp;&#x21b3;</td>
          	
-        <td colspan="1" class="jd-inheritance-class-cell">chan.http.CookieBuilder</td>
+        <td colspan="1" class="jd-inheritance-class-cell">chan.http.SimpleEntity</td>
     </tr>
     
 
@@ -318,7 +330,9 @@ Summary:
 
 
 <h2>Class Overview</h2>
-<p itemprop="articleBody"><p>Provides easy cookie building.</p>
+<p itemprop="articleBody"><p>Simple implementation of <code><a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a></code>.</p>
+ 
+ <p>Method <code><a href="../../../reference/chan/http/SimpleEntity.html#add(java.lang.String, java.lang.String)">add(String, String)</a></code> is not supported for this entity.</p>
 </p>
 
 
@@ -385,7 +399,7 @@ Summary:
             </nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/http/CookieBuilder.html#CookieBuilder()">CookieBuilder</a></span>()</nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/SimpleEntity.html#SimpleEntity()">SimpleEntity</a></span>()</nobr>
         
   </td></tr>
 
@@ -411,12 +425,48 @@ Summary:
             
             
             
-            <a href="../../../reference/chan/http/CookieBuilder.html">CookieBuilder</a></nobr>
+            void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/http/CookieBuilder.html#append(java.lang.String, java.lang.String)">append</a></span>(String name, String value)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/SimpleEntity.html#add(java.lang.String, java.lang.String)">add</a></span>(String name, String value)</nobr>
         
-        <div class="jd-descrdiv"><p>Append cookie with given <code>name</code> and <code>value</code>.</div>
+        <div class="jd-descrdiv"><p>Add string field to entity with given <code>name</code> and <code>value</code>.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            <a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a></nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/SimpleEntity.html#copy()">copy</a></span>()</nobr>
+        
+        <div class="jd-descrdiv"><p>Returns a deep copy of this <code>RequestEntity</code> instance.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            long</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/SimpleEntity.html#getContentLength()">getContentLength</a></span>()</nobr>
+        
+        <div class="jd-descrdiv"><p>Returns a content length of entity.</div>
   
   </td></tr>
 
@@ -432,9 +482,99 @@ Summary:
             String</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/http/CookieBuilder.html#build()">build</a></span>()</nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/SimpleEntity.html#getContentType()">getContentType</a></span>()</nobr>
         
-        <div class="jd-descrdiv"><p>Constructs cookie string.</div>
+        <div class="jd-descrdiv"><p>Returns a content type of entity.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/SimpleEntity.html#setContentType(java.lang.String)">setContentType</a></span>(String contentType)</nobr>
+        
+        <div class="jd-descrdiv"><p>Sets a content type of entity.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/SimpleEntity.html#setData(java.lang.String, java.lang.String)">setData</a></span>(String data, String charsetName)</nobr>
+        
+        <div class="jd-descrdiv"><p>Sets string <code>data</code> with given <code>charsetName</code> encoding.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/SimpleEntity.html#setData(java.lang.String)">setData</a></span>(String data)</nobr>
+        
+        <div class="jd-descrdiv"><p>Sets string <code>data</code> with UTF-8 encoding.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/SimpleEntity.html#setData(byte[])">setData</a></span>(byte[] data)</nobr>
+        
+        <div class="jd-descrdiv"><p>Sets byte array <code>data</code>.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/SimpleEntity.html#write(java.io.OutputStream)">write</a></span>(OutputStream output)</nobr>
+        
+        <div class="jd-descrdiv"><p>Writes entity to given <code>output</code>.</div>
   
   </td></tr>
 
@@ -623,6 +763,122 @@ From class
 </td></tr>
 
 
+
+<tr class="api apilevel-" >
+<td colspan="12">
+  <a href="#" onclick="return toggleInherited(this, null)" id="inherited-methods-chan.http.RequestEntity" class="jd-expando-trigger closed"
+          ><img id="inherited-methods-chan.http.RequestEntity-trigger"
+          src="../../../assets/images/triangle-closed.png"
+          class="jd-expando-trigger-img" /></a>
+From interface
+
+  <a href="../../../reference/chan/http/RequestEntity.html">chan.http.RequestEntity</a>
+
+<div id="inherited-methods-chan.http.RequestEntity">
+  <div id="inherited-methods-chan.http.RequestEntity-list"
+        class="jd-inheritedlinks">
+  </div>
+  <div id="inherited-methods-chan.http.RequestEntity-summary" style="display: none;">
+    <table class="jd-sumtable-expando">
+    
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            abstract
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/RequestEntity.html#add(java.lang.String, java.lang.String)">add</a></span>(String name, String value)</nobr>
+        
+        <div class="jd-descrdiv"><p>Add string field to entity with given <code>name</code> and <code>value</code>.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            abstract
+            
+            
+            
+            
+            <a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a></nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/RequestEntity.html#copy()">copy</a></span>()</nobr>
+        
+        <div class="jd-descrdiv"><p>Returns a deep copy of this <code>RequestEntity</code> instance.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            abstract
+            
+            
+            
+            
+            long</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/RequestEntity.html#getContentLength()">getContentLength</a></span>()</nobr>
+        
+        <div class="jd-descrdiv"><p>Returns a content length of entity.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            abstract
+            
+            
+            
+            
+            String</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/RequestEntity.html#getContentType()">getContentType</a></span>()</nobr>
+        
+        <div class="jd-descrdiv"><p>Returns a content type of entity.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            abstract
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/RequestEntity.html#write(java.io.OutputStream)">write</a></span>(OutputStream output)</nobr>
+        
+        <div class="jd-descrdiv"><p>Writes entity to given <code>output</code>.</div>
+  
+  </td></tr>
+
+
+</table>
+  </div>
+</div>
+</td></tr>
+
+
 </table>
 
 
@@ -657,7 +913,7 @@ From class
 
 
 
-<A NAME="CookieBuilder()"></A>
+<A NAME="SimpleEntity()"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -669,7 +925,7 @@ From class
          
         
       </span>
-      <span class="sympad">CookieBuilder</span>
+      <span class="sympad">SimpleEntity</span>
       <span class="normal">()</span>
     </h4>
     <div class="jd-details-descr">
@@ -695,7 +951,7 @@ From class
 
 
 
-<A NAME="append(java.lang.String, java.lang.String)"></A>
+<A NAME="add(java.lang.String, java.lang.String)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -705,30 +961,54 @@ From class
          
          
          
-        <a href="../../../reference/chan/http/CookieBuilder.html">CookieBuilder</a>
+        void
       </span>
-      <span class="sympad">append</span>
+      <span class="sympad">add</span>
       <span class="normal">(String name, String value)</span>
     </h4>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Append cookie with given <code>name</code> and <code>value</code>.</p></p></div>
+  <div class="jd-tagdata jd-tagdescr"><p><p>Add string field to entity with given <code>name</code> and <code>value</code>.</p></p></div>
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Parameters</h5>
       <table class="jd-tagtable">
         <tr>
           <th>name</td>
-          <td>Cookie name.</td>
+          <td>Field name.</td>
         </tr>
         <tr>
           <th>value</td>
-          <td>Cookie value.</td>
+          <td>Field value.
+</td>
         </tr>
       </table>
   </div>
+
+    </div>
+</div>
+
+
+<A NAME="copy()"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        <a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a>
+      </span>
+      <span class="sympad">copy</span>
+      <span class="normal">()</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Returns a deep copy of this <code>RequestEntity</code> instance.</p></p></div>
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This builder.
+      <ul class="nolist"><li>Copy of this entity.
 </li></ul>
   </div>
 
@@ -736,7 +1016,35 @@ From class
 </div>
 
 
-<A NAME="build()"></A>
+<A NAME="getContentLength()"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        long
+      </span>
+      <span class="sympad">getContentLength</span>
+      <span class="normal">()</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Returns a content length of entity.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Returns</h5>
+      <ul class="nolist"><li>Content length.
+</li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="getContentType()"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -748,16 +1056,193 @@ From class
          
         String
       </span>
-      <span class="sympad">build</span>
+      <span class="sympad">getContentType</span>
       <span class="normal">()</span>
     </h4>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Constructs cookie string.</p></p></div>
+  <div class="jd-tagdata jd-tagdescr"><p><p>Returns a content type of entity.</p></p></div>
   <div class="jd-tagdata">
       <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Cookie string.
+      <ul class="nolist"><li>Content type.
 </li></ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="setContentType(java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">setContentType</span>
+      <span class="normal">(String contentType)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Sets a content type of entity.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>contentType</td>
+          <td>Content type.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="setData(java.lang.String, java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">setData</span>
+      <span class="normal">(String data, String charsetName)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Sets string <code>data</code> with given <code>charsetName</code> encoding.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>data</td>
+          <td>String data.</td>
+        </tr>
+        <tr>
+          <th>charsetName</td>
+          <td>Charset name.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="setData(java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">setData</span>
+      <span class="normal">(String data)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Sets string <code>data</code> with UTF-8 encoding.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>data</td>
+          <td>String data.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="setData(byte[])"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">setData</span>
+      <span class="normal">(byte[] data)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Sets byte array <code>data</code>.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>data</td>
+          <td>Byte array data.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="write(java.io.OutputStream)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+         
+         
+        void
+      </span>
+      <span class="sympad">write</span>
+      <span class="normal">(OutputStream output)</span>
+    </h4>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p><p>Writes entity to given <code>output</code>.</p></p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>output</td>
+          <td>Output stream.</td>
+        </tr>
+      </table>
+  </div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Throws</h5>
+      <table class="jd-tagtable">  
+        <tr>
+            <th>IOException</td>
+            <td></td>
+        </tr>
+      </table>
   </div>
 
     </div>

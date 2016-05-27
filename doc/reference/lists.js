@@ -80,16 +80,17 @@ var DATA = [
       { id:78, label:"chan.http.HttpValidator", link:"reference/chan/http/HttpValidator.html", type:"class", deprecated:"false" },
       { id:79, label:"chan.http.MultipartEntity", link:"reference/chan/http/MultipartEntity.html", type:"class", deprecated:"false" },
       { id:80, label:"chan.http.RequestEntity", link:"reference/chan/http/RequestEntity.html", type:"class", deprecated:"false" },
-      { id:81, label:"chan.http.UrlEncodedEntity", link:"reference/chan/http/UrlEncodedEntity.html", type:"class", deprecated:"false" },
-      { id:82, label:"chan.text", link:"reference/chan/text/package-summary.html", type:"package", deprecated:"false" },
-      { id:83, label:"chan.text.CommentEditor", link:"reference/chan/text/CommentEditor.html", type:"class", deprecated:"false" },
-      { id:84, label:"chan.text.CommentEditor.BulletinBoardCodeCommentEditor", link:"reference/chan/text/CommentEditor.BulletinBoardCodeCommentEditor.html", type:"class", deprecated:"false" },
-      { id:85, label:"chan.text.CommentEditor.WakabaMarkCommentEditor", link:"reference/chan/text/CommentEditor.WakabaMarkCommentEditor.html", type:"class", deprecated:"false" },
-      { id:86, label:"chan.text.GroupParser", link:"reference/chan/text/GroupParser.html", type:"class", deprecated:"false" },
-      { id:87, label:"chan.text.GroupParser.Callback", link:"reference/chan/text/GroupParser.Callback.html", type:"class", deprecated:"false" },
-      { id:88, label:"chan.text.ParseException", link:"reference/chan/text/ParseException.html", type:"class", deprecated:"false" },
-      { id:89, label:"chan.util", link:"reference/chan/util/package-summary.html", type:"package", deprecated:"false" },
-      { id:90, label:"chan.util.CommonUtils", link:"reference/chan/util/CommonUtils.html", type:"class", deprecated:"false" },
-      { id:91, label:"chan.util.StringUtils", link:"reference/chan/util/StringUtils.html", type:"class", deprecated:"false" }
+      { id:81, label:"chan.http.SimpleEntity", link:"reference/chan/http/SimpleEntity.html", type:"class", deprecated:"false" },
+      { id:82, label:"chan.http.UrlEncodedEntity", link:"reference/chan/http/UrlEncodedEntity.html", type:"class", deprecated:"false" },
+      { id:83, label:"chan.text", link:"reference/chan/text/package-summary.html", type:"package", deprecated:"false" },
+      { id:84, label:"chan.text.CommentEditor", link:"reference/chan/text/CommentEditor.html", type:"class", deprecated:"false" },
+      { id:85, label:"chan.text.CommentEditor.BulletinBoardCodeCommentEditor", link:"reference/chan/text/CommentEditor.BulletinBoardCodeCommentEditor.html", type:"class", deprecated:"false" },
+      { id:86, label:"chan.text.CommentEditor.WakabaMarkCommentEditor", link:"reference/chan/text/CommentEditor.WakabaMarkCommentEditor.html", type:"class", deprecated:"false" },
+      { id:87, label:"chan.text.GroupParser", link:"reference/chan/text/GroupParser.html", type:"class", deprecated:"false" },
+      { id:88, label:"chan.text.GroupParser.Callback", link:"reference/chan/text/GroupParser.Callback.html", type:"class", deprecated:"false" },
+      { id:89, label:"chan.text.ParseException", link:"reference/chan/text/ParseException.html", type:"class", deprecated:"false" },
+      { id:90, label:"chan.util", link:"reference/chan/util/package-summary.html", type:"package", deprecated:"false" },
+      { id:91, label:"chan.util.CommonUtils", link:"reference/chan/util/CommonUtils.html", type:"class", deprecated:"false" },
+      { id:92, label:"chan.util.StringUtils", link:"reference/chan/util/StringUtils.html", type:"class", deprecated:"false" }
 
     ];
