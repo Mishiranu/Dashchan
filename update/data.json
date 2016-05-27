@@ -4,7 +4,7 @@
 		{
 			"title": "Release",
 			"name": "2.7.0",
-			"code": 1029,
+			"code": 1030,
 			"minVersion": 1,
 			"maxVersion": 1,
 			"minSdk": 14,
