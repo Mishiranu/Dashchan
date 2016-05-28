@@ -10,6 +10,16 @@
 			"minSdk": 14,
 			"length": 1135517,
 			"source": "/Mishiranu/Dashchan/master/update/package/Dashchan.apk"
+		},
+		{
+			"title": "Test",
+			"name": "2.7.0",
+			"code": 1030,
+			"minVersion": 1,
+			"maxVersion": 1,
+			"minSdk": 14,
+			"length": 1136002,
+			"source": "/Mishiranu/Dashchan/master/update/package/Dashchan-Test.apk"
 		}
 	],
 	"allchan":
