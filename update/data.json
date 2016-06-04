@@ -3,23 +3,13 @@
 	[
 		{
 			"title": "Release",
-			"name": "2.7.0",
+			"name": "2.7.1",
 			"code": 1030,
 			"minVersion": 1,
 			"maxVersion": 1,
 			"minSdk": 14,
-			"length": 1135517,
+			"length": 1138624,
 			"source": "/Mishiranu/Dashchan/master/update/package/Dashchan.apk"
-		},
-		{
-			"title": "Test",
-			"name": "2.7.0",
-			"code": 1030,
-			"minVersion": 1,
-			"maxVersion": 1,
-			"minSdk": 14,
-			"length": 1136002,
-			"source": "/Mishiranu/Dashchan/master/update/package/Dashchan-Test.apk"
 		}
 	],
 	"allchan":
@@ -110,11 +100,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.0",
+			"name": "1.1",
 			"code": 1,
 			"version": 1,
 			"minSdk": 14,
-			"length": 59032,
+			"length": 58615,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanChuckDfwk.apk"
 		}
 	],
@@ -182,11 +172,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.13",
+			"name": "1.14",
 			"code": 1,
 			"version": 1,
 			"minSdk": 14,
-			"length": 120353,
+			"length": 92839,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanDvach.apk"
 		}
 	],
@@ -314,11 +304,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.1",
+			"name": "1.2",
 			"code": 1,
 			"version": 1,
 			"minSdk": 14,
-			"length": 60950,
+			"length": 60258,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanMakabaPaid.apk"
 		}
 	],
@@ -422,11 +412,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.1",
+			"name": "1.2",
 			"code": 1,
 			"version": 1,
 			"minSdk": 14,
-			"length": 59792,
+			"length": 59167,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanSevenchan.apk"
 		}
 	],
