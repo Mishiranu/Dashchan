@@ -22,6 +22,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | cirno           | iichan.hk            | [DashchanCirno.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanCirno.apk)                     |
 | dobrochan       | dobrochan.com        | [DashchanDobrochan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanDobrochan.apk)             |
 | dvach           | 2ch.hk               | [DashchanDvach.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanDvach.apk)                     |
+| endchan         | endchan.xyz          | [DashchanEndchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanEndchan.apk)                 |
 | fiftyfive       | 55chan.org           | [DashchanFiftyfive.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanFiftyfive.apk)             |
 | fourchan        | 4chan.org            | [DashchanFourchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanFourchan.apk)               |
 | haruhichan      | haruhichan.ru        | [DashchanHaruhichan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanHaruhichan.apk)           |
