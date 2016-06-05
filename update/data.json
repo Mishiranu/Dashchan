@@ -180,6 +180,18 @@
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanDvach.apk"
 		}
 	],
+	"endchan":
+	[
+		{
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"minSdk": 14,
+			"length": 58595,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanEndchan.apk"
+		}
+	],
 	"fiftyfive":
 	[
 		{
