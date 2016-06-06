@@ -492,6 +492,18 @@
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanTiretirech.apk"
 		}
 	],
+	"twowatch":
+	[
+		{
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"minSdk": 14,
+			"length": 61606,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanTwowatch.apk"
+		}
+	],
 	"webm":
 	[
 		{

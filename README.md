@@ -25,7 +25,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | endchan         | endchan.xyz          | [DashchanEndchan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanEndchan.apk)                 |
 | fiftyfive       | 55chan.org           | [DashchanFiftyfive.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanFiftyfive.apk)             |
 | fourchan        | 4chan.org            | [DashchanFourchan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanFourchan.apk)               |
-| haruhichan      | haruhichan.ru        | [DashchanHaruhichan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanHaruhichan.apk)           |
+| haruhichan      | haruhichan.ovh       | [DashchanHaruhichan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanHaruhichan.apk)           |
 | horochan        | horochan.ru          | [DashchanHorochan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanHorochan.apk)               |
 | infinite        | 8ch.net              | [DashchanInfinite.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanInfinite.apk)               |
 | krautchan       | krautchan.net        | [DashchanKrautchan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanKrautchan.apk)             |
@@ -46,6 +46,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | synch           | syn-ch.com           | [DashchanSynch.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanSynch.apk)                     |
 | taima           | 420chan.org          | [DashchanTaima.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanTaima.apk)                     |
 | tiretirech      | 2--ch.ru             | [DashchanTiretirech.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanTiretirech.apk)           |
+| twowatch        | 2watch.su            | [DashchanTwowatch.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanTwowatch.apk)               |
 
 ### Archives
 
