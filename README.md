@@ -39,6 +39,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | owlchan         | owlchan.ru           | [DashchanOwlchan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanOwlchan.apk)                 |
 | ponyach         | ponyach.ru           | [DashchanPonyach.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanPonyach.apk)                 |
 | ponychan        | ponychan.net         | [DashchanPonychan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanPonychan.apk)               |
+| princessluna    | princessluna.ru      | [DashchanPrincessLuna.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanPrincessLuna.apk)       |
 | rulet           | 2-chru.net           | [DashchanRulet.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanRulet.apk)                     |
 | sevenchan       | 7chan.org            | [DashchanSevenchan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanSevenchan.apk)             |
 | shanachan       | shanachan.org        | [DashchanShanachan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanShanachan.apk)             |

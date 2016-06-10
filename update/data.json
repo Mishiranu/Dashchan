@@ -408,6 +408,18 @@
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanPonychan.apk"
 		}
 	],
+	"princessluna":
+	[
+		{
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"minSdk": 14,
+			"length": 53495,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanPrincessLuna.apk"
+		}
+	],
 	"rulet":
 	[
 		{
