@@ -47,6 +47,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | taima           | 420chan.org          | [DashchanTaima.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanTaima.apk)                     |
 | tiretirech      | 2--ch.ru             | [DashchanTiretirech.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanTiretirech.apk)           |
 | twowatch        | 2watch.su            | [DashchanTwowatch.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanTwowatch.apk)               |
+| wizardchan      | wizchan.org          | [DashchanWizardchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanWizardchan.apk)           |
 
 ### Archives
 
