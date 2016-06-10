@@ -515,5 +515,17 @@
 			"length": 4070301,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanWebm.apk"
 		}
+	],
+	"wizardchan":
+	[
+		{
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"minSdk": 14,
+			"length": 54725,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanWizardchan.apk"
+		}
 	]
 }
