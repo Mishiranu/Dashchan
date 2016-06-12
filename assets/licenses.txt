@@ -1,0 +1,36 @@
+<h3>android-support-v4
+android-support-v7-appcompat
+android-support-v7-cardview</h3>
+<pre>Copyright (C) 2012-2014 The Android Open Source Project
+Licensed under the Apache License, Version 2.0</pre>
+<a href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a>
+
+<h3>2ch Browser</h3>
+<pre>Copyright (c) 2012 vortexwolf
+Licensed under the MIT License</pre>
+<a href="https://opensource.org/licenses/MIT">https://opensource.org/licenses/MIT</a>
+
+<h3>PhotoView</h3>
+<pre>Copyright 2011, 2012 Chris Banes.
+Licensed under the Apache License, Version 2.0</pre>
+<a href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a>
+
+<h3>FFmpeg</h3>
+<pre>Copyright (c) 2000-2016 the FFmpeg developers
+Licensed under the GNU Lesser General Public License version 2.1 or later (LGPL v2.1+)</pre>
+<a href="http://www.gnu.org/licenses/lgpl-2.1.txt">http://www.gnu.org/licenses/lgpl-2.1.txt</a>
+
+<h3>LibYuv</h3>
+<pre>Copyright 2011 The LibYuv Project Authors
+Licensed under the BSD 3-Clause License</pre>
+<a href="https://chromium.googlesource.com/libyuv/libyuv/+/master/LICENSE">https://chromium.googlesource.com/libyuv/libyuv/+/master/LICENSE</a>
+
+<h3>GIFLIB</h3>
+<pre>Copyright (c) 1997 Eric S. Raymond
+Licensed under the MIT License</pre>
+<a href="https://opensource.org/licenses/MIT">https://opensource.org/licenses/MIT</a>
+
+<h3>JellyBeanSpanFixTextView</h3>
+<pre>Copyright 2012 Pierre-Yves Ricau
+Licensed under the Apache License, Version 2.0</pre>
+<a href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a>

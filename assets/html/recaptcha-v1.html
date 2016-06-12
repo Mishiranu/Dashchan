@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<script type="text/javascript" src="//www.google.com/recaptcha/api/js/recaptcha_ajax.js"></script>
+
+<script type="text/javascript">
+
+function recaptchaReload()
+{
+	Recaptcha.reload();
+}
+
+</script>
+
+</head>
+<body>
+	
+<script type="text/javascript">Recaptcha.create("__REPLACE_API_KEY__", "w", {"theme": "custom"});</script>
+<div id="w">
+<div id="recaptcha_image"></div>
+<input type="hidden" id="recaptcha_response_field" /></div>
+
+</body>
+</html>

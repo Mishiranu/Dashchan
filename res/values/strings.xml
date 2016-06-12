@@ -1,0 +1,532 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+	Copyright 2014-2016 Fukurou Mishiranu
+	
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
+	
+	http://www.apache.org/licenses/LICENSE-2.0
+	
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+-->
+
+<resources>
+	
+	<!-- Text -->
+	
+	<string name="text_address">Address</string>
+	<string name="text_app_name_update">%s update</string>
+	<string name="text_all_imageboards">All imageboards</string>
+	<string name="text_all_posts">All posts</string>
+	<string name="text_autohide_comment">Find in messages</string>
+	<string name="text_autohide_name">Find in names</string>
+	<string name="text_autohide_original_post">Only original posts</string>
+	<string name="text_autohide_sage">Only posts with sage</string>
+	<string name="text_autohide_subject">Find in subjects</string>
+	<string name="text_ban_id_format">Ban ID: %s</string>
+	<string name="text_ban_start_date_format">Start date: %s</string>
+	<string name="text_ban_expires_format">Expires: %s</string>
+	<string name="text_ban_expires_never">never</string>
+	<string name="text_ban_reason_format">Reason: %s</string>
+	<string name="text_board">Board</string>
+	<string name="text_board_speed_format">Speed: %s</string>
+	<string name="text_bump_limit_format">Bump limit: %d posts</string>
+	<string name="text_captcha">Captcha</string>
+	<string name="text_closed_thread">Thread closed</string>
+	<string name="text_code_number_address">Code, number, address</string>
+	<string name="text_configuration">Configuration</string>
+	<string name="text_confirmation">Confirmation</string>
+	<string name="text_cyclical_thread">Cyclical thread</string>
+	<plurals name="text_deleted_count_format">
+		<item quantity="one">%d deleted</item>
+		<item quantity="other">%d deleted</item>
+	</plurals>
+	<string name="text_description">Description</string>
+	<string name="text_disabled_images">Images are disabled</string>
+	<string name="text_disabled_names">Names are disabled</string>
+	<string name="text_disabled_sage">Sage is disabled</string>
+	<string name="text_disabled_subjects">Subjects are disabled</string>
+	<string name="text_disabled_tripcodes">Tripcodes are disabled</string>
+	<string name="text_dont_replace">Don\'t replace</string>
+	<string name="text_download_title">Select where to save</string>
+	<string name="text_download_to_format">Save to \"%s\"</string>
+	<string name="text_download_to_subdirectory">Save to subdirectory</string>
+	<string name="text_enabled_flags">Flags are enabled</string>
+	<string name="text_enabled_icons">Icons are enabled</string>
+	<string name="text_favorite_boards">Favorite boards</string>
+	<string name="text_favorite_threads">Favorite threads</string>
+	<string name="text_files_format">Files: %s</string>
+	<plurals name="text_files_exist_format">
+		<item quantity="one">%d file already exists.</item>
+		<item quantity="other">%d files already exist.</item>
+	</plurals>
+	<string name="text_general">General</string>
+	<string name="text_no_icon">No icon</string>
+	<string name="text_imageboard_name_format">Imageboard %s</string>
+	<string name="text_in_thread_format_format">In thread %s</string>
+	<string name="text_keep_all">Keep all</string>
+	<string name="text_links_attachments_format">Links-attachments: %s</string>
+	<string name="text_local_archive">Local archive</string>
+	<string name="text_main_application">Main application</string>
+	<string name="text_match_found">Match found</string>
+	<string name="text_match_found_format">Match found: %s</string>
+	<string name="text_message">Message</string>
+	<string name="text_message_data">Message data</string>
+	<string name="text_my_post">My post</string>
+	<string name="text_name">Name</string>
+	<string name="text_new_post">New post</string>
+	<plurals name="text_new_posts_count_format">
+		<item quantity="one">%d new post</item>
+		<item quantity="other">%d new posts</item>
+	</plurals>
+	<plurals name="text_new_posts_count_short_format">
+		<item quantity="one">%d new</item>
+		<item quantity="other">%d new</item>
+	</plurals>
+	<string name="text_new_thread">New thread</string>
+	<string name="text_no_matches_found">No matches found</string>
+	<string name="text_no_thread_information">No information</string>
+	<string name="text_older_7_days">Older than 7 days</string>
+	<string name="text_only_imageboard_format">%s only</string>
+	<string name="text_open_pages">Open pages</string>
+	<string name="text_original_poster">Original poster</string>
+	<string name="text_page_format">%d page</string>
+	<string name="text_pages_count_format">Pages count: %d</string>
+	<string name="text_password">Password</string>
+	<string name="text_personal_data">Personal data</string>
+	<string name="text_port">Port</string>
+	<plurals name="text_posts_per_hour_format">
+		<item quantity="one">%d post per hour</item>
+		<item quantity="other">%d posts per hour</item>
+	</plurals>
+	<string name="text_post_sent">Post sent</string>
+	<string name="text_posts_sent">Posts sent</string>
+	<string name="text_posts_with_files_format">Posts with files: %s</string>
+	<string name="text_rating">Rating</string>
+	<string name="text_read_only">Read only</string>
+	<string name="text_regex">Regular expression</string>
+	<string name="text_rejected_words">Rejected words:</string>
+	<string name="text_remove_file_name">Remove file name</string>
+	<string name="text_remove_metadata">Remove metadata</string>
+	<string name="text_remove_rules">Remove rules</string>
+	<string name="text_replace">Replace</string>
+	<plurals name="text_replies_count_format">
+		<item quantity="one">%d reply</item>
+		<item quantity="other">%d replies</item>
+	</plurals>
+	<string name="text_sage_description">Don\'t bring up the thread</string>
+	<string name="text_sage_description_infinitive">Don\'t bring up</string>
+	<string name="text_save_files">Save files</string>
+	<string name="text_save_thumbnails">Save thumbnails</string>
+	<string name="text_selected_format">Selected: %d</string>
+	<plurals name="text_several_files_count_format">
+		<item quantity="one">%d file</item>
+		<item quantity="other">%d files</item>
+	</plurals>
+	<string name="text_several_imageboards">Several imageboards</string>
+	<string name="text_similar_to_format">Similar to %s</string>
+	<string name="text_sort_by_unsorted">Unsorted</string>
+	<string name="text_sort_by_date">Sort by date created</string>
+	<string name="text_sort_by_replies">Sort by replies</string>
+	<string name="text_sorting">Sorting</string>
+	<string name="text_spoiler">Spoiler</string>
+	<string name="text_sticky_thread">Sticky thread</string>
+	<string name="text_subject">Subject</string>
+	<string name="text_test_string">Test string</string>
+	<string name="text_this_week">This week</string>
+	<string name="text_thread">Thread</string>
+	<string name="text_thread_files_format">%d with files</string>
+	<string name="text_threads_created">Threads created</string>
+	<string name="text_threads_viewed">Threads viewed</string>
+	<string name="text_today">Today</string>
+	<string name="text_unique_hash">Unique hash</string>
+	<string name="text_unique_posters_format">Unique posters: %s</string>
+	<string name="text_unsupported_version">Unsupported version</string>
+	<string name="text_updates_format">Updates: %d</string>
+	<string name="text_updates_available_format">Updates available: %d</string>
+	<string name="text_user_banned">User banned</string>
+	<string name="text_user_warned">User warned</string>
+	<plurals name="text_views_count_format">
+		<item quantity="one">%d view</item>
+		<item quantity="other">%d views</item>
+	</plurals>
+	<string name="text_with_name_format">With name %s</string>
+	<string name="text_without_updating">Without updating</string>
+	<string name="text_yesterday">Yesterday</string>
+	
+	<!-- Actions -->
+	
+	<string name="action_add_post">Add reply</string>
+	<string name="action_add_to_favorites">Add to favorites</string>
+	<string name="action_appearance">Appearance</string>
+	<string name="action_archive_add">Archive</string>
+	<string name="action_archive_view">Archive</string>
+	<string name="action_attach">Attach</string>
+	<string name="action_auto_refresh">Auto refreshing</string>
+	<string name="action_boards">Boards</string>
+	<string name="action_browser">Browser</string>
+	<string name="action_catalog">Catalog</string>
+	<string name="action_change_theme">Change theme</string>
+	<string name="action_check_on_startup">Check on startup</string>
+	<string name="action_choose">Choose</string>
+	<string name="action_clear">Clear</string>
+	<string name="action_clear_deleted">Clear deleted</string>
+	<string name="action_clear_history">Clear history</string>
+	<string name="action_copy_email">Copy email</string>
+	<string name="action_copy_expand">Copy&#8230;</string>
+	<string name="action_copy_link">Copy link</string>
+	<string name="action_copy_text">Copy text</string>
+	<string name="action_copy_markup">Copy markup</string>
+	<string name="action_delete">Delete</string>
+	<string name="action_details">Details</string>
+	<string name="action_download_file">Download file</string>
+	<string name="action_download_files">Download files</string>
+	<string name="action_expand">Expand</string>
+	<string name="action_expanded_screen">Expanded screen</string>
+	<string name="action_external_browser">External browser</string>
+	<string name="action_files_only">Files only</string>
+	<string name="action_filter">Filter</string>
+	<string name="action_gallery">Gallery</string>
+	<string name="action_general_boards">General boards</string>
+	<string name="action_go_to_post">Go to post</string>
+	<string name="action_group">Group</string>
+	<string name="action_hidden_posts">Hidden posts</string>
+	<string name="action_hide">Hide</string>
+	<string name="action_hide_expand">Hide&#8230;</string>
+	<string name="action_hide_name">Posts with the same name</string>
+	<string name="action_hide_post">This post</string>
+	<string name="action_hide_replies">Replies tree</string>
+	<string name="action_hide_similar">Similar posts</string>
+	<string name="action_history">History</string>
+	<string name="action_internal_browser">Internal browser</string>
+	<string name="action_load_captcha">Click to load captcha</string>
+	<string name="action_lock_drawer">Lock drawer</string>
+	<string name="action_make_home_page">Make home page</string>
+	<string name="action_make_threadshot">Make threadshot</string>
+	<string name="action_technical_info">Technical info</string>
+	<string name="action_minimize">Minimize</string>
+	<string name="action_my_posts">My posts</string>
+	<string name="action_new_rule">New rule</string>
+	<string name="action_new_thread">New thread</string>
+	<string name="action_open_thread">Open thread</string>
+	<string name="action_open_the_original">Open the original</string>
+	<string name="action_pages">Pages</string>
+	<string name="action_pause">Pause</string>
+	<string name="action_play">Play</string>
+	<string name="action_popular_threads">Popular threads</string>
+	<string name="action_preferences">Preferences</string>
+	<string name="action_quote">Quote</string>
+	<string name="action_refresh">Refresh</string>
+	<string name="action_reload">Reload</string>
+	<string name="action_restart">Restart</string>
+	<string name="action_remove_from_favorites">Remove from favorites</string>
+	<string name="action_remove_from_history">Remove from history</string>
+	<string name="action_remove_rule">Remove rule</string>
+	<string name="action_rename">Rename</string>
+	<string name="action_reply">Reply</string>
+	<string name="action_report">Report</string>
+	<string name="action_retry">Retry</string>
+	<string name="action_save">Save</string>
+	<string name="action_search">Search</string>
+	<string name="action_search_image">Search image</string>
+	<string name="action_select">Select</string>
+	<string name="action_select_all">Select all</string>
+	<string name="action_send">Send</string>
+	<string name="action_sfw_mode">SFW mode</string>
+	<string name="action_share_expand">Share&#8230;</string>
+	<string name="action_share_file">Share file</string>
+	<string name="action_share_link">Share link</string>
+	<string name="action_share_text">Share text</string>
+	<string name="action_show">Show</string>
+	<string name="action_show_thumbnail">Show thumbnail</string>
+	<string name="action_spoilers">Spoilers</string>
+	<string name="action_stop">Stop</string>
+	<string name="action_summary">Summary</string>
+	<string name="action_thread_options">Thread options</string>
+	<string name="action_threads_grid">Threads grid</string>
+	<string name="action_user_boards">User boards</string>
+	<string name="action_view">View</string>
+	
+	<!-- Messages -->
+	
+	<string name="message_archive_too_often_error">You can\'t archive too often</string>
+	<string name="message_banned">You are banned</string>
+	<string name="message_board_not_exist">The board doesn\'t exist</string>
+	<string name="message_cache_unavailable">Cache is unavailable</string>
+	<string name="message_can_skip_captcha">You don\'t need to enter a captcha</string>
+	<string name="message_captcha_expired">Captcha expired</string>
+	<string name="message_captcha_not_valid">Captcha is not valid</string>
+	<string name="message_captcha_pass_allowed">Captcha pass is allowed</string>
+	<string name="message_clear_deleted_warning">Deleted posts will be permanently deleted.</string>
+	<string name="message_clear_history_confirm">Clear history?</string>
+	<string name="message_cloudflate_block">It seems that CloudFlare has blocked your IP. Enter the captcha to pass
+		the verification.</string>
+	<string name="message_clearing">Clearing&#8230;</string>
+	<string name="message_confirm_archivation">Confirm the archivation.</string>
+	<string name="message_confirm_deletion">Confirm the deletion.</string>
+	<string name="message_confirm_reporting">Confirm the reporting.</string>
+	<string name="message_connect_timeout">Connect timeout expired</string>
+	<string name="message_connection_reset">Connection was reset</string>
+	<string name="message_completed">Completed</string>
+	<string name="message_delete_too_new_error">You can\'t delete too new posts</string>
+	<string name="message_delete_too_old_error">You can\'t delete too old posts</string>
+	<string name="message_delete_too_often_error">You can\'t delete posts too often</string>
+	<string name="message_download_completed">Download completed</string>
+	<string name="message_download_count_format">Downloading %1$d of %2$d</string>
+	<string name="message_download_audio">Downloading audio</string>
+	<string name="message_download_error">Unable to download data</string>
+	<string name="message_download_result_format">Success: %1$d, not loaded: %2$d</string>
+	<string name="message_download_name_format">File %s</string>
+	<string name="message_download_not_loaded">Not loaded</string>
+	<string name="message_download_manager_error">Download Manager is not available</string>
+	<string name="message_edited_posts">Some posts have been edited</string>
+	<string name="message_empty_file">You need to attach a file</string>
+	<string name="message_empty_gallery">Gallery is empty</string>
+	<string name="message_empty_history">History is empty</string>
+	<string name="message_empty_post">No comment entered</string>
+	<string name="message_empty_response">Empty response</string>
+	<string name="message_empty_subject">No subject entered</string>
+	<string name="message_enter_valid_data">Enter a valid data</string>
+	<string name="message_extension_error">Extension error</string>
+	<string name="message_field_too_long">Exceeding the fields limit</string>
+	<plurals name="message_file_attach_error_format">
+		<item quantity="one">%d file hasn\'t been attached</item>
+		<item quantity="other">%d files haven\'t been attached</item>
+	</plurals>
+	<string name="message_file_exists">Repeated files are prohibited</string>
+	<string name="message_file_not_support">File format is not supported</string>
+	<string name="message_file_playback">File playback</string>
+	<string name="message_files_limit_reached">Files limit reached</string>
+	<string name="message_files_too_big">Attachments are too large</string>
+	<string name="message_files_too_many">Too many attachments</string>
+	<string name="message_hide_default_name_error">You can\'t hide default name</string>
+	<string name="message_image_corrupted">Image is corrupted</string>
+	<string name="message_image_out_of_memory">Not enough memory to handle image</string>
+	<string name="message_incorrect_password">Incorrect password</string>
+	<string name="message_invalid_authorization_data">Invalid authorization data</string>
+	<string name="message_invalid_certificate">Invalid certificate</string>
+	<string name="message_invalid_data_format">Invalid data format</string>
+	<string name="message_invalid_response">Invalid server response</string>
+	<string name="message_insufficient_space">Insufficient device space</string>
+	<string name="message_loading">Loading&#8230;</string>
+	<string name="message_new_password">A new password was generated</string>
+	<string name="message_no_access">No access</string>
+	<string name="message_no_access_to_memory">No access to memory</string>
+	<string name="message_no_available_updates">No available updates</string>
+	<string name="message_no_backups">Backups not found</string>
+	<string name="message_no_extensions">No extensions installed!</string>
+	<string name="message_no_rules">No rules defined</string>
+	<string name="message_not_found">Not found</string>
+	<string name="message_open_link_confirm">Follow the link?</string>
+	<string name="message_open_posts_confirm">Open thread?</string>
+	<string name="message_open_search_confirm">Go to search?</string>
+	<string name="message_open_threads_confirm">Go to threads list?</string>
+	<string name="message_packages_installed">New extensions were installed. Restart required.</string>
+	<string name="message_page_not_exist_format">The %d page doesn\'t exist</string>
+	<string name="message_playback_error">Playback error</string>
+	<string name="message_post_not_found">The post isn\'t found</string>
+	<string name="message_posting_too_fast">You can\'t post messages too often</string>
+	<string name="message_press_again_to_exit">Press again to exit</string>
+	<string name="message_processing_data">Processing data&#8230;</string>
+	<string name="message_read_timeout">Read timeout expired</string>
+	<string name="message_report_sent">The report has sent successfully</string>
+	<string name="message_report_too_often_error">You can\'t report too often</string>
+	<string name="message_request_sent">The request has been sent successfully</string>
+	<string name="message_save_completed">Save completed</string>
+	<string name="message_sending">Sending&#8230;</string>
+	<string name="message_sending_index_format">Sending %1$d of %2$d&#8230;</string>
+	<string name="message_spam_list">Message rejected</string>
+	<string name="message_ssl_error">SSL/HTTPS error</string>
+	<string name="message_thread_closed">Thread is closed</string>
+	<string name="message_thread_not_exist">The thread doesn\'t exist</string>
+	<string name="message_too_few_meaningful_words">Too few meaningful words</string>
+	<string name="message_tripcode_warning">Tripcodes are disabled on this board. The password will be sent in pure form
+		without conversion to tripcode.</string>
+	<string name="message_uninstall_reminder">Changes will take effect after restarting the application.</string>
+	<string name="message_unknown_address">Unknown address</string>
+	<string name="message_unknown_error">An unknown error occurred</string>
+	<string name="message_unsafe_redirect">Unsafe redirection</string>
+	<string name="message_unsupported_scheme">Scheme not supported</string>
+	<string name="message_update_reminder">You can track downloading progress in notification bar.\n\nYou can install
+		applications when download finishes.\n\nDon\'t forget to restart client after installing extensions!</string>
+	<string name="message_validation_completed">Validation completed</string>
+	
+	<!-- Preferences -->
+	
+	<string name="preference_header_about">About</string>
+	<string name="preference_header_autohide">Autohide</string>
+	<string name="preference_header_contents">Contents</string>
+	<string name="preference_header_favorites">Favorites</string>
+	<string name="preference_header_general">General</string>
+	<string name="preference_header_imageboard">Imageboard</string>
+	<string name="preference_header_imageboards">Imageboards</string>
+	<string name="preference_header_interface">Interface</string>
+	
+	<string name="preference_category_additional">Additional</string>
+	<string name="preference_category_auto_refreshing">Auto refreshing threads</string>
+	<string name="preference_category_connection">Connection</string>
+	<string name="preference_category_downloading">Downloading</string>
+	<string name="preference_category_images">Images</string>
+	<string name="preference_category_navigation">Navigation</string>
+	<string name="preference_category_posts">Posts list</string>
+	<string name="preference_category_services">Services</string>
+	<string name="preference_category_submission">Submission form</string>
+	<string name="preference_category_threads">Threads list</string>
+	<string name="preference_category_video_player">Video player</string>
+	<string name="preference_category_watcher">Favorites watcher</string>
+	
+	<string-array name="preference_generic_network_choices">
+		<item>Always</item>
+		<item>Wi-Fi or 3G+</item>
+		<item>Wi-Fi only</item>
+		<item>Never</item>
+	</string-array>
+	
+	<string name="preference_active_scrollbar">Active scrollbar</string>
+	<string name="preference_all_attachments">All attachments</string>
+	<string name="preference_all_attachments_summary">Display thumbnails for all attachments</string>
+	<string name="preference_auto_refresh_mode">Auto refreshing mode</string>
+	<string-array name="preference_auto_refresh_choices">
+		<item>Separate</item>
+		<item>Always disabled</item>
+		<item>Always enabled</item>
+	</string-array>
+	<string name="preference_auto_refresh_interval">Refresh interval</string>
+	<string name="preference_auto_refresh_interval_summary_format">Every %1$d sec.</string>
+	<string name="preference_backup_data">Backup data</string>
+	<string name="preference_backup_data_summary">Save all your settings, favorites, history and autohide rules</string>
+	<string-array name="preference_backup_data_choices">
+		<item>Backup data</item>
+		<item>Restore data</item>
+	</string-array>
+	<string name="preference_captcha">Captcha type</string>
+	<string name="preference_captcha_cloudflare">CloudFlare captcha type</string>
+	<string name="preference_captcha_pass">Captcha pass</string>
+	<string name="preference_captcha_pass_summary">Allows you to skip captcha</string>
+	<string name="preference_changelog">Changelog</string>
+	<string name="preference_check_for_updates">Check for updates</string>
+	<string name="preference_cache_size">Cache size</string>
+	<string name="preference_clear_cache">Clear cache</string>
+	<string-array name="preference_clear_cache_choices">
+		<item>Thumbnails</item>
+		<item>Cached files</item>
+		<item>Old threads</item>
+		<item>All threads</item>
+	</string-array>
+	<string name="preference_close_on_back">Closing pages</string>
+	<string name="preference_close_on_back_summary">Close pages by clicking a \"Back\" button</string>
+	<string name="preference_cut_thumbnails">Cut thumbnails</string>
+	<string name="preference_cut_thumbnails_summary">Make thumbnails fill square</string>
+	<string name="preference_default_board_name">Default starting board</string>
+	<string name="preference_delete_cookies">Delete cookies</string>
+	<string name="preference_display_hidden_threads">Display hidden threads</string>
+	<string name="preference_display_icons">Display post icons</string>
+	<string name="preference_display_icons_summary">Icons are available in some subject boards</string>
+	<string name="preference_domain">Domain</string>
+	<string name="preference_domain_another">Another</string>
+	<string name="preference_download_detail_name">Detailed file name</string>
+	<string name="preference_download_detail_name_summary">Download files with thread number in names</string>
+	<string name="preference_download_original_name">Original file name</string>
+	<string name="preference_download_original_name_summary">Download files with original file names
+		if it possible</string>
+	<string name="preference_download_path">Download path</string>
+	<string name="preference_download_subdir">Show download configuration dialog</string>
+	<string-array name="preference_download_subdir_choices">
+		<item>Never</item>
+		<item>With multiple downloading</item>
+		<item>Always</item>
+	</string-array>
+	<string name="preference_download_youtube_titles">YouTube video titles</string>
+	<string name="preference_download_youtube_titles_summary">Download and display titles instead of links</string>
+	<string name="preference_favorite_on_reply">Add thread on reply</string>
+	<string name="preference_favorites_order">Favorite threads order</string>
+	<string-array name="preference_favorites_order_choices">
+		<item>Add to the top</item>
+		<item>Add to the bottom</item>
+		<item>Order by title</item>
+	</string-array>
+	<string name="preference_hide_personal_data">Hide personal data block</string>
+	<string name="preference_huge_captcha">Huge captcha</string>
+	<string name="preference_internal_browser">Internal browser</string>
+	<string name="preference_internal_browser_sumamry">Open external links in internal browser</string>
+	<string name="preference_licenses">Open source licenses</string>
+	<string name="preference_licenses_summary">License details for open source software</string>
+	<string name="preference_load_catalog">Load catalog</string>
+	<string name="preference_load_catalog_summary">Catalog will be loaded when you open a threads page</string>
+	<string name="preference_load_nearest_image">Load nearest image</string>
+	<string name="preference_load_thumbnails">Load thumbnails</string>
+	<string name="preference_locale">Language</string>
+	<string name="preference_merge_chans">Merge pages</string>
+	<string name="preference_merge_chans_summary">Display pages for all imageboards</string>
+	<string name="preference_notify_download_complete">Notify when download is completed</string>
+	<string name="preference_notify_download_complete_summary">Will show \"Heads-Up\" notification</string>
+	<string name="preference_page_by_page">Page by page board navigation</string>
+	<string name="preference_page_by_page_summary">Don\'t use long list</string>
+	<string name="preference_pages_list">Drawer headers order</string>
+	<string-array name="preference_pages_list_choices">
+		<item>Pages first</item>
+		<item>Favorites first</item>
+		<item>Hide pages</item>
+	</string-array>
+	<string name="preference_partial_thread_loading">Partial thread loading</string>
+	<string name="preference_partial_thread_loading_summary">Allows to download only new posts instead of
+		a whole thread</string>
+	<string name="preference_password_for_removal">Password for removal</string>
+	<string name="preference_password_for_removal_summary">Used when sending and removing posts</string>
+	<string name="preference_post_max_lines">Max lines count</string>
+	<string name="preference_post_max_lines_summary">Cut long posts if the number of lines exceeds a
+		predetermined value</string>
+	<string name="preference_proxy">HTTP proxy</string>
+	<string name="preference_scroll_thread_gallery">Scroll thread when scrolling gallery</string>
+	<string name="preference_statistics">Statistics</string>
+	<string name="preference_subdirectory_pattern">Subdirectory pattern</string>
+	<string-array name="preference_subdirectory_pattern_descriptions">
+		<item>imageboard code</item>
+		<item>imageboard title</item>
+		<item>board code</item>
+		<item>thread identifier</item>
+		<item>thread title</item>
+		<item>optional part</item>
+	</string-array>
+	<string name="preference_text_scale">Text scale</string>
+	<string name="preference_text_scale_summary_format">Scale %1$d%%</string>
+	<string name="preference_thumbnails_scale">Thumbnail scale</string>
+	<string name="preference_thumbnails_scale_summary_format">Scale %1$d%%</string>
+	<string name="preference_uninstall_extension">Uninstall extension</string>
+	<string name="preference_use_https">Secure connection</string>
+	<string name="preference_use_https_summary">Use HTTPS protocol</string>
+	<string name="preference_use_https_warning">The following option is special for different services such as
+		captchas and app updating. You can configure HTTPS for imageboards in their own categories.</string>
+	<string name="preference_use_video_player">Use built-in video player</string>
+	<string name="preference_use_video_player_summary">Play WebM video attachments</string>
+	<string name="preference_use_video_player_warning">You must install decoding libraries to enable
+		video player.</string>
+	<string name="preference_user_authorization">User authorization</string>
+	<string name="preference_verify_certificate">Verify certificate</string>
+	<string name="preference_verify_certificate_summary">Connection will be terminated if the certificate
+		is not valid</string>
+	<string name="preference_version">Build version</string>
+	<string name="preference_video_completion">Action on playback completion</string>
+	<string-array name="preference_video_completion_choices">
+		<item>Do nothing</item>
+		<item>Play again</item>
+	</string-array>
+	<string name="preference_video_play_after_scroll">Play after scroll</string>
+	<string name="preference_video_play_after_scroll_summary">Hide play button before playing video</string>
+	<string name="preference_video_seek_any_frame">Seek any frame</string>
+	<string name="preference_video_seek_any_frame_summary">Higher accuracy at lower performance</string>
+	<string name="preference_watcher_refresh_interval">Refresh interval</string>
+	<string name="preference_watcher_refresh_interval_summary_format">Check every %1$d sec.</string>
+	<string name="preference_watcher_refresh_periodically">Refresh periodically</string>
+	<string name="preference_watcher_watch_initially">Watch initially</string>
+	<string name="preference_watcher_watch_initially_summary">Enable watcher immediately when thread added
+		to favorites</string>
+	<string name="preference_watcher_wifi_only">Wi-Fi only</string>
+	
+</resources>

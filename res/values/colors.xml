@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+	Copyright 2014-2016 Fukurou Mishiranu
+	
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
+	
+	http://www.apache.org/licenses/LICENSE-2.0
+	
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+-->
+
+<resources>
+	
+	<color name="color_text_error">#ffcc0000</color>
+	
+	<color name="background_window_light">#ffeeeeee</color>
+	<color name="background_block_light">#ccffffff</color>
+	<color name="background_drawer_light">#fffafafa</color>
+	<color name="background_attachment_light">#ff888888</color>
+	<color name="background_spoiler_light">#33000000</color>
+	<color name="background_card_light">#fffafafa</color>
+	<color name="color_post_primary_light">#ff000000</color>
+	<color name="color_post_secondary_light">#aa000000</color>
+	<color name="color_post_grayed_light">@color/color_post_secondary_light</color>
+	<color name="color_text_link_light">@color/color_accent_light</color>
+	<color name="color_text_quote_light">#ff888888</color>
+	<color name="color_text_tripcode_light">#ff888888</color>
+	<color name="color_text_capcode_light">@color/color_text_tripcode_light</color>
+	<color name="color_primary_light">#ff666666</color>
+	<color name="color_accent_light">@color/color_primary_light</color>
+	<color name="color_selection_light">#66666666</color>
+	
+	<color name="background_window_dark">#ff181818</color>
+	<color name="background_block_dark">#aa000000</color>
+	<color name="background_drawer_dark">#ff202020</color>
+	<color name="background_attachment_dark">#ff111111</color>
+	<color name="background_spoiler_dark">#33ffffff</color>
+	<color name="background_card_dark">#ff202020</color>
+	<color name="color_post_primary_dark">#ccffffff</color>
+	<color name="color_post_secondary_dark">#99ffffff</color>
+	<color name="color_post_grayed_dark">@color/color_post_secondary_dark</color>
+	<color name="color_text_link_dark">@color/color_accent_dark</color>
+	<color name="color_text_quote_dark">#ff888888</color>
+	<color name="color_text_tripcode_dark">#ff888888</color>
+	<color name="color_text_capcode_dark">@color/color_text_tripcode_light</color>
+	<color name="color_primary_dark">#ff333333</color>
+	<color name="color_accent_dark">#ffaaaaaa</color>
+	<color name="color_selection_dark">#66aaaaaa</color>
+	
+	<color name="color_text_link_photon">@color/color_primary_photon</color>
+	<color name="color_text_quote_photon">#ff779922</color>
+	<color name="color_text_tripcode_photon">#ff228855</color>
+	<color name="color_text_capcode_photon">#ff2266aa</color>
+	<color name="color_primary_photon">#ffff6600</color>
+	<color name="color_accent_photon">@color/color_primary_photon</color>
+	<color name="color_selection_photon">#66ff6600</color>
+	
+	<color name="color_text_link_hadron">@color/color_primary_hadron</color>
+	<color name="color_text_quote_hadron">#ff77dd00</color>
+	<color name="color_text_tripcode_hadron">#ff33cc88</color>
+	<color name="color_text_capcode_hadron">#ff66bbff</color>
+	<color name="color_primary_hadron">#ffff6600</color>
+	<color name="color_accent_hadron">@color/color_primary_hadron</color>
+	<color name="color_selection_hadron">#66ff6600</color>
+	
+	<color name="background_window_burichan">#ffeef2ff</color>
+	<color name="background_spoiler_burichan">#809988ee</color>
+	<color name="color_text_link_burichan">#ff33335f</color>
+	<color name="color_text_quote_burichan">#ff779922</color>
+	<color name="color_text_tripcode_burichan">#ff228855</color>
+	<color name="color_text_capcode_burichan">#ff2266aa</color>
+	<color name="color_primary_burichan">#ff7777bb</color>
+	<color name="color_accent_burichan">#ffaf0a0f</color>
+	<color name="color_selection_burichan">#66af0a0f</color>
+	
+	<color name="background_window_tomorrow">#ff282a2e</color>
+	<color name="background_card_tomorrow">@color/color_primary_tomorrow</color>
+	<color name="color_text_link_tomorrow">@color/color_accent_tomorrow</color>
+	<color name="color_text_quote_tomorrow">#ffb5bd68</color>
+	<color name="color_text_tripcode_tomorrow">#ff33cc88</color>
+	<color name="color_text_capcode_tomorrow">#ff66bbff</color>
+	<color name="color_primary_tomorrow">#ff32343a</color>
+	<color name="color_accent_tomorrow">#ff81a2be</color>
+	<color name="color_selection_tomorrow">#6681a2be</color>
+	
+	<color name="color_text_link_normie">@color/color_primary_normie</color>
+	<color name="color_text_quote_normie">#ff7da1ca</color>
+	<color name="color_text_tripcode_normie">@color/color_primary_normie</color>
+	<color name="color_text_capcode_normie">@color/color_primary_normie</color>
+	<color name="color_primary_normie">#ff5181b8</color>
+	<color name="color_accent_normie">@color/color_primary_normie</color>
+	<color name="color_selection_normie">#665181b8</color>
+	
+	<color name="background_window_neutron">#ff2c2c2c</color>
+	<color name="color_post_primary_neutron">@color/color_primary_neutron</color>
+	<color name="color_post_secondary_neutron">@color/color_text_link_neutron</color>
+	<color name="color_post_grayed_neutron">@color/color_post_primary_neutron</color>
+	<color name="color_text_link_neutron">#ffccbb88</color>
+	<color name="color_text_quote_neutron">#ff779922</color>
+	<color name="color_text_tripcode_neutron">#ff33cc88</color>
+	<color name="color_text_capcode_neutron">#ffffaa33</color>
+	<color name="color_primary_neutron">#ff6688cc</color>
+	<color name="color_accent_neutron">@color/color_primary_neutron</color>
+	<color name="color_selection_neutron">#666688cc</color>
+	
+	<color name="background_window_amoled">@android:color/black</color>
+	<color name="background_block_amoled">#ff111111</color>
+	<color name="background_drawer_amoled">#ff0f0f0f</color>
+	<color name="color_post_primary_amoled">#88ffffff</color>
+	<color name="color_post_secondary_amoled">#66ffffff</color>
+	<color name="color_post_grayed_amoled">@color/color_post_secondary_amoled</color>
+	<color name="color_text_link_amoled">@color/color_accent_amoled</color>
+	<color name="color_text_quote_amoled">#ff779922</color>
+	<color name="color_text_tripcode_amoled">#ff33cc88</color>
+	<color name="color_text_capcode_amoled">#ff66bbff</color>
+	<color name="color_primary_amoled">@android:color/black</color>
+	<color name="color_accent_amoled">#ffaaaaaa</color>
+	<color name="color_selection_amoled">#66aaaaaa</color>
+	
+</resources>
