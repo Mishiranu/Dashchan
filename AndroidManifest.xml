@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+	Copyright 2014-2016 Fukurou Mishiranu
+	
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
+	
+	http://www.apache.org/licenses/LICENSE-2.0
+	
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+-->
+
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+	package="com.mishiranu.dashchan"
+	android:versionCode="1030"
+	android:versionName="2.7.1">
+	
+	<uses-sdk android:minSdkVersion="16" android:targetSdkVersion="23"/>
+	
+	<uses-permission android:name="android.permission.INTERNET" />
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+	<uses-permission android:name="android.permission.WAKE_LOCK" />
+	
+	<application android:name=".app.MainApplication" android:allowBackup="true" android:label="@string/const_app_name"
+		android:icon="@drawable/ic_launcher" android:logo="@drawable/ic_logo" android:theme="@style/Theme.Special.Stub"
+		android:largeHeap="true">
+		
+		<activity android:name=".app.LauncherActivity">
+			
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+				<category android:name="android.intent.category.LAUNCHER" />
+				<category android:name="android.intent.category.MULTIWINDOW_LAUNCHER" />
+			</intent-filter>
+			
+		</activity>
+		
+		<activity android:name=".app.MainActivity" android:launchMode="singleTask"
+			android:configChanges="orientation|screenSize" />
+		
+		<activity android:name=".app.WebBrowserActivity" android:configChanges="orientation|screenSize" />
+		
+		<activity android:name=".app.UriHandlerActivity" android:theme="@android:style/Theme.NoDisplay"
+			android:launchMode="singleTask">
+			
+			<intent-filter>
+				<action android:name="chan.intent.action.HANDLE_URI" />
+				<category android:name="android.intent.category.DEFAULT" />
+				<data android:scheme="http" />
+				<data android:scheme="https" />
+			</intent-filter>
+			
+		</activity>
+		
+		<activity android:name=".app.PreferencesActivity" />
+		
+		<activity android:name=".app.GalleryActivity" android:configChanges="orientation|screenSize"
+			android:theme="@style/Theme.Gallery" />
+		
+		<activity android:name=".app.PostingActivity" android:windowSoftInputMode="stateHidden" />
+		
+		<activity android:name=".app.AudioPlayerActivity" android:theme="@android:style/Theme.Translucent.NoTitleBar"
+			android:configChanges="orientation|screenSize" android:taskAffinity=".audioplayer"
+			android:launchMode="singleInstance" android:excludeFromRecents="true" />
+		
+		<service android:name=".app.service.PostingService" />
+		
+		<service android:name=".app.service.DownloadService" />
+		
+		<service android:name=".app.service.AudioPlayerService" />
+		
+		<meta-data android:name="com.sec.android.support.multiwindow" android:value="true" />
+		<meta-data android:name="com.sec.android.multiwindow.DEFAULT_SIZE_W" android:value="632dp" />
+		<meta-data android:name="com.sec.android.multiwindow.DEFAULT_SIZE_H" android:value="598dp" />
+		<meta-data android:name="com.sec.android.multiwindow.MINIMUM_SIZE_W" android:value="632dp" />
+		<meta-data android:name="com.sec.android.multiwindow.MINIMUM_SIZE_H" android:value="598dp" />
+		
+	</application>
+	
+</manifest>

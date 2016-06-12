@@ -2,8 +2,6 @@
 
 Dashchan is imageboards client for Android.
 
-This repository is designed to store Dashchan updating data.
-
 Read the [project wiki](https://github.com/Mishiranu/Dashchan/wiki) for further information.
 
 # Packages List
@@ -74,3 +72,15 @@ Remember that every time you install a new extension, you must restart the clien
 Go to Preferences ⇒ About ⇒ Check for updates. After fetching updating data you can view a number of updates in title bar. Usually you just need to click on the download button and wait until downloading ends.
 
 It is better to install extension packages and then install application package. If you download only an extension, don't forget to restart the application after updating.
+
+# Building Guide
+
+1. Install JDK 7 or higher
+2. Install Android SDK
+3. Install Android NDK and define ANDROID_NDK_HOME environment variable
+4. Install Gradle
+5. Run `gradle assembleRelease` in the source code directory
+
+# License
+
+Dashchan is licensed under the [Apache License, version 2.0](LICENSE).
