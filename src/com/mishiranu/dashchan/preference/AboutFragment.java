@@ -404,6 +404,7 @@ public class AboutFragment extends BasePreferenceFragment
 			holder.storeResult(mResult, mErrorItem);
 		}
 		
+		@Override
 		public void cancel()
 		{
 			cancel(true);

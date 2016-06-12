@@ -18,7 +18,7 @@ package com.mishiranu.dashchan.async;
 
 import android.os.AsyncTask;
 
-public abstract class CancelableTask<Params, Progress, Result> extends AsyncTask<Params, Progress, Result>
+public abstract class CancellableTask<Params, Progress, Result> extends AsyncTask<Params, Progress, Result>
 {
 	public abstract void cancel();
 }

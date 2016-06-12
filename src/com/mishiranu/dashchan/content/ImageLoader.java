@@ -30,7 +30,6 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Process;
 import android.util.Base64;
 import android.view.View;
@@ -47,6 +46,7 @@ import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.app.MainApplication;
+import com.mishiranu.dashchan.async.CancellableTask;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.IOUtils;
@@ -171,7 +171,7 @@ public class ImageLoader
 		}
 	}
 	
-	private class LoaderTask extends AsyncTask<Void, Void, Bitmap>
+	private class LoaderTask extends CancellableTask<Void, Void, Bitmap>
 	{
 		private final HttpHolder mHolder = new HttpHolder();
 		
@@ -328,6 +328,7 @@ public class ImageLoader
 			for (Callback<?> callback : callbacks) callback.onResult(result);
 		}
 		
+		@Override
 		public void cancel()
 		{
 			cancel(true);

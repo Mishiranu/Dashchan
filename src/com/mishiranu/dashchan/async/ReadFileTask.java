@@ -26,7 +26,6 @@ import java.io.OutputStream;
 
 import android.content.Context;
 import android.net.Uri;
-import android.os.AsyncTask;
 
 import chan.content.ChanManager;
 import chan.content.ChanPerformer;
@@ -42,7 +41,7 @@ import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.util.IOUtils;
 
-public class ReadFileTask extends AsyncTask<String, Long, Boolean>
+public class ReadFileTask extends CancellableTask<String, Long, Boolean>
 {
 	public static interface Callback
 	{
@@ -234,6 +233,7 @@ public class ReadFileTask extends AsyncTask<String, Long, Boolean>
 		return mToFile.getName();
 	}
 	
+	@Override
 	public void cancel()
 	{
 		cancel(true);

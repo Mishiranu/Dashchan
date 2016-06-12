@@ -604,6 +604,7 @@ public class CaptchaManager implements Handler.Callback
 			holder.storeResult(mApiKey, mChallenge, mInput, mErrorItem);
 		}
 		
+		@Override
 		public void cancel()
 		{
 			cancel(true);

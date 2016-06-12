@@ -24,7 +24,6 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Pair;
 
@@ -280,7 +279,7 @@ public final class AsyncManager
 		mWorkTasks.put(name, holder);
 	}
 	
-	public static abstract class SimpleTask<Params, Progress, Result> extends AsyncTask<Params, Progress, Result>
+	public static abstract class SimpleTask<Params, Progress, Result> extends CancellableTask<Params, Progress, Result>
 	{
 		private final Holder mHolder = new Holder();
 		

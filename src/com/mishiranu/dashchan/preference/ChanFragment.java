@@ -570,6 +570,7 @@ public class ChanFragment extends BasePreferenceFragment
 			holder.storeResult(mValid, mErrorItem);
 		}
 		
+		@Override
 		public void cancel()
 		{
 			cancel(true);

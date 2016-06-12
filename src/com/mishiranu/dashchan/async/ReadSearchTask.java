@@ -22,8 +22,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Locale;
 
-import android.os.AsyncTask;
-
 import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
@@ -38,7 +36,7 @@ import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.net.YouTubeTitlesReader;
 import com.mishiranu.dashchan.text.HtmlParser;
 
-public class ReadSearchTask extends AsyncTask<Void, Void, PostItem[]> implements Comparator<Post>
+public class ReadSearchTask extends CancellableTask<Void, Void, PostItem[]> implements Comparator<Post>
 {
 	private final Callback mCallback;
 	private final String mChanName;
@@ -165,6 +163,7 @@ public class ReadSearchTask extends AsyncTask<Void, Void, PostItem[]> implements
 		else mCallback.onReadSearchFail(mErrorItem);
 	}
 	
+	@Override
 	public void cancel()
 	{
 		cancel(true);

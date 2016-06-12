@@ -405,7 +405,7 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 		@Override
 		public void onRequestTaskCancel(String name, Object task)
 		{
-			((ClearCacheTask) task).cancel(true);
+			((ClearCacheTask) task).cancel();
 		}
 	}
 	
@@ -440,6 +440,12 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 				Thread.currentThread().interrupt();
 			}
 			return null;
+		}
+		
+		@Override
+		public void cancel()
+		{
+			cancel(true);
 		}
 	}
 }
