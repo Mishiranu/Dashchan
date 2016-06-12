@@ -58,6 +58,25 @@ android {
 		buildTypes.release.signingConfig signingConfigs.release
 	}
 
+	defaultConfig {
+		def apiKeyGoogle = null
+		def apiKeySoundCloud = null
+
+		if (new File("private.properties").exists()) {
+			Properties properties = new Properties()
+			properties.load(new FileInputStream(file("private.properties")))
+
+			apiKeyGoogle = properties['api.key.google']
+			apiKeySoundCloud = properties['api.key.soundcloud']
+		}
+
+		if (apiKeyGoogle == null) apiKeyGoogle = '';
+		if (apiKeySoundCloud == null) apiKeySoundCloud = '';
+
+		buildConfigField 'String', 'API_KEY_GOOGLE', '"' + apiKeyGoogle + '"'
+		buildConfigField 'String', 'API_KEY_SOUNDCLOUD', '"' + apiKeySoundCloud + '"'
+	}
+
 	buildTypes {
 		release {
 			minifyEnabled false
