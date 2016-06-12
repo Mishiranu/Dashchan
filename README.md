@@ -81,6 +81,22 @@ It is better to install extension packages and then install application package.
 4. Install Gradle
 5. Run `gradle assembleRelease` in the source code directory
 
+### Build Signed Binary
+
+You can create `keystore.properties` in the source code directory with the following properties:
+
+```properties
+debug.storeFile=%PATH_TO_KEYSTORE_FILE%
+debug.storePassword=%KEYSTORE_PASSWORD%
+debug.keyAlias=%KEY_ALIAS%
+debug.keyPassword=%KEY_PASSWORD%
+
+release.storeFile=%PATH_TO_KEYSTORE_FILE%
+release.storePassword=%KEYSTORE_PASSWORD%
+release.keyAlias=%KEY_ALIAS%
+release.keyPassword=%KEY_PASSWORD%
+```
+
 # License
 
 Dashchan is licensed under the [Apache License, version 2.0](LICENSE).
