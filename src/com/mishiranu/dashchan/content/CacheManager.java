@@ -793,36 +793,7 @@ public class CacheManager implements Runnable
 		}
 	}
 	
-	private static class CancelableTask<V> extends FutureTask<V>
-	{
-		public static interface Cancelable<V> extends Callable<V>
-		{
-			public void cancel();
-		}
-		
-		private final Cancelable<V> mCancelable;
-		
-		public CancelableTask(Cancelable<V> cancelable)
-		{
-			super(cancelable);
-			mCancelable = cancelable;
-		}
-		
-		@Override
-		public boolean cancel(boolean mayInterruptIfRunning)
-		{
-			try
-			{
-				return super.cancel(mayInterruptIfRunning);
-			}
-			finally
-			{
-				mCancelable.cancel();
-			}
-		}
-	}
-	
-	private final HashMap<File, CancelableTask<?>> TASKS_MAP = new HashMap<>();
+	private final HashMap<File, Pair<FutureTask<Void>, SerializeCallback>> TASKS_MAP = new HashMap<>();
 	
 	private void serializeInternal(File file, String fileName, boolean pagesCache, Object object)
 	{
@@ -832,10 +803,15 @@ public class CacheManager implements Runnable
 			file = getPagesFile(fileName);
 			if (file == null) return;
 		}
-		CancelableTask<?> task = TASKS_MAP.get(file);
-		if (task != null) task.cancel(true);
-		task = new CancelableTask<>(new SerializeTask(file, fileName, pagesCache, object));
-		TASKS_MAP.put(file, task);
+		Pair<FutureTask<Void>, SerializeCallback> pair = TASKS_MAP.get(file);
+		if (pair != null)
+		{
+			pair.first.cancel(true);
+			pair.second.onCancel();
+		}
+		SerializeCallback callback = new SerializeCallback(file, fileName, pagesCache, object);
+		FutureTask<Void> task = new FutureTask<>(callback);
+		TASKS_MAP.put(file, new Pair<>(task, callback));
 		AsyncTask.THREAD_POOL_EXECUTOR.execute(task);
 		handleSeializationQueue(false);
 	}
@@ -870,7 +846,7 @@ public class CacheManager implements Runnable
 		return null;
 	}
 	
-	private class SerializeTask implements CancelableTask.Cancelable<Void>
+	private class SerializeCallback implements Callable<Void>
 	{
 		private final File mFile;
 		private final String mFileName;
@@ -878,7 +854,7 @@ public class CacheManager implements Runnable
 		private final Object mObject;
 		private final StreamHolder mHolder = new StreamHolder();
 		
-		public SerializeTask(File file, String fileName, boolean withPagesCache, Object object)
+		public SerializeCallback(File file, String fileName, boolean withPagesCache, Object object)
 		{
 			mFile = file;
 			mFileName = fileName;
@@ -928,17 +904,10 @@ public class CacheManager implements Runnable
 			}
 		}
 		
-		@Override
-		public void cancel()
+		public void onCancel()
 		{
-			try
-			{
-				mHolder.cancel();
-			}
-			finally
-			{
-				onFinished();
-			}
+			mHolder.cancel();
+			onFinished();
 		}
 		
 		private boolean mFinished = false;
