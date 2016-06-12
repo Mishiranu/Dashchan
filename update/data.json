@@ -172,11 +172,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.14",
+			"name": "1.15",
 			"code": 1,
 			"version": 1,
 			"minSdk": 14,
-			"length": 92839,
+			"length": 92290,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanDvach.apk"
 		}
 	],
