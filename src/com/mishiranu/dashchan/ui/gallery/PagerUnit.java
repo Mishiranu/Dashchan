@@ -230,6 +230,7 @@ public class PagerUnit implements PagerInstance.Callback
 		boolean shareFile = false;
 		if (holder != null)
 		{
+			available = true;
 			GalleryItem galleryItem = holder.galleryItem;
 			boolean fullLoaded = holder.fullLoaded;
 			boolean isVideo = galleryItem.isVideo(mGalleryInstance.locator);
