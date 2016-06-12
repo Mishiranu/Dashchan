@@ -97,6 +97,17 @@ release.keyAlias=%KEY_ALIAS%
 release.keyPassword=%KEY_PASSWORD%
 ```
 
+### API Keys
+
+Dashchan uses Google API and SoundCloud API.
+
+You can generate keys for these APIs and add them to `private.properties` file:
+
+```properties
+api.key.google=%GOOGLE_API_KEY%
+api.key.soundcloud=%SOUNDCLOUD_API_KEY%
+```
+
 # License
 
 Dashchan is licensed under the [Apache License, version 2.0](LICENSE).
