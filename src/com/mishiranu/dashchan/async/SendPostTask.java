@@ -18,8 +18,6 @@ package com.mishiranu.dashchan.async;
 
 import java.util.ArrayList;
 
-import android.os.AsyncTask;
-
 import chan.content.ApiException;
 import chan.content.ChanConfiguration;
 import chan.content.ChanMarkup;
@@ -39,7 +37,7 @@ import com.mishiranu.dashchan.net.RecaptchaReader;
 import com.mishiranu.dashchan.text.HtmlParser;
 import com.mishiranu.dashchan.text.SimilarTextEstimator;
 
-public class SendPostTask extends AsyncTask<Void, Long, Boolean>
+public class SendPostTask extends CancellableTask<Void, Long, Boolean>
 {
 	private final String mKey;
 	private final String mChanName;
@@ -274,6 +272,7 @@ public class SendPostTask extends AsyncTask<Void, Long, Boolean>
 		}
 	}
 	
+	@Override
 	public void cancel()
 	{
 		cancel(true);

@@ -18,7 +18,6 @@ package com.mishiranu.dashchan.async;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.os.AsyncTask;
 import android.util.Pair;
 
 import chan.content.ChanConfiguration;
@@ -33,7 +32,7 @@ import com.mishiranu.dashchan.net.CaptchaServiceReader;
 import com.mishiranu.dashchan.net.RecaptchaReader;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 
-public class ReadCaptchaTask extends AsyncTask<Void, Long, Boolean>
+public class ReadCaptchaTask extends CancellableTask<Void, Long, Boolean>
 {
 	public static final String RECAPTCHA_SKIP_RESPONSE = "recaptcha_skip_response";
 	
@@ -229,6 +228,7 @@ public class ReadCaptchaTask extends AsyncTask<Void, Long, Boolean>
 		else mCallback.onReadCaptchaError(mErrorItem);
 	}
 	
+	@Override
 	public void cancel()
 	{
 		cancel(true);

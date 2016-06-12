@@ -68,6 +68,7 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.app.MainApplication;
 import com.mishiranu.dashchan.app.service.AudioPlayerService;
+import com.mishiranu.dashchan.async.CancellableTask;
 import com.mishiranu.dashchan.async.ReadSinglePostTask;
 import com.mishiranu.dashchan.async.SendLocalArchiveTask;
 import com.mishiranu.dashchan.async.SendMultifunctionalTask;
@@ -1195,8 +1196,7 @@ public class DialogUnit implements DialogStack.Callback
 		showPerformSendDialog(state, null, null, null, posts, true);
 	}
 
-	private SendLocalArchiveTask mSendLocalArchiveTask;
-	private SendMultifunctionalTask mSendMultifunctionalTask;
+	private CancellableTask<?, ?, ?> mSendTask;
 	
 	private void showPerformSendDialog(final SendMultifunctionalTask.State state, String type, String text,
 			ArrayList<String> options, final Posts posts, boolean firstTime)
@@ -1318,17 +1318,19 @@ public class DialogUnit implements DialogStack.Callback
 					}
 					else
 					{
-						mSendLocalArchiveTask = new SendLocalArchiveTask(state.chanName, state.boardName,
+						SendLocalArchiveTask task = new SendLocalArchiveTask(state.chanName, state.boardName,
 								state.threadNumber, posts, options.contains(OPTION_THUMBNAILS),
 								options.contains(OPTION_FILES), new PerformSendCallback(posts.length()));
-						mSendLocalArchiveTask.executeOnExecutor(SendMultifunctionalTask.THREAD_POOL_EXECUTOR);
+						task.executeOnExecutor(SendMultifunctionalTask.THREAD_POOL_EXECUTOR);
+						mSendTask = task;
 					}
 				}
 				else
 				{
-					mSendMultifunctionalTask = new SendMultifunctionalTask(state, type, text, options,
+					SendMultifunctionalTask task = new SendMultifunctionalTask(state, type, text, options,
 							new PerformSendCallback(-1));
-					mSendMultifunctionalTask.executeOnExecutor(SendMultifunctionalTask.THREAD_POOL_EXECUTOR);
+					task.executeOnExecutor(SendMultifunctionalTask.THREAD_POOL_EXECUTOR);
+					mSendTask = task;
 				}
 			}
 		}).setNegativeButton(android.R.string.cancel, null).show();
@@ -1357,8 +1359,7 @@ public class DialogUnit implements DialogStack.Callback
 		
 		private void completeTask()
 		{
-			mSendLocalArchiveTask = null;
-			mSendMultifunctionalTask = null;
+			mSendTask = null;
 			ViewUtils.dismissDialogQuietly(mDialog);
 		}
 		
@@ -1438,15 +1439,10 @@ public class DialogUnit implements DialogStack.Callback
 	
 	private void cancelSendTasks()
 	{
-		if (mSendLocalArchiveTask != null)
+		if (mSendTask != null)
 		{
-			mSendLocalArchiveTask.cancel(true);
-			mSendLocalArchiveTask = null;
-		}
-		if (mSendMultifunctionalTask != null)
-		{
-			mSendMultifunctionalTask.cancel();
-			mSendMultifunctionalTask = null;
+			mSendTask.cancel();
+			mSendTask = null;
 		}
 	}
 	

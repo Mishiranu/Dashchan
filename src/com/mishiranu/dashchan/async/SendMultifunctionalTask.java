@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.util.Pair;
 
 import chan.content.ApiException;
@@ -35,7 +34,7 @@ import chan.http.HttpHolder;
 
 import com.mishiranu.dashchan.content.model.ErrorItem;
 
-public class SendMultifunctionalTask extends AsyncTask<Void, Void, Boolean>
+public class SendMultifunctionalTask extends CancellableTask<Void, Void, Boolean>
 {
 	private final State mState;
 	private final String mType;
@@ -161,6 +160,7 @@ public class SendMultifunctionalTask extends AsyncTask<Void, Void, Boolean>
 		else mCallback.onSendFail(mState, mType, mText, mOptions, mErrorItem);
 	}
 	
+	@Override
 	public void cancel()
 	{
 		cancel(true);

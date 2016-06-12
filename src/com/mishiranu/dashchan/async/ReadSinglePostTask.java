@@ -19,8 +19,6 @@ package com.mishiranu.dashchan.async;
 import java.net.HttpURLConnection;
 import java.util.Collections;
 
-import android.os.AsyncTask;
-
 import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
@@ -34,7 +32,7 @@ import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.net.YouTubeTitlesReader;
 
-public class ReadSinglePostTask extends AsyncTask<Void, Void, PostItem>
+public class ReadSinglePostTask extends CancellableTask<Void, Void, PostItem>
 {
 	private final Callback mCallback;
 	private final String mBoardName;
@@ -110,6 +108,7 @@ public class ReadSinglePostTask extends AsyncTask<Void, Void, PostItem>
 		else mCallback.onReadSinglePostFail(mErrorItem);
 	}
 	
+	@Override
 	public void cancel()
 	{
 		cancel(true);

@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import android.net.Uri;
-import android.os.AsyncTask;
 
 import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
@@ -34,7 +33,7 @@ import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.media.CachingInputStream;
 import com.mishiranu.dashchan.util.IOUtils;
 
-public class ReadVideoTask extends AsyncTask<Void, Long, Boolean>
+public class ReadVideoTask extends CancellableTask<Void, Long, Boolean>
 {
 	private final String mChanName;
 	private final Uri mUri;
@@ -141,6 +140,7 @@ public class ReadVideoTask extends AsyncTask<Void, Long, Boolean>
 		return mErrorItem != null;
 	}
 	
+	@Override
 	public void cancel()
 	{
 		cancel(true);

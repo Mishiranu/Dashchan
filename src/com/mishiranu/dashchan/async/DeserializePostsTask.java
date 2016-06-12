@@ -16,14 +16,12 @@
 
 package com.mishiranu.dashchan.async;
 
-import android.os.AsyncTask;
-
 import chan.content.model.Posts;
 
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.model.PostItem;
 
-public class DeserializePostsTask extends AsyncTask<Void, Void, Boolean>
+public class DeserializePostsTask extends CancellableTask<Void, Void, Boolean>
 {
 	private final Callback mCallback;
 	private final String mChanName;
@@ -71,6 +69,7 @@ public class DeserializePostsTask extends AsyncTask<Void, Void, Boolean>
 		mCallback.onDeserializePostsComplete(success, mPosts, mPostItems, mFromCache);
 	}
 	
+	@Override
 	public void cancel()
 	{
 		cancel(true);

@@ -30,7 +30,6 @@ import org.json.JSONObject;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.util.Pair;
 
@@ -41,7 +40,7 @@ import chan.http.HttpHolder;
 import chan.http.HttpRequest;
 import chan.util.CommonUtils;
 
-public class ReadUpdateTask extends AsyncTask<Void, Long, Object>
+public class ReadUpdateTask extends CancellableTask<Void, Long, Object>
 {
 	private final Context mContext;
 	private final Callback mCallback;
@@ -285,6 +284,7 @@ public class ReadUpdateTask extends AsyncTask<Void, Long, Object>
 		mCallback.onReadUpdateComplete((UpdateDataMap) result);
 	}
 	
+	@Override
 	public void cancel()
 	{
 		cancel(true);

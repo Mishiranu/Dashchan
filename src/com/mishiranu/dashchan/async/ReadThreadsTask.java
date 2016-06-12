@@ -18,8 +18,6 @@ package com.mishiranu.dashchan.async;
 
 import java.net.HttpURLConnection;
 
-import android.os.AsyncTask;
-
 import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
@@ -34,7 +32,7 @@ import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.net.YouTubeTitlesReader;
 
-public class ReadThreadsTask extends AsyncTask<Void, Void, Boolean>
+public class ReadThreadsTask extends CancellableTask<Void, Void, Boolean>
 {
 	private final Callback mCallback;
 	private final String mChanName;
@@ -145,6 +143,7 @@ public class ReadThreadsTask extends AsyncTask<Void, Void, Boolean>
 		}
 	}
 	
+	@Override
 	public void cancel()
 	{
 		cancel(true);

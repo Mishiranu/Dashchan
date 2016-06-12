@@ -16,8 +16,6 @@
 
 package com.mishiranu.dashchan.async;
 
-import android.os.AsyncTask;
-
 import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
@@ -28,7 +26,7 @@ import chan.http.HttpHolder;
 
 import com.mishiranu.dashchan.content.model.ErrorItem;
 
-public class ReadBoardsTask extends AsyncTask<Void, Long, Boolean>
+public class ReadBoardsTask extends CancellableTask<Void, Long, Boolean>
 {
 	private final String mChanName;
 	private final Callback mCallback;
@@ -93,6 +91,7 @@ public class ReadBoardsTask extends AsyncTask<Void, Long, Boolean>
 		else mCallback.onReadBoardsFail(mErrorItem);
 	}
 	
+	@Override
 	public void cancel()
 	{
 		cancel(true);

@@ -25,7 +25,6 @@ import java.util.Locale;
 
 import android.graphics.Typeface;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.text.SpannableStringBuilder;
 import android.text.style.StrikethroughSpan;
 import android.text.style.StyleSpan;
@@ -56,7 +55,7 @@ import com.mishiranu.dashchan.text.style.ScriptSpan;
 import com.mishiranu.dashchan.text.style.SpoilerSpan;
 import com.mishiranu.dashchan.util.IOUtils;
 
-public class SendLocalArchiveTask extends AsyncTask<Void, Integer, Object> implements ChanMarkup.MarkupExtra
+public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object> implements ChanMarkup.MarkupExtra
 {
 	private final String mChanName;
 	private final String mBoardName;
@@ -114,7 +113,6 @@ public class SendLocalArchiveTask extends AsyncTask<Void, Integer, Object> imple
 	@Override
 	protected Result doInBackground(Void... params)
 	{
-		Thread thread = Thread.currentThread();
 		String chanName = mChanName;
 		String boardName = mBoardName;
 		String threadNumber = mThreadNumber;
@@ -272,7 +270,7 @@ public class SendLocalArchiveTask extends AsyncTask<Void, Integer, Object> imple
 					}
 				}
 			}
-			if (thread.isInterrupted()) return null;
+			if (isCancelled()) return null;
 			notifyIncrement();
 		}
 		String postHtml = htmlBuilder.build();
@@ -313,6 +311,12 @@ public class SendLocalArchiveTask extends AsyncTask<Void, Integer, Object> imple
 			showSuccess = !willDownload;
 		}
 		mCallback.onLocalArchivationComplete(result != null, showSuccess);
+	}
+	
+	@Override
+	public void cancel()
+	{
+		cancel(true);
 	}
 	
 	private long mLastNotifyIncrement = 0L;

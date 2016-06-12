@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-import android.os.AsyncTask;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -45,7 +44,7 @@ import com.mishiranu.dashchan.text.HtmlParser;
 import com.mishiranu.dashchan.text.SimilarTextEstimator;
 import com.mishiranu.dashchan.util.Log;
 
-public class ReadPostsTask extends AsyncTask<Void, Void, Boolean>
+public class ReadPostsTask extends CancellableTask<Void, Void, Boolean>
 {
 	private final Callback mCallback;
 	private final String mChanName;
@@ -336,6 +335,7 @@ public class ReadPostsTask extends AsyncTask<Void, Void, Boolean>
 		}
 	}
 	
+	@Override
 	public void cancel()
 	{
 		cancel(true);
