@@ -81,6 +81,8 @@ It is better to install extension packages and then install application package.
 4. Install Gradle
 5. Run `gradle assembleRelease` in the source code directory
 
+The resulting APK file will appear in `build/outputs/apk` directory.
+
 ### Build Signed Binary
 
 You can create `keystore.properties` in the source code directory with the following properties:

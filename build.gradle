@@ -1,5 +1,3 @@
-import org.gradle.internal.os.OperatingSystem
-
 buildscript {
 	repositories {
 		jcenter()
@@ -18,6 +16,16 @@ allprojects {
 
 apply plugin: 'com.android.application'
 
+dependencies {
+	provided 'org.ccil.cowan.tagsoup:tagsoup:1.2.1'
+}
+
+def Properties privateProperties = new Properties()
+
+if (new File("private.properties").exists()) {
+	privateProperties.load(new FileInputStream(file("private.properties")))
+}
+
 android {
 	compileSdkVersion 23
 	buildToolsVersion "23.0.3"
@@ -35,22 +43,22 @@ android {
 	}
 
 	if (new File("keystore.properties").exists()) {
-		Properties properties = new Properties()
-		properties.load(new FileInputStream(file("keystore.properties")))
+		def Properties keystoreProperties = new Properties()
+		keystoreProperties.load(new FileInputStream(file("keystore.properties")))
 
 		signingConfigs {
 			debug {
-				storeFile file(properties['debug.storeFile'])
-				storePassword properties['debug.storePassword']
-				keyAlias properties['debug.keyAlias']
-				keyPassword properties['debug.keyPassword']
+				storeFile file(keystoreProperties['debug.storeFile'])
+				storePassword keystoreProperties['debug.storePassword']
+				keyAlias keystoreProperties['debug.keyAlias']
+				keyPassword keystoreProperties['debug.keyPassword']
 			}
 
 			release {
-				storeFile file(properties['release.storeFile'])
-				storePassword properties['release.storePassword']
-				keyAlias properties['release.keyAlias']
-				keyPassword properties['release.keyPassword']
+				storeFile file(keystoreProperties['release.storeFile'])
+				storePassword keystoreProperties['release.storePassword']
+				keyAlias keystoreProperties['release.keyAlias']
+				keyPassword keystoreProperties['release.keyPassword']
 			}
 		}
 
@@ -59,22 +67,14 @@ android {
 	}
 
 	defaultConfig {
-		def apiKeyGoogle = null
-		def apiKeySoundCloud = null
+		def apiKeyGoogle = privateProperties['api.key.google']
+		def apiKeySoundCloud = privateProperties['api.key.soundcloud']
 
-		if (new File("private.properties").exists()) {
-			Properties properties = new Properties()
-			properties.load(new FileInputStream(file("private.properties")))
+		if (apiKeyGoogle == null) apiKeyGoogle = ''
+		if (apiKeySoundCloud == null) apiKeySoundCloud = ''
 
-			apiKeyGoogle = properties['api.key.google']
-			apiKeySoundCloud = properties['api.key.soundcloud']
-		}
-
-		if (apiKeyGoogle == null) apiKeyGoogle = '';
-		if (apiKeySoundCloud == null) apiKeySoundCloud = '';
-
-		buildConfigField 'String', 'API_KEY_GOOGLE', '"' + apiKeyGoogle + '"'
-		buildConfigField 'String', 'API_KEY_SOUNDCLOUD', '"' + apiKeySoundCloud + '"'
+		buildConfigField 'String', 'API_KEY_GOOGLE', '"' + privateProperties['api.key.google'] + '"'
+		buildConfigField 'String', 'API_KEY_SOUNDCLOUD', '"' + privateProperties['api.key.soundcloud'] + '"'
 	}
 
 	buildTypes {
@@ -101,8 +101,8 @@ def getNdkBuildCommand() {
 		properties.load(new FileInputStream(file("local.properties")))
 		ndkDir = properties.getProperty("ndk.dir")
 	}
-	def windows = OperatingSystem.current().isWindows()
-	return (ndkDir != null ? ndkDir + java.io.File.separator : '') + 'ndk-build' + (windows ? '.cmd' : '')
+	def windows = org.gradle.internal.os.OperatingSystem.current().isWindows()
+	return (ndkDir != null ? ndkDir + File.separator : '') + 'ndk-build' + (windows ? '.cmd' : '')
 }
 
 task ndkBuildCompile(type: Exec) {
@@ -118,7 +118,3 @@ tasks.withType(JavaCompile) { compileTask ->
 }
 
 clean.dependsOn ndkBuildClean
-
-dependencies {
-	provided 'org.ccil.cowan.tagsoup:tagsoup:1.2.1'
-}
