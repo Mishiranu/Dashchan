@@ -33,6 +33,7 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.ImageLoader;
+import com.mishiranu.dashchan.net.EmbeddedManager;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.widget.AttachmentView;
 
@@ -501,25 +502,25 @@ public abstract class AttachmentItem
 			case URI_TYPE_YOUTUBE:
 			{
 				attachmentItem = obtainEmbeddedAttachmentItem(binder, locator,
-						EmbeddedAttachment.obtainYouTubeEmbedded(locator, embeddedCode));
+						EmbeddedManager.getInstance().obtainYouTubeAttachment(locator, embeddedCode));
 				break;
 			}
 			case URI_TYPE_VIMEO:
 			{
 				attachmentItem = obtainEmbeddedAttachmentItem(binder, locator,
-						EmbeddedAttachment.obtainVimeoEmbedded(locator, embeddedCode));
+						EmbeddedManager.getInstance().obtainVimeoAttachment(locator, embeddedCode));
 				break;
 			}
 			case URI_TYPE_VOCAROO:
 			{
 				attachmentItem = obtainEmbeddedAttachmentItem(binder, locator,
-						EmbeddedAttachment.obtainVocarooEmbedded(locator, embeddedCode));
+						EmbeddedManager.getInstance().obtainVocarooAttachment(locator, embeddedCode));
 				break;
 			}
 			case URI_TYPE_SOUNDCLOUD:
 			{
 				attachmentItem = obtainEmbeddedAttachmentItem(binder, locator,
-						EmbeddedAttachment.obtainSoundCloudEmbedded(locator, embeddedCode));
+						EmbeddedManager.getInstance().obtainSoundCloudAttachment(locator, embeddedCode));
 				break;
 			}
 			default:

@@ -31,7 +31,6 @@ import chan.content.ChanManager;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
-import chan.content.model.EmbeddedAttachment;
 import chan.http.HttpClient;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
@@ -39,6 +38,7 @@ import chan.http.HttpRequest;
 
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.model.ErrorItem;
+import com.mishiranu.dashchan.net.EmbeddedManager;
 import com.mishiranu.dashchan.util.IOUtils;
 
 public class ReadFileTask extends CancellableTask<String, Long, Boolean>
@@ -141,7 +141,7 @@ public class ReadFileTask extends CancellableTask<String, Long, Boolean>
 				String chanName = mChanName;
 				if (chanName == null) chanName = ChanManager.getInstance().getChanNameByHost(uri.getAuthority());
 				HttpHolder holder = mHolder;
-				uri = EmbeddedAttachment.doReadRealUri(chanName, uri, holder);
+				uri = EmbeddedManager.getInstance().doReadRealUri(chanName, uri, holder);
 				final int connectTimeout = 15000, readTimeout = 15000;
 				byte[] response;
 				if (chanName != null)
