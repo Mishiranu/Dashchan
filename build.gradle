@@ -22,13 +22,13 @@ dependencies {
 
 def Properties privateProperties = new Properties()
 
-if (new File("private.properties").exists()) {
-	privateProperties.load(new FileInputStream(file("private.properties")))
+if (new File('private.properties').exists()) {
+	privateProperties.load(new FileInputStream(file('private.properties')))
 }
 
 android {
 	compileSdkVersion 23
-	buildToolsVersion "23.0.3"
+	buildToolsVersion '23.0.3'
 
 	sourceSets.main {
 		manifest.srcFile 'AndroidManifest.xml'
@@ -42,9 +42,9 @@ android {
 		jniLibs.srcDir 'libs'
 	}
 
-	if (new File("keystore.properties").exists()) {
+	if (new File('keystore.properties').exists()) {
 		def Properties keystoreProperties = new Properties()
-		keystoreProperties.load(new FileInputStream(file("keystore.properties")))
+		keystoreProperties.load(new FileInputStream(file('keystore.properties')))
 
 		signingConfigs {
 			debug {
@@ -96,10 +96,10 @@ android {
 
 def getNdkBuildCommand() {
 	def ndkDir = System.env.ANDROID_NDK_HOME
-	if (ndkDir == null) {
-		Properties properties = new Properties()
-		properties.load(new FileInputStream(file("local.properties")))
-		ndkDir = properties.getProperty("ndk.dir")
+	if (ndkDir == null && new File('local.properties').exists()) {
+		Properties localProperties = new Properties()
+		localProperties.load(new FileInputStream(file('local.properties')))
+		ndkDir = localProperties.getProperty("ndk.dir")
 	}
 	def windows = org.gradle.internal.os.OperatingSystem.current().isWindows()
 	return (ndkDir != null ? ndkDir + File.separator : '') + 'ndk-build' + (windows ? '.cmd' : '')
