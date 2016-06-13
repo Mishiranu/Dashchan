@@ -36,6 +36,7 @@ import chan.util.CommonUtils;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.ui.UiManager;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 
 public class ThreadshotPerformer implements DialogInterface.OnCancelListener
@@ -71,7 +72,7 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener
 		// isBusy == true, because I must prevent view handling in main thread
 		mDemandSet.isBusy = true;
 		mDemandSet.selectionMode = UiManager.SELECTION_THREADSHOT;
-		mAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+		mAsyncTask.executeOnExecutor(ConcurrentUtils.SEPARATE_EXECUTOR);
 	}
 	
 	private View getPostItem(PostItem postItem, View convertView)
@@ -84,6 +85,7 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener
 		@Override
 		protected InputStream doInBackground(Void... params)
 		{
+			Looper.prepare();
 			long time = System.currentTimeMillis();
 			View convertView = null;
 			Drawable divider = mListView.getDivider();
@@ -93,7 +95,6 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener
 			int width = mListView.getWidth();
 			int widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY);
 			int heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
-			if (Looper.myLooper() == null) Looper.prepare();
 			for (PostItem postItem : mPostItems)
 			{
 				convertView = getPostItem(postItem, convertView);
@@ -101,6 +102,7 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener
 				if (!first) height += dividerHeight; else first = false;
 				height += convertView.getMeasuredHeight();
 			}
+			if (isCancelled()) return null;
 			InputStream input = null;
 			if (height > 0)
 			{
@@ -109,6 +111,7 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener
 				canvas.drawColor(mUiManager.getColorScheme().windowBackgroundColor);
 				for (PostItem postItem : mPostItems)
 				{
+					if (isCancelled()) return null;
 					convertView = getPostItem(postItem, convertView);
 					convertView.measure(widthMeasureSpec, heightMeasureSpec);
 					convertView.layout(0, 0, convertView.getMeasuredWidth(), convertView.getMeasuredHeight());
