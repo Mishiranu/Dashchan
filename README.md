@@ -52,7 +52,6 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 
 | Chan Name       | Host                 | Extension Package Link                                                                                                                |
 | :-------------: | :------------------: | :-----------------------------------------------------------------------------------------------------------------------------------: |
-| archivefgts     | fgts.jp              | [DashchanArchiveFgts.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanArchiveFgts.apk)         |
 | archiveliom     | loveisover.me        | [DashchanArchiveLiom.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanArchiveLiom.apk)         |
 | archiverbt      | rbt.asia             | [DashchanArchiveRbt.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanArchiveRbt.apk)           |
 | arhivach        | arhivach.org         | [DashchanArhivach.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanArhivach.apk)               |
