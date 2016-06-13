@@ -79,8 +79,8 @@ public class DecoderDrawable extends Drawable implements LruCache.RemoveCallback
 		if (!(canvas.getClipBounds(rect) && rect.intersect(bounds))) rect.set(bounds);
 		int maxEntries = 0;
 		DisplayMetrics metrics = MainApplication.getInstance().getResources().getDisplayMetrics();
-		int scale = Math.max(1, (int) Math.min((float) rect.width() / metrics.widthPixels,
-				(float) rect.height() / metrics.heightPixels));
+		int scale = Integer.highestOneBit(Math.max(1, (int) Math.min((float) rect.width() / metrics.widthPixels,
+				(float) rect.height() / metrics.heightPixels)));
 		int size = FRAGMENT_SIZE * scale;
 		if (mEnabled && (mScaledBitmap.getWidth() > size / 2 || mScaledBitmap.getHeight() > size / 2))
 		{
