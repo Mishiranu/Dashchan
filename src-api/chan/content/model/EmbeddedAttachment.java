@@ -16,21 +16,9 @@
 
 package chan.content.model;
 
-import java.util.HashMap;
-
-import org.json.JSONObject;
-
 import android.net.Uri;
 
-import chan.content.ChanLocator;
-import chan.content.InvalidResponseException;
-import chan.http.HttpException;
-import chan.http.HttpHolder;
-import chan.http.HttpRequest;
-import chan.util.CommonUtils;
 import chan.util.StringUtils;
-
-import com.mishiranu.dashchan.C;
 
 public final class EmbeddedAttachment implements Attachment
 {
@@ -117,86 +105,6 @@ public final class EmbeddedAttachment implements Attachment
 	{
 		mTitle = title;
 		return this;
-	}
-	
-	public static EmbeddedAttachment obtain(String data)
-	{
-		if (data != null)
-		{
-			ChanLocator locator = ChanLocator.getDefault();
-			String embeddedCode;
-			embeddedCode = locator.getYouTubeEmbeddedCode(data);
-			if (embeddedCode != null) return obtainYouTubeEmbedded(locator, embeddedCode);
-			embeddedCode = locator.getVimeoEmbeddedCode(data);
-			if (embeddedCode != null) return obtainVimeoEmbedded(locator, embeddedCode);
-			embeddedCode = locator.getVocarooEmbeddedCode(data);
-			if (embeddedCode != null) return obtainVocarooEmbedded(locator, embeddedCode);
-			embeddedCode = locator.getSoundCloudEmbeddedCode(data);
-			if (embeddedCode != null) return obtainSoundCloudEmbedded(locator, embeddedCode);
-		}
-		return null;
-	}
-	
-	public static EmbeddedAttachment obtainYouTubeEmbedded(ChanLocator locator, String embeddedCode)
-	{
-		Uri fileUri = locator.buildQueryWithSchemeHost(true, "www.youtube.com", "watch", "v", embeddedCode);
-		Uri thumbnailUri = locator.buildPathWithSchemeHost(true, "img.youtube.com", "vi", embeddedCode, "default.jpg");
-		return new EmbeddedAttachment(fileUri, thumbnailUri, "YouTube", ContentType.VIDEO, false, null);
-	}
-	
-	public static EmbeddedAttachment obtainVimeoEmbedded(ChanLocator locator, String embeddedCode)
-	{
-		Uri fileUri = locator.buildPathWithSchemeHost(true, "vimeo.com", embeddedCode);
-		return new EmbeddedAttachment(fileUri, null, "Vimeo", ContentType.VIDEO, false, null);
-	}
-	
-	public static EmbeddedAttachment obtainVocarooEmbedded(ChanLocator locator, String embeddedCode)
-	{
-		Uri fileUri = locator.buildQueryWithSchemeHost(false, "vocaroo.com", "media_command.php", "media", embeddedCode,
-				"command", "download_mp3");
-		String forcedName = "Vocaroo_" + embeddedCode + ".mp3";
-		return new EmbeddedAttachment(fileUri, null, "Vocaroo", ContentType.AUDIO, true, forcedName);
-	}
-	
-	public static EmbeddedAttachment obtainSoundCloudEmbedded(ChanLocator locator, String embeddedCode)
-	{
-		Uri fileUri = locator.buildPathWithSchemeHost(true, "soundcloud.com", embeddedCode);
-		String forcedName = "SoundCloud_" + embeddedCode.replace('/', '_') + ".mp3";
-		return new EmbeddedAttachment(fileUri, null, "SoundCloud", ContentType.AUDIO, true, forcedName);
-	}
-	
-	private static final HashMap<String, Uri> SOUNDCLOUD_MAP = new HashMap<>();
-	
-	public static Uri doReadRealUri(String chanName, Uri uri, HttpHolder holder) throws HttpException,
-			InvalidResponseException
-	{
-		if ("soundcloud.com".equals(uri.getHost()))
-		{
-			String path = uri.getPath();
-			Uri resultUri;
-			synchronized (SOUNDCLOUD_MAP)
-			{
-				resultUri = SOUNDCLOUD_MAP.get(path);
-			}
-			if (resultUri == null)
-			{
-				uri = ChanLocator.getDefault().buildQueryWithHost("api.soundcloud.com", "resolve.json",
-						"url", uri.toString(), "client_id", C.API_KEY_SOUNDCLOUD);
-				JSONObject jsonObject = new HttpRequest(uri, holder).setSuccessOnly(false).read().getJsonObject();
-				if (jsonObject == null) throw new InvalidResponseException();
-				String uriString = CommonUtils.optJsonString(jsonObject, "download_url");
-				if (uriString == null) uriString = CommonUtils.optJsonString(jsonObject, "stream_url");
-				if (uriString == null) throw new InvalidResponseException();
-				resultUri = Uri.parse(uriString).buildUpon().scheme("http").appendQueryParameter("client_id",
-						C.API_KEY_SOUNDCLOUD).build();
-				synchronized (SOUNDCLOUD_MAP)
-				{
-					SOUNDCLOUD_MAP.put(path, resultUri);
-				}
-			}
-			return resultUri;
-		}
-		return uri;
 	}
 	
 	public boolean contentEquals(EmbeddedAttachment o)

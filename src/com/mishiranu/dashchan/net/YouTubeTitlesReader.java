@@ -342,7 +342,7 @@ public class YouTubeTitlesReader
 	
 	public final void readAndApplyIfNecessary(List<Post> posts, HttpHolder holder)
 	{
-		if (Preferences.isDownloadYouTubeTitles())
+		if (Preferences.isDownloadYouTubeTitles() && !StringUtils.isEmpty(C.API_KEY_GOOGLE))
 		{
 			try
 			{
