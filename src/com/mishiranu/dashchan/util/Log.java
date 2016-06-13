@@ -28,6 +28,8 @@ import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Environment;
 
+import chan.util.CommonUtils;
+
 import com.mishiranu.dashchan.util.IOUtils;
 
 public enum Log
@@ -196,6 +198,12 @@ public enum Log
 				}
 			}
 		}
+	}
+	
+	@Deprecated
+	public static void sleep(long interval)
+	{
+		CommonUtils.sleepMaxTime(System.currentTimeMillis(), interval);
 	}
 	
 	public static void init(Context context)
