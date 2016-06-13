@@ -99,7 +99,7 @@ def getNdkBuildCommand() {
 	if (ndkDir == null && new File('local.properties').exists()) {
 		Properties localProperties = new Properties()
 		localProperties.load(new FileInputStream(file('local.properties')))
-		ndkDir = localProperties.getProperty("ndk.dir")
+		ndkDir = localProperties.getProperty('ndk.dir')
 	}
 	def windows = org.gradle.internal.os.OperatingSystem.current().isWindows()
 	return (ndkDir != null ? ndkDir + File.separator : '') + 'ndk-build' + (windows ? '.cmd' : '')
