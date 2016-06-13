@@ -1277,6 +1277,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				extra.userPostPendings.remove(userPostPending);
 			}
 		}
+		boolean writeToCache = false;
 		if (fullThread)
 		{
 			if (resultItems.handlePostItems != null)
@@ -1286,7 +1287,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				extra.cachedPostItems.clear();
 				Collections.addAll(extra.cachedPostItems, postItems);
 				adapter.setItems(postItems, false);
-				serializePosts();
+				writeToCache = true;
 				boolean allowCache = CacheManager.getInstance().allowPagesCache(pageHolder.chanName);
 				if (first)
 				{
@@ -1312,8 +1313,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		}
 		else
 		{
-			boolean writeToCache = posts.merge(resultItems.readPosts, resultItems.handlePosts,
-					resultItems.mergeActions);
+			writeToCache = posts.merge(resultItems.readPosts, resultItems.handlePosts, resultItems.mergeActions);
 			int repliesCount = 0;
 			if (resultItems.handlePostItems != null)
 			{
@@ -1395,6 +1395,27 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				else ClickableToast.show(getActivity(), message);
 			}
 		}
+		boolean updateAdapters = resultItems.newCount > 0 || resultItems.deletedCount > 0 || resultItems.hasEdited;
+		// Handle new posts loaded before post sending complete
+		for (int i = extra.userPostPendings.size() - 1; i >= 0; i--)
+		{
+			ReadPostsTask.UserPostPending userPostPending = extra.userPostPendings.get(i);
+			if (userPostPending instanceof ReadPostsTask.PostNumberUserPostPending)
+			{
+				for (PostItem postItem : getAdapter())
+				{
+					if (userPostPending.isUserPost(postItem.getPost()))
+					{
+						extra.userPostPendings.remove(i);
+						postItem.setUserPost(true);
+						writeToCache = true;
+						updateAdapters = true;
+						break;
+					}
+				}
+			}
+		}
+		if (writeToCache) serializePosts();
 		if (resultItems.hasEdited)
 		{
 			mLastEditedPostNumbers.clear();
@@ -1414,10 +1435,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 			// Invalidate for ThreadsWatcher
 			invalidateDrawerItems(false, true);
 		}
-		if (resultItems.newCount > 0 || resultItems.deletedCount > 0 || resultItems.hasEdited)
-		{
-			getUiManager().dialog().updateAdapters();
-		}
+		if (updateAdapters) notifyAllAdaptersChanged();
 		updateOptionsMenu(false);
 		if (empty && !adapter.isEmpty()) showScaleAnimation();
 		scrollToDefinedPost(first);
