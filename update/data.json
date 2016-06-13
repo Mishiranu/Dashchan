@@ -36,18 +36,6 @@
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanApachan.apk"
 		}
 	],
-	"archivefgts":
-	[
-		{
-			"title": "Release",
-			"name": "1.1",
-			"code": 1,
-			"version": 1,
-			"minSdk": 14,
-			"length": 53361,
-			"source": "/Mishiranu/Dashchan/master/update/package/DashchanArchiveFgts.apk"
-		}
-	],
 	"archiveliom":
 	[
 		{
