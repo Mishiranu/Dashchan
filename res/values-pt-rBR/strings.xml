@@ -466,7 +466,7 @@
 	<string name="preference_password_for_removal_summary">Usado para enviar ou remover posts</string>
 	<string name="preference_post_max_lines">Máximo de linhas</string>
 	<string name="preference_post_max_lines_summary">Corte posts longos se passar de um valor pré-determinado</string>
-	<string name="preference_proxy">Proxy HTTP</string>
+	<string name="preference_proxy">Proxy</string>
 	<string name="preference_scroll_thread_gallery">Rolar o fio enquanto navega na galeria</string>
 	<string name="preference_statistics">Estátisticas</string>
 	<string name="preference_subdirectory_pattern">Padrão de subdiretório</string>

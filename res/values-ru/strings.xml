@@ -503,7 +503,7 @@
 	<string name="preference_post_max_lines">Максимальное число строк</string>
 	<string name="preference_post_max_lines_summary">Сообщения будут обрезаны, если число строк превышает
 		заданное значение</string>
-	<string name="preference_proxy">HTTP прокси</string>
+	<string name="preference_proxy">Прокси</string>
 	<string name="preference_scroll_thread_gallery">Прокручивать тред из галереи</string>
 	<string name="preference_statistics">Статистика</string>
 	<string name="preference_subdirectory_pattern">Шаблон подкаталога</string>
