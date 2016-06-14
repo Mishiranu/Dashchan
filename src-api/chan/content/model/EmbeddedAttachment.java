@@ -20,6 +20,8 @@ import android.net.Uri;
 
 import chan.util.StringUtils;
 
+import com.mishiranu.dashchan.net.EmbeddedManager;
+
 public final class EmbeddedAttachment implements Attachment
 {
 	private static final long serialVersionUID = 1L;
@@ -105,6 +107,11 @@ public final class EmbeddedAttachment implements Attachment
 	{
 		mTitle = title;
 		return this;
+	}
+	
+	public static EmbeddedAttachment obtain(String data)
+	{
+		return EmbeddedManager.getInstance().obtainAttachment(data);
 	}
 	
 	public boolean contentEquals(EmbeddedAttachment o)
