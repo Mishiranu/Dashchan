@@ -210,10 +210,11 @@ public class ChanFragment extends BasePreferenceFragment
 		if (!configuration.getOption(ChanConfiguration.OPTION_HIDDEN_DISALLOW_PROXY))
 		{
 			mProxyPreference = makeMultipleEditText(connectionCategory, Preferences.KEY_PROXY.bind(chanName), null,
-					R.string.preference_proxy, 0, 2, new String[] {getString(R.string.text_address),
-					getString(R.string.text_port)}, new int[] {InputType.TYPE_CLASS_TEXT |
+					R.string.preference_proxy, 0, 3, new String[] {getString(R.string.text_address),
+					getString(R.string.text_port), null}, new int[] {InputType.TYPE_CLASS_TEXT |
 					InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD, InputType.TYPE_CLASS_NUMBER |
-					InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD}, "%s:%s");
+					InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD, 0}, "%s:%s");
+			mProxyPreference.replaceWithDropdown(2, Preferences.ENTRIES_PROXY_2, Preferences.VALUES_PROXY_2);
 		}
 		if (configuration.getOption(ChanConfiguration.OPTION_READ_THREAD_PARTIALLY))
 		{

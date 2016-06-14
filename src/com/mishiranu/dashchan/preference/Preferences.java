@@ -844,12 +844,16 @@ public class Preferences
 	}
 	
 	public static final ChanKey KEY_PROXY = new ChanKey("%s_proxy");
+	public static final String VALUE_PROXY_2_HTTP = "http";
+	public static final String VALUE_PROXY_2_SOCKS = "socks";
+	public static final String[] ENTRIES_PROXY_2 = {"HTTP", "SOCKS"};
+	public static final String[] VALUES_PROXY_2 = {VALUE_PROXY_2_HTTP, VALUE_PROXY_2_SOCKS};
 	
 	public static String[] getProxy(String chanName)
 	{
 		if (ChanConfiguration.get(chanName).getOption(ChanConfiguration.OPTION_HIDDEN_DISALLOW_PROXY)) return null;
 		String value = PREFERENCES.getString(KEY_PROXY.bind(chanName), null);
-		return unpackOrCastMultipleValues(value, 2);
+		return unpackOrCastMultipleValues(value, 3);
 	}
 	
 	public static final String KEY_SCROLL_THREAD_GALLERY = "scroll_thread_gallery";

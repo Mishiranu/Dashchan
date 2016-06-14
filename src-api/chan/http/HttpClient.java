@@ -190,12 +190,13 @@ public class HttpClient
 	{
 		Proxy proxy = null;
 		String[] proxyData = Preferences.getProxy(chanName);
-		if (proxyData != null && proxyData.length == 2 && proxyData[0] != null && proxyData[1] != null)
+		if (proxyData != null && proxyData[0] != null && proxyData[1] != null)
 		{
+			boolean socks = Preferences.VALUE_PROXY_2_SOCKS.equals(proxyData[2]);
 			try
 			{
-				proxy = new Proxy(Proxy.Type.HTTP, InetSocketAddress.createUnresolved(proxyData[0],
-						Integer.parseInt(proxyData[1])));
+				proxy = new Proxy(socks ? Proxy.Type.SOCKS : Proxy.Type.HTTP, InetSocketAddress
+						.createUnresolved(proxyData[0], Integer.parseInt(proxyData[1])));
 			}
 			catch (Exception e)
 			{
