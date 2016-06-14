@@ -17,6 +17,7 @@
 package com.mishiranu.dashchan.preference;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.json.JSONArray;
 
@@ -27,15 +28,15 @@ import android.preference.DialogPreference;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
-import android.widget.EditText;
 
 import chan.util.StringUtils;
 
+import com.mishiranu.dashchan.widget.DropdownView;
 import com.mishiranu.dashchan.widget.SafePasteEditText;
 
 public class MultipleEditTextPreference extends DialogPreference
 {
-	private final EditText[] mEditTexts;
+	private final ViewHolder[] mViewHolders;
 	private final String[] mTexts;
 	
 	private final int mContainerId;
@@ -44,14 +45,9 @@ public class MultipleEditTextPreference extends DialogPreference
 	{
 		super(context, null, android.R.attr.editTextPreferenceStyle);
 		mContainerId = context.getResources().getIdentifier("edittext_container", "id", "android");
-		mEditTexts = new SafePasteEditText[count];
+		mViewHolders = new ViewHolder[count];
 		mTexts = new String[count];
-		for (int i = 0; i < count; i++)
-		{
-			EditText editText = new SafePasteEditText(context);
-			editText.setId(i + 1);
-			mEditTexts[i] = editText;
-		}
+		for (int i = 0; i < count; i++) mViewHolders[i] = new EditTextViewHolder(context, i);
 	}
 	
 	private String packValues(String[] values)
@@ -78,19 +74,22 @@ public class MultipleEditTextPreference extends DialogPreference
 	
 	public String formatValues(String format)
 	{
-		for (int i = 0; i < mTexts.length; i++)
+		StringBuilder builder = new StringBuilder(format);
+		int index;
+		for (int i = 0; i < mTexts.length && (index = builder.indexOf("%s")) >= 0; i++)
 		{
-			if (StringUtils.isEmpty(mTexts[i])) return null;
+			if (mTexts[i] == null) return null;
+			builder.replace(index, index + 2, mTexts[i]);
 		}
-		return String.format(format, (Object[]) mTexts);
+		return builder.toString();
 	}
 	
 	public void setHints(CharSequence[] hints)
 	{
 		if (hints != null)
 		{
-			int length = Math.min(hints.length, mEditTexts.length);
-			for (int i = 0; i < length; i++) mEditTexts[i].setHint(hints[i]);
+			int length = Math.min(hints.length, mTexts.length);
+			for (int i = 0; i < length; i++) mViewHolders[i].setHint(hints[i]);
 		}
 	}
 	
@@ -98,34 +97,40 @@ public class MultipleEditTextPreference extends DialogPreference
 	{
 		if (types != null)
 		{
-			int length = Math.min(types.length, mEditTexts.length);
-			for (int i = 0; i < length; i++) mEditTexts[i].setInputType(types[i]);
+			int length = Math.min(types.length, mTexts.length);
+			for (int i = 0; i < length; i++) mViewHolders[i].setInputType(types[i]);
 		}
+	}
+	
+	public void replaceWithDropdown(int index, CharSequence[] entries, String[] values)
+	{
+		mViewHolders[index] = new DropdownViewHolder(getContext(), index, entries, values);
 	}
 	
 	@Override
 	protected void onBindDialogView(View view)
 	{
 		super.onBindDialogView(view);
-		for (int i = 0; i < mEditTexts.length; i++)
+		for (int i = 0; i < mTexts.length; i++)
 		{
-			EditText editText = mEditTexts[i];
-			editText.setText(mTexts[i]);
-			ViewParent oldParent = editText.getParent();
+			ViewHolder holder = mViewHolders[i];
+			holder.setValue(mTexts[i]);
+			View child = holder.getView();
+			ViewParent oldParent = child.getParent();
 			if (oldParent != view)
 			{
-				if (oldParent != null) ((ViewGroup) oldParent).removeView(editText);
-				onAddEditTextToDialogView(view, editText);
+				if (oldParent != null) ((ViewGroup) oldParent).removeView(child);
+				onAddEditTextToDialogView(view, child);
 			}
 		}
 	}
 	
-	protected void onAddEditTextToDialogView(View dialogView, EditText editText)
+	protected void onAddEditTextToDialogView(View dialogView, View view)
 	{
 		ViewGroup container = (ViewGroup) dialogView.findViewById(mContainerId);
 		if (container != null)
 		{
-			container.addView(editText, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+			container.addView(view, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 		}
 	}
 	
@@ -135,10 +140,10 @@ public class MultipleEditTextPreference extends DialogPreference
 		super.onDialogClosed(positiveResult);
 		if (positiveResult)
 		{
-			String[] values = new String[mEditTexts.length];
+			String[] values = new String[mTexts.length];
 			for (int i = 0; i < values.length; i++)
 			{
-				values[i] = StringUtils.nullIfEmpty(mEditTexts[i].getText().toString());
+				values[i] = StringUtils.nullIfEmpty(mViewHolders[i].getValue());
 			}
 			if (callChangeListener(values)) setTexts(values);
 		}
@@ -175,6 +180,102 @@ public class MultipleEditTextPreference extends DialogPreference
 		SavedState myState = (SavedState) state;
 		super.onRestoreInstanceState(myState.getSuperState());
 		setTexts(myState.values);
+	}
+	
+	private static interface ViewHolder
+	{
+		public void setHint(CharSequence hint);
+		public void setInputType(int type);
+		public void setValue(String value);
+		public String getValue();
+		public View getView();
+	}
+	
+	private static class EditTextViewHolder implements ViewHolder
+	{
+		private final SafePasteEditText mEditText;
+		
+		public EditTextViewHolder(Context context, int id)
+		{
+			mEditText = new SafePasteEditText(context);
+			mEditText.setId(id);
+		}
+		
+		@Override
+		public void setHint(CharSequence hint)
+		{
+			mEditText.setHint(hint);
+		}
+		
+		@Override
+		public void setInputType(int type)
+		{
+			mEditText.setInputType(type);
+		}
+		
+		@Override
+		public void setValue(String value)
+		{
+			mEditText.setText(value);
+		}
+		
+		@Override
+		public String getValue()
+		{
+			return mEditText.getText().toString();
+		}
+		
+		@Override
+		public View getView()
+		{
+			return mEditText;
+		}
+	}
+	
+	private static class DropdownViewHolder implements ViewHolder
+	{
+		private final DropdownView mDropdownView;
+		private final List<String> mValues;
+		
+		public DropdownViewHolder(Context context, int id, CharSequence[] entries, String[] values)
+		{
+			mDropdownView = new DropdownView(context);
+			mDropdownView.setId(id);
+			mDropdownView.setItems(Arrays.asList(entries));
+			mValues = Arrays.asList(values);
+		}
+		
+		@Override
+		public void setHint(CharSequence hint)
+		{
+			
+		}
+		
+		@Override
+		public void setInputType(int type)
+		{
+			
+		}
+		
+		@Override
+		public void setValue(String value)
+		{
+			int position = mValues.indexOf(value);
+			if (position == -1) position = 0;
+			mDropdownView.setSelection(position);
+		}
+		
+		@Override
+		public String getValue()
+		{
+			return mValues.get(mDropdownView.getSelectedItemPosition());
+		}
+		
+		@Override
+		public View getView()
+		{
+			return mDropdownView;
+		}
 	}
 	
 	private static class SavedState extends BaseSavedState

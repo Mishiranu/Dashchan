@@ -70,20 +70,12 @@
 				android:maxLength="30"
 				android:singleLine="true" />
 			
-			<LinearLayout
-				android:id="@+id/icon_parent"
+			<com.mishiranu.dashchan.widget.DropdownView
+				android:id="@+id/icon"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
 				android:layout_marginLeft="4dp"
-				android:layout_marginRight="4dp">
-				
-				<Spinner
-					android:id="@+id/icon"
-					android:layout_width="match_parent"
-					android:layout_height="wrap_content"
-					android:padding="0dp" />
-				
-			</LinearLayout>
+				android:layout_marginRight="4dp" />
 		
 			<TextView
 				android:id="@+id/personal_tripcode_warning"
