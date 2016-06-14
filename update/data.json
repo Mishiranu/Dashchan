@@ -132,7 +132,7 @@
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanDesustorage.apk"
 		}
 	],
-	"desyach":
+	"diochan":
 	[
 		{
 			"title": "Release",
@@ -140,8 +140,8 @@
 			"code": 1,
 			"version": 1,
 			"minSdk": 14,
-			"length": 60843,
-			"source": "/Mishiranu/Dashchan/master/update/package/DashchanDesyach.apk"
+			"length": 56175,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanDiochan.apk"
 		}
 	],
 	"dobrochan":
