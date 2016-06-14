@@ -650,7 +650,7 @@ public class HttpClient
 				// Throws when connection was established but SSL handshake was timed out
 				return ErrorItem.TYPE_CONNECT_TIMEOUT;
 			}
-			if (message.matches("Hostname .+ was not verified"))
+			if (message.matches("Hostname .+ (was )?not verified"))
 			{
 				// IOException
 				// Throws when hostname not matches certificate
