@@ -81,21 +81,10 @@
 					android:maxLength="30"
 					android:singleLine="true" />
 				
-				<FrameLayout
-					android:id="@+id/icon_parent"
+				<com.mishiranu.dashchan.widget.DropdownView
+					android:id="@+id/icon"
 					android:layout_width="match_parent"
-					android:layout_height="wrap_content"
-					android:gravity="center_vertical"
-					android:background="?android:attr/editTextBackground"
-					android:addStatesFromChildren="true">
-					
-					<Spinner
-						android:id="@+id/icon"
-						android:layout_width="match_parent"
-						android:layout_height="wrap_content"
-						android:padding="0dp" />
-					
-				</FrameLayout>
+					android:layout_height="wrap_content" />
 				
 				<TextView
 					android:id="@+id/personal_tripcode_warning"

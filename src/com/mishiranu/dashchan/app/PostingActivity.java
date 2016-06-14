@@ -77,7 +77,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ScrollView;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toolbar;
 
@@ -116,6 +115,7 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.StringBlockBuilder;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
+import com.mishiranu.dashchan.widget.DropdownView;
 import com.mishiranu.dashchan.widget.ErrorEditTextSetter;
 
 public class PostingActivity extends StateActivity implements View.OnClickListener, View.OnFocusChangeListener,
@@ -155,7 +155,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	private EditText mEmailView;
 	private EditText mPasswordView;
 	private EditText mSubjectView;
-	private Spinner mIconView;
+	private DropdownView mIconView;
 	private ViewGroup mTextFormatView;
 	private TextView mTripcodeWarning;
 	private TextView mRemainingCharacters;
@@ -322,7 +322,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		mEmailView = (EditText) findViewById(R.id.email);
 		mPasswordView = (EditText) findViewById(R.id.password);
 		mSubjectView = (EditText) findViewById(R.id.subject);
-		mIconView = (Spinner) findViewById(R.id.icon);
+		mIconView = (DropdownView) findViewById(R.id.icon);
 		mAttachmentContainer = (LinearLayout) findViewById(R.id.attachment_container);
 		mFooterContainer = (FrameLayout) findViewById(R.id.footer_container);
 		mTripcodeWarning = (TextView) findViewById(R.id.personal_tripcode_warning);
@@ -336,22 +336,12 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		mAttachmentRatingItems = posting.attachmentRatings.size() > 0 ? posting.attachmentRatings : null;
 		if (mUserIconItems != null)
 		{
-			ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item)
-			{
-				@Override
-				public View getView(int position, View convertView, ViewGroup parent)
-				{
-					View view = super.getView(position, convertView, parent);
-					if (C.API_LOLLIPOP && convertView == null) view.setPadding(0, 0, 0, 0);
-					return view;
-				}
-			};
-			adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-			adapter.add(getString(R.string.text_no_icon));
-			for (Pair<String, String> iconItem : mUserIconItems) adapter.add(iconItem.second);
-			mIconView.setAdapter(adapter);
+			ArrayList<String> items = new ArrayList<>();
+			items.add(getString(R.string.text_no_icon));
+			for (Pair<String, String> iconItem : mUserIconItems) items.add(iconItem.second);
+			mIconView.setItems(items);
 		}
-		else findViewById(R.id.icon_parent).setVisibility(View.GONE);
+		else mIconView.setVisibility(View.GONE);
 		
 		float density = ResourceUtils.obtainDensity(this);
 		int handledButtons = 0;
