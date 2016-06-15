@@ -90,8 +90,8 @@ public class PagerUnit implements PagerInstance.Callback
 	
 	public void addAndInitViews(FrameLayout frameLayout, int initialPosition)
 	{
-		mViewPager.setCurrentIndex(initialPosition >= 0 ? initialPosition : 0);
 		mVideoUnit.addViews(frameLayout);
+		mViewPager.setCurrentIndex(initialPosition >= 0 ? initialPosition : 0);
 	}
 	
 	public void onViewsCreated(int[] imageViewPosition)
