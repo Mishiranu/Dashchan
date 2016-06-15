@@ -40,6 +40,8 @@ import chan.http.HttpHolder;
 import chan.http.HttpRequest;
 import chan.util.CommonUtils;
 
+import com.mishiranu.dashchan.C;
+
 public class ReadUpdateTask extends CancellableTask<Void, Long, Object>
 {
 	private final Context mContext;
@@ -152,17 +154,16 @@ public class ReadUpdateTask extends CancellableTask<Void, Long, Object>
 		}
 		ChanLocator locator = ChanLocator.getDefault();
 		ArrayList<Pair<Uri, ArrayList<String>>> targets = new ArrayList<>();
-		Uri appUri = locator.buildPathWithHost("raw.githubusercontent.com", "Mishiranu", "Dashchan", "master",
-				"update", "data.json");
+		Uri appSourceUri = locator.setScheme(Uri.parse(C.UPDATE_SOURCE_URI_STRING));
 		ArrayList<String> extensionNames = new ArrayList<>();
 		extensionNames.add(ChanManager.EXTENSION_NAME_CLIENT);
-		targets.add(new Pair<>(appUri, extensionNames));
+		targets.add(new Pair<>(appSourceUri, extensionNames));
 		Collection<ChanManager.ExtensionItem> extensionItems = ChanManager.getInstance().getExtensionItems();
 		OUTER: for (ChanManager.ExtensionItem extensionItem : extensionItems)
 		{
-			Uri uri = locator.setScheme(extensionItem.updateUri);
-			if (uri != null)
+			if (extensionItem.updateUri != null)
 			{
+				Uri uri = locator.setScheme(extensionItem.updateUri);
 				for (Pair<Uri, ArrayList<String>> target : targets)
 				{
 					if (target.first.equals(uri))
