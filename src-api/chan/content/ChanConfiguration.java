@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -733,16 +734,16 @@ public class ChanConfiguration implements ChanManager.Linked
 		return null;
 	}
 	
-	private ArrayList<Pair<String, Boolean>> mCustomPreferences;
+	private LinkedHashMap<String, Boolean> mCustomPreferences;
 	
 	@Public
 	public final void addCustomPreference(String key, boolean defaultValue)
 	{
-		if (mCustomPreferences == null) mCustomPreferences = new ArrayList<>();
-		mCustomPreferences.add(new Pair<>(key, defaultValue));
+		if (mCustomPreferences == null) mCustomPreferences = new LinkedHashMap<>();
+		mCustomPreferences.put(key, defaultValue);
 	}
 	
-	public final ArrayList<Pair<String, Boolean>> getCustomPreferences()
+	public final LinkedHashMap<String, Boolean> getCustomPreferences()
 	{
 		return mCustomPreferences;
 	}

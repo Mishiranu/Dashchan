@@ -19,6 +19,7 @@ package com.mishiranu.dashchan.preference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 
 import android.annotation.SuppressLint;
@@ -146,17 +147,16 @@ public class ChanFragment extends BasePreferenceFragment
 						| InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD, null);
 			}
 		}
-		ArrayList<Pair<String, Boolean>> customPreferences = configuration.getCustomPreferences();
+		LinkedHashMap<String, Boolean> customPreferences = configuration.getCustomPreferences();
 		if (customPreferences != null)
 		{
-			for (Pair<String, Boolean> preferenceHolder : customPreferences)
+			for (LinkedHashMap.Entry<String, Boolean> preferenceHolder : customPreferences.entrySet())
 			{
-				ChanConfiguration.CustomPreference customPreference = configuration
-						.safe().obtainCustomPreference(preferenceHolder.first);
+				String key = preferenceHolder.getKey();
+				boolean defaultValue = preferenceHolder.getValue();
+				ChanConfiguration.CustomPreference customPreference = configuration.safe().obtainCustomPreference(key);
 				if (customPreference != null && customPreference.title != null)
 				{
-					String key = preferenceHolder.first;
-					boolean defaultValue = preferenceHolder.second;
 					if (mCustomPreferenceKeys == null)
 					{
 						mCustomPreferenceKeys = new HashSet<>();

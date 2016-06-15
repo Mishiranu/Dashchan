@@ -18,8 +18,8 @@ package com.mishiranu.dashchan.widget;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 
 import android.animation.Animator;
 import android.animation.ValueAnimator;
@@ -37,7 +37,6 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -70,7 +69,7 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 	private FrameLayout mDrawerParent;
 	private AbsListView mDrawerListView;
 	private View mDrawerHeader;
-	private ArrayList<Pair<View, Boolean>> mAdditionalViews;
+	private LinkedHashMap<View, Boolean> mAdditionalViews;
 	
 	private ValueAnimator mForegroundAnimator;
 	private boolean mForegroundAnimatorShow;
@@ -617,8 +616,8 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 	
 	public void addAdditionalView(View additionalView, boolean considerActionBarHeight)
 	{
-		if (mAdditionalViews == null) mAdditionalViews = new ArrayList<>();
-		mAdditionalViews.add(new Pair<View, Boolean>(additionalView, considerActionBarHeight));
+		if (mAdditionalViews == null) mAdditionalViews = new LinkedHashMap<>();
+		mAdditionalViews.put(additionalView, considerActionBarHeight);
 	}
 	
 	public void removeAdditionalView(View additionalView)
@@ -690,9 +689,9 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 			}
 			if (mAdditionalViews != null)
 			{
-				for (Pair<View, Boolean> additional : mAdditionalViews)
+				for (LinkedHashMap.Entry<View, Boolean> additional : mAdditionalViews.entrySet())
 				{
-					additional.first.setPadding(0, statusBarHeight + (additional.second ? actionBarHeight : 0),
+					additional.getKey().setPadding(0, statusBarHeight + (additional.getValue() ? actionBarHeight : 0),
 							rightNavigationBarHeight, bottomNavigationBarHeight);
 				}
 			}
