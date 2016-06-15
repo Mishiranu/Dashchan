@@ -23,7 +23,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -35,7 +34,6 @@ import java.util.zip.ZipOutputStream;
 
 import android.content.Context;
 import android.text.format.DateFormat;
-import android.util.Pair;
 
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.storage.AutohideStorage;
@@ -60,9 +58,9 @@ public class BackupManager
 		}
 	};
 	
-	public static ArrayList<Pair<File, String>> getAvailableBackups(Context context)
+	public static LinkedHashMap<File, String> getAvailableBackups(Context context)
 	{
-		ArrayList<Pair<File, String>> backups = new ArrayList<>();
+		LinkedHashMap<File, String> backups = new LinkedHashMap<>();
 		File[] files = Preferences.getDownloadDirectory().listFiles();
 		if (files != null)
 		{
@@ -76,7 +74,7 @@ public class BackupManager
 				{
 					long date = Long.parseLong(matcher.group(1));
 					String dateString = dateFormat.format(date) + " " + timeFormat.format(date);
-					backups.add(new Pair<>(file, dateString));
+					backups.put(file, dateString);
 				}
 			}
 		}

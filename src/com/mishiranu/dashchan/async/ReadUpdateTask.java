@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -31,7 +32,6 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.net.Uri;
 import android.os.Build;
-import android.util.Pair;
 
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
@@ -153,28 +153,24 @@ public class ReadUpdateTask extends CancellableTask<Void, Long, Object>
 			}
 		}
 		ChanLocator locator = ChanLocator.getDefault();
-		ArrayList<Pair<Uri, ArrayList<String>>> targets = new ArrayList<>();
-		Uri appSourceUri = locator.setScheme(Uri.parse(C.UPDATE_SOURCE_URI_STRING));
+		LinkedHashMap<Uri, ArrayList<String>> targets = new LinkedHashMap<>();
+		Uri appUri = locator.setScheme(Uri.parse(C.UPDATE_SOURCE_URI_STRING));
 		ArrayList<String> extensionNames = new ArrayList<>();
 		extensionNames.add(ChanManager.EXTENSION_NAME_CLIENT);
-		targets.add(new Pair<>(appSourceUri, extensionNames));
+		targets.put(appUri, extensionNames);
 		Collection<ChanManager.ExtensionItem> extensionItems = ChanManager.getInstance().getExtensionItems();
-		OUTER: for (ChanManager.ExtensionItem extensionItem : extensionItems)
+		for (ChanManager.ExtensionItem extensionItem : extensionItems)
 		{
 			if (extensionItem.updateUri != null)
 			{
 				Uri uri = locator.setScheme(extensionItem.updateUri);
-				for (Pair<Uri, ArrayList<String>> target : targets)
+				extensionNames = targets.get(uri);
+				if (extensionNames == null)
 				{
-					if (target.first.equals(uri))
-					{
-						target.second.add(extensionItem.extensionName);
-						continue OUTER;
-					}
+					extensionNames = new ArrayList<>();
+					targets.put(uri, extensionNames);
 				}
-				extensionNames = new ArrayList<>();
 				extensionNames.add(extensionItem.extensionName);
-				targets.add(new Pair<>(uri, extensionNames));
 			}
 		}
 		String appVersionName;
@@ -204,11 +200,11 @@ public class ReadUpdateTask extends CancellableTask<Void, Long, Object>
 		}
 		Thread thread = Thread.currentThread();
 		if (thread.isInterrupted()) return null;
-		for (Pair<Uri, ArrayList<String>> target : targets)
+		for (LinkedHashMap.Entry<Uri, ArrayList<String>> target : targets.entrySet())
 		{
 			try
 			{
-				Uri uri = target.first;
+				Uri uri = target.getKey();
 				int redirects = 0;
 				while (redirects++ < 5)
 				{
@@ -225,7 +221,7 @@ public class ReadUpdateTask extends CancellableTask<Void, Long, Object>
 						while (keys.hasNext())
 						{
 							String extensionName = keys.next();
-							if (target.second.contains(extensionName))
+							if (target.getValue().contains(extensionName))
 							{
 								updateItems = updateDataMap.get(extensionName);
 								boolean ignoreVersion = updateItems.get(0).ignoreVersion;

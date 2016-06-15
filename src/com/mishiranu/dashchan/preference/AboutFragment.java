@@ -19,6 +19,7 @@ package com.mishiranu.dashchan.preference;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -159,10 +160,10 @@ public class AboutFragment extends BasePreferenceFragment
 			}
 			else if (which == 1)
 			{
-				ArrayList<Pair<File, String>> fileNamePairs = BackupManager.getAvailableBackups(getActivity());
-				if (fileNamePairs.size() > 0)
+				LinkedHashMap<File, String> filesMap = BackupManager.getAvailableBackups(getActivity());
+				if (filesMap != null && filesMap.size() > 0)
 				{
-					new RestoreFragment(fileNamePairs).show(getFragmentManager(), RestoreFragment.class.getName());
+					new RestoreFragment(filesMap).show(getFragmentManager(), RestoreFragment.class.getName());
 				}
 				else ToastUtils.show(getActivity(), R.string.message_no_backups);
 			}
@@ -179,15 +180,15 @@ public class AboutFragment extends BasePreferenceFragment
 			
 		}
 		
-		public RestoreFragment(ArrayList<Pair<File, String>> fileNamePairs)
+		public RestoreFragment(LinkedHashMap<File, String> filesMap)
 		{
 			Bundle args = new Bundle();
-			ArrayList<String> files = new ArrayList<>(fileNamePairs.size());
-			ArrayList<String> names = new ArrayList<>(fileNamePairs.size());
-			for (Pair<File, String> pair : fileNamePairs)
+			ArrayList<String> files = new ArrayList<>(filesMap.size());
+			ArrayList<String> names = new ArrayList<>(filesMap.size());
+			for (LinkedHashMap.Entry<File, String> pair : filesMap.entrySet())
 			{
-				files.add(pair.first.getAbsolutePath());
-				names.add(pair.second);
+				files.add(pair.getKey().getAbsolutePath());
+				names.add(pair.getValue());
 			}
 			args.putStringArrayList(EXTRA_FILES, files);
 			args.putStringArrayList(EXTRA_NAMES, names);
