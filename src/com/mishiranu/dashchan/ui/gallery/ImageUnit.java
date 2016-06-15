@@ -78,11 +78,18 @@ public class ImageUnit
 		}
 	}
 	
+	public void applyImage(Uri uri, File file, boolean reload)
+	{
+		if (!reload && file.exists()) applyImageFromFile(file);
+		else loadImage(uri, file, mInstance.currentHolder);
+	}
+	
 	private static final Executor EXECUTOR = ConcurrentUtils.newSingleThreadPool(20000, "DecodeBitmapTask", null, 0);
 	
-	public void applyImageFromFile(File file)
+	private void applyImageFromFile(File file)
 	{
 		PagerInstance.ViewHolder holder = mInstance.currentHolder;
+		if (attachReadBitmapCallback(holder)) return;
 		GalleryItem galleryItem = holder.galleryItem;
 		FileHolder fileHolder = FileHolder.obtain(file);
 		if (!(holder.photoView.hasImage() && file.equals(holder.photoViewFile)))
@@ -115,26 +122,24 @@ public class ImageUnit
 		}
 	}
 	
-	public void applyImageLoad(Uri uri, File cachedFile)
-	{
-		loadImage(uri, cachedFile, mInstance.currentHolder);
-	}
-	
 	private void loadImage(Uri uri, File cachedFile, PagerInstance.ViewHolder holder)
 	{
-		if (mReadBitmapCallback != null)
-		{
-			if (mReadBitmapCallback.isHolder(holder))
-			{
-				mReadBitmapCallback.attachDownloading();
-				return;
-			}
-			mReadFileTask.cancel();
-		}
+		if (attachReadBitmapCallback(holder)) return;
+		if (mReadFileTask != null) mReadFileTask.cancel();
 		mReadBitmapCallback = new ReadBitmapCallback(holder);
 		mReadFileTask = new ReadFileTask(mInstance.galleryInstance.context, mInstance.galleryInstance.chanName,
 				uri, cachedFile, true, mReadBitmapCallback);
 		mReadFileTask.executeOnExecutor(ReadFileTask.THREAD_POOL_EXECUTOR);
+	}
+	
+	private boolean attachReadBitmapCallback(PagerInstance.ViewHolder holder)
+	{
+		if (mReadBitmapCallback != null && mReadBitmapCallback.isHolder(holder))
+		{
+			mReadBitmapCallback.attachDownloading();
+			return true;
+		}
+		return false;
 	}
 	
 	private class ReadBitmapCallback implements ReadFileTask.Callback, ReadFileTask.CancelCallback
@@ -161,6 +166,8 @@ public class ImageUnit
 		@Override
 		public void onFileExists(Uri uri, File file)
 		{
+			mReadFileTask = null;
+			mReadBitmapCallback = null;
 			if (isCurrentHolder()) applyImageFromFile(file);
 		}
 		
@@ -304,11 +311,7 @@ public class ImageUnit
 			{
 				int maxSize = PhotoView.getMaximumImageSize();
 				mBitmap = mFileHolder.readImageBitmap(maxSize, true, true);
-				if (mBitmap == null)
-				{
-					mErrorMessageId = R.string.message_image_corrupted;
-				}
-				else
+				if (mBitmap == null) mErrorMessageId = R.string.message_image_corrupted; else
 				{
 					if (mBitmap.getWidth() < mFileHolder.getImageWidth() ||
 							mBitmap.getHeight() < mFileHolder.getImageHeight())
