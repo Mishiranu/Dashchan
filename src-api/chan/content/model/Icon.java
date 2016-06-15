@@ -20,16 +20,19 @@ import java.io.Serializable;
 
 import android.net.Uri;
 
+import chan.annotation.Public;
 import chan.content.ChanLocator;
 import chan.util.StringUtils;
 
-public class Icon implements Serializable
+@Public
+public final class Icon implements Serializable
 {
 	private static final long serialVersionUID = 1L;
 	
 	private final String mUriString;
 	private final String mTitle;
 	
+	@Public
 	public Icon(ChanLocator locator, Uri uri, String title)
 	{
 		mUriString = uri != null ? locator.makeRelative(uri).toString() : null;
@@ -41,11 +44,13 @@ public class Icon implements Serializable
 		return mUriString != null ? Uri.parse(mUriString) : null;
 	}
 	
+	@Public
 	public Uri getUri(ChanLocator locator)
 	{
 		return mUriString != null ? locator.convert(Uri.parse(mUriString)) : null;
 	}
 	
+	@Public
 	public String getTitle()
 	{
 		return mTitle;

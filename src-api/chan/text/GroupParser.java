@@ -18,15 +18,26 @@ package chan.text;
 
 import java.util.Locale;
 
+import chan.annotation.Extendable;
+import chan.annotation.Public;
 import chan.util.StringUtils;
 
-public class GroupParser
+@Public
+public final class GroupParser
 {
+	@Extendable
 	public static interface Callback
 	{
+		@Extendable
 		public boolean onStartElement(GroupParser parser, String tagName, String attrs) throws ParseException;
+		
+		@Extendable
 		public void onEndElement(GroupParser parser, String tagName) throws ParseException;
+		
+		@Extendable
 		public void onText(GroupParser parser, String source, int start, int end) throws ParseException;
+		
+		@Extendable
 		public void onGroupComplete(GroupParser parser, String text) throws ParseException;
 	}
 	
@@ -46,6 +57,7 @@ public class GroupParser
 	private int mMarkCalled = MARK_STATE_NONE;
 	private int mMark = 0;
 	
+	@Public
 	public static void parse(String source, Callback callback) throws ParseException
 	{
 		try
@@ -210,18 +222,21 @@ public class GroupParser
 		}
 	}
 	
+	@Public
 	public void mark()
 	{
 		checkMarkAvailable();
 		mMarkCalled = MARK_STATE_MARK;
 	}
 	
+	@Public
 	public void reset()
 	{
 		checkMarkAvailable();
 		mMarkCalled = MARK_STATE_RESET;
 	}
 	
+	@Public
 	public String getAttr(String attrs, String attr)
 	{
 		if (attrs != null)

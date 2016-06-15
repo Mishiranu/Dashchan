@@ -18,11 +18,13 @@ package chan.http;
 
 import java.net.HttpURLConnection;
 
+import chan.annotation.Public;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.content.model.ErrorItem;
 
-public class HttpException extends Exception implements ErrorItem.Holder
+@Public
+public final class HttpException extends Exception implements ErrorItem.Holder
 {
 	private static final long serialVersionUID = 1L;
 	
@@ -52,6 +54,7 @@ public class HttpException extends Exception implements ErrorItem.Holder
 		mSocketException = socketException;
 	}
 	
+	@Public
 	public HttpException(int responseCode, String responseText)
 	{
 		mResponseCode = responseCode;
@@ -61,16 +64,19 @@ public class HttpException extends Exception implements ErrorItem.Holder
 		mSocketException = false;
 	}
 	
+	@Public
 	public int getResponseCode()
 	{
 		return mResponseCode;
 	}
 	
+	@Public
 	public boolean isHttpException()
 	{
 		return mHttpException;
 	}
 	
+	@Public
 	public boolean isSocketException()
 	{
 		return mSocketException;
@@ -83,6 +89,7 @@ public class HttpException extends Exception implements ErrorItem.Holder
 		return new ErrorItem(mErrorItemType);
 	}
 	
+	@Public
 	public static HttpException createNotFoundException()
 	{
 		return new HttpException(HttpURLConnection.HTTP_NOT_FOUND, "Not Found");

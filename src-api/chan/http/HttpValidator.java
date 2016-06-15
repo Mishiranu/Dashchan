@@ -25,10 +25,12 @@ import org.json.JSONObject;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import chan.annotation.Public;
 import chan.util.CommonUtils;
 import chan.util.StringUtils;
 
-public class HttpValidator implements Parcelable, Serializable
+@Public
+public final class HttpValidator implements Parcelable, Serializable
 {
 	private static final long serialVersionUID = 1L;
 	

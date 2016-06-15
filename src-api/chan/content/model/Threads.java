@@ -20,8 +20,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import chan.annotation.Public;
 import chan.content.ChanPerformer;
 
+@Public
 public final class Threads implements Serializable
 {
 	private static final long serialVersionUID = 1L;
@@ -46,11 +48,13 @@ public final class Threads implements Serializable
 		return setThreads(new Posts[][] {threads});
 	}
 	
+	@Public
 	public int getBoardSpeed()
 	{
 		return mBoardSpeed;
 	}
 	
+	@Public
 	public Threads setBoardSpeed(int boardSpeed)
 	{
 		mBoardSpeed = boardSpeed;
@@ -156,11 +160,13 @@ public final class Threads implements Serializable
 		}
 	}
 	
+	@Public
 	public Threads(Posts... threads)
 	{
 		setThreads(threads);
 	}
 	
+	@Public
 	public Threads(Collection<? extends Posts> threads)
 	{
 		this(threads != null ? threads.toArray(new Posts[threads.size()]) : null);

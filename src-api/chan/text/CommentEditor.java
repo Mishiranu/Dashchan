@@ -24,11 +24,14 @@ import android.util.SparseArray;
 import android.util.SparseIntArray;
 import android.widget.EditText;
 
+import chan.annotation.Extendable;
+import chan.annotation.Public;
 import chan.content.ChanMarkup;
 
+@Extendable
 public class CommentEditor
 {
-	public static final int FLAG_ONE_LINE = 0x00000001;
+	@Public public static final int FLAG_ONE_LINE = 0x00000001;
 	
 	private final SparseArray<Tag> mTags = new SparseArray<>();
 	private final SparseIntArray mSimilar = new SparseIntArray();
@@ -62,23 +65,33 @@ public class CommentEditor
 		}
 	}
 	
+	@Public
+	public CommentEditor()
+	{
+		
+	}
+	
+	@Public
 	public void addTag(int what, String open, String close)
 	{
 		addTag(what, open, close, 0);
 	}
 	
-	public void addTag(int what, String open, String close, int flags)
+	@Public
+	public final void addTag(int what, String open, String close, int flags)
 	{
 		if (open == null || close == null) throw new NullPointerException();
 		mTags.put(what, new Tag(open, close, flags));
 	}
 	
-	public void setUnorderedListMark(String mark)
+	@Public
+	public final void setUnorderedListMark(String mark)
 	{
 		mUnorderedListMark = mark;
 	}
 	
-	public void setOrderedListMark(String mark)
+	@Public
+	public final void setOrderedListMark(String mark)
 	{
 		mOrderedListMark = mark;
 	}
@@ -305,8 +318,10 @@ public class CommentEditor
 		return comment;
 	}
 	
+	@Extendable
 	public static class BulletinBoardCodeCommentEditor extends CommentEditor
 	{
+		@Public
 		public BulletinBoardCodeCommentEditor()
 		{
 			addTag(ChanMarkup.TAG_BOLD, "[b]", "[/b]");
@@ -322,12 +337,14 @@ public class CommentEditor
 		}
 	}
 	
+	@Extendable
 	public static class WakabaMarkCommentEditor extends CommentEditor
 	{
 		private boolean mSerialStrike = true;
 		
 		private static final Pattern MULTIPLE_STRIKES = Pattern.compile("^((?:\\^H)+)");
 		
+		@Public
 		public WakabaMarkCommentEditor()
 		{
 			addTag(ChanMarkup.TAG_BOLD, "**", "**", FLAG_ONE_LINE);

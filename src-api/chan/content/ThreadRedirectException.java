@@ -16,7 +16,10 @@
 
 package chan.content;
 
-public class ThreadRedirectException extends Exception
+import chan.annotation.Public;
+
+@Public
+public final class ThreadRedirectException extends Exception
 {
 	private static final long serialVersionUID = 1L;
 	
@@ -24,6 +27,7 @@ public class ThreadRedirectException extends Exception
 	private final String mThreadNumber;
 	private final String mPostNumber;
 	
+	@Public
 	public ThreadRedirectException(String boardName, String threadNumber, String postNumber)
 	{
 		if (threadNumber == null) throw new NullPointerException("Thread Number must not be null");
@@ -32,6 +36,7 @@ public class ThreadRedirectException extends Exception
 		mPostNumber = postNumber;
 	}
 	
+	@Public
 	public ThreadRedirectException(String threadNumber, String postNumber)
 	{
 		this(null, threadNumber, postNumber);

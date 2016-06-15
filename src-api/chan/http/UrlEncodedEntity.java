@@ -21,6 +21,10 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
+import chan.annotation.Extendable;
+import chan.annotation.Public;
+
+@Extendable
 public class UrlEncodedEntity implements RequestEntity
 {
 	private StringBuilder mBuilder = new StringBuilder();
@@ -28,16 +32,19 @@ public class UrlEncodedEntity implements RequestEntity
 	
 	private String mCharsetName = "UTF-8";
 	
+	@Public
 	public UrlEncodedEntity()
 	{
 		
 	}
 	
+	@Public
 	public UrlEncodedEntity(String... params)
 	{
 		for (int i = 0; i < params.length; i += 2) add(params[i], params[i + 1]);
 	}
 	
+	@Public
 	public void setEncoding(String charsetName)
 	{
 		mCharsetName = charsetName;
@@ -61,13 +68,13 @@ public class UrlEncodedEntity implements RequestEntity
 	{
 		return "application/x-www-form-urlencoded";
 	}
-
+	
 	@Override
 	public long getContentLength()
 	{
 		return getBytes().length;
 	}
-
+	
 	@Override
 	public void write(OutputStream output) throws IOException
 	{

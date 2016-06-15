@@ -20,12 +20,21 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 
+import chan.annotation.Extendable;
+import chan.annotation.Public;
 import chan.util.StringUtils;
 
+@Extendable
 public class SimpleEntity implements RequestEntity
 {
 	private byte[] mData;
 	private String mContentType = "text/plain";
+	
+	@Public
+	public SimpleEntity()
+	{
+		
+	}
 	
 	@Override
 	public void add(String name, String value)
@@ -33,11 +42,13 @@ public class SimpleEntity implements RequestEntity
 		throw new UnsupportedOperationException();
 	}
 	
+	@Extendable
 	public void setData(String data)
 	{
 		setData(data, "UTF-8");
 	}
 	
+	@Extendable
 	public void setData(String data, String charsetName)
 	{
 		try
@@ -50,11 +61,13 @@ public class SimpleEntity implements RequestEntity
 		}
 	}
 	
+	@Extendable
 	public void setData(byte[] data)
 	{
 		mData = data;
 	}
 	
+	@Extendable
 	public void setContentType(String contentType)
 	{
 		if (StringUtils.isEmpty(contentType)) throw new IllegalArgumentException("Invalid content type");

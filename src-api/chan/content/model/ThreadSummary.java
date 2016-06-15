@@ -18,8 +18,10 @@ package chan.content.model;
 
 import android.net.Uri;
 
+import chan.annotation.Public;
 import chan.content.ChanLocator;
 
+@Public
 public final class ThreadSummary
 {
 	private final String mBoardName;
@@ -30,6 +32,7 @@ public final class ThreadSummary
 	private int mPostsCount = -1;
 	private int mViewsCount = -1;
 	
+	@Public
 	public ThreadSummary(String boardName, String threadNumber, String description)
 	{
 		mBoardName = boardName;
@@ -37,16 +40,19 @@ public final class ThreadSummary
 		mDescription = description;
 	}
 	
+	@Public
 	public String getBoardName()
 	{
 		return mBoardName;
 	}
 	
+	@Public
 	public String getThreadNumber()
 	{
 		return mThreadNumber;
 	}
 	
+	@Public
 	public String getDescription()
 	{
 		return mDescription;
@@ -57,33 +63,39 @@ public final class ThreadSummary
 		return mThumbnailUriString != null ? Uri.parse(mThumbnailUriString) : null;
 	}
 	
+	@Public
 	public Uri getThumbnailUri(ChanLocator locator)
 	{
 		return mThumbnailUriString != null ? locator.convert(Uri.parse(mThumbnailUriString)) : null;
 	}
 	
+	@Public
 	public ThreadSummary setThumbnailUri(ChanLocator locator, Uri thumbnailUri)
 	{
 		mThumbnailUriString = thumbnailUri != null ? locator.makeRelative(thumbnailUri).toString() : null;
 		return this;
 	}
 	
+	@Public
 	public int getPostsCount()
 	{
 		return mPostsCount;
 	}
 	
+	@Public
 	public ThreadSummary setPostsCount(int postsCount)
 	{
 		mPostsCount = postsCount;
 		return this;
 	}
 	
+	@Public
 	public int getViewsCount()
 	{
 		return mViewsCount;
 	}
 	
+	@Public
 	public ThreadSummary setViewsCount(int viewsCount)
 	{
 		mViewsCount = viewsCount;

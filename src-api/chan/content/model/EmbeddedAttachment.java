@@ -18,15 +18,22 @@ package chan.content.model;
 
 import android.net.Uri;
 
+import chan.annotation.Public;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.net.EmbeddedManager;
 
+@Public
 public final class EmbeddedAttachment implements Attachment
 {
 	private static final long serialVersionUID = 1L;
 	
-	public static enum ContentType {AUDIO, VIDEO}
+	@Public
+	public static enum ContentType
+	{
+		@Public AUDIO,
+		@Public VIDEO
+	}
 	
 	private final String mFileUriString;
 	private final String mThumbnailUriString;
@@ -37,6 +44,7 @@ public final class EmbeddedAttachment implements Attachment
 	
 	private String mTitle;
 	
+	@Public
 	public EmbeddedAttachment(Uri fileUri, Uri thumbnailUri, String embeddedType, ContentType contentType,
 			boolean canDownload, String forcedName)
 	{
@@ -56,6 +64,7 @@ public final class EmbeddedAttachment implements Attachment
 		return mFileUriString;
 	}
 	
+	@Public
 	public Uri getFileUri()
 	{
 		return mFileUriString != null ? Uri.parse(mFileUriString) : null;
@@ -66,26 +75,31 @@ public final class EmbeddedAttachment implements Attachment
 		return mFileUriString;
 	}
 	
+	@Public
 	public Uri getThumbnailUri()
 	{
 		return mThumbnailUriString != null ? Uri.parse(mThumbnailUriString) : null;
 	}
 	
+	@Public
 	public String getEmbeddedType()
 	{
 		return mEmbeddedType;
 	}
 	
+	@Public
 	public ContentType getContentType()
 	{
 		return mContentType;
 	}
 	
+	@Public
 	public boolean isCanDownload()
 	{
 		return mCanDownload;
 	}
 	
+	@Public
 	public String getForcedName()
 	{
 		return mForcedName;
@@ -109,6 +123,7 @@ public final class EmbeddedAttachment implements Attachment
 		return this;
 	}
 	
+	@Public
 	public static EmbeddedAttachment obtain(String data)
 	{
 		return EmbeddedManager.getInstance().obtainAttachment(data);

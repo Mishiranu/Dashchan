@@ -26,11 +26,13 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.text.SpannableStringBuilder;
 
+import chan.annotation.Public;
+
 import com.mishiranu.dashchan.text.HtmlParser;
 
+@Public
 public class StringUtils
 {
-	// Private API
 	public static String cutIfLongerToLine(String string, int maxLength, boolean dots)
 	{
 		string = string.replaceAll("\r", "").trim();
@@ -43,32 +45,36 @@ public class StringUtils
 		return string.replaceAll(" +", " ");
 	}
 	
+	@Public
 	public static boolean isEmpty(CharSequence string)
 	{
 		return string == null || string.length() == 0;
 	}
 	
+	@Public
 	public static boolean isEmptyOrWhitespace(CharSequence string)
 	{
 		return string == null || string.toString().trim().length() == 0;
 	}
 	
+	@Public
 	public static String emptyIfNull(CharSequence string)
 	{
 		return string == null ? "" : string.toString();
 	}
 	
+	@Public
 	public static String nullIfEmpty(String string)
 	{
 		return isEmpty(string) ? null : string;
 	}
 	
+	@Public
 	public static boolean equals(String first, String second)
 	{
 		return first == second || first != null && first.equals(second);
 	}
 	
-	// Private API
 	public static int compare(String first, String second, boolean ignoreCase)
 	{
 		if (first == second) return 0;
@@ -82,6 +88,7 @@ public class StringUtils
 		return first.compareTo(second);
 	}
 	
+	@Public
 	public static int nearestIndexOf(String string, int start, String... what)
 	{
 		int index = -1;
@@ -93,6 +100,7 @@ public class StringUtils
 		return index;
 	}
 	
+	@Public
 	public static int nearestIndexOf(String string, int start, char... what)
 	{
 		int index = -1;
@@ -104,7 +112,6 @@ public class StringUtils
 		return index;
 	}
 
-	// Private API
 	public static SpannableStringBuilder appendSpan(SpannableStringBuilder builder, CharSequence text, Object... spans)
 	{
 		int start = builder.length();
@@ -114,15 +121,13 @@ public class StringUtils
 		return builder;
 	}
 
-	// Private API
 	public static StringBuilder appendNewLine(StringBuilder builder, String string)
 	{
 		if (builder.length() > 0) builder.append('\n');
 		builder.append(string);
 		return builder;
 	}
-
-	// Private API
+	
 	public static String removeSingleDot(String string)
 	{
 		if (string == null) return null;
@@ -131,8 +136,7 @@ public class StringUtils
 		if (string.length() - temp.length() == 1) string = temp;
 		return string;
 	}
-
-	// Private API
+	
 	public static String transform(boolean firstCapital, String string)
 	{
 		if (string != null && string.length() > 0)
@@ -142,14 +146,12 @@ public class StringUtils
 		}
 		return string;
 	}
-
-	// Private API
+	
 	public static String escapeFile(String string, boolean isPath)
 	{
 		return string != null ? string.replaceAll(isPath ? "[:\\\\*?|<>]" : "[:\\\\/*?|<>]", "_") : null;
 	}
 	
-	// Private API
 	private static int findLinkEnd(String string, int start)
 	{
 		int end = -1;
@@ -205,6 +207,7 @@ public class StringUtils
 		return end;
 	}
 	
+	@Public
 	public static String linkify(String string)
 	{
 		if (string != null)
@@ -288,7 +291,6 @@ public class StringUtils
 		return string;
 	}
 	
-	// Private API
 	public static String fixParsedUriString(String uriString)
 	{
 		if (uriString != null)
@@ -298,8 +300,7 @@ public class StringUtils
 		}
 		return uriString;
 	}
-
-	// Private API
+	
 	public static void copyToClipboard(Context context, String string)
 	{
 		ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
@@ -307,8 +308,7 @@ public class StringUtils
 	}
 	
 	private static final Pattern PATTERN_BOARD_NAME = Pattern.compile("/?([\\w_-]+)/?");
-
-	// Private API
+	
 	public static String validateBoardName(String boardName)
 	{
 		if (boardName != null)
@@ -318,8 +318,7 @@ public class StringUtils
 		}
 		return null;
 	}
-
-	// Private API
+	
 	public static String getFileExtension(String path)
 	{
 		if (path != null)
@@ -331,25 +330,25 @@ public class StringUtils
 		}
 		return null;
 	}
-
-	// Private API
+	
 	public static String formatBoardTitle(String chanName, String boardName, String title)
 	{
 		return '/' + (isEmpty(boardName) ? chanName : boardName) + (isEmpty(title) ? '/'
 				: "/ — " + title);
 	}
 	
-	// Private API
 	public static String formatThreadTitle(String chanName, String boardName, String threadNumber)
 	{
 		return '/' + (isEmpty(boardName) ? chanName : boardName) + '/' + threadNumber;
 	}
 	
+	@Public
 	public static String clearHtml(String string)
 	{
 		return HtmlParser.clear(string);
 	}
 	
+	@Public
 	public static String unescapeHtml(String string)
 	{
 		return HtmlParser.unescape(string);

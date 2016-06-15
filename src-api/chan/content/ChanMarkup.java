@@ -31,6 +31,8 @@ import android.text.style.StyleSpan;
 import android.text.style.UnderlineSpan;
 import android.util.Pair;
 
+import chan.annotation.Extendable;
+import chan.annotation.Public;
 import chan.text.CommentEditor;
 import chan.util.StringUtils;
 
@@ -46,11 +48,13 @@ import com.mishiranu.dashchan.text.style.ScriptSpan;
 import com.mishiranu.dashchan.text.style.SpoilerSpan;
 import com.mishiranu.dashchan.text.style.UnderlyingSpoilerSpan;
 
+@Extendable
 public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 {
 	private final String mChanName;
 	private final boolean mUseInlineLinkParser;
 	
+	@Public
 	public ChanMarkup()
 	{
 		this(true);
@@ -86,40 +90,42 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 		return mChanName;
 	}
 	
-	@SuppressWarnings("unchecked")
 	public static <T extends ChanMarkup> T get(String chanName)
 	{
-		return (T) ChanManager.getInstance().getMarkup(chanName);
+		return ChanManager.getInstance().getMarkup(chanName);
 	}
 	
+	@Public
 	public static <T extends ChanMarkup> T get(Object object)
 	{
 		return get(ChanManager.getInstance().getLinkedChanName(object));
 	}
 	
-	public static final int TAG_BOLD = 0x00000001;
-	public static final int TAG_ITALIC = 0x00000002;
-	public static final int TAG_UNDERLINE = 0x00000004;
-	public static final int TAG_OVERLINE = 0x00000008;
-	public static final int TAG_STRIKE = 0x00000010;
-	public static final int TAG_SUBSCRIPT = 0x00000020;
-	public static final int TAG_SUPERSCRIPT = 0x00000040;
-	public static final int TAG_SPOILER = 0x00000080;
-	public static final int TAG_QUOTE = 0x00000100;
-	public static final int TAG_CODE = 0x00000200;
-	public static final int TAG_ASCII_ART = 0x00000400;
-	public static final int TAG_HEADING = 0x00000800;
+	@Public public static final int TAG_BOLD = 0x00000001;
+	@Public public static final int TAG_ITALIC = 0x00000002;
+	@Public public static final int TAG_UNDERLINE = 0x00000004;
+	@Public public static final int TAG_OVERLINE = 0x00000008;
+	@Public public static final int TAG_STRIKE = 0x00000010;
+	@Public public static final int TAG_SUBSCRIPT = 0x00000020;
+	@Public public static final int TAG_SUPERSCRIPT = 0x00000040;
+	@Public public static final int TAG_SPOILER = 0x00000080;
+	@Public public static final int TAG_QUOTE = 0x00000100;
+	@Public public static final int TAG_CODE = 0x00000200;
+	@Public public static final int TAG_ASCII_ART = 0x00000400;
+	@Public public static final int TAG_HEADING = 0x00000800;
 	
 	public static final int TAG_SPECIAL_UNUSED = 0x01000000;
 	public static final int TAG_SPECIAL_LINK = 0x01000001;
 	public static final int TAG_SPECIAL_COLOR = 0x01000002;
 	public static final int TAG_SPECIAL_LINK_SUFFIX = 0x01000003;
 	
+	@Extendable
 	public CommentEditor obtainCommentEditor(String boardName)
 	{
 		return null;
 	}
 	
+	@Extendable
 	public boolean isTagSupported(String boardName, int tag)
 	{
 		return false;
@@ -280,32 +286,38 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 		}
 	}
 	
-	public void addTag(String tagName, int tag)
+	@Public
+	public final void addTag(String tagName, int tag)
 	{
 		obtainTagItem(tagName, false, null, false, null, null).setTag(tag);
 	}
 	
-	public void addTag(String tagName, String cssClass, int tag)
+	@Public
+	public final void addTag(String tagName, String cssClass, int tag)
 	{
 		obtainTagItem(tagName, true, cssClass, false, null, null).setTag(tag);
 	}
 	
-	public void addTag(String tagName, String attribute, String value, int tag)
+	@Public
+	public final void addTag(String tagName, String attribute, String value, int tag)
 	{
 		obtainTagItem(tagName, false, null, true, attribute, value).setTag(tag);
 	}
 	
-	public void addColorable(String tagName)
+	@Public
+	public final void addColorable(String tagName)
 	{
 		obtainTagItem(tagName, false, null, false, null, null).setColorable(true);
 	}
 	
-	public void addColorable(String tagName, String cssClass)
+	@Public
+	public final void addColorable(String tagName, String cssClass)
 	{
 		obtainTagItem(tagName, true, cssClass, false, null, null).setColorable(true);
 	}
 	
-	public void addColorable(String tagName, String attribute, String value)
+	@Public
+	public final void addColorable(String tagName, String attribute, String value)
 	{
 		obtainTagItem(tagName, false, null, true, attribute, value).setColorable(true);
 	}
@@ -315,22 +327,25 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 	// dobrochan horochan infinite kurisach nulltirech ponychan taima
 	// Added: 14.05.16 12:12
 	@Deprecated
-	public void addBlock(String tagName, boolean spaced)
+	public final void addBlock(String tagName, boolean spaced)
 	{
 		addBlock(tagName, true, spaced);
 	}
 	
-	public void addBlock(String tagName, boolean block, boolean spaced)
+	@Public
+	public final void addBlock(String tagName, boolean block, boolean spaced)
 	{
 		obtainTagItem(tagName, false, null, false, null, null).setBlock(block, spaced);
 	}
 	
-	public void addBlock(String tagName, String cssClass, boolean block, boolean spaced)
+	@Public
+	public final void addBlock(String tagName, String cssClass, boolean block, boolean spaced)
 	{
 		obtainTagItem(tagName, true, cssClass, false, null, null).setBlock(block, spaced);
 	}
 	
-	public void addBlock(String tagName, String attribute, String value, boolean block, boolean spaced)
+	@Public
+	public final void addBlock(String tagName, String attribute, String value, boolean block, boolean spaced)
 	{
 		obtainTagItem(tagName, false, null, true, attribute, value).setBlock(block, spaced);
 	}
@@ -340,28 +355,31 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 	// archiverbt haruhichan kurisach synch
 	// Added: 14.05.16 12:12
 	@Deprecated
-	public void addPreformatted(String tagName)
+	public final void addPreformatted(String tagName)
 	{
 		addPreformatted(tagName, true);
 	}
 	
-	public void addPreformatted(String tagName, boolean preformatted)
+	@Public
+	public final void addPreformatted(String tagName, boolean preformatted)
 	{
 		obtainTagItem(tagName, false, null, false, null, null).setPreformatted(preformatted);
 	}
 	
-	public void addPreformatted(String tagName, String cssClass, boolean preformatted)
+	@Public
+	public final void addPreformatted(String tagName, String cssClass, boolean preformatted)
 	{
 		obtainTagItem(tagName, true, cssClass, false, null, null).setPreformatted(preformatted);
 	}
 	
-	public void addPreformatted(String tagName, String attribute, String value, boolean preformatted)
+	@Public
+	public final void addPreformatted(String tagName, String attribute, String value, boolean preformatted)
 	{
 		obtainTagItem(tagName, false, null, true, attribute, value).setPreformatted(preformatted);
 	}
 	
 	@Override
-	public Object onBeforeTagStart(HtmlParser parser, StringBuilder builder, String tagName,
+	public final Object onBeforeTagStart(HtmlParser parser, StringBuilder builder, String tagName,
 			Attributes attributes, HtmlParser.TagData tagData)
 	{
 		if (!tagName.equals("a"))
@@ -413,7 +431,7 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 	}
 	
 	@Override
-	public void onTagStart(HtmlParser parser, StringBuilder builder, String tagName,
+	public final void onTagStart(HtmlParser parser, StringBuilder builder, String tagName,
 			Attributes attributes, Object object)
 	{
 		ChanSpanProvider provider = parser.getSpanProvider();
@@ -456,7 +474,7 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 	}
 	
 	@Override
-	public void onTagEnd(HtmlParser parser, StringBuilder builder, String tagName)
+	public final void onTagEnd(HtmlParser parser, StringBuilder builder, String tagName)
 	{
 		ChanSpanProvider provider = parser.getSpanProvider();
 		StyledItem styledItem = null;
@@ -493,6 +511,7 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 		}
 	}
 	
+	@Extendable
 	public Pair<String, String> obtainPostLinkThreadPostNumbers(String uriString)
 	{
 		return null;
@@ -520,7 +539,7 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 	}
 	
 	@Override
-	public int onListLineStart(HtmlParser parser, StringBuilder builder, boolean ordered, int line)
+	public final int onListLineStart(HtmlParser parser, StringBuilder builder, boolean ordered, int line)
 	{
 		int length = builder.length();
 		if (parser.isParseMode())
@@ -548,20 +567,20 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 	}
 	
 	@Override
-	public void onCutBlock(HtmlParser parser, StringBuilder builder)
+	public final void onCutBlock(HtmlParser parser, StringBuilder builder)
 	{
 		ChanSpanProvider provider = parser.getSpanProvider();
 		provider.cut(builder.length());
 	}
 	
 	@Override
-	public void onStartEnd(HtmlParser parser, StringBuilder builder, boolean end)
+	public final void onStartEnd(HtmlParser parser, StringBuilder builder, boolean end)
 	{
 		
 	}
 	
 	@Override
-	public HtmlParser.SpanProvider initSpanProvider(HtmlParser parser)
+	public final HtmlParser.SpanProvider initSpanProvider(HtmlParser parser)
 	{
 		ChanSpanProvider provider = new ChanSpanProvider();
 		if (parser.isUnmarkMode())

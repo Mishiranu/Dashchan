@@ -16,10 +16,15 @@
 
 package chan.text;
 
+import chan.annotation.Extendable;
+import chan.annotation.Public;
+
+@Extendable
 public class ParseException extends Exception
 {
 	private static final long serialVersionUID = 1L;
 	
+	@Public
 	public ParseException()
 	{
 		super();
@@ -30,6 +35,7 @@ public class ParseException extends Exception
 		super(detailMessage);
 	}
 	
+	@Public
 	public ParseException(Throwable throwable)
 	{
 		super(throwable);

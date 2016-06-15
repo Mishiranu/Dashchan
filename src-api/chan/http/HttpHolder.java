@@ -26,7 +26,10 @@ import java.util.Map;
 
 import android.net.Uri;
 
-public class HttpHolder
+import chan.annotation.Public;
+
+@Public
+public final class HttpHolder
 {
 	Uri mRequestedUri;
 	Proxy mProxy;
@@ -71,6 +74,7 @@ public class HttpHolder
 		disconnect();
 	}
 	
+	@Public
 	public void disconnect()
 	{
 		mDisconnectRequested = true;
@@ -132,6 +136,7 @@ public class HttpHolder
 		}
 	}
 	
+	@Public
 	public HttpResponse read() throws HttpException
 	{
 		return read(null, null);
@@ -146,6 +151,7 @@ public class HttpHolder
 		return mResponse;
 	}
 	
+	@Public
 	public void checkResponseCode() throws HttpException
 	{
 		HttpClient.getInstance().checkResponseCode(this);
@@ -158,6 +164,7 @@ public class HttpHolder
 		return connection;
 	}
 	
+	@Public
 	public int getResponseCode()
 	{
 		HttpURLConnection connection = getConnectionForHeaders();
@@ -175,6 +182,7 @@ public class HttpHolder
 		return -1;
 	}
 	
+	@Public
 	public String getResponseMessage()
 	{
 		HttpURLConnection connection = getConnectionForHeaders();
@@ -192,17 +200,20 @@ public class HttpHolder
 		return null;
 	}
 	
+	@Public
 	public Uri getRedirectedUri()
 	{
 		return mRedirectedUri;
 	}
 	
+	@Public
 	public Map<String, List<String>> getHeaderFields()
 	{
 		HttpURLConnection connection = getConnectionForHeaders();
 		return connection != null ? connection.getHeaderFields() : null;
 	}
 	
+	@Public
 	public String getCookieValue(String name)
 	{
 		Map<String, List<String>> headers = getHeaderFields();
@@ -225,6 +236,7 @@ public class HttpHolder
 		return null;
 	}
 	
+	@Public
 	public HttpValidator getValidator()
 	{
 		return mValidator;

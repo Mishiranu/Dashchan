@@ -19,69 +19,74 @@ package chan.content;
 import java.io.Serializable;
 import java.util.LinkedHashSet;
 
+import chan.annotation.Public;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.util.FlagUtils;
 
-public class ApiException extends Exception
+@Public
+public final class ApiException extends Exception
 {
 	private static final long serialVersionUID = 1L;
 	
-	public static final int SEND_ERROR_NO_BOARD = 100;
-	public static final int SEND_ERROR_NO_THREAD = 101;
-	public static final int SEND_ERROR_NO_ACCESS = 102;
-	public static final int SEND_ERROR_CAPTCHA = 103;
-	public static final int SEND_ERROR_BANNED = 104;
-	public static final int SEND_ERROR_CLOSED = 105;
-	public static final int SEND_ERROR_TOO_FAST = 106;
-	public static final int SEND_ERROR_FIELD_TOO_LONG = 107;
-	public static final int SEND_ERROR_FILE_EXISTS = 108;
-	public static final int SEND_ERROR_FILE_NOT_SUPPORTED = 109;
-	public static final int SEND_ERROR_FILE_TOO_BIG = 110;
-	public static final int SEND_ERROR_FILES_TOO_MANY = 111;
-	public static final int SEND_ERROR_SPAM_LIST = 112;
-	public static final int SEND_ERROR_EMPTY_FILE = 113;
-	public static final int SEND_ERROR_EMPTY_SUBJECT = 114;
-	public static final int SEND_ERROR_EMPTY_COMMENT = 115;
-	public static final int SEND_ERROR_FILES_LIMIT = 116;
+	@Public public static final int SEND_ERROR_NO_BOARD = 100;
+	@Public public static final int SEND_ERROR_NO_THREAD = 101;
+	@Public public static final int SEND_ERROR_NO_ACCESS = 102;
+	@Public public static final int SEND_ERROR_CAPTCHA = 103;
+	@Public public static final int SEND_ERROR_BANNED = 104;
+	@Public public static final int SEND_ERROR_CLOSED = 105;
+	@Public public static final int SEND_ERROR_TOO_FAST = 106;
+	@Public public static final int SEND_ERROR_FIELD_TOO_LONG = 107;
+	@Public public static final int SEND_ERROR_FILE_EXISTS = 108;
+	@Public public static final int SEND_ERROR_FILE_NOT_SUPPORTED = 109;
+	@Public public static final int SEND_ERROR_FILE_TOO_BIG = 110;
+	@Public public static final int SEND_ERROR_FILES_TOO_MANY = 111;
+	@Public public static final int SEND_ERROR_SPAM_LIST = 112;
+	@Public public static final int SEND_ERROR_EMPTY_FILE = 113;
+	@Public public static final int SEND_ERROR_EMPTY_SUBJECT = 114;
+	@Public public static final int SEND_ERROR_EMPTY_COMMENT = 115;
+	@Public public static final int SEND_ERROR_FILES_LIMIT = 116;
 	
-	public static final int DELETE_ERROR_NO_ACCESS = 200;
-	public static final int DELETE_ERROR_PASSWORD = 201;
-	public static final int DELETE_ERROR_NOT_FOUND = 202;
-	public static final int DELETE_ERROR_TOO_NEW = 203;
-	public static final int DELETE_ERROR_TOO_OLD = 204;
-	public static final int DELETE_ERROR_TOO_OFTEN = 205;
+	@Public public static final int DELETE_ERROR_NO_ACCESS = 200;
+	@Public public static final int DELETE_ERROR_PASSWORD = 201;
+	@Public public static final int DELETE_ERROR_NOT_FOUND = 202;
+	@Public public static final int DELETE_ERROR_TOO_NEW = 203;
+	@Public public static final int DELETE_ERROR_TOO_OLD = 204;
+	@Public public static final int DELETE_ERROR_TOO_OFTEN = 205;
 	
-	public static final int REPORT_ERROR_NO_ACCESS = 300;
-	public static final int REPORT_ERROR_TOO_OFTEN = 301;
-	public static final int REPORT_ERROR_EMPTY_COMMENT = 302;
+	@Public public static final int REPORT_ERROR_NO_ACCESS = 300;
+	@Public public static final int REPORT_ERROR_TOO_OFTEN = 301;
+	@Public public static final int REPORT_ERROR_EMPTY_COMMENT = 302;
+	@Public public static final int ARCHIVE_ERROR_NO_ACCESS = 400;
+	@Public public static final int ARCHIVE_ERROR_TOO_OFTEN = 401;
 	
-	public static final int ARCHIVE_ERROR_NO_ACCESS = 400;
-	public static final int ARCHIVE_ERROR_TOO_OFTEN = 401;
-	
-	public static final int FLAG_KEEP_CAPTCHA = 0x00000001;
+	@Public public static final int FLAG_KEEP_CAPTCHA = 0x00000001;
 	
 	private final int mErrorType;
 	private final int mFlags;
 	private final Object mExtra;
 	
+	@Public
 	public ApiException(int errorType)
 	{
 		this(errorType, 0, null);
 	}
 	
+	@Public
 	public ApiException(int errorType, int flags)
 	{
 		this(errorType, flags, null);
 	}
 	
+	@Public
 	public ApiException(int errorType, Object extra)
 	{
 		this(errorType, 0, extra);
 	}
 	
+	@Public
 	public ApiException(int errorType, int flags, Object extra)
 	{
 		mErrorType = errorType;
@@ -89,11 +94,13 @@ public class ApiException extends Exception
 		mExtra = extra;
 	}
 	
+	@Public
 	public ApiException(String detailMessage)
 	{
 		this(detailMessage, 0);
 	}
 	
+	@Public
 	public ApiException(String detailMessage, int flags)
 	{
 		super(detailMessage);
@@ -286,7 +293,8 @@ public class ApiException extends Exception
 		return new ErrorItem(ErrorItem.TYPE_API, mErrorType);
 	}
 	
-	public static class BanExtra implements Serializable
+	@Public
+	public static final class BanExtra implements Serializable
 	{
 		private static final long serialVersionUID = 1L;
 		
@@ -295,53 +303,59 @@ public class ApiException extends Exception
 		public long startDate;
 		public long expireDate;
 		
+		@Public
+		public BanExtra()
+		{
+			
+		}
+		
+		@Public
 		public BanExtra setId(String id)
 		{
 			this.id = id;
 			return this;
 		}
 		
+		@Public
 		public BanExtra setMessage(String message)
 		{
 			this.message = message;
 			return this;
 		}
 		
+		@Public
 		public BanExtra setStartDate(long startDate)
 		{
 			this.startDate = startDate;
 			return this;
 		}
 		
+		@Public
 		public BanExtra setExpireDate(long expireDate)
 		{
 			this.expireDate = expireDate;
 			return this;
 		}
-		
-		@Override
-		public String toString()
-		{
-			return id + " " + message + " " + startDate + " " + expireDate;
-		}
 	}
 	
-	public static class WordsExtra implements Serializable
+	@Public
+	public static final class WordsExtra implements Serializable
 	{
 		private static final long serialVersionUID = 1L;
 		
 		public final LinkedHashSet<String> words = new LinkedHashSet<>();
 		
+		@Public
+		public WordsExtra()
+		{
+			
+		}
+		
+		@Public
 		public WordsExtra addWord(String word)
 		{
 			words.add(word);
 			return this;
-		}
-		
-		@Override
-		public String toString()
-		{
-			return words.toString();
 		}
 	}
 }
