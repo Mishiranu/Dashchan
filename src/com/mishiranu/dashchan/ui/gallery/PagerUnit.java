@@ -338,21 +338,14 @@ public class PagerUnit implements PagerInstance.Callback
 		{
 			showError(holder, mGalleryInstance.context.getString(R.string.message_cache_unavailable));
 		}
-		else if (!reload && cachedFile.exists())
+		else if (isImage)
 		{
-			if (isImage) mImageUnit.applyImageFromFile(cachedFile); else if (isOpenableVideo)
-			{
-				mImageUnit.interrupt(true);
-				mVideoUnit.applyVideo(cachedFile, true);
-			}
+			mImageUnit.applyImage(uri, cachedFile, reload);
 		}
-		else
+		else if (isVideo)
 		{
-			if (isImage) mImageUnit.applyImageLoad(uri, cachedFile); else if (isOpenableVideo)
-			{
-				mImageUnit.interrupt(true);
-				mVideoUnit.applyVideo(cachedFile, false);
-			}
+			mImageUnit.interrupt(true);
+			mVideoUnit.applyVideo(uri, cachedFile, reload);
 		}
 	}
 	

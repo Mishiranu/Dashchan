@@ -37,6 +37,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.view.Gravity;
 import android.view.View;
@@ -182,7 +183,7 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener
 		if (holder != null) holder.surfaceParent.removeAllViews();
 	}
 	
-	public void applyVideo(File file, boolean fromFile)
+	public void applyVideo(Uri uri, File file, boolean reload)
 	{
 		mWasPlaying = true;
 		mFinishedPlayback = false;
@@ -191,7 +192,7 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener
 		workPlayer.setListener(mPlayerListener);
 		mPlayer = workPlayer;
 		boolean loadedFromFile = false;
-		if (fromFile)
+		if (!reload && file.exists())
 		{
 			try
 			{
@@ -258,9 +259,8 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener
 					}
 				}
 			}.executeOnExecutor(ConcurrentUtils.SEPARATE_EXECUTOR);
-			mReadVideoTask = new ReadVideoTask(mInstance.galleryInstance.chanName,
-					holder.galleryItem.getFileUri(mInstance.galleryInstance.locator),
-					inputStream, new ReadVideoCallback(workPlayer, holder));
+			mReadVideoTask = new ReadVideoTask(mInstance.galleryInstance.chanName, uri, inputStream,
+					new ReadVideoCallback(workPlayer, holder));
 			mReadVideoTask.executeOnExecutor(ReadVideoTask.THREAD_POOL_EXECUTOR);
 		}
 	}
