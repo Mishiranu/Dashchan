@@ -50,6 +50,9 @@ public class C
 		EXTENSION_TRANSFORMATION.put("apng", "png");
 	}
 	
+	public static final String UPDATE_SOURCE_URI_STRING = "//raw.githubusercontent.com/Mishiranu/Dashchan/master/"
+			+ "update/data.json";
+	
 	public static final String DEFAULT_DOWNLOAD_PATH = "/Download/Dashchan/";
 	
 	public static final String USER_AGENT = "Mozilla/5.0 (Android 5.1; Mobile; rv:40.0) Gecko/20100101 Firefox/40.0";
