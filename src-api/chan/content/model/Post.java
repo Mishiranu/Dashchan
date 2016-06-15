@@ -19,10 +19,12 @@ package chan.content.model;
 import java.io.Serializable;
 import java.util.Collection;
 
+import chan.annotation.Public;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.util.FlagUtils;
 
+@Public
 public final class Post implements Serializable, Comparable<Post>
 {
 	private static final long serialVersionUID = 1L;
@@ -65,11 +67,19 @@ public final class Post implements Serializable, Comparable<Post>
 	private Attachment[] mAttachments;
 	private Icon[] mIcons;
 	
+	@Public
+	public Post()
+	{
+		
+	}
+	
+	@Public
 	public String getThreadNumber()
 	{
 		return mThreadNumber;
 	}
 	
+	@Public
 	public Post setThreadNumber(String threadNumber)
 	{
 		mThreadNumber = threadNumber;
@@ -86,22 +96,26 @@ public final class Post implements Serializable, Comparable<Post>
 		return parentPostNumber;
 	}
 	
+	@Public
 	public String getParentPostNumber()
 	{
 		return mParentPostNumber;
 	}
 	
+	@Public
 	public Post setParentPostNumber(String parentPostNumber)
 	{
 		mParentPostNumber = parentPostNumber;
 		return this;
 	}
 	
+	@Public
 	public String getPostNumber()
 	{
 		return mPostNumber;
 	}
 	
+	@Public
 	public Post setPostNumber(String postNumber)
 	{
 		mPostNumber = postNumber;
@@ -120,33 +134,39 @@ public final class Post implements Serializable, Comparable<Post>
 		return threadNumber != null ? threadNumber : getOriginalPostNumber();
 	}
 	
+	@Public
 	public long getTimestamp()
 	{
 		return mTimestamp;
 	}
 	
+	@Public
 	public Post setTimestamp(long timestamp)
 	{
 		mTimestamp = timestamp;
 		return this;
 	}
 	
+	@Public
 	public String getSubject()
 	{
 		return mSubject;
 	}
 	
+	@Public
 	public Post setSubject(String subject)
 	{
 		mSubject = subject;
 		return this;
 	}
 	
+	@Public
 	public String getComment()
 	{
 		return mComment;
 	}
 	
+	@Public
 	public Post setComment(String comment)
 	{
 		mComment = comment;
@@ -170,207 +190,245 @@ public final class Post implements Serializable, Comparable<Post>
 		return editedComment != null ? editedComment : getComment();
 	}
 	
+	@Public
 	public String getCommentMarkup()
 	{
 		return mCommentMarkup;
 	}
 	
+	@Public
 	public Post setCommentMarkup(String commentMarkup)
 	{
 		mCommentMarkup = commentMarkup;
 		return this;
 	}
 	
+	@Public
 	public String getName()
 	{
 		return mName;
 	}
 	
+	@Public
 	public Post setName(String name)
 	{
 		mName = name;
 		return this;
 	}
 	
+	@Public
 	public String getIdentifier()
 	{
 		return mIdentifier;
 	}
 	
+	@Public
 	public Post setIdentifier(String identifier)
 	{
 		mIdentifier = identifier;
 		return this;
 	}
 	
+	@Public
 	public String getTripcode()
 	{
 		return mTripcode;
 	}
 	
+	@Public
 	public Post setTripcode(String tripcode)
 	{
 		mTripcode = tripcode;
 		return this;
 	}
 	
+	@Public
 	public String getCapcode()
 	{
 		return mCapcode;
 	}
 	
+	@Public
 	public Post setCapcode(String capcode)
 	{
 		mCapcode = capcode;
 		return this;
 	}
 	
+	@Public
 	public String getEmail()
 	{
 		return mEmail;
 	}
 	
+	@Public
 	public Post setEmail(String email)
 	{
 		mEmail = email;
 		return this;
 	}
 	
+	@Public
 	public int getAttachmentsCount()
 	{
 		return mAttachments != null ? mAttachments.length : 0;
 	}
 	
+	@Public
 	public Attachment getAttachmentAt(int index)
 	{
 		return mAttachments[index];
 	}
 	
+	@Public
 	public Post setAttachments(Attachment... attachments)
 	{
 		mAttachments = attachments;
 		return this;
 	}
 	
+	@Public
 	public Post setAttachments(Collection<? extends Attachment> attachments)
 	{
 		return setAttachments(attachments != null ? attachments.toArray(new Attachment[attachments.size()]) : null);
 	}
 	
+	@Public
 	public int getIconsCount()
 	{
 		return mIcons != null ? mIcons.length : 0;
 	}
 	
+	@Public
 	public Icon getIconAt(int index)
 	{
 		return mIcons[index];
 	}
 	
+	@Public
 	public Post setIcons(Icon... icons)
 	{
 		mIcons = icons;
 		return this;
 	}
 	
+	@Public
 	public Post setIcons(Collection<? extends Icon> icons)
 	{
 		return setIcons(icons != null ? icons.toArray(new Icon[icons.size()]) : null);
 	}
 	
+	@Public
 	public boolean isSage()
 	{
 		return FlagUtils.get(mFlags, FLAG_SAGE);
 	}
 	
+	@Public
 	public Post setSage(boolean sage)
 	{
 		mFlags = FlagUtils.set(mFlags, FLAG_SAGE, sage);
 		return this;
 	}
 	
+	@Public
 	public boolean isSticky()
 	{
 		return FlagUtils.get(mFlags, FLAG_STICKY);
 	}
 	
+	@Public
 	public Post setSticky(boolean sticky)
 	{
 		mFlags = FlagUtils.set(mFlags, FLAG_STICKY, sticky);
 		return this;
 	}
 	
+	@Public
 	public boolean isClosed()
 	{
 		return FlagUtils.get(mFlags, FLAG_CLOSED);
 	}
 	
+	@Public
 	public Post setClosed(boolean closed)
 	{
 		mFlags = FlagUtils.set(mFlags, FLAG_CLOSED, closed);
 		return this;
 	}
 	
+	@Public
 	public boolean isArchived()
 	{
 		return FlagUtils.get(mFlags, FLAG_ARCHIVED);
 	}
 	
+	@Public
 	public Post setArchived(boolean archived)
 	{
 		mFlags = FlagUtils.set(mFlags, FLAG_ARCHIVED, archived);
 		return this;
 	}
 	
+	@Public
 	public boolean isCyclical()
 	{
 		return FlagUtils.get(mFlags, FLAG_CYCLICAL);
 	}
 	
+	@Public
 	public Post setCyclical(boolean cyclical)
 	{
 		mFlags = FlagUtils.set(mFlags, FLAG_CYCLICAL, cyclical);
 		return this;
 	}
 	
+	@Public
 	public boolean isPosterWarned()
 	{
 		return FlagUtils.get(mFlags, FLAG_POSTER_WARNED);
 	}
 	
+	@Public
 	public Post setPosterWarned(boolean posterWarned)
 	{
 		mFlags = FlagUtils.set(mFlags, FLAG_POSTER_WARNED, posterWarned);
 		return this;
 	}
 	
+	@Public
 	public boolean isPosterBanned()
 	{
 		return FlagUtils.get(mFlags, FLAG_POSTER_BANNED);
 	}
 	
+	@Public
 	public Post setPosterBanned(boolean posterBanned)
 	{
 		mFlags = FlagUtils.set(mFlags, FLAG_POSTER_BANNED, posterBanned);
 		return this;
 	}
 	
+	@Public
 	public boolean isOriginalPoster()
 	{
 		return FlagUtils.get(mFlags, FLAG_ORIGINAL_POSTER);
 	}
 	
+	@Public
 	public Post setOriginalPoster(boolean originalPoster)
 	{
 		mFlags = FlagUtils.set(mFlags, FLAG_ORIGINAL_POSTER, originalPoster);
 		return this;
 	}
 	
+	@Public
 	public boolean isDefaultName()
 	{
 		return FlagUtils.get(mFlags, FLAG_DEFAULT_NAME);
 	}
 	
+	@Public
 	public Post setDefaultName(boolean defaultName)
 	{
 		mFlags = FlagUtils.set(mFlags, FLAG_DEFAULT_NAME, defaultName);
@@ -466,6 +524,7 @@ public final class Post implements Serializable, Comparable<Post>
 		return mNumbersPair;
 	}
 	
+	@Public
 	@Override
 	public int compareTo(Post another)
 	{

@@ -24,11 +24,14 @@ import java.util.regex.Pattern;
 
 import android.net.Uri;
 
+import chan.annotation.Extendable;
+import chan.annotation.Public;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.preference.Preferences;
 
+@Extendable
 public class ChanLocator implements ChanManager.Linked
 {
 	private final String mChanName;
@@ -40,13 +43,20 @@ public class ChanLocator implements ChanManager.Linked
 	private final LinkedHashMap<String, Integer> mHosts = new LinkedHashMap<>();
 	private HttpsMode mHttpsMode = HttpsMode.NO_HTTPS;
 	
-	public static enum HttpsMode {NO_HTTPS, HTTPS_ONLY, CONFIGURABLE};
-	
-	public static class NavigationData
+	@Public
+	public static enum HttpsMode
 	{
-		public static final int TARGET_THREADS = 0;
-		public static final int TARGET_POSTS = 1;
-		public static final int TARGET_SEARCH = 2;
+		@Public NO_HTTPS,
+		@Public HTTPS_ONLY,
+		@Public CONFIGURABLE
+	}
+	
+	@Public
+	public static final class NavigationData
+	{
+		@Public public static final int TARGET_THREADS = 0;
+		@Public public static final int TARGET_POSTS = 1;
+		@Public public static final int TARGET_SEARCH = 2;
 		
 		public final int target;
 		public final String boardName;
@@ -54,6 +64,7 @@ public class ChanLocator implements ChanManager.Linked
 		public final String postNumber;
 		public final String searchQuery;
 		
+		@Public
 		public NavigationData(int target, String boardName, String threadNumber, String postNumber, String searchQuery)
 		{
 			this.target = target;
@@ -68,6 +79,7 @@ public class ChanLocator implements ChanManager.Linked
 		}
 	}
 	
+	@Public
 	public ChanLocator()
 	{
 		this(false);
@@ -98,17 +110,16 @@ public class ChanLocator implements ChanManager.Linked
 		return mChanName;
 	}
 	
-	@SuppressWarnings("unchecked")
 	public static <T extends ChanLocator> T get(String chanName)
 	{
-		return (T) ChanManager.getInstance().getLocator(chanName, true);
+		return ChanManager.getInstance().getLocator(chanName, true);
 	}
 	
-	@SuppressWarnings("unchecked")
+	@Public
 	public static <T extends ChanLocator> T get(Object object)
 	{
 		ChanManager manager = ChanManager.getInstance();
-		return (T) manager.getLocator(manager.getLinkedChanName(object), false);
+		return ChanManager.getInstance().getLocator(manager.getLinkedChanName(object), false);
 	}
 	
 	public static ChanLocator getDefault()
@@ -116,21 +127,25 @@ public class ChanLocator implements ChanManager.Linked
 		return ChanManager.getInstance().getLocator(null, true);
 	}
 	
+	@Public
 	public final void addChanHost(String host)
 	{
 		mHosts.put(host, HOST_TYPE_CONFIGURABLE);
 	}
 	
+	@Public
 	public final void addConvertableChanHost(String host)
 	{
 		mHosts.put(host, HOST_TYPE_CONVERTABLE);
 	}
 	
+	@Public
 	public final void addSpecialChanHost(String host)
 	{
 		mHosts.put(host, HOST_TYPE_SPECIAL);
 	}
 	
+	@Public
 	public final void setHttpsMode(HttpsMode httpsMode)
 	{
 		if (httpsMode == null) throw new NullPointerException();
@@ -142,6 +157,7 @@ public class ChanLocator implements ChanManager.Linked
 		return mHttpsMode == HttpsMode.CONFIGURABLE;
 	}
 	
+	@Public
 	public final boolean isUseHttps()
 	{
 		HttpsMode httpsMode = mHttpsMode;
@@ -167,13 +183,13 @@ public class ChanLocator implements ChanManager.Linked
 		else return new ArrayList<>(mHosts.keySet());
 	}
 	
-	// Can be overridden
-	public boolean isChanHost(String host)
+	public final boolean isChanHost(String host)
 	{
 		if (StringUtils.isEmpty(host)) return false;
 		return mHosts.containsKey(host) || host.equals(Preferences.getDomainUnhandled(getChanName()));
 	}
 	
+	@Public
 	public final boolean isChanHostOrRelative(Uri uri)
 	{
 		if (uri != null)
@@ -185,7 +201,7 @@ public class ChanLocator implements ChanManager.Linked
 		return false;
 	}
 	
-	public boolean isConvertableChanHost(String host)
+	public final boolean isConvertableChanHost(String host)
 	{
 		if (StringUtils.isEmpty(host)) return false;
 		if (host.equals(Preferences.getDomainUnhandled(getChanName()))) return true;
@@ -220,19 +236,19 @@ public class ChanLocator implements ChanManager.Linked
 		return uri;
 	}
 	
-	// Can be overridden
+	@Extendable
 	public boolean isBoardUri(Uri uri)
 	{
 		throw new UnsupportedOperationException();
 	}
 	
-	// Can be overridden
+	@Extendable
 	public boolean isThreadUri(Uri uri)
 	{
 		throw new UnsupportedOperationException();
 	}
 	
-	// Can be overridden
+	@Extendable
 	public boolean isAttachmentUri(Uri uri)
 	{
 		throw new UnsupportedOperationException();
@@ -253,43 +269,43 @@ public class ChanLocator implements ChanManager.Linked
 		return uri != null && isVideoExtension(uri.getPath()) && isAttachmentUri(uri);
 	}
 	
-	// Can be overridden
+	@Extendable
 	public String getBoardName(Uri uri)
 	{
 		throw new UnsupportedOperationException();
 	}
 	
-	// Can be overridden
+	@Extendable
 	public String getThreadNumber(Uri uri)
 	{
 		throw new UnsupportedOperationException();
 	}
 	
-	// Can be overridden
+	@Extendable
 	public String getPostNumber(Uri uri)
 	{
 		throw new UnsupportedOperationException();
 	}
 	
-	// Can be overridden
+	@Extendable
 	public Uri createBoardUri(String boardName, int pageNumber)
 	{
 		throw new UnsupportedOperationException();
 	}
 	
-	// Can be overridden
+	@Extendable
 	public Uri createThreadUri(String boardName, String threadNumber)
 	{
 		throw new UnsupportedOperationException();
 	}
 	
-	// Can be overridden
+	@Extendable
 	public Uri createPostUri(String boardName, String threadNumber, String postNumber)
 	{
 		throw new UnsupportedOperationException();
 	}
 	
-	// Can be overridden
+	@Extendable
 	public String createAttachmentForcedName(Uri fileUri)
 	{
 		return null;
@@ -323,6 +339,7 @@ public class ChanLocator implements ChanManager.Linked
 		return uri;
 	}
 	
+	@Extendable
 	public NavigationData handleUriClickSpecial(Uri uri)
 	{
 		return null;
@@ -334,21 +351,25 @@ public class ChanLocator implements ChanManager.Linked
 		return "http".equals(scheme) || "https".equals(scheme);
 	}
 	
+	@Public
 	public final boolean isImageExtension(String path)
 	{
 		return C.IMAGE_EXTENSIONS.contains(getFileExtension(path));
 	}
 	
+	@Public
 	public final boolean isAudioExtension(String path)
 	{
 		return C.AUDIO_EXTENSIONS.contains(getFileExtension(path));
 	}
 	
+	@Public
 	public final boolean isVideoExtension(String path)
 	{
 		return C.VIDEO_EXTENSIONS.contains(getFileExtension(path));
 	}
 	
+	@Public
 	public final String getFileExtension(String path)
 	{
 		return StringUtils.getFileExtension(path);
@@ -403,17 +424,20 @@ public class ChanLocator implements ChanManager.Linked
 	{
 		return getPreferredScheme(isUseHttps());
 	}
-
+	
+	@Public
 	public final Uri buildPath(String... segments)
 	{
 		return buildPathWithHost(getPreferredHost(), segments);
 	}
-
+	
+	@Public
 	public final Uri buildPathWithHost(String host, String... segments)
 	{
 		return buildPathWithSchemeHost(isUseHttps(), host, segments);
 	}
 	
+	@Public
 	public final Uri buildPathWithSchemeHost(boolean useHttps, String host, String... segments)
 	{
 		Uri.Builder builder = new Uri.Builder().scheme(getPreferredScheme(useHttps)).authority(host);
@@ -425,16 +449,19 @@ public class ChanLocator implements ChanManager.Linked
 		return builder.build();
 	}
 	
+	@Public
 	public final Uri buildQuery(String path, String... alternation)
 	{
 		return buildQueryWithHost(getPreferredHost(), path, alternation);
 	}
 	
+	@Public
 	public final Uri buildQueryWithHost(String host, String path, String... alternation)
 	{
 		return buildQueryWithSchemeHost(isUseHttps(), host, path, alternation);
 	}
 	
+	@Public
 	public final Uri buildQueryWithSchemeHost(boolean useHttps, String host, String path, String... alternation)
 	{
 		Uri.Builder builder = new Uri.Builder().scheme(getPreferredScheme(useHttps)).authority(host);
@@ -551,6 +578,7 @@ public class ChanLocator implements ChanManager.Linked
 		return null;
 	}
 	
+	@Public
 	public final boolean isPathMatches(Uri uri, Pattern pattern)
 	{
 		if (uri != null)
@@ -561,6 +589,7 @@ public class ChanLocator implements ChanManager.Linked
 		return false;
 	}
 	
+	@Public
 	public final String getGroupValue(String from, Pattern pattern, int groupIndex)
 	{
 		if (from == null) return null;

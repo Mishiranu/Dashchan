@@ -25,6 +25,9 @@ import org.json.JSONObject;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import chan.annotation.Public;
+
+@Public
 public class HttpResponse
 {
 	private final byte[] mBytes;
@@ -32,18 +35,21 @@ public class HttpResponse
 	
 	private String mCharsetName;
 	
+	@Public
 	public HttpResponse(byte[] bytes)
 	{
 		mBytes = bytes;
 		mCharsetName = "UTF-8";
 	}
 	
+	@Public
 	public void setEncoding(String charsetName)
 	{
 		mData = null;
 		mCharsetName = charsetName;
 	}
 	
+	@Public
 	public byte[] getBytes()
 	{
 		return mBytes;
@@ -64,17 +70,20 @@ public class HttpResponse
 		}
 	}
 	
+	@Public
 	public String getString()
 	{
 		obtainString();
 		return mData;
 	}
 	
+	@Public
 	public Bitmap getBitmap()
 	{
 		return BitmapFactory.decodeByteArray(mBytes, 0, mBytes.length);
 	}
 	
+	@Public
 	public JSONObject getJsonObject()
 	{
 		obtainString();
@@ -92,6 +101,7 @@ public class HttpResponse
 		return null;
 	}
 	
+	@Public
 	public JSONArray getJsonArray()
 	{
 		obtainString();

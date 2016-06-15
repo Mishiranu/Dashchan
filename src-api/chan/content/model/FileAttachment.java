@@ -20,9 +20,11 @@ import java.util.Locale;
 
 import android.net.Uri;
 
+import chan.annotation.Public;
 import chan.content.ChanLocator;
 import chan.util.StringUtils;
 
+@Public
 public final class FileAttachment implements Attachment
 {
 	private static final long serialVersionUID = 1L;
@@ -36,6 +38,12 @@ public final class FileAttachment implements Attachment
 	private int mHeight;
 	
 	private boolean mSpoiler;
+	
+	@Public
+	public FileAttachment()
+	{
+		
+	}
 	
 	private static String fixRelativeUriString(String uriString)
 	{
@@ -58,11 +66,13 @@ public final class FileAttachment implements Attachment
 		return mFileUriString != null ? Uri.parse(fixRelativeUriString(mFileUriString)) : null;
 	}
 	
+	@Public
 	public Uri getFileUri(ChanLocator locator)
 	{
 		return locator.convert(getRelativeFileUri());
 	}
 	
+	@Public
 	public FileAttachment setFileUri(ChanLocator locator, Uri fileUri)
 	{
 		mFileUriString = fileUri != null ? locator.makeRelative(fileUri).toString() : null;
@@ -74,33 +84,37 @@ public final class FileAttachment implements Attachment
 		return mThumbnailUriString != null ? Uri.parse(fixRelativeUriString(mThumbnailUriString)) : null;
 	}
 	
+	@Public
 	public Uri getThumbnailUri(ChanLocator locator)
 	{
 		return locator.convert(getRelativeThumbnailUri());
 	}
 	
+	@Public
 	public FileAttachment setThumbnailUri(ChanLocator locator, Uri thumbnailUri)
 	{
 		mThumbnailUriString = thumbnailUri != null ? locator.makeRelative(thumbnailUri).toString() : null;
 		return this;
 	}
 	
+	@Public
 	public String getOriginalName()
 	{
 		return mOriginalName;
 	}
 	
+	@Public
 	public FileAttachment setOriginalName(String originalName)
 	{
 		mOriginalName = originalName;
 		return this;
 	}
-
+	
 	public String getNormalizedOriginalName(String fileName)
 	{
 		return getNormalizedOriginalName(fileName, StringUtils.getFileExtension(fileName));
 	}
-
+	
 	public String getNormalizedOriginalName(String fileName, String extension)
 	{
 		String originalName = getOriginalName();
@@ -114,44 +128,52 @@ public final class FileAttachment implements Attachment
 		return null;
 	}
 	
+	@Public
 	public int getSize()
 	{
 		return mSize;
 	}
 	
+	@Public
 	public FileAttachment setSize(int size)
 	{
 		mSize = size;
 		return this;
 	}
 	
+	@Public
 	public int getWidth()
 	{
 		return mWidth;
 	}
 	
+	@Public
 	public FileAttachment setWidth(int width)
 	{
 		mWidth = width;
 		return this;
 	}
 	
+	@Public
 	public int getHeight()
 	{
 		return mHeight;
 	}
 	
+	@Public
 	public FileAttachment setHeight(int height)
 	{
 		mHeight = height;
 		return this;
 	}
 	
+	@Public
 	public boolean isSpoiler()
 	{
 		return mSpoiler;
 	}
 	
+	@Public
 	public FileAttachment setSpoiler(boolean spoiler)
 	{
 		mSpoiler = spoiler;

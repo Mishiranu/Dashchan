@@ -26,8 +26,10 @@ import java.util.LinkedHashMap;
 import android.net.Uri;
 import android.util.Pair;
 
+import chan.annotation.Public;
 import chan.http.HttpValidator;
 
+@Public
 public final class Posts implements Serializable
 {
 	private static final long serialVersionUID = 1L;
@@ -46,17 +48,20 @@ public final class Posts implements Serializable
 	private boolean mAutoRefreshEnabled;
 	private int mAutoRefreshInterval;
 	
+	@Public
 	public Post[] getPosts()
 	{
 		return mPosts;
 	}
 	
+	@Public
 	public Posts setPosts(Post... posts)
 	{
 		mPosts = posts;
 		return this;
 	}
 	
+	@Public
 	public Posts setPosts(Collection<? extends Post> posts)
 	{
 		return setPosts(posts != null ? posts.toArray(new Post[posts.size()]) : null);
@@ -67,33 +72,39 @@ public final class Posts implements Serializable
 		return mPosts[0].getThreadNumberOrOriginalPostNumber();
 	}
 	
+	@Public
 	public Uri getArchivedThreadUri()
 	{
 		return mArchivedThreadUriString != null ? Uri.parse(mArchivedThreadUriString) : null;
 	}
 	
+	@Public
 	public Posts setArchivedThreadUri(Uri uri)
 	{
 		mArchivedThreadUriString = uri != null ? uri.toString() : null;
 		return this;
 	}
 	
+	@Public
 	public int getUniquePosters()
 	{
 		return mUniquePosters;
 	}
 	
+	@Public
 	public Posts setUniquePosters(int uniquePosters)
 	{
 		if (uniquePosters > 0) mUniquePosters = uniquePosters;
 		return this;
 	}
 	
+	@Public
 	public int getPostsCount()
 	{
 		return mPostsCount;
 	}
 	
+	@Public
 	public Posts addPostsCount(int postsCount)
 	{
 		if (postsCount > 0)
@@ -104,11 +115,13 @@ public final class Posts implements Serializable
 		return this;
 	}
 	
+	@Public
 	public int getFilesCount()
 	{
 		return mFilesCount;
 	}
 	
+	@Public
 	public Posts addFilesCount(int filesCount)
 	{
 		if (filesCount > 0)
@@ -119,11 +132,13 @@ public final class Posts implements Serializable
 		return this;
 	}
 	
+	@Public
 	public int getPostsWithFilesCount()
 	{
 		return mPostsWithFilesCount;
 	}
 	
+	@Public
 	public Posts addPostsWithFilesCount(int postsWithFilesCount)
 	{
 		if (postsWithFilesCount > 0)
@@ -283,12 +298,6 @@ public final class Posts implements Serializable
 			{
 				if (posts != null && posts.length() > 0)
 				{
-					synchronized (Posts.class)
-					{
-						lastDebugPosts1 = mPosts;
-						lastDebugPosts2 = posts.mPosts;
-						lastDebugPartial = partial;
-					}
 					int resultSize = 0;
 					int i = 0, j = 0;
 					int ic = mPosts.length, jc = posts.mPosts.length;
@@ -404,22 +413,21 @@ public final class Posts implements Serializable
 		}
 	}
 	
+	@Public
 	public Posts()
 	{
 		
 	}
 	
+	@Public
 	public Posts(Post... posts)
 	{
 		setPosts(posts);
 	}
 	
+	@Public
 	public Posts(Collection<? extends Post> posts)
 	{
 		setPosts(posts);
 	}
-	
-	public static Post[] lastDebugPosts1;
-	public static Post[] lastDebugPosts2;
-	public static boolean lastDebugPartial;
 }

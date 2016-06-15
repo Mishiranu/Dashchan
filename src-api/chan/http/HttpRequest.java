@@ -23,8 +23,12 @@ import java.util.ArrayList;
 import android.net.Uri;
 import android.util.Pair;
 
-public class HttpRequest
+import chan.annotation.Public;
+
+@Public
+public final class HttpRequest
 {
+	@Public
 	public static interface Preset
 	{
 		
@@ -56,14 +60,19 @@ public class HttpRequest
 		public void onOutputProgressChange(long progress, long progressMax);
 	}
 	
+	@Public
 	public static interface RedirectHandler
 	{
+		@Public
 		public static enum Action
 		{
-			CANCEL, GET, RETRANSMIT;
+			@Public CANCEL,
+			@Public GET,
+			@Public RETRANSMIT;
 			
 			private Uri mRedirectedUri;
-		
+			
+			@Public
 			public Action setRedirectedUri(Uri redirectedUri)
 			{
 				mRedirectedUri = redirectedUri;
@@ -88,9 +97,11 @@ public class HttpRequest
 			}
 		}
 		
+		@Public
 		public Action onRedirectReached(int responseCode, Uri requestedUri, Uri redirectedUri, HttpHolder holder)
 				throws HttpException;
 		
+		@Public
 		public static final RedirectHandler NONE = new RedirectHandler()
 		{
 			@Override
@@ -100,6 +111,7 @@ public class HttpRequest
 			}
 		};
 		
+		@Public
 		public static final RedirectHandler BROWSER = new RedirectHandler()
 		{
 			@Override
@@ -109,6 +121,7 @@ public class HttpRequest
 			}
 		};
 		
+		@Public
 		public static final RedirectHandler STRICT = new RedirectHandler()
 		{
 			@Override
@@ -161,6 +174,7 @@ public class HttpRequest
 		mHolder = holder;
 	}
 	
+	@Public
 	public HttpRequest(Uri uri, HttpHolder holder, Preset preset)
 	{
 		this(uri, holder);
@@ -189,37 +203,44 @@ public class HttpRequest
 		return this;
 	}
 	
+	@Public
 	public HttpRequest setGetMethod()
 	{
 		return setMethod(REQUEST_METHOD_GET, null);
 	}
 	
+	@Public
 	public HttpRequest setHeadMethod()
 	{
 		return setMethod(REQUEST_METHOD_HEAD, null);
 	}
 	
+	@Public
 	public HttpRequest setPostMethod(RequestEntity entity)
 	{
 		return setMethod(REQUEST_METHOD_POST, entity);
 	}
 	
+	@Public
 	public HttpRequest setPutMethod(RequestEntity entity)
 	{
 		return setMethod(REQUEST_METHOD_PUT, entity);
 	}
 	
+	@Public
 	public HttpRequest setDeleteMethod(RequestEntity entity)
 	{
 		return setMethod(REQUEST_METHOD_DELETE, entity);
 	}
 	
+	@Public
 	public HttpRequest setSuccessOnly(boolean successOnly)
 	{
 		mSuccessOnly = successOnly;
 		return this;
 	}
 	
+	@Public
 	public HttpRequest setRedirectHandler(RedirectHandler redirectHandler)
 	{
 		if (redirectHandler == null) throw new NullPointerException();
@@ -227,18 +248,21 @@ public class HttpRequest
 		return this;
 	}
 	
+	@Public
 	public HttpRequest setValidator(HttpValidator validator)
 	{
 		mValidator = validator;
 		return this;
 	}
 	
+	@Public
 	public HttpRequest setKeepAlive(boolean keepAlive)
 	{
 		mKeepAlive = keepAlive;
 		return this;
 	}
 	
+	@Public
 	public HttpRequest setTimeouts(int connectTimeout, int readTimeout)
 	{
 		if (connectTimeout >= 0) mConnectTimeout = connectTimeout;
@@ -246,6 +270,7 @@ public class HttpRequest
 		return this;
 	}
 	
+	@Public
 	public HttpRequest setDelay(int delay)
 	{
 		mDelay = delay;
@@ -280,17 +305,20 @@ public class HttpRequest
 		return this;
 	}
 	
+	@Public
 	public HttpRequest addHeader(String name, String value)
 	{
 		return addHeader(new Pair<>(name, value));
 	}
 	
+	@Public
 	public HttpRequest clearHeaders()
 	{
 		mHeaders = null;
 		return this;
 	}
 	
+	@Public
 	public HttpRequest addCookie(String name, String value)
 	{
 		if (value != null)
@@ -301,6 +329,7 @@ public class HttpRequest
 		return this;
 	}
 	
+	@Public
 	public HttpRequest addCookie(String cookie)
 	{
 		if (cookie != null)
@@ -311,6 +340,7 @@ public class HttpRequest
 		return this;
 	}
 	
+	@Public
 	public HttpRequest addCookie(CookieBuilder builder)
 	{
 		if (builder != null)
@@ -321,6 +351,7 @@ public class HttpRequest
 		return this;
 	}
 	
+	@Public
 	public HttpRequest clearCookies()
 	{
 		mCookieBuilder = null;
@@ -333,6 +364,7 @@ public class HttpRequest
 		return this;
 	}
 	
+	@Public
 	public HttpRequest copy()
 	{
 		HttpRequest request = new HttpRequest(mUri, mHolder);
@@ -352,6 +384,7 @@ public class HttpRequest
 		return request;
 	}
 	
+	@Public
 	public HttpHolder execute() throws HttpException
 	{
 		try
@@ -366,6 +399,7 @@ public class HttpRequest
 		}
 	}
 	
+	@Public
 	public HttpResponse read() throws HttpException
 	{
 		HttpHolder holder = execute();

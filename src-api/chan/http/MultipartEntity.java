@@ -26,8 +26,12 @@ import java.util.Random;
 
 import android.webkit.MimeTypeMap;
 
+import chan.annotation.Extendable;
+import chan.annotation.Public;
+
 import com.mishiranu.dashchan.content.model.FileHolder;
 
+@Extendable
 public class MultipartEntity implements RequestEntity
 {
 	private static final Random RANDOM = new Random(System.currentTimeMillis());
@@ -37,6 +41,7 @@ public class MultipartEntity implements RequestEntity
 	
 	private String mCharsetName = "UTF-8";
 	
+	@Public
 	public MultipartEntity()
 	{
 		StringBuilder builder = new StringBuilder();
@@ -45,12 +50,14 @@ public class MultipartEntity implements RequestEntity
 		mBoundary = builder.toString();
 	}
 	
+	@Public
 	public MultipartEntity(String... alternation)
 	{
 		this();
 		for (int i = 0; i < alternation.length; i += 2) add(alternation[i], alternation[i + 1]);
 	}
 	
+	@Public
 	public void setEncoding(String charsetName)
 	{
 		mCharsetName = charsetName;
@@ -62,12 +69,13 @@ public class MultipartEntity implements RequestEntity
 		if (value != null) mParts.add(new StringPart(name, value, mCharsetName));
 	}
 	
+	@Extendable
 	public void add(String name, File file)
 	{
 		add(name, new FileHolderOpenable(FileHolder.obtain(file)), null);
 	}
 	
-	public void add(String name, Openable openable, OpenableOutputListener listener)
+	public final void add(String name, Openable openable, OpenableOutputListener listener)
 	{
 		mParts.add(new OpenablePart(name, openable, listener));
 	}
@@ -77,7 +85,7 @@ public class MultipartEntity implements RequestEntity
 	{
 		return "multipart/form-data; boundary=" + mBoundary;
 	}
-
+	
 	@Override
 	public long getContentLength()
 	{
@@ -109,7 +117,7 @@ public class MultipartEntity implements RequestEntity
 	
 	private static final byte[] BYTES_TWO_DASHES = {0x2d, 0x2d};
 	private static final byte[] BYTES_NEW_LINE = {0x0d, 0x0a};
-
+	
 	@Override
 	public void write(OutputStream output) throws IOException
 	{

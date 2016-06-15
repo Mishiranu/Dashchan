@@ -18,6 +18,9 @@ package chan.content.model;
 
 import java.io.Serializable;
 
+import chan.annotation.Public;
+
+@Public
 public interface Attachment extends Serializable
 {
 	

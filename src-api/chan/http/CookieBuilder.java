@@ -16,12 +16,15 @@
 
 package chan.http;
 
+import chan.annotation.Public;
 import chan.util.StringUtils;
 
-public class CookieBuilder
+@Public
+public final class CookieBuilder
 {
 	private final StringBuilder mBuilder = new StringBuilder();
 	
+	@Public
 	public CookieBuilder()
 	{
 		
@@ -37,6 +40,7 @@ public class CookieBuilder
 		append(builder);
 	}
 	
+	@Public
 	public CookieBuilder append(String name, String value)
 	{
 		if (!StringUtils.isEmpty(value))
@@ -68,6 +72,7 @@ public class CookieBuilder
 		return this;
 	}
 	
+	@Public
 	public String build()
 	{
 		return mBuilder.toString();

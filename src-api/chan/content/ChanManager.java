@@ -431,44 +431,48 @@ public class ChanManager
 		public String getChanName();
 	}
 	
-	ChanConfiguration getConfiguration(String chanName, boolean defaultIfNotFound)
+	@SuppressWarnings("unchecked")
+	<T extends ChanConfiguration> T getConfiguration(String chanName, boolean defaultIfNotFound)
 	{
 		ChanConfiguration configutation = mConfigurations.get(chanName);
 		if (configutation == null)
 		{
-			if (defaultIfNotFound) return mDefaultConfiguration;
+			if (defaultIfNotFound) return (T) mDefaultConfiguration;
 			else throwUnknownChanNameException(chanName);
 		}
-		return configutation;
+		return (T) configutation;
 	}
 	
-	ChanPerformer getPerformer(String chanName, boolean defaultIfNotFound)
+	@SuppressWarnings("unchecked")
+	<T extends ChanPerformer> T getPerformer(String chanName, boolean defaultIfNotFound)
 	{
 		ChanPerformer performer = mPerformers.get(chanName);
 		if (performer == null)
 		{
-			if (defaultIfNotFound) return mDefaultPerformer;
+			if (defaultIfNotFound) return (T) mDefaultPerformer;
 			else throwUnknownChanNameException(chanName);
 		}
-		return performer;
+		return (T) performer;
 	}
 	
-	ChanLocator getLocator(String chanName, boolean defaultIfNotFound)
+	@SuppressWarnings("unchecked")
+	<T extends ChanLocator> T getLocator(String chanName, boolean defaultIfNotFound)
 	{
 		ChanLocator locator = mLocators.get(chanName);
 		if (locator == null)
 		{
-			if (defaultIfNotFound) return mDefaultLocator;
+			if (defaultIfNotFound) return (T) mDefaultLocator;
 			else throwUnknownChanNameException(chanName);
 		}
-		return locator;
+		return (T) locator;
 	}
 	
-	ChanMarkup getMarkup(String chanName)
+	@SuppressWarnings("unchecked")
+	<T extends ChanMarkup> T getMarkup(String chanName)
 	{
 		ChanMarkup markup = mMarkups.get(chanName);
 		if (markup == null) throwUnknownChanNameException(chanName);
-		return markup;
+		return (T) markup;
 	}
 	
 	Resources getResources(String chanName)

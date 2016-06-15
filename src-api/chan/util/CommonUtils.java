@@ -22,13 +22,14 @@ import org.json.JSONObject;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
+import chan.annotation.Public;
+
 import com.mishiranu.dashchan.util.Log;
 
+@Public
 public class CommonUtils
 {
-	/*
-	 * Returns true if thread was interrupted.
-	 */
+	@Public
 	public static boolean sleepMaxTime(long startTime, long interval)
 	{
 		long time = interval - (System.currentTimeMillis() - startTime);
@@ -45,11 +46,13 @@ public class CommonUtils
 		}
 	}
 	
+	@Public
 	public static String optJsonString(JSONObject jsonObject, String name)
 	{
 		return optJsonString(jsonObject, name, null);
 	}
 	
+	@Public
 	public static String optJsonString(JSONObject jsonObject, String name, String fallback)
 	{
 		try
@@ -62,11 +65,13 @@ public class CommonUtils
 		}
 	}
 	
+	@Public
 	public static String getJsonString(JSONObject jsonObject, String name) throws JSONException
 	{
 		if (jsonObject.has(name) && jsonObject.isNull(name)) return null; else return jsonObject.getString(name);
 	}
 	
+	@Public
 	public static String restoreCloudFlareProtectedEmails(String string)
 	{
 		int index = 0;
@@ -150,6 +155,7 @@ public class CommonUtils
 		return string;
 	}
 	
+	@Public
 	public static Bitmap trimBitmap(Bitmap bitmap, int backgroundColor)
 	{
 		if (bitmap == null) return null;
@@ -222,6 +228,7 @@ public class CommonUtils
 		return bitmap;
 	}
 	
+	@Public
 	public static void writeLog(Object... data)
 	{
 		Log.persistent().write(data);

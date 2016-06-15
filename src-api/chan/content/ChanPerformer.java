@@ -28,6 +28,8 @@ import java.util.List;
 import android.graphics.Bitmap;
 import android.net.Uri;
 
+import chan.annotation.Extendable;
+import chan.annotation.Public;
 import chan.content.model.Board;
 import chan.content.model.BoardCategory;
 import chan.content.model.Post;
@@ -47,10 +49,12 @@ import com.mishiranu.dashchan.content.CaptchaManager;
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.net.CloudFlarePasser;
 
+@Extendable
 public class ChanPerformer implements ChanManager.Linked
 {
 	private String mChanName;
 	
+	@Public
 	public ChanPerformer()
 	{
 		this(false);
@@ -71,84 +75,83 @@ public class ChanPerformer implements ChanManager.Linked
 		return mChanName;
 	}
 	
-	@SuppressWarnings("unchecked")
 	public static <T extends ChanPerformer> T get(String chanName)
 	{
-		return (T) ChanManager.getInstance().getPerformer(chanName, true);
+		return ChanManager.getInstance().getPerformer(chanName, true);
 	}
 	
-	@SuppressWarnings("unchecked")
+	@Public
 	public static <T extends ChanPerformer> T get(Object object)
 	{
 		ChanManager manager = ChanManager.getInstance();
-		return (T) manager.getPerformer(manager.getLinkedChanName(object), false);
+		return manager.getPerformer(manager.getLinkedChanName(object), false);
 	}
 	
-	// Can be overridden
+	@Extendable
 	public ReadThreadsResult onReadThreads(ReadThreadsData data) throws HttpException, InvalidResponseException
 	{
 		throw new UnsupportedOperationException();
 	}
 	
-	// Can be overridden
+	@Extendable
 	public ReadPostsResult onReadPosts(ReadPostsData data) throws HttpException, ThreadRedirectException,
 			InvalidResponseException
 	{
 		throw new UnsupportedOperationException();
 	}
 	
-	// Can be overridden
+	@Extendable
 	public ReadSinglePostResult onReadSinglePost(ReadSinglePostData data) throws HttpException, InvalidResponseException
 	{
 		throw new UnsupportedOperationException();
 	}
 	
-	// Can be overridden
+	@Extendable
 	public ReadSearchPostsResult onReadSearchPosts(ReadSearchPostsData data) throws HttpException,
 			InvalidResponseException
 	{
 		throw new UnsupportedOperationException();
 	}
 	
-	// Can be overridden
+	@Extendable
 	public ReadBoardsResult onReadBoards(ReadBoardsData data) throws HttpException, InvalidResponseException
 	{
 		throw new UnsupportedOperationException();
 	}
 	
-	// Can be overridden
+	@Extendable
 	public ReadUserBoardsResult onReadUserBoards(ReadUserBoardsData data) throws HttpException, InvalidResponseException
 	{
 		throw new UnsupportedOperationException();
 	}
 	
-	// Can be overridden
+	@Extendable
 	public ReadThreadSummariesResult onReadThreadSummaries(ReadThreadSummariesData data) throws HttpException,
 			InvalidResponseException
 	{
 		throw new UnsupportedOperationException();
 	}
 	
-	// Can be overridden
+	@Extendable
 	public ReadPostsCountResult onReadPostsCount(ReadPostsCountData data) throws HttpException, InvalidResponseException
 	{
 		throw new UnsupportedOperationException();
 	}
 	
-	// Can be overridden
+	@Extendable
 	public ReadContentResult onReadContent(ReadContentData data) throws HttpException, InvalidResponseException
 	{
 		return new ReadContentResult(new HttpRequest(data.uri, data.holder, data).read());
 	}
 	
-	// Can be overridden
+	@Extendable
 	public CheckAuthorizationResult onCheckAuthorization(CheckAuthorizationData data) throws HttpException,
 			InvalidResponseException
 	{
 		throw new UnsupportedOperationException();
 	}
 	
-	// Can be overridden
+	@Extendable
 	public ReadCaptchaResult onReadCaptcha(ReadCaptchaData data) throws HttpException, InvalidResponseException
 	{
 		if (mChanName == null && data.requirement != null &&
@@ -159,41 +162,42 @@ public class ChanPerformer implements ChanManager.Linked
 		return new ReadCaptchaResult(CaptchaState.SKIP, null);
 	}
 	
-	// Can be overridden
+	@Extendable
 	public SendPostResult onSendPost(SendPostData data) throws HttpException, ApiException, InvalidResponseException
 	{
 		throw new UnsupportedOperationException();
 	}
 	
-	// Can be overridden
+	@Extendable
 	public SendDeletePostsResult onSendDeletePosts(SendDeletePostsData data) throws HttpException, ApiException,
 			InvalidResponseException
 	{
 		throw new UnsupportedOperationException();
 	}
 	
-	// Can be overridden
+	@Extendable
 	public SendReportPostsResult onSendReportPosts(SendReportPostsData data) throws HttpException, ApiException,
 			InvalidResponseException
 	{
 		throw new UnsupportedOperationException();
 	}
 	
-	// Can be overridden
+	@Extendable
 	public SendAddToArchiveResult onSendAddToArchive(SendAddToArchiveData data) throws HttpException, ApiException,
 			InvalidResponseException
 	{
 		throw new UnsupportedOperationException();
 	}
 	
+	@Public
 	public static class ReadThreadsData implements HttpRequest.Preset
 	{
-		public static final int PAGE_NUMBER_CATALOG = -1;
+		@Public public static final int PAGE_NUMBER_CATALOG = -1;
 		
-		public final String boardName;
-		public final int pageNumber;
-		public final HttpHolder holder;
-		public final HttpValidator validator;
+		@Public public final String boardName;
+		@Public public final int pageNumber;
+		@Public public final HttpHolder holder;
+		@Public public final HttpValidator validator;
 		
 		public ReadThreadsData(String boardName, int pageNumber, HttpHolder holder, HttpValidator validator)
 		{
@@ -203,32 +207,38 @@ public class ChanPerformer implements ChanManager.Linked
 			this.validator = validator;
 		}
 		
+		@Public
 		public boolean isCatalog()
 		{
 			return pageNumber == PAGE_NUMBER_CATALOG;
 		}
 	}
 	
-	public static class ReadThreadsResult
+	@Public
+	public static final class ReadThreadsResult
 	{
 		public final Threads threads;
 		public HttpValidator validator;
 		
+		@Public
 		public ReadThreadsResult(Threads threads)
 		{
 			this.threads = threads;
 		}
 		
+		@Public
 		public ReadThreadsResult(Posts... threads)
 		{
 			this(threads != null ? new Threads(threads) : null);
 		}
 		
+		@Public
 		public ReadThreadsResult(Collection<Posts> threads)
 		{
 			this(threads != null && !threads.isEmpty() ? threads.toArray(new Posts[threads.size()]) : null);
 		}
 		
+		@Public
 		public ReadThreadsResult setValidator(HttpValidator validator)
 		{
 			this.validator = validator;
@@ -236,15 +246,16 @@ public class ChanPerformer implements ChanManager.Linked
 		}
 	}
 	
+	@Public
 	public static class ReadPostsData implements HttpRequest.Preset
 	{
-		public final String boardName;
-		public final String threadNumber;
-		public final String lastPostNumber;
-		public final boolean partialThreadLoading;
-		public final Posts cachedPosts;
-		public final HttpHolder holder;
-		public final HttpValidator validator;
+		@Public public final String boardName;
+		@Public public final String threadNumber;
+		@Public public final String lastPostNumber;
+		@Public public final boolean partialThreadLoading;
+		@Public public final Posts cachedPosts;
+		@Public public final HttpHolder holder;
+		@Public public final HttpValidator validator;
 		
 		public ReadPostsData(String boardName, String threadNumber, String lastPostNumber, boolean partialThreadLoading,
 				Posts cachedPosts, HttpHolder holder, HttpValidator validator)
@@ -259,33 +270,39 @@ public class ChanPerformer implements ChanManager.Linked
 		}
 	}
 	
-	public static class ReadPostsResult
+	@Public
+	public static final class ReadPostsResult
 	{
 		public final Posts posts;
 		public HttpValidator validator;
 		public boolean fullThread;
 		
+		@Public
 		public ReadPostsResult(Posts posts)
 		{
 			this.posts = posts;
 		}
 		
+		@Public
 		public ReadPostsResult(Post... posts)
 		{
 			this(posts != null ? new Posts(posts) : null);
 		}
 		
+		@Public
 		public ReadPostsResult(Collection<Post> posts)
 		{
 			this(posts != null && !posts.isEmpty() ? posts.toArray(new Post[posts.size()]) : null);
 		}
 		
+		@Public
 		public ReadPostsResult setValidator(HttpValidator validator)
 		{
 			this.validator = validator;
 			return this;
 		}
 		
+		@Public
 		public ReadPostsResult setFullThread(boolean fullThread)
 		{
 			this.fullThread = fullThread;
@@ -293,11 +310,12 @@ public class ChanPerformer implements ChanManager.Linked
 		}
 	}
 	
+	@Public
 	public static class ReadSinglePostData implements HttpRequest.Preset
 	{
-		public final String boardName;
-		public final String postNumber;
-		public final HttpHolder holder;
+		@Public public final String boardName;
+		@Public public final String postNumber;
+		@Public public final HttpHolder holder;
 		
 		public ReadSinglePostData(String boardName, String postNumber, HttpHolder holder)
 		{
@@ -307,21 +325,24 @@ public class ChanPerformer implements ChanManager.Linked
 		}
 	}
 	
-	public static class ReadSinglePostResult
+	@Public
+	public static final class ReadSinglePostResult
 	{
 		public final Post post;
 		
+		@Public
 		public ReadSinglePostResult(Post post)
 		{
 			this.post = post;
 		}
 	}
 	
+	@Public
 	public static class ReadSearchPostsData implements HttpRequest.Preset
 	{
-		public final String boardName;
-		public final String searchQuery;
-		public final HttpHolder holder;
+		@Public public final String boardName;
+		@Public public final String searchQuery;
+		@Public public final HttpHolder holder;
 		
 		public ReadSearchPostsData(String boardName, String searchQuery, HttpHolder holder)
 		{
@@ -331,36 +352,28 @@ public class ChanPerformer implements ChanManager.Linked
 		}
 	}
 	
-	public static class ReadSearchPostsResult
+	@Public
+	public static final class ReadSearchPostsResult
 	{
 		public final Post[] posts;
 		
+		@Public
 		public ReadSearchPostsResult(Post... posts)
 		{
 			this.posts = posts;
 		}
 		
+		@Public
 		public ReadSearchPostsResult(Collection<Post> posts)
 		{
 			this(posts != null && !posts.isEmpty() ? posts.toArray(new Post[posts.size()]) : null);
 		}
 	}
 	
-	public static class ReadArchivedThreadsData implements HttpRequest.Preset
+	@Public
+	public static final class ReadBoardsData implements HttpRequest.Preset
 	{
-		public final String boardName;
-		public final HttpHolder holder;
-		
-		public ReadArchivedThreadsData(String boardName, HttpHolder holder)
-		{
-			this.boardName = boardName;
-			this.holder = holder;
-		}
-	}
-	
-	public static class ReadBoardsData implements HttpRequest.Preset
-	{
-		public final HttpHolder holder;
+		@Public public final HttpHolder holder;
 		
 		public ReadBoardsData(HttpHolder holder)
 		{
@@ -368,15 +381,18 @@ public class ChanPerformer implements ChanManager.Linked
 		}
 	}
 	
-	public static class ReadBoardsResult
+	@Public
+	public static final class ReadBoardsResult
 	{
 		public final BoardCategory[] boardCategories;
 		
+		@Public
 		public ReadBoardsResult(BoardCategory... boardCategories)
 		{
 			this.boardCategories = boardCategories;
 		}
 		
+		@Public
 		public ReadBoardsResult(Collection<BoardCategory> boardCategories)
 		{
 			this(boardCategories != null && !boardCategories.isEmpty() ? boardCategories
@@ -384,9 +400,10 @@ public class ChanPerformer implements ChanManager.Linked
 		}
 	}
 	
+	@Public
 	public static class ReadUserBoardsData implements HttpRequest.Preset
 	{
-		public final HttpHolder holder;
+		@Public public final HttpHolder holder;
 		
 		public ReadUserBoardsData(HttpHolder holder)
 		{
@@ -394,29 +411,33 @@ public class ChanPerformer implements ChanManager.Linked
 		}
 	}
 	
-	public static class ReadUserBoardsResult
+	@Public
+	public static final class ReadUserBoardsResult
 	{
 		public final Board[] boards;
 		
+		@Public
 		public ReadUserBoardsResult(Board... boards)
 		{
 			this.boards = boards;
 		}
 		
+		@Public
 		public ReadUserBoardsResult(Collection<Board> boards)
 		{
 			this(boards != null && !boards.isEmpty() ? boards.toArray(new Board[boards.size()]) : null);
 		}
 	}
 	
+	@Public
 	public static class ReadThreadSummariesData implements HttpRequest.Preset
 	{
-		public static final int TYPE_ARCHIVED_THREADS = 0;
-		public static final int TYPE_POPULAR_THREADS = 1;
-
-		public final String boardName;
-		public final int type;
-		public final HttpHolder holder;
+		@Public public static final int TYPE_ARCHIVED_THREADS = 0;
+		@Public public static final int TYPE_POPULAR_THREADS = 1;
+		
+		@Public public final String boardName;
+		@Public public final int type;
+		@Public public final HttpHolder holder;
 		
 		public ReadThreadSummariesData(String boardName, int type, HttpHolder holder)
 		{
@@ -426,15 +447,18 @@ public class ChanPerformer implements ChanManager.Linked
 		}
 	}
 	
-	public static class ReadThreadSummariesResult
+	@Public
+	public static final class ReadThreadSummariesResult
 	{
 		public final ThreadSummary[] threadSummaries;
 		
+		@Public
 		public ReadThreadSummariesResult(ThreadSummary... threadSummaries)
 		{
 			this.threadSummaries = threadSummaries;
 		}
 		
+		@Public
 		public ReadThreadSummariesResult(Collection<ThreadSummary> threadSummaries)
 		{
 			this(threadSummaries != null && !threadSummaries.isEmpty() ? threadSummaries
@@ -442,14 +466,15 @@ public class ChanPerformer implements ChanManager.Linked
 		}
 	}
 	
+	@Public
 	public static class ReadPostsCountData implements HttpRequest.TimeoutsPreset
 	{
-		public final String boardName;
-		public final String threadNumber;
+		@Public public final String boardName;
+		@Public public final String threadNumber;
 		public final int connectTimeout;
 		public final int readTimeout;
-		public final HttpHolder holder;
-		public final HttpValidator validator;
+		@Public public final HttpHolder holder;
+		@Public public final HttpValidator validator;
 		
 		public ReadPostsCountData(String boardName, String threadNumber, int connectTimeout, int readTimeout,
 				HttpHolder holder, HttpValidator validator)
@@ -475,16 +500,19 @@ public class ChanPerformer implements ChanManager.Linked
 		}
 	}
 	
-	public static class ReadPostsCountResult
+	@Public
+	public static final class ReadPostsCountResult
 	{
 		public final int postsCount;
 		public HttpValidator validator;
 		
+		@Public
 		public ReadPostsCountResult(int postsCount)
 		{
 			this.postsCount = postsCount;
 		}
 		
+		@Public
 		public ReadPostsCountResult setValidator(HttpValidator validator)
 		{
 			this.validator = validator;
@@ -492,13 +520,14 @@ public class ChanPerformer implements ChanManager.Linked
 		}
 	}
 	
+	@Public
 	public static class ReadContentData implements HttpRequest.TimeoutsPreset, HttpRequest.InputListenerPreset,
 			HttpRequest.OutputStreamPreset
 	{
-		public final Uri uri;
+		@Public public final Uri uri;
 		public final int connectTimeout;
 		public final int readTimeout;
-		public final HttpHolder holder;
+		@Public public final HttpHolder holder;
 		public final HttpHolder.InputListener listener;
 		public final OutputStream outputStream;
 		
@@ -538,24 +567,27 @@ public class ChanPerformer implements ChanManager.Linked
 		}
 	}
 	
-	public static class ReadContentResult
+	@Public
+	public static final class ReadContentResult
 	{
 		public final HttpResponse response;
 		
+		@Public
 		public ReadContentResult(HttpResponse response)
 		{
 			this.response = response;
 		}
 	}
 	
+	@Public
 	public static class CheckAuthorizationData implements HttpRequest.Preset
 	{
-		public static final int TYPE_CAPTCHA_PASS = 0;
-		public static final int TYPE_USER_AUTHORIZATION = 1;
+		@Public public static final int TYPE_CAPTCHA_PASS = 0;
+		@Public public static final int TYPE_USER_AUTHORIZATION = 1;
 		
-		public final int type;
-		public final String[] authorizationData;
-		public final HttpHolder holder;
+		@Public public final int type;
+		@Public public final String[] authorizationData;
+		@Public public final HttpHolder holder;
 		
 		public CheckAuthorizationData(int type, String[] authorizationData, HttpHolder holder)
 		{
@@ -565,28 +597,31 @@ public class ChanPerformer implements ChanManager.Linked
 		}
 	}
 	
-	public static class CheckAuthorizationResult
+	@Public
+	public static final class CheckAuthorizationResult
 	{
 		public final boolean success;
 		
+		@Public
 		public CheckAuthorizationResult(boolean success)
 		{
 			this.success = success;
 		}
 	}
 	
+	@Public
 	public static class ReadCaptchaData implements HttpRequest.Preset
 	{
-		public static final String REQUIREMENT_NEW_THREAD = "new_thread";
-		public static final String REQUIREMENT_REPLY_TO_THREAD = "reply_to_thread";
+		@Public public static final String REQUIREMENT_NEW_THREAD = "new_thread";
+		@Public public static final String REQUIREMENT_REPLY_TO_THREAD = "reply_to_thread";
 		
-		public final String captchaType;
-		public final String[] captchaPass;
-		public final boolean mayShowLoadButton;
-		public final String requirement;
-		public final String boardName;
-		public final String threadNumber;
-		public final HttpHolder holder;
+		@Public public final String captchaType;
+		@Public public final String[] captchaPass;
+		@Public public final boolean mayShowLoadButton;
+		@Public public final String requirement;
+		@Public public final String boardName;
+		@Public public final String threadNumber;
+		@Public public final HttpHolder holder;
 		
 		public ReadCaptchaData(String captchaType, String[] captchaPass, boolean mayShowLoadButton,
 				String requirement, String boardName, String threadNumber, HttpHolder holder)
@@ -601,9 +636,17 @@ public class ChanPerformer implements ChanManager.Linked
 		}
 	}
 	
-	public static enum CaptchaState {CAPTCHA, SKIP, PASS, NEED_LOAD};
+	@Public
+	public static enum CaptchaState
+	{
+		@Public CAPTCHA,
+		@Public SKIP,
+		@Public PASS,
+		@Public NEED_LOAD
+	};
 	
-	public static class ReadCaptchaResult
+	@Public
+	public static final class ReadCaptchaResult
 	{
 		public final CaptchaState captchaState;
 		public final CaptchaData captchaData;
@@ -614,36 +657,42 @@ public class ChanPerformer implements ChanManager.Linked
 		public Bitmap image;
 		public boolean large;
 		
+		@Public
 		public ReadCaptchaResult(CaptchaState captchaState, CaptchaData captchaData)
 		{
 			this.captchaState = captchaState;
 			this.captchaData = captchaData;
 		}
 		
+		@Public
 		public ReadCaptchaResult setCaptchaType(String captchaType)
 		{
 			this.captchaType = captchaType;
 			return this;
 		}
 		
+		@Public
 		public ReadCaptchaResult setInput(ChanConfiguration.Captcha.Input input)
 		{
 			this.input = input;
 			return this;
 		}
 		
+		@Public
 		public ReadCaptchaResult setValidity(ChanConfiguration.Captcha.Validity validity)
 		{
 			this.validity = validity;
 			return this;
 		}
 		
+		@Public
 		public ReadCaptchaResult setImage(Bitmap image)
 		{
 			this.image = image;
 			return this;
 		}
 		
+		@Public
 		public ReadCaptchaResult setLarge(boolean large)
 		{
 			this.large = large;
@@ -661,58 +710,67 @@ public class ChanPerformer implements ChanManager.Linked
 		}
 	}
 	
+	@Public
 	public static class CaptchaData implements Serializable
 	{
 		private static final long serialVersionUID = 1L;
-
-		public static final String CHALLENGE = "challenge";
-		public static final String INPUT = "input";
-		public static final String API_KEY = "api_key";
+		
+		@Public public static final String CHALLENGE = "challenge";
+		@Public public static final String INPUT = "input";
+		@Public public static final String API_KEY = "api_key";
 		
 		private final HashMap<String, String> mData = new HashMap<>();
 		
+		@Public
 		public void put(String key, String value)
 		{
 			mData.put(key, value);
 		}
 		
+		@Public
 		public String get(String key)
 		{
 			return mData.get(key);
 		}
 	}
 	
+	@Public
 	public static class SendPostData implements HttpRequest.TimeoutsPreset, HttpRequest.OutputListenerPreset
 	{
-		public final String boardName;
-		public final String threadNumber;
+		@Public public final String boardName;
+		@Public public final String threadNumber;
 		
-		public final String subject;
-		public final String comment;
-		public final String name;
-		public final String email;
-		public final String password;
+		@Public public final String subject;
+		@Public public final String comment;
+		@Public public final String name;
+		@Public public final String email;
+		@Public public final String password;
 		
-		public final Attachment[] attachments;
+		@Public public final Attachment[] attachments;
 		
-		public final boolean optionSage;
-		public final boolean optionSpoiler;
-		public final boolean optionOriginalPoster;
-		public final String userIcon;
+		@Public public final boolean optionSage;
+		@Public public final boolean optionSpoiler;
+		@Public public final boolean optionOriginalPoster;
+		@Public public final String userIcon;
 		
-		public String captchaType;
-		public final CaptchaData captchaData;
+		@Public public String captchaType;
+		@Public public final CaptchaData captchaData;
 		
 		public final int connectTimeout;
 		public final int readTimeout;
-		public HttpHolder holder;
+		@Public public HttpHolder holder;
 		public HttpRequest.OutputListener listener;
 		
+		@Public
 		public static class Attachment
 		{
 			public final FileHolder fileHolder;
-			public final String rating;
-			public final boolean optionUniqueHash, optionRemoveMetadata, optionRemoveFileName, optionSpoiler;
+			@Public public final String rating;
+			
+			public final boolean optionUniqueHash;
+			public final boolean optionRemoveMetadata;
+			public final boolean optionRemoveFileName;
+			@Public public final boolean optionSpoiler;
 			
 			public MultipartEntity.OpenableOutputListener listener;
 			
@@ -738,30 +796,35 @@ public class ChanPerformer implements ChanManager.Linked
 				}
 			}
 			
+			@Public
 			public void addToEntity(MultipartEntity entity, String name)
 			{
 				ensureOpenable();
 				entity.add(name, mOpenable, listener);
 			}
 			
+			@Public
 			public String getFileName()
 			{
 				ensureOpenable();
 				return mOpenable.getFileName();
 			}
 			
+			@Public
 			public String getMimeType()
 			{
 				ensureOpenable();
 				return mOpenable.getMimeType();
 			}
 			
+			@Public
 			public InputStream openInputSteam() throws IOException
 			{
 				ensureOpenable();
 				return mOpenable.openInputStream();
 			}
 			
+			@Public
 			public long getSize()
 			{
 				ensureOpenable();
@@ -840,11 +903,13 @@ public class ChanPerformer implements ChanManager.Linked
 		}
 	}
 	
-	public static class SendPostResult
+	@Public
+	public static final class SendPostResult
 	{
 		public final String threadNumber;
 		public final String postNumber;
 		
+		@Public
 		public SendPostResult(String threadNumber, String postNumber)
 		{
 			this.threadNumber = threadNumber;
@@ -852,14 +917,15 @@ public class ChanPerformer implements ChanManager.Linked
 		}
 	}
 	
+	@Public
 	public static class SendDeletePostsData implements HttpRequest.Preset
 	{
-		public final String boardName;
-		public final String threadNumber;
-		public final List<String> postNumbers;
-		public final String password;
-		public final boolean optionFilesOnly;
-		public final HttpHolder holder;
+		@Public public final String boardName;
+		@Public public final String threadNumber;
+		@Public public final List<String> postNumbers;
+		@Public public final String password;
+		@Public public final boolean optionFilesOnly;
+		@Public public final HttpHolder holder;
 		
 		public SendDeletePostsData(String boardName, String threadNumber, List<String> postNumbers, String password,
 				boolean optionFilesOnly, HttpHolder holder)
@@ -873,20 +939,26 @@ public class ChanPerformer implements ChanManager.Linked
 		}
 	}
 	
-	public static class SendDeletePostsResult
+	@Public
+	public static final class SendDeletePostsResult
 	{
-		
+		@Public
+		public SendDeletePostsResult()
+		{
+			
+		}
 	}
 	
+	@Public
 	public static class SendReportPostsData implements HttpRequest.Preset
 	{
-		public final String boardName;
-		public final String threadNumber;
-		public final List<String> postNumbers;
-		public final String type;
-		public final List<String> options;
-		public final String comment;
-		public final HttpHolder holder;
+		@Public public final String boardName;
+		@Public public final String threadNumber;
+		@Public public final List<String> postNumbers;
+		@Public public final String type;
+		@Public public final List<String> options;
+		@Public public final String comment;
+		@Public public final HttpHolder holder;
 		
 		public SendReportPostsData(String boardName, String threadNumber, List<String> postNumbers, String type,
 				List<String> options, String comment, HttpHolder holder)
@@ -901,18 +973,24 @@ public class ChanPerformer implements ChanManager.Linked
 		}
 	}
 	
-	public static class SendReportPostsResult
+	@Public
+	public static final class SendReportPostsResult
 	{
-		
+		@Public
+		public SendReportPostsResult()
+		{
+			
+		}
 	}
 	
+	@Public
 	public static class SendAddToArchiveData implements HttpRequest.Preset
 	{
-		public final Uri uri;
-		public final String boardName;
-		public final String threadNumber;
-		public final List<String> options;
-		public final HttpHolder holder;
+		@Public public final Uri uri;
+		@Public public final String boardName;
+		@Public public final String threadNumber;
+		@Public public final List<String> options;
+		@Public public final HttpHolder holder;
 		
 		public SendAddToArchiveData(Uri uri, String boardName, String threadNumber, List<String> options,
 				HttpHolder holder)
@@ -925,11 +1003,13 @@ public class ChanPerformer implements ChanManager.Linked
 		}
 	}
 	
-	public static class SendAddToArchiveResult
+	@Public
+	public static final class SendAddToArchiveResult
 	{
 		public final String boardName;
 		public final String threadNumber;
 		
+		@Public
 		public SendAddToArchiveResult(String boardName, String threadNumber)
 		{
 			this.boardName = boardName;
@@ -937,12 +1017,14 @@ public class ChanPerformer implements ChanManager.Linked
 		}
 	}
 	
+	@Public
 	public final CaptchaData requireUserCaptcha(String requirement, String boardName, String threadNumber,
 			boolean retry)
 	{
 		return CaptchaManager.getInstance().requireUserCaptcha(this, requirement, boardName, threadNumber, retry);
 	}
 	
+	@Public
 	public final Integer requireUserImageSingleChoice(int selected, Bitmap[] images, String descriptionText,
 			Bitmap descriptionImage)
 	{
@@ -950,6 +1032,7 @@ public class ChanPerformer implements ChanManager.Linked
 				descriptionText, descriptionImage);
 	}
 	
+	@Public
 	public final boolean[] requireUserImageMultipleChoice(boolean[] selected, Bitmap[] images, String descriptionText,
 			Bitmap descriptionImage)
 	{

@@ -19,37 +19,40 @@ package chan.content.model;
 import java.util.Collection;
 import java.util.Iterator;
 
+import chan.annotation.Public;
+
+@Public
 public final class BoardCategory implements Iterable<Board>
 {
 	private final String mTitle;
 	private final Board[] mBoards;
 	
+	@Public
 	public String getTitle()
 	{
 		return mTitle;
 	}
 	
+	@Public
 	public Board[] getBoards()
 	{
 		return mBoards;
 	}
 	
+	@Public
 	public BoardCategory(String title, Board[] boards)
 	{
 		mTitle = title;
 		mBoards = boards;
 	}
 	
+	@Public
 	public BoardCategory(String title, Collection<Board> boards)
 	{
 		this(title, boards.toArray(new Board[boards.size()]));
 	}
 	
-	public int getCount()
-	{
-		return mBoards.length;
-	}
-	
+	@Public
 	@Override
 	public Iterator<Board> iterator()
 	{

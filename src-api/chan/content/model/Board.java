@@ -16,32 +16,40 @@
 
 package chan.content.model;
 
+import chan.annotation.Public;
+
+@Public
 public final class Board implements Comparable<Board>
 {
 	private final String mBoardName;
 	private final String mTitle;
 	private final String mDescription;
 	
+	@Public
 	public String getBoardName()
 	{
 		return mBoardName;
 	}
 	
+	@Public
 	public String getTitle()
 	{
 		return mTitle;
 	}
 	
+	@Public
 	public String getDescription()
 	{
 		return mDescription;
 	}
 	
+	@Public
 	public Board(String boardName, String title)
 	{
 		this(boardName, title, null);
 	}
 	
+	@Public
 	public Board(String boardName, String title, String description)
 	{
 		mBoardName = boardName;
@@ -49,6 +57,7 @@ public final class Board implements Comparable<Board>
 		mDescription = description;
 	}
 	
+	@Public
 	@Override
 	public int compareTo(Board another)
 	{
