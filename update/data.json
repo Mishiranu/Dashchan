@@ -40,11 +40,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.0",
+			"name": "1.1",
 			"code": 1,
 			"version": 1,
 			"minSdk": 14,
-			"length": 52636,
+			"length": 52743,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanArchiveLiom.apk"
 		}
 	],
@@ -100,11 +100,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.11",
+			"name": "1.12",
 			"code": 1,
 			"version": 1,
 			"minSdk": 14,
-			"length": 63371,
+			"length": 63333,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanCirno.apk"
 		}
 	],
@@ -124,11 +124,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.1",
+			"name": "1.2",
 			"code": 1,
 			"version": 1,
 			"minSdk": 14,
-			"length": 56016,
+			"length": 56063,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanDesustorage.apk"
 		}
 	],
@@ -160,11 +160,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.15",
+			"name": "1.16",
 			"code": 1,
 			"version": 1,
 			"minSdk": 14,
-			"length": 92290,
+			"length": 93000,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanDvach.apk"
 		}
 	],
