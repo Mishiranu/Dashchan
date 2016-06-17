@@ -117,7 +117,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 		super.onDestroy();
 		mNotificationsWorker.interrupt();
 		mWakeLock.release();
-		DownloadManager.getInstance().onDestroyService();
+		DownloadManager.getInstance().notifyServiceDestroy();
 		if (mReadFileTask != null) mReadFileTask.cancel();
 		try
 		{
@@ -346,7 +346,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 		{
 			if (mErrorTasks.contains(taskData)) mErrorTasks.remove(taskData);
 			mQueuedTasks.add(taskData);
-			DownloadManager.getInstance().addFileToGlobalQueueSet(taskData.to);
+			DownloadManager.getInstance().notifyFileAddedToDownloadQueue(taskData.to);
 			boolean started = start(chanName, from, to);
 			if (!started && refreshNotification) refreshNotification(false);
 		}
@@ -554,7 +554,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 		mQueuedTasks.remove(taskData);
 		if (success)
 		{
-			DownloadManager.getInstance().removeFileFromGlobalQueueSet(file);
+			DownloadManager.getInstance().notifyFileRemovedFromDownloadQueue(file);
 			mSuccessTasks.add(taskData);
 		}
 		else
@@ -592,7 +592,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 	@Override
 	public void onFinishDownloadingInThread()
 	{
-		DownloadManager.getInstance().onFinishDownloadingInThread();
+		DownloadManager.getInstance().notifyFinishDownloadingInThread();
 	}
 	
 	@Override

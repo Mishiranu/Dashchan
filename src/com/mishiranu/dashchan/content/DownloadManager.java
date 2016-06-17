@@ -23,7 +23,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.concurrent.Semaphore;
@@ -89,28 +88,46 @@ public class DownloadManager
 	private final HashSet<String> mQueuedFiles = new HashSet<>();
 	private final Semaphore mQueuePause = new Semaphore(1);
 	
+	private ArrayList<DialogDirectory> mLastDialogDirectotyItems;
+	private File mLastRootDirectory;
+	
 	public String getFileGlobalQueueSetName(File file)
 	{
 		return file.getAbsolutePath().toLowerCase(Locale.getDefault());
 	}
 	
-	public void addFileToGlobalQueueSet(File file)
+	public void notifyFileAddedToDownloadQueue(File file)
 	{
 		mQueuedFiles.add(getFileGlobalQueueSetName(file));
 	}
 	
-	public void removeFileFromGlobalQueueSet(File file)
+	public void notifyFileRemovedFromDownloadQueue(File file)
 	{
 		mQueuedFiles.remove(getFileGlobalQueueSetName(file));
+		if (file.exists() && mLastDialogDirectotyItems != null && mLastRootDirectory != null)
+		{
+			DialogDirectory dialogDirectory = DialogDirectory.create(file.getParentFile(), mLastRootDirectory);
+			if (dialogDirectory != null)
+			{
+				while (dialogDirectory != null)
+				{
+					int index = mLastDialogDirectotyItems.indexOf(dialogDirectory);
+					if (index == -1) mLastDialogDirectotyItems.add(dialogDirectory);
+					else mLastDialogDirectotyItems.set(index, dialogDirectory);
+					dialogDirectory = dialogDirectory.getParent();
+				}
+				Collections.sort(mLastDialogDirectotyItems);
+			}
+		}
 	}
 	
-	public void onDestroyService()
+	public void notifyServiceDestroy()
 	{
 		mQueuedFiles.clear();
 		releaseQueuePauseLock();
 	}
 	
-	public void onFinishDownloadingInThread()
+	public void notifyFinishDownloadingInThread()
 	{
 		if (aquireQueuePauseLock(false)) releaseQueuePauseLock();
 	}
@@ -151,19 +168,26 @@ public class DownloadManager
 		}
 	}
 	
-	private static class DialogDirectory
+	private static class DialogDirectory implements Comparable<DialogDirectory>
 	{
 		public final ArrayList<String> mSegments = new ArrayList<String>();
 		public long lastModified;
 		
-		public DialogDirectory(File directory, File root)
+		public static DialogDirectory create(File directory, File root)
 		{
-			lastModified = directory.lastModified();
+			DialogDirectory dialogDirectory = new DialogDirectory();
+			dialogDirectory.lastModified = directory.lastModified();
 			while (directory != null && !directory.equals(root))
 			{
-				mSegments.add(0, directory.getName());
+				dialogDirectory.mSegments.add(0, directory.getName());
 				directory = directory.getParentFile();
 			}
+			return directory != null ? dialogDirectory : null;
+		}
+		
+		private DialogDirectory()
+		{
+			
 		}
 		
 		public DialogDirectory(String path)
@@ -179,6 +203,19 @@ public class DownloadManager
 		private String getSegment(int index, Locale locale)
 		{
 			return mSegments.get(index).toLowerCase(locale);
+		}
+		
+		public DialogDirectory getParent()
+		{
+			if (mSegments.size() > 1)
+			{
+				DialogDirectory dialogDirectory = new DialogDirectory();
+				dialogDirectory.lastModified = lastModified;
+				dialogDirectory.mSegments.addAll(mSegments);
+				dialogDirectory.mSegments.remove(dialogDirectory.mSegments.size() - 1);
+				return dialogDirectory;
+			}
+			return null;
 		}
 		
 		public boolean filter(DialogDirectory constraintDirectory, boolean anyDepth)
@@ -256,6 +293,12 @@ public class DownloadManager
 			Locale locale = Locale.getDefault();
 			for (int i = 0; i < getDepth(); i++) result = prime * result + getSegment(i, locale).hashCode();
 			return result;
+		}
+		
+		@Override
+		public int compareTo(DialogDirectory another)
+		{
+			return ((Long) another.lastModified).compareTo(lastModified);
 		}
 	}
 	
@@ -359,8 +402,8 @@ public class DownloadManager
 		}
 	}
 	
-	private static class DownloadDialog implements DialogInterface.OnClickListener, RadioGroup.OnCheckedChangeListener,
-			AutoCompleteTextView.OnEditorActionListener, AdapterView.OnItemClickListener, Comparator<DialogDirectory>
+	private class DownloadDialog implements DialogInterface.OnClickListener, RadioGroup.OnCheckedChangeListener,
+			AutoCompleteTextView.OnEditorActionListener, AdapterView.OnItemClickListener
 	{
 		private final Context mContext;
 		private final DialogCallback mCallback;
@@ -374,9 +417,6 @@ public class DownloadManager
 		private final CheckBox mOriginalNameCheckBox;
 		private final AutoCompleteTextView mEditText;
 		private final InputMethodManager mInputMethodManager;
-		
-		private static ArrayList<DialogDirectory> sLastItems;
-		private static File sLastDirectory;
 		
 		@SuppressLint("InflateParams")
 		public DownloadDialog(Context context, DialogCallback callback, String chanName,
@@ -436,7 +476,7 @@ public class DownloadManager
 			mDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN
 					| WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 			mDialog.show();
-			if (directory.equals(sLastDirectory)) mAdapter.setItems(sLastItems);
+			if (directory.equals(mLastRootDirectory)) mAdapter.setItems(mLastDialogDirectotyItems);
 			new AsyncTask<Void, Void, ArrayList<DialogDirectory>>()
 			{
 				private long findDirectories(ArrayList<DialogDirectory> dialogDirectories, File parent,
@@ -450,7 +490,7 @@ public class DownloadManager
 						{
 							if ((exclude == null || !exclude.contains(file)) && file.isDirectory())
 							{
-								DialogDirectory dialogDirectory = new DialogDirectory(file, root);
+								DialogDirectory dialogDirectory = DialogDirectory.create(file, root);
 								dialogDirectories.add(dialogDirectory);
 								long lastModified = findDirectories(dialogDirectories, file, root, exclude);
 								lastModified = Math.max(file.lastModified(), lastModified);
@@ -469,15 +509,15 @@ public class DownloadManager
 					ArrayList<File> exclude = new ArrayList<>();
 					exclude.add(SendLocalArchiveTask.getLocalDownloadDirectory(false));
 					findDirectories(directories, directory, directory, exclude);
-					Collections.sort(directories, DownloadDialog.this);
+					Collections.sort(directories);
 					return directories;
 				}
 				
 				@Override
 				protected void onPostExecute(ArrayList<DialogDirectory> result)
 				{
-					sLastItems = result;
-					sLastDirectory = directory;
+					mLastDialogDirectotyItems = result;
+					mLastRootDirectory = directory;
 					ArrayList<DialogDirectory> dialogDirectories = mAdapter.getItems();
 					int size = result.size();
 					if (size > 0 && dialogDirectories.size() == size)
@@ -490,12 +530,6 @@ public class DownloadManager
 					if (mEditText.isEnabled()) refreshDropDownContents();
 				}
 			}.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-		}
-		
-		@Override
-		public int compare(DialogDirectory lhs, DialogDirectory rhs)
-		{
-			return ((Long) rhs.lastModified).compareTo(lhs.lastModified);
 		}
 		
 		@Override
@@ -577,30 +611,6 @@ public class DownloadManager
 		{
 			String path = mEditText.isEnabled() ? StringUtils.nullIfEmpty(StringUtils
 					.escapeFile(mEditText.getText().toString(), true).trim()) : null;
-			if (path != null)
-			{
-				if (path.endsWith("/")) path = path.substring(0, path.length() - 1);
-				DialogDirectory dialogDirectory = new DialogDirectory(path);
-				ArrayList<DialogDirectory> dialogDirectories = mAdapter.getItems();
-				boolean success = false;
-				for (int i = 0; i < dialogDirectories.size(); i++)
-				{
-					DialogDirectory compareDirectory = dialogDirectories.get(i);
-					if (compareDirectory.equals(dialogDirectory))
-					{
-						// Move directory item to the top
-						// This will fix "jumping" when dialog opened next time
-						if (sLastItems.remove(compareDirectory)) sLastItems.add(0, compareDirectory);
-						success = true;
-						break;
-					}
-				}
-				if (!success)
-				{
-					sLastDirectory = null;
-					sLastItems = null;
-				}
-			}
 			mCallback.onDirectoryChosen(mContext, path, mDetailNameCheckBox.isChecked(),
 					mOriginalNameCheckBox.isChecked(), mChanName, mBoardName, mThreadNumber);
 		}
