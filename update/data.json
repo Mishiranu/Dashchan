@@ -72,6 +72,18 @@
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanArhivach.apk"
 		}
 	],
+	"cablesix":
+	[
+		{
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"minSdk": 14,
+			"length": 55840,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanCableSix.apk"
+		}
+	],
 	"chiochan":
 	[
 		{
