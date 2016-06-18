@@ -15,6 +15,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | :-------------: | :------------------: | :-----------------------------------------------------------------------------------------------------------------------------------: |
 | allchan         | allchan.su           | [DashchanAllchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanAllchan.apk)                 |
 | apachan         | apachan.net          | [DashchanApachan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanApachan.apk)                 |
+| cablesix        | cable6.net           | [DashchanCableSix.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanCableSix.apk)               |
 | chiochan        | 410chan.org          | [DashchanChiochan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanChiochan.apk)               |
 | chuckdfwk       | chuck.dfwk.ru        | [DashchanChuckDfwk.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanChuckDfwk.apk)             |
 | cirno           | iichan.hk            | [DashchanCirno.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanCirno.apk)                     |
