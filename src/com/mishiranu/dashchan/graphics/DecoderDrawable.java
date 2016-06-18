@@ -31,9 +31,8 @@ import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
-import android.util.DisplayMetrics;
+import android.view.View;
 
-import com.mishiranu.dashchan.app.MainApplication;
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.LruCache;
@@ -78,11 +77,39 @@ public class DecoderDrawable extends Drawable implements LruCache.RemoveCallback
 		Rect dstRect = mDstRect;
 		if (!(canvas.getClipBounds(rect) && rect.intersect(bounds))) rect.set(bounds);
 		int maxEntries = 0;
-		DisplayMetrics metrics = MainApplication.getInstance().getResources().getDisplayMetrics();
-		int scale = Integer.highestOneBit(Math.max(1, (int) Math.min((float) rect.width() / metrics.widthPixels,
-				(float) rect.height() / metrics.heightPixels)));
+		int scale = 1;
+		boolean drawScaled = false;
+		Callback callback = getCallback();
+		if (callback instanceof View)
+		{
+			View view = (View) callback;
+			int contentWidth = view.getWidth();
+			int contentHeight = view.getHeight();
+			int rectWidth = rect.width();
+			int rectHeight = rect.height();
+			int scaledSize;
+			int contentSize;
+			int rectSize;
+			int size;
+			if (rectWidth * contentHeight > rectHeight * contentWidth)
+			{
+				scaledSize = mScaledBitmap.getWidth();
+				contentSize = contentWidth;
+				rectSize = rectWidth;
+				size = mWidth;
+			}
+			else
+			{
+				scaledSize = mScaledBitmap.getHeight();
+				contentSize = contentHeight;
+				rectSize = rectHeight;
+				size = mHeight;
+			}
+			scale = Integer.highestOneBit(Math.max(rectSize / contentSize, 1));
+			drawScaled = scaledSize >= size / scale;
+		}
 		int size = FRAGMENT_SIZE * scale;
-		if (mEnabled && (mScaledBitmap.getWidth() > size / 2 || mScaledBitmap.getHeight() > size / 2))
+		if (mEnabled && !drawScaled)
 		{
 			for (int y = 0; y < mHeight; y += size)
 			{
