@@ -72,7 +72,7 @@ public class CommentEditor
 	}
 	
 	@Public
-	public void addTag(int what, String open, String close)
+	public final void addTag(int what, String open, String close)
 	{
 		addTag(what, open, close, 0);
 	}
@@ -340,8 +340,6 @@ public class CommentEditor
 	@Extendable
 	public static class WakabaMarkCommentEditor extends CommentEditor
 	{
-		private boolean mSerialStrike = true;
-		
 		private static final Pattern MULTIPLE_STRIKES = Pattern.compile("^((?:\\^H)+)");
 		
 		@Public
@@ -354,16 +352,10 @@ public class CommentEditor
 		}
 		
 		@Override
-		public void addTag(int what, String open, String close)
-		{
-			if (what == ChanMarkup.TAG_STRIKE) mSerialStrike = false;
-			super.addTag(what, open, close);
-		}
-		
-		@Override
 		public String getTag(int what, boolean close, int length)
 		{
-			if (what == ChanMarkup.TAG_STRIKE && mSerialStrike)
+			String result = super.getTag(what, close, length);
+			if (what == ChanMarkup.TAG_STRIKE && result == null)
 			{
 				if (close)
 				{
@@ -373,13 +365,13 @@ public class CommentEditor
 				}
 				else return "";
 			}
-			return super.getTag(what, close, length);
+			return result;
 		}
 		
 		@Override
 		public FormatResult formatSelectedText(Editable editable, int what, int start, int end)
 		{
-			if (what == ChanMarkup.TAG_STRIKE && mSerialStrike)
+			if (what == ChanMarkup.TAG_STRIKE && super.getTag(what, false) == null)
 			{
 				String text = editable.toString();
 				String textAfterSelection = text.substring(end, text.length());
