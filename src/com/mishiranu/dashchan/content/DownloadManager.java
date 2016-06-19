@@ -679,12 +679,12 @@ public class DownloadManager
 				{
 					switch (radioGroup.getCheckedRadioButtonId())
 					{
-						case 1:
+						case android.R.id.button1:
 						{
 							callback.onConfirmReplacement(context, downloadItems);
 							break;
 						}
-						case 2:
+						case android.R.id.button2:
 						{
 							HashSet<String> availableFileGqsns = new HashSet<>();
 							ArrayList<DownloadService.DownloadItem> finalItems = new ArrayList<>(downloadItems.size());
@@ -720,7 +720,7 @@ public class DownloadManager
 							callback.onConfirmReplacement(context, finalItems);
 							break;
 						}
-						case 3:
+						case android.R.id.button3:
 						{
 							callback.onConfirmReplacement(context, availableItems);
 							break;
