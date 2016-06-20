@@ -47,7 +47,6 @@ import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.content.CaptchaManager;
 import com.mishiranu.dashchan.content.model.FileHolder;
-import com.mishiranu.dashchan.net.CloudFlarePasser;
 
 @Extendable
 public class ChanPerformer implements ChanManager.Linked
@@ -154,11 +153,6 @@ public class ChanPerformer implements ChanManager.Linked
 	@Extendable
 	public ReadCaptchaResult onReadCaptcha(ReadCaptchaData data) throws HttpException, InvalidResponseException
 	{
-		if (mChanName == null && data.requirement != null &&
-				data.requirement.startsWith(CloudFlarePasser.CAPTCHA_REQUIREMENT))
-		{
-			return CloudFlarePasser.readCaptcha(data);
-		}
 		return new ReadCaptchaResult(CaptchaState.SKIP, null);
 	}
 	

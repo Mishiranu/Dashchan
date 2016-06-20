@@ -244,9 +244,9 @@ public class CaptchaManager implements Handler.Callback
 			boolean mayShowLoadButton = (boolean) extra.get(EXTRA_MAY_SHOW_LOAD_BUTTON);
 			String[] captchaPass = forceCaptcha || chanName == null ? null : Preferences.getCaptchaPass(chanName);
 			ReadCaptchaHolder holder = new ReadCaptchaHolder();
-			ReadCaptchaTask task = new ReadCaptchaTask(getActivity(), holder, args.getString(EXTRA_CAPTCHA_TYPE),
-					args.getString(EXTRA_REQUIREMENT), captchaPass, mayShowLoadButton, chanName,
-					args.getString(EXTRA_BOARD_NAME), args.getString(EXTRA_THREAD_NUMBER));
+			ReadCaptchaTask task = new ReadCaptchaTask(getActivity(), holder, getPendingData().captchaReader,
+					args.getString(EXTRA_CAPTCHA_TYPE), args.getString(EXTRA_REQUIREMENT), captchaPass,
+					mayShowLoadButton, chanName, args.getString(EXTRA_BOARD_NAME), args.getString(EXTRA_THREAD_NUMBER));
 			task.executeOnExecutor(ReadCaptchaTask.THREAD_POOL_EXECUTOR);
 			return new Pair<Object, AsyncManager.Holder>(task, holder);
 		}
@@ -985,8 +985,15 @@ public class CaptchaManager implements Handler.Callback
 	
 	private static class CaptchaPendingData extends PendingData
 	{
+		public final ReadCaptchaTask.CaptchaReader captchaReader;
+		
 		public ChanPerformer.CaptchaData captchaData;
 		public String loadedCaptchaType;
+		
+		public CaptchaPendingData(ReadCaptchaTask.CaptchaReader captchaReader)
+		{
+			this.captchaReader = captchaReader;
+		}
 	}
 	
 	private static class ChoicePendingData extends PendingData
@@ -1000,17 +1007,18 @@ public class CaptchaManager implements Handler.Callback
 		ChanConfiguration configuration = ChanConfiguration.get(linked);
 		String captchaType = configuration.getCaptchaType();
 		String chanName = linked.getChanName();
-		return requireUserCaptcha(captchaType, requirement, chanName, boardName, threadNumber, 0, retry);
+		return requireUserCaptcha(null, captchaType, requirement, chanName, boardName, threadNumber, 0, retry);
 	}
 	
-	public ChanPerformer.CaptchaData requireUserCaptcha(String captchaType, String requirement,
-			String chanName, String boardName, String threadNumber, int descriptionResId, boolean retry)
+	public ChanPerformer.CaptchaData requireUserCaptcha(ReadCaptchaTask.CaptchaReader captchaReader,
+			String captchaType, String requirement, String chanName, String boardName, String threadNumber,
+			int descriptionResId, boolean retry)
 	{
 		CaptchaPendingData pendingData;
 		int pendingDataIndex;
 		synchronized (mPendingDataArray)
 		{
-			pendingData = new CaptchaPendingData();
+			pendingData = new CaptchaPendingData(captchaReader);
 			pendingDataIndex = mPendingDataStartIndex++;
 			mPendingDataArray.put(pendingDataIndex, pendingData);
 		}
@@ -1068,8 +1076,8 @@ public class CaptchaManager implements Handler.Callback
 						if (pendingData.captchaData == null)
 						{
 							// Error or canceled, try again
-							return requireUserCaptcha(captchaType, requirement, chanName, boardName, threadNumber,
-									descriptionResId, false);
+							return requireUserCaptcha(captchaReader, captchaType, requirement,
+									chanName, boardName, threadNumber, descriptionResId, false);
 						}
 					}
 					else captchaData.put(ChanPerformer.CaptchaData.INPUT, recaptchaResponse);

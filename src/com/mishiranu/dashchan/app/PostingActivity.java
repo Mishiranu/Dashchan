@@ -1342,7 +1342,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		String requirement = mThreadNumber != null ? ChanPerformer.ReadCaptchaData.REQUIREMENT_REPLY_TO_THREAD
 				: ChanPerformer.ReadCaptchaData.REQUIREMENT_NEW_THREAD;
 		ReadCaptchaHolder holder = new ReadCaptchaHolder();
-		ReadCaptchaTask task = new ReadCaptchaTask(this, holder, mCaptchaType, requirement, captchaPass,
+		ReadCaptchaTask task = new ReadCaptchaTask(this, holder, null, mCaptchaType, requirement, captchaPass,
 				mayShowLoadButton, mChanName, mBoardName, mThreadNumber);
 		task.executeOnExecutor(ReadCaptchaTask.THREAD_POOL_EXECUTOR);
 		return new Pair<Object, AsyncManager.Holder>(task, holder);
