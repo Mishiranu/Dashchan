@@ -48,6 +48,7 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.app.MainApplication;
+import com.mishiranu.dashchan.async.ReadCaptchaTask;
 import com.mishiranu.dashchan.content.CaptchaManager;
 import com.mishiranu.dashchan.preference.Preferences;
 
@@ -64,7 +65,6 @@ public class CloudFlarePasser implements Handler.Callback
 	private static final Pattern ALLOWED_LINKS = Pattern.compile("/?(|cdn-cgi/l/.*)");
 	private static final Pattern CF_CAPTCHA_PATTERN = Pattern.compile("data-sitekey=\"(.*?)\"");
 	
-	public static final String CAPTCHA_REQUIREMENT = "cloudflare";
 	public static final String COOKIE_CLOUDFLARE = "cf_clearance";
 	
 	private CloudFlarePasser()
@@ -340,8 +340,8 @@ public class CloudFlarePasser implements Handler.Callback
 			boolean retry = false;
 			while (true)
 			{
-				ChanPerformer.CaptchaData captchaData = CaptchaManager.getInstance().requireUserCaptcha(captchaType,
-						CAPTCHA_REQUIREMENT + recaptchaApiKey, null, null, null,
+				ChanPerformer.CaptchaData captchaData = CaptchaManager.getInstance().requireUserCaptcha
+						(new CloudFlareCaptchaReader(recaptchaApiKey), captchaType, null, null, null, null,
 						R.string.message_cloudflate_block, retry);
 				if (captchaData == null)
 				{
@@ -381,13 +381,23 @@ public class CloudFlarePasser implements Handler.Callback
 		}
 	}
 	
-	public static ChanPerformer.ReadCaptchaResult readCaptcha(ChanPerformer.ReadCaptchaData data) throws HttpException,
-			InvalidResponseException
+	private static class CloudFlareCaptchaReader implements ReadCaptchaTask.CaptchaReader
 	{
-		String apiKey = data.requirement.substring(CAPTCHA_REQUIREMENT.length());
-		ChanPerformer.CaptchaData captchaData = new ChanPerformer.CaptchaData();
-		captchaData.put(ChanPerformer.CaptchaData.API_KEY, apiKey);
-		return new ChanPerformer.ReadCaptchaResult(ChanPerformer.CaptchaState.CAPTCHA, captchaData);
+		private final String mRecaptchaApiKey;
+		
+		public CloudFlareCaptchaReader(String recaptchaApiKey)
+		{
+			mRecaptchaApiKey = recaptchaApiKey;
+		}
+		
+		@Override
+		public ChanPerformer.ReadCaptchaResult onReadCaptcha(ChanPerformer.ReadCaptchaData data)
+				throws HttpException, InvalidResponseException
+		{
+			ChanPerformer.CaptchaData captchaData = new ChanPerformer.CaptchaData();
+			captchaData.put(ChanPerformer.CaptchaData.API_KEY, mRecaptchaApiKey);
+			return new ChanPerformer.ReadCaptchaResult(ChanPerformer.CaptchaState.CAPTCHA, captchaData);
+		}
 	}
 	
 	public static boolean checkResponse(String chanName, HttpHolder holder) throws HttpException

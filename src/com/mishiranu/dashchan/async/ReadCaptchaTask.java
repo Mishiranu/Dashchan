@@ -24,6 +24,8 @@ import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
+import chan.content.ChanPerformer.ReadCaptchaData;
+import chan.content.ChanPerformer.ReadCaptchaResult;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
 
@@ -38,6 +40,7 @@ public class ReadCaptchaTask extends CancellableTask<Void, Long, Boolean>
 	
 	private final Context mContext;
 	private final Callback mCallback;
+	private final CaptchaReader mCaptchaReader;
 	private final HttpHolder mHolder = new HttpHolder();
 	
 	private final String mCaptchaType;
@@ -66,11 +69,36 @@ public class ReadCaptchaTask extends CancellableTask<Void, Long, Boolean>
 		public void onReadCaptchaError(ErrorItem errorItem);
 	}
 	
-	public ReadCaptchaTask(Context context, Callback callback, String captchaType, String requirement,
-			String[] captchaPass, boolean mayShowLoadButton, String chanName, String boardName, String threadNumber)
+	public static interface CaptchaReader
 	{
+		public ChanPerformer.ReadCaptchaResult onReadCaptcha(ChanPerformer.ReadCaptchaData data)
+				throws HttpException, InvalidResponseException;
+	}
+	
+	private static class ChanCaptchaReader implements CaptchaReader
+	{
+		private final String mChanName;
+		
+		public ChanCaptchaReader(String chanName)
+		{
+			mChanName = chanName;
+		}
+		
+		@Override
+		public ReadCaptchaResult onReadCaptcha(ReadCaptchaData data) throws HttpException, InvalidResponseException
+		{
+			return ChanPerformer.get(mChanName).onReadCaptcha(data);
+		}
+	}
+	
+	public ReadCaptchaTask(Context context, Callback callback, CaptchaReader captchaReader,
+			String captchaType, String requirement, String[] captchaPass, boolean mayShowLoadButton,
+			String chanName, String boardName, String threadNumber)
+	{
+		if (captchaReader == null) captchaReader = new ChanCaptchaReader(chanName);
 		mContext = context;
 		mCallback = callback;
+		mCaptchaReader = captchaReader;
 		mCaptchaType = captchaType;
 		mCaptchaPass = captchaPass;
 		mMayShowLoadButton = mayShowLoadButton;
@@ -89,7 +117,7 @@ public class ReadCaptchaTask extends CancellableTask<Void, Long, Boolean>
 		try
 		{
 			String parentCaptchaType = configuration.getCaptchaParentType(mCaptchaType);
-			result = ChanPerformer.get(mChanName).onReadCaptcha(new ChanPerformer.ReadCaptchaData(parentCaptchaType,
+			result = mCaptchaReader.onReadCaptcha(new ChanPerformer.ReadCaptchaData(parentCaptchaType,
 					mCaptchaPass, mMayShowLoadButton, mRequirement, mBoardName, mThreadNumber, mHolder));
 		}
 		catch (HttpException | InvalidResponseException e)
