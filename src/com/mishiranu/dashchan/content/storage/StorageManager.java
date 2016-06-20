@@ -91,8 +91,8 @@ public class StorageManager implements Handler.Callback, Runnable
 			File file = getFile(storage);
 			if (jsonObject != null)
 			{
-				File tempFile = new File(file.getAbsolutePath() + "_backup");
-				getFile(storage).renameTo(tempFile);
+				File backupFile = getBackupFile(storage);
+				getFile(storage).renameTo(backupFile);
 				boolean success = false;
 				byte[] bytes = jsonObject.toString().getBytes(CHARSET);
 				FileOutputStream output = null;
@@ -109,10 +109,10 @@ public class StorageManager implements Handler.Callback, Runnable
 				finally
 				{
 					IOUtils.close(output);
-					if (success) tempFile.delete(); else
+					if (success) backupFile.delete(); else
 					{
 						file.delete();
-						tempFile.renameTo(file);
+						backupFile.renameTo(file);
 					}
 				}
 			}
@@ -182,19 +182,30 @@ public class StorageManager implements Handler.Callback, Runnable
 		return file;
 	}
 	
-	public File getFile(String name)
+	private File getBackupFile(Storage storage)
+	{
+		return new File(storage.getFile().getAbsolutePath() + "-backup");
+	}
+	
+	private File getFile(String name)
 	{
 		return new File(getDirectory(), name + ".json");
 	}
 	
-	public File getFile(Storage storage)
+	private File getFile(Storage storage)
 	{
 		return getFile(storage.mName);
 	}
 	
-	public JSONObject read(Storage storage)
+	private JSONObject read(Storage storage)
 	{
 		File file = getFile(storage);
+		File backupFile = getBackupFile(storage);
+		if (backupFile.exists())
+		{
+			file.delete();
+			backupFile.renameTo(file);
+		}
 		FileInputStream input = null;
 		byte[] bytes = null;
 		try
