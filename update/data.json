@@ -16,11 +16,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.2",
+			"name": "1.3",
 			"code": 1,
 			"version": 1,
 			"minSdk": 14,
-			"length": 57719,
+			"length": 57796,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanAllchan.apk"
 		}
 	],
@@ -184,11 +184,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.0",
+			"name": "1.1",
 			"code": 1,
 			"version": 1,
 			"minSdk": 14,
-			"length": 58595,
+			"length": 59604,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanEndchan.apk"
 		}
 	],
@@ -340,11 +340,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.2",
+			"name": "1.3",
 			"code": 1,
 			"version": 1,
 			"minSdk": 14,
-			"length": 58644,
+			"length": 57488,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanNulldvachin.apk"
 		}
 	],
