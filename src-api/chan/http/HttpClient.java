@@ -252,9 +252,8 @@ public class HttpClient
 			{
 				for (byte b : new String(chars, start, i - start).getBytes("UTF-8"))
 				{
-					String s = Integer.toString((b & 0x000000ff), 16).toUpperCase(Locale.US);
+					String s = Integer.toString(b & 0xff, 16).toUpperCase(Locale.US);
 					uriStringBuilder.append('%');
-					if (s.length() == 0) uriStringBuilder.append('0');
 					uriStringBuilder.append(s);
 				}
 			}
@@ -274,7 +273,7 @@ public class HttpClient
 		for (int i = 0; i < chars.length; i++)
 		{
 			char c = chars[i];
-			boolean ita = c < 0x7f;
+			boolean ita = c < 0x80;
 			if (ita != ascii)
 			{
 				encodeUriBufferPart(uriStringBuilder, chars, i, start, ascii);
@@ -293,9 +292,9 @@ public class HttpClient
 		uriStringBuilder.append(host);
 		int port = uri.getPort();
 		if (port != -1) uriStringBuilder.append(':').append(port);
-		String path = uri.getPath();
+		String path = uri.getEncodedPath();
 		if (!StringUtils.isEmpty(path)) encodeUriAppend(uriStringBuilder, path);
-		String query = uri.getQuery();
+		String query = uri.getEncodedQuery();
 		if (!StringUtils.isEmpty(query))
 		{
 			uriStringBuilder.append('?');
