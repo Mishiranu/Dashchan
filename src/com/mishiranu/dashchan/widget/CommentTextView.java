@@ -23,11 +23,12 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.net.Uri;
+import android.os.Build;
 import android.text.Layout;
 import android.text.Selection;
 import android.text.Spannable;
@@ -390,7 +391,7 @@ public class CommentTextView extends TextView
 			}
 		}
 		
-		@SuppressLint("NewApi")
+		@TargetApi(Build.VERSION_CODES.M)
 		@Override
 		public boolean onCreateActionMode(ActionMode mode, Menu menu)
 		{

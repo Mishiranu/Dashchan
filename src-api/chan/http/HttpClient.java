@@ -57,9 +57,10 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
-import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.net.Uri;
+import android.os.Build;
 import android.util.Pair;
 
 import chan.content.ChanLocator;
@@ -303,7 +304,7 @@ public class HttpClient
 		return new URL(uriStringBuilder.toString());
 	}
 	
-	@SuppressLint("NewApi")
+	@TargetApi(Build.VERSION_CODES.KITKAT)
 	private void executeInternal(HttpRequest request) throws HttpException
 	{
 		HttpURLConnection connection = null;

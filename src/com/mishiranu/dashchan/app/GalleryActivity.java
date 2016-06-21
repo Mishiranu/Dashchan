@@ -19,7 +19,7 @@ package com.mishiranu.dashchan.app;
 import java.io.File;
 import java.util.ArrayList;
 
-import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -29,6 +29,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.ContextMenu;
@@ -97,7 +98,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 	private PagerUnit mPagerUnit;
 	private ListUnit mListUnit;
 	
-	@SuppressLint("NewApi")
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private void applyStatusNavigationTranslucency()
 	{
 		if (C.API_LOLLIPOP)
@@ -513,7 +514,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		invalidateOptionsMenu();
 	}
 	
-	@SuppressLint("NewApi")
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private class CornerAnimator implements Runnable
 	{
 		private final long mStartTime = System.currentTimeMillis();
@@ -636,7 +637,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 	private boolean mExpandedScreen;
 	private int mSystemUiVisibilityFlags = GalleryInstance.FLAG_LOCKED_USER;
 	
-	@SuppressLint("InlinedApi")
+	@TargetApi(Build.VERSION_CODES.KITKAT)
 	private void invalidateSystemUiVisibility()
 	{
 		ActionBar actionBar = getActionBar();

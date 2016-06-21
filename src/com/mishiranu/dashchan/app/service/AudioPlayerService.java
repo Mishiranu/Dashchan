@@ -17,8 +17,7 @@
 package com.mishiranu.dashchan.app.service;
 
 import java.io.File;
-
-import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -30,10 +29,10 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Binder;
+import android.os.Build;
 import android.os.PowerManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.ContextThemeWrapper;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.app.AudioPlayerActivity;
@@ -76,7 +75,7 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 		return new Intent(context, AudioPlayerService.class).setAction(action);
 	}
 	
-	@SuppressLint("InlinedApi")
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	@Override
 	public void onCreate()
 	{
@@ -342,7 +341,7 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 	private static final int[] ICON_ATTRS = {R.attr.notificationRefresh, R.attr.notificationCancel,
 		R.attr.notificationPlay, R.attr.notificationPause};
 	
-	@SuppressLint("NewApi")
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private void refreshPlaybackNotification(boolean recreate)
 	{
 		Notification.Builder builder = mBuilder;
@@ -371,7 +370,7 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 		startForeground(C.NOTIFICATION_AUDIO_PLAYER_SERVICE, builder.build());
 	}
 	
-	@SuppressLint("NewApi")
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private void refreshDownloadingNotification(boolean recreate, boolean error, ErrorItem errorItem, Uri uri)
 	{
 		Notification.Builder builder = mBuilder;

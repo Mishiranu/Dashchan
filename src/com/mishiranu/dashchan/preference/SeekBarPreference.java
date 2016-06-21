@@ -175,7 +175,6 @@ public class SeekBarPreference extends DialogPreference
 		return defaultValue;
 	}
 	
-	@SuppressLint("InflateParams")
 	@Override
 	protected View onCreateDialogView()
 	{

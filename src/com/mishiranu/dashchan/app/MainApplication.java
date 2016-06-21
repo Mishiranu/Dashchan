@@ -16,10 +16,11 @@
 
 package com.mishiranu.dashchan.app;
 
-import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.os.Build;
 
 import chan.content.ChanManager;
 import chan.http.HttpClient;
@@ -66,7 +67,7 @@ public class MainApplication extends android.app.Application
 		return sInstance;
 	}
 	
-	@SuppressLint("NewApi")
+	@TargetApi(Build.VERSION_CODES.KITKAT)
 	public boolean isLowRam()
 	{
 		if (C.API_KITKAT)

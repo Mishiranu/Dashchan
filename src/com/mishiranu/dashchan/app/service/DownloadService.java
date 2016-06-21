@@ -22,7 +22,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -34,6 +34,7 @@ import android.content.res.TypedArray;
 import android.graphics.Typeface;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
+import android.os.Build;
 import android.os.IBinder;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -89,7 +90,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 		return new Intent(context, DownloadService.class).setAction(action);
 	}
 	
-	@SuppressLint("InlinedApi")
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	@Override
 	public void onCreate()
 	{
@@ -382,7 +383,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 		}
 	}
 	
-	@SuppressLint("NewApi")
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private void refreshNotificationFromThread(NotificationData notificationData)
 	{
 		if (mBuilder == null || (notificationData.hasTask) != mOldStateWithTask)

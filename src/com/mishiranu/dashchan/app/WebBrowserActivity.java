@@ -55,12 +55,12 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 
-@SuppressLint("SetJavaScriptEnabled")
 public class WebBrowserActivity extends StateActivity implements DownloadListener
 {
 	private WebView mWebView;
 	private ProgressView mProgressView;
 	
+	@SuppressLint("SetJavaScriptEnabled")
 	@SuppressWarnings("deprecation")
 	@Override
 	protected void onCreate(Bundle savedInstanceState)

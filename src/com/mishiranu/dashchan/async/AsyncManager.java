@@ -20,10 +20,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Pair;
 
@@ -99,7 +100,7 @@ public final class AsyncManager
 		return fragment.manager;
 	}
 	
-	@SuppressLint("NewApi")
+	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
 	public static AsyncManager get(Fragment fragment)
 	{
 		if (C.API_JELLY_BEAN_MR1)

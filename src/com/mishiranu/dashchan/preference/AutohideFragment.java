@@ -65,7 +65,6 @@ public class AutohideFragment extends BaseListFragment
 	private ArrayAdapter<AutohideStorage.AutohideItem> mAdapter;
 	private LayoutInflater mInflater;
 	
-	@SuppressLint("InflateParams")
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState)
 	{

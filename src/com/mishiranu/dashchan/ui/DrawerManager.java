@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -38,6 +38,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.support.v4.widget.DrawerLayout;
 import android.text.InputFilter;
 import android.text.InputType;
@@ -1309,7 +1310,6 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 		return linearLayout;
 	}
 	
-	@SuppressLint("NewApi")
 	private View makeHeader(ViewGroup parent, boolean button, float density)
 	{
 		if (C.API_LOLLIPOP)
@@ -1527,7 +1527,7 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 		private boolean mHasNew = false;
 		private int mColor;
 		
-		@SuppressLint("NewApi")
+		@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 		public WatcherView(Context context, int defaultWidth)
 		{
 			super(context);

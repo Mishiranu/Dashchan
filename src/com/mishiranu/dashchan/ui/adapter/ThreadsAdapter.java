@@ -325,7 +325,7 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 			{
 				convertView = mUiManager.view().getThreadView(postItem, convertView, parent, mChanName, mBusy);
 			}
-			else convertView = mUiManager.view().getThreadHiddenView(convertView, postItem);
+			else convertView = mUiManager.view().getThreadHiddenView(postItem, convertView, parent);
 			ViewUtils.applyCardHolderPadding(convertView, null, position == 0, position == getCount() - 1, false);
 		}
 		else if (item instanceof PostItem[])
