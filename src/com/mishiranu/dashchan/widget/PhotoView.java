@@ -23,7 +23,6 @@ package com.mishiranu.dashchan.widget;
 import java.lang.reflect.Method;
 
 import android.animation.ValueAnimator;
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
@@ -45,7 +44,6 @@ import android.widget.Scroller;
 import com.mishiranu.dashchan.graphics.TransparentTileDrawable;
 import com.mishiranu.dashchan.util.AnimationUtils;
 
-@SuppressLint("NewApi")
 public class PhotoView extends View implements GestureDetector.OnDoubleTapListener,
 		ViewTreeObserver.OnGlobalLayoutListener, ScaleGestureDetector.OnScaleGestureListener
 {
@@ -640,12 +638,12 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 			deltaY = (viewHeight - height) / 2 - rect.top;
 			mScrollEdgeY = ScrollEdge.BOTH;
 		}
-		else if (rect.top >= 0)
+		else if (rect.top + 0.5f >= 0)
 		{
 			deltaY = -rect.top;
 			mScrollEdgeY = ScrollEdge.START;
 		}
-		else if (rect.bottom <= viewHeight)
+		else if (rect.bottom - 0.5f <= viewHeight)
 		{
 			deltaY = viewHeight - rect.bottom;
 			mScrollEdgeY = ScrollEdge.END;
