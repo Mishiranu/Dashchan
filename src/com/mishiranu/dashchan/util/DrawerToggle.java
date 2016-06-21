@@ -23,7 +23,7 @@ package com.mishiranu.dashchan.util;
 import java.lang.reflect.Field;
 
 import android.animation.ValueAnimator;
-import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
@@ -38,6 +38,7 @@ import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.InsetDrawable;
+import android.os.Build;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.ViewDragHelper;
 import android.view.Gravity;
@@ -106,7 +107,7 @@ public class DrawerToggle implements DrawerLayout.DrawerListener
 		DRAWER_CLOSE_DURATION = duration;
 	}
 	
-	@SuppressLint("NewApi")
+	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 	public void setDrawerIndicatorMode(int mode)
 	{
 		if (mMode != mode)
@@ -138,7 +139,7 @@ public class DrawerToggle implements DrawerLayout.DrawerListener
 		}
 	}
 	
-	@SuppressLint("NewApi")
+	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 	public void syncState()
 	{
 		if (mMode != MODE_DISABLED)
@@ -393,7 +394,7 @@ public class DrawerToggle implements DrawerLayout.DrawerListener
 	
 	private ImageView mUpIndicatorView;
 	
-	@SuppressLint("NewApi")
+	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 	private void setActionBarUpIndicatorObsolete(Drawable upDrawable)
 	{
 		if (C.API_JELLY_BEAN_MR2)
@@ -442,7 +443,6 @@ public class DrawerToggle implements DrawerLayout.DrawerListener
 			return mPosition;
 		}
 		
-		@SuppressLint("InlinedApi")
 		@Override
 		public void draw(Canvas canvas)
 		{
@@ -462,7 +462,7 @@ public class DrawerToggle implements DrawerLayout.DrawerListener
 		}
 	}
 	
-	@SuppressLint("NewApi")
+	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
 	private boolean isLayoutRtl()
 	{
 		return C.API_JELLY_BEAN_MR1 ? mActivity.getWindow().getDecorView().getLayoutDirection()

@@ -22,7 +22,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 
-import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -31,6 +31,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
@@ -414,7 +415,7 @@ public class ChanFragment extends BasePreferenceFragment
 			setArguments(args);
 		}
 		
-		@SuppressLint("NewApi")
+		@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
 		public void show(Fragment parent)
 		{
 			show(C.API_JELLY_BEAN_MR1 ? parent.getChildFragmentManager() : parent.getFragmentManager(),
@@ -454,7 +455,7 @@ public class ChanFragment extends BasePreferenceFragment
 			return task.getPair();
 		}
 		
-		@SuppressLint("NewApi")
+		@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
 		@Override
 		public void onFinishTaskExecution(String name, AsyncManager.Holder holder)
 		{

@@ -19,7 +19,6 @@ package com.mishiranu.dashchan.ui.adapter;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Pair;
 import android.view.View;
@@ -144,7 +143,6 @@ public class ThreadSummariesAdapter extends BaseAdapter implements BusyScrollLis
 		return 0;
 	}
 	
-	@SuppressLint("InflateParams")
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent)
 	{

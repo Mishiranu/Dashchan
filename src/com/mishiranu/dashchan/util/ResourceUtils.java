@@ -16,7 +16,7 @@
 
 package com.mishiranu.dashchan.util;
 
-import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
@@ -25,6 +25,7 @@ import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.InsetDrawable;
+import android.os.Build;
 import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.View;
@@ -36,7 +37,7 @@ public class ResourceUtils
 {
 	public static final int STATUS_NAVIGATION_BACKGROUND = 0x33000000;
 	
-	@SuppressLint("NewApi")
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	public static void applyPreferredTheme(Activity activity)
 	{
 		activity.setTheme(Preferences.getThemeResource());
@@ -130,14 +131,14 @@ public class ResourceUtils
 		return notFound;
 	}
 	
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	@SuppressWarnings("deprecation")
-	@SuppressLint("NewApi")
 	public static Drawable getDrawable(Context context, int resId)
 	{
 		return C.API_LOLLIPOP ? context.getDrawable(resId) : context.getResources().getDrawable(resId);
 	}
 	
-	@SuppressLint("NewApi")
+	
 	public static Drawable getDrawable(Context context, int attr, int notFound)
 	{
 		int resId = getResourceId(context, attr, notFound);
@@ -147,8 +148,8 @@ public class ResourceUtils
 	public static final int[] PRESSED_STATE = {android.R.attr.state_window_focused, android.R.attr.state_enabled,
 		android.R.attr.state_pressed};
 	
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	@SuppressWarnings("deprecation")
-	@SuppressLint("InlinedApi")
 	public static int getSystemSelectorColor(Context context)
 	{
 		if (C.API_LOLLIPOP) return getColor(context, android.R.attr.colorControlHighlight); else 
@@ -161,7 +162,7 @@ public class ResourceUtils
 		}
 	}
 	
-	@SuppressLint("NewApi")
+	@TargetApi(Build.VERSION_CODES.KITKAT)
 	public static int getDialogBackground(Context context)
 	{
 		context = new ContextThemeWrapper(context, getResourceId(context, android.R.attr.dialogTheme, 0));

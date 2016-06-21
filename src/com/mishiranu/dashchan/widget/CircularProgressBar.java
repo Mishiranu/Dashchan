@@ -16,7 +16,7 @@
 
 package com.mishiranu.dashchan.widget;
 
-import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -25,6 +25,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.animation.Interpolator;
@@ -74,7 +75,7 @@ public class CircularProgressBar extends View
 		this(context, null);
 	}
 	
-	@SuppressLint("NewApi")
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	public CircularProgressBar(Context context, AttributeSet attrs)
 	{
 		super(context, attrs);

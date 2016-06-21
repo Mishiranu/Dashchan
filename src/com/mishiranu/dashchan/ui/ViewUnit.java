@@ -176,7 +176,6 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		return getThreadView(null, threadSummaryItem, convertView, parent, chanName, isBusy);
 	}
 	
-	@SuppressLint("InflateParams")
 	private View getThreadView(PostItem postItem, ThreadSummaryItem threadSummaryItem,
 			View convertView, ViewGroup parent, String chanName, boolean isBusy)
 	{
@@ -186,7 +185,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		if (convertView != null && !(convertView.getTag() instanceof ThreadViewHolder)) convertView = null;
 		if (convertView == null)
 		{
-			convertView = mInflater.inflate(R.layout.list_item_card, null);
+			convertView = mInflater.inflate(R.layout.list_item_card, parent, false);
 			CardView cardView = (CardView) convertView.findViewById(R.id.card_view);
 			mInflater.inflate(R.layout.list_item_thread, cardView);
 			holder = new ThreadViewHolder();
@@ -321,7 +320,6 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 				contentHeight, isBusy);
 	}
 	
-	@SuppressLint("InflateParams")
 	public View getThreadViewForGrid(PostItem postItem, ThreadSummaryItem threadSummaryItem, View convertView,
 			ViewGroup parent, HidePerformer hidePerformer, String chanName, int contentHeight, boolean isBusy)
 	{
@@ -331,7 +329,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		if (convertView != null && !(convertView.getTag() instanceof ThreadViewHolder)) convertView = null;
 		if (convertView == null)
 		{
-			convertView = mInflater.inflate(R.layout.list_item_card, null);
+			convertView = mInflater.inflate(R.layout.list_item_card, parent, false);
 			CardView cardView = (CardView) convertView.findViewById(R.id.card_view);
 			mInflater.inflate(R.layout.list_item_thread_grid, cardView);
 			holder = new ThreadViewHolder();
@@ -433,14 +431,13 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		return convertView;
 	}
 	
-	@SuppressLint("InflateParams")
-	public View getThreadHiddenView(View convertView, PostItem postItem)
+	public View getThreadHiddenView(PostItem postItem, View convertView, ViewGroup parent)
 	{
 		HiddenViewHolder holder;
 		if (convertView != null && !(convertView.getTag() instanceof HiddenViewHolder)) convertView = null;
 		if (convertView == null)
 		{
-			convertView = mInflater.inflate(R.layout.list_item_card, null);
+			convertView = mInflater.inflate(R.layout.list_item_card, parent, false);
 			ViewGroup cardView = (ViewGroup) convertView.findViewById(R.id.card_view);
 			mInflater.inflate(R.layout.list_item_hidden, cardView);
 			holder = new HiddenViewHolder();
@@ -460,8 +457,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		return convertView;
 	}
 	
-	@SuppressLint("InflateParams")
-	public View getPostView(PostItem postItem, View convertView, View parent, UiManager.DemandSet demandSet,
+	public View getPostView(PostItem postItem, View convertView, ViewGroup parent, UiManager.DemandSet demandSet,
 			UiManager.ConfigurationSet configurationSet)
 	{
 		Context context = mUiManager.getContext();
@@ -470,7 +466,8 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		if (convertView != null && !(convertView.getTag() instanceof PostViewHolder)) convertView = null;
 		if (convertView == null)
 		{
-			SingleLayerLinearLayout layout = (SingleLayerLinearLayout) mInflater.inflate(R.layout.list_item_post, null);
+			SingleLayerLinearLayout layout = (SingleLayerLinearLayout) mInflater.inflate(R.layout.list_item_post,
+					parent, false);
 			layout.setOnTemporaryDetatchListener(this);
 			convertView = layout;
 			holder = new PostViewHolder();
@@ -673,14 +670,13 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		return convertView;
 	}
 	
-	@SuppressLint("InflateParams")
-	public View getPostHiddenView(PostItem postItem, View convertView)
+	public View getPostHiddenView(PostItem postItem, View convertView, ViewGroup parent)
 	{
 		HiddenViewHolder holder;
 		if (convertView != null && !(convertView.getTag() instanceof HiddenViewHolder)) convertView = null;
 		if (convertView == null)
 		{
-			convertView = mInflater.inflate(R.layout.list_item_hidden, null);
+			convertView = mInflater.inflate(R.layout.list_item_hidden, parent, false);
 			holder = new HiddenViewHolder();
 			holder.index = (TextView) convertView.findViewById(R.id.index);
 			holder.number = (TextView) convertView.findViewById(R.id.number);

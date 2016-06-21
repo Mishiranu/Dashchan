@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Random;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -98,7 +97,6 @@ public class GraphicsUtils
 		return Color.argb(Math.min(a, 0xff), Math.min(r, 0xff), Math.min(g, 0xff), Math.min(b, 0xff));
 	}
 	
-	@SuppressLint("RtlHardcoded")
 	public static int getDrawableColor(Context context, Drawable drawable, int gravity)
 	{
 		float density = ResourceUtils.obtainDensity(context);

@@ -20,13 +20,14 @@ import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.os.Build;
 import android.view.ActionMode;
 import android.view.ContextThemeWrapper;
 import android.view.Gravity;
@@ -55,7 +56,7 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 	
 	private WeakReference<ActionMode> mCurrentActionMode;
 	
-	@SuppressLint("InlinedApi")
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	public DialogStack(Context context, ExpandedScreen expandedScreen)
 	{
 		mContext = context;
@@ -143,7 +144,6 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 		mCallback = callback;
 	}
 	
-	@SuppressLint("InlinedApi")
 	public static void bindDialogToExpandedScreen(Dialog dialog, final View rootView,
 			final ExpandedScreen expandedScreen, boolean unbindOnDismiss, boolean invalidate)
 	{
@@ -255,9 +255,6 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 		return dialogView;
 	}
 	
-	@SuppressLint("InlinedApi")
-	private static final int[] ATTRS_SHADOW = {android.R.attr.windowElevation};
-	
 	private class DialogView extends FrameLayout
 	{
 		private final Paint mPaint = new Paint();
@@ -265,13 +262,15 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 		
 		private boolean mActive = false;
 		
+		@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 		public DialogView(Context context)
 		{
 			super(context);
 			mPaint.setColor((int) (mDimAmount * 0xff) << 24);
 			if (C.API_LOLLIPOP)
 			{
-				TypedArray typedArray = mStyledContext.obtainStyledAttributes(ATTRS_SHADOW);
+				int[] attrs = {android.R.attr.windowElevation};
+				TypedArray typedArray = mStyledContext.obtainStyledAttributes(attrs);
 				mShadowSize = typedArray.getDimension(0, 0f);
 				typedArray.recycle();
 			}
@@ -284,7 +283,7 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 			return getChildAt(0);
 		}
 		
-		@SuppressLint("NewApi")
+		@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 		public void setActive(boolean active)
 		{
 			if (mActive != active)

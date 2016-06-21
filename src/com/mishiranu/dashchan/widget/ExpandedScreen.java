@@ -23,7 +23,6 @@ import java.util.LinkedHashMap;
 
 import android.animation.Animator;
 import android.animation.ValueAnimator;
-import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.app.Activity;
@@ -88,7 +87,7 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 	private final int mLastItemLimit;
 	private int mMinItemsCount;
 	
-	@SuppressLint("NewApi")
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	public ExpandedScreen(Activity activity, boolean enabled)
 	{
 		mActivity = activity;
@@ -170,7 +169,6 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 			return mShown;
 		}
 		
-		@SuppressLint("InlinedApi")
 		public boolean onSystemWindowInsetsChanged(Rect insets)
 		{
 			boolean oldStatusShown = mShown;

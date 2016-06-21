@@ -25,6 +25,7 @@ import java.util.List;
 
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -32,6 +33,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.net.Uri;
+import android.os.Build;
 import android.text.InputType;
 import android.util.Pair;
 import android.util.TypedValue;
@@ -806,7 +808,7 @@ public class DialogUnit implements DialogStack.Callback
 			PostItem postItem = getItem(position);
 			if (postItem.isHidden(mDialogProvider.configurationSet.hidePerformer))
 			{
-				convertView = mUiManager.view().getPostHiddenView(postItem, convertView);
+				convertView = mUiManager.view().getPostHiddenView(postItem, convertView, parent);
 			}
 			else
 			{
@@ -881,7 +883,7 @@ public class DialogUnit implements DialogStack.Callback
 		}
 	};
 	
-	@SuppressLint("InlinedApi")
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private void showAttachmentsGrid(final Context context, final List<AttachmentItem> attachmentItems,
 			final int startImageIndex, final GalleryItem.GallerySet gallerySet)
 	{

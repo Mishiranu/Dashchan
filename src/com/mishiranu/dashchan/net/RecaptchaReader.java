@@ -28,10 +28,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
@@ -574,7 +576,7 @@ public class RecaptchaReader implements Handler.Callback
 	private static final int MESSAGE_CHECK_IMAGE_SELECT_CONTINUE = 7;
 	private static final int MESSAGE_CHECK_IMAGE_TOO_FEW = 8;
 	
-	@SuppressLint("NewApi")
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	@SuppressWarnings("deprecation")
 	@Override
 	public boolean handleMessage(Message msg)

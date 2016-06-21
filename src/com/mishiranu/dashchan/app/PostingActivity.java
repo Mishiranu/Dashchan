@@ -30,7 +30,7 @@ import java.util.Locale;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -46,6 +46,7 @@ import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Parcelable;
@@ -243,7 +244,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	
 	private static final String TASK_READ_CAPTCHA = "read_captcha";
 	
-	@SuppressLint("NewApi")
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
@@ -1011,7 +1012,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		return list;
 	}
 	
-	@SuppressLint("InlinedApi")
+	@TargetApi(Build.VERSION_CODES.KITKAT)
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
@@ -1421,7 +1422,6 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		mSendButton.setEnabled(canSend);
 	}
 	
-	@SuppressLint("NewApi")
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data)
 	{

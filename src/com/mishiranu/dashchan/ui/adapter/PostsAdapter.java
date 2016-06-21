@@ -171,7 +171,7 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 		if (postItem == null) return mBumpLimitDivider;
 		if (postItem.isHidden(mConfigurationSet.hidePerformer))
 		{
-			convertView = mUiManager.view().getPostHiddenView(postItem, convertView);
+			convertView = mUiManager.view().getPostHiddenView(postItem, convertView, parent);
 		}
 		else
 		{

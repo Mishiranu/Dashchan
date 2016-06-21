@@ -216,7 +216,7 @@ public class HistoryAdapter extends BaseAdapter
 			}
 			else
 			{
-				convertView = ViewFactory.makeListTextHeader(context, mInflater, true);
+				convertView = ViewFactory.makeListTextHeader(context, parent, true);
 				holder = null;
 			}
 		}

@@ -24,7 +24,7 @@ import java.util.Iterator;
 import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
-import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -38,6 +38,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
@@ -149,7 +150,7 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 	private final ActionMenuConfigurator mActionMenuConfigurator = new ActionMenuConfigurator();
 	private final ClickableToast.Holder mClickableToastHolder = new ClickableToast.Holder(this);
 	
-	@SuppressLint("NewApi")
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
@@ -1082,7 +1083,7 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		return false;
 	}
 	
-	@SuppressLint("NewApi")
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private void showThemeDialog()
 	{
 		final int checkedItem = Arrays.asList(Preferences.VALUES_THEME).indexOf(Preferences.getTheme());
@@ -1431,13 +1432,13 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		return mPageManager.getPages();
 	}
 	
-	@SuppressLint("NewApi")
+	@TargetApi(Build.VERSION_CODES.M)
 	private boolean isPermissionGranted(String permission)
 	{
 		return C.API_MARSHMALLOW ? checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED : true;
 	}
 	
-	@SuppressLint("NewApi")
+	@TargetApi(Build.VERSION_CODES.M)
 	private boolean requestStoragePermission()
 	{
 		if (C.API_MARSHMALLOW)
@@ -1519,7 +1520,7 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		}
 	}
 	
-	@SuppressLint("NewApi")
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private void createNewPostNotification(Intent intent)
 	{
 		Notification.Builder builder = new Notification.Builder(MainActivity.this);
@@ -1596,7 +1597,7 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		mReadUpdateTask.executeOnExecutor(ReadUpdateTask.THREAD_POOL_EXECUTOR);
 	}
 	
-	@SuppressLint("NewApi")
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	@Override
 	public void onReadUpdateComplete(ReadUpdateTask.UpdateDataMap updateDataMap)
 	{

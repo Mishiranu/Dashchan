@@ -19,7 +19,6 @@ package com.mishiranu.dashchan.widget;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.RippleDrawable;
@@ -94,7 +93,6 @@ public class ClickableView extends FrameLayout implements View.OnClickListener, 
 		}
 	};
 	
-	@SuppressLint("NewApi")
 	@Override
 	public boolean onTouchEvent(MotionEvent event)
 	{

@@ -16,9 +16,10 @@
 
 package com.mishiranu.dashchan.widget;
 
-import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Rect;
+import android.os.Build;
 import android.view.WindowInsets;
 import android.widget.FrameLayout;
 
@@ -69,7 +70,7 @@ public class WindowControlFrameLayout extends FrameLayout
 		}
 	}
 	
-	@SuppressLint("NewApi")
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	@Override
 	public WindowInsets onApplyWindowInsets(WindowInsets insets)
 	{

@@ -171,7 +171,7 @@ public class BoardsAdapter extends BaseAdapter
 				textView.setSingleLine(true);
 				convertView = textView;
 			}
-			else convertView = ViewFactory.makeListTextHeader(mContext, mInflater, false);
+			else convertView = ViewFactory.makeListTextHeader(mContext, parent, false);
 		}
 		((TextView) convertView).setText(listItem.title);
 		return convertView;

@@ -17,7 +17,6 @@
 package com.mishiranu.dashchan.widget;
 
 import java.lang.reflect.Field;
-import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -71,7 +70,7 @@ public class EdgeEffectHandler
 			if (mPullable) super.onPull(deltaDistance);
 		}
 		
-		@SuppressLint("NewApi")
+		@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 		@Override
 		public void onPull(float deltaDistance, float displacement)
 		{
@@ -96,7 +95,7 @@ public class EdgeEffectHandler
 		
 		private Paint mShiftPaint = new Paint();
 		
-		@SuppressLint("NewApi")
+		@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 		@Override
 		public boolean draw(Canvas canvas)
 		{
@@ -134,7 +133,7 @@ public class EdgeEffectHandler
 		mBottomEdgeEffect = new ControlledEdgeEffect(context, shift, false);
 	}
 	
-	@SuppressLint("NewApi")
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	public void setColor(int color)
 	{
 		if (C.API_LOLLIPOP)

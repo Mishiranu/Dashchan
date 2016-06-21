@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Locale;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -339,7 +338,6 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener
 		updatePlayState();
 	}
 	
-	@SuppressLint({"RtlHardcoded", "NewApi"})
 	private void recreateVideoControls()
 	{
 		Context context = mInstance.galleryInstance.context;

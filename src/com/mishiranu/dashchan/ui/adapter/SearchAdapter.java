@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 
 import android.content.Context;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
@@ -100,7 +99,7 @@ public class SearchAdapter extends BaseAdapter implements BusyScrollListener.Cal
 		{
 			if (convertView == null)
 			{
-				convertView = ViewFactory.makeListTextHeader(mContext, LayoutInflater.from(mContext), false);
+				convertView = ViewFactory.makeListTextHeader(mContext, parent, false);
 				if (C.API_LOLLIPOP)
 				{
 					float density = ResourceUtils.obtainDensity(mContext);

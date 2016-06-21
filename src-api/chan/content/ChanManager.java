@@ -27,7 +27,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -40,6 +40,7 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 
@@ -52,7 +53,6 @@ import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.WeakObservable;
 
-@SuppressLint("NewApi")
 public class ChanManager
 {
 	public static final int MAX_VERSION = 1;
@@ -291,6 +291,7 @@ public class ChanManager
 		mLibItems = mapExtensionsList(libItems);
 	}
 	
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private void postInit()
 	{
 		ArrayList<String> loadedChanNames = new ArrayList<>();
@@ -569,6 +570,7 @@ public class ChanManager
 		return null;
 	}
 	
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	public Drawable getIcon(String chanName, int tint)
 	{
 		if (C.API_LOLLIPOP)

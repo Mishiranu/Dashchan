@@ -19,7 +19,6 @@ package com.mishiranu.dashchan.util;
 import java.lang.reflect.Field;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -220,7 +219,7 @@ public class ViewUtils
 				context.getString(titleRes), intent);
 	}
 	
-	@SuppressLint("NewApi")
+	@TargetApi(Build.VERSION_CODES.M)
 	@SuppressWarnings("deprecation")
 	public static void addNotificationAction(Notification.Builder builder, Context context, int icon,
 			CharSequence title, PendingIntent intent)

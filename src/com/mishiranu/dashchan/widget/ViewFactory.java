@@ -16,8 +16,9 @@
 
 package com.mishiranu.dashchan.widget;
 
-import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.Context;
+import android.os.Build;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -32,9 +33,9 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 
 public class ViewFactory
 {
+	@TargetApi(Build.VERSION_CODES.M)
 	@SuppressWarnings("deprecation")
-	@SuppressLint({"InflateParams", "NewApi"})
-	public static TextView makeListTextHeader(Context context, LayoutInflater inflater, boolean tiny)
+	public static TextView makeListTextHeader(Context context, ViewGroup parent, boolean tiny)
 	{
 		if (C.API_LOLLIPOP)
 		{
@@ -51,8 +52,8 @@ public class ViewFactory
 		}
 		else
 		{
-			if (inflater == null) inflater = LayoutInflater.from(context);
-			TextView textView = (TextView) inflater.inflate(android.R.layout.preference_category, null);
+			TextView textView = (TextView) LayoutInflater.from(context).inflate(android.R.layout.preference_category,
+					parent, false);
 			float density = ResourceUtils.obtainDensity(context);
 			textView.setPadding((int) (12f * density), textView.getPaddingTop(), (int) (12f * density),
 					textView.getPaddingBottom());
