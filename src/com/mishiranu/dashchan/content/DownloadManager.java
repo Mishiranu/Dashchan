@@ -109,6 +109,7 @@ public class DownloadManager
 			DialogDirectory dialogDirectory = DialogDirectory.create(file.getParentFile(), mLastRootDirectory);
 			if (dialogDirectory != null)
 			{
+				dialogDirectory.lastModified = file.lastModified();
 				while (dialogDirectory != null)
 				{
 					int index = mLastDialogDirectotyItems.indexOf(dialogDirectory);
@@ -488,13 +489,18 @@ public class DownloadManager
 					{
 						for (File file : files)
 						{
-							if ((exclude == null || !exclude.contains(file)) && file.isDirectory())
+							if ((exclude == null || !exclude.contains(file)))
 							{
-								DialogDirectory dialogDirectory = DialogDirectory.create(file, root);
-								dialogDirectories.add(dialogDirectory);
-								long lastModified = findDirectories(dialogDirectories, file, root, exclude);
-								lastModified = Math.max(file.lastModified(), lastModified);
-								dialogDirectory.lastModified = lastModified;
+								long lastModified;
+								if (file.isDirectory())
+								{
+									DialogDirectory dialogDirectory = DialogDirectory.create(file, root);
+									dialogDirectories.add(dialogDirectory);
+									lastModified = findDirectories(dialogDirectories, file, root, exclude);
+									lastModified = Math.max(dialogDirectory.lastModified, lastModified);
+									dialogDirectory.lastModified = lastModified;
+								}
+								else lastModified = file.lastModified();
 								if (lastModified > resultLastModified) resultLastModified = lastModified;
 							}
 						}
