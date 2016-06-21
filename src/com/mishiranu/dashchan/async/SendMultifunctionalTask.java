@@ -104,22 +104,28 @@ public class SendMultifunctionalTask extends CancellableTask<Void, Void, Boolean
 			{
 				case DELETE:
 				{
-					ChanPerformer.get(mState.chanName).onSendDeletePosts(new ChanPerformer.SendDeletePostsData
+					ChanPerformer.get(mState.chanName).safe().onSendDeletePosts(new ChanPerformer.SendDeletePostsData
 							(mState.boardName, mState.threadNumber, Collections.unmodifiableList(mState.postNumbers),
 							mText, mOptions != null && mOptions.contains(OPTION_FILES_ONLY), mHolder));
 					break;
 				}
 				case REPORT:
 				{
-					ChanPerformer.get(mState.chanName).onSendReportPosts(new ChanPerformer.SendReportPostsData
+					ChanPerformer.get(mState.chanName).safe().onSendReportPosts(new ChanPerformer.SendReportPostsData
 							(mState.boardName, mState.threadNumber, Collections.unmodifiableList(mState.postNumbers),
 							mType, mOptions, mText, mHolder));
 					break;
 				}
 				case ARCHIVE:
 				{
-					Uri uri = ChanLocator.get(mState.chanName).createThreadUri(mState.boardName, mState.threadNumber);
-					ChanPerformer.SendAddToArchiveResult result = ChanPerformer.get(mState.archiveChanName)
+					Uri uri = ChanLocator.get(mState.chanName).safe(false).createThreadUri(mState.boardName,
+							mState.threadNumber);
+					if (uri == null)
+					{
+						mErrorItem = new ErrorItem(ErrorItem.TYPE_UNKNOWN);
+						return false;
+					}
+					ChanPerformer.SendAddToArchiveResult result = ChanPerformer.get(mState.archiveChanName).safe()
 							.onSendAddToArchive(new ChanPerformer.SendAddToArchiveData(uri, mState.boardName,
 							mState.threadNumber, mOptions, mHolder));
 					if (result != null && result.threadNumber != null)
@@ -132,7 +138,7 @@ public class SendMultifunctionalTask extends CancellableTask<Void, Void, Boolean
 			}
 			return true;
 		}
-		catch (HttpException | InvalidResponseException e)
+		catch (ExtensionException | HttpException | InvalidResponseException e)
 		{
 			mErrorItem = e.getErrorItemAndHandle();
 			return false;
@@ -140,11 +146,6 @@ public class SendMultifunctionalTask extends CancellableTask<Void, Void, Boolean
 		catch (ApiException e)
 		{
 			mErrorItem = e.getErrorItem();
-			return false;
-		}
-		catch (LinkageError | RuntimeException e)
-		{
-			mErrorItem = ExtensionException.obtainErrorItemAndLogException(e);
 			return false;
 		}
 		finally

@@ -135,7 +135,7 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 		String defaultName = configuration.getDefaultName(boardName);
 		WakabaLikeHtmlBuilder htmlBuilder = new WakabaLikeHtmlBuilder(posts[0].getSubject(), chanName, boardName,
 				configuration .getBoardTitle(boardName), configuration.getTitle(),
-				locator.createThreadUri(boardName, threadNumber), posts.length, totalFilesCount);
+				locator.safe(false).createThreadUri(boardName, threadNumber), posts.length, totalFilesCount);
 		Result result = new Result(thumbnailsDirectory, filesDirectory);
 		for (Post post : posts)
 		{
@@ -175,9 +175,9 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 						if (text.startsWith("&gt;&gt;"))
 						{
 							Uri uri = locator.validateClickedUriString((String) decodeTo[1], boardName, threadNumber);
-							if (threadNumber.equals(locator.getThreadNumber(uri)))
+							if (threadNumber.equals(locator.safe(false).getThreadNumber(uri)))
 							{
-								String postNumber = locator.getPostNumber(uri);
+								String postNumber = locator.safe(false).getPostNumber(uri);
 								if (postNumber == null) postNumber = threadNumber;
 								extra = "#" + postNumber;
 							}

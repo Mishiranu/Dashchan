@@ -21,6 +21,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.net.Uri;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -152,8 +153,8 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 			{
 				case CONTEXT_MENU_COPY_LINK:
 				{
-					StringUtils.copyToClipboard(getActivity(), getChanLocator()
-							.createBoardUri(boardName, 0).toString());
+					Uri uri = getChanLocator().safe(true).createBoardUri(boardName, 0);
+					if (uri != null) StringUtils.copyToClipboard(getActivity(), uri.toString());
 					return true;
 				}
 				case CONTEXT_MENU_ADD_FAVORITES:

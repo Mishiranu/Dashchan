@@ -256,17 +256,17 @@ public class ChanLocator implements ChanManager.Linked
 	
 	public final boolean isImageUri(Uri uri)
 	{
-		return uri != null && isImageExtension(uri.getPath()) && isAttachmentUri(uri);
+		return uri != null && isImageExtension(uri.getPath()) && mSafe.isAttachmentUri(uri);
 	}
 	
 	public final boolean isAudioUri(Uri uri)
 	{
-		return uri != null && isAudioExtension(uri.getPath()) && isAttachmentUri(uri);
+		return uri != null && isAudioExtension(uri.getPath()) && mSafe.isAttachmentUri(uri);
 	}
 	
 	public final boolean isVideoUri(Uri uri)
 	{
-		return uri != null && isVideoExtension(uri.getPath()) && isAttachmentUri(uri);
+		return uri != null && isVideoExtension(uri.getPath()) && mSafe.isAttachmentUri(uri);
 	}
 	
 	@Extendable
@@ -313,7 +313,7 @@ public class ChanLocator implements ChanManager.Linked
 	
 	public final String createAttachmentFileName(Uri fileUri)
 	{
-		return createAttachmentFileName(fileUri, createAttachmentForcedName(fileUri));
+		return createAttachmentFileName(fileUri, mSafe.createAttachmentForcedName(fileUri));
 	}
 	
 	public final String createAttachmentFileName(Uri fileUri, String forcedName)
@@ -328,13 +328,16 @@ public class ChanLocator implements ChanManager.Linked
 		Uri uri = uriString != null ? Uri.parse(uriString) : null;
 		if (uri != null && uri.isRelative())
 		{
-			Uri baseUri = createThreadUri(boardName, threadNumber);
-			String query = StringUtils.nullIfEmpty(uri.getQuery());
-			String fragment = StringUtils.nullIfEmpty(uri.getFragment());
-			Uri.Builder builder = baseUri.buildUpon().encodedQuery(query).encodedFragment(fragment);
-			String path = uri.getPath();
-			if (!StringUtils.isEmpty(path)) builder.encodedPath(path);
-			return builder.build();
+			Uri baseUri = mSafe.createThreadUri(boardName, threadNumber);
+			if (baseUri != null)
+			{
+				String query = StringUtils.nullIfEmpty(uri.getQuery());
+				String fragment = StringUtils.nullIfEmpty(uri.getFragment());
+				Uri.Builder builder = baseUri.buildUpon().encodedQuery(query).encodedFragment(fragment);
+				String path = uri.getPath();
+				if (!StringUtils.isEmpty(path)) builder.encodedPath(path);
+				return builder.build();
+			}
 		}
 		return uri;
 	}
@@ -605,5 +608,168 @@ public class ChanLocator implements ChanManager.Linked
 		LinkedHashSet<String> data = new LinkedHashSet<>();
 		while (matcher.find() && matcher.groupCount() > 0) data.add(matcher.group(groupIndex));
 		return data.size() > 0 ? data.toArray(new String[data.size()]) : null;
+	}
+	
+	public static final class Safe
+	{
+		private final ChanLocator mLocator;
+		private final boolean mShowToastOnError;
+		
+		private Safe(ChanLocator locator, boolean showToastOnError)
+		{
+			mLocator = locator;
+			mShowToastOnError = showToastOnError;
+		}
+		
+		public boolean isBoardUri(Uri uri)
+		{
+			try
+			{
+				return mLocator.isBoardUri(uri);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				ExtensionException.logException(e, mShowToastOnError);
+				return false;
+			}
+		}
+		
+		public boolean isThreadUri(Uri uri)
+		{
+			try
+			{
+				return mLocator.isThreadUri(uri);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				ExtensionException.logException(e, mShowToastOnError);
+				return false;
+			}
+		}
+		
+		public boolean isAttachmentUri(Uri uri)
+		{
+			try
+			{
+				return mLocator.isAttachmentUri(uri);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				ExtensionException.logException(e, mShowToastOnError);
+				return false;
+			}
+		}
+		
+		public String getBoardName(Uri uri)
+		{
+			try
+			{
+				return mLocator.getBoardName(uri);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				ExtensionException.logException(e, mShowToastOnError);
+				return null;
+			}
+		}
+		
+		public String getThreadNumber(Uri uri)
+		{
+			try
+			{
+				return mLocator.getThreadNumber(uri);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				ExtensionException.logException(e, mShowToastOnError);
+				return null;
+			}
+		}
+		
+		public String getPostNumber(Uri uri)
+		{
+			try
+			{
+				return mLocator.getPostNumber(uri);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				ExtensionException.logException(e, mShowToastOnError);
+				return null;
+			}
+		}
+		
+		public Uri createBoardUri(String boardName, int pageNumber)
+		{
+			try
+			{
+				return mLocator.createBoardUri(boardName, pageNumber);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				ExtensionException.logException(e, mShowToastOnError);
+				return null;
+			}
+		}
+		
+		public Uri createThreadUri(String boardName, String threadNumber)
+		{
+			try
+			{
+				return mLocator.createThreadUri(boardName, threadNumber);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				ExtensionException.logException(e, mShowToastOnError);
+				return null;
+			}
+		}
+		
+		public Uri createPostUri(String boardName, String threadNumber, String postNumber)
+		{
+			try
+			{
+				return mLocator.createPostUri(boardName, threadNumber, postNumber);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				ExtensionException.logException(e, mShowToastOnError);
+				return null;
+			}
+		}
+		
+		public String createAttachmentForcedName(Uri fileUri)
+		{
+			try
+			{
+				return mLocator.createAttachmentForcedName(fileUri);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				ExtensionException.logException(e, mShowToastOnError);
+				return null;
+			}
+		}
+		
+		public NavigationData handleUriClickSpecial(Uri uri)
+		{
+			try
+			{
+				return mLocator.handleUriClickSpecial(uri);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				ExtensionException.logException(e, mShowToastOnError);
+				return null;
+			}
+		}
+	}
+
+	private final Safe mSafeToast = new Safe(this, true);
+	private final Safe mSafe = new Safe(this, false);
+	
+	public final Safe safe(boolean showToastOnError)
+	{
+		return showToastOnError ? mSafeToast : mSafe;
 	}
 }

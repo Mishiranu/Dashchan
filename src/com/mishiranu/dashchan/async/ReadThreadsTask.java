@@ -74,20 +74,10 @@ public class ReadThreadsTask extends CancellableTask<Void, Void, Boolean>
 		try
 		{
 			ChanPerformer performer = ChanPerformer.get(mChanName);
-			Threads threads;
-			HttpValidator validator;
-			try
-			{
-				ChanPerformer.ReadThreadsResult result = performer.onReadThreads(new ChanPerformer.ReadThreadsData
-						(mBoardName, mPageNumber, mHolder, mValidator));
-				threads = result != null ? result.threads : null;
-				validator = result != null ? result.validator : null;
-			}
-			catch (LinkageError | RuntimeException e)
-			{
-				mErrorItem = ExtensionException.obtainErrorItemAndLogException(e);
-				return false;
-			}
+			ChanPerformer.ReadThreadsResult result = performer.safe()
+					.onReadThreads(new ChanPerformer.ReadThreadsData(mBoardName, mPageNumber, mHolder, mValidator));
+			Threads threads = result != null ? result.threads : null;
+			HttpValidator validator = result != null ? result.validator : null;
 			if (threads != null)
 			{
 				threads.setStartPage(mPageNumber);
@@ -118,7 +108,7 @@ public class ReadThreadsTask extends CancellableTask<Void, Void, Boolean>
 			else mErrorItem = e.getErrorItemAndHandle();
 			return false;
 		}
-		catch (InvalidResponseException e)
+		catch (ExtensionException | InvalidResponseException e)
 		{
 			mErrorItem = e.getErrorItemAndHandle();
 			return false;

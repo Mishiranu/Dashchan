@@ -395,7 +395,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 			String comment = data.comment;
 			if (comment != null)
 			{
-				CommentEditor commentEditor = ChanMarkup.get(chanName).obtainCommentEditor(data.boardName);
+				CommentEditor commentEditor = ChanMarkup.get(chanName).safe().obtainCommentEditor(data.boardName);
 				if (commentEditor != null) comment = commentEditor.removeTags(comment);
 				intent.putExtra(C.EXTRA_COMMENT, comment);
 			}

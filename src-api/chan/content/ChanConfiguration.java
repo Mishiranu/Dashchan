@@ -820,7 +820,7 @@ public class ChanConfiguration implements ChanManager.Linked
 			}
 			catch (LinkageError | RuntimeException e)
 			{
-				ExtensionException.logException(e);
+				ExtensionException.logException(e, false);
 			}
 		}
 		return null;
@@ -884,169 +884,6 @@ public class ChanConfiguration implements ChanManager.Linked
 	protected CustomPreference obtainCustomPreferenceConfiguration(String key)
 	{
 		return null;
-	}
-	
-	private final Safe mSafe = new Safe(this);
-	
-	public static final class Safe
-	{
-		private static final Board DEFAULT_BOARD = new Board();
-		private static final Captcha DEFAULT_CAPTCHA = new Captcha();
-		private static final Authorization DEFAULT_AUTHORIZATION = new Authorization();
-		
-		static
-		{
-			DEFAULT_CAPTCHA.validity = Captcha.Validity.LONG_LIFETIME;
-			DEFAULT_CAPTCHA.input = Captcha.Input.ALL;
-		}
-		
-		private final ChanConfiguration mConfiguration;
-		
-		private Safe(ChanConfiguration configuration)
-		{
-			mConfiguration = configuration;
-		}
-		
-		public Board obtainBoard(String boardName)
-		{
-			Board board = null;
-			try
-			{
-				board = mConfiguration.obtainBoardConfiguration(boardName);
-			}
-			catch (LinkageError | RuntimeException e)
-			{
-				ExtensionException.logException(e);
-			}
-			if (board == null) board = DEFAULT_BOARD;
-			return board;
-		}
-		
-		public Captcha obtainCaptcha(String captchaType)
-		{
-			Captcha captcha = mConfiguration.obtainCaptchaConfigurationSafe(captchaType);
-			if (captcha == null) captcha = DEFAULT_CAPTCHA;
-			return captcha;
-		}
-		
-		public Posting obtainPosting(String boardName, boolean newThread)
-		{
-			Posting posting = null;
-			try
-			{
-				posting = mConfiguration.obtainPostingConfiguration(boardName, newThread);
-			}
-			catch (LinkageError | RuntimeException e)
-			{
-				ExtensionException.logException(e);
-			}
-			return posting;
-		}
-		
-		public Deleting obtainDeleting(String boardName)
-		{
-			Deleting deleting = null;
-			try
-			{
-				deleting = mConfiguration.obtainDeletingConfiguration(boardName);
-			}
-			catch (LinkageError | RuntimeException e)
-			{
-				ExtensionException.logException(e);
-			}
-			return deleting;
-		}
-		
-		public Reporting obtainReporting(String boardName)
-		{
-			Reporting reporting = null;
-			try
-			{
-				reporting = mConfiguration.obtainReportingConfiguration(boardName);
-			}
-			catch (LinkageError | RuntimeException e)
-			{
-				ExtensionException.logException(e);
-			}
-			return reporting;
-		}
-		
-		public Authorization obtainCaptchaPass()
-		{
-			Authorization authorization = null;
-			try
-			{
-				authorization = mConfiguration.obtainCaptchaPassConfiguration();
-			}
-			catch (LinkageError | RuntimeException e)
-			{
-				ExtensionException.logException(e);
-			}
-			if (authorization == null) authorization = DEFAULT_AUTHORIZATION;
-			return authorization;
-		}
-		
-		public Authorization obtainUserAuthorization()
-		{
-			Authorization authorization = null;
-			try
-			{
-				authorization = mConfiguration.obtainUserAuthorizationConfiguration();
-			}
-			catch (LinkageError | RuntimeException e)
-			{
-				ExtensionException.logException(e);
-			}
-			if (authorization == null) authorization = DEFAULT_AUTHORIZATION;
-			return authorization;
-		}
-		
-		public Archivation obtainArchivation()
-		{
-			Archivation archivation = null;
-			try
-			{
-				archivation = mConfiguration.obtainArchivationConfiguration();
-			}
-			catch (LinkageError | RuntimeException e)
-			{
-				ExtensionException.logException(e);
-			}
-			return archivation;
-		}
-		
-		public Statistics obtainStatistics()
-		{
-			Statistics statistics = null;
-			try
-			{
-				statistics = mConfiguration.obtainStatisticsConfiguration();
-			}
-			catch (LinkageError | RuntimeException e)
-			{
-				ExtensionException.logException(e);
-			}
-			return statistics;
-		}
-		
-		public CustomPreference obtainCustomPreference(String key)
-		{
-			CustomPreference customPreference = null;
-			try
-			{
-				customPreference = mConfiguration.obtainCustomPreferenceConfiguration(key);
-			}
-			catch (LinkageError | RuntimeException e)
-			{
-				ExtensionException.logException(e);
-			}
-			return customPreference;
-		}
-	}
-	
-	public final Safe safe()
-	{
-		return mSafe;
 	}
 	
 	@Public
@@ -1162,5 +999,168 @@ public class ChanConfiguration implements ChanManager.Linked
 			storeBoardTitle(boardName, title);
 			storeBoardDescription(boardName, description);
 		}
+	}
+	
+	public static final class Safe
+	{
+		private static final Board DEFAULT_BOARD = new Board();
+		private static final Captcha DEFAULT_CAPTCHA = new Captcha();
+		private static final Authorization DEFAULT_AUTHORIZATION = new Authorization();
+		
+		static
+		{
+			DEFAULT_CAPTCHA.validity = Captcha.Validity.LONG_LIFETIME;
+			DEFAULT_CAPTCHA.input = Captcha.Input.ALL;
+		}
+		
+		private final ChanConfiguration mConfiguration;
+		
+		private Safe(ChanConfiguration configuration)
+		{
+			mConfiguration = configuration;
+		}
+		
+		public Board obtainBoard(String boardName)
+		{
+			Board board = null;
+			try
+			{
+				board = mConfiguration.obtainBoardConfiguration(boardName);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				ExtensionException.logException(e, false);
+			}
+			if (board == null) board = DEFAULT_BOARD;
+			return board;
+		}
+		
+		public Captcha obtainCaptcha(String captchaType)
+		{
+			Captcha captcha = mConfiguration.obtainCaptchaConfigurationSafe(captchaType);
+			if (captcha == null) captcha = DEFAULT_CAPTCHA;
+			return captcha;
+		}
+		
+		public Posting obtainPosting(String boardName, boolean newThread)
+		{
+			Posting posting = null;
+			try
+			{
+				posting = mConfiguration.obtainPostingConfiguration(boardName, newThread);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				ExtensionException.logException(e, false);
+			}
+			return posting;
+		}
+		
+		public Deleting obtainDeleting(String boardName)
+		{
+			Deleting deleting = null;
+			try
+			{
+				deleting = mConfiguration.obtainDeletingConfiguration(boardName);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				ExtensionException.logException(e, false);
+			}
+			return deleting;
+		}
+		
+		public Reporting obtainReporting(String boardName)
+		{
+			Reporting reporting = null;
+			try
+			{
+				reporting = mConfiguration.obtainReportingConfiguration(boardName);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				ExtensionException.logException(e, false);
+			}
+			return reporting;
+		}
+		
+		public Authorization obtainCaptchaPass()
+		{
+			Authorization authorization = null;
+			try
+			{
+				authorization = mConfiguration.obtainCaptchaPassConfiguration();
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				ExtensionException.logException(e, false);
+			}
+			if (authorization == null) authorization = DEFAULT_AUTHORIZATION;
+			return authorization;
+		}
+		
+		public Authorization obtainUserAuthorization()
+		{
+			Authorization authorization = null;
+			try
+			{
+				authorization = mConfiguration.obtainUserAuthorizationConfiguration();
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				ExtensionException.logException(e, false);
+			}
+			if (authorization == null) authorization = DEFAULT_AUTHORIZATION;
+			return authorization;
+		}
+		
+		public Archivation obtainArchivation()
+		{
+			Archivation archivation = null;
+			try
+			{
+				archivation = mConfiguration.obtainArchivationConfiguration();
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				ExtensionException.logException(e, false);
+			}
+			return archivation;
+		}
+		
+		public Statistics obtainStatistics()
+		{
+			Statistics statistics = null;
+			try
+			{
+				statistics = mConfiguration.obtainStatisticsConfiguration();
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				ExtensionException.logException(e, false);
+			}
+			return statistics;
+		}
+		
+		public CustomPreference obtainCustomPreference(String key)
+		{
+			CustomPreference customPreference = null;
+			try
+			{
+				customPreference = mConfiguration.obtainCustomPreferenceConfiguration(key);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				ExtensionException.logException(e, false);
+			}
+			return customPreference;
+		}
+	}
+	
+	private final Safe mSafe = new Safe(this);
+	
+	public final Safe safe()
+	{
+		return mSafe;
 	}
 }

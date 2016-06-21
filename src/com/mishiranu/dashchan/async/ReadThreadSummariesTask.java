@@ -57,25 +57,16 @@ public class ReadThreadSummariesTask extends CancellableTask<Void, Long, Boolean
 		try
 		{
 			ChanPerformer performer = ChanPerformer.get(mChanName);
-			ThreadSummary[] threadSummaries;
-			try
-			{
-				ChanPerformer.ReadThreadSummariesResult result = performer.onReadThreadSummaries(new ChanPerformer
-						.ReadThreadSummariesData(mBoardName, mType, mHolder));
-				threadSummaries = result != null ? result.threadSummaries : null;
-			}
-			catch (LinkageError | RuntimeException e)
-			{
-				mErrorItem = ExtensionException.obtainErrorItemAndLogException(e);
-				return false;
-			}
+			ChanPerformer.ReadThreadSummariesResult result = performer.safe()
+					.onReadThreadSummaries(new ChanPerformer.ReadThreadSummariesData(mBoardName, mType, mHolder));
+			ThreadSummary[] threadSummaries = result != null ? result.threadSummaries : null;
 			if (threadSummaries != null && threadSummaries.length > 0)
 			{
 				mThreadSummaries = threadSummaries;
 			}
 			return true;
 		}
-		catch (HttpException | InvalidResponseException e)
+		catch (ExtensionException | HttpException | InvalidResponseException e)
 		{
 			mErrorItem = e.getErrorItemAndHandle();
 			return false;

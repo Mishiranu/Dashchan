@@ -173,35 +173,17 @@ public class SendPostTask extends CancellableTask<Void, Long, Boolean>
 			data.listener = mProgressHandler;
 			data.captchaType = ChanConfiguration.get(mChanName).getCaptchaParentType(data.captchaType);
 			ChanPerformer performer = ChanPerformer.get(mChanName);
-			ChanPerformer.SendPostResult result;
-			try
-			{
-				result = performer.onSendPost(data);
-			}
-			catch (LinkageError | RuntimeException e)
-			{
-				mErrorItem = ExtensionException.obtainErrorItemAndLogException(e);
-				return false;
-			}
+			ChanPerformer.SendPostResult result = performer.safe().onSendPost(data);
 			if (data.threadNumber == null && (result == null || result.threadNumber == null))
 			{
 				// New thread created with undefined number
-				Threads threads;
-				try
-				{
-					ChanPerformer.ReadThreadsResult readThreadsResult = performer.onReadThreads(new ChanPerformer
-							.ReadThreadsData(data.boardName, 0, data.holder, null));
-					threads = readThreadsResult != null ? readThreadsResult.threads : null;
-				}
-				catch (LinkageError | RuntimeException e)
-				{
-					mErrorItem = ExtensionException.obtainErrorItemAndLogException(e);
-					return false;
-				}
+				ChanPerformer.ReadThreadsResult readThreadsResult = performer.safe()
+						.onReadThreads(new ChanPerformer.ReadThreadsData(data.boardName, 0, data.holder, null));
+				Threads threads = readThreadsResult != null ? readThreadsResult.threads : null;
 				if (threads != null && threads.hasThreadsOnStart())
 				{
 					String postComment = data.comment;
-					CommentEditor commentEditor = ChanMarkup.get(mChanName).obtainCommentEditor(data.boardName);
+					CommentEditor commentEditor = ChanMarkup.get(mChanName).safe().obtainCommentEditor(data.boardName);
 					if (commentEditor != null && postComment != null)
 					{
 						postComment = commentEditor.removeTags(postComment);
@@ -229,7 +211,7 @@ public class SendPostTask extends CancellableTask<Void, Long, Boolean>
 			mResult = result;
 			return true;
 		}
-		catch (HttpException | InvalidResponseException e)
+		catch (ExtensionException | HttpException | InvalidResponseException e)
 		{
 			mErrorItem = e.getErrorItemAndHandle();
 			return false;

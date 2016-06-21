@@ -556,15 +556,7 @@ public class ChanManager
 		{
 			for (HashMap.Entry<String, ChanLocator> entry : mLocators.entrySet())
 			{
-				ChanLocator locator = entry.getValue();
-				try
-				{
-					if (locator.isChanHost(host)) return entry.getKey();
-				}
-				catch (LinkageError | RuntimeException e)
-				{
-					ExtensionException.logException(e);
-				}
+				if (entry.getValue().isChanHost(host)) return entry.getKey();
 			}
 		}
 		return null;

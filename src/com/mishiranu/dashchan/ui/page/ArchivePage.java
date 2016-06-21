@@ -17,6 +17,7 @@
 package com.mishiranu.dashchan.ui.page;
 
 import android.app.Activity;
+import android.net.Uri;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -135,8 +136,8 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 		{
 			case CONTEXT_MENU_COPY_LINK:
 			{
-				StringUtils.copyToClipboard(getActivity(), getChanLocator()
-						.createThreadUri(pageHolder.boardName, threadNumber).toString());
+				Uri uri = getChanLocator().safe(true).createThreadUri(pageHolder.boardName, threadNumber);
+				if (uri != null) StringUtils.copyToClipboard(getActivity(), uri.toString());
 				return true;
 			}
 			case CONTEXT_MENU_ADD_FAVORITES:

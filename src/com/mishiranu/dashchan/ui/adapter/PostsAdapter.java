@@ -252,10 +252,11 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 		ChanLocator locator = ChanLocator.get(chanName);
 		String boardName = originalPostItem.getBoardName();
 		String threadNumber = originalPostItem.getThreadNumber();
-		if (chanName != null && locator.isThreadUri(uri) && StringUtils.equals(boardName, locator.getBoardName(uri))
-				&& StringUtils.equals(threadNumber, locator.getThreadNumber(uri)))
+		if (chanName != null && locator.safe(false).isThreadUri(uri)
+				&& StringUtils.equals(boardName, locator.safe(false).getBoardName(uri))
+				&& StringUtils.equals(threadNumber, locator.safe(false).getThreadNumber(uri)))
 		{
-			String postNumber = locator.getPostNumber(uri);
+			String postNumber = locator.safe(false).getPostNumber(uri);
 			int position = StringUtils.isEmpty(postNumber) ? 0 : findPositionByPostNumber(postNumber);
 			if (position == -1)
 			{

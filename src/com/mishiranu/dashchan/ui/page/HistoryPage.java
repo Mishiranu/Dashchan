@@ -19,6 +19,7 @@ package com.mishiranu.dashchan.ui.page;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.net.Uri;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -129,8 +130,9 @@ public class HistoryPage extends ListPage<HistoryAdapter>
 			{
 				case CONTEXT_MENU_COPY_LINK:
 				{
-					StringUtils.copyToClipboard(getActivity(), getChanLocator().createThreadUri(historyItem.boardName,
-							historyItem.threadNumber).toString());
+					Uri uri = getChanLocator().safe(true).createThreadUri(historyItem.boardName,
+							historyItem.threadNumber);
+					if (uri != null) StringUtils.copyToClipboard(getActivity(), uri.toString());
 					return true;
 				}
 				case CONTEXT_MENU_ADD_FAVORITES:

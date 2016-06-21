@@ -79,28 +79,21 @@ public class ReadSearchTask extends CancellableTask<Void, Void, PostItem[]> impl
 			HashSet<String> postNumbers = null;
 			if (board.allowSearch)
 			{
-				try
+				ChanPerformer.ReadSearchPostsResult result = performer.safe()
+						.onReadSearchPosts(new ChanPerformer.ReadSearchPostsData(mBoardName, mSearchQuery, mHolder));
+				Post[] readPosts = result != null ? result.posts : null;
+				if (readPosts != null && readPosts.length > 0)
 				{
-					ChanPerformer.ReadSearchPostsResult result = performer.onReadSearchPosts(new ChanPerformer
-							.ReadSearchPostsData(mBoardName, mSearchQuery, mHolder));
-					Post[] readPosts = result != null ? result.posts : null;
-					if (readPosts != null && readPosts.length > 0)
-					{
-						Collections.addAll(posts, readPosts);
-						postNumbers = new HashSet<>();
-						for (Post post : readPosts) postNumbers.add(post.getPostNumber());
-					}
-				}
-				catch (LinkageError | RuntimeException e)
-				{
-					mErrorItem = ExtensionException.obtainErrorItemAndLogException(e);
-					return null;
+					Collections.addAll(posts, readPosts);
+					postNumbers = new HashSet<>();
+					for (Post post : readPosts) postNumbers.add(post.getPostNumber());
 				}
 			}
 			if (board.allowCatalog && board.allowCatalogSearch)
 			{
-				ChanPerformer.ReadThreadsResult result = performer.onReadThreads(new ChanPerformer.ReadThreadsData
-						(mBoardName, ChanPerformer.ReadThreadsData.PAGE_NUMBER_CATALOG, mHolder, null));
+				ChanPerformer.ReadThreadsResult result = performer.safe()
+						.onReadThreads(new ChanPerformer.ReadThreadsData(mBoardName,
+						ChanPerformer.ReadThreadsData.PAGE_NUMBER_CATALOG, mHolder, null));
 				Posts[] threads = result != null && result.threads != null ? result.threads.getThreads()[0] : null;
 				ArrayList<Post> matched = new ArrayList<>();
 				Locale locale = Locale.getDefault();
@@ -141,7 +134,7 @@ public class ReadSearchTask extends CancellableTask<Void, Void, PostItem[]> impl
 			else postItems = new PostItem[0];
 			return postItems;
 		}
-		catch (HttpException | InvalidResponseException e)
+		catch (ExtensionException | HttpException | InvalidResponseException e)
 		{
 			mErrorItem = e.getErrorItemAndHandle();
 			return null;

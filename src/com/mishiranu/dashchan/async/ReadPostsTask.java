@@ -117,22 +117,12 @@ public class ReadPostsTask extends CancellableTask<Void, Void, Boolean>
 		ChanPerformer performer = ChanPerformer.get(mChanName);
 		try
 		{
-			Posts readPosts;
-			HttpValidator validator;
-			try
-			{
-				ChanPerformer.ReadPostsResult result = performer.onReadPosts(new ChanPerformer
-						.ReadPostsData(mBoardName, mThreadNumber, lastPostNumber, partialThreadLoading,
-						mCachedPosts, mHolder, mValidator));
-				readPosts = result != null ? result.posts : null;
-				validator = result != null ? result.validator : null;
-				if (result != null && result.fullThread) partialThreadLoading = false;
-			}
-			catch (LinkageError | RuntimeException e)
-			{
-				mErrorItem = ExtensionException.obtainErrorItemAndLogException(e);
-				return false;
-			}
+			ChanPerformer.ReadPostsResult result = performer.safe()
+					.onReadPosts(new ChanPerformer.ReadPostsData(mBoardName, mThreadNumber, lastPostNumber,
+					partialThreadLoading, mCachedPosts, mHolder, mValidator));
+			Posts readPosts = result != null ? result.posts : null;
+			HttpValidator validator = result != null ? result.validator : null;
+			if (result != null && result.fullThread) partialThreadLoading = false;
 			Posts fullPosts = mCachedPosts;
 			if (readPosts != null) readPosts.removeRepeatingsAndSort();
 			
@@ -257,18 +247,9 @@ public class ReadPostsTask extends CancellableTask<Void, Void, Boolean>
 				{
 					try
 					{
-						Post post;
-						try
-						{
-							ChanPerformer.ReadSinglePostResult result = performer.onReadSinglePost
-									(new ChanPerformer.ReadSinglePostData(mBoardName, mThreadNumber, mHolder));
-							post = result != null ? result.post : null;
-						}
-						catch (LinkageError | RuntimeException e2)
-						{
-							mErrorItem = ExtensionException.obtainErrorItemAndLogException(e2);
-							return false;
-						}
+						ChanPerformer.ReadSinglePostResult result = performer.safe().onReadSinglePost
+								(new ChanPerformer.ReadSinglePostData(mBoardName, mThreadNumber, mHolder));
+						Post post = result != null ? result.post : null;
 						String threadNumber = post.getThreadNumberOrOriginalPostNumber();
 						if (threadNumber != null && !threadNumber.equals(mThreadNumber))
 						{
@@ -277,7 +258,7 @@ public class ReadPostsTask extends CancellableTask<Void, Void, Boolean>
 							return true;
 						}
 					}
-					catch (HttpException | InvalidResponseException e2)
+					catch (ExtensionException | HttpException | InvalidResponseException e2)
 					{
 						
 					}
@@ -295,7 +276,7 @@ public class ReadPostsTask extends CancellableTask<Void, Void, Boolean>
 			mRedirectPostNumber = e.getPostNumber();
 			return true;
 		}
-		catch (InvalidResponseException e)
+		catch (ExtensionException | InvalidResponseException e)
 		{
 			mErrorItem = e.getErrorItemAndHandle();
 			return false;

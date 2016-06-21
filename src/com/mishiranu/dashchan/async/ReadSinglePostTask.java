@@ -63,42 +63,31 @@ public class ReadSinglePostTask extends CancellableTask<Void, Void, PostItem>
 		try
 		{
 			ChanPerformer performer = ChanPerformer.get(mChanName);
-			Post post;
-			try
-			{
-				ChanPerformer.ReadSinglePostResult result = performer.onReadSinglePost(new ChanPerformer
-						.ReadSinglePostData(mBoardName, mPostNumber, mHolder));
-				post = result != null ? result.post : null;
-			}
-			catch (LinkageError | RuntimeException e)
-			{
-				mErrorItem = ExtensionException.obtainErrorItemAndLogException(e);
-				return null;
-			}
+			ChanPerformer.ReadSinglePostResult result = performer.safe().onReadSinglePost(new ChanPerformer
+					.ReadSinglePostData(mBoardName, mPostNumber, mHolder));
+			Post post = result != null ? result.post : null;
 			YouTubeTitlesReader.getInstance().readAndApplyIfNecessary(Collections.singletonList(post), mHolder);
+			startTime = 0L;
 			return new PostItem(post, mChanName, mBoardName);
 		}
-		catch (Exception e)
+		catch (HttpException e)
 		{
-			if (e instanceof HttpException)
+			mErrorItem = e.getErrorItemAndHandle();
+			if (mErrorItem.httpResponseCode == HttpURLConnection.HTTP_NOT_FOUND)
 			{
-				mErrorItem = ((HttpException) e).getErrorItemAndHandle();
-				if (mErrorItem.httpResponseCode == HttpURLConnection.HTTP_NOT_FOUND)
-				{
-					mErrorItem = new ErrorItem(ErrorItem.TYPE_POST_NOT_FOUND);
-				}
+				mErrorItem = new ErrorItem(ErrorItem.TYPE_POST_NOT_FOUND);
 			}
-			else if (e instanceof InvalidResponseException)
-			{
-				mErrorItem = ((InvalidResponseException) e).getErrorItemAndHandle();
-			}
-			CommonUtils.sleepMaxTime(startTime, 500);
-			return null;
+		}
+		catch (ExtensionException | InvalidResponseException e)
+		{
+			mErrorItem = e.getErrorItemAndHandle();
 		}
 		finally
 		{
 			ChanConfiguration.get(mChanName).commit();
+			CommonUtils.sleepMaxTime(startTime, 500);
 		}
+		return null;
 	}
 	
 	@Override

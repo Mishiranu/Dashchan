@@ -66,17 +66,17 @@ public class InteractionUnit
 			ChanLocator.NavigationData navigationData = null;
 			ChanLocator locator = ChanLocator.get(uriChanName);
 			ChanConfiguration configuration = ChanConfiguration.get(uriChanName);
-			if (locator.isBoardUri(uri))
+			if (locator.safe(false).isBoardUri(uri))
 			{
 				navigationData = new ChanLocator.NavigationData(ChanLocator.NavigationData.TARGET_THREADS,
-						locator.getBoardName(uri), null, null, null);
+						locator.safe(false).getBoardName(uri), null, null, null);
 				handled = true;
 			}
-			else if (locator.isThreadUri(uri))
+			else if (locator.safe(false).isThreadUri(uri))
 			{
-				String boardName = locator.getBoardName(uri);
-				String threadNumber = locator.getThreadNumber(uri);
-				String postNumber = locator.getPostNumber(uri);
+				String boardName = locator.safe(false).getBoardName(uri);
+				String threadNumber = locator.safe(false).getThreadNumber(uri);
+				String postNumber = locator.safe(false).getPostNumber(uri);
 				if (sameChan && configuration.getOption(ChanConfiguration.OPTION_READ_SINGLE_POST))
 				{
 					mUiManager.dialog().displayReplyAsync(uriChanName, boardName, threadNumber, postNumber);
@@ -90,7 +90,7 @@ public class InteractionUnit
 			}
 			else if (sameChan)
 			{
-				navigationData = locator.handleUriClickSpecial(uri);
+				navigationData = locator.safe(false).handleUriClickSpecial(uri);
 				if (navigationData != null) handled = true;
 			}
 			if (handled && navigationData != null)
@@ -155,11 +155,11 @@ public class InteractionUnit
 		if (uriChanName != null)
 		{
 			locator = ChanLocator.get(uriChanName);
-			if (locator.isAttachmentUri(uri))
+			if (locator.safe(false).isAttachmentUri(uri))
 			{
 				fileName = locator.createAttachmentFileName(uri);
-				boardName = locator.getBoardName(uri);
-				threadNumber = locator.getThreadNumber(uri);
+				boardName = locator.safe(false).getBoardName(uri);
+				threadNumber = locator.safe(false).getThreadNumber(uri);
 				if (threadNumber == null) boardName = null;
 				isAttachment = true;
 			}
@@ -208,8 +208,9 @@ public class InteractionUnit
 			}
 		});
 		dialogMenu.addItem(LINK_MENU_COPY, R.string.action_copy_link);
-		if (Preferences.isUseInternalBrowser() && (locator == null || !locator.isBoardUri(uri) && !locator
-				.isThreadUri(uri) && !locator.isAttachmentUri(uri) && locator.handleUriClickSpecial(uri) == null))
+		if (Preferences.isUseInternalBrowser() && (locator == null || !locator.safe(false).isBoardUri(uri)
+				&& !locator.safe(false).isThreadUri(uri) && !locator.safe(false).isAttachmentUri(uri)
+				&& locator.safe(false).handleUriClickSpecial(uri) == null))
 		{
 			dialogMenu.addItem(LINK_MENU_INTERNAL_BROWSER, R.string.action_internal_browser);
 			dialogMenu.addItem(LINK_MENU_EXTERNAL_BROWSER, R.string.action_external_browser);
@@ -479,9 +480,10 @@ public class InteractionUnit
 							ChanLocator locator = ChanLocator.get(postItem.getChanName());
 							String boardName = postItem.getBoardName();
 							String threadNumber = postItem.getThreadNumber();
-							StringUtils.copyToClipboard(context, (postItem.getParentPostNumber() == null
-									? locator.createThreadUri (boardName, threadNumber) : locator.createPostUri
-									(boardName, threadNumber, postItem.getPostNumber())).toString());
+							Uri uri = postItem.getParentPostNumber() == null ? locator.safe(true)
+									.createThreadUri(boardName, threadNumber) : locator.safe(true)
+									.createPostUri(boardName, threadNumber, postItem.getPostNumber());
+							if (uri != null) StringUtils.copyToClipboard(context, uri.toString());
 							break;
 						}
 						case MENU_SHARE:

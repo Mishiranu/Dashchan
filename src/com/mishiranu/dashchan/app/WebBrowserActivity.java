@@ -222,17 +222,18 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 			{
 				ChanLocator locator = ChanLocator.get(chanName);
 				ChanLocator.NavigationData navigationData = null;
-				if (locator.isBoardUri(uri))
+				if (locator.safe(true).isBoardUri(uri))
 				{
 					navigationData = new ChanLocator.NavigationData(ChanLocator.NavigationData.TARGET_THREADS,
-							locator.getBoardName(uri), null, null, null);
+							locator.safe(true).getBoardName(uri), null, null, null);
 				}
-				else if (locator.isThreadUri(uri))
+				else if (locator.safe(true).isThreadUri(uri))
 				{
 					navigationData = new ChanLocator.NavigationData(ChanLocator.NavigationData.TARGET_POSTS,
-							locator.getBoardName(uri), locator.getThreadNumber(uri), locator.getPostNumber(uri), null);
+							locator.safe(true).getBoardName(uri), locator.safe(true).getThreadNumber(uri),
+							locator.safe(true).getPostNumber(uri), null);
 				}
-				else navigationData = locator.handleUriClickSpecial(uri);
+				else navigationData = locator.safe(true).handleUriClickSpecial(uri);
 				if (navigationData != null)
 				{
 					finish();

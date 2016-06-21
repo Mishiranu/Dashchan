@@ -68,7 +68,6 @@ import android.widget.TextView;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
-import chan.content.ExtensionException;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.C;
@@ -537,9 +536,10 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 								case MENU_COPY_LINK:
 								{
 									ChanLocator locator = ChanLocator.get(listItem.chanName);
-									StringUtils.copyToClipboard(mContext, (listItem.isThreadItem()
-											? locator.createThreadUri(listItem.boardName, listItem.threadNumber)
-											: locator.createBoardUri(listItem.boardName, 0)).toString());
+									Uri uri = listItem.isThreadItem() ? locator.safe(true).createThreadUri
+											(listItem.boardName, listItem.threadNumber)
+											: locator.safe(true).createBoardUri(listItem.boardName, 0);
+									if (uri != null) StringUtils.copyToClipboard(mContext, uri.toString());
 									break;
 								}
 								case MENU_ADD_TO_FAVORITES:
@@ -733,29 +733,20 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 				String boardName = null;
 				String threadNumber = null;
 				String postNumber = null;
-				try
+				ChanLocator locator = ChanLocator.get(chanName);
+				if (locator.safe(false).isThreadUri(uri))
 				{
-					ChanLocator locator = ChanLocator.get(chanName);
-					if (locator.isThreadUri(uri))
-					{
-						boardName = locator.getBoardName(uri);
-						threadNumber = locator.getThreadNumber(uri);
-						postNumber = locator.getPostNumber(uri);
-						success = true;
-					}
-					else if (locator.isBoardUri(uri))
-					{
-						boardName = locator.getBoardName(uri);
-						threadNumber = null;
-						postNumber = null;
-						success = true;
-					}
+					boardName = locator.safe(false).getBoardName(uri);
+					threadNumber = locator.safe(false).getThreadNumber(uri);
+					postNumber = locator.safe(false).getPostNumber(uri);
+					success = true;
 				}
-				catch (LinkageError | RuntimeException e)
+				else if (locator.safe(false).isBoardUri(uri))
 				{
-					clearTextAndHideKeyboard();
-					ExtensionException.showToastAndLogException(e);
-					return;
+					boardName = locator.safe(false).getBoardName(uri);
+					threadNumber = null;
+					postNumber = null;
+					success = true;
 				}
 				if (success)
 				{
