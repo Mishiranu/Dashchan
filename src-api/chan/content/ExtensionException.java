@@ -33,23 +33,16 @@ public class ExtensionException extends Exception implements ErrorItem.Holder
 	@Override
 	public ErrorItem getErrorItemAndHandle()
 	{
-		logException(this);
+		logException(getCause(), false);
 		return new ErrorItem(ErrorItem.TYPE_EXTENSION);
 	}
 	
-	public static ErrorItem obtainErrorItemAndLogException(Throwable t)
+	public static void logException(Throwable t, boolean showToast)
 	{
-		logException(t);
-		return new ErrorItem(ErrorItem.TYPE_EXTENSION);
-	}
-	
-	public static void showToastAndLogException(Throwable t)
-	{
-		ToastUtils.show(MainApplication.getInstance(), obtainErrorItemAndLogException(t));
-	}
-	
-	public static void logException(Throwable t)
-	{
-		if (t instanceof LinkageError || t instanceof RuntimeException) Log.persistent().stack(t);
+		if (t instanceof LinkageError || t instanceof RuntimeException)
+		{
+			Log.persistent().stack(t);
+			if (showToast) ToastUtils.show(MainApplication.getInstance(), new ErrorItem(ErrorItem.TYPE_EXTENSION));
+		}
 	}
 }

@@ -50,26 +50,17 @@ public class ReadBoardsTask extends CancellableTask<Void, Long, Boolean>
 	@Override
 	protected Boolean doInBackground(Void... params)
 	{
-		BoardCategory[] boardCategories;
 		try
 		{
-			try
-			{
-				ChanPerformer.ReadBoardsResult result = ChanPerformer.get(mChanName).onReadBoards
-						(new ChanPerformer.ReadBoardsData(mHolder));
-				boardCategories = result != null ? result.boardCategories : null;
-			}
-			catch (LinkageError | RuntimeException e)
-			{
-				mErrorItem = ExtensionException.obtainErrorItemAndLogException(e);
-				return false;
-			}
+			ChanPerformer.ReadBoardsResult result = ChanPerformer.get(mChanName).safe()
+					.onReadBoards(new ChanPerformer.ReadBoardsData(mHolder));
+			BoardCategory[] boardCategories = result != null ? result.boardCategories : null;
 			if (boardCategories != null && boardCategories.length == 0) boardCategories = null;
 			if (boardCategories != null) ChanConfiguration.get(mChanName).updateFromBoards(boardCategories);
 			mBoardCategories = boardCategories;
 			return true;
 		}
-		catch (HttpException | InvalidResponseException e)
+		catch (ExtensionException | HttpException | InvalidResponseException e)
 		{
 			mErrorItem = e.getErrorItemAndHandle();
 			return false;

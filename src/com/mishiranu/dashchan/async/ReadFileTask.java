@@ -140,27 +140,19 @@ public class ReadFileTask extends CancellableTask<String, Long, Boolean>
 				Uri uri = mFromUri;
 				String chanName = mChanName;
 				if (chanName == null) chanName = ChanManager.getInstance().getChanNameByHost(uri.getAuthority());
-				HttpHolder holder = mHolder;
-				uri = EmbeddedManager.getInstance().doReadRealUri(chanName, uri, holder);
+				uri = EmbeddedManager.getInstance().doReadRealUri(chanName, uri, mHolder);
 				final int connectTimeout = 15000, readTimeout = 15000;
 				byte[] response;
 				if (chanName != null)
 				{
-					try
-					{
-						ChanPerformer.ReadContentResult result = ChanPerformer.get(chanName).onReadContent
-								(new ChanPerformer.ReadContentData (uri, connectTimeout, readTimeout,
-								holder, mProgressHandler, null));
-						response = result.response.getBytes();
-					}
-					catch (LinkageError | RuntimeException e)
-					{
-						throw new ExtensionException(e);
-					}
+					ChanPerformer.ReadContentResult result = ChanPerformer.get(chanName).safe()
+							.onReadContent(new ChanPerformer.ReadContentData (uri, connectTimeout, readTimeout,
+									mHolder, mProgressHandler, null));
+					response = result.response.getBytes();
 				}
 				else
 				{
-					response = new HttpRequest(uri, holder).setTimeouts(15000, 15000)
+					response = new HttpRequest(uri, mHolder).setTimeouts(15000, 15000)
 							.setInputListener(mProgressHandler).read().getBytes();
 				}
 				ByteArrayInputStream input = new ByteArrayInputStream(response);
@@ -180,7 +172,7 @@ public class ReadFileTask extends CancellableTask<String, Long, Boolean>
 			}
 			return true;
 		}
-		catch (HttpException | InvalidResponseException | ExtensionException e)
+		catch (ExtensionException | HttpException | InvalidResponseException e)
 		{
 			mErrorItem = e.getErrorItemAndHandle();
 			return false;

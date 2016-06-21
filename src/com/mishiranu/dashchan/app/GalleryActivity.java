@@ -45,7 +45,6 @@ import android.widget.TextView;
 
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
-import chan.content.ExtensionException;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.C;
@@ -150,15 +149,8 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 			String threadNumber = null;
 			if (!defaultLocator)
 			{
-				try
-				{
-					boardName = locator.getBoardName(uri);
-					threadNumber = locator.getThreadNumber(uri);
-				}
-				catch (LinkageError | RuntimeException e)
-				{
-					ExtensionException.showToastAndLogException(e);
-				}
+				boardName = locator.safe(true).getBoardName(uri);
+				threadNumber = locator.safe(true).getThreadNumber(uri);
 			}
 			galleryItems.add(new GalleryItem(uri, boardName, threadNumber));
 			mOverrideUpButton = true;

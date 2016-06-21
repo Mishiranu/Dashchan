@@ -59,7 +59,6 @@ import android.widget.TextView;
 
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
-import chan.content.ExtensionException;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.C;
@@ -896,22 +895,7 @@ public class DownloadManager
 	
 	private boolean isFileNameModifyingAllowed(String chanName, Uri uri)
 	{
-		boolean isAttachment;
-		if (chanName != null)
-		{
-			ChanLocator locator = ChanLocator.get(chanName);
-			try
-			{
-				isAttachment = locator.isAttachmentUri(uri);
-			}
-			catch (LinkageError | RuntimeException e)
-			{
-				ExtensionException.logException(e);
-				isAttachment = false;
-			}
-		}
-		else isAttachment = false;
-		return isAttachment;
+		return chanName != null && ChanLocator.get(chanName).safe(false).isAttachmentUri(uri);
 	}
 	
 	private String getDesiredFileName(Uri uri, String fileName, String originalName, boolean detailName,

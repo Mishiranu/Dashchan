@@ -1033,4 +1033,216 @@ public class ChanPerformer implements ChanManager.Linked
 		return CaptchaManager.getInstance().requireUserImageMultipleChoice(3, selected, images,
 				descriptionText, descriptionImage);
 	}
+	
+	public static final class Safe
+	{
+		private final ChanPerformer mPerformer;
+		
+		private Safe(ChanPerformer performer)
+		{
+			mPerformer = performer;
+		}
+		
+		public ReadThreadsResult onReadThreads(ReadThreadsData data) throws ExtensionException, HttpException,
+				InvalidResponseException
+		{
+			try
+			{
+				return mPerformer.onReadThreads(data);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				throw new ExtensionException(e);
+			}
+		}
+		
+		public ReadPostsResult onReadPosts(ReadPostsData data) throws ExtensionException, HttpException,
+				ThreadRedirectException, InvalidResponseException
+		{
+			try
+			{
+				return mPerformer.onReadPosts(data);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				throw new ExtensionException(e);
+			}
+		}
+		
+		public ReadSinglePostResult onReadSinglePost(ReadSinglePostData data) throws ExtensionException, HttpException,
+				InvalidResponseException
+		{
+			try
+			{
+				return mPerformer.onReadSinglePost(data);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				throw new ExtensionException(e);
+			}
+		}
+		
+		public ReadSearchPostsResult onReadSearchPosts(ReadSearchPostsData data) throws ExtensionException,
+				HttpException, InvalidResponseException
+		{
+			try
+			{
+				return mPerformer.onReadSearchPosts(data);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				throw new ExtensionException(e);
+			}
+		}
+		
+		public ReadBoardsResult onReadBoards(ReadBoardsData data) throws ExtensionException, HttpException,
+				InvalidResponseException
+		{
+			try
+			{
+				return mPerformer.onReadBoards(data);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				throw new ExtensionException(e);
+			}
+		}
+		
+		public ReadUserBoardsResult onReadUserBoards(ReadUserBoardsData data) throws ExtensionException, HttpException,
+				InvalidResponseException
+		{
+			try
+			{
+				return mPerformer.onReadUserBoards(data);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				throw new ExtensionException(e);
+			}
+		}
+		
+		public ReadThreadSummariesResult onReadThreadSummaries(ReadThreadSummariesData data) throws ExtensionException,
+				HttpException, InvalidResponseException
+		{
+			try
+			{
+				return mPerformer.onReadThreadSummaries(data);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				throw new ExtensionException(e);
+			}
+		}
+		
+		public ReadPostsCountResult onReadPostsCount(ReadPostsCountData data) throws ExtensionException, HttpException,
+				InvalidResponseException
+		{
+			try
+			{
+				return mPerformer.onReadPostsCount(data);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				throw new ExtensionException(e);
+			}
+		}
+		
+		public ReadContentResult onReadContent(ReadContentData data) throws ExtensionException, HttpException,
+				InvalidResponseException
+		{
+			try
+			{
+				return mPerformer.onReadContent(data);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				throw new ExtensionException(e);
+			}
+		}
+		
+		public CheckAuthorizationResult onCheckAuthorization(CheckAuthorizationData data) throws ExtensionException,
+				HttpException, InvalidResponseException
+		{
+			try
+			{
+				return mPerformer.onCheckAuthorization(data);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				throw new ExtensionException(e);
+			}
+		}
+		
+		public ReadCaptchaResult onReadCaptcha(ReadCaptchaData data) throws ExtensionException, HttpException,
+				InvalidResponseException
+		{
+			try
+			{
+				return mPerformer.onReadCaptcha(data);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				throw new ExtensionException(e);
+			}
+		}
+		
+		public SendPostResult onSendPost(SendPostData data) throws ExtensionException, HttpException, ApiException,
+				InvalidResponseException
+		{
+			try
+			{
+				return mPerformer.onSendPost(data);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				throw new ExtensionException(e);
+			}
+		}
+		
+		public SendDeletePostsResult onSendDeletePosts(SendDeletePostsData data) throws ExtensionException,
+				HttpException, ApiException, InvalidResponseException
+		{
+			try
+			{
+				return mPerformer.onSendDeletePosts(data);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				throw new ExtensionException(e);
+			}
+		}
+		
+		public SendReportPostsResult onSendReportPosts(SendReportPostsData data) throws ExtensionException,
+				HttpException, ApiException, InvalidResponseException
+		{
+			try
+			{
+				return mPerformer.onSendReportPosts(data);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				throw new ExtensionException(e);
+			}
+		}
+		
+		public SendAddToArchiveResult onSendAddToArchive(SendAddToArchiveData data) throws ExtensionException,
+				HttpException, ApiException, InvalidResponseException
+		{
+			try
+			{
+				return mPerformer.onSendAddToArchive(data);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				throw new ExtensionException(e);
+			}
+		}
+	}
+	
+	private final Safe mSafe = new Safe(this);
+	
+	public final Safe safe()
+	{
+		return mSafe;
+	}
 }

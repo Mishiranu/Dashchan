@@ -544,18 +544,11 @@ public class ChanFragment extends BasePreferenceFragment
 						break;
 					}
 				}
-				try
-				{
-					ChanPerformer.CheckAuthorizationResult result = performer.onCheckAuthorization
-							(new ChanPerformer.CheckAuthorizationData(type, mAuthorizationData, mHolder));
-					mValid = result != null && result.success;
-				}
-				catch (LinkageError | RuntimeException e)
-				{
-					mErrorItem = ExtensionException.obtainErrorItemAndLogException(e);
-				}
+				ChanPerformer.CheckAuthorizationResult result = performer.safe().onCheckAuthorization
+						(new ChanPerformer.CheckAuthorizationData(type, mAuthorizationData, mHolder));
+				mValid = result != null && result.success;
 			}
-			catch (HttpException | InvalidResponseException e)
+			catch (ExtensionException | HttpException | InvalidResponseException e)
 			{
 				mErrorItem = e.getErrorItemAndHandle();
 			}

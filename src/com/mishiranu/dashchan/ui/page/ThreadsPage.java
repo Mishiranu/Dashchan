@@ -23,6 +23,7 @@ import java.util.Collections;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Parcel;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -330,8 +331,9 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 			{
 				case CONTEXT_MENU_COPY_LINK:
 				{
-					StringUtils.copyToClipboard(getActivity(), getChanLocator().createThreadUri(pageHolder.boardName,
-							postItem.getThreadNumber()).toString());
+					Uri uri = getChanLocator().safe(true).createThreadUri(pageHolder.boardName,
+							postItem.getThreadNumber());
+					if (uri != null) StringUtils.copyToClipboard(getActivity(), uri.toString());
 					return true;
 				}
 				case CONTEXT_MENU_SHARE_LINK:

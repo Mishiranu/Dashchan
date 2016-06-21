@@ -463,8 +463,8 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				String chanName = mOriginalThreadData.first;
 				Uri uri = mOriginalThreadData.second;
 				ChanLocator locator = ChanLocator.get(chanName);
-				String boardName = locator.getBoardName(uri);
-				String threadNumber = locator.getThreadNumber(uri);
+				String boardName = locator.safe(true).getBoardName(uri);
+				String threadNumber = locator.safe(true).getThreadNumber(uri);
 				if (threadNumber != null)
 				{
 					String threadTitle = getAdapter().getItem(0).getSubjectOrComment();

@@ -294,7 +294,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			if (noCaptchaPass) RecaptchaReader.getInstance().preloadWebView();
 		}
 		ChanMarkup markup = ChanMarkup.get(mChanName);
-		mCommentEditor = markup.obtainCommentEditor(mBoardName);
+		mCommentEditor = markup.safe().obtainCommentEditor(mBoardName);
 		Configuration configuration = getResources().getConfiguration();
 		boolean needPassword = false;
 		ChanConfiguration.Board board = chanConfiguration.safe().obtainBoard(mBoardName);
@@ -361,7 +361,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 				AbsMarkupButton markupButton = MARKUP_BUTTONS.get(j);
 				if (markupButton.priority == i)
 				{
-					if (markup.isTagSupported(mBoardName, markupButton.what) ||
+					if (markup.safe().isTagSupported(mBoardName, markupButton.what) ||
 							markupButton.what == ChanMarkup.TAG_QUOTE)
 					{
 						int width = (int) (markupButton.widthDp * density);

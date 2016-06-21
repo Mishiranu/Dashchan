@@ -22,7 +22,6 @@ import android.os.Bundle;
 
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
-import chan.content.ExtensionException;
 
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
@@ -39,35 +38,18 @@ public class UriHandlerActivity extends Activity
 		super.onCreate(savedInstanceState);
 		boolean success = false;
 		Uri uri = getIntent().getData();
-		OUTER: if (uri != null)
+		if (uri != null)
 		{
 			String chanName = ChanManager.getInstance().getChanNameByHost(uri.getAuthority());
 			if (chanName != null)
 			{
 				boolean fromClient = getIntent().getBooleanExtra(C.EXTRA_FROM_CLIENT, false);
 				ChanLocator locator = ChanLocator.get(chanName);
-				boolean boardUri = false;
-				boolean threadUri = false;
-				String boardName = null;
-				String threadNumber = null;
-				String postNumber = null;
-				try
-				{
-					boardUri = locator.isBoardUri(uri);
-					threadUri = locator.isThreadUri(uri);
-					if (boardUri || threadUri) boardName = locator.getBoardName(uri);
-					if (threadUri)
-					{
-						threadNumber = locator.getThreadNumber(uri);
-						postNumber = locator.getPostNumber(uri);
-					}
-				}
-				catch (LinkageError | RuntimeException e)
-				{
-					ExtensionException.showToastAndLogException(e);
-					success = true;
-					break OUTER;
-				}
+				boolean boardUri = locator.safe(false).isBoardUri(uri);
+				boolean threadUri = locator.safe(false).isThreadUri(uri);
+				String boardName = boardUri || threadUri ? locator.safe(false).getBoardName(uri) : null;
+				String threadNumber = threadUri ? locator.safe(false).getThreadNumber(uri) : null;
+				String postNumber = threadUri ? locator.safe(false).getPostNumber(uri) : null;
 				if (boardUri)
 				{
 					if (!fromClient)

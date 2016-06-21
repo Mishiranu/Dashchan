@@ -74,19 +74,10 @@ public class ReadVideoTask extends CancellableTask<Void, Long, Boolean>
 		try
 		{
 			int connectTimeout = 15000, readTimeout = 15000;
-			HttpResponse response = null;
-			try
-			{
-				ChanPerformer.ReadContentResult result = ChanPerformer.get(mChanName).onReadContent(new ChanPerformer
-						.ReadContentData(mUri, connectTimeout, readTimeout, mHolder, mProgressHandler,
-						mInputStream.getOutputStream()));
-				if (result != null) response = result.response;
-			}
-			catch (LinkageError | RuntimeException e)
-			{
-				mErrorItem = ExtensionException.obtainErrorItemAndLogException(e);
-				return false;
-			}
+			ChanPerformer.ReadContentResult result = ChanPerformer.get(mChanName).safe()
+					.onReadContent(new ChanPerformer.ReadContentData(mUri, connectTimeout, readTimeout, mHolder,
+					mProgressHandler, mInputStream.getOutputStream()));
+			HttpResponse response = result != null ? result.response : null;
 			if (response != null)
 			{
 				mData = response.getBytes();
@@ -111,7 +102,7 @@ public class ReadVideoTask extends CancellableTask<Void, Long, Boolean>
 			}
 			return true;
 		}
-		catch (HttpException | InvalidResponseException e)
+		catch (ExtensionException | HttpException | InvalidResponseException e)
 		{
 			mErrorItem = e.getErrorItemAndHandle();
 			return false;

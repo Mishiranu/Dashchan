@@ -72,7 +72,7 @@ public class ReadCaptchaTask extends CancellableTask<Void, Long, Boolean>
 	public static interface CaptchaReader
 	{
 		public ChanPerformer.ReadCaptchaResult onReadCaptcha(ChanPerformer.ReadCaptchaData data)
-				throws HttpException, InvalidResponseException;
+				throws ExtensionException, HttpException, InvalidResponseException;
 	}
 	
 	private static class ChanCaptchaReader implements CaptchaReader
@@ -85,9 +85,10 @@ public class ReadCaptchaTask extends CancellableTask<Void, Long, Boolean>
 		}
 		
 		@Override
-		public ReadCaptchaResult onReadCaptcha(ReadCaptchaData data) throws HttpException, InvalidResponseException
+		public ReadCaptchaResult onReadCaptcha(ReadCaptchaData data) throws ExtensionException, HttpException,
+				InvalidResponseException
 		{
-			return ChanPerformer.get(mChanName).onReadCaptcha(data);
+			return ChanPerformer.get(mChanName).safe().onReadCaptcha(data);
 		}
 	}
 	
@@ -120,14 +121,9 @@ public class ReadCaptchaTask extends CancellableTask<Void, Long, Boolean>
 			result = mCaptchaReader.onReadCaptcha(new ChanPerformer.ReadCaptchaData(parentCaptchaType,
 					mCaptchaPass, mMayShowLoadButton, mRequirement, mBoardName, mThreadNumber, mHolder));
 		}
-		catch (HttpException | InvalidResponseException e)
+		catch (ExtensionException | HttpException | InvalidResponseException e)
 		{
 			mErrorItem = e.getErrorItemAndHandle();
-			return false;
-		}
-		catch (LinkageError | RuntimeException e)
-		{
-			mErrorItem = ExtensionException.obtainErrorItemAndLogException(e);
 			return false;
 		}
 		finally

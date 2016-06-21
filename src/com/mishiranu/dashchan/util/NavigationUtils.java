@@ -46,7 +46,6 @@ import android.view.View;
 
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
-import chan.content.ExtensionException;
 import chan.http.CookieBuilder;
 import chan.util.StringUtils;
 
@@ -199,7 +198,7 @@ public class NavigationUtils
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 			intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
 			intent.putExtra(C.EXTRA_FROM_CLIENT, true);
-			if (chanName != null && ChanLocator.get(chanName).isAttachmentUri(uri))
+			if (chanName != null && ChanLocator.get(chanName).safe(false).isAttachmentUri(uri))
 			{
 				String cloudFlareCookie = CloudFlarePasser.getCookie(chanName);
 				if (cloudFlareCookie != null)
@@ -231,7 +230,7 @@ public class NavigationUtils
 		if (uriChanName != null) chanName = uriChanName;
 		ChanLocator locator = ChanLocator.get(chanName);
 		boolean handled = false;
-		if (chanName != null && locator.isAttachmentUri(uri))
+		if (chanName != null && locator.safe(false).isAttachmentUri(uri))
 		{
 			Uri internalUri = locator.convert(uri);
 			String fileName = locator.createAttachmentFileName(internalUri);
@@ -447,16 +446,10 @@ public class NavigationUtils
 		StringBuilder message = new StringBuilder();
 		ChanLocator locator = ChanLocator.get(chanName);
 		boolean isPost = postNumber != null && !postNumber.equals(threadNumber);
-		try
-		{
-			if (isPost) message.append(locator.createPostUri(boardName, threadNumber, postNumber).toString());
-			else message.append(locator.createThreadUri(boardName, threadNumber).toString());
-		}
-		catch (LinkageError | RuntimeException e)
-		{
-			ExtensionException.showToastAndLogException(e);
-			return;
-		}
+		Uri uri = isPost ? locator.safe(true).createPostUri(boardName, threadNumber, postNumber)
+				: locator.safe(true).createThreadUri(boardName, threadNumber);
+		if (uri == null) return;
+		message.append(uri.toString());
 		if (!StringUtils.isEmpty(comment)) message.append("\n\n").append(comment.toString());
 		intent.putExtra(Intent.EXTRA_TEXT, message.toString());
 		if (!StringUtils.isEmpty(subjectOrComment)) intent.putExtra(Intent.EXTRA_SUBJECT, subjectOrComment);

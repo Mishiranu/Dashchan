@@ -52,24 +52,15 @@ public class ReadUserBoardsTask extends CancellableTask<Void, Long, Boolean>
 	{
 		try
 		{
-			Board[] boards;
-			try
-			{
-				ChanPerformer.ReadUserBoardsResult result = ChanPerformer.get(mChanName)
-						.onReadUserBoards(new ChanPerformer.ReadUserBoardsData(mHolder));
-				boards = result != null ? result.boards : null;
-			}
-			catch (LinkageError | RuntimeException e)
-			{
-				mErrorItem = ExtensionException.obtainErrorItemAndLogException(e);
-				return false;
-			}
+			ChanPerformer.ReadUserBoardsResult result = ChanPerformer.get(mChanName).safe()
+					.onReadUserBoards(new ChanPerformer.ReadUserBoardsData(mHolder));
+			Board[] boards = result != null ? result.boards : null;
 			if (boards != null && boards.length == 0) boards = null;
 			if (boards != null) ChanConfiguration.get(mChanName).updateFromBoards(boards);
 			mBoards = boards;
 			return true;
 		}
-		catch (HttpException | InvalidResponseException e)
+		catch (ExtensionException | HttpException | InvalidResponseException e)
 		{
 			mErrorItem = e.getErrorItemAndHandle();
 			return false;

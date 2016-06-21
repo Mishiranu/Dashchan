@@ -512,7 +512,7 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 	}
 	
 	@Extendable
-	public Pair<String, String> obtainPostLinkThreadPostNumbers(String uriString)
+	protected Pair<String, String> obtainPostLinkThreadPostNumbers(String uriString)
 	{
 		return null;
 	}
@@ -522,19 +522,9 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 		MarkupExtra extra = parser.getExtra();
 		if (extra == null) return null;
 		ChanLocator locator = ChanLocator.get(mChanName);
-		String threadNumber;
-		String postNumber;
-		try
-		{
-			Uri uri = locator.validateClickedUriString(uriString, extra.getBoardName(), extra.getThreadNumber());
-			threadNumber = locator.getThreadNumber(uri);
-			postNumber = locator.getPostNumber(uri);
-		}
-		catch (LinkageError | RuntimeException e)
-		{
-			ExtensionException.logException(e);
-			return null;
-		}
+		Uri uri = locator.validateClickedUriString(uriString, extra.getBoardName(), extra.getThreadNumber());
+		String threadNumber = locator.safe(false).getThreadNumber(uri);
+		String postNumber = locator.safe(false).getPostNumber(uri);
 		return threadNumber == null && postNumber == null ? null : new Pair<>(threadNumber, postNumber);
 	}
 	
@@ -589,7 +579,7 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 			if (extra != null)
 			{
 				String boardName = extra.getBoardName();
-				provider.commentEditor = obtainCommentEditor(boardName);
+				provider.commentEditor = mSafe.obtainCommentEditor(boardName);
 			} 
 		}
 		return provider;
@@ -684,8 +674,19 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 					if (!(i < 2 && c == '>' || i >= 2 && c >= '0' && c <= '9')) return;
 				}
 				String uriString = linkHolder.uriString;
-				Pair<String, String> numbers = mUseInlineLinkParser ? obtainPostLinkThreadPostNumbers(uriString)
-						: obtainPostLinkThreadPostNumbers(parser, uriString);
+				Pair<String, String> numbers = null;
+				if (mUseInlineLinkParser)
+				{
+					try
+					{
+						numbers = obtainPostLinkThreadPostNumbers(uriString);
+					}
+					catch (LinkageError | RuntimeException e)
+					{
+						ExtensionException.logException(e, false);
+					}
+				}
+				else numbers = obtainPostLinkThreadPostNumbers(parser, uriString);
 				if (numbers != null)
 				{
 					String threadNumber = numbers.first;
@@ -842,5 +843,48 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 	{
 		public String getBoardName();
 		public String getThreadNumber();
+	}
+	
+	public static final class Safe
+	{
+		private final ChanMarkup mMarkup;
+		
+		private Safe(ChanMarkup markup)
+		{
+			mMarkup = markup;
+		}
+		
+		public CommentEditor obtainCommentEditor(String boardName)
+		{
+			try
+			{
+				return mMarkup.obtainCommentEditor(boardName);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				ExtensionException.logException(e, false);
+				return null;
+			}
+		}
+		
+		public boolean isTagSupported(String boardName, int tag)
+		{
+			try
+			{
+				return mMarkup.isTagSupported(boardName, tag);
+			}
+			catch (LinkageError | RuntimeException e)
+			{
+				ExtensionException.logException(e, false);
+				return false;
+			}
+		}
+	}
+	
+	private final Safe mSafe = new Safe(this);
+	
+	public final Safe safe()
+	{
+		return mSafe;
 	}
 }

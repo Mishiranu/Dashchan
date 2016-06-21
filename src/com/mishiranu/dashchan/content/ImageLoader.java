@@ -283,13 +283,14 @@ public class ImageLoader
 							ChanPerformer performer = ChanPerformer.get(chanName);
 							try
 							{
-								ChanPerformer.ReadContentResult result = performer.onReadContent(new ChanPerformer
-										.ReadContentData(mUri, connectTimeout, readTimeout, mHolder, null, null));
+								ChanPerformer.ReadContentResult result = performer.safe()
+										.onReadContent(new ChanPerformer.ReadContentData(mUri, connectTimeout,
+										readTimeout, mHolder, null, null));
 								bitmap = result != null && result.response != null ? result.response.getBitmap() : null;
 							}
-							catch (LinkageError | RuntimeException e)
+							catch (ExtensionException e)
 							{
-								ExtensionException.logException(e);
+								e.getErrorItemAndHandle();
 								return null;
 							}
 						}

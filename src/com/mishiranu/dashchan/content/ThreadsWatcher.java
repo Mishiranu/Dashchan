@@ -33,6 +33,7 @@ import chan.content.ChanConfiguration;
 import chan.content.ChanManager;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
+import chan.content.InvalidResponseException;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
 import chan.http.HttpValidator;
@@ -449,9 +450,9 @@ public class ThreadsWatcher implements FavoritesStorage.Observer, Handler.Callba
 			try
 			{
 				ChanPerformer performer = ChanPerformer.get(watcherItem.chanName);
-				ChanPerformer.ReadPostsCountResult result = performer.onReadPostsCount(new ChanPerformer
-						.ReadPostsCountData(watcherItem.boardName, watcherItem.threadNumber, 5000, 5000, mHolder,
-						watcherItem.mValidator));
+				ChanPerformer.ReadPostsCountResult result = performer.safe()
+						.onReadPostsCount(new ChanPerformer.ReadPostsCountData(watcherItem.boardName,
+						watcherItem.threadNumber, 5000, 5000, mHolder, watcherItem.mValidator));
 				mResult.newPostsCount = result != null ? result.postsCount : 0;
 				HttpValidator validator = result != null ? result.validator : null;
 				if (validator == null) validator = mHolder.getValidator();
@@ -476,9 +477,9 @@ public class ThreadsWatcher implements FavoritesStorage.Observer, Handler.Callba
 					mResult.error = true;
 				}
 			}
-			catch (LinkageError | RuntimeException e)
+			catch (ExtensionException | InvalidResponseException e)
 			{
-				ExtensionException.logException(e);
+				e.getErrorItemAndHandle();
 				mResult.error = true;
 			}
 			catch (Exception e)

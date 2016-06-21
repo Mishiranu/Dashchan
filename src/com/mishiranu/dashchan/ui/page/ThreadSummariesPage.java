@@ -18,6 +18,7 @@ package com.mishiranu.dashchan.ui.page;
 
 import android.app.Activity;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -171,8 +172,9 @@ public class ThreadSummariesPage extends ListPage<ThreadSummariesAdapter> implem
 		{
 			case CONTEXT_MENU_COPY_LINK:
 			{
-				StringUtils.copyToClipboard(getActivity(), getChanLocator().createThreadUri(threadSummaryItem
-						.getBoardName(), threadSummaryItem.getThreadNumber()).toString());
+				Uri uri = getChanLocator().safe(true).createThreadUri(threadSummaryItem.getBoardName(),
+						threadSummaryItem.getThreadNumber());
+				if (uri != null) StringUtils.copyToClipboard(getActivity(), uri.toString());
 				return true;
 			}
 		}
