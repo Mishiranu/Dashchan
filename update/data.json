@@ -24,6 +24,18 @@
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanAllchan.apk"
 		}
 	],
+	"anonfm":
+	[
+		{
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"minSdk": 16,
+			"length": 52150,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanAnonfm.apk"
+		}
+	],
 	"apachan":
 	[
 		{

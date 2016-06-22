@@ -14,6 +14,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | Chan Name       | Host                 | Extension Package Link                                                                                                     |
 | :-------------: | :------------------: | :------------------------------------------------------------------------------------------------------------------------- |
 | allchan         | allchan.su           | [DashchanAllchan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanAllchan.apk)                 |
+| anonfm          | anon.fm              | [DashchanAnonfm.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanAnonfm.apk)                   |
 | apachan         | apachan.net          | [DashchanApachan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanApachan.apk)                 |
 | cablesix        | cable6.net           | [DashchanCableSix.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanCableSix.apk)               |
 | chiochan        | 410chan.org          | [DashchanChiochan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanChiochan.apk)               |
