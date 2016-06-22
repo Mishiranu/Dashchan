@@ -3,12 +3,12 @@
 	[
 		{
 			"title": "Release",
-			"name": "2.7.1",
+			"name": "2.7.2",
 			"code": 1030,
 			"minVersion": 1,
 			"maxVersion": 1,
-			"minSdk": 14,
-			"length": 1138624,
+			"minSdk": 16,
+			"length": 1125804,
 			"source": "/Mishiranu/Dashchan/master/update/package/Dashchan.apk"
 		}
 	],
@@ -28,11 +28,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.1",
+			"name": "1.2",
 			"code": 1,
 			"version": 1,
 			"minSdk": 16,
-			"length": 52751,
+			"length": 52747,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanAnonfm.apk"
 		}
 	],
