@@ -46,34 +46,46 @@ import com.mishiranu.dashchan.preference.Preferences;
 @Extendable
 public class ChanConfiguration implements ChanManager.Linked
 {
+	private final ChanManager mManager;
 	private final String mChanName;
 	private final SharedPreferences mPreferences;
 	
 	private boolean mCanSetOptions = true;
 	
+	public static final ChanManager.Initializer INITIALIZER = new ChanManager.Initializer();
+	
 	@Public
 	public ChanConfiguration()
 	{
-		this(false);
+		this(true);
 	}
 	
-	ChanConfiguration(boolean defaultInstance)
+	ChanConfiguration(boolean useInitializer)
 	{
-		if (defaultInstance)
+		if (useInitializer)
 		{
-			mChanName = null;
-			mPreferences = null;
-		}
-		else
-		{
-			ChanManager.checkInstancesAndThrow();
-			mChanName = ChanManager.initializingChanName;
+			INITIALIZER.checkInitializing();
+			mManager = INITIALIZER.getChanManager();
+			mChanName = INITIALIZER.getChanName();
 			mPreferences = MainApplication.getInstance().getSharedPreferences("chan." + mChanName,
 					Context.MODE_PRIVATE);
 		}
+		else
+		{
+			mManager = null;
+			mChanName = null;
+			mPreferences = null;
+		}
 	}
 	
-	void init()
+	@Override
+	public final String getChanName()
+	{
+		return mChanName;
+	}
+	
+	@Override
+	public final void init()
 	{
 		mCanSetOptions = false;
 	}
@@ -113,12 +125,6 @@ public class ChanConfiguration implements ChanManager.Linked
 	
 	private static final String KEY_COOKIE = "cookie";
 	private static final String KEY_COOKIES = "cookies";
-	
-	@Override
-	public final String getChanName()
-	{
-		return mChanName;
-	}
 	
 	public static <T extends ChanConfiguration> T get(String chanName)
 	{
@@ -686,7 +692,7 @@ public class ChanConfiguration implements ChanManager.Linked
 	
 	public final String getCaptchaType()
 	{
-		return Preferences.getCaptchaTypeForChanManager(getChanName());
+		return Preferences.getCaptchaTypeForChanConfiguration(getChanName());
 	}
 	
 	public final String getCaptchaPreferredChildType(String captchaType, String checkCaptchaType)
@@ -895,8 +901,8 @@ public class ChanConfiguration implements ChanManager.Linked
 	@Public
 	public final Resources getResources()
 	{
-		if (mChanName == null) return null;
-		return ChanManager.getInstance().getResources(mChanName);
+		if (mManager == null) return null;
+		return mManager.getResources(mChanName);
 	}
 	
 	@Public

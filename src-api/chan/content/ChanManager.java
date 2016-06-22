@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 import java.util.regex.Pattern;
 
 import android.annotation.TargetApi;
@@ -78,18 +79,8 @@ public class ChanManager
 	private LinkedHashSet<String> mAvailableChanNames;
 	private ArrayList<String> mSortedAvailableChanNames;
 	
-	private final ChanConfiguration mDefaultConfiguration = new ChanConfiguration(true);
-	private final ChanPerformer mDefaultPerformer = new ChanPerformer(true);
-	private final ChanLocator mDefaultLocator = new ChanLocator(true);
-
-	private final HashMap<String, ChanConfiguration> mConfigurations = new HashMap<>();
-	private final HashMap<String, ChanPerformer> mPerformers = new HashMap<>();
-	private final HashMap<String, ChanLocator> mLocators = new HashMap<>();
-	private final HashMap<String, ChanMarkup> mMarkups = new HashMap<>();
-	
-	private final HashMap<String, Resources> mResources = new HashMap<>();
-	private final HashMap<String, Drawable> mIcons = new HashMap<>();
-	
+	private final ChanHolder mDefaultChanHolder;
+	private final HashMap<String, ChanHolder> mChanHolders = new HashMap<>();
 	private final HashMap<String, ArrayList<String>> mArchiveMap = new HashMap<>();
 	
 	private final LinkedHashMap<String, ExtensionItem> mExtensionItems;
@@ -97,6 +88,16 @@ public class ChanManager
 	private final LinkedHashMap<String, ExtensionItem> mLibItems;
 
 	private static final Pattern VALID_EXTENSION_NAME = Pattern.compile("[a-z][a-z0-9]{3,14}");
+	
+	private static class ChanHolder
+	{
+		public ChanConfiguration configuration;
+		public ChanPerformer performer;
+		public ChanLocator locator;
+		public ChanMarkup markup;
+		public Resources resources;
+		public Drawable icon;
+	}
 	
 	private static final ChanManager INSTANCE;
 	
@@ -194,6 +195,11 @@ public class ChanManager
 		Collections.addAll(busyExtensionNames, Preferences.SPECIAL_EXTENSION_NAMES);
 		ArrayList<String> busyChanNames = new ArrayList<>(busyExtensionNames);
 		busyChanNames.add(EXTENSION_NAME_LIB_WEBM);
+		
+		mDefaultChanHolder = new ChanHolder();
+		mDefaultChanHolder.configuration = new ChanConfiguration(false);
+		mDefaultChanHolder.performer = new ChanPerformer(false);
+		mDefaultChanHolder.locator = new ChanLocator(false);
 		
 		PackageManager packageManager = MainApplication.getInstance().getPackageManager();
 		List<PackageInfo> packages = packageManager.getInstalledPackages(PackageManager.GET_CONFIGURATIONS);
@@ -303,48 +309,33 @@ public class ChanManager
 				if (chanItem.supported)
 				{
 					String chanName = chanItem.extensionName;
-					initializingChanName = chanName;
+					ChanHolder chanHolder = new ChanHolder();
+					mChanHolders.put(chanName, chanHolder);
 					try
 					{
 						String nativeLibraryDir = chanItem.applicationInfo.nativeLibraryDir;
 						if (nativeLibraryDir != null && !new File(nativeLibraryDir).exists()) nativeLibraryDir = null;
 						ClassLoader classLoader = new PathClassLoader(chanItem.packagePath, nativeLibraryDir,
 								ChanManager.class.getClassLoader());
-						mResources.put(chanName, packageManager.getResourcesForApplication(chanItem.applicationInfo));
-						ChanConfiguration configuration = (ChanConfiguration) classLoader
-								.loadClass(chanItem.classConfiguration).newInstance();
-						configuration.init();
-						mConfigurations.put(chanName, configuration);
-						ChanPerformer performer = (ChanPerformer) classLoader
-								.loadClass(chanItem.classPerformer).newInstance();
-						mPerformers.put(chanName, performer);
-						ChanLocator locator = (ChanLocator) classLoader
-								.loadClass(chanItem.classLocator).newInstance();
-						locator.init();
-						mLocators.put(chanName, locator);
-						ChanMarkup markup = (ChanMarkup) classLoader
-								.loadClass(chanItem.classMarkup).newInstance();
-						mMarkups.put(chanName, markup);
+						chanHolder.resources = packageManager.getResourcesForApplication(chanItem.applicationInfo);
+						chanHolder.configuration = ChanConfiguration.INITIALIZER.initialize(Class
+								.forName(chanItem.classConfiguration, false, classLoader), this, chanName);
+						chanHolder.performer = ChanPerformer.INITIALIZER.initialize(Class
+								.forName(chanItem.classPerformer, false, classLoader), this, chanName);
+						chanHolder.locator = ChanLocator.INITIALIZER.initialize(Class
+								.forName(chanItem.classLocator, false, classLoader), this, chanName);
+						chanHolder.markup = ChanMarkup.INITIALIZER.initialize(Class
+								.forName(chanItem.classMarkup, false, classLoader), this, chanName);
 						if (C.API_LOLLIPOP && chanItem.iconResId != 0)
 						{
-							Drawable icon = mResources.get(chanName).getDrawable(chanItem.iconResId, null);
-							if (icon != null) mIcons.put(chanName, icon);
+							chanHolder.icon = chanHolder.resources.getDrawable(chanItem.iconResId, null);
 						}
 						loadedChanNames.add(chanName);
 					}
 					catch (Exception | LinkageError e)
 					{
+						mChanHolders.remove(chanName);
 						Log.persistent().write(e);
-						mConfigurations.remove(chanName);
-						mPerformers.remove(chanName);
-						mLocators.remove(chanName);
-						mMarkups.remove(chanName);
-						mResources.remove(chanName);
-						mIcons.remove(chanName);
-					}
-					finally
-					{
-						initializingChanName = null;
 					}
 				}
 			}
@@ -402,9 +393,9 @@ public class ChanManager
 				}
 			}
 		}, filter);
-		for (ChanConfiguration configuration : mConfigurations.values())
+		for (ChanHolder chanHolder : mChanHolders.values())
 		{
-			ChanConfiguration.Archivation archivation = configuration.obtainArchivationConfiguration();
+			ChanConfiguration.Archivation archivation = chanHolder.configuration.obtainArchivationConfiguration();
 			if (archivation != null)
 			{
 				for (String host : archivation.hosts)
@@ -418,69 +409,105 @@ public class ChanManager
 							archiveChanNames = new ArrayList<>();
 							mArchiveMap.put(chanName, archiveChanNames);
 						}
-						archiveChanNames.add(configuration.getChanName());
+						archiveChanNames.add(chanHolder.configuration.getChanName());
 					}
 				}
 			}
 		}
 	}
 	
-	static String initializingChanName;
-	
 	public static interface Linked
 	{
 		public String getChanName();
+		public void init();
+	}
+	
+	public static class Initializer
+	{
+		private ChanManager mManager;
+		private String mChanName;
+		
+		private final Semaphore mSemaphore = new Semaphore(1);
+		
+		public ChanManager getChanManager()
+		{
+			return mManager;
+		}
+		
+		public String getChanName()
+		{
+			return mChanName;
+		}
+		
+		public void checkInitializing()
+		{
+			if (mChanName == null)
+			{
+				throw new IllegalStateException("You can't initiate instance of this object by yourself.");
+			}
+		}
+		
+		@SuppressWarnings("unchecked")
+		public <T extends Linked> T initialize(Class<?> clazz, ChanManager manager, String chanName)
+				throws LinkageError, Exception
+		{
+			mManager = manager;
+			mChanName = chanName;
+			mSemaphore.acquireUninterruptibly();
+			T result;
+			try
+			{
+				result = (T) clazz.newInstance();
+			}
+			finally
+			{
+				mManager = null;
+				mChanName = null;
+				mSemaphore.release();
+			}
+			result.init();
+			return result;
+		}
+	}
+	
+	private ChanHolder getChanHolder(String chanName, boolean defaultIfNotFound)
+	{
+		ChanHolder chanHolder = mChanHolders.get(chanName);
+		if (chanHolder == null)
+		{
+			if (defaultIfNotFound) return mDefaultChanHolder;
+			else throw new IllegalArgumentException("Unsupported operation for " + chanName);
+		}
+		return chanHolder;
 	}
 	
 	@SuppressWarnings("unchecked")
 	<T extends ChanConfiguration> T getConfiguration(String chanName, boolean defaultIfNotFound)
 	{
-		ChanConfiguration configutation = mConfigurations.get(chanName);
-		if (configutation == null)
-		{
-			if (defaultIfNotFound) return (T) mDefaultConfiguration;
-			else throwUnknownChanNameException(chanName);
-		}
-		return (T) configutation;
+		return (T) getChanHolder(chanName, defaultIfNotFound).configuration;
 	}
 	
 	@SuppressWarnings("unchecked")
 	<T extends ChanPerformer> T getPerformer(String chanName, boolean defaultIfNotFound)
 	{
-		ChanPerformer performer = mPerformers.get(chanName);
-		if (performer == null)
-		{
-			if (defaultIfNotFound) return (T) mDefaultPerformer;
-			else throwUnknownChanNameException(chanName);
-		}
-		return (T) performer;
+		return (T) getChanHolder(chanName, defaultIfNotFound).performer;
 	}
 	
 	@SuppressWarnings("unchecked")
 	<T extends ChanLocator> T getLocator(String chanName, boolean defaultIfNotFound)
 	{
-		ChanLocator locator = mLocators.get(chanName);
-		if (locator == null)
-		{
-			if (defaultIfNotFound) return (T) mDefaultLocator;
-			else throwUnknownChanNameException(chanName);
-		}
-		return (T) locator;
+		return (T) getChanHolder(chanName, defaultIfNotFound).locator;
 	}
 	
 	@SuppressWarnings("unchecked")
 	<T extends ChanMarkup> T getMarkup(String chanName)
 	{
-		ChanMarkup markup = mMarkups.get(chanName);
-		if (markup == null) throwUnknownChanNameException(chanName);
-		return (T) markup;
+		return (T) getChanHolder(chanName, false).markup;
 	}
 	
 	Resources getResources(String chanName)
 	{
-		Resources resources = mResources.get(chanName);
-		if (resources == null) throwUnknownChanNameException(chanName);
-		return resources;
+		return getChanHolder(chanName, false).resources;
 	}
 	
 	public Collection<ExtensionItem> getExtensionItems()
@@ -554,9 +581,9 @@ public class ChanManager
 	{
 		if (host != null)
 		{
-			for (HashMap.Entry<String, ChanLocator> entry : mLocators.entrySet())
+			for (HashMap.Entry<String, ChanHolder> entry : mChanHolders.entrySet())
 			{
-				if (entry.getValue().isChanHost(host)) return entry.getKey();
+				if (entry.getValue().locator.isChanHost(host)) return entry.getKey();
 			}
 		}
 		return null;
@@ -567,7 +594,7 @@ public class ChanManager
 	{
 		if (C.API_LOLLIPOP)
 		{
-			Drawable drawable = mIcons.get(chanName);
+			Drawable drawable = mChanHolders.get(chanName).icon;
 			if (drawable == null) drawable = MainApplication.getInstance().getDrawable(R.drawable.ic_extension_white);
 			drawable = drawable.getConstantState().newDrawable().mutate();
 			drawable.setTint(tint);
@@ -578,7 +605,10 @@ public class ChanManager
 
 	public void updateConfiguration(Configuration newConfig, DisplayMetrics metrics)
 	{
-		for (Resources resources : mResources.values()) resources.updateConfiguration(newConfig, metrics);
+		for (ChanHolder chanHolder : mChanHolders.values())
+		{
+			chanHolder.resources.updateConfiguration(newConfig, metrics);
+		}
 	}
 	
 	public boolean isExtensionPackage(String packageName)
@@ -595,19 +625,6 @@ public class ChanManager
 		if (object instanceof Linked) return ((Linked) object).getChanName();
 		throw new IllegalArgumentException("Object must be instance of ChanConfiguration, ChanPerformer, " +
 				"ChanLocator or ChanMarkup.");
-	}
-	
-	static void checkInstancesAndThrow()
-	{
-		if (initializingChanName == null)
-		{
-			throw new IllegalStateException("You can't initiate instance of this object by yourself.");
-		}
-	}
-	
-	private void throwUnknownChanNameException(String chanName)
-	{
-		throw new IllegalArgumentException("Unsupported operation for " + chanName);
 	}
 	
 	private boolean mNewExtensionsInstalled = false;
