@@ -173,8 +173,9 @@ public class ClickableToast
 		Activity activity = holder.mActivity;
 		float density = ResourceUtils.obtainDensity(activity);
 		int innerPadding = (int) (8f * density);
-		View toast1 = LayoutInflater.from(activity).inflate(LAYOUT_ID, null);
-		View toast2 = LayoutInflater.from(activity).inflate(LAYOUT_ID, null);
+		LayoutInflater inflater = LayoutInflater.from(activity);
+		View toast1 = inflater.inflate(LAYOUT_ID, null);
+		View toast2 = inflater.inflate(LAYOUT_ID, null);
 		TextView message1 = (TextView) toast1.findViewById(android.R.id.message);
 		TextView message2 = (TextView) toast2.findViewById(android.R.id.message);
 		ViewUtils.removeFromParent(message1);

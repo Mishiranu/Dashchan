@@ -23,7 +23,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.content.Context;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,9 +45,7 @@ public class BoardsAdapter extends BaseAdapter
 	private static final int TYPE_VIEW = 0;
 	private static final int TYPE_HEADER = 1;
 	
-	private final Context mContext;
 	private final String mChanName;
-	private final LayoutInflater mInflater;
 	
 	private final ArrayList<ListItem> mListItems = new ArrayList<>();
 	private final ArrayList<ListItem> mFilteredListItems = new ArrayList<>();
@@ -56,11 +53,9 @@ public class BoardsAdapter extends BaseAdapter
 	private boolean mFilterMode = false;
 	private String mFilterText;
 	
-	public BoardsAdapter(Context context, String chanName)
+	public BoardsAdapter(String chanName)
 	{
-		mContext = context;
 		mChanName = chanName;
-		mInflater = LayoutInflater.from(context);
 	}
 	
 	/*
@@ -163,15 +158,15 @@ public class BoardsAdapter extends BaseAdapter
 		{
 			if (listItem.boardName != null)
 			{
-				float density = ResourceUtils.obtainDensity(mContext);
-				TextView textView = (TextView) mInflater.inflate(android.R.layout.simple_list_item_1,
-						parent, false);
+				float density = ResourceUtils.obtainDensity(parent);
+				TextView textView = (TextView) LayoutInflater.from(parent.getContext())
+						.inflate(android.R.layout.simple_list_item_1, parent, false);
 				textView.setPadding((int) (16f * density), 0, (int) (16f * density), 0);
 				textView.setEllipsize(TextUtils.TruncateAt.END);
 				textView.setSingleLine(true);
 				convertView = textView;
 			}
-			else convertView = ViewFactory.makeListTextHeader(mContext, parent, false);
+			else convertView = ViewFactory.makeListTextHeader(parent, false);
 		}
 		((TextView) convertView).setText(listItem.title);
 		return convertView;

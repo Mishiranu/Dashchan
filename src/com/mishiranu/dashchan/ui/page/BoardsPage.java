@@ -54,7 +54,7 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 		PullableListView listView = getListView();
 		PageHolder pageHolder = getPageHolder();
 		if (C.API_LOLLIPOP) listView.setDivider(null);
-		BoardsAdapter adapter = new BoardsAdapter(activity, pageHolder.chanName);
+		BoardsAdapter adapter = new BoardsAdapter(pageHolder.chanName);
 		initAdapter(adapter);
 		adapter.update();
 		listView.getWrapper().setPullSides(PullableWrapper.Side.TOP);

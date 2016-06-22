@@ -99,7 +99,7 @@ public class SearchAdapter extends BaseAdapter implements BusyScrollListener.Cal
 		{
 			if (convertView == null)
 			{
-				convertView = ViewFactory.makeListTextHeader(mContext, parent, false);
+				convertView = ViewFactory.makeListTextHeader(parent, false);
 				if (C.API_LOLLIPOP)
 				{
 					float density = ResourceUtils.obtainDensity(mContext);

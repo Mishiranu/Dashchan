@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Locale;
 
-import android.content.Context;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,20 +34,11 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 
 public class ArchiveAdapter extends BaseAdapter
 {
-	private final Context mContext;
-	private final LayoutInflater mInflater;
-	
 	private final ArrayList<ThreadSummary> mArchiveItems = new ArrayList<>();
 	private final ArrayList<ThreadSummary> mFilteredArchiveItems = new ArrayList<>();
 	
 	private boolean mFilterMode = false;
 	private String mFilterText;
-	
-	public ArchiveAdapter(Context context)
-	{
-		mContext = context;
-		mInflater = LayoutInflater.from(context);
-	}
 	
 	/*
 	 * Returns true, if adapter isn't empty.
@@ -82,8 +72,9 @@ public class ArchiveAdapter extends BaseAdapter
 		ThreadSummary threadSummary = getItem(position);
 		if (convertView == null)
 		{
-			float density = ResourceUtils.obtainDensity(mContext);
-			TextView textView = (TextView) mInflater.inflate(android.R.layout.simple_list_item_1, parent, false);
+			float density = ResourceUtils.obtainDensity(parent);
+			TextView textView = (TextView) LayoutInflater.from(parent.getContext())
+					.inflate(android.R.layout.simple_list_item_1, parent, false);
 			textView.setPadding((int) (16f * density), 0, (int) (16f * density), 0);
 			textView.setEllipsize(TextUtils.TruncateAt.END);
 			textView.setSingleLine(true);

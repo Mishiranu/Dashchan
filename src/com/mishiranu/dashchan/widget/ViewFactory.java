@@ -17,7 +17,6 @@
 package com.mishiranu.dashchan.widget;
 
 import android.annotation.TargetApi;
-import android.content.Context;
 import android.os.Build;
 import android.text.TextUtils;
 import android.view.Gravity;
@@ -35,14 +34,14 @@ public class ViewFactory
 {
 	@TargetApi(Build.VERSION_CODES.M)
 	@SuppressWarnings("deprecation")
-	public static TextView makeListTextHeader(Context context, ViewGroup parent, boolean tiny)
+	public static TextView makeListTextHeader(ViewGroup parent, boolean tiny)
 	{
 		if (C.API_LOLLIPOP)
 		{
-			TextView textView = new TextView(context);
+			TextView textView = new TextView(parent.getContext());
 			if (C.API_MARSHMALLOW) textView.setTextAppearance(R.style.Widget_CategoryHeader);
-			else textView.setTextAppearance(context, R.style.Widget_CategoryHeader);
-			float density = ResourceUtils.obtainDensity(context);
+			else textView.setTextAppearance(parent.getContext(), R.style.Widget_CategoryHeader);
+			float density = ResourceUtils.obtainDensity(parent);
 			textView.setLayoutParams(new AbsListView.LayoutParams(AbsListView.LayoutParams.MATCH_PARENT,
 					AbsListView.LayoutParams.WRAP_CONTENT));
 			textView.setGravity(Gravity.CENTER_VERTICAL);
@@ -52,9 +51,9 @@ public class ViewFactory
 		}
 		else
 		{
-			TextView textView = (TextView) LayoutInflater.from(context).inflate(android.R.layout.preference_category,
-					parent, false);
-			float density = ResourceUtils.obtainDensity(context);
+			TextView textView = (TextView) LayoutInflater.from(parent.getContext())
+					.inflate(android.R.layout.preference_category, parent, false);
+			float density = ResourceUtils.obtainDensity(parent);
 			textView.setPadding((int) (12f * density), textView.getPaddingTop(), (int) (12f * density),
 					textView.getPaddingBottom());
 			return textView;
@@ -66,11 +65,11 @@ public class ViewFactory
 		public TextView text1, text2;
 	}
 	
-	public static View makeTwoLinesListItem(LayoutInflater inflater, ViewGroup parent, boolean singleLine)
+	public static View makeTwoLinesListItem(ViewGroup parent, boolean singleLine)
 	{
-		ViewGroup view = (ViewGroup) inflater.inflate(ResourceUtils.getResourceId(inflater.getContext(),
-				android.R.attr.preferenceStyle, android.R.attr.layout, android.R.layout.simple_list_item_2),
-				parent, false);
+		ViewGroup view = (ViewGroup) LayoutInflater.from(parent.getContext())
+				.inflate(ResourceUtils.getResourceId(parent.getContext(), android.R.attr.preferenceStyle,
+				android.R.attr.layout, android.R.layout.simple_list_item_2), parent, false);
 		TwoLinesViewHolder holder = new TwoLinesViewHolder();
 		if (view.findViewById(android.R.id.icon) != null)
 		{

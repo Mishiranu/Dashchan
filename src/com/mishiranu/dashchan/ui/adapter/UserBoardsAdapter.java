@@ -19,8 +19,6 @@ package com.mishiranu.dashchan.ui.adapter;
 import java.util.ArrayList;
 import java.util.Locale;
 
-import android.content.Context;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -34,9 +32,7 @@ import com.mishiranu.dashchan.widget.ViewFactory;
 
 public class UserBoardsAdapter extends BaseAdapter
 {
-	private final Context mContext;
 	private final String mChanName;
-	private final LayoutInflater mInflater;
 	
 	private final ArrayList<ListItem> mListItems = new ArrayList<>();
 	private final ArrayList<ListItem> mFilteredListItems = new ArrayList<>();
@@ -44,11 +40,9 @@ public class UserBoardsAdapter extends BaseAdapter
 	private boolean mFilterMode = false;
 	private String mFilterText;
 	
-	public UserBoardsAdapter(Context context, String chanName)
+	public UserBoardsAdapter(String chanName)
 	{
-		mContext = context;
 		mChanName = chanName;
-		mInflater = LayoutInflater.from(context);
 	}
 	
 	/*
@@ -92,8 +86,8 @@ public class UserBoardsAdapter extends BaseAdapter
 		ViewFactory.TwoLinesViewHolder holder;
 		if (convertView == null)
 		{
-			convertView = ViewFactory.makeTwoLinesListItem(mInflater, parent, true);
-			float density = ResourceUtils.obtainDensity(mContext);
+			convertView = ViewFactory.makeTwoLinesListItem(parent, true);
+			float density = ResourceUtils.obtainDensity(parent);
 			convertView.setPadding((int) (16f * density), convertView.getPaddingTop(),
 					(int) (16f * density), convertView.getPaddingBottom());
 			holder = (ViewFactory.TwoLinesViewHolder) convertView.getTag();

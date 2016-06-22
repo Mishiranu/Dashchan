@@ -49,7 +49,7 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 		PullableListView listView = getListView();
 		PageHolder pageHolder = getPageHolder();
 		if (C.API_LOLLIPOP) listView.setDivider(null);
-		ArchiveAdapter adapter = new ArchiveAdapter(activity);
+		ArchiveAdapter adapter = new ArchiveAdapter();
 		initAdapter(adapter);
 		listView.getWrapper().setPullSides(PullableWrapper.Side.TOP);
 		activity.setTitle(getString(R.string.action_archive_view) + ": " + StringUtils
