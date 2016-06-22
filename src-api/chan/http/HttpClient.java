@@ -131,7 +131,6 @@ public class HttpClient
 		CookieHandler.setDefault(new CookieHandler()
 		{
 			private final CookieManager mCookieManager = new CookieManager();
-			private final Map<String, List<String>> mImmutableEmptyMap = Collections.emptyMap();
 			
 			private boolean isInternalRequest()
 			{
@@ -153,7 +152,7 @@ public class HttpClient
 			@Override
 			public Map<String, List<String>> get(URI uri, Map<String, List<String>> requestHeaders) throws IOException
 			{
-				if (isInternalRequest()) return mImmutableEmptyMap;
+				if (isInternalRequest()) return Collections.emptyMap();
 				return mCookieManager.get(uri, requestHeaders);
 			}
 		});
