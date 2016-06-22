@@ -589,7 +589,7 @@ public class HtmlParser implements ContentHandler
 	}
 	
 	private static final Pattern COLOR_PATTERN = Pattern.compile("color: ?(?:rgba?\\((\\d+), ?(\\d+)," +
-			" ?(\\d+)(?:, ?\\d+)?\\)|(#[0-0A-Fa-f]+|[A-Za-z]+))");
+			" ?(\\d+)(?:, ?\\d+)?\\)|(#[0-9A-Fa-f]+|[A-Za-z]+))");
 	
 	public Integer getColorAttribute(Attributes attributes)
 	{
