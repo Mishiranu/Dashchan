@@ -63,7 +63,6 @@ import com.mishiranu.dashchan.widget.ViewFactory;
 public class AutohideFragment extends BaseListFragment
 {
 	private ArrayAdapter<AutohideStorage.AutohideItem> mAdapter;
-	private LayoutInflater mInflater;
 	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState)
@@ -71,7 +70,6 @@ public class AutohideFragment extends BaseListFragment
 		super.onActivityCreated(savedInstanceState);
 		setHasOptionsMenu(true);
 		setEmptyText(R.string.message_no_rules);
-		mInflater = getActivity().getLayoutInflater();
 		mAdapter = new ArrayAdapter<AutohideStorage.AutohideItem>(getActivity(), 0)
 		{
 			@Override
@@ -80,7 +78,7 @@ public class AutohideFragment extends BaseListFragment
 				ViewFactory.TwoLinesViewHolder holder;
 				if (convertView == null)
 				{
-					convertView = ViewFactory.makeTwoLinesListItem(mInflater, parent, true);
+					convertView = ViewFactory.makeTwoLinesListItem(parent, true);
 					holder = (ViewFactory.TwoLinesViewHolder) convertView.getTag();
 				}
 				else holder = (ViewFactory.TwoLinesViewHolder) convertView.getTag();

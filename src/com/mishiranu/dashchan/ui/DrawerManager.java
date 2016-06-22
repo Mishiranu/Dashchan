@@ -94,7 +94,6 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 	private final Context mUnstyledContext;
 	private final Callback mCallback;
 	
-	private final LayoutInflater mInflater;
 	private final InputMethodManager mInputMethodManager;
 
 	private final EditText mSearchEdit;
@@ -146,7 +145,6 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 		mUnstyledContext = unstyledContext;
 		mCallback = callback;
 		float density = ResourceUtils.obtainDensity(context);
-		mInflater = LayoutInflater.from(context);
 		LinearLayout linearLayout = new LinearLayout(context);
 		linearLayout.setOrientation(LinearLayout.VERTICAL);
 		linearLayout.setLayoutParams(new SortableListView.LayoutParams(SortableListView.LayoutParams.MATCH_PARENT,
@@ -1346,7 +1344,7 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 		}
 		else
 		{
-			View view = mInflater.inflate(ResourceUtils.getResourceId(mContext,
+			View view = LayoutInflater.from(mContext).inflate(ResourceUtils.getResourceId(mContext,
 					android.R.attr.preferenceCategoryStyle, android.R.attr.layout,
 					android.R.layout.preference_category), parent, false);
 			ViewHolder holder = new ViewHolder();

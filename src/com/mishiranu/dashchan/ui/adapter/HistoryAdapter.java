@@ -21,7 +21,6 @@ import java.util.Calendar;
 import java.util.Locale;
 
 import android.content.Context;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -38,7 +37,6 @@ import com.mishiranu.dashchan.widget.ViewFactory;
 public class HistoryAdapter extends BaseAdapter
 {
 	private final String mChanName;
-	private final LayoutInflater mInflater;
 	
 	private final ArrayList<Object> mItems = new ArrayList<>();
 	private final ArrayList<Object> mFilteredItems = new ArrayList<>();
@@ -57,7 +55,6 @@ public class HistoryAdapter extends BaseAdapter
 	
 	public HistoryAdapter(Context context, String chanName)
 	{
-		mInflater = LayoutInflater.from(context);
 		mChanName = chanName;
 		ArrayList<HistoryDatabase.HistoryItem> historyItems = HistoryDatabase.getInstance().getAllHistory(chanName);
 		Calendar calendar = Calendar.getInstance();
@@ -208,7 +205,7 @@ public class HistoryAdapter extends BaseAdapter
 		{
 			if (historyItem != null)
 			{
-				convertView = ViewFactory.makeTwoLinesListItem(mInflater, parent, true);
+				convertView = ViewFactory.makeTwoLinesListItem(parent, true);
 				float density = ResourceUtils.obtainDensity(context);
 				convertView.setPadding((int) (16f * density), convertView.getPaddingTop(),
 						(int) (16f * density), convertView.getPaddingBottom());
@@ -216,7 +213,7 @@ public class HistoryAdapter extends BaseAdapter
 			}
 			else
 			{
-				convertView = ViewFactory.makeListTextHeader(context, parent, true);
+				convertView = ViewFactory.makeListTextHeader(parent, true);
 				holder = null;
 			}
 		}

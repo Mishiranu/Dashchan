@@ -474,14 +474,12 @@ public class PagerUnit implements PagerInstance.Callback
 	
 	private class PagerAdapter implements PhotoViewPager.Adapter
 	{
-		private final LayoutInflater mInflater;
 		private final ArrayList<GalleryItem> mGalleryItems;
 		
 		private int mWaitBeforeVideo = 0;
 		
 		public PagerAdapter(ArrayList<GalleryItem> galleryItems)
 		{
-			mInflater = LayoutInflater.from(mGalleryInstance.context);
 			mGalleryItems = galleryItems;
 		}
 		
@@ -493,7 +491,8 @@ public class PagerUnit implements PagerInstance.Callback
 		@Override
 		public View onCreateView(Context context, ViewGroup parent)
 		{
-			View view = mInflater.inflate(R.layout.list_item_gallery, parent, false);
+			View view = LayoutInflater.from(mGalleryInstance.context).inflate(R.layout.list_item_gallery,
+					parent, false);
 			PagerInstance.ViewHolder holder = new PagerInstance.ViewHolder();
 			holder.photoView = (PhotoView) view.findViewById(R.id.photoView);
 			holder.surfaceParent = (FrameLayout) view.findViewById(R.id.surfaceParent);

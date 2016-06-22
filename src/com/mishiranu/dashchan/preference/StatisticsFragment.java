@@ -24,7 +24,6 @@ import android.os.Bundle;
 import android.text.SpannableStringBuilder;
 import android.text.style.StyleSpan;
 import android.text.style.TypefaceSpan;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -93,7 +92,6 @@ public class StatisticsFragment extends BaseListFragment
 				}
 			}
 		}
-		final LayoutInflater inflater = getActivity().getLayoutInflater();
 		setListAdapter(new BaseAdapter()
 		{
 			@Override
@@ -102,7 +100,7 @@ public class StatisticsFragment extends BaseListFragment
 				ViewFactory.TwoLinesViewHolder holder;
 				if (convertView == null)
 				{
-					convertView = ViewFactory.makeTwoLinesListItem(inflater, parent, false);
+					convertView = ViewFactory.makeTwoLinesListItem(parent, false);
 					holder = (ViewFactory.TwoLinesViewHolder) convertView.getTag();
 				}
 				else holder = (ViewFactory.TwoLinesViewHolder) convertView.getTag();

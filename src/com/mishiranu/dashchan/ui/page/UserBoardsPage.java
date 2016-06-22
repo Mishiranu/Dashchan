@@ -45,7 +45,7 @@ public class UserBoardsPage extends ListPage<UserBoardsAdapter> implements ReadU
 		Activity activity = getActivity();
 		PullableListView listView = getListView();
 		PageHolder pageHolder = getPageHolder();
-		UserBoardsAdapter adapter = new UserBoardsAdapter(activity, pageHolder.chanName);
+		UserBoardsAdapter adapter = new UserBoardsAdapter(pageHolder.chanName);
 		initAdapter(adapter);
 		listView.getWrapper().setPullSides(PullableWrapper.Side.TOP);
 		activity.setTitle(getString(R.string.action_user_boards));

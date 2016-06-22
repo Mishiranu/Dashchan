@@ -364,7 +364,6 @@ public class ListUnit implements AdapterView.OnItemClickListener, ActionMode.Cal
 	
 	private class GridAdapter extends BaseAdapter implements BusyScrollListener.Callback
 	{
-		private final LayoutInflater mInflater;
 		private final ArrayList<GalleryItem> mGalleryItems;
 		
 		private boolean mEnabled = false;
@@ -372,7 +371,6 @@ public class ListUnit implements AdapterView.OnItemClickListener, ActionMode.Cal
 		
 		public GridAdapter(ArrayList<GalleryItem> galleryItems)
 		{
-			mInflater = LayoutInflater.from(mInstance.context);
 			mGalleryItems = galleryItems;
 		}
 		
@@ -406,7 +404,8 @@ public class ListUnit implements AdapterView.OnItemClickListener, ActionMode.Cal
 			if (convertView == null)
 			{
 				holder = new GridViewHolder();
-				convertView = mInflater.inflate(R.layout.list_item_attachment, parent, false);
+				convertView = LayoutInflater.from(mInstance.context).inflate(R.layout.list_item_attachment,
+						parent, false);
 				holder.thumbnail = (AttachmentView) convertView.findViewById(R.id.thumbnail);
 				holder.thumbnail.setBackgroundColor(0xff333333);
 				holder.thumbnail.setCropEnabled(true);

@@ -76,7 +76,6 @@ import com.mishiranu.dashchan.widget.SingleLayerLinearLayout;
 public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListener
 {
 	private final UiManager mUiManager;
-	private final LayoutInflater mInflater;
 	private final PostDateFormatter mPostDateFormatter;
 	
 	private final int mThumbnailWidth;
@@ -93,13 +92,12 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 	{
 		Context context = uiManager.getContext();
 		mUiManager = uiManager;
-		mInflater = LayoutInflater.from(context);
 		mPostDateFormatter = new PostDateFormatter(context);
 
 		Configuration configuration = context.getResources().getConfiguration();
 		float density = ResourceUtils.obtainDensity(context);
 		// Define header height, image width and max comment field height
-		View view = mInflater.inflate(R.layout.list_item_post, null);
+		View view = LayoutInflater.from(context).inflate(R.layout.list_item_post, null);
 		View head = view.findViewById(R.id.head);
 		TextView comment = (TextView) view.findViewById(R.id.comment);
 		View bottomBar = view.findViewById(R.id.bottom_bar);
@@ -185,9 +183,10 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		if (convertView != null && !(convertView.getTag() instanceof ThreadViewHolder)) convertView = null;
 		if (convertView == null)
 		{
-			convertView = mInflater.inflate(R.layout.list_item_card, parent, false);
+			LayoutInflater inflater = LayoutInflater.from(context);
+			convertView = inflater.inflate(R.layout.list_item_card, parent, false);
 			CardView cardView = (CardView) convertView.findViewById(R.id.card_view);
-			mInflater.inflate(R.layout.list_item_thread, cardView);
+			inflater.inflate(R.layout.list_item_thread, cardView);
 			holder = new ThreadViewHolder();
 			holder.cardView = cardView;
 			holder.subject = (TextView) cardView.findViewById(R.id.subject);
@@ -329,9 +328,10 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		if (convertView != null && !(convertView.getTag() instanceof ThreadViewHolder)) convertView = null;
 		if (convertView == null)
 		{
-			convertView = mInflater.inflate(R.layout.list_item_card, parent, false);
+			LayoutInflater inflater = LayoutInflater.from(context);
+			convertView = inflater.inflate(R.layout.list_item_card, parent, false);
 			CardView cardView = (CardView) convertView.findViewById(R.id.card_view);
-			mInflater.inflate(R.layout.list_item_thread_grid, cardView);
+			inflater.inflate(R.layout.list_item_thread_grid, cardView);
 			holder = new ThreadViewHolder();
 			holder.cardView = cardView;
 			holder.subject = (TextView) cardView.findViewById(R.id.subject);
@@ -437,9 +437,10 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		if (convertView != null && !(convertView.getTag() instanceof HiddenViewHolder)) convertView = null;
 		if (convertView == null)
 		{
-			convertView = mInflater.inflate(R.layout.list_item_card, parent, false);
+			LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+			convertView = inflater.inflate(R.layout.list_item_card, parent, false);
 			ViewGroup cardView = (ViewGroup) convertView.findViewById(R.id.card_view);
-			mInflater.inflate(R.layout.list_item_hidden, cardView);
+			inflater.inflate(R.layout.list_item_hidden, cardView);
 			holder = new HiddenViewHolder();
 			holder.comment = (TextView) convertView.findViewById(R.id.comment);
 			convertView.setTag(holder);
@@ -466,8 +467,8 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		if (convertView != null && !(convertView.getTag() instanceof PostViewHolder)) convertView = null;
 		if (convertView == null)
 		{
-			SingleLayerLinearLayout layout = (SingleLayerLinearLayout) mInflater.inflate(R.layout.list_item_post,
-					parent, false);
+			SingleLayerLinearLayout layout = (SingleLayerLinearLayout) LayoutInflater.from(context)
+					.inflate(R.layout.list_item_post, parent, false);
 			layout.setOnTemporaryDetatchListener(this);
 			convertView = layout;
 			holder = new PostViewHolder();
@@ -676,7 +677,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		if (convertView != null && !(convertView.getTag() instanceof HiddenViewHolder)) convertView = null;
 		if (convertView == null)
 		{
-			convertView = mInflater.inflate(R.layout.list_item_hidden, parent, false);
+			convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_hidden, parent, false);
 			holder = new HiddenViewHolder();
 			holder.index = (TextView) convertView.findViewById(R.id.index);
 			holder.number = (TextView) convertView.findViewById(R.id.number);
@@ -733,7 +734,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 					int textScale = Preferences.getTextScale();
 					for (int i = holders; i < size; i++)
 					{
-						View view = mInflater.inflate(R.layout.list_item_post_attachment, null);
+						View view = LayoutInflater.from(context).inflate(R.layout.list_item_post_attachment, null);
 						AttachmentHolder attachmentHolder = new AttachmentHolder();
 						attachmentHolder.container = view;
 						attachmentHolder.thumbnail = (AttachmentView) view.findViewById(R.id.thumbnail);
