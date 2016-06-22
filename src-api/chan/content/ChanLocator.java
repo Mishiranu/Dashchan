@@ -240,19 +240,19 @@ public class ChanLocator implements ChanManager.Linked
 	}
 	
 	@Extendable
-	public boolean isBoardUri(Uri uri)
+	protected boolean isBoardUri(Uri uri)
 	{
 		throw new UnsupportedOperationException();
 	}
 	
 	@Extendable
-	public boolean isThreadUri(Uri uri)
+	protected boolean isThreadUri(Uri uri)
 	{
 		throw new UnsupportedOperationException();
 	}
 	
 	@Extendable
-	public boolean isAttachmentUri(Uri uri)
+	protected boolean isAttachmentUri(Uri uri)
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -273,43 +273,43 @@ public class ChanLocator implements ChanManager.Linked
 	}
 	
 	@Extendable
-	public String getBoardName(Uri uri)
+	protected String getBoardName(Uri uri)
 	{
 		throw new UnsupportedOperationException();
 	}
 	
 	@Extendable
-	public String getThreadNumber(Uri uri)
+	protected String getThreadNumber(Uri uri)
 	{
 		throw new UnsupportedOperationException();
 	}
 	
 	@Extendable
-	public String getPostNumber(Uri uri)
+	protected String getPostNumber(Uri uri)
 	{
 		throw new UnsupportedOperationException();
 	}
 	
 	@Extendable
-	public Uri createBoardUri(String boardName, int pageNumber)
+	protected Uri createBoardUri(String boardName, int pageNumber)
 	{
 		throw new UnsupportedOperationException();
 	}
 	
 	@Extendable
-	public Uri createThreadUri(String boardName, String threadNumber)
+	protected Uri createThreadUri(String boardName, String threadNumber)
 	{
 		throw new UnsupportedOperationException();
 	}
 	
 	@Extendable
-	public Uri createPostUri(String boardName, String threadNumber, String postNumber)
+	protected Uri createPostUri(String boardName, String threadNumber, String postNumber)
 	{
 		throw new UnsupportedOperationException();
 	}
 	
 	@Extendable
-	public String createAttachmentForcedName(Uri fileUri)
+	protected String createAttachmentForcedName(Uri fileUri)
 	{
 		return null;
 	}
@@ -346,7 +346,7 @@ public class ChanLocator implements ChanManager.Linked
 	}
 	
 	@Extendable
-	public NavigationData handleUriClickSpecial(Uri uri)
+	protected NavigationData handleUriClickSpecial(Uri uri)
 	{
 		return null;
 	}

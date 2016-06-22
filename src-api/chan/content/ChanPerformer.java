@@ -96,97 +96,100 @@ public class ChanPerformer implements ChanManager.Linked
 	}
 	
 	@Extendable
-	public ReadThreadsResult onReadThreads(ReadThreadsData data) throws HttpException, InvalidResponseException
+	protected ReadThreadsResult onReadThreads(ReadThreadsData data) throws HttpException, InvalidResponseException
 	{
 		throw new UnsupportedOperationException();
 	}
 	
 	@Extendable
-	public ReadPostsResult onReadPosts(ReadPostsData data) throws HttpException, ThreadRedirectException,
+	protected ReadPostsResult onReadPosts(ReadPostsData data) throws HttpException, ThreadRedirectException,
 			InvalidResponseException
 	{
 		throw new UnsupportedOperationException();
 	}
 	
 	@Extendable
-	public ReadSinglePostResult onReadSinglePost(ReadSinglePostData data) throws HttpException, InvalidResponseException
-	{
-		throw new UnsupportedOperationException();
-	}
-	
-	@Extendable
-	public ReadSearchPostsResult onReadSearchPosts(ReadSearchPostsData data) throws HttpException,
+	protected ReadSinglePostResult onReadSinglePost(ReadSinglePostData data) throws HttpException,
 			InvalidResponseException
 	{
 		throw new UnsupportedOperationException();
 	}
 	
 	@Extendable
-	public ReadBoardsResult onReadBoards(ReadBoardsData data) throws HttpException, InvalidResponseException
-	{
-		throw new UnsupportedOperationException();
-	}
-	
-	@Extendable
-	public ReadUserBoardsResult onReadUserBoards(ReadUserBoardsData data) throws HttpException, InvalidResponseException
-	{
-		throw new UnsupportedOperationException();
-	}
-	
-	@Extendable
-	public ReadThreadSummariesResult onReadThreadSummaries(ReadThreadSummariesData data) throws HttpException,
+	protected ReadSearchPostsResult onReadSearchPosts(ReadSearchPostsData data) throws HttpException,
 			InvalidResponseException
 	{
 		throw new UnsupportedOperationException();
 	}
 	
 	@Extendable
-	public ReadPostsCountResult onReadPostsCount(ReadPostsCountData data) throws HttpException, InvalidResponseException
+	protected ReadBoardsResult onReadBoards(ReadBoardsData data) throws HttpException, InvalidResponseException
 	{
 		throw new UnsupportedOperationException();
 	}
 	
 	@Extendable
-	public ReadContentResult onReadContent(ReadContentData data) throws HttpException, InvalidResponseException
+	protected ReadUserBoardsResult onReadUserBoards(ReadUserBoardsData data) throws HttpException,
+			InvalidResponseException
+	{
+		throw new UnsupportedOperationException();
+	}
+	
+	@Extendable
+	protected ReadThreadSummariesResult onReadThreadSummaries(ReadThreadSummariesData data) throws HttpException,
+			InvalidResponseException
+	{
+		throw new UnsupportedOperationException();
+	}
+	
+	@Extendable
+	protected ReadPostsCountResult onReadPostsCount(ReadPostsCountData data) throws HttpException,
+			InvalidResponseException
+	{
+		throw new UnsupportedOperationException();
+	}
+	
+	@Extendable
+	protected ReadContentResult onReadContent(ReadContentData data) throws HttpException, InvalidResponseException
 	{
 		return new ReadContentResult(new HttpRequest(data.uri, data.holder, data).read());
 	}
 	
 	@Extendable
-	public CheckAuthorizationResult onCheckAuthorization(CheckAuthorizationData data) throws HttpException,
+	protected CheckAuthorizationResult onCheckAuthorization(CheckAuthorizationData data) throws HttpException,
 			InvalidResponseException
 	{
 		throw new UnsupportedOperationException();
 	}
 	
 	@Extendable
-	public ReadCaptchaResult onReadCaptcha(ReadCaptchaData data) throws HttpException, InvalidResponseException
+	protected ReadCaptchaResult onReadCaptcha(ReadCaptchaData data) throws HttpException, InvalidResponseException
 	{
 		return new ReadCaptchaResult(CaptchaState.SKIP, null);
 	}
 	
 	@Extendable
-	public SendPostResult onSendPost(SendPostData data) throws HttpException, ApiException, InvalidResponseException
+	protected SendPostResult onSendPost(SendPostData data) throws HttpException, ApiException, InvalidResponseException
 	{
 		throw new UnsupportedOperationException();
 	}
 	
 	@Extendable
-	public SendDeletePostsResult onSendDeletePosts(SendDeletePostsData data) throws HttpException, ApiException,
+	protected SendDeletePostsResult onSendDeletePosts(SendDeletePostsData data) throws HttpException, ApiException,
 			InvalidResponseException
 	{
 		throw new UnsupportedOperationException();
 	}
 	
 	@Extendable
-	public SendReportPostsResult onSendReportPosts(SendReportPostsData data) throws HttpException, ApiException,
+	protected SendReportPostsResult onSendReportPosts(SendReportPostsData data) throws HttpException, ApiException,
 			InvalidResponseException
 	{
 		throw new UnsupportedOperationException();
 	}
 	
 	@Extendable
-	public SendAddToArchiveResult onSendAddToArchive(SendAddToArchiveData data) throws HttpException, ApiException,
+	protected SendAddToArchiveResult onSendAddToArchive(SendAddToArchiveData data) throws HttpException, ApiException,
 			InvalidResponseException
 	{
 		throw new UnsupportedOperationException();
