@@ -128,13 +128,13 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 	public static final int TAG_SPECIAL_LINK_SUFFIX = 0x01000003;
 	
 	@Extendable
-	public CommentEditor obtainCommentEditor(String boardName)
+	protected CommentEditor obtainCommentEditor(String boardName)
 	{
 		return null;
 	}
 	
 	@Extendable
-	public boolean isTagSupported(String boardName, int tag)
+	protected boolean isTagSupported(String boardName, int tag)
 	{
 		return false;
 	}
