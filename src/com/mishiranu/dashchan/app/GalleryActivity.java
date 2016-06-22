@@ -308,8 +308,9 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		for (int i = 0; i < menu.size(); i++) menu.getItem(i).setVisible(false);
 		if (!mGalleryMode)
 		{
-			PagerUnit.OptionsMenuCapabilities capabilities = mPagerUnit.obtainOptionsMenuCapabilities();
-			if (capabilities.available)
+			PagerUnit.OptionsMenuCapabilities capabilities = mPagerUnit != null
+					? mPagerUnit.obtainOptionsMenuCapabilities() : null;
+			if (capabilities != null && capabilities.available)
 			{
 				menu.findItem(OPTIONS_MENU_SAVE).setVisible(capabilities.save);
 				menu.findItem(OPTIONS_MENU_GALLERY).setVisible(!mGalleryWindow && mInstance.galleryItems.size() > 1);
@@ -332,7 +333,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
-		GalleryItem galleryItem = mPagerUnit.getCurrentGalleryItem();
+		GalleryItem galleryItem = mPagerUnit != null ? mPagerUnit.getCurrentGalleryItem() : null;
 		switch (item.getItemId())
 		{
 			case android.R.id.home:
