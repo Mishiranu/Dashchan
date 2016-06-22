@@ -53,25 +53,34 @@ public class ChanPerformer implements ChanManager.Linked
 {
 	private String mChanName;
 	
+	public static final ChanManager.Initializer INITIALIZER = new ChanManager.Initializer();
+	
 	@Public
 	public ChanPerformer()
 	{
-		this(false);
+		this(true);
 	}
 	
-	ChanPerformer(boolean defaultInstance)
+	ChanPerformer(boolean useInitializer)
 	{
-		if (defaultInstance) mChanName = null; else
+		if (useInitializer)
 		{
-			ChanManager.checkInstancesAndThrow();
-			mChanName = ChanManager.initializingChanName;
+			INITIALIZER.checkInitializing();
+			mChanName = INITIALIZER.getChanName();
 		}
+		else mChanName = null;
 	}
 	
 	@Override
 	public final String getChanName()
 	{
 		return mChanName;
+	}
+	
+	@Override
+	public final void init()
+	{
+		
 	}
 	
 	public static <T extends ChanPerformer> T get(String chanName)

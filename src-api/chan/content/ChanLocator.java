@@ -79,35 +79,38 @@ public class ChanLocator implements ChanManager.Linked
 		}
 	}
 	
+	public static final ChanManager.Initializer INITIALIZER = new ChanManager.Initializer();
+	
 	@Public
 	public ChanLocator()
 	{
-		this(false);
+		this(true);
 	}
 	
-	ChanLocator(boolean defaultInstance)
+	ChanLocator(boolean useInitializer)
 	{
-		if (defaultInstance)
+		if (useInitializer)
+		{
+			INITIALIZER.checkInitializing();
+			mChanName = INITIALIZER.getChanName();
+		}
+		else
 		{
 			mChanName = null;
 			mHttpsMode = HttpsMode.CONFIGURABLE;
 		}
-		else
-		{
-			ChanManager.checkInstancesAndThrow();
-			mChanName = ChanManager.initializingChanName;
-		}
-	}
-	
-	void init()
-	{
-		if (getChanHosts(true).size() == 0) throw new RuntimeException("Chan hosts not defined");
 	}
 	
 	@Override
 	public final String getChanName()
 	{
 		return mChanName;
+	}
+	
+	@Override
+	public final void init()
+	{
+		if (getChanHosts(true).size() == 0) throw new RuntimeException("Chan hosts not defined");
 	}
 	
 	public static <T extends ChanLocator> T get(String chanName)

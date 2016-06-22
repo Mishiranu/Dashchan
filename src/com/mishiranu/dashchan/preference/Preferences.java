@@ -201,7 +201,7 @@ public class Preferences
 	public static final String KEY_CAPTCHA_CLOUDFLARE = KEY_CAPTCHA.bind(SPECIAL_CHAN_NAME_CLOUDFLARE);
 	private static final String VALUE_CAPTCHA_START = "captcha_";
 	
-	public static String getCaptchaTypeForChanManager(String chanName)
+	public static String getCaptchaTypeForChanConfiguration(String chanName)
 	{
 		ChanConfiguration configuration = ChanConfiguration.get(chanName);
 		String[] supportedCaptchaTypes = configuration.getSupportedCaptchaTypes();

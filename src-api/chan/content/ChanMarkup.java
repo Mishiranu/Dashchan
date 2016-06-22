@@ -54,18 +54,20 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 	private final String mChanName;
 	private final boolean mUseInlineLinkParser;
 	
+	public static final ChanManager.Initializer INITIALIZER = new ChanManager.Initializer();
+	
 	@Public
 	public ChanMarkup()
 	{
 		this(true);
 	}
 	
-	public ChanMarkup(boolean publicCall)
+	public ChanMarkup(boolean useInitializer)
 	{
-		if (publicCall)
+		if (useInitializer)
 		{
-			ChanManager.checkInstancesAndThrow();
-			mChanName = ChanManager.initializingChanName;
+			INITIALIZER.checkInitializing();
+			mChanName = INITIALIZER.getChanName();
 			Method method = null;
 			try
 			{
@@ -88,6 +90,12 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 	public final String getChanName()
 	{
 		return mChanName;
+	}
+	
+	@Override
+	public final void init()
+	{
+		
 	}
 	
 	public static <T extends ChanMarkup> T get(String chanName)
