@@ -332,7 +332,7 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 	
 	// TODO CHAN
 	// Remove this method after updating
-	// dobrochan horochan infinite kurisach nulltirech ponychan taima
+	// dobrochan horochan infinite ponychan taima
 	// Added: 14.05.16 12:12
 	@Deprecated
 	public final void addBlock(String tagName, boolean spaced)
@@ -360,7 +360,7 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 	
 	// TODO CHAN
 	// Remove this method after updating
-	// haruhichan kurisach synch
+	// haruhichan synch
 	// Added: 14.05.16 12:12
 	@Deprecated
 	public final void addPreformatted(String tagName)
