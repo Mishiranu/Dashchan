@@ -239,6 +239,7 @@ public class ImageUnit
 	{
 		private final File mFile;
 		private final FileHolder mFileHolder;
+		private final PhotoView mPhotoView;
 		
 		private Bitmap mBitmap;
 		private DecoderDrawable mDecoderDrawable;
@@ -250,6 +251,7 @@ public class ImageUnit
 		{
 			mFile = file;
 			mFileHolder = fileHolder;
+			mPhotoView = mInstance.currentHolder.photoView;
 			if (fileHolder.getImageWidth() >= 2048 && fileHolder.getImageHeight() >= 2048 || fileHolder.isSvg())
 			{
 				mInstance.currentHolder.progressBar.setVisible(true, false);
@@ -309,7 +311,7 @@ public class ImageUnit
 			}
 			try
 			{
-				int maxSize = PhotoView.getMaximumImageSize();
+				int maxSize = mPhotoView.getMaximumImageSizeAsync();
 				mBitmap = mFileHolder.readImageBitmap(maxSize, true, true);
 				if (mBitmap == null) mErrorMessageId = R.string.message_image_corrupted; else
 				{

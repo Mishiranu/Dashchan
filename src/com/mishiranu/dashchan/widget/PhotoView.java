@@ -38,14 +38,13 @@ import android.view.ScaleGestureDetector;
 import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewConfiguration;
-import android.view.ViewTreeObserver;
 import android.widget.Scroller;
 
 import com.mishiranu.dashchan.graphics.TransparentTileDrawable;
 import com.mishiranu.dashchan.util.AnimationUtils;
 
 public class PhotoView extends View implements GestureDetector.OnDoubleTapListener,
-		ViewTreeObserver.OnGlobalLayoutListener, ScaleGestureDetector.OnScaleGestureListener
+		ScaleGestureDetector.OnScaleGestureListener
 {
 	private enum ScrollEdge {NONE, START, END, BOTH}
 	private enum TouchMode {UNDEFINED, COMMON, CLOSING_START, CLOSING_END, CLOSING_BOTH}
@@ -54,72 +53,22 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 	
 	private static final int INVALID_POINTER_ID = -1;
 	
-	private static int sMaximumImageSize;
-	private static int sMaximumDecoderSize;
-	
-	private static void updateTextureSize(Canvas canvas)
-	{
-		if (sMaximumImageSize == 0 || sMaximumDecoderSize == 0)
-		{
-			int maxSize = Math.min(canvas.getMaximumBitmapWidth(), canvas.getMaximumBitmapHeight());
-			sMaximumImageSize = Math.min(maxSize, 2048);
-			sMaximumDecoderSize = maxSize;
-		}
-	}
-	
-	public static int getMaximumImageSize()
-	{
-		while (sMaximumImageSize == 0)
-		{
-			try
-			{
-				Thread.sleep(100);
-			}
-			catch (InterruptedException e)
-			{
-				Thread.currentThread().interrupt();
-				return 0;
-			}
-		}
-		return sMaximumImageSize;
-	}
-	
-	public static int getMaximumDecoderSize()
-	{
-		while (sMaximumDecoderSize == 0)
-		{
-			try
-			{
-				Thread.sleep(100);
-			}
-			catch (InterruptedException e)
-			{
-				Thread.currentThread().interrupt();
-				return 0;
-			}
-		}
-		return sMaximumDecoderSize;
-	}
-	
 	private final TransparentTileDrawable mTile;
 	private Drawable mDrawable;
 	private boolean mHasAlpha;
+	private boolean mFitScreen;
 	private boolean mDrawDim;
 	private final Point mPreviousDimensions = new Point();
-	
-	private Matrix mMatrix;
 	private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
 	
 	private int[] mInitialScalingData;
 	private Rect mInitialScaleClipRect;
 	
-	private boolean mFitScreen;
 	private float mMinimumScale, mMaximumScale, mDoubleTapScale, mInitialScale;
 	private final Matrix mBaseMatrix = new Matrix();
-	private final Matrix mDrawMatrix = new Matrix();
-	private final Matrix mSuppMatrix = new Matrix();
-	private final Matrix mScaledMatrix = new Matrix();
-	private final RectF mDisplayRect = new RectF();
+	private final Matrix mTransformMatrix = new Matrix();
+	private final Matrix mDisplayMatrix = new Matrix();
+	private final RectF mWorkRect = new RectF();
 	private final float[] mMatrixValues = new float[9];
 	
 	private Listener mListener;
@@ -165,8 +114,6 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 	public PhotoView(Context context, AttributeSet attr)
 	{
 		super(context, attr);
-		ViewTreeObserver observer = getViewTreeObserver();
-		if (observer != null) observer.addOnGlobalLayoutListener(this);
 		ViewConfiguration configuration = ViewConfiguration.get(context);
 		mMinimumVelocity = configuration.getScaledMinimumFlingVelocity();
 		mTouchSlop = configuration.getScaledTouchSlop();
@@ -174,7 +121,21 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 		mGestureDetector.setOnDoubleTapListener(this);
 		mScaleGestureDetector = new ScaleGestureDetector(getContext(), this);
 		mTile = new TransparentTileDrawable(context, true);
-		initBaseMatrix(false, false);
+		initBaseMatrix(false);
+	}
+	
+	private final Rect mLastLayout = new Rect();
+	
+	@Override
+	protected void onLayout(boolean changed, int left, int top, int right, int bottom)
+	{
+		if (top != mLastLayout.top || bottom != mLastLayout.bottom
+				|| left != mLastLayout.left || right != mLastLayout.right)
+		{
+			mLastLayout.set(left, top, right, bottom);
+			resetScale();
+		}
+		super.onLayout(changed, left, top, right, bottom);
 	}
 	
 	public static interface Listener
@@ -187,12 +148,6 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 	public void setListener(Listener listener)
 	{
 		mListener = listener;
-	}
-	
-	private void setImageMatrix(Matrix matrix)
-	{
-		mMatrix = matrix;
-		invalidate();
 	}
 	
 	public void recycle()
@@ -213,11 +168,17 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 		recycle();
 		mDrawable = drawable;
 		mHasAlpha = hasAlpha;
+		mFitScreen = fitScreen;
 		drawable.setCallback(this);
 		Point dimensions = getDimensions();
 		keepScale &= mPreviousDimensions.equals(dimensions);
 		mPreviousDimensions.set(dimensions.x, dimensions.y);
-		initBaseMatrix(fitScreen, keepScale);
+		initBaseMatrix(keepScale);
+	}
+	
+	public boolean hasImage()
+	{
+		return mDrawable != null;
 	}
 	
 	public void setDrawDimForCurrentImage(boolean drawDim)
@@ -261,13 +222,9 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 	{
 		super.draw(canvas);
 		updateTextureSize(canvas);
-		handleInitialScale();
-		
-		Matrix matrix = mMatrix;
-		if (matrix == null) return;
 		Point dimensions = getDimensions();
 		if (dimensions == null) return;
-		
+		handleInitialScale();
 		boolean restoreClip = false;
 		if (mInitialScaleClipRect != null)
 		{
@@ -275,16 +232,15 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 			canvas.save();
 			canvas.clipRect(mInitialScaleClipRect);
 		}
-		Matrix scaledMatrix = mScaledMatrix;
-		scaledMatrix.set(matrix);
+		RectF rect = initDisplayMatrixAndRect();
 		int workAlpha = 0xff;
 		if (isClosingTouchMode())
 		{
-			float value = Math.min(Math.abs(getClosingTouchModeShift(getDisplayRectUnchecked()))
-					* 2f / getHeight(), 1f);
+			float value = Math.min(Math.abs(getClosingTouchModeShift(rect)) * 2f / getHeight(), 1f);
 			workAlpha = (int) (workAlpha * (1f - value));
 			float scale = (1f - AnimationUtils.ACCELERATE_INTERPOLATOR.getInterpolation(value)) * 0.4f + 0.6f;
-			scaledMatrix.postScale(scale, scale, getWidth() / 2, getHeight() / 2);
+			mDisplayMatrix.postScale(scale, scale, getWidth() / 2, getHeight() / 2);
+			rect = initDisplayRect();
 		}
 		boolean restoreAlpha = false;
 		if (workAlpha != 0xff)
@@ -292,26 +248,17 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 			canvas.saveLayerAlpha(0, 0, getWidth(), getHeight(), workAlpha, Canvas.ALL_SAVE_FLAG);
 			restoreAlpha = true;
 		}
-		
-		float[] matrixValues = mMatrixValues;
-		scaledMatrix.getValues(matrixValues);
-		float scaleX = matrixValues[Matrix.MSCALE_X], scaleY = matrixValues[Matrix.MSCALE_Y],
-				shiftX = matrixValues[Matrix.MTRANS_X], shiftY = matrixValues[Matrix.MTRANS_Y];
-		
-		if (mDrawable != null && mHasAlpha)
-		{
-			mTile.setBounds((int) (shiftX + 0.5f), (int) (shiftY + 0.5f), (int) (dimensions.x * scaleX + shiftX + 0.5f),
-					(int) (dimensions.y * scaleY + shiftY + 0.5f));
-			mTile.draw(canvas);
-		}
-		
-		Paint paint = mPaint;
-		paint.setAlpha(0xff);
 		if (mDrawable != null)
 		{
+			if (mHasAlpha)
+			{
+				mTile.setBounds((int) (rect.left + 0.5f), (int) (rect.top + 0.5f), (int) (rect.right + 0.5f),
+						(int) (rect.bottom + 0.5f));
+				mTile.draw(canvas);
+			}
 			canvas.save();
 			canvas.clipRect(0, 0, getWidth(), getHeight());
-			canvas.concat(scaledMatrix);
+			canvas.concat(mDisplayMatrix);
 			mDrawable.setBounds(0, 0, mDrawable.getIntrinsicWidth(), mDrawable.getIntrinsicHeight());
 			mDrawable.draw(canvas);
 			canvas.restore();
@@ -319,9 +266,9 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 		if (mDrawDim)
 		{
 			canvas.save();
-			canvas.concat(matrix);
-			paint.setColor(0x44000000);
-			canvas.drawRect(0, 0, dimensions.x, dimensions.y, paint);
+			canvas.concat(mDisplayMatrix);
+			mPaint.setColor(0x44000000);
+			canvas.drawRect(0, 0, dimensions.x, dimensions.y, mPaint);
 			canvas.restore();
 		}
 		if (restoreAlpha) canvas.restore();
@@ -335,9 +282,40 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 		if (drawable == mDrawable) invalidate(); else super.invalidateDrawable(drawable);
 	}
 	
-	public boolean hasImage()
+	private int mMaximumImageSize;
+	private final Object mMaximumImageSizeLock = new Object();
+	
+	private void updateTextureSize(Canvas canvas)
 	{
-		return mDrawable != null;
+		if (mMaximumImageSize == 0)
+		{
+			int maxSize = Math.min(canvas.getMaximumBitmapWidth(), canvas.getMaximumBitmapHeight());
+			mMaximumImageSize = Math.min(maxSize, 2048);
+			synchronized (mMaximumImageSizeLock)
+			{
+				mMaximumImageSizeLock.notifyAll();
+			}
+		}
+	}
+	
+	public int getMaximumImageSizeAsync()
+	{
+		if (mMaximumImageSize == 0)
+		{
+			synchronized (mMaximumImageSizeLock)
+			{
+				try
+				{
+					while (mMaximumImageSize == 0) mMaximumImageSizeLock.wait();
+				}
+				catch (InterruptedException e)
+				{
+					Thread.currentThread().interrupt();
+					return 0;
+				}
+			}
+		}
+		return mMaximumImageSize;
 	}
 	
 	private final Point mPoint = new Point();
@@ -361,17 +339,6 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 		cancelFling();
 	}
 	
-	public RectF getDisplayRect()
-	{
-		checkMatrixBounds();
-		return getDisplayRectUnchecked();
-	}
-	
-	private RectF getDisplayRectUnchecked()
-	{
-		return getDisplayRect(getDrawMatrix());
-	}
-	
 	@Override
 	public boolean onScale(ScaleGestureDetector detector)
 	{
@@ -393,10 +360,11 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 		
 	}
 	
-	public float getScale()
+	private float getScale()
 	{
-		return (float) Math.sqrt(Math.pow(getValue(mSuppMatrix, Matrix.MSCALE_X), 2) +
-				Math.pow(getValue(mSuppMatrix, Matrix.MSKEW_Y), 2));
+		mTransformMatrix.getValues(mMatrixValues);
+		return (float) Math.sqrt(Math.pow(mMatrixValues[Matrix.MSCALE_X], 2) +
+				Math.pow(mMatrixValues[Matrix.MSKEW_Y], 2));
 	}
 	
 	@Override
@@ -425,14 +393,11 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 		if (mListener != null)
 		{
 			float x = e.getX(), y = e.getY();
-			RectF displayRect = getDisplayRect();
-			if (displayRect != null)
+			RectF rect = checkMatrixBounds();
+			if (rect != null && rect.contains(x, y))
 			{
-				if (displayRect.contains(x, y))
-				{
-					mListener.onClick(this, true, x, y);
-					return true;
-				}
+				mListener.onClick(this, true, x, y);
+				return true;
 			}
 			mListener.onClick(this, false, x, y);
 		}
@@ -451,25 +416,8 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 			float minFactor = mMinimumScale / scale / 2f;
 			scaleFactor = Math.max(scaleFactor, minFactor);
 			if (scaleFactor == 1f) return;
-			mSuppMatrix.postScale(scaleFactor, scaleFactor, focusX, focusY);
-			checkAndDisplayMatrix();
-		}
-	}
-	
-	private final Rect mLastLayout = new Rect();
-	
-	@Override
-	public void onGlobalLayout()
-	{
-		int top = getTop();
-		int right = getRight();
-		int bottom = getBottom();
-		int left = getLeft();
-		if (top != mLastLayout.top || bottom != mLastLayout.bottom
-				|| left != mLastLayout.left || right != mLastLayout.right)
-		{
-			mLastLayout.set(left, top, right, bottom);
-			resetScale();
+			mTransformMatrix.postScale(scaleFactor, scaleFactor, focusX, focusY);
+			checkMatrixBoundsAndInvalidate();
 		}
 	}
 	
@@ -502,7 +450,7 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 				{
 					if (getScale() < mMinimumScale)
 					{
-						RectF rect = getDisplayRect();
+						RectF rect = checkMatrixBounds();
 						if (rect != null)
 						{
 							post(new AnimatedScaleRunnable(mMinimumScale, rect.centerX(), rect.centerY()));
@@ -579,16 +527,9 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 		mTouchMode = TouchMode.UNDEFINED;
 		if (animate) post(new AnimatedScaleRunnable(scale, focalX, focalY)); else
 		{
-			mSuppMatrix.setScale(scale, scale, focalX, focalY);
-			checkAndDisplayMatrix();
+			mTransformMatrix.setScale(scale, scale, focalX, focalY);
+			checkMatrixBoundsAndInvalidate();
 		}
-	}
-	
-	private Matrix getDrawMatrix()
-	{
-		mDrawMatrix.set(mBaseMatrix);
-		mDrawMatrix.postConcat(mSuppMatrix);
-		return mDrawMatrix;
 	}
 	
 	private void cancelFling()
@@ -622,20 +563,16 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 		throw new RuntimeException();
 	}
 	
-	private void displayMatrix()
+	private void checkMatrixBoundsAndInvalidate()
 	{
-		setImageMatrix(getDrawMatrix());
+		checkMatrixBounds();
+		invalidate();
 	}
 	
-	private void checkAndDisplayMatrix()
+	private RectF checkMatrixBounds()
 	{
-		if (checkMatrixBounds()) displayMatrix();
-	}
-	
-	private boolean checkMatrixBounds()
-	{
-		RectF rect = getDisplayRectUnchecked();
-		if (rect == null) return false;
+		RectF rect = initDisplayMatrixAndRect();
+		if (rect == null) return null;
 		float width = rect.width();
 		float height = rect.height();
 		int viewHeight = getHeight();
@@ -687,41 +624,35 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 			mScrollEdgeX = ScrollEdge.END;
 		}
 		else mScrollEdgeX = ScrollEdge.NONE;
-		mSuppMatrix.postTranslate(deltaX, deltaY);
-		return true;
+		mTransformMatrix.postTranslate(deltaX, deltaY);
+		return rect;
 	}
 	
-	private RectF getDisplayRect(Matrix matrix)
+	private RectF initDisplayMatrixAndRect()
+	{
+		mDisplayMatrix.set(mBaseMatrix);
+		mDisplayMatrix.postConcat(mTransformMatrix);
+		return initDisplayRect();
+	}
+	
+	private RectF initDisplayRect()
 	{
 		Point dimensions = getDimensions();
 		if (dimensions != null)
 		{
-			mDisplayRect.set(0, 0, dimensions.x, dimensions.y);
-			matrix.mapRect(mDisplayRect);
-			return mDisplayRect;
+			mWorkRect.set(0, 0, dimensions.x, dimensions.y);
+			mDisplayMatrix.mapRect(mWorkRect);
+			return mWorkRect;
 		}
 		return null;
 	}
 	
-	private float getValue(Matrix matrix, int whichValue)
-	{
-		matrix.getValues(mMatrixValues);
-		return mMatrixValues[whichValue];
-	}
-	
 	public void resetScale()
 	{
-		initBaseMatrix(mFitScreen, false);
+		initBaseMatrix(false);
 	}
 	
-	private void resetMatrix()
-	{
-		mSuppMatrix.reset();
-		setImageMatrix(getDrawMatrix());
-		checkMatrixBounds();
-	}
-	
-	private void initBaseMatrix(boolean fitScreen, boolean keepScale)
+	private void initBaseMatrix(boolean keepScale)
 	{
 		if (mAnimatedRestoreSwipeRunnable != null)
 		{
@@ -745,12 +676,15 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 			postScale = scale;
 			scale = 1f;
 		}
+		else if (scale <= 0f) scale = 1f;
 		mBaseMatrix.postScale(scale, scale);
 		mBaseMatrix.postTranslate((viewWidth - imageWidth * scale) / 2F, (viewHeight - imageHeight * scale) / 2F);
-		if (!keepScale) resetMatrix();
-		if (scale == 0f) scale = 1f;
-		mFitScreen = fitScreen;
-		if (fitScreen)
+		if (!keepScale)
+		{
+			mTransformMatrix.reset();
+			checkMatrixBounds();
+		}
+		if (mFitScreen)
 		{
 			mMinimumScale = postScale;
 			mMaximumScale = postScale;
@@ -766,8 +700,7 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 			mDoubleTapScale = postScale > 1f ? Math.min(postScale, mMaximumScale) : Math.min(1f / scale, 8f);
 			if (!keepScale && postScale > 1f) setScale(mDoubleTapScale);
 		}
-		// Force invalidate and start decoding
-		setImageMatrix(mMatrix);
+		invalidate();
 	}
 	
 	private float mLastVerticalSwipeValue = 0f;
@@ -788,7 +721,7 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 		private static final int ZOOM_DURATION = 200;
 		
 		private final long mStartTime;
-		private final float[] mStartValues = new float[9];
+		private final Matrix mStartTransformMatrix;
 		private final float mFocalX, mFocalY;
 		private final float mScaleStart, mScaleEnd;
 		
@@ -797,7 +730,7 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 			mFocalX = focalX;
 			mFocalY = focalY;
 			mStartTime = System.currentTimeMillis();
-			mSuppMatrix.getValues(mStartValues);
+			mStartTransformMatrix = new Matrix(mTransformMatrix);
 			mScaleStart = getScale();
 			mScaleEnd = scale;
 		}
@@ -815,9 +748,9 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 			t = AnimationUtils.ACCELERATE_DECELERATE_INTERPOLATOR.getInterpolation(t);
 			float scale = AnimationUtils.lerp(mScaleStart, mScaleEnd, t);
 			float deltaScale = scale / mScaleStart;
-			mSuppMatrix.setValues(mStartValues);
-			mSuppMatrix.postScale(deltaScale, deltaScale, mFocalX, mFocalY);
-			checkAndDisplayMatrix();
+			mTransformMatrix.set(mStartTransformMatrix);
+			mTransformMatrix.postScale(deltaScale, deltaScale, mFocalX, mFocalY);
+			checkMatrixBoundsAndInvalidate();
 			if (post) postOnAnimation(this);
 		}
 	}
@@ -873,16 +806,16 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 			float deltaY = AnimationUtils.lerp(0, mDeltaY, t);
 			float dy = deltaY - mLastDeltaY;
 			mLastDeltaY = deltaY;
-			mSuppMatrix.postTranslate(0, dy);
+			mTransformMatrix.postTranslate(0, dy);
 			if (post)
 			{
-				displayMatrix();
+				invalidate();
 				postOnAnimation(this);
 				if (!mFinish) notifyVerticalSwipe(mDeltaY - deltaY);
 			}
 			else
 			{
-				checkAndDisplayMatrix();
+				checkMatrixBoundsAndInvalidate();
 				if (!mFinish) notifyVerticalSwipe(0f);
 			}
 		}
@@ -905,7 +838,7 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 		
 		public void fling(int viewWidth, int viewHeight, int velocityX, int velocityY)
 		{
-			RectF rect = getDisplayRect();
+			RectF rect = checkMatrixBounds();
 			if (rect == null) return;
 			int startX = Math.round(-rect.left);
 			int minX, maxX, minY, maxY;
@@ -938,8 +871,8 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 			{
 				int newX = mScroller.getCurrX();
 				int newY = mScroller.getCurrY();
-				mSuppMatrix.postTranslate(mCurrentX - newX, mCurrentY - newY);
-				displayMatrix();
+				mTransformMatrix.postTranslate(mCurrentX - newX, mCurrentY - newY);
+				invalidate();
 				mCurrentX = newX;
 				mCurrentY = newY;
 				postOnAnimation(this);
@@ -970,7 +903,8 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 		@Override
 		public void onAnimationUpdate(ValueAnimator animation)
 		{
-			float baseScale = getValue(mBaseMatrix, Matrix.MSCALE_Y);
+			mBaseMatrix.getValues(mMatrixValues);
+			float baseScale = mMatrixValues[Matrix.MSCALE_Y];
 			Point dimensions = getDimensions();
 			if (dimensions == null) return;
 			float scale = (dimensions.x * mViewHeight > dimensions.y * mViewWidth) == mCropEnabled
@@ -996,9 +930,9 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 				float targetScale = AnimationUtils.lerp(scale, mInitialScale, t);
 				float dx = -getWidth() / 2f + targetX;
 				float dy = -getHeight() / 2f + targetY;
-				mSuppMatrix.reset();
-				mSuppMatrix.postTranslate(dx, dy);
-				mSuppMatrix.postScale(targetScale, targetScale, targetX, targetY);
+				mTransformMatrix.reset();
+				mTransformMatrix.postTranslate(dx, dy);
+				mTransformMatrix.postScale(targetScale, targetScale, targetX, targetY);
 				if (mCropEnabled)
 				{
 					if (mInitialScaleClipRect == null) mInitialScaleClipRect = new Rect();
@@ -1008,7 +942,7 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 					mInitialScaleClipRect.set((int) (targetX - scaledHalfSize - 0.5f), (int) (targetY - scaledHalfSize
 							- 0.5f), (int) (targetX + scaledHalfSize + 0.5f), (int) (targetY + scaledHalfSize + 0.5f));
 				}
-				displayMatrix();
+				invalidate();
 			}
 			else
 			{
@@ -1122,9 +1056,9 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 					}
 					if (!mScaleGestureDetector.isInProgress())
 					{
-						if (isClosingTouchMode()) mSuppMatrix.postTranslate(0, dy * CLOSE_SWIPE_FACTOR);
-						else mSuppMatrix.postTranslate(dx, dy);
-						checkAndDisplayMatrix();
+						if (isClosingTouchMode()) mTransformMatrix.postTranslate(0, dy * CLOSE_SWIPE_FACTOR);
+						else mTransformMatrix.postTranslate(dx, dy);
+						checkMatrixBoundsAndInvalidate();
 					}
 					mLastTouchX = x;
 					mLastTouchY = y;
@@ -1147,7 +1081,7 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 				{
 					if (isClosingTouchMode())
 					{
-						RectF rect = getDisplayRect();
+						RectF rect = checkMatrixBounds();
 						if (rect != null)
 						{
 							int viewHeight = getHeight();
