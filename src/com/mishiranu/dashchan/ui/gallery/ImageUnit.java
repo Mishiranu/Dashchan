@@ -327,7 +327,7 @@ public class ImageUnit
 			}
 			catch (Exception e)
 			{
-				
+				mErrorMessageId = R.string.message_image_corrupted;
 			}
 			return null;
 		}
