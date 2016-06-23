@@ -105,6 +105,7 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 	private Drawable mDrawable;
 	private boolean mHasAlpha;
 	private boolean mDrawDim;
+	private final Point mPreviousDimensions = new Point();
 	
 	private Matrix mMatrix;
 	private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
@@ -213,6 +214,9 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 		mDrawable = drawable;
 		mHasAlpha = hasAlpha;
 		drawable.setCallback(this);
+		Point dimensions = getDimensions();
+		keepScale &= mPreviousDimensions.equals(dimensions);
+		mPreviousDimensions.set(dimensions.x, dimensions.y);
 		initBaseMatrix(fitScreen, keepScale);
 	}
 	
@@ -336,9 +340,13 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 		return mDrawable != null;
 	}
 	
-	public Point getDimensions()
+	private final Point mPoint = new Point();
+	
+	private Point getDimensions()
 	{
-		return mDrawable != null ? new Point(mDrawable.getIntrinsicWidth(), mDrawable.getIntrinsicHeight()) : null;
+		if (mDrawable == null) return null;
+		mPoint.set(mDrawable.getIntrinsicWidth(), mDrawable.getIntrinsicHeight());
+		return mPoint;
 	}
 	
 	@Override
