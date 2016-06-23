@@ -160,11 +160,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.2",
+			"name": "1.3",
 			"code": 1,
 			"version": 1,
 			"minSdk": 14,
-			"length": 56497,
+			"length": 56474,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanDiochan.apk"
 		}
 	],
@@ -292,11 +292,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.4",
+			"name": "1.5",
 			"code": 1,
 			"version": 1,
 			"minSdk": 14,
-			"length": 62987,
+			"length": 63042,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanKurisach.apk"
 		}
 	],
@@ -364,11 +364,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.5",
+			"name": "1.6",
 			"code": 1,
 			"version": 1,
 			"minSdk": 14,
-			"length": 63703,
+			"length": 63709,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanNulleu.apk"
 		}
 	],
@@ -376,11 +376,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.0",
+			"name": "1.1",
 			"code": 1,
 			"version": 1,
 			"minSdk": 14,
-			"length": 60425,
+			"length": 60486,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanNulltirech.apk"
 		}
 	],
@@ -448,11 +448,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.3",
+			"name": "1.4",
 			"code": 1,
 			"version": 1,
 			"minSdk": 14,
-			"length": 63500,
+			"length": 63542,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanRulet.apk"
 		}
 	],
@@ -532,11 +532,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.0",
+			"name": "1.1",
 			"code": 1,
 			"version": 1,
 			"minSdk": 14,
-			"length": 61606,
+			"length": 61650,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanTwowatch.apk"
 		}
 	],
