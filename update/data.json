@@ -64,11 +64,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.4",
+			"name": "1.5",
 			"code": 1,
 			"version": 1,
 			"minSdk": 14,
-			"length": 53532,
+			"length": 53566,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanArchiveRbt.apk"
 		}
 	],
