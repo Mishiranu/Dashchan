@@ -79,10 +79,10 @@ It is better to install extension packages and then install application package.
 # Building Guide
 
 1. Install JDK 7 or higher
-2. Install Android SDK
-3. Install Android NDK and define ANDROID_NDK_HOME environment variable
+2. Install Android SDK, define `ANDROID_HOME` environment variable or set `sdk.dir` in `local.properties`
+3. Install Android NDK, define `ANDROID_NDK_HOME` environment variable or set `ndk.dir` in `local.properties`
 4. Install Gradle
-5. Run `gradle assembleRelease` in the source code directory
+5. Run `gradle assembleRelease`
 
 The resulting APK file will appear in `build/outputs/apk` directory.
 
