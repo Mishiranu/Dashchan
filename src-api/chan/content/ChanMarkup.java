@@ -360,7 +360,7 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 	
 	// TODO CHAN
 	// Remove this method after updating
-	// archiverbt haruhichan kurisach synch
+	// haruhichan kurisach synch
 	// Added: 14.05.16 12:12
 	@Deprecated
 	public final void addPreformatted(String tagName)
