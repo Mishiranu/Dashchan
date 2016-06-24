@@ -36,8 +36,6 @@ import android.preference.PreferenceManager;
 import android.preference.TwoStatePreference;
 import android.widget.EditText;
 
-import chan.content.ChanConfiguration;
-import chan.content.ChanManager;
 import chan.util.StringUtils;
 
 public abstract class BasePreferenceFragment extends PreferenceFragment implements Preference.OnPreferenceClickListener,
@@ -318,15 +316,6 @@ public abstract class BasePreferenceFragment extends PreferenceFragment implemen
 	private void updateListSummary(ListPreference preference)
 	{
 		preference.setSummary(preference.getEntry());
-	}
-	
-	public boolean hasChanWithOption(String option)
-	{
-		for (String chanName : ChanManager.getInstance().getAvailableChanNames())
-		{
-			if (ChanConfiguration.get(chanName).getOption(option)) return true;
-		}
-		return false;
 	}
 	
 	protected void expandDialog(Preference preference)
