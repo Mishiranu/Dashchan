@@ -59,7 +59,7 @@ public class ToastUtils implements Runnable
 			ClickableToast.cancel(context);
 			if (sToast == null)
 			{
-				if (Looper.getMainLooper() == Looper.myLooper()) makeNewToast(context.getApplicationContext()); else
+				if (Looper.myLooper() == Looper.getMainLooper()) makeNewToast(context.getApplicationContext()); else
 				{
 					new Handler(Looper.getMainLooper()).post(new ToastUtils(context.getApplicationContext()));
 					try
