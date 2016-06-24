@@ -25,7 +25,6 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.concurrent.Semaphore;
 import java.util.regex.Pattern;
 
 import android.annotation.TargetApi;
@@ -44,6 +43,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.util.Pair;
 
 import dalvik.system.PathClassLoader;
 
@@ -104,7 +104,6 @@ public class ChanManager
 	static
 	{
 		INSTANCE = new ChanManager();
-		INSTANCE.postInit();
 	}
 	
 	public static ChanManager getInstance()
@@ -188,6 +187,7 @@ public class ChanManager
 		return map;
 	}
 	
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private ChanManager()
 	{
 		ArrayList<String> busyExtensionNames = new ArrayList<>();
@@ -295,15 +295,9 @@ public class ChanManager
 		mExtensionItems = mapExtensionsList(extensionItems);
 		mChanItems = mapExtensionsList(chanItems);
 		mLibItems = mapExtensionsList(libItems);
-	}
-	
-	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
-	private void postInit()
-	{
 		ArrayList<String> loadedChanNames = new ArrayList<>();
 		if (mChanItems.size() > 0)
 		{
-			PackageManager packageManager = MainApplication.getInstance().getPackageManager();
 			for (ExtensionItem chanItem : mChanItems.values())
 			{
 				if (chanItem.supported)
@@ -335,7 +329,7 @@ public class ChanManager
 					catch (Exception | LinkageError e)
 					{
 						mChanHolders.remove(chanName);
-						Log.persistent().write(e);
+						Log.persistent().stack(e);
 					}
 				}
 			}
@@ -422,51 +416,44 @@ public class ChanManager
 		public void init();
 	}
 	
-	public static class Initializer
+	public static final class Initializer
 	{
 		private ChanManager mManager;
 		private String mChanName;
-		
-		private final Semaphore mSemaphore = new Semaphore(1);
-		
-		public ChanManager getChanManager()
-		{
-			return mManager;
-		}
-		
-		public String getChanName()
-		{
-			return mChanName;
-		}
-		
-		public void checkInitializing()
-		{
-			if (mChanName == null)
-			{
-				throw new IllegalStateException("You can't initiate instance of this object by yourself.");
-			}
-		}
 		
 		@SuppressWarnings("unchecked")
 		public <T extends Linked> T initialize(Class<?> clazz, ChanManager manager, String chanName)
 				throws LinkageError, Exception
 		{
-			mManager = manager;
-			mChanName = chanName;
-			mSemaphore.acquireUninterruptibly();
-			T result;
-			try
+			synchronized (this)
 			{
-				result = (T) clazz.newInstance();
+				mManager = manager;
+				mChanName = chanName;
+				T result;
+				try
+				{
+					result = (T) clazz.newInstance();
+				}
+				finally
+				{
+					mManager = null;
+					mChanName = null;
+				}
+				result.init();
+				return result;
 			}
-			finally
+		}
+		
+		public Pair<ChanManager, String> consume()
+		{
+			if (mManager != null)
 			{
+				Pair<ChanManager, String> pair = new Pair<ChanManager, String>(mManager, mChanName);
 				mManager = null;
 				mChanName = null;
-				mSemaphore.release();
+				return pair;
 			}
-			result.init();
-			return result;
+			else throw new IllegalStateException("You can't initiate instance of this object by yourself.");
 		}
 	}
 	

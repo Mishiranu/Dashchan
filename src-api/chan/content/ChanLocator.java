@@ -89,16 +89,8 @@ public class ChanLocator implements ChanManager.Linked
 	
 	ChanLocator(boolean useInitializer)
 	{
-		if (useInitializer)
-		{
-			INITIALIZER.checkInitializing();
-			mChanName = INITIALIZER.getChanName();
-		}
-		else
-		{
-			mChanName = null;
-			mHttpsMode = HttpsMode.CONFIGURABLE;
-		}
+		mChanName = useInitializer ? INITIALIZER.consume().second : null;
+		if (!useInitializer) setHttpsMode(HttpsMode.CONFIGURABLE);
 	}
 	
 	@Override
