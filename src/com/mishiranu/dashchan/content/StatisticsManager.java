@@ -23,7 +23,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import chan.content.ChanConfiguration;
-import chan.content.ChanManager;
 
 import com.mishiranu.dashchan.preference.Preferences;
 
@@ -41,19 +40,18 @@ public class StatisticsManager
 	private static final String KEY_THREADS = "threads";
 	
 	private JSONObject mStatistics;
-	private final HashMap<String, ChanConfiguration.Statistics> mStatisticsConfigurations = new HashMap<>();
 	
 	public static class StatisticsItem
 	{
-		public final int views;
-		public final int posts;
-		public final int threads;
+		public final int threadsViewed;
+		public final int postsSent;
+		public final int threadsCreated;
 		
-		private StatisticsItem(int views, int posts, int threads)
+		private StatisticsItem(ChanConfiguration.Statistics statistics, int views, int posts, int threads)
 		{
-			this.views = views;
-			this.posts = posts;
-			this.threads = threads;
+			this.threadsViewed = statistics != null && statistics.threadsViewed ? views : -1;
+			this.postsSent = statistics != null && statistics.postsSent ? posts : -1;
+			this.threadsCreated = statistics != null && statistics.threadsCreated ? threads : -1;
 		}
 	}
 	
@@ -62,11 +60,6 @@ public class StatisticsManager
 		JSONObject jsonObject = Preferences.getStatistics();
 		if (jsonObject == null) jsonObject = new JSONObject();
 		mStatistics = jsonObject;
-		for (String chanName : ChanManager.getInstance().getAvailableChanNames())
-		{
-			ChanConfiguration.Statistics statistics = ChanConfiguration.get(chanName).safe().obtainStatistics();
-			if (statistics != null) mStatisticsConfigurations.put(chanName, statistics);
-		}
 	}
 	
 	private JSONObject getObjectForChanName(String chanName)
@@ -89,8 +82,8 @@ public class StatisticsManager
 	
 	public void incrementViews(String chanName)
 	{
-		ChanConfiguration.Statistics statisticsConfiguration = mStatisticsConfigurations.get(chanName);
-		if (statisticsConfiguration == null || !statisticsConfiguration.threadsViewed) return;
+		ChanConfiguration.Statistics statistics = ChanConfiguration.get(chanName).safe().obtainStatistics();
+		if (statistics == null || !statistics.threadsViewed) return;
 		JSONObject jsonObject = getObjectForChanName(chanName);
 		int views = jsonObject.optInt(KEY_VIEWS) + 1;
 		try
@@ -106,15 +99,15 @@ public class StatisticsManager
 	
 	public void incrementPosts(String chanName, boolean newThread)
 	{
-		ChanConfiguration.Statistics statisticsConfiguration = mStatisticsConfigurations.get(chanName);
-		if (statisticsConfiguration == null) return;
+		ChanConfiguration.Statistics statistics = ChanConfiguration.get(chanName).safe().obtainStatistics();
+		if (statistics == null) return;
 		JSONObject jsonObject = getObjectForChanName(chanName);
 		int posts = jsonObject.optInt(KEY_POSTS) + 1;
 		int threads = newThread ? jsonObject.optInt(KEY_THREADS) + 1 : -1;
 		try
 		{
-			if (statisticsConfiguration.postsSent) jsonObject.put(KEY_POSTS, posts);
-			if (statisticsConfiguration.threadsCreated && newThread) jsonObject.put(KEY_THREADS, threads);
+			if (statistics.postsSent) jsonObject.put(KEY_POSTS, posts);
+			if (statistics.threadsCreated && newThread) jsonObject.put(KEY_THREADS, threads);
 		}
 		catch (JSONException e)
 		{
@@ -132,15 +125,10 @@ public class StatisticsManager
 			try
 			{
 				String chanName = keys.next();
-				ChanConfiguration.Statistics statisticsConfiguration = mStatisticsConfigurations.get(chanName);
-				if (statisticsConfiguration == null) statisticsItems.put(chanName, new StatisticsItem(-1, -1, -1)); else
-				{
-					JSONObject jsonObject = mStatistics.getJSONObject(chanName);
-					statisticsItems.put(chanName, new StatisticsItem(statisticsConfiguration.threadsViewed
-							? jsonObject.optInt(KEY_VIEWS) : -1, statisticsConfiguration.postsSent
-							? jsonObject.optInt(KEY_POSTS) : -1, statisticsConfiguration.threadsCreated
-							? jsonObject.optInt(KEY_THREADS) : -1));
-				}
+				ChanConfiguration.Statistics statistics = ChanConfiguration.get(chanName).safe().obtainStatistics();
+				JSONObject jsonObject = mStatistics.getJSONObject(chanName);
+				statisticsItems.put(chanName, new StatisticsItem(statistics, jsonObject.optInt(KEY_VIEWS),
+						jsonObject.optInt(KEY_POSTS), jsonObject.optInt(KEY_THREADS)));
 			}
 			catch (JSONException e)
 			{

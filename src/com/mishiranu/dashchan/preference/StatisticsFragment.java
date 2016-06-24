@@ -68,27 +68,30 @@ public class StatisticsFragment extends BaseListFragment
 		setHasOptionsMenu(true);
 		getActivity().setTitle(R.string.preference_statistics);
 		HashMap<String, StatisticsManager.StatisticsItem> statisticsItems = StatisticsManager.getInstance().getItems();
-		int totalViews = 0, totalPosts = 0, totalThreads = 0;
+		int totalThreadsViewed = 0;
+		int totalPostsSent = 0;
+		int totalThreadsCreated = 0;
 		for (StatisticsManager.StatisticsItem statisticsItem : statisticsItems.values())
 		{
-			if (statisticsItem.views > 0) totalViews += statisticsItem.views;
-			if (statisticsItem.posts > 0) totalPosts += statisticsItem.posts;
-			if (statisticsItem.threads > 0) totalThreads += statisticsItem.threads;
+			if (statisticsItem.threadsViewed >= 0) totalThreadsViewed += statisticsItem.threadsViewed;
+			if (statisticsItem.postsSent >= 0) totalPostsSent += statisticsItem.postsSent;
+			if (statisticsItem.threadsCreated >= 0) totalThreadsCreated += statisticsItem.threadsCreated;
 		}
-		mListItems.add(new ListItem(getString(R.string.text_general), totalViews, totalPosts, totalThreads));
+		mListItems.add(new ListItem(getString(R.string.text_general), totalThreadsViewed, totalPostsSent,
+				totalThreadsCreated));
 		for (String chanName : ChanManager.getInstance().getAvailableChanNames())
 		{
 			StatisticsManager.StatisticsItem statisticsItem = statisticsItems.get(chanName);
 			if (statisticsItem != null)
 			{
-				int views = statisticsItem.views;
-				int posts = statisticsItem.posts;
-				int threads = statisticsItem.threads;
+				int threadsViewed = statisticsItem.threadsViewed;
+				int postsSent = statisticsItem.postsSent;
+				int threadsCreated = statisticsItem.threadsCreated;
 				String title = ChanConfiguration.get(chanName).getTitle();
 				if (StringUtils.isEmpty(title)) title = chanName;
-				if (views >= 0 || posts >= 0 || threads >= 0)
+				if (threadsViewed >= 0 || postsSent >= 0 || threadsCreated >= 0)
 				{
-					mListItems.add(new ListItem(title, views, posts, threads));
+					mListItems.add(new ListItem(title, threadsViewed, postsSent, threadsCreated));
 				}
 			}
 		}
