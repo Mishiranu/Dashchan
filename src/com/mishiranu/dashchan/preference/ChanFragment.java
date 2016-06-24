@@ -17,10 +17,10 @@
 package com.mishiranu.dashchan.preference;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -89,7 +89,7 @@ public class ChanFragment extends BasePreferenceFragment
 		String chanName = getActivity().getIntent().getStringExtra(C.EXTRA_CHAN_NAME);
 		if (chanName == null)
 		{
-			LinkedHashSet<String> chanNames = ChanManager.getInstance().getAvailableChanNames();
+			Collection<String> chanNames = ChanManager.getInstance().getAvailableChanNames();
 			if (chanNames.size() == 0) throw new IllegalStateException();
 			chanName = chanNames.iterator().next();
 		}

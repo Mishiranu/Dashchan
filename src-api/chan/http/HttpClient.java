@@ -88,7 +88,7 @@ public class HttpClient
 	
 	static
 	{
-		int poolSize = (ChanManager.getInstance().getAvailableChanNames().size() + 1) * 2;
+		int poolSize = (ChanManager.getInstance().getAllChanNames().size() + 1) * 2;
 		System.setProperty("http.maxConnections", Integer.toString(poolSize));
 		try
 		{
@@ -170,7 +170,7 @@ public class HttpClient
 	
 	private HttpClient()
 	{
-		for (String chanName : ChanManager.getInstance().getAvailableChanNames())
+		for (String chanName : ChanManager.getInstance().getAllChanNames())
 		{
 			Proxy proxy;
 			try

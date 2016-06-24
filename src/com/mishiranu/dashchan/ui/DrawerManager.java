@@ -17,11 +17,11 @@
 package com.mishiranu.dashchan.ui;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -214,7 +214,7 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 		mChans.add(new ListItem(ListItem.ITEM_DIVIDER, 0, 0, null));
 		int color = ResourceUtils.getColor(mContext, R.attr.drawerIconColor);
 		ChanManager manager = ChanManager.getInstance();
-		LinkedHashSet<String> availableChans = manager.getAvailableChanNames();
+		Collection<String> availableChans = manager.getAvailableChanNames();
 		for (String chanName : availableChans)
 		{
 			ChanConfiguration configuration = ChanConfiguration.get(chanName);
@@ -865,7 +865,7 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 		ArrayList<FavoritesStorage.FavoriteItem> favoriteThreads = favoritesStorage.getThreads(mergeChans
 				? null : mChanName);
 		boolean addHeader = true;
-		LinkedHashSet<String> chanNames = ChanManager.getInstance().getAvailableChanNames();
+		Collection<String> chanNames = ChanManager.getInstance().getAvailableChanNames();
 		for (int i = 0; i < favoriteThreads.size(); i++)
 		{
 			FavoritesStorage.FavoriteItem favoriteItem = favoriteThreads.get(i);

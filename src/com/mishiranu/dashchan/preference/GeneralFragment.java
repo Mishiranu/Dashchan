@@ -16,7 +16,7 @@
 
 package com.mishiranu.dashchan.preference;
 
-import java.util.LinkedHashSet;
+import java.util.Collection;
 
 import android.os.Bundle;
 import android.preference.ListPreference;
@@ -35,7 +35,7 @@ public class GeneralFragment extends BasePreferenceFragment
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		LinkedHashSet<String> chanNames = ChanManager.getInstance().getAvailableChanNames();
+		Collection<String> chanNames = ChanManager.getInstance().getAvailableChanNames();
 		
 		mLocalePreference = makeList(null, Preferences.KEY_LOCALE, Preferences.VALUES_LOCALE,
 				Preferences.DEFAULT_LOCALE, R.string.preference_locale, Preferences.ENTRIES_LOCALE);
