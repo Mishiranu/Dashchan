@@ -64,9 +64,9 @@ public class ChanConfiguration implements ChanManager.Linked
 	{
 		if (useInitializer)
 		{
-			INITIALIZER.checkInitializing();
-			mManager = INITIALIZER.getChanManager();
-			mChanName = INITIALIZER.getChanName();
+			Pair<ChanManager, String> pair = INITIALIZER.consume();
+			mManager = pair.first;
+			mChanName = pair.second;
 			mPreferences = MainApplication.getInstance().getSharedPreferences("chan." + mChanName,
 					Context.MODE_PRIVATE);
 		}
