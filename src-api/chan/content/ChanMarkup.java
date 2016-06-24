@@ -66,7 +66,7 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 	{
 		if (useInitializer)
 		{
-			mChanName = INITIALIZER.consume().second;
+			mChanName = INITIALIZER.consume().chanName;
 			Method method = null;
 			try
 			{

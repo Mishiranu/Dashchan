@@ -16,7 +16,7 @@
 
 package com.mishiranu.dashchan.app;
 
-import java.util.LinkedHashSet;
+import java.util.Collection;
 import java.util.List;
 
 import android.content.Context;
@@ -65,7 +65,7 @@ public class PreferencesActivity extends PreferenceActivity
 	@Override
 	public void onBuildHeaders(List<Header> target)
 	{
-		LinkedHashSet<String> chanNames = ChanManager.getInstance().getAvailableChanNames();
+		Collection<String> chanNames = ChanManager.getInstance().getAvailableChanNames();
 		Header generalHeader = new Header();
 		generalHeader.titleRes = R.string.preference_header_general;
 		generalHeader.fragment = GeneralFragment.class.getName();

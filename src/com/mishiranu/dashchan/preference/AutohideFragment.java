@@ -17,8 +17,8 @@
 package com.mishiranu.dashchan.preference;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -293,7 +293,7 @@ public class AutohideFragment extends BaseListFragment
 			mValueEdit.addTextChangedListener(mValueListener);
 			mTestStringEdit.addTextChangedListener(mTestStringListener);
 			mChanNameSelector.setOnClickListener(this);
-			LinkedHashSet<String> chanNames = ChanManager.getInstance().getAvailableChanNames();
+			Collection<String> chanNames = ChanManager.getInstance().getAvailableChanNames();
 			if (chanNames.size() <= 1) mChanNameSelector.setVisibility(View.GONE);
 			AutohideStorage.AutohideItem autohideItem = null;
 			if (savedInstanceState != null) autohideItem = savedInstanceState.getParcelable(EXTRA_ITEM);
@@ -533,7 +533,7 @@ public class AutohideFragment extends BaseListFragment
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState)
 		{
-			LinkedHashSet<String> chanNames = ChanManager.getInstance().getAvailableChanNames();
+			Collection<String> chanNames = ChanManager.getInstance().getAvailableChanNames();
 			mChanNames = new ArrayList<String>(chanNames);
 			String[] items = new String[chanNames.size()];
 			for (int i = 0; i < chanNames.size(); i++) items[i] = ChanConfiguration.get(mChanNames.get(i)).getTitle();

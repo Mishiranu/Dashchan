@@ -30,12 +30,12 @@ import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -351,7 +351,7 @@ public class CacheManager implements Runnable
 		
 		public PagesCacheDeleteCondition()
 		{
-			LinkedHashSet<String> chanNames = ChanManager.getInstance().getAvailableChanNames();
+			Collection<String> chanNames = ChanManager.getInstance().getAllChanNames();
 			for (FavoritesStorage.FavoriteItem favoriteItem : FavoritesStorage.getInstance().getThreads(null))
 			{
 				if (chanNames.contains(favoriteItem.chanName))

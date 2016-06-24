@@ -23,8 +23,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 
 import android.os.Bundle;
 import android.os.Parcel;
@@ -63,7 +63,7 @@ public class PageManager
 	{
 		if (inState != null)
 		{
-			LinkedHashSet<String> chanNames = ChanManager.getInstance().getAvailableChanNames();
+			Collection<String> chanNames = ChanManager.getInstance().getAvailableChanNames();
 			PageHolder savedCurrentPage = null;
 			ArrayList<PageHolder> savedPages = inState.getParcelableArrayList(EXTRA_SAVED_PAGES);
 			if (savedPages != null)

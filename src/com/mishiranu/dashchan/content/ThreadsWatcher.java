@@ -49,7 +49,7 @@ public class ThreadsWatcher implements FavoritesStorage.Observer, Handler.Callba
 	
 	static
 	{
-		for (String chanName : ChanManager.getInstance().getAvailableChanNames())
+		for (String chanName : ChanManager.getInstance().getAllChanNames())
 		{
 			ChanConfiguration configuration = ChanConfiguration.get(chanName);
 			if (configuration.getOption(ChanConfiguration.OPTION_READ_POSTS_COUNT))

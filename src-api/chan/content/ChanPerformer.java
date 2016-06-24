@@ -64,7 +64,7 @@ public class ChanPerformer implements ChanManager.Linked
 	
 	ChanPerformer(boolean useInitializer)
 	{
-		mChanName = useInitializer ? INITIALIZER.consume().second : null;
+		mChanName = useInitializer ? INITIALIZER.consume().chanName : null;
 	}
 	
 	@Override

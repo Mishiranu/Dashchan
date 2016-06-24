@@ -77,7 +77,7 @@ public class ImageLoader
 	{
 		EXECUTORS.put(null, ConcurrentUtils.newThreadPool(3, 3, 0, "ImageLoader", "client",
 				Process.THREAD_PRIORITY_DEFAULT));
-		for (String chanName : ChanManager.getInstance().getAvailableChanNames())
+		for (String chanName : ChanManager.getInstance().getAllChanNames())
 		{
 			EXECUTORS.put(chanName, ConcurrentUtils.newThreadPool(3, 3, 0, "ImageLoader", chanName,
 					Process.THREAD_PRIORITY_DEFAULT));

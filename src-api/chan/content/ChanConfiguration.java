@@ -46,8 +46,8 @@ import com.mishiranu.dashchan.preference.Preferences;
 @Extendable
 public class ChanConfiguration implements ChanManager.Linked
 {
-	private final ChanManager mManager;
 	private final String mChanName;
+	private final Resources mResources;
 	private final SharedPreferences mPreferences;
 	
 	private boolean mCanSetOptions = true;
@@ -64,16 +64,16 @@ public class ChanConfiguration implements ChanManager.Linked
 	{
 		if (useInitializer)
 		{
-			Pair<ChanManager, String> pair = INITIALIZER.consume();
-			mManager = pair.first;
-			mChanName = pair.second;
+			ChanManager.Initializer.Holder holder = INITIALIZER.consume();
+			mChanName = holder.chanName;
+			mResources = holder.resources;
 			mPreferences = MainApplication.getInstance().getSharedPreferences("chan." + mChanName,
 					Context.MODE_PRIVATE);
 		}
 		else
 		{
-			mManager = null;
 			mChanName = null;
+			mResources = null;
 			mPreferences = null;
 		}
 	}
@@ -901,8 +901,7 @@ public class ChanConfiguration implements ChanManager.Linked
 	@Public
 	public final Resources getResources()
 	{
-		if (mManager == null) return null;
-		return mManager.getResources(mChanName);
+		return mResources;
 	}
 	
 	@Public

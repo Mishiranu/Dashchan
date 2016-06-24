@@ -43,7 +43,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
-import android.util.Pair;
 
 import dalvik.system.PathClassLoader;
 
@@ -91,12 +90,21 @@ public class ChanManager
 	
 	private static class ChanHolder
 	{
-		public ChanConfiguration configuration;
-		public ChanPerformer performer;
-		public ChanLocator locator;
-		public ChanMarkup markup;
-		public Resources resources;
-		public Drawable icon;
+		public final ChanConfiguration configuration;
+		public final ChanPerformer performer;
+		public final ChanLocator locator;
+		public final ChanMarkup markup;
+		public final Drawable icon;
+		
+		public ChanHolder(ChanConfiguration configuration, ChanPerformer performer, ChanLocator locator,
+				ChanMarkup markup, Drawable icon)
+		{
+			this.configuration = configuration;
+			this.performer = performer;
+			this.locator = locator;
+			this.markup = markup;
+			this.icon = icon;
+		}
 	}
 	
 	private static final ChanManager INSTANCE;
@@ -187,7 +195,6 @@ public class ChanManager
 		return map;
 	}
 	
-	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private ChanManager()
 	{
 		ArrayList<String> busyExtensionNames = new ArrayList<>();
@@ -195,12 +202,8 @@ public class ChanManager
 		Collections.addAll(busyExtensionNames, Preferences.SPECIAL_EXTENSION_NAMES);
 		ArrayList<String> busyChanNames = new ArrayList<>(busyExtensionNames);
 		busyChanNames.add(EXTENSION_NAME_LIB_WEBM);
-		
-		mDefaultChanHolder = new ChanHolder();
-		mDefaultChanHolder.configuration = new ChanConfiguration(false);
-		mDefaultChanHolder.performer = new ChanPerformer(false);
-		mDefaultChanHolder.locator = new ChanLocator(false);
-		
+		mDefaultChanHolder = new ChanHolder(new ChanConfiguration(false), new ChanPerformer(false),
+				new ChanLocator(false), null, null);
 		PackageManager packageManager = MainApplication.getInstance().getPackageManager();
 		List<PackageInfo> packages = packageManager.getInstalledPackages(PackageManager.GET_CONFIGURATIONS);
 		ArrayList<ExtensionItem> extensionItems = new ArrayList<>();
@@ -300,37 +303,11 @@ public class ChanManager
 		{
 			for (ExtensionItem chanItem : mChanItems.values())
 			{
-				if (chanItem.supported)
+				ChanHolder holder = loadChan(chanItem, packageManager);
+				if (holder != null)
 				{
-					String chanName = chanItem.extensionName;
-					ChanHolder chanHolder = new ChanHolder();
-					mChanHolders.put(chanName, chanHolder);
-					try
-					{
-						String nativeLibraryDir = chanItem.applicationInfo.nativeLibraryDir;
-						if (nativeLibraryDir != null && !new File(nativeLibraryDir).exists()) nativeLibraryDir = null;
-						ClassLoader classLoader = new PathClassLoader(chanItem.packagePath, nativeLibraryDir,
-								ChanManager.class.getClassLoader());
-						chanHolder.resources = packageManager.getResourcesForApplication(chanItem.applicationInfo);
-						chanHolder.configuration = ChanConfiguration.INITIALIZER.initialize(Class
-								.forName(chanItem.classConfiguration, false, classLoader), this, chanName);
-						chanHolder.performer = ChanPerformer.INITIALIZER.initialize(Class
-								.forName(chanItem.classPerformer, false, classLoader), this, chanName);
-						chanHolder.locator = ChanLocator.INITIALIZER.initialize(Class
-								.forName(chanItem.classLocator, false, classLoader), this, chanName);
-						chanHolder.markup = ChanMarkup.INITIALIZER.initialize(Class
-								.forName(chanItem.classMarkup, false, classLoader), this, chanName);
-						if (C.API_LOLLIPOP && chanItem.iconResId != 0)
-						{
-							chanHolder.icon = chanHolder.resources.getDrawable(chanItem.iconResId, null);
-						}
-						loadedChanNames.add(chanName);
-					}
-					catch (Exception | LinkageError e)
-					{
-						mChanHolders.remove(chanName);
-						Log.persistent().stack(e);
-					}
+					loadedChanNames.add(chanItem.extensionName);
+					mChanHolders.put(chanItem.extensionName, holder);
 				}
 			}
 		}
@@ -387,6 +364,45 @@ public class ChanManager
 				}
 			}
 		}, filter);
+		updateArchiveMap();
+	}
+	
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
+	private ChanHolder loadChan(ExtensionItem chanItem, PackageManager packageManager)
+	{
+		if (chanItem.supported)
+		{
+			String chanName = chanItem.extensionName;
+			try
+			{
+				String nativeLibraryDir = chanItem.applicationInfo.nativeLibraryDir;
+				if (nativeLibraryDir != null && !new File(nativeLibraryDir).exists()) nativeLibraryDir = null;
+				ClassLoader classLoader = new PathClassLoader(chanItem.packagePath, nativeLibraryDir,
+						ChanManager.class.getClassLoader());
+				Resources resources = packageManager.getResourcesForApplication(chanItem.applicationInfo);
+				ChanConfiguration configuration = ChanConfiguration.INITIALIZER.initialize(classLoader,
+						chanItem.classConfiguration, chanName, resources);
+				ChanPerformer performer = ChanPerformer.INITIALIZER.initialize(classLoader,
+						chanItem.classPerformer, chanName, resources);
+				ChanLocator locator = ChanLocator.INITIALIZER.initialize(classLoader,
+						chanItem.classLocator, chanName, resources);
+				ChanMarkup markup = ChanMarkup.INITIALIZER.initialize(classLoader,
+						chanItem.classMarkup, chanName, resources);
+				Drawable icon = C.API_LOLLIPOP && chanItem.iconResId != 0
+						? resources.getDrawable(chanItem.iconResId, null) : null;
+				return new ChanHolder(configuration, performer, locator, markup, icon);
+			}
+			catch (Exception | LinkageError e)
+			{
+				Log.persistent().stack(e);
+			}
+		}
+		return null;
+	}
+	
+	private void updateArchiveMap()
+	{
+		mArchiveMap.clear();
 		for (ChanHolder chanHolder : mChanHolders.values())
 		{
 			ChanConfiguration.Archivation archivation = chanHolder.configuration.obtainArchivationConfiguration();
@@ -418,40 +434,48 @@ public class ChanManager
 	
 	public static final class Initializer
 	{
-		private ChanManager mManager;
-		private String mChanName;
+		public static class Holder
+		{
+			public final String chanName;
+			public final Resources resources;
+			
+			private Holder(String chanName, Resources resources)
+			{
+				this.chanName = chanName;
+				this.resources = resources;
+			}
+		}
+		
+		private Holder mHolder;
 		
 		@SuppressWarnings("unchecked")
-		public <T extends Linked> T initialize(Class<?> clazz, ChanManager manager, String chanName)
-				throws LinkageError, Exception
+		public <T extends Linked> T initialize(ClassLoader classLoader, String className,
+				String chanName, Resources resources) throws LinkageError, Exception
 		{
 			synchronized (this)
 			{
-				mManager = manager;
-				mChanName = chanName;
+				mHolder = new Holder(chanName, resources);
 				T result;
 				try
 				{
-					result = (T) clazz.newInstance();
+					result = (T) Class.forName(className, false, classLoader).newInstance();
 				}
 				finally
 				{
-					mManager = null;
-					mChanName = null;
+					mHolder = null;
 				}
 				result.init();
 				return result;
 			}
 		}
 		
-		public Pair<ChanManager, String> consume()
+		public Holder consume()
 		{
-			if (mManager != null)
+			if (mHolder != null)
 			{
-				Pair<ChanManager, String> pair = new Pair<ChanManager, String>(mManager, mChanName);
-				mManager = null;
-				mChanName = null;
-				return pair;
+				Holder holder = mHolder;
+				mHolder = null;
+				return holder;
 			}
 			else throw new IllegalStateException("You can't initiate instance of this object by yourself.");
 		}
@@ -492,11 +516,6 @@ public class ChanManager
 		return (T) getChanHolder(chanName, false).markup;
 	}
 	
-	Resources getResources(String chanName)
-	{
-		return getChanHolder(chanName, false).resources;
-	}
-	
 	public Collection<ExtensionItem> getExtensionItems()
 	{
 		return mExtensionItems.values();
@@ -528,7 +547,12 @@ public class ChanManager
 				.getOption(ChanConfiguration.OPTION_HIDDEN_DISALLOW_ARCHIVATION);
 	}
 	
-	public LinkedHashSet<String> getAvailableChanNames()
+	public Collection<String> getAllChanNames()
+	{
+		return mChanItems.keySet();
+	}
+	
+	public Collection<String> getAvailableChanNames()
 	{
 		return mAvailableChanNames;
 	}
@@ -594,7 +618,7 @@ public class ChanManager
 	{
 		for (ChanHolder chanHolder : mChanHolders.values())
 		{
-			chanHolder.resources.updateConfiguration(newConfig, metrics);
+			chanHolder.configuration.getResources().updateConfiguration(newConfig, metrics);
 		}
 	}
 	
