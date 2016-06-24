@@ -27,6 +27,7 @@ import java.util.List;
 
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Looper;
 
 import chan.annotation.Extendable;
 import chan.annotation.Public;
@@ -1018,10 +1019,16 @@ public class ChanPerformer implements ChanManager.Linked
 		}
 	}
 	
+	private void checkPerformerRequireCall()
+	{
+		if (Looper.myLooper() == Looper.getMainLooper()) throw new RuntimeException("Invalid call");
+	}
+	
 	@Public
 	public final CaptchaData requireUserCaptcha(String requirement, String boardName, String threadNumber,
 			boolean retry)
 	{
+		checkPerformerRequireCall();
 		return CaptchaManager.getInstance().requireUserCaptcha(this, requirement, boardName, threadNumber, retry);
 	}
 	
@@ -1029,6 +1036,7 @@ public class ChanPerformer implements ChanManager.Linked
 	public final Integer requireUserImageSingleChoice(int selected, Bitmap[] images, String descriptionText,
 			Bitmap descriptionImage)
 	{
+		checkPerformerRequireCall();
 		return CaptchaManager.getInstance().requireUserImageSingleChoice(3, selected, images,
 				descriptionText, descriptionImage);
 	}
@@ -1037,6 +1045,7 @@ public class ChanPerformer implements ChanManager.Linked
 	public final boolean[] requireUserImageMultipleChoice(boolean[] selected, Bitmap[] images, String descriptionText,
 			Bitmap descriptionImage)
 	{
+		checkPerformerRequireCall();
 		return CaptchaManager.getInstance().requireUserImageMultipleChoice(3, selected, images,
 				descriptionText, descriptionImage);
 	}
