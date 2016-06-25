@@ -60,7 +60,7 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 		listView.getWrapper().setPullSides(PullableWrapper.Side.TOP);
 		boolean hasUserBoards = getChanConfiguration().getOption(ChanConfiguration.OPTION_READ_USER_BOARDS);
 		activity.setTitle(getString(hasUserBoards ? R.string.action_general_boards : R.string.action_boards));
-		if (listView.getCount() != 0)
+		if (!adapter.isEmpty())
 		{
 			showScaleAnimation();
 			if (pageHolder.position != null) pageHolder.position.apply(getListView());
@@ -240,7 +240,7 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 	{
 		mReadTask = null;
 		getListView().getWrapper().cancelBusyState();
-		if (getAdapter().getCount() == 0) switchView(ViewType.ERROR, errorItem.toString());
+		if (getAdapter().isEmpty()) switchView(ViewType.ERROR, errorItem.toString());
 		else ClickableToast.show(getActivity(), errorItem.toString());
 	}
 }

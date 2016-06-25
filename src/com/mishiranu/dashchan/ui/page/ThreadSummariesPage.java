@@ -305,7 +305,7 @@ public class ThreadSummariesPage extends ListPage<ThreadSummariesAdapter> implem
 	{
 		mReadTask = null;
 		getListView().getWrapper().cancelBusyState();
-		if (getAdapter().getCount() == 0) switchView(ViewType.ERROR, errorItem.toString());
+		if (getAdapter().isEmpty()) switchView(ViewType.ERROR, errorItem.toString());
 		else ClickableToast.show(getActivity(), errorItem.toString());
 	}
 	
