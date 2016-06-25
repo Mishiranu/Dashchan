@@ -1444,31 +1444,37 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 	
 	private long mLastNewPostTimestamp;
 	
-	private void onNewPostIntent(Intent intent, boolean fromNotification)
+	private boolean onNewPostIntent(Intent intent, boolean fromNotification)
 	{
-		if (mPage == null) return;
 		if (!fromNotification)
 		{
 			long timestamp = intent.getLongExtra(C.EXTRA_TIMESTAMP, 0L);
 			// Avoid multiple intents (from new post broadcast receiver and activity result)
-			if (mLastNewPostTimestamp == timestamp) return;
+			if (mLastNewPostTimestamp == timestamp) return false;
 			mLastNewPostTimestamp = timestamp;
 		}
 		String chanName = intent.getStringExtra(C.EXTRA_CHAN_NAME);
 		String boardName = intent.getStringExtra(C.EXTRA_BOARD_NAME);
 		String threadNumber = intent.getStringExtra(C.EXTRA_THREAD_NUMBER);
-		if (threadNumber == null) return;
+		if (threadNumber == null) return false;
 		if (intent.getBooleanExtra(C.EXTRA_NEW_THREAD, false))
 		{
-			if (fromNotification) navigatePosts(chanName, boardName, threadNumber, null, null, false); else
+			if (fromNotification)
+			{
+				if (mPage == null) return false;
+				navigatePosts(chanName, boardName, threadNumber, null, null, false);
+				return true;
+			}
+			else
 			{
 				mNewPostDatas.add(new PageHolder.NewPostData(chanName, boardName, threadNumber, null, null, true));
 				PageHolder pageHolder = mPageManager.get(chanName, boardName, null, PageHolder.Content.THREADS);
-				if (pageHolder != null && mPageManager.getCurrentPage() == pageHolder)
+				if (pageHolder != null && mPageManager.getCurrentPage() == pageHolder && mPage != null)
 				{
 					navigatePosts(chanName, boardName, threadNumber, null, null, false);
 				}
 				else createNewPostNotification(intent);
+				return true;
 			}
 		}
 		else
@@ -1476,17 +1482,25 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 			String postNumber = intent.getStringExtra(C.EXTRA_POST_NUMBER);
 			String comment = intent.getStringExtra(C.EXTRA_COMMENT);
 			PageHolder pageHolder = mPageManager.get(chanName, boardName, threadNumber, PageHolder.Content.POSTS);
-			if (pageHolder != null && mPageManager.getCurrentPage() == pageHolder)
+			if (pageHolder != null && mPageManager.getCurrentPage() == pageHolder && mPage != null)
 			{
 				mPage.onCreateNewPost(postNumber, comment);
+				return true;
 			}
 			else
 			{
-				if (fromNotification) navigatePosts(chanName, boardName, threadNumber, null, null, false); else
+				if (fromNotification)
+				{
+					if (mPage == null) return false;
+					navigatePosts(chanName, boardName, threadNumber, null, null, false);
+					return true;
+				}
+				else
 				{
 					mNewPostDatas.add(new PageHolder.NewPostData(chanName, boardName, threadNumber,
 							postNumber, comment, false));
 					createNewPostNotification(intent);
+					return true;
 				}
 			}
 		}
@@ -1544,7 +1558,11 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 				}
 				case ACTION_NAVIGATE_SENT_POST:
 				{
-					if (isActivityResumed()) onNewPostIntent(intent, true);
+					if (isActivityResumed())
+					{
+						boolean success = onNewPostIntent(intent, true);
+						if (!success) break;
+					}
 				}
 				case ACTION_HIDE_SENT_POST:
 				{
