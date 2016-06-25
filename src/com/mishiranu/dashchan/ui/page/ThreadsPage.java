@@ -595,7 +595,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		}
 		else
 		{
-			HttpValidator validator = !append && mLastPage == page && getAdapter().getCount() != 0
+			HttpValidator validator = !append && mLastPage == page && !getAdapter().isEmpty()
 					? getExtra().validator : null;
 			mReadTask = new ReadThreadsTask(this, pageHolder.chanName, pageHolder.boardName, getExtra().cachedThreads,
 					validator, page, append);

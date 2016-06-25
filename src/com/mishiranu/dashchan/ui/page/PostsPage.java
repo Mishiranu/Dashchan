@@ -1260,7 +1260,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		PostsAdapter adapter = getAdapter();
 		boolean first = isFirstLoad();
 		PageHolder pageHolder = getPageHolder();
-		if (adapter.getCount() == 0) StatisticsManager.getInstance().incrementViews(pageHolder.chanName);
+		if (adapter.isEmpty()) StatisticsManager.getInstance().incrementViews(pageHolder.chanName);
 		PostsExtra extra = getExtra();
 		boolean empty = adapter.isEmpty();
 		final int newPostPosition = adapter.getCount();
