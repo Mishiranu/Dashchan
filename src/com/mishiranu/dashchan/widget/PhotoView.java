@@ -152,15 +152,13 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 	
 	public void recycle()
 	{
-		mDrawDim = false;
 		if (mDrawable != null)
 		{
 			mDrawable.setCallback(null);
 			unscheduleDrawable(mDrawable);
 			mDrawable = null;
+			invalidate();
 		}
-		mHasAlpha = false;
-		invalidate();
 	}
 	
 	public void setImage(Drawable drawable, boolean hasAlpha, boolean fitScreen, boolean keepScale)
@@ -169,6 +167,7 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 		mDrawable = drawable;
 		mHasAlpha = hasAlpha;
 		mFitScreen = fitScreen;
+		mDrawDim = false;
 		drawable.setCallback(this);
 		Point dimensions = getDimensions();
 		keepScale &= mPreviousDimensions.equals(dimensions);
@@ -498,17 +497,19 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 	
 	public boolean canScrollLeft()
 	{
-		return mScrollEdgeX != ScrollEdge.START && mScrollEdgeX != ScrollEdge.BOTH || isClosingTouchMode();
+		return hasImage() && (mScrollEdgeX != ScrollEdge.START && mScrollEdgeX != ScrollEdge.BOTH
+				|| isClosingTouchMode());
 	}
 	
 	public boolean canScrollRight()
 	{
-		return mScrollEdgeX != ScrollEdge.END && mScrollEdgeX != ScrollEdge.BOTH || isClosingTouchMode();
+		return hasImage() && (mScrollEdgeX != ScrollEdge.END && mScrollEdgeX != ScrollEdge.BOTH
+				|| isClosingTouchMode());
 	}
 	
 	public boolean isScaling()
 	{
-		return mScaleGestureDetector.isInProgress();
+		return hasImage() && mScaleGestureDetector.isInProgress();
 	}
 	
 	public void setScale(float scale)
