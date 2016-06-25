@@ -34,7 +34,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -250,8 +249,7 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		if (savedInstanceState == null) savedInstanceState = mPageManager.readFromStorage();
 		PageHolder savedCurrentPage = mPageManager.restore(savedInstanceState);
 		if (savedCurrentPage != null) handleData(savedCurrentPage, false); else handleIntent(getIntent(), false);
-		boolean requested = requestStoragePermission();
-		if (!requested) startUpdateTask();
+		startUpdateTask();
 	}
 	
 	@Override
@@ -1430,26 +1428,6 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 	public ArrayList<PageHolder> getDrawerPageHolders()
 	{
 		return mPageManager.getPages();
-	}
-	
-	@TargetApi(Build.VERSION_CODES.M)
-	private boolean isPermissionGranted(String permission)
-	{
-		return C.API_MARSHMALLOW ? checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED : true;
-	}
-	
-	@TargetApi(Build.VERSION_CODES.M)
-	private boolean requestStoragePermission()
-	{
-		if (C.API_MARSHMALLOW)
-		{
-			if (!isPermissionGranted(android.Manifest.permission.WRITE_EXTERNAL_STORAGE))
-			{
-				requestPermissions(new String[] {android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
-				return true;
-			}
-		}
-		return false;
 	}
 	
 	@Override
