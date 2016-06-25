@@ -256,13 +256,7 @@ public class ThreadSummariesPage extends ListPage<ThreadSummariesAdapter> implem
 	}
 	
 	@Override
-	public boolean onCheckPullPermission(PullableWrapper wrapper, PullableWrapper.Side side)
-	{
-		return true;
-	}
-
-	@Override
-	public void onAcceptPull(PullableWrapper wrapper, PullableWrapper.Side side)
+	public void onListPulled(PullableWrapper wrapper, PullableWrapper.Side side)
 	{
 		refreshGlobalThreads(true);
 	}

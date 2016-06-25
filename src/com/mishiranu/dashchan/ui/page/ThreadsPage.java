@@ -531,13 +531,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 	}
 	
 	@Override
-	public boolean onCheckPullPermission(PullableWrapper wrapper, PullableWrapper.Side side)
-	{
-		return mDeserializeTask == null;
-	}
-
-	@Override
-	public void onAcceptPull(PullableWrapper wrapper, PullableWrapper.Side side)
+	public void onListPulled(PullableWrapper wrapper, PullableWrapper.Side side)
 	{
 		refreshThreads(getAdapter().isRealEmpty() || mLastPage == PAGE_NUMBER_CATALOG ? RefreshPage.CURRENT
 				: side == PullableWrapper.Side.BOTTOM ? RefreshPage.NEXT : RefreshPage.PREVIOUS, true);

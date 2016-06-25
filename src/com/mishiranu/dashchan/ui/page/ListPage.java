@@ -288,13 +288,7 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 	}
 	
 	@Override
-	public boolean onCheckPullPermission(PullableWrapper wrapper, PullableWrapper.Side side)
-	{
-		return false;
-	}
-	
-	@Override
-	public void onAcceptPull(PullableWrapper wrapper, PullableWrapper.Side side)
+	public void onListPulled(PullableWrapper wrapper, PullableWrapper.Side side)
 	{
 		
 	}

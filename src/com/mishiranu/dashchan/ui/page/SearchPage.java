@@ -170,13 +170,7 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 	}
 	
 	@Override
-	public boolean onCheckPullPermission(PullableWrapper wrapper, PullableWrapper.Side side)
-	{
-		return true;
-	}
-	
-	@Override
-	public void onAcceptPull(PullableWrapper wrapper, PullableWrapper.Side side)
+	public void onListPulled(PullableWrapper wrapper, PullableWrapper.Side side)
 	{
 		refreshSearch(true);
 	}
