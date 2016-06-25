@@ -45,10 +45,9 @@ public class ErrorItem implements Serializable
 	public static final int TYPE_BOARD_NOT_EXISTS = 14;
 	public static final int TYPE_THREAD_NOT_EXISTS = 15;
 	public static final int TYPE_POST_NOT_FOUND = 16;
-	public static final int TYPE_NOT_FOUND = 17;
-	public static final int TYPE_NO_ACCESS_TO_MEMORY = 18;
-	public static final int TYPE_INSUFFICIENT_SPACE = 19;
-	public static final int TYPE_EXTENSION = 20;
+	public static final int TYPE_NO_ACCESS_TO_MEMORY = 17;
+	public static final int TYPE_INSUFFICIENT_SPACE = 18;
+	public static final int TYPE_EXTENSION = 19;
 	
 	public final int type;
 	public final int specialType;
@@ -108,7 +107,6 @@ public class ErrorItem implements Serializable
 			case TYPE_BOARD_NOT_EXISTS: resId = R.string.message_board_not_exist; break;
 			case TYPE_THREAD_NOT_EXISTS: resId = R.string.message_thread_not_exist; break;
 			case TYPE_POST_NOT_FOUND: resId = R.string.message_post_not_found; break;
-			case TYPE_NOT_FOUND: resId = R.string.message_not_found; break;
 			case TYPE_NO_ACCESS_TO_MEMORY: resId = R.string.message_no_access_to_memory; break;
 			case TYPE_INSUFFICIENT_SPACE: resId = R.string.message_insufficient_space; break;
 			case TYPE_EXTENSION: resId = R.string.message_extension_error; break;

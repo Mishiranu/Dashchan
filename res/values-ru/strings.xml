@@ -360,6 +360,7 @@
 	<string name="message_report_too_often_error">Нельзя жаловаться так часто</string>
 	<string name="message_request_sent">Запрос успешно отправлен</string>
 	<string name="message_save_completed">Сохранение завершено</string>
+	<string name="message_search_completed">Поиск завершён</string>
 	<string name="message_sending">Отправка&#8230;</string>
 	<string name="message_sending_index_format">Отправка %1$d из %2$d&#8230;</string>
 	<string name="message_spam_list">Сообщение отклонено</string>
