@@ -72,8 +72,7 @@ public class PullableWrapper implements AbsListView.OnScrollListener
 	
 	public static interface PullCallback
 	{
-		public boolean onCheckPullPermission(PullableWrapper wrapper, Side side);
-		public void onAcceptPull(PullableWrapper wrapper, Side side);
+		public void onListPulled(PullableWrapper wrapper, Side side);
 	}
 	
 	public static interface PullStateListener
@@ -99,6 +98,7 @@ public class PullableWrapper implements AbsListView.OnScrollListener
 	
 	public void setPullSides(Side sides)
 	{
+		if (sides == null) sides = Side.NONE;
 		mPullSides = sides;
 	}
 	
@@ -114,6 +114,7 @@ public class PullableWrapper implements AbsListView.OnScrollListener
 	
 	private boolean startBusyState(Side side, boolean useCallback)
 	{
+		if (side == null || side == Side.NONE) return false;
 		if (mBusySide != Side.NONE || side != mPullSides && mPullSides != Side.BOTH)
 		{
 			if (side == Side.BOTH && (mBusySide == Side.TOP || mBusySide == Side.BOTTOM))
@@ -124,20 +125,15 @@ public class PullableWrapper implements AbsListView.OnScrollListener
 			}
 			return false;
 		}
-		boolean accept = true;
-		if (useCallback) accept = mPullCallback != null && mPullCallback.onCheckPullPermission(this, side);
-		if (accept)
+		mBusySide = side;
+		PullPainter painter = getPreferredPullPainter(side);
+		if (painter != null)
 		{
-			mBusySide = side;
-			PullPainter painter = getPreferredPullPainter(side);
-			if (painter != null)
-			{
-				painter.setState(PullPainter.State.LOADING, mListView.getEdgeEffectShift(side == Side.TOP));
-			}
-			if (useCallback) mPullCallback.onAcceptPull(this, side);
-			notifyPullStateChanged(true);
+			painter.setState(PullPainter.State.LOADING, mListView.getEdgeEffectShift(side == Side.TOP));
 		}
-		return accept;
+		if (useCallback) mPullCallback.onListPulled(this, side);
+		notifyPullStateChanged(true);
+		return true;
 	}
 	
 	public void cancelBusyState()

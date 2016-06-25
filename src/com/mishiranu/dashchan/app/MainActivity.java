@@ -407,6 +407,7 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		}
 		switchView(ListPage.ViewType.LIST, null);
 		mListView.getWrapper().cancelBusyState();
+		mListView.getWrapper().setPullSides(PullableWrapper.Side.NONE);
 		ClickableToast.cancel(this);
 		requestStoreExtraAndPosition();
 		if (mPage != null)
@@ -1170,16 +1171,9 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 	}
 	
 	@Override
-	public boolean onCheckPullPermission(PullableWrapper wrapper, PullableWrapper.Side side)
+	public void onListPulled(PullableWrapper wrapper, PullableWrapper.Side side)
 	{
-		if (mPage != null) return mPage.onCheckPullPermission(wrapper, side);
-		return false;
-	}
-	
-	@Override
-	public void onAcceptPull(PullableWrapper wrapper, PullableWrapper.Side side)
-	{
-		if (mPage != null) mPage.onAcceptPull(wrapper, side);
+		if (mPage != null) mPage.onListPulled(wrapper, side);
 	}
 	
 	@Override

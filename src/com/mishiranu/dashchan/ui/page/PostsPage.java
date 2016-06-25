@@ -1055,15 +1055,9 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 			if (!scrollToDefinedPost(false)) refreshPosts(true, false);
 		}
 	}
-
+	
 	@Override
-	public boolean onCheckPullPermission(PullableWrapper wrapper, PullableWrapper.Side side)
-	{
-		return mDeserializeTask == null;
-	}
-
-	@Override
-	public void onAcceptPull(PullableWrapper wrapper, PullableWrapper.Side side)
+	public void onListPulled(PullableWrapper wrapper, PullableWrapper.Side side)
 	{
 		refreshPosts(true, false, true);
 	}
