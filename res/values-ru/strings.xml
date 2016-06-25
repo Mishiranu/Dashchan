@@ -334,6 +334,8 @@
 	<string name="message_invalid_response">Некорректный ответ сервера</string>
 	<string name="message_insufficient_space">Недостаточно места на утройстве</string>
 	<string name="message_loading">Загрузка&#8230;</string>
+	<string name="message_memory_access_permission">Для кэширования и просмотра содержимого требуется доступ
+		к памяти устройства.</string>
 	<string name="message_new_password">Сгенерирован новый пароль</string>
 	<string name="message_no_access">Нет доступа</string>
 	<string name="message_no_access_to_memory">Нет доступа к памяти</string>

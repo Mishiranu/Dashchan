@@ -315,6 +315,8 @@
 	<string name="message_invalid_response">Invalid server response</string>
 	<string name="message_insufficient_space">Insufficient device space</string>
 	<string name="message_loading">Loading&#8230;</string>
+	<string name="message_memory_access_permission">A memory access permission is required for caching and
+		viewing content.</string>
 	<string name="message_new_password">A new password was generated</string>
 	<string name="message_no_access">No access</string>
 	<string name="message_no_access_to_memory">No access to memory</string>
