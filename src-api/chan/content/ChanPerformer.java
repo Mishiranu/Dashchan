@@ -344,12 +344,14 @@ public class ChanPerformer implements ChanManager.Linked
 	{
 		@Public public final String boardName;
 		@Public public final String searchQuery;
+		@Public public final int pageNumber;
 		@Public public final HttpHolder holder;
 		
-		public ReadSearchPostsData(String boardName, String searchQuery, HttpHolder holder)
+		public ReadSearchPostsData(String boardName, String searchQuery, int pageNumber, HttpHolder holder)
 		{
 			this.boardName = boardName;
 			this.searchQuery = searchQuery;
+			this.pageNumber = pageNumber;
 			this.holder = holder;
 		}
 	}

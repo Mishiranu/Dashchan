@@ -341,6 +341,7 @@
 	<string name="message_report_too_often_error">You can\'t report too often</string>
 	<string name="message_request_sent">The request has been sent successfully</string>
 	<string name="message_save_completed">Save completed</string>
+	<string name="message_search_completed">Search completed</string>
 	<string name="message_sending">Sending&#8230;</string>
 	<string name="message_sending_index_format">Sending %1$d of %2$d&#8230;</string>
 	<string name="message_spam_list">Message rejected</string>

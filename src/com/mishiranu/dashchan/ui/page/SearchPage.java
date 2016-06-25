@@ -16,7 +16,9 @@
 
 package com.mishiranu.dashchan.ui.page;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 
 import android.app.Activity;
 import android.os.Parcel;
@@ -31,13 +33,17 @@ import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.ui.UiManager;
 import com.mishiranu.dashchan.ui.adapter.SearchAdapter;
+import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
+import com.mishiranu.dashchan.widget.ClickableToast;
+import com.mishiranu.dashchan.widget.ListScroller;
 import com.mishiranu.dashchan.widget.PullableListView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 
 public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTask.Callback
 {
 	private ReadSearchTask mReadTask;
+	private boolean mShowScaleOnSuccess;
 	
 	@Override
 	protected void onCreate()
@@ -50,7 +56,7 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 		SearchAdapter adapter = new SearchAdapter(activity, uiManager);
 		initAdapter(adapter);
 		uiManager.view().setHighlightText(Collections.singleton(pageHolder.searchQuery));
-		listView.getWrapper().setPullSides(PullableWrapper.Side.TOP);
+		listView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
 		activity.setTitle(pageHolder.searchQuery);
 		SearchExtra extra = getExtra();
 		if (pageHolder.initialFromCache)
@@ -62,12 +68,17 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 				if (pageHolder.position != null) pageHolder.position.apply(listView);
 				showScaleAnimation();
 			}
-			else refreshSearch(false);
+			else
+			{
+				mShowScaleOnSuccess = true;
+				refreshSearch(false, false);
+			}
 		}
 		else
 		{
 			extra.groupMode = false;
-			refreshSearch(false);
+			mShowScaleOnSuccess = true;
+			refreshSearch(false, false);
 		}
 		pageHolder.setInitialSearchData(false);
 	}
@@ -132,7 +143,7 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 		{
 			case OPTIONS_MENU_REFRESH:
 			{
-				refreshSearch();
+				refreshSearch(!getAdapter().isEmpty(), false);
 				return true;
 			}
 			case OPTIONS_MENU_GROUP:
@@ -172,19 +183,21 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 	@Override
 	public void onListPulled(PullableWrapper wrapper, PullableWrapper.Side side)
 	{
-		refreshSearch(true);
+		refreshSearch(true, side == PullableWrapper.Side.BOTTOM);
 	}
 	
-	private void refreshSearch()
-	{
-		refreshSearch(!getAdapter().isEmpty());
-	}
-	
-	private void refreshSearch(boolean showPull)
+	private void refreshSearch(boolean showPull, boolean nextPage)
 	{
 		PageHolder pageHolder = getPageHolder();
 		if (mReadTask != null) mReadTask.cancel();
-		mReadTask = new ReadSearchTask(this, pageHolder.chanName, pageHolder.boardName, pageHolder.searchQuery);
+		int pageNumber = 0;
+		if (nextPage)
+		{
+			SearchExtra extra = getExtra();
+			if (extra.postItems != null) pageNumber = extra.pageNumber + 1;
+		}
+		mReadTask = new ReadSearchTask(this, pageHolder.chanName, pageHolder.boardName, pageHolder.searchQuery,
+				pageNumber);
 		mReadTask.executeOnExecutor(ReadSearchTask.THREAD_POOL_EXECUTOR);
 		if (showPull)
 		{
@@ -199,17 +212,70 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 	}
 	
 	@Override
-	public void onReadSearchSuccess(PostItem[] postItems)
+	public void onReadSearchSuccess(PostItem[] postItems, int pageNumber)
 	{
 		mReadTask = null;
+		PullableListView listView = getListView();
+		listView.getWrapper().cancelBusyState();
 		SearchAdapter adapter = getAdapter();
-		boolean empty = adapter.isEmpty();
-		getListView().getWrapper().cancelBusyState();
-		switchView(ViewType.LIST, null);
-		adapter.setItems(postItems);
-		getListView().setSelection(0);
-		getExtra().postItems = postItems;
-		if (empty && !adapter.isEmpty()) showScaleAnimation();
+		boolean showScale = mShowScaleOnSuccess;
+		mShowScaleOnSuccess = false;
+		SearchExtra extra = getExtra();
+		if (pageNumber == 0 && postItems == null)
+		{
+			switchView(ViewType.ERROR, R.string.message_not_found);
+			adapter.setItems(null);
+			extra.postItems = null;
+		}
+		else
+		{
+			switchView(ViewType.LIST, null);
+			if (pageNumber == 0)
+			{
+				adapter.setItems(postItems);
+				extra.postItems = postItems;
+				extra.pageNumber = 0;
+				ListViewUtils.cancelListFling(listView);
+				listView.setSelection(0);
+				if (showScale) showScaleAnimation();
+			}
+			else
+			{
+				ArrayList<PostItem> currentPostItems = new ArrayList<>();
+				Collections.addAll(currentPostItems, extra.postItems);
+				HashSet<String> existingPostNumbers = new HashSet<>();
+				for (PostItem postItem : currentPostItems) existingPostNumbers.add(postItem.getPostNumber());
+				if (postItems != null)
+				{
+					for (PostItem postItem : postItems)
+					{
+						if (!existingPostNumbers.contains(postItem.getPostNumber()))
+						{
+							currentPostItems.add(postItem);
+						}
+					}
+				}
+				if (currentPostItems.size() > existingPostNumbers.size())
+				{
+					int count = listView.getCount();
+					postItems = currentPostItems.toArray(new PostItem[currentPostItems.size()]);
+					adapter.setItems(null);
+					adapter.setGroupMode(false);
+					adapter.setItems(postItems);
+					extra.postItems = postItems;
+					extra.pageNumber = pageNumber;
+					if (listView.getLastVisiblePosition() + 1 == count)
+					{
+						View view = listView.getChildAt(listView.getChildCount() - 1);
+						if (listView.getHeight() - listView.getPaddingBottom() - view.getBottom() >= 0)
+						{
+							ListScroller.scrollTo(getListView(), existingPostNumbers.size());
+						}
+					}
+				}
+				else ClickableToast.show(getActivity(), R.string.message_search_completed);
+			}
+		}
 	}
 	
 	@Override
@@ -217,13 +283,14 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 	{
 		mReadTask = null;
 		getListView().getWrapper().cancelBusyState();
-		switchView(ViewType.ERROR, errorItem.toString());
-		getAdapter().setItems(null);
+		if (getAdapter().isEmpty()) switchView(ViewType.ERROR, errorItem.toString());
+		else ClickableToast.show(getActivity(), errorItem.toString());
 	}
 	
 	public static class SearchExtra implements PageHolder.ParcelableExtra
 	{
 		public PostItem[] postItems;
+		public int pageNumber;
 		public boolean groupMode = false;
 		
 		@Override

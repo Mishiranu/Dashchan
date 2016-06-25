@@ -42,6 +42,7 @@ public class ReadSearchTask extends CancellableTask<Void, Void, PostItem[]> impl
 	private final String mChanName;
 	private final String mBoardName;
 	private final String mSearchQuery;
+	private final int mPageNumber;
 	
 	private final HttpHolder mHolder = new HttpHolder();
 	
@@ -49,16 +50,17 @@ public class ReadSearchTask extends CancellableTask<Void, Void, PostItem[]> impl
 	
 	public static interface Callback
 	{
-		public void onReadSearchSuccess(PostItem[] postItems);
+		public void onReadSearchSuccess(PostItem[] postItems, int pageNumber);
 		public void onReadSearchFail(ErrorItem errorItem);
 	}
 	
-	public ReadSearchTask(Callback callback, String chanName, String boardName, String searchQuery)
+	public ReadSearchTask(Callback callback, String chanName, String boardName, String searchQuery, int pageNumber)
 	{
 		mCallback = callback;
 		mChanName = chanName;
 		mBoardName = boardName;
 		mSearchQuery = searchQuery;
+		mPageNumber = pageNumber;
 	}
 	
 	@Override
@@ -79,8 +81,8 @@ public class ReadSearchTask extends CancellableTask<Void, Void, PostItem[]> impl
 			HashSet<String> postNumbers = null;
 			if (board.allowSearch)
 			{
-				ChanPerformer.ReadSearchPostsResult result = performer.safe()
-						.onReadSearchPosts(new ChanPerformer.ReadSearchPostsData(mBoardName, mSearchQuery, mHolder));
+				ChanPerformer.ReadSearchPostsResult result = performer.safe().onReadSearchPosts(new ChanPerformer
+						.ReadSearchPostsData(mBoardName, mSearchQuery, mPageNumber, mHolder));
 				Post[] readPosts = result != null ? result.posts : null;
 				if (readPosts != null && readPosts.length > 0)
 				{
@@ -89,7 +91,7 @@ public class ReadSearchTask extends CancellableTask<Void, Void, PostItem[]> impl
 					for (Post post : readPosts) postNumbers.add(post.getPostNumber());
 				}
 			}
-			if (board.allowCatalog && board.allowCatalogSearch)
+			if (board.allowCatalog && board.allowCatalogSearch && mPageNumber == 0)
 			{
 				ChanPerformer.ReadThreadsResult result = performer.safe()
 						.onReadThreads(new ChanPerformer.ReadThreadsData(mBoardName,
@@ -131,7 +133,6 @@ public class ReadSearchTask extends CancellableTask<Void, Void, PostItem[]> impl
 					postItem.preload();
 				}
 			}
-			else postItems = new PostItem[0];
 			return postItems;
 		}
 		catch (ExtensionException | HttpException | InvalidResponseException e)
@@ -148,11 +149,7 @@ public class ReadSearchTask extends CancellableTask<Void, Void, PostItem[]> impl
 	@Override
 	public void onPostExecute(PostItem[] postItems)
 	{
-		if (postItems != null)
-		{
-			if (postItems.length > 0) mCallback.onReadSearchSuccess(postItems);
-			else mCallback.onReadSearchFail(new ErrorItem(ErrorItem.TYPE_NOT_FOUND));
-		}
+		if (mErrorItem == null) mCallback.onReadSearchSuccess(postItems, mPageNumber);
 		else mCallback.onReadSearchFail(mErrorItem);
 	}
 	
