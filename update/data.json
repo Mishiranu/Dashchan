@@ -172,11 +172,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.12",
+			"name": "1.13",
 			"code": 1,
 			"version": 1,
 			"minSdk": 14,
-			"length": 60332,
+			"length": 60374,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanDobrochan.apk"
 		}
 	],
