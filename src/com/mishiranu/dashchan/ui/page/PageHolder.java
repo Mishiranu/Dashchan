@@ -26,7 +26,7 @@ import com.mishiranu.dashchan.widget.ListPosition;
 
 public class PageHolder implements Parcelable
 {
-	public enum Content {THREADS, POSTS, SEARCH, ARCHIVE, ALL_BOARDS, USER_BOARDS, POPULAR_THREADS, HISTORY};
+	public enum Content {THREADS, POSTS, SEARCH, ARCHIVE, ALL_BOARDS, USER_BOARDS, HISTORY};
 	
 	boolean inStack = true;
 	public final Content content;
@@ -116,7 +116,7 @@ public class PageHolder implements Parcelable
 			return boardName != null;
 		}
 		return content == Content.SEARCH || content == Content.ARCHIVE || content == Content.USER_BOARDS
-				|| content == Content.POPULAR_THREADS || content == Content.HISTORY;
+				|| content == Content.HISTORY;
 	}
 	
 	public boolean is(String chanName, String boardName, String threadNumber, Content content)
@@ -130,7 +130,6 @@ public class PageHolder implements Parcelable
 			case SEARCH:
 			case ALL_BOARDS:
 			case USER_BOARDS:
-			case POPULAR_THREADS:
 			case HISTORY:
 			{
 				compareContentTypeOnly1 = true;
@@ -143,7 +142,6 @@ public class PageHolder implements Parcelable
 			case SEARCH:
 			case ALL_BOARDS:
 			case USER_BOARDS:
-			case POPULAR_THREADS:
 			case HISTORY:
 			{
 				compareContentTypeOnly2 = true;
