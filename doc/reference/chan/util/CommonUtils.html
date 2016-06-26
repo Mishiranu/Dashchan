@@ -49,6 +49,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -56,7 +66,9 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
 <title>
 
-  CommonUtils - Dashchan API Reference
+  CommonUtils - Dashchan API Reference |
+
+Doclava
 
 </title>
 <link href="../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
@@ -235,6 +247,12 @@ Summary:
 &#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
 
 </div><!-- end sum-details-links -->
+<div class="api-level">
+  
+  
+  
+
+</div>
 </div><!-- end api-info-block -->
 
 
@@ -297,6 +315,7 @@ Summary:
 <h2>Class Overview</h2>
 <p itemprop="articleBody"><p>Provides some utilities to work with JSON objects, bitmaps and logging.</p>
 </p>
+
 
 
 
@@ -385,8 +404,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            
             static
+            
             
             String</nobr>
         </td>
@@ -404,27 +423,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            
             static
             
-            String</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/util/CommonUtils.html#optJsonString(org.json.JSONObject, java.lang.String, java.lang.String)">optJsonString</a></span>(JSONObject jsonObject, String name, String fallback)</nobr>
-        
-        <div class="jd-descrdiv"><p>Returns the value mapped by <code>name</code> if exists, coercing it if necessary, or <code>fallback</code> value
- if no such mapping exists.</div>
-  
-  </td></tr>
-
-
-	 
-    <tr class="alt-color api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            
-            static
             
             String</nobr>
         </td>
@@ -438,12 +438,31 @@ Summary:
 
 
 	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            static
+            
+            
+            String</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/util/CommonUtils.html#optJsonString(org.json.JSONObject, java.lang.String, java.lang.String)">optJsonString</a></span>(JSONObject jsonObject, String name, String fallback)</nobr>
+        
+        <div class="jd-descrdiv"><p>Returns the value mapped by <code>name</code> if exists, coercing it if necessary, or <code>fallback</code> value
+ if no such mapping exists.</div>
+  
+  </td></tr>
+
+
+	 
     <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
-            
             static
+            
             
             String</nobr>
         </td>
@@ -460,8 +479,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            
             static
+            
             
             boolean</nobr>
         </td>
@@ -478,8 +497,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            
             static
+            
             
             Bitmap</nobr>
         </td>
@@ -496,8 +515,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            
             static
+            
             
             void</nobr>
         </td>
@@ -551,10 +570,10 @@ From class
             
             
             
-            boolean</nobr>
+            Object</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">equals</span>(Object arg0)</nobr>
+        <span class="sympad">clone</span>()</nobr>
         
   </td></tr>
 
@@ -564,8 +583,40 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">equals</span>(Object arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">finalize</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
             
             Class&lt;?&gt;</nobr>
         </td>
@@ -596,8 +647,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -612,8 +663,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -644,24 +695,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">wait</span>()</nobr>
-        
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
             
             final
-            
             
             void</nobr>
         </td>
@@ -672,17 +707,33 @@ From class
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad">wait</span>(long arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">wait</span>()</nobr>
         
   </td></tr>
 
@@ -732,19 +783,25 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         
       </span>
       <span class="sympad">CommonUtils</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p></p></div>
+  <p></p>
 
     </div>
 </div>
@@ -770,89 +827,57 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-        static 
-         
-         
-         
+        public
+        
+        
+        static
+        
         String
       </span>
       <span class="sympad">getJsonString</span>
       <span class="normal">(JSONObject jsonObject, String name)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns the value mapped by <code>name</code> if exists, coercing it if necessary, or throws
- if no such mapping exists. This method may handle null values.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
+  <p><p>Returns the value mapped by <code>name</code> if exists, coercing it if necessary, or throws
+ if no such mapping exists. This method may handle null values.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>jsonObject</code></td>
+        <td width="100%">
+          <code>JSONObject</code>:
+          JSONObject from which the value will be taken.</td>
+      </tr>
+      <tr>
+        <td><code>name</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Field name.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>String</code></td>
+        <td width="100%">Value mapped by name.</td>
+      </tr>
+    </table>
+      <table class="responsive">
+      <tr><th colspan=2>Throws</th></tr>
         <tr>
-          <th>jsonObject</td>
-          <td>JSONObject from which the value will be taken.</td>
-        </tr>
-        <tr>
-          <th>name</td>
-          <td>Field name.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Value mapped by name.</li></ul>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Throws</h5>
-      <table class="jd-tagtable">  
-        <tr>
-            <th>JSONException</td>
-            <td>If no such mapping exists. 
+          <td><code>JSONException</code></td>
+          <td width="100%">If no such mapping exists. 
 </td>
         </tr>
       </table>
-  </div>
-
-    </div>
-</div>
-
-
-<A NAME="optJsonString(org.json.JSONObject, java.lang.String, java.lang.String)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public 
-        static 
-         
-         
-         
-        String
-      </span>
-      <span class="sympad">optJsonString</span>
-      <span class="normal">(JSONObject jsonObject, String name, String fallback)</span>
-    </h4>
-    <div class="jd-details-descr">
-      
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns the value mapped by <code>name</code> if exists, coercing it if necessary, or <code>fallback</code> value
- if no such mapping exists. This method may handle null values.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>jsonObject</td>
-          <td>JSONObject from which the value will be taken.</td>
-        </tr>
-        <tr>
-          <th>name</td>
-          <td>Field name.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Value mapped by name. 
-</li></ul>
-  </div>
+  
 
     </div>
 </div>
@@ -863,38 +888,108 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-        static 
-         
-         
-         
+        public
+        
+        
+        static
+        
         String
       </span>
       <span class="sympad">optJsonString</span>
       <span class="normal">(JSONObject jsonObject, String name)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns the value mapped by <code>name</code> if exists, coercing it if necessary, or <code>null</code> value
- if no such mapping exists. This method may handle null values.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>jsonObject</td>
-          <td>JSONObject from which the value will be taken.</td>
-        </tr>
-        <tr>
-          <th>name</td>
-          <td>Field name.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Value mapped by name. 
-</li></ul>
-  </div>
+  <p><p>Returns the value mapped by <code>name</code> if exists, coercing it if necessary, or <code>null</code> value
+ if no such mapping exists. This method may handle null values.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>jsonObject</code></td>
+        <td width="100%">
+          <code>JSONObject</code>:
+          JSONObject from which the value will be taken.</td>
+      </tr>
+      <tr>
+        <td><code>name</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Field name.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>String</code></td>
+        <td width="100%">Value mapped by name. 
+</td>
+      </tr>
+    </table>
+
+    </div>
+</div>
+
+
+<A NAME="optJsonString(org.json.JSONObject, java.lang.String, java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public
+        
+        
+        static
+        
+        String
+      </span>
+      <span class="sympad">optJsonString</span>
+      <span class="normal">(JSONObject jsonObject, String name, String fallback)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <p><p>Returns the value mapped by <code>name</code> if exists, coercing it if necessary, or <code>fallback</code> value
+ if no such mapping exists. This method may handle null values.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>jsonObject</code></td>
+        <td width="100%">
+          <code>JSONObject</code>:
+          JSONObject from which the value will be taken.</td>
+      </tr>
+      <tr>
+        <td><code>name</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Field name.</td>
+      </tr>
+      <tr>
+        <td><code>fallback</code></td>
+        <td width="100%">
+          <code>String</code>
+          <!-- no parameter comment --></td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>String</code></td>
+        <td width="100%">Value mapped by name. 
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -905,33 +1000,42 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-        static 
-         
-         
-         
+        public
+        
+        
+        static
+        
         String
       </span>
       <span class="sympad">restoreCloudFlareProtectedEmails</span>
       <span class="normal">(String string)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Restores emails from HTML string protected by CloudFlare.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>string</td>
-          <td>HTML string.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>HTML string with restored emails.
-</li></ul>
-  </div>
+  <p><p>Restores emails from HTML string protected by CloudFlare.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>string</code></td>
+        <td width="100%">
+          <code>String</code>:
+          HTML string.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>String</code></td>
+        <td width="100%">HTML string with restored emails.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -942,38 +1046,49 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-        static 
-         
-         
-         
+        public
+        
+        
+        static
+        
         boolean
       </span>
       <span class="sympad">sleepMaxTime</span>
       <span class="normal">(long startTime, long interval)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Wait time = <code>interval</code> - (current time - <code>startTime</code>).
- Returns whether thread was interrupted during sleep.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>startTime</td>
-          <td>Time when operation was started.</td>
-        </tr>
-        <tr>
-          <th>interval</td>
-          <td>Minimum time for operation.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>True if thread was interrupted.
-</li></ul>
-  </div>
+  <p><p>Wait time = <code>interval</code> - (current time - <code>startTime</code>).
+ Returns whether thread was interrupted during sleep.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>startTime</code></td>
+        <td width="100%">
+          <code>long</code>:
+          Time when operation was started.</td>
+      </tr>
+      <tr>
+        <td><code>interval</code></td>
+        <td width="100%">
+          <code>long</code>:
+          Minimum time for operation.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>boolean</code></td>
+        <td width="100%">True if thread was interrupted.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -984,38 +1099,49 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-        static 
-         
-         
-         
+        public
+        
+        
+        static
+        
         Bitmap
       </span>
       <span class="sympad">trimBitmap</span>
       <span class="normal">(Bitmap bitmap, int backgroundColor)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Trims bitmap removing empty lines on the edges of image. May return <code>null</code> bitmap.
- If bitmap wasn't trimmed, this method will return original bitmap.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>bitmap</td>
-          <td>Bitmap to trim.</td>
-        </tr>
-        <tr>
-          <th>backgroundColor</td>
-          <td>Background color.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Trimmed bitmap. 
-</li></ul>
-  </div>
+  <p><p>Trims bitmap removing empty lines on the edges of image. May return <code>null</code> bitmap.
+ If bitmap wasn't trimmed, this method will return original bitmap.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>bitmap</code></td>
+        <td width="100%">
+          <code>Bitmap</code>:
+          Bitmap to trim.</td>
+      </tr>
+      <tr>
+        <td><code>backgroundColor</code></td>
+        <td width="100%">
+          <code>int</code>:
+          Background color.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>Bitmap</code></td>
+        <td width="100%">Trimmed bitmap. 
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1026,29 +1152,35 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-        static 
-         
-         
-         
+        public
+        
+        
+        static
+        
         void
       </span>
       <span class="sympad">writeLog</span>
       <span class="normal">(Object... data)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Convenient method to write all objects to log file with client tag.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>data</td>
-          <td>Array of objects to write.
+  <p><p>Convenient method to write all objects to log file with client tag.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>data</code></td>
+        <td width="100%">
+          <code>Object</code>:
+          Array of objects to write.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>

@@ -49,6 +49,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -56,7 +66,9 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
 <title>
 
-  SimpleEntity - Dashchan API Reference
+  SimpleEntity - Dashchan API Reference |
+
+Doclava
 
 </title>
 <link href="../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
@@ -265,6 +277,12 @@ Summary:
 &#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
 
 </div><!-- end sum-details-links -->
+<div class="api-level">
+  
+  
+  
+
+</div>
 </div><!-- end api-info-block -->
 
 
@@ -334,6 +352,7 @@ Summary:
  
  <p>Method <code><a href="../../../reference/chan/http/SimpleEntity.html#add(java.lang.String, java.lang.String)">add(String, String)</a></code> is not supported for this entity.</p>
 </p>
+
 
 
 
@@ -518,9 +537,9 @@ Summary:
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/http/SimpleEntity.html#setData(java.lang.String, java.lang.String)">setData</a></span>(String data, String charsetName)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/SimpleEntity.html#setData(java.lang.String)">setData</a></span>(String data)</nobr>
         
-        <div class="jd-descrdiv"><p>Sets string <code>data</code> with given <code>charsetName</code> encoding.</div>
+        <div class="jd-descrdiv"><p>Sets string <code>data</code> with UTF-8 encoding.</div>
   
   </td></tr>
 
@@ -536,9 +555,9 @@ Summary:
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/http/SimpleEntity.html#setData(java.lang.String)">setData</a></span>(String data)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/SimpleEntity.html#setData(byte[])">setData</a></span>(byte[] data)</nobr>
         
-        <div class="jd-descrdiv"><p>Sets string <code>data</code> with UTF-8 encoding.</div>
+        <div class="jd-descrdiv"><p>Sets byte array <code>data</code>.</div>
   
   </td></tr>
 
@@ -554,9 +573,9 @@ Summary:
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/http/SimpleEntity.html#setData(byte[])">setData</a></span>(byte[] data)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/SimpleEntity.html#setData(java.lang.String, java.lang.String)">setData</a></span>(String data, String charsetName)</nobr>
         
-        <div class="jd-descrdiv"><p>Sets byte array <code>data</code>.</div>
+        <div class="jd-descrdiv"><p>Sets string <code>data</code> with given <code>charsetName</code> encoding.</div>
   
   </td></tr>
 
@@ -621,10 +640,10 @@ From class
             
             
             
-            boolean</nobr>
+            Object</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">equals</span>(Object arg0)</nobr>
+        <span class="sympad">clone</span>()</nobr>
         
   </td></tr>
 
@@ -634,8 +653,40 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">equals</span>(Object arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">finalize</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
             
             Class&lt;?&gt;</nobr>
         </td>
@@ -666,8 +717,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -682,8 +733,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -714,24 +765,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">wait</span>()</nobr>
-        
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
             
             final
-            
             
             void</nobr>
         </td>
@@ -742,17 +777,33 @@ From class
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad">wait</span>(long arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">wait</span>()</nobr>
         
   </td></tr>
 
@@ -918,19 +969,25 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         
       </span>
       <span class="sympad">SimpleEntity</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p></p></div>
+  <p></p>
 
     </div>
 </div>
@@ -956,33 +1013,41 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         void
       </span>
       <span class="sympad">add</span>
       <span class="normal">(String name, String value)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Add string field to entity with given <code>name</code> and <code>value</code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>name</td>
-          <td>Field name.</td>
-        </tr>
-        <tr>
-          <th>value</td>
-          <td>Field value.
+  <p><p>Add string field to entity with given <code>name</code> and <code>value</code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>name</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Field name.</td>
+      </tr>
+      <tr>
+        <td><code>value</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Field value.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -993,24 +1058,33 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a>
       </span>
       <span class="sympad">copy</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns a deep copy of this <code>RequestEntity</code> instance.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Copy of this entity.
-</li></ul>
-  </div>
+  <p><p>Returns a deep copy of this <code>RequestEntity</code> instance.</p></p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a></code></td>
+        <td width="100%">Copy of this entity.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1021,24 +1095,33 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         long
       </span>
       <span class="sympad">getContentLength</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns a content length of entity.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Content length.
-</li></ul>
-  </div>
+  <p><p>Returns a content length of entity.</p></p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>long</code></td>
+        <td width="100%">Content length.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1049,24 +1132,33 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         String
       </span>
       <span class="sympad">getContentType</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns a content type of entity.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Content type.
-</li></ul>
-  </div>
+  <p><p>Returns a content type of entity.</p></p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>String</code></td>
+        <td width="100%">Content type.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1077,66 +1169,35 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         void
       </span>
       <span class="sympad">setContentType</span>
       <span class="normal">(String contentType)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Sets a content type of entity.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>contentType</td>
-          <td>Content type.
+  <p><p>Sets a content type of entity.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>contentType</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Content type.
 </td>
-        </tr>
-      </table>
-  </div>
-
-    </div>
-</div>
-
-
-<A NAME="setData(java.lang.String, java.lang.String)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public 
-         
-         
-         
-         
-        void
-      </span>
-      <span class="sympad">setData</span>
-      <span class="normal">(String data, String charsetName)</span>
-    </h4>
-    <div class="jd-details-descr">
-      
-  <div class="jd-tagdata jd-tagdescr"><p><p>Sets string <code>data</code> with given <code>charsetName</code> encoding.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>data</td>
-          <td>String data.</td>
-        </tr>
-        <tr>
-          <th>charsetName</td>
-          <td>Charset name.
-</td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1147,29 +1208,35 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         void
       </span>
       <span class="sympad">setData</span>
       <span class="normal">(String data)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Sets string <code>data</code> with UTF-8 encoding.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>data</td>
-          <td>String data.
+  <p><p>Sets string <code>data</code> with UTF-8 encoding.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>data</code></td>
+        <td width="100%">
+          <code>String</code>:
+          String data.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1180,29 +1247,80 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         void
       </span>
       <span class="sympad">setData</span>
       <span class="normal">(byte[] data)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Sets byte array <code>data</code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>data</td>
-          <td>Byte array data.
+  <p><p>Sets byte array <code>data</code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>data</code></td>
+        <td width="100%">
+          <code>byte</code>:
+          Byte array data.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
+
+    </div>
+</div>
+
+
+<A NAME="setData(java.lang.String, java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public
+        
+        
+        
+        
+        void
+      </span>
+      <span class="sympad">setData</span>
+      <span class="normal">(String data, String charsetName)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <p><p>Sets string <code>data</code> with given <code>charsetName</code> encoding.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>data</code></td>
+        <td width="100%">
+          <code>String</code>:
+          String data.</td>
+      </tr>
+      <tr>
+        <td><code>charsetName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Charset name.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1213,37 +1331,42 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         void
       </span>
       <span class="sympad">write</span>
       <span class="normal">(OutputStream output)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Writes entity to given <code>output</code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
+  <p><p>Writes entity to given <code>output</code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>output</code></td>
+        <td width="100%">
+          <code>OutputStream</code>:
+          Output stream.</td>
+      </tr>
+    </table>
+      <table class="responsive">
+      <tr><th colspan=2>Throws</th></tr>
         <tr>
-          <th>output</td>
-          <td>Output stream.</td>
+          <td><code>IOException</code></td>
+          <td width="100%"></td>
         </tr>
       </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Throws</h5>
-      <table class="jd-tagtable">  
-        <tr>
-            <th>IOException</td>
-            <td></td>
-        </tr>
-      </table>
-  </div>
+  
 
     </div>
 </div>

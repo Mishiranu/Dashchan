@@ -49,6 +49,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -56,7 +66,9 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
 <title>
 
-  GroupParser - Dashchan API Reference
+  GroupParser - Dashchan API Reference |
+
+Doclava
 
 </title>
 <link href="../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
@@ -247,6 +259,12 @@ Summary:
 &#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
 
 </div><!-- end sum-details-links -->
+<div class="api-level">
+  
+  
+  
+
+</div>
 </div><!-- end api-info-block -->
 
 
@@ -255,7 +273,7 @@ Summary:
 <div id="jd-header">
     public
      
-     
+    final 
     
     class
 <h1 itemprop="name">GroupParser</h1>
@@ -316,6 +334,7 @@ Summary:
  <p>In group mode parser will handle all text inside started tag. Then it call
  <code><a href="../../../reference/chan/text/GroupParser.Callback.html#onGroupComplete(chan.text.GroupParser, java.lang.String)">onGroupComplete(GroupParser, String)</a></code> with all text inside tag.</p>
 </p>
+
 
 
 
@@ -435,8 +454,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            
             static
+            
             
             void</nobr>
         </td>
@@ -508,10 +527,10 @@ From class
             
             
             
-            boolean</nobr>
+            Object</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">equals</span>(Object arg0)</nobr>
+        <span class="sympad">clone</span>()</nobr>
         
   </td></tr>
 
@@ -521,8 +540,40 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">equals</span>(Object arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">finalize</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
             
             Class&lt;?&gt;</nobr>
         </td>
@@ -553,8 +604,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -569,8 +620,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -601,24 +652,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">wait</span>()</nobr>
-        
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
             
             final
-            
             
             void</nobr>
         </td>
@@ -629,17 +664,33 @@ From class
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad">wait</span>(long arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">wait</span>()</nobr>
         
   </td></tr>
 
@@ -697,38 +748,49 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         String
       </span>
       <span class="sympad">getAttr</span>
       <span class="normal">(String attrs, String attr)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Decodes attribute from encoded string. You can use it to handle <code>attrs</code> argument in
- <code><a href="../../../reference/chan/text/GroupParser.Callback.html#onStartElement(chan.text.GroupParser, java.lang.String, java.lang.String)">onStartElement(GroupParser, String, String)</a></code> method.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>attrs</td>
-          <td>Encoded string.</td>
-        </tr>
-        <tr>
-          <th>attr</td>
-          <td>Attribute name.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Attribute value if it exists or <code>null</code>.
-</li></ul>
-  </div>
+  <p><p>Decodes attribute from encoded string. You can use it to handle <code>attrs</code> argument in
+ <code><a href="../../../reference/chan/text/GroupParser.Callback.html#onStartElement(chan.text.GroupParser, java.lang.String, java.lang.String)">onStartElement(GroupParser, String, String)</a></code> method.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>attrs</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Encoded string.</td>
+      </tr>
+      <tr>
+        <td><code>attr</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Attribute name.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>String</code></td>
+        <td width="100%">Attribute value if it exists or <code>null</code>.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -739,20 +801,26 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         void
       </span>
       <span class="sympad">mark</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores parser's position. Later you can come back with <code><a href="../../../reference/chan/text/GroupParser.html#reset()">reset()</a></code> method.</p>
-</p></div>
+  <p><p>Stores parser's position. Later you can come back with <code><a href="../../../reference/chan/text/GroupParser.html#reset()">reset()</a></code> method.</p>
+</p>
 
     </div>
 </div>
@@ -763,42 +831,49 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-        static 
-         
-         
-         
+        public
+        
+        
+        static
+        
         void
       </span>
       <span class="sympad">parse</span>
       <span class="normal">(String source, <a href="../../../reference/chan/text/GroupParser.Callback.html">GroupParser.Callback</a> callback)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Start a new parsing process.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
+  <p><p>Start a new parsing process.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>source</code></td>
+        <td width="100%">
+          <code>String</code>:
+          String to parse.</td>
+      </tr>
+      <tr>
+        <td><code>callback</code></td>
+        <td width="100%">
+          <code>GroupParser.Callback</code>:
+          Callback to handle parsed data.</td>
+      </tr>
+    </table>
+      <table class="responsive">
+      <tr><th colspan=2>Throws</th></tr>
         <tr>
-          <th>source</td>
-          <td>String to parse.</td>
-        </tr>
-        <tr>
-          <th>callback</td>
-          <td>Callback to handle parsed data.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Throws</h5>
-      <table class="jd-tagtable">  
-        <tr>
-            <th><a href="../../../reference/chan/text/ParseException.html">ParseException</a></td>
-            <td>when parsing process was interrupted.
+          <td><code><a href="../../../reference/chan/text/ParseException.html">ParseException</a></code></td>
+          <td width="100%">when parsing process was interrupted.
 </td>
         </tr>
       </table>
-  </div>
+  
 
     </div>
 </div>
@@ -809,20 +884,26 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         void
       </span>
       <span class="sympad">reset</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Resets parser's position to last marked one.</p>
-</p></div>
+  <p><p>Resets parser's position to last marked one.</p>
+</p>
 
     </div>
 </div>

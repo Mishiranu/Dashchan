@@ -49,6 +49,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -56,7 +66,9 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
 <title>
 
-  ChanPerformer.ReadCaptchaResult - Dashchan API Reference
+  ChanPerformer.ReadCaptchaResult - Dashchan API Reference |
+
+Doclava
 
 </title>
 <link href="../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
@@ -297,6 +309,12 @@ Summary:
 &#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
 
 </div><!-- end sum-details-links -->
+<div class="api-level">
+  
+  
+  
+
+</div>
 </div><!-- end api-info-block -->
 
 
@@ -305,7 +323,7 @@ Summary:
 <div id="jd-header">
     public
     static 
-     
+    final 
     
     class
 <h1 itemprop="name">ChanPerformer.ReadCaptchaResult</h1>
@@ -359,6 +377,7 @@ Summary:
 <h2>Class Overview</h2>
 <p itemprop="articleBody"><p>Captcha result for <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadCaptcha(chan.content.ChanPerformer.ReadCaptchaData)">onReadCaptcha(ReadCaptchaData)</a></code>.</p>
 </p>
+
 
 
 
@@ -455,6 +474,24 @@ Summary:
             <a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html">ChanPerformer.ReadCaptchaResult</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html#setCaptchaType(java.lang.String)">setCaptchaType</a></span>(String captchaType)</nobr>
+        
+        <div class="jd-descrdiv"><p>Overrides captcha type.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            <a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html">ChanPerformer.ReadCaptchaResult</a></nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html#setImage(android.graphics.Bitmap)">setImage</a></span>(Bitmap image)</nobr>
         
         <div class="jd-descrdiv"><p>Stores resulting captcha image.</div>
@@ -463,7 +500,43 @@ Summary:
 
 
 	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            <a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html">ChanPerformer.ReadCaptchaResult</a></nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html#setInput(chan.content.ChanConfiguration.Captcha.Input)">setInput</a></span>(<a href="../../../reference/chan/content/ChanConfiguration.Captcha.Input.html">ChanConfiguration.Captcha.Input</a> input)</nobr>
+        
+        <div class="jd-descrdiv"><p>Overrides captcha input mode from configuration.</div>
+  
+  </td></tr>
+
+
+	 
     <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            <a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html">ChanPerformer.ReadCaptchaResult</a></nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html#setLarge(boolean)">setLarge</a></span>(boolean large)</nobr>
+        
+        <div class="jd-descrdiv"><p>Use this method to make image field larger for user.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -522,10 +595,10 @@ From class
             
             
             
-            boolean</nobr>
+            Object</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">equals</span>(Object arg0)</nobr>
+        <span class="sympad">clone</span>()</nobr>
         
   </td></tr>
 
@@ -535,8 +608,40 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">equals</span>(Object arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">finalize</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
             
             Class&lt;?&gt;</nobr>
         </td>
@@ -567,8 +672,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -583,8 +688,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -615,24 +720,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">wait</span>()</nobr>
-        
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
             
             final
-            
             
             void</nobr>
         </td>
@@ -643,17 +732,33 @@ From class
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad">wait</span>(long arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">wait</span>()</nobr>
         
   </td></tr>
 
@@ -703,33 +808,41 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         
       </span>
       <span class="sympad">ChanPerformer.ReadCaptchaResult</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanPerformer.CaptchaState.html">ChanPerformer.CaptchaState</a> captchaState, <a href="../../../reference/chan/content/ChanPerformer.CaptchaData.html">ChanPerformer.CaptchaData</a> captchaData)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Constructor for <code><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html">ChanPerformer.ReadCaptchaResult</a></code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>captchaState</td>
-          <td>Resulting captcha state.</td>
-        </tr>
-        <tr>
-          <th>captchaData</td>
-          <td>Resulting captcha data map.
+  <p><p>Constructor for <code><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html">ChanPerformer.ReadCaptchaResult</a></code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>captchaState</code></td>
+        <td width="100%">
+          <code>ChanPerformer.CaptchaState</code>:
+          Resulting captcha state.</td>
+      </tr>
+      <tr>
+        <td><code>captchaData</code></td>
+        <td width="100%">
+          <code>ChanPerformer.CaptchaData</code>:
+          Resulting captcha data map.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -750,38 +863,186 @@ From class
 
 
 
+<A NAME="setCaptchaType(java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public
+        
+        
+        
+        
+        <a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html">ChanPerformer.ReadCaptchaResult</a>
+      </span>
+      <span class="sympad">setCaptchaType</span>
+      <span class="normal">(String captchaType)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <p><p>Overrides captcha type. It might be useful when chan requires a captcha with specific type.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>captchaType</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Captcha type.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html">ChanPerformer.ReadCaptchaResult</a></code></td>
+        <td width="100%">This object.
+</td>
+      </tr>
+    </table>
+
+    </div>
+</div>
+
+
 <A NAME="setImage(android.graphics.Bitmap)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html">ChanPerformer.ReadCaptchaResult</a>
       </span>
       <span class="sympad">setImage</span>
       <span class="normal">(Bitmap image)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores resulting captcha image. You must set this field with <code><a href="../../../reference/chan/content/ChanPerformer.CaptchaState.html#CAPTCHA">CAPTCHA</a></code> result.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>image</td>
-          <td>Captcha image bitmap.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This object.
-</li></ul>
-  </div>
+  <p><p>Stores resulting captcha image. You must set this field with <code><a href="../../../reference/chan/content/ChanPerformer.CaptchaState.html#CAPTCHA">CAPTCHA</a></code> result.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>image</code></td>
+        <td width="100%">
+          <code>Bitmap</code>:
+          Captcha image bitmap.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html">ChanPerformer.ReadCaptchaResult</a></code></td>
+        <td width="100%">This object.
+</td>
+      </tr>
+    </table>
+
+    </div>
+</div>
+
+
+<A NAME="setInput(chan.content.ChanConfiguration.Captcha.Input)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public
+        
+        
+        
+        
+        <a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html">ChanPerformer.ReadCaptchaResult</a>
+      </span>
+      <span class="sympad">setInput</span>
+      <span class="normal">(<a href="../../../reference/chan/content/ChanConfiguration.Captcha.Input.html">ChanConfiguration.Captcha.Input</a> input)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <p><p>Overrides captcha input mode from configuration. It might be useful when captcha becomes harder than usual
+ and user will have to enter a letters instead of numbers, for example.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>input</code></td>
+        <td width="100%">
+          <code>ChanConfiguration.Captcha.Input</code>:
+          Captcha input mode.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html">ChanPerformer.ReadCaptchaResult</a></code></td>
+        <td width="100%">This object.
+</td>
+      </tr>
+    </table>
+
+    </div>
+</div>
+
+
+<A NAME="setLarge(boolean)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public
+        
+        
+        
+        
+        <a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html">ChanPerformer.ReadCaptchaResult</a>
+      </span>
+      <span class="sympad">setLarge</span>
+      <span class="normal">(boolean large)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <p><p>Use this method to make image field larger for user.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>large</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          True if captcha image is large.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html">ChanPerformer.ReadCaptchaResult</a></code></td>
+        <td width="100%">This object.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -792,34 +1053,43 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html">ChanPerformer.ReadCaptchaResult</a>
       </span>
       <span class="sympad">setValidity</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanConfiguration.Captcha.Validity.html">ChanConfiguration.Captcha.Validity</a> validity)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Overrides captcha validity from configuration. It might be useful when captcha valid in thread,
- but with captcha pass captcha valid in all chan for example.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>validity</td>
-          <td>Captcha validity.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This object.
-</li></ul>
-  </div>
+  <p><p>Overrides captcha validity from configuration. It might be useful when captcha valid in thread,
+ but with captcha pass captcha valid in all chan for example.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>validity</code></td>
+        <td width="100%">
+          <code>ChanConfiguration.Captcha.Validity</code>:
+          Captcha validity.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html">ChanPerformer.ReadCaptchaResult</a></code></td>
+        <td width="100%">This object.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>

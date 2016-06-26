@@ -49,6 +49,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -56,7 +66,9 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../../favicon.ico" />
 <title>
 
-  EmbeddedAttachment - Dashchan API Reference
+  EmbeddedAttachment - Dashchan API Reference |
+
+Doclava
 
 </title>
 <link href="../../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
@@ -265,6 +277,12 @@ Summary:
 &#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
 
 </div><!-- end sum-details-links -->
+<div class="api-level">
+  
+  
+  
+
+</div>
 </div><!-- end api-info-block -->
 
 
@@ -332,6 +350,7 @@ Summary:
 <h2>Class Overview</h2>
 <p itemprop="articleBody"><p>This class can handle some embedded links. See <code><a href="../../../../reference/chan/content/model/EmbeddedAttachment.html#obtain(java.lang.String)">obtain(String)</a></code>.</p>
 </p>
+
 
 
 
@@ -550,8 +569,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            
             static
+            
             
             <a href="../../../../reference/chan/content/model/EmbeddedAttachment.html">EmbeddedAttachment</a></nobr>
         </td>
@@ -605,10 +624,10 @@ From class
             
             
             
-            boolean</nobr>
+            Object</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">equals</span>(Object arg0)</nobr>
+        <span class="sympad">clone</span>()</nobr>
         
   </td></tr>
 
@@ -618,8 +637,40 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">equals</span>(Object arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">finalize</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
             
             Class&lt;?&gt;</nobr>
         </td>
@@ -650,8 +701,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -666,8 +717,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -698,24 +749,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">wait</span>()</nobr>
-        
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
             
             final
-            
             
             void</nobr>
         </td>
@@ -726,17 +761,33 @@ From class
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad">wait</span>(long arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">wait</span>()</nobr>
         
   </td></tr>
 
@@ -790,52 +841,68 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         
       </span>
       <span class="sympad">EmbeddedAttachment</span>
       <span class="normal">(Uri fileUri, Uri thumbnailUri, String embeddedType, <a href="../../../../reference/chan/content/model/EmbeddedAttachment.ContentType.html">EmbeddedAttachment.ContentType</a> contentType, boolean canDownload, String forcedName)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Constructor for <code><a href="../../../../reference/chan/content/model/EmbeddedAttachment.html">EmbeddedAttachment</a></code>.</p>
+  <p><p>Constructor for <code><a href="../../../../reference/chan/content/model/EmbeddedAttachment.html">EmbeddedAttachment</a></code>.</p>
  
  <p>By default file name will be obtain from the last path segment of file URI. You can override this name
- with <code>forcedName</code> argument.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>fileUri</td>
-          <td>File or page URI.</td>
-        </tr>
-        <tr>
-          <th>thumbnailUri</td>
-          <td>Thumbnail URI.</td>
-        </tr>
-        <tr>
-          <th>embeddedType</td>
-          <td>Embedded file type string. For example, "YouTube".</td>
-        </tr>
-        <tr>
-          <th>contentType</td>
-          <td>Content type.</td>
-        </tr>
-        <tr>
-          <th>canDownload</td>
-          <td>If fileUri is direct file URI, you can pass <code>true</code>. This allows user to download file.</td>
-        </tr>
-        <tr>
-          <th>forcedName</td>
-          <td>Overridden file name.
+ with <code>forcedName</code> argument.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>fileUri</code></td>
+        <td width="100%">
+          <code>Uri</code>:
+          File or page URI.</td>
+      </tr>
+      <tr>
+        <td><code>thumbnailUri</code></td>
+        <td width="100%">
+          <code>Uri</code>:
+          Thumbnail URI.</td>
+      </tr>
+      <tr>
+        <td><code>embeddedType</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Embedded file type string. For example, "YouTube".</td>
+      </tr>
+      <tr>
+        <td><code>contentType</code></td>
+        <td width="100%">
+          <code>EmbeddedAttachment.ContentType</code>:
+          Content type.</td>
+      </tr>
+      <tr>
+        <td><code>canDownload</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          If fileUri is direct file URI, you can pass <code>true</code>. This allows user to download file.</td>
+      </tr>
+      <tr>
+        <td><code>forcedName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Overridden file name.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -861,20 +928,33 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/EmbeddedAttachment.ContentType.html">EmbeddedAttachment.ContentType</a>
       </span>
       <span class="sympad">getContentType</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns attachment content type.</p>
-</p></div>
+  <p><p>Returns attachment content type.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/EmbeddedAttachment.ContentType.html">EmbeddedAttachment.ContentType</a></code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -885,20 +965,33 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         String
       </span>
       <span class="sympad">getEmbeddedType</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns attachment embedded type.</p>
-</p></div>
+  <p><p>Returns attachment embedded type.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>String</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -909,20 +1002,33 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         Uri
       </span>
       <span class="sympad">getFileUri</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns attachment file URI.</p>
-</p></div>
+  <p><p>Returns attachment file URI.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>Uri</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -933,20 +1039,33 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         String
       </span>
       <span class="sympad">getForcedName</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns forced file name.</p>
-</p></div>
+  <p><p>Returns forced file name.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>String</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -957,20 +1076,33 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         Uri
       </span>
       <span class="sympad">getThumbnailUri</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns attachment thumbnail URI.</p>
-</p></div>
+  <p><p>Returns attachment thumbnail URI.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>Uri</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -981,20 +1113,33 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         boolean
       </span>
       <span class="sympad">isCanDownload</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether attachment could be downloaded by it's file URI.</p>
-</p></div>
+  <p><p>Returns whether attachment could be downloaded by it's file URI.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>boolean</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1005,19 +1150,25 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-        static 
-         
-         
-         
+        public
+        
+        
+        static
+        
         <a href="../../../../reference/chan/content/model/EmbeddedAttachment.html">EmbeddedAttachment</a>
       </span>
       <span class="sympad">obtain</span>
       <span class="normal">(String data)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns <code><a href="../../../../reference/chan/content/model/EmbeddedAttachment.html">EmbeddedAttachment</a></code> if client support this type by itself.</p>
+  <p><p>Returns <code><a href="../../../../reference/chan/content/model/EmbeddedAttachment.html">EmbeddedAttachment</a></code> if client support this type by itself.</p>
  
  <p>List of supported embedded types:</p>
  
@@ -1028,21 +1179,24 @@ From class
  </ul>
  
  <p>You can pass any string as <code>data</code> argument that contains links from the list above including strings
- with <code><embed></code> or <code><iframe></code> HTML tags. Application will try to find links by itself.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>data</td>
-          <td>String with URI.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li><code><a href="../../../../reference/chan/content/model/EmbeddedAttachment.html">EmbeddedAttachment</a></code> instance or <code>null</code> if embedded link is not supported.
-</li></ul>
-  </div>
+ with <code>embed</code> or <code>iframe</code> HTML tags. Application will try to find links by itself.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>data</code></td>
+        <td width="100%">
+          <code>String</code>:
+          String with URI.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/EmbeddedAttachment.html">EmbeddedAttachment</a></code></td>
+        <td width="100%"><code><a href="../../../../reference/chan/content/model/EmbeddedAttachment.html">EmbeddedAttachment</a></code> instance or <code>null</code> if embedded link is not supported.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>

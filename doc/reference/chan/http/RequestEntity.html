@@ -49,6 +49,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -56,7 +66,9 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
 <title>
 
-  RequestEntity - Dashchan API Reference
+  RequestEntity - Dashchan API Reference |
+
+Doclava
 
 </title>
 <link href="../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
@@ -246,6 +258,12 @@ Summary:
 &#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
 
 </div><!-- end sum-details-links -->
+<div class="api-level">
+  
+  
+  
+
+</div>
 </div><!-- end api-info-block -->
 
 
@@ -314,16 +332,16 @@ Summary:
               >
   <table class="jd-sumtable-expando">
         <tr class="alt-color api apilevel-" >
-              <td class="jd-linkcol"><a href="../../../reference/chan/http/MultipartEntity.html">MultipartEntity</a></td>
-              <td class="jd-descrcol" width="100%"><p>Multipart Form Data implementation of <code><a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a></code>.&nbsp;</td>
+              <td><a href="../../../reference/chan/http/MultipartEntity.html">MultipartEntity</a></td>
+              <td width="100%"><p>Multipart Form Data implementation of <code><a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a></code>.&nbsp;</td>
           </tr>
         <tr class=" api apilevel-" >
-              <td class="jd-linkcol"><a href="../../../reference/chan/http/SimpleEntity.html">SimpleEntity</a></td>
-              <td class="jd-descrcol" width="100%"><p>Simple implementation of <code><a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a></code>.&nbsp;</td>
+              <td><a href="../../../reference/chan/http/SimpleEntity.html">SimpleEntity</a></td>
+              <td width="100%"><p>Simple implementation of <code><a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a></code>.&nbsp;</td>
           </tr>
         <tr class="alt-color api apilevel-" >
-              <td class="jd-linkcol"><a href="../../../reference/chan/http/UrlEncodedEntity.html">UrlEncodedEntity</a></td>
-              <td class="jd-descrcol" width="100%"><p>URL Encoded implementation of <code><a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a></code>.&nbsp;</td>
+              <td><a href="../../../reference/chan/http/UrlEncodedEntity.html">UrlEncodedEntity</a></td>
+              <td width="100%"><p>URL Encoded implementation of <code><a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a></code>.&nbsp;</td>
           </tr>
   </table>
       </div>
@@ -337,6 +355,7 @@ Summary:
 <h2>Class Overview</h2>
 <p itemprop="articleBody"><p>HTTP request entity. Used to pass data with HTTP POST request.</p>
 </p>
+
 
 
 
@@ -538,33 +557,41 @@ Summary:
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-        abstract 
-         
+        public
+        abstract
+        
+        
+        
         void
       </span>
       <span class="sympad">add</span>
       <span class="normal">(String name, String value)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Add string field to entity with given <code>name</code> and <code>value</code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>name</td>
-          <td>Field name.</td>
-        </tr>
-        <tr>
-          <th>value</td>
-          <td>Field value.
+  <p><p>Add string field to entity with given <code>name</code> and <code>value</code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>name</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Field name.</td>
+      </tr>
+      <tr>
+        <td><code>value</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Field value.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -575,24 +602,33 @@ Summary:
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-        abstract 
-         
+        public
+        abstract
+        
+        
+        
         <a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a>
       </span>
       <span class="sympad">copy</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns a deep copy of this <code>RequestEntity</code> instance.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Copy of this entity.
-</li></ul>
-  </div>
+  <p><p>Returns a deep copy of this <code>RequestEntity</code> instance.</p></p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a></code></td>
+        <td width="100%">Copy of this entity.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -603,24 +639,33 @@ Summary:
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-        abstract 
-         
+        public
+        abstract
+        
+        
+        
         long
       </span>
       <span class="sympad">getContentLength</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns a content length of entity.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Content length.
-</li></ul>
-  </div>
+  <p><p>Returns a content length of entity.</p></p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>long</code></td>
+        <td width="100%">Content length.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -631,24 +676,33 @@ Summary:
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-        abstract 
-         
+        public
+        abstract
+        
+        
+        
         String
       </span>
       <span class="sympad">getContentType</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns a content type of entity.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Content type.
-</li></ul>
-  </div>
+  <p><p>Returns a content type of entity.</p></p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>String</code></td>
+        <td width="100%">Content type.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -659,38 +713,43 @@ Summary:
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-        abstract 
-         
+        public
+        abstract
+        
+        
+        
         void
       </span>
       <span class="sympad">write</span>
       <span class="normal">(OutputStream output)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Writes entity to given <code>output</code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
+  <p><p>Writes entity to given <code>output</code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>output</code></td>
+        <td width="100%">
+          <code>OutputStream</code>:
+          Output stream.</td>
+      </tr>
+    </table>
+      <table class="responsive">
+      <tr><th colspan=2>Throws</th></tr>
         <tr>
-          <th>output</td>
-          <td>Output stream.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Throws</h5>
-      <table class="jd-tagtable">  
-        <tr>
-            <th>IOException</td>
-            <td>if an error occurs while writing to given <code>output</code>. 
+          <td><code>IOException</code></td>
+          <td width="100%">if an error occurs while writing to given <code>output</code>. 
 </td>
         </tr>
       </table>
-  </div>
+  
 
     </div>
 </div>

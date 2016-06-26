@@ -49,6 +49,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -56,7 +66,9 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
 <title>
 
-  ChanMarkup - Dashchan API Reference
+  ChanMarkup - Dashchan API Reference |
+
+Doclava
 
 </title>
 <link href="../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
@@ -300,6 +312,12 @@ Summary:
 &#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
 
 </div><!-- end sum-details-links -->
+<div class="api-level">
+  
+  
+  
+
+</div>
 </div><!-- end api-info-block -->
 
 
@@ -381,6 +399,7 @@ Summary:
  <li><code><a href="../../../reference/chan/content/ChanMarkup.html#addColorable(java.lang.String, java.lang.String, java.lang.String)">addColorable(String, String, String)</a></code></li>
  </ul>
 </p>
+
 
 
 
@@ -781,7 +800,7 @@ Summary:
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#addTag(java.lang.String, int)">addTag</a></span>(String tagName, int tag)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#addTag(java.lang.String, java.lang.String, java.lang.String, int)">addTag</a></span>(String tagName, String attribute, String value, int tag)</nobr>
         
         <div class="jd-descrdiv"><p>Add tag to handle.</div>
   
@@ -799,7 +818,7 @@ Summary:
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#addTag(java.lang.String, java.lang.String, int)">addTag</a></span>(String tagName, String cssClass, int tag)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#addTag(java.lang.String, int)">addTag</a></span>(String tagName, int tag)</nobr>
         
         <div class="jd-descrdiv"><p>Add tag to handle.</div>
   
@@ -817,7 +836,7 @@ Summary:
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#addTag(java.lang.String, java.lang.String, java.lang.String, int)">addTag</a></span>(String tagName, String attribute, String value, int tag)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#addTag(java.lang.String, java.lang.String, int)">addTag</a></span>(String tagName, String cssClass, int tag)</nobr>
         
         <div class="jd-descrdiv"><p>Add tag to handle.</div>
   
@@ -829,8 +848,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            
             static
+            
             &lt;T&nbsp;extends&nbsp;<a href="../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a>&gt;
             T</nobr>
         </td>
@@ -891,7 +910,7 @@ Summary:
         <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad"><a href="../../../reference/chan/content/ChanMarkup.html#obtainPostLinkThreadPostNumbers(java.lang.String)">obtainPostLinkThreadPostNumbers</a></span>(String uriString)</nobr>
         
-        <div class="jd-descrdiv"><p>This method calls every time HTML parser reaches links to other posts like <code>>>12345678</code>.</div>
+        <div class="jd-descrdiv"><p>This method calls every time HTML parser reaches links to other posts like <code>&gt;&gt;12345678</code>.</div>
   
   </td></tr>
 
@@ -938,10 +957,10 @@ From class
             
             
             
-            boolean</nobr>
+            Object</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">equals</span>(Object arg0)</nobr>
+        <span class="sympad">clone</span>()</nobr>
         
   </td></tr>
 
@@ -951,8 +970,40 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">equals</span>(Object arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">finalize</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
             
             Class&lt;?&gt;</nobr>
         </td>
@@ -983,8 +1034,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -999,8 +1050,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -1031,24 +1082,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">wait</span>()</nobr>
-        
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
             
             final
-            
             
             void</nobr>
         </td>
@@ -1059,17 +1094,33 @@ From class
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad">wait</span>(long arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">wait</span>()</nobr>
         
   </td></tr>
 
@@ -1124,10 +1175,16 @@ From class
       </span>
         TAG_ASCII_ART
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p>Ascii art tag constant value.
-</p></div>
+  <p>Ascii art tag constant value.
+</p>
 
     
     </div>
@@ -1147,10 +1204,16 @@ From class
       </span>
         TAG_BOLD
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p>Bold tag constant value.
-</p></div>
+  <p>Bold tag constant value.
+</p>
 
     
     </div>
@@ -1170,10 +1233,16 @@ From class
       </span>
         TAG_CODE
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p>Code tag constant value.
-</p></div>
+  <p>Code tag constant value.
+</p>
 
     
     </div>
@@ -1193,10 +1262,16 @@ From class
       </span>
         TAG_HEADING
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p>Code tag constant value.
-</p></div>
+  <p>Code tag constant value.
+</p>
 
     
     </div>
@@ -1216,10 +1291,16 @@ From class
       </span>
         TAG_ITALIC
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p>Italic tag constant value.
-</p></div>
+  <p>Italic tag constant value.
+</p>
 
     
     </div>
@@ -1239,10 +1320,16 @@ From class
       </span>
         TAG_OVERLINE
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p>Overline tag constant value.
-</p></div>
+  <p>Overline tag constant value.
+</p>
 
     
     </div>
@@ -1262,10 +1349,16 @@ From class
       </span>
         TAG_QUOTE
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p>Quote tag constant value.
-</p></div>
+  <p>Quote tag constant value.
+</p>
 
     
     </div>
@@ -1285,10 +1378,16 @@ From class
       </span>
         TAG_SPOILER
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p>Spoiler tag constant value.
-</p></div>
+  <p>Spoiler tag constant value.
+</p>
 
     
     </div>
@@ -1308,10 +1407,16 @@ From class
       </span>
         TAG_STRIKE
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p>Strikethrough tag constant value.
-</p></div>
+  <p>Strikethrough tag constant value.
+</p>
 
     
     </div>
@@ -1331,10 +1436,16 @@ From class
       </span>
         TAG_SUBSCRIPT
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p>Subscript tag constant value.
-</p></div>
+  <p>Subscript tag constant value.
+</p>
 
     
     </div>
@@ -1354,10 +1465,16 @@ From class
       </span>
         TAG_SUPERSCRIPT
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p>Superscript tag constant value.
-</p></div>
+  <p>Superscript tag constant value.
+</p>
 
     
     </div>
@@ -1377,10 +1494,16 @@ From class
       </span>
         TAG_UNDERLINE
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p>Underline tag constant value.
-</p></div>
+  <p>Underline tag constant value.
+</p>
 
     
     </div>
@@ -1402,19 +1525,25 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         
       </span>
       <span class="sympad">ChanMarkup</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p></p></div>
+  <p></p>
 
     </div>
 </div>
@@ -1440,42 +1569,54 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         void
       </span>
       <span class="sympad">addBlock</span>
       <span class="normal">(String tagName, String cssClass, boolean block, boolean spaced)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Marks given <code>tagName</code> as block tag if tag contains <code>cssClass</code> in class attribute.
- For <code>spaced</code> blocks parser will add empty lines around.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>tagName</td>
-          <td>Tag to handle.</td>
-        </tr>
-        <tr>
-          <th>cssClass</td>
-          <td>Tag CSS class.</td>
-        </tr>
-        <tr>
-          <th>block</td>
-          <td>True to enable block tag.</td>
-        </tr>
-        <tr>
-          <th>spaced</td>
-          <td>True to enable spacing.
+  <p><p>Marks given <code>tagName</code> as block tag if tag contains <code>cssClass</code> in class attribute.
+ For <code>spaced</code> blocks parser will add empty lines around.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>tagName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Tag to handle.</td>
+      </tr>
+      <tr>
+        <td><code>cssClass</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Tag CSS class.</td>
+      </tr>
+      <tr>
+        <td><code>block</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          True to enable block tag.</td>
+      </tr>
+      <tr>
+        <td><code>spaced</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          True to enable spacing.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1486,37 +1627,47 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         void
       </span>
       <span class="sympad">addBlock</span>
       <span class="normal">(String tagName, boolean block, boolean spaced)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Marks given <code>tagName</code> as block tag. For <code>spaced</code> blocks parser will add empty lines around.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>tagName</td>
-          <td>Tag to handle.</td>
-        </tr>
-        <tr>
-          <th>block</td>
-          <td>True to enable block tag.</td>
-        </tr>
-        <tr>
-          <th>spaced</td>
-          <td>True to enable spacing.
+  <p><p>Marks given <code>tagName</code> as block tag. For <code>spaced</code> blocks parser will add empty lines around.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>tagName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Tag to handle.</td>
+      </tr>
+      <tr>
+        <td><code>block</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          True to enable block tag.</td>
+      </tr>
+      <tr>
+        <td><code>spaced</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          True to enable spacing.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1527,46 +1678,60 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         void
       </span>
       <span class="sympad">addBlock</span>
       <span class="normal">(String tagName, String attribute, String value, boolean block, boolean spaced)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Marks given <code>tagName</code> as block tag if tag contains <code>attribute</code> that exactly equals <code>value</code>.
- For <code>spaced</code> blocks parser will add empty lines around.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>tagName</td>
-          <td>Tag to handle.</td>
-        </tr>
-        <tr>
-          <th>attribute</td>
-          <td>Tag attribute.</td>
-        </tr>
-        <tr>
-          <th>value</td>
-          <td>Attribute value.</td>
-        </tr>
-        <tr>
-          <th>block</td>
-          <td>True to enable block tag.</td>
-        </tr>
-        <tr>
-          <th>spaced</td>
-          <td>True to enable spacing.
+  <p><p>Marks given <code>tagName</code> as block tag if tag contains <code>attribute</code> that exactly equals <code>value</code>.
+ For <code>spaced</code> blocks parser will add empty lines around.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>tagName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Tag to handle.</td>
+      </tr>
+      <tr>
+        <td><code>attribute</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Tag attribute.</td>
+      </tr>
+      <tr>
+        <td><code>value</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Attribute value.</td>
+      </tr>
+      <tr>
+        <td><code>block</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          True to enable block tag.</td>
+      </tr>
+      <tr>
+        <td><code>spaced</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          True to enable spacing.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1577,34 +1742,42 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         void
       </span>
       <span class="sympad">addColorable</span>
       <span class="normal">(String tagName, String cssClass)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Marks given <code>tagName</code> as tag that may contain color attribute or CSS style if tag contains
- <code>cssClass</code> in class attribute. Parser will handle these cases automatically.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>tagName</td>
-          <td>Tag to handle.</td>
-        </tr>
-        <tr>
-          <th>cssClass</td>
-          <td>Tag CSS class.
+  <p><p>Marks given <code>tagName</code> as tag that may contain color attribute or CSS style if tag contains
+ <code>cssClass</code> in class attribute. Parser will handle these cases automatically.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>tagName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Tag to handle.</td>
+      </tr>
+      <tr>
+        <td><code>cssClass</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Tag CSS class.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1615,30 +1788,36 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         void
       </span>
       <span class="sympad">addColorable</span>
       <span class="normal">(String tagName)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Marks given <code>tagName</code> as tag that may contain color attribute or CSS style. Parser will handle
- these cases automatically.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>tagName</td>
-          <td>Tag to handle.
+  <p><p>Marks given <code>tagName</code> as tag that may contain color attribute or CSS style. Parser will handle
+ these cases automatically.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>tagName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Tag to handle.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1649,38 +1828,48 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         void
       </span>
       <span class="sympad">addColorable</span>
       <span class="normal">(String tagName, String attribute, String value)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Marks given <code>tagName</code> as tag that may contain color attribute or CSS style if tag contains
- <code>attribute</code> that exactly equals <code>value</code>. Parser will handle these cases automatically.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>tagName</td>
-          <td>Tag to handle.</td>
-        </tr>
-        <tr>
-          <th>attribute</td>
-          <td>Tag attribute.</td>
-        </tr>
-        <tr>
-          <th>value</td>
-          <td>Attribute value.
+  <p><p>Marks given <code>tagName</code> as tag that may contain color attribute or CSS style if tag contains
+ <code>attribute</code> that exactly equals <code>value</code>. Parser will handle these cases automatically.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>tagName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Tag to handle.</td>
+      </tr>
+      <tr>
+        <td><code>attribute</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Tag attribute.</td>
+      </tr>
+      <tr>
+        <td><code>value</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Attribute value.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1691,42 +1880,54 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         void
       </span>
       <span class="sympad">addPreformatted</span>
       <span class="normal">(String tagName, String attribute, String value, boolean preformatted)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Marks given <code>tagName</code> as preformatted if tag contains <code>attribute</code> that exactly
- equals <code>value</code>. In this mode all tabs, spaces and line breaks will be taken into account.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>tagName</td>
-          <td>Tag to handle.</td>
-        </tr>
-        <tr>
-          <th>attribute</td>
-          <td>Tag attribute.</td>
-        </tr>
-        <tr>
-          <th>value</td>
-          <td>Attribute value.</td>
-        </tr>
-        <tr>
-          <th>preformatted</td>
-          <td>True to enable preformatted tag.
+  <p><p>Marks given <code>tagName</code> as preformatted if tag contains <code>attribute</code> that exactly
+ equals <code>value</code>. In this mode all tabs, spaces and line breaks will be taken into account.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>tagName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Tag to handle.</td>
+      </tr>
+      <tr>
+        <td><code>attribute</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Tag attribute.</td>
+      </tr>
+      <tr>
+        <td><code>value</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Attribute value.</td>
+      </tr>
+      <tr>
+        <td><code>preformatted</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          True to enable preformatted tag.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1737,38 +1938,48 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         void
       </span>
       <span class="sympad">addPreformatted</span>
       <span class="normal">(String tagName, String cssClass, boolean preformatted)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Marks given <code>tagName</code> as preformatted if tag contains <code>cssClass</code> in class attribute.
- In this mode all tabs, spaces and line breaks will be taken into account.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>tagName</td>
-          <td>Tag to handle.</td>
-        </tr>
-        <tr>
-          <th>cssClass</td>
-          <td>Tag CSS class.</td>
-        </tr>
-        <tr>
-          <th>preformatted</td>
-          <td>True to enable preformatted tag.
+  <p><p>Marks given <code>tagName</code> as preformatted if tag contains <code>cssClass</code> in class attribute.
+ In this mode all tabs, spaces and line breaks will be taken into account.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>tagName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Tag to handle.</td>
+      </tr>
+      <tr>
+        <td><code>cssClass</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Tag CSS class.</td>
+      </tr>
+      <tr>
+        <td><code>preformatted</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          True to enable preformatted tag.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1779,113 +1990,42 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         void
       </span>
       <span class="sympad">addPreformatted</span>
       <span class="normal">(String tagName, boolean preformatted)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Marks given <code>tagName</code> as preformatted. In this mode all tabs, spaces and line breaks
- will be taken into account.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>tagName</td>
-          <td>Tag to handle.</td>
-        </tr>
-        <tr>
-          <th>preformatted</td>
-          <td>True to enable preformatted tag.
+  <p><p>Marks given <code>tagName</code> as preformatted. In this mode all tabs, spaces and line breaks
+ will be taken into account.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>tagName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Tag to handle.</td>
+      </tr>
+      <tr>
+        <td><code>preformatted</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          True to enable preformatted tag.
 </td>
-        </tr>
-      </table>
-  </div>
-
-    </div>
-</div>
-
-
-<A NAME="addTag(java.lang.String, int)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public 
-         
-         
-         
-         
-        void
-      </span>
-      <span class="sympad">addTag</span>
-      <span class="normal">(String tagName, int tag)</span>
-    </h4>
-    <div class="jd-details-descr">
-      
-  <div class="jd-tagdata jd-tagdescr"><p><p>Add tag to handle. Given <code>tagName</code> will be replaced with span defined by <code>tag</code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>tagName</td>
-          <td>Tag to handle.</td>
-        </tr>
-        <tr>
-          <th>tag</td>
-          <td>Tag type.
-</td>
-        </tr>
-      </table>
-  </div>
-
-    </div>
-</div>
-
-
-<A NAME="addTag(java.lang.String, java.lang.String, int)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public 
-         
-         
-         
-         
-        void
-      </span>
-      <span class="sympad">addTag</span>
-      <span class="normal">(String tagName, String cssClass, int tag)</span>
-    </h4>
-    <div class="jd-details-descr">
-      
-  <div class="jd-tagdata jd-tagdescr"><p><p>Add tag to handle. Given <code>tagName</code> will be replaced with span defined by <code>tag</code>
- if tag contains <code>cssClass</code> in class attribute.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>tagName</td>
-          <td>Tag to handle.</td>
-        </tr>
-        <tr>
-          <th>cssClass</td>
-          <td>Tag CSS class.</td>
-        </tr>
-        <tr>
-          <th>tag</td>
-          <td>Tag type.
-</td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1896,42 +2036,151 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         void
       </span>
       <span class="sympad">addTag</span>
       <span class="normal">(String tagName, String attribute, String value, int tag)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Add tag to handle. Given <code>tagName</code> will be replaced with span defined by <code>spanType</code>
- if tag contains <code>attribute</code> that exactly equals <code>value</code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>tagName</td>
-          <td>Tag to handle.</td>
-        </tr>
-        <tr>
-          <th>attribute</td>
-          <td>Tag attribute.</td>
-        </tr>
-        <tr>
-          <th>value</td>
-          <td>Attribute value.</td>
-        </tr>
-        <tr>
-          <th>tag</td>
-          <td>Tag type.
+  <p><p>Add tag to handle. Given <code>tagName</code> will be replaced with span defined by <code>spanType</code>
+ if tag contains <code>attribute</code> that exactly equals <code>value</code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>tagName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Tag to handle.</td>
+      </tr>
+      <tr>
+        <td><code>attribute</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Tag attribute.</td>
+      </tr>
+      <tr>
+        <td><code>value</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Attribute value.</td>
+      </tr>
+      <tr>
+        <td><code>tag</code></td>
+        <td width="100%">
+          <code>int</code>:
+          Tag type.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
+
+    </div>
+</div>
+
+
+<A NAME="addTag(java.lang.String, int)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public
+        
+        
+        
+        
+        void
+      </span>
+      <span class="sympad">addTag</span>
+      <span class="normal">(String tagName, int tag)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <p><p>Add tag to handle. Given <code>tagName</code> will be replaced with span defined by <code>tag</code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>tagName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Tag to handle.</td>
+      </tr>
+      <tr>
+        <td><code>tag</code></td>
+        <td width="100%">
+          <code>int</code>:
+          Tag type.
+</td>
+      </tr>
+    </table>
+
+    </div>
+</div>
+
+
+<A NAME="addTag(java.lang.String, java.lang.String, int)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public
+        
+        
+        
+        
+        void
+      </span>
+      <span class="sympad">addTag</span>
+      <span class="normal">(String tagName, String cssClass, int tag)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <p><p>Add tag to handle. Given <code>tagName</code> will be replaced with span defined by <code>tag</code>
+ if tag contains <code>cssClass</code> in class attribute.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>tagName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Tag to handle.</td>
+      </tr>
+      <tr>
+        <td><code>cssClass</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Tag CSS class.</td>
+      </tr>
+      <tr>
+        <td><code>tag</code></td>
+        <td width="100%">
+          <code>int</code>:
+          Tag type.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1942,34 +2191,43 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-        static 
-         
-         
-         
+        public
+        
+        
+        static
+        
         T
       </span>
       <span class="sympad">get</span>
       <span class="normal">(Object object)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Return linked <code><a href="../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a></code> instance.</p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>object</td>
-          <td>Linked object: <code><a href="../../../reference/chan/content/ChanConfiguration.html">ChanConfiguration</a></code>, <code><a href="../../../reference/chan/content/ChanPerformer.html">ChanPerformer</a></code>,
+  <p><p>Return linked <code><a href="../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a></code> instance.</p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>object</code></td>
+        <td width="100%">
+          <code>Object</code>:
+          Linked object: <code><a href="../../../reference/chan/content/ChanConfiguration.html">ChanConfiguration</a></code>, <code><a href="../../../reference/chan/content/ChanPerformer.html">ChanPerformer</a></code>,
  <code><a href="../../../reference/chan/content/ChanLocator.html">ChanLocator</a></code> or <code><a href="../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a></code>.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li><code><a href="../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a></code> instance.
-</li></ul>
-  </div>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>T</code></td>
+        <td width="100%"><code><a href="../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a></code> instance.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1980,38 +2238,49 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         boolean
       </span>
       <span class="sympad">isTagSupported</span>
       <span class="normal">(String boardName, int tag)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls when client want to determine tag's supportability. This method must return whether board support
- given tag.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>boardName</td>
-          <td>Board name to check.</td>
-        </tr>
-        <tr>
-          <th>tag</td>
-          <td>Tag to check.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>True if tag is supported, false otherwise.
-</li></ul>
-  </div>
+  <p><p>Calls when client want to determine tag's supportability. This method must return whether board support
+ given tag.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>boardName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Board name to check.</td>
+      </tr>
+      <tr>
+        <td><code>tag</code></td>
+        <td width="100%">
+          <code>int</code>:
+          Tag to check.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>boolean</code></td>
+        <td width="100%">True if tag is supported, false otherwise.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2022,33 +2291,42 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/text/CommentEditor.html">CommentEditor</a>
       </span>
       <span class="sympad">obtainCommentEditor</span>
       <span class="normal">(String boardName)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls when client want to show posting activity.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>boardName</td>
-          <td>Board name string.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li><code><a href="../../../reference/chan/text/CommentEditor.html">CommentEditor</a></code> instance.
-</li></ul>
-  </div>
+  <p><p>Calls when client want to show posting activity.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>boardName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Board name string.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/text/CommentEditor.html">CommentEditor</a></code></td>
+        <td width="100%"><code><a href="../../../reference/chan/text/CommentEditor.html">CommentEditor</a></code> instance.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2059,40 +2337,49 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         Pair&lt;String,&nbsp;String&gt;
       </span>
       <span class="sympad">obtainPostLinkThreadPostNumbers</span>
       <span class="normal">(String uriString)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>This method calls every time HTML parser reaches links to other posts like <code>>>12345678</code>.</p>
+  <p><p>This method calls every time HTML parser reaches links to other posts like <code>&gt;&gt;12345678</code>.</p>
  
  <p>You can leave this method not overridden, but overriding can make this method much faster and more correct
  in some cases.</p>
  
  <p>You must return a <code>Pair</code> of strings where the first string is thread number and the second string is
  post number. You can return both values as null: null thread number means this thread, null post number means
- original post.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>uriString</td>
-          <td>Parsed URI string.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Pair of strings.
-</li></ul>
-  </div>
+ original post.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>uriString</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Parsed URI string.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>Pair&lt;String,&nbsp;String&gt;</code></td>
+        <td width="100%">Pair of strings.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>

@@ -49,6 +49,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -56,7 +66,9 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
 <title>
 
-  ChanPerformer.ReadThreadSummariesData - Dashchan API Reference
+  ChanPerformer.ReadThreadSummariesData - Dashchan API Reference |
+
+Doclava
 
 </title>
 <link href="../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
@@ -299,6 +311,12 @@ Summary:
 &#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
 
 </div><!-- end sum-details-links -->
+<div class="api-level">
+  
+  
+  
+
+</div>
 </div><!-- end api-info-block -->
 
 
@@ -372,6 +390,7 @@ Summary:
 
 
 
+
 </div><!-- jd-descr -->
 
 
@@ -430,17 +449,6 @@ Summary:
       <tr class=" api apilevel-" >
           <td class="jd-typecol"><nobr>
           public
-          static
-          final
-          int</nobr></td>
-          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.ReadThreadSummariesData.html#TYPE_POPULAR_THREADS">TYPE_POPULAR_THREADS</a></td>
-          <td class="jd-descrcol" width="100%"><p>Popular threads page type.</td>
-      </tr>
-      
-    
-      <tr class="alt-color api apilevel-" >
-          <td class="jd-typecol"><nobr>
-          public
           
           final
           String</nobr></td>
@@ -449,7 +457,7 @@ Summary:
       </tr>
       
     
-      <tr class=" api apilevel-" >
+      <tr class="alt-color api apilevel-" >
           <td class="jd-typecol"><nobr>
           public
           
@@ -457,6 +465,17 @@ Summary:
           <a href="../../../reference/chan/http/HttpHolder.html">HttpHolder</a></nobr></td>
           <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.ReadThreadSummariesData.html#holder">holder</a></td>
           <td class="jd-descrcol" width="100%"><p>HTTP holder.</td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          
+          final
+          int</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.ReadThreadSummariesData.html#pageNumber">pageNumber</a></td>
+          <td class="jd-descrcol" width="100%"><p>Page number argument.</td>
       </tr>
       
     
@@ -522,10 +541,10 @@ From class
             
             
             
-            boolean</nobr>
+            Object</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">equals</span>(Object arg0)</nobr>
+        <span class="sympad">clone</span>()</nobr>
         
   </td></tr>
 
@@ -535,8 +554,40 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">equals</span>(Object arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">finalize</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
             
             Class&lt;?&gt;</nobr>
         </td>
@@ -567,8 +618,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -583,8 +634,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -615,24 +666,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">wait</span>()</nobr>
-        
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
             
             final
-            
             
             void</nobr>
         </td>
@@ -643,17 +678,33 @@ From class
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad">wait</span>(long arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">wait</span>()</nobr>
         
   </td></tr>
 
@@ -710,33 +761,16 @@ From class
       </span>
         TYPE_ARCHIVED_THREADS
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Archived threads page type.</p>
-</p></div>
-
-    
-    </div>
-</div>
-
-
-
-<A NAME="TYPE_POPULAR_THREADS"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public 
-        static 
-        final 
-        int
-      </span>
-        TYPE_POPULAR_THREADS
-    </h4>
-    <div class="jd-details-descr">
-      
-  <div class="jd-tagdata jd-tagdescr"><p><p>Popular threads page type.</p>
-</p></div>
+  <p><p>Archived threads page type.</p>
+</p>
 
     
     </div>
@@ -756,10 +790,16 @@ From class
       </span>
         boardName
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Board name argument. May be null.</p>
-</p></div>
+  <p><p>Board name argument. May be null.</p>
+</p>
 
     
     </div>
@@ -779,10 +819,45 @@ From class
       </span>
         holder
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>HTTP holder. You must use it when building new <code><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></code>.</p>
-</p></div>
+  <p><p>HTTP holder. You must use it when building new <code><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></code>.</p>
+</p>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="pageNumber"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+        final 
+        int
+      </span>
+        pageNumber
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <p><p>Page number argument.</p>
+</p>
 
     
     </div>
@@ -802,10 +877,16 @@ From class
       </span>
         type
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Page type argument.</p>
-</p></div>
+  <p><p>Page type argument.</p>
+</p>
 
     
     </div>

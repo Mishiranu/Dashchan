@@ -49,6 +49,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -56,7 +66,9 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
 <title>
 
-  ChanPerformer.SendPostData - Dashchan API Reference
+  ChanPerformer.SendPostData - Dashchan API Reference |
+
+Doclava
 
 </title>
 <link href="../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
@@ -302,6 +314,12 @@ Summary:
 &#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
 
 </div><!-- end sum-details-links -->
+<div class="api-level">
+  
+  
+  
+
+</div>
 </div><!-- end api-info-block -->
 
 
@@ -370,6 +388,7 @@ Summary:
 <p itemprop="articleBody"><p>Arguments holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#onSendPost(chan.content.ChanPerformer.SendPostData)">onSendPost(SendPostData)</a></code>. Notify that this class might be
  used as <code><a href="../../../reference/chan/http/HttpRequest.Preset.html">HttpRequest.Preset</a></code>.</p>
 </p>
+
 
 
 
@@ -655,10 +674,10 @@ From class
             
             
             
-            boolean</nobr>
+            Object</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">equals</span>(Object arg0)</nobr>
+        <span class="sympad">clone</span>()</nobr>
         
   </td></tr>
 
@@ -668,8 +687,40 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">equals</span>(Object arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">finalize</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
             
             Class&lt;?&gt;</nobr>
         </td>
@@ -700,8 +751,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -716,8 +767,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -748,24 +799,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">wait</span>()</nobr>
-        
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
             
             final
-            
             
             void</nobr>
         </td>
@@ -776,17 +811,33 @@ From class
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad">wait</span>(long arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">wait</span>()</nobr>
         
   </td></tr>
 
@@ -843,10 +894,16 @@ From class
       </span>
         attachments
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Array of attachments argument. Equals <code>null</code> if empty.</p>
-</p></div>
+  <p><p>Array of attachments argument. Equals <code>null</code> if empty.</p>
+</p>
 
     
     </div>
@@ -866,10 +923,16 @@ From class
       </span>
         boardName
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Board name argument.</p>
-</p></div>
+  <p><p>Board name argument.</p>
+</p>
 
     
     </div>
@@ -889,11 +952,17 @@ From class
       </span>
         captchaData
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Captcha data argument. Obtained from <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadCaptcha(chan.content.ChanPerformer.ReadCaptchaData)">onReadCaptcha(ReadCaptchaData)</a></code>.
+  <p><p>Captcha data argument. Obtained from <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadCaptcha(chan.content.ChanPerformer.ReadCaptchaData)">onReadCaptcha(ReadCaptchaData)</a></code>.
  May be <code>null</code> if captcha was not loaded.</p>
-</p></div>
+</p>
 
     
     </div>
@@ -913,10 +982,16 @@ From class
       </span>
         captchaType
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Captcha type argument.</p>
-</p></div>
+  <p><p>Captcha type argument.</p>
+</p>
 
     
     </div>
@@ -936,10 +1011,16 @@ From class
       </span>
         comment
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Comment argument. Equals <code>null</code> if empty.</p>
-</p></div>
+  <p><p>Comment argument. Equals <code>null</code> if empty.</p>
+</p>
 
     
     </div>
@@ -959,10 +1040,16 @@ From class
       </span>
         email
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Email argument. Equals <code>null</code> if empty.</p>
-</p></div>
+  <p><p>Email argument. Equals <code>null</code> if empty.</p>
+</p>
 
     
     </div>
@@ -982,10 +1069,16 @@ From class
       </span>
         holder
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>HTTP holder. You must use it when building new <code><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></code>.</p>
-</p></div>
+  <p><p>HTTP holder. You must use it when building new <code><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></code>.</p>
+</p>
 
     
     </div>
@@ -1005,10 +1098,16 @@ From class
       </span>
         name
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Name argument. Equals <code>null</code> if empty.</p>
-</p></div>
+  <p><p>Name argument. Equals <code>null</code> if empty.</p>
+</p>
 
     
     </div>
@@ -1028,10 +1127,16 @@ From class
       </span>
         optionOriginalPoster
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Original poster option.</p>
-</p></div>
+  <p><p>Original poster option.</p>
+</p>
 
     
     </div>
@@ -1051,10 +1156,16 @@ From class
       </span>
         optionSage
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Sage option.</p>
-</p></div>
+  <p><p>Sage option.</p>
+</p>
 
     
     </div>
@@ -1074,10 +1185,16 @@ From class
       </span>
         optionSpoiler
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Spoiler option.</p>
-</p></div>
+  <p><p>Spoiler option.</p>
+</p>
 
     
     </div>
@@ -1097,10 +1214,16 @@ From class
       </span>
         password
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Password for deleting argument. Equals <code>null</code> if empty.</p>
-</p></div>
+  <p><p>Password for deleting argument. Equals <code>null</code> if empty.</p>
+</p>
 
     
     </div>
@@ -1120,10 +1243,16 @@ From class
       </span>
         subject
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Subject argument. Equals <code>null</code> if empty.</p>
-</p></div>
+  <p><p>Subject argument. Equals <code>null</code> if empty.</p>
+</p>
 
     
     </div>
@@ -1143,10 +1272,16 @@ From class
       </span>
         threadNumber
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Thread number argument. Equals <code>null</code> if this new thread request.</p>
-</p></div>
+  <p><p>Thread number argument. Equals <code>null</code> if this new thread request.</p>
+</p>
 
     
     </div>
@@ -1166,10 +1301,16 @@ From class
       </span>
         userIcon
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>User icon value. Equals <code>null</code> if nothing chosen.</p>
-</p></div>
+  <p><p>User icon value. Equals <code>null</code> if nothing chosen.</p>
+</p>
 
     
     </div>

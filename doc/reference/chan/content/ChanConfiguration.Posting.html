@@ -49,6 +49,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -56,7 +66,9 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
 <title>
 
-  ChanConfiguration.Posting - Dashchan API Reference
+  ChanConfiguration.Posting - Dashchan API Reference |
+
+Doclava
 
 </title>
 <link href="../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
@@ -297,6 +309,12 @@ Summary:
 &#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
 
 </div><!-- end sum-details-links -->
+<div class="api-level">
+  
+  
+  
+
+</div>
 </div><!-- end api-info-block -->
 
 
@@ -305,7 +323,7 @@ Summary:
 <div id="jd-header">
     public
     static 
-     
+    final 
     
     class
 <h1 itemprop="name">ChanConfiguration.Posting</h1>
@@ -361,8 +379,9 @@ Summary:
 
 
 
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">See Also</h5>
+
+  <div>
+      <p><b>See also:</b></p>
       <ul class="nolist"><li><code><a href="../../../reference/chan/content/ChanPerformer.SendPostData.html">ChanPerformer.SendPostData</a></code></li>
       </ul>
   </div>
@@ -655,10 +674,10 @@ From class
             
             
             
-            boolean</nobr>
+            Object</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">equals</span>(Object arg0)</nobr>
+        <span class="sympad">clone</span>()</nobr>
         
   </td></tr>
 
@@ -668,8 +687,40 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">equals</span>(Object arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">finalize</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
             
             Class&lt;?&gt;</nobr>
         </td>
@@ -700,8 +751,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -716,8 +767,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -748,24 +799,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">wait</span>()</nobr>
-        
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
             
             final
-            
             
             void</nobr>
         </td>
@@ -776,17 +811,33 @@ From class
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad">wait</span>(long arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">wait</span>()</nobr>
         
   </td></tr>
 
@@ -841,11 +892,17 @@ From class
       </span>
         allowEmail
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Set <code>true</code> to enable emails. You will receive user's input from
+  <p><p>Set <code>true</code> to enable emails. You will receive user's input from
  <code><a href="../../../reference/chan/content/ChanPerformer.SendPostData.html#email">email</a></code></p>
-</p></div>
+</p>
 
     
     </div>
@@ -865,11 +922,17 @@ From class
       </span>
         allowName
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Set <code>true</code> to enable names. You will receive user's input from
+  <p><p>Set <code>true</code> to enable names. You will receive user's input from
  <code><a href="../../../reference/chan/content/ChanPerformer.SendPostData.html#name">name</a></code></p>
-</p></div>
+</p>
 
     
     </div>
@@ -889,11 +952,17 @@ From class
       </span>
         allowSubject
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Set <code>true</code> to enable subjects. You will receive user's input from
+  <p><p>Set <code>true</code> to enable subjects. You will receive user's input from
  <code><a href="../../../reference/chan/content/ChanPerformer.SendPostData.html#subject">subject</a></code></p>
-</p></div>
+</p>
 
     
     </div>
@@ -913,11 +982,17 @@ From class
       </span>
         allowTripcode
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Set <code>true</code> to enable tripcodes. You will receive user's input from
+  <p><p>Set <code>true</code> to enable tripcodes. You will receive user's input from
  <code><a href="../../../reference/chan/content/ChanPerformer.SendPostData.html#name">name</a></code></p>
-</p></div>
+</p>
 
     
     </div>
@@ -937,10 +1012,16 @@ From class
       </span>
         attachmentCount
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Maximum number of attachments.</p>
-</p></div>
+  <p><p>Maximum number of attachments.</p>
+</p>
 
     
     </div>
@@ -960,10 +1041,16 @@ From class
       </span>
         attachmentMimeTypes
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Mime types of attachments.</p>
-</p></div>
+  <p><p>Mime types of attachments.</p>
+</p>
 
     
     </div>
@@ -983,12 +1070,18 @@ From class
       </span>
         attachmentRatings
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Attachment ratings. The <code>first</code> field in pair is value, the <code>second</code> one is display name.
+  <p><p>Attachment ratings. The <code>first</code> field in pair is value, the <code>second</code> one is display name.
  You will receive user's selected value from <code><a href="../../../reference/chan/content/ChanPerformer.SendPostData.Attachment.html#rating">rating</a></code>. The first
  item in list will be selected by default.</p>
-</p></div>
+</p>
 
     
     </div>
@@ -1008,11 +1101,17 @@ From class
       </span>
         attachmentSpoiler
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Set <code>true</code> to enable spoiler option. You will receive user's choice from
+  <p><p>Set <code>true</code> to enable spoiler option. You will receive user's choice from
  <code><a href="../../../reference/chan/content/ChanPerformer.SendPostData.Attachment.html#optionSpoiler">optionSpoiler</a></code>.</p>
-</p></div>
+</p>
 
     
     </div>
@@ -1032,10 +1131,16 @@ From class
       </span>
         hasCountryFlags
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Set <code>true</code> to enable notification that board has flags.</p>
-</p></div>
+  <p><p>Set <code>true</code> to enable notification that board has flags.</p>
+</p>
 
     
     </div>
@@ -1055,10 +1160,16 @@ From class
       </span>
         maxCommentLength
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Maximum number of characters in comment.</p>
-</p></div>
+  <p><p>Maximum number of characters in comment.</p>
+</p>
 
     
     </div>
@@ -1078,11 +1189,17 @@ From class
       </span>
         maxCommentLengthEncoding
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Characters encoding in comment. Use this to make client count number of bytes in your encoding
+  <p><p>Characters encoding in comment. Use this to make client count number of bytes in your encoding
  instead of number of chars.</p>
-</p></div>
+</p>
 
     
     </div>
@@ -1102,11 +1219,17 @@ From class
       </span>
         optionOriginalPoster
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Set <code>true</code> to enable original poster mark. You will receive user's choice from
+  <p><p>Set <code>true</code> to enable original poster mark. You will receive user's choice from
  <code><a href="../../../reference/chan/content/ChanPerformer.SendPostData.html#optionSage">optionSage</a></code></p>
-</p></div>
+</p>
 
     
     </div>
@@ -1126,11 +1249,17 @@ From class
       </span>
         optionSage
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Set <code>true</code> to enable sage mark. You will receive user's choice from
+  <p><p>Set <code>true</code> to enable sage mark. You will receive user's choice from
  <code><a href="../../../reference/chan/content/ChanPerformer.SendPostData.html#optionSage">optionSage</a></code></p>
-</p></div>
+</p>
 
     
     </div>
@@ -1150,11 +1279,17 @@ From class
       </span>
         optionSpoiler
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Set <code>true</code> to enable spoiler mark. You will receive user's choice from
+  <p><p>Set <code>true</code> to enable spoiler mark. You will receive user's choice from
  <code><a href="../../../reference/chan/content/ChanPerformer.SendPostData.html#optionSpoiler">optionSpoiler</a></code></p>
-</p></div>
+</p>
 
     
     </div>
@@ -1174,11 +1309,17 @@ From class
       </span>
         userIcons
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>User icons. The <code>first</code> field in pair is value, the <code>second</code> one is display name.
+  <p><p>User icons. The <code>first</code> field in pair is value, the <code>second</code> one is display name.
  You will receive user's selected value from <code><a href="../../../reference/chan/content/ChanPerformer.SendPostData.html#userIcon">userIcon</a></code>.</p>
-</p></div>
+</p>
 
     
     </div>
@@ -1200,20 +1341,26 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         
       </span>
       <span class="sympad">ChanConfiguration.Posting</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Default constructor for <code><a href="../../../reference/chan/content/ChanConfiguration.Posting.html">ChanConfiguration.Posting</a></code>.</p>
-</p></div>
+  <p><p>Default constructor for <code><a href="../../../reference/chan/content/ChanConfiguration.Posting.html">ChanConfiguration.Posting</a></code>.</p>
+</p>
 
     </div>
 </div>

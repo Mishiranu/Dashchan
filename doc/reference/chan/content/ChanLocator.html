@@ -49,6 +49,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -56,7 +66,9 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
 <title>
 
-  ChanLocator - Dashchan API Reference
+  ChanLocator - Dashchan API Reference |
+
+Doclava
 
 </title>
 <link href="../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
@@ -300,6 +312,12 @@ Summary:
 &#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
 
 </div><!-- end sum-details-links -->
+<div class="api-level">
+  
+  
+  
+
+</div>
 </div><!-- end api-info-block -->
 
 
@@ -386,13 +404,14 @@ Summary:
  
  <ul>
  <li><code><a href="../../../reference/chan/content/ChanLocator.html#buildPath(java.lang.String...)">buildPath(String)</a></code></li>
- <li><code><a href="../../../reference/chan/content/ChanLocator.html#buildPathWithHost(java.lang.String, java.lang.String...)">buildPathWithHost(String, String...)</a></code></li>
- <li><code><a href="../../../reference/chan/content/ChanLocator.html#buildPathWithSchemeHost(boolean, java.lang.String, java.lang.String...)">buildPathWithSchemeHost(boolean, String, String...)</a></code></li>
- <li><code><a href="../../../reference/chan/content/ChanLocator.html#buildQuery(java.lang.String, java.lang.String...)">buildQuery(String, String...)</a></code></li>
- <li><code><a href="../../../reference/chan/content/ChanLocator.html#buildQueryWithHost(java.lang.String, java.lang.String, java.lang.String...)">buildQueryWithHost(String, String, String...)</a></code></li>
- <li><code><a href="../../../reference/chan/content/ChanLocator.html#buildQueryWithSchemeHost(boolean, java.lang.String, java.lang.String, java.lang.String...)">buildQueryWithSchemeHost(boolean, String, String, String...)</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanLocator.html#buildPathWithHost(java.lang.String, java.lang.String...)">buildPathWithHost(String, String)</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanLocator.html#buildPathWithSchemeHost(boolean, java.lang.String, java.lang.String...)">buildPathWithSchemeHost(boolean, String, String)</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanLocator.html#buildQuery(java.lang.String, java.lang.String...)">buildQuery(String, String)</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanLocator.html#buildQueryWithHost(java.lang.String, java.lang.String, java.lang.String...)">buildQueryWithHost(String, String, String)</a></code></li>
+ <li><code><a href="../../../reference/chan/content/ChanLocator.html#buildQueryWithSchemeHost(boolean, java.lang.String, java.lang.String, java.lang.String...)">buildQueryWithSchemeHost(boolean, String, String, String)</a></code></li>
  </ul>
 </p>
+
 
 
 
@@ -513,8 +532,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -531,8 +550,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -549,8 +568,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -567,8 +586,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             Uri</nobr>
         </td>
@@ -585,8 +604,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             Uri</nobr>
         </td>
@@ -603,8 +622,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             Uri</nobr>
         </td>
@@ -621,8 +640,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             Uri</nobr>
         </td>
@@ -639,8 +658,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             Uri</nobr>
         </td>
@@ -657,8 +676,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             Uri</nobr>
         </td>
@@ -747,8 +766,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            
             static
+            
             &lt;T&nbsp;extends&nbsp;<a href="../../../reference/chan/content/ChanLocator.html">ChanLocator</a>&gt;
             T</nobr>
         </td>
@@ -783,8 +802,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             String</nobr>
         </td>
@@ -801,8 +820,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             String</nobr>
         </td>
@@ -816,24 +835,6 @@ Summary:
 
 	 
     <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            final
-            
-            
-            String[]</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ChanLocator.html#getGroupValues(java.lang.String, java.util.regex.Pattern, int)">getGroupValues</a></span>(String from, Pattern pattern, int groupIndex)</nobr>
-        
-        <div class="jd-descrdiv"><p>Finds given pattern in string and returns group by index.</div>
-  
-  </td></tr>
-
-
-	 
-    <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -851,7 +852,7 @@ Summary:
 
 
 	 
-    <tr class=" api apilevel-" >
+    <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -869,7 +870,7 @@ Summary:
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -887,7 +888,7 @@ Summary:
 
 
 	 
-    <tr class=" api apilevel-" >
+    <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -905,12 +906,12 @@ Summary:
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             boolean</nobr>
         </td>
@@ -923,7 +924,7 @@ Summary:
 
 
 	 
-    <tr class=" api apilevel-" >
+    <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -941,30 +942,12 @@ Summary:
 
 
 	 
-    <tr class="alt-color api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            
-            
-            
-            boolean</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ChanLocator.html#isChanHost(java.lang.String)">isChanHost</a></span>(String host)</nobr>
-        
-        <div class="jd-descrdiv"><p>Returns whether host is chan host.</div>
-  
-  </td></tr>
-
-
-	 
     <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             boolean</nobr>
         </td>
@@ -981,8 +964,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             boolean</nobr>
         </td>
@@ -999,8 +982,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             boolean</nobr>
         </td>
@@ -1035,8 +1018,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             boolean</nobr>
         </td>
@@ -1053,8 +1036,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             boolean</nobr>
         </td>
@@ -1071,8 +1054,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -1126,10 +1109,10 @@ From class
             
             
             
-            boolean</nobr>
+            Object</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">equals</span>(Object arg0)</nobr>
+        <span class="sympad">clone</span>()</nobr>
         
   </td></tr>
 
@@ -1139,8 +1122,40 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">equals</span>(Object arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">finalize</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
             
             Class&lt;?&gt;</nobr>
         </td>
@@ -1171,8 +1186,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -1187,8 +1202,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -1219,24 +1234,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">wait</span>()</nobr>
-        
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
             
             final
-            
             
             void</nobr>
         </td>
@@ -1247,17 +1246,33 @@ From class
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad">wait</span>(long arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">wait</span>()</nobr>
         
   </td></tr>
 
@@ -1307,19 +1322,25 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         
       </span>
       <span class="sympad">ChanLocator</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p></p></div>
+  <p></p>
 
     </div>
 </div>
@@ -1345,25 +1366,40 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         void
       </span>
       <span class="sympad">addChanHost</span>
       <span class="normal">(String host)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Declares host as chan host. This host might be default host in <code><a href="../../../reference/chan/content/ChanLocator.html#buildPath(java.lang.String...)">buildPath(String)</a></code> and
- <code><a href="../../../reference/chan/content/ChanLocator.html#buildQuery(java.lang.String, java.lang.String...)">buildQuery(String, String...)</a></code> methods. If you declare multiple hosts, user can choice one of them
+  <p><p>Declares host as chan host. This host might be default host in <code><a href="../../../reference/chan/content/ChanLocator.html#buildPath(java.lang.String...)">buildPath(String)</a></code> and
+ <code><a href="../../../reference/chan/content/ChanLocator.html#buildQuery(java.lang.String, java.lang.String...)">buildQuery(String, String)</a></code> methods. If you declare multiple hosts, user can choice one of them
  in preferences. The first declared host will be chosen by default.</p>
  
  <p>For example, a chan has 3 addresses: <code>addr1.com</code>, <code>addr2.com</code>, <code>addr3.com</code>. If user choose
  <code>addr2.com</code> in preferences, URIs with the rest addresses will be converted to <code>addr2.com</code>.</p>
-</p></div>
+</p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>host</code></td>
+        <td width="100%">
+          <code>String</code>
+          <!-- no parameter comment --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1374,21 +1410,36 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         void
       </span>
       <span class="sympad">addConvertableChanHost</span>
       <span class="normal">(String host)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Declares host as chan host. Unlike <code><a href="../../../reference/chan/content/ChanLocator.html#addChanHost(java.lang.String)">addChanHost(String)</a></code> user can't choice this host in preferences,
+  <p><p>Declares host as chan host. Unlike <code><a href="../../../reference/chan/content/ChanLocator.html#addChanHost(java.lang.String)">addChanHost(String)</a></code> user can't choice this host in preferences,
  but it still can be converted. For example, it can be useful for old domains that don't work now.</p>
-</p></div>
+</p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>host</code></td>
+        <td width="100%">
+          <code>String</code>
+          <!-- no parameter comment --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1399,21 +1450,36 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         void
       </span>
       <span class="sympad">addSpecialChanHost</span>
       <span class="normal">(String host)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Declares host as chan host. Unlike <code><a href="../../../reference/chan/content/ChanLocator.html#addChanHost(java.lang.String)">addChanHost(String)</a></code> user can't choice this host in preferences
+  <p><p>Declares host as chan host. Unlike <code><a href="../../../reference/chan/content/ChanLocator.html#addChanHost(java.lang.String)">addChanHost(String)</a></code> user can't choice this host in preferences
  and and can't be converted. For example, it can be useful for special hosts like JSON API or static data.</p>
-</p></div>
+</p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>host</code></td>
+        <td width="100%">
+          <code>String</code>
+          <!-- no parameter comment --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1424,33 +1490,42 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         Uri
       </span>
       <span class="sympad">buildPath</span>
       <span class="normal">(String... segments)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Builds URI with given path segments and preferred host and scheme.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>segments</td>
-          <td>Path segments.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>URI.
-</li></ul>
-  </div>
+  <p><p>Builds URI with given path segments and preferred host and scheme.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>segments</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Path segments.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>Uri</code></td>
+        <td width="100%">URI.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1461,37 +1536,48 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         Uri
       </span>
       <span class="sympad">buildPathWithHost</span>
       <span class="normal">(String host, String... segments)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Builds URI with given host and path segments and preferred scheme.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>host</td>
-          <td>URI host.</td>
-        </tr>
-        <tr>
-          <th>segments</td>
-          <td>Path segments.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>URI.
-</li></ul>
-  </div>
+  <p><p>Builds URI with given host and path segments and preferred scheme.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>host</code></td>
+        <td width="100%">
+          <code>String</code>:
+          URI host.</td>
+      </tr>
+      <tr>
+        <td><code>segments</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Path segments.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>Uri</code></td>
+        <td width="100%">URI.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1502,41 +1588,54 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         Uri
       </span>
       <span class="sympad">buildPathWithSchemeHost</span>
       <span class="normal">(boolean useHttps, String host, String... segments)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Builds URI with given scheme, host and path segments.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>useHttps</td>
-          <td>Defines whether use HTTPS or not.</td>
-        </tr>
-        <tr>
-          <th>host</td>
-          <td>URI host.</td>
-        </tr>
-        <tr>
-          <th>segments</td>
-          <td>Path segments.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>URI.
-</li></ul>
-  </div>
+  <p><p>Builds URI with given scheme, host and path segments.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>useHttps</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          Defines whether use HTTPS or not.</td>
+      </tr>
+      <tr>
+        <td><code>host</code></td>
+        <td width="100%">
+          <code>String</code>:
+          URI host.</td>
+      </tr>
+      <tr>
+        <td><code>segments</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Path segments.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>Uri</code></td>
+        <td width="100%">URI.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1547,37 +1646,48 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         Uri
       </span>
       <span class="sympad">buildQuery</span>
       <span class="normal">(String path, String... alternation)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Builds URI with given path and parameters and preferred host and scheme.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>path</td>
-          <td>URI path.</td>
-        </tr>
-        <tr>
-          <th>alternation</td>
-          <td>Alternation of param's names and values (name, value, name, value...).</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>URI.
-</li></ul>
-  </div>
+  <p><p>Builds URI with given path and parameters and preferred host and scheme.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>path</code></td>
+        <td width="100%">
+          <code>String</code>:
+          URI path.</td>
+      </tr>
+      <tr>
+        <td><code>alternation</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Alternation of param's names and values (name, value, name, value...).</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>Uri</code></td>
+        <td width="100%">URI.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1588,41 +1698,54 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         Uri
       </span>
       <span class="sympad">buildQueryWithHost</span>
       <span class="normal">(String host, String path, String... alternation)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Builds URI with given host, path and parameters and preferred scheme.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>host</td>
-          <td>URI host.</td>
-        </tr>
-        <tr>
-          <th>path</td>
-          <td>URI path.</td>
-        </tr>
-        <tr>
-          <th>alternation</td>
-          <td>Alternation of param's names and values (name, value, name, value...).</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>URI.
-</li></ul>
-  </div>
+  <p><p>Builds URI with given host, path and parameters and preferred scheme.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>host</code></td>
+        <td width="100%">
+          <code>String</code>:
+          URI host.</td>
+      </tr>
+      <tr>
+        <td><code>path</code></td>
+        <td width="100%">
+          <code>String</code>:
+          URI path.</td>
+      </tr>
+      <tr>
+        <td><code>alternation</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Alternation of param's names and values (name, value, name, value...).</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>Uri</code></td>
+        <td width="100%">URI.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1633,45 +1756,60 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         Uri
       </span>
       <span class="sympad">buildQueryWithSchemeHost</span>
       <span class="normal">(boolean useHttps, String host, String path, String... alternation)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Builds URI with given scheme, host, path and parameters.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>useHttps</td>
-          <td>Defines whether use HTTPS or not.</td>
-        </tr>
-        <tr>
-          <th>host</td>
-          <td>URI host.</td>
-        </tr>
-        <tr>
-          <th>path</td>
-          <td>URI path.</td>
-        </tr>
-        <tr>
-          <th>alternation</td>
-          <td>Alternation of param's names and values (name, value, name, value...).</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>URI.
-</li></ul>
-  </div>
+  <p><p>Builds URI with given scheme, host, path and parameters.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>useHttps</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          Defines whether use HTTPS or not.</td>
+      </tr>
+      <tr>
+        <td><code>host</code></td>
+        <td width="100%">
+          <code>String</code>:
+          URI host.</td>
+      </tr>
+      <tr>
+        <td><code>path</code></td>
+        <td width="100%">
+          <code>String</code>:
+          URI path.</td>
+      </tr>
+      <tr>
+        <td><code>alternation</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Alternation of param's names and values (name, value, name, value...).</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>Uri</code></td>
+        <td width="100%">URI.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1682,34 +1820,43 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         String
       </span>
       <span class="sympad">createAttachmentForcedName</span>
       <span class="normal">(Uri fileUri)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls when client intend to obtain a file name from URI. By default client obtains a name from last
- path segment of URI. You can override this behavior using this method.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>fileUri</td>
-          <td>file URI</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>File name.
-</li></ul>
-  </div>
+  <p><p>Calls when client intend to obtain a file name from URI. By default client obtains a name from last
+ path segment of URI. You can override this behavior using this method.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>fileUri</code></td>
+        <td width="100%">
+          <code>Uri</code>:
+          file URI</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>String</code></td>
+        <td width="100%">File name.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1720,37 +1867,48 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         Uri
       </span>
       <span class="sympad">createBoardUri</span>
       <span class="normal">(String boardName, int pageNumber)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls when client intend to create board URI. You <strong>must</strong> override this method.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>boardName</td>
-          <td>Board name.</td>
-        </tr>
-        <tr>
-          <th>pageNumber</td>
-          <td>Number of page, might be <code><a href="../../../reference/chan/content/ChanPerformer.ReadThreadsData.html#PAGE_NUMBER_CATALOG">PAGE_NUMBER_CATALOG</a></code>.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Board URI.
-</li></ul>
-  </div>
+  <p><p>Calls when client intend to create board URI. You <strong>must</strong> override this method.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>boardName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Board name.</td>
+      </tr>
+      <tr>
+        <td><code>pageNumber</code></td>
+        <td width="100%">
+          <code>int</code>:
+          Number of page, might be <code><a href="../../../reference/chan/content/ChanPerformer.ReadThreadsData.html#PAGE_NUMBER_CATALOG">PAGE_NUMBER_CATALOG</a></code>.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>Uri</code></td>
+        <td width="100%">Board URI.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1761,42 +1919,55 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         Uri
       </span>
       <span class="sympad">createPostUri</span>
       <span class="normal">(String boardName, String threadNumber, String postNumber)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls when client intend to create thread URI with anchor to post.
- You <strong>must</strong> override this method.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>boardName</td>
-          <td>Board name.</td>
-        </tr>
-        <tr>
-          <th>threadNumber</td>
-          <td>Thread number.</td>
-        </tr>
-        <tr>
-          <th>postNumber</td>
-          <td>Post number.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Post URI.
-</li></ul>
-  </div>
+  <p><p>Calls when client intend to create thread URI with anchor to post.
+ You <strong>must</strong> override this method.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>boardName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Board name.</td>
+      </tr>
+      <tr>
+        <td><code>threadNumber</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Thread number.</td>
+      </tr>
+      <tr>
+        <td><code>postNumber</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Post number.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>Uri</code></td>
+        <td width="100%">Post URI.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1807,37 +1978,48 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         Uri
       </span>
       <span class="sympad">createThreadUri</span>
       <span class="normal">(String boardName, String threadNumber)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls when client intend to create thread URI. You <strong>must</strong> override this method.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>boardName</td>
-          <td>Board name.</td>
-        </tr>
-        <tr>
-          <th>threadNumber</td>
-          <td>Thread number.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Thread URI.
-</li></ul>
-  </div>
+  <p><p>Calls when client intend to create thread URI. You <strong>must</strong> override this method.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>boardName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Board name.</td>
+      </tr>
+      <tr>
+        <td><code>threadNumber</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Thread number.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>Uri</code></td>
+        <td width="100%">Thread URI.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1848,34 +2030,43 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-        static 
-         
-         
-         
+        public
+        
+        
+        static
+        
         T
       </span>
       <span class="sympad">get</span>
       <span class="normal">(Object object)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Return linked <code><a href="../../../reference/chan/content/ChanLocator.html">ChanLocator</a></code> instance.</p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>object</td>
-          <td>Linked object: <code><a href="../../../reference/chan/content/ChanConfiguration.html">ChanConfiguration</a></code>, <code><a href="../../../reference/chan/content/ChanPerformer.html">ChanPerformer</a></code>,
+  <p><p>Return linked <code><a href="../../../reference/chan/content/ChanLocator.html">ChanLocator</a></code> instance.</p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>object</code></td>
+        <td width="100%">
+          <code>Object</code>:
+          Linked object: <code><a href="../../../reference/chan/content/ChanConfiguration.html">ChanConfiguration</a></code>, <code><a href="../../../reference/chan/content/ChanPerformer.html">ChanPerformer</a></code>,
  <code><a href="../../../reference/chan/content/ChanLocator.html">ChanLocator</a></code> or <code><a href="../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a></code>.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li><code><a href="../../../reference/chan/content/ChanLocator.html">ChanLocator</a></code> instance.
-</li></ul>
-  </div>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>T</code></td>
+        <td width="100%"><code><a href="../../../reference/chan/content/ChanLocator.html">ChanLocator</a></code> instance.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1886,33 +2077,42 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         String
       </span>
       <span class="sympad">getBoardName</span>
       <span class="normal">(Uri uri)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns board name from given URI. You <strong>must</strong> override this method.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>uri</td>
-          <td>URI to inspect.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Board name.
-</li></ul>
-  </div>
+  <p><p>Returns board name from given URI. You <strong>must</strong> override this method.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>uri</code></td>
+        <td width="100%">
+          <code>Uri</code>:
+          URI to inspect.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>String</code></td>
+        <td width="100%">Board name.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1923,33 +2123,42 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         String
       </span>
       <span class="sympad">getFileExtension</span>
       <span class="normal">(String path)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns extension of file with given path.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>path</td>
-          <td>Path to inspect.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>File extension in lower case.
-</li></ul>
-  </div>
+  <p><p>Returns extension of file with given path.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>path</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Path to inspect.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>String</code></td>
+        <td width="100%">File extension in lower case.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1960,86 +2169,54 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         String
       </span>
       <span class="sympad">getGroupValue</span>
       <span class="normal">(String from, Pattern pattern, int groupIndex)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Finds given pattern in string and returns group by index.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>from</td>
-          <td>String to inspect.</td>
-        </tr>
-        <tr>
-          <th>pattern</td>
-          <td>Pattern to find.</td>
-        </tr>
-        <tr>
-          <th>groupIndex</td>
-          <td>Index of group.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>First found value in string by group index.
-</li></ul>
-  </div>
-
-    </div>
-</div>
-
-
-<A NAME="getGroupValues(java.lang.String, java.util.regex.Pattern, int)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public 
-         
-        final 
-         
-         
-        String[]
-      </span>
-      <span class="sympad">getGroupValues</span>
-      <span class="normal">(String from, Pattern pattern, int groupIndex)</span>
-    </h4>
-    <div class="jd-details-descr">
-      
-  <div class="jd-tagdata jd-tagdescr"><p><p>Finds given pattern in string and returns group by index.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>from</td>
-          <td>String to inspect.</td>
-        </tr>
-        <tr>
-          <th>pattern</td>
-          <td>Pattern to find.</td>
-        </tr>
-        <tr>
-          <th>groupIndex</td>
-          <td>Index of group.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>All found values in string by group index.
-</li></ul>
-  </div>
+  <p><p>Finds given pattern in string and returns group by index.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>from</code></td>
+        <td width="100%">
+          <code>String</code>:
+          String to inspect.</td>
+      </tr>
+      <tr>
+        <td><code>pattern</code></td>
+        <td width="100%">
+          <code>Pattern</code>:
+          Pattern to find.</td>
+      </tr>
+      <tr>
+        <td><code>groupIndex</code></td>
+        <td width="100%">
+          <code>int</code>:
+          Index of group.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>String</code></td>
+        <td width="100%">First found value in string by group index.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2050,33 +2227,42 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         String
       </span>
       <span class="sympad">getPostNumber</span>
       <span class="normal">(Uri uri)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns post number from given URI. You <strong>must</strong> override this method.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>uri</td>
-          <td>URI to inspect.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Posts number.
-</li></ul>
-  </div>
+  <p><p>Returns post number from given URI. You <strong>must</strong> override this method.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>uri</code></td>
+        <td width="100%">
+          <code>Uri</code>:
+          URI to inspect.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>String</code></td>
+        <td width="100%">Posts number.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2087,33 +2273,42 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         String
       </span>
       <span class="sympad">getThreadNumber</span>
       <span class="normal">(Uri uri)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns thread number from given URI. You <strong>must</strong> override this method.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>uri</td>
-          <td>URI to inspect.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Thread number.
-</li></ul>
-  </div>
+  <p><p>Returns thread number from given URI. You <strong>must</strong> override this method.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>uri</code></td>
+        <td width="100%">
+          <code>Uri</code>:
+          URI to inspect.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>String</code></td>
+        <td width="100%">Thread number.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2124,34 +2319,43 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/content/ChanLocator.NavigationData.html">ChanLocator.NavigationData</a>
       </span>
       <span class="sympad">handleUriClickSpecial</span>
       <span class="normal">(Uri uri)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls when client intend to handle link click. You can return <code><a href="../../../reference/chan/content/ChanLocator.NavigationData.html">ChanLocator.NavigationData</a></code> instance
- with necessary navigation information.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>uri</td>
-          <td>URI to inspect.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li><code><a href="../../../reference/chan/content/ChanLocator.NavigationData.html">ChanLocator.NavigationData</a></code> instance or null.
-</li></ul>
-  </div>
+  <p><p>Calls when client intend to handle link click. You can return <code><a href="../../../reference/chan/content/ChanLocator.NavigationData.html">ChanLocator.NavigationData</a></code> instance
+ with necessary navigation information.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>uri</code></td>
+        <td width="100%">
+          <code>Uri</code>:
+          URI to inspect.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/ChanLocator.NavigationData.html">ChanLocator.NavigationData</a></code></td>
+        <td width="100%"><code><a href="../../../reference/chan/content/ChanLocator.NavigationData.html">ChanLocator.NavigationData</a></code> instance or null.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2162,33 +2366,42 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         boolean
       </span>
       <span class="sympad">isAttachmentUri</span>
       <span class="normal">(Uri uri)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether URI is attachment URI. You <strong>must</strong> override this method.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>uri</td>
-          <td>URI to inspect.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>True if URI is attachment URI.
-</li></ul>
-  </div>
+  <p><p>Returns whether URI is attachment URI. You <strong>must</strong> override this method.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>uri</code></td>
+        <td width="100%">
+          <code>Uri</code>:
+          URI to inspect.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>boolean</code></td>
+        <td width="100%">True if URI is attachment URI.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2199,33 +2412,42 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         boolean
       </span>
       <span class="sympad">isAudioExtension</span>
       <span class="normal">(String path)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether path has audio extension.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>path</td>
-          <td>Path to inspect.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>True if extension is audio's.
-</li></ul>
-  </div>
+  <p><p>Returns whether path has audio extension.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>path</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Path to inspect.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>boolean</code></td>
+        <td width="100%">True if extension is audio's.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2236,62 +2458,42 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         boolean
       </span>
       <span class="sympad">isBoardUri</span>
       <span class="normal">(Uri uri)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether URI is board URI. You <strong>must</strong> override this method.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>uri</td>
-          <td>URI to inspect.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>True if URI is board URI.
-</li></ul>
-  </div>
-
-    </div>
-</div>
-
-
-<A NAME="isChanHost(java.lang.String)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public 
-         
-         
-         
-         
-        boolean
-      </span>
-      <span class="sympad">isChanHost</span>
-      <span class="normal">(String host)</span>
-    </h4>
-    <div class="jd-details-descr">
-      
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether host is chan host. By default this method will return true for all hosts declared with
- <code><a href="../../../reference/chan/content/ChanLocator.html#addChanHost(java.lang.String)">addChanHost(String)</a></code> or <code><a href="../../../reference/chan/content/ChanLocator.html#addSpecialChanHost(java.lang.String)">addSpecialChanHost(String)</a></code> methods.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>True if host is chan host.
-</li></ul>
-  </div>
+  <p><p>Returns whether URI is board URI. You <strong>must</strong> override this method.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>uri</code></td>
+        <td width="100%">
+          <code>Uri</code>:
+          URI to inspect.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>boolean</code></td>
+        <td width="100%">True if URI is board URI.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2302,26 +2504,44 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         boolean
       </span>
       <span class="sympad">isChanHostOrRelative</span>
       <span class="normal">(Uri uri)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether URI's host is chan host or URI is relative (URI without scheme and host). This method will
+  <p><p>Returns whether URI's host is chan host or URI is relative (URI without scheme and host). This method will
  return true for all URI's with hosts declared with <code><a href="../../../reference/chan/content/ChanLocator.html#addChanHost(java.lang.String)">addChanHost(String)</a></code> or
- <code><a href="../../../reference/chan/content/ChanLocator.html#addSpecialChanHost(java.lang.String)">addSpecialChanHost(String)</a></code> methods and all relative URIs.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>True if host is chan host or relative.
-</li></ul>
-  </div>
+ <code><a href="../../../reference/chan/content/ChanLocator.html#addSpecialChanHost(java.lang.String)">addSpecialChanHost(String)</a></code> methods and all relative URIs.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>uri</code></td>
+        <td width="100%">
+          <code>Uri</code>
+          <!-- no parameter comment --></td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>boolean</code></td>
+        <td width="100%">True if host is chan host or relative.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2332,33 +2552,42 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         boolean
       </span>
       <span class="sympad">isImageExtension</span>
       <span class="normal">(String path)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether path has image extension.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>path</td>
-          <td>Path to inspect.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>True if extension is image's.
-</li></ul>
-  </div>
+  <p><p>Returns whether path has image extension.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>path</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Path to inspect.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>boolean</code></td>
+        <td width="100%">True if extension is image's.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2369,37 +2598,48 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         boolean
       </span>
       <span class="sympad">isPathMatches</span>
       <span class="normal">(Uri uri, Pattern pattern)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether URI's path matches to given pattern.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>uri</td>
-          <td>URI to inspect.</td>
-        </tr>
-        <tr>
-          <th>pattern</td>
-          <td>Pattern to match.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>True if URI's path matches to pattern.
-</li></ul>
-  </div>
+  <p><p>Returns whether URI's path matches to given pattern.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>uri</code></td>
+        <td width="100%">
+          <code>Uri</code>:
+          URI to inspect.</td>
+      </tr>
+      <tr>
+        <td><code>pattern</code></td>
+        <td width="100%">
+          <code>Pattern</code>:
+          Pattern to match.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>boolean</code></td>
+        <td width="100%">True if URI's path matches to pattern.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2410,33 +2650,42 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         boolean
       </span>
       <span class="sympad">isThreadUri</span>
       <span class="normal">(Uri uri)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether URI is thread URI. You <strong>must</strong> override this method.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>uri</td>
-          <td>URI to inspect.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>True if URI is thread URI.
-</li></ul>
-  </div>
+  <p><p>Returns whether URI is thread URI. You <strong>must</strong> override this method.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>uri</code></td>
+        <td width="100%">
+          <code>Uri</code>:
+          URI to inspect.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>boolean</code></td>
+        <td width="100%">True if URI is thread URI.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2447,24 +2696,33 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         boolean
       </span>
       <span class="sympad">isUseHttps</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether HTTPS enabled in preferences.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>True if HTTPS enabled.
-</li></ul>
-  </div>
+  <p><p>Returns whether HTTPS enabled in preferences.</p></p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>boolean</code></td>
+        <td width="100%">True if HTTPS enabled.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2475,33 +2733,42 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         boolean
       </span>
       <span class="sympad">isVideoExtension</span>
       <span class="normal">(String path)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether path has video extension.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>path</td>
-          <td>Path to inspect.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>True if extension is video's.
-</li></ul>
-  </div>
+  <p><p>Returns whether path has video extension.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>path</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Path to inspect.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>boolean</code></td>
+        <td width="100%">True if extension is video's.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2512,21 +2779,36 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         void
       </span>
       <span class="sympad">setHttpsMode</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanLocator.HttpsMode.html">ChanLocator.HttpsMode</a> httpsMode)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Changes default HTTPS mode. By default it equals <code><a href="../../../reference/chan/content/ChanLocator.HttpsMode.html#NO_HTTPS">NO_HTTPS</a></code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">See Also</h5>
+  <p><p>Changes default HTTPS mode. By default it equals <code><a href="../../../reference/chan/content/ChanLocator.HttpsMode.html#NO_HTTPS">NO_HTTPS</a></code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>httpsMode</code></td>
+        <td width="100%">
+          <code>ChanLocator.HttpsMode</code>
+          <!-- no parameter comment --></td>
+      </tr>
+    </table>
+  <div>
+      <p><b>See also:</b></p>
       <ul class="nolist"><li><code><a href="../../../reference/chan/content/ChanLocator.HttpsMode.html">ChanLocator.HttpsMode</a></code></li>
       </ul>
   </div>

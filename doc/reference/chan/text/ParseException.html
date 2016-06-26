@@ -49,6 +49,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -56,7 +66,9 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
 <title>
 
-  ParseException - Dashchan API Reference
+  ParseException - Dashchan API Reference |
+
+Doclava
 
 </title>
 <link href="../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
@@ -261,6 +273,12 @@ Summary:
 &#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
 
 </div><!-- end sum-details-links -->
+<div class="api-level">
+  
+  
+  
+
+</div>
 </div><!-- end api-info-block -->
 
 
@@ -359,6 +377,7 @@ Summary:
 
 
 
+
 </div><!-- jd-descr -->
 
 
@@ -421,7 +440,7 @@ Summary:
         <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad"><a href="../../../reference/chan/text/ParseException.html#ParseException()">ParseException</a></span>()</nobr>
         
-        <div class="jd-descrdiv"><p>Default constructor for an <code><a href="../../../reference/chan/text/ParseException.html">ParseException</a></code>.</div>
+        <div class="jd-descrdiv"><p>Default constructor for a <code><a href="../../../reference/chan/text/ParseException.html">ParseException</a></code>.</div>
   
   </td></tr>
 
@@ -439,7 +458,7 @@ Summary:
         <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad"><a href="../../../reference/chan/text/ParseException.html#ParseException(java.lang.Throwable)">ParseException</a></span>(Throwable throwable)</nobr>
         
-        <div class="jd-descrdiv"><p>Constructor for an <code><a href="../../../reference/chan/text/ParseException.html">ParseException</a></code> with specified cause.</div>
+        <div class="jd-descrdiv"><p>Constructor for a <code><a href="../../../reference/chan/text/ParseException.html">ParseException</a></code> with specified cause.</div>
   
   </td></tr>
 
@@ -488,9 +507,9 @@ From class
     <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
-            synchronized
-            final
             
+            
+            final
             
             void</nobr>
         </td>
@@ -504,7 +523,7 @@ From class
     <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
-            synchronized
+            
             
             
             
@@ -520,7 +539,7 @@ From class
     <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
-            synchronized
+            
             
             
             
@@ -584,9 +603,9 @@ From class
     <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
-            synchronized
-            final
             
+            
+            final
             
             Throwable[]</nobr>
         </td>
@@ -600,7 +619,7 @@ From class
     <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
-            synchronized
+            
             
             
             
@@ -623,7 +642,7 @@ From class
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">printStackTrace</span>(PrintStream arg0)</nobr>
+        <span class="sympad">printStackTrace</span>()</nobr>
         
   </td></tr>
 
@@ -655,7 +674,7 @@ From class
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">printStackTrace</span>()</nobr>
+        <span class="sympad">printStackTrace</span>(PrintStream arg0)</nobr>
         
   </td></tr>
 
@@ -726,10 +745,10 @@ From class
             
             
             
-            boolean</nobr>
+            Object</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">equals</span>(Object arg0)</nobr>
+        <span class="sympad">clone</span>()</nobr>
         
   </td></tr>
 
@@ -739,8 +758,40 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">equals</span>(Object arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">finalize</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
             
             Class&lt;?&gt;</nobr>
         </td>
@@ -771,8 +822,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -787,8 +838,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -819,24 +870,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">wait</span>()</nobr>
-        
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
             
             final
-            
             
             void</nobr>
         </td>
@@ -847,17 +882,33 @@ From class
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad">wait</span>(long arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">wait</span>()</nobr>
         
   </td></tr>
 
@@ -909,20 +960,26 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         
       </span>
       <span class="sympad">ParseException</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Default constructor for an <code><a href="../../../reference/chan/text/ParseException.html">ParseException</a></code>.</p>
-</p></div>
+  <p><p>Default constructor for a <code><a href="../../../reference/chan/text/ParseException.html">ParseException</a></code>.</p>
+</p>
 
     </div>
 </div>
@@ -933,29 +990,35 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         
       </span>
       <span class="sympad">ParseException</span>
       <span class="normal">(Throwable throwable)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Constructor for an <code><a href="../../../reference/chan/text/ParseException.html">ParseException</a></code> with specified cause.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>throwable</td>
-          <td>The cause of this exception.
+  <p><p>Constructor for a <code><a href="../../../reference/chan/text/ParseException.html">ParseException</a></code> with specified cause.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>throwable</code></td>
+        <td width="100%">
+          <code>Throwable</code>:
+          The cause of this exception.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>

@@ -49,6 +49,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -56,7 +66,9 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
 <title>
 
-  GroupParser.Callback - Dashchan API Reference
+  GroupParser.Callback - Dashchan API Reference |
+
+Doclava
 
 </title>
 <link href="../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
@@ -216,6 +228,12 @@
 <div class="sum-details-links">
 
 </div><!-- end sum-details-links -->
+<div class="api-level">
+  
+  
+  
+
+</div>
 </div><!-- end api-info-block -->
 
 
@@ -264,6 +282,7 @@
 <h2>Class Overview</h2>
 <p itemprop="articleBody"><p>Callback for <code><a href="../../../reference/chan/text/GroupParser.html">GroupParser</a></code>.</p>
 </p>
+
 
 
 
@@ -447,42 +466,49 @@
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-        abstract 
-         
+        public
+        abstract
+        
+        
+        
         void
       </span>
       <span class="sympad">onEndElement</span>
       <span class="normal">(<a href="../../../reference/chan/text/GroupParser.html">GroupParser</a> parser, String tagName)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>This method will be called in linear mode every time parser reaches end of tag.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
+  <p><p>This method will be called in linear mode every time parser reaches end of tag.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>parser</code></td>
+        <td width="100%">
+          <code>GroupParser</code>:
+          <code><a href="../../../reference/chan/text/GroupParser.html">GroupParser</a></code> instance.</td>
+      </tr>
+      <tr>
+        <td><code>tagName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Name of tag.</td>
+      </tr>
+    </table>
+      <table class="responsive">
+      <tr><th colspan=2>Throws</th></tr>
         <tr>
-          <th>parser</td>
-          <td><code><a href="../../../reference/chan/text/GroupParser.html">GroupParser</a></code> instance.</td>
-        </tr>
-        <tr>
-          <th>tagName</td>
-          <td>Name of tag.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Throws</h5>
-      <table class="jd-tagtable">  
-        <tr>
-            <th><a href="../../../reference/chan/text/ParseException.html">ParseException</a></td>
-            <td>to interrupt parsing process.
+          <td><code><a href="../../../reference/chan/text/ParseException.html">ParseException</a></code></td>
+          <td width="100%">to interrupt parsing process.
 </td>
         </tr>
       </table>
-  </div>
+  
 
     </div>
 </div>
@@ -493,42 +519,49 @@
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-        abstract 
-         
+        public
+        abstract
+        
+        
+        
         void
       </span>
       <span class="sympad">onGroupComplete</span>
       <span class="normal">(<a href="../../../reference/chan/text/GroupParser.html">GroupParser</a> parser, String text)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>This method will be called in group mode every time parser reaches end of group.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
+  <p><p>This method will be called in group mode every time parser reaches end of group.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>parser</code></td>
+        <td width="100%">
+          <code>GroupParser</code>:
+          <code><a href="../../../reference/chan/text/GroupParser.html">GroupParser</a></code> instance.</td>
+      </tr>
+      <tr>
+        <td><code>text</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Text inside tag.</td>
+      </tr>
+    </table>
+      <table class="responsive">
+      <tr><th colspan=2>Throws</th></tr>
         <tr>
-          <th>parser</td>
-          <td><code><a href="../../../reference/chan/text/GroupParser.html">GroupParser</a></code> instance.</td>
-        </tr>
-        <tr>
-          <th>text</td>
-          <td>Text inside tag.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Throws</h5>
-      <table class="jd-tagtable">  
-        <tr>
-            <th><a href="../../../reference/chan/text/ParseException.html">ParseException</a></td>
-            <td>to interrupt parsing process.
+          <td><code><a href="../../../reference/chan/text/ParseException.html">ParseException</a></code></td>
+          <td width="100%">to interrupt parsing process.
 </td>
         </tr>
       </table>
-  </div>
+  
 
     </div>
 </div>
@@ -539,50 +572,62 @@
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-        abstract 
-         
+        public
+        abstract
+        
+        
+        
         boolean
       </span>
       <span class="sympad">onStartElement</span>
       <span class="normal">(<a href="../../../reference/chan/text/GroupParser.html">GroupParser</a> parser, String tagName, String attrs)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>This method will be called in linear mode every time parser reaches new tag.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
+  <p><p>This method will be called in linear mode every time parser reaches new tag.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>parser</code></td>
+        <td width="100%">
+          <code>GroupParser</code>:
+          <code><a href="../../../reference/chan/text/GroupParser.html">GroupParser</a></code> instance.</td>
+      </tr>
+      <tr>
+        <td><code>tagName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Name of tag.</td>
+      </tr>
+      <tr>
+        <td><code>attrs</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Encoded attributes inside tag.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>boolean</code></td>
+        <td width="100%">True to switch parser to group mode.</td>
+      </tr>
+    </table>
+      <table class="responsive">
+      <tr><th colspan=2>Throws</th></tr>
         <tr>
-          <th>parser</td>
-          <td><code><a href="../../../reference/chan/text/GroupParser.html">GroupParser</a></code> instance.</td>
-        </tr>
-        <tr>
-          <th>tagName</td>
-          <td>Name of tag.</td>
-        </tr>
-        <tr>
-          <th>attrs</td>
-          <td>Encoded attributes inside tag.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>True to switch parser to group mode.</li></ul>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Throws</h5>
-      <table class="jd-tagtable">  
-        <tr>
-            <th><a href="../../../reference/chan/text/ParseException.html">ParseException</a></td>
-            <td>to interrupt parsing process.
+          <td><code><a href="../../../reference/chan/text/ParseException.html">ParseException</a></code></td>
+          <td width="100%">to interrupt parsing process.
 </td>
         </tr>
       </table>
-  </div>
+  
 
     </div>
 </div>
@@ -593,50 +638,61 @@
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-        abstract 
-         
+        public
+        abstract
+        
+        
+        
         void
       </span>
       <span class="sympad">onText</span>
       <span class="normal">(<a href="../../../reference/chan/text/GroupParser.html">GroupParser</a> parser, String source, int start, int end)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>This method will be called in linear mode every time parser skips text.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
+  <p><p>This method will be called in linear mode every time parser skips text.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>parser</code></td>
+        <td width="100%">
+          <code>GroupParser</code>:
+          <code><a href="../../../reference/chan/text/GroupParser.html">GroupParser</a></code> instance.</td>
+      </tr>
+      <tr>
+        <td><code>source</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Source string.</td>
+      </tr>
+      <tr>
+        <td><code>start</code></td>
+        <td width="100%">
+          <code>int</code>:
+          Start index of text.</td>
+      </tr>
+      <tr>
+        <td><code>end</code></td>
+        <td width="100%">
+          <code>int</code>:
+          End index of text.</td>
+      </tr>
+    </table>
+      <table class="responsive">
+      <tr><th colspan=2>Throws</th></tr>
         <tr>
-          <th>parser</td>
-          <td><code><a href="../../../reference/chan/text/GroupParser.html">GroupParser</a></code> instance.</td>
-        </tr>
-        <tr>
-          <th>source</td>
-          <td>Source string.</td>
-        </tr>
-        <tr>
-          <th>start</td>
-          <td>Start index of text.</td>
-        </tr>
-        <tr>
-          <th>end</td>
-          <td>End index of text.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Throws</h5>
-      <table class="jd-tagtable">  
-        <tr>
-            <th><a href="../../../reference/chan/text/ParseException.html">ParseException</a></td>
-            <td>to interrupt parsing process.
+          <td><code><a href="../../../reference/chan/text/ParseException.html">ParseException</a></code></td>
+          <td width="100%">to interrupt parsing process.
 </td>
         </tr>
       </table>
-  </div>
+  
 
     </div>
 </div>

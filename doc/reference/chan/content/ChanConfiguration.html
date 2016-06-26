@@ -49,6 +49,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -56,7 +66,9 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
 <title>
 
-  ChanConfiguration - Dashchan API Reference
+  ChanConfiguration - Dashchan API Reference |
+
+Doclava
 
 </title>
 <link href="../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
@@ -303,6 +315,12 @@ Summary:
 &#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
 
 </div><!-- end sum-details-links -->
+<div class="api-level">
+  
+  
+  
+
+</div>
 </div><!-- end api-info-block -->
 
 
@@ -373,12 +391,11 @@ Summary:
  <li><code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_READ_SINGLE_POST">OPTION_READ_SINGLE_POST</a></code></li>
  <li><code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_READ_POSTS_COUNT">OPTION_READ_POSTS_COUNT</a></code></li>
  <li><code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_READ_USER_BOARDS">OPTION_READ_USER_BOARDS</a></code></li>
- <li><code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_READ_POPULAR_THREADS">OPTION_READ_POPULAR_THREADS</a></code></li>
  <li><code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_ALLOW_CAPTCHA_PASS">OPTION_ALLOW_CAPTCHA_PASS</a></code></li>
  <li><code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_ALLOW_USER_AUTHORIZATION">OPTION_ALLOW_USER_AUTHORIZATION</a></code></li>
  </ul>
  
- <p><h3>Static configuration</h3></p>
+ <h3>Static configuration</h3>
  
  <p>This configuration remains in RAM only while client is launched. You must configure these settings
  during construction.</p>
@@ -396,7 +413,7 @@ Summary:
  
  <p>You can add supported captchas using <code><a href="../../../reference/chan/content/ChanConfiguration.html#addCaptchaType(java.lang.String)">addCaptchaType(String)</a></code>.</p>
  
- <p><h3>Dynamic configuration</h3></p>
+ <h3>Dynamic configuration</h3>
  
  <p>This configuration can be written to client's preferences and read every time client launches.</p>
  
@@ -412,9 +429,10 @@ Summary:
  <p>You can store any another properties using <code><a href="../../../reference/chan/content/ChanConfiguration.html#set(java.lang.String, java.lang.String, boolean)">set(String, String, boolean)</a></code>,
  <code><a href="../../../reference/chan/content/ChanConfiguration.html#set(java.lang.String, java.lang.String, int)">set(String, String, int)</a></code> and <code><a href="../../../reference/chan/content/ChanConfiguration.html#set(java.lang.String, java.lang.String, java.lang.String)">set(String, String, String)</a></code> methods.</p>
  
- <p>You can get stored properties using <code><a href="../../../reference/chan/content/ChanConfiguration.html#get(java.lang.String, java.lang.String, boolean)">{@link #get(String, String, int)</a></code> and <code><a href="../../../reference/chan/content/ChanConfiguration.html#get(java.lang.String, java.lang.String, java.lang.String)">get(String, String, String)</a></code> methods.</p>
+ <p>You can get stored properties using <code><a href="../../../reference/chan/content/ChanConfiguration.html#get(java.lang.String, java.lang.String, boolean)">get(String, String, boolean)</a></code>,
+ <code><a href="../../../reference/chan/content/ChanConfiguration.html#get(java.lang.String, java.lang.String, int)">get(String, String, int)</a></code> and <code><a href="../../../reference/chan/content/ChanConfiguration.html#get(java.lang.String, java.lang.String, java.lang.String)">get(String, String, String)</a></code> methods.</p>
  
- <p><h3>Additional features</h3></p>
+ <h3>Additional features</h3>
  
  <p>You can store cookies using <code><a href="../../../reference/chan/content/ChanConfiguration.html#storeCookie(java.lang.String, java.lang.String, java.lang.String)">storeCookie(String, String, String)</a></code>. Later you can get it using
  <code><a href="../../../reference/chan/content/ChanConfiguration.html#getCookie(java.lang.String)">getCookie(String)</a></code>. User can clear cookies in application preferences.</p>
@@ -424,7 +442,7 @@ Summary:
  <p>You can add additional preferences to chan preferences screen using
  <code><a href="../../../reference/chan/content/ChanConfiguration.html#addCustomPreference(java.lang.String, boolean)">addCustomPreference(String, boolean)</a></code> and <code><a href="../../../reference/chan/content/ChanConfiguration.html#obtainCustomPreferenceConfiguration(java.lang.String)">obtainCustomPreferenceConfiguration(String)</a></code>.</p>
  
- <p><h3>Configuring actions</h3></p>
+ <h3>Configuring actions</h3>
  
  <p>You can configure board features using <code><a href="../../../reference/chan/content/ChanConfiguration.html#obtainBoardConfiguration(java.lang.String)">obtainBoardConfiguration(String)</a></code>.</p>
  
@@ -446,6 +464,7 @@ Summary:
  
  <p>You can configure custom preferences using <code><a href="../../../reference/chan/content/ChanConfiguration.html#obtainStatisticsConfiguration()">obtainStatisticsConfiguration()</a></code>.</p>
 </p>
+
 
 
 
@@ -706,23 +725,12 @@ Summary:
           static
           final
           String</nobr></td>
-          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_READ_POPULAR_THREADS">OPTION_READ_POPULAR_THREADS</a></td>
-          <td class="jd-descrcol" width="100%"><p>Allows client to download popular threads.</td>
-      </tr>
-      
-    
-      <tr class="alt-color api apilevel-" >
-          <td class="jd-typecol"><nobr>
-          public
-          static
-          final
-          String</nobr></td>
           <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_READ_POSTS_COUNT">OPTION_READ_POSTS_COUNT</a></td>
           <td class="jd-descrcol" width="100%"><p>Allows client to download posts count in thread.</td>
       </tr>
       
     
-      <tr class=" api apilevel-" >
+      <tr class="alt-color api apilevel-" >
           <td class="jd-typecol"><nobr>
           public
           static
@@ -733,7 +741,7 @@ Summary:
       </tr>
       
     
-      <tr class="alt-color api apilevel-" >
+      <tr class=" api apilevel-" >
           <td class="jd-typecol"><nobr>
           public
           static
@@ -744,7 +752,7 @@ Summary:
       </tr>
       
     
-      <tr class=" api apilevel-" >
+      <tr class="alt-color api apilevel-" >
           <td class="jd-typecol"><nobr>
           public
           static
@@ -755,7 +763,7 @@ Summary:
       </tr>
       
     
-      <tr class="alt-color api apilevel-" >
+      <tr class=" api apilevel-" >
           <td class="jd-typecol"><nobr>
           public
           static
@@ -814,8 +822,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -832,8 +840,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -850,26 +858,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
-            
-            
-            String</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#get(java.lang.String, java.lang.String, java.lang.String)">get</a></span>(String boardName, String key, String defaultValue)</nobr>
-        
-        <div class="jd-descrdiv"><p>Returns stored string value.</div>
-  
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            
             static
+            
             &lt;T&nbsp;extends&nbsp;<a href="../../../reference/chan/content/ChanConfiguration.html">ChanConfiguration</a>&gt;
             T</nobr>
         </td>
@@ -882,12 +872,30 @@ Summary:
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
+            
             
             
             final
             
+            String</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#get(java.lang.String, java.lang.String, java.lang.String)">get</a></span>(String boardName, String key, String defaultValue)</nobr>
+        
+        <div class="jd-descrdiv"><p>Returns stored string value.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
             
             int</nobr>
         </td>
@@ -904,8 +912,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             boolean</nobr>
         </td>
@@ -922,8 +930,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             Context</nobr>
         </td>
@@ -940,8 +948,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             String</nobr>
         </td>
@@ -958,8 +966,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             File</nobr>
         </td>
@@ -976,8 +984,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             Resources</nobr>
         </td>
@@ -994,8 +1002,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             String</nobr>
         </td>
@@ -1012,8 +1020,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             String[]</nobr>
         </td>
@@ -1210,8 +1218,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -1228,8 +1236,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -1246,26 +1254,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#set(java.lang.String, java.lang.String, java.lang.String)">set</a></span>(String boardName, String key, String value)</nobr>
-        
-        <div class="jd-descrdiv"><p>Stores string value.</div>
-  
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
             
             final
-            
             
             void</nobr>
         </td>
@@ -1278,12 +1268,30 @@ Summary:
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
+            
             
             
             final
             
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#set(java.lang.String, java.lang.String, java.lang.String)">set</a></span>(String boardName, String key, String value)</nobr>
+        
+        <div class="jd-descrdiv"><p>Stores string value.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
             
             void</nobr>
         </td>
@@ -1300,8 +1308,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -1318,26 +1326,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#setBumpLimit(java.lang.String, int)">setBumpLimit</a></span>(String boardName, int bumpLimit)</nobr>
-        
-        <div class="jd-descrdiv"><p>Set <code>bumpLimit</code> for specified <code>boardName</code>.</div>
-  
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
             
             final
-            
             
             void</nobr>
         </td>
@@ -1350,12 +1340,30 @@ Summary:
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
+            
             
             
             final
             
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanConfiguration.html#setBumpLimit(java.lang.String, int)">setBumpLimit</a></span>(String boardName, int bumpLimit)</nobr>
+        
+        <div class="jd-descrdiv"><p>Set <code>bumpLimit</code> for specified <code>boardName</code>.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
             
             void</nobr>
         </td>
@@ -1372,8 +1380,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -1390,8 +1398,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -1408,8 +1416,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -1426,8 +1434,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -1444,8 +1452,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -1462,8 +1470,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -1480,8 +1488,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -1498,8 +1506,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -1516,8 +1524,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -1534,8 +1542,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -1589,10 +1597,10 @@ From class
             
             
             
-            boolean</nobr>
+            Object</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">equals</span>(Object arg0)</nobr>
+        <span class="sympad">clone</span>()</nobr>
         
   </td></tr>
 
@@ -1602,8 +1610,40 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">equals</span>(Object arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">finalize</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
             
             Class&lt;?&gt;</nobr>
         </td>
@@ -1634,8 +1674,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -1650,8 +1690,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -1682,24 +1722,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">wait</span>()</nobr>
-        
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
             
             final
-            
             
             void</nobr>
         </td>
@@ -1710,17 +1734,33 @@ From class
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad">wait</span>(long arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">wait</span>()</nobr>
         
   </td></tr>
 
@@ -1775,9 +1815,15 @@ From class
       </span>
         CAPTCHA_TYPE_MAILRU
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p></p></div>
+  <p></p>
 
     
     </div>
@@ -1797,9 +1843,15 @@ From class
       </span>
         CAPTCHA_TYPE_RECAPTCHA_1
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p></p></div>
+  <p></p>
 
     
     </div>
@@ -1819,9 +1871,15 @@ From class
       </span>
         CAPTCHA_TYPE_RECAPTCHA_2
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p></p></div>
+  <p></p>
 
     
     </div>
@@ -1841,9 +1899,15 @@ From class
       </span>
         CAPTCHA_TYPE_YANDEX_NUMERIC
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p></p></div>
+  <p></p>
 
     
     </div>
@@ -1863,9 +1927,15 @@ From class
       </span>
         CAPTCHA_TYPE_YANDEX_TEXTUAL
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p></p></div>
+  <p></p>
 
     
     </div>
@@ -1885,9 +1955,15 @@ From class
       </span>
         OPTION_ALLOW_CAPTCHA_PASS
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Allows user to enter authorization data and skip the captcha.
+  <p><p>Allows user to enter authorization data and skip the captcha.
  With entered data you will receive <code><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaData.html#captchaPass">captchaPass</a></code> argument.
  You can perform authorization and save cookies or another data that represents authorization state.
  Then you can use them to skip captcha.</p>
@@ -1895,9 +1971,9 @@ From class
  <p>If you enable this option, you <strong>must</strong> implement
  <code><a href="../../../reference/chan/content/ChanPerformer.html#onCheckAuthorization(chan.content.ChanPerformer.CheckAuthorizationData)">onCheckAuthorization(chan.content.ChanPerformer.CheckAuthorizationData)</a></code>.</p>
  
- <p>You should also implement <code><a href="../../../reference/chan/content/ChanConfiguration.html#obtainCaptchaPassConfiguration()">obtainCaptchaPassConfiguration()</a></code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">See Also</h5>
+ <p>You should also implement <code><a href="../../../reference/chan/content/ChanConfiguration.html#obtainCaptchaPassConfiguration()">obtainCaptchaPassConfiguration()</a></code>.</p></p>
+  <div>
+      <p><b>See also:</b></p>
       <ul class="nolist"><li><code><a href="../../../reference/chan/content/ChanPerformer.CaptchaState.html#PASS">PASS</a></code></li>
       </ul>
   </div>
@@ -1920,9 +1996,15 @@ From class
       </span>
         OPTION_ALLOW_USER_AUTHORIZATION
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Allows user to enter authorization data to access some features.
+  <p><p>Allows user to enter authorization data to access some features.
  You can obtain authorization data using <code><a href="../../../reference/chan/content/ChanConfiguration.html#getUserAuthorizationData()">getUserAuthorizationData()</a></code>.
  With this data you can perform authorization and save cookies or another data that represents authorization
  state. Then you can grant user rights to read some threads or something like this.</p>
@@ -1931,34 +2013,7 @@ From class
  <code><a href="../../../reference/chan/content/ChanPerformer.html#onCheckAuthorization(chan.content.ChanPerformer.CheckAuthorizationData)">onCheckAuthorization(chan.content.ChanPerformer.CheckAuthorizationData)</a></code>.</p>
  
  <p>You should also implement <code><a href="../../../reference/chan/content/ChanConfiguration.html#obtainUserAuthorizationConfiguration()">obtainUserAuthorizationConfiguration()</a></code>.</p>
-</p></div>
-
-    
-    </div>
-</div>
-
-
-
-<A NAME="OPTION_READ_POPULAR_THREADS"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public 
-        static 
-        final 
-        String
-      </span>
-        OPTION_READ_POPULAR_THREADS
-    </h4>
-    <div class="jd-details-descr">
-      
-  <div class="jd-tagdata jd-tagdescr"><p><p>Allows client to download popular threads.</p>
- 
- <p>If you enable this option, you <strong>must</strong> implement
- <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadThreadSummaries(chan.content.ChanPerformer.ReadThreadSummariesData)">onReadThreadSummaries(chan.content.ChanPerformer.ReadThreadSummariesData)</a></code> of
- <code><a href="../../../reference/chan/content/ChanPerformer.ReadThreadSummariesData.html#TYPE_POPULAR_THREADS">TYPE_POPULAR_THREADS</a></code> type.</p>
-</p></div>
+</p>
 
     
     </div>
@@ -1978,13 +2033,19 @@ From class
       </span>
         OPTION_READ_POSTS_COUNT
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Allows client to download posts count in thread. This option is necessary for threads watcher.</p>
+  <p><p>Allows client to download posts count in thread. This option is necessary for threads watcher.</p>
  
  <p>If you enable this option, you <strong>must</strong> implement
  <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadPostsCount(chan.content.ChanPerformer.ReadPostsCountData)">onReadPostsCount(chan.content.ChanPerformer.ReadPostsCountData)</a></code>.</p>
-</p></div>
+</p>
 
     
     </div>
@@ -2004,13 +2065,19 @@ From class
       </span>
         OPTION_READ_SINGLE_POST
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Allows client to download single post knowing it's board name and post number.</p>
+  <p><p>Allows client to download single post knowing it's board name and post number.</p>
  
  <p>If you enable this option, you <strong>must</strong> implement
  <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadSinglePost(chan.content.ChanPerformer.ReadSinglePostData)">onReadSinglePost(chan.content.ChanPerformer.ReadSinglePostData)</a></code>.</p>
-</p></div>
+</p>
 
     
     </div>
@@ -2030,11 +2097,17 @@ From class
       </span>
         OPTION_READ_THREAD_PARTIALLY
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Allows client to download thread partially.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">See Also</h5>
+  <p><p>Allows client to download thread partially.</p></p>
+  <div>
+      <p><b>See also:</b></p>
       <ul class="nolist"><li><code><a href="../../../reference/chan/content/ChanPerformer.html#onReadPosts(chan.content.ChanPerformer.ReadPostsData)">onReadPosts(chan.content.ChanPerformer.ReadPostsData)</a></code></li>
       </ul>
   </div>
@@ -2057,13 +2130,19 @@ From class
       </span>
         OPTION_READ_USER_BOARDS
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Allows client to download user boards.</p>
+  <p><p>Allows client to download user boards.</p>
  
  <p>If you enable this option, you <strong>must</strong> implement
  <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadUserBoards(chan.content.ChanPerformer.ReadUserBoardsData)">onReadUserBoards(chan.content.ChanPerformer.ReadUserBoardsData)</a></code>.</p>
-</p></div>
+</p>
 
     
     </div>
@@ -2083,14 +2162,20 @@ From class
       </span>
         OPTION_SINGLE_BOARD_MODE
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Allows client to use only one board. That exempts you from obligation to override
+  <p><p>Allows client to use only one board. That exempts you from obligation to override
  <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadBoards(chan.content.ChanPerformer.ReadBoardsData)">onReadBoards(chan.content.ChanPerformer.ReadBoardsData)</a></code> method.</p>
  
  <p>The <code>boardName</code> argument in all methods will be equal to <code>null</code>. You can change this argument
  using <code><a href="../../../reference/chan/content/ChanConfiguration.html#setSingleBoardName(java.lang.String)">setSingleBoardName(String)</a></code> method.</p>
-</p></div>
+</p>
 
     
     </div>
@@ -2112,19 +2197,25 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         
       </span>
       <span class="sympad">ChanConfiguration</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p></p></div>
+  <p></p>
 
     </div>
 </div>
@@ -2150,34 +2241,40 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         void
       </span>
       <span class="sympad">addCaptchaType</span>
       <span class="normal">(String captchaType)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Add captcha type to list of supported capthas. User may choose captcha in application preferences.
+  <p><p>Add captcha type to list of supported capthas. User may choose captcha in application preferences.
  Client will obtain configuration of custom captchas with <code><a href="../../../reference/chan/content/ChanConfiguration.html#obtainCustomCaptchaConfiguration(java.lang.String)">obtainCustomCaptchaConfiguration(String)</a></code>.</p>
  
  <p>There is a list of default captcha types: <code><a href="../../../reference/chan/content/ChanConfiguration.html#CAPTCHA_TYPE_RECAPTCHA_1">CAPTCHA_TYPE_RECAPTCHA_1</a></code>,
  <code><a href="../../../reference/chan/content/ChanConfiguration.html#CAPTCHA_TYPE_RECAPTCHA_2">CAPTCHA_TYPE_RECAPTCHA_2</a></code>, <code><a href="../../../reference/chan/content/ChanConfiguration.html#CAPTCHA_TYPE_YANDEX_TEXTUAL">CAPTCHA_TYPE_YANDEX_TEXTUAL</a></code>, <code><a href="../../../reference/chan/content/ChanConfiguration.html#CAPTCHA_TYPE_YANDEX_NUMERIC">CAPTCHA_TYPE_YANDEX_NUMERIC</a></code> and
- <code><a href="../../../reference/chan/content/ChanConfiguration.html#CAPTCHA_TYPE_MAILRU">CAPTCHA_TYPE_MAILRU</a></code>. Client is able to handle these captchas by itself.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>captchaType</td>
-          <td>Captcha type string.
+ <code><a href="../../../reference/chan/content/ChanConfiguration.html#CAPTCHA_TYPE_MAILRU">CAPTCHA_TYPE_MAILRU</a></code>. Client is able to handle these captchas by itself.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>captchaType</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Captcha type string.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2188,80 +2285,43 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         void
       </span>
       <span class="sympad">addCustomPreference</span>
       <span class="normal">(String key, boolean defaultValue)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Add custom preference to chan preferences screen. You can obtain a value using
+  <p><p>Add custom preference to chan preferences screen. You can obtain a value using
  <code><a href="../../../reference/chan/content/ChanConfiguration.html#get(java.lang.String, java.lang.String, boolean)">get(String, String, boolean)</a></code> method with <code>null</code> <code>boardName</code> argument. You also must override
- <code><a href="../../../reference/chan/content/ChanConfiguration.html#obtainCustomPreferenceConfiguration(java.lang.String)">obtainCustomPreferenceConfiguration(String)</a></code> to configure such values as title and summary.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>key</td>
-          <td>Custom preference key.</td>
-        </tr>
-        <tr>
-          <th>defaultValue</td>
-          <td>Default value.
+ <code><a href="../../../reference/chan/content/ChanConfiguration.html#obtainCustomPreferenceConfiguration(java.lang.String)">obtainCustomPreferenceConfiguration(String)</a></code> to configure such values as title and summary.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>key</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Custom preference key.</td>
+      </tr>
+      <tr>
+        <td><code>defaultValue</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          Default value.
 </td>
-        </tr>
-      </table>
-  </div>
-
-    </div>
-</div>
-
-
-<A NAME="get(java.lang.String, java.lang.String, java.lang.String)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public 
-         
-        final 
-         
-         
-        String
-      </span>
-      <span class="sympad">get</span>
-      <span class="normal">(String boardName, String key, String defaultValue)</span>
-    </h4>
-    <div class="jd-details-descr">
-      
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns stored string value.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>boardName</td>
-          <td>Board name part of real key.</td>
-        </tr>
-        <tr>
-          <th>key</td>
-          <td>Key name.</td>
-        </tr>
-        <tr>
-          <th>defaultValue</td>
-          <td>Value to return if this preference does not exist.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Stored value.
-</li></ul>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2272,34 +2332,101 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-        static 
-         
-         
-         
+        public
+        
+        
+        static
+        
         T
       </span>
       <span class="sympad">get</span>
       <span class="normal">(Object object)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Return linked <code><a href="../../../reference/chan/content/ChanConfiguration.html">ChanConfiguration</a></code> instance.</p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>object</td>
-          <td>Linked object: <code><a href="../../../reference/chan/content/ChanConfiguration.html">ChanConfiguration</a></code>, <code><a href="../../../reference/chan/content/ChanPerformer.html">ChanPerformer</a></code>,
+  <p><p>Return linked <code><a href="../../../reference/chan/content/ChanConfiguration.html">ChanConfiguration</a></code> instance.</p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>object</code></td>
+        <td width="100%">
+          <code>Object</code>:
+          Linked object: <code><a href="../../../reference/chan/content/ChanConfiguration.html">ChanConfiguration</a></code>, <code><a href="../../../reference/chan/content/ChanPerformer.html">ChanPerformer</a></code>,
  <code><a href="../../../reference/chan/content/ChanLocator.html">ChanLocator</a></code> or <code><a href="../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a></code>.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li><code><a href="../../../reference/chan/content/ChanConfiguration.html">ChanConfiguration</a></code> instance.
-</li></ul>
-  </div>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>T</code></td>
+        <td width="100%"><code><a href="../../../reference/chan/content/ChanConfiguration.html">ChanConfiguration</a></code> instance.
+</td>
+      </tr>
+    </table>
+
+    </div>
+</div>
+
+
+<A NAME="get(java.lang.String, java.lang.String, java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public
+        
+        
+        
+        final
+        String
+      </span>
+      <span class="sympad">get</span>
+      <span class="normal">(String boardName, String key, String defaultValue)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <p><p>Returns stored string value.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>boardName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Board name part of real key.</td>
+      </tr>
+      <tr>
+        <td><code>key</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Key name.</td>
+      </tr>
+      <tr>
+        <td><code>defaultValue</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Value to return if this preference does not exist.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>String</code></td>
+        <td width="100%">Stored value.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2310,41 +2437,54 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         int
       </span>
       <span class="sympad">get</span>
       <span class="normal">(String boardName, String key, int defaultValue)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns stored int value.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>boardName</td>
-          <td>Board name part of real key.</td>
-        </tr>
-        <tr>
-          <th>key</td>
-          <td>Key name.</td>
-        </tr>
-        <tr>
-          <th>defaultValue</td>
-          <td>Value to return if this preference does not exist.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Stored value.
-</li></ul>
-  </div>
+  <p><p>Returns stored int value.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>boardName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Board name part of real key.</td>
+      </tr>
+      <tr>
+        <td><code>key</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Key name.</td>
+      </tr>
+      <tr>
+        <td><code>defaultValue</code></td>
+        <td width="100%">
+          <code>int</code>:
+          Value to return if this preference does not exist.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>int</code></td>
+        <td width="100%">Stored value.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2355,41 +2495,54 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         boolean
       </span>
       <span class="sympad">get</span>
       <span class="normal">(String boardName, String key, boolean defaultValue)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns stored boolean value.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>boardName</td>
-          <td>Board name part of real key.</td>
-        </tr>
-        <tr>
-          <th>key</td>
-          <td>Key name.</td>
-        </tr>
-        <tr>
-          <th>defaultValue</td>
-          <td>Value to return if this preference does not exist.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Stored value.
-</li></ul>
-  </div>
+  <p><p>Returns stored boolean value.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>boardName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Board name part of real key.</td>
+      </tr>
+      <tr>
+        <td><code>key</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Key name.</td>
+      </tr>
+      <tr>
+        <td><code>defaultValue</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          Value to return if this preference does not exist.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>boolean</code></td>
+        <td width="100%">Stored value.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2400,20 +2553,33 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         Context
       </span>
       <span class="sympad">getContext</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns application context.</p>
-</p></div>
+  <p><p>Returns application context.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>Context</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2424,33 +2590,42 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         String
       </span>
       <span class="sympad">getCookie</span>
       <span class="normal">(String cookie)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns stored cookie.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>cookie</td>
-          <td>Cookie name.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Cookie value or null if cookie not found.
-</li></ul>
-  </div>
+  <p><p>Returns stored cookie.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>cookie</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Cookie name.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>String</code></td>
+        <td width="100%">Cookie value or null if cookie not found.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2461,20 +2636,33 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         File
       </span>
       <span class="sympad">getDownloadDirectory</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns download directory.</p> 
-</p></div>
+  <p><p>Returns download directory.</p> 
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>File</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2485,20 +2673,33 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         Resources
       </span>
       <span class="sympad">getResources</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns resources from chan APK file.</p>
-</p></div>
+  <p><p>Returns resources from chan APK file.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>Resources</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2509,20 +2710,33 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         String
       </span>
       <span class="sympad">getTitle</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns a chan title. This title is display name used in client.</p>
-</p></div>
+  <p><p>Returns a chan title. This title is display name used in client.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>String</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2533,25 +2747,34 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         String[]
       </span>
       <span class="sympad">getUserAuthorizationData</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns user authorization data. User can specify authorization data when
- <code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_ALLOW_USER_AUTHORIZATION">OPTION_ALLOW_USER_AUTHORIZATION</a></code> enabled.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>User authorization fields values. 
-</li></ul>
-  </div>
+  <p><p>Returns user authorization data. User can specify authorization data when
+ <code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_ALLOW_USER_AUTHORIZATION">OPTION_ALLOW_USER_AUTHORIZATION</a></code> enabled.</p></p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>String[]</code></td>
+        <td width="100%">User authorization fields values. 
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2562,21 +2785,34 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/content/ChanConfiguration.Archivation.html">ChanConfiguration.Archivation</a>
       </span>
       <span class="sympad">obtainArchivationConfiguration</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls every time client requests archivation configuration. You must return new instance of
+  <p><p>Calls every time client requests archivation configuration. You must return new instance of
  <code><a href="../../../reference/chan/content/ChanConfiguration.Archivation.html">ChanConfiguration.Archivation</a></code> with archivation configuration.</p>
-</p></div>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/ChanConfiguration.Archivation.html">ChanConfiguration.Archivation</a></code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2587,33 +2823,46 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/content/ChanConfiguration.Board.html">ChanConfiguration.Board</a>
       </span>
       <span class="sympad">obtainBoardConfiguration</span>
       <span class="normal">(String boardName)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls every time client requests board configuration. You must return new instance of <code><a href="../../../reference/chan/content/ChanConfiguration.Board.html">ChanConfiguration.Board</a></code>
+  <p><p>Calls every time client requests board configuration. You must return new instance of <code><a href="../../../reference/chan/content/ChanConfiguration.Board.html">ChanConfiguration.Board</a></code>
  with configuration for given <code>boardName</code>.</p>
  
  <p><strong>The <code>boardName</code> argument may be <code>null</code>!</strong> In this case you must return the widest
- configuration for your chan.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>boardName</td>
-          <td>Board name string.
+ configuration for your chan.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>boardName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Board name string.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/ChanConfiguration.Board.html">ChanConfiguration.Board</a></code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2624,21 +2873,34 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/content/ChanConfiguration.Authorization.html">ChanConfiguration.Authorization</a>
       </span>
       <span class="sympad">obtainCaptchaPassConfiguration</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls every time client requests captcha pass configuration. You must return new instance of
+  <p><p>Calls every time client requests captcha pass configuration. You must return new instance of
  <code><a href="../../../reference/chan/content/ChanConfiguration.Authorization.html">ChanConfiguration.Authorization</a></code> with captcha pass configuration.</p>
-</p></div>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/ChanConfiguration.Authorization.html">ChanConfiguration.Authorization</a></code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2649,30 +2911,43 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/content/ChanConfiguration.Captcha.html">ChanConfiguration.Captcha</a>
       </span>
       <span class="sympad">obtainCustomCaptchaConfiguration</span>
       <span class="normal">(String captchaType)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls every time client requests custom captcha configuration. You must return new instance of <code><a href="../../../reference/chan/content/ChanConfiguration.Captcha.html">ChanConfiguration.Captcha</a></code>
- with configuration for given <code>captchaType</code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>captchaType</td>
-          <td>Captcha type string.
+  <p><p>Calls every time client requests custom captcha configuration. You must return new instance of <code><a href="../../../reference/chan/content/ChanConfiguration.Captcha.html">ChanConfiguration.Captcha</a></code>
+ with configuration for given <code>captchaType</code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>captchaType</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Captcha type string.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/ChanConfiguration.Captcha.html">ChanConfiguration.Captcha</a></code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2683,30 +2958,43 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/content/ChanConfiguration.CustomPreference.html">ChanConfiguration.CustomPreference</a>
       </span>
       <span class="sympad">obtainCustomPreferenceConfiguration</span>
       <span class="normal">(String key)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls every time client requests custom captcha configuration. You must return new instance of
- <code><a href="../../../reference/chan/content/ChanConfiguration.CustomPreference.html">ChanConfiguration.CustomPreference</a></code> with configuration for given <code>key</code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>key</td>
-          <td>Custom preference key.
+  <p><p>Calls every time client requests custom captcha configuration. You must return new instance of
+ <code><a href="../../../reference/chan/content/ChanConfiguration.CustomPreference.html">ChanConfiguration.CustomPreference</a></code> with configuration for given <code>key</code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>key</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Custom preference key.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/ChanConfiguration.CustomPreference.html">ChanConfiguration.CustomPreference</a></code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2717,33 +3005,46 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/content/ChanConfiguration.Deleting.html">ChanConfiguration.Deleting</a>
       </span>
       <span class="sympad">obtainDeletingConfiguration</span>
       <span class="normal">(String boardName)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls every time client requests deleting configuration. You must return new instance of <code><a href="../../../reference/chan/content/ChanConfiguration.Deleting.html">ChanConfiguration.Deleting</a></code>
+  <p><p>Calls every time client requests deleting configuration. You must return new instance of <code><a href="../../../reference/chan/content/ChanConfiguration.Deleting.html">ChanConfiguration.Deleting</a></code>
  with configuration for given <code>boardName</code>.</p>
  
  <p><strong>The <code>boardName</code> argument may be <code>null</code>!</strong> In this case you must return the widest
- configuration for your chan.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>boardName</td>
-          <td>Board name string.
+ configuration for your chan.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>boardName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Board name string.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/ChanConfiguration.Deleting.html">ChanConfiguration.Deleting</a></code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2754,37 +3055,52 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/content/ChanConfiguration.Posting.html">ChanConfiguration.Posting</a>
       </span>
       <span class="sympad">obtainPostingConfiguration</span>
       <span class="normal">(String boardName, boolean newThread)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls every time client requests posting configuration. You must return new instance of <code><a href="../../../reference/chan/content/ChanConfiguration.Posting.html">ChanConfiguration.Posting</a></code>
+  <p><p>Calls every time client requests posting configuration. You must return new instance of <code><a href="../../../reference/chan/content/ChanConfiguration.Posting.html">ChanConfiguration.Posting</a></code>
  with configuration for given <code>boardName</code>.</p>
  
  <p><strong>The <code>boardName</code> argument may be <code>null</code>!</strong> In this case you must return the widest
- configuration for your chan.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>boardName</td>
-          <td>Board name string.</td>
-        </tr>
-        <tr>
-          <th>newThread</td>
-          <td>True if user starts new thread.
+ configuration for your chan.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>boardName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Board name string.</td>
+      </tr>
+      <tr>
+        <td><code>newThread</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          True if user starts new thread.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/ChanConfiguration.Posting.html">ChanConfiguration.Posting</a></code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2795,33 +3111,46 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/content/ChanConfiguration.Reporting.html">ChanConfiguration.Reporting</a>
       </span>
       <span class="sympad">obtainReportingConfiguration</span>
       <span class="normal">(String boardName)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls every time client requests reporting configuration. You must return new instance of <code><a href="../../../reference/chan/content/ChanConfiguration.Reporting.html">ChanConfiguration.Reporting</a></code>
+  <p><p>Calls every time client requests reporting configuration. You must return new instance of <code><a href="../../../reference/chan/content/ChanConfiguration.Reporting.html">ChanConfiguration.Reporting</a></code>
  with configuration for given <code>boardName</code>.</p>
  
  <p><strong>The <code>boardName</code> argument may be <code>null</code>!</strong> In this case you must return the widest
- configuration for your chan.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>boardName</td>
-          <td>Board name string.
+ configuration for your chan.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>boardName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Board name string.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/ChanConfiguration.Reporting.html">ChanConfiguration.Reporting</a></code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2832,21 +3161,34 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/content/ChanConfiguration.Statistics.html">ChanConfiguration.Statistics</a>
       </span>
       <span class="sympad">obtainStatisticsConfiguration</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls every time client requests statistics configuration. You must return new instance of
+  <p><p>Calls every time client requests statistics configuration. You must return new instance of
  <code><a href="../../../reference/chan/content/ChanConfiguration.Statistics.html">ChanConfiguration.Statistics</a></code> with statistics configuration.</p>
-</p></div>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/ChanConfiguration.Statistics.html">ChanConfiguration.Statistics</a></code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2857,21 +3199,34 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/content/ChanConfiguration.Authorization.html">ChanConfiguration.Authorization</a>
       </span>
       <span class="sympad">obtainUserAuthorizationConfiguration</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls every time client requests user authorization configuration. You must return new instance of
+  <p><p>Calls every time client requests user authorization configuration. You must return new instance of
  <code><a href="../../../reference/chan/content/ChanConfiguration.Authorization.html">ChanConfiguration.Authorization</a></code> with user authorization configuration.</p>
-</p></div>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/ChanConfiguration.Authorization.html">ChanConfiguration.Authorization</a></code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2882,29 +3237,35 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         void
       </span>
       <span class="sympad">request</span>
       <span class="normal">(String option)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Requests <code>option</code>. You can do it only during construction.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>option</td>
-          <td>Option to request.
+  <p><p>Requests <code>option</code>. You can do it only during construction.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>option</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Option to request.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2915,78 +3276,47 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         void
       </span>
       <span class="sympad">set</span>
       <span class="normal">(String boardName, String key, boolean value)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores boolean value.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>boardName</td>
-          <td>Board name part of key.</td>
-        </tr>
-        <tr>
-          <th>key</td>
-          <td>Key name.</td>
-        </tr>
-        <tr>
-          <th>value</td>
-          <td>Value to store.
+  <p><p>Stores boolean value.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>boardName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Board name part of key.</td>
+      </tr>
+      <tr>
+        <td><code>key</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Key name.</td>
+      </tr>
+      <tr>
+        <td><code>value</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          Value to store.
 </td>
-        </tr>
-      </table>
-  </div>
-
-    </div>
-</div>
-
-
-<A NAME="set(java.lang.String, java.lang.String, java.lang.String)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public 
-         
-        final 
-         
-         
-        void
-      </span>
-      <span class="sympad">set</span>
-      <span class="normal">(String boardName, String key, String value)</span>
-    </h4>
-    <div class="jd-details-descr">
-      
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores string value.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>boardName</td>
-          <td>Board name part of key.</td>
-        </tr>
-        <tr>
-          <th>key</td>
-          <td>Key name.</td>
-        </tr>
-        <tr>
-          <th>value</td>
-          <td>Value to store.
-</td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2997,37 +3327,98 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         void
       </span>
       <span class="sympad">set</span>
       <span class="normal">(String boardName, String key, int value)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores int value.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>boardName</td>
-          <td>Board name part of key.</td>
-        </tr>
-        <tr>
-          <th>key</td>
-          <td>Key name.</td>
-        </tr>
-        <tr>
-          <th>value</td>
-          <td>Value to store.
+  <p><p>Stores int value.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>boardName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Board name part of key.</td>
+      </tr>
+      <tr>
+        <td><code>key</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Key name.</td>
+      </tr>
+      <tr>
+        <td><code>value</code></td>
+        <td width="100%">
+          <code>int</code>:
+          Value to store.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
+
+    </div>
+</div>
+
+
+<A NAME="set(java.lang.String, java.lang.String, java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public
+        
+        
+        
+        final
+        void
+      </span>
+      <span class="sympad">set</span>
+      <span class="normal">(String boardName, String key, String value)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <p><p>Stores string value.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>boardName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Board name part of key.</td>
+      </tr>
+      <tr>
+        <td><code>key</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Key name.</td>
+      </tr>
+      <tr>
+        <td><code>value</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Value to store.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -3038,33 +3429,41 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         void
       </span>
       <span class="sympad">setBoardDescription</span>
       <span class="normal">(String boardName, String description)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Set <code>description</code> for board with given <code>boardName</code>.</p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>boardName</td>
-          <td>Board name.</td>
-        </tr>
-        <tr>
-          <th>description</td>
-          <td>Board description.
+  <p><p>Set <code>description</code> for board with given <code>boardName</code>.</p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>boardName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Board name.</td>
+      </tr>
+      <tr>
+        <td><code>description</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Board description.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -3075,70 +3474,41 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         void
       </span>
       <span class="sympad">setBoardTitle</span>
       <span class="normal">(String boardName, String title)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Set <code>title</code> for board with given <code>boardName</code>.</p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>boardName</td>
-          <td>Board name.</td>
-        </tr>
-        <tr>
-          <th>title</td>
-          <td>Board title.
+  <p><p>Set <code>title</code> for board with given <code>boardName</code>.</p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>boardName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Board name.</td>
+      </tr>
+      <tr>
+        <td><code>title</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Board title.
 </td>
-        </tr>
-      </table>
-  </div>
-
-    </div>
-</div>
-
-
-<A NAME="setBumpLimit(java.lang.String, int)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public 
-         
-        final 
-         
-         
-        void
-      </span>
-      <span class="sympad">setBumpLimit</span>
-      <span class="normal">(String boardName, int bumpLimit)</span>
-    </h4>
-    <div class="jd-details-descr">
-      
-  <div class="jd-tagdata jd-tagdescr"><p><p>Set <code>bumpLimit</code> for specified <code>boardName</code>.</p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>boardName</td>
-          <td>Board name.</td>
-        </tr>
-        <tr>
-          <th>bumpLimit</td>
-          <td>Bump limit value.
-</td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -3149,29 +3519,80 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         void
       </span>
       <span class="sympad">setBumpLimit</span>
       <span class="normal">(int bumpLimit)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Set <code>bumpLimit</code> for all boards.</p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>bumpLimit</td>
-          <td>Bump limit value.
+  <p><p>Set <code>bumpLimit</code> for all boards.</p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>bumpLimit</code></td>
+        <td width="100%">
+          <code>int</code>:
+          Bump limit value.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
+
+    </div>
+</div>
+
+
+<A NAME="setBumpLimit(java.lang.String, int)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public
+        
+        
+        
+        final
+        void
+      </span>
+      <span class="sympad">setBumpLimit</span>
+      <span class="normal">(String boardName, int bumpLimit)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <p><p>Set <code>bumpLimit</code> for specified <code>boardName</code>.</p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>boardName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Board name.</td>
+      </tr>
+      <tr>
+        <td><code>bumpLimit</code></td>
+        <td width="100%">
+          <code>int</code>:
+          Bump limit value.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -3182,29 +3603,35 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         void
       </span>
       <span class="sympad">setBumpLimitMode</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanConfiguration.BumpLimitMode.html">ChanConfiguration.BumpLimitMode</a> mode)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Set specified <code><a href="../../../reference/chan/content/ChanConfiguration.BumpLimitMode.html">ChanConfiguration.BumpLimitMode</a></code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>mode</td>
-          <td>Bump limit mode.
+  <p><p>Set specified <code><a href="../../../reference/chan/content/ChanConfiguration.BumpLimitMode.html">ChanConfiguration.BumpLimitMode</a></code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>mode</code></td>
+        <td width="100%">
+          <code>ChanConfiguration.BumpLimitMode</code>:
+          Bump limit mode.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -3215,29 +3642,35 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         void
       </span>
       <span class="sympad">setDefaultName</span>
       <span class="normal">(String defaultName)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Set poster's <code>defaultName</code> for all boards.</p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>defaultName</td>
-          <td>Default name.
+  <p><p>Set poster's <code>defaultName</code> for all boards.</p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>defaultName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Default name.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -3248,33 +3681,41 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         void
       </span>
       <span class="sympad">setDefaultName</span>
       <span class="normal">(String boardName, String defaultName)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Set poster's <code>defaultName</code> for specified <code>boardName</code>.</p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>boardName</td>
-          <td>Board name.</td>
-        </tr>
-        <tr>
-          <th>defaultName</td>
-          <td>Default name.
+  <p><p>Set poster's <code>defaultName</code> for specified <code>boardName</code>.</p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>boardName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Board name.</td>
+      </tr>
+      <tr>
+        <td><code>defaultName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Default name.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -3285,33 +3726,41 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         void
       </span>
       <span class="sympad">setPagesCount</span>
       <span class="normal">(String boardName, int pagesCount)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Set <code>pagesCount</code> for <code>boardName</code>.</p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>boardName</td>
-          <td>Board name.</td>
-        </tr>
-        <tr>
-          <th>pagesCount</td>
-          <td>Pages count value.
+  <p><p>Set <code>pagesCount</code> for <code>boardName</code>.</p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>boardName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Board name.</td>
+      </tr>
+      <tr>
+        <td><code>pagesCount</code></td>
+        <td width="100%">
+          <code>int</code>:
+          Pages count value.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -3322,30 +3771,36 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         void
       </span>
       <span class="sympad">setSingleBoardName</span>
       <span class="normal">(String boardName)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Set <code>boardName</code> argument for all requests when <code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_SINGLE_BOARD_MODE">OPTION_SINGLE_BOARD_MODE</a></code> enabled.
- That allow you disable this option in the future when chan add multiple boards for example.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>boardName</td>
-          <td>Default board name string.
+  <p><p>Set <code>boardName</code> argument for all requests when <code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_SINGLE_BOARD_MODE">OPTION_SINGLE_BOARD_MODE</a></code> enabled.
+ That allow you disable this option in the future when chan add multiple boards for example.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>boardName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Default board name string.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -3356,33 +3811,41 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         void
       </span>
       <span class="sympad">storeBoardDescription</span>
       <span class="normal">(String boardName, String description)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Store <code>description</code> for board with given <code>boardName</code>.</p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>boardName</td>
-          <td>Board name.</td>
-        </tr>
-        <tr>
-          <th>description</td>
-          <td>Board description.
+  <p><p>Store <code>description</code> for board with given <code>boardName</code>.</p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>boardName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Board name.</td>
+      </tr>
+      <tr>
+        <td><code>description</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Board description.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -3393,33 +3856,41 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         void
       </span>
       <span class="sympad">storeBoardTitle</span>
       <span class="normal">(String boardName, String title)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Store <code>title</code> for board with given <code>boardName</code>.</p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>boardName</td>
-          <td>Board name.</td>
-        </tr>
-        <tr>
-          <th>title</td>
-          <td>Board title.
+  <p><p>Store <code>title</code> for board with given <code>boardName</code>.</p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>boardName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Board name.</td>
+      </tr>
+      <tr>
+        <td><code>title</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Board title.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -3430,33 +3901,41 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         void
       </span>
       <span class="sympad">storeBumpLimit</span>
       <span class="normal">(String boardName, int bumpLimit)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Store <code>bumpLimit</code> for specified <code>boardName</code>.</p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>boardName</td>
-          <td>Board name.</td>
-        </tr>
-        <tr>
-          <th>bumpLimit</td>
-          <td>Bump limit value.
+  <p><p>Store <code>bumpLimit</code> for specified <code>boardName</code>.</p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>boardName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Board name.</td>
+      </tr>
+      <tr>
+        <td><code>bumpLimit</code></td>
+        <td width="100%">
+          <code>int</code>:
+          Bump limit value.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -3467,38 +3946,48 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         void
       </span>
       <span class="sympad">storeCookie</span>
       <span class="normal">(String cookie, String value, String displayName)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores cookie. You can specify human-friendly displayName of cookie.
- User can remove this cookie using cookie manager.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>cookie</td>
-          <td>Cookie name.</td>
-        </tr>
-        <tr>
-          <th>value</td>
-          <td>Cookie value. Set this argument to <code>null</code> to remove the cookie.</td>
-        </tr>
-        <tr>
-          <th>displayName</td>
-          <td>Human-friendly name of cookie. May be <code>null</code> if value is <code>null</code> too.
+  <p><p>Stores cookie. You can specify human-friendly displayName of cookie.
+ User can remove this cookie using cookie manager.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>cookie</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Cookie name.</td>
+      </tr>
+      <tr>
+        <td><code>value</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Cookie value. Set this argument to <code>null</code> to remove the cookie.</td>
+      </tr>
+      <tr>
+        <td><code>displayName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Human-friendly name of cookie. May be <code>null</code> if value is <code>null</code> too.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -3509,33 +3998,41 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         void
       </span>
       <span class="sympad">storeDefaultName</span>
       <span class="normal">(String boardName, String defaultName)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Store poster's <code>defaultName</code> for specified <code>boardName</code>.</p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>boardName</td>
-          <td>Board name.</td>
-        </tr>
-        <tr>
-          <th>defaultName</td>
-          <td>Default name.
+  <p><p>Store poster's <code>defaultName</code> for specified <code>boardName</code>.</p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>boardName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Board name.</td>
+      </tr>
+      <tr>
+        <td><code>defaultName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Default name.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -3546,33 +4043,41 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        public
+        
+        
+        
+        final
         void
       </span>
       <span class="sympad">storePagesCount</span>
       <span class="normal">(String boardName, int pagesCount)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Store <code>pagesCount</code> for <code>boardName</code>.</p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>boardName</td>
-          <td>Board name.</td>
-        </tr>
-        <tr>
-          <th>pagesCount</td>
-          <td>Pages count value.
+  <p><p>Store <code>pagesCount</code> for <code>boardName</code>.</p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>boardName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Board name.</td>
+      </tr>
+      <tr>
+        <td><code>pagesCount</code></td>
+        <td width="100%">
+          <code>int</code>:
+          Pages count value.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>

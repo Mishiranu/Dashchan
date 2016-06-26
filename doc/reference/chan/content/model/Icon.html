@@ -49,6 +49,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -56,7 +66,9 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../../favicon.ico" />
 <title>
 
-  Icon - Dashchan API Reference
+  Icon - Dashchan API Reference |
+
+Doclava
 
 </title>
 <link href="../../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
@@ -257,6 +269,12 @@ Summary:
 &#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
 
 </div><!-- end sum-details-links -->
+<div class="api-level">
+  
+  
+  
+
+</div>
 </div><!-- end api-info-block -->
 
 
@@ -265,7 +283,7 @@ Summary:
 <div id="jd-header">
     public
      
-     
+    final 
     
     class
 <h1 itemprop="name">Icon</h1>
@@ -324,6 +342,7 @@ Summary:
 <h2>Class Overview</h2>
 <p itemprop="articleBody"><p>Model containing post icon.</p>
 </p>
+
 
 
 
@@ -487,10 +506,10 @@ From class
             
             
             
-            boolean</nobr>
+            Object</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">equals</span>(Object arg0)</nobr>
+        <span class="sympad">clone</span>()</nobr>
         
   </td></tr>
 
@@ -500,8 +519,40 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">equals</span>(Object arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">finalize</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
             
             Class&lt;?&gt;</nobr>
         </td>
@@ -532,8 +583,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -548,8 +599,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -580,24 +631,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">wait</span>()</nobr>
-        
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
             
             final
-            
             
             void</nobr>
         </td>
@@ -608,17 +643,33 @@ From class
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad">wait</span>(long arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">wait</span>()</nobr>
         
   </td></tr>
 
@@ -670,37 +721,47 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         
       </span>
       <span class="sympad">Icon</span>
       <span class="normal">(<a href="../../../../reference/chan/content/ChanLocator.html">ChanLocator</a> locator, Uri uri, String title)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Constructor for <code><a href="../../../../reference/chan/content/model/Icon.html">Icon</a></code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>locator</td>
-          <td><code><a href="../../../../reference/chan/content/ChanLocator.html">ChanLocator</a></code> instance to encode URI in model.</td>
-        </tr>
-        <tr>
-          <th>uri</td>
-          <td>Icon URI.</td>
-        </tr>
-        <tr>
-          <th>title</td>
-          <td>Icon title.
+  <p><p>Constructor for <code><a href="../../../../reference/chan/content/model/Icon.html">Icon</a></code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>locator</code></td>
+        <td width="100%">
+          <code>ChanLocator</code>:
+          <code><a href="../../../../reference/chan/content/ChanLocator.html">ChanLocator</a></code> instance to encode URI in model.</td>
+      </tr>
+      <tr>
+        <td><code>uri</code></td>
+        <td width="100%">
+          <code>Uri</code>:
+          Icon URI.</td>
+      </tr>
+      <tr>
+        <td><code>title</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Icon title.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -726,20 +787,33 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         String
       </span>
       <span class="sympad">getTitle</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns icon title.</p>
-</p></div>
+  <p><p>Returns icon title.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>String</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -750,29 +824,42 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         Uri
       </span>
       <span class="sympad">getUri</span>
       <span class="normal">(<a href="../../../../reference/chan/content/ChanLocator.html">ChanLocator</a> locator)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns icon URI.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>locator</td>
-          <td><code><a href="../../../../reference/chan/content/ChanLocator.html">ChanLocator</a></code> instance to decode URI in model.
+  <p><p>Returns icon URI.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>locator</code></td>
+        <td width="100%">
+          <code>ChanLocator</code>:
+          <code><a href="../../../../reference/chan/content/ChanLocator.html">ChanLocator</a></code> instance to decode URI in model.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>Uri</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>

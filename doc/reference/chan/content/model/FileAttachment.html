@@ -49,6 +49,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -56,7 +66,9 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../../favicon.ico" />
 <title>
 
-  FileAttachment - Dashchan API Reference
+  FileAttachment - Dashchan API Reference |
+
+Doclava
 
 </title>
 <link href="../../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
@@ -262,6 +274,12 @@ Summary:
 &#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
 
 </div><!-- end sum-details-links -->
+<div class="api-level">
+  
+  
+  
+
+</div>
 </div><!-- end api-info-block -->
 
 
@@ -338,6 +356,7 @@ Summary:
  
  <p>If this file is embedded frame like YouTube or Vocaroo, use <code><a href="../../../../reference/chan/content/model/EmbeddedAttachment.html">EmbeddedAttachment</a></code> class.</p>
 </p>
+
 
 
 
@@ -715,10 +734,10 @@ From class
             
             
             
-            boolean</nobr>
+            Object</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">equals</span>(Object arg0)</nobr>
+        <span class="sympad">clone</span>()</nobr>
         
   </td></tr>
 
@@ -728,8 +747,40 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">equals</span>(Object arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">finalize</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
             
             Class&lt;?&gt;</nobr>
         </td>
@@ -760,8 +811,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -776,8 +827,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -808,24 +859,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">wait</span>()</nobr>
-        
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
             
             final
-            
             
             void</nobr>
         </td>
@@ -836,17 +871,33 @@ From class
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad">wait</span>(long arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">wait</span>()</nobr>
         
   </td></tr>
 
@@ -900,19 +951,25 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         
       </span>
       <span class="sympad">FileAttachment</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p></p></div>
+  <p></p>
 
     </div>
 </div>
@@ -938,29 +995,42 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         Uri
       </span>
       <span class="sympad">getFileUri</span>
       <span class="normal">(<a href="../../../../reference/chan/content/ChanLocator.html">ChanLocator</a> locator)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns attachment file URI.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>locator</td>
-          <td><code><a href="../../../../reference/chan/content/ChanLocator.html">ChanLocator</a></code> instance to decode URI in model.
+  <p><p>Returns attachment file URI.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>locator</code></td>
+        <td width="100%">
+          <code>ChanLocator</code>:
+          <code><a href="../../../../reference/chan/content/ChanLocator.html">ChanLocator</a></code> instance to decode URI in model.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>Uri</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -971,20 +1041,33 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         int
       </span>
       <span class="sympad">getHeight</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns file height in pixels.</p>
-</p></div>
+  <p><p>Returns file height in pixels.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>int</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -995,20 +1078,33 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         String
       </span>
       <span class="sympad">getOriginalName</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns original file name (file name before uploading).</p>
-</p></div>
+  <p><p>Returns original file name (file name before uploading).</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>String</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1019,20 +1115,33 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         int
       </span>
       <span class="sympad">getSize</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns file size in bytes.</p>
-</p></div>
+  <p><p>Returns file size in bytes.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>int</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1043,29 +1152,42 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         Uri
       </span>
       <span class="sympad">getThumbnailUri</span>
       <span class="normal">(<a href="../../../../reference/chan/content/ChanLocator.html">ChanLocator</a> locator)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns attachment thumbnail URI.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>locator</td>
-          <td><code><a href="../../../../reference/chan/content/ChanLocator.html">ChanLocator</a></code> instance to decode URI in model.
+  <p><p>Returns attachment thumbnail URI.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>locator</code></td>
+        <td width="100%">
+          <code>ChanLocator</code>:
+          <code><a href="../../../../reference/chan/content/ChanLocator.html">ChanLocator</a></code> instance to decode URI in model.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>Uri</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1076,20 +1198,33 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         int
       </span>
       <span class="sympad">getWidth</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns file width in pixels.</p>
-</p></div>
+  <p><p>Returns file width in pixels.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>int</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1100,20 +1235,33 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         boolean
       </span>
       <span class="sympad">isSpoiler</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether file is spoiler.</p>
-</p></div>
+  <p><p>Returns whether file is spoiler.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>boolean</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1124,37 +1272,48 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/FileAttachment.html">FileAttachment</a>
       </span>
       <span class="sympad">setFileUri</span>
       <span class="normal">(<a href="../../../../reference/chan/content/ChanLocator.html">ChanLocator</a> locator, Uri fileUri)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Encodes and stores attachment file URI in this model.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>locator</td>
-          <td><code><a href="../../../../reference/chan/content/ChanLocator.html">ChanLocator</a></code> instance to encode URI in model.</td>
-        </tr>
-        <tr>
-          <th>fileUri</td>
-          <td>Attachment file URI.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
+  <p><p>Encodes and stores attachment file URI in this model.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>locator</code></td>
+        <td width="100%">
+          <code>ChanLocator</code>:
+          <code><a href="../../../../reference/chan/content/ChanLocator.html">ChanLocator</a></code> instance to encode URI in model.</td>
+      </tr>
+      <tr>
+        <td><code>fileUri</code></td>
+        <td width="100%">
+          <code>Uri</code>:
+          Attachment file URI.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/FileAttachment.html">FileAttachment</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1165,33 +1324,42 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/FileAttachment.html">FileAttachment</a>
       </span>
       <span class="sympad">setHeight</span>
       <span class="normal">(int height)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores file height in this model.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>height</td>
-          <td>File height in pixels.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
+  <p><p>Stores file height in this model.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>height</code></td>
+        <td width="100%">
+          <code>int</code>:
+          File height in pixels.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/FileAttachment.html">FileAttachment</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1202,33 +1370,42 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/FileAttachment.html">FileAttachment</a>
       </span>
       <span class="sympad">setOriginalName</span>
       <span class="normal">(String originalName)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores original file name (file name before uploading) in this model.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>originalName</td>
-          <td>Original file name.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
+  <p><p>Stores original file name (file name before uploading) in this model.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>originalName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Original file name.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/FileAttachment.html">FileAttachment</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1239,33 +1416,42 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/FileAttachment.html">FileAttachment</a>
       </span>
       <span class="sympad">setSize</span>
       <span class="normal">(int size)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores file size in bytes in this model.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>size</td>
-          <td>File size in bytes.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
+  <p><p>Stores file size in bytes in this model.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>size</code></td>
+        <td width="100%">
+          <code>int</code>:
+          File size in bytes.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/FileAttachment.html">FileAttachment</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1276,33 +1462,42 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/FileAttachment.html">FileAttachment</a>
       </span>
       <span class="sympad">setSpoiler</span>
       <span class="normal">(boolean spoiler)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores whether file is spoiler in this model.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>spoiler</td>
-          <td>True if file is spoiler, false otherwise.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
+  <p><p>Stores whether file is spoiler in this model.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>spoiler</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          True if file is spoiler, false otherwise.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/FileAttachment.html">FileAttachment</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1313,37 +1508,48 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/FileAttachment.html">FileAttachment</a>
       </span>
       <span class="sympad">setThumbnailUri</span>
       <span class="normal">(<a href="../../../../reference/chan/content/ChanLocator.html">ChanLocator</a> locator, Uri thumbnailUri)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Encodes and stores attachment thumbnail URI in this model.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>locator</td>
-          <td><code><a href="../../../../reference/chan/content/ChanLocator.html">ChanLocator</a></code> instance to encode URI in model.</td>
-        </tr>
-        <tr>
-          <th>thumbnailUri</td>
-          <td>Attachment thumbnail URI.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
+  <p><p>Encodes and stores attachment thumbnail URI in this model.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>locator</code></td>
+        <td width="100%">
+          <code>ChanLocator</code>:
+          <code><a href="../../../../reference/chan/content/ChanLocator.html">ChanLocator</a></code> instance to encode URI in model.</td>
+      </tr>
+      <tr>
+        <td><code>thumbnailUri</code></td>
+        <td width="100%">
+          <code>Uri</code>:
+          Attachment thumbnail URI.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/FileAttachment.html">FileAttachment</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1354,33 +1560,42 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/FileAttachment.html">FileAttachment</a>
       </span>
       <span class="sympad">setWidth</span>
       <span class="normal">(int width)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores file width in this model.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>width</td>
-          <td>File width in pixels.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
+  <p><p>Stores file width in this model.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>width</code></td>
+        <td width="100%">
+          <code>int</code>:
+          File width in pixels.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/FileAttachment.html">FileAttachment</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>

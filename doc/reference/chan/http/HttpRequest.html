@@ -49,6 +49,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -56,7 +66,9 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
 <title>
 
-  HttpRequest - Dashchan API Reference
+  HttpRequest - Dashchan API Reference |
+
+Doclava
 
 </title>
 <link href="../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
@@ -261,6 +273,12 @@ Summary:
 &#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
 
 </div><!-- end sum-details-links -->
+<div class="api-level">
+  
+  
+  
+
+</div>
 </div><!-- end api-info-block -->
 
 
@@ -269,7 +287,7 @@ Summary:
 <div id="jd-header">
     public
      
-     
+    final 
     
     class
 <h1 itemprop="name">HttpRequest</h1>
@@ -323,6 +341,7 @@ Summary:
 <h2>Class Overview</h2>
 <p itemprop="articleBody"><p>HTTP request builder and executor.</p>
 </p>
+
 
 
 
@@ -451,9 +470,9 @@ Summary:
             <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/http/HttpRequest.html#addCookie(java.lang.String, java.lang.String)">addCookie</a></span>(String name, String value)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/HttpRequest.html#addCookie(chan.http.CookieBuilder)">addCookie</a></span>(<a href="../../../reference/chan/http/CookieBuilder.html">CookieBuilder</a> builder)</nobr>
         
-        <div class="jd-descrdiv"><p>Add a cookie with given <code>name</code> and <code>value</code>.</div>
+        <div class="jd-descrdiv"><p>Add a <code><a href="../../../reference/chan/http/CookieBuilder.html">CookieBuilder</a></code> and concatenate it with existing one.</div>
   
   </td></tr>
 
@@ -469,9 +488,9 @@ Summary:
             <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/http/HttpRequest.html#addCookie(chan.http.CookieBuilder)">addCookie</a></span>(<a href="../../../reference/chan/http/CookieBuilder.html">CookieBuilder</a> builder)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/HttpRequest.html#addCookie(java.lang.String, java.lang.String)">addCookie</a></span>(String name, String value)</nobr>
         
-        <div class="jd-descrdiv"><p>Add a <code><a href="../../../reference/chan/http/CookieBuilder.html">CookieBuilder</a></code> and concatenate it with existing one.</div>
+        <div class="jd-descrdiv"><p>Add a cookie with given <code>name</code> and <code>value</code>.</div>
   
   </td></tr>
 
@@ -842,10 +861,10 @@ From class
             
             
             
-            boolean</nobr>
+            Object</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">equals</span>(Object arg0)</nobr>
+        <span class="sympad">clone</span>()</nobr>
         
   </td></tr>
 
@@ -855,8 +874,40 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">equals</span>(Object arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">finalize</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
             
             Class&lt;?&gt;</nobr>
         </td>
@@ -887,8 +938,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -903,8 +954,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -935,24 +986,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">wait</span>()</nobr>
-        
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
             
             final
-            
             
             void</nobr>
         </td>
@@ -963,17 +998,33 @@ From class
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad">wait</span>(long arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">wait</span>()</nobr>
         
   </td></tr>
 
@@ -1023,37 +1074,47 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         
       </span>
       <span class="sympad">HttpRequest</span>
       <span class="normal">(Uri uri, <a href="../../../reference/chan/http/HttpHolder.html">HttpHolder</a> holder, <a href="../../../reference/chan/http/HttpRequest.Preset.html">HttpRequest.Preset</a> preset)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Constructor for <code><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>uri</td>
-          <td>URI for request.</td>
-        </tr>
-        <tr>
-          <th>holder</td>
-          <td><code><a href="../../../reference/chan/http/HttpHolder.html">HttpHolder</a></code> instance. May be null.
+  <p><p>Constructor for <code><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>uri</code></td>
+        <td width="100%">
+          <code>Uri</code>:
+          URI for request.</td>
+      </tr>
+      <tr>
+        <td><code>holder</code></td>
+        <td width="100%">
+          <code>HttpHolder</code>:
+          <code><a href="../../../reference/chan/http/HttpHolder.html">HttpHolder</a></code> instance. May be null.
 </td>
-        </tr>
-        <tr>
-          <th>preset</td>
-          <td>Preset with configuration.</td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+      <tr>
+        <td><code>preset</code></td>
+        <td width="100%">
+          <code>HttpRequest.Preset</code>:
+          Preset with configuration.</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1074,43 +1135,48 @@ From class
 
 
 
-<A NAME="addCookie(java.lang.String, java.lang.String)"></A>
+<A NAME="addCookie(chan.http.CookieBuilder)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a>
       </span>
       <span class="sympad">addCookie</span>
-      <span class="normal">(String name, String value)</span>
+      <span class="normal">(<a href="../../../reference/chan/http/CookieBuilder.html">CookieBuilder</a> builder)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Add a cookie with given <code>name</code> and <code>value</code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>name</td>
-          <td>Cookie name.</td>
-        </tr>
-        <tr>
-          <th>value</td>
-          <td>Cookie value.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This builder.</li></ul>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">See Also</h5>
+  <p><p>Add a <code><a href="../../../reference/chan/http/CookieBuilder.html">CookieBuilder</a></code> and concatenate it with existing one.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>builder</code></td>
+        <td width="100%">
+          <code>CookieBuilder</code>:
+          <code><a href="../../../reference/chan/http/CookieBuilder.html">CookieBuilder</a></code> instance.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></code></td>
+        <td width="100%">This builder.</td>
+      </tr>
+    </table>
+  <div>
+      <p><b>See also:</b></p>
       <ul class="nolist"><li><code><a href="../../../reference/chan/http/CookieBuilder.html">CookieBuilder</a></code></li>
       </ul>
   </div>
@@ -1119,39 +1185,54 @@ From class
 </div>
 
 
-<A NAME="addCookie(chan.http.CookieBuilder)"></A>
+<A NAME="addCookie(java.lang.String, java.lang.String)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a>
       </span>
       <span class="sympad">addCookie</span>
-      <span class="normal">(<a href="../../../reference/chan/http/CookieBuilder.html">CookieBuilder</a> builder)</span>
+      <span class="normal">(String name, String value)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Add a <code><a href="../../../reference/chan/http/CookieBuilder.html">CookieBuilder</a></code> and concatenate it with existing one.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>builder</td>
-          <td><code><a href="../../../reference/chan/http/CookieBuilder.html">CookieBuilder</a></code> instance.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This builder.</li></ul>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">See Also</h5>
+  <p><p>Add a cookie with given <code>name</code> and <code>value</code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>name</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Cookie name.</td>
+      </tr>
+      <tr>
+        <td><code>value</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Cookie value.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></code></td>
+        <td width="100%">This builder.</td>
+      </tr>
+    </table>
+  <div>
+      <p><b>See also:</b></p>
       <ul class="nolist"><li><code><a href="../../../reference/chan/http/CookieBuilder.html">CookieBuilder</a></code></li>
       </ul>
   </div>
@@ -1165,34 +1246,43 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a>
       </span>
       <span class="sympad">addCookie</span>
       <span class="normal">(String cookie)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Add a cookie string.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>cookie</td>
-          <td>Cookie string.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This builder.</li></ul>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">See Also</h5>
+  <p><p>Add a cookie string.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>cookie</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Cookie string.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></code></td>
+        <td width="100%">This builder.</td>
+      </tr>
+    </table>
+  <div>
+      <p><b>See also:</b></p>
       <ul class="nolist"><li><code><a href="../../../reference/chan/http/CookieBuilder.html">CookieBuilder</a></code></li>
       </ul>
   </div>
@@ -1206,37 +1296,48 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a>
       </span>
       <span class="sympad">addHeader</span>
       <span class="normal">(String name, String value)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Add a header with given <code>name</code> and <code>value</code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>name</td>
-          <td>Header name.</td>
-        </tr>
-        <tr>
-          <th>value</td>
-          <td>Header value.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This builder.
-</li></ul>
-  </div>
+  <p><p>Add a header with given <code>name</code> and <code>value</code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>name</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Header name.</td>
+      </tr>
+      <tr>
+        <td><code>value</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Header value.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></code></td>
+        <td width="100%">This builder.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1247,24 +1348,33 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a>
       </span>
       <span class="sympad">clearCookies</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Removes all cookies added before.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This builder.
-</li></ul>
-  </div>
+  <p><p>Removes all cookies added before.</p></p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></code></td>
+        <td width="100%">This builder.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1275,24 +1385,33 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a>
       </span>
       <span class="sympad">clearHeaders</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Removes all headers added before.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This builder.
-</li></ul>
-  </div>
+  <p><p>Removes all headers added before.</p></p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></code></td>
+        <td width="100%">This builder.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1303,24 +1422,33 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a>
       </span>
       <span class="sympad">copy</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns a deep copy of this builder. Request entities will be copied shallowly!</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Copy of builder.
-</li></ul>
-  </div>
+  <p><p>Returns a deep copy of this builder. Request entities will be copied shallowly!</p></p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></code></td>
+        <td width="100%">Copy of builder.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1331,34 +1459,42 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/http/HttpHolder.html">HttpHolder</a>
       </span>
       <span class="sympad">execute</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Executes HTTP request. This make available response headers with returned <code><a href="../../../reference/chan/http/HttpHolder.html">HttpHolder</a></code>.
- Later you can read response body with <code><a href="../../../reference/chan/http/HttpHolder.html#read()">read()</a></code> or disconnect.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>HTTP connection holder.</li></ul>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Throws</h5>
-      <table class="jd-tagtable">  
+  <p><p>Executes HTTP request. This make available response headers with returned <code><a href="../../../reference/chan/http/HttpHolder.html">HttpHolder</a></code>.
+ Later you can read response body with <code><a href="../../../reference/chan/http/HttpHolder.html#read()">read()</a></code> or disconnect.</p></p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/http/HttpHolder.html">HttpHolder</a></code></td>
+        <td width="100%">HTTP connection holder.</td>
+      </tr>
+    </table>
+      <table class="responsive">
+      <tr><th colspan=2>Throws</th></tr>
         <tr>
-            <th><a href="../../../reference/chan/http/HttpException.html">HttpException</a></td>
-            <td>if HTTP exception occurred.
+          <td><code><a href="../../../reference/chan/http/HttpException.html">HttpException</a></code></td>
+          <td width="100%">if HTTP exception occurred.
 </td>
         </tr>
       </table>
-  </div>
+  
 
     </div>
 </div>
@@ -1369,34 +1505,42 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/http/HttpResponse.html">HttpResponse</a>
       </span>
       <span class="sympad">read</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Executes HTTP request and reads response.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>HTTP response.</li></ul>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Throws</h5>
-      <table class="jd-tagtable">  
+  <p><p>Executes HTTP request and reads response.</p></p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/http/HttpResponse.html">HttpResponse</a></code></td>
+        <td width="100%">HTTP response.</td>
+      </tr>
+    </table>
+      <table class="responsive">
+      <tr><th colspan=2>Throws</th></tr>
         <tr>
-            <th><a href="../../../reference/chan/http/HttpException.html">HttpException</a></td>
-            <td>if HTTP exception occurred.</td>
+          <td><code><a href="../../../reference/chan/http/HttpException.html">HttpException</a></code></td>
+          <td width="100%">if HTTP exception occurred.</td>
         </tr>
       </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">See Also</h5>
+  
+  <div>
+      <p><b>See also:</b></p>
       <ul class="nolist"><li><code><a href="../../../reference/chan/http/HttpResponse.html">HttpResponse</a></code></li>
       </ul>
   </div>
@@ -1410,34 +1554,43 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a>
       </span>
       <span class="sympad">setDelay</span>
       <span class="normal">(int delay)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Sets the delay before opening previous and this connection.
- May be helpful in adjusting connection frequency.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>delay</td>
-          <td>Delay in milliseconds.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This builder.
-</li></ul>
-  </div>
+  <p><p>Sets the delay before opening previous and this connection.
+ May be helpful in adjusting connection frequency.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>delay</code></td>
+        <td width="100%">
+          <code>int</code>:
+          Delay in milliseconds.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></code></td>
+        <td width="100%">This builder.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1448,33 +1601,42 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a>
       </span>
       <span class="sympad">setDeleteMethod</span>
       <span class="normal">(<a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a> entity)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Sets HTTP request method to DELETE with request entity.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>entity</td>
-          <td><code><a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a></code> instance.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This builder.
-</li></ul>
-  </div>
+  <p><p>Sets HTTP request method to DELETE with request entity.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>entity</code></td>
+        <td width="100%">
+          <code>RequestEntity</code>:
+          <code><a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a></code> instance.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></code></td>
+        <td width="100%">This builder.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1485,24 +1647,33 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a>
       </span>
       <span class="sympad">setGetMethod</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Sets HTTP request method to GET.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This builder.
-</li></ul>
-  </div>
+  <p><p>Sets HTTP request method to GET.</p></p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></code></td>
+        <td width="100%">This builder.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1513,24 +1684,33 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a>
       </span>
       <span class="sympad">setHeadMethod</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Sets HTTP request method to HEAD.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This builder.
-</li></ul>
-  </div>
+  <p><p>Sets HTTP request method to HEAD.</p></p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></code></td>
+        <td width="100%">This builder.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1541,33 +1721,42 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a>
       </span>
       <span class="sympad">setKeepAlive</span>
       <span class="normal">(boolean keepAlive)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Enabled or disables connection pooling. Enabled by default.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>keepAlive</td>
-          <td>True to enable pooling, false to disable one.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This builder.
-</li></ul>
-  </div>
+  <p><p>Enabled or disables connection pooling. Enabled by default.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>keepAlive</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          True to enable pooling, false to disable one.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></code></td>
+        <td width="100%">This builder.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1578,33 +1767,42 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a>
       </span>
       <span class="sympad">setPostMethod</span>
       <span class="normal">(<a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a> entity)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Sets HTTP request method to POST with request entity.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>entity</td>
-          <td><code><a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a></code> instance.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This builder.
-</li></ul>
-  </div>
+  <p><p>Sets HTTP request method to POST with request entity.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>entity</code></td>
+        <td width="100%">
+          <code>RequestEntity</code>:
+          <code><a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a></code> instance.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></code></td>
+        <td width="100%">This builder.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1615,33 +1813,42 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a>
       </span>
       <span class="sympad">setPutMethod</span>
       <span class="normal">(<a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a> entity)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Sets HTTP request method to PUT with request entity.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>entity</td>
-          <td><code><a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a></code> instance.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This builder.
-</li></ul>
-  </div>
+  <p><p>Sets HTTP request method to PUT with request entity.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>entity</code></td>
+        <td width="100%">
+          <code>RequestEntity</code>:
+          <code><a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a></code> instance.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></code></td>
+        <td width="100%">This builder.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1652,33 +1859,42 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a>
       </span>
       <span class="sympad">setRedirectHandler</span>
       <span class="normal">(<a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a> redirectHandler)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Configures redirect handling with <code><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a></code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>redirectHandler</td>
-          <td>Redirect handler interface.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This builder.
-</li></ul>
-  </div>
+  <p><p>Configures redirect handling with <code><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a></code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>redirectHandler</code></td>
+        <td width="100%">
+          <code>HttpRequest.RedirectHandler</code>:
+          Redirect handler interface.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></code></td>
+        <td width="100%">This builder.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1689,34 +1905,43 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a>
       </span>
       <span class="sympad">setSuccessOnly</span>
       <span class="normal">(boolean successOnly)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Configures response code handling. The <code><a href="../../../reference/chan/http/HttpHolder.html#checkResponseCode()">checkResponseCode()</a></code> will be called automatically
- if this handling enabled. Enabled by default.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>successOnly</td>
-          <td>True to enable handling, false to disable one.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This builder.
-</li></ul>
-  </div>
+  <p><p>Configures response code handling. The <code><a href="../../../reference/chan/http/HttpHolder.html#checkResponseCode()">checkResponseCode()</a></code> will be called automatically
+ if this handling enabled. Enabled by default.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>successOnly</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          True to enable handling, false to disable one.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></code></td>
+        <td width="100%">This builder.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1727,37 +1952,48 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a>
       </span>
       <span class="sympad">setTimeouts</span>
       <span class="normal">(int connectTimeout, int readTimeout)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Sets the timeouts of connection.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>connectTimeout</td>
-          <td>TCP handshake timeout in milliseconds.</td>
-        </tr>
-        <tr>
-          <th>readTimeout</td>
-          <td>Max delay in milliseconds between reading data.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This builder.
-</li></ul>
-  </div>
+  <p><p>Sets the timeouts of connection.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>connectTimeout</code></td>
+        <td width="100%">
+          <code>int</code>:
+          TCP handshake timeout in milliseconds.</td>
+      </tr>
+      <tr>
+        <td><code>readTimeout</code></td>
+        <td width="100%">
+          <code>int</code>:
+          Max delay in milliseconds between reading data.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></code></td>
+        <td width="100%">This builder.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1768,33 +2004,42 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a>
       </span>
       <span class="sympad">setValidator</span>
       <span class="normal">(<a href="../../../reference/chan/http/HttpValidator.html">HttpValidator</a> validator)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Sets the <code><a href="../../../reference/chan/http/HttpValidator.html">HttpValidator</a></code> to handle data changes with <code>304 Not Modified</code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>validator</td>
-          <td><code><a href="../../../reference/chan/http/HttpValidator.html">HttpValidator</a></code> instance. May be null.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This builder.
-</li></ul>
-  </div>
+  <p><p>Sets the <code><a href="../../../reference/chan/http/HttpValidator.html">HttpValidator</a></code> to handle data changes with <code>304 Not Modified</code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>validator</code></td>
+        <td width="100%">
+          <code>HttpValidator</code>:
+          <code><a href="../../../reference/chan/http/HttpValidator.html">HttpValidator</a></code> instance. May be null.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></code></td>
+        <td width="100%">This builder.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>

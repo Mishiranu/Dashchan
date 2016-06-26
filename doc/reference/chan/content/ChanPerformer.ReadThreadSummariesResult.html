@@ -49,6 +49,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -56,7 +66,9 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
 <title>
 
-  ChanPerformer.ReadThreadSummariesResult - Dashchan API Reference
+  ChanPerformer.ReadThreadSummariesResult - Dashchan API Reference |
+
+Doclava
 
 </title>
 <link href="../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
@@ -294,6 +306,12 @@ Summary:
 &#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
 
 </div><!-- end sum-details-links -->
+<div class="api-level">
+  
+  
+  
+
+</div>
 </div><!-- end api-info-block -->
 
 
@@ -302,7 +320,7 @@ Summary:
 <div id="jd-header">
     public
     static 
-     
+    final 
     
     class
 <h1 itemprop="name">ChanPerformer.ReadThreadSummariesResult</h1>
@@ -356,6 +374,7 @@ Summary:
 <h2>Class Overview</h2>
 <p itemprop="articleBody"><p>Result holder for <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadThreadSummaries(chan.content.ChanPerformer.ReadThreadSummariesData)">onReadThreadSummaries(ReadThreadSummariesData)</a></code>.</p>
 </p>
+
 
 
 
@@ -492,10 +511,10 @@ From class
             
             
             
-            boolean</nobr>
+            Object</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">equals</span>(Object arg0)</nobr>
+        <span class="sympad">clone</span>()</nobr>
         
   </td></tr>
 
@@ -505,8 +524,40 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">equals</span>(Object arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">finalize</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
             
             Class&lt;?&gt;</nobr>
         </td>
@@ -537,8 +588,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -553,8 +604,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -585,24 +636,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">wait</span>()</nobr>
-        
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
             
             final
-            
             
             void</nobr>
         </td>
@@ -613,17 +648,33 @@ From class
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad">wait</span>(long arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">wait</span>()</nobr>
         
   </td></tr>
 
@@ -673,29 +724,35 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         
       </span>
       <span class="sympad">ChanPerformer.ReadThreadSummariesResult</span>
       <span class="normal">(<a href="../../../reference/chan/content/model/ThreadSummary.html">ThreadSummary...</a> threadSummaries)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Constructor for <code><a href="../../../reference/chan/content/ChanPerformer.ReadThreadSummariesResult.html">ChanPerformer.ReadThreadSummariesResult</a></code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>threadSummaries</td>
-          <td>Array of <code><a href="../../../reference/chan/content/model/ThreadSummary.html">ThreadSummary</a></code>.
+  <p><p>Constructor for <code><a href="../../../reference/chan/content/ChanPerformer.ReadThreadSummariesResult.html">ChanPerformer.ReadThreadSummariesResult</a></code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>threadSummaries</code></td>
+        <td width="100%">
+          <code>ThreadSummary</code>:
+          Array of <code><a href="../../../reference/chan/content/model/ThreadSummary.html">ThreadSummary</a></code>.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -706,29 +763,35 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         
       </span>
       <span class="sympad">ChanPerformer.ReadThreadSummariesResult</span>
       <span class="normal">(Collection&lt;<a href="../../../reference/chan/content/model/ThreadSummary.html">ThreadSummary</a>&gt; threadSummaries)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Constructor for <code><a href="../../../reference/chan/content/ChanPerformer.ReadThreadSummariesResult.html">ChanPerformer.ReadThreadSummariesResult</a></code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>threadSummaries</td>
-          <td>Collection of <code><a href="../../../reference/chan/content/model/ThreadSummary.html">ThreadSummary</a></code>.
+  <p><p>Constructor for <code><a href="../../../reference/chan/content/ChanPerformer.ReadThreadSummariesResult.html">ChanPerformer.ReadThreadSummariesResult</a></code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>threadSummaries</code></td>
+        <td width="100%">
+          <code>Collection</code>:
+          Collection of <code><a href="../../../reference/chan/content/model/ThreadSummary.html">ThreadSummary</a></code>.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>

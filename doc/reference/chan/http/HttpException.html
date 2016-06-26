@@ -49,6 +49,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -56,7 +66,9 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
 <title>
 
-  HttpException - Dashchan API Reference
+  HttpException - Dashchan API Reference |
+
+Doclava
 
 </title>
 <link href="../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
@@ -275,6 +287,12 @@ Summary:
 &#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
 
 </div><!-- end sum-details-links -->
+<div class="api-level">
+  
+  
+  
+
+</div>
 </div><!-- end api-info-block -->
 
 
@@ -283,7 +301,7 @@ Summary:
 <div id="jd-header">
     public
      
-     
+    final 
     
     class
 <h1 itemprop="name">HttpException</h1>
@@ -372,6 +390,7 @@ Summary:
 
 
 
+
 </div><!-- jd-descr -->
 
 
@@ -432,7 +451,7 @@ Summary:
             </nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/http/HttpException.html#HttpException(int, java.lang.String)">HttpException</a></span>(int responseCode, String detailMessage)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/HttpException.html#HttpException(int, java.lang.String)">HttpException</a></span>(int responseCode, String responseText)</nobr>
         
         <div class="jd-descrdiv"><p>Constructor for a <code><a href="../../../reference/chan/http/HttpException.html">HttpException</a></code> with response code and message.</div>
   
@@ -457,8 +476,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            
             static
+            
             
             <a href="../../../reference/chan/http/HttpException.html">HttpException</a></nobr>
         </td>
@@ -565,9 +584,9 @@ From class
     <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
-            synchronized
-            final
             
+            
+            final
             
             void</nobr>
         </td>
@@ -581,7 +600,7 @@ From class
     <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
-            synchronized
+            
             
             
             
@@ -597,7 +616,7 @@ From class
     <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
-            synchronized
+            
             
             
             
@@ -661,9 +680,9 @@ From class
     <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
-            synchronized
-            final
             
+            
+            final
             
             Throwable[]</nobr>
         </td>
@@ -677,7 +696,7 @@ From class
     <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
-            synchronized
+            
             
             
             
@@ -700,7 +719,7 @@ From class
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">printStackTrace</span>(PrintStream arg0)</nobr>
+        <span class="sympad">printStackTrace</span>()</nobr>
         
   </td></tr>
 
@@ -732,7 +751,7 @@ From class
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">printStackTrace</span>()</nobr>
+        <span class="sympad">printStackTrace</span>(PrintStream arg0)</nobr>
         
   </td></tr>
 
@@ -803,10 +822,10 @@ From class
             
             
             
-            boolean</nobr>
+            Object</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">equals</span>(Object arg0)</nobr>
+        <span class="sympad">clone</span>()</nobr>
         
   </td></tr>
 
@@ -816,8 +835,40 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">equals</span>(Object arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">finalize</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
             
             Class&lt;?&gt;</nobr>
         </td>
@@ -848,8 +899,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -864,8 +915,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -896,24 +947,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">wait</span>()</nobr>
-        
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
             
             final
-            
             
             void</nobr>
         </td>
@@ -924,17 +959,33 @@ From class
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad">wait</span>(long arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">wait</span>()</nobr>
         
   </td></tr>
 
@@ -986,33 +1037,41 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         
       </span>
       <span class="sympad">HttpException</span>
-      <span class="normal">(int responseCode, String detailMessage)</span>
+      <span class="normal">(int responseCode, String responseText)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Constructor for a <code><a href="../../../reference/chan/http/HttpException.html">HttpException</a></code> with response code and message.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>responseCode</td>
-          <td>Response code.</td>
-        </tr>
-        <tr>
-          <th>detailMessage</td>
-          <td>Response message.
+  <p><p>Constructor for a <code><a href="../../../reference/chan/http/HttpException.html">HttpException</a></code> with response code and message.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>responseCode</code></td>
+        <td width="100%">
+          <code>int</code>:
+          Response code.</td>
+      </tr>
+      <tr>
+        <td><code>responseText</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Response message.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1038,25 +1097,34 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-        static 
-         
-         
-         
+        public
+        
+        
+        static
+        
         <a href="../../../reference/chan/http/HttpException.html">HttpException</a>
       </span>
       <span class="sympad">createNotFoundException</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Creates a new instance of <code><a href="../../../reference/chan/http/HttpException.html">HttpException</a></code> with <code>404 (Not Found)</code> response code and
- an appropriate message.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Exception object.
-</li></ul>
-  </div>
+  <p><p>Creates a new instance of <code><a href="../../../reference/chan/http/HttpException.html">HttpException</a></code> with <code>404 (Not Found)</code> response code and
+ an appropriate message.</p></p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/http/HttpException.html">HttpException</a></code></td>
+        <td width="100%">Exception object.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1067,24 +1135,33 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         int
       </span>
       <span class="sympad">getResponseCode</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns response code.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Response code.
-</li></ul>
-  </div>
+  <p><p>Returns response code.</p></p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>int</code></td>
+        <td width="100%">Response code.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1095,20 +1172,33 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         boolean
       </span>
       <span class="sympad">isHttpException</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether exception is HTTP protocol exception.</p>
-</p></div>
+  <p><p>Returns whether exception is HTTP protocol exception.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>boolean</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1119,20 +1209,33 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         boolean
       </span>
       <span class="sympad">isSocketException</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether exception is socket level exception.</p>
-</p></div>
+  <p><p>Returns whether exception is socket level exception.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>boolean</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>

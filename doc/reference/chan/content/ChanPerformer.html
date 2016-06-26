@@ -49,6 +49,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -56,7 +66,9 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
 <title>
 
-  ChanPerformer - Dashchan API Reference
+  ChanPerformer - Dashchan API Reference |
+
+Doclava
 
 </title>
 <link href="../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
@@ -294,12 +306,21 @@ Summary:
   
 
 
+  &#124; <a href="#promethods">Protected Methods</a>
+  
+
 
   &#124; <a href="#inhmethods">Inherited Methods</a>
 
 &#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
 
 </div><!-- end sum-details-links -->
+<div class="api-level">
+  
+  
+  
+
+</div>
 </div><!-- end api-info-block -->
 
 
@@ -372,7 +393,8 @@ Summary:
  
  <p>Depending one the <code><a href="../../../reference/chan/content/ChanConfiguration.Board.html">ChanConfiguration.Board</a></code> configuration you must implement the following methods:</p>
  
- <p><table><tr><th>Option</th><th>Method</th></tr>
+ <table summary="">
+ <tr><th>Option</th><th>Method</th></tr>
  <tr><td><code><a href="../../../reference/chan/content/ChanConfiguration.Board.html#allowSearch">allowSearch</a></code></td>
  <td><code><a href="../../../reference/chan/content/ChanPerformer.html#onReadSearchPosts(chan.content.ChanPerformer.ReadSearchPostsData)">onReadSearchPosts(ReadSearchPostsData)</a></code></td></tr>
  <tr><td><code><a href="../../../reference/chan/content/ChanConfiguration.Board.html#allowCatalog">allowCatalog</a></code></td>
@@ -386,24 +408,26 @@ Summary:
  <tr><td><code><a href="../../../reference/chan/content/ChanConfiguration.Board.html#allowDeleting">allowDeleting</a></code></td>
  <td><code><a href="../../../reference/chan/content/ChanPerformer.html#onSendDeletePosts(chan.content.ChanPerformer.SendDeletePostsData)">onSendDeletePosts(SendDeletePostsData)</a></code></td></tr>
  <tr><td><code><a href="../../../reference/chan/content/ChanConfiguration.Board.html#allowReporting">allowReporting</a></code></td>
- <td><code><a href="../../../reference/chan/content/ChanPerformer.html#onSendReportPosts(chan.content.ChanPerformer.SendReportPostsData)">onSendReportPosts(SendReportPostsData)</a></code></td></tr></table></p>
+ <td><code><a href="../../../reference/chan/content/ChanPerformer.html#onSendReportPosts(chan.content.ChanPerformer.SendReportPostsData)">onSendReportPosts(SendReportPostsData)</a></code></td></tr>
+ </table>
  
  <p>If you configure some options, you also must implement the following methods:</p>
  
- <p><table><tr><th>Option</th><th>Method</th></tr>
+ <table summary="">
+ <tr><th>Option</th><th>Method</th></tr>
  <tr><td><code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_READ_SINGLE_POST">OPTION_READ_SINGLE_POST</a></code></td>
  <td><code><a href="../../../reference/chan/content/ChanPerformer.html#onReadSinglePost(chan.content.ChanPerformer.ReadSinglePostData)">onReadSinglePost(ReadSinglePostData)</a></code></td></tr>
  <tr><td><code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_READ_POSTS_COUNT">OPTION_READ_POSTS_COUNT</a></code></td>
  <td><code><a href="../../../reference/chan/content/ChanPerformer.html#onReadPostsCount(chan.content.ChanPerformer.ReadPostsCountData)">onReadPostsCount(ReadPostsCountData)</a></code></td></tr>
  <tr><td><code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_READ_USER_BOARDS">OPTION_READ_USER_BOARDS</a></code></td>
  <td><code><a href="../../../reference/chan/content/ChanPerformer.html#onReadUserBoards(chan.content.ChanPerformer.ReadUserBoardsData)">onReadUserBoards(ReadUserBoardsData)</a></code></td></tr>
- <tr><td><code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_READ_POPULAR_THREADS">OPTION_READ_POPULAR_THREADS</a></code></td>
- <td><code><a href="../../../reference/chan/content/ChanPerformer.html#onReadThreadSummaries(chan.content.ChanPerformer.ReadThreadSummariesData)">onReadThreadSummaries(ReadThreadSummariesData)</a></code></td></tr>
  <tr><td><code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_ALLOW_CAPTCHA_PASS">OPTION_ALLOW_CAPTCHA_PASS</a></code></td>
  <td><code><a href="../../../reference/chan/content/ChanPerformer.html#onCheckAuthorization(chan.content.ChanPerformer.CheckAuthorizationData)">onCheckAuthorization(CheckAuthorizationData)</a></code></td></tr>
  <tr><td><code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_ALLOW_USER_AUTHORIZATION">OPTION_ALLOW_USER_AUTHORIZATION</a></code></td>
- <td><code><a href="../../../reference/chan/content/ChanPerformer.html#onCheckAuthorization(chan.content.ChanPerformer.CheckAuthorizationData)">onCheckAuthorization(CheckAuthorizationData)</a></code></td></tr></table></p>
+ <td><code><a href="../../../reference/chan/content/ChanPerformer.html#onCheckAuthorization(chan.content.ChanPerformer.CheckAuthorizationData)">onCheckAuthorization(CheckAuthorizationData)</a></code></td></tr>
+ </table>
 </p>
+
 
 
 
@@ -884,8 +908,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            
             static
+            
             &lt;T&nbsp;extends&nbsp;<a href="../../../reference/chan/content/ChanPerformer.html">ChanPerformer</a>&gt;
             T</nobr>
         </td>
@@ -1167,13 +1191,24 @@ Summary:
   </td></tr>
 
 
+
+</table>
+
+
+
+
+<!-- ========== METHOD SUMMARY =========== -->
+<table id="promethods" class="jd-sumtable"><tr><th colspan="12">Protected Methods</th></tr>
+
+
+
 	 
     <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             <a href="../../../reference/chan/content/ChanPerformer.CaptchaData.html">ChanPerformer.CaptchaData</a></nobr>
         </td>
@@ -1190,8 +1225,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             boolean[]</nobr>
         </td>
@@ -1208,8 +1243,8 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             Integer</nobr>
         </td>
@@ -1223,8 +1258,6 @@ Summary:
 
 
 </table>
-
-
 
 
 
@@ -1263,10 +1296,10 @@ From class
             
             
             
-            boolean</nobr>
+            Object</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">equals</span>(Object arg0)</nobr>
+        <span class="sympad">clone</span>()</nobr>
         
   </td></tr>
 
@@ -1276,8 +1309,40 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">equals</span>(Object arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">finalize</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
             
             Class&lt;?&gt;</nobr>
         </td>
@@ -1308,8 +1373,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -1324,8 +1389,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -1356,24 +1421,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">wait</span>()</nobr>
-        
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
             
             final
-            
             
             void</nobr>
         </td>
@@ -1384,17 +1433,33 @@ From class
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad">wait</span>(long arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">wait</span>()</nobr>
         
   </td></tr>
 
@@ -1444,19 +1509,25 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         
       </span>
       <span class="sympad">ChanPerformer</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p></p></div>
+  <p></p>
 
     </div>
 </div>
@@ -1482,34 +1553,43 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-        static 
-         
-         
-         
+        public
+        
+        
+        static
+        
         T
       </span>
       <span class="sympad">get</span>
       <span class="normal">(Object object)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Return linked <code><a href="../../../reference/chan/content/ChanPerformer.html">ChanPerformer</a></code> instance.</p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>object</td>
-          <td>Linked object: <code><a href="../../../reference/chan/content/ChanConfiguration.html">ChanConfiguration</a></code>, <code><a href="../../../reference/chan/content/ChanPerformer.html">ChanPerformer</a></code>,
+  <p><p>Return linked <code><a href="../../../reference/chan/content/ChanPerformer.html">ChanPerformer</a></code> instance.</p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>object</code></td>
+        <td width="100%">
+          <code>Object</code>:
+          Linked object: <code><a href="../../../reference/chan/content/ChanConfiguration.html">ChanConfiguration</a></code>, <code><a href="../../../reference/chan/content/ChanPerformer.html">ChanPerformer</a></code>,
  <code><a href="../../../reference/chan/content/ChanLocator.html">ChanLocator</a></code> or <code><a href="../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a></code>.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li><code><a href="../../../reference/chan/content/ChanPerformer.html">ChanPerformer</a></code> instance.
-</li></ul>
-  </div>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>T</code></td>
+        <td width="100%"><code><a href="../../../reference/chan/content/ChanPerformer.html">ChanPerformer</a></code> instance.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1520,53 +1600,61 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/content/ChanPerformer.CheckAuthorizationResult.html">ChanPerformer.CheckAuthorizationResult</a>
       </span>
       <span class="sympad">onCheckAuthorization</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanPerformer.CheckAuthorizationData.html">ChanPerformer.CheckAuthorizationData</a> data)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls when application requests chan to check authorization data.</p>
+  <p><p>Calls when application requests chan to check authorization data.</p>
  
  <p>This method <strong>must</strong> be overridden in the following cases:</p>
  
  <ul>
  <li><code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_ALLOW_CAPTCHA_PASS">OPTION_ALLOW_CAPTCHA_PASS</a></code> enabled</li>
  <li><code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_ALLOW_USER_AUTHORIZATION">OPTION_ALLOW_USER_AUTHORIZATION</a></code> enabled</li>
- </ul></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
+ </ul></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>data</code></td>
+        <td width="100%">
+          <code>ChanPerformer.CheckAuthorizationData</code>:
+          <code><a href="../../../reference/chan/content/ChanPerformer.CheckAuthorizationData.html">ChanPerformer.CheckAuthorizationData</a></code> instance with arguments.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/ChanPerformer.CheckAuthorizationResult.html">ChanPerformer.CheckAuthorizationResult</a></code></td>
+        <td width="100%"><code><a href="../../../reference/chan/content/ChanPerformer.CheckAuthorizationResult.html">ChanPerformer.CheckAuthorizationResult</a></code> instance.</td>
+      </tr>
+    </table>
+      <table class="responsive">
+      <tr><th colspan=2>Throws</th></tr>
         <tr>
-          <th>data</td>
-          <td><code><a href="../../../reference/chan/content/ChanPerformer.CheckAuthorizationData.html">ChanPerformer.CheckAuthorizationData</a></code> instance with arguments.</td>
+          <td><code><a href="../../../reference/chan/http/HttpException.html">HttpException</a></code></td>
+          <td width="100%">if HTTP or another error with message occurred.</td>
         </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li><code><a href="../../../reference/chan/content/ChanPerformer.CheckAuthorizationResult.html">ChanPerformer.CheckAuthorizationResult</a></code> instance.</li></ul>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Throws</h5>
-      <table class="jd-tagtable">  
         <tr>
-            <th><a href="../../../reference/chan/http/HttpException.html">HttpException</a></td>
-            <td>if HTTP or another error with message occurred.</td>
-        </tr>  
-        <tr>
-            <th><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></td>
-            <td>if server returned an invalid data.
+          <td><code><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></code></td>
+          <td width="100%">if server returned an invalid data.
 </td>
         </tr>
       </table>
-  </div>
+  
 
     </div>
 </div>
@@ -1577,49 +1665,57 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/content/ChanPerformer.ReadBoardsResult.html">ChanPerformer.ReadBoardsResult</a>
       </span>
       <span class="sympad">onReadBoards</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanPerformer.ReadBoardsData.html">ChanPerformer.ReadBoardsData</a> data)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls when application requests chan to download boards list.</p>
+  <p><p>Calls when application requests chan to download boards list.</p>
  
  <p>This method <strong>must</strong> be overridden if option
- <code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_SINGLE_BOARD_MODE">OPTION_SINGLE_BOARD_MODE</a></code> is <strong>not</strong> enabled.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
+ <code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_SINGLE_BOARD_MODE">OPTION_SINGLE_BOARD_MODE</a></code> is <strong>not</strong> enabled.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>data</code></td>
+        <td width="100%">
+          <code>ChanPerformer.ReadBoardsData</code>:
+          <code><a href="../../../reference/chan/content/ChanPerformer.ReadBoardsData.html">ChanPerformer.ReadBoardsData</a></code> instance with arguments.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/ChanPerformer.ReadBoardsResult.html">ChanPerformer.ReadBoardsResult</a></code></td>
+        <td width="100%"><code><a href="../../../reference/chan/content/ChanPerformer.ReadBoardsResult.html">ChanPerformer.ReadBoardsResult</a></code> instance.</td>
+      </tr>
+    </table>
+      <table class="responsive">
+      <tr><th colspan=2>Throws</th></tr>
         <tr>
-          <th>data</td>
-          <td><code><a href="../../../reference/chan/content/ChanPerformer.ReadBoardsData.html">ChanPerformer.ReadBoardsData</a></code> instance with arguments.</td>
+          <td><code><a href="../../../reference/chan/http/HttpException.html">HttpException</a></code></td>
+          <td width="100%">if HTTP or another error with message occurred.</td>
         </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li><code><a href="../../../reference/chan/content/ChanPerformer.ReadBoardsResult.html">ChanPerformer.ReadBoardsResult</a></code> instance.</li></ul>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Throws</h5>
-      <table class="jd-tagtable">  
         <tr>
-            <th><a href="../../../reference/chan/http/HttpException.html">HttpException</a></td>
-            <td>if HTTP or another error with message occurred.</td>
-        </tr>  
-        <tr>
-            <th><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></td>
-            <td>if server returned an invalid data.
+          <td><code><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></code></td>
+          <td width="100%">if server returned an invalid data.
 </td>
         </tr>
       </table>
-  </div>
+  
 
     </div>
 </div>
@@ -1630,19 +1726,25 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html">ChanPerformer.ReadCaptchaResult</a>
       </span>
       <span class="sympad">onReadCaptcha</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaData.html">ChanPerformer.ReadCaptchaData</a> data)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls when application requests chan to read captcha.</p>
+  <p><p>Calls when application requests chan to read captcha.</p>
  
  <p>This method <strong>must</strong> be overridden if option <code><a href="../../../reference/chan/content/ChanConfiguration.Board.html#allowPosting">allowPosting</a></code> is
  enabled for this board.</p>
@@ -1660,34 +1762,36 @@ From class
  
  <p>If your captcha has short lifetime, you can check <code><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaData.html#mayShowLoadButton">mayShowLoadButton</a></code>.
  If this argument equals <code>true</code>, the result may hold <code><a href="../../../reference/chan/content/ChanPerformer.CaptchaState.html#NEED_LOAD">NEED_LOAD</a></code>. This will
- show "Click to load captcha" button for user.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
+ show "Click to load captcha" button for user.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>data</code></td>
+        <td width="100%">
+          <code>ChanPerformer.ReadCaptchaData</code>:
+          <code><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaData.html">ChanPerformer.ReadCaptchaData</a></code> instance with arguments.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html">ChanPerformer.ReadCaptchaResult</a></code></td>
+        <td width="100%"><code><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html">ChanPerformer.ReadCaptchaResult</a></code> instance.</td>
+      </tr>
+    </table>
+      <table class="responsive">
+      <tr><th colspan=2>Throws</th></tr>
         <tr>
-          <th>data</td>
-          <td><code><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaData.html">ChanPerformer.ReadCaptchaData</a></code> instance with arguments.</td>
+          <td><code><a href="../../../reference/chan/http/HttpException.html">HttpException</a></code></td>
+          <td width="100%">if HTTP or another error with message occurred.</td>
         </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li><code><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html">ChanPerformer.ReadCaptchaResult</a></code> instance.</li></ul>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Throws</h5>
-      <table class="jd-tagtable">  
         <tr>
-            <th><a href="../../../reference/chan/http/HttpException.html">HttpException</a></td>
-            <td>if HTTP or another error with message occurred.</td>
-        </tr>  
-        <tr>
-            <th><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></td>
-            <td>if server returned an invalid data.
+          <td><code><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></code></td>
+          <td width="100%">if server returned an invalid data.
 </td>
         </tr>
       </table>
-  </div>
+  
 
     </div>
 </div>
@@ -1698,46 +1802,54 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/content/ChanPerformer.ReadContentResult.html">ChanPerformer.ReadContentResult</a>
       </span>
       <span class="sympad">onReadContent</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanPerformer.ReadContentData.html">ChanPerformer.ReadContentData</a> data)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls when application requests chan to download thumbnail, image, etc.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
+  <p><p>Calls when application requests chan to download thumbnail, image, etc.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>data</code></td>
+        <td width="100%">
+          <code>ChanPerformer.ReadContentData</code>:
+          <code><a href="../../../reference/chan/content/ChanPerformer.ReadContentData.html">ChanPerformer.ReadContentData</a></code> instance with arguments.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/ChanPerformer.ReadContentResult.html">ChanPerformer.ReadContentResult</a></code></td>
+        <td width="100%"><code><a href="../../../reference/chan/content/ChanPerformer.ReadContentResult.html">ChanPerformer.ReadContentResult</a></code> instance.</td>
+      </tr>
+    </table>
+      <table class="responsive">
+      <tr><th colspan=2>Throws</th></tr>
         <tr>
-          <th>data</td>
-          <td><code><a href="../../../reference/chan/content/ChanPerformer.ReadContentData.html">ChanPerformer.ReadContentData</a></code> instance with arguments.</td>
+          <td><code><a href="../../../reference/chan/http/HttpException.html">HttpException</a></code></td>
+          <td width="100%">if HTTP or another error with message occurred.</td>
         </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li><code><a href="../../../reference/chan/content/ChanPerformer.ReadContentResult.html">ChanPerformer.ReadContentResult</a></code> instance.</li></ul>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Throws</h5>
-      <table class="jd-tagtable">  
         <tr>
-            <th><a href="../../../reference/chan/http/HttpException.html">HttpException</a></td>
-            <td>if HTTP or another error with message occurred.</td>
-        </tr>  
-        <tr>
-            <th><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></td>
-            <td>if server returned an invalid data.
+          <td><code><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></code></td>
+          <td width="100%">if server returned an invalid data.
 </td>
         </tr>
       </table>
-  </div>
+  
 
     </div>
 </div>
@@ -1748,56 +1860,64 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/content/ChanPerformer.ReadPostsResult.html">ChanPerformer.ReadPostsResult</a>
       </span>
       <span class="sympad">onReadPosts</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanPerformer.ReadPostsData.html">ChanPerformer.ReadPostsData</a> data)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls when application requests chan to download posts list.</p>
+  <p><p>Calls when application requests chan to download posts list.</p>
  
  <p>This method <strong>must</strong> be overridden.</p>
  
  <p>Option <code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_READ_THREAD_PARTIALLY">OPTION_READ_THREAD_PARTIALLY</a></code> allows you to download threads partially.
  You can check <code><a href="../../../reference/chan/content/ChanPerformer.ReadPostsData.html#partialThreadLoading">partialThreadLoading</a></code> flag and download only posts after
- <code><a href="../../../reference/chan/content/ChanPerformer.ReadPostsData.html#lastPostNumber">lastPostNumber</a></code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
+ <code><a href="../../../reference/chan/content/ChanPerformer.ReadPostsData.html#lastPostNumber">lastPostNumber</a></code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>data</code></td>
+        <td width="100%">
+          <code>ChanPerformer.ReadPostsData</code>:
+          <code><a href="../../../reference/chan/content/ChanPerformer.ReadPostsData.html">ChanPerformer.ReadPostsData</a></code> instance with arguments.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/ChanPerformer.ReadPostsResult.html">ChanPerformer.ReadPostsResult</a></code></td>
+        <td width="100%"><code><a href="../../../reference/chan/content/ChanPerformer.ReadPostsResult.html">ChanPerformer.ReadPostsResult</a></code> instance.</td>
+      </tr>
+    </table>
+      <table class="responsive">
+      <tr><th colspan=2>Throws</th></tr>
         <tr>
-          <th>data</td>
-          <td><code><a href="../../../reference/chan/content/ChanPerformer.ReadPostsData.html">ChanPerformer.ReadPostsData</a></code> instance with arguments.</td>
+          <td><code><a href="../../../reference/chan/http/HttpException.html">HttpException</a></code></td>
+          <td width="100%">if HTTP or another error with message occurred.</td>
         </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li><code><a href="../../../reference/chan/content/ChanPerformer.ReadPostsResult.html">ChanPerformer.ReadPostsResult</a></code> instance.</li></ul>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Throws</h5>
-      <table class="jd-tagtable">  
         <tr>
-            <th><a href="../../../reference/chan/http/HttpException.html">HttpException</a></td>
-            <td>if HTTP or another error with message occurred.</td>
-        </tr>  
+          <td><code><a href="../../../reference/chan/content/ThreadRedirectException.html">ThreadRedirectException</a></code></td>
+          <td width="100%">if server returned data that can be considered as redirect to another thread.</td>
+        </tr>
         <tr>
-            <th><a href="../../../reference/chan/content/ThreadRedirectException.html">ThreadRedirectException</a></td>
-            <td>if server returned data that can be considered as redirect to another thread.</td>
-        </tr>  
-        <tr>
-            <th><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></td>
-            <td>if server returned an invalid data.
+          <td><code><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></code></td>
+          <td width="100%">if server returned an invalid data.
 </td>
         </tr>
       </table>
-  </div>
+  
 
     </div>
 </div>
@@ -1808,52 +1928,60 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/content/ChanPerformer.ReadPostsCountResult.html">ChanPerformer.ReadPostsCountResult</a>
       </span>
       <span class="sympad">onReadPostsCount</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanPerformer.ReadPostsCountData.html">ChanPerformer.ReadPostsCountData</a> data)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls when application requests chan to download posts count.</p>
+  <p><p>Calls when application requests chan to download posts count.</p>
  
  <p>This method is not the same as <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadPosts(chan.content.ChanPerformer.ReadPostsData)">onReadPosts(ReadPostsData)</a></code>. This method must download
  and parse data quickly as possible.</p>
  
  <p>This method <strong>must</strong> be overridden if option
- <code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_READ_POSTS_COUNT">OPTION_READ_POSTS_COUNT</a></code> is enabled.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
+ <code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_READ_POSTS_COUNT">OPTION_READ_POSTS_COUNT</a></code> is enabled.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>data</code></td>
+        <td width="100%">
+          <code>ChanPerformer.ReadPostsCountData</code>:
+          <code><a href="../../../reference/chan/content/ChanPerformer.ReadPostsCountData.html">ChanPerformer.ReadPostsCountData</a></code> instance with arguments.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/ChanPerformer.ReadPostsCountResult.html">ChanPerformer.ReadPostsCountResult</a></code></td>
+        <td width="100%"><code><a href="../../../reference/chan/content/ChanPerformer.ReadPostsCountResult.html">ChanPerformer.ReadPostsCountResult</a></code> instance.</td>
+      </tr>
+    </table>
+      <table class="responsive">
+      <tr><th colspan=2>Throws</th></tr>
         <tr>
-          <th>data</td>
-          <td><code><a href="../../../reference/chan/content/ChanPerformer.ReadPostsCountData.html">ChanPerformer.ReadPostsCountData</a></code> instance with arguments.</td>
+          <td><code><a href="../../../reference/chan/http/HttpException.html">HttpException</a></code></td>
+          <td width="100%">if HTTP or another error with message occurred.</td>
         </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li><code><a href="../../../reference/chan/content/ChanPerformer.ReadPostsCountResult.html">ChanPerformer.ReadPostsCountResult</a></code> instance.</li></ul>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Throws</h5>
-      <table class="jd-tagtable">  
         <tr>
-            <th><a href="../../../reference/chan/http/HttpException.html">HttpException</a></td>
-            <td>if HTTP or another error with message occurred.</td>
-        </tr>  
-        <tr>
-            <th><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></td>
-            <td>if server returned an invalid data.
+          <td><code><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></code></td>
+          <td width="100%">if server returned an invalid data.
 </td>
         </tr>
       </table>
-  </div>
+  
 
     </div>
 </div>
@@ -1864,49 +1992,57 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/content/ChanPerformer.ReadSearchPostsResult.html">ChanPerformer.ReadSearchPostsResult</a>
       </span>
       <span class="sympad">onReadSearchPosts</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanPerformer.ReadSearchPostsData.html">ChanPerformer.ReadSearchPostsData</a> data)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls when application requests chan to download search posts list.</p>
+  <p><p>Calls when application requests chan to download search posts list.</p>
  
  <p>This method <strong>must</strong> be overridden if option <code><a href="../../../reference/chan/content/ChanConfiguration.Board.html#allowSearch">allowSearch</a></code> is
- enabled for this board.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
+ enabled for this board.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>data</code></td>
+        <td width="100%">
+          <code>ChanPerformer.ReadSearchPostsData</code>:
+          <code><a href="../../../reference/chan/content/ChanPerformer.ReadSearchPostsData.html">ChanPerformer.ReadSearchPostsData</a></code> instance with arguments.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/ChanPerformer.ReadSearchPostsResult.html">ChanPerformer.ReadSearchPostsResult</a></code></td>
+        <td width="100%"><code><a href="../../../reference/chan/content/ChanPerformer.ReadSearchPostsResult.html">ChanPerformer.ReadSearchPostsResult</a></code> instance.</td>
+      </tr>
+    </table>
+      <table class="responsive">
+      <tr><th colspan=2>Throws</th></tr>
         <tr>
-          <th>data</td>
-          <td><code><a href="../../../reference/chan/content/ChanPerformer.ReadSearchPostsData.html">ChanPerformer.ReadSearchPostsData</a></code> instance with arguments.</td>
+          <td><code><a href="../../../reference/chan/http/HttpException.html">HttpException</a></code></td>
+          <td width="100%">if HTTP or another error with message occurred.</td>
         </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li><code><a href="../../../reference/chan/content/ChanPerformer.ReadSearchPostsResult.html">ChanPerformer.ReadSearchPostsResult</a></code> instance.</li></ul>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Throws</h5>
-      <table class="jd-tagtable">  
         <tr>
-            <th><a href="../../../reference/chan/http/HttpException.html">HttpException</a></td>
-            <td>if HTTP or another error with message occurred.</td>
-        </tr>  
-        <tr>
-            <th><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></td>
-            <td>if server returned an invalid data.
+          <td><code><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></code></td>
+          <td width="100%">if server returned an invalid data.
 </td>
         </tr>
       </table>
-  </div>
+  
 
     </div>
 </div>
@@ -1917,49 +2053,57 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/content/ChanPerformer.ReadSinglePostResult.html">ChanPerformer.ReadSinglePostResult</a>
       </span>
       <span class="sympad">onReadSinglePost</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanPerformer.ReadSinglePostData.html">ChanPerformer.ReadSinglePostData</a> data)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls when application requests chan to download single post.</p>
+  <p><p>Calls when application requests chan to download single post.</p>
  
  <p>This method <strong>must</strong> be overridden if chan supports
- <code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_READ_SINGLE_POST">OPTION_READ_SINGLE_POST</a></code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
+ <code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_READ_SINGLE_POST">OPTION_READ_SINGLE_POST</a></code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>data</code></td>
+        <td width="100%">
+          <code>ChanPerformer.ReadSinglePostData</code>:
+          <code><a href="../../../reference/chan/content/ChanPerformer.ReadSinglePostData.html">ChanPerformer.ReadSinglePostData</a></code> instance with arguments.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/ChanPerformer.ReadSinglePostResult.html">ChanPerformer.ReadSinglePostResult</a></code></td>
+        <td width="100%"><code><a href="../../../reference/chan/content/ChanPerformer.ReadSinglePostResult.html">ChanPerformer.ReadSinglePostResult</a></code> instance.</td>
+      </tr>
+    </table>
+      <table class="responsive">
+      <tr><th colspan=2>Throws</th></tr>
         <tr>
-          <th>data</td>
-          <td><code><a href="../../../reference/chan/content/ChanPerformer.ReadSinglePostData.html">ChanPerformer.ReadSinglePostData</a></code> instance with arguments.</td>
+          <td><code><a href="../../../reference/chan/http/HttpException.html">HttpException</a></code></td>
+          <td width="100%">if HTTP or another error with message occurred.</td>
         </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li><code><a href="../../../reference/chan/content/ChanPerformer.ReadSinglePostResult.html">ChanPerformer.ReadSinglePostResult</a></code> instance.</li></ul>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Throws</h5>
-      <table class="jd-tagtable">  
         <tr>
-            <th><a href="../../../reference/chan/http/HttpException.html">HttpException</a></td>
-            <td>if HTTP or another error with message occurred.</td>
-        </tr>  
-        <tr>
-            <th><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></td>
-            <td>if server returned an invalid data.
+          <td><code><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></code></td>
+          <td width="100%">if server returned an invalid data.
 </td>
         </tr>
       </table>
-  </div>
+  
 
     </div>
 </div>
@@ -1970,54 +2114,61 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/content/ChanPerformer.ReadThreadSummariesResult.html">ChanPerformer.ReadThreadSummariesResult</a>
       </span>
       <span class="sympad">onReadThreadSummaries</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanPerformer.ReadThreadSummariesData.html">ChanPerformer.ReadThreadSummariesData</a> data)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls when application requests chan to download thread summaries.
+  <p><p>Calls when application requests chan to download thread summaries.
  You can check <code><a href="../../../reference/chan/content/ChanPerformer.ReadThreadSummariesData.html#type">type</a></code> field and return necessary data.</p>
  
  <p>This method <strong>must</strong> be overridden in the following cases:</p>
  
  <ul>
  <li><code><a href="../../../reference/chan/content/ChanConfiguration.Board.html#allowArchive">allowArchive</a></code> enabled</li>
- <li><code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_READ_POPULAR_THREADS">OPTION_READ_POPULAR_THREADS</a></code> enabled</li>
- </ul></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
+ </ul></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>data</code></td>
+        <td width="100%">
+          <code>ChanPerformer.ReadThreadSummariesData</code>:
+          <code><a href="../../../reference/chan/content/ChanPerformer.ReadThreadSummariesData.html">ChanPerformer.ReadThreadSummariesData</a></code> instance with arguments.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/ChanPerformer.ReadThreadSummariesResult.html">ChanPerformer.ReadThreadSummariesResult</a></code></td>
+        <td width="100%"><code><a href="../../../reference/chan/content/ChanPerformer.ReadThreadSummariesResult.html">ChanPerformer.ReadThreadSummariesResult</a></code> instance.</td>
+      </tr>
+    </table>
+      <table class="responsive">
+      <tr><th colspan=2>Throws</th></tr>
         <tr>
-          <th>data</td>
-          <td><code><a href="../../../reference/chan/content/ChanPerformer.ReadThreadSummariesData.html">ChanPerformer.ReadThreadSummariesData</a></code> instance with arguments.</td>
+          <td><code><a href="../../../reference/chan/http/HttpException.html">HttpException</a></code></td>
+          <td width="100%">if HTTP or another error with message occurred.</td>
         </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li><code><a href="../../../reference/chan/content/ChanPerformer.ReadThreadSummariesResult.html">ChanPerformer.ReadThreadSummariesResult</a></code> instance.</li></ul>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Throws</h5>
-      <table class="jd-tagtable">  
         <tr>
-            <th><a href="../../../reference/chan/http/HttpException.html">HttpException</a></td>
-            <td>if HTTP or another error with message occurred.</td>
-        </tr>  
-        <tr>
-            <th><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></td>
-            <td>if server returned an invalid data.
+          <td><code><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></code></td>
+          <td width="100%">if server returned an invalid data.
 </td>
         </tr>
       </table>
-  </div>
+  
 
     </div>
 </div>
@@ -2028,51 +2179,59 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/content/ChanPerformer.ReadThreadsResult.html">ChanPerformer.ReadThreadsResult</a>
       </span>
       <span class="sympad">onReadThreads</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanPerformer.ReadThreadsData.html">ChanPerformer.ReadThreadsData</a> data)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls when application requests chan to download threads list.</p>
+  <p><p>Calls when application requests chan to download threads list.</p>
  
  <p>This method <strong>must</strong> be overridden.</p>
  
  <p>Option <code><a href="../../../reference/chan/content/ChanConfiguration.Board.html#allowCatalog">allowCatalog</a></code> allows client to download catalog of threads.
- Use <code><a href="../../../reference/chan/content/ChanPerformer.ReadThreadsData.html#isCatalog()">isCatalog()</a></code> to determine whether it necessary to do.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
+ Use <code><a href="../../../reference/chan/content/ChanPerformer.ReadThreadsData.html#isCatalog()">isCatalog()</a></code> to determine whether it necessary to do.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>data</code></td>
+        <td width="100%">
+          <code>ChanPerformer.ReadThreadsData</code>:
+          <code><a href="../../../reference/chan/content/ChanPerformer.ReadThreadsData.html">ChanPerformer.ReadThreadsData</a></code> instance with arguments.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/ChanPerformer.ReadThreadsResult.html">ChanPerformer.ReadThreadsResult</a></code></td>
+        <td width="100%"><code><a href="../../../reference/chan/content/ChanPerformer.ReadThreadsResult.html">ChanPerformer.ReadThreadsResult</a></code> instance.</td>
+      </tr>
+    </table>
+      <table class="responsive">
+      <tr><th colspan=2>Throws</th></tr>
         <tr>
-          <th>data</td>
-          <td><code><a href="../../../reference/chan/content/ChanPerformer.ReadThreadsData.html">ChanPerformer.ReadThreadsData</a></code> instance with arguments.</td>
+          <td><code><a href="../../../reference/chan/http/HttpException.html">HttpException</a></code></td>
+          <td width="100%">if HTTP or another error with message occurred.</td>
         </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li><code><a href="../../../reference/chan/content/ChanPerformer.ReadThreadsResult.html">ChanPerformer.ReadThreadsResult</a></code> instance.</li></ul>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Throws</h5>
-      <table class="jd-tagtable">  
         <tr>
-            <th><a href="../../../reference/chan/http/HttpException.html">HttpException</a></td>
-            <td>if HTTP or another error with message occurred.</td>
-        </tr>  
-        <tr>
-            <th><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></td>
-            <td>if server returned an invalid data.
+          <td><code><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></code></td>
+          <td width="100%">if server returned an invalid data.
 </td>
         </tr>
       </table>
-  </div>
+  
 
     </div>
 </div>
@@ -2083,49 +2242,57 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/content/ChanPerformer.ReadUserBoardsResult.html">ChanPerformer.ReadUserBoardsResult</a>
       </span>
       <span class="sympad">onReadUserBoards</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanPerformer.ReadUserBoardsData.html">ChanPerformer.ReadUserBoardsData</a> data)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls when application requests chan to download user boards list.</p>
+  <p><p>Calls when application requests chan to download user boards list.</p>
  
  <p>This method <strong>must</strong> be overridden if option
- <code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_READ_USER_BOARDS">OPTION_READ_USER_BOARDS</a></code> is enabled.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
+ <code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_READ_USER_BOARDS">OPTION_READ_USER_BOARDS</a></code> is enabled.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>data</code></td>
+        <td width="100%">
+          <code>ChanPerformer.ReadUserBoardsData</code>:
+          <code><a href="../../../reference/chan/content/ChanPerformer.ReadUserBoardsData.html">ChanPerformer.ReadUserBoardsData</a></code> instance with arguments.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/ChanPerformer.ReadUserBoardsResult.html">ChanPerformer.ReadUserBoardsResult</a></code></td>
+        <td width="100%"><code><a href="../../../reference/chan/content/ChanPerformer.ReadUserBoardsResult.html">ChanPerformer.ReadUserBoardsResult</a></code> instance.</td>
+      </tr>
+    </table>
+      <table class="responsive">
+      <tr><th colspan=2>Throws</th></tr>
         <tr>
-          <th>data</td>
-          <td><code><a href="../../../reference/chan/content/ChanPerformer.ReadUserBoardsData.html">ChanPerformer.ReadUserBoardsData</a></code> instance with arguments.</td>
+          <td><code><a href="../../../reference/chan/http/HttpException.html">HttpException</a></code></td>
+          <td width="100%">if HTTP or another error with message occurred.</td>
         </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li><code><a href="../../../reference/chan/content/ChanPerformer.ReadUserBoardsResult.html">ChanPerformer.ReadUserBoardsResult</a></code> instance.</li></ul>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Throws</h5>
-      <table class="jd-tagtable">  
         <tr>
-            <th><a href="../../../reference/chan/http/HttpException.html">HttpException</a></td>
-            <td>if HTTP or another error with message occurred.</td>
-        </tr>  
-        <tr>
-            <th><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></td>
-            <td>if server returned an invalid data.
+          <td><code><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></code></td>
+          <td width="100%">if server returned an invalid data.
 </td>
         </tr>
       </table>
-  </div>
+  
 
     </div>
 </div>
@@ -2136,55 +2303,63 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/content/ChanPerformer.SendAddToArchiveResult.html">ChanPerformer.SendAddToArchiveResult</a>
       </span>
       <span class="sympad">onSendAddToArchive</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanPerformer.SendAddToArchiveData.html">ChanPerformer.SendAddToArchiveData</a> data)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls when application requests chan to add thread to archive.</p>
+  <p><p>Calls when application requests chan to add thread to archive.</p>
  
  <p>This method <strong>must</strong> be overridden if chan implements archivation.</p>
  
- <p>You can throw <code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code> with <code>ARCHIVE_*</code> error types.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
+ <p>You can throw <code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code> with <code>ARCHIVE_*</code> error types.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>data</code></td>
+        <td width="100%">
+          <code>ChanPerformer.SendAddToArchiveData</code>:
+          <code><a href="../../../reference/chan/content/ChanPerformer.SendAddToArchiveData.html">ChanPerformer.SendAddToArchiveData</a></code> instance with arguments.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/ChanPerformer.SendAddToArchiveResult.html">ChanPerformer.SendAddToArchiveResult</a></code></td>
+        <td width="100%"><code><a href="../../../reference/chan/content/ChanPerformer.SendAddToArchiveResult.html">ChanPerformer.SendAddToArchiveResult</a></code> instance.</td>
+      </tr>
+    </table>
+      <table class="responsive">
+      <tr><th colspan=2>Throws</th></tr>
         <tr>
-          <th>data</td>
-          <td><code><a href="../../../reference/chan/content/ChanPerformer.SendAddToArchiveData.html">ChanPerformer.SendAddToArchiveData</a></code> instance with arguments.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li><code><a href="../../../reference/chan/content/ChanPerformer.SendAddToArchiveResult.html">ChanPerformer.SendAddToArchiveResult</a></code> instance.</li></ul>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Throws</h5>
-      <table class="jd-tagtable">  
-        <tr>
-            <th><a href="../../../reference/chan/content/ApiException.html">ApiException</a></td>
-            <td>if archivation wasn't complete due to user errors. It can hold error code,
+          <td><code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code></td>
+          <td width="100%">if archivation wasn't complete due to user errors. It can hold error code,
  see <code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code>.</td>
-        </tr>  
+        </tr>
         <tr>
-            <th><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></td>
-            <td>if server returns an invalid data.
+          <td><code><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></code></td>
+          <td width="100%">if server returns an invalid data.
 </td>
-        </tr>  
+        </tr>
         <tr>
-            <th><a href="../../../reference/chan/http/HttpException.html">HttpException</a></td>
-            <td></td>
+          <td><code><a href="../../../reference/chan/http/HttpException.html">HttpException</a></code></td>
+          <td width="100%"></td>
         </tr>
       </table>
-  </div>
+  
 
     </div>
 </div>
@@ -2195,19 +2370,25 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/content/ChanPerformer.SendDeletePostsResult.html">ChanPerformer.SendDeletePostsResult</a>
       </span>
       <span class="sympad">onSendDeletePosts</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanPerformer.SendDeletePostsData.html">ChanPerformer.SendDeletePostsData</a> data)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls when application requests chan to delete posts.</p>
+  <p><p>Calls when application requests chan to delete posts.</p>
  
  <p>This method <strong>must</strong> be overridden if option <code><a href="../../../reference/chan/content/ChanConfiguration.Board.html#allowDeleting">allowDeleting</a></code> is
  enabled for this board.</p>
@@ -2216,38 +2397,40 @@ From class
  posts. <strong>You must throw <code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code> only in case if nothing was deleted</strong>. In other cases
  you must return and throw nothing.</p>
  
- <p>You can throw <code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code> with <code>DELETE_*</code> error types.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
+ <p>You can throw <code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code> with <code>DELETE_*</code> error types.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>data</code></td>
+        <td width="100%">
+          <code>ChanPerformer.SendDeletePostsData</code>:
+          <code><a href="../../../reference/chan/content/ChanPerformer.SendDeletePostsData.html">ChanPerformer.SendDeletePostsData</a></code> instance with arguments.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/ChanPerformer.SendDeletePostsResult.html">ChanPerformer.SendDeletePostsResult</a></code></td>
+        <td width="100%"><code><a href="../../../reference/chan/content/ChanPerformer.SendDeletePostsResult.html">ChanPerformer.SendDeletePostsResult</a></code> instance.</td>
+      </tr>
+    </table>
+      <table class="responsive">
+      <tr><th colspan=2>Throws</th></tr>
         <tr>
-          <th>data</td>
-          <td><code><a href="../../../reference/chan/content/ChanPerformer.SendDeletePostsData.html">ChanPerformer.SendDeletePostsData</a></code> instance with arguments.</td>
+          <td><code><a href="../../../reference/chan/http/HttpException.html">HttpException</a></code></td>
+          <td width="100%">if HTTP or another error with message occurred.</td>
         </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li><code><a href="../../../reference/chan/content/ChanPerformer.SendDeletePostsResult.html">ChanPerformer.SendDeletePostsResult</a></code> instance.</li></ul>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Throws</h5>
-      <table class="jd-tagtable">  
         <tr>
-            <th><a href="../../../reference/chan/http/HttpException.html">HttpException</a></td>
-            <td>if HTTP or another error with message occurred.</td>
-        </tr>  
+          <td><code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code></td>
+          <td width="100%">if deleting wasn't complete due to user errors.</td>
+        </tr>
         <tr>
-            <th><a href="../../../reference/chan/content/ApiException.html">ApiException</a></td>
-            <td>if deleting wasn't complete due to user errors.</td>
-        </tr>  
-        <tr>
-            <th><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></td>
-            <td>if server returned an invalid data.
+          <td><code><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></code></td>
+          <td width="100%">if server returned an invalid data.
 </td>
         </tr>
       </table>
-  </div>
+  
 
     </div>
 </div>
@@ -2258,52 +2441,60 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/content/ChanPerformer.SendPostResult.html">ChanPerformer.SendPostResult</a>
       </span>
       <span class="sympad">onSendPost</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanPerformer.SendPostData.html">ChanPerformer.SendPostData</a> data)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls when application requests chan to send post.</p>
+  <p><p>Calls when application requests chan to send post.</p>
  
- <p>You can throw <code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code> with <code>SEND_*</code> error types.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
+ <p>You can throw <code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code> with <code>SEND_*</code> error types.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>data</code></td>
+        <td width="100%">
+          <code>ChanPerformer.SendPostData</code>:
+          <code><a href="../../../reference/chan/content/ChanPerformer.SendPostData.html">ChanPerformer.SendPostData</a></code> instance with arguments.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/ChanPerformer.SendPostResult.html">ChanPerformer.SendPostResult</a></code></td>
+        <td width="100%"><code><a href="../../../reference/chan/content/ChanPerformer.SendPostResult.html">ChanPerformer.SendPostResult</a></code> instance.</td>
+      </tr>
+    </table>
+      <table class="responsive">
+      <tr><th colspan=2>Throws</th></tr>
         <tr>
-          <th>data</td>
-          <td><code><a href="../../../reference/chan/content/ChanPerformer.SendPostData.html">ChanPerformer.SendPostData</a></code> instance with arguments.</td>
+          <td><code><a href="../../../reference/chan/http/HttpException.html">HttpException</a></code></td>
+          <td width="100%">if HTTP or another error with message occurred.</td>
         </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li><code><a href="../../../reference/chan/content/ChanPerformer.SendPostResult.html">ChanPerformer.SendPostResult</a></code> instance.</li></ul>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Throws</h5>
-      <table class="jd-tagtable">  
         <tr>
-            <th><a href="../../../reference/chan/http/HttpException.html">HttpException</a></td>
-            <td>if HTTP or another error with message occurred.</td>
-        </tr>  
+          <td><code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code></td>
+          <td width="100%">if sending wasn't complete due to user errors.</td>
+        </tr>
         <tr>
-            <th><a href="../../../reference/chan/content/ApiException.html">ApiException</a></td>
-            <td>if sending wasn't complete due to user errors.</td>
-        </tr>  
-        <tr>
-            <th><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></td>
-            <td>if server returned an invalid data.
+          <td><code><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></code></td>
+          <td width="100%">if server returned an invalid data.
 </td>
         </tr>
       </table>
-  </div>
+  
 
     </div>
 </div>
@@ -2314,58 +2505,75 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../reference/chan/content/ChanPerformer.SendReportPostsResult.html">ChanPerformer.SendReportPostsResult</a>
       </span>
       <span class="sympad">onSendReportPosts</span>
       <span class="normal">(<a href="../../../reference/chan/content/ChanPerformer.SendReportPostsData.html">ChanPerformer.SendReportPostsData</a> data)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Calls when application requests chan to send report.</p>
+  <p><p>Calls when application requests chan to send report.</p>
  
  <p>This method <strong>must</strong> be overridden if option <code><a href="../../../reference/chan/content/ChanConfiguration.Board.html#allowReporting">allowReporting</a></code> is
  enabled for this board.</p>
  
- <p>You can throw <code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code> with <code>REPORT_*</code> error types.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
+ <p>You can throw <code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code> with <code>REPORT_*</code> error types.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>data</code></td>
+        <td width="100%">
+          <code>ChanPerformer.SendReportPostsData</code>:
+          <code><a href="../../../reference/chan/content/ChanPerformer.SendDeletePostsData.html">ChanPerformer.SendDeletePostsData</a></code> instance with arguments.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/ChanPerformer.SendReportPostsResult.html">ChanPerformer.SendReportPostsResult</a></code></td>
+        <td width="100%"><code><a href="../../../reference/chan/content/ChanPerformer.SendReportPostsResult.html">ChanPerformer.SendReportPostsResult</a></code> instance.</td>
+      </tr>
+    </table>
+      <table class="responsive">
+      <tr><th colspan=2>Throws</th></tr>
         <tr>
-          <th>data</td>
-          <td><code><a href="../../../reference/chan/content/ChanPerformer.SendDeletePostsData.html">ChanPerformer.SendDeletePostsData</a></code> instance with arguments.</td>
+          <td><code><a href="../../../reference/chan/http/HttpException.html">HttpException</a></code></td>
+          <td width="100%">if HTTP or another error with message occurred.</td>
         </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li><code><a href="../../../reference/chan/content/ChanPerformer.SendReportPostsResult.html">ChanPerformer.SendReportPostsResult</a></code> instance.</li></ul>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Throws</h5>
-      <table class="jd-tagtable">  
         <tr>
-            <th><a href="../../../reference/chan/http/HttpException.html">HttpException</a></td>
-            <td>if HTTP or another error with message occurred.</td>
-        </tr>  
+          <td><code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code></td>
+          <td width="100%">if reporting wasn't complete due to user errors.</td>
+        </tr>
         <tr>
-            <th><a href="../../../reference/chan/content/ApiException.html">ApiException</a></td>
-            <td>if reporting wasn't complete due to user errors.</td>
-        </tr>  
-        <tr>
-            <th><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></td>
-            <td>if server returns an invalid data.
+          <td><code><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></code></td>
+          <td width="100%">if server returns an invalid data.
 </td>
         </tr>
       </table>
-  </div>
+  
 
     </div>
 </div>
+
+
+
+
+
+<!-- ========= METHOD DETAIL ======== -->
+
+<h2>Protected Methods</h2>
+
 
 
 <A NAME="requireUserCaptcha(java.lang.String, java.lang.String, java.lang.String, boolean)"></A>
@@ -2373,46 +2581,61 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        protected
+        
+        
+        
+        final
         <a href="../../../reference/chan/content/ChanPerformer.CaptchaData.html">ChanPerformer.CaptchaData</a>
       </span>
       <span class="sympad">requireUserCaptcha</span>
       <span class="normal">(String requirement, String boardName, String threadNumber, boolean retry)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Suspends this thread and shows captcha dialog for user. Captcha will be loaded with
- <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadCaptcha(chan.content.ChanPerformer.ReadCaptchaData)">onReadCaptcha(ReadCaptchaData)</a></code>. You can specify <code>requirement</code> for differen behaviors.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>requirement</td>
-          <td>Requirement string.</td>
-        </tr>
-        <tr>
-          <th>boardName</td>
-          <td>Board name.</td>
-        </tr>
-        <tr>
-          <th>threadNumber</td>
-          <td>Thread number.</td>
-        </tr>
-        <tr>
-          <th>retry</td>
-          <td>True if this is not the first request. If true, this will show "invalid captcha" toast for user.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li><code><a href="../../../reference/chan/content/ChanPerformer.CaptchaData.html">ChanPerformer.CaptchaData</a></code> with <code><a href="../../../reference/chan/content/ChanPerformer.CaptchaData.html#INPUT">INPUT</a></code> or null if user has canceled an operation.
-</li></ul>
-  </div>
+  <p><p>Suspends this thread and shows captcha dialog for user. Captcha will be loaded with
+ <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadCaptcha(chan.content.ChanPerformer.ReadCaptchaData)">onReadCaptcha(ReadCaptchaData)</a></code>. You can specify <code>requirement</code> for differen behaviors.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>requirement</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Requirement string.</td>
+      </tr>
+      <tr>
+        <td><code>boardName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Board name.</td>
+      </tr>
+      <tr>
+        <td><code>threadNumber</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Thread number.</td>
+      </tr>
+      <tr>
+        <td><code>retry</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          True if this is not the first request. If true, this will show "invalid captcha" toast for user.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/ChanPerformer.CaptchaData.html">ChanPerformer.CaptchaData</a></code></td>
+        <td width="100%"><code><a href="../../../reference/chan/content/ChanPerformer.CaptchaData.html">ChanPerformer.CaptchaData</a></code> with <code><a href="../../../reference/chan/content/ChanPerformer.CaptchaData.html#INPUT">INPUT</a></code> or null if user has canceled an operation.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2423,45 +2646,60 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        protected
+        
+        
+        
+        final
         boolean[]
       </span>
       <span class="sympad">requireUserImageMultipleChoice</span>
       <span class="normal">(boolean[] selected, Bitmap[] images, String descriptionText, Bitmap descriptionImage)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Suspends this thread and shows images dialog for user. User can choose multiple images.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>selected</td>
-          <td>Array of default selected indexes, <code>true</code> for selected, may be null.</td>
-        </tr>
-        <tr>
-          <th>images</td>
-          <td>Array of images.</td>
-        </tr>
-        <tr>
-          <th>descriptionText</td>
-          <td>Description text (e.g. "Select all burgers").</td>
-        </tr>
-        <tr>
-          <th>descriptionImage</td>
-          <td>Description image (e.g. example image).</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Array of selected indexes or null if user has canceled an operation.
-</li></ul>
-  </div>
+  <p><p>Suspends this thread and shows images dialog for user. User can choose multiple images.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>selected</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          Array of default selected indexes, <code>true</code> for selected, may be null.</td>
+      </tr>
+      <tr>
+        <td><code>images</code></td>
+        <td width="100%">
+          <code>Bitmap</code>:
+          Array of images.</td>
+      </tr>
+      <tr>
+        <td><code>descriptionText</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Description text (e.g. "Select all burgers").</td>
+      </tr>
+      <tr>
+        <td><code>descriptionImage</code></td>
+        <td width="100%">
+          <code>Bitmap</code>:
+          Description image (e.g. example image).</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>boolean[]</code></td>
+        <td width="100%">Array of selected indexes or null if user has canceled an operation.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2472,54 +2710,65 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-        final 
-         
-         
+        protected
+        
+        
+        
+        final
         Integer
       </span>
       <span class="sympad">requireUserImageSingleChoice</span>
       <span class="normal">(int selected, Bitmap[] images, String descriptionText, Bitmap descriptionImage)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Suspends this thread and shows images dialog for user. User can choose only one image.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>selected</td>
-          <td>Default selected index, may be -1.</td>
-        </tr>
-        <tr>
-          <th>images</td>
-          <td>Array of images.</td>
-        </tr>
-        <tr>
-          <th>descriptionText</td>
-          <td>Description text (e.g. "Select all burgers").</td>
-        </tr>
-        <tr>
-          <th>descriptionImage</td>
-          <td>Description image (e.g. example image).</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>Index of chosen image, -1 if image wasn't chosen or null if user has canceled an operation.
-</li></ul>
-  </div>
+  <p><p>Suspends this thread and shows images dialog for user. User can choose only one image.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>selected</code></td>
+        <td width="100%">
+          <code>int</code>:
+          Default selected index, may be -1.</td>
+      </tr>
+      <tr>
+        <td><code>images</code></td>
+        <td width="100%">
+          <code>Bitmap</code>:
+          Array of images.</td>
+      </tr>
+      <tr>
+        <td><code>descriptionText</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Description text (e.g. "Select all burgers").</td>
+      </tr>
+      <tr>
+        <td><code>descriptionImage</code></td>
+        <td width="100%">
+          <code>Bitmap</code>:
+          Description image (e.g. example image).</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>Integer</code></td>
+        <td width="100%">Index of chosen image, -1 if image wasn't chosen or null if user has canceled an operation.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
 
 
-
-
-
-<!-- ========= METHOD DETAIL ======== -->
 
 
 

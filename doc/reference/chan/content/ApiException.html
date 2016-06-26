@@ -49,6 +49,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -56,7 +66,9 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
 <title>
 
-  ApiException - Dashchan API Reference
+  ApiException - Dashchan API Reference |
+
+Doclava
 
 </title>
 <link href="../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
@@ -317,6 +329,12 @@ Summary:
 &#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
 
 </div><!-- end sum-details-links -->
+<div class="api-level">
+  
+  
+  
+
+</div>
 </div><!-- end api-info-block -->
 
 
@@ -325,7 +343,7 @@ Summary:
 <div id="jd-header">
     public
      
-     
+    final 
     
     class
 <h1 itemprop="name">ApiException</h1>
@@ -409,6 +427,7 @@ Summary:
 <h2>Class Overview</h2>
 <p itemprop="articleBody"><p>Thrown by sending methods from <code><a href="../../../reference/chan/content/ChanPerformer.html">ChanPerformer</a></code>.</p>
 </p>
+
 
 
 
@@ -975,9 +994,9 @@ From class
     <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
-            synchronized
-            final
             
+            
+            final
             
             void</nobr>
         </td>
@@ -991,7 +1010,7 @@ From class
     <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
-            synchronized
+            
             
             
             
@@ -1007,7 +1026,7 @@ From class
     <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
-            synchronized
+            
             
             
             
@@ -1071,9 +1090,9 @@ From class
     <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
-            synchronized
-            final
             
+            
+            final
             
             Throwable[]</nobr>
         </td>
@@ -1087,7 +1106,7 @@ From class
     <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
-            synchronized
+            
             
             
             
@@ -1110,7 +1129,7 @@ From class
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">printStackTrace</span>(PrintStream arg0)</nobr>
+        <span class="sympad">printStackTrace</span>()</nobr>
         
   </td></tr>
 
@@ -1142,7 +1161,7 @@ From class
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">printStackTrace</span>()</nobr>
+        <span class="sympad">printStackTrace</span>(PrintStream arg0)</nobr>
         
   </td></tr>
 
@@ -1213,10 +1232,10 @@ From class
             
             
             
-            boolean</nobr>
+            Object</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">equals</span>(Object arg0)</nobr>
+        <span class="sympad">clone</span>()</nobr>
         
   </td></tr>
 
@@ -1226,8 +1245,40 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">equals</span>(Object arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">finalize</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
             
             Class&lt;?&gt;</nobr>
         </td>
@@ -1258,8 +1309,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -1274,8 +1325,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -1306,24 +1357,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">wait</span>()</nobr>
-        
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
             
             final
-            
             
             void</nobr>
         </td>
@@ -1334,17 +1369,33 @@ From class
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad">wait</span>(long arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">wait</span>()</nobr>
         
   </td></tr>
 
@@ -1401,10 +1452,16 @@ From class
       </span>
         ARCHIVE_ERROR_NO_ACCESS
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>No access to archive thread: unsupported or canceled operation.</p>
-</p></div>
+  <p><p>No access to archive thread: unsupported or canceled operation.</p>
+</p>
 
     
     </div>
@@ -1424,10 +1481,16 @@ From class
       </span>
         ARCHIVE_ERROR_TOO_OFTEN
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>User sends archive requests too often.</p>
-</p></div>
+  <p><p>User sends archive requests too often.</p>
+</p>
 
     
     </div>
@@ -1447,10 +1510,16 @@ From class
       </span>
         DELETE_ERROR_NOT_FOUND
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Deleted post was not found.</p>
-</p></div>
+  <p><p>Deleted post was not found.</p>
+</p>
 
     
     </div>
@@ -1470,10 +1539,16 @@ From class
       </span>
         DELETE_ERROR_NO_ACCESS
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>No access to delete posts: unsupported or canceled operation.</p>
-</p></div>
+  <p><p>No access to delete posts: unsupported or canceled operation.</p>
+</p>
 
     
     </div>
@@ -1493,10 +1568,16 @@ From class
       </span>
         DELETE_ERROR_PASSWORD
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>User entered invalid password.</p>
-</p></div>
+  <p><p>User entered invalid password.</p>
+</p>
 
     
     </div>
@@ -1516,10 +1597,16 @@ From class
       </span>
         DELETE_ERROR_TOO_NEW
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>User must wait before deleting new posts.</p>
-</p></div>
+  <p><p>User must wait before deleting new posts.</p>
+</p>
 
     
     </div>
@@ -1539,10 +1626,16 @@ From class
       </span>
         DELETE_ERROR_TOO_OFTEN
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>User sends delete post requests too often.</p>
-</p></div>
+  <p><p>User sends delete post requests too often.</p>
+</p>
 
     
     </div>
@@ -1562,10 +1655,16 @@ From class
       </span>
         DELETE_ERROR_TOO_OLD
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>The post is too old to delete.</p>
-</p></div>
+  <p><p>The post is too old to delete.</p>
+</p>
 
     
     </div>
@@ -1585,10 +1684,16 @@ From class
       </span>
         FLAG_KEEP_CAPTCHA
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Flag: client will not reset captcha due to exception.</p>
-</p></div>
+  <p><p>Flag: client will not reset captcha due to exception.</p>
+</p>
 
     
     </div>
@@ -1608,10 +1713,16 @@ From class
       </span>
         REPORT_ERROR_EMPTY_COMMENT
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>User must specify comment to send report.</p>
-</p></div>
+  <p><p>User must specify comment to send report.</p>
+</p>
 
     
     </div>
@@ -1631,10 +1742,16 @@ From class
       </span>
         REPORT_ERROR_NO_ACCESS
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>No access to report post: unsupported or canceled operation.</p>
-</p></div>
+  <p><p>No access to report post: unsupported or canceled operation.</p>
+</p>
 
     
     </div>
@@ -1654,10 +1771,16 @@ From class
       </span>
         REPORT_ERROR_TOO_OFTEN
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>User sends report post requests too often.</p>
-</p></div>
+  <p><p>User sends report post requests too often.</p>
+</p>
 
     
     </div>
@@ -1677,12 +1800,18 @@ From class
       </span>
         SEND_ERROR_BANNED
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>User is banned.</p>
+  <p><p>User is banned.</p>
  
  <p>May be returned with <code><a href="../../../reference/chan/content/ApiException.BanExtra.html">ApiException.BanExtra</a></code> instance.</p>
-</p></div>
+</p>
 
     
     </div>
@@ -1702,10 +1831,16 @@ From class
       </span>
         SEND_ERROR_CAPTCHA
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Mistyped or empty captcha.</p>
-</p></div>
+  <p><p>Mistyped or empty captcha.</p>
+</p>
 
     
     </div>
@@ -1725,10 +1860,16 @@ From class
       </span>
         SEND_ERROR_CLOSED
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Thread closed.</p>
-</p></div>
+  <p><p>Thread closed.</p>
+</p>
 
     
     </div>
@@ -1748,10 +1889,16 @@ From class
       </span>
         SEND_ERROR_EMPTY_COMMENT
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>User must specify comment to send post.</p>
-</p></div>
+  <p><p>User must specify comment to send post.</p>
+</p>
 
     
     </div>
@@ -1771,10 +1918,16 @@ From class
       </span>
         SEND_ERROR_EMPTY_FILE
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>User must attach file to send post.</p>
-</p></div>
+  <p><p>User must attach file to send post.</p>
+</p>
 
     
     </div>
@@ -1794,10 +1947,16 @@ From class
       </span>
         SEND_ERROR_EMPTY_SUBJECT
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>User must specify subject to send post.</p>
-</p></div>
+  <p><p>User must specify subject to send post.</p>
+</p>
 
     
     </div>
@@ -1817,10 +1976,16 @@ From class
       </span>
         SEND_ERROR_FIELD_TOO_LONG
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Comment or another field exceeds limit.</p>
-</p></div>
+  <p><p>Comment or another field exceeds limit.</p>
+</p>
 
     
     </div>
@@ -1840,10 +2005,16 @@ From class
       </span>
         SEND_ERROR_FILES_LIMIT
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Reached maximum files count in thread.</p>
-</p></div>
+  <p><p>Reached maximum files count in thread.</p>
+</p>
 
     
     </div>
@@ -1863,10 +2034,16 @@ From class
       </span>
         SEND_ERROR_FILES_TOO_MANY
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Too many files attached to post.</p>
-</p></div>
+  <p><p>Too many files attached to post.</p>
+</p>
 
     
     </div>
@@ -1886,10 +2063,16 @@ From class
       </span>
         SEND_ERROR_FILE_EXISTS
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>File with the same hash sum exists on server.</p>
-</p></div>
+  <p><p>File with the same hash sum exists on server.</p>
+</p>
 
     
     </div>
@@ -1909,10 +2092,16 @@ From class
       </span>
         SEND_ERROR_FILE_NOT_SUPPORTED
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>File type is not supported.</p>
-</p></div>
+  <p><p>File type is not supported.</p>
+</p>
 
     
     </div>
@@ -1932,10 +2121,16 @@ From class
       </span>
         SEND_ERROR_FILE_TOO_BIG
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>File size exceeds limit.</p>
-</p></div>
+  <p><p>File size exceeds limit.</p>
+</p>
 
     
     </div>
@@ -1955,10 +2150,16 @@ From class
       </span>
         SEND_ERROR_NO_ACCESS
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>No access to post on this board or thread.</p>
-</p></div>
+  <p><p>No access to post on this board or thread.</p>
+</p>
 
     
     </div>
@@ -1978,10 +2179,16 @@ From class
       </span>
         SEND_ERROR_NO_BOARD
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Board not exists error.</p>
-</p></div>
+  <p><p>Board not exists error.</p>
+</p>
 
     
     </div>
@@ -2001,10 +2208,16 @@ From class
       </span>
         SEND_ERROR_NO_THREAD
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Thread not exists error.</p>
-</p></div>
+  <p><p>Thread not exists error.</p>
+</p>
 
     
     </div>
@@ -2024,12 +2237,18 @@ From class
       </span>
         SEND_ERROR_SPAM_LIST
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Comment or another field contains a word from spam list.</p>
+  <p><p>Comment or another field contains a word from spam list.</p>
  
  <p>May be returned with <code><a href="../../../reference/chan/content/ApiException.WordsExtra.html">ApiException.WordsExtra</a></code> instance.</p>
-</p></div>
+</p>
 
     
     </div>
@@ -2049,10 +2268,16 @@ From class
       </span>
         SEND_ERROR_TOO_FAST
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>User sends posts too fast.</p>
-</p></div>
+  <p><p>User sends posts too fast.</p>
+</p>
 
     
     </div>
@@ -2074,29 +2299,35 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         
       </span>
       <span class="sympad">ApiException</span>
       <span class="normal">(int errorType)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Constructor for an <code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>errorType</td>
-          <td>Error type constant value.
+  <p><p>Constructor for an <code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>errorType</code></td>
+        <td width="100%">
+          <code>int</code>:
+          Error type constant value.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2107,33 +2338,41 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         
       </span>
       <span class="sympad">ApiException</span>
       <span class="normal">(int errorType, int flags)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Constructor for an <code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>errorType</td>
-          <td>Error type constant value.</td>
-        </tr>
-        <tr>
-          <th>flags</td>
-          <td>Additional option flags. The following flags are available: <code><a href="../../../reference/chan/content/ApiException.html#FLAG_KEEP_CAPTCHA">FLAG_KEEP_CAPTCHA</a></code>.
+  <p><p>Constructor for an <code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>errorType</code></td>
+        <td width="100%">
+          <code>int</code>:
+          Error type constant value.</td>
+      </tr>
+      <tr>
+        <td><code>flags</code></td>
+        <td width="100%">
+          <code>int</code>:
+          Additional option flags. The following flags are available: <code><a href="../../../reference/chan/content/ApiException.html#FLAG_KEEP_CAPTCHA">FLAG_KEEP_CAPTCHA</a></code>.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2144,33 +2383,41 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         
       </span>
       <span class="sympad">ApiException</span>
       <span class="normal">(int errorType, Object extra)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Constructor for an <code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>errorType</td>
-          <td>Error type constant value.</td>
-        </tr>
-        <tr>
-          <th>extra</td>
-          <td>Additional extra data. The following types are available <code><a href="../../../reference/chan/content/ApiException.BanExtra.html">ApiException.BanExtra</a></code>, <code><a href="../../../reference/chan/content/ApiException.WordsExtra.html">ApiException.WordsExtra</a></code>.
+  <p><p>Constructor for an <code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>errorType</code></td>
+        <td width="100%">
+          <code>int</code>:
+          Error type constant value.</td>
+      </tr>
+      <tr>
+        <td><code>extra</code></td>
+        <td width="100%">
+          <code>Object</code>:
+          Additional extra data. The following types are available <code><a href="../../../reference/chan/content/ApiException.BanExtra.html">ApiException.BanExtra</a></code>, <code><a href="../../../reference/chan/content/ApiException.WordsExtra.html">ApiException.WordsExtra</a></code>.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2181,37 +2428,47 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         
       </span>
       <span class="sympad">ApiException</span>
       <span class="normal">(int errorType, int flags, Object extra)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Constructor for an <code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>errorType</td>
-          <td>Error type constant value.</td>
-        </tr>
-        <tr>
-          <th>flags</td>
-          <td>Additional option flags. The following flags are available: <code><a href="../../../reference/chan/content/ApiException.html#FLAG_KEEP_CAPTCHA">FLAG_KEEP_CAPTCHA</a></code>.</td>
-        </tr>
-        <tr>
-          <th>extra</td>
-          <td>Additional extra data. The following types are available <code><a href="../../../reference/chan/content/ApiException.BanExtra.html">ApiException.BanExtra</a></code>, <code><a href="../../../reference/chan/content/ApiException.WordsExtra.html">ApiException.WordsExtra</a></code>.
+  <p><p>Constructor for an <code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>errorType</code></td>
+        <td width="100%">
+          <code>int</code>:
+          Error type constant value.</td>
+      </tr>
+      <tr>
+        <td><code>flags</code></td>
+        <td width="100%">
+          <code>int</code>:
+          Additional option flags. The following flags are available: <code><a href="../../../reference/chan/content/ApiException.html#FLAG_KEEP_CAPTCHA">FLAG_KEEP_CAPTCHA</a></code>.</td>
+      </tr>
+      <tr>
+        <td><code>extra</code></td>
+        <td width="100%">
+          <code>Object</code>:
+          Additional extra data. The following types are available <code><a href="../../../reference/chan/content/ApiException.BanExtra.html">ApiException.BanExtra</a></code>, <code><a href="../../../reference/chan/content/ApiException.WordsExtra.html">ApiException.WordsExtra</a></code>.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2222,29 +2479,35 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         
       </span>
       <span class="sympad">ApiException</span>
       <span class="normal">(String detailMessage)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Constructor for an <code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>detailMessage</td>
-          <td>Error message.
+  <p><p>Constructor for an <code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>detailMessage</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Error message.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2255,33 +2518,41 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         
       </span>
       <span class="sympad">ApiException</span>
       <span class="normal">(String detailMessage, int flags)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Constructor for an <code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>detailMessage</td>
-          <td>Error message.</td>
-        </tr>
-        <tr>
-          <th>flags</td>
-          <td>Additional option flags. The following flags are available: <code><a href="../../../reference/chan/content/ApiException.html#FLAG_KEEP_CAPTCHA">FLAG_KEEP_CAPTCHA</a></code>.
+  <p><p>Constructor for an <code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>detailMessage</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Error message.</td>
+      </tr>
+      <tr>
+        <td><code>flags</code></td>
+        <td width="100%">
+          <code>int</code>:
+          Additional option flags. The following flags are available: <code><a href="../../../reference/chan/content/ApiException.html#FLAG_KEEP_CAPTCHA">FLAG_KEEP_CAPTCHA</a></code>.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>

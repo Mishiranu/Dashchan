@@ -49,6 +49,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -56,7 +66,9 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
 <title>
 
-  HttpRequest.RedirectHandler - Dashchan API Reference
+  HttpRequest.RedirectHandler - Dashchan API Reference |
+
+Doclava
 
 </title>
 <link href="../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
@@ -227,6 +239,12 @@
 <div class="sum-details-links">
 
 </div><!-- end sum-details-links -->
+<div class="api-level">
+  
+  
+  
+
+</div>
 </div><!-- end api-info-block -->
 
 
@@ -277,8 +295,9 @@
 
 
 
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">See Also</h5>
+
+  <div>
+      <p><b>See also:</b></p>
       <ul class="nolist"><li><code><a href="../../../reference/chan/http/HttpRequest.html#setRedirectHandler(chan.http.HttpRequest.RedirectHandler)">setRedirectHandler(RedirectHandler)</a></code></li>
       </ul>
   </div>
@@ -467,10 +486,16 @@
       </span>
         BROWSER
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p><code><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a></code> implementation. This handler will follow all redirects with GET method.</p>
-</p></div>
+  <p><p><code><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a></code> implementation. This handler will follow all redirects with GET method.</p>
+</p>
 
     
     </div>
@@ -490,10 +515,16 @@
       </span>
         NONE
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p><code><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a></code> implementation. This handler will not follow any redirects.</p>
-</p></div>
+  <p><p><code><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a></code> implementation. This handler will not follow any redirects.</p>
+</p>
 
     
     </div>
@@ -513,11 +544,17 @@
       </span>
         STRICT
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p><code><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a></code> implementation. This handler will follow <code>301</code> and <code>302</code> redirects
+  <p><p><code><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.html">HttpRequest.RedirectHandler</a></code> implementation. This handler will follow <code>301</code> and <code>302</code> redirects
  with previous method. The rest will be followed with GET method.</p>
-</p></div>
+</p>
 
     
     </div>
@@ -547,55 +584,69 @@
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-        abstract 
-         
+        public
+        abstract
+        
+        
+        
         <a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html">HttpRequest.RedirectHandler.Action</a>
       </span>
       <span class="sympad">onRedirectReached</span>
       <span class="normal">(int responseCode, Uri requestedUri, Uri redirectedUri, <a href="../../../reference/chan/http/HttpHolder.html">HttpHolder</a> holder)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>HTTP client will call this method every time it reaches redirect response code.
- You must return the most suitable <code><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html">HttpRequest.RedirectHandler.Action</a></code> type for this response.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
+  <p><p>HTTP client will call this method every time it reaches redirect response code.
+ You must return the most suitable <code><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html">HttpRequest.RedirectHandler.Action</a></code> type for this response.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>responseCode</code></td>
+        <td width="100%">
+          <code>int</code>:
+          Response code.</td>
+      </tr>
+      <tr>
+        <td><code>requestedUri</code></td>
+        <td width="100%">
+          <code>Uri</code>:
+          Requested URI.</td>
+      </tr>
+      <tr>
+        <td><code>redirectedUri</code></td>
+        <td width="100%">
+          <code>Uri</code>:
+          URI decoded from <code>Location</code> header.</td>
+      </tr>
+      <tr>
+        <td><code>holder</code></td>
+        <td width="100%">
+          <code>HttpHolder</code>:
+          HTTP holder instance.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html">HttpRequest.RedirectHandler.Action</a></code></td>
+        <td width="100%"><code><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html">HttpRequest.RedirectHandler.Action</a></code> type.</td>
+      </tr>
+    </table>
+      <table class="responsive">
+      <tr><th colspan=2>Throws</th></tr>
         <tr>
-          <th>responseCode</td>
-          <td>Response code.</td>
-        </tr>
-        <tr>
-          <th>requestedUri</td>
-          <td>Requested URI.</td>
-        </tr>
-        <tr>
-          <th>redirectedUri</td>
-          <td>URI decoded from <code>Location</code> header.</td>
-        </tr>
-        <tr>
-          <th>holder</td>
-          <td>HTTP holder instance.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li><code><a href="../../../reference/chan/http/HttpRequest.RedirectHandler.Action.html">HttpRequest.RedirectHandler.Action</a></code> type.</li></ul>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Throws</h5>
-      <table class="jd-tagtable">  
-        <tr>
-            <th><a href="../../../reference/chan/http/HttpException.html">HttpException</a></td>
-            <td>if HTTP exception occurred.
+          <td><code><a href="../../../reference/chan/http/HttpException.html">HttpException</a></code></td>
+          <td width="100%">if HTTP exception occurred.
 </td>
         </tr>
       </table>
-  </div>
+  
 
     </div>
 </div>

@@ -49,6 +49,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -56,7 +66,9 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
 <title>
 
-  CommentEditor - Dashchan API Reference
+  CommentEditor - Dashchan API Reference |
+
+Doclava
 
 </title>
 <link href="../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
@@ -253,6 +265,12 @@ Summary:
 &#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
 
 </div><!-- end sum-details-links -->
+<div class="api-level">
+  
+  
+  
+
+</div>
 </div><!-- end api-info-block -->
 
 
@@ -331,12 +349,12 @@ Summary:
               >
   <table class="jd-sumtable-expando">
         <tr class="alt-color api apilevel-" >
-              <td class="jd-linkcol"><a href="../../../reference/chan/text/CommentEditor.BulletinBoardCodeCommentEditor.html">CommentEditor.BulletinBoardCodeCommentEditor</a></td>
-              <td class="jd-descrcol" width="100%"><p>Implementation of <code><a href="../../../reference/chan/text/CommentEditor.html">CommentEditor</a></code>.&nbsp;</td>
+              <td><a href="../../../reference/chan/text/CommentEditor.BulletinBoardCodeCommentEditor.html">CommentEditor.BulletinBoardCodeCommentEditor</a></td>
+              <td width="100%"><p>Implementation of <code><a href="../../../reference/chan/text/CommentEditor.html">CommentEditor</a></code>.&nbsp;</td>
           </tr>
         <tr class=" api apilevel-" >
-              <td class="jd-linkcol"><a href="../../../reference/chan/text/CommentEditor.WakabaMarkCommentEditor.html">CommentEditor.WakabaMarkCommentEditor</a></td>
-              <td class="jd-descrcol" width="100%"><p>Implementation of <code><a href="../../../reference/chan/text/CommentEditor.html">CommentEditor</a></code>.&nbsp;</td>
+              <td><a href="../../../reference/chan/text/CommentEditor.WakabaMarkCommentEditor.html">CommentEditor.WakabaMarkCommentEditor</a></td>
+              <td width="100%"><p>Implementation of <code><a href="../../../reference/chan/text/CommentEditor.html">CommentEditor</a></code>.&nbsp;</td>
           </tr>
   </table>
       </div>
@@ -352,6 +370,7 @@ Summary:
 <h2>Class Overview</h2>
 <p itemprop="articleBody"><p>This class is used to handle comment input when user writes new post.</p>
 </p>
+
 
 
 
@@ -493,7 +512,7 @@ Summary:
             
             
             
-            
+            final
             
             void</nobr>
         </td>
@@ -511,7 +530,7 @@ Summary:
             
             
             
-            
+            final
             
             void</nobr>
         </td>
@@ -529,7 +548,7 @@ Summary:
             
             
             
-            
+            final
             
             void</nobr>
         </td>
@@ -547,7 +566,7 @@ Summary:
             
             
             
-            
+            final
             
             void</nobr>
         </td>
@@ -601,10 +620,10 @@ From class
             
             
             
-            boolean</nobr>
+            Object</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">equals</span>(Object arg0)</nobr>
+        <span class="sympad">clone</span>()</nobr>
         
   </td></tr>
 
@@ -614,8 +633,40 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">equals</span>(Object arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">finalize</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
             
             Class&lt;?&gt;</nobr>
         </td>
@@ -646,8 +697,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -662,8 +713,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -694,24 +745,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">wait</span>()</nobr>
-        
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
             
             final
-            
             
             void</nobr>
         </td>
@@ -722,17 +757,33 @@ From class
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad">wait</span>(long arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">wait</span>()</nobr>
         
   </td></tr>
 
@@ -787,10 +838,16 @@ From class
       </span>
         FLAG_ONE_LINE
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Flag for tags that work only being in one line.</p>
-</p></div>
+  <p><p>Flag for tags that work only being in one line.</p>
+</p>
 
     
     </div>
@@ -812,19 +869,25 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         
       </span>
       <span class="sympad">CommentEditor</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p></p></div>
+  <p></p>
 
     </div>
 </div>
@@ -850,37 +913,47 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        final
         void
       </span>
       <span class="sympad">addTag</span>
       <span class="normal">(int what, String open, String close)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Add a new tag to handle. <code>what</code> argument must be one of tag constants from <code><a href="../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a></code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>what</td>
-          <td>Tag to handle.</td>
-        </tr>
-        <tr>
-          <th>open</td>
-          <td>Open tag string.</td>
-        </tr>
-        <tr>
-          <th>close</td>
-          <td>Close tag string.
+  <p><p>Add a new tag to handle. <code>what</code> argument must be one of tag constants from <code><a href="../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a></code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>what</code></td>
+        <td width="100%">
+          <code>int</code>:
+          Tag to handle.</td>
+      </tr>
+      <tr>
+        <td><code>open</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Open tag string.</td>
+      </tr>
+      <tr>
+        <td><code>close</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Close tag string.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -891,41 +964,53 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        final
         void
       </span>
       <span class="sympad">addTag</span>
       <span class="normal">(int what, String open, String close, int flags)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Add a new tag to handle. <code>what</code> argument must be one of tag constants from <code><a href="../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a></code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>what</td>
-          <td>Tag to handle.</td>
-        </tr>
-        <tr>
-          <th>open</td>
-          <td>Open tag string.</td>
-        </tr>
-        <tr>
-          <th>close</td>
-          <td>Close tag string.</td>
-        </tr>
-        <tr>
-          <th>flags</td>
-          <td>Tag handling flags.
+  <p><p>Add a new tag to handle. <code>what</code> argument must be one of tag constants from <code><a href="../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a></code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>what</code></td>
+        <td width="100%">
+          <code>int</code>:
+          Tag to handle.</td>
+      </tr>
+      <tr>
+        <td><code>open</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Open tag string.</td>
+      </tr>
+      <tr>
+        <td><code>close</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Close tag string.</td>
+      </tr>
+      <tr>
+        <td><code>flags</code></td>
+        <td width="100%">
+          <code>int</code>:
+          Tag handling flags.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -936,30 +1021,36 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        final
         void
       </span>
       <span class="sympad">setOrderedListMark</span>
       <span class="normal">(String mark)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Sets a ordered list mark. This mark is using in the beginning of line for transformation to ordered list.
- By default it equals <code>null</code>. That means all lists will begin with number and dot: "1. ", "2. ", etc.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>mark</td>
-          <td>Ordered list mark.
+  <p><p>Sets a ordered list mark. This mark is using in the beginning of line for transformation to ordered list.
+ By default it equals <code>null</code>. That means all lists will begin with number and dot: "1. ", "2. ", etc.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>mark</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Ordered list mark.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -970,30 +1061,36 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        final
         void
       </span>
       <span class="sympad">setUnorderedListMark</span>
       <span class="normal">(String mark)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Sets a unordered list mark. This mark is using in the beginning of line for transformation to unordered list.
- By default it equals <code>"- "</code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>mark</td>
-          <td>Unordered list mark.
+  <p><p>Sets a unordered list mark. This mark is using in the beginning of line for transformation to unordered list.
+ By default it equals <code>"- "</code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>mark</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Unordered list mark.
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>

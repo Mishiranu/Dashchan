@@ -49,6 +49,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -56,7 +66,9 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
 <title>
 
-  ChanLocator.NavigationData - Dashchan API Reference
+  ChanLocator.NavigationData - Dashchan API Reference |
+
+Doclava
 
 </title>
 <link href="../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
@@ -297,6 +309,12 @@ Summary:
 &#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
 
 </div><!-- end sum-details-links -->
+<div class="api-level">
+  
+  
+  
+
+</div>
 </div><!-- end api-info-block -->
 
 
@@ -305,7 +323,7 @@ Summary:
 <div id="jd-header">
     public
     static 
-     
+    final 
     
     class
 <h1 itemprop="name">ChanLocator.NavigationData</h1>
@@ -359,6 +377,7 @@ Summary:
 <h2>Class Overview</h2>
 <p itemprop="articleBody"><p>Navigation data holder. Used in <code><a href="../../../reference/chan/content/ChanLocator.html#handleUriClickSpecial(android.net.Uri)">handleUriClickSpecial(Uri)</a></code> method.</p>
 </p>
+
 
 
 
@@ -517,10 +536,10 @@ From class
             
             
             
-            boolean</nobr>
+            Object</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">equals</span>(Object arg0)</nobr>
+        <span class="sympad">clone</span>()</nobr>
         
   </td></tr>
 
@@ -530,8 +549,40 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">equals</span>(Object arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">finalize</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
             
             Class&lt;?&gt;</nobr>
         </td>
@@ -562,8 +613,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -578,8 +629,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -610,24 +661,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">wait</span>()</nobr>
-        
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
             
             final
-            
             
             void</nobr>
         </td>
@@ -638,17 +673,33 @@ From class
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad">wait</span>(long arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">wait</span>()</nobr>
         
   </td></tr>
 
@@ -703,10 +754,16 @@ From class
       </span>
         TARGET_POSTS
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Target to list of posts.</p>
-</p></div>
+  <p><p>Target to list of posts.</p>
+</p>
 
     
     </div>
@@ -726,11 +783,17 @@ From class
       </span>
         TARGET_SEARCH
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Target to list of search results. You <strong>must<strong> enable
+  <p><p>Target to list of search results. You <strong>must</strong> enable
  <code><a href="../../../reference/chan/content/ChanConfiguration.Board.html#allowSearch">allowSearch</a></code> option for specified board to use this target.</p>
-</p></div>
+</p>
 
     
     </div>
@@ -750,10 +813,16 @@ From class
       </span>
         TARGET_THREADS
     </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Target to list of threads.</p>
-</p></div>
+  <p><p>Target to list of threads.</p>
+</p>
 
     
     </div>
@@ -775,45 +844,59 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         
       </span>
       <span class="sympad">ChanLocator.NavigationData</span>
       <span class="normal">(int target, String boardName, String threadNumber, String postNumber, String searchQuery)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>target</td>
-          <td>Can take the values <code><a href="../../../reference/chan/content/ChanLocator.NavigationData.html#TARGET_THREADS">TARGET_THREADS</a></code>, <code><a href="../../../reference/chan/content/ChanLocator.NavigationData.html#TARGET_POSTS">TARGET_POSTS</a></code> or <code><a href="../../../reference/chan/content/ChanLocator.NavigationData.html#TARGET_SEARCH">TARGET_SEARCH</a></code>.</td>
-        </tr>
-        <tr>
-          <th>boardName</td>
-          <td>Board name.</td>
-        </tr>
-        <tr>
-          <th>threadNumber</td>
-          <td>Thread number (must be not null for target == <code><a href="../../../reference/chan/content/ChanLocator.NavigationData.html#TARGET_POSTS">TARGET_POSTS</a></code>).</td>
-        </tr>
-        <tr>
-          <th>postNumber</td>
-          <td>Post number.</td>
-        </tr>
-        <tr>
-          <th>searchQuery</td>
-          <td>Search query (must be not null for target == <code><a href="../../../reference/chan/content/ChanLocator.NavigationData.html#TARGET_SEARCH">TARGET_SEARCH</a></code>).
+  <p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>target</code></td>
+        <td width="100%">
+          <code>int</code>:
+          Can take the values <code><a href="../../../reference/chan/content/ChanLocator.NavigationData.html#TARGET_THREADS">TARGET_THREADS</a></code>, <code><a href="../../../reference/chan/content/ChanLocator.NavigationData.html#TARGET_POSTS">TARGET_POSTS</a></code> or <code><a href="../../../reference/chan/content/ChanLocator.NavigationData.html#TARGET_SEARCH">TARGET_SEARCH</a></code>.</td>
+      </tr>
+      <tr>
+        <td><code>boardName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Board name.</td>
+      </tr>
+      <tr>
+        <td><code>threadNumber</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Thread number (must be not null for target == <code><a href="../../../reference/chan/content/ChanLocator.NavigationData.html#TARGET_POSTS">TARGET_POSTS</a></code>).</td>
+      </tr>
+      <tr>
+        <td><code>postNumber</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Post number.</td>
+      </tr>
+      <tr>
+        <td><code>searchQuery</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Search query (must be not null for target == <code><a href="../../../reference/chan/content/ChanLocator.NavigationData.html#TARGET_SEARCH">TARGET_SEARCH</a></code>).
 </td>
-        </tr>
-      </table>
-  </div>
+      </tr>
+    </table>
 
     </div>
 </div>

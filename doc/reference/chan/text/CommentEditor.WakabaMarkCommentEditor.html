@@ -49,6 +49,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -56,7 +66,9 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
 <title>
 
-  CommentEditor.WakabaMarkCommentEditor - Dashchan API Reference
+  CommentEditor.WakabaMarkCommentEditor - Dashchan API Reference |
+
+Doclava
 
 </title>
 <link href="../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
@@ -256,6 +268,12 @@ Summary:
 &#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
 
 </div><!-- end sum-details-links -->
+<div class="api-level">
+  
+  
+  
+
+</div>
 </div><!-- end api-info-block -->
 
 
@@ -334,17 +352,18 @@ Summary:
  
  <p>This editor has the following configuration:</p>
  
- <p><table>
+ <table summary="">
  <tr><th>What</th><th>Open</th><th>Close</th><th>Flags</th></tr>
  <tr><td><code><a href="../../../reference/chan/content/ChanMarkup.html#TAG_BOLD">TAG_BOLD</a></code></td><td><code>**</code></td><td><code>**</code></td><td><code>one line</code></td></tr>
  <tr><td><code><a href="../../../reference/chan/content/ChanMarkup.html#TAG_ITALIC">TAG_ITALIC</a></code></td><td><code>*</code></td><td><code>*</code></td><td><code>one line</code></td></tr>
  <tr><td><code><a href="../../../reference/chan/content/ChanMarkup.html#TAG_SPOILER">TAG_SPOILER</a></code></td><td><code>%%</code></td><td><code>%%</code></td><td><code>one line</code></td></tr>
  <tr><td><code><a href="../../../reference/chan/content/ChanMarkup.html#TAG_CODE">TAG_CODE</a></code></td><td><code>`</code></td><td><code>`</code></td><td><code>one line</code></td></tr>
- </table></p>
+ </table>
  
  <p>Also this editor can handle <code><a href="../../../reference/chan/content/ChanMarkup.html#TAG_STRIKE">TAG_STRIKE</a></code> with appending multiple <code>^H</code>
  after end selection position.</p>
 </p>
+
 
 
 
@@ -504,7 +523,7 @@ From class
             
             
             
-            
+            final
             
             void</nobr>
         </td>
@@ -522,7 +541,7 @@ From class
             
             
             
-            
+            final
             
             void</nobr>
         </td>
@@ -540,7 +559,7 @@ From class
             
             
             
-            
+            final
             
             void</nobr>
         </td>
@@ -558,7 +577,7 @@ From class
             
             
             
-            
+            final
             
             void</nobr>
         </td>
@@ -604,10 +623,10 @@ From class
             
             
             
-            boolean</nobr>
+            Object</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">equals</span>(Object arg0)</nobr>
+        <span class="sympad">clone</span>()</nobr>
         
   </td></tr>
 
@@ -617,8 +636,40 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">equals</span>(Object arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">finalize</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
             
             Class&lt;?&gt;</nobr>
         </td>
@@ -649,8 +700,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -665,8 +716,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -697,24 +748,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">wait</span>()</nobr>
-        
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
             
             final
-            
             
             void</nobr>
         </td>
@@ -725,17 +760,33 @@ From class
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad">wait</span>(long arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">wait</span>()</nobr>
         
   </td></tr>
 
@@ -785,19 +836,25 @@ From class
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         
       </span>
       <span class="sympad">CommentEditor.WakabaMarkCommentEditor</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p></p></div>
+  <p></p>
 
     </div>
 </div>

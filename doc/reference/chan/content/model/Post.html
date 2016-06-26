@@ -49,6 +49,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -56,7 +66,9 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../../favicon.ico" />
 <title>
 
-  Post - Dashchan API Reference
+  Post - Dashchan API Reference |
+
+Doclava
 
 </title>
 <link href="../../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
@@ -264,6 +276,12 @@ Summary:
 &#124; <a href="#" onclick="return toggleAllClassInherited()" id="toggleAllClassInherited">[Expand All]</a>
 
 </div><!-- end sum-details-links -->
+<div class="api-level">
+  
+  
+  
+
+</div>
 </div><!-- end api-info-block -->
 
 
@@ -341,6 +359,7 @@ Summary:
  <li><code><a href="../../../../reference/chan/content/model/Post.html#setPostNumber(java.lang.String)">setPostNumber(String)</a></code></li>
  </ul>
 </p>
+
 
 
 
@@ -1081,7 +1100,7 @@ Summary:
             <a href="../../../../reference/chan/content/model/Post.html">Post</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../../reference/chan/content/model/Post.html#setIcons(chan.content.model.Icon...)">setIcons</a></span>(<a href="../../../../reference/chan/content/model/Icon.html">Icon...</a> icons)</nobr>
+        <span class="sympad"><a href="../../../../reference/chan/content/model/Post.html#setIcons(java.util.Collection<? extends chan.content.model.Icon>)">setIcons</a></span>(Collection&lt;?&nbsp;extends&nbsp;<a href="../../../../reference/chan/content/model/Icon.html">Icon</a>&gt; icons)</nobr>
         
         <div class="jd-descrdiv"><p>Stores icons in this model.</div>
   
@@ -1099,7 +1118,7 @@ Summary:
             <a href="../../../../reference/chan/content/model/Post.html">Post</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../../reference/chan/content/model/Post.html#setIcons(java.util.Collection<? extends chan.content.model.Icon>)">setIcons</a></span>(Collection&lt;?&nbsp;extends&nbsp;<a href="../../../../reference/chan/content/model/Icon.html">Icon</a>&gt; icons)</nobr>
+        <span class="sympad"><a href="../../../../reference/chan/content/model/Post.html#setIcons(chan.content.model.Icon...)">setIcons</a></span>(<a href="../../../../reference/chan/content/model/Icon.html">Icon...</a> icons)</nobr>
         
         <div class="jd-descrdiv"><p>Stores icons in this model.</div>
   
@@ -1382,10 +1401,10 @@ From class
             
             
             
-            boolean</nobr>
+            Object</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">equals</span>(Object arg0)</nobr>
+        <span class="sympad">clone</span>()</nobr>
         
   </td></tr>
 
@@ -1395,8 +1414,40 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">equals</span>(Object arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">finalize</span>()</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
             
             Class&lt;?&gt;</nobr>
         </td>
@@ -1427,8 +1478,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -1443,8 +1494,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
@@ -1475,24 +1526,8 @@ From class
         <td class="jd-typecol"><nobr>
             
             
-            final
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad">wait</span>()</nobr>
-        
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
             
             final
-            
             
             void</nobr>
         </td>
@@ -1503,17 +1538,33 @@ From class
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
-            final
             
+            final
             
             void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad">wait</span>(long arg0)</nobr>
+        
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad">wait</span>()</nobr>
         
   </td></tr>
 
@@ -1607,19 +1658,25 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         
       </span>
       <span class="sympad">Post</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p></p></div>
+  <p></p>
 
     </div>
 </div>
@@ -1645,19 +1702,41 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         int
       </span>
       <span class="sympad">compareTo</span>
       <span class="normal">(<a href="../../../../reference/chan/content/model/Post.html">Post</a> another)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p></p></div>
+  <p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>another</code></td>
+        <td width="100%">
+          <code>Post</code>
+          <!-- no parameter comment --></td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>int</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1668,20 +1747,42 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/Attachment.html">Attachment</a>
       </span>
       <span class="sympad">getAttachmentAt</span>
       <span class="normal">(int index)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns attachment at given <code>index</code>.</p>
-</p></div>
+  <p><p>Returns attachment at given <code>index</code>.</p>
+</p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>index</code></td>
+        <td width="100%">
+          <code>int</code>
+          <!-- no parameter comment --></td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/Attachment.html">Attachment</a></code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1692,20 +1793,33 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         int
       </span>
       <span class="sympad">getAttachmentsCount</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns attachments count.</p>
-</p></div>
+  <p><p>Returns attachments count.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>int</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1716,20 +1830,33 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         String
       </span>
       <span class="sympad">getCapcode</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns poster capcode.</p>
-</p></div>
+  <p><p>Returns poster capcode.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>String</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1740,20 +1867,33 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         String
       </span>
       <span class="sympad">getComment</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns post comment.</p>
-</p></div>
+  <p><p>Returns post comment.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>String</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1764,23 +1904,36 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         String
       </span>
       <span class="sympad">getCommentMarkup</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns post original comment markup.</p>
+  <p><p>Returns post original comment markup.</p>
  
  <p>This method calls when application want to get original comment markup. By default <code><a href="../../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a></code> provides
  unmark operation, but you can override this method and provide more correct operation if it possible.</p>
-</p></div>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>String</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1791,20 +1944,33 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         String
       </span>
       <span class="sympad">getEmail</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns poster email.</p>
-</p></div>
+  <p><p>Returns poster email.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>String</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1815,20 +1981,42 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/Icon.html">Icon</a>
       </span>
       <span class="sympad">getIconAt</span>
       <span class="normal">(int index)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns icon at given <code>index</code>.</p>
-</p></div>
+  <p><p>Returns icon at given <code>index</code>.</p>
+</p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>index</code></td>
+        <td width="100%">
+          <code>int</code>
+          <!-- no parameter comment --></td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/Icon.html">Icon</a></code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1839,20 +2027,33 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         int
       </span>
       <span class="sympad">getIconsCount</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns icons count.</p>
-</p></div>
+  <p><p>Returns icons count.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>int</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1863,20 +2064,33 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         String
       </span>
       <span class="sympad">getIdentifier</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns poster identifier.</p>
-</p></div>
+  <p><p>Returns poster identifier.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>String</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1887,20 +2101,33 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         String
       </span>
       <span class="sympad">getName</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns poster name.</p>
-</p></div>
+  <p><p>Returns poster name.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>String</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1911,20 +2138,33 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         String
       </span>
       <span class="sympad">getParentPostNumber</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns parent post number.</p>
-</p></div>
+  <p><p>Returns parent post number.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>String</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1935,20 +2175,33 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         String
       </span>
       <span class="sympad">getPostNumber</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns post number.</p>
-</p></div>
+  <p><p>Returns post number.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>String</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1959,20 +2212,33 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         String
       </span>
       <span class="sympad">getSubject</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns post subject.</p>
-</p></div>
+  <p><p>Returns post subject.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>String</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -1983,20 +2249,33 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         String
       </span>
       <span class="sympad">getThreadNumber</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns real thread number with this post.</p>
-</p></div>
+  <p><p>Returns real thread number with this post.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>String</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2007,20 +2286,33 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         long
       </span>
       <span class="sympad">getTimestamp</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns date of post created.</p>
-</p></div>
+  <p><p>Returns date of post created.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>long</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2031,20 +2323,33 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         String
       </span>
       <span class="sympad">getTripcode</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns poster tripcode.</p>
-</p></div>
+  <p><p>Returns poster tripcode.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>String</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2055,20 +2360,33 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         boolean
       </span>
       <span class="sympad">isArchived</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether thread is archived.</p>
-</p></div>
+  <p><p>Returns whether thread is archived.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>boolean</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2079,20 +2397,33 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         boolean
       </span>
       <span class="sympad">isClosed</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether thread is closed.</p>
-</p></div>
+  <p><p>Returns whether thread is closed.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>boolean</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2103,20 +2434,33 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         boolean
       </span>
       <span class="sympad">isCyclical</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether thread is cyclical.</p>
-</p></div>
+  <p><p>Returns whether thread is cyclical.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>boolean</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2127,20 +2471,33 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         boolean
       </span>
       <span class="sympad">isDefaultName</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether poster name is default.</p>
-</p></div>
+  <p><p>Returns whether poster name is default.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>boolean</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2151,20 +2508,33 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         boolean
       </span>
       <span class="sympad">isOriginalPoster</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether post was written by original poster.</p>
-</p></div>
+  <p><p>Returns whether post was written by original poster.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>boolean</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2175,20 +2545,33 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         boolean
       </span>
       <span class="sympad">isPosterBanned</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether poster was banned by moderator.</p>
-</p></div>
+  <p><p>Returns whether poster was banned by moderator.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>boolean</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2199,20 +2582,33 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         boolean
       </span>
       <span class="sympad">isPosterWarned</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether poster was warned by moderator.</p>
-</p></div>
+  <p><p>Returns whether poster was warned by moderator.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>boolean</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2223,20 +2619,33 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         boolean
       </span>
       <span class="sympad">isSage</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether post contains sage mark.</p>
-</p></div>
+  <p><p>Returns whether post contains sage mark.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>boolean</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2247,20 +2656,33 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         boolean
       </span>
       <span class="sympad">isSticky</span>
       <span class="normal">()</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Returns whether thread is sticky.</p>
-</p></div>
+  <p><p>Returns whether thread is sticky.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>boolean</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2271,33 +2693,42 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/Post.html">Post</a>
       </span>
       <span class="sympad">setArchived</span>
       <span class="normal">(boolean archived)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores whether thread is archived. Will be ignored by application if post is not original.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>archived</td>
-          <td>True if thread is archived, false otherwise.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
+  <p><p>Stores whether thread is archived. Will be ignored by application if post is not original.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>archived</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          True if thread is archived, false otherwise.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/Post.html">Post</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2308,33 +2739,42 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/Post.html">Post</a>
       </span>
       <span class="sympad">setAttachments</span>
       <span class="normal">(<a href="../../../../reference/chan/content/model/Attachment.html">Attachment...</a> attachments)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores attachments in this model.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>attachments</td>
-          <td>Array of <code><a href="../../../../reference/chan/content/model/Attachment.html">Attachment</a></code>.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
+  <p><p>Stores attachments in this model.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>attachments</code></td>
+        <td width="100%">
+          <code>Attachment</code>:
+          Array of <code><a href="../../../../reference/chan/content/model/Attachment.html">Attachment</a></code>.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/Post.html">Post</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2345,33 +2785,42 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/Post.html">Post</a>
       </span>
       <span class="sympad">setAttachments</span>
       <span class="normal">(Collection&lt;?&nbsp;extends&nbsp;<a href="../../../../reference/chan/content/model/Attachment.html">Attachment</a>&gt; attachments)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores attachments in this model.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>attachments</td>
-          <td>Collection of <code><a href="../../../../reference/chan/content/model/Attachment.html">Attachment</a></code>.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
+  <p><p>Stores attachments in this model.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>attachments</code></td>
+        <td width="100%">
+          <code>Collection</code>:
+          Collection of <code><a href="../../../../reference/chan/content/model/Attachment.html">Attachment</a></code>.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/Post.html">Post</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2382,33 +2831,42 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/Post.html">Post</a>
       </span>
       <span class="sympad">setCapcode</span>
       <span class="normal">(String capcode)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores poster capcode in this model. Capcode <strong>must not contain</strong> <code>#</code> characters.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>capcode</td>
-          <td>Poster capcode.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
+  <p><p>Stores poster capcode in this model. Capcode <strong>must not contain</strong> <code>#</code> characters.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>capcode</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Poster capcode.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/Post.html">Post</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2419,33 +2877,42 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/Post.html">Post</a>
       </span>
       <span class="sympad">setClosed</span>
       <span class="normal">(boolean closed)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores whether thread is closed. Will be ignored by application if post is not original.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>closed</td>
-          <td>True if thread is closed, false otherwise.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
+  <p><p>Stores whether thread is closed. Will be ignored by application if post is not original.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>closed</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          True if thread is closed, false otherwise.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/Post.html">Post</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2456,33 +2923,42 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/Post.html">Post</a>
       </span>
       <span class="sympad">setComment</span>
       <span class="normal">(String comment)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores post comment in this model.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>comment</td>
-          <td>Post comment.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
+  <p><p>Stores post comment in this model.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>comment</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Post comment.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/Post.html">Post</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2493,36 +2969,45 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/Post.html">Post</a>
       </span>
       <span class="sympad">setCommentMarkup</span>
       <span class="normal">(String commentMarkup)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores post original comment markup in this model.</p>
+  <p><p>Stores post original comment markup in this model.</p>
  
  <p>By default <code><a href="../../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a></code> provides unmark operation. Some chans stores original markup along with
- parsed comment, so you can simplify and precisify unmark operation with this method.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>commentMarkup</td>
-          <td>Post comment markup.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
+ parsed comment, so you can simplify and precisify unmark operation with this method.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>commentMarkup</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Post comment markup.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/Post.html">Post</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2533,33 +3018,42 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/Post.html">Post</a>
       </span>
       <span class="sympad">setCyclical</span>
       <span class="normal">(boolean cyclical)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores whether thread is cyclical. Will be ignored by application if post is not original.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>cyclical</td>
-          <td>True if thread is cyclical, false otherwise.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
+  <p><p>Stores whether thread is cyclical. Will be ignored by application if post is not original.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>cyclical</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          True if thread is cyclical, false otherwise.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/Post.html">Post</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2570,33 +3064,42 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/Post.html">Post</a>
       </span>
       <span class="sympad">setDefaultName</span>
       <span class="normal">(boolean defaultName)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores whether poster name is default. In this case it may be hidden in posts list.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>defaultName</td>
-          <td>True if poster name is default, false otherwise.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
+  <p><p>Stores whether poster name is default. In this case it may be hidden in posts list.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>defaultName</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          True if poster name is default, false otherwise.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/Post.html">Post</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2607,71 +3110,43 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/Post.html">Post</a>
       </span>
       <span class="sympad">setEmail</span>
       <span class="normal">(String email)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores poster email in this model. You must handle "sage" mails by yourself using
- <code><a href="../../../../reference/chan/content/model/Post.html#setSage(boolean)">setSage(boolean)</a></code> method.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>email</td>
-          <td>Poster email.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
-
-    </div>
-</div>
-
-
-<A NAME="setIcons(chan.content.model.Icon...)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public 
-         
-         
-         
-         
-        <a href="../../../../reference/chan/content/model/Post.html">Post</a>
-      </span>
-      <span class="sympad">setIcons</span>
-      <span class="normal">(<a href="../../../../reference/chan/content/model/Icon.html">Icon...</a> icons)</span>
-    </h4>
-    <div class="jd-details-descr">
-      
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores icons in this model.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>icons</td>
-          <td>Array of <code><a href="../../../../reference/chan/content/model/Icon.html">Icon</a></code>.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
+  <p><p>Stores poster email in this model. You must handle "sage" mails by yourself using
+ <code><a href="../../../../reference/chan/content/model/Post.html#setSage(boolean)">setSage(boolean)</a></code> method.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>email</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Poster email.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/Post.html">Post</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2682,33 +3157,88 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/Post.html">Post</a>
       </span>
       <span class="sympad">setIcons</span>
       <span class="normal">(Collection&lt;?&nbsp;extends&nbsp;<a href="../../../../reference/chan/content/model/Icon.html">Icon</a>&gt; icons)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores icons in this model.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>icons</td>
-          <td>Collection of <code><a href="../../../../reference/chan/content/model/Icon.html">Icon</a></code>.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
+  <p><p>Stores icons in this model.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>icons</code></td>
+        <td width="100%">
+          <code>Collection</code>:
+          Collection of <code><a href="../../../../reference/chan/content/model/Icon.html">Icon</a></code>.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/Post.html">Post</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
+
+    </div>
+</div>
+
+
+<A NAME="setIcons(chan.content.model.Icon...)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public
+        
+        
+        
+        
+        <a href="../../../../reference/chan/content/model/Post.html">Post</a>
+      </span>
+      <span class="sympad">setIcons</span>
+      <span class="normal">(<a href="../../../../reference/chan/content/model/Icon.html">Icon...</a> icons)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <p><p>Stores icons in this model.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>icons</code></td>
+        <td width="100%">
+          <code>Icon</code>:
+          Array of <code><a href="../../../../reference/chan/content/model/Icon.html">Icon</a></code>.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/Post.html">Post</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2719,33 +3249,42 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/Post.html">Post</a>
       </span>
       <span class="sympad">setIdentifier</span>
       <span class="normal">(String identifier)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores poster identifier (an unique poster number or name within the thread) in this model.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>identifier</td>
-          <td>Poster identifier.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
+  <p><p>Stores poster identifier (an unique poster number or name within the thread) in this model.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>identifier</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Poster identifier.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/Post.html">Post</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2756,33 +3295,42 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/Post.html">Post</a>
       </span>
       <span class="sympad">setName</span>
       <span class="normal">(String name)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores poster name in this model.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>name</td>
-          <td>Poster name.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
+  <p><p>Stores poster name in this model.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>name</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Poster name.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/Post.html">Post</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2793,33 +3341,42 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/Post.html">Post</a>
       </span>
       <span class="sympad">setOriginalPoster</span>
       <span class="normal">(boolean originalPoster)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores whether post was written by original poster.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>originalPoster</td>
-          <td>True if post was written by original poster, false otherwise.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
+  <p><p>Stores whether post was written by original poster.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>originalPoster</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          True if post was written by original poster, false otherwise.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/Post.html">Post</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2830,35 +3387,44 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/Post.html">Post</a>
       </span>
       <span class="sympad">setParentPostNumber</span>
       <span class="normal">(String parentPostNumber)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores parent post number for this post. In chan context parent post number must be equal original post
+  <p><p>Stores parent post number for this post. In chan context parent post number must be equal original post
  number which means all posts are replies to original one. The parent post number stored for original post
- must be <code>null</code>.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>parentPostNumber</td>
-          <td>Parent post number.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
+ must be <code>null</code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>parentPostNumber</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Parent post number.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/Post.html">Post</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2869,33 +3435,42 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/Post.html">Post</a>
       </span>
       <span class="sympad">setPostNumber</span>
       <span class="normal">(String postNumber)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores post number for this post.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>postNumber</td>
-          <td>Post number.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
+  <p><p>Stores post number for this post.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>postNumber</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Post number.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/Post.html">Post</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2906,33 +3481,42 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/Post.html">Post</a>
       </span>
       <span class="sympad">setPosterBanned</span>
       <span class="normal">(boolean posterBanned)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores whether poster was banned by moderator.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>posterBanned</td>
-          <td>True if poster was banned, false otherwise.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
+  <p><p>Stores whether poster was banned by moderator.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>posterBanned</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          True if poster was banned, false otherwise.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/Post.html">Post</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2943,33 +3527,42 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/Post.html">Post</a>
       </span>
       <span class="sympad">setPosterWarned</span>
       <span class="normal">(boolean posterWarned)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores whether poster was warned by moderator.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>posterWarned</td>
-          <td>True if poster was warned, false otherwise.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
+  <p><p>Stores whether poster was warned by moderator.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>posterWarned</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          True if poster was warned, false otherwise.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/Post.html">Post</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -2980,33 +3573,42 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/Post.html">Post</a>
       </span>
       <span class="sympad">setSage</span>
       <span class="normal">(boolean sage)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores whether post contains sage mark (in email or another field) and doesn't bump a thread.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>sage</td>
-          <td>True if post contains sage mark, false otherwise.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
+  <p><p>Stores whether post contains sage mark (in email or another field) and doesn't bump a thread.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>sage</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          True if post contains sage mark, false otherwise.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/Post.html">Post</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -3017,33 +3619,42 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/Post.html">Post</a>
       </span>
       <span class="sympad">setSticky</span>
       <span class="normal">(boolean sticky)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores whether thread is sticky. Will be ignored by application if post is not original.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>sticky</td>
-          <td>True if thread is sticky, false otherwise.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
+  <p><p>Stores whether thread is sticky. Will be ignored by application if post is not original.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>sticky</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          True if thread is sticky, false otherwise.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/Post.html">Post</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -3054,33 +3665,42 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/Post.html">Post</a>
       </span>
       <span class="sympad">setSubject</span>
       <span class="normal">(String subject)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores post subject in this model.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>subject</td>
-          <td>Post subject.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
+  <p><p>Stores post subject in this model.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>subject</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Post subject.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/Post.html">Post</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -3091,34 +3711,43 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/Post.html">Post</a>
       </span>
       <span class="sympad">setThreadNumber</span>
       <span class="normal">(String threadNumber)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores thread number in this model. Usually thread number equals original post number, so in most cases
- you shouldn't use this method.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>threadNumber</td>
-          <td>Thread number.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
+  <p><p>Stores thread number in this model. Usually thread number equals original post number, so in most cases
+ you shouldn't use this method.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>threadNumber</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Thread number.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/Post.html">Post</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -3129,33 +3758,42 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/Post.html">Post</a>
       </span>
       <span class="sympad">setTimestamp</span>
       <span class="normal">(long timestamp)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores date of post created in this model.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>timestamp</td>
-          <td>UNIX timestamp.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
+  <p><p>Stores date of post created in this model.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>timestamp</code></td>
+        <td width="100%">
+          <code>long</code>:
+          UNIX timestamp.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/Post.html">Post</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
@@ -3166,33 +3804,42 @@ From interface
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
       <span class="normal">
-        public 
-         
-         
-         
-         
+        public
+        
+        
+        
+        
         <a href="../../../../reference/chan/content/model/Post.html">Post</a>
       </span>
       <span class="sympad">setTripcode</span>
       <span class="normal">(String tripcode)</span>
     </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
     <div class="jd-details-descr">
       
-  <div class="jd-tagdata jd-tagdescr"><p><p>Stores poster tripcode in this model. Tripcode <strong>must include</strong> <code>!</code> characters.</p></p></div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Parameters</h5>
-      <table class="jd-tagtable">
-        <tr>
-          <th>tripcode</td>
-          <td>Poster tripcode.</td>
-        </tr>
-      </table>
-  </div>
-  <div class="jd-tagdata">
-      <h5 class="jd-tagtitle">Returns</h5>
-      <ul class="nolist"><li>This model.
-</li></ul>
-  </div>
+  <p><p>Stores poster tripcode in this model. Tripcode <strong>must include</strong> <code>!</code> characters.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>tripcode</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Poster tripcode.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/Post.html">Post</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
 
     </div>
 </div>
