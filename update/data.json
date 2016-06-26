@@ -3,12 +3,12 @@
 	[
 		{
 			"title": "Release",
-			"name": "2.7.2",
+			"name": "2.7.3",
 			"code": 1030,
 			"minVersion": 1,
 			"maxVersion": 1,
 			"minSdk": 16,
-			"length": 1125804,
+			"length": 1123796,
 			"source": "/Mishiranu/Dashchan/master/update/package/Dashchan.apk"
 		}
 	],
@@ -184,11 +184,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.16",
+			"name": "1.17",
 			"code": 1,
 			"version": 1,
-			"minSdk": 14,
-			"length": 93000,
+			"minSdk": 16,
+			"length": 92527,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanDvach.apk"
 		}
 	],
@@ -220,11 +220,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.9",
+			"name": "1.10",
 			"code": 1,
 			"version": 1,
 			"minSdk": 14,
-			"length": 61621,
+			"length": 61224,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanFourchan.apk"
 		}
 	],
