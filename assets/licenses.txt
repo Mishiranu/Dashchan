@@ -34,3 +34,7 @@ Licensed under the MIT License</pre>
 <pre>Copyright 2012 Pierre-Yves Ricau
 Licensed under the Apache License, Version 2.0</pre>
 <a href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a>
+
+<h3>material-design-icons</h3>
+<pre>Licensed under the CC-BY 4.0</pre>
+<a href="http://creativecommons.org/licenses/by/4.0/">http://creativecommons.org/licenses/by/4.0/</a>
