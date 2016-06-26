@@ -122,9 +122,8 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 	
 	public static final int MENU_ITEM_ALL_BOARDS = 1;
 	public static final int MENU_ITEM_USER_BOARDS = 2;
-	public static final int MENU_ITEM_POPULAR_THREADS = 3;
-	public static final int MENU_ITEM_HISTORY = 4;
-	public static final int MENU_ITEM_PREFERENCES = 5;
+	public static final int MENU_ITEM_HISTORY = 3;
+	public static final int MENU_ITEM_PREFERENCES = 4;
 	
 	public static interface Callback
 	{
@@ -264,8 +263,7 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 			Context context = mContext;
 			mMenu.add(new ListItem(ListItem.ITEM_DIVIDER, 0, 0, null));
 			TypedArray typedArray = context.obtainStyledAttributes(new int[] {R.attr.drawerMenuBoards,
-					R.attr.drawerMenuUserBoards, R.attr.drawerMenuPopularThreads, R.attr.drawerMenuHistory,
-					R.attr.drawerMenuPreferences});
+					R.attr.drawerMenuUserBoards, R.attr.drawerMenuHistory, R.attr.drawerMenuPreferences});
 			boolean addDivider = false;
 			boolean hasUserBoards = configuration.getOption(ChanConfiguration.OPTION_READ_USER_BOARDS);
 			if (!configuration.getOption(ChanConfiguration.OPTION_SINGLE_BOARD_MODE))
@@ -280,16 +278,10 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 						context.getString(R.string.action_user_boards)));
 				addDivider = true;
 			}
-			if (configuration.getOption(ChanConfiguration.OPTION_READ_POPULAR_THREADS))
-			{
-				mMenu.add(new ListItem(ListItem.ITEM_MENU, MENU_ITEM_POPULAR_THREADS, typedArray.getResourceId(2, 0),
-						context.getString(R.string.action_popular_threads)));
-				addDivider = true;
-			}
 			if (addDivider) mMenu.add(new ListItem(ListItem.ITEM_DIVIDER, 0, 0, null));
-			mMenu.add(new ListItem(ListItem.ITEM_MENU, MENU_ITEM_HISTORY, typedArray.getResourceId(3, 0),
+			mMenu.add(new ListItem(ListItem.ITEM_MENU, MENU_ITEM_HISTORY, typedArray.getResourceId(2, 0),
 					context.getString(R.string.action_history)));
-			mMenu.add(new ListItem(ListItem.ITEM_MENU, MENU_ITEM_PREFERENCES, typedArray.getResourceId(4, 0),
+			mMenu.add(new ListItem(ListItem.ITEM_MENU, MENU_ITEM_PREFERENCES, typedArray.getResourceId(3, 0),
 					context.getString(R.string.action_preferences)));
 			typedArray.recycle();
 			invalidateItems(false, true);

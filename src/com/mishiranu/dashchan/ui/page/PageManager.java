@@ -158,7 +158,6 @@ public class PageManager
 			case ARCHIVE: return new ArchivePage();
 			case ALL_BOARDS: return new BoardsPage();
 			case USER_BOARDS: return new UserBoardsPage();
-			case POPULAR_THREADS: return new ThreadSummariesPage();
 			case HISTORY: return new HistoryPage();
 		}
 		return null;

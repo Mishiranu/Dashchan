@@ -97,7 +97,6 @@
 		<item name="drawerIconColor">#8a000000</item>
 		<item name="drawerMenuBoards">@drawable/ic_local_offer_black_a8a</item>
 		<item name="drawerMenuUserBoards">@drawable/ic_group_black_a8a</item>
-		<item name="drawerMenuPopularThreads">@drawable/ic_whatshot_black_a8a</item>
 		<item name="drawerMenuHistory">@drawable/ic_history_black_a8a</item>
 		<item name="drawerMenuPreferences">@drawable/ic_settings_black_a8a</item>
 		
@@ -158,7 +157,6 @@
 		<item name="drawerIconColor">#a8ffffff</item>
 		<item name="drawerMenuBoards">@drawable/ic_local_offer_white_aa8</item>
 		<item name="drawerMenuUserBoards">@drawable/ic_group_white_aa8</item>
-		<item name="drawerMenuPopularThreads">@drawable/ic_whatshot_white_aa8</item>
 		<item name="drawerMenuHistory">@drawable/ic_history_white_aa8</item>
 		<item name="drawerMenuPreferences">@drawable/ic_settings_white_aa8</item>
 		

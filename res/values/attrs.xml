@@ -89,7 +89,6 @@
 	<attr name="drawerIconColor" format="color|reference" />
 	<attr name="drawerMenuBoards" format="reference" />
 	<attr name="drawerMenuUserBoards" format="reference" />
-	<attr name="drawerMenuPopularThreads" format="reference" />
 	<attr name="drawerMenuHistory" format="reference" />
 	<attr name="drawerMenuPreferences" format="reference" />
 	

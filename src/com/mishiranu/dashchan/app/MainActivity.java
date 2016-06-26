@@ -491,7 +491,6 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 			case ARCHIVE:
 			case ALL_BOARDS:
 			case USER_BOARDS:
-			case POPULAR_THREADS:
 			case HISTORY:
 			{
 				pageHolder = mPageManager.add(content, chanName, boardName, null, null, null);
@@ -530,7 +529,6 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 				}
 				case ALL_BOARDS:
 				case USER_BOARDS:
-				case POPULAR_THREADS:
 				case HISTORY:
 				{
 					displayUp = pageHolder.boardName != null || mPageManager.getStackSize() > 1;
@@ -1259,7 +1257,6 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 				{
 					case ALL_BOARDS:
 					case USER_BOARDS:
-					case POPULAR_THREADS:
 					case HISTORY:
 					{
 						return false;
@@ -1380,11 +1377,6 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 			case DrawerManager.MENU_ITEM_USER_BOARDS:
 			{
 				content = PageHolder.Content.USER_BOARDS;
-				break;
-			}
-			case DrawerManager.MENU_ITEM_POPULAR_THREADS:
-			{
-				content = PageHolder.Content.POPULAR_THREADS;
 				break;
 			}
 			case DrawerManager.MENU_ITEM_HISTORY:
