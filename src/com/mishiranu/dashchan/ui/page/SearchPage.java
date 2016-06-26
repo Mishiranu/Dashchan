@@ -260,6 +260,7 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 				if (currentPostItems.size() > existingPostNumbers.size())
 				{
 					int count = listView.getCount();
+					boolean fromGroupMode = adapter.isGroupMode();
 					postItems = CommonUtils.toArray(currentPostItems, PostItem.class);
 					adapter.setItems(null);
 					adapter.setGroupMode(false);
@@ -271,7 +272,28 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 						View view = listView.getChildAt(listView.getChildCount() - 1);
 						if (listView.getHeight() - listView.getPaddingBottom() - view.getBottom() >= 0)
 						{
-							ListScroller.scrollTo(getListView(), existingPostNumbers.size());
+							if (fromGroupMode)
+							{
+								final int firstNewIndex = existingPostNumbers.size();
+								listView.post(new Runnable()
+								{
+									@Override
+									public void run()
+									{
+										if (isDestroyed()) return;
+										getListView().setSelection(Math.max(firstNewIndex - 8, 0));
+										getListView().post(new Runnable()
+										{
+											@Override
+											public void run()
+											{
+												if (!isDestroyed()) ListScroller.scrollTo(getListView(), firstNewIndex);
+											}
+										});
+									}
+								});
+							}
+							else ListScroller.scrollTo(getListView(), existingPostNumbers.size());
 						}
 					}
 				}
