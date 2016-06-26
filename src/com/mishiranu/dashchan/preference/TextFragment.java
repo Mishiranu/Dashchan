@@ -32,6 +32,7 @@ import android.widget.ScrollView;
 
 import chan.content.ChanMarkup;
 
+import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.graphics.ColorScheme;
 import com.mishiranu.dashchan.text.HtmlParser;
@@ -112,6 +113,7 @@ public class TextFragment extends Fragment implements View.OnClickListener
 	public void onActivityCreated(Bundle savedInstanceState)
 	{
 		super.onActivityCreated(savedInstanceState);
+		if (!C.API_MARSHMALLOW) ((View) getView().getParent()).setPadding(0, 0, 0, 0);
 		switch (getArguments().getInt(EXTRA_TYPE))
 		{
 			case TYPE_LICENSES:
