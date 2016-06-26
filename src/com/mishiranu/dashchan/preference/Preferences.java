@@ -19,9 +19,11 @@ package com.mishiranu.dashchan.preference;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -1025,6 +1027,22 @@ public class Preferences
 	public static int getThumbnailsScale()
 	{
 		return PREFERENCES.getInt(KEY_THUMBNAILS_SCALE, DEFAULT_THUMBNAILS_SCALE);
+	}
+	
+	public static final String KEY_TRUSTED_EXSTENSIONS = "trusted_extensions";
+	
+	public static boolean isExtensionTrusted(String packageName)
+	{
+		Set<String> packageNames = PREFERENCES.getStringSet(KEY_TRUSTED_EXSTENSIONS, null);
+		return packageNames != null && packageNames.contains(packageName);
+	}
+	
+	public static void setExtensionTrusted(String packageName)
+	{
+		Set<String> packageNames = PREFERENCES.getStringSet(KEY_TRUSTED_EXSTENSIONS, null);
+		if (packageNames != null) packageNames = new HashSet<String>(packageNames); else packageNames = new HashSet<>();
+		packageNames.add(packageName);
+		PREFERENCES.edit().putStringSet(KEY_TRUSTED_EXSTENSIONS, packageNames).commit();
 	}
 	
 	public static final ChanKey KEY_USE_HTTPS = new ChanKey("%s_use_https");
