@@ -27,6 +27,7 @@ import chan.content.InvalidResponseException;
 import chan.content.model.ThreadSummary;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
+import chan.util.CommonUtils;
 
 import com.mishiranu.dashchan.content.model.ErrorItem;
 
@@ -111,6 +112,6 @@ public class ReadThreadSummariesTask extends CancellableTask<Void, Void, ThreadS
 				}
 			}
 		}
-		return threadSummaries.size() > 0 ? threadSummaries.toArray(new ThreadSummary[threadSummaries.size()]) : null;
+		return CommonUtils.toArray(threadSummaries, ThreadSummary.class);
 	}
 }

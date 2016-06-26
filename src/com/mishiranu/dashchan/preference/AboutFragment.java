@@ -44,6 +44,7 @@ import chan.http.HttpHolder;
 import chan.http.HttpRequest;
 import chan.text.GroupParser;
 import chan.text.ParseException;
+import chan.util.CommonUtils;
 
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.app.PreferencesActivity;
@@ -199,7 +200,7 @@ public class AboutFragment extends BasePreferenceFragment
 		public Dialog onCreateDialog(Bundle savedInstanceState)
 		{
 			ArrayList<String> names = getArguments().getStringArrayList(EXTRA_NAMES);
-			final String[] items = names.toArray(new String[names.size()]);
+			String[] items = CommonUtils.toArray(names, String.class);
 			return new AlertDialog.Builder(getActivity()).setSingleChoiceItems(items, 0, null).setNegativeButton
 					(android.R.string.cancel, null).setPositiveButton(android.R.string.ok, this).create();
 		}

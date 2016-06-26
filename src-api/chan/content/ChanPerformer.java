@@ -44,6 +44,7 @@ import chan.http.HttpRequest;
 import chan.http.HttpResponse;
 import chan.http.HttpValidator;
 import chan.http.MultipartEntity;
+import chan.util.CommonUtils;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.content.CaptchaManager;
@@ -231,13 +232,13 @@ public class ChanPerformer implements ChanManager.Linked
 		@Public
 		public ReadThreadsResult(Posts... threads)
 		{
-			this(threads != null ? new Threads(threads) : null);
+			this((threads = CommonUtils.removeNullItems(threads, Posts.class)) != null ? new Threads(threads) : null);
 		}
 		
 		@Public
 		public ReadThreadsResult(Collection<Posts> threads)
 		{
-			this(threads != null && !threads.isEmpty() ? threads.toArray(new Posts[threads.size()]) : null);
+			this(CommonUtils.toArray(threads, Posts.class));
 		}
 		
 		@Public
@@ -288,13 +289,13 @@ public class ChanPerformer implements ChanManager.Linked
 		@Public
 		public ReadPostsResult(Post... posts)
 		{
-			this(posts != null ? new Posts(posts) : null);
+			this((posts = CommonUtils.removeNullItems(posts, Post.class)) != null ? new Posts(posts) : null);
 		}
 		
 		@Public
 		public ReadPostsResult(Collection<Post> posts)
 		{
-			this(posts != null && !posts.isEmpty() ? posts.toArray(new Post[posts.size()]) : null);
+			this(CommonUtils.toArray(posts, Post.class));
 		}
 		
 		@Public
@@ -364,13 +365,13 @@ public class ChanPerformer implements ChanManager.Linked
 		@Public
 		public ReadSearchPostsResult(Post... posts)
 		{
-			this.posts = posts;
+			this.posts = CommonUtils.removeNullItems(posts, Post.class);
 		}
 		
 		@Public
 		public ReadSearchPostsResult(Collection<Post> posts)
 		{
-			this(posts != null && !posts.isEmpty() ? posts.toArray(new Post[posts.size()]) : null);
+			this(CommonUtils.toArray(posts, Post.class));
 		}
 	}
 	
@@ -393,14 +394,13 @@ public class ChanPerformer implements ChanManager.Linked
 		@Public
 		public ReadBoardsResult(BoardCategory... boardCategories)
 		{
-			this.boardCategories = boardCategories;
+			this.boardCategories = CommonUtils.removeNullItems(boardCategories, BoardCategory.class);
 		}
 		
 		@Public
 		public ReadBoardsResult(Collection<BoardCategory> boardCategories)
 		{
-			this(boardCategories != null && !boardCategories.isEmpty() ? boardCategories
-					.toArray(new BoardCategory[boardCategories.size()]) : null);
+			this(CommonUtils.toArray(boardCategories, BoardCategory.class));
 		}
 	}
 	
@@ -423,13 +423,13 @@ public class ChanPerformer implements ChanManager.Linked
 		@Public
 		public ReadUserBoardsResult(Board... boards)
 		{
-			this.boards = boards;
+			this.boards = CommonUtils.removeNullItems(boards, Board.class);
 		}
 		
 		@Public
 		public ReadUserBoardsResult(Collection<Board> boards)
 		{
-			this(boards != null && !boards.isEmpty() ? boards.toArray(new Board[boards.size()]) : null);
+			this(CommonUtils.toArray(boards, Board.class));
 		}
 	}
 	
@@ -465,14 +465,13 @@ public class ChanPerformer implements ChanManager.Linked
 		@Public
 		public ReadThreadSummariesResult(ThreadSummary... threadSummaries)
 		{
-			this.threadSummaries = threadSummaries;
+			this.threadSummaries = CommonUtils.removeNullItems(threadSummaries, ThreadSummary.class);
 		}
 		
 		@Public
 		public ReadThreadSummariesResult(Collection<ThreadSummary> threadSummaries)
 		{
-			this(threadSummaries != null && !threadSummaries.isEmpty() ? threadSummaries
-					.toArray(new ThreadSummary[threadSummaries.size()]) : null);
+			this(CommonUtils.toArray(threadSummaries, ThreadSummary.class));
 		}
 	}
 	

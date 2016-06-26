@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import chan.annotation.Public;
+import chan.util.CommonUtils;
 
 @Public
 public final class BoardCategory implements Iterable<Board>
@@ -43,13 +44,13 @@ public final class BoardCategory implements Iterable<Board>
 	public BoardCategory(String title, Board[] boards)
 	{
 		mTitle = title;
-		mBoards = boards;
+		mBoards = CommonUtils.removeNullItems(boards, Board.class);
 	}
 	
 	@Public
 	public BoardCategory(String title, Collection<Board> boards)
 	{
-		this(title, boards.toArray(new Board[boards.size()]));
+		this(title, CommonUtils.toArray(boards, Board.class));
 	}
 	
 	@Public

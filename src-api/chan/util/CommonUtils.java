@@ -16,6 +16,9 @@
 
 package chan.util;
 
+import java.lang.reflect.Array;
+import java.util.Collection;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -232,5 +235,40 @@ public class CommonUtils
 	public static void writeLog(Object... data)
 	{
 		Log.persistent().write(data);
+	}
+	
+	public static <T> T[] removeNullItems(T[] array, Class<T> itemClass)
+	{
+		if (array != null)
+		{
+			int nullItems = 0;
+			for (T item : array)
+			{
+				if (item == null) nullItems++;
+			}
+			if (nullItems == array.length) array = null; else if (nullItems > 0)
+			{
+				@SuppressWarnings("unchecked")
+				T[] newArray = (T[]) Array.newInstance(itemClass, array.length - nullItems);
+				int i = 0;
+				for (T item : array)
+				{
+					if (item != null) newArray[i++] = item;
+				}
+				array = newArray;
+			}
+		}
+		return array;
+	}
+	
+	public static <T> T[] toArray(Collection<? extends T> collection, Class<T> itemClass)
+	{
+		if (collection != null && !collection.isEmpty())
+		{
+			@SuppressWarnings("unchecked")
+			T[] array = (T[]) Array.newInstance(itemClass, collection.size());
+			return collection.toArray(array);
+		}
+		return null;
 	}
 }
