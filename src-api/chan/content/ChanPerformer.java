@@ -440,12 +440,14 @@ public class ChanPerformer implements ChanManager.Linked
 		@Public public static final int TYPE_POPULAR_THREADS = 1;
 		
 		@Public public final String boardName;
+		@Public public final int pageNumber;
 		@Public public final int type;
 		@Public public final HttpHolder holder;
 		
-		public ReadThreadSummariesData(String boardName, int type, HttpHolder holder)
+		public ReadThreadSummariesData(String boardName, int pageNumber, int type, HttpHolder holder)
 		{
 			this.boardName = boardName;
+			this.pageNumber = pageNumber;
 			this.type = type;
 			this.holder = holder;
 		}

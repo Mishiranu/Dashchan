@@ -16,6 +16,10 @@
 
 package com.mishiranu.dashchan.async;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+
 import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
@@ -26,50 +30,47 @@ import chan.http.HttpHolder;
 
 import com.mishiranu.dashchan.content.model.ErrorItem;
 
-public class ReadThreadSummariesTask extends CancellableTask<Void, Long, Boolean>
+public class ReadThreadSummariesTask extends CancellableTask<Void, Void, ThreadSummary[]>
 {
 	private final String mChanName;
 	private final String mBoardName;
+	private final int mPageNumber;
 	private final int mType;
 	private final Callback mCallback;
 	private final HttpHolder mHolder = new HttpHolder();
 	
-	private ThreadSummary[] mThreadSummaries;
 	private ErrorItem mErrorItem;
 	
 	public static interface Callback
 	{
-		public void onReadThreadSummariesSuccess(ThreadSummary[] threadSummaries);
+		public void onReadThreadSummariesSuccess(ThreadSummary[] threadSummaries, int pageNumber);
 		public void onReadThreadSummariesFail(ErrorItem errorItem);
 	}
 	
-	public ReadThreadSummariesTask(String chanName, String boardName, int type, Callback callback)
+	public ReadThreadSummariesTask(String chanName, String boardName, int pageNumber, int type, Callback callback)
 	{
 		mChanName = chanName;
 		mBoardName = boardName;
+		mPageNumber = pageNumber;
 		mType = type;
 		mCallback = callback;
 	}
 	
 	@Override
-	protected Boolean doInBackground(Void... params)
+	protected ThreadSummary[] doInBackground(Void... params)
 	{
 		try
 		{
 			ChanPerformer performer = ChanPerformer.get(mChanName);
-			ChanPerformer.ReadThreadSummariesResult result = performer.safe()
-					.onReadThreadSummaries(new ChanPerformer.ReadThreadSummariesData(mBoardName, mType, mHolder));
+			ChanPerformer.ReadThreadSummariesResult result = performer.safe().onReadThreadSummaries(new ChanPerformer
+					.ReadThreadSummariesData(mBoardName, mPageNumber, mType, mHolder));
 			ThreadSummary[] threadSummaries = result != null ? result.threadSummaries : null;
-			if (threadSummaries != null && threadSummaries.length > 0)
-			{
-				mThreadSummaries = threadSummaries;
-			}
-			return true;
+			return threadSummaries != null && threadSummaries.length > 0 ? threadSummaries : null;
 		}
 		catch (ExtensionException | HttpException | InvalidResponseException e)
 		{
 			mErrorItem = e.getErrorItemAndHandle();
-			return false;
+			return null;
 		}
 		finally
 		{
@@ -78,13 +79,9 @@ public class ReadThreadSummariesTask extends CancellableTask<Void, Long, Boolean
 	}
 	
 	@Override
-	public void onPostExecute(Boolean success)
+	public void onPostExecute(ThreadSummary[] threadSummaries)
 	{
-		if (success)
-		{
-			if (mThreadSummaries != null) mCallback.onReadThreadSummariesSuccess(mThreadSummaries);
-			else mCallback.onReadThreadSummariesFail(new ErrorItem(ErrorItem.TYPE_EMPTY_RESPONSE));
-		}
+		if (mErrorItem == null) mCallback.onReadThreadSummariesSuccess(threadSummaries, mPageNumber);
 		else mCallback.onReadThreadSummariesFail(mErrorItem);
 	}
 	
@@ -93,5 +90,27 @@ public class ReadThreadSummariesTask extends CancellableTask<Void, Long, Boolean
 	{
 		cancel(true);
 		mHolder.interrupt();
+	}
+	
+	public static ThreadSummary[] concatenate(ThreadSummary[] threadSummaries1, ThreadSummary[] threadSummaries2)
+	{
+		ArrayList<ThreadSummary> threadSummaries = new ArrayList<>();
+		if (threadSummaries1 != null) Collections.addAll(threadSummaries, threadSummaries1);
+		HashSet<String> identifiers = new HashSet<>();
+		for (ThreadSummary threadSummary : threadSummaries)
+		{
+			identifiers.add(threadSummary.getBoardName() + '/' + threadSummary.getThreadNumber());
+		}
+		if (threadSummaries2 != null)
+		{
+			for (ThreadSummary threadSummary : threadSummaries2)
+			{
+				if (!identifiers.contains(threadSummary.getBoardName() + '/' + threadSummary.getThreadNumber()))
+				{
+					threadSummaries.add(threadSummary);
+				}
+			}
+		}
+		return threadSummaries.size() > 0 ? threadSummaries.toArray(new ThreadSummary[threadSummaries.size()]) : null;
 	}
 }
