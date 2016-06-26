@@ -294,6 +294,7 @@
 	<string name="message_empty_subject">No subject entered</string>
 	<string name="message_enter_valid_data">Enter a valid data</string>
 	<string name="message_extension_error">Extension error</string>
+	<string name="message_extension_trust_request">Allow this extension to manage application?</string>
 	<string name="message_field_too_long">Exceeding the fields limit</string>
 	<plurals name="message_file_attach_error_format">
 		<item quantity="one">%d file hasn\'t been attached</item>

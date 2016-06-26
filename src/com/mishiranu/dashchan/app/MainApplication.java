@@ -28,7 +28,6 @@ import chan.http.HttpClient;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.storage.DatabaseHelper;
-import com.mishiranu.dashchan.media.VideoPlayer;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.Log;
 
@@ -52,7 +51,7 @@ public class MainApplication extends android.app.Application
 		DatabaseHelper.getInstance();
 		CacheManager.getInstance();
 		Preferences.applyLocale(this);
-		if (Preferences.isUseVideoPlayer()) VideoPlayer.loadLibraries(this);
+		ChanManager.getInstance().loadLibraries();
 	}
 	
 	@Override

@@ -311,6 +311,7 @@
 	<string name="message_empty_subject">Введите заголовок</string>
 	<string name="message_enter_valid_data">Введите корректные данные</string>
 	<string name="message_extension_error">Ошибка расширения</string>
+	<string name="message_extension_trust_request">Разрешить этому расширению управление приложением?</string>
 	<string name="message_field_too_long">Превышение лимита полей</string>
 	<plurals name="message_file_attach_error_format">
 		<item quantity="one">Не удалось прикрепить %d файл</item>

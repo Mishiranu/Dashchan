@@ -50,7 +50,7 @@ public class PreferencesActivity extends PreferenceActivity
 		ResourceUtils.applyPreferredTheme(this);
 		super.onCreate(savedInstanceState);
 		boolean root = getIntent().getExtras() == null;
-		boolean hasChans = ChanManager.getInstance().getDefaultChanName() != null;
+		boolean hasChans = !ChanManager.getInstance().getAvailableChanNames().isEmpty();
 		if (hasChans && root) setTitle(R.string.action_preferences);
 		if (hasChans || !root) getActionBar().setDisplayHomeAsUpEnabled(true);
 		if (!hasChans && root && savedInstanceState == null) ToastUtils.show(this, R.string.message_no_extensions);
