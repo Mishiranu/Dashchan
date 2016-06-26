@@ -437,11 +437,6 @@ public class ChanPerformer implements ChanManager.Linked
 	public static class ReadThreadSummariesData implements HttpRequest.Preset
 	{
 		@Public public static final int TYPE_ARCHIVED_THREADS = 0;
-		// TODO CHAN
-		// Remove this field after updating
-		// dvach fourchan
-		// Added: 26.06.16 16:39
-		@Public public static final int TYPE_POPULAR_THREADS = 1;
 		
 		@Public public final String boardName;
 		@Public public final int pageNumber;

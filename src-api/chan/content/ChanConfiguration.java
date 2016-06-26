@@ -96,11 +96,6 @@ public class ChanConfiguration implements ChanManager.Linked
 	@Public public static final String OPTION_READ_SINGLE_POST = "read_single_post";
 	@Public public static final String OPTION_READ_POSTS_COUNT = "read_posts_count";
 	@Public public static final String OPTION_READ_USER_BOARDS = "read_user_boards";
-	// TODO CHAN
-	// Remove this field after updating
-	// dvach fourchan
-	// Added: 26.06.16 16:39
-	@Public public static final String OPTION_READ_POPULAR_THREADS = "read_popular_threads";
 	@Public public static final String OPTION_ALLOW_CAPTCHA_PASS = "allow_captcha_pass";
 	@Public public static final String OPTION_ALLOW_USER_AUTHORIZATION = "allow_user_authorization";
 	
