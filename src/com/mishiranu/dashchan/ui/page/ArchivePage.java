@@ -34,13 +34,16 @@ import com.mishiranu.dashchan.async.ReadUserBoardsTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.ui.adapter.ArchiveAdapter;
+import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
+import com.mishiranu.dashchan.widget.ListScroller;
 import com.mishiranu.dashchan.widget.PullableListView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 
 public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadSummariesTask.Callback
 {
 	private ReadThreadSummariesTask mReadTask;
+	private boolean mShowScaleOnSuccess;
 	
 	@Override
 	protected void onCreate()
@@ -51,7 +54,7 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 		if (C.API_LOLLIPOP) listView.setDivider(null);
 		ArchiveAdapter adapter = new ArchiveAdapter();
 		initAdapter(adapter);
-		listView.getWrapper().setPullSides(PullableWrapper.Side.TOP);
+		listView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
 		activity.setTitle(getString(R.string.action_archive_view) + ": " + StringUtils
 				.formatBoardTitle(pageHolder.chanName, pageHolder.boardName, null));
 		ArchiveExtra extra = getExtra();
@@ -61,7 +64,11 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 			adapter.setItems(extra.threadSummaries);
 			if (pageHolder.position != null) pageHolder.position.apply(getListView());
 		}
-		else refreshThreads(false);
+		else
+		{
+			mShowScaleOnSuccess = true;
+			refreshThreads(false, false);
+		}
 	}
 	
 	@Override
@@ -105,7 +112,7 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 		{
 			case OPTIONS_MENU_REFRESH:
 			{
-				refreshThreads(!getAdapter().isEmpty());
+				refreshThreads(!getAdapter().isEmpty(), false);
 				return true;
 			}
 		}
@@ -158,14 +165,20 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 	@Override
 	public void onListPulled(PullableWrapper wrapper, PullableWrapper.Side side)
 	{
-		refreshThreads(true);
+		refreshThreads(true, side == PullableWrapper.Side.BOTTOM);
 	}
 	
-	private void refreshThreads(boolean showPull)
+	private void refreshThreads(boolean showPull, boolean nextPage)
 	{
 		if (mReadTask != null) mReadTask.cancel();
 		PageHolder pageHolder = getPageHolder();
-		mReadTask = new ReadThreadSummariesTask(pageHolder.chanName, pageHolder.boardName,
+		int pageNumber = 0;
+		if (nextPage)
+		{
+			ArchiveExtra extra = getExtra();
+			if (extra.threadSummaries != null) pageNumber = extra.pageNumber + 1;
+		}
+		mReadTask = new ReadThreadSummariesTask(pageHolder.chanName, pageHolder.boardName, pageNumber,
 				ChanPerformer.ReadThreadSummariesData.TYPE_ARCHIVED_THREADS, this);
 		mReadTask.executeOnExecutor(ReadUserBoardsTask.THREAD_POOL_EXECUTOR);
 		if (showPull)
@@ -181,14 +194,51 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 	}
 	
 	@Override
-	public void onReadThreadSummariesSuccess(ThreadSummary[] threadSummaries)
+	public void onReadThreadSummariesSuccess(ThreadSummary[] threadSummaries, int pageNumber)
 	{
 		mReadTask = null;
-		getListView().getWrapper().cancelBusyState();
-		switchView(ViewType.LIST, null);
-		getExtra().threadSummaries = threadSummaries;
-		getAdapter().setItems(threadSummaries);
-		getListView().setSelection(0);
+		PullableListView listView = getListView();
+		listView.getWrapper().cancelBusyState();
+		boolean showScale = mShowScaleOnSuccess;
+		mShowScaleOnSuccess = false;
+		if (pageNumber == 0 && threadSummaries == null)
+		{
+			if (getAdapter().isEmpty()) switchView(ViewType.ERROR, R.string.message_empty_response);
+			else ClickableToast.show(getActivity(), R.string.message_empty_response);
+		}
+		else
+		{
+			switchView(ViewType.LIST, null);
+			ArchiveExtra extra = getExtra();
+			if (pageNumber == 0)
+			{
+				getAdapter().setItems(threadSummaries);
+				extra.threadSummaries = threadSummaries;
+				extra.pageNumber = 0;
+				ListViewUtils.cancelListFling(listView);
+				listView.setSelection(0);
+				if (showScale) showScaleAnimation();
+			}
+			else
+			{
+				threadSummaries = ReadThreadSummariesTask.concatenate(extra.threadSummaries, threadSummaries);
+				int oldCount = extra.threadSummaries.length;
+				if (threadSummaries.length > oldCount)
+				{
+					getAdapter().setItems(threadSummaries);
+					extra.threadSummaries = threadSummaries;
+					extra.pageNumber = pageNumber;
+					if (listView.getLastVisiblePosition() + 1 == oldCount)
+					{
+						View view = listView.getChildAt(listView.getChildCount() - 1);
+						if (listView.getHeight() - listView.getPaddingBottom() - view.getBottom() >= 0)
+						{
+							ListScroller.scrollTo(getListView(), oldCount);
+						}
+					}
+				}
+			}
+		}
 	}
 	
 	@Override
@@ -203,6 +253,7 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 	public static class ArchiveExtra implements PageHolder.Extra
 	{
 		public ThreadSummary[] threadSummaries;
+		public int pageNumber;
 	}
 	
 	private ArchiveExtra getExtra()
