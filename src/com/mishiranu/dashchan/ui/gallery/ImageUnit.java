@@ -92,18 +92,10 @@ public class ImageUnit
 		if (attachReadBitmapCallback(holder)) return;
 		GalleryItem galleryItem = holder.galleryItem;
 		FileHolder fileHolder = FileHolder.obtain(file);
-		if (!(holder.photoView.hasImage() && file.equals(holder.photoViewFile)))
-		{
-			if (holder.decodeBitmapTask != null) ((DecodeBitmapTask) holder.decodeBitmapTask).cancel(holder);
-			DecodeBitmapTask decodeBitmapTask = new DecodeBitmapTask(file, fileHolder);
-			decodeBitmapTask.executeOnExecutor(EXECUTOR);
-			holder.decodeBitmapTask = decodeBitmapTask;
-		}
-		else
-		{
-			holder.fullLoaded = true;
-			mInstance.galleryInstance.callback.invalidateOptionsMenu();
-		}
+		if (holder.decodeBitmapTask != null) ((DecodeBitmapTask) holder.decodeBitmapTask).cancel(holder);
+		DecodeBitmapTask decodeBitmapTask = new DecodeBitmapTask(file, fileHolder);
+		decodeBitmapTask.executeOnExecutor(EXECUTOR);
+		holder.decodeBitmapTask = decodeBitmapTask;
 		if (galleryItem.size <= 0)
 		{
 			galleryItem.size = (int) file.length();
@@ -377,7 +369,7 @@ public class ImageUnit
 		private void setPhotoViewImage(PagerInstance.ViewHolder holder, Drawable drawable, boolean hasAlpha)
 		{
 			holder.photoView.setImage(drawable, hasAlpha, false, holder.photoViewThumbnail);
-			holder.photoViewFile = mFile;
+			holder.photoViewThumbnail = false;
 		}
 	};
 }

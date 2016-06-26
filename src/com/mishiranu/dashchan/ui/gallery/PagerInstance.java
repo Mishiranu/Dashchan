@@ -16,8 +16,6 @@
 
 package com.mishiranu.dashchan.ui.gallery;
 
-import java.io.File;
-
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
@@ -63,7 +61,6 @@ public class PagerInstance
 		public AnimatedPngDecoder animatedPngDecoder;
 		public GifDecoder gifDecoder;
 		public boolean photoViewThumbnail;
-		public File photoViewFile;
 		
 		public boolean fullLoaded;
 		public Object decodeBitmapTask;
@@ -92,7 +89,6 @@ public class PagerInstance
 				gifDecoder = null;
 			}
 			photoViewThumbnail = false;
-			photoViewFile = null;
 		}
 	}
 	
