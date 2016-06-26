@@ -51,6 +51,7 @@ import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
 import chan.content.model.Posts;
+import chan.util.CommonUtils;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.C;
@@ -219,8 +220,8 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		ArrayList<PostItem> cachedPostItems = extra.cachedPostItems;
 		if (extra.cachedPosts != null && cachedPostItems.size() > 0)
 		{
-			onDeserializePostsCompleteInternal(true, extra.cachedPosts, cachedPostItems
-					.toArray(new PostItem[cachedPostItems.size()]), pageHolder.initialFromCache && !forceLoad, true);
+			onDeserializePostsCompleteInternal(true, extra.cachedPosts, CommonUtils.toArray(cachedPostItems,
+					PostItem.class), pageHolder.initialFromCache && !forceLoad, true);
 		}
 		else
 		{
@@ -514,8 +515,8 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 			{
 				ArrayList<String> localAutohide = mHidePerformer.getReadableLocalAutohide();
 				final boolean[] checked = new boolean[localAutohide.size()];
-				new AlertDialog.Builder(activity).setMultiChoiceItems(localAutohide.toArray(new String
-						[localAutohide.size()]), checked, new DialogInterface.OnMultiChoiceClickListener()
+				new AlertDialog.Builder(activity).setMultiChoiceItems(CommonUtils.toArray(localAutohide, String.class),
+						checked, new DialogInterface.OnMultiChoiceClickListener()
 				{
 					@Override
 					public void onClick(DialogInterface dialog, int which, boolean isChecked)
@@ -748,7 +749,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				{
 					data.add(new Replyable.ReplyData(postItem.getPostNumber(), null));
 				}
-				if (data.size() > 0) mReplyable.onRequestReply(data.toArray(new Replyable.ReplyData[data.size()]));
+				if (data.size() > 0) mReplyable.onRequestReply(CommonUtils.toArray(data, Replyable.ReplyData.class));
 				mode.finish();
 				return true;
 			}
@@ -1577,7 +1578,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		public void writeToParcel(Parcel dest)
 		{
 			dest.writeList(userPostPendings);
-			dest.writeStringArray(expandedPosts.toArray(new String[expandedPosts.size()]));
+			dest.writeStringArray(CommonUtils.toArray(expandedPosts, String.class));
 			dest.writeInt(isAddedToHistory ? 1 : 0);
 		}
 		

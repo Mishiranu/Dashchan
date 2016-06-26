@@ -28,6 +28,7 @@ import android.util.Pair;
 
 import chan.annotation.Public;
 import chan.http.HttpValidator;
+import chan.util.CommonUtils;
 
 @Public
 public final class Posts implements Serializable
@@ -57,14 +58,14 @@ public final class Posts implements Serializable
 	@Public
 	public Posts setPosts(Post... posts)
 	{
-		mPosts = posts;
+		mPosts = CommonUtils.removeNullItems(posts, Post.class);
 		return this;
 	}
 	
 	@Public
 	public Posts setPosts(Collection<? extends Post> posts)
 	{
-		return setPosts(posts != null ? posts.toArray(new Post[posts.size()]) : null);
+		return setPosts(CommonUtils.toArray(posts, Post.class));
 	}
 	
 	public String getThreadNumber()
@@ -228,7 +229,7 @@ public final class Posts implements Serializable
 				String postNumber = post.getPostNumber();
 				posts.put(postNumber, post);
 			}
-			if (posts.size() != mPosts.length) mPosts = posts.values().toArray(new Post[posts.size()]);
+			if (posts.size() != mPosts.length) mPosts = CommonUtils.toArray(posts.values(), Post.class);
 			Arrays.sort(mPosts);
 		}
 	}
@@ -244,7 +245,7 @@ public final class Posts implements Serializable
 				{
 					if (!post.isDeleted()) posts.add(post);
 				}
-				mPosts = posts.toArray(new Post[posts.size()]);
+				mPosts = CommonUtils.toArray(posts, Post.class);
 			}
 		}
 	}
@@ -370,9 +371,8 @@ public final class Posts implements Serializable
 					newCount = postsArray.length;
 				}
 			}
-			Post[] changed = changedList.size() > 0 ? changedList.toArray(new Post[changedList.size()]) : null;
-			MergeAction[] actions = actionsList.size() > 0 ? actionsList
-					.toArray(new MergeAction[actionsList.size()]) : null;
+			Post[] changed = CommonUtils.toArray(changedList, Post.class);
+			MergeAction[] actions = CommonUtils.toArray(actionsList, MergeAction.class);
 			return new MergeResult(newCount, deletedCount, hasEdited, changed, actions, fieldsUpdated);
 		}
 	}
@@ -407,7 +407,7 @@ public final class Posts implements Serializable
 					if (actions[i].insert) newPosts.add(actions[i].index, handlePosts[i]);
 					else newPosts.set(actions[i].index, handlePosts[i]);
 				}
-				mPosts = newPosts.toArray(new Post[newPosts.size()]);
+				mPosts = CommonUtils.toArray(newPosts, Post.class);
 			}
 			return handlePosts != null || fieldsUpdated;
 		}

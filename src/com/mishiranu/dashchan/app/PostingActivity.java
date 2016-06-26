@@ -87,6 +87,7 @@ import chan.content.ChanLocator;
 import chan.content.ChanMarkup;
 import chan.content.ChanPerformer;
 import chan.text.CommentEditor;
+import chan.util.CommonUtils;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.C;
@@ -1040,7 +1041,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 				{
 					if (mimeTypes.size() > 0)
 					{
-						intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes.toArray(new String[mimeTypes.size()]));
+						intent.putExtra(Intent.EXTRA_MIME_TYPES, CommonUtils.toArray(mimeTypes, String.class));
 					}
 					intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
 				}
@@ -1105,15 +1106,15 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		boolean optionSage = mSageCheckBox.isChecked();
 		boolean optionSpoiler = mSpoilerCheckBox.isChecked();
 		boolean optionOriginalPoster = mOriginalPosterCheckBox.isChecked();
-		ArrayList<ChanPerformer.SendPostData.Attachment> files = new ArrayList<>();
+		ArrayList<ChanPerformer.SendPostData.Attachment> array = new ArrayList<>();
 		for (int i = 0; i < mAttachments.size(); i++)
 		{
 			AttachmentHolder data = mAttachments.get(i);
-			files.add(new ChanPerformer.SendPostData.Attachment(data.fileHolder, data.rating, data.optionUniqueHash,
+			array.add(new ChanPerformer.SendPostData.Attachment(data.fileHolder, data.rating, data.optionUniqueHash,
 					data.optionRemoveMetadata, data.optionRemoveFileName, data.optionSpoiler));
 		}
 		ChanPerformer.SendPostData.Attachment[] attachments = null;
-		if (files.size() > 0) attachments = files.toArray(new ChanPerformer.SendPostData.Attachment[files.size()]);
+		if (array.size() > 0) attachments = CommonUtils.toArray(array, ChanPerformer.SendPostData.Attachment.class);
 		String userIcon = null;
 		if (mUserIconItems != null)
 		{

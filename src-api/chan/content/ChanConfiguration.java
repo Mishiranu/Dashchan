@@ -37,6 +37,7 @@ import android.util.Pair;
 import chan.annotation.Extendable;
 import chan.annotation.Public;
 import chan.content.model.BoardCategory;
+import chan.util.CommonUtils;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.R;
@@ -684,11 +685,7 @@ public class ChanConfiguration implements ChanManager.Linked
 	{
 		if (mSupportedCaptchaTypes == null && mSupportedCaptchaTypesList != null)
 		{
-			if (mSupportedCaptchaTypesList.size() > 0)
-			{
-				mSupportedCaptchaTypes = mSupportedCaptchaTypesList.toArray(new String
-						[mSupportedCaptchaTypesList.size()]);
-			}
+			mSupportedCaptchaTypes = CommonUtils.toArray(mSupportedCaptchaTypesList, String.class);
 			mSupportedCaptchaTypesList = null;
 		}
 		return mSupportedCaptchaTypes;

@@ -26,6 +26,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import chan.util.CommonUtils;
+
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.async.ReadSearchTask;
 import com.mishiranu.dashchan.content.ImageLoader;
@@ -258,7 +260,7 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 				if (currentPostItems.size() > existingPostNumbers.size())
 				{
 					int count = listView.getCount();
-					postItems = currentPostItems.toArray(new PostItem[currentPostItems.size()]);
+					postItems = CommonUtils.toArray(currentPostItems, PostItem.class);
 					adapter.setItems(null);
 					adapter.setGroupMode(false);
 					adapter.setItems(postItems);

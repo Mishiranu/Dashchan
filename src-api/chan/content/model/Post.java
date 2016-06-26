@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.Collection;
 
 import chan.annotation.Public;
+import chan.util.CommonUtils;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.util.FlagUtils;
@@ -283,14 +284,14 @@ public final class Post implements Serializable, Comparable<Post>
 	@Public
 	public Post setAttachments(Attachment... attachments)
 	{
-		mAttachments = attachments;
+		mAttachments = CommonUtils.removeNullItems(attachments, Attachment.class);
 		return this;
 	}
 	
 	@Public
 	public Post setAttachments(Collection<? extends Attachment> attachments)
 	{
-		return setAttachments(attachments != null ? attachments.toArray(new Attachment[attachments.size()]) : null);
+		return setAttachments(CommonUtils.toArray(attachments, Attachment.class));
 	}
 	
 	@Public
@@ -308,14 +309,14 @@ public final class Post implements Serializable, Comparable<Post>
 	@Public
 	public Post setIcons(Icon... icons)
 	{
-		mIcons = icons;
+		mIcons = CommonUtils.removeNullItems(icons, Icon.class);
 		return this;
 	}
 	
 	@Public
 	public Post setIcons(Collection<? extends Icon> icons)
 	{
-		return setIcons(icons != null ? icons.toArray(new Icon[icons.size()]) : null);
+		return setIcons(CommonUtils.toArray(icons, Icon.class));
 	}
 	
 	@Public

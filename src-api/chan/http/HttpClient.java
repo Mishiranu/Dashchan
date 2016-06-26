@@ -65,6 +65,7 @@ import android.util.Pair;
 
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
+import chan.util.CommonUtils;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.C;
@@ -1045,7 +1046,7 @@ public class HttpClient
 				ArrayList<String> enabledProtocols = new ArrayList<>();
 				Collections.addAll(enabledProtocols, getEnabledProtocols());
 				if (enabledProtocols.size() > 1) enabledProtocols.remove("SSLv3");
-				protocols = enabledProtocols.toArray(new String[enabledProtocols.size()]);
+				protocols = CommonUtils.toArray(enabledProtocols, String.class);
 			}
 			super.setEnabledProtocols(protocols);
 		}

@@ -36,6 +36,7 @@ import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
 import chan.content.model.Threads;
 import chan.http.HttpValidator;
+import chan.util.CommonUtils;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.R;
@@ -98,7 +99,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 			if (extra.cachedThreads != null && cachedPostItems.size() > 0)
 			{
 				onDeserializeThreadsCompleteInternal(true, extra.cachedThreads,
-						cachedPostItems.toArray(new PostItem[cachedPostItems.size()][]), true);
+						CommonUtils.toArray(cachedPostItems, PostItem[].class), true);
 			}
 			else
 			{

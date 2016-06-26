@@ -42,6 +42,7 @@ import android.widget.ArrayAdapter;
 
 import chan.content.ChanConfiguration;
 import chan.content.ChanManager;
+import chan.util.CommonUtils;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.R;
@@ -477,9 +478,8 @@ public class UpdateFragment extends BaseListFragment
 		{
 			int index = getArguments().getInt(EXTRA_INDEX);
 			ArrayList<String> targets = getArguments().getStringArrayList(EXTRA_TARGETS);
-			String[] items = targets.toArray(new String[targets.size()]);
-			return new AlertDialog.Builder(getActivity()).setSingleChoiceItems(items, index, this)
-					.setNegativeButton(android.R.string.cancel, null).create();
+			return new AlertDialog.Builder(getActivity()).setSingleChoiceItems(CommonUtils.toArray(targets,
+					String.class), index, this).setNegativeButton(android.R.string.cancel, null).create();
 		}
 		
 		@Override

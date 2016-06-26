@@ -29,6 +29,7 @@ import android.os.Parcelable;
 
 import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
+import chan.util.CommonUtils;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.app.MainApplication;
@@ -334,10 +335,7 @@ public class DraftsStorage extends StorageManager.Storage
 						if (attachmentDraft != null) attachmentDraftList.add(attachmentDraft);
 					}
 				}
-				if (attachmentDraftList.size() > 0)
-				{
-					attachmentDrafts = attachmentDraftList.toArray(new AttachmentDraft[attachmentDraftList.size()]);
-				}
+				attachmentDrafts = CommonUtils.toArray(attachmentDraftList, AttachmentDraft.class);
 			}
 			return new PostDraft(threadDraft.chanName, threadDraft.boardName, threadDraft.threadNumber,
 					jsonObject.optString(KEY_SUBJECT, null), jsonObject.optString(KEY_COMMENT, null),

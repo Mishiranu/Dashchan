@@ -51,6 +51,7 @@ import chan.content.InvalidResponseException;
 import chan.http.HttpClient;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
+import chan.util.CommonUtils;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.C;
@@ -191,7 +192,7 @@ public class ChanFragment extends BasePreferenceFragment
 		}
 		else
 		{
-			String[] domainsArray = domains.toArray(new String[domains.size()]);
+			String[] domainsArray = CommonUtils.toArray(domains, String.class);
 			String[] entries = new String[domainsArray.length + 1];
 			System.arraycopy(domainsArray, 0, entries, 0, domainsArray.length);
 			entries[entries.length - 1] = getString(R.string.preference_domain_another);

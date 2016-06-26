@@ -29,6 +29,7 @@ import org.json.JSONObject;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import chan.util.CommonUtils;
 import chan.util.StringUtils;
 
 public class AutohideStorage extends StorageManager.Storage
@@ -276,7 +277,7 @@ public class AutohideStorage extends StorageManager.Storage
 		@Override
 		public void writeToParcel(Parcel dest, int flags)
 		{
-			dest.writeStringArray(chanNames != null ? chanNames.toArray(new String[chanNames.size()]) : null);
+			dest.writeStringArray(CommonUtils.toArray(chanNames, String.class));
 			dest.writeString(boardName);
 			dest.writeString(threadNumber);
 			dest.writeInt(optionOriginalPost ? 1 : 0);

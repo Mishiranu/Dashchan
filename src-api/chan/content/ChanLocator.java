@@ -26,6 +26,7 @@ import android.net.Uri;
 
 import chan.annotation.Extendable;
 import chan.annotation.Public;
+import chan.util.CommonUtils;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.C;
@@ -602,7 +603,7 @@ public class ChanLocator implements ChanManager.Linked
 		Matcher matcher = pattern.matcher(from);
 		LinkedHashSet<String> data = new LinkedHashSet<>();
 		while (matcher.find() && matcher.groupCount() > 0) data.add(matcher.group(groupIndex));
-		return data.size() > 0 ? data.toArray(new String[data.size()]) : null;
+		return CommonUtils.toArray(data, String.class);
 	}
 	
 	public static final class Safe

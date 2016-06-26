@@ -22,6 +22,7 @@ import java.util.Collection;
 
 import chan.annotation.Public;
 import chan.content.ChanPerformer;
+import chan.util.CommonUtils;
 
 @Public
 public final class Threads implements Serializable
@@ -118,7 +119,7 @@ public final class Threads implements Serializable
 				{
 					if (posts != null) newLastPage.add(posts);
 				}
-				mThreads[0] = newLastPage.toArray(new Posts[newLastPage.size()]);
+				mThreads[0] = CommonUtils.toArray(newLastPage, Posts.class);
 			}
 		}
 	}
@@ -155,7 +156,7 @@ public final class Threads implements Serializable
 				{
 					if (posts != null) newLastPage.add(posts);
 				}
-				mThreads[0] = newLastPage.toArray(new Posts[newLastPage.size()]);
+				mThreads[0] = CommonUtils.toArray(newLastPage, Posts.class);
 			}
 		}
 	}
@@ -163,12 +164,12 @@ public final class Threads implements Serializable
 	@Public
 	public Threads(Posts... threads)
 	{
-		setThreads(threads);
+		setThreads(CommonUtils.removeNullItems(threads, Posts.class));
 	}
 	
 	@Public
 	public Threads(Collection<? extends Posts> threads)
 	{
-		this(threads != null ? threads.toArray(new Posts[threads.size()]) : null);
+		this(CommonUtils.toArray(threads, Posts.class));
 	}
 }
