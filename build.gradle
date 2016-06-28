@@ -47,23 +47,16 @@ android {
 		keystoreProperties.load(new FileInputStream(file('keystore.properties')))
 
 		signingConfigs {
-			debug {
-				storeFile file(keystoreProperties['debug.storeFile'])
-				storePassword keystoreProperties['debug.storePassword']
-				keyAlias keystoreProperties['debug.keyAlias']
-				keyPassword keystoreProperties['debug.keyPassword']
-			}
-
-			release {
-				storeFile file(keystoreProperties['release.storeFile'])
-				storePassword keystoreProperties['release.storePassword']
-				keyAlias keystoreProperties['release.keyAlias']
-				keyPassword keystoreProperties['release.keyPassword']
+			general {
+				storeFile file(keystoreProperties['store.file'])
+				storePassword keystoreProperties['store.password']
+				keyAlias keystoreProperties['key.alias']
+				keyPassword keystoreProperties['key.password']
 			}
 		}
 
-		buildTypes.debug.signingConfig signingConfigs.debug
-		buildTypes.release.signingConfig signingConfigs.release
+		buildTypes.debug.signingConfig signingConfigs.general
+		buildTypes.release.signingConfig signingConfigs.general
 	}
 
 	defaultConfig {

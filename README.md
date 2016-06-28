@@ -91,15 +91,10 @@ The resulting APK file will appear in `build/outputs/apk` directory.
 You can create `keystore.properties` in the source code directory with the following properties:
 
 ```properties
-debug.storeFile=%PATH_TO_KEYSTORE_FILE%
-debug.storePassword=%KEYSTORE_PASSWORD%
-debug.keyAlias=%KEY_ALIAS%
-debug.keyPassword=%KEY_PASSWORD%
-
-release.storeFile=%PATH_TO_KEYSTORE_FILE%
-release.storePassword=%KEYSTORE_PASSWORD%
-release.keyAlias=%KEY_ALIAS%
-release.keyPassword=%KEY_PASSWORD%
+store.file=%PATH_TO_KEYSTORE_FILE%
+store.password=%KEYSTORE_PASSWORD%
+key.alias=%KEY_ALIAS%
+key.password=%KEY_PASSWORD%
 ```
 
 ### API Keys
