@@ -34,6 +34,7 @@ import java.util.zip.ZipOutputStream;
 
 import android.content.Context;
 import android.text.format.DateFormat;
+import android.util.Pair;
 
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.storage.AutohideStorage;
@@ -81,18 +82,18 @@ public class BackupManager
 		return backups;
 	}
 	
-	private static void addFileToMap(LinkedHashMap<String, File> files, File file)
+	private static void addFileToMap(LinkedHashMap<String, Pair<File, Boolean>> files, File file, boolean mustExist)
 	{
-		files.put(file.getName(), file);
+		files.put(file.getName(), new Pair<>(file, mustExist));
 	}
 	
-	private static LinkedHashMap<String, File> obtainBackupFiles(Context context)
+	private static LinkedHashMap<String, Pair<File, Boolean>> obtainBackupFiles(Context context)
 	{
-		LinkedHashMap<String, File> files = new LinkedHashMap<>();
-		addFileToMap(files, Preferences.getPreferencesFile());
-		addFileToMap(files, DatabaseHelper.getDatabaseFile());
-		addFileToMap(files, FavoritesStorage.getInstance().getFile());
-		addFileToMap(files, AutohideStorage.getInstance().getFile());
+		LinkedHashMap<String, Pair<File, Boolean>> files = new LinkedHashMap<>();
+		addFileToMap(files, Preferences.getPreferencesFile(), true);
+		addFileToMap(files, DatabaseHelper.getDatabaseFile(), true);
+		addFileToMap(files, FavoritesStorage.getInstance().getFile(), false);
+		addFileToMap(files, AutohideStorage.getInstance().getFile(), false);
 		return files;
 	}
 	
@@ -100,22 +101,23 @@ public class BackupManager
 	{
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		ZipOutputStream zip = new ZipOutputStream(output);
-		LinkedHashMap<String, File> files = obtainBackupFiles(context);
+		LinkedHashMap<String, Pair<File, Boolean>> files = obtainBackupFiles(context);
 		boolean success = true;
-		for (File file : files.values())
+		for (Pair<File, Boolean> pair : files.values())
 		{
-			if (file.exists() && file.canRead())
+			if (pair.first.exists())
 			{
 				FileInputStream input = null;
 				try
 				{
-					zip.putNextEntry(new ZipEntry(file.getName()));
-					input = new FileInputStream(file);
+					zip.putNextEntry(new ZipEntry(pair.first.getName()));
+					input = new FileInputStream(pair.first);
 					IOUtils.copyStream(input, zip);
 					zip.closeEntry();
 				}
 				catch (IOException e)
 				{
+					Log.persistent().write(e);
 					success = false;
 					break;
 				}
@@ -124,7 +126,7 @@ public class BackupManager
 					IOUtils.close(input);
 				}
 			}
-			else
+			else if (pair.second)
 			{
 				success = false;
 				break;
@@ -142,7 +144,7 @@ public class BackupManager
 	
 	public static void loadBackup(Context context, File file)
 	{
-		LinkedHashMap<String, File> files = obtainBackupFiles(context);
+		LinkedHashMap<String, Pair<File, Boolean>> files = obtainBackupFiles(context);
 		ZipInputStream zip = null;
 		boolean success = true;
 		try
@@ -152,13 +154,13 @@ public class BackupManager
 			while ((entry = zip.getNextEntry()) != null)
 			{
 				String name = entry.getName();
-				File target = files.get(name);
-				if (target != null)
+				Pair<File, Boolean> pair = files.get(name);
+				if (pair != null)
 				{
 					OutputStream output = null;
 					try
 					{
-						output = new FileOutputStream(target);
+						output = new FileOutputStream(pair.first);
 						IOUtils.copyStream(zip, output);
 						zip.closeEntry();
 					}
