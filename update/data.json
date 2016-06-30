@@ -148,11 +148,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.2",
+			"name": "1.3",
 			"code": 1,
 			"version": 1,
-			"minSdk": 14,
-			"length": 56063,
+			"minSdk": 16,
+			"length": 55957,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanDesustorage.apk"
 		}
 	],
