@@ -55,20 +55,59 @@ public class IOUtils
 		return true;
 	}
 	
-	public static final int bytesToInt(byte[] bytes, int start, int count)
+	public static int bytesToInt(byte[] bytes, int start, int count)
 	{
 		int result = 0;
 		for (int i = 0; i < count; i++) result = result << 8 | bytes[start + i] & 0xff;
 		return result;
 	}
 	
-	public static final void intToBytes(byte[] bytes, int start, int count, int value)
+	public static void intToBytes(byte[] bytes, int start, int count, int value)
 	{
 		for (int i = count - 1; i >= 0; i--)
 		{
 			bytes[start + i] = (byte) (value & 0xff);
 			value >>>= 8;
 		}
+	}
+	
+	public static int skipExactly(InputStream input, int count) throws IOException
+	{
+		int total = 0;
+		while (count - total > 0)
+		{
+			int skipped = (int) input.skip(count - total);
+			if (skipped == 0)
+			{
+				int read = input.read();
+				if (read == -1) break;
+				total++;
+			}
+			total += skipped;
+		}
+		return total;
+	}
+	
+	public static boolean skipExactlyCheck(InputStream input, int count) throws IOException
+	{
+		return skipExactly(input, count) == count;
+	}
+	
+	public static int readExactly(InputStream input, byte[] buffer, int offset, int count) throws IOException
+	{
+		int total = 0;
+		while (count - total > 0)
+		{
+			int read = input.read(buffer, offset + total, count - total);
+			if (read == -1) break;
+			total += read;
+		}
+		return total;
+	}
+	
+	public static boolean readExactlyCheck(InputStream input, byte[] buffer, int offset, int count) throws IOException
+	{
+		return readExactly(input, buffer, offset, count) == count;
 	}
 	
 	public static void copyStream(InputStream from, OutputStream to) throws IOException

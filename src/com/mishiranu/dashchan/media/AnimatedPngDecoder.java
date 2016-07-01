@@ -94,29 +94,24 @@ public class AnimatedPngDecoder implements Runnable
 		try
 		{
 			input = new BufferedInputStream(fileHolder.openInputStream());
-			input.read(buffer, 0, 8);
+			if (!IOUtils.readExactlyCheck(input, buffer, 0, 8)) throw new IOException();
 			output.write(buffer, 0, 8);
-			OUTER: while (true)
+			while (true)
 			{
-				if (input.read(buffer, 0, 8) < 8) break;
+				if (!IOUtils.readExactlyCheck(input, buffer, 0, 8)) throw new IOException();
 				int length = IOUtils.bytesToInt(buffer, 0, 4);
 				if (length < 0) break;
 				length += 4;
 				String name = new String(buffer, 4, 4);
 				if (GraphicsUtils.isUselessPngChuck(name))
 				{
-					while (length > 0)
-					{
-						int count = (int) input.skip(length);
-						if (count == 0) break OUTER;
-						length -= count;
-					}
+					if (!IOUtils.skipExactlyCheck(input, length)) throw new IOException();
 					continue;
 				}
 				if ("acTL".equals(name))
 				{
 					if (length != 12) throw new IOException();
-					input.read(buffer, 0, 12);
+					if (!IOUtils.readExactlyCheck(input, buffer, 0, 12)) throw new IOException();
 					int totalFramesCount = IOUtils.bytesToInt(buffer, 0, 4);
 					if (totalFramesCount <= 0) throw new IOException();
 					frames = new Frame[totalFramesCount];
@@ -127,7 +122,7 @@ public class AnimatedPngDecoder implements Runnable
 					if (frames == null) throw new IOException();
 					if (framesCount == frames.length) throw new IOException();
 					if (length != 30) throw new IOException();
-					input.read(buffer, 0, 30);
+					if (!IOUtils.readExactlyCheck(input, buffer, 0, 30)) throw new IOException();
 					if (currentFrame == null) head = output.toByteArray();
 					else currentFrame.bytes = output.toByteArray();
 					output.reset();
@@ -159,16 +154,17 @@ public class AnimatedPngDecoder implements Runnable
 					byte[] nameBytes = "IDAT".getBytes("ISO-8859-1");
 					output.write(nameBytes);
 					crc32.update(nameBytes);
-					input.skip(4);
+					if (!IOUtils.skipExactlyCheck(input, 4)) throw new IOException();
 					length -= 8;
 					while (length > 0)
 					{
 						int count = input.read(buffer, 0, Math.min(buffer.length, length));
+						if (count == -1) throw new IOException();
 						output.write(buffer, 0, count);
 						crc32.update(buffer, 0, count);
 						length -= count;
 					}
-					input.skip(4);
+					if (!IOUtils.skipExactlyCheck(input, 4)) throw new IOException();
 					IOUtils.intToBytes(buffer, 0, 4, (int) crc32.getValue());
 					output.write(buffer, 0, 4);
 					crc32.reset();
