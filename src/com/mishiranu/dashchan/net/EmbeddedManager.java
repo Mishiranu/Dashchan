@@ -25,7 +25,6 @@ import android.net.Uri;
 import chan.content.ChanLocator;
 import chan.content.InvalidResponseException;
 import chan.content.model.EmbeddedAttachment;
-import chan.content.model.EmbeddedAttachment.ContentType;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
 import chan.http.HttpRequest;
@@ -70,13 +69,14 @@ public class EmbeddedManager
 	{
 		Uri fileUri = locator.buildQueryWithSchemeHost(true, "www.youtube.com", "watch", "v", embeddedCode);
 		Uri thumbnailUri = locator.buildPathWithSchemeHost(true, "img.youtube.com", "vi", embeddedCode, "default.jpg");
-		return new EmbeddedAttachment(fileUri, thumbnailUri, "YouTube", ContentType.VIDEO, false, null);
+		return new EmbeddedAttachment(fileUri, thumbnailUri, "YouTube", EmbeddedAttachment.ContentType.VIDEO,
+				false, null);
 	}
 	
 	public EmbeddedAttachment obtainVimeoAttachment(ChanLocator locator, String embeddedCode)
 	{
 		Uri fileUri = locator.buildPathWithSchemeHost(true, "vimeo.com", embeddedCode);
-		return new EmbeddedAttachment(fileUri, null, "Vimeo", ContentType.VIDEO, false, null);
+		return new EmbeddedAttachment(fileUri, null, "Vimeo", EmbeddedAttachment.ContentType.VIDEO, false, null);
 	}
 	
 	public EmbeddedAttachment obtainVocarooAttachment(ChanLocator locator, String embeddedCode)
@@ -84,14 +84,15 @@ public class EmbeddedManager
 		Uri fileUri = locator.buildQueryWithSchemeHost(false, "vocaroo.com", "media_command.php", "media", embeddedCode,
 				"command", "download_mp3");
 		String forcedName = "Vocaroo_" + embeddedCode + ".mp3";
-		return new EmbeddedAttachment(fileUri, null, "Vocaroo", ContentType.AUDIO, true, forcedName);
+		return new EmbeddedAttachment(fileUri, null, "Vocaroo", EmbeddedAttachment.ContentType.AUDIO, true, forcedName);
 	}
 	
 	public EmbeddedAttachment obtainSoundCloudAttachment(ChanLocator locator, String embeddedCode)
 	{
 		Uri fileUri = locator.buildPathWithSchemeHost(true, "soundcloud.com", embeddedCode);
 		String forcedName = "SoundCloud_" + embeddedCode.replace('/', '_') + ".mp3";
-		return new EmbeddedAttachment(fileUri, null, "SoundCloud", ContentType.AUDIO, true, forcedName);
+		return new EmbeddedAttachment(fileUri, null, "SoundCloud", EmbeddedAttachment.ContentType.AUDIO,
+				true, forcedName);
 	}
 	
 	private final HashMap<String, Uri> mSoundcloudUriMap = new HashMap<>();
