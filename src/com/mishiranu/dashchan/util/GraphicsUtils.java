@@ -172,10 +172,10 @@ public class GraphicsUtils
 	
 	public static class SkipRange
 	{
-		public final long start;
-		public final long count;
+		public final int start;
+		public final int count;
 		
-		private SkipRange(long start, long count)
+		private SkipRange(int start, int count)
 		{
 			this.start = start;
 			this.count = count;
@@ -205,105 +205,95 @@ public class GraphicsUtils
 		InputStream input = null;
 		try
 		{
-			input = fileHolder.openInputStream();
-			byte[] buffer = new byte[4];
-			long total = fileHolder.getSize();
-			long position = input.read(buffer, 0, 2);
-			if (buffer[0] == (byte) 0xff && buffer[1] == (byte) 0xd8)
+			if (fileHolder.getImageType() == FileHolder.ImageType.IMAGE_JPEG)
 			{
-				// JPEG image
 				if (removeMetadata)
 				{
-					while (position < total)
+					input = new BufferedInputStream(fileHolder.openInputStream(), 16 * 1024);
+					int position = 0;
+					byte[] buffer = new byte[2];
+					while (true)
 					{
-						position += input.read(buffer, 0, 2);
-						if (buffer[0] == (byte) 0xff)
+						int oneByte = input.read();
+						position++;
+						if (oneByte == 0xff)
 						{
-							// Erase JFIF or EXIF
-							boolean metadata = buffer[1] == (byte) 0xe0 || buffer[1] == (byte) 0xe1;
-							long start = position - 2;
-							position += input.read(buffer, 0, 2);
-							int size = IOUtils.bytesToInt(buffer, 0, 2);
-							position += input.skip(size - 2);
-							if (metadata)
+							oneByte = input.read();
+							position++;
+							if ((oneByte & 0xe0) == 0xe0 || oneByte == 0xfe)
 							{
+								// Application data (0xe0 for JFIF, 0xe1 for EXIF) or comment (0xfe)
+								if (!IOUtils.readExactlyCheck(input, buffer, 0, 2)) break;
+								int size = IOUtils.bytesToInt(buffer, 0, 2);
+								if (!IOUtils.skipExactlyCheck(input, size - 2)) break;
 								if (skipRanges == null) skipRanges = new ArrayList<>();
-								skipRanges.add(new SkipRange(start, (long) (size + 2)));
+								skipRanges.add(new SkipRange(position - 2, size + 2));
+								position += size;
 							}
 						}
-						else break;
+						if (oneByte == -1) break;
 					}
 				}
 			}
-			else
+			else if (fileHolder.getImageType() == FileHolder.ImageType.IMAGE_PNG)
 			{
-				position += input.read(buffer, 2, 2);
-				if (buffer[0] == (byte) 0x89 && buffer[1] == (byte) 0x50 && buffer[2] == (byte) 0x4E
-						&& buffer[3] == (byte) 0x47)
+				if (removeMetadata)
 				{
-					if (removeMetadata)
+					input = fileHolder.openInputStream();
+					if (IOUtils.skipExactlyCheck(input, 8))
 					{
-						// PNG image
-						position += input.skip(4);
-						while (position < total)
+						int position = 8;
+						byte[] buffer = new byte[8];
+						while (true)
 						{
-							long start = position;
-							position += input.read(buffer);
+							if (!IOUtils.readExactlyCheck(input, buffer, 0, 8)) break;
 							int size = IOUtils.bytesToInt(buffer, 0, 4);
-							position += input.read(buffer);
-							String type = new String(buffer, 0, 4, "UTF-8");
-							position += input.skip(size);
-							position += input.skip(4);
-							if (isUselessPngChuck(type))
+							String name = new String(buffer, 4, 4);
+							if (!IOUtils.skipExactlyCheck(input, size + 4)) break;
+							if (isUselessPngChunk(name))
 							{
 								if (skipRanges == null) skipRanges = new ArrayList<>();
-								skipRanges.add(new SkipRange(start, position - start));
+								skipRanges.add(new SkipRange(position, size + 12));
 							}
-							if ("IEND".equals(type))
+							position += size + 12;
+							if ("IEND".equals(name))
 							{
-								if (total > position)
+								int fileSize = fileHolder.getSize();
+								if (fileSize > position)
 								{
 									if (skipRanges == null) skipRanges = new ArrayList<>();
-									skipRanges.add(new SkipRange(position, total - position));
+									skipRanges.add(new SkipRange(position, fileSize - position));
 								}
 								break;
 							}
 						}
 					}
 				}
-				else if (buffer[0] == (byte) 0x52 && buffer[1] == (byte) 0x49 && buffer[2] == (byte) 0x46
-						&& buffer[3] == (byte) 0x46)
+			}
+			else if (fileHolder.getImageType() == FileHolder.ImageType.IMAGE_WEBP)
+			{
+				Bitmap bitmap;
+				try
 				{
-					position += input.skip(4);
-					position += input.read(buffer, 0, 4);
-					if (buffer[0] == (byte) 0x57 && buffer[1] == (byte) 0x45 && buffer[2] == (byte) 0x42
-							&& buffer[3] == (byte) 0x50)
+					bitmap = fileHolder.readImageBitmap();
+				}
+				catch (Exception | OutOfMemoryError e)
+				{
+					bitmap = null;
+				}
+				if (bitmap != null)
+				{
+					try
 					{
-						// WEBP image
-						Bitmap bitmap;
-						try
-						{
-							bitmap = fileHolder.readImageBitmap();
-						}
-						catch (Exception | OutOfMemoryError e)
-						{
-							bitmap = null;
-						}
-						if (bitmap != null)
-						{
-							try
-							{
-								ByteArrayOutputStream stream = new ByteArrayOutputStream();
-								bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-								decodedFile = stream.toByteArray();
-								int index = fileName.lastIndexOf('.');
-								newFileName = (index >= 0 ? fileName.substring(0, index) : fileName) + ".png";
-							}
-							finally
-							{
-								bitmap.recycle();
-							}
-						}
+						ByteArrayOutputStream stream = new ByteArrayOutputStream();
+						bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+						decodedFile = stream.toByteArray();
+						int index = fileName.lastIndexOf('.');
+						newFileName = (index >= 0 ? fileName.substring(0, index) : fileName) + ".png";
+					}
+					finally
+					{
+						bitmap.recycle();
 					}
 				}
 			}
@@ -327,39 +317,38 @@ public class GraphicsUtils
 				? new TransformationData(skipRanges, decodedFile, newFileName) : null;
 	}
 	
-	public static boolean isUselessPngChuck(String type)
+	public static boolean isUselessPngChunk(String name)
 	{
-		return "iTXt".equals(type) || "tEXt".equals(type) || "tIME".equals(type)
-				|| "zTXt".equals(type);
+		return "iTXt".equals(name) || "tEXt".equals(name) || "tIME".equals(name)
+				|| "zTXt".equals(name);
 	}
 	
 	public static boolean isFaultyGrayscaleJpegImage(FileHolder fileHolder)
 	{
-		if (fileHolder.isImage())
+		byte[] sof = null;
+		if (fileHolder.getImageType() == FileHolder.ImageType.IMAGE_JPEG)
 		{
-			InputStream inputStream = null;
-			byte[] sof = null;
+			InputStream input = null;
 			try
 			{
-				inputStream = new BufferedInputStream(fileHolder.openInputStream());
-				if (inputStream.read() == 0xff && inputStream.read() == 0xd8)
+				input = new BufferedInputStream(fileHolder.openInputStream());
+				byte[] buffer = new byte[2];
+				while (true)
 				{
-					byte[] lengthBytes = new byte[2];
-					while (true)
+					int oneByte = input.read();
+					if (oneByte == 0xff)
 					{
-						int data = inputStream.read();
-						if (data != 0xff) break;
-						int id = inputStream.read();
-						int count = inputStream.read(lengthBytes);
-						if (count != 2) break;
-						int length = IOUtils.bytesToInt(lengthBytes, 0, 2) - 2;
-						if (id == 0xc0 || id == 0xc1 || id == 0xc2)
+						oneByte = input.read();
+						if (oneByte == 0xc0 || oneByte == 0xc1 || oneByte == 0xc2)
 						{
-							sof = new byte[length];
-							inputStream.read(sof);
+							if (!IOUtils.readExactlyCheck(input, buffer, 0, 2)) break;
+							int size = IOUtils.bytesToInt(buffer, 0, 2) - 2;
+							sof = new byte[size];
+							if (!IOUtils.readExactlyCheck(input, sof, 0, size)) sof = null;
+							break;
 						}
-						else inputStream.skip(length);
 					}
+					if (oneByte == -1) break;
 				}
 			}
 			catch (IOException e)
@@ -368,11 +357,10 @@ public class GraphicsUtils
 			}
 			finally
 			{
-				IOUtils.close(inputStream);
+				IOUtils.close(input);
 			}
-			if (sof != null && sof.length > 7 && (sof[5] & 0xff) == 1 && (sof[7] & 0xff) != 0x11) return true;
 		}
-		return false;
+		return sof != null && sof.length > 7 && (sof[5] & 0xff) == 1 && (sof[7] & 0xff) != 0x11;
 	}
 	
 	public static boolean isWhite(int color)
