@@ -103,7 +103,7 @@ public class AnimatedPngDecoder implements Runnable
 				if (length < 0) break;
 				length += 4;
 				String name = new String(buffer, 4, 4);
-				if (GraphicsUtils.isUselessPngChuck(name))
+				if (GraphicsUtils.isUselessPngChunk(name))
 				{
 					if (!IOUtils.skipExactlyCheck(input, length)) throw new IOException();
 					continue;
