@@ -44,17 +44,6 @@ import com.mishiranu.dashchan.preference.Preferences;
 
 public class IOUtils
 {
-	public static boolean startsWith(byte[] where, byte[] what)
-	{
-		if (where == null || what == null) return false;
-		if (what.length > where.length) return false;
-		for (int i = 0; i < what.length; i++)
-		{
-			if (what[i] != where[i]) return false;
-		}
-		return true;
-	}
-	
 	public static int bytesToInt(byte[] bytes, int start, int count)
 	{
 		int result = 0;

@@ -84,8 +84,8 @@ public class WebViewBitmapDecoder extends WebViewClient implements WebView.Pictu
 				try
 				{
 					inputStream = mFileHolder.openInputStream();
-					return new WebResourceResponse(mFileHolder.isSvg() ? "image/svg+xml" : "image/jpeg", null,
-							inputStream);
+					return new WebResourceResponse(mFileHolder.getImageType() == FileHolder.ImageType.IMAGE_SVG
+							? "image/svg+xml" : "image/jpeg", null, inputStream);
 				}
 				catch (IOException e)
 				{

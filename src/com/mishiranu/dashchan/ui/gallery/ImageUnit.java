@@ -17,7 +17,6 @@
 package com.mishiranu.dashchan.ui.gallery;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.concurrent.Executor;
 
@@ -38,7 +37,6 @@ import com.mishiranu.dashchan.media.AnimatedPngDecoder;
 import com.mishiranu.dashchan.media.GifDecoder;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
-import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.widget.PhotoView;
 
 public class ImageUnit
@@ -223,10 +221,6 @@ public class ImageUnit
 		}
 	}
 	
-	private static final byte[] MAGIC_GIF_1 = {'G', 'I', 'F', '8', '7', 'a'};
-	private static final byte[] MAGIC_GIF_2 = {'G', 'I', 'F', '8', '9', 'a'};
-	private static final byte[] MAGIC_PNG = {(byte) 0x89, 'P', 'N', 'G', '\r', '\n', 0x1a, '\n'};
-	
 	private class DecodeBitmapTask extends AsyncTask<Void, Void, Void>
 	{
 		private final File mFile;
@@ -244,7 +238,8 @@ public class ImageUnit
 			mFile = file;
 			mFileHolder = fileHolder;
 			mPhotoView = mInstance.currentHolder.photoView;
-			if (fileHolder.getImageWidth() >= 2048 && fileHolder.getImageHeight() >= 2048 || fileHolder.isSvg())
+			if (fileHolder.getImageWidth() >= 2048 && fileHolder.getImageHeight() >= 2048
+					|| fileHolder.getImageType() == FileHolder.ImageType.IMAGE_SVG)
 			{
 				mInstance.currentHolder.progressBar.setVisible(true, false);
 				mInstance.currentHolder.progressBar.setIndeterminate(true);
@@ -254,30 +249,12 @@ public class ImageUnit
 		@Override
 		protected Void doInBackground(Void... params)
 		{
-			FileInputStream input = null;
-			byte[] magic = null;
-			boolean success = false;
-			try
-			{
-				input = new FileInputStream(mFile);
-				magic = new byte[8];
-				int count = input.read(magic);
-				if (count == 8) success = true;
-			}
-			catch (IOException e)
-			{
-				
-			}
-			finally
-			{
-				IOUtils.close(input);
-			}
-			if (!success)
+			if (!mFileHolder.isImage())
 			{
 				mErrorMessageId = R.string.message_image_corrupted;
 				return null;
 			}
-			if (IOUtils.startsWith(magic, MAGIC_PNG))
+			if (mFileHolder.getImageType() == FileHolder.ImageType.IMAGE_PNG)
 			{
 				try
 				{
@@ -289,7 +266,7 @@ public class ImageUnit
 					
 				}
 			}
-			else if (IOUtils.startsWith(magic, MAGIC_GIF_1) || IOUtils.startsWith(magic, MAGIC_GIF_2))
+			else if (mFileHolder.getImageType() == FileHolder.ImageType.IMAGE_GIF)
 			{
 				try
 				{
