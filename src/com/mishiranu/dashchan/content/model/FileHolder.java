@@ -65,11 +65,12 @@ public abstract class FileHolder implements Serializable
 	{
 		return StringUtils.getFileExtension(getName());
 	}
+
+	public static enum ImageType {NOT_IMAGE, IMAGE_JPEG, IMAGE_PNG, IMAGE_GIF, IMAGE_WEBP, IMAGE_BMP, IMAGE_SVG}
 	
 	private static class ImageData
 	{
-		public boolean image = false;
-		public boolean svg = false;
+		public ImageType type = ImageType.NOT_IMAGE;
 		public int width = -1;
 		public int height = -1;
 	}
@@ -89,6 +90,23 @@ public abstract class FileHolder implements Serializable
 			throw new RuntimeException(e);
 		}
 	}
+
+	private static final int[] SIGNATURE_JPEG = {0xff, 0xd8, 0xff};
+	private static final int[] SIGNATURE_PNG = {0x89, 'P', 'N', 'G', '\r', '\n', 0x1a, '\n'};
+	private static final int[] SIGNATURE_GIF = {'G', 'I', 'F', '8', -1, 'a'};
+	private static final int[] SIGNATURE_WEBP = {'R', 'I', 'F', 'F', -1, -1, -1, -1, 'W', 'E', 'B', 'P'};
+	private static final int[] SIGNATURE_BMP = {'B', 'M'};
+	
+	private static boolean startsWith(byte[] where, int[] what)
+	{
+		if (where == null || what == null) return false;
+		if (what.length > where.length) return false;
+		for (int i = 0; i < what.length; i++)
+		{
+			if (what[i] >= 0 && what[i] != (where[i] & 0xff)) return false;
+		}
+		return true;
+	}
 	
 	private ImageData getImageData()
 	{
@@ -102,9 +120,38 @@ public abstract class FileHolder implements Serializable
 				readBitmapSimple(options);
 				if (options.outWidth > 0 && options.outHeight > 0)
 				{
-					mImageData.image = true;
-					mImageData.width = options.outWidth;
-					mImageData.height = options.outHeight;
+					InputStream input = null;
+					byte[] signature = null;
+					boolean success = false;
+					try
+					{
+						input = openInputStream();
+						signature = new byte[12];
+						success = IOUtils.readExactlyCheck(input, signature, 0, signature.length);
+					}
+					catch (IOException e)
+					{
+						
+					}
+					finally
+					{
+						IOUtils.close(input);
+					}
+					if (success)
+					{
+						ImageType type = null;
+						if (startsWith(signature, SIGNATURE_PNG)) type = ImageType.IMAGE_PNG;
+						else if (startsWith(signature, SIGNATURE_JPEG)) type = ImageType.IMAGE_JPEG;
+						else if (startsWith(signature, SIGNATURE_GIF)) type = ImageType.IMAGE_GIF;
+						else if (startsWith(signature, SIGNATURE_WEBP)) type = ImageType.IMAGE_WEBP;
+						else if (startsWith(signature, SIGNATURE_BMP)) type = ImageType.IMAGE_BMP;
+						if (type != null)
+						{
+							mImageData.type = type;
+							mImageData.width = options.outWidth;
+							mImageData.height = options.outHeight;
+						}
+					}
 				}
 				else
 				{
@@ -134,10 +181,9 @@ public abstract class FileHolder implements Serializable
 											width = -1;
 											height = -1;
 										}
-										mImageData.image = true;
+										mImageData.type = ImageType.IMAGE_SVG;
 										mImageData.width = width;
 										mImageData.height = height;
-										mImageData.svg = true;
 										break OUTER;
 									}
 									break;
@@ -160,14 +206,14 @@ public abstract class FileHolder implements Serializable
 		}
 	}
 	
-	public boolean isImage()
+	public ImageType getImageType()
 	{
-		return getImageData().image;
+		return getImageData().type;
 	}
 	
-	public boolean isSvg()
+	public boolean isImage()
 	{
-		return getImageData().svg;
+		return getImageData().type != ImageType.NOT_IMAGE;
 	}
 	
 	public int getImageWidth()
@@ -188,7 +234,7 @@ public abstract class FileHolder implements Serializable
 	public Bitmap readImageBitmap(int maxSize, boolean mayUseRegionDecoder, boolean mayUseWebViewDecoder)
 	{
 		ImageData imageData = getImageData();
-		if (imageData.image)
+		if (imageData.type != ImageType.NOT_IMAGE)
 		{
 			BitmapFactory.Options options = new BitmapFactory.Options();
 			options.inSampleSize = calculateInSampleSize(maxSize, imageData.width, imageData.height);
@@ -202,8 +248,8 @@ public abstract class FileHolder implements Serializable
 			boolean mayUseWebViewDecoder)
 	{
 		ImageData imageData = getImageData();
-		if (!imageData.image) return null;
-		if (!imageData.svg)
+		if (imageData.type == ImageType.NOT_IMAGE) return null;
+		if (imageData.type != ImageType.IMAGE_SVG)
 		{
 			Bitmap bitmap = readBitmapSimple(options);
 			if (bitmap != null) return bitmap;
@@ -356,11 +402,12 @@ public abstract class FileHolder implements Serializable
 			mContext = context.getApplicationContext();
 			mUriString = uri.toString();
 			mName = name;
+			InputStream input = null;
 			try
 			{
 				int newSize = 0;
 				byte[] buffer = new byte[8192];
-				InputStream input = openInputStream();
+				input = openInputStream();
 				int count;
 				while ((count = input.read(buffer)) >= 0) newSize += count;
 				size = newSize;
@@ -368,6 +415,10 @@ public abstract class FileHolder implements Serializable
 			catch (IOException e)
 			{
 				
+			}
+			finally
+			{
+				IOUtils.close(input);
 			}
 			mSize = size;
 		}
