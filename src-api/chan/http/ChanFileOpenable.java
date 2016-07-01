@@ -24,6 +24,7 @@ import java.util.Random;
 
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.util.GraphicsUtils;
+import com.mishiranu.dashchan.util.IOUtils;
 
 public class ChanFileOpenable implements MultipartEntity.Openable
 {
@@ -165,12 +166,10 @@ public class ChanFileOpenable implements MultipartEntity.Openable
 				return count;
 			}
 			mSkipIndex++;
-			long skip = skipRange.count;
-			mPosition += skip;
-			while (skip > 0)
+			if (skipRange.count > 0)
 			{
-				long result = mInputStream.skip(skip);
-				if (result > 0) skip -= result;
+				mPosition += skipRange.count;
+				if (!IOUtils.skipExactlyCheck(mInputStream, skipRange.count)) throw new IOException();
 			}
 			return 0;
 		}
