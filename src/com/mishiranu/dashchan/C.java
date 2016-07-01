@@ -40,7 +40,7 @@ public class C
 	
 	static
 	{
-		Collections.addAll(IMAGE_EXTENSIONS, "jpg", "jpe", "jpeg", "png", "apng", "gif", "bmp");
+		Collections.addAll(IMAGE_EXTENSIONS, "jpg", "jpe", "jpeg", "png", "apng", "gif", "webp", "bmp");
 		Collections.addAll(AUDIO_EXTENSIONS, "mp3", "ogg", "flac", "wav");
 		Collections.addAll(VIDEO_EXTENSIONS, "webm", "mp4");
 		WEB_VIEW_BITMAP_DECODER_SUPPORTED = API_KITKAT;
