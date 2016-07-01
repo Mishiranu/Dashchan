@@ -16,6 +16,7 @@
 
 package com.mishiranu.dashchan.content.storage;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -211,8 +212,9 @@ public class StorageManager implements Handler.Callback, Runnable
 		try
 		{
 			input = new FileInputStream(file);
-			bytes = new byte[(int) file.length()];
-			input.read(bytes);
+			ByteArrayOutputStream output = new ByteArrayOutputStream();
+			IOUtils.copyStream(input, output);
+			bytes = output.toByteArray();
 		}
 		catch (IOException e)
 		{
