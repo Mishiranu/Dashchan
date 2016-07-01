@@ -24,8 +24,6 @@ import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
-import chan.content.ChanPerformer.ReadCaptchaData;
-import chan.content.ChanPerformer.ReadCaptchaResult;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
 
@@ -85,8 +83,8 @@ public class ReadCaptchaTask extends CancellableTask<Void, Long, Boolean>
 		}
 		
 		@Override
-		public ReadCaptchaResult onReadCaptcha(ReadCaptchaData data) throws ExtensionException, HttpException,
-				InvalidResponseException
+		public ChanPerformer.ReadCaptchaResult onReadCaptcha(ChanPerformer.ReadCaptchaData data)
+				throws ExtensionException, HttpException, InvalidResponseException
 		{
 			return ChanPerformer.get(mChanName).safe().onReadCaptcha(data);
 		}
