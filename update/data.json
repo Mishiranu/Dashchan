@@ -76,11 +76,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.7",
+			"name": "1.8",
 			"code": 1,
 			"version": 1,
 			"minSdk": 16,
-			"length": 58241,
+			"length": 58290,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanArhivach.apk"
 		}
 	],
