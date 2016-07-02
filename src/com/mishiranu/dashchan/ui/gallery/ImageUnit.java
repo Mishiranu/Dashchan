@@ -37,6 +37,7 @@ import com.mishiranu.dashchan.media.AnimatedPngDecoder;
 import com.mishiranu.dashchan.media.GifDecoder;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
+import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.widget.PhotoView;
 
 public class ImageUnit
@@ -287,8 +288,15 @@ public class ImageUnit
 					if (mBitmap.getWidth() < mFileHolder.getImageWidth() ||
 							mBitmap.getHeight() < mFileHolder.getImageHeight())
 					{
-						mDecoderDrawable = new DecoderDrawable(mBitmap, mFileHolder);
-						mBitmap = null;
+						try
+						{
+							mDecoderDrawable = new DecoderDrawable(mBitmap, mFileHolder);
+							mBitmap = null;
+						}
+						catch (OutOfMemoryError | IOException e)
+						{
+							
+						}
 					}
 				}
 			}
@@ -298,6 +306,7 @@ public class ImageUnit
 			}
 			catch (Exception e)
 			{
+				Log.persistent().stack(e);
 				mErrorMessageId = R.string.message_image_corrupted;
 			}
 			return null;
