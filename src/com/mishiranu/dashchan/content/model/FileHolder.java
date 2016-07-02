@@ -33,6 +33,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
+import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
@@ -42,6 +43,7 @@ import android.webkit.MimeTypeMap;
 
 import chan.util.StringUtils;
 
+import com.mishiranu.dashchan.media.JpegData;
 import com.mishiranu.dashchan.media.WebViewBitmapDecoder;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
@@ -71,6 +73,7 @@ public abstract class FileHolder implements Serializable
 	private static class ImageData
 	{
 		public ImageType type = ImageType.NOT_IMAGE;
+		public JpegData jpegData;
 		public int width = -1;
 		public int height = -1;
 	}
@@ -148,8 +151,23 @@ public abstract class FileHolder implements Serializable
 						if (type != null)
 						{
 							mImageData.type = type;
-							mImageData.width = options.outWidth;
-							mImageData.height = options.outHeight;
+							boolean rotate = false;
+							if (type == ImageType.IMAGE_JPEG)
+							{
+								mImageData.jpegData = JpegData.extract(this);
+								int rotation = mImageData.jpegData.getRotation();
+								rotate = rotation == 90 || rotation == 270;
+							}
+							if (rotate)
+							{
+								mImageData.width = options.outHeight;
+								mImageData.height = options.outWidth;
+							}
+							else
+							{
+								mImageData.width = options.outWidth;
+								mImageData.height = options.outHeight;
+							}
 						}
 					}
 				}
@@ -216,6 +234,17 @@ public abstract class FileHolder implements Serializable
 		return getImageData().type != ImageType.NOT_IMAGE;
 	}
 	
+	public JpegData getJpegData()
+	{
+		return getImageData().jpegData;
+	}
+	
+	public int getRotation()
+	{
+		JpegData jpegData = getJpegData();
+		return jpegData != null ? jpegData.getRotation() : 0;
+	}
+	
 	public int getImageWidth()
 	{
 		return getImageData().width;
@@ -244,6 +273,25 @@ public abstract class FileHolder implements Serializable
 		return null;
 	}
 	
+	private Bitmap rotateBitmap(Bitmap bitmap)
+	{
+		ImageData imageData = getImageData();
+		if (imageData.jpegData != null)
+		{
+			int rotation = imageData.jpegData.getRotation();
+			if (rotation != 0)
+			{
+				Matrix matrix = new Matrix();
+				matrix.setRotate(-rotation);
+				Bitmap newBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(),
+						matrix, false);
+				bitmap.recycle();
+				bitmap = newBitmap;
+			}
+		}
+		return bitmap;
+	}
+	
 	private Bitmap readBitmapInternal(BitmapFactory.Options options, boolean mayUseRegionDecoder,
 			boolean mayUseWebViewDecoder)
 	{
@@ -252,7 +300,7 @@ public abstract class FileHolder implements Serializable
 		if (imageData.type != ImageType.IMAGE_SVG)
 		{
 			Bitmap bitmap = readBitmapSimple(options);
-			if (bitmap != null) return bitmap;
+			if (bitmap != null) return rotateBitmap(bitmap);
 			if (mayUseRegionDecoder)
 			{
 				InputStream input = null;
@@ -261,7 +309,8 @@ public abstract class FileHolder implements Serializable
 				{
 					input = openInputStream();
 					decoder = BitmapRegionDecoder.newInstance(input, false);
-					return decoder.decodeRegion(new Rect(0, 0, decoder.getWidth(), decoder.getHeight()), options);
+					return rotateBitmap(decoder.decodeRegion(new Rect(0, 0, decoder.getWidth(), decoder.getHeight()),
+							options));
 				}
 				catch (IOException e)
 				{

@@ -26,9 +26,11 @@ import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.view.View;
@@ -50,6 +52,7 @@ public class DecoderDrawable extends Drawable implements LruCache.RemoveCallback
 	private final LinkedHashMap<Integer, DecodeTask> mTasks = new LinkedHashMap<>();
 	private final LruCache<Integer, Bitmap> mFragments = new LruCache<>(this, MIN_MAX_ENTRIES);
 	
+	private final int mRotation;
 	private final int mWidth;
 	private final int mHeight;
 	
@@ -64,6 +67,7 @@ public class DecoderDrawable extends Drawable implements LruCache.RemoveCallback
 	{
 		mScaledBitmap = scaledBitmap;
 		mDecoder = BitmapRegionDecoder.newInstance(fileHolder.openInputStream(), false);
+		mRotation = fileHolder.getRotation();
 		mWidth = fileHolder.getImageWidth();
 		mHeight = fileHolder.getImageHeight();
 	}
@@ -129,7 +133,7 @@ public class DecoderDrawable extends Drawable implements LruCache.RemoveCallback
 							DecodeTask task = mTasks.get(key);
 							if (task == null)
 							{
-								task = new DecodeTask(x, y, scale);
+								task = new DecodeTask(key, x, y, scale);
 								task.executeOnExecutor(EXECUTOR);
 								mTasks.put(key, task);
 							}
@@ -227,11 +231,11 @@ public class DecoderDrawable extends Drawable implements LruCache.RemoveCallback
 		{
 			mRecycled = true;
 			clear();
+			mScaledBitmap.recycle();
 			synchronized (this)
 			{
-				mScaledBitmap.recycle();
+				mDecoder.recycle();
 			}
-			mDecoder.recycle();
 		}
 	}
 	
@@ -242,13 +246,26 @@ public class DecoderDrawable extends Drawable implements LruCache.RemoveCallback
 	
 	private class DecodeTask extends AsyncTask<Void, Void, Bitmap>
 	{
-		private final BitmapFactory.Options mOptions = new BitmapFactory.Options();
+		private final int mKey;
 		private final Rect mRect;
+		private final BitmapFactory.Options mOptions = new BitmapFactory.Options();
 		
-		public DecodeTask(int x, int y, int scale)
+		public DecodeTask(int key, int x, int y, int scale)
 		{
+			mKey = key;
 			mRect = new Rect(x, y, Math.min(x + FRAGMENT_SIZE * scale, mWidth),
 					Math.min(y + FRAGMENT_SIZE * scale, mHeight));
+			if (mRotation != 0)
+			{
+				Matrix matrix = new Matrix();
+				matrix.setRotate(mRotation);
+				if (mRotation == 90) matrix.postTranslate(mHeight, 0);
+				else if (mRotation == 270) matrix.postTranslate(0, mWidth);
+				else matrix.postTranslate(mWidth, mHeight);
+				RectF rectF = new RectF(mRect);
+				matrix.mapRect(rectF);
+				mRect.set((int) rectF.left, (int) rectF.top, (int) rectF.right, (int) rectF.bottom);
+			}
 			mOptions.inDither = true;
 			mOptions.inSampleSize = scale;
 		}
@@ -260,7 +277,17 @@ public class DecoderDrawable extends Drawable implements LruCache.RemoveCallback
 			{
 				synchronized (DecoderDrawable.this)
 				{
-					return mDecoder.decodeRegion(mRect, mOptions);
+					Bitmap bitmap = mDecoder.decodeRegion(mRect, mOptions);
+					if (bitmap != null && mRotation != 0)
+					{
+						Matrix matrix = new Matrix();
+						matrix.setRotate(-mRotation);
+						Bitmap newBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(),
+								matrix, false);
+						bitmap.recycle();
+						bitmap = newBitmap;
+					}
+					return bitmap;
 				}
 			}
 			catch (Throwable t)
@@ -284,11 +311,10 @@ public class DecoderDrawable extends Drawable implements LruCache.RemoveCallback
 		@Override
 		protected void onPostExecute(Bitmap result)
 		{
-			int key = calculateKey(mRect.left, mRect.top, mOptions.inSampleSize);
-			mTasks.remove(key);
+			mTasks.remove(mKey);
 			if (result != null)
 			{
-				mFragments.put(key, result);
+				mFragments.put(mKey, result);
 				invalidateSelf();
 			}
 			else recycle();
