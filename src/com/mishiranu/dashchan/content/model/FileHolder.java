@@ -274,28 +274,23 @@ public abstract class FileHolder implements Serializable
 			BitmapFactory.Options options = new BitmapFactory.Options();
 			options.inSampleSize = calculateInSampleSize(maxSize, imageData.width, imageData.height);
 			options.inDither = true;
-			return readBitmapInternal(options, mayUseRegionDecoder, mayUseWebViewDecoder);
+			Bitmap bitmap = readBitmapInternal(options, mayUseRegionDecoder, mayUseWebViewDecoder);
+			if (bitmap != null && imageData.jpegData != null)
+			{
+				int rotation = imageData.jpegData.getRotation();
+				if (rotation != 0)
+				{
+					Matrix matrix = new Matrix();
+					matrix.setRotate(-rotation);
+					Bitmap newBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(),
+							matrix, false);
+					bitmap.recycle();
+					bitmap = newBitmap;
+				}
+			}
+			return bitmap;
 		}
 		return null;
-	}
-	
-	private Bitmap rotateBitmap(Bitmap bitmap)
-	{
-		ImageData imageData = getImageData();
-		if (imageData.jpegData != null)
-		{
-			int rotation = imageData.jpegData.getRotation();
-			if (rotation != 0)
-			{
-				Matrix matrix = new Matrix();
-				matrix.setRotate(-rotation);
-				Bitmap newBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(),
-						matrix, false);
-				bitmap.recycle();
-				bitmap = newBitmap;
-			}
-		}
-		return bitmap;
 	}
 	
 	private Bitmap readBitmapInternal(BitmapFactory.Options options, boolean mayUseRegionDecoder,
@@ -306,7 +301,7 @@ public abstract class FileHolder implements Serializable
 		if (imageData.type != ImageType.IMAGE_SVG)
 		{
 			Bitmap bitmap = readBitmapSimple(options);
-			if (bitmap != null) return rotateBitmap(bitmap);
+			if (bitmap != null) return bitmap;
 			if (mayUseRegionDecoder && isRegionDecoderSupported())
 			{
 				InputStream input = null;
@@ -315,8 +310,7 @@ public abstract class FileHolder implements Serializable
 				{
 					input = openInputStream();
 					decoder = BitmapRegionDecoder.newInstance(input, false);
-					return rotateBitmap(decoder.decodeRegion(new Rect(0, 0, decoder.getWidth(), decoder.getHeight()),
-							options));
+					return decoder.decodeRegion(new Rect(0, 0, decoder.getWidth(), decoder.getHeight()), options);
 				}
 				catch (IOException e)
 				{
@@ -329,7 +323,7 @@ public abstract class FileHolder implements Serializable
 				}
 			}
 		}
-		if (mayUseWebViewDecoder) return WebViewBitmapDecoder.loadBitmap(this);
+		if (mayUseWebViewDecoder) return WebViewBitmapDecoder.loadBitmap(this, options);
 		return null;
 	}
 	

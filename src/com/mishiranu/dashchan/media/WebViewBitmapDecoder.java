@@ -23,6 +23,7 @@ import java.util.concurrent.CountDownLatch;
 
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Picture;
@@ -40,8 +41,7 @@ import com.mishiranu.dashchan.app.MainApplication;
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.util.IOUtils;
 
-@SuppressWarnings("deprecation")
-public class WebViewBitmapDecoder extends WebViewClient implements WebView.PictureListener
+public class WebViewBitmapDecoder extends WebViewClient
 {
 	private static final int MESSAGE_INIT_WEB_VIEW = 1;
 	private static final int MESSAGE_MEASURE_PICTURE = 2;
@@ -50,15 +50,17 @@ public class WebViewBitmapDecoder extends WebViewClient implements WebView.Pictu
 	private static final Handler HANDLER = new Handler(Looper.getMainLooper(), new Callback());
 	
 	private final FileHolder mFileHolder;
+	private final int mSampleSize;
 	private final CountDownLatch mLatch = new CountDownLatch(1);
 	
 	private volatile Bitmap mBitmap;
 	
 	private WebView mWebView;
 	
-	private WebViewBitmapDecoder(FileHolder fileHolder) throws IOException
+	private WebViewBitmapDecoder(FileHolder fileHolder, BitmapFactory.Options options) throws IOException
 	{
 		mFileHolder = fileHolder;
+		mSampleSize = options != null ? Math.max(options.inSampleSize, 1) : 1;
 		if (!fileHolder.isImage()) throw new IOException();
 		HANDLER.obtainMessage(MESSAGE_INIT_WEB_VIEW, this).sendToTarget();
 		try
@@ -107,11 +109,15 @@ public class WebViewBitmapDecoder extends WebViewClient implements WebView.Pictu
 		notifyExtract(view);
 	}
 	
-	@Override
-	public void onNewPicture(WebView view, Picture picture)
+	@Deprecated
+	private WebView.PictureListener mPictureListener = new WebView.PictureListener()
 	{
-		if (mPageFinished) notifyExtract(view);
-	}
+		@Override
+		public void onNewPicture(WebView view, Picture picture)
+		{
+			if (mPageFinished) notifyExtract(view);
+		}
+	};
 	
 	private void notifyExtract(WebView view)
 	{
@@ -173,6 +179,7 @@ public class WebViewBitmapDecoder extends WebViewClient implements WebView.Pictu
 	
 	private static class Callback implements Handler.Callback
 	{
+		@SuppressWarnings("deprecation")
 		@SuppressLint("SetJavaScriptEnabled")
 		@Override
 		public boolean handleMessage(Message msg)
@@ -184,15 +191,19 @@ public class WebViewBitmapDecoder extends WebViewClient implements WebView.Pictu
 					WebViewBitmapDecoder decoder = (WebViewBitmapDecoder) msg.obj;
 					int width = decoder.mFileHolder.getImageWidth();
 					int height = decoder.mFileHolder.getImageHeight();
+					int rotation = decoder.mFileHolder.getRotation();
+					if (rotation == 90 || rotation == 270) width = height ^ width ^ (height = width); // Swap
+					width /= decoder.mSampleSize;
+					height /= decoder.mSampleSize;
 					WebView webView = new WebView(MainApplication.getInstance());
 					WebSettings settings = webView.getSettings();
 					settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
 					settings.setAppCacheEnabled(false);
 					settings.setJavaScriptEnabled(true);
-					webView.setInitialScale(100);
+					webView.setInitialScale(100 / decoder.mSampleSize);
 					webView.setWebViewClient(decoder);
 					webView.setBackgroundColor(Color.TRANSPARENT);
-					webView.setPictureListener(decoder);
+					webView.setPictureListener(decoder.mPictureListener);
 					webView.addJavascriptInterface(decoder, "jsi");
 					if (width > 0 && height > 0) webView.layout(0, 0, width, height);
 					webView.loadData("<!DOCTYPE html><html><head><script type=\"text/javascript\">"
@@ -227,17 +238,19 @@ public class WebViewBitmapDecoder extends WebViewClient implements WebView.Pictu
 	@JavascriptInterface
 	public void onCalculateSize(int width, int height)
 	{
+		width /= mSampleSize;
+		height /= mSampleSize;
 		HANDLER.obtainMessage(MESSAGE_CHECK_PICTURE_SIZE, new Object[] {this, width, height}).sendToTarget();
 	}
 	
-	public static Bitmap loadBitmap(FileHolder fileHolder)
+	public static Bitmap loadBitmap(FileHolder fileHolder, BitmapFactory.Options options)
 	{
 		if (C.WEB_VIEW_BITMAP_DECODER_SUPPORTED && !MainApplication.getInstance().isLowRam())
 		{
 			WebViewBitmapDecoder decoder;
 			try
 			{
-				decoder = new WebViewBitmapDecoder(fileHolder);
+				decoder = new WebViewBitmapDecoder(fileHolder, options);
 			}
 			catch (IOException e)
 			{
