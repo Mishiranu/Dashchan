@@ -18,7 +18,6 @@ package com.mishiranu.dashchan.util;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Random;
@@ -321,46 +320,6 @@ public class GraphicsUtils
 	{
 		return "iTXt".equals(name) || "tEXt".equals(name) || "tIME".equals(name)
 				|| "zTXt".equals(name);
-	}
-	
-	public static boolean isFaultyGrayscaleJpegImage(FileHolder fileHolder)
-	{
-		byte[] sof = null;
-		if (fileHolder.getImageType() == FileHolder.ImageType.IMAGE_JPEG)
-		{
-			InputStream input = null;
-			try
-			{
-				input = new BufferedInputStream(fileHolder.openInputStream());
-				byte[] buffer = new byte[2];
-				while (true)
-				{
-					int oneByte = input.read();
-					if (oneByte == 0xff)
-					{
-						oneByte = input.read();
-						if (oneByte == 0xc0 || oneByte == 0xc1 || oneByte == 0xc2)
-						{
-							if (!IOUtils.readExactlyCheck(input, buffer, 0, 2)) break;
-							int size = IOUtils.bytesToInt(buffer, 0, 2) - 2;
-							sof = new byte[size];
-							if (!IOUtils.readExactlyCheck(input, sof, 0, size)) sof = null;
-							break;
-						}
-					}
-					if (oneByte == -1) break;
-				}
-			}
-			catch (IOException e)
-			{
-				
-			}
-			finally
-			{
-				IOUtils.close(input);
-			}
-		}
-		return sof != null && sof.length > 7 && (sof[5] & 0xff) == 1 && (sof[7] & 0xff) != 0x11;
 	}
 	
 	public static boolean isWhite(int color)
