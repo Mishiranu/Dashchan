@@ -224,7 +224,7 @@ public class GraphicsUtils
 							{
 								// Application data (0xe0 for JFIF, 0xe1 for EXIF) or comment (0xfe)
 								if (!IOUtils.readExactlyCheck(input, buffer, 0, 2)) break;
-								int size = IOUtils.bytesToInt(buffer, 0, 2);
+								int size = IOUtils.bytesToInt(false, 0, 2, buffer);
 								if (!IOUtils.skipExactlyCheck(input, size - 2)) break;
 								if (skipRanges == null) skipRanges = new ArrayList<>();
 								skipRanges.add(new SkipRange(position - 2, size + 2));
@@ -247,7 +247,7 @@ public class GraphicsUtils
 						while (true)
 						{
 							if (!IOUtils.readExactlyCheck(input, buffer, 0, 8)) break;
-							int size = IOUtils.bytesToInt(buffer, 0, 4);
+							int size = IOUtils.bytesToInt(false, 0, 4, buffer);
 							String name = new String(buffer, 4, 4);
 							if (!IOUtils.skipExactlyCheck(input, size + 4)) break;
 							if (isUselessPngChunk(name))

@@ -44,20 +44,22 @@ import com.mishiranu.dashchan.preference.Preferences;
 
 public class IOUtils
 {
-	public static int bytesToInt(byte[] bytes, int start, int count)
+	public static int bytesToInt(boolean littleEndian, int start, int count, byte... bytes)
 	{
 		int result = 0;
-		for (int i = 0; i < count; i++) result = result << 8 | bytes[start + i] & 0xff;
+		for (int i = 0; i < count; i++) result = result << 8 | bytes[start + (littleEndian ? count - i - 1 : i)] & 0xff;
 		return result;
 	}
 	
-	public static void intToBytes(byte[] bytes, int start, int count, int value)
+	public static byte[] intToBytes(int value, boolean littleEndian, int start, int count, byte[] bytes)
 	{
-		for (int i = count - 1; i >= 0; i--)
+		if (bytes == null) bytes = new byte[start + count];
+		for (int i = 0; i < count; i++)
 		{
-			bytes[start + i] = (byte) (value & 0xff);
+			bytes[start + (littleEndian ? i : count - i - 1)] = (byte) (value & 0xff);
 			value >>>= 8;
 		}
+		return bytes;
 	}
 	
 	public static int skipExactly(InputStream input, int count) throws IOException

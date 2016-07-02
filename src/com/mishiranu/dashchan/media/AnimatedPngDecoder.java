@@ -99,7 +99,7 @@ public class AnimatedPngDecoder implements Runnable
 			while (true)
 			{
 				if (!IOUtils.readExactlyCheck(input, buffer, 0, 8)) throw new IOException();
-				int length = IOUtils.bytesToInt(buffer, 0, 4);
+				int length = IOUtils.bytesToInt(false, 0, 4, buffer);
 				if (length < 0) break;
 				length += 4;
 				String name = new String(buffer, 4, 4);
@@ -112,7 +112,7 @@ public class AnimatedPngDecoder implements Runnable
 				{
 					if (length != 12) throw new IOException();
 					if (!IOUtils.readExactlyCheck(input, buffer, 0, 12)) throw new IOException();
-					int totalFramesCount = IOUtils.bytesToInt(buffer, 0, 4);
+					int totalFramesCount = IOUtils.bytesToInt(false, 0, 4, buffer);
 					if (totalFramesCount <= 0) throw new IOException();
 					frames = new Frame[totalFramesCount];
 					continue;
@@ -126,12 +126,12 @@ public class AnimatedPngDecoder implements Runnable
 					if (currentFrame == null) head = output.toByteArray();
 					else currentFrame.bytes = output.toByteArray();
 					output.reset();
-					int width = IOUtils.bytesToInt(buffer, 4, 4);
-					int height = IOUtils.bytesToInt(buffer, 8, 4);
-					int x = IOUtils.bytesToInt(buffer, 12, 4);
-					int y = IOUtils.bytesToInt(buffer, 16, 4);
-					int delayNumerator = IOUtils.bytesToInt(buffer, 20, 2);
-					int delayDenominator = IOUtils.bytesToInt(buffer, 22, 2);
+					int width = IOUtils.bytesToInt(false, 4, 4, buffer);
+					int height = IOUtils.bytesToInt(false, 8, 4, buffer);
+					int x = IOUtils.bytesToInt(false, 12, 4, buffer);
+					int y = IOUtils.bytesToInt(false, 16, 4, buffer);
+					int delayNumerator = IOUtils.bytesToInt(false, 20, 2, buffer);
+					int delayDenominator = IOUtils.bytesToInt(false, 22, 2, buffer);
 					if (delayDenominator <= 0) delayDenominator = 100;
 					int delay = delayNumerator * 1000 / delayDenominator;
 					if (delay <= 10) delay = 100; // Like in Firefox
@@ -149,7 +149,7 @@ public class AnimatedPngDecoder implements Runnable
 				else if ("fdAT".equals(name))
 				{
 					if (frames == null) throw new IOException();
-					IOUtils.intToBytes(buffer, 0, 4, length - 8);
+					IOUtils.intToBytes(length - 8, false, 0, 4, buffer);
 					output.write(buffer, 0, 4);
 					byte[] nameBytes = "IDAT".getBytes("ISO-8859-1");
 					output.write(nameBytes);
@@ -165,7 +165,7 @@ public class AnimatedPngDecoder implements Runnable
 						length -= count;
 					}
 					if (!IOUtils.skipExactlyCheck(input, 4)) throw new IOException();
-					IOUtils.intToBytes(buffer, 0, 4, (int) crc32.getValue());
+					IOUtils.intToBytes((int) crc32.getValue(), false, 0, 4, buffer);
 					output.write(buffer, 0, 4);
 					crc32.reset();
 					continue;
@@ -204,10 +204,10 @@ public class AnimatedPngDecoder implements Runnable
 		{
 			for (Frame frame : frames)
 			{
-				IOUtils.intToBytes(head, 16, 4, frame.width);
-				IOUtils.intToBytes(head, 20, 4, frame.height);
+				IOUtils.intToBytes(frame.width, false, 16, 4, head);
+				IOUtils.intToBytes(frame.height, false, 20, 4, head);
 				crc32.update(head, 12, 17);
-				IOUtils.intToBytes(head, 29, 4, (int) crc32.getValue());
+				IOUtils.intToBytes((int) crc32.getValue(), false, 29, 4, head);
 				crc32.reset();
 				frame.bitmap = BitmapFactory.decodeStream(new FrameInputStream(head, frame));
 				if (frame.bitmap == null)
