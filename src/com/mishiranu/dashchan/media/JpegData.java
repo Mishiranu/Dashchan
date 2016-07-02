@@ -41,7 +41,7 @@ public class JpegData
 	
 	public static final String KEY_EXIF_OFFSET = "exifOffset";
 	public static final String KEY_GPS_OFFSET = "gpsOffset";
-
+	
 	public final LinkedHashMap<String, String> exif;
 	public final boolean forbidPartialDecoder;
 	
