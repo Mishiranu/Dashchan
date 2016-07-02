@@ -43,6 +43,7 @@ import com.mishiranu.dashchan.util.LruCache;
 public class DecoderDrawable extends Drawable implements LruCache.RemoveCallback<Integer, Bitmap>
 {
 	private static final Executor EXECUTOR = ConcurrentUtils.newSingleThreadPool(20000, "DecoderDrawable", null, 0);
+	private static final Bitmap NULL_BITMAP = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
 	
 	private static final int FRAGMENT_SIZE = 512;
 	private static final int MIN_MAX_ENTRIES = 16;
@@ -60,7 +61,7 @@ public class DecoderDrawable extends Drawable implements LruCache.RemoveCallback
 	private final Rect mRect = new Rect();
 	private final Rect mDstRect = new Rect();
 	private final Paint mPaint = new Paint(Paint.FILTER_BITMAP_FLAG);
-
+	
 	private boolean mEnabled = true;
 	private boolean mRecycled = false;
 	
@@ -77,7 +78,6 @@ public class DecoderDrawable extends Drawable implements LruCache.RemoveCallback
 	@Override
 	public void draw(Canvas canvas)
 	{
-		if (mRecycled) return;
 		Rect bounds = getBounds();
 		Rect rect = mRect;
 		Rect dstRect = mDstRect;
@@ -85,35 +85,39 @@ public class DecoderDrawable extends Drawable implements LruCache.RemoveCallback
 		int maxEntries = 0;
 		int scale = 1;
 		boolean drawScaled = false;
-		Callback callback = getCallback();
-		if (callback instanceof View)
+		if (!mRecycled)
 		{
-			View view = (View) callback;
-			int contentWidth = view.getWidth();
-			int contentHeight = view.getHeight();
-			int rectWidth = rect.width();
-			int rectHeight = rect.height();
-			int scaledSize;
-			int contentSize;
-			int rectSize;
-			int size;
-			if (rectWidth * contentHeight > rectHeight * contentWidth)
+			Callback callback = getCallback();
+			if (callback instanceof View)
 			{
-				scaledSize = mScaledBitmap.getWidth();
-				contentSize = contentWidth;
-				rectSize = rectWidth;
-				size = mWidth;
+				View view = (View) callback;
+				int contentWidth = view.getWidth();
+				int contentHeight = view.getHeight();
+				int rectWidth = rect.width();
+				int rectHeight = rect.height();
+				int scaledSize;
+				int contentSize;
+				int rectSize;
+				int size;
+				if (rectWidth * contentHeight > rectHeight * contentWidth)
+				{
+					scaledSize = mScaledBitmap.getWidth();
+					contentSize = contentWidth;
+					rectSize = rectWidth;
+					size = mWidth;
+				}
+				else
+				{
+					scaledSize = mScaledBitmap.getHeight();
+					contentSize = contentHeight;
+					rectSize = rectHeight;
+					size = mHeight;
+				}
+				scale = Integer.highestOneBit(Math.max(rectSize / contentSize, 1));
+				drawScaled = scaledSize >= size / scale;
 			}
-			else
-			{
-				scaledSize = mScaledBitmap.getHeight();
-				contentSize = contentHeight;
-				rectSize = rectHeight;
-				size = mHeight;
-			}
-			scale = Integer.highestOneBit(Math.max(rectSize / contentSize, 1));
-			drawScaled = scaledSize >= size / scale;
 		}
+		else drawScaled = true;
 		int size = FRAGMENT_SIZE * scale;
 		if (mEnabled && !drawScaled)
 		{
@@ -125,10 +129,15 @@ public class DecoderDrawable extends Drawable implements LruCache.RemoveCallback
 					{
 						int key = calculateKey(x, y, scale);
 						Bitmap fragment = mFragments.get(key);
+						boolean drawScaledFragment = false;
 						if (fragment != null)
 						{
-							dstRect.set(x, y, x + scale * fragment.getWidth(), y + scale * fragment.getHeight());
-							canvas.drawBitmap(fragment, null, dstRect, mPaint);
+							if (fragment != NULL_BITMAP)
+							{
+								dstRect.set(x, y, x + scale * fragment.getWidth(), y + scale * fragment.getHeight());
+								canvas.drawBitmap(fragment, null, dstRect, mPaint);
+							}
+							else drawScaledFragment = true;
 						}
 						else
 						{
@@ -139,6 +148,10 @@ public class DecoderDrawable extends Drawable implements LruCache.RemoveCallback
 								task.executeOnExecutor(EXECUTOR);
 								mTasks.put(key, task);
 							}
+							drawScaledFragment = true;
+						}
+						if (drawScaledFragment)
+						{
 							canvas.save();
 							canvas.clipRect(x, y, x + size, y + size);
 							dstRect.set(0, 0, mWidth, mHeight);
@@ -229,16 +242,21 @@ public class DecoderDrawable extends Drawable implements LruCache.RemoveCallback
 	
 	public void recycle()
 	{
+		recycle(true);
+	}
+	
+	private void recycle(boolean recycleScaled)
+	{
 		if (!mRecycled)
 		{
 			mRecycled = true;
 			clear();
-			mScaledBitmap.recycle();
 			synchronized (this)
 			{
 				mDecoder.recycle();
 			}
 		}
+		if (recycleScaled) mScaledBitmap.recycle();
 	}
 	
 	private int calculateKey(int x, int y, int scale)
@@ -251,6 +269,8 @@ public class DecoderDrawable extends Drawable implements LruCache.RemoveCallback
 		private final int mKey;
 		private final Rect mRect;
 		private final BitmapFactory.Options mOptions = new BitmapFactory.Options();
+		
+		private boolean mError = false;
 		
 		public DecodeTask(int key, int x, int y, int scale)
 		{
@@ -294,6 +314,7 @@ public class DecoderDrawable extends Drawable implements LruCache.RemoveCallback
 			}
 			catch (Throwable t)
 			{
+				mError = true;
 				Log.persistent().stack(t);
 				return null;
 			}
@@ -315,12 +336,11 @@ public class DecoderDrawable extends Drawable implements LruCache.RemoveCallback
 		protected void onPostExecute(Bitmap result)
 		{
 			mTasks.remove(mKey);
-			if (result != null)
+			if (mError) recycle(false); else
 			{
+				if (result == null) result = NULL_BITMAP;
 				mFragments.put(mKey, result);
-				invalidateSelf();
 			}
-			else recycle();
 		}
 	}
 }

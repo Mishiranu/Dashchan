@@ -248,7 +248,7 @@ public abstract class FileHolder implements Serializable
 	public boolean isRegionDecoderSupported()
 	{
 		JpegData jpegData = getJpegData();
-		return jpegData == null || !jpegData.forbidPartialDecoder;
+		return jpegData == null || !jpegData.forbidRegionDecoder;
 	}
 	
 	public int getImageWidth()
