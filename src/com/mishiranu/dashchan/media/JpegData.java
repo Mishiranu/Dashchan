@@ -43,12 +43,12 @@ public class JpegData
 	public static final String KEY_GPS_OFFSET = "gpsOffset";
 	
 	public final LinkedHashMap<String, String> exif;
-	public final boolean forbidPartialDecoder;
+	public final boolean forbidRegionDecoder;
 	
-	private JpegData(LinkedHashMap<String, String> exif, boolean forbidPartialDecoder)
+	private JpegData(LinkedHashMap<String, String> exif, boolean forbidRegionDecoder)
 	{
 		this.exif = exif;
-		this.forbidPartialDecoder = forbidPartialDecoder;
+		this.forbidRegionDecoder = forbidRegionDecoder;
 	}
 	
 	public int getRotation()
@@ -270,7 +270,7 @@ public class JpegData
 			{
 				IOUtils.close(input);
 			}
-			boolean forbidPartialDecoder = sofBytes != null && sofBytes.length > 7 && (sofBytes[5] & 0xff) == 1
+			boolean forbidRegionDecoder = sofBytes != null && sofBytes.length > 7 && (sofBytes[5] & 0xff) == 1
 					&& (sofBytes[7] & 0xff) != 0x11;
 			LinkedHashMap<String, String> exif = null;
 			if (exifBytes != null && exifBytes.length > 8)
@@ -289,7 +289,7 @@ public class JpegData
 					extractIfd(exif, IFD_GPS, exifBytes, KEY_GPS_OFFSET, littleEndian);
 				}
 			}
-			return new JpegData(exif, forbidPartialDecoder);
+			return new JpegData(exif, forbidRegionDecoder);
 		}
 		return null;
 	}
