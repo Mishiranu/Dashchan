@@ -87,6 +87,9 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 
 	private Collection<String> mHighlightText;
 	
+	private static final float ALPHA_HIDDEN_POST = 0.2f;
+	private static final float ALPHA_DELETED_POST = 0.5f;
+	
 	@SuppressLint("InflateParams")
 	ViewUnit(UiManager uiManager)
 	{
@@ -358,7 +361,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
 			
 			boolean hidden = postItem.isHidden(hidePerformer);
-			((View) holder.threadContent.getParent()).setAlpha(hidden ? 0.4f : 1f);
+			((View) holder.threadContent.getParent()).setAlpha(hidden ? ALPHA_HIDDEN_POST : 1f);
 			String subject = postItem.getSubject();
 			if (!StringUtils.isEmptyOrWhitespace(subject) && !hidden)
 			{
@@ -444,6 +447,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			holder = new HiddenViewHolder();
 			holder.comment = (TextView) convertView.findViewById(R.id.comment);
 			convertView.setTag(holder);
+			convertView.findViewById(R.id.head).setAlpha(ALPHA_HIDDEN_POST);
 			convertView.findViewById(R.id.index).setVisibility(View.GONE);
 			convertView.findViewById(R.id.number).setVisibility(View.GONE);
 			ViewUtils.applyScaleSize(holder.comment);
@@ -552,7 +556,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		{
 			holder.stateImages[i].setVisibility(holder.states[i] ? View.VISIBLE : View.GONE);
 		}
-		convertView.setAlpha(postItem.isDeleted() ? 0.5f : 1f);
+		convertView.setAlpha(postItem.isDeleted() ? ALPHA_DELETED_POST : 1f);
 		
 		CharSequence name = postItem.getFullName();
 		colorScheme.apply(postItem.getFullNameSpans());
@@ -683,6 +687,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			holder.number = (TextView) convertView.findViewById(R.id.number);
 			holder.comment = (TextView) convertView.findViewById(R.id.comment);
 			convertView.setTag(holder);
+			convertView.findViewById(R.id.head).setAlpha(ALPHA_HIDDEN_POST);
 			ViewUtils.applyScaleSize(holder.index, holder.number, holder.comment);
 			ViewUtils.applyScaleMarginLR(holder.index, holder.number, holder.comment);
 		}
