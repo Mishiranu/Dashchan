@@ -245,6 +245,12 @@ public abstract class FileHolder implements Serializable
 		return jpegData != null ? jpegData.getRotation() : 0;
 	}
 	
+	public boolean isRegionDecoderSupported()
+	{
+		JpegData jpegData = getJpegData();
+		return jpegData == null || !jpegData.forbidPartialDecoder;
+	}
+	
 	public int getImageWidth()
 	{
 		return getImageData().width;
@@ -301,7 +307,7 @@ public abstract class FileHolder implements Serializable
 		{
 			Bitmap bitmap = readBitmapSimple(options);
 			if (bitmap != null) return rotateBitmap(bitmap);
-			if (mayUseRegionDecoder)
+			if (mayUseRegionDecoder && isRegionDecoderSupported())
 			{
 				InputStream input = null;
 				BitmapRegionDecoder decoder = null;

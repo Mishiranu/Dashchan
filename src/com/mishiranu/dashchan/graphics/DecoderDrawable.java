@@ -37,6 +37,7 @@ import android.view.View;
 
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
+import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.LruCache;
 
 public class DecoderDrawable extends Drawable implements LruCache.RemoveCallback<Integer, Bitmap>
@@ -66,6 +67,7 @@ public class DecoderDrawable extends Drawable implements LruCache.RemoveCallback
 	public DecoderDrawable(Bitmap scaledBitmap, FileHolder fileHolder) throws IOException
 	{
 		mScaledBitmap = scaledBitmap;
+		if (!fileHolder.isRegionDecoderSupported()) throw new IOException("Decoder drawable is not supported");
 		mDecoder = BitmapRegionDecoder.newInstance(fileHolder.openInputStream(), false);
 		mRotation = fileHolder.getRotation();
 		mWidth = fileHolder.getImageWidth();
@@ -292,6 +294,7 @@ public class DecoderDrawable extends Drawable implements LruCache.RemoveCallback
 			}
 			catch (Throwable t)
 			{
+				Log.persistent().stack(t);
 				return null;
 			}
 		}
