@@ -262,6 +262,7 @@
 	<string name="action_share_link">Отправить ссылку</string>
 	<string name="action_share_text">Отправить текст</string>
 	<string name="action_show">Показать</string>
+	<string name="action_show_on_map">Показать на карте</string>
 	<string name="action_show_thumbnail">Показать миниатюру</string>
 	<string name="action_spoilers">Спойлеры</string>
 	<string name="action_stop">Стоп</string>
