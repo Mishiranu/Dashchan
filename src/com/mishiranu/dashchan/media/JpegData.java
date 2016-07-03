@@ -19,43 +19,83 @@ package com.mishiranu.dashchan.media;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
+
+import android.util.Pair;
+
+import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.util.IOUtils;
 
 public class JpegData
 {
-	public static final String KEY_DESCRIPTION = "description";
-	public static final String KEY_MAKE = "make";
-	public static final String KEY_MODEL = "model";
-	public static final String KEY_ORIENTATION = "orientation";
-	public static final String KEY_SOFTWARE = "software";
-	public static final String KEY_DATE_TIME = "dateTime";
+	private static final String KEY_DESCRIPTION = "description";
+	private static final String KEY_MAKE = "make";
+	private static final String KEY_MODEL = "model";
+	private static final String KEY_ORIENTATION = "orientation";
+	private static final String KEY_SOFTWARE = "software";
+	private static final String KEY_DATE_TIME = "dateTime";
 	
-	public static final String KEY_LATITUDE = "latitude";
-	public static final String KEY_LATITUDE_REF = "latitudeRef";
-	public static final String KEY_LONGITUDE = "longitude";
-	public static final String KEY_LONGITUDE_REF = "longitudeRef";
+	private static final String KEY_LATITUDE = "latitude";
+	private static final String KEY_LATITUDE_REF = "latitudeRef";
+	private static final String KEY_LONGITUDE = "longitude";
+	private static final String KEY_LONGITUDE_REF = "longitudeRef";
 	
-	public static final String KEY_EXIF_OFFSET = "exifOffset";
-	public static final String KEY_GPS_OFFSET = "gpsOffset";
+	private static final String KEY_EXIF_OFFSET = "exifOffset";
+	private static final String KEY_GPS_OFFSET = "gpsOffset";
 	
-	public final LinkedHashMap<String, String> exif;
+	public final boolean hasExif;
 	public final boolean forbidRegionDecoder;
+	private final LinkedHashMap<String, String> mExif;
 	
-	private JpegData(LinkedHashMap<String, String> exif, boolean forbidRegionDecoder)
+	private JpegData(boolean hasExif, boolean forbidRegionDecoder, LinkedHashMap<String, String> exif)
 	{
-		this.exif = exif;
+		this.hasExif = hasExif;
 		this.forbidRegionDecoder = forbidRegionDecoder;
+		mExif = exif;
+	}
+	
+	private List<Pair<String, String>> mUserMetadata = null;
+	
+	private void addUserMetadata(String key, String title)
+	{
+		String value = mExif.get(key);
+		if (!StringUtils.isEmpty(value)) mUserMetadata.add(new Pair<>(title, value));
+	}
+	
+	public List<Pair<String, String>> getUserMetadata()
+	{
+		if (mUserMetadata == null)
+		{
+			if (mExif != null)
+			{
+				mUserMetadata = new ArrayList<>();
+				addUserMetadata(KEY_DESCRIPTION, "Description");
+				addUserMetadata(KEY_MAKE, "Manufacturer");
+				addUserMetadata(KEY_MODEL, "Model");
+				addUserMetadata(KEY_SOFTWARE, "Software");
+				addUserMetadata(KEY_DATE_TIME, "Date");
+				int rotation = getRotation();
+				if (rotation != 0) mUserMetadata.add(new Pair<>("Rotation", rotation + "°"));
+				String geolocation = getGeolocation(true);
+				if (geolocation != null) mUserMetadata.add(new Pair<>("Geolocation", geolocation));
+				mUserMetadata = Collections.unmodifiableList(mUserMetadata);
+			}
+			else mUserMetadata = Collections.emptyList();
+		}
+		return mUserMetadata;
 	}
 	
 	public int getRotation()
 	{
-		if (exif != null)
+		if (mExif != null)
 		{
-			String orientation = exif.get(KEY_ORIENTATION);
+			String orientation = mExif.get(KEY_ORIENTATION);
 			if (orientation != null)
 			{
 				switch (orientation)
@@ -69,18 +109,40 @@ public class JpegData
 		return 0;
 	}
 	
-	public String getLocation()
+	private String formatLocationValue(double value)
 	{
-		if (exif != null)
+		int degrees = (int) value;
+		value -= degrees;
+		value *= 60;
+		int minutes = (int) value;
+		value -= minutes;
+		value *= 60;
+		int seconds = (int) value;
+		return degrees + "°" + minutes + "'" + seconds + "\"";
+	}
+	
+	public String getGeolocation(boolean userReadable)
+	{
+		if (mExif != null)
 		{
-			String latitude = exif.get(KEY_LATITUDE);
-			String latitudeRef = exif.get(KEY_LATITUDE_REF);
-			String longitude = exif.get(KEY_LONGITUDE);
-			String longitudeRef = exif.get(KEY_LATITUDE_REF);
+			String latitude = mExif.get(KEY_LATITUDE);
+			String latitudeRef = mExif.get(KEY_LATITUDE_REF);
+			String longitude = mExif.get(KEY_LONGITUDE);
+			String longitudeRef = mExif.get(KEY_LATITUDE_REF);
 			if (latitude != null && latitudeRef != null && longitude != null && longitudeRef != null)
 			{
-				return ("S".equals(latitudeRef) ? "-" : "") + latitude + " "
-						+ ("W".equals(longitudeRef) ? "-" : "") + longitude;
+				if (userReadable)
+				{
+					double latitudeValue = Double.parseDouble(latitude);
+					double longitudeValue = Double.parseDouble(longitude);
+					return formatLocationValue(latitudeValue) + latitudeRef + " " + formatLocationValue(longitudeValue)
+							+ longitudeRef;
+				}
+				else
+				{
+					return ("S".equals(latitudeRef) ? "-" : "") + latitude + ","
+							+ ("W".equals(longitudeRef) ? "-" : "") + longitude;
+				}
 			}
 		}
 		return null;
@@ -98,13 +160,32 @@ public class JpegData
 		return null;
 	}
 	
-	private static String convertIfdRational(byte[] exifBytes, int offset, int format, boolean littleEndian)
+	private static double convertIfdRational(byte[] exifBytes, int offset, int format, boolean littleEndian)
 	{
 		if ((format == 5 || format == 10) && exifBytes.length >= offset + 8)
 		{
 			int numerator = IOUtils.bytesToInt(littleEndian, offset, 4, exifBytes);
 			int denominator = IOUtils.bytesToInt(littleEndian, offset + 4, 4, exifBytes);
-			return String.format(Locale.US, "%.8f", (double) numerator / denominator);
+			return (double) numerator / denominator;
+		}
+		return Double.NaN;
+	}
+	
+	private static String convertIfdGpsString(byte[] exifBytes, int offset, int format, boolean littleEndian,
+			int count)
+	{
+		if ((format == 5 || format == 10) && exifBytes.length >= offset + 8)
+		{
+			double value = 0.0;
+			int[] denominators = {1, 60, 3600};
+			count = Math.max(Math.min(count, 3), 1);
+			for (int i = 0; i < count; i++)
+			{
+				double itValue = convertIfdRational(exifBytes, offset + 8 * i, format, littleEndian);
+				if (itValue == Double.NaN) break;
+				value += itValue / denominators[i];
+			}
+			return String.format(Locale.US, "%.7f", value);
 		}
 		return null;
 	}
@@ -124,6 +205,7 @@ public class JpegData
 				{
 					int type = IOUtils.bytesToInt(littleEndian, position, 2, exifBytes);
 					int format = IOUtils.bytesToInt(littleEndian, position + 2, 2, exifBytes);
+					int count = IOUtils.bytesToInt(littleEndian, position + 4, 4, exifBytes);
 					int value = IOUtils.bytesToInt(littleEndian, position + 8, 4, exifBytes);
 					if (ifd == IFD_GENERAL)
 					{
@@ -182,7 +264,8 @@ public class JpegData
 							}
 							case 0x0002:
 							{
-								exif.put(KEY_LATITUDE, convertIfdRational(exifBytes, value, format, littleEndian));
+								exif.put(KEY_LATITUDE, convertIfdGpsString(exifBytes, value, format,
+										littleEndian, count));
 								break;
 							}
 							case 0x0003:
@@ -192,7 +275,8 @@ public class JpegData
 							}
 							case 0x0004:
 							{
-								exif.put(KEY_LONGITUDE, convertIfdRational(exifBytes, value, format, littleEndian));
+								exif.put(KEY_LONGITUDE, convertIfdGpsString(exifBytes, value, format,
+										littleEndian, count));
 								break;
 							}
 						}
@@ -289,7 +373,7 @@ public class JpegData
 					extractIfd(exif, IFD_GPS, exifBytes, KEY_GPS_OFFSET, littleEndian);
 				}
 			}
-			return new JpegData(exif, forbidRegionDecoder);
+			return new JpegData(exifBytes != null, forbidRegionDecoder, exif);
 		}
 		return null;
 	}
