@@ -169,6 +169,12 @@ public class GraphicsUtils
 		return resizedBitmap;
 	}
 	
+	public static boolean canRemoveMetadata(FileHolder fileHolder)
+	{
+		return fileHolder.getImageType() == FileHolder.ImageType.IMAGE_JPEG
+				|| fileHolder.getImageType() == FileHolder.ImageType.IMAGE_PNG;
+	}
+	
 	public static class SkipRange
 	{
 		public final int start;
@@ -184,29 +190,57 @@ public class GraphicsUtils
 	public static class TransformationData
 	{
 		public final ArrayList<SkipRange> skipRanges;
-		public final byte[] decodedFile;
+		public final byte[] decodedBytes;
 		public final String newFileName;
 		
-		private TransformationData(ArrayList<SkipRange> skipRanges, byte[] decodedFile, String newFileName)
+		private TransformationData(ArrayList<SkipRange> skipRanges, byte[] decodedBytes, String newFileName)
 		{
 			this.skipRanges = skipRanges;
-			this.decodedFile = decodedFile;
+			this.decodedBytes = decodedBytes;
 			this.newFileName = newFileName;
 		}
 	}
 	
 	public static TransformationData transformImageForPosting(FileHolder fileHolder, String fileName,
-			boolean removeMetadata)
+			boolean removeMetadata, boolean reencodeImage)
 	{
 		ArrayList<SkipRange> skipRanges = null;
-		byte[] decodedFile = null;
+		byte[] decodedBytes = null;
 		String newFileName = null;
 		InputStream input = null;
 		try
 		{
-			if (fileHolder.getImageType() == FileHolder.ImageType.IMAGE_JPEG)
+			if (reencodeImage && fileHolder.isImage())
 			{
-				if (removeMetadata)
+				Bitmap bitmap;
+				try
+				{
+					bitmap = fileHolder.readImageBitmap(Integer.MAX_VALUE, true, true);
+				}
+				catch (Exception | OutOfMemoryError e)
+				{
+					bitmap = null;
+				}
+				if (bitmap != null)
+				{
+					try
+					{
+						boolean jpeg = fileHolder.getImageType() == FileHolder.ImageType.IMAGE_JPEG;
+						ByteArrayOutputStream output = new ByteArrayOutputStream();
+						bitmap.compress(jpeg ? Bitmap.CompressFormat.JPEG : Bitmap.CompressFormat.PNG, 100, output);
+						decodedBytes = output.toByteArray();
+						int index = fileName.lastIndexOf('.');
+						newFileName = (index >= 0 ? fileName.substring(0, index) : fileName) + (jpeg ? ".jpg" : ".png");
+					}
+					finally
+					{
+						bitmap.recycle();
+					}
+				}
+			}
+			else if (removeMetadata)
+			{
+				if (fileHolder.getImageType() == FileHolder.ImageType.IMAGE_JPEG)
 				{
 					input = new BufferedInputStream(fileHolder.openInputStream(), 16 * 1024);
 					int position = 0;
@@ -233,10 +267,7 @@ public class GraphicsUtils
 						if (oneByte == -1) break;
 					}
 				}
-			}
-			else if (fileHolder.getImageType() == FileHolder.ImageType.IMAGE_PNG)
-			{
-				if (removeMetadata)
+				else if (fileHolder.getImageType() == FileHolder.ImageType.IMAGE_PNG)
 				{
 					input = fileHolder.openInputStream();
 					if (IOUtils.skipExactlyCheck(input, 8))
@@ -269,33 +300,6 @@ public class GraphicsUtils
 					}
 				}
 			}
-			else if (fileHolder.getImageType() == FileHolder.ImageType.IMAGE_WEBP)
-			{
-				Bitmap bitmap;
-				try
-				{
-					bitmap = fileHolder.readImageBitmap();
-				}
-				catch (Exception | OutOfMemoryError e)
-				{
-					bitmap = null;
-				}
-				if (bitmap != null)
-				{
-					try
-					{
-						ByteArrayOutputStream stream = new ByteArrayOutputStream();
-						bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-						decodedFile = stream.toByteArray();
-						int index = fileName.lastIndexOf('.');
-						newFileName = (index >= 0 ? fileName.substring(0, index) : fileName) + ".png";
-					}
-					finally
-					{
-						bitmap.recycle();
-					}
-				}
-			}
 		}
 		catch (Exception e)
 		{
@@ -312,8 +316,8 @@ public class GraphicsUtils
 				
 			}
 		}
-		return skipRanges != null || decodedFile != null || newFileName != null
-				? new TransformationData(skipRanges, decodedFile, newFileName) : null;
+		return skipRanges != null || decodedBytes != null || newFileName != null
+				? new TransformationData(skipRanges, decodedBytes, newFileName) : null;
 	}
 	
 	public static boolean isUselessPngChunk(String name)

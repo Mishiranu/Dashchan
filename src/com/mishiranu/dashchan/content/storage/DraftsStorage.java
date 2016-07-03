@@ -444,6 +444,7 @@ public class DraftsStorage extends StorageManager.Storage
 		private static final String KEY_RATING = "rating";
 		private static final String KEY_OPTION_UNIQUE_HASH = "optionUniqueHash";
 		private static final String KEY_OPTION_REMOVE_METADATA = "optionRemoveMetadata";
+		private static final String KEY_OPTION_REENCODE_IMAGE = "optionReencodeImage";
 		private static final String KEY_OPTION_REMOVE_FILE_NAME = "optionRemoveFileName";
 		private static final String KEY_OPTION_SPOILER = "optionSpoiler";
 		
@@ -451,16 +452,19 @@ public class DraftsStorage extends StorageManager.Storage
 		public final String rating;
 		public final boolean optionUniqueHash;
 		public final boolean optionRemoveMetadata;
+		public final boolean optionReencodeImage;
 		public final boolean optionRemoveFileName;
 		public final boolean optionSpoiler;
 		
 		public AttachmentDraft(FileHolder fileHolder, String rating, boolean optionUniqueHash,
-				boolean optionRemoveMetadata, boolean optionRemoveFileName, boolean optionSpoiler)
+				boolean optionRemoveMetadata, boolean optionReencodeImage, boolean optionRemoveFileName,
+				boolean optionSpoiler)
 		{
 			this.fileHolder = fileHolder;
 			this.rating = rating;
 			this.optionUniqueHash = optionUniqueHash;
 			this.optionRemoveMetadata = optionRemoveMetadata;
+			this.optionReencodeImage = optionReencodeImage;
 			this.optionRemoveFileName = optionRemoveFileName;
 			this.optionSpoiler = optionSpoiler;
 		}
@@ -472,6 +476,7 @@ public class DraftsStorage extends StorageManager.Storage
 			putJson(jsonObject, KEY_RATING, rating);
 			putJson(jsonObject, KEY_OPTION_UNIQUE_HASH, optionUniqueHash);
 			putJson(jsonObject, KEY_OPTION_REMOVE_METADATA, optionRemoveMetadata);
+			putJson(jsonObject, KEY_OPTION_REENCODE_IMAGE, optionReencodeImage);
 			putJson(jsonObject, KEY_OPTION_REMOVE_FILE_NAME, optionRemoveFileName);
 			putJson(jsonObject, KEY_OPTION_SPOILER, optionSpoiler);
 			return jsonObject;
@@ -485,9 +490,10 @@ public class DraftsStorage extends StorageManager.Storage
 			if (uri == null) return null;
 			FileHolder fileHolder = FileHolder.obtain(MainApplication.getInstance(), uri);
 			if (fileHolder == null) return null;
-			return new AttachmentDraft(fileHolder, jsonObject.optString(KEY_RATING, null),
-					jsonObject.optBoolean(KEY_OPTION_UNIQUE_HASH), jsonObject.optBoolean(KEY_OPTION_REMOVE_METADATA),
-					jsonObject.optBoolean(KEY_OPTION_REMOVE_FILE_NAME), jsonObject.optBoolean(KEY_OPTION_SPOILER));
+			return new AttachmentDraft(fileHolder, jsonObject.optString(KEY_RATING, null), jsonObject
+					.optBoolean(KEY_OPTION_UNIQUE_HASH), jsonObject.optBoolean(KEY_OPTION_REMOVE_METADATA),
+					jsonObject.optBoolean(KEY_OPTION_REENCODE_IMAGE), jsonObject
+					.optBoolean(KEY_OPTION_REMOVE_FILE_NAME), jsonObject.optBoolean(KEY_OPTION_SPOILER));
 		}
 	}
 }

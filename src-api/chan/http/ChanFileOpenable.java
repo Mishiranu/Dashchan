@@ -36,30 +36,31 @@ public class ChanFileOpenable implements MultipartEntity.Openable
 	
 	private final int mRandomBytes;
 	private final ArrayList<GraphicsUtils.SkipRange> mSkipRanges;
-	private final byte[] mDecodedFile;
+	private final byte[] mDecodedBytes;
 	private final long mRealSize;
 	
-	public ChanFileOpenable(FileHolder fileHolder, boolean uniqueHash, boolean removeMetadata, boolean removeFileName)
+	public ChanFileOpenable(FileHolder fileHolder, boolean uniqueHash, boolean removeMetadata, boolean reencodeImage,
+			boolean removeFileName)
 	{
 		mFileHolder = fileHolder;
 		String fileName = MultipartEntity.obtainFileName(fileHolder, removeFileName);
 		mRandomBytes = uniqueHash ? 6 : 0;
 		GraphicsUtils.TransformationData transformationData = GraphicsUtils.transformImageForPosting(fileHolder,
-				fileName, removeMetadata);
+				fileName, removeMetadata, reencodeImage);
 		if (transformationData != null)
 		{
 			mSkipRanges = transformationData.skipRanges;
-			mDecodedFile = transformationData.decodedFile;
+			mDecodedBytes = transformationData.decodedBytes;
 			if (transformationData.newFileName != null) fileName = transformationData.newFileName;
 		}
 		else
 		{
 			mSkipRanges = null;
-			mDecodedFile = null;
+			mDecodedBytes = null;
 		}
 		mFileName = fileName;
 		mMimeType = MultipartEntity.obtainMimeType(fileName);
-		mRealSize = mDecodedFile != null ? mDecodedFile.length : fileHolder.getSize();
+		mRealSize = mDecodedBytes != null ? mDecodedBytes.length : fileHolder.getSize();
 	}
 	
 	@Override
@@ -101,7 +102,7 @@ public class ChanFileOpenable implements MultipartEntity.Openable
 		
 		public ChanFileInputStream() throws IOException
 		{
-			mInputStream = mDecodedFile != null ? new ByteArrayInputStream(mDecodedFile)
+			mInputStream = mDecodedBytes != null ? new ByteArrayInputStream(mDecodedBytes)
 					: mFileHolder.openInputStream();
 			mRandomBytesLeft = mRandomBytes;
 		}

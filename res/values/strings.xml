@@ -110,6 +110,7 @@
 	<string name="text_posts_with_files_format">Posts with files: %s</string>
 	<string name="text_rating">Rating</string>
 	<string name="text_read_only">Read only</string>
+	<string name="text_reencode_image">Re-encode image</string>
 	<string name="text_regex">Regular expression</string>
 	<string name="text_rejected_words">Rejected words:</string>
 	<string name="text_remove_file_name">Remove file name</string>
