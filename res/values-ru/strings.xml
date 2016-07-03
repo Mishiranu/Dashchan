@@ -121,6 +121,7 @@
 	<string name="text_posts_with_files_format">Сообщений с файлами: %s</string>
 	<string name="text_rating">Рейтинг</string>
 	<string name="text_read_only">Только чтение</string>
+	<string name="text_reencode_image">Перекодировать</string>
 	<string name="text_regex">Регулярное выражение</string>
 	<string name="text_rejected_words">Следующие слова отклонены</string>
 	<string name="text_remove_file_name">Удалить имя файла</string>

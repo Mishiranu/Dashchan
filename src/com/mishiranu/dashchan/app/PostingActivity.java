@@ -61,6 +61,8 @@ import android.text.style.UnderlineSpan;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Pair;
+import android.util.SparseBooleanArray;
+import android.util.SparseIntArray;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.Menu;
@@ -485,8 +487,8 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 				for (DraftsStorage.AttachmentDraft attachmentDraft : attachmentDrafts)
 				{
 					addAttachment(attachmentDraft.fileHolder, attachmentDraft.rating, attachmentDraft.optionUniqueHash,
-							attachmentDraft.optionRemoveMetadata, attachmentDraft.optionRemoveFileName,
-							attachmentDraft.optionSpoiler);
+							attachmentDraft.optionRemoveMetadata, attachmentDraft.optionReencodeImage,
+							attachmentDraft.optionRemoveFileName, attachmentDraft.optionSpoiler);
 				}
 			}
 			if (!Preferences.isHidePersonalData())
@@ -693,8 +695,8 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			{
 				AttachmentHolder holder = mAttachments.get(i);
 				attachmentDrafts[i] = new DraftsStorage.AttachmentDraft(holder.fileHolder, holder.rating,
-						holder.optionUniqueHash, holder.optionRemoveMetadata, holder.optionRemoveFileName,
-						holder.optionSpoiler);
+						holder.optionUniqueHash, holder.optionRemoveMetadata, holder.optionReencodeImage,
+						holder.optionRemoveFileName, holder.optionSpoiler);
 			}
 		}
 		String subject = mSubjectView.getText().toString();
@@ -1111,7 +1113,8 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		{
 			AttachmentHolder data = mAttachments.get(i);
 			array.add(new ChanPerformer.SendPostData.Attachment(data.fileHolder, data.rating, data.optionUniqueHash,
-					data.optionRemoveMetadata, data.optionRemoveFileName, data.optionSpoiler));
+					data.optionRemoveMetadata, data.optionReencodeImage, data.optionRemoveFileName,
+					data.optionSpoiler));
 		}
 		ChanPerformer.SendPostData.Attachment[] attachments = null;
 		if (array.size() > 0) attachments = CommonUtils.toArray(array, ChanPerformer.SendPostData.Attachment.class);
@@ -1467,7 +1470,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		}
 	}
 	
-	private class AttachmentHolder
+	private static class AttachmentHolder
 	{
 		public View self;
 		public TextView fileName;
@@ -1478,6 +1481,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		public String rating;
 		public boolean optionUniqueHash = false;
 		public boolean optionRemoveMetadata = false;
+		public boolean optionReencodeImage = false;
 		public boolean optionRemoveFileName = false;
 		public boolean optionSpoiler = false;
 	}
@@ -1488,24 +1492,26 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		
 		private static final int OPTION_TYPE_UNIQUE_HASH = 0;
 		private static final int OPTION_TYPE_REMOVE_METADATA = 1;
-		private static final int OPTION_TYPE_REMOVE_FILE_NAME = 2;
-		private static final int OPTION_TYPE_SPOILER = 3;
+		private static final int OPTION_TYPE_REENCODE_IMAGE = 2;
+		private static final int OPTION_TYPE_REMOVE_FILE_NAME = 3;
+		private static final int OPTION_TYPE_SPOILER = 4;
 		
 		private static class OptionItem
 		{
 			public final String title;
 			public final int type;
-			public final boolean enabled;
+			public final boolean checked;
 			
-			public OptionItem(String title, int type, boolean enabled)
+			public OptionItem(String title, int type, boolean checked)
 			{
 				this.title = title;
 				this.type = type;
-				this.enabled = enabled;
+				this.checked = checked;
 			}
 		}
 		
 		private final ArrayList<OptionItem> mOptionItems = new ArrayList<>();
+		private final SparseIntArray mOptionIndexes = new SparseIntArray();
 		
 		public AttachmentOptionsDialog()
 		{
@@ -1519,26 +1525,70 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			setArguments(args);
 		}
 		
+		private static class ItemsAdapter extends ArrayAdapter<String>
+		{
+			private final SparseBooleanArray mEnabledItems = new SparseBooleanArray();
+			
+			public ItemsAdapter(Context context, int resId, ArrayList<String> items)
+			{
+				super(context, resId, android.R.id.text1, items);
+			}
+			
+			@Override
+			public View getView(int position, View convertView, ViewGroup parent)
+			{
+				View view = super.getView(position, convertView, parent);
+				view.setEnabled(isEnabled(position));
+				return view;
+			}
+			
+			@Override
+			public boolean isEnabled(int position)
+			{
+				return mEnabledItems.get(position, true);
+			}
+			
+			public void setEnabled(int index, boolean enabled)
+			{
+				mEnabledItems.put(index, enabled);
+			}
+		}
+		
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState)
 		{
 			PostingActivity activity = (PostingActivity) getActivity();
 			AttachmentHolder holder = activity.mAttachments.get(getArguments().getInt(EXTRA_ATTACHMENT_INDEX));
 			ChanConfiguration.Posting postingConfiguration = activity.mPostingConfiguration;
-			ArrayList<OptionItem> optionItems = mOptionItems;
-			optionItems.add(new OptionItem(getString(R.string.text_unique_hash), OPTION_TYPE_UNIQUE_HASH,
+			int index = 0;
+			mOptionItems.clear();
+			mOptionIndexes.clear();
+			mOptionItems.add(new OptionItem(getString(R.string.text_unique_hash), OPTION_TYPE_UNIQUE_HASH,
 					holder.optionUniqueHash));
-			optionItems.add(new OptionItem(getString(R.string.text_remove_metadata), OPTION_TYPE_REMOVE_METADATA,
-					holder.optionRemoveMetadata));
-			optionItems.add(new OptionItem(getString(R.string.text_remove_file_name), OPTION_TYPE_REMOVE_FILE_NAME,
+			mOptionIndexes.append(OPTION_TYPE_UNIQUE_HASH, index++);
+			if (GraphicsUtils.canRemoveMetadata(holder.fileHolder))
+			{
+				mOptionItems.add(new OptionItem(getString(R.string.text_remove_metadata), OPTION_TYPE_REMOVE_METADATA,
+						holder.optionRemoveMetadata));
+				mOptionIndexes.append(OPTION_TYPE_REMOVE_METADATA, index++);
+			}
+			if (holder.fileHolder.isImage())
+			{
+				mOptionItems.add(new OptionItem(getString(R.string.text_reencode_image), OPTION_TYPE_REENCODE_IMAGE,
+						holder.optionReencodeImage));
+				mOptionIndexes.append(OPTION_TYPE_REENCODE_IMAGE, index++);
+			}
+			mOptionItems.add(new OptionItem(getString(R.string.text_remove_file_name), OPTION_TYPE_REMOVE_FILE_NAME,
 					holder.optionRemoveFileName));
+			mOptionIndexes.append(OPTION_TYPE_REMOVE_FILE_NAME, index++);
 			if (postingConfiguration.attachmentSpoiler)
 			{
-				optionItems.add(new OptionItem(getString(R.string.text_spoiler), OPTION_TYPE_SPOILER,
+				mOptionItems.add(new OptionItem(getString(R.string.text_spoiler), OPTION_TYPE_SPOILER,
 						holder.optionSpoiler));
+				mOptionIndexes.append(OPTION_TYPE_SPOILER, index++);
 			}
 			ArrayList<String> items = new ArrayList<>();
-			for (OptionItem optionItem : optionItems) items.add(optionItem.title);
+			for (OptionItem optionItem : mOptionItems) items.add(optionItem.title);
 			LinearLayout linearLayout = new LinearLayout(activity);
 			linearLayout.setOrientation(LinearLayout.VERTICAL);
 			ImageView imageView = new ImageView(activity);
@@ -1553,12 +1603,26 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
 			int resId = ResourceUtils.obtainAlertDialogLayoutResId(activity, ResourceUtils.DIALOG_LAYOUT_MULTI_CHOICE);
 			if (C.API_LOLLIPOP) listView.setDividerHeight(0);
-			listView.setAdapter(new ArrayAdapter<>(activity, resId, android.R.id.text1, items));
-			for (int i = 0; i < optionItems.size(); i++) listView.setItemChecked(i, optionItems.get(i).enabled);
+			ItemsAdapter adapter = new ItemsAdapter(activity, resId, items);
+			listView.setAdapter(adapter);
+			for (int i = 0; i < mOptionItems.size(); i++) listView.setItemChecked(i, mOptionItems.get(i).checked);
 			listView.setOnItemClickListener(this);
+			updateItemsEnabled(adapter, holder);
 			AlertDialog dialog = new AlertDialog.Builder(activity).setView(linearLayout).create();
 			dialog.setCanceledOnTouchOutside(true);
 			return dialog;
+		}
+		
+		private void updateItemsEnabled(ItemsAdapter adapter, AttachmentHolder holder)
+		{
+			int reencodeIndex = mOptionIndexes.get(OPTION_TYPE_REENCODE_IMAGE, -1);
+			boolean allowRemoveMetadata = reencodeIndex == -1 || !holder.optionReencodeImage;
+			int removeMetadataIndex = mOptionIndexes.get(OPTION_TYPE_REMOVE_METADATA, -1);
+			if (removeMetadataIndex >= 0)
+			{
+				adapter.setEnabled(removeMetadataIndex, allowRemoveMetadata);
+				adapter.notifyDataSetChanged();
+			}
 		}
 		
 		@Override
@@ -1572,9 +1636,11 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			{
 				case OPTION_TYPE_UNIQUE_HASH: holder.optionUniqueHash = checked; break;
 				case OPTION_TYPE_REMOVE_METADATA: holder.optionRemoveMetadata = checked; break;
+				case OPTION_TYPE_REENCODE_IMAGE: holder.optionReencodeImage = checked; break;
 				case OPTION_TYPE_REMOVE_FILE_NAME: holder.optionRemoveFileName = checked; break;
 				case OPTION_TYPE_SPOILER: holder.optionSpoiler = checked; break;
 			}
+			updateItemsEnabled((ItemsAdapter) parent.getAdapter(), holder);
 		}
 	}
 	
@@ -1754,16 +1820,18 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	
 	private void addAttachment(FileHolder fileHolder)
 	{
-		addAttachment(fileHolder, null, false, false, false, false);
+		addAttachment(fileHolder, null, false, false, false, false, false);
 	}
 	
 	private void addAttachment(FileHolder fileHolder, String rating, boolean optionUniqueHash,
-			boolean optionRemoveMetadata, boolean optionRemoveFileName, boolean optionSpoiler)
+			boolean optionRemoveMetadata, boolean optionReencodeImage, boolean optionRemoveFileName,
+			boolean optionSpoiler)
 	{
 		AttachmentHolder holder = addNewAttachment(mAttachmentOptionsListener);
 		holder.fileHolder = fileHolder;
 		holder.optionUniqueHash = optionUniqueHash;
 		holder.optionRemoveMetadata = optionRemoveMetadata;
+		holder.optionReencodeImage = optionReencodeImage;
 		holder.optionRemoveFileName = optionRemoveFileName;
 		holder.optionSpoiler = optionSpoiler;
 		holder.fileName.setText(fileHolder.getName());

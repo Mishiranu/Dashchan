@@ -773,6 +773,7 @@ public class ChanPerformer implements ChanManager.Linked
 			
 			public final boolean optionUniqueHash;
 			public final boolean optionRemoveMetadata;
+			public final boolean optionReencodeImage;
 			public final boolean optionRemoveFileName;
 			@Public public final boolean optionSpoiler;
 			
@@ -781,13 +782,15 @@ public class ChanPerformer implements ChanManager.Linked
 			private ChanFileOpenable mOpenable;
 			
 			public Attachment(FileHolder fileHolder, String rating, boolean optionUniqueHash,
-					boolean optionRemoveMetadata, boolean optionRemoveFilename, boolean optionSpoiler)
+					boolean optionRemoveMetadata, boolean optionReencodeImage, boolean optionRemoveFileName,
+					boolean optionSpoiler)
 			{
 				this.fileHolder = fileHolder;
 				this.rating = rating;
 				this.optionUniqueHash = optionUniqueHash;
 				this.optionRemoveMetadata = optionRemoveMetadata;
-				this.optionRemoveFileName = optionRemoveFilename;
+				this.optionReencodeImage = optionReencodeImage;
+				this.optionRemoveFileName = optionRemoveFileName;
 				this.optionSpoiler = optionSpoiler;
 			}
 			
@@ -796,7 +799,7 @@ public class ChanPerformer implements ChanManager.Linked
 				if (mOpenable == null)
 				{
 					mOpenable = new ChanFileOpenable(fileHolder, optionUniqueHash, optionRemoveMetadata,
-							optionRemoveFileName);
+							optionReencodeImage, optionRemoveFileName);
 				}
 			}
 			
