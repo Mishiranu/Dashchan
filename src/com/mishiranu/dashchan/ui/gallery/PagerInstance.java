@@ -25,6 +25,7 @@ import com.mishiranu.dashchan.graphics.DecoderDrawable;
 import com.mishiranu.dashchan.graphics.SimpleBitmapDrawable;
 import com.mishiranu.dashchan.media.AnimatedPngDecoder;
 import com.mishiranu.dashchan.media.GifDecoder;
+import com.mishiranu.dashchan.media.JpegData;
 import com.mishiranu.dashchan.widget.CircularProgressBar;
 import com.mishiranu.dashchan.widget.PhotoView;
 
@@ -60,6 +61,7 @@ public class PagerInstance
 		public DecoderDrawable decoderDrawable;
 		public AnimatedPngDecoder animatedPngDecoder;
 		public GifDecoder gifDecoder;
+		public JpegData jpegData;
 		public boolean photoViewThumbnail;
 		
 		public boolean fullLoaded;
@@ -88,6 +90,7 @@ public class PagerInstance
 				gifDecoder.recycle();
 				gifDecoder = null;
 			}
+			jpegData = null;
 			photoViewThumbnail = false;
 		}
 	}

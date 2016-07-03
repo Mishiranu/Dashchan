@@ -236,6 +236,7 @@ public class PagerUnit implements PagerInstance.Callback
 			boolean isVideo = galleryItem.isVideo(mGalleryInstance.locator);
 			boolean isOpenableVideo = isVideo && galleryItem.isOpenableVideo(mGalleryInstance.locator);
 			boolean isVideoInitialized = isOpenableVideo && mVideoUnit.isInitialized();
+			boolean imageHasMetadata = mImageUnit.hasMetadata();
 			save = fullLoaded || isVideo && !isOpenableVideo;
 			if (!save && isOpenableVideo)
 			{
@@ -244,7 +245,7 @@ public class PagerUnit implements PagerInstance.Callback
 				if (cachedFile != null && cachedFile.exists()) save = true;
 			}
 			refresh = !isOpenableVideo && !isVideo || isVideoInitialized;
-			viewTechnicalInfo = isVideoInitialized;
+			viewTechnicalInfo = isVideoInitialized || imageHasMetadata;
 			searchImage = galleryItem.getDisplayImageUri(mGalleryInstance.locator) != null;
 			navigatePost = galleryItem.postNumber != null;
 			shareFile = fullLoaded;
@@ -260,7 +261,9 @@ public class PagerUnit implements PagerInstance.Callback
 	
 	public void viewTechnicalInfo()
 	{
-		mVideoUnit.viewTechnicalInfo();
+		GalleryItem galleryItem = mPagerInstance.currentHolder.galleryItem;
+		if (galleryItem.isImage(mGalleryInstance.locator)) mImageUnit.viewTechnicalInfo();
+		else if (galleryItem.isVideo(mGalleryInstance.locator)) mVideoUnit.viewTechnicalInfo();
 	}
 	
 	private void interrupt(boolean force)

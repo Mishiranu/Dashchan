@@ -245,6 +245,7 @@
 	<string name="action_share_link">Share link</string>
 	<string name="action_share_text">Share text</string>
 	<string name="action_show">Show</string>
+	<string name="action_show_on_map">Show on map</string>
 	<string name="action_show_thumbnail">Show thumbnail</string>
 	<string name="action_spoilers">Spoilers</string>
 	<string name="action_stop">Stop</string>

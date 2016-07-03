@@ -20,10 +20,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.Executor;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.util.Pair;
 
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.async.ReadFileTask;
@@ -35,9 +40,12 @@ import com.mishiranu.dashchan.graphics.DecoderDrawable;
 import com.mishiranu.dashchan.graphics.SimpleBitmapDrawable;
 import com.mishiranu.dashchan.media.AnimatedPngDecoder;
 import com.mishiranu.dashchan.media.GifDecoder;
+import com.mishiranu.dashchan.media.JpegData;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.Log;
+import com.mishiranu.dashchan.util.StringBlockBuilder;
+import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.PhotoView;
 
 public class ImageUnit
@@ -222,6 +230,48 @@ public class ImageUnit
 		}
 	}
 	
+	public boolean hasMetadata()
+	{
+		JpegData jpegData = mInstance.currentHolder.jpegData;
+		return jpegData != null && !jpegData.getUserMetadata().isEmpty();
+	}
+	
+	public void viewTechnicalInfo()
+	{
+		StringBlockBuilder builder = new StringBlockBuilder();
+		for (Pair<String, String> pair : mInstance.currentHolder.jpegData.getUserMetadata())
+		{
+			builder.appendLine(pair.first + ": " + pair.second);
+		}
+		String message = builder.toString();
+		AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(mInstance.galleryInstance.context)
+				.setTitle(R.string.action_technical_info).setMessage(message)
+				.setPositiveButton(android.R.string.ok, null);
+		String geolocation = mInstance.currentHolder.jpegData.getGeolocation(false);
+		if (geolocation != null)
+		{
+			String fileName = mInstance.currentHolder.galleryItem.getFileName(mInstance.galleryInstance.locator);
+			Uri uri = new Uri.Builder().scheme("geo").appendQueryParameter("q",
+					geolocation + "(" + fileName + ")").build();
+			final Intent intent = new Intent(Intent.ACTION_VIEW).setData(uri);
+			if (!mInstance.galleryInstance.context.getPackageManager().queryIntentActivities(intent,
+					PackageManager.MATCH_DEFAULT_ONLY).isEmpty())
+			{
+				dialogBuilder.setNeutralButton(R.string.action_show_on_map, new DialogInterface.OnClickListener()
+				{
+					@Override
+					public void onClick(DialogInterface dialog, int which)
+					{
+						mInstance.galleryInstance.context.startActivity(intent);
+					}
+				});
+			}
+		}
+		AlertDialog dialog = dialogBuilder.create();
+		dialog.setOnShowListener(ViewUtils.ALERT_DIALOG_MESSAGE_SELECTABLE);
+		dialog.show();
+	}
+	
 	private class DecodeBitmapTask extends AsyncTask<Void, Void, Void>
 	{
 		private final File mFile;
@@ -355,6 +405,7 @@ public class ImageUnit
 		private void setPhotoViewImage(PagerInstance.ViewHolder holder, Drawable drawable, boolean hasAlpha)
 		{
 			holder.photoView.setImage(drawable, hasAlpha, false, holder.photoViewThumbnail);
+			holder.jpegData = mFileHolder.getJpegData();
 			holder.photoViewThumbnail = false;
 		}
 	};
