@@ -157,6 +157,7 @@
 		<item quantity="one">%d view</item>
 		<item quantity="other">%d views</item>
 	</plurals>
+	<string name="text_warning">Warning</string>
 	<string name="text_with_name_format">With name %s</string>
 	<string name="text_without_updating">Without updating</string>
 	<string name="text_yesterday">Yesterday</string>
@@ -309,6 +310,10 @@
 	<string name="message_hide_default_name_error">You can\'t hide default name</string>
 	<string name="message_image_corrupted">Image is corrupted</string>
 	<string name="message_image_out_of_memory">Not enough memory to handle image</string>
+	<string name="message_image_warning">This image contains the following data: %s.</string>
+	<string name="message_image_warning_exif">Exif metadata</string>
+	<string name="message_image_warning_orientation">orientation</string>
+	<string name="message_image_warning_geolocation">geolocation</string>
 	<string name="message_incorrect_password">Incorrect password</string>
 	<string name="message_invalid_authorization_data">Invalid authorization data</string>
 	<string name="message_invalid_certificate">Invalid certificate</string>

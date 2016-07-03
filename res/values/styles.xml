@@ -45,6 +45,7 @@
 		<item name="buttonPlay">@drawable/ic_action_play_light</item>
 		<item name="buttonRating">@drawable/ic_action_warning_light</item>
 		<item name="buttonRefresh">@drawable/ic_action_refresh_light</item>
+		<item name="buttonWarning">@drawable/ic_action_warning_light</item>
 		
 		<item name="iconWarning">@drawable/ic_action_warning_light</item>
 		
@@ -98,6 +99,7 @@
 		<item name="buttonPlay">@drawable/ic_action_play_dark</item>
 		<item name="buttonRating">@drawable/ic_action_warning_dark</item>
 		<item name="buttonRefresh">@drawable/ic_action_refresh_dark</item>
+		<item name="buttonWarning">@drawable/ic_action_warning_dark</item>
 		
 		<item name="iconWarning">@drawable/ic_action_warning_dark</item>
 		

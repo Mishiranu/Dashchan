@@ -79,6 +79,16 @@
 		</LinearLayout>
 		
 		<ImageButton
+			android:id="@+id/attachment_warning"
+			android:layout_width="48dp"
+			android:layout_height="match_parent"
+			android:layout_gravity="center_vertical"
+			android:layout_marginRight="-8dp"
+			style="?android:attr/borderlessButtonStyle"
+			android:scaleType="center"
+			android:src="?attr/buttonWarning" />
+		
+		<ImageButton
 			android:id="@+id/attachment_rating"
 			android:layout_width="48dp"
 			android:layout_height="match_parent"

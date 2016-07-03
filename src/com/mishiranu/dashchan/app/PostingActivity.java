@@ -105,6 +105,7 @@ import com.mishiranu.dashchan.content.storage.DraftsStorage;
 import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.graphics.RoundedCornersDrawable;
 import com.mishiranu.dashchan.graphics.TransparentTileDrawable;
+import com.mishiranu.dashchan.media.JpegData;
 import com.mishiranu.dashchan.net.RecaptchaReader;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.text.style.HeadingSpan;
@@ -1644,6 +1645,53 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		}
 	}
 	
+	public static class AttachmentWarningDialog extends DialogFragment
+	{
+		private static final String EXTRA_ATTACHMENT_INDEX = "attachmentIndex";
+		
+		public AttachmentWarningDialog()
+		{
+			
+		}
+		
+		public AttachmentWarningDialog(int attachmentIndex)
+		{
+			Bundle args = new Bundle();
+			args.putInt(EXTRA_ATTACHMENT_INDEX, attachmentIndex);
+			setArguments(args);
+		}
+		
+		@Override
+		public Dialog onCreateDialog(Bundle savedInstanceState)
+		{
+			PostingActivity activity = (PostingActivity) getActivity();
+			AttachmentHolder holder = activity.mAttachments.get(getArguments().getInt(EXTRA_ATTACHMENT_INDEX));
+			JpegData jpegData = holder.fileHolder.getJpegData();
+			boolean hasExif = jpegData != null && jpegData.hasExif;
+			int rotation = holder.fileHolder.getRotation();
+			String geolocation = jpegData != null ? jpegData.getGeolocation(false) : null;
+			StringBuilder builder = new StringBuilder();
+			if (hasExif)
+			{
+				if (builder.length() > 0) builder.append(", ");
+				builder.append(getString(R.string.message_image_warning_exif));
+			}
+			if (rotation != 0)
+			{
+				if (builder.length() > 0) builder.append(", ");
+				builder.append(getString(R.string.message_image_warning_orientation));
+			}
+			if (geolocation != null)
+			{
+				if (builder.length() > 0) builder.append(", ");
+				builder.append(getString(R.string.message_image_warning_geolocation));
+			}
+			return new AlertDialog.Builder(getActivity()).setTitle(R.string.text_warning)
+					.setMessage(getString(R.string.message_image_warning, builder.toString()))
+					.setPositiveButton(android.R.string.ok, null).create();
+		}
+	}
+	
 	public static class AttachmentRatingDialog extends DialogFragment implements DialogInterface.OnClickListener
 	{
 		private static final String EXTRA_ATTACHMENT_INDEX = "attachmentIndex";
@@ -1696,6 +1744,18 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			int attachmentIndex = mAttachments.indexOf(holder);
 			AttachmentOptionsDialog dialog = new AttachmentOptionsDialog(attachmentIndex);
 			dialog.show(getFragmentManager(), AttachmentOptionsDialog.class.getName());
+		}
+	};
+	
+	private final View.OnClickListener mAttachmentWarningListener = new View.OnClickListener()
+	{
+		@Override
+		public void onClick(View v)
+		{
+			AttachmentHolder holder = (AttachmentHolder) v.getTag();
+			int attachmentIndex = mAttachments.indexOf(holder);
+			AttachmentWarningDialog dialog = new AttachmentWarningDialog(attachmentIndex);
+			dialog.show(getFragmentManager(), AttachmentWarningDialog.class.getName());
 		}
 	};
 	
@@ -1779,7 +1839,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		}
 	}
 	
-	private AttachmentHolder addNewAttachment(View.OnClickListener optionsListener)
+	private AttachmentHolder addNewAttachment(boolean enableWarning)
 	{
 		FrameLayout layout = (FrameLayout) getLayoutInflater().inflate(R.layout.activity_posting_attachment,
 				mAttachmentContainer, false);
@@ -1797,6 +1857,12 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		holder.options = layout.findViewById(R.id.attachment_options);
 		holder.imageView = (ImageView) layout.findViewById(R.id.attachment_preview);
 		holder.imageView.setBackground(new TransparentTileDrawable(this, true));
+		View warning = layout.findViewById(R.id.attachment_warning);
+		if (!enableWarning) warning.setVisibility(View.GONE); else
+		{
+			warning.setOnClickListener(mAttachmentWarningListener);
+			warning.setTag(holder);
+		}
 		View rating = layout.findViewById(R.id.attachment_rating);
 		if (mAttachmentRatingItems == null) rating.setVisibility(View.GONE); else
 		{
@@ -1806,12 +1872,8 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		View remove = layout.findViewById(R.id.attachment_remove);
 		remove.setOnClickListener(mAttachmentRemoveListener);
 		remove.setTag(holder);
-		if (optionsListener != null)
-		{
-			holder.options.setOnClickListener(optionsListener);
-			holder.options.setTag(holder);
-		}
-		else holder.options.setVisibility(View.GONE);
+		holder.options.setOnClickListener(mAttachmentOptionsListener);
+		holder.options.setTag(holder);
 		mAttachments.add(holder);
 		invalidateOptionsMenu();
 		mScrollView.postResizeComment();
@@ -1827,7 +1889,8 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			boolean optionRemoveMetadata, boolean optionReencodeImage, boolean optionRemoveFileName,
 			boolean optionSpoiler)
 	{
-		AttachmentHolder holder = addNewAttachment(mAttachmentOptionsListener);
+		JpegData jpegData = fileHolder.getJpegData();
+		AttachmentHolder holder = addNewAttachment(jpegData != null && jpegData.hasExif);
 		holder.fileHolder = fileHolder;
 		holder.optionUniqueHash = optionUniqueHash;
 		holder.optionRemoveMetadata = optionRemoveMetadata;
