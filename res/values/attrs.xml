@@ -67,6 +67,7 @@
 	<attr name="buttonPlay" format="reference" />
 	<attr name="buttonRating" format="reference" />
 	<attr name="buttonRefresh" format="reference" />
+	<attr name="buttonWarning" format="reference" />
 	
 	<attr name="iconWarning" format="reference" />
 	

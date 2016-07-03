@@ -75,6 +75,7 @@
 		<item name="buttonPlay">@drawable/ic_play_arrow_black</item>
 		<item name="buttonRating">@drawable/ic_flag_black</item>
 		<item name="buttonRefresh">@drawable/ic_refresh_black</item>
+		<item name="buttonWarning">@drawable/ic_warning_black</item>
 		
 		<item name="iconWarning">@drawable/ic_warning_black_a8c</item>
 		
@@ -135,6 +136,7 @@
 		<item name="buttonPlay">@drawable/ic_play_arrow_white</item>
 		<item name="buttonRating">@drawable/ic_flag_white</item>
 		<item name="buttonRefresh">@drawable/ic_refresh_white</item>
+		<item name="buttonWarning">@drawable/ic_warning_white</item>
 		
 		<item name="iconWarning">@drawable/ic_warning_white_ab5</item>
 		
