@@ -182,6 +182,15 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener
 		if (holder != null) holder.surfaceParent.removeAllViews();
 	}
 	
+	public void forcePause()
+	{
+		if (mInitialized)
+		{
+			mWasPlaying = false;
+			setPlaying(false, true);
+		}
+	}
+	
 	public void applyVideo(Uri uri, File file, boolean reload)
 	{
 		mWasPlaying = true;
@@ -310,6 +319,7 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener
 				else mAudioManager.abandonAudioFocus(this);
 			}
 			mPlayer.setPlaying(playing);
+			mPausedByTransientLossOfFocus = false;
 		}
 		return true;
 	}

@@ -272,6 +272,11 @@ public class PagerUnit implements PagerInstance.Callback
 		mVideoUnit.interrupt();
 	}
 	
+	public void forcePauseVideo()
+	{
+		mVideoUnit.forcePause();
+	}
+	
 	public void onFinish()
 	{
 		interrupt(true);
