@@ -365,6 +365,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 			}
 			case OPTIONS_MENU_SEARCH_IMAGE:
 			{
+				mPagerUnit.forcePauseVideo();
 				NavigationUtils.searchImage(this, mInstance.chanName,
 						galleryItem.getDisplayImageUri(mInstance.locator));
 				break;
@@ -381,17 +382,20 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 			}
 			case OPTIONS_MENU_EXTERNAL_BROWSER:
 			{
+				mPagerUnit.forcePauseVideo();
 				NavigationUtils.handleUri(this, mInstance.chanName, galleryItem.getFileUri(mInstance.locator),
 						NavigationUtils.BrowserType.EXTERNAL);
 				break;
 			}
 			case OPTIONS_MENU_SHARE_LINK:
 			{
+				mPagerUnit.forcePauseVideo();
 				NavigationUtils.share(this, galleryItem.getFileUri(mInstance.locator).toString());
 				break;
 			}
 			case OPTIONS_MENU_SHARE_FILE:
 			{
+				mPagerUnit.forcePauseVideo();
 				Uri uri = galleryItem.getFileUri(mInstance.locator);
 				File file = CacheManager.getInstance().getMediaFile(uri, false);
 				if (file == null) ToastUtils.show(this, R.string.message_cache_unavailable);
