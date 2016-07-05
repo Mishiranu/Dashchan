@@ -43,7 +43,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.Typeface;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Build;
@@ -53,11 +52,7 @@ import android.os.Parcelable;
 import android.text.Editable;
 import android.text.SpannableString;
 import android.text.TextWatcher;
-import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
-import android.text.style.StrikethroughSpan;
-import android.text.style.StyleSpan;
-import android.text.style.UnderlineSpan;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Pair;
@@ -108,10 +103,8 @@ import com.mishiranu.dashchan.graphics.TransparentTileDrawable;
 import com.mishiranu.dashchan.media.JpegData;
 import com.mishiranu.dashchan.net.RecaptchaReader;
 import com.mishiranu.dashchan.preference.Preferences;
-import com.mishiranu.dashchan.text.style.HeadingSpan;
-import com.mishiranu.dashchan.text.style.MonospaceSpan;
-import com.mishiranu.dashchan.text.style.ScriptSpan;
 import com.mishiranu.dashchan.ui.CaptchaController;
+import com.mishiranu.dashchan.ui.MarkupButtonProvider;
 import com.mishiranu.dashchan.ui.Replyable;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.IOUtils;
@@ -175,73 +168,6 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	private final ClickableToast.Holder mClickableToastHolder = new ClickableToast.Holder(this);
 	
 	private PostingService.PostingBinder mBinder;
-	
-	private static abstract class AbsMarkupButton
-	{
-		public final int what;
-		public final int widthDp;
-		public final int priority;
-		public final String text;
-		
-		public AbsMarkupButton(int what, int widthDp, int priority, String text)
-		{
-			this.what = what;
-			this.widthDp = widthDp;
-			this.priority = priority;
-			this.text = text;
-		}
-		
-		public abstract Object getSpan(Context context);
-	}
-	
-	private static class MarkupButton extends AbsMarkupButton
-	{
-		public final Object span;
-		
-		public MarkupButton(int what, int widthDp, int priority, String text, Object span)
-		{
-			super(what, widthDp, priority, text);
-			this.span = span;
-		}
-		
-		@Override
-		public Object getSpan(Context context)
-		{
-			return span;
-		}
-	}
-	
-	private static final ArrayList<AbsMarkupButton> MARKUP_BUTTONS = new ArrayList<>();
-	
-	static
-	{
-		MARKUP_BUTTONS.add(new MarkupButton(ChanMarkup.TAG_BOLD, 40, 0, "B", new StyleSpan(Typeface.BOLD)));
-		MARKUP_BUTTONS.add(new MarkupButton(ChanMarkup.TAG_ITALIC, 40, 1, "I", new StyleSpan(Typeface.ITALIC)));
-		MARKUP_BUTTONS.add(new MarkupButton(ChanMarkup.TAG_UNDERLINE, 40, 2, "U", new UnderlineSpan()));
-		MARKUP_BUTTONS.add(new MarkupButton(ChanMarkup.TAG_STRIKE, 40, 3, "S", new StrikethroughSpan()));
-		MARKUP_BUTTONS.add(new MarkupButton(ChanMarkup.TAG_CODE, 40, 6, "#", new MonospaceSpan(true)));
-		MARKUP_BUTTONS.add(new MarkupButton(ChanMarkup.TAG_ASCII_ART, 44, 9, "AA", new MonospaceSpan(false)));
-		MARKUP_BUTTONS.add(new MarkupButton(ChanMarkup.TAG_HEADING, 44, 7, "H", new HeadingSpan()));
-		MARKUP_BUTTONS.add(new MarkupButton(ChanMarkup.TAG_SUBSCRIPT, 44, 8, "SUB", new ScriptSpan(false)));
-		MARKUP_BUTTONS.add(new MarkupButton(ChanMarkup.TAG_SUPERSCRIPT, 44, 8, "SUP", new ScriptSpan(true)));
-		MARKUP_BUTTONS.add(new AbsMarkupButton(ChanMarkup.TAG_SPOILER, 44, 5, "SP")
-		{
-			@Override
-			public Object getSpan(Context context)
-			{
-				return new BackgroundColorSpan(ResourceUtils.getColor(context, R.attr.backgroundSpoiler));
-			}
-		});
-		MARKUP_BUTTONS.add(new AbsMarkupButton(ChanMarkup.TAG_QUOTE, 40, 4, ">")
-		{
-			@Override
-			public Object getSpan(Context context)
-			{
-				return C.API_LOLLIPOP ? null : new ForegroundColorSpan(ResourceUtils.getColor(context,
-						R.attr.colorTextQuote));
-			}
-		});
-	}
 
 	private static final String EXTRA_SAVED_POST_DRAFT = "ExtraSavedPostDraft";
 	private static final String EXTRA_SAVED_CAPTCHA = "ExtraSavedCaptcha";
@@ -349,67 +275,29 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		else mIconView.setVisibility(View.GONE);
 		
 		float density = ResourceUtils.obtainDensity(this);
-		int handledButtons = 0;
 		int maxButtonsWidth = getResources().getDisplayMetrics().widthPixels - mTextFormatView.getPaddingLeft()
 				- mTextFormatView.getPaddingRight();
-		int buttonsWidth = 0;
 		int buttonMarginLeft = (int) ((C.API_LOLLIPOP ? -4f : 0f) * density);
-		boolean[] allowMarkupButton = new boolean[MARKUP_BUTTONS.size()];
-		int supportedTags = 0;
-		for (int i = 0; handledButtons != MARKUP_BUTTONS.size(); i++)
-		{
-			boolean[] futureMarkupButton = new boolean[MARKUP_BUTTONS.size()];
-			int futureWidth = buttonsWidth;
-			for (int j = 0; j < MARKUP_BUTTONS.size(); j++)
-			{
-				AbsMarkupButton markupButton = MARKUP_BUTTONS.get(j);
-				if (markupButton.priority == i)
-				{
-					if (markup.safe().isTagSupported(mBoardName, markupButton.what) ||
-							markupButton.what == ChanMarkup.TAG_QUOTE)
-					{
-						int width = (int) (markupButton.widthDp * density);
-						if (futureWidth > 0) width += buttonMarginLeft;
-						futureWidth += width;
-						futureMarkupButton[j] = true;
-						supportedTags |= markupButton.what;
-					}
-					handledButtons++;
-				}
-			}
-			if (futureWidth <= maxButtonsWidth)
-			{
-				buttonsWidth = futureWidth;
-				for (int j = 0; j < allowMarkupButton.length; j++) allowMarkupButton[j] |= futureMarkupButton[j];
-			}
-		}
+		Pair<Integer, Integer> supportedAndDisplayedTags = MarkupButtonProvider.obtainSupportedAndDisplayedTags(markup,
+				mBoardName, density, maxButtonsWidth, buttonMarginLeft);
+		int supportedTags = supportedAndDisplayedTags.first;
+		int displayedTags = supportedAndDisplayedTags.second;
 		if (mCommentEditor != null) mCommentEditor.handleSimilar(supportedTags);
 		boolean firstMarkupButton = true;
-		for (int i = 0; i < allowMarkupButton.length; i++)
+		for (MarkupButtonProvider provider : MarkupButtonProvider.iterable(displayedTags))
 		{
-			if (allowMarkupButton[i])
-			{
-				AbsMarkupButton markupButton = MARKUP_BUTTONS.get(i);
-				Button button = new Button(mTextFormatView.getContext(), null, android.R.attr.borderlessButtonStyle);
-				button.setTextSize(TypedValue.COMPLEX_UNIT_DIP, C.API_LOLLIPOP ? 14 : 18);
-				LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams
-						((int) (markupButton.widthDp * density), (int) (40f * density));
-				if (!firstMarkupButton) layoutParams.leftMargin = buttonMarginLeft;
-				button.setTag(markupButton.what);
-				button.setOnClickListener(mFormatButtonClickListener);
-				button.setPadding(0, 0, 0, 0);
-				if (C.API_LOLLIPOP) button.setAllCaps(false);
-				Object span = markupButton.getSpan(this);
-				if (span != null)
-				{
-					SpannableString spannable = new SpannableString(markupButton.text);
-					spannable.setSpan(span, 0, spannable.length(), SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
-					button.setText(spannable);
-				}
-				else button.setText(markupButton.text);
-				mTextFormatView.addView(button, layoutParams);
-				firstMarkupButton = false;
-			}
+			Button button = provider.createButton(mTextFormatView.getContext(), android.R.attr.borderlessButtonStyle);
+			button.setTextSize(TypedValue.COMPLEX_UNIT_DIP, C.API_LOLLIPOP ? 14 : 18);
+			LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams
+					((int) (provider.widthDp * density), (int) (40f * density));
+			if (!firstMarkupButton) layoutParams.leftMargin = buttonMarginLeft;
+			button.setTag(provider.tag);
+			button.setOnClickListener(mFormatButtonClickListener);
+			button.setPadding(0, 0, 0, 0);
+			if (C.API_LOLLIPOP) button.setAllCaps(false);
+			provider.applyTextAndStyle(button);
+			mTextFormatView.addView(button, layoutParams);
+			firstMarkupButton = false;
 		}
 		
 		boolean longFooter = longLayout && !hugeCaptcha;
@@ -1074,23 +962,14 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			int what = (int) v.getTag();
 			switch (what)
 			{
-				case ChanMarkup.TAG_BOLD:
-				case ChanMarkup.TAG_ITALIC:
-				case ChanMarkup.TAG_UNDERLINE:
-				case ChanMarkup.TAG_STRIKE:
-				case ChanMarkup.TAG_SUBSCRIPT:
-				case ChanMarkup.TAG_SUPERSCRIPT:
-				case ChanMarkup.TAG_SPOILER:
-				case ChanMarkup.TAG_CODE:
-				case ChanMarkup.TAG_ASCII_ART:
-				case ChanMarkup.TAG_HEADING:
-				{
-					mCommentEditor.formatSelectedText(mCommentView, what);
-					break;
-				}
 				case ChanMarkup.TAG_QUOTE:
 				{
 					formatQuote();
+					break;
+				}
+				default:
+				{
+					mCommentEditor.formatSelectedText(mCommentView, what);
 					break;
 				}
 			}
