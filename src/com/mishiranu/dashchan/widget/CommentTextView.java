@@ -26,7 +26,6 @@ import java.util.regex.Pattern;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Build;
 import android.text.Layout;
@@ -881,48 +880,11 @@ public class CommentTextView extends TextView
 		return spans;
 	}
 	
-	private final Paint mOverlinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-	
 	@Override
 	protected void onDraw(Canvas canvas)
 	{
 		super.onDraw(canvas);
-		Layout layout = getLayout();
-		if (layout != null)
-		{
-			CharSequence text = getText();
-			if (text instanceof Spanned)
-			{
-				Spanned spanned = (Spanned) text;
-				OverlineSpan[] spans = spanned.getSpans(0, spanned.length(), OverlineSpan.class);
-				if (spans != null && spans.length > 0)
-				{
-					int paddingTop = getExtendedPaddingTop();
-					int paddingLeft = getPaddingLeft();
-					int shift = (int) (getTextSize() * 8f / 9f);
-					float thickness = getTextSize() / 15f - 0.25f;
-					int color = getTextColors().getDefaultColor();
-					Paint paint = mOverlinePaint;
-					paint.setColor(color);
-					paint.setStrokeWidth(thickness);
-					for (OverlineSpan span : spans)
-					{
-						int start = spanned.getSpanStart(span);
-						int end = spanned.getSpanEnd(span);
-						int lineStart = layout.getLineForOffset(start);
-						int lineEnd = layout.getLineForOffset(end);
-						for (int i = lineStart; i <= lineEnd; i++)
-						{
-							float left = i == lineStart ? layout.getPrimaryHorizontal(start) : layout.getLineLeft(i);
-							float right = i == lineEnd ? layout.getPrimaryHorizontal(end) : layout.getLineRight(i);
-							float top = layout.getLineBaseline(i) - shift + 0.5f;
-							canvas.drawLine(paddingLeft + left, paddingTop + top, paddingLeft + right,
-									paddingTop + top, paint);
-						}
-					}
-				}
-			}
-		}
+		OverlineSpan.draw(this, canvas);
 	}
 	
 	private static final Field EDITOR_FIELD;

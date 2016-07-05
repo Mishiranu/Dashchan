@@ -22,6 +22,8 @@ import android.text.Layout;
 import android.util.AttributeSet;
 import android.widget.TextView;
 
+import com.mishiranu.dashchan.text.style.OverlineSpan;
+
 // Allows to cut lines that doesn't fit to view's height.
 public class CutTextView extends TextView
 {
@@ -31,7 +33,7 @@ public class CutTextView extends TextView
 	}
 	
 	@Override
-	public void draw(Canvas canvas)
+	protected void onDraw(Canvas canvas)
 	{
 		int height = getHeight();
 		Layout layout = getLayout();
@@ -50,7 +52,8 @@ public class CutTextView extends TextView
 			canvas.save();
 			canvas.clipRect(0, 0, getWidth(), maxHeight);
 		}
-		super.draw(canvas);
+		super.onDraw(canvas);
+		OverlineSpan.draw(this, canvas);
 		if (maxHeight > 0) canvas.restore();
 	}
 }
