@@ -1430,7 +1430,11 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 			// Invalidate for ThreadsWatcher
 			invalidateDrawerItems(false, true);
 		}
-		if (updateAdapters) notifyAllAdaptersChanged();
+		if (updateAdapters)
+		{
+			getUiManager().dialog().updateAdapters();
+			notifyAllAdaptersChanged();
+		}
 		updateOptionsMenu(false);
 		if (empty && !adapter.isEmpty()) showScaleAnimation();
 		scrollToDefinedPost(first);
