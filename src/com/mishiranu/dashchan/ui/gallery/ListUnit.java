@@ -467,21 +467,21 @@ public class ListUnit implements AdapterView.OnItemClickListener, ActionMode.Cal
 		}
 		
 		@Override
-		public void setBusy(boolean isBusy, AbsListView view)
+		public void setListViewBusy(boolean isBusy, AbsListView listView)
 		{
 			mBusy = isBusy;
 			if (!mBusy)
 			{
 				CacheManager cacheManager = CacheManager.getInstance();
-				int count = view.getChildCount();
+				int count = listView.getChildCount();
 				for (int i = 0; i < count; i++)
 				{
-					View v = view.getChildAt(i);
-					int position = view.getPositionForView(v);
+					View view = listView.getChildAt(i);
+					int position = listView.getPositionForView(view);
 					GalleryItem galleryItem = getItem(position);
 					if (galleryItem.getThumbnailUri(mInstance.locator) != null)
 					{
-						displayThumbnail(v, (GridViewHolder) v.getTag(), cacheManager, galleryItem);
+						displayThumbnail(view, (GridViewHolder) view.getTag(), cacheManager, galleryItem);
 					}
 				}
 			}

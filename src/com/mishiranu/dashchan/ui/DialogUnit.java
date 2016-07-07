@@ -821,20 +821,9 @@ public class DialogUnit implements DialogStack.Callback
 		}
 		
 		@Override
-		public void setBusy(boolean isBusy, AbsListView view)
+		public void setListViewBusy(boolean isBusy, AbsListView listView)
 		{
-			if (!isBusy)
-			{
-				int count = view.getChildCount();
-				for (int i = 0; i < count; i++)
-				{
-					View v = view.getChildAt(i);
-					int position = view.getPositionForView(v);
-					PostItem postItem = getItem(position);
-					if (postItem != null) mUiManager.view().displayThumbnail(v, postItem.getAttachmentItems(), false);
-				}
-			}
-			mDemandSet.isBusy = isBusy;
+			mUiManager.view().handleListViewBusyStateChange(isBusy, listView, mDemandSet);
 		}
 		
 		@Override

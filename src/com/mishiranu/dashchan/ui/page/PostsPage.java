@@ -154,7 +154,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		}
 		PostsAdapter adapter = new PostsAdapter(activity, pageHolder.chanName, pageHolder.boardName, uiManager,
 				mReplyable, mHidePerformer, extra.userPostNumbers, listView);
-		initAdapter(adapter);
+		initAdapter(adapter, adapter);
 		listView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
 		uiManager.observable().register(this);
 		

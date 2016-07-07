@@ -24,7 +24,7 @@ public class BusyScrollListener implements ListView.OnScrollListener, Runnable
 {
 	public static interface Callback
 	{
-		void setBusy(boolean isBusy, AbsListView view);
+		public void setListViewBusy(boolean isBusy, AbsListView listView);
 	}
 	
 	private final Callback mCallback;
@@ -42,14 +42,14 @@ public class BusyScrollListener implements ListView.OnScrollListener, Runnable
 	}
 	
 	private boolean mIsBusy = false, mQueuedIsBusy;
-	private AbsListView mBoundView;
+	private AbsListView mListView;
 	
 	@Override
 	public void onScrollStateChanged(AbsListView view, int scrollState)
 	{
 		boolean isBusy = scrollState != AbsListView.OnScrollListener.SCROLL_STATE_IDLE;
 		mQueuedIsBusy = isBusy;
-		mBoundView = view;
+		mListView = view;
 		mHandler.removeCallbacks(this);
 		if (isBusy && !mIsBusy) run(); else if (!isBusy && mIsBusy) mHandler.postDelayed(this, 250);
 	}
@@ -60,7 +60,7 @@ public class BusyScrollListener implements ListView.OnScrollListener, Runnable
 		if (mQueuedIsBusy != mIsBusy)
 		{
 			mIsBusy = mQueuedIsBusy;
-			mCallback.setBusy(mIsBusy, mBoundView);
+			mCallback.setListViewBusy(mIsBusy, mListView);
 		}
 	}
 }

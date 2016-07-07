@@ -82,7 +82,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		listView.setDivider(null);
 		listView.addOnBeforeLayoutListener(this);
 		ThreadsAdapter adapter = new ThreadsAdapter(activity, pageHolder.chanName, pageHolder.boardName, uiManager);
-		initAdapter(adapter);
+		initAdapter(adapter, adapter);
 		listView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
 		mOldListSelector = listView.getSelector();
 		listView.setSelector(android.R.color.transparent);

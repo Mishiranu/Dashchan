@@ -53,7 +53,7 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 		PageHolder pageHolder = getPageHolder();
 		if (C.API_LOLLIPOP) listView.setDivider(null);
 		ArchiveAdapter adapter = new ArchiveAdapter();
-		initAdapter(adapter);
+		initAdapter(adapter, null);
 		listView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
 		activity.setTitle(getString(R.string.action_archive_view) + ": " + StringUtils
 				.formatBoardTitle(pageHolder.chanName, pageHolder.boardName, null));

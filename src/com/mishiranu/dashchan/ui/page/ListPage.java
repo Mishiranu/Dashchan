@@ -24,6 +24,7 @@ import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 
 import chan.content.ChanConfiguration;
@@ -35,8 +36,10 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ListScroller;
 import com.mishiranu.dashchan.widget.PullableListView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
+import com.mishiranu.dashchan.widget.callback.BusyScrollListener;
 
-public abstract class ListPage<Adapter extends BaseAdapter> implements PullableWrapper.PullCallback
+public abstract class ListPage<Adapter extends BaseAdapter> implements PullableWrapper.PullCallback,
+		BusyScrollListener.Callback
 {
 	public static final int OPTIONS_MENU_APPEARANCE = -1;
 	public static final int OPTIONS_MENU_SEARCH = -2;
@@ -59,8 +62,9 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 	private PullableListView mListView;
 	private UiManager mUiManager;
 	private ActionIconSet mActionIconSet;
-	
+
 	private Adapter mAdapter;
+	private BusyScrollListener.Callback mBusyScrollListenerCallback;
 	private State mState = State.INIT;
 	
 	public final void init(Activity activity, Callback callback, PageHolder pageHolder, PullableListView listView,
@@ -150,11 +154,12 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 		if (mActionIconSet != null) return mActionIconSet.getId(attr); else return 0;
 	}
 	
-	protected final void initAdapter(Adapter adapter)
+	protected final void initAdapter(Adapter adapter, BusyScrollListener.Callback callback)
 	{
 		if (mState == State.LOCKED)
 		{
 			mAdapter = adapter;
+			mBusyScrollListenerCallback = callback;
 			mUiManager.view().notifyUnbindListView(mListView);
 			mListView.setAdapter(adapter);
 		}
@@ -291,6 +296,12 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 	public void onListPulled(PullableWrapper wrapper, PullableWrapper.Side side)
 	{
 		
+	}
+	
+	@Override
+	public void setListViewBusy(boolean isBusy, AbsListView listView)
+	{
+		if (mBusyScrollListenerCallback != null) mBusyScrollListenerCallback.setListViewBusy(isBusy, listView);
 	}
 	
 	public void onCreateNewPost(String postNumber, String comment)

@@ -41,6 +41,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.CardView;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
@@ -896,27 +897,47 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		if (start) notifyUnbindView(view);
 	}
 	
-	public void displayThumbnail(View view, List<AttachmentItem> attachmentItems, boolean force)
+	public void handleListViewBusyStateChange(boolean isBusy, AbsListView listView, UiManager.DemandSet demandSet)
 	{
-		if (attachmentItems != null)
+		if (!isBusy)
 		{
-			Object tag = view.getTag();
-			if (tag instanceof UiManager.Holder)
+			int count = listView.getChildCount();
+			for (int i = 0; i < count; i++)
 			{
-				UiManager.Holder holder = (UiManager.Holder) tag;
-				int size = attachmentItems.size();
-				int count = Math.min(size, holder.getAttachmentViewCount());
-				boolean needShowSeveralIcon = size > 1 && count == 1;
-				for (int i = 0; i < count; i++)
+				View view = listView.getChildAt(i);
+				UiManager.Holder holder = (UiManager.Holder) view.getTag();
+				if (holder != null)
 				{
-					AttachmentItem attachmentItem = attachmentItems.get(i);
-					if (!attachmentItem.isHandled())
-					{
-						attachmentItem.handleImage(holder.getAttachmentView(i), needShowSeveralIcon, false, force);
-					}
+					PostItem postItem = holder.postItem;
+					if (postItem != null) displayThumbnail(holder, postItem.getAttachmentItems(), false);
 				}
 			}
 		}
+		demandSet.isBusy = isBusy;
+	}
+	
+	private void displayThumbnail(UiManager.Holder holder, List<AttachmentItem> attachmentItems, boolean force)
+	{
+		if (attachmentItems != null)
+		{
+			int size = attachmentItems.size();
+			int count = Math.min(size, holder.getAttachmentViewCount());
+			boolean needShowSeveralIcon = size > 1 && count == 1;
+			for (int i = 0; i < count; i++)
+			{
+				AttachmentItem attachmentItem = attachmentItems.get(i);
+				if (!attachmentItem.isHandled())
+				{
+					attachmentItem.handleImage(holder.getAttachmentView(i), needShowSeveralIcon, false, force);
+				}
+			}
+		}
+	}
+	
+	public void displayThumbnail(View view, List<AttachmentItem> attachmentItems, boolean force)
+	{
+		Object tag = view.getTag();
+		if (tag instanceof UiManager.Holder) displayThumbnail((UiManager.Holder) tag, attachmentItems, force);
 	}
 	
 	public void displayThumbnail(ListView listView, int position, List<AttachmentItem> attachmentItems, boolean force)

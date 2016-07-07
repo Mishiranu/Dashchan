@@ -832,25 +832,25 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 	}
 	
 	@Override
-	public void setBusy(boolean isBusy, AbsListView view)
+	public void setListViewBusy(boolean isBusy, AbsListView listView)
 	{
 		if (!isBusy)
 		{
-			int count = view.getChildCount();
+			int count = listView.getChildCount();
 			for (int i = 0; i < count; i++)
 			{
-				View v = view.getChildAt(i);
-				int position = view.getPositionForView(v);
+				View view = listView.getChildAt(i);
+				int position = listView.getPositionForView(view);
 				Object item = getItem(position);
 				if (item instanceof PostItem)
 				{
 					PostItem postItem = (PostItem) item;
-					mUiManager.view().displayThumbnail(v, postItem.getAttachmentItems(), false);
+					mUiManager.view().displayThumbnail(view, postItem.getAttachmentItems(), false);
 				}
 				else if (item instanceof PostItem[])
 				{
 					PostItem[] postItems = (PostItem[]) item;
-					ViewGroup viewGroup = (ViewGroup) v;
+					ViewGroup viewGroup = (ViewGroup) view;
 					for (int j = 0; j < postItems.length; j++)
 					{
 						PostItem postItem = postItems[j];
