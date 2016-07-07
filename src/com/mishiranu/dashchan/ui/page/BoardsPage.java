@@ -55,7 +55,7 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 		PageHolder pageHolder = getPageHolder();
 		if (C.API_LOLLIPOP) listView.setDivider(null);
 		BoardsAdapter adapter = new BoardsAdapter(pageHolder.chanName);
-		initAdapter(adapter);
+		initAdapter(adapter, null);
 		adapter.update();
 		listView.getWrapper().setPullSides(PullableWrapper.Side.TOP);
 		boolean hasUserBoards = getChanConfiguration().getOption(ChanConfiguration.OPTION_READ_USER_BOARDS);

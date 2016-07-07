@@ -565,12 +565,9 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 	}
 	
 	@Override
-	public void setBusy(boolean isBusy, AbsListView view)
+	public void setListViewBusy(boolean isBusy, AbsListView listView)
 	{
-		if (mListView.getAdapter() instanceof BusyScrollListener.Callback)
-		{
-			((BusyScrollListener.Callback) mListView.getAdapter()).setBusy(isBusy, view);
-		}
+		if (mPage != null) mPage.setListViewBusy(isBusy, listView);
 	}
 	
 	@Override
