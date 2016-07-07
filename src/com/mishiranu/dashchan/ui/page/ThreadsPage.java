@@ -384,66 +384,22 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		mGridLayoutControl.onListLayout(width);
 	}
 	
-	private final GridLayoutControl mGridLayoutControl = new GridLayoutControl()
-	{
-		@Override
-		protected ListView getListView()
-		{
-			return ThreadsPage.this.getListView();
-		}
-		
-		@Override
-		protected boolean isGridMode()
-		{
-			return getAdapter().isGridMode();
-		}
-		
-		@Override
-		protected void setGridMode(boolean gridMode)
-		{
-			getAdapter().setGridMode(gridMode);
-		}
-		
-		@Override
-		protected String getPositionInfo(int position)
-		{
-			return getAdapter().getPositionInfo(position);
-		}
-		
-		@Override
-		protected int getPositionFromInfo(String positionInfo)
-		{
-			return getAdapter().getPositionFromInfo(positionInfo);
-		}
-		
-		@Override
-		protected void updateConfiguration(int listViewWidth)
-		{
-			getAdapter().updateConfiguration(listViewWidth);
-		}
-	};
+	private final GridLayoutControl mGridLayoutControl = new GridLayoutControl();
 	
-	static abstract class GridLayoutControl implements Runnable
+	private class GridLayoutControl implements Runnable
 	{
 		private int mCurrentWidth;
 		private ListPosition mListPosition;
 		private String mPositionInfo;
 		
-		protected abstract ListView getListView();
-		protected abstract boolean isGridMode();
-		protected abstract void setGridMode(boolean gridMode);
-		protected abstract String getPositionInfo(int position);
-		protected abstract int getPositionFromInfo(String positionInfo);
-		protected abstract void updateConfiguration(int listViewWidth);
-		
 		public void applyGridMode(boolean gridMode)
 		{
 			ListView listView = getListView();
 			ListPosition listPosition = ListPosition.obtain(listView);
-			String positionInfo = getPositionInfo(listPosition.position);
-			setGridMode(gridMode);
+			String positionInfo = getAdapter().getPositionInfo(listPosition.position);
+			getAdapter().setGridMode(gridMode);
 			Preferences.setThreadsGridMode(gridMode);
-			int position = getPositionFromInfo(positionInfo);
+			int position = getAdapter().getPositionFromInfo(positionInfo);
 			if (position != -1) new ListPosition(position, listPosition.y).apply(listView);
 		}
 		
@@ -463,9 +419,9 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 				mCurrentWidth = width;
 				ListView listView = getListView();
 				listView.removeCallbacks(this);
-				boolean gridMode = isGridMode();
+				boolean gridMode = getAdapter().isGridMode();
 				mListPosition = gridMode ? ListPosition.obtain(listView) : null;
-				mPositionInfo = gridMode ? getPositionInfo(mListPosition.position) : null;
+				mPositionInfo = gridMode ? getAdapter().getPositionInfo(mListPosition.position) : null;
 				listView.post(this);
 			}
 		}
@@ -475,10 +431,10 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		{
 			ListView listView = getListView();
 			listView.removeCallbacks(this);
-			updateConfiguration(listView.getWidth());
+			getAdapter().updateConfiguration(listView.getWidth());
 			if (mPositionInfo != null)
 			{
-				int position = getPositionFromInfo(mPositionInfo);
+				int position = getAdapter().getPositionFromInfo(mPositionInfo);
 				if (position != -1 && position != mListPosition.position)
 				{
 					// Fix list position due to rows count changing

@@ -330,8 +330,57 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 		}
 		else if (item instanceof PostItem[])
 		{
-			convertView = mGridBuilder.getView(mContext, mUiManager, convertView, parent, (PostItem[]) item, position,
-					getCount(), mGridRowCount);
+			PostItem[] postItems = (PostItem[]) item;
+			LinearLayout linearLayout = (LinearLayout) convertView;
+			if (linearLayout == null)
+			{
+				linearLayout = new LinearLayout(mContext);
+				linearLayout.setOrientation(LinearLayout.HORIZONTAL);
+				linearLayout.setMotionEventSplittingEnabled(false);
+				ViewUtils.applyMultipleCardHolderPadding(linearLayout);
+				// Free space view
+				linearLayout.addView(new View(mContext), 0, LinearLayout.LayoutParams.MATCH_PARENT);
+				convertView = linearLayout;
+			}
+			while (linearLayout.getChildCount() - 1 > mGridRowCount) linearLayout.removeViewAt(mGridRowCount - 1);
+			int count = getCount();
+			int freeSpaceIndex = linearLayout.getChildCount() - 1;
+			View freeSpaceView = linearLayout.getChildAt(freeSpaceIndex);
+			freeSpaceView.setVisibility(View.GONE);
+			for (int i = 0; i < postItems.length; i++)
+			{
+				PostItem postItem = postItems[i];
+				if (postItem != null)
+				{
+					View convertViewChild = null;
+					if (i < freeSpaceIndex)
+					{
+						View view = linearLayout.getChildAt(i);
+						if (view.getClass() == View.class) linearLayout.removeViewAt(i); else convertViewChild = view;
+					}
+					boolean add = convertViewChild == null;
+					convertViewChild = mUiManager.view().getThreadViewForGrid(postItem, convertViewChild, parent,
+							mHidePerformer, mChanName, mGridItemContentHeight, mBusy);
+					if (add)
+					{
+						linearLayout.addView(convertViewChild, i, new LinearLayout.LayoutParams(0,
+								LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+					}
+					else convertViewChild.setVisibility(View.VISIBLE);
+					ViewUtils.applyCardHolderPadding(convertViewChild, mUiManager.view()
+							.extractCardView(convertViewChild), position == 0, position == count - 1, true);
+				}
+				else
+				{
+					for (int j = i; j < freeSpaceIndex; j++)
+					{
+						linearLayout.getChildAt(j).setVisibility(View.GONE);
+					}
+					freeSpaceView.setVisibility(View.VISIBLE);
+					((LinearLayout.LayoutParams) freeSpaceView.getLayoutParams()).weight = postItems.length - i;
+					break;
+				}
+			}
 		}
 		else
 		{
@@ -349,75 +398,6 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 					: (int) (8f * density), (int) (20f * density), (int) (4f * density));
 		}
 		return convertView;
-	}
-	
-	private final GridBuilder<PostItem> mGridBuilder = new GridBuilder<PostItem>()
-	{
-		@Override
-		public View getViewChild(PostItem postItem, View convertViewChild, ViewGroup parent)
-		{
-			return mUiManager.view().getThreadViewForGrid(postItem, convertViewChild, parent,
-					mHidePerformer, mChanName, mGridItemContentHeight, mBusy);
-		}
-	};
-	
-	static abstract class GridBuilder<T>
-	{
-		public final View getView(Context context, UiManager uiManager, View convertView, ViewGroup parent, T[] items,
-				int position, int count, int rowCount)
-		{
-			LinearLayout linearLayout = (LinearLayout) convertView;
-			if (linearLayout == null)
-			{
-				linearLayout = new LinearLayout(context);
-				linearLayout.setOrientation(LinearLayout.HORIZONTAL);
-				linearLayout.setMotionEventSplittingEnabled(false);
-				ViewUtils.applyMultipleCardHolderPadding(linearLayout);
-				// Free space view
-				linearLayout.addView(new View(context), 0, LinearLayout.LayoutParams.MATCH_PARENT);
-				convertView = linearLayout;
-			}
-			while (linearLayout.getChildCount() - 1 > rowCount) linearLayout.removeViewAt(rowCount - 1);
-			int freeSpaceIndex = linearLayout.getChildCount() - 1;
-			View freeSpaceView = linearLayout.getChildAt(freeSpaceIndex);
-			freeSpaceView.setVisibility(View.GONE);
-			for (int i = 0; i < items.length; i++)
-			{
-				T item = items[i];
-				if (item != null)
-				{
-					View convertViewChild = null;
-					if (i < freeSpaceIndex)
-					{
-						View view = linearLayout.getChildAt(i);
-						if (view.getClass() == View.class) linearLayout.removeViewAt(i); else convertViewChild = view;
-					}
-					boolean add = convertViewChild == null;
-					convertViewChild = getViewChild(item, convertViewChild, parent);
-					if (add)
-					{
-						linearLayout.addView(convertViewChild, i, new LinearLayout.LayoutParams(0,
-								LinearLayout.LayoutParams.WRAP_CONTENT, 1));
-					}
-					else convertViewChild.setVisibility(View.VISIBLE);
-					ViewUtils.applyCardHolderPadding(convertViewChild, uiManager.view()
-							.extractCardView(convertViewChild), position == 0, position == count - 1, true);
-				}
-				else
-				{
-					for (int j = i; j < freeSpaceIndex; j++)
-					{
-						linearLayout.getChildAt(j).setVisibility(View.GONE);
-					}
-					freeSpaceView.setVisibility(View.VISIBLE);
-					((LinearLayout.LayoutParams) freeSpaceView.getLayoutParams()).weight = items.length - i;
-					break;
-				}
-			}
-			return convertView;
-		}
-		
-		public abstract View getViewChild(T item, View convertViewChild, ViewGroup parent);
 	}
 	
 	private Animator mLastAnimator;
