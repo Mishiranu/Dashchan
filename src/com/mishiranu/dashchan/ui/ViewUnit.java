@@ -47,7 +47,6 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import chan.util.StringUtils;
 
@@ -57,7 +56,6 @@ import com.mishiranu.dashchan.content.ImageLoader;
 import com.mishiranu.dashchan.content.model.AttachmentItem;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.model.PostItem;
-import com.mishiranu.dashchan.content.model.ThreadSummaryItem;
 import com.mishiranu.dashchan.graphics.ColorScheme;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.text.style.LinkSpan;
@@ -168,18 +166,6 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 	
 	public View getThreadView(PostItem postItem, View convertView, ViewGroup parent, String chanName, boolean isBusy)
 	{
-		return getThreadView(postItem, null, convertView, parent, chanName, isBusy);
-	}
-	
-	public View getThreadView(ThreadSummaryItem threadSummaryItem, View convertView, ViewGroup parent,
-			String chanName, boolean isBusy)
-	{
-		return getThreadView(null, threadSummaryItem, convertView, parent, chanName, isBusy);
-	}
-	
-	private View getThreadView(PostItem postItem, ThreadSummaryItem threadSummaryItem,
-			View convertView, ViewGroup parent, String chanName, boolean isBusy)
-	{
 		Context context = mUiManager.getContext();
 		ColorScheme colorScheme = mUiManager.getColorScheme();
 		ThreadViewHolder holder;
@@ -232,98 +218,50 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		}
 		else holder = (ThreadViewHolder) convertView.getTag();
 		
-		if (postItem != null)
+		holder.postItem = postItem;
+		
+		holder.showOpClickView.setEnabled(true);
+		holder.stateSticky.setVisibility(postItem.isSticky() ? View.VISIBLE : View.GONE);
+		holder.stateClosed.setVisibility(postItem.isClosed() ? View.VISIBLE : View.GONE);
+		
+		String subject = postItem.getSubject();
+		if (!StringUtils.isEmpty(subject))
 		{
-			holder.postItem = postItem;
-			
-			holder.showOpClickView.setEnabled(true);
-			holder.stateSticky.setVisibility(postItem.isSticky() ? View.VISIBLE : View.GONE);
-			holder.stateClosed.setVisibility(postItem.isClosed() ? View.VISIBLE : View.GONE);
-			
-			String subject = postItem.getSubject();
-			if (!StringUtils.isEmpty(subject))
-			{
-				holder.subject.setVisibility(View.VISIBLE);
-				holder.subject.setText(subject);
-			}
-			else holder.subject.setVisibility(View.GONE);
-			CharSequence comment = postItem.getThreadCommentShort(parent.getWidth(), holder.comment.getTextSize(), 8);
-			colorScheme.apply(postItem.getThreadCommentShortSpans());
-			if (StringUtils.isEmpty(subject) && StringUtils.isEmpty(comment)) comment = " "; // Avoid 0 height
-			holder.comment.setText(comment);
-			holder.comment.setVisibility(holder.comment.getText().length() > 0 ? View.VISIBLE : View.GONE);
-			holder.description.setText(postItem.formatThreadCardDescription(context, false));
-			
-			holder.thumbnail.resetTransition();
-			List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
-			if (attachmentItems != null)
-			{
-				AttachmentItem attachmentItem = attachmentItems.get(0);
-				boolean needShowSeveralIcon = attachmentItems.size() > 1;
-				attachmentItem.handleImage(holder.thumbnail, needShowSeveralIcon, isBusy, false);
-				holder.thumbnailClickListener.update(0, true);
-				holder.thumbnailLongClickListener.update(attachmentItem);
-				holder.thumbnail.setSfwMode(Preferences.isSfwMode());
-				holder.thumbnail.setVisibility(View.VISIBLE);
-			}
-			else
-			{
-				ImageLoader.getInstance().unbind(holder.thumbnail);
-				holder.thumbnail.setVisibility(View.GONE);
-			}
-			holder.thumbnail.setOnClickListener(holder.thumbnailClickListener);
-			holder.thumbnail.setOnLongClickListener(holder.thumbnailLongClickListener);
+			holder.subject.setVisibility(View.VISIBLE);
+			holder.subject.setText(subject);
 		}
-		else if (threadSummaryItem != null)
+		else holder.subject.setVisibility(View.GONE);
+		CharSequence comment = postItem.getThreadCommentShort(parent.getWidth(), holder.comment.getTextSize(), 8);
+		colorScheme.apply(postItem.getThreadCommentShortSpans());
+		if (StringUtils.isEmpty(subject) && StringUtils.isEmpty(comment)) comment = " "; // Avoid 0 height
+		holder.comment.setText(comment);
+		holder.comment.setVisibility(holder.comment.getText().length() > 0 ? View.VISIBLE : View.GONE);
+		holder.description.setText(postItem.formatThreadCardDescription(context, false));
+		
+		holder.thumbnail.resetTransition();
+		List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
+		if (attachmentItems != null)
 		{
-			holder.postItem = null;
-			
-			holder.showOpClickView.setEnabled(false);
-			holder.stateSticky.setVisibility(View.GONE);
-			holder.stateClosed.setVisibility(View.GONE);
-			
-			String boardName = threadSummaryItem.getBoardName();
-			holder.subject.setText(StringUtils.formatBoardTitle(chanName, boardName,
-					ChanConfiguration.get(chanName).getBoardTitle(boardName)));
-			holder.comment.setText(threadSummaryItem.getDescription());
-			holder.comment.setVisibility(holder.comment.getText().length() > 0 ? View.VISIBLE : View.GONE);
-			holder.description.setText(threadSummaryItem.formatThreadCardDescription(context, false));
-			
-			holder.thumbnail.resetTransition();
-			List<AttachmentItem> attachmentItems = threadSummaryItem.getAttachmentItems();
-			if (attachmentItems != null)
-			{
-				attachmentItems.get(0).handleImage(holder.thumbnail, false, isBusy, false);
-				holder.thumbnail.setSfwMode(Preferences.isSfwMode());
-				holder.thumbnail.setVisibility(View.VISIBLE);
-			}
-			else
-			{
-				ImageLoader.getInstance().unbind(holder.thumbnail);
-				holder.thumbnail.setVisibility(View.GONE);
-			}
-			holder.thumbnail.setOnClickListener(null);
-			holder.thumbnail.setOnLongClickListener(null);
+			AttachmentItem attachmentItem = attachmentItems.get(0);
+			boolean needShowSeveralIcon = attachmentItems.size() > 1;
+			attachmentItem.handleImage(holder.thumbnail, needShowSeveralIcon, isBusy, false);
+			holder.thumbnailClickListener.update(0, true);
+			holder.thumbnailLongClickListener.update(attachmentItem);
+			holder.thumbnail.setSfwMode(Preferences.isSfwMode());
+			holder.thumbnail.setVisibility(View.VISIBLE);
 		}
+		else
+		{
+			ImageLoader.getInstance().unbind(holder.thumbnail);
+			holder.thumbnail.setVisibility(View.GONE);
+		}
+		holder.thumbnail.setOnClickListener(holder.thumbnailClickListener);
+		holder.thumbnail.setOnLongClickListener(holder.thumbnailLongClickListener);
 		return convertView;
 	}
 	
 	public View getThreadViewForGrid(PostItem postItem, View convertView, ViewGroup parent,
 			HidePerformer hidePerformer, String chanName, int contentHeight, boolean isBusy)
-	{
-		return getThreadViewForGrid(postItem, null, convertView, parent, hidePerformer, chanName,
-				contentHeight, isBusy);
-	}
-	
-	public View getThreadViewForGrid(ThreadSummaryItem threadSummaryItem, View convertView, ViewGroup parent,
-			String chanName, int contentHeight, boolean isBusy)
-	{
-		return getThreadViewForGrid(null, threadSummaryItem, convertView, parent, null, chanName,
-				contentHeight, isBusy);
-	}
-	
-	public View getThreadViewForGrid(PostItem postItem, ThreadSummaryItem threadSummaryItem, View convertView,
-			ViewGroup parent, HidePerformer hidePerformer, String chanName, int contentHeight, boolean isBusy)
 	{
 		Context context = mUiManager.getContext();
 		ColorScheme colorScheme = mUiManager.getColorScheme();
@@ -353,82 +291,50 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		}
 		else holder = (ThreadViewHolder) convertView.getTag();
 
-		if (postItem != null)
+		holder.postItem = postItem;
+		
+		holder.showOpClickView.setEnabled(true);
+		List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
+		
+		boolean hidden = postItem.isHidden(hidePerformer);
+		((View) holder.threadContent.getParent()).setAlpha(hidden ? ALPHA_HIDDEN_POST : 1f);
+		String subject = postItem.getSubject();
+		if (!StringUtils.isEmptyOrWhitespace(subject) && !hidden)
 		{
-			holder.postItem = postItem;
-			
-			holder.showOpClickView.setEnabled(true);
-			List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
-			
-			boolean hidden = postItem.isHidden(hidePerformer);
-			((View) holder.threadContent.getParent()).setAlpha(hidden ? ALPHA_HIDDEN_POST : 1f);
-			String subject = postItem.getSubject();
-			if (!StringUtils.isEmptyOrWhitespace(subject) && !hidden)
-			{
-				holder.subject.setVisibility(View.VISIBLE);
-				holder.subject.setText(subject.trim());
-			}
-			else holder.subject.setVisibility(View.GONE);
-			CharSequence comment = null;
-			if (hidden) comment = postItem.getHideReason();
-			if (comment == null)
-			{
-				comment = postItem.getThreadCommentShort(parent.getWidth() / 2,
-						holder.comment.getTextSize(), attachmentItems != null ? 4 : 12);
-				colorScheme.apply(postItem.getThreadCommentShortSpans());
-			}
-			holder.comment.setText(comment);
-			holder.comment.setVisibility(StringUtils.isEmpty(comment) ? View.GONE : View.VISIBLE);
-			holder.description.setText(postItem.formatThreadCardDescription(context, true));
-			
-			holder.thumbnail.resetTransition();
-			if (attachmentItems != null && !hidden)
-			{
-				AttachmentItem attachmentItem = attachmentItems.get(0);
-				boolean needShowSeveralIcon = attachmentItems.size() > 1;
-				attachmentItem.handleImage(holder.thumbnail, needShowSeveralIcon, isBusy, false);
-				holder.thumbnailClickListener.update(0, true);
-				holder.thumbnailLongClickListener.update(attachmentItem);
-				holder.thumbnail.setSfwMode(Preferences.isSfwMode());
-				holder.thumbnail.setVisibility(View.VISIBLE);
-			}
-			else
-			{
-				ImageLoader.getInstance().unbind(holder.thumbnail);
-				holder.thumbnail.setVisibility(View.GONE);
-			}
-			holder.thumbnail.setOnClickListener(holder.thumbnailClickListener);
-			holder.thumbnail.setOnLongClickListener(holder.thumbnailLongClickListener);
+			holder.subject.setVisibility(View.VISIBLE);
+			holder.subject.setText(subject.trim());
 		}
-		else if (threadSummaryItem != null)
+		else holder.subject.setVisibility(View.GONE);
+		CharSequence comment = null;
+		if (hidden) comment = postItem.getHideReason();
+		if (comment == null)
 		{
-			holder.postItem = null;
-			
-			holder.showOpClickView.setEnabled(false);
-			
-			String boardName = threadSummaryItem.getBoardName();
-			holder.subject.setText(StringUtils.formatBoardTitle(chanName, boardName,
-					ChanConfiguration.get(chanName).getBoardTitle(boardName)));
-			holder.comment.setText(threadSummaryItem.getDescription());
-			holder.comment.setVisibility(holder.comment.getText().length() > 0 ? View.VISIBLE : View.GONE);
-			holder.description.setText(threadSummaryItem.formatThreadCardDescription(context, false));
-			
-			holder.thumbnail.resetTransition();
-			List<AttachmentItem> attachmentItems = threadSummaryItem.getAttachmentItems();
-			if (attachmentItems != null)
-			{
-				attachmentItems.get(0).handleImage(holder.thumbnail, false, isBusy, false);
-				holder.thumbnail.setSfwMode(Preferences.isSfwMode());
-				holder.thumbnail.setVisibility(View.VISIBLE);
-			}
-			else
-			{
-				ImageLoader.getInstance().unbind(holder.thumbnail);
-				holder.thumbnail.setVisibility(View.GONE);
-			}
-			holder.thumbnail.setOnClickListener(null);
-			holder.thumbnail.setOnLongClickListener(null);
+			comment = postItem.getThreadCommentShort(parent.getWidth() / 2,
+					holder.comment.getTextSize(), attachmentItems != null ? 4 : 12);
+			colorScheme.apply(postItem.getThreadCommentShortSpans());
 		}
+		holder.comment.setText(comment);
+		holder.comment.setVisibility(StringUtils.isEmpty(comment) ? View.GONE : View.VISIBLE);
+		holder.description.setText(postItem.formatThreadCardDescription(context, true));
+		
+		holder.thumbnail.resetTransition();
+		if (attachmentItems != null && !hidden)
+		{
+			AttachmentItem attachmentItem = attachmentItems.get(0);
+			boolean needShowSeveralIcon = attachmentItems.size() > 1;
+			attachmentItem.handleImage(holder.thumbnail, needShowSeveralIcon, isBusy, false);
+			holder.thumbnailClickListener.update(0, true);
+			holder.thumbnailLongClickListener.update(attachmentItem);
+			holder.thumbnail.setSfwMode(Preferences.isSfwMode());
+			holder.thumbnail.setVisibility(View.VISIBLE);
+		}
+		else
+		{
+			ImageLoader.getInstance().unbind(holder.thumbnail);
+			holder.thumbnail.setVisibility(View.GONE);
+		}
+		holder.thumbnail.setOnClickListener(holder.thumbnailClickListener);
+		holder.thumbnail.setOnLongClickListener(holder.thumbnailLongClickListener);
 		
 		holder.threadContent.getLayoutParams().height = contentHeight;
 		return convertView;
