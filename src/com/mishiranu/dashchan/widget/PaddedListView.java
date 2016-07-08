@@ -16,12 +16,20 @@
 
 package com.mishiranu.dashchan.widget;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.AbsListView;
 import android.widget.ListView;
+
+import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.util.ResourceUtils;
 
 public class PaddedListView extends ListView implements EdgeEffectHandler.Shift
 {
@@ -84,5 +92,84 @@ public class PaddedListView extends ListView implements EdgeEffectHandler.Shift
 	public final int obtainEdgeEffectShift(boolean top)
 	{
 		return  top ? -getTopPaddingOffset() : getBottomPaddingOffset();
+	}
+
+	private Object getFastScroll()
+	{
+		try
+		{
+			Field field = AbsListView.class.getDeclaredField(C.API_LOLLIPOP ? "mFastScroll" : "mFastScroller");
+			field.setAccessible(true);
+			return field.get(this);
+		}
+		catch (Exception e)
+		{
+			
+		}
+		return null;
+	}
+	
+	private boolean mFastScrollModified = false;
+	
+	@Override
+	public void setFastScrollEnabled(boolean enabled)
+	{
+		super.setFastScrollEnabled(enabled);
+		if (enabled && !mFastScrollModified)
+		{
+			Object fastScroll = getFastScroll();
+			if (fastScroll != null)
+			{
+				mFastScrollModified = true;
+				try
+				{
+					Field field = fastScroll.getClass().getDeclaredField("mMinimumTouchTarget");
+					field.setAccessible(true);
+					field.setInt(fastScroll, field.getInt(fastScroll) / 3);
+				}
+				catch (Exception e)
+				{
+					
+				}
+			}
+		}
+	}
+	
+	private boolean mFastScrollIntercept = false;
+	
+	@Override
+	public boolean onInterceptTouchEvent(MotionEvent ev)
+	{
+		if (super.onInterceptTouchEvent(ev)) return true;
+		if (ev.getAction() == MotionEvent.ACTION_DOWN)
+		{
+			boolean intercept = false;
+			if (isFastScrollEnabled())
+			{
+				// Fast scroll has higher priority, than click to child views
+				boolean calculateManually = true;
+				Object fastScroll = getFastScroll();
+				if (fastScroll != null)
+				{
+					try
+					{
+						Method method = fastScroll.getClass().getDeclaredMethod("isPointInsideX", float.class);
+						method.setAccessible(true);
+						intercept = (boolean) method.invoke(fastScroll, ev.getX());
+						calculateManually = false;
+					}
+					catch (Exception e)
+					{
+						
+					}
+				}
+				if (calculateManually)
+				{
+					intercept = getWidth() - ev.getX() < (int) (30f * ResourceUtils.obtainDensity(this));
+				}
+			}
+			mFastScrollIntercept = intercept;
+		}
+		return mFastScrollIntercept;
 	}
 }
