@@ -25,8 +25,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AbsListView;
 
-import com.mishiranu.dashchan.util.ResourceUtils;
-
 public class PullableListView extends PaddedListView implements PullableWrapper.Wrapped, AbsListView.OnScrollListener
 {
 	private final PullableWrapper mWrapper = new PullableWrapper(this);
@@ -46,27 +44,6 @@ public class PullableListView extends PaddedListView implements PullableWrapper.
 		super(context, attrs, defStyleAttr);
 		super.setOnScrollListener(this);
 		mWrapper.handleAttrs(attrs, defStyleAttr, 0);
-	}
-	
-	private boolean mFastScrollerIntercept = false;
-	
-	@Override
-	public boolean onInterceptTouchEvent(MotionEvent ev)
-	{
-		if (super.onInterceptTouchEvent(ev)) return true;
-		if (ev.getAction() == MotionEvent.ACTION_DOWN)
-		{
-			boolean intercept = false;
-			if (isFastScrollEnabled())
-			{
-				// Scroller has higher priority, than click to child views
-				float density = ResourceUtils.obtainDensity(this);
-				int minSize = (int) (32 * density);
-				intercept = getWidth() - ev.getX() < minSize;
-			}
-			mFastScrollerIntercept = intercept;
-		}
-		return mFastScrollerIntercept;
 	}
 	
 	private OnScrollListener mOnScrollListener;
