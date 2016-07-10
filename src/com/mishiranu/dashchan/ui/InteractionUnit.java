@@ -18,7 +18,6 @@ package com.mishiranu.dashchan.ui;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 
 import android.app.AlertDialog;
@@ -243,7 +242,7 @@ public class InteractionUnit
 		public void onClick(View v)
 		{
 			UiManager.Holder holder = ListViewUtils.getViewHolder(v, UiManager.Holder.class);
-			List<AttachmentItem> attachmentItems = holder.postItem.getAttachmentItems();
+			ArrayList<AttachmentItem> attachmentItems = holder.postItem.getAttachmentItems();
 			if (attachmentItems != null)
 			{
 				GalleryItem.GallerySet gallerySet = holder.getGallerySet();
@@ -393,7 +392,7 @@ public class InteractionUnit
 		new ThumbnailLongClickDialog(mUiManager, attachmentItem, attachmentView, hasViewHolder, threadTitle);
 	}
 	
-	public boolean handlePostClick(View view, PostItem postItem)
+	public boolean handlePostClick(View view, PostItem postItem, ArrayList<PostItem> localPostItems)
 	{
 		if (postItem.isHiddenUnchecked())
 		{
@@ -402,7 +401,23 @@ public class InteractionUnit
 			mUiManager.sendPostItemMessage(postItem, UiManager.MESSAGE_PERFORM_SERIALIZE);
 			return true;
 		}
-		else return mUiManager.view().handlePostForDoubleClick(view);
+		else
+		{
+			if (Preferences.getHighlightUnreadMode() == Preferences.HIGHLIGHT_UNREAD_MANUALLY)
+			{
+				for (int i = 0; i < localPostItems.size(); i++)
+				{
+					PostItem itPostItem = localPostItems.get(i);
+					if (itPostItem != null && itPostItem.isUnread())
+					{
+						itPostItem.setUnread(false);
+						mUiManager.sendPostItemMessage(itPostItem, UiManager.MESSAGE_INVALIDATE_VIEW);
+					}
+					if (itPostItem == postItem) break;
+				}
+			}
+			return mUiManager.view().handlePostForDoubleClick(view);
+		}
 	}
 	
 	private static final int MENU_REPLY = 0;

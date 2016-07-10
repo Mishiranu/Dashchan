@@ -184,6 +184,11 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 		return convertView;
 	}
 	
+	public ArrayList<PostItem> getItems()
+	{
+		return mPostItems;
+	}
+	
 	public int findPositionByOrdinalIndex(int ordinalIndex)
 	{
 		for (int i = 0; i < getCount(); i++)

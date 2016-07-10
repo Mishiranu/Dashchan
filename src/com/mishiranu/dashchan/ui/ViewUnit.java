@@ -568,11 +568,28 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		}
 		if (viewsEnabled && postItem.isUnread())
 		{
-			Animator animator = AnimationUtils.ofNewPostWithStartDelay(convertView, postItem,
-					colorScheme.highlightBackgroundColor);
-			animator.setDuration(500);
-			animator.start();
-			holder.newPostAnimator = animator;
+			switch (Preferences.getHighlightUnreadMode())
+			{
+				case Preferences.HIGHLIGHT_UNREAD_AUTOMATICALLY:
+				{
+					Animator animator = AnimationUtils.ofNewPostWithStartDelay(convertView, postItem,
+							colorScheme.highlightBackgroundColor);
+					animator.setDuration(500);
+					animator.start();
+					holder.newPostAnimator = animator;
+					break;
+				}
+				case Preferences.HIGHLIGHT_UNREAD_MANUALLY:
+				{
+					convertView.setBackgroundColor(colorScheme.highlightBackgroundColor);
+					break;
+				}
+				default:
+				{
+					convertView.setBackground(null);
+					break;
+				}
+			}
 		}
 		else if (demandSet.selectionMode == UiManager.SELECTION_SELECTED)
 		{
