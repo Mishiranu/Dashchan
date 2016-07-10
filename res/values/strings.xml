@@ -462,6 +462,12 @@
 		<item>Order by title</item>
 	</string-array>
 	<string name="preference_hide_personal_data">Hide personal data block</string>
+	<string name="preference_highlight_unread">Highlight unread posts</string>
+	<string-array name="preference_highlight_unread_choices">
+		<item>Hide eventually</item>
+		<item>Hide on tap</item>
+		<item>Never highlight</item>
+	</string-array>
 	<string name="preference_huge_captcha">Huge captcha</string>
 	<string name="preference_internal_browser">Internal browser</string>
 	<string name="preference_internal_browser_sumamry">Open external links in internal browser</string>

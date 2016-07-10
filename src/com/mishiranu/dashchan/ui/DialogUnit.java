@@ -18,6 +18,7 @@ package com.mishiranu.dashchan.ui;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -113,13 +114,13 @@ public class DialogUnit implements DialogStack.Callback
 	
 	private class DialogHolder implements UiManager.Observer
 	{
-		public final RepliesAdapter adapter;
+		public final DialogPostsAdapter adapter;
 		public final DialogProvider dialogProvider;
 		
 		public final FrameLayout content;
 		public final ListView listView;
 		
-		public DialogHolder(RepliesAdapter adapter, DialogProvider dialogProvider, FrameLayout content,
+		public DialogHolder(DialogPostsAdapter adapter, DialogProvider dialogProvider, FrameLayout content,
 				ListView listView)
 		{
 			this.adapter = adapter;
@@ -243,7 +244,7 @@ public class DialogUnit implements DialogStack.Callback
 		public boolean onStateChanged(int state);
 	}
 	
-	private abstract class DialogProvider
+	private abstract class DialogProvider implements Iterable<PostItem>
 	{
 		public final UiManager.ConfigurationSet configurationSet;
 		
@@ -251,9 +252,6 @@ public class DialogUnit implements DialogStack.Callback
 		{
 			this.configurationSet = configurationSet;
 		}
-		
-		public abstract int getCount();
-		public abstract PostItem getItem(int index);
 		
 		public void onRequestUpdateDemandSet(UiManager.DemandSet demandSet, int index)
 		{
@@ -313,15 +311,9 @@ public class DialogUnit implements DialogStack.Callback
 		}
 		
 		@Override
-		public int getCount()
+		public Iterator<PostItem> iterator()
 		{
-			return 1;
-		}
-		
-		@Override
-		public PostItem getItem(int index)
-		{
-			return mPostItem;
+			return Collections.singletonList(mPostItem).iterator();
 		}
 	}
 	
@@ -420,15 +412,19 @@ public class DialogUnit implements DialogStack.Callback
 		}
 		
 		@Override
-		public int getCount()
+		public PostItem findPostItem(String postNumber)
 		{
-			return mPostItems.size();
+			for (PostItem postItem : mPostItems)
+			{
+				if (postNumber.equals(postItem.getPostNumber())) return postItem;
+			}
+			return null;
 		}
 		
 		@Override
-		public PostItem getItem(int index)
+		public Iterator<PostItem> iterator()
 		{
-			return mPostItems.get(index);
+			return mPostItems.iterator();
 		}
 		
 		@Override
@@ -440,7 +436,7 @@ public class DialogUnit implements DialogStack.Callback
 		@Override
 		public void onLinkClick(CommentTextView view, String chanName, Uri uri, boolean confirmed)
 		{
-			PostItem originalPostItem = getItem(0);
+			PostItem originalPostItem = mPostItems.get(0);
 			String boardName = originalPostItem.getBoardName();
 			String threadNumber = originalPostItem.getThreadNumber();
 			ChanLocator locator = ChanLocator.get(chanName);
@@ -467,28 +463,12 @@ public class DialogUnit implements DialogStack.Callback
 		{
 			mUiManager.interaction().handleLinkLongClick(view, chanName, uri);
 		}
-		
-		@Override
-		public PostItem findPostItem(String postNumber)
-		{
-			for (PostItem postItem : mPostItems)
-			{
-				if (postNumber.equals(postItem.getPostNumber())) return postItem;
-			}
-			return null;
-		}
-		
-		@Override
-		public Iterator<PostItem> iterator()
-		{
-			return mPostItems.iterator();
-		}
 	}
 	
 	private class RepliesDialogPostsProvider extends DialogProvider
 	{
 		private final PostItem mPostItem;
-		private final ArrayList<PostItem> mPosts = new ArrayList<>();
+		private final ArrayList<PostItem> mPostItems = new ArrayList<>();
 		
 		public RepliesDialogPostsProvider(PostItem postItem, UiManager.ConfigurationSet configurationSet,
 				String repliesToPost)
@@ -499,28 +479,22 @@ public class DialogUnit implements DialogStack.Callback
 		}
 		
 		@Override
-		public int getCount()
+		public Iterator<PostItem> iterator()
 		{
-			return mPosts.size();
-		}
-		
-		@Override
-		public PostItem getItem(int index)
-		{
-			return mPosts.get(index);
+			return mPostItems.iterator();
 		}
 		
 		@Override
 		public void onRequestUpdate()
 		{
 			super.onRequestUpdate();
-			mPosts.clear();
+			mPostItems.clear();
 			LinkedHashSet<String> referencesFrom = mPostItem.getReferencesFrom();
 			if (referencesFrom != null)
 			{
 				for (PostItem postItem : configurationSet.postsProvider)
 				{
-					if (referencesFrom.contains(postItem.getPostNumber())) mPosts.add(postItem);
+					if (referencesFrom.contains(postItem.getPostNumber())) mPostItems.add(postItem);
 				}
 			}
 		}
@@ -551,15 +525,11 @@ public class DialogUnit implements DialogStack.Callback
 		}
 		
 		@Override
-		public int getCount()
+		public Iterator<PostItem> iterator()
 		{
-			return mPostItem != null ? 1 : 0;
-		}
-		
-		@Override
-		public PostItem getItem(int index)
-		{
-			return mPostItem;
+			List<PostItem> list;
+			if (mPostItem != null) list = Collections.singletonList(mPostItem); else list = Collections.emptyList();
+			return list.iterator();
 		}
 		
 		@Override
@@ -677,7 +647,7 @@ public class DialogUnit implements DialogStack.Callback
 		FrameLayout content = new FrameLayout(context);
 		ListView listView = new ListView(context);
 		content.addView(listView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
-		RepliesAdapter adapter = new RepliesAdapter(dialogProvider, listView);
+		DialogPostsAdapter adapter = new DialogPostsAdapter(dialogProvider, listView);
 		listView.setOnItemClickListener(adapter);
 		listView.setOnItemLongClickListener(adapter);
 		listView.setOnScrollListener(new BusyScrollListener(adapter));
@@ -748,7 +718,7 @@ public class DialogUnit implements DialogStack.Callback
 		if (holder != null && holder.position != null) holder.position.apply(holder.listView);
 	}
 	
-	private class RepliesAdapter extends BaseAdapter implements BusyScrollListener.Callback,
+	private class DialogPostsAdapter extends BaseAdapter implements BusyScrollListener.Callback,
 			AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener
 	{
 		private static final int ITEM_VIEW_TYPE_POST = 0;
@@ -757,16 +727,25 @@ public class DialogUnit implements DialogStack.Callback
 		private final DialogProvider mDialogProvider;
 		private final UiManager.DemandSet mDemandSet = new UiManager.DemandSet();
 		private final CommentTextView.ListSelectionKeeper mListSelectionKeeper;
+		private final ArrayList<PostItem> mPostItems = new ArrayList<>();
 		
-		public RepliesAdapter(DialogProvider dialogProvider, ListView listView)
+		public DialogPostsAdapter(DialogProvider dialogProvider, ListView listView)
 		{
 			mDialogProvider = dialogProvider;
 			mListSelectionKeeper = new CommentTextView.ListSelectionKeeper(listView);
+			updatePostItems();
+		}
+		
+		private void updatePostItems()
+		{
+			mPostItems.clear();
+			for (PostItem postItem : mDialogProvider) mPostItems.add(postItem);
 		}
 		
 		@Override
 		public void notifyDataSetChanged()
 		{
+			updatePostItems();
 			mListSelectionKeeper.onBeforeNotifyDataSetChanged();
 			super.notifyDataSetChanged();
 			mListSelectionKeeper.onAfterNotifyDataSetChanged();
@@ -788,13 +767,13 @@ public class DialogUnit implements DialogStack.Callback
 		@Override
 		public int getCount()
 		{
-			return mDialogProvider.getCount();
+			return mPostItems.size();
 		}
 		
 		@Override
 		public PostItem getItem(int position)
 		{
-			return mDialogProvider.getItem(position);
+			return mPostItems.get(position);
 		}
 		
 		@Override
@@ -829,7 +808,7 @@ public class DialogUnit implements DialogStack.Callback
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id)
 		{
-			mUiManager.interaction().handlePostClick(view, getItem(position));
+			mUiManager.interaction().handlePostClick(view, getItem(position), mPostItems);
 		}
 		
 		@Override

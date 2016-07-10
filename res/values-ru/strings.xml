@@ -483,6 +483,12 @@
 		<item>Сортировать по заголовку</item>
 	</string-array>
 	<string name="preference_hide_personal_data">Скрыть блок личных данных</string>
+	<string name="preference_highlight_unread">Подсвечивать непрочитанное</string>
+	<string-array name="preference_highlight_unread_choices">
+		<item>Скрывать со временем</item>
+		<item>Скрывать при нажатии</item>
+		<item>Не подсвечивать</item>
+	</string-array>
 	<string name="preference_huge_captcha">Большая капча</string>
 	<string name="preference_internal_browser">Встроенный браузер</string>
 	<string name="preference_internal_browser_sumamry">Открывать внешние ссылки во встроенном браузере</string>

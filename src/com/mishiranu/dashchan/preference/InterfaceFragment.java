@@ -55,6 +55,9 @@ public class InterfaceFragment extends BasePreferenceFragment
 				InputType.TYPE_CLASS_NUMBER, false);
 		makeCheckBox(postsCategory, true, Preferences.KEY_ALL_ATTACHMENTS, Preferences.DEFAULT_ALL_ATTACHMENTS,
 				R.string.preference_all_attachments, R.string.preference_all_attachments_summary);
+		makeList(postsCategory, Preferences.KEY_HIGHLIGHT_UNREAD, Preferences.VALUES_HIGHLIGHT_UNREAD,
+				Preferences.DEFAULT_HIGHLIGHT_UNREAD, R.string.preference_highlight_unread,
+				R.array.preference_highlight_unread_choices);
 		makeCheckBox(postsCategory, true, Preferences.KEY_DISPLAY_ICONS, Preferences.DEFAULT_DISPLAY_ICONS,
 				R.string.preference_display_icons, R.string.preference_display_icons_summary);
 		

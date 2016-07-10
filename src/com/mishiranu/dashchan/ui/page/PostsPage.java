@@ -297,7 +297,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		}
 		PostsAdapter adapter = getAdapter();
 		PostItem postItem = adapter.getItem(position);
-		if (postItem != null) getUiManager().interaction().handlePostClick(view, postItem);
+		if (postItem != null) getUiManager().interaction().handlePostClick(view, postItem, adapter.getItems());
 	}
 	
 	@Override

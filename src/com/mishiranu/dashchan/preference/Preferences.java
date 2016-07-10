@@ -611,6 +611,27 @@ public class Preferences
 		return PREFERENCES.getBoolean(KEY_HIDE_PERSONAL_DATA, DEFAULT_HIDE_PERSONAL_DATA);
 	}
 	
+	public static final String KEY_HIGHLIGHT_UNREAD = "highlight_unread_posts";
+	public static final String VALUE_HIGHLIGHT_UNREAD_AUTOMATICALLY = "automatically";
+	public static final String VALUE_HIGHLIGHT_UNREAD_MANUALLY = "manually";
+	public static final String VALUE_HIGHLIGHT_UNREAD_NEVER = "never";
+	public static final String[] VALUES_HIGHLIGHT_UNREAD = new String[] {VALUE_HIGHLIGHT_UNREAD_AUTOMATICALLY,
+		VALUE_HIGHLIGHT_UNREAD_MANUALLY, VALUE_HIGHLIGHT_UNREAD_NEVER};
+	public static final String DEFAULT_HIGHLIGHT_UNREAD = VALUE_HIGHLIGHT_UNREAD_AUTOMATICALLY;
+	
+	public static final int HIGHLIGHT_UNREAD_AUTOMATICALLY = 0;
+	public static final int HIGHLIGHT_UNREAD_MANUALLY = 1;
+	public static final int HIGHLIGHT_UNREAD_NEVER = 2;
+	
+	public static int getHighlightUnreadMode()
+	{
+		String value = PREFERENCES.getString(KEY_HIGHLIGHT_UNREAD, DEFAULT_HIGHLIGHT_UNREAD);
+		if (VALUE_HIGHLIGHT_UNREAD_AUTOMATICALLY.equals(value)) return HIGHLIGHT_UNREAD_AUTOMATICALLY;
+		if (VALUE_HIGHLIGHT_UNREAD_MANUALLY.equals(value)) return HIGHLIGHT_UNREAD_MANUALLY;
+		if (VALUE_HIGHLIGHT_UNREAD_NEVER.equals(value)) return HIGHLIGHT_UNREAD_NEVER;
+		return HIGHLIGHT_UNREAD_AUTOMATICALLY;
+	}
+	
 	public static final String KEY_HUGE_CAPTCHA = "huge_captcha";
 	public static final boolean DEFAULT_HUGE_CAPTCHA = false;
 	
@@ -1172,6 +1193,7 @@ public class Preferences
 		private final boolean allAttachments;
 		private final boolean cutThumbnails;
 		private final boolean displayIcons;
+		private final int highlightUnreadMode;
 		private final String loadThumbnailsMode;
 		private final String locale;
 		private final int postMaxLines;
@@ -1184,6 +1206,7 @@ public class Preferences
 			allAttachments = isAllAttachments();
 			cutThumbnails = isCutThumbnails();
 			displayIcons = isDisplayIcons();
+			highlightUnreadMode = getHighlightUnreadMode();
 			loadThumbnailsMode = getLoadThumbnailsMode();
 			locale = getLocale();
 			postMaxLines = getPostMaxLines();
@@ -1194,7 +1217,7 @@ public class Preferences
 		public boolean isNeedRefreshList(Holder another)
 		{
 			return allAttachments != another.allAttachments || cutThumbnails != another.cutThumbnails ||
-					displayIcons != another.displayIcons ||
+					displayIcons != another.displayIcons || highlightUnreadMode != another.highlightUnreadMode ||
 					!StringUtils.equals(loadThumbnailsMode, another.loadThumbnailsMode);
 		}
 		
