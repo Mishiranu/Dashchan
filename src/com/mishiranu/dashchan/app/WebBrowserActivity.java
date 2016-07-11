@@ -32,14 +32,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.CookieManager;
 import android.webkit.DownloadListener;
 import android.webkit.SslErrorHandler;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.webkit.WebViewDatabase;
 import android.widget.FrameLayout;
 
 import chan.content.ChanLocator;
@@ -54,6 +52,7 @@ import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
+import com.mishiranu.dashchan.util.WebViewUtils;
 
 public class WebBrowserActivity extends StateActivity implements DownloadListener
 {
@@ -61,7 +60,6 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 	private ProgressView mProgressView;
 	
 	@SuppressLint("SetJavaScriptEnabled")
-	@SuppressWarnings("deprecation")
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
@@ -88,24 +86,20 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 		frameLayout.addView(mProgressView, FrameLayout.LayoutParams.MATCH_PARENT, (int) (3f * density + 0.5f));
 		setContentView(frameLayout, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
 				ViewGroup.LayoutParams.MATCH_PARENT));
-		CookieManager.getInstance().removeAllCookie();
 		webView.setDownloadListener(this);
+		WebViewUtils.clearAll(webView);
 		webView.loadUrl(getIntent().getData().toString());
 		registerForContextMenu(webView);
 	}
 	
-	@SuppressWarnings("deprecation")
 	@Override
 	protected void onFinish()
 	{
 		super.onFinish();
 		mWebView.stopLoading();
-		mWebView.clearCache(true);
 		ViewUtils.removeFromParent(mWebView);
+		WebViewUtils.clearAll(mWebView);
 		mWebView.destroy();
-		WebViewDatabase.getInstance(this).clearFormData();
-		WebViewDatabase.getInstance(this).clearHttpAuthUsernamePassword();
-		CookieManager.getInstance().removeAllCookie();
 	}
 	
 	private static final int OPTIONS_MENU_RELOAD = 0;

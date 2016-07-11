@@ -51,6 +51,7 @@ import com.mishiranu.dashchan.app.MainApplication;
 import com.mishiranu.dashchan.async.ReadCaptchaTask;
 import com.mishiranu.dashchan.content.CaptchaManager;
 import com.mishiranu.dashchan.preference.Preferences;
+import com.mishiranu.dashchan.util.WebViewUtils;
 
 public class CloudFlarePasser implements Handler.Callback
 {
@@ -165,15 +166,12 @@ public class CloudFlarePasser implements Handler.Callback
 		}
 	}
 	
-	@SuppressWarnings("deprecation")
 	private void handleJavaScript(CloudFlareClient client)
 	{
 		String chanName = client.mChanName;
 		client.notifyStarted();
 		mWebView.stopLoading();
-		CookieManager.getInstance().removeAllCookie();
-		if (!C.API_LOLLIPOP) android.webkit.CookieSyncManager.getInstance().sync();
-		mWebView.clearCache(true);
+		WebViewUtils.clearAll(mWebView);
 		mWebView.setWebViewClient(client);
 		ChanLocator locator = ChanLocator.get(chanName);
 		mWebView.loadUrl(locator.buildPath().toString());
@@ -280,14 +278,12 @@ public class CloudFlarePasser implements Handler.Callback
 	
 	private WebView mWebView;
 	
-	@SuppressWarnings("deprecation")
 	@SuppressLint("SetJavaScriptEnabled")
 	private void initWebView()
 	{
 		if (mWebView == null)
 		{
 			Context context = MainApplication.getInstance();
-			if (!C.API_LOLLIPOP) android.webkit.CookieSyncManager.createInstance(context);
 			mWebView = new WebView(context);
 			WebSettings settings = mWebView.getSettings();
 			settings.setUserAgentString(C.USER_AGENT);

@@ -62,6 +62,7 @@ import com.mishiranu.dashchan.text.HtmlParser;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
+import com.mishiranu.dashchan.util.WebViewUtils;
 
 public class RecaptchaReader implements Handler.Callback
 {
@@ -577,7 +578,6 @@ public class RecaptchaReader implements Handler.Callback
 	private static final int MESSAGE_CHECK_IMAGE_TOO_FEW = 8;
 	
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
-	@SuppressWarnings("deprecation")
 	@Override
 	public boolean handleMessage(Message msg)
 	{
@@ -645,17 +645,16 @@ public class RecaptchaReader implements Handler.Callback
 				else
 				{
 					mWebView.stopLoading();
+					WebViewUtils.clearAll(mWebView);
 					CookieManager cookieManager = CookieManager.getInstance();
-					cookieManager.removeAllCookie();
 					String cookies = COOKIES;
 					if (cookies != null)
 					{
-						if (C.API_LOLLIPOP) cookieManager.setAcceptThirdPartyCookies(mWebView, true);
+						WebViewUtils.setThirdPartyCookiesEnabled(mWebView);
 						for (String cookie : cookies.split("; *"))
 						{
 							cookieManager.setCookie("google.com", cookie + "; path=/; domain=.google.com");
 						}
-						if (!C.API_LOLLIPOP) android.webkit.CookieSyncManager.getInstance().sync();
 					}
 					mClient.setLoadingHolder(loadingHolder);
 					ChanLocator locator = ChanLocator.getDefault();
@@ -671,7 +670,6 @@ public class RecaptchaReader implements Handler.Callback
 						if (mRecaptchaV1Html == null) mRecaptchaV1Html = readHtmlAsset("recaptcha-v1.html");
 						data = mRecaptchaV1Html.replace("__REPLACE_API_KEY__", loadingHolder.apiKey);
 					}
-					mWebView.clearCache(true);
 					mWebView.loadDataWithBaseURL(uriString, data, "text/html", "UTF-8", null);
 				}
 				return true;
@@ -1004,6 +1002,7 @@ public class RecaptchaReader implements Handler.Callback
 			settings.setJavaScriptEnabled(true);
 			settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
 			settings.setAppCacheEnabled(false);
+			WebViewUtils.clearAll(mWebView);
 			/*{
 				mWebView.setInitialScale(100);
 				mWebView.layout(0, 0, 400, 600);
