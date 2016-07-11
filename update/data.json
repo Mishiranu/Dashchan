@@ -364,11 +364,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.7",
+			"name": "1.8",
 			"code": 1,
 			"version": 1,
 			"minSdk": 14,
-			"length": 62892,
+			"length": 63188,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanNulleu.apk"
 		}
 	],
