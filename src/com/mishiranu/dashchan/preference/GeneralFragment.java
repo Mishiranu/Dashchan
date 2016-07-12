@@ -59,13 +59,14 @@ public class GeneralFragment extends BasePreferenceFragment
 				Preferences.getCaptchaTypeEntries(null, captchaTypes));
 		
 		PreferenceCategory connectionCategory = makeCategory(R.string.preference_category_connection);
-		makeButton(connectionCategory, null, getString(R.string.preference_use_https_warning), true)
-				.setSelectable(false);
+		makeButton(connectionCategory, 0, R.string.preference_use_https_warning, true).setSelectable(false);
 		makeCheckBox(connectionCategory, true, Preferences.KEY_USE_HTTPS_GENERAL, Preferences.DEFAULT_USE_HTTPS,
-				getString(R.string.preference_use_https), getString(R.string.preference_use_https_summary));
+				R.string.preference_use_https, R.string.preference_use_https_summary);
 		makeCheckBox(connectionCategory, true, Preferences.KEY_VERIFY_CERTIFICATE,
 				Preferences.DEFAULT_VERIFY_CERTIFICATE, R.string.preference_verify_certificate,
 				R.string.preference_verify_certificate_summary);
+		makeCheckBox(connectionCategory, true, Preferences.KEY_USE_GMS_PROVIDER, Preferences.DEFAULT_USE_GMS_PROVIDER,
+				R.string.preference_use_gms_provider, R.string.preference_use_gms_provider_summary);
 	}
 	
 	@Override
