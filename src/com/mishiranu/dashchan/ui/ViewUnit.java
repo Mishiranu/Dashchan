@@ -130,9 +130,9 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		mUiManager.dialog().closeDialogs();
 	}
 	
-	public void setHighlightText(Collection<String> hightlightText)
+	public void setHighlightText(Collection<String> highlightText)
 	{
-		mHighlightText = hightlightText;
+		mHighlightText = highlightText;
 	}
 	
 	private final CommentTextView.LinkListener mDefaultLinkListener = new CommentTextView.LinkListener()
