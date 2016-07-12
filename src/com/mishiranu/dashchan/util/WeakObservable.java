@@ -52,7 +52,8 @@ public class WeakObservable<T> implements Iterable<T>
 		
 		private T mNext;
 		
-		private void prepareNext()
+		@Override
+		public boolean hasNext()
 		{
 			if (mNext == null)
 			{
@@ -67,21 +68,14 @@ public class WeakObservable<T> implements Iterable<T>
 					else mIterator.remove();
 				}
 			}
-		}
-		
-		@Override
-		public boolean hasNext()
-		{
-			prepareNext();
 			return mNext != null;
 		}
 		
 		@Override
 		public T next()
 		{
-			prepareNext();
+			if (!hasNext()) throw new NoSuchElementException();
 			T next = mNext;
-			if (next == null) throw new NoSuchElementException();
 			mNext = null;
 			return next;
 		}
