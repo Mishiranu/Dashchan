@@ -52,11 +52,10 @@ public final class AsyncManager
 		
 		public boolean attached = false;
 				
-		@Deprecated
 		@Override
-		public void onAttach(Activity activity)
+		public void onActivityCreated(Bundle savedInstanceState)
 		{
-			super.onAttach(activity);
+			super.onActivityCreated(savedInstanceState);
 			if (!attached)
 			{
 				attached = true;
