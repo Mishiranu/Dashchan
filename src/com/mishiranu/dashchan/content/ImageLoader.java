@@ -277,7 +277,8 @@ public class ImageLoader
 					{
 						String chanName = ChanManager.getInstance().getChanNameByHost(mUri.getAuthority());
 						if (chanName == null) chanName = mChanName;
-						final int connectTimeout = 10000, readTimeout = 1000;
+						int connectTimeout = 10000;
+						int readTimeout = 5000;
 						if (chanName != null)
 						{
 							ChanPerformer performer = ChanPerformer.get(chanName);
