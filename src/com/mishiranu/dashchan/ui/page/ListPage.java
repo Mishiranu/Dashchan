@@ -334,6 +334,7 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 		if (mState == State.PAUSED)
 		{
 			mState = State.RESUMED;
+			setListViewBusy(false, mListView); // Refresh list view contents
 			onResume();
 		}
 	}
