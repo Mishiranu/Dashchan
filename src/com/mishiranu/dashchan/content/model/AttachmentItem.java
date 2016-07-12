@@ -572,7 +572,14 @@ public abstract class AttachmentItem
 		}
 	}
 	
-	public void handleImage(AttachmentView view, boolean needShowSeveralIcon, boolean isBusy, boolean force)
+	private boolean mForceLoadThumbnail = false;
+	
+	public void setForceLoadThumbnail()
+	{
+		mForceLoadThumbnail = true;
+	}
+	
+	public void displayThumbnail(AttachmentView view, boolean needShowSeveralIcon, boolean isBusy, boolean force)
 	{
 		view.setCropEnabled(Preferences.isCutThumbnails());
 		view.setImage(null);
@@ -628,7 +635,7 @@ public abstract class AttachmentItem
 			// Load image if cached in RAM or list isn't scrolling (for better performance)
 			if (!isBusy || isCachedMemory)
 			{
-				boolean fromCacheOnly = isCachedMemory || !loadThumbnails && !force;
+				boolean fromCacheOnly = isCachedMemory || !(loadThumbnails || force || mForceLoadThumbnail);
 				int errorAttrId = mayReplaceOverlay && !fromCacheOnly ? R.attr.attachmentWarning : 0;
 				imageLoader.loadImage(uri, getChanName(), key, fromCacheOnly, view, additionalOverlayAttrId,
 						errorAttrId);
@@ -636,13 +643,14 @@ public abstract class AttachmentItem
 		}
 	}
 	
-	public boolean isHandled()
+	public boolean isThumbnailReady()
 	{
-		return isHandled(getThumbnailKey());
+		String thumbnailKey = getThumbnailKey();
+		return thumbnailKey == null || CacheManager.getInstance().isThumbnailCachedMemory(thumbnailKey);
 	}
 	
-	public static boolean isHandled(String thumbnailKey)
+	public boolean canLoadThumbnailManually()
 	{
-		return thumbnailKey == null || CacheManager.getInstance().isThumbnailCachedMemory(thumbnailKey);
+		return !isThumbnailReady() && !mForceLoadThumbnail && !Preferences.isLoadThumbnails();
 	}
 }

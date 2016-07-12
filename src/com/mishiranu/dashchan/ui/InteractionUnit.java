@@ -334,9 +334,7 @@ public class InteractionUnit
 					dialogMenu.addItem(MENU_SEARCH_IMAGE, R.string.action_search_image);
 				}
 			}
-			String thumbnailKey = mAttachmentItem.getThumbnailKey();
-			if (hasViewHolder && thumbnailKey != null && !Preferences.isLoadThumbnails()
-					&& !AttachmentItem.isHandled(thumbnailKey))
+			if (hasViewHolder && mAttachmentItem.canLoadThumbnailManually())
 			{
 				dialogMenu.addItem(MENU_SHOW_THUMBNAIL, R.string.action_show_thumbnail);
 			}
