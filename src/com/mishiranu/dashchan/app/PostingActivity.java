@@ -64,6 +64,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -273,32 +274,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			mIconView.setItems(items);
 		}
 		else mIconView.setVisibility(View.GONE);
-		
-		float density = ResourceUtils.obtainDensity(this);
-		int maxButtonsWidth = getResources().getDisplayMetrics().widthPixels - mTextFormatView.getPaddingLeft()
-				- mTextFormatView.getPaddingRight();
-		int buttonMarginLeft = (int) ((C.API_LOLLIPOP ? -4f : 0f) * density);
-		Pair<Integer, Integer> supportedAndDisplayedTags = MarkupButtonProvider.obtainSupportedAndDisplayedTags(markup,
-				mBoardName, density, maxButtonsWidth, buttonMarginLeft);
-		int supportedTags = supportedAndDisplayedTags.first;
-		int displayedTags = supportedAndDisplayedTags.second;
-		if (mCommentEditor != null) mCommentEditor.handleSimilar(supportedTags);
-		boolean firstMarkupButton = true;
-		for (MarkupButtonProvider provider : MarkupButtonProvider.iterable(displayedTags))
-		{
-			Button button = provider.createButton(mTextFormatView.getContext(), android.R.attr.borderlessButtonStyle);
-			button.setTextSize(TypedValue.COMPLEX_UNIT_DIP, C.API_LOLLIPOP ? 14 : 18);
-			LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams
-					((int) (provider.widthDp * density), (int) (40f * density));
-			if (!firstMarkupButton) layoutParams.leftMargin = buttonMarginLeft;
-			button.setTag(provider.tag);
-			button.setOnClickListener(mFormatButtonClickListener);
-			button.setPadding(0, 0, 0, 0);
-			if (C.API_LOLLIPOP) button.setAllCaps(false);
-			provider.applyTextAndStyle(button);
-			mTextFormatView.addView(button, layoutParams);
-			firstMarkupButton = false;
-		}
+		new MarkupButtonsBuilder();
 		
 		boolean longFooter = longLayout && !hugeCaptcha;
 		int resId = longFooter ? R.layout.activity_posting_footer_long : R.layout.activity_posting_footer_common;
@@ -1875,6 +1851,64 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	{
 		super.onWindowFocusChanged(hasFocus);
 		mClickableToastHolder.onWindowFocusChanged(hasFocus);
+	}
+	
+	private class MarkupButtonsBuilder implements ViewTreeObserver.OnGlobalLayoutListener, Runnable
+	{
+		private int mLastWidth = -1;
+		
+		public MarkupButtonsBuilder()
+		{
+			mTextFormatView.getViewTreeObserver().addOnGlobalLayoutListener(this);
+		}
+		
+		@Override
+		public void onGlobalLayout()
+		{
+			int width = mTextFormatView.getWidth();
+			if (mLastWidth != width)
+			{
+				mLastWidth = width;
+				mTextFormatView.removeCallbacks(this);
+				mTextFormatView.post(this);
+			}
+		}
+		
+		@Override
+		public void run()
+		{
+			mTextFormatView.removeAllViews();
+			fillContainer();
+		}
+		
+		private void fillContainer()
+		{
+			float density = ResourceUtils.obtainDensity(PostingActivity.this);
+			int maxButtonsWidth = mLastWidth - mTextFormatView.getPaddingLeft() - mTextFormatView.getPaddingRight();
+			int buttonMarginLeft = (int) ((C.API_LOLLIPOP ? -4f : 0f) * density);
+			Pair<Integer, Integer> supportedAndDisplayedTags = MarkupButtonProvider.obtainSupportedAndDisplayedTags
+					(ChanMarkup.get(mChanName), mBoardName, density, maxButtonsWidth, buttonMarginLeft);
+			int supportedTags = supportedAndDisplayedTags.first;
+			int displayedTags = supportedAndDisplayedTags.second;
+			if (mCommentEditor != null) mCommentEditor.handleSimilar(supportedTags);
+			boolean firstMarkupButton = true;
+			for (MarkupButtonProvider provider : MarkupButtonProvider.iterable(displayedTags))
+			{
+				Button button = provider.createButton(mTextFormatView.getContext(),
+						android.R.attr.borderlessButtonStyle);
+				button.setTextSize(TypedValue.COMPLEX_UNIT_DIP, C.API_LOLLIPOP ? 14 : 18);
+				LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams
+						((int) (provider.widthDp * density), (int) (40f * density));
+				if (!firstMarkupButton) layoutParams.leftMargin = buttonMarginLeft;
+				button.setTag(provider.tag);
+				button.setOnClickListener(mFormatButtonClickListener);
+				button.setPadding(0, 0, 0, 0);
+				if (C.API_LOLLIPOP) button.setAllCaps(false);
+				provider.applyTextAndStyle(button);
+				mTextFormatView.addView(button, layoutParams);
+				firstMarkupButton = false;
+			}
+		}
 	}
 	
 	/*
