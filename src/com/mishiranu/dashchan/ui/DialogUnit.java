@@ -854,7 +854,7 @@ public class DialogUnit implements DialogStack.Callback
 	
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private void showAttachmentsGrid(final Context context, final List<AttachmentItem> attachmentItems,
-			final int startImageIndex, final GalleryItem.GallerySet gallerySet)
+			final int startImageIndex, final GalleryItem.GallerySet gallerySet, PostItem postItem)
 	{
 		Context styledContext = new ContextThemeWrapper(context, R.style.Theme_Gallery);
 		final Dialog dialog = new Dialog(styledContext);
@@ -948,6 +948,7 @@ public class DialogUnit implements DialogStack.Callback
 		dialog.show();
 		notifySwitchBackground();
 		mAttachmentDialog = dialog;
+		if (postItem != null) mUiManager.sendPostItemMessage(postItem, UiManager.MESSAGE_PERFORM_LOAD_THUMBNAIL);
 	}
 	
 	@SuppressLint("InflateParams")
@@ -978,9 +979,9 @@ public class DialogUnit implements DialogStack.Callback
 	}
 	
 	public void openAttachmentOrDialog(Context context, View imageView, List<AttachmentItem> attachmentItems,
-			int imageIndex, GalleryItem.GallerySet gallerySet)
+			int imageIndex, GalleryItem.GallerySet gallerySet, PostItem postItem)
 	{
-		if (attachmentItems.size() > 1) showAttachmentsGrid(context, attachmentItems, imageIndex, gallerySet);
+		if (attachmentItems.size() > 1) showAttachmentsGrid(context, attachmentItems, imageIndex, gallerySet, postItem);
 		else openAttachment(context, imageView, attachmentItems, 0, imageIndex, gallerySet);
 	}
 	

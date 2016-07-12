@@ -250,7 +250,7 @@ public class InteractionUnit
 				if (mMayShowDialog)
 				{
 					mUiManager.dialog().openAttachmentOrDialog(mUiManager.getContext(), v,
-							attachmentItems, startImageIndex, gallerySet);
+							attachmentItems, startImageIndex, gallerySet, holder.postItem);
 				}
 				else
 				{
