@@ -959,7 +959,7 @@ public class DialogUnit implements DialogStack.Callback
 		final AttachmentView attachmentView = (AttachmentView) view.findViewById(R.id.thumbnail);
 		TextView textView = (TextView) view.findViewById(R.id.attachment_info);
 		textView.setBackgroundColor(0xcc222222);
-		attachmentItem.handleImage(attachmentView, false, false, true);
+		attachmentItem.displayThumbnail(attachmentView, false, false, true);
 		textView.setText(attachmentItem.getDescription(AttachmentItem.FormatMode.TWO_LINES));
 		View clickView = view.findViewById(R.id.click_view);
 		clickView.setOnClickListener(clickListener);

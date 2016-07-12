@@ -245,7 +245,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		{
 			AttachmentItem attachmentItem = attachmentItems.get(0);
 			boolean needShowSeveralIcon = attachmentItems.size() > 1;
-			attachmentItem.handleImage(holder.thumbnail, needShowSeveralIcon, isBusy, false);
+			attachmentItem.displayThumbnail(holder.thumbnail, needShowSeveralIcon, isBusy, false);
 			holder.thumbnailClickListener.update(0, true);
 			holder.thumbnailLongClickListener.update(attachmentItem);
 			holder.thumbnail.setSfwMode(Preferences.isSfwMode());
@@ -323,7 +323,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		{
 			AttachmentItem attachmentItem = attachmentItems.get(0);
 			boolean needShowSeveralIcon = attachmentItems.size() > 1;
-			attachmentItem.handleImage(holder.thumbnail, needShowSeveralIcon, isBusy, false);
+			attachmentItem.displayThumbnail(holder.thumbnail, needShowSeveralIcon, isBusy, false);
 			holder.thumbnailClickListener.update(0, true);
 			holder.thumbnailLongClickListener.update(attachmentItem);
 			holder.thumbnail.setSfwMode(Preferences.isSfwMode());
@@ -694,7 +694,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 				{
 					AttachmentHolder attachmentHolder = attachmentHolders.get(i);
 					AttachmentItem attachmentItem = attachmentItems.get(i);
-					attachmentItem.handleImage(attachmentHolder.thumbnail, false, demandSet.isBusy, false);
+					attachmentItem.displayThumbnail(attachmentHolder.thumbnail, false, demandSet.isBusy, false);
 					attachmentHolder.thumbnailClickListener.update(i, false);
 					attachmentHolder.thumbnailLongClickListener.update(attachmentItem);
 					attachmentHolder.thumbnail.setSfwMode(sfwMode);
@@ -714,7 +714,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			else
 			{
 				AttachmentItem attachmentItem = attachmentItems.get(0);
-				attachmentItem.handleImage(holder.thumbnail, size > 1, demandSet.isBusy, false);
+				attachmentItem.displayThumbnail(holder.thumbnail, size > 1, demandSet.isBusy, false);
 				holder.thumbnailClickListener.update(0, true);
 				holder.thumbnailLongClickListener.update(attachmentItem);
 				holder.thumbnail.setSfwMode(Preferences.isSfwMode());
@@ -943,9 +943,10 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			for (int i = 0; i < count; i++)
 			{
 				AttachmentItem attachmentItem = attachmentItems.get(i);
-				if (!attachmentItem.isHandled())
+				if (!attachmentItem.isThumbnailReady())
 				{
-					attachmentItem.handleImage(holder.getAttachmentView(i), needShowSeveralIcon, false, force);
+					if (force) attachmentItem.setForceLoadThumbnail();
+					attachmentItem.displayThumbnail(holder.getAttachmentView(i), needShowSeveralIcon, false, false);
 				}
 			}
 		}
