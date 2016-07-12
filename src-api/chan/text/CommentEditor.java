@@ -125,6 +125,7 @@ public class CommentEditor
 	
 	public final void handleSimilar(int supportedTags)
 	{
+		mSimilar.clear();
 		int size = mTags.size();
 		for (int i = 0; i < size; i++)
 		{
