@@ -680,22 +680,6 @@ public class Preferences
 	public static final String KEY_LOAD_THUMBNAILS = "load_thumbnails";
 	public static final String DEFAULT_LOAD_THUMBNAILS = GENERIC_VALUE_NETWORK_ALWAYS;
 	
-	static
-	{
-		{
-			// TODO REMOVE AFTER A WHILE
-			// Added: 27.05.16 16:48
-			SharedPreferences.Editor editor = null;
-			String loadThumbnails = PREFERENCES.getString("thumbnails", null);
-			if (loadThumbnails != null)
-			{
-				editor = PREFERENCES.edit();
-				editor.putString(KEY_LOAD_THUMBNAILS, loadThumbnails);
-			}
-			if (editor != null) editor.commit();
-		}
-	}
-	
 	private static String getLoadThumbnailsMode()
 	{
 		return PREFERENCES.getString(KEY_LOAD_THUMBNAILS, DEFAULT_LOAD_THUMBNAILS);
