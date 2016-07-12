@@ -515,6 +515,8 @@
 	<string name="preference_thumbnails_scale">Thumbnail scale</string>
 	<string name="preference_thumbnails_scale_summary_format">Scale %1$d%%</string>
 	<string name="preference_uninstall_extension">Uninstall extension</string>
+	<string name="preference_use_gms_provider">Use GMS security provider</string>
+	<string name="preference_use_gms_provider_summary">Requires restart</string>
 	<string name="preference_use_https">Secure connection</string>
 	<string name="preference_use_https_summary">Use HTTPS protocol</string>
 	<string name="preference_use_https_warning">The following option is special for different services such as

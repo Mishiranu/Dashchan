@@ -113,8 +113,7 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 		boolean playerAvailable = VideoPlayer.loadLibraries(getActivity());
 		if (!playerAvailable)
 		{
-			makeButton(videoPlayerCategory, null, getString(R.string.preference_use_video_player_warning), true)
-					.setSelectable(false);
+			makeButton(videoPlayerCategory, 0, R.string.preference_use_video_player_warning, true).setSelectable(false);
 		}
 		makeCheckBox(videoPlayerCategory, true, Preferences.KEY_USE_VIDEO_PLAYER, Preferences.DEFAULT_USE_VIDEO_PLAYER,
 				R.string.preference_use_video_player, R.string.preference_use_video_player_summary)

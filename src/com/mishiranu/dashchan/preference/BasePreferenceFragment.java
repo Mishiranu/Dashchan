@@ -137,6 +137,12 @@ public abstract class BasePreferenceFragment extends PreferenceFragment implemen
 		return category;
 	}
 	
+	public Preference makeButton(PreferenceGroup parent, int titleResId, int summaryResId, boolean information)
+	{
+		return makeButton(parent, titleResId != 0 ? getString(titleResId) : null,
+				summaryResId != 0 ? getString(summaryResId) : null, information);
+	}
+	
 	public Preference makeButton(PreferenceGroup parent, CharSequence title, CharSequence summary,
 			boolean information)
 	{
@@ -148,16 +154,10 @@ public abstract class BasePreferenceFragment extends PreferenceFragment implemen
 		return preference;
 	}
 	
-	public Preference makeButton(PreferenceGroup parent, int titleResId, int summaryResId, boolean information)
-	{
-		return makeButton(parent, getString(titleResId), summaryResId != 0 ? getString(summaryResId) : null,
-				information);
-	}
-	
 	public CheckBoxPreference makeCheckBox(PreferenceGroup parent, boolean persistent, String key, boolean defaultValue,
 			int titleResId, int summaryResId)
 	{
-		return makeCheckBox(parent, persistent, key, defaultValue, getString(titleResId),
+		return makeCheckBox(parent, persistent, key, defaultValue, titleResId != 0 ? getString(titleResId) : null,
 				summaryResId != 0 ? getString(summaryResId) : null);
 	}
 	
@@ -252,7 +252,7 @@ public abstract class BasePreferenceFragment extends PreferenceFragment implemen
 	public SeekBarPreference makeSeekBar(PreferenceGroup parent, String key, int defaultValue,
 			int titleResId, int summaryResId, int minValue, int maxValue, int step, float multiplier)
 	{
-		return makeSeekBar(parent, key, defaultValue, getString(titleResId),
+		return makeSeekBar(parent, key, defaultValue, titleResId != 0 ? getString(titleResId) : null,
 				summaryResId != 0 ? getString(summaryResId) : null, minValue, maxValue, step, multiplier);
 	}
 	

@@ -536,6 +536,8 @@
 	<string name="preference_thumbnails_scale">Масштаб превью</string>
 	<string name="preference_thumbnails_scale_summary_format">Масштаб %1$d%%</string>
 	<string name="preference_uninstall_extension">Удалить расширение</string>
+	<string name="preference_use_gms_provider">Использ. постав. безопасности GMS</string>
+	<string name="preference_use_gms_provider_summary">Необходим перезапуск</string>
 	<string name="preference_use_https">Защищённое соединение</string>
 	<string name="preference_use_https_summary">Использовать протокол HTTPS</string>
 	<string name="preference_use_https_warning">Следующая опция является частной для некоторых сервисов,

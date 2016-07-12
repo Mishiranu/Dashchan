@@ -108,19 +108,22 @@ public class HttpClient
 		SHORT_RESPONSE_MESSAGES.put("Internal Server Error", "Internal Error");
 		SHORT_RESPONSE_MESSAGES.put("Service Temporarily Unavailable", "Service Unavailable");
 		
-		try
+		if (Preferences.isUseGmsProvider())
 		{
-			// Load GmsCore_OpenSSL from Google Play Services package
-			Context context = MainApplication.getInstance().createPackageContext("com.google.android.gms",
-					Context.CONTEXT_IGNORE_SECURITY | Context.CONTEXT_INCLUDE_CODE);
-			Class<?> providerInstallerImplClass = Class.forName("com.google.android.gms.common.security"
-					+ ".ProviderInstallerImpl", false, context.getClassLoader());
-			Method insertProviderMethod = providerInstallerImplClass.getMethod("insertProvider", Context.class);
-			insertProviderMethod.invoke(null, context);
-		}
-		catch (Exception e)
-		{
-			
+			try
+			{
+				// Load GmsCore_OpenSSL from Google Play Services package
+				Context context = MainApplication.getInstance().createPackageContext("com.google.android.gms",
+						Context.CONTEXT_IGNORE_SECURITY | Context.CONTEXT_INCLUDE_CODE);
+				Class<?> providerInstallerImplClass = Class.forName("com.google.android.gms.common.security"
+						+ ".ProviderInstallerImpl", false, context.getClassLoader());
+				Method insertProviderMethod = providerInstallerImplClass.getMethod("insertProvider", Context.class);
+				insertProviderMethod.invoke(null, context);
+			}
+			catch (Exception e)
+			{
+				
+			}
 		}
 		
 		/*
