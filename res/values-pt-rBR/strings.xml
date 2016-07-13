@@ -22,7 +22,6 @@
 	
 	<string name="text_address">Endereço</string>
 	<string name="text_app_name_update">%s atualizações</string>
-	<string name="text_all_imageboards">Todas as imageboards</string>
 	<string name="text_all_posts">Todos os posts</string>
 	<string name="text_autohide_comment">Encontre nas mensagens</string>
 	<string name="text_autohide_name">Encontre no nome</string>
@@ -68,7 +67,6 @@
 	</plurals>
 	<string name="text_general">Geral</string>
 	<string name="text_no_icon">Sem ícone</string>
-	<string name="text_imageboard_name_format">Imageboard %s</string>
 	<string name="text_in_thread_format_format">No fio %s</string>
 	<string name="text_keep_all">Guardar tudo</string>
 	<string name="text_links_attachments_format">Anexo do link: %s</string>
@@ -90,7 +88,7 @@
 	<string name="text_new_thread">Criar fio</string>
 	<string name="text_no_thread_information">Sem informação</string>
 	<string name="text_older_7_days">Velho a mais de 7 dias</string>
-	<string name="text_only_imageboard_format">%s somente</string>
+	<string name="text_only_forum_format">%s somente</string>
 	<string name="text_open_pages">Páginas abertas</string>
 	<string name="text_original_poster">OP</string>
 	<string name="text_page_format">%d página</string>
@@ -125,7 +123,6 @@
 		<item quantity="one">%d arquivo</item>
 		<item quantity="other">%d arquivos</item>
 	</plurals>
-	<string name="text_several_imageboards">Vários imageboards</string>
 	<string name="text_similar_to_format">Similar a %s</string>
 	<string name="text_sort_by_unsorted">Não-organizado</string>
 	<string name="text_sort_by_date">Ordenar por data de criação</string>
@@ -355,8 +352,6 @@
 	<string name="preference_header_contents">Conteúdo</string>
 	<string name="preference_header_favorites">Favoritos</string>
 	<string name="preference_header_general">Geral</string>
-	<string name="preference_header_imageboard">Imageboard</string>
-	<string name="preference_header_imageboards">Imageboards</string>
 	<string name="preference_header_interface">Interface</string>
 	
 	<string name="preference_category_additional">Adcional</string>
@@ -452,7 +447,6 @@
 	<string name="preference_load_thumbnails">Carregar miniaturas</string>
 	<string name="preference_locale">Linguagem</string>
 	<string name="preference_merge_chans">Fundir páginas</string>
-	<string name="preference_merge_chans_summary">Exibe páginas para todas as imageboards</string>
 	<string name="preference_notify_download_complete">Notificar quando o download acabar</string>
 	<string name="preference_notify_download_complete_summary">Mostrará notificação \"Heads-Up\" quando completar o
 		download</string>
@@ -476,8 +470,8 @@
 	<string name="preference_statistics">Estátisticas</string>
 	<string name="preference_subdirectory_pattern">Padrão de subdiretório</string>
 	<string-array name="preference_subdirectory_pattern_descriptions">
-		<item>código da imageboard</item>
-		<item>título da imageboard</item>
+		<item>código da fórum</item>
+		<item>título da fórum</item>
 		<item>código da board</item>
 		<item>identificador do fio</item>
 		<item>título do fio</item>

@@ -70,6 +70,20 @@ public class PreferencesActivity extends PreferenceActivity
 		generalHeader.titleRes = R.string.preference_header_general;
 		generalHeader.fragment = GeneralFragment.class.getName();
 		target.add(generalHeader);
+		if (chanNames.size() == 1)
+		{
+			Header chanHeader = new Header();
+			chanHeader.titleRes = R.string.preference_header_forum;
+			chanHeader.fragment = ChanFragment.class.getName();
+			target.add(chanHeader);
+		}
+		else if (chanNames.size() > 1)
+		{
+			Header chansHeader = new Header();
+			chansHeader.titleRes = R.string.preference_header_forums;
+			chansHeader.fragment = ChansFragment.class.getName();
+			target.add(chansHeader);
+		}
 		Header interfaceHeader = new Header();
 		interfaceHeader.titleRes = R.string.preference_header_interface;
 		interfaceHeader.fragment = InterfaceFragment.class.getName();
@@ -78,20 +92,6 @@ public class PreferencesActivity extends PreferenceActivity
 		contentsHeader.titleRes = R.string.preference_header_contents;
 		contentsHeader.fragment = ContentsFragment.class.getName();
 		target.add(contentsHeader);
-		if (chanNames.size() == 1)
-		{
-			Header chanHeader = new Header();
-			chanHeader.titleRes = R.string.preference_header_imageboard;
-			chanHeader.fragment = ChanFragment.class.getName();
-			target.add(chanHeader);
-		}
-		else if (chanNames.size() > 1)
-		{
-			Header chansHeader = new Header();
-			chansHeader.titleRes = R.string.preference_header_imageboards;
-			chansHeader.fragment = ChansFragment.class.getName();
-			target.add(chansHeader);
-		}
 		Header favoritesHeader = new Header();
 		favoritesHeader.titleRes = R.string.preference_header_favorites;
 		favoritesHeader.fragment = FavoritesFragment.class.getName();

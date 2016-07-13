@@ -313,7 +313,7 @@ public class AutohideFragment extends BaseListFragment
 			}
 			else
 			{
-				mChanNameSelector.setText(R.string.text_all_imageboards);
+				mChanNameSelector.setText(R.string.text_all_forums);
 				mBoardNameEdit.setText(null);
 				mThreadNumberEdit.setText(null);
 				mAutohideOriginalPost.setChecked(false);
@@ -354,13 +354,13 @@ public class AutohideFragment extends BaseListFragment
 		{
 			String chanNameText;
 			int size = mSelectedChanNames.size();
-			if (size == 0) chanNameText = getString(R.string.text_all_imageboards);
-			else if (size > 1) chanNameText = getString(R.string.text_several_imageboards); else
+			if (size == 0) chanNameText = getString(R.string.text_all_forums);
+			else if (size > 1) chanNameText = getString(R.string.text_several_forums); else
 			{
 				String chanName = mSelectedChanNames.iterator().next();
 				ChanConfiguration configuration = ChanConfiguration.get(chanName);
 				String title = configuration != null ? configuration.getTitle() : chanName;
-				chanNameText = getString(R.string.text_only_imageboard_format, title);
+				chanNameText = getString(R.string.text_only_forum_format, title);
 			}
 			mChanNameSelector.setText(chanNameText);
 		}
