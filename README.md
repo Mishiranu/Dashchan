@@ -4,7 +4,7 @@ Dashchan is imageboards client for Android.
 
 Read the [project wiki](https://github.com/Mishiranu/Dashchan/wiki) for further information.
 
-# Packages List
+## Packages List
 
 Client application: [Dashchan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/Dashchan.apk).  
 Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanWebm.apk).
@@ -63,20 +63,20 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | fourplebs       | 4plebs.org           | [DashchanFourplebs.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanFourplebs.apk)             |
 | local           | ( local archive )    | [DashchanLocal.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanLocal.apk)                     |
 
-# Installation Guide
+## Installation Guide
 
 1. Install extension packages
 2. Install client application
 
 Remember that every time you install a new extension, you must restart the client application.
 
-# Updating Guide
+## Updating Guide
 
 Go to Preferences ⇒ About ⇒ Check for updates. After fetching updating data you can view a number of updates in title bar. Usually you just need to click on the download button and wait until downloading ends.
 
 It is better to install extension packages and then install application package. If you download only an extension, don't forget to restart the application after updating.
 
-# Building Guide
+## Building Guide
 
 1. Install JDK 7 or higher
 2. Install Android SDK, define `ANDROID_HOME` environment variable or set `sdk.dir` in `local.properties`
@@ -108,6 +108,6 @@ api.key.google=%GOOGLE_API_KEY%
 api.key.soundcloud=%SOUNDCLOUD_API_KEY%
 ```
 
-# License
+## License
 
 Dashchan is licensed under the [Apache License, version 2.0](LICENSE).
