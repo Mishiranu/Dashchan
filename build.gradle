@@ -78,7 +78,7 @@ android {
 
 	lintOptions {
 		abortOnError false
-		disable 'MissingTranslation', 'ValidFragment'
+		disable 'MissingTranslation', 'ValidFragment', 'ResourceType'
 	}
 
 	compileOptions {
