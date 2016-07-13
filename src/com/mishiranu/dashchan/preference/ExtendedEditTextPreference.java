@@ -45,7 +45,7 @@ public class ExtendedEditTextPreference extends EditTextPreference
 	
 	public void setDescription(CharSequence description)
 	{
-		if (StringUtils.isEmpty(description) && mDescriptionView == null)
+		if (!StringUtils.isEmpty(description) && mDescriptionView == null)
 		{
 			EditText editText = getEditText();
 			float density = ResourceUtils.obtainDensity(getContext());
