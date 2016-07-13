@@ -49,7 +49,7 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.app.MainApplication;
 import com.mishiranu.dashchan.async.ReadCaptchaTask;
-import com.mishiranu.dashchan.content.CaptchaManager;
+import com.mishiranu.dashchan.content.ForegroundManager;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.WebViewUtils;
 
@@ -336,7 +336,7 @@ public class CloudFlarePasser implements Handler.Callback
 			boolean retry = false;
 			while (true)
 			{
-				ChanPerformer.CaptchaData captchaData = CaptchaManager.getInstance().requireUserCaptcha
+				ChanPerformer.CaptchaData captchaData = ForegroundManager.getInstance().requireUserCaptcha
 						(new CloudFlareCaptchaReader(recaptchaApiKey), captchaType, null, null, null, null,
 						R.string.message_cloudflate_block, retry);
 				if (captchaData == null)

@@ -94,7 +94,7 @@ import com.mishiranu.dashchan.app.service.PostingService;
 import com.mishiranu.dashchan.async.AsyncManager;
 import com.mishiranu.dashchan.async.ReadCaptchaTask;
 import com.mishiranu.dashchan.async.SendPostTask;
-import com.mishiranu.dashchan.content.CaptchaManager;
+import com.mishiranu.dashchan.content.ForegroundManager;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.content.storage.DraftsStorage;
@@ -606,7 +606,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	{
 		super.onResume();
 		mClickableToastHolder.onResume();
-		CaptchaManager.registerForeground(this);
+		ForegroundManager.register(this);
 	}
 	
 	@Override
@@ -614,6 +614,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	{
 		super.onPause();
 		mClickableToastHolder.onPause();
+		ForegroundManager.unregister(this);
 	}
 	
 	@Override
@@ -626,7 +627,6 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			mBinder = null;
 		}
 		unbindService(this);
-		CaptchaManager.unregisterForeground(this);
 		ClickableToast.unregister(mClickableToastHolder);
 		if (mSaveDraftOnFinish)
 		{

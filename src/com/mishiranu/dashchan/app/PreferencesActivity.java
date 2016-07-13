@@ -29,7 +29,7 @@ import chan.content.ChanManager;
 
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.async.ReadUpdateTask;
-import com.mishiranu.dashchan.content.CaptchaManager;
+import com.mishiranu.dashchan.content.ForegroundManager;
 import com.mishiranu.dashchan.preference.AboutFragment;
 import com.mishiranu.dashchan.preference.AutohideFragment;
 import com.mishiranu.dashchan.preference.ChanFragment;
@@ -124,14 +124,14 @@ public class PreferencesActivity extends PreferenceActivity
 	protected void onResume()
 	{
 		super.onResume();
-		CaptchaManager.registerForeground(this);
+		ForegroundManager.register(this);
 	}
 	
 	@Override
 	protected void onPause()
 	{
 		super.onPause();
-		CaptchaManager.unregisterForeground(this);
+		ForegroundManager.unregister(this);
 	}
 	
 	public static int checkNewVersions(Context context, ReadUpdateTask.UpdateDataMap updateDataMap)

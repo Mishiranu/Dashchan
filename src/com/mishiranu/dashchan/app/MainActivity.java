@@ -74,7 +74,7 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.app.service.PostingService;
 import com.mishiranu.dashchan.async.ReadUpdateTask;
-import com.mishiranu.dashchan.content.CaptchaManager;
+import com.mishiranu.dashchan.content.ForegroundManager;
 import com.mishiranu.dashchan.content.ThreadsWatcher;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.graphics.ActionIconSet;
@@ -601,7 +601,7 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		mClickableToastHolder.onResume();
 		showRestartDialogIfNeeded();
 		ChanManager.getInstance().getInstallationObservable().register(mInstallationCallback);
-		CaptchaManager.registerForeground(this);
+		ForegroundManager.register(this);
 	}
 	
 	@Override
@@ -611,6 +611,7 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		mThreadsWatcher.stop();
 		if (mPage != null) mPage.pause();
 		mClickableToastHolder.onPause();
+		ForegroundManager.unregister(this);
 	}
 	
 	@Override
@@ -631,7 +632,6 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		}
 		mUiManager.onFinish();
 		mThreadsWatcher.cleanup();
-		CaptchaManager.unregisterForeground(this);
 		ClickableToast.unregister(mClickableToastHolder);
 		FavoritesStorage.getInstance().getObservable().unregister(this);
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mNewPostReceiver);
