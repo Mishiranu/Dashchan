@@ -438,7 +438,7 @@
 	<string name="preference_display_hidden_threads">Display hidden threads</string>
 	<string name="preference_display_icons">Display post icons</string>
 	<string name="preference_display_icons_summary">Icons are available in some subject boards</string>
-	<string name="preference_domain">Domain</string>
+	<string name="preference_domain">Domain name</string>
 	<string name="preference_domain_another">Another</string>
 	<string name="preference_download_detail_name">Detailed file name</string>
 	<string name="preference_download_detail_name_summary">Download files with thread number in names</string>

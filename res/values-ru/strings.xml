@@ -459,7 +459,7 @@
 	<string name="preference_display_hidden_threads">Выводить скрытые треды</string>
 	<string name="preference_display_icons">Показывать иконки сообщений</string>
 	<string name="preference_display_icons_summary">Иконки доступны на некоторых разделах</string>
-	<string name="preference_domain">Домен</string>
+	<string name="preference_domain">Доменное имя</string>
 	<string name="preference_domain_another">Другой</string>
 	<string name="preference_download_detail_name">Подробное имя файла</string>
 	<string name="preference_download_detail_name_summary">Загружать файлы с номером треда в названии</string>
