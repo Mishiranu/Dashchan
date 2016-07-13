@@ -436,6 +436,12 @@
 	<string name="preference_favorite_on_reply">Adcione o fio ao responder</string>
 	<string name="preference_favorites_order">Ordem de favoritos</string>
 	<string name="preference_hide_personal_data">Esconder bloco de dados pessoais</string>
+	<string name="preference_highlight_unread">Destacar posts não-lidos</string>
+	<string-array name="preference_highlight_unread_choices">
+		<item>Esconder eventualmente</item>
+		<item>Esconder ao tocar</item>
+		<item>Nunca destacar</item>
+	</string-array>
 	<string name="preference_huge_captcha">Captcha enorme</string>
 	<string name="preference_internal_browser">Navegador interno</string>
 	<string name="preference_internal_browser_sumamry">Abra link no navegador interno</string>
