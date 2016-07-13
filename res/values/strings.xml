@@ -22,7 +22,7 @@
 	
 	<string name="text_address">Address</string>
 	<string name="text_app_name_update">%s update</string>
-	<string name="text_all_imageboards">All imageboards</string>
+	<string name="text_all_forums">All forums</string>
 	<string name="text_all_posts">All posts</string>
 	<string name="text_autohide_comment">Find in messages</string>
 	<string name="text_autohide_name">Find in names</string>
@@ -59,6 +59,7 @@
 	<string name="text_download_to_subdirectory">Save to subdirectory</string>
 	<string name="text_enabled_flags">Flags are enabled</string>
 	<string name="text_enabled_icons">Icons are enabled</string>
+	<string name="text_extension_name_format">Extension %s</string>
 	<string name="text_favorite_boards">Favorite boards</string>
 	<string name="text_favorite_threads">Favorite threads</string>
 	<string name="text_files_format">Files: %s</string>
@@ -68,7 +69,6 @@
 	</plurals>
 	<string name="text_general">General</string>
 	<string name="text_no_icon">No icon</string>
-	<string name="text_imageboard_name_format">Imageboard %s</string>
 	<string name="text_in_thread_format_format">In thread %s</string>
 	<string name="text_keep_all">Keep all</string>
 	<string name="text_links_attachments_format">Links-attachments: %s</string>
@@ -93,7 +93,7 @@
 	<string name="text_no_matches_found">No matches found</string>
 	<string name="text_no_thread_information">No information</string>
 	<string name="text_older_7_days">Older than 7 days</string>
-	<string name="text_only_imageboard_format">%s only</string>
+	<string name="text_only_forum_format">%s only</string>
 	<string name="text_open_pages">Open pages</string>
 	<string name="text_original_poster">Original poster</string>
 	<string name="text_page_format">%d page</string>
@@ -130,7 +130,7 @@
 		<item quantity="one">%d file</item>
 		<item quantity="other">%d files</item>
 	</plurals>
-	<string name="text_several_imageboards">Several imageboards</string>
+	<string name="text_several_forums">Several forums</string>
 	<string name="text_similar_to_format">Similar to %s</string>
 	<string name="text_sort_by_unsorted">Unsorted</string>
 	<string name="text_sort_by_date">Sort by date created</string>
@@ -373,9 +373,9 @@
 	<string name="preference_header_autohide">Autohide</string>
 	<string name="preference_header_contents">Contents</string>
 	<string name="preference_header_favorites">Favorites</string>
+	<string name="preference_header_forum">Forum</string>
+	<string name="preference_header_forums">Forums</string>
 	<string name="preference_header_general">General</string>
-	<string name="preference_header_imageboard">Imageboard</string>
-	<string name="preference_header_imageboards">Imageboards</string>
 	<string name="preference_header_interface">Interface</string>
 	
 	<string name="preference_category_additional">Additional</string>
@@ -479,7 +479,7 @@
 	<string name="preference_load_thumbnails">Load thumbnails</string>
 	<string name="preference_locale">Language</string>
 	<string name="preference_merge_chans">Merge pages</string>
-	<string name="preference_merge_chans_summary">Display pages for all imageboards</string>
+	<string name="preference_merge_chans_summary">Display pages for all forums</string>
 	<string name="preference_notify_download_complete">Notify when download is completed</string>
 	<string name="preference_notify_download_complete_summary">Will show \"Heads-Up\" notification</string>
 	<string name="preference_page_by_page">Page by page board navigation</string>
@@ -503,8 +503,8 @@
 	<string name="preference_statistics">Statistics</string>
 	<string name="preference_subdirectory_pattern">Subdirectory pattern</string>
 	<string-array name="preference_subdirectory_pattern_descriptions">
-		<item>imageboard code</item>
-		<item>imageboard title</item>
+		<item>forum code</item>
+		<item>forum title</item>
 		<item>board code</item>
 		<item>thread identifier</item>
 		<item>thread title</item>
@@ -520,7 +520,7 @@
 	<string name="preference_use_https">Secure connection</string>
 	<string name="preference_use_https_summary">Use HTTPS protocol</string>
 	<string name="preference_use_https_warning">The following option is special for different services such as
-		captchas and app updating. You can configure HTTPS for imageboards in their own categories.</string>
+		captchas and app updating. You can configure HTTPS for forums in their own categories.</string>
 	<string name="preference_use_video_player">Use built-in video player</string>
 	<string name="preference_use_video_player_summary">Play WebM video attachments</string>
 	<string name="preference_use_video_player_warning">You must install decoding libraries to enable

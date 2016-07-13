@@ -23,7 +23,7 @@
 	
 	<string name="text_address">Адрес</string>
 	<string name="text_app_name_update">Обновление %s</string>
-	<string name="text_all_imageboards">Все имиджборды</string>
+	<string name="text_all_forums">Все форумы</string>
 	<string name="text_all_posts">Все сообщения</string>
 	<string name="text_autohide_comment">Искать в сообщениях</string>
 	<string name="text_autohide_name">Искать в именах</string>
@@ -62,6 +62,7 @@
 	<string name="text_download_to_subdirectory">Сохранить в подкаталоге</string>
 	<string name="text_enabled_flags">Флаги включены</string>
 	<string name="text_enabled_icons">Иконки включены</string>
+	<string name="text_extension_name_format">Расширение %s</string>
 	<string name="text_favorite_boards">Избранные разделы</string>
 	<string name="text_favorite_threads">Избранные треды</string>
 	<string name="text_files_format">Файлов: %s</string>
@@ -73,7 +74,6 @@
 	</plurals>
 	<string name="text_general">Общая</string>
 	<string name="text_no_icon">Нет иконки</string>
-	<string name="text_imageboard_name_format">Имиджборд %s</string>
 	<string name="text_in_thread_format_format">В треде %s</string>
 	<string name="text_keep_all">Сохранить все</string>
 	<string name="text_links_attachments_format">Вложений-ссылок: %s</string>
@@ -102,7 +102,7 @@
 	<string name="text_no_matches_found">Совпадений не найдено</string>
 	<string name="text_no_thread_information">Нет информации</string>
 	<string name="text_older_7_days">Старше 7 дней</string>
-	<string name="text_only_imageboard_format">Только %s</string>
+	<string name="text_only_forum_format">Только %s</string>
 	<string name="text_open_pages">Страницы</string>
 	<string name="text_original_poster">Создатель треда</string>
 	<string name="text_page_format">%d страница</string>
@@ -145,7 +145,7 @@
 		<item quantity="many">%d файлов</item>
 		<item quantity="other">%d файлов</item>
 	</plurals>
-	<string name="text_several_imageboards">Несколько имиджборд</string>
+	<string name="text_several_forums">Несколько форумов</string>
 	<string name="text_similar_to_format">Похожие на %s</string>
 	<string name="text_sort_by_unsorted">Без сортировки</string>
 	<string name="text_sort_by_date">Сортировать по дате создания</string>
@@ -393,9 +393,9 @@
 	<string name="preference_header_autohide">Автоскрытие</string>
 	<string name="preference_header_contents">Содержимое</string>
 	<string name="preference_header_favorites">Избранное</string>
+	<string name="preference_header_forum">Форум</string>
+	<string name="preference_header_forums">Форумы</string>
 	<string name="preference_header_general">Общие</string>
-	<string name="preference_header_imageboard">Имиджборд</string>
-	<string name="preference_header_imageboards">Имиджборды</string>
 	<string name="preference_header_interface">Интерфейс</string>
 	
 	<string name="preference_category_additional">Дополнительно</string>
@@ -500,7 +500,7 @@
 	<string name="preference_load_thumbnails">Загружать миниатюры</string>
 	<string name="preference_locale">Язык</string>
 	<string name="preference_merge_chans">Объединить страницы</string>
-	<string name="preference_merge_chans_summary">Отображать страницы для всех имиджборд</string>
+	<string name="preference_merge_chans_summary">Отображать страницы для всех форумов</string>
 	<string name="preference_notify_download_complete">Уведомлять о завершении загрузки</string>
 	<string name="preference_notify_download_complete_summary">Будет показано всплывающее уведомление</string>
 	<string name="preference_page_by_page">Постраничное перелистывание раздела</string>
@@ -524,8 +524,8 @@
 	<string name="preference_statistics">Статистика</string>
 	<string name="preference_subdirectory_pattern">Шаблон подкаталога</string>
 	<string-array name="preference_subdirectory_pattern_descriptions">
-		<item>код имиджборда</item>
-		<item>название имиджборда</item>
+		<item>код форума</item>
+		<item>название форума</item>
 		<item>код раздела</item>
 		<item>идентификатор треда</item>
 		<item>заголовок треда</item>
@@ -540,9 +540,8 @@
 	<string name="preference_use_gms_provider_summary">Необходим перезапуск</string>
 	<string name="preference_use_https">Защищённое соединение</string>
 	<string name="preference_use_https_summary">Использовать протокол HTTPS</string>
-	<string name="preference_use_https_warning">Следующая опция является частной для некоторых сервисов,
-		таких как капчи и обновление приложения. Вы можете настроить HTTPS для имиджборд
-		в их собственных категориях.</string>
+	<string name="preference_use_https_warning">Следующая опция является частной для некоторых сервисов, таких как капчи
+		и обновление приложения. Вы можете настроить HTTPS для форумов в их собственных категориях.</string>
 	<string name="preference_use_video_player">Использовать встроенный видеоплеер</string>
 	<string name="preference_use_video_player_summary">Воспроизводить вложенные WebM видео</string>
 	<string name="preference_use_video_player_warning">Для работы видеоплеера необходимо установить

@@ -367,7 +367,7 @@ public class UpdateFragment extends BaseListFragment
 						request.setDestinationUri(Uri.fromFile(file));
 						request.setTitle(file.getName());
 						request.setDescription(i == 0 ? getString(R.string.text_main_application)
-								: getString(R.string.text_imageboard_name_format, listItem.title));
+								: getString(R.string.text_extension_name_format, listItem.title));
 						request.setMimeType("application/vnd.android.package-archive");
 						try
 						{
