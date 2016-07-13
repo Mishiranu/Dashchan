@@ -56,7 +56,7 @@ import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.app.MainApplication;
-import com.mishiranu.dashchan.content.CaptchaManager;
+import com.mishiranu.dashchan.content.ForegroundManager;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.text.HtmlParser;
 import com.mishiranu.dashchan.util.GraphicsUtils;
@@ -190,8 +190,8 @@ public class RecaptchaReader implements Handler.Callback
 						boolean[] result;
 						if (willReplace)
 						{
-							Integer singleResult = CaptchaManager.getInstance().requireUserImageSingleChoice(countX, -1,
-									captchaImages, description.substring(0, willReplaceIndex).trim(), null);
+							Integer singleResult = ForegroundManager.getInstance().requireUserImageSingleChoice(countX,
+									-1, captchaImages, description.substring(0, willReplaceIndex).trim(), null);
 							if (singleResult != null)
 							{
 								lastReplaceIndex = singleResult;
@@ -202,7 +202,7 @@ public class RecaptchaReader implements Handler.Callback
 						}
 						else
 						{
-							result = CaptchaManager.getInstance().requireUserImageMultipleChoice(countX, previous,
+							result = ForegroundManager.getInstance().requireUserImageMultipleChoice(countX, previous,
 									captchaImages, description, null);
 						}
 						loadingHolder.imageSelectorPreviousSelected = null;
@@ -286,7 +286,7 @@ public class RecaptchaReader implements Handler.Callback
 					{
 						if (captchaImage != null) captchaImage.recycle();
 						captchaImage = getImage2(holder, apiKey, challenge, null, false).first;
-						boolean[] result = CaptchaManager.getInstance().requireUserImageMultipleChoice(3, null,
+						boolean[] result = ForegroundManager.getInstance().requireUserImageMultipleChoice(3, null,
 								splitImages(captchaImage, 3, 3), HtmlParser.clear(imageSelectorDescription), null);
 						if (result != null)
 						{

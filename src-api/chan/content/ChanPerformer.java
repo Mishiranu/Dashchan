@@ -47,7 +47,7 @@ import chan.http.MultipartEntity;
 import chan.util.CommonUtils;
 import chan.util.StringUtils;
 
-import com.mishiranu.dashchan.content.CaptchaManager;
+import com.mishiranu.dashchan.content.ForegroundManager;
 import com.mishiranu.dashchan.content.model.FileHolder;
 
 @Extendable
@@ -1034,7 +1034,7 @@ public class ChanPerformer implements ChanManager.Linked
 			boolean retry)
 	{
 		checkPerformerRequireCall();
-		return CaptchaManager.getInstance().requireUserCaptcha(this, requirement, boardName, threadNumber, retry);
+		return ForegroundManager.getInstance().requireUserCaptcha(this, requirement, boardName, threadNumber, retry);
 	}
 	
 	@Public
@@ -1042,7 +1042,7 @@ public class ChanPerformer implements ChanManager.Linked
 			Bitmap descriptionImage)
 	{
 		checkPerformerRequireCall();
-		return CaptchaManager.getInstance().requireUserImageSingleChoice(3, selected, images,
+		return ForegroundManager.getInstance().requireUserImageSingleChoice(3, selected, images,
 				descriptionText, descriptionImage);
 	}
 	
@@ -1051,8 +1051,8 @@ public class ChanPerformer implements ChanManager.Linked
 			Bitmap descriptionImage)
 	{
 		checkPerformerRequireCall();
-		return CaptchaManager.getInstance().requireUserImageMultipleChoice(3, selected, images,
-				descriptionText, descriptionImage);
+		return ForegroundManager.getInstance().requireUserImageMultipleChoice(3, selected, images, descriptionText,
+				descriptionImage);
 	}
 	
 	public static final class Safe

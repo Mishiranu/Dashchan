@@ -70,16 +70,16 @@ import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableView;
 
-public class CaptchaManager implements Handler.Callback
+public class ForegroundManager implements Handler.Callback
 {
-	private static final CaptchaManager INSTANCE = new CaptchaManager();
+	private static final ForegroundManager INSTANCE = new ForegroundManager();
 	
-	private CaptchaManager()
+	private ForegroundManager()
 	{
 		
 	}
 	
-	public static CaptchaManager getInstance()
+	public static ForegroundManager getInstance()
 	{
 		return INSTANCE;
 	}
@@ -100,10 +100,33 @@ public class CaptchaManager implements Handler.Callback
 		return mActivity != null ? mActivity.get() : null;
 	}
 	
-	public static class CaptchaDialogFragment extends DialogFragment implements CaptchaController.Callback,
-			AsyncManager.Callback, ReadCaptchaTask.Callback
+	@SuppressWarnings("unchecked")
+	private <T extends PendingData> T getPendingData(int pendingDataIndex)
+	{
+		synchronized (mPendingDataArray)
+		{
+			return (T) mPendingDataArray.get(pendingDataIndex);
+		}
+	}
+	
+	private static abstract class PendingDataDialogFragment extends DialogFragment
 	{
 		private static final String EXTRA_PENDING_DATA_INDEX = "pendingDataIndex";
+		
+		protected final void fillArguments(Bundle args, int pendingDataIndex)
+		{
+			args.putInt(EXTRA_PENDING_DATA_INDEX, pendingDataIndex);
+		}
+		
+		protected <T extends PendingData> T getPendingData()
+		{
+			return getInstance().getPendingData(getArguments().getInt(EXTRA_PENDING_DATA_INDEX));
+		}
+	}
+	
+	public static class CaptchaDialogFragment extends PendingDataDialogFragment implements CaptchaController.Callback,
+			AsyncManager.Callback, ReadCaptchaTask.Callback
+	{
 		private static final String EXTRA_CHAN_NAME = "chanName";
 		private static final String EXTRA_CAPTCHA_TYPE = "captchaType";
 		private static final String EXTRA_REQUIREMENT = "requirement";
@@ -138,7 +161,7 @@ public class CaptchaManager implements Handler.Callback
 				String boardName, String threadNumber, int descriptionResId)
 		{
 			Bundle args = new Bundle();
-			args.putInt(EXTRA_PENDING_DATA_INDEX, pendingDataIndex);
+			fillArguments(args, pendingDataIndex);
 			args.putString(EXTRA_CHAN_NAME, chanName);
 			args.putString(EXTRA_CAPTCHA_TYPE, captchaType);
 			args.putString(EXTRA_REQUIREMENT, requirement);
@@ -193,18 +216,6 @@ public class CaptchaManager implements Handler.Callback
 			outState.putBoolean(EXTRA_BLACK_AND_WHITE, mBlackAndWhite);
 		}
 		
-		private CaptchaPendingData getPendingData()
-		{
-			CaptchaManager captchaManager = CaptchaManager.getInstance();
-			synchronized (captchaManager.mPendingDataArray)
-			{
-				int pendingDataIndex = getArguments().getInt(EXTRA_PENDING_DATA_INDEX);
-				CaptchaPendingData pendingData = (CaptchaPendingData) captchaManager.mPendingDataArray
-						.get(pendingDataIndex);
-				return pendingData;
-			}
-		}
-		
 		private void reloadCaptcha(CaptchaPendingData pendingData, boolean forceCaptcha, boolean mayShowLoadButton,
 				boolean restart)
 		{
@@ -243,8 +254,9 @@ public class CaptchaManager implements Handler.Callback
 			boolean forceCaptcha = (boolean) extra.get(EXTRA_FORCE_CAPTCHA);
 			boolean mayShowLoadButton = (boolean) extra.get(EXTRA_MAY_SHOW_LOAD_BUTTON);
 			String[] captchaPass = forceCaptcha || chanName == null ? null : Preferences.getCaptchaPass(chanName);
+			CaptchaPendingData pendingData = getPendingData();
 			ReadCaptchaHolder holder = new ReadCaptchaHolder();
-			ReadCaptchaTask task = new ReadCaptchaTask(getActivity(), holder, getPendingData().captchaReader,
+			ReadCaptchaTask task = new ReadCaptchaTask(getActivity(), holder, pendingData.captchaReader,
 					args.getString(EXTRA_CAPTCHA_TYPE), args.getString(EXTRA_REQUIREMENT), captchaPass,
 					mayShowLoadButton, chanName, args.getString(EXTRA_BOARD_NAME), args.getString(EXTRA_THREAD_NUMBER));
 			task.executeOnExecutor(ReadCaptchaTask.THREAD_POOL_EXECUTOR);
@@ -420,9 +432,8 @@ public class CaptchaManager implements Handler.Callback
 		}
 	}
 	
-	public static class CaptchaCheckDialogFragment extends DialogFragment implements AsyncManager.Callback
+	public static class CaptchaCheckDialogFragment extends PendingDataDialogFragment implements AsyncManager.Callback
 	{
-		private static final String EXTRA_PENDING_DATA_INDEX = "pendingDataIndex";
 		private static final String EXTRA_CAPTCHA_TYPE = "captchaType";
 		private static final String EXTRA_TASK_NAME = "taskName";
 		
@@ -434,7 +445,7 @@ public class CaptchaManager implements Handler.Callback
 		public CaptchaCheckDialogFragment(int pendingDataIndex, String captchaType)
 		{
 			Bundle args = new Bundle();
-			args.putInt(EXTRA_PENDING_DATA_INDEX, pendingDataIndex);
+			fillArguments(args, pendingDataIndex);
 			args.putString(EXTRA_CAPTCHA_TYPE, captchaType);
 			args.putString(EXTRA_TASK_NAME, "check_captcha_" + System.currentTimeMillis());
 			setArguments(args);
@@ -457,18 +468,6 @@ public class CaptchaManager implements Handler.Callback
 			}
 			Bundle args = getArguments();
 			AsyncManager.get(this).startTask(args.getString(EXTRA_TASK_NAME), this, null, false);
-		}
-		
-		private CaptchaPendingData getPendingData()
-		{
-			CaptchaManager captchaManager = CaptchaManager.getInstance();
-			synchronized (captchaManager.mPendingDataArray)
-			{
-				int pendingDataIndex = getArguments().getInt(EXTRA_PENDING_DATA_INDEX);
-				CaptchaPendingData pendingData = (CaptchaPendingData) captchaManager.mPendingDataArray
-						.get(pendingDataIndex);
-				return pendingData;
-			}
 		}
 		
 		@Override
@@ -612,10 +611,9 @@ public class CaptchaManager implements Handler.Callback
 		}
 	}
 	
-	public static class ChoiceDialogFragment extends DialogFragment implements View.OnClickListener,
+	public static class ChoiceDialogFragment extends PendingDataDialogFragment implements View.OnClickListener,
 			DialogInterface.OnClickListener
 	{
-		private static final String EXTRA_PENDING_DATA_INDEX = "pendingDataIndex";
 		private static final String EXTRA_COLUMNS = "columns";
 		private static final String EXTRA_SELECTED = "selected";
 		private static final String EXTRA_IMAGES = "images";
@@ -635,7 +633,7 @@ public class CaptchaManager implements Handler.Callback
 				String descriptionText, Bitmap descriptionImage, boolean multiple)
 		{
 			Bundle args = new Bundle();
-			args.putInt(EXTRA_PENDING_DATA_INDEX, pendingDataIndex);
+			fillArguments(args, pendingDataIndex);
 			args.putInt(EXTRA_COLUMNS, columns);
 			args.putBooleanArray(EXTRA_SELECTED, selected);
 			args.putParcelableArray(EXTRA_IMAGES, images);
@@ -687,18 +685,6 @@ public class CaptchaManager implements Handler.Callback
 		{
 			super.onSaveInstanceState(outState);
 			outState.putBooleanArray(EXTRA_SELECTED, mSelected);
-		}
-		
-		private ChoicePendingData getPendingData()
-		{
-			CaptchaManager captchaManager = CaptchaManager.getInstance();
-			synchronized (captchaManager.mPendingDataArray)
-			{
-				int pendingDataIndex = getArguments().getInt(EXTRA_PENDING_DATA_INDEX);
-				ChoicePendingData pendingData = (ChoicePendingData) captchaManager.mPendingDataArray
-						.get(pendingDataIndex);
-				return pendingData;
-			}
 		}
 		
 		@SuppressLint("InflateParams")
@@ -1165,12 +1151,12 @@ public class CaptchaManager implements Handler.Callback
 		}
 	}
 	
-	public static void registerForeground(Activity activity)
+	public static void register(Activity activity)
 	{
 		INSTANCE.mActivity = new WeakReference<>(activity);
 	}
 	
-	public static void unregisterForeground(Activity activity)
+	public static void unregister(Activity activity)
 	{
 		if (INSTANCE.getActivity() == activity) INSTANCE.mActivity = null;
 	}

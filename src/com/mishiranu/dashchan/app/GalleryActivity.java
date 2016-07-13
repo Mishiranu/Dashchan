@@ -50,8 +50,8 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
-import com.mishiranu.dashchan.content.CaptchaManager;
 import com.mishiranu.dashchan.content.DownloadManager;
+import com.mishiranu.dashchan.content.ForegroundManager;
 import com.mishiranu.dashchan.content.model.AttachmentItem;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.graphics.ActionIconSet;
@@ -211,7 +211,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 	{
 		super.onResume();
 		if (mPagerUnit != null) mPagerUnit.onResume();
-		CaptchaManager.registerForeground(this);
+		ForegroundManager.register(this);
 	}
 	
 	@Override
@@ -219,13 +219,13 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 	{
 		super.onPause();
 		if (mPagerUnit != null) mPagerUnit.onPause();
+		ForegroundManager.unregister(this);
 	}
 	
 	@Override
 	protected void onFinish()
 	{
 		super.onFinish();
-		CaptchaManager.unregisterForeground(this);
 		if (mPagerUnit != null) mPagerUnit.onFinish();
 	}
 	
