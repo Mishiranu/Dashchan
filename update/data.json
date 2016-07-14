@@ -352,11 +352,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.5",
+			"name": "1.6",
 			"code": 1,
 			"version": 1,
 			"minSdk": 14,
-			"length": 58743,
+			"length": 59683,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanNulldvachin.apk"
 		}
 	],
