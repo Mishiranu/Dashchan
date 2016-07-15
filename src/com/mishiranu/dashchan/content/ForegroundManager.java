@@ -1312,9 +1312,10 @@ public class ForegroundManager implements Handler.Callback
 			String descriptionText, Bitmap descriptionImage, boolean imageChoice)
 	{
 		boolean[] selectedArray = null;
-		if (selected >= 0 && selected < items.length)
+		int length = items != null ? items.length : images != null ? images.length : 0;
+		if (selected >= 0 && selected < length)
 		{
-			selectedArray = new boolean[items.length];
+			selectedArray = new boolean[length];
 			selectedArray[selected] = true;
 		}
 		boolean[] result = requireUserChoice(columns, selectedArray, items, images, descriptionText, descriptionImage,
