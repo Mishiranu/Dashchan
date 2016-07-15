@@ -1038,6 +1038,24 @@ public class ChanPerformer implements ChanManager.Linked
 	}
 	
 	@Public
+	public final Integer requireUserItemSingleChoice(int selected, CharSequence[] item, String descriptionText,
+			Bitmap descriptionImage)
+	{
+		checkPerformerRequireCall();
+		return ForegroundManager.getInstance().requireUserItemSingleChoice(selected, item,
+				descriptionText, descriptionImage);
+	}
+	
+	@Public
+	public final boolean[] requireUserItemMultipleChoice(boolean[] selected, CharSequence[] item,
+			String descriptionText, Bitmap descriptionImage)
+	{
+		checkPerformerRequireCall();
+		return ForegroundManager.getInstance().requireUserItemMultipleChoice(selected, item,
+				descriptionText, descriptionImage);
+	}
+	
+	@Public
 	public final Integer requireUserImageSingleChoice(int selected, Bitmap[] images, String descriptionText,
 			Bitmap descriptionImage)
 	{
@@ -1047,12 +1065,12 @@ public class ChanPerformer implements ChanManager.Linked
 	}
 	
 	@Public
-	public final boolean[] requireUserImageMultipleChoice(boolean[] selected, Bitmap[] images, String descriptionText,
-			Bitmap descriptionImage)
+	public final boolean[] requireUserImageMultipleChoice(boolean[] selected, Bitmap[] images,
+			String descriptionText, Bitmap descriptionImage)
 	{
 		checkPerformerRequireCall();
-		return ForegroundManager.getInstance().requireUserImageMultipleChoice(3, selected, images, descriptionText,
-				descriptionImage);
+		return ForegroundManager.getInstance().requireUserImageMultipleChoice(3, selected, images,
+				descriptionText, descriptionImage);
 	}
 	
 	public static final class Safe
