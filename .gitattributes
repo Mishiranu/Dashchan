@@ -1,0 +1,6 @@
+/jni/src/gif/dgif/*.c linguist-vendored
+/jni/src/gif/dgif/*.h linguist-vendored
+/jni/src/player/ffmpeg/include/* linguist-vendored
+/jni/src/player/ffmpeg/shared/* linguist-vendored
+/jni/src/player/yuv/include/* linguist-vendored
+/jni/src/player/yuv/shared/* linguist-vendored
