@@ -17,6 +17,8 @@
 package com.mishiranu.dashchan.content;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 
 import android.annotation.SuppressLint;
@@ -25,6 +27,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
@@ -39,10 +42,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -51,7 +57,6 @@ import chan.content.ChanManager;
 import chan.content.ChanPerformer;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
-import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
@@ -86,7 +91,7 @@ public class ForegroundManager implements Handler.Callback
 	
 	private static final int MESSAGE_REQUIRE_USER_CAPTCHA = 1;
 	private static final int MESSAGE_REQUIRE_ASYNC_CHECK = 2;
-	private static final int MESSAGE_REQUIRE_USER_IMAGE_CHOICE = 3;
+	private static final int MESSAGE_REQUIRE_USER_CHOICE = 3;
 	private static final int MESSAGE_SHOW_CAPTCHA_INVALID = 4;
 	
 	private final Handler mHandler = new Handler(Looper.getMainLooper(), this);
@@ -611,7 +616,217 @@ public class ForegroundManager implements Handler.Callback
 		}
 	}
 	
-	public static class ChoiceDialogFragment extends PendingDataDialogFragment implements View.OnClickListener,
+	private static ImageView appendDescriptionImageView(Activity activity, ViewGroup viewGroup, Bitmap descriptionImage)
+	{
+		ImageView imageView = new ImageView(activity)
+		{
+			@Override
+			protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
+			{
+				super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+				int width = getMeasuredWidth();
+				int height = 0;
+				Drawable drawable = getDrawable();
+				if (drawable != null)
+				{
+					int dw = drawable.getIntrinsicWidth(), dh = drawable.getIntrinsicHeight();
+					if (dw > 0 && dh > 0) height = width * dh / dw;
+				}
+				height = Math.min(height, (int) (120f * ResourceUtils.obtainDensity(this)));
+				setMeasuredDimension(width, height);
+			}
+		};
+		imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+		imageView.setImageBitmap(descriptionImage);
+		viewGroup.addView(imageView);
+		return imageView;
+	}
+	
+	private static class ItemsAdapter extends ArrayAdapter<CharSequence>
+	{
+		private final View mHeader;
+		
+		public ItemsAdapter(Context context, int resource, ArrayList<CharSequence> items, View header)
+		{
+			super(context, resource, android.R.id.text1, items);
+			mHeader = header;
+		}
+		
+		@Override
+		public int getItemViewType(int position)
+		{
+			if (mHeader != null && position == 0) return ListView.ITEM_VIEW_TYPE_IGNORE;
+			return super.getItemViewType(position);
+		}
+		
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent)
+		{
+			if (mHeader != null && position == 0) return mHeader;
+			return super.getView(position, convertView, parent);
+		}
+		
+		@Override
+		public boolean areAllItemsEnabled()
+		{
+			return false;
+		}
+		
+		@Override
+		public boolean isEnabled(int position)
+		{
+			return mHeader == null || position != 0;
+		}
+	}
+	
+	public static class ItemChoiceDialogFragment extends PendingDataDialogFragment implements
+			DialogInterface.OnClickListener, AdapterView.OnItemClickListener
+	{
+		private static final String EXTRA_SELECTED = "selected";
+		private static final String EXTRA_ITEMS = "items";
+		private static final String EXTRA_DESCRIPTION_TEXT = "descriptionText";
+		private static final String EXTRA_DESCRIPTION_IMAGE = "descriptionImage";
+		private static final String EXTRA_MULTIPLE = "multiple";
+		
+		private boolean[] mSelected;
+		private boolean mHasImage;
+		
+		public ItemChoiceDialogFragment()
+		{
+			
+		}
+		
+		public ItemChoiceDialogFragment(int pendingDataIndex, boolean[] selected, CharSequence[] items,
+				String descriptionText, Bitmap descriptionImage, boolean multiple)
+		{
+			Bundle args = new Bundle();
+			fillArguments(args, pendingDataIndex);
+			args.putBooleanArray(EXTRA_SELECTED, selected);
+			args.putCharSequenceArray(EXTRA_ITEMS, items);
+			args.putString(EXTRA_DESCRIPTION_TEXT, descriptionText);
+			args.putParcelable(EXTRA_DESCRIPTION_IMAGE, descriptionImage);
+			args.putBoolean(EXTRA_MULTIPLE, multiple);
+			setArguments(args);
+		}
+		
+		public void show(Activity activity)
+		{
+			show(activity.getFragmentManager(), getClass().getName());
+		}
+		
+		@Override
+		public void onActivityCreated(Bundle savedInstanceState)
+		{
+			super.onActivityCreated(savedInstanceState);
+			PendingData pendingData = getPendingData();
+			if (pendingData == null)
+			{
+				dismissAllowingStateLoss();
+				return;
+			}
+		}
+		
+		@Override
+		public void onSaveInstanceState(Bundle outState)
+		{
+			super.onSaveInstanceState(outState);
+			outState.putBooleanArray(EXTRA_SELECTED, mSelected);
+		}
+		
+		@SuppressLint("InflateParams")
+		@Override
+		public Dialog onCreateDialog(Bundle savedInstanceState)
+		{
+			Activity activity = getActivity();
+			CharSequence[] items = getArguments().getCharSequenceArray(EXTRA_ITEMS);
+			if (items == null) items = new CharSequence[0];
+			String descriptionText = getArguments().getString(EXTRA_DESCRIPTION_TEXT);
+			Bitmap descriptionImage = getArguments().getParcelable(EXTRA_DESCRIPTION_IMAGE);
+			boolean multiple = getArguments().getBoolean(EXTRA_MULTIPLE);
+			mSelected = new boolean[items.length];
+			boolean[] selected = savedInstanceState != null ? savedInstanceState.getBooleanArray(EXTRA_SELECTED) : null;
+			if (selected == null) selected = getArguments().getBooleanArray(EXTRA_SELECTED);
+			if (selected != null && selected.length == mSelected.length)
+			{
+				System.arraycopy(selected, 0, mSelected, 0, selected.length);
+			}
+			
+			FrameLayout imageLayout = null;
+			if (descriptionImage != null)
+			{
+				imageLayout = new FrameLayout(activity);
+				ImageView imageView = appendDescriptionImageView(activity, imageLayout, descriptionImage);
+				int outerPadding = activity.getResources().getDimensionPixelOffset(R.dimen.dialog_padding_text);
+				((FrameLayout.LayoutParams) imageView.getLayoutParams()).setMargins(0, outerPadding, outerPadding,
+						outerPadding / 2);
+			}
+			ArrayList<CharSequence> itemsList = new ArrayList<>();
+			if (imageLayout != null) itemsList.add(null);
+			Collections.addAll(itemsList, items);
+			int resId = ResourceUtils.obtainAlertDialogLayoutResId(activity, multiple
+					? ResourceUtils.DIALOG_LAYOUT_MULTI_CHOICE : ResourceUtils.DIALOG_LAYOUT_SINGLE_CHOICE);
+			ItemsAdapter adapter = new ItemsAdapter(activity, resId, itemsList, imageLayout);
+			AlertDialog alertDialog = new AlertDialog.Builder(activity).setTitle(descriptionText)
+					.setAdapter(adapter, null).setPositiveButton(android.R.string.ok, this)
+					.setNegativeButton(android.R.string.cancel, this).create();
+			ListView listView = alertDialog.getListView();
+			listView.setOnItemClickListener(this);
+			listView.setChoiceMode(multiple ? ListView.CHOICE_MODE_MULTIPLE : ListView.CHOICE_MODE_SINGLE);
+			for (int i = 0, j = imageLayout == null ? 0 : 1; i < mSelected.length; i++, j++)
+			{
+				listView.setItemChecked(j, mSelected[i]);
+			}
+			mHasImage = imageLayout != null;
+			return alertDialog;
+		}
+		
+		@Override
+		public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+		{
+			if (mHasImage && position == 0) return;
+			int arrayPosition = mHasImage ? position - 1 : position;
+			if (getArguments().getBoolean(EXTRA_MULTIPLE))
+			{
+				mSelected[arrayPosition] = !mSelected[arrayPosition];
+				((ListView) parent).setItemChecked(position, mSelected[arrayPosition]);
+			}
+			else
+			{
+				for (int i = 0; i < mSelected.length; i++) mSelected[i] = i == arrayPosition;
+				dismiss();
+				storeResult(true);
+			}
+		}
+		
+		@Override
+		public void onClick(DialogInterface dialog, int which)
+		{
+			storeResult(which == AlertDialog.BUTTON_POSITIVE);
+		}
+		
+		@Override
+		public void onCancel(DialogInterface dialog)
+		{
+			super.onCancel(dialog);
+			storeResult(false);
+		}
+		
+		private void storeResult(boolean success)
+		{
+			ChoicePendingData pendingData = getPendingData();
+			if (pendingData != null)
+			{
+				synchronized (pendingData)
+				{
+					pendingData.result = success ? mSelected : null;
+					pendingData.ready = true;
+					pendingData.notifyAll();
+				}
+			}
+		}
+	}
+	
+	public static class ImageChoiceDialogFragment extends PendingDataDialogFragment implements View.OnClickListener,
 			DialogInterface.OnClickListener
 	{
 		private static final String EXTRA_COLUMNS = "columns";
@@ -624,12 +839,12 @@ public class ForegroundManager implements Handler.Callback
 		private FrameLayout[] mSelectionViews;
 		private boolean[] mSelected;
 		
-		public ChoiceDialogFragment()
+		public ImageChoiceDialogFragment()
 		{
 			
 		}
 		
-		public ChoiceDialogFragment(int pendingDataIndex, int columns, boolean[] selected, Bitmap[] images,
+		public ImageChoiceDialogFragment(int pendingDataIndex, int columns, boolean[] selected, Bitmap[] images,
 				String descriptionText, Bitmap descriptionImage, boolean multiple)
 		{
 			Bundle args = new Bundle();
@@ -702,37 +917,10 @@ public class ForegroundManager implements Handler.Callback
 			Bitmap descriptionImage = getArguments().getParcelable(EXTRA_DESCRIPTION_IMAGE);
 			int outerPadding = activity.getResources().getDimensionPixelOffset(R.dimen.dialog_padding_text);
 			container.setPadding(outerPadding, outerPadding, outerPadding, outerPadding);
-			if (!StringUtils.isEmpty(descriptionText))
-			{
-				TextView descriptionView = new TextView(activity, null, android.R.attr.textAppearanceListItem);
-				descriptionView.setPadding(0, 0, 0, outerPadding);
-				descriptionView.setText(descriptionText);
-				container.addView(descriptionView);
-			}
 			int cornersRadius = (int) (2f * density);
 			if (descriptionImage != null)
 			{
-				ImageView imageView = new ImageView(activity)
-				{
-					@Override
-					protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
-					{
-						super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-						int width = getMeasuredWidth();
-						int height = 0;
-						Drawable drawable = getDrawable();
-						if (drawable != null)
-						{
-							int dw = drawable.getIntrinsicWidth(), dh = drawable.getIntrinsicHeight();
-							if (dw > 0 && dh > 0) height = width * dh / dw;
-						}
-						height = Math.min(height, (int) (120f * density));
-						setMeasuredDimension(width, height);
-					}
-				};
-				imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
-				imageView.setImageBitmap(descriptionImage);
-				container.addView(imageView);
+				ImageView imageView = appendDescriptionImageView(activity, container, descriptionImage);
 				((LinearLayout.LayoutParams) imageView.getLayoutParams()).setMargins(0, 0, 0, (int) (20f * density));
 			}
 			int innerPadding = (int) (8f * density);
@@ -783,8 +971,9 @@ public class ForegroundManager implements Handler.Callback
 			}
 			ScrollView scrollView = new ScrollView(activity);
 			scrollView.addView(container, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-			final AlertDialog alertDialog = new AlertDialog.Builder(activity).setView(scrollView).setPositiveButton
-					(android.R.string.ok, this).setNegativeButton(android.R.string.cancel, this).create();
+			final AlertDialog alertDialog = new AlertDialog.Builder(activity).setView(scrollView)
+					.setTitle(descriptionText).setPositiveButton(android.R.string.ok, this)
+					.setNegativeButton(android.R.string.cancel, this).create();
 			alertDialog.setOnShowListener(new DialogInterface.OnShowListener()
 			{
 				@Override
@@ -800,10 +989,14 @@ public class ForegroundManager implements Handler.Callback
 		public void onClick(View v)
 		{
 			int index = (int) v.getTag();
-			mSelected[index] = !mSelected[index];
-			updateSelection(index);
-			if (!getArguments().getBoolean(EXTRA_MULTIPLE))
+			if (getArguments().getBoolean(EXTRA_MULTIPLE))
 			{
+				mSelected[index] = !mSelected[index];
+				updateSelection(index);
+			}
+			else
+			{
+				for (int i = 0; i < mSelected.length; i++) mSelected[i] = i == index;
 				dismiss();
 				storeResult(true);
 			}
@@ -851,7 +1044,7 @@ public class ForegroundManager implements Handler.Callback
 		{
 			case MESSAGE_REQUIRE_USER_CAPTCHA:
 			case MESSAGE_REQUIRE_ASYNC_CHECK:
-			case MESSAGE_REQUIRE_USER_IMAGE_CHOICE:
+			case MESSAGE_REQUIRE_USER_CHOICE:
 			{
 				HandlerData handlerData = (HandlerData) msg.obj;
 				Activity activity = getActivity();
@@ -888,13 +1081,22 @@ public class ForegroundManager implements Handler.Callback
 									captchaHandlerData.captchaType).show(activity);
 							break;
 						}
-						case MESSAGE_REQUIRE_USER_IMAGE_CHOICE:
+						case MESSAGE_REQUIRE_USER_CHOICE:
 						{
 							ChoiceHandlerData choiceHandlerData = (ChoiceHandlerData) handlerData;
-							new ChoiceDialogFragment(handlerData.pendingDataIndex, choiceHandlerData.columns,
-									choiceHandlerData.selected, choiceHandlerData.images,
-									choiceHandlerData.descriptionText, choiceHandlerData.descriptionImage,
-									choiceHandlerData.multiple).show(activity);
+							if (choiceHandlerData.images != null)
+							{
+								new ImageChoiceDialogFragment(handlerData.pendingDataIndex, choiceHandlerData.columns,
+										choiceHandlerData.selected, choiceHandlerData.images,
+										choiceHandlerData.descriptionText, choiceHandlerData.descriptionImage,
+										choiceHandlerData.multiple).show(activity);
+							}
+							else
+							{
+								new ItemChoiceDialogFragment(handlerData.pendingDataIndex, choiceHandlerData.selected,
+										choiceHandlerData.items,choiceHandlerData.descriptionText,
+										choiceHandlerData.descriptionImage, choiceHandlerData.multiple).show(activity);
+							}
 							break;
 						}
 					}
@@ -947,17 +1149,19 @@ public class ForegroundManager implements Handler.Callback
 		public final int columns;
 		public final boolean[] selected;
 		public final Bitmap[] images;
+		public final CharSequence[] items;
 		public final String descriptionText;
 		public final Bitmap descriptionImage;
 		public final boolean multiple;
 		
 		public ChoiceHandlerData(int pendingDataIndex, int columns, boolean[] selected, Bitmap[] images,
-				String descriptionText, Bitmap descriptionImage, boolean multiple)
+				CharSequence[] items, String descriptionText, Bitmap descriptionImage, boolean multiple)
 		{
 			super(pendingDataIndex);
 			this.columns = columns;
 			this.selected = selected;
 			this.images = images;
+			this.items = items;
 			this.descriptionText = descriptionText;
 			this.descriptionImage = descriptionImage;
 			this.multiple = multiple;
@@ -1080,17 +1284,41 @@ public class ForegroundManager implements Handler.Callback
 		}
 	}
 	
+	public Integer requireUserItemSingleChoice(int selected, CharSequence[] items, String descriptionText,
+			Bitmap descriptionImage)
+	{
+		return requireUserSingleChoice(0, selected, items, null, descriptionText, descriptionImage, false);
+	}
+	
+	public boolean[] requireUserItemMultipleChoice(boolean[] selected, CharSequence[] items, String descriptionText,
+			Bitmap descriptionImage)
+	{
+		return requireUserChoice(0, selected, items, null, descriptionText, descriptionImage, true, false);
+	}
+	
 	public Integer requireUserImageSingleChoice(int columns, int selected, Bitmap[] images,
 			String descriptionText, Bitmap descriptionImage)
 	{
+		return requireUserSingleChoice(columns, selected, null, images, descriptionText, descriptionImage, true);
+	}
+	
+	public boolean[] requireUserImageMultipleChoice(int columns, boolean[] selected, Bitmap[] images,
+			String descriptionText, Bitmap descriptionImage)
+	{
+		return requireUserChoice(columns, selected, null, images, descriptionText, descriptionImage, true, true);
+	}
+	
+	private Integer requireUserSingleChoice(int columns, int selected, CharSequence[] items, Bitmap[] images,
+			String descriptionText, Bitmap descriptionImage, boolean imageChoice)
+	{
 		boolean[] selectedArray = null;
-		if (selected >= 0 && selected < images.length)
+		if (selected >= 0 && selected < items.length)
 		{
-			selectedArray = new boolean[images.length];
+			selectedArray = new boolean[items.length];
 			selectedArray[selected] = true;
 		}
-		boolean[] result = requireUserImageChoice(columns, selectedArray, images, descriptionText,
-				descriptionImage, false);
+		boolean[] result = requireUserChoice(columns, selectedArray, items, images, descriptionText, descriptionImage,
+				false, imageChoice);
 		if (result != null)
 		{
 			for (int i = 0; i < result.length; i++)
@@ -1102,16 +1330,11 @@ public class ForegroundManager implements Handler.Callback
 		return null;
 	}
 	
-	public boolean[] requireUserImageMultipleChoice(int columns, boolean[] selected, Bitmap[] images,
-			String descriptionText, Bitmap descriptionImage)
+	private boolean[] requireUserChoice(int columns, boolean[] selected, CharSequence[] items, Bitmap[] images,
+			String descriptionText, Bitmap descriptionImage, boolean multiple, boolean imageChoice)
 	{
-		return requireUserImageChoice(columns, selected, images, descriptionText, descriptionImage, true);
-	}
-	
-	private boolean[] requireUserImageChoice(int columns, boolean[] selected, Bitmap[] images,
-			String descriptionText, Bitmap descriptionImage, boolean multiple)
-	{
-		if (images == null) throw new NullPointerException("Images array is null");
+		if (imageChoice && images == null) throw new NullPointerException("Images array is null");
+		if (!imageChoice && items == null) throw new NullPointerException("Items array is null");
 		ChoicePendingData pendingData;
 		int pendingDataIndex;
 		synchronized (mPendingDataArray)
@@ -1122,9 +1345,9 @@ public class ForegroundManager implements Handler.Callback
 		}
 		try
 		{
-			ChoiceHandlerData handlerData = new ChoiceHandlerData(pendingDataIndex, columns, selected, images,
+			ChoiceHandlerData handlerData = new ChoiceHandlerData(pendingDataIndex, columns, selected, images, items,
 					descriptionText, descriptionImage, multiple);
-			mHandler.obtainMessage(MESSAGE_REQUIRE_USER_IMAGE_CHOICE, handlerData).sendToTarget();
+			mHandler.obtainMessage(MESSAGE_REQUIRE_USER_CHOICE, handlerData).sendToTarget();
 			synchronized (pendingData)
 			{
 				while (!pendingData.ready)
