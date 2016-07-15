@@ -6,6 +6,7 @@
 !/src-api
 !/src-external
 !/update
+!/.gitattributes
 !/.gitignore
 !/AndroidManifest.xml
 !/build.gradle
