@@ -556,7 +556,7 @@ public final class Post implements Serializable, Comparable<Post>
 			}
 		}
 		else if (mAttachments != null || o.mAttachments != null) return false;
-		if (mIcons == o.mIcons || mIcons != null && mIcons.length == o.mIcons.length)
+		if (mIcons == o.mIcons || mIcons != null && o.mIcons != null && mIcons.length == o.mIcons.length)
 		{
 			for (int i = 0, count = mIcons != null ? mIcons.length : 0; i < count; i++)
 			{
