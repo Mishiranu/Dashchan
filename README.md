@@ -26,7 +26,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | endchan         | endchan.xyz          | [DashchanEndchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanEndchan.apk)                 |
 | fiftyfive       | 55chan.org           | [DashchanFiftyfive.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanFiftyfive.apk)             |
 | fourchan        | 4chan.org            | [DashchanFourchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanFourchan.apk)               |
-| haruhichan      | haruhichan.ru        | [DashchanHaruhichan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanHaruhichan.apk)           |
+| haruhichan      | haruhichan.ovh       | [DashchanHaruhichan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanHaruhichan.apk)           |
 | horochan        | horochan.ru          | [DashchanHorochan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanHorochan.apk)               |
 | infinite        | 8ch.net              | [DashchanInfinite.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanInfinite.apk)               |
 | krautchan       | krautchan.net        | [DashchanKrautchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanKrautchan.apk)             |
@@ -37,6 +37,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | nulldvachin     | 02ch.in              | [DashchanNulldvachin.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNulldvachin.apk)         |
 | nulleu          | 0chan.eu             | [DashchanNulleu.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNulleu.apk)                   |
 | nulltirech      | 0-chan.ru            | [DashchanNulltirech.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNulltirech.apk)           |
+| onechanca       | 1chan.ca             | [DashchanOnechanca.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanOnechanca.apk)             |
 | owlchan         | owlchan.ru           | [DashchanOwlchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanOwlchan.apk)                 |
 | ponyach         | ponyach.ru           | [DashchanPonyach.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanPonyach.apk)                 |
 | ponychan        | ponychan.net         | [DashchanPonychan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanPonychan.apk)               |
