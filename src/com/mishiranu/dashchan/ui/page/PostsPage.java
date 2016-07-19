@@ -809,7 +809,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		boolean positionDefined = false;
 		Locale locale = Locale.getDefault();
 		SearchHelper helper = new SearchHelper();
-		helper.setFlags("m", "r", "a", "d", "e");
+		helper.setFlags("m", "r", "a", "d", "e", "op");
 		HashSet<String> queries = helper.handleQueries(locale, query);
 		HashSet<String> fileNames = new HashSet<>();
 		PostsExtra extra = getExtra();
@@ -825,7 +825,9 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				boolean hasAttachments = postItem.hasAttachments();
 				boolean deleted = postItem.isDeleted();
 				boolean edited = mLastEditedPostNumbers.contains(postNumber);
-				if (!helper.checkFlags("m", userPost, "r", reply, "a", hasAttachments, "d", deleted, "e", edited))
+				boolean originalPoster = postItem.isOriginalPoster();
+				if (!helper.checkFlags("m", userPost, "r", reply, "a", hasAttachments, "d", deleted, "e", edited,
+						"op", originalPoster))
 				{
 					continue;
 				}
