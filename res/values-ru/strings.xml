@@ -25,11 +25,11 @@
 	<string name="text_app_name_update">Обновление %s</string>
 	<string name="text_all_forums">Все форумы</string>
 	<string name="text_all_posts">Все сообщения</string>
-	<string name="text_autohide_comment">Искать в сообщениях</string>
+	<string name="text_autohide_comment">Искать в комментариях</string>
 	<string name="text_autohide_name">Искать в именах</string>
 	<string name="text_autohide_original_post">Только исходные сообщения</string>
 	<string name="text_autohide_sage">Только сообщения с sage</string>
-	<string name="text_autohide_subject">Искать в заголовках</string>
+	<string name="text_autohide_subject">Искать в темах</string>
 	<string name="text_ban_id_format">ID блокировки: %s</string>
 	<string name="text_ban_start_date_format">Дата выдачи: %s</string>
 	<string name="text_ban_expires_format">Истекает: %s</string>
@@ -41,6 +41,7 @@
 	<string name="text_captcha">Капча</string>
 	<string name="text_closed_thread">Тред закрыт</string>
 	<string name="text_code_number_address">Код, номер, адрес</string>
+	<string name="text_comment">Комментарий</string>
 	<string name="text_configuration">Конфигурация</string>
 	<string name="text_confirmation">Подтверждение</string>
 	<string name="text_cyclical_thread">Цикличный тред</string>
@@ -81,7 +82,6 @@
 	<string name="text_main_application">Основное приложение</string>
 	<string name="text_match_found">Найдено совпадение</string>
 	<string name="text_match_found_format">Найдено совпадение: %s</string>
-	<string name="text_message">Сообщение</string>
 	<string name="text_message_data">Данные сообщения</string>
 	<string name="text_my_post">Моё сообщение</string>
 	<string name="text_name">Имя</string>
@@ -287,6 +287,7 @@
 	<string name="message_cloudflate_block">Похоже, что CloudFlare заблокировал ваш IP. Введите капчу,
 		чтобы пройти проверку.</string>
 	<string name="message_clearing">Очистка&#8230;</string>
+	<string name="message_comment_too_short">Комментарий слишком короткий</string>
 	<string name="message_confirm_archivation">Подтвердите архивирование.</string>
 	<string name="message_confirm_deletion">Подтвердите удаление.</string>
 	<string name="message_confirm_reporting">Подтвердите жалобу.</string>
@@ -308,9 +309,7 @@
 	<string name="message_empty_file">Необходимо прикрепить файл</string>
 	<string name="message_empty_gallery">Галерея пуста</string>
 	<string name="message_empty_history">История пуста</string>
-	<string name="message_empty_post">Введите текст сообщения</string>
 	<string name="message_empty_response">Пустой ответ сервера</string>
-	<string name="message_empty_subject">Введите заголовок</string>
 	<string name="message_enter_valid_data">Введите корректные данные</string>
 	<string name="message_extension_error">Ошибка расширения</string>
 	<string name="message_extension_trust_request">Разрешить этому расширению управление приложением?</string>
@@ -359,7 +358,7 @@
 	<string name="message_page_not_exist_format">%d страница не существует</string>
 	<string name="message_playback_error">Ошибка воспроизведения</string>
 	<string name="message_post_not_found">Сообщение не найдено</string>
-	<string name="message_posting_too_fast">Нельзя писать сообщения так часто</string>
+	<string name="message_posting_too_fast">Нельзя отправлять так часто</string>
 	<string name="message_press_again_to_exit">Нажмите ещё раз, чтобы выйти</string>
 	<string name="message_processing_data">Обработка данных&#8230;</string>
 	<string name="message_read_timeout">Время ожидания приёма истекло</string>
@@ -372,6 +371,7 @@
 	<string name="message_sending_index_format">Отправка %1$d из %2$d&#8230;</string>
 	<string name="message_spam_list">Сообщение отклонено</string>
 	<string name="message_ssl_error">Ошибка SSL/HTTPS</string>
+	<string name="message_subject_too_short">Тема слишком короткая</string>
 	<string name="message_thread_closed">Тред закрыт</string>
 	<string name="message_thread_not_exist">Тред не существует</string>
 	<string name="message_too_few_meaningful_words">Слишком мало значащих слов</string>

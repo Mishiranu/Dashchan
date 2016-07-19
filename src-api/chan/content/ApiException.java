@@ -214,12 +214,12 @@ public final class ApiException extends Exception
 			}
 			case ApiException.SEND_ERROR_EMPTY_SUBJECT:
 			{
-				resId = R.string.message_empty_subject;
+				resId = R.string.message_subject_too_short;
 				break;
 			}
 			case ApiException.SEND_ERROR_EMPTY_COMMENT:
 			{
-				resId = R.string.message_empty_post;
+				resId = R.string.message_comment_too_short;
 				break;
 			}
 			case ApiException.SEND_ERROR_FILES_LIMIT:
@@ -269,7 +269,7 @@ public final class ApiException extends Exception
 			}
 			case ApiException.REPORT_ERROR_EMPTY_COMMENT:
 			{
-				resId = R.string.message_empty_post;
+				resId = R.string.message_comment_too_short;
 				break;
 			}
 			case ApiException.ARCHIVE_ERROR_NO_ACCESS:

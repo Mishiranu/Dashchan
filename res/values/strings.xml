@@ -24,7 +24,7 @@
 	<string name="text_app_name_update">%s update</string>
 	<string name="text_all_forums">All forums</string>
 	<string name="text_all_posts">All posts</string>
-	<string name="text_autohide_comment">Find in messages</string>
+	<string name="text_autohide_comment">Find in comments</string>
 	<string name="text_autohide_name">Find in names</string>
 	<string name="text_autohide_original_post">Only original posts</string>
 	<string name="text_autohide_sage">Only posts with sage</string>
@@ -40,6 +40,7 @@
 	<string name="text_captcha">Captcha</string>
 	<string name="text_closed_thread">Thread closed</string>
 	<string name="text_code_number_address">Code, number, address</string>
+	<string name="text_comment">Comment</string>
 	<string name="text_configuration">Configuration</string>
 	<string name="text_confirmation">Confirmation</string>
 	<string name="text_cyclical_thread">Cyclical thread</string>
@@ -76,7 +77,6 @@
 	<string name="text_main_application">Main application</string>
 	<string name="text_match_found">Match found</string>
 	<string name="text_match_found_format">Match found: %s</string>
-	<string name="text_message">Message</string>
 	<string name="text_message_data">Message data</string>
 	<string name="text_my_post">My post</string>
 	<string name="text_name">Name</string>
@@ -270,6 +270,7 @@
 	<string name="message_cloudflate_block">It seems that CloudFlare has blocked your IP. Enter the captcha to pass
 		the verification.</string>
 	<string name="message_clearing">Clearing&#8230;</string>
+	<string name="message_comment_too_short">Comment is too short</string>
 	<string name="message_confirm_archivation">Confirm the archivation.</string>
 	<string name="message_confirm_deletion">Confirm the deletion.</string>
 	<string name="message_confirm_reporting">Confirm the reporting.</string>
@@ -291,9 +292,7 @@
 	<string name="message_empty_file">You need to attach a file</string>
 	<string name="message_empty_gallery">Gallery is empty</string>
 	<string name="message_empty_history">History is empty</string>
-	<string name="message_empty_post">No comment entered</string>
 	<string name="message_empty_response">Empty response</string>
-	<string name="message_empty_subject">No subject entered</string>
 	<string name="message_enter_valid_data">Enter a valid data</string>
 	<string name="message_extension_error">Extension error</string>
 	<string name="message_extension_trust_request">Allow this extension to manage application?</string>
@@ -340,7 +339,7 @@
 	<string name="message_page_not_exist_format">The %d page doesn\'t exist</string>
 	<string name="message_playback_error">Playback error</string>
 	<string name="message_post_not_found">The post isn\'t found</string>
-	<string name="message_posting_too_fast">You can\'t post messages too often</string>
+	<string name="message_posting_too_fast">You can\'t send too often</string>
 	<string name="message_press_again_to_exit">Press again to exit</string>
 	<string name="message_processing_data">Processing data&#8230;</string>
 	<string name="message_read_timeout">Read timeout expired</string>
@@ -351,8 +350,9 @@
 	<string name="message_search_completed">Search completed</string>
 	<string name="message_sending">Sending&#8230;</string>
 	<string name="message_sending_index_format">Sending %1$d of %2$d&#8230;</string>
-	<string name="message_spam_list">Message rejected</string>
+	<string name="message_spam_list">Post rejected</string>
 	<string name="message_ssl_error">SSL/HTTPS error</string>
+	<string name="message_subject_too_short">Subject is too short</string>
 	<string name="message_thread_closed">Thread is closed</string>
 	<string name="message_thread_not_exist">The thread doesn\'t exist</string>
 	<string name="message_too_few_meaningful_words">Too few meaningful words</string>
