@@ -72,7 +72,6 @@
 	<string name="text_links_attachments_format">Anexo do link: %s</string>
 	<string name="text_local_archive">Arquivo local</string>
 	<string name="text_main_application">Aplicação principal</string>
-	<string name="text_message">Mensagem</string>
 	<string name="text_message_data">Dados da mensagem</string>
 	<string name="text_my_post">Meu post</string>
 	<string name="text_name">Nome</string>
@@ -277,9 +276,7 @@
 	<string name="message_empty_file">Você precisa de uma imagem</string>
 	<string name="message_empty_gallery">Galeria está vazia</string>
 	<string name="message_empty_history">Histórico está vazio</string>
-	<string name="message_empty_post">O post está vazio</string>
 	<string name="message_empty_response">Resposta vazia</string>
-	<string name="message_empty_subject">Sem assunto</string>
 	<string name="message_enter_valid_data">Entre dados válidos</string>
 	<string name="message_extension_error">Erro de extensão</string>
 	<string name="message_field_too_long">Passando dos limites de texto</string>
