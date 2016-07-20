@@ -27,8 +27,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -575,20 +573,6 @@ public class CacheManager implements Runnable
 		}
 	}
 	
-	private final MessageDigest mDigest;
-	
-	// mDigest initializing block
-	{
-		try
-		{
-			mDigest = MessageDigest.getInstance("SHA-256");
-		}
-		catch (NoSuchAlgorithmException e)
-		{
-			throw new RuntimeException(e);
-		}
-	}
-	
 	private final LruCache<String, String> mCachedFileKeys = new LruCache<>(1000);
 	
 	public String getCachedFileKey(Uri uri)
@@ -621,20 +605,7 @@ public class CacheManager implements Runnable
 				String hash = cachedFileKeys.get(data);
 				if (hash != null) return hash;
 			}
-			MessageDigest digest = mDigest;
-			byte[] bytes;
-			synchronized (digest)
-			{
-				digest.reset();
-				bytes = digest.digest(data.getBytes());
-			}
-			StringBuilder hashBuilder = new StringBuilder(bytes.length * 2);
-			for (byte b : bytes)
-			{
-				if ((b & 0xf0) == 0) hashBuilder.append(0);
-				hashBuilder.append(Integer.toString(b & 0xf, 16));
-			}
-			String hash = hashBuilder.toString();
+			String hash = StringUtils.calculateSha256(data);
 			synchronized (cachedFileKeys)
 			{
 				cachedFileKeys.put(data, hash);
