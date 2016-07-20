@@ -54,7 +54,8 @@ public class UriHandlerActivity extends Activity
 				{
 					if (!fromClient)
 					{
-						NavigationUtils.navigateThreads(this, chanName, boardName, false, false, false, false);
+						startActivity(NavigationUtils.obtainThreadsIntent(this, chanName, boardName,
+								false, false, false, false));
 					}
 					success = true;
 				}
@@ -62,8 +63,8 @@ public class UriHandlerActivity extends Activity
 				{
 					if (!fromClient)
 					{
-						NavigationUtils.navigatePosts(this, chanName, boardName, threadNumber, postNumber,
-								null, false, false);
+						startActivity(NavigationUtils.obtainPostsIntent(this, chanName, boardName, threadNumber,
+								postNumber, null, false, false));
 					}
 					success = true;
 				}

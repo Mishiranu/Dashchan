@@ -26,5 +26,5 @@ public interface LocalNavigator
 	public void navigateSearch(String chanName, String boardName, String searchQuery);
 	public void navigateArchive(String chanName, String boardName);
 	public void navigateTarget(String chanName, ChanLocator.NavigationData data, boolean fromCache);
-	public void navigateAddPost(String chanName, String boardName, String threadNumber, Replyable.ReplyData... data);
+	public void navigatePosting(String chanName, String boardName, String threadNumber, Replyable.ReplyData... data);
 }

@@ -64,55 +64,53 @@ import com.mishiranu.dashchan.preference.Preferences;
 
 public class NavigationUtils
 {
-	private static void startMain(Context context, Intent intent, boolean animated, boolean fromCache)
+	private static Intent obtainMainIntent(Context context, boolean animated, boolean fromCache)
 	{
-		context.startActivity(intent.setComponent(new ComponentName(context, MainActivity.class))
+		return new Intent().setComponent(new ComponentName(context, MainActivity.class))
 				.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP)
-				.putExtra(C.EXTRA_ANIMATED_TRANSITION, animated).putExtra(C.EXTRA_FROM_CACHE, fromCache));
+				.putExtra(C.EXTRA_ANIMATED_TRANSITION, animated).putExtra(C.EXTRA_FROM_CACHE, fromCache);
 	}
 	
-	public static void navigateThreads(Context context, String chanName, String boardName, boolean navigateTop,
+	public static Intent obtainThreadsIntent(Context context, String chanName, String boardName, boolean navigateTop,
 			boolean animated, boolean fromCache, boolean launcher)
 	{
-		startMain(context, new Intent().putExtra(C.EXTRA_CHAN_NAME, chanName).putExtra(C.EXTRA_BOARD_NAME, boardName)
-				.putExtra(C.EXTRA_NAVIGATE_TOP, navigateTop).putExtra(C.EXTRA_LAUNCHER, launcher), animated, fromCache);
+		return obtainMainIntent(context, animated, fromCache).putExtra(C.EXTRA_CHAN_NAME, chanName)
+				.putExtra(C.EXTRA_BOARD_NAME, boardName).putExtra(C.EXTRA_NAVIGATE_TOP, navigateTop)
+				.putExtra(C.EXTRA_LAUNCHER, launcher);
 	}
 	
-	public static void navigatePosts(Context context, String chanName, String boardName, String threadNumber,
+	public static Intent obtainPostsIntent(Context context, String chanName, String boardName, String threadNumber,
 			String postNumber, String threadTitle, boolean animated, boolean fromCache)
 	{
-		startMain(context, new Intent().putExtra(C.EXTRA_CHAN_NAME, chanName).putExtra(C.EXTRA_BOARD_NAME, boardName)
-				.putExtra(C.EXTRA_THREAD_NUMBER, threadNumber).putExtra(C.EXTRA_POST_NUMBER, postNumber)
-				.putExtra(C.EXTRA_THREAD_TITLE, threadTitle), animated, fromCache);
+		return obtainMainIntent(context, animated, fromCache).putExtra(C.EXTRA_CHAN_NAME, chanName)
+				.putExtra(C.EXTRA_BOARD_NAME, boardName).putExtra(C.EXTRA_THREAD_NUMBER, threadNumber)
+				.putExtra(C.EXTRA_POST_NUMBER, postNumber).putExtra(C.EXTRA_THREAD_TITLE, threadTitle);
 	}
 	
-	public static void navigateSearch(Context context, String chanName, String boardName, String searchQuery,
+	public static Intent obtainSearchIntent(Context context, String chanName, String boardName, String searchQuery,
 			boolean animated)
 	{
-		startMain(context, new Intent().putExtra(C.EXTRA_CHAN_NAME, chanName).putExtra(C.EXTRA_BOARD_NAME, boardName)
-				.putExtra(C.EXTRA_SEARCH_QUERY, searchQuery), animated, false);
+		return obtainMainIntent(context, animated, false).putExtra(C.EXTRA_CHAN_NAME, chanName)
+				.putExtra(C.EXTRA_BOARD_NAME, boardName).putExtra(C.EXTRA_SEARCH_QUERY, searchQuery);
 	}
 	
-	public static void navigateTarget(Context context, String chanName, ChanLocator.NavigationData data,
+	public static Intent obtainTargetIntent(Context context, String chanName, ChanLocator.NavigationData data,
 			boolean animated, boolean fromCache)
 	{
 		switch (data.target)
 		{
 			case ChanLocator.NavigationData.TARGET_THREADS:
 			{
-				navigateThreads(context, chanName, data.boardName, false, animated, fromCache, false);
-				break;
+				return obtainThreadsIntent(context, chanName, data.boardName, false, animated, fromCache, false);
 			}
 			case ChanLocator.NavigationData.TARGET_POSTS:
 			{
-				navigatePosts(context, chanName, data.boardName, data.threadNumber, data.postNumber, null,
+				return obtainPostsIntent(context, chanName, data.boardName, data.threadNumber, data.postNumber, null,
 						animated, fromCache);
-				break;
 			}
 			case ChanLocator.NavigationData.TARGET_SEARCH:
 			{
-				navigateSearch(context, chanName, data.boardName, data.searchQuery, animated);
-				break;
+				return obtainSearchIntent(context, chanName, data.boardName, data.searchQuery, animated);
 			}
 			default:
 			{
@@ -136,7 +134,8 @@ public class NavigationUtils
 			if (threadNumber != null)
 			{
 				activity.finish();
-				navigatePosts(activity, chanName, boardName, threadNumber, null, null, true, false);
+				activity.startActivity(obtainPostsIntent(activity, chanName, boardName, threadNumber,
+						null, null, true, false));
 				success = true;
 			}
 		}

@@ -147,7 +147,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				public void onRequestReply(ReplyData... data)
 				{
 					PageHolder pageHolder = getPageHolder();
-					getUiManager().navigator().navigateAddPost(pageHolder.chanName, pageHolder.boardName,
+					getUiManager().navigator().navigatePosting(pageHolder.chanName, pageHolder.boardName,
 							pageHolder.threadNumber, data);
 				}
 			};
@@ -406,7 +406,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		{
 			case OPTIONS_MENU_ADD_POST:
 			{
-				getUiManager().navigator().navigateAddPost(pageHolder.chanName, pageHolder.boardName,
+				getUiManager().navigator().navigatePosting(pageHolder.chanName, pageHolder.boardName,
 						pageHolder.threadNumber);
 				return true;
 			}
