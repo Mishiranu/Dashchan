@@ -325,7 +325,7 @@ public class JpegData
 							// Application data (0xe0 for JFIF, 0xe1 for EXIF) or comment (0xfe)
 							if (!IOUtils.readExactlyCheck(input, buffer, 0, 2)) break;
 							int size = IOUtils.bytesToInt(false, 0, 2, buffer);
-							if (oneByte == 0xe1 && size > 8)
+							if (oneByte == 0xe1 && size > 14)
 							{
 								byte[] data = new byte[size - 8];
 								if (!IOUtils.readExactlyCheck(input, data, 0, 6)) break;
