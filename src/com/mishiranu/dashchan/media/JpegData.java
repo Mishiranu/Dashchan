@@ -126,11 +126,13 @@ public class JpegData
 		if (mExif != null)
 		{
 			String latitude = mExif.get(KEY_LATITUDE);
-			String latitudeRef = mExif.get(KEY_LATITUDE_REF);
 			String longitude = mExif.get(KEY_LONGITUDE);
-			String longitudeRef = mExif.get(KEY_LATITUDE_REF);
-			if (latitude != null && latitudeRef != null && longitude != null && longitudeRef != null)
+			if (latitude != null && longitude != null)
 			{
+				String latitudeRef = mExif.get(KEY_LATITUDE_REF);
+				String longitudeRef = mExif.get(KEY_LONGITUDE_REF);
+				if (StringUtils.isEmptyOrWhitespace(latitudeRef)) latitudeRef = "N";
+				if (StringUtils.isEmptyOrWhitespace(longitudeRef)) longitudeRef = "E";
 				if (userReadable)
 				{
 					double latitudeValue = Double.parseDouble(latitude);
