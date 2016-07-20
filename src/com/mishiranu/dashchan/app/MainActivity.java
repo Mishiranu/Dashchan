@@ -324,7 +324,7 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 	}
 	
 	@Override
-	public void navigateAddPost(String chanName, String boardName, String threadNumber, Replyable.ReplyData... data)
+	public void navigatePosting(String chanName, String boardName, String threadNumber, Replyable.ReplyData... data)
 	{
 		Intent addPostIntent = new Intent(getApplicationContext(), PostingActivity.class);
 		addPostIntent.putExtra(C.EXTRA_CHAN_NAME, chanName);

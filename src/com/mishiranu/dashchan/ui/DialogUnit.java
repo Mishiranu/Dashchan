@@ -358,8 +358,8 @@ public class DialogUnit implements DialogStack.Callback
 				@Override
 				public void onRequestReply(ReplyData... data)
 				{
-					mUiManager.navigator().navigateAddPost(postItem.getChanName(),
-							postItem.getBoardName(), postItem.getThreadNumber(), data);
+					mUiManager.navigator().navigatePosting(postItem.getChanName(), postItem.getBoardName(),
+							postItem.getThreadNumber(), data);
 				}
 			};
 		}
@@ -1369,13 +1369,11 @@ public class DialogUnit implements DialogStack.Callback
 						ClickableToast.show(context, context.getString(R.string.message_completed),
 								context.getString(R.string.action_open_thread), new Runnable()
 						{
-							
 							@Override
 							public void run()
 							{
-								NavigationUtils.navigatePosts(mUiManager.getContext(), state.archiveChanName,
-										archiveBoardName, archiveThreadNumber, null, state.archiveThreadTitle,
-										true, false);
+								mUiManager.navigator().navigatePosts(state.archiveChanName, archiveBoardName,
+										archiveThreadNumber, null, state.archiveThreadTitle, false);
 							}
 						}, false);
 					}

@@ -153,8 +153,8 @@ public class LauncherActivity extends Activity
 		String chanName = ChanManager.getInstance().getDefaultChanName();
 		if (chanName == null) startActivity(new Intent(this, PreferencesActivity.class)); else
 		{
-			NavigationUtils.navigateThreads(this, chanName, Preferences.getDefaultBoardName(chanName),
-					false, false, false, true);
+			startActivity(NavigationUtils.obtainThreadsIntent(this, chanName, Preferences.getDefaultBoardName(chanName),
+					false, false, false, true));
 		}
 		finish();
 	}

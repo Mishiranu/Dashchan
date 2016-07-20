@@ -261,7 +261,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 			}
 			case OPTIONS_MENU_NEW_THREAD:
 			{
-				getUiManager().navigator().navigateAddPost(pageHolder.chanName, pageHolder.boardName, null);
+				getUiManager().navigator().navigatePosting(pageHolder.chanName, pageHolder.boardName, null);
 				return true;
 			}
 			case OPTIONS_MENU_ADD_TO_FAVORITES_TEXT:

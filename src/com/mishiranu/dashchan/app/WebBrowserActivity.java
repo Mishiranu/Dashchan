@@ -231,7 +231,8 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 				if (navigationData != null)
 				{
 					finish();
-					NavigationUtils.navigateTarget(WebBrowserActivity.this, chanName, navigationData, true, false);
+					startActivity(NavigationUtils.obtainTargetIntent(WebBrowserActivity.this, chanName, navigationData,
+							true, false));
 					return true;
 				}
 			}
