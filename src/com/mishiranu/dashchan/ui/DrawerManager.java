@@ -72,7 +72,7 @@ import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.content.ThreadsWatcher;
+import com.mishiranu.dashchan.app.service.WatcherService;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.ui.page.PageHolder;
@@ -87,8 +87,8 @@ import com.mishiranu.dashchan.widget.SafePasteEditText;
 import com.mishiranu.dashchan.widget.SortableListView;
 
 public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shift, SortableListView.OnFinishedListener,
-		AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener, View.OnClickListener,
-		View.OnTouchListener, DrawerLayout.DrawerListener, EditText.OnEditorActionListener, ThreadsWatcher.Callback
+		AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener, DrawerLayout.DrawerListener,
+		EditText.OnEditorActionListener, View.OnClickListener, View.OnTouchListener, WatcherService.Client.Callback
 {
 	private final Context mContext;
 	private final Context mUnstyledContext;
@@ -111,7 +111,7 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 	private final ArrayList<ListItem> mMenu = new ArrayList<>();
 
 	private SortableListView mListView;
-	private ThreadsWatcher mThreadsWatcher;
+	private WatcherService.Client mWatcherServiceClient;
 	
 	private boolean mMergeChans = false;
 	private boolean mChanSelectMode = false;
@@ -138,11 +138,13 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 		public ArrayList<PageHolder> getDrawerPageHolders();
 	}
 	
-	public DrawerManager(Context context, Context unstyledContext, Callback callback)
+	public DrawerManager(Context context, Context unstyledContext, Callback callback,
+			WatcherService.Client watcherServiceClient)
 	{
 		mContext = context;
 		mUnstyledContext = unstyledContext;
 		mCallback = callback;
+		mWatcherServiceClient = watcherServiceClient;
 		float density = ResourceUtils.obtainDensity(context);
 		LinearLayout linearLayout = new LinearLayout(context);
 		linearLayout.setOrientation(LinearLayout.VERTICAL);
@@ -389,11 +391,6 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 	{
 		updateList(pages, favorites);
 		notifyDataSetChanged();
-	}
-	
-	public void setThreadsWatcher(ThreadsWatcher threadsWatcher)
-	{
-		mThreadsWatcher = threadsWatcher;
 	}
 	
 	@Override
@@ -884,7 +881,8 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 						favoriteItem.threadNumber, favoriteItem.title, 0, mChanIcons.get(favoriteItem.chanName));
 				if (mWatcherSupportSet.contains(favoriteItem.chanName))
 				{
-					ThreadsWatcher.TemporalCountData temporalCountData = mThreadsWatcher.countNewPosts(favoriteItem);
+					WatcherService.TemporalCountData temporalCountData = mWatcherServiceClient
+							.countNewPosts(favoriteItem);
 					listItem.watcherPostsCountDifference = temporalCountData.postsCountDifference;
 					listItem.watcherHasNewPosts = temporalCountData.hasNewPosts;
 					listItem.watcherIsError = temporalCountData.isError;
@@ -1023,7 +1021,7 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 					}
 					case HEADER_ACTION_REFRESH_WATCHER:
 					{
-						mThreadsWatcher.update();
+						mWatcherServiceClient.update();
 						break;
 					}
 				}
@@ -1437,10 +1435,10 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 				if (listItem.type == ListItem.ITEM_FAVORITE && listItem.isThreadItem() &&
 						mWatcherSupportSet.contains(listItem.chanName))
 				{
-					ThreadsWatcher.WatcherItem watcherItem = mThreadsWatcher.getItem(listItem.chanName,
+					WatcherService.WatcherItem watcherItem = mWatcherServiceClient.getItem(listItem.chanName,
 							listItem.boardName, listItem.threadNumber);
 					updateWatcherItem(convertView, holder, watcherItem != null ? watcherItem.getLastState()
-							: ThreadsWatcher.State.DISABLED);
+							: WatcherService.State.DISABLED);
 				}
 				break;
 			}
@@ -1476,7 +1474,7 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 		return holder.listItem;
 	}
 	
-	private void updateWatcherItem(View view, ViewHolder holder, ThreadsWatcher.State state)
+	private void updateWatcherItem(View view, ViewHolder holder, WatcherService.State state)
 	{
 		WatcherView watcherView = (WatcherView) holder.extra;
 		watcherView.setPostsCountDifference(holder.listItem.watcherPostsCountDifference,
@@ -1518,7 +1516,7 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 			addView(mProgressBar, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT,
 					FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
 			setOnClickListener(this);
-			setWatcherState(ThreadsWatcher.State.DISABLED);
+			setWatcherState(WatcherService.State.DISABLED);
 			setPostsCountDifference(0, false, false);
 		}
 		
@@ -1569,7 +1567,7 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 		public void setPostsCountDifference(int postsCountDifference, boolean hasNew, boolean error)
 		{
 			String text;
-			if (postsCountDifference == ThreadsWatcher.POSTS_COUNT_DIFFERENCE_DELETED) text = "X"; else
+			if (postsCountDifference == WatcherService.POSTS_COUNT_DIFFERENCE_DELETED) text = "X"; else
 			{
 				if (Math.abs(postsCountDifference) >= 1000) text = Integer.toString(postsCountDifference / 1000) + "K+";
 				else text = Integer.toString(postsCountDifference);
@@ -1580,7 +1578,7 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 			invalidate();
 		}
 		
-		public void setWatcherState(ThreadsWatcher.State state)
+		public void setWatcherState(WatcherService.State state)
 		{
 			if (mWatcherDrawableColorSet == null)
 			{
@@ -1635,7 +1633,7 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 	}
 	
 	@Override
-	public void onWatcherUpdate(ThreadsWatcher.WatcherItem watcherItem, ThreadsWatcher.State state)
+	public void onWatcherUpdate(WatcherService.WatcherItem watcherItem, WatcherService.State state)
 	{
 		if ((mMergeChans || watcherItem.chanName.equals(mChanName))
 				&& mWatcherSupportSet.contains(watcherItem.chanName))

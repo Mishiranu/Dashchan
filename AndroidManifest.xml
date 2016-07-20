@@ -74,6 +74,8 @@
 		
 		<service android:name=".app.service.DownloadService" />
 		
+		<service android:name=".app.service.WatcherService" />
+		
 		<service android:name=".app.service.AudioPlayerService" />
 		
 		<meta-data android:name="com.sec.android.support.multiwindow" android:value="true" />
