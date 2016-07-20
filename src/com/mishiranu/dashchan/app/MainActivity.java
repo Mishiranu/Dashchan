@@ -73,9 +73,9 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.app.service.PostingService;
+import com.mishiranu.dashchan.app.service.WatcherService;
 import com.mishiranu.dashchan.async.ReadUpdateTask;
 import com.mishiranu.dashchan.content.ForegroundManager;
-import com.mishiranu.dashchan.content.ThreadsWatcher;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.graphics.ThemeChoiceDrawable;
@@ -107,7 +107,7 @@ import com.mishiranu.dashchan.widget.callback.ScrollListenerComposite;
 public class MainActivity extends StateActivity implements BusyScrollListener.Callback, DrawerManager.Callback,
 		AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener, PullableWrapper.PullCallback,
 		ListPage.Callback, PullableWrapper.PullStateListener, SortableListView.OnStateChangedListener,
-		FavoritesStorage.Observer, LocalNavigator, ReadUpdateTask.Callback
+		FavoritesStorage.Observer, WatcherService.Client.Callback, LocalNavigator, ReadUpdateTask.Callback
 {
 	private UiManager mUiManager;
 	private PageManager mPageManager;
@@ -115,8 +115,8 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 	
 	private Preferences.Holder mCurrentPreferences;
 	private ActionIconSet mActionIconSet;
-	private ThreadsWatcher mThreadsWatcher;
 	private final ArrayList<PageHolder.NewPostData> mNewPostDatas = new ArrayList<>();
+	private final WatcherService.Client mWatcherServiceClient = new WatcherService.Client(this);
 	
 	private SortableListView mDrawerListView;
 	private DrawerManager mDrawerManager;
@@ -167,6 +167,7 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		setContentView(R.layout.activity_main);
 		ClickableToast.register(mClickableToastHolder);
 		FavoritesStorage.getInstance().getObservable().register(this);
+		mWatcherServiceClient.bind(this);
 		mPageManager = new PageManager();
 		mActionIconSet = new ActionIconSet(this);
 		mProgressView = findViewById(R.id.progress);
@@ -186,7 +187,7 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		mDrawerListView = new SortableListView(styledContext, this);
 		mDrawerListView.setId(android.R.id.tabcontent);
 		mDrawerListView.setOnSortingStateChangedListener(this);
-		mDrawerManager = new DrawerManager(styledContext, this, this);
+		mDrawerManager = new DrawerManager(styledContext, this, this, mWatcherServiceClient);
 		mDrawerManager.bind(mDrawerListView);
 		mDrawerParent = new FrameLayout(this);
 		mDrawerParent.addView(mDrawerListView);
@@ -235,9 +236,6 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		mExpandedScreen.addAdditionalView(mProgressView, true);
 		mExpandedScreen.addAdditionalView(mErrorView, true);
 		mExpandedScreen.finishInitialization();
-		mThreadsWatcher = new ThreadsWatcher();
-		mThreadsWatcher.setCallback(mDrawerManager);
-		mDrawerManager.setThreadsWatcher(mThreadsWatcher);
 		mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		IntentFilter intentFilter = new IntentFilter();
 		intentFilter.addAction(ACTION_UPDATE_APPLICATION);
@@ -463,7 +461,7 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		clearListAnimator();
 		mAllowScaleAnimation = animated;
 		setActionBarLocked(LOCKER_HANDLE, false);
-		mThreadsWatcher.updateConfiguration(chanName);
+		mWatcherServiceClient.updateConfiguration(chanName);
 		mDrawerManager.updateConfiguration(chanName);
 		mPage = mPageManager.newPage(content);
 		mSendPrepareMenuToPage = false; // Will be changed in onCreateOptionsMenu
@@ -596,7 +594,7 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		super.onResume();
 		mExpandedScreen.onResume();
 		mDrawerManager.performResume();
-		mThreadsWatcher.start();
+		mWatcherServiceClient.start();
 		if (mPage != null) mPage.resume();
 		mClickableToastHolder.onResume();
 		showRestartDialogIfNeeded();
@@ -608,7 +606,7 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 	protected void onPause()
 	{
 		super.onPause();
-		mThreadsWatcher.stop();
+		mWatcherServiceClient.stop();
 		if (mPage != null) mPage.pause();
 		mClickableToastHolder.onPause();
 		ForegroundManager.unregister(this);
@@ -631,7 +629,7 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 			mReadUpdateTask = null;
 		}
 		mUiManager.onFinish();
-		mThreadsWatcher.cleanup();
+		mWatcherServiceClient.unbind(this);
 		ClickableToast.unregister(mClickableToastHolder);
 		FavoritesStorage.getInstance().getObservable().unregister(this);
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mNewPostReceiver);
@@ -1617,6 +1615,12 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 				break;
 			}
 		}
+	}
+
+	@Override
+	public void onWatcherUpdate(WatcherService.WatcherItem watcherItem, WatcherService.State state)
+	{
+		mDrawerManager.onWatcherUpdate(watcherItem, state);
 	}
 	
 	@Override

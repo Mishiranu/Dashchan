@@ -14,18 +14,25 @@
  * limitations under the License.
  */
 
-package com.mishiranu.dashchan.content;
+package com.mishiranu.dashchan.app.service;
 
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.FutureTask;
 
+import android.app.Service;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.os.Process;
 
@@ -39,11 +46,12 @@ import chan.http.HttpHolder;
 import chan.http.HttpValidator;
 import chan.util.StringUtils;
 
+import com.mishiranu.dashchan.content.NetworkObserver;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 
-public class ThreadsWatcher implements FavoritesStorage.Observer, Handler.Callback
+public class WatcherService extends Service implements FavoritesStorage.Observer, Handler.Callback
 {
 	private static final HashMap<String, ExecutorService> EXECUTORS = new HashMap<>();
 	
@@ -69,10 +77,10 @@ public class ThreadsWatcher implements FavoritesStorage.Observer, Handler.Callba
 	private final HashMap<String, WatcherTask> mTasks = new HashMap<>();
 	
 	private boolean mMergeChans = false;
-	private Callback mCallback;
-	private String mChanName;
+	private final HashMap<Client, String> mClients = new HashMap<>();
+	private final HashSet<Client> mStartedClients = new HashSet<>();
 	
-	private boolean mStarted = false;
+	private boolean mStarted;
 	private int mInterval;
 	private boolean mRefreshPeriodically = true;
 	
@@ -151,8 +159,12 @@ public class ThreadsWatcher implements FavoritesStorage.Observer, Handler.Callba
 		return newPostsCount - postsCount;
 	}
 	
-	public ThreadsWatcher()
+	private boolean mDestroyed = false;
+	
+	@Override
+	public void onCreate()
 	{
+		super.onCreate();
 		ArrayList<FavoritesStorage.FavoriteItem> favoriteItems = FavoritesStorage.getInstance().getThreads(null);
 		boolean available = isAvailable();
 		for (FavoritesStorage.FavoriteItem favoriteItem : favoriteItems)
@@ -168,20 +180,83 @@ public class ThreadsWatcher implements FavoritesStorage.Observer, Handler.Callba
 		FavoritesStorage.getInstance().getObservable().register(this);
 	}
 	
-	public void setCallback(Callback callback)
+	@Override
+	public void onDestroy()
 	{
-		mCallback = callback;
+		super.onDestroy();
+		mDestroyed = true;
+		stop(true);
+		mWatching.clear();
+		mClients.clear();
+		mStartedClients.clear();
+		FavoritesStorage.getInstance().getObservable().unregister(this);
 	}
 	
-	public static interface Callback
+	@Override
+	public Binder onBind(Intent intent)
 	{
-		public void onWatcherUpdate(WatcherItem watcherItem, State state);
+		return new Binder();
+	}
+	
+	public class Binder extends android.os.Binder
+	{
+		public void addClient(Client client)
+		{
+			if (!mDestroyed) mClients.put(client, null);
+		}
+		
+		public void removeClient(Client client)
+		{
+			if (!mDestroyed) mClients.remove(client);
+		}
+		
+		public void setActiveChanName(Client client, String chanName)
+		{
+			if (!mDestroyed)
+			{
+				boolean success = !chanName.equals(mClients.put(client, chanName));
+				if (success) onUpdateConfiguration();
+			}
+		}
+		
+		public void start(Client client)
+		{
+			if (!mDestroyed)
+			{
+				if (mStartedClients.isEmpty()) WatcherService.this.start();
+				mStartedClients.add(client);
+			}
+		}
+		
+		public void stop(Client client)
+		{
+			if (!mDestroyed)
+			{
+				mStartedClients.remove(client);
+				if (mStartedClients.isEmpty()) WatcherService.this.stop(false);
+			}
+		}
+		
+		public void update()
+		{
+			if (!mDestroyed) WatcherService.this.update();
+		}
+		
+		public WatcherItem getItem(String chanName, String boardName, String threadNumber)
+		{
+			return WatcherService.this.getItem(chanName, boardName, threadNumber);
+		}
+		
+		public TemporalCountData countNewPosts(FavoritesStorage.FavoriteItem favoriteItem)
+		{
+			return WatcherService.this.countNewPosts(favoriteItem);
+		}
 	}
 	
 	private void notifyUpdate(WatcherItem watcherItem, State state)
 	{
 		watcherItem.mLastState = state;
-		if (mCallback != null) mCallback.onWatcherUpdate(watcherItem, state);
+		for (Client client : mClients.keySet()) client.notifyUpdate(watcherItem, state);
 	}
 	
 	private static String makeKey(String chanName, String boardName, String threadNumber)
@@ -189,7 +264,7 @@ public class ThreadsWatcher implements FavoritesStorage.Observer, Handler.Callba
 		return chanName + "/" + boardName + "/" + threadNumber;
 	}
 	
-	public WatcherItem getItem(String chanName, String boardName, String threadNumber)
+	private WatcherItem getItem(String chanName, String boardName, String threadNumber)
 	{
 		return mWatching.get(makeKey(chanName, boardName, threadNumber));
 	}
@@ -211,7 +286,7 @@ public class ThreadsWatcher implements FavoritesStorage.Observer, Handler.Callba
 				{
 					WatcherItem watcherItem = new WatcherItem(favoriteItem);
 					mWatching.put(watcherItem.mKey, watcherItem);
-					if (mMergeChans || favoriteItem.chanName.equals(mChanName)) enqueue(watcherItem, true);
+					if (isActiveChanName(favoriteItem.chanName)) enqueue(watcherItem, true);
 				}
 				break;
 			}
@@ -224,10 +299,7 @@ public class ThreadsWatcher implements FavoritesStorage.Observer, Handler.Callba
 					WatcherTask task = mTasks.remove(watcherItem.mKey);
 					if (task != null) task.cancel(false);
 					mHandler.removeMessages(MESSAGE_UPDATE, watcherItem);
-					if (mMergeChans || favoriteItem.chanName.equals(mChanName))
-					{
-						notifyUpdate(watcherItem, State.DISABLED);
-					}
+					if (isActiveChanName(favoriteItem.chanName)) notifyUpdate(watcherItem, State.DISABLED);
 				}
 				break;
 			}
@@ -245,17 +317,16 @@ public class ThreadsWatcher implements FavoritesStorage.Observer, Handler.Callba
 		}
 	}
 	
-	public void updateConfiguration(String chanName)
+	private void onUpdateConfiguration()
 	{
-		if (!StringUtils.equals(mChanName, chanName))
+		if (mStarted)
 		{
 			cancelAll();
-			mChanName = chanName;
 			updateAllSinceNow();
 		}
 	}
 	
-	public void start()
+	private void start()
 	{
 		mHandler.removeMessages(MESSAGE_STOP);
 		if (!mStarted)
@@ -266,37 +337,32 @@ public class ThreadsWatcher implements FavoritesStorage.Observer, Handler.Callba
 			mMergeChans = Preferences.isMergeChans();
 			if (mRefreshPeriodically) updateAllSinceNow(); else
 			{
-				boolean mergeChans = mMergeChans;
 				for (WatcherItem watcherItem : mWatching.values())
 				{
-					if (mergeChans || watcherItem.chanName.equals(mChanName)) notifyUpdate(watcherItem, State.ENABLED);
+					if (isActiveChanName(watcherItem.chanName)) notifyUpdate(watcherItem, State.ENABLED);
 				}
 			}
 		}
 	}
 	
-	public void stop()
+	private void stop(boolean now)
 	{
 		if (mStarted)
 		{
 			mHandler.removeMessages(MESSAGE_STOP);
-			mHandler.sendEmptyMessageDelayed(MESSAGE_STOP, 1000);
+			if (now)
+			{
+				mStarted = false;
+				mHandler.removeMessages(MESSAGE_UPDATE);
+				cancelAll();
+			}
+			else mHandler.sendEmptyMessageDelayed(MESSAGE_STOP, 1000);
 		}
 	}
 	
-	public void update()
+	private void update()
 	{
-		if (mStarted)
-		{
-			updateAll();
-		}
-	}
-	
-	public void cleanup()
-	{
-		stop();
-		mWatching.clear();
-		FavoritesStorage.getInstance().getObservable().unregister(this);
+		if (mStarted) updateAll();
 	}
 	
 	public static class TemporalCountData
@@ -313,24 +379,23 @@ public class ThreadsWatcher implements FavoritesStorage.Observer, Handler.Callba
 		}
 	}
 	
-	private final TemporalCountData mTemporalCountData = new TemporalCountData();
+	private static final TemporalCountData TEMPORAL_COUNT_DATA = new TemporalCountData();
 	
-	public TemporalCountData countNewPosts(FavoritesStorage.FavoriteItem favoriteItem)
+	private TemporalCountData countNewPosts(FavoritesStorage.FavoriteItem favoriteItem)
 	{
-		TemporalCountData temporalCountData = mTemporalCountData;
-		// Watcher may have newer dirty values
 		WatcherItem watcherItem = getItem(favoriteItem);
 		if (watcherItem != null)
 		{
-			temporalCountData.set(watcherItem.getPostsCountDifference(), watcherItem.mHasNewPosts,
+			TEMPORAL_COUNT_DATA.set(watcherItem.getPostsCountDifference(), watcherItem.mHasNewPosts,
 					watcherItem.isError());
+			return TEMPORAL_COUNT_DATA;
 		}
-		else
-		{
-			temporalCountData.set(calculatePostsCountDifference(favoriteItem.newPostsCount, favoriteItem.postsCount),
-					favoriteItem.hasNewPosts, false);
-		}
-		return temporalCountData;
+		return null;
+	}
+	
+	private boolean isActiveChanName(String chanName)
+	{
+		return mMergeChans || mClients.containsValue(chanName);
 	}
 	
 	private long mLastAvailableCheck;
@@ -351,10 +416,9 @@ public class ThreadsWatcher implements FavoritesStorage.Observer, Handler.Callba
 	private void updateAll()
 	{
 		mHandler.removeMessages(MESSAGE_UPDATE);
-		boolean mergeChans = mMergeChans;
 		for (WatcherItem watcherItem : mWatching.values())
 		{
-			if (mergeChans || watcherItem.chanName.equals(mChanName)) enqueue(watcherItem, true);
+			if (isActiveChanName(watcherItem.chanName)) enqueue(watcherItem, true);
 		}
 	}
 	
@@ -363,10 +427,9 @@ public class ThreadsWatcher implements FavoritesStorage.Observer, Handler.Callba
 		mHandler.removeMessages(MESSAGE_UPDATE);
 		long time = System.currentTimeMillis();
 		boolean available = isAvailable();
-		boolean mergeChans = mMergeChans;
 		for (WatcherItem watcherItem : mWatching.values())
 		{
-			if (mergeChans || watcherItem.chanName.equals(mChanName))
+			if (isActiveChanName(watcherItem.chanName))
 			{
 				long dt = time - watcherItem.mLastUpdateTime;
 				if (dt >= mInterval) enqueue(watcherItem, available);
@@ -482,10 +545,6 @@ public class ThreadsWatcher implements FavoritesStorage.Observer, Handler.Callba
 				e.getErrorItemAndHandle();
 				mResult.error = true;
 			}
-			catch (Exception e)
-			{
-				mResult.error = true;
-			}
 			return mResult;
 		}
 	}
@@ -521,9 +580,7 @@ public class ThreadsWatcher implements FavoritesStorage.Observer, Handler.Callba
 		{
 			case MESSAGE_STOP:
 			{
-				mStarted = false;
-				mHandler.removeMessages(MESSAGE_UPDATE);
-				cancelAll();
+				stop(true);
 				return true;
 			}
 			case MESSAGE_UPDATE:
@@ -589,5 +646,105 @@ public class ThreadsWatcher implements FavoritesStorage.Observer, Handler.Callba
 			}
 		}
 		return false;
+	}
+	
+	public static final class Client implements ServiceConnection
+	{
+		private final Callback mCallback;
+		private Binder mBinder;
+		
+		private String mChanName = null;
+		private boolean mStarted = false;
+		
+		public Client(Callback callback)
+		{
+			mCallback = callback;
+		}
+		
+		public void bind(Context context)
+		{
+			context.bindService(new Intent(context, WatcherService.class), this, BIND_AUTO_CREATE);
+		}
+		
+		public void unbind(Context context)
+		{
+			unbindInternal();
+			context.unbindService(this);
+		}
+		
+		public void updateConfiguration(String chanName)
+		{
+			mChanName = chanName;
+			if (mBinder != null) mBinder.setActiveChanName(this, chanName);
+		}
+		
+		public void start()
+		{
+			mStarted = true;
+			if (mBinder != null) mBinder.start(this);
+		}
+		
+		public void stop()
+		{
+			mStarted = false;
+			if (mBinder != null) mBinder.stop(this);
+		}
+		
+		public void update()
+		{
+			if (mBinder != null) mBinder.update();
+		}
+		
+		public WatcherItem getItem(String chanName, String boardName, String threadNumber)
+		{
+			return mBinder != null ? mBinder.getItem(chanName, boardName, threadNumber) : null;
+		}
+		
+		public TemporalCountData countNewPosts(FavoritesStorage.FavoriteItem favoriteItem)
+		{
+			TemporalCountData temporalCountData = mBinder != null ? mBinder.countNewPosts(favoriteItem) : null;
+			if (temporalCountData == null)
+			{
+				temporalCountData = TEMPORAL_COUNT_DATA;
+				temporalCountData.set(calculatePostsCountDifference(favoriteItem.newPostsCount,
+						favoriteItem.postsCount), favoriteItem.hasNewPosts, false);
+			}
+			return temporalCountData;
+		}
+		
+		private void unbindInternal()
+		{
+			if (mBinder != null)
+			{
+				if (mStarted) mBinder.stop(this);
+				mBinder.removeClient(this);
+				mBinder = null;
+			}
+		}
+		
+		@Override
+		public void onServiceConnected(ComponentName name, IBinder service)
+		{
+			mBinder = (Binder) service;
+			mBinder.addClient(this);
+			if (mChanName != null) mBinder.setActiveChanName(this, mChanName);
+			if (mStarted) mBinder.start(this);
+		}
+		
+		@Override
+		public void onServiceDisconnected(ComponentName name)
+		{
+			unbindInternal();
+		}
+		
+		public void notifyUpdate(WatcherItem watcherItem, State state)
+		{
+			mCallback.onWatcherUpdate(watcherItem, state);
+		}
+		
+		public static interface Callback
+		{
+			public void onWatcherUpdate(WatcherItem watcherItem, State state);
+		}
 	}
 }
