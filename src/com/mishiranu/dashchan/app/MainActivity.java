@@ -238,7 +238,6 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		mExpandedScreen.finishInitialization();
 		mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		IntentFilter intentFilter = new IntentFilter();
-		intentFilter.addAction(ACTION_UPDATE_APPLICATION);
 		intentFilter.addAction(ACTION_NAVIGATE_SENT_POST);
 		intentFilter.addAction(ACTION_HIDE_SENT_POST);
 		registerReceiver(mNotificationBroadcastReceiver, intentFilter);
@@ -640,6 +639,7 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		}
 		unregisterReceiver(mNotificationBroadcastReceiver);
 		for (Integer id : mNotificationIds) mNotificationManager.cancel(id);
+		mNotificationManager.cancel(C.NOTIFICATION_UPDATE);
 		FavoritesStorage.getInstance().await(true);
 	}
 	
@@ -1520,11 +1520,9 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		mNotificationIds.add(id);
 	}
 	
-	private static final String ACTION_UPDATE_APPLICATION = "com.mishiranu.dashchan.action.UPDATE_APPLICATION";
 	private static final String ACTION_NAVIGATE_SENT_POST = "com.mishiranu.dashchan.action.NAVIGATE_SENT_POST";
 	private static final String ACTION_HIDE_SENT_POST = "com.mishiranu.dashchan.action.HIDE_SENT_POST";
 	
-	private static final String EXTRA_UPDATE_DATA_MAP = "update_data_map";
 	private static final String EXTRA_NOTIFICATION_ID = "notification_id";
 	
 	private final BroadcastReceiver mNotificationBroadcastReceiver = new BroadcastReceiver()
@@ -1534,15 +1532,6 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		{
 			switch (intent.getAction())
 			{
-				case ACTION_UPDATE_APPLICATION:
-				{
-					ReadUpdateTask.UpdateDataMap updateDataMap = (ReadUpdateTask.UpdateDataMap)
-							intent.getSerializableExtra(EXTRA_UPDATE_DATA_MAP);
-					startActivity(PreferencesActivity.createUpdateIntent(MainActivity.this, updateDataMap));
-					mNotificationManager.cancel(C.NOTIFICATION_UPDATE);
-					mNotificationIds.remove((Object) C.NOTIFICATION_UPDATE);
-					break;
-				}
 				case ACTION_NAVIGATE_SENT_POST:
 				{
 					if (isActivityResumed())
@@ -1596,11 +1585,9 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		builder.setContentTitle(getString(R.string.text_app_name_update,
 				getString(R.string.const_app_name)));
 		builder.setContentText(text);
-		builder.setContentIntent(PendingIntent.getBroadcast(MainActivity.this, C.NOTIFICATION_UPDATE,
-				new Intent(ACTION_UPDATE_APPLICATION).putExtra(EXTRA_UPDATE_DATA_MAP, updateDataMap),
-				PendingIntent.FLAG_UPDATE_CURRENT));
+		builder.setContentIntent(PendingIntent.getActivity(MainActivity.this, 0, PreferencesActivity.createUpdateIntent
+				(this, updateDataMap).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), PendingIntent.FLAG_UPDATE_CURRENT));
 		mNotificationManager.notify(C.NOTIFICATION_UPDATE, builder.build());
-		mNotificationIds.add(C.NOTIFICATION_UPDATE);
 	}
 	
 	@Override
