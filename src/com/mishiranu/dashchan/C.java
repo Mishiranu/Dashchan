@@ -73,8 +73,8 @@ public class C
 	
 	public static final int NOTIFICATION_DOWNLOAD_SERVICE = 1;
 	public static final int NOTIFICATION_AUDIO_PLAYER_SERVICE = 2;
-	public static final int NOTIFICATION_UPDATE = 3;
 	
+	public static final String NOTIFICATION_TAG_UPDATE = "update";
 	public static final String NOTIFICATION_TAG_POSTING = "posting";
 	
 	public static final String EXTRA_ALLOW_EXPANDED_SCREEN = "com.mishiranu.dashchan.extra.ALLOW_EXPANDED_SCREEN";
