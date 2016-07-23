@@ -39,27 +39,6 @@ public class PageHolder implements Parcelable
 	public boolean initialFromCache;
 	public String initialPostNumber;
 	
-	public static class NewPostData
-	{
-		public final String chanName;
-		public final String boardName;
-		public final String threadNumber;
-		public final String postNumber;
-		public final String comment;
-		public final boolean newThread;
-		
-		public NewPostData(String chanName, String boardName, String threadNumber, String postNumber, String comment,
-				boolean newThread)
-		{
-			this.chanName = chanName;
-			this.boardName = boardName;
-			this.threadNumber = threadNumber;
-			this.postNumber = postNumber;
-			this.comment = comment;
-			this.newThread = newThread;
-		}
-	}
-	
 	public PageHolder(Content content, String chanName, String boardName, String threadNumber, String threadTitle,
 			String searchQuery)
 	{

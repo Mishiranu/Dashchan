@@ -17,7 +17,6 @@
 package com.mishiranu.dashchan.util;
 
 import java.lang.reflect.Field;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -230,12 +229,5 @@ public class ViewUtils
 					title, intent).build());
 		}
 		else builder.addAction(icon, title, intent);
-	}
-	
-	private static final AtomicInteger NEXT_NOTIFICATION_ID = new AtomicInteger(C.NOTIFICATION_CUSTOM_START);
-	
-	public static int obtainNextNotificationId()
-	{
-		return NEXT_NOTIFICATION_ID.getAndIncrement();
 	}
 }

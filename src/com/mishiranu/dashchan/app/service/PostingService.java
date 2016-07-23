@@ -28,9 +28,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Binder;
 import android.os.Build;
-import android.os.IBinder;
 import android.os.PowerManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.ContextThemeWrapper;
@@ -50,6 +48,7 @@ import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.storage.DraftsStorage;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.preference.Preferences;
+import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 
@@ -69,12 +68,14 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 	private Thread mNotificationsWorker;
 	private final LinkedBlockingQueue<TaskState> mNotificationsQueue = new LinkedBlockingQueue<>();
 	
+	private static int sNotificationId = 0;
+	
 	private static class TaskState
 	{
 		public final String key;
 		public final SendPostTask task;
 		public final Notification.Builder builder;
-		public final int notificationId = ViewUtils.obtainNextNotificationId();
+		public final int notificationId = ++sNotificationId;
 		public final String text;
 		
 		private SendPostTask.ProgressState progressState = SendPostTask.ProgressState.CONNECTING;
@@ -123,6 +124,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 	public void onDestroy()
 	{
 		super.onDestroy();
+		mWakeLock.release();
 		mNotificationsWorker.interrupt();
 	}
 	
@@ -137,6 +139,12 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 	}
 	
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
+	private void setNotificationColor(Notification.Builder builder)
+	{
+		Context themedContext = new ContextThemeWrapper(this, Preferences.getThemeResource());
+		builder.setColor(ResourceUtils.getColor(themedContext, android.R.attr.colorAccent));
+	}
+	
 	@Override
 	public void run()
 	{
@@ -170,12 +178,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 					Context themedContext = new ContextThemeWrapper(this, R.style.Theme_Special_Notification);
 					ViewUtils.addNotificationAction(builder, this, ResourceUtils.getResourceId(themedContext,
 							R.attr.notificationCancel, 0), getString(android.R.string.cancel), cancelIntent);
-					if (C.API_LOLLIPOP)
-					{
-						themedContext = new ContextThemeWrapper(this, Preferences.getThemeResource());
-						int notificationColor = ResourceUtils.getColor(themedContext, android.R.attr.colorAccent);
-						builder.setColor(notificationColor);
-					}
+					if (C.API_LOLLIPOP) setNotificationColor(builder);
 				}
 				boolean progressMode = taskState.task.isProgressMode();
 				switch (taskState.progressState)
@@ -211,9 +214,9 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 	}
 	
 	@Override
-	public IBinder onBind(Intent intent)
+	public Binder onBind(Intent intent)
 	{
-		return new PostingBinder();
+		return new Binder();
 	}
 	
 	private void stopSelfAndReleaseWakeLock()
@@ -234,18 +237,19 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 				int attachmentIndex, int attachmentsCount);
 		public void onSendPostChangeProgressValue(int progress, int progressMax);
 		
-		public void onSendPostSuccess(Intent intent);
+		public void onSendPostSuccess();
 		public void onSendPostFail(ErrorItem errorItem, Object extra, boolean captchaError, boolean keepCaptcha);
 		public void onSendPostCancel();
 	}
 	
-	public class PostingBinder extends Binder
+	public class Binder extends android.os.Binder
 	{
 		public void executeSendPost(String chanName, ChanPerformer.SendPostData data)
 		{
+			String key = makeKey(chanName, data.boardName, data.threadNumber);
+			if (mTasks.containsKey(key)) return;
 			startService(new Intent(PostingService.this, PostingService.class));
 			mWakeLock.acquire();
-			String key = makeKey(chanName, data.boardName, data.threadNumber);
 			SendPostTask task = new SendPostTask(key, chanName, PostingService.this, data);
 			task.executeOnExecutor(SendPostTask.THREAD_POOL_EXECUTOR);
 			TaskState taskState = new TaskState(key, task, PostingService.this, chanName, data);
@@ -384,26 +388,12 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 	{
 		if (removeTask(key))
 		{
-			Intent intent = new Intent(C.ACTION_POST_SENT);
 			String targetThreadNumber = data.threadNumber != null ? data.threadNumber
 					: StringUtils.nullIfEmpty(threadNumber);
-			intent.putExtra(C.EXTRA_TIMESTAMP, System.currentTimeMillis());
-			intent.putExtra(C.EXTRA_CHAN_NAME, chanName);
-			intent.putExtra(C.EXTRA_BOARD_NAME, data.boardName);
-			intent.putExtra(C.EXTRA_THREAD_NUMBER, targetThreadNumber);
-			if (!StringUtils.isEmpty(postNumber)) intent.putExtra(C.EXTRA_POST_NUMBER, postNumber);
-			String comment = data.comment;
-			if (comment != null)
-			{
-				CommentEditor commentEditor = ChanMarkup.get(chanName).safe().obtainCommentEditor(data.boardName);
-				if (commentEditor != null) comment = commentEditor.removeTags(comment);
-				intent.putExtra(C.EXTRA_COMMENT, comment);
-			}
 			if (targetThreadNumber != null && Preferences.isFavoriteOnReply())
 			{
 				FavoritesStorage.getInstance().add(chanName, data.boardName, targetThreadNumber, null, 0);
 			}
-			intent.putExtra(C.EXTRA_NEW_THREAD, data.threadNumber == null);
 			StatisticsManager.getInstance().incrementPosts(chanName, data.threadNumber == null);
 			DraftsStorage draftsStorage = DraftsStorage.getInstance();
 			if (targetThreadNumber != null)
@@ -415,12 +405,54 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 			}
 			draftsStorage.removePostDraft(chanName, data.boardName, data.threadNumber);
 			draftsStorage.removeCaptchaDraft();
+			if (targetThreadNumber != null)
+			{
+				postNumber = StringUtils.nullIfEmpty(postNumber);
+				String comment = data.comment;
+				if (comment != null)
+				{
+					CommentEditor commentEditor = ChanMarkup.get(chanName).safe().obtainCommentEditor(data.boardName);
+					if (commentEditor != null) comment = commentEditor.removeTags(comment);
+				}
+				NewPostData newPostData = new NewPostData(chanName, data.boardName, targetThreadNumber, postNumber,
+						comment, data.threadNumber == null);
+				String arrayKey = makeKey(chanName, data.boardName, targetThreadNumber);
+				ArrayList<NewPostData> newPostDatas = NEW_POST_DATAS.get(arrayKey);
+				if (newPostDatas == null)
+				{
+					newPostDatas = new ArrayList<>(1);
+					NEW_POST_DATAS.put(arrayKey, newPostDatas);
+				}
+				newPostDatas.add(newPostData);
+				if (newPostData.newThread)
+				{
+					sNewThreadData = newPostData;
+					sNewThreadDataKey = makeKey(chanName, data.boardName, null);
+				}
+				Notification.Builder builder = new Notification.Builder(this);
+				builder.setSmallIcon(android.R.drawable.stat_sys_upload_done);
+				if (C.API_LOLLIPOP)
+				{
+					setNotificationColor(builder);
+					builder.setPriority(Notification.PRIORITY_HIGH);
+					builder.setVibrate(new long[0]);
+				}
+				else builder.setTicker(getString(R.string.text_post_sent));
+				builder.setContentTitle(getString(R.string.text_post_sent));
+				builder.setContentText(buildNotificationText(chanName, data.boardName, targetThreadNumber, postNumber));
+				String tag = newPostData.getNotificationTag();
+				Intent intent = NavigationUtils.obtainPostsIntent(this, chanName, data.boardName, targetThreadNumber,
+						postNumber, null, true, false);
+				builder.setContentIntent(PendingIntent.getActivity(this, tag.hashCode(), intent,
+						PendingIntent.FLAG_UPDATE_CURRENT));
+				mNotificationManager.notify(tag, 0, builder.build());
+			}
 			ArrayList<Callback> callbacks = mCallbacks.get(key);
 			if (callbacks != null)
 			{
-				for (Callback callback : callbacks) callback.onSendPostSuccess(intent);
+				for (Callback callback : callbacks) callback.onSendPostSuccess();
 			}
-			LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+			LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(C.ACTION_POST_SENT));
 		}
 	}
 	
@@ -465,5 +497,79 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 			this.captchaError = captchaError;
 			this.keepCaptcha = keepCaptcha;
 		}
+	}
+	
+	public static class NewPostData
+	{
+		public final String chanName;
+		public final String boardName;
+		public final String threadNumber;
+		public final String postNumber;
+		public final String comment;
+		public final boolean newThread;
+		
+		public NewPostData(String chanName, String boardName, String threadNumber, String postNumber,
+				String comment, boolean newThread)
+		{
+			this.chanName = chanName;
+			this.boardName = boardName;
+			this.threadNumber = threadNumber;
+			this.postNumber = postNumber;
+			this.comment = comment;
+			this.newThread = newThread;
+		}
+		
+		private String mNotificationTag;
+		
+		public String getNotificationTag()
+		{
+			if (mNotificationTag == null)
+			{
+				mNotificationTag = StringUtils.calculateSha256(chanName + "/" + boardName + "/" + threadNumber + "/"
+						+ postNumber + "/" + comment + "/" + newThread);
+			}
+			return mNotificationTag;
+		}
+	}
+	
+	private static final HashMap<String, ArrayList<NewPostData>> NEW_POST_DATAS = new HashMap<>();
+	
+	public static ArrayList<NewPostData> getNewPostDatas(Context context, String chanName, String boardName,
+			String threadNumber)
+	{
+		ArrayList<NewPostData> newPostDatas = NEW_POST_DATAS.remove(makeKey(chanName, boardName, threadNumber));
+		if (newPostDatas != null)
+		{
+			NotificationManager notificationManager = (NotificationManager) context
+					.getSystemService(NOTIFICATION_SERVICE);
+			for (NewPostData newPostData : newPostDatas)
+			{
+				notificationManager.cancel(newPostData.getNotificationTag(), 0);
+			}
+		}
+		return newPostDatas;
+	}
+
+	private static NewPostData sNewThreadData;
+	private static String sNewThreadDataKey;
+	
+	public static NewPostData obtainNewThreadData(Context context, String chanName, String boardName)
+	{
+		if (makeKey(chanName, boardName, null).equals(sNewThreadDataKey))
+		{
+			NewPostData newThreadData = sNewThreadData;
+			clearNewThreadData();
+			NotificationManager notificationManager = (NotificationManager) context
+					.getSystemService(NOTIFICATION_SERVICE);
+			notificationManager.cancel(newThreadData.getNotificationTag(), 0 );
+			return newThreadData;
+		}
+		return null;
+	}
+	
+	public static void clearNewThreadData()
+	{
+		sNewThreadData = null;
+		sNewThreadDataKey = null;
 	}
 }

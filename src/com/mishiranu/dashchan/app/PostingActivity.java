@@ -168,7 +168,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	
 	private final ClickableToast.Holder mClickableToastHolder = new ClickableToast.Holder(this);
 	
-	private PostingService.PostingBinder mBinder;
+	private PostingService.Binder mPostingServiceBinder;
 
 	private static final String EXTRA_SAVED_POST_DRAFT = "ExtraSavedPostDraft";
 	private static final String EXTRA_SAVED_CAPTCHA = "ExtraSavedCaptcha";
@@ -621,10 +621,10 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	protected void onFinish()
 	{
 		super.onFinish();
-		if (mBinder != null)
+		if (mPostingServiceBinder != null)
 		{
-			mBinder.unregister(this);
-			mBinder = null;
+			mPostingServiceBinder.unregister(this);
+			mPostingServiceBinder = null;
 		}
 		unbindService(this);
 		ClickableToast.unregister(mClickableToastHolder);
@@ -639,17 +639,17 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	@Override
 	public void onServiceConnected(ComponentName name, IBinder service)
 	{
-		mBinder = (PostingService.PostingBinder) service;
-		mBinder.register(this, mChanName, mBoardName, mThreadNumber);
+		mPostingServiceBinder = (PostingService.Binder) service;
+		mPostingServiceBinder.register(this, mChanName, mBoardName, mThreadNumber);
 	}
 	
 	@Override
 	public void onServiceDisconnected(ComponentName name)
 	{
-		if (mBinder != null)
+		if (mPostingServiceBinder != null)
 		{
-			mBinder.unregister(this);
-			mBinder = null;
+			mPostingServiceBinder.unregister(this);
+			mPostingServiceBinder = null;
 		}
 	}
 	
@@ -954,7 +954,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	
 	private void executeSendPost()
 	{
-		if (mBinder == null) return;
+		if (mPostingServiceBinder == null) return;
 		String subject = StringUtils.nullIfEmpty(mSubjectView.getText().toString());
 		String comment = StringUtils.nullIfEmpty(mCommentView.getText().toString());
 		String name = StringUtils.nullIfEmpty(mNameView.getText().toString());
@@ -987,7 +987,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 				subject, comment, name, email, password, attachments, optionSage, optionSpoiler, optionOriginalPoster,
 				userIcon, captchaType, captchaData, 15000, 45000);
 		DraftsStorage.getInstance().store(obtainPostDraft());
-		mBinder.executeSendPost(mChanName, data);
+		mPostingServiceBinder.executeSendPost(mChanName, data);
 		mSendButton.setEnabled(false);
 	}
 	
@@ -999,7 +999,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		public void onCancel(DialogInterface dialog)
 		{
 			mProgressDialog = null;
-			mBinder.cancelSendPost(mChanName, mBoardName, mThreadNumber);
+			mPostingServiceBinder.cancelSendPost(mChanName, mBoardName, mThreadNumber);
 		}
 	};
 	
@@ -1085,11 +1085,10 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	}
 	
 	@Override
-	public void onSendPostSuccess(Intent intent)
+	public void onSendPostSuccess()
 	{
 		dismissSendPost();
 		mSaveDraftOnFinish = false;
-		setResult(RESULT_OK, intent);
 		finish();
 	}
 	

@@ -19,7 +19,6 @@ package com.mishiranu.dashchan.app;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 
 import android.animation.Animator;
 import android.animation.AnimatorSet;
@@ -115,7 +114,6 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 	
 	private Preferences.Holder mCurrentPreferences;
 	private ActionIconSet mActionIconSet;
-	private final ArrayList<PageHolder.NewPostData> mNewPostDatas = new ArrayList<>();
 	private final WatcherService.Client mWatcherServiceClient = new WatcherService.Client(this);
 	
 	private SortableListView mDrawerListView;
@@ -134,9 +132,6 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 	private View mErrorView;
 	private TextView mErrorText;
 	private boolean mWideMode;
-	
-	private NotificationManager mNotificationManager;
-	private final ArrayList<Integer> mNotificationIds = new ArrayList<>();
 	
 	private ReadUpdateTask mReadUpdateTask;
 	
@@ -236,11 +231,6 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		mExpandedScreen.addAdditionalView(mProgressView, true);
 		mExpandedScreen.addAdditionalView(mErrorView, true);
 		mExpandedScreen.finishInitialization();
-		mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-		IntentFilter intentFilter = new IntentFilter();
-		intentFilter.addAction(ACTION_NAVIGATE_SENT_POST);
-		intentFilter.addAction(ACTION_HIDE_SENT_POST);
-		registerReceiver(mNotificationBroadcastReceiver, intentFilter);
 		LocalBroadcastManager.getInstance(this).registerReceiver(mNewPostReceiver,
 				new IntentFilter(C.ACTION_POST_SENT));
 		if (savedInstanceState == null) savedInstanceState = mPageManager.readFromStorage();
@@ -325,12 +315,12 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 	@Override
 	public void navigatePosting(String chanName, String boardName, String threadNumber, Replyable.ReplyData... data)
 	{
-		Intent addPostIntent = new Intent(getApplicationContext(), PostingActivity.class);
-		addPostIntent.putExtra(C.EXTRA_CHAN_NAME, chanName);
-		addPostIntent.putExtra(C.EXTRA_BOARD_NAME, boardName);
-		addPostIntent.putExtra(C.EXTRA_THREAD_NUMBER, threadNumber);
-		addPostIntent.putExtra(C.EXTRA_REPLY_DATA, data);
-		startActivityForResult(addPostIntent, C.REQUEST_CODE_ADD_POST);
+		Intent intent = new Intent(getApplicationContext(), PostingActivity.class);
+		intent.putExtra(C.EXTRA_CHAN_NAME, chanName);
+		intent.putExtra(C.EXTRA_BOARD_NAME, boardName);
+		intent.putExtra(C.EXTRA_THREAD_NUMBER, threadNumber);
+		intent.putExtra(C.EXTRA_REPLY_DATA, data);
+		startActivity(intent);
 	}
 	
 	private void handleIntent(Intent intent, boolean animated)
@@ -407,11 +397,7 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		mListView.getWrapper().setPullSides(PullableWrapper.Side.NONE);
 		ClickableToast.cancel(this);
 		requestStoreExtraAndPosition();
-		if (mPage != null)
-		{
-			mPage.cleanup();
-			mPage = null;
-		}
+		cleanupPage();
 		mHandler.removeCallbacks(mQueuedHandler);
 		setActionBarLocked(LOCKER_HANDLE, true);
 		setActionBarLocked(LOCKER_SEARCH, false);
@@ -475,8 +461,8 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 			}
 			case POSTS:
 			{
-				pageHolder = mPageManager.add(content, chanName, boardName, threadNumber, threadTitle,
-						null).setInitialPostsData(fromCache, postNumber);
+				pageHolder = mPageManager.add(content, chanName, boardName, threadNumber, threadTitle, null)
+						.setInitialPostsData(fromCache, postNumber);
 				break;
 			}
 			case SEARCH:
@@ -502,6 +488,16 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		invalidateOptionsMenu();
 		invalidateHomeUpState();
 		mAllowScaleAnimation = true;
+	}
+	
+	private void cleanupPage()
+	{
+		if (mPage != null)
+		{
+			PostingService.clearNewThreadData();
+			mPage.cleanup();
+			mPage = null;
+		}
 	}
 	
 	private void invalidateHomeUpState()
@@ -632,14 +628,13 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		ClickableToast.unregister(mClickableToastHolder);
 		FavoritesStorage.getInstance().getObservable().unregister(this);
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mNewPostReceiver);
-		if (mPage != null) mPage.cleanup();
+		cleanupPage();
 		for (String chanName : ChanManager.getInstance().getAvailableChanNames())
 		{
 			ChanConfiguration.get(chanName).commit();
 		}
-		unregisterReceiver(mNotificationBroadcastReceiver);
-		for (Integer id : mNotificationIds) mNotificationManager.cancel(id);
-		mNotificationManager.cancel(C.NOTIFICATION_UPDATE);
+		NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+		notificationManager.cancel(C.NOTIFICATION_UPDATE);
 		FavoritesStorage.getInstance().await(true);
 	}
 	
@@ -1330,11 +1325,7 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 			}
 			else targetPageHolder = mPageManager.get(chanName, boardName, null, PageHolder.Content.THREADS);
 			mPageManager.closeAllExcept(targetPageHolder);
-			if (mPageManager.getCurrentPage() == null)
-			{
-				mPage.cleanup();
-				mPage = null;
-			}
+			if (mPageManager.getCurrentPage() == null) cleanupPage();
 			mDrawerManager.invalidateItems(true, false);
 			navigateBoardsOrThreads(chanName, boardName, false, targetPageHolder != null);
 		}
@@ -1411,146 +1402,12 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		return mPageManager.getPages();
 	}
 	
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent intent)
-	{
-		if (resultCode == RESULT_OK)
-		{
-			if (C.ACTION_POST_SENT.equals(intent.getAction())) onNewPostIntent(intent, false);
-		}
-	}
-	
 	private final BroadcastReceiver mNewPostReceiver = new BroadcastReceiver()
 	{
 		@Override
 		public void onReceive(Context context, Intent intent)
 		{
-			onNewPostIntent(intent, false);
-		}
-	};
-	
-	private long mLastNewPostTimestamp;
-	
-	private boolean onNewPostIntent(Intent intent, boolean fromNotification)
-	{
-		if (!fromNotification)
-		{
-			long timestamp = intent.getLongExtra(C.EXTRA_TIMESTAMP, 0L);
-			// Avoid multiple intents (from new post broadcast receiver and activity result)
-			if (mLastNewPostTimestamp == timestamp) return false;
-			mLastNewPostTimestamp = timestamp;
-		}
-		String chanName = intent.getStringExtra(C.EXTRA_CHAN_NAME);
-		String boardName = intent.getStringExtra(C.EXTRA_BOARD_NAME);
-		String threadNumber = intent.getStringExtra(C.EXTRA_THREAD_NUMBER);
-		if (threadNumber == null) return false;
-		if (intent.getBooleanExtra(C.EXTRA_NEW_THREAD, false))
-		{
-			if (fromNotification)
-			{
-				if (mPage == null) return false;
-				navigatePosts(chanName, boardName, threadNumber, null, null, false);
-				return true;
-			}
-			else
-			{
-				mNewPostDatas.add(new PageHolder.NewPostData(chanName, boardName, threadNumber, null, null, true));
-				PageHolder pageHolder = mPageManager.get(chanName, boardName, null, PageHolder.Content.THREADS);
-				if (pageHolder != null && mPageManager.getCurrentPage() == pageHolder && mPage != null)
-				{
-					navigatePosts(chanName, boardName, threadNumber, null, null, false);
-				}
-				else createNewPostNotification(intent);
-				return true;
-			}
-		}
-		else
-		{
-			String postNumber = intent.getStringExtra(C.EXTRA_POST_NUMBER);
-			String comment = intent.getStringExtra(C.EXTRA_COMMENT);
-			PageHolder pageHolder = mPageManager.get(chanName, boardName, threadNumber, PageHolder.Content.POSTS);
-			if (pageHolder != null && mPageManager.getCurrentPage() == pageHolder && mPage != null)
-			{
-				mPage.onCreateNewPost(postNumber, comment);
-				return true;
-			}
-			else
-			{
-				if (fromNotification)
-				{
-					if (mPage == null) return false;
-					navigatePosts(chanName, boardName, threadNumber, null, null, false);
-					return true;
-				}
-				else
-				{
-					mNewPostDatas.add(new PageHolder.NewPostData(chanName, boardName, threadNumber,
-							postNumber, comment, false));
-					createNewPostNotification(intent);
-					return true;
-				}
-			}
-		}
-	}
-	
-	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
-	private void createNewPostNotification(Intent intent)
-	{
-		Notification.Builder builder = new Notification.Builder(MainActivity.this);
-		builder.setSmallIcon(android.R.drawable.stat_sys_upload_done);
-		if (C.API_LOLLIPOP)
-		{
-			builder.setColor(ResourceUtils.getColor(MainActivity.this, android.R.attr.colorAccent));
-			builder.setPriority(Notification.PRIORITY_HIGH);
-			builder.setVibrate(new long[0]);
-		}
-		else builder.setTicker(getString(R.string.text_post_sent));
-		String chanName = intent.getStringExtra(C.EXTRA_CHAN_NAME);
-		String boardName = intent.getStringExtra(C.EXTRA_BOARD_NAME);
-		String threadNumber = intent.getStringExtra(C.EXTRA_THREAD_NUMBER);
-		String postNumber = intent.getStringExtra(C.EXTRA_POST_NUMBER);
-		builder.setContentTitle(getString(R.string.text_post_sent));
-		builder.setContentText(PostingService.buildNotificationText(chanName, boardName, threadNumber, postNumber));
-		int id = ViewUtils.obtainNextNotificationId();
-		builder.setContentIntent(PendingIntent.getBroadcast(MainActivity.this, id, new Intent(ACTION_NAVIGATE_SENT_POST)
-				.putExtra(EXTRA_NOTIFICATION_ID, id).putExtras(intent.getExtras()), PendingIntent.FLAG_UPDATE_CURRENT));
-		builder.setDeleteIntent(PendingIntent.getBroadcast(MainActivity.this, id, new Intent(ACTION_HIDE_SENT_POST)
-				.putExtra(EXTRA_NOTIFICATION_ID, id), PendingIntent.FLAG_UPDATE_CURRENT));
-		mNotificationManager.notify(id, builder.build());
-		mNotificationIds.add(id);
-	}
-	
-	private static final String ACTION_NAVIGATE_SENT_POST = "com.mishiranu.dashchan.action.NAVIGATE_SENT_POST";
-	private static final String ACTION_HIDE_SENT_POST = "com.mishiranu.dashchan.action.HIDE_SENT_POST";
-	
-	private static final String EXTRA_NOTIFICATION_ID = "notification_id";
-	
-	private final BroadcastReceiver mNotificationBroadcastReceiver = new BroadcastReceiver()
-	{
-		@Override
-		public void onReceive(Context context, Intent intent)
-		{
-			switch (intent.getAction())
-			{
-				case ACTION_NAVIGATE_SENT_POST:
-				{
-					if (isActivityResumed())
-					{
-						boolean success = onNewPostIntent(intent, true);
-						if (!success) break;
-					}
-				}
-				case ACTION_HIDE_SENT_POST:
-				{
-					if (isActivityResumed())
-					{
-						int id = intent.getIntExtra(EXTRA_NOTIFICATION_ID, -1);
-						mNotificationManager.cancel(id);
-						mNotificationIds.remove((Object) id);
-					}
-					break;
-				}
-			}
+			if (mPage != null) mPage.handleNewPostDatasNow();
 		}
 	};
 	
@@ -1587,7 +1444,8 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		builder.setContentText(text);
 		builder.setContentIntent(PendingIntent.getActivity(MainActivity.this, 0, PreferencesActivity.createUpdateIntent
 				(this, updateDataMap).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), PendingIntent.FLAG_UPDATE_CURRENT));
-		mNotificationManager.notify(C.NOTIFICATION_UPDATE, builder.build());
+		NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+		notificationManager.notify(C.NOTIFICATION_UPDATE, builder.build());
 	}
 	
 	@Override
@@ -1720,25 +1578,6 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 	{
 		if (threadNumber != null) return pageHolder.is(chanName, boardName, threadNumber, PageHolder.Content.POSTS);
 		else return pageHolder.is(chanName, boardName, null, PageHolder.Content.THREADS);
-	}
-	
-	@Override
-	public ArrayList<PageHolder.NewPostData> getNewPostDatas(PageHolder pageHolder)
-	{
-		ArrayList<PageHolder.NewPostData> result = null;
-		Iterator<PageHolder.NewPostData> iterator = mNewPostDatas.iterator();
-		while (iterator.hasNext())
-		{
-			PageHolder.NewPostData newPostData = iterator.next();
-			if (pageHolder.is(newPostData.chanName, newPostData.boardName, newPostData.threadNumber,
-					PageHolder.Content.POSTS))
-			{
-				if (result == null) result = new ArrayList<>();
-				result.add(newPostData);
-				iterator.remove();
-			}
-		}
-		return result;
 	}
 	
 	private void setActionBarLocked(String locker, boolean locked)
