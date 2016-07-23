@@ -27,7 +27,6 @@ public class DeserializePostsTask extends CancellableTask<Void, Void, Boolean>
 	private final String mChanName;
 	private final String mBoardName;
 	private final String mThreadNumber;
-	private final boolean mFromCache;
 	private final Posts mCachedPosts;
 	
 	private final CacheManager.StreamHolder mHolder = new CacheManager.StreamHolder();
@@ -37,17 +36,16 @@ public class DeserializePostsTask extends CancellableTask<Void, Void, Boolean>
 	
 	public static interface Callback
 	{
-		public void onDeserializePostsComplete(boolean success, Posts posts, PostItem[] postItems, boolean fromCache);
+		public void onDeserializePostsComplete(boolean success, Posts posts, PostItem[] postItems);
 	}
 	
 	public DeserializePostsTask(Callback callback, String chanName, String boardName, String threadNumber,
-			boolean fromCache, Posts cachedPosts)
+			Posts cachedPosts)
 	{
 		mCallback = callback;
 		mChanName = chanName;
 		mBoardName = boardName;
 		mThreadNumber = threadNumber;
-		mFromCache = fromCache;
 		mCachedPosts = cachedPosts;
 	}
 	
@@ -66,7 +64,7 @@ public class DeserializePostsTask extends CancellableTask<Void, Void, Boolean>
 	@Override
 	public void onPostExecute(Boolean success)
 	{
-		mCallback.onDeserializePostsComplete(success, mPosts, mPostItems, mFromCache);
+		mCallback.onDeserializePostsComplete(success, mPosts, mPostItems);
 	}
 	
 	@Override
