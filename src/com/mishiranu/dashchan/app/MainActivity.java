@@ -634,7 +634,7 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 			ChanConfiguration.get(chanName).commit();
 		}
 		NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-		notificationManager.cancel(C.NOTIFICATION_UPDATE);
+		notificationManager.cancel(C.NOTIFICATION_TAG_UPDATE, 0);
 		FavoritesStorage.getInstance().await(true);
 	}
 	
@@ -1444,8 +1444,9 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		builder.setContentText(text);
 		builder.setContentIntent(PendingIntent.getActivity(MainActivity.this, 0, PreferencesActivity.createUpdateIntent
 				(this, updateDataMap).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), PendingIntent.FLAG_UPDATE_CURRENT));
+		builder.setAutoCancel(true);
 		NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-		notificationManager.notify(C.NOTIFICATION_UPDATE, builder.build());
+		notificationManager.notify(C.NOTIFICATION_TAG_UPDATE, 0, builder.build());
 	}
 	
 	@Override
