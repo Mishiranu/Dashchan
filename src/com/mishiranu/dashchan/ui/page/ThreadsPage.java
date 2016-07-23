@@ -40,6 +40,7 @@ import chan.util.CommonUtils;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.app.service.PostingService;
 import com.mishiranu.dashchan.async.DeserializeThreadsTask;
 import com.mishiranu.dashchan.async.ReadThreadsTask;
 import com.mishiranu.dashchan.content.CacheManager;
@@ -139,6 +140,19 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		PullableListView listView = getListView();
 		listView.setSelector(mOldListSelector);
 		listView.removeOnBeforeLayoutListener(this);
+	}
+	
+	@Override
+	protected void onHandleNewPostDatas()
+	{
+		PageHolder pageHolder = getPageHolder();
+		PostingService.NewPostData newPostData = PostingService.obtainNewThreadData(getActivity(), pageHolder.chanName,
+				pageHolder.boardName);
+		if (newPostData != null)
+		{
+			getUiManager().navigator().navigatePosts(newPostData.chanName, newPostData.boardName,
+					newPostData.threadNumber, newPostData.postNumber, null, false);
+		}
 	}
 	
 	private void updateTitle(String title)

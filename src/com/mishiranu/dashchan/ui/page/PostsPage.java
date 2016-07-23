@@ -208,15 +208,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		FavoritesStorage.getInstance().getObservable().register(this);
 		LocalBroadcastManager.getInstance(activity).registerReceiver(mGalleryPagerReceiver,
 				new IntentFilter(C.ACTION_GALLERY_GO_TO_POST));
-		ArrayList<PageHolder.NewPostData> newPostDatas = getNewPostDatas();
 		boolean forceLoad = false;
-		if (newPostDatas != null && newPostDatas.size() > 0)
-		{
-			for (PageHolder.NewPostData newPostData : newPostDatas)
-			{
-				forceLoad |= addUserPostPending(newPostData.newThread, newPostData.postNumber, newPostData.comment);
-			}
-		}
 		ArrayList<PostItem> cachedPostItems = extra.cachedPostItems;
 		if (extra.cachedPosts != null && cachedPostItems.size() > 0)
 		{
@@ -980,29 +972,6 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		else userPostPending = new ReadPostsTask.CommentUserPostPending(comment);
 		if (userPostPending != null) getExtra().userPostPendings.add(userPostPending);
 		return userPostPending != null;
-	}
-	
-	@Override
-	public void onCreateNewPost(String postNumber, String comment)
-	{
-		addUserPostPending(false, postNumber, comment);
-		Runnable runnable = new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				PostsAdapter adapter = getAdapter();
-				refreshPosts(true, false);
-				if (Preferences.isFavoriteOnReply() && !adapter.isEmpty())
-				{
-					// After posting, thread won't have title. I must set it manually
-					PageHolder pageHolder = getPageHolder();
-					FavoritesStorage.getInstance().modifyTitle(pageHolder.chanName, pageHolder.boardName,
-							pageHolder.threadNumber, adapter.getItem(0).getSubjectOrComment(), false);
-				}
-			}
-		};
-		if (isFirstLoad()) mOnFirstLoadComplete.add(runnable); else runnable.run();
 	}
 	
 	@Override

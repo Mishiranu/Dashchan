@@ -67,15 +67,15 @@ public class C
 	public static final String ACTION_POST_SENT = "com.mishiranu.dashchan.action.POST_SENT";
 	public static final String ACTION_GALLERY_GO_TO_POST = "com.mishiranu.dashchan.action.GALLERY_GO_TO_POST";
 	
-	public static final int REQUEST_CODE_ADD_POST = 1;
-	public static final int REQUEST_CODE_ATTACH = 2;
-	public static final int REQUEST_CODE_UNINSTALL = 3;
-	public static final int REQUEST_CODE_OPEN_PATH = 4;
+	public static final int REQUEST_CODE_ATTACH = 1;
+	public static final int REQUEST_CODE_UNINSTALL = 2;
+	public static final int REQUEST_CODE_OPEN_PATH = 3;
 	
 	public static final int NOTIFICATION_DOWNLOAD_SERVICE = 1;
 	public static final int NOTIFICATION_AUDIO_PLAYER_SERVICE = 2;
 	public static final int NOTIFICATION_UPDATE = 3;
-	public static final int NOTIFICATION_CUSTOM_START = 4;
+	
+	public static final String NOTIFICATION_TAG_POSTING = "posting";
 	
 	public static final String EXTRA_ALLOW_EXPANDED_SCREEN = "com.mishiranu.dashchan.extra.ALLOW_EXPANDED_SCREEN";
 	public static final String EXTRA_ALLOW_GO_TO_POST = "com.mishiranu.dashchan.extra.ALLOW_GO_TO_POST";

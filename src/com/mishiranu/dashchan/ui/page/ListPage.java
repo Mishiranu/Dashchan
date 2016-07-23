@@ -16,8 +16,6 @@
 
 package com.mishiranu.dashchan.ui.page;
 
-import java.util.ArrayList;
-
 import android.app.Activity;
 import android.content.res.Resources;
 import android.view.ContextMenu;
@@ -84,7 +82,7 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 			onCreate();
 			if (mAdapter == null) throw new IllegalStateException("Adapter wasn't initialized");
 			mState = State.RESUMED;
-			onResume();
+			performResume();
 		}
 	}
 	
@@ -196,11 +194,6 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 		mCallback.removePage(mPageHolder);
 	}
 	
-	protected final ArrayList<PageHolder.NewPostData> getNewPostDatas()
-	{
-		return mCallback.getNewPostDatas(mPageHolder);
-	}
-	
 	protected final void setActionBarLocked(boolean locked)
 	{
 		mCallback.setActionBarLocked(locked);
@@ -222,6 +215,11 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 	}
 	
 	protected void onDestroy()
+	{
+		
+	}
+	
+	protected void onHandleNewPostDatas()
 	{
 		
 	}
@@ -304,11 +302,6 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 		if (mBusyScrollListenerCallback != null) mBusyScrollListenerCallback.setListViewBusy(isBusy, listView);
 	}
 	
-	public void onCreateNewPost(String postNumber, String comment)
-	{
-		
-	}
-	
 	public int onDrawerNumberEntered(int number)
 	{
 		return 0;
@@ -329,13 +322,24 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 		return mState == State.CONSUMED;
 	}
 	
+	public final boolean isResumed()
+	{
+		return mState == State.RESUMED;
+	}
+	
+	private void performResume()
+	{
+		onResume();
+		onHandleNewPostDatas();
+	}
+	
 	public final void resume()
 	{
 		if (mState == State.PAUSED)
 		{
 			mState = State.RESUMED;
 			setListViewBusy(false, mListView); // Refresh list view contents
-			onResume();
+			performResume();
 		}
 	}
 	
@@ -358,6 +362,11 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 		}
 	}
 	
+	public final void handleNewPostDatasNow()
+	{
+		if (mState == State.RESUMED) onHandleNewPostDatas();
+	}
+	
 	public static interface Callback
 	{
 		public void invalidateDrawerItems(boolean pages, boolean favorites);
@@ -365,7 +374,6 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 		public void switchView(ViewType viewType, String message);
 		public void showScaleAnimation();
 		public void removePage(PageHolder pageHolder);
-		public ArrayList<PageHolder.NewPostData> getNewPostDatas(PageHolder pageHolder);
 		public void setActionBarLocked(boolean locked);
 	}
 }
