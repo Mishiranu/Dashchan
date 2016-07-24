@@ -80,7 +80,9 @@ public class WakabaLikeHtmlBuilder
 				.append(".reflink a {color: inherit; text-decoration: none;} ")
 				.append(".withimage {min-width: 30em;} ")
 				.append(".postericon {padding-right: 6px; max-height: 1em;} ")
+				.append("span.underline {text-decoration: underline;} ")
 				.append("span.overline {text-decoration: overline;} ")
+				.append("span.strike {text-decoration: line-through;} ")
 				.append("span.code {font-family: monospace; white-space: pre;} ")
 				.append("span.aa {font-family: Mona, \"MS PGothic\", monospace;} ")
 				.append("span.heading {font-weight: bold; font-size: 1.2rem;}</style>");

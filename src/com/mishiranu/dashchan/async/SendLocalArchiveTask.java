@@ -388,8 +388,8 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 			}
 			case ChanMarkup.TAG_UNDERLINE:
 			{
-				openTag = "<u>";
-				closeTag = "</u>";
+				openTag = "<span class=\"underline\">";
+				closeTag = "</span>";
 				break;
 			}
 			case ChanMarkup.TAG_OVERLINE:
@@ -400,8 +400,8 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 			}
 			case ChanMarkup.TAG_STRIKE:
 			{
-				openTag = "<s>";
-				closeTag = "</s>";
+				openTag = "<span class=\"strike\">";
+				closeTag = "</span>";
 				break;
 			}
 			case ChanMarkup.TAG_SUBSCRIPT:
