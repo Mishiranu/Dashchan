@@ -32,10 +32,10 @@ public class WakabaLikeHtmlBuilder
 	
 	static
 	{
-		STYLES.add(new Pair<>("Photon", "http://mishiranu.github.io/Dashchan/wakaba/photon.css"));
-		STYLES.add(new Pair<>("Futaba", "http://mishiranu.github.io/Dashchan/wakaba/futaba.css"));
-		STYLES.add(new Pair<>("Burichan", "http://mishiranu.github.io/Dashchan/wakaba/burichan.css"));
-		STYLES.add(new Pair<>("Gurochan", "http://mishiranu.github.io/Dashchan/wakaba/gurochan.css"));
+		STYLES.add(new Pair<>("Photon", "https://mishiranu.github.io/Dashchan/wakaba/photon.css"));
+		STYLES.add(new Pair<>("Futaba", "https://mishiranu.github.io/Dashchan/wakaba/futaba.css"));
+		STYLES.add(new Pair<>("Burichan", "https://mishiranu.github.io/Dashchan/wakaba/burichan.css"));
+		STYLES.add(new Pair<>("Gurochan", "https://mishiranu.github.io/Dashchan/wakaba/gurochan.css"));
 	}
 	
 	private static final String CLIENT_URI = "https://github.com/Mishiranu/Dashchan/";
