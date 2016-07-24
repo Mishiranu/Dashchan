@@ -55,54 +55,54 @@ public class WakabaLikeHtmlBuilder
 	{
 		mChanName = chanName;
 		StringBuilder builder = mBuilder;
-		builder.append("<!DOCTYPE html><html><head>")
-				.append("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />");
+		builder.append("<!DOCTYPE html>\n<html>\n<head>\n")
+				.append("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n");
 		builder.append("<title>");
 		if (!StringUtils.isEmpty(threadTitle)) builder.append(threadTitle).append(" — ");
 		builder.append('/').append(boardName).append('/').append(" — ");
 		if (!StringUtils.isEmpty(boardTitle)) builder.append(boardTitle).append(" — ");
 		builder.append(chanTitle);
-		builder.append("</title>");
+		builder.append("</title>\n");
 		for (int i = 0; i < STYLES.size(); i++)
 		{
 			Pair<String, String> style = STYLES.get(i);
 			builder.append("<link rel=\"");
 			if (i > 0) builder.append("alternate ");
 			builder.append("stylesheet\" type=\"text/css\" href=\"").append(style.second)
-					.append("\" title=\"").append(style.first).append("\" />");
+					.append("\" title=\"").append(style.first).append("\" />\n");
 		}
-		builder.append("<style type=\"text/css\">body {margin: 0; padding: 8px; margin-bottom: auto;} ")
-				.append(".thumb {border: none; margin: 2px 20px; max-width: 200px; max-height: 200px;} ")
-				.append(".nothumb {float: left; background: #eee; border: 2px dashed #aaa; ")
-				.append("text-align: center; margin: 2px 20px; padding: 1em 0.5em 1em 0.5em;} ")
-				.append(".filesize {padding-left: 20px; display: inline-block;} ")
-				.append(".replyheader {padding: 0 0.25em 0 0;} ")
-				.append(".reflink a {color: inherit; text-decoration: none;} ")
-				.append(".withimage {min-width: 30em;} ")
-				.append(".postericon {padding-right: 6px; max-height: 1em;} ")
-				.append("span.underline {text-decoration: underline;} ")
-				.append("span.overline {text-decoration: overline;} ")
-				.append("span.strike {text-decoration: line-through;} ")
-				.append("span.code {font-family: monospace; white-space: pre;} ")
-				.append("span.aa {font-family: Mona, \"MS PGothic\", monospace;} ")
-				.append("span.heading {font-weight: bold; font-size: 1.2rem;}</style>");
-		builder.append("<script type=\"text/javascript\">function switchStyle(style) {")
-				.append("var links = document.getElementsByTagName('link'); for (var i = 0; i < links.length; i++) {")
-				.append("var rel = links[i].getAttribute(\"rel\"); var title = links[i].getAttribute(\"title\"); ")
-				.append("if (rel.indexOf(\"style\") != -1 && title) links[i].disabled = title != style;}} ")
-				.append("switchStyle('Photon');</script>");
-		builder.append("</head><body><div class=\"logo\">").append(boardTitle).append(" @ ").append(chanTitle)
-				.append("</div><div class=\"logo\" style=\"font-size: 1rem; margin-top: 0.25em;\">");
+		builder.append("<style type=\"text/css\">\nbody {margin: 0; padding: 8px; margin-bottom: auto;}\n")
+				.append(".thumb {border: none; margin: 2px 20px; max-width: 200px; max-height: 200px;}\n")
+				.append(".nothumb {float: left; background: #eee; border: 2px dashed #aaa;\n")
+				.append("text-align: center; margin: 2px 20px; padding: 1em 0.5em 1em 0.5em;}\n")
+				.append(".filesize {padding-left: 20px; display: inline-block;}\n")
+				.append(".replyheader {padding: 0 0.25em 0 0;}\n")
+				.append(".reflink a {color: inherit; text-decoration: none;}\n")
+				.append(".withimage {min-width: 30em;}\n")
+				.append(".postericon {padding-right: 6px; max-height: 1em;}\n")
+				.append("span.underline {text-decoration: underline;}\n")
+				.append("span.overline {text-decoration: overline;}\n")
+				.append("span.strike {text-decoration: line-through;}\n")
+				.append("span.code {font-family: monospace; white-space: pre;}\n")
+				.append("span.aa {font-family: Mona, \"MS PGothic\", monospace;}\n")
+				.append("span.heading {font-weight: bold; font-size: 1.2rem;}\n</style>\n");
+		builder.append("<script type=\"text/javascript\">\nfunction switchStyle(style)\n{\n\t")
+				.append("var links = document.getElementsByTagName('link');\n\tfor (var i = 0; i < links.length; i++)")
+				.append("\n\t{\n\t\tvar rel = links[i].getAttribute(\"rel\");")
+				.append("\n\t\tvar title = links[i].getAttribute(\"title\");")
+				.append("\n\t\tif (rel.indexOf(\"style\") != -1 && title) links[i].disabled = title != style;")
+				.append("\n\t}\n}\nswitchStyle('Photon');\n</script>\n");
+		builder.append("</head>\n<body>\n<div class=\"logo\">").append(boardTitle).append(" @ ").append(chanTitle)
+				.append("</div>\n<div class=\"logo\" style=\"font-size: 1rem; margin-top: 0.25em;\">\n");
 		for (int i = 0; i < STYLES.size(); i++)
 		{
 			Pair<String, String> style = STYLES.get(i);
-			if (i > 0) builder.append(' ');
 			builder.append("[ <a href=\"javascript:switchStyle('").append(style.first).append("');\">")
-					.append(style.first).append("</a> ]");
+					.append(style.first).append("</a> ]\n");
 		}
-		builder.append("</div><hr /><div id=\"delform\" data-thread-uri=\"").append(threadUri.toString())
+		builder.append("</div>\n<hr />\n<div id=\"delform\" data-thread-uri=\"").append(threadUri.toString())
 				.append("\" data-posts=\"").append(postsCount).append("\" data-files=\"")
-				.append(filesCount).append("\">");
+				.append(filesCount).append("\">\n");
 	}
 	
 	private boolean mOriginalPost = true;
@@ -205,7 +205,7 @@ public class WakabaLikeHtmlBuilder
 		{
 			boolean withImage = mFileItems.size() > 0;
 			StringBuilder builder = mBuilder;
-			builder.append("<span data-number=\"").append(number).append("\"></span>");
+			builder.append("<span data-number=\"").append(number).append("\"></span>\n");
 			if (mOriginalPost)
 			{
 				mOriginalPost = false;
@@ -215,12 +215,12 @@ public class WakabaLikeHtmlBuilder
 			}
 			else
 			{
-				builder.append("<table><tbody><tr><td class=\"doubledash\">&gt;&gt;</td>")
-						.append("<td class=\"reply\" id=\"reply").append(number).append("\">");
+				builder.append("<table>\n<tbody>\n<tr>\n<td class=\"doubledash\">&gt;&gt;</td>\n")
+						.append("<td class=\"reply\" id=\"reply").append(number).append("\">\n");
 				appendHeader(false);
 				appendFiles();
 				appendComment(withImage);
-				builder.append("</td></tr></tbody></table>");
+				builder.append("</td>\n</tr>\n</tbody>\n</table>\n");
 			}
 		}
 		mNumber = null;
@@ -247,17 +247,17 @@ public class WakabaLikeHtmlBuilder
 		StringBuilder builder = mBuilder;
 		builder.append("<div");
 		if (!originalPost) builder.append(" class=\"replyheader\"");
-		builder.append("><a name=\"").append(number).append("\"></a><input type=\"checkbox\" value=\"")
-				.append(number).append("\" disabled />");
+		builder.append(">\n<a name=\"").append(number).append("\"></a>\n<input type=\"checkbox\" value=\"")
+				.append(number).append("\" disabled />\n");
 		for (Pair<Uri, String> icon : mIconItems)
 		{
 			builder.append("<img data-icon=\"true\" class=\"postericon\" src=\"").append(icon.first).append("\"");
 			if (icon.second != null) builder.append(" title=\"").append(escapeHtml(icon.second)).append("\"");
-			builder.append(" />");
+			builder.append(" />\n");
 		}
 		if (!StringUtils.isEmpty(subject))
 		{
-			builder.append("<span class=\"replytitle\" data-subject=\"true\">").append(subject).append("</span> ");
+			builder.append("<span class=\"replytitle\" data-subject=\"true\">").append(subject).append("</span>\n");
 		}
 		if (name == null) name = "";
 		boolean hasIdentifier = !StringUtils.isEmpty(identifier);
@@ -275,7 +275,7 @@ public class WakabaLikeHtmlBuilder
 		builder.append(name);
 		if (hasEmail) builder.append("</a>");
 		if (hasIdentifier) builder.append(" ID: ").append(identifier);
-		builder.append("</span> ");
+		builder.append("</span>\n");
 		boolean hasTripcode = !StringUtils.isEmpty(tripcode);
 		boolean hasCapcode = !StringUtils.isEmpty(capcode);
 		boolean originalPoster = mOriginalPoster;
@@ -297,14 +297,14 @@ public class WakabaLikeHtmlBuilder
 				if (hasTripcode || hasCapcode) builder.append(' ');
 				builder.append("# OP");
 			}
-			builder.append("</span> ");
+			builder.append("</span>\n");
 		}
-		if (mSage) builder.append("<a href=\"mailto:sage\" data-sage=\"true\"></a>");
+		if (mSage) builder.append("<a href=\"mailto:sage\" data-sage=\"true\"></a>\n");
 		builder.append("<span data-timestamp=\"").append(timestamp).append("\">").append(DATE_FORMAT.format(timestamp))
-				.append("</span> ");
+				.append("</span>\n");
 		builder.append("<span class=\"reflink\">No.").append(number);
 		if (mDeleted) builder.append(" <span style=\"color: #f00\">DELETED</span>");
-		builder.append("</span></div>");
+		builder.append("</span>\n</div>\n");
 	}
 	
 	private void appendComment(boolean withImage)
@@ -312,7 +312,7 @@ public class WakabaLikeHtmlBuilder
 		StringBuilder builder = mBuilder;
 		builder.append("<blockquote data-comment=\"true\"");
 		if (mFileItems.size() > 0) builder.append(" class=\"withimage\"");
-		builder.append('>').append(mComment).append("</blockquote>");
+		builder.append(">\n").append(mComment).append("\n</blockquote>\n");
 	}
 	
 	private void appendFiles()
@@ -321,13 +321,13 @@ public class WakabaLikeHtmlBuilder
 		ArrayList<FileItem> fileItems = mFileItems;
 		boolean multiple = fileItems.size() > 1;
 		for (FileItem fileItem : fileItems) appendFile(fileItem, multiple);
-		if (multiple) builder.append("<br style=\"clear: left;\" />");
+		if (multiple) builder.append("<br style=\"clear: left;\" />\n");
 	}
 	
 	private void appendFile(FileItem fileItem, boolean multiple)
 	{
 		StringBuilder builder = mBuilder;
-		if (multiple) builder.append("<div style=\"float: left;\">");
+		if (multiple) builder.append("<div style=\"float: left;\">\n");
 		builder.append("<span class=\"filesize\" data-file=\"").append(fileItem.imageFile)
 				.append("\" data-thumbnail=\"").append(fileItem.thumbnailFile != null ? fileItem.thumbnailFile : "");
 		if (fileItem.originalName != null)
@@ -335,9 +335,9 @@ public class WakabaLikeHtmlBuilder
 			builder.append("\" data-original-name=\"").append(escapeHtml(fileItem.originalName));
 		}
 		builder.append("\" data-size=\"").append(fileItem.size).append("\" data-width=\"").append(fileItem.width)
-				.append("\" data-height=\"").append(fileItem.height).append("\">");
+				.append("\" data-height=\"").append(fileItem.height).append("\">\n");
 		builder.append("File: <a target=\"_blank\" href=\"")
-				.append(fileItem.imageFile).append("\">").append(fileItem.displayName).append("</a>");
+				.append(fileItem.imageFile).append("\">").append(fileItem.displayName).append("</a>\n");
 		String size = null;
 		if (fileItem.size > 0)
 		{
@@ -364,7 +364,7 @@ public class WakabaLikeHtmlBuilder
 				|| fileItem.originalName != null;
 		if (hasFileInfo)
 		{
-			if (multiple) builder.append("<br />"); else builder.append(' ');
+			if (multiple) builder.append("<br />\n");
 			boolean hasTitleFileInfo = multiple && fileItem.originalName != null;
 			builder.append("(<em");
 			if (hasTitleFileInfo)
@@ -375,22 +375,22 @@ public class WakabaLikeHtmlBuilder
 			}
 			builder.append('>');
 			appendFileInfo(size, fileItem, multiple);
-			builder.append("</em>)");
+			builder.append("</em>)\n");
 		}
-		builder.append("</span><br />");
+		builder.append("</span>\n<br />\n");
 		if (fileItem.thumbnailFile != null)
 		{
-			builder.append("<a target=\"_blank\" href=\"").append(fileItem.imageFile).append("\"><img src=\"")
+			builder.append("<a target=\"_blank\" href=\"").append(fileItem.imageFile).append("\">\n<img src=\"")
 					.append(fileItem.thumbnailFile).append("\" class=\"thumb\"");
 			if (!multiple) builder.append(" style=\"float: left;\"");
-			builder.append(" /></a>");
+			builder.append(" />\n</a>\n");
 		}
 		else
 		{
-			builder.append("<div class=\"nothumb\"><a target=\"_blank\" href=\"").append(fileItem.imageFile)
-					.append("\">No<br />thumbnail</a></div>");
+			builder.append("<div class=\"nothumb\">\n<a target=\"_blank\" href=\"").append(fileItem.imageFile)
+					.append("\">No<br />thumbnail</a>\n</div>\n");
 		}
-		if (multiple) builder.append("</div>");
+		if (multiple) builder.append("</div>\n");
 	}
 	
 	private void appendFileInfo(String size, FileItem fileItem, boolean shortInfo)
@@ -417,8 +417,9 @@ public class WakabaLikeHtmlBuilder
 	public String build()
 	{
 		closePost();
-		return mBuilder.append("<br style=\"clear: left;\" /><hr /> </div>").append("<p class=\"footer\"> - <a href=\"")
-				.append(CLIENT_URI).append("\">dashchan</a> + <a href=\"http://wakaba.c3.cx/\">wakaba</a> + ")
-				.append("<a href=\"http://www.2chan.net/\">futaba</a> -</p></body></html>").toString();
+		return mBuilder.append("<br style=\"clear: left;\" />\n<hr />\n</div>\n")
+				.append("<p class=\"footer\">\n- <a href=\"").append(CLIENT_URI).append("\">dashchan</a> + ")
+				.append("<a href=\"http://wakaba.c3.cx/\">wakaba</a> + ")
+				.append("<a href=\"http://www.2chan.net/\">futaba</a> -\n</p>\n</body>\n</html>").toString();
 	}
 }
