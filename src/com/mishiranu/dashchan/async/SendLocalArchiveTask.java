@@ -152,6 +152,7 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 			boolean originalPoster = post.isOriginalPoster();
 			boolean deleted = post.isDeleted();
 			boolean useDefaultName = name.equals(defaultName) || name.isEmpty();
+			if (name.isEmpty()) name = defaultName;
 			int attachmentsCount = post.getAttachmentsCount();
 			int iconsCount = post.getIconsCount();
 			CharSequence charSequence = HtmlParser.parse(comment, markup, null, this);
