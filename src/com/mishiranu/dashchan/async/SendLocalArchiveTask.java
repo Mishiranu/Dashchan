@@ -236,6 +236,7 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 					FileAttachment fileAttachment = (FileAttachment) attachment;
 					Uri fileUri = fileAttachment.getFileUri(locator);
 					Uri thumbnailUri = fileAttachment.getThumbnailUri(locator);
+					if (fileUri == null) fileUri = thumbnailUri;
 					if (fileUri != null)
 					{
 						String fileName = locator.createAttachmentFileName(fileUri);
