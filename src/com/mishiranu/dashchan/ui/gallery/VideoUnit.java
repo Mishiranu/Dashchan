@@ -351,7 +351,7 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener
 	private void recreateVideoControls()
 	{
 		Context context = mInstance.galleryInstance.context;
-		float density = context.getResources().getDisplayMetrics().density;
+		float density = ResourceUtils.obtainDensity(context);
 		int targetLayoutCounfiguration = ResourceUtils.isTabletOrLandscape(context.getResources()
 				.getConfiguration()) ? 1 : 0;
 		if (targetLayoutCounfiguration != mLayoutConfiguration)
