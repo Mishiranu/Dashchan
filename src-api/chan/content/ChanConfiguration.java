@@ -566,8 +566,8 @@ public class ChanConfiguration implements ChanManager.Linked
 			if (defaultName != null) return defaultName;
 		}
 		String defaultName = get(boardName, KEY_DEFAULT_NAME, null);
-		if (defaultName != null) return defaultName;
-		if (mDefaultName != null) return mDefaultName;
+		if (!StringUtils.isEmpty(defaultName)) return defaultName;
+		if (!StringUtils.isEmpty(mDefaultName)) return mDefaultName;
 		return "Anonymous";
 	}
 
