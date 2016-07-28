@@ -1619,15 +1619,4 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 			
 		}
 	}
-	
-	/*{
-		dbg.Log.d("create", hashCode());
-	}
-	
-	@Override
-	protected void finalize() throws Throwable
-	{
-		dbg.Log.d("finalize", hashCode());
-		super.finalize();
-	}*/
 }
