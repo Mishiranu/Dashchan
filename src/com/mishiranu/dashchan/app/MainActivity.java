@@ -736,6 +736,7 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 					mMayShowRestartDialog = true;
 				}
 			});
+			dialog.setCanceledOnTouchOutside(false);
 			dialog.show();
 			mUiManager.dialog().notifySwitchBackground();
 		}
