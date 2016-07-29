@@ -35,6 +35,7 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.app.MainApplication;
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.preference.Preferences;
+import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.LruCache;
 
 public class DraftsStorage extends StorageManager.Storage
@@ -444,29 +445,33 @@ public class DraftsStorage extends StorageManager.Storage
 		private static final String KEY_RATING = "rating";
 		private static final String KEY_OPTION_UNIQUE_HASH = "optionUniqueHash";
 		private static final String KEY_OPTION_REMOVE_METADATA = "optionRemoveMetadata";
-		private static final String KEY_OPTION_REENCODE_IMAGE = "optionReencodeImage";
 		private static final String KEY_OPTION_REMOVE_FILE_NAME = "optionRemoveFileName";
 		private static final String KEY_OPTION_SPOILER = "optionSpoiler";
+		private static final String KEY_REENCODING = "reencoding";
+
+		private static final String KEY_REENCODING_FORMAT = "format";
+		private static final String KEY_REENCODING_QUALITY = "quality";
+		private static final String KEY_REENCODING_REDUCE = "reduce";
 		
 		public final FileHolder fileHolder;
 		public final String rating;
 		public final boolean optionUniqueHash;
 		public final boolean optionRemoveMetadata;
-		public final boolean optionReencodeImage;
 		public final boolean optionRemoveFileName;
 		public final boolean optionSpoiler;
+		public final GraphicsUtils.Reencoding reencoding;
 		
 		public AttachmentDraft(FileHolder fileHolder, String rating, boolean optionUniqueHash,
-				boolean optionRemoveMetadata, boolean optionReencodeImage, boolean optionRemoveFileName,
-				boolean optionSpoiler)
+				boolean optionRemoveMetadata, boolean optionRemoveFileName, boolean optionSpoiler,
+				GraphicsUtils.Reencoding reencoding)
 		{
 			this.fileHolder = fileHolder;
 			this.rating = rating;
 			this.optionUniqueHash = optionUniqueHash;
 			this.optionRemoveMetadata = optionRemoveMetadata;
-			this.optionReencodeImage = optionReencodeImage;
 			this.optionRemoveFileName = optionRemoveFileName;
 			this.optionSpoiler = optionSpoiler;
+			this.reencoding = reencoding;
 		}
 		
 		public JSONObject toJsonObject() throws JSONException
@@ -476,9 +481,16 @@ public class DraftsStorage extends StorageManager.Storage
 			putJson(jsonObject, KEY_RATING, rating);
 			putJson(jsonObject, KEY_OPTION_UNIQUE_HASH, optionUniqueHash);
 			putJson(jsonObject, KEY_OPTION_REMOVE_METADATA, optionRemoveMetadata);
-			putJson(jsonObject, KEY_OPTION_REENCODE_IMAGE, optionReencodeImage);
 			putJson(jsonObject, KEY_OPTION_REMOVE_FILE_NAME, optionRemoveFileName);
 			putJson(jsonObject, KEY_OPTION_SPOILER, optionSpoiler);
+			if (reencoding != null)
+			{
+				JSONObject reencodingObject = new JSONObject();
+				putJson(reencodingObject, KEY_REENCODING_FORMAT, reencoding.format);
+				putJson(reencodingObject, KEY_REENCODING_QUALITY, reencoding.quality);
+				putJson(reencodingObject, KEY_REENCODING_REDUCE, reencoding.reduce);
+				jsonObject.put(KEY_REENCODING, reencodingObject);
+			}
 			return jsonObject;
 		}
 		
@@ -490,10 +502,18 @@ public class DraftsStorage extends StorageManager.Storage
 			if (uri == null) return null;
 			FileHolder fileHolder = FileHolder.obtain(MainApplication.getInstance(), uri);
 			if (fileHolder == null) return null;
-			return new AttachmentDraft(fileHolder, jsonObject.optString(KEY_RATING, null), jsonObject
-					.optBoolean(KEY_OPTION_UNIQUE_HASH), jsonObject.optBoolean(KEY_OPTION_REMOVE_METADATA),
-					jsonObject.optBoolean(KEY_OPTION_REENCODE_IMAGE), jsonObject
-					.optBoolean(KEY_OPTION_REMOVE_FILE_NAME), jsonObject.optBoolean(KEY_OPTION_SPOILER));
+			JSONObject reencodingObject = jsonObject.optJSONObject(KEY_REENCODING);
+			GraphicsUtils.Reencoding reencoding = null;
+			if (reencodingObject != null)
+			{
+				reencoding = new GraphicsUtils.Reencoding(reencodingObject.optString(KEY_REENCODING_FORMAT),
+						reencodingObject.optInt(KEY_REENCODING_QUALITY),
+						reencodingObject.optInt(KEY_REENCODING_REDUCE));
+			}
+			return new AttachmentDraft(fileHolder, jsonObject.optString(KEY_RATING, null),
+					jsonObject.optBoolean(KEY_OPTION_UNIQUE_HASH), jsonObject.optBoolean(KEY_OPTION_REMOVE_METADATA),
+					jsonObject.optBoolean(KEY_OPTION_REMOVE_FILE_NAME), jsonObject.optBoolean(KEY_OPTION_SPOILER),
+					reencoding);
 		}
 	}
 }

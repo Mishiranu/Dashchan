@@ -108,8 +108,10 @@
 	<string name="text_post_sent">Post sent</string>
 	<string name="text_posts_sent">Posts sent</string>
 	<string name="text_posts_with_files_format">Posts with files: %s</string>
+	<string name="text_quality_format">Quality: %d%%</string>
 	<string name="text_rating">Rating</string>
 	<string name="text_read_only">Read only</string>
+	<string name="text_reduce_format">Reduce: %dx</string>
 	<string name="text_reencode_image">Re-encode image</string>
 	<string name="text_regex">Regular expression</string>
 	<string name="text_rejected_words">Rejected words:</string>
@@ -511,9 +513,9 @@
 		<item>optional part</item>
 	</string-array>
 	<string name="preference_text_scale">Text scale</string>
-	<string name="preference_text_scale_summary_format">Scale %1$d%%</string>
+	<string name="preference_text_scale_summary_format">Scale: %d%%</string>
 	<string name="preference_thumbnails_scale">Thumbnail scale</string>
-	<string name="preference_thumbnails_scale_summary_format">Scale %1$d%%</string>
+	<string name="preference_thumbnails_scale_summary_format">Scale: %d%%</string>
 	<string name="preference_uninstall_extension">Uninstall extension</string>
 	<string name="preference_use_gms_provider">Use GMS security provider</string>
 	<string name="preference_use_gms_provider_summary">Requires restart</string>

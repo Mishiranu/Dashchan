@@ -475,9 +475,9 @@
 		<item>parte opcional</item>
 	</string-array>
 	<string name="preference_text_scale">Escala do texto</string>
-	<string name="preference_text_scale_summary_format">Escala %1$d%%</string>
+	<string name="preference_text_scale_summary_format">Escala: %d%%</string>
 	<string name="preference_thumbnails_scale">Escala da miniatura</string>
-	<string name="preference_thumbnails_scale_summary_format">Escala %1$d%%</string>
+	<string name="preference_thumbnails_scale_summary_format">Escala: %d%%</string>
 	<string name="preference_uninstall_extension">Remover extensões</string>
 	<string name="preference_use_https">Conexão segura</string>
 	<string name="preference_use_https_summary">Use protocolo HTTPS</string>

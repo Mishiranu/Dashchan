@@ -18,6 +18,7 @@ package com.mishiranu.dashchan.util;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Random;
@@ -169,6 +170,28 @@ public class GraphicsUtils
 		return resizedBitmap;
 	}
 	
+	public static class Reencoding
+	{
+		public static final String FORMAT_JPEG = "jpeg";
+		public static final String FORMAT_PNG = "png";
+		
+		public final String format;
+		public final int quality;
+		public final int reduce;
+		
+		public Reencoding(String format, int quality, int reduce)
+		{
+			this.format = FORMAT_JPEG.equals(format) || FORMAT_PNG.equals(format) ? format : FORMAT_JPEG;
+			this.quality = quality > 100 ? 100 : quality < 1 ? 1 : quality;
+			this.reduce = reduce > 8 ? 8 : reduce < 1 ? 1 : reduce;
+		}
+		
+		public static boolean allowQuality(String format)
+		{
+			return FORMAT_JPEG.equals(format);
+		}
+	}
+	
 	public static boolean canRemoveMetadata(FileHolder fileHolder)
 	{
 		return fileHolder.getImageType() == FileHolder.ImageType.IMAGE_JPEG
@@ -202,7 +225,7 @@ public class GraphicsUtils
 	}
 	
 	public static TransformationData transformImageForPosting(FileHolder fileHolder, String fileName,
-			boolean removeMetadata, boolean reencodeImage)
+			boolean removeMetadata, Reencoding reencoding)
 	{
 		ArrayList<SkipRange> skipRanges = null;
 		byte[] decodedBytes = null;
@@ -210,7 +233,7 @@ public class GraphicsUtils
 		InputStream input = null;
 		try
 		{
-			if (reencodeImage && fileHolder.isImage())
+			if (reencoding != null && fileHolder.isImage())
 			{
 				Bitmap bitmap;
 				try
@@ -225,12 +248,23 @@ public class GraphicsUtils
 				{
 					try
 					{
-						boolean jpeg = fileHolder.getImageType() == FileHolder.ImageType.IMAGE_JPEG;
+						if (reencoding.reduce > 1)
+						{
+							Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth()
+									/ reencoding.reduce, bitmap.getHeight() / reencoding.reduce, true);
+							if (scaledBitmap != bitmap)
+							{
+								bitmap.recycle();
+								bitmap = scaledBitmap;
+							}
+						}
+						boolean png = Reencoding.FORMAT_PNG.equals(reencoding.format);
 						ByteArrayOutputStream output = new ByteArrayOutputStream();
-						bitmap.compress(jpeg ? Bitmap.CompressFormat.JPEG : Bitmap.CompressFormat.PNG, 100, output);
+						bitmap.compress(Reencoding.FORMAT_PNG.equals(reencoding.format) ? Bitmap.CompressFormat.PNG
+								: Bitmap.CompressFormat.JPEG, reencoding.quality, output);
 						decodedBytes = output.toByteArray();
 						int index = fileName.lastIndexOf('.');
-						newFileName = (index >= 0 ? fileName.substring(0, index) : fileName) + (jpeg ? ".jpg" : ".png");
+						newFileName = (index >= 0 ? fileName.substring(0, index) : fileName) + (png ? ".png" : ".jpeg");
 					}
 					finally
 					{
@@ -301,7 +335,7 @@ public class GraphicsUtils
 				}
 			}
 		}
-		catch (Exception e)
+		catch (IOException e)
 		{
 			
 		}

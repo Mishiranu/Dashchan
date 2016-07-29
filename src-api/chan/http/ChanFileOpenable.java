@@ -39,14 +39,14 @@ public class ChanFileOpenable implements MultipartEntity.Openable
 	private final byte[] mDecodedBytes;
 	private final long mRealSize;
 	
-	public ChanFileOpenable(FileHolder fileHolder, boolean uniqueHash, boolean removeMetadata, boolean reencodeImage,
-			boolean removeFileName)
+	public ChanFileOpenable(FileHolder fileHolder, boolean uniqueHash, boolean removeMetadata, boolean removeFileName,
+			GraphicsUtils.Reencoding reencoding)
 	{
 		mFileHolder = fileHolder;
 		String fileName = MultipartEntity.obtainFileName(fileHolder, removeFileName);
 		mRandomBytes = uniqueHash ? 6 : 0;
 		GraphicsUtils.TransformationData transformationData = GraphicsUtils.transformImageForPosting(fileHolder,
-				fileName, removeMetadata, reencodeImage);
+				fileName, removeMetadata, reencoding);
 		if (transformationData != null)
 		{
 			mSkipRanges = transformationData.skipRanges;

@@ -49,6 +49,7 @@ import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.content.ForegroundManager;
 import com.mishiranu.dashchan.content.model.FileHolder;
+import com.mishiranu.dashchan.util.GraphicsUtils;
 
 @Extendable
 public class ChanPerformer implements ChanManager.Linked
@@ -773,25 +774,25 @@ public class ChanPerformer implements ChanManager.Linked
 			
 			public final boolean optionUniqueHash;
 			public final boolean optionRemoveMetadata;
-			public final boolean optionReencodeImage;
 			public final boolean optionRemoveFileName;
 			@Public public final boolean optionSpoiler;
+			public final GraphicsUtils.Reencoding reencoding;
 			
 			public MultipartEntity.OpenableOutputListener listener;
 			
 			private ChanFileOpenable mOpenable;
 			
 			public Attachment(FileHolder fileHolder, String rating, boolean optionUniqueHash,
-					boolean optionRemoveMetadata, boolean optionReencodeImage, boolean optionRemoveFileName,
-					boolean optionSpoiler)
+					boolean optionRemoveMetadata, boolean optionRemoveFileName, boolean optionSpoiler,
+					GraphicsUtils.Reencoding reencoding)
 			{
 				this.fileHolder = fileHolder;
 				this.rating = rating;
 				this.optionUniqueHash = optionUniqueHash;
 				this.optionRemoveMetadata = optionRemoveMetadata;
-				this.optionReencodeImage = optionReencodeImage;
 				this.optionRemoveFileName = optionRemoveFileName;
 				this.optionSpoiler = optionSpoiler;
+				this.reencoding = reencoding;
 			}
 			
 			private void ensureOpenable()
@@ -799,7 +800,7 @@ public class ChanPerformer implements ChanManager.Linked
 				if (mOpenable == null)
 				{
 					mOpenable = new ChanFileOpenable(fileHolder, optionUniqueHash, optionRemoveMetadata,
-							optionReencodeImage, optionRemoveFileName);
+							optionRemoveFileName, reencoding);
 				}
 			}
 			

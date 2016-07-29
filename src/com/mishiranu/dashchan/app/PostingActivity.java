@@ -75,6 +75,8 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toolbar;
@@ -104,6 +106,7 @@ import com.mishiranu.dashchan.graphics.TransparentTileDrawable;
 import com.mishiranu.dashchan.media.JpegData;
 import com.mishiranu.dashchan.net.RecaptchaReader;
 import com.mishiranu.dashchan.preference.Preferences;
+import com.mishiranu.dashchan.preference.SeekBarPreference;
 import com.mishiranu.dashchan.ui.CaptchaController;
 import com.mishiranu.dashchan.ui.MarkupButtonProvider;
 import com.mishiranu.dashchan.ui.Replyable;
@@ -352,8 +355,8 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 				for (DraftsStorage.AttachmentDraft attachmentDraft : attachmentDrafts)
 				{
 					addAttachment(attachmentDraft.fileHolder, attachmentDraft.rating, attachmentDraft.optionUniqueHash,
-							attachmentDraft.optionRemoveMetadata, attachmentDraft.optionReencodeImage,
-							attachmentDraft.optionRemoveFileName, attachmentDraft.optionSpoiler);
+							attachmentDraft.optionRemoveMetadata, attachmentDraft.optionRemoveFileName,
+							attachmentDraft.optionSpoiler, attachmentDraft.reencoding);
 				}
 			}
 			if (!Preferences.isHidePersonalData())
@@ -560,8 +563,8 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			{
 				AttachmentHolder holder = mAttachments.get(i);
 				attachmentDrafts[i] = new DraftsStorage.AttachmentDraft(holder.fileHolder, holder.rating,
-						holder.optionUniqueHash, holder.optionRemoveMetadata, holder.optionReencodeImage,
-						holder.optionRemoveFileName, holder.optionSpoiler);
+						holder.optionUniqueHash, holder.optionRemoveMetadata, holder.optionRemoveFileName,
+						holder.optionSpoiler, holder.reencoding);
 			}
 		}
 		String subject = mSubjectView.getText().toString();
@@ -969,8 +972,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		{
 			AttachmentHolder data = mAttachments.get(i);
 			array.add(new ChanPerformer.SendPostData.Attachment(data.fileHolder, data.rating, data.optionUniqueHash,
-					data.optionRemoveMetadata, data.optionReencodeImage, data.optionRemoveFileName,
-					data.optionSpoiler));
+					data.optionRemoveMetadata, data.optionRemoveFileName, data.optionSpoiler, data.reencoding));
 		}
 		ChanPerformer.SendPostData.Attachment[] attachments = null;
 		if (array.size() > 0) attachments = CommonUtils.toArray(array, ChanPerformer.SendPostData.Attachment.class);
@@ -1336,9 +1338,9 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		public String rating;
 		public boolean optionUniqueHash = false;
 		public boolean optionRemoveMetadata = false;
-		public boolean optionReencodeImage = false;
 		public boolean optionRemoveFileName = false;
 		public boolean optionSpoiler = false;
+		public GraphicsUtils.Reencoding reencoding;
 	}
 	
 	public static class AttachmentOptionsDialog extends DialogFragment implements AdapterView.OnItemClickListener
@@ -1367,6 +1369,8 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		
 		private final ArrayList<OptionItem> mOptionItems = new ArrayList<>();
 		private final SparseIntArray mOptionIndexes = new SparseIntArray();
+		
+		private ListView mListView;
 		
 		public AttachmentOptionsDialog()
 		{
@@ -1409,11 +1413,17 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			}
 		}
 		
+		private AttachmentHolder getAttachmentHolder()
+		{
+			PostingActivity activity = (PostingActivity) getActivity();
+			return activity.mAttachments.get(getArguments().getInt(EXTRA_ATTACHMENT_INDEX));
+		}
+		
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState)
 		{
 			PostingActivity activity = (PostingActivity) getActivity();
-			AttachmentHolder holder = activity.mAttachments.get(getArguments().getInt(EXTRA_ATTACHMENT_INDEX));
+			AttachmentHolder holder = getAttachmentHolder();
 			ChanConfiguration.Posting postingConfiguration = activity.mPostingConfiguration;
 			int index = 0;
 			mOptionItems.clear();
@@ -1430,7 +1440,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			if (holder.fileHolder.isImage())
 			{
 				mOptionItems.add(new OptionItem(getString(R.string.text_reencode_image), OPTION_TYPE_REENCODE_IMAGE,
-						holder.optionReencodeImage));
+						holder.reencoding != null));
 				mOptionIndexes.append(OPTION_TYPE_REENCODE_IMAGE, index++);
 			}
 			mOptionItems.add(new OptionItem(getString(R.string.text_remove_file_name), OPTION_TYPE_REMOVE_FILE_NAME,
@@ -1452,16 +1462,16 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
 			linearLayout.addView(imageView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
 					0, 1));
-			ListView listView = new ListView(activity);
-			linearLayout.addView(listView, LinearLayout.LayoutParams.MATCH_PARENT,
+			mListView = new ListView(activity);
+			linearLayout.addView(mListView, LinearLayout.LayoutParams.MATCH_PARENT,
 					LinearLayout.LayoutParams.WRAP_CONTENT);
-			listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+			mListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
 			int resId = ResourceUtils.obtainAlertDialogLayoutResId(activity, ResourceUtils.DIALOG_LAYOUT_MULTI_CHOICE);
-			if (C.API_LOLLIPOP) listView.setDividerHeight(0);
+			if (C.API_LOLLIPOP) mListView.setDividerHeight(0);
 			ItemsAdapter adapter = new ItemsAdapter(activity, resId, items);
-			listView.setAdapter(adapter);
-			for (int i = 0; i < mOptionItems.size(); i++) listView.setItemChecked(i, mOptionItems.get(i).checked);
-			listView.setOnItemClickListener(this);
+			mListView.setAdapter(adapter);
+			for (int i = 0; i < mOptionItems.size(); i++) mListView.setItemChecked(i, mOptionItems.get(i).checked);
+			mListView.setOnItemClickListener(this);
 			updateItemsEnabled(adapter, holder);
 			AlertDialog dialog = new AlertDialog.Builder(activity).setView(linearLayout).create();
 			dialog.setCanceledOnTouchOutside(true);
@@ -1471,7 +1481,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		private void updateItemsEnabled(ItemsAdapter adapter, AttachmentHolder holder)
 		{
 			int reencodeIndex = mOptionIndexes.get(OPTION_TYPE_REENCODE_IMAGE, -1);
-			boolean allowRemoveMetadata = reencodeIndex == -1 || !holder.optionReencodeImage;
+			boolean allowRemoveMetadata = reencodeIndex == -1 || holder.reencoding == null;
 			int removeMetadataIndex = mOptionIndexes.get(OPTION_TYPE_REMOVE_METADATA, -1);
 			if (removeMetadataIndex >= 0)
 			{
@@ -1483,19 +1493,149 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id)
 		{
-			PostingActivity activity = (PostingActivity) getActivity();
-			AttachmentHolder holder = activity.mAttachments.get(getArguments().getInt(EXTRA_ATTACHMENT_INDEX));
+			AttachmentHolder holder = getAttachmentHolder();
 			int type = mOptionItems.get(position).type;
-			boolean checked = ((ListView) parent).isItemChecked(position);
+			boolean checked = mListView.isItemChecked(position);
 			switch (type)
 			{
 				case OPTION_TYPE_UNIQUE_HASH: holder.optionUniqueHash = checked; break;
 				case OPTION_TYPE_REMOVE_METADATA: holder.optionRemoveMetadata = checked; break;
-				case OPTION_TYPE_REENCODE_IMAGE: holder.optionReencodeImage = checked; break;
+				case OPTION_TYPE_REENCODE_IMAGE:
+				{
+					if (checked)
+					{
+						mListView.setItemChecked(position, false);
+						new ReencodingDialog().show(getFragmentManager(), ReencodingDialog.class.getName());
+					}
+					else holder.reencoding = null;
+					break;
+				}
 				case OPTION_TYPE_REMOVE_FILE_NAME: holder.optionRemoveFileName = checked; break;
 				case OPTION_TYPE_SPOILER: holder.optionSpoiler = checked; break;
 			}
-			updateItemsEnabled((ItemsAdapter) parent.getAdapter(), holder);
+			updateItemsEnabled((ItemsAdapter) mListView.getAdapter(), holder);
+		}
+		
+		public void setReencoding(GraphicsUtils.Reencoding reencoding)
+		{
+			int reencodeIndex = mOptionIndexes.get(OPTION_TYPE_REENCODE_IMAGE, -1);
+			if (reencodeIndex >= 0)
+			{
+				getAttachmentHolder().reencoding = reencoding;
+				mListView.setItemChecked(reencodeIndex, reencoding != null);
+			}
+		}
+	}
+	
+	public static class ReencodingDialog extends DialogFragment implements DialogInterface.OnClickListener,
+			RadioGroup.OnCheckedChangeListener
+	{
+		private static final String EXTRA_QUALITY = "quality";
+		private static final String EXTRA_REDUCE = "reduce";
+		
+		private RadioGroup mRadioGroup;
+		private SeekBarPreference.Holder mQualityHolder;
+		private SeekBarPreference.Holder mReduceHolder;
+		
+		private static final String[] OPTIONS = {GraphicsUtils.Reencoding.FORMAT_JPEG.toUpperCase(Locale.US),
+				GraphicsUtils.Reencoding.FORMAT_PNG.toUpperCase(Locale.US)};
+		private static final String[] FORMATS = {GraphicsUtils.Reencoding.FORMAT_JPEG,
+				GraphicsUtils.Reencoding.FORMAT_PNG};
+		private static final int[] IDS = {android.R.id.icon1, android.R.id.icon2};
+		
+		@Override
+		public Dialog onCreateDialog(Bundle savedInstanceState)
+		{
+			Context context = getActivity();
+			mQualityHolder = new SeekBarPreference.Holder(false, 1, 100, 1, 1, getString(R.string.text_quality_format)); // TODO
+			mReduceHolder = new SeekBarPreference.Holder(false, 1, 8, 1, 1, getString(R.string.text_reduce_format)); // TODO
+			mQualityHolder.setCurrentValue(savedInstanceState != null ? savedInstanceState.getInt(EXTRA_QUALITY) : 100);
+			mReduceHolder.setCurrentValue(savedInstanceState != null ? savedInstanceState.getInt(EXTRA_REDUCE) : 1);
+			int padding = getResources().getDimensionPixelSize(R.dimen.dialog_padding_view);
+			View qualityView = mQualityHolder.create(context);
+			mQualityHolder.getSeekBar().setSaveEnabled(false);
+			qualityView.setPadding(qualityView.getPaddingLeft(), 0, qualityView.getPaddingRight(), padding / 2);
+			View reduceView = mReduceHolder.create(context);
+			mReduceHolder.getSeekBar().setSaveEnabled(false);
+			reduceView.setPadding(reduceView.getPaddingLeft(), 0, reduceView.getPaddingRight(),
+					reduceView.getPaddingBottom());
+			mRadioGroup = new RadioGroup(context);
+			mRadioGroup.setOrientation(RadioGroup.VERTICAL);
+			mRadioGroup.setPadding(padding, padding, padding, padding / 2);
+			mRadioGroup.setOnCheckedChangeListener(this);
+			for (int i = 0; i < OPTIONS.length; i++)
+			{
+				RadioButton radioButton = new RadioButton(context);
+				radioButton.setText(OPTIONS[i]);
+				radioButton.setId(IDS[i]);
+				mRadioGroup.addView(radioButton);
+			}
+			mRadioGroup.check(IDS[0]);
+			LinearLayout linearLayout = new LinearLayout(context);
+			linearLayout.setOrientation(LinearLayout.VERTICAL);
+			FrameLayout qualityLayout = new FrameLayout(context);
+			qualityLayout.setId(android.R.id.text1);
+			qualityLayout.addView(qualityView);
+			FrameLayout reduceLayout = new FrameLayout(context);
+			reduceLayout.setId(android.R.id.text2);
+			reduceLayout.addView(reduceView);
+			linearLayout.addView(mRadioGroup, LinearLayout.LayoutParams.MATCH_PARENT,
+					LinearLayout.LayoutParams.WRAP_CONTENT);
+			linearLayout.addView(qualityLayout, LinearLayout.LayoutParams.MATCH_PARENT,
+					LinearLayout.LayoutParams.WRAP_CONTENT);
+			linearLayout.addView(reduceLayout, LinearLayout.LayoutParams.MATCH_PARENT,
+					LinearLayout.LayoutParams.WRAP_CONTENT);
+			ScrollView scrollView = new ScrollView(context);
+			scrollView.addView(linearLayout, ScrollView.LayoutParams.MATCH_PARENT,
+					ScrollView.LayoutParams.WRAP_CONTENT);
+			return new AlertDialog.Builder(context).setTitle(R.string.text_reencode_image)
+					.setView(scrollView).setNegativeButton(android.R.string.cancel, null)
+					.setPositiveButton(android.R.string.ok, this).create();
+		}
+		
+		@Override
+		public void onSaveInstanceState(Bundle outState)
+		{
+			super.onSaveInstanceState(outState);
+			outState.putInt(EXTRA_QUALITY, mQualityHolder.getCurrentValue());
+			outState.putInt(EXTRA_REDUCE, mReduceHolder.getCurrentValue());
+		}
+		
+		@Override
+		public void onClick(DialogInterface dialog, int which)
+		{
+			AttachmentOptionsDialog attachmentOptionsDialog = (AttachmentOptionsDialog) getFragmentManager()
+					.findFragmentByTag(AttachmentOptionsDialog.class.getName());
+			if (attachmentOptionsDialog != null)
+			{
+				String format = null;
+				int id = mRadioGroup.getCheckedRadioButtonId();
+				for (int i = 0; i < IDS.length; i++)
+				{
+					if (IDS[i] == id)
+					{
+						format = FORMATS[i];
+						break;
+					}
+				}
+				attachmentOptionsDialog.setReencoding(new GraphicsUtils.Reencoding(format,
+						mQualityHolder.getCurrentValue(), mReduceHolder.getCurrentValue()));
+			}
+		}
+		
+		@Override
+		public void onCheckedChanged(RadioGroup group, int checkedId)
+		{
+			boolean allowQuality = true;
+			for (int i = 0; i < IDS.length; i++)
+			{
+				if (IDS[i] == checkedId)
+				{
+					allowQuality = GraphicsUtils.Reencoding.allowQuality(FORMATS[i]);
+					break;
+				}
+			}
+			mQualityHolder.getSeekBar().setEnabled(allowQuality);
 		}
 	}
 	
@@ -1736,21 +1876,21 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	
 	private void addAttachment(FileHolder fileHolder)
 	{
-		addAttachment(fileHolder, null, false, false, false, false, false);
+		addAttachment(fileHolder, null, false, false, false, false, null);
 	}
 	
 	private void addAttachment(FileHolder fileHolder, String rating, boolean optionUniqueHash,
-			boolean optionRemoveMetadata, boolean optionReencodeImage, boolean optionRemoveFileName,
-			boolean optionSpoiler)
+			boolean optionRemoveMetadata, boolean optionRemoveFileName, boolean optionSpoiler,
+			GraphicsUtils.Reencoding reencoding)
 	{
 		JpegData jpegData = fileHolder.getJpegData();
 		AttachmentHolder holder = addNewAttachment(jpegData != null && jpegData.hasExif);
 		holder.fileHolder = fileHolder;
 		holder.optionUniqueHash = optionUniqueHash;
 		holder.optionRemoveMetadata = optionRemoveMetadata;
-		holder.optionReencodeImage = optionReencodeImage;
 		holder.optionRemoveFileName = optionRemoveFileName;
 		holder.optionSpoiler = optionSpoiler;
+		holder.reencoding = reencoding;
 		holder.fileName.setText(fileHolder.getName());
 		if (mAttachmentRatingItems != null)
 		{

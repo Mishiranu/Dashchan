@@ -119,8 +119,10 @@
 	<string name="text_post_sent">Сообщение отправлено</string>
 	<string name="text_posts_sent">Отправлено сообщений</string>
 	<string name="text_posts_with_files_format">Сообщений с файлами: %s</string>
+	<string name="text_quality_format">Качество: %d%%</string>
 	<string name="text_rating">Рейтинг</string>
 	<string name="text_read_only">Только чтение</string>
+	<string name="text_reduce_format">Уменьшить: %dx</string>
 	<string name="text_reencode_image">Перекодировать</string>
 	<string name="text_regex">Регулярное выражение</string>
 	<string name="text_rejected_words">Следующие слова отклонены</string>
@@ -532,9 +534,9 @@
 		<item>опционально</item>
 	</string-array>
 	<string name="preference_text_scale">Масштаб текста</string>
-	<string name="preference_text_scale_summary_format">Масштаб %1$d%%</string>
+	<string name="preference_text_scale_summary_format">Масштаб: %d%%</string>
 	<string name="preference_thumbnails_scale">Масштаб превью</string>
-	<string name="preference_thumbnails_scale_summary_format">Масштаб %1$d%%</string>
+	<string name="preference_thumbnails_scale_summary_format">Масштаб: %d%%</string>
 	<string name="preference_uninstall_extension">Удалить расширение</string>
 	<string name="preference_use_gms_provider">Использ. постав. безопасности GMS</string>
 	<string name="preference_use_gms_provider_summary">Необходим перезапуск</string>
