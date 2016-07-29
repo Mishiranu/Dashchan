@@ -31,6 +31,7 @@
 #include <jni.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <inttypes.h>
 
 #include "player.h"
 #include "util.h"
@@ -60,6 +61,14 @@
 #define AUDIO_MAX_ENQUEUE_SIZE 256
 #define WINDOW_FORMAT_YV12 0x32315659
 #define MAX_FPS 60
+
+#define WRITE_LOGS 0
+
+#if WRITE_LOGS
+#define logp(...) log(__VA_ARGS__)
+#else
+#define logp(...)
+#endif
 
 static JavaVM * loadJavaVM;
 static SLEngineItf slEngine;
@@ -324,7 +333,7 @@ static int enqueueAudioBuffer(Player * player)
 		{
 			player->audioPosition = audioBuffer->position + audioBuffer->index * 1000 / audioBuffer->divider;
 			player->audioPositionNotSync = 0;
-			//log("play audio %lld", player->audioPosition); // TODO
+			logp("play audio %" PRId64, player->audioPosition);
 		}
 		int enqueueSize = min32(audioBuffer->size - audioBuffer->index, AUDIO_MAX_ENQUEUE_SIZE);
 		(*player->slQueue)->Enqueue(player->slQueue, audioBuffer->buffer + audioBuffer->index, enqueueSize);
@@ -347,7 +356,7 @@ static void audioPlayerCallback(SLAndroidSimpleBufferQueueItf slQueue, void * co
 {
 	Player * player = (Player *) context;
 	if (player->interrupt) return;
-	//log("audio callback"); // TODO
+	logp("audio callback");
 	pthread_mutex_lock(&player->audioSleepBufferMutex);
 	int result = enqueueAudioBuffer(player);
 	if (result) pthread_cond_broadcast(&player->audioBufferCond);
@@ -457,7 +466,7 @@ static void * performDecodeAudio(void * data)
 				int64_t gaining = player->videoFinished ? 0 : position - videoPosition;
 				if (gaining > GAINING_THRESHOLD)
 				{
-					//log("sleep audio %lld %lld", gaining, position); // TODO
+					logp("sleep audio %" PRId64 " %" PRId64, gaining, position);
 					int64_t time = calculateFrameTime(gaining);
 					while (!player->interrupt && !player->audioIgnoreWorkFrame)
 					{
@@ -614,7 +623,7 @@ static void * performDraw(void * data)
 		}
 		if (waitTime > 0)
 		{
-			//log("sleep video %lld %lld %lld", waitTime, player->videoPosition, position); // TODO
+			logp("sleep video %" PRId64 " %" PRId64 " %" PRId64, waitTime, player->videoPosition, position);
 			int64_t time = calculateFrameTime(waitTime);
 			while (!player->interrupt && !player->drawIgnoreWorkFrame)
 			{
@@ -628,7 +637,7 @@ static void * performDraw(void * data)
 			int64_t gaining = -waitTime;
 			if (player->audioStreamIndex == UNDEFINED && gaining > GAINING_THRESHOLD) player->startTime += gaining;
 		}
-		//log("draw video %lld", player->videoPosition); // TODO
+		logp("draw video %" PRId64, player->videoPosition);
 		int bufferSize = bufferItem->bufferSize;
 		if (bufferSize > player->videoLastBufferSize)
 		{
@@ -913,13 +922,13 @@ static void * performDecodePackets(void * data)
 				{
 					blockingQueueAdd(&player->audioPacketQueue, packetHolder);
 					player->audioFinished = 0;
-					//log("enqueue audio %lld", packet.pts); // TODO
+					logp("enqueue audio %" PRId64, packet.pts);
 				}
 				else if (isVideo)
 				{
 					blockingQueueAdd(&player->videoPacketQueue, packetHolder);
 					player->videoFinished = 0;
-					//log("enqueue video %lld", packet.pts); // TODO
+					logp("enqueue video %" PRId64, packet.pts);
 				}
 			}
 			SKIP_FRAME:
@@ -1452,7 +1461,7 @@ void setPosition(JNIEnv * env, jlong pointer, jlong position)
 			if (videoPosition == -1) videoPosition = position;
 			position = min64(audioPosition, videoPosition);
 		}
-		//log("seek %lld", position); // TODO
+		logp("seek %lld", position);
 		av_seek_frame(player->formatContext, -1, position * 1000, AVSEEK_FLAG_BACKWARD);
 		player->decodeFinished = 0;
 		player->audioFinished = 0;
@@ -1493,7 +1502,7 @@ void setPlaying(JNIEnv * env, jlong pointer, jboolean playing)
 	playing = !!playing;
 	if (player->playing != playing)
 	{
-		//log("switch playing %d", playing); // TODO
+		logp("switch playing %d", playing);
 		pthread_mutex_lock(&player->playFinishMutex);
 		if (playing) updateAudioPositionSurrogate(player, player->pausedPosition, 1);
 		else player->pausedPosition = calculatePosition(player, 1);
