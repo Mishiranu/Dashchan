@@ -134,6 +134,11 @@ public class SeekBarPreference extends DialogPreference
 		{
 			mSwitchValue = isChecked;
 		}
+		
+		public SeekBar getSeekBar()
+		{
+			return mSeekBar;
+		}
 	}
 	
 	private final Holder mHolder;
