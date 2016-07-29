@@ -349,16 +349,16 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 		{
 			builder = new Notification.Builder(this);
 			builder.setSmallIcon(R.drawable.ic_audiotrack_white_24dp);
-			PendingIntent contentIntent = PendingIntent.getActivity(mContext, C.NOTIFICATION_AUDIO_PLAYER_SERVICE,
+			PendingIntent contentIntent = PendingIntent.getActivity(mContext, 0,
 					new Intent(this, AudioPlayerActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
 			builder.setContentIntent(contentIntent);
 			TypedArray typedArray = mContext.obtainStyledAttributes(ICON_ATTRS);
-			PendingIntent toggleIntent = PendingIntent.getService(mContext, C.NOTIFICATION_AUDIO_PLAYER_SERVICE,
+			PendingIntent toggleIntent = PendingIntent.getService(mContext, 0,
 					obtainIntent(this, ACTION_TOGGLE), PendingIntent.FLAG_UPDATE_CURRENT);
 			boolean playing = mMediaPlayer.isPlaying();
 			ViewUtils.addNotificationAction(builder, mContext, typedArray, playing ? 3 : 2,
 					playing ? R.string.action_pause : R.string.action_play, toggleIntent);
-			PendingIntent cancelIntent = PendingIntent.getService(mContext, C.NOTIFICATION_AUDIO_PLAYER_SERVICE,
+			PendingIntent cancelIntent = PendingIntent.getService(mContext, 0,
 					obtainIntent(this, ACTION_CANCEL), PendingIntent.FLAG_UPDATE_CURRENT);
 			ViewUtils.addNotificationAction(builder, mContext, typedArray, 1, R.string.action_stop, cancelIntent);
 			typedArray.recycle();
@@ -367,7 +367,7 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 			builder.setContentTitle(getString(R.string.message_file_playback));
 			builder.setContentText(getString(R.string.message_download_name_format, mFileName));
 		}
-		startForeground(C.NOTIFICATION_AUDIO_PLAYER_SERVICE, builder.build());
+		startForeground(C.NOTIFICATION_ID_AUDIO_PLAYER, builder.build());
 	}
 	
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -379,21 +379,21 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 			builder = new Notification.Builder(this);
 			builder.setSmallIcon(error ? android.R.drawable.stat_sys_download_done
 					: android.R.drawable.stat_sys_download);
-			builder.setDeleteIntent(PendingIntent.getService(mContext, C.NOTIFICATION_DOWNLOAD_SERVICE,
-					obtainIntent(this, ACTION_CANCEL), PendingIntent.FLAG_UPDATE_CURRENT));
+			builder.setDeleteIntent(PendingIntent.getService(mContext, 0, obtainIntent(this, ACTION_CANCEL),
+					PendingIntent.FLAG_UPDATE_CURRENT));
 			TypedArray typedArray = mContext.obtainStyledAttributes(ICON_ATTRS);
 			if (error)
 			{
-				PendingIntent retryIntent = PendingIntent.getService(mContext, C.NOTIFICATION_AUDIO_PLAYER_SERVICE,
-						obtainIntent(this, ACTION_START).setData(uri).putExtra(EXTRA_CHAN_NAME, mChanName)
-						.putExtra(EXTRA_FILE_NAME, mFileName), PendingIntent.FLAG_UPDATE_CURRENT);
+				PendingIntent retryIntent = PendingIntent.getService(mContext, 0, obtainIntent(this, ACTION_START)
+						.setData(uri).putExtra(EXTRA_CHAN_NAME, mChanName).putExtra(EXTRA_FILE_NAME, mFileName),
+						PendingIntent.FLAG_UPDATE_CURRENT);
 				ViewUtils.addNotificationAction(builder, mContext, typedArray, 0,
 						R.string.action_retry, retryIntent);
 			}
 			else
 			{
-				PendingIntent cancelIntent = PendingIntent.getService(mContext, C.NOTIFICATION_AUDIO_PLAYER_SERVICE,
-						obtainIntent(this, ACTION_CANCEL), PendingIntent.FLAG_UPDATE_CURRENT);
+				PendingIntent cancelIntent = PendingIntent.getService(mContext, 0, obtainIntent(this, ACTION_CANCEL),
+						PendingIntent.FLAG_UPDATE_CURRENT);
 				ViewUtils.addNotificationAction(builder, mContext, typedArray, 1,
 						android.R.string.cancel, cancelIntent);
 			}
@@ -405,7 +405,7 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 		{
 			builder.setContentTitle(getString(R.string.message_download_completed));
 			builder.setContentText(getString(R.string.message_download_result_format, 0, 1));
-			mNotificationManager.notify(C.NOTIFICATION_AUDIO_PLAYER_SERVICE, builder.build());
+			mNotificationManager.notify(C.NOTIFICATION_ID_AUDIO_PLAYER, builder.build());
 		}
 		else
 		{
@@ -413,7 +413,7 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 			builder.setContentText(getString(R.string.message_download_name_format, mFileName));
 			builder.setProgress(mProgressMax, mProgress, mProgressMax == 0 ||
 					mProgress > mProgressMax || mProgress < 0);
-			startForeground(C.NOTIFICATION_AUDIO_PLAYER_SERVICE, builder.build());
+			startForeground(C.NOTIFICATION_ID_AUDIO_PLAYER, builder.build());
 		}
 	}
 	

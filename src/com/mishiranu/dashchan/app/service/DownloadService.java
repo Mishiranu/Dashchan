@@ -129,7 +129,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 			Thread.currentThread().interrupt();
 		}
 		stopForeground(true);
-		mNotificationManager.cancel(C.NOTIFICATION_DOWNLOAD_SERVICE);
+		mNotificationManager.cancel(C.NOTIFICATION_ID_DOWNLOAD);
 	}
 	
 	@Override
@@ -389,9 +389,9 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 		if (mBuilder == null || (notificationData.hasTask) != mOldStateWithTask)
 		{
 			mOldStateWithTask = notificationData.hasTask;
-			mNotificationManager.cancel(C.NOTIFICATION_DOWNLOAD_SERVICE);
+			mNotificationManager.cancel(C.NOTIFICATION_ID_DOWNLOAD);
 			mBuilder = new Notification.Builder(mContext);
-			mBuilder.setDeleteIntent(PendingIntent.getService(mContext, C.NOTIFICATION_DOWNLOAD_SERVICE,
+			mBuilder.setDeleteIntent(PendingIntent.getService(mContext, 0,
 					obtainIntent(this, ACTION_CANCEL_DOWNLOADING), PendingIntent.FLAG_UPDATE_CURRENT));
 			mBuilder.setSmallIcon(notificationData.hasTask ? android.R.drawable.stat_sys_download
 					: android.R.drawable.stat_sys_download_done);
@@ -399,7 +399,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 			TypedArray typedArray = mContext.obtainStyledAttributes(ICON_ATTRS);
 			if (notificationData.hasTask)
 			{
-				PendingIntent cancelIntent = PendingIntent.getService(mContext, C.NOTIFICATION_DOWNLOAD_SERVICE,
+				PendingIntent cancelIntent = PendingIntent.getService(mContext, 0,
 						obtainIntent(this, ACTION_CANCEL_DOWNLOADING), PendingIntent.FLAG_UPDATE_CURRENT);
 				ViewUtils.addNotificationAction(mBuilder, mContext, typedArray, 1,
 						android.R.string.cancel, cancelIntent);
@@ -417,7 +417,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 				}
 				if (hasRetryable)
 				{
-					PendingIntent retryIntent = PendingIntent.getService(mContext, C.NOTIFICATION_DOWNLOAD_SERVICE,
+					PendingIntent retryIntent = PendingIntent.getService(mContext, 0,
 							obtainIntent(this, ACTION_RETRY_DOWNLOADING), PendingIntent.FLAG_UPDATE_CURRENT);
 					ViewUtils.addNotificationAction(mBuilder, mContext, typedArray, 0,
 							R.string.action_retry, retryIntent);
@@ -444,7 +444,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 			}
 			if (notificationData.successTasksSize > 0)
 			{
-				mBuilder.setContentIntent(PendingIntent.getService(mContext, C.NOTIFICATION_DOWNLOAD_SERVICE,
+				mBuilder.setContentIntent(PendingIntent.getService(mContext, 0,
 						obtainIntent(this, ACTION_OPEN_FILE), PendingIntent.FLAG_UPDATE_CURRENT));
 			}
 		}
@@ -498,10 +498,10 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 		}
 		else mBuilder.setTicker(headsUp ? contentTitle : null);
 		Notification notification = mBuilder.build();
-		if (notificationData.hasTask) startForeground(C.NOTIFICATION_DOWNLOAD_SERVICE, notification); else
+		if (notificationData.hasTask) startForeground(C.NOTIFICATION_ID_DOWNLOAD, notification); else
 		{
 			stopForeground(true);
-			mNotificationManager.notify(C.NOTIFICATION_DOWNLOAD_SERVICE, notification);
+			mNotificationManager.notify(C.NOTIFICATION_ID_DOWNLOAD, notification);
 		}
 	}
 	
