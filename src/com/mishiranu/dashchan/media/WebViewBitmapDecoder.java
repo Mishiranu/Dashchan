@@ -26,7 +26,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Picture;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -109,14 +108,9 @@ public class WebViewBitmapDecoder extends WebViewClient
 		notifyExtract(view);
 	}
 	
-	@Deprecated
-	private WebView.PictureListener mPictureListener = new WebView.PictureListener()
+	private WebView.PictureListener mPictureListener = (view, picture) ->
 	{
-		@Override
-		public void onNewPicture(WebView view, Picture picture)
-		{
-			if (mPageFinished) notifyExtract(view);
-		}
+		if (mPageFinished) notifyExtract(view);
 	};
 	
 	private void notifyExtract(WebView view)

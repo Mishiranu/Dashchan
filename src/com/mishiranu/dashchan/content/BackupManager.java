@@ -49,15 +49,7 @@ import com.mishiranu.dashchan.util.ToastUtils;
 public class BackupManager
 {
 	private static final Pattern NAME_PATTERN = Pattern.compile("backup-(\\d+)\\.zip");
-	
-	private static final Comparator<File> COMPARATOR = new Comparator<File>()
-	{
-		@Override
-		public int compare(File lhs, File rhs)
-		{
-			return rhs.getName().compareTo(lhs.getName());
-		}
-	};
+	private static final Comparator<File> COMPARATOR = (lhs, rhs) -> rhs.getName().compareTo(lhs.getName());
 	
 	public static LinkedHashMap<File, String> getAvailableBackups(Context context)
 	{

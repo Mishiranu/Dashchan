@@ -162,14 +162,10 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 				ChanLocator locator = ChanLocator.getDefault();
 				if (locator.isWebScheme(uri) && locator.isImageExtension(uri.getPath()))
 				{
-					menu.add(R.string.action_view).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener()
+					menu.add(R.string.action_view).setOnMenuItemClickListener(item ->
 					{
-						@Override
-						public boolean onMenuItemClick(MenuItem item)
-						{
-							NavigationUtils.openImageVideo(WebBrowserActivity.this, uri, false);
-							return true;
-						}
+						NavigationUtils.openImageVideo(WebBrowserActivity.this, uri, false);
+						return true;
 					});
 				}
 				break;

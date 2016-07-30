@@ -287,14 +287,7 @@ public class ClickableToast
 		mContainer.setVisibility(View.GONE);
 	}
 	
-	private final Runnable mCancelRunnable = new Runnable()
-	{
-		@Override
-		public void run()
-		{
-			cancelInternal(true);
-		}
-	};
+	private final Runnable mCancelRunnable = () -> cancelInternal(true);
 	
 	private void postCancelInternal()
 	{

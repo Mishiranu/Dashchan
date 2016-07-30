@@ -254,31 +254,27 @@ public enum Log
 				
 			}
 		}
-		final File errorsDirectory = new File(packageDirectory, "errors");
+		File errorsDirectory = new File(packageDirectory, "errors");
 		if (errorsDirectory.exists() || errorsDirectory.mkdirs())
 		{
-			final Thread.UncaughtExceptionHandler systemHandler = Thread.getDefaultUncaughtExceptionHandler();
-			Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler()
+			Thread.UncaughtExceptionHandler systemHandler = Thread.getDefaultUncaughtExceptionHandler();
+			Thread.setDefaultUncaughtExceptionHandler((thread, ex) ->
 			{
-				@Override
-				public void uncaughtException(Thread thread, Throwable ex)
+				try
 				{
-					try
-					{
-						File errorFile = new File(errorsDirectory, "error-" + System.currentTimeMillis() + ".txt");
-						PrintStream stream = new PrintStream(errorFile);
-						stream.print(sTechnicalData);
-						stream.println(STACK_TRACE_DIVIDER);
-						ex.printStackTrace(stream);
-					}
-					catch (Throwable t)
-					{
-						// It's OK to catch Throwable here, let's forget about it...
-					}
-					finally
-					{
-						systemHandler.uncaughtException(thread, ex);
-					}
+					File errorFile = new File(errorsDirectory, "error-" + System.currentTimeMillis() + ".txt");
+					PrintStream stream = new PrintStream(errorFile);
+					stream.print(sTechnicalData);
+					stream.println(STACK_TRACE_DIVIDER);
+					ex.printStackTrace(stream);
+				}
+				catch (Throwable t)
+				{
+					// It's OK to catch Throwable here, let's forget about it...
+				}
+				finally
+				{
+					systemHandler.uncaughtException(thread, ex);
 				}
 			});
 		}

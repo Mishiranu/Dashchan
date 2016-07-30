@@ -819,29 +819,25 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		{
 			holder.comment.setMaxLines(mCommentMaxLines);
 			holder.bottomBarExpand.setVisibility(View.VISIBLE);
-			holder.bottomBarExpand.setOnClickListener(new View.OnClickListener()
+			holder.bottomBarExpand.setOnClickListener(v ->
 			{
-				@Override
-				public void onClick(View v)
+				holder.postItem.setExpanded(true);
+				removeMaxHeight(view);
+				int fromHeight = holder.comment.getHeight();
+				AnimationUtils.measureDynamicHeight(holder.comment);
+				int toHeight = holder.comment.getMeasuredHeight();
+				// When button bar becomes hidden, height of view becomes smaller, so it can cause
+				// little jumping of list; This is solution - start animation from item_height + bar_height 
+				if (holder.bottomBar.getVisibility() == View.GONE) fromHeight += mCommentAdditionalHeight;
+				if (toHeight > fromHeight)
 				{
-					holder.postItem.setExpanded(true);
-					removeMaxHeight(view);
-					int fromHeight = holder.comment.getHeight();
-					AnimationUtils.measureDynamicHeight(holder.comment);
-					int toHeight = holder.comment.getMeasuredHeight();
-					// When button bar becomes hidden, height of view becomes smaller, so it can cause
-					// little jumping of list; This is solution - start animation from item_height + bar_height 
-					if (holder.bottomBar.getVisibility() == View.GONE) fromHeight += mCommentAdditionalHeight;
-					if (toHeight > fromHeight)
-					{
-						float density = ResourceUtils.obtainDensity(holder.comment);
-						float value = (toHeight - fromHeight) / density / 400;
-						if (value > 1f) value = 1f; else if (value < 0.2f) value = 0.2f;
-						Animator heightAnimator = AnimationUtils.ofHeight(holder.comment, fromHeight,
-								ViewGroup.LayoutParams.WRAP_CONTENT, false);
-						heightAnimator.setDuration((int) (200 * value));
-						heightAnimator.start();
-					}
+					float density = ResourceUtils.obtainDensity(holder.comment);
+					float value = (toHeight - fromHeight) / density / 400;
+					if (value > 1f) value = 1f; else if (value < 0.2f) value = 0.2f;
+					Animator heightAnimator = AnimationUtils.ofHeight(holder.comment, fromHeight,
+							ViewGroup.LayoutParams.WRAP_CONTENT, false);
+					heightAnimator.setDuration((int) (200 * value));
+					heightAnimator.start();
 				}
 			});
 		}
@@ -1029,21 +1025,17 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 				{
 					final int listHeight = listView.getHeight() - listView.getPaddingTop() -
 							listView.getPaddingBottom();
-					listView.post(new Runnable()
+					listView.post(() ->
 					{
-						@Override
-						public void run()
+						int end = holder.comment.getSelectionEnd();
+						if (end >= 0)
 						{
-							int end = holder.comment.getSelectionEnd();
-							if (end >= 0)
+							Layout layout = holder.comment.getLayout();
+							int line = layout.getLineForOffset(end);
+							int count = layout.getLineCount();
+							if (count - line <= 4)
 							{
-								Layout layout = holder.comment.getLayout();
-								int line = layout.getLineForOffset(end);
-								int count = layout.getLineCount();
-								if (count - line <= 4)
-								{
-									listView.setSelectionFromTop(position, listHeight - view.getHeight());
-								}
+								listView.setSelectionFromTop(position, listHeight - view.getHeight());
 							}
 						}
 					});

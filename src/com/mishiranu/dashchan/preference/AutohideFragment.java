@@ -421,21 +421,15 @@ public class AutohideFragment extends BaseListFragment
 			}
 			if (StringUtils.isEmpty(text)) mErrorText.setVisibility(View.GONE); else
 			{
-				mScrollView.post(mScrollRunnable);
+				mScrollView.post(() ->
+				{
+					int position = mErrorText.getBottom() - mScrollView.getHeight();
+					if (mScrollView.getScrollY() < position) mScrollView.smoothScrollTo(0, position);
+				});
 				mErrorText.setVisibility(View.VISIBLE);
 				mErrorText.setText(text);
 			}
 		}
-		
-		private final Runnable mScrollRunnable = new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				int position = mErrorText.getBottom() - mScrollView.getHeight();
-				if (mScrollView.getScrollY() < position) mScrollView.smoothScrollTo(0, position);
-			}
-		};
 		
 		private Pattern mWorkPattern;
 		

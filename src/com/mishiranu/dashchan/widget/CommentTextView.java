@@ -226,14 +226,7 @@ public class CommentTextView extends TextView
 		mSpoilersEnabled = enabled;
 	}
 	
-	private final Runnable mSyncRunnable = new Runnable()
-	{
-		@Override
-		public void run()
-		{
-			if (mCommentListener != null) mCommentListener.onRequestSiblingsInvalidate(CommentTextView.this);
-		}
-	};
+	private final Runnable mSyncRunnable = () -> mCommentListener.onRequestSiblingsInvalidate(CommentTextView.this);
 	
 	private boolean startSelectionActionMode(int start, int end)
 	{
@@ -682,19 +675,15 @@ public class CommentTextView extends TextView
 		else return Uri.parse(uriString);
 	}
 	
-	private final Runnable mLinkLongClickRunnable = new Runnable()
+	private final Runnable mLinkLongClickRunnable = () ->
 	{
-		@Override
-		public void run()
+		if (mSpanToClick instanceof LinkSpan)
 		{
-			if (mSpanToClick instanceof LinkSpan)
-			{
-				Uri uri = createUri(((LinkSpan) mSpanToClick).getUriString());
-				mSpanToClick.setClicked(false);
-				mSpanToClick = null;
-				invalidate();
-				if (uri != null) getLinkListener().onLinkLongClick(CommentTextView.this, mChanName, uri);
-			}
+			Uri uri = createUri(((LinkSpan) mSpanToClick).getUriString());
+			mSpanToClick.setClicked(false);
+			mSpanToClick = null;
+			invalidate();
+			if (uri != null) getLinkListener().onLinkLongClick(CommentTextView.this, mChanName, uri);
 		}
 	};
 	

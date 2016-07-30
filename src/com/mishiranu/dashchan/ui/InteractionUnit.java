@@ -22,7 +22,6 @@ import java.util.Map;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.net.Uri;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -122,13 +121,10 @@ public class InteractionUnit
 					final ChanLocator.NavigationData navigationDataFinal = navigationData;
 					new AlertDialog.Builder(mUiManager.getContext()).setMessage(messageId)
 							.setNegativeButton(android.R.string.cancel, null)
-							.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
+							.setPositiveButton(android.R.string.ok, (dialog, which) ->
 					{
-						@Override
-						public void onClick(DialogInterface dialog, int which)
-						{
-							mUiManager.navigator().navigateTarget(uriChanName, navigationDataFinal, false);
-						}
+						mUiManager.navigator().navigateTarget(uriChanName, navigationDataFinal, false);
+						
 					}).show();
 					mUiManager.dialog().notifySwitchBackground();
 				}
@@ -167,42 +163,38 @@ public class InteractionUnit
 		final String finalFileName = fileName;
 		final String finalBoardName = boardName;
 		final String finalThreadNumber = threadNumber;
-		DialogMenu dialogMenu = new DialogMenu(mUiManager.getContext(), new DialogMenu.Callback()
+		DialogMenu dialogMenu = new DialogMenu(mUiManager.getContext(), (context, id, extra) ->
 		{
-			@Override
-			public void onItemClick(Context context, int id, Map<String, Object> extra)
+			switch (id)
 			{
-				switch (id)
+				case LINK_MENU_COPY:
 				{
-					case LINK_MENU_COPY:
-					{
-						StringUtils.copyToClipboard(context, uri.toString());
-						break;
-					}
-					case LINK_MENU_INTERNAL_BROWSER:
-					{
-						NavigationUtils.handleUri(mUiManager.getContext(), finalChanName, uri,
-								NavigationUtils.BrowserType.INTERNAL);
-						break;
-					}
-					case LINK_MENU_EXTERNAL_BROWSER:
-					{
-						NavigationUtils.handleUri(mUiManager.getContext(), finalChanName, uri,
-								NavigationUtils.BrowserType.EXTERNAL);
-						break;
-					}
-					case LINK_MENU_DOWNLOAD_FILE:
-					{
-						DownloadManager.getInstance().downloadStorage(context, uri, finalFileName, null, finalChanName,
-								finalBoardName, finalThreadNumber, null);
-						break;
-					}
-					case LINK_MENU_OPEN_THREAD:
-					{
-						mUiManager.navigator().navigatePosts(finalChanName, finalBoardName, finalThreadNumber,
-								null, null, false);
-						break;
-					}
+					StringUtils.copyToClipboard(context, uri.toString());
+					break;
+				}
+				case LINK_MENU_INTERNAL_BROWSER:
+				{
+					NavigationUtils.handleUri(mUiManager.getContext(), finalChanName, uri,
+							NavigationUtils.BrowserType.INTERNAL);
+					break;
+				}
+				case LINK_MENU_EXTERNAL_BROWSER:
+				{
+					NavigationUtils.handleUri(mUiManager.getContext(), finalChanName, uri,
+							NavigationUtils.BrowserType.EXTERNAL);
+					break;
+				}
+				case LINK_MENU_DOWNLOAD_FILE:
+				{
+					DownloadManager.getInstance().downloadStorage(context, uri, finalFileName, null, finalChanName,
+							finalBoardName, finalThreadNumber, null);
+					break;
+				}
+				case LINK_MENU_OPEN_THREAD:
+				{
+					mUiManager.navigator().navigatePosts(finalChanName, finalBoardName, finalThreadNumber,
+							null, null, false);
+					break;
 				}
 			}
 		});

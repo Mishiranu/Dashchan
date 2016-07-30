@@ -490,7 +490,7 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener
 		}
 	};
 	
-	private Runnable mProgressRunnable = new Runnable()
+	private final Runnable mProgressRunnable = new Runnable()
 	{
 		@Override
 		public void run()

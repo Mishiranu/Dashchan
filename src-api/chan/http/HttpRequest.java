@@ -102,37 +102,19 @@ public final class HttpRequest
 				throws HttpException;
 		
 		@Public
-		public static final RedirectHandler NONE = new RedirectHandler()
-		{
-			@Override
-			public Action onRedirectReached(int responseCode, Uri requestedUri, Uri redirectedUri, HttpHolder holder)
-			{
-				return Action.CANCEL;
-			}
-		};
+		public static final RedirectHandler NONE = (responseCode, requestedUri, redirectedUri, holder) -> Action.CANCEL;
 		
 		@Public
-		public static final RedirectHandler BROWSER = new RedirectHandler()
-		{
-			@Override
-			public Action onRedirectReached(int responseCode, Uri requestedUri, Uri redirectedUri, HttpHolder holder)
-			{
-				return Action.GET;
-			}
-		};
+		public static final RedirectHandler BROWSER = (responseCode, requestedUri, redirectedUri, holder) -> Action.GET;
 		
 		@Public
-		public static final RedirectHandler STRICT = new RedirectHandler()
+		public static final RedirectHandler STRICT = (responseCode, requestedUri, redirectedUri, holder) ->
 		{
-			@Override
-			public Action onRedirectReached(int responseCode, Uri requestedUri, Uri redirectedUri, HttpHolder holder)
+			switch (responseCode)
 			{
-				switch (responseCode)
-				{
-					case HttpURLConnection.HTTP_MOVED_PERM:
-					case HttpURLConnection.HTTP_MOVED_TEMP: return Action.RETRANSMIT;
-					default: return Action.GET;
-				}
+				case HttpURLConnection.HTTP_MOVED_PERM:
+				case HttpURLConnection.HTTP_MOVED_TEMP: return Action.RETRANSMIT;
+				default: return Action.GET;
 			}
 		};
 	}

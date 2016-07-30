@@ -45,16 +45,12 @@ import com.mishiranu.dashchan.preference.Preferences;
 
 public class ViewUtils
 {
-	public static DialogInterface.OnShowListener ALERT_DIALOG_MESSAGE_SELECTABLE = new DialogInterface.OnShowListener()
+	public static DialogInterface.OnShowListener ALERT_DIALOG_MESSAGE_SELECTABLE = dialog ->
 	{
-		@Override
-		public void onShow(DialogInterface dialog)
+		if (dialog instanceof AlertDialog)
 		{
-			if (dialog instanceof AlertDialog)
-			{
-				TextView textView = (TextView) ((AlertDialog) dialog).findViewById(android.R.id.message);
-				if (textView != null) textView.setTextIsSelectable(true);
-			}
+			TextView textView = (TextView) ((AlertDialog) dialog).findViewById(android.R.id.message);
+			if (textView != null) textView.setTextIsSelectable(true);
 		}
 	};
 	

@@ -56,24 +56,20 @@ public class HistoryDatabase implements BaseColumns
 	public void addHistory(final String chanName, final String boardName, final String threadNumber,
 			final String threadTitle)
 	{
-		DatabaseHelper.getInstance().getExecutor().execute(new Runnable()
+		DatabaseHelper.getInstance().getExecutor().execute(() ->
 		{
-			@Override
-			public void run()
+			synchronized (HistoryDatabase.this)
 			{
-				synchronized (HistoryDatabase.this)
-				{
-					clearOldHistory(chanName);
-					mDatabase.delete(DatabaseHelper.TABLE_HISTORY, buildWhere(chanName, boardName, threadNumber), null);
-					long currentTime = System.currentTimeMillis();
-					ContentValues values = new ContentValues();
-					values.put(COLUMN_CHAN_NAME, chanName);
-					values.put(COLUMN_BOARD_NAME, boardName);
-					values.put(COLUMN_THREAD_NUMBER, threadNumber);
-					values.put(COLUMN_TITLE, threadTitle);
-					values.put(COLUMN_CREATED, currentTime);
-					mDatabase.insert(DatabaseHelper.TABLE_HISTORY, null, values);
-				}
+				clearOldHistory(chanName);
+				mDatabase.delete(DatabaseHelper.TABLE_HISTORY, buildWhere(chanName, boardName, threadNumber), null);
+				long currentTime = System.currentTimeMillis();
+				ContentValues values = new ContentValues();
+				values.put(COLUMN_CHAN_NAME, chanName);
+				values.put(COLUMN_BOARD_NAME, boardName);
+				values.put(COLUMN_THREAD_NUMBER, threadNumber);
+				values.put(COLUMN_TITLE, threadTitle);
+				values.put(COLUMN_CREATED, currentTime);
+				mDatabase.insert(DatabaseHelper.TABLE_HISTORY, null, values);
 			}
 		});
 	}
@@ -83,18 +79,14 @@ public class HistoryDatabase implements BaseColumns
 	{
 		if (!StringUtils.isEmpty(threadTitle))
 		{
-			DatabaseHelper.getInstance().getExecutor().execute(new Runnable()
+			DatabaseHelper.getInstance().getExecutor().execute(() ->
 			{
-				@Override
-				public void run()
+				synchronized (HistoryDatabase.this)
 				{
-					synchronized (HistoryDatabase.this)
-					{
-						ContentValues values = new ContentValues();
-						values.put(COLUMN_TITLE, threadTitle);
-						mDatabase.update(DatabaseHelper.TABLE_HISTORY, values,
-								buildWhere(chanName, boardName, threadNumber), null);
-					}
+					ContentValues values = new ContentValues();
+					values.put(COLUMN_TITLE, threadTitle);
+					mDatabase.update(DatabaseHelper.TABLE_HISTORY, values,
+							buildWhere(chanName, boardName, threadNumber), null);
 				}
 			});
 		}

@@ -155,17 +155,7 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 			expandedScreen.addAdditionalView(rootView, false);
 			decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
 					View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
-			if (unbindOnDismiss)
-			{
-				dialog.setOnDismissListener(new DialogInterface.OnDismissListener()
-				{
-					@Override
-					public void onDismiss(DialogInterface dialog)
-					{
-						expandedScreen.removeAdditionalView(rootView);
-					}
-				});
-			}
+			if (unbindOnDismiss) dialog.setOnDismissListener(d -> expandedScreen.removeAdditionalView(rootView));
 			if (invalidate) expandedScreen.updatePaddings();
 		}
 		else rootView.setFitsSystemWindows(true);

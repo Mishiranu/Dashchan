@@ -241,14 +241,10 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		mListUnit.setListSelection(mPagerUnit.getCurrentIndex(), true);
 	}
 	
-	private Runnable mReturnToGalleryRunnable = new Runnable()
+	private Runnable mReturnToGalleryRunnable = () ->
 	{
-		@Override
-		public void run()
-		{
-			switchMode(true, true);
-			invalidateListPosition();
-		}
+		switchMode(true, true);
+		invalidateListPosition();
 	};
 	
 	private boolean returnToGallery()
@@ -653,14 +649,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 	
 	private void postInvalidateSystemUIVisibility()
 	{
-		mRootView.post(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				invalidateSystemUiVisibility();
-			}
-		});
+		mRootView.post(() -> invalidateSystemUiVisibility());
 	}
 	
 	@Override

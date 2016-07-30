@@ -353,14 +353,10 @@ public class DialogUnit implements DialogStack.Callback
 		boolean canReply = configuration.safe().obtainBoard(postItem.getBoardName()).allowPosting;
 		if (canReply)
 		{
-			return new Replyable()
+			return data ->
 			{
-				@Override
-				public void onRequestReply(ReplyData... data)
-				{
-					mUiManager.navigator().navigatePosting(postItem.getChanName(), postItem.getBoardName(),
-							postItem.getThreadNumber(), data);
-				}
+				mUiManager.navigator().navigatePosting(postItem.getChanName(), postItem.getBoardName(),
+						postItem.getThreadNumber(), data);
 			};
 		}
 		return null;
@@ -568,23 +564,15 @@ public class DialogUnit implements DialogStack.Callback
 		@Override
 		public void onReadSinglePostFail(final ErrorItem errorItem)
 		{
-			switchState(STATE_ERROR, new Runnable()
+			switchState(STATE_ERROR, () ->
 			{
-				@Override
-				public void run()
+				Context context = mUiManager.getContext();
+				ClickableToast.show(context, errorItem.toString(), context.getString(R.string.action_open_thread), () ->
 				{
-					Context context = mUiManager.getContext();
-					ClickableToast.show(context, errorItem.toString(), context.getString(R.string.action_open_thread),
-							new Runnable()
-					{
-						@Override
-						public void run()
-						{
-							mUiManager.navigator().navigatePosts(mChanName, mBoardName, mThreadNumber,
-									mPostNumber, null, false);
-						}
-					}, false);
-				}
+					mUiManager.navigator().navigatePosts(mChanName, mBoardName, mThreadNumber,
+							mPostNumber, null, false);
+					
+				}, false);
 			});
 		}
 	}
@@ -659,36 +647,32 @@ public class DialogUnit implements DialogStack.Callback
 		listView.setTag(holder);
 		content.setTag(holder);
 		mDialogStack.push(content);
-		dialogProvider.setStateListener(new StateListener()
+		dialogProvider.setStateListener((state) ->
 		{
-			@Override
-			public boolean onStateChanged(int state)
+			switch (state)
 			{
-				switch (state)
+				case STATE_LIST:
 				{
-					case STATE_LIST:
-					{
-						holder.setShowLoading(false);
-						holder.requestUpdate();
-						return true;
-					}
-					case STATE_LOADING:
-					{
-						holder.setShowLoading(true);
-						return true;
-					}
-					case STATE_ERROR:
-					{
-						if (!holder.cancelled)
-						{
-							mDialogStack.pop();
-							return true;
-						}
-						return false;
-					}
+					holder.setShowLoading(false);
+					holder.requestUpdate();
+					return true;
 				}
-				return false;
+				case STATE_LOADING:
+				{
+					holder.setShowLoading(true);
+					return true;
+				}
+				case STATE_ERROR:
+				{
+					if (!holder.cancelled)
+					{
+						mDialogStack.pop();
+						return true;
+					}
+					return false;
+				}
 			}
+			return false;
 		});
 	}
 	
@@ -828,28 +812,16 @@ public class DialogUnit implements DialogStack.Callback
 		mAttachmentDialog = null;
 	}
 	
-	private DialogInterface.OnCancelListener mAttachmentDialogCancelListener =  new DialogInterface.OnCancelListener()
-	{
-		@Override
-		public void onCancel(DialogInterface dialog)
-		{
-			mAttachmentDialog = null;
-		}
-	};
+	private final DialogInterface.OnCancelListener mAttachmentDialogCancelListener = d -> mAttachmentDialog = null;
 	
-	private DialogInterface.OnKeyListener mAttachmentDialogKeyListener = new DialogInterface.OnKeyListener()
+	private final DialogInterface.OnKeyListener mAttachmentDialogKeyListener = (dialog, keyCode, event) ->
 	{
-		@Override
-		public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event)
+		if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN && event.isLongPress())
 		{
-			if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN
-					&& event.isLongPress())
-			{
-				closeDialogs();
-				return true;
-			}
-			return false;
+			closeDialogs();
+			return true;
 		}
+		return false;
 	};
 	
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -861,14 +833,7 @@ public class DialogUnit implements DialogStack.Callback
 		dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		dialog.setOnCancelListener(mAttachmentDialogCancelListener);
 		dialog.setOnKeyListener(mAttachmentDialogKeyListener);
-		View.OnClickListener closeListener = new View.OnClickListener()
-		{
-			@Override
-			public void onClick(View v)
-			{
-				dialog.cancel();
-			}
-		};
+		View.OnClickListener closeListener = v -> dialog.cancel();
 		LayoutInflater inflater = LayoutInflater.from(styledContext);
 		FrameLayout rootView = new FrameLayout(styledContext);
 		rootView.setOnClickListener(closeListener);
@@ -881,19 +846,15 @@ public class DialogUnit implements DialogStack.Callback
 		container.setMotionEventSplittingEnabled(false);
 		container.setOnClickListener(closeListener);
 		scrollView.addView(container, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-		View.OnClickListener clickListener = new View.OnClickListener()
+		View.OnClickListener clickListener = v ->
 		{
-			@Override
-			public void onClick(View v)
+			int index = (int) v.getTag();
+			int imageIndex = startImageIndex;
+			for (int i = 0; i < index; i++)
 			{
-				int index = (int) v.getTag();
-				int imageIndex = startImageIndex;
-				for (int i = 0; i < index; i++)
-				{
-					if (attachmentItems.get(i).isShowInGallery()) imageIndex++;
-				}
-				openAttachment(context, v, attachmentItems, index, imageIndex, gallerySet);
+				if (attachmentItems.get(i).isShowInGallery()) imageIndex++;
 			}
+			openAttachment(context, v, attachmentItems, index, imageIndex, gallerySet);
 		};
 		Configuration configuration = context.getResources().getConfiguration();
 		boolean tablet = ResourceUtils.isTablet(configuration);
@@ -964,15 +925,11 @@ public class DialogUnit implements DialogStack.Callback
 		textView.setText(attachmentItem.getDescription(AttachmentItem.FormatMode.TWO_LINES));
 		View clickView = view.findViewById(R.id.click_view);
 		clickView.setOnClickListener(clickListener);
-		clickView.setOnLongClickListener(new View.OnLongClickListener()
+		clickView.setOnLongClickListener(v ->
 		{
-			@Override
-			public boolean onLongClick(View v)
-			{
-				mUiManager.interaction().showThumbnailLongClickDialog(attachmentItem, attachmentView,
-						false, gallerySet.getThreadTitle());
-				return true;
-			}
+			mUiManager.interaction().showThumbnailLongClickDialog(attachmentItem, attachmentView,
+					false, gallerySet.getThreadTitle());
+			return true;
 		});
 		clickView.setTag(index);
 		return view;
@@ -1067,13 +1024,9 @@ public class DialogUnit implements DialogStack.Callback
 		AlertDialog.Builder alertDialog = new AlertDialog.Builder(context).setPositiveButton(android.R.string.ok, null);
 		if (!StringUtils.isEmpty(emailToCopy))
 		{
-			alertDialog.setNeutralButton(R.string.action_copy_email, new DialogInterface.OnClickListener()
+			alertDialog.setNeutralButton(R.string.action_copy_email, (dialog, which) ->
 			{
-				@Override
-				public void onClick(DialogInterface dialog, int which)
-				{
-					StringUtils.copyToClipboard(mUiManager.getContext(), emailToCopy);
-				}
+				StringUtils.copyToClipboard(mUiManager.getContext(), emailToCopy);
 			});
 		}
 		alertDialog.setView(container).show();
@@ -1129,14 +1082,11 @@ public class DialogUnit implements DialogStack.Callback
 			{
 				items[canArchiveLocal ? i + 1 : i] = ChanConfiguration.get(archiveChanNames.get(i)).getTitle();
 			}
-			new AlertDialog.Builder(context).setItems(items, new DialogInterface.OnClickListener()
+			new AlertDialog.Builder(context).setItems(items, (dialog, which) ->
 			{
-				@Override
-				public void onClick(DialogInterface dialog, int which)
-				{
-					performSendArchiveThreadInternal(state, canArchiveLocal ? which == 0 ? null
-							: archiveChanNames.get(which - 1) : archiveChanNames.get(which), posts);
-				}
+				performSendArchiveThreadInternal(state, canArchiveLocal ? which == 0 ? null
+						: archiveChanNames.get(which - 1) : archiveChanNames.get(which), posts);
+				
 			}).setTitle(R.string.action_archive_add).show();
 		}
 		else if (canArchiveLocal)
@@ -1367,14 +1317,11 @@ public class DialogUnit implements DialogStack.Callback
 						FavoritesStorage.getInstance().add(state.archiveChanName, archiveBoardName,
 								archiveThreadNumber, state.archiveThreadTitle, 0);
 						ClickableToast.show(context, context.getString(R.string.message_completed),
-								context.getString(R.string.action_open_thread), new Runnable()
+								context.getString(R.string.action_open_thread), () ->
 						{
-							@Override
-							public void run()
-							{
-								mUiManager.navigator().navigatePosts(state.archiveChanName, archiveBoardName,
-										archiveThreadNumber, null, state.archiveThreadTitle, false);
-							}
+							mUiManager.navigator().navigatePosts(state.archiveChanName, archiveBoardName,
+									archiveThreadNumber, null, state.archiveThreadTitle, false);
+							
 						}, false);
 					}
 					else ToastUtils.show(context, R.string.message_completed);

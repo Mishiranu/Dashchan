@@ -26,14 +26,7 @@ import android.os.Process;
 
 public class ConcurrentUtils
 {
-	public static Executor SEPARATE_EXECUTOR = new Executor()
-	{
-		@Override
-		public void execute(Runnable command)
-		{
-			new Thread(command).start();
-		}
-	};
+	public static Executor SEPARATE_EXECUTOR = command -> new Thread(command).start();
 	
 	public static ThreadPoolExecutor newSingleThreadPool(int lifeTimeMs, String componentName, String componentPart,
 			int threadPriority)

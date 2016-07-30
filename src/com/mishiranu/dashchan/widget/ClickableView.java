@@ -65,33 +65,22 @@ public class ClickableView extends FrameLayout implements View.OnClickListener, 
 	
 	private boolean mIsTap = false;
 	
-	private final Runnable mTapRunnable = new Runnable()
+	private final Runnable mTapRunnable = () ->
 	{
-		@Override
-		public void run()
+		mIsTap = true;
+		Drawable drawable = getBackground();
+		if (drawable != null)
 		{
-			mIsTap = true;
-			Drawable drawable = getBackground();
-			if (drawable != null)
+			drawable.setState(ResourceUtils.PRESSED_STATE);
+			drawable = drawable.getCurrent();
+			if (drawable instanceof TransitionDrawable)
 			{
-				drawable.setState(ResourceUtils.PRESSED_STATE);
-				drawable = drawable.getCurrent();
-				if (drawable instanceof TransitionDrawable)
-				{
-					((TransitionDrawable) drawable).startTransition(ViewConfiguration.getLongPressTimeout());
-				}
+				((TransitionDrawable) drawable).startTransition(ViewConfiguration.getLongPressTimeout());
 			}
 		}
 	};
 	
-	private final Runnable mClickRunnable = new Runnable()
-	{
-		@Override
-		public void run()
-		{
-			mOnClickListener.onClick(ClickableView.this);
-		}
-	};
+	private final Runnable mClickRunnable = () -> mOnClickListener.onClick(ClickableView.this);
 	
 	@Override
 	public boolean onTouchEvent(MotionEvent event)

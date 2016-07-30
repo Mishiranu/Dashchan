@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.concurrent.Executor;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -257,13 +256,9 @@ public class ImageUnit
 			if (!mInstance.galleryInstance.context.getPackageManager().queryIntentActivities(intent,
 					PackageManager.MATCH_DEFAULT_ONLY).isEmpty())
 			{
-				dialogBuilder.setNeutralButton(R.string.action_show_on_map, new DialogInterface.OnClickListener()
+				dialogBuilder.setNeutralButton(R.string.action_show_on_map, (dialog, which) ->
 				{
-					@Override
-					public void onClick(DialogInterface dialog, int which)
-					{
-						mInstance.galleryInstance.context.startActivity(intent);
-					}
+					mInstance.galleryInstance.context.startActivity(intent);
 				});
 			}
 		}
