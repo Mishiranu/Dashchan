@@ -216,7 +216,7 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 	public int getSystemDimenResource(Resources resources, String name, int fallbackValue)
 	{
 		int resId = resources.getIdentifier(name, "dimen", "android");
-		return resId != 0 ? resources.getDimensionPixelSize(resId) : 0;
+		return resId != 0 ? resources.getDimensionPixelSize(resId) : fallbackValue;
 	}
 	
 	public boolean getSystemBoolResource(Resources resources, String name, boolean fallbackValue)
@@ -261,7 +261,7 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 		{
 			
 		}
-	};
+	}
 	
 	private class KitKatContentForeground extends ForegroundDrawable
 	{
@@ -277,7 +277,7 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 				canvas.drawRect(0f, 0f, getBounds().width(), mStatusBar.getHeight(), mPaint);
 			}
 		}
-	};
+	}
 	
 	private class LollipopContentForeground extends ForegroundDrawable
 	{
@@ -335,7 +335,7 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 				}
 			}
 		}
-	};
+	}
 	
 	private class LollipopStatusBarForeground extends ForegroundDrawable
 	{
@@ -366,7 +366,7 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 				}
 			}
 		}
-	};
+	}
 	
 	private class LollipopDrawerForeground extends ForegroundDrawable
 	{
@@ -387,7 +387,7 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 				}
 			}
 		}
-	};
+	}
 	
 	private class ForegroundAnimatorListener implements ValueAnimator.AnimatorListener,
 			ValueAnimator.AnimatorUpdateListener
@@ -524,7 +524,7 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 			setState(STATE_SHOW, show);
 			applyShowActionBar(show);
 			mLastShowStateChanged = System.currentTimeMillis();
-			updatePaddings(show);
+			updatePaddings();
 		}
 	};
 	
@@ -641,7 +641,7 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 				mDrawerParent.setForeground(mStatusBarDrawerForeground);
 			}
 		}
-		updatePaddings(true);
+		updatePaddings();
 	}
 	
 	public void setDrawerOverToolbarEnabled(boolean drawerOverToolbarEnabled)
@@ -661,11 +661,6 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 	}
 	
 	public void updatePaddings()
-	{
-		updatePaddings(isActionBarShowing());
-	}
-	
-	private void updatePaddings(boolean actionShowing)
 	{
 		if (mListView != null && (mExpandingEnabled || mFullScreenLayoutEnabled))
 		{

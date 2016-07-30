@@ -78,8 +78,7 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 		settings.setDomStorageEnabled(true);
 		webView.setWebViewClient(new CustomWebViewClient());
 		webView.setWebChromeClient(new CustomWebChromeClient());
-		ProgressView progressView = new ProgressView(this);
-		mProgressView = progressView;
+		mProgressView = new ProgressView(this);
 		float density = ResourceUtils.obtainDensity(this);
 		FrameLayout frameLayout = new FrameLayout(this);
 		frameLayout.addView(mWebView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
@@ -192,8 +191,8 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 	{
 		try
 		{
-			startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-					| Intent.FLAG_ACTIVITY_NEW_TASK));
+			startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse(url))
+					.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
 		}
 		catch (ActivityNotFoundException e)
 		{
@@ -211,7 +210,7 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 			if (chanName != null)
 			{
 				ChanLocator locator = ChanLocator.get(chanName);
-				ChanLocator.NavigationData navigationData = null;
+				ChanLocator.NavigationData navigationData;
 				if (locator.safe(true).isBoardUri(uri))
 				{
 					navigationData = new ChanLocator.NavigationData(ChanLocator.NavigationData.TARGET_THREADS,

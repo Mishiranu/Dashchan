@@ -103,7 +103,7 @@ public class ImageLoader
 		private final WeakReference<V> mView;
 		
 		private String mKey;
-		private int mViewHashCode;
+		private final int mViewHashCode;
 		
 		public Callback(V view)
 		{
@@ -179,7 +179,7 @@ public class ImageLoader
 		private final String mChanName;
 		private final String mKey;
 
-		public ArrayList<Callback<?>> callbacks;
+		public final ArrayList<Callback<?>> callbacks;
 		public final boolean fromCacheOnly;
 		public boolean fromCacheOnlyChecked;
 		
@@ -404,8 +404,8 @@ public class ImageLoader
 		view.setTag(R.id.thumbnail, null);
 	}
 	
-	private <V extends View> void loadImage(Uri uri, String chanName, String key, ArrayList<Callback<?>> callbacks,
-			Callback<?> newCallback, boolean fromCacheOnly)
+	private void loadImage(Uri uri, String chanName, String key, ArrayList<Callback<?>> callbacks,
+						   Callback<?> newCallback, boolean fromCacheOnly)
 	{
 		Bitmap bitmap = mCacheManager.loadThumbnailMemory(key);
 		if (bitmap != null)

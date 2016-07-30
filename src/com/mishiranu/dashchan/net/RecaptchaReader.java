@@ -246,7 +246,7 @@ public class RecaptchaReader implements Handler.Callback
 							{
 								throw new HttpException(ErrorItem.TYPE_CAPTCHA_EXPIRED, false, false);
 							}
-							if (loadingHolder.challenge != challenge)
+							if (!StringUtils.equals(loadingHolder.challenge, challenge))
 							{
 								challenge = loadingHolder.challenge;
 								reset = true;
@@ -368,7 +368,7 @@ public class RecaptchaReader implements Handler.Callback
 				challenge = matcher.group(1);
 				synchronized (mLastChallenges1)
 				{
-					mLastChallenges1.put(apiKey, new Pair<Long, String>(System.currentTimeMillis(), challenge));
+					mLastChallenges1.put(apiKey, new Pair<>(System.currentTimeMillis(), challenge));
 				}
 				return challenge;
 			}
@@ -401,8 +401,7 @@ public class RecaptchaReader implements Handler.Callback
 		else uri = locator.buildQueryWithHost("www.google.com", "recaptcha/api/image", "c", challenge);
 		Bitmap image = new HttpRequest(uri, holder).read().getBitmap();
 		if (transformBlackAndWhite) transformBlackAndWhite = GraphicsUtils.isBlackAndWhiteCaptchaImage(image);
-		return transformBlackAndWhite ? GraphicsUtils.handleBlackAndWhiteCaptchaImage(image)
-				: new Pair<Bitmap, Boolean>(image, false);
+		return transformBlackAndWhite ? GraphicsUtils.handleBlackAndWhiteCaptchaImage(image) : new Pair<>(image, false);
 	}
 	
 	/*
@@ -809,6 +808,7 @@ public class RecaptchaReader implements Handler.Callback
 		
 		private final Object mJavascriptInterface = new Object()
 		{
+			@SuppressWarnings("unused")
 			@JavascriptInterface
 			public void onSuccess(String response)
 			{
@@ -819,6 +819,7 @@ public class RecaptchaReader implements Handler.Callback
 				}
 			}
 			
+			@SuppressWarnings("unused")
 			@JavascriptInterface
 			public void onCheckCaptchaExpired(String expired)
 			{
@@ -830,6 +831,7 @@ public class RecaptchaReader implements Handler.Callback
 				}
 			}
 			
+			@SuppressWarnings("unused")
 			@JavascriptInterface
 			public void onCheckImageSelect(String imageSelector, String description, String sizeX, String sizeY)
 			{
@@ -841,6 +843,7 @@ public class RecaptchaReader implements Handler.Callback
 				}
 			}
 			
+			@SuppressWarnings("unused")
 			@JavascriptInterface
 			public void onCheckImageSelectedTooFew(String few, String checked)
 			{
@@ -853,6 +856,7 @@ public class RecaptchaReader implements Handler.Callback
 			}
 		};
 		
+		@SuppressLint({"JavascriptInterface", "AddJavascriptInterface"})
 		public RecaptchaClient(WebView webView)
 		{
 			webView.addJavascriptInterface(mJavascriptInterface, "jsi");
@@ -928,7 +932,7 @@ public class RecaptchaReader implements Handler.Callback
 						synchronized (mLoadingHolder)
 						{
 							mLoadingHolder.queuedReplace = false;
-							mLoadingHolder.replace = new Pair<String, String>(challenge, uri.getQueryParameter("id"));
+							mLoadingHolder.replace = new Pair<>(challenge, uri.getQueryParameter("id"));
 							mLoadingHolder.applyReady();
 						}
 					}
@@ -945,6 +949,7 @@ public class RecaptchaReader implements Handler.Callback
 			return INTERCEPT_NONE;
 		}
 
+		@SuppressWarnings("deprecation")
 		@Override
 		public WebResourceResponse shouldInterceptRequest(WebView view, String url)
 		{

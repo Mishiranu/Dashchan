@@ -385,6 +385,7 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 		obtainTagItem(tagName, false, null, true, attribute, value).setPreformatted(preformatted);
 	}
 	
+	@SuppressWarnings("UnusedAssignment")
 	@Override
 	public final Object onBeforeTagStart(HtmlParser parser, StringBuilder builder, String tagName,
 			Attributes attributes, HtmlParser.TagData tagData)
@@ -568,12 +569,6 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 	{
 		ChanSpanProvider provider = parser.getSpanProvider();
 		provider.cut(builder.length());
-	}
-	
-	@Override
-	public final void onStartEnd(HtmlParser parser, StringBuilder builder, boolean end)
-	{
-		
 	}
 	
 	@Override
@@ -846,7 +841,7 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 		}
 	}
 	
-	public static interface MarkupExtra
+	public interface MarkupExtra
 	{
 		public String getBoardName();
 		public String getThreadNumber();

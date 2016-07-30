@@ -47,9 +47,9 @@ public class SendMultifunctionalTask extends CancellableTask<Void, Void, Boolean
 	private String mArchiveThreadNumber;
 	private ErrorItem mErrorItem;
 	
-	public static enum Operation {DELETE, REPORT, ARCHIVE}
+	public enum Operation {DELETE, REPORT, ARCHIVE}
 	
-	public static interface Callback
+	public interface Callback
 	{
 		public void onSendSuccess(State state, String archiveBoardName, String archiveThreadNumber);
 		public void onSendFail(State state, String type, String text, ArrayList<String> options, ErrorItem errorItem);

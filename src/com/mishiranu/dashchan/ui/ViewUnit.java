@@ -140,13 +140,13 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		@Override
 		public void onLinkClick(CommentTextView view, String chanName, Uri uri, boolean confirmed)
 		{
-			mUiManager.interaction().handleLinkClick(view, chanName, uri, confirmed);
+			mUiManager.interaction().handleLinkClick(chanName, uri, confirmed);
 		}
 		
 		@Override
 		public void onLinkLongClick(CommentTextView view, String chanName, Uri uri)
 		{
-			mUiManager.interaction().handleLinkLongClick(view, chanName, uri);
+			mUiManager.interaction().handleLinkLongClick(uri);
 		}
 	};
 	
@@ -165,7 +165,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		}
 	};
 	
-	public View getThreadView(PostItem postItem, View convertView, ViewGroup parent, String chanName, boolean isBusy)
+	public View getThreadView(PostItem postItem, View convertView, ViewGroup parent, boolean isBusy)
 	{
 		Context context = mUiManager.getContext();
 		ColorScheme colorScheme = mUiManager.getColorScheme();
@@ -262,7 +262,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 	}
 	
 	public View getThreadViewForGrid(PostItem postItem, View convertView, ViewGroup parent,
-			HidePerformer hidePerformer, String chanName, int contentHeight, boolean isBusy)
+			HidePerformer hidePerformer, int contentHeight, boolean isBusy)
 	{
 		Context context = mUiManager.getContext();
 		ColorScheme colorScheme = mUiManager.getColorScheme();
@@ -803,8 +803,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		holder.bottomBar.setVisibility(needBar ? View.VISIBLE : View.GONE);
 		boolean hasText = holder.comment.getVisibility() == View.VISIBLE;
 		float density = ResourceUtils.obtainDensity(holder.comment);
-		int padding = (int) ((needBar ? 0f : hasText ? 10f : 6f) * density);
-		holder.textBarPadding.getLayoutParams().height = padding;
+		holder.textBarPadding.getLayoutParams().height = (int) ((needBar ? 0f : hasText ? 10f : 6f) * density);
 	}
 	
 	private void setMaxHeight(final View view, View parent)
@@ -1000,13 +999,6 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		}
 	}
 	
-	public CardView extractCardView(View view)
-	{
-		Object tag = view.getTag();
-		if (tag instanceof ThreadViewHolder) return ((ThreadViewHolder) tag).cardView;
-		return null;
-	}
-	
 	boolean handlePostForDoubleClick(final View view)
 	{
 		final PostViewHolder holder = ListViewUtils.getViewHolder(view, PostViewHolder.class);
@@ -1116,11 +1108,13 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 							{
 								mStartX = x;
 								mStartY = y;
+								// noinspection SuspiciousMethodCalls
 								if (holder.badgeImages != null && holder.badgeImages.contains(child))
 								{
 									mType = TYPE_BADGES;
 									return true;
 								}
+								// noinspection SuspiciousMethodCalls
 								if (Arrays.asList(holder.stateImages).contains(child))
 								{
 									mType = TYPE_STATES;
@@ -1276,7 +1270,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		
 		public LinebreakLayout head;
 		public TextView number, name, index, date;
-		public ImageView[] stateImages = new ImageView[STATE_ATTRS.length];
+		public final ImageView[] stateImages = new ImageView[STATE_ATTRS.length];
 		public ArrayList<ImageView> badgeImages;
 		public ViewGroup attachments;
 		public CommentTextView comment;
@@ -1288,7 +1282,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		public TextView bottomBarExpand;
 		public TextView bottomBarOpenThread;
 		
-		public boolean[] states = new boolean[STATE_ATTRS.length];
+		public final boolean[] states = new boolean[STATE_ATTRS.length];
 		
 		public PostViewHolder()
 		{

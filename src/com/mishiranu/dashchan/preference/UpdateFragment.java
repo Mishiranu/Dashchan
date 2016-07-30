@@ -356,7 +356,7 @@ public class UpdateFragment extends BaseListFragment
 					{
 						String name = listItem.extensionName + "_" + updateItem.name;
 						String extension = ".apk";
-						File file = null;
+						File file;
 						for (int j = 0; true; j++)
 						{
 							file = new File(directory, name + (j == 0 ? "" : "_" + j) + extension);
@@ -491,7 +491,7 @@ public class UpdateFragment extends BaseListFragment
 		}
 	}
 	
-	public static int checkNewVersions(Context context, ReadUpdateTask.UpdateDataMap updateDataMap)
+	public static int checkNewVersions(ReadUpdateTask.UpdateDataMap updateDataMap)
 	{
 		int count = 0;
 		ArrayList<ListItem> listItems = buildData(null, updateDataMap, null);

@@ -86,7 +86,7 @@ public class SendPostTask extends CancellableTask<Void, Long, Boolean>
 		}
 	};
 	
-	public static interface Callback
+	public interface Callback
 	{
 		public void onSendPostChangeProgressState(String key, ProgressState progressState,
 				int attachmentIndex, int attachmentsCount);
@@ -118,7 +118,7 @@ public class SendPostTask extends CancellableTask<Void, Long, Boolean>
 		return mProgressMode;
 	}
 	
-	public static enum ProgressState {CONNECTING, SENDING, PROCESSING};
+	public enum ProgressState {CONNECTING, SENDING, PROCESSING}
 	
 	private ProgressState mLastProgressState = ProgressState.CONNECTING;
 	

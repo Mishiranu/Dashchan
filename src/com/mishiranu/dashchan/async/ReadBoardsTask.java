@@ -35,7 +35,7 @@ public class ReadBoardsTask extends CancellableTask<Void, Long, Boolean>
 	private BoardCategory[] mBoardCategories;
 	private ErrorItem mErrorItem;
 	
-	public static interface Callback
+	public interface Callback
 	{
 		public void onReadBoardsSuccess(BoardCategory[] boardCategories);
 		public void onReadBoardsFail(ErrorItem errorItem);

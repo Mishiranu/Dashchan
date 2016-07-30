@@ -203,7 +203,6 @@ public class WakabaLikeHtmlBuilder
 		String number = mNumber;
 		if (number != null)
 		{
-			boolean withImage = mFileItems.size() > 0;
 			StringBuilder builder = mBuilder;
 			builder.append("<span data-number=\"").append(number).append("\"></span>\n");
 			if (mOriginalPost)
@@ -211,7 +210,7 @@ public class WakabaLikeHtmlBuilder
 				mOriginalPost = false;
 				appendFiles();
 				appendHeader(true);
-				appendComment(withImage);
+				appendComment();
 			}
 			else
 			{
@@ -219,7 +218,7 @@ public class WakabaLikeHtmlBuilder
 						.append("<td class=\"reply\" id=\"reply").append(number).append("\">\n");
 				appendHeader(false);
 				appendFiles();
-				appendComment(withImage);
+				appendComment();
 				builder.append("</td>\n</tr>\n</tbody>\n</table>\n");
 			}
 		}
@@ -307,7 +306,7 @@ public class WakabaLikeHtmlBuilder
 		builder.append("</span>\n</div>\n");
 	}
 	
-	private void appendComment(boolean withImage)
+	private void appendComment()
 	{
 		StringBuilder builder = mBuilder;
 		builder.append("<blockquote data-comment=\"true\"");
@@ -393,6 +392,7 @@ public class WakabaLikeHtmlBuilder
 		if (multiple) builder.append("</div>\n");
 	}
 	
+	@SuppressWarnings("UnusedAssignment")
 	private void appendFileInfo(String size, FileItem fileItem, boolean shortInfo)
 	{
 		StringBuilder builder = mBuilder;

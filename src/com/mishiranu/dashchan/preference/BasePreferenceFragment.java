@@ -92,7 +92,7 @@ public abstract class BasePreferenceFragment extends PreferenceFragment implemen
 		@Override
 		public boolean checkDependency(Preference dependencyPreference)
 		{
-			String value = null;
+			String value;
 			if (dependencyPreference instanceof EditTextPreference)
 			{
 				value = ((EditTextPreference) dependencyPreference).getText();

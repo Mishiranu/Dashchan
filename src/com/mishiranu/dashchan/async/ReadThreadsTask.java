@@ -49,7 +49,7 @@ public class ReadThreadsTask extends CancellableTask<Void, Void, Boolean>
 	private HttpValidator mResultValidator;
 	private ErrorItem mErrorItem;
 	
-	public static interface Callback
+	public interface Callback
 	{
 		public void onReadThreadsSuccess(Threads threads, PostItem[][] postItems, int pageNumber,
 				boolean append, boolean checkModified, HttpValidator validator);

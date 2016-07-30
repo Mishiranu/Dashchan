@@ -59,8 +59,8 @@ public class GalleryBackgroundDrawable extends Drawable
 			mCenterY = -1;
 		}
 		float density = ResourceUtils.obtainDensity(view);
-		int colorFrom = Math.max((int) (Color.alpha(color) - 5), 0x00) << 24 | 0x00ffffff & color;
-		int colorTo = Math.min((int) (Color.alpha(color) + 5), 0xff) << 24 | 0x00ffffff & color;
+		int colorFrom = Math.max(Color.alpha(color) - 5, 0x00) << 24 | 0x00ffffff & color;
+		int colorTo = Math.min(Color.alpha(color) + 5, 0xff) << 24 | 0x00ffffff & color;
 		Bitmap bitmap = GraphicsUtils.generateNoise(80, (int) density, colorFrom, colorTo);
 		mPaint.setShader(new BitmapShader(bitmap, BitmapShader.TileMode.REPEAT, BitmapShader.TileMode.REPEAT));
 	}

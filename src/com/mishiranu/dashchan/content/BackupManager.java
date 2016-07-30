@@ -79,7 +79,7 @@ public class BackupManager
 		files.put(file.getName(), new Pair<>(file, mustExist));
 	}
 	
-	private static LinkedHashMap<String, Pair<File, Boolean>> obtainBackupFiles(Context context)
+	private static LinkedHashMap<String, Pair<File, Boolean>> obtainBackupFiles()
 	{
 		LinkedHashMap<String, Pair<File, Boolean>> files = new LinkedHashMap<>();
 		addFileToMap(files, Preferences.getPreferencesFile(), true);
@@ -93,7 +93,7 @@ public class BackupManager
 	{
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		ZipOutputStream zip = new ZipOutputStream(output);
-		LinkedHashMap<String, Pair<File, Boolean>> files = obtainBackupFiles(context);
+		LinkedHashMap<String, Pair<File, Boolean>> files = obtainBackupFiles();
 		boolean success = true;
 		for (Pair<File, Boolean> pair : files.values())
 		{
@@ -136,7 +136,7 @@ public class BackupManager
 	
 	public static void loadBackup(Context context, File file)
 	{
-		LinkedHashMap<String, Pair<File, Boolean>> files = obtainBackupFiles(context);
+		LinkedHashMap<String, Pair<File, Boolean>> files = obtainBackupFiles();
 		ZipInputStream zip = null;
 		boolean success = true;
 		try

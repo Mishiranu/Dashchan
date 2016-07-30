@@ -72,6 +72,7 @@ public class AutohideFragment extends BaseListFragment
 		setEmptyText(R.string.message_no_rules);
 		mAdapter = new ArrayAdapter<AutohideStorage.AutohideItem>(getActivity(), 0)
 		{
+			@SuppressWarnings("UnusedAssignment")
 			@Override
 			public View getView(int position, View convertView, ViewGroup parent)
 			{
@@ -345,7 +346,7 @@ public class AutohideFragment extends BaseListFragment
 		@Override
 		public void onClick(View v)
 		{
-			MultipleChanDialog dialog = new MultipleChanDialog(new ArrayList<String>(mSelectedChanNames));
+			MultipleChanDialog dialog = new MultipleChanDialog(new ArrayList<>(mSelectedChanNames));
 			dialog.setTargetFragment(this, 0);
 			dialog.show(getFragmentManager(), MultipleChanDialog.class.getName());
 		}
@@ -528,7 +529,7 @@ public class AutohideFragment extends BaseListFragment
 		public Dialog onCreateDialog(Bundle savedInstanceState)
 		{
 			Collection<String> chanNames = ChanManager.getInstance().getAvailableChanNames();
-			mChanNames = new ArrayList<String>(chanNames);
+			mChanNames = new ArrayList<>(chanNames);
 			String[] items = new String[chanNames.size()];
 			for (int i = 0; i < chanNames.size(); i++) items[i] = ChanConfiguration.get(mChanNames.get(i)).getTitle();
 			boolean[] checkedItems = savedInstanceState != null ? savedInstanceState

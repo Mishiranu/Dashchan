@@ -42,11 +42,6 @@ public class LruCache<K, V> extends LinkedHashMap<K, V>
 		mMaxEntries = maxEntries;
 	}
 	
-	public int getMaxEntries()
-	{
-		return mMaxEntries;
-	}
-	
 	@Override
 	protected boolean removeEldestEntry(Entry<K, V> eldest)
 	{
@@ -55,7 +50,7 @@ public class LruCache<K, V> extends LinkedHashMap<K, V>
 		return remove;
 	}
 	
-	public static interface RemoveCallback<K, V>
+	public interface RemoveCallback<K, V>
 	{
 		public void onRemoveEldestEntry(K key, V value);
 	}

@@ -41,10 +41,9 @@ public class ReadVideoTask extends CancellableTask<Void, Long, Boolean>
 	private final Callback mCallback;
 	private final HttpHolder mHolder = new HttpHolder();
 	
-	private byte[] mData;
 	private ErrorItem mErrorItem;
 	
-	public static interface Callback
+	public interface Callback
 	{
 		public void onReadVideoProgressUpdate(long progress, long progressMax);
 		public void onReadVideoSuccess(CachingInputStream inputStream);
@@ -80,8 +79,8 @@ public class ReadVideoTask extends CancellableTask<Void, Long, Boolean>
 			HttpResponse response = result != null ? result.response : null;
 			if (response != null)
 			{
-				mData = response.getBytes();
-				if (mData == null)
+				byte[] data = response.getBytes();
+				if (data == null)
 				{
 					mErrorItem = new ErrorItem(ErrorItem.TYPE_UNKNOWN);
 					return false;
@@ -89,7 +88,7 @@ public class ReadVideoTask extends CancellableTask<Void, Long, Boolean>
 				OutputStream output = mInputStream.getOutputStream();
 				try
 				{
-					output.write(mData);
+					output.write(data);
 				}
 				catch (IOException e)
 				{

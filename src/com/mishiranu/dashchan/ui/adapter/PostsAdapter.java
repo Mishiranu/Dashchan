@@ -270,13 +270,13 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 			}
 			mUiManager.dialog().displaySingle(getItem(position), mConfigurationSet);
 		}
-		else mUiManager.interaction().handleLinkClick(view, chanName, uri, confirmed);
+		else mUiManager.interaction().handleLinkClick(chanName, uri, confirmed);
 	}
 	
 	@Override
 	public void onLinkLongClick(CommentTextView view, String chanName, Uri uri)
 	{
-		mUiManager.interaction().handleLinkLongClick(view, chanName, uri);
+		mUiManager.interaction().handleLinkLongClick(uri);
 	}
 	
 	public void setItems(PostItem[] postItems, boolean maySkipHandlingReferences)

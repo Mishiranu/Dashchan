@@ -29,7 +29,7 @@ public final class EmbeddedAttachment implements Attachment
 	private static final long serialVersionUID = 1L;
 	
 	@Public
-	public static enum ContentType
+	public enum ContentType
 	{
 		@Public AUDIO,
 		@Public VIDEO
@@ -59,20 +59,10 @@ public final class EmbeddedAttachment implements Attachment
 		mForcedName = forcedName;
 	}
 	
-	public String getFileUriString()
-	{
-		return mFileUriString;
-	}
-	
 	@Public
 	public Uri getFileUri()
 	{
 		return mFileUriString != null ? Uri.parse(mFileUriString) : null;
-	}
-	
-	public String getThumbnailUriString()
-	{
-		return mFileUriString;
 	}
 	
 	@Public

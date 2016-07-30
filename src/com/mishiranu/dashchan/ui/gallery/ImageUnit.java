@@ -142,7 +142,7 @@ public class ImageUnit
 	
 	private class ReadBitmapCallback implements ReadFileTask.Callback, ReadFileTask.CancelCallback
 	{
-		private PagerInstance.ViewHolder mHolder;
+		private final PagerInstance.ViewHolder mHolder;
 		private final GalleryItem mGalleryItem;
 		
 		public ReadBitmapCallback(PagerInstance.ViewHolder holder)
@@ -403,5 +403,5 @@ public class ImageUnit
 			holder.jpegData = mFileHolder.getJpegData();
 			holder.photoViewThumbnail = false;
 		}
-	};
+	}
 }

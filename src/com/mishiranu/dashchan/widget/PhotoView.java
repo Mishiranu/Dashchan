@@ -88,8 +88,9 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 	
 	private float mLastTouchX;
 	private float mLastTouchY;
-	private float mTouchSlop;
-	private float mMinimumVelocity;
+	
+	private final float mTouchSlop;
+	private final float mMinimumVelocity;
 	
 	private VelocityTracker mVelocityTracker;
 	private boolean mIsDragging;
@@ -98,7 +99,7 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 	
 	static
 	{
-		Method inDoubleTapMode = null;
+		Method inDoubleTapMode;
 		try
 		{
 			inDoubleTapMode = ScaleGestureDetector.class.getDeclaredMethod("inDoubleTapMode");
@@ -138,7 +139,7 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 		super.onLayout(changed, left, top, right, bottom);
 	}
 	
-	public static interface Listener
+	public interface Listener
 	{
 		public void onClick(PhotoView photoView, boolean image, float x, float y);
 		public void onVerticalSwipe(PhotoView photoView, float value);

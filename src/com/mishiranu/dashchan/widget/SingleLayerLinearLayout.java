@@ -45,7 +45,7 @@ public class SingleLayerLinearLayout extends LinearLayout
 		return false;
 	}
 	
-	public static interface OnTemporaryDetatchListener
+	public interface OnTemporaryDetatchListener
 	{
 		public void onTemporaryDetatch(SingleLayerLinearLayout view, boolean start);
 	}

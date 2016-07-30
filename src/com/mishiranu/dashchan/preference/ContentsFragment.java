@@ -248,11 +248,7 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 					}
 					if (storageDirectory != null)
 					{
-						if (storageDirectory.equals(Environment.getExternalStorageDirectory()))
-						{
-							storageDirectory = null;
-							path = "/" + path;
-						}
+						if (storageDirectory.equals(Environment.getExternalStorageDirectory())) path = "/" + path;
 						else path = new File(storageDirectory, path).getAbsolutePath();
 						if (!path.endsWith("/")) path += "/";
 						mDownloadPathPreference.getEditText().setText(path);

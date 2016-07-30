@@ -42,7 +42,7 @@ public class ReadSinglePostTask extends CancellableTask<Void, Void, PostItem>
 	private final HttpHolder mHolder = new HttpHolder();
 	private ErrorItem mErrorItem;
 	
-	public static interface Callback
+	public interface Callback
 	{
 		public void onReadSinglePostSuccess(PostItem postItem);
 		public void onReadSinglePostFail(ErrorItem errorItem);

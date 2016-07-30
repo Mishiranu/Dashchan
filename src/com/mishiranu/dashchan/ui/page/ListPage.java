@@ -50,9 +50,9 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 	public static final int APPEARANCE_MENU_THREADS_GRID = 105;
 	public static final int APPEARANCE_MENU_SFW_MODE = 106;
 
-	private static enum State {INIT, LOCKED, RESUMED, PAUSED, CONSUMED};
+	private enum State {INIT, LOCKED, RESUMED, PAUSED, CONSUMED}
 	
-	public static enum ViewType {LIST, PROGRESS, ERROR};
+	public enum ViewType {LIST, PROGRESS, ERROR}
 	
 	private Activity mActivity;
 	private Callback mCallback;
@@ -322,11 +322,6 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 		return mState == State.CONSUMED;
 	}
 	
-	public final boolean isResumed()
-	{
-		return mState == State.RESUMED;
-	}
-	
 	private void performResume()
 	{
 		onResume();
@@ -367,7 +362,7 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 		if (mState == State.RESUMED) onHandleNewPostDatas();
 	}
 	
-	public static interface Callback
+	public interface Callback
 	{
 		public void invalidateDrawerItems(boolean pages, boolean favorites);
 		public void updateOptionsMenu(boolean recreate);

@@ -55,7 +55,7 @@ public class ErrorItem implements Serializable
 	public final int httpResponseCode;
 	public final String message;
 	
-	public static interface Holder
+	public interface Holder
 	{
 		public ErrorItem getErrorItemAndHandle();
 	}

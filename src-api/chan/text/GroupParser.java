@@ -26,7 +26,7 @@ import chan.util.StringUtils;
 public final class GroupParser
 {
 	@Extendable
-	public static interface Callback
+	public interface Callback
 	{
 		@Extendable
 		public boolean onStartElement(GroupParser parser, String tagName, String attrs) throws ParseException;

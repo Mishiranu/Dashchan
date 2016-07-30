@@ -55,7 +55,7 @@ import com.mishiranu.dashchan.util.WebViewUtils;
 
 public class CloudFlarePasser implements Handler.Callback
 {
-	private static CloudFlarePasser INSTANCE = new CloudFlarePasser();
+	private static final CloudFlarePasser INSTANCE = new CloudFlarePasser();
 	private static final int WEB_VIEW_TIMEOUT = 20000;
 	
 	private static final String CF_FORBIDDEN_FLAG = "<form class=\"challenge-form\" id=\"challenge-form\" "
@@ -245,6 +245,7 @@ public class CloudFlarePasser implements Handler.Callback
 			}
 		}
 		
+		@SuppressWarnings("deprecation")
 		@Override
 		public WebResourceResponse shouldInterceptRequest(WebView view, String url)
 		{
@@ -274,7 +275,7 @@ public class CloudFlarePasser implements Handler.Callback
 			}
 			return null;
 		}
-	};
+	}
 	
 	private WebView mWebView;
 	

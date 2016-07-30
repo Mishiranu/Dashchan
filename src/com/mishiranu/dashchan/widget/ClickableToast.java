@@ -19,6 +19,7 @@ package com.mishiranu.dashchan.widget;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -30,6 +31,7 @@ import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -128,7 +130,7 @@ public class ClickableToast
 		catch (WindowManager.BadTokenException e)
 		{
 			String message = e.getMessage();
-			if (message != null && message.contains("permission denied")) return; else throw e;
+			if (message == null || !message.contains("permission denied")) throw e;
 		}
 	}
 	
@@ -158,7 +160,7 @@ public class ClickableToast
 	public static void cancel(Context context)
 	{
 		ClickableToast clickableToast = TOASTS.get(obtainBaseContext(context));
-		if (clickableToast != null) clickableToast.cancelInternal(true);
+		if (clickableToast != null) clickableToast.cancelInternal();
 	}
 	
 	private static void invalidate(Context context)
@@ -251,7 +253,7 @@ public class ClickableToast
 	private void showInternal(CharSequence message, String button, Runnable listener, boolean clickableOnlyWhenRoot)
 	{
 		ToastUtils.cancel();
-		cancelInternal(false);
+		cancelInternal();
 		mMessage.setText(message);
 		mButton.setText(button);
 		mOnClickListener = listener;
@@ -277,7 +279,7 @@ public class ClickableToast
 		mWindowManager.updateViewLayout(mContainer, layoutParams);
 	}
 	
-	private void cancelInternal(boolean animate)
+	private void cancelInternal()
 	{
 		if (!mShowing) return;
 		mContainer.removeCallbacks(mCancelRunnable);
@@ -287,7 +289,7 @@ public class ClickableToast
 		mContainer.setVisibility(View.GONE);
 	}
 	
-	private final Runnable mCancelRunnable = () -> cancelInternal(true);
+	private final Runnable mCancelRunnable = () -> cancelInternal();
 	
 	private void postCancelInternal()
 	{
@@ -357,6 +359,7 @@ public class ClickableToast
 			mDrawable.setBounds(left, top, right, bottom);
 		}
 		
+		@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 		@Override
 		public Rect getDirtyBounds()
 		{

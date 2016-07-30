@@ -22,7 +22,7 @@ import chan.util.StringUtils;
 
 public class StringBlockBuilder
 {
-	private ArrayList<String> mStrings = new ArrayList<>();
+	private final ArrayList<String> mStrings = new ArrayList<>();
 	
 	public void appendLine(String line)
 	{

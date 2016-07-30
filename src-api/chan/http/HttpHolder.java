@@ -63,7 +63,7 @@ public final class HttpHolder
 	private volatile boolean mDisconnectRequested = false;
 	private volatile boolean mInterrupted = false;
 	
-	public static interface InputListener
+	public interface InputListener
 	{
 		public void onInputProgressChange(long progress, long progressMax);
 	}

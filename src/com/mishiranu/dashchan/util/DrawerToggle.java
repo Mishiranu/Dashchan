@@ -27,7 +27,6 @@ import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
@@ -83,7 +82,7 @@ public class DrawerToggle implements DrawerLayout.DrawerListener
 	
 	static
 	{
-		int duration = 0;
+		int duration;
 		try
 		{
 			Field baseSettleDurationField = ViewDragHelper.class.getDeclaredField("BASE_SETTLE_DURATION");
@@ -147,7 +146,7 @@ public class DrawerToggle implements DrawerLayout.DrawerListener
 		}
 	}
 	
-	public void onConfigurationChanged(Configuration newConfig)
+	public void onConfigurationChanged()
 	{
 		if (!C.API_LOLLIPOP) mHomeAsUpIndicator = getThemeUpIndicatorObsolete();
 		syncState();

@@ -27,6 +27,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -199,6 +200,7 @@ public class ChanManager
 		return map;
 	}
 	
+	@SuppressLint("PackageManagerGetSignatures")
 	private ChanManager()
 	{
 		ArrayList<String> busyExtensionNames = new ArrayList<>();
@@ -262,7 +264,7 @@ public class ChanManager
 							Log.persistent().write("Extension names conflict: " + extensionName + " already exists");
 							break;
 						}
-						ExtensionItem extensionItem = null;
+						ExtensionItem extensionItem;
 						if (chanExtension)
 						{
 							int invalidVersion = Integer.MIN_VALUE;
@@ -507,7 +509,7 @@ public class ChanManager
 		}
 	}
 	
-	public static interface Linked
+	public interface Linked
 	{
 		public String getChanName();
 		public void init();
@@ -652,7 +654,7 @@ public class ChanManager
 	{
 		if (mSortedAvailableChanNames == null)
 		{
-			if (mAvailableChanNames != null) mSortedAvailableChanNames = new ArrayList<String>(mAvailableChanNames);
+			if (mAvailableChanNames != null) mSortedAvailableChanNames = new ArrayList<>(mAvailableChanNames);
 			else return 0;
 		}
 		return mSortedAvailableChanNames.indexOf(lhs) - mSortedAvailableChanNames.indexOf(rhs);
@@ -674,7 +676,7 @@ public class ChanManager
 		{
 			if (!chanNames.contains(chanName)) chanNames.add(chanName);
 		}
-		mAvailableChanNames = new LinkedHashSet<String>(chanNames);
+		mAvailableChanNames = new LinkedHashSet<>(chanNames);
 		mSortedAvailableChanNames = null;
 		Preferences.setChansOrder(chanNames);
 	}

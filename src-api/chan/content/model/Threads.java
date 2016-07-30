@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import chan.annotation.Public;
-import chan.content.ChanPerformer;
 import chan.util.CommonUtils;
 
 @Public
@@ -60,11 +59,6 @@ public final class Threads implements Serializable
 	{
 		mBoardSpeed = boardSpeed;
 		return this;
-	}
-	
-	public boolean isCatalog()
-	{
-		return mStartPage == ChanPerformer.ReadThreadsData.PAGE_NUMBER_CATALOG;
 	}
 	
 	public boolean hasThreadsOnStart()

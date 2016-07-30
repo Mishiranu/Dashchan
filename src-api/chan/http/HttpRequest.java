@@ -29,42 +29,42 @@ import chan.annotation.Public;
 public final class HttpRequest
 {
 	@Public
-	public static interface Preset
+	public interface Preset
 	{
 		
 	}
 	
-	public static interface TimeoutsPreset extends Preset
+	public interface TimeoutsPreset extends Preset
 	{
 		public int getConnectTimeout();
 		public int getReadTimeout();
 	}
 	
-	public static interface InputListenerPreset extends Preset
+	public interface InputListenerPreset extends Preset
 	{
 		public HttpHolder.InputListener getInputListener();
 	}
 	
-	public static interface OutputListenerPreset extends Preset
+	public interface OutputListenerPreset extends Preset
 	{
 		public OutputListener getOutputListener();
 	}
 	
-	public static interface OutputStreamPreset extends Preset
+	public interface OutputStreamPreset extends Preset
 	{
 		public OutputStream getOutputStream();
 	}
 	
-	public static interface OutputListener
+	public interface OutputListener
 	{
 		public void onOutputProgressChange(long progress, long progressMax);
 	}
 	
 	@Public
-	public static interface RedirectHandler
+	public interface RedirectHandler
 	{
 		@Public
-		public static enum Action
+		public enum Action
 		{
 			@Public CANCEL,
 			@Public GET,

@@ -43,6 +43,7 @@ public class SafePasteEditText extends EditText
 		super(context, attrs, defStyleAttr);
 	}
 	
+	@SuppressWarnings("unused")
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	public SafePasteEditText(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes)
 	{

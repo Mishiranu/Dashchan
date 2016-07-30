@@ -463,7 +463,7 @@ public class ChanFragment extends BasePreferenceFragment
 			dismissAllowingStateLoss();
 			boolean valid = holder.nextArgument();
 			ErrorItem errorItem = holder.nextArgument();
-			boolean expandPreference = false;
+			boolean expandPreference;
 			if (errorItem == null)
 			{
 				ToastUtils.show(getActivity(), valid ? R.string.message_validation_completed

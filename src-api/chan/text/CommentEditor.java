@@ -259,17 +259,15 @@ public class CommentEditor
 			String textBeforeSelection = text.substring(Math.max(0, start - similarTag.open.length() - 1), start);
 			String textAfterSelection = text.substring(end, Math.min(text.length(),
 					end + similarTag.open.length() + 1));
-			boolean apply;
 			if (textBeforeSelection.endsWith(similarTag.open))
 			{
-				apply = false;
+				boolean apply;
 				if (textBeforeSelection.length() == similarTag.open.length()) apply = true; else
 				{
 					apply = textBeforeSelection.charAt(0) != similarTag.open.charAt(similarTag.open.length() - 1);
 				}
 				if (apply && textAfterSelection.startsWith(similarTag.close))
 				{
-					apply = false;
 					if (textAfterSelection.length() == similarTag.close.length()) apply = true; else
 					{
 						apply = textAfterSelection.charAt(similarTag.close.length()) != similarTag.close.charAt(0);

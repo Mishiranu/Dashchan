@@ -24,6 +24,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.concurrent.Semaphore;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.graphics.Bitmap;
@@ -164,7 +165,7 @@ public class VideoPlayer
 	
 	private static Object invoke(String methodName, Object... args)
 	{
-		Method method = null;
+		Method method;
 		synchronized (METHODS)
 		{
 			method = METHODS.get(methodName);
@@ -259,7 +260,7 @@ public class VideoPlayer
 	private boolean mInitialized = false;
 	private final int[] mSummaryOutput = new int[3];
 	
-	public static interface Listener
+	public interface Listener
 	{
 		public void onComplete(VideoPlayer player);
 		public void onBusyStateChange(VideoPlayer player, boolean busy);
@@ -270,7 +271,7 @@ public class VideoPlayer
 	private boolean mLastSeeking = false;
 	private volatile boolean mLastBuffering = false;
 	
-	private static interface InputHolder
+	private interface InputHolder
 	{
 		public int read(byte[] buffer, int count) throws IOException;
 		public int seek(int position, CachingInputStream.Whence whence) throws IOException;
@@ -437,12 +438,6 @@ public class VideoPlayer
 		}
 	}
 	
-	public void replaceStream(CachingInputStream inputStream) throws IOException
-	{
-		if (mConsumed) return;
-		replaceStream(new CachingInputHolder(inputStream));
-	}
-	
 	public void replaceStream(File file) throws IOException
 	{
 		if (mConsumed) return;
@@ -523,7 +518,7 @@ public class VideoPlayer
 					}
 					catch (InterruptedException e)
 					{
-						continue;
+						
 					}
 				}
 				if (mConsumed) return;
@@ -597,6 +592,7 @@ public class VideoPlayer
 		if (mListener != null) mListener.onDimensionChange(this);
 	}
 	
+	@SuppressLint("ViewConstructor")
 	private static class PlayerTextureView extends TextureView implements TextureView.SurfaceTextureListener
 	{
 		private final WeakReference<VideoPlayer> mPlayer;
@@ -604,7 +600,7 @@ public class VideoPlayer
 		public PlayerTextureView(Context context, VideoPlayer player)
 		{
 			super(context);
-			mPlayer = new WeakReference<VideoPlayer>(player);
+			mPlayer = new WeakReference<>(player);
 			setSurfaceTextureListener(this);
 		}
 		
@@ -796,7 +792,7 @@ public class VideoPlayer
 		
 		public NativeBridge(VideoPlayer player)
 		{
-			mPlayer = new WeakReference<VideoPlayer>(player);
+			mPlayer = new WeakReference<>(player);
 		}
 		
 		public byte[] getBuffer()
@@ -879,6 +875,7 @@ public class VideoPlayer
 		}
 	}
 	
+	@SuppressWarnings("unused")
 	private static class Holder
 	{
 		public static native long init(Object nativeBridge, boolean seekAnyFrame);

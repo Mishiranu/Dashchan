@@ -19,7 +19,6 @@ package com.mishiranu.dashchan.ui.gallery;
 import java.io.File;
 import java.util.ArrayList;
 
-import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -487,7 +486,7 @@ public class PagerUnit implements PagerInstance.Callback
 		}
 		
 		@Override
-		public View onCreateView(Context context, ViewGroup parent)
+		public View onCreateView(ViewGroup parent)
 		{
 			View view = LayoutInflater.from(mGalleryInstance.context).inflate(R.layout.list_item_gallery,
 					parent, false);

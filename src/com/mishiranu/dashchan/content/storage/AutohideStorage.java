@@ -297,7 +297,7 @@ public class AutohideStorage extends StorageManager.Storage
 				String[] chanNames = source.createStringArray();
 				if (chanNames != null)
 				{
-					autohideItem.chanNames = new HashSet<String>();
+					autohideItem.chanNames = new HashSet<>();
 					Collections.addAll(autohideItem.chanNames, chanNames);
 				}
 				autohideItem.boardName = source.readString();

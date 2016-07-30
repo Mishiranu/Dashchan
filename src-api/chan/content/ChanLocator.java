@@ -45,7 +45,7 @@ public class ChanLocator implements ChanManager.Linked
 	private HttpsMode mHttpsMode = HttpsMode.NO_HTTPS;
 	
 	@Public
-	public static enum HttpsMode
+	public enum HttpsMode
 	{
 		@Public NO_HTTPS,
 		@Public HTTPS_ONLY,
@@ -374,23 +374,6 @@ public class ChanLocator implements ChanManager.Linked
 		return StringUtils.getFileExtension(path);
 	}
 	
-	public final String convertPreferredHost(String host)
-	{
-		String firstConfigurableHost = null;
-		boolean singleConfigurableHost = true;
-		for (LinkedHashMap.Entry<String, Integer> entry : mHosts.entrySet())
-		{
-			if (entry.getValue() == HOST_TYPE_CONFIGURABLE)
-			{
-				if (firstConfigurableHost == null) firstConfigurableHost = entry.getKey();
-				else if (singleConfigurableHost) singleConfigurableHost = false;
-				else break;
-			}
-		}
-		if (StringUtils.isEmpty(host) || singleConfigurableHost) host = firstConfigurableHost;
-		return host;
-	}
-	
 	public final String getPreferredHost()
 	{
 		String host = Preferences.getDomainUnhandled(getChanName());
@@ -496,7 +479,7 @@ public class ChanLocator implements ChanManager.Linked
 	
 	private static final Pattern SOUNDCLOUD_URI = Pattern.compile("(?:https?://)soundcloud\\.com/([\\w/_-]*)");
 	
-	private final boolean isMayContainEmbeddedCode(String text, String what)
+	private boolean isMayContainEmbeddedCode(String text, String what)
 	{
 		return !StringUtils.isEmpty(text) && text.contains(what);
 	}

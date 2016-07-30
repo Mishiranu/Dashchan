@@ -108,7 +108,7 @@ public class CommentTextView extends TextView
 		BASE_POINTS[7] = new double[] {sqrth2, sqrth2};
 	}
 	
-	private static LinkListener DEFAULT_LINK_LISTENER = new LinkListener()
+	private static final LinkListener DEFAULT_LINK_LISTENER = new LinkListener()
 	{
 		@Override
 		public void onLinkClick(CommentTextView view, String chanName, Uri uri, boolean confirmed)
@@ -153,18 +153,18 @@ public class CommentTextView extends TextView
 		super.setCustomSelectionActionModeCallback(new CustomSelectionCallback());
 	}
 	
-	public static interface ClickableSpan
+	public interface ClickableSpan
 	{
 		public void setClicked(boolean clicked);
 	}
 	
-	public static interface CommentListener
+	public interface CommentListener
 	{
 		public void onRequestSiblingsInvalidate(CommentTextView view);
 		public String onPrepareToCopy(CommentTextView view, Spannable text, int start, int end);
 	}
 	
-	public static interface LinkListener
+	public interface LinkListener
 	{
 		public void onLinkClick(CommentTextView view, String chanName, Uri uri, boolean confirmed);
 		public void onLinkLongClick(CommentTextView view, String chanName, Uri uri);
@@ -622,7 +622,7 @@ public class CommentTextView extends TextView
 		{
 			if (!startSelectionActionMode(start, end)) setTextIsSelectable(false);
 		}
-	};
+	}
 	
 	private SelectorRunnable mSelectorRunnable;
 	
@@ -838,9 +838,9 @@ public class CommentTextView extends TextView
 	{
 		ArrayList<SpanHolder<T>> result = new ArrayList<>();
 		// Find spans around touch point for better click treatment
-		for (int i = 0; i < mDeltaAttempts.length; i++)
+		for (int[] deltaAttempt : mDeltaAttempts)
 		{
-			int startX = x + mDeltaAttempts[i][0], startY = y + mDeltaAttempts[i][1];
+			int startX = x + deltaAttempt[0], startY = y + deltaAttempt[1];
 			T[] spans = findSpansToClickSingle(layout, spanned, type, startX, startY);
 			if (spans != null)
 			{
@@ -881,7 +881,7 @@ public class CommentTextView extends TextView
 	
 	static
 	{
-		Field editorField = null;
+		Field editorField;
 		try
 		{
 			editorField = TextView.class.getDeclaredField("mEditor");
@@ -910,12 +910,12 @@ public class CommentTextView extends TextView
 	
 	public static class ListSelectionKeeper implements Runnable
 	{
-		public static interface Holder
+		public interface Holder
 		{
 			public CommentTextView getCommentTextView();
 		}
 		
-		private ListView mListView;
+		private final ListView mListView;
 		private int mPostCount;
 		
 		private String mText;

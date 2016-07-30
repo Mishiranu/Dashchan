@@ -63,7 +63,7 @@ public class MultipleEditTextPreference extends DialogPreference
 	public void setTexts(String[] values)
 	{
 		int length = Math.min(values.length, mTexts.length);
-		for (int i = 0; i < length; i++) mTexts[i] = values[i]; 
+		System.arraycopy(values, 0, mTexts, 0, length);
 		persistString(packValues(values));
 	}
 	
@@ -182,7 +182,7 @@ public class MultipleEditTextPreference extends DialogPreference
 		setTexts(myState.values);
 	}
 	
-	private static interface ViewHolder
+	private interface ViewHolder
 	{
 		public void setHint(CharSequence hint);
 		public void setInputType(int type);

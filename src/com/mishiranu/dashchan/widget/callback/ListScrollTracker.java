@@ -112,7 +112,7 @@ public class ListScrollTracker implements AbsListView.OnScrollListener, Runnable
 		mLastTrackingItem = -1;
 	}
 	
-	public static interface OnScrollListener
+	public interface OnScrollListener
 	{
 		public void onScroll(AbsListView view, int scrollY, int totalItemCount, boolean first, boolean last);
 	}

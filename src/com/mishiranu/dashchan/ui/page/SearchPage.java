@@ -112,11 +112,7 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 	public boolean onItemLongClick(View view, int position, long id)
 	{
 		PostItem postItem = getAdapter().getPostItem(position);
-		if (postItem != null)
-		{
-			return getUiManager().interaction().handlePostContextMenu(postItem, null, false, false);
-		}
-		return false;
+		return postItem != null && getUiManager().interaction().handlePostContextMenu(postItem, null, false, false);
 	}
 
 	private static final int OPTIONS_MENU_REFRESH = 0;

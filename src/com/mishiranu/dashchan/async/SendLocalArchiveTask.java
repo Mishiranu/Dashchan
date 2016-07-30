@@ -65,7 +65,7 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 	private final boolean mSaveFiles;
 	private final Callback mCallback;
 	
-	public static interface Callback
+	public interface Callback
 	{
 		public void onLocalArchivationProgressUpdate(int handledPostsCount);
 		public void onLocalArchivationComplete(boolean success, boolean showSuccess);
@@ -240,14 +240,14 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 					if (fileUri != null)
 					{
 						String fileName = locator.createAttachmentFileName(fileUri);
-						fileName = chooseFileName(existFilesLc, fileName, locator);
+						fileName = chooseFileName(existFilesLc, fileName);
 						String filePath = archiveDirectoryName + "/src/" + fileName;
 						String thumbnailName = null;
 						String thumbnailPath = null;
 						if (thumbnailUri != null)
 						{
 							thumbnailName = locator.createAttachmentFileName(thumbnailUri);
-							thumbnailName = chooseFileName(existThumbnailsLc, thumbnailName, locator);
+							thumbnailName = chooseFileName(existThumbnailsLc, thumbnailName);
 							thumbnailPath = archiveDirectoryName + "/thumb/" + thumbnailName;
 						}
 						String originalName = fileAttachment.getNormalizedOriginalName(fileName);
@@ -543,7 +543,7 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 		return directory;
 	}
 	
-	private String chooseFileName(ArrayList<String> fileNamesLc, String fileName, ChanLocator locator)
+	private String chooseFileName(ArrayList<String> fileNamesLc, String fileName)
 	{
 		if (fileName != null)
 		{
@@ -553,8 +553,8 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 			{
 				String extension = StringUtils.getFileExtension(fileName);
 				if (extension != null) fileName = fileName.substring(0, fileName.length() - extension.length() - 1);
-				String newFileName = null;
-				String newFileNameLc = null;
+				String newFileName;
+				String newFileNameLc;
 				int i = 0;
 				do
 				{

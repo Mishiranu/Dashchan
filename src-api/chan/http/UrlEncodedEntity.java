@@ -27,7 +27,7 @@ import chan.annotation.Public;
 @Extendable
 public class UrlEncodedEntity implements RequestEntity
 {
-	private StringBuilder mBuilder = new StringBuilder();
+	private final StringBuilder mBuilder = new StringBuilder();
 	private byte[] mBytes;
 	
 	private String mCharsetName = "UTF-8";

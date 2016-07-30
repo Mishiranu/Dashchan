@@ -645,7 +645,7 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 	{
 		super.onConfigurationChanged(newConfig);
 		ViewUtils.fixActionBar(this, mToolbarView);
-		mDrawerToggle.onConfigurationChanged(newConfig);
+		mDrawerToggle.onConfigurationChanged();
 		updateWideConfiguration(false);
 		mExpandedScreen.onConfigurationChanged(newConfig);
 		updateOptionsMenu(false);
@@ -1386,7 +1386,7 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		mReadUpdateTask = null;
 		if (updateDataMap == null) return;
 		Preferences.setLastUpdateCheck(System.currentTimeMillis());
-		int count = PreferencesActivity.checkNewVersions(MainActivity.this, updateDataMap);
+		int count = PreferencesActivity.checkNewVersions(updateDataMap);
 		if (count <= 0) return;
 		Notification.Builder builder = new Notification.Builder(MainActivity.this);
 		builder.setSmallIcon(R.drawable.ic_new_releases_white_24dp);

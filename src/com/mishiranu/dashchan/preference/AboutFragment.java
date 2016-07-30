@@ -308,7 +308,7 @@ public class AboutFragment extends BasePreferenceFragment
 					ReadUpdateHolder holder = new ReadUpdateHolder();
 					ReadUpdateTask task = new ReadUpdateTask(getActivity(), holder);
 					task.executeOnExecutor(ReadChangelogTask.THREAD_POOL_EXECUTOR);
-					return new Pair<Object, AsyncManager.Holder>(task, holder);
+					return new Pair<>(task, holder);
 				}
 			}
 			return null;

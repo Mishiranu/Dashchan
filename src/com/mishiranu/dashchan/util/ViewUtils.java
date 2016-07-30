@@ -36,7 +36,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewOutlineProvider;
 import android.view.ViewParent;
-import android.widget.CardView;
 import android.widget.TextView;
 import android.widget.Toolbar;
 
@@ -45,7 +44,7 @@ import com.mishiranu.dashchan.preference.Preferences;
 
 public class ViewUtils
 {
-	public static DialogInterface.OnShowListener ALERT_DIALOG_MESSAGE_SELECTABLE = dialog ->
+	public static final DialogInterface.OnShowListener ALERT_DIALOG_MESSAGE_SELECTABLE = dialog ->
 	{
 		if (dialog instanceof AlertDialog)
 		{
@@ -114,8 +113,7 @@ public class ViewUtils
 		view.setPadding(leftRight, 0, leftRight, 0);
 	}
 	
-	public static void applyCardHolderPadding(View view, CardView cardView,
-			boolean isFirst, boolean isLast, boolean multipleLeftRight)
+	public static void applyCardHolderPadding(View view, boolean isFirst, boolean isLast, boolean multipleLeftRight)
 	{
 		float density = ResourceUtils.obtainDensity(view);
 		int leftRight = multipleLeftRight ? (int) (2.5f * density + 0.5f) : (int) (8f * density);

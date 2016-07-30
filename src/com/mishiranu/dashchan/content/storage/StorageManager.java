@@ -80,7 +80,7 @@ public class StorageManager implements Handler.Callback, Runnable
 	{
 		synchronized (storage.mLock)
 		{
-			JSONObject jsonObject = null;
+			JSONObject jsonObject;
 			try
 			{
 				jsonObject = storage.onSerialize(data);
@@ -134,7 +134,7 @@ public class StorageManager implements Handler.Callback, Runnable
 		{
 			mName = name;
 			mTimeout = timeout;
-			mMaxTimeout = timeout;
+			mMaxTimeout = maxTimeout;
 		}
 		
 		public final File getFile()
@@ -238,13 +238,13 @@ public class StorageManager implements Handler.Callback, Runnable
 		return null;
 	}
 	
-	private SparseArray<Long> mSerializeTimes = new SparseArray<>();
+	private final SparseArray<Long> mSerializeTimes = new SparseArray<>();
 	
 	public void serialize(Storage storage)
 	{
 		if (storage.mIdentifier == 0) storage.mIdentifier = mNextIdentifier++;
 		Long timeObject = mSerializeTimes.get(storage.mIdentifier);
-		long timeout = 0L;
+		long timeout;
 		if (timeObject == null)
 		{
 			mSerializeTimes.put(storage.mIdentifier, System.currentTimeMillis());

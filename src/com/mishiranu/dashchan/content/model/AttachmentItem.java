@@ -361,7 +361,7 @@ public abstract class AttachmentItem
 		}
 	}
 	
-	public static interface Binder
+	public interface Binder
 	{
 		public String getChanName();
 		public String getBoardName();
@@ -385,8 +385,7 @@ public abstract class AttachmentItem
 			Attachment attachment = post.getAttachmentAt(i);
 			if (attachment instanceof FileAttachment)
 			{
-				attachmentItem = obtainFileAttachmentItem(postItem, locator, (FileAttachment) attachment,
-						postItem.getBoardName(), postItem.getThreadNumber());
+				attachmentItem = obtainFileAttachmentItem(postItem, locator, (FileAttachment) attachment);
 			}
 			else if (attachment instanceof EmbeddedAttachment)
 			{
@@ -407,19 +406,6 @@ public abstract class AttachmentItem
 		return null;
 	}
 	
-	public static ArrayList<AttachmentItem> obtain(ThreadSummaryItem threadSummaryItem, Uri thumbnailUri)
-	{
-		if (thumbnailUri != null)
-		{
-			FileAttachmentItem attachmentItem = new FileAttachmentItem(threadSummaryItem);
-			attachmentItem.thumbnailUri = thumbnailUri;
-			ArrayList<AttachmentItem> attachmentItems = new ArrayList<>(1);
-			attachmentItems.add(attachmentItem);
-			return attachmentItems;
-		}
-		return null;
-	}
-	
 	private static ArrayList<String> getAllCodes(String... codes)
 	{
 		if (codes != null && codes.length > 0)
@@ -431,16 +417,16 @@ public abstract class AttachmentItem
 		return null;
 	}
 	
-	public static final String formatSize(int size)
+	public static String formatSize(int size)
 	{
 		size /= 1024;
 		return size >= 1024 ? String.format(Locale.US, "%.1f", size / 1024f) + " MB" : size + " KB";
 	}
 	
-	public static enum FormatMode {LONG, SIMPLE, TWO_LINES, THREE_LINES};
+	public enum FormatMode {LONG, SIMPLE, TWO_LINES, THREE_LINES}
 	
 	private static FileAttachmentItem obtainFileAttachmentItem(Binder binder, ChanLocator locator,
-			FileAttachment attachment, String boardName, String threadNumber)
+			FileAttachment attachment)
 	{
 		if (attachment == null) return null;
 		FileAttachmentItem attachmentItem = new FileAttachmentItem(binder);

@@ -97,8 +97,7 @@ public class EmbeddedManager
 	
 	private final HashMap<String, Uri> mSoundcloudUriMap = new HashMap<>();
 	
-	public Uri doReadRealUri(String chanName, Uri uri, HttpHolder holder) throws HttpException,
-			InvalidResponseException
+	public Uri doReadRealUri(Uri uri, HttpHolder holder) throws HttpException, InvalidResponseException
 	{
 		if ("soundcloud.com".equals(uri.getHost()) && !StringUtils.isEmpty(C.API_KEY_SOUNDCLOUD))
 		{

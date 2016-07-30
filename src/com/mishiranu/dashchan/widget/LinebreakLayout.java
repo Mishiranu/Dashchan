@@ -50,23 +50,27 @@ public class LinebreakLayout extends ViewGroup
 		typedArray.recycle();
 	}
 	
+	@SuppressWarnings("unused")
 	public void setHorizontalSpacing(int horizontalSpacing)
 	{
 		mHorizontalSpacing = horizontalSpacing;
 		requestLayout();
 	}
 	
+	@SuppressWarnings("unused")
 	public void setVerticalSpacing(int verticalSpacing)
 	{
 		mVerticalSpacing = verticalSpacing;
 		requestLayout();
 	}
 	
+	@SuppressWarnings("unused")
 	public int getHorizontalSpacing()
 	{
 		return mHorizontalSpacing;
 	}
 	
+	@SuppressWarnings("unused")
 	public int getVerticalSpacing()
 	{
 		return mVerticalSpacing;
@@ -109,7 +113,7 @@ public class LinebreakLayout extends ViewGroup
 		for (int i = 0; i < count; i++)
 		{
 			View child = getChildAt(i);
-			LayoutParams layoutParams = (LayoutParams) child.getLayoutParams();
+			LayoutParams layoutParams = child.getLayoutParams();
 			boolean measure = child.getVisibility() != View.GONE;
 			boolean linebreak = measure && layoutParams.width == LayoutParams.MATCH_PARENT;
 			if (measure)
@@ -167,7 +171,7 @@ public class LinebreakLayout extends ViewGroup
 					View child = getChildAt(j);
 					if (child.getVisibility() != View.GONE)
 					{
-						LayoutParams layoutParams = (LayoutParams) child.getLayoutParams();
+						LayoutParams layoutParams = child.getLayoutParams();
 						lineHeight = Math.max(lineHeight, child.getMeasuredHeight());
 						// Line break
 						if (layoutParams.width == LayoutParams.MATCH_PARENT) break;
@@ -178,7 +182,7 @@ public class LinebreakLayout extends ViewGroup
 			View child = getChildAt(i);
 			if (child.getVisibility() != View.GONE)
 			{
-				LayoutParams layoutParams = (LayoutParams) child.getLayoutParams();
+				LayoutParams layoutParams = child.getLayoutParams();
 				int width = child.getMeasuredWidth();
 				int height = child.getMeasuredHeight();
 				// + 1 for ceil

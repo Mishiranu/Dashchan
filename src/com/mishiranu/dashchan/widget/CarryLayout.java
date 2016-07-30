@@ -48,23 +48,27 @@ public class CarryLayout extends ViewGroup
 		typedArray.recycle();
 	}
 	
+	@SuppressWarnings("unused")
 	public void setHorizontalSpacing(int horizontalSpacing)
 	{
 		mHorizontalSpacing = horizontalSpacing;
 		requestLayout();
 	}
 	
+	@SuppressWarnings("unused")
 	public void setVerticalSpacing(int verticalSpacing)
 	{
 		mVerticalSpacing = verticalSpacing;
 		requestLayout();
 	}
 	
+	@SuppressWarnings("unused")
 	public int getHorizontalSpacing()
 	{
 		return mHorizontalSpacing;
 	}
 	
+	@SuppressWarnings("unused")
 	public int getVerticalSpacing()
 	{
 		return mVerticalSpacing;
@@ -90,7 +94,7 @@ public class CarryLayout extends ViewGroup
 		for (int i = 0; i < count; i++)
 		{
 			View child = getChildAt(i);
-			LayoutParams layoutParams = (LayoutParams) child.getLayoutParams();
+			LayoutParams layoutParams = child.getLayoutParams();
 			boolean measure = child.getVisibility() != View.GONE;
 			if (measure)
 			{

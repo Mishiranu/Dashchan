@@ -65,7 +65,7 @@ public class HtmlParser implements ContentHandler
 				extra).convert();
 	}
 	
-	public static interface Markup
+	public interface Markup
 	{
 		public Object onBeforeTagStart(HtmlParser parser, StringBuilder builder, String tagName,
 				Attributes attributes, TagData tagData);
@@ -75,21 +75,20 @@ public class HtmlParser implements ContentHandler
 		
 		public int onListLineStart(HtmlParser parser, StringBuilder builder, boolean ordered, int line);
 		public void onCutBlock(HtmlParser parser, StringBuilder builder);
-		public void onStartEnd(HtmlParser parser, StringBuilder builder, boolean end);
 		
 		public SpanProvider initSpanProvider(HtmlParser parser);
 	}
 	
-	public static interface SpanProvider
+	public interface SpanProvider
 	{
 		public CharSequence transformBuilder(HtmlParser parser, StringBuilder builder);
 	}
 	
 	public static class TagData
 	{
-		public static int UNDEFINED = 0;
-		public static int ENABLED = 1;
-		public static int DISABLED = 2;
+		public static final int UNDEFINED = 0;
+		public static final int ENABLED = 1;
+		public static final int DISABLED = 2;
 		
 		public boolean block;
 		public boolean spaced;
@@ -145,7 +144,6 @@ public class HtmlParser implements ContentHandler
 		}
 		parser.setContentHandler(this);
 		StringBuilder builder = mBuilder;
-		mMarkup.onStartEnd(this, builder, false);
 		try
 		{
 			parser.parse(new InputSource(new StringReader(mSource)));
@@ -153,10 +151,6 @@ public class HtmlParser implements ContentHandler
 		catch (Exception e)
 		{
 			throw new RuntimeException(e);
-		}
-		finally
-		{
-			mMarkup.onStartEnd(this, builder, true);
 		}
 		int start = 0;
 		int end = 0;
@@ -404,9 +398,9 @@ public class HtmlParser implements ContentHandler
 	
 	private int mLastCharactersLength = 0;
 	private int mLastBlock = LAST_BLOCK_NONE;
-	private PositiveStateStack mBlockMode = new PositiveStateStack();
-	private PositiveStateStack mSpacedMode = new PositiveStateStack();
-	private PositiveStateStack mPreformattedMode = new PositiveStateStack();
+	private final PositiveStateStack mBlockMode = new PositiveStateStack();
+	private final PositiveStateStack mSpacedMode = new PositiveStateStack();
+	private final PositiveStateStack mPreformattedMode = new PositiveStateStack();
 	
 	private int mTableStart = 0;
 	
@@ -414,10 +408,9 @@ public class HtmlParser implements ContentHandler
 	private int mListStart = -1;
 	
 	@Override
-	public void startElement(String uri, String localName, String qName, Attributes attributes)
+	public void startElement(String uri, String tagName, String qName, Attributes attributes)
 	{
 		if (mParsingMode == MODE_UNESCAPE) return;
-		String tagName = localName;
 		StringBuilder builder = mBuilder;
 		if ("br".equals(tagName)) return; // Ignore
 		TagData tagData = fillBaseTagData(tagName);
@@ -470,10 +463,9 @@ public class HtmlParser implements ContentHandler
 	}
 	
 	@Override
-	public void endElement(String uri, String localName, String qName)
+	public void endElement(String uri, String tagName, String qName)
 	{
 		if (mParsingMode == MODE_UNESCAPE) return;
-		String tagName = localName;
 		StringBuilder builder = mBuilder;
 		if ("br".equals(tagName))
 		{
@@ -654,12 +646,6 @@ public class HtmlParser implements ContentHandler
 		
 		@Override
 		public void onCutBlock(HtmlParser parser, StringBuilder builder)
-		{
-			
-		}
-		
-		@Override
-		public void onStartEnd(HtmlParser parser, StringBuilder builder, boolean end)
 		{
 			
 		}

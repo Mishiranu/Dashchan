@@ -38,7 +38,6 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
@@ -57,6 +56,7 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.net.Uri;
@@ -227,6 +227,7 @@ public class HttpClient
 	
 	private static class AllowAllHostnameVerifier implements HostnameVerifier
 	{
+		@SuppressLint("BadHostnameVerifier")
 		@Override
 		public boolean verify(String hostname, SSLSession session)
 		{
@@ -310,7 +311,7 @@ public class HttpClient
 	@TargetApi(Build.VERSION_CODES.KITKAT)
 	private void executeInternal(HttpRequest request) throws HttpException
 	{
-		HttpURLConnection connection = null;
+		HttpURLConnection connection;
 		HttpHolder holder = request.mHolder;
 		try
 		{
@@ -401,7 +402,7 @@ public class HttpClient
 					// Scheme changed, so I must handle redirect myself
 					boolean oldHttps = connection instanceof HttpsURLConnection;
 					String redirectedUriString = connection.getHeaderField("Location");
-					Uri redirectedUri = null;
+					Uri redirectedUri;
 					if (!StringUtils.isEmpty(redirectedUriString))
 					{
 						redirectedUri = Uri.parse(redirectedUriString);
@@ -898,7 +899,6 @@ public class HttpClient
 				catch (InterruptedException e)
 				{
 					Thread.currentThread().interrupt();
-					return;
 				}
 				finally
 				{
@@ -907,63 +907,12 @@ public class HttpClient
 				}
 			}
 		}
-		/*if (delay > 0)
-		{
-			URL url = connection.getURL();
-			String key = url.getAuthority();
-			DelayLock delayLock;
-			synchronized (mDelayLocks)
-			{
-				delayLock = mDelayLocks.get(key);
-				if (delayLock == null)
-				{
-					delayLock = new DelayLock();
-					mDelayLocks.put(key, delayLock);
-				}
-			}
-			synchronized (delayLock)
-			{
-				try
-				{
-					while (delayLock.active != null) delayLock.wait();
-				}
-				catch (InterruptedException e)
-				{
-					Thread.currentThread().interrupt();
-				}
-				delayLock.active = connection;
-			}
-			try
-			{
-				Thread.sleep(delay);
-			}
-			catch (InterruptedException e)
-			{
-				Thread.currentThread().interrupt();
-			}
-		}*/
 	}
 	
+	@SuppressWarnings("UnusedParameters")
 	void onDisconnect(HttpURLConnection connection)
 	{
-		/*URL url = connection.getURL();
-		String key = url.getAuthority();
-		DelayLock delayLock;
-		synchronized (mDelayLocks)
-		{
-			delayLock = mDelayLocks.get(key);
-		}
-		if (delayLock != null)
-		{
-			synchronized (delayLock)
-			{
-				if (delayLock.active == connection)
-				{
-					delayLock.active = null;
-					delayLock.notifyAll();
-				}
-			}
-		}*/
+		
 	}
 	
 	private static class NoSSLv3SSLSocketFactory extends SSLSocketFactory
@@ -1000,7 +949,7 @@ public class HttpClient
 		}
 		
 		@Override
-		public Socket createSocket(String host, int port) throws IOException, UnknownHostException
+		public Socket createSocket(String host, int port) throws IOException
 		{
 			return wrap(mWrapped.createSocket(host, port));
 		}
@@ -1012,8 +961,7 @@ public class HttpClient
 		}
 		
 		@Override
-		public Socket createSocket(String host, int port, InetAddress localAddress, int localPort)
-				throws IOException, UnknownHostException
+		public Socket createSocket(String host, int port, InetAddress localAddress, int localPort) throws IOException
 		{
 			return wrap(mWrapped.createSocket(host, port, localAddress, localPort));
 		}

@@ -265,7 +265,7 @@ public class ForegroundManager implements Handler.Callback
 					args.getString(EXTRA_CAPTCHA_TYPE), args.getString(EXTRA_REQUIREMENT), captchaPass,
 					mayShowLoadButton, chanName, args.getString(EXTRA_BOARD_NAME), args.getString(EXTRA_THREAD_NUMBER));
 			task.executeOnExecutor(ReadCaptchaTask.THREAD_POOL_EXECUTOR);
-			return new Pair<Object, AsyncManager.Holder>(task, holder);
+			return new Pair<>(task, holder);
 		}
 		
 		@Override
@@ -349,7 +349,7 @@ public class ForegroundManager implements Handler.Callback
 			mBlackAndWhite = blackAndWhite;
 			boolean invertColors = blackAndWhite && !GraphicsUtils.isLight(ResourceUtils
 					.getDialogBackground(getActivity()));
-			mCaptchaController.showCaptcha(captchaState, input, image, large, blackAndWhite, invertColors);
+			mCaptchaController.showCaptcha(captchaState, input, image, large, invertColors);
 		}
 		
 		private void finishDialog(CaptchaPendingData pendingData)
@@ -571,9 +571,8 @@ public class ForegroundManager implements Handler.Callback
 				boolean fallback = ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_FALLBACK.equals(mCaptchaType);
 				try
 				{
-					String recaptchaResponse = RecaptchaReader.getInstance().getResponseField2(mHolder, mApiKey,
+					mInput = RecaptchaReader.getInstance().getResponseField2(mHolder, mApiKey,
 							mChallenge, mInput, fallback);
-					mInput = recaptchaResponse;
 					return true;
 				}
 				catch (HttpException e)
@@ -706,11 +705,7 @@ public class ForegroundManager implements Handler.Callback
 		{
 			super.onActivityCreated(savedInstanceState);
 			PendingData pendingData = getPendingData();
-			if (pendingData == null)
-			{
-				dismissAllowingStateLoss();
-				return;
-			}
+			if (pendingData == null) dismissAllowingStateLoss();
 		}
 		
 		@Override

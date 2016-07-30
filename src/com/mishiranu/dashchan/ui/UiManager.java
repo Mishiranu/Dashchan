@@ -100,7 +100,7 @@ public class UiManager
 	// Invalidate comment view if contains post item
 	public static final int MESSAGE_PERFORM_LOAD_THUMBNAIL = 8;
 	
-	public static interface Observer
+	public interface Observer
 	{
 		public void onPostItemMessage(PostItem postItem, int message);
 	}
@@ -121,7 +121,7 @@ public class UiManager
 		return mObservable;
 	}
 	
-	public static interface PostsProvider extends Iterable<PostItem>
+	public interface PostsProvider extends Iterable<PostItem>
 	{
 		public PostItem findPostItem(String postNumber);
 	}
@@ -180,15 +180,15 @@ public class UiManager
 		}
 	}
 	
-	public static interface ThumbnailClickListener extends View.OnClickListener
+	public interface ThumbnailClickListener extends View.OnClickListener
 	{
 		public void update(int index, boolean mayShowDialog);
-	};
+	}
 	
-	public static interface ThumbnailLongClickListener extends View.OnLongClickListener
+	public interface ThumbnailLongClickListener extends View.OnLongClickListener
 	{
 		public void update(AttachmentItem attachmentItem);
-	};
+	}
 	
 	static abstract class Holder
 	{

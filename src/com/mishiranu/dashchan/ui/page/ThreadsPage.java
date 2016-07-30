@@ -100,7 +100,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 			if (extra.cachedThreads != null && cachedPostItems.size() > 0)
 			{
 				onDeserializeThreadsCompleteInternal(true, extra.cachedThreads,
-						CommonUtils.toArray(cachedPostItems, PostItem[].class), true);
+						CommonUtils.toArray(cachedPostItems, PostItem[].class));
 			}
 			else
 			{
@@ -508,7 +508,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 				: side == PullableWrapper.Side.BOTTOM ? RefreshPage.NEXT : RefreshPage.PREVIOUS, true);
 	}
 	
-	private static enum RefreshPage {CURRENT, PREVIOUS, NEXT, CATALOG};
+	private enum RefreshPage {CURRENT, PREVIOUS, NEXT, CATALOG}
 	
 	private static final int PAGE_NUMBER_CATALOG = ChanPerformer.ReadThreadsData.PAGE_NUMBER_CATALOG;
 	
@@ -591,11 +591,10 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		mDeserializeTask = null;
 		getListView().getWrapper().cancelBusyState();
 		switchView(ViewType.LIST, null);
-		onDeserializeThreadsCompleteInternal(success, threads, postItems, false);
+		onDeserializeThreadsCompleteInternal(success, threads, postItems);
 	}
 	
-	private void onDeserializeThreadsCompleteInternal(boolean success, Threads threads, PostItem[][] postItems,
-			boolean isLoadedExplicitly)
+	private void onDeserializeThreadsCompleteInternal(boolean success, Threads threads, PostItem[][] postItems)
 	{
 		mDeserializeTask = null;
 		getListView().getWrapper().cancelBusyState();

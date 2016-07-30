@@ -170,7 +170,7 @@ public class DownloadManager
 	
 	private static class DialogDirectory implements Comparable<DialogDirectory>
 	{
-		public final ArrayList<String> mSegments = new ArrayList<String>();
+		public final ArrayList<String> mSegments = new ArrayList<>();
 		public long lastModified;
 		
 		public static DialogDirectory create(File directory, File root)
@@ -609,7 +609,7 @@ public class DownloadManager
 		}
 	}
 	
-	private static interface ReplaceCallback
+	private interface ReplaceCallback
 	{
 		public void onConfirmReplacement(Context context, ArrayList<DownloadService.DownloadItem> downloadItems);
 	}
@@ -617,24 +617,26 @@ public class DownloadManager
 	private void confirmReplacement(final Context context, final File directory,
 			final ArrayList<DownloadService.DownloadItem> downloadItems, final ReplaceCallback callback)
 	{
-		HashSet<String> availableFileGqsns = new HashSet<>();
-		final ArrayList<DownloadService.DownloadItem> availableItems = new ArrayList<>();
-		File lastExistedFile = null;
+		ArrayList<DownloadService.DownloadItem> availableItems = new ArrayList<>();
 		int queued = 0, exists = 0;
-		for (DownloadService.DownloadItem downloadItem : downloadItems)
+		File lastExistedFile = null;
 		{
-			File file = new File(directory, downloadItem.name);
-			String gqsn = getFileGlobalQueueSetName(file);
-			if (mQueuedFiles.contains(gqsn) || availableFileGqsns.contains(gqsn)) queued++;
-			else if (file.exists())
+			HashSet<String> futureQueuedFiles = new HashSet<>();
+			for (DownloadService.DownloadItem downloadItem : downloadItems)
 			{
-				exists++;
-				lastExistedFile = file;
-			}
-			else
-			{
-				availableFileGqsns.add(gqsn);
-				availableItems.add(downloadItem);
+				File file = new File(directory, downloadItem.name);
+				String name = getFileGlobalQueueSetName(file);
+				if (mQueuedFiles.contains(name) || futureQueuedFiles.contains(name)) queued++;
+				else if (file.exists())
+				{
+					exists++;
+					lastExistedFile = file;
+				}
+				else
+				{
+					futureQueuedFiles.add(name);
+					availableItems.add(downloadItem);
+				}
 			}
 		}
 		if (availableItems.size() != downloadItems.size())
@@ -665,61 +667,58 @@ public class DownloadManager
 			radioGroup.setPadding(0, (int) (12f * density), 0, 0);
 			linearLayout.addView(radioGroup);
 			AlertDialog.Builder builder = new AlertDialog.Builder(context).setView(linearLayout)
-					.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
+					.setPositiveButton(android.R.string.ok, (dialog, which) ->
 			{
-				@Override
-				public void onClick(DialogInterface dialog, int which)
+				switch (radioGroup.getCheckedRadioButtonId())
 				{
-					switch (radioGroup.getCheckedRadioButtonId())
+					case android.R.id.button1:
 					{
-						case android.R.id.button1:
+						callback.onConfirmReplacement(context, downloadItems);
+						break;
+					}
+					case android.R.id.button2:
+					{
+						HashSet<String> futureQueuedFiles = new HashSet<>();
+						ArrayList<DownloadService.DownloadItem> finalItems = new ArrayList<>(downloadItems.size());
+						for (DownloadService.DownloadItem downloadItem : downloadItems)
 						{
-							callback.onConfirmReplacement(context, downloadItems);
-							break;
-						}
-						case android.R.id.button2:
-						{
-							HashSet<String> availableFileGqsns = new HashSet<>();
-							ArrayList<DownloadService.DownloadItem> finalItems = new ArrayList<>(downloadItems.size());
-							for (DownloadService.DownloadItem downloadItem : downloadItems)
+							if (availableItems.contains(downloadItem))
 							{
-								if (availableItems.contains(downloadItem))
-								{
-									availableFileGqsns.add(getFileGlobalQueueSetName(new File(directory,
-											downloadItem.name)));
-									finalItems.add(downloadItem);
-								}
-								else
-								{
-									String fileName = downloadItem.name;
-									String dotExtension = "." + StringUtils.getFileExtension(fileName);
-									fileName = fileName.substring(0, fileName.length() - dotExtension.length());
-									File file = null;
-									String gqsn = null;
-									int i = 0;
-									do
-									{
-										file = new File(directory, fileName + (i > 0 ? "-" + i : "") + dotExtension);
-										gqsn = getFileGlobalQueueSetName(file);
-										i++;
-									}
-									while (file.exists() || mQueuedFiles.contains(gqsn) ||
-											availableFileGqsns.contains(gqsn));
-									availableFileGqsns.add(gqsn);
-									finalItems.add(new DownloadService.DownloadItem(downloadItem.chanName,
-											downloadItem.uri, file.getName()));
-								}
+								futureQueuedFiles.add(getFileGlobalQueueSetName(new File(directory,
+										downloadItem.name)));
+								finalItems.add(downloadItem);
 							}
-							callback.onConfirmReplacement(context, finalItems);
-							break;
+							else
+							{
+								String fileName = downloadItem.name;
+								String dotExtension = "." + StringUtils.getFileExtension(fileName);
+								fileName = fileName.substring(0, fileName.length() - dotExtension.length());
+								File file;
+								String name;
+								int i = 0;
+								do
+								{
+									file = new File(directory, fileName + (i > 0 ? "-" + i : "") + dotExtension);
+									name = getFileGlobalQueueSetName(file);
+									i++;
+								}
+								while (file.exists() || mQueuedFiles.contains(name) ||
+										futureQueuedFiles.contains(name));
+								futureQueuedFiles.add(name);
+								finalItems.add(new DownloadService.DownloadItem(downloadItem.chanName,
+										downloadItem.uri, file.getName()));
+							}
 						}
-						case android.R.id.button3:
-						{
-							callback.onConfirmReplacement(context, availableItems);
-							break;
-						}
+						callback.onConfirmReplacement(context, finalItems);
+						break;
+					}
+					case android.R.id.button3:
+					{
+						callback.onConfirmReplacement(context, availableItems);
+						break;
 					}
 				}
+				
 			}).setNegativeButton(android.R.string.cancel, null);
 			AlertDialog dialog;
 			if (exists == 1)

@@ -63,15 +63,15 @@ public class PhotoViewPager extends ViewGroup
 		mAdapter = adapter;
 		for (int i = 0; i < 3; i++)
 		{
-			View view = adapter.onCreateView(context, this);
+			View view = adapter.onCreateView(this);
 			super.addView(view, -1, generateDefaultLayoutParams());
 			mPhotoViews.add(adapter.getPhotoView(view));
 		}
 	}
 	
-	public static interface Adapter
+	public interface Adapter
 	{
-		public View onCreateView(Context context, ViewGroup parent);
+		public View onCreateView(ViewGroup parent);
 		public PhotoView getPhotoView(View view);
 		public void onPositionChange(PhotoViewPager view, int index, View currentView, View leftView, View rightView,
 				boolean manually);
@@ -447,8 +447,8 @@ public class PhotoViewPager extends ViewGroup
 		}
 	}
 	
-	private Runnable mSwipingStateRunnableTrue = new SwipingStateRunnable(true);
-	private Runnable mSwipingStateRunnableFalse = new SwipingStateRunnable(false);
+	private final Runnable mSwipingStateRunnableTrue = new SwipingStateRunnable(true);
+	private final Runnable mSwipingStateRunnableFalse = new SwipingStateRunnable(false);
 	
 	private class SwipingStateRunnable implements Runnable
 	{

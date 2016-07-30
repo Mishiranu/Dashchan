@@ -48,7 +48,7 @@ public class WeakObservable<T> implements Iterable<T>
 	
 	private class WeakIterator implements Iterator<T>
 	{
-		private Iterator<WeakReference<T>> mIterator = mObservers.iterator();
+		private final Iterator<WeakReference<T>> mIterator = mObservers.iterator();
 		
 		private T mNext;
 		
