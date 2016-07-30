@@ -380,21 +380,8 @@ public class ForegroundManager implements Handler.Callback
 			EditText captchaInputView = (EditText) container.findViewById(R.id.captcha_input);
 			mCaptchaController.setupViews(container, null, captchaInputView, true, captcha);
 			AlertDialog alertDialog = new AlertDialog.Builder(activity).setView(container).setTitle(R.string
-					.text_confirmation).setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
-			{
-				@Override
-				public void onClick(DialogInterface dialog, int which)
-				{
-					onConfirmCaptcha();
-				}
-			}).setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener()
-			{
-				@Override
-				public void onClick(DialogInterface dialog, int which)
-				{
-					cancelInternal();
-				}
-			}).create();
+					.text_confirmation).setPositiveButton(android.R.string.ok, (dialog, which) -> onConfirmCaptcha())
+					.setNegativeButton(android.R.string.cancel, (dialog, which) -> cancelInternal()).create();
 			alertDialog.setCanceledOnTouchOutside(false);
 			return alertDialog;
 		}
@@ -974,13 +961,9 @@ public class ForegroundManager implements Handler.Callback
 			final AlertDialog alertDialog = new AlertDialog.Builder(activity).setView(scrollView)
 					.setTitle(descriptionText).setPositiveButton(android.R.string.ok, this)
 					.setNegativeButton(android.R.string.cancel, this).create();
-			alertDialog.setOnShowListener(new DialogInterface.OnShowListener()
+			alertDialog.setOnShowListener(dialog ->
 			{
-				@Override
-				public void onShow(DialogInterface dialog)
-				{
-					alertDialog.getWindow().setLayout((int) (320 * density), WindowManager.LayoutParams.WRAP_CONTENT);
-				}
+				alertDialog.getWindow().setLayout((int) (320 * density), WindowManager.LayoutParams.WRAP_CONTENT);
 			});
 			return alertDialog;
 		}

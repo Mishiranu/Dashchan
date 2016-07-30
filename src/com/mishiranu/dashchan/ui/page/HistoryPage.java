@@ -18,7 +18,6 @@ package com.mishiranu.dashchan.ui.page;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.net.Uri;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -84,15 +83,12 @@ public class HistoryPage extends ListPage<HistoryAdapter>
 			{
 				new AlertDialog.Builder(getActivity()).setMessage(R.string.message_clear_history_confirm)
 						.setNegativeButton(android.R.string.cancel, null)
-						.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
+						.setPositiveButton(android.R.string.ok, (dialog, which1) ->
 				{
-					@Override
-					public void onClick(DialogInterface dialog, int which)
-					{
-						HistoryDatabase.getInstance().clearAllHistory(getPageHolder().chanName);
-						getAdapter().clear();
-						switchView(ViewType.ERROR, R.string.message_empty_history);
-					}
+					HistoryDatabase.getInstance().clearAllHistory(getPageHolder().chanName);
+					getAdapter().clear();
+					switchView(ViewType.ERROR, R.string.message_empty_history);
+					
 				}).show();
 				return true;
 			}

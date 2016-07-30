@@ -516,19 +516,15 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 	private boolean mEnqueuedShowState = true;
 	private long mLastShowStateChanged;
 	
-	private final Runnable mShowStateRunnable = new Runnable()
+	private final Runnable mShowStateRunnable = () ->
 	{
-		@Override
-		public void run()
+		if (mEnqueuedShowState != isActionBarShowing())
 		{
-			if (mEnqueuedShowState != isActionBarShowing())
-			{
-				boolean show = mEnqueuedShowState;
-				setState(STATE_SHOW, show);
-				applyShowActionBar(show);
-				mLastShowStateChanged = System.currentTimeMillis();
-				updatePaddings(show);
-			}
+			boolean show = mEnqueuedShowState;
+			setState(STATE_SHOW, show);
+			applyShowActionBar(show);
+			mLastShowStateChanged = System.currentTimeMillis();
+			updatePaddings(show);
 		}
 	};
 	
@@ -784,14 +780,7 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 		}
 	}
 	
-	private final Runnable mStatusGuardHideRunnable = new Runnable()
-	{
-		@Override
-		public void run()
-		{
-			mStatusGuardView.setVisibility(View.GONE);
-		}
-	};
+	private final Runnable mStatusGuardHideRunnable = () -> mStatusGuardView.setVisibility(View.GONE);
 	
 	private static final Field FAST_SCROLL_FIELD;
 	private static final Method UPDATE_LAYOUT_METHOD;
@@ -815,21 +804,17 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 		UPDATE_LAYOUT_METHOD = updateLayoutMethod;
 	}
 	
-	private final Runnable mScrollerUpdater = new Runnable()
+	private final Runnable mScrollerUpdater = () ->
 	{
-		@Override
-		public void run()
+		if (UPDATE_LAYOUT_METHOD != null)
 		{
-			if (UPDATE_LAYOUT_METHOD != null)
+			try
 			{
-				try
-				{
-					UPDATE_LAYOUT_METHOD.invoke(FAST_SCROLL_FIELD.get(mListView));
-				}
-				catch (Exception e)
-				{
-					
-				}
+				UPDATE_LAYOUT_METHOD.invoke(FAST_SCROLL_FIELD.get(mListView));
+			}
+			catch (Exception e)
+			{
+				
 			}
 		}
 	};

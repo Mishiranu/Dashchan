@@ -84,14 +84,11 @@ public class LauncherActivity extends Activity
 			{
 				Context context = new ContextThemeWrapper(this, Preferences.getThemeResource());
 				new AlertDialog.Builder(context).setMessage(R.string.message_memory_access_permission)
-						.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
+						.setPositiveButton(android.R.string.ok, (dialog, which) ->
 				{
-					@Override
-					public void onClick(DialogInterface dialog, int which)
-					{
-						mState = STATE_PERMISSION_REQUEST;
-						requestPermissions(new String[] {android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
-					}
+					mState = STATE_PERMISSION_REQUEST;
+					requestPermissions(new String[] {android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
+					
 				}).setCancelable(false).show();
 				return;
 			}
@@ -109,30 +106,27 @@ public class LauncherActivity extends Activity
 		if (!extensionItems.isEmpty())
 		{
 			final ChanManager.ExtensionItem extensionItem = extensionItems.iterator().next();
-			DialogInterface.OnClickListener onClickListener = new DialogInterface.OnClickListener()
+			DialogInterface.OnClickListener onClickListener = (dialog, which) ->
 			{
-				@Override
-				public void onClick(DialogInterface dialog, int which)
+				switch (which)
 				{
-					switch (which)
+					case AlertDialog.BUTTON_POSITIVE:
+					case AlertDialog.BUTTON_NEGATIVE:
 					{
-						case AlertDialog.BUTTON_POSITIVE:
-						case AlertDialog.BUTTON_NEGATIVE:
-						{
-							ChanManager.getInstance().changeUntrustedExtensionState(extensionItem.extensionName,
-									which == AlertDialog.BUTTON_POSITIVE);
-							extensionItems.remove(extensionItem);
-							break;
-						}
-						case AlertDialog.BUTTON_NEUTRAL:
-						{
-							startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-									.setData(Uri.parse("package:" + extensionItem.packageInfo.packageName)));
-							break;
-						}
+						ChanManager.getInstance().changeUntrustedExtensionState(extensionItem.extensionName,
+								which == AlertDialog.BUTTON_POSITIVE);
+						extensionItems.remove(extensionItem);
+						break;
 					}
-					navigateExtensionsTrust(extensionItems);
+					case AlertDialog.BUTTON_NEUTRAL:
+					{
+						startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+								.setData(Uri.parse("package:" + extensionItem.packageInfo.packageName)));
+						break;
+					}
 				}
+				navigateExtensionsTrust(extensionItems);
+				
 			};
 			Context context = new ContextThemeWrapper(this, Preferences.getThemeResource());
 			String packageName = extensionItem.packageInfo.packageName;

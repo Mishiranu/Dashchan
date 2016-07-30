@@ -30,7 +30,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
@@ -404,17 +403,13 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		setActionBarLocked(false);
 		if (animated)
 		{
-			mQueuedHandler = new Runnable()
+			mQueuedHandler = () ->
 			{
-				@Override
-				public void run()
-				{
-					mQueuedHandler = null;
-					if (mListView.getAnimation() != null) mListView.getAnimation().cancel();
-					mListView.setAlpha(1f);
-					handleDataAfterAnimation(content, chanName, boardName, threadNumber, postNumber, threadTitle,
-							searchQuery, fromCache, true);
-				}
+				mQueuedHandler = null;
+				if (mListView.getAnimation() != null) mListView.getAnimation().cancel();
+				mListView.setAlpha(1f);
+				handleDataAfterAnimation(content, chanName, boardName, threadNumber, postNumber, threadTitle,
+						searchQuery, fromCache, true);
 			};
 			mHandler.postDelayed(mQueuedHandler, 300);
 			ObjectAnimator alphaAnimator = ObjectAnimator.ofFloat(mListView, View.ALPHA, 1f, 0f);
@@ -700,15 +695,7 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		}
 	}
 	
-	private final Runnable mInstallationCallback = new Runnable()
-	{
-		@Override
-		public void run()
-		{
-			showRestartDialogIfNeeded();
-		}
-	};
-	
+	private final Runnable mInstallationCallback = () -> showRestartDialogIfNeeded();
 	private boolean mMayShowRestartDialog = true;
 	
 	private void showRestartDialogIfNeeded()
@@ -717,25 +704,15 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		{
 			mMayShowRestartDialog = false;
 			AlertDialog dialog = new AlertDialog.Builder(this).setMessage(R.string.message_packages_installed)
-					.setPositiveButton(R.string.action_restart, new DialogInterface.OnClickListener()
+					.setPositiveButton(R.string.action_restart, (d, which) ->
 			{
-				@Override
-				public void onClick(DialogInterface dialog, int which)
-				{
-					Bundle outState = new Bundle();
-					writePagesState(outState);
-					mPageManager.writeToStorage(outState);
-					NavigationUtils.restartApplication(MainActivity.this);
-				}
+				Bundle outState = new Bundle();
+				writePagesState(outState);
+				mPageManager.writeToStorage(outState);
+				NavigationUtils.restartApplication(MainActivity.this);
+				
 			}).setNegativeButton(android.R.string.cancel, null).create();
-			dialog.setOnDismissListener(new DialogInterface.OnDismissListener()
-			{
-				@Override
-				public void onDismiss(DialogInterface dialog)
-				{
-					mMayShowRestartDialog = true;
-				}
-			});
+			dialog.setOnDismissListener(d -> mMayShowRestartDialog = true);
 			dialog.setCanceledOnTouchOutside(false);
 			dialog.show();
 			mUiManager.dialog().notifySwitchBackground();
@@ -782,41 +759,30 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		private boolean mWasSubmit = false;
 		private boolean mMenuUpdated = false;
 		
-		private final Runnable mRestoreLastSearchQueryRunnable = new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				mSearchView.setQuery(mLastSearchQuery, false);
-			}
-		};
+		private final Runnable mRestoreLastSearchQueryRunnable = () -> mSearchView.setQuery(mLastSearchQuery, false);
 		
 		/*
 		 * In Marshmallow keyboard is not showing when action menu item is not shown as action. Fix it here.
 		 */
-		private final Runnable mMarshmallowShowKeyboardRunnable = new Runnable()
+		private final Runnable mMarshmallowShowKeyboardRunnable = () ->
 		{
-			@Override
-			public void run()
+			View textView = null;
+			try
 			{
-				View textView = null;
-				try
+				Field field = SearchView.class.getDeclaredField("mSearchSrcTextView");
+				field.setAccessible(true);
+				textView = (View) field.get(mSearchView);
+			}
+			catch (Exception e)
+			{
+				
+			}
+			if (textView != null)
+			{
+				InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+				if (inputMethodManager != null)
 				{
-					Field field = SearchView.class.getDeclaredField("mSearchSrcTextView");
-					field.setAccessible(true);
-					textView = (View) field.get(mSearchView);
-				}
-				catch (Exception e)
-				{
-					
-				}
-				if (textView != null)
-				{
-					InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-					if (inputMethodManager != null)
-					{
-						inputMethodManager.showSoftInput(textView, InputMethodManager.SHOW_IMPLICIT);
-					}
+					inputMethodManager.showSoftInput(textView, InputMethodManager.SHOW_IMPLICIT);
 				}
 			}
 		};
@@ -1085,19 +1051,15 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		scrollView.addView(outer, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 		final AlertDialog dialog = new AlertDialog.Builder(this).setTitle(R.string.action_change_theme)
 				.setView(scrollView).setNegativeButton(android.R.string.cancel, null).create();
-		View.OnClickListener listener = new View.OnClickListener()
+		View.OnClickListener listener = v ->
 		{
-			@Override
-			public void onClick(View v)
+			int index = (int) v.getTag();
+			if (index != checkedItem)
 			{
-				int index = (int) v.getTag();
-				if (index != checkedItem)
-				{
-					Preferences.setTheme(Preferences.VALUES_THEME[index]);
-					recreate();
-				}
-				dialog.dismiss();
+				Preferences.setTheme(Preferences.VALUES_THEME[index]);
+				recreate();
 			}
+			dialog.dismiss();
 		};
 		int circleSize = (int) (56f * density);
 		int itemPadding = (int) (12f * density);
@@ -1341,13 +1303,9 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		return result;
 	}
 	
-	private final Runnable mPreferencesRunnable = new Runnable()
+	private final Runnable mPreferencesRunnable = () ->
 	{
-		@Override
-		public void run()
-		{
-			startActivity(new Intent(MainActivity.this, PreferencesActivity.class));
-		}
+		startActivity(new Intent(MainActivity.this, PreferencesActivity.class));
 	};
 	
 	@Override
@@ -1498,14 +1456,7 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		}
 	}
 	
-	private final Runnable mShowScaleRunnable = new Runnable()
-	{
-		@Override
-		public void run()
-		{
-			showScaleAnimation(false);
-		}
-	};
+	private final Runnable mShowScaleRunnable = () -> showScaleAnimation(false);
 	
 	@Override
 	public void showScaleAnimation()

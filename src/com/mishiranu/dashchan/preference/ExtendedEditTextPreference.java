@@ -94,13 +94,9 @@ public class ExtendedEditTextPreference extends EditTextPreference
 			Button button = ((AlertDialog) getDialog()).getButton(AlertDialog.BUTTON_NEUTRAL);
 			if (button != null)
 			{
-				button.setOnClickListener(new View.OnClickListener()
+				button.setOnClickListener(v ->
 				{
-					@Override
-					public void onClick(View v)
-					{
-						ExtendedEditTextPreference.this.onClick(getDialog(), AlertDialog.BUTTON_NEUTRAL);
-					}
+					ExtendedEditTextPreference.this.onClick(getDialog(), AlertDialog.BUTTON_NEUTRAL);
 				});
 			}
 		}

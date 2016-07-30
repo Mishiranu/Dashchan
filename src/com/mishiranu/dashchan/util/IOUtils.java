@@ -142,13 +142,9 @@ public class IOUtils
 		}
 	}
 	
-	public static final Comparator<File> SORT_BY_DATE = new Comparator<File>()
+	public static final Comparator<File> SORT_BY_DATE = (lhs, rhs) ->
 	{
-		@Override
-		public int compare(File lhs, File rhs)
-		{
-			return ((Long) lhs.lastModified()).compareTo(rhs.lastModified());
-		}
+		return ((Long) lhs.lastModified()).compareTo(rhs.lastModified());
 	};
 	
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)

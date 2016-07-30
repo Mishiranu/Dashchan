@@ -54,17 +54,7 @@ public class ListPosition
 	
 	public void apply(final ListView listView)
 	{
-		if (listView.getHeight() == 0)
-		{
-			listView.post(new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					listView.setSelectionFromTop(position, y);
-				}
-			});
-		}
+		if (listView.getHeight() == 0) listView.post(() -> listView.setSelectionFromTop(position, y));
 		else listView.setSelectionFromTop(position, y);
 	}
 	

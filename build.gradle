@@ -5,7 +5,11 @@ buildscript {
 
 	dependencies {
 		classpath 'com.android.tools.build:gradle:2.1.0'
+		classpath 'me.tatarka:gradle-retrolambda:3.2.5'
+		classpath 'me.tatarka.retrolambda.projectlombok:lombok.ast:0.2.3.a2'
 	}
+	
+	configurations.classpath.exclude group: 'com.android.tools.external.lombok'
 }
 
 allprojects {
@@ -15,6 +19,7 @@ allprojects {
 }
 
 apply plugin: 'com.android.application'
+apply plugin: 'me.tatarka.retrolambda'
 
 dependencies {
 	provided 'org.ccil.cowan.tagsoup:tagsoup:1.2.1'
@@ -82,8 +87,8 @@ android {
 	}
 
 	compileOptions {
-		sourceCompatibility JavaVersion.VERSION_1_7
-		targetCompatibility JavaVersion.VERSION_1_7
+		sourceCompatibility JavaVersion.VERSION_1_8
+		targetCompatibility JavaVersion.VERSION_1_8
 	}
 }
 

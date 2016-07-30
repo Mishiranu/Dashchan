@@ -507,54 +507,51 @@ public class VideoPlayer
 	
 	private long mSeekToPosition = SEEK_TO_WAIT;
 	private final Semaphore mSeekerMutex = new Semaphore(1);
-	private final Thread mSeekerThread = new Thread(new Runnable()
+	private final Thread mSeekerThread = new Thread(() ->
 	{
-		@Override
-		public void run()
+		Thread seekerThread = Thread.currentThread();
+		while (true)
 		{
-			while (true)
+			long seekToPosition = SEEK_TO_WAIT;
+			synchronized (seekerThread)
 			{
-				long seekToPosition = SEEK_TO_WAIT;
-				synchronized (mSeekerThread)
-				{
-					while (mSeekToPosition == SEEK_TO_WAIT && !mConsumed)
-					{
-						try
-						{
-							mSeekerThread.wait();
-						}
-						catch (InterruptedException e)
-						{
-							continue;
-						}
-					}
-					if (mConsumed) return;
-					if (!mConsumed && mInitialized && mSeekToPosition >= 0L)
-					{
-						seekToPosition = mSeekToPosition;
-						mSeekerMutex.acquireUninterruptibly();
-					}
-				}
-				if (seekToPosition >= 0L)
+				while (mSeekToPosition == SEEK_TO_WAIT && !mConsumed)
 				{
 					try
 					{
-						HANDLER.removeMessages(MESSAGE_END_BUFFERING);
-						HANDLER.sendMessageDelayed(HANDLER.obtainMessage(MESSAGE_START_BUFFERING,
-								VideoPlayer.this), 200);
-						HANDLER.sendMessageDelayed(HANDLER.obtainMessage(MESSAGE_RETRY_SET_POSITION,
-								new Object[] {VideoPlayer.this, seekToPosition}), 1000);
-						setPosition(mPointer, seekToPosition);
-						HANDLER.removeMessages(MESSAGE_RETRY_SET_POSITION);
-						HANDLER.removeMessages(MESSAGE_START_BUFFERING);
-						HANDLER.sendMessageDelayed(HANDLER.obtainMessage(MESSAGE_END_BUFFERING,
-								VideoPlayer.this), 100);
+						seekerThread.wait();
 					}
-					finally
+					catch (InterruptedException e)
 					{
-						mSeekToPosition = SEEK_TO_WAIT;
-						mSeekerMutex.release();
+						continue;
 					}
+				}
+				if (mConsumed) return;
+				if (!mConsumed && mInitialized && mSeekToPosition >= 0L)
+				{
+					seekToPosition = mSeekToPosition;
+					mSeekerMutex.acquireUninterruptibly();
+				}
+			}
+			if (seekToPosition >= 0L)
+			{
+				try
+				{
+					HANDLER.removeMessages(MESSAGE_END_BUFFERING);
+					HANDLER.sendMessageDelayed(HANDLER.obtainMessage(MESSAGE_START_BUFFERING,
+							VideoPlayer.this), 200);
+					HANDLER.sendMessageDelayed(HANDLER.obtainMessage(MESSAGE_RETRY_SET_POSITION,
+							new Object[] {VideoPlayer.this, seekToPosition}), 1000);
+					setPosition(mPointer, seekToPosition);
+					HANDLER.removeMessages(MESSAGE_RETRY_SET_POSITION);
+					HANDLER.removeMessages(MESSAGE_START_BUFFERING);
+					HANDLER.sendMessageDelayed(HANDLER.obtainMessage(MESSAGE_END_BUFFERING,
+							VideoPlayer.this), 100);
+				}
+				finally
+				{
+					mSeekToPosition = SEEK_TO_WAIT;
+					mSeekerMutex.release();
 				}
 			}
 		}

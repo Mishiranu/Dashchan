@@ -127,54 +127,47 @@ public class MarkupButtonProvider
 		return new Pair<>(supportedTags, displayedTags);
 	}
 	
-	public static Iterable<MarkupButtonProvider> iterable(final int displayedTags)
+	public static Iterable<MarkupButtonProvider> iterable(int displayedTags)
 	{
-		return new Iterable<MarkupButtonProvider>()
+		return () -> new Iterator<MarkupButtonProvider>()
 		{
+			private int mDisplayedTags = displayedTags;
+			private MarkupButtonProvider mNext;
+			private int mLast = -1;
+			
 			@Override
-			public Iterator<MarkupButtonProvider> iterator()
+			public boolean hasNext()
 			{
-				return new Iterator<MarkupButtonProvider>()
+				if (mNext == null)
 				{
-					private int mDisplayedTags = displayedTags;
-					private MarkupButtonProvider mNext;
-					private int mLast = -1;
-					
-					@Override
-					public boolean hasNext()
+					for (int i = mLast + 1; i < PROVIDERS.size(); i++)
 					{
-						if (mNext == null)
+						MarkupButtonProvider provider = PROVIDERS.get(i);
+						if (FlagUtils.get(mDisplayedTags, provider.tag))
 						{
-							for (int i = mLast + 1; i < PROVIDERS.size(); i++)
-							{
-								MarkupButtonProvider provider = PROVIDERS.get(i);
-								if (FlagUtils.get(mDisplayedTags, provider.tag))
-								{
-									mDisplayedTags = FlagUtils.set(mDisplayedTags, provider.tag, false);
-									mLast = i;
-									mNext = provider;
-									break;
-								}
-							}
+							mDisplayedTags = FlagUtils.set(mDisplayedTags, provider.tag, false);
+							mLast = i;
+							mNext = provider;
+							break;
 						}
-						return mNext != null;
 					}
-					
-					@Override
-					public MarkupButtonProvider next()
-					{
-						if (!hasNext()) throw new NoSuchElementException();
-						MarkupButtonProvider provider = mNext;
-						mNext = null;
-						return provider;
-					}
-					
-					@Override
-					public void remove()
-					{
-						throw new UnsupportedOperationException();
-					}
-				};
+				}
+				return mNext != null;
+			}
+			
+			@Override
+			public MarkupButtonProvider next()
+			{
+				if (!hasNext()) throw new NoSuchElementException();
+				MarkupButtonProvider provider = mNext;
+				mNext = null;
+				return provider;
+			}
+			
+			@Override
+			public void remove()
+			{
+				throw new UnsupportedOperationException();
 			}
 		};
 	}

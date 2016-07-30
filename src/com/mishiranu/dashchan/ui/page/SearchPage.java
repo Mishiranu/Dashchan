@@ -275,22 +275,14 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 							if (fromGroupMode)
 							{
 								final int firstNewIndex = existingPostNumbers.size();
-								listView.post(new Runnable()
+								listView.post(() ->
 								{
-									@Override
-									public void run()
+									if (isDestroyed()) return;
+									getListView().setSelection(Math.max(firstNewIndex - 8, 0));
+									getListView().post(() ->
 									{
-										if (isDestroyed()) return;
-										getListView().setSelection(Math.max(firstNewIndex - 8, 0));
-										getListView().post(new Runnable()
-										{
-											@Override
-											public void run()
-											{
-												if (!isDestroyed()) ListScroller.scrollTo(getListView(), firstNewIndex);
-											}
-										});
-									}
+										if (!isDestroyed()) ListScroller.scrollTo(getListView(), firstNewIndex);
+									});
 								});
 							}
 							else ListScroller.scrollTo(getListView(), existingPostNumbers.size());

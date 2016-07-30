@@ -614,14 +614,7 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 	
 	public Iterable<PostItem> iterate(final boolean ascending, final int from)
 	{
-		return new Iterable<PostItem>()
-		{
-			@Override
-			public Iterator<PostItem> iterator()
-			{
-				return new PostsIterator(ascending, from);
-			}
-		};
+		return () -> new PostsIterator(ascending, from);
 	}
 	
 	private class PostsIterator implements Iterator<PostItem>

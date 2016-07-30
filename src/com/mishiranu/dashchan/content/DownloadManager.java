@@ -418,6 +418,8 @@ public class DownloadManager
 		private final AutoCompleteTextView mEditText;
 		private final InputMethodManager mInputMethodManager;
 		
+		private final Runnable mDropDownRunnable;
+		
 		@SuppressLint("InflateParams")
 		public DownloadDialog(Context context, DialogCallback callback, String chanName,
 				String boardName, String threadNumber, String threadTitle,
@@ -469,6 +471,7 @@ public class DownloadManager
 			editText.setOnEditorActionListener(this);
 			editText.setOnItemClickListener(this);
 			mEditText = editText;
+			mDropDownRunnable = () -> mEditText.showDropDown();
 			editText.setAdapter(mAdapter);
 			mDialog = new AlertDialog.Builder(context).setTitle(R.string.text_download_title).setView(view)
 					.setNegativeButton(android.R.string.cancel, null)
@@ -579,15 +582,6 @@ public class DownloadManager
 			else mEditText.removeCallbacks(mDropDownRunnable);
 		}
 		
-		private final Runnable mDropDownRunnable = new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				mEditText.showDropDown();
-			}
-		};
-		
 		@Override
 		public boolean onEditorAction(TextView v, int actionId, KeyEvent event)
 		{
@@ -599,18 +593,12 @@ public class DownloadManager
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id)
 		{
-			mEditText.post(mPopupSelectRunnable);
-		}
-		
-		private final Runnable mPopupSelectRunnable = new Runnable()
-		{
-			@Override
-			public void run()
+			mEditText.post(() ->
 			{
 				refreshDropDownContents();
 				mEditText.showDropDown();
-			}
-		};
+			});
+		}
 		
 		private void complete()
 		{
@@ -739,42 +727,26 @@ public class DownloadManager
 				builder.setNeutralButton(R.string.action_view, null);
 				dialog = builder.create();
 				final File singleFile = lastExistedFile;
-				dialog.setOnShowListener(new DialogInterface.OnShowListener()
+				dialog.setOnShowListener(d ->
 				{
-					@Override
-					public void onShow(DialogInterface dialog)
+					dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v ->
 					{
-						((AlertDialog) dialog).getButton(AlertDialog.BUTTON_NEUTRAL)
-								.setOnClickListener(new View.OnClickListener()
+						String extension = StringUtils.getFileExtension(singleFile.getPath());
+						String type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+						try
 						{
-							@Override
-							public void onClick(View v)
-							{
-								String extension = StringUtils.getFileExtension(singleFile.getPath());
-								String type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
-								try
-								{
-									context.startActivity(new Intent(Intent.ACTION_VIEW).setDataAndType
-											(Uri.fromFile(singleFile), type).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-								}
-								catch (ActivityNotFoundException e)
-								{
-									ToastUtils.show(context, R.string.message_unknown_address);
-								}
-							}
-						});
-					}
+							context.startActivity(new Intent(Intent.ACTION_VIEW).setDataAndType
+									(Uri.fromFile(singleFile), type).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+						}
+						catch (ActivityNotFoundException e)
+						{
+							ToastUtils.show(context, R.string.message_unknown_address);
+						}
+					});
 				});
 			}
 			else dialog = builder.create();
-			dialog.setOnDismissListener(new DialogInterface.OnDismissListener()
-			{
-				@Override
-				public void onDismiss(DialogInterface dialog)
-				{
-					releaseQueuePauseLock();
-				}
-			});
+			dialog.setOnDismissListener(d -> releaseQueuePauseLock());
 			dialog.show();
 		}
 		else callback.onConfirmReplacement(context, downloadItems);

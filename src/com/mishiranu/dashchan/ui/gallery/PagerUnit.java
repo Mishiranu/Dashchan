@@ -280,14 +280,11 @@ public class PagerUnit implements PagerInstance.Callback
 	public void onFinish()
 	{
 		interrupt(true);
-		mViewPager.postDelayed(new Runnable()
+		mViewPager.postDelayed(() ->
 		{
-			@Override
-			public void run()
-			{
-				mPagerAdapter.recycleAll();
-				System.gc();
-			}
+			mPagerAdapter.recycleAll();
+			System.gc();
+			
 		}, 200);
 	}
 	
@@ -318,14 +315,7 @@ public class PagerUnit implements PagerInstance.Callback
 		boolean isOpenableVideo = isVideo && galleryItem.isOpenableVideo(mGalleryInstance.locator);
 		if (waitBeforeVideo > 0 && thumbnailReady && isOpenableVideo && !mayShowThumbnailOnly)
 		{
-			mViewPagerParent.postDelayed(new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					loadImageVideo(reload, false, 0);
-				}
-			}, waitBeforeVideo);
+			mViewPagerParent.postDelayed(() -> loadImageVideo(reload, false, 0), waitBeforeVideo);
 			return;
 		}
 		if (isVideo && !isOpenableVideo || isOpenableVideo && mayShowThumbnailOnly)

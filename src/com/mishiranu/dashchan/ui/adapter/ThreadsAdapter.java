@@ -640,22 +640,14 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 		mHeaderExpandIcon.setVisibility(mayExpand ? View.VISIBLE : View.GONE);
 	}
 	
-	private static final Comparator<PostItem> SORT_BY_DATE_COMPARATOR = new Comparator<PostItem>()
+	private static final Comparator<PostItem> SORT_BY_DATE_COMPARATOR = (lhs, rhs) ->
 	{
-		@Override
-		public int compare(PostItem lhs, PostItem rhs)
-		{
-			return ((Long) rhs.getTimestamp()).compareTo(lhs.getTimestamp());
-		}
+		return ((Long) rhs.getTimestamp()).compareTo(lhs.getTimestamp());
 	};
 	
-	private static final Comparator<PostItem> SORT_BY_REPLIES_COMPARATOR = new Comparator<PostItem>()
+	private static final Comparator<PostItem> SORT_BY_REPLIES_COMPARATOR = (lhs, rhs) ->
 	{
-		@Override
-		public int compare(PostItem lhs, PostItem rhs)
-		{
-			return rhs.getThreadPostsCount() - lhs.getThreadPostsCount();
-		}
+		return rhs.getThreadPostsCount() - lhs.getThreadPostsCount();
 	};
 	
 	@Override

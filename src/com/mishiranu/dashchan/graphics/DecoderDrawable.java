@@ -40,7 +40,7 @@ import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.LruCache;
 
-public class DecoderDrawable extends Drawable implements LruCache.RemoveCallback<Integer, Bitmap>
+public class DecoderDrawable extends Drawable
 {
 	private static final Executor EXECUTOR = ConcurrentUtils.newSingleThreadPool(20000, "DecoderDrawable", null, 0);
 	private static final Bitmap NULL_BITMAP = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
@@ -52,7 +52,8 @@ public class DecoderDrawable extends Drawable implements LruCache.RemoveCallback
 	private final BitmapRegionDecoder mDecoder;
 	
 	private final LinkedHashMap<Integer, DecodeTask> mTasks = new LinkedHashMap<>();
-	private final LruCache<Integer, Bitmap> mFragments = new LruCache<>(this, MIN_MAX_ENTRIES);
+	private final LruCache<Integer, Bitmap> mFragments = new LruCache<>((key, value) -> value.recycle(),
+			MIN_MAX_ENTRIES);
 	
 	private final int mRotation;
 	private final int mWidth;
@@ -210,12 +211,6 @@ public class DecoderDrawable extends Drawable implements LruCache.RemoveCallback
 	public int getIntrinsicHeight()
 	{
 		return mHeight;
-	}
-	
-	@Override
-	public void onRemoveEldestEntry(Integer key, Bitmap value)
-	{
-		value.recycle();
 	}
 	
 	public boolean hasAlpha()

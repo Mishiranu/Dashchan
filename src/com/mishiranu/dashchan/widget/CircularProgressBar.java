@@ -126,15 +126,11 @@ public class CircularProgressBar extends View
 	
 	private boolean mQueuedVisible;
 	
-	private final Runnable mSetVisibleRunnable = new Runnable()
+	private final Runnable mSetVisibleRunnable = () ->
 	{
-		@Override
-		public void run()
-		{
-			mVisible = mQueuedVisible;
-			mTimeVisibilitySet = System.currentTimeMillis();
-			invalidate();
-		}
+		mVisible = mQueuedVisible;
+		mTimeVisibilitySet = System.currentTimeMillis();
+		invalidate();
 	};
 	
 	public void setVisible(boolean visible, boolean forced)

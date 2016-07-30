@@ -52,14 +52,7 @@ public class StateActivity extends Activity
 	
 	public void postRecreate()
 	{
-		getWindow().getDecorView().post(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				recreate();
-			}
-		});
+		getWindow().getDecorView().post(() -> recreate());
 	}
 
 	private boolean mOnFinishCalled = false;

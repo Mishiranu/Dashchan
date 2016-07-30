@@ -335,20 +335,16 @@ public class ListUnit implements AdapterView.OnItemClickListener, ActionMode.Cal
 			int size = ResourceUtils.isTablet(configuration) ? 160 : 100;
 			mGridRowCount = (widthDp - GRID_SPACING_DP) / (size + GRID_SPACING_DP);
 			mGridView.setNumColumns(mGridRowCount);
-			mGridView.post(new Runnable()
+			mGridView.post(() ->
 			{
-				@Override
-				public void run()
+				float density = ResourceUtils.obtainDensity(mInstance.context);
+				int spaceForRows = mGridView.getWidth() - mGridView.getPaddingLeft() - mGridView.getPaddingRight()
+						- (int) ((mGridRowCount - 1) * GRID_SPACING_DP * density);
+				int unusedSpace = (spaceForRows - spaceForRows / mGridRowCount * mGridRowCount) / 2;
+				if (unusedSpace > 0)
 				{
-					float density = ResourceUtils.obtainDensity(mInstance.context);
-					int spaceForRows = mGridView.getWidth() - mGridView.getPaddingLeft() - mGridView.getPaddingRight()
-							- (int) ((mGridRowCount - 1) * GRID_SPACING_DP * density);
-					int unusedSpace = (spaceForRows - spaceForRows / mGridRowCount * mGridRowCount) / 2;
-					if (unusedSpace > 0)
-					{
-						mGridView.setPadding(mGridView.getPaddingLeft() + unusedSpace, mGridView.getPaddingTop(),
-								mGridView.getPaddingRight() + unusedSpace, mGridView.getPaddingBottom());
-					}
+					mGridView.setPadding(mGridView.getPaddingLeft() + unusedSpace, mGridView.getPaddingTop(),
+							mGridView.getPaddingRight() + unusedSpace, mGridView.getPaddingBottom());
 				}
 			});
 		}

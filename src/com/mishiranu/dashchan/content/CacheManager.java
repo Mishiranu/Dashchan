@@ -194,13 +194,9 @@ public class CacheManager implements Runnable
 		}
 	}
 	
-	private static final Comparator<CacheItem> SORT_BY_DATE_COMPARATOR = new Comparator<CacheItem>()
+	private static final Comparator<CacheItem> SORT_BY_DATE_COMPARATOR = (lhs, rhs) ->
 	{
-		@Override
-		public int compare(CacheItem lhs, CacheItem rhs)
-		{
-			return ((Long) lhs.lastModified).compareTo(rhs.lastModified);
-		}
+		return ((Long) lhs.lastModified).compareTo(rhs.lastModified);
 	};
 	
 	private final LinkedHashMap<String, CacheItem> mThumbnailsCache = new LinkedHashMap<>();
@@ -235,10 +231,9 @@ public class CacheManager implements Runnable
 	{
 		final CountDownLatch latch = new CountDownLatch(1);
 		mCacheBuildingLatch = latch;
-		new Thread(new Runnable()
+		new Thread(() ->
 		{
-			@Override
-			public void run()
+			try
 			{
 				synchronized (mThumbnailsCache)
 				{
@@ -254,15 +249,12 @@ public class CacheManager implements Runnable
 					mPagesCacheSize = fillCache(mPagesCache, getPagesDirectory(), CacheItem.TYPE_PAGES);
 				}
 				cleanupAsync(true, true, true);
-				try
-				{
-					
-				}
-				finally
-				{
-					latch.countDown();
-				}
 			}
+			finally
+			{
+				latch.countDown();
+			}
+			
 		}).start();
 	}
 	

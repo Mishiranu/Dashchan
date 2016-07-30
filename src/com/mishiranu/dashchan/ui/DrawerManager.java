@@ -29,7 +29,6 @@ import java.util.regex.Pattern;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -154,14 +153,10 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 		editTextContainer.setGravity(Gravity.CENTER_VERTICAL);
 		linearLayout.addView(editTextContainer);
 		mSearchEdit = new SafePasteEditText(context);
-		mSearchEdit.setOnKeyListener(new View.OnKeyListener()
+		mSearchEdit.setOnKeyListener((v, keyCode, event) ->
 		{
-			@Override
-			public boolean onKey(View v, int keyCode, KeyEvent event)
-			{
-				if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) v.clearFocus();
-				return false;
-			}
+			if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) v.clearFocus();
+			return false;
 		});
 		mSearchEdit.setHint(context.getString(R.string.text_code_number_address));
 		mSearchEdit.setOnEditorActionListener(this);
@@ -227,14 +222,10 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 		if (availableChans.size() == 1) selectorContainer.setVisibility(View.GONE);
 	}
 	
-	private final View.OnClickListener mChanSelectorClickListener = new View.OnClickListener()
+	private final View.OnClickListener mChanSelectorClickListener = v ->
 	{
-		@Override
-		public void onClick(View v)
-		{
-			hideKeyboard();
-			setChanSelectMode(!mChanSelectMode);
-		}
+		hideKeyboard();
+		setChanSelectMode(!mChanSelectMode);
 	};
 	
 	public void bind(SortableListView listView)
@@ -562,18 +553,14 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 											.dialog_padding_view);
 									linearLayout.setPadding(padding, padding, padding, padding);
 									AlertDialog dialog = new AlertDialog.Builder(mContext).setView(linearLayout)
-											.setTitle(R.string.action_rename).setNegativeButton(android.R.string.cancel,
-											null).setPositiveButton(android.R.string.ok,
-											new DialogInterface.OnClickListener()
+											.setTitle(R.string.action_rename).setNegativeButton(android.R.string.cancel, null)
+											.setPositiveButton(android.R.string.ok, (d, which) ->
 									{
-										@Override
-										public void onClick(DialogInterface dialog, int which)
-										{
-											String newTitle = editText.getText().toString();
-											FavoritesStorage.getInstance().modifyTitle(listItem.chanName,
-													listItem.boardName, listItem.threadNumber, newTitle, true);
-											invalidateItems(false, true);
-										}
+										String newTitle = editText.getText().toString();
+										FavoritesStorage.getInstance().modifyTitle(listItem.chanName,
+												listItem.boardName, listItem.threadNumber, newTitle, true);
+										invalidateItems(false, true);
+										
 									}).create();
 									dialog.getWindow().setSoftInputMode(WindowManager
 											.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
@@ -836,13 +823,9 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 		}
 	}
 	
-	private static final Comparator<PageHolder> DATE_COMPARATOR = new Comparator<PageHolder>()
+	private static final Comparator<PageHolder> DATE_COMPARATOR = (lhs, rhs) ->
 	{
-		@Override
-		public int compare(PageHolder lhs, PageHolder rhs)
-		{
-			return (int) (rhs.creationTime - lhs.creationTime);
-		}
+		return (int) (rhs.creationTime - lhs.creationTime);
 	};
 	
 	private void updateListFavorites()

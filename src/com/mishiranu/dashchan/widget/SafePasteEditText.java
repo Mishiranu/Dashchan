@@ -49,13 +49,9 @@ public class SafePasteEditText extends EditText
 		super(context, attrs, defStyleAttr, defStyleRes);
 	}
 	
-	private static final InputFilter SPAN_FILTER = new InputFilter()
+	private static final InputFilter SPAN_FILTER = (source, start, end, dest, dstart, dend) ->
 	{
-		@Override
-		public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend)
-		{
-			return source instanceof Spanned ? source.toString() : source;
-		}
+		return source instanceof Spanned ? source.toString() : source;
 	};
 	
 	@Override

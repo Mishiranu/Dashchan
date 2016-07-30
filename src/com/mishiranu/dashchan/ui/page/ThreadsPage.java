@@ -680,15 +680,11 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		else if (checkModified)
 		{
 			adapter.notifyNotModified();
-			getListView().post(new Runnable()
+			getListView().post(() ->
 			{
-				@Override
-				public void run()
-				{
-					ListView listView = getListView();
-					ListViewUtils.cancelListFling(listView);
-					listView.setSelection(0);
-				}
+				ListView listView = getListView();
+				ListViewUtils.cancelListFling(listView);
+				listView.setSelection(0);
 			});
 		}
 		else if (adapter.isRealEmpty())

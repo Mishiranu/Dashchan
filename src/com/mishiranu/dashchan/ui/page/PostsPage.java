@@ -27,7 +27,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Typeface;
@@ -143,15 +142,10 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		ChanConfiguration.Board board = getChanConfiguration().safe().obtainBoard(pageHolder.boardName);
 		if (board.allowPosting)
 		{
-			mReplyable = new Replyable()
+			mReplyable = (data) ->
 			{
-				@Override
-				public void onRequestReply(ReplyData... data)
-				{
-					PageHolder pageHolder = getPageHolder();
-					getUiManager().navigator().navigatePosting(pageHolder.chanName, pageHolder.boardName,
-							pageHolder.threadNumber, data);
-				}
+				getUiManager().navigator().navigatePosting(pageHolder.chanName, pageHolder.boardName,
+						pageHolder.threadNumber, data);
 			};
 		}
 		PostsAdapter adapter = new PostsAdapter(activity, pageHolder.chanName, pageHolder.boardName, uiManager,
@@ -177,14 +171,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		backButtonView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
 		backButtonView.setImageResource(obtainIcon(R.attr.actionBack));
 		backButtonView.setPadding(padding, padding, padding, padding);
-		backButtonView.setOnClickListener(new View.OnClickListener()
-		{
-			@Override
-			public void onClick(View v)
-			{
-				findBack();
-			}
-		});
+		backButtonView.setOnClickListener(v -> findBack());
 		mSearchController.addView(backButtonView, (int) (48f * density), (int) (48f * density));
 		if (C.API_LOLLIPOP)
 		{
@@ -196,14 +183,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		forwardButtonView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
 		forwardButtonView.setImageResource(obtainIcon(R.attr.actionForward));
 		forwardButtonView.setPadding(padding, padding, padding, padding);
-		forwardButtonView.setOnClickListener(new View.OnClickListener()
-		{
-			@Override
-			public void onClick(View v)
-			{
-				findForward();
-			}
-		});
+		forwardButtonView.setOnClickListener(v -> findForward());
 		mSearchController.addView(forwardButtonView, (int) (48f * density), (int) (48f * density));
 		
 		mScrollToPostNumber = pageHolder.initialPostNumber;
@@ -478,18 +458,15 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				holder.setCurrentValue(mAutoRefreshInterval);
 				holder.setSwitchValue(mAutoRefreshEnabled);
 				new AlertDialog.Builder(activity).setTitle(R.string.action_auto_refresh).setView(holder.create
-						(getActivity())).setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
+						(getActivity())).setPositiveButton(android.R.string.ok, (dialog, which1) ->
 				{
-					@Override
-					public void onClick(DialogInterface dialog, int which)
-					{
-						mAutoRefreshEnabled = holder.getSwitchValue();
-						mAutoRefreshInterval = holder.getCurrentValue();
-						Posts posts = getExtra().cachedPosts;
-						boolean changed = posts.setAutoRefreshData(mAutoRefreshEnabled, mAutoRefreshInterval);
-						if (changed) serializePosts();
-						queueNextRefresh(true);
-					}
+					mAutoRefreshEnabled = holder.getSwitchValue();
+					mAutoRefreshInterval = holder.getCurrentValue();
+					Posts posts = getExtra().cachedPosts;
+					boolean changed = posts.setAutoRefreshData(mAutoRefreshEnabled, mAutoRefreshInterval);
+					if (changed) serializePosts();
+					queueNextRefresh(true);
+					
 				}).setNegativeButton(android.R.string.cancel, null).show();
 				return true;
 			}
@@ -498,68 +475,54 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				ArrayList<String> localAutohide = mHidePerformer.getReadableLocalAutohide();
 				final boolean[] checked = new boolean[localAutohide.size()];
 				new AlertDialog.Builder(activity).setMultiChoiceItems(CommonUtils.toArray(localAutohide, String.class),
-						checked, new DialogInterface.OnMultiChoiceClickListener()
+						checked, (dialog, which, isChecked) -> checked[which] = isChecked)
+						.setPositiveButton(android.R.string.ok, (dialog, which) ->
 				{
-					@Override
-					public void onClick(DialogInterface dialog, int which, boolean isChecked)
+					boolean hasDeleted = false;
+					for (int i = 0, j = 0; i < checked.length; i++, j++)
 					{
-						checked[which] = isChecked;
-					}
-				}).setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
-				{
-					@Override
-					public void onClick(DialogInterface dialog, int which)
-					{
-						boolean hasDeleted = false;
-						for (int i = 0, j = 0; i < checked.length; i++, j++)
+						if (checked[i])
 						{
-							if (checked[i])
-							{
-								mHidePerformer.removeLocalAutohide(j--);
-								hasDeleted = true;
-							}
-						}
-						if (hasDeleted)
-						{
-							PostsAdapter adapter = getAdapter();
-							adapter.invalidateHidden();
-							notifyAllAdaptersChanged();
-							mHidePerformer.encodeLocalAutohide(getExtra().cachedPosts);
-							serializePosts();
-							adapter.preloadPosts(getListView().getFirstVisiblePosition());
+							mHidePerformer.removeLocalAutohide(j--);
+							hasDeleted = true;
 						}
 					}
+					if (hasDeleted)
+					{
+						adapter.invalidateHidden();
+						notifyAllAdaptersChanged();
+						mHidePerformer.encodeLocalAutohide(getExtra().cachedPosts);
+						serializePosts();
+						adapter.preloadPosts(getListView().getFirstVisiblePosition());
+					}
+					
 				}).setNegativeButton(android.R.string.cancel, null).setTitle(R.string.text_remove_rules).show();
 				return true;
 			}
 			case THREAD_OPTIONS_MENU_CLEAR_DELETED:
 			{
 				new AlertDialog.Builder(getActivity()).setMessage(R.string.message_clear_deleted_warning)
-						.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
+						.setPositiveButton(android.R.string.ok, (dialog, which) ->
 				{
-					@Override
-					public void onClick(DialogInterface dialog, int which)
+					PostsExtra extra = getExtra();
+					Posts cachedPosts = extra.cachedPosts;
+					cachedPosts.clearDeletedPosts();
+					ArrayList<PostItem> deletedPostItems = adapter.clearDeletedPosts();
+					if (deletedPostItems != null)
 					{
-						PostsExtra extra = getExtra();
-						Posts cachedPosts = extra.cachedPosts;
-						cachedPosts.clearDeletedPosts();
-						PostsAdapter adapter = getAdapter();
-						ArrayList<PostItem> deletedPostItems = adapter.clearDeletedPosts();
-						if (deletedPostItems != null)
+						extra.cachedPostItems.removeAll(deletedPostItems);
+						synchronized (extra.userPostNumbers)
 						{
-							extra.cachedPostItems.removeAll(deletedPostItems);
-							synchronized (extra.userPostNumbers)
+							for (PostItem postItem : deletedPostItems)
 							{
-								for (PostItem postItem : deletedPostItems)
-								{
-									extra.userPostNumbers.remove(postItem.getPostNumber());
-								}
+								extra.userPostNumbers.remove(postItem.getPostNumber());
 							}
-							notifyAllAdaptersChanged();
 						}
-						updateOptionsMenu(false);
-						serializePosts();
+						notifyAllAdaptersChanged();
 					}
+					updateOptionsMenu(false);
+					serializePosts();
+					
 				}).setNegativeButton(android.R.string.cancel, null).show();
 				return true;
 			}
@@ -1123,14 +1086,10 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 	
 	private static final Handler HANDLER = new Handler();
 	
-	private final Runnable mRefreshRunnable = new Runnable()
+	private final Runnable mRefreshRunnable = () ->
 	{
-		@Override
-		public void run()
-		{
-			if (mDeserializeTask == null && mReadTask == null) refreshPosts(true, false);
-			queueNextRefresh(false);
-		}
+		if (mDeserializeTask == null && mReadTask == null) refreshPosts(true, false);
+		queueNextRefresh(false);
 	};
 	
 	private void queueNextRefresh(boolean instant)
@@ -1393,13 +1352,10 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				}
 				if (resultItems.newCount > 0)
 				{
-					ClickableToast.show(getActivity(), message, getString(R.string.action_show), new Runnable()
+					ClickableToast.show(getActivity(), message, getString(R.string.action_show), () ->
 					{
-						@Override
-						public void run()
-						{
-							if (!isDestroyed()) ListScroller.scrollTo(getListView(), newPostPosition);
-						}
+						if (!isDestroyed()) ListScroller.scrollTo(getListView(), newPostPosition);
+						
 					}, true);
 				}
 				else ClickableToast.show(getActivity(), message);

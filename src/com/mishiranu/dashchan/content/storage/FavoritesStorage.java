@@ -369,45 +369,33 @@ public class FavoritesStorage extends StorageManager.Storage
 		return StringUtils.compare(lhs.threadNumber, rhs.threadNumber, false);
 	}
 	
-	private final Comparator<FavoriteItem> mChanNameIndexAscendingComparator = new Comparator<FavoriteItem>()
+	private final Comparator<FavoriteItem> mChanNameIndexAscendingComparator = (lhs, rhs) ->
 	{
-		@Override
-		public int compare(FavoriteItem lhs, FavoriteItem rhs)
-		{
-			int result = compareChanNames(lhs, rhs);
-			if (result != 0) return result;
-			return mFavoriteItemsList.indexOf(lhs) - mFavoriteItemsList.indexOf(rhs);
-		}
+		int result = compareChanNames(lhs, rhs);
+		if (result != 0) return result;
+		return mFavoriteItemsList.indexOf(lhs) - mFavoriteItemsList.indexOf(rhs);
 	};
 	
-	private final Comparator<FavoriteItem> mIdentifiersComparator = new Comparator<FavoriteItem>()
+	private final Comparator<FavoriteItem> mIdentifiersComparator = (lhs, rhs) ->
 	{
-		@Override
-		public int compare(FavoriteItem lhs, FavoriteItem rhs)
-		{
-			int result = compareChanNames(lhs, rhs);
-			if (result != 0) return result;
-			result = compareBoardNames(lhs, rhs);
-			if (result != 0) return result;
-			result = compareThreadNumbers(lhs, rhs);
-			if (result != 0) return result;
-			return mFavoriteItemsList.indexOf(lhs) - mFavoriteItemsList.indexOf(rhs);
-		}
+		int result = compareChanNames(lhs, rhs);
+		if (result != 0) return result;
+		result = compareBoardNames(lhs, rhs);
+		if (result != 0) return result;
+		result = compareThreadNumbers(lhs, rhs);
+		if (result != 0) return result;
+		return mFavoriteItemsList.indexOf(lhs) - mFavoriteItemsList.indexOf(rhs);
 	};
 	
-	private final Comparator<FavoriteItem> mTitlesComparator = new Comparator<FavoriteItem>()
+	private final Comparator<FavoriteItem> mTitlesComparator = (lhs, rhs) ->
 	{
-		@Override
-		public int compare(FavoriteItem lhs, FavoriteItem rhs)
-		{
-			int result = compareChanNames(lhs, rhs);
-			if (result != 0) return result;
-			result = StringUtils.compare(lhs.title, rhs.title, true);
-			if (result != 0) return result;
-			result = compareBoardNames(lhs, rhs);
-			if (result != 0) return result;
-			return compareThreadNumbers(lhs, rhs);
-		}
+		int result = compareChanNames(lhs, rhs);
+		if (result != 0) return result;
+		result = StringUtils.compare(lhs.title, rhs.title, true);
+		if (result != 0) return result;
+		result = compareBoardNames(lhs, rhs);
+		if (result != 0) return result;
+		return compareThreadNumbers(lhs, rhs);
 	};
 	
 	public static class FavoriteItem

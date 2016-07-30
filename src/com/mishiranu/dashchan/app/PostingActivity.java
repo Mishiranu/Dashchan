@@ -1100,56 +1100,53 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		dismissSendPost();
 		if (extra != null)
 		{
-			ClickableToast.show(this, errorItem.toString(), getString(R.string.action_details), new Runnable()
+			ClickableToast.show(this, errorItem.toString(), getString(R.string.action_details), () ->
 			{
-				@Override
-				public void run()
+				String message = null;
+				if (extra instanceof ApiException.BanExtra)
 				{
-					String message = null;
-					if (extra instanceof ApiException.BanExtra)
+					StringBlockBuilder builder = new StringBlockBuilder();
+					PostDateFormatter formatter = new PostDateFormatter(PostingActivity.this);
+					ApiException.BanExtra banExtra = (ApiException.BanExtra) extra;
+					if (!StringUtils.isEmpty(banExtra.id))
 					{
-						StringBlockBuilder builder = new StringBlockBuilder();
-						PostDateFormatter formatter = new PostDateFormatter(PostingActivity.this);
-						ApiException.BanExtra banExtra = (ApiException.BanExtra) extra;
-						if (!StringUtils.isEmpty(banExtra.id))
-						{
-							builder.appendLine(getString(R.string.text_ban_id_format, banExtra.id));
-						}
-						if (banExtra.startDate > 0L)
-						{
-							builder.appendLine(getString(R.string.text_ban_start_date_format,
-									formatter.format(banExtra.startDate)));
-						}
-						if (banExtra.expireDate > 0L)
-						{
-							builder.appendLine(getString(R.string.text_ban_expires_format,
-									banExtra.expireDate == Long.MAX_VALUE ? getString(R.string.text_ban_expires_never)
-									: formatter.format(banExtra.expireDate)));
-						}
-						if (!StringUtils.isEmpty(banExtra.message))
-						{
-							builder.appendLine(getString(R.string.text_ban_reason_format, banExtra.message));
-						}
-						message = builder.toString();
+						builder.appendLine(getString(R.string.text_ban_id_format, banExtra.id));
 					}
-					else if (extra instanceof ApiException.WordsExtra)
+					if (banExtra.startDate > 0L)
 					{
-						StringBuilder builder = new StringBuilder();
-						ApiException.WordsExtra words = (ApiException.WordsExtra) extra;
-						builder.append(getString(R.string.text_rejected_words)).append(": ");
-						boolean first = true;
-						for (String word : words.words)
-						{
-							if (first) first = false; else builder.append(", ");
-							builder.append(word);
-						}
-						message = builder.toString();
+						builder.appendLine(getString(R.string.text_ban_start_date_format,
+								formatter.format(banExtra.startDate)));
 					}
-					AlertDialog dialog = new AlertDialog.Builder(PostingActivity.this).setTitle(R.string.action_details)
-							.setMessage(message).setPositiveButton(android.R.string.ok, null).create();
-					dialog.setOnShowListener(ViewUtils.ALERT_DIALOG_MESSAGE_SELECTABLE);
-					dialog.show();
+					if (banExtra.expireDate > 0L)
+					{
+						builder.appendLine(getString(R.string.text_ban_expires_format,
+								banExtra.expireDate == Long.MAX_VALUE ? getString(R.string.text_ban_expires_never)
+										: formatter.format(banExtra.expireDate)));
+					}
+					if (!StringUtils.isEmpty(banExtra.message))
+					{
+						builder.appendLine(getString(R.string.text_ban_reason_format, banExtra.message));
+					}
+					message = builder.toString();
 				}
+				else if (extra instanceof ApiException.WordsExtra)
+				{
+					StringBuilder builder = new StringBuilder();
+					ApiException.WordsExtra words = (ApiException.WordsExtra) extra;
+					builder.append(getString(R.string.text_rejected_words)).append(": ");
+					boolean first = true;
+					for (String word : words.words)
+					{
+						if (first) first = false; else builder.append(", ");
+						builder.append(word);
+					}
+					message = builder.toString();
+				}
+				AlertDialog dialog = new AlertDialog.Builder(PostingActivity.this).setTitle(R.string.action_details)
+						.setMessage(message).setPositiveButton(android.R.string.ok, null).create();
+				dialog.setOnShowListener(ViewUtils.ALERT_DIALOG_MESSAGE_SELECTABLE);
+				dialog.show();
+				
 			}, false);
 		}
 		else ClickableToast.show(this, errorItem.toString());
@@ -1729,40 +1726,28 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		}
 	}
 	
-	private final View.OnClickListener mAttachmentOptionsListener = new View.OnClickListener()
+	private final View.OnClickListener mAttachmentOptionsListener = v ->
 	{
-		@Override
-		public void onClick(View v)
-		{
-			AttachmentHolder holder = (AttachmentHolder) v.getTag();
-			int attachmentIndex = mAttachments.indexOf(holder);
-			AttachmentOptionsDialog dialog = new AttachmentOptionsDialog(attachmentIndex);
-			dialog.show(getFragmentManager(), AttachmentOptionsDialog.class.getName());
-		}
+		AttachmentHolder holder = (AttachmentHolder) v.getTag();
+		int attachmentIndex = mAttachments.indexOf(holder);
+		AttachmentOptionsDialog dialog = new AttachmentOptionsDialog(attachmentIndex);
+		dialog.show(getFragmentManager(), AttachmentOptionsDialog.class.getName());
 	};
 	
-	private final View.OnClickListener mAttachmentWarningListener = new View.OnClickListener()
+	private final View.OnClickListener mAttachmentWarningListener = v ->
 	{
-		@Override
-		public void onClick(View v)
-		{
-			AttachmentHolder holder = (AttachmentHolder) v.getTag();
-			int attachmentIndex = mAttachments.indexOf(holder);
-			AttachmentWarningDialog dialog = new AttachmentWarningDialog(attachmentIndex);
-			dialog.show(getFragmentManager(), AttachmentWarningDialog.class.getName());
-		}
+		AttachmentHolder holder = (AttachmentHolder) v.getTag();
+		int attachmentIndex = mAttachments.indexOf(holder);
+		AttachmentWarningDialog dialog = new AttachmentWarningDialog(attachmentIndex);
+		dialog.show(getFragmentManager(), AttachmentWarningDialog.class.getName());
 	};
 	
-	private final View.OnClickListener mAttachmentRatingListener = new View.OnClickListener()
+	private final View.OnClickListener mAttachmentRatingListener = v ->
 	{
-		@Override
-		public void onClick(View v)
-		{
-			AttachmentHolder holder = (AttachmentHolder) v.getTag();
-			int attachmentIndex = mAttachments.indexOf(holder);
-			AttachmentRatingDialog dialog = new AttachmentRatingDialog(attachmentIndex);
-			dialog.show(getFragmentManager(), AttachmentRatingDialog.class.getName());
-		}
+		AttachmentHolder holder = (AttachmentHolder) v.getTag();
+		int attachmentIndex = mAttachments.indexOf(holder);
+		AttachmentRatingDialog dialog = new AttachmentRatingDialog(attachmentIndex);
+		dialog.show(getFragmentManager(), AttachmentRatingDialog.class.getName());
 	};
 	
 	private final View.OnClickListener mAttachmentRemoveListener = new View.OnClickListener()
