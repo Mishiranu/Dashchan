@@ -50,7 +50,15 @@ public class NetworkObserver
 		Context context = MainApplication.getInstance();
 		mConnectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 		onActiveNetworkChange();
-		context.registerReceiver(mReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+		BroadcastReceiver connectivityReceiver = new BroadcastReceiver()
+		{
+			@Override
+			public void onReceive(Context context, Intent intent)
+			{
+				onActiveNetworkChange();
+			}
+		};
+		context.registerReceiver(connectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 	}
 	
 	public boolean isWifiConnected()
@@ -107,15 +115,6 @@ public class NetworkObserver
 		}
 		return false;
 	}
-	
-	private final BroadcastReceiver mReceiver = new BroadcastReceiver()
-	{
-		@Override
-		public void onReceive(Context context, Intent intent)
-		{
-			onActiveNetworkChange();
-		}
-	};
 	
 	private void onActiveNetworkChange()
 	{

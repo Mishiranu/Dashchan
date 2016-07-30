@@ -241,7 +241,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		mListUnit.setListSelection(mPagerUnit.getCurrentIndex(), true);
 	}
 	
-	private Runnable mReturnToGalleryRunnable = () ->
+	private final Runnable mReturnToGalleryRunnable = () ->
 	{
 		switchMode(true, true);
 		invalidateListPosition();

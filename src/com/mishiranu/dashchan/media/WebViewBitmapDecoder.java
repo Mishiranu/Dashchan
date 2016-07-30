@@ -73,8 +73,8 @@ public class WebViewBitmapDecoder extends WebViewClient
 		}
 	}
 	
+	@SuppressWarnings("deprecation")
 	@Override
-	@Deprecated
 	public WebResourceResponse shouldInterceptRequest(WebView view, String url)
 	{
 		if (url.startsWith("http://") || url.startsWith("https://"))
@@ -108,7 +108,8 @@ public class WebViewBitmapDecoder extends WebViewClient
 		notifyExtract(view);
 	}
 	
-	private WebView.PictureListener mPictureListener = (view, picture) ->
+	@SuppressWarnings("deprecation")
+	private final WebView.PictureListener mPictureListener = (view, picture) ->
 	{
 		if (mPageFinished) notifyExtract(view);
 	};
@@ -174,7 +175,7 @@ public class WebViewBitmapDecoder extends WebViewClient
 	private static class Callback implements Handler.Callback
 	{
 		@SuppressWarnings("deprecation")
-		@SuppressLint("SetJavaScriptEnabled")
+		@SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
 		@Override
 		public boolean handleMessage(Message msg)
 		{
@@ -229,6 +230,7 @@ public class WebViewBitmapDecoder extends WebViewClient
 		}
 	}
 	
+	@SuppressWarnings("unused")
 	@JavascriptInterface
 	public void onCalculateSize(int width, int height)
 	{

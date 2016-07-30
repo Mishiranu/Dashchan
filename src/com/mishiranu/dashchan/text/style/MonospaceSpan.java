@@ -20,7 +20,7 @@ import android.text.style.TypefaceSpan;
 
 public class MonospaceSpan extends TypefaceSpan
 {
-	private boolean mAsciiArt;
+	private final boolean mAsciiArt;
 	
 	public MonospaceSpan(boolean asciiArt)
 	{

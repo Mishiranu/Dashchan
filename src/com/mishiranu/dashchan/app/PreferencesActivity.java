@@ -134,9 +134,9 @@ public class PreferencesActivity extends PreferenceActivity
 		ForegroundManager.unregister(this);
 	}
 	
-	public static int checkNewVersions(Context context, ReadUpdateTask.UpdateDataMap updateDataMap)
+	public static int checkNewVersions(ReadUpdateTask.UpdateDataMap updateDataMap)
 	{
-		return UpdateFragment.checkNewVersions(context, updateDataMap);
+		return UpdateFragment.checkNewVersions(updateDataMap);
 	}
 	
 	public static Intent createUpdateIntent(Context context, ReadUpdateTask.UpdateDataMap updateDataMap)

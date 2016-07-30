@@ -26,7 +26,6 @@ import android.net.Uri;
 import chan.content.ChanLocator;
 
 import com.mishiranu.dashchan.content.DownloadManager;
-import com.mishiranu.dashchan.content.model.AttachmentItem;
 import com.mishiranu.dashchan.util.NavigationUtils;
 
 public class GalleryItem implements Serializable

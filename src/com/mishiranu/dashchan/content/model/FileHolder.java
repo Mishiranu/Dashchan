@@ -68,7 +68,7 @@ public abstract class FileHolder implements Serializable
 		return StringUtils.getFileExtension(getName());
 	}
 
-	public static enum ImageType {NOT_IMAGE, IMAGE_JPEG, IMAGE_PNG, IMAGE_GIF, IMAGE_WEBP, IMAGE_BMP, IMAGE_SVG}
+	public enum ImageType {NOT_IMAGE, IMAGE_JPEG, IMAGE_PNG, IMAGE_GIF, IMAGE_WEBP, IMAGE_BMP, IMAGE_SVG}
 	
 	private static class ImageData
 	{

@@ -47,12 +47,12 @@ import com.mishiranu.dashchan.util.ViewUtils;
 public class AudioPlayerService extends Service implements AudioManager.OnAudioFocusChangeListener,
 		MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener, ReadFileTask.Callback 
 {
-	private static String ACTION_START = "com.mishiranu.dashchan.action.START";
-	public static String ACTION_CANCEL = "com.mishiranu.dashchan.action.CANCEL";
-	public static String ACTION_TOGGLE = "com.mishiranu.dashchan.action.TOGGLE";
+	private static final String ACTION_START = "com.mishiranu.dashchan.action.START";
+	public static final String ACTION_CANCEL = "com.mishiranu.dashchan.action.CANCEL";
+	public static final String ACTION_TOGGLE = "com.mishiranu.dashchan.action.TOGGLE";
 
-	private static String EXTRA_CHAN_NAME = "com.mishiranu.dashchan.extra.CHAN_NAME";
-	private static String EXTRA_FILE_NAME = "com.mishiranu.dashchan.extra.FILE_NAME";
+	private static final String EXTRA_CHAN_NAME = "com.mishiranu.dashchan.extra.CHAN_NAME";
+	private static final String EXTRA_FILE_NAME = "com.mishiranu.dashchan.extra.FILE_NAME";
 	
 	private AudioManager mAudioManager;
 	private NotificationManager mNotificationManager;
@@ -182,7 +182,7 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 	
 	private void togglePlayback()
 	{
-		boolean success = false;
+		boolean success;
 		if (mMediaPlayer.isPlaying()) success = pause(true); else success = play(true);
 		if (success)
 		{
@@ -371,7 +371,7 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 	}
 	
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
-	private void refreshDownloadingNotification(boolean recreate, boolean error, ErrorItem errorItem, Uri uri)
+	private void refreshDownloadingNotification(boolean recreate, boolean error, Uri uri)
 	{
 		Notification.Builder builder = mBuilder;
 		if (builder == null || recreate)
@@ -428,7 +428,7 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 	public void onStartDownloading(Uri uri, File file)
 	{
 		mLastUpdate = 0L;
-		refreshDownloadingNotification(true, false, null, null);
+		refreshDownloadingNotification(true, false, null);
 	}
 	
 	@Override
@@ -438,7 +438,7 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 		mReadFileTask = null;
 		stopForeground(true);
 		if (success) initAndPlayAudio(file);
-		else refreshDownloadingNotification(true, true, errorItem, uri);
+		else refreshDownloadingNotification(true, true, uri);
 	}
 	
 	@Override
@@ -450,7 +450,7 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 		if (t - mLastUpdate >= 1000L)
 		{
 			mLastUpdate = t;
-			refreshDownloadingNotification(false, false, null, null);
+			refreshDownloadingNotification(false, false, null);
 		}
 	}
 	

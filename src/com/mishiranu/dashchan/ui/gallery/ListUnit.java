@@ -412,11 +412,13 @@ public class ListUnit implements AdapterView.OnItemClickListener, ActionMode.Cal
 				if (C.API_LOLLIPOP)
 				{
 					holder.selectorCheckDrawable = new SelectorCheckDrawable();
+					// noinspection RedundantCast
 					((FrameLayout) convertView).setForeground(holder.selectorCheckDrawable);
 				}
 				else
 				{
 					holder.selectorBorderDrawable = new SelectorBorderDrawable(mInstance.context);
+					// noinspection RedundantCast
 					((FrameLayout) convertView).setForeground(holder.selectorBorderDrawable);
 				}
 				convertView.setTag(holder);
@@ -449,7 +451,7 @@ public class ListUnit implements AdapterView.OnItemClickListener, ActionMode.Cal
 					}
 					else holder.thumbnail.setImage(null);
 				}
-				else displayThumbnail(convertView, holder, cacheManager, galleryItem);
+				else displayThumbnail(holder, cacheManager, galleryItem);
 			}
 			else
 			{
@@ -477,14 +479,13 @@ public class ListUnit implements AdapterView.OnItemClickListener, ActionMode.Cal
 					GalleryItem galleryItem = getItem(position);
 					if (galleryItem.getThumbnailUri(mInstance.locator) != null)
 					{
-						displayThumbnail(view, (GridViewHolder) view.getTag(), cacheManager, galleryItem);
+						displayThumbnail((GridViewHolder) view.getTag(), cacheManager, galleryItem);
 					}
 				}
 			}
 		}
 		
-		public void displayThumbnail(View view, GridViewHolder holder, CacheManager cacheManager,
-				GalleryItem galleryItem)
+		public void displayThumbnail(GridViewHolder holder, CacheManager cacheManager, GalleryItem galleryItem)
 		{
 			ImageLoader imageLoader = ImageLoader.getInstance();
 			imageLoader.unbind(holder.thumbnail);
@@ -509,8 +510,9 @@ public class ListUnit implements AdapterView.OnItemClickListener, ActionMode.Cal
 			super(context);
 		}
 		
+		@SuppressWarnings("unused") // Overrides hidden Android API protected method
 		@TargetApi(Build.VERSION_CODES.KITKAT)
-		public void onDrawVerticalScrollBar(Canvas canvas, Drawable scrollBar, int l, int t, int r, int b)
+		protected void onDrawVerticalScrollBar(Canvas canvas, Drawable scrollBar, int l, int t, int r, int b)
 		{
 			int spacing = getPaddingLeft();
 			int size = b - t;

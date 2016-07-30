@@ -121,7 +121,7 @@ public class CircularProgressBar extends View
 	
 	private float getValue(long currentTime, long fromTime, float max)
 	{
-		return (float) (((currentTime - fromTime) % max)) / max;
+		return ((currentTime - fromTime) % max) / max;
 	}
 	
 	private boolean mQueuedVisible;
@@ -293,7 +293,7 @@ public class CircularProgressBar extends View
 		invalidate();
 	}
 	
-	private void drawArc(Canvas canvas, Paint paint, RectF size, float start, float length)
+	private void drawArc(Canvas canvas, Paint paint, float start, float length)
 	{
 		if (length < 0.001f) length = 0.001f;
 		Path path = mPath;
@@ -324,8 +324,8 @@ public class CircularProgressBar extends View
 		
 		if (C.API_LOLLIPOP)
 		{
-			float arcStart = 0f;
-			float arcLength = 0f;
+			float arcStart;
+			float arcLength;
 			if (mTransientState != TRANSIENT_NONE)
 			{
 				boolean finished = true; 
@@ -385,7 +385,7 @@ public class CircularProgressBar extends View
 				Paint paint = mPaint;
 				paint.setStrokeWidth(size / 48f * 4f);
 				paint.setColor(Color.argb(useAlpha ? alpha : 0xff, 0xff, 0xff, 0xff));
-				drawArc(canvas, paint, mRectF, arcStart, arcLength);
+				drawArc(canvas, paint, arcStart, arcLength);
 				canvas.restore();
 			}
 		}
@@ -430,12 +430,12 @@ public class CircularProgressBar extends View
 				Paint paint = mPaint;
 				paint.setStrokeWidth(size * 0.065f);
 				paint.setColor(Color.argb(0x80 * progressAlpha / 0xff, 0x80, 0x80, 0x80));
-				drawArc(canvas, paint, mRectF, 0f, 1f);
+				drawArc(canvas, paint, 0f, 1f);
 				float progress = calculateTransientProgress();
 				if (progress > 0f)
 				{
 					paint.setColor(Color.argb(0x80 * progressAlpha / 0xff, 0xff, 0xff, 0xff));
-					drawArc(canvas, paint, mRectF, 0f, progress);
+					drawArc(canvas, paint, 0f, progress);
 				}
 				canvas.restore();
 				if (progress != mProgress) invalidate = true;

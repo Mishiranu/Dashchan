@@ -139,7 +139,7 @@ public class ChanConfiguration implements ChanManager.Linked
 	}
 	
 	@Public
-	public static enum BumpLimitMode
+	public enum BumpLimitMode
 	{
 		@Public AFTER_POST,
 		@Public AFTER_REPLY,
@@ -168,7 +168,7 @@ public class ChanConfiguration implements ChanManager.Linked
 	public static final class Captcha
 	{
 		@Public
-		public static enum Input
+		public enum Input
 		{
 			@Public ALL,
 			@Public LATIN,
@@ -176,7 +176,7 @@ public class ChanConfiguration implements ChanManager.Linked
 		}
 		
 		@Public
-		public static enum Validity
+		public enum Validity
 		{
 			@Public SHORT_LIFETIME,
 			@Public IN_THREAD,
@@ -462,7 +462,7 @@ public class ChanConfiguration implements ChanManager.Linked
 	
 	public final void storeBoards(JSONArray jsonArray)
 	{
-		set(null, KEY_BOARDS, jsonArray != null ? jsonArray.toString() : (String) null);
+		set(null, KEY_BOARDS, jsonArray != null ? jsonArray.toString() : null);
 	}
 	
 	public final JSONArray getBoards()

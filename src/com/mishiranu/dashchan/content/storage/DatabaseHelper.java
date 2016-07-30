@@ -165,7 +165,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
 							String[] chanNamesArray = chanNamesString.split(",");
 							if (chanNamesArray.length > 0)
 							{
-								chanNames = new HashSet<String>();
+								chanNames = new HashSet<>();
 								Collections.addAll(chanNames, chanNamesArray);
 							}
 						}

@@ -111,7 +111,7 @@ public class HidePerformer
 						if ((!autohideItem.optionOriginalPost || autohideItem.optionOriginalPost == originalPost)
 								&& (!autohideItem.optionSage || autohideItem.optionSage == sage))
 						{
-							String result = null;
+							String result;
 							// OR selection (hide if subj, exp or name matches to rule)
 							if (subject == null) subject = postItem.getSubject();
 							if (autohideItem.optionSubject && (result = autohideItem.find(subject)) != null)
@@ -245,6 +245,7 @@ public class HidePerformer
 		posts.setLocalAutohide(localAutohide);
 	}
 	
+	@SuppressWarnings("ManualArrayToCollectionCopy")
 	public void decodeLocalAutohide(Posts posts)
 	{
 		String[][] localAutohide = posts.getLocalAutohide();

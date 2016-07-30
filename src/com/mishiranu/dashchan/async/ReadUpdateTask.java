@@ -105,7 +105,7 @@ public class ReadUpdateTask extends CancellableTask<Void, Long, Object>
 		}
 	}
 	
-	public static interface Callback
+	public interface Callback
 	{
 		public void onReadUpdateComplete(UpdateDataMap updateDataMap);
 	}

@@ -84,10 +84,10 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 	private int mInterval;
 	private boolean mRefreshPeriodically = true;
 	
-	public static int NEW_POSTS_COUNT_DELETED = -1;
-	public static int POSTS_COUNT_DIFFERENCE_DELETED = Integer.MIN_VALUE;
+	public static final int NEW_POSTS_COUNT_DELETED = -1;
+	public static final int POSTS_COUNT_DIFFERENCE_DELETED = Integer.MIN_VALUE;
 	
-	public static enum State {DISABLED, UNAVAILABLE, ENABLED, BUSY};
+	public enum State {DISABLED, UNAVAILABLE, ENABLED, BUSY}
 	
 	public static class WatcherItem
 	{
@@ -742,7 +742,7 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 			mCallback.onWatcherUpdate(watcherItem, state);
 		}
 		
-		public static interface Callback
+		public interface Callback
 		{
 			public void onWatcherUpdate(WatcherItem watcherItem, State state);
 		}

@@ -147,7 +147,7 @@ public class FavoritesStorage extends StorageManager.Storage
 	public static final int ACTION_WATCHER_DISABLE = 3;
 	public static final int ACTION_WATCHER_SYNC = 4;
 	
-	public static interface Observer
+	public interface Observer
 	{
 		public void onFavoritesUpdate(FavoriteItem favoriteItem, int action);
 	}

@@ -35,7 +35,7 @@ public class SeekBarPreference extends DialogPreference
 {
 	public static class Holder implements SeekBar.OnSeekBarChangeListener, CompoundButton.OnCheckedChangeListener
 	{
-		private boolean mShowSwitch;
+		private final boolean mShowSwitch;
 		private int mMaxValue;
 		private int mMinValue;
 		private int mStep;

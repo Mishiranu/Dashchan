@@ -34,7 +34,7 @@ public class DeserializePostsTask extends CancellableTask<Void, Void, Boolean>
 	private Posts mPosts;
 	private PostItem[] mPostItems;
 	
-	public static interface Callback
+	public interface Callback
 	{
 		public void onDeserializePostsComplete(boolean success, Posts posts, PostItem[] postItems);
 	}

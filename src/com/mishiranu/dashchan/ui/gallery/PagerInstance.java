@@ -95,7 +95,7 @@ public class PagerInstance
 		}
 	}
 	
-	public static interface Callback
+	public interface Callback
 	{
 		public void showError(ViewHolder holder, String message);
 	}

@@ -56,12 +56,6 @@ public class StateActivity extends Activity
 	}
 
 	private boolean mOnFinishCalled = false;
-	private boolean mResumed = false;
-	
-	public boolean isActivityResumed()
-	{
-		return mResumed;
-	}
 	
 	@Override
 	public void recreate()
@@ -71,16 +65,8 @@ public class StateActivity extends Activity
 	}
 	
 	@Override
-	protected void onResume()
-	{
-		mResumed = true;
-		super.onResume();
-	}
-	
-	@Override
 	protected void onPause()
 	{
-		mResumed = false;
 		super.onPause();
 		callOnFinish(false);
 	}

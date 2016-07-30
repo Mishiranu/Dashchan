@@ -133,7 +133,6 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	private String mCaptchaType;
 	private ChanPerformer.CaptchaState mCaptchaState;
 	private ChanPerformer.CaptchaData mCaptchaData;
-	private ChanConfiguration.Captcha mCaptchaConfiguration;
 	private String mLoadedCaptchaType;
 	private ChanConfiguration.Captcha.Input mLoadedCaptchaInput;
 	private ChanConfiguration.Captcha.Validity mLoadedCaptchaValidity;
@@ -163,11 +162,10 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	private TextView mRemainingCharacters;
 	
 	private final CaptchaController mCaptchaController = new CaptchaController(this);
-	private FrameLayout mFooterContainer;
 	private Button mSendButton;
 	private int mAttachmentColumnCount;
 	
-	private ArrayList<AttachmentHolder> mAttachments = new ArrayList<>();
+	private final ArrayList<AttachmentHolder> mAttachments = new ArrayList<>();
 	
 	private final ClickableToast.Holder mClickableToastHolder = new ClickableToast.Holder(this);
 	
@@ -259,7 +257,6 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		mSubjectView = (EditText) findViewById(R.id.subject);
 		mIconView = (DropdownView) findViewById(R.id.icon);
 		mAttachmentContainer = (LinearLayout) findViewById(R.id.attachment_container);
-		mFooterContainer = (FrameLayout) findViewById(R.id.footer_container);
 		mTripcodeWarning = (TextView) findViewById(R.id.personal_tripcode_warning);
 		mRemainingCharacters = (TextView) findViewById(R.id.remaining_characters);
 		mCommentView.setOnFocusChangeListener(this);
@@ -281,16 +278,15 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		
 		boolean longFooter = longLayout && !hugeCaptcha;
 		int resId = longFooter ? R.layout.activity_posting_footer_long : R.layout.activity_posting_footer_common;
-		getLayoutInflater().inflate(resId, mFooterContainer);
-		mCaptchaConfiguration = chanConfiguration.safe().obtainCaptcha(mCaptchaType);
-		View captchaInputParentView = mFooterContainer.findViewById(R.id.captcha_input_parent);
-		EditText captchaInputView = (EditText) mFooterContainer.findViewById(R.id.captcha_input);
-		mCaptchaController.setupViews(mFooterContainer, captchaInputParentView, captchaInputView,
-				!longFooter, mCaptchaConfiguration);
-		mSendButton = (Button) mFooterContainer.findViewById(R.id.send_button);
+		FrameLayout footerContainer = (FrameLayout) findViewById(R.id.footer_container);
+		getLayoutInflater().inflate(resId, footerContainer);
+		View captchaInputParentView = footerContainer.findViewById(R.id.captcha_input_parent);
+		EditText captchaInputView = (EditText) footerContainer.findViewById(R.id.captcha_input);
+		ChanConfiguration.Captcha captcha = chanConfiguration.safe().obtainCaptcha(mCaptchaType);
+		mCaptchaController.setupViews(footerContainer, captchaInputParentView, captchaInputView, !longFooter, captcha);
+		mSendButton = (Button) footerContainer.findViewById(R.id.send_button);
 		mSendButton.setOnClickListener(this);
-		int columnCount = configuration.screenWidthDp >= 960 ? 4 : configuration.screenWidthDp >= 480 ? 2 : 1;
-		mAttachmentColumnCount = columnCount;
+		mAttachmentColumnCount = configuration.screenWidthDp >= 960 ? 4 : configuration.screenWidthDp >= 480 ? 2 : 1;
 		
 		mNameView.setVisibility(posting.allowName ? View.VISIBLE : View.GONE);
 		mEmailView.setVisibility(posting.allowEmail ? View.VISIBLE : View.GONE);
@@ -392,7 +388,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			if (captchaDraft != null && captchaDraft.loadedCaptchaType == null)
 			{
 				mCaptchaLoadTime = captchaDraft.loadTime;
-				ChanConfiguration.Captcha.Validity captchaValidity = mCaptchaConfiguration.validity;
+				ChanConfiguration.Captcha.Validity captchaValidity = captcha.validity;
 				if (captchaValidity == null) captchaValidity = ChanConfiguration.Captcha.Validity.SHORT_LIFETIME;
 				if (captchaDraft.loadedValidity != null)
 				{
@@ -461,12 +457,13 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		if (parcelableArray != null)
 		{
 			boolean onlyLinks = true;
-			for (int i = 0; i < parcelableArray.length; i++)
+			for (Parcelable parcelable : parcelableArray)
 			{
-				Replyable.ReplyData data = (Replyable.ReplyData) parcelableArray[i];
+				Replyable.ReplyData data = (Replyable.ReplyData) parcelable;
 				if (!StringUtils.isEmpty(data.comment))
 				{
 					onlyLinks = false;
+					break;
 				}
 			}
 			for (int i = 0; i < parcelableArray.length; i++)
@@ -481,7 +478,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 					// Check if user replies to the same post
 					int index = builder.lastIndexOf(link, commentCarriage);
 					if (index < 0 || index < commentCarriage && commentCarriage <= builder.length() &&
-							builder.substring(index, commentCarriage).indexOf("\n>>") >= 0)
+							builder.substring(index, commentCarriage).contains("\n>>"))
 					{
 						boolean afterSpace = false; // If user wants to add link at the same line
 						if (commentCarriage > 0 && commentCarriage <= builder.length())
@@ -1204,7 +1201,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		ReadCaptchaTask task = new ReadCaptchaTask(this, holder, null, mCaptchaType, requirement, captchaPass,
 				mayShowLoadButton, mChanName, mBoardName, mThreadNumber);
 		task.executeOnExecutor(ReadCaptchaTask.THREAD_POOL_EXECUTOR);
-		return new Pair<Object, AsyncManager.Holder>(task, holder);
+		return new Pair<>(task, holder);
 	}
 	
 	@Override
@@ -1275,8 +1272,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		mLoadedCaptchaValidity = validity;
 		boolean invertColors = blackAndWhite && !GraphicsUtils.isLight(ResourceUtils.getColor(this,
 				android.R.attr.windowBackground));
-		boolean canSend = mCaptchaController.showCaptcha(captchaState, input, image, large,
-				blackAndWhite, invertColors);
+		boolean canSend = mCaptchaController.showCaptcha(captchaState, input, image, large, invertColors);
 		mSendButton.setEnabled(canSend);
 	}
 	
@@ -1416,6 +1412,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			return activity.mAttachments.get(getArguments().getInt(EXTRA_ATTACHMENT_INDEX));
 		}
 		
+		@SuppressWarnings("UnusedAssignment")
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState)
 		{
@@ -1544,8 +1541,8 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		public Dialog onCreateDialog(Bundle savedInstanceState)
 		{
 			Context context = getActivity();
-			mQualityHolder = new SeekBarPreference.Holder(false, 1, 100, 1, 1, getString(R.string.text_quality_format)); // TODO
-			mReduceHolder = new SeekBarPreference.Holder(false, 1, 8, 1, 1, getString(R.string.text_reduce_format)); // TODO
+			mQualityHolder = new SeekBarPreference.Holder(false, 1, 100, 1, 1, getString(R.string.text_quality_format));
+			mReduceHolder = new SeekBarPreference.Holder(false, 1, 8, 1, 1, getString(R.string.text_reduce_format));
 			mQualityHolder.setCurrentValue(savedInstanceState != null ? savedInstanceState.getInt(EXTRA_QUALITY) : 100);
 			mReduceHolder.setCurrentValue(savedInstanceState != null ? savedInstanceState.getInt(EXTRA_REDUCE) : 1);
 			int padding = getResources().getDimensionPixelSize(R.dimen.dialog_padding_view);

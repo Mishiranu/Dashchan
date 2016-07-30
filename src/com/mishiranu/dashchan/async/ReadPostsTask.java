@@ -85,7 +85,7 @@ public class ReadPostsTask extends CancellableTask<Void, Void, Boolean>
 		public boolean hasEdited;
 	}
 	
-	public static interface Callback
+	public interface Callback
 	{
 		public void onRequestPreloadPosts(PostItem[] postItems);
 		public void onReadPostsSuccess(Posts posts, ResultItems resultItems, boolean fullThread,
@@ -346,7 +346,7 @@ public class ReadPostsTask extends CancellableTask<Void, Void, Boolean>
 		return postItems;
 	}
 	
-	public static interface UserPostPending extends Parcelable
+	public interface UserPostPending extends Parcelable
 	{
 		public boolean isUserPost(Post post);
 	}

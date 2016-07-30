@@ -642,13 +642,13 @@ public class ChanPerformer implements ChanManager.Linked
 	}
 	
 	@Public
-	public static enum CaptchaState
+	public enum CaptchaState
 	{
 		@Public CAPTCHA,
 		@Public SKIP,
 		@Public PASS,
 		@Public NEED_LOAD
-	};
+	}
 	
 	@Public
 	public static final class ReadCaptchaResult

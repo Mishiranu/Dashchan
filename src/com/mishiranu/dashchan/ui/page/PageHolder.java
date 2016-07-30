@@ -26,7 +26,7 @@ import com.mishiranu.dashchan.widget.ListPosition;
 
 public class PageHolder implements Parcelable
 {
-	public enum Content {THREADS, POSTS, SEARCH, ARCHIVE, ALL_BOARDS, USER_BOARDS, HISTORY};
+	public enum Content {THREADS, POSTS, SEARCH, ARCHIVE, ALL_BOARDS, USER_BOARDS, HISTORY}
 	
 	boolean inStack = true;
 	public final Content content;
@@ -201,12 +201,12 @@ public class PageHolder implements Parcelable
 		}
 	};
 	
-	public static interface Extra
+	public interface Extra
 	{
 		
 	}
 	
-	public static interface ParcelableExtra extends Extra
+	public interface ParcelableExtra extends Extra
 	{
 		public void writeToParcel(Parcel dest);
 		public void readFromParcel(Parcel source);

@@ -281,7 +281,7 @@ public class MultipartEntity implements RequestEntity
 		}
 	}
 	
-	public static interface Openable
+	public interface Openable
 	{
 		public String getFileName();
 		public String getMimeType();
@@ -348,7 +348,7 @@ public class MultipartEntity implements RequestEntity
 		return mimeType;
 	}
 	
-	public static interface OpenableOutputListener
+	public interface OpenableOutputListener
 	{
 		public void onOutputProgressChange(Openable openable, long progress, long progressMax);
 	}

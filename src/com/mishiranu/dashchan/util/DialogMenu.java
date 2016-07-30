@@ -126,7 +126,7 @@ public class DialogMenu implements DialogInterface.OnClickListener
 		mCallback.onItemClick(mContext, mListItems.get(which).id, mExtra);
 	}
 	
-	public static interface Callback
+	public interface Callback
 	{
 		public void onItemClick(Context context, int id, Map<String, Object> extra);
 	}

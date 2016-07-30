@@ -71,12 +71,14 @@ public class StringUtils
 		return isEmpty(string) ? null : string;
 	}
 	
+	@SuppressWarnings("StringEquality")
 	@Public
 	public static boolean equals(String first, String second)
 	{
 		return first == second || first != null && first.equals(second);
 	}
 	
+	@SuppressWarnings("StringEquality")
 	public static int compare(String first, String second, boolean ignoreCase)
 	{
 		if (first == second) return 0;
@@ -123,29 +125,12 @@ public class StringUtils
 		return builder;
 	}
 
-	public static StringBuilder appendNewLine(StringBuilder builder, String string)
-	{
-		if (builder.length() > 0) builder.append('\n');
-		builder.append(string);
-		return builder;
-	}
-	
 	public static String removeSingleDot(String string)
 	{
 		if (string == null) return null;
 		if (!string.endsWith(".")) return string;
 		String temp = string.replace(".", "");
 		if (string.length() - temp.length() == 1) string = temp;
-		return string;
-	}
-	
-	public static String transform(boolean firstCapital, String string)
-	{
-		if (string != null && string.length() > 0)
-		{
-			string = string.toLowerCase(Locale.getDefault());
-			if (firstCapital) string = string.substring(0, 1).toUpperCase(Locale.getDefault()) + string.substring(1);
-		}
 		return string;
 	}
 	

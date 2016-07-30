@@ -42,7 +42,7 @@ public class ReadThreadSummariesTask extends CancellableTask<Void, Void, ThreadS
 	
 	private ErrorItem mErrorItem;
 	
-	public static interface Callback
+	public interface Callback
 	{
 		public void onReadThreadSummariesSuccess(ThreadSummary[] threadSummaries, int pageNumber);
 		public void onReadThreadSummariesFail(ErrorItem errorItem);

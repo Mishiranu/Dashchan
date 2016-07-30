@@ -323,10 +323,10 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 			PostItem postItem = (PostItem) item;
 			if (!postItem.isHidden(mHidePerformer))
 			{
-				convertView = mUiManager.view().getThreadView(postItem, convertView, parent, mChanName, mBusy);
+				convertView = mUiManager.view().getThreadView(postItem, convertView, parent, mBusy);
 			}
 			else convertView = mUiManager.view().getThreadHiddenView(postItem, convertView, parent);
-			ViewUtils.applyCardHolderPadding(convertView, null, position == 0, position == getCount() - 1, false);
+			ViewUtils.applyCardHolderPadding(convertView, position == 0, position == getCount() - 1, false);
 		}
 		else if (item instanceof PostItem[])
 		{
@@ -360,15 +360,14 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 					}
 					boolean add = convertViewChild == null;
 					convertViewChild = mUiManager.view().getThreadViewForGrid(postItem, convertViewChild, parent,
-							mHidePerformer, mChanName, mGridItemContentHeight, mBusy);
+							mHidePerformer, mGridItemContentHeight, mBusy);
 					if (add)
 					{
 						linearLayout.addView(convertViewChild, i, new LinearLayout.LayoutParams(0,
 								LinearLayout.LayoutParams.WRAP_CONTENT, 1));
 					}
 					else convertViewChild.setVisibility(View.VISIBLE);
-					ViewUtils.applyCardHolderPadding(convertViewChild, mUiManager.view()
-							.extractCardView(convertViewChild), position == 0, position == count - 1, true);
+					ViewUtils.applyCardHolderPadding(convertViewChild, position == 0, position == count - 1, true);
 				}
 				else
 				{

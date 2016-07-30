@@ -43,7 +43,7 @@ import com.mishiranu.dashchan.util.IOUtils;
 
 public class ReadFileTask extends CancellableTask<String, Long, Boolean>
 {
-	public static interface Callback
+	public interface Callback
 	{
 		public void onFileExists(Uri uri, File file);
 		public void onStartDownloading(Uri uri, File file);
@@ -51,12 +51,12 @@ public class ReadFileTask extends CancellableTask<String, Long, Boolean>
 		public void onUpdateProgress(long progress, long progressMax);
 	}
 	
-	public static interface CancelCallback
+	public interface CancelCallback
 	{
 		public void onCancelDownloading(Uri uri, File file);
 	}
 	
-	public static interface AsyncFinishCallback
+	public interface AsyncFinishCallback
 	{
 		public void onFinishDownloadingInThread();
 	}
@@ -138,21 +138,21 @@ public class ReadFileTask extends CancellableTask<String, Long, Boolean>
 			else
 			{
 				Uri uri = mFromUri;
-				String chanName = mChanName;
-				if (chanName == null) chanName = ChanManager.getInstance().getChanNameByHost(uri.getAuthority());
-				uri = EmbeddedManager.getInstance().doReadRealUri(chanName, uri, mHolder);
+				uri = EmbeddedManager.getInstance().doReadRealUri(uri, mHolder);
 				final int connectTimeout = 15000, readTimeout = 15000;
 				byte[] response;
+				String chanName = mChanName;
+				if (chanName == null) chanName = ChanManager.getInstance().getChanNameByHost(uri.getAuthority());
 				if (chanName != null)
 				{
 					ChanPerformer.ReadContentResult result = ChanPerformer.get(chanName).safe()
 							.onReadContent(new ChanPerformer.ReadContentData (uri, connectTimeout, readTimeout,
-									mHolder, mProgressHandler, null));
+							mHolder, mProgressHandler, null));
 					response = result.response.getBytes();
 				}
 				else
 				{
-					response = new HttpRequest(uri, mHolder).setTimeouts(15000, 15000)
+					response = new HttpRequest(uri, mHolder).setTimeouts(connectTimeout, readTimeout)
 							.setInputListener(mProgressHandler).read().getBytes();
 				}
 				ByteArrayInputStream input = new ByteArrayInputStream(response);

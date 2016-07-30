@@ -467,7 +467,7 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener
 		return String.format(Locale.US, "%02d:%02d", m, s);
 	}
 	
-	private View.OnClickListener mPlayPauseClickListener = new View.OnClickListener()
+	private final View.OnClickListener mPlayPauseClickListener = new View.OnClickListener()
 	{
 		@Override
 		public void onClick(View v)

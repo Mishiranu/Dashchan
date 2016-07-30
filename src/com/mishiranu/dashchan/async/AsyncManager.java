@@ -36,7 +36,7 @@ public final class AsyncManager
 {
 	public static final class TaskFragment extends Fragment
 	{
-		public AsyncManager manager;
+		public final AsyncManager manager;
 		
 		public TaskFragment()
 		{
@@ -176,7 +176,7 @@ public final class AsyncManager
 		for (Holder holder : mWorkTasks.values()) holder.callback = null;
 	}
 	
-	public static interface Callback
+	public interface Callback
 	{
 		public Pair<Object, Holder> onCreateAndExecuteTask(String name, HashMap<String, Object> extra);
 		public void onFinishTaskExecution(String name, Holder holder);
@@ -279,13 +279,14 @@ public final class AsyncManager
 		mWorkTasks.put(name, holder);
 	}
 	
+	@SuppressWarnings("UnusedParameters")
 	public static abstract class SimpleTask<Params, Progress, Result> extends CancellableTask<Params, Progress, Result>
 	{
 		private final Holder mHolder = new Holder();
 		
 		public final Pair<Object, Holder> getPair()
 		{
-			return new Pair<Object, Holder>(this, mHolder);
+			return new Pair<>(this, mHolder);
 		}
 		
 		@Override

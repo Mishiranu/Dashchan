@@ -97,7 +97,7 @@ public class PullableListView extends PaddedListView implements PullableWrapper.
 		}
 	}
 	
-	public static interface OnBeforeLayoutListener
+	public interface OnBeforeLayoutListener
 	{
 		public void onBeforeLayout(View v, int left, int top, int right, int bottom);
 	}

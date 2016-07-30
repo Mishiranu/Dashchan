@@ -82,23 +82,18 @@ public class C
 	public static final String EXTRA_ANIMATED_TRANSITION = "com.mishiranu.dashchan.extra.ANIMATED_TRANSITION";
 	public static final String EXTRA_BOARD_NAME = "com.mishiranu.dashchan.extra.BOARD_NAME";
 	public static final String EXTRA_CHAN_NAME = "com.mishiranu.dashchan.extra.CHAN_NAME";
-	public static final String EXTRA_COMMENT = "com.mishiranu.dashchan.extra.COMMENT";
 	public static final String EXTRA_FAIL_RESULT = "com.mishiranu.dashchan.extra.FAIL_RESULT";
 	public static final String EXTRA_FROM_CACHE = "com.mishiranu.dashchan.extra.FROM_CACHE";
 	public static final String EXTRA_FROM_CLIENT = "com.mishiranu.dashchan.extra.FROM_CLIENT";
-	public static final String EXTRA_GALLERY_ITEM = "com.mishiranu.dashchan.extra.EXTRA_GALLERY_ITEM";
 	public static final String EXTRA_GALLERY_MODE = "com.mishiranu.dashchan.extra.GALLERY_MODE";
 	public static final String EXTRA_IMAGE_INDEX = "com.mishiranu.dashchan.extra.IMAGE_INDEX";
 	public static final String EXTRA_LAUNCHER = "com.mishiranu.dashchan.extra.LAUNCHER";
 	public static final String EXTRA_NAVIGATE_TOP = "com.mishiranu.dashchan.extra.NAVIGATE_TOP";
-	public static final String EXTRA_NEW_THREAD = "com.mishiranu.dashchan.extra.NEW_THREAD";
 	public static final String EXTRA_OBTAIN_ITEMS = "com.mishiranu.dashchan.extra.EXTRA_OBTAIN_ITEMS";
 	public static final String EXTRA_POST_NUMBER = "com.mishiranu.dashchan.extra.POST_NUMBER";
 	public static final String EXTRA_REPLY_DATA = "com.mishiranu.dashchan.extra.REPLY_DATA";
 	public static final String EXTRA_SEARCH_QUERY = "com.mishiranu.dashchan.extra.SEARCH_QUERY";
-	public static final String EXTRA_SELECTED_FILE = "com.mishiranu.dashchan.extra.SELECTED_FILE";
 	public static final String EXTRA_THREAD_NUMBER = "com.mishiranu.dashchan.extra.THREAD_NUMBER";
-	public static final String EXTRA_TIMESTAMP = "com.mishiranu.dashchan.extra.TIMESTAMP";
 	public static final String EXTRA_THREAD_TITLE = "com.mishiranu.dashchan.extra.THREAD_TITLE";
 	public static final String EXTRA_VIEW_POSITION = "com.mishiranu.dashchan.extra.VIEW_POSITION";
 }

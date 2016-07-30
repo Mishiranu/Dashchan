@@ -76,7 +76,7 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 			@Override
 			public void onActionModeStarted(ActionMode mode)
 			{
-				mCurrentActionMode = new WeakReference<ActionMode>(mode);
+				mCurrentActionMode = new WeakReference<>(mode);
 				super.onActionModeStarted(mode);
 			}
 			
@@ -185,7 +185,7 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 				if (mode != null) mode.finish();
 			}
 		}
-		DialogView dialogView = createDialog(view, !mVisibileViews.isEmpty());
+		DialogView dialogView = createDialog(view);
 		mVisibileViews.add(dialogView);
 		switchBackground(false);
 	}
@@ -230,7 +230,7 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 
 	private static final int[] ATTRS_BACKGROUND = {android.R.attr.windowBackground};
 	
-	private DialogView createDialog(View view, boolean animate)
+	private DialogView createDialog(View view)
 	{
 		DialogView dialogView = new DialogView(mContext);
 		mRootView.addView(dialogView, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
@@ -308,7 +308,7 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 		}
 	}
 	
-	public static interface Callback
+	public interface Callback
 	{
 		public void onPop(View view);
 		public void onHide(View view);

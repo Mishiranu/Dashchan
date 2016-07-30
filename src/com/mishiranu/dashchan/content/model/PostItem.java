@@ -53,18 +53,13 @@ import com.mishiranu.dashchan.util.PostDateFormatter;
 
 public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, Comparable<PostItem>
 {
-	public static final int FORMAT_REPLIES = 0;
-	public static final int FORMAT_REPLIES_WITH_FILES = 1;
-	public static final int FORMAT_FILES = 2;
-	public static final int FORMAT_ATTACHMENT_SIZE = 3;
-	
 	private final String mChanName;
 	private final String mBoardName;
 	private ArrayList<AttachmentItem> mAttachmentItems;
 	private ArrayList<Pair<Uri, String>> mIcons;
 
-	public static int ORDINAL_INDEX_NONE = -1;
-	public static int ORDINAL_INDEX_DELETED = -2;
+	public static final int ORDINAL_INDEX_NONE = -1;
+	public static final int ORDINAL_INDEX_DELETED = -2;
 	
 	private int mOrdinalIndex = ORDINAL_INDEX_NONE;
 
@@ -136,8 +131,7 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 				threadData.gallerySet.setThreadTitle(getSubjectOrComment());
 				threadData.gallerySet.add(mAttachmentItems);
 			}
-			threadData.commentShort = obtainThreadComment(mPost.getWorkComment(), mChanName, mBoardName,
-					getThreadNumber(), this);
+			threadData.commentShort = obtainThreadComment(mPost.getWorkComment(), mChanName, this);
 			threadData.commentShortSpans = ColorScheme.getSpans(threadData.commentShort);
 		}
 		else
@@ -152,7 +146,7 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 			if (icon != null)
 			{
 				if (icons == null) icons = new ArrayList<>();
-				icons.add(new Pair<Uri, String>(icon.getRelativeUri(), icon.getTitle()));
+				icons.add(new Pair<>(icon.getRelativeUri(), icon.getTitle()));
 			}
 		}
 		mIcons = icons;
@@ -457,18 +451,17 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 		return mSubject;
 	}
 	
-	private static CharSequence obtainComment(String comment, String chanName, String boardName,
-			String threadNumber, String parentPostNumber, ChanMarkup.MarkupExtra extra)
+	private static CharSequence obtainComment(String comment, String chanName, String parentPostNumber,
+											  ChanMarkup.MarkupExtra extra)
 	{
 		return StringUtils.isEmpty(comment) ? "" : HtmlParser.parse(comment, ChanMarkup.get(chanName),
 				StringUtils.emptyIfNull(parentPostNumber), extra);
 	}
 	
-	private static CharSequence obtainThreadComment(String comment, String chanName,
-			String boardName, String threadNumber, ChanMarkup.MarkupExtra extra)
+	private static CharSequence obtainThreadComment(String comment, String chanName, ChanMarkup.MarkupExtra extra)
 	{
 		SpannableStringBuilder commentBuilder = new SpannableStringBuilder(obtainComment(comment,
-				chanName, boardName, threadNumber, null, extra));
+				chanName, null, extra));
 		int linebreaks = 0;
 		// Remove more than one linebreaks in sequence
 		for (int i = commentBuilder.length() - 1; i >= 0; i--)
@@ -492,8 +485,8 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 			{
 				if (mComment == null)
 				{
-					CharSequence comment = obtainComment(mPost.getWorkComment(), getChanName(), mBoardName,
-							getThreadNumber(), getParentPostNumber(), this);
+					CharSequence comment = obtainComment(mPost.getWorkComment(), getChanName(),
+							getParentPostNumber(), this);
 					// Make empty lines take less space
 					SpannableStringBuilder builder = null;
 					int linebreaks = 0;
@@ -650,12 +643,11 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 	
 	public String getAttachmentsDescription(Context context, AttachmentItem.FormatMode formatMode)
 	{
-		String result = null;
 		int count = mAttachmentItems.size();
 		if (count == 1)
 		{
 			AttachmentItem attachmentItem = mAttachmentItems.get(0);
-			result = attachmentItem.getDescription(formatMode);
+			return attachmentItem.getDescription(formatMode);
 		}
 		else
 		{
@@ -665,9 +657,8 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 			if (size > 0) builder.append(AttachmentItem.formatSize(size)).append(' ');
 			builder.append(context.getResources().getQuantityString(R.plurals
 					.text_several_files_count_format, count, count));
-			result = builder.toString();
+			return builder.toString();
 		}
-		return result;
 	}
 	
 	public int getPostReplyCount()

@@ -54,9 +54,9 @@ import com.mishiranu.dashchan.util.ViewUtils;
 
 public class PostingService extends Service implements Runnable, SendPostTask.Callback
 {
-	private static String ACTION_CANCEL_POSTING = "com.mishiranu.dashchan.action.CANCEL_POSTING";
+	private static final String ACTION_CANCEL_POSTING = "com.mishiranu.dashchan.action.CANCEL_POSTING";
 	
-	private static String EXTRA_KEY = "com.mishiranu.dashchan.extra.KEY";
+	private static final String EXTRA_KEY = "com.mishiranu.dashchan.extra.KEY";
 	
 	private final HashMap<String, ArrayList<Callback>> mCallbacks = new HashMap<>();
 	private final HashMap<Callback, String> mCallbackKeys = new HashMap<>();
@@ -225,12 +225,12 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 		mWakeLock.release();
 	}
 	
-	private static final String makeKey(String chanName, String boardName, String threadNumber)
+	private static String makeKey(String chanName, String boardName, String threadNumber)
 	{
 		return chanName + '/' + boardName + '/' + threadNumber;
 	}
 	
-	public static interface Callback
+	public interface Callback
 	{
 		public void onSendPostStart(boolean progressMode);
 		public void onSendPostChangeProgressState(boolean progressMode, SendPostTask.ProgressState progressState,
@@ -521,12 +521,12 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 		
 		private String mNotificationTag;
 		
-		public String getNotificationTag()
+		private String getNotificationTag()
 		{
 			if (mNotificationTag == null)
 			{
-				mNotificationTag = StringUtils.calculateSha256(chanName + "/" + boardName + "/" + threadNumber + "/"
-						+ postNumber + "/" + comment + "/" + newThread);
+				mNotificationTag = C.NOTIFICATION_TAG_POSTING + "/" + StringUtils.calculateSha256(chanName +
+						"/" + boardName + "/" + threadNumber + "/" + postNumber + "/" + comment + "/" + newThread);
 			}
 			return mNotificationTag;
 		}

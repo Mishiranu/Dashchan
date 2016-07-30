@@ -51,7 +51,8 @@ public class PaddedListView extends ListView implements EdgeEffectHandler.Shift
 		super(context, attrs, defStyleAttr);
 	}
 	
-	protected final void onDrawVerticalScrollBar(Canvas canvas, Drawable scrollBar, int l, int t, int r, int b)
+	@SuppressWarnings("unused") // Overrides hidden Android API protected method
+	protected void onDrawVerticalScrollBar(Canvas canvas, Drawable scrollBar, int l, int t, int r, int b)
 	{
 		if (b - t == getHeight())
 		{

@@ -101,7 +101,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 	
 	private LinearLayout mSearchController;
 	private TextView mSearchTextResult;
-	private ArrayList<Integer> mSearchFoundPosts = new ArrayList<>();
+	private final ArrayList<Integer> mSearchFoundPosts = new ArrayList<>();
 	private boolean mSearching = false;
 	private int mSearchLastPosition;
 	
@@ -268,11 +268,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		if (mSelectionMode != null) return false;
 		PostsAdapter adapter = getAdapter();
 		PostItem postItem = adapter.getItem(position);
-		if (postItem != null)
-		{
-			return getUiManager().interaction().handlePostContextMenu(postItem, mReplyable, true, true);
-		}
-		return false;
+		return postItem != null && getUiManager().interaction().handlePostContextMenu(postItem, mReplyable, true, true);
 	}
 
 	private static final int OPTIONS_MENU_ADD_POST = 0;
@@ -780,7 +776,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				{
 					if (comment.contains(lowQuery)) continue OUTER;
 				}
-				String subject = postItem.getSubject().toString().toLowerCase(locale);
+				String subject = postItem.getSubject().toLowerCase(locale);
 				String name = postItem.getFullName().toString().toLowerCase(locale);
 				fileNames.clear();
 				ArrayList<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
@@ -914,7 +910,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 	@Override
 	public boolean onBackPressed()
 	{
-		if (onStopSearchInternal()) return true; else return super.onBackPressed();
+		return onStopSearchInternal() || super.onBackPressed();
 	}
 	
 	private boolean handleNewPostDatas()
@@ -927,7 +923,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 			PostsExtra extra = getExtra();
 			for (PostingService.NewPostData newPostData : newPostDatas)
 			{
-				ReadPostsTask.UserPostPending userPostPending = null;
+				ReadPostsTask.UserPostPending userPostPending;
 				if (newPostData.newThread)
 				{
 					userPostPending = new ReadPostsTask.NewThreadUserPostPending();
@@ -1043,18 +1039,17 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		}
 		if (extra.cachedPosts != null)
 		{
+			Pair<String, Uri> originalThreadData = null;
 			Uri archivedThreadUri = extra.cachedPosts.getArchivedThreadUri();
 			if (archivedThreadUri != null)
 			{
 				String chanName = ChanManager.getInstance().getChanNameByHost(archivedThreadUri.getAuthority());
-				if (chanName != null)
-				{
-					Pair<String, Uri> originalThreadData = new Pair<>(chanName, archivedThreadUri);
-					if ((mOriginalThreadData == null) != (originalThreadData == null))
-					{
-						updateOptionsMenu(false);
-					}
-				}
+				if (chanName != null) originalThreadData =  new Pair<>(chanName, archivedThreadUri);
+			}
+			if ((mOriginalThreadData == null) != (originalThreadData == null))
+			{
+				mOriginalThreadData = originalThreadData;
+				updateOptionsMenu(false);
 			}
 		}
 		Iterator<PostItem> iterator = getAdapter().iterator();
@@ -1511,7 +1506,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 			{
 				PostsAdapter adapter = getAdapter();
 				adapter.cancelPreloading();
-				boolean success = false;
+				boolean success;
 				if (message == UiManager.MESSAGE_PERFORM_HIDE_NAME) success = mHidePerformer.addHideByName(postItem);
 				else success = mHidePerformer.addHideSimilar(postItem);
 				if (success)
@@ -1544,7 +1539,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 	{
 		public Posts cachedPosts;
 		public final ArrayList<PostItem> cachedPostItems = new ArrayList<>();
-		public final HashSet<String> userPostNumbers = new HashSet<String>();
+		public final HashSet<String> userPostNumbers = new HashSet<>();
 		
 		public final ArrayList<ReadPostsTask.UserPostPending> userPostPendings = new ArrayList<>();
 		public final HashSet<String> expandedPosts = new HashSet<>();

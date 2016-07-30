@@ -18,6 +18,7 @@ package com.mishiranu.dashchan.net;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -173,7 +174,7 @@ public class YouTubeTitlesReader
 	
 	private static class FileCodeData extends EmbeddedCodeData
 	{
-		public EmbeddedAttachment attachment;
+		public final EmbeddedAttachment attachment;
 		
 		public FileCodeData(EmbeddedApplyHolder applyHolder, String embeddedCode, EmbeddedAttachment attachment)
 		{
@@ -274,7 +275,8 @@ public class YouTubeTitlesReader
 			if (attachment instanceof EmbeddedAttachment)
 			{
 				EmbeddedAttachment embeddedAttachment = (EmbeddedAttachment) attachment;
-				String embeddedCode = locator.getYouTubeEmbeddedCode(embeddedAttachment.getFileUriString());
+				Uri uri = embeddedAttachment.getFileUri();
+				String embeddedCode = uri != null ? locator.getYouTubeEmbeddedCode(uri.toString()) : null;
 				if (embeddedCode != null)
 				{
 					if (applyHolder == null) applyHolder = new EmbeddedApplyHolder(post);
@@ -367,10 +369,7 @@ public class YouTubeTitlesReader
 			ArrayList<Post> posts = new ArrayList<>();
 			for (Posts thread : threads.getThreads()[0])
 			{
-				if (thread != null)
-				{
-					for (Post post : thread.getPosts()) posts.add(post);
-				}
+				if (thread != null) Collections.addAll(posts, thread.getPosts());
 			}
 			if (posts.size() > 0) readAndApplyIfNecessary(posts, holder);
 		}

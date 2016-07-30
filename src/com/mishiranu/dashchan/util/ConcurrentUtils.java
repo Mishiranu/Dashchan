@@ -26,7 +26,7 @@ import android.os.Process;
 
 public class ConcurrentUtils
 {
-	public static Executor SEPARATE_EXECUTOR = command -> new Thread(command).start();
+	public static final Executor SEPARATE_EXECUTOR = command -> new Thread(command).start();
 	
 	public static ThreadPoolExecutor newSingleThreadPool(int lifeTimeMs, String componentName, String componentPart,
 			int threadPriority)
@@ -37,7 +37,7 @@ public class ConcurrentUtils
 	public static ThreadPoolExecutor newThreadPool(int from, int to, long lifeTimeMs,
 			String componentName, String componentPart, int threadPriority)
 	{
-		return new ThreadPoolExecutor(from, to, lifeTimeMs, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(),
+		return new ThreadPoolExecutor(from, to, lifeTimeMs, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(),
 				new ComponentThreadFactory(componentName, componentPart, threadPriority));
 	}
 	

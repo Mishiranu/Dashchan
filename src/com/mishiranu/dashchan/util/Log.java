@@ -30,8 +30,7 @@ import android.os.Environment;
 
 import chan.util.CommonUtils;
 
-import com.mishiranu.dashchan.util.IOUtils;
-
+@SuppressWarnings({"deprecation", "unused"})
 public enum Log
 {
 	ELAPSED_MARK, ELAPSED_MARK_UPDATE, FILE_NAME, DISABLE_QUOTES, TYPE_WARNING, TYPE_ERROR;
@@ -113,7 +112,7 @@ public enum Log
 			if (data[i] == null) builder.append("null");
 			else if (data[i] instanceof CharSequence)
 			{
-				String string = ((CharSequence) data[i]).toString().replace("\n", "[LF]").replace("\r", "[CR]");
+				String string = data[i].toString().replace("\n", "[LF]").replace("\r", "[CR]");
 				if (qouteStrings) builder.append('"');
 				builder.append(string);
 				if (qouteStrings) builder.append('"');
@@ -174,7 +173,7 @@ public enum Log
 		{
 			synchronized (sLogOutput)
 			{
-				sLogOutput.append(TIME_FORMAT.format(System.currentTimeMillis()) + ": " + message);
+				sLogOutput.append(TIME_FORMAT.format(System.currentTimeMillis())).append(": ").append(message);
 				sLogOutput.append('\n');
 			}
 		}

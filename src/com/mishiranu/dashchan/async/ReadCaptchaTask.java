@@ -59,7 +59,7 @@ public class ReadCaptchaTask extends CancellableTask<Void, Long, Boolean>
 	private boolean mBlackAndWhite;
 	private ErrorItem mErrorItem;
 
-	public static interface Callback
+	public interface Callback
 	{
 		public void onReadCaptchaSuccess(ChanPerformer.CaptchaState captchaState, ChanPerformer.CaptchaData captchaData,
 				String captchaType, ChanConfiguration.Captcha.Input input, ChanConfiguration.Captcha.Validity validity,
@@ -67,7 +67,7 @@ public class ReadCaptchaTask extends CancellableTask<Void, Long, Boolean>
 		public void onReadCaptchaError(ErrorItem errorItem);
 	}
 	
-	public static interface CaptchaReader
+	public interface CaptchaReader
 	{
 		public ChanPerformer.ReadCaptchaResult onReadCaptcha(ChanPerformer.ReadCaptchaData data)
 				throws ExtensionException, HttpException, InvalidResponseException;

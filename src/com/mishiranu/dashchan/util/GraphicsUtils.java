@@ -40,7 +40,6 @@ import com.mishiranu.dashchan.content.model.FileHolder;
 public class GraphicsUtils
 {
 	public static final Typeface TYPEFACE_MEDIUM = newTypeface("sans-serif-medium");
-	public static final Typeface TYPEFACE_LIGHT = newTypeface("sans-serif-light");
 	
 	private static final Random RANDOM = new Random(System.currentTimeMillis());
 	
@@ -360,12 +359,6 @@ public class GraphicsUtils
 				|| "zTXt".equals(name);
 	}
 	
-	public static boolean isWhite(int color)
-	{
-		return Color.alpha(color) == 0xff && Color.red(color) >= 0xe0 && Color.green(color) >= 0xe0
-				&& Color.blue(color) >= 0xe0;
-	}
-	
 	public static boolean isBlackAndWhiteCaptchaImage(Bitmap image)
 	{
 		if (image != null)
@@ -422,9 +415,9 @@ public class GraphicsUtils
 			canvas.drawBitmap(mask, 0, 0, paint);
 			mask.recycle();
 			image = result;
-			return new Pair<Bitmap, Boolean>(image, true);
+			return new Pair<>(image, true);
 		}
-		return new Pair<Bitmap, Boolean>(null, false);
+		return new Pair<>(null, false);
 	}
 	
 	public static Bitmap generateNoise(int size, int scale, int colorFrom, int colorTo)

@@ -152,7 +152,7 @@ public class NavigationUtils
 		return null;
 	}
 	
-	public static enum BrowserType {AUTO, INTERNAL, EXTERNAL};
+	public enum BrowserType {AUTO, INTERNAL, EXTERNAL}
 	
 	public static void handleUri(Context context, String chanName, Uri uri, BrowserType browserType)
 	{
@@ -270,7 +270,7 @@ public class NavigationUtils
 		}
 		gallerySet.cleanup();
 		ArrayList<GalleryItem> galleryItems = gallerySet.getItems();
-		sGalleryItems = new WeakReference<ArrayList<GalleryItem>>(galleryItems);
+		sGalleryItems = new WeakReference<>(galleryItems);
 		Intent intent = new Intent(context, GalleryActivity.class);
 		intent.putExtra(C.EXTRA_CHAN_NAME, chanName);
 		intent.putExtra(C.EXTRA_THREAD_TITLE, gallerySet.getThreadTitle());

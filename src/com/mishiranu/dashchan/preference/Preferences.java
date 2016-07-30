@@ -211,7 +211,7 @@ public class Preferences
 		String defaultCaptchaType = supportedCaptchaTypes[0];
 		String captchaTypeValue = PREFERENCES.getString(KEY_CAPTCHA.bind(chanName),
 				transformCaptchaTypeToValue(defaultCaptchaType));
-		String captchaType = null;
+		String captchaType;
 		if (captchaTypeValue != null && captchaTypeValue.startsWith(VALUE_CAPTCHA_START))
 		{
 			captchaType = captchaTypeValue.substring(VALUE_CAPTCHA_START.length());
@@ -258,7 +258,7 @@ public class Preferences
 		String defaultCaptchaType = getCloudFlareDefaultCaptchaType();
 		String captchaTypeValue = PREFERENCES.getString(KEY_CAPTCHA_CLOUDFLARE,
 				transformCaptchaTypeToValue(defaultCaptchaType));
-		String captchaType = null;
+		String captchaType;
 		if (captchaTypeValue != null && captchaTypeValue.startsWith(VALUE_CAPTCHA_START))
 		{
 			captchaType = captchaTypeValue.substring(VALUE_CAPTCHA_START.length());
@@ -919,8 +919,7 @@ public class Preferences
 		{
 			try
 			{
-				JSONObject jsonObject = new JSONObject(statistics);
-				return jsonObject;
+				return new JSONObject(statistics);
 			}
 			catch (JSONException e)
 			{
@@ -1045,7 +1044,7 @@ public class Preferences
 	public static void setExtensionTrusted(String packageName)
 	{
 		Set<String> packageNames = PREFERENCES.getStringSet(KEY_TRUSTED_EXSTENSIONS, null);
-		if (packageNames != null) packageNames = new HashSet<String>(packageNames); else packageNames = new HashSet<>();
+		if (packageNames != null) packageNames = new HashSet<>(packageNames); else packageNames = new HashSet<>();
 		packageNames.add(packageName);
 		PREFERENCES.edit().putStringSet(KEY_TRUSTED_EXSTENSIONS, packageNames).commit();
 	}

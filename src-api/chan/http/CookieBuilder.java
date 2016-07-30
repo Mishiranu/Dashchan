@@ -30,11 +30,6 @@ public final class CookieBuilder
 		
 	}
 	
-	public CookieBuilder(String cookie)
-	{
-		append(cookie);
-	}
-	
 	public CookieBuilder(CookieBuilder builder)
 	{
 		append(builder);

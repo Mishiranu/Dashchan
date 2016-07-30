@@ -109,22 +109,22 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 	private final ArrayList<ArrayList<ListItem>> mCategories = new ArrayList<>();
 	private final ArrayList<ListItem> mMenu = new ArrayList<>();
 
+	private final WatcherService.Client mWatcherServiceClient;
 	private SortableListView mListView;
-	private WatcherService.Client mWatcherServiceClient;
 	
 	private boolean mMergeChans = false;
 	private boolean mChanSelectMode = false;
 	private String mChanName;
 
-	public static int RESULT_REMOVE_ERROR_MESSAGE = 0x00000001;
-	public static int RESULT_SUCCESS = 0x00000002;
+	public static final int RESULT_REMOVE_ERROR_MESSAGE = 0x00000001;
+	public static final int RESULT_SUCCESS = 0x00000002;
 	
 	public static final int MENU_ITEM_ALL_BOARDS = 1;
 	public static final int MENU_ITEM_USER_BOARDS = 2;
 	public static final int MENU_ITEM_HISTORY = 3;
 	public static final int MENU_ITEM_PREFERENCES = 4;
 	
-	public static interface Callback
+	public interface Callback
 	{
 		public void onSelectChan(String chanName);
 		public void onSelectBoard(String chanName, String boardName, boolean fromCache);
@@ -182,7 +182,11 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 				android.R.attr.selectableItemBackground, 0));
 		selectorContainer.setOrientation(LinearLayout.HORIZONTAL);
 		selectorContainer.setGravity(Gravity.CENTER_VERTICAL);
-		selectorContainer.setOnClickListener(mChanSelectorClickListener);
+		selectorContainer.setOnClickListener(v ->
+		{
+			hideKeyboard();
+			setChanSelectMode(!mChanSelectMode);
+		});
 		linearLayout.addView(selectorContainer);
 		selectorContainer.setMinimumHeight((int) (40f * density));
 		if (C.API_LOLLIPOP)
@@ -221,12 +225,6 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 		}
 		if (availableChans.size() == 1) selectorContainer.setVisibility(View.GONE);
 	}
-	
-	private final View.OnClickListener mChanSelectorClickListener = v ->
-	{
-		hideKeyboard();
-		setChanSelectMode(!mChanSelectMode);
-	};
 	
 	public void bind(SortableListView listView)
 	{
@@ -1213,7 +1211,7 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 		WatcherView watcherView = null;
 		if (watcher)
 		{
-			watcherView = new WatcherView(mContext, size);
+			watcherView = new WatcherView(mContext);
 			linearLayout.addView(watcherView, size, size);
 		}
 		ImageView closeView = null;
@@ -1295,7 +1293,6 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 					(int) (8f * density));
 			linearLayout2.addView(textView, layoutParams);
 			ViewHolder holder = new ViewHolder();
-			holder = new ViewHolder();
 			holder.text = textView;
 			if (button)
 			{
@@ -1321,7 +1318,6 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 					android.R.attr.preferenceCategoryStyle, android.R.attr.layout,
 					android.R.layout.preference_category), parent, false);
 			ViewHolder holder = new ViewHolder();
-			holder = new ViewHolder();
 			holder.text = (TextView) view.findViewById(android.R.id.title);
 			if (button)
 			{
@@ -1420,7 +1416,7 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 				{
 					WatcherService.WatcherItem watcherItem = mWatcherServiceClient.getItem(listItem.chanName,
 							listItem.boardName, listItem.threadNumber);
-					updateWatcherItem(convertView, holder, watcherItem != null ? watcherItem.getLastState()
+					updateWatcherItem(holder, watcherItem != null ? watcherItem.getLastState()
 							: WatcherService.State.DISABLED);
 				}
 				break;
@@ -1457,7 +1453,7 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 		return holder.listItem;
 	}
 	
-	private void updateWatcherItem(View view, ViewHolder holder, WatcherService.State state)
+	private void updateWatcherItem(ViewHolder holder, WatcherService.State state)
 	{
 		WatcherView watcherView = (WatcherView) holder.extra;
 		watcherView.setPostsCountDifference(holder.listItem.watcherPostsCountDifference,
@@ -1490,7 +1486,7 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 		private int mColor;
 		
 		@TargetApi(Build.VERSION_CODES.LOLLIPOP)
-		public WatcherView(Context context, int defaultWidth)
+		public WatcherView(Context context)
 		{
 			super(context);
 			setBackgroundResource(ResourceUtils.getResourceId(context, android.R.attr.selectableItemBackground, 0));
@@ -1643,7 +1639,7 @@ public class DrawerManager extends BaseAdapter implements EdgeEffectHandler.Shif
 						ViewHolder holder = (ViewHolder) view.getTag();
 						if (holder != null && targetItem == holder.listItem)
 						{
-							updateWatcherItem(view, holder, state);
+							updateWatcherItem(holder, state);
 							break;
 						}
 					}

@@ -44,7 +44,7 @@ public class PullableWrapper implements AbsListView.OnScrollListener
 	
 	private final float mPullDeltaGain;
 	
-	public static enum Side {NONE, BOTH, TOP, BOTTOM};
+	public enum Side {NONE, BOTH, TOP, BOTTOM}
 	
 	public PullableWrapper(Wrapped listView)
 	{
@@ -70,12 +70,12 @@ public class PullableWrapper implements AbsListView.OnScrollListener
 		mBottomProgress.setColor(color);
 	}
 	
-	public static interface PullCallback
+	public interface PullCallback
 	{
 		public void onListPulled(PullableWrapper wrapper, Side side);
 	}
 	
-	public static interface PullStateListener
+	public interface PullStateListener
 	{
 		public void onPullStateChanged(PullableWrapper wrapper, boolean busy);
 	}
@@ -347,9 +347,10 @@ public class PullableWrapper implements AbsListView.OnScrollListener
 		}
 	}
 	
-	private static interface PullPainter
+	private interface PullPainter
 	{
-		public enum State {IDLE, PULL, LOADING};
+		public enum State {IDLE, PULL, LOADING}
+		
 		public static final int MAX_STRAIN = 1000;
 		
 		public void setColor(int color);
@@ -675,6 +676,7 @@ public class PullableWrapper implements AbsListView.OnScrollListener
 			}
 		}
 		
+		@SuppressWarnings("UnnecessaryLocalVariable")
 		private void invalidate(Wrapped wrapped, int width, float radius, float commonShift, int padding)
 		{
 			int hw = width / 2;
@@ -904,7 +906,7 @@ public class PullableWrapper implements AbsListView.OnScrollListener
 		}
 	}
 	
-	public static interface Wrapped extends EdgeEffectHandler.Shift
+	public interface Wrapped extends EdgeEffectHandler.Shift
 	{
 		public Context getContext();
 		public Resources getResources();

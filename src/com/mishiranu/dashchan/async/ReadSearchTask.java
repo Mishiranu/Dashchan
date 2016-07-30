@@ -48,7 +48,7 @@ public class ReadSearchTask extends CancellableTask<Void, Void, PostItem[]> impl
 	
 	private ErrorItem mErrorItem;
 	
-	public static interface Callback
+	public interface Callback
 	{
 		public void onReadSearchSuccess(PostItem[] postItems, int pageNumber);
 		public void onReadSearchFail(ErrorItem errorItem);

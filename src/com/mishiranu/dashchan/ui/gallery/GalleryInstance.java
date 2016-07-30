@@ -45,7 +45,7 @@ public class GalleryInstance
 		this.callback = callback;
 	}
 	
-	public static interface Callback
+	public interface Callback
 	{
 		public void downloadGalleryItem(GalleryItem galleryItem);
 		public void downloadGalleryItems(ArrayList<GalleryItem> galleryItems);

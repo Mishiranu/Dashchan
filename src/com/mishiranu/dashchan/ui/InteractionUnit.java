@@ -43,7 +43,6 @@ import com.mishiranu.dashchan.util.DialogMenu;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.widget.AttachmentView;
-import com.mishiranu.dashchan.widget.CommentTextView;
 
 public class InteractionUnit
 {
@@ -54,7 +53,7 @@ public class InteractionUnit
 		mUiManager = uiManager;
 	}
 	
-	public void handleLinkClick(CommentTextView view, String chanName, Uri uri, boolean confirmed)
+	public void handleLinkClick(String chanName, Uri uri, boolean confirmed)
 	{
 		boolean handled = false;
 		final String uriChanName = ChanManager.getInstance().getChanNameByHost(uri.getHost());
@@ -139,7 +138,7 @@ public class InteractionUnit
 	private static final int LINK_MENU_DOWNLOAD_FILE = 3;
 	private static final int LINK_MENU_OPEN_THREAD = 4;
 	
-	public void handleLinkLongClick(CommentTextView view, String chanName, final Uri uri)
+	public void handleLinkLongClick(final Uri uri)
 	{
 		String uriChanName = ChanManager.getInstance().getChanNameByHost(uri.getHost());
 		String fileName = null;
@@ -283,7 +282,7 @@ public class InteractionUnit
 					holder.getGallerySet().getThreadTitle());
 			return true;
 		}
-	};
+	}
 	
 	public UiManager.ThumbnailClickListener createThumbnailClickListener()
 	{
@@ -374,7 +373,7 @@ public class InteractionUnit
 				}
 			}
 		}
-	};
+	}
 	
 	public void showThumbnailLongClickDialog(AttachmentItem attachmentItem, AttachmentView attachmentView,
 			boolean hasViewHolder, String threadTitle)
@@ -625,7 +624,6 @@ public class InteractionUnit
 					int spanEnd = builder.getSpanEnd(span);
 					builder.delete(spanStart, spanEnd);
 				}
-				text = builder;
 			}
 			return builder.toString();
 		}

@@ -27,8 +27,8 @@ import java.lang.annotation.Target;
  * This imposes some restrictions to deleting and modifying this element.
  */
 @Inherited
-@Target(value = {ElementType.TYPE, ElementType.CONSTRUCTOR, ElementType.METHOD, ElementType.FIELD})
-@Retention(value = RetentionPolicy.SOURCE)
+@Target({ElementType.TYPE, ElementType.CONSTRUCTOR, ElementType.METHOD, ElementType.FIELD})
+@Retention(RetentionPolicy.SOURCE)
 public @interface Public
 {
 	

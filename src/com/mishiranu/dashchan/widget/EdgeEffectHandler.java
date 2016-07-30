@@ -93,7 +93,7 @@ public class EdgeEffectHandler
 			return super.getMaxHeight() + mShift.getEdgeEffectShift(mTop);
 		}
 		
-		private Paint mShiftPaint = new Paint();
+		private final Paint mShiftPaint = new Paint();
 		
 		@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 		@Override
@@ -177,29 +177,6 @@ public class EdgeEffectHandler
 		}
 		EDGE_GLOW_TOP_FIELD = edgeGlowTopField;
 		EDGE_GLOW_BOTTOM_FIELD = edgeGlowBottomField;
-	}
-	
-	public static EdgeEffectHandler bind(Context context, Object target, Shift shift)
-	{
-		if (EDGE_GLOW_TOP_FIELD != null && EDGE_GLOW_BOTTOM_FIELD != null)
-		{
-			try
-			{
-				Object temp = EDGE_GLOW_TOP_FIELD.get(target);
-				if (temp != null && !(temp instanceof ControlledEdgeEffect))
-				{
-					EdgeEffectHandler handler = new EdgeEffectHandler(context, shift);
-					EDGE_GLOW_TOP_FIELD.set(target, handler.mTopEdgeEffect);
-					EDGE_GLOW_BOTTOM_FIELD.set(target, handler.mBottomEdgeEffect);
-					return handler;
-				}
-			}
-			catch (Exception e)
-			{
-				
-			}
-		}
-		return null;
 	}
 	
 	public static EdgeEffectHandler bind(AbsListView listView, Shift shift)

@@ -62,19 +62,19 @@ import com.mishiranu.dashchan.util.ViewUtils;
 public class DownloadService extends Service implements ReadFileTask.Callback, ReadFileTask.AsyncFinishCallback,
 		Runnable, MediaScannerConnection.MediaScannerConnectionClient
 {
-	private static Executor SINGLE_THREAD_EXECUTOR = Executors.newSingleThreadExecutor();
+	private static final Executor SINGLE_THREAD_EXECUTOR = Executors.newSingleThreadExecutor();
 	
-	private static String ACTION_START = "com.mishiranu.dashchan.action.START";
-	private static String ACTION_SHOW_FAKE = "com.mishiranu.dashchan.action.SHOW_FAKE";
-	private static String ACTION_OPEN_FILE = "com.mishiranu.dashchan.action.OPEN_FILE";
-	private static String ACTION_CANCEL_DOWNLOADING = "com.mishiranu.dashchan.action.CANCEL_DOWNLOADING";
-	private static String ACTION_RETRY_DOWNLOADING = "com.mishiranu.dashchan.action.RETRY_DOWNLOADING";
+	private static final String ACTION_START = "com.mishiranu.dashchan.action.START";
+	private static final String ACTION_SHOW_FAKE = "com.mishiranu.dashchan.action.SHOW_FAKE";
+	private static final String ACTION_OPEN_FILE = "com.mishiranu.dashchan.action.OPEN_FILE";
+	private static final String ACTION_CANCEL_DOWNLOADING = "com.mishiranu.dashchan.action.CANCEL_DOWNLOADING";
+	private static final String ACTION_RETRY_DOWNLOADING = "com.mishiranu.dashchan.action.RETRY_DOWNLOADING";
 	
-	private static String EXTRA_DIRECTORY = "com.mishiranu.dashchan.extra.DIRECTORY";
-	private static String EXTRA_DOWNLOAD_ITEMS = "com.mishiranu.dashchan.extra.DOWNLOAD_ITEMS";
+	private static final String EXTRA_DIRECTORY = "com.mishiranu.dashchan.extra.DIRECTORY";
+	private static final String EXTRA_DOWNLOAD_ITEMS = "com.mishiranu.dashchan.extra.DOWNLOAD_ITEMS";
 	
-	private static String EXTRA_FILE = "com.mishiranu.dashchan.extra.FILE";
-	private static String EXTRA_SUCCESS = "com.mishiranu.dashchan.extra.SUCCESS";
+	private static final String EXTRA_FILE = "com.mishiranu.dashchan.extra.FILE";
+	private static final String EXTRA_SUCCESS = "com.mishiranu.dashchan.extra.SUCCESS";
 	
 	private Context mContext;
 	private NotificationManager mNotificationManager;

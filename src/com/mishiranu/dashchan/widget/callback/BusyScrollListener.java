@@ -22,7 +22,7 @@ import android.widget.ListView;
 
 public class BusyScrollListener implements ListView.OnScrollListener, Runnable
 {
-	public static interface Callback
+	public interface Callback
 	{
 		public void setListViewBusy(boolean isBusy, AbsListView listView);
 	}

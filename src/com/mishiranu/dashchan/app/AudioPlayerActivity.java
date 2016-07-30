@@ -97,7 +97,7 @@ public class AudioPlayerActivity extends StateActivity implements Runnable, Seek
 		bindService(new Intent(this, AudioPlayerService.class), this, 0);
 	}
 	
-	private BroadcastReceiver mAudioPlayerReceiver = new BroadcastReceiver()
+	private final BroadcastReceiver mAudioPlayerReceiver = new BroadcastReceiver()
 	{
 		@Override
 		public void onReceive(Context context, Intent intent)

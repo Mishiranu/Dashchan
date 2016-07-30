@@ -86,15 +86,21 @@ public class CacheManager implements Runnable
 	{
 		handleGalleryShareFiles();
 		syncCache();
+		BroadcastReceiver mediaMountedReceiver = new BroadcastReceiver()
+		{
+			@Override
+			public void onReceive(Context context, Intent intent)
+			{
+				syncCache();
+			}
+		};
 		IntentFilter intentFilter = new IntentFilter(Intent.ACTION_MEDIA_MOUNTED);
 		intentFilter.addDataScheme("file");
-		MainApplication.getInstance().registerReceiver(mMediaMountedReceiver, intentFilter);
-		mWorkerCleanerThread.start();
+		MainApplication.getInstance().registerReceiver(mediaMountedReceiver, intentFilter);
+		new Thread(this, "CacheManagerWorker").start();
 	}
 	
 	private final LinkedBlockingQueue<CacheItem> mCacheItemsToDelete = new LinkedBlockingQueue<>();
-	
-	private final Thread mWorkerCleanerThread = new Thread(this, "CacheManagerWorker");
 	
 	@Override
 	public void run()
@@ -134,15 +140,6 @@ public class CacheManager implements Runnable
 	}
 	
 	private volatile CountDownLatch mCacheBuildingLatch;
-	
-	private final BroadcastReceiver mMediaMountedReceiver = new BroadcastReceiver()
-	{
-		@Override
-		public void onReceive(Context context, Intent intent)
-		{
-			syncCache();
-		}
-	};
 	
 	private class CacheItem
 	{
@@ -329,7 +326,7 @@ public class CacheManager implements Runnable
 		return size;
 	}
 	
-	private static interface DeleteCondition
+	private interface DeleteCondition
 	{
 		public boolean allowDeleteCacheItem(CacheItem cacheItem);
 	}
@@ -671,7 +668,7 @@ public class CacheManager implements Runnable
 		File file = getThumbnailFile(thumbnailKey);
 		if (file == null) return null;
 		if (!isFileExistsInCache(file, thumbnailKey, CacheItem.TYPE_THUMBNAILS)) return null;
-		Bitmap bitmap = null;
+		Bitmap bitmap;
 		FileInputStream fis = null;
 		try
 		{
@@ -974,8 +971,7 @@ public class CacheManager implements Runnable
 		File directory = getPagesDirectory();
 		if (directory == null) return null;
 		if (!directory.exists()) directory.mkdirs();
-		File file = new File(directory, fileName);
-		return file;
+		return new File(directory, fileName);
 	}
 	
 	private final Object mDirectoryLocker = new Object();
@@ -1057,6 +1053,6 @@ public class CacheManager implements Runnable
 		String fileName = GALLERY_SHARE_FILE_NAME_START + System.currentTimeMillis() + "." + extension;
 		File shareFile = new File(tempDirectory, fileName);
 		IOUtils.copyInternalFile(file, shareFile);
-		return new Pair<File, String>(shareFile, mimeType);
+		return new Pair<>(shareFile, mimeType);
 	}
 }

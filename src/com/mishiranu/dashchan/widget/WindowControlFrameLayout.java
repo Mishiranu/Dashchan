@@ -27,7 +27,7 @@ import com.mishiranu.dashchan.C;
 
 public class WindowControlFrameLayout extends FrameLayout
 {
-	public static interface OnApplyWindowPaddingsListener
+	public interface OnApplyWindowPaddingsListener
 	{
 		public void onApplyWindowPaddings(WindowControlFrameLayout view, Rect rect);
 	}
@@ -90,8 +90,8 @@ public class WindowControlFrameLayout extends FrameLayout
 		}
 	}
 	
+	@SuppressWarnings("deprecation")
 	@Override
-	@Deprecated
 	protected boolean fitSystemWindows(Rect insets)
 	{
 		Rect rect = !C.API_LOLLIPOP ? new Rect(insets) : null;

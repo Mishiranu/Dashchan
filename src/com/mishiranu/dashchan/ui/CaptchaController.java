@@ -41,7 +41,7 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 public class CaptchaController implements View.OnClickListener, View.OnLongClickListener,
 		TextView.OnEditorActionListener
 {
-	public static enum CaptchaViewType {LOADING, IMAGE, SKIP, ERROR};
+	public enum CaptchaViewType {LOADING, IMAGE, SKIP, ERROR}
 	
 	private final Callback mCallback;
 	
@@ -59,7 +59,7 @@ public class CaptchaController implements View.OnClickListener, View.OnLongClick
 	
 	private ChanConfiguration.Captcha.Input mCaptchaInput;
 	
-	public static interface Callback
+	public interface Callback
 	{
 		public void onRefreshCapctha(boolean forceRefresh);
 		public void onConfirmCaptcha();
@@ -183,7 +183,7 @@ public class CaptchaController implements View.OnClickListener, View.OnLongClick
 	}
 	
 	public boolean showCaptcha(ChanPerformer.CaptchaState captchaState, ChanConfiguration.Captcha.Input input,
-			Bitmap image, boolean large, boolean blackAndWhite, boolean invertColors)
+			Bitmap image, boolean large, boolean invertColors)
 	{
 		switch (captchaState)
 		{

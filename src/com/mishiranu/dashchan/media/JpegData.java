@@ -365,7 +365,7 @@ public class JpegData
 				boolean littleEndian = false;
 				boolean valid = true;
 				if (tiffHeader == 0x49492a00) littleEndian = true;
-				else if (tiffHeader != 0x4d4d002a) valid = false;;
+				else if (tiffHeader != 0x4d4d002a) valid = false;
 				if (valid)
 				{
 					exif = new LinkedHashMap<>();

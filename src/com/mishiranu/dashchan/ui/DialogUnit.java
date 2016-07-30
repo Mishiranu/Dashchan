@@ -451,13 +451,13 @@ public class DialogUnit implements DialogStack.Callback
 					}
 				}
 			}
-			mUiManager.interaction().handleLinkClick(view, chanName, uri, confirmed);
+			mUiManager.interaction().handleLinkClick(chanName, uri, confirmed);
 		}
 		
 		@Override
 		public void onLinkLongClick(CommentTextView view, String chanName, Uri uri)
 		{
-			mUiManager.interaction().handleLinkLongClick(view, chanName, uri);
+			mUiManager.interaction().handleLinkLongClick(uri);
 		}
 	}
 	
@@ -879,8 +879,7 @@ public class DialogUnit implements DialogStack.Callback
 				if (first) linearLayout.setPadding(0, padding, 0, padding);
 				else linearLayout.setPadding(0, 0, 0, padding);
 			}
-			View view = makeDialogItemView(styledContext, inflater, attachmentItems.get(i), i, density,
-					clickListener, gallerySet);
+			View view = makeDialogItemView(inflater, attachmentItems.get(i), i, density, clickListener, gallerySet);
 			int totalSize = size;
 			if (column == 0)
 			{
@@ -913,8 +912,8 @@ public class DialogUnit implements DialogStack.Callback
 	}
 	
 	@SuppressLint("InflateParams")
-	private View makeDialogItemView(Context context, LayoutInflater inflater, final AttachmentItem attachmentItem,
-			int index, float density, View.OnClickListener clickListener, final GalleryItem.GallerySet gallerySet)
+	private View makeDialogItemView(LayoutInflater inflater, final AttachmentItem attachmentItem, int index,
+			float density, View.OnClickListener clickListener, final GalleryItem.GallerySet gallerySet)
 	{
 		View view = inflater.inflate(R.layout.list_item_attachment, null);
 		ViewUtils.makeRoundedCorners(view, (int) (2f * density + 0.5f), true);
@@ -1106,10 +1105,8 @@ public class DialogUnit implements DialogStack.Callback
 		if (archiveChanName == null)
 		{
 			archivation = new ChanConfiguration.Archivation();
-			archivation.options.add(new Pair<String, String>(OPTION_THUMBNAILS,
-					context.getString(R.string.text_save_thumbnails)));
-			archivation.options.add(new Pair<String, String>(OPTION_FILES,
-					context.getString(R.string.text_save_files)));
+			archivation.options.add(new Pair<>(OPTION_THUMBNAILS, context.getString(R.string.text_save_thumbnails)));
+			archivation.options.add(new Pair<>(OPTION_FILES, context.getString(R.string.text_save_files)));
 		}
 		else archivation = ChanConfiguration.get(archiveChanName).safe().obtainArchivation();
 		if (archivation == null) return;

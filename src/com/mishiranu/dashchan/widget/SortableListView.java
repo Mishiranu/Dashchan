@@ -16,6 +16,7 @@
 
 package com.mishiranu.dashchan.widget;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.DataSetObservable;
 import android.database.DataSetObserver;
@@ -32,6 +33,7 @@ import android.widget.ListAdapter;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.util.ResourceUtils;
 
+@SuppressLint("ViewConstructor")
 public class SortableListView extends PaddedListView implements AdapterView.OnItemLongClickListener, ListAdapter
 {
 	private final DataSetObservable mDataSetObservable = new DataSetObservable();
@@ -49,12 +51,12 @@ public class SortableListView extends PaddedListView implements AdapterView.OnIt
 	private float mFingerY;
 	private View mDrawView;
 	
-	public static interface OnFinishedListener
+	public interface OnFinishedListener
 	{
 		public void onSortingFinished(SortableListView listView, int oldPosition, int newPosition);
 	}
 	
-	public static interface OnStateChangedListener
+	public interface OnStateChangedListener
 	{
 		public void onSortingStateChanged(SortableListView listView, boolean sorting);
 	}
@@ -130,8 +132,8 @@ public class SortableListView extends PaddedListView implements AdapterView.OnIt
 		int topBound = getHeight() / 4;
 		int bottomBound = getHeight() - topBound;
 		float speed = 0f;
-		if (y < topBound) speed = (float) (y - topBound) / topBound;
-		else if (y > bottomBound) speed = (float) (y - bottomBound) / (getHeight() - bottomBound);
+		if (y < topBound) speed = (y - topBound) / topBound;
+		else if (y > bottomBound) speed = (y - bottomBound) / (getHeight() - bottomBound);
 		mScrollSpeed = speed;
 		if (position != mPosition)
 		{

@@ -170,6 +170,7 @@ public class SSLSocketWrapper extends SSLSocket
 		mWrapped.close();
 	}
 	
+	@SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
 	@Override
 	public boolean equals(Object o)
 	{

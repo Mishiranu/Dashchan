@@ -33,7 +33,7 @@ public class DeserializeThreadsTask extends CancellableTask<Void, Void, Boolean>
 	private Threads mThreads;
 	private PostItem[][] mPostItems;
 	
-	public static interface Callback
+	public interface Callback
 	{
 		public void onDeserializeThreadsComplete(boolean success, Threads threads, PostItem[][] postItems);
 	}

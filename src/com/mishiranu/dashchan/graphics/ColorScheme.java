@@ -68,7 +68,7 @@ public class ColorScheme
 	
 	public final float colorGainFactor;
 	
-	public static interface Span
+	public interface Span
 	{
 		public void applyColorScheme(ColorScheme colorScheme);
 	}

@@ -174,7 +174,7 @@ public final class Posts implements Serializable
 	
 	public Pair<Boolean, Integer> getAutoRefreshDate()
 	{
-		return new Pair<Boolean, Integer>(mAutoRefreshEnabled, mAutoRefreshInterval);
+		return new Pair<>(mAutoRefreshEnabled, mAutoRefreshInterval);
 	}
 	
 	public boolean setAutoRefreshData(boolean enabled, int interval)
