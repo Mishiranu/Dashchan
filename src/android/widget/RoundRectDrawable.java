@@ -31,7 +31,7 @@ import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 
-class RoundRectDrawable extends Drawable
+public class RoundRectDrawable extends Drawable
 {
 	private float mRadius;
 	private final Paint mPaint;
@@ -48,18 +48,15 @@ class RoundRectDrawable extends Drawable
 		mBoundsI = new Rect();
 	}
 	
-	void setPadding(float padding)
+	public void setPadding(float padding)
 	{
-		if (padding == mPadding)
-		{
-			return;
-		}
+		if (padding == mPadding) return;
 		mPadding = padding;
 		updateBounds(null);
 		invalidateSelf();
 	}
 	
-	float getPadding()
+	public float getPadding()
 	{
 		return mPadding;
 	}
@@ -72,16 +69,12 @@ class RoundRectDrawable extends Drawable
 	
 	private void updateBounds(Rect bounds)
 	{
-		if (bounds == null)
-		{
-			bounds = getBounds();
-		}
+		if (bounds == null) bounds = getBounds();
 		mBoundsF.set(bounds.left, bounds.top, bounds.right, bounds.bottom);
 		mBoundsI.set(bounds);
 		float vInset = RoundRectDrawableWithShadow.calculateVerticalPadding(mPadding, mRadius);
 		float hInset = RoundRectDrawableWithShadow.calculateHorizontalPadding(mPadding, mRadius);
 		mBoundsI.inset((int) Math.ceil(hInset), (int) Math.ceil(vInset));
-		// to make sure they have same bounds.
 		mBoundsF.set(mBoundsI);
 	}
 	
@@ -101,10 +94,7 @@ class RoundRectDrawable extends Drawable
 	
 	void setRadius(float radius)
 	{
-		if (radius == mRadius)
-		{
-			return;
-		}
+		if (radius == mRadius) return;
 		mRadius = radius;
 		updateBounds(null);
 		invalidateSelf();
@@ -113,13 +103,13 @@ class RoundRectDrawable extends Drawable
 	@Override
 	public void setAlpha(int alpha)
 	{
-		// not supported because older versions do not support
+		
 	}
 	
 	@Override
 	public void setColorFilter(ColorFilter cf)
 	{
-		// not supported because older versions do not support
+		
 	}
 	
 	@Override
