@@ -30,11 +30,6 @@ Licensed under the BSD 3-Clause License</pre>
 Licensed under the MIT License</pre>
 <a href="https://opensource.org/licenses/MIT">https://opensource.org/licenses/MIT</a>
 
-<h3>JellyBeanSpanFixTextView</h3>
-<pre>Copyright 2012 Pierre-Yves Ricau
-Licensed under the Apache License, Version 2.0</pre>
-<a href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a>
-
 <h3>material-design-icons</h3>
 <pre>Licensed under the CC-BY 4.0</pre>
 <a href="http://creativecommons.org/licenses/by/4.0/">http://creativecommons.org/licenses/by/4.0/</a>
