@@ -79,7 +79,7 @@ It is better to install extension packages and then install application package.
 
 ## Building Guide
 
-1. Install JDK 7 or higher
+1. Install JDK 8 or higher
 2. Install Android SDK, define `ANDROID_HOME` environment variable or set `sdk.dir` in `local.properties`
 3. Install Android NDK, define `ANDROID_NDK_HOME` environment variable or set `ndk.dir` in `local.properties`
 4. Install Gradle
