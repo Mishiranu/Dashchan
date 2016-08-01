@@ -119,42 +119,4 @@ public class CaptchaServiceReader
 		}
 		throw new InvalidResponseException();
 	}
-	
-	private Bitmap mYandexCaptchaOverlay;
-	
-	public Result readYandex(Context context, HttpHolder holder, String challenge) throws HttpException,
-			InvalidResponseException
-	{
-		Thread thread = Thread.currentThread();
-		Uri uri = ChanLocator.getDefault().buildQueryWithHost("captcha.yandex.net", "image", "key", challenge);
-		Bitmap image = new HttpRequest(uri, holder).read().getBitmap();
-		if (image == null) throw new InvalidResponseException();
-		if (thread.isInterrupted()) return null;
-		Bitmap overlay;
-		synchronized (this)
-		{
-			overlay = mYandexCaptchaOverlay;
-			if (overlay == null)
-			{
-				InputStream input = null;
-				try
-				{
-					input = context.getAssets().open("yandex-captcha-overlay.png");
-					overlay = BitmapFactory.decodeStream(input);
-					mYandexCaptchaOverlay = overlay;
-				}
-				catch (Exception e)
-				{
-					
-				}
-				finally
-				{
-					IOUtils.close(input);
-				}
-			}
-		}
-		image = GraphicsUtils.handleBlackAndWhiteCaptchaImage(image, overlay, overlay != null
-				? image.getWidth() - overlay.getWidth() : 0, 0).first;
-		return new Result(challenge, image, true);
-	}
 }

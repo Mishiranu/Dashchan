@@ -139,8 +139,6 @@ public class ReadCaptchaTask extends CancellableTask<Void, Long, Boolean>
 				ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_FALLBACK.equals(captchaType);
 		boolean oldRecaptcha = ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_1_JAVASCRIPT.equals(captchaType) ||
 				ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_1_NOSCRIPT.equals(captchaType);
-		boolean yandex = ChanConfiguration.CAPTCHA_TYPE_YANDEX_NUMERIC.equals(captchaType) ||
-				ChanConfiguration.CAPTCHA_TYPE_YANDEX_TEXTUAL.equals(captchaType);
 		boolean mailru = ChanConfiguration.CAPTCHA_TYPE_MAILRU.equals(captchaType);
 		if (mCaptchaState != ChanPerformer.CaptchaState.CAPTCHA) return true;
 		if (thread.isInterrupted()) return null;
@@ -199,18 +197,13 @@ public class ReadCaptchaTask extends CancellableTask<Void, Long, Boolean>
 				return false;
 			}
 		}
-		else if (yandex || mailru)
+		else if (mailru)
 		{
 			CaptchaServiceReader reader = CaptchaServiceReader.getInstance();
 			CaptchaServiceReader.Result captchaResult;
 			try
 			{
-				if (yandex)
-				{
-					captchaResult = reader.readYandex(mContext, mHolder, mCaptchaData
-							.get(ChanPerformer.CaptchaData.CHALLENGE));
-				}
-				else if (mailru)
+				if (mailru)
 				{
 					captchaResult = reader.readMailru(mHolder, mChanName, mCaptchaData
 							.get(ChanPerformer.CaptchaData.API_KEY));

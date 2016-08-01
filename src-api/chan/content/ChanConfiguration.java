@@ -113,8 +113,6 @@ public class ChanConfiguration implements ChanManager.Linked
 	public static final int PAGES_COUNT_INVALID = Integer.MAX_VALUE;
 	public static final int BUMP_LIMIT_INVALID = Integer.MAX_VALUE;
 	
-	@Public public static final String CAPTCHA_TYPE_YANDEX_NUMERIC = "yandex_numeric";
-	@Public public static final String CAPTCHA_TYPE_YANDEX_TEXTUAL = "yandex_textual";
 	@Public public static final String CAPTCHA_TYPE_RECAPTCHA_1 = "recaptcha_1";
 	public static final String CAPTCHA_TYPE_RECAPTCHA_1_JAVASCRIPT = CAPTCHA_TYPE_RECAPTCHA_1 + "_javascript";
 	public static final String CAPTCHA_TYPE_RECAPTCHA_1_NOSCRIPT = CAPTCHA_TYPE_RECAPTCHA_1 + "_noscript";
@@ -758,23 +756,7 @@ public class ChanConfiguration implements ChanManager.Linked
 	
 	private Captcha obtainCaptchaConfigurationSafe(String captchaType)
 	{
-		if (CAPTCHA_TYPE_YANDEX_NUMERIC.equals(captchaType))
-		{
-			Captcha captcha = new Captcha();
-			captcha.title = "Yandex (Numeric)";
-			captcha.input = Captcha.Input.NUMERIC;
-			captcha.validity = Captcha.Validity.LONG_LIFETIME;
-			return captcha;
-		}
-		else if (CAPTCHA_TYPE_YANDEX_TEXTUAL.equals(captchaType))
-		{
-			Captcha captcha = new Captcha();
-			captcha.title = "Yandex (Textual)";
-			captcha.input = Captcha.Input.ALL;
-			captcha.validity = Captcha.Validity.LONG_LIFETIME;
-			return captcha;
-		}
-		else if (CAPTCHA_TYPE_RECAPTCHA_1_JAVASCRIPT.equals(captchaType))
+		if (CAPTCHA_TYPE_RECAPTCHA_1_JAVASCRIPT.equals(captchaType))
 		{
 			Captcha captcha = new Captcha();
 			captcha.title = "reCAPTCHA (JavaScript)";
