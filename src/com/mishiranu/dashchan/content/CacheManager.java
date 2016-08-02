@@ -740,15 +740,26 @@ public class CacheManager implements Runnable
 		}
 	}
 	
-	public static class StreamHolder
+	public static class SerializationHolder
 	{
-		private Closeable stream;
+		private boolean cancelled = false;
+		private Closeable closeable;
+		
+		private void setCloseable(Closeable closeable) throws IOException
+		{
+			synchronized (this)
+			{
+				if (cancelled) throw new IOException();
+				this.closeable = closeable;
+			}
+		}
 		
 		public void cancel()
 		{
 			synchronized (this)
 			{
-				IOUtils.close(stream);
+				cancelled = true;
+				IOUtils.close(closeable);
 			}
 		}
 	}
@@ -777,7 +788,7 @@ public class CacheManager implements Runnable
 	}
 	
 	@SuppressWarnings("unchecked")
-	private <T> T deserializeInternal(File file, String fileName, boolean withPagesCache, StreamHolder holder)
+	private <T> T deserializeInternal(File file, String fileName, boolean withPagesCache, SerializationHolder holder)
 	{
 		if (withPagesCache)
 		{
@@ -792,12 +803,16 @@ public class CacheManager implements Runnable
 		try
 		{
 			FileInputStream fileInputStream = new FileInputStream(file);
+			holder.setCloseable(fileInputStream);
 			objectInputStream = new ObjectInputStream(fileInputStream);
 			return (T) objectInputStream.readObject();
 		}
 		catch (Exception e)
 		{
-			Log.persistent().stack(e);
+			synchronized (holder)
+			{
+				if (!holder.cancelled) Log.persistent().stack(e);
+			}
 		}
 		finally
 		{
@@ -812,7 +827,7 @@ public class CacheManager implements Runnable
 		private final String mFileName;
 		private final boolean mWithPagesCache;
 		private final Object mObject;
-		private final StreamHolder mHolder = new StreamHolder();
+		private final SerializationHolder mHolder = new SerializationHolder();
 		
 		public SerializeCallback(File file, String fileName, boolean withPagesCache, Object object)
 		{
@@ -828,23 +843,17 @@ public class CacheManager implements Runnable
 			try
 			{
 				boolean success = false;
-				FileOutputStream fileOutput = null;
+				FileOutputStream fileOutputStream = null;
 				try
 				{
-					ByteArrayOutputStream output = new ByteArrayOutputStream();
-					ObjectOutputStream objectOutput = new ObjectOutputStream(output);
-					synchronized (mHolder)
-					{
-						mHolder.stream = objectOutput;
-					}
-					objectOutput.writeObject(mObject);
-					byte[] bytes = output.toByteArray();
-					fileOutput = new FileOutputStream(mFile);
-					synchronized (mHolder)
-					{
-						mHolder.stream = fileOutput;
-					}
-					IOUtils.copyStream(new ByteArrayInputStream(bytes), fileOutput);
+					ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+					ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+					mHolder.setCloseable(objectOutputStream);
+					objectOutputStream.writeObject(mObject);
+					byte[] bytes = outputStream.toByteArray();
+					fileOutputStream = new FileOutputStream(mFile);
+					mHolder.setCloseable(fileOutputStream);
+					IOUtils.copyStream(new ByteArrayInputStream(bytes), fileOutputStream);
 					success = true;
 				}
 				catch (Exception e)
@@ -853,7 +862,7 @@ public class CacheManager implements Runnable
 				}
 				finally
 				{
-					IOUtils.close(fileOutput);
+					IOUtils.close(fileOutputStream);
 					if (mWithPagesCache) validateNewCachedFile(mFile, mFileName, CacheItem.TYPE_PAGES, success);
 				}
 				return null;
@@ -900,7 +909,7 @@ public class CacheManager implements Runnable
 		}
 	}
 	
-	public Threads deserializeThreads(String chanName, String boardName, StreamHolder holder)
+	public Threads deserializeThreads(String chanName, String boardName, SerializationHolder holder)
 	{
 		if (allowPagesCache(chanName))
 		{
@@ -940,7 +949,7 @@ public class CacheManager implements Runnable
 		}
 	}
 	
-	public Posts deserializePosts(String chanName, String boardName, String threadNumber, StreamHolder holder)
+	public Posts deserializePosts(String chanName, String boardName, String threadNumber, SerializationHolder holder)
 	{
 		if (allowPagesCache(chanName))
 		{

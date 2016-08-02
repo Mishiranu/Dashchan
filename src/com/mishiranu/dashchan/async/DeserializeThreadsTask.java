@@ -28,7 +28,7 @@ public class DeserializeThreadsTask extends CancellableTask<Void, Void, Boolean>
 	private final String mBoardName;
 	private final Threads mCachedThreads;
 	
-	private final CacheManager.StreamHolder mHolder = new CacheManager.StreamHolder();
+	private final CacheManager.SerializationHolder mHolder = new CacheManager.SerializationHolder();
 	
 	private Threads mThreads;
 	private PostItem[][] mPostItems;
@@ -49,11 +49,8 @@ public class DeserializeThreadsTask extends CancellableTask<Void, Void, Boolean>
 	@Override
 	protected Boolean doInBackground(Void... params)
 	{
-		if (mCachedThreads == null)
-		{
-			mThreads = CacheManager.getInstance().deserializeThreads(mChanName, mBoardName, mHolder);
-		}
-		else mThreads = mCachedThreads;
+		if (mCachedThreads != null) mThreads = mCachedThreads;
+		else mThreads = CacheManager.getInstance().deserializeThreads(mChanName, mBoardName, mHolder);
 		mPostItems = ReadThreadsTask.wrapThreads(mThreads, mChanName, mBoardName);
 		return mPostItems != null && mPostItems.length > 0 && mPostItems[0] != null;
 	}
