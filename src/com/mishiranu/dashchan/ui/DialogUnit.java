@@ -1001,7 +1001,7 @@ public class DialogUnit implements DialogStack.Callback
 			linearLayout.setPadding((int) (18f * density), 0, (int) (8f * density), 0); // 18f = 16f + 2f
 			ImageView imageView = new ImageView(context);
 			linearLayout.addView(imageView, (int) (20f * density), (int) (20f * density));
-			if (icon.mUri != null) imageLoader.loadImage(icon.mUri, chanName, null, imageView, false);
+			if (icon.mUri != null) imageLoader.loadImage(icon.mUri, chanName, null, false, imageView);
 			else imageView.setImageResource(ResourceUtils.getResourceId(context, icon.mAttrId, 0));
 			TextView textView = new TextView(context, null, android.R.attr.textAppearanceListItem);
 			linearLayout.addView(textView, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));

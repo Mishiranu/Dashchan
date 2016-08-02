@@ -773,7 +773,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 					if (uri != null)
 					{
 						uri = uri.isRelative() ? locator.convert(uri) : uri;
-						ImageLoader.getInstance().loadImage(uri, chanName, null, imageView, false);
+						ImageLoader.getInstance().loadImage(uri, chanName, null, false, imageView);
 					}
 					else
 					{

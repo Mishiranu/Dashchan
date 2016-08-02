@@ -180,7 +180,7 @@ public class ImageLoader
 		private final String mKey;
 
 		public final ArrayList<Callback<?>> callbacks;
-		public final boolean fromCacheOnly;
+		public boolean fromCacheOnly;
 		public boolean fromCacheOnlyChecked;
 		
 		private boolean mNotFound;
@@ -405,7 +405,7 @@ public class ImageLoader
 	}
 	
 	private void loadImage(Uri uri, String chanName, String key, ArrayList<Callback<?>> callbacks,
-						   Callback<?> newCallback, boolean fromCacheOnly)
+			Callback<?> newCallback, boolean fromCacheOnly)
 	{
 		Bitmap bitmap = mCacheManager.loadThumbnailMemory(key);
 		if (bitmap != null)
@@ -440,14 +440,21 @@ public class ImageLoader
 				if (loaderTask.callbacks.get(index).checkKeys()) return;
 				loaderTask.callbacks.remove(index);
 			}
-			boolean restart;
-			synchronized (loaderTask)
+			boolean restart = loaderTask.fromCacheOnly && !fromCacheOnly;
+			if (restart)
 			{
-				restart = loaderTask.fromCacheOnly && !fromCacheOnly && loaderTask.fromCacheOnlyChecked;
+				synchronized (loaderTask)
+				{
+					if (!loaderTask.fromCacheOnlyChecked)
+					{
+						loaderTask.fromCacheOnly = false;
+						restart = false;
+					}
+				}
 			}
 			if (restart)
 			{
-				mLoaderTasks.remove(loaderTask);
+				mLoaderTasks.remove(key);
 				loaderTask.cancel();
 				ArrayList<Callback<?>> callbacks = loaderTask.callbacks;
 				callbacks.add(callback);
@@ -474,7 +481,7 @@ public class ImageLoader
 				fromCacheOnly);
 	}
 	
-	public void loadImage(Uri uri, String chanName, String key, ImageView imageView, boolean fromCacheOnly)
+	public void loadImage(Uri uri, String chanName, String key, boolean fromCacheOnly, ImageView imageView)
 	{
 		loadImage(uri, chanName, key, new SimpleCallback(imageView), fromCacheOnly);
 	}
