@@ -909,7 +909,6 @@ public class HttpClient
 		}
 	}
 	
-	@SuppressWarnings("UnusedParameters")
 	void onDisconnect(HttpURLConnection connection)
 	{
 		

@@ -194,7 +194,7 @@ public class ChanPerformer implements ChanManager.Linked
 	}
 	
 	@Public
-	public static class ReadThreadsData implements HttpRequest.Preset
+	public static class ReadThreadsData implements HttpRequest.HolderPreset
 	{
 		@Public public static final int PAGE_NUMBER_CATALOG = -1;
 		
@@ -215,6 +215,12 @@ public class ChanPerformer implements ChanManager.Linked
 		public boolean isCatalog()
 		{
 			return pageNumber == PAGE_NUMBER_CATALOG;
+		}
+		
+		@Override
+		public HttpHolder getHolder()
+		{
+			return holder;
 		}
 	}
 	
@@ -251,7 +257,7 @@ public class ChanPerformer implements ChanManager.Linked
 	}
 	
 	@Public
-	public static class ReadPostsData implements HttpRequest.Preset
+	public static class ReadPostsData implements HttpRequest.HolderPreset
 	{
 		@Public public final String boardName;
 		@Public public final String threadNumber;
@@ -271,6 +277,12 @@ public class ChanPerformer implements ChanManager.Linked
 			this.cachedPosts = cachedPosts;
 			this.holder = holder;
 			this.validator = validator;
+		}
+		
+		@Override
+		public HttpHolder getHolder()
+		{
+			return holder;
 		}
 	}
 	
@@ -315,7 +327,7 @@ public class ChanPerformer implements ChanManager.Linked
 	}
 	
 	@Public
-	public static class ReadSinglePostData implements HttpRequest.Preset
+	public static class ReadSinglePostData implements HttpRequest.HolderPreset
 	{
 		@Public public final String boardName;
 		@Public public final String postNumber;
@@ -326,6 +338,12 @@ public class ChanPerformer implements ChanManager.Linked
 			this.boardName = boardName;
 			this.postNumber = postNumber;
 			this.holder = holder;
+		}
+		
+		@Override
+		public HttpHolder getHolder()
+		{
+			return holder;
 		}
 	}
 	
@@ -342,7 +360,7 @@ public class ChanPerformer implements ChanManager.Linked
 	}
 	
 	@Public
-	public static class ReadSearchPostsData implements HttpRequest.Preset
+	public static class ReadSearchPostsData implements HttpRequest.HolderPreset
 	{
 		@Public public final String boardName;
 		@Public public final String searchQuery;
@@ -355,6 +373,12 @@ public class ChanPerformer implements ChanManager.Linked
 			this.searchQuery = searchQuery;
 			this.pageNumber = pageNumber;
 			this.holder = holder;
+		}
+		
+		@Override
+		public HttpHolder getHolder()
+		{
+			return holder;
 		}
 	}
 	
@@ -377,13 +401,19 @@ public class ChanPerformer implements ChanManager.Linked
 	}
 	
 	@Public
-	public static final class ReadBoardsData implements HttpRequest.Preset
+	public static final class ReadBoardsData implements HttpRequest.HolderPreset
 	{
 		@Public public final HttpHolder holder;
 		
 		public ReadBoardsData(HttpHolder holder)
 		{
 			this.holder = holder;
+		}
+		
+		@Override
+		public HttpHolder getHolder()
+		{
+			return holder;
 		}
 	}
 	
@@ -406,13 +436,19 @@ public class ChanPerformer implements ChanManager.Linked
 	}
 	
 	@Public
-	public static class ReadUserBoardsData implements HttpRequest.Preset
+	public static class ReadUserBoardsData implements HttpRequest.HolderPreset
 	{
 		@Public public final HttpHolder holder;
 		
 		public ReadUserBoardsData(HttpHolder holder)
 		{
 			this.holder = holder;
+		}
+		
+		@Override
+		public HttpHolder getHolder()
+		{
+			return holder;
 		}
 	}
 	
@@ -435,7 +471,7 @@ public class ChanPerformer implements ChanManager.Linked
 	}
 	
 	@Public
-	public static class ReadThreadSummariesData implements HttpRequest.Preset
+	public static class ReadThreadSummariesData implements HttpRequest.HolderPreset
 	{
 		@Public public static final int TYPE_ARCHIVED_THREADS = 0;
 		
@@ -450,6 +486,12 @@ public class ChanPerformer implements ChanManager.Linked
 			this.pageNumber = pageNumber;
 			this.type = type;
 			this.holder = holder;
+		}
+		
+		@Override
+		public HttpHolder getHolder()
+		{
+			return holder;
 		}
 	}
 	
@@ -472,7 +514,7 @@ public class ChanPerformer implements ChanManager.Linked
 	}
 	
 	@Public
-	public static class ReadPostsCountData implements HttpRequest.TimeoutsPreset
+	public static class ReadPostsCountData implements HttpRequest.HolderPreset, HttpRequest.TimeoutsPreset
 	{
 		@Public public final String boardName;
 		@Public public final String threadNumber;
@@ -490,6 +532,12 @@ public class ChanPerformer implements ChanManager.Linked
 			this.readTimeout = readTimeout;
 			this.holder = holder;
 			this.validator = validator;
+		}
+		
+		@Override
+		public HttpHolder getHolder()
+		{
+			return holder;
 		}
 		
 		@Override
@@ -526,8 +574,8 @@ public class ChanPerformer implements ChanManager.Linked
 	}
 	
 	@Public
-	public static class ReadContentData implements HttpRequest.TimeoutsPreset, HttpRequest.InputListenerPreset,
-			HttpRequest.OutputStreamPreset
+	public static class ReadContentData implements HttpRequest.HolderPreset, HttpRequest.TimeoutsPreset,
+			HttpRequest.InputListenerPreset, HttpRequest.OutputStreamPreset
 	{
 		@Public public final Uri uri;
 		public final int connectTimeout;
@@ -545,6 +593,12 @@ public class ChanPerformer implements ChanManager.Linked
 			this.holder = holder;
 			this.listener = listener;
 			this.outputStream = outputStream;
+		}
+		
+		@Override
+		public HttpHolder getHolder()
+		{
+			return holder;
 		}
 		
 		@Override
@@ -585,7 +639,7 @@ public class ChanPerformer implements ChanManager.Linked
 	}
 	
 	@Public
-	public static class CheckAuthorizationData implements HttpRequest.Preset
+	public static class CheckAuthorizationData implements HttpRequest.HolderPreset
 	{
 		@Public public static final int TYPE_CAPTCHA_PASS = 0;
 		@Public public static final int TYPE_USER_AUTHORIZATION = 1;
@@ -599,6 +653,12 @@ public class ChanPerformer implements ChanManager.Linked
 			this.type = type;
 			this.authorizationData = authorizationData;
 			this.holder = holder;
+		}
+		
+		@Override
+		public HttpHolder getHolder()
+		{
+			return holder;
 		}
 	}
 	
@@ -615,7 +675,7 @@ public class ChanPerformer implements ChanManager.Linked
 	}
 	
 	@Public
-	public static class ReadCaptchaData implements HttpRequest.Preset
+	public static class ReadCaptchaData implements HttpRequest.HolderPreset
 	{
 		@Public public static final String REQUIREMENT_NEW_THREAD = "new_thread";
 		@Public public static final String REQUIREMENT_REPLY_TO_THREAD = "reply_to_thread";
@@ -638,6 +698,12 @@ public class ChanPerformer implements ChanManager.Linked
 			this.boardName = boardName;
 			this.threadNumber = threadNumber;
 			this.holder = holder;
+		}
+		
+		@Override
+		public HttpHolder getHolder()
+		{
+			return holder;
 		}
 	}
 	
@@ -740,7 +806,8 @@ public class ChanPerformer implements ChanManager.Linked
 	}
 	
 	@Public
-	public static class SendPostData implements HttpRequest.TimeoutsPreset, HttpRequest.OutputListenerPreset
+	public static class SendPostData implements HttpRequest.HolderPreset, HttpRequest.TimeoutsPreset,
+			HttpRequest.OutputListenerPreset
 	{
 		@Public public final String boardName;
 		@Public public final String threadNumber;
@@ -893,6 +960,12 @@ public class ChanPerformer implements ChanManager.Linked
 		}
 		
 		@Override
+		public HttpHolder getHolder()
+		{
+			return holder;
+		}
+		
+		@Override
 		public int getConnectTimeout()
 		{
 			return connectTimeout;
@@ -926,7 +999,7 @@ public class ChanPerformer implements ChanManager.Linked
 	}
 	
 	@Public
-	public static class SendDeletePostsData implements HttpRequest.Preset
+	public static class SendDeletePostsData implements HttpRequest.HolderPreset
 	{
 		@Public public final String boardName;
 		@Public public final String threadNumber;
@@ -945,6 +1018,12 @@ public class ChanPerformer implements ChanManager.Linked
 			this.optionFilesOnly = optionFilesOnly;
 			this.holder = holder;
 		}
+		
+		@Override
+		public HttpHolder getHolder()
+		{
+			return holder;
+		}
 	}
 	
 	@Public
@@ -958,7 +1037,7 @@ public class ChanPerformer implements ChanManager.Linked
 	}
 	
 	@Public
-	public static class SendReportPostsData implements HttpRequest.Preset
+	public static class SendReportPostsData implements HttpRequest.HolderPreset
 	{
 		@Public public final String boardName;
 		@Public public final String threadNumber;
@@ -979,6 +1058,12 @@ public class ChanPerformer implements ChanManager.Linked
 			this.comment = comment;
 			this.holder = holder;
 		}
+		
+		@Override
+		public HttpHolder getHolder()
+		{
+			return holder;
+		}
 	}
 	
 	@Public
@@ -992,7 +1077,7 @@ public class ChanPerformer implements ChanManager.Linked
 	}
 	
 	@Public
-	public static class SendAddToArchiveData implements HttpRequest.Preset
+	public static class SendAddToArchiveData implements HttpRequest.HolderPreset
 	{
 		@Public public final Uri uri;
 		@Public public final String boardName;
@@ -1008,6 +1093,12 @@ public class ChanPerformer implements ChanManager.Linked
 			this.threadNumber = threadNumber;
 			this.options = options != null ? Collections.unmodifiableList(options) : null;
 			this.holder = holder;
+		}
+		
+		@Override
+		public HttpHolder getHolder()
+		{
+			return holder;
 		}
 	}
 	
