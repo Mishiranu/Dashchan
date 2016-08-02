@@ -34,6 +34,11 @@ public final class HttpRequest
 		
 	}
 	
+	public interface HolderPreset extends Preset
+	{
+		public HttpHolder getHolder();
+	}
+	
 	public interface TimeoutsPreset extends Preset
 	{
 		public int getConnectTimeout();
@@ -149,17 +154,13 @@ public final class HttpRequest
 	
 	boolean mCheckCloudFlare = true;
 	
-	public HttpRequest(Uri uri, HttpHolder holder)
-	{
-		if (holder == null) holder = new HttpHolder();
-		mUri = uri;
-		mHolder = holder;
-	}
-	
 	@Public
 	public HttpRequest(Uri uri, HttpHolder holder, Preset preset)
 	{
-		this(uri, holder);
+		if (holder == null && preset instanceof HolderPreset) holder = ((HolderPreset) preset).getHolder();
+		if (holder == null) holder = new HttpHolder();
+		mUri = uri;
+		mHolder = holder;
 		if (preset instanceof TimeoutsPreset)
 		{
 			setTimeouts(((TimeoutsPreset) preset).getConnectTimeout(), ((TimeoutsPreset) preset).getReadTimeout());
@@ -176,6 +177,18 @@ public final class HttpRequest
 		{
 			setOutputStream(((OutputStreamPreset) preset).getOutputStream());
 		}
+	}
+	
+	@Public
+	public HttpRequest(Uri uri, HttpHolder holder)
+	{
+		this(uri, holder, null);
+	}
+	
+	@Public
+	public HttpRequest(Uri uri, Preset preset)
+	{
+		this(uri, null, preset);
 	}
 	
 	private HttpRequest setMethod(int method, RequestEntity entity)
