@@ -39,6 +39,12 @@ public final class HttpHolder
 	private int mAttempt;
 	boolean mForceGet = false;
 	
+	@Public
+	public HttpHolder()
+	{
+		
+	}
+	
 	void initRequest(HttpRequest request, Proxy proxy, String chanName, boolean verifyCertificate, int maxAttempts)
 	{
 		mRequestedUri = request.mUri;
