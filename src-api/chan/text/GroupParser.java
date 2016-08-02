@@ -80,6 +80,7 @@ public final class GroupParser
 	{
 		String source = mSource;
 		int index = source.indexOf('<');
+		if (index > 0) onText(0, index);
 		char[] tagNameEndCharacters = {' ', '\r', '\n', '\t'};
 		while (index != -1)
 		{
@@ -95,34 +96,42 @@ public final class GroupParser
 			{
 				int length = source.length();
 				int start = index;
-				boolean inQuotes1 = false;
-				boolean inQuotes2 = false;
-				int end = -1;
-				for (int i = index; i < length; i++)
-				{
-					char c = source.charAt(i);
-					if (c == '"' && !inQuotes1) inQuotes2 = !inQuotes2;
-					else if (c == '\'' && !inQuotes2) inQuotes1 = !inQuotes1;
-					else if (c == '>' && !inQuotes1 && !inQuotes2)
-					{
-						end = i;
-						break;
-					}
-				}
-				if (end == -1)
-				{
-					// HTML is malformed. Try to find possible end of tag.
-					end = source.indexOf('>', start);
-				}
+				int end = source.indexOf('>', start);
+				boolean endsWithGt = true;
 				if (end == -1)
 				{
 					end = Math.min(start + 50, length);
 					throw new ParseException("Malformed HTML after " + start + ": end of tag was not found ("
 							+ source.substring(start, end) + ")");
 				}
+				// < character inside attribute, e.g. <span onlick="test.innerHTML='<p>test</p>'">
+				// or malformed HTML, e.g. <span style="color: #fff"<p>test</p>
+				int unusualTagStart = source.indexOf('<', start + 1);
+				if (unusualTagStart >= 0 && unusualTagStart < end)
+				{
+					boolean inQuotes1 = false;
+					boolean inQuotes2 = false;
+					for (int i = index; i < length; i++)
+					{
+						char c = source.charAt(i);
+						if (c == '"' && !inQuotes1) inQuotes2 = !inQuotes2;
+						else if (c == '\'' && !inQuotes2) inQuotes1 = !inQuotes1;
+						else if (c == '<' && !inQuotes1 && !inQuotes2 || index - start > 500)
+						{
+							// Malformed HTML
+							end = unusualTagStart - 1;
+							endsWithGt = false;
+							break;
+						}
+						else if (c == '>' && !inQuotes1 && !inQuotes2)
+						{
+							end = i;
+							break;
+						}
+					}
+				}
 				boolean close = next == '/';
-				String raw = source.substring(start, end + 1);
-				String fullTag = raw.substring(close ? 2 : 1, raw.length() - 1);
+				String fullTag = source.substring(start + (close ? 2 : 1), end + (endsWithGt ? 0 : 1));
 				String tagName = fullTag;
 				String attrs = null;
 				int t = StringUtils.nearestIndexOf(fullTag, 0, tagNameEndCharacters);
@@ -147,7 +156,8 @@ public final class GroupParser
 				{
 					mMarkCalled = MARK_STATE_NONE;
 					mMarkAvailable = true;
-					if (close) onEndElement(tagName, raw); else onStartElement(tagName, attrs, raw);
+					if (close) onEndElement(tagName, start, end + 1);
+					else onStartElement(tagName, attrs, start, end + 1);
 					mMarkAvailable = false;
 					if (mMarkCalled == MARK_STATE_MARK)
 					{
@@ -162,7 +172,7 @@ public final class GroupParser
 				index = source.indexOf('<', end);
 				start = end + 1;
 				end = index >= 0 ? index : length;
-				if (start < end) onText(source, start, end);
+				if (start < end) onText(start, end);
 			}
 		}
 	}
@@ -172,12 +182,12 @@ public final class GroupParser
 		return mGroupTagName != null;
 	}
 	
-	private void onStartElement(String tagName, String attrs, String raw) throws ParseException
+	private void onStartElement(String tagName, String attrs, int start, int end) throws ParseException
 	{
 		if (isGroupMode())
 		{
 			if (tagName.equals(mGroupTagName)) mGroupCount++;
-			mGroup.append(raw);
+			mGroup.append(mSource, start, end);
 		}
 		else
 		{
@@ -191,7 +201,7 @@ public final class GroupParser
 		}
 	}
 	
-	private void onEndElement(String tagName, String raw) throws ParseException
+	private void onEndElement(String tagName, int start, int end) throws ParseException
 	{
 		if (!isGroupMode())
 		{
@@ -206,12 +216,12 @@ public final class GroupParser
 				mGroupTagName = null;
 			}
 		}
-		if (isGroupMode()) mGroup.append(raw);
+		if (isGroupMode()) mGroup.append(mSource, start, end);
 	}
 	
-	private void onText(String source, int start, int end) throws ParseException
+	private void onText(int start, int end) throws ParseException
 	{
-		if (isGroupMode()) mGroup.append(source, start, end); else mCallback.onText(this, source, start, end);
+		if (isGroupMode()) mGroup.append(mSource, start, end); else mCallback.onText(this, mSource, start, end);
 	}
 	
 	private void checkMarkAvailable()
