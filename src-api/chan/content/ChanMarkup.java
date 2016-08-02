@@ -385,6 +385,8 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 		obtainTagItem(tagName, false, null, true, attribute, value).setPreformatted(preformatted);
 	}
 	
+	private static final TagItem UNUSED_TAG_ITEM = new TagItem();
+	
 	@SuppressWarnings("UnusedAssignment")
 	@Override
 	public final Object onBeforeTagStart(HtmlParser parser, StringBuilder builder, String tagName,
@@ -433,6 +435,7 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 					tagItem.applyTagData(tagData);
 					return tagItem;
 				}
+				return UNUSED_TAG_ITEM;
 			}
 		}
 		return null;
