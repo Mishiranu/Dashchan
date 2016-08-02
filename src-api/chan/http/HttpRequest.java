@@ -284,6 +284,7 @@ public final class HttpRequest
 		return this;
 	}
 	
+	@Public
 	public HttpRequest setOutputStream(OutputStream outputStream)
 	{
 		mOutputStream = outputStream;
@@ -401,7 +402,7 @@ public final class HttpRequest
 		try
 		{
 			if (mRequestMethod == REQUEST_METHOD_HEAD) return null;
-			return holder.read(mInputListener, mOutputStream);
+			return holder.read();
 		}
 		catch (HttpException e)
 		{

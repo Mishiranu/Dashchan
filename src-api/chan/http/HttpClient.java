@@ -329,7 +329,7 @@ public class HttpClient
 				secureConnection.setHostnameVerifier(holder.mVerifyCertificate ? DEFAULT_HOSTNAME_VERIFIER
 						: ALLOW_ALL_HOSTNAME_VERIFIER);
 			}
-			holder.setConnection(connection);
+			holder.setConnection(connection, request.mInputListener, request.mOutputStream);
 			String chanName = holder.mChanName;
 			
 			connection.setUseCaches(false);
@@ -538,8 +538,7 @@ public class HttpClient
 		}
 	}
 	
-	HttpResponse read(HttpHolder holder, HttpHolder.InputListener listener, OutputStream output)
-			throws HttpException
+	HttpResponse read(HttpHolder holder) throws HttpException
 	{
 		try
 		{
@@ -562,7 +561,8 @@ public class HttpClient
 				commonInput = new GZIPInputStream(commonInput);
 				contentLength = -1;
 			}
-			ClientInputStream input = new ClientInputStream(commonInput, holder, listener, contentLength);
+			OutputStream output = holder.mOutputStream;
+			ClientInputStream input = new ClientInputStream(commonInput, holder, holder.mInputListener, contentLength);
 			ByteArrayOutputStream writeTo = output == null ? new ByteArrayOutputStream() : null;
 			if (output == null) output = writeTo;
 			try

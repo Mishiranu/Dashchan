@@ -63,6 +63,9 @@ public final class HttpHolder
 	private volatile boolean mDisconnectRequested = false;
 	private volatile boolean mInterrupted = false;
 	
+	InputListener mInputListener;
+	OutputStream mOutputStream;
+	
 	public interface InputListener
 	{
 		public void onInputProgressChange(long progress, long progressMax);
@@ -82,11 +85,14 @@ public final class HttpHolder
 		mResponse = null;
 	}
 	
-	void setConnection(HttpURLConnection connection) throws HttpClient.DisconnectedIOException
+	void setConnection(HttpURLConnection connection, InputListener inputListener, OutputStream outputStream)
+			throws HttpClient.DisconnectedIOException
 	{
 		mDisconnectRequested = false;
 		mRequestThread = Thread.currentThread();
 		mConnection = connection;
+		mInputListener = inputListener;
+		mOutputStream = outputStream;
 		mRedirectedUri = null;
 		mValidator = null;
 		mResponse = null;
@@ -128,6 +134,8 @@ public final class HttpHolder
 	{
 		HttpURLConnection connection = mConnection;
 		mConnection = null;
+		mInputListener = null;
+		mOutputStream = null;
 		if (connection != null)
 		{
 			connection.disconnect();
@@ -139,14 +147,9 @@ public final class HttpHolder
 	@Public
 	public HttpResponse read() throws HttpException
 	{
-		return read(null, null);
-	}
-	
-	public HttpResponse read(InputListener listener, OutputStream outputStream) throws HttpException
-	{
 		HttpResponse response = mResponse;
 		if (response != null) return response;
-		response = HttpClient.getInstance().read(this, listener, outputStream);
+		response = HttpClient.getInstance().read(this);
 		mResponse = response;
 		return mResponse;
 	}
