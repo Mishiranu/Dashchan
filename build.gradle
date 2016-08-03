@@ -71,8 +71,8 @@ android {
 		if (apiKeyGoogle == null) apiKeyGoogle = ''
 		if (apiKeySoundCloud == null) apiKeySoundCloud = ''
 
-		buildConfigField 'String', 'API_KEY_GOOGLE', '"' + privateProperties['api.key.google'] + '"'
-		buildConfigField 'String', 'API_KEY_SOUNDCLOUD', '"' + privateProperties['api.key.soundcloud'] + '"'
+		buildConfigField 'String', 'API_KEY_GOOGLE', '"' + apiKeyGoogle + '"'
+		buildConfigField 'String', 'API_KEY_SOUNDCLOUD', '"' + apiKeySoundCloud + '"'
 	}
 
 	buildTypes {
