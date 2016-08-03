@@ -363,10 +363,11 @@ public class DraftsStorage extends StorageManager.Storage
 		public final String boardName;
 		public final String threadNumber;
 		
-		public CaptchaDraft(String captchaType, ChanPerformer.CaptchaState captchaState, ChanPerformer.CaptchaData captchaData,
-				String loadedCaptchaType, ChanConfiguration.Captcha.Input loadedInput,
-				ChanConfiguration.Captcha.Validity loadedValidity, String text, Bitmap image, boolean large,
-				boolean blackAndWhite, long loadTime, String boardName, String threadNumber)
+		public CaptchaDraft(String captchaType, ChanPerformer.CaptchaState captchaState,
+				ChanPerformer.CaptchaData captchaData, String loadedCaptchaType,
+				ChanConfiguration.Captcha.Input loadedInput, ChanConfiguration.Captcha.Validity loadedValidity,
+				String text, Bitmap image, boolean large, boolean blackAndWhite, long loadTime,
+				String boardName, String threadNumber)
 		{
 			this.captchaType = captchaType;
 			this.captchaState = captchaState;

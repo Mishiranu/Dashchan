@@ -16,13 +16,10 @@
 
 package com.mishiranu.dashchan.net;
 
-import java.io.InputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
@@ -35,7 +32,6 @@ import chan.http.HttpHolder;
 import chan.http.HttpRequest;
 
 import com.mishiranu.dashchan.util.GraphicsUtils;
-import com.mishiranu.dashchan.util.IOUtils;
 
 public class CaptchaServiceReader
 {
