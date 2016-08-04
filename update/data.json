@@ -336,6 +336,18 @@
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanMakabaPaid.apk"
 		}
 	],
+	"meguca":
+	[
+		{
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"minSdk": 16,
+			"length": 24978,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanMeguca.apk"
+		}
+	],
 	"nowere":
 	[
 		{
@@ -372,6 +384,18 @@
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanNulleu.apk"
 		}
 	],
+	"nullnyan":
+	[
+		{
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"minSdk": 16,
+			"length": 18852,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanNullnyan.apk"
+		}
+	],
 	"nulltirech":
 	[
 		{
@@ -406,6 +430,18 @@
 			"minSdk": 14,
 			"length": 57498,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanOwlchan.apk"
+		}
+	],
+	"ozuchan":
+	[
+		{
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"minSdk": 16,
+			"length": 17914,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanOzuchan.apk"
 		}
 	],
 	"ponyach":

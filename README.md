@@ -33,12 +33,15 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | kurisach        | kurisa.ch            | [DashchanKurisach.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanKurisach.apk)               |
 | lainchan        | lainchan.org         | [DashchanLainchan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanLainchan.apk)               |
 | makabapaid      | 2channel.hk          | [DashchanMakabaPaid.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanMakabaPaid.apk)           |
+| meguca          | meguca.org           | [DashchanMeguca.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanMeguca.apk)                   |
 | nowere          | nowere.net           | [DashchanNowere.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanNowere.apk)                   |
 | nulldvachin     | 02ch.in              | [DashchanNulldvachin.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanNulldvachin.apk)         |
 | nulleu          | 0chan.eu             | [DashchanNulleu.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanNulleu.apk)                   |
+| nullnyan        | 0nyan.ml             | [DashchanNullnyan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanNullnyan.apk)               |
 | nulltirech      | 0-chan.ru            | [DashchanNulltirech.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanNulltirech.apk)           |
 | onechanca       | 1chan.ca             | [DashchanOnechanca.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanOnechanca.apk)             |
 | owlchan         | owlchan.ru           | [DashchanOwlchan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanOwlchan.apk)                 |
+| ozuchan         | ozuchan.ru           | [DashchanOzuchan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanOzuchan.apk)                 |
 | ponyach         | ponyach.ru           | [DashchanPonyach.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanPonyach.apk)                 |
 | ponychan        | ponychan.net         | [DashchanPonychan.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanPonychan.apk)               |
 | princessluna    | princessluna.ru      | [DashchanPrincessLuna.apk](https://github.com/Mishiranu/Dashchan/raw/master/update/package/DashchanPrincessLuna.apk)       |
