@@ -53,6 +53,23 @@ public class ViewUtils
 		}
 	};
 	
+	public static final DialogInterface.OnShowListener ALERT_DIALOG_LONGER_TITLE = dialog ->
+	{
+		if (dialog instanceof AlertDialog)
+		{
+			View view = ((AlertDialog) dialog).getWindow().getDecorView();
+			int id = view.getResources().getIdentifier("alertTitle", "id", "android");
+			if (id == 0) id = android.R.id.title;
+			View titleView = view.findViewById(id);
+			if (titleView instanceof TextView)
+			{
+				TextView textView = (TextView) titleView;
+				int maxLines = textView.getMaxLines();
+				if (maxLines > 0 && maxLines < 4) textView.setMaxLines(4);
+			}
+		}
+	};
+	
 	public static void removeFromParent(View view)
 	{
 		ViewParent viewParent = view.getParent();
