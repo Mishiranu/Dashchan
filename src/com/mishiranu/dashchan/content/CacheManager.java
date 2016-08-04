@@ -53,7 +53,6 @@ import android.webkit.MimeTypeMap;
 import chan.content.ChanConfiguration;
 import chan.content.ChanManager;
 import chan.content.model.Posts;
-import chan.content.model.Threads;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.app.MainApplication;
@@ -779,19 +778,15 @@ public class CacheManager implements Runnable
 		}
 	}
 	
-	private final HashMap<File, Pair<FutureTask<Void>, SerializeCallback>> mSerializeTasks = new HashMap<>();
+	private final HashMap<File, Pair<FutureTask<Void>, SerializePageCallback>> mSerializeTasks = new HashMap<>();
 	
-	private void serializeInternal(File file, String fileName, boolean pagesCache, Object object)
+	private void serializePage(String fileName, Object object)
 	{
-		File tempFile = null;
-		if (pagesCache)
-		{
-			if (!isCacheAvailable()) return;
-			file = getPagesFile(fileName);
-			if (file == null) return;
-			tempFile = getPagesFile(TEMP_PAGE_FILE_PREFIX + System.currentTimeMillis() + "_" + fileName);
-		}
-		Pair<FutureTask<Void>, SerializeCallback> pair;
+		if (!isCacheAvailable()) return;
+		File file = getPagesFile(fileName);
+		if (file == null) return;
+		File tempFile = getPagesFile(TEMP_PAGE_FILE_PREFIX + System.currentTimeMillis() + "_" + fileName);
+		Pair<FutureTask<Void>, SerializePageCallback> pair;
 		synchronized (mSerializeTasks)
 		{
 			pair = mSerializeTasks.get(file);
@@ -801,7 +796,7 @@ public class CacheManager implements Runnable
 			pair.first.cancel(true);
 			pair.second.onCancel();
 		}
-		SerializeCallback callback = new SerializeCallback(file, tempFile, fileName, pagesCache, object);
+		SerializePageCallback callback = new SerializePageCallback(file, tempFile, fileName, object);
 		FutureTask<Void> task = new FutureTask<>(callback);
 		synchronized (mSerializeTasks)
 		{
@@ -812,21 +807,16 @@ public class CacheManager implements Runnable
 	}
 	
 	@SuppressWarnings("unchecked")
-	private <T> T deserializeInternal(File file, String fileName, boolean withPagesCache, SerializationHolder holder)
-			throws ClassCastException
+	private <T> T deserializePage(String fileName, SerializationHolder holder) throws ClassCastException
 	{
-		if (withPagesCache)
-		{
-			if (!isCacheAvailable()) return null;
-			file = getPagesFile(fileName);
-			if (file == null) return null;
-			if (!isFileExistsInCache(file, fileName, CacheItem.TYPE_PAGES)) return null;
-		}
-		else if (!file.exists()) return null;
-		if (withPagesCache) updateCachedFileLastModified(file, fileName, CacheItem.TYPE_PAGES);
+		if (!isCacheAvailable()) return null;
+		File file = getPagesFile(fileName);
+		if (file == null) return null;
+		if (!isFileExistsInCache(file, fileName, CacheItem.TYPE_PAGES)) return null;
+		updateCachedFileLastModified(file, fileName, CacheItem.TYPE_PAGES);
 		synchronized (mSerializeTasks)
 		{
-			Pair<FutureTask<Void>, SerializeCallback> pair = mSerializeTasks.get(file);
+			Pair<FutureTask<Void>, SerializePageCallback> pair = mSerializeTasks.get(file);
 			if (pair != null) return (T) pair.second.mObject;
 		}
 		ObjectInputStream objectInputStream = null;
@@ -853,21 +843,19 @@ public class CacheManager implements Runnable
 	
 	private final Object mTempSerializeFileLock = new Object();
 	
-	private class SerializeCallback implements Callable<Void>
+	private class SerializePageCallback implements Callable<Void>
 	{
 		private final File mFile;
 		private final File mTempFile;
 		private final String mFileName;
-		private final boolean mWithPagesCache;
 		private final Object mObject;
 		private final SerializationHolder mHolder = new SerializationHolder();
 		
-		public SerializeCallback(File file, File tempFile, String fileName, boolean withPagesCache, Object object)
+		public SerializePageCallback(File file, File tempFile, String fileName, Object object)
 		{
 			mFile = file;
 			mTempFile = tempFile;
 			mFileName = fileName;
-			mWithPagesCache = withPagesCache;
 			mObject = object;
 		}
 		
@@ -877,16 +865,20 @@ public class CacheManager implements Runnable
 			try
 			{
 				boolean success = false;
-				FileOutputStream fileOutputStream = null;
+				OutputStream outputStream = null;
 				try
 				{
-					fileOutputStream = new FileOutputStream(mTempFile != null ? mTempFile : mFile);
+					FileOutputStream fileOutputStream = new FileOutputStream(mTempFile != null ? mTempFile : mFile);
+					outputStream = fileOutputStream;
 					mHolder.setCloseable(fileOutputStream);
 					ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+					outputStream = objectOutputStream;
 					objectOutputStream.writeObject(mObject);
+					success = true;
 					if (mTempFile != null)
 					{
-						IOUtils.close(fileOutputStream);
+						IOUtils.close(outputStream);
+						outputStream = null;
 						synchronized (mTempSerializeFileLock)
 						{
 							if (mTempFile.exists())
@@ -894,9 +886,9 @@ public class CacheManager implements Runnable
 								mFile.delete();
 								mTempFile.renameTo(mFile);
 							}
+							else success = false;
 						}
 					}
-					success = true;
 				}
 				catch (Exception e)
 				{
@@ -904,9 +896,9 @@ public class CacheManager implements Runnable
 				}
 				finally
 				{
-					IOUtils.close(fileOutputStream);
+					IOUtils.close(outputStream);
 					if (!success && mTempFile != null) mTempFile.delete();
-					if (mWithPagesCache) validateNewCachedFile(mFile, mFileName, CacheItem.TYPE_PAGES, success);
+					validateNewCachedFile(mFile, mFileName, CacheItem.TYPE_PAGES, success);
 				}
 				return null;
 			}
@@ -939,7 +931,7 @@ public class CacheManager implements Runnable
 			{
 				synchronized (mSerializeTasks)
 				{
-					Pair<FutureTask<Void>, SerializeCallback> pair = mSerializeTasks.get(mFile);
+					Pair<FutureTask<Void>, SerializePageCallback> pair = mSerializeTasks.get(mFile);
 					if (pair != null && pair.second == this) mSerializeTasks.remove(mFile);
 				}
 				handleSeializationQueue(true);
@@ -952,52 +944,9 @@ public class CacheManager implements Runnable
 		return !ChanConfiguration.get(chanName).getOption(ChanConfiguration.OPTION_HIDDEN_DISABLE_SERIALIZATION);
 	}
 	
-	public void serializeThreads(String chanName, String boardName, Object threads)
-	{
-		if (allowPagesCache(chanName))
-		{
-			serializeInternal(null, getThreadsFileName(chanName, boardName), true, threads);
-		}
-	}
-	
-	public Threads deserializeThreads(String chanName, String boardName, SerializationHolder holder)
-	{
-		if (allowPagesCache(chanName))
-		{
-			try
-			{
-				return deserializeInternal(null, getThreadsFileName(chanName, boardName), true, holder);
-			}
-			catch (ClassCastException e)
-			{
-				return null;
-			}
-		}
-		else return null;
-	}
-	
-	public void removeThreads(String chanName, String boardName)
-	{
-		synchronized (mPagesCache)
-		{
-			String fileName = getThreadsFileName(chanName, boardName);
-			CacheItem cacheItem = mPagesCache.get(fileName.toLowerCase(Locale.US));
-			if (cacheItem != null)
-			{
-				mPagesCache.remove(fileName);
-				mPagesCacheSize -= cacheItem.length;
-			}
-			File file = getPagesFile(fileName);
-			if (file != null) file.delete();
-		}
-	}
-	
 	public void serializePosts(String chanName, String boardName, String threadNumber, Object posts)
 	{
-		if (allowPagesCache(chanName))
-		{
-			serializeInternal(null, getPostsFileName(chanName, boardName, threadNumber), true, posts);
-		}
+		if (allowPagesCache(chanName)) serializePage(getPostsFileName(chanName, boardName, threadNumber), posts);
 	}
 	
 	public Posts deserializePosts(String chanName, String boardName, String threadNumber, SerializationHolder holder)
@@ -1006,7 +955,7 @@ public class CacheManager implements Runnable
 		{
 			try
 			{
-				return deserializeInternal(null, getPostsFileName(chanName, boardName, threadNumber), true, holder);
+				return deserializePage(getPostsFileName(chanName, boardName, threadNumber), holder);
 			}
 			catch (ClassCastException e)
 			{
@@ -1014,11 +963,6 @@ public class CacheManager implements Runnable
 			}
 		}
 		else return null;
-	}
-	
-	private String getThreadsFileName(String chanName, String boardName)
-	{
-		return "threads_" + chanName + "_" + boardName;
 	}
 	
 	private String getPostsFileName(String chanName, String boardName, String threadNumber)
