@@ -79,9 +79,11 @@ public final class GroupParser
 	private void convert() throws ParseException
 	{
 		String source = mSource;
+		int length = source.length();
 		int index = source.indexOf('<');
 		if (index > 0) onText(0, index);
 		char[] tagNameEndCharacters = {' ', '\r', '\n', '\t'};
+		char[] tagStartEnd = {'<', '>'};
 		while (index != -1)
 		{
 			char next = source.charAt(index + 1);
@@ -94,41 +96,48 @@ public final class GroupParser
 			}
 			else
 			{
-				int length = source.length();
 				int start = index;
-				int end = source.indexOf('>', start);
+				int end = -1;
 				boolean endsWithGt = true;
+				boolean inApostrophes = false;
+				boolean inQuotes = false;
+				// Find tag end including cases when <> are a part of attribute
+				// E.g. <span onlick="test.innerHTML='<p>test</p>'">
+				for (int i = start + 1, to = Math.min(index + 500, length); i < to; i++)
+				{
+					char c = source.charAt(i);
+					if (c == '"' && !inApostrophes) inQuotes = !inQuotes;
+					else if (c == '\'' && !inQuotes) inApostrophes = !inApostrophes;
+					else if (c == '<' && !inApostrophes && !inQuotes)
+					{
+						// Malformed HTML, e.g. <span style="color: #fff"<p>test</p>
+						end = i - 1;
+						endsWithGt = false;
+						break;
+					}
+					else if (c == '>' && !inApostrophes && !inQuotes)
+					{
+						end = i;
+						break;
+					}
+				}
 				if (end == -1)
 				{
-					end = Math.min(start + 50, length);
-					throw new ParseException("Malformed HTML after " + start + ": end of tag was not found ("
-							+ source.substring(start, end) + ")");
-				}
-				// < character inside attribute, e.g. <span onlick="test.innerHTML='<p>test</p>'">
-				// or malformed HTML, e.g. <span style="color: #fff"<p>test</p>
-				int unusualTagStart = source.indexOf('<', start + 1);
-				if (unusualTagStart >= 0 && unusualTagStart < end)
-				{
-					boolean inQuotes1 = false;
-					boolean inQuotes2 = false;
-					for (int i = index; i < length; i++)
+					end = StringUtils.nearestIndexOf(source, start + 1, tagStartEnd);
+					if (end == -1)
 					{
-						char c = source.charAt(i);
-						if (c == '"' && !inQuotes1) inQuotes2 = !inQuotes2;
-						else if (c == '\'' && !inQuotes2) inQuotes1 = !inQuotes1;
-						else if (c == '<' && !inQuotes1 && !inQuotes2 || index - start > 500)
-						{
-							// Malformed HTML
-							end = unusualTagStart - 1;
-							endsWithGt = false;
-							break;
-						}
-						else if (c == '>' && !inQuotes1 && !inQuotes2)
-						{
-							end = i;
-							break;
-						}
+						end = Math.min(start + 50, length);
+						throw new ParseException("Malformed HTML after " + start + ": end of tag was not found ("
+								+ source.substring(start, end) + ")");
 					}
+					endsWithGt = source.charAt(end) == '>';
+				}
+				if (end - start <= 1)
+				{
+					// Empty tag, handle as text characters
+					onText(start, start + 1);
+					index = source.indexOf('<', start + 1);
+					continue;
 				}
 				boolean close = next == '/';
 				String fullTag = source.substring(start + (close ? 2 : 1), end + (endsWithGt ? 0 : 1));
