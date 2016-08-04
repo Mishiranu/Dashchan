@@ -66,8 +66,6 @@ import com.mishiranu.dashchan.util.WebViewUtils;
 
 public class RecaptchaReader implements Handler.Callback
 {
-	//private static final boolean DEBUG = false;
-	
 	private static final RecaptchaReader INSTANCE = new RecaptchaReader();
 	
 	public static RecaptchaReader getInstance()
@@ -955,7 +953,6 @@ public class RecaptchaReader implements Handler.Callback
 		{
 			Log.persistent().write("recaptcha intercept", url.length() > 100 ? url.substring(0, 100) + "..." : url);
 			int intercept = interceptRequest(url);
-			//if (DEBUG) return null;
 			switch (intercept)
 			{
 				case INTERCEPT_NONE:
