@@ -16,6 +16,7 @@
 
 package com.mishiranu.dashchan.content;
 
+import java.io.BufferedOutputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
@@ -745,7 +746,7 @@ public class CacheManager implements Runnable
 		}
 	}
 	
-	private void handleSeializationQueue(boolean release)
+	private void handleSerializationQueue(boolean release)
 	{
 		synchronized (mSerializationQueueLock)
 		{
@@ -803,7 +804,7 @@ public class CacheManager implements Runnable
 			mSerializeTasks.put(file, new Pair<>(task, callback));
 		}
 		AsyncTask.THREAD_POOL_EXECUTOR.execute(task);
-		handleSeializationQueue(false);
+		handleSerializationQueue(false);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -862,50 +863,40 @@ public class CacheManager implements Runnable
 		@Override
 		public Void call() throws Exception
 		{
+			boolean success = false;
+			OutputStream outputStream = null;
 			try
 			{
-				boolean success = false;
-				OutputStream outputStream = null;
-				try
+				outputStream = new FileOutputStream(mTempFile != null ? mTempFile : mFile);
+				ObjectOutputStream objectOutputStream = new ObjectOutputStream(new BufferedOutputStream(outputStream));
+				outputStream = objectOutputStream;
+				mHolder.setCloseable(outputStream);
+				objectOutputStream.writeObject(mObject);
+				objectOutputStream.flush();
+				IOUtils.close(outputStream);
+				outputStream = null;
+				synchronized (mTempSerializeFileLock)
 				{
-					FileOutputStream fileOutputStream = new FileOutputStream(mTempFile != null ? mTempFile : mFile);
-					outputStream = fileOutputStream;
-					mHolder.setCloseable(fileOutputStream);
-					ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-					outputStream = objectOutputStream;
-					objectOutputStream.writeObject(mObject);
-					success = true;
-					if (mTempFile != null)
+					if (mTempFile.exists())
 					{
-						IOUtils.close(outputStream);
-						outputStream = null;
-						synchronized (mTempSerializeFileLock)
-						{
-							if (mTempFile.exists())
-							{
-								mFile.delete();
-								mTempFile.renameTo(mFile);
-							}
-							else success = false;
-						}
+						mFile.delete();
+						mTempFile.renameTo(mFile);
+						success = true;
 					}
 				}
-				catch (Exception e)
-				{
-					
-				}
-				finally
-				{
-					IOUtils.close(outputStream);
-					if (!success && mTempFile != null) mTempFile.delete();
-					validateNewCachedFile(mFile, mFileName, CacheItem.TYPE_PAGES, success);
-				}
-				return null;
+			}
+			catch (Exception e)
+			{
+				
 			}
 			finally
 			{
+				IOUtils.close(outputStream);
+				if (success) validateNewCachedFile(mFile, mFileName, CacheItem.TYPE_PAGES, true);
+				else mTempFile.delete();
 				onFinished();
 			}
+			return null;
 		}
 		
 		public void onCancel()
@@ -934,7 +925,7 @@ public class CacheManager implements Runnable
 					Pair<FutureTask<Void>, SerializePageCallback> pair = mSerializeTasks.get(mFile);
 					if (pair != null && pair.second == this) mSerializeTasks.remove(mFile);
 				}
-				handleSeializationQueue(true);
+				handleSerializationQueue(true);
 			}
 		}
 	}
