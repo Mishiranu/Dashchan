@@ -16,7 +16,6 @@
 
 package chan.content.model;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -24,10 +23,8 @@ import chan.annotation.Public;
 import chan.util.CommonUtils;
 
 @Public
-public final class Threads implements Serializable
+public final class Threads
 {
-	private static final long serialVersionUID = 1L;
-	
 	private Posts[][] mThreads;
 	private int mStartPage;
 	private int mBoardSpeed;

@@ -18,7 +18,6 @@ package com.mishiranu.dashchan.ui.page;
 
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
-import java.util.Collections;
 
 import android.app.Activity;
 import android.content.Context;
@@ -41,9 +40,7 @@ import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.app.service.PostingService;
-import com.mishiranu.dashchan.async.DeserializeThreadsTask;
 import com.mishiranu.dashchan.async.ReadThreadsTask;
-import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.ImageLoader;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PostItem;
@@ -64,9 +61,8 @@ import com.mishiranu.dashchan.widget.PullableListView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 
 public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesStorage.Observer, UiManager.Observer,
-		DeserializeThreadsTask.Callback, ReadThreadsTask.Callback, PullableListView.OnBeforeLayoutListener
+		ReadThreadsTask.Callback, PullableListView.OnBeforeLayoutListener
 {
-	private DeserializeThreadsTask mDeserializeTask;
 	private ReadThreadsTask mReadTask;
 	
 	private Drawable mOldListSelector;
@@ -94,27 +90,24 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		mGridLayoutControl.apply();
 		ChanConfiguration.Board board = getChanConfiguration().safe().obtainBoard(pageHolder.boardName);
 		mLastPage = board.allowCatalog && Preferences.isLoadCatalog(pageHolder.chanName) ? PAGE_NUMBER_CATALOG : 0;
-		if (pageHolder.initialFromCache)
+		if (pageHolder.initialFromCache && extra.cachedThreads != null && extra.cachedPostItems.size() > 0)
 		{
-			ArrayList<PostItem[]> cachedPostItems = extra.cachedPostItems;
-			if (extra.cachedThreads != null && cachedPostItems.size() > 0)
+			mLastPage = extra.cachedThreads.getLastPage();
+			getAdapter().setItems(CommonUtils.toArray(extra.cachedPostItems, PostItem[].class),
+					extra.cachedThreads.getStartPage(), extra.cachedThreads);
+			showScaleAnimation();
+			if (pageHolder.position != null)
 			{
-				onDeserializeThreadsCompleteInternal(true, extra.cachedThreads,
-						CommonUtils.toArray(cachedPostItems, PostItem[].class));
-			}
-			else
-			{
-				mDeserializeTask = new DeserializeThreadsTask(this, pageHolder.chanName, pageHolder.boardName,
-						extra.cachedThreads);
-				mDeserializeTask.executeOnExecutor(DeserializeThreadsTask.THREAD_POOL_EXECUTOR);
-				listView.getWrapper().startBusyState(PullableWrapper.Side.BOTH);
+				int position = getAdapter().getPositionFromInfo(extra.positionInfo);
+				if (position != -1 && position != pageHolder.position.position)
+				{
+					// Fix position if grid mode was changed
+					new ListPosition(position, pageHolder.position.y).apply(listView);
+				}
+				else pageHolder.position.apply(listView);
 			}
 		}
-		else
-		{
-			CacheManager.getInstance().removeThreads(pageHolder.chanName, pageHolder.boardName);
-			refreshThreads(RefreshPage.CURRENT, false);
-		}
+		else refreshThreads(RefreshPage.CURRENT, false);
 		FavoritesStorage.getInstance().getObservable().register(this);
 		String boardTitle = getChanConfiguration().getBoardTitle(pageHolder.boardName);
 		updateTitle(boardTitle);
@@ -125,11 +118,6 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 	protected void onDestroy()
 	{
 		getUiManager().observable().unregister(this);
-		if (mDeserializeTask != null)
-		{
-			mDeserializeTask.cancel();
-			mDeserializeTask = null;
-		}
 		if (mReadTask != null)
 		{
 			mReadTask.cancel();
@@ -519,7 +507,6 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 	
 	private void refreshThreads(RefreshPage refreshPage, boolean showPull)
 	{
-		if (mDeserializeTask != null) return;
 		if (mReadTask != null) mReadTask.cancel();
 		int page;
 		boolean append = false;
@@ -554,7 +541,6 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 	
 	private boolean loadThreadsPage(int page, boolean append, boolean showPull)
 	{
-		if (mDeserializeTask != null) return false;
 		if (mReadTask != null) mReadTask.cancel();
 		PageHolder pageHolder = getPageHolder();
 		if (page < PAGE_NUMBER_CATALOG || page >= Math.max(getChanConfiguration()
@@ -583,47 +569,6 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 			}
 			return true;
 		}
-	}
-	
-	@Override
-	public void onDeserializeThreadsComplete(boolean success, Threads threads, PostItem[][] postItems)
-	{
-		mDeserializeTask = null;
-		getListView().getWrapper().cancelBusyState();
-		switchView(ViewType.LIST, null);
-		onDeserializeThreadsCompleteInternal(success, threads, postItems);
-	}
-	
-	private void onDeserializeThreadsCompleteInternal(boolean success, Threads threads, PostItem[][] postItems)
-	{
-		mDeserializeTask = null;
-		getListView().getWrapper().cancelBusyState();
-		switchView(ViewType.LIST, null);
-		ThreadsExtra extra = getExtra();
-		extra.cachedThreads = null;
-		extra.cachedPostItems.clear();
-		if (success)
-		{
-			extra.cachedThreads = threads;
-			Collections.addAll(extra.cachedPostItems, postItems);
-			int startPage = threads.getStartPage();
-			mLastPage = threads.getLastPage();
-			getAdapter().setItems(postItems, startPage, threads);
-			showScaleAnimation();
-			PageHolder pageHolder = getPageHolder();
-			if (pageHolder.position != null)
-			{
-				ListView listView = getListView();
-				int position = getAdapter().getPositionFromInfo(extra.positionInfo);
-				if (position != -1 && position != pageHolder.position.position)
-				{
-					// Fix position if grid mode was changed
-					new ListPosition(position, pageHolder.position.y).apply(listView);
-				}
-				else pageHolder.position.apply(listView);
-			}
-		}
-		else refreshThreads(RefreshPage.CURRENT, false);
 	}
 	
 	@Override
@@ -673,7 +618,6 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 				extra.cachedPostItems.add(postItems[0]);
 				extra.cachedThreads = threads;
 			}
-			CacheManager.getInstance().serializeThreads(pageHolder.chanName, pageHolder.boardName, extra.cachedThreads);
 			if (oldCount == 0 && !adapter.isRealEmpty()) showScaleAnimation();
 		}
 		else if (checkModified)
