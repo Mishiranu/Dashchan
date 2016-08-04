@@ -40,6 +40,7 @@ public class DialogMenu implements DialogInterface.OnClickListener
 	private final Callback mCallback;
 	
 	private final ArrayList<ListItem> mListItems = new ArrayList<>();
+	private boolean mLongTitle;
 	
 	private static class ListItem
 	{
@@ -67,10 +68,11 @@ public class DialogMenu implements DialogInterface.OnClickListener
 		mCallback = callback;
 	}
 	
-	public DialogMenu setTitle(String title)
+	public DialogMenu setTitle(String title, boolean longTitle)
 	{
 		checkConsumed();
 		mDialog.setTitle(title);
+		mLongTitle = longTitle;
 		return this;
 	}
 	
@@ -111,7 +113,12 @@ public class DialogMenu implements DialogInterface.OnClickListener
 	public void show()
 	{
 		checkConsumed();
-		if (mListItems.size() > 0) mDialog.setAdapter(new DialogAdapter(), this).show();
+		if (mListItems.size() > 0)
+		{
+			AlertDialog dialog = mDialog.setAdapter(new DialogAdapter(), this).create();
+			if (mLongTitle) dialog.setOnShowListener(ViewUtils.ALERT_DIALOG_LONGER_TITLE);
+			dialog.show();
+		}
 		mConsumed = true;
 	}
 	

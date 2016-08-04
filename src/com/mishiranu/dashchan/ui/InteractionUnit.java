@@ -316,7 +316,7 @@ public class InteractionUnit
 			mThreadTitle = threadTitle;
 			Context context = attachmentView.getContext();
 			DialogMenu dialogMenu = new DialogMenu(context, this);
-			dialogMenu.setTitle(mAttachmentItem.getDialogTitle());
+			dialogMenu.setTitle(mAttachmentItem.getDialogTitle(), true);
 			if (mAttachmentItem.canDownloadToStorage())
 			{
 				dialogMenu.addItem(MENU_DOWNLOAD_FILE, R.string.action_download_file);
