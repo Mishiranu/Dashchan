@@ -32,14 +32,12 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
-import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.AbsListView;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
@@ -181,9 +179,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		{
 			mListUnit = new ListUnit(mInstance);
 			mPagerUnit = new PagerUnit(mInstance);
-			AbsListView listView = mListUnit.getListView();
-			registerForContextMenu(listView);
-			mRootView.addView(listView, FrameLayout.LayoutParams.MATCH_PARENT,
+			mRootView.addView(mListUnit.getListView(), FrameLayout.LayoutParams.MATCH_PARENT,
 					FrameLayout.LayoutParams.MATCH_PARENT);
 			mRootView.addView(mPagerUnit.getView(), FrameLayout.LayoutParams.MATCH_PARENT,
 					FrameLayout.LayoutParams.MATCH_PARENT);
@@ -444,21 +440,6 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 			DownloadManager.getInstance().downloadStorage(this, requestItems, mInstance.chanName,
 					boardName, threadNumber, mThreadTitle, true);
 		}
-	}
-	
-	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo)
-	{
-		AbsListView.AdapterContextMenuInfo info = (AbsListView.AdapterContextMenuInfo) menuInfo;
-		mListUnit.onCreateContextMenu(menu, info);
-	}
-	
-	@Override
-	public boolean onContextItemSelected(MenuItem item)
-	{
-		AbsListView.AdapterContextMenuInfo info = (AbsListView.AdapterContextMenuInfo) item.getMenuInfo();
-		if (mListUnit.onContextItemSelected(item, info)) return true;
-		return super.onContextItemSelected(item);
 	}
 	
 	@Override

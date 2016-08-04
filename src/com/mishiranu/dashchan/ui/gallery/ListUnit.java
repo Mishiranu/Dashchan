@@ -57,13 +57,15 @@ import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.graphics.SelectorBorderDrawable;
 import com.mishiranu.dashchan.graphics.SelectorCheckDrawable;
 import com.mishiranu.dashchan.util.AnimationUtils;
+import com.mishiranu.dashchan.util.DialogMenu;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.AttachmentView;
 import com.mishiranu.dashchan.widget.EdgeEffectHandler;
 import com.mishiranu.dashchan.widget.callback.BusyScrollListener;
 
-public class ListUnit implements AdapterView.OnItemClickListener, ActionMode.Callback
+public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener,
+		ActionMode.Callback
 {
 	private static final int GRID_SPACING_DP = 4;
 	
@@ -90,6 +92,7 @@ public class ListUnit implements AdapterView.OnItemClickListener, ActionMode.Cal
 		mGridView.setAdapter(mGridAdapter);
 		mGridView.setOnScrollListener(new BusyScrollListener(mGridAdapter));
 		mGridView.setOnItemClickListener(this);
+		mGridView.setOnItemLongClickListener(this);
 		updateGridMetrics(instance.context.getResources().getConfiguration());
 	}
 	
@@ -175,59 +178,63 @@ public class ListUnit implements AdapterView.OnItemClickListener, ActionMode.Cal
 		else mInstance.callback.navigatePageFromList(position);
 	}
 	
-	private static final int CONTEXT_MENU_DOWNLOAD_FILE = 0;
-	private static final int CONTEXT_MENU_SEARCH_IMAGE = 1;
-	private static final int CONTEXT_MENU_COPY_LINK = 2;
-	private static final int CONTEXT_MENU_GO_TO_POST = 3;
-	private static final int CONTEXT_MENU_SHARE_LINK = 4;
+	private static final int MENU_DOWNLOAD_FILE = 0;
+	private static final int MENU_SEARCH_IMAGE = 1;
+	private static final int MENU_COPY_LINK = 2;
+	private static final int MENU_GO_TO_POST = 3;
+	private static final int MENU_SHARE_LINK = 4;
 	
-	public void onCreateContextMenu(ContextMenu menu, AbsListView.AdapterContextMenuInfo info)
+	@Override
+	public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id0)
 	{
-		if (mSelectionMode != null) return;
-		GalleryItem galleryItem = mGridAdapter.getItem(info.position);
-		menu.add(0, CONTEXT_MENU_DOWNLOAD_FILE, 0, R.string.action_download_file);
+		if (mSelectionMode != null) return false;
+		GalleryItem galleryItem = mGridAdapter.getItem(position);
+		DialogMenu dialogMenu = new DialogMenu(mInstance.context, (context, id, extra) ->
+		{
+			switch (id)
+			{
+				case MENU_DOWNLOAD_FILE:
+				{
+					mInstance.callback.downloadGalleryItem(galleryItem);
+					break;
+				}
+				case MENU_SEARCH_IMAGE:
+				{
+					NavigationUtils.searchImage(mInstance.context, mInstance.chanName, galleryItem
+							.getDisplayImageUri(mInstance.locator));
+					break;
+				}
+				case MENU_COPY_LINK:
+				{
+					StringUtils.copyToClipboard(mInstance.context, galleryItem.getFileUri(mInstance.locator)
+							.toString());
+					break;
+				}
+				case MENU_GO_TO_POST:
+				{
+					mInstance.callback.navigatePost(galleryItem, true);
+					break;
+				}
+				case MENU_SHARE_LINK:
+				{
+					NavigationUtils.share(mInstance.context, galleryItem.getFileUri(mInstance.locator).toString());
+					break;
+				}
+			}
+			
+		});
+		dialogMenu.setTitle(galleryItem.originalName != null ? galleryItem.originalName
+				: galleryItem.getFileName(mInstance.locator), true);
+		dialogMenu.addItem(MENU_DOWNLOAD_FILE, R.string.action_download_file);
 		if (galleryItem.getDisplayImageUri(mInstance.locator) != null)
 		{
-			menu.add(0, CONTEXT_MENU_SEARCH_IMAGE, 0, R.string.action_search_image);
+			dialogMenu.addItem(MENU_SEARCH_IMAGE, R.string.action_search_image);
 		}
-		menu.add(0, CONTEXT_MENU_COPY_LINK, 0, R.string.action_copy_link);
-		if (galleryItem.postNumber != null) menu.add(0, CONTEXT_MENU_GO_TO_POST, 0, R.string.action_go_to_post);
-		menu.add(0, CONTEXT_MENU_SHARE_LINK, 0, R.string.action_share_link);
-	}
-	
-	public boolean onContextItemSelected(MenuItem item, AbsListView.AdapterContextMenuInfo info)
-	{
-		GalleryItem galleryItem = mGridAdapter.getItem(info.position);
-		switch (item.getItemId())
-		{
-			case CONTEXT_MENU_DOWNLOAD_FILE:
-			{
-				mInstance.callback.downloadGalleryItem(galleryItem);
-				return true;
-			}
-			case CONTEXT_MENU_SEARCH_IMAGE:
-			{
-				NavigationUtils.searchImage(mInstance.context, mInstance.chanName, galleryItem
-						.getDisplayImageUri(mInstance.locator));
-				return true;
-			}
-			case CONTEXT_MENU_COPY_LINK:
-			{
-				StringUtils.copyToClipboard(mInstance.context, galleryItem.getFileUri(mInstance.locator).toString());
-				return true;
-			}
-			case CONTEXT_MENU_GO_TO_POST:
-			{
-				mInstance.callback.navigatePost(galleryItem, true);
-				return true;
-			}
-			case CONTEXT_MENU_SHARE_LINK:
-			{
-				NavigationUtils.share(mInstance.context, galleryItem.getFileUri(mInstance.locator).toString());
-				return true;
-			}
-		}
-		return false;
+		dialogMenu.addItem(MENU_COPY_LINK, R.string.action_copy_link);
+		if (galleryItem.postNumber != null) dialogMenu.addItem(MENU_GO_TO_POST, R.string.action_go_to_post);
+		dialogMenu.addItem(MENU_SHARE_LINK, R.string.action_share_link);
+		dialogMenu.show();
+		return true;
 	}
 	
 	public void onConfigurationChanged(Configuration newConfig)
