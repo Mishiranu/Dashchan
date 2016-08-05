@@ -100,11 +100,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.8",
+			"name": "1.9",
 			"code": 1,
 			"version": 1,
-			"minSdk": 14,
-			"length": 60322,
+			"minSdk": 16,
+			"length": 24415,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanChiochan.apk"
 		}
 	],
@@ -124,11 +124,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.14",
+			"name": "1.15",
 			"code": 1,
 			"version": 1,
-			"minSdk": 14,
-			"length": 63814,
+			"minSdk": 16,
+			"length": 28233,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanCirno.apk"
 		}
 	],
@@ -340,11 +340,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.0",
+			"name": "1.1",
 			"code": 1,
 			"version": 1,
 			"minSdk": 16,
-			"length": 24978,
+			"length": 25007,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanMeguca.apk"
 		}
 	],
