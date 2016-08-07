@@ -249,8 +249,9 @@ public class GraphicsUtils
 					{
 						if (reencoding.reduce > 1)
 						{
-							Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth()
-									/ reencoding.reduce, bitmap.getHeight() / reencoding.reduce, true);
+							Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap,
+									Math.max(bitmap.getWidth() / reencoding.reduce, 1),
+									Math.max(bitmap.getHeight() / reencoding.reduce, 1), true);
 							if (scaledBitmap != bitmap)
 							{
 								bitmap.recycle();
@@ -355,8 +356,7 @@ public class GraphicsUtils
 	
 	public static boolean isUselessPngChunk(String name)
 	{
-		return "iTXt".equals(name) || "tEXt".equals(name) || "tIME".equals(name)
-				|| "zTXt".equals(name);
+		return "iTXt".equals(name) || "tEXt".equals(name) || "tIME".equals(name) || "zTXt".equals(name);
 	}
 	
 	public static boolean isBlackAndWhiteCaptchaImage(Bitmap image)
