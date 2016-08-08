@@ -182,8 +182,12 @@ public final class FileAttachment implements Attachment
 	
 	public boolean contentEquals(FileAttachment o)
 	{
-		return StringUtils.equals(mFileUriString, o.mFileUriString) && StringUtils.equals(mThumbnailUriString,
-				o.mThumbnailUriString) && StringUtils.equals(mOriginalName, o.mOriginalName) && mSize == o.mSize &&
-				mWidth == o.mWidth && mHeight == o.mHeight && mSpoiler == o.mSpoiler;
+		return StringUtils.equals(mFileUriString, o.mFileUriString) &&
+				StringUtils.equals(mThumbnailUriString, o.mThumbnailUriString) &&
+				StringUtils.equals(mOriginalName, o.mOriginalName) &&
+				mSize == o.mSize &&
+				mWidth == o.mWidth &&
+				mHeight == o.mHeight &&
+				mSpoiler == o.mSpoiler;
 	}
 }
