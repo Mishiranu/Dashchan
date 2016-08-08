@@ -121,9 +121,11 @@ public final class EmbeddedAttachment implements Attachment
 	
 	public boolean contentEquals(EmbeddedAttachment o)
 	{
-		return StringUtils.equals(mFileUriString, o.mFileUriString) && StringUtils.equals(mThumbnailUriString,
-				o.mThumbnailUriString) && StringUtils.equals(mEmbeddedType, o.mEmbeddedType) &&
-				mContentType == o.mContentType && mCanDownload == o.mCanDownload &&
+		return StringUtils.equals(mFileUriString, o.mFileUriString) &&
+				StringUtils.equals(mThumbnailUriString, o.mThumbnailUriString) &&
+				StringUtils.equals(mEmbeddedType, o.mEmbeddedType) &&
+				mContentType == o.mContentType &&
+				mCanDownload == o.mCanDownload &&
 				StringUtils.equals(mForcedName, o.mForcedName);
 	}
 }

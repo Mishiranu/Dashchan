@@ -564,12 +564,18 @@ public final class Post implements Serializable, Comparable<Post>
 			}
 		}
 		else return false;
-		return (EXTERNAL_FLAGS_MASK & mFlags) == (EXTERNAL_FLAGS_MASK & o.mFlags) && StringUtils.equals(mThreadNumber,
-				o.mThreadNumber) && StringUtils.equals(mParentPostNumber, o.mParentPostNumber) &&
-				StringUtils.equals(mPostNumber, o.mPostNumber) && mTimestamp == o.mTimestamp &&
-				StringUtils.equals(mSubject, o.mSubject) && StringUtils.equals(mComment, o.mComment) &&
-				StringUtils.equals(mCommentMarkup, o.mCommentMarkup) && StringUtils.equals(mName, o.mName) &&
-				StringUtils.equals(mIdentifier, o.mIdentifier) && StringUtils.equals(mTripcode, o.mTripcode) &&
-				StringUtils.equals(mCapcode, o.mCapcode) && StringUtils.equals(mEmail, o.mEmail);
+		return (EXTERNAL_FLAGS_MASK & mFlags) == (EXTERNAL_FLAGS_MASK & o.mFlags) &&
+				StringUtils.equals(mThreadNumber, o.mThreadNumber) &&
+				StringUtils.equals(mParentPostNumber, o.mParentPostNumber) &&
+				StringUtils.equals(mPostNumber, o.mPostNumber) &&
+				mTimestamp == o.mTimestamp &&
+				StringUtils.equals(mSubject, o.mSubject) &&
+				StringUtils.equals(mComment, o.mComment) &&
+				StringUtils.equals(mCommentMarkup, o.mCommentMarkup) &&
+				StringUtils.equals(mName, o.mName) &&
+				StringUtils.equals(mIdentifier, o.mIdentifier) &&
+				StringUtils.equals(mTripcode, o.mTripcode) &&
+				StringUtils.equals(mCapcode, o.mCapcode) &&
+				StringUtils.equals(mEmail, o.mEmail);
 	}
 }
