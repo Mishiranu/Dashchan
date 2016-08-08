@@ -35,10 +35,10 @@ import android.widget.ListView;
 
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
-import chan.content.model.Posts;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.async.ReadPostsTask;
 import com.mishiranu.dashchan.content.HidePerformer;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.model.PostItem;
@@ -279,21 +279,20 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 		mUiManager.interaction().handleLinkLongClick(uri);
 	}
 	
-	public void setItems(PostItem[] postItems, boolean maySkipHandlingReferences)
+	public void setItems(ArrayList<ReadPostsTask.Patch> patches, boolean maySkipHandlingReferences)
 	{
 		mPostItems.clear();
 		mPostItemsMap.clear();
 		mConfigurationSet.gallerySet.clear();
-		insertItemsInternal(postItems, null, maySkipHandlingReferences);
+		insertItemsInternal(patches, maySkipHandlingReferences);
 	}
 	
-	public void mergeItems(PostItem[] postItems, Posts.MergeAction[] mergeActions)
+	public void mergeItems(ArrayList<ReadPostsTask.Patch> patches)
 	{
-		insertItemsInternal(postItems, mergeActions, false);
+		insertItemsInternal(patches, false);
 	}
 	
-	private void insertItemsInternal(PostItem[] postItems, Posts.MergeAction[] mergeActions,
-			boolean maySkipHandlingReferences)
+	private void insertItemsInternal(ArrayList<ReadPostsTask.Patch> patches, boolean maySkipHandlingReferences)
 	{
 		cancelPreloading();
 		mPostItems.remove(null);
@@ -301,23 +300,11 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 		boolean invalidateReferences = false;
 		int startAppendIndex = -1;
 		
-		for (int i = 0; i < postItems.length; i++)
+		for (ReadPostsTask.Patch patch : patches)
 		{
-			PostItem postItem = postItems[i];
-			int index;
-			boolean insert;
-			if (mergeActions != null)
-			{
-				Posts.MergeAction action = mergeActions[i];
-				index = action.index;
-				insert = action.insert;
-			}
-			else
-			{
-				index = i;
-				insert = true;
-			}
-			if (insert)
+			PostItem postItem = patch.postItem;
+			int index = patch.index;
+			if (!patch.replaceAtIndex)
 			{
 				boolean append = index == mPostItems.size();
 				mPostItems.add(index, postItem);

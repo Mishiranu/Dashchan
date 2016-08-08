@@ -19,7 +19,9 @@ package com.mishiranu.dashchan.async;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import android.os.Parcel;
@@ -35,6 +37,7 @@ import chan.content.model.Posts;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
 import chan.http.HttpValidator;
+import chan.util.CommonUtils;
 
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PostItem;
@@ -58,38 +61,22 @@ public class ReadPostsTask extends CancellableTask<Void, Void, Boolean>
 	
 	private final HttpHolder mHolder = new HttpHolder();
 	
-	private Posts mPostsModel;
-	private PostItem[] mHandlePostItems;
-	private Post[] mHandlePosts;
-	private Posts.MergeAction[] mMergeActions;
-	private Posts mReadPosts;
+	private Result mResult;
+	private boolean mFullThread = false;
+	
 	private String mRedirectBoardName;
 	private String mRedirectThreadNumber;
 	private String mRedirectPostNumber;
+	
 	private ArrayList<UserPostPending> mRemovedUserPostPendings;
 	private ErrorItem mErrorItem;
-	
-	private boolean mFullThread = false;
-	private int mNewCount = 0;
-	private int mDeletedCount = 0;
-	private boolean mHasEdited = false;
-	
-	public static class ResultItems
-	{
-		public PostItem[] handlePostItems;
-		public Post[] handlePosts;
-		public Posts.MergeAction[] mergeActions;
-		public Posts readPosts;
-		public int newCount;
-		public int deletedCount;
-		public boolean hasEdited;
-	}
 	
 	public interface Callback
 	{
 		public void onRequestPreloadPosts(PostItem[] postItems);
-		public void onReadPostsSuccess(Posts posts, ResultItems resultItems, boolean fullThread,
+		public void onReadPostsSuccess(Result result, boolean fullThread,
 				ArrayList<UserPostPending> removedUserPostPendings);
+		public void onReadPostsEmpty();
 		public void onReadPostsRedirect(String boardName, String threadNumber, String postNumber);
 		public void onReadPostsFail(ErrorItem errorItem);
 	}
@@ -123,13 +110,23 @@ public class ReadPostsTask extends CancellableTask<Void, Void, Boolean>
 			Posts readPosts = result != null ? result.posts : null;
 			HttpValidator validator = result != null ? result.validator : null;
 			if (result != null && result.fullThread) partialThreadLoading = false;
-			Posts fullPosts = mCachedPosts;
-			if (readPosts != null) readPosts.removeRepeatingsAndSort();
 			
 			if (readPosts != null && readPosts.length() > 0)
 			{
+				// Remove repeatings and sort
 				Post[] posts = readPosts.getPosts();
-				Post firstPost = fullPosts != null ? fullPosts.getPosts()[0] : posts[0];
+				LinkedHashMap<String, Post> postsMap = new LinkedHashMap<>();
+				for (Post post : readPosts.getPosts())
+				{
+					String postNumber = post.getPostNumber();
+					postsMap.put(postNumber, post);
+				}
+				if (postsMap.size() != posts.length) posts = CommonUtils.toArray(postsMap.values(), Post.class);
+				Arrays.sort(posts);
+				readPosts.setPosts(posts);
+				
+				// Validate model data format
+				Post firstPost = mCachedPosts != null ? mCachedPosts.getPosts()[0] : posts[0];
 				String firstPostNumber = firstPost.getPostNumber();
 				if (firstPostNumber == null)
 				{
@@ -177,70 +174,73 @@ public class ReadPostsTask extends CancellableTask<Void, Void, Boolean>
 				}
 			}
 			
-			Post[] handlePosts = null;
-			if (fullPosts != null)
+			Result handleResult = null;
+			boolean fullThread = false;
+			if (mCachedPosts != null)
 			{
 				boolean partial = partialThreadLoading && lastPostNumber != null;
-				Posts.MergeResult mergeResult = fullPosts.pendingMerge(readPosts, partial);
-				mNewCount = mergeResult.newCount;
-				mDeletedCount = mergeResult.deletedCount;
-				mHasEdited = mergeResult.hasEdited;
-				handlePosts = mergeResult.changed;
-				mMergeActions = mergeResult.actions;
+				handleResult = mergePosts(mCachedPosts, readPosts, partial);
 			}
 			else if (readPosts != null && readPosts.length() > 0)
 			{
-				fullPosts = readPosts;
-				handlePosts = readPosts.getPosts();
-				mNewCount = readPosts.length();
-				mFullThread = true;
-			}
-			
-			if (handlePosts != null && handlePosts.length > 0)
-			{
-				mHandlePosts = handlePosts;
-				if (mUserPostPendings != null)
+				Post[] readPostsArray = readPosts.getPosts();
+				ArrayList<Patch> patches = new ArrayList<>();
+				for (int i = 0; i < readPostsArray.length; i++)
 				{
-					ArrayList<UserPostPending> workUserPostPendings = new ArrayList<>(mUserPostPendings);
-					OUTER : for (int i = handlePosts.length - 1; i >= 0; i--)
+					patches.add(new Patch(readPostsArray[i], null, i, false, true));
+				}
+				handleResult = new Result(readPostsArray.length, 0, false, readPosts, patches, false);
+				fullThread = true;
+			}
+			if (handleResult != null)
+			{
+				if (!handleResult.patches.isEmpty())
+				{
+					if (mUserPostPendings != null)
 					{
-						Post post = handlePosts[i];
-						for (int j = workUserPostPendings.size() - 1; j >= 0; j--)
+						ArrayList<UserPostPending> workUserPostPendings = new ArrayList<>(mUserPostPendings);
+						OUTER: for (int i = handleResult.patches.size() - 1; i >= 0; i--)
 						{
-							UserPostPending userPostPending = workUserPostPendings.get(j);
-							if (userPostPending.isUserPost(post))
+							Post post = handleResult.patches.get(i).newPost;
+							for (int j = workUserPostPendings.size() - 1; j >= 0; j--)
 							{
-								post.setUserPost(true);
-								workUserPostPendings.remove(j);
-								if (mRemovedUserPostPendings == null) mRemovedUserPostPendings = new ArrayList<>();
-								mRemovedUserPostPendings.add(userPostPending);
-								if (workUserPostPendings.isEmpty()) break OUTER;
+								UserPostPending userPostPending = workUserPostPendings.get(j);
+								if (userPostPending.isUserPost(post))
+								{
+									post.setUserPost(true);
+									workUserPostPendings.remove(j);
+									if (mRemovedUserPostPendings == null) mRemovedUserPostPendings = new ArrayList<>();
+									mRemovedUserPostPendings.add(userPostPending);
+									if (workUserPostPendings.isEmpty()) break OUTER;
+								}
 							}
 						}
 					}
+					ArrayList<Post> handlePosts = new ArrayList<>();
+					for (Patch patch : handleResult.patches) handlePosts.add(patch.newPost);
+					YouTubeTitlesReader.getInstance().readAndApplyIfNecessary(handlePosts, mHolder);
 				}
-				YouTubeTitlesReader.getInstance().readAndApplyIfNecessary(handlePosts, mHolder);
-			}
-			PostItem[] handlePostItems = wrapPosts(handlePosts, mChanName, mBoardName);
-			if (handlePostItems != null) mCallback.onRequestPreloadPosts(handlePostItems);
-			if (fullPosts != null)
-			{
+				PostItem[] handlePostItems = new PostItem[handleResult.patches.size()];
+				for (int i = 0; i < handlePostItems.length; i++)
+				{
+					Patch patch = handleResult.patches.get(i);
+					PostItem postItem = new PostItem(patch.newPost, mChanName, mBoardName);
+					patch.postItem = postItem;
+					handlePostItems[i] = postItem;
+				}
+				mCallback.onRequestPreloadPosts(handlePostItems);
 				if (validator == null) validator = mHolder.getValidator();
-				if (validator != null) fullPosts.setValidator(validator);
+				if (validator == null && mCachedPosts != null) validator = mCachedPosts.getValidator();
+				handleResult.posts.setValidator(validator);
+				mResult = handleResult;
+				mFullThread = fullThread;
 			}
-			mPostsModel = fullPosts;
-			mHandlePostItems = handlePostItems;
-			mReadPosts = readPosts;
 			return true;
 		}
 		catch (HttpException e)
 		{
 			int responseCode = e.getResponseCode();
-			if (responseCode == HttpURLConnection.HTTP_NOT_MODIFIED)
-			{
-				mPostsModel = mCachedPosts;
-				return true;
-			}
+			if (responseCode == HttpURLConnection.HTTP_NOT_MODIFIED) return true;
 			if (responseCode == HttpURLConnection.HTTP_NOT_FOUND)
 			{
 				if (ChanConfiguration.get(mChanName).getOption(ChanConfiguration.OPTION_READ_SINGLE_POST))
@@ -297,18 +297,8 @@ public class ReadPostsTask extends CancellableTask<Void, Void, Boolean>
 				mCallback.onReadPostsRedirect(mRedirectBoardName != null ? mRedirectBoardName : mBoardName,
 						mRedirectThreadNumber, mRedirectPostNumber);
 			}
-			else
-			{
-				ResultItems resultItems = new ResultItems();
-				resultItems.handlePostItems = mHandlePostItems;
-				resultItems.handlePosts = mHandlePosts;
-				resultItems.mergeActions = mMergeActions;
-				resultItems.readPosts = mReadPosts;
-				resultItems.newCount = mNewCount;
-				resultItems.deletedCount = mDeletedCount;
-				resultItems.hasEdited = mHasEdited;
-				mCallback.onReadPostsSuccess(mPostsModel, resultItems, mFullThread, mRemovedUserPostPendings);
-			}
+			else if (mResult != null) mCallback.onReadPostsSuccess(mResult, mFullThread, mRemovedUserPostPendings);
+			else mCallback.onReadPostsEmpty();
 		}
 		else
 		{
@@ -344,6 +334,158 @@ public class ReadPostsTask extends CancellableTask<Void, Void, Boolean>
 			postItems[i] = new PostItem(posts.get(i), chanName, boardName);
 		}
 		return postItems;
+	}
+	
+	public static class Patch
+	{
+		public final Post newPost;
+		public final Post oldPost;
+		public PostItem postItem;
+		
+		public final int index;
+		public final boolean replaceAtIndex;
+		public final boolean newPostAddedToEnd;
+		
+		public Patch(Post newPost, Post oldPost, int index, boolean replaceAtIndex, boolean newPostAddedToEnd)
+		{
+			this.newPost = newPost;
+			this.oldPost = oldPost;
+			this.index = index;
+			this.replaceAtIndex = replaceAtIndex;
+			this.newPostAddedToEnd = newPostAddedToEnd;
+		}
+		
+		public Patch(PostItem postItem, int index)
+		{
+			newPost = postItem.getPost();
+			oldPost = null;
+			this.postItem = postItem;
+			this.index = index;
+			replaceAtIndex = false;
+			newPostAddedToEnd = true;
+		}
+	}
+	
+	public static class Result
+	{
+		public final int newCount, deletedCount;
+		public final boolean hasEdited;
+		
+		public final Posts posts;
+		public final ArrayList<Patch> patches;
+		public final boolean fieldsUpdated;
+		
+		public Result(int newCount, int deletedCount, boolean hasEdited, Posts posts,
+				ArrayList<Patch> patches, boolean fieldsUpdated)
+		{
+			this.newCount = newCount;
+			this.deletedCount = deletedCount;
+			this.hasEdited = hasEdited;
+			this.posts = posts;
+			this.patches = patches;
+			this.fieldsUpdated = fieldsUpdated;
+		}
+	}
+	
+	private static Result mergePosts(Posts cachedPosts, Posts loadedPosts, boolean partial)
+	{
+		int newCount = 0;
+		int deletedCount = 0;
+		boolean hasEdited = false;
+		ArrayList<Patch> patches = new ArrayList<>();
+		if (loadedPosts != null && loadedPosts.length() > 0)
+		{
+			Post[] cachedPostsArray = cachedPosts.getPosts();
+			Post[] loadedPostsArray = loadedPosts.getPosts();
+			int resultSize = 0;
+			int i = 0, j = 0;
+			int ic = cachedPostsArray.length, jc = loadedPostsArray.length;
+			while (i < ic || j < jc)
+			{
+				Post oldPost = i < ic ? cachedPostsArray[i] : null;
+				Post newPost = j < jc ? loadedPostsArray[j] : null;
+				int result;
+				if (oldPost == null) result = 1;
+				else if (newPost == null) result = -1;
+				else result = oldPost.compareTo(newPost);
+				if (result < 0) // Number of new post is greater
+				{
+					// So add old post to array and mark it as deleted, if downloading was not partial
+					if (!partial && !oldPost.isDeleted())
+					{
+						Post postBeforeCopy = oldPost;
+						// Copying will reset client internal flags in model
+						oldPost = oldPost.copy().setDeleted(true);
+						deletedCount++;
+						patches.add(new Patch(oldPost, postBeforeCopy, resultSize, true, false));
+						hasEdited = true;
+					}
+					resultSize++;
+					i++;
+				}
+				else if (result > 0) // Number of old post is greater
+				{
+					// It's a new post. May be it will be inserted in center of list.
+					boolean addToEnd = oldPost == null;
+					patches.add(new Patch(newPost, null, resultSize, false, addToEnd));
+					resultSize++;
+					if (addToEnd) newCount++; else hasEdited = true;
+					j++;
+				}
+				else // Post numbers are equal
+				{
+					if (!oldPost.contentEquals(newPost) || oldPost.isDeleted())
+					{
+						hasEdited = true;
+						patches.add(new Patch(newPost, oldPost, resultSize, true, false));
+						resultSize++;
+					}
+					else
+					{
+						// Keep old model if no changes, because PostItem bound to old PostModel
+						resultSize++;
+					}
+					i++;
+					j++;
+				}
+			}
+		}
+		Post[] postsArray = cachedPosts.getPosts();
+		if (!patches.isEmpty())
+		{
+			ArrayList<Post> newPosts = new ArrayList<>();
+			if (postsArray != null) Collections.addAll(newPosts, postsArray);
+			for (int i = 0; i < patches.size(); i++)
+			{
+				Patch patch = patches.get(i);
+				if (patch.replaceAtIndex) newPosts.set(patch.index, patch.newPost);
+				else newPosts.add(patch.index, patch.newPost);
+			}
+			postsArray = CommonUtils.toArray(newPosts, Post.class);
+		}
+		Posts resultPosts = new Posts(postsArray);
+		resultPosts.setArchivedThreadUriString(cachedPosts.getArchivedThreadUriString());
+		resultPosts.setUniquePosters(cachedPosts.getUniquePosters());
+		// The rest model fields must be updated in main thread
+		boolean fieldsUpdated = false;
+		if (loadedPosts != null)
+		{
+			String archivedThreadUriString = loadedPosts.getArchivedThreadUriString();
+			if (archivedThreadUriString != null && !archivedThreadUriString
+					.equals(resultPosts.getArchivedThreadUriString()))
+			{
+				resultPosts.setArchivedThreadUriString(archivedThreadUriString);
+				fieldsUpdated = true;
+			}
+			int uniquePosters = loadedPosts.getUniquePosters();
+			if (uniquePosters > 0 && uniquePosters != resultPosts.getUniquePosters())
+			{
+				resultPosts.setUniquePosters(uniquePosters);
+				fieldsUpdated = true;
+			}
+		}
+		if (patches.isEmpty() && !fieldsUpdated) return null;
+		return new Result(newCount, deletedCount, hasEdited, resultPosts, patches, fieldsUpdated);
 	}
 	
 	public interface UserPostPending extends Parcelable

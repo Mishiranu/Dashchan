@@ -578,4 +578,26 @@ public final class Post implements Serializable, Comparable<Post>
 				StringUtils.equals(mCapcode, o.mCapcode) &&
 				StringUtils.equals(mEmail, o.mEmail);
 	}
+	
+	public Post copy()
+	{
+		Post result = new Post()
+				.setThreadNumber(mThreadNumber)
+				.setParentPostNumber(mParentPostNumber)
+				.setPostNumber(mPostNumber)
+				.setTimestamp(mTimestamp)
+				.setSubject(mSubject)
+				.setComment(mComment)
+				.setEditedComment(mEditedComment)
+				.setCommentMarkup(mCommentMarkup)
+				.setName(mName)
+				.setIdentifier(mIdentifier)
+				.setTripcode(mTripcode)
+				.setCapcode(mCapcode)
+				.setEmail(mEmail);
+		result.mFlags = EXTERNAL_FLAGS_MASK & mFlags;
+		result.mAttachments = mAttachments;
+		result.mIcons = mIcons;
+		return result;
+	}
 }

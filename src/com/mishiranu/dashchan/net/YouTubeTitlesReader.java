@@ -17,7 +17,6 @@
 package com.mishiranu.dashchan.net;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -355,11 +354,6 @@ public class YouTubeTitlesReader
 				
 			}
 		}
-	}
-	
-	public final void readAndApplyIfNecessary(Post[] posts, HttpHolder holder)
-	{
-		readAndApplyIfNecessary(Arrays.asList(posts), holder);
 	}
 	
 	public final void readAndApplyIfNecessary(Threads threads, HttpHolder holder)

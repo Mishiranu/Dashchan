@@ -21,6 +21,9 @@ import chan.content.model.Posts;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.model.PostItem;
 
+import java.util.ArrayList;
+import java.util.Collections;
+
 public class DeserializePostsTask extends CancellableTask<Void, Void, Boolean>
 {
 	private final Callback mCallback;
@@ -32,11 +35,11 @@ public class DeserializePostsTask extends CancellableTask<Void, Void, Boolean>
 	private final CacheManager.SerializationHolder mHolder = new CacheManager.SerializationHolder();
 	
 	private Posts mPosts;
-	private PostItem[] mPostItems;
+	private ArrayList<PostItem> mPostItems;
 	
 	public interface Callback
 	{
-		public void onDeserializePostsComplete(boolean success, Posts posts, PostItem[] postItems);
+		public void onDeserializePostsComplete(boolean success, Posts posts, ArrayList<PostItem> postItems);
 	}
 	
 	public DeserializePostsTask(Callback callback, String chanName, String boardName, String threadNumber,
@@ -54,8 +57,11 @@ public class DeserializePostsTask extends CancellableTask<Void, Void, Boolean>
 	{
 		if (mCachedPosts != null) mPosts = mCachedPosts;
 		else mPosts = CacheManager.getInstance().deserializePosts(mChanName, mBoardName, mThreadNumber, mHolder);
-		mPostItems = ReadPostsTask.wrapPosts(mPosts, mChanName, mBoardName);
-		return mPostItems != null && mPostItems.length > 0;
+		PostItem[] postItems = ReadPostsTask.wrapPosts(mPosts, mChanName, mBoardName);
+		if (postItems == null || postItems.length == 0) return false;
+		mPostItems = new ArrayList<>(postItems.length);
+		Collections.addAll(mPostItems, postItems);
+		return true;
 	}
 	
 	@Override

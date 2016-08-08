@@ -192,11 +192,9 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				new IntentFilter(C.ACTION_GALLERY_GO_TO_POST));
 		boolean hasNewPostDatas = handleNewPostDatas();
 		extra.forceRefresh = hasNewPostDatas || !pageHolder.initialFromCache;
-		ArrayList<PostItem> cachedPostItems = extra.cachedPostItems;
-		if (extra.cachedPosts != null && cachedPostItems.size() > 0)
+		if (extra.cachedPosts != null && extra.cachedPostItems.size() > 0)
 		{
-			onDeserializePostsCompleteInternal(true, extra.cachedPosts,
-					CommonUtils.toArray(cachedPostItems, PostItem.class), true);
+			onDeserializePostsCompleteInternal(true, extra.cachedPosts, new ArrayList<>(extra.cachedPostItems), true);
 		}
 		else
 		{
@@ -1044,7 +1042,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 			if (archivedThreadUri != null)
 			{
 				String chanName = ChanManager.getInstance().getChanNameByHost(archivedThreadUri.getAuthority());
-				if (chanName != null) originalThreadData =  new Pair<>(chanName, archivedThreadUri);
+				if (chanName != null) originalThreadData = new Pair<>(chanName, archivedThreadUri);
 			}
 			if ((mOriginalThreadData == null) != (originalThreadData == null))
 			{
@@ -1166,7 +1164,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 	}
 	
 	@Override
-	public void onDeserializePostsComplete(boolean success, Posts posts, PostItem[] postItems)
+	public void onDeserializePostsComplete(boolean success, Posts posts, ArrayList<PostItem> postItems)
 	{
 		mDeserializeTask = null;
 		getListView().getWrapper().cancelBusyState();
@@ -1186,7 +1184,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		onDeserializePostsCompleteInternal(success, posts, postItems, false);
 	}
 	
-	private void onDeserializePostsCompleteInternal(boolean success, Posts posts, PostItem[] postItems,
+	private void onDeserializePostsCompleteInternal(boolean success, Posts posts, ArrayList<PostItem> postItems,
 			boolean isLoadedExplicitly)
 	{
 		PostsAdapter adapter = getAdapter();
@@ -1197,13 +1195,15 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		{
 			mHidePerformer.decodeLocalAutohide(posts);
 			extra.cachedPosts = posts;
-			Collections.addAll(extra.cachedPostItems, postItems);
-			adapter.setItems(postItems, isLoadedExplicitly); 
+			extra.cachedPostItems.addAll(postItems);
+			ArrayList<ReadPostsTask.Patch> patches = new ArrayList<>();
+			for (int i = 0; i < postItems.size(); i++) patches.add(new ReadPostsTask.Patch(postItems.get(i), i));
+			adapter.setItems(patches, isLoadedExplicitly);
 			for (PostItem postItem : adapter)
 			{
 				if (extra.expandedPosts.contains(postItem.getPostNumber())) postItem.setExpanded(true);
 			}
-			Pair<Boolean, Integer> autoRefreshData = posts.getAutoRefreshDate();
+			Pair<Boolean, Integer> autoRefreshData = posts.getAutoRefreshData();
 			mAutoRefreshEnabled = autoRefreshData.first;
 			mAutoRefreshInterval = Math.min(Math.max(autoRefreshData.second, Preferences.MIN_AUTO_REFRESH_INTERVAL),
 					Preferences.MAX_AUTO_REFRESH_INTERVAL);
@@ -1223,7 +1223,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 	}
 	
 	@Override
-	public void onReadPostsSuccess(Posts posts, ReadPostsTask.ResultItems resultItems, boolean fullThread,
+	public void onReadPostsSuccess(ReadPostsTask.Result result, boolean fullThread,
 			ArrayList<ReadPostsTask.UserPostPending> removedUserPostPendings)
 	{
 		mReadTask = null;
@@ -1242,110 +1242,102 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				extra.userPostPendings.remove(userPostPending);
 			}
 		}
-		boolean writeToCache = false;
 		if (fullThread)
 		{
-			if (resultItems.handlePostItems != null)
+			// Thread was opened for the first time
+			extra.cachedPosts = result.posts;
+			extra.cachedPostItems.clear();
+			for (ReadPostsTask.Patch patch : result.patches) extra.cachedPostItems.add(patch.postItem);
+			adapter.setItems(result.patches, false);
+			boolean allowCache = CacheManager.getInstance().allowPagesCache(pageHolder.chanName);
+			if (allowCache)
 			{
-				PostItem[] postItems = resultItems.handlePostItems;
-				extra.cachedPosts = posts;
-				extra.cachedPostItems.clear();
-				Collections.addAll(extra.cachedPostItems, postItems);
-				adapter.setItems(postItems, false);
-				writeToCache = true;
-				boolean allowCache = CacheManager.getInstance().allowPagesCache(pageHolder.chanName);
-				if (wasEmpty)
-				{
-					if (allowCache)
-					{
-						for (PostItem postItem : postItems) postItem.setUnread(true);
-					}
-					onFirstPostsLoad();
-				}
-				else if (allowCache)
-				{
-					for (int i = postItems.length - resultItems.newCount; i < postItems.length; i++)
-					{
-						postItems[i].setUnread(true);
-					}
-				}
+				for (PostItem postItem : extra.cachedPostItems) postItem.setUnread(true);
 			}
-			else if (adapter.isEmpty())
-			{
-				displayDownloadError(true, getString(R.string.message_empty_response));
-			}
+			onFirstPostsLoad();
 		}
 		else
 		{
-			writeToCache = posts.merge(resultItems.readPosts, resultItems.handlePosts, resultItems.mergeActions);
-			int repliesCount = 0;
-			if (resultItems.handlePostItems != null)
+			if (extra.cachedPosts != null)
 			{
-				if (resultItems.mergeActions != null)
+				// Copy data from old model to new model
+				Pair<Boolean, Integer> autoRefreshData = extra.cachedPosts.getAutoRefreshData();
+				result.posts.setAutoRefreshData(autoRefreshData.first, autoRefreshData.second);
+				result.posts.setLocalAutohide(extra.cachedPosts.getLocalAutohide());
+			}
+			extra.cachedPosts = result.posts;
+			int repliesCount = 0;
+			if (!result.patches.isEmpty())
+			{
+				// Copy data from old model to new model
+				for (ReadPostsTask.Patch patch : result.patches)
 				{
-					synchronized (extra.userPostNumbers)
+					if (patch.oldPost != null)
 					{
-						for (PostItem postItem : resultItems.handlePostItems)
+						if (patch.oldPost.isUserPost()) patch.newPost.setUserPost(true);
+						if (patch.oldPost.isHidden()) patch.newPost.setHidden(true);
+						if (patch.oldPost.isShown()) patch.newPost.setHidden(false);
+					}
+				}
+				synchronized (extra.userPostNumbers)
+				{
+					for (ReadPostsTask.Patch patch : result.patches)
+					{
+						if (patch.newPost.isUserPost()) extra.userPostNumbers.add(patch.newPost.getPostNumber());
+					}
+					for (ReadPostsTask.Patch patch : result.patches)
+					{
+						if (patch.newPostAddedToEnd)
 						{
-							if (postItem.isUserPost()) extra.userPostNumbers.add(postItem.getPostNumber());
-						}
-						for (int i = 0; i < resultItems.handlePostItems.length; i++)
-						{
-							PostItem postItem = resultItems.handlePostItems[i];
-							if (resultItems.mergeActions[i].newPost)
+							HashSet<String> referencesTo = patch.postItem.getReferencesTo();
+							if (referencesTo != null)
 							{
-								HashSet<String> referencesTo = postItem.getReferencesTo();
-								if (referencesTo != null)
+								for (String postNumber : referencesTo)
 								{
-									for (String postNumber : referencesTo)
+									if (extra.userPostNumbers.contains(postNumber))
 									{
-										if (extra.userPostNumbers.contains(postNumber))
-										{
-											repliesCount++;
-											break;
-										}
+										repliesCount++;
+										break;
 									}
 								}
 							}
 						}
 					}
 				}
-				extra.cachedPosts = posts;
-				adapter.mergeItems(resultItems.handlePostItems, resultItems.mergeActions);
+				adapter.mergeItems(result.patches);
 				extra.cachedPostItems.clear();
 				for (PostItem postItem : adapter) extra.cachedPostItems.add(postItem);
-				// Also mark changed posts as unread, it's ok
-				for (PostItem postItem : resultItems.handlePostItems) postItem.setUnread(true);
+				// Mark changed posts as unread
+				for (ReadPostsTask.Patch patch : result.patches) patch.postItem.setUnread(true);
 			}
-			if (writeToCache) serializePosts();
-			if (resultItems.newCount > 0 || repliesCount > 0 || resultItems.deletedCount > 0 || resultItems.hasEdited)
+			if (result.newCount > 0 || repliesCount > 0 || result.deletedCount > 0 || result.hasEdited)
 			{
 				StringBuilder message = new StringBuilder();
-				if (repliesCount > 0 || resultItems.deletedCount > 0)
+				if (repliesCount > 0 || result.deletedCount > 0)
 				{
 					message.append(getQuantityString(R.plurals.text_new_posts_count_short_format,
-							resultItems.newCount, resultItems.newCount));
+							result.newCount, result.newCount));
 					if (repliesCount > 0)
 					{
 						message.append(", ").append(getQuantityString(R.plurals.text_replies_count_format,
 								repliesCount, repliesCount));
 					}
-					if (resultItems.deletedCount > 0)
+					if (result.deletedCount > 0)
 					{
 						message.append(", ").append(getQuantityString(R.plurals.text_deleted_count_format,
-								resultItems.deletedCount, resultItems.deletedCount));
+								result.deletedCount, result.deletedCount));
 					}
 				}
-				else if (resultItems.newCount > 0)
+				else if (result.newCount > 0)
 				{
 					message.append(getQuantityString(R.plurals.text_new_posts_count_format,
-							resultItems.newCount, resultItems.newCount));
+							result.newCount, result.newCount));
 				}
 				else
 				{
 					message.append(getString(R.string.message_edited_posts));
 				}
-				if (resultItems.newCount > 0)
+				if (result.newCount > 0)
 				{
 					ClickableToast.show(getActivity(), message, getString(R.string.action_show), () ->
 					{
@@ -1356,7 +1348,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				else ClickableToast.show(getActivity(), message);
 			}
 		}
-		boolean updateAdapters = resultItems.newCount > 0 || resultItems.deletedCount > 0 || resultItems.hasEdited;
+		boolean updateAdapters = result.newCount > 0 || result.deletedCount > 0 || result.hasEdited;
 		// Handle new posts loaded before post sending complete
 		for (int i = extra.userPostPendings.size() - 1; i >= 0; i--)
 		{
@@ -1369,23 +1361,19 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 					{
 						extra.userPostPendings.remove(i);
 						postItem.setUserPost(true);
-						writeToCache = true;
 						updateAdapters = true;
 						break;
 					}
 				}
 			}
 		}
-		if (writeToCache) serializePosts();
-		if (resultItems.hasEdited)
+		serializePosts();
+		if (result.hasEdited)
 		{
 			mLastEditedPostNumbers.clear();
-			for (int i = 0; i < resultItems.handlePostItems.length; i++)
+			for (ReadPostsTask.Patch patch : result.patches)
 			{
-				if (!resultItems.mergeActions[i].newPost)
-				{
-					mLastEditedPostNumbers.add(resultItems.handlePostItems[i].getPostNumber());
-				}
+				if (!patch.newPostAddedToEnd) mLastEditedPostNumbers.add(patch.newPost.getPostNumber());
 			}
 		}
 		if (FavoritesStorage.getInstance().hasFavorite(pageHolder.chanName, pageHolder.boardName,
@@ -1406,6 +1394,15 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		scrollToSpecifiedPost(wasEmpty);
 		mScrollToPostNumber = null;
 		updateOptionsMenu(false);
+	}
+	
+	@Override
+	public void onReadPostsEmpty()
+	{
+		mReadTask = null;
+		getListView().getWrapper().cancelBusyState();
+		switchView(ViewType.LIST, null);
+		if (getAdapter().isEmpty()) displayDownloadError(true, getString(R.string.message_empty_response));
 	}
 	
 	@Override
