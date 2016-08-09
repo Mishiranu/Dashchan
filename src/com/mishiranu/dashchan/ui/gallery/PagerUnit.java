@@ -363,7 +363,13 @@ public class PagerUnit implements PagerInstance.Callback
 					holder.recyclePhotoView();
 					holder.simpleBitmapDrawable = new SimpleBitmapDrawable(bitmap, galleryItem.width,
 							galleryItem.height);
-					holder.photoView.setImage(holder.simpleBitmapDrawable, bitmap.hasAlpha(), false, keepScale);
+					boolean fitScreen = false;
+					if (galleryItem.isVideo(mGalleryInstance.locator))
+					{
+						fitScreen = true;
+						keepScale = false;
+					}
+					holder.photoView.setImage(holder.simpleBitmapDrawable, bitmap.hasAlpha(), fitScreen, keepScale);
 					holder.photoViewThumbnail = true;
 					return true;
 				}
