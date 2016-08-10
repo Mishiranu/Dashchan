@@ -18,6 +18,7 @@ package com.mishiranu.dashchan.ui.page;
 
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import android.app.Activity;
 import android.content.Context;
@@ -35,7 +36,6 @@ import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
 import chan.content.model.Threads;
 import chan.http.HttpValidator;
-import chan.util.CommonUtils;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.R;
@@ -93,8 +93,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		if (pageHolder.initialFromCache && extra.cachedThreads != null && extra.cachedPostItems.size() > 0)
 		{
 			mLastPage = extra.cachedThreads.getLastPage();
-			getAdapter().setItems(CommonUtils.toArray(extra.cachedPostItems, PostItem[].class),
-					extra.cachedThreads.getStartPage(), extra.cachedThreads);
+			getAdapter().setItems(extra.cachedPostItems, extra.cachedThreads.getStartPage(), extra.cachedThreads);
 			showScaleAnimation();
 			if (pageHolder.position != null)
 			{
@@ -519,7 +518,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		{
 			boolean pageByPage = Preferences.isPageByPage();
 			int currentPage = mLastPage;
-			if (pageByPage) 
+			if (pageByPage)
 			{
 				page = refreshPage == RefreshPage.NEXT ? currentPage + 1 : refreshPage == RefreshPage.PREVIOUS
 						? currentPage - 1 : currentPage;
@@ -585,7 +584,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 			int oldCount = adapter.getCount();
 			ThreadsExtra extra = getExtra();
 			if (append) adapter.appendItems(postItems[0], pageNumber, threads);
-			else adapter.setItems(postItems, pageNumber, threads);
+			else adapter.setItems(Arrays.asList(postItems), pageNumber, threads);
 			PageHolder pageHolder = getPageHolder();
 			String title = getChanConfiguration().getBoardTitle(pageHolder.boardName);
 			if (title != null) updateTitle(title);

@@ -17,6 +17,7 @@
 package com.mishiranu.dashchan.ui.adapter;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Locale;
@@ -465,7 +466,7 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 		return -1;
 	}
 	
-	public void setItems(PostItem[][] postItems, int pageNumber, Threads threads)
+	public void setItems(Collection<PostItem[]> postItems, int pageNumber, Threads threads)
 	{
 		mCatalogPostItems = null;
 		mItems.clear();
