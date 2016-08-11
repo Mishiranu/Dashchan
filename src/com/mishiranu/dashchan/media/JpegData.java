@@ -152,7 +152,7 @@ public class JpegData
 	
 	private static String extractIfdString(byte[] exifBytes, int offset, int format)
 	{
-		if (format == 2 && exifBytes.length > offset && exifBytes[offset] != 0x00)
+		if (format == 2 && offset >= 0 && exifBytes.length > offset && exifBytes[offset] != 0x00)
 		{
 			for (int i = offset; i < exifBytes.length; i++)
 			{
@@ -164,7 +164,7 @@ public class JpegData
 	
 	private static double convertIfdRational(byte[] exifBytes, int offset, int format, boolean littleEndian)
 	{
-		if ((format == 5 || format == 10) && exifBytes.length >= offset + 8)
+		if ((format == 5 || format == 10) && offset >= 0 && exifBytes.length >= offset + 8)
 		{
 			int numerator = IOUtils.bytesToInt(littleEndian, offset, 4, exifBytes);
 			int denominator = IOUtils.bytesToInt(littleEndian, offset + 4, 4, exifBytes);
@@ -176,7 +176,7 @@ public class JpegData
 	private static String convertIfdGpsString(byte[] exifBytes, int offset, int format, boolean littleEndian,
 			int count)
 	{
-		if ((format == 5 || format == 10) && exifBytes.length >= offset + 8)
+		if ((format == 5 || format == 10) && offset >= 0 && exifBytes.length >= offset + 8)
 		{
 			double value = 0.0;
 			int[] denominators = {1, 60, 3600};
@@ -198,7 +198,7 @@ public class JpegData
 	private static boolean extractIfd(LinkedHashMap<String, String> exif, int ifd, byte[] exifBytes, int offset,
 			boolean littleEndian)
 	{
-		if (exifBytes.length >= offset + 2)
+		if (offset >= 0 && exifBytes.length >= offset + 2)
 		{
 			int entries = IOUtils.bytesToInt(littleEndian, offset, 2, exifBytes);
 			if (exifBytes.length >= offset + 2 + 12 * entries)
