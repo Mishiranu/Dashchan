@@ -111,8 +111,6 @@ struct Player
 	
 	int audioStreamIndex;
 	int videoStreamIndex;
-	AVCodecContext * audioCodecContext;
-	AVCodecContext * videoCodecContext;
 	
 	BlockingQueue audioPacketQueue;
 	BlockingQueue videoPacketQueue;
@@ -306,6 +304,24 @@ static int64_t calculateFrameTime(int64_t waitTime)
 	return getTime() + waitTime - min64(max64(waitTime / 2, 25), 100);
 }
 
+static int decodeFrame(AVStream * stream, AVPacket * packet, AVFrame * frame, int video, int finish)
+{
+	int ready;
+	if (video) avcodec_decode_video2(stream->codec, frame, &ready, packet);
+	else avcodec_decode_audio4(stream->codec, frame, &ready, packet);
+	if (finish)
+	{
+		// Sometimes need to decode more times after packets decoding finished to get more frames
+		int finishAttempts = 10;
+		while (!ready && finishAttempts-- > 0)
+		{
+			if (video) avcodec_decode_video2(stream->codec, frame, &ready, packet);
+			else avcodec_decode_audio4(stream->codec, frame, &ready, packet);
+		}
+	}
+	return ready;
+}
+
 static int enqueueAudioBuffer(Player * player)
 {
 	if (!player->playing)
@@ -369,16 +385,31 @@ static void * performDecodeAudio(void * data)
 	Player * player = (Player *) data;
 	player->audioBufferNeedEnqueueAfterDecode = 1;
 	AVStream * stream = getStream(player->audioStreamIndex);
-	AVCodecContext * codecContext = player->audioCodecContext;
 	AVFrame * frame = av_frame_alloc();
 	SwrContext * resampleContext = swr_alloc();
 	PacketHolder * packetHolder = NULL;
+	AVPacket lastPacket;
+	int lastPacketValid = 0;
 	
 	while (!player->interrupt)
 	{
 		packetHolder = (PacketHolder *) blockingQueueGet(&player->audioPacketQueue, 1);
-		if (player->audioIgnoreWorkFrame) player->audioIgnoreWorkFrame = 0;
+		if (player->audioIgnoreWorkFrame)
+        {
+            if (lastPacketValid)
+            {
+                av_packet_unref(&lastPacket);
+                lastPacketValid = 0;
+            }
+            player->audioIgnoreWorkFrame = 0;
+        }
 		if (packetHolder == NULL || player->interrupt) break;
+		if (packetHolder->packet != NULL)
+		{
+			if (lastPacketValid) av_packet_unref(&lastPacket);
+			av_copy_packet(&lastPacket, packetHolder->packet);
+			lastPacketValid = 1;
+		}
 		condBroadcastLocked(&player->decodePacketsFlowCond, &player->decodePacketsFlowMutex);
 		if (player->interrupt) break;
 		
@@ -390,22 +421,20 @@ static void * performDecodeAudio(void * data)
 		pthread_mutex_unlock(&player->playFinishMutex);
 		if (player->interrupt) break;
 		
-		int send = 1;
 		while (1)
 		{
 			int success = 0;
 			uint8_t ** dstData = NULL;
 			if (player->audioIgnoreWorkFrame) goto IGNORE_AUDIO_FRAME;
 			AVPacket * packet = packetHolder->packet;
-			if (packet == NULL) goto IGNORE_AUDIO_FRAME;
+			if (packet == NULL)
+            {
+                if (!lastPacketValid) goto IGNORE_AUDIO_FRAME;
+                packet = &lastPacket;
+            }
 			pthread_mutex_lock(&player->decodeAudioFrameMutex);
 			if (player->audioIgnoreWorkFrame) unlockAndGoTo(&player->decodeAudioFrameMutex, IGNORE_AUDIO_FRAME);
-			if (send)
-			{
-				send = 0;
-				avcodec_send_packet(codecContext, packet);
-			}
-			int ready = !avcodec_receive_frame(codecContext, frame);
+			int ready = decodeFrame(stream, packet, frame, 0, packetHolder->finish);
 			pthread_mutex_unlock(&player->decodeAudioFrameMutex);
 			
 			if (ready)
@@ -497,7 +526,7 @@ static void * performDecodeAudio(void * data)
 			if (packetHolder->finish && frame->pkt_pts >= packet->pts)
 			{
 				pthread_mutex_lock(&player->decodeAudioFrameMutex);
-				if (!player->audioIgnoreWorkFrame) avcodec_flush_buffers(codecContext);
+				if (!player->audioIgnoreWorkFrame) avcodec_flush_buffers(stream->codec);
 				pthread_mutex_unlock(&player->decodeAudioFrameMutex);
 				break;
 			}
@@ -506,6 +535,7 @@ static void * performDecodeAudio(void * data)
 		packetHolder = NULL;
 	}
 	if (packetHolder != NULL) packetQueueFreeCallback(packetHolder);
+	if (lastPacketValid) av_packet_unref(&lastPacket);
 	swr_free(&resampleContext);
 	av_frame_free(&frame);
 	return NULL;
@@ -578,8 +608,8 @@ static void * performDraw(void * data)
 	JNIEnv * env;
 	(*loadJavaVM)->AttachCurrentThread(loadJavaVM, &env, NULL);
 	AVStream * stream = getStream(player->videoStreamIndex);
-	int lastWidth = player->videoCodecContext->width;
-	int lastHeight = player->videoCodecContext->height;
+	int lastWidth = stream->codec->width;
+	int lastHeight = stream->codec->height;
 	while (!player->interrupt)
 	{
 		BufferItem * bufferItem = NULL;
@@ -709,7 +739,6 @@ static void * performDecodeVideo(void * data)
 {
 	Player * player = (Player *) data;
 	AVStream * stream = getStream(player->videoStreamIndex);
-	AVCodecContext * codecContext = player->videoCodecContext;
 	pthread_mutex_lock(&player->videoSleepDrawMutex);
 	while (!player->interrupt && player->videoBufferQueue == NULL)
 	{
@@ -724,12 +753,14 @@ static void * performDecodeVideo(void * data)
 	ScaleHolder scaleHolder;
 	scaleHolder.bufferSize = 0;
 	scaleHolder.scaleBuffer = NULL;
-	int lastWidth = codecContext->width;
-	int lastHeight = codecContext->height;
+	int lastWidth = stream->codec->width;
+	int lastHeight = stream->codec->height;
 	extendScaleHolder(&scaleHolder, player->videoBufferQueue->bufferSize, lastWidth, lastHeight, bytesPerPixel, isYUV);
 	SparceArray scaleContexts;
 	sparceArrayInit(&scaleContexts, 1);
 	PacketHolder * packetHolder = NULL;
+	AVPacket lastPacket;
+	int lastPacketValid = 0;
 	
 	int totalMeasurements = 10;
 	int currentMeasurement = 0;
@@ -738,8 +769,22 @@ static void * performDecodeVideo(void * data)
 	while (!player->interrupt)
 	{
 		packetHolder = (PacketHolder *) blockingQueueGet(&player->videoPacketQueue, 1);
-		if (player->videoIgnoreWorkFrame) player->videoIgnoreWorkFrame = 0;
+		if (player->videoIgnoreWorkFrame)
+        {
+            if (lastPacketValid)
+            {
+                av_packet_unref(&lastPacket);
+                lastPacketValid = 0;
+            }
+            player->videoIgnoreWorkFrame = 0;
+        }
 		if (packetHolder == NULL || player->interrupt) break;
+		if (packetHolder->packet != NULL)
+        {
+            if (lastPacketValid) av_packet_unref(&lastPacket);
+            av_copy_packet(&lastPacket, packetHolder->packet);
+            lastPacketValid = 1;
+        }
 		condBroadcastLocked(&player->decodePacketsFlowCond, &player->decodePacketsFlowMutex);
 		if (player->interrupt) break;
 		
@@ -751,22 +796,20 @@ static void * performDecodeVideo(void * data)
 		pthread_mutex_unlock(&player->playFinishMutex);
 		if (player->interrupt) break;
 		
-		int send = 1;
 		while (1)
 		{
 			int success = 0;
 			VideoFrameExtra * extra = NULL;
 			if (player->videoIgnoreWorkFrame) goto IGNORE_VIDEO_FRAME;
 			AVPacket * packet = packetHolder->packet;
-			if (packet == NULL) goto IGNORE_VIDEO_FRAME;
+			if (packet == NULL)
+			{
+				if (!lastPacketValid) goto IGNORE_VIDEO_FRAME;
+				packet = &lastPacket;
+			}
 			pthread_mutex_lock(&player->decodeVideoFrameMutex);
 			if (player->videoIgnoreWorkFrame) unlockAndGoTo(&player->decodeVideoFrameMutex, IGNORE_VIDEO_FRAME);
-			if (send)
-			{
-				send = 0;
-				avcodec_send_packet(codecContext, packet);
-			}
-			int ready = !avcodec_receive_frame(codecContext, frame);
+			int ready = decodeFrame(stream, packet, frame, 1, packetHolder->finish);
 			pthread_mutex_unlock(&player->decodeVideoFrameMutex);
 			
 			if (ready)
@@ -862,7 +905,7 @@ static void * performDecodeVideo(void * data)
 			if (packetHolder->finish && frame->pkt_pts >= packet->pts)
 			{
 				pthread_mutex_lock(&player->decodeVideoFrameMutex);
-				if (!player->videoIgnoreWorkFrame) avcodec_flush_buffers(codecContext);
+				if (!player->videoIgnoreWorkFrame) avcodec_flush_buffers(stream->codec);
 				pthread_mutex_unlock(&player->decodeVideoFrameMutex);
 				break;
 			}
@@ -872,6 +915,7 @@ static void * performDecodeVideo(void * data)
 		packetHolder = NULL;
 	}
 	if (packetHolder != NULL) packetQueueFreeCallback(packetHolder);
+	if (lastPacketValid) av_packet_unref(&lastPacket);
 	sparceArrayDestroyEach(&scaleContexts, sws_freeContext(data));
 	av_free(scaleHolder.scaleBuffer);
 	av_frame_free(&frame);
@@ -987,9 +1031,8 @@ static void updatePlayerSurface(JNIEnv * env, Player * player, jobject surface, 
 		player->videoWindow = ANativeWindow_fromSurface(env, surface);
 		int format = ANativeWindow_getFormat(player->videoWindow);
 		AVStream * stream = getStream(player->videoStreamIndex);
-		AVCodecContext * codecContext = player->videoCodecContext;
-		int width = codecContext->width;
-		int height = codecContext->height;
+		int width = stream->codec->width;
+		int height = stream->codec->height;
 		if (player->videoBufferQueue == NULL)
 		{
 			int videoFormat = -1;
@@ -1149,7 +1192,7 @@ jlong init(JNIEnv * env, jobject nativeBridge, jboolean seekAnyFrame)
 	int videoStreamIndex = UNDEFINED;
 	for (int i = 0; i < formatContext->nb_streams; i++)
 	{
-		int codecType = formatContext->streams[i]->codecpar->codec_type;
+		int codecType = formatContext->streams[i]->codec->codec_type;
 		if (audioStreamIndex == UNDEFINED && codecType == AVMEDIA_TYPE_AUDIO) audioStreamIndex = i;
 		else if (videoStreamIndex == UNDEFINED && codecType == AVMEDIA_TYPE_VIDEO) videoStreamIndex = i;
 	}
@@ -1162,33 +1205,19 @@ jlong init(JNIEnv * env, jobject nativeBridge, jboolean seekAnyFrame)
 	player->videoStreamIndex = videoStreamIndex;
 	AVStream * audioStream = audioStreamIndex != UNDEFINED ? formatContext->streams[audioStreamIndex] : NULL;
 	AVStream * videoStream = videoStreamIndex != UNDEFINED ? formatContext->streams[videoStreamIndex] : NULL;
-	AVCodecContext * audioCodecContext = NULL;
-	AVCodecContext * videoCodecContext = NULL;
-	if (audioStream != NULL)
-	{
-		audioCodecContext = avcodec_alloc_context3(NULL);
-		avcodec_parameters_to_context(audioCodecContext, audioStream->codecpar);
-	}
-	if (videoStream != NULL)
-	{
-		videoCodecContext = avcodec_alloc_context3(NULL);
-		avcodec_parameters_to_context(videoCodecContext, videoStream->codecpar);
-	}
-	player->audioCodecContext = audioCodecContext;
-	player->videoCodecContext = videoCodecContext;
-	AVCodec * audioCodec = audioStream != NULL ? avcodec_find_decoder(audioCodecContext->codec_id) : NULL;
-	AVCodec * videoCodec = videoStream != NULL ? avcodec_find_decoder(videoCodecContext->codec_id) : NULL;
+	AVCodec * audioCodec = audioStream != NULL ? avcodec_find_decoder(audioStream->codec->codec_id) : NULL;
+	AVCodec * videoCodec = videoStream != NULL ? avcodec_find_decoder(videoStream->codec->codec_id) : NULL;
 	if (videoCodec == NULL)
 	{
 		player->errorCode = ERROR_FIND_CODEC;
 		return jlongCast(player);
 	}
-	if (audioCodec != NULL && avcodec_open2(audioCodecContext, audioCodec, NULL) < 0)
+	if (audioCodec != NULL && avcodec_open2(audioStream->codec, audioCodec, NULL) < 0)
 	{
 		player->errorCode = ERROR_OPEN_CODEC;
 		return jlongCast(player);
 	}
-	if (videoCodec != NULL && avcodec_open2(videoCodecContext, videoCodec, NULL) < 0)
+	if (videoCodec != NULL && avcodec_open2(videoStream->codec, videoCodec, NULL) < 0)
 	{
 		player->errorCode = ERROR_OPEN_CODEC;
 		return jlongCast(player);
@@ -1197,7 +1226,7 @@ jlong init(JNIEnv * env, jobject nativeBridge, jboolean seekAnyFrame)
 	{
 		SLresult result;
 		int success = 0;
-		int channels = audioCodecContext->channels;
+		int channels = audioStream->codec->channels;
 		if (channels != 1 && channels != 2)
 		{
 			channels = 2;
@@ -1220,7 +1249,7 @@ jlong init(JNIEnv * env, jobject nativeBridge, jboolean seekAnyFrame)
 		const SLboolean queueRequired[] = {SL_BOOLEAN_TRUE};
 		int needResampleSR = NEED_RESAMPLE_NO;
 		int slSampleRate = 0;
-		int sampleRate = audioCodecContext->sample_rate;
+		int sampleRate = audioStream->codec->sample_rate;
 		switch (sampleRate)
 		{
 			case 8000: slSampleRate = SL_SAMPLINGRATE_8; break;
@@ -1277,12 +1306,10 @@ jlong init(JNIEnv * env, jobject nativeBridge, jboolean seekAnyFrame)
 		HANDLE_SL_INIT_ERROR:
 		if (!success)
 		{
-			avcodec_close(audioCodecContext);
+			avcodec_close(audioStream->codec);
 			audioStreamIndex = UNDEFINED;
 			player->audioStreamIndex = UNDEFINED;
-			player->audioCodecContext = NULL;
 			audioStream = NULL;
-			audioCodecContext = NULL;
 			audioCodec = NULL;
 		}
 	}
@@ -1352,8 +1379,8 @@ void destroy(JNIEnv * env, jlong pointer)
 	
 	if (player->slPlayer != NULL) (*player->slPlayer)->Destroy(player->slPlayer);
 	if (player->slOutputMix != NULL) (*player->slOutputMix)->Destroy(player->slOutputMix);
-	if (player->audioCodecContext) avcodec_close(player->audioCodecContext);
-	if (player->videoCodecContext) avcodec_close(player->videoCodecContext);
+	if (player->audioStreamIndex != UNDEFINED) avcodec_close(getStream(player->audioStreamIndex)->codec);
+	if (player->videoStreamIndex != UNDEFINED) avcodec_close(getStream(player->videoStreamIndex)->codec);
 	if (player->formatContext != NULL) avformat_close_input(&player->formatContext);
 	if (player->ioContext != NULL)
 	{
@@ -1377,8 +1404,9 @@ void getSummary(JNIEnv * env, jlong pointer, jintArray output)
 {
 	Player * player = pointerCast(pointer);
 	jint result[3];
-	result[0] = player->videoCodecContext->width;
-	result[1] = player->videoCodecContext->height;
+	AVStream * stream = getStream(player->videoStreamIndex);
+	result[0] = stream->codec->width;
+	result[1] = stream->codec->height;
 	result[2] = player->audioStreamIndex != UNDEFINED;
 	(*env)->SetIntArrayRegion(env, output, 0, 3, result);
 }
@@ -1421,8 +1449,8 @@ void setPosition(JNIEnv * env, jlong pointer, jlong position)
 		}
 		player->audioBuffer = NULL;
 		if (player->videoBufferQueue != NULL) bufferQueueClear(player->videoBufferQueue, videoBufferQueueFreeCallback);
-		if (player->audioCodecContext != NULL) avcodec_flush_buffers(player->audioCodecContext);
-		if (player->videoCodecContext != NULL) avcodec_flush_buffers(player->videoCodecContext);
+		if (player->audioStreamIndex != UNDEFINED) avcodec_flush_buffers(getStream(player->audioStreamIndex)->codec);
+		if (player->videoStreamIndex != UNDEFINED) avcodec_flush_buffers(getStream(player->videoStreamIndex)->codec);
 		if (player->seekAnyFrame)
 		{
 			int64_t audioPosition = player->audioStreamIndex != UNDEFINED ? -1 : position;
@@ -1598,28 +1626,30 @@ jobjectArray getTechnicalInfo(JNIEnv * env, jlong pointer)
 {
 	char buffer[24];
 	Player * player = pointerCast(pointer);
+	AVStream * audioStream = player->audioStreamIndex != UNDEFINED ? getStream(player->audioStreamIndex) : NULL;
+	AVStream * videoStream = player->videoStreamIndex != UNDEFINED ? getStream(player->videoStreamIndex) : NULL;
 	int entries = av_dict_count(player->formatContext->metadata);
 	// Format, width, height, frame rate, pixel format, canvas format, libyuv
-	if (player->videoCodecContext != NULL) entries += 7;
+	if (videoStream != NULL) entries += 7;
 	// Format, channels, sample rate
-	if (player->audioCodecContext != NULL) entries += 3;
+	if (audioStream != NULL) entries += 3;
 	jobjectArray result = (*env)->NewObjectArray(env, 2 * entries, (*env)->FindClass(env, "java/lang/String"), NULL);
 	int index = 0;
-	if (player->videoCodecContext != NULL)
+	if (videoStream != NULL)
 	{
 		(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env, "video_format"));
 		(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env,
-				player->videoCodecContext->codec->long_name));
-		sprintf(buffer, "%d", player->videoCodecContext->width);
+				videoStream->codec->codec->long_name));
+		sprintf(buffer, "%d", videoStream->codec->width);
 		(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env, "width"));
 		(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env, buffer));
-		sprintf(buffer, "%d", player->videoCodecContext->height);
+		sprintf(buffer, "%d", videoStream->codec->height);
 		(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env, "height"));
 		(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env, buffer));
-		sprintf(buffer, "%.3lf", av_q2d(getStream(player->videoStreamIndex)->r_frame_rate));
+		sprintf(buffer, "%.3lf", av_q2d(videoStream->r_frame_rate));
 		(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env, "frame_rate"));
 		(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env, buffer));
-		const AVPixFmtDescriptor * pixFmtDesctiptor = av_pix_fmt_desc_get(player->videoCodecContext->pix_fmt);
+		const AVPixFmtDescriptor * pixFmtDesctiptor = av_pix_fmt_desc_get(videoStream->codec->pix_fmt);
 		(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env, "pixel_format"));
 		(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env,
 				pixFmtDesctiptor != NULL ? pixFmtDesctiptor->name : "Unknown"));
@@ -1657,15 +1687,15 @@ jobjectArray getTechnicalInfo(JNIEnv * env, jlong pointer)
 		(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env, "use_libyuv"));
 		(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env, buffer));
 	}
-	if (player->audioCodecContext != NULL)
+	if (audioStream != NULL)
 	{
 		(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env, "audio_format"));
 		(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env,
-				player->audioCodecContext->codec->long_name));
-		sprintf(buffer, "%d", player->audioCodecContext->channels);
+				audioStream->codec->codec->long_name));
+		sprintf(buffer, "%d", audioStream->codec->channels);
 		(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env, "channels"));
 		(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env, buffer));
-		sprintf(buffer, "%d", player->audioCodecContext->sample_rate);
+		sprintf(buffer, "%d", audioStream->codec->sample_rate);
 		(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env, "sample_rate"));
 		(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env, buffer));
 	}
