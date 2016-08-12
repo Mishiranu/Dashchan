@@ -124,11 +124,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.15",
+			"name": "1.16",
 			"code": 1,
 			"version": 1,
 			"minSdk": 16,
-			"length": 28233,
+			"length": 26565,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanCirno.apk"
 		}
 	],
