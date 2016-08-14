@@ -235,7 +235,7 @@ public class MainActivity extends StateActivity implements BusyScrollListener.Ca
 		if (savedInstanceState == null) savedInstanceState = mPageManager.readFromStorage();
 		PageHolder savedCurrentPage = mPageManager.restore(savedInstanceState);
 		if (savedCurrentPage != null) handleData(savedCurrentPage, false); else handleIntent(getIntent(), false);
-		startUpdateTask();
+		if (savedInstanceState == null) startUpdateTask();
 	}
 	
 	@Override
