@@ -925,10 +925,11 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		PageHolder pageHolder = getPageHolder();
 		ArrayList<PostingService.NewPostData> newPostDatas = PostingService.getNewPostDatas(getActivity(),
 				pageHolder.chanName, pageHolder.boardName, pageHolder.threadNumber);
-		if (newPostDatas != null && !newPostDatas.isEmpty())
+		if (newPostDatas != null)
 		{
+			boolean hasNewPostDatas = false;
 			PostsExtra extra = getExtra();
-			for (PostingService.NewPostData newPostData : newPostDatas)
+			OUTER: for (PostingService.NewPostData newPostData : newPostDatas)
 			{
 				ReadPostsTask.UserPostPending userPostPending;
 				if (newPostData.newThread)
@@ -938,14 +939,28 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				else if (newPostData.postNumber != null)
 				{
 					userPostPending = new ReadPostsTask.PostNumberUserPostPending(newPostData.postNumber);
+					// Check this post had loaded before this callback was called
+					// This can be unequivocally checked only for this type of UserPostPending
+					for (PostItem postItem : getAdapter())
+					{
+						if (userPostPending.isUserPost(postItem.getPost()))
+						{
+							postItem.setUserPost(true);
+							extra.userPostNumbers.add(postItem.getPostNumber());
+							getUiManager().sendPostItemMessage(postItem, UiManager.MESSAGE_INVALIDATE_VIEW);
+							serializePosts();
+							continue OUTER;
+						}
+					}
 				}
 				else
 				{
 					userPostPending = new ReadPostsTask.CommentUserPostPending(newPostData.comment);
 				}
 				extra.userPostPendings.add(userPostPending);
+				hasNewPostDatas = true;
 			}
-			return true;
+			return hasNewPostDatas;
 		}
 		return false;
 	}
@@ -1349,24 +1364,6 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 			}
 		}
 		boolean updateAdapters = result.newCount > 0 || result.deletedCount > 0 || result.hasEdited;
-		// Handle new posts loaded before post sending complete
-		for (int i = extra.userPostPendings.size() - 1; i >= 0; i--)
-		{
-			ReadPostsTask.UserPostPending userPostPending = extra.userPostPendings.get(i);
-			if (userPostPending instanceof ReadPostsTask.PostNumberUserPostPending)
-			{
-				for (PostItem postItem : getAdapter())
-				{
-					if (userPostPending.isUserPost(postItem.getPost()))
-					{
-						extra.userPostPendings.remove(i);
-						postItem.setUserPost(true);
-						updateAdapters = true;
-						break;
-					}
-				}
-			}
-		}
 		serializePosts();
 		if (result.hasEdited)
 		{
