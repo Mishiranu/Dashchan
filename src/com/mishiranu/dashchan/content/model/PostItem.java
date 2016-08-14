@@ -607,25 +607,6 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 		return mLinkSpans;
 	}
 	
-	/*
-	 * Must be called only after getComment.
-	 */
-	public boolean hasUserRepliesAfterComment(HashSet<String> userPostNumbers)
-	{
-		LinkSuffixSpan[] linkSuffixSpans = mLinkSuffixSpans;
-		if (linkSuffixSpans != null && userPostNumbers != null)
-		{
-			synchronized (userPostNumbers)
-			{
-				for (LinkSuffixSpan span : linkSuffixSpans)
-				{
-					if (userPostNumbers.contains(span.getPostNumber())) return true;
-				}
-			}
-		}
-		return false;
-	}
-	
 	public ArrayList<Pair<Uri, String>> getIcons()
 	{
 		return mIcons;
