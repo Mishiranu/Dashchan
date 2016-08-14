@@ -478,13 +478,10 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		if (linkSuffixSpans != null && configurationSet.userPostNumbers != null)
 		{
 			boolean showMyPosts = Preferences.isShowMyPosts();
-			synchronized (configurationSet.userPostNumbers)
+			for (LinkSuffixSpan span : linkSuffixSpans)
 			{
-				for (LinkSuffixSpan span : linkSuffixSpans)
-				{
-					span.setSuffix(LinkSuffixSpan.SUFFIX_USER_POST, showMyPosts && configurationSet.userPostNumbers
-							.contains(span.getPostNumber()));
-				}
+				span.setSuffix(LinkSuffixSpan.SUFFIX_USER_POST, showMyPosts && configurationSet.userPostNumbers
+						.contains(span.getPostNumber()));
 			}
 		}
 		LinkSpan[] linkSpans = postItem.getLinkSpansAfterComment();

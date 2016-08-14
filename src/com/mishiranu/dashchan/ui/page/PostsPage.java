@@ -505,12 +505,9 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 					if (deletedPostItems != null)
 					{
 						extra.cachedPostItems.removeAll(deletedPostItems);
-						synchronized (extra.userPostNumbers)
+						for (PostItem postItem : deletedPostItems)
 						{
-							for (PostItem postItem : deletedPostItems)
-							{
-								extra.userPostNumbers.remove(postItem.getPostNumber());
-							}
+							extra.userPostNumbers.remove(postItem.getPostNumber());
 						}
 						notifyAllAdaptersChanged();
 					}
@@ -760,7 +757,19 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				String postNumber = postItem.getPostNumber();
 				String comment = postItem.getComment().toString().toLowerCase(locale);
 				boolean userPost = postItem.isUserPost();
-				boolean reply = postItem.hasUserRepliesAfterComment(extra.userPostNumbers);
+				boolean reply = false;
+				HashSet<String> referencesTo = postItem.getReferencesTo();
+				if (referencesTo != null)
+				{
+					for (String referenceTo : referencesTo)
+					{
+						if (extra.userPostNumbers.contains(referenceTo))
+						{
+							reply = true;
+							break;
+						}
+					}
+				}
 				boolean hasAttachments = postItem.hasAttachments();
 				boolean deleted = postItem.isDeleted();
 				boolean edited = mLastEditedPostNumbers.contains(postNumber);
@@ -1172,13 +1181,10 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		if (success && postItems != null)
 		{
 			PostsExtra extra = getExtra();
-			synchronized (extra.userPostNumbers)
+			extra.userPostNumbers.clear();
+			for (PostItem postItem : postItems)
 			{
-				extra.userPostNumbers.clear();
-				for (PostItem postItem : postItems)
-				{
-					if (postItem.isUserPost()) extra.userPostNumbers.add(postItem.getPostNumber());
-				}
+				if (postItem.isUserPost()) extra.userPostNumbers.add(postItem.getPostNumber());
 			}
 		}
 		onDeserializePostsCompleteInternal(success, posts, postItems, false);
@@ -1279,26 +1285,20 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 						if (patch.oldPost.isShown()) patch.newPost.setHidden(false);
 					}
 				}
-				synchronized (extra.userPostNumbers)
+				for (ReadPostsTask.Patch patch : result.patches)
 				{
-					for (ReadPostsTask.Patch patch : result.patches)
+					if (patch.newPost.isUserPost()) extra.userPostNumbers.add(patch.newPost.getPostNumber());
+					if (patch.newPostAddedToEnd)
 					{
-						if (patch.newPost.isUserPost()) extra.userPostNumbers.add(patch.newPost.getPostNumber());
-					}
-					for (ReadPostsTask.Patch patch : result.patches)
-					{
-						if (patch.newPostAddedToEnd)
+						HashSet<String> referencesTo = patch.postItem.getReferencesTo();
+						if (referencesTo != null)
 						{
-							HashSet<String> referencesTo = patch.postItem.getReferencesTo();
-							if (referencesTo != null)
+							for (String postNumber : referencesTo)
 							{
-								for (String postNumber : referencesTo)
+								if (extra.userPostNumbers.contains(postNumber))
 								{
-									if (extra.userPostNumbers.contains(postNumber))
-									{
-										repliesCount++;
-										break;
-									}
+									repliesCount++;
+									break;
 								}
 							}
 						}
@@ -1477,11 +1477,8 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 			case UiManager.MESSAGE_PERFORM_USER_MARK_UPDATE:
 			{
 				PostsExtra extra = getExtra();
-				synchronized (extra.userPostNumbers)
-				{
-					if (postItem.isUserPost()) extra.userPostNumbers.add(postItem.getPostNumber());
-					else extra.userPostNumbers.remove(postItem.getPostNumber());
-				}
+				if (postItem.isUserPost()) extra.userPostNumbers.add(postItem.getPostNumber());
+				else extra.userPostNumbers.remove(postItem.getPostNumber());
 				break;
 			}
 			case UiManager.MESSAGE_PERFORM_CASCADE_HIDE:
