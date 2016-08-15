@@ -93,6 +93,9 @@ public class CommonUtils
 				if (index1 == index2 && index3 > index)
 				{
 					int index5 = builder.indexOf("\"", index);
+					if (index5 == -1) index5 = builder.indexOf("'", index);
+					if (index5 == -1) index5 = builder.indexOf(" ", index);
+					if (index5 == -1) break;
 					String url = builder.substring(index, index5);
 					int index6 = url.indexOf('#');
 					String hash = null;
@@ -104,6 +107,9 @@ public class CommonUtils
 						{
 							index6 += 14;
 							index5 = builder.indexOf("\"", index6);
+							if (index5 == -1) index5 = builder.indexOf("'", index6);
+							if (index5 == -1) index5 = builder.indexOf(" ", index6--);
+							if (index5 == -1) break;
 							hash = builder.substring(index6, index5);
 							replaceTag = true;
 						}
