@@ -28,6 +28,7 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.text.SpannableStringBuilder;
 
+import chan.annotation.Extendable;
 import chan.annotation.Public;
 
 import com.mishiranu.dashchan.text.HtmlParser;
@@ -114,6 +115,44 @@ public class StringUtils
 			if (itIndex >= 0 && (itIndex < index || index == -1)) index = itIndex;
 		}
 		return index;
+	}
+	
+	@Extendable
+	public interface ReplacementCallback
+	{
+		@Extendable
+		public String getReplacement(Matcher matcher);
+	}
+	
+	@Public
+	public static String replaceAll(String string, String regularExpression, ReplacementCallback replacementCallback)
+	{
+		return replaceAll(string, Pattern.compile(regularExpression), replacementCallback);
+	}
+	
+	@Public
+	public static String replaceAll(String string, Pattern pattern, ReplacementCallback replacementCallback)
+	{
+		if (string != null)
+		{
+			if (pattern == null) throw new NullPointerException("pattern is null");
+			if (replacementCallback == null) throw new NullPointerException("replacementCallback is null");
+			StringBuffer buffer = null;
+			Matcher matcher = pattern.matcher(string);
+			while (matcher.find())
+			{
+				if (buffer == null) buffer = new StringBuffer();
+				String replacement = replacementCallback.getReplacement(matcher);
+				if (replacement != null) replacement = Matcher.quoteReplacement(replacement);
+				matcher.appendReplacement(buffer, replacement);
+			}
+			if (buffer != null)
+			{
+				matcher.appendTail(buffer);
+				string = buffer.toString();
+			}
+		}
+		return string;
 	}
 
 	public static SpannableStringBuilder appendSpan(SpannableStringBuilder builder, CharSequence text, Object... spans)
