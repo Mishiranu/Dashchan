@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+#ifndef PLAYER_UTIL_H
+#define PLAYER_UTIL_H
+
 #include <jni.h>
 #include <pthread.h>
 #include <stdarg.h>
@@ -120,3 +123,5 @@ int condSleepUntilMs(pthread_cond_t * cond, pthread_mutex_t * mutex, int64_t tim
 int32_t min32(int32_t a, int32_t b);
 int64_t min64(int64_t a, int64_t b);
 int64_t max64(int64_t a, int64_t b);
+
+#endif // PLAYER_UTIL_H

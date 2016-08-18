@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-#include <jni.h>
+#ifndef PLAYER_H
+#define PLAYER_H
 
 jlong init(JNIEnv *, jobject, jboolean);
 void destroy(JNIEnv *, jlong);
@@ -33,3 +34,5 @@ jintArray getCurrentFrame(JNIEnv *, jlong);
 jobjectArray getTechnicalInfo(JNIEnv *, jlong);
 
 void initLibs(JavaVM * javaVM);
+
+#endif // PLAYER_H

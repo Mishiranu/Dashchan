@@ -37,8 +37,10 @@
 #include "util.h"
 
 #define unlockAndGoTo(mutex, label) {pthread_mutex_unlock(mutex); goto label;}
-#define getStream(index) player->formatContext->streams[index]
 #define sendBridgeMessage(what) (*env)->CallVoidMethod(env, player->nativeBridge, bridge->methodOnMessage, what)
+
+#define AUDIO_STREAM player->formatContext->streams[player->audioStreamIndex]
+#define VIDEO_STREAM player->formatContext->streams[player->videoStreamIndex]
 
 #define jlongCast(addr) (jlong) (long) addr
 #define pointerCast(addr) (void *) (long) addr
@@ -384,7 +386,7 @@ static void * performDecodeAudio(void * data)
 {
 	Player * player = (Player *) data;
 	player->audioBufferNeedEnqueueAfterDecode = 1;
-	AVStream * stream = getStream(player->audioStreamIndex);
+	AVStream * stream = AUDIO_STREAM;
 	AVFrame * frame = av_frame_alloc();
 	SwrContext * resampleContext = swr_alloc();
 	PacketHolder * packetHolder = NULL;
@@ -607,7 +609,7 @@ static void * performDraw(void * data)
 	Player * player = (Player *) data;
 	JNIEnv * env;
 	(*loadJavaVM)->AttachCurrentThread(loadJavaVM, &env, NULL);
-	AVStream * stream = getStream(player->videoStreamIndex);
+	AVStream * stream = VIDEO_STREAM;
 	int lastWidth = stream->codec->width;
 	int lastHeight = stream->codec->height;
 	while (!player->interrupt)
@@ -738,7 +740,7 @@ static void extendScaleHolder(ScaleHolder * scaleHolder, int bufferSize, int wid
 static void * performDecodeVideo(void * data)
 {
 	Player * player = (Player *) data;
-	AVStream * stream = getStream(player->videoStreamIndex);
+	AVStream * stream = VIDEO_STREAM;
 	pthread_mutex_lock(&player->videoSleepDrawMutex);
 	while (!player->interrupt && player->videoBufferQueue == NULL)
 	{
@@ -1030,7 +1032,7 @@ static void updatePlayerSurface(JNIEnv * env, Player * player, jobject surface, 
 	{
 		player->videoWindow = ANativeWindow_fromSurface(env, surface);
 		int format = ANativeWindow_getFormat(player->videoWindow);
-		AVStream * stream = getStream(player->videoStreamIndex);
+		AVStream * stream = VIDEO_STREAM;
 		int width = stream->codec->width;
 		int height = stream->codec->height;
 		if (player->videoBufferQueue == NULL)
@@ -1379,8 +1381,8 @@ void destroy(JNIEnv * env, jlong pointer)
 	
 	if (player->slPlayer != NULL) (*player->slPlayer)->Destroy(player->slPlayer);
 	if (player->slOutputMix != NULL) (*player->slOutputMix)->Destroy(player->slOutputMix);
-	if (player->audioStreamIndex != UNDEFINED) avcodec_close(getStream(player->audioStreamIndex)->codec);
-	if (player->videoStreamIndex != UNDEFINED) avcodec_close(getStream(player->videoStreamIndex)->codec);
+	if (player->audioStreamIndex != UNDEFINED) avcodec_close(AUDIO_STREAM->codec);
+	if (player->videoStreamIndex != UNDEFINED) avcodec_close(VIDEO_STREAM->codec);
 	if (player->formatContext != NULL) avformat_close_input(&player->formatContext);
 	if (player->ioContext != NULL)
 	{
@@ -1404,7 +1406,7 @@ void getSummary(JNIEnv * env, jlong pointer, jintArray output)
 {
 	Player * player = pointerCast(pointer);
 	jint result[3];
-	AVStream * stream = getStream(player->videoStreamIndex);
+	AVStream * stream = VIDEO_STREAM;
 	result[0] = stream->codec->width;
 	result[1] = stream->codec->height;
 	result[2] = player->audioStreamIndex != UNDEFINED;
@@ -1449,8 +1451,8 @@ void setPosition(JNIEnv * env, jlong pointer, jlong position)
 		}
 		player->audioBuffer = NULL;
 		if (player->videoBufferQueue != NULL) bufferQueueClear(player->videoBufferQueue, videoBufferQueueFreeCallback);
-		if (player->audioStreamIndex != UNDEFINED) avcodec_flush_buffers(getStream(player->audioStreamIndex)->codec);
-		if (player->videoStreamIndex != UNDEFINED) avcodec_flush_buffers(getStream(player->videoStreamIndex)->codec);
+		if (player->audioStreamIndex != UNDEFINED) avcodec_flush_buffers(AUDIO_STREAM->codec);
+		if (player->videoStreamIndex != UNDEFINED) avcodec_flush_buffers(VIDEO_STREAM->codec);
 		if (player->seekAnyFrame)
 		{
 			int64_t audioPosition = player->audioStreamIndex != UNDEFINED ? -1 : position;
@@ -1471,7 +1473,7 @@ void setPosition(JNIEnv * env, jlong pointer, jlong position)
 						else if (packet.stream_index == player->videoStreamIndex) outPosition = &videoPosition;
 						if (outPosition != NULL)
 						{
-							AVRational timeBase = getStream(packet.stream_index)->time_base;
+							AVRational timeBase = player->formatContext->streams[packet.stream_index]->time_base;
 							int64_t timestamp = packet.pts * 1000 * timeBase.num / timeBase.den;
 							if (timestamp > maxPosition)
 							{
@@ -1626,8 +1628,8 @@ jobjectArray getTechnicalInfo(JNIEnv * env, jlong pointer)
 {
 	char buffer[24];
 	Player * player = pointerCast(pointer);
-	AVStream * audioStream = player->audioStreamIndex != UNDEFINED ? getStream(player->audioStreamIndex) : NULL;
-	AVStream * videoStream = player->videoStreamIndex != UNDEFINED ? getStream(player->videoStreamIndex) : NULL;
+	AVStream * audioStream = player->audioStreamIndex != UNDEFINED ? AUDIO_STREAM : NULL;
+	AVStream * videoStream = player->videoStreamIndex != UNDEFINED ? VIDEO_STREAM : NULL;
 	int entries = av_dict_count(player->formatContext->metadata);
 	// Format, width, height, frame rate, pixel format, canvas format, libyuv
 	if (videoStream != NULL) entries += 7;
