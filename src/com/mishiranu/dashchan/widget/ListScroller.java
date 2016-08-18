@@ -58,7 +58,7 @@ public class ListScroller implements Runnable
 		if (listScroller == null && mayCreate)
 		{
 			listScroller = new ListScroller(listView);
-			listView.setTag(R.id.seek_bar);
+			listView.setTag(R.id.seek_bar, listScroller);
 		}
 		return listScroller;
 	}
