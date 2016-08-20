@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.mishiranu.dashchan.preference;
+package com.mishiranu.dashchan.preference.fragment;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,10 +56,12 @@ import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.app.PreferencesActivity;
 import com.mishiranu.dashchan.async.AsyncManager;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.net.CloudFlarePasser;
+import com.mishiranu.dashchan.preference.MultipleEditTextPreference;
+import com.mishiranu.dashchan.preference.Preferences;
+import com.mishiranu.dashchan.preference.PreferencesActivity;
 import com.mishiranu.dashchan.util.ToastUtils;
 
 public class ChanFragment extends BasePreferenceFragment

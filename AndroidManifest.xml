@@ -59,7 +59,7 @@
 			
 		</activity>
 		
-		<activity android:name=".app.PreferencesActivity" />
+		<activity android:name=".preference.PreferencesActivity" />
 		
 		<activity android:name=".app.GalleryActivity" android:configChanges="orientation|screenSize"
 			android:theme="@style/Theme.Gallery" />
@@ -70,7 +70,7 @@
 			android:configChanges="orientation|screenSize" android:taskAffinity=".audioplayer"
 			android:launchMode="singleInstance" android:excludeFromRecents="true" />
 		
-		<activity android:name=".app.UpdaterActivity" android:theme="@android:style/Theme.Panel"
+		<activity android:name=".preference.UpdaterActivity" android:theme="@android:style/Theme.Panel"
 			android:excludeFromRecents="true" />
 		
 		<service android:name=".app.service.PostingService" />

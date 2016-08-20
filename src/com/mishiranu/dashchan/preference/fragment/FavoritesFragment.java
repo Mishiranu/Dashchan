@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.mishiranu.dashchan.preference;
+package com.mishiranu.dashchan.preference.fragment;
 
 import android.os.Bundle;
 import android.preference.ListPreference;
@@ -23,6 +23,7 @@ import android.preference.PreferenceCategory;
 
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
+import com.mishiranu.dashchan.preference.Preferences;
 
 public class FavoritesFragment extends BasePreferenceFragment
 {

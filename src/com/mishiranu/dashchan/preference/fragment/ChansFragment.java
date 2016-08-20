@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.mishiranu.dashchan.preference;
+package com.mishiranu.dashchan.preference.fragment;
 
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
@@ -26,7 +26,7 @@ import chan.content.ChanManager;
 
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.app.PreferencesActivity;
+import com.mishiranu.dashchan.preference.PreferencesActivity;
 import com.mishiranu.dashchan.util.ResourceUtils;
 
 public class ChansFragment extends BasePreferenceFragment

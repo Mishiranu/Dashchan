@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.mishiranu.dashchan.preference;
+package com.mishiranu.dashchan.preference.fragment;
 
 import java.io.File;
 import java.util.HashMap;
@@ -52,6 +52,8 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.async.AsyncManager;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.media.VideoPlayer;
+import com.mishiranu.dashchan.preference.ExtendedEditTextPreference;
+import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.ToastUtils;
 
 public class ContentsFragment extends BasePreferenceFragment implements DialogInterface.OnClickListener
