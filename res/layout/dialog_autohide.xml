@@ -128,8 +128,7 @@
 			android:layout_height="wrap_content"
 			android:layout_marginLeft="@dimen/dialog_padding_view"
 			android:layout_marginRight="@dimen/dialog_padding_view"
-			android:hint="@string/text_regex"
-			android:singleLine="true" />
+			android:hint="@string/text_regex" />
 		
 		<TextView
 			android:id="@+id/error_text"

@@ -31,6 +31,7 @@ import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.Layout;
 import android.text.TextWatcher;
 import android.text.style.BackgroundColorSpan;
 import android.view.ContextMenu;
@@ -425,7 +426,17 @@ public class AutohideFragment extends BaseListFragment
 				mScrollView.post(() ->
 				{
 					int position = mErrorText.getBottom() - mScrollView.getHeight();
-					if (mScrollView.getScrollY() < position) mScrollView.smoothScrollTo(0, position);
+					if (mScrollView.getScrollY() < position)
+					{
+						int limit = Integer.MAX_VALUE;
+						int start = mValueEdit.getSelectionStart();
+						if (start >= 0)
+						{
+							Layout layout = mValueEdit.getLayout();
+							limit = layout.getLineTop(layout.getLineForOffset(start)) + mValueEdit.getTop();
+						}
+						if (limit > position) mScrollView.smoothScrollTo(0, position);
+					}
 				});
 				mErrorText.setVisibility(View.VISIBLE);
 				mErrorText.setText(text);
@@ -453,8 +464,36 @@ public class AutohideFragment extends BaseListFragment
 		private final TextWatcher mValueListener = new TextWatcher()
 		{
 			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count, int after)
+			{
+				
+			}
+			
+			@Override
 			public void onTextChanged(CharSequence s, int start, int before, int count)
 			{
+				
+			}
+			
+			@Override
+			public void afterTextChanged(Editable s)
+			{
+				// Remove line breaks
+				for (int i = 0; i < s.length(); i++)
+				{
+					char c = s.charAt(i);
+					// Replacing or deleting will call this callback again
+					if (c == '\n')
+					{
+						s.replace(i, i + 1, " ");
+						return;
+					}
+					else if (c == '\r')
+					{
+						s.delete(i, i + 1);
+						return;
+					}
+				}
 				Pattern pattern = null;
 				try
 				{
@@ -467,18 +506,6 @@ public class AutohideFragment extends BaseListFragment
 				}
 				mWorkPattern = pattern;
 				updateTestResult();
-			}
-			
-			@Override
-			public void beforeTextChanged(CharSequence s, int start, int count, int after)
-			{
-				
-			}
-			
-			@Override
-			public void afterTextChanged(Editable s)
-			{
-				
 			}
 		};
 		
