@@ -70,6 +70,9 @@
 			android:configChanges="orientation|screenSize" android:taskAffinity=".audioplayer"
 			android:launchMode="singleInstance" android:excludeFromRecents="true" />
 		
+		<activity android:name=".app.UpdaterActivity" android:theme="@android:style/Theme.Panel"
+			android:excludeFromRecents="true" />
+		
 		<service android:name=".app.service.PostingService" />
 		
 		<service android:name=".app.service.DownloadService" />
