@@ -78,6 +78,7 @@ import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.graphics.ThemeChoiceDrawable;
 import com.mishiranu.dashchan.preference.Preferences;
+import com.mishiranu.dashchan.preference.PreferencesActivity;
 import com.mishiranu.dashchan.ui.DrawerManager;
 import com.mishiranu.dashchan.ui.LocalNavigator;
 import com.mishiranu.dashchan.ui.Replyable;

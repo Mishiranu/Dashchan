@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.mishiranu.dashchan.preference;
+package com.mishiranu.dashchan.preference.fragment;
 
 import java.util.Collection;
 
@@ -26,6 +26,7 @@ import android.preference.PreferenceCategory;
 import chan.content.ChanManager;
 
 import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.preference.Preferences;
 
 public class GeneralFragment extends BasePreferenceFragment
 {

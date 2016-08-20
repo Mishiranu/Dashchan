@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.mishiranu.dashchan.preference;
+package com.mishiranu.dashchan.preference.fragment;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -46,10 +46,11 @@ import chan.util.CommonUtils;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.app.PreferencesActivity;
 import com.mishiranu.dashchan.app.UpdaterActivity;
 import com.mishiranu.dashchan.async.ReadUpdateTask;
 import com.mishiranu.dashchan.graphics.ActionIconSet;
+import com.mishiranu.dashchan.preference.Preferences;
+import com.mishiranu.dashchan.preference.PreferencesActivity;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 

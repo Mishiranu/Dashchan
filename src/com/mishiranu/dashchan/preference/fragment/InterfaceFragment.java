@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package com.mishiranu.dashchan.preference;
+package com.mishiranu.dashchan.preference.fragment;
 
 import android.os.Bundle;
 import android.preference.PreferenceCategory;
 import android.text.InputType;
 
 import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.preference.Preferences;
 
 public class InterfaceFragment extends BasePreferenceFragment
 {

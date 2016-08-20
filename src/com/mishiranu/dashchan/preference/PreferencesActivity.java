@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.mishiranu.dashchan.app;
+package com.mishiranu.dashchan.preference;
 
 import java.util.Collection;
 import java.util.List;
@@ -30,15 +30,15 @@ import chan.content.ChanManager;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.async.ReadUpdateTask;
 import com.mishiranu.dashchan.content.ForegroundManager;
-import com.mishiranu.dashchan.preference.AboutFragment;
-import com.mishiranu.dashchan.preference.AutohideFragment;
-import com.mishiranu.dashchan.preference.ChanFragment;
-import com.mishiranu.dashchan.preference.ChansFragment;
-import com.mishiranu.dashchan.preference.ContentsFragment;
-import com.mishiranu.dashchan.preference.FavoritesFragment;
-import com.mishiranu.dashchan.preference.GeneralFragment;
-import com.mishiranu.dashchan.preference.InterfaceFragment;
-import com.mishiranu.dashchan.preference.UpdateFragment;
+import com.mishiranu.dashchan.preference.fragment.AboutFragment;
+import com.mishiranu.dashchan.preference.fragment.AutohideFragment;
+import com.mishiranu.dashchan.preference.fragment.ChanFragment;
+import com.mishiranu.dashchan.preference.fragment.ChansFragment;
+import com.mishiranu.dashchan.preference.fragment.ContentsFragment;
+import com.mishiranu.dashchan.preference.fragment.FavoritesFragment;
+import com.mishiranu.dashchan.preference.fragment.GeneralFragment;
+import com.mishiranu.dashchan.preference.fragment.InterfaceFragment;
+import com.mishiranu.dashchan.preference.fragment.UpdateFragment;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 

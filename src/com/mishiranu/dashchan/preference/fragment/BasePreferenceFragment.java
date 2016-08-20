@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.mishiranu.dashchan.preference;
+package com.mishiranu.dashchan.preference.fragment;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -37,6 +37,10 @@ import android.preference.TwoStatePreference;
 import android.widget.EditText;
 
 import chan.util.StringUtils;
+
+import com.mishiranu.dashchan.preference.ExtendedEditTextPreference;
+import com.mishiranu.dashchan.preference.MultipleEditTextPreference;
+import com.mishiranu.dashchan.preference.SeekBarPreference;
 
 public abstract class BasePreferenceFragment extends PreferenceFragment implements Preference.OnPreferenceClickListener,
 		Preference.OnPreferenceChangeListener, SharedPreferences.OnSharedPreferenceChangeListener

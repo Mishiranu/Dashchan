@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.mishiranu.dashchan.app;
+package com.mishiranu.dashchan.preference;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,6 +29,9 @@ import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+
+import com.mishiranu.dashchan.app.MainApplication;
+import com.mishiranu.dashchan.app.StateActivity;
 
 public class UpdaterActivity extends StateActivity
 {
