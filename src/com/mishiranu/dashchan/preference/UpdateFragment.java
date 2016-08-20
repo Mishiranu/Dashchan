@@ -47,6 +47,7 @@ import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.app.PreferencesActivity;
+import com.mishiranu.dashchan.app.UpdaterActivity;
 import com.mishiranu.dashchan.async.ReadUpdateTask;
 import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.util.ResourceUtils;
@@ -347,6 +348,8 @@ public class UpdateFragment extends BaseListFragment
 				File directory = ReadUpdateTask.getDownloadDirectory(getActivity());
 				boolean started = false;
 				boolean downloadManagerError = false;
+				long clientId = -1;
+				ArrayList<Long> ids = new ArrayList<>();
 				for (int i = 0; i < mAdapter.getCount(); i++)
 				{
 					ListItem listItem = mAdapter.getItem(i);
@@ -369,9 +372,10 @@ public class UpdateFragment extends BaseListFragment
 						request.setDescription(i == 0 ? getString(R.string.text_main_application)
 								: getString(R.string.text_extension_name_format, listItem.title));
 						request.setMimeType("application/vnd.android.package-archive");
+						long id;
 						try
 						{
-							downloadManager.enqueue(request);
+							id = downloadManager.enqueue(request);
 						}
 						catch (IllegalArgumentException e)
 						{
@@ -381,11 +385,18 @@ public class UpdateFragment extends BaseListFragment
 								downloadManagerError = true;
 								break;
 							}
+							throw e;
 						}
 						started = true;
+						if (ChanManager.EXTENSION_NAME_CLIENT.equals(listItem.extensionName)) clientId = id;
+						else ids.add(id);
 					}
 				}
-				if (started) MessageDialog.create(MessageDialog.TYPE_UPDATE_REMINDER, this, false);
+				if (started)
+				{
+					MessageDialog.create(MessageDialog.TYPE_UPDATE_REMINDER, this, false);
+					UpdaterActivity.initUpdater(clientId, ids);
+				}
 				else if (downloadManagerError) ToastUtils.show(getActivity(), R.string.message_download_manager_error);
 				else ToastUtils.show(getActivity(), R.string.message_no_available_updates);
 				return true;
