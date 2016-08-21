@@ -1268,7 +1268,12 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 			// Thread was opened for the first time
 			extra.cachedPosts = result.posts;
 			extra.cachedPostItems.clear();
-			for (ReadPostsTask.Patch patch : result.patches) extra.cachedPostItems.add(patch.postItem);
+			extra.userPostNumbers.clear();
+			for (ReadPostsTask.Patch patch : result.patches)
+			{
+				extra.cachedPostItems.add(patch.postItem);
+				if (patch.newPost.isUserPost()) extra.userPostNumbers.add(patch.newPost.getPostNumber());
+			}
 			adapter.setItems(result.patches, false);
 			boolean allowCache = CacheManager.getInstance().allowPagesCache(pageHolder.chanName);
 			if (allowCache)
