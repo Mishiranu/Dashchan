@@ -28,8 +28,7 @@ import android.view.MenuItem;
 import chan.content.ChanManager;
 
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.async.ReadUpdateTask;
-import com.mishiranu.dashchan.content.ForegroundManager;
+import com.mishiranu.dashchan.content.async.ReadUpdateTask;
 import com.mishiranu.dashchan.preference.fragment.AboutFragment;
 import com.mishiranu.dashchan.preference.fragment.AutohideFragment;
 import com.mishiranu.dashchan.preference.fragment.ChanFragment;
@@ -39,6 +38,7 @@ import com.mishiranu.dashchan.preference.fragment.FavoritesFragment;
 import com.mishiranu.dashchan.preference.fragment.GeneralFragment;
 import com.mishiranu.dashchan.preference.fragment.InterfaceFragment;
 import com.mishiranu.dashchan.preference.fragment.UpdateFragment;
+import com.mishiranu.dashchan.ui.ForegroundManager;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 

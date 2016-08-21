@@ -69,9 +69,9 @@ import chan.util.CommonUtils;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.C;
-import com.mishiranu.dashchan.app.MainApplication;
+import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.model.ErrorItem;
-import com.mishiranu.dashchan.net.CloudFlarePasser;
+import com.mishiranu.dashchan.content.net.CloudFlarePasser;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;

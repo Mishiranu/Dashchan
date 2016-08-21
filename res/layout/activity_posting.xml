@@ -19,7 +19,7 @@
 <view xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:tools="http://schemas.android.com/tools"
 	android:id="@+id/scroll_view"
-	class="com.mishiranu.dashchan.app.PostingActivity$ResizingScrollView"
+	class="com.mishiranu.dashchan.ui.posting.PostingActivity$ResizingScrollView"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
 	android:fillViewport="true">

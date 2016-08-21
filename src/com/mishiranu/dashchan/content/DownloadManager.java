@@ -63,8 +63,8 @@ import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.app.service.DownloadService;
-import com.mishiranu.dashchan.async.SendLocalArchiveTask;
+import com.mishiranu.dashchan.content.async.SendLocalArchiveTask;
+import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;

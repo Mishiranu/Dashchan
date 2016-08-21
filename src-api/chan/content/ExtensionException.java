@@ -16,7 +16,7 @@
 
 package chan.content;
 
-import com.mishiranu.dashchan.app.MainApplication;
+import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.ToastUtils;

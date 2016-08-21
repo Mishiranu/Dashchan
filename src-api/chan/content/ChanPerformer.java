@@ -47,8 +47,8 @@ import chan.http.MultipartEntity;
 import chan.util.CommonUtils;
 import chan.util.StringUtils;
 
-import com.mishiranu.dashchan.content.ForegroundManager;
 import com.mishiranu.dashchan.content.model.FileHolder;
+import com.mishiranu.dashchan.ui.ForegroundManager;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 
 @Extendable

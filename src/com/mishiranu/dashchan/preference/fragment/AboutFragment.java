@@ -47,9 +47,9 @@ import chan.text.ParseException;
 import chan.util.CommonUtils;
 
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.async.AsyncManager;
-import com.mishiranu.dashchan.async.ReadUpdateTask;
 import com.mishiranu.dashchan.content.BackupManager;
+import com.mishiranu.dashchan.content.async.AsyncManager;
+import com.mishiranu.dashchan.content.async.ReadUpdateTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.preference.PreferencesActivity;
 import com.mishiranu.dashchan.util.ToastUtils;

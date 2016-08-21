@@ -45,8 +45,7 @@ import chan.http.HttpRequest;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.app.MainApplication;
-import com.mishiranu.dashchan.async.CancellableTask;
+import com.mishiranu.dashchan.content.async.CancellableTask;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.IOUtils;

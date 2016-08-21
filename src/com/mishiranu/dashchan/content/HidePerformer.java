@@ -25,7 +25,6 @@ import chan.content.model.Posts;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.app.MainApplication;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.storage.AutohideStorage;
 import com.mishiranu.dashchan.text.SimilarTextEstimator;

@@ -24,7 +24,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewDatabase;
 
 import com.mishiranu.dashchan.C;
-import com.mishiranu.dashchan.app.MainApplication;
+import com.mishiranu.dashchan.content.MainApplication;
 
 public class WebViewUtils
 {

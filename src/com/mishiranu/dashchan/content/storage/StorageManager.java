@@ -35,7 +35,7 @@ import android.util.SparseArray;
 
 import chan.util.StringUtils;
 
-import com.mishiranu.dashchan.app.MainApplication;
+import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.util.IOUtils;
 
 public class StorageManager implements Handler.Callback, Runnable

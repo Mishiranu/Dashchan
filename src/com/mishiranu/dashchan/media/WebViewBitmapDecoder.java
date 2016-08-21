@@ -36,7 +36,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import com.mishiranu.dashchan.C;
-import com.mishiranu.dashchan.app.MainApplication;
+import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.util.IOUtils;
 

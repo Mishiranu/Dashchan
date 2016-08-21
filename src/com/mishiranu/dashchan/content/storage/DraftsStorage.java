@@ -32,7 +32,7 @@ import chan.content.ChanPerformer;
 import chan.util.CommonUtils;
 import chan.util.StringUtils;
 
-import com.mishiranu.dashchan.app.MainApplication;
+import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.GraphicsUtils;

@@ -30,8 +30,8 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 
-import com.mishiranu.dashchan.app.MainApplication;
-import com.mishiranu.dashchan.app.StateActivity;
+import com.mishiranu.dashchan.content.MainApplication;
+import com.mishiranu.dashchan.ui.StateActivity;
 
 public class UpdaterActivity extends StateActivity
 {

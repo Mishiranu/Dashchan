@@ -46,11 +46,11 @@ import chan.util.CommonUtils;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.app.UpdaterActivity;
-import com.mishiranu.dashchan.async.ReadUpdateTask;
+import com.mishiranu.dashchan.content.async.ReadUpdateTask;
 import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.preference.PreferencesActivity;
+import com.mishiranu.dashchan.preference.UpdaterActivity;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 

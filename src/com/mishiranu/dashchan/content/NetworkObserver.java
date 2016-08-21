@@ -24,8 +24,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.telephony.TelephonyManager;
 
-import com.mishiranu.dashchan.app.MainApplication;
-
 public class NetworkObserver
 {
 	private static final NetworkObserver INSTANCE = new NetworkObserver();

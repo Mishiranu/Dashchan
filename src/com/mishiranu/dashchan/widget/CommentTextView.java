@@ -55,7 +55,7 @@ import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.text.style.LinkSpan;
 import com.mishiranu.dashchan.text.style.OverlineSpan;
 import com.mishiranu.dashchan.text.style.SpoilerSpan;
-import com.mishiranu.dashchan.ui.Replyable;
+import com.mishiranu.dashchan.ui.posting.Replyable;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 

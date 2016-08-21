@@ -56,7 +56,6 @@ import chan.content.ChanManager;
 import chan.content.model.Posts;
 import chan.util.StringUtils;
 
-import com.mishiranu.dashchan.app.MainApplication;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.IOUtils;
