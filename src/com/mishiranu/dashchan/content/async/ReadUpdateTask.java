@@ -36,17 +36,15 @@ import android.os.Build;
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
 import chan.http.HttpException;
-import chan.http.HttpHolder;
 import chan.http.HttpRequest;
 import chan.util.CommonUtils;
 
 import com.mishiranu.dashchan.C;
 
-public class ReadUpdateTask extends CancellableTask<Void, Long, Object>
+public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object>
 {
 	private final Context mContext;
 	private final Callback mCallback;
-	private final HttpHolder mHolder = new HttpHolder();
 	
 	public static class UpdateDataMap implements Serializable 
 	{
@@ -208,7 +206,7 @@ public class ReadUpdateTask extends CancellableTask<Void, Long, Object>
 				int redirects = 0;
 				while (redirects++ < 5)
 				{
-					JSONObject jsonObject = new HttpRequest(uri, mHolder).read().getJsonObject();
+					JSONObject jsonObject = new HttpRequest(uri, getHolder()).read().getJsonObject();
 					if (jsonObject != null)
 					{
 						String redirect = CommonUtils.optJsonString(jsonObject, "redirect");
@@ -264,7 +262,7 @@ public class ReadUpdateTask extends CancellableTask<Void, Long, Object>
 			}
 			catch (HttpException e)
 			{
-				mHolder.disconnect();
+				getHolder().disconnect();
 			}
 			catch (JSONException e)
 			{
@@ -279,12 +277,5 @@ public class ReadUpdateTask extends CancellableTask<Void, Long, Object>
 	protected void onPostExecute(Object result)
 	{
 		mCallback.onReadUpdateComplete((UpdateDataMap) result);
-	}
-	
-	@Override
-	public void cancel()
-	{
-		cancel(true);
-		mHolder.interrupt();
 	}
 }

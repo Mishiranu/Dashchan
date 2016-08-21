@@ -260,7 +260,7 @@ public class ForegroundManager implements Handler.Callback
 			String[] captchaPass = forceCaptcha || chanName == null ? null : Preferences.getCaptchaPass(chanName);
 			CaptchaPendingData pendingData = getPendingData();
 			ReadCaptchaHolder holder = new ReadCaptchaHolder();
-			ReadCaptchaTask task = new ReadCaptchaTask(getActivity(), holder, pendingData.captchaReader,
+			ReadCaptchaTask task = new ReadCaptchaTask(holder, pendingData.captchaReader,
 					args.getString(EXTRA_CAPTCHA_TYPE), args.getString(EXTRA_REQUIREMENT), captchaPass,
 					mayShowLoadButton, chanName, args.getString(EXTRA_BOARD_NAME), args.getString(EXTRA_THREAD_NUMBER));
 			task.executeOnExecutor(ReadCaptchaTask.THREAD_POOL_EXECUTOR);

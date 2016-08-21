@@ -25,21 +25,19 @@ import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
 import chan.content.model.Post;
 import chan.http.HttpException;
-import chan.http.HttpHolder;
 import chan.util.CommonUtils;
 
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.net.YouTubeTitlesReader;
 
-public class ReadSinglePostTask extends CancellableTask<Void, Void, PostItem>
+public class ReadSinglePostTask extends HttpHolderTask<Void, Void, PostItem>
 {
 	private final Callback mCallback;
 	private final String mBoardName;
 	private final String mChanName;
 	private final String mPostNumber;
 	
-	private final HttpHolder mHolder = new HttpHolder();
 	private ErrorItem mErrorItem;
 	
 	public interface Callback
@@ -64,9 +62,9 @@ public class ReadSinglePostTask extends CancellableTask<Void, Void, PostItem>
 		{
 			ChanPerformer performer = ChanPerformer.get(mChanName);
 			ChanPerformer.ReadSinglePostResult result = performer.safe().onReadSinglePost(new ChanPerformer
-					.ReadSinglePostData(mBoardName, mPostNumber, mHolder));
+					.ReadSinglePostData(mBoardName, mPostNumber, getHolder()));
 			Post post = result != null ? result.post : null;
-			YouTubeTitlesReader.getInstance().readAndApplyIfNecessary(Collections.singletonList(post), mHolder);
+			YouTubeTitlesReader.getInstance().readAndApplyIfNecessary(Collections.singletonList(post), getHolder());
 			startTime = 0L;
 			return new PostItem(post, mChanName, mBoardName);
 		}
@@ -95,12 +93,5 @@ public class ReadSinglePostTask extends CancellableTask<Void, Void, PostItem>
 	{
 		if (result != null) mCallback.onReadSinglePostSuccess(result);
 		else mCallback.onReadSinglePostFail(mErrorItem);
-	}
-	
-	@Override
-	public void cancel()
-	{
-		cancel(true);
-		mHolder.interrupt();
 	}
 }
