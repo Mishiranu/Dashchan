@@ -70,7 +70,7 @@ import com.mishiranu.dashchan.content.service.PostingService;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.content.storage.HistoryDatabase;
 import com.mishiranu.dashchan.preference.Preferences;
-import com.mishiranu.dashchan.preference.SeekBarPreference;
+import com.mishiranu.dashchan.ui.SeekBarForm;
 import com.mishiranu.dashchan.ui.navigator.DrawerForm;
 import com.mishiranu.dashchan.ui.navigator.adapter.PostsAdapter;
 import com.mishiranu.dashchan.ui.navigator.manager.ThreadshotPerformer;
@@ -445,17 +445,17 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 			}
 			case THREAD_OPTIONS_MENU_AUTO_REFRESH:
 			{
-				final SeekBarPreference.Holder holder = new SeekBarPreference.Holder(true,
-						Preferences.MIN_AUTO_REFRESH_INTERVAL, Preferences.MAX_AUTO_REFRESH_INTERVAL,
-						Preferences.STEP_AUTO_REFRESH_INTERVAL, 1f,
-						getString(R.string.preference_auto_refresh_interval_summary_format));
-				holder.setCurrentValue(mAutoRefreshInterval);
-				holder.setSwitchValue(mAutoRefreshEnabled);
-				new AlertDialog.Builder(activity).setTitle(R.string.action_auto_refresh).setView(holder.create
-						(getActivity())).setPositiveButton(android.R.string.ok, (dialog, which1) ->
+				SeekBarForm seekBarForm = new SeekBarForm(true);
+				seekBarForm.setConfiguration(Preferences.MIN_AUTO_REFRESH_INTERVAL,
+						Preferences.MAX_AUTO_REFRESH_INTERVAL, Preferences.STEP_AUTO_REFRESH_INTERVAL, 1f);
+				seekBarForm.setValueFormat(getString(R.string.preference_auto_refresh_interval_summary_format));
+				seekBarForm.setCurrentValue(mAutoRefreshInterval);
+				seekBarForm.setSwitchValue(mAutoRefreshEnabled);
+				new AlertDialog.Builder(activity).setTitle(R.string.action_auto_refresh).setView(seekBarForm.inflate
+						(getActivity())).setPositiveButton(android.R.string.ok, (dialog, which) ->
 				{
-					mAutoRefreshEnabled = holder.getSwitchValue();
-					mAutoRefreshInterval = holder.getCurrentValue();
+					mAutoRefreshEnabled = seekBarForm.getSwitchValue();
+					mAutoRefreshInterval = seekBarForm.getCurrentValue();
 					Posts posts = getExtra().cachedPosts;
 					boolean changed = posts.setAutoRefreshData(mAutoRefreshEnabled, mAutoRefreshInterval);
 					if (changed) serializePosts();

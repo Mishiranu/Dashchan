@@ -269,7 +269,7 @@ public abstract class BasePreferenceFragment extends PreferenceFragment implemen
 		preference.setSummary(summary);
 		preference.setDialogTitle(title);
 		preference.setDefaultValue(defaultValue);
-		preference.setSeekBarConfig(minValue, maxValue, step, multiplier);
+		preference.setSeekBarConfiguration(minValue, maxValue, step, multiplier);
 		addPreference(parent, preference);
 		return preference;
 	}

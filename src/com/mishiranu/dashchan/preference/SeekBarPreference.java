@@ -16,153 +16,34 @@
 
 package com.mishiranu.dashchan.preference;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.preference.DialogPreference;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.CompoundButton;
-import android.widget.SeekBar;
-import android.widget.Switch;
-import android.widget.TextView;
 
-import com.mishiranu.dashchan.C;
-import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.ui.SeekBarForm;
 
 public class SeekBarPreference extends DialogPreference
 {
-	public static class Holder implements SeekBar.OnSeekBarChangeListener, CompoundButton.OnCheckedChangeListener
-	{
-		private final boolean mShowSwitch;
-		private int mMaxValue;
-		private int mMinValue;
-		private int mStep;
-		private float mMultipler;
-		private String mValueFormat;
-		
-		private int mCurrentValue;
-		private boolean mSwitchValue;
-		
-		private SeekBar mSeekBar;
-		private Switch mSwitch;
-		private TextView mValueText;
-		
-		public Holder(boolean showSwitch, int minValue, int maxValue, int step, float multipler, String valueFormat)
-		{
-			mShowSwitch = showSwitch;
-			mMaxValue = maxValue;
-			mMinValue = minValue;
-			mStep = step;
-			mMultipler = multipler;
-			mValueFormat = valueFormat;
-		}
-		
-		@SuppressLint("InflateParams")
-		public View create(Context context)
-		{
-			LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			View view = inflater.inflate(R.layout.dialog_seek_bar_preference, null);
-			((TextView) view.findViewById(R.id.min_value)).setText(Integer.toString((int) (mMinValue * mMultipler)));
-			((TextView) view.findViewById(R.id.max_value)).setText(Integer.toString((int) (mMaxValue * mMultipler)));
-			mSeekBar = (SeekBar) view.findViewById(R.id.seek_bar);
-			mSeekBar.setMax((mMaxValue - mMinValue) / mStep);
-			mSeekBar.setProgress((mCurrentValue - mMinValue) / mStep);
-			mSeekBar.setOnSeekBarChangeListener(this);
-			mSwitch = (Switch) view.findViewById(R.id.switch_view);
-			if (!mShowSwitch) mSwitch.setVisibility(View.GONE); else
-			{
-				mSwitch.setChecked(mSwitchValue);
-				mSwitch.setOnCheckedChangeListener(this);
-				if (C.API_LOLLIPOP) ((ViewGroup.MarginLayoutParams) mSwitch.getLayoutParams()).rightMargin = 0;
-			}
-			mValueText = (TextView) view.findViewById(R.id.current_value);
-			updateCurrentValueText();
-			return view;
-		}
-		
-		public void setCurrentValue(int currentValue)
-		{
-			mCurrentValue = currentValue;
-		}
-		
-		public void setSwitchValue(boolean switchValue)
-		{
-			mSwitchValue = switchValue;
-		}
-		
-		public int getCurrentValue()
-		{
-			return mCurrentValue;
-		}
-		
-		public boolean getSwitchValue()
-		{
-			return mSwitchValue;
-		}
-		
-		public void updateCurrentValueText()
-		{
-			int currentValue = (int) (mMultipler * mCurrentValue);
-			String currentValueText = mValueFormat != null ? String.format(mValueFormat, currentValue)
-					: Integer.toString(currentValue);
-			mValueText.setText(currentValueText);
-		}
-		
-		@Override
-		public void onProgressChanged(SeekBar seek, int value, boolean fromTouch)
-		{
-			mCurrentValue = value * mStep + mMinValue;
-			updateCurrentValueText();
-		}
-		
-		@Override
-		public void onStartTrackingTouch(SeekBar seek)
-		{
-			
-		}
-		
-		@Override
-		public void onStopTrackingTouch(SeekBar seek)
-		{
-			
-		}
-
-		@Override
-		public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
-		{
-			mSwitchValue = isChecked;
-		}
-		
-		public SeekBar getSeekBar()
-		{
-			return mSeekBar;
-		}
-	}
-	
-	private final Holder mHolder;
+	private final SeekBarForm mSeekBarForm;
 	private int mDefaultValue;
 	
 	public SeekBarPreference(Context context)
 	{
 		super(context, null);
-		mHolder = new Holder(false, 0, 100, 10, 1f, null);
+		mSeekBarForm = new SeekBarForm(false);
 	}
 	
-	public void setSeekBarConfig(int minValue, int maxValue, int step, float multiplier)
+	public void setSeekBarConfiguration(int minValue, int maxValue, int step, float multiplier)
 	{
-		mHolder.mMinValue = minValue;
-		mHolder.mMaxValue = maxValue;
-		mHolder.mStep = step;
-		mHolder.mMultipler = multiplier;
+		mSeekBarForm.setConfiguration(minValue, maxValue, step, multiplier);
 	}
 	
 	@Override
 	public void setSummary(CharSequence summary)
 	{
 		super.setSummary(summary);
-		mHolder.mValueFormat = summary != null ? summary.toString() : null;
+		mSeekBarForm.setValueFormat(summary != null ? summary.toString() : null);
 	}
 	
 	@Override
@@ -183,8 +64,8 @@ public class SeekBarPreference extends DialogPreference
 	@Override
 	protected View onCreateDialogView()
 	{
-		mHolder.setCurrentValue(getPersistedInt(mDefaultValue));
-		return mHolder.create(getContext());
+		mSeekBarForm.setCurrentValue(getPersistedInt(mDefaultValue));
+		return mSeekBarForm.inflate(getContext());
 	}
 	
 	@Override
@@ -192,7 +73,7 @@ public class SeekBarPreference extends DialogPreference
 	{
 		super.onDialogClosed(positiveResult);
 		if (!positiveResult) return;
-		if (shouldPersist()) persistInt(mHolder.getCurrentValue());
+		if (shouldPersist()) persistInt(mSeekBarForm.getCurrentValue());
 		notifyChanged();
 	}
 	
@@ -202,7 +83,7 @@ public class SeekBarPreference extends DialogPreference
 		String summary = super.getSummary().toString();
 		if (summary != null)
 		{
-			int value = (int) (getPersistedInt(mDefaultValue) * mHolder.mMultipler);
+			int value = (int) (getPersistedInt(mDefaultValue) * mSeekBarForm.getMultipler());
 			return String.format(summary, value);
 		}
 		return summary;

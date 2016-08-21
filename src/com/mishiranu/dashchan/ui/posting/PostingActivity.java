@@ -105,9 +105,9 @@ import com.mishiranu.dashchan.graphics.RoundedCornersDrawable;
 import com.mishiranu.dashchan.graphics.TransparentTileDrawable;
 import com.mishiranu.dashchan.media.JpegData;
 import com.mishiranu.dashchan.preference.Preferences;
-import com.mishiranu.dashchan.preference.SeekBarPreference;
 import com.mishiranu.dashchan.ui.CaptchaForm;
 import com.mishiranu.dashchan.ui.ForegroundManager;
+import com.mishiranu.dashchan.ui.SeekBarForm;
 import com.mishiranu.dashchan.ui.StateActivity;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.IOUtils;
@@ -1527,8 +1527,8 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		private static final String EXTRA_REDUCE = "reduce";
 		
 		private RadioGroup mRadioGroup;
-		private SeekBarPreference.Holder mQualityHolder;
-		private SeekBarPreference.Holder mReduceHolder;
+		private SeekBarForm mQualityForm;
+		private SeekBarForm mReduceForm;
 		
 		private static final String[] OPTIONS = {GraphicsUtils.Reencoding.FORMAT_JPEG.toUpperCase(Locale.US),
 				GraphicsUtils.Reencoding.FORMAT_PNG.toUpperCase(Locale.US)};
@@ -1540,16 +1540,20 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		public Dialog onCreateDialog(Bundle savedInstanceState)
 		{
 			Context context = getActivity();
-			mQualityHolder = new SeekBarPreference.Holder(false, 1, 100, 1, 1, getString(R.string.text_quality_format));
-			mReduceHolder = new SeekBarPreference.Holder(false, 1, 8, 1, 1, getString(R.string.text_reduce_format));
-			mQualityHolder.setCurrentValue(savedInstanceState != null ? savedInstanceState.getInt(EXTRA_QUALITY) : 100);
-			mReduceHolder.setCurrentValue(savedInstanceState != null ? savedInstanceState.getInt(EXTRA_REDUCE) : 1);
+			mQualityForm = new SeekBarForm(false);
+			mQualityForm.setConfiguration(1, 100, 1, 1);
+			mQualityForm.setValueFormat(getString(R.string.text_quality_format));
+			mQualityForm.setCurrentValue(savedInstanceState != null ? savedInstanceState.getInt(EXTRA_QUALITY) : 100);
+			mReduceForm = new SeekBarForm(false);
+			mReduceForm.setConfiguration(1, 8, 1, 1);
+			mReduceForm.setValueFormat(getString(R.string.text_reduce_format));
+			mReduceForm.setCurrentValue(savedInstanceState != null ? savedInstanceState.getInt(EXTRA_REDUCE) : 1);
 			int padding = getResources().getDimensionPixelSize(R.dimen.dialog_padding_view);
-			View qualityView = mQualityHolder.create(context);
-			mQualityHolder.getSeekBar().setSaveEnabled(false);
+			View qualityView = mQualityForm.inflate(context);
+			mQualityForm.getSeekBar().setSaveEnabled(false);
 			qualityView.setPadding(qualityView.getPaddingLeft(), 0, qualityView.getPaddingRight(), padding / 2);
-			View reduceView = mReduceHolder.create(context);
-			mReduceHolder.getSeekBar().setSaveEnabled(false);
+			View reduceView = mReduceForm.inflate(context);
+			mReduceForm.getSeekBar().setSaveEnabled(false);
 			reduceView.setPadding(reduceView.getPaddingLeft(), 0, reduceView.getPaddingRight(),
 					reduceView.getPaddingBottom());
 			mRadioGroup = new RadioGroup(context);
@@ -1590,8 +1594,8 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		public void onSaveInstanceState(Bundle outState)
 		{
 			super.onSaveInstanceState(outState);
-			outState.putInt(EXTRA_QUALITY, mQualityHolder.getCurrentValue());
-			outState.putInt(EXTRA_REDUCE, mReduceHolder.getCurrentValue());
+			outState.putInt(EXTRA_QUALITY, mQualityForm.getCurrentValue());
+			outState.putInt(EXTRA_REDUCE, mReduceForm.getCurrentValue());
 		}
 		
 		@Override
@@ -1612,7 +1616,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 					}
 				}
 				attachmentOptionsDialog.setReencoding(new GraphicsUtils.Reencoding(format,
-						mQualityHolder.getCurrentValue(), mReduceHolder.getCurrentValue()));
+						mQualityForm.getCurrentValue(), mReduceForm.getCurrentValue()));
 			}
 		}
 		
@@ -1628,7 +1632,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 					break;
 				}
 			}
-			mQualityHolder.getSeekBar().setEnabled(allowQuality);
+			mQualityForm.getSeekBar().setEnabled(allowQuality);
 		}
 	}
 	
