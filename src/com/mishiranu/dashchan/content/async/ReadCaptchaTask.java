@@ -16,7 +16,6 @@
 
 package com.mishiranu.dashchan.content.async;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.Pair;
 
@@ -25,21 +24,18 @@ import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
 import chan.http.HttpException;
-import chan.http.HttpHolder;
 
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.net.CaptchaServiceReader;
 import com.mishiranu.dashchan.content.net.RecaptchaReader;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 
-public class ReadCaptchaTask extends CancellableTask<Void, Long, Boolean>
+public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean>
 {
 	public static final String RECAPTCHA_SKIP_RESPONSE = "recaptcha_skip_response";
 	
-	private final Context mContext;
 	private final Callback mCallback;
 	private final CaptchaReader mCaptchaReader;
-	private final HttpHolder mHolder = new HttpHolder();
 	
 	private final String mCaptchaType;
 	private final String[] mCaptchaPass;
@@ -90,12 +86,11 @@ public class ReadCaptchaTask extends CancellableTask<Void, Long, Boolean>
 		}
 	}
 	
-	public ReadCaptchaTask(Context context, Callback callback, CaptchaReader captchaReader,
+	public ReadCaptchaTask(Callback callback, CaptchaReader captchaReader,
 			String captchaType, String requirement, String[] captchaPass, boolean mayShowLoadButton,
 			String chanName, String boardName, String threadNumber)
 	{
 		if (captchaReader == null) captchaReader = new ChanCaptchaReader(chanName);
-		mContext = context;
 		mCallback = callback;
 		mCaptchaReader = captchaReader;
 		mCaptchaType = captchaType;
@@ -117,7 +112,7 @@ public class ReadCaptchaTask extends CancellableTask<Void, Long, Boolean>
 		{
 			String parentCaptchaType = configuration.getCaptchaParentType(mCaptchaType);
 			result = mCaptchaReader.onReadCaptcha(new ChanPerformer.ReadCaptchaData(parentCaptchaType,
-					mCaptchaPass, mMayShowLoadButton, mRequirement, mBoardName, mThreadNumber, mHolder));
+					mCaptchaPass, mMayShowLoadButton, mRequirement, mBoardName, mThreadNumber, getHolder()));
 		}
 		catch (ExtensionException | HttpException | InvalidResponseException e)
 		{
@@ -161,20 +156,20 @@ public class ReadCaptchaTask extends CancellableTask<Void, Long, Boolean>
 				String challenge;
 				if (newRecaptcha)
 				{
-					challenge = recaptchaReader.getChallenge2(mHolder, apiKey,
+					challenge = recaptchaReader.getChallenge2(getHolder(), apiKey,
 							!ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_FALLBACK.equals(captchaType));
 				}
 				else if (oldRecaptcha)
 				{
-					challenge = recaptchaReader.getChallenge1(mHolder, apiKey,
+					challenge = recaptchaReader.getChallenge1(getHolder(), apiKey,
 							!ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_1_NOSCRIPT.equals(captchaType));
 				}
 				else throw new RuntimeException();
 				mCaptchaData.put(ChanPerformer.CaptchaData.CHALLENGE, challenge);
 				if (thread.isInterrupted()) return null;
 				Pair<Bitmap, Boolean> pair;
-				if (newRecaptcha) pair = recaptchaReader.getImage2(mHolder, apiKey, challenge, null, true);
-				else if (oldRecaptcha) pair = recaptchaReader.getImage1(mHolder, challenge, true);
+				if (newRecaptcha) pair = recaptchaReader.getImage2(getHolder(), apiKey, challenge, null, true);
+				else if (oldRecaptcha) pair = recaptchaReader.getImage1(getHolder(), challenge, true);
 				else throw new RuntimeException();
 				mImage = pair.first;
 				mBlackAndWhite = pair.second;
@@ -205,7 +200,7 @@ public class ReadCaptchaTask extends CancellableTask<Void, Long, Boolean>
 			{
 				if (mailru)
 				{
-					captchaResult = reader.readMailru(mHolder, mChanName, mCaptchaData
+					captchaResult = reader.readMailru(getHolder(), mChanName, mCaptchaData
 							.get(ChanPerformer.CaptchaData.API_KEY));
 				}
 				else throw new RuntimeException();
@@ -241,12 +236,5 @@ public class ReadCaptchaTask extends CancellableTask<Void, Long, Boolean>
 					mImage, mLarge, mBlackAndWhite);
 		}
 		else mCallback.onReadCaptchaError(mErrorItem);
-	}
-	
-	@Override
-	public void cancel()
-	{
-		cancel(true);
-		mHolder.interrupt();
 	}
 }

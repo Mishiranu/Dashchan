@@ -26,19 +26,17 @@ import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
 import chan.content.model.ThreadSummary;
 import chan.http.HttpException;
-import chan.http.HttpHolder;
 import chan.util.CommonUtils;
 
 import com.mishiranu.dashchan.content.model.ErrorItem;
 
-public class ReadThreadSummariesTask extends CancellableTask<Void, Void, ThreadSummary[]>
+public class ReadThreadSummariesTask extends HttpHolderTask<Void, Void, ThreadSummary[]>
 {
 	private final String mChanName;
 	private final String mBoardName;
 	private final int mPageNumber;
 	private final int mType;
 	private final Callback mCallback;
-	private final HttpHolder mHolder = new HttpHolder();
 	
 	private ErrorItem mErrorItem;
 	
@@ -64,7 +62,7 @@ public class ReadThreadSummariesTask extends CancellableTask<Void, Void, ThreadS
 		{
 			ChanPerformer performer = ChanPerformer.get(mChanName);
 			ChanPerformer.ReadThreadSummariesResult result = performer.safe().onReadThreadSummaries(new ChanPerformer
-					.ReadThreadSummariesData(mBoardName, mPageNumber, mType, mHolder));
+					.ReadThreadSummariesData(mBoardName, mPageNumber, mType, getHolder()));
 			ThreadSummary[] threadSummaries = result != null ? result.threadSummaries : null;
 			return threadSummaries != null && threadSummaries.length > 0 ? threadSummaries : null;
 		}
@@ -84,13 +82,6 @@ public class ReadThreadSummariesTask extends CancellableTask<Void, Void, ThreadS
 	{
 		if (mErrorItem == null) mCallback.onReadThreadSummariesSuccess(threadSummaries, mPageNumber);
 		else mCallback.onReadThreadSummariesFail(mErrorItem);
-	}
-	
-	@Override
-	public void cancel()
-	{
-		cancel(true);
-		mHolder.interrupt();
 	}
 	
 	public static ThreadSummary[] concatenate(ThreadSummary[] threadSummaries1, ThreadSummary[] threadSummaries2)

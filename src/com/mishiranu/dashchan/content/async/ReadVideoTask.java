@@ -26,20 +26,18 @@ import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
 import chan.http.HttpException;
-import chan.http.HttpHolder;
 import chan.http.HttpResponse;
 
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.media.CachingInputStream;
 import com.mishiranu.dashchan.util.IOUtils;
 
-public class ReadVideoTask extends CancellableTask<Void, Long, Boolean>
+public class ReadVideoTask extends HttpHolderTask<Void, Long, Boolean>
 {
 	private final String mChanName;
 	private final Uri mUri;
 	private final CachingInputStream mInputStream;
 	private final Callback mCallback;
-	private final HttpHolder mHolder = new HttpHolder();
 	
 	private ErrorItem mErrorItem;
 	
@@ -74,7 +72,7 @@ public class ReadVideoTask extends CancellableTask<Void, Long, Boolean>
 		{
 			int connectTimeout = 15000, readTimeout = 15000;
 			ChanPerformer.ReadContentResult result = ChanPerformer.get(mChanName).safe()
-					.onReadContent(new ChanPerformer.ReadContentData(mUri, connectTimeout, readTimeout, mHolder,
+					.onReadContent(new ChanPerformer.ReadContentData(mUri, connectTimeout, readTimeout, getHolder(),
 					mProgressHandler, mInputStream.getOutputStream()));
 			HttpResponse response = result != null ? result.response : null;
 			if (response != null)
@@ -128,12 +126,5 @@ public class ReadVideoTask extends CancellableTask<Void, Long, Boolean>
 	public boolean isError()
 	{
 		return mErrorItem != null;
-	}
-	
-	@Override
-	public void cancel()
-	{
-		cancel(true);
-		mHolder.interrupt();
 	}
 }

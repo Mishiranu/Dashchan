@@ -74,6 +74,6 @@ public class DeserializePostsTask extends CancellableTask<Void, Void, Boolean>
 	public void cancel()
 	{
 		cancel(true);
-		if (mHolder != null) mHolder.cancel();
+		mHolder.cancel();
 	}
 }

@@ -33,7 +33,6 @@ import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
 import chan.http.HttpClient;
 import chan.http.HttpException;
-import chan.http.HttpHolder;
 import chan.http.HttpRequest;
 
 import com.mishiranu.dashchan.content.CacheManager;
@@ -41,7 +40,7 @@ import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.net.EmbeddedManager;
 import com.mishiranu.dashchan.util.IOUtils;
 
-public class ReadFileTask extends CancellableTask<String, Long, Boolean>
+public class ReadFileTask extends HttpHolderTask<String, Long, Boolean>
 {
 	public interface Callback
 	{
@@ -63,7 +62,6 @@ public class ReadFileTask extends CancellableTask<String, Long, Boolean>
 	
 	private final Context mContext;
 	private final Callback mCallback;
-	private final HttpHolder mHolder = new HttpHolder();
 	
 	private final String mChanName;
 	private final Uri mFromUri;
@@ -138,7 +136,7 @@ public class ReadFileTask extends CancellableTask<String, Long, Boolean>
 			else
 			{
 				Uri uri = mFromUri;
-				uri = EmbeddedManager.getInstance().doReadRealUri(uri, mHolder);
+				uri = EmbeddedManager.getInstance().doReadRealUri(uri, getHolder());
 				final int connectTimeout = 15000, readTimeout = 15000;
 				byte[] response;
 				String chanName = mChanName;
@@ -147,12 +145,12 @@ public class ReadFileTask extends CancellableTask<String, Long, Boolean>
 				{
 					ChanPerformer.ReadContentResult result = ChanPerformer.get(chanName).safe()
 							.onReadContent(new ChanPerformer.ReadContentData (uri, connectTimeout, readTimeout,
-							mHolder, mProgressHandler, null));
+							getHolder(), mProgressHandler, null));
 					response = result.response.getBytes();
 				}
 				else
 				{
-					response = new HttpRequest(uri, mHolder).setTimeouts(connectTimeout, readTimeout)
+					response = new HttpRequest(uri, getHolder()).setTimeouts(connectTimeout, readTimeout)
 							.setInputListener(mProgressHandler).read().getBytes();
 				}
 				ByteArrayInputStream input = new ByteArrayInputStream(response);
@@ -228,8 +226,7 @@ public class ReadFileTask extends CancellableTask<String, Long, Boolean>
 	@Override
 	public void cancel()
 	{
-		cancel(true);
-		mHolder.interrupt();
+		super.cancel();
 		if (mLoadingStarted)
 		{
 			mToFile.delete();

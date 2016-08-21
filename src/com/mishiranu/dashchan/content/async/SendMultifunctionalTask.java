@@ -30,18 +30,16 @@ import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
 import chan.http.HttpException;
-import chan.http.HttpHolder;
 
 import com.mishiranu.dashchan.content.model.ErrorItem;
 
-public class SendMultifunctionalTask extends CancellableTask<Void, Void, Boolean>
+public class SendMultifunctionalTask extends HttpHolderTask<Void, Void, Boolean>
 {
 	private final State mState;
 	private final String mType;
 	private final String mText;
 	private final ArrayList<String> mOptions;
 	private final Callback mCallback;
-	private final HttpHolder mHolder = new HttpHolder();
 
 	private String mArchiveBoardName;
 	private String mArchiveThreadNumber;
@@ -106,14 +104,14 @@ public class SendMultifunctionalTask extends CancellableTask<Void, Void, Boolean
 				{
 					ChanPerformer.get(mState.chanName).safe().onSendDeletePosts(new ChanPerformer.SendDeletePostsData
 							(mState.boardName, mState.threadNumber, Collections.unmodifiableList(mState.postNumbers),
-							mText, mOptions != null && mOptions.contains(OPTION_FILES_ONLY), mHolder));
+							mText, mOptions != null && mOptions.contains(OPTION_FILES_ONLY), getHolder()));
 					break;
 				}
 				case REPORT:
 				{
 					ChanPerformer.get(mState.chanName).safe().onSendReportPosts(new ChanPerformer.SendReportPostsData
 							(mState.boardName, mState.threadNumber, Collections.unmodifiableList(mState.postNumbers),
-							mType, mOptions, mText, mHolder));
+							mType, mOptions, mText, getHolder()));
 					break;
 				}
 				case ARCHIVE:
@@ -127,7 +125,7 @@ public class SendMultifunctionalTask extends CancellableTask<Void, Void, Boolean
 					}
 					ChanPerformer.SendAddToArchiveResult result = ChanPerformer.get(mState.archiveChanName).safe()
 							.onSendAddToArchive(new ChanPerformer.SendAddToArchiveData(uri, mState.boardName,
-							mState.threadNumber, mOptions, mHolder));
+							mState.threadNumber, mOptions, getHolder()));
 					if (result != null && result.threadNumber != null)
 					{
 						mArchiveBoardName = result.boardName;
@@ -159,12 +157,5 @@ public class SendMultifunctionalTask extends CancellableTask<Void, Void, Boolean
 	{
 		if (result) mCallback.onSendSuccess(mState, mArchiveBoardName, mArchiveThreadNumber);
 		else mCallback.onSendFail(mState, mType, mText, mOptions, mErrorItem);
-	}
-	
-	@Override
-	public void cancel()
-	{
-		cancel(true);
-		mHolder.interrupt();
 	}
 }

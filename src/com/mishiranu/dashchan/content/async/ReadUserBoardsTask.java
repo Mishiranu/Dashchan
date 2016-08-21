@@ -22,15 +22,13 @@ import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
 import chan.content.model.Board;
 import chan.http.HttpException;
-import chan.http.HttpHolder;
 
 import com.mishiranu.dashchan.content.model.ErrorItem;
 
-public class ReadUserBoardsTask extends CancellableTask<Void, Long, Boolean>
+public class ReadUserBoardsTask extends HttpHolderTask<Void, Long, Boolean>
 {
 	private final String mChanName;
 	private final Callback mCallback;
-	private final HttpHolder mHolder = new HttpHolder();
 	
 	private Board[] mBoards;
 	private ErrorItem mErrorItem;
@@ -53,7 +51,7 @@ public class ReadUserBoardsTask extends CancellableTask<Void, Long, Boolean>
 		try
 		{
 			ChanPerformer.ReadUserBoardsResult result = ChanPerformer.get(mChanName).safe()
-					.onReadUserBoards(new ChanPerformer.ReadUserBoardsData(mHolder));
+					.onReadUserBoards(new ChanPerformer.ReadUserBoardsData(getHolder()));
 			Board[] boards = result != null ? result.boards : null;
 			if (boards != null && boards.length == 0) boards = null;
 			if (boards != null) ChanConfiguration.get(mChanName).updateFromBoards(boards);
@@ -80,12 +78,5 @@ public class ReadUserBoardsTask extends CancellableTask<Void, Long, Boolean>
 			else mCallback.onReadUserBoardsFail(new ErrorItem(ErrorItem.TYPE_EMPTY_RESPONSE));
 		}
 		else mCallback.onReadUserBoardsFail(mErrorItem);
-	}
-	
-	@Override
-	public void cancel()
-	{
-		cancel(true);
-		mHolder.interrupt();
 	}
 }

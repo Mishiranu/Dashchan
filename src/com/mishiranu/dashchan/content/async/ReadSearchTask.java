@@ -29,22 +29,19 @@ import chan.content.InvalidResponseException;
 import chan.content.model.Post;
 import chan.content.model.Posts;
 import chan.http.HttpException;
-import chan.http.HttpHolder;
 
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.net.YouTubeTitlesReader;
 import com.mishiranu.dashchan.text.HtmlParser;
 
-public class ReadSearchTask extends CancellableTask<Void, Void, PostItem[]> implements Comparator<Post>
+public class ReadSearchTask extends HttpHolderTask<Void, Void, PostItem[]> implements Comparator<Post>
 {
 	private final Callback mCallback;
 	private final String mChanName;
 	private final String mBoardName;
 	private final String mSearchQuery;
 	private final int mPageNumber;
-	
-	private final HttpHolder mHolder = new HttpHolder();
 	
 	private ErrorItem mErrorItem;
 	
@@ -82,7 +79,7 @@ public class ReadSearchTask extends CancellableTask<Void, Void, PostItem[]> impl
 			if (board.allowSearch)
 			{
 				ChanPerformer.ReadSearchPostsResult result = performer.safe().onReadSearchPosts(new ChanPerformer
-						.ReadSearchPostsData(mBoardName, mSearchQuery, mPageNumber, mHolder));
+						.ReadSearchPostsData(mBoardName, mSearchQuery, mPageNumber, getHolder()));
 				Post[] readPosts = result != null ? result.posts : null;
 				if (readPosts != null && readPosts.length > 0)
 				{
@@ -95,7 +92,7 @@ public class ReadSearchTask extends CancellableTask<Void, Void, PostItem[]> impl
 			{
 				ChanPerformer.ReadThreadsResult result = performer.safe()
 						.onReadThreads(new ChanPerformer.ReadThreadsData(mBoardName,
-						ChanPerformer.ReadThreadsData.PAGE_NUMBER_CATALOG, mHolder, null));
+						ChanPerformer.ReadThreadsData.PAGE_NUMBER_CATALOG, getHolder(), null));
 				Posts[] threads = result != null && result.threads != null ? result.threads.getThreads()[0] : null;
 				ArrayList<Post> matched = new ArrayList<>();
 				Locale locale = Locale.getDefault();
@@ -121,7 +118,7 @@ public class ReadSearchTask extends CancellableTask<Void, Void, PostItem[]> impl
 			if (posts.size() > 0)
 			{
 				Collections.sort(posts, this);
-				YouTubeTitlesReader.getInstance().readAndApplyIfNecessary(posts, mHolder);
+				YouTubeTitlesReader.getInstance().readAndApplyIfNecessary(posts, getHolder());
 			}
 			PostItem[] postItems = ReadPostsTask.wrapPosts(posts, mChanName, mBoardName);
 			if (postItems != null)
@@ -151,12 +148,5 @@ public class ReadSearchTask extends CancellableTask<Void, Void, PostItem[]> impl
 	{
 		if (mErrorItem == null) mCallback.onReadSearchSuccess(postItems, mPageNumber);
 		else mCallback.onReadSearchFail(mErrorItem);
-	}
-	
-	@Override
-	public void cancel()
-	{
-		cancel(true);
-		mHolder.interrupt();
 	}
 }

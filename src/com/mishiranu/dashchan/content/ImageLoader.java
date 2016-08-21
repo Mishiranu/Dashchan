@@ -40,12 +40,11 @@ import chan.content.ChanManager;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
 import chan.http.HttpException;
-import chan.http.HttpHolder;
 import chan.http.HttpRequest;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.content.async.CancellableTask;
+import com.mishiranu.dashchan.content.async.HttpHolderTask;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.IOUtils;
@@ -170,10 +169,8 @@ public class ImageLoader
 		}
 	}
 	
-	private class LoaderTask extends CancellableTask<Void, Void, Bitmap>
+	private class LoaderTask extends HttpHolderTask<Void, Void, Bitmap>
 	{
-		private final HttpHolder mHolder = new HttpHolder();
-		
 		private final Uri mUri;
 		private final String mChanName;
 		private final String mKey;
@@ -285,7 +282,7 @@ public class ImageLoader
 							{
 								ChanPerformer.ReadContentResult result = performer.safe()
 										.onReadContent(new ChanPerformer.ReadContentData(mUri, connectTimeout,
-										readTimeout, mHolder, null, null));
+										readTimeout, getHolder(), null, null));
 								bitmap = result != null && result.response != null ? result.response.getBitmap() : null;
 							}
 							catch (ExtensionException e)
@@ -296,7 +293,7 @@ public class ImageLoader
 						}
 						else
 						{
-							bitmap = new HttpRequest(mUri, mHolder).setTimeouts(connectTimeout, readTimeout)
+							bitmap = new HttpRequest(mUri, getHolder()).setTimeouts(connectTimeout, readTimeout)
 									.read().getBitmap();
 						}
 					}
@@ -316,7 +313,7 @@ public class ImageLoader
 			}
 			finally
 			{
-				mHolder.disconnect();
+				getHolder().disconnect();
 			}
 			return bitmap;
 		}
@@ -327,13 +324,6 @@ public class ImageLoader
 			mLoaderTasks.remove(mKey);
 			if (mNotFound) mNotFoundMap.put(mKey, System.currentTimeMillis());
 			for (Callback<?> callback : callbacks) callback.onResult(result);
-		}
-		
-		@Override
-		public void cancel()
-		{
-			cancel(true);
-			mHolder.interrupt();
 		}
 	}
 	

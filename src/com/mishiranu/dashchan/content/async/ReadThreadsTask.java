@@ -25,14 +25,13 @@ import chan.content.InvalidResponseException;
 import chan.content.model.Posts;
 import chan.content.model.Threads;
 import chan.http.HttpException;
-import chan.http.HttpHolder;
 import chan.http.HttpValidator;
 
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.net.YouTubeTitlesReader;
 
-public class ReadThreadsTask extends CancellableTask<Void, Void, Boolean>
+public class ReadThreadsTask extends HttpHolderTask<Void, Void, Boolean>
 {
 	private final Callback mCallback;
 	private final String mChanName;
@@ -41,8 +40,6 @@ public class ReadThreadsTask extends CancellableTask<Void, Void, Boolean>
 	private final HttpValidator mValidator;
 	private final int mPageNumber;
 	private final boolean mAppend;
-	
-	private final HttpHolder mHolder = new HttpHolder();
 	
 	private Threads mThreads;
 	private PostItem[][] mPostItems;
@@ -75,7 +72,7 @@ public class ReadThreadsTask extends CancellableTask<Void, Void, Boolean>
 		{
 			ChanPerformer performer = ChanPerformer.get(mChanName);
 			ChanPerformer.ReadThreadsResult result = performer.safe()
-					.onReadThreads(new ChanPerformer.ReadThreadsData(mBoardName, mPageNumber, mHolder, mValidator));
+					.onReadThreads(new ChanPerformer.ReadThreadsData(mBoardName, mPageNumber, getHolder(), mValidator));
 			Threads threads = result != null ? result.threads : null;
 			HttpValidator validator = result != null ? result.validator : null;
 			if (threads != null)
@@ -90,10 +87,10 @@ public class ReadThreadsTask extends CancellableTask<Void, Void, Boolean>
 					threads = null;
 				}
 			}
-			if (validator == null) validator = mHolder.getValidator();
+			if (validator == null) validator = getHolder().getValidator();
 			mThreads = threads;
 			mResultValidator = validator;
-			YouTubeTitlesReader.getInstance().readAndApplyIfNecessary(mThreads, mHolder);
+			YouTubeTitlesReader.getInstance().readAndApplyIfNecessary(mThreads, getHolder());
 			mPostItems = wrapThreads(mThreads, mChanName, mBoardName);
 			return true;
 		}
@@ -131,13 +128,6 @@ public class ReadThreadsTask extends CancellableTask<Void, Void, Boolean>
 		{
 			mCallback.onReadThreadsFail(mErrorItem, mPageNumber);
 		}
-	}
-	
-	@Override
-	public void cancel()
-	{
-		cancel(true);
-		mHolder.interrupt();
 	}
 	
 	static PostItem[][] wrapThreads(Threads threads, String chanName, String boardName)

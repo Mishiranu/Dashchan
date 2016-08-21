@@ -28,7 +28,6 @@ import chan.content.model.Post;
 import chan.content.model.Posts;
 import chan.content.model.Threads;
 import chan.http.HttpException;
-import chan.http.HttpHolder;
 import chan.http.MultipartEntity;
 import chan.text.CommentEditor;
 
@@ -37,7 +36,7 @@ import com.mishiranu.dashchan.content.net.RecaptchaReader;
 import com.mishiranu.dashchan.text.HtmlParser;
 import com.mishiranu.dashchan.text.SimilarTextEstimator;
 
-public class SendPostTask extends CancellableTask<Void, Long, Boolean>
+public class SendPostTask extends HttpHolderTask<Void, Long, Boolean>
 {
 	private final String mKey;
 	private final String mChanName;
@@ -45,7 +44,6 @@ public class SendPostTask extends CancellableTask<Void, Long, Boolean>
 	private final ChanPerformer.SendPostData mData;
 	
 	private final boolean mProgressMode;
-	private final HttpHolder mHolder = new HttpHolder();
 	
 	private ChanPerformer.SendPostResult mResult;
 	private ErrorItem mErrorItem;
@@ -162,14 +160,14 @@ public class SendPostTask extends CancellableTask<Void, Long, Boolean>
 					String challenge = data.captchaData.get(ChanPerformer.CaptchaData.CHALLENGE);
 					String input = data.captchaData.get(ChanPerformer.CaptchaData.INPUT);
 					boolean fallback = ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_FALLBACK.equals(data.captchaType);
-					recaptchaResponse = RecaptchaReader.getInstance().getResponseField2(mHolder, apiKey,
+					recaptchaResponse = RecaptchaReader.getInstance().getResponseField2(getHolder(), apiKey,
 							challenge, input, fallback);
 					if (recaptchaResponse == null) throw new ApiException(ApiException.SEND_ERROR_CAPTCHA);
 				}
 				data.captchaData.put(ChanPerformer.CaptchaData.INPUT, recaptchaResponse);
 			}
 			if (isCancelled()) return false;
-			data.holder = mHolder;
+			data.holder = getHolder();
 			data.listener = mProgressHandler;
 			data.captchaType = ChanConfiguration.get(mChanName).getCaptchaParentType(data.captchaType);
 			ChanPerformer performer = ChanPerformer.get(mChanName);
@@ -252,12 +250,5 @@ public class SendPostTask extends CancellableTask<Void, Long, Boolean>
 			}
 			else mCallback.onSendPostFail(mKey, mData, mChanName, mErrorItem, mExtra, mCaptchaError, mKeepCaptcha);
 		}
-	}
-	
-	@Override
-	public void cancel()
-	{
-		cancel(true);
-		mHolder.interrupt();
 	}
 }

@@ -35,7 +35,6 @@ import chan.content.ThreadRedirectException;
 import chan.content.model.Post;
 import chan.content.model.Posts;
 import chan.http.HttpException;
-import chan.http.HttpHolder;
 import chan.http.HttpValidator;
 import chan.util.CommonUtils;
 
@@ -47,7 +46,7 @@ import com.mishiranu.dashchan.text.HtmlParser;
 import com.mishiranu.dashchan.text.SimilarTextEstimator;
 import com.mishiranu.dashchan.util.Log;
 
-public class ReadPostsTask extends CancellableTask<Void, Void, Boolean>
+public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 {
 	private final Callback mCallback;
 	private final String mChanName;
@@ -58,8 +57,6 @@ public class ReadPostsTask extends CancellableTask<Void, Void, Boolean>
 	private final boolean mForceLoadFullThread;
 	private final String mLastPostNumber;
 	private final ArrayList<UserPostPending> mUserPostPendings;
-	
-	private final HttpHolder mHolder = new HttpHolder();
 	
 	private Result mResult;
 	private boolean mFullThread = false;
@@ -106,7 +103,7 @@ public class ReadPostsTask extends CancellableTask<Void, Void, Boolean>
 		{
 			ChanPerformer.ReadPostsResult result = performer.safe()
 					.onReadPosts(new ChanPerformer.ReadPostsData(mBoardName, mThreadNumber, lastPostNumber,
-					partialThreadLoading, mCachedPosts, mHolder, mValidator));
+					partialThreadLoading, mCachedPosts, getHolder(), mValidator));
 			Posts readPosts = result != null ? result.posts : null;
 			HttpValidator validator = result != null ? result.validator : null;
 			if (result != null && result.fullThread) partialThreadLoading = false;
@@ -218,7 +215,7 @@ public class ReadPostsTask extends CancellableTask<Void, Void, Boolean>
 					}
 					ArrayList<Post> handlePosts = new ArrayList<>();
 					for (Patch patch : handleResult.patches) handlePosts.add(patch.newPost);
-					YouTubeTitlesReader.getInstance().readAndApplyIfNecessary(handlePosts, mHolder);
+					YouTubeTitlesReader.getInstance().readAndApplyIfNecessary(handlePosts, getHolder());
 				}
 				PostItem[] handlePostItems = new PostItem[handleResult.patches.size()];
 				for (int i = 0; i < handlePostItems.length; i++)
@@ -229,7 +226,7 @@ public class ReadPostsTask extends CancellableTask<Void, Void, Boolean>
 					handlePostItems[i] = postItem;
 				}
 				mCallback.onRequestPreloadPosts(handlePostItems);
-				if (validator == null) validator = mHolder.getValidator();
+				if (validator == null) validator = getHolder().getValidator();
 				if (validator == null && mCachedPosts != null) validator = mCachedPosts.getValidator();
 				handleResult.posts.setValidator(validator);
 				mResult = handleResult;
@@ -248,7 +245,7 @@ public class ReadPostsTask extends CancellableTask<Void, Void, Boolean>
 					try
 					{
 						ChanPerformer.ReadSinglePostResult result = performer.safe().onReadSinglePost
-								(new ChanPerformer.ReadSinglePostData(mBoardName, mThreadNumber, mHolder));
+								(new ChanPerformer.ReadSinglePostData(mBoardName, mThreadNumber, getHolder()));
 						Post post = result != null ? result.post : null;
 						String threadNumber = post.getThreadNumberOrOriginalPostNumber();
 						if (threadNumber != null && !threadNumber.equals(mThreadNumber))
@@ -304,13 +301,6 @@ public class ReadPostsTask extends CancellableTask<Void, Void, Boolean>
 		{
 			mCallback.onReadPostsFail(mErrorItem);
 		}
-	}
-	
-	@Override
-	public void cancel()
-	{
-		cancel(true);
-		mHolder.interrupt();
 	}
 	
 	static PostItem[] wrapPosts(Posts posts, String chanName, String boardName)
