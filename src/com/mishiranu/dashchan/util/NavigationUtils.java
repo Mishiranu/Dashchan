@@ -51,22 +51,22 @@ import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.app.GalleryActivity;
-import com.mishiranu.dashchan.app.LauncherActivity;
-import com.mishiranu.dashchan.app.MainActivity;
-import com.mishiranu.dashchan.app.WebBrowserActivity;
-import com.mishiranu.dashchan.app.service.AudioPlayerService;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.model.GalleryItem;
+import com.mishiranu.dashchan.content.net.CloudFlarePasser;
+import com.mishiranu.dashchan.content.service.AudioPlayerService;
 import com.mishiranu.dashchan.media.VideoPlayer;
-import com.mishiranu.dashchan.net.CloudFlarePasser;
 import com.mishiranu.dashchan.preference.Preferences;
+import com.mishiranu.dashchan.ui.LauncherActivity;
+import com.mishiranu.dashchan.ui.WebBrowserActivity;
+import com.mishiranu.dashchan.ui.gallery.GalleryActivity;
+import com.mishiranu.dashchan.ui.navigator.NavigatorActivity;
 
 public class NavigationUtils
 {
 	private static Intent obtainMainIntent(Context context, boolean animated, boolean fromCache)
 	{
-		return new Intent().setComponent(new ComponentName(context, MainActivity.class))
+		return new Intent().setComponent(new ComponentName(context, NavigatorActivity.class))
 				.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP)
 				.putExtra(C.EXTRA_ANIMATED_TRANSITION, animated).putExtra(C.EXTRA_FROM_CACHE, fromCache);
 	}

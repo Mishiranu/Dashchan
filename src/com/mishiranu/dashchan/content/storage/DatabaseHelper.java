@@ -30,7 +30,7 @@ import android.os.Process;
 import chan.http.HttpValidator;
 import chan.util.StringUtils;
 
-import com.mishiranu.dashchan.app.MainApplication;
+import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.FlagUtils;
 

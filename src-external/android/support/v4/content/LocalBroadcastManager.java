@@ -29,7 +29,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 
-import com.mishiranu.dashchan.app.MainApplication;
+import com.mishiranu.dashchan.content.MainApplication;
 
 /**
  * Helper to register for and send broadcasts of Intents to local objects within your process. This is has a number of

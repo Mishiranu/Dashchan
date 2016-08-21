@@ -28,11 +28,11 @@
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 	<uses-permission android:name="android.permission.WAKE_LOCK" />
 	
-	<application android:name=".app.MainApplication" android:allowBackup="true" android:label="@string/const_app_name"
+	<application android:name=".content.MainApplication" android:allowBackup="true" android:label="@string/const_app_name"
 		android:icon="@drawable/ic_launcher" android:logo="@drawable/ic_logo" android:theme="@style/Theme.Special.Stub"
 		android:largeHeap="true">
 		
-		<activity android:name=".app.LauncherActivity">
+		<activity android:name=".ui.LauncherActivity">
 			
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
@@ -42,13 +42,23 @@
 			
 		</activity>
 		
-		<activity android:name=".app.MainActivity" android:launchMode="singleTask"
+		<activity android:name=".ui.navigator.NavigatorActivity" android:launchMode="singleTask"
 			android:configChanges="orientation|screenSize" />
 		
-		<activity android:name=".app.WebBrowserActivity" android:configChanges="orientation|screenSize" />
+		<activity android:name=".ui.gallery.GalleryActivity" android:configChanges="orientation|screenSize"
+			android:theme="@style/Theme.Gallery" />
 		
-		<activity android:name=".app.UriHandlerActivity" android:theme="@android:style/Theme.NoDisplay"
-			android:launchMode="singleTask">
+		<activity android:name=".ui.posting.PostingActivity" android:windowSoftInputMode="stateHidden" />
+		
+		<activity android:name=".ui.WebBrowserActivity" android:configChanges="orientation|screenSize" />
+		
+		<activity android:name=".preference.PreferencesActivity" />
+		
+		<activity android:name=".preference.UpdaterActivity" android:excludeFromRecents="true"
+			android:theme="@android:style/Theme.Panel" />
+		
+		<activity android:name=".content.UriHandlerActivity" android:theme="@android:style/Theme.NoDisplay"
+				  android:launchMode="singleTask">
 			
 			<intent-filter>
 				<action android:name="chan.intent.action.HANDLE_URI" />
@@ -56,30 +66,20 @@
 				<data android:scheme="http" />
 				<data android:scheme="https" />
 			</intent-filter>
-			
+		
 		</activity>
 		
-		<activity android:name=".preference.PreferencesActivity" />
+		<activity android:name=".content.service.AudioPlayerActivity" android:configChanges="orientation|screenSize"
+			android:taskAffinity=".audioplayer" android:launchMode="singleInstance" android:excludeFromRecents="true"
+			android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 		
-		<activity android:name=".app.GalleryActivity" android:configChanges="orientation|screenSize"
-			android:theme="@style/Theme.Gallery" />
+		<service android:name=".content.service.PostingService" />
 		
-		<activity android:name=".app.PostingActivity" android:windowSoftInputMode="stateHidden" />
+		<service android:name=".content.service.DownloadService" />
 		
-		<activity android:name=".app.AudioPlayerActivity" android:theme="@android:style/Theme.Translucent.NoTitleBar"
-			android:configChanges="orientation|screenSize" android:taskAffinity=".audioplayer"
-			android:launchMode="singleInstance" android:excludeFromRecents="true" />
+		<service android:name=".content.service.WatcherService" />
 		
-		<activity android:name=".preference.UpdaterActivity" android:theme="@android:style/Theme.Panel"
-			android:excludeFromRecents="true" />
-		
-		<service android:name=".app.service.PostingService" />
-		
-		<service android:name=".app.service.DownloadService" />
-		
-		<service android:name=".app.service.WatcherService" />
-		
-		<service android:name=".app.service.AudioPlayerService" />
+		<service android:name=".content.service.AudioPlayerService" />
 		
 		<meta-data android:name="com.sec.android.support.multiwindow" android:value="true" />
 		<meta-data android:name="com.sec.android.multiwindow.DEFAULT_SIZE_W" android:value="632dp" />

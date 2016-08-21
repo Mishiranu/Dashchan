@@ -56,9 +56,9 @@ import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.async.AsyncManager;
+import com.mishiranu.dashchan.content.async.AsyncManager;
 import com.mishiranu.dashchan.content.model.ErrorItem;
-import com.mishiranu.dashchan.net.CloudFlarePasser;
+import com.mishiranu.dashchan.content.net.CloudFlarePasser;
 import com.mishiranu.dashchan.preference.MultipleEditTextPreference;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.preference.PreferencesActivity;

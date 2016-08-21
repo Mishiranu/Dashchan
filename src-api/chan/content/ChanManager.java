@@ -50,7 +50,7 @@ import dalvik.system.PathClassLoader;
 
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.app.MainApplication;
+import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.media.VideoPlayer;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.Log;

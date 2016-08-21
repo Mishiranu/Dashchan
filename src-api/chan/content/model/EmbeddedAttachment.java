@@ -21,7 +21,7 @@ import android.net.Uri;
 import chan.annotation.Public;
 import chan.util.StringUtils;
 
-import com.mishiranu.dashchan.net.EmbeddedManager;
+import com.mishiranu.dashchan.content.net.EmbeddedManager;
 
 @Public
 public final class EmbeddedAttachment implements Attachment

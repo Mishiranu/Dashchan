@@ -22,7 +22,7 @@ import chan.content.ApiException;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.app.MainApplication;
+import com.mishiranu.dashchan.content.MainApplication;
 
 public class ErrorItem implements Serializable
 {

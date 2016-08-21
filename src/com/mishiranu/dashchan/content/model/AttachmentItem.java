@@ -33,7 +33,7 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.ImageLoader;
-import com.mishiranu.dashchan.net.EmbeddedManager;
+import com.mishiranu.dashchan.content.net.EmbeddedManager;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.widget.AttachmentView;
 
