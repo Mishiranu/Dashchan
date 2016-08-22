@@ -184,11 +184,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.18",
+			"name": "1.19",
 			"code": 1,
 			"version": 1,
 			"minSdk": 16,
-			"length": 54723,
+			"length": 54883,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanDvach.apk"
 		}
 	],
@@ -436,11 +436,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.0",
+			"name": "1.1",
 			"code": 1,
 			"version": 1,
 			"minSdk": 16,
-			"length": 17914,
+			"length": 19247,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanOzuchan.apk"
 		}
 	],
