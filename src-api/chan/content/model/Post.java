@@ -74,6 +74,19 @@ public final class Post implements Serializable, Comparable<Post>
 		
 	}
 	
+	private static void validateThreadNumber(String threadNumber) throws IllegalArgumentException
+	{
+		if (threadNumber != null)
+		{
+			String escapedThreadNumber = StringUtils.escapeFile(threadNumber, false);
+			if (threadNumber.length() > 30 || !escapedThreadNumber.equals(threadNumber))
+			{
+				throw new IllegalArgumentException("Thread number is not valid: " + threadNumber + ". Thread number " +
+						"is limited to 30 characters and must not contain any characters from \":\\/*?|<>\".");
+			}
+		}
+	}
+	
 	@Public
 	public String getThreadNumber()
 	{
@@ -83,8 +96,19 @@ public final class Post implements Serializable, Comparable<Post>
 	@Public
 	public Post setThreadNumber(String threadNumber)
 	{
+		validateThreadNumber(threadNumber);
 		mThreadNumber = threadNumber;
 		return this;
+	}
+	
+	private static void validatePostNumber(String postNumber, boolean throwOnNull) throws IllegalArgumentException
+	{
+		NumbersPair pair = obtainNumbersPair(postNumber);
+		if (pair == null && (postNumber != null || throwOnNull))
+		{
+			throw new IllegalArgumentException("Post number is not valid: " + postNumber + ". Post number must be " +
+					"a positive number or a pair of positive numbers separated by dot.");
+		}
 	}
 	
 	public String getParentPostNumberOrNull()
@@ -106,6 +130,7 @@ public final class Post implements Serializable, Comparable<Post>
 	@Public
 	public Post setParentPostNumber(String parentPostNumber)
 	{
+		validatePostNumber(parentPostNumber, false);
 		mParentPostNumber = parentPostNumber;
 		return this;
 	}
@@ -119,6 +144,7 @@ public final class Post implements Serializable, Comparable<Post>
 	@Public
 	public Post setPostNumber(String postNumber)
 	{
+		validatePostNumber(postNumber, true);
 		mPostNumber = postNumber;
 		return this;
 	}
@@ -486,10 +512,38 @@ public final class Post implements Serializable, Comparable<Post>
 		public final int postNumber;
 		public final int variation;
 		
-		public NumbersPair(String postNumber, String variation)
+		public NumbersPair(String postNumber, String variation) throws NumberFormatException
 		{
 			this.postNumber = Integer.parseInt(postNumber);
 			this.variation = variation != null ? Integer.parseInt(variation) : 0;
+		}
+	}
+	
+	private static NumbersPair obtainNumbersPair(String postNumber)
+	{
+		if (postNumber == null) return null;
+		String variation = null;
+		int index = -1;
+		for (int i = 0; i < postNumber.length(); i++)
+		{
+			char c = postNumber.charAt(i);
+			if (c < '0' || c > '9')
+			{
+				if (c == '.' && index == -1) index = i; else return null;
+			}
+		}
+		if (index >= 0)
+		{
+			variation = postNumber.substring(index + 1);
+			postNumber = postNumber.substring(0, index);
+		}
+		try
+		{
+			return new NumbersPair(postNumber, variation);
+		}
+		catch (NumberFormatException e)
+		{
+			return null;
 		}
 	}
 	
@@ -497,37 +551,13 @@ public final class Post implements Serializable, Comparable<Post>
 	
 	private NumbersPair getNumbersPair()
 	{
-		if (mNumbersPair == null)
-		{
-			String postNumber = getPostNumber();
-			String variation = null;
-			int index1 = -1;
-			int index2 = -1;
-			for (int i = 0; i < postNumber.length(); i++)
-			{
-				char c = postNumber.charAt(i);
-				if (c < '0' || c > '9')
-				{
-					if (index1 == -1) index1 = i; else if (index2 == -1)
-					{
-						index2 = i;
-						break;
-					}
-				}
-			}
-			if (index1 >= 0)
-			{
-				variation = postNumber.substring(index1 + 1, index2 >= 0 ? index2 : postNumber.length());
-				postNumber = postNumber.substring(0, index1);
-			}
-			mNumbersPair = new NumbersPair(postNumber, variation);
-		}
+		if (mNumbersPair == null) mNumbersPair = obtainNumbersPair(getPostNumber());
 		return mNumbersPair;
 	}
 	
 	@Public
 	@Override
-	public int compareTo(Post another)
+	public int compareTo(Post another) throws NumberFormatException
 	{
 		NumbersPair thisPair = getNumbersPair();
 		NumbersPair anotherPair = another.getNumbersPair();
