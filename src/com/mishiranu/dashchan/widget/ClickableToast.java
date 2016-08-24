@@ -123,15 +123,10 @@ public class ClickableToast
 		Context context = obtainBaseContext(holder.mActivity);
 		ClickableToast clickableToast = TOASTS.get(context);
 		if (clickableToast != null) return;
-		try
-		{
-			TOASTS.put(context, new ClickableToast(holder));
-		}
-		catch (WindowManager.BadTokenException e)
-		{
-			String message = e.getMessage();
-			if (message == null || !message.contains("permission denied")) throw e;
-		}
+		// TYPE_TOAST works well only on Lollipop and higher, but can throw BadTokenException on some devices
+		if (C.API_LOLLIPOP) clickableToast = newInstance(holder, WindowManager.LayoutParams.TYPE_TOAST);
+		if (clickableToast == null) clickableToast = newInstance(holder, WindowManager.LayoutParams.TYPE_APPLICATION);
+		if (clickableToast != null) TOASTS.put(context, clickableToast);
 	}
 	
 	public static void unregister(Holder holder)
@@ -169,7 +164,21 @@ public class ClickableToast
 		if (clickableToast != null && clickableToast.mShowing) clickableToast.updateLayoutAndRealClickable(false);
 	}
 	
-	private ClickableToast(Holder holder)
+	private static ClickableToast newInstance(Holder holder, int windowType)
+	{
+		try
+		{
+			return new ClickableToast(holder, windowType);
+		}
+		catch (WindowManager.BadTokenException e)
+		{
+			String message = e.getMessage();
+			if (message != null && message.contains("permission denied")) return null;
+			throw e;
+		}
+	}
+	
+	private ClickableToast(Holder holder, int windowType)
 	{
 		mHolder = holder;
 		Activity activity = holder.mActivity;
@@ -224,8 +233,7 @@ public class ClickableToast
 		layoutParams.format = PixelFormat.TRANSLUCENT;
 		layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
 		layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
-		layoutParams.type = C.API_LOLLIPOP ? WindowManager.LayoutParams.TYPE_TOAST
-				: WindowManager.LayoutParams.TYPE_APPLICATION;
+		layoutParams.type = windowType;
 		layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
 				WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
 		layoutParams.setTitle(activity.getPackageName() + "/" + getClass().getName()); // For hierarchy view
