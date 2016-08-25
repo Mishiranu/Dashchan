@@ -303,29 +303,6 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 		}
 	}
 	
-	static PostItem[] wrapPosts(Posts posts, String chanName, String boardName)
-	{
-		return posts != null ? wrapPosts(posts.getPosts(), chanName, boardName) : null;
-	}
-	
-	static PostItem[] wrapPosts(Post[] posts, String chanName, String boardName)
-	{
-		if (posts == null || posts.length == 0) return null;
-		return wrapPosts(Arrays.asList(posts), chanName, boardName);
-	}
-	
-	static PostItem[] wrapPosts(List<Post> posts, String chanName, String boardName)
-	{
-		if (posts == null || posts.size() == 0) return null;
-		PostItem[] postItems = new PostItem[posts.size()];
-		Thread thread = Thread.currentThread();
-		for (int i = 0, length = posts.size(); i < length && !thread.isInterrupted(); i++)
-		{
-			postItems[i] = new PostItem(posts.get(i), chanName, boardName);
-		}
-		return postItems;
-	}
-	
 	public static class Patch
 	{
 		public final Post newPost;

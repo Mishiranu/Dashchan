@@ -16,13 +16,13 @@
 
 package com.mishiranu.dashchan.content.async;
 
+import chan.content.model.Post;
 import chan.content.model.Posts;
 
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.model.PostItem;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 public class DeserializePostsTask extends CancellableTask<Void, Void, Boolean>
 {
@@ -57,10 +57,11 @@ public class DeserializePostsTask extends CancellableTask<Void, Void, Boolean>
 	{
 		if (mCachedPosts != null) mPosts = mCachedPosts;
 		else mPosts = CacheManager.getInstance().deserializePosts(mChanName, mBoardName, mThreadNumber, mHolder);
-		PostItem[] postItems = ReadPostsTask.wrapPosts(mPosts, mChanName, mBoardName);
-		if (postItems == null || postItems.length == 0) return false;
-		mPostItems = new ArrayList<>(postItems.length);
-		Collections.addAll(mPostItems, postItems);
+		if (mPosts == null) return false;
+		Post[] posts = mPosts.getPosts();
+		if (posts == null || posts.length == 0) return false;
+		mPostItems = new ArrayList<>(posts.length);
+		for (Post post : posts) mPostItems.add(new PostItem(post, mChanName, mBoardName));
 		return true;
 	}
 	
