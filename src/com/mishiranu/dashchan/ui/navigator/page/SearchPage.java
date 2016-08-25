@@ -26,8 +26,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-import chan.util.CommonUtils;
-
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.ImageLoader;
 import com.mishiranu.dashchan.content.async.ReadSearchTask;
@@ -64,7 +62,7 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 		if (pageHolder.initialFromCache)
 		{
 			adapter.setGroupMode(extra.groupMode);
-			if (extra.postItems != null)
+			if (!extra.postItems.isEmpty())
 			{
 				adapter.setItems(extra.postItems);
 				if (pageHolder.position != null) pageHolder.position.apply(listView);
@@ -192,7 +190,7 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 		if (nextPage)
 		{
 			SearchExtra extra = getExtra();
-			if (extra.postItems != null) pageNumber = extra.pageNumber + 1;
+			if (!extra.postItems.isEmpty()) pageNumber = extra.pageNumber + 1;
 		}
 		mReadTask = new ReadSearchTask(this, pageHolder.chanName, pageHolder.boardName, pageHolder.searchQuery,
 				pageNumber);
@@ -210,7 +208,7 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 	}
 	
 	@Override
-	public void onReadSearchSuccess(PostItem[] postItems, int pageNumber)
+	public void onReadSearchSuccess(ArrayList<PostItem> postItems, int pageNumber)
 	{
 		mReadTask = null;
 		PullableListView listView = getListView();
@@ -219,11 +217,11 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 		boolean showScale = mShowScaleOnSuccess;
 		mShowScaleOnSuccess = false;
 		SearchExtra extra = getExtra();
-		if (pageNumber == 0 && postItems == null)
+		if (pageNumber == 0 && (postItems == null || postItems.isEmpty()))
 		{
 			switchView(ViewType.ERROR, R.string.message_not_found);
 			adapter.setItems(null);
-			extra.postItems = null;
+			extra.postItems.clear();
 		}
 		else
 		{
@@ -231,7 +229,8 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 			if (pageNumber == 0)
 			{
 				adapter.setItems(postItems);
-				extra.postItems = postItems;
+				extra.postItems.clear();
+				extra.postItems.addAll(postItems);
 				extra.pageNumber = 0;
 				ListViewUtils.cancelListFling(listView);
 				listView.setSelection(0);
@@ -239,29 +238,22 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 			}
 			else
 			{
-				ArrayList<PostItem> currentPostItems = new ArrayList<>();
-				Collections.addAll(currentPostItems, extra.postItems);
 				HashSet<String> existingPostNumbers = new HashSet<>();
-				for (PostItem postItem : currentPostItems) existingPostNumbers.add(postItem.getPostNumber());
+				for (PostItem postItem : extra.postItems) existingPostNumbers.add(postItem.getPostNumber());
 				if (postItems != null)
 				{
 					for (PostItem postItem : postItems)
 					{
-						if (!existingPostNumbers.contains(postItem.getPostNumber()))
-						{
-							currentPostItems.add(postItem);
-						}
+						if (!existingPostNumbers.contains(postItem.getPostNumber())) extra.postItems.add(postItem);
 					}
 				}
-				if (currentPostItems.size() > existingPostNumbers.size())
+				if (extra.postItems.size() > existingPostNumbers.size())
 				{
 					int count = listView.getCount();
 					boolean fromGroupMode = adapter.isGroupMode();
-					postItems = CommonUtils.toArray(currentPostItems, PostItem.class);
 					adapter.setItems(null);
 					adapter.setGroupMode(false);
-					adapter.setItems(postItems);
-					extra.postItems = postItems;
+					adapter.setItems(extra.postItems);
 					extra.pageNumber = pageNumber;
 					if (listView.getLastVisiblePosition() + 1 == count)
 					{
@@ -301,7 +293,7 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 	
 	public static class SearchExtra implements PageHolder.ParcelableExtra
 	{
-		public PostItem[] postItems;
+		public final ArrayList<PostItem> postItems = new ArrayList<>();
 		public int pageNumber;
 		public boolean groupMode = false;
 		
