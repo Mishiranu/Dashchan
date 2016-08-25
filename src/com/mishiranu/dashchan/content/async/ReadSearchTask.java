@@ -35,7 +35,7 @@ import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.net.YouTubeTitlesReader;
 import com.mishiranu.dashchan.text.HtmlParser;
 
-public class ReadSearchTask extends HttpHolderTask<Void, Void, PostItem[]> implements Comparator<Post>
+public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostItem>> implements Comparator<Post>
 {
 	private final Callback mCallback;
 	private final String mChanName;
@@ -47,7 +47,7 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, PostItem[]> imple
 	
 	public interface Callback
 	{
-		public void onReadSearchSuccess(PostItem[] postItems, int pageNumber);
+		public void onReadSearchSuccess(ArrayList<PostItem> postItems, int pageNumber);
 		public void onReadSearchFail(ErrorItem errorItem);
 	}
 	
@@ -67,7 +67,7 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, PostItem[]> imple
 	}
 	
 	@Override
-	protected PostItem[] doInBackground(Void... params)
+	protected ArrayList<PostItem> doInBackground(Void... params)
 	{
 		try
 		{
@@ -119,18 +119,17 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, PostItem[]> imple
 			{
 				Collections.sort(posts, this);
 				YouTubeTitlesReader.getInstance().readAndApplyIfNecessary(posts, getHolder());
-			}
-			PostItem[] postItems = ReadPostsTask.wrapPosts(posts, mChanName, mBoardName);
-			if (postItems != null)
-			{
-				for (int i = 0; i < postItems.length; i++)
+				ArrayList<PostItem> postItems = new ArrayList<>(posts.size());
+				for (int i = 0; i < posts.size() && !Thread.interrupted(); i++)
 				{
-					PostItem postItem = postItems[i];
+					PostItem postItem = new PostItem(posts.get(i), mChanName, mBoardName);
 					postItem.setOrdinalIndex(i);
 					postItem.preload();
+					postItems.add(postItem);
 				}
+				return postItems;
 			}
-			return postItems;
+			return null;
 		}
 		catch (ExtensionException | HttpException | InvalidResponseException e)
 		{
@@ -144,7 +143,7 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, PostItem[]> imple
 	}
 	
 	@Override
-	public void onPostExecute(PostItem[] postItems)
+	public void onPostExecute(ArrayList<PostItem> postItems)
 	{
 		if (mErrorItem == null) mCallback.onReadSearchSuccess(postItems, mPageNumber);
 		else mCallback.onReadSearchFail(mErrorItem);

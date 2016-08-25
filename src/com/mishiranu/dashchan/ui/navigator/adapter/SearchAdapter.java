@@ -17,7 +17,6 @@
 package com.mishiranu.dashchan.ui.navigator.adapter;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 
 import android.content.Context;
@@ -143,10 +142,10 @@ public class SearchAdapter extends BaseAdapter implements BusyScrollListener.Cal
 		mUiManager.view().handleListViewBusyStateChange(isBusy, listView, mDemandSet);
 	}
 	
-	public void setItems(PostItem[] postItems)
+	public void setItems(ArrayList<PostItem> postItems)
 	{
 		mPostItems.clear();
-		if (postItems != null) Collections.addAll(mPostItems, postItems);
+		if (postItems != null) mPostItems.addAll(postItems);
 		handleItems();
 	}
 	
