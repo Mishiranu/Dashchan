@@ -17,13 +17,15 @@
 package com.mishiranu.dashchan.content.async;
 
 import java.net.HttpURLConnection;
+import java.util.ArrayList;
+import java.util.Collections;
 
 import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
+import chan.content.model.Post;
 import chan.content.model.Posts;
-import chan.content.model.Threads;
 import chan.http.HttpException;
 import chan.http.HttpValidator;
 
@@ -36,33 +38,36 @@ public class ReadThreadsTask extends HttpHolderTask<Void, Void, Boolean>
 	private final Callback mCallback;
 	private final String mChanName;
 	private final String mBoardName;
-	private final Threads mCachedThreads;
-	private final HttpValidator mValidator;
 	private final int mPageNumber;
+	private final HttpValidator mValidator;
 	private final boolean mAppend;
 	
-	private Threads mThreads;
-	private PostItem[][] mPostItems;
+	private ArrayList<PostItem> mPostItems;
+	private int mBoardSpeed = 0;
 	private HttpValidator mResultValidator;
 	private ErrorItem mErrorItem;
 	
 	public interface Callback
 	{
-		public void onReadThreadsSuccess(Threads threads, PostItem[][] postItems, int pageNumber,
-				boolean append, boolean checkModified, HttpValidator validator);
+		public void onReadThreadsSuccess(ArrayList<PostItem> postItems, int pageNumber,
+				int boardSpeed, boolean append, boolean checkModified, HttpValidator validator);
 		public void onReadThreadsFail(ErrorItem errorItem, int pageNumber);
 	}
 	
-	public ReadThreadsTask(Callback callback, String chanName, String boardName, Threads cachedThreads,
-			HttpValidator validator, int pageNumber, boolean append)
+	public ReadThreadsTask(Callback callback, String chanName, String boardName, int pageNumber,
+			HttpValidator validator, boolean append)
 	{
 		mCallback = callback;
 		mChanName = chanName;
 		mBoardName = boardName;
-		mCachedThreads = cachedThreads;
-		mValidator = validator;
 		mPageNumber = pageNumber;
+		mValidator = validator;
 		mAppend = append;
+	}
+	
+	private boolean isFirstPage()
+	{
+		return mPageNumber == 0 || mPageNumber == ChanPerformer.ReadThreadsData.PAGE_NUMBER_CATALOG;
 	}
 	
 	@Override
@@ -73,32 +78,39 @@ public class ReadThreadsTask extends HttpHolderTask<Void, Void, Boolean>
 			ChanPerformer performer = ChanPerformer.get(mChanName);
 			ChanPerformer.ReadThreadsResult result = performer.safe()
 					.onReadThreads(new ChanPerformer.ReadThreadsData(mBoardName, mPageNumber, getHolder(), mValidator));
-			Threads threads = result != null ? result.threads : null;
+			Posts[] threadsArray = result != null ? result.threads : null;
+			ArrayList<PostItem> postItems = null;
+			int boardSpeed = result != null ? result.boardSpeed : 0;
 			HttpValidator validator = result != null ? result.validator : null;
-			if (threads != null)
+			if (threadsArray != null && threadsArray.length > 0)
 			{
-				threads.setStartPage(mPageNumber);
-				threads.removeEmpty();
-				if (mAppend) threads.removeRepeats(mCachedThreads);
-				Posts[][] threadsArray = threads.getThreads();
-				if (threadsArray == null || threadsArray.length == 1 && (threadsArray[0] == null
-						|| threadsArray[0].length == 0))
+				ArrayList<Post> posts = new ArrayList<>();
+				for (Posts thread : threadsArray)
 				{
-					threads = null;
+					Post[] postsArray = thread.getPosts();
+					if (postsArray != null) Collections.addAll(posts, postsArray);
+				}
+				YouTubeTitlesReader.getInstance().readAndApplyIfNecessary(posts, getHolder());
+				for (Posts thread : threadsArray)
+				{
+					Post[] postsArray = thread.getPosts();
+					if (postsArray != null && postsArray.length > 0)
+					{
+						if (postItems == null) postItems = new ArrayList<>();
+						postItems.add(new PostItem(thread, mChanName, mBoardName));
+					}
 				}
 			}
 			if (validator == null) validator = getHolder().getValidator();
-			mThreads = threads;
+			mPostItems = postItems;
+			mBoardSpeed = boardSpeed;
 			mResultValidator = validator;
-			YouTubeTitlesReader.getInstance().readAndApplyIfNecessary(mThreads, getHolder());
-			mPostItems = wrapThreads(mThreads, mChanName, mBoardName);
 			return true;
 		}
 		catch (HttpException e)
 		{
 			if (e.getResponseCode() == HttpURLConnection.HTTP_NOT_MODIFIED) return true;
-			if ((mPageNumber == 0 || mPageNumber == ChanPerformer.ReadThreadsData.PAGE_NUMBER_CATALOG) &&
-					e.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND)
+			if (isFirstPage() && e.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND)
 			{
 				mErrorItem = new ErrorItem(ErrorItem.TYPE_BOARD_NOT_EXISTS);
 			}
@@ -121,33 +133,9 @@ public class ReadThreadsTask extends HttpHolderTask<Void, Void, Boolean>
 	{
 		if (success)
 		{
-			mCallback.onReadThreadsSuccess(mThreads, mPostItems, mPageNumber, mAppend,
+			mCallback.onReadThreadsSuccess(mPostItems, mPageNumber, mBoardSpeed, mAppend,
 					mValidator != null, mResultValidator);
 		}
-		else
-		{
-			mCallback.onReadThreadsFail(mErrorItem, mPageNumber);
-		}
-	}
-	
-	static PostItem[][] wrapThreads(Threads threads, String chanName, String boardName)
-	{
-		if (threads == null) return new PostItem[1][];
-		Posts[][] threadsArray = threads.getThreads();
-		PostItem[][] postItems = new PostItem[threadsArray.length][];
-		Thread thread = Thread.currentThread();
-		for (int i = 0; i < threadsArray.length && !thread.isInterrupted(); i++)
-		{
-			Posts[] page = threadsArray[i];
-			if (page != null)
-			{
-				postItems[i] = new PostItem[page.length];
-				for (int j = 0; j < page.length && !thread.isInterrupted(); j++)
-				{
-					postItems[i][j] = new PostItem(page[j], chanName, boardName);
-				}
-			}
-		}
-		return postItems;
+		else mCallback.onReadThreadsFail(mErrorItem, mPageNumber);
 	}
 }

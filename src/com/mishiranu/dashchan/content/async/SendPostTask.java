@@ -26,7 +26,6 @@ import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
 import chan.content.model.Post;
 import chan.content.model.Posts;
-import chan.content.model.Threads;
 import chan.http.HttpException;
 import chan.http.MultipartEntity;
 import chan.text.CommentEditor;
@@ -177,8 +176,8 @@ public class SendPostTask extends HttpHolderTask<Void, Long, Boolean>
 				// New thread created with undefined number
 				ChanPerformer.ReadThreadsResult readThreadsResult = performer.safe()
 						.onReadThreads(new ChanPerformer.ReadThreadsData(data.boardName, 0, data.holder, null));
-				Threads threads = readThreadsResult != null ? readThreadsResult.threads : null;
-				if (threads != null && threads.hasThreadsOnStart())
+				Posts[] threads = readThreadsResult != null ? readThreadsResult.threads : null;
+				if (threads != null && threads.length > 0)
 				{
 					String postComment = data.comment;
 					CommentEditor commentEditor = ChanMarkup.get(mChanName).safe().obtainCommentEditor(data.boardName);
@@ -188,7 +187,7 @@ public class SendPostTask extends HttpHolderTask<Void, Long, Boolean>
 					}
 					SimilarTextEstimator estimator = new SimilarTextEstimator(Integer.MAX_VALUE, true);
 					SimilarTextEstimator.WordsData wordsData1 = estimator.getWords(postComment);
-					for (Posts thread : threads.getThreads()[0])
+					for (Posts thread : threads)
 					{
 						Post[] posts = thread.getPosts();
 						if (posts != null && posts.length > 0)

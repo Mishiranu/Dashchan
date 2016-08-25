@@ -42,7 +42,6 @@ import android.widget.TextView;
 
 import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
-import chan.content.model.Threads;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.C;
@@ -84,7 +83,7 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 	private final TextView[] mHeaderData = new TextView[6];
 	private final RadioButton[] mSortingData = new RadioButton[3];
 	
-	private Threads mHeaderThreads;
+	private boolean mMayShowHeader = false;
 	private boolean mHeaderExpanded = false;
 	private boolean mBusy = false;
 
@@ -226,7 +225,7 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 	
 	private boolean isShowHeader()
 	{
-		return mHeaderThreads != null && mFilteredPostItems == null;
+		return mMayShowHeader && mFilteredPostItems == null;
 	}
 	
 	public boolean isRealEmpty()
@@ -456,7 +455,7 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 	
 	public int getCatalogSortIndex()
 	{
-		if (mHeaderThreads != null && mSortingData[0].getVisibility() == View.VISIBLE)
+		if (mMayShowHeader && mSortingData[0].getVisibility() == View.VISIBLE)
 		{
 			for (int i = 0; i < mSortingData.length; i++)
 			{
@@ -466,14 +465,14 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 		return -1;
 	}
 	
-	public void setItems(Collection<PostItem[]> postItems, int pageNumber, Threads threads)
+	public void setItems(Collection<ArrayList<PostItem>> postItems, int pageNumber, int boardSpeed)
 	{
 		mCatalogPostItems = null;
 		mItems.clear();
-		mHeaderThreads = null;
-		for (PostItem[] pagePostItems : postItems)
+		mMayShowHeader = false;
+		for (ArrayList<PostItem> pagePostItems : postItems)
 		{
-			appendItemsInternal(pagePostItems, pageNumber, threads);
+			appendItemsInternal(pagePostItems, pageNumber, boardSpeed);
 			pageNumber++;
 		}
 		int index = getCatalogSortIndex();
@@ -482,10 +481,10 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 		notifyDataSetChanged();
 	}
 	
-	public void appendItems(PostItem[] postItems, int pageNumber, Threads threads)
+	public void appendItems(ArrayList<PostItem> postItems, int pageNumber, int boardSpeed)
 	{
 		mCatalogPostItems = null;
-		appendItemsInternal(postItems, pageNumber, threads);
+		appendItemsInternal(postItems, pageNumber, boardSpeed);
 		applyFilterIfNecessary();
 		notifyDataSetChanged();
 	}
@@ -503,13 +502,13 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 		notifyDataSetChanged();
 	}
 	
-	private void appendItemsInternal(PostItem[] postItems, int pageNumber, Threads threads)
+	private void appendItemsInternal(ArrayList<PostItem> postItems, int pageNumber, int boardSpeed)
 	{
 		if (pageNumber > 0)
 		{
 			mItems.add(new DividerItem(mContext.getString(R.string.text_page_format, pageNumber), pageNumber));
 		}
-		else updateHeaderView(threads, pageNumber == ChanPerformer.ReadThreadsData.PAGE_NUMBER_CATALOG);
+		else updateHeaderView(pageNumber == ChanPerformer.ReadThreadsData.PAGE_NUMBER_CATALOG, boardSpeed);
 		if (postItems != null)
 		{
 			for (PostItem postItem : postItems)
@@ -525,14 +524,13 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 		builder.append(line);
 	}
 	
-	private void updateHeaderView(Threads threads, boolean catalog)
+	private void updateHeaderView(boolean catalog, int boardSpeed)
 	{
-		mHeaderThreads = threads;
+		mMayShowHeader = true;
 		ChanConfiguration configuration = ChanConfiguration.get(mChanName);
 		String title = configuration.getBoardTitle(mBoardName);
 		if (StringUtils.isEmpty(title)) title = StringUtils.formatBoardTitle(mChanName, mBoardName, null);
 		boolean mayExpand = false;
-		int boardSpeed = mHeaderThreads.getBoardSpeed();
 		if (boardSpeed > 0)
 		{
 			mHeaderData[1].setVisibility(View.VISIBLE);

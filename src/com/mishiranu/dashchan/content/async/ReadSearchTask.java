@@ -93,7 +93,7 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, PostItem[]> imple
 				ChanPerformer.ReadThreadsResult result = performer.safe()
 						.onReadThreads(new ChanPerformer.ReadThreadsData(mBoardName,
 						ChanPerformer.ReadThreadsData.PAGE_NUMBER_CATALOG, getHolder(), null));
-				Posts[] threads = result != null && result.threads != null ? result.threads.getThreads()[0] : null;
+				Posts[] threads = result != null ? result.threads : null;
 				ArrayList<Post> matched = new ArrayList<>();
 				Locale locale = Locale.getDefault();
 				String searchQuery = mSearchQuery.toUpperCase(locale);
