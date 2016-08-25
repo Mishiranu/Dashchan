@@ -227,19 +227,14 @@ public class ChanPerformer implements ChanManager.Linked
 	@Public
 	public static final class ReadThreadsResult
 	{
-		public final Threads threads;
+		public final Posts[] threads;
+		public int boardSpeed;
 		public HttpValidator validator;
-		
-		@Public
-		public ReadThreadsResult(Threads threads)
-		{
-			this.threads = threads;
-		}
 		
 		@Public
 		public ReadThreadsResult(Posts... threads)
 		{
-			this((threads = CommonUtils.removeNullItems(threads, Posts.class)) != null ? new Threads(threads) : null);
+			this.threads = CommonUtils.removeNullItems(threads, Posts.class);
 		}
 		
 		@Public
@@ -249,10 +244,28 @@ public class ChanPerformer implements ChanManager.Linked
 		}
 		
 		@Public
+		public ReadThreadsResult setBoardSpeed(int boardSpeed)
+		{
+			this.boardSpeed = boardSpeed;
+			return this;
+		}
+		
+		@Public
 		public ReadThreadsResult setValidator(HttpValidator validator)
 		{
 			this.validator = validator;
 			return this;
+		}
+		
+		// TODO CHAN
+		// Remove this constructor after updating
+		// allchan apachan archiverbt dvach endchan makabapaid nulldvachin
+		// Added: 24.08.16 03:39
+		@Public
+		public ReadThreadsResult(Threads threads)
+		{
+			this(threads != null ? threads.getThreads() : null);
+			if (threads != null) boardSpeed = threads.getBoardSpeed();
 		}
 	}
 	

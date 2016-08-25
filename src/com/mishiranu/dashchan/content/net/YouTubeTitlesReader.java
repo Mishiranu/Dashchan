@@ -17,7 +17,6 @@
 package com.mishiranu.dashchan.content.net;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -31,8 +30,6 @@ import chan.content.InvalidResponseException;
 import chan.content.model.Attachment;
 import chan.content.model.EmbeddedAttachment;
 import chan.content.model.Post;
-import chan.content.model.Posts;
-import chan.content.model.Threads;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
 import chan.http.HttpRequest;
@@ -353,19 +350,6 @@ public class YouTubeTitlesReader
 			{
 				
 			}
-		}
-	}
-	
-	public final void readAndApplyIfNecessary(Threads threads, HttpHolder holder)
-	{
-		if (threads != null && threads.hasThreadsOnStart())
-		{
-			ArrayList<Post> posts = new ArrayList<>();
-			for (Posts thread : threads.getThreads()[0])
-			{
-				if (thread != null) Collections.addAll(posts, thread.getPosts());
-			}
-			if (posts.size() > 0) readAndApplyIfNecessary(posts, holder);
 		}
 	}
 }

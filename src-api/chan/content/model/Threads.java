@@ -16,33 +16,30 @@
 
 package chan.content.model;
 
-import java.util.ArrayList;
 import java.util.Collection;
 
 import chan.annotation.Public;
 import chan.util.CommonUtils;
 
+// TODO CHAN
+// Remove this class after updating
+// allchan apachan archiverbt dvach endchan makabapaid nulldvachin
+// Added: 24.08.16 03:39
 @Public
 public final class Threads
 {
-	private Posts[][] mThreads;
-	private int mStartPage;
+	private Posts[] mThreads;
 	private int mBoardSpeed;
 	
-	public Posts[][] getThreads()
+	public Posts[] getThreads()
 	{
 		return mThreads;
 	}
 	
-	public Threads setThreads(Posts[][] threads)
+	public Threads setThreads(Posts[] threads)
 	{
 		mThreads = threads;
 		return this;
-	}
-	
-	public Threads setThreads(Posts[] threads)
-	{
-		return setThreads(new Posts[][] {threads});
 	}
 	
 	@Public
@@ -56,100 +53,6 @@ public final class Threads
 	{
 		mBoardSpeed = boardSpeed;
 		return this;
-	}
-	
-	public boolean hasThreadsOnStart()
-	{
-		return mThreads != null && mThreads[0] != null && mThreads[0].length > 0;
-	}
-	
-	public int getStartPage()
-	{
-		return mStartPage;
-	}
-	
-	public Threads setStartPage(int startPage)
-	{
-		this.mStartPage = startPage;
-		return this;
-	}
-	
-	public int getLastPage()
-	{
-		return mStartPage + (mThreads != null ? mThreads.length - 1 : 0);
-	}
-	
-	public void addNextPage(Threads threads)
-	{
-		Posts[][] threadsArray = mThreads;
-		Posts[] lastPage = threads.mThreads != null ? threads.mThreads[0] : null;
-		Posts[][] newThreads = new Posts[threadsArray.length + 1][];
-		System.arraycopy(threadsArray, 0, newThreads, 0, threadsArray.length);
-		newThreads[threadsArray.length] = lastPage;
-		setThreads(newThreads);
-	}
-	
-	public void removeEmpty()
-	{
-		Posts[] lastPage = mThreads != null ? mThreads[0] : null;
-		if (lastPage != null)
-		{
-			boolean rebuild = false;
-			for (int i = 0; i < lastPage.length; i++)
-			{
-				if (lastPage[i] == null || lastPage[i].length() == 0)
-				{
-					rebuild = true;
-					lastPage[i] = null;
-				}
-			}
-			if (rebuild)
-			{
-				ArrayList<Posts> newLastPage = new ArrayList<>(mThreads.length);
-				for (Posts posts : lastPage)
-				{
-					if (posts != null) newLastPage.add(posts);
-				}
-				mThreads[0] = CommonUtils.toArray(newLastPage, Posts.class);
-			}
-		}
-	}
-	
-	public void removeRepeats(Threads allThreads)
-	{
-		if (allThreads == null || mThreads == null) return;
-		Posts[] lastPage = mThreads[0];
-		if (lastPage != null)
-		{
-			boolean rebuild = false;
-			for (Posts[] threadsArray : allThreads.mThreads)
-			{
-				if (threadsArray != null)
-				{
-					for (Posts posts : threadsArray)
-					{
-						for (int i = 0; i < lastPage.length; i++)
-						{
-							if (lastPage[i] != null && lastPage[i].getThreadNumber().equals(posts.getThreadNumber()))
-							{
-								lastPage[i] = null;
-								rebuild = true;
-								break;
-							}
-						}
-					}
-				}
-			}
-			if (rebuild)
-			{
-				ArrayList<Posts> newLastPage = new ArrayList<>(mThreads.length);
-				for (Posts posts : lastPage)
-				{
-					if (posts != null) newLastPage.add(posts);
-				}
-				mThreads[0] = CommonUtils.toArray(newLastPage, Posts.class);
-			}
-		}
 	}
 	
 	@Public

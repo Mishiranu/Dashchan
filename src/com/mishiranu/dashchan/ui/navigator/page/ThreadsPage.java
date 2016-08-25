@@ -18,7 +18,8 @@ package com.mishiranu.dashchan.ui.navigator.page;
 
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 
 import android.app.Activity;
 import android.content.Context;
@@ -34,7 +35,6 @@ import android.widget.ListView;
 
 import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
-import chan.content.model.Threads;
 import chan.http.HttpValidator;
 import chan.util.StringUtils;
 
@@ -67,8 +67,6 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 	
 	private Drawable mOldListSelector;
 	
-	private int mLastPage;
-	
 	@Override
 	protected void onCreate()
 	{
@@ -89,11 +87,9 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 				Preferences.isThreadsGridMode());
 		mGridLayoutControl.apply();
 		ChanConfiguration.Board board = getChanConfiguration().safe().obtainBoard(pageHolder.boardName);
-		mLastPage = board.allowCatalog && Preferences.isLoadCatalog(pageHolder.chanName) ? PAGE_NUMBER_CATALOG : 0;
-		if (pageHolder.initialFromCache && extra.cachedThreads != null && extra.cachedPostItems.size() > 0)
+		if (pageHolder.initialFromCache && !extra.cachedPostItems.isEmpty())
 		{
-			mLastPage = extra.cachedThreads.getLastPage();
-			getAdapter().setItems(extra.cachedPostItems, extra.cachedThreads.getStartPage(), extra.cachedThreads);
+			getAdapter().setItems(extra.cachedPostItems, extra.startPageNumber, extra.boardSpeed);
 			showScaleAnimation();
 			if (pageHolder.position != null)
 			{
@@ -106,7 +102,12 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 				else pageHolder.position.apply(listView);
 			}
 		}
-		else refreshThreads(RefreshPage.CURRENT, false);
+		else
+		{
+			extra.startPageNumber = board.allowCatalog && Preferences.isLoadCatalog(pageHolder.chanName)
+					? PAGE_NUMBER_CATALOG : 0;
+			refreshThreads(RefreshPage.CURRENT, false);
+		}
 		FavoritesStorage.getInstance().getObservable().register(this);
 		String boardTitle = getChanConfiguration().getBoardTitle(pageHolder.boardName);
 		updateTitle(boardTitle);
@@ -210,6 +211,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 	public void onPrepareOptionsMenu(Menu menu)
 	{
 		PageHolder pageHolder = getPageHolder();
+		ThreadsExtra extra = getExtra();
 		ChanConfiguration configuration = getChanConfiguration();
 		ChanConfiguration.Board board = configuration.safe().obtainBoard(pageHolder.boardName);
 		boolean search = board.allowSearch;
@@ -217,9 +219,10 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		boolean catalogSearch = catalog && board.allowCatalogSearch;
 		boolean canSearch = search || catalogSearch;
 		mAllowSearch = canSearch;
+		boolean isCatalogOpen = extra.startPageNumber == PAGE_NUMBER_CATALOG;
 		menu.findItem(OPTIONS_MENU_SEARCH).setTitle(canSearch ? R.string.action_search : R.string.action_filter);
-		menu.findItem(OPTIONS_MENU_CATALOG).setVisible(catalog && mLastPage != PAGE_NUMBER_CATALOG);
-		menu.findItem(OPTIONS_MENU_PAGES).setVisible(catalog && mLastPage == PAGE_NUMBER_CATALOG);
+		menu.findItem(OPTIONS_MENU_CATALOG).setVisible(catalog && !isCatalogOpen);
+		menu.findItem(OPTIONS_MENU_PAGES).setVisible(catalog && isCatalogOpen);
 		menu.findItem(OPTIONS_MENU_ARCHIVE).setVisible(board.allowArchive);
 		menu.findItem(OPTIONS_MENU_NEW_THREAD).setVisible(board.allowPosting);
 		boolean singleBoardMode = configuration.getOption(ChanConfiguration.OPTION_SINGLE_BOARD_MODE);
@@ -491,7 +494,8 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 	@Override
 	public void onListPulled(PullableWrapper wrapper, PullableWrapper.Side side)
 	{
-		refreshThreads(getAdapter().isRealEmpty() || mLastPage == PAGE_NUMBER_CATALOG ? RefreshPage.CURRENT
+		ThreadsExtra extra = getExtra();
+		refreshThreads(getAdapter().isRealEmpty() || extra.startPageNumber == PAGE_NUMBER_CATALOG ? RefreshPage.CURRENT
 				: side == PullableWrapper.Side.BOTTOM ? RefreshPage.NEXT : RefreshPage.PREVIOUS, true);
 	}
 	
@@ -506,55 +510,62 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 	
 	private void refreshThreads(RefreshPage refreshPage, boolean showPull)
 	{
-		if (mReadTask != null) mReadTask.cancel();
-		int page;
-		boolean append = false;
-		if (refreshPage == RefreshPage.CATALOG || refreshPage == RefreshPage.CURRENT &&
-				mLastPage == PAGE_NUMBER_CATALOG)
+		if (mReadTask != null)
 		{
-			page = PAGE_NUMBER_CATALOG;
+			mReadTask.cancel();
+			mReadTask = null;
+		}
+		int pageNumber;
+		boolean append = false;
+		ThreadsExtra extra = getExtra();
+		if (refreshPage == RefreshPage.CATALOG || refreshPage == RefreshPage.CURRENT &&
+				extra.startPageNumber == PAGE_NUMBER_CATALOG)
+		{
+			pageNumber = PAGE_NUMBER_CATALOG;
 		}
 		else
 		{
+			int currentPageNumber = extra.startPageNumber;
+			if (!extra.cachedPostItems.isEmpty()) currentPageNumber += extra.cachedPostItems.size() - 1;
 			boolean pageByPage = Preferences.isPageByPage();
-			int currentPage = mLastPage;
 			if (pageByPage)
 			{
-				page = refreshPage == RefreshPage.NEXT ? currentPage + 1 : refreshPage == RefreshPage.PREVIOUS
-						? currentPage - 1 : currentPage;
-				if (page < 0) page = 0;
+				pageNumber = refreshPage == RefreshPage.NEXT ? currentPageNumber + 1
+						: refreshPage == RefreshPage.PREVIOUS ? currentPageNumber - 1 : currentPageNumber;
+				if (pageNumber < 0) pageNumber = 0;
 			}
 			else
 			{
-				page = refreshPage == RefreshPage.NEXT && currentPage >= 0 ? currentPage + 1 : 0;
-				if (page != 0) append = true;
+				pageNumber = refreshPage == RefreshPage.NEXT && currentPageNumber >= 0 ? currentPageNumber + 1 : 0;
+				if (pageNumber != 0) append = true;
 			}
 		}
-		loadThreadsPage(page, append, showPull);
+		loadThreadsPage(pageNumber, append, showPull);
 	}
 	
-	private boolean loadThreadsPage(int page, boolean append)
+	private boolean loadThreadsPage(int pageNumber, boolean append)
 	{
-		return loadThreadsPage(page, append, !getAdapter().isRealEmpty());
+		return loadThreadsPage(pageNumber, append, !getAdapter().isRealEmpty());
 	}
 	
-	private boolean loadThreadsPage(int page, boolean append, boolean showPull)
+	private boolean loadThreadsPage(int pageNumber, boolean append, boolean showPull)
 	{
 		if (mReadTask != null) mReadTask.cancel();
 		PageHolder pageHolder = getPageHolder();
-		if (page < PAGE_NUMBER_CATALOG || page >= Math.max(getChanConfiguration()
+		if (pageNumber < PAGE_NUMBER_CATALOG || pageNumber >= Math.max(getChanConfiguration()
 				.getPagesCount(pageHolder.boardName), 1))
 		{
 			getListView().getWrapper().cancelBusyState();
-			ToastUtils.show(getActivity(), getString(R.string.message_page_not_exist_format, page));
+			ToastUtils.show(getActivity(), getString(R.string.message_page_not_exist_format, pageNumber));
 			return false;
 		}
 		else
 		{
-			HttpValidator validator = !append && mLastPage == page && !getAdapter().isEmpty()
-					? getExtra().validator : null;
-			mReadTask = new ReadThreadsTask(this, pageHolder.chanName, pageHolder.boardName, getExtra().cachedThreads,
-					validator, page, append);
+			ThreadsExtra extra = getExtra();
+			HttpValidator validator = !append && extra.cachedPostItems.size() == 1
+					&& extra.startPageNumber == pageNumber ? extra.validator : null;
+			mReadTask = new ReadThreadsTask(this, pageHolder.chanName, pageHolder.boardName, pageNumber,
+					validator, append);
 			mReadTask.executeOnExecutor(ReadThreadsTask.THREAD_POOL_EXECUTOR);
 			if (showPull)
 			{
@@ -571,20 +582,33 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 	}
 	
 	@Override
-	public void onReadThreadsSuccess(Threads threads, PostItem[][] postItems, int pageNumber,
-			boolean append, boolean checkModified, HttpValidator validator)
+	public void onReadThreadsSuccess(ArrayList<PostItem> postItems, int pageNumber,
+			int boardSpeed, boolean append, boolean checkModified, HttpValidator validator)
 	{
 		mReadTask = null;
 		getListView().getWrapper().cancelBusyState();
 		switchView(ViewType.LIST, null);
-		ThreadsAdapter adapter = getAdapter();
-		if (threads != null)
+		ThreadsExtra extra = getExtra();
+		if (postItems != null && postItems.isEmpty()) postItems = null;
+		if (extra.cachedPostItems.isEmpty()) append = false;
+		if (postItems != null && append)
 		{
-			mLastPage = pageNumber;
+			HashSet<String> threadNumbers = new HashSet<>();
+			for (ArrayList<PostItem> pagePostItems : extra.cachedPostItems)
+			{
+				for (PostItem postItem : pagePostItems) threadNumbers.add(postItem.getPostNumber());
+			}
+			for (int i = postItems.size() - 1; i >= 0; i--)
+			{
+				if (threadNumbers.contains(postItems.get(i).getThreadNumber())) postItems.remove(i);
+			}
+		}
+		ThreadsAdapter adapter = getAdapter();
+		if (postItems != null && !postItems.isEmpty())
+		{
 			int oldCount = adapter.getCount();
-			ThreadsExtra extra = getExtra();
-			if (append) adapter.appendItems(postItems[0], pageNumber, threads);
-			else adapter.setItems(Arrays.asList(postItems), pageNumber, threads);
+			if (append) adapter.appendItems(postItems, pageNumber, extra.boardSpeed);
+			else adapter.setItems(Collections.singleton(postItems), pageNumber, boardSpeed);
 			PageHolder pageHolder = getPageHolder();
 			String title = getChanConfiguration().getBoardTitle(pageHolder.boardName);
 			if (title != null) updateTitle(title);
@@ -606,20 +630,16 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 				}
 			}
 			extra.validator = validator;
-			if (append && extra.cachedThreads != null)
-			{
-				extra.cachedPostItems.add(postItems[0]);
-				extra.cachedThreads.addNextPage(threads);
-			}
-			else
+			if (!append)
 			{
 				extra.cachedPostItems.clear();
-				extra.cachedPostItems.add(postItems[0]);
-				extra.cachedThreads = threads;
+				extra.startPageNumber = pageNumber;
+				extra.boardSpeed = boardSpeed;
 			}
+			extra.cachedPostItems.add(postItems);
 			if (oldCount == 0 && !adapter.isRealEmpty()) showScaleAnimation();
 		}
-		else if (checkModified)
+		else if (checkModified && postItems == null)
 		{
 			adapter.notifyNotModified();
 			getListView().post(() ->
@@ -706,8 +726,9 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 	
 	public static class ThreadsExtra implements PageHolder.ParcelableExtra
 	{
-		public Threads cachedThreads;
-		public final ArrayList<PostItem[]> cachedPostItems = new ArrayList<>();
+		public final ArrayList<ArrayList<PostItem>> cachedPostItems = new ArrayList<>();
+		public int startPageNumber;
+		public int boardSpeed;
 		public HttpValidator validator;
 		
 		public boolean headerExpanded = false;
