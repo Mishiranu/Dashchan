@@ -66,7 +66,7 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
 <title>
 
-  StringUtils - Dashchan API Reference |
+  TemplateParser - Dashchan API Reference |
 
 Doclava
 
@@ -155,9 +155,9 @@ Doclava
   <a href="../../../reference/chan/content/model/package-summary.html">chan.content.model</a></li>
     <li class="api apilevel-">
   <a href="../../../reference/chan/http/package-summary.html">chan.http</a></li>
-    <li class="api apilevel-">
-  <a href="../../../reference/chan/text/package-summary.html">chan.text</a></li>
     <li class="selected api apilevel-">
+  <a href="../../../reference/chan/text/package-summary.html">chan.text</a></li>
+    <li class="api apilevel-">
   <a href="../../../reference/chan/util/package-summary.html">chan.util</a></li>
               </ul><br/>
             </div> <!-- end packages -->
@@ -167,18 +167,32 @@ Doclava
               
     <li><h2>Interfaces</h2>
       <ul>
-          <li class="api apilevel-"><a href="../../../reference/chan/util/StringUtils.ReplacementCallback.html">StringUtils.ReplacementCallback</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/GroupParser.Callback.html">GroupParser.Callback</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.CloseCallback.html">TemplateParser.CloseCallback</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.ContentCallback.html">TemplateParser.ContentCallback</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.OpenCallback.html">TemplateParser.OpenCallback</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.TextCallback.html">TemplateParser.TextCallback</a></li>
       </ul>
     </li>
               
     <li><h2>Classes</h2>
       <ul>
-          <li class="api apilevel-"><a href="../../../reference/chan/util/CommonUtils.html">CommonUtils</a></li>
-          <li class="selected api apilevel-"><a href="../../../reference/chan/util/StringUtils.html">StringUtils</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/CommentEditor.html">CommentEditor</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/CommentEditor.BulletinBoardCodeCommentEditor.html">CommentEditor.BulletinBoardCodeCommentEditor</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/CommentEditor.WakabaMarkCommentEditor.html">CommentEditor.WakabaMarkCommentEditor</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/GroupParser.html">GroupParser</a></li>
+          <li class="selected api apilevel-"><a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.Attributes.html">TemplateParser.Attributes</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.Instance.html">TemplateParser.Instance</a></li>
       </ul>
     </li>
               
               
+    <li><h2>Exceptions</h2>
+      <ul>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/ParseException.html">ParseException</a></li>
+      </ul>
+    </li>
               
             </ul><br/>
           </div><!-- end classes -->
@@ -269,10 +283,10 @@ Summary:
 <div id="jd-header">
     public
      
-     
+    final 
     
     class
-<h1 itemprop="name">StringUtils</h1>
+<h1 itemprop="name">TemplateParser</h1>
 
 
 
@@ -305,7 +319,7 @@ Summary:
         
             <td class="jd-inheritance-space">&nbsp;&nbsp;&nbsp;&#x21b3;</td>
          	
-        <td colspan="1" class="jd-inheritance-class-cell">chan.util.StringUtils</td>
+        <td colspan="1" class="jd-inheritance-class-cell">chan.text.TemplateParser&lt;H&gt;</td>
     </tr>
     
 
@@ -321,7 +335,30 @@ Summary:
 
 
 <h2>Class Overview</h2>
-<p itemprop="articleBody"><p>Provides some utilities to work with strings.</p>
+<p itemprop="articleBody"><p>HTML text parser. This parser is a convenient wrapper over the <code><a href="../../../reference/chan/text/GroupParser.html">GroupParser</a></code>. Read about wrapped
+ parser before using this one.</p>
+
+ <p>You can define parsing rules using the following methods:</p>
+ 
+ <ul>
+ <li><code><a href="../../../reference/chan/text/TemplateParser.html#name(java.lang.String)">name(String)</a></code></li>
+ <li><code><a href="../../../reference/chan/text/TemplateParser.html#equals(java.lang.String, java.lang.String, java.lang.String)">equals(String, String, String)</a></code></li>
+ <li><code><a href="../../../reference/chan/text/TemplateParser.html#starts(java.lang.String, java.lang.String, java.lang.String)">starts(String, String, String)</a></code></li>
+ <li><code><a href="../../../reference/chan/text/TemplateParser.html#contains(java.lang.String, java.lang.String, java.lang.String)">contains(String, String, String)</a></code></li>
+ <li><code><a href="../../../reference/chan/text/TemplateParser.html#ends(java.lang.String, java.lang.String, java.lang.String)">ends(String, String, String)</a></code></li>
+ </ul>
+ 
+ <p>And define reaction rules:</p>
+ 
+ <ul>
+ <li><code><a href="../../../reference/chan/text/TemplateParser.html#open(chan.text.TemplateParser.OpenCallback<H>)">open(OpenCallback)</a></code></li>
+ <li><code><a href="../../../reference/chan/text/TemplateParser.html#content(chan.text.TemplateParser.ContentCallback<H>)">content(ContentCallback)</a></code></li>
+ <li><code><a href="../../../reference/chan/text/TemplateParser.html#close(chan.text.TemplateParser.CloseCallback<H>)">close(CloseCallback)</a></code></li>
+ <li><code><a href="../../../reference/chan/text/TemplateParser.html#text(chan.text.TemplateParser.TextCallback<H>)">text(TextCallback)</a></code></li>
+ </ul>
+ 
+ <p>After defining parsing rules you should call <code><a href="../../../reference/chan/text/TemplateParser.html#prepare()">prepare()</a></code> method. Then you can use your parsing
+ calling <code><a href="../../../reference/chan/text/TemplateParser.html#parse(java.lang.String, H)">parse(String, Object)</a></code> method.</p>
 </p>
 
 
@@ -364,9 +401,69 @@ Summary:
          
          
         
+        class</nobr></td>
+      <td class="jd-linkcol"><a href="../../../reference/chan/text/TemplateParser.Attributes.html">TemplateParser.Attributes</a></td>
+      <td class="jd-descrcol" width="100%"><p>Attributes holder and parser.&nbsp;</td>
+    </tr>
+    
+    
+    <tr class=" api apilevel-" >
+      <td class="jd-typecol"><nobr>
+        
+         
+         
+        
         interface</nobr></td>
-      <td class="jd-linkcol"><a href="../../../reference/chan/util/StringUtils.ReplacementCallback.html">StringUtils.ReplacementCallback</a></td>
-      <td class="jd-descrcol" width="100%"><p>Replacement callback for <code>replaceAll</code> methods.&nbsp;</td>
+      <td class="jd-linkcol"><a href="../../../reference/chan/text/TemplateParser.CloseCallback.html">TemplateParser.CloseCallback</a>&lt;H&gt;</td>
+      <td class="jd-descrcol" width="100%"><p>Tag close callback.&nbsp;</td>
+    </tr>
+    
+    
+    <tr class="alt-color api apilevel-" >
+      <td class="jd-typecol"><nobr>
+        
+         
+         
+        
+        interface</nobr></td>
+      <td class="jd-linkcol"><a href="../../../reference/chan/text/TemplateParser.ContentCallback.html">TemplateParser.ContentCallback</a>&lt;H&gt;</td>
+      <td class="jd-descrcol" width="100%"><p>Tag full content callback.&nbsp;</td>
+    </tr>
+    
+    
+    <tr class=" api apilevel-" >
+      <td class="jd-typecol"><nobr>
+        
+         
+         
+        
+        class</nobr></td>
+      <td class="jd-linkcol"><a href="../../../reference/chan/text/TemplateParser.Instance.html">TemplateParser.Instance</a></td>
+      <td class="jd-descrcol" width="100%"><p>Parsing process holder.&nbsp;</td>
+    </tr>
+    
+    
+    <tr class="alt-color api apilevel-" >
+      <td class="jd-typecol"><nobr>
+        
+         
+         
+        
+        interface</nobr></td>
+      <td class="jd-linkcol"><a href="../../../reference/chan/text/TemplateParser.OpenCallback.html">TemplateParser.OpenCallback</a>&lt;H&gt;</td>
+      <td class="jd-descrcol" width="100%"><p>Tag open callback.&nbsp;</td>
+    </tr>
+    
+    
+    <tr class=" api apilevel-" >
+      <td class="jd-typecol"><nobr>
+        
+         
+         
+        
+        interface</nobr></td>
+      <td class="jd-linkcol"><a href="../../../reference/chan/text/TemplateParser.TextCallback.html">TemplateParser.TextCallback</a>&lt;H&gt;</td>
+      <td class="jd-descrcol" width="100%"><p>Text between tags callback.&nbsp;</td>
     </tr>
     
     
@@ -409,7 +506,7 @@ Summary:
             </nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/util/StringUtils.html#StringUtils()">StringUtils</a></span>()</nobr>
+        <span class="sympad"><a href="../../../reference/chan/text/TemplateParser.html#TemplateParser()">TemplateParser</a></span>()</nobr>
         
   </td></tr>
 
@@ -432,15 +529,15 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            static
             
             
-            String</nobr>
+            
+            <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/util/StringUtils.html#clearHtml(java.lang.String)">clearHtml</a></span>(String string)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/text/TemplateParser.html#close(chan.text.TemplateParser.CloseCallback<H>)">close</a></span>(<a href="../../../reference/chan/text/TemplateParser.CloseCallback.html">CloseCallback</a>&lt;H&gt; closeCallback)</nobr>
         
-        <div class="jd-descrdiv"><p>Removes all HTML tags and transforms mnemonics.</div>
+        <div class="jd-descrdiv"><p>Defines a reaction callback when tag closed.</div>
   
   </td></tr>
 
@@ -450,15 +547,16 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            static
             
             
-            String</nobr>
+            
+            <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/util/StringUtils.html#emptyIfNull(java.lang.CharSequence)">emptyIfNull</a></span>(CharSequence string)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/text/TemplateParser.html#contains(java.lang.String, java.lang.String, java.lang.String)">contains</a></span>(String tagName, String attribute, String value)</nobr>
         
-        <div class="jd-descrdiv"><p>Returns <code>string.toString()</code> if <code>string</code> is not <code>null</code>, otherwise returns empty string.</div>
+        <div class="jd-descrdiv"><p>Indicates the parser to react on <code>tagName</code> tags which has an <code>attribute</code>
+ contains <code>value</code>.</div>
   
   </td></tr>
 
@@ -468,15 +566,15 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            static
             
             
-            boolean</nobr>
+            
+            <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/util/StringUtils.html#equals(java.lang.String, java.lang.String)">equals</a></span>(String first, String second)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/text/TemplateParser.html#content(chan.text.TemplateParser.ContentCallback<H>)">content</a></span>(<a href="../../../reference/chan/text/TemplateParser.ContentCallback.html">ContentCallback</a>&lt;H&gt; contentCallback)</nobr>
         
-        <div class="jd-descrdiv"><p>Returns whether strings are equals.</div>
+        <div class="jd-descrdiv"><p>Defines a reaction callback when full tag content parsed.</div>
   
   </td></tr>
 
@@ -486,15 +584,16 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            static
             
             
-            boolean</nobr>
+            
+            <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/util/StringUtils.html#isEmpty(java.lang.CharSequence)">isEmpty</a></span>(CharSequence string)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/text/TemplateParser.html#ends(java.lang.String, java.lang.String, java.lang.String)">ends</a></span>(String tagName, String attribute, String value)</nobr>
         
-        <div class="jd-descrdiv"><p>Returns whether <code>string</code> is <code>null</code> or empty.</div>
+        <div class="jd-descrdiv"><p>Indicates the parser to react on <code>tagName</code> tags which has an <code>attribute</code>
+ ends with <code>value</code>.</div>
   
   </td></tr>
 
@@ -504,15 +603,16 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            static
             
             
-            boolean</nobr>
+            
+            <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/util/StringUtils.html#isEmptyOrWhitespace(java.lang.CharSequence)">isEmptyOrWhitespace</a></span>(CharSequence string)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/text/TemplateParser.html#equals(java.lang.String, java.lang.String, java.lang.String)">equals</a></span>(String tagName, String attribute, String value)</nobr>
         
-        <div class="jd-descrdiv"><p>Returns whether <code>string</code> is <code>null</code>, empty or contains only whitespaces.</div>
+        <div class="jd-descrdiv"><p>Indicates the parser to react on <code>tagName</code> tags which has an <code>attribute</code>
+ equals <code>value</code>.</div>
   
   </td></tr>
 
@@ -522,15 +622,15 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            static
             
             
-            String</nobr>
+            
+            <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/util/StringUtils.html#linkify(java.lang.String)">linkify</a></span>(String string)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/text/TemplateParser.html#name(java.lang.String)">name</a></span>(String tagName)</nobr>
         
-        <div class="jd-descrdiv"><p>Append HTML links to text.</div>
+        <div class="jd-descrdiv"><p>Indicates the parser to react on <code>tagName</code> tags.</div>
   
   </td></tr>
 
@@ -540,15 +640,15 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            static
             
             
-            int</nobr>
+            
+            <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/util/StringUtils.html#nearestIndexOf(java.lang.String, int, char...)">nearestIndexOf</a></span>(String string, int start, char... what)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/text/TemplateParser.html#open(chan.text.TemplateParser.OpenCallback<H>)">open</a></span>(<a href="../../../reference/chan/text/TemplateParser.OpenCallback.html">OpenCallback</a>&lt;H&gt; openCallback)</nobr>
         
-        <div class="jd-descrdiv"><p>Returns the next index of the nearest of given <code>what</code> char array in <code>string</code>, or -1.</div>
+        <div class="jd-descrdiv"><p>Defines a reaction callback when tag opened.</div>
   
   </td></tr>
 
@@ -558,15 +658,15 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            static
             
             
-            int</nobr>
+            
+            void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/util/StringUtils.html#nearestIndexOf(java.lang.String, int, java.lang.String...)">nearestIndexOf</a></span>(String string, int start, String... what)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/text/TemplateParser.html#parse(java.lang.String, H)">parse</a></span>(String source, H holder)</nobr>
         
-        <div class="jd-descrdiv"><p>Returns the next index of the nearest of given <code>what</code> string array in <code>string</code>, or -1.</div>
+        <div class="jd-descrdiv"><p>Starts a new parsing process.</div>
   
   </td></tr>
 
@@ -576,15 +676,15 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            static
             
             
-            String</nobr>
+            
+            <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/util/StringUtils.html#nullIfEmpty(java.lang.String)">nullIfEmpty</a></span>(String string)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/text/TemplateParser.html#prepare()">prepare</a></span>()</nobr>
         
-        <div class="jd-descrdiv"><p>Returns <code>null</code> if <code>string</code> is empty, otherwise returns <code>string</code>.</div>
+        <div class="jd-descrdiv"><p>Normalizes a parser content and allows you to use your parser.</div>
   
   </td></tr>
 
@@ -594,16 +694,16 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            static
             
             
-            String</nobr>
+            
+            <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/util/StringUtils.html#replaceAll(java.lang.String, java.lang.String, chan.util.StringUtils.ReplacementCallback)">replaceAll</a></span>(String string, String regularExpression, <a href="../../../reference/chan/util/StringUtils.ReplacementCallback.html">StringUtils.ReplacementCallback</a> replacementCallback)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/text/TemplateParser.html#starts(java.lang.String, java.lang.String, java.lang.String)">starts</a></span>(String tagName, String attribute, String value)</nobr>
         
-        <div class="jd-descrdiv"><p>Replaces all matches for <code>regularExpression</code> within given <code>string</code> with the replacement
- provided by <code>replacementCallback</code>.</div>
+        <div class="jd-descrdiv"><p>Indicates the parser to react on <code>tagName</code> tags which has an <code>attribute</code>
+ starts with <code>value</code>.</div>
   
   </td></tr>
 
@@ -613,34 +713,15 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
-            static
             
             
-            String</nobr>
+            
+            <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/util/StringUtils.html#replaceAll(java.lang.String, java.util.regex.Pattern, chan.util.StringUtils.ReplacementCallback)">replaceAll</a></span>(String string, Pattern pattern, <a href="../../../reference/chan/util/StringUtils.ReplacementCallback.html">StringUtils.ReplacementCallback</a> replacementCallback)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/text/TemplateParser.html#text(chan.text.TemplateParser.TextCallback<H>)">text</a></span>(<a href="../../../reference/chan/text/TemplateParser.TextCallback.html">TextCallback</a>&lt;H&gt; textCallback)</nobr>
         
-        <div class="jd-descrdiv"><p>Replaces all matches for compiled <code>pattern</code> within given <code>string</code> with the replacement
- provided by <code>replacementCallback</code>.</div>
-  
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            static
-            
-            
-            String</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/util/StringUtils.html#unescapeHtml(java.lang.String)">unescapeHtml</a></span>(String string)</nobr>
-        
-        <div class="jd-descrdiv"><p>Removes all HTML tags and transforms mnemonics.</div>
+        <div class="jd-descrdiv"><p>Defines a reaction callback on text between tags.</div>
   
   </td></tr>
 
@@ -895,7 +976,7 @@ From class
 
 
 
-<A NAME="StringUtils()"></A>
+<A NAME="TemplateParser()"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -907,7 +988,7 @@ From class
         
         
       </span>
-      <span class="sympad">StringUtils</span>
+      <span class="sympad">TemplateParser</span>
       <span class="normal">()</span>
     </h4>
       <div class="api-level">
@@ -939,7 +1020,7 @@ From class
 
 
 
-<A NAME="clearHtml(java.lang.String)"></A>
+<A NAME="close(chan.text.TemplateParser.CloseCallback<H>)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -947,12 +1028,12 @@ From class
         public
         
         
-        static
         
-        String
+        
+        <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;
       </span>
-      <span class="sympad">clearHtml</span>
-      <span class="normal">(String string)</span>
+      <span class="sympad">close</span>
+      <span class="normal">(<a href="../../../reference/chan/text/TemplateParser.CloseCallback.html">CloseCallback</a>&lt;H&gt; closeCallback)</span>
     </h4>
       <div class="api-level">
         <div></div>
@@ -962,21 +1043,84 @@ From class
       </div>
     <div class="jd-details-descr">
       
-  <p><p>Removes all HTML tags and transforms mnemonics. This method will handle spaces and line breaks.</p></p>
+  <p><p>Defines a reaction callback when tag closed. Parser can react only on <code><a href="../../../reference/chan/text/TemplateParser.html#name(java.lang.String)">name(String)</a></code> rule.</p></p>
     <table class="responsive">
     <tr><th colspan=2>Parameters</th></tr>
       <tr>
-        <td><code>string</code></td>
+        <td><code>closeCallback</code></td>
         <td width="100%">
-          <code>String</code>:
-          Source string.</td>
+          <code>CloseCallback</code>:
+          Tag close callback.</td>
       </tr>
     </table>
     <table class="responsive">
       <tr><th colspan=2>Returns</th></tr>
       <tr>
-        <td><code>String</code></td>
-        <td width="100%">Cleared <code>source</code> string.
+        <td><code><a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</code></td>
+        <td width="100%">This parser.</td>
+      </tr>
+    </table>
+  <div>
+      <p><b>See also:</b></p>
+      <ul class="nolist"><li><code><a href="../../../reference/chan/text/GroupParser.Callback.html#onEndElement(chan.text.GroupParser, java.lang.String)">onEndElement(GroupParser, String)</a></code></li>
+      </ul>
+  </div>
+
+    </div>
+</div>
+
+
+<A NAME="contains(java.lang.String, java.lang.String, java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public
+        
+        
+        
+        
+        <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;
+      </span>
+      <span class="sympad">contains</span>
+      <span class="normal">(String tagName, String attribute, String value)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <p><p>Indicates the parser to react on <code>tagName</code> tags which has an <code>attribute</code>
+ contains <code>value</code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>tagName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Tag name.</td>
+      </tr>
+      <tr>
+        <td><code>attribute</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Attribute name.</td>
+      </tr>
+      <tr>
+        <td><code>value</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Attribute value.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</code></td>
+        <td width="100%">This parser.
 </td>
       </tr>
     </table>
@@ -985,7 +1129,7 @@ From class
 </div>
 
 
-<A NAME="emptyIfNull(java.lang.CharSequence)"></A>
+<A NAME="content(chan.text.TemplateParser.ContentCallback<H>)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -993,12 +1137,12 @@ From class
         public
         
         
-        static
         
-        String
+        
+        <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;
       </span>
-      <span class="sympad">emptyIfNull</span>
-      <span class="normal">(CharSequence string)</span>
+      <span class="sympad">content</span>
+      <span class="normal">(<a href="../../../reference/chan/text/TemplateParser.ContentCallback.html">ContentCallback</a>&lt;H&gt; contentCallback)</span>
     </h4>
       <div class="api-level">
         <div></div>
@@ -1008,26 +1152,27 @@ From class
       </div>
     <div class="jd-details-descr">
       
-  <p><p>Returns <code>string.toString()</code> if <code>string</code> is not <code>null</code>, otherwise returns empty string.</p></p>
+  <p><p>Defines a reaction callback when full tag content parsed. This callback may be not called if open callback
+ returned a <code>false</code> value.</p></p>
     <table class="responsive">
     <tr><th colspan=2>Parameters</th></tr>
       <tr>
-        <td><code>string</code></td>
+        <td><code>contentCallback</code></td>
         <td width="100%">
-          <code>CharSequence</code>:
-          String instance.</td>
+          <code>ContentCallback</code>:
+          Tag content callback.</td>
       </tr>
     </table>
     <table class="responsive">
       <tr><th colspan=2>Returns</th></tr>
       <tr>
-        <td><code>String</code></td>
-        <td width="100%">Not null string.</td>
+        <td><code><a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</code></td>
+        <td width="100%">This parser.</td>
       </tr>
     </table>
   <div>
       <p><b>See also:</b></p>
-      <ul class="nolist"><li><code><a href="../../../reference/chan/util/StringUtils.html#isEmpty(java.lang.CharSequence)">isEmpty(CharSequence)</a></code></li>
+      <ul class="nolist"><li><code><a href="../../../reference/chan/text/GroupParser.Callback.html#onGroupComplete(chan.text.GroupParser, java.lang.String)">onGroupComplete(GroupParser, String)</a></code></li>
       </ul>
   </div>
 
@@ -1035,7 +1180,7 @@ From class
 </div>
 
 
-<A NAME="equals(java.lang.String, java.lang.String)"></A>
+<A NAME="ends(java.lang.String, java.lang.String, java.lang.String)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -1043,12 +1188,71 @@ From class
         public
         
         
-        static
         
-        boolean
+        
+        <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;
+      </span>
+      <span class="sympad">ends</span>
+      <span class="normal">(String tagName, String attribute, String value)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <p><p>Indicates the parser to react on <code>tagName</code> tags which has an <code>attribute</code>
+ ends with <code>value</code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>tagName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Tag name.</td>
+      </tr>
+      <tr>
+        <td><code>attribute</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Attribute name.</td>
+      </tr>
+      <tr>
+        <td><code>value</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Attribute value.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</code></td>
+        <td width="100%">This parser.
+</td>
+      </tr>
+    </table>
+
+    </div>
+</div>
+
+
+<A NAME="equals(java.lang.String, java.lang.String, java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public
+        
+        
+        
+        
+        <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;
       </span>
       <span class="sympad">equals</span>
-      <span class="normal">(String first, String second)</span>
+      <span class="normal">(String tagName, String attribute, String value)</span>
     </h4>
       <div class="api-level">
         <div></div>
@@ -1058,27 +1262,34 @@ From class
       </div>
     <div class="jd-details-descr">
       
-  <p><p>Returns whether strings are equals. May handle null values.</p></p>
+  <p><p>Indicates the parser to react on <code>tagName</code> tags which has an <code>attribute</code>
+ equals <code>value</code>.</p></p>
     <table class="responsive">
     <tr><th colspan=2>Parameters</th></tr>
       <tr>
-        <td><code>first</code></td>
+        <td><code>tagName</code></td>
         <td width="100%">
           <code>String</code>:
-          String instance.</td>
+          Tag name.</td>
       </tr>
       <tr>
-        <td><code>second</code></td>
+        <td><code>attribute</code></td>
         <td width="100%">
           <code>String</code>:
-          String instance.</td>
+          Attribute name.</td>
+      </tr>
+      <tr>
+        <td><code>value</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Attribute value.</td>
       </tr>
     </table>
     <table class="responsive">
       <tr><th colspan=2>Returns</th></tr>
       <tr>
-        <td><code>boolean</code></td>
-        <td width="100%">True if strings are equals.
+        <td><code><a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</code></td>
+        <td width="100%">This parser.
 </td>
       </tr>
     </table>
@@ -1087,7 +1298,7 @@ From class
 </div>
 
 
-<A NAME="isEmpty(java.lang.CharSequence)"></A>
+<A NAME="name(java.lang.String)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -1095,12 +1306,12 @@ From class
         public
         
         
-        static
         
-        boolean
+        
+        <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;
       </span>
-      <span class="sympad">isEmpty</span>
-      <span class="normal">(CharSequence string)</span>
+      <span class="sympad">name</span>
+      <span class="normal">(String tagName)</span>
     </h4>
       <div class="api-level">
         <div></div>
@@ -1110,21 +1321,21 @@ From class
       </div>
     <div class="jd-details-descr">
       
-  <p><p>Returns whether <code>string</code> is <code>null</code> or empty.</p></p>
+  <p><p>Indicates the parser to react on <code>tagName</code> tags.</p></p>
     <table class="responsive">
     <tr><th colspan=2>Parameters</th></tr>
       <tr>
-        <td><code>string</code></td>
+        <td><code>tagName</code></td>
         <td width="100%">
-          <code>CharSequence</code>:
-          String instance.</td>
+          <code>String</code>:
+          Tag name.</td>
       </tr>
     </table>
     <table class="responsive">
       <tr><th colspan=2>Returns</th></tr>
       <tr>
-        <td><code>boolean</code></td>
-        <td width="100%">True if string is empty.
+        <td><code><a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</code></td>
+        <td width="100%">This parser.
 </td>
       </tr>
     </table>
@@ -1133,7 +1344,7 @@ From class
 </div>
 
 
-<A NAME="isEmptyOrWhitespace(java.lang.CharSequence)"></A>
+<A NAME="open(chan.text.TemplateParser.OpenCallback<H>)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -1141,12 +1352,12 @@ From class
         public
         
         
-        static
         
-        boolean
+        
+        <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;
       </span>
-      <span class="sympad">isEmptyOrWhitespace</span>
-      <span class="normal">(CharSequence string)</span>
+      <span class="sympad">open</span>
+      <span class="normal">(<a href="../../../reference/chan/text/TemplateParser.OpenCallback.html">OpenCallback</a>&lt;H&gt; openCallback)</span>
     </h4>
       <div class="api-level">
         <div></div>
@@ -1156,234 +1367,28 @@ From class
       </div>
     <div class="jd-details-descr">
       
-  <p><p>Returns whether <code>string</code> is <code>null</code>, empty or contains only whitespaces.</p></p>
+  <p><p>Defines a reaction callback when tag opened. This callback determines if parser should parse the full
+ tag content and call content callback or not depending on the return value. If you don't specify this callback,
+ parser will parser full content anyway.</p></p>
     <table class="responsive">
     <tr><th colspan=2>Parameters</th></tr>
       <tr>
-        <td><code>string</code></td>
+        <td><code>openCallback</code></td>
         <td width="100%">
-          <code>CharSequence</code>:
-          String instance.</td>
+          <code>OpenCallback</code>:
+          Tag open callback.</td>
       </tr>
     </table>
     <table class="responsive">
       <tr><th colspan=2>Returns</th></tr>
       <tr>
-        <td><code>boolean</code></td>
-        <td width="100%">True if string is empty or whitespace.
-</td>
-      </tr>
-    </table>
-
-    </div>
-</div>
-
-
-<A NAME="linkify(java.lang.String)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public
-        
-        
-        static
-        
-        String
-      </span>
-      <span class="sympad">linkify</span>
-      <span class="normal">(String string)</span>
-    </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
-    <div class="jd-details-descr">
-      
-  <p><p>Append HTML links to text.</p></p>
-    <table class="responsive">
-    <tr><th colspan=2>Parameters</th></tr>
-      <tr>
-        <td><code>string</code></td>
-        <td width="100%">
-          <code>String</code>:
-          Text to append links.</td>
-      </tr>
-    </table>
-    <table class="responsive">
-      <tr><th colspan=2>Returns</th></tr>
-      <tr>
-        <td><code>String</code></td>
-        <td width="100%">Text with links.
-</td>
-      </tr>
-    </table>
-
-    </div>
-</div>
-
-
-<A NAME="nearestIndexOf(java.lang.String, int, char...)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public
-        
-        
-        static
-        
-        int
-      </span>
-      <span class="sympad">nearestIndexOf</span>
-      <span class="normal">(String string, int start, char... what)</span>
-    </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
-    <div class="jd-details-descr">
-      
-  <p><p>Returns the next index of the nearest of given <code>what</code> char array in <code>string</code>, or -1.</p></p>
-    <table class="responsive">
-    <tr><th colspan=2>Parameters</th></tr>
-      <tr>
-        <td><code>string</code></td>
-        <td width="100%">
-          <code>String</code>:
-          Where to search.</td>
-      </tr>
-      <tr>
-        <td><code>start</code></td>
-        <td width="100%">
-          <code>int</code>:
-          Start offset.</td>
-      </tr>
-      <tr>
-        <td><code>what</code></td>
-        <td width="100%">
-          <code>char</code>:
-          Char array to search.</td>
-      </tr>
-    </table>
-    <table class="responsive">
-      <tr><th colspan=2>Returns</th></tr>
-      <tr>
-        <td><code>int</code></td>
-        <td width="100%">True if strings are equals.
-</td>
-      </tr>
-    </table>
-
-    </div>
-</div>
-
-
-<A NAME="nearestIndexOf(java.lang.String, int, java.lang.String...)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public
-        
-        
-        static
-        
-        int
-      </span>
-      <span class="sympad">nearestIndexOf</span>
-      <span class="normal">(String string, int start, String... what)</span>
-    </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
-    <div class="jd-details-descr">
-      
-  <p><p>Returns the next index of the nearest of given <code>what</code> string array in <code>string</code>, or -1.</p></p>
-    <table class="responsive">
-    <tr><th colspan=2>Parameters</th></tr>
-      <tr>
-        <td><code>string</code></td>
-        <td width="100%">
-          <code>String</code>:
-          Where to search.</td>
-      </tr>
-      <tr>
-        <td><code>start</code></td>
-        <td width="100%">
-          <code>int</code>:
-          Start offset.</td>
-      </tr>
-      <tr>
-        <td><code>what</code></td>
-        <td width="100%">
-          <code>String</code>:
-          String array to search.</td>
-      </tr>
-    </table>
-    <table class="responsive">
-      <tr><th colspan=2>Returns</th></tr>
-      <tr>
-        <td><code>int</code></td>
-        <td width="100%">True if strings are equals.
-</td>
-      </tr>
-    </table>
-
-    </div>
-</div>
-
-
-<A NAME="nullIfEmpty(java.lang.String)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public
-        
-        
-        static
-        
-        String
-      </span>
-      <span class="sympad">nullIfEmpty</span>
-      <span class="normal">(String string)</span>
-    </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
-    <div class="jd-details-descr">
-      
-  <p><p>Returns <code>null</code> if <code>string</code> is empty, otherwise returns <code>string</code>.</p></p>
-    <table class="responsive">
-    <tr><th colspan=2>Parameters</th></tr>
-      <tr>
-        <td><code>string</code></td>
-        <td width="100%">
-          <code>String</code>:
-          String instance.</td>
-      </tr>
-    </table>
-    <table class="responsive">
-      <tr><th colspan=2>Returns</th></tr>
-      <tr>
-        <td><code>String</code></td>
-        <td width="100%">Null string if <code>s</code> is empty.</td>
+        <td><code><a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</code></td>
+        <td width="100%">This parser.</td>
       </tr>
     </table>
   <div>
       <p><b>See also:</b></p>
-      <ul class="nolist"><li><code><a href="../../../reference/chan/util/StringUtils.html#isEmpty(java.lang.CharSequence)">isEmpty(CharSequence)</a></code></li>
+      <ul class="nolist"><li><code><a href="../../../reference/chan/text/GroupParser.Callback.html#onStartElement(chan.text.GroupParser, java.lang.String, java.lang.String)">onStartElement(GroupParser, String, String)</a></code></li>
       </ul>
   </div>
 
@@ -1391,7 +1396,7 @@ From class
 </div>
 
 
-<A NAME="replaceAll(java.lang.String, java.lang.String, chan.util.StringUtils.ReplacementCallback)"></A>
+<A NAME="parse(java.lang.String, H)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -1399,12 +1404,12 @@ From class
         public
         
         
-        static
         
-        String
+        
+        void
       </span>
-      <span class="sympad">replaceAll</span>
-      <span class="normal">(String string, String regularExpression, <a href="../../../reference/chan/util/StringUtils.ReplacementCallback.html">StringUtils.ReplacementCallback</a> replacementCallback)</span>
+      <span class="sympad">parse</span>
+      <span class="normal">(String source, H holder)</span>
     </h4>
       <div class="api-level">
         <div></div>
@@ -1414,37 +1419,66 @@ From class
       </div>
     <div class="jd-details-descr">
       
-  <p><p>Replaces all matches for <code>regularExpression</code> within given <code>string</code> with the replacement
- provided by <code>replacementCallback</code>.</p>
- 
- <p>If the same regular expression is to be used for multiple operations, it may be more efficient to
- use <code><a href="../../../reference/chan/util/StringUtils.html#replaceAll(java.lang.String, java.util.regex.Pattern, chan.util.StringUtils.ReplacementCallback)">replaceAll(String, Pattern, ReplacementCallback)</a></code> method with compiled <code>Pattern</code>.</p></p>
+  <p><p>Starts a new parsing process.</p></p>
     <table class="responsive">
     <tr><th colspan=2>Parameters</th></tr>
       <tr>
-        <td><code>string</code></td>
+        <td><code>source</code></td>
         <td width="100%">
           <code>String</code>:
-          Source string.</td>
+          String to parse.</td>
       </tr>
       <tr>
-        <td><code>regularExpression</code></td>
+        <td><code>holder</code></td>
         <td width="100%">
-          <code>String</code>:
-          Regular expression string.</td>
-      </tr>
-      <tr>
-        <td><code>replacementCallback</code></td>
-        <td width="100%">
-          <code>StringUtils.ReplacementCallback</code>:
-          <code><a href="../../../reference/chan/util/StringUtils.ReplacementCallback.html">StringUtils.ReplacementCallback</a></code> instance.</td>
+          <code>H</code>:
+          Intermediate data holder during parsing process.</td>
       </tr>
     </table>
+      <table class="responsive">
+      <tr><th colspan=2>Throws</th></tr>
+        <tr>
+          <td><code><a href="../../../reference/chan/text/ParseException.html">ParseException</a></code></td>
+          <td width="100%">when parsing process was interrupted.
+</td>
+        </tr>
+      </table>
+  
+
+    </div>
+</div>
+
+
+<A NAME="prepare()"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public
+        
+        
+        
+        
+        <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;
+      </span>
+      <span class="sympad">prepare</span>
+      <span class="normal">()</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <p><p>Normalizes a parser content and allows you to use your parser. After calling this methods you can't
+ define any new rules or callbacks.</p></p>
     <table class="responsive">
       <tr><th colspan=2>Returns</th></tr>
       <tr>
-        <td><code>String</code></td>
-        <td width="100%">Resulting string.
+        <td><code><a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</code></td>
+        <td width="100%">This parser.
 </td>
       </tr>
     </table>
@@ -1453,7 +1487,7 @@ From class
 </div>
 
 
-<A NAME="replaceAll(java.lang.String, java.util.regex.Pattern, chan.util.StringUtils.ReplacementCallback)"></A>
+<A NAME="starts(java.lang.String, java.lang.String, java.lang.String)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -1461,12 +1495,12 @@ From class
         public
         
         
-        static
         
-        String
+        
+        <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;
       </span>
-      <span class="sympad">replaceAll</span>
-      <span class="normal">(String string, Pattern pattern, <a href="../../../reference/chan/util/StringUtils.ReplacementCallback.html">StringUtils.ReplacementCallback</a> replacementCallback)</span>
+      <span class="sympad">starts</span>
+      <span class="normal">(String tagName, String attribute, String value)</span>
     </h4>
       <div class="api-level">
         <div></div>
@@ -1476,34 +1510,34 @@ From class
       </div>
     <div class="jd-details-descr">
       
-  <p><p>Replaces all matches for compiled <code>pattern</code> within given <code>string</code> with the replacement
- provided by <code>replacementCallback</code>.</p></p>
+  <p><p>Indicates the parser to react on <code>tagName</code> tags which has an <code>attribute</code>
+ starts with <code>value</code>.</p></p>
     <table class="responsive">
     <tr><th colspan=2>Parameters</th></tr>
       <tr>
-        <td><code>string</code></td>
+        <td><code>tagName</code></td>
         <td width="100%">
           <code>String</code>:
-          Source string.</td>
+          Tag name.</td>
       </tr>
       <tr>
-        <td><code>pattern</code></td>
+        <td><code>attribute</code></td>
         <td width="100%">
-          <code>Pattern</code>:
-          Compiled regular expression.</td>
+          <code>String</code>:
+          Attribute name.</td>
       </tr>
       <tr>
-        <td><code>replacementCallback</code></td>
+        <td><code>value</code></td>
         <td width="100%">
-          <code>StringUtils.ReplacementCallback</code>:
-          <code><a href="../../../reference/chan/util/StringUtils.ReplacementCallback.html">StringUtils.ReplacementCallback</a></code> instance.</td>
+          <code>String</code>:
+          Attribute value.</td>
       </tr>
     </table>
     <table class="responsive">
       <tr><th colspan=2>Returns</th></tr>
       <tr>
-        <td><code>String</code></td>
-        <td width="100%">Resulting string.
+        <td><code><a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</code></td>
+        <td width="100%">This parser.
 </td>
       </tr>
     </table>
@@ -1512,7 +1546,7 @@ From class
 </div>
 
 
-<A NAME="unescapeHtml(java.lang.String)"></A>
+<A NAME="text(chan.text.TemplateParser.TextCallback<H>)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -1520,12 +1554,12 @@ From class
         public
         
         
-        static
         
-        String
+        
+        <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;
       </span>
-      <span class="sympad">unescapeHtml</span>
-      <span class="normal">(String string)</span>
+      <span class="sympad">text</span>
+      <span class="normal">(<a href="../../../reference/chan/text/TemplateParser.TextCallback.html">TextCallback</a>&lt;H&gt; textCallback)</span>
     </h4>
       <div class="api-level">
         <div></div>
@@ -1535,24 +1569,28 @@ From class
       </div>
     <div class="jd-details-descr">
       
-  <p><p>Removes all HTML tags and transforms mnemonics. This method will not handle spaces and line breaks.</p></p>
+  <p><p>Defines a reaction callback on text between tags. This callback doesn't depend on any rules.</p></p>
     <table class="responsive">
     <tr><th colspan=2>Parameters</th></tr>
       <tr>
-        <td><code>string</code></td>
+        <td><code>textCallback</code></td>
         <td width="100%">
-          <code>String</code>:
-          Source string.</td>
+          <code>TextCallback</code>:
+          Text between tags callback.</td>
       </tr>
     </table>
     <table class="responsive">
       <tr><th colspan=2>Returns</th></tr>
       <tr>
-        <td><code>String</code></td>
-        <td width="100%">Escaped <code>source</code> string.
-</td>
+        <td><code><a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</code></td>
+        <td width="100%">This parser.</td>
       </tr>
     </table>
+  <div>
+      <p><b>See also:</b></p>
+      <ul class="nolist"><li><code><a href="../../../reference/chan/text/GroupParser.Callback.html#onText(chan.text.GroupParser, java.lang.String, int, int)">onText(GroupParser, String, int, int)</a></code></li>
+      </ul>
+  </div>
 
     </div>
 </div>

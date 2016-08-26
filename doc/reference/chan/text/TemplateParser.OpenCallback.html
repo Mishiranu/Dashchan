@@ -66,7 +66,7 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
 <title>
 
-  GroupParser.Callback - Dashchan API Reference |
+  TemplateParser.OpenCallback - Dashchan API Reference |
 
 Doclava
 
@@ -167,10 +167,10 @@ Doclava
               
     <li><h2>Interfaces</h2>
       <ul>
-          <li class="selected api apilevel-"><a href="../../../reference/chan/text/GroupParser.Callback.html">GroupParser.Callback</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/GroupParser.Callback.html">GroupParser.Callback</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.CloseCallback.html">TemplateParser.CloseCallback</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.ContentCallback.html">TemplateParser.ContentCallback</a></li>
-          <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.OpenCallback.html">TemplateParser.OpenCallback</a></li>
+          <li class="selected api apilevel-"><a href="../../../reference/chan/text/TemplateParser.OpenCallback.html">TemplateParser.OpenCallback</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.TextCallback.html">TemplateParser.TextCallback</a></li>
       </ul>
     </li>
@@ -252,7 +252,7 @@ Doclava
      
     
     interface
-<h1 itemprop="name">GroupParser.Callback</h1>
+<h1 itemprop="name">TemplateParser.OpenCallback</h1>
 
 
 
@@ -271,7 +271,7 @@ Doclava
 
     <tr>
          	
-        <td colspan="1" class="jd-inheritance-class-cell">chan.text.GroupParser.Callback</td>
+        <td colspan="1" class="jd-inheritance-class-cell">chan.text.TemplateParser.OpenCallback&lt;H&gt;</td>
     </tr>
     
 
@@ -287,7 +287,7 @@ Doclava
 
 
 <h2>Class Overview</h2>
-<p itemprop="articleBody"><p>Callback for <code><a href="../../../reference/chan/text/GroupParser.html">GroupParser</a></code>.</p>
+<p itemprop="articleBody"><p>Tag open callback.</p>
 </p>
 
 
@@ -356,66 +356,12 @@ Doclava
             
             
             
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/text/GroupParser.Callback.html#onEndElement(chan.text.GroupParser, java.lang.String)">onEndElement</a></span>(<a href="../../../reference/chan/text/GroupParser.html">GroupParser</a> parser, String tagName)</nobr>
-        
-        <div class="jd-descrdiv"><p>This method will be called in linear mode every time parser reaches end of tag.</div>
-  
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            abstract
-            
-            
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/text/GroupParser.Callback.html#onGroupComplete(chan.text.GroupParser, java.lang.String)">onGroupComplete</a></span>(<a href="../../../reference/chan/text/GroupParser.html">GroupParser</a> parser, String text)</nobr>
-        
-        <div class="jd-descrdiv"><p>This method will be called in group mode every time parser reaches end of group.</div>
-  
-  </td></tr>
-
-
-	 
-    <tr class="alt-color api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            abstract
-            
-            
-            
-            
             boolean</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/text/GroupParser.Callback.html#onStartElement(chan.text.GroupParser, java.lang.String, java.lang.String)">onStartElement</a></span>(<a href="../../../reference/chan/text/GroupParser.html">GroupParser</a> parser, String tagName, String attrs)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/text/TemplateParser.OpenCallback.html#onOpen(chan.text.TemplateParser.Instance, H, java.lang.String, chan.text.TemplateParser.Attributes)">onOpen</a></span>(<a href="../../../reference/chan/text/TemplateParser.Instance.html">TemplateParser.Instance</a> instance, H holder, String tagName, <a href="../../../reference/chan/text/TemplateParser.Attributes.html">TemplateParser.Attributes</a> attributes)</nobr>
         
-        <div class="jd-descrdiv"><p>This method will be called in linear mode every time parser reaches new tag.</div>
-  
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            abstract
-            
-            
-            
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/text/GroupParser.Callback.html#onText(chan.text.GroupParser, java.lang.String, int, int)">onText</a></span>(<a href="../../../reference/chan/text/GroupParser.html">GroupParser</a> parser, String source, int start, int end)</nobr>
-        
-        <div class="jd-descrdiv"><p>This method will be called in linear mode every time parser skips text.</div>
+        <div class="jd-descrdiv"><p>Tag open callback method.</div>
   
   </td></tr>
 
@@ -468,113 +414,7 @@ Doclava
 
 
 
-<A NAME="onEndElement(chan.text.GroupParser, java.lang.String)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public
-        abstract
-        
-        
-        
-        void
-      </span>
-      <span class="sympad">onEndElement</span>
-      <span class="normal">(<a href="../../../reference/chan/text/GroupParser.html">GroupParser</a> parser, String tagName)</span>
-    </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
-    <div class="jd-details-descr">
-      
-  <p><p>This method will be called in linear mode every time parser reaches end of tag.</p></p>
-    <table class="responsive">
-    <tr><th colspan=2>Parameters</th></tr>
-      <tr>
-        <td><code>parser</code></td>
-        <td width="100%">
-          <code>GroupParser</code>:
-          <code><a href="../../../reference/chan/text/GroupParser.html">GroupParser</a></code> instance.</td>
-      </tr>
-      <tr>
-        <td><code>tagName</code></td>
-        <td width="100%">
-          <code>String</code>:
-          Name of tag.</td>
-      </tr>
-    </table>
-      <table class="responsive">
-      <tr><th colspan=2>Throws</th></tr>
-        <tr>
-          <td><code><a href="../../../reference/chan/text/ParseException.html">ParseException</a></code></td>
-          <td width="100%">to interrupt parsing process.
-</td>
-        </tr>
-      </table>
-  
-
-    </div>
-</div>
-
-
-<A NAME="onGroupComplete(chan.text.GroupParser, java.lang.String)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public
-        abstract
-        
-        
-        
-        void
-      </span>
-      <span class="sympad">onGroupComplete</span>
-      <span class="normal">(<a href="../../../reference/chan/text/GroupParser.html">GroupParser</a> parser, String text)</span>
-    </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
-    <div class="jd-details-descr">
-      
-  <p><p>This method will be called in group mode every time parser reaches end of group.</p></p>
-    <table class="responsive">
-    <tr><th colspan=2>Parameters</th></tr>
-      <tr>
-        <td><code>parser</code></td>
-        <td width="100%">
-          <code>GroupParser</code>:
-          <code><a href="../../../reference/chan/text/GroupParser.html">GroupParser</a></code> instance.</td>
-      </tr>
-      <tr>
-        <td><code>text</code></td>
-        <td width="100%">
-          <code>String</code>:
-          Text inside tag.</td>
-      </tr>
-    </table>
-      <table class="responsive">
-      <tr><th colspan=2>Throws</th></tr>
-        <tr>
-          <td><code><a href="../../../reference/chan/text/ParseException.html">ParseException</a></code></td>
-          <td width="100%">to interrupt parsing process.
-</td>
-        </tr>
-      </table>
-  
-
-    </div>
-</div>
-
-
-<A NAME="onStartElement(chan.text.GroupParser, java.lang.String, java.lang.String)"></A>
+<A NAME="onOpen(chan.text.TemplateParser.Instance, H, java.lang.String, chan.text.TemplateParser.Attributes)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -586,8 +426,8 @@ Doclava
         
         boolean
       </span>
-      <span class="sympad">onStartElement</span>
-      <span class="normal">(<a href="../../../reference/chan/text/GroupParser.html">GroupParser</a> parser, String tagName, String attrs)</span>
+      <span class="sympad">onOpen</span>
+      <span class="normal">(<a href="../../../reference/chan/text/TemplateParser.Instance.html">TemplateParser.Instance</a> instance, H holder, String tagName, <a href="../../../reference/chan/text/TemplateParser.Attributes.html">TemplateParser.Attributes</a> attributes)</span>
     </h4>
       <div class="api-level">
         <div></div>
@@ -597,98 +437,39 @@ Doclava
       </div>
     <div class="jd-details-descr">
       
-  <p><p>This method will be called in linear mode every time parser reaches new tag.</p></p>
+  <p><p>Tag open callback method. See <code><a href="../../../reference/chan/text/TemplateParser.html#open(chan.text.TemplateParser.OpenCallback<H>)">open(OpenCallback)</a></code>.</p></p>
     <table class="responsive">
     <tr><th colspan=2>Parameters</th></tr>
       <tr>
-        <td><code>parser</code></td>
+        <td><code>instance</code></td>
         <td width="100%">
-          <code>GroupParser</code>:
-          <code><a href="../../../reference/chan/text/GroupParser.html">GroupParser</a></code> instance.</td>
+          <code>TemplateParser.Instance</code>:
+          Parser instance holder.</td>
+      </tr>
+      <tr>
+        <td><code>holder</code></td>
+        <td width="100%">
+          <code>H</code>:
+          Intermediate data holder.</td>
       </tr>
       <tr>
         <td><code>tagName</code></td>
         <td width="100%">
           <code>String</code>:
-          Name of tag.</td>
+          Tag name.</td>
       </tr>
       <tr>
-        <td><code>attrs</code></td>
+        <td><code>attributes</code></td>
         <td width="100%">
-          <code>String</code>:
-          Encoded attributes inside tag.</td>
+          <code>TemplateParser.Attributes</code>:
+          Attributes holder.</td>
       </tr>
     </table>
     <table class="responsive">
       <tr><th colspan=2>Returns</th></tr>
       <tr>
         <td><code>boolean</code></td>
-        <td width="100%">True to switch parser to group mode.</td>
-      </tr>
-    </table>
-      <table class="responsive">
-      <tr><th colspan=2>Throws</th></tr>
-        <tr>
-          <td><code><a href="../../../reference/chan/text/ParseException.html">ParseException</a></code></td>
-          <td width="100%">to interrupt parsing process.
-</td>
-        </tr>
-      </table>
-  
-
-    </div>
-</div>
-
-
-<A NAME="onText(chan.text.GroupParser, java.lang.String, int, int)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public
-        abstract
-        
-        
-        
-        void
-      </span>
-      <span class="sympad">onText</span>
-      <span class="normal">(<a href="../../../reference/chan/text/GroupParser.html">GroupParser</a> parser, String source, int start, int end)</span>
-    </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
-    <div class="jd-details-descr">
-      
-  <p><p>This method will be called in linear mode every time parser skips text.</p></p>
-    <table class="responsive">
-    <tr><th colspan=2>Parameters</th></tr>
-      <tr>
-        <td><code>parser</code></td>
-        <td width="100%">
-          <code>GroupParser</code>:
-          <code><a href="../../../reference/chan/text/GroupParser.html">GroupParser</a></code> instance.</td>
-      </tr>
-      <tr>
-        <td><code>source</code></td>
-        <td width="100%">
-          <code>String</code>:
-          Source string.</td>
-      </tr>
-      <tr>
-        <td><code>start</code></td>
-        <td width="100%">
-          <code>int</code>:
-          Start index of text.</td>
-      </tr>
-      <tr>
-        <td><code>end</code></td>
-        <td width="100%">
-          <code>int</code>:
-          End index of text.</td>
+        <td width="100%">True if parser should parser full tag content.</td>
       </tr>
     </table>
       <table class="responsive">

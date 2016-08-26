@@ -66,7 +66,7 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
 <title>
 
-  CommentEditor.WakabaMarkCommentEditor - Dashchan API Reference |
+  TemplateParser.Instance - Dashchan API Reference |
 
 Doclava
 
@@ -179,11 +179,11 @@ Doclava
       <ul>
           <li class="api apilevel-"><a href="../../../reference/chan/text/CommentEditor.html">CommentEditor</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/text/CommentEditor.BulletinBoardCodeCommentEditor.html">CommentEditor.BulletinBoardCodeCommentEditor</a></li>
-          <li class="selected api apilevel-"><a href="../../../reference/chan/text/CommentEditor.WakabaMarkCommentEditor.html">CommentEditor.WakabaMarkCommentEditor</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/CommentEditor.WakabaMarkCommentEditor.html">CommentEditor.WakabaMarkCommentEditor</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/text/GroupParser.html">GroupParser</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.Attributes.html">TemplateParser.Attributes</a></li>
-          <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.Instance.html">TemplateParser.Instance</a></li>
+          <li class="selected api apilevel-"><a href="../../../reference/chan/text/TemplateParser.Instance.html">TemplateParser.Instance</a></li>
       </ul>
     </li>
               
@@ -236,15 +236,6 @@ Doclava
   
   
   
-   
-  
-  
-
-  
-   
-  
-  
-  
   
 
 
@@ -259,14 +250,11 @@ Summary:
 
 
 
-  <a href="#inhfields">Inherited Fields</a>
+
+
+
+  <a href="#pubmethods">Methods</a>
   
-
-
-  &#124; <a href="#pubctors">Ctors</a>
-  
-
-
 
 
 
@@ -289,19 +277,15 @@ Summary:
 <div id="jd-header">
     public
     static 
-     
+    final 
     
     class
-<h1 itemprop="name">CommentEditor.WakabaMarkCommentEditor</h1>
+<h1 itemprop="name">TemplateParser.Instance</h1>
 
 
 
   
-  
-  
-
-  
-    extends <a href="../../../reference/chan/text/CommentEditor.html">CommentEditor</a><br/>
+    extends Object<br/>
   
   
   
@@ -321,7 +305,7 @@ Summary:
 
     <tr>
          	
-        <td colspan="3" class="jd-inheritance-class-cell">java.lang.Object</td>
+        <td colspan="2" class="jd-inheritance-class-cell">java.lang.Object</td>
     </tr>
     
 
@@ -329,17 +313,7 @@ Summary:
         
             <td class="jd-inheritance-space">&nbsp;&nbsp;&nbsp;&#x21b3;</td>
          	
-        <td colspan="2" class="jd-inheritance-class-cell"><a href="../../../reference/chan/text/CommentEditor.html">chan.text.CommentEditor</a></td>
-    </tr>
-    
-
-    <tr>
-        
-            <td class="jd-inheritance-space">&nbsp;</td>
-        
-            <td class="jd-inheritance-space">&nbsp;&nbsp;&nbsp;&#x21b3;</td>
-         	
-        <td colspan="1" class="jd-inheritance-class-cell">chan.text.CommentEditor.WakabaMarkCommentEditor</td>
+        <td colspan="1" class="jd-inheritance-class-cell">chan.text.TemplateParser.Instance</td>
     </tr>
     
 
@@ -355,20 +329,7 @@ Summary:
 
 
 <h2>Class Overview</h2>
-<p itemprop="articleBody"><p>Implementation of <code><a href="../../../reference/chan/text/CommentEditor.html">CommentEditor</a></code>.</p>
- 
- <p>This editor has the following configuration:</p>
- 
- <table summary="">
- <tr><th>What</th><th>Open</th><th>Close</th><th>Flags</th></tr>
- <tr><td><code><a href="../../../reference/chan/content/ChanMarkup.html#TAG_BOLD">TAG_BOLD</a></code></td><td><code>**</code></td><td><code>**</code></td><td><code>one line</code></td></tr>
- <tr><td><code><a href="../../../reference/chan/content/ChanMarkup.html#TAG_ITALIC">TAG_ITALIC</a></code></td><td><code>*</code></td><td><code>*</code></td><td><code>one line</code></td></tr>
- <tr><td><code><a href="../../../reference/chan/content/ChanMarkup.html#TAG_SPOILER">TAG_SPOILER</a></code></td><td><code>%%</code></td><td><code>%%</code></td><td><code>one line</code></td></tr>
- <tr><td><code><a href="../../../reference/chan/content/ChanMarkup.html#TAG_CODE">TAG_CODE</a></code></td><td><code>`</code></td><td><code>`</code></td><td><code>one line</code></td></tr>
- </table>
- 
- <p>Also this editor can handle <code><a href="../../../reference/chan/content/ChanMarkup.html#TAG_STRIKE">TAG_STRIKE</a></code> with appending multiple <code>^H</code>
- after end selection position.</p>
+<p itemprop="articleBody"><p>Parsing process holder.</p>
 </p>
 
 
@@ -418,55 +379,14 @@ Summary:
 
 
 
-<!-- =========== FIELD SUMMARY =========== -->
-<table id="inhfields" class="jd-sumtable"><tr><th>
-  <a href="#" class="toggle-all" onclick="return toggleAllInherited(this, null)">[Expand]</a>
-  <div style="clear:left;">Inherited Fields</div></th></tr>
-
-
-<tr class="api apilevel-" >
-<td colspan="12">
-
-  <a href="#" onclick="return toggleInherited(this, null)" id="inherited-fields-chan.text.CommentEditor" class="jd-expando-trigger closed"
-          ><img id="inherited-fields-chan.text.CommentEditor-trigger"
-          src="../../../assets/images/triangle-closed.png"
-          class="jd-expando-trigger-img" /></a>From class
-<a href="../../../reference/chan/text/CommentEditor.html">chan.text.CommentEditor</a>
-<div id="inherited-fields-chan.text.CommentEditor">
-  <div id="inherited-fields-chan.text.CommentEditor-list"
-        class="jd-inheritedlinks">
-  </div>
-  <div id="inherited-fields-chan.text.CommentEditor-summary" style="display: none;">
-    <table class="jd-sumtable-expando">
-    
-
-    
-      <tr class="alt-color api apilevel-" >
-          <td class="jd-typecol"><nobr>
-          public
-          static
-          final
-          int</nobr></td>
-          <td class="jd-linkcol"><a href="../../../reference/chan/text/CommentEditor.html#FLAG_ONE_LINE">FLAG_ONE_LINE</a></td>
-          <td class="jd-descrcol" width="100%"><p>Flag for tags that work only being in one line.</td>
-      </tr>
-      
-    
-</table>
-  </div>
-</div>
-</td></tr>
 
 
 
 
-</table>
 
 
-
-
-<!-- ======== CONSTRUCTOR SUMMARY ======== -->
-<table id="pubctors" class="jd-sumtable"><tr><th colspan="12">Public Constructors</th></tr>
+<!-- ========== METHOD SUMMARY =========== -->
+<table id="pubmethods" class="jd-sumtable"><tr><th colspan="12">Public Methods</th></tr>
 
 
 
@@ -478,20 +398,18 @@ Summary:
             
             
             
-            </nobr>
+            void</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/text/CommentEditor.WakabaMarkCommentEditor.html#CommentEditor.WakabaMarkCommentEditor()">CommentEditor.WakabaMarkCommentEditor</a></span>()</nobr>
+        <span class="sympad"><a href="../../../reference/chan/text/TemplateParser.Instance.html#finish()">finish</a></span>()</nobr>
         
+        <div class="jd-descrdiv"><p>Finishes a parsing process.</div>
+  
   </td></tr>
 
 
 
 </table>
-
-
-
-
 
 
 
@@ -503,104 +421,6 @@ Summary:
 <table id="inhmethods" class="jd-sumtable"><tr><th>
   <a href="#" class="toggle-all" onclick="return toggleAllInherited(this, null)">[Expand]</a>
   <div style="clear:left;">Inherited Methods</div></th></tr>
-
-
-<tr class="api apilevel-" >
-<td colspan="12">
-  <a href="#" onclick="return toggleInherited(this, null)" id="inherited-methods-chan.text.CommentEditor" class="jd-expando-trigger closed"
-          ><img id="inherited-methods-chan.text.CommentEditor-trigger"
-          src="../../../assets/images/triangle-closed.png"
-          class="jd-expando-trigger-img" /></a>
-From class
-
-  <a href="../../../reference/chan/text/CommentEditor.html">chan.text.CommentEditor</a>
-
-<div id="inherited-methods-chan.text.CommentEditor">
-  <div id="inherited-methods-chan.text.CommentEditor-list"
-        class="jd-inheritedlinks">
-  </div>
-  <div id="inherited-methods-chan.text.CommentEditor-summary" style="display: none;">
-    <table class="jd-sumtable-expando">
-    
-
-
-	 
-    <tr class="alt-color api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            
-            final
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/text/CommentEditor.html#addTag(int, java.lang.String, java.lang.String)">addTag</a></span>(int what, String open, String close)</nobr>
-        
-        <div class="jd-descrdiv"><p>Add a new tag to handle.</div>
-  
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            
-            final
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/text/CommentEditor.html#addTag(int, java.lang.String, java.lang.String, int)">addTag</a></span>(int what, String open, String close, int flags)</nobr>
-        
-        <div class="jd-descrdiv"><p>Add a new tag to handle.</div>
-  
-  </td></tr>
-
-
-	 
-    <tr class="alt-color api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            
-            final
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/text/CommentEditor.html#setOrderedListMark(java.lang.String)">setOrderedListMark</a></span>(String mark)</nobr>
-        
-        <div class="jd-descrdiv"><p>Sets a ordered list mark.</div>
-  
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            
-            final
-            
-            void</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/text/CommentEditor.html#setUnorderedListMark(java.lang.String)">setUnorderedListMark</a></span>(String mark)</nobr>
-        
-        <div class="jd-descrdiv"><p>Sets a unordered list mark.</div>
-  
-  </td></tr>
-
-
-</table>
-  </div>
-</div>
-</td></tr>
-
 
 
 <tr class="api apilevel-" >
@@ -833,12 +653,20 @@ From class
 <!-- Public ctors -->
 
 
+
 <!-- ========= CONSTRUCTOR DETAIL ======== -->
-<h2>Public Constructors</h2>
+<!-- Protected ctors -->
 
 
 
-<A NAME="CommentEditor.WakabaMarkCommentEditor()"></A>
+<!-- ========= METHOD DETAIL ======== -->
+<!-- Public methdos -->
+
+<h2>Public Methods</h2>
+
+
+
+<A NAME="finish()"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -848,9 +676,9 @@ From class
         
         
         
-        
+        void
       </span>
-      <span class="sympad">CommentEditor.WakabaMarkCommentEditor</span>
+      <span class="sympad">finish</span>
       <span class="normal">()</span>
     </h4>
       <div class="api-level">
@@ -861,22 +689,13 @@ From class
       </div>
     <div class="jd-details-descr">
       
-  <p></p>
+  <p><p>Finishes a parsing process. Calling this method doesn't interrupt your working callback.</p>
+</p>
 
     </div>
 </div>
 
 
-
-
-
-<!-- ========= CONSTRUCTOR DETAIL ======== -->
-<!-- Protected ctors -->
-
-
-
-<!-- ========= METHOD DETAIL ======== -->
-<!-- Public methdos -->
 
 
 

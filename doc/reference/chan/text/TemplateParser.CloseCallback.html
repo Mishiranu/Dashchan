@@ -66,7 +66,7 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
 <title>
 
-  chan.util - Dashchan API Reference |
+  TemplateParser.CloseCallback - Dashchan API Reference |
 
 Doclava
 
@@ -95,7 +95,7 @@ Doclava
 </noscript>
 </head>
 
-<body class="">
+<body class="" itemscope itemtype="http://schema.org/Article">
 
 <div id="header">
     <div id="headerLeft">
@@ -155,9 +155,9 @@ Doclava
   <a href="../../../reference/chan/content/model/package-summary.html">chan.content.model</a></li>
     <li class="api apilevel-">
   <a href="../../../reference/chan/http/package-summary.html">chan.http</a></li>
-    <li class="api apilevel-">
-  <a href="../../../reference/chan/text/package-summary.html">chan.text</a></li>
     <li class="selected api apilevel-">
+  <a href="../../../reference/chan/text/package-summary.html">chan.text</a></li>
+    <li class="api apilevel-">
   <a href="../../../reference/chan/util/package-summary.html">chan.util</a></li>
               </ul><br/>
             </div> <!-- end packages -->
@@ -167,18 +167,32 @@ Doclava
               
     <li><h2>Interfaces</h2>
       <ul>
-        <li class="api apilevel-"><a href="../../../reference/chan/util/StringUtils.ReplacementCallback.html">StringUtils.ReplacementCallback</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/GroupParser.Callback.html">GroupParser.Callback</a></li>
+          <li class="selected api apilevel-"><a href="../../../reference/chan/text/TemplateParser.CloseCallback.html">TemplateParser.CloseCallback</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.ContentCallback.html">TemplateParser.ContentCallback</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.OpenCallback.html">TemplateParser.OpenCallback</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.TextCallback.html">TemplateParser.TextCallback</a></li>
       </ul>
     </li>
               
     <li><h2>Classes</h2>
       <ul>
-        <li class="api apilevel-"><a href="../../../reference/chan/util/CommonUtils.html">CommonUtils</a></li>
-        <li class="api apilevel-"><a href="../../../reference/chan/util/StringUtils.html">StringUtils</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/CommentEditor.html">CommentEditor</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/CommentEditor.BulletinBoardCodeCommentEditor.html">CommentEditor.BulletinBoardCodeCommentEditor</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/CommentEditor.WakabaMarkCommentEditor.html">CommentEditor.WakabaMarkCommentEditor</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/GroupParser.html">GroupParser</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.Attributes.html">TemplateParser.Attributes</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.Instance.html">TemplateParser.Instance</a></li>
       </ul>
     </li>
               
               
+    <li><h2>Exceptions</h2>
+      <ul>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/ParseException.html">ParseException</a></li>
+      </ul>
+    </li>
               
             </ul><br/>
           </div><!-- end classes -->
@@ -214,80 +228,268 @@ Doclava
 <div class="g-unit" id="doc-content">
 
 <div id="api-info-block">
+
+
+
+
+<div class="sum-details-links">
+
+</div><!-- end sum-details-links -->
 <div class="api-level">
   
   
   
 
 </div>
-</div>
+</div><!-- end api-info-block -->
+
+
+<!-- ======== START OF CLASS DATA ======== -->
 
 <div id="jd-header">
-  package
-  <h1>chan.util</h1>
+    public
+    static 
+     
+    
+    interface
+<h1 itemprop="name">TemplateParser.CloseCallback</h1>
+
+
+
+  
+  
+  
+
+
 </div><!-- end header -->
 
 <div id="naMessage"></div>
 
 <div id="jd-content" class="api apilevel-">
+<table class="jd-inheritance-table">
 
 
-  <div class="jd-descr">
-    Provides utitily methods to handle strings, JSON objects and JSON arrays.
-
-  </div>
-
-
-
-
-
-  
-    <h2>Interfaces</h2>
-    <div class="jd-sumtable">
+    <tr>
+         	
+        <td colspan="1" class="jd-inheritance-class-cell">chan.text.TemplateParser.CloseCallback&lt;H&gt;</td>
+    </tr>
     
-  <table class="jd-sumtable-expando">
-        <tr class="alt-color api apilevel-" >
-              <td><a href="../../../reference/chan/util/StringUtils.ReplacementCallback.html">StringUtils.ReplacementCallback</a></td>
-              <td width="100%"><p>Replacement callback for <code>replaceAll</code> methods.&nbsp;</td>
-          </tr>
-  </table>
+
+</table>
+
+
+
+
+
+
+
+<div class="jd-descr">
+
+
+<h2>Class Overview</h2>
+<p itemprop="articleBody"><p>Tag close callback.</p>
+</p>
+
+
+
+
+
+
+</div><!-- jd-descr -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="jd-descr">
+
+
+<h2>Summary</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- ========== METHOD SUMMARY =========== -->
+<table id="pubmethods" class="jd-sumtable"><tr><th colspan="12">Public Methods</th></tr>
+
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            abstract
+            
+            
+            
+            
+            void</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/text/TemplateParser.CloseCallback.html#onClose(chan.text.TemplateParser.Instance, H, java.lang.String)">onClose</a></span>(<a href="../../../reference/chan/text/TemplateParser.Instance.html">TemplateParser.Instance</a> instance, H holder, String tagName)</nobr>
+        
+        <div class="jd-descrdiv"><p>Tag close callback method.</div>
+  
+  </td></tr>
+
+
+
+</table>
+
+
+
+
+
+
+
+</div><!-- jd-descr (summary) -->
+
+<!-- Details -->
+
+
+
+
+
+
+
+
+<!-- XML Attributes -->
+
+
+<!-- Enum Values -->
+
+
+<!-- Constants -->
+
+
+<!-- Fields -->
+
+
+<!-- Public ctors -->
+
+
+
+<!-- ========= CONSTRUCTOR DETAIL ======== -->
+<!-- Protected ctors -->
+
+
+
+<!-- ========= METHOD DETAIL ======== -->
+<!-- Public methdos -->
+
+<h2>Public Methods</h2>
+
+
+
+<A NAME="onClose(chan.text.TemplateParser.Instance, H, java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public
+        abstract
+        
+        
+        
+        void
+      </span>
+      <span class="sympad">onClose</span>
+      <span class="normal">(<a href="../../../reference/chan/text/TemplateParser.Instance.html">TemplateParser.Instance</a> instance, H holder, String tagName)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <p><p>Tag close callback method. See <code><a href="../../../reference/chan/text/TemplateParser.html#close(chan.text.TemplateParser.CloseCallback<H>)">close(CloseCallback)</a></code>.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>instance</code></td>
+        <td width="100%">
+          <code>TemplateParser.Instance</code>:
+          Parser instance holder.</td>
+      </tr>
+      <tr>
+        <td><code>holder</code></td>
+        <td width="100%">
+          <code>H</code>:
+          Intermediate data holder.</td>
+      </tr>
+      <tr>
+        <td><code>tagName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Tag name.</td>
+      </tr>
+    </table>
+      <table class="responsive">
+      <tr><th colspan=2>Throws</th></tr>
+        <tr>
+          <td><code><a href="../../../reference/chan/text/ParseException.html">ParseException</a></code></td>
+          <td width="100%">to interrupt parsing process.
+</td>
+        </tr>
+      </table>
+  
+
     </div>
-  
+</div>
 
 
-  
-    <h2>Classes</h2>
-    <div class="jd-sumtable">
-    
-  <table class="jd-sumtable-expando">
-        <tr class="alt-color api apilevel-" >
-              <td><a href="../../../reference/chan/util/CommonUtils.html">CommonUtils</a></td>
-              <td width="100%"><p>Provides some utilities to work with JSON objects, bitmaps and logging.&nbsp;</td>
-          </tr>
-        <tr class=" api apilevel-" >
-              <td><a href="../../../reference/chan/util/StringUtils.html">StringUtils</a></td>
-              <td width="100%"><p>Provides some utilities to work with strings.&nbsp;</td>
-          </tr>
-  </table>
-    </div>
-  
 
 
-  
+
+<!-- ========= METHOD DETAIL ======== -->
 
 
-  
 
-
-  
-
+<!-- ========= END OF CLASS DATA ========= -->
+<A NAME="navbar_top"></A>
 
 <div id="footer">
 
 </div> <!-- end footer -->
 
-</div><!-- end jd-content -->
-</div><!-- doc-content -->
+</div> <!-- jd-content -->
+
+</div><!-- end doc-content -->
 
 </div> <!-- end body-content --> 
 

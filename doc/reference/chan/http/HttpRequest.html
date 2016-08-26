@@ -446,6 +446,42 @@ Summary:
   </td></tr>
 
 
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            </nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/HttpRequest.html#HttpRequest(android.net.Uri, chan.http.HttpHolder)">HttpRequest</a></span>(Uri uri, <a href="../../../reference/chan/http/HttpHolder.html">HttpHolder</a> holder)</nobr>
+        
+        <div class="jd-descrdiv"><p>Constructor for <code><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></code> without preset.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            </nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/HttpRequest.html#HttpRequest(android.net.Uri, chan.http.HttpRequest.Preset)">HttpRequest</a></span>(Uri uri, <a href="../../../reference/chan/http/HttpRequest.Preset.html">HttpRequest.Preset</a> preset)</nobr>
+        
+        <div class="jd-descrdiv"><p>Constructor for <code><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></code>.</div>
+  
+  </td></tr>
+
+
 
 </table>
 
@@ -722,6 +758,24 @@ Summary:
             <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/http/HttpRequest.html#setOutputStream(java.io.OutputStream)">setOutputStream</a></span>(OutputStream outputStream)</nobr>
+        
+        <div class="jd-descrdiv"><p>Sets the output stream as the destination of response.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad"><a href="../../../reference/chan/http/HttpRequest.html#setPostMethod(chan.http.RequestEntity)">setPostMethod</a></span>(<a href="../../../reference/chan/http/RequestEntity.html">RequestEntity</a> entity)</nobr>
         
         <div class="jd-descrdiv"><p>Sets HTTP request method to POST with request entity.</div>
@@ -730,7 +784,7 @@ Summary:
 
 
 	 
-    <tr class=" api apilevel-" >
+    <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -748,7 +802,7 @@ Summary:
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -766,7 +820,7 @@ Summary:
 
 
 	 
-    <tr class=" api apilevel-" >
+    <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -784,7 +838,7 @@ Summary:
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -802,7 +856,7 @@ Summary:
 
 
 	 
-    <tr class=" api apilevel-" >
+    <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -1105,14 +1159,105 @@ From class
         <td><code>holder</code></td>
         <td width="100%">
           <code>HttpHolder</code>:
-          <code><a href="../../../reference/chan/http/HttpHolder.html">HttpHolder</a></code> instance. May be null.
-</td>
+          <code><a href="../../../reference/chan/http/HttpHolder.html">HttpHolder</a></code> instance. May be null.</td>
       </tr>
       <tr>
         <td><code>preset</code></td>
         <td width="100%">
           <code>HttpRequest.Preset</code>:
-          Preset with configuration.</td>
+          Preset with configuration.
+</td>
+      </tr>
+    </table>
+
+    </div>
+</div>
+
+
+<A NAME="HttpRequest(android.net.Uri, chan.http.HttpHolder)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public
+        
+        
+        
+        
+        
+      </span>
+      <span class="sympad">HttpRequest</span>
+      <span class="normal">(Uri uri, <a href="../../../reference/chan/http/HttpHolder.html">HttpHolder</a> holder)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <p><p>Constructor for <code><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></code> without preset.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>uri</code></td>
+        <td width="100%">
+          <code>Uri</code>:
+          URI for request.</td>
+      </tr>
+      <tr>
+        <td><code>holder</code></td>
+        <td width="100%">
+          <code>HttpHolder</code>:
+          <code><a href="../../../reference/chan/http/HttpHolder.html">HttpHolder</a></code> instance. May be null.
+</td>
+      </tr>
+    </table>
+
+    </div>
+</div>
+
+
+<A NAME="HttpRequest(android.net.Uri, chan.http.HttpRequest.Preset)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public
+        
+        
+        
+        
+        
+      </span>
+      <span class="sympad">HttpRequest</span>
+      <span class="normal">(Uri uri, <a href="../../../reference/chan/http/HttpRequest.Preset.html">HttpRequest.Preset</a> preset)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <p><p>Constructor for <code><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></code>. In most cases <code><a href="../../../reference/chan/http/HttpRequest.Preset.html">HttpRequest.Preset</a></code> can provide it's own <code><a href="../../../reference/chan/http/HttpException.html">HttpException</a></code>,
+ so you can use this constructor.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>uri</code></td>
+        <td width="100%">
+          <code>Uri</code>:
+          URI for request.</td>
+      </tr>
+      <tr>
+        <td><code>preset</code></td>
+        <td width="100%">
+          <code>HttpRequest.Preset</code>:
+          Preset with configuration.
+</td>
       </tr>
     </table>
 
@@ -1747,6 +1892,53 @@ From class
         <td width="100%">
           <code>boolean</code>:
           True to enable pooling, false to disable one.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a></code></td>
+        <td width="100%">This builder.
+</td>
+      </tr>
+    </table>
+
+    </div>
+</div>
+
+
+<A NAME="setOutputStream(java.io.OutputStream)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public
+        
+        
+        
+        
+        <a href="../../../reference/chan/http/HttpRequest.html">HttpRequest</a>
+      </span>
+      <span class="sympad">setOutputStream</span>
+      <span class="normal">(OutputStream outputStream)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <p><p>Sets the output stream as the destination of response. In this case <code><a href="../../../reference/chan/http/HttpRequest.html#read()">read()</a></code> method
+ will return <code>null</code> value.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>outputStream</code></td>
+        <td width="100%">
+          <code>OutputStream</code>:
+          Output stream.</td>
       </tr>
     </table>
     <table class="responsive">

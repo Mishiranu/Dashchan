@@ -1256,6 +1256,42 @@ Summary:
   </td></tr>
 
 
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
+            
+            boolean[]</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.html#requireUserItemMultipleChoice(boolean[], java.lang.CharSequence[], java.lang.String, android.graphics.Bitmap)">requireUserItemMultipleChoice</a></span>(boolean[] selected, CharSequence[] items, String descriptionText, Bitmap descriptionImage)</nobr>
+        
+        <div class="jd-descrdiv"><p>Suspends this thread and shows items dialog for user.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            final
+            
+            Integer</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/ChanPerformer.html#requireUserItemSingleChoice(int, java.lang.CharSequence[], java.lang.String, android.graphics.Bitmap)">requireUserItemSingleChoice</a></span>(int selected, CharSequence[] items, String descriptionText, Bitmap descriptionImage)</nobr>
+        
+        <div class="jd-descrdiv"><p>Suspends this thread and shows items dialog for user.</div>
+  
+  </td></tr>
+
+
 
 </table>
 
@@ -2696,7 +2732,7 @@ From class
       <tr><th colspan=2>Returns</th></tr>
       <tr>
         <td><code>boolean[]</code></td>
-        <td width="100%">Array of selected indexes or null if user has canceled an operation.
+        <td width="100%">Array of selected indexes or <code>null</code> if user has canceled an operation.
 </td>
       </tr>
     </table>
@@ -2760,7 +2796,135 @@ From class
       <tr><th colspan=2>Returns</th></tr>
       <tr>
         <td><code>Integer</code></td>
-        <td width="100%">Index of chosen image, -1 if image wasn't chosen or null if user has canceled an operation.
+        <td width="100%">Index of chosen image, -1 if image wasn't chosen or <code>null</code> if user has canceled an operation.
+</td>
+      </tr>
+    </table>
+
+    </div>
+</div>
+
+
+<A NAME="requireUserItemMultipleChoice(boolean[], java.lang.CharSequence[], java.lang.String, android.graphics.Bitmap)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        protected
+        
+        
+        
+        final
+        boolean[]
+      </span>
+      <span class="sympad">requireUserItemMultipleChoice</span>
+      <span class="normal">(boolean[] selected, CharSequence[] items, String descriptionText, Bitmap descriptionImage)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <p><p>Suspends this thread and shows items dialog for user. User can choose multiple items.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>selected</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          Array of default selected indexes, <code>true</code> for selected, may be null.</td>
+      </tr>
+      <tr>
+        <td><code>items</code></td>
+        <td width="100%">
+          <code>CharSequence</code>:
+          Array of items.</td>
+      </tr>
+      <tr>
+        <td><code>descriptionText</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Description text (e.g. "Select all burgers").</td>
+      </tr>
+      <tr>
+        <td><code>descriptionImage</code></td>
+        <td width="100%">
+          <code>Bitmap</code>:
+          Description image (e.g. example image).</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>boolean[]</code></td>
+        <td width="100%">Array of selected indexes or <code>null</code> if user has canceled an operation.
+</td>
+      </tr>
+    </table>
+
+    </div>
+</div>
+
+
+<A NAME="requireUserItemSingleChoice(int, java.lang.CharSequence[], java.lang.String, android.graphics.Bitmap)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        protected
+        
+        
+        
+        final
+        Integer
+      </span>
+      <span class="sympad">requireUserItemSingleChoice</span>
+      <span class="normal">(int selected, CharSequence[] items, String descriptionText, Bitmap descriptionImage)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <p><p>Suspends this thread and shows items dialog for user. User can choose only one item.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>selected</code></td>
+        <td width="100%">
+          <code>int</code>:
+          Default selected index, may be -1.</td>
+      </tr>
+      <tr>
+        <td><code>items</code></td>
+        <td width="100%">
+          <code>CharSequence</code>:
+          Array of items.</td>
+      </tr>
+      <tr>
+        <td><code>descriptionText</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Description text (e.g. "Select all burgers").</td>
+      </tr>
+      <tr>
+        <td><code>descriptionImage</code></td>
+        <td width="100%">
+          <code>Bitmap</code>:
+          Description image (e.g. example image).</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>Integer</code></td>
+        <td width="100%">Index of chosen item, -1 if item wasn't chosen or <code>null</code> if user has canceled an operation.
 </td>
       </tr>
     </table>
