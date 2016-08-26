@@ -23,7 +23,7 @@ import chan.util.CommonUtils;
 
 // TODO CHAN
 // Remove this class after updating
-// allchan apachan archiverbt dvach endchan makabapaid nulldvachin
+// apachan archiverbt dvach endchan makabapaid nulldvachin
 // Added: 24.08.16 03:39
 @Public
 public final class Threads
