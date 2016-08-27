@@ -14,6 +14,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | Chan Name       | Host                 | Extension Package Link                                                                                                                |
 | :-------------: | :------------------: | :-----------------------------------------------------------------------------------------------------------------------------------: |
 | allchan         | allchan.su           | [DashchanAllchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanAllchan.apk)                 |
+| alterchan       | alterchan.in         | [DashchanAlterchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanAlterchan.apk)             |
 | anonfm          | anon.fm              | [DashchanAnonfm.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanAnonfm.apk)                   |
 | apachan         | apachan.net          | [DashchanApachan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanApachan.apk)                 |
 | cablesix        | cable6.net           | [DashchanCableSix.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanCableSix.apk)               |
@@ -53,7 +54,9 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | synch           | syn-ch.com           | [DashchanSynch.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanSynch.apk)                     |
 | taima           | 420chan.org          | [DashchanTaima.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanTaima.apk)                     |
 | tiretirech      | 2--ch.ru             | [DashchanTiretirech.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanTiretirech.apk)           |
+| tumbach         | tumba.ch             | [DashchanTumbach.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanTumbach.apk)                 |
 | twowatch        | 2watch.su            | [DashchanTwowatch.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanTwowatch.apk)               |
+| valkyria        | u18chan.com          | [DashchanValkyria.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanValkyria.apk)               |
 | wizardchan      | wizchan.org          | [DashchanWizardchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanWizardchan.apk)           |
 
 ### Archives
