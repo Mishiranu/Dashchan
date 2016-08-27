@@ -24,6 +24,18 @@
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanAllchan.apk"
 		}
 	],
+	"alterchan":
+	[
+		{
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"minSdk": 16,
+			"length": 22579,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanAlterchan.apk"
+		}
+	],
 	"anonfm":
 	[
 		{
@@ -576,6 +588,18 @@
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanTiretirech.apk"
 		}
 	],
+	"tumbach":
+	[
+		{
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"minSdk": 16,
+			"length": 48274,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanTumbach.apk"
+		}
+	],
 	"twowatch":
 	[
 		{
@@ -586,6 +610,18 @@
 			"minSdk": 14,
 			"length": 61650,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanTwowatch.apk"
+		}
+	],
+	"valkyria":
+	[
+		{
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"minSdk": 16,
+			"length": 20990,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanValkyria.apk"
 		}
 	],
 	"webm":
