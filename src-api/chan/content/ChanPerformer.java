@@ -782,16 +782,6 @@ public class ChanPerformer implements ChanManager.Linked
 			this.large = large;
 			return this;
 		}
-		
-		// TODO CHAN
-		// Remove this constructor after updating
-		// infinite
-		// Added: 17.03.16 03:28
-		public ReadCaptchaResult(CaptchaState captchaState, CaptchaData captchaData, Bitmap image)
-		{
-			this(captchaState, captchaData);
-			this.image = image;
-		}
 	}
 	
 	@Public

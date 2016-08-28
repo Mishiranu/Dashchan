@@ -280,11 +280,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.6",
+			"name": "1.7",
 			"code": 1,
 			"version": 1,
-			"minSdk": 14,
-			"length": 64983,
+			"minSdk": 16,
+			"length": 26387,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanInfinite.apk"
 		}
 	],
