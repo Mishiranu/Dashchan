@@ -331,7 +331,7 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 	
 	// TODO CHAN
 	// Remove this method after updating
-	// horochan infinite ponychan
+	// horochan ponychan
 	// Added: 14.05.16 12:12
 	@Deprecated
 	public final void addBlock(String tagName, boolean spaced)
