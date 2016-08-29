@@ -256,11 +256,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.1",
+			"name": "1.2",
 			"code": 1,
 			"version": 1,
-			"minSdk": 14,
-			"length": 57970,
+			"minSdk": 16,
+			"length": 20308,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanHaruhichan.apk"
 		}
 	],
