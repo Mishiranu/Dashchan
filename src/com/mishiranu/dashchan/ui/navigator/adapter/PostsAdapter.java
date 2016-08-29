@@ -46,6 +46,7 @@ import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.ui.posting.Replyable;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
+import com.mishiranu.dashchan.widget.BaseAdapterNotifier;
 import com.mishiranu.dashchan.widget.CommentTextView;
 import com.mishiranu.dashchan.widget.callback.BusyScrollListener;
 
@@ -55,11 +56,12 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 	private static final int ITEM_VIEW_TYPE_POST = 0;
 	private static final int ITEM_VIEW_TYPE_HIDDEN_POST = 1;
 	
+	private final BaseAdapterNotifier mNotifier = new BaseAdapterNotifier(this);
+	
 	private final ArrayList<PostItem> mPostItems = new ArrayList<>();
 	private final HashMap<String, PostItem> mPostItemsMap = new HashMap<>();
 	private final HashSet<PostItem> mSelected = new HashSet<>();
 	
-	private final Context mContext;
 	private final UiManager mUiManager;
 	private final UiManager.DemandSet mDemandSet = new UiManager.DemandSet();
 	private final UiManager.ConfigurationSet mConfigurationSet;
@@ -73,7 +75,6 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 	public PostsAdapter(Context context, String chanName, String boardName, UiManager uiManager,
 			Replyable replyable, HidePerformer hidePerformer, HashSet<String> userPostNumbers, ListView listView)
 	{
-		mContext = context;
 		mUiManager = uiManager;
 		mConfigurationSet = new UiManager.ConfigurationSet(replyable, this, hidePerformer,
 				new GalleryItem.GallerySet(true), this, userPostNumbers, true, false, true, true, null);
@@ -118,6 +119,11 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 		mListSelectionKeeper.onBeforeNotifyDataSetChanged();
 		super.notifyDataSetChanged();
 		mListSelectionKeeper.onAfterNotifyDataSetChanged();
+	}
+	
+	public void postNotifyDataSetChanged()
+	{
+		mNotifier.postNotifyDataSetChanged();
 	}
 	
 	@Override
@@ -184,9 +190,9 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 		return convertView;
 	}
 	
-	public ArrayList<PostItem> getItems()
+	public int indexOf(PostItem postItem)
 	{
-		return mPostItems;
+		return mPostItems.indexOf(postItem);
 	}
 	
 	public int findPositionByOrdinalIndex(int ordinalIndex)
@@ -265,7 +271,7 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 			int position = StringUtils.isEmpty(postNumber) ? 0 : findPositionByPostNumber(postNumber);
 			if (position == -1)
 			{
-				ToastUtils.show(mContext, R.string.message_post_not_found);
+				ToastUtils.show(view.getContext(), R.string.message_post_not_found);
 				return;
 			}
 			mUiManager.dialog().displaySingle(getItem(position), mConfigurationSet);

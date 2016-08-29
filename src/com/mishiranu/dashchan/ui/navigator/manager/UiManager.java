@@ -86,22 +86,14 @@ public class UiManager
 		return mLocalNavigator;
 	}
 	
-	// Invalidate adapter if contains post item
 	public static final int MESSAGE_INVALIDATE_VIEW = 1;
-	// Perform cascade hide (without serialization)
 	public static final int MESSAGE_INVALIDATE_COMMENT_VIEW = 2;
-	// Write cache
-	public static final int MESSAGE_PERFORM_SERIALIZE = 3;
-	// Refresh user mark state
-	public static final int MESSAGE_PERFORM_USER_MARK_UPDATE = 4;
-	// Load thumbnail for this view
-	public static final int MESSAGE_PERFORM_CASCADE_HIDE = 5;
-	// Perform hide by name and serialize if necessary
+	public static final int MESSAGE_PERFORM_SWITCH_USER_MARK = 3;
+	public static final int MESSAGE_PERFORM_SWITCH_HIDE = 4;
+	public static final int MESSAGE_PERFORM_HIDE_REPLIES = 5;
 	public static final int MESSAGE_PERFORM_HIDE_NAME = 6;
-	// Perform hide by name and serialize if necessary
 	public static final int MESSAGE_PERFORM_HIDE_SIMILAR = 7;
-	// Invalidate comment view if contains post item
-	public static final int MESSAGE_PERFORM_LOAD_THUMBNAIL = 8;
+	public static final int MESSAGE_PERFORM_DISPLAY_THUMBNAILS = 8;
 	
 	public interface Observer
 	{

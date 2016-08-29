@@ -918,14 +918,14 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 				if (holder != null)
 				{
 					PostItem postItem = holder.postItem;
-					if (postItem != null) displayThumbnail(holder, postItem.getAttachmentItems(), false);
+					if (postItem != null) displayThumbnails(holder, postItem.getAttachmentItems(), false);
 				}
 			}
 		}
 		demandSet.isBusy = isBusy;
 	}
 	
-	private void displayThumbnail(UiManager.Holder holder, List<AttachmentItem> attachmentItems, boolean force)
+	private void displayThumbnails(UiManager.Holder holder, List<AttachmentItem> attachmentItems, boolean force)
 	{
 		if (attachmentItems != null)
 		{
@@ -944,18 +944,18 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		}
 	}
 	
-	public void displayThumbnail(View view, List<AttachmentItem> attachmentItems, boolean force)
+	public void displayThumbnails(View view, List<AttachmentItem> attachmentItems, boolean force)
 	{
 		Object tag = view.getTag();
-		if (tag instanceof UiManager.Holder) displayThumbnail((UiManager.Holder) tag, attachmentItems, force);
+		if (tag instanceof UiManager.Holder) displayThumbnails((UiManager.Holder) tag, attachmentItems, force);
 	}
 	
-	public void displayThumbnail(ListView listView, int position, List<AttachmentItem> attachmentItems, boolean force)
+	public void displayThumbnails(ListView listView, int position, List<AttachmentItem> attachmentItems, boolean force)
 	{
 		if (position != ListView.INVALID_POSITION)
 		{
 			View view = listView.getChildAt(position - listView.getFirstVisiblePosition());
-			if (view != null) displayThumbnail(view, attachmentItems, force);
+			if (view != null) displayThumbnails(view, attachmentItems, force);
 		}
 	}
 	
@@ -972,27 +972,19 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		return -1;
 	}
 	
-	public int findViewIndex(ListView listView, PostItem postItem)
+	public void invalidateCommentView(ListView listView, int position)
 	{
-		ListAdapter adapter = listView.getAdapter();
-		for (int i = 0; i < adapter.getCount(); i++)
+		if (position != ListView.INVALID_POSITION)
 		{
-			PostItem adapterPostItem = (PostItem) adapter.getItem(i);
-			if (adapterPostItem != null && adapterPostItem == postItem) return i;
-		}
-		return ListView.INVALID_POSITION;
-	}
-	
-	public void invalidateComment(ListView listView, int position)
-	{
-		int first = listView.getFirstVisiblePosition();
-		int count = listView.getChildCount();
-		int index = position - first;
-		if (index >= 0 && index < count)
-		{
-			View child = listView.getChildAt(index);
-			PostViewHolder holder = (PostViewHolder) child.getTag();
-			holder.comment.invalidate();
+			int first = listView.getFirstVisiblePosition();
+			int count = listView.getChildCount();
+			int index = position - first;
+			if (index >= 0 && index < count)
+			{
+				View child = listView.getChildAt(index);
+				PostViewHolder holder = (PostViewHolder) child.getTag();
+				holder.comment.invalidate();
+			}
 		}
 	}
 	

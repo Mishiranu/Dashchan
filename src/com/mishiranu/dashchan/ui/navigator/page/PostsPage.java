@@ -257,7 +257,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		}
 		PostsAdapter adapter = getAdapter();
 		PostItem postItem = adapter.getItem(position);
-		if (postItem != null) getUiManager().interaction().handlePostClick(view, postItem, adapter.getItems());
+		if (postItem != null) getUiManager().interaction().handlePostClick(view, postItem, adapter);
 	}
 	
 	@Override
@@ -1458,43 +1458,47 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 	@Override
 	public void onPostItemMessage(PostItem postItem, int message)
 	{
-		int position = getUiManager().view().findViewIndex(getListView(), postItem);
+		int index = getAdapter().indexOf(postItem);
+		if (index == -1) return;
 		switch (message)
 		{
 			case UiManager.MESSAGE_INVALIDATE_VIEW:
 			{
-				getAdapter().notifyDataSetChanged();
+				getAdapter().postNotifyDataSetChanged();
 				break;
 			}
 			case UiManager.MESSAGE_INVALIDATE_COMMENT_VIEW:
 			{
-				getUiManager().view().invalidateComment(getListView(), position);
+				getUiManager().view().invalidateCommentView(getListView(), index);
 				break;
 			}
-			case UiManager.MESSAGE_PERFORM_SERIALIZE:
+			case UiManager.MESSAGE_PERFORM_SWITCH_USER_MARK:
 			{
-				if (position != ListView.INVALID_POSITION) serializePosts();
-				break;
-			}
-			case UiManager.MESSAGE_PERFORM_USER_MARK_UPDATE:
-			{
+				postItem.setUserPost(!postItem.isUserPost());
 				PostsExtra extra = getExtra();
 				if (postItem.isUserPost()) extra.userPostNumbers.add(postItem.getPostNumber());
 				else extra.userPostNumbers.remove(postItem.getPostNumber());
+				getUiManager().sendPostItemMessage(postItem, UiManager.MESSAGE_INVALIDATE_VIEW);
+				serializePosts();
 				break;
 			}
-			case UiManager.MESSAGE_PERFORM_CASCADE_HIDE:
+			case UiManager.MESSAGE_PERFORM_SWITCH_HIDE:
 			{
-				if (position != ListView.INVALID_POSITION)
+				postItem.setHidden(!postItem.isHidden(mHidePerformer));
+				getUiManager().sendPostItemMessage(postItem, UiManager.MESSAGE_INVALIDATE_VIEW);
+				serializePosts();
+				break;
+			}
+			case UiManager.MESSAGE_PERFORM_HIDE_REPLIES:
+			{
+				ArrayList<PostItem> postItemsToInvalidate = new ArrayList<>();
+				hidePostAndReplies(postItem, postItemsToInvalidate);
+				UiManager uiManager = getUiManager();
+				for (PostItem invalidatePostItem : postItemsToInvalidate)
 				{
-					ArrayList<PostItem> postItemsToInvalidate = new ArrayList<>();
-					hidePostAndReplies(postItem, postItemsToInvalidate);
-					UiManager uiManager = getUiManager();
-					for (PostItem invalidatePostItem : postItemsToInvalidate)
-					{
-						uiManager.sendPostItemMessage(invalidatePostItem, UiManager.MESSAGE_INVALIDATE_VIEW);
-					}
+					uiManager.sendPostItemMessage(invalidatePostItem, UiManager.MESSAGE_INVALIDATE_VIEW);
 				}
+				serializePosts();
 				break;
 			}
 			case UiManager.MESSAGE_PERFORM_HIDE_NAME:
@@ -1516,9 +1520,9 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				adapter.preloadPosts(getListView().getFirstVisiblePosition());
 				break;
 			}
-			case UiManager.MESSAGE_PERFORM_LOAD_THUMBNAIL:
+			case UiManager.MESSAGE_PERFORM_DISPLAY_THUMBNAILS:
 			{
-				getUiManager().view().displayThumbnail(getListView(), position, postItem.getAttachmentItems(), true);
+				getUiManager().view().displayThumbnails(getListView(), index, postItem.getAttachmentItems(), true);
 				break;
 			}
 		}
