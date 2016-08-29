@@ -359,7 +359,7 @@ public class InteractionUnit
 				}
 				case MENU_SHOW_THUMBNAIL:
 				{
-					mUiManager.sendPostItemMessage(mAttachmentView, UiManager.MESSAGE_PERFORM_LOAD_THUMBNAIL);
+					mUiManager.sendPostItemMessage(mAttachmentView, UiManager.MESSAGE_PERFORM_DISPLAY_THUMBNAILS);
 					break;
 				}
 				case MENU_COPY_LINK:
@@ -382,28 +382,25 @@ public class InteractionUnit
 		new ThumbnailLongClickDialog(mUiManager, attachmentItem, attachmentView, hasViewHolder, threadTitle);
 	}
 	
-	public boolean handlePostClick(View view, PostItem postItem, ArrayList<PostItem> localPostItems)
+	public boolean handlePostClick(View view, PostItem postItem, Iterable<PostItem> localPostItems)
 	{
 		if (postItem.isHiddenUnchecked())
 		{
-			postItem.setHidden(false);
-			mUiManager.sendPostItemMessage(postItem, UiManager.MESSAGE_INVALIDATE_VIEW);
-			mUiManager.sendPostItemMessage(postItem, UiManager.MESSAGE_PERFORM_SERIALIZE);
+			mUiManager.sendPostItemMessage(postItem, UiManager.MESSAGE_PERFORM_SWITCH_HIDE);
 			return true;
 		}
 		else
 		{
 			if (Preferences.getHighlightUnreadMode() == Preferences.HIGHLIGHT_UNREAD_MANUALLY)
 			{
-				for (int i = 0; i < localPostItems.size(); i++)
+				for (PostItem localPostItem : localPostItems)
 				{
-					PostItem itPostItem = localPostItems.get(i);
-					if (itPostItem != null && itPostItem.isUnread())
+					if (localPostItem.isUnread())
 					{
-						itPostItem.setUnread(false);
-						mUiManager.sendPostItemMessage(itPostItem, UiManager.MESSAGE_INVALIDATE_VIEW);
+						localPostItem.setUnread(false);
+						mUiManager.sendPostItemMessage(localPostItem, UiManager.MESSAGE_INVALIDATE_VIEW);
 					}
-					if (itPostItem == postItem) break;
+					if (localPostItem == postItem) break;
 				}
 			}
 			return mUiManager.view().handlePostForDoubleClick(view);
@@ -501,10 +498,7 @@ public class InteractionUnit
 						}
 						case MENU_ADD_REMOVE_MY_MARK:
 						{
-							postItem.setUserPost(!postItem.isUserPost());
-							mUiManager.sendPostItemMessage(postItem, UiManager.MESSAGE_PERFORM_USER_MARK_UPDATE);
-							mUiManager.sendPostItemMessage(postItem, UiManager.MESSAGE_INVALIDATE_VIEW);
-							mUiManager.sendPostItemMessage(postItem, UiManager.MESSAGE_PERFORM_SERIALIZE);
+							mUiManager.sendPostItemMessage(postItem, UiManager.MESSAGE_PERFORM_SWITCH_USER_MARK);
 							break;
 						}
 						case MENU_SHARE_LINK:
@@ -553,15 +547,12 @@ public class InteractionUnit
 						}
 						case MENU_HIDE_POST:
 						{
-							postItem.setHidden(true);
-							mUiManager.sendPostItemMessage(postItem, UiManager.MESSAGE_INVALIDATE_VIEW);
-							mUiManager.sendPostItemMessage(postItem, UiManager.MESSAGE_PERFORM_SERIALIZE);
+							mUiManager.sendPostItemMessage(postItem, UiManager.MESSAGE_PERFORM_SWITCH_HIDE);
 							break;
 						}
 						case MENU_HIDE_REPLIES:
 						{
-							mUiManager.sendPostItemMessage(postItem, UiManager.MESSAGE_PERFORM_CASCADE_HIDE);
-							mUiManager.sendPostItemMessage(postItem, UiManager.MESSAGE_PERFORM_SERIALIZE);
+							mUiManager.sendPostItemMessage(postItem, UiManager.MESSAGE_PERFORM_HIDE_REPLIES);
 							break;
 						}
 						case MENU_HIDE_NAME:

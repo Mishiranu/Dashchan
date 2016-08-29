@@ -90,6 +90,7 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.AttachmentView;
+import com.mishiranu.dashchan.widget.BaseAdapterNotifier;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.CommentTextView;
 import com.mishiranu.dashchan.widget.DialogStack;
@@ -137,40 +138,39 @@ public class DialogUnit implements DialogStack.Callback
 		@Override
 		public void onPostItemMessage(PostItem postItem, int message)
 		{
-			int position = mUiManager.view().findViewIndex(listView, postItem);
 			switch (message)
 			{
 				case UiManager.MESSAGE_INVALIDATE_VIEW:
 				{
-					boolean notify = position != ListView.INVALID_POSITION;
+					boolean notify = adapter.postItems.contains(postItem);
 					if (!notify)
 					{
+						// Must notify adapter to update links to shown/hidden posts
 						LinkedHashSet<String> referencesFrom = postItem.getReferencesFrom();
 						if (referencesFrom != null)
 						{
-							for (int i = 0; i < adapter.getCount(); i++)
+							for (String referenceFrom : referencesFrom)
 							{
-								PostItem adapterPostItem = adapter.getItem(i);
-								if (adapterPostItem != null && referencesFrom.contains(adapterPostItem.getPostNumber()))
+								if (adapter.postNumbers.contains(referenceFrom))
 								{
-									// Must notify adapter to update links to shown/hidden posts 
 									notify = true;
 									break;
 								}
 							}
 						}
 					}
-					if (notify && adapter != null) adapter.notifyDataSetChanged();
+					if (notify) adapter.postNotifyDataSetChanged();
 					break;
 				}
 				case UiManager.MESSAGE_INVALIDATE_COMMENT_VIEW:
 				{
-					mUiManager.view().invalidateComment(listView, position);
+					mUiManager.view().invalidateCommentView(listView, adapter.postItems.indexOf(postItem));
 					break;
 				}
-				case UiManager.MESSAGE_PERFORM_LOAD_THUMBNAIL:
+				case UiManager.MESSAGE_PERFORM_DISPLAY_THUMBNAILS:
 				{
-					mUiManager.view().displayThumbnail(listView, position, postItem.getAttachmentItems(), true);
+					mUiManager.view().displayThumbnails(listView, adapter.postItems.indexOf(postItem),
+							postItem.getAttachmentItems(), true);
 					break;
 				}
 			}
@@ -708,10 +708,14 @@ public class DialogUnit implements DialogStack.Callback
 		private static final int ITEM_VIEW_TYPE_POST = 0;
 		private static final int ITEM_VIEW_TYPE_HIDDEN_POST = 1;
 		
+		private final BaseAdapterNotifier mNotifier = new BaseAdapterNotifier(this);
+		
+		public final ArrayList<PostItem> postItems = new ArrayList<>();
+		public final HashSet<String> postNumbers = new HashSet<>();
+		
 		private final DialogProvider mDialogProvider;
 		private final UiManager.DemandSet mDemandSet = new UiManager.DemandSet();
 		private final CommentTextView.ListSelectionKeeper mListSelectionKeeper;
-		private final ArrayList<PostItem> mPostItems = new ArrayList<>();
 		
 		public DialogPostsAdapter(DialogProvider dialogProvider, ListView listView)
 		{
@@ -722,8 +726,13 @@ public class DialogUnit implements DialogStack.Callback
 		
 		private void updatePostItems()
 		{
-			mPostItems.clear();
-			for (PostItem postItem : mDialogProvider) mPostItems.add(postItem);
+			postItems.clear();
+			postNumbers.clear();
+			for (PostItem postItem : mDialogProvider)
+			{
+				postItems.add(postItem);
+				postNumbers.add(postItem.getPostNumber());
+			}
 		}
 		
 		@Override
@@ -733,6 +742,11 @@ public class DialogUnit implements DialogStack.Callback
 			mListSelectionKeeper.onBeforeNotifyDataSetChanged();
 			super.notifyDataSetChanged();
 			mListSelectionKeeper.onAfterNotifyDataSetChanged();
+		}
+		
+		public void postNotifyDataSetChanged()
+		{
+			mNotifier.postNotifyDataSetChanged();
 		}
 		
 		@Override
@@ -751,13 +765,13 @@ public class DialogUnit implements DialogStack.Callback
 		@Override
 		public int getCount()
 		{
-			return mPostItems.size();
+			return postItems.size();
 		}
 		
 		@Override
 		public PostItem getItem(int position)
 		{
-			return mPostItems.get(position);
+			return postItems.get(position);
 		}
 		
 		@Override
@@ -792,7 +806,7 @@ public class DialogUnit implements DialogStack.Callback
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id)
 		{
-			mUiManager.interaction().handlePostClick(view, getItem(position), mPostItems);
+			mUiManager.interaction().handlePostClick(view, getItem(position), postItems);
 		}
 		
 		@Override
@@ -908,7 +922,7 @@ public class DialogUnit implements DialogStack.Callback
 		dialog.show();
 		notifySwitchBackground();
 		mAttachmentDialog = dialog;
-		if (postItem != null) mUiManager.sendPostItemMessage(postItem, UiManager.MESSAGE_PERFORM_LOAD_THUMBNAIL);
+		if (postItem != null) mUiManager.sendPostItemMessage(postItem, UiManager.MESSAGE_PERFORM_DISPLAY_THUMBNAILS);
 	}
 	
 	@SuppressLint("InflateParams")

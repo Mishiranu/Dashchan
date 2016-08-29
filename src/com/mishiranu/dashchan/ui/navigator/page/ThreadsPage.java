@@ -676,7 +676,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 	{
 		switch (message)
 		{
-			case UiManager.MESSAGE_PERFORM_LOAD_THUMBNAIL:
+			case UiManager.MESSAGE_PERFORM_DISPLAY_THUMBNAILS:
 			{
 				UiManager uiManager = getUiManager();
 				ThreadsAdapter adapter = getAdapter();
@@ -717,7 +717,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 				}
 				if (thumbnailedView != null)
 				{
-					uiManager.view().displayThumbnail(thumbnailedView, postItem.getAttachmentItems(), true);
+					uiManager.view().displayThumbnails(thumbnailedView, postItem.getAttachmentItems(), true);
 				}
 				break;
 			}
