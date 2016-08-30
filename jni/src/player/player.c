@@ -389,6 +389,7 @@ static void * performDecodeAudio(void * data)
 	AVStream * stream = AUDIO_STREAM;
 	AVFrame * frame = av_frame_alloc();
 	SwrContext * resampleContext = swr_alloc();
+	int silentAudioLength = UNDEFINED;
 	PacketHolder * packetHolder = NULL;
 	AVPacket lastPacket;
 	int lastPacketValid = 0;
@@ -397,14 +398,14 @@ static void * performDecodeAudio(void * data)
 	{
 		packetHolder = (PacketHolder *) blockingQueueGet(&player->audioPacketQueue, 1);
 		if (player->audioIgnoreWorkFrame)
-        {
-            if (lastPacketValid)
-            {
-                av_packet_unref(&lastPacket);
-                lastPacketValid = 0;
-            }
-            player->audioIgnoreWorkFrame = 0;
-        }
+		{
+			if (lastPacketValid)
+			{
+				av_packet_unref(&lastPacket);
+				lastPacketValid = 0;
+			}
+			player->audioIgnoreWorkFrame = 0;
+		}
 		if (packetHolder == NULL || player->interrupt) break;
 		if (packetHolder->packet != NULL)
 		{
@@ -430,10 +431,10 @@ static void * performDecodeAudio(void * data)
 			if (player->audioIgnoreWorkFrame) goto IGNORE_AUDIO_FRAME;
 			AVPacket * packet = packetHolder->packet;
 			if (packet == NULL)
-            {
-                if (!lastPacketValid) goto IGNORE_AUDIO_FRAME;
-                packet = &lastPacket;
-            }
+			{
+				if (!lastPacketValid) goto IGNORE_AUDIO_FRAME;
+				packet = &lastPacket;
+			}
 			pthread_mutex_lock(&player->decodeAudioFrameMutex);
 			if (player->audioIgnoreWorkFrame) unlockAndGoTo(&player->decodeAudioFrameMutex, IGNORE_AUDIO_FRAME);
 			int ready = decodeFrame(stream, packet, frame, 0, packetHolder->finish);
@@ -511,6 +512,14 @@ static void * performDecodeAudio(void * data)
 				audioBuffer->size = size;
 				audioBuffer->position = position;
 				audioBuffer->divider = 2 * frame->channels * dstSampleRate;
+				// Fix loud click on video start even on low sound level by muting sound buffer for 40 milliseconds
+				if (silentAudioLength == UNDEFINED) silentAudioLength = 40 * audioBuffer->divider / 1000;
+				if (silentAudioLength > 0)
+				{
+					int count = silentAudioLength >= size ? size : silentAudioLength;
+					memset(audioBuffer->buffer, 0, count);
+					silentAudioLength -= count;
+				}
 				int needEnqueue = player->audioBufferNeedEnqueueAfterDecode;
 				blockingQueueAdd(&player->audioBufferQueue, audioBuffer);
 				if (needEnqueue) enqueueAudioBuffer(player);
@@ -772,21 +781,21 @@ static void * performDecodeVideo(void * data)
 	{
 		packetHolder = (PacketHolder *) blockingQueueGet(&player->videoPacketQueue, 1);
 		if (player->videoIgnoreWorkFrame)
-        {
-            if (lastPacketValid)
-            {
-                av_packet_unref(&lastPacket);
-                lastPacketValid = 0;
-            }
-            player->videoIgnoreWorkFrame = 0;
-        }
+		{
+			if (lastPacketValid)
+			{
+				av_packet_unref(&lastPacket);
+				lastPacketValid = 0;
+			}
+			player->videoIgnoreWorkFrame = 0;
+		}
 		if (packetHolder == NULL || player->interrupt) break;
 		if (packetHolder->packet != NULL)
-        {
-            if (lastPacketValid) av_packet_unref(&lastPacket);
-            av_copy_packet(&lastPacket, packetHolder->packet);
-            lastPacketValid = 1;
-        }
+		{
+			if (lastPacketValid) av_packet_unref(&lastPacket);
+			av_copy_packet(&lastPacket, packetHolder->packet);
+			lastPacketValid = 1;
+		}
 		condBroadcastLocked(&player->decodePacketsFlowCond, &player->decodePacketsFlowMutex);
 		if (player->interrupt) break;
 		
