@@ -377,7 +377,54 @@ public class StringUtils
 	@Public
 	public static String unescapeHtml(String string)
 	{
-		return HtmlParser.unescape(string);
+		if (StringUtils.isEmpty(string)) return "";
+		StringBuilder builder = new StringBuilder(string.length());
+		int index = 0;
+		while (index < string.length())
+		{
+			int start = string.indexOf('&', index);
+			int end = start >= index ? string.indexOf(';', start) : -1;
+			if (start >= index && end > start)
+			{
+				builder.append(string, index, start);
+				int realStart = string.lastIndexOf('&', end);
+				if (realStart > start)
+				{
+					builder.append(string, start, realStart);
+					start = realStart;
+				}
+				int value = -1;
+				String entity = string.substring(start + 1, end);
+				if (entity.startsWith("#") && !entity.contains("+") && !entity.contains("-"))
+				{
+					try
+					{
+						if (entity.startsWith("#x") || entity.startsWith("#X"))
+						{
+							value = Integer.parseInt(entity.substring(2), 16);
+						}
+						else value = Integer.parseInt(entity.substring(1));
+					}
+					catch (NumberFormatException e)
+					{
+						
+					}
+				}
+				else
+				{
+					value = HtmlParser.SCHEMA.getEntity(entity);
+					if (value == 0) value = -1;
+				}
+				if (value >= 0) builder.append((char) value); else builder.append(string, start, end + 1);
+				index = end + 1;
+			}
+			else
+			{
+				builder.append(string, index, string.length());
+				break;
+			}
+		}
+		return builder.toString();
 	}
 	
 	private static final MessageDigest DIGEST_SHA_256;

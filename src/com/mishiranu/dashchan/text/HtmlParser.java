@@ -47,11 +47,6 @@ public class HtmlParser implements ContentHandler
 		return parse(source, null, MODE_CLEAR, null, null).toString();
 	}
 	
-	public static String unescape(String source)
-	{
-		return parse(source, null, MODE_UNESCAPE, null, null).toString();
-	}
-	
 	public static String unmark(String source, Markup markup, Object extra)
 	{
 		return parse(source, markup, MODE_UNMARK, null, extra).toString();
@@ -104,8 +99,7 @@ public class HtmlParser implements ContentHandler
 	
 	private static final int MODE_PARSE = 0;
 	private static final int MODE_CLEAR = 1;
-	private static final int MODE_UNESCAPE = 2;
-	private static final int MODE_UNMARK = 3;
+	private static final int MODE_UNMARK = 2;
 	
 	private final String mSource;
 	private final StringBuilder mBuilder = new StringBuilder();
@@ -119,7 +113,6 @@ public class HtmlParser implements ContentHandler
 	
 	private HtmlParser(String source, Markup markup, int parsingMode, String parentPostNumber, Object extra)
 	{
-		if (parsingMode == MODE_UNESCAPE) source = "<span>" + source + "</span>";
 		mSource = source;
 		mMarkup = markup;
 		mParsingMode = parsingMode;
@@ -129,14 +122,14 @@ public class HtmlParser implements ContentHandler
 		mSpanProvider = spannedPostMarkup ? markup.initSpanProvider(this) : null;
 	}
 	
-	private static final HTMLSchema HTML_SCHEMA = new HTMLSchema();
+	public static final HTMLSchema SCHEMA = new HTMLSchema();
 	
 	public CharSequence convert()
 	{
 		Parser parser = new Parser();
 		try
 		{
-			parser.setProperty("http://www.ccil.org/~cowan/tagsoup/properties/schema", HTML_SCHEMA);
+			parser.setProperty(Parser.schemaProperty, SCHEMA);
 		}
 		catch (SAXNotRecognizedException | SAXNotSupportedException e)
 		{
@@ -410,7 +403,6 @@ public class HtmlParser implements ContentHandler
 	@Override
 	public void startElement(String uri, String tagName, String qName, Attributes attributes)
 	{
-		if (mParsingMode == MODE_UNESCAPE) return;
 		StringBuilder builder = mBuilder;
 		if ("br".equals(tagName)) return; // Ignore
 		TagData tagData = fillBaseTagData(tagName);
@@ -465,7 +457,6 @@ public class HtmlParser implements ContentHandler
 	@Override
 	public void endElement(String uri, String tagName, String qName)
 	{
-		if (mParsingMode == MODE_UNESCAPE) return;
 		StringBuilder builder = mBuilder;
 		if ("br".equals(tagName))
 		{
@@ -488,11 +479,6 @@ public class HtmlParser implements ContentHandler
 	public void characters(char ch[], int start, int length)
 	{
 		StringBuilder builder = mBuilder;
-		if (mParsingMode == MODE_UNESCAPE)
-		{
-			builder.append(ch, start, length);
-			return;
-		}
 		int realLength = 0;
 		if (mPreformattedMode.check())
 		{
