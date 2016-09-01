@@ -19,6 +19,7 @@ package com.mishiranu.dashchan.text;
 import java.io.StringReader;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -278,6 +279,7 @@ public class HtmlParser implements ContentHandler
 	}
 	
 	private static final HashMap<String, TagData> DEFAULT_TAGS = new HashMap<>();
+	private static final HashSet<String> HIDDEN_TAGS = new HashSet<>();
 	
 	static
 	{
@@ -302,6 +304,9 @@ public class HtmlParser implements ContentHandler
 		DEFAULT_TAGS.put("td", new TagData(true, false, false));
 		DEFAULT_TAGS.put("th", new TagData(true, false, false));
 		DEFAULT_TAGS.put("tr", new TagData(true, true, false));
+		
+		HIDDEN_TAGS.add("script");
+		HIDDEN_TAGS.add("style");
 	}
 	
 	private final TagData mTagData = new TagData(false, false, false);
@@ -400,9 +405,16 @@ public class HtmlParser implements ContentHandler
 	private boolean mOrderedList;
 	private int mListStart = -1;
 	
+	private boolean mHidden = false;
+	
 	@Override
 	public void startElement(String uri, String tagName, String qName, Attributes attributes)
 	{
+		if (HIDDEN_TAGS.contains(tagName))
+		{
+			mHidden = true;
+			return;
+		}
 		StringBuilder builder = mBuilder;
 		if ("br".equals(tagName)) return; // Ignore
 		TagData tagData = fillBaseTagData(tagName);
@@ -457,6 +469,11 @@ public class HtmlParser implements ContentHandler
 	@Override
 	public void endElement(String uri, String tagName, String qName)
 	{
+		if (mHidden)
+		{
+			if (HIDDEN_TAGS.contains(tagName)) mHidden = false;
+			return;
+		}
 		StringBuilder builder = mBuilder;
 		if ("br".equals(tagName))
 		{
@@ -478,6 +495,7 @@ public class HtmlParser implements ContentHandler
 	@Override
 	public void characters(char ch[], int start, int length)
 	{
+		if (mHidden) return;
 		StringBuilder builder = mBuilder;
 		int realLength = 0;
 		if (mPreformattedMode.check())
