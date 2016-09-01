@@ -146,6 +146,7 @@ public class HtmlParser implements ContentHandler
 		{
 			throw new RuntimeException(e);
 		}
+		removeBlockLastWhitespaces();
 		int start = 0;
 		int end = 0;
 		boolean substring = false;
