@@ -350,7 +350,22 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			if (posting.optionSage) mSageCheckBox.setChecked(postDraft.optionSage);
 			if (posting.optionSpoiler) mSageCheckBox.setChecked(postDraft.optionSpoiler);
 			mOriginalPosterCheckBox.setChecked(postDraft.optionOriginalPoster);
-			applyUserIcon(postDraft.userIcon);
+			if (mUserIconItems != null)
+			{
+				int index = 0;
+				if (postDraft.userIcon != null)
+				{
+					for (int i = 0; i < mUserIconItems.size(); i++)
+					{
+						if (postDraft.userIcon.equals(mUserIconItems.get(i).first))
+						{
+							index = i + 1;
+							break;
+						}
+					}
+				}
+				mIconView.setSelection(index);
+			}
 		}
 		
 		boolean captchaRestoreSuccess = false;
@@ -800,27 +815,12 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		}
 	};
 	
-	private void applyUserIcon(String icon)
-	{
-		if (mUserIconItems != null && icon != null)
-		{
-			for (int i = 0; i < mUserIconItems.size(); i++)
-			{
-				if (icon.equals(mUserIconItems.get(i).second))
-				{
-					mIconView.setSelection(i + 1);
-					break;
-				}
-			}
-		}
-	}
-	
 	private String getUserIcon()
 	{
 		if (mUserIconItems != null)
 		{
 			int position = mIconView.getSelectedItemPosition() - 1;
-			if (position >= 0) return mUserIconItems.get(position).second;
+			if (position >= 0) return mUserIconItems.get(position).first;
 		}
 		return null;
 	}
@@ -950,6 +950,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		boolean optionSage = mSageCheckBox.isChecked();
 		boolean optionSpoiler = mSpoilerCheckBox.isChecked();
 		boolean optionOriginalPoster = mOriginalPosterCheckBox.isChecked();
+		String userIcon = getUserIcon();
 		ArrayList<ChanPerformer.SendPostData.Attachment> array = new ArrayList<>();
 		for (int i = 0; i < mAttachments.size(); i++)
 		{
@@ -959,12 +960,6 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		}
 		ChanPerformer.SendPostData.Attachment[] attachments = null;
 		if (array.size() > 0) attachments = CommonUtils.toArray(array, ChanPerformer.SendPostData.Attachment.class);
-		String userIcon = null;
-		if (mUserIconItems != null)
-		{
-			int position = mIconView.getSelectedItemPosition() - 1;
-			if (position >= 0) userIcon = mUserIconItems.get(position).first;
-		}
 		ChanPerformer.CaptchaData captchaData = mCaptchaData;
 		if (captchaData != null) captchaData.put(ChanPerformer.CaptchaData.INPUT, mCaptchaForm.getInput());
 		String captchaType = mLoadedCaptchaType != null ? mLoadedCaptchaType : mCaptchaType;
