@@ -34,13 +34,11 @@ import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.model.FileHolder;
-import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.LruCache;
 
 public class DraftsStorage extends StorageManager.Storage
 {
-	private static final String KEY_THREAD_DRAFTS = "threadDrafts";
 	private static final String KEY_POST_DRAFTS = "postDrafts";
 	
 	private static final DraftsStorage INSTANCE = new DraftsStorage();
@@ -50,7 +48,6 @@ public class DraftsStorage extends StorageManager.Storage
 		return INSTANCE;
 	}
 	
-	private final LruCache<String, ThreadDraft> mThreadDrafts = new LruCache<>(15);
 	private final LruCache<String, PostDraft> mPostDrafts = new LruCache<>(5);
 	
 	private String mCaptchaChanName;
@@ -62,22 +59,6 @@ public class DraftsStorage extends StorageManager.Storage
 		JSONObject jsonObject = read();
 		if (jsonObject != null)
 		{
-			JSONArray threadsArray = jsonObject.optJSONArray(KEY_THREAD_DRAFTS);
-			if (threadsArray != null && threadsArray.length() > 0)
-			{
-				try
-				{
-					for (int i = 0; i < threadsArray.length(); i++)
-					{
-						ThreadDraft threadDraft = ThreadDraft.fromJsonObject(threadsArray.getJSONObject(i));
-						if (threadDraft != null) mThreadDrafts.put(makeKey(threadDraft), threadDraft);
-					}
-				}
-				catch (JSONException e)
-				{
-					
-				}
-			}
 			JSONArray postsArray = jsonObject.optJSONArray(KEY_POST_DRAFTS);
 			if (postsArray != null && postsArray.length() > 0)
 			{
@@ -100,24 +81,15 @@ public class DraftsStorage extends StorageManager.Storage
 	@Override
 	public Object onClone()
 	{
-		return new Object[] {new ArrayList<>(mThreadDrafts.values()), new ArrayList<>(mPostDrafts.values())};
+		return new ArrayList<>(mPostDrafts.values());
 	}
 	
 	@Override
 	public JSONObject onSerialize(Object data) throws JSONException
 	{
-		Object[] dataArray = (Object[]) data;
 		@SuppressWarnings("unchecked")
-		ArrayList<ThreadDraft> threadDrafts = (ArrayList<ThreadDraft>) dataArray[0];
-		@SuppressWarnings("unchecked")
-		ArrayList<PostDraft> postDrafts = (ArrayList<PostDraft>) dataArray[1];
+		ArrayList<PostDraft> postDrafts = (ArrayList<PostDraft>) data;
 		JSONObject jsonObject = new JSONObject();
-		if (threadDrafts.size() > 0)
-		{
-			JSONArray jsonArray = new JSONArray();
-			for (ThreadDraft threadDraft : threadDrafts) jsonArray.put(threadDraft.toJsonObject());
-			jsonObject.put(KEY_THREAD_DRAFTS, jsonArray);
-		}
 		if (postDrafts.size() > 0)
 		{
 			JSONArray jsonArray = new JSONArray();
@@ -132,25 +104,9 @@ public class DraftsStorage extends StorageManager.Storage
 		return chanName + "/" + boardName + "/" + threadNumber;
 	}
 	
-	private static String makeKey(ThreadDraft threadDraft)
+	private static String makeKey(PostDraft postDraft)
 	{
-		return makeKey(threadDraft.chanName, threadDraft.boardName, threadDraft.threadNumber);
-	}
-	
-	public void store(ThreadDraft threadDraft)
-	{
-		if (threadDraft != null)
-		{
-			boolean serialize = true;
-			if (threadDraft.isEmpty()) serialize = mThreadDrafts.remove(makeKey(threadDraft)) != null;
-			else mThreadDrafts.put(makeKey(threadDraft), threadDraft);
-			if (serialize) serialize();
-		}
-	}
-	
-	public ThreadDraft getThreadDraft(String chanName, String boardName, String threadNumber)
-	{
-		return mThreadDrafts.get(makeKey(chanName, boardName, threadNumber));
+		return makeKey(postDraft.chanName, postDraft.boardName, postDraft.threadNumber);
 	}
 	
 	public void store(PostDraft postDraft)
@@ -197,7 +153,7 @@ public class DraftsStorage extends StorageManager.Storage
 		mCaptchaChanName = null;
 	}
 	
-	public static class ThreadDraft
+	public static class PostDraft
 	{
 		private static final String KEY_CHAN_NAME = "chanName";
 		private static final String KEY_BOARD_NAME = "boardName";
@@ -206,7 +162,12 @@ public class DraftsStorage extends StorageManager.Storage
 		private static final String KEY_NAME = "name";
 		private static final String KEY_EMAIL = "email";
 		private static final String KEY_PASSWORD = "password";
+		private static final String KEY_SUBJECT = "subject";
+		private static final String KEY_COMMENT = "comment";
+		private static final String KEY_COMMENT_CARRIAGE = "commentCarriage";
+		private static final String KEY_ATTACHMENT_DRAFTS = "attachmentDrafts";
 		private static final String KEY_OPTION_SAGE = "optionSage";
+		private static final String KEY_OPTION_SPOILER = "optionSpoiler";
 		private static final String KEY_OPTION_ORIGINAL_POSTER = "optionOriginalPoster";
 		private static final String KEY_USER_ICON = "userIcon";
 		
@@ -217,12 +178,19 @@ public class DraftsStorage extends StorageManager.Storage
 		public final String name;
 		public final String email;
 		public final String password;
+		public final String subject;
+		public final String comment;
+		public final int commentCarriage;
+		public final AttachmentDraft[] attachmentDrafts;
 		public final boolean optionSage;
+		public final boolean optionSpoiler;
 		public final boolean optionOriginalPoster;
 		public final String userIcon;
 		
-		public ThreadDraft(String chanName, String boardName, String threadNumber, String name, String email,
-				String password, boolean optionSage, boolean optionOriginalPoster, String userIcon)
+		public PostDraft(String chanName, String boardName, String threadNumber,
+				String name, String email, String password, String subject, String comment, int commentCarriage,
+				AttachmentDraft[] attachmentDrafts, boolean optionSage, boolean optionSpoiler,
+				boolean optionOriginalPoster, String userIcon)
 		{
 			this.chanName = chanName;
 			this.boardName = boardName;
@@ -233,13 +201,27 @@ public class DraftsStorage extends StorageManager.Storage
 			this.optionSage = optionSage;
 			this.optionOriginalPoster = optionOriginalPoster;
 			this.userIcon = userIcon;
+			this.subject = subject;
+			this.comment = comment;
+			this.commentCarriage = commentCarriage;
+			this.attachmentDrafts = attachmentDrafts;
+			this.optionSpoiler = optionSpoiler;
+		}
+		
+		public PostDraft(String chanName, String boardName, String threadNumber,
+				String name, String email, String password,
+				boolean optionSage, boolean optionOriginalPoster, String userIcon)
+		{
+			this(chanName, boardName, threadNumber, name, email, password, null, null, 0,
+					null, optionSage, false, optionOriginalPoster, userIcon);
 		}
 		
 		public boolean isEmpty()
 		{
-			return StringUtils.isEmpty(name) && StringUtils.isEmpty(email) &&
-					(StringUtils.isEmpty(password) || password.equals(Preferences.getPassword(chanName))) &&
-					!optionSage && !optionOriginalPoster && StringUtils.isEmpty(userIcon);
+			return StringUtils.isEmpty(name) && StringUtils.isEmpty(email) && StringUtils.isEmpty(password) &&
+					StringUtils.isEmpty(subject) && StringUtils.isEmpty(comment) &&
+					(attachmentDrafts == null || attachmentDrafts.length == 0) &&
+					!optionSage && !optionSpoiler && !optionOriginalPoster && StringUtils.isEmpty(userIcon);
 		}
 		
 		public JSONObject toJsonObject() throws JSONException
@@ -251,60 +233,6 @@ public class DraftsStorage extends StorageManager.Storage
 			putJson(jsonObject, KEY_NAME, name);
 			putJson(jsonObject, KEY_EMAIL, email);
 			putJson(jsonObject, KEY_PASSWORD, password);
-			putJson(jsonObject, KEY_OPTION_SAGE, optionSage);
-			putJson(jsonObject, KEY_OPTION_ORIGINAL_POSTER, optionOriginalPoster);
-			putJson(jsonObject, KEY_USER_ICON, userIcon);
-			return jsonObject;
-		}
-		
-		public static ThreadDraft fromJsonObject(JSONObject jsonObject)
-		{
-			String chanName = jsonObject.optString(KEY_CHAN_NAME, null);
-			if (chanName == null) return null;
-			return new ThreadDraft(chanName, jsonObject.optString(KEY_BOARD_NAME, null),
-					jsonObject.optString(KEY_THREAD_NUMBER, null), jsonObject.optString(KEY_NAME, null),
-					jsonObject.optString(KEY_EMAIL, null), jsonObject.optString(KEY_PASSWORD, null),
-					jsonObject.optBoolean(KEY_OPTION_SAGE), jsonObject.optBoolean(KEY_OPTION_ORIGINAL_POSTER),
-					jsonObject.optString(KEY_USER_ICON, null));
-		}
-	}
-	
-	public static class PostDraft extends ThreadDraft
-	{
-		private static final String KEY_SUBJECT = "subject";
-		private static final String KEY_COMMENT = "comment";
-		private static final String KEY_COMMENT_CARRIAGE = "commentCarriage";
-		private static final String KEY_ATTACHMENT_DRAFTS = "attachmentDrafts";
-		private static final String KEY_OPTION_SPOILER = "optionSpoiler";
-		
-		public final String subject;
-		public final String comment;
-		public final int commentCarriage;
-		public final AttachmentDraft[] attachmentDrafts;
-		public final boolean optionSpoiler;
-		
-		public boolean isEmpty()
-		{
-			return super.isEmpty() && StringUtils.isEmpty(subject) && StringUtils.isEmpty(comment) &&
-					(attachmentDrafts == null || attachmentDrafts.length == 0) && !optionSpoiler;
-		}
-		
-		public PostDraft(String chanName, String boardName, String threadNumber, String subject, String comment,
-				int commentCarriage, AttachmentDraft[] attachmentDrafts, String name, String email, String password,
-				boolean optionSage, boolean optionSpoiler, boolean optionOriginalPoster, String userIcon)
-		{
-			super(chanName, boardName, threadNumber, name, email, password, optionSage, optionOriginalPoster, userIcon);
-			this.subject = subject;
-			this.comment = comment;
-			this.commentCarriage = commentCarriage;
-			this.attachmentDrafts = attachmentDrafts;
-			this.optionSpoiler = optionSpoiler;
-		}
-		
-		@Override
-		public JSONObject toJsonObject() throws JSONException
-		{
-			JSONObject jsonObject = super.toJsonObject();
 			putJson(jsonObject, KEY_SUBJECT, subject);
 			putJson(jsonObject, KEY_COMMENT, comment);
 			putJson(jsonObject, KEY_COMMENT_CARRIAGE, commentCarriage);
@@ -314,14 +242,24 @@ public class DraftsStorage extends StorageManager.Storage
 				for (AttachmentDraft attachmentDraft : attachmentDrafts) jsonArray.put(attachmentDraft.toJsonObject());
 				jsonObject.put(KEY_ATTACHMENT_DRAFTS, jsonArray);
 			}
+			putJson(jsonObject, KEY_OPTION_SAGE, optionSage);
 			putJson(jsonObject, KEY_OPTION_SPOILER, optionSpoiler);
+			putJson(jsonObject, KEY_OPTION_ORIGINAL_POSTER, optionOriginalPoster);
+			putJson(jsonObject, KEY_USER_ICON, userIcon);
 			return jsonObject;
 		}
 		
 		public static PostDraft fromJsonObject(JSONObject jsonObject)
 		{
-			ThreadDraft threadDraft = ThreadDraft.fromJsonObject(jsonObject);
-			if (threadDraft == null) return null;
+			String chanName = jsonObject.optString(KEY_CHAN_NAME, null);
+			String boardName = jsonObject.optString(KEY_BOARD_NAME, null);
+			String threadNumber = jsonObject.optString(KEY_THREAD_NUMBER, null);
+			String name = jsonObject.optString(KEY_NAME, null);
+			String email = jsonObject.optString(KEY_EMAIL, null);
+			String password = jsonObject.optString(KEY_PASSWORD, null);
+			String subject = jsonObject.optString(KEY_SUBJECT, null);
+			String comment = jsonObject.optString(KEY_COMMENT, null);
+			int commentCarriage = jsonObject.optInt(KEY_COMMENT_CARRIAGE);
 			AttachmentDraft[] attachmentDrafts = null;
 			JSONArray jsonArray = jsonObject.optJSONArray(KEY_ATTACHMENT_DRAFTS);
 			if (jsonArray != null && jsonArray.length() > 0)
@@ -338,11 +276,12 @@ public class DraftsStorage extends StorageManager.Storage
 				}
 				attachmentDrafts = CommonUtils.toArray(attachmentDraftList, AttachmentDraft.class);
 			}
-			return new PostDraft(threadDraft.chanName, threadDraft.boardName, threadDraft.threadNumber,
-					jsonObject.optString(KEY_SUBJECT, null), jsonObject.optString(KEY_COMMENT, null),
-					jsonObject.optInt(KEY_COMMENT_CARRIAGE), attachmentDrafts, threadDraft.name, threadDraft.email,
-					threadDraft.password, threadDraft.optionSage, jsonObject.optBoolean(KEY_OPTION_SPOILER),
-					threadDraft.optionOriginalPoster, threadDraft.userIcon);
+			boolean optionSage = jsonObject.optBoolean(KEY_OPTION_SAGE);
+			boolean optionSpoiler = jsonObject.optBoolean(KEY_OPTION_SPOILER);
+			boolean optionOriginalPoster = jsonObject.optBoolean(KEY_OPTION_ORIGINAL_POSTER);
+			String userIcon = jsonObject.optString(KEY_USER_ICON, null);
+			return new PostDraft(chanName, boardName, threadNumber, name, email, password, subject, comment,
+					commentCarriage, attachmentDrafts, optionSage, optionSpoiler, optionOriginalPoster, userIcon);
 		}
 	}
 	

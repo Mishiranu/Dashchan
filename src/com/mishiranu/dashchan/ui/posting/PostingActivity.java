@@ -142,7 +142,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	private List<Pair<String, String>> mUserIconItems;
 	private List<Pair<String, String>> mAttachmentRatingItems;
 	
-	private boolean mSaveDraftOnFinish = true;
+	private boolean mStoreDraftOnFinish = true;
 	private boolean mWatchTripcodeWarning = false;
 	
 	private ResizingScrollView mScrollView;
@@ -305,20 +305,6 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 					!needPassword && mUserIconItems == null;
 		}
 		if (hidePersonalDataBlock) findViewById(R.id.personal_data_block).setVisibility(View.GONE);
-		
-		DraftsStorage.ThreadDraft threadDraft = draftsStorage.getThreadDraft(mChanName, mBoardName, mThreadNumber);
-		if (threadDraft != null)
-		{
-			if (!Preferences.isHidePersonalData())
-			{
-				if (posting.allowName) mNameView.setText(threadDraft.name);
-				mEmailView.setText(threadDraft.email);
-				mPasswordView.setText(threadDraft.password);
-			}
-			if (posting.optionSage) mSageCheckBox.setChecked(threadDraft.optionSage);
-			mOriginalPosterCheckBox.setChecked(threadDraft.optionOriginalPoster);
-			applyUserIcon(threadDraft.userIcon);
-		}
 		
 		StringBuilder builder = new StringBuilder();
 		int commentCarriage = 0;
@@ -573,8 +559,9 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		boolean optionSpoiler = mSpoilerCheckBox.isChecked();
 		boolean optionOriginalPoster = mOriginalPosterCheckBox.isChecked();
 		String userIcon = getUserIcon();
-		return new DraftsStorage.PostDraft(mChanName, mBoardName, mThreadNumber, subject, comment, commentCarriage,
-				attachmentDrafts, name, email, password, optionSage, optionSpoiler, optionOriginalPoster, userIcon);
+		return new DraftsStorage.PostDraft(mChanName, mBoardName, mThreadNumber, name, email, password,
+				subject, comment, commentCarriage, attachmentDrafts,
+				optionSage, optionSpoiler, optionOriginalPoster, userIcon);
 	}
 	
 	private DraftsStorage.CaptchaDraft obtainCaptchaDraft()
@@ -627,7 +614,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		}
 		unbindService(this);
 		ClickableToast.unregister(mClickableToastHolder);
-		if (mSaveDraftOnFinish)
+		if (mStoreDraftOnFinish)
 		{
 			DraftsStorage draftsStorage = DraftsStorage.getInstance();
 			draftsStorage.store(obtainPostDraft());
@@ -1086,7 +1073,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	public void onSendPostSuccess()
 	{
 		dismissSendPost();
-		mSaveDraftOnFinish = false;
+		mStoreDraftOnFinish = false;
 		finish();
 	}
 	
