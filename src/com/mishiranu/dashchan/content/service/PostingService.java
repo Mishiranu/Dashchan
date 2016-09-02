@@ -396,15 +396,15 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 			}
 			StatisticsManager.getInstance().incrementPosts(chanName, data.threadNumber == null);
 			DraftsStorage draftsStorage = DraftsStorage.getInstance();
+			draftsStorage.removeCaptchaDraft();
+			draftsStorage.removePostDraft(chanName, data.boardName, data.threadNumber);
 			if (targetThreadNumber != null)
 			{
 				String password = Preferences.getPassword(chanName);
 				if (StringUtils.equals(password, data.password)) password = null;
-				draftsStorage.store(new DraftsStorage.ThreadDraft(chanName, data.boardName, targetThreadNumber,
+				draftsStorage.store(new DraftsStorage.PostDraft(chanName, data.boardName, targetThreadNumber,
 						data.name, data.email, password, data.optionSage, data.optionOriginalPoster, data.userIcon));
 			}
-			draftsStorage.removePostDraft(chanName, data.boardName, data.threadNumber);
-			draftsStorage.removeCaptchaDraft();
 			if (targetThreadNumber != null)
 			{
 				postNumber = StringUtils.nullIfEmpty(postNumber);
