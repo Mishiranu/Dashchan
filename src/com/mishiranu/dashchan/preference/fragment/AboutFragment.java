@@ -295,15 +295,15 @@ public class AboutFragment extends BasePreferenceFragment
 		@Override
 		public Pair<Object, AsyncManager.Holder> onCreateAndExecuteTask(String name, HashMap<String, Object> extra)
 		{
-			switch (getArguments().getInt(EXTRA_TYPE))
+			switch (name)
 			{
-				case TYPE_CHANGELOG:
+				case TASK_READ_CHANGELOG:
 				{
 					ReadChangelogTask task = new ReadChangelogTask(getActivity());
 					task.executeOnExecutor(ReadChangelogTask.THREAD_POOL_EXECUTOR);
 					return task.getPair();
 				}
-				case TYPE_UPDATE:
+				case TASK_READ_UPDATE:
 				{
 					ReadUpdateHolder holder = new ReadUpdateHolder();
 					ReadUpdateTask task = new ReadUpdateTask(getActivity(), holder);
@@ -318,9 +318,9 @@ public class AboutFragment extends BasePreferenceFragment
 		public void onFinishTaskExecution(String name, AsyncManager.Holder holder)
 		{
 			dismissAllowingStateLoss();
-			switch (getArguments().getInt(EXTRA_TYPE))
+			switch (name)
 			{
-				case TYPE_CHANGELOG:
+				case TASK_READ_CHANGELOG:
 				{
 					String content = holder.nextArgument();
 					ErrorItem errorItem = holder.nextArgument();
@@ -336,7 +336,7 @@ public class AboutFragment extends BasePreferenceFragment
 					else ToastUtils.show(getActivity(), errorItem);
 					break;
 				}
-				case TYPE_UPDATE:
+				case TASK_READ_UPDATE:
 				{
 					ReadUpdateTask.UpdateDataMap updateDataMap = holder.nextArgument();
 					startActivity(UpdateFragment.createUpdateIntent(getActivity(), updateDataMap));
@@ -348,7 +348,19 @@ public class AboutFragment extends BasePreferenceFragment
 		@Override
 		public void onRequestTaskCancel(String name, Object task)
 		{
-			((ReadChangelogTask) task).cancel();
+			switch (name)
+			{
+				case TASK_READ_CHANGELOG:
+				{
+					((ReadChangelogTask) task).cancel();
+					break;
+				}
+				case TASK_READ_UPDATE:
+				{
+					((ReadUpdateTask) task).cancel();
+					break;
+				}
+			}
 		}
 	}
 	
