@@ -616,11 +616,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.0",
+			"name": "1.1",
 			"code": 1,
 			"version": 1,
 			"minSdk": 16,
-			"length": 20990,
+			"length": 21019,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanValkyria.apk"
 		}
 	],
