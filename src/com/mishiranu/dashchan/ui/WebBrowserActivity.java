@@ -17,6 +17,7 @@
 package com.mishiranu.dashchan.ui;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -232,9 +233,15 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 				else navigationData = locator.safe(true).handleUriClickSpecial(uri);
 				if (navigationData != null)
 				{
-					finish();
-					startActivity(NavigationUtils.obtainTargetIntent(WebBrowserActivity.this, chanName, navigationData,
-							true, false));
+					new AlertDialog.Builder(WebBrowserActivity.this).setMessage(R.string.message_open_link_confirm)
+							.setNegativeButton(android.R.string.cancel, null)
+							.setPositiveButton(android.R.string.ok, (dialog, which) ->
+					{
+						finish();
+						startActivity(NavigationUtils.obtainTargetIntent(WebBrowserActivity.this,
+								chanName, navigationData, true, false));
+						
+					}).show();
 					return true;
 				}
 			}
