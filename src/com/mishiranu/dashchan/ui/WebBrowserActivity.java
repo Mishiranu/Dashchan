@@ -102,8 +102,9 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 	}
 	
 	private static final int OPTIONS_MENU_RELOAD = 0;
-	private static final int OPTIONS_MENU_SHARE_LINK = 1;
-	private static final int OPTIONS_MENU_BROWSER = 2;
+	private static final int OPTIONS_MENU_COPY_LINK = 1;
+	private static final int OPTIONS_MENU_SHARE_LINK = 2;
+	private static final int OPTIONS_MENU_BROWSER = 3;
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu)
@@ -111,6 +112,7 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 		ActionIconSet set = new ActionIconSet(this);
 		menu.add(0, OPTIONS_MENU_RELOAD, 0, R.string.action_reload).setIcon(set.getId(R.attr.actionRefresh))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+		menu.add(0, OPTIONS_MENU_COPY_LINK, 0, R.string.action_copy_link);
 		menu.add(0, OPTIONS_MENU_SHARE_LINK, 0, R.string.action_share_link);
 		menu.add(0, OPTIONS_MENU_BROWSER, 0, R.string.action_browser);
 		return super.onCreateOptionsMenu(menu);
@@ -129,6 +131,11 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 			case OPTIONS_MENU_RELOAD:
 			{
 				mWebView.reload();
+				break;
+			}
+			case OPTIONS_MENU_COPY_LINK:
+			{
+				StringUtils.copyToClipboard(this, mWebView.getUrl());
 				break;
 			}
 			case OPTIONS_MENU_SHARE_LINK:
