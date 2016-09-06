@@ -152,7 +152,7 @@ public class RecaptchaReader implements Handler.Callback
 				if (loadingHolder.imageSelector)
 				{
 					boolean reset = true;
-					String challenge = loadingHolder.challenge;
+					ComplexChallenge challenge = loadingHolder.challenge;
 					Bitmap[] captchaImages = null;
 					int lastReplaceIndex = -1;
 					while (true)
@@ -163,8 +163,8 @@ public class RecaptchaReader implements Handler.Callback
 							{
 								for (Bitmap captchaImage : captchaImages) captchaImage.recycle();
 							}
-							Bitmap fullCaptchaImage = getImage2(holder, apiKey, loadingHolder.challenge,
-									null, false).first;
+							Bitmap fullCaptchaImage = getImage2(holder, apiKey, challenge.challenge,
+									challenge.id, false).first;
 							captchaImages = splitImages(fullCaptchaImage, loadingHolder.imageSelectorSizeX,
 									loadingHolder.imageSelectorSizeY);
 							loadingHolder.replace = null;
@@ -176,8 +176,8 @@ public class RecaptchaReader implements Handler.Callback
 						boolean willReplace = willReplaceIndex >= 0;
 						if (loadingHolder.replace != null && lastReplaceIndex >= 0)
 						{
-							Bitmap replaceCaptchaImage = getImage2(holder, apiKey, loadingHolder.replace.first,
-									loadingHolder.replace.second, false).first;
+							Bitmap replaceCaptchaImage = getImage2(holder, apiKey, loadingHolder.replace.challenge,
+									loadingHolder.replace.id, false).first;
 							loadingHolder.replace = null;
 							captchaImages[lastReplaceIndex].recycle();
 							captchaImages[lastReplaceIndex] = replaceCaptchaImage;
@@ -244,7 +244,7 @@ public class RecaptchaReader implements Handler.Callback
 							{
 								throw new HttpException(ErrorItem.TYPE_CAPTCHA_EXPIRED, false, false);
 							}
-							if (!StringUtils.equals(loadingHolder.challenge, challenge))
+							if (!challenge.equals(loadingHolder.challenge))
 							{
 								challenge = loadingHolder.challenge;
 								reset = true;
@@ -260,7 +260,7 @@ public class RecaptchaReader implements Handler.Callback
 						throw new CancelException();
 					}
 				}
-				if (loadingHolder.challenge != null) return loadingHolder.challenge;
+				if (loadingHolder.challenge != null) return loadingHolder.challenge.challenge;
 				if (loadingHolder.response != null) throw new SkipException(loadingHolder.response);
 				mHandler.sendEmptyMessage(MESSAGE_CANCEL);
 				throw new HttpException(ErrorItem.TYPE_DOWNLOAD, false, false);
@@ -335,7 +335,7 @@ public class RecaptchaReader implements Handler.Callback
 					mHandler.sendEmptyMessage(MESSAGE_CANCEL);
 					return null;
 				}
-				if (loadingHolder.challenge != null) return loadingHolder.challenge;
+				if (loadingHolder.challenge != null) return loadingHolder.challenge.challenge;
 				mHandler.sendEmptyMessage(MESSAGE_CANCEL);
 				throw new HttpException(ErrorItem.TYPE_DOWNLOAD, false, false);
 			}
@@ -405,27 +405,17 @@ public class RecaptchaReader implements Handler.Callback
 	/*
 	 * Returns g-recaptcha-response field, or null if captcha invalid.
 	 */
-	public String getResponseField2(HttpHolder holder, String apiKey, String challenge, String input, boolean fallback)
-			throws HttpException
+	public String getResponseField2(HttpHolder holder, String apiKey, String challenge, String input,
+			boolean useJavaScript) throws HttpException
 	{
 		if (apiKey == null || challenge == null) return null;
-		if (fallback)
-		{
-			ChanLocator locator = ChanLocator.getDefault();
-			Uri uri = locator.buildQueryWithHost("www.google.com", "recaptcha/api/fallback", "k", apiKey);
-			UrlEncodedEntity entity = new UrlEncodedEntity("c", challenge, "response", input);
-			String data = new HttpRequest(uri, holder).setPostMethod(entity)
-					.setRedirectHandler(HttpRequest.RedirectHandler.STRICT).read().getString();
-			Matcher matcher = RECAPTCHA_RESULT_PATTERN.matcher(data);
-			return matcher.find() ? matcher.group(1) : null;
-		}
-		else
+		if (useJavaScript)
 		{
 			if (mClient != null && mClient.getLoadingHolder() != null)
 			{
 				LoadingHolder loadingHolder = mClient.getLoadingHolder();
 				if (loadingHolder.recaptcha2 && apiKey.equals(loadingHolder.apiKey) &&
-						challenge.equals(loadingHolder.challenge))
+						challenge.equals(loadingHolder.challenge != null ? loadingHolder.challenge.challenge : null))
 				{
 					loadingHolder = new LoadingHolder(apiKey, true, input);
 					mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_VERIFY, loadingHolder));
@@ -448,6 +438,16 @@ public class RecaptchaReader implements Handler.Callback
 			}
 			throw new HttpException(ErrorItem.TYPE_UNKNOWN, false, false);
 		}
+		else
+		{
+			ChanLocator locator = ChanLocator.getDefault();
+			Uri uri = locator.buildQueryWithHost("www.google.com", "recaptcha/api/fallback", "k", apiKey);
+			UrlEncodedEntity entity = new UrlEncodedEntity("c", challenge, "response", input);
+			String data = new HttpRequest(uri, holder).setPostMethod(entity)
+					.setRedirectHandler(HttpRequest.RedirectHandler.STRICT).read().getString();
+			Matcher matcher = RECAPTCHA_RESULT_PATTERN.matcher(data);
+			return matcher.find() ? matcher.group(1) : null;
+		}
 	}
 	
 	public void preloadWebView()
@@ -461,14 +461,53 @@ public class RecaptchaReader implements Handler.Callback
 	
 	private static final int WAIT_TIMEOUT = 15000;
 	
+	private static class ComplexChallenge
+	{
+		public final String challenge;
+		public final String id;
+		
+		public ComplexChallenge(String challenge, String id)
+		{
+			this.challenge = challenge;
+			this.id = id;
+		}
+		
+		public ComplexChallenge(Uri uri)
+		{
+			this(uri.getQueryParameter("c"), uri.getQueryParameter("id"));
+		}
+		
+		@Override
+		public boolean equals(Object o)
+		{
+			if (o == this) return true;
+			if (o instanceof ComplexChallenge)
+			{
+				ComplexChallenge co = (ComplexChallenge) o;
+				return StringUtils.equals(co.challenge, challenge) && StringUtils.equals(co.id, id);
+			}
+			return false;
+		}
+		
+		@Override
+		public int hashCode()
+		{
+			int prime = 31;
+			int result = 1;
+			result = prime * result + (challenge != null ? challenge.hashCode() : 0);
+			result = prime * result + (id != null ? id.hashCode() : 0);
+			return result;
+		}
+	}
+	
 	private static class LoadingHolder
 	{
 		public final String apiKey;
 		public final boolean recaptcha2;
 		public final String input;
 
-		public String challenge;
-		public Pair<String, String> replace;
+		public ComplexChallenge challenge;
+		public ComplexChallenge replace;
 		public boolean queuedReplace;
 		public String response;
 		public boolean expired;
@@ -687,7 +726,7 @@ public class RecaptchaReader implements Handler.Callback
 			{
 				LoadingHolder loadingHolder = (LoadingHolder) msg.obj;
 				mClient.setLoadingHolder(loadingHolder);
-				mClient.requestCheckCaptchaExpired(mHandler.obtainMessage(MESSAGE_VERIFY_CONTINUE));
+				mClient.requestCheckCaptchaExpired(MESSAGE_VERIFY_CONTINUE);
 				break;
 			}
 			case MESSAGE_VERIFY_CONTINUE:
@@ -705,7 +744,7 @@ public class RecaptchaReader implements Handler.Callback
 					mWebView.loadUrl("javascript:recaptchaStartVerify()");
 					if (loadingHolder.imageSelector)
 					{
-						mClient.requestCheckImageSelectedTooFew(mHandler.obtainMessage(MESSAGE_CHECK_IMAGE_TOO_FEW));
+						mClient.requestCheckImageSelectedTooFew(MESSAGE_CHECK_IMAGE_TOO_FEW);
 					}
 				}
 				else
@@ -717,7 +756,7 @@ public class RecaptchaReader implements Handler.Callback
 			}
 			case MESSAGE_CHECK_IMAGE_SELECT:
 			{
-				mClient.requestCheckImageSelect(mHandler.obtainMessage(MESSAGE_CHECK_IMAGE_SELECT_CONTINUE));
+				mClient.requestCheckImageSelect(MESSAGE_CHECK_IMAGE_SELECT_CONTINUE);
 				break;
 			}
 			case MESSAGE_CHECK_IMAGE_SELECT_CONTINUE:
@@ -756,29 +795,6 @@ public class RecaptchaReader implements Handler.Callback
 				}
 				break;
 			}
-			/*case 200:
-			{
-				Bitmap bitmap = null;
-				java.io.FileOutputStream stream = null;
-				try
-				{
-					bitmap = Bitmap.createBitmap(400, 600, Bitmap.Config.ARGB_8888);
-					mWebView.draw(new Canvas(bitmap));
-					stream = new java.io.FileOutputStream("/sdcard/tmp.png");
-					bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-				}
-				catch (Exception e)
-				{
-					
-				}
-				finally
-				{
-					IOUtils.closeStream(stream);
-					if (bitmap != null) bitmap.recycle();
-				}
-				mHandler.sendEmptyMessageDelayed(200, 500);
-				return true;
-			}*/
 		}
 		return false;
 	}
@@ -802,11 +818,18 @@ public class RecaptchaReader implements Handler.Callback
 	private class RecaptchaClient extends WebViewClient
 	{
 		private LoadingHolder mLoadingHolder;
-		private Message mNextStatusMessage;
 		
+		private final Object mNextRequestLock = new Object();
+		private int mNextRequestType;
+		private int mNextRequestMessage;
+		
+		private static final int REQUEST_CHECK_CAPTCHA_EXPIRED = 1;
+		private static final int REQUEST_CHECK_IMAGE_SELECT = 2;
+		private static final int REQUEST_CHECK_IMAGE_SELECTED_TOO_FEW = 3;
+		
+		@SuppressWarnings("unused")
 		private final Object mJavascriptInterface = new Object()
 		{
-			@SuppressWarnings("unused")
 			@JavascriptInterface
 			public void onSuccess(String response)
 			{
@@ -817,42 +840,37 @@ public class RecaptchaReader implements Handler.Callback
 				}
 			}
 			
-			@SuppressWarnings("unused")
 			@JavascriptInterface
 			public void onCheckCaptchaExpired(String expired)
 			{
-				if (mNextStatusMessage != null)
-				{
-					mNextStatusMessage.obj = expired;
-					mHandler.sendMessage(mNextStatusMessage);
-					mNextStatusMessage = null;
-				}
+				notifyHandler(REQUEST_CHECK_CAPTCHA_EXPIRED, expired);
 			}
 			
-			@SuppressWarnings("unused")
 			@JavascriptInterface
 			public void onCheckImageSelect(String imageSelector, String description, String sizeX, String sizeY)
 			{
-				if (mNextStatusMessage != null)
-				{
-					mNextStatusMessage.obj = new String[] {imageSelector, description, sizeX, sizeY};
-					mHandler.sendMessage(mNextStatusMessage);
-					mNextStatusMessage = null;
-				}
+				notifyHandler(REQUEST_CHECK_IMAGE_SELECT, new String[] {imageSelector, description, sizeX, sizeY});
 			}
 			
-			@SuppressWarnings("unused")
 			@JavascriptInterface
 			public void onCheckImageSelectedTooFew(String few, String checked)
 			{
-				if (mNextStatusMessage != null)
-				{
-					mNextStatusMessage.obj = new String[] {few, checked};
-					mHandler.sendMessage(mNextStatusMessage);
-					mNextStatusMessage = null;
-				}
+				notifyHandler(REQUEST_CHECK_IMAGE_SELECTED_TOO_FEW, new String[] {few, checked});
 			}
 		};
+		
+		private void notifyHandler(int checkType, Object object)
+		{
+			synchronized (mNextRequestLock)
+			{
+				if (mNextRequestType == checkType)
+				{
+					mHandler.sendMessage(mHandler.obtainMessage(mNextRequestMessage, object));
+					mNextRequestType = 0;
+					mNextRequestMessage = 0;
+				}
+			}
+		}
 		
 		@SuppressLint({"JavascriptInterface", "AddJavascriptInterface"})
 		public RecaptchaClient(WebView webView)
@@ -870,22 +888,29 @@ public class RecaptchaReader implements Handler.Callback
 			return mLoadingHolder;
 		}
 		
-		public void requestCheckCaptchaExpired(Message message)
+		public void requestCheckCaptchaExpired(int message)
 		{
-			mNextStatusMessage = message;
-			mWebView.loadUrl("javascript:recaptchaCheckCaptchaExpired()");
+			request(REQUEST_CHECK_CAPTCHA_EXPIRED, message, "javascript:recaptchaCheckCaptchaExpired()");
 		}
 		
-		public void requestCheckImageSelect(Message message)
+		public void requestCheckImageSelect(int message)
 		{
-			mNextStatusMessage = message;
-			mWebView.loadUrl("javascript:recaptchaCheckImageSelect()");
+			request(REQUEST_CHECK_IMAGE_SELECT, message, "javascript:recaptchaCheckImageSelect()");
 		}
 		
-		public void requestCheckImageSelectedTooFew(Message message)
+		public void requestCheckImageSelectedTooFew(int message)
 		{
-			mNextStatusMessage = message;
-			mWebView.loadUrl("javascript:recaptchaCheckImageSelectedTooFew()");
+			request(REQUEST_CHECK_IMAGE_SELECTED_TOO_FEW, message, "javascript:recaptchaCheckImageSelectedTooFew()");
+		}
+		
+		private void request(int type, int message, String url)
+		{
+			synchronized (mNextRequestLock)
+			{
+				mNextRequestType = type;
+				mNextRequestMessage = message;
+			}
+			mWebView.loadUrl(url);
 		}
 		
 		private static final int INTERCEPT_NONE = 0;
@@ -923,20 +948,23 @@ public class RecaptchaReader implements Handler.Callback
 			{
 				if (mLoadingHolder != null)
 				{
-					String challenge = uri.getQueryParameter("c");
-					if (mLoadingHolder.challenge != null && mLoadingHolder.recaptcha2 &&
-							mLoadingHolder.queuedReplace)
+					ComplexChallenge challenge = new ComplexChallenge(uri);
+					ComplexChallenge oldChallenge = mLoadingHolder.challenge;
+					if (!challenge.equals(oldChallenge))
 					{
-						synchronized (mLoadingHolder)
+						if (mLoadingHolder.recaptcha2 && oldChallenge != null && mLoadingHolder.queuedReplace)
 						{
-							mLoadingHolder.queuedReplace = false;
-							mLoadingHolder.replace = new Pair<>(challenge, uri.getQueryParameter("id"));
-							mLoadingHolder.applyReady();
+							synchronized (mLoadingHolder)
+							{
+								mLoadingHolder.queuedReplace = false;
+								mLoadingHolder.replace = challenge;
+								mLoadingHolder.applyReady();
+							}
 						}
+						else mLoadingHolder.challenge = challenge;
+						if (mLoadingHolder.recaptcha2) mHandler.sendEmptyMessage(MESSAGE_CHECK_IMAGE_SELECT);
+						else mLoadingHolder.applyReady();
 					}
-					else mLoadingHolder.challenge = challenge;
-					if (mLoadingHolder.recaptcha2) mHandler.sendEmptyMessage(MESSAGE_CHECK_IMAGE_SELECT);
-					else mLoadingHolder.applyReady();
 				}
 				return INTERCEPT_IMAGE;
 			}
@@ -1005,11 +1033,6 @@ public class RecaptchaReader implements Handler.Callback
 			settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
 			settings.setAppCacheEnabled(false);
 			WebViewUtils.clearAll(mWebView);
-			/*{
-				mWebView.setInitialScale(100);
-				mWebView.layout(0, 0, 400, 600);
-				mHandler.sendEmptyMessage(200);
-			}*/
 		}
 	}
 	
