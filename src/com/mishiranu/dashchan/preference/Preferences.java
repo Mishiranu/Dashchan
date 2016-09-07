@@ -18,6 +18,7 @@ package com.mishiranu.dashchan.preference;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -200,15 +201,14 @@ public class Preferences
 	}
 	
 	public static final ChanKey KEY_CAPTCHA = new ChanKey("%s_captcha");
-	public static final String KEY_CAPTCHA_CLOUDFLARE = KEY_CAPTCHA.bind(SPECIAL_CHAN_NAME_CLOUDFLARE);
 	private static final String VALUE_CAPTCHA_START = "captcha_";
 	
 	public static String getCaptchaTypeForChanConfiguration(String chanName)
 	{
 		ChanConfiguration configuration = ChanConfiguration.get(chanName);
-		String[] supportedCaptchaTypes = configuration.getSupportedCaptchaTypes();
-		if (supportedCaptchaTypes == null) return null;
-		String defaultCaptchaType = supportedCaptchaTypes[0];
+		Collection<String> supportedCaptchaTypes = configuration.getSupportedCaptchaTypes();
+		if (supportedCaptchaTypes == null || supportedCaptchaTypes.isEmpty()) return null;
+		String defaultCaptchaType = supportedCaptchaTypes.iterator().next();
 		String captchaTypeValue = PREFERENCES.getString(KEY_CAPTCHA.bind(chanName),
 				transformCaptchaTypeToValue(defaultCaptchaType));
 		String captchaType;
@@ -223,68 +223,33 @@ public class Preferences
 		return defaultCaptchaType;
 	}
 	
-	public static String[] getCaptchaTypeValues(String[] captchaTypes)
+	public static String[] getCaptchaTypeValues(Collection<String> captchaTypes)
 	{
-		String[] values = new String[captchaTypes.length];
-		for (int i = 0; i < captchaTypes.length; i++) values[i] = transformCaptchaTypeToValue(captchaTypes[i]);
+		int i = 0;
+		String[] values = new String[captchaTypes.size()];
+		for (String captchaType : captchaTypes) values[i++] = transformCaptchaTypeToValue(captchaType);
 		return values;
 	}
 	
-	public static String[] getCaptchaTypeEntries(String chanName, String[] captchaTypes)
+	public static String[] getCaptchaTypeEntries(String chanName, Collection<String> captchaTypes)
 	{
+		int i = 0;
 		ChanConfiguration configuration = ChanConfiguration.get(chanName);
-		String[] entries = new String[captchaTypes.length];
-		for (int i = 0; i < captchaTypes.length; i++)
-		{
-			entries[i] = configuration.safe().obtainCaptcha(captchaTypes[i]).title;
-		}
+		String[] entries = new String[captchaTypes.size()];
+		for (String captchaType : captchaTypes) entries[i++] = configuration.safe().obtainCaptcha(captchaType).title;
 		return entries;
 	}
 	
 	public static String getCaptchaTypeDefaultValue(String chanName)
 	{
-		String[] supportedCaptchaTypes = ChanConfiguration.get(chanName).getSupportedCaptchaTypes();
-		if (supportedCaptchaTypes == null) return null;
-		return transformCaptchaTypeToValue(supportedCaptchaTypes[0]);
+		Collection<String> supportedCaptchaTypes = ChanConfiguration.get(chanName).getSupportedCaptchaTypes();
+		if (supportedCaptchaTypes == null || supportedCaptchaTypes.isEmpty()) return null;
+		return transformCaptchaTypeToValue(supportedCaptchaTypes.iterator().next());
 	}
 	
 	private static String transformCaptchaTypeToValue(String captchaType)
 	{
 		return VALUE_CAPTCHA_START + captchaType;
-	}
-	
-	public static String getCloudFlareCaptchaType()
-	{
-		String defaultCaptchaType = getCloudFlareDefaultCaptchaType();
-		String captchaTypeValue = PREFERENCES.getString(KEY_CAPTCHA_CLOUDFLARE,
-				transformCaptchaTypeToValue(defaultCaptchaType));
-		String captchaType;
-		if (captchaTypeValue != null && captchaTypeValue.startsWith(VALUE_CAPTCHA_START))
-		{
-			captchaType = captchaTypeValue.substring(VALUE_CAPTCHA_START.length());
-			if (ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_JAVASCRIPT.equals(captchaType) ||
-					ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_FALLBACK.equals(captchaType))
-			{
-				return captchaType;
-			}
-		}
-		return defaultCaptchaType;
-	}
-	
-	public static String[] getCloudFlareCaptchaTypes()
-	{
-		return new String[] {ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_JAVASCRIPT,
-				ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_FALLBACK};
-	}
-	
-	public static String getCloudFlareDefaultCaptchaType()
-	{
-		return ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_JAVASCRIPT;
-	}
-	
-	public static String getCloudFlareCaptchaTypeDefaultValue()
-	{
-		return transformCaptchaTypeToValue(getCloudFlareDefaultCaptchaType());
 	}
 	
 	public static final ChanKey KEY_CAPTCHA_PASS = new ChanKey("%s_captcha_pass");
@@ -861,6 +826,14 @@ public class Preferences
 		if (ChanConfiguration.get(chanName).getOption(ChanConfiguration.OPTION_HIDDEN_DISALLOW_PROXY)) return null;
 		String value = PREFERENCES.getString(KEY_PROXY.bind(chanName), null);
 		return unpackOrCastMultipleValues(value, 3);
+	}
+	
+	public static final String KEY_RECAPTCHA_JAVASCRIPT = "recaptcha_javascript";
+	public static final boolean DEFAULT_RECAPTCHA_JAVASCRIPT = true;
+	
+	public static boolean isRecaptchaJavascript()
+	{
+		return PREFERENCES.getBoolean(KEY_RECAPTCHA_JAVASCRIPT, DEFAULT_RECAPTCHA_JAVASCRIPT);
 	}
 	
 	public static final String KEY_SCROLL_THREAD_GALLERY = "scroll_thread_gallery";

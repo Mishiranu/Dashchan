@@ -389,7 +389,6 @@
 		<item>Restaurar</item>
 	</string-array>
 	<string name="preference_captcha">Tipo de captcha</string>
-	<string name="preference_captcha_cloudflare">Tipo de captcha do CloudFlare</string>
 	<string name="preference_captcha_pass">Senha do captcha</string>
 	<string name="preference_captcha_pass_summary">Permite ignorar o captcha</string>
 	<string name="preference_check_for_updates">Checar por atualizações</string>

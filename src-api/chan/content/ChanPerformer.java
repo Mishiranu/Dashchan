@@ -828,7 +828,7 @@ public class ChanPerformer implements ChanManager.Linked
 		@Public public final boolean optionOriginalPoster;
 		@Public public final String userIcon;
 		
-		@Public public String captchaType;
+		@Public public final String captchaType;
 		@Public public final CaptchaData captchaData;
 		
 		public final int connectTimeout;

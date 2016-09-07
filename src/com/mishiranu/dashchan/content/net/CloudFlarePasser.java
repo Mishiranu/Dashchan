@@ -333,13 +333,12 @@ public class CloudFlarePasser implements Handler.Callback
 		try
 		{
 			HttpHolder holder = new HttpHolder();
-			String captchaType = Preferences.getCloudFlareCaptchaType();
 			boolean retry = false;
 			while (true)
 			{
 				ChanPerformer.CaptchaData captchaData = ForegroundManager.getInstance().requireUserCaptcha
-						(new CloudFlareCaptchaReader(recaptchaApiKey), captchaType, null, null, null, null,
-						R.string.message_cloudflate_block, retry);
+						(new CloudFlareCaptchaReader(recaptchaApiKey), ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2,
+						null, null, null, null, R.string.message_cloudflate_block, retry);
 				if (captchaData == null)
 				{
 					synchronized (mCaptchaLastCancel)

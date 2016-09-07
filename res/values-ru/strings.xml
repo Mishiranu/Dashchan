@@ -439,7 +439,6 @@
 		<item>Восстановить данные</item>
 	</string-array>
 	<string name="preference_captcha">Тип капчи</string>
-	<string name="preference_captcha_cloudflare">Тип капчи CloudFlare</string>
 	<string name="preference_captcha_pass">Пропуск капчи</string>
 	<string name="preference_captcha_pass_summary">Код для пропуска капчи</string>
 	<string name="preference_changelog">Список изменений</string>
@@ -522,6 +521,9 @@
 	<string name="preference_post_max_lines_summary">Сообщения будут обрезаны, если число строк превышает
 		заданное значение</string>
 	<string name="preference_proxy">Прокси</string>
+	<string name="preference_recaptcha_javascript">Использ. JavaScript для reCAPTCHA</string>
+	<string name="preference_recaptcha_javascript_summary">Упрощение капчи, предоставляемой сервисом
+		Google reCAPTCHA</string>
 	<string name="preference_scroll_thread_gallery">Прокручивать тред из галереи</string>
 	<string name="preference_statistics">Статистика</string>
 	<string name="preference_subdirectory_pattern">Шаблон подкаталога</string>

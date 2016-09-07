@@ -28,6 +28,7 @@ import chan.http.HttpException;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.net.CaptchaServiceReader;
 import com.mishiranu.dashchan.content.net.RecaptchaReader;
+import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 
 public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean>
@@ -107,11 +108,9 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean>
 	{
 		Thread thread = Thread.currentThread();
 		ChanPerformer.ReadCaptchaResult result;
-		ChanConfiguration configuration = ChanConfiguration.get(mChanName);
 		try
 		{
-			String parentCaptchaType = configuration.getCaptchaParentType(mCaptchaType);
-			result = mCaptchaReader.onReadCaptcha(new ChanPerformer.ReadCaptchaData(parentCaptchaType,
+			result = mCaptchaReader.onReadCaptcha(new ChanPerformer.ReadCaptchaData(mCaptchaType,
 					mCaptchaPass, mMayShowLoadButton, mRequirement, mBoardName, mThreadNumber, getHolder()));
 		}
 		catch (ExtensionException | HttpException | InvalidResponseException e)
@@ -125,52 +124,42 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean>
 		}
 		mCaptchaState = result.captchaState;
 		mCaptchaData = result.captchaData;
-		mLoadedCaptchaType = result.captchaType != null ? configuration.getCaptchaPreferredChildType(result.captchaType,
-				mCaptchaType) : null;
+		mLoadedCaptchaType = result.captchaType != null ? result.captchaType : null;
 		mInput = result.input;
 		mValidity = result.validity;
 		String captchaType = mLoadedCaptchaType != null ? mLoadedCaptchaType : mCaptchaType;
-		boolean newRecaptcha = ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_JAVASCRIPT.equals(captchaType) ||
-				ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_FALLBACK.equals(captchaType);
-		boolean oldRecaptcha = ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_1_JAVASCRIPT.equals(captchaType) ||
-				ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_1_NOSCRIPT.equals(captchaType);
+		boolean recaptcha2 = ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2.equals(captchaType);
+		boolean recaptcha1 = ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_1.equals(captchaType);
 		boolean mailru = ChanConfiguration.CAPTCHA_TYPE_MAILRU.equals(captchaType);
 		if (mCaptchaState != ChanPerformer.CaptchaState.CAPTCHA) return true;
 		if (thread.isInterrupted()) return null;
-		if (mMayShowLoadButton && newRecaptcha)
+		if (mMayShowLoadButton && recaptcha2)
 		{
 			String apiKey = mCaptchaData.get(ChanPerformer.CaptchaData.API_KEY);
-			if (ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_JAVASCRIPT.equals(captchaType))
-			{
-				RecaptchaReader.getInstance().preloadNewWidget(apiKey);
-			}
+			if (Preferences.isRecaptchaJavascript()) RecaptchaReader.getInstance().preloadNewWidget(apiKey);
 			mCaptchaState = ChanPerformer.CaptchaState.NEED_LOAD;
 			return true;
 		}
-		if (newRecaptcha || oldRecaptcha)
+		if (recaptcha2 || recaptcha1)
 		{
 			String apiKey = mCaptchaData.get(ChanPerformer.CaptchaData.API_KEY);
 			try
 			{
 				RecaptchaReader recaptchaReader = RecaptchaReader.getInstance();
 				String challenge;
-				if (newRecaptcha)
+				if (recaptcha2)
 				{
-					challenge = recaptchaReader.getChallenge2(getHolder(), apiKey,
-							!ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_FALLBACK.equals(captchaType));
+					challenge = recaptchaReader.getChallenge2(getHolder(), apiKey, Preferences.isRecaptchaJavascript());
 				}
-				else if (oldRecaptcha)
+				else
 				{
-					challenge = recaptchaReader.getChallenge1(getHolder(), apiKey,
-							!ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_1_NOSCRIPT.equals(captchaType));
+					challenge = recaptchaReader.getChallenge1(getHolder(), apiKey, Preferences.isRecaptchaJavascript());
 				}
-				else throw new RuntimeException();
 				mCaptchaData.put(ChanPerformer.CaptchaData.CHALLENGE, challenge);
 				if (thread.isInterrupted()) return null;
 				Pair<Bitmap, Boolean> pair;
-				if (newRecaptcha) pair = recaptchaReader.getImage2(getHolder(), apiKey, challenge, null, true);
-				else if (oldRecaptcha) pair = recaptchaReader.getImage1(getHolder(), challenge, true);
-				else throw new RuntimeException();
+				if (recaptcha2) pair = recaptchaReader.getImage2(getHolder(), apiKey, challenge, null, true);
+				else pair = recaptchaReader.getImage1(getHolder(), challenge, true);
 				mImage = pair.first;
 				mBlackAndWhite = pair.second;
 				return true;

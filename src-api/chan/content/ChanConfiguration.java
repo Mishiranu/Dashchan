@@ -18,10 +18,12 @@ package chan.content;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -37,7 +39,6 @@ import android.util.Pair;
 import chan.annotation.Extendable;
 import chan.annotation.Public;
 import chan.content.model.BoardCategory;
-import chan.util.CommonUtils;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.R;
@@ -114,11 +115,7 @@ public class ChanConfiguration implements ChanManager.Linked
 	public static final int BUMP_LIMIT_INVALID = Integer.MAX_VALUE;
 	
 	@Public public static final String CAPTCHA_TYPE_RECAPTCHA_1 = "recaptcha_1";
-	public static final String CAPTCHA_TYPE_RECAPTCHA_1_JAVASCRIPT = CAPTCHA_TYPE_RECAPTCHA_1 + "_javascript";
-	public static final String CAPTCHA_TYPE_RECAPTCHA_1_NOSCRIPT = CAPTCHA_TYPE_RECAPTCHA_1 + "_noscript";
 	@Public public static final String CAPTCHA_TYPE_RECAPTCHA_2 = "recaptcha_2";
-	public static final String CAPTCHA_TYPE_RECAPTCHA_2_JAVASCRIPT = CAPTCHA_TYPE_RECAPTCHA_2 + "_javascript";
-	public static final String CAPTCHA_TYPE_RECAPTCHA_2_FALLBACK = CAPTCHA_TYPE_RECAPTCHA_2 + "_fallback";
 	@Public public static final String CAPTCHA_TYPE_MAILRU = "mailru";
 	
 	private static final String KEY_COOKIE = "cookie";
@@ -648,90 +645,25 @@ public class ChanConfiguration implements ChanManager.Linked
 		return PAGES_COUNT_INVALID;
 	}
 
-	private ArrayList<String> mSupportedCaptchaTypesList;
-	private String[] mSupportedCaptchaTypes;
+	private LinkedHashSet<String> mSupportedCaptchaTypes;
 	
 	@Public
 	public final void addCaptchaType(String captchaType)
 	{
 		checkInit();
 		if (captchaType == null) throw new NullPointerException();
-		if (mSupportedCaptchaTypesList == null) mSupportedCaptchaTypesList = new ArrayList<>();
-		String[] childCaptchaTypes = getCaptchaChildTypesIfExists(captchaType);
-		if (childCaptchaTypes != null)
-		{
-			for (String childCaptchaType : childCaptchaTypes)
-			{
-				if (childCaptchaType != null && !mSupportedCaptchaTypesList.contains(childCaptchaType))
-				{
-					mSupportedCaptchaTypesList.add(childCaptchaType);
-				}
-			}
-		}
-		else if (captchaType != null && !mSupportedCaptchaTypesList.contains(captchaType))
-		{
-			mSupportedCaptchaTypesList.add(captchaType);
-		}
+		if (mSupportedCaptchaTypes == null) mSupportedCaptchaTypes = new LinkedHashSet<>();
+		mSupportedCaptchaTypes.add(captchaType);
 	}
 	
-	public final String[] getSupportedCaptchaTypes()
+	public final Collection<String> getSupportedCaptchaTypes()
 	{
-		if (mSupportedCaptchaTypes == null && mSupportedCaptchaTypesList != null)
-		{
-			mSupportedCaptchaTypes = CommonUtils.toArray(mSupportedCaptchaTypesList, String.class);
-			mSupportedCaptchaTypesList = null;
-		}
 		return mSupportedCaptchaTypes;
 	}
 	
 	public final String getCaptchaType()
 	{
 		return Preferences.getCaptchaTypeForChanConfiguration(getChanName());
-	}
-	
-	public final String getCaptchaPreferredChildType(String captchaType, String checkCaptchaType)
-	{
-		String[] childTypes = getCaptchaChildTypesIfExists(captchaType);
-		if (childTypes != null)
-		{
-			if (checkCaptchaType != null)
-			{
-				for (String childType : childTypes)
-				{
-					if (childType.equals(checkCaptchaType)) return childType;
-				}
-			}
-			return childTypes[0];
-		}
-		return captchaType;
-	}
-	
-	public final String getCaptchaParentType(String captchaType)
-	{
-		if (CAPTCHA_TYPE_RECAPTCHA_1_JAVASCRIPT.equals(captchaType) ||
-				CAPTCHA_TYPE_RECAPTCHA_1_NOSCRIPT.equals(captchaType))
-		{
-			return CAPTCHA_TYPE_RECAPTCHA_1;
-		}
-		if (CAPTCHA_TYPE_RECAPTCHA_2_JAVASCRIPT.equals(captchaType) ||
-				CAPTCHA_TYPE_RECAPTCHA_2_FALLBACK.equals(captchaType))
-		{
-			return CAPTCHA_TYPE_RECAPTCHA_2;
-		}
-		return captchaType;
-	}
-	
-	public final String[] getCaptchaChildTypesIfExists(String captchaType)
-	{
-		if (CAPTCHA_TYPE_RECAPTCHA_1.equals(captchaType))
-		{
-			return new String[] {CAPTCHA_TYPE_RECAPTCHA_1_JAVASCRIPT, CAPTCHA_TYPE_RECAPTCHA_1_NOSCRIPT};
-		}
-		if (CAPTCHA_TYPE_RECAPTCHA_2.equals(captchaType))
-		{
-			return new String[] {CAPTCHA_TYPE_RECAPTCHA_2_JAVASCRIPT, CAPTCHA_TYPE_RECAPTCHA_2_FALLBACK};
-		}
-		return null;
 	}
 	
 	private LinkedHashMap<String, Boolean> mCustomPreferences;
@@ -756,36 +688,20 @@ public class ChanConfiguration implements ChanManager.Linked
 	
 	private Captcha obtainCaptchaConfigurationSafe(String captchaType)
 	{
-		if (CAPTCHA_TYPE_RECAPTCHA_1_JAVASCRIPT.equals(captchaType))
+		if (CAPTCHA_TYPE_RECAPTCHA_1.equals(captchaType))
 		{
 			Captcha captcha = new Captcha();
-			captcha.title = "reCAPTCHA (JavaScript)";
+			captcha.title = "reCAPTCHA";
 			captcha.input = Captcha.Input.LATIN;
 			captcha.validity = Captcha.Validity.LONG_LIFETIME;
 			return captcha;
 		}
-		else if (CAPTCHA_TYPE_RECAPTCHA_1_NOSCRIPT.equals(captchaType))
+		else if (CAPTCHA_TYPE_RECAPTCHA_2.equals(captchaType))
 		{
 			Captcha captcha = new Captcha();
-			captcha.title = "reCAPTCHA (NoScript)";
-			captcha.input = Captcha.Input.LATIN;
-			captcha.validity = Captcha.Validity.LONG_LIFETIME;
-			return captcha;
-		}
-		else if (CAPTCHA_TYPE_RECAPTCHA_2_JAVASCRIPT.equals(captchaType))
-		{
-			Captcha captcha = new Captcha();
-			captcha.title = "reCAPTCHA 2 (JavaScript)";
+			captcha.title = "reCAPTCHA 2";
 			captcha.input = Captcha.Input.LATIN;
 			captcha.validity = Captcha.Validity.SHORT_LIFETIME;
-			return captcha;
-		}
-		else if (CAPTCHA_TYPE_RECAPTCHA_2_FALLBACK.equals(captchaType))
-		{
-			Captcha captcha = new Captcha();
-			captcha.title = "reCAPTCHA 2 (Fallback)";
-			captcha.input = Captcha.Input.LATIN;
-			captcha.validity = Captcha.Validity.LONG_LIFETIME;
 			return captcha;
 		}
 		else if (CAPTCHA_TYPE_MAILRU.equals(captchaType))

@@ -53,11 +53,9 @@ public class GeneralFragment extends BasePreferenceFragment
 				R.string.preference_internal_browser, R.string.preference_internal_browser_sumamry);
 		
 		PreferenceCategory servicesCategory = makeCategory(R.string.preference_category_services);
-		String[] captchaTypes = Preferences.getCloudFlareCaptchaTypes();
-		String[] values = Preferences.getCaptchaTypeValues(captchaTypes);
-		makeList(servicesCategory, Preferences.KEY_CAPTCHA_CLOUDFLARE, values,
-				Preferences.getCloudFlareCaptchaTypeDefaultValue(), R.string.preference_captcha_cloudflare,
-				Preferences.getCaptchaTypeEntries(null, captchaTypes));
+		makeCheckBox(servicesCategory, true, Preferences.KEY_RECAPTCHA_JAVASCRIPT,
+				Preferences.DEFAULT_RECAPTCHA_JAVASCRIPT, R.string.preference_recaptcha_javascript,
+				R.string.preference_recaptcha_javascript_summary);
 		
 		PreferenceCategory connectionCategory = makeCategory(R.string.preference_category_connection);
 		makeButton(connectionCategory, 0, R.string.preference_use_https_warning, true).setSelectable(false);

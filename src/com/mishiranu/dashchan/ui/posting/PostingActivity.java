@@ -206,8 +206,8 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		DraftsStorage draftsStorage = DraftsStorage.getInstance();
 		mPostingConfiguration = posting;
 		mCaptchaType = chanConfiguration.getCaptchaType();
-		if (ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_JAVASCRIPT.equals(mCaptchaType) ||
-				ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_1_JAVASCRIPT.equals(mCaptchaType))
+		if (Preferences.isRecaptchaJavascript() && (ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2.equals(mCaptchaType) ||
+				ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_1.equals(mCaptchaType)))
 		{
 			boolean noCaptchaPass = true;
 			String[] captchaPass = Preferences.getCaptchaPass(mChanName);

@@ -32,6 +32,7 @@ import chan.text.CommentEditor;
 
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.net.RecaptchaReader;
+import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.text.HtmlParser;
 import com.mishiranu.dashchan.text.SimilarTextEstimator;
 
@@ -148,9 +149,7 @@ public class SendPostTask extends HttpHolderTask<Void, Long, Boolean>
 		try
 		{
 			ChanPerformer.SendPostData data = mData;
-			boolean newRecaptcha = ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_JAVASCRIPT.equals(data.captchaType) ||
-					ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_FALLBACK.equals(data.captchaType);
-			if (data.captchaData != null && newRecaptcha)
+			if (data.captchaData != null && ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2.equals(data.captchaType))
 			{
 				String apiKey = data.captchaData.get(ChanPerformer.CaptchaData.API_KEY);
 				String recaptchaResponse = data.captchaData.get(ReadCaptchaTask.RECAPTCHA_SKIP_RESPONSE);
@@ -158,9 +157,8 @@ public class SendPostTask extends HttpHolderTask<Void, Long, Boolean>
 				{
 					String challenge = data.captchaData.get(ChanPerformer.CaptchaData.CHALLENGE);
 					String input = data.captchaData.get(ChanPerformer.CaptchaData.INPUT);
-					boolean fallback = ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_FALLBACK.equals(data.captchaType);
 					recaptchaResponse = RecaptchaReader.getInstance().getResponseField2(getHolder(), apiKey,
-							challenge, input, fallback);
+							challenge, input, Preferences.isRecaptchaJavascript());
 					if (recaptchaResponse == null) throw new ApiException(ApiException.SEND_ERROR_CAPTCHA);
 				}
 				data.captchaData.put(ChanPerformer.CaptchaData.INPUT, recaptchaResponse);
@@ -168,7 +166,6 @@ public class SendPostTask extends HttpHolderTask<Void, Long, Boolean>
 			if (isCancelled()) return false;
 			data.holder = getHolder();
 			data.listener = mProgressHandler;
-			data.captchaType = ChanConfiguration.get(mChanName).getCaptchaParentType(data.captchaType);
 			ChanPerformer performer = ChanPerformer.get(mChanName);
 			ChanPerformer.SendPostResult result = performer.safe().onSendPost(data);
 			if (data.threadNumber == null && (result == null || result.threadNumber == null))
