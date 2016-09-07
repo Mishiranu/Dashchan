@@ -563,15 +563,12 @@ public class ForegroundManager implements Handler.Callback
 		@Override
 		protected Boolean doInBackground(Void... params)
 		{
-			boolean newRecaptcha = ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_JAVASCRIPT.equals(mCaptchaType) ||
-					ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_FALLBACK.equals(mCaptchaType);
-			if (newRecaptcha)
+			if (ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2.equals(mCaptchaType))
 			{
-				boolean fallback = ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_FALLBACK.equals(mCaptchaType);
 				try
 				{
 					mInput = RecaptchaReader.getInstance().getResponseField2(mHolder, mApiKey,
-							mChallenge, mInput, fallback);
+							mChallenge, mInput, Preferences.isRecaptchaJavascript());
 					return true;
 				}
 				catch (HttpException e)
@@ -1216,9 +1213,7 @@ public class ForegroundManager implements Handler.Callback
 				String workCaptchaType = pendingData.loadedCaptchaType != null
 						? pendingData.loadedCaptchaType : captchaType;
 				String apiKey = captchaData.get(ChanPerformer.CaptchaData.API_KEY);
-				boolean newRecaptcha = ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_JAVASCRIPT.equals(workCaptchaType) ||
-						ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_FALLBACK.equals(workCaptchaType);
-				if (apiKey != null && newRecaptcha)
+				if (apiKey != null && ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2.equals(workCaptchaType))
 				{
 					String recaptchaResponse = captchaData.get(ReadCaptchaTask.RECAPTCHA_SKIP_RESPONSE);
 					if (recaptchaResponse == null)

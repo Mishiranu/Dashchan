@@ -418,7 +418,6 @@
 		<item>Restore data</item>
 	</string-array>
 	<string name="preference_captcha">Captcha type</string>
-	<string name="preference_captcha_cloudflare">CloudFlare captcha type</string>
 	<string name="preference_captcha_pass">Captcha pass</string>
 	<string name="preference_captcha_pass_summary">Allows you to skip captcha</string>
 	<string name="preference_changelog">Changelog</string>
@@ -501,6 +500,9 @@
 	<string name="preference_post_max_lines_summary">Cut long posts if the number of lines exceeds a
 		predetermined value</string>
 	<string name="preference_proxy">Proxy</string>
+	<string name="preference_recaptcha_javascript">Use JavaScript for reCAPTCHA</string>
+	<string name="preference_recaptcha_javascript_summary">Simplifies captcha
+		Google reCAPTCHA service provides</string>
 	<string name="preference_scroll_thread_gallery">Scroll thread when scrolling gallery</string>
 	<string name="preference_statistics">Statistics</string>
 	<string name="preference_subdirectory_pattern">Subdirectory pattern</string>

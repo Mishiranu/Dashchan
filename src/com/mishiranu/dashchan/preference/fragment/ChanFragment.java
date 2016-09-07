@@ -121,8 +121,8 @@ public class ChanFragment extends BasePreferenceFragment
 					getString(R.string.text_password), InputType.TYPE_CLASS_TEXT |
 					InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD, false);
 		}
-		String[] captchaTypes = configuration.getSupportedCaptchaTypes();
-		if (captchaTypes != null && captchaTypes.length > 1)
+		Collection<String> captchaTypes = configuration.getSupportedCaptchaTypes();
+		if (captchaTypes != null && captchaTypes.size() > 1)
 		{
 			String[] values = Preferences.getCaptchaTypeValues(captchaTypes);
 			makeList(null, Preferences.KEY_CAPTCHA.bind(chanName), values,
