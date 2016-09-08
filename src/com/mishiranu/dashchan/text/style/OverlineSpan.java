@@ -42,7 +42,7 @@ public class OverlineSpan
 					int paddingLeft = textView.getPaddingLeft();
 					int shift = (int) (textView.getTextSize() * 8f / 9f);
 					float thickness = textView.getTextSize() / 15f - 0.25f;
-					int color = textView.getTextColors().getDefaultColor();
+					int color = textView.getCurrentTextColor();
 					PAINT.setColor(color);
 					PAINT.setStrokeWidth(thickness);
 					for (OverlineSpan span : spans)
