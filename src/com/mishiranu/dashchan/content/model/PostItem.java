@@ -454,7 +454,7 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 	private static CharSequence obtainComment(String comment, String chanName, String parentPostNumber,
 											  ChanMarkup.MarkupExtra extra)
 	{
-		return StringUtils.isEmpty(comment) ? "" : HtmlParser.parse(comment, ChanMarkup.get(chanName),
+		return StringUtils.isEmpty(comment) ? "" : HtmlParser.spanify(comment, ChanMarkup.get(chanName),
 				StringUtils.emptyIfNull(parentPostNumber), extra);
 	}
 	
