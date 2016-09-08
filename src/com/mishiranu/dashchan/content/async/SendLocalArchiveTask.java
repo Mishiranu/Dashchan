@@ -155,7 +155,7 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 			if (name.isEmpty()) name = defaultName;
 			int attachmentsCount = post.getAttachmentsCount();
 			int iconsCount = post.getIconsCount();
-			CharSequence charSequence = HtmlParser.parse(comment, markup, null, this);
+			CharSequence charSequence = HtmlParser.spanify(comment, markup, null, this);
 			spanItems.clear();
 			SpannableStringBuilder spannable = new SpannableStringBuilder(charSequence);
 			replaceSpannable(spannable, '<', "&lt;");

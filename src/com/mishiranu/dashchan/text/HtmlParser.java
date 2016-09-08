@@ -38,9 +38,9 @@ import chan.util.StringUtils;
 
 public class HtmlParser implements ContentHandler
 {
-	public static CharSequence parse(String source, Markup markup, String parentPostNumber, Object extra)
+	public static CharSequence spanify(String source, Markup markup, String parentPostNumber, Object extra)
 	{
-		return parse(source, markup, MODE_PARSE, parentPostNumber, extra);
+		return parse(source, markup, MODE_SPANIFY, parentPostNumber, extra);
 	}
 	
 	public static String clear(String source)
@@ -56,9 +56,8 @@ public class HtmlParser implements ContentHandler
 	private static CharSequence parse(String source, Markup markup, int parsingMode, String parentPostNumber,
 			Object extra)
 	{
-		if (source == null) return "";
-		return new HtmlParser(source, markup != null ? markup : MARKUP_IMPL, parsingMode, parentPostNumber,
-				extra).convert();
+		if (StringUtils.isEmpty(source)) return "";
+		return new HtmlParser(source, markup, parsingMode, parentPostNumber, extra).convert();
 	}
 	
 	public interface Markup
@@ -98,7 +97,7 @@ public class HtmlParser implements ContentHandler
 		}
 	}
 	
-	private static final int MODE_PARSE = 0;
+	private static final int MODE_SPANIFY = 0;
 	private static final int MODE_CLEAR = 1;
 	private static final int MODE_UNMARK = 2;
 	
@@ -114,13 +113,13 @@ public class HtmlParser implements ContentHandler
 	
 	private HtmlParser(String source, Markup markup, int parsingMode, String parentPostNumber, Object extra)
 	{
+		if (markup == null) markup = IDLE_MARKUP;
 		mSource = source;
 		mMarkup = markup;
 		mParsingMode = parsingMode;
 		mParentPostNumber = parentPostNumber;
 		mExtra = extra;
-		boolean spannedPostMarkup = parsingMode == MODE_PARSE || parsingMode == MODE_UNMARK;
-		mSpanProvider = spannedPostMarkup ? markup.initSpanProvider(this) : null;
+		mSpanProvider = isSpanifyMode() || isUnmarkMode() ? markup.initSpanProvider(this) : null;
 	}
 	
 	public static final HTMLSchema SCHEMA = new HTMLSchema();
@@ -172,16 +171,16 @@ public class HtmlParser implements ContentHandler
 				break;
 			}
 		}
-		boolean removeNbsps = mParsingMode == MODE_PARSE || mParsingMode == MODE_CLEAR;
-		if (removeNbsps)
+		if (isSpanifyMode() || isClearMode())
 		{
+			// Replace non-breaking spaces with regular spaces
 			for (int i = 0; i < length; i++)
 			{
 				char c = builder.charAt(i);
 				if (c == '\u00a0') builder.setCharAt(i, ' ');
 			}
 		}
-		if (isParseMode() && mSpanProvider != null)
+		if (isSpanifyMode() && mSpanProvider != null)
 		{
 			CharSequence charSequence = mSpanProvider.transformBuilder(this, builder);
 			if (charSequence == null) return "";
@@ -190,9 +189,14 @@ public class HtmlParser implements ContentHandler
 		return substring ? builder.substring(start, end) : builder;
 	}
 	
-	public boolean isParseMode()
+	public boolean isSpanifyMode()
 	{
-		return mParsingMode == MODE_PARSE;
+		return mParsingMode == MODE_SPANIFY;
+	}
+	
+	public boolean isClearMode()
+	{
+		return mParsingMode == MODE_CLEAR;
 	}
 	
 	public boolean isUnmarkMode()
@@ -335,7 +339,7 @@ public class HtmlParser implements ContentHandler
 	{
 		StringBuilder builder = mBuilder;
 		boolean mayAppend = true;
-		if (mParsingMode == MODE_PARSE)
+		if (isSpanifyMode())
 		{
 			int length = builder.length();
 			if (length >= 2) mayAppend = builder.charAt(length - 1) != '\n' || builder.charAt(length - 2) != '\n';
@@ -621,7 +625,7 @@ public class HtmlParser implements ContentHandler
 		return null;
 	}
 	
-	private static final Markup MARKUP_IMPL = new Markup()
+	private static final Markup IDLE_MARKUP = new Markup()
 	{
 		@Override
 		public Object onBeforeTagStart(HtmlParser parser, StringBuilder builder, String tagName,

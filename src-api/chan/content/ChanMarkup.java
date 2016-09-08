@@ -509,7 +509,7 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 			if (styledItem.tag == TAG_SPECIAL_LINK)
 			{
 				LinkHolder linkHolder = (LinkHolder) styledItem.extra;
-				if (parser.isParseMode())
+				if (parser.isSpanifyMode())
 				{
 					provider.modifyLink(parser, styledItem.start, end, linkHolder);
 				}
@@ -543,7 +543,7 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 	public final int onListLineStart(HtmlParser parser, StringBuilder builder, boolean ordered, int line)
 	{
 		int length = builder.length();
-		if (parser.isParseMode())
+		if (parser.isSpanifyMode())
 		{
 			if (ordered) builder.append(line).append(". "); else builder.append("\u2022 ");
 		}
