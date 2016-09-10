@@ -163,7 +163,6 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 				case CONTEXT_MENU_ADD_FAVORITES:
 				{
 					FavoritesStorage.getInstance().add(getPageHolder().chanName, boardName);
-					invalidateDrawerItems(false, true);
 					return true;
 				}
 			}

@@ -1095,7 +1095,6 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				pageHolder.threadTitle = title;
 				notifyTitleChanged();
 			}
-			invalidateDrawerItems(true, true);
 		}
 	}
 	
@@ -1403,6 +1402,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		getListView().getWrapper().cancelBusyState();
 		switchView(ViewType.LIST, null);
 		if (getAdapter().isEmpty()) displayDownloadError(true, getString(R.string.message_empty_response));
+		else onAfterPostsLoad();
 	}
 	
 	@Override

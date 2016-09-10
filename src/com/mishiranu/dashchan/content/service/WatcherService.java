@@ -303,7 +303,7 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 				}
 				break;
 			}
-			case FavoritesStorage.ACTION_WATCHER_SYNC:
+			case FavoritesStorage.ACTION_WATCHER_SYNCHRONIZE:
 			{
 				WatcherItem watcherItem = getItem(favoriteItem);
 				if (watcherItem != null)
@@ -311,6 +311,7 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 					watcherItem.mPostsCount = favoriteItem.postsCount;
 					watcherItem.mNewPostsCount = favoriteItem.newPostsCount;
 					watcherItem.mHasNewPosts = false;
+					notifyUpdate(watcherItem, null); // State not changed
 				}
 				break;
 			}

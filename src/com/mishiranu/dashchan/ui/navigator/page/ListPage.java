@@ -169,11 +169,6 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 		mCallback.notifyTitleChanged();
 	}
 	
-	protected final void invalidateDrawerItems(boolean pages, boolean favorites)
-	{
-		mCallback.invalidateDrawerItems(pages, favorites);
-	}
-	
 	protected final void updateOptionsMenu(boolean recreate)
 	{
 		if (mState == State.RESUMED || mState == State.PAUSED) mCallback.updateOptionsMenu(recreate);
@@ -374,7 +369,6 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 	
 	public interface Callback
 	{
-		public void invalidateDrawerItems(boolean pages, boolean favorites);
 		public void notifyTitleChanged();
 		public void updateOptionsMenu(boolean recreate);
 		public void switchView(ViewType viewType, String message);
