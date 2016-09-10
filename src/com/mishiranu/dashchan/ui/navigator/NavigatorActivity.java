@@ -479,10 +479,10 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		if (pageHolder == null) throw new RuntimeException();
 		mUiManager.view().resetPages();
 		mPage.init(this, this, pageHolder, mListView, mUiManager, mActionIconSet);
-		mDrawerForm.invalidateItems(true, false);
 		if (!mWideMode && !mDrawerLayout.isDrawerOpen(Gravity.START)) mDrawerListView.setSelection(0);
 		invalidateOptionsMenu();
 		invalidateHomeUpState();
+		notifyTitleChanged();
 		mAllowScaleAnimation = true;
 	}
 	
@@ -1424,6 +1424,13 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	public void onWatcherUpdate(WatcherService.WatcherItem watcherItem, WatcherService.State state)
 	{
 		mDrawerForm.onWatcherUpdate(watcherItem, state);
+	}
+	
+	@Override
+	public void notifyTitleChanged()
+	{
+		mDrawerForm.invalidateItems(true, false);
+		if (mPage != null) setTitle(mPage.obtainTitle());
 	}
 	
 	@Override

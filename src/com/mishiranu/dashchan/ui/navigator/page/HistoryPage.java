@@ -16,7 +16,6 @@
 
 package com.mishiranu.dashchan.ui.navigator.page;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.net.Uri;
 import android.view.ContextMenu;
@@ -38,18 +37,22 @@ public class HistoryPage extends ListPage<HistoryAdapter>
 	@Override
 	protected void onCreate()
 	{
-		Activity activity = getActivity();
 		PullableListView listView = getListView();
 		PageHolder pageHolder = getPageHolder();
-		HistoryAdapter adapter = new HistoryAdapter(activity, pageHolder.chanName);
+		HistoryAdapter adapter = new HistoryAdapter(getActivity(), pageHolder.chanName);
 		initAdapter(adapter, null);
 		listView.getWrapper().setPullSides(PullableWrapper.Side.NONE);
-		activity.setTitle(getString(R.string.action_history));
 		if (adapter.isEmpty()) switchView(ViewType.ERROR, R.string.message_empty_history); else
 		{
 			showScaleAnimation();
 			if (pageHolder.position != null) pageHolder.position.apply(getListView());
 		}
+	}
+	
+	@Override
+	public String obtainTitle()
+	{
+		return getString(R.string.action_history);
 	}
 	
 	@Override

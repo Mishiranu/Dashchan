@@ -16,7 +16,6 @@
 
 package com.mishiranu.dashchan.ui.navigator.page;
 
-import android.app.Activity;
 import android.net.Uri;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -47,15 +46,12 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 	@Override
 	protected void onCreate()
 	{
-		Activity activity = getActivity();
 		PullableListView listView = getListView();
 		PageHolder pageHolder = getPageHolder();
 		if (C.API_LOLLIPOP) listView.setDivider(null);
 		ArchiveAdapter adapter = new ArchiveAdapter();
 		initAdapter(adapter, null);
 		listView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
-		activity.setTitle(getString(R.string.action_archive_view) + ": " + StringUtils
-				.formatBoardTitle(pageHolder.chanName, pageHolder.boardName, null));
 		ArchiveExtra extra = getExtra();
 		if (getExtra().threadSummaries != null)
 		{
@@ -78,6 +74,14 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 			mReadTask.cancel();
 			mReadTask = null;
 		}
+	}
+	
+	@Override
+	public String obtainTitle()
+	{
+		PageHolder pageHolder = getPageHolder();
+		return getString(R.string.action_archive_view) + ": " + StringUtils.formatBoardTitle(pageHolder.chanName,
+				pageHolder.boardName, null);
 	}
 	
 	@Override
