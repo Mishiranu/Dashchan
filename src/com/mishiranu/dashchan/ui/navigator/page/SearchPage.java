@@ -51,7 +51,7 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 		PageHolder pageHolder = getPageHolder();
 		UiManager uiManager = getUiManager();
 		listView.setDivider(ResourceUtils.getDrawable(getActivity(), R.attr.postsDivider, 0));
-		SearchAdapter adapter = new SearchAdapter(getActivity(), uiManager);
+		SearchAdapter adapter = new SearchAdapter(uiManager);
 		initAdapter(adapter, adapter);
 		uiManager.view().setHighlightText(Collections.singleton(pageHolder.searchQuery));
 		listView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);

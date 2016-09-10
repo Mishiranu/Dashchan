@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
 
-import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -30,6 +29,7 @@ import chan.content.ChanConfiguration;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.storage.HistoryDatabase;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ViewFactory;
@@ -53,7 +53,7 @@ public class HistoryAdapter extends BaseAdapter
 	private static final int HEADER_WEEK = 3;
 	private static final int HEADER_OLD = 4;
 	
-	public HistoryAdapter(Context context, String chanName)
+	public HistoryAdapter(String chanName)
 	{
 		mChanName = chanName;
 		ArrayList<HistoryDatabase.HistoryItem> historyItems = HistoryDatabase.getInstance().getAllHistory(chanName);
@@ -89,7 +89,7 @@ public class HistoryAdapter extends BaseAdapter
 					case HEADER_WEEK: resId = R.string.text_this_week; break;
 					case HEADER_OLD: resId = R.string.text_older_7_days; break;
 				}
-				mItems.add(context.getString(resId));
+				mItems.add(MainApplication.getInstance().getString(resId));
 			}
 			mItems.add(historyItem);
 		}
@@ -200,13 +200,12 @@ public class HistoryAdapter extends BaseAdapter
 		HistoryDatabase.HistoryItem historyItem = item instanceof HistoryDatabase.HistoryItem
 				? (HistoryDatabase.HistoryItem) item : null;
 		ViewFactory.TwoLinesViewHolder holder;
-		Context context = parent.getContext();
 		if (convertView == null)
 		{
 			if (historyItem != null)
 			{
 				convertView = ViewFactory.makeTwoLinesListItem(parent, true);
-				float density = ResourceUtils.obtainDensity(context);
+				float density = ResourceUtils.obtainDensity(parent);
 				convertView.setPadding((int) (16f * density), convertView.getPaddingTop(),
 						(int) (16f * density), convertView.getPaddingBottom());
 				holder = (ViewFactory.TwoLinesViewHolder) convertView.getTag();
