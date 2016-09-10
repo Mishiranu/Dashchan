@@ -388,8 +388,8 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 			// Page could be deleted from stack during clearStack (when home button pressed, for example)
 			mPageManager.moveCurrentPageTop();
 			mPage.updatePageConfiguration(postNumber, threadTitle);
+			mDrawerForm.invalidateItems(true, false);
 			invalidateHomeUpState();
-			invalidateDrawerItems(true, false);
 			return;
 		}
 		switchView(ListPage.ViewType.LIST, null);
@@ -1413,6 +1413,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		{
 			case FavoritesStorage.ACTION_ADD:
 			case FavoritesStorage.ACTION_REMOVE:
+			case FavoritesStorage.ACTION_MODIFY_TITLE:
 			{
 				mDrawerForm.invalidateItems(false, true);
 				break;
@@ -1431,12 +1432,6 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	{
 		mDrawerForm.invalidateItems(true, false);
 		if (mPage != null) setTitle(mPage.obtainTitle());
-	}
-	
-	@Override
-	public void invalidateDrawerItems(boolean pages, boolean favorites)
-	{
-		mDrawerForm.invalidateItems(pages, favorites);
 	}
 	
 	@Override

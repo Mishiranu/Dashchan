@@ -143,9 +143,10 @@ public class FavoritesStorage extends StorageManager.Storage
 	
 	public static final int ACTION_ADD = 0;
 	public static final int ACTION_REMOVE = 1;
-	public static final int ACTION_WATCHER_ENABLE = 2;
-	public static final int ACTION_WATCHER_DISABLE = 3;
-	public static final int ACTION_WATCHER_SYNC = 4;
+	public static final int ACTION_MODIFY_TITLE = 2;
+	public static final int ACTION_WATCHER_ENABLE = 3;
+	public static final int ACTION_WATCHER_DISABLE = 4;
+	public static final int ACTION_WATCHER_SYNCHRONIZE = 5;
 	
 	public interface Observer
 	{
@@ -263,11 +264,25 @@ public class FavoritesStorage extends StorageManager.Storage
 			FavoriteItem favoriteItem = getFavorite(chanName, boardName, threadNumber);
 			if (favoriteItem != null && (fromUser || !favoriteItem.modifiedTitle))
 			{
-				boolean changed = !StringUtils.equals(favoriteItem.title, title);
-				favoriteItem.title = title;
-				if (fromUser) favoriteItem.modifiedTitle = !empty;
-				if (changed) sortIfNeededInternal();
-				serialize();
+				boolean titleChanged = !StringUtils.equals(favoriteItem.title, title);
+				boolean stateChanged = false;
+				if (titleChanged)
+				{
+					favoriteItem.title = title;
+					stateChanged = true;
+				}
+				if (fromUser)
+				{
+					boolean mofidiedTitle = !empty;
+					stateChanged = favoriteItem.modifiedTitle != mofidiedTitle;
+					favoriteItem.modifiedTitle = mofidiedTitle;
+				}
+				if (stateChanged)
+				{
+					if (titleChanged) sortIfNeededInternal();
+					notifyFavoritesUpdate(favoriteItem, ACTION_MODIFY_TITLE);
+					serialize();
+				}
 			}
 		}
 	}
@@ -280,7 +295,7 @@ public class FavoritesStorage extends StorageManager.Storage
 			favoriteItem.postsCount = postsCount;
 			favoriteItem.newPostsCount = postsCount;
 			favoriteItem.hasNewPosts = false;
-			notifyFavoritesUpdate(favoriteItem, ACTION_WATCHER_SYNC);
+			notifyFavoritesUpdate(favoriteItem, ACTION_WATCHER_SYNCHRONIZE);
 			serialize();
 		}
 	}

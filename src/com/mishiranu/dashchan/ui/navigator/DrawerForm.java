@@ -557,7 +557,6 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 										String newTitle = editText.getText().toString();
 										FavoritesStorage.getInstance().modifyTitle(listItem.chanName,
 												listItem.boardName, listItem.threadNumber, newTitle, true);
-										invalidateItems(false, true);
 										
 									}).create();
 									dialog.getWindow().setSoftInputMode(WindowManager
@@ -1458,7 +1457,8 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		WatcherView watcherView = (WatcherView) holder.extra;
 		watcherView.setPostsCountDifference(holder.listItem.watcherPostsCountDifference,
 				holder.listItem.watcherHasNewPosts, holder.listItem.watcherIsError);
-		watcherView.setWatcherState(state);
+		// Null state means state not changed
+		if (state != null) watcherView.setWatcherState(state);
 	}
 	
 	private WatcherDrawableColorSet mWatcherDrawableColorSet;
