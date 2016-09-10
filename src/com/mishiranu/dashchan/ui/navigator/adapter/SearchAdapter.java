@@ -19,7 +19,6 @@ package com.mishiranu.dashchan.ui.navigator.adapter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
-import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
@@ -29,6 +28,7 @@ import android.widget.TextView;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.HidePerformer;
+import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
@@ -41,8 +41,6 @@ public class SearchAdapter extends BaseAdapter implements BusyScrollListener.Cal
 	private static final int TYPE_VIEW = 0;
 	private static final int TYPE_HEADER = 1;
 	
-	private final Context mContext;
-	
 	private final UiManager mUiManager;
 	private final UiManager.DemandSet mDemandSet = new UiManager.DemandSet();
 	private final UiManager.ConfigurationSet mConfigurationSet;
@@ -52,9 +50,8 @@ public class SearchAdapter extends BaseAdapter implements BusyScrollListener.Cal
 	
 	private boolean mGroupMode = false;
 	
-	public SearchAdapter(Context context, UiManager uiManager)
+	public SearchAdapter(UiManager uiManager)
 	{
-		mContext = context;
 		mUiManager = uiManager;
 		mConfigurationSet = new UiManager.ConfigurationSet(null, null, new HidePerformer(),
 				new GalleryItem.GallerySet(false), null, null, true, false, false, false, null);
@@ -101,7 +98,7 @@ public class SearchAdapter extends BaseAdapter implements BusyScrollListener.Cal
 				convertView = ViewFactory.makeListTextHeader(parent, false);
 				if (C.API_LOLLIPOP)
 				{
-					float density = ResourceUtils.obtainDensity(mContext);
+					float density = ResourceUtils.obtainDensity(parent);
 					convertView.setPadding((int) (12f * density), convertView.getPaddingTop() + (int) (12f * density),
 							(int) (12f * density), convertView.getPaddingBottom());
 				}
@@ -196,7 +193,7 @@ public class SearchAdapter extends BaseAdapter implements BusyScrollListener.Cal
 					{
 						number = false;
 					}
-					mGroupItems.add(mContext.getString(R.string.text_in_thread_format_format,
+					mGroupItems.add(MainApplication.getInstance().getString(R.string.text_in_thread_format_format,
 							number ? "#" + threadNumber : threadNumber));
 					int ordinalIndex = 0;
 					for (PostItem postItem : entry.getValue())

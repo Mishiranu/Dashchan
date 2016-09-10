@@ -39,7 +39,7 @@ public class HistoryPage extends ListPage<HistoryAdapter>
 	{
 		PullableListView listView = getListView();
 		PageHolder pageHolder = getPageHolder();
-		HistoryAdapter adapter = new HistoryAdapter(getActivity(), pageHolder.chanName);
+		HistoryAdapter adapter = new HistoryAdapter(pageHolder.chanName);
 		initAdapter(adapter, null);
 		listView.getWrapper().setPullSides(PullableWrapper.Side.NONE);
 		if (adapter.isEmpty()) switchView(ViewType.ERROR, R.string.message_empty_history); else
