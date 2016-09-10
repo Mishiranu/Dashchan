@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 
-import android.app.Activity;
 import android.os.Parcel;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -48,16 +47,14 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 	@Override
 	protected void onCreate()
 	{
-		Activity activity = getActivity();
 		PullableListView listView = getListView();
 		PageHolder pageHolder = getPageHolder();
 		UiManager uiManager = getUiManager();
-		listView.setDivider(ResourceUtils.getDrawable(activity, R.attr.postsDivider, 0));
-		SearchAdapter adapter = new SearchAdapter(activity, uiManager);
+		listView.setDivider(ResourceUtils.getDrawable(getActivity(), R.attr.postsDivider, 0));
+		SearchAdapter adapter = new SearchAdapter(getActivity(), uiManager);
 		initAdapter(adapter, adapter);
 		uiManager.view().setHighlightText(Collections.singleton(pageHolder.searchQuery));
 		listView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
-		activity.setTitle(pageHolder.searchQuery);
 		SearchExtra extra = getExtra();
 		if (pageHolder.initialFromCache)
 		{
@@ -92,6 +89,12 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 			mReadTask = null;
 		}
 		ImageLoader.getInstance().clearTasks(getPageHolder().chanName);
+	}
+	
+	@Override
+	public String obtainTitle()
+	{
+		return getPageHolder().searchQuery;
 	}
 	
 	@Override

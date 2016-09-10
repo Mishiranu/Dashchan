@@ -164,6 +164,11 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 		else throw new IllegalStateException("Adapter can be initialized only in onCreate method");
 	}
 	
+	protected final void notifyTitleChanged()
+	{
+		mCallback.notifyTitleChanged();
+	}
+	
 	protected final void invalidateDrawerItems(boolean pages, boolean favorites)
 	{
 		mCallback.invalidateDrawerItems(pages, favorites);
@@ -222,6 +227,11 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 	protected void onHandleNewPostDatas()
 	{
 		
+	}
+	
+	public String obtainTitle()
+	{
+		return null;
 	}
 	
 	public void onItemClick(View view, int position, long id)
@@ -365,6 +375,7 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 	public interface Callback
 	{
 		public void invalidateDrawerItems(boolean pages, boolean favorites);
+		public void notifyTitleChanged();
 		public void updateOptionsMenu(boolean recreate);
 		public void switchView(ViewType viewType, String message);
 		public void showScaleAnimation();

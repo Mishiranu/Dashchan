@@ -154,7 +154,6 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		listView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
 		uiManager.observable().register(this);
 		
-		applyTitle(pageHolder.threadTitle, true);
 		Context darkStyledContext = new ContextThemeWrapper(activity, R.style.Theme_General_Main_Dark);
 		mSearchController = new LinearLayout(darkStyledContext);
 		mSearchController.setOrientation(LinearLayout.HORIZONTAL);
@@ -244,6 +243,14 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 	{
 		boolean hasNewPostDatas = handleNewPostDatas();
 		if (hasNewPostDatas) refreshPosts(true, false);
+	}
+	
+	@Override
+	public String obtainTitle()
+	{
+		PageHolder pageHolder = getPageHolder();
+		if (!StringUtils.isEmptyOrWhitespace(pageHolder.threadTitle)) return pageHolder.threadTitle;
+		else return StringUtils.formatThreadTitle(pageHolder.chanName, pageHolder.boardName, pageHolder.threadNumber);
 	}
 	
 	@Override
@@ -1051,11 +1058,11 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 	
 	private void onAfterPostsLoad()
 	{
+		PageHolder pageHolder = getPageHolder();
 		PostsExtra extra = getExtra();
 		if (!extra.isAddedToHistory)
 		{
 			extra.isAddedToHistory = true;
-			PageHolder pageHolder = getPageHolder();
 			HistoryDatabase.getInstance().addHistory(pageHolder.chanName, pageHolder.boardName,
 					pageHolder.threadNumber, pageHolder.threadTitle);
 		}
@@ -1075,29 +1082,20 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 			}
 		}
 		Iterator<PostItem> iterator = getAdapter().iterator();
-		if (iterator.hasNext()) applyTitle(iterator.next().getSubjectOrComment(), false);
-	}
-	
-	private void applyTitle(String title, boolean activityOnly)
-	{
-		PageHolder pageHolder = getPageHolder();
-		if (!StringUtils.isEmptyOrWhitespace(title))
+		if (iterator.hasNext())
 		{
-			if (!activityOnly)
+			String title = iterator.next().getSubjectOrComment();
+			if (StringUtils.isEmptyOrWhitespace(title)) title = null;
+			FavoritesStorage.getInstance().modifyTitle(pageHolder.chanName, pageHolder.boardName,
+					pageHolder.threadNumber, title, false);
+			if (!StringUtils.equals(StringUtils.nullIfEmpty(pageHolder.threadTitle), title))
 			{
-				pageHolder.threadTitle = title;
-				FavoritesStorage.getInstance().modifyTitle(pageHolder.chanName, pageHolder.boardName,
-						pageHolder.threadNumber, title, false);
-				invalidateDrawerItems(true, true);
 				HistoryDatabase.getInstance().refreshTitles(pageHolder.chanName, pageHolder.boardName,
 						pageHolder.threadNumber, title);
+				pageHolder.threadTitle = title;
+				notifyTitleChanged();
 			}
-			getActivity().setTitle(title);
-		}
-		else
-		{
-			getActivity().setTitle(StringUtils.formatThreadTitle(pageHolder.chanName, pageHolder.boardName,
-					pageHolder.threadNumber));
+			invalidateDrawerItems(true, true);
 		}
 	}
 	

@@ -109,8 +109,6 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 			refreshThreads(RefreshPage.CURRENT, false);
 		}
 		FavoritesStorage.getInstance().getObservable().register(this);
-		String boardTitle = getChanConfiguration().getBoardTitle(pageHolder.boardName);
-		updateTitle(boardTitle);
 		pageHolder.setInitialThreadsData(false);
 	}
 	
@@ -143,11 +141,12 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		}
 	}
 	
-	private void updateTitle(String title)
+	@Override
+	public String obtainTitle()
 	{
 		PageHolder pageHolder = getPageHolder();
-		if (title != null) invalidateDrawerItems(true, true);
-		getActivity().setTitle(StringUtils.formatBoardTitle(pageHolder.chanName, pageHolder.boardName, title));
+		String title = getChanConfiguration().getBoardTitle(pageHolder.boardName);
+		return StringUtils.formatBoardTitle(pageHolder.chanName, pageHolder.boardName, title);
 	}
 	
 	@Override
@@ -609,9 +608,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 			int oldCount = adapter.getCount();
 			if (append) adapter.appendItems(postItems, pageNumber, extra.boardSpeed);
 			else adapter.setItems(Collections.singleton(postItems), pageNumber, boardSpeed);
-			PageHolder pageHolder = getPageHolder();
-			String title = getChanConfiguration().getBoardTitle(pageHolder.boardName);
-			if (title != null) updateTitle(title);
+			notifyTitleChanged();
 			ListView listView = getListView();
 			if (!append)
 			{

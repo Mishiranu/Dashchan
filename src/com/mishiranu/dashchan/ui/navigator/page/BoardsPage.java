@@ -20,7 +20,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Activity;
 import android.net.Uri;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -50,7 +49,6 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 	@Override
 	protected void onCreate()
 	{
-		Activity activity = getActivity();
 		PullableListView listView = getListView();
 		PageHolder pageHolder = getPageHolder();
 		if (C.API_LOLLIPOP) listView.setDivider(null);
@@ -58,8 +56,6 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 		initAdapter(adapter, null);
 		adapter.update();
 		listView.getWrapper().setPullSides(PullableWrapper.Side.TOP);
-		boolean hasUserBoards = getChanConfiguration().getOption(ChanConfiguration.OPTION_READ_USER_BOARDS);
-		activity.setTitle(getString(hasUserBoards ? R.string.action_general_boards : R.string.action_boards));
 		if (!adapter.isEmpty())
 		{
 			showScaleAnimation();
@@ -76,6 +72,13 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 			mReadTask.cancel();
 			mReadTask = null;
 		}
+	}
+	
+	@Override
+	public String obtainTitle()
+	{
+		boolean hasUserBoards = getChanConfiguration().getOption(ChanConfiguration.OPTION_READ_USER_BOARDS);
+		return getString(hasUserBoards ? R.string.action_general_boards : R.string.action_boards);
 	}
 	
 	@Override

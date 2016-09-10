@@ -16,7 +16,6 @@
 
 package com.mishiranu.dashchan.ui.navigator.page;
 
-import android.app.Activity;
 import android.net.Uri;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -42,13 +41,11 @@ public class UserBoardsPage extends ListPage<UserBoardsAdapter> implements ReadU
 	@Override
 	protected void onCreate()
 	{
-		Activity activity = getActivity();
 		PullableListView listView = getListView();
 		PageHolder pageHolder = getPageHolder();
 		UserBoardsAdapter adapter = new UserBoardsAdapter(pageHolder.chanName);
 		initAdapter(adapter, null);
 		listView.getWrapper().setPullSides(PullableWrapper.Side.TOP);
-		activity.setTitle(getString(R.string.action_user_boards));
 		UserBoardsExtra extra = getExtra();
 		if (getExtra().boards != null)
 		{
@@ -67,6 +64,12 @@ public class UserBoardsPage extends ListPage<UserBoardsAdapter> implements ReadU
 			mReadTask.cancel();
 			mReadTask = null;
 		}
+	}
+	
+	@Override
+	public String obtainTitle()
+	{
+		return getString(R.string.action_user_boards);
 	}
 	
 	@Override
