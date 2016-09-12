@@ -1056,7 +1056,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		}
 	}
 	
-	private void onAfterPostsLoad()
+	private void onAfterPostsLoad(boolean fromCache)
 	{
 		PageHolder pageHolder = getPageHolder();
 		PostsExtra extra = getExtra();
@@ -1080,6 +1080,11 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				mOriginalThreadData = originalThreadData;
 				updateOptionsMenu(false);
 			}
+		}
+		if (!fromCache)
+		{
+			FavoritesStorage.getInstance().modifyPostsCount(pageHolder.chanName, pageHolder.boardName,
+					pageHolder.threadNumber, getAdapter().getExistingPostsCount());
 		}
 		Iterator<PostItem> iterator = getAdapter().iterator();
 		if (iterator.hasNext())
@@ -1226,7 +1231,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 			mAutoRefreshInterval = Math.min(Math.max(autoRefreshData.second, Preferences.MIN_AUTO_REFRESH_INTERVAL),
 					Preferences.MAX_AUTO_REFRESH_INTERVAL);
 			onFirstPostsLoad();
-			onAfterPostsLoad();
+			onAfterPostsLoad(true);
 			showScaleAnimation();
 			scrollToSpecifiedPost(true);
 			if (extra.forceRefresh)
@@ -1375,20 +1380,12 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				if (!patch.newPostAddedToEnd) mLastEditedPostNumbers.add(patch.newPost.getPostNumber());
 			}
 		}
-		if (FavoritesStorage.getInstance().hasFavorite(pageHolder.chanName, pageHolder.boardName,
-				pageHolder.threadNumber))
-		{
-			FavoritesStorage.getInstance().modifyPostsCount(pageHolder.chanName, pageHolder.boardName,
-					pageHolder.threadNumber, adapter.getExistingPostsCount());
-			// Invalidate for ThreadsWatcher
-			invalidateDrawerItems(false, true);
-		}
 		if (updateAdapters)
 		{
 			getUiManager().dialog().updateAdapters();
 			notifyAllAdaptersChanged();
 		}
-		onAfterPostsLoad();
+		onAfterPostsLoad(false);
 		if (wasEmpty && !adapter.isEmpty()) showScaleAnimation();
 		scrollToSpecifiedPost(wasEmpty);
 		mScrollToPostNumber = null;
@@ -1402,7 +1399,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		getListView().getWrapper().cancelBusyState();
 		switchView(ViewType.LIST, null);
 		if (getAdapter().isEmpty()) displayDownloadError(true, getString(R.string.message_empty_response));
-		else onAfterPostsLoad();
+		else onAfterPostsLoad(false);
 	}
 	
 	@Override
