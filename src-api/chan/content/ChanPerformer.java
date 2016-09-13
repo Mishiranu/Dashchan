@@ -438,6 +438,17 @@ public class ChanPerformer implements ChanManager.Linked
 		@Public
 		public ReadBoardsResult(BoardCategory... boardCategories)
 		{
+			if (boardCategories != null)
+			{
+				for (int i = 0; i < boardCategories.length; i++)
+				{
+					if (boardCategories[i] != null)
+					{
+						Board[] boards = boardCategories[i].getBoards();
+						if (boards == null || boards.length == 0) boardCategories[i] = null;
+					}
+				}
+			}
 			this.boardCategories = CommonUtils.removeNullItems(boardCategories, BoardCategory.class);
 		}
 		
