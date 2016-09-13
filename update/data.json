@@ -400,11 +400,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.1",
+			"name": "1.2",
 			"code": 1,
 			"version": 1,
 			"minSdk": 16,
-			"length": 20377,
+			"length": 20383,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanNullnyan.apk"
 		}
 	],
@@ -580,11 +580,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.1",
+			"name": "1.2",
 			"code": 1,
 			"version": 1,
-			"minSdk": 14,
-			"length": 56929,
+			"minSdk": 16,
+			"length": 20893,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanTiretirech.apk"
 		}
 	],
