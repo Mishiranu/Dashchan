@@ -24,6 +24,18 @@
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanAllchan.apk"
 		}
 	],
+	"alphachan":
+	[
+		{
+			"title": "Release",
+			"name": "1.0",
+			"code": 1,
+			"version": 1,
+			"minSdk": 16,
+			"length": 20104,
+			"source": "/Mishiranu/Dashchan/master/update/package/DashchanAlphachan.apk"
+		}
+	],
 	"alterchan":
 	[
 		{
