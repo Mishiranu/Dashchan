@@ -259,7 +259,7 @@ public class ChanPerformer implements ChanManager.Linked
 		
 		// TODO CHAN
 		// Remove this constructor after updating
-		// apachan archiverbt dvach endchan makabapaid nulldvachin
+		// apachan archiverbt endchan nulldvachin
 		// Added: 24.08.16 03:39
 		@Public
 		public ReadThreadsResult(Threads threads)
