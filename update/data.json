@@ -292,11 +292,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.7",
+			"name": "1.8",
 			"code": 1,
 			"version": 1,
 			"minSdk": 16,
-			"length": 26387,
+			"length": 27683,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanInfinite.apk"
 		}
 	],
@@ -412,11 +412,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.2",
+			"name": "1.3",
 			"code": 1,
 			"version": 1,
 			"minSdk": 16,
-			"length": 20383,
+			"length": 21731,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanNullnyan.apk"
 		}
 	],
