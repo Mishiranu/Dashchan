@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,18 +32,18 @@ public class ThemeChoiceDrawable extends Drawable
 {
 	private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 	private final RectF mRectF = new RectF();
-	
+
 	private final int mBackground;
 	private final int mPrimary;
 	private final int mAccent;
-	
+
 	public ThemeChoiceDrawable(int colorBackground, int colorPrimary, int colorAccent)
 	{
 		mBackground = colorBackground;
 		mPrimary = colorPrimary;
 		mAccent = colorAccent;
 	}
-	
+
 	@Override
 	public void draw(Canvas canvas)
 	{
@@ -72,30 +72,30 @@ public class ThemeChoiceDrawable extends Drawable
 			canvas.drawCircle(cx, cy, radius * 0.8f, paint);
 		}
 	}
-	
+
 	private static void applyRectRadius(RectF rectF, int cx, int cy, float radius)
 	{
 		rectF.set(cx - radius, cy - radius, cx + radius, cy + radius);
 	}
-	
+
 	@Override
 	public int getOpacity()
 	{
 		return PixelFormat.TRANSLUCENT;
 	}
-	
+
 	@Override
 	public void setAlpha(int alpha)
 	{
-		
+
 	}
-	
+
 	@Override
 	public void setColorFilter(ColorFilter cf)
 	{
-		
+
 	}
-	
+
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	@Override
 	public void getOutline(Outline outline)

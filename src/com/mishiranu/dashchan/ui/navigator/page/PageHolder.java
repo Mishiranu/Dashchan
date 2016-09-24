@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,7 +27,7 @@ import com.mishiranu.dashchan.widget.ListPosition;
 public class PageHolder implements Parcelable
 {
 	public enum Content {THREADS, POSTS, SEARCH, ARCHIVE, ALL_BOARDS, USER_BOARDS, HISTORY}
-	
+
 	boolean inStack = true;
 	public final Content content;
 	public final String chanName, boardName, threadNumber, searchQuery;
@@ -35,16 +35,16 @@ public class PageHolder implements Parcelable
 	public final long creationTime;
 	public ListPosition position;
 	public Extra extra;
-	
+
 	public boolean initialFromCache;
 	public String initialPostNumber;
-	
+
 	public PageHolder(Content content, String chanName, String boardName, String threadNumber, String threadTitle,
 			String searchQuery)
 	{
 		this(content, chanName, boardName, threadNumber, threadTitle, searchQuery, System.currentTimeMillis());
 	}
-	
+
 	public PageHolder(Content content, String chanName, String boardName, String threadNumber, String threadTitle,
 			String searchQuery, long creationTime)
 	{
@@ -56,37 +56,37 @@ public class PageHolder implements Parcelable
 		this.searchQuery = searchQuery;
 		this.creationTime = creationTime;
 	}
-	
+
 	public PageHolder setInitialThreadsData(boolean fromCache)
 	{
 		initialFromCache = fromCache;
 		return this;
 	}
-	
+
 	public PageHolder setInitialPostsData(boolean fromCache, String postNumber)
 	{
 		initialFromCache = fromCache;
 		initialPostNumber = postNumber;
 		return this;
 	}
-	
+
 	public PageHolder setInitialSearchData(boolean fromCache)
 	{
 		initialFromCache = fromCache;
 		return this;
 	}
-	
+
 	public boolean isThreadsOrPosts()
 	{
 		return content == Content.THREADS || content == Content.POSTS;
 	}
-	
+
 	public boolean canDestroyIfNotInStack()
 	{
 		return content == Content.SEARCH || content == Content.ARCHIVE || content == Content.ALL_BOARDS
 				|| content == Content.HISTORY;
 	}
-	
+
 	public boolean canRemoveFromStackIfDeep()
 	{
 		if (content == Content.ALL_BOARDS)
@@ -97,7 +97,7 @@ public class PageHolder implements Parcelable
 		return content == Content.SEARCH || content == Content.ARCHIVE || content == Content.USER_BOARDS
 				|| content == Content.HISTORY;
 	}
-	
+
 	public boolean is(String chanName, String boardName, String threadNumber, Content content)
 	{
 		if (this.content != content) return false;
@@ -132,13 +132,13 @@ public class PageHolder implements Parcelable
 		if (compareContentTypeOnly1 || compareContentTypeOnly2) return false;
 		return StringUtils.equals(this.boardName, boardName) && StringUtils.equals(this.threadNumber, threadNumber);
 	}
-	
+
 	@Override
 	public int describeContents()
 	{
 		return 0;
 	}
-	
+
 	@Override
 	public void writeToParcel(Parcel dest, int flags)
 	{
@@ -158,7 +158,7 @@ public class PageHolder implements Parcelable
 		}
 		else dest.writeString(null);
 	}
-	
+
 	public static final Creator<PageHolder> CREATOR = new Creator<PageHolder>()
 	{
 		@Override
@@ -193,19 +193,19 @@ public class PageHolder implements Parcelable
 			}
 			return pageHolder;
 		}
-		
+
 		@Override
 		public PageHolder[] newArray(int size)
 		{
 			return new PageHolder[size];
 		}
 	};
-	
+
 	public interface Extra
 	{
-		
+
 	}
-	
+
 	public interface ParcelableExtra extends Extra
 	{
 		public void writeToParcel(Parcel dest);

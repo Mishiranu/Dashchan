@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,19 +27,19 @@ public class SearchHelper
 	private static final int SEARCH_NONE = 0;
 	private static final int SEARCH_INCLUDE = 1;
 	private static final int SEARCH_EXCLUDE = -1;
-	
+
 	private static final Pattern PATTERN_LONG_QUERY_PART = Pattern.compile("(?:^| )(-)?\"(.*?)\"(?= |$)");
-	
-	private final HashMap<String, Integer> mFlags = new HashMap<>();  
-	private final HashSet<String> mResultInclude = new HashSet<>();  
+
+	private final HashMap<String, Integer> mFlags = new HashMap<>();
+	private final HashSet<String> mResultInclude = new HashSet<>();
 	private final HashSet<String> mResultExclude = new HashSet<>();
-	
+
 	public void setFlags(String... flags)
 	{
 		mFlags.clear();
 		for (String flag : flags) mFlags.put(flag, SEARCH_NONE);
 	}
-	
+
 	public HashSet<String> handleQueries(Locale locale, String query)
 	{
 		StringBuilder queryBuilder = null;
@@ -100,9 +100,9 @@ public class SearchHelper
 		}
 		return queries;
 	}
-	
+
 	private final HashMap<String, Boolean> mFlagsState = new HashMap<>();
-	
+
 	/*
 	 * flag-state (String-Boolean) alternation
 	 */
@@ -113,9 +113,9 @@ public class SearchHelper
 			mFlagsState.put((String) alernation[i], (Boolean) alernation[i + 1]);
 		}
 		return checkFlags(mFlagsState);
-		
+
 	}
-	
+
 	private boolean checkFlags(HashMap<String, Boolean> flagsState)
 	{
 		OUTER: for (HashMap.Entry<String, Boolean> flagState : flagsState.entrySet())
@@ -139,17 +139,17 @@ public class SearchHelper
 		}
 		return true;
 	}
-	
+
 	public boolean hasIncluded()
 	{
 		return mResultInclude.size() > 0;
 	}
-	
+
 	public Iterable<String> getIncluded()
 	{
 		return mResultInclude;
 	}
-	
+
 	public Iterable<String> getExcluded()
 	{
 		return mResultExclude;

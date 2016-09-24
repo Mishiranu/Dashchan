@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,7 +27,7 @@ import com.mishiranu.dashchan.content.MainApplication;
 public class ErrorItem implements Serializable
 {
 	private static final long serialVersionUID = 1L;
-	
+
 	public static final int TYPE_UNKNOWN = 0;
 	public static final int TYPE_API = 1;
 	public static final int TYPE_SSL = 2;
@@ -48,18 +48,18 @@ public class ErrorItem implements Serializable
 	public static final int TYPE_NO_ACCESS_TO_MEMORY = 17;
 	public static final int TYPE_INSUFFICIENT_SPACE = 18;
 	public static final int TYPE_EXTENSION = 19;
-	
+
 	public final int type;
 	public final int specialType;
-	
+
 	public final int httpResponseCode;
 	public final String message;
-	
+
 	public interface Holder
 	{
 		public ErrorItem getErrorItemAndHandle();
 	}
-	
+
 	public ErrorItem(int type, int specialType)
 	{
 		this.type = type;
@@ -67,7 +67,7 @@ public class ErrorItem implements Serializable
 		httpResponseCode = 0;
 		message = null;
 	}
-	
+
 	public ErrorItem(int httpResponseCode, String message)
 	{
 		type = 0;
@@ -75,12 +75,12 @@ public class ErrorItem implements Serializable
 		this.httpResponseCode = httpResponseCode;
 		this.message = StringUtils.removeSingleDot(message);
 	}
-	
+
 	public ErrorItem(int type)
 	{
 		this(type, 0);
 	}
-	
+
 	@Override
 	public String toString()
 	{

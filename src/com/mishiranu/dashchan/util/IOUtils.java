@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -50,7 +50,7 @@ public class IOUtils
 		for (int i = 0; i < count; i++) result = result << 8 | bytes[start + (littleEndian ? count - i - 1 : i)] & 0xff;
 		return result;
 	}
-	
+
 	public static byte[] intToBytes(int value, boolean littleEndian, int start, int count, byte[] bytes)
 	{
 		if (bytes == null) bytes = new byte[start + count];
@@ -61,7 +61,7 @@ public class IOUtils
 		}
 		return bytes;
 	}
-	
+
 	public static int skipExactly(InputStream input, int count) throws IOException
 	{
 		int total = 0;
@@ -78,12 +78,12 @@ public class IOUtils
 		}
 		return total;
 	}
-	
+
 	public static boolean skipExactlyCheck(InputStream input, int count) throws IOException
 	{
 		return skipExactly(input, count) == count;
 	}
-	
+
 	public static int readExactly(InputStream input, byte[] buffer, int offset, int count) throws IOException
 	{
 		int total = 0;
@@ -95,19 +95,19 @@ public class IOUtils
 		}
 		return total;
 	}
-	
+
 	public static boolean readExactlyCheck(InputStream input, byte[] buffer, int offset, int count) throws IOException
 	{
 		return readExactly(input, buffer, offset, count) == count;
 	}
-	
+
 	public static void copyStream(InputStream from, OutputStream to) throws IOException
 	{
 		byte data[] = new byte[8192];
 		int count;
 		while ((count = from.read(data)) != -1) to.write(data, 0, count);
 	}
-	
+
 	public static void close(Closeable closeable)
 	{
 		try
@@ -116,10 +116,10 @@ public class IOUtils
 		}
 		catch (Exception e)
 		{
-			
+
 		}
 	}
-	
+
 	public static boolean copyInternalFile(File from, File to)
 	{
 		FileInputStream input = null;
@@ -141,12 +141,12 @@ public class IOUtils
 			close(output);
 		}
 	}
-	
+
 	public static final Comparator<File> SORT_BY_DATE = (lhs, rhs) ->
 	{
 		return ((Long) lhs.lastModified()).compareTo(rhs.lastModified());
 	};
-	
+
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private static Uri findChildDocument(ContentResolver contentResolver, Uri uri, String displayName)
 	{
@@ -171,7 +171,7 @@ public class IOUtils
 		}
 		return null;
 	}
-	
+
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	public static OutputStream openOutputStream(Context context, File file) throws IOException
 	{

@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -51,11 +51,11 @@ public class AudioPlayerActivity extends StateActivity implements Runnable, Seek
 	private SeekBar mSeekBar;
 	private ImageButton mButton;
 	private AlertDialog mAlertDialog;
-	
+
 	private boolean mTracking = false;
-	
+
 	private AudioPlayerService.Binder mAudioPlayerBinder;
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
@@ -96,7 +96,7 @@ public class AudioPlayerActivity extends StateActivity implements Runnable, Seek
 		LocalBroadcastManager.getInstance(this).registerReceiver(mAudioPlayerReceiver, intentFilter);
 		bindService(new Intent(this, AudioPlayerService.class), this, 0);
 	}
-	
+
 	private final BroadcastReceiver mAudioPlayerReceiver = new BroadcastReceiver()
 	{
 		@Override
@@ -114,7 +114,7 @@ public class AudioPlayerActivity extends StateActivity implements Runnable, Seek
 			}
 		}
 	};
-	
+
 	@Override
 	public void onServiceConnected(ComponentName name, IBinder service)
 	{
@@ -125,26 +125,26 @@ public class AudioPlayerActivity extends StateActivity implements Runnable, Seek
 		setPlayState(mAudioPlayerBinder.isPlaying());
 		run();
 	}
-	
+
 	@Override
 	public void onServiceDisconnected(ComponentName name)
 	{
 		mAudioPlayerBinder = null;
 		finish();
 	}
-	
+
 	@Override
 	public void onClick(View v)
 	{
 		mAudioPlayerBinder.togglePlayback();
 	}
-	
+
 	private void setPlayState(boolean playing)
 	{
 		mButton.setImageResource(ResourceUtils.getResourceId(mContext, playing ? R.attr.buttonPause
 				: R.attr.buttonPlay, 0));
 	}
-	
+
 	@Override
 	protected void onStart()
 	{
@@ -153,7 +153,7 @@ public class AudioPlayerActivity extends StateActivity implements Runnable, Seek
 		mSeekBar.removeCallbacks(this);
 		run();
 	}
-	
+
 	@Override
 	protected void onStop()
 	{
@@ -161,7 +161,7 @@ public class AudioPlayerActivity extends StateActivity implements Runnable, Seek
 		mAlertDialog.dismiss();
 		mSeekBar.removeCallbacks(this);
 	}
-	
+
 	@Override
 	protected void onFinish()
 	{
@@ -169,7 +169,7 @@ public class AudioPlayerActivity extends StateActivity implements Runnable, Seek
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mAudioPlayerReceiver);
 		if (mAudioPlayerBinder != null) unbindService(this);
 	}
-	
+
 	@Override
 	public void run()
 	{
@@ -186,7 +186,7 @@ public class AudioPlayerActivity extends StateActivity implements Runnable, Seek
 		mSeekBar.removeCallbacks(this);
 		finish();
 	}
-	
+
 	@Override
 	public void onClick(DialogInterface dialog, int which)
 	{
@@ -196,19 +196,19 @@ public class AudioPlayerActivity extends StateActivity implements Runnable, Seek
 		mAudioPlayerBinder = null;
 		finish();
 	}
-	
+
 	@Override
 	public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
 	{
 		if (fromUser) mAudioPlayerBinder.seekTo(progress);
 	}
-	
+
 	@Override
 	public void onStartTrackingTouch(SeekBar seekBar)
 	{
 		mTracking = true;
 	}
-	
+
 	@Override
 	public void onStopTrackingTouch(SeekBar seekBar)
 	{

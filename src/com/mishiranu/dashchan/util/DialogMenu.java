@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,19 +36,19 @@ public class DialogMenu implements DialogInterface.OnClickListener
 {
 	private final Context mContext;
 	private final AlertDialog.Builder mDialog;
-	
+
 	private final Callback mCallback;
-	
+
 	private final ArrayList<ListItem> mListItems = new ArrayList<>();
 	private boolean mLongTitle;
-	
+
 	private static class ListItem
 	{
 		public final int id;
 		public final String title;
 		public final boolean checkable;
 		public final boolean checked;
-		
+
 		public ListItem(int id, String title, boolean checkable, boolean checked)
 		{
 			this.id = id;
@@ -60,14 +60,14 @@ public class DialogMenu implements DialogInterface.OnClickListener
 
 	private HashMap<String, Object> mExtra;
 	private boolean mConsumed = false;
-	
+
 	public DialogMenu(Context context, Callback callback)
 	{
 		mContext = context;
 		mDialog = new AlertDialog.Builder(context);
 		mCallback = callback;
 	}
-	
+
 	public DialogMenu setTitle(String title, boolean longTitle)
 	{
 		checkConsumed();
@@ -75,41 +75,41 @@ public class DialogMenu implements DialogInterface.OnClickListener
 		mLongTitle = longTitle;
 		return this;
 	}
-	
+
 	private DialogMenu addItem(int id, String title, boolean checkable, boolean checked)
 	{
 		checkConsumed();
 		mListItems.add(new ListItem(id, title, checkable, checked));
 		return this;
 	}
-	
+
 	public DialogMenu addItem(int id, String title)
 	{
 		return addItem(id, title, false, false);
 	}
-	
+
 	public DialogMenu addItem(int id, int titleRes)
 	{
 		return addItem(id, mContext.getString(titleRes));
 	}
-	
+
 	public DialogMenu addCheckableItem(int id, String title, boolean checked)
 	{
 		return addItem(id, title, true, checked);
 	}
-	
+
 	public DialogMenu addCheckableItem(int id, int titleRes, boolean checked)
 	{
 		return addCheckableItem(id, mContext.getString(titleRes), checked);
 	}
-	
+
 	public DialogMenu putExtra(String key, Object value)
 	{
 		if (mExtra == null) mExtra = new HashMap<>();
 		mExtra.put(key, value);
 		return this;
 	}
-	
+
 	public void show()
 	{
 		checkConsumed();
@@ -121,65 +121,65 @@ public class DialogMenu implements DialogInterface.OnClickListener
 		}
 		mConsumed = true;
 	}
-	
+
 	private void checkConsumed()
 	{
 		if (mConsumed) throw new RuntimeException("DialogMenu is already consumed.");
 	}
-	
+
 	@Override
 	public void onClick(DialogInterface dialog, int which)
 	{
 		mCallback.onItemClick(mContext, mListItems.get(which).id, mExtra);
 	}
-	
+
 	public interface Callback
 	{
 		public void onItemClick(Context context, int id, Map<String, Object> extra);
 	}
-	
+
 	private class DialogAdapter extends BaseAdapter
 	{
 		private static final int TYPE_SIMPLE = 0;
 		private static final int TYPE_CHECKABLE = 1;
-		
+
 		private final int mLayoutResId;
-		
+
 		public DialogAdapter()
 		{
 			mLayoutResId = ResourceUtils.obtainAlertDialogLayoutResId(mContext, ResourceUtils.DIALOG_LAYOUT_SIMPLE);
 		}
-		
+
 		@Override
 		public int getViewTypeCount()
 		{
 			return 2;
 		}
-		
+
 		@Override
 		public int getItemViewType(int position)
 		{
 			return getItem(position).checkable ? TYPE_CHECKABLE : TYPE_SIMPLE;
 		}
-		
+
 		@Override
 		public int getCount()
 		{
 			return mListItems.size();
 		}
-		
+
 		@Override
 		public ListItem getItem(int position)
 		{
 			return mListItems.get(position);
 		}
-		
+
 		@Override
 		public long getItemId(int position)
 		{
 			return 0;
 		}
-		
+
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent)
 		{
@@ -217,7 +217,7 @@ public class DialogMenu implements DialogInterface.OnClickListener
 			return convertView;
 		}
 	}
-	
+
 	private static class ViewHolder
 	{
 		public TextView textView;

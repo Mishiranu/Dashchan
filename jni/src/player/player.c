@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -86,13 +86,13 @@ struct Player
 {
 	int errorCode;
 	int seekAnyFrame;
-	
+
 	jobject nativeBridge;
 	SparceArray bridges;
-	
+
 	AVIOContext * ioContext;
 	AVFormatContext * formatContext;
-	
+
 	int interrupt;
 	pthread_t decodePacketsThread;
 	pthread_t decodeAudioThread;
@@ -103,20 +103,20 @@ struct Player
 	pthread_mutex_t decodePacketsFlowMutex;
 	pthread_mutex_t decodeAudioFrameMutex;
 	pthread_mutex_t decodeVideoFrameMutex;
-	
+
 	int playing;
 	int decodeFinished;
 	int audioFinished;
 	int videoFinished;
 	pthread_cond_t playFinishCond;
 	pthread_mutex_t playFinishMutex;
-	
+
 	int audioStreamIndex;
 	int videoStreamIndex;
-	
+
 	BlockingQueue audioPacketQueue;
 	BlockingQueue videoPacketQueue;
-	
+
 	SLObjectItf slOutputMix;
 	SLObjectItf slPlayer;
 	SLPlayItf slPlay;
@@ -129,7 +129,7 @@ struct Player
 	pthread_cond_t audioSleepCond;
 	pthread_cond_t audioBufferCond;
 	pthread_mutex_t audioSleepBufferMutex;
-	
+
 	pthread_cond_t videoSleepCond;
 	pthread_mutex_t videoSleepDrawMutex;
 	pthread_cond_t videoQueueCond;
@@ -142,7 +142,7 @@ struct Player
 	int videoLastBufferHeight;
 	int videoLastBufferSize;
 	int videoFormat;
-	
+
 	int64_t audioPosition;
 	int64_t videoPosition;
 	int audioPositionNotSync;
@@ -393,7 +393,7 @@ static void * performDecodeAudio(void * data)
 	PacketHolder * packetHolder = NULL;
 	AVPacket lastPacket;
 	int lastPacketValid = 0;
-	
+
 	while (!player->interrupt)
 	{
 		packetHolder = (PacketHolder *) blockingQueueGet(&player->audioPacketQueue, 1);
@@ -415,7 +415,7 @@ static void * performDecodeAudio(void * data)
 		}
 		condBroadcastLocked(&player->decodePacketsFlowCond, &player->decodePacketsFlowMutex);
 		if (player->interrupt) break;
-		
+
 		pthread_mutex_lock(&player->playFinishMutex);
 		while (!player->interrupt && !player->playing)
 		{
@@ -423,7 +423,7 @@ static void * performDecodeAudio(void * data)
 		}
 		pthread_mutex_unlock(&player->playFinishMutex);
 		if (player->interrupt) break;
-		
+
 		while (1)
 		{
 			int success = 0;
@@ -439,7 +439,7 @@ static void * performDecodeAudio(void * data)
 			if (player->audioIgnoreWorkFrame) unlockAndGoTo(&player->decodeAudioFrameMutex, IGNORE_AUDIO_FRAME);
 			int ready = decodeFrame(stream, packet, frame, 0, packetHolder->finish);
 			pthread_mutex_unlock(&player->decodeAudioFrameMutex);
-			
+
 			if (ready)
 			{
 				int64_t position;
@@ -450,7 +450,7 @@ static void * performDecodeAudio(void * data)
 					success = 1;
 					goto IGNORE_AUDIO_FRAME;
 				}
-				
+
 				if (frame->channel_layout == 0) frame->channel_layout = av_get_default_channel_layout(frame->channels);
 				uint64_t srcChannelLayout = frame->channel_layout;
 				uint64_t dstChannelLayout = player->resampleChannels != 0 ? player->resampleChannels : srcChannelLayout;
@@ -474,7 +474,7 @@ static void * performDecodeAudio(void * data)
 						dstSampleRate, srcSampleRate, AV_ROUND_UP);
 				result = swr_convert(resampleContext, dstData, dstSamples, (const uint8_t **) frame->data, srcSamples);
 				if (result < 0 || player->audioIgnoreWorkFrame) goto IGNORE_AUDIO_FRAME;
-				
+
 				int size = av_samples_get_buffer_size(NULL, dstChannels, result, dstFormat, 1);
 				if (size < 0) goto IGNORE_AUDIO_FRAME;
 				pthread_mutex_lock(&player->audioSleepBufferMutex);
@@ -526,7 +526,7 @@ static void * performDecodeAudio(void * data)
 				pthread_mutex_unlock(&player->audioSleepBufferMutex);
 				success = 1;
 			}
-			
+
 			IGNORE_AUDIO_FRAME:
 			if (dstData != NULL)
 			{
@@ -633,7 +633,7 @@ static void * performDraw(void * data)
 		player->drawIgnoreWorkFrame = 0;
 		pthread_mutex_unlock(&player->videoQueueMutex);
 		if (player->interrupt) goto IGNORE_DRAW_FRAME;
-		
+
 		pthread_mutex_lock(&player->playFinishMutex);
 		while (!player->interrupt && !player->playing)
 		{
@@ -641,7 +641,7 @@ static void * performDraw(void * data)
 		}
 		pthread_mutex_unlock(&player->playFinishMutex);
 		if (player->interrupt) goto IGNORE_DRAW_FRAME;
-		
+
 		pthread_mutex_lock(&player->videoSleepDrawMutex);
 		if (player->drawIgnoreWorkFrame) unlockAndGoTo(&player->videoSleepDrawMutex, IGNORE_DRAW_FRAME);
 		VideoFrameExtra * extra = bufferItem->extra;
@@ -699,7 +699,7 @@ static void * performDraw(void * data)
 			player->lastDrawTimes[0] = getTime();
 		}
 		pthread_mutex_unlock(&player->videoSleepDrawMutex);
-		
+
 		IGNORE_DRAW_FRAME:
 		if (bufferItem != NULL)
 		{
@@ -757,7 +757,7 @@ static void * performDecodeVideo(void * data)
 	}
 	pthread_mutex_unlock(&player->videoSleepDrawMutex);
 	if (player->interrupt) return NULL;
-	
+
 	int bytesPerPixel = getBytesPerPixel(player->videoFormat);
 	int isYUV = player->videoFormat == AV_PIX_FMT_YUV420P;
 	AVFrame * frame = av_frame_alloc();
@@ -772,11 +772,11 @@ static void * performDecodeVideo(void * data)
 	PacketHolder * packetHolder = NULL;
 	AVPacket lastPacket;
 	int lastPacketValid = 0;
-	
+
 	int totalMeasurements = 10;
 	int currentMeasurement = 0;
 	int measurements[2 * totalMeasurements];
-	
+
 	while (!player->interrupt)
 	{
 		packetHolder = (PacketHolder *) blockingQueueGet(&player->videoPacketQueue, 1);
@@ -798,7 +798,7 @@ static void * performDecodeVideo(void * data)
 		}
 		condBroadcastLocked(&player->decodePacketsFlowCond, &player->decodePacketsFlowMutex);
 		if (player->interrupt) break;
-		
+
 		pthread_mutex_lock(&player->playFinishMutex);
 		while (!player->interrupt && !player->playing)
 		{
@@ -806,7 +806,7 @@ static void * performDecodeVideo(void * data)
 		}
 		pthread_mutex_unlock(&player->playFinishMutex);
 		if (player->interrupt) break;
-		
+
 		while (1)
 		{
 			int success = 0;
@@ -822,7 +822,7 @@ static void * performDecodeVideo(void * data)
 			if (player->videoIgnoreWorkFrame) unlockAndGoTo(&player->decodeVideoFrameMutex, IGNORE_VIDEO_FRAME);
 			int ready = decodeFrame(stream, packet, frame, 1, packetHolder->finish);
 			pthread_mutex_unlock(&player->decodeVideoFrameMutex);
-			
+
 			if (ready)
 			{
 				extra = malloc(sizeof(VideoFrameExtra));
@@ -835,7 +835,7 @@ static void * performDecodeVideo(void * data)
 					success = 1;
 					goto IGNORE_VIDEO_FRAME;
 				}
-				
+
 				int extendedBufferSize = 0;
 				if (lastWidth != frame->width || lastHeight != frame->height)
 				{
@@ -889,7 +889,7 @@ static void * performDecodeVideo(void * data)
 						}
 					}
 				}
-				
+
 				pthread_mutex_lock(&player->videoQueueMutex);
 				if (player->videoIgnoreWorkFrame) unlockAndGoTo(&player->videoQueueMutex, IGNORE_VIDEO_FRAME);
 				if (extendedBufferSize > 0) bufferQueueExtend(player->videoBufferQueue, extendedBufferSize);
@@ -909,7 +909,7 @@ static void * performDecodeVideo(void * data)
 				}
 				pthread_mutex_unlock(&player->videoQueueMutex);
 			}
-			
+
 			IGNORE_VIDEO_FRAME:
 			if (!success && extra != NULL) free(extra);
 			if (!success || !packetHolder->finish) break;
@@ -1354,14 +1354,14 @@ void destroy(JNIEnv * env, jlong pointer)
 	blockingQueueInterrupt(&player->audioPacketQueue);
 	blockingQueueInterrupt(&player->videoPacketQueue);
 	blockingQueueInterrupt(&player->audioBufferQueue);
-	
+
 	condBroadcastLocked(&player->audioSleepCond, &player->audioSleepBufferMutex);
 	condBroadcastLocked(&player->audioBufferCond, &player->audioSleepBufferMutex);
 	condBroadcastLocked(&player->videoSleepCond, &player->videoSleepDrawMutex);
 	condBroadcastLocked(&player->videoQueueCond, &player->videoQueueMutex);
 	condBroadcastLocked(&player->playFinishCond, &player->playFinishMutex);
 	condBroadcastLocked(&player->decodePacketsFlowCond, &player->decodePacketsFlowMutex);
-	
+
 	pthread_join(player->decodePacketsThread, NULL);
 	pthread_mutex_destroy(&player->decodePacketsReadMutex);
 	pthread_mutex_destroy(&player->decodePacketsFlowMutex);
@@ -1377,7 +1377,7 @@ void destroy(JNIEnv * env, jlong pointer)
 	pthread_cond_destroy(&player->audioBufferCond);
 	pthread_cond_destroy(&player->videoSleepCond);
 	pthread_cond_destroy(&player->videoQueueCond);
-	
+
 	blockingQueueDestroy(&player->audioPacketQueue, packetQueueFreeCallback);
 	blockingQueueDestroy(&player->videoPacketQueue, packetQueueFreeCallback);
 	blockingQueueDestroy(&player->audioBufferQueue, audioBufferQueueFreeCallback);
@@ -1387,7 +1387,7 @@ void destroy(JNIEnv * env, jlong pointer)
 		free(player->videoBufferQueue);
 		free(player->videoLastBuffer);
 	}
-	
+
 	if (player->slPlayer != NULL) (*player->slPlayer)->Destroy(player->slPlayer);
 	if (player->slOutputMix != NULL) (*player->slOutputMix)->Destroy(player->slOutputMix);
 	if (player->audioStreamIndex != UNDEFINED) avcodec_close(AUDIO_STREAM->codec);

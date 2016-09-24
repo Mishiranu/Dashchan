@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -49,11 +49,11 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener
 	private final String mThreadTitle;
 	private final List<PostItem> mPostItems;
 	private final ProgressDialog mDialog;
-	
+
 	private final UiManager.DemandSet mDemandSet = new UiManager.DemandSet();
 	private final UiManager.ConfigurationSet mConfigurationSet = new UiManager.ConfigurationSet(null, null, null,
 			null, null, null, false, false, false, false, null);
-	
+
 	public ThreadshotPerformer(ListView listView, UiManager uiManager, String chanName, String boardName,
 			String threadNumber, String threadTitle, List<PostItem> postItems)
 	{
@@ -74,12 +74,12 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener
 		mDemandSet.selectionMode = UiManager.SELECTION_THREADSHOT;
 		mAsyncTask.executeOnExecutor(ConcurrentUtils.SEPARATE_EXECUTOR);
 	}
-	
+
 	private View getPostItem(PostItem postItem, View convertView)
 	{
 		return mUiManager.view().getPostView(postItem, convertView, mListView, mDemandSet, mConfigurationSet);
 	}
-	
+
 	private final AsyncTask<Void, Void, InputStream> mAsyncTask = new AsyncTask<Void, Void, InputStream>()
 	{
 		@Override
@@ -132,7 +132,7 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener
 			CommonUtils.sleepMaxTime(time, 500);
 			return input;
 		}
-		
+
 		@Override
 		protected void onPostExecute(InputStream result)
 		{
@@ -145,7 +145,7 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener
 			else ToastUtils.show(mListView.getContext(), R.string.message_unknown_error);
 		}
 	};
-	
+
 	@Override
 	public void onCancel(DialogInterface dialog)
 	{

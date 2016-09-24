@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,10 +36,10 @@ public class ArchiveAdapter extends BaseAdapter
 {
 	private final ArrayList<ThreadSummary> mArchiveItems = new ArrayList<>();
 	private final ArrayList<ThreadSummary> mFilteredArchiveItems = new ArrayList<>();
-	
+
 	private boolean mFilterMode = false;
 	private String mFilterText;
-	
+
 	/*
 	 * Returns true, if adapter isn't empty.
 	 */
@@ -65,7 +65,7 @@ public class ArchiveAdapter extends BaseAdapter
 		notifyDataSetChanged();
 		return !mFilterMode || mFilteredArchiveItems.size() > 0;
 	}
-	
+
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent)
 	{
@@ -83,25 +83,25 @@ public class ArchiveAdapter extends BaseAdapter
 		((TextView) convertView).setText(threadSummary.getDescription());
 		return convertView;
 	}
-	
+
 	@Override
 	public int getCount()
 	{
 		return (mFilterMode ? mFilteredArchiveItems : mArchiveItems).size();
 	}
-	
+
 	@Override
 	public ThreadSummary getItem(int position)
 	{
 		return (mFilterMode ? mFilteredArchiveItems : mArchiveItems).get(position);
 	}
-	
+
 	@Override
 	public long getItemId(int position)
 	{
 		return 0;
 	}
-	
+
 	public void setItems(ThreadSummary[] threadSummaries)
 	{
 		mArchiveItems.clear();

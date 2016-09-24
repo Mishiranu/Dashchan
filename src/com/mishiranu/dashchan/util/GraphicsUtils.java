@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,16 +40,16 @@ import com.mishiranu.dashchan.content.model.FileHolder;
 public class GraphicsUtils
 {
 	public static final Typeface TYPEFACE_MEDIUM = newTypeface("sans-serif-medium");
-	
+
 	private static final Random RANDOM = new Random(System.currentTimeMillis());
-	
+
 	private static Typeface newTypeface(String familyName)
 	{
 		return Typeface.create(familyName, Typeface.NORMAL);
 	}
-	
+
 	private static final float CONTRAST_GAIN = 2.5f;
-	
+
 	private static final ColorMatrixColorFilter CONTRAST_FILTER = new ColorMatrixColorFilter(new float[]
 	{
 		CONTRAST_GAIN, 0f, 0f, 0f, (1f - CONTRAST_GAIN) * 255f,
@@ -57,7 +57,7 @@ public class GraphicsUtils
 		0f, 0f, CONTRAST_GAIN, 0f, (1f - CONTRAST_GAIN) * 255f,
 		0f, 0f, 0f, 1f, 0f
 	});
-	
+
 	private static final ColorMatrixColorFilter BLACK_CHROMA_KEY_FILTER = new ColorMatrixColorFilter(new float[]
 	{
 		0f, 0f, 0f, 0f, 0f,
@@ -65,7 +65,7 @@ public class GraphicsUtils
 		0f, 0f, 0f, 0f, 0f,
 		-1f/3f, -1f/3f, -1f/3f, 0f, 255f
 	});
-	
+
 	public static final ColorMatrixColorFilter INVERT_FILTER = new ColorMatrixColorFilter(new float[]
 	{
 		-1f, 0f, 0f, 0f, 255f,
@@ -73,19 +73,19 @@ public class GraphicsUtils
 		0f, 0f, -1f, 0f, 255f,
 		0f, 0f, 0f, 1f, 0f
 	});
-	
+
 	public static int modifyColorGain(int color, float gain)
 	{
 		int r = Color.red(color), g = Color.green(color), b = Color.blue(color);
 		return Color.argb(Color.alpha(color), Math.min((int) (r * gain), 0xff), Math.min((int) (g * gain), 0xff),
 				Math.min((int) (b * gain), 0xff));
 	}
-	
+
 	public static boolean isLight(int color)
 	{
 		return (Color.red(color) + Color.green(color) + Color.blue(color)) / 3 >= 0x80;
 	}
-	
+
 	public static int mixColors(int background, int foreground)
 	{
 		int ba = Color.alpha(background), fa = Color.alpha(foreground);
@@ -95,7 +95,7 @@ public class GraphicsUtils
 		int b = (Color.blue(foreground) * fa + Color.blue(background) * ba * (0xff - fa) / 0xff) / a;
 		return Color.argb(Math.min(a, 0xff), Math.min(r, 0xff), Math.min(g, 0xff), Math.min(b, 0xff));
 	}
-	
+
 	public static int getDrawableColor(Context context, Drawable drawable, int gravity)
 	{
 		float density = ResourceUtils.obtainDensity(context);
@@ -150,13 +150,13 @@ public class GraphicsUtils
 			bitmap.recycle();
 		}
 	}
-	
+
 	public static Bitmap reduceThumbnailSize(Resources resources, Bitmap bitmap)
 	{
 		int newSize = (int) (72f * ResourceUtils.obtainDensity(resources));
 		return reduceBitmapSize(bitmap, newSize, true);
 	}
-	
+
 	public static Bitmap reduceBitmapSize(Bitmap bitmap, int newSize, boolean recycleOld)
 	{
 		int width = bitmap.getWidth();
@@ -168,53 +168,53 @@ public class GraphicsUtils
 		if (recycleOld && resizedBitmap != bitmap) bitmap.recycle();
 		return resizedBitmap;
 	}
-	
+
 	public static class Reencoding
 	{
 		public static final String FORMAT_JPEG = "jpeg";
 		public static final String FORMAT_PNG = "png";
-		
+
 		public final String format;
 		public final int quality;
 		public final int reduce;
-		
+
 		public Reencoding(String format, int quality, int reduce)
 		{
 			this.format = FORMAT_JPEG.equals(format) || FORMAT_PNG.equals(format) ? format : FORMAT_JPEG;
 			this.quality = quality > 100 ? 100 : quality < 1 ? 1 : quality;
 			this.reduce = reduce > 8 ? 8 : reduce < 1 ? 1 : reduce;
 		}
-		
+
 		public static boolean allowQuality(String format)
 		{
 			return FORMAT_JPEG.equals(format);
 		}
 	}
-	
+
 	public static boolean canRemoveMetadata(FileHolder fileHolder)
 	{
 		return fileHolder.getImageType() == FileHolder.ImageType.IMAGE_JPEG
 				|| fileHolder.getImageType() == FileHolder.ImageType.IMAGE_PNG;
 	}
-	
+
 	public static class SkipRange
 	{
 		public final int start;
 		public final int count;
-		
+
 		private SkipRange(int start, int count)
 		{
 			this.start = start;
 			this.count = count;
 		}
 	}
-	
+
 	public static class TransformationData
 	{
 		public final ArrayList<SkipRange> skipRanges;
 		public final byte[] decodedBytes;
 		public final String newFileName;
-		
+
 		private TransformationData(ArrayList<SkipRange> skipRanges, byte[] decodedBytes, String newFileName)
 		{
 			this.skipRanges = skipRanges;
@@ -222,7 +222,7 @@ public class GraphicsUtils
 			this.newFileName = newFileName;
 		}
 	}
-	
+
 	public static TransformationData transformImageForPosting(FileHolder fileHolder, String fileName,
 			boolean removeMetadata, Reencoding reencoding)
 	{
@@ -337,7 +337,7 @@ public class GraphicsUtils
 		}
 		catch (IOException e)
 		{
-			
+
 		}
 		finally
 		{
@@ -347,18 +347,18 @@ public class GraphicsUtils
 			}
 			catch (Exception e)
 			{
-				
+
 			}
 		}
 		return skipRanges != null || decodedBytes != null || newFileName != null
 				? new TransformationData(skipRanges, decodedBytes, newFileName) : null;
 	}
-	
+
 	public static boolean isUselessPngChunk(String name)
 	{
 		return "iTXt".equals(name) || "tEXt".equals(name) || "tIME".equals(name) || "zTXt".equals(name);
 	}
-	
+
 	public static boolean isBlackAndWhiteCaptchaImage(Bitmap image)
 	{
 		if (image != null)
@@ -388,12 +388,12 @@ public class GraphicsUtils
 		}
 		return false;
 	}
-	
+
 	public static Pair<Bitmap, Boolean> handleBlackAndWhiteCaptchaImage(Bitmap image)
 	{
 		return handleBlackAndWhiteCaptchaImage(image, null, 0, 0);
 	}
-	
+
 	public static Pair<Bitmap, Boolean> handleBlackAndWhiteCaptchaImage(Bitmap image, Bitmap overlay,
 			int overlayX, int overlayY)
 	{
@@ -419,7 +419,7 @@ public class GraphicsUtils
 		}
 		return new Pair<>(null, false);
 	}
-	
+
 	public static Bitmap generateNoise(int size, int scale, int colorFrom, int colorTo)
 	{
 		int aFrom = Color.alpha(colorFrom);

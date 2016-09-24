@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -67,7 +67,7 @@ import com.mishiranu.dashchan.util.ToastUtils;
 public class ChanFragment extends BasePreferenceFragment
 {
 	private String mChanName;
-	
+
 	private EditTextPreference mDefaultBoardPreference;
 	private MultipleEditTextPreference mCaptchaPassPreference;
 	private MultipleEditTextPreference mUserAuthorizationPreference;
@@ -77,14 +77,14 @@ public class ChanFragment extends BasePreferenceFragment
 	private CheckBoxPreference mUseHttpsPreference;
 	private MultipleEditTextPreference mProxyPreference;
 	private Preference mUninstallExtensionPreference;
-	
+
 	private HashSet<String> mCustomPreferenceKeys;
-	
+
 	private static String VALUE_CUSTOM_DOMAIN = "custom_domain\n";
 	private static String EXTRA_ANOTHER_DOMAIN_MODE = "another_domain_mode";
-	
+
 	private boolean mAnotherDomainMode = false;
-	
+
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
@@ -102,7 +102,7 @@ public class ChanFragment extends BasePreferenceFragment
 		getActivity().setTitle(configuration.getTitle());
 		ChanConfiguration.Board board = configuration.safe().obtainBoard(null);
 		ChanConfiguration.Deleting deleting = board.allowDeleting ? configuration.safe().obtainDeleting(null) : null;
-		
+
 		if (!configuration.getOption(ChanConfiguration.OPTION_SINGLE_BOARD_MODE))
 		{
 			mDefaultBoardPreference = makeEditText(null, Preferences.KEY_DEFAULT_BOARD_NAME.bind(chanName), null,
@@ -181,7 +181,7 @@ public class ChanFragment extends BasePreferenceFragment
 			intent.putExtra(C.EXTRA_CHAN_NAME, chanName);
 			preference.setIntent(intent);
 		}
-		
+
 		PreferenceCategory connectionCategory = makeCategory(R.string.preference_category_connection);
 		ArrayList<String> domains = locator.getChanHosts(true);
 		mAnotherDomainMode = !domains.contains(locator.getPreferredHost()) || domains.size() == 1 ||
@@ -226,21 +226,21 @@ public class ChanFragment extends BasePreferenceFragment
 					Preferences.DEFAULT_PARTIAL_THREAD_LOADING, R.string.preference_partial_thread_loading,
 					R.string.preference_partial_thread_loading_summary);
 		}
-		
+
 		PreferenceCategory additionalCategory = makeCategory(R.string.preference_category_additional);
 		mUninstallExtensionPreference = makeButton(additionalCategory, R.string.preference_uninstall_extension,
 				0, false);
-		
+
 		if (mDefaultBoardPreference != null) updateDefaultBoardSummary();
 	}
-	
+
 	@Override
 	public void onSaveInstanceState(Bundle outState)
 	{
 		super.onSaveInstanceState(outState);
 		outState.putBoolean(EXTRA_ANOTHER_DOMAIN_MODE, mAnotherDomainMode);
 	}
-	
+
 	@Override
 	public boolean onPreferenceChange(Preference preference, Object newValue)
 	{
@@ -315,7 +315,7 @@ public class ChanFragment extends BasePreferenceFragment
 		}
 		return super.onPreferenceChange(preference, newValue);
 	}
-	
+
 	@Override
 	public boolean onPreferenceClick(Preference preference)
 	{
@@ -337,7 +337,7 @@ public class ChanFragment extends BasePreferenceFragment
 		}
 		return super.onPreferenceClick(preference);
 	}
-	
+
 	@Override
 	public void onPreferenceAfterChange(Preference preference)
 	{
@@ -365,7 +365,7 @@ public class ChanFragment extends BasePreferenceFragment
 			}
 		}
 	}
-	
+
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data)
 	{
@@ -375,7 +375,7 @@ public class ChanFragment extends BasePreferenceFragment
 		}
 		super.onActivityResult(requestCode, resultCode, data);
 	}
-	
+
 	private void updateDefaultBoardSummary()
 	{
 		EditTextPreference preference = mDefaultBoardPreference;
@@ -392,23 +392,23 @@ public class ChanFragment extends BasePreferenceFragment
 		}
 		preference.setSummary(text);
 	}
-	
+
 	private static final int AUTHORIZATION_TYPE_CAPTCHA_PASS = 0;
 	private static final int AUTHORIZATION_TYPE_USER = 1;
-	
+
 	public static class AuthorizationFragment extends DialogFragment implements AsyncManager.Callback
 	{
 		private static final String TASK_CHECK_AUTHORIZATION = "check_authorization";
-		
+
 		private static final String EXTRA_CHAN_NAME = "chanName";
 		private static final String EXTRA_AUTHORIZATION_TYPE = "authorizationType";
 		private static final String EXTRA_AUTHORIZATION_DATA = "authorizationData";
-		
+
 		public AuthorizationFragment()
 		{
-			
+
 		}
-		
+
 		public AuthorizationFragment(String chanName, int authorizationType, String[] authorizationData)
 		{
 			Bundle args = new Bundle();
@@ -417,14 +417,14 @@ public class ChanFragment extends BasePreferenceFragment
 			args.putStringArray(EXTRA_AUTHORIZATION_DATA, authorizationData);
 			setArguments(args);
 		}
-		
+
 		@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
 		public void show(Fragment parent)
 		{
 			show(C.API_JELLY_BEAN_MR1 ? parent.getChildFragmentManager() : parent.getFragmentManager(),
 					getClass().getName());
 		}
-		
+
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState)
 		{
@@ -433,21 +433,21 @@ public class ChanFragment extends BasePreferenceFragment
 			dialog.setMessage(getString(R.string.message_loading));
 			return dialog;
 		}
-		
+
 		@Override
 		public void onActivityCreated(Bundle savedInstanceState)
 		{
 			super.onActivityCreated(savedInstanceState);
 			AsyncManager.get(this).startTask(TASK_CHECK_AUTHORIZATION, this, null, false);
 		}
-		
+
 		@Override
 		public void onCancel(DialogInterface dialog)
 		{
 			super.onCancel(dialog);
 			AsyncManager.get(this).cancelTask(TASK_CHECK_AUTHORIZATION, this);
 		}
-		
+
 		@Override
 		public Pair<Object, AsyncManager.Holder> onCreateAndExecuteTask(String name, HashMap<String, Object> extra)
 		{
@@ -457,7 +457,7 @@ public class ChanFragment extends BasePreferenceFragment
 			task.executeOnExecutor(CheckAuthorizationTask.THREAD_POOL_EXECUTOR);
 			return task.getPair();
 		}
-		
+
 		@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
 		@Override
 		public void onFinishTaskExecution(String name, AsyncManager.Holder holder)
@@ -501,32 +501,32 @@ public class ChanFragment extends BasePreferenceFragment
 				}
 			}
 		}
-		
+
 		@Override
 		public void onRequestTaskCancel(String name, Object task)
 		{
 			((CheckAuthorizationTask) task).cancel();
 		}
 	}
-	
+
 	private static class CheckAuthorizationTask extends AsyncManager.SimpleTask<Void, Void, Void>
 	{
 		private final HttpHolder mHolder = new HttpHolder();
-		
+
 		private final String mChanName;
 		private final int mAuthorizationType;
 		private final String[] mAuthorizationData;
-		
+
 		private boolean mValid;
 		private ErrorItem mErrorItem;
-		
+
 		public CheckAuthorizationTask(String chanName, int authorizationType, String[] authorizationData)
 		{
 			mChanName = chanName;
 			mAuthorizationType = authorizationType;
 			mAuthorizationData = authorizationData;
 		}
-		
+
 		@Override
 		public Void doInBackground(Void... params)
 		{
@@ -561,13 +561,13 @@ public class ChanFragment extends BasePreferenceFragment
 			}
 			return null;
 		}
-		
+
 		@Override
 		protected void onStoreResult(AsyncManager.Holder holder, Void result)
 		{
 			holder.storeResult(mValid, mErrorItem);
 		}
-		
+
 		@Override
 		public void cancel()
 		{

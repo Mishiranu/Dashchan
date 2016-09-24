@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,29 +29,29 @@ public class ListScroller implements Runnable
 {
 	private static final int SCROLL_DURATION = 250;
 	private static final int MIN_SCROLL_DURATION = 10;
-	
+
 	private final ListView mListView;
 	private final int mAdditionalScroll;
-	
+
 	private int mScrollDuration;
 	private int mToPosition;
 	private int mCurrentPosition;
-	
+
 	private boolean mIdleState;
 	private long mIdleStart;
 	private int mIdleTop;
-	
+
 	private ListScroller(ListView listView)
 	{
 		mListView = listView;
 		mAdditionalScroll = (int) (16f * ResourceUtils.obtainDensity(listView));
 	}
-	
+
 	public static int getJumpThreshold(Context context)
 	{
 		return context.getResources().getConfiguration().screenHeightDp / 40;
 	}
-	
+
 	private static ListScroller getListScroller(ListView listView, boolean mayCreate)
 	{
 		ListScroller listScroller = (ListScroller) listView.getTag(R.id.seek_bar);
@@ -62,24 +62,24 @@ public class ListScroller implements Runnable
 		}
 		return listScroller;
 	}
-	
+
 	public static void cancel(ListView listView)
 	{
 		ListScroller listScroller = getListScroller(listView, false);
 		if (listScroller != null) listScroller.cancel();
 	}
-	
+
 	private void cancel()
 	{
 		mListView.removeCallbacks(this);
 		ListViewUtils.cancelListFling(mListView);
 	}
-	
+
 	public static void scrollTo(ListView listView, int position)
 	{
 		getListScroller(listView, true).scrollTo(position);
 	}
-	
+
 	private void scrollTo(int position)
 	{
 		cancel();
@@ -99,7 +99,7 @@ public class ListScroller implements Runnable
 		}
 		else mListView.setSelection(position);
 	}
-	
+
 	@Override
 	public void run()
 	{

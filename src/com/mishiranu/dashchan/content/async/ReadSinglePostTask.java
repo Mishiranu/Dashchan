@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,15 +37,15 @@ public class ReadSinglePostTask extends HttpHolderTask<Void, Void, PostItem>
 	private final String mBoardName;
 	private final String mChanName;
 	private final String mPostNumber;
-	
+
 	private ErrorItem mErrorItem;
-	
+
 	public interface Callback
 	{
 		public void onReadSinglePostSuccess(PostItem postItem);
 		public void onReadSinglePostFail(ErrorItem errorItem);
 	}
-	
+
 	public ReadSinglePostTask(Callback callback, String chanName, String boardName, String postNumber)
 	{
 		mCallback = callback;
@@ -53,7 +53,7 @@ public class ReadSinglePostTask extends HttpHolderTask<Void, Void, PostItem>
 		mChanName = chanName;
 		mPostNumber = postNumber;
 	}
-	
+
 	@Override
 	protected PostItem doInBackground(Void... params)
 	{
@@ -87,7 +87,7 @@ public class ReadSinglePostTask extends HttpHolderTask<Void, Void, PostItem>
 		}
 		return null;
 	}
-	
+
 	@Override
 	protected void onPostExecute(PostItem result)
 	{

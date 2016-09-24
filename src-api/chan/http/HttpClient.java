@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -79,14 +79,14 @@ import com.mishiranu.dashchan.util.Log;
 public class HttpClient
 {
 	private static final int MAX_ATTEMPS_COUNT = 10;
-	
+
 	private static final HashMap<String, String> SHORT_RESPONSE_MESSAGES = new HashMap<>();
-	
+
 	private static final HostnameVerifier DEFAULT_HOSTNAME_VERIFIER = HttpsURLConnection.getDefaultHostnameVerifier();
 	private static final HostnameVerifier ALLOW_ALL_HOSTNAME_VERIFIER = new AllowAllHostnameVerifier();
-	
+
 	private static final int HTTP_TEMPORARY_REDIRECT = 307;
-	
+
 	static
 	{
 		int poolSize = (ChanManager.getInstance().getAllChanNames().size() + 1) * 2;
@@ -102,12 +102,12 @@ public class HttpClient
 		}
 		catch (Exception e)
 		{
-			
+
 		}
-		
+
 		SHORT_RESPONSE_MESSAGES.put("Internal Server Error", "Internal Error");
 		SHORT_RESPONSE_MESSAGES.put("Service Temporarily Unavailable", "Service Unavailable");
-		
+
 		if (Preferences.isUseGmsProvider())
 		{
 			try
@@ -122,20 +122,20 @@ public class HttpClient
 			}
 			catch (Exception e)
 			{
-				
+
 			}
 		}
-		
+
 		/*
 		 * MediaPlayer uses MediaHTTPConnection that uses its own CookieHandler instance.
 		 * This cause some bugs in application work.
-		 * 
+		 *
 		 * This CookieHandler doesn't allow app to store cookies when chan HttpClient used.
 		 */
 		CookieHandler.setDefault(new CookieHandler()
 		{
 			private final CookieManager mCookieManager = new CookieManager();
-			
+
 			private boolean isInternalRequest()
 			{
 				StackTraceElement[] elements = Thread.currentThread().getStackTrace();
@@ -145,14 +145,14 @@ public class HttpClient
 				}
 				return false;
 			}
-			
+
 			@Override
 			public void put(URI uri, Map<String, List<String>> responseHeaders) throws IOException
 			{
 				if (isInternalRequest()) return;
 				mCookieManager.put(uri, responseHeaders);
 			}
-			
+
 			@Override
 			public Map<String, List<String>> get(URI uri, Map<String, List<String>> requestHeaders) throws IOException
 			{
@@ -161,17 +161,17 @@ public class HttpClient
 			}
 		});
 	}
-	
+
 	private static final HttpClient INSTANCE = new HttpClient();
-	
+
 	public static HttpClient getInstance()
 	{
 		return INSTANCE;
 	}
-	
+
 	private final HashMap<String, Proxy> mProxies = new HashMap<>();
 	private boolean mUseNoSSLv3SSLSocketFactory = false;
-	
+
 	private HttpClient()
 	{
 		for (String chanName : ChanManager.getInstance().getAllChanNames())
@@ -189,7 +189,7 @@ public class HttpClient
 			if (proxy != null) mProxies.put(chanName, proxy);
 		}
 	}
-	
+
 	private Proxy initProxy(String chanName, boolean throwIfNotValid) throws Exception
 	{
 		Proxy proxy = null;
@@ -209,7 +209,7 @@ public class HttpClient
 		}
 		return proxy;
 	}
-	
+
 	public boolean updateProxy(String chanName)
 	{
 		Proxy proxy;
@@ -224,7 +224,7 @@ public class HttpClient
 		if (proxy != null) mProxies.put(chanName, proxy); else mProxies.remove(chanName);
 		return true;
 	}
-	
+
 	private static class AllowAllHostnameVerifier implements HostnameVerifier
 	{
 		@SuppressLint("BadHostnameVerifier")
@@ -234,12 +234,12 @@ public class HttpClient
 			return true;
 		}
 	}
-	
+
 	static final class DisconnectedIOException extends IOException
 	{
 		private static final long serialVersionUID = 1L;
 	}
-	
+
 	void execute(HttpRequest request) throws HttpException
 	{
 		String chanName = ChanManager.getInstance().getChanNameByHost(request.mUri.getAuthority());
@@ -248,7 +248,7 @@ public class HttpClient
 		request.mHolder.initRequest(request, mProxies.get(chanName), chanName, verifyCertificate, MAX_ATTEMPS_COUNT);
 		executeInternal(request);
 	}
-	
+
 	private void encodeUriBufferPart(StringBuilder uriStringBuilder, char[] chars, int i, int start, boolean ascii)
 	{
 		if (!ascii)
@@ -264,12 +264,12 @@ public class HttpClient
 			}
 			catch (Exception e)
 			{
-				
+
 			}
 		}
 		else uriStringBuilder.append(chars, start, i - start);
 	}
-	
+
 	private void encodeUriAppend(StringBuilder uriStringBuilder, String part)
 	{
 		char[] chars = part.toCharArray();
@@ -288,7 +288,7 @@ public class HttpClient
 		}
 		encodeUriBufferPart(uriStringBuilder, chars, chars.length, start, ascii);
 	}
-	
+
 	private URL encodeUri(Uri uri) throws MalformedURLException
 	{
 		StringBuilder uriStringBuilder = new StringBuilder();
@@ -307,7 +307,7 @@ public class HttpClient
 		}
 		return new URL(uriStringBuilder.toString());
 	}
-	
+
 	@TargetApi(Build.VERSION_CODES.KITKAT)
 	private void executeInternal(HttpRequest request) throws HttpException
 	{
@@ -331,7 +331,7 @@ public class HttpClient
 			}
 			holder.setConnection(connection, request.mInputListener, request.mOutputStream);
 			String chanName = holder.mChanName;
-			
+
 			connection.setUseCaches(false);
 			connection.setConnectTimeout(request.mConnectTimeout);
 			connection.setReadTimeout(request.mReadTimeout);
@@ -356,7 +356,7 @@ public class HttpClient
 			if (cookieBuilder != null) connection.setRequestProperty("Cookie", cookieBuilder.build());
 			HttpValidator validator = request.mValidator;
 			if (validator != null) validator.write(connection);
-			
+
 			boolean forceGet = holder.mForceGet;
 			int method = forceGet ? HttpRequest.REQUEST_METHOD_GET : request.mRequestMethod;
 			RequestEntity entity = forceGet ? null : request.mRequestEntity;
@@ -389,7 +389,7 @@ public class HttpClient
 				output.close();
 				holder.checkDisconnected();
 			}
-			
+
 			int responseCode = connection.getResponseCode();
 			HttpRequest.RedirectHandler redirectHandler = request.mRedirectHandler;
 			switch (responseCode)
@@ -482,7 +482,7 @@ public class HttpClient
 					throw new HttpException(responseCode, holder.getResponseMessage());
 				}
 			}
-			
+
 			if (validator != null && responseCode == HttpURLConnection.HTTP_NOT_MODIFIED)
 			{
 				String responseMessage = connection.getResponseMessage();
@@ -537,7 +537,7 @@ public class HttpClient
 			throw new HttpException(ErrorItem.TYPE_DOWNLOAD, false, true, e);
 		}
 	}
-	
+
 	HttpResponse read(HttpHolder holder) throws HttpException
 	{
 		try
@@ -616,7 +616,7 @@ public class HttpClient
 			holder.disconnectAndClear();
 		}
 	}
-	
+
 	void checkResponseCode(HttpHolder holder) throws HttpException
 	{
 		int responseCode = holder.getResponseCode();
@@ -631,14 +631,14 @@ public class HttpClient
 			throw new HttpException(responseCode, message);
 		}
 	}
-	
+
 	private void checkExceptionAndThrow(IOException exception) throws HttpException
 	{
 		Log.persistent().stack(exception);
 		int errorType = getErrorTypeForException(exception);
 		if (errorType != 0) throw new HttpException(errorType, false, true, exception);
 	}
-	
+
 	private int getErrorTypeForException(IOException exception)
 	{
 		if (isConnectionReset(exception)) return ErrorItem.TYPE_CONNECTION_RESET;
@@ -673,7 +673,7 @@ public class HttpClient
 		if (exception instanceof SocketTimeoutException) return ErrorItem.TYPE_READ_TIMEOUT;
 		return 0;
 	}
-	
+
 	private boolean isConnectionReset(IOException exception)
 	{
 		if (exception instanceof EOFException) return true;
@@ -682,23 +682,23 @@ public class HttpClient
 				|| message.contains("Connection closed by peer") || message.contains("unexpected end of stream")
 				|| message.contains("Connection refused"));
 	}
-	
+
 	public static InputStream wrapWithProgressListener(InputStream input, HttpHolder.InputListener listener,
 			long contentLength)
 	{
 		return new ClientInputStream(input, new HttpHolder(), listener, contentLength);
 	}
-	
+
 	private static class ClientInputStream extends InputStream
 	{
 		private final InputStream mInput;
 		private final HttpHolder mHolder;
-		
+
 		private final HttpHolder.InputListener mListener;
 		private final long mContentLength;
-		
+
 		private volatile long mProgress;
-		
+
 		public ClientInputStream(InputStream input, HttpHolder holder,
 				HttpHolder.InputListener listener, long contentLength)
 		{
@@ -708,7 +708,7 @@ public class HttpClient
 			mContentLength = contentLength;
 			if (mListener != null) mListener.onInputProgressChange(0, contentLength);
 		}
-		
+
 		@Override
 		public int read() throws IOException
 		{
@@ -717,13 +717,13 @@ public class HttpClient
 			updateProgress(value);
 			return value;
 		}
-		
+
 		@Override
 		public int read(byte[] b) throws IOException
 		{
 			return read(b, 0, b.length);
 		}
-		
+
 		@Override
 		public int read(byte[] b, int off, int len) throws IOException
 		{
@@ -732,7 +732,7 @@ public class HttpClient
 			updateProgress(value);
 			return value;
 		}
-		
+
 		@Override
 		public long skip(long n) throws IOException
 		{
@@ -741,7 +741,7 @@ public class HttpClient
 			updateProgress(value);
 			return value;
 		}
-		
+
 		private void updateProgress(long value)
 		{
 			if (mListener != null && value > 0)
@@ -750,49 +750,49 @@ public class HttpClient
 				mListener.onInputProgressChange(mProgress, mContentLength);
 			}
 		}
-		
+
 		@Override
 		public int available() throws IOException
 		{
 			mHolder.checkDisconnected(this);
 			return mInput.available();
 		}
-		
+
 		@Override
 		public void close() throws IOException
 		{
 			mInput.close();
 		}
-		
+
 		@Override
 		public void mark(int readlimit)
 		{
 			mInput.mark(readlimit);
 		}
-		
+
 		@Override
 		public boolean markSupported()
 		{
 			return mInput.markSupported();
 		}
-		
+
 		@Override
 		public synchronized void reset() throws IOException
 		{
 			mInput.reset();
 		}
 	}
-	
+
 	private static class ClientOutputStream extends OutputStream
 	{
 		private final OutputStream mOutput;
 		private final HttpHolder mHolder;
-		
+
 		private final HttpRequest.OutputListener mListener;
 		private final long mContentLength;
-		
+
 		private volatile long mProgress;
-		
+
 		public ClientOutputStream(OutputStream output, HttpHolder holder, HttpRequest.OutputListener listener,
 				long contentLength)
 		{
@@ -802,7 +802,7 @@ public class HttpClient
 			mContentLength = contentLength;
 			if (mListener != null) mListener.onOutputProgressChange(0, contentLength);
 		}
-		
+
 		@Override
 		public void write(int oneByte) throws IOException
 		{
@@ -810,7 +810,7 @@ public class HttpClient
 			mOutput.write(oneByte);
 			updateProgress(1);
 		}
-		
+
 		@Override
 		public void write(byte[] buffer) throws IOException
 		{
@@ -818,7 +818,7 @@ public class HttpClient
 			mOutput.write(buffer);
 			updateProgress(buffer.length);
 		}
-		
+
 		@Override
 		public void write(byte[] buffer, int offset, int length) throws IOException
 		{
@@ -826,7 +826,7 @@ public class HttpClient
 			mOutput.write(buffer, offset, length);
 			updateProgress(length);
 		}
-		
+
 		private void updateProgress(long value)
 		{
 			if (mListener != null && value > 0)
@@ -835,13 +835,13 @@ public class HttpClient
 				mListener.onOutputProgressChange(mProgress, mContentLength);
 			}
 		}
-		
+
 		@Override
 		public void close() throws IOException
 		{
 			mOutput.close();
 		}
-		
+
 		@Override
 		public void flush() throws IOException
 		{
@@ -849,21 +849,21 @@ public class HttpClient
 			mOutput.flush();
 		}
 	}
-	
+
 	/*private static class DelayLock
 	{
 		public HttpURLConnection active = null;
 	}
-	
+
 	private final HashMap<String, DelayLock> mDelayLocks = new HashMap<>();*/
-	
+
 	private static class DelayLock
 	{
 		public boolean locked = false;
 	}
-	
+
 	private final HashMap<String, DelayLock> mDelayLocks = new HashMap<>();
-	
+
 	void onConnect(HttpURLConnection connection, int delay)
 	{
 		if (delay > 0)
@@ -908,63 +908,63 @@ public class HttpClient
 			}
 		}
 	}
-	
+
 	void onDisconnect(HttpURLConnection connection)
 	{
-		
+
 	}
-	
+
 	private static class NoSSLv3SSLSocketFactory extends SSLSocketFactory
 	{
 		private final SSLSocketFactory mWrapped;
-		
+
 		public NoSSLv3SSLSocketFactory(SSLSocketFactory sslSocketFactory)
 		{
 			mWrapped = sslSocketFactory;
 		}
-		
+
 		private Socket wrap(Socket socket)
 		{
 			if (socket instanceof SSLSocket) socket = new NoSSLv3SSLSocket((SSLSocket) socket);
 			return socket;
 		}
-		
+
 		@Override
 		public String[] getDefaultCipherSuites()
 		{
 			return mWrapped.getDefaultCipherSuites();
 		}
-		
+
 		@Override
 		public String[] getSupportedCipherSuites()
 		{
 			return mWrapped.getSupportedCipherSuites();
 		}
-		
+
 		@Override
 		public Socket createSocket(Socket s, String host, int port, boolean autoClose) throws IOException
 		{
 			return wrap(mWrapped.createSocket(s, host, port, autoClose));
 		}
-		
+
 		@Override
 		public Socket createSocket(String host, int port) throws IOException
 		{
 			return wrap(mWrapped.createSocket(host, port));
 		}
-		
+
 		@Override
 		public Socket createSocket(InetAddress address, int port) throws IOException
 		{
 			return wrap(mWrapped.createSocket(address, port));
 		}
-		
+
 		@Override
 		public Socket createSocket(String host, int port, InetAddress localAddress, int localPort) throws IOException
 		{
 			return wrap(mWrapped.createSocket(host, port, localAddress, localPort));
 		}
-		
+
 		@Override
 		public Socket createSocket(InetAddress address, int port, InetAddress localAddress, int localPort)
 				throws IOException
@@ -972,7 +972,7 @@ public class HttpClient
 			return wrap(mWrapped.createSocket(address, port, localAddress, localPort));
 		}
 	}
-	
+
 	private static class NoSSLv3SSLSocket extends SSLSocketWrapper
 	{
 		public NoSSLv3SSLSocket(SSLSocket socket)
@@ -984,10 +984,10 @@ public class HttpClient
 			}
 			catch (Exception e)
 			{
-				
+
 			}
 		}
-		
+
 		@Override
 		public void setEnabledProtocols(String[] protocols)
 		{

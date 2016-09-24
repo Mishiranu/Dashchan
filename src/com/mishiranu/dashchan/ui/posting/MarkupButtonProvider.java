@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -51,7 +51,7 @@ public class MarkupButtonProvider
 
 	public final String mText;
 	private final Object mSpan;
-	
+
 	private MarkupButtonProvider(int tag, int widthDp, int priority, String text, Object span)
 	{
 		this.tag = tag;
@@ -60,7 +60,7 @@ public class MarkupButtonProvider
 		mText = text;
 		mSpan = span;
 	}
-	
+
 	public Button createButton(Context context, int defStyleAttr)
 	{
 		return new Button(context, null, defStyleAttr)
@@ -73,12 +73,12 @@ public class MarkupButtonProvider
 			}
 		};
 	}
-	
+
 	public Object getSpan(Context context)
 	{
 		return mSpan;
 	}
-	
+
 	public void applyTextAndStyle(Button button)
 	{
 		Object span = getSpan(button.getContext());
@@ -90,7 +90,7 @@ public class MarkupButtonProvider
 		}
 		else button.setText(mText);
 	}
-	
+
 	public static Pair<Integer, Integer> obtainSupportedAndDisplayedTags(ChanMarkup markup, String boardName,
 			float density, int maxButtonsWidth, int buttonMarginLeft)
 	{
@@ -126,7 +126,7 @@ public class MarkupButtonProvider
 		}
 		return new Pair<>(supportedTags, displayedTags);
 	}
-	
+
 	public static Iterable<MarkupButtonProvider> iterable(int displayedTags)
 	{
 		return () -> new Iterator<MarkupButtonProvider>()
@@ -134,7 +134,7 @@ public class MarkupButtonProvider
 			private int mDisplayedTags = displayedTags;
 			private MarkupButtonProvider mNext;
 			private int mLast = -1;
-			
+
 			@Override
 			public boolean hasNext()
 			{
@@ -154,7 +154,7 @@ public class MarkupButtonProvider
 				}
 				return mNext != null;
 			}
-			
+
 			@Override
 			public MarkupButtonProvider next()
 			{
@@ -163,7 +163,7 @@ public class MarkupButtonProvider
 				mNext = null;
 				return provider;
 			}
-			
+
 			@Override
 			public void remove()
 			{
@@ -171,9 +171,9 @@ public class MarkupButtonProvider
 			}
 		};
 	}
-	
+
 	private static final ArrayList<MarkupButtonProvider> PROVIDERS = new ArrayList<>();
-	
+
 	static
 	{
 		PROVIDERS.add(new MarkupButtonProvider(ChanMarkup.TAG_BOLD, 40, 0, "B", new StyleSpan(Typeface.BOLD)));

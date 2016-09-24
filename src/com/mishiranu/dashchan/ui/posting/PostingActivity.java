@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -128,7 +128,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	private String mThreadNumber;
 	private ChanConfiguration.Posting mPostingConfiguration;
 	private CommentEditor mCommentEditor;
-	
+
 	private String mCaptchaType;
 	private ChanPerformer.CaptchaState mCaptchaState;
 	private ChanPerformer.CaptchaData mCaptchaData;
@@ -141,10 +141,10 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	private long mCaptchaLoadTime;
 	private List<Pair<String, String>> mUserIconItems;
 	private List<Pair<String, String>> mAttachmentRatingItems;
-	
+
 	private boolean mStoreDraftOnFinish = true;
 	private boolean mWatchTripcodeWarning = false;
-	
+
 	private ResizingScrollView mScrollView;
 	private EditText mCommentView;
 	private CheckBox mSageCheckBox;
@@ -159,22 +159,22 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	private ViewGroup mTextFormatView;
 	private TextView mTripcodeWarning;
 	private TextView mRemainingCharacters;
-	
+
 	private final CaptchaForm mCaptchaForm = new CaptchaForm(this);
 	private Button mSendButton;
 	private int mAttachmentColumnCount;
-	
+
 	private final ArrayList<AttachmentHolder> mAttachments = new ArrayList<>();
-	
+
 	private final ClickableToast.Holder mClickableToastHolder = new ClickableToast.Holder(this);
-	
+
 	private PostingService.Binder mPostingServiceBinder;
 
 	private static final String EXTRA_SAVED_POST_DRAFT = "ExtraSavedPostDraft";
 	private static final String EXTRA_SAVED_CAPTCHA = "ExtraSavedCaptcha";
-	
+
 	private static final String TASK_READ_CAPTCHA = "read_captcha";
-	
+
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -236,7 +236,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		}
 		boolean hugeCaptcha = Preferences.isHugeCaptcha();
 		boolean longLayout = configuration.screenWidthDp >= 480;
-		
+
 		setContentView(R.layout.activity_posting);
 		ClickableToast.register(mClickableToastHolder);
 		if (C.API_LOLLIPOP)
@@ -274,7 +274,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		}
 		else mIconView.setVisibility(View.GONE);
 		new MarkupButtonsBuilder();
-		
+
 		boolean longFooter = longLayout && !hugeCaptcha;
 		int resId = longFooter ? R.layout.activity_posting_footer_long : R.layout.activity_posting_footer_common;
 		FrameLayout footerContainer = (FrameLayout) findViewById(R.id.footer_container);
@@ -286,7 +286,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		mSendButton = (Button) footerContainer.findViewById(R.id.send_button);
 		mSendButton.setOnClickListener(this);
 		mAttachmentColumnCount = configuration.screenWidthDp >= 960 ? 4 : configuration.screenWidthDp >= 480 ? 2 : 1;
-		
+
 		mNameView.setVisibility(posting.allowName ? View.VISIBLE : View.GONE);
 		mEmailView.setVisibility(posting.allowEmail ? View.VISIBLE : View.GONE);
 		mPasswordView.setVisibility(needPassword ? View.VISIBLE : View.GONE);
@@ -305,10 +305,10 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 					!needPassword && mUserIconItems == null;
 		}
 		if (hidePersonalDataBlock) findViewById(R.id.personal_data_block).setVisibility(View.GONE);
-		
+
 		StringBuilder builder = new StringBuilder();
 		int commentCarriage = 0;
-		
+
 		DraftsStorage.PostDraft postDraft;
 		if (savedInstanceState != null && savedInstanceState.containsKey(EXTRA_SAVED_POST_DRAFT))
 		{
@@ -367,7 +367,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 				mIconView.setSelection(index);
 			}
 		}
-		
+
 		boolean captchaRestoreSuccess = false;
 		if (savedInstanceState != null && savedInstanceState.containsKey(EXTRA_SAVED_CAPTCHA))
 		{
@@ -451,7 +451,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 				}
 			}
 		}
-		
+
 		Parcelable[] parcelableArray = savedInstanceState != null ? null
 				: getIntent().getParcelableArrayExtra(C.EXTRA_REPLY_DATA);
 		if (parcelableArray != null)
@@ -488,7 +488,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 							{
 								if (charBefore == ' ' && onlyLinks) afterSpace = true; else
 								{
-									// Ensure free line before link 
+									// Ensure free line before link
 									builder.insert(commentCarriage++, '\n');
 								}
 							}
@@ -535,13 +535,13 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 				}
 			}
 		}
-		
+
 		mCommentView.setText(builder);
 		mCommentView.setSelection(commentCarriage);
 		mCommentView.requestFocus();
 		setTitle(StringUtils.isEmpty(mThreadNumber) ? R.string.text_new_thread : R.string.text_new_post);
 		if (!captchaRestoreSuccess) refreshCaptcha(false, true, false);
-		
+
 		PostingService.FailResult failResult = savedInstanceState != null ? null
 				: (PostingService.FailResult) getIntent().getSerializableExtra(C.EXTRA_FAIL_RESULT);
 		if (failResult != null)
@@ -549,7 +549,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			onSendPostFail(failResult.errorItem, failResult.extra, failResult.captchaError, failResult.keepCaptcha);
 		}
 	}
-	
+
 	private DraftsStorage.PostDraft obtainPostDraft()
 	{
 		DraftsStorage.AttachmentDraft[] attachmentDrafts = null;
@@ -578,7 +578,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 				subject, comment, commentCarriage, attachmentDrafts,
 				optionSage, optionSpoiler, optionOriginalPoster, userIcon);
 	}
-	
+
 	private DraftsStorage.CaptchaDraft obtainCaptchaDraft()
 	{
 		String input = mCaptchaForm.getInput();
@@ -586,7 +586,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 				mLoadedCaptchaInput, mLoadedCaptchaValidity, input, mCaptchaImage, mCaptchaLarge,
 				mCaptchaBlackAndWhite, mCaptchaLoadTime, mBoardName, mThreadNumber);
 	}
-	
+
 	@Override
 	protected void onSaveInstanceState(Bundle outState)
 	{
@@ -597,11 +597,11 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		}
 		catch (JSONException e)
 		{
-			
+
 		}
 		outState.putParcelable(EXTRA_SAVED_CAPTCHA, obtainCaptchaDraft());
 	}
-	
+
 	@Override
 	protected void onResume()
 	{
@@ -609,7 +609,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		mClickableToastHolder.onResume();
 		ForegroundManager.register(this);
 	}
-	
+
 	@Override
 	protected void onPause()
 	{
@@ -617,7 +617,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		mClickableToastHolder.onPause();
 		ForegroundManager.unregister(this);
 	}
-	
+
 	@Override
 	protected void onFinish()
 	{
@@ -636,14 +636,14 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			draftsStorage.store(mChanName, obtainCaptchaDraft());
 		}
 	}
-	
+
 	@Override
 	public void onServiceConnected(ComponentName name, IBinder service)
 	{
 		mPostingServiceBinder = (PostingService.Binder) service;
 		mPostingServiceBinder.register(this, mChanName, mBoardName, mThreadNumber);
 	}
-	
+
 	@Override
 	public void onServiceDisconnected(ComponentName name)
 	{
@@ -653,7 +653,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			mPostingServiceBinder = null;
 		}
 	}
-	
+
 	@Override
 	public void onClick(View v)
 	{
@@ -662,19 +662,19 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			executeSendPost();
 		}
 	}
-	
+
 	@Override
 	public void onRefreshCapctha(boolean forceRefresh)
 	{
 		refreshCaptcha(forceRefresh, false, true);
 	}
-	
+
 	@Override
 	public void onConfirmCaptcha()
 	{
 		executeSendPost();
 	}
-	
+
 	@Override
 	public void onFocusChange(View v, boolean hasFocus)
 	{
@@ -683,11 +683,11 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			updateFocusButtons(hasFocus);
 		}
 	}
-	
+
 	private final TextWatcher mNameEditListener = new TextWatcher()
 	{
 		private ForegroundColorSpan mTripcodeSpan;
-		
+
 		@Override
 		public void onTextChanged(CharSequence s, int start, int before, int count)
 		{
@@ -696,13 +696,13 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 				mTripcodeWarning.setVisibility(s.toString().indexOf('#') >= 0 ? View.VISIBLE : View.GONE);
 			}
 		}
-		
+
 		@Override
 		public void beforeTextChanged(CharSequence s, int start, int count, int after)
 		{
-			
+
 		}
-		
+
 		@Override
 		public void afterTextChanged(Editable s)
 		{
@@ -722,18 +722,18 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			}
 		}
 	};
-	
+
 	private final TextWatcher mCommentEditListener = new TextWatcher()
 	{
 		private boolean mShow = false;
 		private boolean mError = false;
-		
+
 		private ErrorEditTextSetter mErrorSetter;
-		
+
 		private CharsetEncoder mEncoder;
 		private boolean mEncoderReady = false;
 		private ByteBuffer mByteBuffer = null;
-		
+
 		@Override
 		public void onTextChanged(CharSequence s, int start, int before, int count)
 		{
@@ -757,7 +757,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 						}
 						catch (Exception e)
 						{
-							
+
 						}
 					}
 				}
@@ -801,20 +801,20 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 				if (c == '\n' || c == '.') DraftsStorage.getInstance().store(obtainPostDraft());
 			}
 		}
-		
+
 		@Override
 		public void beforeTextChanged(CharSequence s, int start, int count, int after)
 		{
-			
+
 		}
-		
+
 		@Override
 		public void afterTextChanged(Editable s)
 		{
-			
+
 		}
 	};
-	
+
 	private String getUserIcon()
 	{
 		if (mUserIconItems != null)
@@ -824,9 +824,9 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		}
 		return null;
 	}
-	
+
 	private static final int OPTIONS_MENU_ATTACH = 0;
-	
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu)
 	{
@@ -835,14 +835,14 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 		return true;
 	}
-	
+
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu)
 	{
 		menu.findItem(OPTIONS_MENU_ATTACH).setVisible(mAttachments.size() < mPostingConfiguration.attachmentCount);
 		return super.onPrepareOptionsMenu(menu);
 	}
-	
+
 	private void handleMimeTypeGroup(ArrayList<String> list, Collection<String> mimeTypes, String mimeTypeGroup)
 	{
 		String allSubMimeTypes = mimeTypeGroup + "*";
@@ -852,7 +852,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			if (mimeType.startsWith(mimeTypeGroup) && !allSubMimeTypes.equals(mimeType)) list.add(mimeType);
 		}
 	}
-	
+
 	private ArrayList<String> buildMimeTypeList(Collection<String> mimeTypes)
 	{
 		ArrayList<String> list = new ArrayList<>();
@@ -865,7 +865,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		}
 		return list;
 	}
-	
+
 	@TargetApi(Build.VERSION_CODES.KITKAT)
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
@@ -904,7 +904,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		}
 		return true;
 	}
-	
+
 	private void updateFocusButtons(boolean commentFocused)
 	{
 		if (C.API_LOLLIPOP)
@@ -915,7 +915,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			}
 		}
 	}
-	
+
 	private final View.OnClickListener mFormatButtonClickListener = new View.OnClickListener()
 	{
 		@Override
@@ -937,7 +937,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			}
 		}
 	};
-	
+
 	private void executeSendPost()
 	{
 		if (mPostingServiceBinder == null) return;
@@ -970,9 +970,9 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		mPostingServiceBinder.executeSendPost(mChanName, data);
 		mSendButton.setEnabled(false);
 	}
-	
+
 	private ProgressDialog mProgressDialog;
-	
+
 	private final DialogInterface.OnCancelListener mSendPostCancelListener = new DialogInterface.OnCancelListener()
 	{
 		@Override
@@ -982,7 +982,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			mPostingServiceBinder.cancelSendPost(mChanName, mBoardName, mThreadNumber);
 		}
 	};
-	
+
 	private final DialogInterface.OnClickListener mSendPostMinimizeListener = new DialogInterface.OnClickListener()
 	{
 		@Override
@@ -992,14 +992,14 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			finish();
 		}
 	};
-	
+
 	private void dismissSendPost()
 	{
 		if (mProgressDialog != null) mProgressDialog.dismiss();
 		mProgressDialog = null;
 		mSendButton.setEnabled(true);
 	}
-	
+
 	@Override
 	public void onSendPostStart(boolean progressMode)
 	{
@@ -1017,7 +1017,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		onSendPostChangeProgressState(progressMode, SendPostTask.ProgressState.CONNECTING, -1, -1);
 		mProgressDialog.show();
 	}
-	
+
 	@Override
 	public void onSendPostChangeProgressState(boolean progressMode, SendPostTask.ProgressState progressState,
 			int attachmentIndex, int attachmentsCount)
@@ -1053,7 +1053,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			}
 		}
 	}
-	
+
 	@Override
 	public void onSendPostChangeProgressValue(int progress, int progressMax)
 	{
@@ -1063,7 +1063,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			mProgressDialog.setProgress(progress);
 		}
 	}
-	
+
 	@Override
 	public void onSendPostSuccess()
 	{
@@ -1071,7 +1071,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		mStoreDraftOnFinish = false;
 		finish();
 	}
-	
+
 	@Override
 	public void onSendPostFail(ErrorItem errorItem, final Object extra, boolean captchaError, boolean keepCaptcha)
 	{
@@ -1124,22 +1124,22 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 						.setMessage(message).setPositiveButton(android.R.string.ok, null).create();
 				dialog.setOnShowListener(ViewUtils.ALERT_DIALOG_MESSAGE_SELECTABLE);
 				dialog.show();
-				
+
 			}, false);
 		}
 		else ClickableToast.show(this, errorItem.toString());
 		if (errorItem.httpResponseCode == 0 && !keepCaptcha) refreshCaptcha(false, !captchaError, true);
 	}
-	
+
 	@Override
 	public void onSendPostCancel()
 	{
 		dismissSendPost();
 	}
-	
+
 	private static final String EXTRA_FORCE_CAPTCHA = "forceCaptcha";
 	private static final String EXTRA_MAY_SHOW_LOAD_BUTTON = "mayShowLoadButton";
-	
+
 	private void refreshCaptcha(boolean forceCaptcha, boolean mayShowLoadButton, boolean restart)
 	{
 		mCaptchaState = null;
@@ -1151,7 +1151,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		extra.put(EXTRA_MAY_SHOW_LOAD_BUTTON, mayShowLoadButton);
 		AsyncManager.get(this).startTask(TASK_READ_CAPTCHA, this, extra, restart);
 	}
-	
+
 	private static class ReadCaptchaHolder extends AsyncManager.Holder implements ReadCaptchaTask.Callback
 	{
 		@Override
@@ -1162,14 +1162,14 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			storeResult("onReadCaptchaSuccess", captchaState, captchaData, captchaType, input, validity,
 					image, large, blackAndWhite);
 		}
-		
+
 		@Override
 		public void onReadCaptchaError(ErrorItem errorItem)
 		{
 			storeResult("onReadCaptchaError", errorItem);
 		}
 	}
-	
+
 	@Override
 	public Pair<Object, AsyncManager.Holder> onCreateAndExecuteTask(String name, HashMap<String, Object> extra)
 	{
@@ -1184,7 +1184,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		task.executeOnExecutor(ReadCaptchaTask.THREAD_POOL_EXECUTOR);
 		return new Pair<>(task, holder);
 	}
-	
+
 	@Override
 	public void onFinishTaskExecution(String name, AsyncManager.Holder holder)
 	{
@@ -1207,13 +1207,13 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			onReadCaptchaError(errorItem);
 		}
 	}
-	
+
 	@Override
 	public void onRequestTaskCancel(String name, Object task)
 	{
 		((ReadCaptchaTask) task).cancel();
 	}
-	
+
 	@Override
 	public void onReadCaptchaSuccess(ChanPerformer.CaptchaState captchaState, ChanPerformer.CaptchaData captchaData,
 			String captchaType, ChanConfiguration.Captcha.Input input, ChanConfiguration.Captcha.Validity validity,
@@ -1222,7 +1222,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		mCaptchaLoadTime = System.currentTimeMillis();
 		showCaptcha(captchaState, captchaData, captchaType, input, validity, image, large, blackAndWhite);
 	}
-	
+
 	@Override
 	public void onReadCaptchaError(ErrorItem errorItem)
 	{
@@ -1231,7 +1231,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		mSendButton.setEnabled(true);
 		mCaptchaForm.showError();
 	}
-	
+
 	private void showCaptcha(ChanPerformer.CaptchaState captchaState, ChanPerformer.CaptchaData captchaData,
 			String captchaType, ChanConfiguration.Captcha.Input input, ChanConfiguration.Captcha.Validity validity,
 			Bitmap image, boolean large, boolean blackAndWhite)
@@ -1256,7 +1256,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		boolean canSend = mCaptchaForm.showCaptcha(captchaState, input, image, large, invertColors);
 		mSendButton.setEnabled(canSend);
 	}
-	
+
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data)
 	{
@@ -1300,7 +1300,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			}
 		}
 	}
-	
+
 	private static class AttachmentHolder
 	{
 		public View self;
@@ -1316,23 +1316,23 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		public boolean optionSpoiler = false;
 		public GraphicsUtils.Reencoding reencoding;
 	}
-	
+
 	public static class AttachmentOptionsDialog extends DialogFragment implements AdapterView.OnItemClickListener
 	{
 		private static final String EXTRA_ATTACHMENT_INDEX = "attachmentIndex";
-		
+
 		private static final int OPTION_TYPE_UNIQUE_HASH = 0;
 		private static final int OPTION_TYPE_REMOVE_METADATA = 1;
 		private static final int OPTION_TYPE_REENCODE_IMAGE = 2;
 		private static final int OPTION_TYPE_REMOVE_FILE_NAME = 3;
 		private static final int OPTION_TYPE_SPOILER = 4;
-		
+
 		private static class OptionItem
 		{
 			public final String title;
 			public final int type;
 			public final boolean checked;
-			
+
 			public OptionItem(String title, int type, boolean checked)
 			{
 				this.title = title;
@@ -1340,33 +1340,33 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 				this.checked = checked;
 			}
 		}
-		
+
 		private final ArrayList<OptionItem> mOptionItems = new ArrayList<>();
 		private final SparseIntArray mOptionIndexes = new SparseIntArray();
-		
+
 		private ListView mListView;
-		
+
 		public AttachmentOptionsDialog()
 		{
-			
+
 		}
-		
+
 		public AttachmentOptionsDialog(int attachmentIndex)
 		{
 			Bundle args = new Bundle();
 			args.putInt(EXTRA_ATTACHMENT_INDEX, attachmentIndex);
 			setArguments(args);
 		}
-		
+
 		private static class ItemsAdapter extends ArrayAdapter<String>
 		{
 			private final SparseBooleanArray mEnabledItems = new SparseBooleanArray();
-			
+
 			public ItemsAdapter(Context context, int resId, ArrayList<String> items)
 			{
 				super(context, resId, android.R.id.text1, items);
 			}
-			
+
 			@Override
 			public View getView(int position, View convertView, ViewGroup parent)
 			{
@@ -1374,25 +1374,25 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 				view.setEnabled(isEnabled(position));
 				return view;
 			}
-			
+
 			@Override
 			public boolean isEnabled(int position)
 			{
 				return mEnabledItems.get(position, true);
 			}
-			
+
 			public void setEnabled(int index, boolean enabled)
 			{
 				mEnabledItems.put(index, enabled);
 			}
 		}
-		
+
 		private AttachmentHolder getAttachmentHolder()
 		{
 			PostingActivity activity = (PostingActivity) getActivity();
 			return activity.mAttachments.get(getArguments().getInt(EXTRA_ATTACHMENT_INDEX));
 		}
-		
+
 		@SuppressWarnings("UnusedAssignment")
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState)
@@ -1452,7 +1452,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			dialog.setCanceledOnTouchOutside(true);
 			return dialog;
 		}
-		
+
 		private void updateItemsEnabled(ItemsAdapter adapter, AttachmentHolder holder)
 		{
 			int reencodeIndex = mOptionIndexes.get(OPTION_TYPE_REENCODE_IMAGE, -1);
@@ -1464,7 +1464,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 				adapter.notifyDataSetChanged();
 			}
 		}
-		
+
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id)
 		{
@@ -1490,7 +1490,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			}
 			updateItemsEnabled((ItemsAdapter) mListView.getAdapter(), holder);
 		}
-		
+
 		public void setReencoding(GraphicsUtils.Reencoding reencoding)
 		{
 			int reencodeIndex = mOptionIndexes.get(OPTION_TYPE_REENCODE_IMAGE, -1);
@@ -1501,23 +1501,23 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			}
 		}
 	}
-	
+
 	public static class ReencodingDialog extends DialogFragment implements DialogInterface.OnClickListener,
 			RadioGroup.OnCheckedChangeListener
 	{
 		private static final String EXTRA_QUALITY = "quality";
 		private static final String EXTRA_REDUCE = "reduce";
-		
+
 		private RadioGroup mRadioGroup;
 		private SeekBarForm mQualityForm;
 		private SeekBarForm mReduceForm;
-		
+
 		private static final String[] OPTIONS = {GraphicsUtils.Reencoding.FORMAT_JPEG.toUpperCase(Locale.US),
 				GraphicsUtils.Reencoding.FORMAT_PNG.toUpperCase(Locale.US)};
 		private static final String[] FORMATS = {GraphicsUtils.Reencoding.FORMAT_JPEG,
 				GraphicsUtils.Reencoding.FORMAT_PNG};
 		private static final int[] IDS = {android.R.id.icon1, android.R.id.icon2};
-		
+
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState)
 		{
@@ -1571,7 +1571,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 					.setView(scrollView).setNegativeButton(android.R.string.cancel, null)
 					.setPositiveButton(android.R.string.ok, this).create();
 		}
-		
+
 		@Override
 		public void onSaveInstanceState(Bundle outState)
 		{
@@ -1579,7 +1579,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			outState.putInt(EXTRA_QUALITY, mQualityForm.getCurrentValue());
 			outState.putInt(EXTRA_REDUCE, mReduceForm.getCurrentValue());
 		}
-		
+
 		@Override
 		public void onClick(DialogInterface dialog, int which)
 		{
@@ -1601,7 +1601,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 						mQualityForm.getCurrentValue(), mReduceForm.getCurrentValue()));
 			}
 		}
-		
+
 		@Override
 		public void onCheckedChanged(RadioGroup group, int checkedId)
 		{
@@ -1617,23 +1617,23 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			mQualityForm.getSeekBar().setEnabled(allowQuality);
 		}
 	}
-	
+
 	public static class AttachmentWarningDialog extends DialogFragment
 	{
 		private static final String EXTRA_ATTACHMENT_INDEX = "attachmentIndex";
-		
+
 		public AttachmentWarningDialog()
 		{
-			
+
 		}
-		
+
 		public AttachmentWarningDialog(int attachmentIndex)
 		{
 			Bundle args = new Bundle();
 			args.putInt(EXTRA_ATTACHMENT_INDEX, attachmentIndex);
 			setArguments(args);
 		}
-		
+
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState)
 		{
@@ -1664,23 +1664,23 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 					.setPositiveButton(android.R.string.ok, null).create();
 		}
 	}
-	
+
 	public static class AttachmentRatingDialog extends DialogFragment implements DialogInterface.OnClickListener
 	{
 		private static final String EXTRA_ATTACHMENT_INDEX = "attachmentIndex";
-		
+
 		public AttachmentRatingDialog()
 		{
-			
+
 		}
-		
+
 		public AttachmentRatingDialog(int attachmentIndex)
 		{
 			Bundle args = new Bundle();
 			args.putInt(EXTRA_ATTACHMENT_INDEX, attachmentIndex);
 			setArguments(args);
 		}
-		
+
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState)
 		{
@@ -1697,7 +1697,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			return new AlertDialog.Builder(activity).setTitle(R.string.text_rating).setSingleChoiceItems(items,
 					checkedItem, this).setNegativeButton(android.R.string.cancel, null).create();
 		}
-		
+
 		@Override
 		public void onClick(DialogInterface dialog, int which)
 		{
@@ -1707,7 +1707,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			holder.rating = activity.mAttachmentRatingItems.get(which).first;
 		}
 	}
-	
+
 	private final View.OnClickListener mAttachmentOptionsListener = v ->
 	{
 		AttachmentHolder holder = (AttachmentHolder) v.getTag();
@@ -1715,7 +1715,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		AttachmentOptionsDialog dialog = new AttachmentOptionsDialog(attachmentIndex);
 		dialog.show(getFragmentManager(), AttachmentOptionsDialog.class.getName());
 	};
-	
+
 	private final View.OnClickListener mAttachmentWarningListener = v ->
 	{
 		AttachmentHolder holder = (AttachmentHolder) v.getTag();
@@ -1723,7 +1723,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		AttachmentWarningDialog dialog = new AttachmentWarningDialog(attachmentIndex);
 		dialog.show(getFragmentManager(), AttachmentWarningDialog.class.getName());
 	};
-	
+
 	private final View.OnClickListener mAttachmentRatingListener = v ->
 	{
 		AttachmentHolder holder = (AttachmentHolder) v.getTag();
@@ -1731,7 +1731,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		AttachmentRatingDialog dialog = new AttachmentRatingDialog(attachmentIndex);
 		dialog.show(getFragmentManager(), AttachmentRatingDialog.class.getName());
 	};
-	
+
 	private final View.OnClickListener mAttachmentRemoveListener = new View.OnClickListener()
 	{
 		@Override
@@ -1755,7 +1755,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			}
 		}
 	};
-	
+
 	private void addAttachmentViewToContainer(View attachmentView, int position)
 	{
 		LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) attachmentView.getLayoutParams();
@@ -1799,7 +1799,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			placeholder.setVisibility(mAttachmentColumnCount == column + 1 ? View.GONE : View.VISIBLE);
 		}
 	}
-	
+
 	private AttachmentHolder addNewAttachment(boolean enableWarning)
 	{
 		FrameLayout layout = (FrameLayout) getLayoutInflater().inflate(R.layout.activity_posting_attachment,
@@ -1840,12 +1840,12 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		mScrollView.postResizeComment();
 		return holder;
 	}
-	
+
 	private void addAttachment(FileHolder fileHolder)
 	{
 		addAttachment(fileHolder, null, false, false, false, false, null);
 	}
-	
+
 	private void addAttachment(FileHolder fileHolder, String rating, boolean optionUniqueHash,
 			boolean optionRemoveMetadata, boolean optionRemoveFileName, boolean optionSpoiler,
 			GraphicsUtils.Reencoding reencoding)
@@ -1876,7 +1876,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			}
 			catch (OutOfMemoryError e)
 			{
-				
+
 			}
 			fileSize += " " + fileHolder.getImageWidth() + "x" + fileHolder.getImageHeight();
 		}
@@ -1895,7 +1895,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 				}
 				catch (Exception | OutOfMemoryError e)
 				{
-					
+
 				}
 				finally
 				{
@@ -1912,7 +1912,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		}
 		holder.fileSize.setText(fileSize);
 	}
-	
+
 	private void formatQuote()
 	{
 		Editable editable = mCommentView.getText();
@@ -1940,7 +1940,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			mCommentView.setSelection(newStart, newEnd);
 		}
 	}
-	
+
 	private void resizeComment(ViewGroup root)
 	{
 		View postMain = root.getChildAt(0);
@@ -1951,23 +1951,23 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		int delta = root.getHeight() - postMain.getMeasuredHeight();
 		if (delta > 0) mCommentView.setMinHeight(mCommentView.getMeasuredHeight() + delta);
 	}
-	
+
 	@Override
 	public void onWindowFocusChanged(boolean hasFocus)
 	{
 		super.onWindowFocusChanged(hasFocus);
 		mClickableToastHolder.onWindowFocusChanged(hasFocus);
 	}
-	
+
 	private class MarkupButtonsBuilder implements ViewTreeObserver.OnGlobalLayoutListener, Runnable
 	{
 		private int mLastWidth = -1;
-		
+
 		public MarkupButtonsBuilder()
 		{
 			mTextFormatView.getViewTreeObserver().addOnGlobalLayoutListener(this);
 		}
-		
+
 		@Override
 		public void onGlobalLayout()
 		{
@@ -1979,14 +1979,14 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 				mTextFormatView.post(this);
 			}
 		}
-		
+
 		@Override
 		public void run()
 		{
 			mTextFormatView.removeAllViews();
 			fillContainer();
 		}
-		
+
 		private void fillContainer()
 		{
 			float density = ResourceUtils.obtainDensity(PostingActivity.this);
@@ -2016,7 +2016,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			}
 		}
 	}
-	
+
 	/*
 	 * Modified ScrollView. Allows comment input resizing to fit screen.
 	 */
@@ -2029,7 +2029,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		    setFocusable(true);
 		    setFocusableInTouchMode(true);
 		}
-		
+
 		@Override
 		protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
@@ -2038,14 +2038,14 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			int newHeight = getMeasuredHeight();
 			if (newHeight != oldHeight) postResizeComment();
 		}
-		
+
 		@Override
 		public void run()
 		{
 			PostingActivity activity = (PostingActivity) getContext();
 			activity.resizeComment(ResizingScrollView.this);
 		}
-		
+
 		public void postResizeComment()
 		{
 			removeCallbacks(this);

@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -57,37 +57,37 @@ public class CloudFlarePasser implements Handler.Callback
 {
 	private static final CloudFlarePasser INSTANCE = new CloudFlarePasser();
 	private static final int WEB_VIEW_TIMEOUT = 20000;
-	
+
 	private static final String CF_FORBIDDEN_FLAG = "<form class=\"challenge-form\" id=\"challenge-form\" "
 			+ "action=\"/cdn-cgi/l/chk_captcha\" method=\"get\">";
 	private static final String CF_UNAVAILABLE_FLAG = "<span data-translate=\"checking_browser\">"
 			+ "Checking your browser before accessing</span>";
-	
+
 	private static final Pattern ALLOWED_LINKS = Pattern.compile("/?(|cdn-cgi/l/.*)");
 	private static final Pattern CF_CAPTCHA_PATTERN = Pattern.compile("data-sitekey=\"(.*?)\"");
-	
+
 	public static final String COOKIE_CLOUDFLARE = "cf_clearance";
-	
+
 	private CloudFlarePasser()
 	{
-		
+
 	}
-	
+
 	private final Handler mHandler = new Handler(Looper.getMainLooper(), this);
-	
+
 	private static class CheckHolder
 	{
 		public final String chanName;
-		
+
 		public volatile boolean started;
 		public volatile boolean ready;
 		public volatile boolean success;
-		
+
 		public CheckHolder(String chanName)
 		{
 			this.chanName = chanName;
 		}
-		
+
 		public void waitReady(boolean infinite) throws InterruptedException
 		{
 			synchronized (this)
@@ -110,12 +110,12 @@ public class CloudFlarePasser implements Handler.Callback
 			}
 		}
 	}
-	
+
 	private final LinkedHashMap<String, CloudFlareClient> mClientHandlers = new LinkedHashMap<>();
-	
+
 	private static final int MESSAGE_CHECK_JAVASCRIPT = 1;
 	private static final int MESSAGE_HANDLE_NEXT_JAVASCRIPT = 2;
-	
+
 	@Override
 	public boolean handleMessage(Message msg)
 	{
@@ -147,7 +147,7 @@ public class CloudFlarePasser implements Handler.Callback
 		}
 		return false;
 	}
-	
+
 	private void handleNextJavaScript()
 	{
 		mHandler.removeMessages(MESSAGE_HANDLE_NEXT_JAVASCRIPT);
@@ -165,7 +165,7 @@ public class CloudFlarePasser implements Handler.Callback
 			mHandler.sendEmptyMessageDelayed(MESSAGE_HANDLE_NEXT_JAVASCRIPT, WEB_VIEW_TIMEOUT);
 		}
 	}
-	
+
 	private void handleJavaScript(CloudFlareClient client)
 	{
 		String chanName = client.mChanName;
@@ -176,21 +176,21 @@ public class CloudFlarePasser implements Handler.Callback
 		ChanLocator locator = ChanLocator.get(chanName);
 		mWebView.loadUrl(locator.buildPath().toString());
 	}
-	
+
 	private class CloudFlareClient extends WebViewClient
 	{
 		private final String mChanName;
 		private final ArrayList<CheckHolder> mCheckHolders = new ArrayList<>();
-		
+
 		private boolean mStarted = false;
 		private boolean mWasChecked = false;
-		
+
 		public CloudFlareClient(String chanName, CheckHolder checkHolder)
 		{
 			mChanName = chanName;
 			add(checkHolder);
 		}
-		
+
 		public void add(CheckHolder checkHolder)
 		{
 			mCheckHolders.add(checkHolder);
@@ -203,7 +203,7 @@ public class CloudFlarePasser implements Handler.Callback
 				}
 			}
 		}
-		
+
 		public void notifyStarted()
 		{
 			mStarted = true;
@@ -216,7 +216,7 @@ public class CloudFlarePasser implements Handler.Callback
 				}
 			}
 		}
-		
+
 		@Override
 		public void onPageFinished(WebView view, String url)
 		{
@@ -244,7 +244,7 @@ public class CloudFlarePasser implements Handler.Callback
 				handleNextJavaScript();
 			}
 		}
-		
+
 		@SuppressWarnings("deprecation")
 		@Override
 		public WebResourceResponse shouldInterceptRequest(WebView view, String url)
@@ -254,7 +254,7 @@ public class CloudFlarePasser implements Handler.Callback
 			if (ALLOWED_LINKS.matcher(uri.getPath()).matches()) return null;
 			return new WebResourceResponse("text/html", "UTF-8", null);
 		}
-		
+
 		private String extractCookie(String url, String name)
 		{
 			try
@@ -271,14 +271,14 @@ public class CloudFlarePasser implements Handler.Callback
 			}
 			catch (Exception e)
 			{
-				
+
 			}
 			return null;
 		}
 	}
-	
+
 	private WebView mWebView;
-	
+
 	@SuppressLint("SetJavaScriptEnabled")
 	private void initWebView()
 	{
@@ -293,10 +293,10 @@ public class CloudFlarePasser implements Handler.Callback
 			settings.setAppCacheEnabled(false);
 		}
 	}
-	
+
 	private final HashMap<String, CheckHolder> mCaptchaHolders = new HashMap<>();
 	private final HashMap<String, Long> mCaptchaLastCancel = new HashMap<>();
-	
+
 	private boolean handleCaptcha(String chanName, String recaptchaApiKey) throws HttpException
 	{
 		CheckHolder checkHolder;
@@ -343,7 +343,7 @@ public class CloudFlarePasser implements Handler.Callback
 				{
 					synchronized (mCaptchaLastCancel)
 					{
-						mCaptchaLastCancel.put(chanName, System.currentTimeMillis());						
+						mCaptchaLastCancel.put(chanName, System.currentTimeMillis());
 					}
 					return false;
 				}
@@ -376,16 +376,16 @@ public class CloudFlarePasser implements Handler.Callback
 			}
 		}
 	}
-	
+
 	private static class CloudFlareCaptchaReader implements ReadCaptchaTask.CaptchaReader
 	{
 		private final String mRecaptchaApiKey;
-		
+
 		public CloudFlareCaptchaReader(String recaptchaApiKey)
 		{
 			mRecaptchaApiKey = recaptchaApiKey;
 		}
-		
+
 		@Override
 		public ChanPerformer.ReadCaptchaResult onReadCaptcha(ChanPerformer.ReadCaptchaData data)
 				throws HttpException, InvalidResponseException
@@ -395,7 +395,7 @@ public class CloudFlarePasser implements Handler.Callback
 			return new ChanPerformer.ReadCaptchaResult(ChanPerformer.CaptchaState.CAPTCHA, captchaData);
 		}
 	}
-	
+
 	public static boolean checkResponse(String chanName, HttpHolder holder) throws HttpException
 	{
 		int responseCode = holder.getResponseCode();
@@ -445,7 +445,7 @@ public class CloudFlarePasser implements Handler.Callback
 		}
 		return false;
 	}
-	
+
 	private static void storeCookie(String chanName, String cookie, String uriString)
 	{
 		ChanConfiguration configuration = ChanConfiguration.get(chanName);
@@ -460,7 +460,7 @@ public class CloudFlarePasser implements Handler.Callback
 			Preferences.setUseHttps(chanName, "https".equals(uri.getScheme()));
 		}
 	}
-	
+
 	public static String getCookie(String chanName)
 	{
 		return StringUtils.nullIfEmpty(ChanConfiguration.get(chanName).getCookie(COOKIE_CLOUDFLARE));

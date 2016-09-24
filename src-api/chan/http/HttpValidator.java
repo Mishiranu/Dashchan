@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,19 +33,19 @@ import chan.util.StringUtils;
 public final class HttpValidator implements Parcelable, Serializable
 {
 	private static final long serialVersionUID = 1L;
-	
+
 	private static final String KEY_ETAG = "ETag";
 	private static final String KEY_LAST_MODIFIED = "LastModified";
-	
+
 	private final String mETag;
 	private final String mLastModified;
-	
+
 	private HttpValidator(String eTag, String lastModified)
 	{
 		mETag = eTag;
 		mLastModified = lastModified;
 	}
-	
+
 	static HttpValidator obtain(HttpURLConnection connection)
 	{
 		String eTag = connection.getHeaderField("ETag");
@@ -53,26 +53,26 @@ public final class HttpValidator implements Parcelable, Serializable
 		if (eTag != null || lastModified != null) return new HttpValidator(eTag, lastModified);
 		return null;
 	}
-	
+
 	public void write(HttpURLConnection connection)
 	{
 		if (mETag != null) connection.setRequestProperty("If-None-Match", mETag);
 		if (mLastModified != null) connection.setRequestProperty("If-Modified-Since", mLastModified);
 	}
-	
+
 	@Override
 	public int describeContents()
 	{
 		return 0;
 	}
-	
+
 	@Override
 	public void writeToParcel(Parcel dest, int flags)
 	{
 		dest.writeString(mETag);
 		dest.writeString(mLastModified);
 	}
-	
+
 	public static final Creator<HttpValidator> CREATOR = new Creator<HttpValidator>()
 	{
 		@Override
@@ -82,14 +82,14 @@ public final class HttpValidator implements Parcelable, Serializable
 			String lastModified = source.readString();
 			return new HttpValidator(eTag, lastModified);
 		}
-		
+
 		@Override
 		public HttpValidator[] newArray(int size)
 		{
 			return new HttpValidator[size];
 		}
 	};
-	
+
 	public static HttpValidator fromString(String validator)
 	{
 		if (validator != null)
@@ -103,12 +103,12 @@ public final class HttpValidator implements Parcelable, Serializable
 			}
 			catch (JSONException e)
 			{
-				
+
 			}
 		}
 		return null;
 	}
-	
+
 	@Override
 	public String toString()
 	{

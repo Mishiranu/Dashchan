@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,34 +40,34 @@ public class JpegData
 	private static final String KEY_ORIENTATION = "orientation";
 	private static final String KEY_SOFTWARE = "software";
 	private static final String KEY_DATE_TIME = "dateTime";
-	
+
 	private static final String KEY_LATITUDE = "latitude";
 	private static final String KEY_LATITUDE_REF = "latitudeRef";
 	private static final String KEY_LONGITUDE = "longitude";
 	private static final String KEY_LONGITUDE_REF = "longitudeRef";
-	
+
 	private static final String KEY_EXIF_OFFSET = "exifOffset";
 	private static final String KEY_GPS_OFFSET = "gpsOffset";
-	
+
 	public final boolean hasExif;
 	public final boolean forbidRegionDecoder;
 	private final LinkedHashMap<String, String> mExif;
-	
+
 	private JpegData(boolean hasExif, boolean forbidRegionDecoder, LinkedHashMap<String, String> exif)
 	{
 		this.hasExif = hasExif;
 		this.forbidRegionDecoder = forbidRegionDecoder;
 		mExif = exif;
 	}
-	
+
 	private List<Pair<String, String>> mUserMetadata = null;
-	
+
 	private void addUserMetadata(String key, String title)
 	{
 		String value = mExif.get(key);
 		if (!StringUtils.isEmpty(value)) mUserMetadata.add(new Pair<>(title, value));
 	}
-	
+
 	public List<Pair<String, String>> getUserMetadata()
 	{
 		if (mUserMetadata == null)
@@ -90,7 +90,7 @@ public class JpegData
 		}
 		return mUserMetadata;
 	}
-	
+
 	public int getRotation()
 	{
 		if (mExif != null)
@@ -108,7 +108,7 @@ public class JpegData
 		}
 		return 0;
 	}
-	
+
 	private String formatLocationValue(double value)
 	{
 		int degrees = (int) value;
@@ -120,7 +120,7 @@ public class JpegData
 		int seconds = (int) value;
 		return degrees + "°" + minutes + "'" + seconds + "\"";
 	}
-	
+
 	public String getGeolocation(boolean userReadable)
 	{
 		if (mExif != null)
@@ -149,7 +149,7 @@ public class JpegData
 		}
 		return null;
 	}
-	
+
 	private static String extractIfdString(byte[] exifBytes, int offset, int format)
 	{
 		if (format == 2 && offset >= 0 && exifBytes.length > offset && exifBytes[offset] != 0x00)
@@ -161,7 +161,7 @@ public class JpegData
 		}
 		return null;
 	}
-	
+
 	private static double convertIfdRational(byte[] exifBytes, int offset, int format, boolean littleEndian)
 	{
 		if ((format == 5 || format == 10) && offset >= 0 && exifBytes.length >= offset + 8)
@@ -172,7 +172,7 @@ public class JpegData
 		}
 		return Double.NaN;
 	}
-	
+
 	private static String convertIfdGpsString(byte[] exifBytes, int offset, int format, boolean littleEndian,
 			int count)
 	{
@@ -194,7 +194,7 @@ public class JpegData
 
 	private static final int IFD_GENERAL = 0;
 	private static final int IFD_GPS = 1;
-	
+
 	private static boolean extractIfd(LinkedHashMap<String, String> exif, int ifd, byte[] exifBytes, int offset,
 			boolean littleEndian)
 	{
@@ -290,7 +290,7 @@ public class JpegData
 		}
 		return false;
 	}
-	
+
 	private static boolean extractIfd(LinkedHashMap<String, String> exif, int ifd, byte[] exifBytes,
 			String offsetStringKey, boolean littleEndian)
 	{
@@ -302,7 +302,7 @@ public class JpegData
 		}
 		return false;
 	}
-	
+
 	public static JpegData extract(FileHolder fileHolder)
 	{
 		if (fileHolder.getImageType() == FileHolder.ImageType.IMAGE_JPEG)
@@ -350,7 +350,7 @@ public class JpegData
 			}
 			catch (IOException e)
 			{
-				
+
 			}
 			finally
 			{

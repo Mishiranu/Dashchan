@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -44,17 +44,17 @@ public class FavoritesStorage extends StorageManager.Storage
 	private static final String KEY_NEW_POSTS_COUNT = "newPostsCount";
 	private static final String KEY_HAS_NEW_POSTS = "hasNewPosts";
 	private static final String KEY_WATCHER_VALIDATOR = "watcherValidator";
-	
+
 	private static final FavoritesStorage INSTANCE = new FavoritesStorage();
-	
+
 	public static FavoritesStorage getInstance()
 	{
 		return INSTANCE;
 	}
-	
+
 	private final HashMap<String, FavoriteItem> mFavoriteItemsMap = new HashMap<>();
 	private final ArrayList<FavoriteItem> mFavoriteItemsList = new ArrayList<>();
-	
+
 	private FavoritesStorage()
 	{
 		super("favorites", 2000, 10000);
@@ -97,7 +97,7 @@ public class FavoritesStorage extends StorageManager.Storage
 			}
 		}
 	}
-	
+
 	@Override
 	public Object onClone()
 	{
@@ -105,7 +105,7 @@ public class FavoritesStorage extends StorageManager.Storage
 		for (FavoriteItem favoriteItem : mFavoriteItemsList) favoriteItems.add(new FavoriteItem(favoriteItem));
 		return favoriteItems;
 	}
-	
+
 	@Override
 	public JSONObject onSerialize(Object data) throws JSONException
 	{
@@ -138,56 +138,56 @@ public class FavoritesStorage extends StorageManager.Storage
 		}
 		return null;
 	}
-	
+
 	private final WeakObservable<Observer> mObservable = new WeakObservable<>();
-	
+
 	public static final int ACTION_ADD = 0;
 	public static final int ACTION_REMOVE = 1;
 	public static final int ACTION_MODIFY_TITLE = 2;
 	public static final int ACTION_WATCHER_ENABLE = 3;
 	public static final int ACTION_WATCHER_DISABLE = 4;
 	public static final int ACTION_WATCHER_SYNCHRONIZE = 5;
-	
+
 	public interface Observer
 	{
 		public void onFavoritesUpdate(FavoriteItem favoriteItem, int action);
 	}
-	
+
 	public WeakObservable<Observer> getObservable()
 	{
 		return mObservable;
 	}
-	
+
 	public boolean canSortManually()
 	{
 		return Preferences.getFavoritesOrder() != Preferences.FAVORITES_ORDER_BY_TITLE;
 	}
-	
+
 	private void notifyFavoritesUpdate(FavoriteItem favoriteItem, int action)
 	{
 		for (Observer observer : mObservable) observer.onFavoritesUpdate(favoriteItem, action);
 	}
-	
+
 	private static String makeKey(String chanName, String boardName, String threadNumber)
 	{
 		return chanName + "/" + boardName + "/" + threadNumber;
 	}
-	
+
 	private static String makeKey(FavoriteItem favoriteItem)
 	{
 		return makeKey(favoriteItem.chanName, favoriteItem.boardName, favoriteItem.threadNumber);
 	}
-	
+
 	public FavoriteItem getFavorite(String chanName, String boardName, String threadNumber)
 	{
 		return mFavoriteItemsMap.get(makeKey(chanName, boardName, threadNumber));
 	}
-	
+
 	public boolean hasFavorite(String chanName, String boardName, String threadNumber)
 	{
 		return getFavorite(chanName, boardName, threadNumber) != null;
 	}
-	
+
 	private boolean sortIfNeededInternal()
 	{
 		if (!canSortManually())
@@ -203,12 +203,12 @@ public class FavoritesStorage extends StorageManager.Storage
 		}
 		return false;
 	}
-	
+
 	public void sortIfNeeded()
 	{
 		if (sortIfNeededInternal()) serialize();
 	}
-	
+
 	public void add(FavoriteItem favoriteItem)
 	{
 		if (!hasFavorite(favoriteItem.chanName, favoriteItem.boardName, favoriteItem.threadNumber))
@@ -227,7 +227,7 @@ public class FavoritesStorage extends StorageManager.Storage
 			serialize();
 		}
 	}
-	
+
 	public void add(String chanName, String boardName, String threadNumber, String title, int postsCount)
 	{
 		FavoriteItem favoriteItem = new FavoriteItem();
@@ -239,12 +239,12 @@ public class FavoritesStorage extends StorageManager.Storage
 		favoriteItem.newPostsCount = postsCount;
 		add(favoriteItem);
 	}
-	
+
 	public void add(String chanName, String boardName)
 	{
 		add(chanName, boardName, null, null, 0);
 	}
-	
+
 	public void moveAfter(FavoriteItem favoriteItem, FavoriteItem afterFavoriteItem)
 	{
 		if (canSortManually() && mFavoriteItemsList.remove(favoriteItem))
@@ -254,7 +254,7 @@ public class FavoritesStorage extends StorageManager.Storage
 			serialize();
 		}
 	}
-	
+
 	public void modifyTitle(String chanName, String boardName, String threadNumber, String title, boolean fromUser)
 	{
 		boolean empty = StringUtils.isEmpty(title);
@@ -286,7 +286,7 @@ public class FavoritesStorage extends StorageManager.Storage
 			}
 		}
 	}
-	
+
 	public void modifyPostsCount(String chanName, String boardName, String threadNumber, int postsCount)
 	{
 		FavoriteItem favoriteItem = getFavorite(chanName, boardName, threadNumber);
@@ -299,7 +299,7 @@ public class FavoritesStorage extends StorageManager.Storage
 			serialize();
 		}
 	}
-	
+
 	public void modifyWatcherData(String chanName, String boardName, String threadNumber,
 			int newPostsCount, boolean hasNewPosts, HttpValidator watcherValidator)
 	{
@@ -312,7 +312,7 @@ public class FavoritesStorage extends StorageManager.Storage
 			serialize();
 		}
 	}
-	
+
 	public void toggleWatcher(String chanName, String boardName, String threadNumber)
 	{
 		FavoriteItem favoriteItem = getFavorite(chanName, boardName, threadNumber);
@@ -324,7 +324,7 @@ public class FavoritesStorage extends StorageManager.Storage
 			serialize();
 		}
 	}
-	
+
 	public void remove(String chanName, String boardName, String threadNumber)
 	{
 		FavoriteItem favoriteItem = mFavoriteItemsMap.remove(makeKey(chanName, boardName, threadNumber));
@@ -340,17 +340,17 @@ public class FavoritesStorage extends StorageManager.Storage
 			serialize();
 		}
 	}
-	
+
 	public ArrayList<FavoriteItem> getThreads(String chanName)
 	{
 		return getFavorites(chanName, true, false, false);
 	}
-	
+
 	public ArrayList<FavoriteItem> getBoards(String chanName)
 	{
 		return getFavorites(chanName, false, true, true);
 	}
-	
+
 	private ArrayList<FavoriteItem> getFavorites(String chanName, boolean threads, boolean boards,
 			boolean orderByBoardName)
 	{
@@ -368,29 +368,29 @@ public class FavoritesStorage extends StorageManager.Storage
 		Collections.sort(favoriteItems, comparator);
 		return favoriteItems;
 	}
-	
+
 	private static int compareChanNames(FavoriteItem lhs, FavoriteItem rhs)
 	{
 		return ChanManager.getInstance().compareChanNames(lhs.chanName, rhs.chanName);
 	}
-	
+
 	private static int compareBoardNames(FavoriteItem lhs, FavoriteItem rhs)
 	{
 		return StringUtils.compare(lhs.boardName, rhs.boardName, false);
 	}
-	
+
 	private static int compareThreadNumbers(FavoriteItem lhs, FavoriteItem rhs)
 	{
 		return StringUtils.compare(lhs.threadNumber, rhs.threadNumber, false);
 	}
-	
+
 	private final Comparator<FavoriteItem> mChanNameIndexAscendingComparator = (lhs, rhs) ->
 	{
 		int result = compareChanNames(lhs, rhs);
 		if (result != 0) return result;
 		return mFavoriteItemsList.indexOf(lhs) - mFavoriteItemsList.indexOf(rhs);
 	};
-	
+
 	private final Comparator<FavoriteItem> mIdentifiersComparator = (lhs, rhs) ->
 	{
 		int result = compareChanNames(lhs, rhs);
@@ -401,7 +401,7 @@ public class FavoritesStorage extends StorageManager.Storage
 		if (result != 0) return result;
 		return mFavoriteItemsList.indexOf(lhs) - mFavoriteItemsList.indexOf(rhs);
 	};
-	
+
 	private final Comparator<FavoriteItem> mTitlesComparator = (lhs, rhs) ->
 	{
 		int result = compareChanNames(lhs, rhs);
@@ -412,34 +412,34 @@ public class FavoritesStorage extends StorageManager.Storage
 		if (result != 0) return result;
 		return compareThreadNumbers(lhs, rhs);
 	};
-	
+
 	public static class FavoriteItem
 	{
 		public String chanName;
 		public String boardName;
 		public String threadNumber;
 		public String title;
-		
+
 		public boolean modifiedTitle;
 		public boolean watcherEnabled;
-		
+
 		public int postsCount;
 		public int newPostsCount;
 		public boolean hasNewPosts;
 		public HttpValidator watcherValidator;
-		
+
 		public FavoriteItem()
 		{
-			
+
 		}
-		
+
 		public FavoriteItem(FavoriteItem favoriteItem)
 		{
 			this(favoriteItem.chanName, favoriteItem.boardName, favoriteItem.threadNumber, favoriteItem.title,
 					favoriteItem.modifiedTitle, favoriteItem.watcherEnabled, favoriteItem.postsCount,
 					favoriteItem.newPostsCount, favoriteItem.hasNewPosts, favoriteItem.watcherValidator);
 		}
-		
+
 		public FavoriteItem(String chanName, String boardName, String threadNumber, String title, boolean modifiedTitle,
 				boolean watcherEnabled, int postsCount, int newPostsCount, boolean hasNewPosts,
 				HttpValidator watcherValidator)
@@ -455,7 +455,7 @@ public class FavoritesStorage extends StorageManager.Storage
 			this.hasNewPosts = hasNewPosts;
 			this.watcherValidator = watcherValidator;
 		}
-		
+
 		public boolean equals(String chanName, String boardName, String threadNumber)
 		{
 			return this.chanName.equals(chanName) && StringUtils.equals(this.boardName, boardName)

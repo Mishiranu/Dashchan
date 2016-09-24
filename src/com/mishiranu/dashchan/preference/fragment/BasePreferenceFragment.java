@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -47,31 +47,31 @@ public abstract class BasePreferenceFragment extends PreferenceFragment implemen
 {
 	private ArrayList<EditTextPreference> mSummaryListenersEditText;
 	private HashMap<MultipleEditTextPreference, String> mSummaryListenersMultipleEditText;
-	
+
 	private ArrayList<Dependency> mDependencies;
-	
+
 	private static abstract class Dependency
 	{
 		public final String key, dependencyKey;
 		public final boolean positive;
-		
+
 		public Dependency(String key, String dependencyKey, boolean positive)
 		{
 			this.key = key;
 			this.dependencyKey = dependencyKey;
 			this.positive = positive;
 		}
-		
+
 		public abstract boolean checkDependency(Preference dependencyPreference);
 	}
-	
+
 	private static class BooleanDependency extends Dependency
 	{
 		public BooleanDependency(String key, String dependencyKey, boolean positive)
 		{
 			super(key, dependencyKey, positive);
 		}
-		
+
 		@Override
 		public boolean checkDependency(Preference dependencyPreference)
 		{
@@ -82,17 +82,17 @@ public abstract class BasePreferenceFragment extends PreferenceFragment implemen
 			return false;
 		}
 	}
-	
+
 	private static class StringDependency extends Dependency
 	{
 		private final HashSet<String> mValues = new HashSet<>();
-		
+
 		public StringDependency(String key, String dependencyKey, boolean positive, String... values)
 		{
 			super(key, dependencyKey, positive);
 			Collections.addAll(mValues, values);
 		}
-		
+
 		@Override
 		public boolean checkDependency(Preference dependencyPreference)
 		{
@@ -109,7 +109,7 @@ public abstract class BasePreferenceFragment extends PreferenceFragment implemen
 			return mValues.contains(value) == positive;
 		}
 	}
-	
+
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
@@ -117,14 +117,14 @@ public abstract class BasePreferenceFragment extends PreferenceFragment implemen
 		setPreferenceScreen(getPreferenceManager().createPreferenceScreen(getActivity()));
 		getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
 	}
-	
+
 	@Override
 	public void onDestroy()
 	{
 		super.onDestroy();
 		getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
 	}
-	
+
 	private void addPreference(PreferenceGroup parent, Preference preference)
 	{
 		if (parent != null) parent.addPreference(preference);
@@ -132,7 +132,7 @@ public abstract class BasePreferenceFragment extends PreferenceFragment implemen
 		preference.setOnPreferenceChangeListener(this);
 		preference.setOnPreferenceClickListener(this);
 	}
-	
+
 	public PreferenceCategory makeCategory(int titleResId)
 	{
 		PreferenceCategory category = new PreferenceCategory(getActivity());
@@ -140,13 +140,13 @@ public abstract class BasePreferenceFragment extends PreferenceFragment implemen
 		getPreferenceScreen().addPreference(category);
 		return category;
 	}
-	
+
 	public Preference makeButton(PreferenceGroup parent, int titleResId, int summaryResId, boolean information)
 	{
 		return makeButton(parent, titleResId != 0 ? getString(titleResId) : null,
 				summaryResId != 0 ? getString(summaryResId) : null, information);
 	}
-	
+
 	public Preference makeButton(PreferenceGroup parent, CharSequence title, CharSequence summary,
 			boolean information)
 	{
@@ -157,14 +157,14 @@ public abstract class BasePreferenceFragment extends PreferenceFragment implemen
 		addPreference(parent, preference);
 		return preference;
 	}
-	
+
 	public CheckBoxPreference makeCheckBox(PreferenceGroup parent, boolean persistent, String key, boolean defaultValue,
 			int titleResId, int summaryResId)
 	{
 		return makeCheckBox(parent, persistent, key, defaultValue, titleResId != 0 ? getString(titleResId) : null,
 				summaryResId != 0 ? getString(summaryResId) : null);
 	}
-	
+
 	public CheckBoxPreference makeCheckBox(PreferenceGroup parent, boolean persistent, String key,
 			boolean defaultValue, CharSequence title, CharSequence summary)
 	{
@@ -177,7 +177,7 @@ public abstract class BasePreferenceFragment extends PreferenceFragment implemen
 		addPreference(parent, preference);
 		return preference;
 	}
-	
+
 	public ExtendedEditTextPreference makeEditText(PreferenceGroup parent, String key, String defaultValue,
 			int titleResId, int summaryResId, CharSequence hint, int inputType, boolean repeatValueInSummary)
 	{
@@ -199,7 +199,7 @@ public abstract class BasePreferenceFragment extends PreferenceFragment implemen
 		}
 		return preference;
 	}
-	
+
 	public MultipleEditTextPreference makeMultipleEditText(PreferenceGroup parent, String key, String defaultValue,
 			int titleResId, int summaryResId, int count, CharSequence[] hints, int inputType,
 			String repeatValueInSummaryPattern)
@@ -209,7 +209,7 @@ public abstract class BasePreferenceFragment extends PreferenceFragment implemen
 		return makeMultipleEditText(parent, key, defaultValue, titleResId, summaryResId, count, hints, inputTypes,
 				repeatValueInSummaryPattern);
 	}
-	
+
 	public MultipleEditTextPreference makeMultipleEditText(PreferenceGroup parent, String key, String defaultValue,
 			int titleResId, int summaryResId, int count, CharSequence[] hints, int[] inputTypes,
 			String repeatValueInSummaryPattern)
@@ -231,13 +231,13 @@ public abstract class BasePreferenceFragment extends PreferenceFragment implemen
 		}
 		return preference;
 	}
-	
+
 	public ListPreference makeList(PreferenceGroup parent, String key, CharSequence[] values,
 			String defaultValue, int titleResId, int entriesResId)
 	{
 		return makeList(parent, key, values, defaultValue, titleResId, getResources().getStringArray(entriesResId));
 	}
-	
+
 	public ListPreference makeList(PreferenceGroup parent, String key, CharSequence[] values,
 			String defaultValue, int titleResId, CharSequence[] entries)
 	{
@@ -252,14 +252,14 @@ public abstract class BasePreferenceFragment extends PreferenceFragment implemen
 		updateListSummary(preference);
 		return preference;
 	}
-	
+
 	public SeekBarPreference makeSeekBar(PreferenceGroup parent, String key, int defaultValue,
 			int titleResId, int summaryResId, int minValue, int maxValue, int step, float multiplier)
 	{
 		return makeSeekBar(parent, key, defaultValue, titleResId != 0 ? getString(titleResId) : null,
 				summaryResId != 0 ? getString(summaryResId) : null, minValue, maxValue, step, multiplier);
 	}
-	
+
 	public SeekBarPreference makeSeekBar(PreferenceGroup parent, String key, int defaultValue,
 			String title, String summary, int minValue, int maxValue, int step, float multiplier)
 	{
@@ -273,7 +273,7 @@ public abstract class BasePreferenceFragment extends PreferenceFragment implemen
 		addPreference(parent, preference);
 		return preference;
 	}
-	
+
 	public void addDependency(String key, String dependencyKey, boolean positive)
 	{
 		if (mDependencies == null) mDependencies = new ArrayList<>();
@@ -281,7 +281,7 @@ public abstract class BasePreferenceFragment extends PreferenceFragment implemen
 		mDependencies.add(dependency);
 		updateDependency(dependency);
 	}
-	
+
 	public void addDependency(String key, String dependencyKey, boolean positive, String... values)
 	{
 		if (mDependencies == null) mDependencies = new ArrayList<>();
@@ -289,18 +289,18 @@ public abstract class BasePreferenceFragment extends PreferenceFragment implemen
 		mDependencies.add(dependency);
 		updateDependency(dependency);
 	}
-	
+
 	private void updateDependency(Dependency dependency)
 	{
 		Preference dependencyPreference = findPreference(dependency.dependencyKey);
 		updateDependency(dependency, dependencyPreference);
 	}
-	
+
 	private void updateDependency(Dependency dependency, Preference dependencyPreference)
 	{
 		findPreference(dependency.key).setEnabled(dependency.checkDependency(dependencyPreference));
 	}
-	
+
 	private void updateEditTextSummary(EditTextPreference preference)
 	{
 		String text = preference.getText();
@@ -311,17 +311,17 @@ public abstract class BasePreferenceFragment extends PreferenceFragment implemen
 		}
 		preference.setSummary(text);
 	}
-	
+
 	private void updateMultipleEditTextSummary(MultipleEditTextPreference preference, String format)
 	{
 		preference.setSummary(preference.formatValues(format));
 	}
-	
+
 	private void updateListSummary(ListPreference preference)
 	{
 		preference.setSummary(preference.getEntry());
 	}
-	
+
 	protected void expandDialog(Preference preference)
 	{
 		if (preference instanceof DialogPreference)
@@ -345,26 +345,26 @@ public abstract class BasePreferenceFragment extends PreferenceFragment implemen
 			}
 		}
 	}
-	
+
 	@Override
 	public final void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key)
 	{
 		Preference preference = findPreference(key);
 		if (preference != null) onPreferenceAfterChange(preference);
 	}
-	
+
 	@Override
 	public boolean onPreferenceChange(Preference preference, Object newValue)
 	{
 		return true;
 	}
-	
+
 	@Override
 	public boolean onPreferenceClick(Preference preference)
 	{
 		return false;
 	}
-	
+
 	public void onPreferenceAfterChange(Preference preference)
 	{
 		if (mSummaryListenersEditText != null)
@@ -395,7 +395,7 @@ public abstract class BasePreferenceFragment extends PreferenceFragment implemen
 			}
 		}
 	}
-	
+
 	private static PreferenceGroup getParentGroup(PreferenceGroup preferenceGroup, Preference preference)
 	{
 		for (int i = 0; i < preferenceGroup.getPreferenceCount(); i++)
@@ -411,7 +411,7 @@ public abstract class BasePreferenceFragment extends PreferenceFragment implemen
 		}
 		return null;
 	}
-	
+
 	protected PreferenceGroup getParentGroup(Preference preference)
 	{
 		return getParentGroup(getPreferenceScreen(), preference);

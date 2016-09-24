@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,22 +37,22 @@ import com.mishiranu.dashchan.widget.ViewFactory;
 public class HistoryAdapter extends BaseAdapter
 {
 	private final String mChanName;
-	
+
 	private final ArrayList<Object> mItems = new ArrayList<>();
 	private final ArrayList<Object> mFilteredItems = new ArrayList<>();
 
 	private boolean mFilterMode = false;
 	private String mFilterText;
-	
+
 	private static final int TYPE_HEADER = 0;
 	private static final int TYPE_ITEM = 1;
-	
+
 	private static final int HEADER_NONE = 0;
 	private static final int HEADER_TODAY = 1;
 	private static final int HEADER_YESTERDAY = 2;
 	private static final int HEADER_WEEK = 3;
 	private static final int HEADER_OLD = 4;
-	
+
 	public HistoryAdapter(String chanName)
 	{
 		mChanName = chanName;
@@ -94,7 +94,7 @@ public class HistoryAdapter extends BaseAdapter
 			mItems.add(historyItem);
 		}
 	}
-	
+
 	/*
 	 * Returns true, if adapter isn't empty.
 	 */
@@ -121,7 +121,7 @@ public class HistoryAdapter extends BaseAdapter
 		notifyDataSetChanged();
 		return !mFilterMode || mFilteredItems.size() > 0;
 	}
-	
+
 	public void remove(HistoryDatabase.HistoryItem historyItem)
 	{
 		int index = mItems.indexOf(historyItem);
@@ -136,7 +136,7 @@ public class HistoryAdapter extends BaseAdapter
 			if (mFilterMode) applyFilter(mFilterText); else notifyDataSetChanged();
 		}
 	}
-	
+
 	public void clear()
 	{
 		mItems.clear();
@@ -155,44 +155,44 @@ public class HistoryAdapter extends BaseAdapter
 	{
 		return 0;
 	}
-	
+
 	@Override
 	public Object getItem(int position)
 	{
 		return (mFilterMode ? mFilteredItems : mItems).get(position);
 	}
-	
+
 	public HistoryDatabase.HistoryItem getHistoryItem(int position)
 	{
 		Object item = getItem(position);
 		if (item instanceof HistoryDatabase.HistoryItem) return (HistoryDatabase.HistoryItem) item;
 		return null;
 	}
-	
+
 	@Override
 	public boolean areAllItemsEnabled()
 	{
 		return false;
 	}
-	
+
 	@Override
 	public boolean isEnabled(int position)
 	{
 		return getItem(position) instanceof HistoryDatabase.HistoryItem;
 	}
-	
+
 	@Override
 	public int getViewTypeCount()
 	{
 		return 2;
 	}
-	
+
 	@Override
 	public int getItemViewType(int position)
 	{
 		return getItem(position) instanceof HistoryDatabase.HistoryItem ? TYPE_ITEM : TYPE_HEADER;
 	}
-	
+
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent)
 	{

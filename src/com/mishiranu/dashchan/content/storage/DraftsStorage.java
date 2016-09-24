@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,19 +40,19 @@ import com.mishiranu.dashchan.util.LruCache;
 public class DraftsStorage extends StorageManager.Storage
 {
 	private static final String KEY_POST_DRAFTS = "postDrafts";
-	
+
 	private static final DraftsStorage INSTANCE = new DraftsStorage();
-	
+
 	public static DraftsStorage getInstance()
 	{
 		return INSTANCE;
 	}
-	
+
 	private final LruCache<String, PostDraft> mPostDrafts = new LruCache<>(5);
-	
+
 	private String mCaptchaChanName;
 	private CaptchaDraft mCaptchaDraft;
-	
+
 	private DraftsStorage()
 	{
 		super("drafts", 2000, 10000);
@@ -72,18 +72,18 @@ public class DraftsStorage extends StorageManager.Storage
 				}
 				catch (JSONException e)
 				{
-					
+
 				}
 			}
 		}
 	}
-	
+
 	@Override
 	public Object onClone()
 	{
 		return new ArrayList<>(mPostDrafts.values());
 	}
-	
+
 	@Override
 	public JSONObject onSerialize(Object data) throws JSONException
 	{
@@ -98,17 +98,17 @@ public class DraftsStorage extends StorageManager.Storage
 		}
 		return jsonObject;
 	}
-	
+
 	private static String makeKey(String chanName, String boardName, String threadNumber)
 	{
 		return chanName + "/" + boardName + "/" + threadNumber;
 	}
-	
+
 	private static String makeKey(PostDraft postDraft)
 	{
 		return makeKey(postDraft.chanName, postDraft.boardName, postDraft.threadNumber);
 	}
-	
+
 	public void store(PostDraft postDraft)
 	{
 		if (postDraft != null)
@@ -119,24 +119,24 @@ public class DraftsStorage extends StorageManager.Storage
 			if (serialize) serialize();
 		}
 	}
-	
+
 	public PostDraft getPostDraft(String chanName, String boardName, String threadNumber)
 	{
 		return mPostDrafts.get(makeKey(chanName, boardName, threadNumber));
 	}
-	
+
 	public void removePostDraft(String chanName, String boardName, String threadNumber)
 	{
 		PostDraft postDraft = mPostDrafts.remove(makeKey(chanName, boardName, threadNumber));
 		if (postDraft != null) serialize();
 	}
-	
+
 	public void store(String chanName, CaptchaDraft captchaDraft)
 	{
 		mCaptchaChanName = chanName;
 		mCaptchaDraft = captchaDraft;
 	}
-	
+
 	public CaptchaDraft getCaptchaDraft(String chanName)
 	{
 		if (mCaptchaDraft != null && mCaptchaChanName.equals(chanName) && System.currentTimeMillis() -
@@ -146,19 +146,19 @@ public class DraftsStorage extends StorageManager.Storage
 		}
 		return null;
 	}
-	
+
 	public void removeCaptchaDraft()
 	{
 		mCaptchaDraft = null;
 		mCaptchaChanName = null;
 	}
-	
+
 	public static class PostDraft
 	{
 		private static final String KEY_CHAN_NAME = "chanName";
 		private static final String KEY_BOARD_NAME = "boardName";
 		private static final String KEY_THREAD_NUMBER = "threadNumber";
-		
+
 		private static final String KEY_NAME = "name";
 		private static final String KEY_EMAIL = "email";
 		private static final String KEY_PASSWORD = "password";
@@ -170,11 +170,11 @@ public class DraftsStorage extends StorageManager.Storage
 		private static final String KEY_OPTION_SPOILER = "optionSpoiler";
 		private static final String KEY_OPTION_ORIGINAL_POSTER = "optionOriginalPoster";
 		private static final String KEY_USER_ICON = "userIcon";
-		
+
 		public final String chanName;
 		public final String boardName;
 		public final String threadNumber;
-		
+
 		public final String name;
 		public final String email;
 		public final String password;
@@ -186,7 +186,7 @@ public class DraftsStorage extends StorageManager.Storage
 		public final boolean optionSpoiler;
 		public final boolean optionOriginalPoster;
 		public final String userIcon;
-		
+
 		public PostDraft(String chanName, String boardName, String threadNumber,
 				String name, String email, String password, String subject, String comment, int commentCarriage,
 				AttachmentDraft[] attachmentDrafts, boolean optionSage, boolean optionSpoiler,
@@ -207,7 +207,7 @@ public class DraftsStorage extends StorageManager.Storage
 			this.attachmentDrafts = attachmentDrafts;
 			this.optionSpoiler = optionSpoiler;
 		}
-		
+
 		public PostDraft(String chanName, String boardName, String threadNumber,
 				String name, String email, String password,
 				boolean optionSage, boolean optionOriginalPoster, String userIcon)
@@ -215,7 +215,7 @@ public class DraftsStorage extends StorageManager.Storage
 			this(chanName, boardName, threadNumber, name, email, password, null, null, 0,
 					null, optionSage, false, optionOriginalPoster, userIcon);
 		}
-		
+
 		public boolean isEmpty()
 		{
 			return StringUtils.isEmpty(name) && StringUtils.isEmpty(email) && StringUtils.isEmpty(password) &&
@@ -223,7 +223,7 @@ public class DraftsStorage extends StorageManager.Storage
 					(attachmentDrafts == null || attachmentDrafts.length == 0) &&
 					!optionSage && !optionSpoiler && !optionOriginalPoster && StringUtils.isEmpty(userIcon);
 		}
-		
+
 		public JSONObject toJsonObject() throws JSONException
 		{
 			JSONObject jsonObject = new JSONObject();
@@ -248,7 +248,7 @@ public class DraftsStorage extends StorageManager.Storage
 			putJson(jsonObject, KEY_USER_ICON, userIcon);
 			return jsonObject;
 		}
-		
+
 		public static PostDraft fromJsonObject(JSONObject jsonObject)
 		{
 			String chanName = jsonObject.optString(KEY_CHAN_NAME, null);
@@ -284,7 +284,7 @@ public class DraftsStorage extends StorageManager.Storage
 					commentCarriage, attachmentDrafts, optionSage, optionSpoiler, optionOriginalPoster, userIcon);
 		}
 	}
-	
+
 	public static class CaptchaDraft implements Parcelable
 	{
 		public final String captchaType;
@@ -301,7 +301,7 @@ public class DraftsStorage extends StorageManager.Storage
 
 		public final String boardName;
 		public final String threadNumber;
-		
+
 		public CaptchaDraft(String captchaType, ChanPerformer.CaptchaState captchaState,
 				ChanPerformer.CaptchaData captchaData, String loadedCaptchaType,
 				ChanConfiguration.Captcha.Input loadedInput, ChanConfiguration.Captcha.Validity loadedValidity,
@@ -322,13 +322,13 @@ public class DraftsStorage extends StorageManager.Storage
 			this.boardName = boardName;
 			this.threadNumber = threadNumber;
 		}
-		
+
 		@Override
 		public int describeContents()
 		{
 			return 0;
 		}
-		
+
 		@Override
 		public void writeToParcel(Parcel dest, int flags)
 		{
@@ -346,7 +346,7 @@ public class DraftsStorage extends StorageManager.Storage
 			dest.writeString(boardName);
 			dest.writeString(threadNumber);
 		}
-		
+
 		public static final Creator<CaptchaDraft> CREATOR = new Creator<CaptchaDraft>()
 		{
 			@Override
@@ -370,7 +370,7 @@ public class DraftsStorage extends StorageManager.Storage
 				return new CaptchaDraft(captchaType, captchaState, captchaData, loadedCaptchaType, loadedInput,
 						loadedValidity, text, image, large, blackAndWhite, loadTime, boardName, threadNumber);
 			}
-			
+
 			@Override
 			public CaptchaDraft[] newArray(int size)
 			{
@@ -378,7 +378,7 @@ public class DraftsStorage extends StorageManager.Storage
 			}
 		};
 	}
-	
+
 	public static class AttachmentDraft
 	{
 		private static final String KEY_FILE_URI = "fileUri";
@@ -392,7 +392,7 @@ public class DraftsStorage extends StorageManager.Storage
 		private static final String KEY_REENCODING_FORMAT = "format";
 		private static final String KEY_REENCODING_QUALITY = "quality";
 		private static final String KEY_REENCODING_REDUCE = "reduce";
-		
+
 		public final FileHolder fileHolder;
 		public final String rating;
 		public final boolean optionUniqueHash;
@@ -400,7 +400,7 @@ public class DraftsStorage extends StorageManager.Storage
 		public final boolean optionRemoveFileName;
 		public final boolean optionSpoiler;
 		public final GraphicsUtils.Reencoding reencoding;
-		
+
 		public AttachmentDraft(FileHolder fileHolder, String rating, boolean optionUniqueHash,
 				boolean optionRemoveMetadata, boolean optionRemoveFileName, boolean optionSpoiler,
 				GraphicsUtils.Reencoding reencoding)
@@ -413,7 +413,7 @@ public class DraftsStorage extends StorageManager.Storage
 			this.optionSpoiler = optionSpoiler;
 			this.reencoding = reencoding;
 		}
-		
+
 		public JSONObject toJsonObject() throws JSONException
 		{
 			JSONObject jsonObject = new JSONObject();
@@ -433,7 +433,7 @@ public class DraftsStorage extends StorageManager.Storage
 			}
 			return jsonObject;
 		}
-		
+
 		public static AttachmentDraft fromJsonObject(JSONObject jsonObject)
 		{
 			String uriString = jsonObject.optString(KEY_FILE_URI, null);

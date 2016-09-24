@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -41,23 +41,23 @@ public class BoardsAdapter extends BaseAdapter
 {
 	public static final String KEY_TITLE = "title";
 	public static final String KEY_BOARDS = "boards";
-	
+
 	private static final int TYPE_VIEW = 0;
 	private static final int TYPE_HEADER = 1;
-	
+
 	private final String mChanName;
-	
+
 	private final ArrayList<ListItem> mListItems = new ArrayList<>();
 	private final ArrayList<ListItem> mFilteredListItems = new ArrayList<>();
-	
+
 	private boolean mFilterMode = false;
 	private String mFilterText;
-	
+
 	public BoardsAdapter(String chanName)
 	{
 		mChanName = chanName;
 	}
-	
+
 	/*
 	 * Returns true, if adapter isn't empty.
 	 */
@@ -89,7 +89,7 @@ public class BoardsAdapter extends BaseAdapter
 		notifyDataSetChanged();
 		return !mFilterMode || mFilteredListItems.size() > 0;
 	}
-	
+
 	public void update()
 	{
 		mListItems.clear();
@@ -119,37 +119,37 @@ public class BoardsAdapter extends BaseAdapter
 			}
 			catch (JSONException e)
 			{
-				
+
 			}
 		}
 		notifyDataSetChanged();
 		if (mFilterMode) applyFilter(mFilterText);
 	}
-	
+
 	@Override
 	public int getViewTypeCount()
 	{
 		return 2;
 	}
-	
+
 	@Override
 	public int getItemViewType(int position)
 	{
 		return getItem(position).boardName == null ? TYPE_HEADER : TYPE_VIEW;
 	}
-	
+
 	@Override
 	public boolean isEnabled(int position)
 	{
 		return getItem(position).boardName != null;
 	}
-	
+
 	@Override
 	public boolean areAllItemsEnabled()
 	{
 		return false;
 	}
-	
+
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent)
 	{
@@ -171,29 +171,29 @@ public class BoardsAdapter extends BaseAdapter
 		((TextView) convertView).setText(listItem.title);
 		return convertView;
 	}
-	
+
 	@Override
 	public int getCount()
 	{
 		return (mFilterMode ? mFilteredListItems : mListItems).size();
 	}
-	
+
 	@Override
 	public ListItem getItem(int position)
 	{
 		return (mFilterMode ? mFilteredListItems : mListItems).get(position);
 	}
-	
+
 	@Override
 	public long getItemId(int position)
 	{
 		return 0;
 	}
-	
+
 	public static class ListItem
 	{
 		public final String boardName, title;
-		
+
 		public ListItem(String boardName, String title)
 		{
 			this.boardName = boardName;

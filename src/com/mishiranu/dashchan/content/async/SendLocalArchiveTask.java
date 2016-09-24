@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -64,13 +64,13 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 	private final boolean mSaveThumbnails;
 	private final boolean mSaveFiles;
 	private final Callback mCallback;
-	
+
 	public interface Callback
 	{
 		public void onLocalArchivationProgressUpdate(int handledPostsCount);
 		public void onLocalArchivationComplete(boolean success, boolean showSuccess);
 	}
-	
+
 	public SendLocalArchiveTask(String chanName, String boardName, String threadNumber,
 			Posts posts, boolean saveThumbnails, boolean saveFiles, Callback callback)
 	{
@@ -82,34 +82,34 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 		mSaveFiles = saveFiles;
 		mCallback = callback;
 	}
-	
+
 	@Override
 	public String getBoardName()
 	{
 		return mBoardName;
 	}
-	
+
 	@Override
 	public String getThreadNumber()
 	{
 		return mThreadNumber;
 	}
-	
+
 	private static class SpanItem
 	{
 		public int start;
 		public int end;
-		
+
 		public final String openTag;
 		public final String closeTag;
-		
+
 		public SpanItem(String openTag, String closeTag)
 		{
 			this.openTag = openTag;
 			this.closeTag = closeTag;
 		}
 	}
-	
+
 	@Override
 	protected Result doInBackground(Void... params)
 	{
@@ -293,13 +293,13 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 		}
 		return result;
 	}
-	
+
 	@Override
 	protected void onProgressUpdate(Integer... values)
 	{
 		mCallback.onLocalArchivationProgressUpdate(values[0]);
 	}
-	
+
 	@Override
 	protected void onPostExecute(Object resultObject)
 	{
@@ -314,16 +314,16 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 		}
 		mCallback.onLocalArchivationComplete(result != null, showSuccess);
 	}
-	
+
 	@Override
 	public void cancel()
 	{
 		cancel(true);
 	}
-	
+
 	private long mLastNotifyIncrement = 0L;
 	private int mProgress = 0;
-	
+
 	public void notifyIncrement()
 	{
 		mProgress++;
@@ -334,7 +334,7 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 			publishProgress(mProgress);
 		}
 	}
-	
+
 	private boolean performDownload(File directory, ArrayList<DownloadService.DownloadItem> downloadItems)
 	{
 		if (directory != null && downloadItems.size() > 0)
@@ -344,22 +344,22 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 		}
 		return false;
 	}
-	
+
 	private static class Result
 	{
 		public final File filesDirectory;
 		public final File thumbnailsDirectory;
-		
+
 		public final ArrayList<DownloadService.DownloadItem> filesToDownload = new ArrayList<>();
 		public final ArrayList<DownloadService.DownloadItem> thumbnailsToDownload = new ArrayList<>();
-		
+
 		public Result(File thumbnailsDirectory, File filesDirectory)
 		{
 			this.thumbnailsDirectory = thumbnailsDirectory;
 			this.filesDirectory = filesDirectory;
 		}
 	}
-	
+
 	private void replaceSpannable(SpannableStringBuilder spannable, char what, String with)
 	{
 		for (int i = 0; i < spannable.length(); i++)
@@ -367,7 +367,7 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 			if (spannable.charAt(i) == what) spannable.replace(i, i + 1, with);
 		}
 	}
-	
+
 	private SpanItem makeSpanItem(int what, Object extra)
 	{
 		String openTag;
@@ -465,7 +465,7 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 		}
 		return new SpanItem(openTag, closeTag);
 	}
-	
+
 	private Object[] getSpanType(Object span, Object[] result)
 	{
 		result[0] = 0;
@@ -520,7 +520,7 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 		}
 		return result;
 	}
-	
+
 	public static File getLocalDownloadDirectory(boolean prepare)
 	{
 		File directory = new File(Preferences.getDownloadDirectory(), "Archive");
@@ -536,13 +536,13 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 				}
 				catch (IOException e)
 				{
-					
+
 				}
 			}
 		}
 		return directory;
 	}
-	
+
 	private String chooseFileName(ArrayList<String> fileNamesLc, String fileName)
 	{
 		if (fileName != null)

@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,19 +26,19 @@ public class CarryLayout extends ViewGroup
 {
 	private int mHorizontalSpacing;
 	private int mVerticalSpacing;
-	
+
 	private static final int[] ATTRS = new int[] {android.R.attr.horizontalSpacing, android.R.attr.verticalSpacing};
-	
+
 	public CarryLayout(Context context)
 	{
 		super(context);
 	}
-	
+
 	public CarryLayout(Context context, AttributeSet attrs)
 	{
 		this(context, attrs, 0);
 	}
-	
+
 	public CarryLayout(Context context, AttributeSet attrs, int defStyleAttr)
 	{
 		super(context, attrs, defStyleAttr);
@@ -47,33 +47,33 @@ public class CarryLayout extends ViewGroup
 		mVerticalSpacing = typedArray.getDimensionPixelSize(1, 0);
 		typedArray.recycle();
 	}
-	
+
 	@SuppressWarnings("unused")
 	public void setHorizontalSpacing(int horizontalSpacing)
 	{
 		mHorizontalSpacing = horizontalSpacing;
 		requestLayout();
 	}
-	
+
 	@SuppressWarnings("unused")
 	public void setVerticalSpacing(int verticalSpacing)
 	{
 		mVerticalSpacing = verticalSpacing;
 		requestLayout();
 	}
-	
+
 	@SuppressWarnings("unused")
 	public int getHorizontalSpacing()
 	{
 		return mHorizontalSpacing;
 	}
-	
+
 	@SuppressWarnings("unused")
 	public int getVerticalSpacing()
 	{
 		return mVerticalSpacing;
 	}
-	
+
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
 	{
@@ -128,7 +128,7 @@ public class CarryLayout extends ViewGroup
 		minHeight = Math.max(minHeight, getSuggestedMinimumHeight());
 		setMeasuredDimension(resolveSize(minWidth, widthMeasureSpec), resolveSize(minHeight, heightMeasureSpec));
 	}
-	
+
 	@Override
 	protected void onLayout(boolean changed, int l, int t, int r, int b)
 	{
@@ -163,7 +163,7 @@ public class CarryLayout extends ViewGroup
 			}
 		}
 	}
-	
+
 	@Override
 	protected LayoutParams generateDefaultLayoutParams()
 	{

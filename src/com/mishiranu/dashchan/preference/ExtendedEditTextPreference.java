@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,12 +37,12 @@ public class ExtendedEditTextPreference extends EditTextPreference
 	private CharSequence mNeutralButtonText;
 	private DialogInterface.OnClickListener mNeutralButtonListener;
 	private boolean mNeutralButtonCloseDialog;
-	
+
 	public ExtendedEditTextPreference(Context context)
 	{
 		super(context);
 	}
-	
+
 	public void setDescription(CharSequence description)
 	{
 		if (!StringUtils.isEmpty(description) && mDescriptionView == null)
@@ -54,14 +54,14 @@ public class ExtendedEditTextPreference extends EditTextPreference
 		}
 		if (mDescriptionView != null) mDescriptionView.setText(description);
 	}
-	
+
 	public void setNeutralButton(CharSequence text, DialogInterface.OnClickListener listener, boolean closeDialog)
 	{
 		mNeutralButtonText = text;
 		mNeutralButtonListener = listener;
 		mNeutralButtonCloseDialog = closeDialog;
 	}
-	
+
 	@Override
 	protected void onBindDialogView(View view)
 	{
@@ -77,14 +77,14 @@ public class ExtendedEditTextPreference extends EditTextPreference
 			}
 		}
 	}
-	
+
 	@Override
 	protected void onPrepareDialogBuilder(AlertDialog.Builder builder)
 	{
 		super.onPrepareDialogBuilder(builder);
 		if (mNeutralButtonText != null) builder.setNeutralButton(mNeutralButtonText, this);
 	}
-	
+
 	@Override
 	protected void showDialog(Bundle state)
 	{
@@ -101,7 +101,7 @@ public class ExtendedEditTextPreference extends EditTextPreference
 			}
 		}
 	}
-	
+
 	@Override
 	public void onClick(DialogInterface dialog, int which)
 	{

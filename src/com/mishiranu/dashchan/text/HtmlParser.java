@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,24 +42,24 @@ public class HtmlParser implements ContentHandler
 	{
 		return parse(source, markup, MODE_SPANIFY, parentPostNumber, extra);
 	}
-	
+
 	public static String clear(String source)
 	{
 		return parse(source, null, MODE_CLEAR, null, null).toString();
 	}
-	
+
 	public static String unmark(String source, Markup markup, Object extra)
 	{
 		return parse(source, markup, MODE_UNMARK, null, extra).toString();
 	}
-	
+
 	private static CharSequence parse(String source, Markup markup, int parsingMode, String parentPostNumber,
 			Object extra)
 	{
 		if (StringUtils.isEmpty(source)) return "";
 		return new HtmlParser(source, markup, parsingMode, parentPostNumber, extra).convert();
 	}
-	
+
 	public interface Markup
 	{
 		public Object onBeforeTagStart(HtmlParser parser, StringBuilder builder, String tagName,
@@ -67,28 +67,28 @@ public class HtmlParser implements ContentHandler
 		public void onTagStart(HtmlParser parser, StringBuilder builder, String tagName,
 				Attributes attributes, Object object);
 		public void onTagEnd(HtmlParser parser, StringBuilder builder, String tagName);
-		
+
 		public int onListLineStart(HtmlParser parser, StringBuilder builder, boolean ordered, int line);
 		public void onCutBlock(HtmlParser parser, StringBuilder builder);
-		
+
 		public SpanProvider initSpanProvider(HtmlParser parser);
 	}
-	
+
 	public interface SpanProvider
 	{
 		public CharSequence transformBuilder(HtmlParser parser, StringBuilder builder);
 	}
-	
+
 	public static class TagData
 	{
 		public static final int UNDEFINED = 0;
 		public static final int ENABLED = 1;
 		public static final int DISABLED = 2;
-		
+
 		public boolean block;
 		public boolean spaced;
 		public int preformatted;
-		
+
 		public TagData(boolean block, boolean spaced, boolean preformatted)
 		{
 			this.block = block;
@@ -96,11 +96,11 @@ public class HtmlParser implements ContentHandler
 			this.preformatted = preformatted ? ENABLED : UNDEFINED;
 		}
 	}
-	
+
 	private static final int MODE_SPANIFY = 0;
 	private static final int MODE_CLEAR = 1;
 	private static final int MODE_UNMARK = 2;
-	
+
 	private final String mSource;
 	private final StringBuilder mBuilder = new StringBuilder();
 	private final Markup mMarkup;
@@ -108,9 +108,9 @@ public class HtmlParser implements ContentHandler
 	private final SpanProvider mSpanProvider;
 
 	private final String mParentPostNumber;
-	
+
 	private final Object mExtra;
-	
+
 	private HtmlParser(String source, Markup markup, int parsingMode, String parentPostNumber, Object extra)
 	{
 		if (markup == null) markup = IDLE_MARKUP;
@@ -121,9 +121,9 @@ public class HtmlParser implements ContentHandler
 		mExtra = extra;
 		mSpanProvider = isSpanifyMode() || isUnmarkMode() ? markup.initSpanProvider(this) : null;
 	}
-	
+
 	public static final HTMLSchema SCHEMA = new HTMLSchema();
-	
+
 	public CharSequence convert()
 	{
 		Parser parser = new Parser();
@@ -188,79 +188,79 @@ public class HtmlParser implements ContentHandler
 		}
 		return substring ? builder.substring(start, end) : builder;
 	}
-	
+
 	public boolean isSpanifyMode()
 	{
 		return mParsingMode == MODE_SPANIFY;
 	}
-	
+
 	public boolean isClearMode()
 	{
 		return mParsingMode == MODE_CLEAR;
 	}
-	
+
 	public boolean isUnmarkMode()
 	{
 		return mParsingMode == MODE_UNMARK;
 	}
-	
+
 	public StringBuilder getBuilder()
 	{
 		return mBuilder;
 	}
-	
+
 	public String getParentPostNumber()
 	{
 		return mParentPostNumber;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public <T> T getExtra()
 	{
 		return (T) mExtra;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public <T extends SpanProvider> T getSpanProvider()
 	{
 		return (T) mSpanProvider;
 	}
-	
+
 	@Override
 	public void setDocumentLocator(Locator locator)
 	{
-		
+
 	}
-	
+
 	@Override
 	public void startDocument()
 	{
-		
+
 	}
-	
+
 	@Override
 	public void endDocument()
 	{
-		
+
 	}
-	
+
 	@Override
 	public void startPrefixMapping(String prefix, String uri)
 	{
-		
+
 	}
-	
+
 	@Override
 	public void endPrefixMapping(String prefix)
 	{
-		
+
 	}
-	
+
 	private static class PositiveStateStack
 	{
 		private boolean[] mState = null;
 		private int mPosition = -1;
-		
+
 		public void push(boolean state)
 		{
 			if (state || mPosition >= 0)
@@ -271,21 +271,21 @@ public class HtmlParser implements ContentHandler
 				mState[mPosition] = state;
 			}
 		}
-		
+
 		public boolean pop()
 		{
 			return mPosition >= 0 ? mState[mPosition--] : false;
 		}
-		
+
 		public boolean check()
 		{
 			return mPosition >= 0 ? mState[mPosition] : false;
 		}
 	}
-	
+
 	private static final HashMap<String, TagData> DEFAULT_TAGS = new HashMap<>();
 	private static final HashSet<String> HIDDEN_TAGS = new HashSet<>();
-	
+
 	static
 	{
 		DEFAULT_TAGS.put("blockquote", new TagData(true, true, false));
@@ -303,19 +303,19 @@ public class HtmlParser implements ContentHandler
 		DEFAULT_TAGS.put("p", new TagData(true, true, false));
 		DEFAULT_TAGS.put("pre", new TagData(true, true, true));
 		DEFAULT_TAGS.put("ul", new TagData(true, true, false));
-		
+
 		// Show tables as lists
 		DEFAULT_TAGS.put("table", new TagData(true, false, false));
 		DEFAULT_TAGS.put("td", new TagData(true, false, false));
 		DEFAULT_TAGS.put("th", new TagData(true, false, false));
 		DEFAULT_TAGS.put("tr", new TagData(true, true, false));
-		
+
 		HIDDEN_TAGS.add("script");
 		HIDDEN_TAGS.add("style");
 	}
-	
+
 	private final TagData mTagData = new TagData(false, false, false);
-	
+
 	private TagData fillBaseTagData(String tagName)
 	{
 		TagData tagData = mTagData;
@@ -334,7 +334,7 @@ public class HtmlParser implements ContentHandler
 		}
 		return tagData;
 	}
-	
+
 	private void appendLineBreak()
 	{
 		StringBuilder builder = mBuilder;
@@ -347,7 +347,7 @@ public class HtmlParser implements ContentHandler
 		}
 		if (mayAppend) builder.append("\n");
 	}
-	
+
 	private void appendBlockBreak(boolean spacedTag)
 	{
 		switch (mLastBlock)
@@ -394,24 +394,24 @@ public class HtmlParser implements ContentHandler
 			}
 		}
 	}
-	
+
 	private static final int LAST_BLOCK_NONE = 0;
 	private static final int LAST_BLOCK_COMMON = 1;
 	private static final int LAST_BLOCK_SPACED = 2;
-	
+
 	private int mLastCharactersLength = 0;
 	private int mLastBlock = LAST_BLOCK_NONE;
 	private final PositiveStateStack mBlockMode = new PositiveStateStack();
 	private final PositiveStateStack mSpacedMode = new PositiveStateStack();
 	private final PositiveStateStack mPreformattedMode = new PositiveStateStack();
-	
+
 	private int mTableStart = 0;
-	
+
 	private boolean mOrderedList;
 	private int mListStart = -1;
-	
+
 	private boolean mHidden = false;
-	
+
 	@Override
 	public void startElement(String uri, String tagName, String qName, Attributes attributes)
 	{
@@ -434,7 +434,7 @@ public class HtmlParser implements ContentHandler
 		mSpacedMode.push(spacedTag);
 		mPreformattedMode.push(preformattedTag);
 		mLastBlock = blockTag ? spacedTag ? LAST_BLOCK_SPACED : LAST_BLOCK_COMMON : LAST_BLOCK_NONE;
-		
+
 		if (tagName.equals("tr") || tagName.equals("th") || tagName.equals("td"))
 		{
 			if (tagName.equals("tr")) mTableStart = 1; else
@@ -470,7 +470,7 @@ public class HtmlParser implements ContentHandler
 			}
 		}
 	}
-	
+
 	@Override
 	public void endElement(String uri, String tagName, String qName)
 	{
@@ -496,7 +496,7 @@ public class HtmlParser implements ContentHandler
 		if ((tagName.equals("ol") || tagName.equals("ul"))) mListStart = -1;
 		mLastBlock = blockTag ? spacedTag ? LAST_BLOCK_SPACED : LAST_BLOCK_COMMON : LAST_BLOCK_NONE;
 	}
-	
+
 	@Override
 	public void characters(char ch[], int start, int length)
 	{
@@ -570,28 +570,28 @@ public class HtmlParser implements ContentHandler
 		else mLastCharactersLength = realLength;
 		if (realLength > 0) mLastBlock = LAST_BLOCK_NONE;
 	}
-	
+
 	@Override
 	public void ignorableWhitespace(char ch[], int start, int length)
 	{
-		
+
 	}
-	
+
 	@Override
 	public void processingInstruction(String target, String data)
 	{
-		
+
 	}
-	
+
 	@Override
 	public void skippedEntity(String name)
 	{
-		
+
 	}
-	
+
 	private static final Pattern COLOR_PATTERN = Pattern.compile("color: ?(?:rgba?\\((\\d+), ?(\\d+)," +
 			" ?(\\d+)(?:, ?\\d+)?\\)|(#[0-9A-Fa-f]+|[A-Za-z]+))");
-	
+
 	public Integer getColorAttribute(Attributes attributes)
 	{
 		String spanStyle = attributes.getValue("", "style");
@@ -610,7 +610,7 @@ public class HtmlParser implements ContentHandler
 					}
 					catch (IllegalArgumentException e)
 					{
-						
+
 					}
 				}
 				else
@@ -624,7 +624,7 @@ public class HtmlParser implements ContentHandler
 		}
 		return null;
 	}
-	
+
 	private static final Markup IDLE_MARKUP = new Markup()
 	{
 		@Override
@@ -633,32 +633,32 @@ public class HtmlParser implements ContentHandler
 		{
 			return null;
 		}
-		
+
 		@Override
 		public void onTagStart(HtmlParser parser, StringBuilder builder, String tagName,
 				Attributes attributes, Object object)
 		{
-			
+
 		}
-		
+
 		@Override
 		public void onTagEnd(HtmlParser parser, StringBuilder builder, String tagName)
 		{
-			
+
 		}
-		
+
 		@Override
 		public int onListLineStart(HtmlParser parser, StringBuilder builder, boolean ordered, int line)
 		{
 			return 0;
 		}
-		
+
 		@Override
 		public void onCutBlock(HtmlParser parser, StringBuilder builder)
 		{
-			
+
 		}
-		
+
 		@Override
 		public SpanProvider initSpanProvider(HtmlParser parser)
 		{

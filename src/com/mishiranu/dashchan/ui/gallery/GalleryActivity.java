@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -71,28 +71,28 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 	private static final String EXTRA_GALLERY_WINDOW = "galleryWindow";
 	private static final String EXTRA_GALLERY_MODE = "galleryMode";
 	private static final String EXTRA_SYSTEM_UI_VISIBILITY = "systemUIVisibility";
-	
+
 	private String mThreadTitle;
 	private final GalleryInstance mInstance = new GalleryInstance(this, this);
-	
+
 	private View mActionBar;
 	private WindowControlFrameLayout mRootView;
-	
+
 	private GalleryBackgroundDrawable mBackgroundDrawable;
-	
+
 	private boolean mGalleryWindow, mGalleryMode;
 	private boolean mAllowGoToPost;
 	private boolean mOverrideUpButton = false;
 	private final boolean mScrollThread = Preferences.isScrollThreadGallery();
-	
+
 	private static final int ACTION_BAR_COLOR = 0xaa202020;
 	private static final int BACKGROUND_COLOR = 0xf0101010;
-	
+
 	private final ActionMenuConfigurator mActionMenuConfigurator = new ActionMenuConfigurator();
 
 	private PagerUnit mPagerUnit;
 	private ListUnit mListUnit;
-	
+
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private void applyStatusNavigationTranslucency()
 	{
@@ -106,7 +106,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 					| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
 		}
 	}
-	
+
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
@@ -199,7 +199,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 			mPagerUnit.onViewsCreated(imageViewPosition);
 		}
 	}
-	
+
 	@Override
 	protected void onResume()
 	{
@@ -207,7 +207,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		if (mPagerUnit != null) mPagerUnit.onResume();
 		ForegroundManager.register(this);
 	}
-	
+
 	@Override
 	protected void onPause()
 	{
@@ -215,32 +215,32 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		if (mPagerUnit != null) mPagerUnit.onPause();
 		ForegroundManager.unregister(this);
 	}
-	
+
 	@Override
 	protected void onFinish()
 	{
 		super.onFinish();
 		if (mPagerUnit != null) mPagerUnit.onFinish();
 	}
-	
+
 	@Override
 	public void finish()
 	{
 		super.finish();
 		overridePendingTransition(0, R.anim.fast_fade_out);
 	}
-	
+
 	private void invalidateListPosition()
 	{
 		mListUnit.setListSelection(mPagerUnit.getCurrentIndex(), true);
 	}
-	
+
 	private final Runnable mReturnToGalleryRunnable = () ->
 	{
 		switchMode(true, true);
 		invalidateListPosition();
 	};
-	
+
 	private boolean returnToGallery()
 	{
 		if (mGalleryWindow && !mGalleryMode)
@@ -251,13 +251,13 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		}
 		return false;
 	}
-	
+
 	@Override
 	public void onBackPressed()
 	{
 		if (!returnToGallery()) super.onBackPressed();
 	}
-	
+
 	private static final int OPTIONS_MENU_SAVE = 0;
 	private static final int OPTIONS_MENU_GALLERY = 1;
 	private static final int OPTIONS_MENU_REFRESH = 2;
@@ -269,7 +269,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 	private static final int OPTIONS_MENU_SHARE_LINK = 8;
 	private static final int OPTIONS_MENU_SHARE_FILE = 9;
 	private static final int OPTIONS_MENU_SELECT = 10;
-	
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu)
 	{
@@ -291,7 +291,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		mActionMenuConfigurator.onAfterCreateOptionsMenu(menu);
 		return true;
 	}
-	
+
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu)
 	{
@@ -319,7 +319,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		mActionMenuConfigurator.onAfterPrepareOptionsMenu(menu);
 		return true;
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
@@ -400,13 +400,13 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		}
 		return true;
 	}
-	
+
 	@Override
 	public void downloadGalleryItem(GalleryItem galleryItem)
 	{
 		galleryItem.downloadStorage(this, mInstance.locator, mThreadTitle);
 	}
-	
+
 	@Override
 	public void downloadGalleryItems(ArrayList<GalleryItem> galleryItems)
 	{
@@ -439,7 +439,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 					boardName, threadNumber, mThreadTitle, true);
 		}
 	}
-	
+
 	@Override
 	protected void onSaveInstanceState(Bundle outState)
 	{
@@ -450,7 +450,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		outState.putBoolean(EXTRA_SYSTEM_UI_VISIBILITY, FlagUtils.get(mSystemUiVisibilityFlags,
 				GalleryInstance.FLAG_LOCKED_USER));
 	}
-	
+
 	@Override
 	public void onConfigurationChanged(Configuration newConfig)
 	{
@@ -461,9 +461,9 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		mActionMenuConfigurator.onConfigurationChanged(newConfig);
 		invalidateSystemUiVisibility();
 	}
-	
+
 	private static final int GALLERY_TRANSITION_DURATION = 150;
-	
+
 	private void switchMode(boolean galleryMode, boolean animated)
 	{
 		int duration = animated ? GALLERY_TRANSITION_DURATION : 0;
@@ -485,7 +485,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		}
 		invalidateOptionsMenu();
 	}
-	
+
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private class CornerAnimator implements Runnable
 	{
@@ -495,9 +495,9 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		private final int mToActionBarAlpha;
 		private final int mFromStatusBarAlpha;
 		private final int mToStatusBarAlpha;
-		
+
 		private static final int INTERVAL = 200;
-		
+
 		public CornerAnimator(int actionBarAlpha, int statusBarAlpha)
 		{
 			Drawable drawable = mActionBar.getBackground();
@@ -516,7 +516,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 			}
 			if (mFromActionBarAlpha != mToActionBarAlpha || mFromStatusBarAlpha != mToStatusBarAlpha) run();
 		}
-		
+
 		@Override
 		public void run()
 		{
@@ -534,20 +534,20 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 			if (t < 1f) mRootView.postOnAnimation(this);
 		}
 	}
-	
+
 	@Override
 	public void modifyVerticalSwipeState(float value)
 	{
 		if (!mGalleryWindow) mBackgroundDrawable.setAlpha((int) (0xff * (1f - value)));
 	}
-	
+
 	@Override
 	public void updateTitle()
 	{
 		GalleryItem galleryItem = mPagerUnit.getCurrentGalleryItem();
 		if (galleryItem != null) setTitle(galleryItem, mPagerUnit.getCurrentIndex(), galleryItem.size);
 	}
-	
+
 	private void setTitle(GalleryItem galleryItem, int position, int size)
 	{
 		String fileName = galleryItem.getFileName(mInstance.locator);
@@ -559,20 +559,20 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		if (size > 0) builder.append(", ").append(AttachmentItem.formatSize(size));
 		getActionBar().setSubtitle(builder);
 	}
-	
+
 	@Override
 	public void navigateGalleryOrFinish()
 	{
 		if (!returnToGallery()) finish();
 	}
-	
+
 	@Override
 	public void navigatePageFromList(int position)
 	{
 		switchMode(false, true);
 		mPagerUnit.navigatePageFromList(position, GALLERY_TRANSITION_DURATION);
 	}
-	
+
 	@Override
 	public void navigatePost(GalleryItem galleryItem, boolean force)
 	{
@@ -585,7 +585,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 			if (force) finish();
 		}
 	}
-	
+
 	@Override
 	public void setScreenOnFixed(boolean fixed)
 	{
@@ -593,22 +593,22 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		if (fixed) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 	}
-	
+
 	@Override
 	public boolean isGalleryWindow()
 	{
 		return mGalleryWindow;
 	}
-	
+
 	@Override
 	public boolean isGalleryMode()
 	{
 		return mGalleryMode;
 	}
-	
+
 	private boolean mExpandedScreen;
 	private int mSystemUiVisibilityFlags = GalleryInstance.FLAG_LOCKED_USER;
-	
+
 	@TargetApi(Build.VERSION_CODES.KITKAT)
 	private void invalidateSystemUiVisibility()
 	{
@@ -625,31 +625,31 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		}
 		if (mPagerUnit != null) mPagerUnit.invalidateControlsVisibility();
 	}
-	
+
 	private void postInvalidateSystemUIVisibility()
 	{
 		mRootView.post(() -> invalidateSystemUiVisibility());
 	}
-	
+
 	@Override
 	public boolean isSystemUiVisible()
 	{
 		return mSystemUiVisibilityFlags != 0;
 	}
-	
+
 	@Override
 	public void modifySystemUiVisibility(int flag, boolean value)
 	{
 		mSystemUiVisibilityFlags = FlagUtils.set(mSystemUiVisibilityFlags, flag, value);
 		invalidateSystemUiVisibility();
 	}
-	
+
 	@Override
 	public void toggleSystemUIVisibility(int flag)
 	{
 		modifySystemUiVisibility(flag, !FlagUtils.get(mSystemUiVisibilityFlags, flag));
 	}
-	
+
 	@Override
 	public void onApplyWindowPaddings(WindowControlFrameLayout view, Rect rect)
 	{

@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -53,24 +53,24 @@ import com.mishiranu.dashchan.widget.AttachmentView;
 public class ImageLoader
 {
 	private static final ImageLoader INSTANCE = new ImageLoader();
-	
+
 	public static ImageLoader getInstance()
 	{
 		return INSTANCE;
 	}
-	
+
 	private ImageLoader()
 	{
-		
+
 	}
-	
+
 	private final CacheManager mCacheManager = CacheManager.getInstance();
-	
+
 	private final HashMap<String, LoaderTask> mLoaderTasks = new HashMap<>();
 	private final HashMap<String, Long> mNotFoundMap = new HashMap<>();
-	
+
 	private static final HashMap<String, ThreadPoolExecutor> EXECUTORS = new HashMap<>();
-	
+
 	static
 	{
 		EXECUTORS.put(null, ConcurrentUtils.newThreadPool(3, 3, 0, "ImageLoader", "client",
@@ -81,7 +81,7 @@ public class ImageLoader
 					Process.THREAD_PRIORITY_DEFAULT));
 		}
 	}
-	
+
 	public void clearTasks(String chanName)
 	{
 		Iterator<HashMap.Entry<String, LoaderTask>> iterator = mLoaderTasks.entrySet().iterator();
@@ -95,32 +95,32 @@ public class ImageLoader
 			}
 		}
 	}
-	
+
 	public static abstract class Callback<V extends View>
 	{
 		private final WeakReference<V> mView;
-		
+
 		private String mKey;
 		private final int mViewHashCode;
-		
+
 		public Callback(V view)
 		{
 			mView = new WeakReference<>(view);
 			mViewHashCode = mView.hashCode();
 		}
-		
+
 		Callback<V> setKey(String key)
 		{
 			mKey = key;
 			mView.get().setTag(R.id.thumbnail, key);
 			return this;
 		}
-		
+
 		public final V getView()
 		{
 			return mView.get();
 		}
-		
+
 		public final void onResult(Bitmap bitmap)
 		{
 			if (checkKeys())
@@ -128,21 +128,21 @@ public class ImageLoader
 				if (bitmap != null) onSuccess(bitmap); else onError();
 			}
 		}
-		
+
 		public void onPrepare()
 		{
-			
+
 		}
-		
+
 		public abstract void onSuccess(Bitmap bitmap);
 		public abstract void onError();
-		
+
 		public final boolean checkKeys()
 		{
 			V view = getView();
 			return view != null && mKey.equals(view.getTag(R.id.thumbnail));
 		}
-		
+
 		@Override
 		public final boolean equals(Object o)
 		{
@@ -157,7 +157,7 @@ public class ImageLoader
 			}
 			return false;
 		}
-		
+
 		@Override
 		public final int hashCode()
 		{
@@ -168,7 +168,7 @@ public class ImageLoader
 			return result;
 		}
 	}
-	
+
 	private class LoaderTask extends HttpHolderTask<Void, Void, Bitmap>
 	{
 		private final Uri mUri;
@@ -178,9 +178,9 @@ public class ImageLoader
 		public final ArrayList<Callback<?>> callbacks;
 		public boolean fromCacheOnly;
 		public boolean fromCacheOnlyChecked;
-		
+
 		private boolean mNotFound;
-		
+
 		public LoaderTask(Uri uri, String chanName, String key, ArrayList<Callback<?>> callbacks, boolean fromCacheOnly)
 		{
 			mUri = uri;
@@ -189,7 +189,7 @@ public class ImageLoader
 			this.callbacks = callbacks;
 			this.fromCacheOnly = fromCacheOnly;
 		}
-		
+
 		@Override
 		protected Bitmap doInBackground(Void... params)
 		{
@@ -309,7 +309,7 @@ public class ImageLoader
 			}
 			catch (Exception | OutOfMemoryError e)
 			{
-				
+
 			}
 			finally
 			{
@@ -317,7 +317,7 @@ public class ImageLoader
 			}
 			return bitmap;
 		}
-		
+
 		@Override
 		protected void onPostExecute(Bitmap result)
 		{
@@ -326,19 +326,19 @@ public class ImageLoader
 			for (Callback<?> callback : callbacks) callback.onResult(result);
 		}
 	}
-	
+
 	private class AttachmentCallback extends Callback<AttachmentView>
 	{
 		private final int mSuccessAttrId;
 		private final int mErrorAttrId;
-		
+
 		public AttachmentCallback(AttachmentView view, int successAttrId, int errorAttrId)
 		{
 			super(view);
 			mSuccessAttrId = successAttrId;
 			mErrorAttrId = errorAttrId;
 		}
-		
+
 		@Override
 		public void onPrepare()
 		{
@@ -346,7 +346,7 @@ public class ImageLoader
 			view.setImage(null);
 			view.enqueueTransition();
 		}
-		
+
 		@Override
 		public void onSuccess(Bitmap bitmap)
 		{
@@ -354,45 +354,45 @@ public class ImageLoader
 			view.setAdditionalOverlay(mSuccessAttrId, false);
 			view.setImage(bitmap);
 		}
-		
+
 		@Override
 		public void onError()
 		{
 			if (mErrorAttrId != 0) getView().setAdditionalOverlay(mErrorAttrId, true);
 		}
 	}
-	
+
 	private class SimpleCallback extends Callback<ImageView>
 	{
 		public SimpleCallback(ImageView view)
 		{
 			super(view);
 		}
-		
+
 		@Override
 		public void onPrepare()
 		{
 			getView().setImageDrawable(null);
 		}
-		
+
 		@Override
 		public void onSuccess(Bitmap bitmap)
 		{
 			getView().setImageBitmap(bitmap);
 		}
-		
+
 		@Override
 		public void onError()
 		{
-			
+
 		}
 	}
-	
+
 	public void unbind(View view)
 	{
 		view.setTag(R.id.thumbnail, null);
 	}
-	
+
 	private void loadImage(Uri uri, String chanName, String key, ArrayList<Callback<?>> callbacks,
 			Callback<?> newCallback, boolean fromCacheOnly)
 	{
@@ -414,7 +414,7 @@ public class ImageLoader
 		mLoaderTasks.put(key, loaderTask);
 		loaderTask.executeOnExecutor(EXECUTORS.get(chanName));
 	}
-	
+
 	public <V extends View> void loadImage(Uri uri, String chanName, String key, Callback<V> callback,
 			boolean fromCacheOnly)
 	{
@@ -462,14 +462,14 @@ public class ImageLoader
 			loadImage(uri, chanName, key, callbacks, callback, fromCacheOnly);
 		}
 	}
-	
+
 	public void loadImage(Uri uri, String chanName, String key, boolean fromCacheOnly, AttachmentView attachmentView,
 			int successAttrId, int errorAttrId)
 	{
 		loadImage(uri, chanName, key, new AttachmentCallback(attachmentView, successAttrId, errorAttrId),
 				fromCacheOnly);
 	}
-	
+
 	public void loadImage(Uri uri, String chanName, String key, boolean fromCacheOnly, ImageView imageView)
 	{
 		loadImage(uri, chanName, key, new SimpleCallback(imageView), fromCacheOnly);

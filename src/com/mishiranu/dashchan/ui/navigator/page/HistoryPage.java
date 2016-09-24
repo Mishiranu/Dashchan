@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -48,13 +48,13 @@ public class HistoryPage extends ListPage<HistoryAdapter>
 			if (pageHolder.position != null) pageHolder.position.apply(getListView());
 		}
 	}
-	
+
 	@Override
 	public String obtainTitle()
 	{
 		return getString(R.string.action_history);
 	}
-	
+
 	@Override
 	public void onItemClick(View view, int position, long id)
 	{
@@ -65,9 +65,9 @@ public class HistoryPage extends ListPage<HistoryAdapter>
 					historyItem.threadNumber, null, null, false);
 		}
 	}
-	
+
 	private static final int OPTIONS_MENU_CLEAR_HISTORY = 0;
-	
+
 	@Override
 	public void onCreateOptionsMenu(Menu menu)
 	{
@@ -76,7 +76,7 @@ public class HistoryPage extends ListPage<HistoryAdapter>
 		menu.add(0, OPTIONS_MENU_CLEAR_HISTORY, 0, R.string.action_clear_history);
 		menu.addSubMenu(0, OPTIONS_MENU_APPEARANCE, 0, R.string.action_appearance);
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
@@ -91,18 +91,18 @@ public class HistoryPage extends ListPage<HistoryAdapter>
 					HistoryDatabase.getInstance().clearAllHistory(getPageHolder().chanName);
 					getAdapter().clear();
 					switchView(ViewType.ERROR, R.string.message_empty_history);
-					
+
 				}).show();
 				return true;
 			}
 		}
 		return false;
 	}
-	
+
 	private static final int CONTEXT_MENU_COPY_LINK = 0;
 	private static final int CONTEXT_MENU_ADD_FAVORITES = 1;
 	private static final int CONTEXT_MENU_REMOVE_FROM_HISTORY = 2;
-	
+
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v, int position, View targetView)
 	{
@@ -118,7 +118,7 @@ public class HistoryPage extends ListPage<HistoryAdapter>
 			menu.add(0, CONTEXT_MENU_REMOVE_FROM_HISTORY, 0, R.string.action_remove_from_history);
 		}
 	}
-	
+
 	@Override
 	public boolean onContextItemSelected(MenuItem item, int position, View targetView)
 	{
@@ -153,7 +153,7 @@ public class HistoryPage extends ListPage<HistoryAdapter>
 		}
 		return false;
 	}
-	
+
 	@Override
 	public void onSearchTextChange(String newText)
 	{

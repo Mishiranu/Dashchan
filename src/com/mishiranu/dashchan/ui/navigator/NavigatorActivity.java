@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -111,39 +111,39 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	private UiManager mUiManager;
 	private PageManager mPageManager;
 	private ListPage<?> mPage;
-	
+
 	private Preferences.Holder mCurrentPreferences;
 	private ActionIconSet mActionIconSet;
 	private final WatcherService.Client mWatcherServiceClient = new WatcherService.Client(this);
-	
+
 	private SortableListView mDrawerListView;
 	private DrawerForm mDrawerForm;
 	private FrameLayout mDrawerParent;
 	private DrawerLayout mDrawerLayout;
 	private DrawerToggle mDrawerToggle;
-	
+
 	private ExpandedScreen mExpandedScreen;
 	private View mToolbarView;
-	
+
 	private ViewGroup mDrawerCommon, mDrawerWide;
-	
+
 	private PullableListView mListView;
 	private View mProgressView;
 	private View mErrorView;
 	private TextView mErrorText;
 	private boolean mWideMode;
-	
+
 	private ReadUpdateTask mReadUpdateTask;
-	
+
 	private static final String LOCKER_HANDLE = "handle";
 	private static final String LOCKER_DRAWER = "drawer";
 	private static final String LOCKER_SEARCH = "search";
 	private static final String LOCKER_PULL = "pull";
 	private static final String LOCKER_CUSTOM = "custom";
-	
+
 	private final ActionMenuConfigurator mActionMenuConfigurator = new ActionMenuConfigurator();
 	private final ClickableToast.Holder mClickableToastHolder = new ClickableToast.Holder(this);
-	
+
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	@Override
 	public void onCreate(Bundle savedInstanceState)
@@ -238,33 +238,33 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		if (savedCurrentPage != null) handleData(savedCurrentPage, false); else handleIntent(getIntent(), false);
 		if (savedInstanceState == null) startUpdateTask();
 	}
-	
+
 	@Override
 	protected void onNewIntent(Intent intent)
 	{
 		if (intent.getBooleanExtra(C.EXTRA_LAUNCHER, false)) return;
 		handleIntent(intent, intent.getBooleanExtra(C.EXTRA_ANIMATED_TRANSITION, false));
 	}
-	
+
 	@Override
 	protected void onSaveInstanceState(Bundle outState)
 	{
 		super.onSaveInstanceState(outState);
 		writePagesState(outState);
 	}
-	
+
 	private void writePagesState(Bundle outState)
 	{
 		requestStoreExtraAndPosition();
 		mPageManager.save(outState);
 	}
-	
+
 	@Override
 	public void navigateBoardsOrThreads(String chanName, String boardName, boolean navigateTop, boolean fromCache)
 	{
 		handleIntentData(chanName, boardName, null, null, null, null, navigateTop, fromCache, true);
 	}
-	
+
 	@Override
 	public void navigatePosts(String chanName, String boardName, String threadNumber, String postNumber,
 			String threadTitle, boolean fromCache)
@@ -272,19 +272,19 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		handleIntentData(chanName, boardName, threadNumber, postNumber, threadTitle, null,
 				false, fromCache, true);
 	}
-	
+
 	@Override
 	public void navigateSearch(String chanName, String boardName, String searchQuery)
 	{
 		handleIntentData(chanName, boardName, null, null, null, searchQuery, false, false, true);
 	}
-	
+
 	@Override
 	public void navigateArchive(String chanName, String boardName)
 	{
 		performNavigation(PageHolder.Content.ARCHIVE, chanName, boardName, null, null, null, null, false, true);
 	}
-	
+
 	@Override
 	public void navigateTarget(String chanName, ChanLocator.NavigationData data, boolean fromCache)
 	{
@@ -311,7 +311,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 			}
 		}
 	}
-	
+
 	@Override
 	public void navigatePosting(String chanName, String boardName, String threadNumber, Replyable.ReplyData... data)
 	{
@@ -322,7 +322,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		intent.putExtra(C.EXTRA_REPLY_DATA, data);
 		startActivity(intent);
 	}
-	
+
 	private void handleIntent(Intent intent, boolean animated)
 	{
 		String chanName = intent.getStringExtra(C.EXTRA_CHAN_NAME);
@@ -336,7 +336,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		handleIntentData(chanName, boardName, threadNumber, postNumber, threadTitle, searchQuery, navigateTop,
 				fromCache, animated);
 	}
-	
+
 	private void handleIntentData(String chanName, String boardName, String threadNumber, String postNumber,
 			String threadTitle, String searchQuery, boolean navigateTop, boolean fromCache, boolean animated)
 	{
@@ -367,17 +367,17 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 					false, animated);
 		}
 	}
-	
+
 	private Runnable mQueuedHandler;
 	private final Handler mHandler = new Handler();
 	private boolean mAllowScaleAnimation = false;
-	
+
 	private void handleData(PageHolder pageHolder, boolean animated)
 	{
 		performNavigation(pageHolder.content, pageHolder.chanName, pageHolder.boardName, pageHolder.threadNumber, null,
 				pageHolder.threadTitle, pageHolder.searchQuery, true, animated);
 	}
-	
+
 	private void performNavigation(final PageHolder.Content content, final String chanName, final String boardName,
 			final String threadNumber, final String postNumber, final String threadTitle, final String searchQuery,
 			final boolean fromCache, boolean animated)
@@ -425,7 +425,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 					searchQuery, fromCache, false);
 		}
 	}
-	
+
 	private void requestStoreExtraAndPosition()
 	{
 		if (mPage != null)
@@ -434,7 +434,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 			mPage.onRequestStoreExtra();
 		}
 	}
-	
+
 	private void handleDataAfterAnimation(PageHolder.Content content, String chanName, String boardName,
 			String threadNumber, String postNumber, String threadTitle, String searchQuery,
 			boolean fromCache, boolean animated)
@@ -485,7 +485,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		notifyTitleChanged();
 		mAllowScaleAnimation = true;
 	}
-	
+
 	private void cleanupPage()
 	{
 		if (mPage != null)
@@ -495,7 +495,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 			mPage = null;
 		}
 	}
-	
+
 	private void invalidateHomeUpState()
 	{
 		if (mPage != null)
@@ -529,7 +529,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		}
 		else mDrawerToggle.setDrawerIndicatorMode(DrawerToggle.MODE_DISABLED);
 	}
-	
+
 	private void updateWideConfiguration(boolean forced)
 	{
 		Configuration configuration = getResources().getConfiguration();
@@ -552,13 +552,13 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 				(int) (320 * density + 0.5f));
 		mDrawerCommon.getLayoutParams().width = mDrawerWide.getLayoutParams().width = drawerWidth;
 	}
-	
+
 	@Override
 	public void setListViewBusy(boolean isBusy, AbsListView listView)
 	{
 		if (mPage != null) mPage.setListViewBusy(isBusy, listView);
 	}
-	
+
 	@Override
 	protected void onStart()
 	{
@@ -578,7 +578,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		mCurrentPreferences = newPreferences;
 		updateWideConfiguration(false);
 	}
-	
+
 	@Override
 	protected void onResume()
 	{
@@ -592,7 +592,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		ChanManager.getInstance().getInstallationObservable().register(mInstallationCallback);
 		ForegroundManager.register(this);
 	}
-	
+
 	@Override
 	protected void onPause()
 	{
@@ -602,14 +602,14 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		mClickableToastHolder.onPause();
 		ForegroundManager.unregister(this);
 	}
-	
+
 	@Override
 	protected void onStop()
 	{
 		super.onStop();
 		ChanManager.getInstance().getInstallationObservable().unregister(mInstallationCallback);
 	}
-	
+
 	@Override
 	protected void onFinish()
 	{
@@ -633,14 +633,14 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		notificationManager.cancel(C.NOTIFICATION_TAG_UPDATE, 0);
 		FavoritesStorage.getInstance().await(true);
 	}
-	
+
 	@Override
 	protected void onPostCreate(Bundle savedInstanceState)
 	{
 		super.onPostCreate(savedInstanceState);
 		mDrawerToggle.syncState();
 	}
-	
+
 	@Override
 	public void onConfigurationChanged(Configuration newConfig)
 	{
@@ -651,7 +651,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		mExpandedScreen.onConfigurationChanged(newConfig);
 		updateOptionsMenu(false);
 	}
-	
+
 	@Override
 	public boolean onSearchRequested()
 	{
@@ -662,9 +662,9 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		}
 		return false;
 	}
-	
+
 	private long mBackPressed = 0;
-	
+
 	@Override
 	public void onBackPressed()
 	{
@@ -695,10 +695,10 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 			}
 		}
 	}
-	
+
 	private final Runnable mInstallationCallback = () -> showRestartDialogIfNeeded();
 	private boolean mMayShowRestartDialog = true;
-	
+
 	private void showRestartDialogIfNeeded()
 	{
 		if (ChanManager.getInstance().checkNewExtensionsInstalled() && mMayShowRestartDialog)
@@ -711,7 +711,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 				writePagesState(outState);
 				mPageManager.writeToStorage(outState);
 				NavigationUtils.restartApplication(this);
-				
+
 			}).setNegativeButton(android.R.string.cancel, null).create();
 			dialog.setOnDismissListener(d -> mMayShowRestartDialog = true);
 			dialog.setCanceledOnTouchOutside(false);
@@ -719,49 +719,49 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 			mUiManager.dialog().notifySwitchBackground();
 		}
 	}
-	
+
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id)
 	{
 		if (mPage != null) mPage.onItemClick(view, position, id);
 	}
-	
+
 	@Override
 	public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id)
 	{
 		if (mPage != null) return mPage.onItemLongClick(view, position, id);
 		return false;
 	}
-	
+
 	@Override
 	public void onActionModeStarted(ActionMode mode)
 	{
 		super.onActionModeStarted(mode);
 		mExpandedScreen.setActionModeState(true);
 	}
-	
+
 	@Override
 	public void onActionModeFinished(ActionMode mode)
 	{
 		super.onActionModeFinished(mode);
 		mExpandedScreen.setActionModeState(false);
 	}
-	
+
 	@Override
 	public void onWindowFocusChanged(boolean hasFocus)
 	{
 		super.onWindowFocusChanged(hasFocus);
 		mClickableToastHolder.onWindowFocusChanged(hasFocus);
 	}
-	
+
 	private class SearchViewController implements SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener
 	{
 		private boolean mSearchExpanded = false;
 		private boolean mWasSubmit = false;
 		private boolean mMenuUpdated = false;
-		
+
 		private final Runnable mRestoreLastSearchQueryRunnable = () -> mSearchView.setQuery(mLastSearchQuery, false);
-		
+
 		/*
 		 * In Marshmallow keyboard is not showing when action menu item is not shown as action. Fix it here.
 		 */
@@ -776,7 +776,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 			}
 			catch (Exception e)
 			{
-				
+
 			}
 			if (textView != null)
 			{
@@ -787,7 +787,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 				}
 			}
 		};
-		
+
 		@Override
 		public boolean onQueryTextSubmit(String query)
 		{
@@ -805,7 +805,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 			}
 			return true;
 		}
-		
+
 		@Override
 		public boolean onQueryTextChange(String newText)
 		{
@@ -817,7 +817,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 			if (mPage != null) mPage.onSearchTextChange(newText);
 			return false;
 		}
-		
+
 		@Override
 		public boolean onMenuItemActionExpand(MenuItem item)
 		{
@@ -827,7 +827,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 			if (C.API_MARSHMALLOW) mSearchView.postDelayed(mMarshmallowShowKeyboardRunnable, 250);
 			return true;
 		}
-		
+
 		@Override
 		public boolean onMenuItemActionCollapse(MenuItem item)
 		{
@@ -841,13 +841,13 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	private final SearchViewController mSearchViewController = new SearchViewController();
 	private SearchView mSearchView;
 	private MenuItem mSearchMenuItem;
-	
+
 	private boolean mExpandSearchViewOnCreate = false;
 	private String mLastSearchQuery;
-	
+
 	private Menu mCurrentMenu;
 	private boolean mSendPrepareMenuToPage = false;
-	
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu)
 	{
@@ -863,7 +863,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 			mPage.onCreateOptionsMenu(menu);
 			mSendPrepareMenuToPage = true;
 		}
-		
+
 		MenuItem appearanceOptionsItem = menu.findItem(ListPage.OPTIONS_MENU_APPEARANCE);
 		if (appearanceOptionsItem != null)
 		{
@@ -882,7 +882,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 			appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_SFW_MODE, 0, R.string.action_sfw_mode)
 					.setCheckable(true);
 		}
-		
+
 		mSearchMenuItem = menu.findItem(ListPage.OPTIONS_MENU_SEARCH);
 		if (mSearchMenuItem != null)
 		{
@@ -898,7 +898,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		mActionMenuConfigurator.onAfterCreateOptionsMenu(menu);
 		return super.onCreateOptionsMenu(menu);
 	}
-	
+
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu)
 	{
@@ -921,7 +921,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		mActionMenuConfigurator.onAfterPrepareOptionsMenu(menu);
 		return super.onPrepareOptionsMenu(menu);
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
@@ -1015,7 +1015,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		}
 		return super.onOptionsItemSelected(item);
 	}
-	
+
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo)
 	{
@@ -1026,7 +1026,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 			mPage.onCreateContextMenu(menu, v, info.position, info.targetView);
 		}
 	}
-	
+
 	@Override
 	public boolean onContextItemSelected(MenuItem item)
 	{
@@ -1037,7 +1037,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		}
 		return false;
 	}
-	
+
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private void showThemeDialog()
 	{
@@ -1121,19 +1121,19 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		}
 		dialog.show();
 	}
-	
+
 	@Override
 	public void onListPulled(PullableWrapper wrapper, PullableWrapper.Side side)
 	{
 		if (mPage != null) mPage.onListPulled(wrapper, side);
 	}
-	
+
 	@Override
 	public void onPullStateChanged(PullableWrapper wrapper, boolean busy)
 	{
 		setActionBarLocked(LOCKER_PULL, busy);
 	}
-	
+
 	@Override
 	public void onSortingStateChanged(SortableListView listView, boolean sorting)
 	{
@@ -1143,7 +1143,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 					: DrawerLayout.LOCK_MODE_UNLOCKED);
 		}
 	}
-	
+
 	@Override
 	public void onSelectChan(String chanName)
 	{
@@ -1181,7 +1181,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		}
 		if (!mWideMode) mDrawerLayout.closeDrawers();
 	}
-	
+
 	@Override
 	public void onSelectBoard(String chanName, String boardName, boolean fromCache)
 	{
@@ -1196,7 +1196,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		}
 		if (!mWideMode) mDrawerLayout.closeDrawers();
 	}
-	
+
 	@Override
 	public boolean onSelectThread(String chanName, String boardName, String threadNumber, String postNumber,
 			String threadTitle, boolean fromCache)
@@ -1227,7 +1227,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		if (!mWideMode) mDrawerLayout.closeDrawers();
 		return true;
 	}
-	
+
 	@Override
 	public boolean onClosePage(String chanName, String boardName, String threadNumber)
 	{
@@ -1269,7 +1269,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		}
 		return false;
 	}
-	
+
 	@Override
 	public void onCloseAllPages()
 	{
@@ -1294,7 +1294,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 			navigateBoardsOrThreads(chanName, boardName, false, targetPageHolder != null);
 		}
 	}
-	
+
 	@Override
 	public int onEnterNumber(int number)
 	{
@@ -1303,9 +1303,9 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		if (!mWideMode && FlagUtils.get(result, DrawerForm.RESULT_SUCCESS)) mDrawerLayout.closeDrawers();
 		return result;
 	}
-	
+
 	private final Runnable mPreferencesRunnable = () -> startActivity(new Intent(this, PreferencesActivity.class));
-	
+
 	@Override
 	public void onSelectDrawerMenuItem(int item)
 	{
@@ -1352,13 +1352,13 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		}
 		if (!mWideMode) mDrawerLayout.closeDrawers();
 	}
-	
+
 	@Override
 	public ArrayList<PageHolder> getDrawerPageHolders()
 	{
 		return mPageManager.getPages();
 	}
-	
+
 	private final BroadcastReceiver mNewPostReceiver = new BroadcastReceiver()
 	{
 		@Override
@@ -1367,7 +1367,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 			if (mPage != null) mPage.handleNewPostDatasNow();
 		}
 	};
-	
+
 	private void startUpdateTask()
 	{
 		if (!Preferences.isCheckUpdatesOnStart()) return;
@@ -1376,7 +1376,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		mReadUpdateTask = new ReadUpdateTask(this, this);
 		mReadUpdateTask.executeOnExecutor(ReadUpdateTask.THREAD_POOL_EXECUTOR);
 	}
-	
+
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	@Override
 	public void onReadUpdateComplete(ReadUpdateTask.UpdateDataMap updateDataMap)
@@ -1405,7 +1405,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		notificationManager.notify(C.NOTIFICATION_TAG_UPDATE, 0, builder.build());
 	}
-	
+
 	@Override
 	public void onFavoritesUpdate(FavoritesStorage.FavoriteItem favoriteItem, int action)
 	{
@@ -1426,14 +1426,14 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	{
 		mDrawerForm.onWatcherUpdate(watcherItem, state);
 	}
-	
+
 	@Override
 	public void notifyTitleChanged()
 	{
 		mDrawerForm.invalidateItems(true, false);
 		if (mPage != null) setTitle(mPage.obtainTitle());
 	}
-	
+
 	@Override
 	public void updateOptionsMenu(boolean recreate)
 	{
@@ -1444,7 +1444,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		}
 		else onPrepareOptionsMenu(mCurrentMenu);
 	}
-	
+
 	@Override
 	public void switchView(ListPage.ViewType viewType, String message)
 	{
@@ -1455,15 +1455,15 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 			mErrorText.setText(message != null ? message : getString(R.string.message_unknown_error));
 		}
 	}
-	
+
 	private final Runnable mShowScaleRunnable = () -> showScaleAnimation(false);
-	
+
 	@Override
 	public void showScaleAnimation()
 	{
 		showScaleAnimation(true);
 	}
-	
+
 	private void showScaleAnimation(boolean post)
 	{
 		clearListAnimator();
@@ -1487,9 +1487,9 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 			}
 		}
 	}
-	
+
 	private Animator mCurrentListAnimator;
-	
+
 	private void clearListAnimator()
 	{
 		if (mCurrentListAnimator != null)
@@ -1499,20 +1499,20 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		}
 		mListView.setVisibility(View.VISIBLE);
 	}
-	
+
 	private void startListAnimator(Animator animator)
 	{
 		clearListAnimator();
 		mCurrentListAnimator = animator;
 		animator.start();
 	}
-	
+
 	@Override
 	public void removePage(PageHolder pageHolder)
 	{
 		removePage(pageHolder.chanName, pageHolder.boardName, pageHolder.threadNumber);
 	}
-	
+
 	private void removePage(String chanName, String boardName, String threadNumber)
 	{
 		ArrayList<PageHolder> pageHolders = mPageManager.getPages();
@@ -1526,48 +1526,48 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		}
 		mDrawerForm.invalidateItems(true, false);
 	}
-	
+
 	private boolean isPageThreadsPosts(PageHolder pageHolder, String chanName, String boardName, String threadNumber)
 	{
 		if (threadNumber != null) return pageHolder.is(chanName, boardName, threadNumber, PageHolder.Content.POSTS);
 		else return pageHolder.is(chanName, boardName, null, PageHolder.Content.THREADS);
 	}
-	
+
 	private void setActionBarLocked(String locker, boolean locked)
 	{
 		if (locked) mExpandedScreen.addLocker(locker); else mExpandedScreen.removeLocker(locker);
 	}
-	
+
 	@Override
 	public void setActionBarLocked(boolean locked)
 	{
 		setActionBarLocked(LOCKER_CUSTOM, locked);
 	}
-	
+
 	private class ExpandedScreenDrawerLocker implements DrawerLayout.DrawerListener
 	{
 		@Override
 		public void onDrawerSlide(View drawerView, float slideOffset)
 		{
-			
+
 		}
-		
+
 		@Override
 		public void onDrawerOpened(View drawerView)
 		{
 			setActionBarLocked(LOCKER_DRAWER, true);
 		}
-		
+
 		@Override
 		public void onDrawerClosed(View drawerView)
 		{
 			setActionBarLocked(LOCKER_DRAWER, false);
 		}
-		
+
 		@Override
 		public void onDrawerStateChanged(int newState)
 		{
-			
+
 		}
 	}
 }

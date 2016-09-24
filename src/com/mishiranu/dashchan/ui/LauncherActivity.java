@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -49,11 +49,11 @@ public class LauncherActivity extends Activity
 {
 	private static final int STATE_START = 0;
 	private static final int STATE_PERMISSION_REQUEST = 1;
-	
+
 	private static final String EXTRA_STATE = "state";
-	
+
 	private int mState;
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
@@ -67,14 +67,14 @@ public class LauncherActivity extends Activity
 			case STATE_PERMISSION_REQUEST: break;
 		}
 	}
-	
+
 	@Override
 	protected void onSaveInstanceState(Bundle outState)
 	{
 		super.onSaveInstanceState(outState);
 		outState.putInt(EXTRA_STATE, mState);
 	}
-	
+
 	@TargetApi(Build.VERSION_CODES.M)
 	private void navigatePermissionRequest()
 	{
@@ -89,19 +89,19 @@ public class LauncherActivity extends Activity
 				{
 					mState = STATE_PERMISSION_REQUEST;
 					requestPermissions(new String[] {android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
-					
+
 				}).setCancelable(false).show();
 				return;
 			}
 		}
 		navigateExtensionsTrust();
 	}
-	
+
 	private void navigateExtensionsTrust()
 	{
 		navigateExtensionsTrust(ChanManager.getInstance().getUntrustedExtensionItems());
 	}
-	
+
 	private void navigateExtensionsTrust(final Collection<ChanManager.ExtensionItem> extensionItems)
 	{
 		if (!extensionItems.isEmpty())
@@ -127,7 +127,7 @@ public class LauncherActivity extends Activity
 					}
 				}
 				navigateExtensionsTrust(extensionItems);
-				
+
 			};
 			Context context = new ContextThemeWrapper(this, Preferences.getThemeResource());
 			String packageName = extensionItem.packageInfo.packageName;
@@ -142,7 +142,7 @@ public class LauncherActivity extends Activity
 		}
 		else navigateMainActivity();
 	}
-	
+
 	private void navigateMainActivity()
 	{
 		String chanName = ChanManager.getInstance().getDefaultChanName();
@@ -153,7 +153,7 @@ public class LauncherActivity extends Activity
 		}
 		finish();
 	}
-	
+
 	@Override
 	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
 	{

@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,15 +37,15 @@ public class UpdaterActivity extends StateActivity
 {
 	private static final String EXTRA_URI_STRINGS = "uriStrings";
 	private static final String EXTRA_DOWNLOAD_IDS = "downloadIds";
-	
+
 	private static final String EXTRA_INDEX = "index";
-	
+
 	private DownloadManager mDownloadManager;
-	
+
 	private ArrayList<String> mUriStrings;
 	private HashMap<String, Long> mDownloadIds;
 	private int mIndex = 0;
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -57,14 +57,14 @@ public class UpdaterActivity extends StateActivity
 		if (savedInstanceState == null) performInstallation();
 		else mIndex = savedInstanceState.getInt(EXTRA_INDEX);
 	}
-	
+
 	@Override
 	protected void onSaveInstanceState(Bundle outState)
 	{
 		super.onSaveInstanceState(outState);
 		outState.putInt(EXTRA_INDEX, mIndex);
 	}
-	
+
 	private void performInstallation()
 	{
 		if (mUriStrings != null && mUriStrings.size() > mIndex)
@@ -75,7 +75,7 @@ public class UpdaterActivity extends StateActivity
 		}
 		else finish();
 	}
-	
+
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data)
 	{
@@ -91,9 +91,9 @@ public class UpdaterActivity extends StateActivity
 			else finish();
 		}
 	}
-	
+
 	private static BroadcastReceiver sUpdatesReceiver;
-	
+
 	public static void initUpdater(long clientId, Collection<Long> ids)
 	{
 		Context context = MainApplication.getInstance();
@@ -105,7 +105,7 @@ public class UpdaterActivity extends StateActivity
 			private final HashMap<String, Long> mDownloadIds = new HashMap<>();
 			private final ArrayList<String> mUriStrings = new ArrayList<>();
 			private String mClientUriString = null;
-			
+
 			@Override
 			public void onReceive(Context context, Intent intent)
 			{

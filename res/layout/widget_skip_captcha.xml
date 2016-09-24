@@ -2,13 +2,13 @@
 
 <!--
 	Copyright 2014-2016 Fukurou Mishiranu
-	
+
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
 	You may obtain a copy of the License at
-	
+
 	http://www.apache.org/licenses/LICENSE-2.0
-	
+
 	Unless required by applicable law or agreed to in writing, software
 	distributed under the License is distributed on an "AS IS" BASIS,
 	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,7 +26,7 @@
 	android:visibility="gone"
 	android:layout_marginLeft="-40dp"
 	android:layout_marginRight="-40dp">
-	
+
 	<TextView
 		android:id="@+id/captcha_skip_text"
 		android:layout_width="wrap_content"
@@ -34,7 +34,7 @@
 		android:paddingLeft="20dp"
 		android:paddingRight="20dp"
 		android:textAppearance="?android:attr/textAppearance" />
-	
+
 	<ImageButton
 		android:id="@+id/captcha_load_button"
 		android:layout_width="48dp"
@@ -43,5 +43,5 @@
 		style="?android:attr/buttonBarButtonStyle"
 		android:scaleType="center"
 		android:src="?attr/buttonCancel" />
-	
+
 </LinearLayout>

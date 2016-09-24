@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -44,7 +44,7 @@ public class AttachmentView extends ClickableView
 	private final RectF mDestination = new RectF();
 	private final Paint mBitmapPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
 	private TransparentTileDrawable mTileDrawable;
-	
+
 	private int mBackgroundColor;
 	private Drawable mAdditionalOverlay;
 	private boolean mCropEnabled = false;
@@ -52,13 +52,13 @@ public class AttachmentView extends ClickableView
 	private boolean mSfwMode = false;
 	private boolean mDrawTouching = false;
 	private RoundedCornersDrawable mCornersDrawable;
-	
+
 	private long mLastClickTime;
 
 	private final float[] mWorkColorMatrix;
 	private final ColorMatrix mColorMatrix1;
 	private final ColorMatrix mColorMatrix2;
-	
+
 	public AttachmentView(Context context, AttributeSet attrs)
 	{
 		super(new ContextThemeWrapper(context, R.style.Theme_Gallery), attrs);
@@ -78,22 +78,22 @@ public class AttachmentView extends ClickableView
 			mColorMatrix2 = null;
 		}
 	}
-	
+
 	public void setCropEnabled(boolean enabled)
 	{
 		mCropEnabled = enabled;
 	}
-	
+
 	public void setFitSquare(boolean fitSquare)
 	{
 		mFitSquare = fitSquare;
 	}
-	
+
 	public void setSfwMode(boolean sfwMode)
 	{
 		mSfwMode = sfwMode;
 	}
-	
+
 	public void setAdditionalOverlay(int attrId, boolean invalidate)
 	{
 		Drawable drawable = attrId != 0 ? ResourceUtils.getDrawable(getContext(), attrId, 0) : null;
@@ -103,7 +103,7 @@ public class AttachmentView extends ClickableView
 		}
 		if (invalidate) invalidate();
 	}
-	
+
 	@Override
 	public boolean onTouchEvent(MotionEvent event)
 	{
@@ -127,18 +127,18 @@ public class AttachmentView extends ClickableView
 		}
 		return super.onTouchEvent(event);
 	}
-	
+
 	@Override
 	public void setBackgroundColor(int color)
 	{
 		mBackgroundColor = color;
 	}
-	
+
 	public void setDrawTouching(boolean drawTouching)
 	{
 		mDrawTouching = drawTouching;
 	}
-	
+
 	public void applyRoundedCorners(int backgroundColor)
 	{
 		float density = ResourceUtils.obtainDensity(this);
@@ -147,7 +147,7 @@ public class AttachmentView extends ClickableView
 		mCornersDrawable.setColor(backgroundColor);
 		if (getWidth() > 0) updateCornersBounds(getWidth(), getHeight());
 	}
-	
+
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
 	{
@@ -158,39 +158,39 @@ public class AttachmentView extends ClickableView
 			setMeasuredDimension(width, width);
 		}
 	}
-	
+
 	@Override
 	protected void onLayout(boolean changed, int left, int top, int right, int bottom)
 	{
 		super.onLayout(changed, left, top, right, bottom);
 		updateCornersBounds(right - left, bottom - top);
-		
+
 	}
-	
+
 	private void updateCornersBounds(int width, int height)
 	{
 		if (mCornersDrawable != null) mCornersDrawable.setBounds(0, 0, width, height);
 	}
-	
+
 	private boolean mEnqueuedTranslation = false;
 	private long mImageApplyTime = 0L;
-	
+
 	public void resetTransition()
 	{
 		setNextTransitionEnabled(false);
 	}
-	
+
 	public void enqueueTransition()
 	{
 		setNextTransitionEnabled(true);
 	}
-	
+
 	private void setNextTransitionEnabled(boolean enabled)
 	{
 		mImageApplyTime = 0L;
 		mEnqueuedTranslation = enabled;
 	}
-	
+
 	@Override
 	public void draw(Canvas canvas)
 	{
@@ -266,9 +266,9 @@ public class AttachmentView extends ClickableView
 		if (mCornersDrawable != null) mCornersDrawable.draw(canvas);
 		if (invalidate) invalidate();
 	}
-	
+
 	private Bitmap mBitmap;
-	
+
 	public void setImage(Bitmap bitmap)
 	{
 		mBitmap = bitmap;

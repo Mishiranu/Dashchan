@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -77,33 +77,33 @@ import com.mishiranu.dashchan.widget.ClickableView;
 public class ForegroundManager implements Handler.Callback
 {
 	private static final ForegroundManager INSTANCE = new ForegroundManager();
-	
+
 	private ForegroundManager()
 	{
-		
+
 	}
-	
+
 	public static ForegroundManager getInstance()
 	{
 		return INSTANCE;
 	}
-	
+
 	private static final int MESSAGE_REQUIRE_USER_CAPTCHA = 1;
 	private static final int MESSAGE_REQUIRE_ASYNC_CHECK = 2;
 	private static final int MESSAGE_REQUIRE_USER_CHOICE = 3;
 	private static final int MESSAGE_SHOW_CAPTCHA_INVALID = 4;
-	
+
 	private final Handler mHandler = new Handler(Looper.getMainLooper(), this);
 	private final SparseArray<PendingData> mPendingDataArray = new SparseArray<>();
-	
+
 	private int mPendingDataStartIndex = 0;
 	private WeakReference<Activity> mActivity;
-	
+
 	private Activity getActivity()
 	{
 		return mActivity != null ? mActivity.get() : null;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	private <T extends PendingData> T getPendingData(int pendingDataIndex)
 	{
@@ -112,22 +112,22 @@ public class ForegroundManager implements Handler.Callback
 			return (T) mPendingDataArray.get(pendingDataIndex);
 		}
 	}
-	
+
 	private static abstract class PendingDataDialogFragment extends DialogFragment
 	{
 		private static final String EXTRA_PENDING_DATA_INDEX = "pendingDataIndex";
-		
+
 		protected final void fillArguments(Bundle args, int pendingDataIndex)
 		{
 			args.putInt(EXTRA_PENDING_DATA_INDEX, pendingDataIndex);
 		}
-		
+
 		protected <T extends PendingData> T getPendingData()
 		{
 			return getInstance().getPendingData(getArguments().getInt(EXTRA_PENDING_DATA_INDEX));
 		}
 	}
-	
+
 	public static class CaptchaDialogFragment extends PendingDataDialogFragment implements CaptchaForm.Callback,
 			AsyncManager.Callback, ReadCaptchaTask.Callback
 	{
@@ -138,29 +138,29 @@ public class ForegroundManager implements Handler.Callback
 		private static final String EXTRA_THREAD_NUMBER = "threadNumber";
 		private static final String EXTRA_DESCRIPTION_RES_ID = "descriptionResId";
 		private static final String EXTRA_TASK_NAME = "taskName";
-		
+
 		private static final String EXTRA_CAPTCHA_STATE = "captchaState";
 		private static final String EXTRA_LOADED_INPUT = "loadedInput";
 		private static final String EXTRA_IMAGE = "image";
 		private static final String EXTRA_LARGE = "large";
 		private static final String EXTRA_BLACK_AND_WHITE = "blackAndWhite";
-		
+
 		private static final String EXTRA_FORCE_CAPTCHA = "forceCaptcha";
 		private static final String EXTRA_MAY_SHOW_LOAD_BUTTON = "mayShowLoadButton";
-		
+
 		private ChanPerformer.CaptchaState mCaptchaState;
 		private ChanConfiguration.Captcha.Input mLoadedInput;
 		private Bitmap mImage;
 		private boolean mLarge;
 		private boolean mBlackAndWhite;
-		
+
 		private final CaptchaForm mCaptchaForm = new CaptchaForm(this);
-		
+
 		public CaptchaDialogFragment()
 		{
-			
+
 		}
-		
+
 		public CaptchaDialogFragment(int pendingDataIndex, String chanName, String captchaType, String requirement,
 				String boardName, String threadNumber, int descriptionResId)
 		{
@@ -175,12 +175,12 @@ public class ForegroundManager implements Handler.Callback
 			args.putInt(EXTRA_DESCRIPTION_RES_ID, descriptionResId);
 			setArguments(args);
 		}
-		
+
 		public void show(Activity activity)
 		{
 			show(activity.getFragmentManager(), getClass().getName());
 		}
-		
+
 		@Override
 		public void onActivityCreated(Bundle savedInstanceState)
 		{
@@ -208,7 +208,7 @@ public class ForegroundManager implements Handler.Callback
 			}
 			if (needLoad) reloadCaptcha(pendingData, false, true, false);
 		}
-		
+
 		@Override
 		public void onSaveInstanceState(Bundle outState)
 		{
@@ -219,7 +219,7 @@ public class ForegroundManager implements Handler.Callback
 			outState.putBoolean(EXTRA_LARGE, mLarge);
 			outState.putBoolean(EXTRA_BLACK_AND_WHITE, mBlackAndWhite);
 		}
-		
+
 		private void reloadCaptcha(CaptchaPendingData pendingData, boolean forceCaptcha, boolean mayShowLoadButton,
 				boolean restart)
 		{
@@ -231,7 +231,7 @@ public class ForegroundManager implements Handler.Callback
 			extra.put(EXTRA_MAY_SHOW_LOAD_BUTTON, mayShowLoadButton);
 			AsyncManager.get(this).startTask(getArguments().getString(EXTRA_TASK_NAME), this, extra, restart);
 		}
-		
+
 		private static class ReadCaptchaHolder extends AsyncManager.Holder implements ReadCaptchaTask.Callback
 		{
 			@Override
@@ -242,14 +242,14 @@ public class ForegroundManager implements Handler.Callback
 				storeResult("onReadCaptchaSuccess", captchaState, captchaData, captchaType, input, validity,
 						image, large, blackAndWhite);
 			}
-			
+
 			@Override
 			public void onReadCaptchaError(ErrorItem errorItem)
 			{
 				storeResult("onReadCaptchaError", errorItem);
 			}
 		}
-		
+
 		@Override
 		public Pair<Object, AsyncManager.Holder> onCreateAndExecuteTask(String name, HashMap<String, Object> extra)
 		{
@@ -266,7 +266,7 @@ public class ForegroundManager implements Handler.Callback
 			task.executeOnExecutor(ReadCaptchaTask.THREAD_POOL_EXECUTOR);
 			return new Pair<>(task, holder);
 		}
-		
+
 		@Override
 		public void onFinishTaskExecution(String name, AsyncManager.Holder holder)
 		{
@@ -290,13 +290,13 @@ public class ForegroundManager implements Handler.Callback
 				onReadCaptchaError(errorItem);
 			}
 		}
-		
+
 		@Override
 		public void onRequestTaskCancel(String name, Object task)
 		{
 			((ReadCaptchaTask) task).cancel();
 		}
-		
+
 		@Override
 		public void onReadCaptchaSuccess(ChanPerformer.CaptchaState captchaState, ChanPerformer.CaptchaData captchaData,
 				String captchaType, ChanConfiguration.Captcha.Input input, ChanConfiguration.Captcha.Validity validity,
@@ -312,7 +312,7 @@ public class ForegroundManager implements Handler.Callback
 			pendingData.loadedCaptchaType = captchaType;
 			showCaptcha(captchaState, captchaType, input, image, large, blackAndWhite);
 		}
-		
+
 		@Override
 		public void onReadCaptchaError(ErrorItem errorItem)
 		{
@@ -331,7 +331,7 @@ public class ForegroundManager implements Handler.Callback
 			ToastUtils.show(getActivity(), errorItem);
 			mCaptchaForm.showError();
 		}
-		
+
 		private void showCaptcha(ChanPerformer.CaptchaState captchaState, String captchaType,
 				ChanConfiguration.Captcha.Input input, Bitmap image, boolean large, boolean blackAndWhite)
 		{
@@ -350,7 +350,7 @@ public class ForegroundManager implements Handler.Callback
 					.getDialogBackground(getActivity()));
 			mCaptchaForm.showCaptcha(captchaState, input, image, large, invertColors);
 		}
-		
+
 		private void finishDialog(CaptchaPendingData pendingData)
 		{
 			AsyncManager.get(this).cancelTask(getArguments().getString(EXTRA_TASK_NAME), this);
@@ -363,7 +363,7 @@ public class ForegroundManager implements Handler.Callback
 				}
 			}
 		}
-		
+
 		@SuppressLint("InflateParams")
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState)
@@ -384,7 +384,7 @@ public class ForegroundManager implements Handler.Callback
 			alertDialog.setCanceledOnTouchOutside(false);
 			return alertDialog;
 		}
-		
+
 		@Override
 		public void onRefreshCapctha(boolean forceRefresh)
 		{
@@ -392,7 +392,7 @@ public class ForegroundManager implements Handler.Callback
 			if (pendingData == null) dismissAllowingStateLoss();
 			else reloadCaptcha(pendingData, forceRefresh, false, true);
 		}
-		
+
 		@Override
 		public void onConfirmCaptcha()
 		{
@@ -403,14 +403,14 @@ public class ForegroundManager implements Handler.Callback
 			}
 			finishDialog(pendingData);
 		}
-		
+
 		@Override
 		public void onCancel(DialogInterface dialog)
 		{
 			super.onCancel(dialog);
 			cancelInternal();
 		}
-		
+
 		private void cancelInternal()
 		{
 			CaptchaPendingData pendingData = getPendingData();
@@ -422,17 +422,17 @@ public class ForegroundManager implements Handler.Callback
 			finishDialog(pendingData);
 		}
 	}
-	
+
 	public static class CaptchaCheckDialogFragment extends PendingDataDialogFragment implements AsyncManager.Callback
 	{
 		private static final String EXTRA_CAPTCHA_TYPE = "captchaType";
 		private static final String EXTRA_TASK_NAME = "taskName";
-		
+
 		public CaptchaCheckDialogFragment()
 		{
-			
+
 		}
-		
+
 		public CaptchaCheckDialogFragment(int pendingDataIndex, String captchaType)
 		{
 			Bundle args = new Bundle();
@@ -441,12 +441,12 @@ public class ForegroundManager implements Handler.Callback
 			args.putString(EXTRA_TASK_NAME, "check_captcha_" + System.currentTimeMillis());
 			setArguments(args);
 		}
-		
+
 		public void show(Activity activity)
 		{
 			show(activity.getFragmentManager(), getClass().getName());
 		}
-		
+
 		@Override
 		public void onActivityCreated(Bundle savedInstanceState)
 		{
@@ -460,7 +460,7 @@ public class ForegroundManager implements Handler.Callback
 			Bundle args = getArguments();
 			AsyncManager.get(this).startTask(args.getString(EXTRA_TASK_NAME), this, null, false);
 		}
-		
+
 		@Override
 		public Pair<Object, AsyncManager.Holder> onCreateAndExecuteTask(String name, HashMap<String, Object> extra)
 		{
@@ -473,7 +473,7 @@ public class ForegroundManager implements Handler.Callback
 			task.executeOnExecutor(CheckCaptchaTask.THREAD_POOL_EXECUTOR);
 			return task.getPair();
 		}
-		
+
 		@Override
 		public void onFinishTaskExecution(String name, AsyncManager.Holder holder)
 		{
@@ -501,13 +501,13 @@ public class ForegroundManager implements Handler.Callback
 			finishDialog(pendingData, false);
 			dismissAllowingStateLoss();
 		}
-		
+
 		@Override
 		public void onRequestTaskCancel(String name, Object task)
 		{
 			((CheckCaptchaTask) task).cancel();
 		}
-		
+
 		private void finishDialog(CaptchaPendingData pendingData, boolean cancel)
 		{
 			AsyncManager.get(this).cancelTask(getArguments().getString(EXTRA_TASK_NAME), this);
@@ -521,7 +521,7 @@ public class ForegroundManager implements Handler.Callback
 				}
 			}
 		}
-		
+
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState)
 		{
@@ -530,7 +530,7 @@ public class ForegroundManager implements Handler.Callback
 			dialog.setCanceledOnTouchOutside(false);
 			return dialog;
 		}
-		
+
 		@Override
 		public void onCancel(DialogInterface dialog)
 		{
@@ -540,18 +540,18 @@ public class ForegroundManager implements Handler.Callback
 			finishDialog(pendingData, true);
 		}
 	}
-	
+
 	private static class CheckCaptchaTask extends AsyncManager.SimpleTask<Void, Void, Boolean>
 	{
 		private final HttpHolder mHolder = new HttpHolder();
-		
+
 		private final String mCaptchaType;
 		private final String mApiKey;
 		private final String mChallenge;
 		private String mInput;
-		
+
 		private ErrorItem mErrorItem;
-		
+
 		public CheckCaptchaTask(String captchaType, String apiKey, String challenge, String input)
 		{
 			mCaptchaType = captchaType;
@@ -559,7 +559,7 @@ public class ForegroundManager implements Handler.Callback
 			mChallenge = challenge;
 			mInput = input;
 		}
-		
+
 		@Override
 		protected Boolean doInBackground(Void... params)
 		{
@@ -583,13 +583,13 @@ public class ForegroundManager implements Handler.Callback
 				return false;
 			}
 		}
-		
+
 		@Override
 		protected void onStoreResult(AsyncManager.Holder holder, Boolean result)
 		{
 			holder.storeResult(mApiKey, mChallenge, mInput, mErrorItem);
 		}
-		
+
 		@Override
 		public void cancel()
 		{
@@ -597,7 +597,7 @@ public class ForegroundManager implements Handler.Callback
 			mHolder.interrupt();
 		}
 	}
-	
+
 	private static ImageView appendDescriptionImageView(Activity activity, ViewGroup viewGroup, Bitmap descriptionImage)
 	{
 		ImageView imageView = new ImageView(activity)
@@ -623,44 +623,44 @@ public class ForegroundManager implements Handler.Callback
 		viewGroup.addView(imageView);
 		return imageView;
 	}
-	
+
 	private static class ItemsAdapter extends ArrayAdapter<CharSequence>
 	{
 		private final View mHeader;
-		
+
 		public ItemsAdapter(Context context, int resource, ArrayList<CharSequence> items, View header)
 		{
 			super(context, resource, android.R.id.text1, items);
 			mHeader = header;
 		}
-		
+
 		@Override
 		public int getItemViewType(int position)
 		{
 			if (mHeader != null && position == 0) return ListView.ITEM_VIEW_TYPE_IGNORE;
 			return super.getItemViewType(position);
 		}
-		
+
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent)
 		{
 			if (mHeader != null && position == 0) return mHeader;
 			return super.getView(position, convertView, parent);
 		}
-		
+
 		@Override
 		public boolean areAllItemsEnabled()
 		{
 			return false;
 		}
-		
+
 		@Override
 		public boolean isEnabled(int position)
 		{
 			return mHeader == null || position != 0;
 		}
 	}
-	
+
 	public static class ItemChoiceDialogFragment extends PendingDataDialogFragment implements
 			DialogInterface.OnClickListener, AdapterView.OnItemClickListener
 	{
@@ -669,15 +669,15 @@ public class ForegroundManager implements Handler.Callback
 		private static final String EXTRA_DESCRIPTION_TEXT = "descriptionText";
 		private static final String EXTRA_DESCRIPTION_IMAGE = "descriptionImage";
 		private static final String EXTRA_MULTIPLE = "multiple";
-		
+
 		private boolean[] mSelected;
 		private boolean mHasImage;
-		
+
 		public ItemChoiceDialogFragment()
 		{
-			
+
 		}
-		
+
 		public ItemChoiceDialogFragment(int pendingDataIndex, boolean[] selected, CharSequence[] items,
 				String descriptionText, Bitmap descriptionImage, boolean multiple)
 		{
@@ -690,12 +690,12 @@ public class ForegroundManager implements Handler.Callback
 			args.putBoolean(EXTRA_MULTIPLE, multiple);
 			setArguments(args);
 		}
-		
+
 		public void show(Activity activity)
 		{
 			show(activity.getFragmentManager(), getClass().getName());
 		}
-		
+
 		@Override
 		public void onActivityCreated(Bundle savedInstanceState)
 		{
@@ -703,14 +703,14 @@ public class ForegroundManager implements Handler.Callback
 			PendingData pendingData = getPendingData();
 			if (pendingData == null) dismissAllowingStateLoss();
 		}
-		
+
 		@Override
 		public void onSaveInstanceState(Bundle outState)
 		{
 			super.onSaveInstanceState(outState);
 			outState.putBooleanArray(EXTRA_SELECTED, mSelected);
 		}
-		
+
 		@SuppressLint("InflateParams")
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState)
@@ -728,7 +728,7 @@ public class ForegroundManager implements Handler.Callback
 			{
 				System.arraycopy(selected, 0, mSelected, 0, selected.length);
 			}
-			
+
 			FrameLayout imageLayout = null;
 			if (descriptionImage != null)
 			{
@@ -757,7 +757,7 @@ public class ForegroundManager implements Handler.Callback
 			mHasImage = imageLayout != null;
 			return alertDialog;
 		}
-		
+
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id)
 		{
@@ -775,20 +775,20 @@ public class ForegroundManager implements Handler.Callback
 				storeResult(true);
 			}
 		}
-		
+
 		@Override
 		public void onClick(DialogInterface dialog, int which)
 		{
 			storeResult(which == AlertDialog.BUTTON_POSITIVE);
 		}
-		
+
 		@Override
 		public void onCancel(DialogInterface dialog)
 		{
 			super.onCancel(dialog);
 			storeResult(false);
 		}
-		
+
 		private void storeResult(boolean success)
 		{
 			ChoicePendingData pendingData = getPendingData();
@@ -803,7 +803,7 @@ public class ForegroundManager implements Handler.Callback
 			}
 		}
 	}
-	
+
 	public static class ImageChoiceDialogFragment extends PendingDataDialogFragment implements View.OnClickListener,
 			DialogInterface.OnClickListener
 	{
@@ -816,12 +816,12 @@ public class ForegroundManager implements Handler.Callback
 
 		private FrameLayout[] mSelectionViews;
 		private boolean[] mSelected;
-		
+
 		public ImageChoiceDialogFragment()
 		{
-			
+
 		}
-		
+
 		public ImageChoiceDialogFragment(int pendingDataIndex, int columns, boolean[] selected, Bitmap[] images,
 				String descriptionText, Bitmap descriptionImage, boolean multiple)
 		{
@@ -835,12 +835,12 @@ public class ForegroundManager implements Handler.Callback
 			args.putBoolean(EXTRA_MULTIPLE, multiple);
 			setArguments(args);
 		}
-		
+
 		public void show(Activity activity)
 		{
 			show(activity.getFragmentManager(), getClass().getName());
 		}
-		
+
 		private void ensureArrays()
 		{
 			if (mSelectionViews == null)
@@ -852,7 +852,7 @@ public class ForegroundManager implements Handler.Callback
 				mSelected = new boolean[count];
 			}
 		}
-		
+
 		@Override
 		public void onActivityCreated(Bundle savedInstanceState)
 		{
@@ -872,14 +872,14 @@ public class ForegroundManager implements Handler.Callback
 			}
 			for (int i = 0; i < mSelected.length; i++) updateSelection(i);
 		}
-		
+
 		@Override
 		public void onSaveInstanceState(Bundle outState)
 		{
 			super.onSaveInstanceState(outState);
 			outState.putBooleanArray(EXTRA_SELECTED, mSelected);
 		}
-		
+
 		@SuppressLint("InflateParams")
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState)
@@ -958,7 +958,7 @@ public class ForegroundManager implements Handler.Callback
 			});
 			return alertDialog;
 		}
-		
+
 		@Override
 		public void onClick(View v)
 		{
@@ -975,27 +975,27 @@ public class ForegroundManager implements Handler.Callback
 				storeResult(true);
 			}
 		}
-		
+
 		private void updateSelection(int index)
 		{
 			Drawable drawable = mSelectionViews[index].getForeground();
 			if (C.API_LOLLIPOP) ((SelectorCheckDrawable) drawable).setSelected(mSelected[index], true);
 			else ((SelectorBorderDrawable) drawable).setSelected(mSelected[index]);
 		}
-		
+
 		@Override
 		public void onClick(DialogInterface dialog, int which)
 		{
 			storeResult(which == AlertDialog.BUTTON_POSITIVE);
 		}
-		
+
 		@Override
 		public void onCancel(DialogInterface dialog)
 		{
 			super.onCancel(dialog);
 			storeResult(false);
 		}
-		
+
 		private void storeResult(boolean success)
 		{
 			ChoicePendingData pendingData = getPendingData();
@@ -1010,7 +1010,7 @@ public class ForegroundManager implements Handler.Callback
 			}
 		}
 	}
-	
+
 	@Override
 	public boolean handleMessage(Message msg)
 	{
@@ -1085,17 +1085,17 @@ public class ForegroundManager implements Handler.Callback
 		}
 		return false;
 	}
-	
+
 	private static abstract class HandlerData
 	{
 		public final int pendingDataIndex;
-		
+
 		public HandlerData(int pendingDataIndex)
 		{
 			this.pendingDataIndex = pendingDataIndex;
 		}
 	}
-	
+
 	private static class CaptchaHandlerData extends HandlerData
 	{
 		public final String chanName;
@@ -1104,7 +1104,7 @@ public class ForegroundManager implements Handler.Callback
 		public final String boardName;
 		public final String threadNumber;
 		public final int descriptionResId;
-		
+
 		public CaptchaHandlerData(int pendingDataIndex, String chanName, String captchaType, String requirement,
 				String boardName, String threadNumber, int descriptionResId)
 		{
@@ -1117,7 +1117,7 @@ public class ForegroundManager implements Handler.Callback
 			this.descriptionResId = descriptionResId;
 		}
 	}
-	
+
 	private static class ChoiceHandlerData extends HandlerData
 	{
 		public final int columns;
@@ -1127,7 +1127,7 @@ public class ForegroundManager implements Handler.Callback
 		public final String descriptionText;
 		public final Bitmap descriptionImage;
 		public final boolean multiple;
-		
+
 		public ChoiceHandlerData(int pendingDataIndex, int columns, boolean[] selected, Bitmap[] images,
 				CharSequence[] items, String descriptionText, Bitmap descriptionImage, boolean multiple)
 		{
@@ -1141,30 +1141,30 @@ public class ForegroundManager implements Handler.Callback
 			this.multiple = multiple;
 		}
 	}
-	
+
 	private static abstract class PendingData
 	{
 		public boolean ready = false;
 	}
-	
+
 	private static class CaptchaPendingData extends PendingData
 	{
 		public final ReadCaptchaTask.CaptchaReader captchaReader;
-		
+
 		public ChanPerformer.CaptchaData captchaData;
 		public String loadedCaptchaType;
-		
+
 		public CaptchaPendingData(ReadCaptchaTask.CaptchaReader captchaReader)
 		{
 			this.captchaReader = captchaReader;
 		}
 	}
-	
+
 	private static class ChoicePendingData extends PendingData
 	{
 		public boolean[] result;
 	}
-	
+
 	public ChanPerformer.CaptchaData requireUserCaptcha(ChanManager.Linked linked, String requirement,
 			String boardName, String threadNumber, boolean retry)
 	{
@@ -1173,7 +1173,7 @@ public class ForegroundManager implements Handler.Callback
 		String chanName = linked.getChanName();
 		return requireUserCaptcha(null, captchaType, requirement, chanName, boardName, threadNumber, 0, retry);
 	}
-	
+
 	public ChanPerformer.CaptchaData requireUserCaptcha(ReadCaptchaTask.CaptchaReader captchaReader,
 			String captchaType, String requirement, String chanName, String boardName, String threadNumber,
 			int descriptionResId, boolean retry)
@@ -1255,31 +1255,31 @@ public class ForegroundManager implements Handler.Callback
 			}
 		}
 	}
-	
+
 	public Integer requireUserItemSingleChoice(int selected, CharSequence[] items, String descriptionText,
 			Bitmap descriptionImage)
 	{
 		return requireUserSingleChoice(0, selected, items, null, descriptionText, descriptionImage, false);
 	}
-	
+
 	public boolean[] requireUserItemMultipleChoice(boolean[] selected, CharSequence[] items, String descriptionText,
 			Bitmap descriptionImage)
 	{
 		return requireUserChoice(0, selected, items, null, descriptionText, descriptionImage, true, false);
 	}
-	
+
 	public Integer requireUserImageSingleChoice(int columns, int selected, Bitmap[] images,
 			String descriptionText, Bitmap descriptionImage)
 	{
 		return requireUserSingleChoice(columns, selected, null, images, descriptionText, descriptionImage, true);
 	}
-	
+
 	public boolean[] requireUserImageMultipleChoice(int columns, boolean[] selected, Bitmap[] images,
 			String descriptionText, Bitmap descriptionImage)
 	{
 		return requireUserChoice(columns, selected, null, images, descriptionText, descriptionImage, true, true);
 	}
-	
+
 	private Integer requireUserSingleChoice(int columns, int selected, CharSequence[] items, Bitmap[] images,
 			String descriptionText, Bitmap descriptionImage, boolean imageChoice)
 	{
@@ -1302,7 +1302,7 @@ public class ForegroundManager implements Handler.Callback
 		}
 		return null;
 	}
-	
+
 	private boolean[] requireUserChoice(int columns, boolean[] selected, CharSequence[] items, Bitmap[] images,
 			String descriptionText, Bitmap descriptionImage, boolean multiple, boolean imageChoice)
 	{
@@ -1346,12 +1346,12 @@ public class ForegroundManager implements Handler.Callback
 			}
 		}
 	}
-	
+
 	public static void register(Activity activity)
 	{
 		INSTANCE.mActivity = new WeakReference<>(activity);
 	}
-	
+
 	public static void unregister(Activity activity)
 	{
 		if (INSTANCE.getActivity() == activity) INSTANCE.mActivity = null;

@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -52,7 +52,7 @@ public class ViewUtils
 			if (textView != null) textView.setTextIsSelectable(true);
 		}
 	};
-	
+
 	public static final DialogInterface.OnShowListener ALERT_DIALOG_LONGER_TITLE = dialog ->
 	{
 		if (dialog instanceof AlertDialog)
@@ -69,19 +69,19 @@ public class ViewUtils
 			}
 		}
 	};
-	
+
 	public static void removeFromParent(View view)
 	{
 		ViewParent viewParent = view.getParent();
 		if (viewParent instanceof ViewGroup) ((ViewGroup) viewParent).removeView(view);
 	}
-	
+
 	public static boolean isDrawerLockable(Configuration configuration)
 	{
 		return configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 				&& ResourceUtils.isTablet(configuration);
 	}
-	
+
 	public static void applyScaleSize(View... views)
 	{
 		float scale = Preferences.getTextScale() / 100f;
@@ -104,7 +104,7 @@ public class ViewUtils
 			}
 		}
 	}
-	
+
 	public static void applyScaleMarginLR(View... views)
 	{
 		float scale = Preferences.getTextScale() / 100f;
@@ -122,14 +122,14 @@ public class ViewUtils
 			}
 		}
 	}
-	
+
 	public static void applyMultipleCardHolderPadding(View view)
 	{
 		float density = ResourceUtils.obtainDensity(view);
 		int leftRight = (int) (5.5f * density);
 		view.setPadding(leftRight, 0, leftRight, 0);
 	}
-	
+
 	public static void applyCardHolderPadding(View view, boolean isFirst, boolean isLast, boolean multipleLeftRight)
 	{
 		float density = ResourceUtils.obtainDensity(view);
@@ -138,7 +138,7 @@ public class ViewUtils
 		int bottom = isLast ? (int) (7f * density) : 0;
 		view.setPadding(leftRight, top, leftRight, bottom);
 	}
-	
+
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	public static void fixActionBar(Activity activity, View toolbarView)
 	{
@@ -170,7 +170,7 @@ public class ViewUtils
 				}
 				catch (Exception e)
 				{
-					
+
 				}
 				toolbarView.getLayoutParams().height = actionHeight;
 				toolbarView.setMinimumHeight(actionHeight);
@@ -183,7 +183,7 @@ public class ViewUtils
 			}
 		}
 	}
-	
+
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	public static void makeRoundedCorners(View view, final int radius, final boolean withPaddings)
 	{
@@ -193,7 +193,7 @@ public class ViewUtils
 			view.setOutlineProvider(new ViewOutlineProvider()
 			{
 				private final Rect mRect = new Rect();
-				
+
 				@Override
 				public void getOutline(View view, Outline outline)
 				{
@@ -209,7 +209,7 @@ public class ViewUtils
 			});
 		}
 	}
-	
+
 	public static void dismissDialogQuietly(DialogInterface dialog)
 	{
 		try
@@ -221,14 +221,14 @@ public class ViewUtils
 			// May be detached from window manager
 		}
 	}
-	
+
 	public static void addNotificationAction(Notification.Builder builder, Context context, TypedArray typedArray,
 			int resourceIndex, int titleRes, PendingIntent intent)
 	{
 		addNotificationAction(builder, context, typedArray.getResourceId(resourceIndex, 0),
 				context.getString(titleRes), intent);
 	}
-	
+
 	@TargetApi(Build.VERSION_CODES.M)
 	@SuppressWarnings("deprecation")
 	public static void addNotificationAction(Notification.Builder builder, Context context, int icon,

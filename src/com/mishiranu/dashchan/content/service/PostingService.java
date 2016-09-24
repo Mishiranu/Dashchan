@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -55,21 +55,21 @@ import com.mishiranu.dashchan.util.ViewUtils;
 public class PostingService extends Service implements Runnable, SendPostTask.Callback
 {
 	private static final String ACTION_CANCEL_POSTING = "com.mishiranu.dashchan.action.CANCEL_POSTING";
-	
+
 	private static final String EXTRA_KEY = "com.mishiranu.dashchan.extra.KEY";
-	
+
 	private final HashMap<String, ArrayList<Callback>> mCallbacks = new HashMap<>();
 	private final HashMap<Callback, String> mCallbackKeys = new HashMap<>();
 	private final HashMap<String, TaskState> mTasks = new HashMap<>();
-	
+
 	private NotificationManager mNotificationManager;
 	private PowerManager.WakeLock mWakeLock;
-	
+
 	private Thread mNotificationsWorker;
 	private final LinkedBlockingQueue<TaskState> mNotificationsQueue = new LinkedBlockingQueue<>();
-	
+
 	private static int sNotificationId = 0;
-	
+
 	private static class TaskState
 	{
 		public final String key;
@@ -77,17 +77,17 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 		public final Notification.Builder builder;
 		public final int notificationId = ++sNotificationId;
 		public final String text;
-		
+
 		private SendPostTask.ProgressState progressState = SendPostTask.ProgressState.CONNECTING;
 		private int attachmentIndex = 0;
 		private int attachmentsCount = 0;
-		
+
 		private int progress = 0;
 		private int progressMax = 0;
-		
+
 		private boolean first;
 		private boolean cancel;
-		
+
 		public TaskState(String key, SendPostTask task, Context context, String chanName,
 				ChanPerformer.SendPostData data)
 		{
@@ -97,7 +97,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 			text = buildNotificationText(chanName, data.boardName, data.threadNumber, null);
 		}
 	}
-	
+
 	public static String buildNotificationText(String chanName, String boardName, String threadNumber,
 			String postNumber)
 	{
@@ -107,7 +107,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 		if (!StringUtils.isEmpty(postNumber)) builder.append(", #").append(postNumber);
 		return builder.toString();
 	}
-	
+
 	@Override
 	public void onCreate()
 	{
@@ -119,7 +119,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 		mNotificationsWorker = new Thread(this, "PostingServiceNotificationThread");
 		mNotificationsWorker.start();
 	}
-	
+
 	@Override
 	public void onDestroy()
 	{
@@ -127,7 +127,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 		mWakeLock.release();
 		mNotificationsWorker.interrupt();
 	}
-	
+
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId)
 	{
@@ -137,14 +137,14 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 		}
 		return START_NOT_STICKY;
 	}
-	
+
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private void setNotificationColor(Notification.Builder builder)
 	{
 		Context themedContext = new ContextThemeWrapper(this, Preferences.getThemeResource());
 		builder.setColor(ResourceUtils.getColor(themedContext, android.R.attr.colorAccent));
 	}
-	
+
 	@Override
 	public void run()
 	{
@@ -212,36 +212,36 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 			}
 		}
 	}
-	
+
 	@Override
 	public Binder onBind(Intent intent)
 	{
 		return new Binder();
 	}
-	
+
 	private void stopSelfAndReleaseWakeLock()
 	{
 		stopSelf();
 		mWakeLock.release();
 	}
-	
+
 	private static String makeKey(String chanName, String boardName, String threadNumber)
 	{
 		return chanName + '/' + boardName + '/' + threadNumber;
 	}
-	
+
 	public interface Callback
 	{
 		public void onSendPostStart(boolean progressMode);
 		public void onSendPostChangeProgressState(boolean progressMode, SendPostTask.ProgressState progressState,
 				int attachmentIndex, int attachmentsCount);
 		public void onSendPostChangeProgressValue(int progress, int progressMax);
-		
+
 		public void onSendPostSuccess();
 		public void onSendPostFail(ErrorItem errorItem, Object extra, boolean captchaError, boolean keepCaptcha);
 		public void onSendPostCancel();
 	}
-	
+
 	public class Binder extends android.os.Binder
 	{
 		public void executeSendPost(String chanName, ChanPerformer.SendPostData data)
@@ -261,12 +261,12 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 				for (Callback callback : callbacks) notifyInitDownloading(callback, taskState, false);
 			}
 		}
-		
+
 		public void cancelSendPost(String chanName, String boardName, String threadNumber)
 		{
 			performCancel(makeKey(chanName, boardName, threadNumber));
 		}
-		
+
 		public void register(Callback callback, String chanName, String boardName, String threadNumber)
 		{
 			String key = makeKey(chanName, boardName, threadNumber);
@@ -281,7 +281,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 			TaskState taskState = mTasks.get(key);
 			if (taskState != null) notifyInitDownloading(callback, taskState, true);
 		}
-		
+
 		public void unregister(Callback callback)
 		{
 			String key = mCallbackKeys.remove(callback);
@@ -293,14 +293,14 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 			}
 		}
 	}
-	
+
 	private void enqueueUpdateNotification(TaskState taskState, boolean first, boolean cancel)
 	{
 		taskState.first = first;
 		taskState.cancel = cancel;
 		mNotificationsQueue.add(taskState);
 	}
-	
+
 	private void notifyInitDownloading(Callback callback, TaskState taskState, boolean notifyState)
 	{
 		boolean progressMode = taskState.task.isProgressMode();
@@ -312,7 +312,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 			callback.onSendPostChangeProgressValue(taskState.progress, taskState.progressMax);
 		}
 	}
-	
+
 	private void performCancel(String key)
 	{
 		TaskState taskState = mTasks.remove(key);
@@ -328,7 +328,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 			}
 		}
 	}
-	
+
 	@Override
 	public void onSendPostChangeProgressState(String key, SendPostTask.ProgressState progressState,
 			int attachmentIndex, int attachmentsCount)
@@ -352,7 +352,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 			}
 		}
 	}
-	
+
 	@Override
 	public void onSendPostChangeProgressValue(String key, int progress, int progressMax)
 	{
@@ -369,7 +369,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 			}
 		}
 	}
-	
+
 	private boolean removeTask(String key)
 	{
 		TaskState taskState = mTasks.remove(key);
@@ -381,7 +381,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 		}
 		return false;
 	}
-	
+
 	@Override
 	public void onSendPostSuccess(String key, ChanPerformer.SendPostData data,
 			String chanName, String threadNumber, String postNumber)
@@ -455,7 +455,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 			LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(C.ACTION_POST_SENT));
 		}
 	}
-	
+
 	@Override
 	public void onSendPostFail(String key, ChanPerformer.SendPostData data, String chanName, ErrorItem errorItem,
 			Object extra, boolean captchaError, boolean keepCaptcha)
@@ -480,16 +480,16 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 			}
 		}
 	}
-	
+
 	public static class FailResult implements Serializable
 	{
 		private static final long serialVersionUID = 1L;
-		
+
 		public final ErrorItem errorItem;
 		public final Object extra;
 		public final boolean captchaError;
 		public final boolean keepCaptcha;
-		
+
 		public FailResult(ErrorItem errorItem, Object extra, boolean captchaError, boolean keepCaptcha)
 		{
 			this.errorItem = errorItem;
@@ -498,7 +498,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 			this.keepCaptcha = keepCaptcha;
 		}
 	}
-	
+
 	public static class NewPostData
 	{
 		public final String chanName;
@@ -507,7 +507,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 		public final String postNumber;
 		public final String comment;
 		public final boolean newThread;
-		
+
 		public NewPostData(String chanName, String boardName, String threadNumber, String postNumber,
 				String comment, boolean newThread)
 		{
@@ -518,9 +518,9 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 			this.comment = comment;
 			this.newThread = newThread;
 		}
-		
+
 		private String mNotificationTag;
-		
+
 		private String getNotificationTag()
 		{
 			if (mNotificationTag == null)
@@ -531,9 +531,9 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 			return mNotificationTag;
 		}
 	}
-	
+
 	private static final HashMap<String, ArrayList<NewPostData>> NEW_POST_DATAS = new HashMap<>();
-	
+
 	public static ArrayList<NewPostData> getNewPostDatas(Context context, String chanName, String boardName,
 			String threadNumber)
 	{
@@ -552,7 +552,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 
 	private static NewPostData sNewThreadData;
 	private static String sNewThreadDataKey;
-	
+
 	public static NewPostData obtainNewThreadData(Context context, String chanName, String boardName)
 	{
 		if (makeKey(chanName, boardName, null).equals(sNewThreadDataKey))
@@ -566,7 +566,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 		}
 		return null;
 	}
-	
+
 	public static void clearNewThreadData()
 	{
 		sNewThreadData = null;

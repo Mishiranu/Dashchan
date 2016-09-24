@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,19 +28,19 @@ public class LinebreakLayout extends ViewGroup
 {
 	private int mHorizontalSpacing;
 	private int mVerticalSpacing;
-	
+
 	private static final int[] ATTRS = new int[] {android.R.attr.horizontalSpacing, android.R.attr.verticalSpacing};
-	
+
 	public LinebreakLayout(Context context)
 	{
 		super(context);
 	}
-	
+
 	public LinebreakLayout(Context context, AttributeSet attrs)
 	{
 		this(context, attrs, 0);
 	}
-	
+
 	public LinebreakLayout(Context context, AttributeSet attrs, int defStyleAttr)
 	{
 		super(context, attrs, defStyleAttr);
@@ -49,35 +49,35 @@ public class LinebreakLayout extends ViewGroup
 		mVerticalSpacing = typedArray.getDimensionPixelSize(1, 0);
 		typedArray.recycle();
 	}
-	
+
 	@SuppressWarnings("unused")
 	public void setHorizontalSpacing(int horizontalSpacing)
 	{
 		mHorizontalSpacing = horizontalSpacing;
 		requestLayout();
 	}
-	
+
 	@SuppressWarnings("unused")
 	public void setVerticalSpacing(int verticalSpacing)
 	{
 		mVerticalSpacing = verticalSpacing;
 		requestLayout();
 	}
-	
+
 	@SuppressWarnings("unused")
 	public int getHorizontalSpacing()
 	{
 		return mHorizontalSpacing;
 	}
-	
+
 	@SuppressWarnings("unused")
 	public int getVerticalSpacing()
 	{
 		return mVerticalSpacing;
 	}
-	
+
 	private final ArrayList<View> mPostMeasurements = new ArrayList<>();
-	
+
 	private static int measureChild(View child, LayoutParams layoutParams, boolean widthUnspecified,
 			boolean linebreak, int maxWidth, int lineWidth, int heightMeasureSpec, int vertialPaddings,
 			int matchLineHeight, int horizontalSpacing)
@@ -93,7 +93,7 @@ public class LinebreakLayout extends ViewGroup
 		if (lineWidth > 0) lineWidth += horizontalSpacing;
 		return child.getMeasuredWidth();
 	}
-	
+
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
 	{
@@ -147,7 +147,7 @@ public class LinebreakLayout extends ViewGroup
 		minHeight = Math.max(minHeight, getSuggestedMinimumHeight());
 		setMeasuredDimension(resolveSize(minWidth, widthMeasureSpec), resolveSize(minHeight, heightMeasureSpec));
 	}
-	
+
 	@Override
 	protected void onLayout(boolean changed, int l, int t, int r, int b)
 	{
@@ -201,7 +201,7 @@ public class LinebreakLayout extends ViewGroup
 			}
 		}
 	}
-	
+
 	@Override
 	protected LayoutParams generateDefaultLayoutParams()
 	{

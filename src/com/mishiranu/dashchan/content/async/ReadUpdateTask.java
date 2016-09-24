@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -45,28 +45,28 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object>
 {
 	private final Context mContext;
 	private final Callback mCallback;
-	
-	public static class UpdateDataMap implements Serializable 
+
+	public static class UpdateDataMap implements Serializable
 	{
 		private static final long serialVersionUID = 1L;
-		
+
 		private final HashMap<String, ArrayList<ReadUpdateTask.UpdateItem>> mMap = new HashMap<>();
-		
+
 		public ArrayList<ReadUpdateTask.UpdateItem> get(String extensionName)
 		{
 			return mMap.get(extensionName);
 		}
-		
+
 		public Iterable<String> extensionNames()
 		{
 			return mMap.keySet();
 		}
 	}
-	
+
 	public static class UpdateItem implements Serializable
 	{
 		private static final long serialVersionUID = 1L;
-		
+
 		public final String title;
 		public final String name;
 		public final int code;
@@ -75,7 +75,7 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object>
 		public final long length;
 		public final String source;
 		public final boolean ignoreVersion;
-		
+
 		public UpdateItem(String title, String name, int code, int version, long length, String source,
 				boolean ignoreVersion)
 		{
@@ -88,7 +88,7 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object>
 			this.source = source;
 			this.ignoreVersion = ignoreVersion;
 		}
-		
+
 		public UpdateItem(String title, String name, int code, int minVersion, int maxVersion, long length,
 				String source)
 		{
@@ -102,18 +102,18 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object>
 			ignoreVersion = false;
 		}
 	}
-	
+
 	public interface Callback
 	{
 		public void onReadUpdateComplete(UpdateDataMap updateDataMap);
 	}
-	
+
 	public ReadUpdateTask(Context context, Callback callback)
 	{
 		mContext = context.getApplicationContext();
 		mCallback = callback;
 	}
-	
+
 	public static File getDownloadDirectory(Context context)
 	{
 		String dirType = "updates";
@@ -121,7 +121,7 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object>
 		if (directory != null) directory.mkdirs();
 		return directory;
 	}
-	
+
 	private static Uri normalizeUri(Uri uri, Uri base)
 	{
 		boolean noScheme = uri.getScheme() == null;
@@ -135,7 +135,7 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object>
 		}
 		return uri;
 	}
-	
+
 	@Override
 	protected Object doInBackground(Void... params)
 	{
@@ -266,13 +266,13 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object>
 			}
 			catch (JSONException e)
 			{
-				
+
 			}
 			if (thread.isInterrupted()) return null;
 		}
 		return updateDataMap;
 	}
-	
+
 	@Override
 	protected void onPostExecute(Object result)
 	{

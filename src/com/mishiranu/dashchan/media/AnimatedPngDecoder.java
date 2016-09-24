@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -48,9 +48,9 @@ public class AnimatedPngDecoder implements Runnable
 	private final Canvas mCanvas;
 	private final Frame[] mFrames;
 	private final int mDuration;
-	
+
 	private long mStartTime;
-	
+
 	private static class Frame
 	{
 		public byte[] bytes;
@@ -63,7 +63,7 @@ public class AnimatedPngDecoder implements Runnable
 		public final boolean restoreBackground;
 		public final boolean restorePrevious;
 		public final boolean blendOver;
-		
+
 		public Frame(int width, int height, int x, int y, int startTime, boolean restoreBackground,
 				boolean restorePrevious, boolean blendOver)
 		{
@@ -77,7 +77,7 @@ public class AnimatedPngDecoder implements Runnable
 			this.blendOver = blendOver;
 		}
 	}
-	
+
 	public AnimatedPngDecoder(FileHolder fileHolder) throws IOException
 	{
 		// Transform APNG to multiple PNG images and decode them
@@ -228,7 +228,7 @@ public class AnimatedPngDecoder implements Runnable
 		mDuration = totalTime;
 		mStartTime = System.currentTimeMillis();
 	}
-	
+
 	private static void recycleFrames(Frame[] frames)
 	{
 		for (Frame frame : frames)
@@ -240,25 +240,25 @@ public class AnimatedPngDecoder implements Runnable
 			}
 		}
 	}
-	
+
 	private static class FrameInputStream extends InputStream
 	{
 		private final byte[] mHead;
 		private final Frame mFrame;
-		
+
 		private int mPosition;
-		
+
 		private int getTotalCount()
 		{
 			return mHead.length + mFrame.bytes.length + IEND_CHUNK.length;
 		}
-		
+
 		public FrameInputStream(byte[] head, Frame frame)
 		{
 			mHead = head;
 			mFrame = frame;
 		}
-		
+
 		@Override
 		public int read()
 		{
@@ -282,13 +282,13 @@ public class AnimatedPngDecoder implements Runnable
 			}
 			return -1;
 		}
-		
+
 		@Override
 		public int read(byte[] buffer)
 		{
 			return read(buffer, 0, buffer.length);
 		}
-		
+
 		@Override
 		public int read(byte[] buffer, int byteOffset, int byteCount)
 		{
@@ -300,7 +300,7 @@ public class AnimatedPngDecoder implements Runnable
 			if (position < IEND_CHUNK.length) return copy(buffer, byteOffset, byteCount, IEND_CHUNK, position);
 			return -1;
 		}
-		
+
 		private int copy(byte[] buffer, int byteOffset, int byteCount, byte[] from, int position)
 		{
 			int count = Math.min(from.length - position, byteCount);
@@ -308,7 +308,7 @@ public class AnimatedPngDecoder implements Runnable
 			mPosition += count;
 			return count;
 		}
-		
+
 		@Override
 		public long skip(long byteCount)
 		{
@@ -325,14 +325,14 @@ public class AnimatedPngDecoder implements Runnable
 				return byteCount;
 			}
 		}
-		
+
 		@Override
 		public int available()
 		{
 			return getTotalCount() - mPosition;
 		}
 	}
-	
+
 	public void recycle()
 	{
 		recycleFrames(mFrames);
@@ -341,15 +341,15 @@ public class AnimatedPngDecoder implements Runnable
 	private int mLastIndex = -1;
 	private boolean mHasPrevious = false;
 	private int[] mPreviousColors;
-	
+
 	private final Paint mClearPaint = new Paint();
-	
+
 	{
 		mClearPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
 	}
-	
+
 	private final Paint mDrawPaint = new Paint(Paint.FILTER_BITMAP_FLAG);
-	
+
 	private void drawImage(int index)
 	{
 		if (index > 0)
@@ -383,7 +383,7 @@ public class AnimatedPngDecoder implements Runnable
 		}
 		mCanvas.drawBitmap(frame.bitmap, frame.x, frame.y, mDrawPaint);
 	}
-	
+
 	private int draw()
 	{
 		int position = 0;
@@ -417,9 +417,9 @@ public class AnimatedPngDecoder implements Runnable
 		}
 		return delay;
 	}
-	
+
 	private Drawable mDrawable;
-	
+
 	public Drawable getDrawable()
 	{
 		if (mDrawable == null)
@@ -427,37 +427,37 @@ public class AnimatedPngDecoder implements Runnable
 			mDrawable = new Drawable()
 			{
 				private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG);
-				
+
 				@Override
 				public int getIntrinsicWidth()
 				{
 					return mFrames[0].width;
 				}
-				
+
 				@Override
 				public int getIntrinsicHeight()
 				{
 					return mFrames[0].height;
 				}
-				
+
 				@Override
 				public void setColorFilter(ColorFilter colorFilter)
 				{
 					mPaint.setColorFilter(colorFilter);
 				}
-				
+
 				@Override
 				public void setAlpha(int alpha)
 				{
 					mPaint.setAlpha(alpha);
 				}
-				
+
 				@Override
 				public int getOpacity()
 				{
 					return PixelFormat.TRANSPARENT;
 				}
-				
+
 				@Override
 				public void draw(Canvas canvas)
 				{
@@ -483,7 +483,7 @@ public class AnimatedPngDecoder implements Runnable
 		}
 		return mDrawable;
 	}
-	
+
 	@Override
 	public void run()
 	{

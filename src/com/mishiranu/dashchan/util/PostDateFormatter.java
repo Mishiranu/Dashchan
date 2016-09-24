@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,7 +29,7 @@ public class PostDateFormatter
 {
 	private final String mInstance;
 	private final DateFormat mDateFormat, mDateFormatLong, mTimeFormat;
-	
+
 	public PostDateFormatter(Context context)
 	{
 		SimpleDateFormat systemFormat = (SimpleDateFormat) android.text.format.DateFormat.getDateFormat(context);
@@ -49,7 +49,7 @@ public class PostDateFormatter
 		mDateFormatLong = new SimpleDateFormat(longDateFormat, Locale.getDefault());
 		mTimeFormat = new SimpleDateFormat(timeFormat, Locale.US);
 	}
-	
+
 	public String format(long timestamp)
 	{
 		Calendar calendar = Calendar.getInstance();
@@ -58,18 +58,18 @@ public class PostDateFormatter
 		return (calendar.get(Calendar.YEAR) != year ? mDateFormatLong : mDateFormat).format(timestamp)
 				+ " " + mTimeFormat.format(timestamp);
 	}
-	
+
 	public Holder format(long timestamp, Holder holder)
 	{
-		if (holder != null && holder.instance.equals(mInstance)) return holder; 
+		if (holder != null && holder.instance.equals(mInstance)) return holder;
 		return new Holder(format(timestamp), mInstance);
 	}
-	
+
 	public static class Holder
 	{
 		public final String text;
 		private final String instance;
-		
+
 		private Holder(String text, String instance)
 		{
 			this.text = text;

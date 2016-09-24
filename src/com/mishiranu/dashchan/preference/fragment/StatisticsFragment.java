@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -49,7 +49,7 @@ public class StatisticsFragment extends BaseListFragment
 		public final int views;
 		public final int posts;
 		public final int threads;
-		
+
 		public ListItem(String title, int views, int posts, int threads)
 		{
 			this.title = title;
@@ -58,9 +58,9 @@ public class StatisticsFragment extends BaseListFragment
 			this.threads = threads;
 		}
 	}
-	
+
 	private final ArrayList<ListItem> mListItems = new ArrayList<>();
-	
+
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState)
 	{
@@ -116,7 +116,7 @@ public class StatisticsFragment extends BaseListFragment
 				holder.text2.setText(spannable);
 				return convertView;
 			}
-			
+
 			private void appendSpannedLine(SpannableStringBuilder spannable, int resId, int value)
 			{
 				if (value >= 0)
@@ -126,36 +126,36 @@ public class StatisticsFragment extends BaseListFragment
 					StringUtils.appendSpan(spannable, Integer.toString(value), getBoldSpan());
 				}
 			}
-			
+
 			private Object getBoldSpan()
 			{
 				return C.API_LOLLIPOP ? new TypefaceSpan("sans-serif-medium") : new StyleSpan(Typeface.BOLD);
 			}
-			
+
 			@Override
 			public long getItemId(int position)
 			{
 				return 0;
 			}
-			
+
 			@Override
 			public ListItem getItem(int position)
 			{
 				return mListItems.get(position);
 			}
-			
+
 			@Override
 			public int getCount()
 			{
 				return mListItems.size();
 			}
-			
+
 			@Override
 			public boolean areAllItemsEnabled()
 			{
 				return false;
 			}
-			
+
 			@Override
 			public boolean isEnabled(int position)
 			{
@@ -163,9 +163,9 @@ public class StatisticsFragment extends BaseListFragment
 			}
 		});
 	}
-	
+
 	private static final int OPTIONS_MENU_CLEAR = 0;
-	
+
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater)
 	{
@@ -174,7 +174,7 @@ public class StatisticsFragment extends BaseListFragment
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 		super.onCreateOptionsMenu(menu, inflater);
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{

@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -59,12 +59,12 @@ public class AboutFragment extends BasePreferenceFragment
 	private Preference mBackupDataPreference;
 	private Preference mChangelogPreference;
 	private Preference mCheckForUpdatesPreference;
-	
+
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		
+
 		Preference statisticsPreference = makeButton(null, R.string.preference_statistics, 0, false);
 		mBackupDataPreference = makeButton(null, R.string.preference_backup_data,
 				R.string.preference_backup_data_summary, false);
@@ -73,12 +73,12 @@ public class AboutFragment extends BasePreferenceFragment
 		Preference licensePreference = makeButton(null, R.string.preference_licenses,
 				R.string.preference_licenses_summary, false);
 		makeButton(null, getString(R.string.preference_version), getBuildVersion() + " (" + getBuildDate() + ")", true);
-		
+
 		Intent intent = new Intent(getActivity(), PreferencesActivity.class);
 		intent.putExtra(PreferencesActivity.EXTRA_SHOW_FRAGMENT, StatisticsFragment.class.getName());
 		intent.putExtra(PreferencesActivity.EXTRA_NO_HEADERS, true);
 		statisticsPreference.setIntent(intent);
-		
+
 		intent = new Intent(getActivity(), PreferencesActivity.class);
 		intent.putExtra(PreferencesActivity.EXTRA_SHOW_FRAGMENT, TextFragment.class.getName());
 		intent.putExtra(PreferencesActivity.EXTRA_SHOW_FRAGMENT_ARGUMENTS,
@@ -86,7 +86,7 @@ public class AboutFragment extends BasePreferenceFragment
 		intent.putExtra(PreferencesActivity.EXTRA_NO_HEADERS, true);
 		licensePreference.setIntent(intent);
 	}
-	
+
 	private String getBuildVersion()
 	{
 		String version;
@@ -101,7 +101,7 @@ public class AboutFragment extends BasePreferenceFragment
 		}
 		return version;
 	}
-	
+
 	private String getBuildDate()
 	{
 		long time;
@@ -121,7 +121,7 @@ public class AboutFragment extends BasePreferenceFragment
 		}
 		return DateFormat.getDateFormat(getActivity()).format(time);
 	}
-	
+
 	@Override
 	public boolean onPreferenceClick(Preference preference)
 	{
@@ -142,7 +142,7 @@ public class AboutFragment extends BasePreferenceFragment
 		}
 		return super.onPreferenceClick(preference);
 	}
-	
+
 	public static class BackupDialog extends DialogFragment implements DialogInterface.OnClickListener
 	{
 		@Override
@@ -151,7 +151,7 @@ public class AboutFragment extends BasePreferenceFragment
 			String[] items = getResources().getStringArray(R.array.preference_backup_data_choices);
 			return new AlertDialog.Builder(getActivity()).setItems(items, this).create();
 		}
-		
+
 		@Override
 		public void onClick(DialogInterface dialog, int which)
 		{
@@ -170,17 +170,17 @@ public class AboutFragment extends BasePreferenceFragment
 			}
 		}
 	}
-	
+
 	public static class RestoreFragment extends DialogFragment implements DialogInterface.OnClickListener
 	{
 		private static final String EXTRA_FILES = "files";
 		private static final String EXTRA_NAMES = "names";
-		
+
 		public RestoreFragment()
 		{
-			
+
 		}
-		
+
 		public RestoreFragment(LinkedHashMap<File, String> filesMap)
 		{
 			Bundle args = new Bundle();
@@ -195,7 +195,7 @@ public class AboutFragment extends BasePreferenceFragment
 			args.putStringArrayList(EXTRA_NAMES, names);
 			setArguments(args);
 		}
-		
+
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState)
 		{
@@ -204,7 +204,7 @@ public class AboutFragment extends BasePreferenceFragment
 			return new AlertDialog.Builder(getActivity()).setSingleChoiceItems(items, 0, null).setNegativeButton
 					(android.R.string.cancel, null).setPositiveButton(android.R.string.ok, this).create();
 		}
-		
+
 		@Override
 		public void onClick(DialogInterface dialog, int which)
 		{
@@ -213,29 +213,29 @@ public class AboutFragment extends BasePreferenceFragment
 			BackupManager.loadBackup(getActivity(), file);
 		}
 	}
-	
+
 	public static class ReadDialog extends DialogFragment implements AsyncManager.Callback
 	{
 		private static final String EXTRA_TYPE = "type";
-		
+
 		private static final int TYPE_CHANGELOG = 0;
 		private static final int TYPE_UPDATE = 1;
-		
+
 		private static final String TASK_READ_CHANGELOG = "read_changelog";
 		private static final String TASK_READ_UPDATE = "read_update";
-		
+
 		public ReadDialog()
 		{
-			
+
 		}
-		
+
 		public ReadDialog(int type)
 		{
 			Bundle args = new Bundle();
 			args.putInt(EXTRA_TYPE, type);
 			setArguments(args);
 		}
-		
+
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState)
 		{
@@ -244,7 +244,7 @@ public class AboutFragment extends BasePreferenceFragment
 			dialog.setCanceledOnTouchOutside(false);
 			return dialog;
 		}
-		
+
 		@Override
 		public void onActivityCreated(Bundle savedInstanceState)
 		{
@@ -263,7 +263,7 @@ public class AboutFragment extends BasePreferenceFragment
 				}
 			}
 		}
-		
+
 		@Override
 		public void onCancel(DialogInterface dialog)
 		{
@@ -282,7 +282,7 @@ public class AboutFragment extends BasePreferenceFragment
 				}
 			}
 		}
-		
+
 		private static class ReadUpdateHolder extends AsyncManager.Holder implements ReadUpdateTask.Callback
 		{
 			@Override
@@ -291,7 +291,7 @@ public class AboutFragment extends BasePreferenceFragment
 				storeResult(updateDataMap);
 			}
 		}
-		
+
 		@Override
 		public Pair<Object, AsyncManager.Holder> onCreateAndExecuteTask(String name, HashMap<String, Object> extra)
 		{
@@ -313,7 +313,7 @@ public class AboutFragment extends BasePreferenceFragment
 			}
 			return null;
 		}
-		
+
 		@Override
 		public void onFinishTaskExecution(String name, AsyncManager.Holder holder)
 		{
@@ -344,7 +344,7 @@ public class AboutFragment extends BasePreferenceFragment
 				}
 			}
 		}
-		
+
 		@Override
 		public void onRequestTaskCancel(String name, Object task)
 		{
@@ -363,16 +363,16 @@ public class AboutFragment extends BasePreferenceFragment
 			}
 		}
 	}
-	
+
 	private static class ReadChangelogTask extends AsyncManager.SimpleTask<Void, Void, Boolean>
 	{
 		private final HttpHolder mHolder = new HttpHolder();
-		
+
 		private final Context mContext;
-		
+
 		private String mResult;
 		private ErrorItem mErrorItem;
-		
+
 		public ReadChangelogTask(Context context)
 		{
 			mContext = context.getApplicationContext();
@@ -411,13 +411,13 @@ public class AboutFragment extends BasePreferenceFragment
 				return false;
 			}
 		}
-		
+
 		@Override
 		protected void onStoreResult(AsyncManager.Holder holder, Boolean result)
 		{
 			holder.storeResult(mResult, mErrorItem);
 		}
-		
+
 		@Override
 		public void cancel()
 		{
@@ -425,11 +425,11 @@ public class AboutFragment extends BasePreferenceFragment
 			mHolder.interrupt();
 		}
 	}
-	
+
 	private static class ChangelogGroupCallback implements GroupParser.Callback
 	{
 		private String mResult;
-		
+
 		public static String parse(String source)
 		{
 			ChangelogGroupCallback callback = new ChangelogGroupCallback();
@@ -439,29 +439,29 @@ public class AboutFragment extends BasePreferenceFragment
 			}
 			catch (ParseException e)
 			{
-				
+
 			}
 			return callback.mResult;
 		}
-		
+
 		@Override
 		public boolean onStartElement(GroupParser parser, String tagName, String attrs)
 		{
 			return "div".equals(tagName) && "markdown-body".equals(parser.getAttr(attrs, "class"));
 		}
-		
+
 		@Override
 		public void onEndElement(GroupParser parser, String tagName)
 		{
-			
+
 		}
-		
+
 		@Override
 		public void onText(GroupParser parser, String source, int start, int end) throws ParseException
 		{
-			
+
 		}
-		
+
 		@Override
 		public void onGroupComplete(GroupParser parser, String text) throws ParseException
 		{

@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -45,7 +45,7 @@ import com.mishiranu.dashchan.widget.PullableWrapper;
 public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTask.Callback
 {
 	private ReadBoardsTask mReadTask;
-	
+
 	@Override
 	protected void onCreate()
 	{
@@ -63,7 +63,7 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 		}
 		else refreshBoards(false);
 	}
-	
+
 	@Override
 	protected void onDestroy()
 	{
@@ -73,14 +73,14 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 			mReadTask = null;
 		}
 	}
-	
+
 	@Override
 	public String obtainTitle()
 	{
 		boolean hasUserBoards = getChanConfiguration().getOption(ChanConfiguration.OPTION_READ_USER_BOARDS);
 		return getString(hasUserBoards ? R.string.action_general_boards : R.string.action_boards);
 	}
-	
+
 	@Override
 	public void onItemClick(View view, int position, long id)
 	{
@@ -90,10 +90,10 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 			getUiManager().navigator().navigateBoardsOrThreads(getPageHolder().chanName, boardName, false, false);
 		}
 	}
-	
+
 	private static final int OPTIONS_MENU_REFRESH = 0;
 	private static final int OPTIONS_MENU_MAKE_HOME_PAGE = 1;
-	
+
 	@Override
 	public void onCreateOptionsMenu(Menu menu)
 	{
@@ -107,7 +107,7 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 		menu.findItem(OPTIONS_MENU_MAKE_HOME_PAGE).setVisible(Preferences.getDefaultBoardName(pageHolder.chanName)
 				!= null);
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
@@ -127,10 +127,10 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 		}
 		return false;
 	}
-	
+
 	private static final int CONTEXT_MENU_COPY_LINK = 0;
 	private static final int CONTEXT_MENU_ADD_FAVORITES = 1;
-	
+
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v, int position, View targetView)
 	{
@@ -145,7 +145,7 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 			}
 		}
 	}
-	
+
 	@Override
 	public boolean onContextItemSelected(MenuItem item, int position, View targetView)
 	{
@@ -169,19 +169,19 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 		}
 		return false;
 	}
-	
+
 	@Override
 	public void onSearchTextChange(String newText)
 	{
 		getAdapter().applyFilter(newText);
 	}
-	
+
 	@Override
 	public void onListPulled(PullableWrapper wrapper, PullableWrapper.Side side)
 	{
 		refreshBoards(true);
 	}
-	
+
 	private void refreshBoards(boolean showPull)
 	{
 		if (mReadTask != null) mReadTask.cancel();
@@ -198,7 +198,7 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 			switchView(ViewType.PROGRESS, null);
 		}
 	}
-	
+
 	@Override
 	public void onReadBoardsSuccess(BoardCategory[] boardCategories)
 	{
@@ -227,7 +227,7 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 			}
 			catch (JSONException e)
 			{
-				
+
 			}
 		}
 		ChanConfiguration configuration = getChanConfiguration();
@@ -236,7 +236,7 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 		getAdapter().update();
 		getListView().setSelection(0);
 	}
-	
+
 	@Override
 	public void onReadBoardsFail(ErrorItem errorItem)
 	{

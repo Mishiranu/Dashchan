@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,27 +32,27 @@ public class HistoryDatabase implements BaseColumns
 	static final String COLUMN_THREAD_NUMBER = "thread_number";
 	static final String COLUMN_TITLE = "title";
 	static final String COLUMN_CREATED = "created";
-	
+
 	private static final String[] ALL_COLUMNS = {_ID, COLUMN_CHAN_NAME, COLUMN_BOARD_NAME, COLUMN_THREAD_NUMBER,
 			COLUMN_TITLE, COLUMN_CREATED};
-	
+
 	private static final int HISTORY_SIZE = 200;
 	private static final int HISTORY_THRESHOLD = HISTORY_SIZE + 50;
-	
+
 	private static final HistoryDatabase INSTANCE = new HistoryDatabase();
-	
+
 	public static HistoryDatabase getInstance()
 	{
 		return INSTANCE;
 	}
-	
+
 	private final SQLiteDatabase mDatabase;
-	
+
 	private HistoryDatabase()
 	{
 		mDatabase = DatabaseHelper.getInstance().getWritableDatabase();
 	}
-	
+
 	public void addHistory(final String chanName, final String boardName, final String threadNumber,
 			final String threadTitle)
 	{
@@ -73,7 +73,7 @@ public class HistoryDatabase implements BaseColumns
 			}
 		});
 	}
-	
+
 	public void refreshTitles(final String chanName, final String boardName, final String threadNumber,
 			final String threadTitle)
 	{
@@ -91,19 +91,19 @@ public class HistoryDatabase implements BaseColumns
 			});
 		}
 	}
-	
+
 	private String buildWhere(String chanName, String boardName, String threadNumber)
 	{
 		return COLUMN_CHAN_NAME + " = \"" + chanName + "\" AND " +
 				COLUMN_BOARD_NAME + (boardName == null ? " IS NULL" : " = \"" + boardName + "\"") + " AND " +
 				COLUMN_THREAD_NUMBER + " = \"" + threadNumber + "\"";
 	}
-	
+
 	private String buildWhere(String chanName)
 	{
 		return COLUMN_CHAN_NAME + " = \"" + chanName + "\"";
 	}
-	
+
 	public ArrayList<HistoryItem> getAllHistory(String chanName)
 	{
 		synchronized (this)
@@ -128,7 +128,7 @@ public class HistoryDatabase implements BaseColumns
 			return historyItems;
 		}
 	}
-	
+
 	public boolean remove(String chanName, String boardName, String threadNumber)
 	{
 		synchronized (this)
@@ -137,7 +137,7 @@ public class HistoryDatabase implements BaseColumns
 					threadNumber), null) > 0;
 		}
 	}
-	
+
 	private void clearOldHistory(String chanName)
 	{
 		synchronized (this)
@@ -159,7 +159,7 @@ public class HistoryDatabase implements BaseColumns
 			}
 		}
 	}
-	
+
 	public void clearAllHistory(String chanName)
 	{
 		synchronized (this)
@@ -167,7 +167,7 @@ public class HistoryDatabase implements BaseColumns
 			mDatabase.delete(DatabaseHelper.TABLE_HISTORY, buildWhere(chanName), null);
 		}
 	}
-	
+
 	public static class HistoryItem
 	{
 		public String chanName;

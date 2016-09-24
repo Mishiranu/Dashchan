@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,40 +31,40 @@ public final class HttpRequest
 	@Public
 	public interface Preset
 	{
-		
+
 	}
-	
+
 	public interface HolderPreset extends Preset
 	{
 		public HttpHolder getHolder();
 	}
-	
+
 	public interface TimeoutsPreset extends Preset
 	{
 		public int getConnectTimeout();
 		public int getReadTimeout();
 	}
-	
+
 	public interface InputListenerPreset extends Preset
 	{
 		public HttpHolder.InputListener getInputListener();
 	}
-	
+
 	public interface OutputListenerPreset extends Preset
 	{
 		public OutputListener getOutputListener();
 	}
-	
+
 	public interface OutputStreamPreset extends Preset
 	{
 		public OutputStream getOutputStream();
 	}
-	
+
 	public interface OutputListener
 	{
 		public void onOutputProgressChange(long progress, long progressMax);
 	}
-	
+
 	@Public
 	public interface RedirectHandler
 	{
@@ -74,26 +74,26 @@ public final class HttpRequest
 			@Public CANCEL,
 			@Public GET,
 			@Public RETRANSMIT;
-			
+
 			private Uri mRedirectedUri;
-			
+
 			@Public
 			public Action setRedirectedUri(Uri redirectedUri)
 			{
 				mRedirectedUri = redirectedUri;
 				return this;
 			}
-			
+
 			public Uri getRedirectedUri()
 			{
 				return mRedirectedUri;
 			}
-			
+
 			private void reset()
 			{
 				mRedirectedUri = null;
 			}
-			
+
 			public static void resetAll()
 			{
 				CANCEL.reset();
@@ -101,17 +101,17 @@ public final class HttpRequest
 				RETRANSMIT.reset();
 			}
 		}
-		
+
 		@Public
 		public Action onRedirectReached(int responseCode, Uri requestedUri, Uri redirectedUri, HttpHolder holder)
 				throws HttpException;
-		
+
 		@Public
 		public static final RedirectHandler NONE = (responseCode, requestedUri, redirectedUri, holder) -> Action.CANCEL;
-		
+
 		@Public
 		public static final RedirectHandler BROWSER = (responseCode, requestedUri, redirectedUri, holder) -> Action.GET;
-		
+
 		@Public
 		public static final RedirectHandler STRICT = (responseCode, requestedUri, redirectedUri, holder) ->
 		{
@@ -123,19 +123,19 @@ public final class HttpRequest
 			}
 		};
 	}
-	
+
 	final HttpHolder mHolder;
 	final Uri mUri;
-	
+
 	static final int REQUEST_METHOD_GET = 0;
 	static final int REQUEST_METHOD_HEAD = 1;
 	static final int REQUEST_METHOD_POST = 2;
 	static final int REQUEST_METHOD_PUT = 3;
 	static final int REQUEST_METHOD_DELETE = 4;
-	
+
 	int mRequestMethod = REQUEST_METHOD_GET;
 	RequestEntity mRequestEntity;
-	
+
 	boolean mSuccessOnly = true;
 	RedirectHandler mRedirectHandler = RedirectHandler.BROWSER;
 	HttpValidator mValidator;
@@ -144,16 +144,16 @@ public final class HttpRequest
 	HttpHolder.InputListener mInputListener;
 	OutputListener mOutputListener;
 	OutputStream mOutputStream;
-	
+
 	int mConnectTimeout = 15000;
 	int mReadTimeout = 15000;
 	int mDelay = 0;
 
 	ArrayList<Pair<String, String>> mHeaders;
 	CookieBuilder mCookieBuilder;
-	
+
 	boolean mCheckCloudFlare = true;
-	
+
 	@Public
 	public HttpRequest(Uri uri, HttpHolder holder, Preset preset)
 	{
@@ -178,63 +178,63 @@ public final class HttpRequest
 			setOutputStream(((OutputStreamPreset) preset).getOutputStream());
 		}
 	}
-	
+
 	@Public
 	public HttpRequest(Uri uri, HttpHolder holder)
 	{
 		this(uri, holder, null);
 	}
-	
+
 	@Public
 	public HttpRequest(Uri uri, Preset preset)
 	{
 		this(uri, null, preset);
 	}
-	
+
 	private HttpRequest setMethod(int method, RequestEntity entity)
 	{
 		mRequestMethod = method;
 		mRequestEntity = entity;
 		return this;
 	}
-	
+
 	@Public
 	public HttpRequest setGetMethod()
 	{
 		return setMethod(REQUEST_METHOD_GET, null);
 	}
-	
+
 	@Public
 	public HttpRequest setHeadMethod()
 	{
 		return setMethod(REQUEST_METHOD_HEAD, null);
 	}
-	
+
 	@Public
 	public HttpRequest setPostMethod(RequestEntity entity)
 	{
 		return setMethod(REQUEST_METHOD_POST, entity);
 	}
-	
+
 	@Public
 	public HttpRequest setPutMethod(RequestEntity entity)
 	{
 		return setMethod(REQUEST_METHOD_PUT, entity);
 	}
-	
+
 	@Public
 	public HttpRequest setDeleteMethod(RequestEntity entity)
 	{
 		return setMethod(REQUEST_METHOD_DELETE, entity);
 	}
-	
+
 	@Public
 	public HttpRequest setSuccessOnly(boolean successOnly)
 	{
 		mSuccessOnly = successOnly;
 		return this;
 	}
-	
+
 	@Public
 	public HttpRequest setRedirectHandler(RedirectHandler redirectHandler)
 	{
@@ -242,21 +242,21 @@ public final class HttpRequest
 		mRedirectHandler = redirectHandler;
 		return this;
 	}
-	
+
 	@Public
 	public HttpRequest setValidator(HttpValidator validator)
 	{
 		mValidator = validator;
 		return this;
 	}
-	
+
 	@Public
 	public HttpRequest setKeepAlive(boolean keepAlive)
 	{
 		mKeepAlive = keepAlive;
 		return this;
 	}
-	
+
 	@Public
 	public HttpRequest setTimeouts(int connectTimeout, int readTimeout)
 	{
@@ -264,33 +264,33 @@ public final class HttpRequest
 		if (readTimeout >= 0) mReadTimeout = readTimeout;
 		return this;
 	}
-	
+
 	@Public
 	public HttpRequest setDelay(int delay)
 	{
 		mDelay = delay;
 		return this;
 	}
-	
+
 	public HttpRequest setInputListener(HttpHolder.InputListener listener)
 	{
 		mInputListener = listener;
 		return this;
 	}
-	
+
 	public HttpRequest setOutputListener(OutputListener listener)
 	{
 		mOutputListener = listener;
 		return this;
 	}
-	
+
 	@Public
 	public HttpRequest setOutputStream(OutputStream outputStream)
 	{
 		mOutputStream = outputStream;
 		return this;
 	}
-	
+
 	private HttpRequest addHeader(Pair<String, String> header)
 	{
 		if (header != null)
@@ -300,20 +300,20 @@ public final class HttpRequest
 		}
 		return this;
 	}
-	
+
 	@Public
 	public HttpRequest addHeader(String name, String value)
 	{
 		return addHeader(new Pair<>(name, value));
 	}
-	
+
 	@Public
 	public HttpRequest clearHeaders()
 	{
 		mHeaders = null;
 		return this;
 	}
-	
+
 	@Public
 	public HttpRequest addCookie(String name, String value)
 	{
@@ -324,7 +324,7 @@ public final class HttpRequest
 		}
 		return this;
 	}
-	
+
 	@Public
 	public HttpRequest addCookie(String cookie)
 	{
@@ -335,7 +335,7 @@ public final class HttpRequest
 		}
 		return this;
 	}
-	
+
 	@Public
 	public HttpRequest addCookie(CookieBuilder builder)
 	{
@@ -346,20 +346,20 @@ public final class HttpRequest
 		}
 		return this;
 	}
-	
+
 	@Public
 	public HttpRequest clearCookies()
 	{
 		mCookieBuilder = null;
 		return this;
 	}
-	
+
 	public HttpRequest setCheckCloudFlare(boolean checkCloudFlare)
 	{
 		mCheckCloudFlare = checkCloudFlare;
 		return this;
 	}
-	
+
 	@Public
 	public HttpRequest copy()
 	{
@@ -379,7 +379,7 @@ public final class HttpRequest
 		request.setCheckCloudFlare(mCheckCloudFlare);
 		return request;
 	}
-	
+
 	@Public
 	public HttpHolder execute() throws HttpException
 	{
@@ -394,7 +394,7 @@ public final class HttpRequest
 			throw e;
 		}
 	}
-	
+
 	@Public
 	public HttpResponse read() throws HttpException
 	{

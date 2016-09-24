@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,29 +32,29 @@ public class SafePasteEditText extends EditText
 	{
 		super(context);
 	}
-	
+
 	public SafePasteEditText(Context context, AttributeSet attrs)
 	{
 		super(context, attrs);
 	}
-	
+
 	public SafePasteEditText(Context context, AttributeSet attrs, int defStyleAttr)
 	{
 		super(context, attrs, defStyleAttr);
 	}
-	
+
 	@SuppressWarnings("unused")
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	public SafePasteEditText(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes)
 	{
 		super(context, attrs, defStyleAttr, defStyleRes);
 	}
-	
+
 	private static final InputFilter SPAN_FILTER = (source, start, end, dest, dstart, dend) ->
 	{
 		return source instanceof Spanned ? source.toString() : source;
 	};
-	
+
 	@Override
 	public boolean onTextContextMenuItem(int id)
 	{

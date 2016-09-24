@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,22 +42,22 @@ public class StorageManager implements Handler.Callback, Runnable
 {
 	private static final StorageManager INSTANCE = new StorageManager();
 	private static final Charset CHARSET = Charset.forName("UTF-8");
-	
+
 	public static StorageManager getInstance()
 	{
 		return INSTANCE;
 	}
-	
+
 	private StorageManager()
 	{
 		new Thread(this, "StorageManagerWorker").start();
 	}
-	
+
 	private final Handler mHandler = new Handler(Looper.getMainLooper(), this);
 	private final LinkedBlockingQueue<Pair<Storage, Object>> mQueue = new LinkedBlockingQueue<>();
-	
+
 	private int mNextIdentifier = 1;
-	
+
 	@Override
 	public void run()
 	{
@@ -75,7 +75,7 @@ public class StorageManager implements Handler.Callback, Runnable
 			performSerialize(pair.first, pair.second);
 		}
 	}
-	
+
 	private void performSerialize(Storage storage, Object data)
 	{
 		synchronized (storage.mLock)
@@ -120,84 +120,84 @@ public class StorageManager implements Handler.Callback, Runnable
 			else file.delete();
 		}
 	}
-	
+
 	public static abstract class Storage
 	{
 		private final String mName;
 		private final int mTimeout;
 		private final int mMaxTimeout;
-		
+
 		private int mIdentifier = 0;
 		private final Object mLock = new Object();
-		
+
 		public Storage(String name, int timeout, int maxTimeout)
 		{
 			mName = name;
 			mTimeout = timeout;
 			mMaxTimeout = maxTimeout;
 		}
-		
+
 		public final File getFile()
 		{
 			return INSTANCE.getFile(this);
 		}
-		
+
 		public final JSONObject read()
 		{
 			return INSTANCE.read(this);
 		}
-		
+
 		public final void serialize()
 		{
 			INSTANCE.serialize(this);
 		}
-		
+
 		public final void await(boolean async)
 		{
 			INSTANCE.await(this, async);
 		}
-		
+
 		public abstract Object onClone();
 		public abstract JSONObject onSerialize(Object data) throws JSONException;
-		
+
 		public static void putJson(JSONObject jsonObject, String name, String value) throws JSONException
 		{
 			if (!StringUtils.isEmpty(value)) jsonObject.put(name, value);
 		}
-		
+
 		public static void putJson(JSONObject jsonObject, String name, boolean value) throws JSONException
 		{
 			if (value) jsonObject.put(name, true);
 		}
-		
+
 		public static void putJson(JSONObject jsonObject, String name, int value) throws JSONException
 		{
 			if (value != 0) jsonObject.put(name, value);
 		}
 	}
-	
+
 	private File getDirectory()
 	{
 		File file = new File(MainApplication.getInstance().getFilesDir(), "storage");
 		file.mkdirs();
 		return file;
 	}
-	
+
 	private File getBackupFile(Storage storage)
 	{
 		return new File(storage.getFile().getAbsolutePath() + "-backup");
 	}
-	
+
 	private File getFile(String name)
 	{
 		return new File(getDirectory(), name + ".json");
 	}
-	
+
 	private File getFile(Storage storage)
 	{
 		return getFile(storage.mName);
 	}
-	
+
 	private JSONObject read(Storage storage)
 	{
 		File file = getFile(storage);
@@ -218,7 +218,7 @@ public class StorageManager implements Handler.Callback, Runnable
 		}
 		catch (IOException e)
 		{
-			
+
 		}
 		finally
 		{
@@ -232,14 +232,14 @@ public class StorageManager implements Handler.Callback, Runnable
 			}
 			catch (JSONException e)
 			{
-				
+
 			}
 		}
 		return null;
 	}
-	
+
 	private final SparseArray<Long> mSerializeTimes = new SparseArray<>();
-	
+
 	public void serialize(Storage storage)
 	{
 		if (storage.mIdentifier == 0) storage.mIdentifier = mNextIdentifier++;
@@ -259,7 +259,7 @@ public class StorageManager implements Handler.Callback, Runnable
 		}
 		else mHandler.sendMessageDelayed(mHandler.obtainMessage(storage.mIdentifier, storage), timeout);
 	}
-	
+
 	public void await(Storage storage, boolean async)
 	{
 		if (mHandler.hasMessages(storage.mIdentifier))
@@ -269,12 +269,12 @@ public class StorageManager implements Handler.Callback, Runnable
 			if (async) enqueueSerialize(storage); else performSerialize(storage, storage.onClone());
 		}
 	}
-	
+
 	private void enqueueSerialize(Storage storage)
 	{
 		mQueue.add(new Pair<>(storage, storage.onClone()));
 	}
-	
+
 	@Override
 	public boolean handleMessage(Message msg)
 	{

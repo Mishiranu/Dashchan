@@ -2,13 +2,13 @@
 
 <!--
 	Copyright 2014-2016 Fukurou Mishiranu
-	
+
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
 	You may obtain a copy of the License at
-	
+
 	http://www.apache.org/licenses/LICENSE-2.0
-	
+
 	Unless required by applicable law or agreed to in writing, software
 	distributed under the License is distributed on an "AS IS" BASIS,
 	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,9 +18,9 @@
 
 <resources xmlns:tools="http://schemas.android.com/tools"
 	tools:ignore="UnusedQuantity">
-	
+
 	<!-- Text -->
-	
+
 	<string name="text_address">Адрес</string>
 	<string name="text_app_name_update">Обновление %s</string>
 	<string name="text_all_forums">Все форумы</string>
@@ -180,9 +180,9 @@
 	<string name="text_with_name_format">С именем %s</string>
 	<string name="text_without_updating">Без обновления</string>
 	<string name="text_yesterday">Вчера</string>
-	
+
 	<!-- Actions -->
-	
+
 	<string name="action_add_post">Ответить</string>
 	<string name="action_add_to_favorites">Добавить в избранное</string>
 	<string name="action_appearance">Внешний вид</string>
@@ -273,9 +273,9 @@
 	<string name="action_threads_grid">Сетка тредов</string>
 	<string name="action_user_boards">Пользовательские разделы</string>
 	<string name="action_view">Просмотр</string>
-	
+
 	<!-- Messages -->
-	
+
 	<string name="message_archive_too_often_error">Нельзя архивировать так часто</string>
 	<string name="message_banned">Вы заблокированы</string>
 	<string name="message_board_not_exist">Раздел не существует</string>
@@ -388,9 +388,9 @@
 		установить приложения после окончания загрузки.\n\nНе забудьте перезапустить клиент после
 		установки расширений!</string>
 	<string name="message_validation_completed">Проверка завершена</string>
-	
+
 	<!-- Preferences -->
-	
+
 	<string name="preference_header_about">О программе</string>
 	<string name="preference_header_autohide">Автоскрытие</string>
 	<string name="preference_header_contents">Содержимое</string>
@@ -399,7 +399,7 @@
 	<string name="preference_header_forums">Форумы</string>
 	<string name="preference_header_general">Общие</string>
 	<string name="preference_header_interface">Интерфейс</string>
-	
+
 	<string name="preference_category_additional">Дополнительно</string>
 	<string name="preference_category_auto_refreshing">Автообновление тредов</string>
 	<string name="preference_category_connection">Соединение</string>
@@ -412,14 +412,14 @@
 	<string name="preference_category_threads">Список тредов</string>
 	<string name="preference_category_video_player">Видеоплеер</string>
 	<string name="preference_category_watcher">Отслеживание избранного</string>
-	
+
 	<string-array name="preference_generic_network_choices">
 		<item>Всегда</item>
 		<item>Через Wi-Fi или 3G+</item>
 		<item>Только через Wi-Fi</item>
 		<item>Никогда</item>
 	</string-array>
-	
+
 	<string name="preference_active_scrollbar">Активная полоса прокрутки</string>
 	<string name="preference_all_attachments">Все вложения</string>
 	<string name="preference_all_attachments_summary">Показывать миниатюры всех вложений</string>
@@ -572,5 +572,5 @@
 	<string name="preference_watcher_watch_initially_summary">Включать отслеживание сразу при добавлении
 		в избранное</string>
 	<string name="preference_watcher_wifi_only">Только через Wi-Fi</string>
-	
+
 </resources>

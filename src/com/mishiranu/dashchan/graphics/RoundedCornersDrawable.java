@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,23 +29,23 @@ public class RoundedCornersDrawable extends Drawable
 	private final Path mPath = new Path();
 	private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 	private final int mRadius;
-	
+
 	public RoundedCornersDrawable(int radius)
 	{
 		mRadius = radius;
 	}
-	
+
 	public RoundedCornersDrawable(int radius, int color)
 	{
 		this(radius);
 		setColor(color);
 	}
-	
+
 	public void setColor(int color)
 	{
 		mPaint.setColor(color);
 	}
-	
+
 	@Override
 	public void setBounds(int left, int top, int right, int bottom)
 	{
@@ -75,28 +75,28 @@ public class RoundedCornersDrawable extends Drawable
 		}
 		super.setBounds(left, top, right, bottom);
 	}
-	
+
 	@Override
 	public void draw(Canvas canvas)
 	{
 		canvas.drawPath(mPath, mPaint);
 	}
-	
+
 	@Override
 	public int getOpacity()
 	{
 		return PixelFormat.TRANSLUCENT;
 	}
-	
+
 	@Override
 	public void setAlpha(int alpha)
 	{
-		
+
 	}
-	
+
 	@Override
 	public void setColorFilter(ColorFilter cf)
 	{
-		
+
 	}
 }

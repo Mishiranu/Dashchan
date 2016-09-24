@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -76,19 +76,19 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 {
 	private final UiManager mUiManager;
 	private final PostDateFormatter mPostDateFormatter;
-	
+
 	private final int mThumbnailWidth;
 	private final int mMultipleAttachmentInfoWidth;
-	
+
 	private final int mCommentMaxLines;
 	private final int mCommentAdditionalHeight;
 	private final int mCommentAdditionalLines;
 
 	private Collection<String> mHighlightText;
-	
+
 	private static final float ALPHA_HIDDEN_POST = 0.2f;
 	private static final float ALPHA_DELETED_POST = 0.5f;
-	
+
 	@SuppressLint("InflateParams")
 	ViewUnit(UiManager uiManager)
 	{
@@ -114,7 +114,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		mCommentAdditionalHeight = bottomBar.getMeasuredHeight();
 		mCommentAdditionalLines = (int) Math.ceil(mCommentAdditionalHeight / comment.getTextSize());
 		mThumbnailWidth = head.getMeasuredHeight();
-		int additionalAttachmentInfoWidthDp = 64; // approximately equal to thumbnail width + right padding 
+		int additionalAttachmentInfoWidthDp = 64; // approximately equal to thumbnail width + right padding
 		int minAttachmentInfoWidthDp = additionalAttachmentInfoWidthDp + 68;
 		int maxAttachmentInfoWidthDp = additionalAttachmentInfoWidthDp + 84;
 		int attachmentInfoWidthDp = configuration.smallestScreenWidthDp * minAttachmentInfoWidthDp / 320;
@@ -123,18 +123,18 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		attachmentInfoWidthDp -= additionalAttachmentInfoWidthDp;
 		mMultipleAttachmentInfoWidth = (int) (attachmentInfoWidthDp * density + 0.5f);
 	}
-	
+
 	public void resetPages()
 	{
 		mHighlightText = null;
 		mUiManager.dialog().closeDialogs();
 	}
-	
+
 	public void setHighlightText(Collection<String> highlightText)
 	{
 		mHighlightText = highlightText;
 	}
-	
+
 	private final CommentTextView.LinkListener mDefaultLinkListener = new CommentTextView.LinkListener()
 	{
 		@Override
@@ -142,14 +142,14 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		{
 			mUiManager.interaction().handleLinkClick(chanName, uri, confirmed);
 		}
-		
+
 		@Override
 		public void onLinkLongClick(CommentTextView view, String chanName, Uri uri)
 		{
 			mUiManager.interaction().handleLinkLongClick(uri);
 		}
 	};
-	
+
 	private final CommentTextView.CommentListener mCommentListener = new CommentTextView.CommentListener()
 	{
 		@Override
@@ -157,14 +157,14 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		{
 			mUiManager.sendPostItemMessage(view, UiManager.MESSAGE_INVALIDATE_COMMENT_VIEW);
 		}
-		
+
 		@Override
 		public String onPrepareToCopy(CommentTextView view, Spannable text, int start, int end)
 		{
 			return mUiManager.interaction().getCopyReadyComment(text, start, end);
 		}
 	};
-	
+
 	public View getThreadView(PostItem postItem, View convertView, ViewGroup parent, boolean isBusy)
 	{
 		Context context = mUiManager.getContext();
@@ -218,13 +218,13 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			thumbnailLayoutParams.height = thumbnailLayoutParams.height * thumbnailsScale / 100;
 		}
 		else holder = (ThreadViewHolder) convertView.getTag();
-		
+
 		holder.postItem = postItem;
-		
+
 		holder.showOpClickView.setEnabled(true);
 		holder.stateSticky.setVisibility(postItem.isSticky() ? View.VISIBLE : View.GONE);
 		holder.stateClosed.setVisibility(postItem.isClosed() ? View.VISIBLE : View.GONE);
-		
+
 		String subject = postItem.getSubject();
 		if (!StringUtils.isEmpty(subject))
 		{
@@ -238,7 +238,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		holder.comment.setText(comment);
 		holder.comment.setVisibility(holder.comment.getText().length() > 0 ? View.VISIBLE : View.GONE);
 		holder.description.setText(postItem.formatThreadCardDescription(context, false));
-		
+
 		holder.thumbnail.resetTransition();
 		List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
 		if (attachmentItems != null)
@@ -260,7 +260,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		holder.thumbnail.setOnLongClickListener(holder.thumbnailLongClickListener);
 		return convertView;
 	}
-	
+
 	public View getThreadViewForGrid(PostItem postItem, View convertView, ViewGroup parent,
 			HidePerformer hidePerformer, int contentHeight, boolean isBusy)
 	{
@@ -293,10 +293,10 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		else holder = (ThreadViewHolder) convertView.getTag();
 
 		holder.postItem = postItem;
-		
+
 		holder.showOpClickView.setEnabled(true);
 		List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
-		
+
 		boolean hidden = postItem.isHidden(hidePerformer);
 		((View) holder.threadContent.getParent()).setAlpha(hidden ? ALPHA_HIDDEN_POST : 1f);
 		String subject = postItem.getSubject();
@@ -317,7 +317,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		holder.comment.setText(comment);
 		holder.comment.setVisibility(StringUtils.isEmpty(comment) ? View.GONE : View.VISIBLE);
 		holder.description.setText(postItem.formatThreadCardDescription(context, true));
-		
+
 		holder.thumbnail.resetTransition();
 		if (attachmentItems != null && !hidden)
 		{
@@ -336,11 +336,11 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		}
 		holder.thumbnail.setOnClickListener(holder.thumbnailClickListener);
 		holder.thumbnail.setOnLongClickListener(holder.thumbnailLongClickListener);
-		
+
 		holder.threadContent.getLayoutParams().height = contentHeight;
 		return convertView;
 	}
-	
+
 	public View getThreadHiddenView(PostItem postItem, View convertView, ViewGroup parent)
 	{
 		HiddenViewHolder holder;
@@ -361,14 +361,14 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			ViewUtils.applyScaleMarginLR(holder.comment);
 		}
 		else holder = (HiddenViewHolder) convertView.getTag();
-		
+
 		holder.postItem = postItem;
 		String description = postItem.getHideReason();
 		if (description == null) description = postItem.getSubjectOrComment();
 		holder.comment.setText(description);
 		return convertView;
 	}
-	
+
 	public View getPostView(PostItem postItem, View convertView, ViewGroup parent, UiManager.DemandSet demandSet,
 			UiManager.ConfigurationSet configurationSet)
 	{
@@ -410,14 +410,14 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			holder.bottomBarExpand = (TextView) convertView.findViewById(R.id.bottom_bar_expand);
 			holder.bottomBarOpenThread = (TextView) convertView.findViewById(R.id.bottom_bar_open_thread);
 			convertView.setTag(holder);
-			
+
 			holder.head.setOnTouchListener(mHeadContentTouchListener);
 			holder.comment.setCommentListener(mCommentListener);
 			holder.thumbnail.setOnClickListener(holder.thumbnailClickListener);
 			holder.thumbnail.setOnLongClickListener(holder.thumbnailLongClickListener);
 			holder.bottomBarReplies.setOnClickListener(mRepliesBlockClickListener);
 			holder.bottomBarOpenThread.setOnClickListener(mThreadLinkBlockClickListener);
-			
+
 			holder.index.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
 			int textScale = Preferences.getTextScale();
 			if (textScale != 100)
@@ -428,7 +428,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 				ViewUtils.applyScaleSize(holder.stateImages);
 				holder.head.setHorizontalSpacing(holder.head.getHorizontalSpacing() * textScale / 100);
 			}
-			
+
 			holder.thumbnail.setDrawTouching(true);
 			holder.thumbnail.applyRoundedCorners(getPostBackgroundColor(configurationSet));
 			ViewGroup.LayoutParams thumbnailLayoutParams = holder.thumbnail.getLayoutParams();
@@ -441,10 +441,10 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			else thumbnailLayoutParams.width = mThumbnailWidth;
 		}
 		else holder = (PostViewHolder) convertView.getTag();
-		
+
 		holder.postItem = postItem;
 		holder.configurationSet = configurationSet;
-		
+
 		String chanName = postItem.getChanName();
 		String boardName = postItem.getBoardName();
 		String threadNumber = postItem.getThreadNumber();
@@ -464,12 +464,12 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			holder.stateImages[i].setVisibility(holder.states[i] ? View.VISIBLE : View.GONE);
 		}
 		convertView.setAlpha(postItem.isDeleted() ? ALPHA_DELETED_POST : 1f);
-		
+
 		CharSequence name = postItem.getFullName();
 		colorScheme.apply(postItem.getFullNameSpans());
 		holder.name.setText(makeHighlightedText(name));
 		holder.date.setText(postItem.getDateTime(mPostDateFormatter));
-		
+
 		String subject = postItem.getSubject();
 		CharSequence comment = !StringUtils.isEmpty(configurationSet.repliesToPost)
 				? postItem.getComment(configurationSet.repliesToPost) : postItem.getComment();
@@ -520,7 +520,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		holder.name.setVisibility(showName ? View.VISIBLE : View.GONE);
 		boolean showIndex = postItem.getOrdinalIndex() != PostItem.ORDINAL_INDEX_NONE;
 		holder.index.setVisibility(showIndex ? View.VISIBLE : View.GONE);
-		
+
 		if (demandSet.selectionMode == UiManager.SELECTION_THREADSHOT)
 		{
 			holder.bottomBarReplies.setVisibility(View.GONE);
@@ -547,7 +547,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			else setMaxHeight(convertView, parent);
 		}
 		else invalidateBottomBar(holder);
-		
+
 		boolean viewsEnabled = demandSet.selectionMode == UiManager.SELECTION_DISABLED;
 		holder.thumbnail.setEnabled(viewsEnabled);
 		holder.comment.setEnabled(viewsEnabled);
@@ -595,7 +595,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		else convertView.setBackground(null);
 		return convertView;
 	}
-	
+
 	public View getPostHiddenView(PostItem postItem, View convertView, ViewGroup parent)
 	{
 		HiddenViewHolder holder;
@@ -613,7 +613,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			ViewUtils.applyScaleMarginLR(holder.index, holder.number, holder.comment);
 		}
 		else holder = (HiddenViewHolder) convertView.getTag();
-		
+
 		holder.postItem = postItem;
 		holder.index.setText(postItem.getOrdinalIndexString());
 		holder.number.setText("#" + postItem.getPostNumber());
@@ -623,13 +623,13 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		postItem.setUnread(false);
 		return convertView;
 	}
-	
+
 	private int getPostBackgroundColor(UiManager.ConfigurationSet configurationSet)
 	{
 		ColorScheme colorScheme = mUiManager.getColorScheme();
 		return configurationSet.isDialog ? colorScheme.dialogBackgroundColor : colorScheme.windowBackgroundColor;
 	}
-	
+
 	@SuppressLint("InflateParams")
 	private void handlePostViewAttachments(PostViewHolder holder, UiManager.ConfigurationSet configurationSet,
 			UiManager.DemandSet demandSet)
@@ -732,7 +732,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			holder.attachmentViewCount = 1;
 		}
 	}
-	
+
 	private void handlePostViewIcons(PostViewHolder holder)
 	{
 		Context context = mUiManager.getContext();
@@ -786,7 +786,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			for (ImageView imageView : holder.badgeImages) imageView.setVisibility(View.GONE);
 		}
 	}
-	
+
 	private void invalidateBottomBar(PostViewHolder holder)
 	{
 		boolean repliesVisible = holder.bottomBarReplies.getVisibility() == View.VISIBLE;
@@ -802,7 +802,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		float density = ResourceUtils.obtainDensity(holder.comment);
 		holder.textBarPadding.getLayoutParams().height = (int) ((needBar ? 0f : hasText ? 10f : 6f) * density);
 	}
-	
+
 	private void setMaxHeight(final View view, View parent)
 	{
 		final PostViewHolder holder = (PostViewHolder) view.getTag();
@@ -823,7 +823,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 				AnimationUtils.measureDynamicHeight(holder.comment);
 				int toHeight = holder.comment.getMeasuredHeight();
 				// When button bar becomes hidden, height of view becomes smaller, so it can cause
-				// little jumping of list; This is solution - start animation from item_height + bar_height 
+				// little jumping of list; This is solution - start animation from item_height + bar_height
 				if (holder.bottomBar.getVisibility() == View.GONE) fromHeight += mCommentAdditionalHeight;
 				if (toHeight > fromHeight)
 				{
@@ -844,7 +844,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		}
 		invalidateBottomBar(holder);
 	}
-	
+
 	private void removeMaxHeight(View view)
 	{
 		PostViewHolder holder = (PostViewHolder) view.getTag();
@@ -853,13 +853,13 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		holder.bottomBarExpand.setVisibility(View.GONE);
 		invalidateBottomBar(holder);
 	}
-	
+
 	private void clearMaxHeightAnimation(PostViewHolder holder)
 	{
 		holder.comment.clearAnimation();
 		holder.comment.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
 	}
-	
+
 	private CharSequence makeHighlightedText(CharSequence text)
 	{
 		if (mHighlightText != null && text != null)
@@ -881,12 +881,12 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		}
 		return text;
 	}
-	
+
 	public void notifyUnbindListView(ListView listView)
 	{
 		for (int i = 0; i < listView.getChildCount(); i++) notifyUnbindView(listView.getChildAt(i));
 	}
-	
+
 	public void notifyUnbindView(View view)
 	{
 		PostViewHolder holder = ListViewUtils.getViewHolder(view, PostViewHolder.class);
@@ -899,13 +899,13 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			}
 		}
 	}
-	
+
 	@Override
 	public void onTemporaryDetatch(SingleLayerLinearLayout view, boolean start)
 	{
 		if (start) notifyUnbindView(view);
 	}
-	
+
 	public void handleListViewBusyStateChange(boolean isBusy, AbsListView listView, UiManager.DemandSet demandSet)
 	{
 		if (!isBusy)
@@ -924,7 +924,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		}
 		demandSet.isBusy = isBusy;
 	}
-	
+
 	private void displayThumbnails(UiManager.Holder holder, List<AttachmentItem> attachmentItems, boolean force)
 	{
 		if (attachmentItems != null)
@@ -943,13 +943,13 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			}
 		}
 	}
-	
+
 	public void displayThumbnails(View view, List<AttachmentItem> attachmentItems, boolean force)
 	{
 		Object tag = view.getTag();
 		if (tag instanceof UiManager.Holder) displayThumbnails((UiManager.Holder) tag, attachmentItems, force);
 	}
-	
+
 	public void displayThumbnails(ListView listView, int position, List<AttachmentItem> attachmentItems, boolean force)
 	{
 		if (position != ListView.INVALID_POSITION)
@@ -958,7 +958,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			if (view != null) displayThumbnails(view, attachmentItems, force);
 		}
 	}
-	
+
 	public int findImageIndex(ArrayList<GalleryItem> galleryItems, PostItem postItem)
 	{
 		if (galleryItems != null && postItem.hasAttachments())
@@ -971,7 +971,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		}
 		return -1;
 	}
-	
+
 	public void invalidateCommentView(ListView listView, int position)
 	{
 		if (position != ListView.INVALID_POSITION)
@@ -987,7 +987,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			}
 		}
 	}
-	
+
 	boolean handlePostForDoubleClick(final View view)
 	{
 		final PostViewHolder holder = ListViewUtils.getViewHolder(view, PostViewHolder.class);
@@ -1026,7 +1026,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		}
 		else return false;
 	}
-	
+
 	private final View.OnClickListener mRepliesBlockClickListener = new View.OnClickListener()
 	{
 		@Override
@@ -1037,7 +1037,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			mUiManager.dialog().displayReplies(postItem, holder.configurationSet);
 		}
 	};
-	
+
 	private final View.OnClickListener mThreadLinkBlockClickListener = new View.OnClickListener()
 	{
 		@Override
@@ -1050,7 +1050,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 					postItem.getThreadNumber(), postNumber, null, false);
 		}
 	};
-	
+
 	private final View.OnClickListener mThreadShowOpClickListener = new View.OnClickListener()
 	{
 		@Override
@@ -1060,16 +1060,16 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			mUiManager.dialog().displayThread(holder.postItem);
 		}
 	};
-	
+
 	private final View.OnTouchListener mHeadContentTouchListener = new View.OnTouchListener()
 	{
 		private static final int TYPE_NONE = 0;
 		private static final int TYPE_BADGES = 1;
 		private static final int TYPE_STATES = 2;
-		
+
 		private int mType;
 		private float mStartX, mStartY;
-		
+
 		@Override
 		public boolean onTouch(View v, MotionEvent event)
 		{
@@ -1172,13 +1172,13 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			return false;
 		}
 	};
-	
+
 	private static final int[] STATE_ATTRS = {R.attr.postUserPost, R.attr.postOriginalPoster,
 		R.attr.postSage, R.attr.postEmail, R.attr.postSticky, R.attr.postClosed,
 		R.attr.postCyclical, R.attr.postWarned, R.attr.postBanned};
-	
+
 	private static final SparseIntArray STATE_TEXTS = new SparseIntArray();
-	
+
 	static
 	{
 		STATE_TEXTS.put(R.attr.postUserPost, R.string.text_my_post);
@@ -1190,29 +1190,29 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		STATE_TEXTS.put(R.attr.postWarned, R.string.text_user_warned);
 		STATE_TEXTS.put(R.attr.postBanned, R.string.text_user_banned);
 	}
-	
+
 	private class AttachmentHolder
 	{
 		public AttachmentView thumbnail;
 		public final UiManager.ThumbnailClickListener thumbnailClickListener;
 		public final UiManager.ThumbnailLongClickListener thumbnailLongClickListener;
-		
+
 		public View container;
 		public TextView attachmentInfo;
-		
+
 		public AttachmentHolder()
 		{
 			thumbnailClickListener = mUiManager.interaction().createThumbnailClickListener();
 			thumbnailLongClickListener = mUiManager.interaction().createThumbnailLongClickListener();
 		}
 	}
-	
+
 	private class ThreadViewHolder extends UiManager.Holder
 	{
 		public AttachmentView thumbnail;
 		public final UiManager.ThumbnailClickListener thumbnailClickListener;
 		public final UiManager.ThumbnailLongClickListener thumbnailLongClickListener;
-		
+
 		public CardView cardView;
 		public TextView subject;
 		public TextView comment;
@@ -1220,43 +1220,43 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		public ImageView stateSticky, stateClosed;
 		public View threadContent;
 		public View showOpClickView;
-		
+
 		public ThreadViewHolder()
 		{
 			thumbnailClickListener = mUiManager.interaction().createThumbnailClickListener();
 			thumbnailLongClickListener = mUiManager.interaction().createThumbnailLongClickListener();
 		}
-		
+
 		@Override
 		public GalleryItem.GallerySet getGallerySet()
 		{
 			return postItem.getThreadGallerySet();
 		}
-		
+
 		@Override
 		public int getAttachmentViewCount()
 		{
 			return 1;
 		}
-		
+
 		@Override
 		public AttachmentView getAttachmentView(int index)
 		{
 			return thumbnail;
 		}
 	}
-	
+
 	private class PostViewHolder extends UiManager.Holder implements CommentTextView.ListSelectionKeeper.Holder
 	{
 		public UiManager.ConfigurationSet configurationSet;
 		public Animator newPostAnimator;
-		
+
 		public AttachmentView thumbnail;
 		public final UiManager.ThumbnailClickListener thumbnailClickListener;
 		public final UiManager.ThumbnailLongClickListener thumbnailLongClickListener;
 		public ArrayList<AttachmentHolder> attachmentHolders;
 		public int attachmentViewCount = 1;
-		
+
 		public LinebreakLayout head;
 		public TextView number, name, index, date;
 		public final ImageView[] stateImages = new ImageView[STATE_ATTRS.length];
@@ -1270,58 +1270,58 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		public TextView bottomBarReplies;
 		public TextView bottomBarExpand;
 		public TextView bottomBarOpenThread;
-		
+
 		public final boolean[] states = new boolean[STATE_ATTRS.length];
-		
+
 		public PostViewHolder()
 		{
 			thumbnailClickListener = mUiManager.interaction().createThumbnailClickListener();
 			thumbnailLongClickListener = mUiManager.interaction().createThumbnailLongClickListener();
 		}
-		
+
 		@Override
 		public GalleryItem.GallerySet getGallerySet()
 		{
 			return configurationSet.gallerySet;
 		}
-		
+
 		@Override
 		public int getAttachmentViewCount()
 		{
 			return attachmentViewCount;
 		}
-		
+
 		@Override
 		public AttachmentView getAttachmentView(int index)
 		{
 			return attachmentViewCount > 1 ? attachmentHolders.get(index).thumbnail : thumbnail;
 		}
-		
+
 		@Override
 		public CommentTextView getCommentTextView()
 		{
 			return comment;
 		}
 	}
-	
+
 	private static class HiddenViewHolder extends UiManager.Holder
 	{
 		public TextView index;
 		public TextView number;
 		public TextView comment;
-		
+
 		@Override
 		public GalleryItem.GallerySet getGallerySet()
 		{
 			throw new UnsupportedOperationException();
 		}
-		
+
 		@Override
 		public int getAttachmentViewCount()
 		{
 			return 0;
 		}
-		
+
 		@Override
 		public AttachmentView getAttachmentView(int index)
 		{

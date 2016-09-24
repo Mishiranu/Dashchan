@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -44,17 +44,17 @@ public class TextFragment extends Fragment implements View.OnClickListener
 {
 	private static final String EXTRA_TYPE = "type";
 	private static final String EXTRA_CONTENT = "content";
-	
+
 	public static final int TYPE_LICENSES = 0;
 	public static final int TYPE_CHANGELOG = 1;
-	
+
 	private CommentTextView mTextView;
-	
+
 	public TextFragment()
 	{
-		
+
 	}
-	
+
 	public static Bundle createArguments(int type, String content)
 	{
 		Bundle args = new Bundle();
@@ -62,7 +62,7 @@ public class TextFragment extends Fragment implements View.OnClickListener
 		args.putString(EXTRA_CONTENT, content);
 		return args;
 	}
-	
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 	{
@@ -108,7 +108,7 @@ public class TextFragment extends Fragment implements View.OnClickListener
 		frameLayout.addView(mTextView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
 		return scrollView;
 	}
-	
+
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState)
 	{
@@ -128,9 +128,9 @@ public class TextFragment extends Fragment implements View.OnClickListener
 			}
 		}
 	}
-	
+
 	private long mLastClickTime;
-	
+
 	@Override
 	public void onClick(View v)
 	{
@@ -142,7 +142,7 @@ public class TextFragment extends Fragment implements View.OnClickListener
 		}
 		else mLastClickTime = time;
 	}
-	
+
 	private static class Markup extends ChanMarkup
 	{
 		public Markup()

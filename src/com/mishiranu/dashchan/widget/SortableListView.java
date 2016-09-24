@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -39,28 +39,28 @@ public class SortableListView extends PaddedListView implements AdapterView.OnIt
 	private final DataSetObservable mDataSetObservable = new DataSetObservable();
 	private final Paint mActivePaint;
 	private final View mFakeView;
-	
+
 	private ListAdapter mWrappedAdapter;
 	private OnItemLongClickListener mLongClickListener;
 	private OnFinishedListener mFinishedListener;
 	private OnStateChangedListener mStateChangedListener;
-	
+
 	private int mAllowStart = INVALID_POSITION, mAllowEnd = INVALID_POSITION;
 	private int mStartPosition = INVALID_POSITION, mPosition = INVALID_POSITION;
 	private boolean mAllowStartSorting;
 	private float mFingerY;
 	private View mDrawView;
-	
+
 	public interface OnFinishedListener
 	{
 		public void onSortingFinished(SortableListView listView, int oldPosition, int newPosition);
 	}
-	
+
 	public interface OnStateChangedListener
 	{
 		public void onSortingStateChanged(SortableListView listView, boolean sorting);
 	}
-	
+
 	public SortableListView(Context context, Context unstyledContext)
 	{
 		super(context);
@@ -72,32 +72,32 @@ public class SortableListView extends PaddedListView implements AdapterView.OnIt
 		mActivePaint = new Paint();
 		mActivePaint.setColorFilter(colorFilter);
 		mFakeView = new View(context);
-		mFakeView.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, 0)); 
+		mFakeView.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, 0));
 	}
-	
+
 	@Override
 	public void setOnItemLongClickListener(OnItemLongClickListener listener)
 	{
 		mLongClickListener = listener;
 	}
-	
+
 	public void setOnSortingFinishedListener(OnFinishedListener listener)
 	{
 		mFinishedListener = listener;
 	}
-	
+
 	public void setOnSortingStateChangedListener(OnStateChangedListener listener)
 	{
 		mStateChangedListener = listener;
 	}
-	
+
 	@Override
 	public boolean onInterceptTouchEvent(MotionEvent ev)
 	{
 		if (mStartPosition != INVALID_POSITION) return true;
 		return super.onInterceptTouchEvent(ev);
 	}
-	
+
 	private final Runnable mScroller = new Runnable()
 	{
 		@Override
@@ -112,7 +112,7 @@ public class SortableListView extends PaddedListView implements AdapterView.OnIt
 			postDelayed(this, duration);
 		}
 	};
-	
+
 	private void updatePosition()
 	{
 		float y = mLastY - mFingerY + mFakeView.getHeight() / 2;
@@ -146,10 +146,10 @@ public class SortableListView extends PaddedListView implements AdapterView.OnIt
 					mFakeView.getTop() + 2 * mFakeView.getHeight());
 		}
 	}
-	
+
 	private float mLastY;
 	private float mScrollSpeed;
-	
+
 	@Override
 	public boolean onTouchEvent(MotionEvent ev)
 	{
@@ -184,7 +184,7 @@ public class SortableListView extends PaddedListView implements AdapterView.OnIt
 		}
 		return super.onTouchEvent(ev);
 	}
-	
+
 	@Override
 	protected void onDraw(Canvas canvas)
 	{
@@ -214,7 +214,7 @@ public class SortableListView extends PaddedListView implements AdapterView.OnIt
 			updatePosition();
 		}
 	}
-	
+
 	@Override
 	public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id)
 	{
@@ -229,7 +229,7 @@ public class SortableListView extends PaddedListView implements AdapterView.OnIt
 			mAllowStartSorting = false;
 		}
 	}
-	
+
 	public boolean startSorting(int start, int end, int position)
 	{
 		if (mAllowStartSorting && end > start && position >= start && position <= end &&
@@ -257,19 +257,19 @@ public class SortableListView extends PaddedListView implements AdapterView.OnIt
 		}
 		return false;
 	}
-	
+
 	public boolean isSorting()
 	{
 		return mStartPosition != INVALID_POSITION;
 	}
-	
+
 	@Override
 	public void setAdapter(ListAdapter adapter)
 	{
 		mWrappedAdapter = adapter;
 		super.setAdapter(adapter != null ? this : null);
 	}
-	
+
 	private int transformPosition(int position)
 	{
 		if (mStartPosition != INVALID_POSITION)
@@ -285,7 +285,7 @@ public class SortableListView extends PaddedListView implements AdapterView.OnIt
 		}
 		return position;
 	}
-	
+
 	@Override
 	public void registerDataSetObserver(DataSetObserver observer)
 	{
@@ -299,65 +299,65 @@ public class SortableListView extends PaddedListView implements AdapterView.OnIt
 		mDataSetObservable.unregisterObserver(observer);
 		mWrappedAdapter.unregisterDataSetObserver(observer);
 	}
-	
+
 	@Override
 	public int getCount()
 	{
 		return mWrappedAdapter.getCount();
 	}
-	
+
 	@Override
 	public Object getItem(int position)
 	{
 		if (position == mPosition) return null;
 		return mWrappedAdapter.getItem(transformPosition(position));
 	}
-	
+
 	@Override
 	public long getItemId(int position)
 	{
 		if (position == mPosition) return 0L;
 		return mWrappedAdapter.getItemId(transformPosition(position));
 	}
-	
+
 	@Override
 	public boolean hasStableIds()
 	{
 		return mWrappedAdapter.hasStableIds();
 	}
-	
+
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent)
 	{
 		if (position == mPosition) return mFakeView;
 		return mWrappedAdapter.getView(transformPosition(position), convertView, parent);
 	}
-	
+
 	@Override
 	public int getItemViewType(int position)
 	{
 		if (position == mPosition) return IGNORE_ITEM_VIEW_TYPE;
 		return mWrappedAdapter.getItemViewType(transformPosition(position));
 	}
-	
+
 	@Override
 	public int getViewTypeCount()
 	{
 		return mWrappedAdapter.getViewTypeCount();
 	}
-	
+
 	@Override
 	public boolean isEmpty()
 	{
 		return mWrappedAdapter.isEmpty();
 	}
-	
+
 	@Override
 	public boolean areAllItemsEnabled()
 	{
 		return mWrappedAdapter.areAllItemsEnabled();
 	}
-	
+
 	@Override
 	public boolean isEnabled(int position)
 	{

@@ -1,12 +1,12 @@
 /*
  * Copyright (C) 2011 The Android Open Source Project
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -49,13 +49,13 @@ public class LocalBroadcastManager
 		final IntentFilter filter;
 		final BroadcastReceiver receiver;
 		boolean broadcasting;
-		
+
 		ReceiverRecord(IntentFilter _filter, BroadcastReceiver _receiver)
 		{
 			filter = _filter;
 			receiver = _receiver;
 		}
-		
+
 		@Override
 		public String toString()
 		{
@@ -68,35 +68,35 @@ public class LocalBroadcastManager
 			return builder.toString();
 		}
 	}
-	
+
 	private static class BroadcastRecord
 	{
 		final Intent intent;
 		final ArrayList<ReceiverRecord> receivers;
-		
+
 		BroadcastRecord(Intent _intent, ArrayList<ReceiverRecord> _receivers)
 		{
 			intent = _intent;
 			receivers = _receivers;
 		}
 	}
-	
+
 	private final HashMap<BroadcastReceiver, ArrayList<IntentFilter>> mReceivers = new HashMap<>();
 	private final HashMap<String, ArrayList<ReceiverRecord>> mActions = new HashMap<>();
-	
+
 	private final ArrayList<BroadcastRecord> mPendingBroadcasts = new ArrayList<>();
-	
+
 	static final int MSG_EXEC_PENDING_BROADCASTS = 1;
-	
+
 	private final Handler mHandler;
-	
+
 	private static final LocalBroadcastManager INSTANCE = new LocalBroadcastManager();
-	
+
 	public static LocalBroadcastManager getInstance(Context context)
 	{
 		return INSTANCE;
 	}
-	
+
 	private LocalBroadcastManager()
 	{
 		mHandler = new Handler(Looper.getMainLooper())
@@ -115,15 +115,15 @@ public class LocalBroadcastManager
 			}
 		};
 	}
-	
+
 	/**
 	 * Register a receive for any local broadcasts that match the given IntentFilter.
-	 * 
+	 *
 	 * @param receiver
 	 *            The BroadcastReceiver to handle the broadcast.
 	 * @param filter
 	 *            Selects the Intent broadcasts to be received.
-	 * 
+	 *
 	 * @see #unregisterReceiver
 	 */
 	public void registerReceiver(BroadcastReceiver receiver, IntentFilter filter)
@@ -151,14 +151,14 @@ public class LocalBroadcastManager
 			}
 		}
 	}
-	
+
 	/**
 	 * Unregister a previously registered BroadcastReceiver. <em>All</em> filters that have been registered for this
 	 * BroadcastReceiver will be removed.
-	 * 
+	 *
 	 * @param receiver
 	 *            The BroadcastReceiver to unregister.
-	 * 
+	 *
 	 * @see #registerReceiver
 	 */
 	public void unregisterReceiver(BroadcastReceiver receiver)
@@ -196,14 +196,14 @@ public class LocalBroadcastManager
 			}
 		}
 	}
-	
+
 	/**
 	 * Broadcast the given intent to all interested BroadcastReceivers. This call is asynchronous; it returns
 	 * immediately, and you will continue executing while the receivers are run.
-	 * 
+	 *
 	 * @param intent
 	 *            The Intent to broadcast; all receivers matching this Intent will receive the broadcast.
-	 * 
+	 *
 	 * @see #registerReceiver
 	 */
 	public boolean sendBroadcast(Intent intent)
@@ -215,7 +215,7 @@ public class LocalBroadcastManager
 			final Uri data = intent.getData();
 			final String scheme = intent.getScheme();
 			final Set<String> categories = intent.getCategories();
-			
+
 			ArrayList<ReceiverRecord> entries = mActions.get(intent.getAction());
 			if (entries != null)
 			{
@@ -227,7 +227,7 @@ public class LocalBroadcastManager
 					{
 						continue;
 					}
-					
+
 					int match = receiver.filter.match(action, type, scheme, data, categories, "LocalBroadcastManager");
 					if (match >= 0)
 					{
@@ -239,7 +239,7 @@ public class LocalBroadcastManager
 						receiver.broadcasting = true;
 					}
 				}
-				
+
 				if (receivers != null)
 				{
 					for (int i = 0; i < receivers.size(); i++)
@@ -257,7 +257,7 @@ public class LocalBroadcastManager
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Like {@link #sendBroadcast(Intent)}, but if there are any receivers for the Intent this function will block and
 	 * immediately dispatch them before returning.
@@ -269,7 +269,7 @@ public class LocalBroadcastManager
 			executePendingBroadcasts();
 		}
 	}
-	
+
 	private void executePendingBroadcasts()
 	{
 		Context context = MainApplication.getInstance();

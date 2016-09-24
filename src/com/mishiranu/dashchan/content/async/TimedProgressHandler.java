@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,7 +24,7 @@ public class TimedProgressHandler implements HttpHolder.InputListener, HttpReque
 		MultipartEntity.OpenableOutputListener
 {
 	private final long[] mLastProgressUpdate = new long[3];
-	
+
 	private boolean checkNeedToUpdate(int index, long progress, long progressMax)
 	{
 		long time = System.currentTimeMillis();
@@ -35,7 +35,7 @@ public class TimedProgressHandler implements HttpHolder.InputListener, HttpReque
 		}
 		return false;
 	}
-	
+
 	@Override
 	public final void onInputProgressChange(long progress, long progressMax)
 	{
@@ -44,7 +44,7 @@ public class TimedProgressHandler implements HttpHolder.InputListener, HttpReque
 			onProgressChange(progress, progressMax);
 		}
 	}
-	
+
 	@Override
 	public final void onOutputProgressChange(long progress, long progressMax)
 	{
@@ -53,7 +53,7 @@ public class TimedProgressHandler implements HttpHolder.InputListener, HttpReque
 			onProgressChange(progress, progressMax);
 		}
 	}
-	
+
 	@Override
 	public final void onOutputProgressChange(MultipartEntity.Openable openable, long progress, long progressMax)
 	{
@@ -62,14 +62,14 @@ public class TimedProgressHandler implements HttpHolder.InputListener, HttpReque
 			onProgressChange(openable, progress, progressMax);
 		}
 	}
-	
+
 	public void onProgressChange(long progress, long progressMax)
 	{
-		
+
 	}
-	
+
 	public void onProgressChange(MultipartEntity.Openable openable, long progress, long progressMax)
 	{
-		
+
 	}
 }

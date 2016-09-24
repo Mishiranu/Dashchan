@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,20 +33,20 @@ import com.mishiranu.dashchan.util.ToastUtils;
 public class HidePerformer
 {
 	private static final int MAX_COMMENT_LENGTH = 1000;
-	
+
 	private final AutohideStorage mAutohideStorage;
 	private final SimilarTextEstimator mEstimator = new SimilarTextEstimator(MAX_COMMENT_LENGTH, true);
 	private final String mAutohidePrefix;
-	
+
 	private ArrayList<String> mNames;
 	private ArrayList<SimilarTextEstimator.WordsData> mWords;
-	
+
 	public HidePerformer()
 	{
 		mAutohideStorage = AutohideStorage.getInstance();
 		mAutohidePrefix = MainApplication.getInstance().getString(R.string.preference_header_autohide) + ": ";
 	}
-	
+
 	public String checkHidden(PostItem postItem)
 	{
 		String message = checkHiddenByName(postItem);
@@ -54,7 +54,7 @@ public class HidePerformer
 		if (message == null) message = checkHiddenGlobalAutohide(postItem);
 		return message != null ? mAutohidePrefix + message : null;
 	}
-	
+
 	private String checkHiddenByName(PostItem postItem)
 	{
 		if (mNames != null)
@@ -64,7 +64,7 @@ public class HidePerformer
 		}
 		return null;
 	}
-	
+
 	private String checkHiddenBySimilarPost(PostItem postItem)
 	{
 		if (mWords != null)
@@ -83,7 +83,7 @@ public class HidePerformer
 		}
 		return null;
 	}
-	
+
 	private String checkHiddenGlobalAutohide(PostItem postItem)
 	{
 		String chanName = postItem.getChanName();
@@ -134,7 +134,7 @@ public class HidePerformer
 		}
 		return null;
 	}
-	
+
 	public boolean addHideByName(PostItem postItem)
 	{
 		if (postItem.isUseDefaultName())
@@ -149,7 +149,7 @@ public class HidePerformer
 		mNames.add(fullName);
 		return true;
 	}
-	
+
 	public boolean addHideSimilar(PostItem postItem)
 	{
 		String comment = postItem.getComment().toString();
@@ -170,14 +170,14 @@ public class HidePerformer
 		mWords.add(wordsData);
 		return true;
 	}
-	
+
 	public boolean hasLocalAutohide()
 	{
 		int namesLength = mNames != null ? mNames.size() : 0;
 		int wordsLength = mWords != null ? mWords.size() : 0;
 		return namesLength + wordsLength > 0;
 	}
-	
+
 	public ArrayList<String> getReadableLocalAutohide()
 	{
 		Resources resources = MainApplication.getInstance().getResources();
@@ -198,7 +198,7 @@ public class HidePerformer
 		}
 		return localAutohide;
 	}
-	
+
 	public void removeLocalAutohide(int index)
 	{
 		if (mNames != null)
@@ -216,10 +216,10 @@ public class HidePerformer
 			if (mWords.isEmpty()) mWords = null;
 		}
 	}
-	
+
 	private static final String TYPE_NAME = "name";
 	private static final String TYPE_SIMILAR = "similar";
-	
+
 	public void encodeLocalAutohide(Posts posts)
 	{
 		String[][] localAutohide = null;
@@ -243,7 +243,7 @@ public class HidePerformer
 		}
 		posts.setLocalAutohide(localAutohide);
 	}
-	
+
 	@SuppressWarnings("ManualArrayToCollectionCopy")
 	public void decodeLocalAutohide(Posts posts)
 	{

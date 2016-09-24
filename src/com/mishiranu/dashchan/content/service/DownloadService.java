@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -63,33 +63,33 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 		Runnable, MediaScannerConnection.MediaScannerConnectionClient
 {
 	private static final Executor SINGLE_THREAD_EXECUTOR = Executors.newSingleThreadExecutor();
-	
+
 	private static final String ACTION_START = "com.mishiranu.dashchan.action.START";
 	private static final String ACTION_SHOW_FAKE = "com.mishiranu.dashchan.action.SHOW_FAKE";
 	private static final String ACTION_OPEN_FILE = "com.mishiranu.dashchan.action.OPEN_FILE";
 	private static final String ACTION_CANCEL_DOWNLOADING = "com.mishiranu.dashchan.action.CANCEL_DOWNLOADING";
 	private static final String ACTION_RETRY_DOWNLOADING = "com.mishiranu.dashchan.action.RETRY_DOWNLOADING";
-	
+
 	private static final String EXTRA_DIRECTORY = "com.mishiranu.dashchan.extra.DIRECTORY";
 	private static final String EXTRA_DOWNLOAD_ITEMS = "com.mishiranu.dashchan.extra.DOWNLOAD_ITEMS";
-	
+
 	private static final String EXTRA_FILE = "com.mishiranu.dashchan.extra.FILE";
 	private static final String EXTRA_SUCCESS = "com.mishiranu.dashchan.extra.SUCCESS";
-	
+
 	private Context mContext;
 	private NotificationManager mNotificationManager;
 	private int mNotificationColor;
 	private PowerManager.WakeLock mWakeLock;
 	private boolean mFirstStart;
-	
+
 	private Thread mNotificationsWorker;
 	private final LinkedBlockingQueue<NotificationData> mNotificationsQueue = new LinkedBlockingQueue<>();
-	
+
 	private static Intent obtainIntent(Context context, String action)
 	{
 		return new Intent(context, DownloadService.class).setAction(action);
 	}
-	
+
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	@Override
 	public void onCreate()
@@ -111,7 +111,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 		mWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "DownloadServiceWakeLock");
 		mWakeLock.setReferenceCounted(false);
 	}
-	
+
 	@Override
 	public void onDestroy()
 	{
@@ -131,7 +131,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 		stopForeground(true);
 		mNotificationManager.cancel(C.NOTIFICATION_ID_DOWNLOAD);
 	}
-	
+
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId)
 	{
@@ -212,13 +212,13 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 		}
 		return START_NOT_STICKY;
 	}
-	
+
 	@Override
 	public IBinder onBind(Intent intent)
 	{
 		return null;
 	}
-	
+
 	private static class NotificationData
 	{
 		public final boolean allowHeadsUp;
@@ -232,7 +232,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 		public final int progress;
 		public final int progressMax;
 		public final boolean forceSetImage;
-		
+
 		private NotificationData(boolean allowHeadsUp, boolean hasTask, int queudTasksSize, int successTasksSize,
 				ArrayList<TaskData> errorTasks, boolean hasExternal, TaskData lastSuccessTaskData,
 				String currentTaskFileName, int progress, int progressMax, boolean forceSetImage)
@@ -249,7 +249,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 			this.progressMax = progressMax;
 			this.forceSetImage = forceSetImage;
 		}
-		
+
 		public NotificationData(boolean allowHeadsUp, boolean hasTask, int queudTasksSize, int successTasksSize,
 				ArrayList<TaskData> errorTasks, boolean hasExternal, TaskData lastSuccessTaskData,
 				String currentTaskFileName, int progress, int progressMax)
@@ -257,13 +257,13 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 			this(allowHeadsUp, hasTask, queudTasksSize, successTasksSize, errorTasks, hasExternal, lastSuccessTaskData,
 					currentTaskFileName, progress, progressMax, false);
 		}
-		
+
 		public NotificationData(TaskData lastSuccessTaskData)
 		{
 			this(false, false, 0, 0, null, false, lastSuccessTaskData, null, 0, 0, true);
 		}
 	}
-	
+
 	@Override
 	public void run()
 	{
@@ -291,7 +291,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 			else refreshNotificationFromThread(notificationData);
 		}
 	}
-	
+
 	private final ArrayList<TaskData> mQueuedTasks = new ArrayList<>();
 	private final ArrayList<TaskData> mSuccessTasks = new ArrayList<>();
 	private final ArrayList<TaskData> mErrorTasks = new ArrayList<>();
@@ -299,15 +299,15 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 	private Notification.Builder mBuilder;
 	private Notification.BigTextStyle mNotificationStyle;
 	private CharSequence mNotificationBigText;
-	
+
 	private volatile int mProgress, mProgressMax;
 	private volatile long mLastUpdate;
 
 	private ReadFileTask mReadFileTask;
-	
+
 	private File mScannedMediaFile;
 	private Uri mScannedMediaUri;
-	
+
 	private static class TaskData
 	{
 		public final String chanName;
@@ -316,14 +316,14 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 		public boolean retryable = true;
 		public boolean local = false;
 		public String errorInfo;
-		
+
 		public TaskData(String chanName, Uri from, File to)
 		{
 			this.chanName = chanName;
 			this.from = from;
 			this.to = to;
 		}
-		
+
 		@Override
 		public boolean equals(Object o)
 		{
@@ -331,14 +331,14 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 			if (o instanceof TaskData) return to.equals(((TaskData) o).to);
 			return false;
 		}
-		
+
 		@Override
 		public int hashCode()
 		{
 			return to.hashCode();
 		}
 	}
-	
+
 	private void enqueue(String chanName, Uri from, File to, boolean refreshNotification)
 	{
 		TaskData taskData = new TaskData(chanName, from, to);
@@ -353,7 +353,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 		}
 		else if (success && mReadFileTask == null) refreshNotification(true);
 	}
-	
+
 	private boolean start(String chanName, Uri from, File to)
 	{
 		if (mReadFileTask == null)
@@ -367,11 +367,11 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 		}
 		return false;
 	}
-	
+
 	private boolean mOldStateWithTask = false;
-	
+
 	private static final int[] ICON_ATTRS = {R.attr.notificationRefresh, R.attr.notificationCancel};
-	
+
 	private void setBuilderImage(TaskData taskData)
 	{
 		if (taskData.to.exists())
@@ -382,7 +382,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 			mBuilder.setLargeIcon(fileHolder.readImageBitmap(size / 4, false, false));
 		}
 	}
-	
+
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private void refreshNotificationFromThread(NotificationData notificationData)
 	{
@@ -504,7 +504,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 			mNotificationManager.notify(C.NOTIFICATION_ID_DOWNLOAD, notification);
 		}
 	}
-	
+
 	private void refreshNotification(boolean allowHeadsUp)
 	{
 		boolean hasTask = mReadFileTask != null;
@@ -531,19 +531,19 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 				mProgress, mProgressMax));
 		if (hasTask) mWakeLock.acquire(); else mWakeLock.acquire(15000);
 	}
-	
+
 	@Override
 	public void onFileExists(Uri uri, File file)
 	{
 		onFinishDownloading(true, uri, file, null);
 	}
-	
+
 	@Override
 	public void onStartDownloading(Uri uri, File file)
 	{
 		refreshNotification(false);
 	}
-	
+
 	@Override
 	public void onFinishDownloading(boolean success, Uri uri, File file, ErrorItem errorItem)
 	{
@@ -576,7 +576,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 		}
 		else refreshNotification(true);
 	}
-	
+
 	@Override
 	public void onUpdateProgress(long progress, long progressMax)
 	{
@@ -589,45 +589,45 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 			refreshNotification(false);
 		}
 	}
-	
+
 	@Override
 	public void onFinishDownloadingInThread()
 	{
 		DownloadManager.getInstance().notifyFinishDownloadingInThread();
 	}
-	
+
 	@Override
 	public void onMediaScannerConnected()
 	{
-		
+
 	}
-	
+
 	@Override
 	public void onScanCompleted(String path, Uri uri)
 	{
 		mScannedMediaFile = new File(path);
 		mScannedMediaUri = uri;
 	}
-	
+
 	public static class DownloadItem implements Parcelable
 	{
 		public final String chanName;
 		public final Uri uri;
 		public final String name;
-		
+
 		public DownloadItem(String chanName, Uri uri, String name)
 		{
 			this.chanName = chanName;
 			this.uri = uri;
 			this.name = name;
 		}
-		
+
 		@Override
 		public int describeContents()
 		{
 			return 0;
 		}
-		
+
 		@Override
 		public void writeToParcel(Parcel dest, int flags)
 		{
@@ -635,7 +635,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 			dest.writeString(uri != null ? uri.toString() : null);
 			dest.writeString(name);
 		}
-		
+
 		public static final Creator<DownloadItem> CREATOR = new Creator<DownloadItem>()
 		{
 			@Override
@@ -643,7 +643,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 			{
 				return new DownloadItem[size];
 			}
-			
+
 			@Override
 			public DownloadItem createFromParcel(Parcel source)
 			{
@@ -653,7 +653,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 				return new DownloadItem(chanName, uriString != null ? Uri.parse(uriString) : null, name);
 			}
 		};
-		
+
 		@Override
 		public boolean equals(Object o)
 		{
@@ -665,7 +665,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 			}
 			return false;
 		}
-		
+
 		@Override
 		public int hashCode()
 		{
@@ -676,7 +676,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 			return result;
 		}
 	}
-	
+
 	public static void downloadDirect(Context context, File directory, ArrayList<DownloadItem> downloadItems)
 	{
 		int size = downloadItems.size();
@@ -693,7 +693,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 		}
 		else downloadDirectInternal(context, directory, downloadItems);
 	}
-	
+
 	private static void downloadDirectInternal(Context context, File directory, ArrayList<DownloadItem> downloadItems)
 	{
 		Intent intent = obtainIntent(context, ACTION_START);
@@ -701,7 +701,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 		intent.putExtra(EXTRA_DOWNLOAD_ITEMS, downloadItems);
 		context.startService(intent);
 	}
-	
+
 	public static void showFake(Context context, File file, boolean success)
 	{
 		Intent intent = obtainIntent(context, ACTION_SHOW_FAKE);

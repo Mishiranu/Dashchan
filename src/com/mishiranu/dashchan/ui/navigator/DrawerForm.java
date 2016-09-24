@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -92,17 +92,17 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 	private final Context mContext;
 	private final Context mUnstyledContext;
 	private final Callback mCallback;
-	
+
 	private final InputMethodManager mInputMethodManager;
 
 	private final EditText mSearchEdit;
 	private final View mHeaderView;
 	private final TextView mChanNameView;
 	private final ImageView mChanSelectorIcon;
-	
+
 	private final HashMap<String, Drawable> mChanIcons = new HashMap<>();
 	private final HashSet<String> mWatcherSupportSet = new HashSet<>();
-	
+
 	private final ArrayList<ListItem> mChans = new ArrayList<>();
 	private final ArrayList<ListItem> mPages = new ArrayList<>();
 	private final ArrayList<ListItem> mFavorites = new ArrayList<>();
@@ -111,19 +111,19 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 
 	private final WatcherService.Client mWatcherServiceClient;
 	private SortableListView mListView;
-	
+
 	private boolean mMergeChans = false;
 	private boolean mChanSelectMode = false;
 	private String mChanName;
 
 	public static final int RESULT_REMOVE_ERROR_MESSAGE = 0x00000001;
 	public static final int RESULT_SUCCESS = 0x00000002;
-	
+
 	public static final int MENU_ITEM_ALL_BOARDS = 1;
 	public static final int MENU_ITEM_USER_BOARDS = 2;
 	public static final int MENU_ITEM_HISTORY = 3;
 	public static final int MENU_ITEM_PREFERENCES = 4;
-	
+
 	public interface Callback
 	{
 		public void onSelectChan(String chanName);
@@ -136,7 +136,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		public void onSelectDrawerMenuItem(int item);
 		public ArrayList<PageHolder> getDrawerPageHolders();
 	}
-	
+
 	public DrawerForm(Context context, Context unstyledContext, Callback callback,
 			WatcherService.Client watcherServiceClient)
 	{
@@ -225,7 +225,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		}
 		if (availableChans.size() == 1) selectorContainer.setVisibility(View.GONE);
 	}
-	
+
 	public void bind(SortableListView listView)
 	{
 		mListView = listView;
@@ -242,7 +242,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		if (C.API_LOLLIPOP) listView.setDivider(null);
 		else listView.setPadding((int) (12f * density), 0, (int) (12f * density), 0);
 	}
-	
+
 	public void updateConfiguration(String chanName)
 	{
 		if (!StringUtils.equals(chanName, mChanName))
@@ -278,12 +278,12 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			invalidateItems(false, true);
 		}
 	}
-	
+
 	public View getHeaderView()
 	{
 		return mHeaderView;
 	}
-	
+
 	private void setChanSelectMode(boolean enabled)
 	{
 		if (mChanSelectMode != enabled)
@@ -294,7 +294,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			mListView.setSelection(0);
 		}
 	}
-	
+
 	@Override
 	public void onSortingFinished(SortableListView listView, int oldPosition, int newPosition)
 	{
@@ -324,11 +324,11 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			invalidateItems(false, true);
 		}
 	}
-	
+
 	private boolean mMultipleFingersCountingTime = false;
 	private long mMultipleFingersTime;
 	private long mMultipleFingersStartTime;
-	
+
 	@Override
 	public boolean onTouch(View v, MotionEvent event)
 	{
@@ -365,7 +365,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		}
 		return false;
 	}
-	
+
 	public void performResume()
 	{
 		boolean mergeChans = Preferences.isMergeChans();
@@ -375,13 +375,13 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			invalidateItems(true, true);
 		}
 	}
-	
+
 	public void invalidateItems(boolean pages, boolean favorites)
 	{
 		updateList(pages, favorites);
 		notifyDataSetChanged();
 	}
-	
+
 	@Override
 	public void notifyDataSetChanged()
 	{
@@ -394,7 +394,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			mSearchEdit.post(mRestoreSearchFocusRunnable);
 		}
 	}
-	
+
 	private final Runnable mRestoreSearchFocusRunnable = new Runnable()
 	{
 		@Override
@@ -403,14 +403,14 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			mSearchEdit.requestFocus();
 		}
 	};
-	
+
 	@Override
 	public int getEdgeEffectShift(boolean top)
 	{
 		int shift = mListView.obtainEdgeEffectShift(top);
 		return top ? shift + mHeaderView.getPaddingTop() : shift;
 	}
-	
+
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id)
 	{
@@ -449,12 +449,12 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			}
 		}
 	}
-	
+
 	private static final int MENU_COPY_LINK = 0;
 	private static final int MENU_ADD_TO_FAVORITES = 1;
 	private static final int MENU_REMOVE_FROM_FAVORITES = 2;
 	private static final int MENU_RENAME = 3;
-	
+
 	@Override
 	public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id)
 	{
@@ -557,7 +557,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 										String newTitle = editText.getText().toString();
 										FavoritesStorage.getInstance().modifyTitle(listItem.chanName,
 												listItem.boardName, listItem.threadNumber, newTitle, true);
-										
+
 									}).create();
 									dialog.getWindow().setSoftInputMode(WindowManager
 											.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
@@ -585,48 +585,48 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		}
 		return false;
 	}
-	
+
 	@Override
 	public void onDrawerSlide(View drawerView, float slideOffset)
 	{
-		
+
 	}
-	
+
 	@Override
 	public void onDrawerOpened(View drawerView)
 	{
-		
+
 	}
-	
+
 	@Override
 	public void onDrawerClosed(View drawerView)
 	{
 		hideKeyboard();
 		setChanSelectMode(false);
 	}
-	
+
 	@Override
 	public void onDrawerStateChanged(int newState)
 	{
-		
+
 	}
-	
+
 	private void clearTextAndHideKeyboard()
 	{
 		mSearchEdit.setText(null);
 		hideKeyboard();
 	}
-	
+
 	private void hideKeyboard()
 	{
 		mSearchEdit.clearFocus();
 		if (mInputMethodManager != null) mInputMethodManager.hideSoftInputFromWindow(mSearchEdit.getWindowToken(), 0);
 	}
-	
+
 	private static final Pattern PATTERN_NAVIGATION_BOARD_THREAD = Pattern.compile("([\\w_-]+) (\\d+)");
 	private static final Pattern PATTERN_NAVIGATION_BOARD = Pattern.compile("/?([\\w_-]+)");
 	private static final Pattern PATTERN_NAVIGATION_THREAD = Pattern.compile("#(\\d+)");
-	
+
 	@Override
 	public void onClick(View v)
 	{
@@ -638,7 +638,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		}
 		catch (NumberFormatException e)
 		{
-			
+
 		}
 		if (number >= 0)
 		{
@@ -737,7 +737,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		onClick(v);
 		return true;
 	}
-	
+
 	private void updateList(boolean pages, boolean favorites)
 	{
 		int mode = Preferences.getPagesListMode();
@@ -774,7 +774,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		}
 		notifyDataSetChanged();
 	}
-	
+
 	private void updateListPages()
 	{
 		boolean mergeChans = mMergeChans;
@@ -819,12 +819,12 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			}
 		}
 	}
-	
+
 	private static final Comparator<PageHolder> DATE_COMPARATOR = (lhs, rhs) ->
 	{
 		return (int) (rhs.creationTime - lhs.creationTime);
 	};
-	
+
 	private void updateListFavorites()
 	{
 		boolean mergeChans = mMergeChans;
@@ -889,7 +889,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			}
 		}
 	}
-	
+
 	private static class ListItem
 	{
 		public static final int ITEM_HEADER = 1;
@@ -898,20 +898,20 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		public static final int ITEM_MENU = 4;
 		public static final int ITEM_CHAN = 5;
 		public static final int ITEM_DIVIDER = 6;
-		
+
 		public final int type, data, resourceId;
 		public final String chanName, boardName, threadNumber, title;
 		public final Drawable resource;
-		
+
 		private int watcherPostsCountDifference = 0;
 		private boolean watcherHasNewPosts = false;
 		private boolean watcherIsError = false;
-		
+
 		public ListItem(int type, String chanName, String boardName, String threadNumber, String title)
 		{
 			this(type, chanName, boardName, threadNumber, title, 0, 0);
 		}
-		
+
 		public ListItem(int type, String chanName, String boardName, String threadNumber, String title, int data,
 				int resourceId)
 		{
@@ -924,7 +924,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			this.threadNumber = threadNumber;
 			this.title = title;
 		}
-		
+
 		public ListItem(int type, String chanName, String boardName, String threadNumber, String title, int data,
 				Drawable resource)
 		{
@@ -937,7 +937,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			this.threadNumber = threadNumber;
 			this.title = title;
 		}
-		
+
 		public ListItem(int type, int data, int resourceId, String title)
 		{
 			this.type = type;
@@ -949,7 +949,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			this.threadNumber = null;
 			this.title = title;
 		}
-		
+
 		public boolean isThreadItem()
 		{
 			return threadNumber != null;
@@ -961,7 +961,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 					&& StringUtils.equals(this.threadNumber, threadNumber);
 		}
 	}
-	
+
 	private final View.OnClickListener mCloseButtonListener = new View.OnClickListener()
 	{
 		@Override
@@ -980,10 +980,10 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			}
 		}
 	};
-	
+
 	private static final int HEADER_ACTION_CLOSE_ALL = 0;
 	private static final int HEADER_ACTION_REFRESH_WATCHER = 1;
-	
+
 	private final View.OnClickListener mHeaderButtonListener = new View.OnClickListener()
 	{
 		@Override
@@ -1008,7 +1008,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			}
 		}
 	};
-	
+
 	private static final int TYPE_VIEW = 0;
 	private static final int TYPE_VIEW_ICON = 1;
 	private static final int TYPE_VIEW_WATCHER = 2;
@@ -1018,13 +1018,13 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 	private static final int TYPE_HEADER = 6;
 	private static final int TYPE_HEADER_BUTTON = 7;
 	private static final int TYPE_DIVIDER = 8;
-	
+
 	@Override
 	public int getViewTypeCount()
 	{
 		return 9;
 	}
-	
+
 	@Override
 	public int getItemViewType(int position)
 	{
@@ -1073,7 +1073,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		}
 		return IGNORE_ITEM_VIEW_TYPE;
 	}
-	
+
 	@Override
 	public int getCount()
 	{
@@ -1089,7 +1089,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		}
 		return count;
 	}
-	
+
 	@Override
 	public ListItem getItem(int position)
 	{
@@ -1114,13 +1114,13 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		}
 		return null;
 	}
-	
+
 	@Override
 	public long getItemId(int position)
 	{
 		return 0;
 	}
-	
+
 	@Override
 	public boolean isEnabled(int position)
 	{
@@ -1133,13 +1133,13 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		}
 		return false;
 	}
-	
+
 	@Override
 	public boolean areAllItemsEnabled()
 	{
 		return false;
 	}
-	
+
 	private View makeSimpleDivider()
 	{
 		float density = ResourceUtils.obtainDensity(mContext);
@@ -1173,7 +1173,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			return view;
 		}
 	}
-	
+
 	private TextView makeCommonTextView(boolean header)
 	{
 		TextView textView = new TextView(mContext, null, C.API_LOLLIPOP ? android.R.attr.textAppearanceListItem
@@ -1191,7 +1191,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		}
 		return textView;
 	}
-	
+
 	private View makeView(boolean icon, boolean watcher, boolean closeable, float density)
 	{
 		int size = (int) (48f * density);
@@ -1268,7 +1268,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		textView.setPadding((int) (textLeftDp * density), 0, (int) (textRightDp * density), 0);
 		return linearLayout;
 	}
-	
+
 	private View makeHeader(ViewGroup parent, boolean button, float density)
 	{
 		if (C.API_LOLLIPOP)
@@ -1346,7 +1346,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			return view;
 		}
 	}
-	
+
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent)
 	{
@@ -1436,7 +1436,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		}
 		return convertView;
 	}
-	
+
 	private class ViewHolder
 	{
 		public ListItem listItem;
@@ -1444,14 +1444,14 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		public ImageView icon;
 		public View extra;
 	}
-	
+
 	private ListItem getItem(View view)
 	{
 		view = ListViewUtils.getRootViewInList(view);
 		ViewHolder holder = (ViewHolder) view.getTag();
 		return holder.listItem;
 	}
-	
+
 	private void updateWatcherItem(ViewHolder holder, WatcherService.State state)
 	{
 		WatcherView watcherView = (WatcherView) holder.extra;
@@ -1460,15 +1460,15 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		// Null state means state not changed
 		if (state != null) watcherView.setWatcherState(state);
 	}
-	
+
 	private WatcherDrawableColorSet mWatcherDrawableColorSet;
-	
+
 	private class WatcherDrawableColorSet
 	{
 		public final int enabledColor;
 		public final int unavailableColor;
 		public final int disabledColor;
-		
+
 		public WatcherDrawableColorSet(int enabledColor, int unavailableColor, int disabledColor)
 		{
 			this.enabledColor = enabledColor;
@@ -1476,15 +1476,15 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			this.disabledColor = disabledColor;
 		}
 	}
-	
+
 	private class WatcherView extends FrameLayout implements View.OnClickListener
 	{
 		private final ProgressBar mProgressBar;
-		
+
 		private String mText = "";
 		private boolean mHasNew = false;
 		private int mColor;
-		
+
 		@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 		public WatcherView(Context context)
 		{
@@ -1498,11 +1498,11 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			setWatcherState(WatcherService.State.DISABLED);
 			setPostsCountDifference(0, false, false);
 		}
-		
+
 		private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.LINEAR_TEXT_FLAG);
 		private final RectF mRectF = new RectF();
 		private final Rect mRect = new Rect();
-		
+
 		@Override
 		public void draw(Canvas canvas)
 		{
@@ -1542,7 +1542,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			}
 			canvas.restore();
 		}
-		
+
 		public void setPostsCountDifference(int postsCountDifference, boolean hasNew, boolean error)
 		{
 			String text;
@@ -1556,7 +1556,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			mHasNew = hasNew;
 			invalidate();
 		}
-		
+
 		public void setWatcherState(WatcherService.State state)
 		{
 			if (mWatcherDrawableColorSet == null)
@@ -1602,7 +1602,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			}
 			invalidate();
 		}
-		
+
 		@Override
 		public void onClick(View v)
 		{
@@ -1610,7 +1610,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			FavoritesStorage.getInstance().toggleWatcher(listItem.chanName, listItem.boardName, listItem.threadNumber);
 		}
 	}
-	
+
 	@Override
 	public void onWatcherUpdate(WatcherService.WatcherItem watcherItem, WatcherService.State state)
 	{
@@ -1647,15 +1647,15 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			}
 		}
 	}
-	
+
 	private class ListViewScrollFixListener implements ListView.OnScrollListener
 	{
 		@Override
 		public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount)
 		{
-			
+
 		}
-		
+
 		@Override
 		public void onScrollStateChanged(AbsListView view, int scrollState)
 		{

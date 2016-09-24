@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,7 +42,7 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 {
 	private ReadThreadSummariesTask mReadTask;
 	private boolean mShowScaleOnSuccess;
-	
+
 	@Override
 	protected void onCreate()
 	{
@@ -65,7 +65,7 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 			refreshThreads(false, false);
 		}
 	}
-	
+
 	@Override
 	protected void onDestroy()
 	{
@@ -75,7 +75,7 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 			mReadTask = null;
 		}
 	}
-	
+
 	@Override
 	public String obtainTitle()
 	{
@@ -83,7 +83,7 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 		return getString(R.string.action_archive_view) + ": " + StringUtils.formatBoardTitle(pageHolder.chanName,
 				pageHolder.boardName, null);
 	}
-	
+
 	@Override
 	public void onItemClick(View view, int position, long id)
 	{
@@ -95,9 +95,9 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 					null, null, false);
 		}
 	}
-	
+
 	private static final int OPTIONS_MENU_REFRESH = 0;
-	
+
 	@Override
 	public void onCreateOptionsMenu(Menu menu)
 	{
@@ -107,7 +107,7 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 		menu.addSubMenu(0, OPTIONS_MENU_APPEARANCE, 0, R.string.action_appearance);
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
@@ -121,10 +121,10 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 		}
 		return false;
 	}
-	
+
 	private static final int CONTEXT_MENU_COPY_LINK = 0;
 	private static final int CONTEXT_MENU_ADD_FAVORITES = 1;
-	
+
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v, int position, View targetView)
 	{
@@ -136,7 +136,7 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 			menu.add(0, CONTEXT_MENU_ADD_FAVORITES, 0, R.string.action_add_to_favorites);
 		}
 	}
-	
+
 	@Override
 	public boolean onContextItemSelected(MenuItem item, int position, View targetView)
 	{
@@ -154,23 +154,23 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 			{
 				FavoritesStorage.getInstance().add(pageHolder.chanName, pageHolder.boardName, threadNumber, null, 0);
 				return true;
-			} 
+			}
 		}
 		return false;
 	}
-	
+
 	@Override
 	public void onSearchTextChange(String newText)
 	{
 		getAdapter().applyFilter(newText);
 	}
-	
+
 	@Override
 	public void onListPulled(PullableWrapper wrapper, PullableWrapper.Side side)
 	{
 		refreshThreads(true, side == PullableWrapper.Side.BOTTOM);
 	}
-	
+
 	private void refreshThreads(boolean showPull, boolean nextPage)
 	{
 		if (mReadTask != null) mReadTask.cancel();
@@ -195,7 +195,7 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 			switchView(ViewType.PROGRESS, null);
 		}
 	}
-	
+
 	@Override
 	public void onReadThreadSummariesSuccess(ThreadSummary[] threadSummaries, int pageNumber)
 	{
@@ -243,7 +243,7 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 			}
 		}
 	}
-	
+
 	@Override
 	public void onReadThreadSummariesFail(ErrorItem errorItem)
 	{
@@ -252,13 +252,13 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 		if (getAdapter().isEmpty()) switchView(ViewType.ERROR, errorItem.toString());
 		else ClickableToast.show(getActivity(), errorItem.toString());
 	}
-	
+
 	public static class ArchiveExtra implements PageHolder.Extra
 	{
 		public ThreadSummary[] threadSummaries;
 		public int pageNumber;
 	}
-	
+
 	private ArchiveExtra getExtra()
 	{
 		PageHolder pageHolder = getPageHolder();

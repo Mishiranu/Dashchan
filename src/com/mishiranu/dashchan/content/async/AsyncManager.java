@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,21 +37,21 @@ public final class AsyncManager
 	public static final class TaskFragment extends Fragment
 	{
 		public final AsyncManager manager;
-		
+
 		public TaskFragment()
 		{
 			manager = new AsyncManager(this);
 		}
-		
+
 		@Override
 		public void onCreate(Bundle savedInstanceState)
 		{
 			super.onCreate(savedInstanceState);
 			setRetainInstance(true);
 		}
-		
+
 		public boolean attached = false;
-				
+
 		@Override
 		public void onActivityCreated(Bundle savedInstanceState)
 		{
@@ -62,7 +62,7 @@ public final class AsyncManager
 				manager.onAttach();
 			}
 		}
-		
+
 		@Override
 		public void onDestroy()
 		{
@@ -74,7 +74,7 @@ public final class AsyncManager
 				manager.onDestroy();
 			}
 		}
-		
+
 		@Override
 		public void onDetach()
 		{
@@ -86,7 +86,7 @@ public final class AsyncManager
 			}
 		}
 	}
-	
+
 	private static AsyncManager get(FragmentManager fragmentManager)
 	{
 		String tag = AsyncManager.class.getName();
@@ -98,7 +98,7 @@ public final class AsyncManager
 		}
 		return fragment.manager;
 	}
-	
+
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
 	public static AsyncManager get(Fragment fragment)
 	{
@@ -113,30 +113,30 @@ public final class AsyncManager
 		}
 		return get(fragment.getFragmentManager());
 	}
-	
+
 	public static AsyncManager get(Activity activity)
 	{
 		return get(activity.getFragmentManager());
 	}
-	
+
 	private final TaskFragment mFragment;
-	
+
 	private AsyncManager(TaskFragment fragment)
 	{
 		mFragment = fragment;
 	}
-	
+
 	private ArrayList<QueuedHolder> mQueued;
-	
+
 	private final LinkedHashMap<String, Holder> mWorkTasks = new LinkedHashMap<>();
-	
+
 	private static class QueuedHolder
 	{
 		public final String name;
 		public final Callback callback;
 		public final HashMap<String, Object> extra;
 		public final boolean restart;
-		
+
 		public QueuedHolder(String name, Callback callback, HashMap<String, Object> extra, boolean restart)
 		{
 			this.name = name;
@@ -145,7 +145,7 @@ public final class AsyncManager
 			this.restart = restart;
 		}
 	}
-	
+
 	private void onAttach()
 	{
 		if (mQueued != null)
@@ -157,7 +157,7 @@ public final class AsyncManager
 			mQueued = null;
 		}
 	}
-	
+
 	private void onDestroy()
 	{
 		for (Holder holder : mWorkTasks.values())
@@ -170,19 +170,19 @@ public final class AsyncManager
 			holder.manager = null;
 		}
 	}
-	
+
 	private void onDetach()
 	{
 		for (Holder holder : mWorkTasks.values()) holder.callback = null;
 	}
-	
+
 	public interface Callback
 	{
 		public Pair<Object, Holder> onCreateAndExecuteTask(String name, HashMap<String, Object> extra);
 		public void onFinishTaskExecution(String name, Holder holder);
 		public void onRequestTaskCancel(String name, Object task);
 	}
-	
+
 	public static class Holder
 	{
 		private String name;
@@ -190,10 +190,10 @@ public final class AsyncManager
 		private AsyncManager manager;
 		private Callback callback;
 		private boolean ready = false;
-		
+
 		private Object[] mArguments;
 		private int mArgumentIndex = 0;
-		
+
 		public final void storeResult(Object... arguments)
 		{
 			ready = true;
@@ -205,19 +205,19 @@ public final class AsyncManager
 				callback.onFinishTaskExecution(name, this);
 			}
 		}
-		
+
 		@SuppressWarnings("unchecked")
 		public <T> T getArgument(int index)
 		{
 			return (T) mArguments[index];
 		}
-		
+
 		public <T> T nextArgument()
 		{
 			return getArgument(mArgumentIndex++);
 		}
 	}
-	
+
 	private void removeQueued(String name)
 	{
 		for (int i = mQueued.size() - 1; i >= 0; i--)
@@ -225,7 +225,7 @@ public final class AsyncManager
 			if (StringUtils.equals(name, mQueued.get(i).name)) mQueued.remove(i);
 		}
 	}
-	
+
 	public void startTask(String name, Callback callback, HashMap<String, Object> extra, boolean restart)
 	{
 		if (mFragment.attached) enqueue(name, callback, extra, restart); else
@@ -235,7 +235,7 @@ public final class AsyncManager
 			mQueued.add(new QueuedHolder(name, callback, extra, restart));
 		}
 	}
-	
+
 	public void cancelTask(String name, Callback callback)
 	{
 		if (mQueued != null) removeQueued(name);
@@ -247,7 +247,7 @@ public final class AsyncManager
 			callback.onRequestTaskCancel(name, holder.task);
 		}
 	}
-	
+
 	private void enqueue(String name, Callback callback, HashMap<String, Object> extra, boolean restart)
 	{
 		Holder holder = mWorkTasks.get(name);
@@ -278,32 +278,32 @@ public final class AsyncManager
 		holder.callback = callback;
 		mWorkTasks.put(name, holder);
 	}
-	
+
 	@SuppressWarnings("UnusedParameters")
 	public static abstract class SimpleTask<Params, Progress, Result> extends CancellableTask<Params, Progress, Result>
 	{
 		private final Holder mHolder = new Holder();
-		
+
 		public final Pair<Object, Holder> getPair()
 		{
 			return new Pair<>(this, mHolder);
 		}
-		
+
 		@Override
 		protected final void onPostExecute(Result result)
 		{
 			onStoreResult(mHolder, result);
 			onAfterPostExecute(result);
 		}
-		
+
 		protected void onStoreResult(Holder holder, Result result)
 		{
 			mHolder.storeResult(result);
 		}
-		
+
 		protected void onAfterPostExecute(Result result)
 		{
-			
+
 		}
 	}
 }

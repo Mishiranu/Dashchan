@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,7 +30,7 @@ import com.mishiranu.dashchan.util.FlagUtils;
 public final class ApiException extends Exception
 {
 	private static final long serialVersionUID = 1L;
-	
+
 	@Public public static final int SEND_ERROR_NO_BOARD = 100;
 	@Public public static final int SEND_ERROR_NO_THREAD = 101;
 	@Public public static final int SEND_ERROR_NO_ACCESS = 102;
@@ -48,44 +48,44 @@ public final class ApiException extends Exception
 	@Public public static final int SEND_ERROR_EMPTY_SUBJECT = 114;
 	@Public public static final int SEND_ERROR_EMPTY_COMMENT = 115;
 	@Public public static final int SEND_ERROR_FILES_LIMIT = 116;
-	
+
 	@Public public static final int DELETE_ERROR_NO_ACCESS = 200;
 	@Public public static final int DELETE_ERROR_PASSWORD = 201;
 	@Public public static final int DELETE_ERROR_NOT_FOUND = 202;
 	@Public public static final int DELETE_ERROR_TOO_NEW = 203;
 	@Public public static final int DELETE_ERROR_TOO_OLD = 204;
 	@Public public static final int DELETE_ERROR_TOO_OFTEN = 205;
-	
+
 	@Public public static final int REPORT_ERROR_NO_ACCESS = 300;
 	@Public public static final int REPORT_ERROR_TOO_OFTEN = 301;
 	@Public public static final int REPORT_ERROR_EMPTY_COMMENT = 302;
 	@Public public static final int ARCHIVE_ERROR_NO_ACCESS = 400;
 	@Public public static final int ARCHIVE_ERROR_TOO_OFTEN = 401;
-	
+
 	@Public public static final int FLAG_KEEP_CAPTCHA = 0x00000001;
-	
+
 	private final int mErrorType;
 	private final int mFlags;
 	private final Object mExtra;
-	
+
 	@Public
 	public ApiException(int errorType)
 	{
 		this(errorType, 0, null);
 	}
-	
+
 	@Public
 	public ApiException(int errorType, int flags)
 	{
 		this(errorType, flags, null);
 	}
-	
+
 	@Public
 	public ApiException(int errorType, Object extra)
 	{
 		this(errorType, 0, extra);
 	}
-	
+
 	@Public
 	public ApiException(int errorType, int flags, Object extra)
 	{
@@ -93,13 +93,13 @@ public final class ApiException extends Exception
 		mFlags = flags;
 		mExtra = extra;
 	}
-	
+
 	@Public
 	public ApiException(String detailMessage)
 	{
 		this(detailMessage, 0);
 	}
-	
+
 	@Public
 	public ApiException(String detailMessage, int flags)
 	{
@@ -108,17 +108,17 @@ public final class ApiException extends Exception
 		mFlags = flags;
 		mExtra = null;
 	}
-	
+
 	public int getErrorType()
 	{
 		return mErrorType;
 	}
-	
+
 	public boolean checkFlag(int flag)
 	{
 		return FlagUtils.get(mFlags, flag);
 	}
-	
+
 	public Object getExtra()
 	{
 		switch (mErrorType)
@@ -136,7 +136,7 @@ public final class ApiException extends Exception
 		}
 		return null;
 	}
-	
+
 	public static int getResId(int errorType)
 	{
 		int resId = 0;
@@ -285,51 +285,51 @@ public final class ApiException extends Exception
 		}
 		return resId;
 	}
-	
+
 	public ErrorItem getErrorItem()
 	{
 		String message = getMessage();
 		if (!StringUtils.isEmpty(message)) return new ErrorItem(0, message);
 		return new ErrorItem(ErrorItem.TYPE_API, mErrorType);
 	}
-	
+
 	@Public
 	public static final class BanExtra implements Serializable
 	{
 		private static final long serialVersionUID = 1L;
-		
+
 		public String id;
 		public String message;
 		public long startDate;
 		public long expireDate;
-		
+
 		@Public
 		public BanExtra()
 		{
-			
+
 		}
-		
+
 		@Public
 		public BanExtra setId(String id)
 		{
 			this.id = id;
 			return this;
 		}
-		
+
 		@Public
 		public BanExtra setMessage(String message)
 		{
 			this.message = message;
 			return this;
 		}
-		
+
 		@Public
 		public BanExtra setStartDate(long startDate)
 		{
 			this.startDate = startDate;
 			return this;
 		}
-		
+
 		@Public
 		public BanExtra setExpireDate(long expireDate)
 		{
@@ -337,20 +337,20 @@ public final class ApiException extends Exception
 			return this;
 		}
 	}
-	
+
 	@Public
 	public static final class WordsExtra implements Serializable
 	{
 		private static final long serialVersionUID = 1L;
-		
+
 		public final LinkedHashSet<String> words = new LinkedHashSet<>();
-		
+
 		@Public
 		public WordsExtra()
 		{
-			
+
 		}
-		
+
 		@Public
 		public WordsExtra addWord(String word)
 		{

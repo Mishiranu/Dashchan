@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,41 +40,41 @@ public class CircularProgressBar extends View
 	private static final int INDETERMINATE_LOLLIPOP_TIME = 6665;
 	private static final int PROGRESS_TRANSIENT_TIME = 500;
 	private static final int VISIBILITY_TRANSIENT_TIME = 500;
-	
+
 	private static final int TRANSIENT_NONE = 0;
 	private static final int TRANSIENT_INDETERMINATE_PROGRESS = 1;
 	private static final int TRANSIENT_PROGRESS_INDETERMINATE = 2;
-	
+
 	private final Paint mPaint;
 	private final Path mPath = new Path();
 	private final RectF mRectF = new RectF();
-	
+
 	private final Drawable mIndeterminateDrawable;
 	private final int mIndeterminateDuration;
-	
+
 	private final Interpolator mLollipopStartInterpolator;
 	private final Interpolator mLollipopEndInterpolator;
-	
+
 	private final long mStartTime = System.currentTimeMillis();
 
 	private int mTransientState = TRANSIENT_NONE;
 	private final float[] mCircularData = C.API_LOLLIPOP ? new float[2] : null;
 	private final float[] mTransientData = C.API_LOLLIPOP ? new float[2] : null;
 	private long mTimeTransientStart;
-	
+
 	private boolean mIndeterminate = true;
 	private boolean mVisible = false;
 	private long mTimeVisibilitySet;
-	
+
 	private float mProgress = 0f;
 	private float mTransientProgress = 0;
 	private long mTimeProgressChange;
-	
+
 	public CircularProgressBar(Context context)
 	{
 		this(context, null);
 	}
-	
+
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	public CircularProgressBar(Context context, AttributeSet attrs)
 	{
@@ -107,7 +107,7 @@ public class CircularProgressBar extends View
 			typedArray.recycle();
 		}
 	}
-	
+
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
 	{
@@ -118,21 +118,21 @@ public class CircularProgressBar extends View
 		setMeasuredDimension(resolveSizeAndState(width, widthMeasureSpec, 0),
 				resolveSizeAndState(height, heightMeasureSpec, 0));
 	}
-	
+
 	private float getValue(long currentTime, long fromTime, float max)
 	{
 		return ((currentTime - fromTime) % max) / max;
 	}
-	
+
 	private boolean mQueuedVisible;
-	
+
 	private final Runnable mSetVisibleRunnable = () ->
 	{
 		mVisible = mQueuedVisible;
 		mTimeVisibilitySet = System.currentTimeMillis();
 		invalidate();
 	};
-	
+
 	public void setVisible(boolean visible, boolean forced)
 	{
 		removeCallbacks(mSetVisibleRunnable);
@@ -153,7 +153,7 @@ public class CircularProgressBar extends View
 			else mSetVisibleRunnable.run();
 		}
 	}
-	
+
 	public void cancelVisibilityTransient()
 	{
 		removeCallbacks(mSetVisibleRunnable);
@@ -161,7 +161,7 @@ public class CircularProgressBar extends View
 		mVisible = mQueuedVisible;
 		invalidate();
 	}
-	
+
 	private boolean calculateLollipopProgress()
 	{
 		float progress = calculateTransientProgress();
@@ -171,7 +171,7 @@ public class CircularProgressBar extends View
 		mCircularData[1] = arcLength;
 		return progress != mProgress;
 	}
-	
+
 	private void calculateLollipopIndeterminate(long currentTime)
 	{
 		float rotationValue = getValue(currentTime, mStartTime, INDETERMINATE_LOLLIPOP_TIME);
@@ -186,7 +186,7 @@ public class CircularProgressBar extends View
 		mCircularData[0] = arcStart % 1f;
 		mCircularData[1] = arcLength;
 	}
-	
+
 	private boolean calculateLollipopTransient(float arcStart, float arcLength,
 			float desiredStart, float desiredLength, long interval)
 	{
@@ -204,7 +204,7 @@ public class CircularProgressBar extends View
 		mCircularData[1] = arcLength;
 		return finished;
 	}
-	
+
 	private boolean calculateLollipopTransientIndeterminateProgress()
 	{
 		float arcStart = mTransientData[0];
@@ -215,7 +215,7 @@ public class CircularProgressBar extends View
 		int interval = (int) (800f * (desiredStart - arcStart));
 		return calculateLollipopTransient(arcStart, arcLength, desiredStart, desiredLength, interval);
 	}
-	
+
 	private boolean calculateLollipopTransientProgressIndeterminate()
 	{
 		float arcStart = mTransientData[0];
@@ -226,7 +226,7 @@ public class CircularProgressBar extends View
 		if (arcStart >= desiredStart || arcLength >= desiredLength) arcStart -= 1f;
 		return calculateLollipopTransient(arcStart, arcLength, desiredStart, desiredLength, 1000L);
 	}
-	
+
 	public void setIndeterminate(boolean indeterminate)
 	{
 		if (mIndeterminate != indeterminate)
@@ -273,7 +273,7 @@ public class CircularProgressBar extends View
 			mIndeterminate = indeterminate;
 		}
 	}
-	
+
 	private float calculateTransientProgress()
 	{
 		long time = System.currentTimeMillis() - mTimeProgressChange;
@@ -282,7 +282,7 @@ public class CircularProgressBar extends View
 		float start = mTransientProgress;
 		return start + (end - start) * time / PROGRESS_TRANSIENT_TIME;
 	}
-	
+
 	public void setProgress(int progress, int max, boolean ignoreTransient)
 	{
 		float value = (float) progress / max;
@@ -292,7 +292,7 @@ public class CircularProgressBar extends View
 		mProgress = value;
 		invalidate();
 	}
-	
+
 	private void drawArc(Canvas canvas, Paint paint, float start, float length)
 	{
 		if (length < 0.001f) length = 0.001f;
@@ -306,7 +306,7 @@ public class CircularProgressBar extends View
 		else path.arcTo(mRectF, start * 360f - 90f, length * 360f, false);
 		canvas.drawPath(path, paint);
 	}
-	
+
 	@Override
 	protected void onDraw(Canvas canvas)
 	{
@@ -314,21 +314,21 @@ public class CircularProgressBar extends View
 		long time = System.currentTimeMillis();
 		int size = Math.min(width, height);
 		boolean invalidate = false;
-		
+
 		boolean transientVisibility = time - mTimeVisibilitySet < VISIBILITY_TRANSIENT_TIME;
 		float visibilityValue = transientVisibility ? (float) (time - mTimeVisibilitySet) /
 				VISIBILITY_TRANSIENT_TIME : 1f;
 		visibilityValue = AnimationUtils.ACCELERATE_DECELERATE_INTERPOLATOR.getInterpolation(visibilityValue);
 		int alpha = (int) (mVisible ? 0xff * visibilityValue : 0xff * (1f - visibilityValue));
 		if (transientVisibility) invalidate = true;
-		
+
 		if (C.API_LOLLIPOP)
 		{
 			float arcStart;
 			float arcLength;
 			if (mTransientState != TRANSIENT_NONE)
 			{
-				boolean finished = true; 
+				boolean finished = true;
 				if (mTransientState == TRANSIENT_INDETERMINATE_PROGRESS)
 				{
 					finished = calculateLollipopTransientIndeterminateProgress();
@@ -442,7 +442,7 @@ public class CircularProgressBar extends View
 			}
 			if (alpha == 0x00 && mVisible) invalidate = true;
 		}
-		
+
 		if (invalidate && (alpha > 0x00 || mVisible)) invalidate();
 	}
 }

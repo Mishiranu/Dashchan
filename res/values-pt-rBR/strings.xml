@@ -2,13 +2,13 @@
 
 <!--
 	Copyright 2014-2016 Fukurou Mishiranu
-	
+
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
 	You may obtain a copy of the License at
-	
+
 	http://www.apache.org/licenses/LICENSE-2.0
-	
+
 	Unless required by applicable law or agreed to in writing, software
 	distributed under the License is distributed on an "AS IS" BASIS,
 	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,9 +17,9 @@
 -->
 
 <resources>
-	
+
 	<!-- Text -->
-	
+
 	<string name="text_address">Endereço</string>
 	<string name="text_app_name_update">%s atualizações</string>
 	<string name="text_all_posts">Todos os posts</string>
@@ -150,9 +150,9 @@
 	<string name="text_with_name_format">Com nome %s</string>
 	<string name="text_without_updating">Sem atualização</string>
 	<string name="text_yesterday">Ontem</string>
-	
+
 	<!-- Actions -->
-	
+
 	<string name="action_add_post">Responder</string>
 	<string name="action_add_to_favorites">Adcionar ao favoritos</string>
 	<string name="action_appearance">Aparência</string>
@@ -241,9 +241,9 @@
 	<string name="action_threads_grid">Fios em grades</string>
 	<string name="action_user_boards">Boards de usuários</string>
 	<string name="action_view">Ver</string>
-	
+
 	<!-- Messages -->
-	
+
 	<string name="message_archive_too_often_error">Espere um pouco antes de fazer isso novamente</string>
 	<string name="message_banned">Voce está banido</string>
 	<string name="message_board_not_exist">Essa board não existe</string>
@@ -341,16 +341,16 @@
 	<string name="message_update_reminder">Você pode acompanhar o progresso de download na barra de status.\n\nVocê pode
 		instalar as aplicações quando o download acabar.\n\nNão se esqueça de reiniciar o aplicativo!</string>
 	<string name="message_validation_completed">Validação completa</string>
-	
+
 	<!-- Preferences -->
-	
+
 	<string name="preference_header_about">Informações</string>
 	<string name="preference_header_autohide">Auto-Esconder</string>
 	<string name="preference_header_contents">Conteúdo</string>
 	<string name="preference_header_favorites">Favoritos</string>
 	<string name="preference_header_general">Geral</string>
 	<string name="preference_header_interface">Interface</string>
-	
+
 	<string name="preference_category_additional">Adcional</string>
 	<string name="preference_category_auto_refreshing">Fios auto-atualizáveis</string>
 	<string name="preference_category_connection">Conexão</string>
@@ -362,14 +362,14 @@
 	<string name="preference_category_threads">Lista de fios</string>
 	<string name="preference_category_video_player">Reprodutor de vídeo</string>
 	<string name="preference_category_watcher">Watcher de favoritos</string>
-	
+
 	<string-array name="preference_generic_network_choices">
 		<item>Sempre</item>
 		<item>Wi-Fi ou 3G+</item>
 		<item>Somente Wi-Fi</item>
 		<item>Nunca</item>
 	</string-array>
-	
+
 	<string name="preference_active_scrollbar">Barra de rolagem ativa</string>
 	<string name="preference_all_attachments">Todos os anexos</string>
 	<string name="preference_all_attachments_summary">Exibir miniaturas para todos os anexos</string>
@@ -503,5 +503,5 @@
 	<string name="preference_watcher_watch_initially_summary">Ativa o watcher assim que um fio é adcionado
 		aos favoritos</string>
 	<string name="preference_watcher_wifi_only">Somente Wi-Fi</string>
-	
+
 </resources>

@@ -2,13 +2,13 @@
 
 <!--
 	Copyright 2014-2016 Fukurou Mishiranu
-	
+
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
 	You may obtain a copy of the License at
-	
+
 	http://www.apache.org/licenses/LICENSE-2.0
-	
+
 	Unless required by applicable law or agreed to in writing, software
 	distributed under the License is distributed on an "AS IS" BASIS,
 	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,9 +17,9 @@
 -->
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
-	
+
 	<style name="Theme.Special.Main.Light" parent="@android:style/Theme.Holo.Light.DarkActionBar">
-	    
+
 		<item name="actionAttach">@drawable/ic_action_new_attachment_dark</item>
 		<item name="actionAddPost">@drawable/ic_action_chat_dark</item>
 		<item name="actionAddRule">@drawable/ic_action_new_event_dark</item>
@@ -36,7 +36,7 @@
 		<item name="actionSearch">@drawable/ic_action_search_dark</item>
 		<item name="actionSelect">@drawable/ic_action_view_as_grid</item>
 		<item name="actionVolumeOff">@drawable/ic_action_volume_muted</item>
-		
+
 		<item name="buttonCancel">@drawable/ic_action_cancel_light</item>
 		<item name="buttonDropDown">@drawable/ic_action_expand_light</item>
 		<item name="buttonDropDownDrawer">@drawable/ic_action_expand_dark</item>
@@ -46,9 +46,9 @@
 		<item name="buttonRating">@drawable/ic_action_warning_light</item>
 		<item name="buttonRefresh">@drawable/ic_action_refresh_light</item>
 		<item name="buttonWarning">@drawable/ic_action_warning_light</item>
-		
+
 		<item name="iconWarning">@drawable/ic_action_warning_light</item>
-		
+
 		<item name="postBanned">@drawable/ic_action_error_light_edited</item>
 		<item name="postClosed">@drawable/ic_action_secure_light_edited</item>
 		<item name="postCyclical">@drawable/ic_action_refresh_light_edited</item>
@@ -58,22 +58,22 @@
 		<item name="postSticky">@drawable/ic_action_make_available_offline_light_edited</item>
 		<item name="postUserPost">@drawable/ic_action_important_light_edited</item>
 		<item name="postWarned">@drawable/ic_action_warning_light_edited</item>
-		
+
 		<item name="attachmentAudio">@drawable/ic_action_audio_dark</item>
 		<item name="attachmentFile">@drawable/ic_action_attachment_dark</item>
 		<item name="attachmentSeveral">@drawable/ic_action_full_screen_dark</item>
 		<item name="attachmentVideo">@drawable/ic_action_play_over_video_dark</item>
 		<item name="attachmentWarning">@drawable/ic_action_warning_dark</item>
-		
+
 		<item name="drawerMenuBoards">@drawable/ic_action_labels_dark</item>
 		<item name="drawerMenuUserBoards">@drawable/ic_action_group_dark</item>
 		<item name="drawerMenuHistory">@drawable/ic_action_history_dark</item>
 		<item name="drawerMenuPreferences">@drawable/ic_action_settings_dark</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Special.Main.Dark" parent="@android:style/Theme.Holo">
-		
+
 		<item name="actionAttach">@drawable/ic_action_new_attachment_dark</item>
 		<item name="actionAddPost">@drawable/ic_action_chat_dark</item>
 		<item name="actionAddRule">@drawable/ic_action_new_event_dark</item>
@@ -90,7 +90,7 @@
 		<item name="actionSearch">@drawable/ic_action_search_dark</item>
 		<item name="actionSelect">@drawable/ic_action_view_as_grid</item>
 		<item name="actionVolumeOff">@drawable/ic_action_volume_muted</item>
-		
+
 		<item name="buttonCancel">@drawable/ic_action_cancel_dark</item>
 		<item name="buttonDropDown">@drawable/ic_action_expand_dark</item>
 		<item name="buttonDropDownDrawer">@drawable/ic_action_expand_dark</item>
@@ -100,9 +100,9 @@
 		<item name="buttonRating">@drawable/ic_action_warning_dark</item>
 		<item name="buttonRefresh">@drawable/ic_action_refresh_dark</item>
 		<item name="buttonWarning">@drawable/ic_action_warning_dark</item>
-		
+
 		<item name="iconWarning">@drawable/ic_action_warning_dark</item>
-		
+
 		<item name="postBanned">@drawable/ic_action_error_dark_edited</item>
 		<item name="postClosed">@drawable/ic_action_secure_dark_edited</item>
 		<item name="postCyclical">@drawable/ic_action_refresh_dark_edited</item>
@@ -112,182 +112,182 @@
 		<item name="postSticky">@drawable/ic_action_make_available_offline_dark_edited</item>
 		<item name="postUserPost">@drawable/ic_action_important_dark_edited</item>
 		<item name="postWarned">@drawable/ic_action_warning_dark_edited</item>
-		
+
 		<item name="attachmentAudio">@drawable/ic_action_audio_dark</item>
 		<item name="attachmentFile">@drawable/ic_action_attachment_dark</item>
 		<item name="attachmentSeveral">@drawable/ic_action_full_screen_dark</item>
 		<item name="attachmentVideo">@drawable/ic_action_play_over_video_dark</item>
 		<item name="attachmentWarning">@drawable/ic_action_warning_dark</item>
-		
+
 		<item name="drawerMenuBoards">@drawable/ic_action_labels_dark</item>
 		<item name="drawerMenuUserBoards">@drawable/ic_action_group_dark</item>
 		<item name="drawerMenuHistory">@drawable/ic_action_history_dark</item>
 		<item name="drawerMenuPreferences">@drawable/ic_action_settings_dark</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.General.Main.Light" parent="@style/Theme.Special.Main.Light">
-	    
+
 		<item name="android:windowBackground">@color/background_window_light</item>
 		<item name="backgroundBlock">@color/background_block_light</item>
 		<item name="backgroundDrawer">@color/background_drawer_light</item>
 		<item name="backgroundAttachment">@color/background_attachment_light</item>
 		<item name="backgroundSpoiler">@color/background_spoiler_light</item>
 		<item name="backgroundCard">@color/background_card_light</item>
-		
+
 		<item name="colorPrimarySupport">@color/color_primary_light</item>
 		<item name="colorAccentSupport">@color/color_accent_light</item>
 		<item name="colorTextError">@color/color_text_error</item>
-		
+
 		<item name="colorPostPrimary">@color/color_post_primary_light</item>
 		<item name="colorPostSecondary">@color/color_post_secondary_light</item>
 		<item name="colorPostGrayed">@color/color_post_grayed_light</item>
-		
+
 		<item name="android:textColorLink">@color/color_text_link_light</item>
 		<item name="colorTextQuote">@color/color_text_quote_light</item>
 		<item name="colorTextTripcode">@color/color_text_tripcode_light</item>
 		<item name="colorTextCapcode">@color/color_text_capcode_light</item>
-		
+
 		<item name="colorGainFactor">0.75</item>
-		
+
 		<item name="postsDivider">@drawable/posts_divider_light</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.General.Main.Dark" parent="@style/Theme.Special.Main.Dark">
-	    
+
 		<item name="android:windowBackground">@color/background_window_dark</item>
 		<item name="backgroundBlock">@color/background_block_dark</item>
 		<item name="backgroundDrawer">@color/background_drawer_dark</item>
 		<item name="backgroundAttachment">@color/background_attachment_dark</item>
 		<item name="backgroundSpoiler">@color/background_spoiler_dark</item>
 		<item name="backgroundCard">@color/background_card_dark</item>
-		
+
 		<item name="colorPrimarySupport">@color/color_primary_dark</item>
 		<item name="colorAccentSupport">@color/color_accent_dark</item>
 		<item name="colorTextError">@color/color_text_error</item>
-		
+
 		<item name="colorPostPrimary">@color/color_post_primary_dark</item>
 		<item name="colorPostSecondary">@color/color_post_secondary_dark</item>
 		<item name="colorPostGrayed">@color/color_post_grayed_dark</item>
-		
+
 		<item name="android:textColorLink">@color/color_text_link_dark</item>
 		<item name="colorTextQuote">@color/color_text_quote_dark</item>
 		<item name="colorTextTripcode">@color/color_text_tripcode_dark</item>
 		<item name="colorTextCapcode">@color/color_text_capcode_dark</item>
-		
+
 		<item name="colorGainFactor">1.25</item>
-		
+
 		<item name="postsDivider">@drawable/posts_divider_dark</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.General.Extended.Main.Photon" parent="@style/Theme.General.Main.Light">
-		
+
 		<item name="colorPrimarySupport">@color/color_primary_photon</item>
 		<item name="colorAccentSupport">@color/color_accent_photon</item>
-		
+
 		<item name="android:textColorLink">@color/color_text_link_photon</item>
 		<item name="colorTextQuote">@color/color_text_quote_photon</item>
 		<item name="colorTextTripcode">@color/color_text_tripcode_photon</item>
 		<item name="colorTextCapcode">@color/color_text_capcode_photon</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.General.Extended.Main.Hadron" parent="@style/Theme.General.Main.Dark">
-		
+
 		<item name="colorPrimarySupport">@color/color_primary_hadron</item>
 		<item name="colorAccentSupport">@color/color_accent_hadron</item>
-		
+
 		<item name="android:textColorLink">@color/color_text_link_hadron</item>
 		<item name="colorTextQuote">@color/color_text_quote_hadron</item>
 		<item name="colorTextTripcode">@color/color_text_tripcode_hadron</item>
 		<item name="colorTextCapcode">@color/color_text_capcode_hadron</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.General.Extended.Main.Burichan" parent="@style/Theme.General.Main.Light">
-		
+
 		<item name="android:windowBackground">@color/background_window_burichan</item>
 		<item name="backgroundSpoiler">@color/background_spoiler_burichan</item>
-		
+
 		<item name="colorPrimarySupport">@color/color_primary_burichan</item>
 		<item name="colorAccentSupport">@color/color_accent_burichan</item>
-		
+
 		<item name="android:textColorLink">@color/color_text_link_burichan</item>
 		<item name="colorTextQuote">@color/color_text_quote_burichan</item>
 		<item name="colorTextTripcode">@color/color_text_tripcode_burichan</item>
 		<item name="colorTextCapcode">@color/color_text_capcode_burichan</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.General.Extended.Main.Tomorrow" parent="@style/Theme.General.Main.Dark">
-		
+
 		<item name="android:windowBackground">@color/background_window_tomorrow</item>
 		<item name="backgroundCard">@color/background_card_tomorrow</item>
-		
+
 		<item name="colorPrimarySupport">@color/color_primary_tomorrow</item>
 		<item name="colorAccentSupport">@color/color_accent_tomorrow</item>
-		
+
 		<item name="android:textColorLink">@color/color_text_link_tomorrow</item>
 		<item name="colorTextQuote">@color/color_text_quote_tomorrow</item>
 		<item name="colorTextTripcode">@color/color_text_tripcode_tomorrow</item>
 		<item name="colorTextCapcode">@color/color_text_capcode_tomorrow</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.General.Extended.Main.Normie" parent="@style/Theme.General.Main.Light">
-		
+
 		<item name="colorPrimarySupport">@color/color_primary_normie</item>
 		<item name="colorAccentSupport">@color/color_accent_normie</item>
-		
+
 		<item name="android:textColorLink">@color/color_text_link_normie</item>
 		<item name="colorTextQuote">@color/color_text_quote_normie</item>
 		<item name="colorTextTripcode">@color/color_text_tripcode_normie</item>
 		<item name="colorTextCapcode">@color/color_text_capcode_normie</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.General.Extended.Main.Neutron" parent="@style/Theme.General.Main.Dark">
-		
+
 		<item name="android:windowBackground">@color/background_window_neutron</item>
-		
+
 		<item name="colorPrimarySupport">@color/color_primary_neutron</item>
 		<item name="colorAccentSupport">@color/color_accent_neutron</item>
-		
+
 		<item name="colorPostPrimary">@color/color_post_primary_neutron</item>
 		<item name="colorPostSecondary">@color/color_post_secondary_neutron</item>
 		<item name="colorPostGrayed">@color/color_post_grayed_neutron</item>
-		
+
 		<item name="android:textColorLink">@color/color_text_link_neutron</item>
 		<item name="colorTextQuote">@color/color_text_quote_neutron</item>
 		<item name="colorTextTripcode">@color/color_text_tripcode_neutron</item>
 		<item name="colorTextCapcode">@color/color_text_capcode_neutron</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.General.Extended.Main.Amoled" parent="@style/Theme.General.Main.Dark">
-		
+
 		<item name="android:windowBackground">@color/background_window_amoled</item>
 		<item name="backgroundBlock">@color/background_block_amoled</item>
 		<item name="backgroundDrawer">@color/background_drawer_amoled</item>
-		
+
 		<item name="colorPrimarySupport">@color/color_primary_amoled</item>
 		<item name="colorAccentSupport">@color/color_accent_amoled</item>
-		
+
 		<item name="colorPostPrimary">@color/color_post_primary_amoled</item>
 		<item name="colorPostSecondary">@color/color_post_secondary_amoled</item>
 		<item name="colorPostGrayed">@color/color_post_grayed_amoled</item>
-		
+
 		<item name="android:textColorLink">@color/color_text_link_amoled</item>
 		<item name="colorTextQuote">@color/color_text_quote_amoled</item>
 		<item name="colorTextTripcode">@color/color_text_tripcode_amoled</item>
 		<item name="colorTextCapcode">@color/color_text_capcode_amoled</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.General.Extended.Gallery" parent="@style/Theme.General.Main.Dark">
-	    
+
 		<item name="android:windowBackground">@android:color/transparent</item>
 		<item name="android:windowActionBarOverlay">true</item>
 		<item name="android:colorBackgroundCacheHint">@null</item>
@@ -295,94 +295,94 @@
 		<item name="android:windowContentOverlay">@null</item>
 		<item name="android:windowAnimationStyle">@null</item>
 		<item name="android:windowIsTranslucent">true</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Main.Photon" parent="@style/Theme.General.Extended.Main.Photon">
-		
+
 		<item name="styleDrawerSpecial">@style/Theme.General.Main.Dark</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Main.Hadron" parent="@style/Theme.General.Extended.Main.Hadron">
-		
+
 		<item name="android:actionBarStyle">@android:style/Widget.Holo.ActionBar.Solid</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Main.Burichan" parent="@style/Theme.General.Extended.Main.Burichan">
-		
+
 		<item name="styleDrawerSpecial">@style/Theme.General.Main.Dark</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Main.Tomorrow" parent="@style/Theme.General.Extended.Main.Tomorrow">
-		
+
 		<item name="android:actionBarStyle">@android:style/Widget.Holo.ActionBar.Solid</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Main.Normie" parent="@style/Theme.General.Extended.Main.Normie">
-		
+
 		<item name="styleDrawerSpecial">@style/Theme.General.Main.Dark</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Main.Neutron" parent="@style/Theme.General.Extended.Main.Neutron">
-		
+
 		<item name="android:actionBarStyle">@android:style/Widget.Holo.ActionBar.Solid</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Main.Amoled" parent="@style/Theme.General.Extended.Main.Amoled">
-		
+
 		<item name="android:actionBarStyle">@style/Widget.Main.Amoled.ActionBar</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Gallery" parent="@style/Theme.General.Extended.Gallery">
-		
+
 		<item name="android:actionBarStyle">@style/Widget.Gallery.ActionBar</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Special.Stub" parent="@android:style/Theme.Holo.NoActionBar">
-		
+
 		<item name="android:windowBackground">@color/background_window_dark</item>
-		
+
 	</style>
-	
+
 	<style name="Widget.Main.Amoled.ActionBar" parent="@android:style/Widget.Holo.ActionBar">
-	    
+
 		<item name="android:logo">@android:color/transparent</item>
 		<item name="android:background">@android:color/black</item>
-		
+
 	</style>
-	
+
 	<style name="Widget.Gallery.ActionBar" parent="@android:style/Widget.Holo.ActionBar">
-	    
+
 		<item name="android:background">@android:color/transparent</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Special.Notification" parent="@android:style/Theme.Holo">
-	    
+
 		<item name="notificationCancel">@drawable/ic_action_cancel_dark</item>
 		<item name="notificationRefresh">@drawable/ic_action_refresh_dark</item>
 		<item name="notificationPlay">@drawable/ic_action_play_dark</item>
 		<item name="notificationPause">@drawable/ic_action_pause_dark</item>
-		
+
 	</style>
-	
+
 	<style name="Widget.HeaderText" parent="@android:style/Widget.TextView">
-	    
+
 		<item name="android:textSize">12sp</item>
 		<item name="android:textColor">?attr/colorPostSecondary</item>
-		
+
 	</style>
-	
+
 	<style name="Widget.PostButton" parent="@android:style/Widget.TextView">
-	    
+
 		<item name="android:gravity">left|center_vertical</item>
 		<item name="android:background">?android:attr/listChoiceBackgroundIndicator</item>
 		<item name="android:paddingLeft">6dp</item>
@@ -393,7 +393,7 @@
 		<item name="android:textSize">11sp</item>
 		<item name="android:fontFamily">sans-serif-medium</item>
 		<item name="android:textColor">?attr/colorPostSecondary</item>
-		
+
 	</style>
-	
+
 </resources>

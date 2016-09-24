@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -48,13 +48,13 @@ public class CommonUtils
 			return true;
 		}
 	}
-	
+
 	@Public
 	public static String optJsonString(JSONObject jsonObject, String name)
 	{
 		return optJsonString(jsonObject, name, null);
 	}
-	
+
 	@Public
 	public static String optJsonString(JSONObject jsonObject, String name, String fallback)
 	{
@@ -67,13 +67,13 @@ public class CommonUtils
 			return fallback;
 		}
 	}
-	
+
 	@Public
 	public static String getJsonString(JSONObject jsonObject, String name) throws JSONException
 	{
 		if (jsonObject.has(name) && jsonObject.isNull(name)) return null; else return jsonObject.getString(name);
 	}
-	
+
 	@Public
 	public static String restoreCloudFlareProtectedEmails(String string)
 	{
@@ -163,7 +163,7 @@ public class CommonUtils
 		}
 		return string;
 	}
-	
+
 	@Public
 	public static Bitmap trimBitmap(Bitmap bitmap, int backgroundColor)
 	{
@@ -236,13 +236,13 @@ public class CommonUtils
 		}
 		return bitmap;
 	}
-	
+
 	@Public
 	public static void writeLog(Object... data)
 	{
 		Log.persistent().write(data);
 	}
-	
+
 	public static <T> T[] removeNullItems(T[] array, Class<T> itemClass)
 	{
 		if (array != null)
@@ -266,7 +266,7 @@ public class CommonUtils
 		}
 		return array;
 	}
-	
+
 	public static <T> T[] toArray(Collection<? extends T> collection, Class<T> itemClass)
 	{
 		if (collection != null && !collection.isEmpty())

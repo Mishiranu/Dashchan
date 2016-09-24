@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -57,22 +57,22 @@ import com.mishiranu.dashchan.util.ToastUtils;
 public class UpdateFragment extends BaseListFragment
 {
 	private static final String VERSION_TITLE_RELEASE = "Release";
-	
+
 	private static final String EXTRA_UPDATE_DATA_MAP = "update_data_map";
 	private static final String EXTRA_TARGET_PREFIX = "target_";
-	
+
 	private ArrayAdapter<ListItem> mAdapter;
 	private ReadUpdateTask.UpdateDataMap mUpdateDataMap;
-	
+
 	private static final class ListItem
 	{
 		public final String extensionName;
 		public final String title;
-		
+
 		public String target;
 		public int targetIndex;
 		public String warning;
-		
+
 		public ListItem(String extensionName)
 		{
 			String title = ChanConfiguration.get(extensionName).getTitle();
@@ -80,13 +80,13 @@ public class UpdateFragment extends BaseListFragment
 			this.extensionName = extensionName;
 			this.title = title;
 		}
-		
+
 		public ListItem(String extensionName, String title)
 		{
 			this.extensionName = extensionName;
 			this.title = title;
 		}
-		
+
 		public void setTarget(Context context, ArrayList<ReadUpdateTask.UpdateItem> updateItems, int targetIndex)
 		{
 			ReadUpdateTask.UpdateItem updateItem = updateItems.get(targetIndex);
@@ -101,14 +101,14 @@ public class UpdateFragment extends BaseListFragment
 			else target = context != null ? context.getString(R.string.text_without_updating) : null;
 		}
 	}
-	
+
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
 		updateTitle();
 	}
-	
+
 	private void updateTitle()
 	{
 		int count = 0;
@@ -123,7 +123,7 @@ public class UpdateFragment extends BaseListFragment
 		getActivity().setTitle(getString(R.string.text_updates_format, count));
 		getActivity().invalidateOptionsMenu();
 	}
-	
+
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState)
 	{
@@ -132,7 +132,7 @@ public class UpdateFragment extends BaseListFragment
 		mAdapter = new ArrayAdapter<ListItem>(getActivity(), 0)
 		{
 			private final CheckBoxPreference mCheckBoxViewGetter = new CheckBoxPreference(getContext());
-			
+
 			@Override
 			public View getView(int position, View convertView, ViewGroup parent)
 			{
@@ -156,7 +156,7 @@ public class UpdateFragment extends BaseListFragment
 		mUpdateDataMap = (ReadUpdateTask.UpdateDataMap) getArguments().getSerializable(EXTRA_UPDATE_DATA_MAP);
 		buildData(savedInstanceState);
 	}
-	
+
 	@Override
 	public void onSaveInstanceState(Bundle outState)
 	{
@@ -167,19 +167,19 @@ public class UpdateFragment extends BaseListFragment
 			outState.putInt(EXTRA_TARGET_PREFIX + listItem.extensionName, listItem.targetIndex);
 		}
 	}
-	
+
 	private static boolean checkVersionValid(ReadUpdateTask.UpdateItem updateItem, int minVersion, int maxVersion)
 	{
 		return updateItem.ignoreVersion || updateItem.version >= minVersion && updateItem.version <= maxVersion;
 	}
-	
+
 	private static boolean compareForUpdates(ReadUpdateTask.UpdateItem installedUpdateItem,
 			ReadUpdateTask.UpdateItem newUpdateItem)
 	{
 		return newUpdateItem.code > installedUpdateItem.code || !StringUtils.equals(newUpdateItem.name,
 				installedUpdateItem.name);
 	}
-	
+
 	private static ListItem handleAddListItem(Context context, ReadUpdateTask.UpdateDataMap updateDataMap,
 			String extensionName, Bundle savedInstanceState, int minVersion, int maxVersion, String warningUnsupported)
 	{
@@ -225,7 +225,7 @@ public class UpdateFragment extends BaseListFragment
 		listItem.setTarget(context, updateItems, targetIndex);
 		return listItem;
 	}
-	
+
 	private static ArrayList<ListItem> buildData(Context context, ReadUpdateTask.UpdateDataMap updateDataMap,
 			Bundle savedInstanceState)
 	{
@@ -284,14 +284,14 @@ public class UpdateFragment extends BaseListFragment
 		}
 		return listItems;
 	}
-	
+
 	private void buildData(Bundle savedInstanceState)
 	{
 		mAdapter.clear();
 		mAdapter.addAll(buildData(getActivity(), mUpdateDataMap, savedInstanceState));
 		updateTitle();
 	}
-	
+
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id)
 	{
@@ -304,10 +304,10 @@ public class UpdateFragment extends BaseListFragment
 		dialog.setTargetFragment(this, 0);
 		dialog.show(getFragmentManager(), TargetDialog.TAG);
 	}
-	
+
 	private static final int OPTIONS_MENU_DOWNLOAD = 0;
 	private static final int OPTIONS_CHECK_ON_START = 1;
-	
+
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater)
 	{
@@ -330,13 +330,13 @@ public class UpdateFragment extends BaseListFragment
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 		menu.add(0, OPTIONS_CHECK_ON_START, 0, R.string.action_check_on_startup).setCheckable(true);
 	}
-	
+
 	@Override
 	public void onPrepareOptionsMenu(Menu menu)
 	{
 		menu.findItem(OPTIONS_CHECK_ON_START).setChecked(Preferences.isCheckUpdatesOnStart());
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
@@ -410,7 +410,7 @@ public class UpdateFragment extends BaseListFragment
 		}
 		return false;
 	}
-	
+
 	private void handleListItemValidity(ListItem listItem, int minVersion, int maxVersion, String warningUnsupported)
 	{
 		ReadUpdateTask.UpdateItem targetUpdateItem = mUpdateDataMap.get(listItem.extensionName)
@@ -418,7 +418,7 @@ public class UpdateFragment extends BaseListFragment
 		boolean valid = checkVersionValid(targetUpdateItem, minVersion, maxVersion);
 		if (valid) listItem.warning = null; else listItem.warning = warningUnsupported;
 	}
-	
+
 	private void onTargetChanged(ListItem listItem)
 	{
 		String warningUnsupported = getString(R.string.text_unsupported_version);
@@ -442,7 +442,7 @@ public class UpdateFragment extends BaseListFragment
 		}
 		// Called method must invoke notifyDataSetChanged later
 	}
-	
+
 	private void onTargetSelected(String extensionName, int targetIndex)
 	{
 		for (int i = 0; i < mAdapter.getCount(); i++)
@@ -462,7 +462,7 @@ public class UpdateFragment extends BaseListFragment
 			}
 		}
 	}
-	
+
 	public static class TargetDialog extends DialogFragment implements DialogInterface.OnClickListener
 	{
 		private static final String TAG = TargetDialog.class.getName();
@@ -470,12 +470,12 @@ public class UpdateFragment extends BaseListFragment
 		private static final String EXTRA_EXTENSION_NAME = "extensionName";
 		private static final String EXTRA_TARGETS = "targets";
 		private static final String EXTRA_INDEX = "index";
-		
+
 		public TargetDialog()
 		{
-			
+
 		}
-		
+
 		public TargetDialog(String extensionName, ArrayList<String> targets, int index)
 		{
 			Bundle args = new Bundle();
@@ -484,7 +484,7 @@ public class UpdateFragment extends BaseListFragment
 			args.putInt(EXTRA_INDEX, index);
 			setArguments(args);
 		}
-		
+
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState)
 		{
@@ -493,7 +493,7 @@ public class UpdateFragment extends BaseListFragment
 			return new AlertDialog.Builder(getActivity()).setSingleChoiceItems(CommonUtils.toArray(targets,
 					String.class), index, this).setNegativeButton(android.R.string.cancel, null).create();
 		}
-		
+
 		@Override
 		public void onClick(DialogInterface dialog, int which)
 		{
@@ -502,7 +502,7 @@ public class UpdateFragment extends BaseListFragment
 					.getString(EXTRA_EXTENSION_NAME), which);
 		}
 	}
-	
+
 	public static int checkNewVersions(ReadUpdateTask.UpdateDataMap updateDataMap)
 	{
 		int count = 0;
@@ -513,7 +513,7 @@ public class UpdateFragment extends BaseListFragment
 		}
 		return count;
 	}
-	
+
 	public static Intent createUpdateIntent(Context context, ReadUpdateTask.UpdateDataMap updateDataMap)
 	{
 		Bundle args = new Bundle();

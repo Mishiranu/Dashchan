@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,14 +34,14 @@ import com.mishiranu.dashchan.util.AnimationUtils;
 public class SelectorCheckDrawable extends Drawable
 {
 	private static final int DURATION = 200;
-	
+
 	private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 	private final Path mPath = new Path();
 	private final PathMeasure mPathMeasure = new PathMeasure();
-	
+
 	private long mStart;
 	private boolean mSelected = false;
-	
+
 	public SelectorCheckDrawable()
 	{
 		mPaint.setStyle(Paint.Style.STROKE);
@@ -49,7 +49,7 @@ public class SelectorCheckDrawable extends Drawable
 		mPaint.setStrokeJoin(Paint.Join.MITER);
 		mPaint.setColor(Color.WHITE);
 	}
-	
+
 	@Override
 	public void draw(Canvas canvas)
 	{
@@ -76,7 +76,7 @@ public class SelectorCheckDrawable extends Drawable
 		else size = width;
 		final float strokeSize = 0.03f;
 		mPaint.setStrokeWidth(strokeSize * size);
-		
+
 		mPath.moveTo(0.39f * size, 0.5f * size);
 		mPath.rLineTo(0.08f * size, 0.08f * size);
 		mPath.rLineTo(0.14f * size, -0.14f * size);
@@ -87,7 +87,7 @@ public class SelectorCheckDrawable extends Drawable
 		else mPathMeasure.getSegment(value * length, length, mPath, true);
 		canvas.drawPath(mPath, mPaint);
 		mPath.rewind();
-		
+
 		float append = mSelected ? (1f - value) * 90f : value * -90f - 180f;
 		mPaint.setStrokeWidth(strokeSize * size);
 		mPath.arcTo(0.3f * size, 0.3f * size, 0.7f * size, 0.7f * size, 270f + append, -180f, true);
@@ -99,34 +99,34 @@ public class SelectorCheckDrawable extends Drawable
 		else mPathMeasure.getSegment(value * length, length, mPath, true);
 		canvas.drawPath(mPath, mPaint);
 		mPath.rewind();
-		
+
 		canvas.restore();
 		if (value < 1f) invalidateSelf();
 	}
-	
+
 	@Override
 	public int getOpacity()
 	{
 		return PixelFormat.TRANSLUCENT;
 	}
-	
+
 	@Override
 	public void setAlpha(int alpha)
 	{
-		
+
 	}
-	
+
 	@Override
 	public void setColorFilter(ColorFilter cf)
 	{
-		
+
 	}
-	
+
 	public boolean isSelected()
 	{
 		return mSelected;
 	}
-	
+
 	public void setSelected(boolean selected, boolean animate)
 	{
 		if (mSelected != selected)

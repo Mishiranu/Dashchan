@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -41,19 +41,19 @@ public class ReadThreadsTask extends HttpHolderTask<Void, Void, Boolean>
 	private final int mPageNumber;
 	private final HttpValidator mValidator;
 	private final boolean mAppend;
-	
+
 	private ArrayList<PostItem> mPostItems;
 	private int mBoardSpeed = 0;
 	private HttpValidator mResultValidator;
 	private ErrorItem mErrorItem;
-	
+
 	public interface Callback
 	{
 		public void onReadThreadsSuccess(ArrayList<PostItem> postItems, int pageNumber,
 				int boardSpeed, boolean append, boolean checkModified, HttpValidator validator);
 		public void onReadThreadsFail(ErrorItem errorItem, int pageNumber);
 	}
-	
+
 	public ReadThreadsTask(Callback callback, String chanName, String boardName, int pageNumber,
 			HttpValidator validator, boolean append)
 	{
@@ -64,12 +64,12 @@ public class ReadThreadsTask extends HttpHolderTask<Void, Void, Boolean>
 		mValidator = validator;
 		mAppend = append;
 	}
-	
+
 	private boolean isFirstPage()
 	{
 		return mPageNumber == 0 || mPageNumber == ChanPerformer.ReadThreadsData.PAGE_NUMBER_CATALOG;
 	}
-	
+
 	@Override
 	protected Boolean doInBackground(Void... params)
 	{
@@ -127,7 +127,7 @@ public class ReadThreadsTask extends HttpHolderTask<Void, Void, Boolean>
 			ChanConfiguration.get(mChanName).commit();
 		}
 	}
-	
+
 	@Override
 	public void onPostExecute(Boolean success)
 	{

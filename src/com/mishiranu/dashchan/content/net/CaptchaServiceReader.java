@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,18 +36,18 @@ import com.mishiranu.dashchan.util.GraphicsUtils;
 public class CaptchaServiceReader
 {
 	private static final CaptchaServiceReader INSTANCE = new CaptchaServiceReader();
-	
+
 	public static CaptchaServiceReader getInstance()
 	{
 		return INSTANCE;
 	}
-	
+
 	public static class Result
 	{
 		public final String challenge;
 		public final Bitmap image;
 		public final boolean blackAndWhite;
-		
+
 		private Result(String challenge, Bitmap image, boolean blackAndWhite)
 		{
 			this.challenge = challenge;
@@ -55,9 +55,9 @@ public class CaptchaServiceReader
 			this.blackAndWhite = blackAndWhite;
 		}
 	}
-	
+
 	private static final Pattern PATTERN_MAILRU = Pattern.compile("id: \"(.*?)\"[\\s\\S]*url: \"(.*?)\"");
-	
+
 	public Result readMailru(HttpHolder holder, String chanName, String apiKey) throws HttpException,
 			InvalidResponseException
 	{

@@ -2,13 +2,13 @@
 
 <!--
 	Copyright 2014-2016 Fukurou Mishiranu
-	
+
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
 	You may obtain a copy of the License at
-	
+
 	http://www.apache.org/licenses/LICENSE-2.0
-	
+
 	Unless required by applicable law or agreed to in writing, software
 	distributed under the License is distributed on an "AS IS" BASIS,
 	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,7 +19,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content">
-	
+
 	<LinearLayout
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
@@ -29,7 +29,7 @@
 		android:descendantFocusability="beforeDescendants"
 		android:paddingTop="@dimen/dialog_padding_text_half"
 		android:paddingBottom="@dimen/dialog_padding_text_half">
-		
+
 		<TextView
 			android:id="@+id/chan_name"
 			android:layout_width="match_parent"
@@ -43,14 +43,14 @@
 			android:paddingLeft="@dimen/dialog_padding_text_half"
 			android:paddingRight="@dimen/dialog_padding_text_half"
 			android:fontFamily="sans-serif-medium" />
-		
+
 		<LinearLayout
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:orientation="horizontal"
 			android:layout_marginLeft="@dimen/dialog_padding_view"
 			android:layout_marginRight="@dimen/dialog_padding_view">
-			
+
 			<com.mishiranu.dashchan.widget.SafePasteEditText
 				android:id="@+id/board_name"
 				android:layout_width="0dp"
@@ -61,7 +61,7 @@
 				android:imeOptions="flagNoExtractUi|flagNoFullscreen"
 				android:maxLength="10"
 				android:singleLine="true" />
-			
+
 			<com.mishiranu.dashchan.widget.SafePasteEditText
 				android:id="@+id/thread_number"
 				android:layout_width="0dp"
@@ -73,9 +73,9 @@
 				android:maxLength="10"
 				android:inputType="number"
 				android:singleLine="true" />
-			
+
 		</LinearLayout>
-		
+
 		<LinearLayout
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
@@ -83,21 +83,21 @@
 			android:paddingTop="8dp"
 			android:layout_marginLeft="@dimen/dialog_padding_view"
 			android:layout_marginRight="@dimen/dialog_padding_view">
-			
+
 			<CheckBox
 				android:id="@+id/autohide_original_post"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:text="@string/text_autohide_original_post"
 				android:textAppearance="?android:attr/textAppearanceSmall" />
-			
+
 			<CheckBox
 				android:id="@+id/autohide_sage"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:text="@string/text_autohide_sage"
 				android:textAppearance="?android:attr/textAppearanceSmall" />
-			
+
 			<CheckBox
 				android:id="@+id/autohide_subject"
 				android:layout_width="wrap_content"
@@ -105,23 +105,23 @@
 				android:layout_marginTop="8dp"
 				android:text="@string/text_autohide_subject"
 				android:textAppearance="?android:attr/textAppearanceSmall" />
-			
+
 			<CheckBox
 				android:id="@+id/autohide_comment"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:text="@string/text_autohide_comment"
 				android:textAppearance="?android:attr/textAppearanceSmall" />
-			
+
 			<CheckBox
 				android:id="@+id/autohide_name"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:text="@string/text_autohide_name"
 				android:textAppearance="?android:attr/textAppearanceSmall" />
-			
+
 		</LinearLayout>
-		
+
 		<com.mishiranu.dashchan.widget.SafePasteEditText
 			android:id="@+id/value"
 			android:layout_width="match_parent"
@@ -129,7 +129,7 @@
 			android:layout_marginLeft="@dimen/dialog_padding_view"
 			android:layout_marginRight="@dimen/dialog_padding_view"
 			android:hint="@string/text_regex" />
-		
+
 		<TextView
 			android:id="@+id/error_text"
 			android:layout_width="match_parent"
@@ -140,7 +140,7 @@
 			android:textColor="?attr/colorTextError"
 			android:textSize="14sp"
 			android:visibility="gone" />
-		
+
 		<TextView
 			android:id="@+id/matcher_result"
 			android:layout_width="match_parent"
@@ -151,7 +151,7 @@
 			android:paddingRight="@dimen/dialog_padding_text"
 			android:textSize="14sp"
 			android:singleLine="true" />
-		
+
 		<com.mishiranu.dashchan.widget.SafePasteEditText
 			android:id="@+id/test_string"
 			android:layout_width="match_parent"
@@ -159,11 +159,11 @@
 			android:layout_marginLeft="@dimen/dialog_padding_view"
 			android:layout_marginRight="@dimen/dialog_padding_view"
 			android:hint="@string/text_test_string" />
-		
+
 		<View
 			android:layout_width="320dp"
 			android:layout_height="0dp" />
-		
+
 	</LinearLayout>
-	
+
 </ScrollView>

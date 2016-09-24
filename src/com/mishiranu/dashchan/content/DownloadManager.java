@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -73,33 +73,33 @@ import com.mishiranu.dashchan.util.ToastUtils;
 public class DownloadManager
 {
 	private static final DownloadManager INSTANCE = new DownloadManager();
-	
+
 	public static DownloadManager getInstance()
 	{
 		return INSTANCE;
 	}
-	
+
 	private DownloadManager()
 	{
-		
+
 	}
-	
+
 	private final HashSet<String> mQueuedFiles = new HashSet<>();
 	private final Semaphore mQueuePause = new Semaphore(1);
-	
+
 	private ArrayList<DialogDirectory> mLastDialogDirectotyItems;
 	private File mLastRootDirectory;
-	
+
 	public String getFileGlobalQueueSetName(File file)
 	{
 		return file.getAbsolutePath().toLowerCase(Locale.getDefault());
 	}
-	
+
 	public void notifyFileAddedToDownloadQueue(File file)
 	{
 		mQueuedFiles.add(getFileGlobalQueueSetName(file));
 	}
-	
+
 	public void notifyFileRemovedFromDownloadQueue(File file)
 	{
 		mQueuedFiles.remove(getFileGlobalQueueSetName(file));
@@ -120,18 +120,18 @@ public class DownloadManager
 			}
 		}
 	}
-	
+
 	public void notifyServiceDestroy()
 	{
 		mQueuedFiles.clear();
 		releaseQueuePauseLock();
 	}
-	
+
 	public void notifyFinishDownloadingInThread()
 	{
 		if (aquireQueuePauseLock(false)) releaseQueuePauseLock();
 	}
-	
+
 	private boolean aquireQueuePauseLock(boolean tryOnly)
 	{
 		if (tryOnly) return mQueuePause.tryAcquire(); else
@@ -148,18 +148,18 @@ public class DownloadManager
 			}
 		}
 	}
-	
+
 	private void releaseQueuePauseLock()
 	{
 		mQueuePause.release();
 	}
-	
+
 	public static class RequestItem
 	{
 		public final Uri uri;
 		public final String fileName;
 		public final String originalName;
-		
+
 		public RequestItem(Uri uri, String fileName, String originalName)
 		{
 			this.uri = uri;
@@ -167,12 +167,12 @@ public class DownloadManager
 			this.originalName = originalName;
 		}
 	}
-	
+
 	private static class DialogDirectory implements Comparable<DialogDirectory>
 	{
 		public final ArrayList<String> mSegments = new ArrayList<>();
 		public long lastModified;
-		
+
 		public static DialogDirectory create(File directory, File root)
 		{
 			DialogDirectory dialogDirectory = new DialogDirectory();
@@ -184,27 +184,27 @@ public class DownloadManager
 			}
 			return directory != null ? dialogDirectory : null;
 		}
-		
+
 		private DialogDirectory()
 		{
-			
+
 		}
-		
+
 		public DialogDirectory(String path)
 		{
 			Collections.addAll(mSegments, path.split("/", -1));
 		}
-		
+
 		public int getDepth()
 		{
 			return mSegments.size();
 		}
-		
+
 		private String getSegment(int index, Locale locale)
 		{
 			return mSegments.get(index).toLowerCase(locale);
 		}
-		
+
 		public DialogDirectory getParent()
 		{
 			if (mSegments.size() > 1)
@@ -217,7 +217,7 @@ public class DownloadManager
 			}
 			return null;
 		}
-		
+
 		public boolean filter(DialogDirectory constraintDirectory, boolean anyDepth)
 		{
 			Locale locale = Locale.getDefault();
@@ -240,7 +240,7 @@ public class DownloadManager
 			}
 			return false;
 		}
-		
+
 		private String convert(boolean displayName)
 		{
 			StringBuilder builder = new StringBuilder();
@@ -255,18 +255,18 @@ public class DownloadManager
 			if (!displayName) builder.append('/');
 			return builder.toString();
 		}
-		
+
 		public String getDisplayName()
 		{
 			return convert(true);
 		}
-		
+
 		@Override
 		public String toString()
 		{
 			return convert(false);
 		}
-		
+
 		@Override
 		public boolean equals(Object o)
 		{
@@ -284,7 +284,7 @@ public class DownloadManager
 			}
 			return false;
 		}
-		
+
 		@Override
 		public int hashCode()
 		{
@@ -294,40 +294,40 @@ public class DownloadManager
 			for (int i = 0; i < getDepth(); i++) result = prime * result + getSegment(i, locale).hashCode();
 			return result;
 		}
-		
+
 		@Override
 		public int compareTo(DialogDirectory another)
 		{
 			return ((Long) another.lastModified).compareTo(lastModified);
 		}
 	}
-	
+
 	private static class DialogAdapter extends BaseAdapter implements Filterable
 	{
 		private final ArrayList<DialogDirectory> mDialogDirectoryItems = new ArrayList<>();
 		private ArrayList<DialogDirectory> mFilteredDialogDirectoryItems;
 		private final Object mLock = new Object();
-		
+
 		@Override
 		public int getCount()
 		{
 			return (mFilteredDialogDirectoryItems != null ? mFilteredDialogDirectoryItems
 					: mDialogDirectoryItems).size();
 		}
-		
+
 		@Override
 		public DialogDirectory getItem(int position)
 		{
 			return (mFilteredDialogDirectoryItems != null ? mFilteredDialogDirectoryItems
 					: mDialogDirectoryItems).get(position);
 		}
-		
+
 		@Override
 		public long getItemId(int position)
 		{
 			return 0;
 		}
-		
+
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent)
 		{
@@ -341,7 +341,7 @@ public class DownloadManager
 			((TextView) convertView).setText(dialogDirectory.getDisplayName());
 			return convertView;
 		}
-		
+
 		private final Filter mFilter = new Filter()
 		{
 			@Override
@@ -353,7 +353,7 @@ public class DownloadManager
 				mFilteredDialogDirectoryItems = values;
 				notifyDataSetChanged();
 			}
-			
+
 			@Override
 			protected FilterResults performFiltering(CharSequence constraint)
 			{
@@ -379,13 +379,13 @@ public class DownloadManager
 				return results;
 			}
 		};
-		
+
 		@Override
 		public Filter getFilter()
 		{
 			return mFilter;
 		}
-		
+
 		public void setItems(Collection<DialogDirectory> directories)
 		{
 			synchronized (mLock)
@@ -395,13 +395,13 @@ public class DownloadManager
 				notifyDataSetChanged();
 			}
 		}
-		
+
 		public ArrayList<DialogDirectory> getItems()
 		{
 			return mDialogDirectoryItems;
 		}
 	}
-	
+
 	private class DownloadDialog implements DialogInterface.OnClickListener, RadioGroup.OnCheckedChangeListener,
 			AutoCompleteTextView.OnEditorActionListener, AdapterView.OnItemClickListener
 	{
@@ -410,16 +410,16 @@ public class DownloadManager
 		private final String mChanName;
 		private final String mBoardName;
 		private final String mThreadNumber;
-		
+
 		private final AlertDialog mDialog;
 		private final DialogAdapter mAdapter = new DialogAdapter();
 		private final CheckBox mDetailNameCheckBox;
 		private final CheckBox mOriginalNameCheckBox;
 		private final AutoCompleteTextView mEditText;
 		private final InputMethodManager mInputMethodManager;
-		
+
 		private final Runnable mDropDownRunnable;
-		
+
 		@SuppressLint("InflateParams")
 		public DownloadDialog(Context context, DialogCallback callback, String chanName,
 				String boardName, String threadNumber, String threadTitle,
@@ -509,7 +509,7 @@ public class DownloadManager
 					}
 					return resultLastModified;
 				}
-				
+
 				@Override
 				protected ArrayList<DialogDirectory> doInBackground(Void... params)
 				{
@@ -520,7 +520,7 @@ public class DownloadManager
 					Collections.sort(directories);
 					return directories;
 				}
-				
+
 				@Override
 				protected void onPostExecute(ArrayList<DialogDirectory> result)
 				{
@@ -539,13 +539,13 @@ public class DownloadManager
 				}
 			}.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 		}
-		
+
 		@Override
 		public void onClick(DialogInterface dialog, int which)
 		{
 			complete();
 		}
-		
+
 		private void refreshDropDownContents()
 		{
 			Editable editable = mEditText.getEditableText();
@@ -560,7 +560,7 @@ public class DownloadManager
 				}
 			}
 		}
-		
+
 		@Override
 		public void onCheckedChanged(RadioGroup group, int checkedId)
 		{
@@ -581,7 +581,7 @@ public class DownloadManager
 			}
 			else mEditText.removeCallbacks(mDropDownRunnable);
 		}
-		
+
 		@Override
 		public boolean onEditorAction(TextView v, int actionId, KeyEvent event)
 		{
@@ -589,7 +589,7 @@ public class DownloadManager
 			complete();
 			return true;
 		}
-		
+
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id)
 		{
@@ -599,7 +599,7 @@ public class DownloadManager
 				mEditText.showDropDown();
 			});
 		}
-		
+
 		private void complete()
 		{
 			String path = mEditText.isEnabled() ? StringUtils.nullIfEmpty(StringUtils
@@ -608,12 +608,12 @@ public class DownloadManager
 					mOriginalNameCheckBox.isChecked(), mChanName, mBoardName, mThreadNumber);
 		}
 	}
-	
+
 	private interface ReplaceCallback
 	{
 		public void onConfirmReplacement(Context context, ArrayList<DownloadService.DownloadItem> downloadItems);
 	}
-	
+
 	private void confirmReplacement(final Context context, final File directory,
 			final ArrayList<DownloadService.DownloadItem> downloadItems, final ReplaceCallback callback)
 	{
@@ -718,7 +718,7 @@ public class DownloadManager
 						break;
 					}
 				}
-				
+
 			}).setNegativeButton(android.R.string.cancel, null);
 			AlertDialog dialog;
 			if (exists == 1)
@@ -750,23 +750,23 @@ public class DownloadManager
 		}
 		else callback.onConfirmReplacement(context, downloadItems);
 	}
-	
+
 	private interface DialogCallback
 	{
 		public void onDirectoryChosen(Context context, String path, boolean detailName, boolean originalName,
 				String chanName, String boardName, String threadNumber);
 	}
-	
+
 	private class StorageDialogCallback implements DialogCallback, ReplaceCallback
 	{
 		private final ArrayList<RequestItem> mRequestItems;
 		private File mDirectory;
-		
+
 		public StorageDialogCallback(ArrayList<RequestItem> requestItems)
 		{
 			mRequestItems = requestItems;
 		}
-		
+
 		@Override
 		public void onDirectoryChosen(Context context, String path, boolean detailName, boolean originalName,
 				String chanName, String boardName, String threadNumber)
@@ -781,26 +781,26 @@ public class DownloadManager
 			}
 			confirmReplacement(context, mDirectory, downloadItems, this);
 		}
-		
+
 		@Override
 		public void onConfirmReplacement(Context context, ArrayList<DownloadService.DownloadItem> downloadItems)
 		{
 			DownloadService.downloadDirect(context, mDirectory, downloadItems);
 		}
 	}
-	
+
 	private class StreamDialogCallback implements DialogCallback, ReplaceCallback
 	{
 		private final InputStream mInput;
 		private final String mFileName;
 		private File mDirectory;
-		
+
 		public StreamDialogCallback(InputStream input, String fileName)
 		{
 			mInput = input;
 			mFileName = fileName;
 		}
-		
+
 		@Override
 		public void onDirectoryChosen(Context context, String path, boolean detailName, boolean originalName,
 				String chanName, String boardName, String threadNumber)
@@ -812,7 +812,7 @@ public class DownloadManager
 			downloadItems.add(new DownloadService.DownloadItem(chanName, null, fileName));
 			confirmReplacement(context, mDirectory, downloadItems, this);
 		}
-		
+
 		@Override
 		public void onConfirmReplacement(Context context, ArrayList<DownloadService.DownloadItem> downloadItems)
 		{
@@ -828,7 +828,7 @@ public class DownloadManager
 			}
 			catch (IOException e)
 			{
-				
+
 			}
 			finally
 			{
@@ -839,7 +839,7 @@ public class DownloadManager
 			DownloadService.showFake(context, file, success);
 		}
 	}
-	
+
 	private File getDownloadDirectory(String path)
 	{
 		File directory = Preferences.getDownloadDirectory();
@@ -850,7 +850,7 @@ public class DownloadManager
 		}
 		return directory;
 	}
-	
+
 	private String getFileNameWithChanBoardThreadData(String fileName, String chanName, String boardName,
 			String threadNumber)
 	{
@@ -863,12 +863,12 @@ public class DownloadManager
 		if (threadNumber != null) builder.append('-').append(threadNumber);
 		return builder.append('.').append(extension).toString();
 	}
-	
+
 	private boolean isFileNameModifyingAllowed(String chanName, Uri uri)
 	{
 		return chanName != null && ChanLocator.get(chanName).safe(false).isAttachmentUri(uri);
 	}
-	
+
 	private String getDesiredFileName(Uri uri, String fileName, String originalName, boolean detailName,
 			String chanName, String boardName, String threadNumber)
 	{
@@ -879,14 +879,14 @@ public class DownloadManager
 		}
 		return fileName;
 	}
-	
+
 	public void downloadStorage(Context context, Uri uri, String fileName, String originalName,
 			String chanName, String boardName, String threadNumber, String threadTitle)
 	{
 		downloadStorage(context, new RequestItem(uri, fileName, originalName),
 				chanName, boardName, threadNumber, threadTitle);
 	}
-	
+
 	public void downloadStorage(Context context, RequestItem requestItem, String chanName,
 			String boardName, String threadNumber, String threadTitle)
 	{
@@ -894,7 +894,7 @@ public class DownloadManager
 		requestItems.add(requestItem);
 		downloadStorage(context, requestItems, chanName, boardName, threadNumber, threadTitle, false);
 	}
-	
+
 	public void downloadStorage(Context context, ArrayList<RequestItem> requestItems, String chanName,
 			String boardName, String threadNumber, String threadTitle, boolean multiple)
 	{
@@ -917,7 +917,7 @@ public class DownloadManager
 					Preferences.isDownloadOriginalName(), chanName, boardName, threadNumber);
 		}
 	}
-	
+
 	public void saveStreamStorage(Context context, InputStream input, String chanName,
 			String boardName, String threadNumber, String threadTitle, String fileName, boolean forceNoDialog)
 	{
