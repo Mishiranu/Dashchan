@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,7 +37,7 @@ public abstract class BaseListFragment extends Fragment implements AdapterView.O
 	private ListView mListView;
 	private View mEmptyView;
 	private TextView mEmptyText;
-	
+
 	@Override
 	public final View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 	{
@@ -62,22 +62,22 @@ public abstract class BaseListFragment extends Fragment implements AdapterView.O
 		}
 		catch (Exception e)
 		{
-			
+
 		}
 		mListView = listView;
 		return view;
 	}
-	
+
 	public ListView getListView()
 	{
 		return mListView;
 	}
-	
+
 	public void setListAdapter(ListAdapter adapter)
 	{
 		mListView.setAdapter(adapter);
 	}
-	
+
 	public void setEmptyText(CharSequence text)
 	{
 		mEmptyText.setText(text);
@@ -92,15 +92,15 @@ public abstract class BaseListFragment extends Fragment implements AdapterView.O
 			mListView.setEmptyView(mEmptyView);
 		}
 	}
-	
+
 	public void setEmptyText(int resId)
 	{
 		setEmptyText(getString(resId));
 	}
-	
+
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id)
 	{
-		
+
 	}
 }

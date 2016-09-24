@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -50,15 +50,15 @@ import com.mishiranu.dashchan.widget.PhotoView;
 public class ImageUnit
 {
 	private final PagerInstance mInstance;
-	
+
 	private ReadFileTask mReadFileTask;
 	private ReadBitmapCallback mReadBitmapCallback;
-	
+
 	public ImageUnit(PagerInstance instance)
 	{
 		mInstance = instance;
 	}
-	
+
 	public void interrupt(boolean force)
 	{
 		if (force && mReadFileTask != null)
@@ -71,7 +71,7 @@ public class ImageUnit
 		interruptHolder(mInstance.currentHolder);
 		interruptHolder(mInstance.rightHolder);
 	}
-	
+
 	private void interruptHolder(PagerInstance.ViewHolder holder)
 	{
 		if (holder != null)
@@ -83,15 +83,15 @@ public class ImageUnit
 			}
 		}
 	}
-	
+
 	public void applyImage(Uri uri, File file, boolean reload)
 	{
 		if (!reload && file.exists()) applyImageFromFile(file);
 		else loadImage(uri, file, mInstance.currentHolder);
 	}
-	
+
 	private static final Executor EXECUTOR = ConcurrentUtils.newSingleThreadPool(20000, "DecodeBitmapTask", null, 0);
-	
+
 	private void applyImageFromFile(File file)
 	{
 		PagerInstance.ViewHolder holder = mInstance.currentHolder;
@@ -119,7 +119,7 @@ public class ImageUnit
 			}
 		}
 	}
-	
+
 	private void loadImage(Uri uri, File cachedFile, PagerInstance.ViewHolder holder)
 	{
 		if (attachReadBitmapCallback(holder)) return;
@@ -129,7 +129,7 @@ public class ImageUnit
 				uri, cachedFile, true, mReadBitmapCallback);
 		mReadFileTask.executeOnExecutor(ReadFileTask.THREAD_POOL_EXECUTOR);
 	}
-	
+
 	private boolean attachReadBitmapCallback(PagerInstance.ViewHolder holder)
 	{
 		if (mReadBitmapCallback != null && mReadBitmapCallback.isHolder(holder))
@@ -139,28 +139,28 @@ public class ImageUnit
 		}
 		return false;
 	}
-	
+
 	private class ReadBitmapCallback implements ReadFileTask.Callback, ReadFileTask.CancelCallback
 	{
 		private final PagerInstance.ViewHolder mHolder;
 		private final GalleryItem mGalleryItem;
-		
+
 		public ReadBitmapCallback(PagerInstance.ViewHolder holder)
 		{
 			mHolder = holder;
 			mGalleryItem = holder.galleryItem;
 		}
-		
+
 		private boolean isCurrentHolder()
 		{
 			return isHolder(mInstance.currentHolder);
 		}
-		
+
 		public boolean isHolder(PagerInstance.ViewHolder holder)
 		{
 			return holder != null && holder.galleryItem == mGalleryItem;
 		}
-		
+
 		@Override
 		public void onFileExists(Uri uri, File file)
 		{
@@ -168,7 +168,7 @@ public class ImageUnit
 			mReadBitmapCallback = null;
 			if (isCurrentHolder()) applyImageFromFile(file);
 		}
-		
+
 		@Override
 		public void onStartDownloading(Uri uri, File file)
 		{
@@ -181,7 +181,7 @@ public class ImageUnit
 
 		private int mPendingProgress;
 		private int mPendingProgressMax;
-		
+
 		public void attachDownloading()
 		{
 			if (isCurrentHolder())
@@ -194,7 +194,7 @@ public class ImageUnit
 				}
 			}
 		}
-		
+
 		@Override
 		public void onFinishDownloading(boolean success, Uri uri, File file, ErrorItem errorItem)
 		{
@@ -206,13 +206,13 @@ public class ImageUnit
 				if (success) applyImageFromFile(file); else mInstance.callback.showError(mHolder, errorItem.toString());
 			}
 		}
-		
+
 		@Override
 		public void onCancelDownloading(Uri uri, File file)
 		{
 			if (isHolder(mHolder)) mHolder.progressBar.setVisible(false, true);
 		}
-		
+
 		@Override
 		public void onUpdateProgress(long progress, long progressMax)
 		{
@@ -228,13 +228,13 @@ public class ImageUnit
 			}
 		}
 	}
-	
+
 	public boolean hasMetadata()
 	{
 		JpegData jpegData = mInstance.currentHolder.jpegData;
 		return jpegData != null && !jpegData.getUserMetadata().isEmpty();
 	}
-	
+
 	public void viewTechnicalInfo()
 	{
 		StringBlockBuilder builder = new StringBlockBuilder();
@@ -266,19 +266,19 @@ public class ImageUnit
 		dialog.setOnShowListener(ViewUtils.ALERT_DIALOG_MESSAGE_SELECTABLE);
 		dialog.show();
 	}
-	
+
 	private class DecodeBitmapTask extends AsyncTask<Void, Void, Void>
 	{
 		private final File mFile;
 		private final FileHolder mFileHolder;
 		private final PhotoView mPhotoView;
-		
+
 		private Bitmap mBitmap;
 		private DecoderDrawable mDecoderDrawable;
 		private AnimatedPngDecoder mAnimatedPngDecoder;
 		private GifDecoder mGifDecoder;
 		private int mErrorMessageId;
-		
+
 		public DecodeBitmapTask(File file, FileHolder fileHolder)
 		{
 			mFile = file;
@@ -291,7 +291,7 @@ public class ImageUnit
 				mInstance.currentHolder.progressBar.setIndeterminate(true);
 			}
 		}
-		
+
 		@Override
 		protected Void doInBackground(Void... params)
 		{
@@ -309,7 +309,7 @@ public class ImageUnit
 				}
 				catch (IOException e)
 				{
-					
+
 				}
 			}
 			else if (mFileHolder.getImageType() == FileHolder.ImageType.IMAGE_GIF)
@@ -321,7 +321,7 @@ public class ImageUnit
 				}
 				catch (IOException e)
 				{
-					
+
 				}
 			}
 			try
@@ -340,7 +340,7 @@ public class ImageUnit
 						}
 						catch (OutOfMemoryError | IOException e)
 						{
-							
+
 						}
 					}
 				}
@@ -356,7 +356,7 @@ public class ImageUnit
 			}
 			return null;
 		}
-		
+
 		@Override
 		protected void onPostExecute(Void result)
 		{
@@ -390,13 +390,13 @@ public class ImageUnit
 			}
 			else mInstance.callback.showError(holder, mInstance.galleryInstance.context.getString(mErrorMessageId));
 		}
-		
+
 		public void cancel(PagerInstance.ViewHolder holder)
 		{
 			cancel(true);
 			holder.progressBar.setVisible(false, true);
 		}
-		
+
 		private void setPhotoViewImage(PagerInstance.ViewHolder holder, Drawable drawable, boolean hasAlpha)
 		{
 			holder.photoView.setImage(drawable, hasAlpha, false, holder.photoViewThumbnail);

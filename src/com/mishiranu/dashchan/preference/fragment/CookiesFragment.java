@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,7 +33,7 @@ import com.mishiranu.dashchan.R;
 public class CookiesFragment extends BasePreferenceFragment implements Comparator<Map.Entry<String, String>>
 {
 	private ChanConfiguration mConfiguration;
-	
+
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
@@ -43,7 +43,7 @@ public class CookiesFragment extends BasePreferenceFragment implements Comparato
 		mConfiguration = ChanConfiguration.get(chanName);
 		getActivity().setTitle(R.string.preference_delete_cookies);
 		Map<String, String> cookies = mConfiguration.getAllCookieNames();
-		
+
 		ArrayList<Map.Entry<String, String>> entries = new ArrayList<>(cookies.entrySet());
 		Collections.sort(entries, this);
 		for (Map.Entry<String, String> entry : entries)
@@ -55,13 +55,13 @@ public class CookiesFragment extends BasePreferenceFragment implements Comparato
 			preference.setKey(entry.getKey());
 		}
 	}
-	
+
 	@Override
 	public int compare(Map.Entry<String, String> lhs, Map.Entry<String, String> rhs)
 	{
 		return StringUtils.compare(lhs.getKey(), rhs.getKey(), true);
 	}
-	
+
 	@Override
 	public boolean onPreferenceClick(Preference preference)
 	{

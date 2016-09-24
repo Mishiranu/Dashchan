@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,88 +31,88 @@ import chan.util.CommonUtils;
 public final class Posts implements Serializable
 {
 	private static final long serialVersionUID = 1L;
-	
+
 	private Post[] mPosts;
 	private HttpValidator mHttpValidator;
-	
+
 	private String mArchivedThreadUriString;
 	private int mUniquePosters = 0;
-	
+
 	private int mPostsCount = -1;
 	private int mFilesCount = -1;
 	private int mPostsWithFilesCount = -1;
-	
+
 	private String[][] mLocalAutohide;
 	private boolean mAutoRefreshEnabled;
 	private int mAutoRefreshInterval;
-	
+
 	@Public
 	public Post[] getPosts()
 	{
 		return mPosts;
 	}
-	
+
 	@Public
 	public Posts setPosts(Post... posts)
 	{
 		mPosts = CommonUtils.removeNullItems(posts, Post.class);
 		return this;
 	}
-	
+
 	@Public
 	public Posts setPosts(Collection<? extends Post> posts)
 	{
 		return setPosts(CommonUtils.toArray(posts, Post.class));
 	}
-	
+
 	public String getThreadNumber()
 	{
 		return mPosts[0].getThreadNumberOrOriginalPostNumber();
 	}
-	
+
 	@Public
 	public Uri getArchivedThreadUri()
 	{
 		return mArchivedThreadUriString != null ? Uri.parse(mArchivedThreadUriString) : null;
 	}
-	
+
 	@Public
 	public Posts setArchivedThreadUri(Uri uri)
 	{
 		mArchivedThreadUriString = uri != null ? uri.toString() : null;
 		return this;
 	}
-	
+
 	public String getArchivedThreadUriString()
 	{
 		return mArchivedThreadUriString;
 	}
-	
+
 	public Posts setArchivedThreadUriString(String uriString)
 	{
 		mArchivedThreadUriString = uriString;
 		return this;
 	}
-	
+
 	@Public
 	public int getUniquePosters()
 	{
 		return mUniquePosters;
 	}
-	
+
 	@Public
 	public Posts setUniquePosters(int uniquePosters)
 	{
 		if (uniquePosters > 0) mUniquePosters = uniquePosters;
 		return this;
 	}
-	
+
 	@Public
 	public int getPostsCount()
 	{
 		return mPostsCount;
 	}
-	
+
 	@Public
 	public Posts addPostsCount(int postsCount)
 	{
@@ -123,13 +123,13 @@ public final class Posts implements Serializable
 		}
 		return this;
 	}
-	
+
 	@Public
 	public int getFilesCount()
 	{
 		return mFilesCount;
 	}
-	
+
 	@Public
 	public Posts addFilesCount(int filesCount)
 	{
@@ -140,13 +140,13 @@ public final class Posts implements Serializable
 		}
 		return this;
 	}
-	
+
 	@Public
 	public int getPostsWithFilesCount()
 	{
 		return mPostsWithFilesCount;
 	}
-	
+
 	@Public
 	public Posts addPostsWithFilesCount(int postsWithFilesCount)
 	{
@@ -157,34 +157,34 @@ public final class Posts implements Serializable
 		}
 		return this;
 	}
-	
+
 	public HttpValidator getValidator()
 	{
 		return mHttpValidator;
 	}
-	
+
 	public Posts setValidator(HttpValidator validator)
 	{
 		mHttpValidator = validator;
 		return this;
 	}
-	
+
 	public String[][] getLocalAutohide()
 	{
 		return mLocalAutohide;
 	}
-	
+
 	public Posts setLocalAutohide(String[][] localAutohide)
 	{
 		mLocalAutohide = localAutohide;
 		return this;
 	}
-	
+
 	public Pair<Boolean, Integer> getAutoRefreshData()
 	{
 		return new Pair<>(mAutoRefreshEnabled, mAutoRefreshInterval);
 	}
-	
+
 	public boolean setAutoRefreshData(boolean enabled, int interval)
 	{
 		if (mAutoRefreshEnabled != enabled || mAutoRefreshInterval != interval)
@@ -195,12 +195,12 @@ public final class Posts implements Serializable
 		}
 		return false;
 	}
-	
+
 	public int length()
 	{
 		return mPosts != null ? mPosts.length : 0;
 	}
-	
+
 	public int append(Posts posts)
 	{
 		if (posts != null && posts.length() > 0)
@@ -226,7 +226,7 @@ public final class Posts implements Serializable
 		}
 		return 0;
 	}
-	
+
 	public void clearDeletedPosts()
 	{
 		if (length() > 0)
@@ -239,19 +239,19 @@ public final class Posts implements Serializable
 			mPosts = CommonUtils.toArray(posts, Post.class);
 		}
 	}
-	
+
 	@Public
 	public Posts()
 	{
-		
+
 	}
-	
+
 	@Public
 	public Posts(Post... posts)
 	{
 		setPosts(posts);
 	}
-	
+
 	@Public
 	public Posts(Collection<? extends Post> posts)
 	{

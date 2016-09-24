@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -44,28 +44,28 @@ public class DecoderDrawable extends Drawable
 {
 	private static final Executor EXECUTOR = ConcurrentUtils.newSingleThreadPool(20000, "DecoderDrawable", null, 0);
 	private static final Bitmap NULL_BITMAP = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
-	
+
 	private static final int FRAGMENT_SIZE = 512;
 	private static final int MIN_MAX_ENTRIES = 16;
-	
+
 	private final Bitmap mScaledBitmap;
 	private final BitmapRegionDecoder mDecoder;
-	
+
 	private final LinkedHashMap<Integer, DecodeTask> mTasks = new LinkedHashMap<>();
 	private final LruCache<Integer, Bitmap> mFragments = new LruCache<>((key, value) -> value.recycle(),
 			MIN_MAX_ENTRIES);
-	
+
 	private final int mRotation;
 	private final int mWidth;
 	private final int mHeight;
-	
+
 	private final Rect mRect = new Rect();
 	private final Rect mDstRect = new Rect();
 	private final Paint mPaint = new Paint(Paint.FILTER_BITMAP_FLAG);
-	
+
 	private boolean mEnabled = true;
 	private boolean mRecycled = false;
-	
+
 	public DecoderDrawable(Bitmap scaledBitmap, FileHolder fileHolder) throws IOException
 	{
 		mScaledBitmap = scaledBitmap;
@@ -75,7 +75,7 @@ public class DecoderDrawable extends Drawable
 		mWidth = fileHolder.getImageWidth();
 		mHeight = fileHolder.getImageHeight();
 	}
-	
+
 	@Override
 	public void draw(Canvas canvas)
 	{
@@ -182,42 +182,42 @@ public class DecoderDrawable extends Drawable
 			}
 		}
 	}
-	
+
 	@Override
 	public int getOpacity()
 	{
 		return PixelFormat.TRANSLUCENT;
 	}
-	
+
 	@Override
 	public void setAlpha(int alpha)
 	{
-		
+
 	}
-	
+
 	@Override
 	public void setColorFilter(ColorFilter colorFilter)
 	{
-		
+
 	}
-	
+
 	@Override
 	public int getIntrinsicWidth()
 	{
 		return mWidth;
 	}
-	
+
 	@Override
 	public int getIntrinsicHeight()
 	{
 		return mHeight;
 	}
-	
+
 	public boolean hasAlpha()
 	{
 		return mScaledBitmap.hasAlpha();
 	}
-	
+
 	private void clear()
 	{
 		for (DecodeTask task : mTasks.values()) task.cancel();
@@ -225,7 +225,7 @@ public class DecoderDrawable extends Drawable
 		for (Bitmap fragment : mFragments.values()) fragment.recycle();
 		mFragments.clear();
 	}
-	
+
 	public void setEnabled(boolean enabled)
 	{
 		if (mEnabled != enabled)
@@ -234,12 +234,12 @@ public class DecoderDrawable extends Drawable
 			if (!enabled) clear();
 		}
 	}
-	
+
 	public void recycle()
 	{
 		recycle(true);
 	}
-	
+
 	private void recycle(boolean recycleScaled)
 	{
 		if (!mRecycled)
@@ -253,20 +253,20 @@ public class DecoderDrawable extends Drawable
 		}
 		if (recycleScaled) mScaledBitmap.recycle();
 	}
-	
+
 	private int calculateKey(int x, int y, int scale)
 	{
 		return x << 18 | y << 4 | scale;
 	}
-	
+
 	private class DecodeTask extends AsyncTask<Void, Void, Bitmap>
 	{
 		private final int mKey;
 		private final Rect mRect;
 		private final BitmapFactory.Options mOptions = new BitmapFactory.Options();
-		
+
 		private boolean mError = false;
-		
+
 		public DecodeTask(int key, int x, int y, int scale)
 		{
 			mKey = key;
@@ -286,7 +286,7 @@ public class DecoderDrawable extends Drawable
 			mOptions.inDither = true;
 			mOptions.inSampleSize = scale;
 		}
-		
+
 		@Override
 		protected Bitmap doInBackground(Void... params)
 		{
@@ -314,19 +314,19 @@ public class DecoderDrawable extends Drawable
 				return null;
 			}
 		}
-		
+
 		public void cancel()
 		{
 			cancel(false);
 			mOptions.mCancel = true;
 		}
-		
+
 		@Override
 		protected void onCancelled(Bitmap result)
 		{
 			if (result != null) result.recycle();
 		}
-		
+
 		@Override
 		protected void onPostExecute(Bitmap result)
 		{

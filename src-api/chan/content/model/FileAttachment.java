@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,19 +32,19 @@ public final class FileAttachment implements Attachment
 	private String mFileUriString;
 	private String mThumbnailUriString;
 	private String mOriginalName;
-	
+
 	private int mSize;
 	private int mWidth;
 	private int mHeight;
-	
+
 	private boolean mSpoiler;
-	
+
 	@Public
 	public FileAttachment()
 	{
-		
+
 	}
-	
+
 	private static String fixRelativeUriString(String uriString)
 	{
 		int index = uriString.indexOf("//");
@@ -60,61 +60,61 @@ public final class FileAttachment implements Attachment
 		}
 		return uriString;
 	}
-	
+
 	public Uri getRelativeFileUri()
 	{
 		return mFileUriString != null ? Uri.parse(fixRelativeUriString(mFileUriString)) : null;
 	}
-	
+
 	@Public
 	public Uri getFileUri(ChanLocator locator)
 	{
 		return locator.convert(getRelativeFileUri());
 	}
-	
+
 	@Public
 	public FileAttachment setFileUri(ChanLocator locator, Uri fileUri)
 	{
 		mFileUriString = fileUri != null ? locator.makeRelative(fileUri).toString() : null;
 		return this;
 	}
-	
+
 	public Uri getRelativeThumbnailUri()
 	{
 		return mThumbnailUriString != null ? Uri.parse(fixRelativeUriString(mThumbnailUriString)) : null;
 	}
-	
+
 	@Public
 	public Uri getThumbnailUri(ChanLocator locator)
 	{
 		return locator.convert(getRelativeThumbnailUri());
 	}
-	
+
 	@Public
 	public FileAttachment setThumbnailUri(ChanLocator locator, Uri thumbnailUri)
 	{
 		mThumbnailUriString = thumbnailUri != null ? locator.makeRelative(thumbnailUri).toString() : null;
 		return this;
 	}
-	
+
 	@Public
 	public String getOriginalName()
 	{
 		return mOriginalName;
 	}
-	
+
 	@Public
 	public FileAttachment setOriginalName(String originalName)
 	{
 		mOriginalName = originalName;
 		return this;
 	}
-	
+
 	public String getNormalizedOriginalName(String fileName)
 	{
 		return getNormalizedOriginalName(fileName, StringUtils.getFileExtension(fileName));
 	}
-	
+
 	public String getNormalizedOriginalName(String fileName, String extension)
 	{
 		String originalName = getOriginalName();
@@ -127,59 +127,59 @@ public final class FileAttachment implements Attachment
 		}
 		return null;
 	}
-	
+
 	@Public
 	public int getSize()
 	{
 		return mSize;
 	}
-	
+
 	@Public
 	public FileAttachment setSize(int size)
 	{
 		mSize = size;
 		return this;
 	}
-	
+
 	@Public
 	public int getWidth()
 	{
 		return mWidth;
 	}
-	
+
 	@Public
 	public FileAttachment setWidth(int width)
 	{
 		mWidth = width;
 		return this;
 	}
-	
+
 	@Public
 	public int getHeight()
 	{
 		return mHeight;
 	}
-	
+
 	@Public
 	public FileAttachment setHeight(int height)
 	{
 		mHeight = height;
 		return this;
 	}
-	
+
 	@Public
 	public boolean isSpoiler()
 	{
 		return mSpoiler;
 	}
-	
+
 	@Public
 	public FileAttachment setSpoiler(boolean spoiler)
 	{
 		mSpoiler = spoiler;
 		return this;
 	}
-	
+
 	public boolean contentEquals(FileAttachment o)
 	{
 		return StringUtils.equals(mFileUriString, o.mFileUriString) &&

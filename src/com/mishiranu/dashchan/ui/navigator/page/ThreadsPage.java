@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -64,9 +64,9 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		ReadThreadsTask.Callback, PullableListView.OnBeforeLayoutListener
 {
 	private ReadThreadsTask mReadTask;
-	
+
 	private Drawable mOldListSelector;
-	
+
 	@Override
 	protected void onCreate()
 	{
@@ -111,7 +111,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		FavoritesStorage.getInstance().getObservable().register(this);
 		pageHolder.setInitialThreadsData(false);
 	}
-	
+
 	@Override
 	protected void onDestroy()
 	{
@@ -127,7 +127,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		listView.setSelector(mOldListSelector);
 		listView.removeOnBeforeLayoutListener(this);
 	}
-	
+
 	@Override
 	protected void onHandleNewPostDatas()
 	{
@@ -140,7 +140,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 					newPostData.threadNumber, newPostData.postNumber, null, false);
 		}
 	}
-	
+
 	@Override
 	public String obtainTitle()
 	{
@@ -148,7 +148,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		String title = getChanConfiguration().getBoardTitle(pageHolder.boardName);
 		return StringUtils.formatBoardTitle(pageHolder.chanName, pageHolder.boardName, title);
 	}
-	
+
 	@Override
 	public void onItemClick(View view, int position, long id)
 	{
@@ -171,9 +171,9 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 			}
 		}
 	}
-	
+
 	private boolean mAllowSearch = false;
-	
+
 	private static final int OPTIONS_MENU_REFRESH = 0;
 	private static final int OPTIONS_MENU_CATALOG = 1;
 	private static final int OPTIONS_MENU_PAGES = 2;
@@ -184,7 +184,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 	private static final int OPTIONS_MENU_ADD_TO_FAVORITES_ICON = 7;
 	private static final int OPTIONS_MENU_REMOVE_FROM_FAVORITES_ICON = 8;
 	private static final int OPTIONS_MENU_MAKE_HOME_PAGE = 9;
-	
+
 	@Override
 	public void onCreateOptionsMenu(Menu menu)
 	{
@@ -205,7 +205,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 				.setIcon(obtainIcon(R.attr.actionRemoveFromFavorites)).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 		menu.add(0, OPTIONS_MENU_MAKE_HOME_PAGE, 0, R.string.action_make_home_page);
 	}
-	
+
 	@Override
 	public void onPrepareOptionsMenu(Menu menu)
 	{
@@ -235,7 +235,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		menu.findItem(OPTIONS_MENU_MAKE_HOME_PAGE).setVisible(!singleBoardMode &&
 				!StringUtils.equals(pageHolder.boardName, Preferences.getDefaultBoardName(pageHolder.chanName)));
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
@@ -288,7 +288,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		}
 		return false;
 	}
-	
+
 	@Override
 	public void onFavoritesUpdate(FavoritesStorage.FavoriteItem favoriteItem, int action)
 	{
@@ -310,7 +310,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 	private static final int CONTEXT_MENU_COPY_LINK = 0;
 	private static final int CONTEXT_MENU_SHARE_LINK = 1;
 	private static final int CONTEXT_MENU_HIDE = 2;
-	
+
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v, int position, View targetView)
 	{
@@ -322,7 +322,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 			if (!postItem.isHiddenUnchecked()) menu.add(Menu.NONE, CONTEXT_MENU_HIDE, 0, R.string.action_hide);
 		}
 	}
-	
+
 	@Override
 	public boolean onContextItemSelected(MenuItem item, int position, View targetView)
 	{
@@ -359,7 +359,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		}
 		return false;
 	}
-	
+
 	@Override
 	public void onAppearanceOptionChanged(int what)
 	{
@@ -379,22 +379,22 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 			}
 		}
 	}
-	
+
 	@Override
 	public void onBeforeLayout(View v, int left, int top, int right, int bottom)
 	{
 		int width = right - left;
 		mGridLayoutControl.onListLayout(width);
 	}
-	
+
 	private final GridLayoutControl mGridLayoutControl = new GridLayoutControl();
-	
+
 	private class GridLayoutControl implements Runnable
 	{
 		private int mCurrentWidth;
 		private ListPosition mListPosition;
 		private String mPositionInfo;
-		
+
 		public void applyGridMode(boolean gridMode)
 		{
 			ListView listView = getListView();
@@ -405,7 +405,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 			int position = getAdapter().getPositionFromInfo(positionInfo);
 			if (position != -1) new ListPosition(position, listPosition.y).apply(listView);
 		}
-		
+
 		public void apply()
 		{
 			ListView listView = getListView();
@@ -414,7 +414,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 			mPositionInfo = null;
 			if (listView.getWidth() > 0) run(); else listView.post(this);
 		}
-		
+
 		public void onListLayout(int width)
 		{
 			if (mCurrentWidth != width)
@@ -428,7 +428,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 				listView.post(this);
 			}
 		}
-		
+
 		@Override
 		public void run()
 		{
@@ -447,7 +447,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 			else mCurrentWidth = listView.getWidth();
 		}
 	}
-	
+
 	@Override
 	public boolean onStartSearch(String query)
 	{
@@ -459,7 +459,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		}
 		else return super.onStartSearch(query);
 	}
-	
+
 	@Override
 	public int onDrawerNumberEntered(int number)
 	{
@@ -472,7 +472,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		}
 		return result;
 	}
-	
+
 	@Override
 	public void onRequestStoreExtra()
 	{
@@ -483,13 +483,13 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		extra.catalogSortIndex = adapter.getCatalogSortIndex();
 		extra.positionInfo = pageHolder.position != null ? adapter.getPositionInfo(pageHolder.position.position) : null;
 	}
-	
+
 	@Override
 	public void onSearchTextChange(String newText)
 	{
 		getAdapter().applyFilter(newText);
 	}
-	
+
 	@Override
 	public void onListPulled(PullableWrapper wrapper, PullableWrapper.Side side)
 	{
@@ -497,16 +497,16 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		refreshThreads(getAdapter().isRealEmpty() || extra.startPageNumber == PAGE_NUMBER_CATALOG ? RefreshPage.CURRENT
 				: side == PullableWrapper.Side.BOTTOM ? RefreshPage.NEXT : RefreshPage.PREVIOUS, true);
 	}
-	
+
 	private enum RefreshPage {CURRENT, PREVIOUS, NEXT, CATALOG}
-	
+
 	private static final int PAGE_NUMBER_CATALOG = ChanPerformer.ReadThreadsData.PAGE_NUMBER_CATALOG;
-	
+
 	private void refreshThreads(RefreshPage refreshPage)
 	{
 		refreshThreads(refreshPage, !getAdapter().isRealEmpty());
 	}
-	
+
 	private void refreshThreads(RefreshPage refreshPage, boolean showPull)
 	{
 		if (mReadTask != null)
@@ -541,12 +541,12 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		}
 		loadThreadsPage(pageNumber, append, showPull);
 	}
-	
+
 	private boolean loadThreadsPage(int pageNumber, boolean append)
 	{
 		return loadThreadsPage(pageNumber, append, !getAdapter().isRealEmpty());
 	}
-	
+
 	private boolean loadThreadsPage(int pageNumber, boolean append, boolean showPull)
 	{
 		if (mReadTask != null) mReadTask.cancel();
@@ -579,7 +579,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 			return true;
 		}
 	}
-	
+
 	@Override
 	public void onReadThreadsSuccess(ArrayList<PostItem> postItems, int pageNumber,
 			int boardSpeed, boolean append, boolean checkModified, HttpValidator validator)
@@ -652,7 +652,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		}
 		else ClickableToast.show(getActivity(), R.string.message_empty_response);
 	}
-	
+
 	@Override
 	public void onReadThreadsFail(ErrorItem errorItem, int pageNumber)
 	{
@@ -667,7 +667,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 			else ClickableToast.show(getActivity(), errorItem.toString());
 		}
 	}
-	
+
 	@Override
 	public void onPostItemMessage(PostItem postItem, int message)
 	{
@@ -720,18 +720,18 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 			}
 		}
 	}
-	
+
 	public static class ThreadsExtra implements PageHolder.ParcelableExtra
 	{
 		public final ArrayList<ArrayList<PostItem>> cachedPostItems = new ArrayList<>();
 		public int startPageNumber;
 		public int boardSpeed;
 		public HttpValidator validator;
-		
+
 		public boolean headerExpanded = false;
 		public int catalogSortIndex = -1;
 		public String positionInfo;
-		
+
 		@Override
 		public void writeToParcel(Parcel dest)
 		{
@@ -739,7 +739,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 			dest.writeInt(catalogSortIndex);
 			dest.writeString(positionInfo);
 		}
-		
+
 		@Override
 		public void readFromParcel(Parcel source)
 		{
@@ -748,7 +748,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 			positionInfo = source.readString();
 		}
 	}
-	
+
 	private ThreadsExtra getExtra()
 	{
 		PageHolder pageHolder = getPageHolder();

@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,7 +29,7 @@ import chan.util.StringUtils;
 public class WakabaLikeHtmlBuilder
 {
 	private static final ArrayList<Pair<String, String>> STYLES = new ArrayList<>();
-	
+
 	static
 	{
 		STYLES.add(new Pair<>("Photon", "https://mishiranu.github.io/Dashchan/wakaba/photon.css"));
@@ -37,19 +37,19 @@ public class WakabaLikeHtmlBuilder
 		STYLES.add(new Pair<>("Burichan", "https://mishiranu.github.io/Dashchan/wakaba/burichan.css"));
 		STYLES.add(new Pair<>("Gurochan", "https://mishiranu.github.io/Dashchan/wakaba/gurochan.css"));
 	}
-	
+
 	private static final String CLIENT_URI = "https://github.com/Mishiranu/Dashchan/";
-	
+
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("MM/dd/yy(ccc)HH:mm:ss", Locale.US);
-	
+
 	static
 	{
 		DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("Etc/GMT"));
 	}
-	
+
 	private final StringBuilder mBuilder = new StringBuilder();
 	private final String mChanName;
-	
+
 	public WakabaLikeHtmlBuilder(String threadTitle, String chanName, String boardName, String boardTitle,
 			String chanTitle, Uri threadUri, int postsCount, int filesCount)
 	{
@@ -104,7 +104,7 @@ public class WakabaLikeHtmlBuilder
 				.append("\" data-posts=\"").append(postsCount).append("\" data-files=\"")
 				.append(filesCount).append("\">\n");
 	}
-	
+
 	private boolean mOriginalPost = true;
 	private String mNumber;
 	private String mSubject;
@@ -121,7 +121,7 @@ public class WakabaLikeHtmlBuilder
 	private String mComment;
 	private final ArrayList<Pair<Uri, String>> mIconItems = new ArrayList<>();
 	private final ArrayList<FileItem> mFileItems = new ArrayList<>();
-	
+
 	private static class FileItem
 	{
 		public final String imageFile;
@@ -131,7 +131,7 @@ public class WakabaLikeHtmlBuilder
 		public final int size;
 		public final int width;
 		public final int height;
-		
+
 		public FileItem(String imageFile, String thumbnailFile, String displayName, String originalName,
 				int size, int width, int height)
 		{
@@ -144,7 +144,7 @@ public class WakabaLikeHtmlBuilder
 			this.height = height;
 		}
 	}
-	
+
 	public void addPost(String number, String subject, String name, String identifier, String tripcode, String capcode,
 			String email, boolean sage, boolean originalPoster, long timestamp, boolean deleted,
 			boolean useDefaultName, String comment)
@@ -164,7 +164,7 @@ public class WakabaLikeHtmlBuilder
 		mUseDefaultName = useDefaultName;
 		mComment = comment;
 	}
-	
+
 	public void addIcon(Uri uri, String title)
 	{
 		if (uri != null)
@@ -176,7 +176,7 @@ public class WakabaLikeHtmlBuilder
 			mIconItems.add(new Pair<>(uri, title));
 		}
 	}
-	
+
 	public void addFile(String imageFile, String thumbnailFile, String originalName, int size, int width, int height)
 	{
 		int index = imageFile.lastIndexOf('/');
@@ -197,7 +197,7 @@ public class WakabaLikeHtmlBuilder
 		if (extension != null) displayName += extension;
 		mFileItems.add(new FileItem(imageFile, thumbnailFile, displayName, originalName, size, width, height));
 	}
-	
+
 	private void closePost()
 	{
 		String number = mNumber;
@@ -226,13 +226,13 @@ public class WakabaLikeHtmlBuilder
 		mIconItems.clear();
 		mFileItems.clear();
 	}
-	
+
 	private static String escapeHtml(String string)
 	{
 		return string != null ? string.replace("&", "&amp;").replace("\"", "&quot;")
 				.replace("<", "&lt;").replace(">", "&gt;") : "";
 	}
-	
+
 	private void appendHeader(boolean originalPost)
 	{
 		String number = mNumber;
@@ -305,7 +305,7 @@ public class WakabaLikeHtmlBuilder
 		if (mDeleted) builder.append(" <span style=\"color: #f00\">DELETED</span>");
 		builder.append("</span>\n</div>\n");
 	}
-	
+
 	private void appendComment()
 	{
 		StringBuilder builder = mBuilder;
@@ -313,7 +313,7 @@ public class WakabaLikeHtmlBuilder
 		if (mFileItems.size() > 0) builder.append(" class=\"withimage\"");
 		builder.append(">\n").append(mComment).append("\n</blockquote>\n");
 	}
-	
+
 	private void appendFiles()
 	{
 		StringBuilder builder = mBuilder;
@@ -322,7 +322,7 @@ public class WakabaLikeHtmlBuilder
 		for (FileItem fileItem : fileItems) appendFile(fileItem, multiple);
 		if (multiple) builder.append("<br style=\"clear: left;\" />\n");
 	}
-	
+
 	private void appendFile(FileItem fileItem, boolean multiple)
 	{
 		StringBuilder builder = mBuilder;
@@ -391,7 +391,7 @@ public class WakabaLikeHtmlBuilder
 		}
 		if (multiple) builder.append("</div>\n");
 	}
-	
+
 	@SuppressWarnings("UnusedAssignment")
 	private void appendFileInfo(String size, FileItem fileItem, boolean shortInfo)
 	{
@@ -413,7 +413,7 @@ public class WakabaLikeHtmlBuilder
 			if (shortInfo) builder.append("…"); else builder.append(escapeHtml(fileItem.originalName));
 		}
 	}
-	
+
 	public String build()
 	{
 		closePost();

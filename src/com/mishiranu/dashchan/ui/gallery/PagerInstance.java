@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,19 +33,19 @@ public class PagerInstance
 {
 	public final GalleryInstance galleryInstance;
 	public final Callback callback;
-	
+
 	public boolean scrollingLeft;
 
 	public ViewHolder leftHolder;
 	public ViewHolder currentHolder;
 	public ViewHolder rightHolder;
-	
+
 	public PagerInstance(GalleryInstance galleryInstance, Callback callback)
 	{
 		this.galleryInstance = galleryInstance;
 		this.callback = callback;
 	}
-	
+
 	public static class ViewHolder
 	{
 		public GalleryItem galleryItem;
@@ -53,20 +53,20 @@ public class PagerInstance
 		public FrameLayout surfaceParent;
 		public CircularProgressBar progressBar;
 		public View playButton;
-		
+
 		public View errorView;
 		public TextView errorText;
-		
+
 		public SimpleBitmapDrawable simpleBitmapDrawable;
 		public DecoderDrawable decoderDrawable;
 		public AnimatedPngDecoder animatedPngDecoder;
 		public GifDecoder gifDecoder;
 		public JpegData jpegData;
 		public boolean photoViewThumbnail;
-		
+
 		public boolean fullLoaded;
 		public Object decodeBitmapTask;
-		
+
 		public void recyclePhotoView()
 		{
 			photoView.recycle();
@@ -94,7 +94,7 @@ public class PagerInstance
 			photoViewThumbnail = false;
 		}
 	}
-	
+
 	public interface Callback
 	{
 		public void showError(ViewHolder holder, String message);

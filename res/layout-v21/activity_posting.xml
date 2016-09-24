@@ -2,13 +2,13 @@
 
 <!--
 	Copyright 2014-2016 Fukurou Mishiranu
-	
+
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
 	You may obtain a copy of the License at
-	
+
 	http://www.apache.org/licenses/LICENSE-2.0
-	
+
 	Unless required by applicable law or agreed to in writing, software
 	distributed under the License is distributed on an "AS IS" BASIS,
 	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,17 +20,17 @@
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
 	android:orientation="vertical">
-	
+
 	<include
 		layout="@layout/activity_posting_toolbar" />
-	
+
 	<view
 		android:id="@+id/scroll_view"
 		class="com.mishiranu.dashchan.ui.posting.PostingActivity$ResizingScrollView"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:fillViewport="true">
-		
+
 		<LinearLayout
 			android:id="@+id/post_main"
 			android:layout_width="match_parent"
@@ -38,13 +38,13 @@
 			android:paddingLeft="8dp"
 			android:paddingRight="8dp"
 			android:orientation="vertical">
-			
+
 			<LinearLayout
 				android:id="@+id/personal_data_block"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
 				android:orientation="vertical">
-			
+
 				<TextView
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
@@ -52,7 +52,7 @@
 					android:paddingLeft="4dp"
 					android:paddingRight="4dp"
 					android:text="@string/text_personal_data" />
-				
+
 				<com.mishiranu.dashchan.widget.SafePasteEditText
 					android:id="@+id/name"
 					android:layout_width="match_parent"
@@ -61,7 +61,7 @@
 					android:inputType="textPersonName"
 					android:maxLength="30"
 					android:singleLine="true" />
-				
+
 				<com.mishiranu.dashchan.widget.SafePasteEditText
 					android:id="@+id/email"
 					android:layout_width="match_parent"
@@ -70,7 +70,7 @@
 					android:inputType="textEmailAddress"
 					android:maxLength="30"
 					android:singleLine="true" />
-				
+
 				<com.mishiranu.dashchan.widget.SafePasteEditText
 					android:id="@+id/password"
 					android:layout_width="match_parent"
@@ -80,12 +80,12 @@
 					android:typeface="monospace"
 					android:maxLength="30"
 					android:singleLine="true" />
-				
+
 				<com.mishiranu.dashchan.widget.DropdownView
 					android:id="@+id/icon"
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content" />
-				
+
 				<TextView
 					android:id="@+id/personal_tripcode_warning"
 					android:layout_width="match_parent"
@@ -97,9 +97,9 @@
 					android:textSize="12sp"
 					android:text="@string/message_tripcode_warning"
 					android:visibility="gone" />
-				
+
 			</LinearLayout>
-			
+
 			<TextView
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
@@ -107,7 +107,7 @@
 				android:paddingLeft="4dp"
 				android:paddingRight="4dp"
 				android:text="@string/text_message_data" />
-			
+
 			<com.mishiranu.dashchan.widget.SafePasteEditText
 				android:id="@+id/subject"
 				android:layout_width="match_parent"
@@ -116,7 +116,7 @@
 				android:inputType="textShortMessage|textCapSentences"
 				android:maxLength="60"
 				android:singleLine="true" />
-			
+
 			<com.mishiranu.dashchan.widget.SafePasteEditText
 				android:id="@+id/comment"
 				android:layout_width="match_parent"
@@ -125,7 +125,7 @@
 				android:hint="@string/text_comment"
 				android:inputType="textLongMessage|textMultiLine|textCapSentences"
 				android:imeOptions="flagNoExtractUi" />
-			
+
 			<TextView
 				android:id="@+id/remaining_characters"
 				android:layout_width="match_parent"
@@ -138,7 +138,7 @@
 				android:textSize="12sp"
 				android:gravity="right"
 				android:visibility="gone" />
-			
+
 			<com.mishiranu.dashchan.widget.CarryLayout
 				android:id="@+id/checkbox_parent"
 				android:layout_width="match_parent"
@@ -149,36 +149,36 @@
 				android:paddingBottom="4dp"
 				android:horizontalSpacing="8dp"
 				android:verticalSpacing="4dp">
-				
+
 				<CheckBox
 					android:id="@+id/sage_checkbox"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
 					android:text="@string/text_sage_description_infinitive"
 					android:textAppearance="?android:attr/textAppearanceSmall" />
-				
+
 				<CheckBox
 					android:id="@+id/spoiler_checkbox"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
 					android:text="@string/text_spoiler"
 					android:textAppearance="?android:attr/textAppearanceSmall" />
-				
+
 				<CheckBox
 					android:id="@+id/original_poster_checkbox"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
 					android:text="@string/text_original_poster"
 					android:textAppearance="?android:attr/textAppearanceSmall" />
-				
+
 			</com.mishiranu.dashchan.widget.CarryLayout>
-			
+
 			<LinearLayout
 				android:id="@+id/attachment_container"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
 				android:orientation="vertical" />
-			
+
 			<TextView
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
@@ -186,14 +186,14 @@
 				android:paddingLeft="4dp"
 				android:paddingRight="4dp"
 				android:text="@string/text_confirmation" />
-			
+
 			<FrameLayout
 				android:id="@+id/footer_container"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content" />
-			
+
 		</LinearLayout>
-		
+
 	</view>
-	
+
 </LinearLayout>

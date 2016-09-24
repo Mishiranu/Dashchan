@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,7 +34,7 @@ public class StateActivity extends Activity
 			super.onDetach();
 		}
 	}
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
@@ -49,42 +49,42 @@ public class StateActivity extends Activity
 			fragmentManager.beginTransaction().add(fragment, tag).commit();
 		}
 	}
-	
+
 	public void postRecreate()
 	{
 		getWindow().getDecorView().post(() -> recreate());
 	}
 
 	private boolean mOnFinishCalled = false;
-	
+
 	@Override
 	public void recreate()
 	{
 		super.recreate();
 		callOnFinish(true);
 	}
-	
+
 	@Override
 	protected void onPause()
 	{
 		super.onPause();
 		callOnFinish(false);
 	}
-	
+
 	@Override
 	protected void onStop()
 	{
 		super.onStop();
 		callOnFinish(false);
 	}
-	
+
 	@Override
 	protected void onDestroy()
 	{
 		super.onDestroy();
 		callOnFinish(false);
 	}
-	
+
 	private void callOnFinish(boolean force)
 	{
 		if (!mOnFinishCalled && (isFinishing() || force))
@@ -93,9 +93,9 @@ public class StateActivity extends Activity
 			mOnFinishCalled = true;
 		}
 	}
-	
+
 	protected void onFinish()
 	{
-		
+
 	}
 }

@@ -4,17 +4,17 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * ********************************************************************************
- * 
+ *
  * Copyright 2014-2016 Fukurou Mishiranu
  */
 
@@ -50,17 +50,17 @@ public class DrawerToggle implements DrawerLayout.DrawerListener
 {
 	private final Activity mActivity;
 	private final DrawerLayout mDrawerLayout;
-	
+
 	private final ArrowDrawable mArrowDrawable;
 	private final SlideDrawable mSlideDrawable;
 	private Drawable mHomeAsUpIndicator;
-	
+
 	public static final int MODE_DISABLED = 0;
 	public static final int MODE_DRAWER = 1;
 	public static final int MODE_UP = 2;
-	
+
 	private int mMode = MODE_DISABLED;
-	
+
 	public DrawerToggle(Activity activity, DrawerLayout drawerLayout)
 	{
 		mActivity = activity;
@@ -77,9 +77,9 @@ public class DrawerToggle implements DrawerLayout.DrawerListener
 			mSlideDrawable = new SlideDrawable(activity);
 		}
 	}
-	
+
 	private static final int DRAWER_CLOSE_DURATION;
-	
+
 	static
 	{
 		int duration;
@@ -95,7 +95,7 @@ public class DrawerToggle implements DrawerLayout.DrawerListener
 		}
 		DRAWER_CLOSE_DURATION = duration;
 	}
-	
+
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 	public void setDrawerIndicatorMode(int mode)
 	{
@@ -127,7 +127,7 @@ public class DrawerToggle implements DrawerLayout.DrawerListener
 			}
 		}
 	}
-	
+
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 	public void syncState()
 	{
@@ -145,13 +145,13 @@ public class DrawerToggle implements DrawerLayout.DrawerListener
 			}
 		}
 	}
-	
+
 	public void onConfigurationChanged()
 	{
 		if (!C.API_LOLLIPOP) mHomeAsUpIndicator = getThemeUpIndicatorObsolete();
 		syncState();
 	}
-	
+
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
 		if (item != null && item.getItemId() == android.R.id.home)
@@ -180,7 +180,7 @@ public class DrawerToggle implements DrawerLayout.DrawerListener
 		}
 		return false;
 	}
-	
+
 	@Override
 	public void onDrawerSlide(View drawerView, float slideOffset)
 	{
@@ -196,7 +196,7 @@ public class DrawerToggle implements DrawerLayout.DrawerListener
 			mSlideDrawable.setPosition(glyphOffset);
 		}
 	}
-	
+
 	@Override
 	public void onDrawerOpened(View drawerView)
 	{
@@ -206,7 +206,7 @@ public class DrawerToggle implements DrawerLayout.DrawerListener
 		}
 		else mSlideDrawable.setPosition(1);
 	}
-	
+
 	@Override
 	public void onDrawerClosed(View drawerView)
 	{
@@ -216,30 +216,30 @@ public class DrawerToggle implements DrawerLayout.DrawerListener
 		}
 		else mSlideDrawable.setPosition(0);
 	}
-	
+
 	@Override
 	public void onDrawerStateChanged(int newState)
 	{
-		
+
 	}
-	
+
 	private static final float ARROW_HEAD_ANGLE = (float) Math.toRadians(45);
-	
+
 	private class ArrowDrawable extends Drawable
 	{
 		private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		private final Path mPath = new Path();
-		
+
 		private final float mBarThickness;
 		private final float mTopBottomArrowSize;
 		private final float mBarSize;
 		private final float mMiddleArrowSize;
 		private final float mBarGap;
 		private final int mSize;
-		
+
 		private boolean mVerticalMirror = false;
 		private float mPosition;
-		
+
 		public ArrowDrawable(Context context)
 		{
 			mPaint.setAntiAlias(true);
@@ -256,7 +256,7 @@ public class DrawerToggle implements DrawerLayout.DrawerListener
 			mPaint.setStrokeCap(Paint.Cap.SQUARE);
 			mPaint.setStrokeWidth(mBarThickness);
 		}
-		
+
 		public void setPosition(float position)
 		{
 			position = Math.min(1f, Math.max(0f, position));
@@ -265,19 +265,19 @@ public class DrawerToggle implements DrawerLayout.DrawerListener
 			mPosition = position;
 			invalidateSelf();
 		}
-		
+
 		@Override
 		public int getIntrinsicWidth()
 		{
 			return mSize;
 		}
-		
+
 		@Override
 		public int getIntrinsicHeight()
 		{
 			return mSize;
 		}
-		
+
 		@Override
 		public void draw(Canvas canvas)
 		{
@@ -308,19 +308,19 @@ public class DrawerToggle implements DrawerLayout.DrawerListener
 			canvas.drawPath(mPath, mPaint);
 			canvas.restore();
 		}
-		
+
 		@Override
 		public void setAlpha(int alpha)
 		{
-			
+
 		}
-		
+
 		@Override
 		public void setColorFilter(ColorFilter colorFilter)
 		{
-			
+
 		}
-		
+
 		@Override
 		public int getOpacity()
 		{
@@ -331,12 +331,12 @@ public class DrawerToggle implements DrawerLayout.DrawerListener
 	private class StateArrowAnimatorListener implements ValueAnimator.AnimatorUpdateListener
 	{
 		private final boolean mEnable;
-		
+
 		public StateArrowAnimatorListener(boolean enable)
 		{
 			mEnable = enable;
 		}
-		
+
 		@Override
 		public void onAnimationUpdate(ValueAnimator animation)
 		{
@@ -344,44 +344,44 @@ public class DrawerToggle implements DrawerLayout.DrawerListener
 			mArrowDrawable.setPosition(mEnable ? 1f - value : value);
 		}
 	}
-	
+
 	private class SlideDrawable extends Drawable
 	{
 		private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		private final int mSize;
-		
+
 		private float mPosition;
-		
+
 		private SlideDrawable(Context context)
 		{
 			mPaint.setColor(0xff979797);
 			float density = ResourceUtils.obtainDensity(context);
 			mSize = (int) (16f * density);
 		}
-		
+
 		public void setPosition(float position)
 		{
 			mPosition = position;
 			invalidateSelf();
 		}
-		
+
 		public float getPosition()
 		{
 			return mPosition;
 		}
-		
+
 		@Override
 		public int getIntrinsicWidth()
 		{
 			return mSize;
 		}
-		
+
 		@Override
 		public int getIntrinsicHeight()
 		{
 			return mSize;
 		}
-		
+
 		@Override
 		public void draw(Canvas canvas)
 		{
@@ -401,28 +401,28 @@ public class DrawerToggle implements DrawerLayout.DrawerListener
 			canvas.drawRect(0, 40, 30, 48, mPaint);
 			canvas.restore();
 		}
-		
+
 		@Override
 		public void setAlpha(int alpha)
 		{
-			
+
 		}
-		
+
 		@Override
 		public void setColorFilter(ColorFilter colorFilter)
 		{
-			
+
 		}
-		
+
 		@Override
 		public int getOpacity()
 		{
 			return PixelFormat.TRANSLUCENT;
 		}
 	}
-	
+
 	private static final int[] THEME_ATTRS = new int[] {android.R.attr.homeAsUpIndicator};
-	
+
 	private Drawable getThemeUpIndicatorObsolete()
 	{
 		if (C.API_JELLY_BEAN_MR2)
@@ -441,9 +441,9 @@ public class DrawerToggle implements DrawerLayout.DrawerListener
 			return result;
 		}
 	}
-	
+
 	private ImageView mUpIndicatorView;
-	
+
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 	private void setActionBarUpIndicatorObsolete(Drawable upDrawable)
 	{
@@ -468,7 +468,7 @@ public class DrawerToggle implements DrawerLayout.DrawerListener
 			if (mUpIndicatorView != null) mUpIndicatorView.setImageDrawable(upDrawable);
 		}
 	}
-	
+
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
 	private boolean isLayoutRtl()
 	{

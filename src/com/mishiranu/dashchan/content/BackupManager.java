@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -50,7 +50,7 @@ public class BackupManager
 {
 	private static final Pattern NAME_PATTERN = Pattern.compile("backup-(\\d+)\\.zip");
 	private static final Comparator<File> COMPARATOR = (lhs, rhs) -> rhs.getName().compareTo(lhs.getName());
-	
+
 	public static LinkedHashMap<File, String> getAvailableBackups(Context context)
 	{
 		LinkedHashMap<File, String> backups = new LinkedHashMap<>();
@@ -73,12 +73,12 @@ public class BackupManager
 		}
 		return backups;
 	}
-	
+
 	private static void addFileToMap(LinkedHashMap<String, Pair<File, Boolean>> files, File file, boolean mustExist)
 	{
 		files.put(file.getName(), new Pair<>(file, mustExist));
 	}
-	
+
 	private static LinkedHashMap<String, Pair<File, Boolean>> obtainBackupFiles()
 	{
 		LinkedHashMap<String, Pair<File, Boolean>> files = new LinkedHashMap<>();
@@ -88,7 +88,7 @@ public class BackupManager
 		addFileToMap(files, AutohideStorage.getInstance().getFile(), false);
 		return files;
 	}
-	
+
 	public static void makeBackup(Context context)
 	{
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -133,7 +133,7 @@ public class BackupManager
 		}
 		else ToastUtils.show(context, R.string.message_no_access);
 	}
-	
+
 	public static void loadBackup(Context context, File file)
 	{
 		LinkedHashMap<String, Pair<File, Boolean>> files = obtainBackupFiles();

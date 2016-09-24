@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,10 +34,10 @@ import com.mishiranu.dashchan.util.GraphicsUtils;
 public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean>
 {
 	public static final String RECAPTCHA_SKIP_RESPONSE = "recaptcha_skip_response";
-	
+
 	private final Callback mCallback;
 	private final CaptchaReader mCaptchaReader;
-	
+
 	private final String mCaptchaType;
 	private final String[] mCaptchaPass;
 	private final boolean mMayShowLoadButton;
@@ -45,7 +45,7 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean>
 	private final String mChanName;
 	private final String mBoardName;
 	private final String mThreadNumber;
-	
+
 	private ChanPerformer.CaptchaState mCaptchaState;
 	private ChanPerformer.CaptchaData mCaptchaData;
 	private String mLoadedCaptchaType;
@@ -63,22 +63,22 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean>
 				Bitmap image, boolean large, boolean blackAndWhite);
 		public void onReadCaptchaError(ErrorItem errorItem);
 	}
-	
+
 	public interface CaptchaReader
 	{
 		public ChanPerformer.ReadCaptchaResult onReadCaptcha(ChanPerformer.ReadCaptchaData data)
 				throws ExtensionException, HttpException, InvalidResponseException;
 	}
-	
+
 	private static class ChanCaptchaReader implements CaptchaReader
 	{
 		private final String mChanName;
-		
+
 		public ChanCaptchaReader(String chanName)
 		{
 			mChanName = chanName;
 		}
-		
+
 		@Override
 		public ChanPerformer.ReadCaptchaResult onReadCaptcha(ChanPerformer.ReadCaptchaData data)
 				throws ExtensionException, HttpException, InvalidResponseException
@@ -86,7 +86,7 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean>
 			return ChanPerformer.get(mChanName).safe().onReadCaptcha(data);
 		}
 	}
-	
+
 	public ReadCaptchaTask(Callback callback, CaptchaReader captchaReader,
 			String captchaType, String requirement, String[] captchaPass, boolean mayShowLoadButton,
 			String chanName, String boardName, String threadNumber)
@@ -102,7 +102,7 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean>
 		mBoardName = boardName;
 		mThreadNumber = threadNumber;
 	}
-	
+
 	@Override
 	protected Boolean doInBackground(Void... params)
 	{
@@ -215,7 +215,7 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean>
 		mErrorItem = new ErrorItem(ErrorItem.TYPE_UNKNOWN);
 		return false;
 	}
-	
+
 	@Override
 	protected void onPostExecute(Boolean result)
 	{

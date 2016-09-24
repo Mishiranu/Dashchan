@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,12 +24,12 @@ import java.util.NoSuchElementException;
 public class WeakObservable<T> implements Iterable<T>
 {
 	private final ArrayList<WeakReference<T>> mObservers = new ArrayList<>();
-	
+
 	public void register(T observer)
 	{
 		mObservers.add(new WeakReference<>(observer));
 	}
-	
+
 	public void unregister(T observer)
 	{
 		Iterator<WeakReference<T>> iterator = mObservers.iterator();
@@ -39,19 +39,19 @@ public class WeakObservable<T> implements Iterable<T>
 			if (item == observer || item == null) iterator.remove();
 		}
 	}
-	
+
 	@Override
 	public Iterator<T> iterator()
 	{
 		return new WeakIterator();
 	}
-	
+
 	private class WeakIterator implements Iterator<T>
 	{
 		private final Iterator<WeakReference<T>> mIterator = mObservers.iterator();
-		
+
 		private T mNext;
-		
+
 		@Override
 		public boolean hasNext()
 		{
@@ -70,7 +70,7 @@ public class WeakObservable<T> implements Iterable<T>
 			}
 			return mNext != null;
 		}
-		
+
 		@Override
 		public T next()
 		{
@@ -79,7 +79,7 @@ public class WeakObservable<T> implements Iterable<T>
 			mNext = null;
 			return next;
 		}
-		
+
 		@Override
 		public void remove()
 		{

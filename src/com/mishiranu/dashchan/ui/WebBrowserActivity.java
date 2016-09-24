@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -59,7 +59,7 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 {
 	private WebView mWebView;
 	private ProgressView mProgressView;
-	
+
 	@SuppressLint("SetJavaScriptEnabled")
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -91,7 +91,7 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 		webView.loadUrl(getIntent().getData().toString());
 		registerForContextMenu(webView);
 	}
-	
+
 	@Override
 	protected void onFinish()
 	{
@@ -101,12 +101,12 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 		WebViewUtils.clearAll(mWebView);
 		mWebView.destroy();
 	}
-	
+
 	private static final int OPTIONS_MENU_RELOAD = 0;
 	private static final int OPTIONS_MENU_COPY_LINK = 1;
 	private static final int OPTIONS_MENU_SHARE_LINK = 2;
 	private static final int OPTIONS_MENU_BROWSER = 3;
-	
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu)
 	{
@@ -118,7 +118,7 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 		menu.add(0, OPTIONS_MENU_BROWSER, 0, R.string.action_browser);
 		return super.onCreateOptionsMenu(menu);
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
@@ -155,7 +155,7 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 		}
 		return true;
 	}
-	
+
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo)
 	{
@@ -179,20 +179,20 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 			}
 		}
 	}
-	
+
 	@Override
 	public void onConfigurationChanged(Configuration newConfig)
 	{
 		super.onConfigurationChanged(newConfig);
 		ViewUtils.fixActionBar(this, null);
 	}
-	
+
 	@Override
 	public void onBackPressed()
 	{
 		if (mWebView.canGoBack()) mWebView.goBack(); else super.onBackPressed();
 	}
-	
+
 	@Override
 	public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimetype,
 			long contentLength)
@@ -207,7 +207,7 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 			ToastUtils.show(this, R.string.message_unknown_address);
 		}
 	}
-	
+
 	private class CustomWebViewClient extends WebViewClient
 	{
 		@Override
@@ -240,7 +240,7 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 						finish();
 						startActivity(NavigationUtils.obtainTargetIntent(WebBrowserActivity.this,
 								chanName, navigationData, true, false));
-						
+
 					}).show();
 					return true;
 				}
@@ -248,7 +248,7 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 			view.loadUrl(url);
 			return true;
 		}
-		
+
 		@Override
 		public void onPageFinished(WebView view, String url)
 		{
@@ -256,7 +256,7 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 			if (StringUtils.isEmptyOrWhitespace(title)) setTitle(R.string.action_browser);
 			else setTitle(view.getTitle());
 		}
-		
+
 		@Override
 		public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error)
 		{
@@ -268,7 +268,7 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 			else handler.proceed();
 		}
 	}
-	
+
 	private class CustomWebChromeClient extends WebChromeClient
 	{
 		@Override
@@ -277,24 +277,24 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 			mProgressView.setProgress(newProgress);
 		}
 	}
-	
+
 	private static class ProgressView extends View
 	{
 		private static final int TRANSIENT_TIME = 200;
-		
+
 		private final Paint mPaint = new Paint();
-		
+
 		private long mProgressSetTime;
 		private float mTransientProgress = 0f;
 		private int mProgress = 0;
-		
+
 		public ProgressView(Context context)
 		{
 			super(context);
 			int color = ResourceUtils.getColor(context, R.attr.colorAccentSupport);
 			mPaint.setColor(Color.BLACK | color);
 		}
-		
+
 		public void setProgress(int progress)
 		{
 			mTransientProgress = calculateTransient();
@@ -302,17 +302,17 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 			mProgress = progress;
 			invalidate();
 		}
-		
+
 		private float getTime()
 		{
 			return Math.min((float) (System.currentTimeMillis() - mProgressSetTime) / TRANSIENT_TIME, 1f);
 		}
-		
+
 		private float calculateTransient()
 		{
 			return AnimationUtils.lerp(mTransientProgress, mProgress, getTime());
 		}
-		
+
 		@Override
 		protected void onDraw(Canvas canvas)
 		{

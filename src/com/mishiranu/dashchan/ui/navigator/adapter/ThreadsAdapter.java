@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -75,14 +75,14 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 	private final String mBoardName;
 	private final UiManager mUiManager;
 	private final HidePerformer mHidePerformer;
-	
+
 	private final View mHeaderView;
 	private final View mHeaderAdditional;
 	private final ClickableView mHeaderClickableView;
 	private final ImageView mHeaderExpandIcon;
 	private final TextView[] mHeaderData = new TextView[6];
 	private final RadioButton[] mSortingData = new RadioButton[3];
-	
+
 	private boolean mMayShowHeader = false;
 	private boolean mHeaderExpanded = false;
 	private boolean mBusy = false;
@@ -91,7 +91,7 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 	private boolean mGridMode = false;
 	private int mGridRowCount = 1;
 	private int mGridItemContentHeight;
-	
+
 	public ThreadsAdapter(Context context, String chanName, String boardName, UiManager uiManager)
 	{
 		mContext = context;
@@ -176,7 +176,7 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 		mSortingData[0].setChecked(true);
 		mHeaderView = frameLayout;
 	}
-	
+
 	public void applyAttributesBeforeFill(boolean headerExpanded, int catalogSortIndex, boolean gridMode)
 	{
 		mHeaderExpanded = headerExpanded;
@@ -184,7 +184,7 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 		mCatalogPostItems = null;
 		setGridMode(gridMode);
 	}
-	
+
 	private void prepareGridItems()
 	{
 		if (mGridItems != null && mGridItems.size() > 0) return;
@@ -222,30 +222,30 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 		}
 		if (postItems != null) mGridItems.add(postItems);
 	}
-	
+
 	private boolean isShowHeader()
 	{
 		return mMayShowHeader && mFilteredPostItems == null;
 	}
-	
+
 	public boolean isRealEmpty()
 	{
 		return mItems.size() == 0;
 	}
-	
+
 	@Override
 	public void notifyDataSetChanged()
 	{
 		if (mGridItems != null) mGridItems.clear();
 		super.notifyDataSetChanged();
 	}
-	
+
 	@Override
 	public int getViewTypeCount()
 	{
 		return 4;
 	}
-	
+
 	@Override
 	public int getItemViewType(int position)
 	{
@@ -254,7 +254,7 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 				: ITEM_VIEW_TYPE_THREAD : item instanceof PostItem[] ? ITEM_VIEW_TYPE_THREAD_GRID
 				: item instanceof DividerItem ? ITEM_VIEW_TYPE_PAGE_DIVIDER : IGNORE_ITEM_VIEW_TYPE;
 	}
-	
+
 	@Override
 	public int getCount()
 	{
@@ -268,14 +268,14 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 		count += isShowHeader() ? 1 : 0;
 		return count;
 	}
-	
+
 	@Override
 	public Object getItem(int position)
 	{
 		Object item = getItemInternal(position);
 		return item instanceof PostItem ? (PostItem) item : item instanceof PostItem[] ? (PostItem[]) item : null;
 	}
-	
+
 	public Object getItemInternal(int position)
 	{
 		if (isShowHeader())
@@ -294,25 +294,25 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 					? mCatalogPostItems : mItems).get(position);
 		}
 	}
-	
+
 	@Override
 	public long getItemId(int position)
 	{
 		return 0;
 	}
-	
+
 	@Override
 	public boolean isEnabled(int position)
 	{
 		return getItem(position) != null;
 	}
-	
+
 	@Override
 	public boolean areAllItemsEnabled()
 	{
 		return true;
 	}
-	
+
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent)
 	{
@@ -398,9 +398,9 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 		}
 		return convertView;
 	}
-	
+
 	private Animator mLastAnimator;
-	
+
 	@Override
 	public void onClick(View v)
 	{
@@ -447,12 +447,12 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 			mLastAnimator = animatorSet;
 		}
 	}
-	
+
 	public boolean isHeaderExpanded()
 	{
 		return mHeaderExpanded;
 	}
-	
+
 	public int getCatalogSortIndex()
 	{
 		if (mMayShowHeader && mSortingData[0].getVisibility() == View.VISIBLE)
@@ -464,7 +464,7 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 		}
 		return -1;
 	}
-	
+
 	public void setItems(Collection<ArrayList<PostItem>> postItems, int pageNumber, int boardSpeed)
 	{
 		mCatalogPostItems = null;
@@ -480,7 +480,7 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 		applyFilterIfNecessary();
 		notifyDataSetChanged();
 	}
-	
+
 	public void appendItems(ArrayList<PostItem> postItems, int pageNumber, int boardSpeed)
 	{
 		mCatalogPostItems = null;
@@ -488,7 +488,7 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 		applyFilterIfNecessary();
 		notifyDataSetChanged();
 	}
-	
+
 	public void notifyNotModified()
 	{
 		for (Object item : mItems)
@@ -501,7 +501,7 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 		}
 		notifyDataSetChanged();
 	}
-	
+
 	private void appendItemsInternal(ArrayList<PostItem> postItems, int pageNumber, int boardSpeed)
 	{
 		if (pageNumber > 0)
@@ -517,13 +517,13 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 			}
 		}
 	}
-	
+
 	private static void appendNewLine(StringBuilder builder, String line)
 	{
 		if (builder.length() > 0) builder.append('\n');
 		builder.append(line);
 	}
-	
+
 	private void updateHeaderView(boolean catalog, int boardSpeed)
 	{
 		mMayShowHeader = true;
@@ -637,17 +637,17 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 		mHeaderClickableView.setVisibility(mayExpand ? View.VISIBLE : View.GONE);
 		mHeaderExpandIcon.setVisibility(mayExpand ? View.VISIBLE : View.GONE);
 	}
-	
+
 	private static final Comparator<PostItem> SORT_BY_DATE_COMPARATOR = (lhs, rhs) ->
 	{
 		return ((Long) rhs.getTimestamp()).compareTo(lhs.getTimestamp());
 	};
-	
+
 	private static final Comparator<PostItem> SORT_BY_REPLIES_COMPARATOR = (lhs, rhs) ->
 	{
 		return rhs.getThreadPostsCount() - lhs.getThreadPostsCount();
 	};
-	
+
 	@Override
 	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
 	{
@@ -663,7 +663,7 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 			if (!mCatalogPostItems.isEmpty()) notifyDataSetChanged();
 		}
 	}
-	
+
 	private void applySorting(int index)
 	{
 		if (mCatalogPostItems == null) mCatalogPostItems = new ArrayList<>(mItems.size());
@@ -683,12 +683,12 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 			}
 		}
 	}
-	
+
 	private void applyFilterIfNecessary()
 	{
 		if (mFilteredPostItems != null) applyFilter(mFilterText);
 	}
-	
+
 	/*
 	 * Returns true, if adapter isn't empty.
 	 */
@@ -722,7 +722,7 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 		notifyDataSetChanged();
 		return !filterMode || mFilteredPostItems.size() > 0;
 	}
-	
+
 	public void updateConfiguration(int listViewWidth)
 	{
 		Pair<Integer, Integer> configuration = obtainGridConfiguration(mContext, listViewWidth,
@@ -734,7 +734,7 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 			if (mGridMode && mItems.size() > 0) notifyDataSetChanged();
 		}
 	}
-	
+
 	static Pair<Integer, Integer> obtainGridConfiguration(Context context, int listViewWidth, int currentRowCount,
 			int currentContentHeight)
 	{
@@ -753,7 +753,7 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 		}
 		return null;
 	}
-	
+
 	public void setGridMode(boolean gridMode)
 	{
 		if (mGridMode != gridMode)
@@ -762,17 +762,17 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 			if (mItems.size() > 0) notifyDataSetChanged();
 		}
 	}
-	
+
 	public boolean isGridMode()
 	{
 		return mGridMode;
 	}
-	
+
 	private static String getPositionType(int type, Object item)
 	{
 		switch (type)
 		{
-			case ITEM_VIEW_TYPE_THREAD: 
+			case ITEM_VIEW_TYPE_THREAD:
 			case ITEM_VIEW_TYPE_THREAD_HIDDEN: return "thread" + ((PostItem) item).getPostNumber();
 			case ITEM_VIEW_TYPE_THREAD_GRID: return "thread" + ((PostItem[]) item)[0].getPostNumber();
 			case ITEM_VIEW_TYPE_PAGE_DIVIDER: return "divider" + ((DividerItem) item).pageNumber;
@@ -780,7 +780,7 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 		}
 		return null;
 	}
-	
+
 	public String getPositionInfo(int position)
 	{
 		int count = getCount();
@@ -789,7 +789,7 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 		int type = getItemViewType(position);
 		return getPositionType(type, item);
 	}
-	
+
 	public int getPositionFromInfo(String positionInfo)
 	{
 		if (positionInfo != null)
@@ -820,7 +820,7 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 		}
 		return -1;
 	}
-	
+
 	@Override
 	public void setListViewBusy(boolean isBusy, AbsListView listView)
 	{
@@ -855,12 +855,12 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 		}
 		mBusy = isBusy;
 	}
-	
+
 	private static class DividerItem
 	{
 		public final String title;
 		public final int pageNumber;
-		
+
 		public DividerItem(String title, int pageNumber)
 		{
 			this.title = title;

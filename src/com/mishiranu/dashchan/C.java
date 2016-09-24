@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,15 +29,15 @@ public class C
 	public static final boolean API_KITKAT = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
 	public static final boolean API_LOLLIPOP = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
 	public static final boolean API_MARSHMALLOW = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
-	
+
 	public static final HashSet<String> IMAGE_EXTENSIONS = new HashSet<>();
 	public static final HashSet<String> AUDIO_EXTENSIONS = new HashSet<>();
 	public static final HashSet<String> VIDEO_EXTENSIONS = new HashSet<>();
-	
+
 	public static final HashMap<String, String> EXTENSION_TRANSFORMATION = new HashMap<>();
-	
+
 	public static final boolean WEB_VIEW_BITMAP_DECODER_SUPPORTED;
-	
+
 	static
 	{
 		Collections.addAll(IMAGE_EXTENSIONS, "jpg", "jpe", "jpeg", "png", "apng", "gif", "webp", "bmp");
@@ -49,34 +49,34 @@ public class C
 		EXTENSION_TRANSFORMATION.put("jpe", "jpeg");
 		EXTENSION_TRANSFORMATION.put("apng", "png");
 	}
-	
+
 	public static final String UPDATE_SOURCE_URI_STRING = "//raw.githubusercontent.com/Mishiranu/Dashchan/master/"
 			+ "update/data.json";
-	
+
 	public static final String DEFAULT_DOWNLOAD_PATH = "/Download/Dashchan/";
-	
+
 	public static final String USER_AGENT = "Mozilla/5.0 (Android 6.0; Mobile; rv:47.0) Gecko/20100101 Firefox/47.0";
-	
+
 	public static final String API_KEY_GOOGLE = BuildConfig.API_KEY_GOOGLE;
 	public static final String API_KEY_SOUNDCLOUD = BuildConfig.API_KEY_SOUNDCLOUD;
-	
+
 	public static final int HIDDEN_UNKNOWN = 0;
 	public static final int HIDDEN_FALSE = 1;
 	public static final int HIDDEN_TRUE = 2;
-	
+
 	public static final String ACTION_POST_SENT = "com.mishiranu.dashchan.action.POST_SENT";
 	public static final String ACTION_GALLERY_GO_TO_POST = "com.mishiranu.dashchan.action.GALLERY_GO_TO_POST";
-	
+
 	public static final int REQUEST_CODE_ATTACH = 1;
 	public static final int REQUEST_CODE_UNINSTALL = 2;
 	public static final int REQUEST_CODE_OPEN_PATH = 3;
-	
+
 	public static final String NOTIFICATION_TAG_UPDATE = "update";
 	public static final String NOTIFICATION_TAG_POSTING = "posting";
-	
+
 	public static final int NOTIFICATION_ID_DOWNLOAD = 1;
 	public static final int NOTIFICATION_ID_AUDIO_PLAYER = 2;
-	
+
 	public static final String EXTRA_ALLOW_EXPANDED_SCREEN = "com.mishiranu.dashchan.extra.ALLOW_EXPANDED_SCREEN";
 	public static final String EXTRA_ALLOW_GO_TO_POST = "com.mishiranu.dashchan.extra.ALLOW_GO_TO_POST";
 	public static final String EXTRA_ANIMATED_TRANSITION = "com.mishiranu.dashchan.extra.ANIMATED_TRANSITION";

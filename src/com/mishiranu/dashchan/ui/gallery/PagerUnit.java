@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -55,14 +55,14 @@ public class PagerUnit implements PagerInstance.Callback
 {
 	private final GalleryInstance mGalleryInstance;
 	private final PagerInstance mPagerInstance;
-	
+
 	private final ImageUnit mImageUnit;
 	private final VideoUnit mVideoUnit;
-	
+
 	private final FrameLayout mViewPagerParent;
 	private final PhotoViewPager mViewPager;
 	private final PagerAdapter mPagerAdapter;
-	
+
 	public PagerUnit(GalleryInstance instance)
 	{
 		mGalleryInstance = instance;
@@ -81,18 +81,18 @@ public class PagerUnit implements PagerInstance.Callback
 				FrameLayout.LayoutParams.MATCH_PARENT);
 		mViewPager.setCount(instance.galleryItems.size());
 	}
-	
+
 	public View getView()
 	{
 		return mViewPagerParent;
 	}
-	
+
 	public void addAndInitViews(FrameLayout frameLayout, int initialPosition)
 	{
 		mVideoUnit.addViews(frameLayout);
 		mViewPager.setCurrentIndex(initialPosition >= 0 ? initialPosition : 0);
 	}
-	
+
 	public void onViewsCreated(int[] imageViewPosition)
 	{
 		if (!mGalleryInstance.callback.isGalleryWindow() && imageViewPosition != null)
@@ -110,43 +110,43 @@ public class PagerUnit implements PagerInstance.Callback
 			}
 		}
 	}
-	
+
 	private boolean mResumed = false;
-	
+
 	public void onResume()
 	{
 		mResumed = true;
 		mVideoUnit.onResume();
 	}
-	
+
 	public void onPause()
 	{
 		mResumed = false;
 		mVideoUnit.onPause();
 	}
-	
+
 	public int getCurrentIndex()
 	{
 		return mViewPager.getCurrentIndex();
 	}
-	
+
 	public void onApplyWindowPaddings(Rect rect)
 	{
 		mVideoUnit.onApplyWindowPaddings(rect);
 	}
-	
+
 	public void invalidateControlsVisibility()
 	{
 		mVideoUnit.invalidateControlsVisibility();
 	}
-	
+
 	public void onBackToGallery()
 	{
 		mVideoUnit.showHideVideoView(false);
 	}
-	
+
 	private static final float PAGER_SCALE = 0.9f;
-	
+
 	public void switchMode(boolean galleryMode, int duration)
 	{
 		if (galleryMode)
@@ -177,23 +177,23 @@ public class PagerUnit implements PagerInstance.Callback
 			}
 		}
 	}
-	
+
 	public void navigatePageFromList(int position, int duration)
 	{
 		mPagerAdapter.setWaitBeforeNextVideo(duration);
 		mViewPager.setCurrentIndex(position);
 	}
-	
+
 	public void onConfigurationChanged(Configuration newConfig)
 	{
 		mVideoUnit.onConfigurationChanged(newConfig);
 	}
-	
+
 	public void refreshCurrent()
 	{
 		if (mPagerInstance.currentHolder != null) loadImageVideo(true, false, 0);
 	}
-	
+
 	public static class OptionsMenuCapabilities
 	{
 		public final boolean available;
@@ -203,7 +203,7 @@ public class PagerUnit implements PagerInstance.Callback
 		public final boolean searchImage;
 		public final boolean navigatePost;
 		public final boolean shareFile;
-		
+
 		public OptionsMenuCapabilities(boolean available, boolean save, boolean refresh, boolean viewTechnicalInfo,
 				boolean searchImage, boolean navigatePost, boolean shareFile)
 		{
@@ -216,7 +216,7 @@ public class PagerUnit implements PagerInstance.Callback
 			this.shareFile = shareFile;
 		}
 	}
-	
+
 	public OptionsMenuCapabilities obtainOptionsMenuCapabilities()
 	{
 		PagerInstance.ViewHolder holder = mPagerInstance.currentHolder;
@@ -252,30 +252,30 @@ public class PagerUnit implements PagerInstance.Callback
 		return new OptionsMenuCapabilities(available, save, refresh, viewTechnicalInfo,
 				searchImage, navigatePost, shareFile);
 	}
-	
+
 	public GalleryItem getCurrentGalleryItem()
 	{
 		return mPagerInstance.currentHolder != null ? mPagerInstance.currentHolder.galleryItem : null;
 	}
-	
+
 	public void viewTechnicalInfo()
 	{
 		GalleryItem galleryItem = mPagerInstance.currentHolder.galleryItem;
 		if (galleryItem.isImage(mGalleryInstance.locator)) mImageUnit.viewTechnicalInfo();
 		else if (galleryItem.isVideo(mGalleryInstance.locator)) mVideoUnit.viewTechnicalInfo();
 	}
-	
+
 	private void interrupt(boolean force)
 	{
 		mImageUnit.interrupt(force);
 		mVideoUnit.interrupt();
 	}
-	
+
 	public void forcePauseVideo()
 	{
 		mVideoUnit.forcePause();
 	}
-	
+
 	public void onFinish()
 	{
 		interrupt(true);
@@ -283,10 +283,10 @@ public class PagerUnit implements PagerInstance.Callback
 		{
 			mPagerAdapter.recycleAll();
 			System.gc();
-			
+
 		}, 200);
 	}
-	
+
 	private void loadImageVideo(final boolean reload, boolean mayShowThumbnailOnly, int waitBeforeVideo)
 	{
 		PagerInstance.ViewHolder holder = mPagerInstance.currentHolder;
@@ -345,7 +345,7 @@ public class PagerUnit implements PagerInstance.Callback
 			mVideoUnit.applyVideo(uri, cachedFile, reload);
 		}
 	}
-	
+
 	private boolean presetThumbnail(PagerInstance.ViewHolder holder, GalleryItem galleryItem,
 			boolean keepScale, boolean unbind)
 	{
@@ -377,7 +377,7 @@ public class PagerUnit implements PagerInstance.Callback
 		}
 		return false;
 	}
-	
+
 	@Override
 	public void showError(PagerInstance.ViewHolder holder, String message)
 	{
@@ -392,7 +392,7 @@ public class PagerUnit implements PagerInstance.Callback
 			holder.progressBar.cancelVisibilityTransient();
 		}
 	}
-	
+
 	private final PhotoView.Listener mPhotoViewListener = new PhotoView.Listener()
 	{
 		@Override
@@ -424,9 +424,9 @@ public class PagerUnit implements PagerInstance.Callback
 				else mGalleryInstance.callback.navigateGalleryOrFinish();
 			}
 		}
-		
+
 		private boolean mSwiping = false;
-		
+
 		@Override
 		public void onVerticalSwipe(PhotoView photoView, float value)
 		{
@@ -438,7 +438,7 @@ public class PagerUnit implements PagerInstance.Callback
 			}
 			mGalleryInstance.callback.modifyVerticalSwipeState(value);
 		}
-		
+
 		@Override
 		public boolean onClose(PhotoView photoView)
 		{
@@ -446,11 +446,11 @@ public class PagerUnit implements PagerInstance.Callback
 			return true;
 		}
 	};
-	
+
 	private static class PlayShape extends Shape
 	{
 		private final Path mPath = new Path();
-		
+
 		@Override
 		public void draw(Canvas canvas, Paint paint)
 		{
@@ -474,23 +474,23 @@ public class PagerUnit implements PagerInstance.Callback
 			path.rewind();
 		}
 	}
-	
+
 	private class PagerAdapter implements PhotoViewPager.Adapter
 	{
 		private final ArrayList<GalleryItem> mGalleryItems;
-		
+
 		private int mWaitBeforeVideo = 0;
-		
+
 		public PagerAdapter(ArrayList<GalleryItem> galleryItems)
 		{
 			mGalleryItems = galleryItems;
 		}
-		
+
 		public void setWaitBeforeNextVideo(int waitBeforeVideo)
 		{
 			mWaitBeforeVideo = waitBeforeVideo;
 		}
-		
+
 		@Override
 		public View onCreateView(ViewGroup parent)
 		{
@@ -508,13 +508,13 @@ public class PagerUnit implements PagerInstance.Callback
 			view.setTag(holder);
 			return view;
 		}
-		
+
 		@Override
 		public PhotoView getPhotoView(View view)
 		{
 			return ((PagerInstance.ViewHolder) view.getTag()).photoView;
 		}
-		
+
 		private void applySideViewData(PagerInstance.ViewHolder holder, int index, boolean active)
 		{
 			GalleryItem galleryItem = mGalleryItems.get(index);
@@ -556,9 +556,9 @@ public class PagerUnit implements PagerInstance.Callback
 				}
 			}
 		}
-		
+
 		private int mPreviousIndex = -1;
-		
+
 		@Override
 		public void onPositionChange(PhotoViewPager view, int index, View currentView, View leftView, View rightView,
 				boolean manually)
@@ -599,13 +599,13 @@ public class PagerUnit implements PagerInstance.Callback
 				mGalleryInstance.callback.navigatePost(galleryItem, false);
 			}
 		}
-		
+
 		@Override
 		public void onSwipingStateChange(PhotoViewPager view, boolean swiping)
 		{
 			mVideoUnit.handleSwipingContent(swiping, false);
 		}
-		
+
 		public void recycleAll()
 		{
 			for (int i = 0; i < mViewPager.getChildCount(); i++)
@@ -616,19 +616,19 @@ public class PagerUnit implements PagerInstance.Callback
 			}
 		}
 	}
-	
+
 	private class LoadThumbnailCallback extends ImageLoader.Callback<PhotoView>
 	{
 		private final PagerInstance.ViewHolder mHolder;
 		private final GalleryItem mGalleryItem;
-		
+
 		public LoadThumbnailCallback(PhotoView view, PagerInstance.ViewHolder holder, GalleryItem galleryItem)
 		{
 			super(view);
 			mHolder = holder;
 			mGalleryItem = galleryItem;
 		}
-		
+
 		@Override
 		public void onSuccess(Bitmap bitmap)
 		{
@@ -637,11 +637,11 @@ public class PagerUnit implements PagerInstance.Callback
 				presetThumbnail(mHolder, mGalleryItem, false, true);
 			}
 		}
-		
+
 		@Override
 		public void onError()
 		{
-			
+
 		}
 	}
 }

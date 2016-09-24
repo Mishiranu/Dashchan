@@ -16,22 +16,22 @@ public final class TemplateParser<H>
 	private final HashMap<String, ArrayList<AttributeMatcher<H>>> mCloseMatchers = new HashMap<>();
 	private final ArrayList<TextCallback<H>> mTextCallbacks = new ArrayList<>();
 	private boolean mReady;
-	
+
 	private final ArrayList<Pair<String, AttributeMatcher<H>>> mBuildingMatchers = new ArrayList<>();
 	private OpenCallback<H> mOpenCallback;
 	private ContentCallback<H> mContentCallback;
 	private CloseCallback<H> mCloseCallback;
-	
+
 	@Public
 	public TemplateParser()
 	{
-		
+
 	}
-	
+
 	private static class AttributeMatcher<H>
 	{
 		public enum Method {EQUALS, STARTS, CONTAINS, ENDS}
-		
+
 		private final String mAttribute;
 		private final String mValue;
 		private final Method mMethod;
@@ -39,14 +39,14 @@ public final class TemplateParser<H>
 		public OpenCallback<H> openCallback;
 		public ContentCallback<H> contentCallback;
 		public CloseCallback<H> closeCallback;
-		
+
 		public AttributeMatcher(String attribute, String value, Method method)
 		{
 			mAttribute = attribute;
 			mValue = value;
 			mMethod = method;
 		}
-		
+
 		public boolean match(Attributes attributes)
 		{
 			if (mMethod == null) return true;
@@ -61,7 +61,7 @@ public final class TemplateParser<H>
 			throw new RuntimeException();
 		}
 	}
-	
+
 	private void copyCallbacks()
 	{
 		if (mOpenCallback != null || mContentCallback != null || mCloseCallback != null)
@@ -96,7 +96,7 @@ public final class TemplateParser<H>
 			mCloseCallback = null;
 		}
 	}
-	
+
 	private void normalize()
 	{
 		for (ArrayList<AttributeMatcher<H>> matchers : mOpenMatchers.values())
@@ -114,42 +114,42 @@ public final class TemplateParser<H>
 			}
 		}
 	}
-	
+
 	private void checkReady()
 	{
 		if (mReady) throw new IllegalStateException("You can not call this method after prepare() call");
 	}
-	
+
 	@Public
 	public TemplateParser<H> name(String tagName)
 	{
 		return tag(tagName, null, null, null);
 	}
-	
+
 	@Public
 	public TemplateParser<H> equals(String tagName, String attribute, String value)
 	{
 		return tag(tagName, attribute, value, AttributeMatcher.Method.EQUALS);
 	}
-	
+
 	@Public
 	public TemplateParser<H> starts(String tagName, String attribute, String value)
 	{
 		return tag(tagName, attribute, value, AttributeMatcher.Method.STARTS);
 	}
-	
+
 	@Public
 	public TemplateParser<H> contains(String tagName, String attribute, String value)
 	{
 		return tag(tagName, attribute, value, AttributeMatcher.Method.CONTAINS);
 	}
-	
+
 	@Public
 	public TemplateParser<H> ends(String tagName, String attribute, String value)
 	{
 		return tag(tagName, attribute, value, AttributeMatcher.Method.ENDS);
 	}
-	
+
 	private TemplateParser<H> tag(String tagName, String attribute, String value, AttributeMatcher.Method method)
 	{
 		checkReady();
@@ -158,7 +158,7 @@ public final class TemplateParser<H>
 		mBuildingMatchers.add(new Pair<>(tagName, new AttributeMatcher<>(attribute, value, method)));
 		return this;
 	}
-	
+
 	@Public
 	public TemplateParser<H> open(OpenCallback<H> openCallback)
 	{
@@ -167,7 +167,7 @@ public final class TemplateParser<H>
 		mOpenCallback = openCallback;
 		return this;
 	}
-	
+
 	@Public
 	public TemplateParser<H> content(ContentCallback<H> contentCallback)
 	{
@@ -176,7 +176,7 @@ public final class TemplateParser<H>
 		mContentCallback = contentCallback;
 		return this;
 	}
-	
+
 	@Public
 	public TemplateParser<H> close(CloseCallback<H> closeCallback)
 	{
@@ -185,7 +185,7 @@ public final class TemplateParser<H>
 		mCloseCallback = closeCallback;
 		return this;
 	}
-	
+
 	private void checkHasMatchers()
 	{
 		if (mBuildingMatchers.isEmpty())
@@ -193,7 +193,7 @@ public final class TemplateParser<H>
 			throw new IllegalStateException("You must define at least one parsing rule before adding this callback");
 		}
 	}
-	
+
 	@Public
 	public TemplateParser<H> text(TextCallback<H> textCallback)
 	{
@@ -206,7 +206,7 @@ public final class TemplateParser<H>
 		mTextCallbacks.add(textCallback);
 		return this;
 	}
-	
+
 	@Public
 	public TemplateParser<H> prepare()
 	{
@@ -216,7 +216,7 @@ public final class TemplateParser<H>
 		mReady = true;
 		return this;
 	}
-	
+
 	@Public
 	public void parse(String source, H holder) throws ParseException
 	{
@@ -230,17 +230,17 @@ public final class TemplateParser<H>
 			// finish() was called
 		}
 	}
-	
+
 	@Public
 	public static final class Attributes
 	{
 		private static final Object NULL = new Object();
-		
+
 		private GroupParser mParser;
 		private String mAttributes;
-		
+
 		private final HashMap<String, Object> mLastValues = new HashMap<>();
-		
+
 		@Public
 		public String get(String attribute)
 		{
@@ -250,7 +250,7 @@ public final class TemplateParser<H>
 			mLastValues.put(attribute, stringValue != null ? stringValue : NULL);
 			return stringValue;
 		}
-		
+
 		public void set(GroupParser parser, String attributes)
 		{
 			mParser = parser;
@@ -258,79 +258,79 @@ public final class TemplateParser<H>
 			mLastValues.clear();
 		}
 	}
-	
+
 	@Public
 	public static final class Instance
 	{
 		private final Implementation mImplementation;
-		
+
 		public Instance(Implementation implementation)
 		{
 			mImplementation = implementation;
 		}
-		
+
 		@Public
 		public void finish()
 		{
 			mImplementation.mFinish = true;
 		}
 	}
-	
+
 	@Extendable
 	public interface OpenCallback<H>
 	{
 		@Extendable
 		public boolean onOpen(Instance instance, H holder, String tagName, Attributes attributes) throws ParseException;
 	}
-	
+
 	@Extendable
 	public interface ContentCallback<H>
 	{
 		@Extendable
 		public void onContent(Instance instance, H holder, String text) throws ParseException;
 	}
-	
+
 	@Extendable
 	public interface CloseCallback<H>
 	{
 		@Extendable
 		public void onClose(Instance instance, H holder, String tagName) throws ParseException;
 	}
-	
+
 	@Extendable
 	public interface TextCallback<H>
 	{
 		@Extendable
 		public void onText(Instance instance, H holder, String source, int start, int end) throws ParseException;
 	}
-	
+
 	private static class FinishException extends ParseException
 	{
-		
+
 	}
-	
+
 	private static class Implementation<H> implements GroupParser.Callback
 	{
 		private final TemplateParser<H> mParser;
 		private final H mHolder;
-		
+
 		private final Attributes mAttributes = new Attributes();
 		private final Instance mInstance = new Instance(this);
-		
+
 		private AttributeMatcher<H> mWorkMatcher;
 		private boolean mFinish = false;
-		
+
 		public Implementation(TemplateParser<H> parser, H holder)
 		{
 			mParser = parser;
 			mHolder = holder;
 		}
-		
+
 		private void checkFinish() throws FinishException
 		{
 			if (mFinish) throw new FinishException();
 		}
-		
+
 		@Override
 		public boolean onStartElement(GroupParser parser, String tagName, String attrs) throws ParseException
 		{
@@ -359,7 +359,7 @@ public final class TemplateParser<H>
 			}
 			return false;
 		}
-		
+
 		@Override
 		public void onEndElement(GroupParser parser, String tagName) throws ParseException
 		{
@@ -373,7 +373,7 @@ public final class TemplateParser<H>
 				}
 			}
 		}
-		
+
 		@Override
 		public void onGroupComplete(GroupParser parser, String text) throws ParseException
 		{
@@ -383,7 +383,7 @@ public final class TemplateParser<H>
 				checkFinish();
 			}
 		}
-		
+
 		@Override
 		public void onText(GroupParser parser, String source, int start, int end) throws ParseException
 		{

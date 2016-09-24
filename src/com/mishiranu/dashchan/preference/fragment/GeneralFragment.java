@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,16 +31,16 @@ import com.mishiranu.dashchan.preference.Preferences;
 public class GeneralFragment extends BasePreferenceFragment
 {
 	private ListPreference mLocalePreference;
-	
+
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
 		Collection<String> chanNames = ChanManager.getInstance().getAvailableChanNames();
-		
+
 		mLocalePreference = makeList(null, Preferences.KEY_LOCALE, Preferences.VALUES_LOCALE,
 				Preferences.DEFAULT_LOCALE, R.string.preference_locale, Preferences.ENTRIES_LOCALE);
-		
+
 		PreferenceCategory navigationCategory = makeCategory(R.string.preference_category_navigation);
 		makeCheckBox(navigationCategory, true, Preferences.KEY_CLOSE_ON_BACK, Preferences.DEFAULT_CLOSE_ON_BACK,
 				R.string.preference_close_on_back, R.string.preference_close_on_back_summary);
@@ -51,12 +51,12 @@ public class GeneralFragment extends BasePreferenceFragment
 		}
 		makeCheckBox(navigationCategory, true, Preferences.KEY_INTERNAL_BROWSER, Preferences.DEFAULT_INTERNAL_BROWSER,
 				R.string.preference_internal_browser, R.string.preference_internal_browser_sumamry);
-		
+
 		PreferenceCategory servicesCategory = makeCategory(R.string.preference_category_services);
 		makeCheckBox(servicesCategory, true, Preferences.KEY_RECAPTCHA_JAVASCRIPT,
 				Preferences.DEFAULT_RECAPTCHA_JAVASCRIPT, R.string.preference_recaptcha_javascript,
 				R.string.preference_recaptcha_javascript_summary);
-		
+
 		PreferenceCategory connectionCategory = makeCategory(R.string.preference_category_connection);
 		makeButton(connectionCategory, 0, R.string.preference_use_https_warning, true).setSelectable(false);
 		makeCheckBox(connectionCategory, true, Preferences.KEY_USE_HTTPS_GENERAL, Preferences.DEFAULT_USE_HTTPS,
@@ -67,7 +67,7 @@ public class GeneralFragment extends BasePreferenceFragment
 		makeCheckBox(connectionCategory, true, Preferences.KEY_USE_GMS_PROVIDER, Preferences.DEFAULT_USE_GMS_PROVIDER,
 				R.string.preference_use_gms_provider, R.string.preference_use_gms_provider_summary);
 	}
-	
+
 	@Override
 	public void onPreferenceAfterChange(Preference preference)
 	{

@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,24 +29,24 @@ import com.mishiranu.dashchan.preference.Preferences;
 public class StatisticsManager
 {
 	private static final StatisticsManager INSTANCE = new StatisticsManager();
-	
+
 	public static StatisticsManager getInstance()
 	{
 		return INSTANCE;
 	}
-	
+
 	private static final String KEY_VIEWS = "views";
 	private static final String KEY_POSTS = "posts";
 	private static final String KEY_THREADS = "threads";
-	
+
 	private JSONObject mStatistics;
-	
+
 	public static class StatisticsItem
 	{
 		public final int threadsViewed;
 		public final int postsSent;
 		public final int threadsCreated;
-		
+
 		private StatisticsItem(ChanConfiguration.Statistics statistics, int views, int posts, int threads)
 		{
 			this.threadsViewed = statistics != null && statistics.threadsViewed ? views : -1;
@@ -54,14 +54,14 @@ public class StatisticsManager
 			this.threadsCreated = statistics != null && statistics.threadsCreated ? threads : -1;
 		}
 	}
-	
+
 	private StatisticsManager()
 	{
 		JSONObject jsonObject = Preferences.getStatistics();
 		if (jsonObject == null) jsonObject = new JSONObject();
 		mStatistics = jsonObject;
 	}
-	
+
 	private JSONObject getObjectForChanName(String chanName)
 	{
 		JSONObject jsonObject = mStatistics.optJSONObject(chanName);
@@ -79,7 +79,7 @@ public class StatisticsManager
 		}
 		return jsonObject;
 	}
-	
+
 	public void incrementViews(String chanName)
 	{
 		ChanConfiguration.Statistics statistics = ChanConfiguration.get(chanName).safe().obtainStatistics();
@@ -96,7 +96,7 @@ public class StatisticsManager
 		}
 		Preferences.setStatistics(mStatistics);
 	}
-	
+
 	public void incrementPosts(String chanName, boolean newThread)
 	{
 		ChanConfiguration.Statistics statistics = ChanConfiguration.get(chanName).safe().obtainStatistics();
@@ -115,7 +115,7 @@ public class StatisticsManager
 		}
 		Preferences.setStatistics(mStatistics);
 	}
-	
+
 	public HashMap<String, StatisticsItem> getItems()
 	{
 		HashMap<String, StatisticsItem> statisticsItems = new HashMap<>();
@@ -137,7 +137,7 @@ public class StatisticsManager
 		}
 		return statisticsItems;
 	}
-	
+
 	public void clear()
 	{
 		mStatistics = new JSONObject();

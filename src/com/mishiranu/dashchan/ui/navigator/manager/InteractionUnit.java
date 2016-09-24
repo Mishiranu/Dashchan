@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -48,12 +48,12 @@ import com.mishiranu.dashchan.widget.AttachmentView;
 public class InteractionUnit
 {
 	private final UiManager mUiManager;
-	
+
 	InteractionUnit(UiManager uiManager)
 	{
 		mUiManager = uiManager;
 	}
-	
+
 	public void handleLinkClick(String chanName, Uri uri, boolean confirmed)
 	{
 		boolean handled = false;
@@ -124,7 +124,7 @@ public class InteractionUnit
 							.setPositiveButton(android.R.string.ok, (dialog, which) ->
 					{
 						mUiManager.navigator().navigateTarget(uriChanName, navigationDataFinal, false);
-						
+
 					}).show();
 					mUiManager.dialog().notifySwitchBackground();
 				}
@@ -132,13 +132,13 @@ public class InteractionUnit
 		}
 		if (!handled) NavigationUtils.handleUriInternal(mUiManager.getContext(), chanName, uri, true);
 	}
-	
+
 	private static final int LINK_MENU_COPY = 0;
 	private static final int LINK_MENU_INTERNAL_BROWSER = 1;
 	private static final int LINK_MENU_EXTERNAL_BROWSER = 2;
 	private static final int LINK_MENU_DOWNLOAD_FILE = 3;
 	private static final int LINK_MENU_OPEN_THREAD = 4;
-	
+
 	public void handleLinkLongClick(final Uri uri)
 	{
 		String uriChanName = ChanManager.getInstance().getChanNameByHost(uri.getHost());
@@ -211,25 +211,25 @@ public class InteractionUnit
 		dialogMenu.show();
 		mUiManager.dialog().notifySwitchBackground();
 	}
-	
+
 	private static class ThumbnailClickListenerImpl implements UiManager.ThumbnailClickListener
 	{
 		private final UiManager mUiManager;
 		private int mIndex;
 		private boolean mMayShowDialog;
-		
+
 		public ThumbnailClickListenerImpl(UiManager uiManager)
 		{
 			mUiManager = uiManager;
 		}
-		
+
 		@Override
 		public void update(int index, boolean mayShowDialog)
 		{
 			mIndex = index;
 			mMayShowDialog = mayShowDialog;
 		}
-		
+
 		@Override
 		public void onClick(View v)
 		{
@@ -258,23 +258,23 @@ public class InteractionUnit
 			}
 		}
 	}
-	
+
 	private static class ThumbnailLongClickListenerImpl implements UiManager.ThumbnailLongClickListener
 	{
 		private final UiManager mUiManager;
 		private AttachmentItem mAttachmentItem;
-		
+
 		public ThumbnailLongClickListenerImpl(UiManager uiManager)
 		{
 			mUiManager = uiManager;
 		}
-		
+
 		@Override
 		public void update(AttachmentItem attachmentItem)
 		{
 			mAttachmentItem = attachmentItem;
 		}
-		
+
 		@Override
 		public boolean onLongClick(View v)
 		{
@@ -284,30 +284,30 @@ public class InteractionUnit
 			return true;
 		}
 	}
-	
+
 	public UiManager.ThumbnailClickListener createThumbnailClickListener()
 	{
 		return new ThumbnailClickListenerImpl(mUiManager);
 	}
-	
+
 	public UiManager.ThumbnailLongClickListener createThumbnailLongClickListener()
 	{
 		return new ThumbnailLongClickListenerImpl(mUiManager);
 	}
-	
+
 	private static class ThumbnailLongClickDialog implements DialogMenu.Callback
 	{
 		private final UiManager mUiManager;
 		private final AttachmentItem mAttachmentItem;
 		private final AttachmentView mAttachmentView;
 		private final String mThreadTitle;
-		
+
 		private static final int MENU_DOWNLOAD_FILE = 0;
 		private static final int MENU_SEARCH_IMAGE = 1;
 		private static final int MENU_SHOW_THUMBNAIL = 2;
 		private static final int MENU_COPY_LINK = 3;
 		private static final int MENU_SHARE_LINK = 4;
-		
+
 		public ThumbnailLongClickDialog(UiManager uiManager, AttachmentItem attachmentItem,
 				AttachmentView attachmentView, boolean hasViewHolder, String threadTitle)
 		{
@@ -335,7 +335,7 @@ public class InteractionUnit
 			dialogMenu.show();
 			uiManager.dialog().notifySwitchBackground();
 		}
-		
+
 		@Override
 		public void onItemClick(Context context, int id, Map<String, Object> extra)
 		{
@@ -375,13 +375,13 @@ public class InteractionUnit
 			}
 		}
 	}
-	
+
 	public void showThumbnailLongClickDialog(AttachmentItem attachmentItem, AttachmentView attachmentView,
 			boolean hasViewHolder, String threadTitle)
 	{
 		new ThumbnailLongClickDialog(mUiManager, attachmentItem, attachmentView, hasViewHolder, threadTitle);
 	}
-	
+
 	public boolean handlePostClick(View view, PostItem postItem, Iterable<PostItem> localPostItems)
 	{
 		if (postItem.isHiddenUnchecked())
@@ -406,7 +406,7 @@ public class InteractionUnit
 			return mUiManager.view().handlePostForDoubleClick(view);
 		}
 	}
-	
+
 	private static final int MENU_REPLY = 0;
 	private static final int MENU_QUOTE = 1;
 	private static final int MENU_COPY = 2;
@@ -424,7 +424,7 @@ public class InteractionUnit
 	private static final int MENU_HIDE_REPLIES = 14;
 	private static final int MENU_HIDE_NAME = 15;
 	private static final int MENU_HIDE_SIMILAR = 16;
-	
+
 	public boolean handlePostContextMenu(final PostItem postItem, final Replyable replyable, boolean allowMyMarkEdit,
 			boolean allowHiding)
 	{
@@ -596,12 +596,12 @@ public class InteractionUnit
 		}
 		return false;
 	}
-	
+
 	private String getCopyReadyComment(CharSequence text)
 	{
 		return getCopyReadyComment(text, 0, text.length());
 	}
-	
+
 	String getCopyReadyComment(CharSequence text, int start, int end)
 	{
 		if (text instanceof Spanned)

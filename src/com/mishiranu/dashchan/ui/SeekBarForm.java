@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,19 +37,19 @@ public class SeekBarForm implements SeekBar.OnSeekBarChangeListener, CompoundBut
 	private int mStep = 10;
 	private float mMultipler = 1f;
 	private String mValueFormat;
-	
+
 	private int mCurrentValue;
 	private boolean mSwitchValue;
-	
+
 	private SeekBar mSeekBar;
 	private Switch mSwitch;
 	private TextView mValueText;
-	
+
 	public SeekBarForm(boolean showSwitch)
 	{
 		mShowSwitch = showSwitch;
 	}
-	
+
 	public void setConfiguration(int minValue, int maxValue, int step, float multipler)
 	{
 		mMaxValue = maxValue;
@@ -57,12 +57,12 @@ public class SeekBarForm implements SeekBar.OnSeekBarChangeListener, CompoundBut
 		mStep = step;
 		mMultipler = multipler;
 	}
-	
+
 	public void setValueFormat(String valueFormat)
 	{
 		mValueFormat = valueFormat;
 	}
-	
+
 	@SuppressLint("InflateParams")
 	public View inflate(Context context)
 	{
@@ -85,32 +85,32 @@ public class SeekBarForm implements SeekBar.OnSeekBarChangeListener, CompoundBut
 		updateCurrentValueText();
 		return view;
 	}
-	
+
 	public void setCurrentValue(int currentValue)
 	{
 		mCurrentValue = currentValue;
 	}
-	
+
 	public void setSwitchValue(boolean switchValue)
 	{
 		mSwitchValue = switchValue;
 	}
-	
+
 	public int getCurrentValue()
 	{
 		return mCurrentValue;
 	}
-	
+
 	public float getMultipler()
 	{
 		return mMultipler;
 	}
-	
+
 	public boolean getSwitchValue()
 	{
 		return mSwitchValue;
 	}
-	
+
 	public void updateCurrentValueText()
 	{
 		int currentValue = (int) (mMultipler * mCurrentValue);
@@ -118,32 +118,32 @@ public class SeekBarForm implements SeekBar.OnSeekBarChangeListener, CompoundBut
 				: Integer.toString(currentValue);
 		mValueText.setText(currentValueText);
 	}
-	
+
 	@Override
 	public void onProgressChanged(SeekBar seek, int value, boolean fromTouch)
 	{
 		mCurrentValue = value * mStep + mMinValue;
 		updateCurrentValueText();
 	}
-	
+
 	@Override
 	public void onStartTrackingTouch(SeekBar seek)
 	{
-		
+
 	}
-	
+
 	@Override
 	public void onStopTrackingTouch(SeekBar seek)
 	{
-		
+
 	}
-	
+
 	@Override
 	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
 	{
 		mSwitchValue = isChecked;
 	}
-	
+
 	public SeekBar getSeekBar()
 	{
 		return mSeekBar;

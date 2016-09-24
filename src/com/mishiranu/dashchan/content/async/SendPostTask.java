@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,15 +42,15 @@ public class SendPostTask extends HttpHolderTask<Void, Long, Boolean>
 	private final String mChanName;
 	private final Callback mCallback;
 	private final ChanPerformer.SendPostData mData;
-	
+
 	private final boolean mProgressMode;
-	
+
 	private ChanPerformer.SendPostResult mResult;
 	private ErrorItem mErrorItem;
 	private Object mExtra;
 	private boolean mCaptchaError = false;
 	private boolean mKeepCaptcha = false;
-	
+
 	private final TimedProgressHandler mProgressHandler = new TimedProgressHandler()
 	{
 		@Override
@@ -61,10 +61,10 @@ public class SendPostTask extends HttpHolderTask<Void, Long, Boolean>
 				publishProgress(0L, progress, progressMax);
 			}
 		}
-		
+
 		private final ArrayList<MultipartEntity.Openable> mCompleteOpenables = new ArrayList<>();
 		private MultipartEntity.Openable mLastOpenable = null;
-		
+
 		@Override
 		public void onProgressChange(MultipartEntity.Openable openable, long progress, long progressMax)
 		{
@@ -83,7 +83,7 @@ public class SendPostTask extends HttpHolderTask<Void, Long, Boolean>
 			}
 		}
 	};
-	
+
 	public interface Callback
 	{
 		public void onSendPostChangeProgressState(String key, ProgressState progressState,
@@ -94,7 +94,7 @@ public class SendPostTask extends HttpHolderTask<Void, Long, Boolean>
 		public void onSendPostFail(String key, ChanPerformer.SendPostData data, String chanName, ErrorItem errorItem,
 				Object extra, boolean captchaError, boolean keepCaptcha);
 	}
-	
+
 	public SendPostTask(String key, String chanName, Callback callback, ChanPerformer.SendPostData data)
 	{
 		mKey = key;
@@ -110,16 +110,16 @@ public class SendPostTask extends HttpHolderTask<Void, Long, Boolean>
 			}
 		}
 	}
-	
+
 	public boolean isProgressMode()
 	{
 		return mProgressMode;
 	}
-	
+
 	public enum ProgressState {CONNECTING, SENDING, PROCESSING}
-	
+
 	private ProgressState mLastProgressState = ProgressState.CONNECTING;
-	
+
 	private void switchProgressState(ProgressState progressState, int attachmentIndex, boolean force)
 	{
 		if (mLastProgressState != progressState || force)
@@ -132,7 +132,7 @@ public class SendPostTask extends HttpHolderTask<Void, Long, Boolean>
 			}
 		}
 	}
-	
+
 	private void updateProgressValue(int index, long progress, long progressMax)
 	{
 		if (progress == 0) switchProgressState(ProgressState.SENDING, index, true);
@@ -142,7 +142,7 @@ public class SendPostTask extends HttpHolderTask<Void, Long, Boolean>
 			mCallback.onSendPostChangeProgressValue(mKey, (int) (progress / 1024), (int) (progressMax / 1024));
 		}
 	}
-	
+
 	@Override
 	protected Boolean doInBackground(Void... params)
 	{
@@ -224,7 +224,7 @@ public class SendPostTask extends HttpHolderTask<Void, Long, Boolean>
 			ChanConfiguration.get(mChanName).commit();
 		}
 	}
-	
+
 	@Override
 	protected void onProgressUpdate(Long... values)
 	{
@@ -233,7 +233,7 @@ public class SendPostTask extends HttpHolderTask<Void, Long, Boolean>
 		long progressMax = values[2];
 		updateProgressValue(index, progress, progressMax);
 	}
-	
+
 	@Override
 	protected void onPostExecute(final Boolean result)
 	{

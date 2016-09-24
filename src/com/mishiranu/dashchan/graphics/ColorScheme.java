@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,7 +30,7 @@ public class ColorScheme
 	private static final int[] ATTRS = {android.R.attr.windowBackground, R.attr.backgroundSpoiler,
 		android.R.attr.textColorLink, R.attr.colorTextQuote, R.attr.colorTextTripcode, R.attr.colorTextCapcode,
 		R.attr.colorGainFactor};
-	
+
 	public ColorScheme(Context context)
 	{
 		TypedArray typedArray = context.obtainStyledAttributes(ATTRS);
@@ -52,37 +52,37 @@ public class ColorScheme
 
 	public final int windowBackgroundColor;
 	public final int dialogBackgroundColor;
-	
+
 	public final int spoilerBackgroundColor;
 	public final int spoilerTopBackgroundColor;
-	
+
 	public final int linkColor;
 	public final int quoteColor;
 	public final int clickedColor;
-	
+
 	public final int tripcodeColor;
 	public final int capcodeColor;
-	
+
 	public final int highlightTextColor;
 	public final int highlightBackgroundColor;
-	
+
 	public final float colorGainFactor;
-	
+
 	public interface Span
 	{
 		public void applyColorScheme(ColorScheme colorScheme);
 	}
-	
+
 	public static Span[] getSpans(CharSequence text)
 	{
 		return text instanceof Spanned ? ((Spanned) text).getSpans(0, text.length(), Span.class) : null;
 	}
-	
+
 	public void apply(CharSequence text)
 	{
 		apply(getSpans(text));
 	}
-	
+
 	public void apply(Span[] spans)
 	{
 		if (spans != null)

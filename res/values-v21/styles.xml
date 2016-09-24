@@ -2,13 +2,13 @@
 
 <!--
 	Copyright 2014-2016 Fukurou Mishiranu
-	
+
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
 	You may obtain a copy of the License at
-	
+
 	http://www.apache.org/licenses/LICENSE-2.0
-	
+
 	Unless required by applicable law or agreed to in writing, software
 	distributed under the License is distributed on an "AS IS" BASIS,
 	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,39 +17,39 @@
 -->
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
-	
+
 	<style name="Widget.Special.Main.Light.ActionBar" parent="@android:style/Widget.Material.Light.ActionBar.Solid">
-		
+
 		<item name="android:elevation">0dp</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Special.Main.Light.ActionBar" parent="@android:style/ThemeOverlay.Material.Dark.ActionBar">
-		
+
 		<item name="android:colorAccent">@android:color/black</item>
-		
+
 	</style>
-	
+
 	<style name="Widget.Special.Main.Dark.ActionBar" parent="@android:style/Widget.Material.ActionBar.Solid">
-		
+
 		<item name="android:elevation">0dp</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Special.Main.Dark.ActionBar" parent="@android:style/ThemeOverlay.Material.ActionBar">
-		
+
 		<item name="android:colorAccent">@android:color/white</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Special.Main.Light" parent="@android:style/Theme.Material.Light.DarkActionBar">
-		
+
 		<item name="android:actionBarStyle">@style/Widget.Special.Main.Light.ActionBar</item>
 		<item name="android:actionBarTheme">@style/Theme.Special.Main.Light.ActionBar</item>
-		
+
 		<item name="android:colorEdgeEffect">?android:attr/colorAccent</item>
 		<item name="android:textColorHighlight">@color/color_selection_light</item>
-		
+
 		<item name="actionAttach">@drawable/ic_attach_file_white_edited</item>
 		<item name="actionAddPost">@drawable/ic_edit_white</item>
 		<item name="actionAddRule">@drawable/ic_playlist_add_white</item>
@@ -66,7 +66,7 @@
 		<item name="actionSearch">@drawable/ic_search_white</item>
 		<item name="actionSelect">@drawable/ic_custom_select_white</item>
 		<item name="actionVolumeOff">@drawable/ic_volume_off_white</item>
-		
+
 		<item name="buttonCancel">@drawable/ic_close_black</item>
 		<item name="buttonDropDown">@drawable/ic_arrow_drop_down_black</item>
 		<item name="buttonDropDownDrawer">?attr/buttonDropDown</item>
@@ -76,9 +76,9 @@
 		<item name="buttonRating">@drawable/ic_flag_black</item>
 		<item name="buttonRefresh">@drawable/ic_refresh_black</item>
 		<item name="buttonWarning">@drawable/ic_warning_black</item>
-		
+
 		<item name="iconWarning">@drawable/ic_warning_black_a8c</item>
-		
+
 		<item name="postBanned">@drawable/ic_error_black_aa8</item>
 		<item name="postClosed">@drawable/ic_lock_black_aa8</item>
 		<item name="postCyclical">@drawable/ic_refresh_black_c20_aa8</item>
@@ -88,29 +88,29 @@
 		<item name="postSticky">@drawable/ic_action_make_available_offline_black_edited_a88</item>
 		<item name="postUserPost">@drawable/ic_star_black_c20_aa8</item>
 		<item name="postWarned">@drawable/ic_warning_black_aa8</item>
-		
+
 		<item name="attachmentAudio">@drawable/ic_headset_white</item>
 		<item name="attachmentFile">@drawable/ic_insert_drive_file_white</item>
 		<item name="attachmentSeveral">@drawable/ic_fullscreen_white</item>
 		<item name="attachmentVideo">@drawable/ic_play_circle_outline_white</item>
 		<item name="attachmentWarning">@drawable/ic_warning_white</item>
-		
+
 		<item name="drawerIconColor">#8a000000</item>
 		<item name="drawerMenuBoards">@drawable/ic_local_offer_black_a8a</item>
 		<item name="drawerMenuUserBoards">@drawable/ic_group_black_a8a</item>
 		<item name="drawerMenuHistory">@drawable/ic_history_black_a8a</item>
 		<item name="drawerMenuPreferences">@drawable/ic_settings_black_a8a</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Special.Main.Dark" parent="@android:style/Theme.Material">
-		
+
 		<item name="android:actionBarStyle">@style/Widget.Special.Main.Dark.ActionBar</item>
 		<item name="android:actionBarTheme">@style/Theme.Special.Main.Dark.ActionBar</item>
-		
+
 		<item name="android:colorEdgeEffect">?android:attr/colorAccent</item>
 		<item name="android:textColorHighlight">@color/color_selection_dark</item>
-		
+
 		<item name="actionAttach">@drawable/ic_attach_file_white_edited</item>
 		<item name="actionAddPost">@drawable/ic_edit_white</item>
 		<item name="actionAddRule">@drawable/ic_playlist_add_white</item>
@@ -127,7 +127,7 @@
 		<item name="actionSearch">@drawable/ic_search_white</item>
 		<item name="actionSelect">@drawable/ic_custom_select_white</item>
 		<item name="actionVolumeOff">@drawable/ic_volume_off_white</item>
-		
+
 		<item name="buttonCancel">@drawable/ic_close_white</item>
 		<item name="buttonDropDown">@drawable/ic_arrow_drop_down_white</item>
 		<item name="buttonDropDownDrawer">?attr/buttonDropDown</item>
@@ -137,9 +137,9 @@
 		<item name="buttonRating">@drawable/ic_flag_white</item>
 		<item name="buttonRefresh">@drawable/ic_refresh_white</item>
 		<item name="buttonWarning">@drawable/ic_warning_white</item>
-		
+
 		<item name="iconWarning">@drawable/ic_warning_white_ab5</item>
-		
+
 		<item name="postBanned">@drawable/ic_error_white_a99</item>
 		<item name="postClosed">@drawable/ic_lock_white_a99</item>
 		<item name="postCyclical">@drawable/ic_refresh_white_c20_a99</item>
@@ -149,294 +149,294 @@
 		<item name="postSticky">@drawable/ic_action_make_available_offline_white_edited_a99</item>
 		<item name="postUserPost">@drawable/ic_star_white_c20_a99</item>
 		<item name="postWarned">@drawable/ic_warning_white_a99</item>
-		
+
 		<item name="attachmentAudio">@drawable/ic_headset_white</item>
 		<item name="attachmentFile">@drawable/ic_insert_drive_file_white</item>
 		<item name="attachmentSeveral">@drawable/ic_fullscreen_white</item>
 		<item name="attachmentVideo">@drawable/ic_play_circle_outline_white</item>
 		<item name="attachmentWarning">@drawable/ic_warning_white</item>
-		
+
 		<item name="drawerIconColor">#a8ffffff</item>
 		<item name="drawerMenuBoards">@drawable/ic_local_offer_white_aa8</item>
 		<item name="drawerMenuUserBoards">@drawable/ic_group_white_aa8</item>
 		<item name="drawerMenuHistory">@drawable/ic_history_white_aa8</item>
 		<item name="drawerMenuPreferences">@drawable/ic_settings_white_aa8</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Main.Photon" parent="@style/Theme.General.Extended.Main.Photon">
-		
+
 		<item name="android:dialogTheme">@style/Theme.Main.Photon.Dialog</item>
 		<item name="android:alertDialogTheme">@style/Theme.Main.Photon.Dialog.Alert</item>
-		
+
 		<item name="android:colorPrimary">@color/color_primary_photon</item>
 		<item name="android:colorPrimaryDark">@color/color_primary_photon</item>
 		<item name="android:colorAccent">@color/color_accent_photon</item>
 		<item name="android:textColorHighlight">@color/color_selection_photon</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Main.Hadron" parent="@style/Theme.General.Extended.Main.Hadron">
-		
+
 		<item name="android:dialogTheme">@style/Theme.Main.Hadron.Dialog</item>
 		<item name="android:alertDialogTheme">@style/Theme.Main.Hadron.Dialog.Alert</item>
-		
+
 		<item name="android:colorPrimary">@color/color_primary_hadron</item>
 		<item name="android:colorPrimaryDark">@color/color_primary_hadron</item>
 		<item name="android:colorAccent">@color/color_accent_hadron</item>
 		<item name="android:textColorHighlight">@color/color_selection_hadron</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Main.Burichan" parent="@style/Theme.General.Extended.Main.Burichan">
-		
+
 		<item name="android:dialogTheme">@style/Theme.Main.Burichan.Dialog</item>
 		<item name="android:alertDialogTheme">@style/Theme.Main.Burichan.Dialog.Alert</item>
-		
+
 		<item name="android:colorPrimary">@color/color_primary_burichan</item>
 		<item name="android:colorPrimaryDark">@color/color_primary_burichan</item>
 		<item name="android:colorAccent">@color/color_accent_burichan</item>
 		<item name="android:textColorHighlight">@color/color_selection_burichan</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Main.Tomorrow" parent="@style/Theme.General.Extended.Main.Tomorrow">
-		
+
 		<item name="android:dialogTheme">@style/Theme.Main.Tomorrow.Dialog</item>
 		<item name="android:alertDialogTheme">@style/Theme.Main.Tomorrow.Dialog.Alert</item>
-		
+
 		<item name="android:colorPrimary">@color/color_primary_tomorrow</item>
 		<item name="android:colorPrimaryDark">@color/color_primary_tomorrow</item>
 		<item name="android:colorAccent">@color/color_accent_tomorrow</item>
 		<item name="android:textColorHighlight">@color/color_selection_tomorrow</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Main.Neutron" parent="@style/Theme.General.Extended.Main.Neutron">
-		
+
 		<item name="android:dialogTheme">@style/Theme.Main.Neutron.Dialog</item>
 		<item name="android:alertDialogTheme">@style/Theme.Main.Neutron.Dialog.Alert</item>
-		
+
 		<item name="android:colorPrimary">@color/color_primary_neutron</item>
 		<item name="android:colorPrimaryDark">@color/color_primary_neutron</item>
 		<item name="android:colorAccent">@color/color_accent_neutron</item>
 		<item name="android:textColorHighlight">@color/color_selection_neutron</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Main.Amoled" parent="@style/Theme.General.Extended.Main.Amoled">
-		
+
 		<item name="android:dialogTheme">@style/Theme.Main.Amoled.Dialog</item>
 		<item name="android:alertDialogTheme">@style/Theme.Main.Amoled.Dialog.Alert</item>
-		
+
 		<item name="android:colorPrimary">@color/color_primary_amoled</item>
 		<item name="android:colorPrimaryDark">@color/color_primary_amoled</item>
 		<item name="android:colorAccent">@color/color_accent_amoled</item>
 		<item name="android:textColorHighlight">@color/color_selection_amoled</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Main.Normie" parent="@style/Theme.General.Extended.Main.Normie">
-		
+
 		<item name="android:dialogTheme">@style/Theme.Main.Normie.Dialog</item>
 		<item name="android:alertDialogTheme">@style/Theme.Main.Normie.Dialog.Alert</item>
-		
+
 		<item name="android:colorPrimary">@color/color_primary_normie</item>
 		<item name="android:colorPrimaryDark">@color/color_primary_normie</item>
 		<item name="android:colorAccent">@color/color_accent_normie</item>
 		<item name="android:textColorHighlight">@color/color_selection_normie</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Gallery" parent="@style/Theme.General.Extended.Gallery">
-		
+
 		<item name="android:actionBarStyle">@style/Widget.Gallery.ActionBar</item>
 		<item name="android:dialogTheme">@style/Theme.Gallery.Dialog</item>
 		<item name="android:alertDialogTheme">@style/Theme.Gallery.Dialog.Alert</item>
-		
+
 		<item name="android:colorPrimary">@android:color/white</item>
 		<item name="android:colorPrimaryDark">@android:color/black</item>
 		<item name="android:colorAccent">@android:color/white</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Special.Stub" parent="@android:style/Theme.Material.NoActionBar" />
-	
+
 	<style name="Theme.Special.Main.Light.Dialog" parent="@android:style/Theme.Material.Light.Dialog">
-		
+
 		<item name="android:actionBarTheme">@android:style/ThemeOverlay.Material.Dark.ActionBar</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Special.Main.Light.Dialog.Alert" parent="@android:style/Theme.Material.Light.Dialog.Alert">
-		
+
 		<item name="android:actionBarTheme">@android:style/ThemeOverlay.Material.Dark.ActionBar</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Special.Main.Dark.Dialog" parent="@android:style/Theme.Material.Dialog" />
-	
+
 	<style name="Theme.Special.Main.Dark.Dialog.Alert" parent="@android:style/Theme.Material.Dialog.Alert" />
-	
+
 	<style name="Theme.Main.Photon.Dialog" parent="@style/Theme.Special.Main.Light.Dialog">
-		
+
 		<item name="android:colorPrimary">@color/color_primary_photon</item>
 		<item name="android:colorPrimaryDark">@color/color_primary_photon</item>
 		<item name="android:colorAccent">@color/color_accent_photon</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Main.Photon.Dialog.Alert" parent="@style/Theme.Special.Main.Light.Dialog.Alert">
-		
+
 		<item name="android:colorPrimary">@color/color_primary_photon</item>
 		<item name="android:colorPrimaryDark">@color/color_primary_photon</item>
 		<item name="android:colorAccent">@color/color_accent_photon</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Main.Hadron.Dialog" parent="@style/Theme.Special.Main.Dark.Dialog">
-		
+
 		<item name="android:colorPrimary">@color/color_primary_hadron</item>
 		<item name="android:colorPrimaryDark">@color/color_primary_hadron</item>
 		<item name="android:colorAccent">@color/color_accent_hadron</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Main.Hadron.Dialog.Alert" parent="@style/Theme.Special.Main.Dark.Dialog.Alert">
-		
+
 		<item name="android:colorPrimary">@color/color_primary_hadron</item>
 		<item name="android:colorPrimaryDark">@color/color_primary_hadron</item>
 		<item name="android:colorAccent">@color/color_accent_hadron</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Main.Burichan.Dialog" parent="@style/Theme.Special.Main.Light.Dialog">
-		
+
 		<item name="android:colorPrimary">@color/color_primary_burichan</item>
 		<item name="android:colorPrimaryDark">@color/color_primary_burichan</item>
 		<item name="android:colorAccent">@color/color_accent_burichan</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Main.Burichan.Dialog.Alert" parent="@style/Theme.Special.Main.Light.Dialog.Alert">
-		
+
 		<item name="android:colorPrimary">@color/color_primary_burichan</item>
 		<item name="android:colorPrimaryDark">@color/color_primary_burichan</item>
 		<item name="android:colorAccent">@color/color_accent_burichan</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Main.Tomorrow.Dialog" parent="@style/Theme.Special.Main.Dark.Dialog">
-		
+
 		<item name="android:colorPrimary">@color/color_primary_tomorrow</item>
 		<item name="android:colorPrimaryDark">@color/color_primary_tomorrow</item>
 		<item name="android:colorAccent">@color/color_accent_tomorrow</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Main.Tomorrow.Dialog.Alert" parent="@style/Theme.Special.Main.Dark.Dialog.Alert">
-		
+
 		<item name="android:colorPrimary">@color/color_primary_tomorrow</item>
 		<item name="android:colorPrimaryDark">@color/color_primary_tomorrow</item>
 		<item name="android:colorAccent">@color/color_accent_tomorrow</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Main.Normie.Dialog" parent="@style/Theme.Special.Main.Light.Dialog">
-		
+
 		<item name="android:colorPrimary">@color/color_primary_normie</item>
 		<item name="android:colorPrimaryDark">@color/color_primary_normie</item>
 		<item name="android:colorAccent">@color/color_accent_normie</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Main.Normie.Dialog.Alert" parent="@style/Theme.Special.Main.Light.Dialog.Alert">
-		
+
 		<item name="android:colorPrimary">@color/color_primary_normie</item>
 		<item name="android:colorPrimaryDark">@color/color_primary_normie</item>
 		<item name="android:colorAccent">@color/color_accent_normie</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Main.Neutron.Dialog" parent="@style/Theme.Special.Main.Dark.Dialog">
-		
+
 		<item name="android:colorPrimary">@color/color_primary_neutron</item>
 		<item name="android:colorPrimaryDark">@color/color_primary_neutron</item>
 		<item name="android:colorAccent">@color/color_accent_neutron</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Main.Neutron.Dialog.Alert" parent="@style/Theme.Special.Main.Dark.Dialog.Alert">
-		
+
 		<item name="android:colorPrimary">@color/color_primary_neutron</item>
 		<item name="android:colorPrimaryDark">@color/color_primary_neutron</item>
 		<item name="android:colorAccent">@color/color_accent_neutron</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Main.Amoled.Dialog" parent="@style/Theme.Special.Main.Dark.Dialog">
-		
+
 		<item name="android:colorPrimary">@color/color_primary_amoled</item>
 		<item name="android:colorPrimaryDark">@color/color_primary_amoled</item>
 		<item name="android:colorAccent">@color/color_accent_amoled</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Main.Amoled.Dialog.Alert" parent="@style/Theme.Special.Main.Dark.Dialog.Alert">
-		
+
 		<item name="android:colorPrimary">@color/color_primary_amoled</item>
 		<item name="android:colorPrimaryDark">@color/color_primary_amoled</item>
 		<item name="android:colorAccent">@color/color_accent_amoled</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Gallery.Dialog" parent="@android:style/Theme.Material.Dialog">
-		
+
 		<item name="android:colorPrimary">@android:color/white</item>
 		<item name="android:colorPrimaryDark">@android:color/white</item>
 		<item name="android:colorAccent">@android:color/white</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Gallery.Dialog.Alert" parent="@android:style/Theme.Material.Dialog.Alert">
-		
+
 		<item name="android:colorPrimary">@android:color/white</item>
 		<item name="android:colorPrimaryDark">@android:color/white</item>
 		<item name="android:colorAccent">@android:color/white</item>
-		
+
 	</style>
-	
+
 	<style name="Widget.Gallery.ActionBar" parent="@android:style/Widget.Material.ActionBar">
-		
+
 		<item name="android:background">@android:color/transparent</item>
-		
+
 	</style>
-	
+
 	<style name="Widget.CategoryHeader" parent="@android:style/Widget.TextView">
-		
+
 		<item name="android:minHeight">48dp</item>
 		<item name="android:gravity">left|center_vertical</item>
 		<item name="android:textColor">?android:attr/colorAccent</item>
 		<item name="android:fontFamily">sans-serif-medium</item>
 		<item name="android:textSize">14sp</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Special.Notification" parent="@android:style/Theme.Material.Light">
-		
+
 		<item name="notificationCancel">@drawable/ic_close_grey</item>
 		<item name="notificationRefresh">@drawable/ic_refresh_grey</item>
 		<item name="notificationPlay">@drawable/ic_play_arrow_grey</item>
 		<item name="notificationPause">@drawable/ic_pause_grey</item>
-		
+
 	</style>
-	
+
 	<style name="Theme.Special.White" parent="@android:style/Theme.Material">
-		
+
 		<item name="android:colorPrimary">@android:color/white</item>
 		<item name="android:colorPrimaryDark">@android:color/white</item>
 		<item name="android:colorAccent">@android:color/white</item>
-		
+
 	</style>
-	
+
 </resources>

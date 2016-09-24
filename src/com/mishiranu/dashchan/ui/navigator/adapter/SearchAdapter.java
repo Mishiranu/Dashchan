@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,49 +40,49 @@ public class SearchAdapter extends BaseAdapter implements BusyScrollListener.Cal
 {
 	private static final int TYPE_VIEW = 0;
 	private static final int TYPE_HEADER = 1;
-	
+
 	private final UiManager mUiManager;
 	private final UiManager.DemandSet mDemandSet = new UiManager.DemandSet();
 	private final UiManager.ConfigurationSet mConfigurationSet;
-	
+
 	private final ArrayList<PostItem> mPostItems = new ArrayList<>();
 	private final ArrayList<Object> mGroupItems = new ArrayList<>();
-	
+
 	private boolean mGroupMode = false;
-	
+
 	public SearchAdapter(UiManager uiManager)
 	{
 		mUiManager = uiManager;
 		mConfigurationSet = new UiManager.ConfigurationSet(null, null, new HidePerformer(),
 				new GalleryItem.GallerySet(false), null, null, true, false, false, false, null);
 	}
-	
+
 	@Override
 	public int getViewTypeCount()
 	{
 		return 2;
 	}
-	
+
 	@Override
 	public int getItemViewType(int position)
 	{
 		Object item = getItem(position);
 		return item instanceof PostItem ? TYPE_VIEW : TYPE_HEADER;
 	}
-	
+
 	@Override
 	public boolean isEnabled(int position)
 	{
 		Object item = getItem(position);
 		return item instanceof PostItem;
 	}
-	
+
 	@Override
 	public boolean areAllItemsEnabled()
 	{
 		return false;
 	}
-	
+
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent)
 	{
@@ -107,45 +107,45 @@ public class SearchAdapter extends BaseAdapter implements BusyScrollListener.Cal
 			return convertView;
 		}
 	}
-	
+
 	@Override
 	public int getCount()
 	{
 		return mGroupMode ? mGroupItems.size() : mPostItems.size();
 	}
-	
+
 	@Override
 	public Object getItem(int position)
 	{
 		return mGroupMode ? mGroupItems.get(position) : mPostItems.get(position);
 	}
-	
+
 	public PostItem getPostItem(int position)
 	{
 		Object item = getItem(position);
 		if (item instanceof PostItem) return (PostItem) item;
 		return null;
 	}
-	
+
 	@Override
 	public long getItemId(int position)
 	{
 		return 0;
 	}
-	
+
 	@Override
 	public void setListViewBusy(boolean isBusy, AbsListView listView)
 	{
 		mUiManager.view().handleListViewBusyStateChange(isBusy, listView, mDemandSet);
 	}
-	
+
 	public void setItems(ArrayList<PostItem> postItems)
 	{
 		mPostItems.clear();
 		if (postItems != null) mPostItems.addAll(postItems);
 		handleItems();
 	}
-	
+
 	public void setGroupMode(boolean groupMode)
 	{
 		if (mGroupMode != groupMode)
@@ -154,12 +154,12 @@ public class SearchAdapter extends BaseAdapter implements BusyScrollListener.Cal
 			handleItems();
 		}
 	}
-	
+
 	public boolean isGroupMode()
 	{
 		return mGroupMode;
 	}
-	
+
 	private void handleItems()
 	{
 		mGroupItems.clear();

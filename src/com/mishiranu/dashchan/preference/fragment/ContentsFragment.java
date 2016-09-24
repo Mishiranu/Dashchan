@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -60,18 +60,18 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 {
 	private ExtendedEditTextPreference mDownloadPathPreference;
 	private Preference mClearCachePreference;
-	
+
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		
+
 		makeList(null, Preferences.KEY_LOAD_THUMBNAILS, Preferences.GENERIC_VALUES_NETWORK,
 				Preferences.DEFAULT_LOAD_THUMBNAILS, R.string.preference_load_thumbnails,
 				R.array.preference_generic_network_choices);
 		makeCheckBox(null, true, Preferences.KEY_DOWNLOAD_YOUTUBE_TITLES, Preferences.DEFAULT_DOWNLOAD_YOUTUBE_TITLES,
 				R.string.preference_download_youtube_titles, R.string.preference_download_youtube_titles_summary);
-		
+
 		PreferenceCategory autoRefreshingCategory = makeCategory(R.string.preference_category_auto_refreshing);
 		makeList(autoRefreshingCategory, Preferences.KEY_AUTO_REFRESH_MODE, Preferences.VALUES_AUTO_REFRESH_MODE,
 				Preferences.DEFAULT_AUTO_REFRESH_MODE, R.string.preference_auto_refresh_mode,
@@ -80,7 +80,7 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 				Preferences.DEFAULT_AUTO_REFRESH_INTERVAL, R.string.preference_auto_refresh_interval,
 				R.string.preference_auto_refresh_interval_summary_format, Preferences.MIN_AUTO_REFRESH_INTERVAL,
 				Preferences.MAX_AUTO_REFRESH_INTERVAL, Preferences.STEP_AUTO_REFRESH_INTERVAL, 1f);
-		
+
 		PreferenceCategory downloadingCategory = makeCategory(R.string.preference_category_downloading);
 		makeCheckBox(downloadingCategory, true, Preferences.KEY_DOWNLOAD_DETAIL_NAME,
 				Preferences.DEFAULT_DOWNLOAD_DETAIL_NAME, R.string.preference_download_detail_name,
@@ -105,12 +105,12 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 					Preferences.DEFAULT_NOTIFY_DOWNLOAD_COMPLETE, R.string.preference_notify_download_complete,
 					R.string.preference_notify_download_complete_summary);
 		}
-		
+
 		PreferenceCategory imagesCategory = makeCategory(R.string.preference_category_images);
 		makeList(imagesCategory, Preferences.KEY_LOAD_NEAREST_IMAGE, Preferences.GENERIC_VALUES_NETWORK,
 				Preferences.DEFAULT_LOAD_NEAREST_IMAGE, R.string.preference_load_nearest_image,
 				R.array.preference_generic_network_choices);
-		
+
 		PreferenceCategory videoPlayerCategory = makeCategory(R.string.preference_category_video_player);
 		boolean playerAvailable = VideoPlayer.loadLibraries(getActivity());
 		if (!playerAvailable)
@@ -135,19 +135,19 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 			addDependency(Preferences.KEY_VIDEO_PLAY_AFTER_SCROLL, Preferences.KEY_USE_VIDEO_PLAYER, true);
 			addDependency(Preferences.KEY_VIDEO_SEEK_ANY_FRAME, Preferences.KEY_USE_VIDEO_PLAYER, true);
 		}
-		
+
 		PreferenceCategory additionalCategory = makeCategory(R.string.preference_category_additional);
 		makeSeekBar(additionalCategory, Preferences.KEY_CACHE_SIZE, Preferences.DEFAULT_CACHE_SIZE,
 				getString(R.string.preference_cache_size), "%d MB", 50, 400, 10, Preferences.MULTIPLIER_CACHE_SIZE);
 		mClearCachePreference = makeButton(additionalCategory, R.string.preference_clear_cache, 0, false);
-		
+
 		addDependency(Preferences.KEY_AUTO_REFRESH_INTERVAL, Preferences.KEY_AUTO_REFRESH_MODE, true,
 				Preferences.VALUE_AUTO_REFRESH_MODE_ENABLED);
 		addDependency(Preferences.KEY_SUBDIR_PATTERN, Preferences.KEY_DOWNLOAD_SUBDIR, false,
 				Preferences.VALUE_DOWNLOAD_SUBDIR_DISABLED);
 		updateCacheSize();
 	}
-	
+
 	private CharSequence makeSubdirDescrption()
 	{
 		String[] formats = {"\\c", "\\d", "\\b", "\\t", "\\e", "<\u2026>"};
@@ -162,7 +162,7 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 		}
 		return builder;
 	}
-	
+
 	@Override
 	public boolean onPreferenceClick(Preference preference)
 	{
@@ -174,7 +174,7 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 		}
 		return super.onPreferenceClick(preference);
 	}
-	
+
 	private void updateCacheSize()
 	{
 		long cacheSize = CacheManager.getInstance().getCacheSize();
@@ -182,7 +182,7 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 		mClearCachePreference.setSummary(summary);
 		mClearCachePreference.setEnabled(cacheSize > 0L);
 	}
-	
+
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	@Override
 	public void onClick(DialogInterface dialog, int which)
@@ -190,7 +190,7 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 		startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
 				.putExtra("android.content.extra.SHOW_ADVANCED", true), C.REQUEST_CODE_OPEN_PATH);
 	}
-	
+
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data)
@@ -206,7 +206,7 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 				if (!uri.equals(uriPermission.getUri()))
 				{
 					contentResolver.releasePersistableUriPermission(uriPermission.getUri(),
-							(uriPermission.isReadPermission() ? Intent.FLAG_GRANT_READ_URI_PERMISSION : 0) | 
+							(uriPermission.isReadPermission() ? Intent.FLAG_GRANT_READ_URI_PERMISSION : 0) |
 							(uriPermission.isWritePermission() ? Intent.FLAG_GRANT_WRITE_URI_PERMISSION : 0));
 				}
 			}
@@ -245,7 +245,7 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 						}
 						catch (Exception e)
 						{
-							
+
 						}
 					}
 					if (storageDirectory != null)
@@ -261,14 +261,14 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 			if (!success) ToastUtils.show(getActivity(), R.string.message_unknown_error);
 		}
 	}
-	
+
 	public static class ClearCacheFragment extends DialogFragment implements DialogInterface.OnMultiChoiceClickListener,
 			DialogInterface.OnClickListener, DialogInterface.OnShowListener
 	{
 		private static final String EXTRA_CHECKED_ITEMS = "checkedItems";
-		
+
 		private boolean[] mCheckedItems;
-		
+
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState)
 		{
@@ -281,20 +281,20 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 			dialog.setOnShowListener(this);
 			return dialog;
 		}
-		
+
 		@Override
 		public void onSaveInstanceState(Bundle outState)
 		{
 			super.onSaveInstanceState(outState);
 			outState.putBooleanArray(EXTRA_CHECKED_ITEMS, mCheckedItems);
 		}
-		
+
 		@Override
 		public void onShow(DialogInterface dialog)
 		{
 			((AlertDialog) dialog).getListView().getChildAt(2).setEnabled(!mCheckedItems[3]);
 		}
-		
+
 		@Override
 		public void onClick(DialogInterface dialog, int which, boolean isChecked)
 		{
@@ -318,7 +318,7 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 			}
 			mCheckedItems[which] = isChecked;
 		}
-		
+
 		@Override
 		public void onClick(DialogInterface dialog, int which)
 		{
@@ -328,21 +328,21 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 			clearingDialog.show(getTargetFragment().getFragmentManager(), ClearingDialog.class.getName());
 		}
 	}
-	
+
 	public static class ClearingDialog extends DialogFragment implements AsyncManager.Callback
 	{
 		private static final String EXTRA_THUMBNAILS = "thumbnails";
 		private static final String EXTRA_MEDIA = "media";
 		private static final String EXTRA_OLD_PAGES = "oldPages";
 		private static final String EXTRA_ALL_PAGES = "allPages";
-		
+
 		private static final String TASK_CLEAR_CACHE = "clear_cache";
-		
+
 		public ClearingDialog()
 		{
-			
+
 		}
-		
+
 		public ClearingDialog(boolean thumbnails, boolean media, boolean oldPages, boolean allPages)
 		{
 			Bundle args = new Bundle();
@@ -352,7 +352,7 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 			args.putBoolean(EXTRA_ALL_PAGES, allPages);
 			setArguments(args);
 		}
-		
+
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState)
 		{
@@ -361,19 +361,19 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 			dialog.setCanceledOnTouchOutside(false);
 			return dialog;
 		}
-		
+
 		@Override
 		public void onActivityCreated(Bundle savedInstanceState)
 		{
 			super.onActivityCreated(savedInstanceState);
 			AsyncManager.get(this).startTask(TASK_CLEAR_CACHE, this, null, false);
 		}
-		
+
 		private void sendUpdateCacheSize()
 		{
 			((ContentsFragment) getTargetFragment()).updateCacheSize();
 		}
-		
+
 		@Override
 		public void onCancel(DialogInterface dialog)
 		{
@@ -381,7 +381,7 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 			AsyncManager.get(this).cancelTask(TASK_CLEAR_CACHE, this);
 			sendUpdateCacheSize();
 		}
-		
+
 		@Override
 		public Pair<Object, AsyncManager.Holder> onCreateAndExecuteTask(String name, HashMap<String, Object> extra)
 		{
@@ -391,28 +391,28 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 			task.executeOnExecutor(ClearCacheTask.THREAD_POOL_EXECUTOR);
 			return task.getPair();
 		}
-		
+
 		@Override
 		public void onFinishTaskExecution(String name, AsyncManager.Holder holder)
 		{
 			dismissAllowingStateLoss();
 			sendUpdateCacheSize();
 		}
-		
+
 		@Override
 		public void onRequestTaskCancel(String name, Object task)
 		{
 			((ClearCacheTask) task).cancel();
 		}
 	}
-	
+
 	private static class ClearCacheTask extends AsyncManager.SimpleTask<Void, Void, Void>
 	{
 		private final boolean mThumbnails;
 		private final boolean mMedia;
 		private final boolean mOldPages;
 		private final boolean mAllPages;
-		
+
 		public ClearCacheTask(boolean thumbnails, boolean media, boolean oldPages, boolean allPages)
 		{
 			mThumbnails = thumbnails;
@@ -420,7 +420,7 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 			mOldPages = oldPages;
 			mAllPages = allPages;
 		}
-		
+
 		@Override
 		protected Void doInBackground(Void... params)
 		{
@@ -438,7 +438,7 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 			}
 			return null;
 		}
-		
+
 		@Override
 		public void cancel()
 		{

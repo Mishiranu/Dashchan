@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,42 +34,42 @@ import chan.util.CommonUtils;
 public enum Log
 {
 	ELAPSED_MARK, ELAPSED_MARK_UPDATE, FILE_NAME, DISABLE_QUOTES, TYPE_WARNING, TYPE_ERROR;
-	
+
 	private static final String STACK_TRACE_DIVIDER = "----------------------------------------";
-	
+
 	private static final String TAG = "Dashchan";
 	private static final int MAX_FILES_COUNT = 20;
 	private static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm:ss.SSS", Locale.US);
-	
+
 	private static final ThreadLocal<Long> MARK_TIME = new ThreadLocal<>();
 	private static final Persistent PERSISTENT = new Persistent();
 
 	private static String sTechnicalData;
 	private static PrintStream sLogOutput;
-	
+
 	public static class Persistent
 	{
 		private Persistent()
 		{
-			
+
 		}
-		
+
 		public void mark()
 		{
 			Log.mark();
 		}
-		
+
 		public void write(Object... data)
 		{
 			Log.write(data);
 		}
-		
+
 		public void stack(Throwable t)
 		{
 			Log.stack(t);
 		}
 	}
-	
+
 	public static Persistent persistent()
 	{
 		return PERSISTENT;
@@ -80,7 +80,7 @@ public enum Log
 	{
 		MARK_TIME.set(System.nanoTime());
 	}
-	
+
 	@Deprecated
 	public static void write(Object... data)
 	{
@@ -178,7 +178,7 @@ public enum Log
 			}
 		}
 	}
-	
+
 	@Deprecated
 	public static void stack(Throwable t)
 	{
@@ -198,13 +198,13 @@ public enum Log
 			}
 		}
 	}
-	
+
 	@Deprecated
 	public static void sleep(long interval)
 	{
 		CommonUtils.sleepMaxTime(System.currentTimeMillis(), interval);
 	}
-	
+
 	public static void init(Context context)
 	{
 		PackageInfo packageInfo;
@@ -250,7 +250,7 @@ public enum Log
 			}
 			catch (Exception e)
 			{
-				
+
 			}
 		}
 		File errorsDirectory = new File(packageDirectory, "errors");

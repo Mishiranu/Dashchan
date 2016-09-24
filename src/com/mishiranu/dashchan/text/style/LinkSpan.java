@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,18 +32,18 @@ public class LinkSpan extends CharacterStyle implements UpdateAppearance, Commen
 {
 	private final String mUriString;
 	private final String mPostNumber;
-	
+
 	private int mForegroundColor, mClickedColor;
-	
+
 	private boolean mClicked;
 	private boolean mHidden;
-	
+
 	public LinkSpan(String uriString, String postNumber)
 	{
 		mUriString = StringUtils.fixParsedUriString(uriString);
 		mPostNumber = postNumber;
 	}
-	
+
 	@Override
 	public void applyColorScheme(ColorScheme colorScheme)
 	{
@@ -53,7 +53,7 @@ public class LinkSpan extends CharacterStyle implements UpdateAppearance, Commen
 			mClickedColor = colorScheme.clickedColor;
 		}
 	}
-	
+
 	@Override
 	public void updateDrawState(TextPaint paint)
 	{
@@ -70,7 +70,7 @@ public class LinkSpan extends CharacterStyle implements UpdateAppearance, Commen
 					: GraphicsUtils.mixColors(paint.bgColor, mClickedColor);
 		}
 	}
-	
+
 	@Override
 	public void setClicked(boolean clicked)
 	{
@@ -81,12 +81,12 @@ public class LinkSpan extends CharacterStyle implements UpdateAppearance, Commen
 	{
 		mHidden = hidden;
 	}
-	
+
 	public String getUriString()
 	{
 		return mUriString;
 	}
-	
+
 	public String getPostNumber()
 	{
 		return mPostNumber;

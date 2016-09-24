@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,7 +31,6 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.view.ActionMode;
-import android.view.ContextMenu;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -68,15 +67,15 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 		ActionMode.Callback
 {
 	private static final int GRID_SPACING_DP = 4;
-	
+
 	private final GalleryInstance mInstance;
-	
+
 	private final ScrollBarGridView mGridView;
 	private final GridAdapter mGridAdapter;
-	
+
 	private int mGridRowCount;
 	private ActionMode mSelectionMode;
-	
+
 	public ListUnit(GalleryInstance instance)
 	{
 		mInstance = instance;
@@ -95,12 +94,12 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 		mGridView.setOnItemLongClickListener(this);
 		updateGridMetrics(instance.context.getResources().getConfiguration());
 	}
-	
+
 	public AbsListView getListView()
 	{
 		return mGridView;
 	}
-	
+
 	public void setListSelection(int position, boolean checkVisibility)
 	{
 		if (checkVisibility)
@@ -110,17 +109,17 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 		}
 		mGridView.setSelection(position);
 	}
-	
+
 	public boolean areItemsSelectable()
 	{
 		return mGridAdapter.getCount() > 0;
 	}
-	
+
 	public void startSelectionMode()
 	{
 		mSelectionMode = mGridView.startActionMode(this);
 	}
-	
+
 	public boolean onApplyWindowPaddings(Rect rect)
 	{
 		if (C.API_LOLLIPOP)
@@ -134,9 +133,9 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 		}
 		return false;
 	}
-	
+
 	private static final float GRID_SCALE = 1.1f;
-	
+
 	public void switchMode(boolean galleryMode, int duration)
 	{
 		if (galleryMode)
@@ -164,7 +163,7 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 			else mGridView.setVisibility(View.GONE);
 		}
 	}
-	
+
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id)
 	{
@@ -177,13 +176,13 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 		}
 		else mInstance.callback.navigatePageFromList(position);
 	}
-	
+
 	private static final int MENU_DOWNLOAD_FILE = 0;
 	private static final int MENU_SEARCH_IMAGE = 1;
 	private static final int MENU_COPY_LINK = 2;
 	private static final int MENU_GO_TO_POST = 3;
 	private static final int MENU_SHARE_LINK = 4;
-	
+
 	@Override
 	public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id0)
 	{
@@ -221,7 +220,7 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 					break;
 				}
 			}
-			
+
 		});
 		dialogMenu.setTitle(galleryItem.originalName != null ? galleryItem.originalName
 				: galleryItem.getFileName(mInstance.locator), true);
@@ -236,12 +235,12 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 		dialogMenu.show();
 		return true;
 	}
-	
+
 	public void onConfigurationChanged(Configuration newConfig)
 	{
 		if (newConfig.orientation != Configuration.ORIENTATION_UNDEFINED) updateGridMetrics(newConfig);
 	}
-	
+
 	private void updateGalleryItemChecked(View view, int position)
 	{
 		boolean checked = mGridView.isItemChecked(position);
@@ -249,14 +248,14 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 		if (C.API_LOLLIPOP) holder.selectorCheckDrawable.setSelected(checked, true);
 		else holder.selectorBorderDrawable.setSelected(checked);
 	}
-	
+
 	private void updateAllGalleryItemsChecked()
 	{
 		int startPosition = mGridView.getFirstVisiblePosition();
 		int count = mGridView.getChildCount();
 		for (int i = 0; i < count; i++) updateGalleryItemChecked(mGridView.getChildAt(i), startPosition + i);
 	}
-	
+
 	private static final int ACTION_MENU_SELECT_ALL = 0;
 	private static final int ACTION_MENU_DOWNLOAD_FILES = 1;
 
@@ -282,7 +281,7 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 	{
 		return false;
 	}
-	
+
 	@Override
 	public boolean onActionItemClicked(ActionMode mode, MenuItem item)
 	{
@@ -310,7 +309,7 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 		}
 		return false;
 	}
-	
+
 	@Override
 	public void onDestroyActionMode(ActionMode mode)
 	{
@@ -318,7 +317,7 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 		mGridView.setChoiceMode(GridView.CHOICE_MODE_NONE);
 		updateAllGalleryItemsChecked();
 	}
-	
+
 	private void updateGridMetrics(Configuration configuration)
 	{
 		if (mGridView != null)
@@ -356,7 +355,7 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 			});
 		}
 	}
-	
+
 	private static class GridViewHolder
 	{
 		public AttachmentView thumbnail;
@@ -364,42 +363,42 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 		public SelectorBorderDrawable selectorBorderDrawable;
 		public SelectorCheckDrawable selectorCheckDrawable;
 	}
-	
+
 	private class GridAdapter extends BaseAdapter implements BusyScrollListener.Callback
 	{
 		private final ArrayList<GalleryItem> mGalleryItems;
-		
+
 		private boolean mEnabled = false;
 		private boolean mBusy = false;
-		
+
 		public GridAdapter(ArrayList<GalleryItem> galleryItems)
 		{
 			mGalleryItems = galleryItems;
 		}
-		
+
 		public void activate()
 		{
 			mEnabled = true;
 		}
-		
+
 		@Override
 		public int getCount()
 		{
 			return mEnabled ? mGalleryItems.size() : 0;
 		}
-		
+
 		@Override
 		public GalleryItem getItem(int position)
 		{
 			return mGalleryItems.get(position);
 		}
-		
+
 		@Override
 		public long getItemId(int position)
 		{
 			return 0;
 		}
-		
+
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent)
 		{
@@ -470,7 +469,7 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 			else holder.selectorBorderDrawable.setSelected(checked);
 			return convertView;
 		}
-		
+
 		@Override
 		public void setListViewBusy(boolean isBusy, AbsListView listView)
 		{
@@ -491,7 +490,7 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 				}
 			}
 		}
-		
+
 		public void displayThumbnail(GridViewHolder holder, CacheManager cacheManager, GalleryItem galleryItem)
 		{
 			ImageLoader imageLoader = ImageLoader.getInstance();
@@ -506,17 +505,17 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 			}
 		}
 	}
-	
+
 	private class ScrollBarGridView extends GridView
 	{
 		private final Rect mRect = new Rect();
 		private final Paint mPaint = new Paint();
-		
+
 		public ScrollBarGridView(Context context)
 		{
 			super(context);
 		}
-		
+
 		@SuppressWarnings("unused") // Overrides hidden Android API protected method
 		@TargetApi(Build.VERSION_CODES.KITKAT)
 		protected void onDrawVerticalScrollBar(Canvas canvas, Drawable scrollBar, int l, int t, int r, int b)
@@ -538,9 +537,9 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 				canvas.drawRect(mRect, mPaint);
 			}
 		}
-		
+
 		private EdgeEffectHandler mEdgeEffectHandler;
-		
+
 		@Override
 		public void setOverScrollMode(int mode)
 		{
@@ -555,7 +554,7 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 				}
 			}
 		}
-		
+
 		public void applyEdgeEffectShift(int top, int bottom)
 		{
 			if (mEdgeEffectHandler != null)

@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -54,39 +54,39 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 		WindowControlFrameLayout.OnApplyWindowPaddingsListener
 {
 	private static final int LOLLIPOP_DIM_COLOR = 0x4d000000;
-	
+
 	private final boolean mExpandingEnabled;
 	private final boolean mFullScreenLayoutEnabled;
-	
+
 	private final Activity mActivity;
 	private View mToolbarView;
 	private View mActionModeView;
 	private View mStatusGuardView;
-	
+
 	private AbsListView mListView;
 	private boolean mDrawerOverToolbarEnabled;
 	private FrameLayout mDrawerParent;
 	private AbsListView mDrawerListView;
 	private View mDrawerHeader;
 	private LinkedHashMap<View, Boolean> mAdditionalViews;
-	
+
 	private ValueAnimator mForegroundAnimator;
 	private boolean mForegroundAnimatorShow;
-	
+
 	private final StatusBarController mStatusBar;
 	private final NavigationBarController mNavigationBar;
-	
+
 	private static final int STATE_SHOW = 0x00000001;
 	private static final int STATE_ACTION_MODE = 0x00000002;
 	private static final int STATE_LOCKED = 0x00000004;
-	
+
 	private final HashSet<String> mLockers = new HashSet<>();
 	private int mStateFlags = STATE_SHOW;
-	
+
 	private final int mSlopShiftSize;
 	private final int mLastItemLimit;
 	private int mMinItemsCount;
-	
+
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	public ExpandedScreen(Activity activity, boolean enabled)
 	{
@@ -135,7 +135,7 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 		}
 		readConfiguration(resources.getConfiguration());
 	}
-	
+
 	@Override
 	public void onApplyWindowPaddings(WindowControlFrameLayout view, Rect rect)
 	{
@@ -144,13 +144,13 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 		needUpdate |= mStatusBar.onSystemWindowInsetsChanged(rect);
 		if (needUpdate) onConfigurationChanged(null);
 	}
-	
+
 	private class StatusBarController
 	{
 		private final int mHeight;
 		private final int mInitialActionBarHeight;
 		private boolean mShown = false; // Will be changed if enabled and transparent mode
-		
+
 		public StatusBarController()
 		{
 			Resources resources = mActivity.getResources();
@@ -158,17 +158,17 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 			// Height may be not changed when screen rotated in insets rect on 4.4 (tested on emulator)
 			mInitialActionBarHeight = obtainActionBarHeight();
 		}
-		
+
 		public int getHeight()
 		{
 			return mHeight;
 		}
-		
+
 		public boolean isShown()
 		{
 			return mShown;
 		}
-		
+
 		public boolean onSystemWindowInsetsChanged(Rect insets)
 		{
 			boolean oldStatusShown = mShown;
@@ -178,27 +178,27 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 			return statusShown != oldStatusShown;
 		}
 	}
-	
+
 	private class NavigationBarController
 	{
 		private int mRight;
 		private int mBottom;
-		
+
 		public int getRight()
 		{
 			return mRight;
 		}
-		
+
 		public int getBottom()
 		{
 			return mBottom;
 		}
-		
+
 		public boolean isShown()
 		{
 			return mRight > 0 || mBottom > 0;
 		}
-		
+
 		public boolean onSystemWindowInsetsChanged(Rect insets)
 		{
 			int right = insets.right;
@@ -212,61 +212,61 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 			return false;
 		}
 	}
-	
+
 	public int getSystemDimenResource(Resources resources, String name, int fallbackValue)
 	{
 		int resId = resources.getIdentifier(name, "dimen", "android");
 		return resId != 0 ? resources.getDimensionPixelSize(resId) : fallbackValue;
 	}
-	
+
 	public boolean getSystemBoolResource(Resources resources, String name, boolean fallbackValue)
 	{
 		int resId = resources.getIdentifier(name, "bool", "android");
 		return resId != 0 ? resources.getBoolean(resId) : fallbackValue;
 	}
-	
+
 	/*
 	 * The same value is hardcoded in ActionBarImpl.
 	 */
 	private static final int ACTION_BAR_ANIMATION_TIME = 250;
-	
+
 	private final ForegroundDrawable mContentForeground;
 	private final ForegroundDrawable mStatusBarContentForeground;
 	private final ForegroundDrawable mStatusBarDrawerForeground;
-	
+
 	private abstract class ForegroundDrawable extends Drawable
 	{
 		protected int mAlpha = 0xff;
-		
+
 		public final void applyAlpha(float value)
 		{
 			mAlpha = (int) (0xff * value);
 			invalidateSelf();
 		}
-		
+
 		@Override
 		public final int getOpacity()
 		{
 			return 0;
 		}
-		
+
 		@Override
 		public final void setAlpha(int alpha)
 		{
-			
+
 		}
-		
+
 		@Override
 		public final void setColorFilter(ColorFilter cf)
 		{
-			
+
 		}
 	}
-	
+
 	private class KitKatContentForeground extends ForegroundDrawable
 	{
 		private final Paint mPaint = new Paint();
-		
+
 		@Override
 		public void draw(Canvas canvas)
 		{
@@ -278,19 +278,19 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 			}
 		}
 	}
-	
+
 	private class LollipopContentForeground extends ForegroundDrawable
 	{
 		private final Paint mPaint = new Paint();
 		private final int mStatusBarColor;
 		private final int mNavigationBarColor;
-		
+
 		public LollipopContentForeground(int statusBarColor, int navigationBarColor)
 		{
 			mStatusBarColor = statusBarColor;
 			mNavigationBarColor = navigationBarColor;
 		}
-		
+
 		@Override
 		public void draw(Canvas canvas)
 		{
@@ -336,17 +336,17 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 			}
 		}
 	}
-	
+
 	private class LollipopStatusBarForeground extends ForegroundDrawable
 	{
 		private final Paint mPaint = new Paint();
 		private final int mStatusBarColor;
-		
+
 		public LollipopStatusBarForeground(int statusBarColor)
 		{
 			mStatusBarColor = statusBarColor;
 		}
-		
+
 		@Override
 		public void draw(Canvas canvas)
 		{
@@ -367,11 +367,11 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 			}
 		}
 	}
-	
+
 	private class LollipopDrawerForeground extends ForegroundDrawable
 	{
 		private final Paint mPaint = new Paint();
-		
+
 		@Override
 		public void draw(Canvas canvas)
 		{
@@ -388,17 +388,17 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 			}
 		}
 	}
-	
+
 	private class ForegroundAnimatorListener implements ValueAnimator.AnimatorListener,
 			ValueAnimator.AnimatorUpdateListener
 	{
 		private final boolean mShow;
-		
+
 		public ForegroundAnimatorListener(boolean show)
 		{
 			mShow = show;
 		}
-		
+
 		@Override
 		public void onAnimationUpdate(ValueAnimator animation)
 		{
@@ -408,35 +408,35 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 			if (mStatusBarDrawerForeground != null) mStatusBarDrawerForeground.applyAlpha(alpha);
 			if (mToolbarView != null) mToolbarView.setAlpha(alpha);
 		}
-		
+
 		@Override
 		public void onAnimationStart(Animator animation)
 		{
-			
+
 		}
-		
+
 		@Override
 		public void onAnimationEnd(Animator animation)
 		{
 			if (mToolbarView != null && !mShow) mActivity.getActionBar().hide();
 			mForegroundAnimator = null;
 		}
-		
+
 		@Override
 		public void onAnimationCancel(Animator animation)
 		{
-			
+
 		}
-		
+
 		@Override
 		public void onAnimationRepeat(Animator animation)
 		{
-			
+
 		}
 	}
-	
+
 	private boolean mLastTranslucent = false;
-	
+
 	@TargetApi(Build.VERSION_CODES.KITKAT)
 	private void setState(int state, boolean value)
 	{
@@ -472,12 +472,12 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 			}
 		}
 	}
-	
+
 	private boolean checkState(int state)
 	{
 		return FlagUtils.get(mStateFlags, state);
 	}
-	
+
 	private void applyShowActionBar(boolean show)
 	{
 		ActionBar actionBar = mActivity.getActionBar();
@@ -505,17 +505,17 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 			if (show) actionBar.show(); else actionBar.hide();
 		}
 	}
-	
+
 	private boolean isActionBarShowing()
 	{
 		if (!mActivity.getActionBar().isShowing()) return false;
 		if (mToolbarView != null && mForegroundAnimator != null) return mForegroundAnimatorShow;
 		return true;
 	}
-	
+
 	private boolean mEnqueuedShowState = true;
 	private long mLastShowStateChanged;
-	
+
 	private final Runnable mShowStateRunnable = () ->
 	{
 		if (mEnqueuedShowState != isActionBarShowing())
@@ -527,25 +527,25 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 			updatePaddings();
 		}
 	};
-	
+
 	public void addLocker(String name)
 	{
 		mLockers.add(name);
 		if (!checkState(STATE_LOCKED)) setLocked(true);
 	}
-	
+
 	public void removeLocker(String name)
 	{
 		mLockers.remove(name);
 		if (mLockers.size() == 0 && checkState(STATE_LOCKED)) setLocked(false);
 	}
-	
+
 	private void setLocked(boolean locked)
 	{
 		setState(STATE_LOCKED, locked);
 		if (locked) setShowActionBar(true, false);
 	}
-	
+
 	private void setShowActionBar(boolean show, boolean delayed)
 	{
 		// In Lollipop ActionMode isn't depending from Toolbar (android:windowActionModeOverlay == true in theme)
@@ -563,24 +563,24 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 			}
 		}
 	}
-	
+
 	public boolean isFullScreenLayoutEnabled()
 	{
 		return mFullScreenLayoutEnabled;
 	}
-	
+
 	public void onResume()
 	{
 		onConfigurationChanged(mActivity.getResources().getConfiguration());
 	}
-	
+
 	public void onConfigurationChanged(Configuration configuration)
 	{
 		if (configuration != null) readConfiguration(configuration);
 		updatePaddings();
 		if (mListView != null) mListView.post(mScrollerUpdater);
 	}
-	
+
 	private void readConfiguration(Configuration configuration)
 	{
 		if (configuration.screenHeightDp != Configuration.SCREEN_HEIGHT_DP_UNDEFINED)
@@ -589,7 +589,7 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 			mMinItemsCount = configuration.screenHeightDp / 48;
 		}
 	}
-	
+
 	public void setContentListView(AbsListView listView, ScrollListenerComposite composite)
 	{
 		mListView = listView;
@@ -600,32 +600,32 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 			else listView.setOnScrollListener(scrollTracker);
 		}
 	}
-	
+
 	public void setDrawerListView(FrameLayout drawerParent, AbsListView drawerListView, View drawerHeader)
 	{
 		mDrawerParent = drawerParent;
 		mDrawerListView = drawerListView;
 		mDrawerHeader = drawerHeader;
 	}
-	
+
 	public void addAdditionalView(View additionalView, boolean considerActionBarHeight)
 	{
 		if (mAdditionalViews == null) mAdditionalViews = new LinkedHashMap<>();
 		mAdditionalViews.put(additionalView, considerActionBarHeight);
 	}
-	
+
 	public void removeAdditionalView(View additionalView)
 	{
 		if (mAdditionalViews != null) mAdditionalViews.remove(additionalView);
 	}
-	
+
 	public void setToolbar(View toolbar, FrameLayout toolbarDrawerInterlayerLayout)
 	{
 		mToolbarView = toolbar;
 		toolbarDrawerInterlayerLayout.setForeground(mStatusBarContentForeground);
 		addAdditionalView(toolbarDrawerInterlayerLayout, false);
 	}
-	
+
 	public void finishInitialization()
 	{
 		if (mFullScreenLayoutEnabled)
@@ -643,15 +643,15 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 		}
 		updatePaddings();
 	}
-	
+
 	public void setDrawerOverToolbarEnabled(boolean drawerOverToolbarEnabled)
 	{
 		mDrawerOverToolbarEnabled = drawerOverToolbarEnabled;
 		if (mListView != null) updatePaddings();
 	}
-	
+
 	private static final int[] ATTRS_ACTION_BAR_SIZE = {android.R.attr.actionBarSize};
-	
+
 	private int obtainActionBarHeight()
 	{
 		TypedArray typedArray = mActivity.obtainStyledAttributes(ATTRS_ACTION_BAR_SIZE);
@@ -659,7 +659,7 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 		typedArray.recycle();
 		return actionHeight;
 	}
-	
+
 	public void updatePaddings()
 	{
 		if (mListView != null && (mExpandingEnabled || mFullScreenLayoutEnabled))
@@ -706,9 +706,9 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 			if (mStatusBarDrawerForeground != null) mStatusBarDrawerForeground.invalidateSelf();
 		}
 	}
-	
+
 	private boolean mScrollingDown;
-	
+
 	@Override
 	public void onScroll(AbsListView view, int scrollY, int totalItemCount, boolean first, boolean last)
 	{
@@ -736,7 +736,7 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 		}
 		setShowActionBar(!hide, true);
 	}
-	
+
 	public void setActionModeState(boolean actionMode)
 	{
 		if (actionMode && mFullScreenLayoutEnabled && mActionModeView == null)
@@ -761,7 +761,7 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 				}
 				catch (Exception e)
 				{
-					
+
 				}
 			}
 			if (mStatusGuardView != null) mStatusGuardView.post(mStatusGuardHideRunnable);
@@ -774,12 +774,12 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 			setShowActionBar(true, true);
 		}
 	}
-	
+
 	private final Runnable mStatusGuardHideRunnable = () -> mStatusGuardView.setVisibility(View.GONE);
-	
+
 	private static final Field FAST_SCROLL_FIELD;
 	private static final Method UPDATE_LAYOUT_METHOD;
-	
+
 	static
 	{
 		Field fastScrollField;
@@ -798,7 +798,7 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 		FAST_SCROLL_FIELD = fastScrollField;
 		UPDATE_LAYOUT_METHOD = updateLayoutMethod;
 	}
-	
+
 	private final Runnable mScrollerUpdater = () ->
 	{
 		if (UPDATE_LAYOUT_METHOD != null)
@@ -809,7 +809,7 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 			}
 			catch (Exception e)
 			{
-				
+
 			}
 		}
 	};

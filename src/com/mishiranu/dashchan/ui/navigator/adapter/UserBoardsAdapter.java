@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,18 +33,18 @@ import com.mishiranu.dashchan.widget.ViewFactory;
 public class UserBoardsAdapter extends BaseAdapter
 {
 	private final String mChanName;
-	
+
 	private final ArrayList<ListItem> mListItems = new ArrayList<>();
 	private final ArrayList<ListItem> mFilteredListItems = new ArrayList<>();
 
 	private boolean mFilterMode = false;
 	private String mFilterText;
-	
+
 	public UserBoardsAdapter(String chanName)
 	{
 		mChanName = chanName;
 	}
-	
+
 	/*
 	 * Returns true, if adapter isn't empty.
 	 */
@@ -78,7 +78,7 @@ public class UserBoardsAdapter extends BaseAdapter
 		notifyDataSetChanged();
 		return !mFilterMode || mFilteredListItems.size() > 0;
 	}
-	
+
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent)
 	{
@@ -103,25 +103,25 @@ public class UserBoardsAdapter extends BaseAdapter
 		else holder.text2.setVisibility(View.GONE);
 		return convertView;
 	}
-	
+
 	@Override
 	public int getCount()
 	{
 		return (mFilterMode ? mFilteredListItems : mListItems).size();
 	}
-	
+
 	@Override
 	public ListItem getItem(int position)
 	{
 		return (mFilterMode ? mFilteredListItems : mListItems).get(position);
 	}
-	
+
 	@Override
 	public long getItemId(int position)
 	{
 		return 0;
 	}
-	
+
 	public void setItems(Board[] boards)
 	{
 		mListItems.clear();
@@ -140,11 +140,11 @@ public class UserBoardsAdapter extends BaseAdapter
 		notifyDataSetChanged();
 		if (mFilterMode) applyFilter(mFilterText);
 	}
-	
+
 	public static class ListItem
 	{
 		public final String boardName, title, description;
-		
+
 		public ListItem(String boardName, String title, String description)
 		{
 			this.boardName = boardName;

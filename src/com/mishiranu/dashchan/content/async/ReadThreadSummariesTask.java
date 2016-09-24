@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,15 +37,15 @@ public class ReadThreadSummariesTask extends HttpHolderTask<Void, Void, ThreadSu
 	private final int mPageNumber;
 	private final int mType;
 	private final Callback mCallback;
-	
+
 	private ErrorItem mErrorItem;
-	
+
 	public interface Callback
 	{
 		public void onReadThreadSummariesSuccess(ThreadSummary[] threadSummaries, int pageNumber);
 		public void onReadThreadSummariesFail(ErrorItem errorItem);
 	}
-	
+
 	public ReadThreadSummariesTask(String chanName, String boardName, int pageNumber, int type, Callback callback)
 	{
 		mChanName = chanName;
@@ -54,7 +54,7 @@ public class ReadThreadSummariesTask extends HttpHolderTask<Void, Void, ThreadSu
 		mType = type;
 		mCallback = callback;
 	}
-	
+
 	@Override
 	protected ThreadSummary[] doInBackground(Void... params)
 	{
@@ -76,14 +76,14 @@ public class ReadThreadSummariesTask extends HttpHolderTask<Void, Void, ThreadSu
 			ChanConfiguration.get(mChanName).commit();
 		}
 	}
-	
+
 	@Override
 	public void onPostExecute(ThreadSummary[] threadSummaries)
 	{
 		if (mErrorItem == null) mCallback.onReadThreadSummariesSuccess(threadSummaries, mPageNumber);
 		else mCallback.onReadThreadSummariesFail(mErrorItem);
 	}
-	
+
 	public static ThreadSummary[] concatenate(ThreadSummary[] threadSummaries1, ThreadSummary[] threadSummaries2)
 	{
 		ArrayList<ThreadSummary> threadSummaries = new ArrayList<>();

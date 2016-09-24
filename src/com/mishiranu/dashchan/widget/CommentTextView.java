@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -68,7 +68,7 @@ public class CommentTextView extends TextView
 	private final int[][] mDeltaAttempts;
 	private final int mTouchSlop;
 	private final int mAdditionalPadding;
-	
+
 	private ClickableSpan mSpanToClick;
 	private float mStartX, mStartY;
 	private float mLastX, mLastY;
@@ -78,22 +78,22 @@ public class CommentTextView extends TextView
 	private boolean mMaxModeLines;
 	private boolean mAppendAdditionalPadding;
 	private boolean mUseAdditionalPadding;
-	
+
 	private CommentListener mCommentListener;
 	private LinkListener mLinkListener;
 	private boolean mSpoilersEnabled;
-	
+
 	private String mChanName;
 	private String mBoardName;
 	private String mThreadNumber;
-	
+
 	private Replyable mReplyable;
 	private String mPostNumber;
-	
+
 	private static final double[][] BASE_POINTS;
 	private static final int RING_RADIUS = 6;
 	private static final int RINGS = 3;
-	
+
 	static
 	{
 		BASE_POINTS = new double[8][];
@@ -107,7 +107,7 @@ public class CommentTextView extends TextView
 		BASE_POINTS[6] = new double[] {-sqrth2, sqrth2};
 		BASE_POINTS[7] = new double[] {sqrth2, sqrth2};
 	}
-	
+
 	private static final LinkListener DEFAULT_LINK_LISTENER = new LinkListener()
 	{
 		@Override
@@ -115,19 +115,19 @@ public class CommentTextView extends TextView
 		{
 			NavigationUtils.handleUri(view.getContext(), chanName, uri, NavigationUtils.BrowserType.AUTO);
 		}
-		
+
 		@Override
 		public void onLinkLongClick(CommentTextView view, String chanName, Uri uri)
 		{
-			
+
 		}
 	};
-	
+
 	public CommentTextView(Context context, AttributeSet attrs)
 	{
 		this(context, attrs, android.R.attr.textViewStyle);
 	}
-	
+
 	public CommentTextView(Context context, AttributeSet attrs, int defStyleAttr)
 	{
 		super(context, attrs, defStyleAttr);
@@ -152,29 +152,29 @@ public class CommentTextView extends TextView
 		mAdditionalPadding = (int) (64f * density);
 		super.setCustomSelectionActionModeCallback(new CustomSelectionCallback());
 	}
-	
+
 	public interface ClickableSpan
 	{
 		public void setClicked(boolean clicked);
 	}
-	
+
 	public interface CommentListener
 	{
 		public void onRequestSiblingsInvalidate(CommentTextView view);
 		public String onPrepareToCopy(CommentTextView view, Spannable text, int start, int end);
 	}
-	
+
 	public interface LinkListener
 	{
 		public void onLinkClick(CommentTextView view, String chanName, Uri uri, boolean confirmed);
 		public void onLinkLongClick(CommentTextView view, String chanName, Uri uri);
 	}
-	
+
 	public void setCommentListener(CommentListener l)
 	{
 		mCommentListener = l;
 	}
-	
+
 	public void setLinkListener(LinkListener l, String chanName, String boardName, String threadNumber)
 	{
 		mLinkListener = l;
@@ -182,12 +182,12 @@ public class CommentTextView extends TextView
 		mBoardName = boardName;
 		mThreadNumber = threadNumber;
 	}
-	
+
 	private LinkListener getLinkListener()
 	{
 		return mLinkListener != null ? mLinkListener : DEFAULT_LINK_LISTENER;
 	}
-	
+
 	public void setSubjectAndComment(CharSequence subject, CharSequence comment)
 	{
 		boolean hasSubject = !StringUtils.isEmpty(subject);
@@ -219,15 +219,15 @@ public class CommentTextView extends TextView
 		else if (hasComment) setText(comment);
 		else setText(null);
 	}
-	
+
 	public void setSpoilersEnabled(boolean enabled)
 	{
 		// Must invalidate text after changing this field
 		mSpoilersEnabled = enabled;
 	}
-	
+
 	private final Runnable mSyncRunnable = () -> mCommentListener.onRequestSiblingsInvalidate(CommentTextView.this);
-	
+
 	private boolean startSelectionActionMode(int start, int end)
 	{
 		selectNecessaryText(start, end);
@@ -278,9 +278,9 @@ public class CommentTextView extends TextView
 			return false;
 		}
 	}
-	
+
 	private static final Pattern LIST_PATTERN = Pattern.compile("^(?:(?:\\d+[\\.\\)]|[\u2022-]) |>(?!>) ?)");
-	
+
 	private void selectNecessaryText(int start, int end)
 	{
 		Spannable spannable = (Spannable) getText();
@@ -324,25 +324,25 @@ public class CommentTextView extends TextView
 		}
 		Selection.setSelection(spannable, start, end);
 	}
-	
+
 	public void setReplyable(Replyable replyable, String postNumber)
 	{
 		mReplyable = replyable;
 		mPostNumber = postNumber;
 	}
-	
+
 	@Override
 	public void setCustomSelectionActionModeCallback(ActionMode.Callback actionModeCallback)
 	{
-		
+
 	}
-	
+
 	private String getPartialCommentString(Spannable text, int start, int end)
 	{
 		return mCommentListener != null ? mCommentListener.onPrepareToCopy(CommentTextView.this, text, start, end)
 				: text.subSequence(start, end).toString();
 	}
-	
+
 	private Uri extractSelectedUri()
 	{
 		int start = getSelectionStart();
@@ -368,10 +368,10 @@ public class CommentTextView extends TextView
 		}
 		return null;
 	}
-	
+
 	private ActionMode mCurrentActionMode;
 	private Menu mCurrentActionModeMenu;
-	
+
 	private class CustomSelectionCallback implements ActionMode.Callback, Runnable
 	{
 		private void addCopyMenuItemIfNotNull(Menu menu, MenuItem menuItem, int flags)
@@ -382,7 +382,7 @@ public class CommentTextView extends TextView
 						.setShowAsAction(flags);
 			}
 		}
-		
+
 		@TargetApi(Build.VERSION_CODES.M)
 		@Override
 		public boolean onCreateActionMode(ActionMode mode, Menu menu)
@@ -423,7 +423,7 @@ public class CommentTextView extends TextView
 			}
 			return true;
 		}
-		
+
 		@Override
 		public boolean onPrepareActionMode(ActionMode mode, Menu menu)
 		{
@@ -431,7 +431,7 @@ public class CommentTextView extends TextView
 			menu.findItem(android.R.id.button2).setVisible(uri != null);
 			return true;
 		}
-		
+
 		@Override
 		public void onDestroyActionMode(ActionMode mode)
 		{
@@ -442,7 +442,7 @@ public class CommentTextView extends TextView
 			}
 			post(this);
 		}
-		
+
 		@Override
 		public boolean onActionItemClicked(ActionMode mode, MenuItem item)
 		{
@@ -485,14 +485,14 @@ public class CommentTextView extends TextView
 			}
 			return true;
 		}
-		
+
 		@Override
 		public void run()
 		{
 			setTextIsSelectable(false);
 		}
 	}
-	
+
 	@Override
 	protected void onSelectionChanged(int selStart, int selEnd)
 	{
@@ -504,7 +504,7 @@ public class CommentTextView extends TextView
 			getCustomSelectionActionModeCallback().onPrepareActionMode(mCurrentActionMode, mCurrentActionModeMenu);
 		}
 	}
-	
+
 	@Override
 	public void setMaxLines(int maxlines)
 	{
@@ -513,7 +513,7 @@ public class CommentTextView extends TextView
 		mMaxModeLines = true;
 		super.setMaxLines(maxlines);
 	}
-	
+
 	@Override
 	public void setMaxHeight(int maxHeight)
 	{
@@ -522,25 +522,25 @@ public class CommentTextView extends TextView
 		mMaxModeLines = false;
 		super.setMaxHeight(maxHeight);
 	}
-	
+
 	@Override
 	public void setPadding(int left, int top, int right, int bottom)
 	{
 		if (mUseAdditionalPadding) bottom += mAdditionalPadding;
 		super.setPadding(left, top, right, bottom);
 	}
-	
+
 	public void setAppendAdditionalPadding(boolean appendAdditionalPadding)
 	{
 		mAppendAdditionalPadding = appendAdditionalPadding;
 		updateUseAdditionalPadding();
 	}
-	
+
 	public int getAdditionalPadding()
 	{
 		return mAppendAdditionalPadding ? mAdditionalPadding : 0;
 	}
-	
+
 	private void updateUseAdditionalPadding()
 	{
 		boolean needUseAdditionalPadding = mAppendAdditionalPadding && isTextSelectable();
@@ -554,7 +554,7 @@ public class CommentTextView extends TextView
 			mUseAdditionalPadding = needUseAdditionalPadding;
 		}
 	}
-	
+
 	@Override
 	public void setTextIsSelectable(boolean selectable)
 	{
@@ -572,9 +572,9 @@ public class CommentTextView extends TextView
 		super.setTextIsSelectable(selectable);
 		updateUseAdditionalPadding();
 	}
-	
+
 	private int mSetTextDepth = 0;
-	
+
 	@Override
 	public void setText(CharSequence text, BufferType type)
 	{
@@ -612,25 +612,25 @@ public class CommentTextView extends TextView
 			mSetTextDepth--;
 		}
 	}
-	
+
 	private class SelectorRunnable implements Runnable
 	{
 		public int start = -1, end = -1;
-		
+
 		@Override
 		public void run()
 		{
 			if (!startSelectionActionMode(start, end)) setTextIsSelectable(false);
 		}
 	}
-	
+
 	private SelectorRunnable mSelectorRunnable;
-	
+
 	public void startSelection()
 	{
 		startSelection(-1, -1);
 	}
-	
+
 	public void startSelection(int start, int end)
 	{
 		mLastStartSelectionCalled = System.currentTimeMillis();
@@ -643,7 +643,7 @@ public class CommentTextView extends TextView
 			}
 			catch (Exception e)
 			{
-				
+
 			}
 		}
 		if (!startSelectionActionMode(start, end))
@@ -654,17 +654,17 @@ public class CommentTextView extends TextView
 			post(mSelectorRunnable);
 		}
 	}
-	
+
 	public boolean isSelectionEnabled()
 	{
 		return isTextSelectable();
 	}
-	
+
 	public long getPreferredDoubleTapTimeout()
 	{
 		return Math.max(ViewConfiguration.getDoubleTapTimeout(), 500);
 	}
-	
+
 	private Uri createUri(String uriString)
 	{
 		if (mChanName != null)
@@ -674,7 +674,7 @@ public class CommentTextView extends TextView
 		}
 		else return Uri.parse(uriString);
 	}
-	
+
 	private final Runnable mLinkLongClickRunnable = () ->
 	{
 		if (mSpanToClick instanceof LinkSpan)
@@ -686,7 +686,7 @@ public class CommentTextView extends TextView
 			if (uri != null) getLinkListener().onLinkLongClick(CommentTextView.this, mChanName, uri);
 		}
 	};
-	
+
 	@Override
 	public boolean onTouchEvent(MotionEvent event)
 	{
@@ -812,7 +812,7 @@ public class CommentTextView extends TextView
 		}
 		return false;
 	}
-	
+
 	private <T extends ClickableSpan> void setSpanToClick(SpanHolder<T> spanHolder)
 	{
 		mSpanToClick = spanHolder.span;
@@ -820,12 +820,12 @@ public class CommentTextView extends TextView
 		mStartX = spanHolder.startX;
 		mStartY = spanHolder.startY;
 	}
-	
+
 	private static class SpanHolder<T>
 	{
 		public final T span;
 		public final int startX, startY;
-		
+
 		public SpanHolder(T span, int startX, int startY)
 		{
 			this.span = span;
@@ -833,7 +833,7 @@ public class CommentTextView extends TextView
 			this.startY = startY;
 		}
 	}
-	
+
 	private <T> ArrayList<SpanHolder<T>> findSpansToClick(Layout layout, Spanned spanned, Class<T> type, int x, int y)
 	{
 		ArrayList<SpanHolder<T>> result = new ArrayList<>();
@@ -852,7 +852,7 @@ public class CommentTextView extends TextView
 		}
 		return result;
 	}
-	
+
 	private <T> T[] findSpansToClickSingle(Layout layout, Spanned spanned, Class<T> type, int x, int y)
 	{
 		int line = layout.getLineForVertical(y);
@@ -868,17 +868,17 @@ public class CommentTextView extends TextView
 		}
 		return spans;
 	}
-	
+
 	@Override
 	protected void onDraw(Canvas canvas)
 	{
 		super.onDraw(canvas);
 		OverlineSpan.draw(this, canvas);
 	}
-	
+
 	private static final Field EDITOR_FIELD;
 	private static final Method ENABLE_HTC_TEXT_SELECTION_METHOD;
-	
+
 	static
 	{
 		Field editorField;
@@ -907,27 +907,27 @@ public class CommentTextView extends TextView
 		}
 		ENABLE_HTC_TEXT_SELECTION_METHOD = enableHtcTextSelectionMethod;
 	}
-	
+
 	public static class ListSelectionKeeper implements Runnable
 	{
 		public interface Holder
 		{
 			public CommentTextView getCommentTextView();
 		}
-		
+
 		private final ListView mListView;
 		private int mPostCount;
-		
+
 		private String mText;
 		private int mSelectionStart;
 		private int mSelectionEnd;
 		private int mPosition;
-		
+
 		public ListSelectionKeeper(ListView listView)
 		{
 			mListView = listView;
 		}
-		
+
 		public void onBeforeNotifyDataSetChanged()
 		{
 			mListView.removeCallbacks(this);
@@ -952,14 +952,14 @@ public class CommentTextView extends TextView
 			}
 			mPosition = position;
 		}
-		
+
 		public void onAfterNotifyDataSetChanged()
 		{
 			mPostCount = 2;
 			mListView.removeCallbacks(this);
 			mListView.post(this);
 		}
-		
+
 		public void run()
 		{
 			if (mPostCount-- > 0)

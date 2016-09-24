@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,22 +27,22 @@ import android.telephony.TelephonyManager;
 public class NetworkObserver
 {
 	private static final NetworkObserver INSTANCE = new NetworkObserver();
-	
+
 	public static NetworkObserver getInstance()
 	{
 		return INSTANCE;
 	}
-	
+
 	private static final int NETWORK_WIFI = 2;
 	private static final int NETWORK_MOBILE = 1;
 	private static final int NETWORK_UNDEFINED = 0;
-	
+
 	private final ConnectivityManager mConnectivityManager;
-	
+
 	private int mNetworkState = NETWORK_UNDEFINED;
 	private long mLast3GChecked;
 	private boolean mLast3GAvailable;
-	
+
 	private NetworkObserver()
 	{
 		Context context = MainApplication.getInstance();
@@ -58,12 +58,12 @@ public class NetworkObserver
 		};
 		context.registerReceiver(connectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 	}
-	
+
 	public boolean isWifiConnected()
 	{
 		return mNetworkState == NETWORK_WIFI;
 	}
-	
+
 	public boolean isMobile3GConnected()
 	{
 		switch (mNetworkState)
@@ -113,7 +113,7 @@ public class NetworkObserver
 		}
 		return false;
 	}
-	
+
 	private void onActiveNetworkChange()
 	{
 		int networkState = NETWORK_UNDEFINED;

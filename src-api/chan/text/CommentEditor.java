@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,19 +32,19 @@ import chan.content.ChanMarkup;
 public class CommentEditor
 {
 	@Public public static final int FLAG_ONE_LINE = 0x00000001;
-	
+
 	private final SparseArray<Tag> mTags = new SparseArray<>();
 	private final SparseIntArray mSimilar = new SparseIntArray();
 
 	private String mUnorderedListMark = "- ";
 	private String mOrderedListMark;
-	
+
 	public static class Tag
 	{
 		public final String open;
 		public final String close;
 		public final int flags;
-		
+
 		public Tag(String open, String close, int flags)
 		{
 			this.open = open;
@@ -52,77 +52,77 @@ public class CommentEditor
 			this.flags = flags;
 		}
 	}
-	
+
 	public static class FormatResult
 	{
 		public final int start;
 		public final int end;
-		
+
 		public FormatResult(int start, int end)
 		{
 			this.start = start;
 			this.end = end;
 		}
 	}
-	
+
 	@Public
 	public CommentEditor()
 	{
-		
+
 	}
-	
+
 	@Public
 	public final void addTag(int what, String open, String close)
 	{
 		addTag(what, open, close, 0);
 	}
-	
+
 	@Public
 	public final void addTag(int what, String open, String close, int flags)
 	{
 		if (open == null || close == null) throw new NullPointerException();
 		mTags.put(what, new Tag(open, close, flags));
 	}
-	
+
 	@Public
 	public final void setUnorderedListMark(String mark)
 	{
 		mUnorderedListMark = mark;
 	}
-	
+
 	@Public
 	public final void setOrderedListMark(String mark)
 	{
 		mOrderedListMark = mark;
 	}
-	
+
 	public final String getUnorderedListMark()
 	{
 		return mUnorderedListMark;
 	}
-	
+
 	public final String getOrderedListMark()
 	{
 		return mOrderedListMark;
 	}
-	
+
 	public final String getTag(int what, boolean close)
 	{
 		Tag tag = mTags.get(what);
 		if (tag == null) return null;
 		return close ? tag.close : tag.open;
 	}
-	
+
 	public String getTag(int what, boolean close, int length)
 	{
 		return getTag(what, close);
 	}
-	
+
 	public final SparseArray<Tag> getAllTags()
 	{
 		return mTags;
 	}
-	
+
 	public final void handleSimilar(int supportedTags)
 	{
 		mSimilar.clear();
@@ -152,7 +152,7 @@ public class CommentEditor
 			}
 		}
 	}
-	
+
 	public final void formatSelectedText(EditText commentView, int what)
 	{
 		int start = commentView.getSelectionStart();
@@ -161,7 +161,7 @@ public class CommentEditor
 		FormatResult result = formatSelectedText(commentView.getText(), what, start, end);
 		if (result != null) commentView.setSelection(result.start, result.end);
 	}
-	
+
 	public FormatResult formatSelectedText(Editable editable, int what, int start, int end)
 	{
 		Tag tag = mTags.get(what);
@@ -170,7 +170,7 @@ public class CommentEditor
 		if (oneLine && end > start) return formatSelectedTextOneLine(editable, what, tag, start, end);
 		return formatSelectedTextLineDirectly(editable, what, tag, start, end);
 	}
-	
+
 	private FormatResult formatSelectedTextOneLine(Editable editable, int what, Tag tag, int start, int end)
 	{
 		int newStart = -1;
@@ -248,7 +248,7 @@ public class CommentEditor
 		}
 		return new FormatResult(newStart, newEnd);
 	}
-	
+
 	private FormatResult formatSelectedTextLineDirectly(Editable editable, int what, Tag tag, int start, int end)
 	{
 		int similar = mSimilar.get(what, -1);
@@ -298,7 +298,7 @@ public class CommentEditor
 			return new FormatResult(start + open.length(), end + open.length());
 		}
 	}
-	
+
 	public String removeTags(String comment)
 	{
 		if (comment != null)
@@ -316,7 +316,7 @@ public class CommentEditor
 		}
 		return comment;
 	}
-	
+
 	@Extendable
 	public static class BulletinBoardCodeCommentEditor extends CommentEditor
 	{
@@ -335,12 +335,12 @@ public class CommentEditor
 			addTag(ChanMarkup.TAG_ASCII_ART, "[aa]", "[/aa]");
 		}
 	}
-	
+
 	@Extendable
 	public static class WakabaMarkCommentEditor extends CommentEditor
 	{
 		private static final Pattern MULTIPLE_STRIKES = Pattern.compile("^((?:\\^H)+)");
-		
+
 		@Public
 		public WakabaMarkCommentEditor()
 		{
@@ -349,7 +349,7 @@ public class CommentEditor
 			addTag(ChanMarkup.TAG_SPOILER, "%%", "%%", FLAG_ONE_LINE);
 			addTag(ChanMarkup.TAG_CODE, "`", "`", FLAG_ONE_LINE);
 		}
-		
+
 		@Override
 		public String getTag(int what, boolean close, int length)
 		{
@@ -366,7 +366,7 @@ public class CommentEditor
 			}
 			return result;
 		}
-		
+
 		@Override
 		public FormatResult formatSelectedText(Editable editable, int what, int start, int end)
 		{
@@ -400,7 +400,7 @@ public class CommentEditor
 			}
 			else return super.formatSelectedText(editable, what, start, end);
 		}
-		
+
 		@Override
 		public String removeTags(String comment)
 		{

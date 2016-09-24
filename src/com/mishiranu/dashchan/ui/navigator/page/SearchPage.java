@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -43,7 +43,7 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 {
 	private ReadSearchTask mReadTask;
 	private boolean mShowScaleOnSuccess;
-	
+
 	@Override
 	protected void onCreate()
 	{
@@ -79,7 +79,7 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 		}
 		pageHolder.setInitialSearchData(false);
 	}
-	
+
 	@Override
 	protected void onDestroy()
 	{
@@ -90,13 +90,13 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 		}
 		ImageLoader.getInstance().clearTasks(getPageHolder().chanName);
 	}
-	
+
 	@Override
 	public String obtainTitle()
 	{
 		return getPageHolder().searchQuery;
 	}
-	
+
 	@Override
 	public void onItemClick(View view, int position, long id)
 	{
@@ -108,7 +108,7 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 					postItem.getThreadNumber(), postItem.getPostNumber(), null, false);
 		}
 	}
-	
+
 	@Override
 	public boolean onItemLongClick(View view, int position, long id)
 	{
@@ -118,7 +118,7 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 
 	private static final int OPTIONS_MENU_REFRESH = 0;
 	private static final int OPTIONS_MENU_GROUP = 1;
-	
+
 	@Override
 	public void onCreateOptionsMenu(Menu menu)
 	{
@@ -128,13 +128,13 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 		menu.add(0, OPTIONS_MENU_GROUP, 0, R.string.action_group).setCheckable(true);
 		menu.addSubMenu(0, OPTIONS_MENU_APPEARANCE, 0, R.string.action_appearance);
 	}
-	
+
 	@Override
 	public void onPrepareOptionsMenu(Menu menu)
 	{
 		menu.findItem(OPTIONS_MENU_GROUP).setChecked(getAdapter().isGroupMode());
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
@@ -156,7 +156,7 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 		}
 		return false;
 	}
-	
+
 	@Override
 	public void onAppearanceOptionChanged(int what)
 	{
@@ -170,7 +170,7 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 			}
 		}
 	}
-	
+
 	@Override
 	public boolean onStartSearch(String query)
 	{
@@ -178,13 +178,13 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 		getUiManager().navigator().navigateSearch(pageHolder.chanName, pageHolder.boardName, query);
 		return false;
 	}
-	
+
 	@Override
 	public void onListPulled(PullableWrapper wrapper, PullableWrapper.Side side)
 	{
 		refreshSearch(true, side == PullableWrapper.Side.BOTTOM);
 	}
-	
+
 	private void refreshSearch(boolean showPull, boolean nextPage)
 	{
 		PageHolder pageHolder = getPageHolder();
@@ -209,7 +209,7 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 			switchView(ViewType.PROGRESS, null);
 		}
 	}
-	
+
 	@Override
 	public void onReadSearchSuccess(ArrayList<PostItem> postItems, int pageNumber)
 	{
@@ -284,7 +284,7 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 			}
 		}
 	}
-	
+
 	@Override
 	public void onReadSearchFail(ErrorItem errorItem)
 	{
@@ -293,26 +293,26 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 		if (getAdapter().isEmpty()) switchView(ViewType.ERROR, errorItem.toString());
 		else ClickableToast.show(getActivity(), errorItem.toString());
 	}
-	
+
 	public static class SearchExtra implements PageHolder.ParcelableExtra
 	{
 		public final ArrayList<PostItem> postItems = new ArrayList<>();
 		public int pageNumber;
 		public boolean groupMode = false;
-		
+
 		@Override
 		public void writeToParcel(Parcel dest)
 		{
 			dest.writeInt(groupMode ? 1 : 0);
 		}
-		
+
 		@Override
 		public void readFromParcel(Parcel source)
 		{
 			groupMode = source.readInt() != 0;
 		}
 	}
-	
+
 	private SearchExtra getExtra()
 	{
 		PageHolder pageHolder = getPageHolder();

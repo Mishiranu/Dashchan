@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,14 +33,14 @@ public class MessageDialog extends DialogFragment implements DialogInterface.OnC
 	public static final int TYPE_LOADING = 0;
 	public static final int TYPE_UPDATE_REMINDER = 1;
 	public static final int TYPE_UNINSTALL_REMINDER = 2;
-	
+
 	private static final String EXTRA_TYPE = "type";
-	
+
 	public MessageDialog()
 	{
-		
+
 	}
-	
+
 	public static void create(int type, Fragment fragment, boolean setTarget)
 	{
 		dismissIfOpened(fragment);
@@ -51,18 +51,18 @@ public class MessageDialog extends DialogFragment implements DialogInterface.OnC
 		if (setTarget) dialog.setTargetFragment(fragment, 0);
 		dialog.show(fragment.getFragmentManager(), TAG);
 	}
-	
+
 	public static void dismissIfOpened(Fragment fragment)
 	{
 		MessageDialog dialog = (MessageDialog) fragment.getFragmentManager().findFragmentByTag(MessageDialog.TAG);
 		if (dialog != null) dialog.dismissAllowingStateLoss();
 	}
-	
+
 	private int getType()
 	{
 		return getArguments().getInt(EXTRA_TYPE);
 	}
-	
+
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState)
 	{
@@ -88,7 +88,7 @@ public class MessageDialog extends DialogFragment implements DialogInterface.OnC
 		}
 		throw new RuntimeException();
 	}
-	
+
 	@Override
 	public void onClick(DialogInterface dialog, int which)
 	{
@@ -102,7 +102,7 @@ public class MessageDialog extends DialogFragment implements DialogInterface.OnC
 			}
 		}
 	}
-	
+
 	@Override
 	public void onCancel(DialogInterface dialog)
 	{

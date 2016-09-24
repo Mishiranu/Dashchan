@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,35 +31,35 @@ public class WindowControlFrameLayout extends FrameLayout
 	{
 		public void onApplyWindowPaddings(WindowControlFrameLayout view, Rect rect);
 	}
-	
+
 	private OnApplyWindowPaddingsListener mOnApplyWindowPaddingsListener;
-	
+
 	public WindowControlFrameLayout(Context context)
 	{
 		super(context);
 		super.setFitsSystemWindows(true);
 		super.setClipToPadding(false);
 	}
-	
+
 	public void setOnApplyWindowPaddingsListener(OnApplyWindowPaddingsListener listener)
 	{
 		mOnApplyWindowPaddingsListener = listener;
 	}
-	
+
 	@Override
 	public void setFitsSystemWindows(boolean fitSystemWindows)
 	{
 		throw new UnsupportedOperationException();
 	}
-	
+
 	@Override
 	public void setClipToPadding(boolean clipToPadding)
 	{
 		throw new UnsupportedOperationException();
 	}
-	
+
 	private Rect mPreviousRect;
-	
+
 	private void onSystemWindowInsetsChangedInternal(Rect rect)
 	{
 		if (mPreviousRect != null && mPreviousRect.equals(rect)) return;
@@ -69,7 +69,7 @@ public class WindowControlFrameLayout extends FrameLayout
 			mOnApplyWindowPaddingsListener.onApplyWindowPaddings(this, rect);
 		}
 	}
-	
+
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	@Override
 	public WindowInsets onApplyWindowInsets(WindowInsets insets)
@@ -89,7 +89,7 @@ public class WindowControlFrameLayout extends FrameLayout
 			}
 		}
 	}
-	
+
 	@SuppressWarnings("deprecation")
 	@Override
 	protected boolean fitSystemWindows(Rect insets)

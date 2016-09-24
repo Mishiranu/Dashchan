@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,9 +42,9 @@ public class CaptchaForm implements View.OnClickListener, View.OnLongClickListen
 		TextView.OnEditorActionListener
 {
 	public enum CaptchaViewType {LOADING, IMAGE, SKIP, ERROR}
-	
+
 	private final Callback mCallback;
-	
+
 	private boolean mApplyHeight;
 	private View mBlockParentView;
 	private View mBlockView;
@@ -56,20 +56,20 @@ public class CaptchaForm implements View.OnClickListener, View.OnLongClickListen
 	private EditText mInputView;
 	private View mLoadButton;
 	private View mRefreshButton;
-	
+
 	private ChanConfiguration.Captcha.Input mCaptchaInput;
-	
+
 	public interface Callback
 	{
 		public void onRefreshCapctha(boolean forceRefresh);
 		public void onConfirmCaptcha();
 	}
-	
+
 	public CaptchaForm(Callback callback)
 	{
 		mCallback = callback;
 	}
-	
+
 	public void setupViews(View container, View inputParentView, EditText inputView, boolean applyHeight,
 			ChanConfiguration.Captcha captcha)
 	{
@@ -103,7 +103,7 @@ public class CaptchaForm implements View.OnClickListener, View.OnLongClickListen
 		mRefreshButton.setOnLongClickListener(this);
 		if (mInputParentView != null) mInputParentView.setOnClickListener(this);
 	}
-	
+
 	private void updateCaptchaInput(ChanConfiguration.Captcha.Input input)
 	{
 		switch (input)
@@ -125,7 +125,7 @@ public class CaptchaForm implements View.OnClickListener, View.OnLongClickListen
 			}
 		}
 	}
-	
+
 	private void updateCaptchaHeight(boolean large)
 	{
 		if (mApplyHeight)
@@ -140,7 +140,7 @@ public class CaptchaForm implements View.OnClickListener, View.OnLongClickListen
 			}
 		}
 	}
-	
+
 	@Override
 	public void onClick(View v)
 	{
@@ -163,7 +163,7 @@ public class CaptchaForm implements View.OnClickListener, View.OnLongClickListen
 			}
 		}
 	}
-	
+
 	@Override
 	public boolean onLongClick(View v)
 	{
@@ -174,14 +174,14 @@ public class CaptchaForm implements View.OnClickListener, View.OnLongClickListen
 		}
 		return false;
 	}
-	
+
 	@Override
 	public boolean onEditorAction(TextView v, int actionId, KeyEvent event)
 	{
 		mCallback.onConfirmCaptcha();
 		return true;
 	}
-	
+
 	public boolean showCaptcha(ChanPerformer.CaptchaState captchaState, ChanConfiguration.Captcha.Input input,
 			Bitmap image, boolean large, boolean invertColors)
 	{
@@ -214,19 +214,19 @@ public class CaptchaForm implements View.OnClickListener, View.OnLongClickListen
 		}
 		return true;
 	}
-	
+
 	public void showError()
 	{
 		mImageView.setImageResource(android.R.color.transparent);
 		switchToCaptchaView(CaptchaViewType.ERROR, null, false);
 	}
-	
+
 	public void showLoading()
 	{
 		mInputView.setText(null);
 		switchToCaptchaView(CaptchaViewType.LOADING, null, false);
 	}
-	
+
 	private void switchToCaptchaView(CaptchaViewType captchaViewType, ChanConfiguration.Captcha.Input input,
 			boolean large)
 	{
@@ -277,12 +277,12 @@ public class CaptchaForm implements View.OnClickListener, View.OnLongClickListen
 			}
 		}
 	}
-	
+
 	public void setText(String text)
 	{
 		mInputView.setText(text);
 	}
-	
+
 	public String getInput()
 	{
 		return mInputView.getText().toString();

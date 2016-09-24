@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -49,30 +49,30 @@ public class ReadFileTask extends HttpHolderTask<String, Long, Boolean>
 		public void onFinishDownloading(boolean success, Uri uri, File file, ErrorItem errorItem);
 		public void onUpdateProgress(long progress, long progressMax);
 	}
-	
+
 	public interface CancelCallback
 	{
 		public void onCancelDownloading(Uri uri, File file);
 	}
-	
+
 	public interface AsyncFinishCallback
 	{
 		public void onFinishDownloadingInThread();
 	}
-	
+
 	private final Context mContext;
 	private final Callback mCallback;
-	
+
 	private final String mChanName;
 	private final Uri mFromUri;
 	private final File mToFile;
 	private final File mCachedMediaFile;
 	private final boolean mOverwrite;
-	
+
 	private ErrorItem mErrorItem;
-	
+
 	private boolean mLoadingStarted;
-	
+
 	private final TimedProgressHandler mProgressHandler = new TimedProgressHandler()
 	{
 		@Override
@@ -81,7 +81,7 @@ public class ReadFileTask extends HttpHolderTask<String, Long, Boolean>
 			publishProgress(progress, progressMax);
 		}
 	};
-	
+
 	public ReadFileTask(Context context, String chanName, Uri from, File to, boolean overwrite, Callback callback)
 	{
 		mContext = context.getApplicationContext();
@@ -98,7 +98,7 @@ public class ReadFileTask extends HttpHolderTask<String, Long, Boolean>
 		mCachedMediaFile = cachedMediaFile;
 		mOverwrite = overwrite;
 	}
-	
+
 	@Override
 	public void onPreExecute()
 	{
@@ -109,7 +109,7 @@ public class ReadFileTask extends HttpHolderTask<String, Long, Boolean>
 		}
 		else mCallback.onStartDownloading(mFromUri, mToFile);
 	}
-	
+
 	@Override
 	protected Boolean doInBackground(String... params)
 	{
@@ -200,29 +200,29 @@ public class ReadFileTask extends HttpHolderTask<String, Long, Boolean>
 			}
 		}
 	}
-	
+
 	@Override
 	public void onPostExecute(Boolean success)
 	{
 		mCallback.onFinishDownloading(success, mFromUri, mToFile, mErrorItem);
 	}
-	
+
 	@Override
 	protected void onProgressUpdate(Long... values)
 	{
 		mCallback.onUpdateProgress(values[0], values[1]);
 	}
-	
+
 	public boolean isDownloadingFromCache()
 	{
 		return mCachedMediaFile != null;
 	}
-	
+
 	public String getFileName()
 	{
 		return mToFile.getName();
 	}
-	
+
 	@Override
 	public void cancel()
 	{

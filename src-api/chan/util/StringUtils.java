@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -47,38 +47,38 @@ public class StringUtils
 		}
 		return string.replaceAll(" +", " ");
 	}
-	
+
 	@Public
 	public static boolean isEmpty(CharSequence string)
 	{
 		return string == null || string.length() == 0;
 	}
-	
+
 	@Public
 	public static boolean isEmptyOrWhitespace(CharSequence string)
 	{
 		return string == null || string.toString().trim().length() == 0;
 	}
-	
+
 	@Public
 	public static String emptyIfNull(CharSequence string)
 	{
 		return string == null ? "" : string.toString();
 	}
-	
+
 	@Public
 	public static String nullIfEmpty(String string)
 	{
 		return isEmpty(string) ? null : string;
 	}
-	
+
 	@SuppressWarnings("StringEquality")
 	@Public
 	public static boolean equals(String first, String second)
 	{
 		return first == second || first != null && first.equals(second);
 	}
-	
+
 	@SuppressWarnings("StringEquality")
 	public static int compare(String first, String second, boolean ignoreCase)
 	{
@@ -92,7 +92,7 @@ public class StringUtils
 		}
 		return first.compareTo(second);
 	}
-	
+
 	@Public
 	public static int nearestIndexOf(String string, int start, String... what)
 	{
@@ -104,7 +104,7 @@ public class StringUtils
 		}
 		return index;
 	}
-	
+
 	@Public
 	public static int nearestIndexOf(String string, int start, char... what)
 	{
@@ -116,20 +116,20 @@ public class StringUtils
 		}
 		return index;
 	}
-	
+
 	@Extendable
 	public interface ReplacementCallback
 	{
 		@Extendable
 		public String getReplacement(Matcher matcher);
 	}
-	
+
 	@Public
 	public static String replaceAll(String string, String regularExpression, ReplacementCallback replacementCallback)
 	{
 		return replaceAll(string, Pattern.compile(regularExpression), replacementCallback);
 	}
-	
+
 	@Public
 	public static String replaceAll(String string, Pattern pattern, ReplacementCallback replacementCallback)
 	{
@@ -172,12 +172,12 @@ public class StringUtils
 		if (string.length() - temp.length() == 1) string = temp;
 		return string;
 	}
-	
+
 	public static String escapeFile(String string, boolean isPath)
 	{
 		return string != null ? string.replaceAll(isPath ? "[:\\\\*?|<>]" : "[:\\\\/*?|<>]", "_") : null;
 	}
-	
+
 	private static int findLinkEnd(String string, int start)
 	{
 		int end = -1;
@@ -232,7 +232,7 @@ public class StringUtils
 		}
 		return end;
 	}
-	
+
 	@Public
 	public static String linkify(String string)
 	{
@@ -316,7 +316,7 @@ public class StringUtils
 		}
 		return string;
 	}
-	
+
 	public static String fixParsedUriString(String uriString)
 	{
 		if (uriString != null)
@@ -326,15 +326,15 @@ public class StringUtils
 		}
 		return uriString;
 	}
-	
+
 	public static void copyToClipboard(Context context, String string)
 	{
 		ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
 		clipboard.setPrimaryClip(ClipData.newPlainText(null, string));
 	}
-	
+
 	private static final Pattern PATTERN_BOARD_NAME = Pattern.compile("/?([\\w_-]+)/?");
-	
+
 	public static String validateBoardName(String boardName)
 	{
 		if (boardName != null)
@@ -344,7 +344,7 @@ public class StringUtils
 		}
 		return null;
 	}
-	
+
 	public static String getFileExtension(String path)
 	{
 		if (path != null)
@@ -356,24 +356,24 @@ public class StringUtils
 		}
 		return null;
 	}
-	
+
 	public static String formatBoardTitle(String chanName, String boardName, String title)
 	{
 		return '/' + (isEmpty(boardName) ? chanName : boardName) + (isEmpty(title) ? '/'
 				: "/ — " + title);
 	}
-	
+
 	public static String formatThreadTitle(String chanName, String boardName, String threadNumber)
 	{
 		return '/' + (isEmpty(boardName) ? chanName : boardName) + '/' + threadNumber;
 	}
-	
+
 	@Public
 	public static String clearHtml(String string)
 	{
 		return HtmlParser.clear(string);
 	}
-	
+
 	@Public
 	public static String unescapeHtml(String string)
 	{
@@ -407,7 +407,7 @@ public class StringUtils
 					}
 					catch (NumberFormatException e)
 					{
-						
+
 					}
 				}
 				else
@@ -426,9 +426,9 @@ public class StringUtils
 		}
 		return builder.toString();
 	}
-	
+
 	private static final MessageDigest DIGEST_SHA_256;
-	
+
 	static
 	{
 		try
@@ -440,7 +440,7 @@ public class StringUtils
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	public static String calculateSha256(String string)
 	{
 		byte[] bytes;

@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -50,12 +50,12 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 	private final Dialog mDialog;
 	private final FrameLayout mRootView;
 	private final float mDimAmount;
-	
+
 	private Callback mCallback;
 	private boolean mBackground;
-	
+
 	private WeakReference<ActionMode> mCurrentActionMode;
-	
+
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	public DialogStack(Context context, ExpandedScreen expandedScreen)
 	{
@@ -72,14 +72,14 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 				super.onWindowFocusChanged(hasFocus);
 				if (hasFocus) switchBackground(false);
 			}
-			
+
 			@Override
 			public void onActionModeStarted(ActionMode mode)
 			{
 				mCurrentActionMode = new WeakReference<>(mode);
 				super.onActionModeStarted(mode);
 			}
-			
+
 			@Override
 			public void onActionModeFinished(ActionMode mode)
 			{
@@ -111,7 +111,7 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 		decorView.setPadding(0, 0, 0, 0);
 		bindDialogToExpandedScreen(mDialog, mRootView, expandedScreen, false, false);
 	}
-	
+
 	@Override
 	public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event)
 	{
@@ -130,7 +130,7 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 		}
 		return false;
 	}
-	
+
 	@Override
 	public boolean onTouch(View v, MotionEvent event)
 	{
@@ -138,12 +138,12 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 		if (event.getAction() == MotionEvent.ACTION_DOWN && mVisibileViews.size() > 0) popInternal();
 		return false;
 	}
-	
+
 	public void setCallback(Callback callback)
 	{
 		mCallback = callback;
 	}
-	
+
 	public static void bindDialogToExpandedScreen(Dialog dialog, final View rootView,
 			final ExpandedScreen expandedScreen, boolean unbindOnDismiss, boolean invalidate)
 	{
@@ -160,12 +160,12 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 		}
 		else rootView.setFitsSystemWindows(true);
 	}
-	
+
 	private static final int VISIBLE_COUNT = 10;
-	
+
 	private final LinkedList<DialogView> mHiddenViews = new LinkedList<>();
 	private final LinkedList<DialogView> mVisibileViews = new LinkedList<>();
-	
+
 	public void push(View view)
 	{
 		if (mVisibileViews.isEmpty()) mDialog.show(); else
@@ -189,18 +189,18 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 		mVisibileViews.add(dialogView);
 		switchBackground(false);
 	}
-	
+
 	public View pop()
 	{
 		DialogView dialogView = popInternal();
 		return dialogView.getContentView();
 	}
-	
+
 	public void clear()
 	{
 		while (!mVisibileViews.isEmpty()) popInternal();
 	}
-	
+
 	public void switchBackground(boolean background)
 	{
 		if (mBackground != background)
@@ -209,7 +209,7 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 			for (DialogView dialogParentView : mVisibileViews) dialogParentView.postInvalidate();
 		}
 	}
-	
+
 	private DialogView popInternal()
 	{
 		if (mHiddenViews.size() > 0)
@@ -229,7 +229,7 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 	}
 
 	private static final int[] ATTRS_BACKGROUND = {android.R.attr.windowBackground};
-	
+
 	private DialogView createDialog(View view)
 	{
 		DialogView dialogView = new DialogView(mContext);
@@ -244,14 +244,14 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 		dialogView.animate().alpha(1f).setDuration(100).start();
 		return dialogView;
 	}
-	
+
 	private class DialogView extends FrameLayout
 	{
 		private final Paint mPaint = new Paint();
 		private final float mShadowSize;
-		
+
 		private boolean mActive = false;
-		
+
 		@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 		public DialogView(Context context)
 		{
@@ -267,12 +267,12 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 			else mShadowSize = 0f;
 			setActive(true);
 		}
-		
+
 		public View getContentView()
 		{
 			return getChildAt(0);
 		}
-		
+
 		@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 		public void setActive(boolean active)
 		{
@@ -283,19 +283,19 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 				invalidate();
 			}
 		}
-		
+
 		@Override
 		public boolean onInterceptTouchEvent(MotionEvent ev)
 		{
 			return mActive ? super.onInterceptTouchEvent(ev) : true;
 		}
-		
+
 		@Override
 		public boolean onTouchEvent(MotionEvent event)
 		{
 			return mActive ? true : super.onTouchEvent(event);
 		}
-		
+
 		@Override
 		public void draw(Canvas canvas)
 		{
@@ -307,37 +307,37 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 			}
 		}
 	}
-	
+
 	public interface Callback
 	{
 		public void onPop(View view);
 		public void onHide(View view);
 		public void onRestore(View view);
 	}
-	
+
 	@Override
 	public Iterator<View> iterator()
 	{
 		return new ViewIterator();
 	}
-	
+
 	private class ViewIterator implements Iterator<View>
 	{
 		private final Iterator<DialogView> mHiddenIterator = mHiddenViews.iterator();
 		private final Iterator<DialogView> mVisibileIterator = mVisibileViews.iterator();
-		
+
 		@Override
 		public boolean hasNext()
 		{
 			return mHiddenIterator.hasNext() || mVisibileIterator.hasNext();
 		}
-		
+
 		@Override
 		public View next()
 		{
 			return (mHiddenIterator.hasNext() ? mHiddenIterator.next() : mVisibileIterator.next()).getContentView();
 		}
-		
+
 		@Override
 		public void remove()
 		{

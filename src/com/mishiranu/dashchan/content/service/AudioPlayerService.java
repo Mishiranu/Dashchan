@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -43,7 +43,7 @@ import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 
 public class AudioPlayerService extends Service implements AudioManager.OnAudioFocusChangeListener,
-		MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener, ReadFileTask.Callback 
+		MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener, ReadFileTask.Callback
 {
 	private static final String ACTION_START = "com.mishiranu.dashchan.action.START";
 	public static final String ACTION_CANCEL = "com.mishiranu.dashchan.action.CANCEL";
@@ -51,28 +51,28 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 
 	private static final String EXTRA_CHAN_NAME = "com.mishiranu.dashchan.extra.CHAN_NAME";
 	private static final String EXTRA_FILE_NAME = "com.mishiranu.dashchan.extra.FILE_NAME";
-	
+
 	private AudioManager mAudioManager;
 	private NotificationManager mNotificationManager;
 	private int mNotificationColor;
 	private PowerManager.WakeLock mWakeLock;
-	
+
 	private Notification.Builder mBuilder;
 	private ReadFileTask mReadFileTask;
 	private MediaPlayer mMediaPlayer;
-	
+
 	private String mChanName;
 	private String mFileName;
 	private File mAudioFile;
-	
+
 	private Context mContext;
 	private boolean mPausedByTransientLossOfFocus = false;
-	
+
 	private static Intent obtainIntent(Context context, String action)
 	{
 		return new Intent(context, AudioPlayerService.class).setAction(action);
 	}
-	
+
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	@Override
 	public void onCreate()
@@ -92,7 +92,7 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 		mWakeLock.setReferenceCounted(false);
 		mContext = new ContextThemeWrapper(this, R.style.Theme_Special_Notification);
 	}
-	
+
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId)
 	{
@@ -146,19 +146,19 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 		}
 		return START_NOT_STICKY;
 	}
-	
+
 	@Override
 	public void onDestroy()
 	{
 		cleanup();
 		super.onDestroy();
 	}
-	
+
 	private void sendToActivity(String action)
 	{
 		LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(action));
 	}
-	
+
 	private void cleanup()
 	{
 		if (mReadFileTask != null)
@@ -177,7 +177,7 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 		stopForeground(true);
 		sendToActivity(ACTION_CANCEL);
 	}
-	
+
 	private void togglePlayback()
 	{
 		boolean success;
@@ -195,52 +195,52 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 			sendToActivity(ACTION_CANCEL);
 		}
 	}
-	
+
 	public class Binder extends android.os.Binder
 	{
 		public void togglePlayback()
 		{
 			if (mMediaPlayer != null) AudioPlayerService.this.togglePlayback();
 		}
-		
+
 		public void stop()
 		{
 			cleanup();
 			stopSelf();
 		}
-		
+
 		public boolean isPlaying()
 		{
 			return mMediaPlayer != null ? mMediaPlayer.isPlaying() : false;
 		}
-		
+
 		public String getFileName()
 		{
 			return mFileName;
 		}
-		
+
 		public int getPosition()
 		{
 			return mMediaPlayer != null ? mMediaPlayer.getCurrentPosition() : -1;
 		}
-		
+
 		public int getDuration()
 		{
 			return mMediaPlayer != null ? mMediaPlayer.getDuration() : -1;
 		}
-		
+
 		public void seekTo(int msec)
 		{
 			if (mMediaPlayer != null) mMediaPlayer.seekTo(msec);
 		}
 	}
-	
+
 	@Override
 	public Binder onBind(Intent intent)
 	{
 		return new Binder();
 	}
-	
+
 	@Override
 	public void onAudioFocusChange(int focusChange)
 	{
@@ -265,7 +265,7 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 			}
 		}
 	}
-	
+
 	@Override
 	public void onCompletion(MediaPlayer mp)
 	{
@@ -274,7 +274,7 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 		mMediaPlayer.release();
 		initAndPlayAudio(mAudioFile);
 	}
-	
+
 	@Override
 	public boolean onError(MediaPlayer mp, int what, int extra)
 	{
@@ -285,7 +285,7 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 		sendToActivity(ACTION_CANCEL);
 		return true;
 	}
-	
+
 	private boolean pause(boolean resetFocus)
 	{
 		if (resetFocus) mAudioManager.abandonAudioFocus(this);
@@ -293,7 +293,7 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 		mWakeLock.acquire(15000);
 		return true;
 	}
-	
+
 	private boolean play(boolean resetFocus)
 	{
 		if (resetFocus && mAudioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
@@ -305,7 +305,7 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 		mWakeLock.acquire();
 		return true;
 	}
-	
+
 	private void initAndPlayAudio(File file)
 	{
 		mAudioFile = file;
@@ -332,13 +332,13 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 		play(true);
 		refreshPlaybackNotification(true);
 	}
-	
+
 	private int mProgress, mProgressMax;
 	private long mLastUpdate;
-	
+
 	private static final int[] ICON_ATTRS = {R.attr.notificationRefresh, R.attr.notificationCancel,
 		R.attr.notificationPlay, R.attr.notificationPause};
-	
+
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private void refreshPlaybackNotification(boolean recreate)
 	{
@@ -367,7 +367,7 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 		}
 		startForeground(C.NOTIFICATION_ID_AUDIO_PLAYER, builder.build());
 	}
-	
+
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private void refreshDownloadingNotification(boolean recreate, boolean error, Uri uri)
 	{
@@ -414,21 +414,21 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 			startForeground(C.NOTIFICATION_ID_AUDIO_PLAYER, builder.build());
 		}
 	}
-	
+
 	@Override
 	public void onFileExists(Uri uri, File file)
 	{
 		mReadFileTask = null;
 		initAndPlayAudio(file);
 	}
-	
+
 	@Override
 	public void onStartDownloading(Uri uri, File file)
 	{
 		mLastUpdate = 0L;
 		refreshDownloadingNotification(true, false, null);
 	}
-	
+
 	@Override
 	public void onFinishDownloading(boolean success, Uri uri, File file, ErrorItem errorItem)
 	{
@@ -438,7 +438,7 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 		if (success) initAndPlayAudio(file);
 		else refreshDownloadingNotification(true, true, uri);
 	}
-	
+
 	@Override
 	public void onUpdateProgress(long progress, long progressMax)
 	{
@@ -451,7 +451,7 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 			refreshDownloadingNotification(false, false, null);
 		}
 	}
-	
+
 	public static void start(Context context, String chanName, Uri uri, String fileName)
 	{
 		context.startService(obtainIntent(context, ACTION_START).setData(uri).putExtra(EXTRA_CHAN_NAME, chanName)

@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,23 +33,23 @@ public class GifDecoder implements Runnable
 {
 	private static native long init(String fileName);
 	private static native void destroy(long pointer);
-	
+
 	private static native int getErrorCode(long pointer);
 	private static native void getSummary(long pointer, int[] summary);
-	
+
 	private static native int draw(long pointer, Bitmap bitmap);
-	
+
 	private static final Handler HANDLER = new Handler(Looper.getMainLooper());
-	
+
 	private final long mPointer;
 	private boolean mConsumed = false;
-	
+
 	private final int mWidth;
 	private final int mHeight;
 	private final Bitmap mBitmap;
-	
+
 	private static boolean sLoaded = false;
-	
+
 	public GifDecoder(File file) throws IOException
 	{
 		synchronized (GifDecoder.class)
@@ -80,7 +80,7 @@ public class GifDecoder implements Runnable
 		mHeight = summary[1];
 		mBitmap = Bitmap.createBitmap(summary[0], summary[1], Bitmap.Config.ARGB_8888);
 	}
-	
+
 	public void recycle()
 	{
 		if (!mConsumed)
@@ -90,7 +90,7 @@ public class GifDecoder implements Runnable
 			destroy(mPointer);
 		}
 	}
-	
+
 	@Override
 	protected void finalize() throws Throwable
 	{
@@ -103,9 +103,9 @@ public class GifDecoder implements Runnable
 			super.finalize();
 		}
 	}
-	
+
 	private Drawable mDrawable;
-	
+
 	public Drawable getDrawable()
 	{
 		if (mDrawable == null)
@@ -113,37 +113,37 @@ public class GifDecoder implements Runnable
 			mDrawable = new Drawable()
 			{
 				private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG);
-				
+
 				@Override
 				public int getIntrinsicWidth()
 				{
 					return mWidth;
 				}
-				
+
 				@Override
 				public int getIntrinsicHeight()
 				{
 					return mHeight;
 				}
-				
+
 				@Override
 				public void setColorFilter(ColorFilter colorFilter)
 				{
 					mPaint.setColorFilter(colorFilter);
 				}
-				
+
 				@Override
 				public void setAlpha(int alpha)
 				{
 					mPaint.setAlpha(alpha);
 				}
-				
+
 				@Override
 				public int getOpacity()
 				{
 					return PixelFormat.TRANSPARENT;
 				}
-				
+
 				@Override
 				public void draw(Canvas canvas)
 				{
@@ -171,7 +171,7 @@ public class GifDecoder implements Runnable
 		}
 		return mDrawable;
 	}
-	
+
 	@Override
 	public void run()
 	{

@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,15 +42,15 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostIte
 	private final String mBoardName;
 	private final String mSearchQuery;
 	private final int mPageNumber;
-	
+
 	private ErrorItem mErrorItem;
-	
+
 	public interface Callback
 	{
 		public void onReadSearchSuccess(ArrayList<PostItem> postItems, int pageNumber);
 		public void onReadSearchFail(ErrorItem errorItem);
 	}
-	
+
 	public ReadSearchTask(Callback callback, String chanName, String boardName, String searchQuery, int pageNumber)
 	{
 		mCallback = callback;
@@ -59,13 +59,13 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostIte
 		mSearchQuery = searchQuery;
 		mPageNumber = pageNumber;
 	}
-	
+
 	@Override
 	public int compare(Post lhs, Post rhs)
 	{
 		return ((Long) rhs.getTimestamp()).compareTo(lhs.getTimestamp());
 	}
-	
+
 	@Override
 	protected ArrayList<PostItem> doInBackground(Void... params)
 	{
@@ -141,7 +141,7 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostIte
 			ChanConfiguration.get(mChanName).commit();
 		}
 	}
-	
+
 	@Override
 	public void onPostExecute(ArrayList<PostItem> postItems)
 	{

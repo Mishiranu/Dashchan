@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,33 +30,33 @@ public final class GroupParser
 	{
 		@Extendable
 		public boolean onStartElement(GroupParser parser, String tagName, String attrs) throws ParseException;
-		
+
 		@Extendable
 		public void onEndElement(GroupParser parser, String tagName) throws ParseException;
-		
+
 		@Extendable
 		public void onText(GroupParser parser, String source, int start, int end) throws ParseException;
-		
+
 		@Extendable
 		public void onGroupComplete(GroupParser parser, String text) throws ParseException;
 	}
-	
+
 	private final String mSource;
 	private final Callback mCallback;
-	
+
 	private final StringBuilder mGroup = new StringBuilder();
-	
+
 	private String mGroupTagName;
 	private int mGroupCount = -1;
-	
+
 	private static final int MARK_STATE_NONE = 0;
 	private static final int MARK_STATE_MARK = 1;
 	private static final int MARK_STATE_RESET = 2;
-	
+
 	private boolean mMarkAvailable = false;
 	private int mMarkCalled = MARK_STATE_NONE;
 	private int mMark = 0;
-	
+
 	@Public
 	public static void parse(String source, Callback callback) throws ParseException
 	{
@@ -69,13 +69,13 @@ public final class GroupParser
 			throw new ParseException(e);
 		}
 	}
-	
+
 	private GroupParser(String source, Callback callback)
 	{
 		mSource = source;
 		mCallback = callback;
 	}
-	
+
 	private void convert() throws ParseException
 	{
 		String source = mSource;
@@ -185,12 +185,12 @@ public final class GroupParser
 			}
 		}
 	}
-	
+
 	private boolean isGroupMode()
 	{
 		return mGroupTagName != null;
 	}
-	
+
 	private void onStartElement(String tagName, String attrs, int start, int end) throws ParseException
 	{
 		if (isGroupMode())
@@ -209,7 +209,7 @@ public final class GroupParser
 			}
 		}
 	}
-	
+
 	private void onEndElement(String tagName, int start, int end) throws ParseException
 	{
 		if (!isGroupMode())
@@ -227,12 +227,12 @@ public final class GroupParser
 		}
 		if (isGroupMode()) mGroup.append(mSource, start, end);
 	}
-	
+
 	private void onText(int start, int end) throws ParseException
 	{
 		if (isGroupMode()) mGroup.append(mSource, start, end); else mCallback.onText(this, mSource, start, end);
 	}
-	
+
 	private void checkMarkAvailable()
 	{
 		if (!mMarkAvailable)
@@ -240,21 +240,21 @@ public final class GroupParser
 			throw new IllegalStateException("This method can only be called in onStartElement or onEndElement methods");
 		}
 	}
-	
+
 	@Public
 	public void mark()
 	{
 		checkMarkAvailable();
 		mMarkCalled = MARK_STATE_MARK;
 	}
-	
+
 	@Public
 	public void reset()
 	{
 		checkMarkAvailable();
 		mMarkCalled = MARK_STATE_RESET;
 	}
-	
+
 	@Public
 	public String getAttr(String attrs, String attr)
 	{

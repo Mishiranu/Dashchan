@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,12 +35,12 @@ import com.mishiranu.dashchan.content.model.FileHolder;
 public class MultipartEntity implements RequestEntity
 {
 	private static final Random RANDOM = new Random(System.currentTimeMillis());
-	
+
 	private final ArrayList<Part> mParts = new ArrayList<>();
 	private final String mBoundary;
-	
+
 	private String mCharsetName = "UTF-8";
-	
+
 	@Public
 	public MultipartEntity()
 	{
@@ -49,43 +49,43 @@ public class MultipartEntity implements RequestEntity
 		for (int i = 0; i < 11; i++) builder.append(RANDOM.nextInt(10));
 		mBoundary = builder.toString();
 	}
-	
+
 	@Public
 	public MultipartEntity(String... alternation)
 	{
 		this();
 		for (int i = 0; i < alternation.length; i += 2) add(alternation[i], alternation[i + 1]);
 	}
-	
+
 	@Public
 	public void setEncoding(String charsetName)
 	{
 		mCharsetName = charsetName;
 	}
-	
+
 	@Override
 	public void add(String name, String value)
 	{
 		if (value != null) mParts.add(new StringPart(name, value, mCharsetName));
 	}
-	
+
 	@Extendable
 	public void add(String name, File file)
 	{
 		add(name, new FileHolderOpenable(FileHolder.obtain(file)), null);
 	}
-	
+
 	public final void add(String name, Openable openable, OpenableOutputListener listener)
 	{
 		mParts.add(new OpenablePart(name, openable, listener));
 	}
-	
+
 	@Override
 	public String getContentType()
 	{
 		return "multipart/form-data; boundary=" + mBoundary;
 	}
-	
+
 	@Override
 	public long getContentLength()
 	{
@@ -114,10 +114,10 @@ public class MultipartEntity implements RequestEntity
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	private static final byte[] BYTES_TWO_DASHES = {0x2d, 0x2d};
 	private static final byte[] BYTES_NEW_LINE = {0x0d, 0x0a};
-	
+
 	@Override
 	public void write(OutputStream output) throws IOException
 	{
@@ -154,7 +154,7 @@ public class MultipartEntity implements RequestEntity
 		output.write(BYTES_NEW_LINE);
 		output.flush();
 	}
-	
+
 	@Override
 	public MultipartEntity copy()
 	{
@@ -163,31 +163,31 @@ public class MultipartEntity implements RequestEntity
 		entity.mParts.addAll(mParts);
 		return entity;
 	}
-	
+
 	private static abstract class Part
 	{
 		private final String mName;
-		
+
 		public Part(String name)
 		{
 			mName = name;
 		}
-		
+
 		public String getName()
 		{
 			return mName;
 		}
-		
+
 		public abstract String getFileName();
 		public abstract String getContentType();
 		public abstract long getContentLength();
 		public abstract void write(OutputStream output) throws IOException;
 	}
-	
+
 	private static class StringPart extends Part
 	{
 		private final byte[] mBytes;
-		
+
 		public StringPart(String name, String value, String charset)
 		{
 			super(name);
@@ -200,37 +200,37 @@ public class MultipartEntity implements RequestEntity
 				throw new RuntimeException(e);
 			}
 		}
-		
+
 		@Override
 		public String getFileName()
 		{
 			return null;
 		}
-		
+
 		@Override
 		public String getContentType()
 		{
 			return null;
 		}
-		
+
 		@Override
 		public long getContentLength()
 		{
 			return mBytes.length;
 		}
-		
+
 		@Override
 		public void write(OutputStream output) throws IOException
 		{
 			output.write(mBytes);
 		}
 	}
-	
+
 	private static class OpenablePart extends Part
 	{
 		private final Openable mOpenable;
 		private final OpenableOutputListener mListener;
-		
+
 		public OpenablePart(String name, Openable openable, OpenableOutputListener listener)
 		{
 			super(name);
@@ -243,19 +243,19 @@ public class MultipartEntity implements RequestEntity
 		{
 			return mOpenable.getFileName();
 		}
-		
+
 		@Override
 		public String getContentType()
 		{
 			return mOpenable.getMimeType();
 		}
-		
+
 		@Override
 		public long getContentLength()
 		{
 			return mOpenable.getSize();
 		}
-		
+
 		@Override
 		public void write(OutputStream output) throws IOException
 		{
@@ -280,7 +280,7 @@ public class MultipartEntity implements RequestEntity
 			}
 		}
 	}
-	
+
 	public interface Openable
 	{
 		public String getFileName();
@@ -288,45 +288,45 @@ public class MultipartEntity implements RequestEntity
 		public InputStream openInputStream() throws IOException;
 		public long getSize();
 	}
-	
+
 	private static class FileHolderOpenable implements Openable
 	{
 		private final FileHolder mFileHolder;
 		private final String mFileName;
 		private final String mMimeType;
-		
+
 		public FileHolderOpenable(FileHolder fileHolder)
 		{
 			mFileHolder = fileHolder;
 			mFileName = obtainFileName(mFileHolder, false);
 			mMimeType = obtainMimeType(mFileName);
 		}
-		
+
 		@Override
 		public String getFileName()
 		{
 			return mFileName;
 		}
-		
+
 		@Override
 		public String getMimeType()
 		{
 			return mMimeType;
 		}
-		
+
 		@Override
 		public InputStream openInputStream() throws IOException
 		{
 			return mFileHolder.openInputStream();
 		}
-		
+
 		@Override
 		public long getSize()
 		{
 			return mFileHolder.getSize();
 		}
 	}
-	
+
 	static String obtainFileName(FileHolder fileHolder, boolean removeFileName)
 	{
 		String fileName = fileHolder.getName();
@@ -339,7 +339,7 @@ public class MultipartEntity implements RequestEntity
 		}
 		return fileName;
 	}
-	
+
 	static String obtainMimeType(String fileName)
 	{
 		String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap
@@ -347,7 +347,7 @@ public class MultipartEntity implements RequestEntity
 		if (mimeType == null) mimeType = "application/octet-stream";
 		return mimeType;
 	}
-	
+
 	public interface OpenableOutputListener
 	{
 		public void onOutputProgressChange(Openable openable, long progress, long progressMax);

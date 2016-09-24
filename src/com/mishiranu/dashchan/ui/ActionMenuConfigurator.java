@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,7 +33,7 @@ public class ActionMenuConfigurator
 	private static final Object ACTION_BAR_POLICY;
 	private static final Method GET_MAX_ACTION_BUTTONS_METHOD;
 	private static final Method SHOWS_OVERFLOW_MENU_BUTTON_METHOD;
-	
+
 	static
 	{
 		Field showAsActionField;
@@ -63,11 +63,11 @@ public class ActionMenuConfigurator
 		GET_MAX_ACTION_BUTTONS_METHOD = getMaxActionButtonsMethod;
 		SHOWS_OVERFLOW_MENU_BUTTON_METHOD = showsOverflowMenuButtonMethod;
 	}
-	
+
 	// True for SHOW_AS_ACTION_ALWAYS, false for SHOW_AS_ACTION_IF_ROOM
 	private final SparseArray<Boolean> mDisplay = new SparseArray<>();
 	private Menu mLastMenu;
-	
+
 	public void onConfigurationChanged(Configuration newConfig)
 	{
 		if (newConfig.orientation != Configuration.ORIENTATION_UNDEFINED && mLastMenu != null)
@@ -75,7 +75,7 @@ public class ActionMenuConfigurator
 			onAfterPrepareOptionsMenu(mLastMenu);
 		}
 	}
-	
+
 	public void onAfterCreateOptionsMenu(Menu menu)
 	{
 		mDisplay.clear();
@@ -100,7 +100,7 @@ public class ActionMenuConfigurator
 			}
 		}
 	}
-	
+
 	public void onAfterPrepareOptionsMenu(Menu menu)
 	{
 		int maxCount;
@@ -150,7 +150,7 @@ public class ActionMenuConfigurator
 			}
 		}
 	}
-	
+
 	private static int getShowAsAction(MenuItem menuItem)
 	{
 		try

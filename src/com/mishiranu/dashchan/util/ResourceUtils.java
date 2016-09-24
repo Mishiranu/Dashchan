@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,7 +36,7 @@ import com.mishiranu.dashchan.preference.Preferences;
 public class ResourceUtils
 {
 	public static final int STATUS_NAVIGATION_BACKGROUND = 0x33000000;
-	
+
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	public static void applyPreferredTheme(Activity activity)
 	{
@@ -47,42 +47,42 @@ public class ResourceUtils
 			activity.getWindow().setStatusBarColor(GraphicsUtils.mixColors(color, STATUS_NAVIGATION_BACKGROUND));
 		}
 	}
-	
+
 	public static float obtainDensity(View view)
 	{
 		return obtainDensity(view.getResources());
 	}
-	
+
 	public static float obtainDensity(Fragment fragment)
 	{
 		return obtainDensity(fragment.getResources());
 	}
-	
+
 	public static float obtainDensity(Context context)
 	{
 		return obtainDensity(context.getResources());
 	}
-	
+
 	public static float obtainDensity(Resources resources)
 	{
 		return resources.getDisplayMetrics().density;
 	}
-	
+
 	public static boolean isTablet(Configuration configuration)
 	{
 		return configuration.smallestScreenWidthDp >= 600;
 	}
-	
+
 	public static boolean isTabletLarge(Configuration configuration)
 	{
 		return configuration.smallestScreenWidthDp >= 720;
 	}
-	
+
 	public static boolean isTabletOrLandscape(Configuration configuration)
 	{
 		return configuration.orientation == Configuration.ORIENTATION_LANDSCAPE || isTablet(configuration);
 	}
-	
+
 	public static int getColor(Context context, int attr)
 	{
 		TypedArray typedArray = context.obtainStyledAttributes(new int[] {attr});
@@ -95,7 +95,7 @@ public class ResourceUtils
 			typedArray.recycle();
 		}
 	}
-	
+
 	public static int getResourceId(Context context, int attr, int notFound)
 	{
 		try
@@ -108,11 +108,11 @@ public class ResourceUtils
 		}
 		catch (Exception e)
 		{
-			
+
 		}
 		return notFound;
 	}
-	
+
 	public static int getResourceId(Context context, int defStyleAttr, int attr, int notFound)
 	{
 		try
@@ -126,33 +126,33 @@ public class ResourceUtils
 		}
 		catch (Exception e)
 		{
-			
+
 		}
 		return notFound;
 	}
-	
+
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	@SuppressWarnings("deprecation")
 	public static Drawable getDrawable(Context context, int resId)
 	{
 		return C.API_LOLLIPOP ? context.getDrawable(resId) : context.getResources().getDrawable(resId);
 	}
-	
-	
+
+
 	public static Drawable getDrawable(Context context, int attr, int notFound)
 	{
 		int resId = getResourceId(context, attr, notFound);
 		return resId != 0 ? getDrawable(context, resId) : null;
 	}
-	
+
 	public static final int[] PRESSED_STATE = {android.R.attr.state_window_focused, android.R.attr.state_enabled,
 		android.R.attr.state_pressed};
-	
+
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	@SuppressWarnings("deprecation")
 	public static int getSystemSelectorColor(Context context)
 	{
-		if (C.API_LOLLIPOP) return getColor(context, android.R.attr.colorControlHighlight); else 
+		if (C.API_LOLLIPOP) return getColor(context, android.R.attr.colorControlHighlight); else
 		{
 			int resId = getResourceId(context, android.R.attr.listChoiceBackgroundIndicator,
 					android.R.drawable.list_selector_background);
@@ -161,7 +161,7 @@ public class ResourceUtils
 			return GraphicsUtils.getDrawableColor(context, drawable, Gravity.CENTER);
 		}
 	}
-	
+
 	@TargetApi(Build.VERSION_CODES.KITKAT)
 	public static int getDialogBackground(Context context)
 	{
@@ -172,7 +172,7 @@ public class ResourceUtils
 		if (C.API_KITKAT && drawable instanceof InsetDrawable) drawable = ((InsetDrawable) drawable).getDrawable();
 		return drawable != null ? GraphicsUtils.getDrawableColor(context, drawable, Gravity.CENTER) : 0;
 	}
-	
+
 	public static int getSystemSelectionIcon(Context context, String name, String fallback)
 	{
 		try
@@ -196,11 +196,11 @@ public class ResourceUtils
 			return context.getResources().getIdentifier(fallback, "drawable", "android");
 		}
 	}
-	
+
 	public static final int DIALOG_LAYOUT_SIMPLE = 0;
 	public static final int DIALOG_LAYOUT_SINGLE_CHOICE = 1;
 	public static final int DIALOG_LAYOUT_MULTI_CHOICE = 2;
-	
+
 	public static int obtainAlertDialogLayoutResId(Context context, int dialogLayout)
 	{
 		int resId;

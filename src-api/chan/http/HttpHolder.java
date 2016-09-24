@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,16 +35,16 @@ public final class HttpHolder
 	Proxy mProxy;
 	String mChanName;
 	boolean mVerifyCertificate;
-	
+
 	private int mAttempt;
 	boolean mForceGet = false;
-	
+
 	@Public
 	public HttpHolder()
 	{
-		
+
 	}
-	
+
 	void initRequest(HttpRequest request, Proxy proxy, String chanName, boolean verifyCertificate, int maxAttempts)
 	{
 		mRequestedUri = request.mUri;
@@ -53,36 +53,36 @@ public final class HttpHolder
 		mVerifyCertificate = verifyCertificate;
 		mAttempt = maxAttempts;
 	}
-	
+
 	boolean nextAttempt()
 	{
 		return mAttempt-- > 0;
 	}
-	
+
 	Uri mRedirectedUri;
 	HttpValidator mValidator;
 	private HttpResponse mResponse;
-	
+
 	private volatile Thread mRequestThread;
 	private volatile HttpURLConnection mConnection;
 	private volatile HttpURLConnection mDeadConnection;
 	private volatile boolean mDisconnectRequested = false;
 	private volatile boolean mInterrupted = false;
-	
+
 	InputListener mInputListener;
 	OutputStream mOutputStream;
-	
+
 	public interface InputListener
 	{
 		public void onInputProgressChange(long progress, long progressMax);
 	}
-	
+
 	public void interrupt()
 	{
 		mInterrupted = true;
 		disconnect();
 	}
-	
+
 	@Public
 	public void disconnect()
 	{
@@ -90,7 +90,7 @@ public final class HttpHolder
 		if (mRequestThread == Thread.currentThread()) disconnectAndClear();
 		mResponse = null;
 	}
-	
+
 	void setConnection(HttpURLConnection connection, InputListener inputListener, OutputStream outputStream)
 			throws HttpClient.DisconnectedIOException
 	{
@@ -104,19 +104,19 @@ public final class HttpHolder
 		mResponse = null;
 		if (mInterrupted) throw new HttpClient.DisconnectedIOException();
 	}
-	
+
 	HttpURLConnection getConnection() throws HttpClient.DisconnectedIOException
 	{
 		HttpURLConnection connection = mConnection;
 		if (connection == null) throw new HttpClient.DisconnectedIOException();
 		return connection;
 	}
-	
+
 	void checkDisconnected() throws HttpClient.DisconnectedIOException
 	{
 		checkDisconnected(null);
 	}
-	
+
 	void checkDisconnected(Closeable closeable) throws HttpClient.DisconnectedIOException
 	{
 		if (mDisconnectRequested)
@@ -129,13 +129,13 @@ public final class HttpHolder
 				}
 				catch (IOException e)
 				{
-					
+
 				}
 			}
 			throw new HttpClient.DisconnectedIOException();
 		}
 	}
-	
+
 	void disconnectAndClear()
 	{
 		HttpURLConnection connection = mConnection;
@@ -149,7 +149,7 @@ public final class HttpHolder
 			HttpClient.getInstance().onDisconnect(connection);
 		}
 	}
-	
+
 	@Public
 	public HttpResponse read() throws HttpException
 	{
@@ -159,20 +159,20 @@ public final class HttpHolder
 		mResponse = response;
 		return mResponse;
 	}
-	
+
 	@Public
 	public void checkResponseCode() throws HttpException
 	{
 		HttpClient.getInstance().checkResponseCode(this);
 	}
-	
+
 	private HttpURLConnection getConnectionForHeaders()
 	{
 		HttpURLConnection connection = mConnection;
 		if (connection == null) connection = mDeadConnection;
 		return connection;
 	}
-	
+
 	@Public
 	public int getResponseCode()
 	{
@@ -190,7 +190,7 @@ public final class HttpHolder
 		}
 		return -1;
 	}
-	
+
 	@Public
 	public String getResponseMessage()
 	{
@@ -208,20 +208,20 @@ public final class HttpHolder
 		}
 		return null;
 	}
-	
+
 	@Public
 	public Uri getRedirectedUri()
 	{
 		return mRedirectedUri;
 	}
-	
+
 	@Public
 	public Map<String, List<String>> getHeaderFields()
 	{
 		HttpURLConnection connection = getConnectionForHeaders();
 		return connection != null ? connection.getHeaderFields() : null;
 	}
-	
+
 	@Public
 	public String getCookieValue(String name)
 	{
@@ -238,13 +238,13 @@ public final class HttpHolder
 					int startIndex = start.length();
 					int endIndex = cookie.indexOf(';');
 					if (endIndex >= 0) return cookie.substring(startIndex, endIndex);
-					else return cookie.substring(startIndex); 
+					else return cookie.substring(startIndex);
 				}
 			}
 		}
 		return null;
 	}
-	
+
 	@Public
 	public HttpValidator getValidator()
 	{

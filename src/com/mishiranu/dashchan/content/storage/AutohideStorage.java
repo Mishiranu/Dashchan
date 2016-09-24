@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -43,16 +43,16 @@ public class AutohideStorage extends StorageManager.Storage
 	private static final String KEY_OPTION_COMMENT = "optionComment";
 	private static final String KEY_OPTION_NAME = "optionName";
 	private static final String KEY_VALUE = "value";
-	
+
 	private static final AutohideStorage INSTANCE = new AutohideStorage();
-	
+
 	public static AutohideStorage getInstance()
 	{
 		return INSTANCE;
 	}
-	
+
 	private final ArrayList<AutohideItem> mAutohideItems = new ArrayList<>();
-	
+
 	private AutohideStorage()
 	{
 		super("autohide", 1000, 10000);
@@ -96,7 +96,7 @@ public class AutohideStorage extends StorageManager.Storage
 			}
 		}
 	}
-	
+
 	public ArrayList<AutohideItem> getItems()
 	{
 		return mAutohideItems;
@@ -143,68 +143,68 @@ public class AutohideStorage extends StorageManager.Storage
 		}
 		return null;
 	}
-	
+
 	public void add(AutohideItem autohideItem)
 	{
 		mAutohideItems.add(autohideItem);
 		serialize();
 	}
-	
+
 	public void update(int index, AutohideItem autohideItem)
 	{
 		mAutohideItems.set(index, autohideItem);
 		serialize();
 	}
-	
+
 	public void delete(int index)
 	{
 		mAutohideItems.remove(index);
 		serialize();
 	}
-	
+
 	public static class AutohideItem implements Parcelable
 	{
 		public HashSet<String> chanNames;
-		
+
 		public String boardName;
 		public String threadNumber;
-		
+
 		public boolean optionOriginalPost;
 		public boolean optionSage;
-		
+
 		public boolean optionSubject;
 		public boolean optionComment;
 		public boolean optionName;
-		
+
 		public String value;
-		
+
 		private volatile boolean mReady = false;
 		private Pattern mPattern;
-		
+
 		public AutohideItem()
 		{
-			
+
 		}
-		
+
 		public AutohideItem(AutohideItem autohideItem)
 		{
 			this(autohideItem.chanNames, autohideItem.boardName, autohideItem.threadNumber,
 					autohideItem.optionOriginalPost, autohideItem.optionSage, autohideItem.optionSubject,
 					autohideItem.optionComment, autohideItem.optionName, autohideItem.value);
 		}
-		
+
 		public AutohideItem(HashSet<String> chanNames, String boardName, String threadNumber, boolean optionOriginalPost,
 				boolean optionSage, boolean optionSubject, boolean optionComment, boolean optionName, String value)
 		{
 			update(chanNames, boardName, threadNumber, optionOriginalPost, optionSage,
 					optionSubject, optionComment, optionName, value);
 		}
-		
+
 		public static Pattern makePattern(String value)
 		{
 			return Pattern.compile(value, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 		}
-		
+
 		public void update(HashSet<String> chanNames, String boardName, String threadNumber,
 				boolean optionOriginalPost, boolean optionSage, boolean optionSubject,
 				boolean optionComment, boolean optionName, String value)
@@ -219,7 +219,7 @@ public class AutohideStorage extends StorageManager.Storage
 			this.optionName = optionName;
 			this.value = value;
 		}
-		
+
 		public String find(String data)
 		{
 			if (!mReady)
@@ -234,7 +234,7 @@ public class AutohideStorage extends StorageManager.Storage
 						}
 						catch (Exception e)
 						{
-							
+
 						}
 						mReady = true;
 					}
@@ -252,11 +252,11 @@ public class AutohideStorage extends StorageManager.Storage
 			}
 			catch (Exception e)
 			{
-				
+
 			}
 			return null;
 		}
-		
+
 		public String getReason(boolean subject, boolean name, String text, String findResult)
 		{
 			StringBuilder builder = new StringBuilder();
@@ -287,7 +287,7 @@ public class AutohideStorage extends StorageManager.Storage
 			dest.writeInt(optionName ? 1 : 0);
 			dest.writeString(value);
 		}
-		
+
 		public static final Creator<AutohideItem> CREATOR = new Creator<AutohideItem>()
 		{
 			@Override
@@ -310,7 +310,7 @@ public class AutohideStorage extends StorageManager.Storage
 				autohideItem.value = source.readString();
 				return autohideItem;
 			}
-			
+
 			@Override
 			public AutohideItem[] newArray(int size)
 			{

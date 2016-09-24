@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -57,17 +57,17 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 	private final boolean mForceLoadFullThread;
 	private final String mLastPostNumber;
 	private final ArrayList<UserPostPending> mUserPostPendings;
-	
+
 	private Result mResult;
 	private boolean mFullThread = false;
-	
+
 	private String mRedirectBoardName;
 	private String mRedirectThreadNumber;
 	private String mRedirectPostNumber;
-	
+
 	private ArrayList<UserPostPending> mRemovedUserPostPendings;
 	private ErrorItem mErrorItem;
-	
+
 	public interface Callback
 	{
 		public void onRequestPreloadPosts(PostItem[] postItems);
@@ -77,7 +77,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 		public void onReadPostsRedirect(String boardName, String threadNumber, String postNumber);
 		public void onReadPostsFail(ErrorItem errorItem);
 	}
-	
+
 	public ReadPostsTask(Callback callback, String chanName, String boardName, String threadNumber, Posts cachedPosts,
 			boolean useValidator, boolean forceLoadFullThread, String lastPostNumber,
 			ArrayList<UserPostPending> userPostPendings)
@@ -92,7 +92,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 		mLastPostNumber = lastPostNumber;
 		mUserPostPendings = userPostPendings.size() > 0 ? userPostPendings : null;
 	}
-	
+
 	@Override
 	protected Boolean doInBackground(Void... params)
 	{
@@ -107,7 +107,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 			Posts readPosts = result != null ? result.posts : null;
 			HttpValidator validator = result != null ? result.validator : null;
 			if (result != null && result.fullThread) partialThreadLoading = false;
-			
+
 			if (readPosts != null && readPosts.length() > 0)
 			{
 				// Remove repeatings and sort
@@ -121,7 +121,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 				if (postsMap.size() != posts.length) posts = CommonUtils.toArray(postsMap.values(), Post.class);
 				Arrays.sort(posts);
 				readPosts.setPosts(posts);
-				
+
 				// Validate model data format
 				Post firstPost = mCachedPosts != null ? mCachedPosts.getPosts()[0] : posts[0];
 				String firstPostNumber = firstPost.getPostNumber();
@@ -170,7 +170,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 					}
 				}
 			}
-			
+
 			Result handleResult = null;
 			boolean fullThread = false;
 			if (mCachedPosts != null)
@@ -257,7 +257,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 					}
 					catch (ExtensionException | HttpException | InvalidResponseException e2)
 					{
-						
+
 					}
 				}
 				mErrorItem = new ErrorItem(ErrorItem.TYPE_THREAD_NOT_EXISTS);
@@ -283,7 +283,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 			ChanConfiguration.get(mChanName).commit();
 		}
 	}
-	
+
 	@Override
 	public void onPostExecute(Boolean success)
 	{
@@ -302,17 +302,17 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 			mCallback.onReadPostsFail(mErrorItem);
 		}
 	}
-	
+
 	public static class Patch
 	{
 		public final Post newPost;
 		public final Post oldPost;
 		public PostItem postItem;
-		
+
 		public final int index;
 		public final boolean replaceAtIndex;
 		public final boolean newPostAddedToEnd;
-		
+
 		public Patch(Post newPost, Post oldPost, int index, boolean replaceAtIndex, boolean newPostAddedToEnd)
 		{
 			this.newPost = newPost;
@@ -321,7 +321,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 			this.replaceAtIndex = replaceAtIndex;
 			this.newPostAddedToEnd = newPostAddedToEnd;
 		}
-		
+
 		public Patch(PostItem postItem, int index)
 		{
 			newPost = postItem.getPost();
@@ -332,16 +332,16 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 			newPostAddedToEnd = true;
 		}
 	}
-	
+
 	public static class Result
 	{
 		public final int newCount, deletedCount;
 		public final boolean hasEdited;
-		
+
 		public final Posts posts;
 		public final ArrayList<Patch> patches;
 		public final boolean fieldsUpdated;
-		
+
 		public Result(int newCount, int deletedCount, boolean hasEdited, Posts posts,
 				ArrayList<Patch> patches, boolean fieldsUpdated)
 		{
@@ -353,7 +353,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 			this.fieldsUpdated = fieldsUpdated;
 		}
 	}
-	
+
 	private static Result mergePosts(Posts cachedPosts, Posts loadedPosts, boolean partial)
 	{
 		int newCount = 0;
@@ -454,27 +454,27 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 		if (patches.isEmpty() && !fieldsUpdated) return null;
 		return new Result(newCount, deletedCount, hasEdited, resultPosts, patches, fieldsUpdated);
 	}
-	
+
 	public interface UserPostPending extends Parcelable
 	{
 		public boolean isUserPost(Post post);
 	}
-	
+
 	public static class PostNumberUserPostPending implements UserPostPending
 	{
 		private final String mPostNumber;
-		
+
 		public PostNumberUserPostPending(String postNumber)
 		{
 			mPostNumber = postNumber;
 		}
-		
+
 		@Override
 		public boolean isUserPost(Post post)
 		{
 			return mPostNumber.equals(post.getPostNumber());
 		}
-		
+
 		@Override
 		public boolean equals(Object o)
 		{
@@ -485,25 +485,25 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 			}
 			return false;
 		}
-		
+
 		@Override
 		public int hashCode()
 		{
 			return mPostNumber.hashCode();
 		}
-		
+
 		@Override
 		public int describeContents()
 		{
 			return 0;
 		}
-		
+
 		@Override
 		public void writeToParcel(Parcel dest, int flags)
 		{
 			dest.writeString(mPostNumber);
 		}
-		
+
 		public static final Creator<PostNumberUserPostPending> CREATOR = new Creator<PostNumberUserPostPending>()
 		{
 			@Override
@@ -511,7 +511,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 			{
 				return new PostNumberUserPostPending[size];
 			}
-			
+
 			@Override
 			public PostNumberUserPostPending createFromParcel(Parcel source)
 			{
@@ -520,7 +520,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 			}
 		};
 	}
-	
+
 	public static class NewThreadUserPostPending implements UserPostPending
 	{
 		@Override
@@ -528,7 +528,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 		{
 			return post.getParentPostNumberOrNull() == null;
 		}
-		
+
 		@Override
 		public boolean equals(Object o)
 		{
@@ -536,25 +536,25 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 			if (o instanceof NewThreadUserPostPending) return true;
 			return false;
 		}
-		
+
 		@Override
 		public int hashCode()
 		{
 			return 1;
 		}
-		
+
 		@Override
 		public int describeContents()
 		{
 			return 0;
 		}
-		
+
 		@Override
 		public void writeToParcel(Parcel dest, int flags)
 		{
-			
+
 		}
-		
+
 		public static final Creator<NewThreadUserPostPending> CREATOR = new Creator<NewThreadUserPostPending>()
 		{
 			@Override
@@ -562,7 +562,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 			{
 				return new NewThreadUserPostPending[size];
 			}
-			
+
 			@Override
 			public NewThreadUserPostPending createFromParcel(Parcel source)
 			{
@@ -570,23 +570,23 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 			}
 		};
 	}
-	
+
 	public static class CommentUserPostPending implements UserPostPending
 	{
 		private static final SimilarTextEstimator ESTIMATOR = new SimilarTextEstimator(Integer.MAX_VALUE, true);
-		
+
 		private final SimilarTextEstimator.WordsData mWordsData;
-		
+
 		public CommentUserPostPending(String comment)
 		{
 			this(ESTIMATOR.getWords(comment));
 		}
-		
+
 		private CommentUserPostPending(SimilarTextEstimator.WordsData wordsData)
 		{
 			mWordsData = wordsData;
 		}
-		
+
 		@Override
 		public boolean isUserPost(Post post)
 		{
@@ -594,7 +594,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 			SimilarTextEstimator.WordsData wordsData = ESTIMATOR.getWords(comment);
 			return ESTIMATOR.checkSimiliar(mWordsData, wordsData) || mWordsData == null && wordsData == null;
 		}
-		
+
 		@Override
 		public boolean equals(Object o)
 		{
@@ -607,7 +607,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 			}
 			return false;
 		}
-		
+
 		@Override
 		public int hashCode()
 		{
@@ -620,20 +620,20 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 			}
 			return result;
 		}
-		
+
 		@Override
 		public int describeContents()
 		{
 			return 0;
 		}
-		
+
 		@Override
 		public void writeToParcel(Parcel dest, int flags)
 		{
 			dest.writeSerializable(mWordsData != null ? mWordsData.words : null);
 			dest.writeInt(mWordsData != null ? mWordsData.count : 0);
 		}
-		
+
 		public static final Creator<CommentUserPostPending> CREATOR = new Creator<CommentUserPostPending>()
 		{
 			@Override
@@ -641,7 +641,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 			{
 				return new CommentUserPostPending[size];
 			}
-			
+
 			@Override
 			public CommentUserPostPending createFromParcel(Parcel source)
 			{

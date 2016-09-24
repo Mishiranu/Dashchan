@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -38,40 +38,40 @@ public class DatabaseHelper extends SQLiteOpenHelper
 {
 	private static final String DATABASE_NAME = "dashchan.db";
 	private static final int DATABASE_VERSION = 8;
-	
+
 	static final String TABLE_HISTORY = "history";
 	static final String TABLE_HIDDEN_THREADS = "hidden_threads";
-	
+
 	private static final String TYPE_INTEGER = "INTEGER";
 	private static final String TYPE_LONG = "LONG";
 	private static final String TYPE_TEXT = "TEXT";
 
 	private final Executor mExecutor = ConcurrentUtils.newSingleThreadPool(10000, "DatabaseHelper", null,
 			Process.THREAD_PRIORITY_DEFAULT);
-	
+
 	private static final DatabaseHelper INSTANCE = new DatabaseHelper();
-	
+
 	public static DatabaseHelper getInstance()
 	{
 		return INSTANCE;
 	}
-	
+
 	private DatabaseHelper()
 	{
 		super(MainApplication.getInstance(), DATABASE_NAME, null, DATABASE_VERSION);
 		getWritableDatabase(); // Perform create and upgrade here
 	}
-	
+
 	public Executor getExecutor()
 	{
 		return mExecutor;
 	}
-	
+
 	public static File getDatabaseFile()
 	{
 		return MainApplication.getInstance().getDatabasePath(DATABASE_NAME);
 	}
-	
+
 	@Override
 	public void onCreate(SQLiteDatabase db)
 	{
@@ -87,7 +87,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
 				.addColumn(HiddenThreadsDatabase.COLUMN_THREAD_NUMBER, TYPE_TEXT)
 				.addColumn(HiddenThreadsDatabase.COLUMN_HIDDEN, TYPE_INTEGER).execute(db);
 	}
-	
+
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
 	{
@@ -189,24 +189,24 @@ public class DatabaseHelper extends SQLiteOpenHelper
 			}
 		}
 	}
-	
+
 	private static class TableCreator
 	{
 		private final ArrayList<String> mColumns = new ArrayList<>();
 		private final String mTableName;
-		
+
 		public TableCreator(String tableName)
 		{
 			mTableName = tableName;
 		}
-		
+
 		public TableCreator addColumn(String columnName, String columnType)
 		{
 			String columnString = columnName + " " + columnType + " NULL";
 			mColumns.add(columnString);
 			return this;
 		}
-		
+
 		public void execute(SQLiteDatabase db)
 		{
 			StringBuilder builder = new StringBuilder().append("CREATE TABLE ").append(mTableName).append(" (");
@@ -216,21 +216,21 @@ public class DatabaseHelper extends SQLiteOpenHelper
 			db.execSQL(builder.toString());
 		}
 	}
-	
+
 	private static class TableModifier
 	{
 		private final TableCreator mTableCreator;
 		private final String mFromTableName;
-		
+
 		private final ArrayList<String> mFrom = new ArrayList<>(), mTo = new ArrayList<>();
-		
+
 		public TableModifier(String newTableName, String oldTableName)
 		{
 			if (newTableName == null) newTableName = oldTableName;
 			mTableCreator = new TableCreator(newTableName);
 			mFromTableName = newTableName.equals(oldTableName) ? null : oldTableName;
 		}
-		
+
 		public TableModifier addColumn(String columnName, String columnType, String copyFrom)
 		{
 			mTableCreator.addColumn(columnName, columnType);
@@ -241,7 +241,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
 			}
 			return this;
 		}
-		
+
 		public void execute(SQLiteDatabase db)
 		{
 			String table = mTableCreator.mTableName;

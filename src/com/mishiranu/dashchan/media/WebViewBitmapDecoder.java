@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -45,17 +45,17 @@ public class WebViewBitmapDecoder extends WebViewClient
 	private static final int MESSAGE_INIT_WEB_VIEW = 1;
 	private static final int MESSAGE_MEASURE_PICTURE = 2;
 	private static final int MESSAGE_CHECK_PICTURE_SIZE = 3;
-	
+
 	private static final Handler HANDLER = new Handler(Looper.getMainLooper(), new Callback());
-	
+
 	private final FileHolder mFileHolder;
 	private final int mSampleSize;
 	private final CountDownLatch mLatch = new CountDownLatch(1);
-	
+
 	private volatile Bitmap mBitmap;
-	
+
 	private WebView mWebView;
-	
+
 	private WebViewBitmapDecoder(FileHolder fileHolder, BitmapFactory.Options options) throws IOException
 	{
 		mFileHolder = fileHolder;
@@ -72,7 +72,7 @@ public class WebViewBitmapDecoder extends WebViewClient
 			throw new InterruptedIOException();
 		}
 	}
-	
+
 	@SuppressWarnings("deprecation")
 	@Override
 	public WebResourceResponse shouldInterceptRequest(WebView view, String url)
@@ -99,7 +99,7 @@ public class WebViewBitmapDecoder extends WebViewClient
 	}
 
 	private boolean mPageFinished = false;
-	
+
 	@Override
 	public void onPageFinished(WebView view, String url)
 	{
@@ -107,21 +107,21 @@ public class WebViewBitmapDecoder extends WebViewClient
 		mPageFinished = true;
 		notifyExtract(view);
 	}
-	
+
 	@SuppressWarnings("deprecation")
 	private final WebView.PictureListener mPictureListener = (view, picture) ->
 	{
 		if (mPageFinished) notifyExtract(view);
 	};
-	
+
 	private void notifyExtract(WebView view)
 	{
 		HANDLER.removeMessages(MESSAGE_MEASURE_PICTURE);
 		HANDLER.sendMessageDelayed(HANDLER.obtainMessage(MESSAGE_MEASURE_PICTURE, new Object[] {this, view}), 1000);
 	}
-	
+
 	private boolean mMeasured = false;
-	
+
 	private void measurePicture(WebView view)
 	{
 		if (!mMeasured)
@@ -131,13 +131,13 @@ public class WebViewBitmapDecoder extends WebViewClient
 			view.loadUrl("javascript:calculateSize();");
 		}
 	}
-	
+
 	private void countDownAndDestroy(WebView view)
 	{
 		mLatch.countDown();
 		view.destroy();
 	}
-	
+
 	private void checkPictureSize(int width, int height)
 	{
 		if (width > 0 && height > 0)
@@ -171,7 +171,7 @@ public class WebViewBitmapDecoder extends WebViewClient
 		else countDownAndDestroy(mWebView);
 		mWebView = null;
 	}
-	
+
 	private static class Callback implements Handler.Callback
 	{
 		@SuppressWarnings("deprecation")
@@ -229,7 +229,7 @@ public class WebViewBitmapDecoder extends WebViewClient
 			return false;
 		}
 	}
-	
+
 	@SuppressWarnings("unused")
 	@JavascriptInterface
 	public void onCalculateSize(int width, int height)
@@ -238,7 +238,7 @@ public class WebViewBitmapDecoder extends WebViewClient
 		height /= mSampleSize;
 		HANDLER.obtainMessage(MESSAGE_CHECK_PICTURE_SIZE, new Object[] {this, width, height}).sendToTarget();
 	}
-	
+
 	public static Bitmap loadBitmap(FileHolder fileHolder, BitmapFactory.Options options)
 	{
 		if (C.WEB_VIEW_BITMAP_DECODER_SUPPORTED && !MainApplication.getInstance().isLowRam())

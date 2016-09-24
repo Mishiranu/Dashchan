@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -53,15 +53,15 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 {
 	private final String mChanName;
 	private final boolean mUseInlineLinkParser;
-	
+
 	public static final ChanManager.Initializer INITIALIZER = new ChanManager.Initializer();
-	
+
 	@Public
 	public ChanMarkup()
 	{
 		this(true);
 	}
-	
+
 	public ChanMarkup(boolean useInitializer)
 	{
 		if (useInitializer)
@@ -74,7 +74,7 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 			}
 			catch (Exception e)
 			{
-				
+
 			}
 			mUseInlineLinkParser = method != null && !ChanMarkup.class.equals(method.getDeclaringClass());
 		}
@@ -84,30 +84,30 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 			mUseInlineLinkParser = true;
 		}
 	}
-	
+
 	@Override
 	public final String getChanName()
 	{
 		return mChanName;
 	}
-	
+
 	@Override
 	public final void init()
 	{
-		
+
 	}
-	
+
 	public static <T extends ChanMarkup> T get(String chanName)
 	{
 		return ChanManager.getInstance().getMarkup(chanName);
 	}
-	
+
 	@Public
 	public static <T extends ChanMarkup> T get(Object object)
 	{
 		return get(ChanManager.getInstance().getLinkedChanName(object));
 	}
-	
+
 	@Public public static final int TAG_BOLD = 0x00000001;
 	@Public public static final int TAG_ITALIC = 0x00000002;
 	@Public public static final int TAG_UNDERLINE = 0x00000004;
@@ -120,82 +120,82 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 	@Public public static final int TAG_CODE = 0x00000200;
 	@Public public static final int TAG_ASCII_ART = 0x00000400;
 	@Public public static final int TAG_HEADING = 0x00000800;
-	
+
 	public static final int TAG_SPECIAL_UNUSED = 0x01000000;
 	public static final int TAG_SPECIAL_LINK = 0x01000001;
 	public static final int TAG_SPECIAL_COLOR = 0x01000002;
 	public static final int TAG_SPECIAL_LINK_SUFFIX = 0x01000003;
-	
+
 	@Extendable
 	protected CommentEditor obtainCommentEditor(String boardName)
 	{
 		return null;
 	}
-	
+
 	@Extendable
 	protected boolean isTagSupported(String boardName, int tag)
 	{
 		return false;
 	}
-	
+
 	private static class MarkupItem
 	{
 		public TagItem tagItem;
 		public HashMap<String, TagItem> cssClassTagItems;
 		public ArrayList<AttributeItem> attrubuteItems;
 	}
-	
+
 	private static class AttributeItem
 	{
 		public final String attribute;
 		public final String value;
-		
+
 		public final TagItem tagItem = new TagItem();
-		
+
 		public AttributeItem(String attribute, String value)
 		{
 			this.attribute = attribute;
 			this.value = value;
 		}
 	}
-	
+
 	private static class TagItem
 	{
 		public TagItem parentTagItem;
-		
+
 		public int tag;
 		public boolean colorable;
-		
+
 		public boolean blockDefined;
 		public boolean block;
 		public boolean spaced;
-		
+
 		public boolean preformattedDefined;
 		public boolean preformatted;
-		
+
 		public void setTag(int tag)
 		{
 			this.tag = tag;
 		}
-		
+
 		public void setColorable(boolean colorable)
 		{
 			this.colorable = colorable;
 		}
-		
+
 		public void setBlock(boolean block, boolean spaced)
 		{
 			blockDefined = true;
 			this.block = block;
 			this.spaced = spaced;
 		}
-		
+
 		public void setPreformatted(boolean preformatted)
 		{
 			preformattedDefined = true;
 			this.preformatted = preformatted;
 		}
-		
+
 		public void applyTagData(HtmlParser.TagData tagData)
 		{
 			if (parentTagItem != null) parentTagItem.applyTagData(tagData);
@@ -209,21 +209,21 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 				tagData.preformatted = preformatted ? HtmlParser.TagData.ENABLED : HtmlParser.TagData.DISABLED;
 			}
 		}
-		
+
 		public boolean isMorePreferredThanParent()
 		{
 			return parentTagItem == null || tag != 0 || parentTagItem.tag == 0;
 		}
 	}
-	
+
 	private final HashMap<String, MarkupItem> mMarkupItems = new HashMap<>();
-	
+
 	private TagItem obtainTagItem(String tagName, boolean withCssClass, String cssClass, boolean withAttribute,
 			String attribute, String value)
 	{
 		if (withCssClass && cssClass == null)
 		{
-			throw new NullPointerException("cssClass must not be null");	
+			throw new NullPointerException("cssClass must not be null");
 		}
 		if (withAttribute && (attribute == null || value == null))
 		{
@@ -292,43 +292,43 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 			return markupItem.tagItem;
 		}
 	}
-	
+
 	@Public
 	public final void addTag(String tagName, int tag)
 	{
 		obtainTagItem(tagName, false, null, false, null, null).setTag(tag);
 	}
-	
+
 	@Public
 	public final void addTag(String tagName, String cssClass, int tag)
 	{
 		obtainTagItem(tagName, true, cssClass, false, null, null).setTag(tag);
 	}
-	
+
 	@Public
 	public final void addTag(String tagName, String attribute, String value, int tag)
 	{
 		obtainTagItem(tagName, false, null, true, attribute, value).setTag(tag);
 	}
-	
+
 	@Public
 	public final void addColorable(String tagName)
 	{
 		obtainTagItem(tagName, false, null, false, null, null).setColorable(true);
 	}
-	
+
 	@Public
 	public final void addColorable(String tagName, String cssClass)
 	{
 		obtainTagItem(tagName, true, cssClass, false, null, null).setColorable(true);
 	}
-	
+
 	@Public
 	public final void addColorable(String tagName, String attribute, String value)
 	{
 		obtainTagItem(tagName, false, null, true, attribute, value).setColorable(true);
 	}
-	
+
 	// TODO CHAN
 	// Remove this method after updating
 	// horochan ponychan
@@ -338,25 +338,25 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 	{
 		addBlock(tagName, true, spaced);
 	}
-	
+
 	@Public
 	public final void addBlock(String tagName, boolean block, boolean spaced)
 	{
 		obtainTagItem(tagName, false, null, false, null, null).setBlock(block, spaced);
 	}
-	
+
 	@Public
 	public final void addBlock(String tagName, String cssClass, boolean block, boolean spaced)
 	{
 		obtainTagItem(tagName, true, cssClass, false, null, null).setBlock(block, spaced);
 	}
-	
+
 	@Public
 	public final void addBlock(String tagName, String attribute, String value, boolean block, boolean spaced)
 	{
 		obtainTagItem(tagName, false, null, true, attribute, value).setBlock(block, spaced);
 	}
-	
+
 	// TODO CHAN
 	// Remove this method after updating
 	// synch
@@ -366,27 +366,27 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 	{
 		addPreformatted(tagName, true);
 	}
-	
+
 	@Public
 	public final void addPreformatted(String tagName, boolean preformatted)
 	{
 		obtainTagItem(tagName, false, null, false, null, null).setPreformatted(preformatted);
 	}
-	
+
 	@Public
 	public final void addPreformatted(String tagName, String cssClass, boolean preformatted)
 	{
 		obtainTagItem(tagName, true, cssClass, false, null, null).setPreformatted(preformatted);
 	}
-	
+
 	@Public
 	public final void addPreformatted(String tagName, String attribute, String value, boolean preformatted)
 	{
 		obtainTagItem(tagName, false, null, true, attribute, value).setPreformatted(preformatted);
 	}
-	
+
 	private static final TagItem UNUSED_TAG_ITEM = new TagItem();
-	
+
 	@SuppressWarnings("UnusedAssignment")
 	@Override
 	public final Object onBeforeTagStart(HtmlParser parser, StringBuilder builder, String tagName,
@@ -440,7 +440,7 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 		}
 		return null;
 	}
-	
+
 	@Override
 	public final void onTagStart(HtmlParser parser, StringBuilder builder, String tagName,
 			Attributes attributes, Object object)
@@ -483,7 +483,7 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 			provider.add(tag, extra, builder.length());
 		}
 	}
-	
+
 	@Override
 	public final void onTagEnd(HtmlParser parser, StringBuilder builder, String tagName)
 	{
@@ -521,13 +521,13 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 			styledItem.close(end);
 		}
 	}
-	
+
 	@Extendable
 	protected Pair<String, String> obtainPostLinkThreadPostNumbers(String uriString)
 	{
 		return null;
 	}
-	
+
 	private Pair<String, String> obtainPostLinkThreadPostNumbers(HtmlParser parser, String uriString)
 	{
 		MarkupExtra extra = parser.getExtra();
@@ -538,7 +538,7 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 		String postNumber = locator.safe(false).getPostNumber(uri);
 		return threadNumber == null && postNumber == null ? null : new Pair<>(threadNumber, postNumber);
 	}
-	
+
 	@Override
 	public final int onListLineStart(HtmlParser parser, StringBuilder builder, boolean ordered, int line)
 	{
@@ -566,14 +566,14 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 		}
 		return builder.length() - length;
 	}
-	
+
 	@Override
 	public final void onCutBlock(HtmlParser parser, StringBuilder builder)
 	{
 		ChanSpanProvider provider = parser.getSpanProvider();
 		provider.cut(builder.length());
 	}
-	
+
 	@Override
 	public final HtmlParser.SpanProvider initSpanProvider(HtmlParser parser)
 	{
@@ -585,23 +585,23 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 			{
 				String boardName = extra.getBoardName();
 				provider.commentEditor = mSafe.obtainCommentEditor(boardName);
-			} 
+			}
 		}
 		return provider;
 	}
-	
+
 	private static class LinkHolder
 	{
 		public String uriString;
 		public String postNumber;
 	}
-	
+
 	private static class LinkSuffixHolder
 	{
 		public int suffix;
 		public String postNumber;
 	}
-	
+
 	private static class StyledItem
 	{
 		public final int tag;
@@ -609,7 +609,7 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 
 		public int start;
 		public int end;
-		
+
 		public StyledItem(int tag, Object extra, int start)
 		{
 			this.tag = tag;
@@ -617,31 +617,31 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 			this.start = start;
 			this.end = -1;
 		}
-		
+
 		public boolean isClosed()
 		{
 			return end >= start;
 		}
-		
+
 		public void close(int end)
 		{
 			this.end = end;
 		}
 	}
-	
+
 	private class ChanSpanProvider implements HtmlParser.SpanProvider
 	{
 		private final ArrayList<StyledItem> mStyledItems = new ArrayList<>();
-		
+
 		public CommentEditor commentEditor;
-		
+
 		public StyledItem add(int tag, Object extra, int start)
 		{
 			StyledItem styledItem = new StyledItem(tag, extra, start);
 			mStyledItems.add(styledItem);
 			return styledItem;
 		}
-		
+
 		public StyledItem getLastOpenStyledItem()
 		{
 			ArrayList<StyledItem> styledItems = mStyledItems;
@@ -652,7 +652,7 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 			}
 			return null;
 		}
-		
+
 		public void cut(int length)
 		{
 			ArrayList<StyledItem> styledItems = mStyledItems;
@@ -663,7 +663,7 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 				if (styledItem.start > length) styledItem.start = length;
 			}
 		}
-		
+
 		private void modifyLink(HtmlParser parser, int start, int end, LinkHolder linkHolder)
 		{
 			String parentPostNumber = parser.getParentPostNumber();
@@ -713,7 +713,7 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 				}
 			}
 		}
-		
+
 		/*
 		 * Returns number of characters added or removed
 		 */
@@ -731,7 +731,7 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 			}
 			return 0;
 		}
-		
+
 		@Override
 		public CharSequence transformBuilder(HtmlParser parser, StringBuilder builder)
 		{
@@ -843,22 +843,22 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 			return spannable;
 		}
 	}
-	
+
 	public interface MarkupExtra
 	{
 		public String getBoardName();
 		public String getThreadNumber();
 	}
-	
+
 	public static final class Safe
 	{
 		private final ChanMarkup mMarkup;
-		
+
 		private Safe(ChanMarkup markup)
 		{
 			mMarkup = markup;
 		}
-		
+
 		public CommentEditor obtainCommentEditor(String boardName)
 		{
 			try
@@ -871,7 +871,7 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 				return null;
 			}
 		}
-		
+
 		public boolean isTagSupported(String boardName, int tag)
 		{
 			try
@@ -885,9 +885,9 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 			}
 		}
 	}
-	
+
 	private final Safe mSafe = new Safe(this);
-	
+
 	public final Safe safe()
 	{
 		return mSafe;

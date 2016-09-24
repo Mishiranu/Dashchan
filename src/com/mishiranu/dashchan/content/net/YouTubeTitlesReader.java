@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,17 +42,17 @@ import com.mishiranu.dashchan.text.HtmlParser;
 public class YouTubeTitlesReader
 {
 	private static final YouTubeTitlesReader INSTANCE = new YouTubeTitlesReader();
-	
+
 	private YouTubeTitlesReader()
 	{
-		
+
 	}
-	
+
 	public static YouTubeTitlesReader getInstance()
 	{
 		return INSTANCE;
 	}
-	
+
 	private void readYouTubeTitles(HashMap<String, String> writeTo, ArrayList<String> embeddedCodes,
 			int from, int count, HttpHolder holder) throws HttpException, InvalidResponseException
 	{
@@ -88,9 +88,9 @@ public class YouTubeTitlesReader
 			}
 		}
 	}
-	
+
 	private final HashMap<String, String> mCachedYouTubeTitles = new HashMap<>();
-	
+
 	public final HashMap<String, String> readYouTubeTitles(ArrayList<String> embeddedCodes, HttpHolder holder)
 			throws HttpException, InvalidResponseException
 	{
@@ -117,33 +117,33 @@ public class YouTubeTitlesReader
 		}
 		return null;
 	}
-	
+
 	private static abstract class EmbeddedCodeData
 	{
 		public final EmbeddedApplyHolder applyHolder;
 		public final String embeddedCode;
-		
+
 		public EmbeddedCodeData(EmbeddedApplyHolder applyHolder, String embeddedCode)
 		{
 			this.applyHolder = applyHolder;
 			this.embeddedCode = embeddedCode;
 		}
-		
+
 		public abstract int applyTitle(String title);
 		public abstract void fixPositions(int shift);
 	}
-	
+
 	private static class LinkCodeData extends EmbeddedCodeData
 	{
 		public int start, end;
-		
+
 		public LinkCodeData(EmbeddedApplyHolder applyHolder, String embeddedCode, int start, int end)
 		{
 			super(applyHolder, embeddedCode);
 			this.start = start;
 			this.end = end;
 		}
-		
+
 		@Override
 		public int applyTitle(String title)
 		{
@@ -156,7 +156,7 @@ public class YouTubeTitlesReader
 			applyHolder.commentBuilder.replace(start, end, title);
 			return shift;
 		}
-		
+
 		@Override
 		public void fixPositions(int shift)
 		{
@@ -167,44 +167,44 @@ public class YouTubeTitlesReader
 			}
 		}
 	}
-	
+
 	private static class FileCodeData extends EmbeddedCodeData
 	{
 		public final EmbeddedAttachment attachment;
-		
+
 		public FileCodeData(EmbeddedApplyHolder applyHolder, String embeddedCode, EmbeddedAttachment attachment)
 		{
 			super(applyHolder, embeddedCode);
 			this.attachment = attachment;
 		}
-		
+
 		@Override
 		public int applyTitle(String title)
 		{
 			attachment.setTitle(title);
 			return 0;
 		}
-		
+
 		@Override
 		public void fixPositions(int shift)
 		{
-			
+
 		}
 	}
-	
+
 	private static class EmbeddedApplyHolder
 	{
 		public final Post post;
 		public final ArrayList<EmbeddedCodeData> embeddedCodeDatas = new ArrayList<>();
-		
+
 		public StringBuilder commentBuilder;
-		
+
 		public EmbeddedApplyHolder(Post post)
 		{
 			this.post = post;
 		}
 	}
-	
+
 	private EmbeddedApplyHolder getYouTubeApplyHolder(ChanLocator locator, Post post)
 	{
 		EmbeddedApplyHolder applyHolder = null;
@@ -282,7 +282,7 @@ public class YouTubeTitlesReader
 		}
 		return applyHolder;
 	}
-	
+
 	private void readYouTubeTitlesAndApplyChecked(List<Post> posts, HttpHolder holder)
 			throws HttpException, InvalidResponseException
 	{
@@ -337,7 +337,7 @@ public class YouTubeTitlesReader
 			}
 		}
 	}
-	
+
 	public final void readAndApplyIfNecessary(List<Post> posts, HttpHolder holder)
 	{
 		if (Preferences.isDownloadYouTubeTitles() && !StringUtils.isEmpty(C.API_KEY_GOOGLE))
@@ -348,7 +348,7 @@ public class YouTubeTitlesReader
 			}
 			catch (HttpException | InvalidResponseException e)
 			{
-				
+
 			}
 		}
 	}

@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,25 +40,25 @@ import com.mishiranu.dashchan.widget.ListPosition;
 public class PageManager
 {
 	private static final String EXTRA_SAVED_PAGES = "savedPages";
-	
+
 	private PageHolder mPageHolder;
 	private final ArrayList<PageHolder> mPageHolders = new ArrayList<>();
-	
+
 	public PageHolder getCurrentPage()
 	{
 		return mPageHolder;
 	}
-	
+
 	public ArrayList<PageHolder> getPages()
 	{
 		return mPageHolders;
 	}
-	
+
 	public void save(Bundle outState)
 	{
 		outState.putParcelableArrayList(EXTRA_SAVED_PAGES, mPageHolders);
 	}
-	
+
 	public PageHolder restore(Bundle inState)
 	{
 		if (inState != null)
@@ -82,12 +82,12 @@ public class PageManager
 		}
 		return null;
 	}
-	
+
 	private File getSavedPagesFile()
 	{
 		return CacheManager.getInstance().getInternalCacheFile("saved-pages");
 	}
-	
+
 	public void writeToStorage(Bundle outState)
 	{
 		File file = getSavedPagesFile();
@@ -113,7 +113,7 @@ public class PageManager
 			}
 		}
 	}
-	
+
 	public Bundle readFromStorage()
 	{
 		File file = getSavedPagesFile();
@@ -136,7 +136,7 @@ public class PageManager
 			}
 			catch (IOException e)
 			{
-				
+
 			}
 			finally
 			{
@@ -147,7 +147,7 @@ public class PageManager
 		}
 		return null;
 	}
-	
+
 	public ListPage<?> newPage(PageHolder.Content content)
 	{
 		switch (content)
@@ -162,7 +162,7 @@ public class PageManager
 		}
 		return null;
 	}
-	
+
 	public PageHolder add(PageHolder.Content content, String chanName, String boardName, String threadNumber,
 			String threadTitle, String searchQuery)
 	{
@@ -176,17 +176,17 @@ public class PageManager
 			mPageHolders.remove(pageHolder);
 		}
 		pageHolder = new PageHolder(content, chanName, boardName, threadNumber, threadTitle, searchQuery);
-		
+
 		if (mPageHolder != null && !mPageHolder.inStack && mPageHolder.canDestroyIfNotInStack())
 		{
 			mPageHolders.remove(mPageHolder);
 		}
-		
+
 		mPageHolders.add(pageHolder);
 		pageHolder.position = position;
 		pageHolder.extra = extra;
 		mPageHolder = pageHolder;
-		
+
 		boolean mergeChans = Preferences.isMergeChans();
 		int depth = 0;
 		// Remove deep search, boards, etc pages if they are deep in stack
@@ -204,7 +204,7 @@ public class PageManager
 		}
 		return pageHolder;
 	}
-	
+
 	public int getStackSize(String chanName)
 	{
 		boolean mergeChans = Preferences.isMergeChans();
@@ -215,12 +215,12 @@ public class PageManager
 		}
 		return count;
 	}
-	
+
 	public int getStackSize()
 	{
 		return getStackSize(mPageHolder.chanName);
 	}
-	
+
 	public PageHolder getTargetPreviousPage()
 	{
 		boolean mergeChans = Preferences.isMergeChans();
@@ -235,7 +235,7 @@ public class PageManager
 		}
 		return null;
 	}
-	
+
 	public PageHolder getLastPage(String chanName)
 	{
 		boolean mergeChans = Preferences.isMergeChans();
@@ -246,18 +246,18 @@ public class PageManager
 		}
 		return null;
 	}
-	
+
 	public void removeCurrentPageFromStack()
 	{
 		mPageHolder.inStack = false;
 		if (mPageHolder.isThreadsOrPosts() && Preferences.isCloseOnBack()) mPageHolders.remove(mPageHolder);
 	}
-	
+
 	public void removeCurrentPage()
 	{
 		mPageHolders.remove(mPageHolder);
 	}
-	
+
 	public void clearStack()
 	{
 		boolean mergeChans = Preferences.isMergeChans();
@@ -277,14 +277,14 @@ public class PageManager
 			}
 		}
 	}
-	
+
 	public void moveCurrentPageTop()
 	{
 		mPageHolder.inStack = true;
 		mPageHolders.remove(mPageHolder);
 		mPageHolders.add(mPageHolder);
 	}
-	
+
 	public PageHolder get(String chanName, String boardName, String threadNumber, PageHolder.Content content)
 	{
 		for (PageHolder pageHolder : mPageHolders)
@@ -293,7 +293,7 @@ public class PageManager
 		}
 		return null;
 	}
-	
+
 	public void closeAllExcept(PageHolder exceptPageHolder)
 	{
 		boolean mergeChans = Preferences.isMergeChans();
@@ -310,17 +310,17 @@ public class PageManager
 			}
 		}
 	}
-	
+
 	public boolean isSingleBoardMode(String chanName)
 	{
 		return ChanConfiguration.get(chanName).getOption(ChanConfiguration.OPTION_SINGLE_BOARD_MODE);
 	}
-	
+
 	public boolean isSingleBoardMode()
 	{
 		return isSingleBoardMode(mPageHolder.chanName);
 	}
-	
+
 	public String getSingleBoardName(String chanName)
 	{
 		return ChanConfiguration.get(chanName).getSingleBoardName();

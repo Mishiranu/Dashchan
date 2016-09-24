@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -46,7 +46,7 @@ public class ListViewUtils
 		}
 		return view;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public static <T> T getViewHolder(View view, Class<T> clazz)
 	{
@@ -60,7 +60,7 @@ public class ListViewUtils
 		}
 		return null;
 	}
-	
+
 	public static void cancelListFling(ListView listView)
 	{
 		MotionEvent motionEvent;
@@ -71,7 +71,7 @@ public class ListViewUtils
 		listView.onTouchEvent(motionEvent);
 		motionEvent.recycle();
 	}
-	
+
 	public static void colorizeListThumb4(AbsListView listView)
 	{
 		final int colorDefault = ResourceUtils.getColor(listView.getContext(), R.attr.colorAccentSupport);
@@ -112,7 +112,7 @@ public class ListViewUtils
 						addState(pressedState, pressedDrawable);
 						addState(defaultState, defaultDrawable);
 					}
-					
+
 					@Override
 					protected boolean onStateChange(int[] stateSet)
 					{
@@ -131,7 +131,7 @@ public class ListViewUtils
 		}
 		catch (Exception e)
 		{
-			
+
 		}
 	}
 }

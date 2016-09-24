@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -64,7 +64,7 @@ import com.mishiranu.dashchan.widget.ViewFactory;
 public class AutohideFragment extends BaseListFragment
 {
 	private ArrayAdapter<AutohideStorage.AutohideItem> mAdapter;
-	
+
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState)
 	{
@@ -158,15 +158,15 @@ public class AutohideFragment extends BaseListFragment
 		mAdapter.addAll(AutohideStorage.getInstance().getItems());
 		setListAdapter(mAdapter);
 	}
-	
+
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id)
 	{
 		editRule(mAdapter.getItem(position), position);
 	}
-	
+
 	private static final int OPTIONS_MENU_NEW_RULE = 0;
-	
+
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater)
 	{
@@ -175,7 +175,7 @@ public class AutohideFragment extends BaseListFragment
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 		super.onCreateOptionsMenu(menu, inflater);
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
@@ -189,16 +189,16 @@ public class AutohideFragment extends BaseListFragment
 		}
 		return super.onOptionsItemSelected(item);
 	}
-	
+
 	private static final int CONTEXT_MENU_REMOVE_RULE = 0;
-	
+
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo)
 	{
 		super.onCreateContextMenu(menu, v, menuInfo);
 		menu.add(Menu.NONE, CONTEXT_MENU_REMOVE_RULE, 0, R.string.action_remove_rule);
 	}
-	
+
 	@Override
 	public boolean onContextItemSelected(MenuItem item)
 	{
@@ -214,14 +214,14 @@ public class AutohideFragment extends BaseListFragment
 		}
 		return super.onContextItemSelected(item);
 	}
-	
+
 	private void editRule(AutohideStorage.AutohideItem autohideItem, int index)
 	{
 		AutohideDialog dialog = new AutohideDialog(autohideItem, index);
 		dialog.setTargetFragment(this, 0);
 		dialog.show(getFragmentManager(), AutohideDialog.class.getName());
 	}
-	
+
 	private void onEditComplete(AutohideStorage.AutohideItem autohideItem, int index)
 	{
 		if (index == -1)
@@ -237,15 +237,15 @@ public class AutohideFragment extends BaseListFragment
 			mAdapter.insert(autohideItem, index);
 		}
 	}
-	
+
 	public static class AutohideDialog extends DialogFragment implements View.OnClickListener,
 			DialogInterface.OnClickListener
 	{
 		private static final String EXTRA_ITEM = "item";
 		private static final String EXTRA_INDEX = "index";
-		
+
 		private final HashSet<String> mSelectedChanNames = new HashSet<>();
-		
+
 		private ScrollView mScrollView;
 		private TextView mChanNameSelector;
 		private EditText mBoardNameEdit;
@@ -259,12 +259,12 @@ public class AutohideFragment extends BaseListFragment
 		private TextView mErrorText;
 		private TextView mMatcherText;
 		private EditText mTestStringEdit;
-		
+
 		public AutohideDialog()
 		{
-			
+
 		}
-		
+
 		public AutohideDialog(AutohideStorage.AutohideItem autohideItem, int index)
 		{
 			Bundle args = new Bundle();
@@ -272,7 +272,7 @@ public class AutohideFragment extends BaseListFragment
 			args.putInt(EXTRA_INDEX, index);
 			setArguments(args);
 		}
-		
+
 		@SuppressLint("InflateParams")
 		@Override
 		public void onCreate(Bundle savedInstanceState)
@@ -327,14 +327,14 @@ public class AutohideFragment extends BaseListFragment
 			}
 			updateTestResult();
 		}
-		
+
 		@Override
 		public void onSaveInstanceState(Bundle outState)
 		{
 			super.onSaveInstanceState(outState);
 			outState.putParcelable(EXTRA_ITEM, readDialogView());
 		}
-		
+
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState)
 		{
@@ -343,7 +343,7 @@ public class AutohideFragment extends BaseListFragment
 			dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 			return dialog;
 		}
-		
+
 		@Override
 		public void onClick(View v)
 		{
@@ -351,7 +351,7 @@ public class AutohideFragment extends BaseListFragment
 			dialog.setTargetFragment(this, 0);
 			dialog.show(getFragmentManager(), MultipleChanDialog.class.getName());
 		}
-		
+
 		private void updateSelectedText()
 		{
 			String chanNameText;
@@ -366,7 +366,7 @@ public class AutohideFragment extends BaseListFragment
 			}
 			mChanNameSelector.setText(chanNameText);
 		}
-		
+
 		private AutohideStorage.AutohideItem readDialogView()
 		{
 			String boardName = mBoardNameEdit.getText().toString();
@@ -381,24 +381,24 @@ public class AutohideFragment extends BaseListFragment
 					boardName, threadNumber, optionOriginalPost, optionSage,
 					optionSubject, optionComment, optionName, value);
 		}
-		
+
 		@Override
 		public void onClick(DialogInterface dialog, int which)
 		{
 			((AutohideFragment) getTargetFragment()).onEditComplete(readDialogView(),
 					getArguments().getInt(EXTRA_INDEX));
 		}
-		
+
 		private void onChansSelected(ArrayList<String> selected)
 		{
 			mSelectedChanNames.clear();
 			mSelectedChanNames.addAll(selected);
 			updateSelectedText();
 		}
-		
+
 		private BackgroundColorSpan mErrorSpan;
 		private ErrorEditTextSetter mErrorValueSetter;
-		
+
 		private void updateError(int index, String text)
 		{
 			boolean error = index >= 0;
@@ -442,9 +442,9 @@ public class AutohideFragment extends BaseListFragment
 				mErrorText.setText(text);
 			}
 		}
-		
+
 		private Pattern mWorkPattern;
-		
+
 		private void updateTestResult()
 		{
 			String matchedText = null;
@@ -460,21 +460,21 @@ public class AutohideFragment extends BaseListFragment
 			}
 			else mMatcherText.setText(R.string.text_no_matches_found);
 		}
-		
+
 		private final TextWatcher mValueListener = new TextWatcher()
 		{
 			@Override
 			public void beforeTextChanged(CharSequence s, int start, int count, int after)
 			{
-				
+
 			}
-			
+
 			@Override
 			public void onTextChanged(CharSequence s, int start, int before, int count)
 			{
-				
+
 			}
-			
+
 			@Override
 			public void afterTextChanged(Editable s)
 			{
@@ -508,7 +508,7 @@ public class AutohideFragment extends BaseListFragment
 				updateTestResult();
 			}
 		};
-		
+
 		private final TextWatcher mTestStringListener = new TextWatcher()
 		{
 			@Override
@@ -516,42 +516,42 @@ public class AutohideFragment extends BaseListFragment
 			{
 				updateTestResult();
 			}
-			
+
 			@Override
 			public void beforeTextChanged(CharSequence s, int start, int count, int after)
 			{
-				
+
 			}
-			
+
 			@Override
 			public void afterTextChanged(Editable s)
 			{
-				
+
 			}
 		};
 	}
-	
+
 	public static class MultipleChanDialog extends DialogFragment implements DialogInterface.OnMultiChoiceClickListener,
 			DialogInterface.OnClickListener
 	{
 		private static final String EXTRA_SELECTED = "selected";
 		private static final String EXTRA_CHECKED = "checked";
-		
+
 		public MultipleChanDialog()
 		{
-			
+
 		}
-		
+
 		public MultipleChanDialog(ArrayList<String> selected)
 		{
 			Bundle args = new Bundle();
 			args.putStringArrayList(EXTRA_SELECTED, selected);
 			setArguments(args);
 		}
-		
+
 		private List<String> mChanNames;
 		private boolean[] mCheckedItems;
-		
+
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState)
 		{
@@ -573,20 +573,20 @@ public class AutohideFragment extends BaseListFragment
 					.setNegativeButton(android.R.string.cancel, null)
 					.setPositiveButton(android.R.string.ok, this).create();
 		}
-		
+
 		@Override
 		public void onSaveInstanceState(Bundle outState)
 		{
 			super.onSaveInstanceState(outState);
 			outState.putBooleanArray(EXTRA_CHECKED, mCheckedItems);
 		}
-		
+
 		@Override
 		public void onClick(DialogInterface dialog, int which, boolean isChecked)
 		{
 			mCheckedItems[which] = isChecked;
 		}
-		
+
 		@Override
 		public void onClick(DialogInterface dialog, int which)
 		{

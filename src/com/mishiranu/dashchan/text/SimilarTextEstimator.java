@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,16 +22,16 @@ import java.util.Locale;
 public class SimilarTextEstimator
 {
 	private static final int MIN_WORDS_COUNT = 1;
-	
+
 	private final int mMaxLength;
 	private final boolean mRemovePostLinks;
-	
+
 	public SimilarTextEstimator(int maxLength, boolean removePostLinks)
 	{
 		mMaxLength = maxLength;
 		mRemovePostLinks = removePostLinks;
 	}
-	
+
 	public boolean checkSimiliar(WordsData wordsData1, WordsData wordsData2)
 	{
 		if (wordsData1 != null && wordsData2 != null)
@@ -52,7 +52,7 @@ public class SimilarTextEstimator
 		}
 		return false;
 	}
-	
+
 	public WordsData getWords(String text)
 	{
 		if (text == null) return null;
@@ -115,13 +115,13 @@ public class SimilarTextEstimator
 		}
 		return count >= MIN_WORDS_COUNT ? new WordsData(words, count) : null;
 	}
-	
+
 	public static class WordsData
 	{
 		public final HashSet<String> words;
 		public final int count;
 		public String postNumber;
-		
+
 		public WordsData(HashSet<String> words, int count)
 		{
 			this.words = words;

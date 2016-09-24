@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,22 +35,22 @@ public class PaddedListView extends ListView implements EdgeEffectHandler.Shift
 {
 	private EdgeEffectHandler mEdgeEffectHandler;
 	private EdgeEffectHandler.Shift mShift;
-	
+
 	public PaddedListView(Context context)
 	{
 		super(context);
 	}
-	
+
 	public PaddedListView(Context context, AttributeSet attrs)
 	{
 		super(context, attrs);
 	}
-	
+
 	public PaddedListView(Context context, AttributeSet attrs, int defStyleAttr)
 	{
 		super(context, attrs, defStyleAttr);
 	}
-	
+
 	@SuppressWarnings("unused") // Overrides hidden Android API protected method
 	protected void onDrawVerticalScrollBar(Canvas canvas, Drawable scrollBar, int l, int t, int r, int b)
 	{
@@ -62,17 +62,17 @@ public class PaddedListView extends ListView implements EdgeEffectHandler.Shift
 		scrollBar.setBounds(l, t, r, b);
 		scrollBar.draw(canvas);
 	}
-	
+
 	public void setEdgeEffectShift(EdgeEffectHandler.Shift shift)
 	{
 		mShift = shift;
 	}
-	
+
 	public EdgeEffectHandler getEdgeEffectHandler()
 	{
 		return mEdgeEffectHandler;
 	}
-	
+
 	@Override
 	public void setOverScrollMode(int mode)
 	{
@@ -83,13 +83,13 @@ public class PaddedListView extends ListView implements EdgeEffectHandler.Shift
 			if (edgeEffectHandler != null) mEdgeEffectHandler = edgeEffectHandler;
 		}
 	}
-	
+
 	@Override
 	public int getEdgeEffectShift(boolean top)
 	{
 		return mShift != null ? mShift.getEdgeEffectShift(top) : obtainEdgeEffectShift(top);
 	}
-	
+
 	public final int obtainEdgeEffectShift(boolean top)
 	{
 		return  top ? -getTopPaddingOffset() : getBottomPaddingOffset();
@@ -105,13 +105,13 @@ public class PaddedListView extends ListView implements EdgeEffectHandler.Shift
 		}
 		catch (Exception e)
 		{
-			
+
 		}
 		return null;
 	}
-	
+
 	private boolean mFastScrollModified = false;
-	
+
 	@Override
 	public void setFastScrollEnabled(boolean enabled)
 	{
@@ -130,14 +130,14 @@ public class PaddedListView extends ListView implements EdgeEffectHandler.Shift
 				}
 				catch (Exception e)
 				{
-					
+
 				}
 			}
 		}
 	}
-	
+
 	private boolean mFastScrollIntercept = false;
-	
+
 	@Override
 	public boolean onInterceptTouchEvent(MotionEvent ev)
 	{
@@ -161,7 +161,7 @@ public class PaddedListView extends ListView implements EdgeEffectHandler.Shift
 					}
 					catch (Exception e)
 					{
-						
+
 					}
 				}
 				if (calculateManually)

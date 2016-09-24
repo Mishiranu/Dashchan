@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,18 +25,18 @@ import java.util.Arrays;
 public class CachingInputStream extends InputStream
 {
 	enum Whence {START, RELATIVE, END}
-	
+
 	private final Object mDataBufferLock = new Object();
 	private byte[] mDataBuffer = new byte[1024];
 	private boolean mDataBufferEnd = false;
 	private int mDataBufferCount = 0;
 	private int mDataBufferIndex = 0;
-	
+
 	private boolean mAllowReadBeyondBuffer = true;
 	private boolean mClosed = false;
-	
+
 	private final byte[] mOneByteBuffer = new byte[1];
-	
+
 	@Override
 	public int read() throws IOException
 	{
@@ -46,13 +46,13 @@ public class CachingInputStream extends InputStream
 			return count == 1 ? mOneByteBuffer[0] : -1;
 		}
 	}
-	
+
 	@Override
 	public int read(byte[] buffer) throws IOException
 	{
 		return read(buffer, 0, buffer.length);
 	}
-	
+
 	@Override
 	public int read(byte[] buffer, int byteOffset, int byteCount) throws IOException
 	{
@@ -81,7 +81,7 @@ public class CachingInputStream extends InputStream
 			return byteCount;
 		}
 	}
-	
+
 	@Override
 	public void close() throws IOException
 	{
@@ -95,7 +95,7 @@ public class CachingInputStream extends InputStream
 			}
 		}
 	}
-	
+
 	public void setAllowReadBeyondBuffer(boolean allow)
 	{
 		synchronized (mDataBufferLock)
@@ -104,7 +104,7 @@ public class CachingInputStream extends InputStream
 			mDataBufferLock.notifyAll();
 		}
 	}
-	
+
 	public int seek(int position, Whence whence)
 	{
 		synchronized (mDataBufferLock)
@@ -133,7 +133,7 @@ public class CachingInputStream extends InputStream
 			return index;
 		}
 	}
-	
+
 	public int getPosition()
 	{
 		synchronized (mDataBufferLock)
@@ -141,7 +141,7 @@ public class CachingInputStream extends InputStream
 			return mDataBufferIndex;
 		}
 	}
-	
+
 	public int getTotalCount()
 	{
 		synchronized (mDataBufferLock)
@@ -149,7 +149,7 @@ public class CachingInputStream extends InputStream
 			return mDataBufferEnd ? mDataBufferCount : -1;
 		}
 	}
-	
+
 	private final OutputStream mOutputStream = new OutputStream()
 	{
 		@Override
@@ -161,13 +161,13 @@ public class CachingInputStream extends InputStream
 				write(mOneByteBuffer, 0, 1);
 			}
 		}
-		
+
 		@Override
 		public void write(byte[] buffer) throws IOException
 		{
 			write(buffer, 0, buffer.length);
 		}
-		
+
 		@Override
 		public void write(byte[] buffer, int offset, int count) throws IOException
 		{
@@ -187,7 +187,7 @@ public class CachingInputStream extends InputStream
 				}
 			}
 		}
-		
+
 		@Override
 		public void close() throws IOException
 		{
@@ -201,12 +201,12 @@ public class CachingInputStream extends InputStream
 			}
 		}
 	};
-	
+
 	public OutputStream getOutputStream()
 	{
 		return mOutputStream;
 	}
-	
+
 	public void writeTo(OutputStream output) throws IOException
 	{
 		output.write(mDataBuffer, 0, mDataBufferCount);

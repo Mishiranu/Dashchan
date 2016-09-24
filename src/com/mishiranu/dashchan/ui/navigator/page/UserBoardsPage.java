@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,7 +37,7 @@ import com.mishiranu.dashchan.widget.PullableWrapper;
 public class UserBoardsPage extends ListPage<UserBoardsAdapter> implements ReadUserBoardsTask.Callback
 {
 	private ReadUserBoardsTask mReadTask;
-	
+
 	@Override
 	protected void onCreate()
 	{
@@ -55,7 +55,7 @@ public class UserBoardsPage extends ListPage<UserBoardsAdapter> implements ReadU
 		}
 		else refreshBoards(false);
 	}
-	
+
 	@Override
 	protected void onDestroy()
 	{
@@ -65,13 +65,13 @@ public class UserBoardsPage extends ListPage<UserBoardsAdapter> implements ReadU
 			mReadTask = null;
 		}
 	}
-	
+
 	@Override
 	public String obtainTitle()
 	{
 		return getString(R.string.action_user_boards);
 	}
-	
+
 	@Override
 	public void onItemClick(View view, int position, long id)
 	{
@@ -81,9 +81,9 @@ public class UserBoardsPage extends ListPage<UserBoardsAdapter> implements ReadU
 			getUiManager().navigator().navigateBoardsOrThreads(getPageHolder().chanName, boardName, false, false);
 		}
 	}
-	
+
 	private static final int OPTIONS_MENU_REFRESH = 0;
-	
+
 	@Override
 	public void onCreateOptionsMenu(Menu menu)
 	{
@@ -93,7 +93,7 @@ public class UserBoardsPage extends ListPage<UserBoardsAdapter> implements ReadU
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 		menu.addSubMenu(0, OPTIONS_MENU_APPEARANCE, 0, R.string.action_appearance);
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
@@ -107,10 +107,10 @@ public class UserBoardsPage extends ListPage<UserBoardsAdapter> implements ReadU
 		}
 		return false;
 	}
-	
+
 	private static final int CONTEXT_MENU_COPY_LINK = 0;
 	private static final int CONTEXT_MENU_ADD_FAVORITES = 1;
-	
+
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v, int position, View targetView)
 	{
@@ -124,7 +124,7 @@ public class UserBoardsPage extends ListPage<UserBoardsAdapter> implements ReadU
 			}
 		}
 	}
-	
+
 	@Override
 	public boolean onContextItemSelected(MenuItem item, int position, View targetView)
 	{
@@ -143,24 +143,24 @@ public class UserBoardsPage extends ListPage<UserBoardsAdapter> implements ReadU
 				{
 					FavoritesStorage.getInstance().add(getPageHolder().chanName, boardName);
 					return true;
-				} 
+				}
 			}
 		}
 		return false;
 	}
-	
+
 	@Override
 	public void onSearchTextChange(String newText)
 	{
 		getAdapter().applyFilter(newText);
 	}
-	
+
 	@Override
 	public void onListPulled(PullableWrapper wrapper, PullableWrapper.Side side)
 	{
 		refreshBoards(true);
 	}
-	
+
 	private void refreshBoards(boolean showPull)
 	{
 		if (mReadTask != null) mReadTask.cancel();
@@ -177,7 +177,7 @@ public class UserBoardsPage extends ListPage<UserBoardsAdapter> implements ReadU
 			switchView(ViewType.PROGRESS, null);
 		}
 	}
-	
+
 	@Override
 	public void onReadUserBoardsSuccess(Board[] boards)
 	{
@@ -188,7 +188,7 @@ public class UserBoardsPage extends ListPage<UserBoardsAdapter> implements ReadU
 		getAdapter().setItems(boards);
 		getListView().setSelection(0);
 	}
-	
+
 	@Override
 	public void onReadUserBoardsFail(ErrorItem errorItem)
 	{
@@ -197,12 +197,12 @@ public class UserBoardsPage extends ListPage<UserBoardsAdapter> implements ReadU
 		if (getAdapter().isEmpty()) switchView(ViewType.ERROR, errorItem.toString());
 		else ClickableToast.show(getActivity(), errorItem.toString());
 	}
-	
+
 	public static class UserBoardsExtra implements PageHolder.Extra
 	{
 		public Board[] boards;
 	}
-	
+
 	private UserBoardsExtra getExtra()
 	{
 		PageHolder pageHolder = getPageHolder();

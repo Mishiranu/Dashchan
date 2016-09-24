@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,32 +28,32 @@ import android.widget.AbsListView;
 public class PullableListView extends PaddedListView implements PullableWrapper.Wrapped, AbsListView.OnScrollListener
 {
 	private final PullableWrapper mWrapper = new PullableWrapper(this);
-	
+
 	public PullableListView(Context context)
 	{
 		this(context, null);
 	}
-	
+
 	public PullableListView(Context context, AttributeSet attrs)
 	{
 		this(context, attrs, android.R.attr.listViewStyle);
 	}
-	
+
 	public PullableListView(Context context, AttributeSet attrs, int defStyleAttr)
 	{
 		super(context, attrs, defStyleAttr);
 		super.setOnScrollListener(this);
 		mWrapper.handleAttrs(attrs, defStyleAttr, 0);
 	}
-	
+
 	private OnScrollListener mOnScrollListener;
-	
+
 	@Override
 	public void setOnScrollListener(OnScrollListener l)
 	{
 		mOnScrollListener = l;
 	}
-	
+
 	@Override
 	public boolean onTouchEvent(MotionEvent ev)
 	{
@@ -77,12 +77,12 @@ public class PullableListView extends PaddedListView implements PullableWrapper.
 		mWrapper.onScrollStateChanged(view, scrollState);
 		if (mOnScrollListener != null) mOnScrollListener.onScrollStateChanged(view, scrollState);
 	}
-	
+
 	public PullableWrapper getWrapper()
 	{
 		return mWrapper;
 	}
-	
+
 	@Override
 	public void draw(Canvas canvas)
 	{
@@ -96,26 +96,26 @@ public class PullableListView extends PaddedListView implements PullableWrapper.
 			mWrapper.drawAfter(canvas);
 		}
 	}
-	
+
 	public interface OnBeforeLayoutListener
 	{
 		public void onBeforeLayout(View v, int left, int top, int right, int bottom);
 	}
-	
+
 	private final ArrayList<OnBeforeLayoutListener> mBeforeLayoutListeners = new ArrayList<>();
-	
+
 	@Override
 	protected void onLayout(boolean changed, int l, int t, int r, int b)
 	{
 		for (OnBeforeLayoutListener listener : mBeforeLayoutListeners) listener.onBeforeLayout(this, l, t, r, b);
 		super.onLayout(changed, l, t, r, b);
 	}
-	
+
 	public void addOnBeforeLayoutListener(OnBeforeLayoutListener listener)
 	{
 		mBeforeLayoutListeners.add(listener);
 	}
-	
+
 	public void removeOnBeforeLayoutListener(OnBeforeLayoutListener listener)
 	{
 		mBeforeLayoutListeners.remove(listener);

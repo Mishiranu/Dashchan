@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2016 Fukurou Mishiranu
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -43,13 +43,13 @@ public class InterfaceFragment extends BasePreferenceFragment
 				R.string.preference_scroll_thread_gallery, 0);
 		makeList(null, Preferences.KEY_PAGES_LIST, Preferences.VALUES_PAGES_LIST, Preferences.DEFAULT_PAGES_LIST,
 				R.string.preference_pages_list, R.array.preference_pages_list_choices);
-		
+
 		PreferenceCategory threadsCategory = makeCategory(R.string.preference_category_threads);
 		makeCheckBox(threadsCategory, true, Preferences.KEY_PAGE_BY_PAGE, Preferences.DEFAULT_PAGE_BY_PAGE,
 				R.string.preference_page_by_page, R.string.preference_page_by_page_summary);
 		makeCheckBox(threadsCategory, true, Preferences.KEY_DISPLAY_HIDDEN_THREADS,
 				Preferences.DEFAULT_DISPLAY_HIDDEN_THREADS, R.string.preference_display_hidden_threads, 0);
-		
+
 		PreferenceCategory postsCategory = makeCategory(R.string.preference_category_posts);
 		makeEditText(postsCategory, Preferences.KEY_POST_MAX_LINES, Preferences.DEFAULT_POST_MAX_LINES,
 				R.string.preference_post_max_lines, R.string.preference_post_max_lines_summary, null,
@@ -61,7 +61,7 @@ public class InterfaceFragment extends BasePreferenceFragment
 				R.array.preference_highlight_unread_choices);
 		makeCheckBox(postsCategory, true, Preferences.KEY_DISPLAY_ICONS, Preferences.DEFAULT_DISPLAY_ICONS,
 				R.string.preference_display_icons, R.string.preference_display_icons_summary);
-		
+
 		PreferenceCategory submissionCategory = makeCategory(R.string.preference_category_submission);
 		makeCheckBox(submissionCategory, true, Preferences.KEY_HIDE_PERSONAL_DATA,
 				Preferences.DEFAULT_HIDE_PERSONAL_DATA, R.string.preference_hide_personal_data, 0);
