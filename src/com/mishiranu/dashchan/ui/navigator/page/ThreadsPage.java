@@ -104,6 +104,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		}
 		else
 		{
+			extra.cachedPostItems.clear();
 			extra.startPageNumber = board.allowCatalog && Preferences.isLoadCatalog(pageHolder.chanName)
 					? PAGE_NUMBER_CATALOG : 0;
 			refreshThreads(RefreshPage.CURRENT, false);
