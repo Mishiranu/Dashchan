@@ -40,7 +40,7 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 public class PullableWrapper implements AbsListView.OnScrollListener
 {
 	private final Wrapped mListView;
-	private final PullPainter mTopProgress, mBottomProgress;
+	private final PullView mTopView, mBottomView;
 
 	private final float mPullDeltaGain;
 
@@ -50,8 +50,8 @@ public class PullableWrapper implements AbsListView.OnScrollListener
 	{
 		mListView = listView;
 		Context context = listView.getContext();
-		mTopProgress = C.API_LOLLIPOP ? new LollipopProgress(listView, true) : new IcsProgress(listView, true);
-		mBottomProgress = C.API_LOLLIPOP ? new LollipopProgress(listView, false) : new IcsProgress(listView, false);
+		mTopView = C.API_LOLLIPOP ? new LollipopView(listView, true) : new JellyBeanView(listView, true);
+		mBottomView = C.API_LOLLIPOP ? new LollipopView(listView, false) : new JellyBeanView(listView, false);
 		mPullDeltaGain = ResourceUtils.isTablet(context.getResources().getConfiguration()) ? 6f : 4f;
 	}
 
@@ -66,8 +66,8 @@ public class PullableWrapper implements AbsListView.OnScrollListener
 
 	public void setColor(int color)
 	{
-		mTopProgress.setColor(color);
-		mBottomProgress.setColor(color);
+		mTopView.setColor(color);
+		mBottomView.setColor(color);
 	}
 
 	public interface PullCallback
@@ -107,9 +107,9 @@ public class PullableWrapper implements AbsListView.OnScrollListener
 		startBusyState(side, false);
 	}
 
-	private PullPainter getPreferredPullPainter(Side side)
+	private PullView getSidePullView(Side side)
 	{
-		return side == Side.TOP ? mTopProgress : side == Side.BOTTOM ? mBottomProgress : null;
+		return side == Side.TOP ? mTopView : side == Side.BOTTOM ? mBottomView : null;
 	}
 
 	private boolean startBusyState(Side side, boolean useCallback)
@@ -119,18 +119,15 @@ public class PullableWrapper implements AbsListView.OnScrollListener
 		{
 			if (side == Side.BOTH && (mBusySide == Side.TOP || mBusySide == Side.BOTTOM))
 			{
-				PullPainter painter = getPreferredPullPainter(mBusySide);
-				painter.setState(PullPainter.State.IDLE, mListView.getEdgeEffectShift(side == Side.TOP));
+				PullView pullView = getSidePullView(mBusySide);
+				pullView.setState(PullView.State.IDLE, mListView.getEdgeEffectShift(side == Side.TOP));
 				mBusySide = Side.BOTH;
 			}
 			return false;
 		}
 		mBusySide = side;
-		PullPainter painter = getPreferredPullPainter(side);
-		if (painter != null)
-		{
-			painter.setState(PullPainter.State.LOADING, mListView.getEdgeEffectShift(side == Side.TOP));
-		}
+		PullView pullView = getSidePullView(side);
+		if (pullView != null) pullView.setState(PullView.State.LOADING, mListView.getEdgeEffectShift(side == Side.TOP));
 		if (useCallback) mPullCallback.onListPulled(this, side);
 		notifyPullStateChanged(true);
 		return true;
@@ -141,8 +138,8 @@ public class PullableWrapper implements AbsListView.OnScrollListener
 		if (mBusySide != Side.NONE)
 		{
 			mBusySide = Side.NONE;
-			mTopProgress.setState(PullPainter.State.IDLE, mListView.getEdgeEffectShift(true));
-			mBottomProgress.setState(PullPainter.State.IDLE, mListView.getEdgeEffectShift(false));
+			mTopView.setState(PullView.State.IDLE, mListView.getEdgeEffectShift(true));
+			mBottomView.setState(PullView.State.IDLE, mListView.getEdgeEffectShift(false));
 			notifyPullStateChanged(false);
 			mUpdateStartY = true;
 		}
@@ -158,12 +155,12 @@ public class PullableWrapper implements AbsListView.OnScrollListener
 
 	private int deltaToPullStrain(float delta)
 	{
-		return (int) (mPullDeltaGain * delta / mListView.getHeight() * PullPainter.MAX_STRAIN);
+		return (int) (mPullDeltaGain * delta / mListView.getHeight() * PullView.MAX_STRAIN);
 	}
 
 	private int pullStrainToDelta(int pullStrain)
 	{
-		return (int) (pullStrain * mListView.getHeight() / (mPullDeltaGain * PullPainter.MAX_STRAIN));
+		return (int) (pullStrain * mListView.getHeight() / (mPullDeltaGain * PullView.MAX_STRAIN));
 	}
 
 	/*
@@ -205,15 +202,15 @@ public class PullableWrapper implements AbsListView.OnScrollListener
 					if (dy > 0 && mScrolledToTop && (mPullSides == Side.BOTH || mPullSides == Side.TOP))
 					{
 						resetTop = false;
-						int pullStrain = mTopProgress.getAndResetIdlePullStrain();
+						int pullStrain = mTopView.getAndResetIdlePullStrain();
 						if (pullStrain > 0)
 						{
 							mStartY -= pullStrainToDelta(pullStrain);
 							dy = ev.getY() - mStartY;
 						}
 						int padding = mListView.getEdgeEffectShift(true);
-						mTopProgress.setState(PullPainter.State.PULL, padding);
-						mTopProgress.setPullStrain(deltaToPullStrain(dy), padding);
+						mTopView.setState(PullView.State.PULL, padding);
+						mTopView.setPullStrain(deltaToPullStrain(dy), padding);
 						if (edgeEffectHandler != null)
 						{
 							edgeEffectHandler.finish(true);
@@ -223,15 +220,15 @@ public class PullableWrapper implements AbsListView.OnScrollListener
 					else if (dy < 0 && mScrolledToBottom && (mPullSides == Side.BOTH || mPullSides == Side.BOTTOM))
 					{
 						resetBottom = false;
-						int pullStrain = mBottomProgress.getAndResetIdlePullStrain();
+						int pullStrain = mBottomView.getAndResetIdlePullStrain();
 						if (pullStrain > 0)
 						{
 							mStartY += pullStrainToDelta(pullStrain);
 							dy = ev.getY() - mStartY;
 						}
 						int padding = mListView.getEdgeEffectShift(false);
-						mBottomProgress.setState(PullPainter.State.PULL, padding);
-						mBottomProgress.setPullStrain(-deltaToPullStrain(dy), padding);
+						mBottomView.setState(PullView.State.PULL, padding);
+						mBottomView.setPullStrain(-deltaToPullStrain(dy), padding);
 						if (edgeEffectHandler != null)
 						{
 							edgeEffectHandler.finish(false);
@@ -239,36 +236,36 @@ public class PullableWrapper implements AbsListView.OnScrollListener
 						}
 					}
 				}
-				int topPullStrain = mTopProgress.getPullStrain();
-				int bottomPullStrain = mBottomProgress.getPullStrain();
+				int topPullStrain = mTopView.getPullStrain();
+				int bottomPullStrain = mBottomView.getPullStrain();
 				if (resetTop && resetBottom && (topPullStrain > 0 || bottomPullStrain > 0))
 				{
 					if (topPullStrain > bottomPullStrain)
 					{
-						mTopJumpStartTime = mTopProgress.calculateJumpStartTime();
+						mTopJumpStartTime = mTopView.calculateJumpStartTime();
 					}
 					else
 					{
-						mBottomJumpStartTime = mBottomProgress.calculateJumpStartTime();
+						mBottomJumpStartTime = mBottomView.calculateJumpStartTime();
 					}
 				}
 				if (action == MotionEvent.ACTION_UP)
 				{
-					if (topPullStrain >= PullPainter.MAX_STRAIN)
+					if (topPullStrain >= PullView.MAX_STRAIN)
 					{
 						mTopJumpStartTime = System.currentTimeMillis();
 						boolean success = startBusyState(Side.TOP, true);
 						resetTop &= !success;
 					}
-					if (bottomPullStrain >= PullPainter.MAX_STRAIN)
+					if (bottomPullStrain >= PullView.MAX_STRAIN)
 					{
 						mBottomJumpStartTime = System.currentTimeMillis();
 						boolean success = startBusyState(Side.BOTTOM, true);
 						resetBottom &= !success;
 					}
 				}
-				if (resetTop) mTopProgress.setState(PullPainter.State.IDLE, mListView.getEdgeEffectShift(true));
-				if (resetBottom) mBottomProgress.setState(PullPainter.State.IDLE, mListView.getEdgeEffectShift(false));
+				if (resetTop) mTopView.setState(PullView.State.IDLE, mListView.getEdgeEffectShift(true));
+				if (resetBottom) mBottomView.setState(PullView.State.IDLE, mListView.getEdgeEffectShift(false));
 			}
 		}
 	}
@@ -314,8 +311,8 @@ public class PullableWrapper implements AbsListView.OnScrollListener
 
 	public void drawBefore(Canvas canvas)
 	{
-		int top = mTopProgress.calculateJumpValue(mTopJumpStartTime);
-		int bottom = mBottomProgress.calculateJumpValue(mBottomJumpStartTime);
+		int top = mTopView.calculateJumpValue(mTopJumpStartTime);
+		int bottom = mBottomView.calculateJumpValue(mBottomJumpStartTime);
 		int shift = top > bottom ? top : -bottom;
 		if (shift != 0)
 		{
@@ -338,8 +335,8 @@ public class PullableWrapper implements AbsListView.OnScrollListener
 		}
 		int shift = mBeforeShiftValue;
 		float density = ResourceUtils.obtainDensity(mListView.getResources());
-		mTopProgress.draw(canvas, mListView.getEdgeEffectShift(true), density);
-		mBottomProgress.draw(canvas, mListView.getEdgeEffectShift(false), density);
+		mTopView.draw(canvas, mListView.getEdgeEffectShift(true), density);
+		mBottomView.draw(canvas, mListView.getEdgeEffectShift(false), density);
 		if (mLastShiftValue != shift)
 		{
 			mLastShiftValue = shift;
@@ -347,7 +344,7 @@ public class PullableWrapper implements AbsListView.OnScrollListener
 		}
 	}
 
-	private interface PullPainter
+	private interface PullView
 	{
 		public enum State {IDLE, PULL, LOADING}
 
@@ -363,7 +360,7 @@ public class PullableWrapper implements AbsListView.OnScrollListener
 		public int calculateJumpValue(long jumpStartTime);
 	}
 
-	private static class IcsProgress implements PullPainter
+	private static class JellyBeanView implements PullView
 	{
 		private static final int IDLE_FOLD_TIME = 500;
 		private static final int LOADING_HALF_CYCLE_TIME = 600;
@@ -385,7 +382,7 @@ public class PullableWrapper implements AbsListView.OnScrollListener
 
 		private int mColor;
 
-		public IcsProgress(Wrapped wrapped, boolean top)
+		public JellyBeanView(Wrapped wrapped, boolean top)
 		{
 			mWrapped = new WeakReference<>(wrapped);
 			mHeight = (int) (3f * ResourceUtils.obtainDensity(wrapped.getContext()) + 0.5f);
@@ -610,7 +607,7 @@ public class PullableWrapper implements AbsListView.OnScrollListener
 	}
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
-	private static class LollipopProgress implements PullPainter
+	private static class LollipopView implements PullView
 	{
 		private static final int IDLE_FOLD_TIME = 100;
 		private static final int LOADING_FOLD_TIME = 150;
@@ -641,7 +638,7 @@ public class PullableWrapper implements AbsListView.OnScrollListener
 
 		private int mPullStrain = 0;
 
-		public LollipopProgress(Wrapped wrapped, boolean top)
+		public LollipopView(Wrapped wrapped, boolean top)
 		{
 			mWrapped = new WeakReference<>(wrapped);
 			mTop = top;
