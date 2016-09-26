@@ -482,6 +482,7 @@ public class PullableWrapper implements AbsListView.OnScrollListener
 		private float getIdleTransientPullStrainValue(long time)
 		{
 			int foldTime = IDLE_FOLD_TIME * mStartIdlePullStrain / MAX_STRAIN;
+			if (foldTime <= 0) return 0f;
 			float value = Math.min((float) (time - mTimeIdleStart) / foldTime, 1f);
 			return (1f - value) * mStartIdlePullStrain / MAX_STRAIN;
 		}
@@ -764,6 +765,7 @@ public class PullableWrapper implements AbsListView.OnScrollListener
 		private float getIdleTransientPullStrainValue(int maxFoldTime, long time)
 		{
 			int foldTime = maxFoldTime * mStartFoldingPullStrain / MAX_STRAIN;
+			if (foldTime <= 0) return 0f;
 			float value = Math.min((float) (time - mTimeStateStart) / foldTime, 1f);
 			return (1f - value) * mStartFoldingPullStrain / MAX_STRAIN;
 		}
