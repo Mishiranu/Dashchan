@@ -18,6 +18,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | alterchan       | alterchan.in         | [DashchanAlterchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanAlterchan.apk)             |
 | anonfm          | anon.fm              | [DashchanAnonfm.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanAnonfm.apk)                   |
 | apachan         | apachan.net          | [DashchanApachan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanApachan.apk)                 |
+| brchan          | brchan.org           | [DashchanBrchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanBrchan.apk)                   |
 | cablesix        | cable6.net           | [DashchanCableSix.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanCableSix.apk)               |
 | chiochan        | 410chan.org          | [DashchanChiochan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanChiochan.apk)               |
 | chuckdfwk       | chuck.dfwk.ru        | [DashchanChuckDfwk.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanChuckDfwk.apk)             |
