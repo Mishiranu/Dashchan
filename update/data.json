@@ -124,11 +124,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.9",
+			"name": "1.10",
 			"code": 1,
 			"version": 1,
 			"minSdk": 16,
-			"length": 24415,
+			"length": 26215,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanChiochan.apk"
 		}
 	],
