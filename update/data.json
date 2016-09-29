@@ -112,11 +112,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.0",
+			"name": "1.1",
 			"code": 1,
 			"version": 1,
 			"minSdk": 16,
-			"length": 26653,
+			"length": 27133,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanBrchan.apk"
 		}
 	],
