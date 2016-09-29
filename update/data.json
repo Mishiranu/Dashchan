@@ -168,18 +168,6 @@
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanCirno.apk"
 		}
 	],
-	"claire":
-	[
-		{
-			"title": "Release",
-			"name": "1.2",
-			"code": 1,
-			"version": 1,
-			"minSdk": 14,
-			"length": 63129,
-			"source": "/Mishiranu/Dashchan/master/update/package/DashchanClaire.apk"
-		}
-	],
 	"desustorage":
 	[
 		{
