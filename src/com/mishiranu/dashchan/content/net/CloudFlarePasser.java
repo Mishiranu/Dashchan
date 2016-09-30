@@ -45,10 +45,10 @@ import chan.http.HttpHolder;
 import chan.http.HttpRequest;
 import chan.util.StringUtils;
 
-import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.async.ReadCaptchaTask;
+import com.mishiranu.dashchan.preference.AdvancedPreferences;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.ui.ForegroundManager;
 import com.mishiranu.dashchan.util.WebViewUtils;
@@ -174,6 +174,7 @@ public class CloudFlarePasser implements Handler.Callback
 		WebViewUtils.clearAll(mWebView);
 		mWebView.setWebViewClient(client);
 		ChanLocator locator = ChanLocator.get(chanName);
+		mWebView.getSettings().setUserAgentString(AdvancedPreferences.getUserAgent(chanName));
 		mWebView.loadUrl(locator.buildPath().toString());
 	}
 
@@ -287,7 +288,6 @@ public class CloudFlarePasser implements Handler.Callback
 			Context context = MainApplication.getInstance();
 			mWebView = new WebView(context);
 			WebSettings settings = mWebView.getSettings();
-			settings.setUserAgentString(C.USER_AGENT);
 			settings.setJavaScriptEnabled(true);
 			settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
 			settings.setAppCacheEnabled(false);

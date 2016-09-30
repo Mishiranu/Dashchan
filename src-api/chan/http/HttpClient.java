@@ -72,6 +72,7 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.net.CloudFlarePasser;
+import com.mishiranu.dashchan.preference.AdvancedPreferences;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
@@ -335,7 +336,7 @@ public class HttpClient
 			connection.setUseCaches(false);
 			connection.setConnectTimeout(request.mConnectTimeout);
 			connection.setReadTimeout(request.mReadTimeout);
-			connection.setRequestProperty("User-Agent", C.USER_AGENT);
+			connection.setRequestProperty("User-Agent", AdvancedPreferences.getUserAgent(chanName));
 			connection.setInstanceFollowRedirects(false);
 			connection.setRequestProperty("Connection", request.mKeepAlive ? "keep-alive" : "close");
 			connection.setRequestProperty("Accept-Encoding", "gzip");

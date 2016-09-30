@@ -56,6 +56,7 @@ import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.net.CloudFlarePasser;
 import com.mishiranu.dashchan.content.service.AudioPlayerService;
 import com.mishiranu.dashchan.media.VideoPlayer;
+import com.mishiranu.dashchan.preference.AdvancedPreferences;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.ui.LauncherActivity;
 import com.mishiranu.dashchan.ui.WebBrowserActivity;
@@ -203,8 +204,10 @@ public class NavigationUtils
 				if (cloudFlareCookie != null)
 				{
 					// For MX Player, see https://sites.google.com/site/mxvpen/api
-					intent.putExtra("headers", new String[] {"User-Agent", C.USER_AGENT, "Cookie",
-							new CookieBuilder().append(CloudFlarePasser.COOKIE_CLOUDFLARE, cloudFlareCookie).build()});
+					String userAgent = AdvancedPreferences.getUserAgent(chanName);
+					String cookie = new CookieBuilder().append(CloudFlarePasser.COOKIE_CLOUDFLARE,
+							cloudFlareCookie).build();
+					intent.putExtra("headers", new String[] {"User-Agent", userAgent, "Cookie", cookie});
 				}
 			}
 			if (!isWeb) intent = Intent.createChooser(intent, null);
