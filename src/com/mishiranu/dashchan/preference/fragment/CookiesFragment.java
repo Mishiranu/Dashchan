@@ -23,6 +23,7 @@ import java.util.Map;
 
 import android.os.Bundle;
 import android.preference.Preference;
+import android.preference.PreferenceGroup;
 
 import chan.content.ChanConfiguration;
 import chan.util.StringUtils;
@@ -42,7 +43,7 @@ public class CookiesFragment extends BasePreferenceFragment implements Comparato
 		if (chanName == null) throw new IllegalStateException();
 		mConfiguration = ChanConfiguration.get(chanName);
 		getActivity().setTitle(R.string.preference_delete_cookies);
-		Map<String, String> cookies = mConfiguration.getAllCookieNames();
+		Map<String, String> cookies = mConfiguration.getCookiesWithDisplayName();
 
 		ArrayList<Map.Entry<String, String>> entries = new ArrayList<>(cookies.entrySet());
 		Collections.sort(entries, this);
@@ -50,9 +51,9 @@ public class CookiesFragment extends BasePreferenceFragment implements Comparato
 		{
 			String cookie = mConfiguration.getCookie(entry.getKey());
 			Preference preference = makeButton(null, entry.getValue(), cookie, false);
-			if (StringUtils.isEmpty(cookie)) preference.setEnabled(false);
-			else preference.setOnPreferenceClickListener(this);
+			preference.setOnPreferenceClickListener(this);
 			preference.setKey(entry.getKey());
+			preference.setPersistent(false);
 		}
 	}
 
@@ -69,6 +70,12 @@ public class CookiesFragment extends BasePreferenceFragment implements Comparato
 		preference.setSummary(null);
 		mConfiguration.storeCookie(preference.getKey(), null, null);
 		mConfiguration.commit();
+		PreferenceGroup preferenceGroup = getParentGroup(preference);
+		if (preference != null)
+		{
+			preferenceGroup.removePreference(preference);
+			if (preferenceGroup.getPreferenceCount() == 0) getActivity().finish();
+		}
 		return true;
 	}
 }
