@@ -52,6 +52,7 @@ public final class HttpHolder
 		mChanName = chanName;
 		mVerifyCertificate = verifyCertificate;
 		mAttempt = maxAttempts;
+		mForceGet = false;
 	}
 
 	boolean nextAttempt()
