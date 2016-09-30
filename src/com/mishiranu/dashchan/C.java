@@ -55,7 +55,8 @@ public class C
 
 	public static final String DEFAULT_DOWNLOAD_PATH = "/Download/Dashchan/";
 
-	public static final String USER_AGENT = "Mozilla/5.0 (Android 6.0; Mobile; rv:47.0) Gecko/20100101 Firefox/47.0";
+	public static final String USER_AGENT = "Mozilla/5.0 (Linux; Android 7.0; wv) " +
+			"AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/52.0.2743.116 Mobile Safari/537.36";
 
 	public static final String API_KEY_GOOGLE = BuildConfig.API_KEY_GOOGLE;
 	public static final String API_KEY_SOUNDCLOUD = BuildConfig.API_KEY_SOUNDCLOUD;
