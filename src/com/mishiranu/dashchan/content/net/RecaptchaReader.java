@@ -16,11 +16,8 @@
 
 package com.mishiranu.dashchan.content.net;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -34,7 +31,6 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -57,6 +53,7 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.model.ErrorItem;
+import com.mishiranu.dashchan.preference.AdvancedPreferences;
 import com.mishiranu.dashchan.text.HtmlParser;
 import com.mishiranu.dashchan.ui.ForegroundManager;
 import com.mishiranu.dashchan.util.GraphicsUtils;
@@ -94,33 +91,10 @@ public class RecaptchaReader implements Handler.Callback
 			"(?:</label>|</div>).*?)?value=\"(.{20,}?)\"");
 	private static final Pattern RECAPTCHA_RESULT_PATTERN = Pattern.compile("<textarea.*?>(.*?)</textarea>");
 
-	private static final String COOKIES;
 	private static final byte[] STUB_IMAGE;
 
 	static
 	{
-		String cookies = null;
-		// The captcha become easier with SID, HSID, SSID cookies
-		File cookiesFile = new File(Environment.getExternalStorageDirectory(), "Android/data/" +
-				MainApplication.getInstance().getPackageName() + "/google-cookies.txt");
-		if (cookiesFile.exists())
-		{
-			BufferedReader reader = null;
-			try
-			{
-				reader = new BufferedReader(new FileReader(cookiesFile));
-				cookies = reader.readLine();
-			}
-			catch (Exception e)
-			{
-
-			}
-			finally
-			{
-				IOUtils.close(reader);
-			}
-		}
-		COOKIES = StringUtils.nullIfEmpty(cookies);
 		Bitmap bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		bitmap.compress(Bitmap.CompressFormat.PNG, 100, output);
@@ -271,8 +245,9 @@ public class RecaptchaReader implements Handler.Callback
 			ChanLocator locator = ChanLocator.getDefault();
 			Uri uri = locator.buildQueryWithHost("www.google.com", "recaptcha/api/fallback", "k", apiKey);
 			Bitmap captchaImage = null;
-			String responseText = new HttpRequest(uri, holder).addCookie(COOKIES).addHeader("Accept-Language", "en-US")
-					.addHeader("Referer", "https://www.google.com/").read().getString();
+			String responseText = new HttpRequest(uri, holder).addCookie(AdvancedPreferences.getGoogleCookie())
+					.addHeader("Accept-Language", "en-US").addHeader("Referer", "https://www.google.com/")
+					.read().getString();
 			while (true)
 			{
 				Matcher matcher = RECAPTCHA_FALLBACK_PATTERN.matcher(responseText);
@@ -299,10 +274,11 @@ public class RecaptchaReader implements Handler.Callback
 								}
 							}
 							if (!hasSelected) continue;
-							responseText = new HttpRequest(uri, holder).setPostMethod(entity).addCookie(COOKIES)
+							responseText = new HttpRequest(uri, holder).setPostMethod(entity)
+									.addCookie(AdvancedPreferences.getGoogleCookie())
 									.setRedirectHandler(HttpRequest.RedirectHandler.STRICT)
-									.addHeader("Accept-Language", "en-US").addHeader("Referer",
-									"https://www.google.com/").read().getString();
+									.addHeader("Accept-Language", "en-US")
+									.addHeader("Referer", "https://www.google.com/").read().getString();
 							matcher = RECAPTCHA_RESULT_PATTERN.matcher(responseText);
 							if (matcher.find())
 							{
@@ -352,14 +328,16 @@ public class RecaptchaReader implements Handler.Callback
 			if (challenge == null)
 			{
 				Uri uri = locator.buildQueryWithHost("www.google.com", "recaptcha/api/challenge", "k", apiKey);
-				String responseText = new HttpRequest(uri, holder).addCookie(COOKIES).read().getString();
+				String responseText = new HttpRequest(uri, holder).addCookie(AdvancedPreferences.getGoogleCookie())
+						.read().getString();
 				Matcher matcher = RECAPTCHA_CHALLENGE_PATTERN.matcher(responseText);
 				if (!matcher.find()) return null;
 				challenge = matcher.group(1);
 			}
 			Uri uri = locator.buildQueryWithHost("www.google.com", "recaptcha/api/reload", "c", challenge,
 					"k", apiKey, "type", "image");
-			String responseText = new HttpRequest(uri, holder).addCookie(COOKIES).read().getString();
+			String responseText = new HttpRequest(uri, holder).addCookie(AdvancedPreferences.getGoogleCookie())
+					.read().getString();
 			Matcher matcher = RECAPTCHA_CHALLENGE_PATTERN.matcher(responseText);
 			if (matcher.find())
 			{
@@ -683,7 +661,7 @@ public class RecaptchaReader implements Handler.Callback
 					mWebView.stopLoading();
 					WebViewUtils.clearAll(mWebView);
 					CookieManager cookieManager = CookieManager.getInstance();
-					String cookies = COOKIES;
+					String cookies = AdvancedPreferences.getGoogleCookie();
 					if (cookies != null)
 					{
 						WebViewUtils.setThirdPartyCookiesEnabled(mWebView);

@@ -27,6 +27,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import chan.content.ChanManager;
+import chan.http.CookieBuilder;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.C;
@@ -37,9 +38,11 @@ import com.mishiranu.dashchan.util.Log;
 public class AdvancedPreferences
 {
 	private static final HashMap<String, String> USER_AGENTS = new HashMap<>();
+	private static final String GOOGLE_COOKIE;
 
 	static
 	{
+		CookieBuilder googleCookieBuilder = null;
 		File file = MainApplication.getInstance().getExternalCacheDir();
 		if (file != null)
 		{
@@ -86,6 +89,28 @@ public class AdvancedPreferences
 								USER_AGENTS.put(ChanManager.EXTENSION_NAME_CLIENT, userAgent);
 							}
 						}
+						JSONObject googleCookieObject = jsonObject.optJSONObject("googleCookie");
+						if (googleCookieObject != null)
+						{
+							for (Iterator<String> keys = googleCookieObject.keys(); keys.hasNext();)
+							{
+								String name = keys.next();
+								String value = googleCookieObject.getString(name);
+								if (!StringUtils.isEmpty(value))
+								{
+									if (googleCookieBuilder == null) googleCookieBuilder = new CookieBuilder();
+									googleCookieBuilder.append(name, value);
+								}
+							}
+						}
+						else
+						{
+							String googleCookie = jsonObject.optString("googleCookie", null);
+							if (!StringUtils.isEmpty(googleCookie))
+							{
+								googleCookieBuilder = new CookieBuilder().append(googleCookie);
+							}
+						}
 					}
 					catch (JSONException e)
 					{
@@ -94,6 +119,7 @@ public class AdvancedPreferences
 				}
 			}
 		}
+		GOOGLE_COOKIE = googleCookieBuilder != null ? googleCookieBuilder.build() : null;
 	}
 
 	public static String getUserAgent(String chanName)
@@ -102,5 +128,11 @@ public class AdvancedPreferences
 		if (userAgent == null) userAgent = USER_AGENTS.get(ChanManager.EXTENSION_NAME_CLIENT);
 		if (userAgent == null) userAgent = C.USER_AGENT;
 		return userAgent;
+	}
+
+	public static String getGoogleCookie()
+	{
+		// Google reCAPTCHA becomes easier with HSID, SSID, SID, NID cookies
+		return GOOGLE_COOKIE;
 	}
 }
