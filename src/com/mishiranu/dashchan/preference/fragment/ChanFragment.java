@@ -71,6 +71,7 @@ public class ChanFragment extends BasePreferenceFragment
 	private EditTextPreference mDefaultBoardPreference;
 	private MultipleEditTextPreference mCaptchaPassPreference;
 	private MultipleEditTextPreference mUserAuthorizationPreference;
+	private Preference mCookiePreference;
 	private ListPreference mDomainPreference1;
 	private EditTextPreference mDomainPreference2;
 	private EditTextPreference mPasswordPreference;
@@ -172,15 +173,12 @@ public class ChanFragment extends BasePreferenceFragment
 				}
 			}
 		}
-		if (configuration.hasCookies())
-		{
-			Preference preference = makeButton(null, R.string.preference_delete_cookies, 0, false);
-			Intent intent = new Intent(getActivity(), PreferencesActivity.class);
-			intent.putExtra(PreferencesActivity.EXTRA_SHOW_FRAGMENT, CookiesFragment.class.getName());
-			intent.putExtra(PreferencesActivity.EXTRA_NO_HEADERS, true);
-			intent.putExtra(C.EXTRA_CHAN_NAME, chanName);
-			preference.setIntent(intent);
-		}
+		mCookiePreference = makeButton(null, R.string.preference_delete_cookies, 0, false);
+		Intent intent = new Intent(getActivity(), PreferencesActivity.class);
+		intent.putExtra(PreferencesActivity.EXTRA_SHOW_FRAGMENT, CookiesFragment.class.getName());
+		intent.putExtra(PreferencesActivity.EXTRA_NO_HEADERS, true);
+		intent.putExtra(C.EXTRA_CHAN_NAME, chanName);
+		mCookiePreference.setIntent(intent);
 
 		PreferenceCategory connectionCategory = makeCategory(R.string.preference_category_connection);
 		ArrayList<String> domains = locator.getChanHosts(true);
@@ -232,6 +230,22 @@ public class ChanFragment extends BasePreferenceFragment
 				0, false);
 
 		if (mDefaultBoardPreference != null) updateDefaultBoardSummary();
+	}
+
+	@Override
+	public void onResume()
+	{
+		super.onResume();
+		if (mCookiePreference != null)
+		{
+			ChanConfiguration configuration = ChanConfiguration.get(mChanName);
+			if (!configuration.hasCookiesWithDisplayName())
+			{
+				PreferenceGroup preferenceGroup = getParentGroup(mCookiePreference);
+				if (preferenceGroup != null) preferenceGroup.removePreference(mCookiePreference);
+				mCookiePreference = null;
+			}
+		}
 	}
 
 	@Override

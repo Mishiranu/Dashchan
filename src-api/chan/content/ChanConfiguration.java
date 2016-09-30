@@ -801,38 +801,48 @@ public class ChanConfiguration implements ChanManager.Linked
 	@Public
 	public final String getCookie(String cookie)
 	{
+		if (cookie == null) return null;
 		return get(null, KEY_COOKIE + "_" + cookie, null);
 	}
+
+	private final Object mCookieLock = new Object();
 
 	@Public
 	public final void storeCookie(String cookie, String value, String displayName)
 	{
-		set(null, KEY_COOKIE + "_" + cookie, value);
-		JSONObject jsonObject;
-		try
+		if (cookie == null) throw new NullPointerException("cookie must not be null");
+		synchronized (mCookieLock)
 		{
-			String data = get(null, KEY_COOKIES, null);
-			jsonObject = new JSONObject(data);
-		}
-		catch (Exception e)
-		{
-			jsonObject = new JSONObject();
-		}
-		if (displayName != null)
-		{
+			set(null, KEY_COOKIE + "_" + cookie, value);
+			JSONObject jsonObject;
 			try
 			{
-				jsonObject.put(cookie, displayName);
+				String data = get(null, KEY_COOKIES, null);
+				jsonObject = new JSONObject(data);
 			}
-			catch (JSONException e)
+			catch (Exception e)
 			{
-				throw new RuntimeException(e);
+				jsonObject = new JSONObject();
 			}
-			set(null, KEY_COOKIES, jsonObject.toString());
+			boolean updateDisplayName = false;
+			if (value != null && displayName != null)
+			{
+				try
+				{
+					jsonObject.put(cookie, displayName);
+					updateDisplayName = true;
+				}
+				catch (JSONException e)
+				{
+					throw new RuntimeException(e);
+				}
+			}
+			else if (jsonObject.remove(cookie) != null) updateDisplayName = true;
+			if (updateDisplayName) set(null, KEY_COOKIES, jsonObject.length() > 0 ? jsonObject.toString() : null);
 		}
 	}
 
-	public final boolean hasCookies()
+	public final boolean hasCookiesWithDisplayName()
 	{
 		try
 		{
@@ -847,7 +857,7 @@ public class ChanConfiguration implements ChanManager.Linked
 		return false;
 	}
 
-	public final HashMap<String, String> getAllCookieNames()
+	public final HashMap<String, String> getCookiesWithDisplayName()
 	{
 		HashMap<String, String> result = new HashMap<>();
 		try
