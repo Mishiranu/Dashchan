@@ -27,6 +27,7 @@ import chan.content.InvalidResponseException;
 import chan.content.model.Post;
 import chan.content.model.Posts;
 import chan.http.HttpException;
+import chan.http.HttpHolder;
 import chan.http.HttpValidator;
 
 import com.mishiranu.dashchan.content.model.ErrorItem;
@@ -71,13 +72,13 @@ public class ReadThreadsTask extends HttpHolderTask<Void, Void, Boolean>
 	}
 
 	@Override
-	protected Boolean doInBackground(Void... params)
+	protected Boolean doInBackground(HttpHolder holder, Void... params)
 	{
 		try
 		{
 			ChanPerformer performer = ChanPerformer.get(mChanName);
 			ChanPerformer.ReadThreadsResult result = performer.safe()
-					.onReadThreads(new ChanPerformer.ReadThreadsData(mBoardName, mPageNumber, getHolder(), mValidator));
+					.onReadThreads(new ChanPerformer.ReadThreadsData(mBoardName, mPageNumber, holder, mValidator));
 			Posts[] threadsArray = result != null ? result.threads : null;
 			ArrayList<PostItem> postItems = null;
 			int boardSpeed = result != null ? result.boardSpeed : 0;
@@ -90,7 +91,7 @@ public class ReadThreadsTask extends HttpHolderTask<Void, Void, Boolean>
 					Post[] postsArray = thread.getPosts();
 					if (postsArray != null) Collections.addAll(posts, postsArray);
 				}
-				YouTubeTitlesReader.getInstance().readAndApplyIfNecessary(posts, getHolder());
+				YouTubeTitlesReader.getInstance().readAndApplyIfNecessary(posts, holder);
 				for (Posts thread : threadsArray)
 				{
 					Post[] postsArray = thread.getPosts();
@@ -101,7 +102,7 @@ public class ReadThreadsTask extends HttpHolderTask<Void, Void, Boolean>
 					}
 				}
 			}
-			if (validator == null) validator = getHolder().getValidator();
+			if (validator == null) validator = holder.getValidator();
 			mPostItems = postItems;
 			mBoardSpeed = boardSpeed;
 			mResultValidator = validator;

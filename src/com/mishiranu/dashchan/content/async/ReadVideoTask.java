@@ -26,6 +26,7 @@ import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
 import chan.http.HttpException;
+import chan.http.HttpHolder;
 import chan.http.HttpResponse;
 
 import com.mishiranu.dashchan.content.model.ErrorItem;
@@ -66,13 +67,13 @@ public class ReadVideoTask extends HttpHolderTask<Void, Long, Boolean>
 	}
 
 	@Override
-	protected Boolean doInBackground(Void... params)
+	protected Boolean doInBackground(HttpHolder holder, Void... params)
 	{
 		try
 		{
 			int connectTimeout = 15000, readTimeout = 15000;
 			ChanPerformer.ReadContentResult result = ChanPerformer.get(mChanName).safe()
-					.onReadContent(new ChanPerformer.ReadContentData(mUri, connectTimeout, readTimeout, getHolder(),
+					.onReadContent(new ChanPerformer.ReadContentData(mUri, connectTimeout, readTimeout, holder,
 					mProgressHandler, mInputStream.getOutputStream()));
 			HttpResponse response = result != null ? result.response : null;
 			if (response != null)

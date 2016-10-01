@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.List;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -35,6 +34,7 @@ import chan.content.ThreadRedirectException;
 import chan.content.model.Post;
 import chan.content.model.Posts;
 import chan.http.HttpException;
+import chan.http.HttpHolder;
 import chan.http.HttpValidator;
 import chan.util.CommonUtils;
 
@@ -94,7 +94,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 	}
 
 	@Override
-	protected Boolean doInBackground(Void... params)
+	protected Boolean doInBackground(HttpHolder holder, Void... params)
 	{
 		String lastPostNumber = mForceLoadFullThread ? null : mLastPostNumber;
 		boolean partialThreadLoading = Preferences.isPartialThreadLoading(mChanName) && !mForceLoadFullThread;
@@ -103,7 +103,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 		{
 			ChanPerformer.ReadPostsResult result = performer.safe()
 					.onReadPosts(new ChanPerformer.ReadPostsData(mBoardName, mThreadNumber, lastPostNumber,
-					partialThreadLoading, mCachedPosts, getHolder(), mValidator));
+					partialThreadLoading, mCachedPosts, holder, mValidator));
 			Posts readPosts = result != null ? result.posts : null;
 			HttpValidator validator = result != null ? result.validator : null;
 			if (result != null && result.fullThread) partialThreadLoading = false;
@@ -215,7 +215,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 					}
 					ArrayList<Post> handlePosts = new ArrayList<>();
 					for (Patch patch : handleResult.patches) handlePosts.add(patch.newPost);
-					YouTubeTitlesReader.getInstance().readAndApplyIfNecessary(handlePosts, getHolder());
+					YouTubeTitlesReader.getInstance().readAndApplyIfNecessary(handlePosts, holder);
 				}
 				PostItem[] handlePostItems = new PostItem[handleResult.patches.size()];
 				for (int i = 0; i < handlePostItems.length; i++)
@@ -226,7 +226,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 					handlePostItems[i] = postItem;
 				}
 				mCallback.onRequestPreloadPosts(handlePostItems);
-				if (validator == null) validator = getHolder().getValidator();
+				if (validator == null) validator = holder.getValidator();
 				if (validator == null && mCachedPosts != null) validator = mCachedPosts.getValidator();
 				handleResult.posts.setValidator(validator);
 				mResult = handleResult;
@@ -245,7 +245,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 					try
 					{
 						ChanPerformer.ReadSinglePostResult result = performer.safe().onReadSinglePost
-								(new ChanPerformer.ReadSinglePostData(mBoardName, mThreadNumber, getHolder()));
+								(new ChanPerformer.ReadSinglePostData(mBoardName, mThreadNumber, holder));
 						Post post = result != null ? result.post : null;
 						String threadNumber = post.getThreadNumberOrOriginalPostNumber();
 						if (threadNumber != null && !threadNumber.equals(mThreadNumber))

@@ -26,6 +26,7 @@ import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
 import chan.content.model.ThreadSummary;
 import chan.http.HttpException;
+import chan.http.HttpHolder;
 import chan.util.CommonUtils;
 
 import com.mishiranu.dashchan.content.model.ErrorItem;
@@ -56,13 +57,13 @@ public class ReadThreadSummariesTask extends HttpHolderTask<Void, Void, ThreadSu
 	}
 
 	@Override
-	protected ThreadSummary[] doInBackground(Void... params)
+	protected ThreadSummary[] doInBackground(HttpHolder holder, Void... params)
 	{
 		try
 		{
 			ChanPerformer performer = ChanPerformer.get(mChanName);
 			ChanPerformer.ReadThreadSummariesResult result = performer.safe().onReadThreadSummaries(new ChanPerformer
-					.ReadThreadSummariesData(mBoardName, mPageNumber, mType, getHolder()));
+					.ReadThreadSummariesData(mBoardName, mPageNumber, mType, holder));
 			ThreadSummary[] threadSummaries = result != null ? result.threadSummaries : null;
 			return threadSummaries != null && threadSummaries.length > 0 ? threadSummaries : null;
 		}

@@ -330,9 +330,9 @@ public class CloudFlarePasser implements Handler.Callback
 			}
 			return checkHolder.success;
 		}
+		HttpHolder holder = new HttpHolder();
 		try
 		{
-			HttpHolder holder = new HttpHolder();
 			boolean retry = false;
 			while (true)
 			{
@@ -365,6 +365,7 @@ public class CloudFlarePasser implements Handler.Callback
 		}
 		finally
 		{
+			holder.cleanup();
 			synchronized (mCaptchaHolders)
 			{
 				mCaptchaHolders.remove(chanName);

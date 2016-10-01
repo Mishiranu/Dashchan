@@ -36,6 +36,7 @@ import android.os.Build;
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
 import chan.http.HttpException;
+import chan.http.HttpHolder;
 import chan.http.HttpRequest;
 import chan.util.CommonUtils;
 
@@ -137,7 +138,7 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object>
 	}
 
 	@Override
-	protected Object doInBackground(Void... params)
+	protected Object doInBackground(HttpHolder holder, Void... params)
 	{
 		long timeThreshold = System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000; // One week left
 		File directory = getDownloadDirectory(mContext);
@@ -206,7 +207,7 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object>
 				int redirects = 0;
 				while (redirects++ < 5)
 				{
-					JSONObject jsonObject = new HttpRequest(uri, getHolder()).read().getJsonObject();
+					JSONObject jsonObject = new HttpRequest(uri, holder).read().getJsonObject();
 					if (jsonObject != null)
 					{
 						String redirect = CommonUtils.optJsonString(jsonObject, "redirect");
@@ -260,11 +261,7 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object>
 					break;
 				}
 			}
-			catch (HttpException e)
-			{
-				getHolder().disconnect();
-			}
-			catch (JSONException e)
+			catch (HttpException | JSONException e)
 			{
 
 			}

@@ -29,6 +29,7 @@ import chan.content.InvalidResponseException;
 import chan.content.model.Post;
 import chan.content.model.Posts;
 import chan.http.HttpException;
+import chan.http.HttpHolder;
 
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PostItem;
@@ -67,7 +68,7 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostIte
 	}
 
 	@Override
-	protected ArrayList<PostItem> doInBackground(Void... params)
+	protected ArrayList<PostItem> doInBackground(HttpHolder holder, Void... params)
 	{
 		try
 		{
@@ -79,7 +80,7 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostIte
 			if (board.allowSearch)
 			{
 				ChanPerformer.ReadSearchPostsResult result = performer.safe().onReadSearchPosts(new ChanPerformer
-						.ReadSearchPostsData(mBoardName, mSearchQuery, mPageNumber, getHolder()));
+						.ReadSearchPostsData(mBoardName, mSearchQuery, mPageNumber, holder));
 				Post[] readPosts = result != null ? result.posts : null;
 				if (readPosts != null && readPosts.length > 0)
 				{
@@ -92,7 +93,7 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostIte
 			{
 				ChanPerformer.ReadThreadsResult result = performer.safe()
 						.onReadThreads(new ChanPerformer.ReadThreadsData(mBoardName,
-						ChanPerformer.ReadThreadsData.PAGE_NUMBER_CATALOG, getHolder(), null));
+						ChanPerformer.ReadThreadsData.PAGE_NUMBER_CATALOG, holder, null));
 				Posts[] threads = result != null ? result.threads : null;
 				ArrayList<Post> matched = new ArrayList<>();
 				Locale locale = Locale.getDefault();
@@ -118,7 +119,7 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostIte
 			if (posts.size() > 0)
 			{
 				Collections.sort(posts, this);
-				YouTubeTitlesReader.getInstance().readAndApplyIfNecessary(posts, getHolder());
+				YouTubeTitlesReader.getInstance().readAndApplyIfNecessary(posts, holder);
 				ArrayList<PostItem> postItems = new ArrayList<>(posts.size());
 				for (int i = 0; i < posts.size() && !Thread.interrupted(); i++)
 				{

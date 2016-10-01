@@ -546,6 +546,10 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 				e.getErrorItemAndHandle();
 				mResult.error = true;
 			}
+			finally
+			{
+				mHolder.cleanup();
+			}
 			return mResult;
 		}
 	}

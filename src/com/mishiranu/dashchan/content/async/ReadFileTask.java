@@ -33,6 +33,7 @@ import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
 import chan.http.HttpClient;
 import chan.http.HttpException;
+import chan.http.HttpHolder;
 import chan.http.HttpRequest;
 
 import com.mishiranu.dashchan.content.CacheManager;
@@ -111,7 +112,7 @@ public class ReadFileTask extends HttpHolderTask<String, Long, Boolean>
 	}
 
 	@Override
-	protected Boolean doInBackground(String... params)
+	protected Boolean doInBackground(HttpHolder holder, String... params)
 	{
 		try
 		{
@@ -136,7 +137,7 @@ public class ReadFileTask extends HttpHolderTask<String, Long, Boolean>
 			else
 			{
 				Uri uri = mFromUri;
-				uri = EmbeddedManager.getInstance().doReadRealUri(uri, getHolder());
+				uri = EmbeddedManager.getInstance().doReadRealUri(uri, holder);
 				final int connectTimeout = 15000, readTimeout = 15000;
 				byte[] response;
 				String chanName = mChanName;
@@ -145,12 +146,12 @@ public class ReadFileTask extends HttpHolderTask<String, Long, Boolean>
 				{
 					ChanPerformer.ReadContentResult result = ChanPerformer.get(chanName).safe()
 							.onReadContent(new ChanPerformer.ReadContentData (uri, connectTimeout, readTimeout,
-							getHolder(), mProgressHandler, null));
+							holder, mProgressHandler, null));
 					response = result.response.getBytes();
 				}
 				else
 				{
-					response = new HttpRequest(uri, getHolder()).setTimeouts(connectTimeout, readTimeout)
+					response = new HttpRequest(uri, holder).setTimeouts(connectTimeout, readTimeout)
 							.setInputListener(mProgressHandler).read().getBytes();
 				}
 				ByteArrayInputStream input = new ByteArrayInputStream(response);
