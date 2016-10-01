@@ -275,7 +275,8 @@ public class HttpClient
 		String chanName = ChanManager.getInstance().getChanNameByHost(request.mUri.getAuthority());
 		ChanLocator locator = ChanLocator.get(chanName);
 		boolean verifyCertificate = locator.isUseHttps() && Preferences.isVerifyCertificate();
-		request.mHolder.initRequest(request, mProxies.get(chanName), chanName, verifyCertificate, MAX_ATTEMPS_COUNT);
+		request.mHolder.initRequest(request, mProxies.get(chanName), chanName, verifyCertificate, request.mDelay,
+				MAX_ATTEMPS_COUNT);
 		executeInternal(request);
 	}
 
@@ -341,8 +342,8 @@ public class HttpClient
 	@TargetApi(Build.VERSION_CODES.KITKAT)
 	private void executeInternal(HttpRequest request) throws HttpException
 	{
-		HttpURLConnection connection;
 		HttpHolder holder = request.mHolder;
+		holder.cleanup();
 		try
 		{
 			Uri requestedUri = request.mHolder.mRequestedUri;
@@ -351,8 +352,8 @@ public class HttpClient
 				throw new HttpException(ErrorItem.TYPE_UNSUPPORTED_SCHEME, false, false);
 			}
 			URL url = encodeUri(requestedUri);
-			connection = (HttpURLConnection) (holder.mProxy != null ? url.openConnection(holder.mProxy)
-					: url.openConnection());
+			HttpURLConnection connection = (HttpURLConnection) (holder.mProxy != null
+					? url.openConnection(holder.mProxy) : url.openConnection());
 			if (connection instanceof HttpsURLConnection)
 			{
 				HttpsURLConnection secureConnection = (HttpsURLConnection) connection;
@@ -361,7 +362,15 @@ public class HttpClient
 				secureConnection.setSSLSocketFactory(holder.mVerifyCertificate
 						? DEFAULT_SSL_SOCKET_FACTORY : UNSAFE_SSL_SOCKET_FACTORY);
 			}
-			holder.setConnection(connection, request.mInputListener, request.mOutputStream);
+			try
+			{
+				holder.setConnection(connection, request.mInputListener, request.mOutputStream);
+			}
+			catch (DisconnectedIOException e)
+			{
+				connection.disconnect();
+				throw e;
+			}
 			String chanName = holder.mChanName;
 
 			connection.setUseCaches(false);
@@ -403,7 +412,6 @@ public class HttpClient
 				default: throw new RuntimeException();
 			}
 			connection.setRequestMethod(methodString);
-			onConnect(connection, request.mDelay);
 			if (entity != null)
 			{
 				connection.setDoOutput(true);
@@ -523,7 +531,7 @@ public class HttpClient
 			}
 			if (request.mSuccessOnly) checkResponseCode(holder);
 			holder.mValidator = HttpValidator.obtain(connection);
-			holder.checkDisconnected();
+			holder.checkDisconnectedAndSetHasUnreadBody(true);
 		}
 		catch (DisconnectedIOException e)
 		{
@@ -625,7 +633,7 @@ public class HttpClient
 					}
 				}
 			}
-			holder.checkDisconnected();
+			holder.checkDisconnectedAndSetHasUnreadBody(false);
 			if (writeTo != null)
 			{
 				HttpResponse httpResponse = new HttpResponse(writeTo.toByteArray());
@@ -896,7 +904,8 @@ public class HttpClient
 
 	private final HashMap<String, DelayLock> mDelayLocks = new HashMap<>();
 
-	void onConnect(HttpURLConnection connection, int delay)
+	// Called from HttpHolder
+	void onConnect(String chanName, HttpURLConnection connection, int delay) throws DisconnectedIOException
 	{
 		if (delay > 0)
 		{
@@ -941,6 +950,7 @@ public class HttpClient
 		}
 	}
 
+	// Called from HttpHolder
 	void onDisconnect(HttpURLConnection connection)
 	{
 

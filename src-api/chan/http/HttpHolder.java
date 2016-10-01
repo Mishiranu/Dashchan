@@ -35,6 +35,7 @@ public final class HttpHolder
 	Proxy mProxy;
 	String mChanName;
 	boolean mVerifyCertificate;
+	int mDelay;
 
 	private int mAttempt;
 	boolean mForceGet = false;
@@ -45,12 +46,14 @@ public final class HttpHolder
 
 	}
 
-	void initRequest(HttpRequest request, Proxy proxy, String chanName, boolean verifyCertificate, int maxAttempts)
+	void initRequest(HttpRequest request, Proxy proxy, String chanName, boolean verifyCertificate, int delay,
+			int maxAttempts)
 	{
 		mRequestedUri = request.mUri;
 		mProxy = proxy;
 		mChanName = chanName;
 		mVerifyCertificate = verifyCertificate;
+		mDelay = delay;
 		mAttempt = maxAttempts;
 		mForceGet = false;
 	}
@@ -70,6 +73,8 @@ public final class HttpHolder
 	private volatile boolean mDisconnectRequested = false;
 	private volatile boolean mInterrupted = false;
 
+	private boolean mHasUnreadBody = false;
+
 	InputListener mInputListener;
 	OutputStream mOutputStream;
 
@@ -82,6 +87,16 @@ public final class HttpHolder
 	{
 		mInterrupted = true;
 		disconnect();
+	}
+
+	public void cleanup()
+	{
+		if (mRequestThread == Thread.currentThread() && mHasUnreadBody)
+		{
+			disconnectAndClear();
+			mHasUnreadBody = false;
+			mResponse = null;
+		}
 	}
 
 	@Public
@@ -103,7 +118,14 @@ public final class HttpHolder
 		mRedirectedUri = null;
 		mValidator = null;
 		mResponse = null;
-		if (mInterrupted) throw new HttpClient.DisconnectedIOException();
+		if (mInterrupted)
+		{
+			mConnection = null;
+			mInputListener = null;
+			mOutputStream = null;
+			throw new HttpClient.DisconnectedIOException();
+		}
+		HttpClient.getInstance().onConnect(mChanName, connection, mDelay);
 	}
 
 	HttpURLConnection getConnection() throws HttpClient.DisconnectedIOException
@@ -137,6 +159,12 @@ public final class HttpHolder
 		}
 	}
 
+	void checkDisconnectedAndSetHasUnreadBody(boolean hasUnreadBody) throws HttpClient.DisconnectedIOException
+	{
+		checkDisconnected();
+		mHasUnreadBody = hasUnreadBody;
+	}
+
 	void disconnectAndClear()
 	{
 		HttpURLConnection connection = mConnection;
@@ -158,7 +186,7 @@ public final class HttpHolder
 		if (response != null) return response;
 		response = HttpClient.getInstance().read(this);
 		mResponse = response;
-		return mResponse;
+		return response;
 	}
 
 	@Public
