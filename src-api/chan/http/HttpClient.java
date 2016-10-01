@@ -40,6 +40,7 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -50,11 +51,12 @@ import java.util.zip.GZIPInputStream;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLProtocolException;
-import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.X509TrustManager;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
@@ -84,7 +86,10 @@ public class HttpClient
 	private static final HashMap<String, String> SHORT_RESPONSE_MESSAGES = new HashMap<>();
 
 	private static final HostnameVerifier DEFAULT_HOSTNAME_VERIFIER = HttpsURLConnection.getDefaultHostnameVerifier();
-	private static final HostnameVerifier ALLOW_ALL_HOSTNAME_VERIFIER = new AllowAllHostnameVerifier();
+	private static final HostnameVerifier UNSAFE_HOSTNAME_VERIFIER = (hostname, session) -> true;
+
+	private static final SSLSocketFactory DEFAULT_SSL_SOCKET_FACTORY = HttpsURLConnection.getDefaultSSLSocketFactory();
+	private static final SSLSocketFactory UNSAFE_SSL_SOCKET_FACTORY;
 
 	private static final int HTTP_TEMPORARY_REDIRECT = 307;
 
@@ -108,6 +113,40 @@ public class HttpClient
 
 		SHORT_RESPONSE_MESSAGES.put("Internal Server Error", "Internal Error");
 		SHORT_RESPONSE_MESSAGES.put("Service Temporarily Unavailable", "Service Unavailable");
+
+		@SuppressLint("TrustAllX509TrustManager")
+		X509TrustManager trustManager = new X509TrustManager()
+		{
+			@Override
+			public void checkClientTrusted(X509Certificate[] chain, String authType)
+			{
+
+			}
+
+			@Override
+			public void checkServerTrusted(X509Certificate[] chain, String authType)
+			{
+
+			}
+
+			@Override
+			public X509Certificate[] getAcceptedIssuers()
+			{
+				return null;
+			}
+		};
+		SSLSocketFactory sslSocketFactory;
+		try
+		{
+			SSLContext sslContext = SSLContext.getInstance("TLS");
+			sslContext.init(null, new X509TrustManager[] {trustManager}, null);
+			sslSocketFactory = sslContext.getSocketFactory();
+		}
+		catch (Exception e)
+		{
+			sslSocketFactory = DEFAULT_SSL_SOCKET_FACTORY;
+		}
+		UNSAFE_SSL_SOCKET_FACTORY = sslSocketFactory;
 
 		if (Preferences.isUseGmsProvider())
 		{
@@ -226,16 +265,6 @@ public class HttpClient
 		return true;
 	}
 
-	private static class AllowAllHostnameVerifier implements HostnameVerifier
-	{
-		@SuppressLint("BadHostnameVerifier")
-		@Override
-		public boolean verify(String hostname, SSLSession session)
-		{
-			return true;
-		}
-	}
-
 	static final class DisconnectedIOException extends IOException
 	{
 		private static final long serialVersionUID = 1L;
@@ -327,8 +356,10 @@ public class HttpClient
 			if (connection instanceof HttpsURLConnection)
 			{
 				HttpsURLConnection secureConnection = (HttpsURLConnection) connection;
-				secureConnection.setHostnameVerifier(holder.mVerifyCertificate ? DEFAULT_HOSTNAME_VERIFIER
-						: ALLOW_ALL_HOSTNAME_VERIFIER);
+				secureConnection.setHostnameVerifier(holder.mVerifyCertificate
+						? DEFAULT_HOSTNAME_VERIFIER : UNSAFE_HOSTNAME_VERIFIER);
+				secureConnection.setSSLSocketFactory(holder.mVerifyCertificate
+						? DEFAULT_SSL_SOCKET_FACTORY : UNSAFE_SSL_SOCKET_FACTORY);
 			}
 			holder.setConnection(connection, request.mInputListener, request.mOutputStream);
 			String chanName = holder.mChanName;
