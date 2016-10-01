@@ -576,6 +576,10 @@ public class ForegroundManager implements Handler.Callback
 					mErrorItem = e.getErrorItemAndHandle();
 					return false;
 				}
+				finally
+				{
+					mHolder.cleanup();
+				}
 			}
 			else
 			{

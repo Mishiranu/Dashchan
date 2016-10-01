@@ -410,6 +410,10 @@ public class AboutFragment extends BasePreferenceFragment
 				mHolder.disconnect();
 				return false;
 			}
+			finally
+			{
+				mHolder.cleanup();
+			}
 		}
 
 		@Override

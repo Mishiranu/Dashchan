@@ -22,6 +22,7 @@ import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
 import chan.content.model.BoardCategory;
 import chan.http.HttpException;
+import chan.http.HttpHolder;
 
 import com.mishiranu.dashchan.content.model.ErrorItem;
 
@@ -46,12 +47,12 @@ public class ReadBoardsTask extends HttpHolderTask<Void, Long, Boolean>
 	}
 
 	@Override
-	protected Boolean doInBackground(Void... params)
+	protected Boolean doInBackground(HttpHolder holder, Void... params)
 	{
 		try
 		{
 			ChanPerformer.ReadBoardsResult result = ChanPerformer.get(mChanName).safe()
-					.onReadBoards(new ChanPerformer.ReadBoardsData(getHolder()));
+					.onReadBoards(new ChanPerformer.ReadBoardsData(holder));
 			BoardCategory[] boardCategories = result != null ? result.boardCategories : null;
 			if (boardCategories != null && boardCategories.length == 0) boardCategories = null;
 			if (boardCategories != null) ChanConfiguration.get(mChanName).updateFromBoards(boardCategories);

@@ -30,6 +30,7 @@ import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
 import chan.http.HttpException;
+import chan.http.HttpHolder;
 
 import com.mishiranu.dashchan.content.model.ErrorItem;
 
@@ -94,7 +95,7 @@ public class SendMultifunctionalTask extends HttpHolderTask<Void, Void, Boolean>
 	}
 
 	@Override
-	protected Boolean doInBackground(Void... params)
+	protected Boolean doInBackground(HttpHolder holder, Void... params)
 	{
 		try
 		{
@@ -104,14 +105,14 @@ public class SendMultifunctionalTask extends HttpHolderTask<Void, Void, Boolean>
 				{
 					ChanPerformer.get(mState.chanName).safe().onSendDeletePosts(new ChanPerformer.SendDeletePostsData
 							(mState.boardName, mState.threadNumber, Collections.unmodifiableList(mState.postNumbers),
-							mText, mOptions != null && mOptions.contains(OPTION_FILES_ONLY), getHolder()));
+							mText, mOptions != null && mOptions.contains(OPTION_FILES_ONLY), holder));
 					break;
 				}
 				case REPORT:
 				{
 					ChanPerformer.get(mState.chanName).safe().onSendReportPosts(new ChanPerformer.SendReportPostsData
 							(mState.boardName, mState.threadNumber, Collections.unmodifiableList(mState.postNumbers),
-							mType, mOptions, mText, getHolder()));
+							mType, mOptions, mText, holder));
 					break;
 				}
 				case ARCHIVE:
@@ -125,7 +126,7 @@ public class SendMultifunctionalTask extends HttpHolderTask<Void, Void, Boolean>
 					}
 					ChanPerformer.SendAddToArchiveResult result = ChanPerformer.get(mState.archiveChanName).safe()
 							.onSendAddToArchive(new ChanPerformer.SendAddToArchiveData(uri, mState.boardName,
-							mState.threadNumber, mOptions, getHolder()));
+							mState.threadNumber, mOptions, holder));
 					if (result != null && result.threadNumber != null)
 					{
 						mArchiveBoardName = result.boardName;

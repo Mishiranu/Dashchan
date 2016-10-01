@@ -25,6 +25,7 @@ import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
 import chan.content.model.Post;
 import chan.http.HttpException;
+import chan.http.HttpHolder;
 import chan.util.CommonUtils;
 
 import com.mishiranu.dashchan.content.model.ErrorItem;
@@ -55,16 +56,16 @@ public class ReadSinglePostTask extends HttpHolderTask<Void, Void, PostItem>
 	}
 
 	@Override
-	protected PostItem doInBackground(Void... params)
+	protected PostItem doInBackground(HttpHolder holder, Void... params)
 	{
 		long startTime = System.currentTimeMillis();
 		try
 		{
 			ChanPerformer performer = ChanPerformer.get(mChanName);
 			ChanPerformer.ReadSinglePostResult result = performer.safe().onReadSinglePost(new ChanPerformer
-					.ReadSinglePostData(mBoardName, mPostNumber, getHolder()));
+					.ReadSinglePostData(mBoardName, mPostNumber, holder));
 			Post post = result != null ? result.post : null;
-			YouTubeTitlesReader.getInstance().readAndApplyIfNecessary(Collections.singletonList(post), getHolder());
+			YouTubeTitlesReader.getInstance().readAndApplyIfNecessary(Collections.singletonList(post), holder);
 			startTime = 0L;
 			return new PostItem(post, mChanName, mBoardName);
 		}

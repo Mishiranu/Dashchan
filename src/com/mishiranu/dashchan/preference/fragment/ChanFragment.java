@@ -571,6 +571,7 @@ public class ChanFragment extends BasePreferenceFragment
 			}
 			finally
 			{
+				mHolder.cleanup();
 				ChanConfiguration.get(mChanName).commit();
 			}
 			return null;

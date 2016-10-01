@@ -40,6 +40,7 @@ import chan.content.ChanManager;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
 import chan.http.HttpException;
+import chan.http.HttpHolder;
 import chan.http.HttpRequest;
 import chan.util.StringUtils;
 
@@ -191,7 +192,7 @@ public class ImageLoader
 		}
 
 		@Override
-		protected Bitmap doInBackground(Void... params)
+		protected Bitmap doInBackground(HttpHolder holder, Void... params)
 		{
 			Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
 			String scheme = mUri.getScheme();
@@ -282,7 +283,7 @@ public class ImageLoader
 							{
 								ChanPerformer.ReadContentResult result = performer.safe()
 										.onReadContent(new ChanPerformer.ReadContentData(mUri, connectTimeout,
-										readTimeout, getHolder(), null, null));
+										readTimeout, holder, null, null));
 								bitmap = result != null && result.response != null ? result.response.getBitmap() : null;
 							}
 							catch (ExtensionException e)
@@ -293,7 +294,7 @@ public class ImageLoader
 						}
 						else
 						{
-							bitmap = new HttpRequest(mUri, getHolder()).setTimeouts(connectTimeout, readTimeout)
+							bitmap = new HttpRequest(mUri, holder).setTimeouts(connectTimeout, readTimeout)
 									.read().getBitmap();
 						}
 					}
@@ -310,10 +311,6 @@ public class ImageLoader
 			catch (Exception | OutOfMemoryError e)
 			{
 
-			}
-			finally
-			{
-				getHolder().disconnect();
 			}
 			return bitmap;
 		}

@@ -27,6 +27,7 @@ import chan.content.InvalidResponseException;
 import chan.content.model.Post;
 import chan.content.model.Posts;
 import chan.http.HttpException;
+import chan.http.HttpHolder;
 import chan.http.MultipartEntity;
 import chan.text.CommentEditor;
 
@@ -144,7 +145,7 @@ public class SendPostTask extends HttpHolderTask<Void, Long, Boolean>
 	}
 
 	@Override
-	protected Boolean doInBackground(Void... params)
+	protected Boolean doInBackground(HttpHolder holder, Void... params)
 	{
 		try
 		{
@@ -157,14 +158,14 @@ public class SendPostTask extends HttpHolderTask<Void, Long, Boolean>
 				{
 					String challenge = data.captchaData.get(ChanPerformer.CaptchaData.CHALLENGE);
 					String input = data.captchaData.get(ChanPerformer.CaptchaData.INPUT);
-					recaptchaResponse = RecaptchaReader.getInstance().getResponseField2(getHolder(), apiKey,
+					recaptchaResponse = RecaptchaReader.getInstance().getResponseField2(holder, apiKey,
 							challenge, input, Preferences.isRecaptchaJavascript());
 					if (recaptchaResponse == null) throw new ApiException(ApiException.SEND_ERROR_CAPTCHA);
 				}
 				data.captchaData.put(ChanPerformer.CaptchaData.INPUT, recaptchaResponse);
 			}
 			if (isCancelled()) return false;
-			data.holder = getHolder();
+			data.holder = holder;
 			data.listener = mProgressHandler;
 			ChanPerformer performer = ChanPerformer.get(mChanName);
 			ChanPerformer.SendPostResult result = performer.safe().onSendPost(data);

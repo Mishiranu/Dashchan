@@ -24,6 +24,7 @@ import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
 import chan.http.HttpException;
+import chan.http.HttpHolder;
 
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.net.CaptchaServiceReader;
@@ -104,14 +105,14 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean>
 	}
 
 	@Override
-	protected Boolean doInBackground(Void... params)
+	protected Boolean doInBackground(HttpHolder holder, Void... params)
 	{
 		Thread thread = Thread.currentThread();
 		ChanPerformer.ReadCaptchaResult result;
 		try
 		{
 			result = mCaptchaReader.onReadCaptcha(new ChanPerformer.ReadCaptchaData(mCaptchaType,
-					mCaptchaPass, mMayShowLoadButton, mRequirement, mBoardName, mThreadNumber, getHolder()));
+					mCaptchaPass, mMayShowLoadButton, mRequirement, mBoardName, mThreadNumber, holder));
 		}
 		catch (ExtensionException | HttpException | InvalidResponseException e)
 		{
@@ -149,17 +150,17 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean>
 				String challenge;
 				if (recaptcha2)
 				{
-					challenge = recaptchaReader.getChallenge2(getHolder(), apiKey, Preferences.isRecaptchaJavascript());
+					challenge = recaptchaReader.getChallenge2(holder, apiKey, Preferences.isRecaptchaJavascript());
 				}
 				else
 				{
-					challenge = recaptchaReader.getChallenge1(getHolder(), apiKey, Preferences.isRecaptchaJavascript());
+					challenge = recaptchaReader.getChallenge1(holder, apiKey, Preferences.isRecaptchaJavascript());
 				}
 				mCaptchaData.put(ChanPerformer.CaptchaData.CHALLENGE, challenge);
 				if (thread.isInterrupted()) return null;
 				Pair<Bitmap, Boolean> pair;
-				if (recaptcha2) pair = recaptchaReader.getImage2(getHolder(), apiKey, challenge, null, true);
-				else pair = recaptchaReader.getImage1(getHolder(), challenge, true);
+				if (recaptcha2) pair = recaptchaReader.getImage2(holder, apiKey, challenge, null, true);
+				else pair = recaptchaReader.getImage1(holder, challenge, true);
 				mImage = pair.first;
 				mBlackAndWhite = pair.second;
 				return true;
@@ -189,7 +190,7 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean>
 			{
 				if (mailru)
 				{
-					captchaResult = reader.readMailru(getHolder(), mChanName, mCaptchaData
+					captchaResult = reader.readMailru(holder, mChanName, mCaptchaData
 							.get(ChanPerformer.CaptchaData.API_KEY));
 				}
 				else throw new RuntimeException();

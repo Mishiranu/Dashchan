@@ -22,10 +22,20 @@ public abstract class HttpHolderTask<Params, Progress, Result> extends Cancellab
 {
 	private final HttpHolder mHolder = new HttpHolder();
 
-	public final HttpHolder getHolder()
+	@Override
+	protected final Result doInBackground(Params... params)
 	{
-		return mHolder;
+		try
+		{
+			return doInBackground(mHolder, params);
+		}
+		finally
+		{
+			mHolder.cleanup();
+		}
 	}
+
+	protected abstract Result doInBackground(HttpHolder holder, Params... params);
 
 	@Override
 	public void cancel()
