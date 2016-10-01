@@ -398,11 +398,11 @@ public final class HttpRequest
 	@Public
 	public HttpResponse read() throws HttpException
 	{
-		HttpHolder holder = execute();
+		execute();
 		try
 		{
 			if (mRequestMethod == REQUEST_METHOD_HEAD) return null;
-			return holder.read();
+			return mHolder.read();
 		}
 		catch (HttpException e)
 		{
