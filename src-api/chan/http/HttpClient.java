@@ -890,6 +890,9 @@ public class HttpClient
 		}
 	}
 
+	private final HashMap<Object, HttpURLConnection> mSingleConnections = new HashMap<>();
+	private final HashMap<HttpURLConnection, Object> mSingleConnectionIdetifiers = new HashMap<>();
+
 	/*private static class DelayLock
 	{
 		public HttpURLConnection active = null;
@@ -907,6 +910,26 @@ public class HttpClient
 	// Called from HttpHolder
 	void onConnect(String chanName, HttpURLConnection connection, int delay) throws DisconnectedIOException
 	{
+		if (AdvancedPreferences.isSingleConnection(chanName))
+		{
+			synchronized (mSingleConnections)
+			{
+				while (mSingleConnections.containsKey(chanName))
+				{
+					try
+					{
+						mSingleConnections.wait();
+					}
+					catch (InterruptedException e)
+					{
+						Thread.currentThread().interrupt();
+						throw new DisconnectedIOException();
+					}
+				}
+				mSingleConnections.put(chanName, connection);
+				mSingleConnectionIdetifiers.put(connection, chanName);
+			}
+		}
 		if (delay > 0)
 		{
 			URL url = connection.getURL();
@@ -953,7 +976,18 @@ public class HttpClient
 	// Called from HttpHolder
 	void onDisconnect(HttpURLConnection connection)
 	{
-
+		synchronized (mSingleConnections)
+		{
+			Object identifier = mSingleConnectionIdetifiers.remove(connection);
+			if (identifier != null)
+			{
+				if (connection == mSingleConnections.get(identifier))
+				{
+					mSingleConnections.remove(identifier);
+					mSingleConnections.notifyAll();
+				}
+			}
+		}
 	}
 
 	private static class NoSSLv3SSLSocketFactory extends SSLSocketFactory
