@@ -21,8 +21,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -38,6 +40,7 @@ import com.mishiranu.dashchan.util.Log;
 public class AdvancedPreferences
 {
 	private static final HashMap<String, String> USER_AGENTS = new HashMap<>();
+	private static final HashSet<String> SINGLE_CONNECTIONS = new HashSet<>();
 	private static final String GOOGLE_COOKIE;
 
 	static
@@ -89,6 +92,14 @@ public class AdvancedPreferences
 								USER_AGENTS.put(ChanManager.EXTENSION_NAME_CLIENT, userAgent);
 							}
 						}
+						JSONArray singleConnectionArray = jsonObject.optJSONArray("singleConnection");
+						if (singleConnectionArray != null)
+						{
+							for (int i = 0; i < singleConnectionArray.length(); i++)
+							{
+								SINGLE_CONNECTIONS.add(singleConnectionArray.getString(i));
+							}
+						}
 						JSONObject googleCookieObject = jsonObject.optJSONObject("googleCookie");
 						if (googleCookieObject != null)
 						{
@@ -128,6 +139,11 @@ public class AdvancedPreferences
 		if (userAgent == null) userAgent = USER_AGENTS.get(ChanManager.EXTENSION_NAME_CLIENT);
 		if (userAgent == null) userAgent = C.USER_AGENT;
 		return userAgent;
+	}
+
+	public static boolean isSingleConnection(String chanName)
+	{
+		return SINGLE_CONNECTIONS.contains(chanName != null ? chanName : ChanManager.EXTENSION_NAME_CLIENT);
 	}
 
 	public static String getGoogleCookie()
