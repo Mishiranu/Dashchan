@@ -412,11 +412,11 @@
 	[
 		{
 			"title": "Release",
-			"name": "1.3",
+			"name": "1.4",
 			"code": 1,
 			"version": 1,
 			"minSdk": 16,
-			"length": 21731,
+			"length": 21767,
 			"source": "/Mishiranu/Dashchan/master/update/package/DashchanNullnyan.apk"
 		}
 	],
