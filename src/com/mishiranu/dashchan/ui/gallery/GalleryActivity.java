@@ -389,7 +389,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 				Uri uri = galleryItem.getFileUri(mInstance.locator);
 				File file = CacheManager.getInstance().getMediaFile(uri, false);
 				if (file == null) ToastUtils.show(this, R.string.message_cache_unavailable);
-				else NavigationUtils.shareFile(this, file, uri);
+				else NavigationUtils.shareFile(this, file, galleryItem.getFileName(mInstance.locator));
 				break;
 			}
 			case OPTIONS_MENU_SELECT:

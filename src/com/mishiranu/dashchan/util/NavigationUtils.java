@@ -458,9 +458,9 @@ public class NavigationUtils
 		context.startActivity(Intent.createChooser(intent, null));
 	}
 
-	public static void shareFile(Context context, File file, Uri sourceUri)
+	public static void shareFile(Context context, File file, String fileName)
 	{
-		Pair<File, String> data = CacheManager.getInstance().prepareFileForShare(file, sourceUri);
+		Pair<File, String> data = CacheManager.getInstance().prepareFileForShare(file, fileName);
 		if (data == null)
 		{
 			ToastUtils.show(context, R.string.message_cache_unavailable);

@@ -1031,12 +1031,11 @@ public class CacheManager implements Runnable
 		}
 	}
 
-	public Pair<File, String> prepareFileForShare(File file, Uri sourceUri)
+	public Pair<File, String> prepareFileForShare(File file, String fileName)
 	{
 		File tempDirectory = getExternalTempDirectory();
 		if (tempDirectory == null) return null;
-		String extension = StringUtils.getFileExtension(sourceUri != null ? sourceUri.getPath()
-				: file.getAbsolutePath());
+		String extension = StringUtils.getFileExtension(fileName);
 		String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
 		if (mimeType == null)
 		{
@@ -1044,7 +1043,7 @@ public class CacheManager implements Runnable
 			extension = "jpg";
 		}
 		handleGalleryShareFiles();
-		String fileName = GALLERY_SHARE_FILE_NAME_START + System.currentTimeMillis() + "." + extension;
+		fileName = GALLERY_SHARE_FILE_NAME_START + System.currentTimeMillis() + "." + extension;
 		File shareFile = new File(tempDirectory, fileName);
 		IOUtils.copyInternalFile(file, shareFile);
 		return new Pair<>(shareFile, mimeType);
