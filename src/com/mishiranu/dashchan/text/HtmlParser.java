@@ -594,32 +594,42 @@ public class HtmlParser implements ContentHandler
 
 	public Integer getColorAttribute(Attributes attributes)
 	{
-		String spanStyle = attributes.getValue("", "style");
-		if (spanStyle != null)
+		String style = attributes.getValue("", "style");
+		String color = null;
+		if (style != null)
 		{
-			Matcher matcher = COLOR_PATTERN.matcher(spanStyle);
+			Matcher matcher = COLOR_PATTERN.matcher(style);
 			if (matcher.find())
 			{
-				String colorString = matcher.group(4);
-				if (!StringUtils.isEmpty(colorString))
-				{
-					try
-					{
-						int color = Color.parseColor(colorString);
-						return Color.BLACK | color;
-					}
-					catch (IllegalArgumentException e)
-					{
-
-					}
-				}
-				else
+				if (matcher.group(1) != null)
 				{
 					int r = Integer.parseInt(matcher.group(1));
 					int g = Integer.parseInt(matcher.group(2));
 					int b = Integer.parseInt(matcher.group(3));
 					return Color.rgb(r, g, b);
 				}
+				color = matcher.group(4);
+			}
+		}
+		if (StringUtils.isEmpty(color)) color = attributes.getValue("", "color");
+		if (!StringUtils.isEmpty(color))
+		{
+			if (color.charAt(0) == '#' && color.length() != 7)
+			{
+				if (color.length() == 4)
+				{
+					color = "#" + color.charAt(1) + color.charAt(1) + color.charAt(2) + color.charAt(2)
+							+ color.charAt(3) + color.charAt(3);
+				}
+				else if (color.length() < 7) color = color + "000000".substring(color.length() - 1); else return null;
+			}
+			try
+			{
+				return Color.BLACK | Color.parseColor(color);
+			}
+			catch (IllegalArgumentException e)
+			{
+
 			}
 		}
 		return null;
