@@ -212,6 +212,7 @@ public class StringUtils
 				case '\0':
 				case '\n':
 				case '\r':
+				case '\t':
 				case ' ':
 				case '<':
 				case '"':
@@ -224,7 +225,7 @@ public class StringUtils
 				case ':':
 				case ';':
 				{
-					prevValidEndReached = true;
+					validEndReached = true;
 					break;
 				}
 			}
