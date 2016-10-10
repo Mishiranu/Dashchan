@@ -28,7 +28,6 @@ import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -46,6 +45,7 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.NetworkObserver;
+import com.mishiranu.dashchan.content.storage.StatisticsStorage;
 
 public class Preferences
 {
@@ -121,6 +121,16 @@ public class Preferences
 			}
 		}
 		return hasValues;
+	}
+
+	static
+	{
+		String statistics = PREFERENCES.getString("statistics", null);
+		if (statistics != null)
+		{
+			StatisticsStorage.getInstance().convertFromOldFormat(statistics);
+			PREFERENCES.edit().remove("statistics").commit();
+		}
 	}
 
 	private static final String GENERIC_VALUE_NETWORK_ALWAYS = "always";
@@ -881,30 +891,6 @@ public class Preferences
 	public static void setShowSpoilers(boolean showSpoilers)
 	{
 		PREFERENCES.edit().putBoolean(KEY_SHOW_SPOILERS, showSpoilers).commit();
-	}
-
-	public static final String KEY_STATISTICS = "statistics";
-
-	public static JSONObject getStatistics()
-	{
-		String statistics = PREFERENCES.getString(KEY_STATISTICS, null);
-		if (statistics != null)
-		{
-			try
-			{
-				return new JSONObject(statistics);
-			}
-			catch (JSONException e)
-			{
-
-			}
-		}
-		return null;
-	}
-
-	public static void setStatistics(JSONObject jsonObject)
-	{
-		PREFERENCES.edit().putString(KEY_STATISTICS, jsonObject.toString()).commit();
 	}
 
 	public static final String KEY_TEXT_SCALE = "text_scale";

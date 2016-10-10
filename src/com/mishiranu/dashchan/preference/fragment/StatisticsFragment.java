@@ -37,8 +37,9 @@ import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.content.StatisticsManager;
+import com.mishiranu.dashchan.content.storage.StatisticsStorage;
 import com.mishiranu.dashchan.graphics.ActionIconSet;
+import com.mishiranu.dashchan.util.PostDateFormatter;
 import com.mishiranu.dashchan.widget.ViewFactory;
 
 public class StatisticsFragment extends BaseListFragment
@@ -67,30 +68,48 @@ public class StatisticsFragment extends BaseListFragment
 		super.onActivityCreated(savedInstanceState);
 		setHasOptionsMenu(true);
 		getActivity().setTitle(R.string.preference_statistics);
-		HashMap<String, StatisticsManager.StatisticsItem> statisticsItems = StatisticsManager.getInstance().getItems();
+		long startTime = StatisticsStorage.getInstance().getStartTime();
+		if (startTime > 0)
+		{
+			getActivity().getActionBar().setSubtitle(getString(R.string.text_since_format,
+					new PostDateFormatter(getActivity()).format(startTime)));
+		}
+		HashMap<String, StatisticsStorage.StatisticsItem> statisticsItems = StatisticsStorage.getInstance().getItems();
 		int totalThreadsViewed = 0;
 		int totalPostsSent = 0;
 		int totalThreadsCreated = 0;
-		for (StatisticsManager.StatisticsItem statisticsItem : statisticsItems.values())
+		for (HashMap.Entry<String, StatisticsStorage.StatisticsItem> entry : statisticsItems.entrySet())
 		{
-			if (statisticsItem.threadsViewed >= 0) totalThreadsViewed += statisticsItem.threadsViewed;
-			if (statisticsItem.postsSent >= 0) totalPostsSent += statisticsItem.postsSent;
-			if (statisticsItem.threadsCreated >= 0) totalThreadsCreated += statisticsItem.threadsCreated;
+			ChanConfiguration.Statistics statistics = ChanConfiguration.get(entry.getKey()).safe().obtainStatistics();
+			StatisticsStorage.StatisticsItem statisticsItem = entry.getValue();
+			if (statistics.threadsViewed && statisticsItem.threadsViewed > 0)
+			{
+				totalThreadsViewed += statisticsItem.threadsViewed;
+			}
+			if (statistics.postsSent && statisticsItem.postsSent > 0)
+			{
+				totalPostsSent += statisticsItem.postsSent;
+			}
+			if (statistics.threadsCreated && statisticsItem.threadsCreated > 0)
+			{
+				totalThreadsCreated += statisticsItem.threadsCreated;
+			}
 		}
 		mListItems.add(new ListItem(getString(R.string.text_general), totalThreadsViewed, totalPostsSent,
 				totalThreadsCreated));
 		for (String chanName : ChanManager.getInstance().getAvailableChanNames())
 		{
-			StatisticsManager.StatisticsItem statisticsItem = statisticsItems.get(chanName);
+			StatisticsStorage.StatisticsItem statisticsItem = statisticsItems.get(chanName);
 			if (statisticsItem != null)
 			{
-				int threadsViewed = statisticsItem.threadsViewed;
-				int postsSent = statisticsItem.postsSent;
-				int threadsCreated = statisticsItem.threadsCreated;
-				String title = ChanConfiguration.get(chanName).getTitle();
-				if (StringUtils.isEmpty(title)) title = chanName;
-				if (threadsViewed >= 0 || postsSent >= 0 || threadsCreated >= 0)
+				ChanConfiguration.Statistics statistics = ChanConfiguration.get(chanName).safe().obtainStatistics();
+				if (statistics.threadsViewed && statistics.postsSent && statistics.threadsCreated)
 				{
+					int threadsViewed = statistics.threadsViewed ? statisticsItem.threadsViewed : -1;
+					int postsSent = statistics.postsSent ? statisticsItem.postsSent : -1;
+					int threadsCreated = statistics.threadsCreated ? statisticsItem.threadsCreated : -1;
+					String title = ChanConfiguration.get(chanName).getTitle();
+					if (StringUtils.isEmpty(title)) title = chanName;
 					mListItems.add(new ListItem(title, threadsViewed, postsSent, threadsCreated));
 				}
 			}
@@ -182,7 +201,7 @@ public class StatisticsFragment extends BaseListFragment
 		{
 			case OPTIONS_MENU_CLEAR:
 			{
-				StatisticsManager.getInstance().clear();
+				StatisticsStorage.getInstance().clear();
 				getActivity().finish();
 				break;
 			}

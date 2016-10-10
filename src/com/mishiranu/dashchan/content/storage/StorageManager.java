@@ -174,6 +174,11 @@ public class StorageManager implements Handler.Callback, Runnable
 		{
 			if (value != 0) jsonObject.put(name, value);
 		}
+
+		public static void putJson(JSONObject jsonObject, String name, long value) throws JSONException
+		{
+			if (value != 0L) jsonObject.put(name, value);
+		}
 	}
 
 	private File getDirectory()
