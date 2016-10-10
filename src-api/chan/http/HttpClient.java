@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.GZIPInputStream;
 
 import javax.net.ssl.HostnameVerifier;
@@ -893,19 +894,7 @@ public class HttpClient
 	private final HashMap<Object, HttpURLConnection> mSingleConnections = new HashMap<>();
 	private final HashMap<HttpURLConnection, Object> mSingleConnectionIdetifiers = new HashMap<>();
 
-	/*private static class DelayLock
-	{
-		public HttpURLConnection active = null;
-	}
-
-	private final HashMap<String, DelayLock> mDelayLocks = new HashMap<>();*/
-
-	private static class DelayLock
-	{
-		public boolean locked = false;
-	}
-
-	private final HashMap<String, DelayLock> mDelayLocks = new HashMap<>();
+	private final HashMap<String, AtomicBoolean> mDelayLocks = new HashMap<>();
 
 	// Called from HttpHolder
 	void onConnect(String chanName, HttpURLConnection connection, int delay) throws DisconnectedIOException
@@ -934,13 +923,13 @@ public class HttpClient
 		{
 			URL url = connection.getURL();
 			String key = url.getAuthority();
-			DelayLock delayLock;
+			AtomicBoolean delayLock;
 			synchronized (mDelayLocks)
 			{
 				delayLock = mDelayLocks.get(key);
 				if (delayLock == null)
 				{
-					delayLock = new DelayLock();
+					delayLock = new AtomicBoolean(false);
 					mDelayLocks.put(key, delayLock);
 				}
 			}
@@ -948,14 +937,14 @@ public class HttpClient
 			{
 				try
 				{
-					while (delayLock.locked) delayLock.wait();
+					while (delayLock.get()) delayLock.wait();
 				}
 				catch (InterruptedException e)
 				{
 					Thread.currentThread().interrupt();
 					return;
 				}
-				delayLock.locked = true;
+				delayLock.set(true);
 				try
 				{
 					Thread.sleep(delay);
@@ -966,7 +955,7 @@ public class HttpClient
 				}
 				finally
 				{
-					delayLock.locked = false;
+					delayLock.set(false);
 					delayLock.notifyAll();
 				}
 			}
