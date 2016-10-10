@@ -134,6 +134,7 @@
 	</plurals>
 	<string name="text_several_forums">Several forums</string>
 	<string name="text_similar_to_format">Similar to %s</string>
+	<string name="text_since_format">Since %s</string>
 	<string name="text_sort_by_unsorted">Unsorted</string>
 	<string name="text_sort_by_date">Sort by date created</string>
 	<string name="text_sort_by_replies">Sort by replies</string>

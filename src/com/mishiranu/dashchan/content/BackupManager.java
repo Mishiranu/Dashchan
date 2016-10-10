@@ -40,6 +40,7 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.storage.AutohideStorage;
 import com.mishiranu.dashchan.content.storage.DatabaseHelper;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
+import com.mishiranu.dashchan.content.storage.StatisticsStorage;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
@@ -86,6 +87,7 @@ public class BackupManager
 		addFileToMap(files, DatabaseHelper.getDatabaseFile(), true);
 		addFileToMap(files, FavoritesStorage.getInstance().getFile(), false);
 		addFileToMap(files, AutohideStorage.getInstance().getFile(), false);
+		addFileToMap(files, StatisticsStorage.getInstance().getFile(), false);
 		return files;
 	}
 

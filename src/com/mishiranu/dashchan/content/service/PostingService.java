@@ -41,11 +41,11 @@ import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.content.StatisticsManager;
 import com.mishiranu.dashchan.content.async.SendPostTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.storage.DraftsStorage;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
+import com.mishiranu.dashchan.content.storage.StatisticsStorage;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.ui.posting.PostingActivity;
 import com.mishiranu.dashchan.util.NavigationUtils;
@@ -394,7 +394,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 			{
 				FavoritesStorage.getInstance().add(chanName, data.boardName, targetThreadNumber, null, 0);
 			}
-			StatisticsManager.getInstance().incrementPosts(chanName, data.threadNumber == null);
+			StatisticsStorage.getInstance().incrementPostsSent(chanName, data.threadNumber == null);
 			DraftsStorage draftsStorage = DraftsStorage.getInstance();
 			draftsStorage.removeCaptchaDraft();
 			draftsStorage.removePostDraft(chanName, data.boardName, data.threadNumber);

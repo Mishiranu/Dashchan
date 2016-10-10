@@ -149,6 +149,7 @@
 	</plurals>
 	<string name="text_several_forums">Несколько форумов</string>
 	<string name="text_similar_to_format">Похожие на %s</string>
+	<string name="text_since_format">Начиная с %s</string>
 	<string name="text_sort_by_unsorted">Без сортировки</string>
 	<string name="text_sort_by_date">Сортировать по дате создания</string>
 	<string name="text_sort_by_replies">Сортировать по ответам</string>
