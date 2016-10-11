@@ -170,6 +170,8 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 
 	private PostingService.Binder mPostingServiceBinder;
 
+	private boolean mSendButtonEnabled = true;
+
 	private static final String EXTRA_SAVED_POST_DRAFT = "ExtraSavedPostDraft";
 	private static final String EXTRA_SAVED_CAPTCHA = "ExtraSavedCaptcha";
 
@@ -938,6 +940,12 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		}
 	};
 
+	private void updateSendButtonState()
+	{
+		mSendButton.setEnabled(mSendButtonEnabled && mCaptchaState != null &&
+				mCaptchaState != ChanPerformer.CaptchaState.NEED_LOAD);
+	}
+
 	private void executeSendPost()
 	{
 		if (mPostingServiceBinder == null) return;
@@ -968,7 +976,8 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 				userIcon, captchaType, captchaData, 15000, 45000);
 		DraftsStorage.getInstance().store(obtainPostDraft());
 		mPostingServiceBinder.executeSendPost(mChanName, data);
-		mSendButton.setEnabled(false);
+		mSendButtonEnabled = false;
+		updateSendButtonState();
 	}
 
 	private ProgressDialog mProgressDialog;
@@ -997,7 +1006,8 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	{
 		if (mProgressDialog != null) mProgressDialog.dismiss();
 		mProgressDialog = null;
-		mSendButton.setEnabled(true);
+		mSendButtonEnabled = true;
+		updateSendButtonState();
 	}
 
 	@Override
@@ -1144,7 +1154,8 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	{
 		mCaptchaState = null;
 		mLoadedCaptchaType = null;
-		mSendButton.setEnabled(false);
+		mCaptchaLoadTime = 0L;
+		updateSendButtonState();
 		mCaptchaForm.showLoading();
 		HashMap<String, Object> extra = new HashMap<>();
 		extra.put(EXTRA_FORCE_CAPTCHA, forceCaptcha);
@@ -1227,8 +1238,6 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	public void onReadCaptchaError(ErrorItem errorItem)
 	{
 		ClickableToast.show(this, errorItem.toString());
-		mCaptchaLoadTime = 0L;
-		mSendButton.setEnabled(true);
 		mCaptchaForm.showError();
 	}
 
@@ -1253,8 +1262,8 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		mLoadedCaptchaValidity = validity;
 		boolean invertColors = blackAndWhite && !GraphicsUtils.isLight(ResourceUtils.getColor(this,
 				android.R.attr.windowBackground));
-		boolean canSend = mCaptchaForm.showCaptcha(captchaState, input, image, large, invertColors);
-		mSendButton.setEnabled(canSend);
+		mCaptchaForm.showCaptcha(captchaState, input, image, large, invertColors);
+		updateSendButtonState();
 	}
 
 	@Override

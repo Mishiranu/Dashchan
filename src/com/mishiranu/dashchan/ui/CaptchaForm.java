@@ -182,7 +182,7 @@ public class CaptchaForm implements View.OnClickListener, View.OnLongClickListen
 		return true;
 	}
 
-	public boolean showCaptcha(ChanPerformer.CaptchaState captchaState, ChanConfiguration.Captcha.Input input,
+	public void showCaptcha(ChanPerformer.CaptchaState captchaState, ChanConfiguration.Captcha.Input input,
 			Bitmap image, boolean large, boolean invertColors)
 	{
 		switch (captchaState)
@@ -192,7 +192,7 @@ public class CaptchaForm implements View.OnClickListener, View.OnLongClickListen
 				mImageView.setImageBitmap(image);
 				mImageView.setColorFilter(invertColors ? GraphicsUtils.INVERT_FILTER : null);
 				switchToCaptchaView(CaptchaViewType.IMAGE, input, large);
-				return true;
+				break;
 			}
 			case SKIP:
 			case NEED_LOAD:
@@ -202,17 +202,16 @@ public class CaptchaForm implements View.OnClickListener, View.OnLongClickListen
 						: R.string.message_can_skip_captcha);
 				mLoadButton.setVisibility(View.GONE);
 				switchToCaptchaView(CaptchaViewType.SKIP, null, false);
-				return !needLoad;
+				break;
 			}
 			case PASS:
 			{
 				mSkipTextView.setText(R.string.message_captcha_pass_allowed);
 				mLoadButton.setVisibility(View.VISIBLE);
 				switchToCaptchaView(CaptchaViewType.SKIP, null, false);
-				return true;
+				break;
 			}
 		}
-		return true;
 	}
 
 	public void showError()
