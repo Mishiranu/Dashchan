@@ -44,6 +44,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -156,6 +157,8 @@ public class ForegroundManager implements Handler.Callback
 
 		private final CaptchaForm mCaptchaForm = new CaptchaForm(this);
 
+		private Button mPositiveButton;
+
 		public CaptchaDialogFragment()
 		{
 
@@ -225,6 +228,11 @@ public class ForegroundManager implements Handler.Callback
 		{
 			pendingData.captchaData = null;
 			pendingData.loadedCaptchaType = null;
+			mCaptchaState = null;
+			mImage = null;
+			mLarge = false;
+			mBlackAndWhite = false;
+			updatePositiveButtonState();
 			mCaptchaForm.showLoading();
 			HashMap<String, Object> extra = new HashMap<>();
 			extra.put(EXTRA_FORCE_CAPTCHA, forceCaptcha);
@@ -308,7 +316,7 @@ public class ForegroundManager implements Handler.Callback
 				dismissAllowingStateLoss();
 				return;
 			}
-			pendingData.captchaData = captchaData;
+			pendingData.captchaData = captchaData != null ? captchaData : new ChanPerformer.CaptchaData();
 			pendingData.loadedCaptchaType = captchaType;
 			showCaptcha(captchaState, captchaType, input, image, large, blackAndWhite);
 		}
@@ -322,12 +330,6 @@ public class ForegroundManager implements Handler.Callback
 				dismissAllowingStateLoss();
 				return;
 			}
-			pendingData.captchaData = null;
-			pendingData.loadedCaptchaType = null;
-			mCaptchaState = null;
-			mImage = null;
-			mLarge = false;
-			mBlackAndWhite = false;
 			ToastUtils.show(getActivity(), errorItem);
 			mCaptchaForm.showError();
 		}
@@ -349,6 +351,7 @@ public class ForegroundManager implements Handler.Callback
 			boolean invertColors = blackAndWhite && !GraphicsUtils.isLight(ResourceUtils
 					.getDialogBackground(getActivity()));
 			mCaptchaForm.showCaptcha(captchaState, input, image, large, invertColors);
+			updatePositiveButtonState();
 		}
 
 		private void finishDialog(CaptchaPendingData pendingData)
@@ -361,6 +364,15 @@ public class ForegroundManager implements Handler.Callback
 					pendingData.ready = true;
 					pendingData.notifyAll();
 				}
+			}
+		}
+
+		private void updatePositiveButtonState()
+		{
+			if (mPositiveButton != null)
+			{
+				mPositiveButton.setEnabled(mCaptchaState != null &&
+						mCaptchaState != ChanPerformer.CaptchaState.NEED_LOAD);
 			}
 		}
 
@@ -378,10 +390,15 @@ public class ForegroundManager implements Handler.Callback
 					.safe().obtainCaptcha(args.getString(EXTRA_CAPTCHA_TYPE));
 			EditText captchaInputView = (EditText) container.findViewById(R.id.captcha_input);
 			mCaptchaForm.setupViews(container, null, captchaInputView, true, captcha);
-			AlertDialog alertDialog = new AlertDialog.Builder(activity).setView(container).setTitle(R.string
-					.text_confirmation).setPositiveButton(android.R.string.ok, (dialog, which) -> onConfirmCaptcha())
+			AlertDialog alertDialog = new AlertDialog.Builder(activity).setTitle(R.string.text_confirmation)
+					.setView(container).setPositiveButton(android.R.string.ok, (dialog, which) -> onConfirmCaptcha())
 					.setNegativeButton(android.R.string.cancel, (dialog, which) -> cancelInternal()).create();
 			alertDialog.setCanceledOnTouchOutside(false);
+			alertDialog.setOnShowListener(dialog ->
+			{
+				mPositiveButton = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+				updatePositiveButtonState();
+			});
 			return alertDialog;
 		}
 
