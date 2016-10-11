@@ -56,6 +56,7 @@ import chan.content.ChanManager;
 import chan.content.model.Posts;
 import chan.util.StringUtils;
 
+import com.mishiranu.dashchan.content.async.MainLooperGetter;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.IOUtils;
@@ -340,6 +341,9 @@ public class CacheManager implements Runnable
 		return size;
 	}
 
+	private final MainLooperGetter<ArrayList<FavoritesStorage.FavoriteItem>> mFavoritesGetter
+			= new MainLooperGetter<>();
+
 	private interface DeleteCondition
 	{
 		public boolean allowDeleteCacheItem(CacheItem cacheItem);
@@ -353,7 +357,8 @@ public class CacheManager implements Runnable
 		public PagesCacheDeleteCondition()
 		{
 			Collection<String> chanNames = ChanManager.getInstance().getAllChanNames();
-			for (FavoritesStorage.FavoriteItem favoriteItem : FavoritesStorage.getInstance().getThreads(null))
+			for (FavoritesStorage.FavoriteItem favoriteItem : mFavoritesGetter
+					.get(() -> FavoritesStorage.getInstance().getThreads(null)))
 			{
 				if (chanNames.contains(favoriteItem.chanName))
 				{
