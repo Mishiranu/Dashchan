@@ -592,14 +592,30 @@ public class ChanConfiguration implements ChanManager.Linked
 
 	public final int getBumpLimit(String boardName)
 	{
+		int bumpLimit = BUMP_LIMIT_INVALID;
 		if (mBumpLimitMap != null)
 		{
-			Integer bumpLimit = mBumpLimitMap.get(boardName);
-			if (bumpLimit != null) return bumpLimit;
+			Integer bumpLimitValue = mBumpLimitMap.get(boardName);
+			if (bumpLimitValue != null) bumpLimit = bumpLimitValue;
 		}
-		int bumpLimit = get(boardName, KEY_BUMP_LIMIT, BUMP_LIMIT_INVALID);
-		if (bumpLimit != BUMP_LIMIT_INVALID) return bumpLimit;
-		return mBumpLimit;
+		if (bumpLimit == BUMP_LIMIT_INVALID) bumpLimit = get(boardName, KEY_BUMP_LIMIT, BUMP_LIMIT_INVALID);
+		if (bumpLimit == BUMP_LIMIT_INVALID) bumpLimit = mBumpLimit;
+		return bumpLimit > 0 ? bumpLimit : BUMP_LIMIT_INVALID;
+	}
+
+	public final int getBumpLimitWithMode(String boardName)
+	{
+		int bumpLimit = getBumpLimit(boardName);
+		if (bumpLimit != ChanConfiguration.BUMP_LIMIT_INVALID)
+		{
+			switch (mBumpLimitMode)
+			{
+				case AFTER_POST: break;
+				case AFTER_REPLY: bumpLimit++; break;
+				case BEFORE_POST: bumpLimit--; break;
+			}
+		}
+		return bumpLimit;
 	}
 
 	private BumpLimitMode mBumpLimitMode = BumpLimitMode.AFTER_POST;
@@ -610,11 +626,6 @@ public class ChanConfiguration implements ChanManager.Linked
 		checkInit();
 		if (mode == null) throw new NullPointerException();
 		mBumpLimitMode = mode;
-	}
-
-	public final BumpLimitMode getBumpLimitMode()
-	{
-		return mBumpLimitMode;
 	}
 
 	private HashMap<String, Integer> mPagesCountMap;
