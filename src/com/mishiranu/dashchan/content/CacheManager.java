@@ -34,9 +34,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Locale;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import android.content.BroadcastReceiver;
@@ -215,16 +213,10 @@ public class CacheManager implements Runnable
 			for (File file : files)
 			{
 				CacheItem cacheItem = new CacheItem(file, type);
-				if (type == CacheItem.TYPE_PAGES)
+				if (type == CacheItem.TYPE_PAGES && cacheItem.name.startsWith(TEMP_PAGE_FILE_PREFIX))
 				{
-					if (cacheItem.name.startsWith(TEMP_PAGE_FILE_PREFIX))
-					{
-						synchronized (mTempSerializeFileLock)
-						{
-							file.delete();
-						}
-						continue;
-					}
+					if (cacheItem.lastModified < System.currentTimeMillis() - OLD_THREADS_THRESHOLD) file.delete();
+					continue;
 				}
 				cacheItemsList.add(cacheItem);
 			}
@@ -783,72 +775,94 @@ public class CacheManager implements Runnable
 		}
 	}
 
-	private final HashMap<File, Pair<FutureTask<Void>, SerializePageCallback>> mSerializeTasks = new HashMap<>();
+	private final HashMap<String, SerializePageCallback> mSerializePageCallbacks = new HashMap<>();
 
 	private void serializePage(String fileName, Object object)
 	{
 		if (!isCacheAvailable()) return;
 		File file = getPagesFile(fileName);
 		if (file == null) return;
-		File tempFile = getPagesFile(TEMP_PAGE_FILE_PREFIX + System.currentTimeMillis() + "_" + fileName);
-		Pair<FutureTask<Void>, SerializePageCallback> pair;
-		synchronized (mSerializeTasks)
+		File tempFile = getPagesFile(TEMP_PAGE_FILE_PREFIX + fileName);
+		SerializePageCallback callback;
+		synchronized (mSerializePageCallbacks)
 		{
-			pair = mSerializeTasks.get(file);
+			callback = mSerializePageCallbacks.get(fileName);
 		}
-		if (pair != null)
+		if (callback != null) callback.cancel();
+		callback = new SerializePageCallback(file, tempFile, fileName, object);
+		synchronized (mSerializePageCallbacks)
 		{
-			pair.first.cancel(true);
-			pair.second.onCancel();
+			mSerializePageCallbacks.put(fileName, callback);
 		}
-		SerializePageCallback callback = new SerializePageCallback(file, tempFile, fileName, object);
-		FutureTask<Void> task = new FutureTask<>(callback);
-		synchronized (mSerializeTasks)
-		{
-			mSerializeTasks.put(file, new Pair<>(task, callback));
-		}
-		AsyncTask.THREAD_POOL_EXECUTOR.execute(task);
+		AsyncTask.THREAD_POOL_EXECUTOR.execute(callback);
 		handleSerializationQueue(false);
 	}
 
-	@SuppressWarnings("unchecked")
-	private <T> T deserializePage(String fileName, SerializationHolder holder) throws ClassCastException
+	private Object deserializePage(String fileName, SerializationHolder holder)
 	{
 		if (!isCacheAvailable()) return null;
 		File file = getPagesFile(fileName);
 		if (file == null) return null;
-		if (!isFileExistsInCache(file, fileName, CacheItem.TYPE_PAGES)) return null;
-		updateCachedFileLastModified(file, fileName, CacheItem.TYPE_PAGES);
-		synchronized (mSerializeTasks)
+		synchronized (mSerializePageCallbacks)
 		{
-			Pair<FutureTask<Void>, SerializePageCallback> pair = mSerializeTasks.get(file);
-			if (pair != null) return (T) pair.second.mObject;
+			SerializePageCallback callback = mSerializePageCallbacks.get(fileName);
+			if (callback != null) return callback.mObject;
 		}
-		ObjectInputStream objectInputStream = null;
-		try
+		synchronized (obtainPageFileLock(fileName))
 		{
-			FileInputStream fileInputStream = new FileInputStream(file);
-			holder.setCloseable(fileInputStream);
-			objectInputStream = new ObjectInputStream(fileInputStream);
-			return (T) objectInputStream.readObject();
-		}
-		catch (Exception e)
-		{
-			synchronized (holder)
+			File tempFile = getPagesFile(TEMP_PAGE_FILE_PREFIX + fileName);
+			if (tempFile.exists())
+			{
+				if ((!file.exists() || !file.delete()) && !tempFile.renameTo(file))
+				{
+					Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES,
+							"Can't restore backup file", tempFile.getName());
+				}
+				else validateNewCachedFile(file, fileName, CacheItem.TYPE_PAGES, true);
+			}
+			ObjectInputStream objectInputStream = null;
+			try
+			{
+				FileInputStream fileInputStream = new FileInputStream(file);
+				holder.setCloseable(fileInputStream);
+				objectInputStream = new ObjectInputStream(fileInputStream);
+				Object result = objectInputStream.readObject();
+				updateCachedFileLastModified(file, fileName, CacheItem.TYPE_PAGES);
+				return result;
+			}
+			catch (FileNotFoundException e)
+			{
+
+			}
+			catch (Exception e)
 			{
 				if (!holder.cancelled) Log.persistent().stack(e);
 			}
+			finally
+			{
+				IOUtils.close(objectInputStream);
+			}
+			return null;
 		}
-		finally
-		{
-			IOUtils.close(objectInputStream);
-		}
-		return null;
 	}
 
-	private final Object mTempSerializeFileLock = new Object();
+	private final HashMap<String, Object> mPageFileLocks = new HashMap<>();
 
-	private class SerializePageCallback implements Callable<Void>
+	private Object obtainPageFileLock(String fileName)
+	{
+		synchronized (mPageFileLocks)
+		{
+			Object object = mPageFileLocks.get(fileName);
+			if (object == null)
+			{
+				object = new Object();
+				mPageFileLocks.put(fileName, object);
+			}
+			return object;
+		}
+	}
+
+	private class SerializePageCallback implements Runnable
 	{
 		private final File mFile;
 		private final File mTempFile;
@@ -865,71 +879,67 @@ public class CacheManager implements Runnable
 		}
 
 		@Override
-		public Void call() throws Exception
+		public void run()
 		{
-			boolean success = false;
-			OutputStream outputStream = null;
-			try
+			synchronized (obtainPageFileLock(mFileName))
 			{
-				outputStream = new FileOutputStream(mTempFile != null ? mTempFile : mFile);
-				ObjectOutputStream objectOutputStream = new ObjectOutputStream(new BufferedOutputStream(outputStream));
-				outputStream = objectOutputStream;
-				mHolder.setCloseable(outputStream);
-				objectOutputStream.writeObject(mObject);
-				objectOutputStream.flush();
-				IOUtils.close(outputStream);
-				outputStream = null;
-				synchronized (mTempSerializeFileLock)
+				if (mHolder.cancelled) return;
+				if (mFile.exists() && (!mTempFile.exists() || !mTempFile.delete()) && !mFile.renameTo(mTempFile))
 				{
-					if (mTempFile.exists())
+					Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES,
+							"Can't create backup of", mFile.getName());
+					return;
+				}
+				boolean success = false;
+				OutputStream outputStream = null;
+				try
+				{
+					outputStream = new FileOutputStream(mFile);
+					ObjectOutputStream objectOutputStream = new ObjectOutputStream
+							(new BufferedOutputStream(outputStream));
+					outputStream = objectOutputStream;
+					mHolder.setCloseable(outputStream);
+					objectOutputStream.writeObject(mObject);
+					objectOutputStream.flush();
+					success = IOUtils.close(outputStream);
+					outputStream = null;
+				}
+				catch (Exception e)
+				{
+
+				}
+				finally
+				{
+					success &= IOUtils.close(outputStream);
+					if (success)
+					{
+						if (mTempFile.exists() && !mTempFile.delete())
+						{
+							Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES,
+									"Can't delete temp file", mTempFile.getName());
+						}
+						validateNewCachedFile(mFile, mFileName, CacheItem.TYPE_PAGES, true);
+					}
+					else
 					{
 						mFile.delete();
 						mTempFile.renameTo(mFile);
-						success = true;
 					}
+					synchronized (mSerializePageCallbacks)
+					{
+						mSerializePageCallbacks.remove(mFileName);
+					}
+					handleSerializationQueue(true);
 				}
 			}
-			catch (Exception e)
-			{
-
-			}
-			finally
-			{
-				IOUtils.close(outputStream);
-				if (success) validateNewCachedFile(mFile, mFileName, CacheItem.TYPE_PAGES, true);
-				else mTempFile.delete();
-				onFinished();
-			}
-			return null;
 		}
 
-		public void onCancel()
+		public void cancel()
 		{
 			mHolder.cancel();
-			onFinished();
-		}
-
-		private boolean mFinished = false;
-
-		public void onFinished()
-		{
-			boolean release = false;
-			synchronized (this)
+			synchronized (obtainPageFileLock(mFileName))
 			{
-				if (!mFinished)
-				{
-					mFinished = true;
-					release = true;
-				}
-			}
-			if (release)
-			{
-				synchronized (mSerializeTasks)
-				{
-					Pair<FutureTask<Void>, SerializePageCallback> pair = mSerializeTasks.get(mFile);
-					if (pair != null && pair.second == this) mSerializeTasks.remove(mFile);
-				}
-				handleSerializationQueue(true);
+				// Wait until run() over
 			}
 		}
 	}
@@ -950,7 +960,7 @@ public class CacheManager implements Runnable
 		{
 			try
 			{
-				return deserializePage(getPostsFileName(chanName, boardName, threadNumber), holder);
+				return (Posts) deserializePage(getPostsFileName(chanName, boardName, threadNumber), holder);
 			}
 			catch (ClassCastException e)
 			{
