@@ -108,15 +108,16 @@ public class IOUtils
 		while ((count = from.read(data)) != -1) to.write(data, 0, count);
 	}
 
-	public static void close(Closeable closeable)
+	public static boolean close(Closeable closeable)
 	{
 		try
 		{
 			if (closeable != null) closeable.close();
+			return true;
 		}
-		catch (Exception e)
+		catch (IOException e)
 		{
-
+			return false;
 		}
 	}
 
