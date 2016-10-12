@@ -101,6 +101,13 @@
 				android:ellipsize="start" />
 
 			<ImageView
+				android:id="@+id/state_sage"
+				android:layout_width="12dp"
+				android:layout_height="12dp"
+				android:layout_marginLeft="8dp"
+				android:src="?attr/postSage" />
+
+			<ImageView
 				android:id="@+id/state_sticky"
 				android:layout_width="12dp"
 				android:layout_height="12dp"

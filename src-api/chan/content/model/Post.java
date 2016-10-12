@@ -41,6 +41,7 @@ public final class Post implements Serializable, Comparable<Post>
 	private static final int FLAG_POSTER_BANNED = 0x00000040;
 	private static final int FLAG_ORIGINAL_POSTER = 0x00000080;
 	private static final int FLAG_DEFAULT_NAME = 0x00000100;
+	private static final int FLAG_BUMP_LIMIT_REACHED = 0x00000200;
 
 	private static final int FLAG_HIDDEN = 0x00010000;
 	private static final int FLAG_SHOWN = 0x00020000;
@@ -459,6 +460,19 @@ public final class Post implements Serializable, Comparable<Post>
 	public Post setDefaultName(boolean defaultName)
 	{
 		mFlags = FlagUtils.set(mFlags, FLAG_DEFAULT_NAME, defaultName);
+		return this;
+	}
+
+	@Public
+	public boolean isBumpLimitReached()
+	{
+		return FlagUtils.get(mFlags, FLAG_BUMP_LIMIT_REACHED);
+	}
+
+	@Public
+	public Post setBumpLimitReached(boolean bumpLimitReached)
+	{
+		mFlags = FlagUtils.set(mFlags, FLAG_BUMP_LIMIT_REACHED, bumpLimitReached);
 		return this;
 	}
 

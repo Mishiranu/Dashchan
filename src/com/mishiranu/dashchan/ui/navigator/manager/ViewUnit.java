@@ -43,7 +43,6 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.ImageView;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -182,6 +181,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			holder.subject = (TextView) cardView.findViewById(R.id.subject);
 			holder.comment = (TextView) cardView.findViewById(R.id.comment);
 			holder.description = (TextView) cardView.findViewById(R.id.thread_description);
+			holder.stateSage = (ImageView) cardView.findViewById(R.id.state_sage);
 			holder.stateSticky = (ImageView) cardView.findViewById(R.id.state_sticky);
 			holder.stateClosed = (ImageView) cardView.findViewById(R.id.state_closed);
 			holder.thumbnail = (AttachmentView) cardView.findViewById(R.id.thumbnail);
@@ -194,7 +194,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			ViewGroup.MarginLayoutParams thumbnailLayoutParams = (ViewGroup.MarginLayoutParams) holder
 					.thumbnail.getLayoutParams();
 			ViewUtils.applyScaleSize(holder.comment, holder.subject, holder.description,
-					holder.stateSticky, holder.stateClosed);
+					holder.stateSage, holder.stateSticky, holder.stateClosed);
 			if (ResourceUtils.isTablet(context.getResources().getConfiguration()))
 			{
 				float density = ResourceUtils.obtainDensity(context);
@@ -222,6 +222,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		holder.postItem = postItem;
 
 		holder.showOpClickView.setEnabled(true);
+		holder.stateSage.setVisibility(postItem.isBumpLimitReached(null) ? View.VISIBLE : View.GONE);
 		holder.stateSticky.setVisibility(postItem.isSticky() ? View.VISIBLE : View.GONE);
 		holder.stateClosed.setVisibility(postItem.isClosed() ? View.VISIBLE : View.GONE);
 
@@ -452,7 +453,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		holder.number.setText("#" + postNumber);
 		holder.states[0] = postItem.isUserPost() && Preferences.isShowMyPosts();
 		holder.states[1] = postItem.isOriginalPoster();
-		holder.states[2] = postItem.isSage();
+		holder.states[2] = postItem.isSage() || postItem.isBumpLimitReached(configurationSet.postsProvider);
 		holder.states[3] = !StringUtils.isEmpty(postItem.getEmail());
 		holder.states[4] = postItem.isSticky();
 		holder.states[5] = postItem.isClosed();
@@ -1217,7 +1218,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		public TextView subject;
 		public TextView comment;
 		public TextView description;
-		public ImageView stateSticky, stateClosed;
+		public ImageView stateSage, stateSticky, stateClosed;
 		public View threadContent;
 		public View showOpClickView;
 

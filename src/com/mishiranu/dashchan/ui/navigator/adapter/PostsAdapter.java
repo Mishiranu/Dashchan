@@ -87,30 +87,7 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 		view.setBackgroundColor(ResourceUtils.getColor(context, R.attr.colorTextError));
 		frameLayout.addView(view, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
 		mBumpLimitDivider = frameLayout;
-		ChanConfiguration configuration = ChanConfiguration.get(chanName);
-		int bumpLimit = configuration.getBumpLimit(boardName);
-		if (bumpLimit != ChanConfiguration.BUMP_LIMIT_INVALID)
-		{
-			ChanConfiguration.BumpLimitMode bumpLimitMode = configuration.getBumpLimitMode();
-			switch (bumpLimitMode)
-			{
-				case AFTER_POST:
-				{
-					break;
-				}
-				case AFTER_REPLY:
-				{
-					bumpLimit++;
-					break;
-				}
-				case BEFORE_POST:
-				{
-					bumpLimit--;
-					break;
-				}
-			}
-		}
-		mBumpLimit = bumpLimit;
+		mBumpLimit = ChanConfiguration.get(chanName).getBumpLimitWithMode(boardName);
 	}
 
 	@Override
