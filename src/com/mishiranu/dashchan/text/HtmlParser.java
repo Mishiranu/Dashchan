@@ -505,38 +505,16 @@ public class HtmlParser implements ContentHandler
 		int realLength = 0;
 		if (mPreformattedMode.check())
 		{
-			int lastLineBeginning = 0;
-			for (int i = builder.length() - 1; i >= 0; i--)
-			{
-				if (builder.charAt(i) == '\n')
-				{
-					lastLineBeginning = i + 1;
-					break;
-				}
-			}
 			char p = '\0';
 			for (int i = start, to = start + length; i < to; i++)
 			{
 				char c = ch[i];
 				if (c == '\n' && i - 1 == to) break; // Last line break may be ignored
 				// \r\r - 2 spaces, \n\n - 2 spaces, \n\r - 2 spaces, \r\n - 1 space
-				if ((c >= ' ' || c == '\n' || c == '\r') && !(c == '\n' && p == '\r'))
+				if ((c >= ' ' || c == '\t' || c == '\n' || c == '\r') && !(c == '\n' && p == '\r'))
 				{
-					if (c == '\r' || c == '\n')
-					{
-						builder.append('\n');
-						lastLineBeginning = builder.length();
-					}
-					else builder.append(c);
+					builder.append(c == '\r' ? '\n' : c);
 					realLength++;
-				}
-				else if (c == '\t')
-				{
-					final int tabSize = 8;
-					int lineLength = builder.length() - lastLineBeginning;
-					int size = tabSize - lineLength % tabSize;
-					for (int j = 0 ; j < size; j++) builder.append(' ');
-					realLength += size;
 				}
 				p = c;
 			}

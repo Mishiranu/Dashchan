@@ -46,6 +46,7 @@ import com.mishiranu.dashchan.text.style.OverlineSpan;
 import com.mishiranu.dashchan.text.style.QuoteSpan;
 import com.mishiranu.dashchan.text.style.ScriptSpan;
 import com.mishiranu.dashchan.text.style.SpoilerSpan;
+import com.mishiranu.dashchan.text.style.TabulationSpan;
 import com.mishiranu.dashchan.text.style.UnderlyingSpoilerSpan;
 
 @Extendable
@@ -736,6 +737,13 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 		public CharSequence transformBuilder(HtmlParser parser, StringBuilder builder)
 		{
 			SpannableString spannable = new SpannableString(builder);
+			for (int i = 0; i < spannable.length(); i++)
+			{
+				if (spannable.charAt(i) == '\t')
+				{
+					spannable.setSpan(new TabulationSpan(), i, i + 1, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
+				}
+			}
 			for (StyledItem styledItem : mStyledItems)
 			{
 				if (styledItem.isClosed())
