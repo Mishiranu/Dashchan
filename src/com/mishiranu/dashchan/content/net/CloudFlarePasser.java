@@ -43,6 +43,7 @@ import chan.content.InvalidResponseException;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
 import chan.http.HttpRequest;
+import chan.http.UrlEncodedEntity;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.R;
@@ -58,13 +59,13 @@ public class CloudFlarePasser implements Handler.Callback
 	private static final CloudFlarePasser INSTANCE = new CloudFlarePasser();
 	private static final int WEB_VIEW_TIMEOUT = 20000;
 
-	private static final String CF_FORBIDDEN_FLAG = "<form class=\"challenge-form\" id=\"challenge-form\" "
-			+ "action=\"/cdn-cgi/l/chk_captcha\" method=\"get\">";
-	private static final String CF_UNAVAILABLE_FLAG = "<span data-translate=\"checking_browser\">"
-			+ "Checking your browser before accessing</span>";
+	private static final Pattern PATTERN_FORBIDDEN = Pattern.compile("<form class=\\\"challenge-form\\\" " +
+			"id=\\\"challenge-form\\\" action=\\\"(.*?)\\\" method=\\\"(.*?)\\\"");
+	private static final Pattern PATTERN_UNAVAILABLE = Pattern.compile("<span " +
+			"data-translate=\\\"checking_browser\\\">Checking your browser before accessing</span>");
 
 	private static final Pattern ALLOWED_LINKS = Pattern.compile("/?(|cdn-cgi/l/.*)");
-	private static final Pattern CF_CAPTCHA_PATTERN = Pattern.compile("data-sitekey=\"(.*?)\"");
+	private static final Pattern PATTERN_CAPTCHA = Pattern.compile("data-sitekey=\"(.*?)\"");
 
 	public static final String COOKIE_CLOUDFLARE = "cf_clearance";
 
@@ -294,41 +295,59 @@ public class CloudFlarePasser implements Handler.Callback
 		}
 	}
 
+	public static class Result
+	{
+		public final boolean success;
+		public final HttpHolder replaceHolder;
+
+		private Result(boolean success, HttpHolder replaceHolder)
+		{
+			this.success = success;
+			this.replaceHolder = replaceHolder;
+		}
+	}
+
 	private final HashMap<String, CheckHolder> mCaptchaHolders = new HashMap<>();
 	private final HashMap<String, Long> mCaptchaLastCancel = new HashMap<>();
 
-	private boolean handleCaptcha(String chanName, String recaptchaApiKey) throws HttpException
+	private Result handleCaptcha(String chanName, Uri specialUri, String recaptchaApiKey) throws HttpException
 	{
-		CheckHolder checkHolder;
-		boolean handle;
+		CheckHolder checkHolder = null;
 		synchronized (mCaptchaLastCancel)
 		{
 			Long lastCancelTime = mCaptchaLastCancel.get(chanName);
-			if (lastCancelTime != null && System.currentTimeMillis() - lastCancelTime < 5000) return false;
+			if (lastCancelTime != null && System.currentTimeMillis() - lastCancelTime < 5000)
+			{
+				return new Result(false, null);
+			}
 		}
-		synchronized (mCaptchaHolders)
+		if (specialUri == null)
 		{
-			checkHolder = mCaptchaHolders.get(chanName);
-			if (checkHolder == null)
+			boolean handle;
+			synchronized (mCaptchaHolders)
 			{
-				checkHolder = new CheckHolder(chanName);
-				mCaptchaHolders.put(chanName, checkHolder);
-				handle = true;
+				checkHolder = mCaptchaHolders.get(chanName);
+				if (checkHolder == null)
+				{
+					checkHolder = new CheckHolder(chanName);
+					mCaptchaHolders.put(chanName, checkHolder);
+					handle = true;
+				}
+				else handle = false;
 			}
-			else handle = false;
-		}
-		if (!handle)
-		{
-			try
+			if (!handle)
 			{
-				checkHolder.waitReady(true);
+				try
+				{
+					checkHolder.waitReady(true);
+				}
+				catch (InterruptedException e)
+				{
+					Thread.currentThread().interrupt();
+					return new Result(false, null);
+				}
+				return new Result(checkHolder.success, null);
 			}
-			catch (InterruptedException e)
-			{
-				Thread.currentThread().interrupt();
-				return false;
-			}
-			return checkHolder.success;
 		}
 		HttpHolder holder = new HttpHolder();
 		try
@@ -345,20 +364,29 @@ public class CloudFlarePasser implements Handler.Callback
 					{
 						mCaptchaLastCancel.put(chanName, System.currentTimeMillis());
 					}
-					return false;
+					return new Result(false, null);
 				}
-				if (Thread.currentThread().isInterrupted()) return false;
+				if (Thread.currentThread().isInterrupted()) return new Result(false, null);
 				String recaptchaResponse = captchaData.get(ChanPerformer.CaptchaData.INPUT);
 				ChanLocator locator = ChanLocator.get(chanName);
-				Uri uri = locator.buildQuery("cdn-cgi/l/chk_captcha", "g-recaptcha-response", recaptchaResponse);
-				new HttpRequest(uri, holder).setRedirectHandler(HttpRequest.RedirectHandler.NONE)
-						.setSuccessOnly(false).setCheckCloudFlare(false).read();
+				if (specialUri != null)
+				{
+					new HttpRequest(specialUri, holder).setRedirectHandler(HttpRequest.RedirectHandler.NONE)
+							.setPostMethod(new UrlEncodedEntity("g-recaptcha-response", recaptchaResponse))
+							.setSuccessOnly(false).setCheckCloudFlare(false).read();
+				}
+				else
+				{
+					Uri uri = locator.buildQuery("cdn-cgi/l/chk_captcha", "g-recaptcha-response", recaptchaResponse);
+					new HttpRequest(uri, holder).setRedirectHandler(HttpRequest.RedirectHandler.NONE)
+							.setSuccessOnly(false).setCheckCloudFlare(false).read();
+				}
 				String cookie = holder.getCookieValue(COOKIE_CLOUDFLARE);
 				if (cookie != null)
 				{
 					storeCookie(chanName, cookie, null);
-					checkHolder.success = true;
-					return true;
+					if (checkHolder != null) checkHolder.success = true;
+					return new Result(true, specialUri != null ? holder : null);
 				}
 				retry = true;
 			}
@@ -366,14 +394,17 @@ public class CloudFlarePasser implements Handler.Callback
 		finally
 		{
 			holder.cleanup();
-			synchronized (mCaptchaHolders)
+			if (checkHolder != null)
 			{
-				mCaptchaHolders.remove(chanName);
-			}
-			synchronized (checkHolder)
-			{
-				checkHolder.ready = true;
-				checkHolder.notifyAll();
+				synchronized (mCaptchaHolders)
+				{
+					mCaptchaHolders.remove(chanName);
+				}
+				synchronized (checkHolder)
+				{
+					checkHolder.ready = true;
+					checkHolder.notifyAll();
+				}
 			}
 		}
 	}
@@ -397,7 +428,7 @@ public class CloudFlarePasser implements Handler.Callback
 		}
 	}
 
-	public static boolean checkResponse(String chanName, HttpHolder holder) throws HttpException
+	public static Result checkResponse(String chanName, Uri uri, HttpHolder holder) throws HttpException
 	{
 		int responseCode = holder.getResponseCode();
 		if ((responseCode == HttpURLConnection.HTTP_FORBIDDEN || responseCode == HttpURLConnection.HTTP_UNAVAILABLE)
@@ -408,20 +439,29 @@ public class CloudFlarePasser implements Handler.Callback
 			{
 				case HttpURLConnection.HTTP_FORBIDDEN:
 				{
-					if (responseText.contains(CF_FORBIDDEN_FLAG))
+					Matcher matcher = PATTERN_FORBIDDEN.matcher(responseText);
+					if (matcher.find())
 					{
-						Matcher matcher = CF_CAPTCHA_PATTERN.matcher(responseText);
+						Uri specialUri = null;
+						if ("post".equals(matcher.group(2)))
+						{
+							specialUri = Uri.parse(matcher.group(1));
+							specialUri = specialUri.buildUpon().scheme(uri.getScheme())
+									.authority(uri.getAuthority()).build();
+						}
+						matcher = PATTERN_CAPTCHA.matcher(responseText);
 						if (matcher.find())
 						{
 							String captchaApiKey = matcher.group(1);
-							return INSTANCE.handleCaptcha(chanName, captchaApiKey);
+							return INSTANCE.handleCaptcha(chanName, specialUri, captchaApiKey);
 						}
 					}
 					break;
 				}
 				case HttpURLConnection.HTTP_UNAVAILABLE:
 				{
-					if (responseText.contains(CF_UNAVAILABLE_FLAG))
+					Matcher matcher = PATTERN_UNAVAILABLE.matcher(responseText);
+					if (matcher.find())
 					{
 						CheckHolder checkHolder = new CheckHolder(chanName);
 						INSTANCE.mHandler.obtainMessage(MESSAGE_CHECK_JAVASCRIPT, checkHolder).sendToTarget();
@@ -432,19 +472,15 @@ public class CloudFlarePasser implements Handler.Callback
 						catch (InterruptedException e)
 						{
 							Thread.currentThread().interrupt();
-							return false;
+							return new Result(false, null);
 						}
-						return checkHolder.success;
+						return new Result(checkHolder.success, null);
 					}
-					/*if (responseText.contains(CF_UNAVAILABLE_FLAG))
-					{
-						return INSTANCE.handleCaptcha(chanName, "6LeT6gcAAAAAAAZ_yDmTMqPH57dJQZdQcu6VFqog");
-					}*/
 					break;
 				}
 			}
 		}
-		return false;
+		return new Result(false, null);
 	}
 
 	private static void storeCookie(String chanName, String cookie, String uriString)

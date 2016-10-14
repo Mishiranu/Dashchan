@@ -430,8 +430,27 @@ public class HttpClient
 				output.close();
 				holder.checkDisconnected();
 			}
-
 			int responseCode = connection.getResponseCode();
+
+			if (chanName != null && request.mCheckCloudFlare)
+			{
+				CloudFlarePasser.Result result = CloudFlarePasser.checkResponse(chanName, requestedUri, holder);
+				if (result.success)
+				{
+					// TODO Handle possible connection replacement
+					if (holder.nextAttempt())
+					{
+						executeInternal(request);
+						return;
+					}
+					else
+					{
+						holder.disconnectAndClear();
+						throw new HttpException(responseCode, holder.getResponseMessage());
+					}
+				}
+			}
+
 			HttpRequest.RedirectHandler redirectHandler = request.mRedirectHandler;
 			switch (responseCode)
 			{
@@ -508,19 +527,6 @@ public class HttpClient
 							throw new HttpException(responseCode, holder.getResponseMessage());
 						}
 					}
-				}
-			}
-			if (chanName != null && request.mCheckCloudFlare && CloudFlarePasser.checkResponse(chanName, holder))
-			{
-				if (holder.nextAttempt())
-				{
-					executeInternal(request);
-					return;
-				}
-				else
-				{
-					holder.disconnectAndClear();
-					throw new HttpException(responseCode, holder.getResponseMessage());
 				}
 			}
 
