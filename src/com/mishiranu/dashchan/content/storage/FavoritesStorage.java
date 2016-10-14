@@ -34,6 +34,7 @@ import com.mishiranu.dashchan.util.WeakObservable;
 
 public class FavoritesStorage extends StorageManager.Storage
 {
+	private static final String KEY_DATA = "data";
 	private static final String KEY_CHAN_NAME = "chanName";
 	private static final String KEY_BOARD_NAME = "boardName";
 	private static final String KEY_THREAD_NUMBER = "threadNumber";
@@ -61,7 +62,7 @@ public class FavoritesStorage extends StorageManager.Storage
 		JSONObject jsonObject = read();
 		if (jsonObject != null)
 		{
-			JSONArray jsonArray = jsonObject.optJSONArray("data");
+			JSONArray jsonArray = jsonObject.optJSONArray(KEY_DATA);
 			if (jsonArray != null)
 			{
 				for (int i = 0; i < jsonArray.length(); i++)
@@ -133,7 +134,7 @@ public class FavoritesStorage extends StorageManager.Storage
 				jsonArray.put(jsonObject);
 			}
 			JSONObject jsonObject = new JSONObject();
-			jsonObject.put("data", jsonArray);
+			jsonObject.put(KEY_DATA, jsonArray);
 			return jsonObject;
 		}
 		return null;
