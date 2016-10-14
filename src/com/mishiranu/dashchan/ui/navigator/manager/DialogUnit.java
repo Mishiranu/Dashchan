@@ -300,11 +300,11 @@ public class DialogUnit implements DialogStack.Callback
 		}
 	}
 
-	private class SingleDialogPostsProvider extends DialogProvider
+	private class SingleDialogProvider extends DialogProvider
 	{
 		private final PostItem mPostItem;
 
-		public SingleDialogPostsProvider(PostItem postItem, UiManager.ConfigurationSet configurationSet)
+		public SingleDialogProvider(PostItem postItem, UiManager.ConfigurationSet configurationSet)
 		{
 			super(configurationSet.copyEdit(false, true, null));
 			mPostItem = postItem;
@@ -317,10 +317,10 @@ public class DialogUnit implements DialogStack.Callback
 		}
 	}
 
-	private static class ThreadDialogPostsProviderRedirector implements CommentTextView.LinkListener,
+	private static class ThreadDialogProviderRedirector implements CommentTextView.LinkListener,
 			UiManager.PostsProvider
 	{
-		public ThreadDialogPostsProvider provider;
+		public ThreadDialogProvider provider;
 
 		@Override
 		public Iterator<PostItem> iterator()
@@ -362,12 +362,12 @@ public class DialogUnit implements DialogStack.Callback
 		return null;
 	}
 
-	private class ThreadDialogPostsProvider extends DialogProvider implements CommentTextView.LinkListener,
+	private class ThreadDialogProvider extends DialogProvider implements CommentTextView.LinkListener,
 			UiManager.PostsProvider
 	{
 		private final ArrayList<PostItem> mPostItems = new ArrayList<>();
 
-		public ThreadDialogPostsProvider(PostItem postItem, ThreadDialogPostsProviderRedirector redirector)
+		public ThreadDialogProvider(PostItem postItem, ThreadDialogProviderRedirector redirector)
 		{
 			super(new UiManager.ConfigurationSet(createThreadReplyable(postItem), redirector, new HidePerformer(),
 					new GalleryItem.GallerySet(false), redirector, null, false, true, false, false, null));
@@ -461,12 +461,12 @@ public class DialogUnit implements DialogStack.Callback
 		}
 	}
 
-	private class RepliesDialogPostsProvider extends DialogProvider
+	private class RepliesDialogProvider extends DialogProvider
 	{
 		private final PostItem mPostItem;
 		private final ArrayList<PostItem> mPostItems = new ArrayList<>();
 
-		public RepliesDialogPostsProvider(PostItem postItem, UiManager.ConfigurationSet configurationSet,
+		public RepliesDialogProvider(PostItem postItem, UiManager.ConfigurationSet configurationSet,
 				String repliesToPost)
 		{
 			super(configurationSet.copyEdit(false, true, repliesToPost));
@@ -496,7 +496,37 @@ public class DialogUnit implements DialogStack.Callback
 		}
 	}
 
-	private class AsyncDialogPostsProvider extends DialogProvider implements ReadSinglePostTask.Callback
+	private class ListDialogProvider extends DialogProvider
+	{
+		private final HashSet<String> mPostNumbers;
+		private final ArrayList<PostItem> mPostItems = new ArrayList<>();
+
+		public ListDialogProvider(Collection<String> postNumbers, UiManager.ConfigurationSet configurationSet)
+		{
+			super(configurationSet.copyEdit(false, true, null));
+			mPostNumbers = new HashSet<>(postNumbers);
+			onRequestUpdate();
+		}
+
+		@Override
+		public Iterator<PostItem> iterator()
+		{
+			return mPostItems.iterator();
+		}
+
+		@Override
+		public void onRequestUpdate()
+		{
+			super.onRequestUpdate();
+			mPostItems.clear();
+			for (PostItem postItem : configurationSet.postsProvider)
+			{
+				if (mPostNumbers.contains(postItem.getPostNumber())) mPostItems.add(postItem);
+			}
+		}
+	}
+
+	private class AsyncDialogProvider extends DialogProvider implements ReadSinglePostTask.Callback
 	{
 		private final String mChanName;
 		private final String mBoardName;
@@ -506,7 +536,7 @@ public class DialogUnit implements DialogStack.Callback
 		private ReadSinglePostTask mReadTask;
 		private PostItem mPostItem;
 
-		public AsyncDialogPostsProvider(String chanName, String boardName, String threadNumber, String postNumber)
+		public AsyncDialogProvider(String chanName, String boardName, String threadNumber, String postNumber)
 		{
 			super(new UiManager.ConfigurationSet(null, null, new HidePerformer(),
 					new GalleryItem.GallerySet(false), null, null, false, true, false, false, null));
@@ -611,22 +641,27 @@ public class DialogUnit implements DialogStack.Callback
 
 	public void displaySingle(PostItem postItem, UiManager.ConfigurationSet configurationSet)
 	{
-		display(new SingleDialogPostsProvider(postItem, configurationSet));
+		display(new SingleDialogProvider(postItem, configurationSet));
 	}
 
 	public void displayThread(PostItem postItem)
 	{
-		display(new ThreadDialogPostsProvider(postItem, new ThreadDialogPostsProviderRedirector()));
+		display(new ThreadDialogProvider(postItem, new ThreadDialogProviderRedirector()));
 	}
 
 	public void displayReplies(PostItem postItem, UiManager.ConfigurationSet configurationSet)
 	{
-		display(new RepliesDialogPostsProvider(postItem, configurationSet, postItem.getPostNumber()));
+		display(new RepliesDialogProvider(postItem, configurationSet, postItem.getPostNumber()));
+	}
+
+	public void displayList(Collection<String> postNumbers, UiManager.ConfigurationSet configurationSet)
+	{
+		display(new ListDialogProvider(postNumbers, configurationSet));
 	}
 
 	public void displayReplyAsync(String chanName, String boardName, String threadNumber, String postNumber)
 	{
-		display(new AsyncDialogPostsProvider(chanName, boardName, threadNumber, postNumber));
+		display(new AsyncDialogProvider(chanName, boardName, threadNumber, postNumber));
 	}
 
 	private void display(DialogProvider dialogProvider)

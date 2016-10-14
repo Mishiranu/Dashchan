@@ -42,10 +42,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
@@ -100,7 +100,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 	private ActionMode mSelectionMode;
 
 	private LinearLayout mSearchController;
-	private TextView mSearchTextResult;
+	private Button mSearchTextResult;
 	private final ArrayList<Integer> mSearchFoundPosts = new ArrayList<>();
 	private boolean mSearching = false;
 	private int mSearchLastPosition;
@@ -142,11 +142,8 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		ChanConfiguration.Board board = getChanConfiguration().safe().obtainBoard(pageHolder.boardName);
 		if (board.allowPosting)
 		{
-			mReplyable = (data) ->
-			{
-				getUiManager().navigator().navigatePosting(pageHolder.chanName, pageHolder.boardName,
-						pageHolder.threadNumber, data);
-			};
+			mReplyable = data -> getUiManager().navigator().navigatePosting(pageHolder.chanName, pageHolder.boardName,
+					pageHolder.threadNumber, data);
 		}
 		PostsAdapter adapter = new PostsAdapter(activity, pageHolder.chanName, pageHolder.boardName, uiManager,
 				mReplyable, mHidePerformer, extra.userPostNumbers, listView);
@@ -160,10 +157,13 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		mSearchController.setGravity(Gravity.CENTER_VERTICAL);
 		float density = ResourceUtils.obtainDensity(getResources());
 		int padding = (int) (10f * density);
-		mSearchTextResult = new TextView(darkStyledContext, null, android.R.attr.textAppearanceLarge);
+		mSearchTextResult = new Button(darkStyledContext, null, android.R.attr.borderlessButtonStyle);
 		mSearchTextResult.setTextSize(11f);
-		mSearchTextResult.setTypeface(null, Typeface.BOLD);
-		mSearchTextResult.setPadding((int) (4f * density), 0, (int) (4f * density), 0);
+		if (!C.API_LOLLIPOP) mSearchTextResult.setTypeface(null, Typeface.BOLD);
+		mSearchTextResult.setPadding((int) (14f * density), 0, (int) (14f * density), 0);
+		mSearchTextResult.setMinimumWidth(0);
+		mSearchTextResult.setMinWidth(0);
+		mSearchTextResult.setOnClickListener(v -> showSearchDialog());
 		mSearchController.addView(mSearchTextResult, LinearLayout.LayoutParams.WRAP_CONTENT,
 				LinearLayout.LayoutParams.WRAP_CONTENT);
 		ImageView backButtonView = new ImageView(darkStyledContext, null, android.R.attr.borderlessButtonStyle);
@@ -172,18 +172,20 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		backButtonView.setPadding(padding, padding, padding, padding);
 		backButtonView.setOnClickListener(v -> findBack());
 		mSearchController.addView(backButtonView, (int) (48f * density), (int) (48f * density));
-		if (C.API_LOLLIPOP)
-		{
-			LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) backButtonView.getLayoutParams();
-			layoutParams.leftMargin = (int) (2f * density);
-			layoutParams.rightMargin = -(int) (8f * density);
-		}
 		ImageView forwardButtonView = new ImageView(darkStyledContext, null, android.R.attr.borderlessButtonStyle);
 		forwardButtonView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
 		forwardButtonView.setImageResource(obtainIcon(R.attr.actionForward));
 		forwardButtonView.setPadding(padding, padding, padding, padding);
 		forwardButtonView.setOnClickListener(v -> findForward());
 		mSearchController.addView(forwardButtonView, (int) (48f * density), (int) (48f * density));
+		if (C.API_LOLLIPOP)
+		{
+			for (int i = 0; i < mSearchController.getChildCount() - 1; i++)
+			{
+				View view = mSearchController.getChildAt(i);
+				((LinearLayout.LayoutParams) view.getLayoutParams()).rightMargin = (int) (-6f * density);
+			}
+		}
 
 		mScrollToPostNumber = pageHolder.initialPostNumber;
 		FavoritesStorage.getInstance().getObservable().register(this);
@@ -381,7 +383,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				if (child != null)
 				{
 					UiManager uiManager = getUiManager();
-					ArrayList<GalleryItem> galleryItems = getAdapter().getGallerySet().getItems();
+					ArrayList<GalleryItem> galleryItems = getAdapter().getConfigurationSet().gallerySet.getItems();
 					int position = listView.getPositionForView(child);
 					OUTER: for (int v = 0; v <= 1; v++)
 					{
@@ -393,7 +395,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 					}
 				}
 				NavigationUtils.openGallery(getActivity(), null, pageHolder.chanName, imageIndex,
-						adapter.getGallerySet(), true, true);
+						adapter.getConfigurationSet().gallerySet, true, true);
 				return true;
 			}
 			case OPTIONS_MENU_SELECT:
@@ -679,8 +681,9 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				if (postItems.size() > 0)
 				{
 					PageHolder pageHolder = getPageHolder();
+					String threadTitle = getAdapter().getConfigurationSet().gallerySet.getThreadTitle();
 					new ThreadshotPerformer(getListView(), getUiManager(), pageHolder.chanName, pageHolder.boardName,
-							pageHolder.threadNumber, getAdapter().getGallerySet().getThreadTitle(), postItems);
+							pageHolder.threadNumber, threadTitle, postItems);
 				}
 				mode.finish();
 				return true;
@@ -890,6 +893,21 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 			return true;
 		}
 		else return false;
+	}
+
+	private void showSearchDialog()
+	{
+		if (!mSearchFoundPosts.isEmpty())
+		{
+			PostsAdapter adapter = getAdapter();
+			HashSet<String> postNumbers = new HashSet<>();
+			for (Integer position : mSearchFoundPosts)
+			{
+				PostItem postItem = adapter.getItem(position);
+				postNumbers.add(postItem.getPostNumber());
+			}
+			getUiManager().dialog().displayList(postNumbers, adapter.getConfigurationSet());
+		}
 	}
 
 	private void findBack()
