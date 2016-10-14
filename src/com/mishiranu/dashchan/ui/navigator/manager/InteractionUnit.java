@@ -134,8 +134,8 @@ public class InteractionUnit
 	}
 
 	private static final int LINK_MENU_COPY = 0;
-	private static final int LINK_MENU_INTERNAL_BROWSER = 1;
-	private static final int LINK_MENU_EXTERNAL_BROWSER = 2;
+	private static final int LINK_MENU_SHARE = 1;
+	private static final int LINK_MENU_BROWSER = 2;
 	private static final int LINK_MENU_DOWNLOAD_FILE = 3;
 	private static final int LINK_MENU_OPEN_THREAD = 4;
 
@@ -172,16 +172,15 @@ public class InteractionUnit
 					StringUtils.copyToClipboard(context, uri.toString());
 					break;
 				}
-				case LINK_MENU_INTERNAL_BROWSER:
+				case LINK_MENU_SHARE:
+				{
+					NavigationUtils.share(mUiManager.getContext(), uri);
+					break;
+				}
+				case LINK_MENU_BROWSER:
 				{
 					NavigationUtils.handleUri(mUiManager.getContext(), finalChanName, uri,
 							NavigationUtils.BrowserType.INTERNAL);
-					break;
-				}
-				case LINK_MENU_EXTERNAL_BROWSER:
-				{
-					NavigationUtils.handleUri(mUiManager.getContext(), finalChanName, uri,
-							NavigationUtils.BrowserType.EXTERNAL);
 					break;
 				}
 				case LINK_MENU_DOWNLOAD_FILE:
@@ -199,12 +198,12 @@ public class InteractionUnit
 			}
 		});
 		dialogMenu.addItem(LINK_MENU_COPY, R.string.action_copy_link);
+		dialogMenu.addItem(LINK_MENU_SHARE, R.string.action_share_link);
 		if (Preferences.isUseInternalBrowser() && (locator == null || !locator.safe(false).isBoardUri(uri)
 				&& !locator.safe(false).isThreadUri(uri) && !locator.safe(false).isAttachmentUri(uri)
 				&& locator.safe(false).handleUriClickSpecial(uri) == null))
 		{
-			dialogMenu.addItem(LINK_MENU_INTERNAL_BROWSER, R.string.action_internal_browser);
-			dialogMenu.addItem(LINK_MENU_EXTERNAL_BROWSER, R.string.action_external_browser);
+			dialogMenu.addItem(LINK_MENU_BROWSER, R.string.action_browser);
 		}
 		if (isAttachment) dialogMenu.addItem(LINK_MENU_DOWNLOAD_FILE, R.string.action_download_file);
 		if (threadNumber != null) dialogMenu.addItem(LINK_MENU_OPEN_THREAD, R.string.action_open_thread);
@@ -369,7 +368,7 @@ public class InteractionUnit
 				}
 				case MENU_SHARE_LINK:
 				{
-					NavigationUtils.share(context, fileUri.toString());
+					NavigationUtils.share(context, fileUri);
 					break;
 				}
 			}
@@ -478,14 +477,42 @@ public class InteractionUnit
 							break;
 						}
 						case MENU_COPY_LINK:
+						case MENU_SHARE_LINK:
+						case MENU_SHARE_TEXT:
 						{
 							ChanLocator locator = ChanLocator.get(postItem.getChanName());
 							String boardName = postItem.getBoardName();
 							String threadNumber = postItem.getThreadNumber();
-							Uri uri = postItem.getParentPostNumber() == null ? locator.safe(true)
-									.createThreadUri(boardName, threadNumber) : locator.safe(true)
-									.createPostUri(boardName, threadNumber, postItem.getPostNumber());
-							if (uri != null) StringUtils.copyToClipboard(context, uri.toString());
+							String postNumber = postItem.getPostNumber();
+							Uri uri = postItem.getParentPostNumber() == null
+									? locator.safe(true).createThreadUri(boardName, threadNumber)
+									: locator.safe(true).createPostUri(boardName, threadNumber, postNumber);
+							if (uri != null)
+							{
+								switch (id)
+								{
+									case MENU_COPY_LINK:
+									{
+										StringUtils.copyToClipboard(context, uri.toString());
+										break;
+									}
+									case MENU_SHARE_LINK:
+									{
+										String subject = postItem.getSubjectOrComment();
+										if (StringUtils.isEmptyOrWhitespace(subject)) subject = uri.toString();
+										NavigationUtils.share(context, subject, null, uri);
+										break;
+									}
+									case MENU_SHARE_TEXT:
+									{
+										String subject = postItem.getSubjectOrComment();
+										if (StringUtils.isEmptyOrWhitespace(subject)) subject = uri.toString();
+										NavigationUtils.share(context, subject,
+												getCopyReadyComment(postItem.getComment()), uri);
+										break;
+									}
+								}
+							}
 							break;
 						}
 						case MENU_SHARE:
@@ -499,20 +526,6 @@ public class InteractionUnit
 						case MENU_ADD_REMOVE_MY_MARK:
 						{
 							mUiManager.sendPostItemMessage(postItem, UiManager.MESSAGE_PERFORM_SWITCH_USER_MARK);
-							break;
-						}
-						case MENU_SHARE_LINK:
-						{
-							NavigationUtils.share(context, postItem.getChanName(), postItem.getBoardName(),
-									postItem.getThreadNumber(), postItem.getPostNumber(),
-									postItem.getSubjectOrComment(), null);
-							break;
-						}
-						case MENU_SHARE_TEXT:
-						{
-							NavigationUtils.share(context, postItem.getChanName(), postItem.getBoardName(),
-									postItem.getThreadNumber(), postItem.getPostNumber(),
-									postItem.getSubjectOrComment(), getCopyReadyComment(postItem.getComment()));
 							break;
 						}
 						case MENU_REPORT:

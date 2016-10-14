@@ -38,8 +38,14 @@ public class UriHandlerActivity extends Activity
 		super.onCreate(savedInstanceState);
 		boolean success = false;
 		Uri uri = getIntent().getData();
-		if (uri != null)
+		CONDITION: if (uri != null)
 		{
+			if (getIntent().getBooleanExtra(C.EXTRA_EXTERNAL_BROWSER, false))
+			{
+				NavigationUtils.handleUri(this, null, uri, NavigationUtils.BrowserType.EXTERNAL);
+				success = true;
+				break CONDITION;
+			}
 			String chanName = ChanManager.getInstance().getChanNameByHost(uri.getAuthority());
 			if (chanName != null)
 			{

@@ -79,6 +79,7 @@ import com.mishiranu.dashchan.util.DialogMenu;
 import com.mishiranu.dashchan.util.FlagUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.ListViewUtils;
+import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.widget.EdgeEffectHandler;
@@ -451,9 +452,10 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 	}
 
 	private static final int MENU_COPY_LINK = 0;
-	private static final int MENU_ADD_TO_FAVORITES = 1;
-	private static final int MENU_REMOVE_FROM_FAVORITES = 2;
-	private static final int MENU_RENAME = 3;
+	private static final int MENU_SHARE_LINK = 1;
+	private static final int MENU_ADD_TO_FAVORITES = 2;
+	private static final int MENU_REMOVE_FROM_FAVORITES = 3;
+	private static final int MENU_RENAME = 4;
 
 	@Override
 	public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id)
@@ -510,12 +512,30 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 							switch (id)
 							{
 								case MENU_COPY_LINK:
+								case MENU_SHARE_LINK:
 								{
 									ChanLocator locator = ChanLocator.get(listItem.chanName);
 									Uri uri = listItem.isThreadItem() ? locator.safe(true).createThreadUri
 											(listItem.boardName, listItem.threadNumber)
 											: locator.safe(true).createBoardUri(listItem.boardName, 0);
-									if (uri != null) StringUtils.copyToClipboard(mContext, uri.toString());
+									if (uri != null)
+									{
+										switch (id)
+										{
+											case MENU_COPY_LINK:
+											{
+												StringUtils.copyToClipboard(mContext, uri.toString());
+												break;
+											}
+											case MENU_SHARE_LINK:
+											{
+												String subject = listItem.title;
+												if (StringUtils.isEmptyOrWhitespace(subject)) subject = uri.toString();
+												NavigationUtils.share(context, subject, null, uri);
+												break;
+											}
+										}
+									}
 									break;
 								}
 								case MENU_ADD_TO_FAVORITES:
@@ -568,6 +588,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 						}
 					});
 					dialogMenu.addItem(MENU_COPY_LINK, R.string.action_copy_link);
+					if (listItem.isThreadItem()) dialogMenu.addItem(MENU_SHARE_LINK, R.string.action_share_link);
 					if (listItem.type != ListItem.ITEM_FAVORITE && !FavoritesStorage.getInstance()
 							.hasFavorite(listItem.chanName, listItem.boardName, listItem.threadNumber))
 					{
