@@ -105,7 +105,6 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 	private static final int OPTIONS_MENU_RELOAD = 0;
 	private static final int OPTIONS_MENU_COPY_LINK = 1;
 	private static final int OPTIONS_MENU_SHARE_LINK = 2;
-	private static final int OPTIONS_MENU_BROWSER = 3;
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu)
@@ -115,7 +114,6 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 		menu.add(0, OPTIONS_MENU_COPY_LINK, 0, R.string.action_copy_link);
 		menu.add(0, OPTIONS_MENU_SHARE_LINK, 0, R.string.action_share_link);
-		menu.add(0, OPTIONS_MENU_BROWSER, 0, R.string.action_browser);
 		return super.onCreateOptionsMenu(menu);
 	}
 
@@ -141,15 +139,7 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 			}
 			case OPTIONS_MENU_SHARE_LINK:
 			{
-				Intent intent = new Intent(Intent.ACTION_SEND).setType("text/plain");
-				intent.putExtra(Intent.EXTRA_TEXT, mWebView.getUrl());
-				startActivity(Intent.createChooser(intent, null));
-				break;
-			}
-			case OPTIONS_MENU_BROWSER:
-			{
-				NavigationUtils.handleUri(this, null, Uri.parse(mWebView.getUrl()),
-						NavigationUtils.BrowserType.EXTERNAL);
+				NavigationUtils.share(this, Uri.parse(mWebView.getUrl()));
 				break;
 			}
 		}
@@ -210,6 +200,7 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 
 	private class CustomWebViewClient extends WebViewClient
 	{
+		@SuppressWarnings("deprecation")
 		@Override
 		public boolean shouldOverrideUrlLoading(WebView view, String url)
 		{

@@ -211,7 +211,6 @@
 	<string name="action_download_files">Загрузить файлы</string>
 	<string name="action_expand">Развернуть</string>
 	<string name="action_expanded_screen">Расшир. экран</string>
-	<string name="action_external_browser">Внешний браузер</string>
 	<string name="action_files_only">Только файлы</string>
 	<string name="action_filter">Фильтр</string>
 	<string name="action_gallery">Галерея</string>
@@ -226,7 +225,6 @@
 	<string name="action_hide_replies">Дерево ответов</string>
 	<string name="action_hide_similar">Похожие сообщения</string>
 	<string name="action_history">История</string>
-	<string name="action_internal_browser">Внутренний браузер</string>
 	<string name="action_load_captcha">Нажмите, чтобы загрузить капчу</string>
 	<string name="action_lock_drawer">Фиксир. меню</string>
 	<string name="action_make_home_page">Сделать домашней</string>

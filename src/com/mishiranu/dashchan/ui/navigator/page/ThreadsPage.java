@@ -34,6 +34,7 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 
 import chan.content.ChanConfiguration;
+import chan.content.ChanLocator;
 import chan.content.ChanPerformer;
 import chan.http.HttpValidator;
 import chan.util.StringUtils;
@@ -344,8 +345,11 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 				case CONTEXT_MENU_SHARE_LINK:
 				{
 					Context context = getActivity();
-					NavigationUtils.share(context, pageHolder.chanName, pageHolder.boardName,
-							postItem.getThreadNumber(), null, postItem.getSubjectOrComment(), null);
+					Uri uri = ChanLocator.get(pageHolder.chanName).safe(true)
+							.createThreadUri(pageHolder.boardName, postItem.getThreadNumber());
+					String subject = postItem.getSubjectOrComment();
+					if (StringUtils.isEmptyOrWhitespace(subject)) subject = uri.toString();
+					NavigationUtils.share(context, subject, null, uri);
 					return true;
 				}
 				case CONTEXT_MENU_HIDE:

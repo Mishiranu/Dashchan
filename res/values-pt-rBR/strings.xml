@@ -180,7 +180,6 @@
 	<string name="action_download_files">Baixar arquivos</string>
 	<string name="action_expand">Expandir</string>
 	<string name="action_expanded_screen">Área expandida</string>
-	<string name="action_external_browser">Navegador externo</string>
 	<string name="action_files_only">Somente arquivos</string>
 	<string name="action_filter">Filtro</string>
 	<string name="action_gallery">Galeria</string>
@@ -195,7 +194,6 @@
 	<string name="action_hide_replies">Árvore de respostas</string>
 	<string name="action_hide_similar">Posts similares</string>
 	<string name="action_history">Histórico</string>
-	<string name="action_internal_browser">Navegador interno</string>
 	<string name="action_load_captcha">Toque para carregar o captcha</string>
 	<string name="action_lock_drawer">Trancar drawer</string>
 	<string name="action_make_home_page">Fazer como página inicial</string>

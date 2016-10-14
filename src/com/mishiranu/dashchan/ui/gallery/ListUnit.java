@@ -216,7 +216,7 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 				}
 				case MENU_SHARE_LINK:
 				{
-					NavigationUtils.share(mInstance.context, galleryItem.getFileUri(mInstance.locator).toString());
+					NavigationUtils.share(mInstance.context, galleryItem.getFileUri(mInstance.locator));
 					break;
 				}
 			}

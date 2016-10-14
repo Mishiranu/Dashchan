@@ -36,6 +36,7 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.LabeledIntent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
@@ -52,6 +53,7 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
+import com.mishiranu.dashchan.content.UriHandlerActivity;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.net.CloudFlarePasser;
 import com.mishiranu.dashchan.content.service.AudioPlayerService;
@@ -432,30 +434,26 @@ public class NavigationUtils
 		.show();
 	}
 
-	public static void share(Context context, String uriString)
+	public static void share(Context context, String subject, String text, Uri uri)
 	{
 		Intent intent = new Intent(Intent.ACTION_SEND);
 		intent.setType("text/plain");
-		intent.putExtra(Intent.EXTRA_SUBJECT, uriString);
-		intent.putExtra(Intent.EXTRA_TEXT, uriString);
-		context.startActivity(Intent.createChooser(intent, null));
+		intent.putExtra(Intent.EXTRA_SUBJECT, subject);
+		intent.putExtra(Intent.EXTRA_TEXT, text);
+		intent = Intent.createChooser(intent, null);
+		if (uri != null)
+		{
+			LabeledIntent viewIntent = new LabeledIntent(new Intent(context, UriHandlerActivity.class)
+					.setAction(Intent.ACTION_VIEW).setData(uri).putExtra(C.EXTRA_EXTERNAL_BROWSER, true),
+					context.getPackageName(), R.string.action_browser, android.R.mipmap.sym_def_app_icon);
+			intent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] {viewIntent});
+		}
+		context.startActivity(intent);
 	}
 
-	public static void share(Context context, String chanName, String boardName, String threadNumber,
-			String postNumber, String subjectOrComment, CharSequence comment)
+	public static void share(Context context, Uri uri)
 	{
-		Intent intent = new Intent(Intent.ACTION_SEND).setType("text/plain");
-		StringBuilder message = new StringBuilder();
-		ChanLocator locator = ChanLocator.get(chanName);
-		boolean isPost = postNumber != null && !postNumber.equals(threadNumber);
-		Uri uri = isPost ? locator.safe(true).createPostUri(boardName, threadNumber, postNumber)
-				: locator.safe(true).createThreadUri(boardName, threadNumber);
-		if (uri == null) return;
-		message.append(uri.toString());
-		if (!StringUtils.isEmpty(comment)) message.append("\n\n").append(comment.toString());
-		intent.putExtra(Intent.EXTRA_TEXT, message.toString());
-		if (!StringUtils.isEmpty(subjectOrComment)) intent.putExtra(Intent.EXTRA_SUBJECT, subjectOrComment);
-		context.startActivity(Intent.createChooser(intent, null));
+		share(context, uri.toString(), uri.toString(), uri);
 	}
 
 	public static void shareFile(Context context, File file, String fileName)

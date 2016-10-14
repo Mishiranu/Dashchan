@@ -83,6 +83,7 @@ public class C
 	public static final String EXTRA_ANIMATED_TRANSITION = "com.mishiranu.dashchan.extra.ANIMATED_TRANSITION";
 	public static final String EXTRA_BOARD_NAME = "com.mishiranu.dashchan.extra.BOARD_NAME";
 	public static final String EXTRA_CHAN_NAME = "com.mishiranu.dashchan.extra.CHAN_NAME";
+	public static final String EXTRA_EXTERNAL_BROWSER = "com.mishiranu.dashchan.extra.EXTERNAL_BROWSER";
 	public static final String EXTRA_FAIL_RESULT = "com.mishiranu.dashchan.extra.FAIL_RESULT";
 	public static final String EXTRA_FROM_CACHE = "com.mishiranu.dashchan.extra.FROM_CACHE";
 	public static final String EXTRA_FROM_CLIENT = "com.mishiranu.dashchan.extra.FROM_CLIENT";

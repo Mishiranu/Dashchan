@@ -194,7 +194,6 @@
 	<string name="action_download_files">Download files</string>
 	<string name="action_expand">Expand</string>
 	<string name="action_expanded_screen">Expanded screen</string>
-	<string name="action_external_browser">External browser</string>
 	<string name="action_files_only">Files only</string>
 	<string name="action_filter">Filter</string>
 	<string name="action_gallery">Gallery</string>
@@ -209,7 +208,6 @@
 	<string name="action_hide_replies">Replies tree</string>
 	<string name="action_hide_similar">Similar posts</string>
 	<string name="action_history">History</string>
-	<string name="action_internal_browser">Internal browser</string>
 	<string name="action_load_captcha">Click to load captcha</string>
 	<string name="action_lock_drawer">Lock drawer</string>
 	<string name="action_make_home_page">Make home page</string>

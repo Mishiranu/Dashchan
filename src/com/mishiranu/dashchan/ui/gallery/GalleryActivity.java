@@ -265,10 +265,9 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 	private static final int OPTIONS_MENU_SEARCH_IMAGE = 4;
 	private static final int OPTIONS_MENU_COPY_LINK = 5;
 	private static final int OPTIONS_MENU_NAVIGATE_POST = 6;
-	private static final int OPTIONS_MENU_EXTERNAL_BROWSER = 7;
-	private static final int OPTIONS_MENU_SHARE_LINK = 8;
-	private static final int OPTIONS_MENU_SHARE_FILE = 9;
-	private static final int OPTIONS_MENU_SELECT = 10;
+	private static final int OPTIONS_MENU_SHARE_LINK = 7;
+	private static final int OPTIONS_MENU_SHARE_FILE = 8;
+	private static final int OPTIONS_MENU_SELECT = 9;
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu)
@@ -283,7 +282,6 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		menu.add(0, OPTIONS_MENU_SEARCH_IMAGE, 0, R.string.action_search_image);
 		menu.add(0, OPTIONS_MENU_COPY_LINK, 0, R.string.action_copy_link);
 		menu.add(0, OPTIONS_MENU_NAVIGATE_POST, 0, R.string.action_go_to_post);
-		menu.add(0, OPTIONS_MENU_EXTERNAL_BROWSER, 0, R.string.action_external_browser);
 		menu.add(0, OPTIONS_MENU_SHARE_LINK, 0, R.string.action_share_link);
 		menu.add(0, OPTIONS_MENU_SHARE_FILE, 0, R.string.action_share_file);
 		menu.add(0, OPTIONS_MENU_SELECT, 0, R.string.action_select).setIcon(set.getId(R.attr.actionSelect))
@@ -310,7 +308,6 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 				menu.findItem(OPTIONS_MENU_COPY_LINK).setVisible(true);
 				menu.findItem(OPTIONS_MENU_NAVIGATE_POST).setVisible(mAllowGoToPost && !mScrollThread
 						&& capabilities.navigatePost);
-				menu.findItem(OPTIONS_MENU_EXTERNAL_BROWSER).setVisible(true);
 				menu.findItem(OPTIONS_MENU_SHARE_LINK).setVisible(true);
 				menu.findItem(OPTIONS_MENU_SHARE_FILE).setVisible(capabilities.shareFile);
 			}
@@ -370,17 +367,10 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 				navigatePost(galleryItem, true);
 				break;
 			}
-			case OPTIONS_MENU_EXTERNAL_BROWSER:
-			{
-				mPagerUnit.forcePauseVideo();
-				NavigationUtils.handleUri(this, mInstance.chanName, galleryItem.getFileUri(mInstance.locator),
-						NavigationUtils.BrowserType.EXTERNAL);
-				break;
-			}
 			case OPTIONS_MENU_SHARE_LINK:
 			{
 				mPagerUnit.forcePauseVideo();
-				NavigationUtils.share(this, galleryItem.getFileUri(mInstance.locator).toString());
+				NavigationUtils.share(this, galleryItem.getFileUri(mInstance.locator));
 				break;
 			}
 			case OPTIONS_MENU_SHARE_FILE:
