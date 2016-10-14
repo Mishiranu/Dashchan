@@ -68,6 +68,7 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 		super.onCreate(savedInstanceState);
 		setTitle(R.string.action_browser);
 		getActionBar().setDisplayHomeAsUpEnabled(true);
+		ViewUtils.applyToolbarStyle(this, null);
 		WebView webView = new WebView(this);
 		mWebView = webView;
 		WebSettings settings = webView.getSettings();
@@ -174,7 +175,7 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 	public void onConfigurationChanged(Configuration newConfig)
 	{
 		super.onConfigurationChanged(newConfig);
-		ViewUtils.fixActionBar(this, null);
+		ViewUtils.applyToolbarStyle(this, null);
 	}
 
 	@Override

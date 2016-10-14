@@ -41,6 +41,7 @@ import com.mishiranu.dashchan.preference.fragment.UpdateFragment;
 import com.mishiranu.dashchan.ui.ForegroundManager;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
+import com.mishiranu.dashchan.util.ViewUtils;
 
 public class PreferencesActivity extends PreferenceActivity
 {
@@ -54,6 +55,7 @@ public class PreferencesActivity extends PreferenceActivity
 		if (hasChans && root) setTitle(R.string.action_preferences);
 		if (hasChans || !root) getActionBar().setDisplayHomeAsUpEnabled(true);
 		if (!hasChans && root && savedInstanceState == null) ToastUtils.show(this, R.string.message_no_extensions);
+		ViewUtils.applyToolbarStyle(this, null);
 	}
 
 	@Override

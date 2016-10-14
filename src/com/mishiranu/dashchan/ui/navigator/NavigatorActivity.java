@@ -211,6 +211,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		mDrawerLayout.addDrawerListener(mDrawerToggle);
 		mDrawerLayout.addDrawerListener(mDrawerForm);
 		if (mToolbarView == null) mDrawerLayout.addDrawerListener(new ExpandedScreenDrawerLocker());
+		ViewUtils.applyToolbarStyle(this, mToolbarView);
 		if (Preferences.isActiveScrollbar())
 		{
 			mListView.setFastScrollEnabled(true);
@@ -645,7 +646,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	public void onConfigurationChanged(Configuration newConfig)
 	{
 		super.onConfigurationChanged(newConfig);
-		ViewUtils.fixActionBar(this, mToolbarView);
+		ViewUtils.applyToolbarStyle(this, mToolbarView);
 		mDrawerToggle.onConfigurationChanged();
 		updateWideConfiguration(false);
 		mExpandedScreen.onConfigurationChanged(newConfig);

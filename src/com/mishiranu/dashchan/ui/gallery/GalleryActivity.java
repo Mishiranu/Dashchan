@@ -118,6 +118,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		super.onCreate(savedInstanceState);
 		setVolumeControlStream(AudioManager.STREAM_MUSIC);
 		getActionBar().setDisplayHomeAsUpEnabled(true);
+		ViewUtils.applyToolbarStyle(this, null);
 		mExpandedScreen = getIntent().getBooleanExtra(C.EXTRA_ALLOW_EXPANDED_SCREEN, false);
 		mInstance.actionBarColor = ACTION_BAR_COLOR;
 		boolean obtainImages = getIntent().getBooleanExtra(C.EXTRA_OBTAIN_ITEMS, false);
@@ -445,7 +446,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 	public void onConfigurationChanged(Configuration newConfig)
 	{
 		super.onConfigurationChanged(newConfig);
-		ViewUtils.fixActionBar(this, null);
+		ViewUtils.applyToolbarStyle(this, null);
 		if (mListUnit != null) mListUnit.onConfigurationChanged(newConfig);
 		if (mPagerUnit != null) mPagerUnit.onConfigurationChanged(newConfig);
 		mActionMenuConfigurator.onConfigurationChanged(newConfig);
