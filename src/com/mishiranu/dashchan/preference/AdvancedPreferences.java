@@ -42,10 +42,12 @@ public class AdvancedPreferences
 	private static final HashMap<String, String> USER_AGENTS = new HashMap<>();
 	private static final HashSet<String> SINGLE_CONNECTIONS = new HashSet<>();
 	private static final String GOOGLE_COOKIE;
+	private static final int TAB_SIZE;
 
 	static
 	{
 		CookieBuilder googleCookieBuilder = null;
+		int tabSize = 0;
 		File file = MainApplication.getInstance().getExternalCacheDir();
 		if (file != null)
 		{
@@ -122,6 +124,7 @@ public class AdvancedPreferences
 								googleCookieBuilder = new CookieBuilder().append(googleCookie);
 							}
 						}
+						tabSize = jsonObject.optInt("tabSize");
 					}
 					catch (JSONException e)
 					{
@@ -131,6 +134,7 @@ public class AdvancedPreferences
 			}
 		}
 		GOOGLE_COOKIE = googleCookieBuilder != null ? googleCookieBuilder.build() : null;
+		TAB_SIZE = tabSize;
 	}
 
 	public static String getUserAgent(String chanName)
@@ -150,5 +154,10 @@ public class AdvancedPreferences
 	{
 		// Google reCAPTCHA becomes easier with HSID, SSID, SID, NID cookies
 		return GOOGLE_COOKIE;
+	}
+
+	public static int getTabSize()
+	{
+		return TAB_SIZE;
 	}
 }
