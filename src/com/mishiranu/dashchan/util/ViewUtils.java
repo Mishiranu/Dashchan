@@ -40,6 +40,7 @@ import android.widget.TextView;
 import android.widget.Toolbar;
 
 import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.preference.Preferences;
 
 public class ViewUtils
@@ -140,7 +141,7 @@ public class ViewUtils
 	}
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
-	public static void fixActionBar(Activity activity, View toolbarView)
+	public static void applyToolbarStyle(Activity activity, View toolbarView)
 	{
 		if (C.API_LOLLIPOP)
 		{
@@ -152,8 +153,8 @@ public class ViewUtils
 			if (toolbarView != null && toolbarView instanceof Toolbar)
 			{
 				Context context = toolbarView.getContext();
-				TypedArray typedArray = context.obtainStyledAttributes(new int[]
-						{android.R.attr.actionBarStyle, android.R.attr.actionBarSize});
+				int[] attrs = {android.R.attr.actionBarStyle, android.R.attr.actionBarSize};
+				TypedArray typedArray = context.obtainStyledAttributes(attrs);
 				int actionStyle = typedArray.getResourceId(0, 0);
 				int actionHeight = typedArray.getDimensionPixelSize(1, 0);
 				typedArray.recycle();
@@ -174,12 +175,51 @@ public class ViewUtils
 				}
 				toolbarView.getLayoutParams().height = actionHeight;
 				toolbarView.setMinimumHeight(actionHeight);
-				typedArray = context.obtainStyledAttributes(actionStyle, new int []
-						{android.R.attr.titleTextStyle, android.R.attr.subtitleTextStyle});
+				int[] toolbarAttrs = {android.R.attr.titleTextStyle, android.R.attr.subtitleTextStyle};
+				typedArray = context.obtainStyledAttributes(actionStyle, toolbarAttrs);
 				Toolbar toolbar = (Toolbar) toolbarView;
 				toolbar.setTitleTextAppearance(context, typedArray.getResourceId(0, 0));
 				toolbar.setSubtitleTextAppearance(context, typedArray.getResourceId(1, 0));
 				typedArray.recycle();
+				TextView subtitleTextView = null;
+				try
+				{
+					Field field = toolbar.getClass().getDeclaredField("mSubtitleTextView");
+					field.setAccessible(true);
+					subtitleTextView = (TextView) field.get(toolbar);
+					if (subtitleTextView == null)
+					{
+						// Create new TextView
+						toolbar.setSubtitle("stub");
+						toolbar.setSubtitle(null);
+						subtitleTextView = (TextView) field.get(toolbar);
+					}
+				}
+				catch (Exception e)
+				{
+
+				}
+				if (subtitleTextView != null)
+				{
+					Configuration configuration = activity.getResources().getConfiguration();
+					boolean handle = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+							&& !ResourceUtils.isTablet(configuration);
+					subtitleTextView.setIncludeFontPadding(!handle);
+					Object tag = subtitleTextView.getTag(R.id.value);
+					if (tag == null)
+					{
+						tag = subtitleTextView.getPaddingLeft() == 0 && subtitleTextView.getPaddingTop() == 0 &&
+								subtitleTextView.getPaddingRight() == 0 && subtitleTextView.getPaddingBottom() == 0;
+						subtitleTextView.setTag(R.id.value, tag);
+					}
+					if (tag instanceof Boolean && (boolean) tag)
+					{
+						float density = ResourceUtils.obtainDensity(toolbar);
+						subtitleTextView.setPadding(0, 0, 0, handle ? (int) (2f * density + 0.5f) : 0);
+					}
+					// Override text size from text appearance set before
+					if (handle) subtitleTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
+				}
 			}
 		}
 	}
