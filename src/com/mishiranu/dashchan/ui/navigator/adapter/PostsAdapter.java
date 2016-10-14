@@ -228,9 +228,9 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 		return null;
 	}
 
-	public GalleryItem.GallerySet getGallerySet()
+	public UiManager.ConfigurationSet getConfigurationSet()
 	{
-		return mConfigurationSet.gallerySet;
+		return mConfigurationSet;
 	}
 
 	@Override
