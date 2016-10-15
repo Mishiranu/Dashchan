@@ -542,6 +542,8 @@
 	<string name="preference_video_play_after_scroll_summary">Hide play button before playing video</string>
 	<string name="preference_video_seek_any_frame">Seek any frame</string>
 	<string name="preference_video_seek_any_frame_summary">Higher accuracy at lower performance</string>
+	<string name="preference_watcher_auto_disable">Auto disable</string>
+	<string name="preference_watcher_auto_disable_summary">Disable watcher for deleted threads</string>
 	<string name="preference_watcher_refresh_interval">Refresh interval</string>
 	<string name="preference_watcher_refresh_interval_summary_format">Check every %1$d sec.</string>
 	<string name="preference_watcher_refresh_periodically">Refresh periodically</string>

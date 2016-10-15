@@ -51,6 +51,9 @@ public class FavoritesFragment extends BasePreferenceFragment
 		makeCheckBox(watcherCategory, true, Preferences.KEY_WATCHER_WATCH_INITIALLY,
 				Preferences.DEFAULT_WATCHER_WATCH_INITIALLY, R.string.preference_watcher_watch_initially,
 				R.string.preference_watcher_watch_initially_summary);
+		makeCheckBox(watcherCategory, true, Preferences.KEY_WATCHER_AUTO_DISABLE,
+				Preferences.DEFAULT_WATCHER_AUTO_DISABLE, R.string.preference_watcher_auto_disable,
+				R.string.preference_watcher_auto_disable_summary);
 
 		addDependency(Preferences.KEY_WATCHER_REFRESH_INTERVAL, Preferences.KEY_WATCHER_REFRESH_PERIODICALLY, true);
 		addDependency(Preferences.KEY_WATCHER_WIFI_ONLY, Preferences.KEY_WATCHER_REFRESH_PERIODICALLY, true);

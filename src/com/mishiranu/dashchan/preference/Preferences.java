@@ -1099,6 +1099,14 @@ public class Preferences
 		return PREFERENCES.getBoolean(KEY_VIDEO_SEEK_ANY_FRAME, DEFAULT_VIDEO_SEEK_ANY_FRAME);
 	}
 
+	public static final String KEY_WATCHER_AUTO_DISABLE = "watcher_auto_disable";
+	public static final boolean DEFAULT_WATCHER_AUTO_DISABLE = true;
+
+	public static boolean isWatcherAutoDisable()
+	{
+		return PREFERENCES.getBoolean(KEY_WATCHER_AUTO_DISABLE, DEFAULT_WATCHER_AUTO_DISABLE);
+	}
+
 	public static final String KEY_WATCHER_REFRESH_INTERVAL = "watcher_refresh_interval";
 	public static final int DEFAULT_WATCHER_REFRESH_INTERVAL = 30;
 

@@ -564,6 +564,8 @@
 		просмотром видео</string>
 	<string name="preference_video_seek_any_frame">Перемотка к любому кадру</string>
 	<string name="preference_video_seek_any_frame_summary">Повышенная точность при меньшей производительности</string>
+	<string name="preference_watcher_auto_disable">Отключать автоматически</string>
+	<string name="preference_watcher_auto_disable_summary">Отключать отслеживание для удалённых тредов</string>
 	<string name="preference_watcher_refresh_interval">Интервал обновления</string>
 	<string name="preference_watcher_refresh_interval_summary_format">Проверять каждые %1$d сек.</string>
 	<string name="preference_watcher_refresh_periodically">Обновлять периодически</string>
