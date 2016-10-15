@@ -30,6 +30,7 @@ import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
+import chan.content.RedirectException;
 import chan.content.ThreadRedirectException;
 import chan.content.model.Post;
 import chan.content.model.Posts;
@@ -37,6 +38,7 @@ import chan.http.HttpException;
 import chan.http.HttpHolder;
 import chan.http.HttpValidator;
 import chan.util.CommonUtils;
+import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PostItem;
@@ -61,11 +63,8 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 	private Result mResult;
 	private boolean mFullThread = false;
 
-	private String mRedirectBoardName;
-	private String mRedirectThreadNumber;
-	private String mRedirectPostNumber;
-
 	private ArrayList<UserPostPending> mRemovedUserPostPendings;
+	private RedirectException.Target mTarget;
 	private ErrorItem mErrorItem;
 
 	public interface Callback
@@ -74,7 +73,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 		public void onReadPostsSuccess(Result result, boolean fullThread,
 				ArrayList<UserPostPending> removedUserPostPendings);
 		public void onReadPostsEmpty();
-		public void onReadPostsRedirect(String boardName, String threadNumber, String postNumber);
+		public void onReadPostsRedirect(RedirectException.Target target);
 		public void onReadPostsFail(ErrorItem errorItem);
 	}
 
@@ -101,9 +100,40 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 		ChanPerformer performer = ChanPerformer.get(mChanName);
 		try
 		{
-			ChanPerformer.ReadPostsResult result = performer.safe()
-					.onReadPosts(new ChanPerformer.ReadPostsData(mBoardName, mThreadNumber, lastPostNumber,
-					partialThreadLoading, mCachedPosts, holder, mValidator));
+			ChanPerformer.ReadPostsResult result;
+			try
+			{
+				result = performer.safe().onReadPosts(new ChanPerformer.ReadPostsData(mBoardName, mThreadNumber,
+						lastPostNumber, partialThreadLoading, mCachedPosts, holder, mValidator));
+			}
+			catch (ThreadRedirectException e)
+			{
+				RedirectException.Target target = e.obtainTarget(mChanName, mBoardName);
+				if (target == null) throw HttpException.createNotFoundException();
+				mTarget = target;
+				return true;
+			}
+			catch (RedirectException e)
+			{
+				RedirectException.Target target = e.obtainTarget(mChanName);
+				if (target == null) throw HttpException.createNotFoundException();
+				if (!mChanName.equals(target.chanName) || target.threadNumber == null)
+				{
+					Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES,
+							"Only local thread redirects available there");
+					mErrorItem = new ErrorItem(ErrorItem.TYPE_INVALID_DATA_FORMAT);
+					return false;
+				}
+				else if (StringUtils.equals(mBoardName, target.boardName) && mThreadNumber.equals(target.threadNumber))
+				{
+					throw HttpException.createNotFoundException();
+				}
+				else
+				{
+					mTarget = target;
+					return true;
+				}
+			}
 			Posts readPosts = result != null ? result.posts : null;
 			HttpValidator validator = result != null ? result.validator : null;
 			if (result != null && result.fullThread) partialThreadLoading = false;
@@ -250,8 +280,9 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 						String threadNumber = post.getThreadNumberOrOriginalPostNumber();
 						if (threadNumber != null && !threadNumber.equals(mThreadNumber))
 						{
-							mRedirectThreadNumber = threadNumber;
-							mRedirectPostNumber = post.getPostNumber();
+							// noinspection ThrowableResultOfMethodCallIgnored
+							mTarget = RedirectException.toThread(mBoardName, threadNumber, post.getPostNumber())
+									.obtainTarget(mChanName);
 							return true;
 						}
 					}
@@ -264,14 +295,6 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 			}
 			else mErrorItem = e.getErrorItemAndHandle();
 			return false;
-		}
-		catch (ThreadRedirectException e)
-		{
-			mRedirectBoardName = e.getBoardName();
-			if (mRedirectBoardName == null) mRedirectBoardName = mBoardName;
-			mRedirectThreadNumber = e.getThreadNumber();
-			mRedirectPostNumber = e.getPostNumber();
-			return true;
 		}
 		catch (ExtensionException | InvalidResponseException e)
 		{
@@ -289,18 +312,11 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 	{
 		if (success)
 		{
-			if (mRedirectThreadNumber != null)
-			{
-				mCallback.onReadPostsRedirect(mRedirectBoardName != null ? mRedirectBoardName : mBoardName,
-						mRedirectThreadNumber, mRedirectPostNumber);
-			}
-			else if (mResult != null) mCallback.onReadPostsSuccess(mResult, mFullThread, mRemovedUserPostPendings);
+			if (mResult != null) mCallback.onReadPostsSuccess(mResult, mFullThread, mRemovedUserPostPendings);
+			else if (mTarget != null) mCallback.onReadPostsRedirect(mTarget);
 			else mCallback.onReadPostsEmpty();
 		}
-		else
-		{
-			mCallback.onReadPostsFail(mErrorItem);
-		}
+		else mCallback.onReadPostsFail(mErrorItem);
 	}
 
 	public static class Patch

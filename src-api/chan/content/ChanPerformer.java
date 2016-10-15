@@ -94,14 +94,15 @@ public class ChanPerformer implements ChanManager.Linked
 	}
 
 	@Extendable
-	protected ReadThreadsResult onReadThreads(ReadThreadsData data) throws HttpException, InvalidResponseException
+	protected ReadThreadsResult onReadThreads(ReadThreadsData data) throws HttpException, InvalidResponseException,
+			RedirectException
 	{
 		throw new UnsupportedOperationException();
 	}
 
 	@Extendable
-	protected ReadPostsResult onReadPosts(ReadPostsData data) throws HttpException, ThreadRedirectException,
-			InvalidResponseException
+	protected ReadPostsResult onReadPosts(ReadPostsData data) throws HttpException, InvalidResponseException,
+			RedirectException, ThreadRedirectException
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -1189,7 +1190,7 @@ public class ChanPerformer implements ChanManager.Linked
 		}
 
 		public ReadThreadsResult onReadThreads(ReadThreadsData data) throws ExtensionException, HttpException,
-				InvalidResponseException
+				InvalidResponseException, RedirectException
 		{
 			try
 			{
@@ -1202,7 +1203,7 @@ public class ChanPerformer implements ChanManager.Linked
 		}
 
 		public ReadPostsResult onReadPosts(ReadPostsData data) throws ExtensionException, HttpException,
-				ThreadRedirectException, InvalidResponseException
+				InvalidResponseException, RedirectException, ThreadRedirectException
 		{
 			try
 			{

@@ -24,15 +24,18 @@ import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
+import chan.content.RedirectException;
 import chan.content.model.Post;
 import chan.content.model.Posts;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
 import chan.http.HttpValidator;
+import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.net.YouTubeTitlesReader;
+import com.mishiranu.dashchan.util.Log;
 
 public class ReadThreadsTask extends HttpHolderTask<Void, Void, Boolean>
 {
@@ -46,12 +49,15 @@ public class ReadThreadsTask extends HttpHolderTask<Void, Void, Boolean>
 	private ArrayList<PostItem> mPostItems;
 	private int mBoardSpeed = 0;
 	private HttpValidator mResultValidator;
+
+	private RedirectException.Target mTarget;
 	private ErrorItem mErrorItem;
 
 	public interface Callback
 	{
 		public void onReadThreadsSuccess(ArrayList<PostItem> postItems, int pageNumber,
 				int boardSpeed, boolean append, boolean checkModified, HttpValidator validator);
+		public void onReadThreadsRedirect(RedirectException.Target target);
 		public void onReadThreadsFail(ErrorItem errorItem, int pageNumber);
 	}
 
@@ -66,19 +72,37 @@ public class ReadThreadsTask extends HttpHolderTask<Void, Void, Boolean>
 		mAppend = append;
 	}
 
-	private boolean isFirstPage()
-	{
-		return mPageNumber == 0 || mPageNumber == ChanPerformer.ReadThreadsData.PAGE_NUMBER_CATALOG;
-	}
-
 	@Override
 	protected Boolean doInBackground(HttpHolder holder, Void... params)
 	{
 		try
 		{
-			ChanPerformer performer = ChanPerformer.get(mChanName);
-			ChanPerformer.ReadThreadsResult result = performer.safe()
-					.onReadThreads(new ChanPerformer.ReadThreadsData(mBoardName, mPageNumber, holder, mValidator));
+			ChanPerformer.ReadThreadsResult result;
+			try
+			{
+				result = ChanPerformer.get(mChanName).safe().onReadThreads(new ChanPerformer.ReadThreadsData(mBoardName,
+						mPageNumber, holder, mValidator));
+			}
+			catch (RedirectException e)
+			{
+				RedirectException.Target target = e.obtainTarget(mChanName);
+				if (target == null) throw HttpException.createNotFoundException();
+				if (target.threadNumber != null)
+				{
+					Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES, "Only board redirects available there");
+					mErrorItem = new ErrorItem(ErrorItem.TYPE_INVALID_DATA_FORMAT);
+					return false;
+				}
+				else if (mChanName.equals(target.chanName) && StringUtils.equals(mBoardName, target.boardName))
+				{
+					throw HttpException.createNotFoundException();
+				}
+				else
+				{
+					mTarget = target;
+					return true;
+				}
+			}
 			Posts[] threadsArray = result != null ? result.threads : null;
 			ArrayList<PostItem> postItems = null;
 			int boardSpeed = result != null ? result.boardSpeed : 0;
@@ -111,7 +135,7 @@ public class ReadThreadsTask extends HttpHolderTask<Void, Void, Boolean>
 		catch (HttpException e)
 		{
 			if (e.getResponseCode() == HttpURLConnection.HTTP_NOT_MODIFIED) return true;
-			if (isFirstPage() && e.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND)
+			if (e.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND)
 			{
 				mErrorItem = new ErrorItem(ErrorItem.TYPE_BOARD_NOT_EXISTS);
 			}
@@ -134,8 +158,11 @@ public class ReadThreadsTask extends HttpHolderTask<Void, Void, Boolean>
 	{
 		if (success)
 		{
-			mCallback.onReadThreadsSuccess(mPostItems, mPageNumber, mBoardSpeed, mAppend,
-					mValidator != null, mResultValidator);
+			if (mTarget != null) mCallback.onReadThreadsRedirect(mTarget); else
+			{
+				mCallback.onReadThreadsSuccess(mPostItems, mPageNumber, mBoardSpeed, mAppend,
+						mValidator != null, mResultValidator);
+			}
 		}
 		else mCallback.onReadThreadsFail(mErrorItem, mPageNumber);
 	}

@@ -50,6 +50,7 @@ import android.widget.ListView;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
+import chan.content.RedirectException;
 import chan.content.model.Posts;
 import chan.util.CommonUtils;
 import chan.util.StringUtils;
@@ -1421,13 +1422,11 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 	}
 
 	@Override
-	public void onReadPostsRedirect(String boardName, String threadNumber, String postNumber)
+	public void onReadPostsRedirect(RedirectException.Target target)
 	{
 		mReadTask = null;
 		getListView().getWrapper().cancelBusyState();
-		PageHolder pageHolder = getPageHolder();
-		removeCurrentPage();
-		getUiManager().navigator().navigatePosts(pageHolder.chanName, boardName, threadNumber, postNumber, null, false);
+		handleRedirect(target.chanName, target.boardName, target.threadNumber, target.postNumber);
 	}
 
 	@Override

@@ -1229,6 +1229,12 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		return true;
 	}
 
+	private boolean isPageThreadsPosts(PageHolder pageHolder, String chanName, String boardName, String threadNumber)
+	{
+		if (threadNumber != null) return pageHolder.is(chanName, boardName, threadNumber, PageHolder.Content.POSTS);
+		else return pageHolder.is(chanName, boardName, null, PageHolder.Content.THREADS);
+	}
+
 	@Override
 	public boolean onClosePage(String chanName, String boardName, String threadNumber)
 	{
@@ -1256,7 +1262,16 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 			}
 			else
 			{
-				removePage(chanName, boardName, threadNumber);
+				ArrayList<PageHolder> pageHolders = mPageManager.getPages();
+				for (int i = 0; i < pageHolders.size(); i++)
+				{
+					if (isPageThreadsPosts(pageHolders.get(i), chanName, boardName, threadNumber))
+					{
+						pageHolders.remove(i);
+						break;
+					}
+				}
+				mDrawerForm.invalidateItems(true, false);
 				// Replace arrow with bars, if current threads page becomes root
 				if (pageHolder.content == PageHolder.Content.THREADS && mPageManager.getStackSize() <= 1)
 				{
@@ -1509,29 +1524,15 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	}
 
 	@Override
-	public void removePage(PageHolder pageHolder)
+	public void handleRedirect(String chanName, String boardName, String threadNumber, String postNumber)
 	{
-		removePage(pageHolder.chanName, pageHolder.boardName, pageHolder.threadNumber);
-	}
-
-	private void removePage(String chanName, String boardName, String threadNumber)
-	{
-		ArrayList<PageHolder> pageHolders = mPageManager.getPages();
-		for (int i = 0; i < pageHolders.size(); i++)
+		PageHolder pageHolder = mPageManager.getCurrentPage();
+		if (pageHolder.isThreadsOrPosts())
 		{
-			if (isPageThreadsPosts(pageHolders.get(i), chanName, boardName, threadNumber))
-			{
-				pageHolders.remove(i);
-				break;
-			}
+			mPageManager.removeCurrentPage();
+			if (threadNumber == null) navigateBoardsOrThreads(chanName, boardName, false, false);
+			else navigatePosts(chanName, boardName, threadNumber, postNumber, null, false);
 		}
-		mDrawerForm.invalidateItems(true, false);
-	}
-
-	private boolean isPageThreadsPosts(PageHolder pageHolder, String chanName, String boardName, String threadNumber)
-	{
-		if (threadNumber != null) return pageHolder.is(chanName, boardName, threadNumber, PageHolder.Content.POSTS);
-		else return pageHolder.is(chanName, boardName, null, PageHolder.Content.THREADS);
 	}
 
 	private void setActionBarLocked(String locker, boolean locked)

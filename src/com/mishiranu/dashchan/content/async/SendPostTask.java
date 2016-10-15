@@ -24,6 +24,7 @@ import chan.content.ChanMarkup;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
+import chan.content.RedirectException;
 import chan.content.model.Post;
 import chan.content.model.Posts;
 import chan.http.HttpException;
@@ -172,8 +173,16 @@ public class SendPostTask extends HttpHolderTask<Void, Long, Boolean>
 			if (data.threadNumber == null && (result == null || result.threadNumber == null))
 			{
 				// New thread created with undefined number
-				ChanPerformer.ReadThreadsResult readThreadsResult = performer.safe()
-						.onReadThreads(new ChanPerformer.ReadThreadsData(data.boardName, 0, data.holder, null));
+				ChanPerformer.ReadThreadsResult readThreadsResult;
+				try
+				{
+					readThreadsResult = performer.safe().onReadThreads(new ChanPerformer
+							.ReadThreadsData(data.boardName, 0, data.holder, null));
+				}
+				catch (RedirectException e)
+				{
+					readThreadsResult = null;
+				}
 				Posts[] threads = readThreadsResult != null ? readThreadsResult.threads : null;
 				if (threads != null && threads.length > 0)
 				{

@@ -26,6 +26,7 @@ import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
+import chan.content.RedirectException;
 import chan.content.model.Post;
 import chan.content.model.Posts;
 import chan.http.HttpException;
@@ -91,9 +92,16 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostIte
 			}
 			if (board.allowCatalog && board.allowCatalogSearch && mPageNumber == 0)
 			{
-				ChanPerformer.ReadThreadsResult result = performer.safe()
-						.onReadThreads(new ChanPerformer.ReadThreadsData(mBoardName,
-						ChanPerformer.ReadThreadsData.PAGE_NUMBER_CATALOG, holder, null));
+				ChanPerformer.ReadThreadsResult result;
+				try
+				{
+					result = performer.safe().onReadThreads(new ChanPerformer.ReadThreadsData(mBoardName,
+							ChanPerformer.ReadThreadsData.PAGE_NUMBER_CATALOG, holder, null));
+				}
+				catch (RedirectException e)
+				{
+					result = null;
+				}
 				Posts[] threads = result != null ? result.threads : null;
 				ArrayList<Post> matched = new ArrayList<>();
 				Locale locale = Locale.getDefault();

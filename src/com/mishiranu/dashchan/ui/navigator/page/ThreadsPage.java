@@ -16,12 +16,12 @@
 
 package com.mishiranu.dashchan.ui.navigator.page;
 
-import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -36,6 +36,7 @@ import android.widget.ListView;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import chan.content.ChanPerformer;
+import chan.content.RedirectException;
 import chan.http.HttpValidator;
 import chan.util.StringUtils;
 
@@ -659,18 +660,31 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 	}
 
 	@Override
+	public void onReadThreadsRedirect(RedirectException.Target target)
+	{
+		mReadTask = null;
+		getListView().getWrapper().cancelBusyState();
+		if (!StringUtils.equals(target.chanName, getPageHolder().chanName))
+		{
+			if (getAdapter().isRealEmpty()) switchView(ViewType.ERROR, R.string.message_empty_response);
+			String message = getString(R.string.message_open_chan_confirm_confirm,
+					ChanConfiguration.get(target.chanName).getTitle());
+			new AlertDialog.Builder(getActivity()).setMessage(message)
+					.setNegativeButton(android.R.string.cancel, null).setPositiveButton(android.R.string.ok,
+					(dialog, which) -> handleRedirect(target.chanName, target.boardName, null, null)).show();
+		}
+		else handleRedirect(target.chanName, target.boardName, null, null);
+	}
+
+	@Override
 	public void onReadThreadsFail(ErrorItem errorItem, int pageNumber)
 	{
 		mReadTask = null;
 		getListView().getWrapper().cancelBusyState();
-		if (getAdapter().isRealEmpty()) switchView(ViewType.ERROR, errorItem.toString()); else
-		{
-			if (pageNumber > 0 && errorItem.httpResponseCode == HttpURLConnection.HTTP_NOT_FOUND)
-			{
-				ClickableToast.show(getActivity(), getString(R.string.message_page_not_exist_format, pageNumber));
-			}
-			else ClickableToast.show(getActivity(), errorItem.toString());
-		}
+		String message = errorItem.type == ErrorItem.TYPE_BOARD_NOT_EXISTS
+				? getString(R.string.message_page_not_exist_format, pageNumber) : errorItem.toString();
+		if (getAdapter().isRealEmpty()) switchView(ViewType.ERROR, message);
+		else ClickableToast.show(getActivity(), message);
 	}
 
 	@Override
