@@ -332,6 +332,7 @@
 	<string name="message_no_extensions">No extensions installed!</string>
 	<string name="message_no_rules">No rules defined</string>
 	<string name="message_not_found">Not found</string>
+	<string name="message_open_chan_confirm_confirm">Open %s?</string>
 	<string name="message_open_link_confirm">Follow the link?</string>
 	<string name="message_open_posts_confirm">Open thread?</string>
 	<string name="message_open_search_confirm">Go to search?</string>

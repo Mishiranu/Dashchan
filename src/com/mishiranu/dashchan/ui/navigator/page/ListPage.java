@@ -189,9 +189,9 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 		mCallback.showScaleAnimation();
 	}
 
-	protected final void removeCurrentPage()
+	protected final void handleRedirect(String chanName, String boardName, String threadNumber, String postNumber)
 	{
-		mCallback.removePage(mPageHolder);
+		mCallback.handleRedirect(chanName, boardName, threadNumber, postNumber);
 	}
 
 	protected final void setActionBarLocked(boolean locked)
@@ -373,7 +373,7 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 		public void updateOptionsMenu(boolean recreate);
 		public void switchView(ViewType viewType, String message);
 		public void showScaleAnimation();
-		public void removePage(PageHolder pageHolder);
+		public void handleRedirect(String chanName, String boardName, String threadNumber, String postNumber);
 		public void setActionBarLocked(boolean locked);
 	}
 }

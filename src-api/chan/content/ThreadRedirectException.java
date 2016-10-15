@@ -18,6 +18,10 @@ package chan.content;
 
 import chan.annotation.Public;
 
+// TODO CHAN
+// Remove this class aafter updating
+// apachan archiveliom archiverbt desustorage dvach exach fourplebs krautchan meguca onechanca ronery
+// Added: 13.10.16 14:55
 @Public
 public final class ThreadRedirectException extends Exception
 {
@@ -30,7 +34,6 @@ public final class ThreadRedirectException extends Exception
 	@Public
 	public ThreadRedirectException(String boardName, String threadNumber, String postNumber)
 	{
-		if (threadNumber == null) throw new NullPointerException("Thread Number must not be null");
 		mBoardName = boardName;
 		mThreadNumber = threadNumber;
 		mPostNumber = postNumber;
@@ -42,18 +45,10 @@ public final class ThreadRedirectException extends Exception
 		this(null, threadNumber, postNumber);
 	}
 
-	public String getBoardName()
+	@SuppressWarnings("ThrowableResultOfMethodCallIgnored")
+	public RedirectException.Target obtainTarget(String chanName, String boardName) throws ExtensionException
 	{
-		return mBoardName;
-	}
-
-	public String getThreadNumber()
-	{
-		return mThreadNumber;
-	}
-
-	public String getPostNumber()
-	{
-		return mPostNumber;
+		return RedirectException.toThread(mBoardName != null ? mBoardName : boardName, mThreadNumber, mPostNumber)
+				.obtainTarget(chanName);
 	}
 }
