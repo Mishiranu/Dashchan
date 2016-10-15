@@ -647,6 +647,11 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 				}
 				enqueueDelayed(watcherItem);
 				notifyUpdate(watcherItem, available ? State.ENABLED : State.UNAVAILABLE);
+				if (watcherItem.mNewPostsCount == NEW_POSTS_COUNT_DELETED && Preferences.isWatcherAutoDisable())
+				{
+					FavoritesStorage.getInstance().toggleWatcher(watcherItem.chanName,
+							watcherItem.boardName, watcherItem.threadNumber);
+				}
 				return true;
 			}
 		}
