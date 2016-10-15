@@ -37,6 +37,7 @@ import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.util.IOUtils;
+import com.mishiranu.dashchan.util.Log;
 
 public class StorageManager implements Handler.Callback, Runnable
 {
@@ -90,34 +91,50 @@ public class StorageManager implements Handler.Callback, Runnable
 				throw new RuntimeException(e);
 			}
 			File file = getFile(storage);
+			File backupFile = getBackupFile(storage);
 			if (jsonObject != null)
 			{
-				File backupFile = getBackupFile(storage);
-				getFile(storage).renameTo(backupFile);
+				if (file.exists())
+				{
+					if (!backupFile.exists())
+					{
+						if (!file.renameTo(backupFile))
+						{
+							Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES, "Can't create backup of", file);
+							return;
+						}
+					}
+					else file.delete();
+				}
 				boolean success = false;
-				byte[] bytes = jsonObject.toString().getBytes(CHARSET);
 				FileOutputStream output = null;
 				try
 				{
 					output = new FileOutputStream(file);
-					output.write(bytes);
+					output.write(jsonObject.toString().getBytes(CHARSET));
+					output.flush();
+					output.getFD().sync();
 					success = true;
 				}
 				catch (IOException e)
 				{
-					throw new RuntimeException(e);
+					Log.persistent().write(e);
 				}
 				finally
 				{
-					IOUtils.close(output);
-					if (success) backupFile.delete(); else
+					success &= IOUtils.close(output);
+					if (success) backupFile.delete(); else if (file.exists() && !file.delete())
 					{
-						file.delete();
-						backupFile.renameTo(file);
+						Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES,
+								"Can't delete partially written", file);
 					}
 				}
 			}
-			else file.delete();
+			else
+			{
+				file.delete();
+				backupFile.delete();
+			}
 		}
 	}
 
@@ -245,7 +262,7 @@ public class StorageManager implements Handler.Callback, Runnable
 
 	private final SparseArray<Long> mSerializeTimes = new SparseArray<>();
 
-	public void serialize(Storage storage)
+	private void serialize(Storage storage)
 	{
 		if (storage.mIdentifier == 0) storage.mIdentifier = mNextIdentifier++;
 		Long timeObject = mSerializeTimes.get(storage.mIdentifier);

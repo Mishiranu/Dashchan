@@ -891,22 +891,21 @@ public class CacheManager implements Runnable
 					return;
 				}
 				boolean success = false;
-				OutputStream outputStream = null;
+				FileOutputStream outputStream = null;
 				try
 				{
 					outputStream = new FileOutputStream(mFile);
 					ObjectOutputStream objectOutputStream = new ObjectOutputStream
 							(new BufferedOutputStream(outputStream));
-					outputStream = objectOutputStream;
-					mHolder.setCloseable(outputStream);
+					mHolder.setCloseable(objectOutputStream);
 					objectOutputStream.writeObject(mObject);
 					objectOutputStream.flush();
-					success = IOUtils.close(outputStream);
-					outputStream = null;
+					outputStream.getFD().sync();
+					success = true;
 				}
-				catch (Exception e)
+				catch (IOException e)
 				{
-
+					Log.persistent().write(e);
 				}
 				finally
 				{
