@@ -119,18 +119,18 @@ public final class ApiException extends Exception
 		return FlagUtils.get(mFlags, flag);
 	}
 
-	public Object getExtra()
+	public Serializable getExtra()
 	{
 		switch (mErrorType)
 		{
 			case ApiException.SEND_ERROR_BANNED:
 			{
-				if (mExtra instanceof BanExtra) return mExtra;
+				if (mExtra instanceof BanExtra) return (BanExtra) mExtra;
 				break;
 			}
 			case ApiException.SEND_ERROR_SPAM_LIST:
 			{
-				if (mExtra instanceof WordsExtra) return mExtra;
+				if (mExtra instanceof WordsExtra) return (WordsExtra) mExtra;
 				break;
 			}
 		}

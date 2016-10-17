@@ -238,7 +238,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 		public void onSendPostChangeProgressValue(int progress, int progressMax);
 
 		public void onSendPostSuccess();
-		public void onSendPostFail(ErrorItem errorItem, Object extra, boolean captchaError, boolean keepCaptcha);
+		public void onSendPostFail(ErrorItem errorItem, Serializable extra, boolean captchaError, boolean keepCaptcha);
 		public void onSendPostCancel();
 	}
 
@@ -458,7 +458,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 
 	@Override
 	public void onSendPostFail(String key, ChanPerformer.SendPostData data, String chanName, ErrorItem errorItem,
-			Object extra, boolean captchaError, boolean keepCaptcha)
+			Serializable extra, boolean captchaError, boolean keepCaptcha)
 	{
 		if (removeTask(key))
 		{
@@ -486,11 +486,11 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 		private static final long serialVersionUID = 1L;
 
 		public final ErrorItem errorItem;
-		public final Object extra;
+		public final Serializable extra;
 		public final boolean captchaError;
 		public final boolean keepCaptcha;
 
-		public FailResult(ErrorItem errorItem, Object extra, boolean captchaError, boolean keepCaptcha)
+		public FailResult(ErrorItem errorItem, Serializable extra, boolean captchaError, boolean keepCaptcha)
 		{
 			this.errorItem = errorItem;
 			this.extra = extra;
