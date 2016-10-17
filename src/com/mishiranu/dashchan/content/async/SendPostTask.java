@@ -16,6 +16,7 @@
 
 package com.mishiranu.dashchan.content.async;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 import chan.content.ApiException;
@@ -49,7 +50,7 @@ public class SendPostTask extends HttpHolderTask<Void, Long, Boolean>
 
 	private ChanPerformer.SendPostResult mResult;
 	private ErrorItem mErrorItem;
-	private Object mExtra;
+	private Serializable mExtra;
 	private boolean mCaptchaError = false;
 	private boolean mKeepCaptcha = false;
 
@@ -94,7 +95,7 @@ public class SendPostTask extends HttpHolderTask<Void, Long, Boolean>
 		public void onSendPostSuccess(String key, ChanPerformer.SendPostData data,
 				String chanName, String threadNumber, String postNumber);
 		public void onSendPostFail(String key, ChanPerformer.SendPostData data, String chanName, ErrorItem errorItem,
-				Object extra, boolean captchaError, boolean keepCaptcha);
+				Serializable extra, boolean captchaError, boolean keepCaptcha);
 	}
 
 	public SendPostTask(String key, String chanName, Callback callback, ChanPerformer.SendPostData data)
