@@ -17,6 +17,7 @@
 package com.mishiranu.dashchan.ui.navigator.adapter;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,7 +26,9 @@ import java.util.LinkedHashSet;
 
 import android.content.Context;
 import android.net.Uri;
-import android.os.Process;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
@@ -373,9 +376,6 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 			}
 		}
 
-		mPreloadList.ensureCapacity(mPostItems.size());
-		for (PostItem postItem : mPostItems) mPreloadList.add(postItem);
-
 		int ordinalIndex = 0;
 		boolean appendBumpLimitDelimiter = false;
 		for (int i = 0; i < mPostItems.size(); i++)
@@ -398,9 +398,8 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 			}
 		}
 
-		preparePreloading(0);
 		notifyDataSetChanged();
-		startPreloading();
+		preloadPosts(0);
 	}
 
 	public ArrayList<PostItem> clearDeletedPosts()
@@ -486,88 +485,78 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 		return mSelected.size();
 	}
 
-	public void preloadPosts(int from)
+	public void cancelPreloading()
 	{
-		cancelPreloading();
-		preparePreloading(from);
-		startPreloading();
+		mPreloadHandler.removeMessages(0);
 	}
 
-	private void preparePreloading(int from)
+	public void preloadPosts(int from)
 	{
-		ArrayList<PostItem> preloadList = mPreloadList;
+		ArrayList<PostItem> preloadPostItems = new ArrayList<>();
 		ArrayList<PostItem> postItems = mPostItems;
 		int size = postItems.size();
 		from = Math.max(0, Math.min(size, from));
-		preloadList.ensureCapacity(size);
+		preloadPostItems.ensureCapacity(size);
 		// Ordered preloading
 		for (int i = from; i < size; i++)
 		{
 			PostItem postItem = postItems.get(i);
-			if (postItem != null) preloadList.add(postItem);
+			if (postItem != null) preloadPostItems.add(postItem);
 		}
 		for (int i = 0; i < from; i++)
 		{
 			PostItem postItem = postItems.get(i);
-			if (postItem != null) preloadList.add(postItem);
+			if (postItem != null) preloadPostItems.add(postItem);
 		}
+		cancelPreloading();
+		mPreloadHandler.obtainMessage(0, 0, 0, preloadPostItems).sendToTarget();
 	}
 
-	private void startPreloading()
+	public void preloadPosts(Collection<PostItem> postItems, PreloadFinishCallback callback)
 	{
-		// Ensure that cancelPreloading was called before!
-		mPreloadThread = new Thread(mPreloadRunnable);
-		mPreloadThread.start();
-	}
-
-	public void cancelPreloading()
-	{
-		Thread thread = mPreloadThread;
-		if (thread != null)
+		if (postItems != null && !postItems.isEmpty())
 		{
-			// Also will set mPreloadThread field to null
-			thread.interrupt();
-			try
-			{
-				thread.join();
-			}
-			catch (InterruptedException e)
-			{
-				Thread.currentThread().interrupt();
-				return;
-			}
+			new Handler(Looper.getMainLooper(), new PreloadCallback(callback))
+					.obtainMessage(0, 0, 0, postItems).sendToTarget();
 		}
-		mPreloadList.clear();
 	}
 
-	private volatile Thread mPreloadThread;
-	private final ArrayList<PostItem> mPreloadList = new ArrayList<>();
+	private final Handler mPreloadHandler = new Handler(Looper.getMainLooper(), new PreloadCallback(null));
 
-	private final Runnable mPreloadRunnable = new Runnable()
+	public interface PreloadFinishCallback
 	{
+		public void onFinish();
+	}
+
+	private class PreloadCallback implements Handler.Callback
+	{
+		private final PreloadFinishCallback mCallback;
+
+		public PreloadCallback(PreloadFinishCallback callback)
+		{
+			mCallback = callback;
+		}
+
 		@Override
-		public void run()
+		public boolean handleMessage(Message msg)
 		{
-			Thread thread = Thread.currentThread();
-			try
+			// Take only 8ms per frame for preloading in main thread
+			final int ms = 8;
+			HidePerformer hidePerformer = mConfigurationSet.hidePerformer;
+			@SuppressWarnings("unchecked") ArrayList<PostItem> preloadList = (ArrayList<PostItem>) msg.obj;
+			long time = System.currentTimeMillis();
+			int i = msg.arg1;
+			while (i < preloadList.size() && System.currentTimeMillis() - time < ms)
 			{
-				Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-				ArrayList<PostItem> preloadList = mPreloadList;
-				HidePerformer hidePerformer = mConfigurationSet.hidePerformer;
-				for (int i = 0; i < preloadList.size(); i++)
-				{
-					PostItem postItem = preloadList.get(i);
-					postItem.getComment();
-					postItem.isHidden(hidePerformer);
-					if (thread.isInterrupted()) break;
-				}
+				PostItem postItem = preloadList.get(i++);
+				postItem.getComment();
+				postItem.isHidden(hidePerformer);
 			}
-			finally
-			{
-				mPreloadThread = null;
-			}
+			if (i < preloadList.size()) msg.getTarget().obtainMessage(0, i, 0, preloadList).sendToTarget();
+			else if (mCallback != null) mCallback.onFinish();
+			return true;
 		}
-	};
+	}
 
 	public void invalidateHidden()
 	{

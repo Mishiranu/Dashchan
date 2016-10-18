@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Locale;
+import java.util.concurrent.CountDownLatch;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -77,6 +78,7 @@ import com.mishiranu.dashchan.ui.navigator.adapter.PostsAdapter;
 import com.mishiranu.dashchan.ui.navigator.manager.ThreadshotPerformer;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.ui.posting.Replyable;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.SearchHelper;
@@ -1184,26 +1186,44 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 	}
 
 	@Override
-	public void onRequestPreloadPosts(PostItem[] postItems)
+	public void onRequestPreloadPosts(ArrayList<ReadPostsTask.Patch> patches, int oldCount)
 	{
-		PostsAdapter adapter = getAdapter();
-		int count = adapter.getCount();
 		int threshold = ListScroller.getJumpThreshold(getActivity());
-		int handleNewCount = Math.min(threshold / 4, postItems.length);
-		int handleOldCount = Math.min(threshold, count);
-		for (int i = 0; i < handleNewCount; i++)
+		ArrayList<PostItem> postItems = oldCount == 0 ? new ArrayList<>() : ConcurrentUtils.mainGet(() ->
 		{
-			PostItem postItem = postItems[i];
-			postItem.getComment();
-			postItem.isHidden(mHidePerformer);
-		}
-		for (int i = 0; i < handleOldCount; i++)
-		{
-			PostItem postItem = adapter.getItem(count - i - 1);
-			if (postItem != null)
+			ArrayList<PostItem> buildPostItems = new ArrayList<>();
+			PostsAdapter adapter = getAdapter();
+			int count = adapter.getCount();
+			int handleOldCount = Math.min(threshold, count);
+			for (int i = 0; i < handleOldCount; i++)
 			{
-				postItem.getComment();
-				postItem.isHidden(mHidePerformer);
+				PostItem postItem = adapter.getItem(count - i - 1);
+				if (postItem != null) buildPostItems.add(postItem);
+			}
+			return buildPostItems;
+		});
+		int handleNewCount = Math.min(threshold / 4, patches.size());
+		int i = 0;
+		for (ReadPostsTask.Patch patch : patches)
+		{
+			if (!patch.replaceAtIndex && patch.index >= oldCount)
+			{
+				postItems.add(patch.postItem);
+				if (++i == handleNewCount) break;
+			}
+		}
+		CountDownLatch latch = new CountDownLatch(1);
+		getAdapter().preloadPosts(postItems, () -> latch.countDown());
+		while (true)
+		{
+			try
+			{
+				latch.await();
+				break;
+			}
+			catch (InterruptedException e)
+			{
+
 			}
 		}
 	}
