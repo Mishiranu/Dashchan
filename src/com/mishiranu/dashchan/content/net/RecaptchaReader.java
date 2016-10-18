@@ -56,6 +56,7 @@ import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.preference.AdvancedPreferences;
 import com.mishiranu.dashchan.text.HtmlParser;
 import com.mishiranu.dashchan.ui.ForegroundManager;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
@@ -430,7 +431,7 @@ public class RecaptchaReader implements Handler.Callback
 
 	public void preloadWebView()
 	{
-		if (Looper.myLooper() == Looper.getMainLooper()) initWebView();
+		if (ConcurrentUtils.isMain()) initWebView();
 	}
 
 	private static final int PRELOAD_STATE_NONE = 0;
