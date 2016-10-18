@@ -27,7 +27,6 @@ import java.util.List;
 
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.Looper;
 
 import chan.annotation.Extendable;
 import chan.annotation.Public;
@@ -49,6 +48,7 @@ import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.ui.ForegroundManager;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 
 @Extendable
@@ -1133,7 +1133,7 @@ public class ChanPerformer implements ChanManager.Linked
 
 	private void checkPerformerRequireCall()
 	{
-		if (Looper.myLooper() == Looper.getMainLooper()) throw new RuntimeException("Invalid call");
+		if (ConcurrentUtils.isMain()) throw new RuntimeException("Invalid call");
 	}
 
 	@Public
