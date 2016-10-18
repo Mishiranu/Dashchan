@@ -390,7 +390,11 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 			if (postItem.isDeleted()) postItem.setOrdinalIndex(PostItem.ORDINAL_INDEX_DELETED); else
 			{
 				postItem.setOrdinalIndex(ordinalIndex++);
-				if (ordinalIndex == mBumpLimit) appendBumpLimitDelimiter = true;
+				if (ordinalIndex == mBumpLimit && mPostItems.get(0).getBumpLimitReachedState(ordinalIndex)
+						== PostItem.BUMP_LIMIT_REACHED)
+				{
+					appendBumpLimitDelimiter = true;
+				}
 			}
 		}
 
