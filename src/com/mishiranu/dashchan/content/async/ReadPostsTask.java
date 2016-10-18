@@ -69,7 +69,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 
 	public interface Callback
 	{
-		public void onRequestPreloadPosts(PostItem[] postItems);
+		public void onRequestPreloadPosts(ArrayList<Patch> patches, int oldCount);
 		public void onReadPostsSuccess(Result result, boolean fullThread,
 				ArrayList<UserPostPending> removedUserPostPendings);
 		public void onReadPostsEmpty();
@@ -247,15 +247,11 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean>
 					for (Patch patch : handleResult.patches) handlePosts.add(patch.newPost);
 					YouTubeTitlesReader.getInstance().readAndApplyIfNecessary(handlePosts, holder);
 				}
-				PostItem[] handlePostItems = new PostItem[handleResult.patches.size()];
-				for (int i = 0; i < handlePostItems.length; i++)
+				for (Patch patch : handleResult.patches)
 				{
-					Patch patch = handleResult.patches.get(i);
-					PostItem postItem = new PostItem(patch.newPost, mChanName, mBoardName);
-					patch.postItem = postItem;
-					handlePostItems[i] = postItem;
+					patch.postItem = new PostItem(patch.newPost, mChanName, mBoardName);
 				}
-				mCallback.onRequestPreloadPosts(handlePostItems);
+				mCallback.onRequestPreloadPosts(handleResult.patches, mCachedPosts != null ? mCachedPosts.length() : 0);
 				if (validator == null) validator = holder.getValidator();
 				if (validator == null && mCachedPosts != null) validator = mCachedPosts.getValidator();
 				handleResult.posts.setValidator(validator);
