@@ -367,7 +367,7 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 
 	public boolean isSage()
 	{
-		return mPost.isSage() && getParentPostNumber() == null;
+		return mPost.isSage() && getParentPostNumber() != null;
 	}
 
 	public boolean isSticky()
@@ -400,23 +400,25 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 		return mPost.isPosterBanned();
 	}
 
-	public boolean isBumpLimitReached(Iterable<PostItem> postItems)
+	public static final int BUMP_LIMIT_NOT_REACHED = 0;
+	public static final int BUMP_LIMIT_REACHED = 1;
+	public static final int BUMP_LIMIT_NEED_COUNT = 2;
+
+	public int getBumpLimitReachedState(int postsCount)
 	{
-		if (getParentPostNumber() != null) return false;
-		if (mPost.isBumpLimitReached()) return true;
-		int postsCount = 0;
-		if (mThreadData != null) postsCount = mThreadData.postsCount; else if (postItems != null)
-		{
-			// Iterate over all post items. It's not effective, but it happens only for original posts.
-			for (@SuppressWarnings("unused") PostItem postItem : postItems) postsCount++;
-		}
+		if (getParentPostNumber() != null || isSticky() || isCyclical()) return BUMP_LIMIT_NOT_REACHED;
+		if (mPost.isBumpLimitReached()) return BUMP_LIMIT_REACHED;
+		if (mThreadData != null) postsCount = mThreadData.postsCount;
 		if (postsCount > 0)
 		{
 			ChanConfiguration configuration = ChanConfiguration.get(getChanName());
 			int bumpLimit = configuration.getBumpLimitWithMode(getBoardName());
-			if (bumpLimit != ChanConfiguration.BUMP_LIMIT_INVALID) return postsCount >= bumpLimit;
+			if (bumpLimit != ChanConfiguration.BUMP_LIMIT_INVALID)
+			{
+				return postsCount >= bumpLimit ? BUMP_LIMIT_REACHED : BUMP_LIMIT_NOT_REACHED;
+			}
 		}
-		return false;
+		return mThreadData != null ? BUMP_LIMIT_NOT_REACHED : BUMP_LIMIT_NEED_COUNT;
 	}
 
 	public boolean isDeleted()
