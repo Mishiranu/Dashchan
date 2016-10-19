@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 
@@ -59,7 +58,6 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
-import com.mishiranu.dashchan.content.HidePerformer;
 import com.mishiranu.dashchan.content.ImageLoader;
 import com.mishiranu.dashchan.content.async.DeserializePostsTask;
 import com.mishiranu.dashchan.content.async.ReadPostsTask;
@@ -75,6 +73,7 @@ import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.ui.SeekBarForm;
 import com.mishiranu.dashchan.ui.navigator.DrawerForm;
 import com.mishiranu.dashchan.ui.navigator.adapter.PostsAdapter;
+import com.mishiranu.dashchan.ui.navigator.manager.HidePerformer;
 import com.mishiranu.dashchan.ui.navigator.manager.ThreadshotPerformer;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.ui.posting.Replyable;
@@ -153,6 +152,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		initAdapter(adapter, adapter);
 		listView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
 		uiManager.observable().register(this);
+		mHidePerformer.setPostsProvider(adapter);
 
 		Context darkStyledContext = new ContextThemeWrapper(activity, R.style.Theme_General_Main_Dark);
 		mSearchController = new LinearLayout(darkStyledContext);
@@ -1468,25 +1468,6 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		switchView(ViewType.ERROR, message);
 	}
 
-	private void hidePostAndReplies(PostItem postItem, ArrayList<PostItem> postItemsToInvalidate)
-	{
-		if (!postItem.getPost().isHidden())
-		{
-			postItem.setHidden(true);
-			postItemsToInvalidate.add(postItem);
-		}
-		LinkedHashSet<String> referencesFrom = postItem.getReferencesFrom();
-		if (referencesFrom != null)
-		{
-			PostsAdapter adapter = getAdapter();
-			for (String postNumber : referencesFrom)
-			{
-				PostItem foundPostItem = adapter.findPostItem(postNumber);
-				if (foundPostItem != null) hidePostAndReplies(foundPostItem, postItemsToInvalidate);
-			}
-		}
-	}
-
 	@Override
 	public void onPostItemMessage(PostItem postItem, int message)
 	{
@@ -1522,31 +1503,43 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				break;
 			}
 			case UiManager.MESSAGE_PERFORM_HIDE_REPLIES:
-			{
-				ArrayList<PostItem> postItemsToInvalidate = new ArrayList<>();
-				hidePostAndReplies(postItem, postItemsToInvalidate);
-				UiManager uiManager = getUiManager();
-				for (PostItem invalidatePostItem : postItemsToInvalidate)
-				{
-					uiManager.sendPostItemMessage(invalidatePostItem, UiManager.MESSAGE_INVALIDATE_VIEW);
-				}
-				serializePosts();
-				break;
-			}
 			case UiManager.MESSAGE_PERFORM_HIDE_NAME:
 			case UiManager.MESSAGE_PERFORM_HIDE_SIMILAR:
 			{
 				PostsAdapter adapter = getAdapter();
 				adapter.cancelPreloading();
-				boolean success;
-				if (message == UiManager.MESSAGE_PERFORM_HIDE_NAME) success = mHidePerformer.addHideByName(postItem);
-				else success = mHidePerformer.addHideSimilar(postItem);
-				if (success)
+				int result;
+				switch (message)
+				{
+					case UiManager.MESSAGE_PERFORM_HIDE_REPLIES:
+					{
+						result = mHidePerformer.addHideByReplies(postItem);
+						break;
+					}
+					case UiManager.MESSAGE_PERFORM_HIDE_NAME:
+					{
+						result = mHidePerformer.addHideByName(postItem);
+						break;
+					}
+					case UiManager.MESSAGE_PERFORM_HIDE_SIMILAR:
+					{
+						result = mHidePerformer.addHideSimilar(postItem);
+						break;
+					}
+					default: throw new RuntimeException();
+				}
+				if (result == HidePerformer.ADD_SUCCESS)
 				{
 					postItem.resetHidden();
 					adapter.invalidateHidden();
 					notifyAllAdaptersChanged();
 					mHidePerformer.encodeLocalAutohide(getExtra().cachedPosts);
+					serializePosts();
+				}
+				else if (result == HidePerformer.ADD_EXISTS && !postItem.isHiddenUnchecked())
+				{
+					postItem.resetHidden();
+					notifyAllAdaptersChanged();
 					serializePosts();
 				}
 				adapter.preloadPosts(getListView().getFirstVisiblePosition());

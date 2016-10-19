@@ -495,7 +495,7 @@ public final class Post implements Serializable, Comparable<Post>
 
 	public Post resetHidden()
 	{
-		mFlags = FlagUtils.set(mFlags, FLAG_HIDDEN & FLAG_SHOWN, false);
+		mFlags = FlagUtils.set(mFlags, FLAG_HIDDEN | FLAG_SHOWN, false);
 		return this;
 	}
 

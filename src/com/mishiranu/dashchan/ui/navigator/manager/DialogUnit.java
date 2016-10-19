@@ -69,7 +69,6 @@ import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.content.HidePerformer;
 import com.mishiranu.dashchan.content.ImageLoader;
 import com.mishiranu.dashchan.content.async.CancellableTask;
 import com.mishiranu.dashchan.content.async.ReadSinglePostTask;
@@ -317,7 +316,7 @@ public class DialogUnit implements DialogStack.Callback
 		}
 	}
 
-	private static class ThreadDialogProviderRedirector implements CommentTextView.LinkListener,
+	private static class ThreadDialogProviderIntermediate implements CommentTextView.LinkListener,
 			UiManager.PostsProvider
 	{
 		public ThreadDialogProvider provider;
@@ -367,11 +366,11 @@ public class DialogUnit implements DialogStack.Callback
 	{
 		private final ArrayList<PostItem> mPostItems = new ArrayList<>();
 
-		public ThreadDialogProvider(PostItem postItem, ThreadDialogProviderRedirector redirector)
+		public ThreadDialogProvider(PostItem postItem, ThreadDialogProviderIntermediate intermediate)
 		{
-			super(new UiManager.ConfigurationSet(createThreadReplyable(postItem), redirector, new HidePerformer(),
-					new GalleryItem.GallerySet(false), redirector, null, false, true, false, false, null));
-			redirector.provider = this;
+			super(new UiManager.ConfigurationSet(createThreadReplyable(postItem), intermediate, new HidePerformer(),
+					new GalleryItem.GallerySet(false), intermediate, null, false, true, false, false, null));
+			intermediate.provider = this;
 			if (!postItem.isThreadItem()) throw new RuntimeException("Not thread item");
 			postItem.setOrdinalIndex(0);
 			postItem.clearReferencesFrom();
@@ -646,7 +645,7 @@ public class DialogUnit implements DialogStack.Callback
 
 	public void displayThread(PostItem postItem)
 	{
-		display(new ThreadDialogProvider(postItem, new ThreadDialogProviderRedirector()));
+		display(new ThreadDialogProvider(postItem, new ThreadDialogProviderIntermediate()));
 	}
 
 	public void displayReplies(PostItem postItem, UiManager.ConfigurationSet configurationSet)
