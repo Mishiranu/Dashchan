@@ -123,6 +123,7 @@
 		<item quantity="one">%d reply</item>
 		<item quantity="other">%d replies</item>
 	</plurals>
+	<string name="text_replies_to_format">Replies to %s</string>
 	<string name="text_sage_description">Don\'t bring up the thread</string>
 	<string name="text_sage_description_infinitive">Don\'t bring up</string>
 	<string name="text_save_files">Save files</string>

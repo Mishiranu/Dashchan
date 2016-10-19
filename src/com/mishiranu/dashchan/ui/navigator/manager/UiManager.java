@@ -23,7 +23,6 @@ import android.view.View;
 
 import chan.content.ChanLocator;
 
-import com.mishiranu.dashchan.content.HidePerformer;
 import com.mishiranu.dashchan.content.model.AttachmentItem;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.model.PostItem;

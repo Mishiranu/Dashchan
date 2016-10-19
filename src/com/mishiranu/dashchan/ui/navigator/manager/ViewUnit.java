@@ -50,7 +50,6 @@ import chan.content.ChanLocator;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.content.HidePerformer;
 import com.mishiranu.dashchan.content.ImageLoader;
 import com.mishiranu.dashchan.content.model.AttachmentItem;
 import com.mishiranu.dashchan.content.model.GalleryItem;

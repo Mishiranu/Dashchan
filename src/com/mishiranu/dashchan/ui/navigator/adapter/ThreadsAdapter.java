@@ -46,9 +46,9 @@ import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.content.HidePerformer;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.preference.Preferences;
+import com.mishiranu.dashchan.ui.navigator.manager.HidePerformer;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;

@@ -136,6 +136,7 @@
 		<item quantity="many">%d ответов</item>
 		<item quantity="other">%d ответов</item>
 	</plurals>
+	<string name="text_replies_to_format">Ответы на %s</string>
 	<string name="text_sage_description">Не поднимает тред</string>
 	<string name="text_sage_description_infinitive">Не поднимать</string>
 	<string name="text_save_files">Сохранить файлы</string>

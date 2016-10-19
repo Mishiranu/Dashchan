@@ -40,7 +40,6 @@ import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.content.HidePerformer;
 import com.mishiranu.dashchan.content.storage.HiddenThreadsDatabase;
 import com.mishiranu.dashchan.graphics.ColorScheme;
 import com.mishiranu.dashchan.preference.Preferences;
@@ -794,6 +793,11 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 		if (mPost.isHidden()) return C.HIDDEN_TRUE;
 		if (mPost.isShown()) return C.HIDDEN_FALSE;
 		return C.HIDDEN_UNKNOWN;
+	}
+
+	public interface HidePerformer
+	{
+		public String checkHidden(PostItem postItem);
 	}
 
 	public boolean isHidden(HidePerformer hidePerformer)
