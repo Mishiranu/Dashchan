@@ -26,6 +26,7 @@ import android.preference.PreferenceCategory;
 import chan.content.ChanManager;
 
 import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.content.LocaleManager;
 import com.mishiranu.dashchan.preference.Preferences;
 
 public class GeneralFragment extends BasePreferenceFragment
@@ -38,8 +39,8 @@ public class GeneralFragment extends BasePreferenceFragment
 		super.onCreate(savedInstanceState);
 		Collection<String> chanNames = ChanManager.getInstance().getAvailableChanNames();
 
-		mLocalePreference = makeList(null, Preferences.KEY_LOCALE, Preferences.VALUES_LOCALE,
-				Preferences.DEFAULT_LOCALE, R.string.preference_locale, Preferences.ENTRIES_LOCALE);
+		mLocalePreference = makeList(null, Preferences.KEY_LOCALE, LocaleManager.VALUES_LOCALE,
+				LocaleManager.DEFAULT_LOCALE, R.string.preference_locale, LocaleManager.ENTRIES_LOCALE);
 
 		PreferenceCategory navigationCategory = makeCategory(R.string.preference_category_navigation);
 		makeCheckBox(navigationCategory, true, Preferences.KEY_CLOSE_ON_BACK, Preferences.DEFAULT_CLOSE_ON_BACK,
@@ -74,7 +75,7 @@ public class GeneralFragment extends BasePreferenceFragment
 		super.onPreferenceAfterChange(preference);
 		if (preference == mLocalePreference)
 		{
-			Preferences.applyLocale(getActivity());
+			LocaleManager.getInstance().apply(getActivity(), false);
 		}
 	}
 }

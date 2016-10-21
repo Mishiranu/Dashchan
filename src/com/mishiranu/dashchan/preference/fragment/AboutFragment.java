@@ -48,6 +48,7 @@ import chan.util.CommonUtils;
 
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.BackupManager;
+import com.mishiranu.dashchan.content.LocaleManager;
 import com.mishiranu.dashchan.content.async.AsyncManager;
 import com.mishiranu.dashchan.content.async.ReadUpdateTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
@@ -382,11 +383,14 @@ public class AboutFragment extends BasePreferenceFragment
 		public Boolean doInBackground(Void... params)
 		{
 			String page = "Changelog-EN";
-			Locale locale = mContext.getResources().getConfiguration().locale;
-			if (locale != null)
+			for (Locale locale : LocaleManager.getInstance().list(mContext))
 			{
 				String language = locale.getLanguage();
-				if ("ru".equals(language)) page = "Changelog-RU";
+				if ("ru".equals(language))
+				{
+					page = "Changelog-RU";
+					break;
+				}
 			}
 			Uri uri = ChanLocator.getDefault().buildPathWithHost("github.com", "Mishiranu", "Dashchan", "wiki", page);
 			try

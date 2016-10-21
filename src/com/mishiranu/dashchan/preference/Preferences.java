@@ -19,10 +19,8 @@ package com.mishiranu.dashchan.preference;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
 
@@ -31,8 +29,6 @@ import org.json.JSONException;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Environment;
 import android.preference.PreferenceManager;
@@ -43,6 +39,7 @@ import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.content.LocaleManager;
 import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.NetworkObserver;
 import com.mishiranu.dashchan.content.storage.StatisticsStorage;
@@ -666,47 +663,10 @@ public class Preferences
 	}
 
 	public static final String KEY_LOCALE = "locale";
-	public static final String[] ENTRIES_LOCALE;
-	public static final String[] VALUES_LOCALE;
-	public static final String DEFAULT_LOCALE = "";
-	private static final HashMap<String, Locale> VALUES_LOCALE_OBJECTS;
-
-	static
-	{
-		String[] codes = {DEFAULT_LOCALE, "ru", "en", "pt_BR"};
-		String[] names = new String[codes.length];
-		Locale[] locales = new Locale[codes.length];
-		names[0] = "System";
-		for (int i = 1; i < names.length; i++)
-		{
-			String[] splitted = codes[i].split("_");
-			String language = splitted[0];
-			String country = splitted.length > 1 ? splitted[1] : null;
-			Locale locale = country != null ? new Locale(language, country) : new Locale(language);
-			String displayName = locale.getDisplayName(locale);
-			names[i] = displayName.substring(0, 1).toUpperCase(locale) + displayName.substring(1);
-			locales[i] = locale;
-		}
-		ENTRIES_LOCALE = names;
-		VALUES_LOCALE = codes;
-		VALUES_LOCALE_OBJECTS = new HashMap<>();
-		for (int i = 0; i < codes.length; i++) VALUES_LOCALE_OBJECTS.put(codes[i], locales[i]);
-	}
 
 	public static String getLocale()
 	{
-		return PREFERENCES.getString(KEY_LOCALE, DEFAULT_LOCALE);
-	}
-
-	public static void applyLocale(Context context)
-	{
-		Locale locale = VALUES_LOCALE_OBJECTS.get(getLocale());
-		if (locale == null) locale = Locale.getDefault();
-		Resources resources = context.getApplicationContext().getResources();
-		Configuration config = resources.getConfiguration();
-		config.locale = locale;
-		resources.updateConfiguration(config, resources.getDisplayMetrics());
-		ChanManager.getInstance().updateConfiguration(config, resources.getDisplayMetrics());
+		return PREFERENCES.getString(KEY_LOCALE, LocaleManager.DEFAULT_LOCALE);
 	}
 
 	public static final String KEY_LOCK_DRAWER = "lock_drawer";
