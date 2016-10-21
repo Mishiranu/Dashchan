@@ -56,6 +56,7 @@ import com.mishiranu.dashchan.text.style.LinkSpan;
 import com.mishiranu.dashchan.text.style.OverlineSpan;
 import com.mishiranu.dashchan.text.style.SpoilerSpan;
 import com.mishiranu.dashchan.ui.posting.Replyable;
+import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 
@@ -228,62 +229,13 @@ public class CommentTextView extends TextView
 
 	private final Runnable mSyncRunnable = () -> mCommentListener.onRequestSiblingsInvalidate(CommentTextView.this);
 
-	private boolean startSelectionActionMode(int start, int end)
-	{
-		selectNecessaryText(start, end);
-		try
-		{
-			Object editor;
-			Class<?> editorClass;
-			if (EDITOR_FIELD != null)
-			{
-				editor = EDITOR_FIELD.get(CommentTextView.this);
-				editorClass = EDITOR_FIELD.getType();
-			}
-			else
-			{
-				editor = CommentTextView.this;
-				editorClass = TextView.class;
-			}
-			Method method = null;
-			NoSuchMethodException exception = null;
-			String[] methodNames = {"startSelectionActionModeWithSelection", "startSelectionActionMode"};
-			for (String m : methodNames)
-			{
-				try
-				{
-					method = editorClass.getDeclaredMethod(m);
-					method.setAccessible(true);
-					break;
-				}
-				catch (NoSuchMethodException e)
-				{
-					exception = e;
-				}
-			}
-			if (method == null) throw exception;
-			Object result = method.invoke(editor);
-			if (result instanceof Boolean) return (boolean) result;
-			return true;
-		}
-		catch (InvocationTargetException e)
-		{
-			Throwable t = e.getCause();
-			if (t instanceof Error) throw (Error) t;
-			if (t instanceof RuntimeException) throw (RuntimeException) t;
-			return false;
-		}
-		catch (Exception e)
-		{
-			return false;
-		}
-	}
-
 	private static final Pattern LIST_PATTERN = Pattern.compile("^(?:(?:\\d+[\\.\\)]|[\u2022-]) |>(?!>) ?)");
 
 	private void selectNecessaryText(int start, int end)
 	{
-		Spannable spannable = (Spannable) getText();
+		CharSequence text = getText();
+		if (!(text instanceof Spannable)) return;
+		Spannable spannable = (Spannable) text;
 		int length = spannable.length();
 		if (mLastStartSelectionCalled - mLastXYSetted <= getPreferredDoubleTapTimeout() &&
 				(start < 0 || end < 0 || start > length || end > length || start >= end))
@@ -555,10 +507,8 @@ public class CommentTextView extends TextView
 		}
 	}
 
-	@Override
-	public void setTextIsSelectable(boolean selectable)
+	private void updateSelectablePaddings(boolean selectable)
 	{
-		if (selectable == isTextSelectable()) return;
 		if (selectable)
 		{
 			mReservedMax = mCurrentMax;
@@ -569,7 +519,24 @@ public class CommentTextView extends TextView
 			// Also will reset mReservedMax
 			if (mMaxModeLines) setMaxLines(mReservedMax); else setMaxHeight(mReservedMax);
 		}
-		super.setTextIsSelectable(selectable);
+	}
+
+	@Override
+	public void setTextIsSelectable(boolean selectable)
+	{
+		if (selectable == isTextSelectable()) return;
+		updateSelectablePaddings(selectable);
+		try
+		{
+			super.setTextIsSelectable(selectable);
+		}
+		catch (ArrayIndexOutOfBoundsException e)
+		{
+			// Fix spannable issue on Nougat
+			super.setTextIsSelectable(!selectable);
+			updateSelectablePaddings(!selectable);
+			return;
+		}
 		updateUseAdditionalPadding();
 	}
 
@@ -613,18 +580,54 @@ public class CommentTextView extends TextView
 		}
 	}
 
-	private class SelectorRunnable implements Runnable
+	private interface EditorCallable
 	{
-		public int start = -1, end = -1;
-
-		@Override
-		public void run()
-		{
-			if (!startSelectionActionMode(start, end)) setTextIsSelectable(false);
-		}
+		public boolean call(Object editor, Class<?> editorClass) throws Exception;
 	}
 
-	private SelectorRunnable mSelectorRunnable;
+	private final EditorCallable mEditorPerformLongClick = (editor, editorClass) ->
+	{
+		Method method = editorClass.getDeclaredMethod("performLongClick", boolean.class);
+		method.setAccessible(true);
+		return (boolean) method.invoke(editor, false);
+	};
+
+	private final EditorCallable mEditorStartSelectionActionMode = (editor, editorClass) ->
+	{
+		Method method = editorClass.getDeclaredMethod("startSelectionActionMode");
+		method.setAccessible(true);
+		return (boolean) method.invoke(editor);
+	};
+
+	private boolean callEditor(EditorCallable editorCallable)
+	{
+		try
+		{
+			Object editor;
+			Class<?> editorClass;
+			if (EDITOR_FIELD != null)
+			{
+				editor = EDITOR_FIELD.get(CommentTextView.this);
+				editorClass = EDITOR_FIELD.getType();
+			}
+			else
+			{
+				editor = CommentTextView.this;
+				editorClass = TextView.class;
+			}
+			return editorCallable.call(editor, editorClass);
+		}
+		catch (InvocationTargetException e)
+		{
+			Log.persistent().write(e.getCause());
+			return false;
+		}
+		catch (Exception e)
+		{
+			Log.persistent().write(e);
+			return false;
+		}
+	}
 
 	public void startSelection()
 	{
@@ -646,12 +649,31 @@ public class CommentTextView extends TextView
 
 			}
 		}
-		if (!startSelectionActionMode(start, end))
+		selectNecessaryText(start, end);
+		if (C.API_NOUGAT)
 		{
-			if (mSelectorRunnable == null) mSelectorRunnable = new SelectorRunnable();
-			mSelectorRunnable.start = start;
-			mSelectorRunnable.end = end;
-			post(mSelectorRunnable);
+			post(() ->
+			{
+				if (callEditor(mEditorPerformLongClick))
+				{
+					post(() ->
+					{
+						if (!callEditor(mEditorStartSelectionActionMode)) setTextIsSelectable(false);
+					});
+				}
+				else setTextIsSelectable(false);
+			});
+		}
+		else
+		{
+			if (!callEditor(mEditorStartSelectionActionMode))
+			{
+				post(() ->
+				{
+					selectNecessaryText(start, end);
+					if (!callEditor(mEditorStartSelectionActionMode)) setTextIsSelectable(false);
+				});
+			}
 		}
 	}
 
