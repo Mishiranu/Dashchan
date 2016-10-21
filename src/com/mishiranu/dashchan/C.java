@@ -29,6 +29,7 @@ public class C
 	public static final boolean API_KITKAT = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
 	public static final boolean API_LOLLIPOP = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
 	public static final boolean API_MARSHMALLOW = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
+	public static final boolean API_NOUGAT = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
 
 	public static final HashSet<String> IMAGE_EXTENSIONS = new HashSet<>();
 	public static final HashSet<String> AUDIO_EXTENSIONS = new HashSet<>();
