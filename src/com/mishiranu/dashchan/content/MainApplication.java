@@ -28,7 +28,6 @@ import chan.http.HttpClient;
 
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.content.storage.DatabaseHelper;
-import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.Log;
 
 public class MainApplication extends Application
@@ -50,7 +49,7 @@ public class MainApplication extends Application
 		HttpClient.getInstance();
 		DatabaseHelper.getInstance();
 		CacheManager.getInstance();
-		Preferences.applyLocale(this);
+		LocaleManager.getInstance().apply(this, false);
 		ChanManager.getInstance().loadLibraries();
 	}
 
@@ -58,7 +57,7 @@ public class MainApplication extends Application
 	public void onConfigurationChanged(Configuration newConfig)
 	{
 		super.onConfigurationChanged(newConfig);
-		if (newConfig.locale != null) Preferences.applyLocale(this);
+		LocaleManager.getInstance().apply(this, true);
 	}
 
 	public static MainApplication getInstance()
