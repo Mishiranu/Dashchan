@@ -20,7 +20,6 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.res.Resources;
@@ -65,11 +64,11 @@ public class ClickableToast
 
 	public static class Holder
 	{
-		private final Activity mActivity;
+		private final Context mContext;
 
-		public Holder(Activity activity)
+		public Holder(Context context)
 		{
-			mActivity = activity;
+			mContext = context;
 		}
 
 		private boolean mHasFocus = true;
@@ -95,7 +94,7 @@ public class ClickableToast
 
 		private void invalidate()
 		{
-			ClickableToast.invalidate(mActivity);
+			ClickableToast.invalidate(mContext);
 		}
 	}
 
@@ -120,19 +119,15 @@ public class ClickableToast
 
 	public static void register(Holder holder)
 	{
-		Context context = obtainBaseContext(holder.mActivity);
+		Context context = obtainBaseContext(holder.mContext);
 		ClickableToast clickableToast = TOASTS.get(context);
-		if (clickableToast != null) return;
-		// TYPE_TOAST works well only on Lollipop and higher, but can throw BadTokenException on some devices
-		if (C.API_LOLLIPOP) clickableToast = newInstance(holder, WindowManager.LayoutParams.TYPE_TOAST);
-		if (clickableToast == null) clickableToast = newInstance(holder, WindowManager.LayoutParams.TYPE_APPLICATION);
-		if (clickableToast != null) TOASTS.put(context, clickableToast);
+		if (clickableToast == null) TOASTS.put(context, new ClickableToast(holder));
 	}
 
 	public static void unregister(Holder holder)
 	{
-		ClickableToast clickableToast = TOASTS.remove(obtainBaseContext(holder.mActivity));
-		if (clickableToast != null) clickableToast.destroy();
+		ClickableToast clickableToast = TOASTS.remove(obtainBaseContext(holder.mContext));
+		if (clickableToast != null) clickableToast.cancelInternal();
 	}
 
 	public static void show(Context context, int message)
@@ -161,37 +156,23 @@ public class ClickableToast
 	private static void invalidate(Context context)
 	{
 		ClickableToast clickableToast = TOASTS.get(obtainBaseContext(context));
-		if (clickableToast != null && clickableToast.mShowing) clickableToast.updateLayoutAndRealClickable(false);
+		if (clickableToast != null && clickableToast.mShowing) clickableToast.updateLayoutAndRealClickable();
 	}
 
-	private static ClickableToast newInstance(Holder holder, int windowType)
-	{
-		try
-		{
-			return new ClickableToast(holder, windowType);
-		}
-		catch (WindowManager.BadTokenException e)
-		{
-			String message = e.getMessage();
-			if (message != null && message.contains("permission denied")) return null;
-			throw e;
-		}
-	}
-
-	private ClickableToast(Holder holder, int windowType)
+	private ClickableToast(Holder holder)
 	{
 		mHolder = holder;
-		Activity activity = holder.mActivity;
-		float density = ResourceUtils.obtainDensity(activity);
+		Context context = holder.mContext;
+		float density = ResourceUtils.obtainDensity(context);
 		int innerPadding = (int) (8f * density);
-		LayoutInflater inflater = LayoutInflater.from(activity);
+		LayoutInflater inflater = LayoutInflater.from(context);
 		View toast1 = inflater.inflate(LAYOUT_ID, null);
 		View toast2 = inflater.inflate(LAYOUT_ID, null);
 		TextView message1 = (TextView) toast1.findViewById(android.R.id.message);
 		TextView message2 = (TextView) toast2.findViewById(android.R.id.message);
 		ViewUtils.removeFromParent(message1);
 		ViewUtils.removeFromParent(message2);
-		LinearLayout linearLayout = new LinearLayout(activity);
+		LinearLayout linearLayout = new LinearLayout(context);
 		linearLayout.setOrientation(LinearLayout.HORIZONTAL);
 		linearLayout.setTag(this);
 		linearLayout.setDividerDrawable(new ToastDividerDrawable(0xccffffff, (int) (density + 0.5f)));
@@ -224,19 +205,17 @@ public class ClickableToast
 		message2.setSingleLine(true);
 		message1.setEllipsize(TextUtils.TruncateAt.END);
 		message2.setEllipsize(TextUtils.TruncateAt.END);
-		linearLayout.setVisibility(View.GONE);
 		mContainer = linearLayout;
 		mMessage = message1;
 		mButton = message2;
-		mWindowManager = (WindowManager) activity.getSystemService(Context.WINDOW_SERVICE);
+		mWindowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
 		WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
 		layoutParams.format = PixelFormat.TRANSLUCENT;
 		layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
 		layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
-		layoutParams.type = windowType;
 		layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
 				WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
-		layoutParams.setTitle(activity.getPackageName() + "/" + getClass().getName()); // For hierarchy view
+		layoutParams.setTitle(context.getPackageName() + "/" + getClass().getName()); // For hierarchy view
 		layoutParams.windowAnimations = android.R.style.Animation_Toast;
 		layoutParams.gravity = Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
 		layoutParams.y = Y_OFFSET;
@@ -250,12 +229,7 @@ public class ClickableToast
 		{
 
 		}
-		mWindowManager.addView(mContainer, layoutParams);
-	}
-
-	private void destroy()
-	{
-		mWindowManager.removeView(mContainer);
+		mContainer.setLayoutParams(layoutParams);
 	}
 
 	private void showInternal(CharSequence message, String button, Runnable listener, boolean clickableOnlyWhenRoot)
@@ -265,26 +239,60 @@ public class ClickableToast
 		mMessage.setText(message);
 		mButton.setText(button);
 		mOnClickListener = listener;
-		mShowing = true;
 		mPartialClickDrawable.mClicked = false;
 		mPartialClickDrawable.invalidateSelf();
 		mCanClickable = !StringUtils.isEmpty(button);
 		mClickableOnlyWhenRoot = clickableOnlyWhenRoot;
-		updateLayoutAndRealClickable(true);
-		mContainer.setVisibility(View.VISIBLE);
-		mContainer.postDelayed(mCancelRunnable, TIMEOUT);
+		WindowManager.LayoutParams layoutParams = updateLayoutAndRealClickableInternal();
+		boolean added = false;
+		if (C.API_LOLLIPOP)
+		{
+			// TYPE_TOAST works well only on Lollipop and higher, but can throw BadTokenException on some devices
+			layoutParams.type = WindowManager.LayoutParams.TYPE_TOAST;
+			added = addContainerToWindowManager();
+		}
+		if (!added)
+		{
+			layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION;
+			added = addContainerToWindowManager();
+		}
+		if (added)
+		{
+			mShowing = true;
+			mContainer.postDelayed(mCancelRunnable, TIMEOUT);
+		}
 	}
 
-	private void updateLayoutAndRealClickable(boolean force)
+	private boolean addContainerToWindowManager()
 	{
-		if (!force && !mCanClickable) return;
+		try
+		{
+			mWindowManager.addView(mContainer, mContainer.getLayoutParams());
+			return true;
+		}
+		catch (WindowManager.BadTokenException e)
+		{
+			String errorMessage = e.getMessage();
+			if (errorMessage != null && errorMessage.contains("permission denied")) return false;
+			throw e;
+		}
+	}
+
+	private WindowManager.LayoutParams updateLayoutAndRealClickableInternal()
+	{
 		mRealClickable = mCanClickable && (mHolder.mHasFocus || !mClickableOnlyWhenRoot) && mHolder.mResumed;
 		mButton.setVisibility(mRealClickable ? View.VISIBLE : View.GONE);
 		mMessage.setPadding(0, 0, mRealClickable ? mButton.getPaddingLeft() : 0, 0);
 		WindowManager.LayoutParams layoutParams = (WindowManager.LayoutParams) mContainer.getLayoutParams();
 		layoutParams.flags = FlagUtils.set(layoutParams.flags, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
 				!mRealClickable);
-		mWindowManager.updateViewLayout(mContainer, layoutParams);
+		return layoutParams;
+	}
+
+	private void updateLayoutAndRealClickable()
+	{
+		if (!mCanClickable) return;
+		mWindowManager.updateViewLayout(mContainer, updateLayoutAndRealClickableInternal());
 	}
 
 	private void cancelInternal()
@@ -294,7 +302,7 @@ public class ClickableToast
 		mShowing = false;
 		mCanClickable = false;
 		mRealClickable = false;
-		mContainer.setVisibility(View.GONE);
+		mWindowManager.removeView(mContainer);
 	}
 
 	private final Runnable mCancelRunnable = () -> cancelInternal();

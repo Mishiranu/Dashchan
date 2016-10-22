@@ -42,12 +42,14 @@ import android.widget.FrameLayout;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.util.ResourceUtils;
+import com.mishiranu.dashchan.util.ViewUtils;
 
 public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchListener, Iterable<View>
 {
 	private final Context mContext;
 	private final Context mStyledContext;
-	private final Dialog mDialog;
+	private final ExpandedScreen mExpandedScreen;
+	//private final Dialog mDialog;
 	private final FrameLayout mRootView;
 	private final float mDimAmount;
 
@@ -62,54 +64,12 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 		mContext = context;
 		mStyledContext = new ContextThemeWrapper(context, ResourceUtils.getResourceId(context,
 				android.R.attr.dialogTheme, 0));
+		mExpandedScreen = expandedScreen;
 		mRootView = new FrameLayout(context);
 		mRootView.setOnTouchListener(this);
-		mDialog = new Dialog(C.API_LOLLIPOP ? context : new ContextThemeWrapper(context, R.style.Theme_Main_Hadron))
-		{
-			@Override
-			public void onWindowFocusChanged(boolean hasFocus)
-			{
-				super.onWindowFocusChanged(hasFocus);
-				if (hasFocus) switchBackground(false);
-			}
-
-			@Override
-			public void onActionModeStarted(ActionMode mode)
-			{
-				mCurrentActionMode = new WeakReference<>(mode);
-				super.onActionModeStarted(mode);
-			}
-
-			@Override
-			public void onActionModeFinished(ActionMode mode)
-			{
-				if (mCurrentActionMode != null)
-				{
-					if (mCurrentActionMode.get() == mode) mCurrentActionMode = null;
-				}
-				super.onActionModeFinished(mode);
-			}
-		};
-		mDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-		mDialog.setContentView(mRootView);
-		mDialog.setCancelable(false);
-		mDialog.setOnKeyListener(this);
 		TypedArray typedArray = mStyledContext.obtainStyledAttributes(new int[] {android.R.attr.backgroundDimAmount});
 		mDimAmount = typedArray.getFloat(0, 0.6f);
 		typedArray.recycle();
-		Window window = mDialog.getWindow();
-		WindowManager.LayoutParams layoutParams = window.getAttributes();
-		layoutParams.width = WindowManager.LayoutParams.MATCH_PARENT;
-		layoutParams.height = WindowManager.LayoutParams.MATCH_PARENT;
-		layoutParams.flags = WindowManager.LayoutParams.FLAG_DIM_BEHIND | WindowManager.LayoutParams
-				.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR;
-		layoutParams.dimAmount = mDimAmount;
-		if (C.API_LOLLIPOP) layoutParams.flags |= WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS;
-		layoutParams.setTitle(context.getPackageName() + "/" + getClass().getName()); // For hierarchy view
-		View decorView = window.getDecorView();
-		decorView.setBackground(null);
-		decorView.setPadding(0, 0, 0, 0);
-		bindDialogToExpandedScreen(mDialog, mRootView, expandedScreen, false, false);
 	}
 
 	@Override
@@ -144,8 +104,7 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 		mCallback = callback;
 	}
 
-	public static void bindDialogToExpandedScreen(Dialog dialog, final View rootView,
-			final ExpandedScreen expandedScreen, boolean unbindOnDismiss, boolean invalidate)
+	public static void bindDialogToExpandedScreen(Dialog dialog, View rootView, ExpandedScreen expandedScreen)
 	{
 		ViewGroup decorView = (ViewGroup) dialog.getWindow().getDecorView();
 		decorView.getChildAt(0).setFitsSystemWindows(false);
@@ -155,8 +114,8 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 			expandedScreen.addAdditionalView(rootView, false);
 			decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
 					View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
-			if (unbindOnDismiss) dialog.setOnDismissListener(d -> expandedScreen.removeAdditionalView(rootView));
-			if (invalidate) expandedScreen.updatePaddings();
+			dialog.setOnDismissListener(d -> expandedScreen.removeAdditionalView(rootView));
+			expandedScreen.updatePaddings();
 		}
 		else rootView.setFitsSystemWindows(true);
 	}
@@ -165,10 +124,61 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 
 	private final LinkedList<DialogView> mHiddenViews = new LinkedList<>();
 	private final LinkedList<DialogView> mVisibileViews = new LinkedList<>();
+	private Dialog mDialog;
 
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	public void push(View view)
 	{
-		if (mVisibileViews.isEmpty()) mDialog.show(); else
+		if (mVisibileViews.isEmpty())
+		{
+			Dialog dialog = new Dialog(C.API_LOLLIPOP ? mContext
+					: new ContextThemeWrapper(mContext, R.style.Theme_Main_Hadron))
+			{
+				@Override
+				public void onWindowFocusChanged(boolean hasFocus)
+				{
+					super.onWindowFocusChanged(hasFocus);
+					if (hasFocus) switchBackground(false);
+				}
+
+				@Override
+				public void onActionModeStarted(ActionMode mode)
+				{
+					mCurrentActionMode = new WeakReference<>(mode);
+					super.onActionModeStarted(mode);
+				}
+
+				@Override
+				public void onActionModeFinished(ActionMode mode)
+				{
+					if (mCurrentActionMode != null)
+					{
+						if (mCurrentActionMode.get() == mode) mCurrentActionMode = null;
+					}
+					super.onActionModeFinished(mode);
+				}
+			};
+			dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+			dialog.setContentView(mRootView);
+			dialog.setCancelable(false);
+			dialog.setOnKeyListener(this);
+			Window window = dialog.getWindow();
+			WindowManager.LayoutParams layoutParams = window.getAttributes();
+			layoutParams.width = WindowManager.LayoutParams.MATCH_PARENT;
+			layoutParams.height = WindowManager.LayoutParams.MATCH_PARENT;
+			layoutParams.flags = WindowManager.LayoutParams.FLAG_DIM_BEHIND | WindowManager.LayoutParams
+					.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR;
+			layoutParams.dimAmount = mDimAmount;
+			if (C.API_LOLLIPOP) layoutParams.flags |= WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS;
+			layoutParams.setTitle(mContext.getPackageName() + "/" + getClass().getName()); // For hierarchy view
+			View decorView = window.getDecorView();
+			decorView.setBackground(null);
+			decorView.setPadding(0, 0, 0, 0);
+			bindDialogToExpandedScreen(dialog, mRootView, mExpandedScreen);
+			dialog.show();
+			mDialog = dialog;
+		}
+		else
 		{
 			mVisibileViews.getLast().setActive(false);
 			if (mVisibileViews.size() == VISIBLE_COUNT)
@@ -222,7 +232,12 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 		}
 		DialogView dialogView = mVisibileViews.removeLast();
 		mRootView.removeView(dialogView);
-		if (mVisibileViews.isEmpty()) mDialog.hide();
+		if (mVisibileViews.isEmpty())
+		{
+			mDialog.dismiss();
+			mDialog = null;
+			ViewUtils.removeFromParent(mRootView);
+		}
 		else mVisibileViews.getLast().setActive(true);
 		if (mCallback != null) mCallback.onPop(dialogView.getContentView());
 		return dialogView;
