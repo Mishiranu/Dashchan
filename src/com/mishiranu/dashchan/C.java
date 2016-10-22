@@ -31,6 +31,9 @@ public class C
 	public static final boolean API_MARSHMALLOW = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
 	public static final boolean API_NOUGAT = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
 
+	public static final String BUILD_VERSION = BuildConfig.VERSION_NAME;
+	public static final long BUILD_TIMESTAMP = BuildConfig.BUILD_TIMESTAMP;
+
 	public static final HashSet<String> IMAGE_EXTENSIONS = new HashSet<>();
 	public static final HashSet<String> AUDIO_EXTENSIONS = new HashSet<>();
 	public static final HashSet<String> VIDEO_EXTENSIONS = new HashSet<>();

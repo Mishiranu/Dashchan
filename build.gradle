@@ -8,7 +8,7 @@ buildscript {
 		classpath 'me.tatarka:gradle-retrolambda:3.2.5'
 		classpath 'me.tatarka.retrolambda.projectlombok:lombok.ast:0.2.3.a2'
 	}
-	
+
 	configurations.classpath.exclude group: 'com.android.tools.external.lombok'
 }
 
@@ -73,6 +73,8 @@ android {
 
 		buildConfigField 'String', 'API_KEY_GOOGLE', '"' + apiKeyGoogle + '"'
 		buildConfigField 'String', 'API_KEY_SOUNDCLOUD', '"' + apiKeySoundCloud + '"'
+
+		buildConfigField 'long', 'BUILD_TIMESTAMP', System.currentTimeMillis() + 'L'
 	}
 
 	buildTypes {
