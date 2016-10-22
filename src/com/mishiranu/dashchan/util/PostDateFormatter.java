@@ -20,10 +20,10 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import android.content.Context;
+
+import chan.util.StringUtils;
 
 public class PostDateFormatter
 {
@@ -36,9 +36,8 @@ public class PostDateFormatter
 		String systemPattern = systemFormat.toPattern();
 		String dayFormat = systemPattern.contains("dd") ? "dd" : "d";
 		String monthFormat = systemPattern.contains("MM") ? "MM" : "M";
-		char divider = '.';
-		Matcher matcher = Pattern.compile("[^\\w, ]").matcher(systemPattern);
-		if (matcher.find()) divider = matcher.group().charAt(0);
+		int index = StringUtils.nearestIndexOf(systemPattern, '.', '/', '-');
+		char divider = index >= 0 ? systemPattern.charAt(index) : '.';
 		String shortDateFormat = systemPattern.indexOf('d') > systemPattern.indexOf('M')
 				? monthFormat + divider + dayFormat : dayFormat + divider + monthFormat;
 		String longDateFormat = systemPattern.indexOf('d') > systemPattern.indexOf('y')
