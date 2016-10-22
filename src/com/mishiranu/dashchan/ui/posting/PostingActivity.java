@@ -1466,6 +1466,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			{
 				getAttachmentHolder().reencoding = reencoding;
 				mListView.setItemChecked(reencodeIndex, reencoding != null);
+				updateItemsEnabled((ItemsAdapter) mListView.getAdapter(), getAttachmentHolder());
 			}
 		}
 	}
