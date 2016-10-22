@@ -335,6 +335,7 @@ public class DecoderDrawable extends Drawable
 			{
 				if (result == null) result = NULL_BITMAP;
 				mFragments.put(mKey, result);
+				invalidateSelf();
 			}
 		}
 	}
