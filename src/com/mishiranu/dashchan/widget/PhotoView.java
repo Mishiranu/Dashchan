@@ -196,24 +196,30 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 				imageViewPosition[3], cropEnabled ? 1 : 0};
 	}
 
+	public void clearInitialScaleAnimationData()
+	{
+		mInitialScalingData = null;
+	}
+
 	private void handleInitialScale()
 	{
-		if (mInitialScalingData != null)
+		int[] initialScalingData = mInitialScalingData;
+		if (initialScalingData != null)
 		{
+			clearInitialScaleAnimationData();
 			int[] location = new int[2];
 			getLocationOnScreen(location);
-			int x = mInitialScalingData[0] - location[0];
-			int y = mInitialScalingData[1] - location[1];
-			int viewWidth = mInitialScalingData[2];
-			int viewHeight = mInitialScalingData[3];
+			int x = initialScalingData[0] - location[0];
+			int y = initialScalingData[1] - location[1];
+			int viewWidth = initialScalingData[2];
+			int viewHeight = initialScalingData[3];
 			float centerX = x + viewWidth / 2f;
 			float centerY = y + viewHeight / 2f;
-			boolean cropEnabled = mInitialScalingData[4] != 0;
+			boolean cropEnabled = initialScalingData[4] != 0;
 			ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
 			animator.addUpdateListener(new InitialScaleListener(centerX, centerY, viewWidth, viewHeight, cropEnabled));
 			animator.setDuration(INITIAL_SCALE_TRANSITION_TIME);
 			animator.start();
-			mInitialScalingData = null;
 		}
 	}
 

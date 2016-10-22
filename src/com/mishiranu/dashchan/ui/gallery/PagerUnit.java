@@ -384,6 +384,7 @@ public class PagerUnit implements PagerInstance.Callback
 		if (holder == mPagerInstance.currentHolder)
 		{
 			mGalleryInstance.callback.modifySystemUiVisibility(GalleryInstance.FLAG_LOCKED_ERROR, true);
+			holder.photoView.clearInitialScaleAnimationData();
 			holder.recyclePhotoView();
 			interrupt(false);
 			holder.errorView.setVisibility(View.VISIBLE);
