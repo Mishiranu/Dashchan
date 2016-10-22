@@ -681,7 +681,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 	{
 		mReadTask = null;
 		getListView().getWrapper().cancelBusyState();
-		String message = errorItem.type == ErrorItem.TYPE_BOARD_NOT_EXISTS
+		String message = errorItem.type == ErrorItem.TYPE_BOARD_NOT_EXISTS && pageNumber >= 1
 				? getString(R.string.message_page_not_exist_format, pageNumber) : errorItem.toString();
 		if (getAdapter().isRealEmpty()) switchView(ViewType.ERROR, message);
 		else ClickableToast.show(getActivity(), message);
