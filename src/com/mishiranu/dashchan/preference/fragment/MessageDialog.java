@@ -43,7 +43,7 @@ public class MessageDialog extends DialogFragment implements DialogInterface.OnC
 
 	public static void create(int type, Fragment fragment, boolean setTarget)
 	{
-		dismissIfOpened(fragment);
+		dismissIfOpen(fragment);
 		MessageDialog dialog = new MessageDialog();
 		Bundle args = new Bundle();
 		args.putInt(EXTRA_TYPE, type);
@@ -52,7 +52,7 @@ public class MessageDialog extends DialogFragment implements DialogInterface.OnC
 		dialog.show(fragment.getFragmentManager(), TAG);
 	}
 
-	public static void dismissIfOpened(Fragment fragment)
+	public static void dismissIfOpen(Fragment fragment)
 	{
 		MessageDialog dialog = (MessageDialog) fragment.getFragmentManager().findFragmentByTag(MessageDialog.TAG);
 		if (dialog != null) dialog.dismissAllowingStateLoss();

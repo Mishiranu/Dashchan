@@ -40,7 +40,6 @@ import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceGroup;
 import android.text.InputType;
-import android.util.Pair;
 
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
@@ -463,20 +462,20 @@ public class ChanFragment extends BasePreferenceFragment
 		}
 
 		@Override
-		public Pair<Object, AsyncManager.Holder> onCreateAndExecuteTask(String name, HashMap<String, Object> extra)
+		public AsyncManager.Holder onCreateAndExecuteTask(String name, HashMap<String, Object> extra)
 		{
 			Bundle args = getArguments();
 			CheckAuthorizationTask task = new CheckAuthorizationTask(args.getString(EXTRA_CHAN_NAME),
 					args.getInt(EXTRA_AUTHORIZATION_TYPE), args.getStringArray(EXTRA_AUTHORIZATION_DATA));
 			task.executeOnExecutor(CheckAuthorizationTask.THREAD_POOL_EXECUTOR);
-			return task.getPair();
+			return task.getHolder();
 		}
 
 		@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
 		@Override
 		public void onFinishTaskExecution(String name, AsyncManager.Holder holder)
 		{
-			dismissAllowingStateLoss();
+			dismiss();
 			boolean valid = holder.nextArgument();
 			ErrorItem errorItem = holder.nextArgument();
 			boolean expandPreference;

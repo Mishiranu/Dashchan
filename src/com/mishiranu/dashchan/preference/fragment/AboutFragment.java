@@ -33,7 +33,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.text.format.DateFormat;
-import android.util.Pair;
 
 import chan.content.ChanLocator;
 import chan.http.HttpException;
@@ -258,7 +257,7 @@ public class AboutFragment extends BasePreferenceFragment
 		}
 
 		@Override
-		public Pair<Object, AsyncManager.Holder> onCreateAndExecuteTask(String name, HashMap<String, Object> extra)
+		public AsyncManager.Holder onCreateAndExecuteTask(String name, HashMap<String, Object> extra)
 		{
 			switch (name)
 			{
@@ -266,14 +265,14 @@ public class AboutFragment extends BasePreferenceFragment
 				{
 					ReadChangelogTask task = new ReadChangelogTask(getActivity());
 					task.executeOnExecutor(ReadChangelogTask.THREAD_POOL_EXECUTOR);
-					return task.getPair();
+					return task.getHolder();
 				}
 				case TASK_READ_UPDATE:
 				{
 					ReadUpdateHolder holder = new ReadUpdateHolder();
 					ReadUpdateTask task = new ReadUpdateTask(getActivity(), holder);
 					task.executeOnExecutor(ReadChangelogTask.THREAD_POOL_EXECUTOR);
-					return new Pair<>(task, holder);
+					return holder.attach(task);
 				}
 			}
 			return null;

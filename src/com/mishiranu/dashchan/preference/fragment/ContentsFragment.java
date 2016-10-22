@@ -42,7 +42,6 @@ import android.provider.DocumentsContract;
 import android.text.InputType;
 import android.text.SpannableStringBuilder;
 import android.text.style.TypefaceSpan;
-import android.util.Pair;
 import android.widget.ListView;
 
 import chan.util.StringUtils;
@@ -383,19 +382,19 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 		}
 
 		@Override
-		public Pair<Object, AsyncManager.Holder> onCreateAndExecuteTask(String name, HashMap<String, Object> extra)
+		public AsyncManager.Holder onCreateAndExecuteTask(String name, HashMap<String, Object> extra)
 		{
 			Bundle args = getArguments();
 			ClearCacheTask task = new ClearCacheTask(args.getBoolean(EXTRA_THUMBNAILS), args.getBoolean(EXTRA_MEDIA),
 					args.getBoolean(EXTRA_OLD_PAGES), args.getBoolean(EXTRA_ALL_PAGES));
 			task.executeOnExecutor(ClearCacheTask.THREAD_POOL_EXECUTOR);
-			return task.getPair();
+			return task.getHolder();
 		}
 
 		@Override
 		public void onFinishTaskExecution(String name, AsyncManager.Holder holder)
 		{
-			dismissAllowingStateLoss();
+			dismiss();
 			sendUpdateCacheSize();
 		}
 
