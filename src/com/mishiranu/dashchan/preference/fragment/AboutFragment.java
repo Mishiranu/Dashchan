@@ -21,8 +21,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Locale;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -31,7 +29,6 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.Preference;
@@ -46,6 +43,7 @@ import chan.text.GroupParser;
 import chan.text.ParseException;
 import chan.util.CommonUtils;
 
+import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.BackupManager;
 import com.mishiranu.dashchan.content.LocaleManager;
@@ -73,7 +71,8 @@ public class AboutFragment extends BasePreferenceFragment
 		mCheckForUpdatesPreference = makeButton(null, R.string.preference_check_for_updates, 0, false);
 		Preference licensePreference = makeButton(null, R.string.preference_licenses,
 				R.string.preference_licenses_summary, false);
-		makeButton(null, getString(R.string.preference_version), getBuildVersion() + " (" + getBuildDate() + ")", true);
+		makeButton(null, getString(R.string.preference_version), C.BUILD_VERSION +
+				" (" + DateFormat.getDateFormat(getActivity()).format(C.BUILD_TIMESTAMP) + ")", true);
 
 		Intent intent = new Intent(getActivity(), PreferencesActivity.class);
 		intent.putExtra(PreferencesActivity.EXTRA_SHOW_FRAGMENT, StatisticsFragment.class.getName());
@@ -86,41 +85,6 @@ public class AboutFragment extends BasePreferenceFragment
 				TextFragment.createArguments(TextFragment.TYPE_LICENSES, null));
 		intent.putExtra(PreferencesActivity.EXTRA_NO_HEADERS, true);
 		licensePreference.setIntent(intent);
-	}
-
-	private String getBuildVersion()
-	{
-		String version;
-		Context context = getActivity();
-		try
-		{
-			version = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
-		}
-		catch (Exception e)
-		{
-			throw new RuntimeException(e);
-		}
-		return version;
-	}
-
-	private String getBuildDate()
-	{
-		long time;
-		Context context = getActivity();
-		try
-		{
-			ApplicationInfo applicationInfo = context.getPackageManager()
-					.getApplicationInfo(context.getPackageName(), 0);
-			ZipFile zipFile = new ZipFile(applicationInfo.sourceDir);
-			ZipEntry zipEntry = zipFile.getEntry("classes.dex");
-			time = zipEntry.getTime();
-			zipFile.close();
-		}
-		catch (Exception e)
-		{
-			throw new RuntimeException(e);
-		}
-		return DateFormat.getDateFormat(getActivity()).format(time);
 	}
 
 	@Override
