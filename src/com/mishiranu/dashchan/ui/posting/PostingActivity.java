@@ -1141,7 +1141,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	}
 
 	@Override
-	public Pair<Object, AsyncManager.Holder> onCreateAndExecuteTask(String name, HashMap<String, Object> extra)
+	public AsyncManager.Holder onCreateAndExecuteTask(String name, HashMap<String, Object> extra)
 	{
 		boolean forceCaptcha = (boolean) extra.get(EXTRA_FORCE_CAPTCHA);
 		boolean mayShowLoadButton = (boolean) extra.get(EXTRA_MAY_SHOW_LOAD_BUTTON);
@@ -1152,7 +1152,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		ReadCaptchaTask task = new ReadCaptchaTask(holder, null, mCaptchaType, requirement, captchaPass,
 				mayShowLoadButton, mChanName, mBoardName, mThreadNumber);
 		task.executeOnExecutor(ReadCaptchaTask.THREAD_POOL_EXECUTOR);
-		return new Pair<>(task, holder);
+		return holder.attach(task);
 	}
 
 	@Override

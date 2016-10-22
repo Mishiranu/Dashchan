@@ -18,6 +18,7 @@ package com.mishiranu.dashchan.content.async;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 
 import android.annotation.TargetApi;
@@ -26,7 +27,6 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Pair;
 
 import chan.util.StringUtils;
 
@@ -51,6 +51,7 @@ public final class AsyncManager
 		}
 
 		public boolean attached = false;
+		public boolean resumed = false;
 
 		@Override
 		public void onActivityCreated(Bundle savedInstanceState)
@@ -61,6 +62,21 @@ public final class AsyncManager
 				attached = true;
 				manager.onAttach();
 			}
+		}
+
+		@Override
+		public void onResume()
+		{
+			super.onResume();
+			resumed = true;
+			manager.onResume();
+		}
+
+		@Override
+		public void onPause()
+		{
+			super.onPause();
+			resumed = false;
 		}
 
 		@Override
@@ -158,52 +174,63 @@ public final class AsyncManager
 		}
 	}
 
+	private void onResume()
+	{
+		for (Iterator<Holder> iterator = mWorkTasks.values().iterator(); iterator.hasNext();)
+		{
+			Holder holder = iterator.next();
+			tryFinishTaskExecution(holder.mName, holder, holder.mCallback, () -> iterator.remove());
+		}
+	}
+
 	private void onDestroy()
 	{
 		for (Holder holder : mWorkTasks.values())
 		{
-			if (holder.callback != null)
+			if (holder.mCallback != null)
 			{
-				holder.callback.onRequestTaskCancel(holder.name, holder.task);
+				holder.mCallback.onRequestTaskCancel(holder.mName, holder.mTask);
 			}
-			holder.callback = null;
-			holder.manager = null;
+			holder.mManager = null;
+			holder.mCallback = null;
 		}
 	}
 
 	private void onDetach()
 	{
-		for (Holder holder : mWorkTasks.values()) holder.callback = null;
+		for (Holder holder : mWorkTasks.values()) holder.mCallback = null;
 	}
 
 	public interface Callback
 	{
-		public Pair<Object, Holder> onCreateAndExecuteTask(String name, HashMap<String, Object> extra);
+		public Holder onCreateAndExecuteTask(String name, HashMap<String, Object> extra);
 		public void onFinishTaskExecution(String name, Holder holder);
 		public void onRequestTaskCancel(String name, Object task);
 	}
 
 	public static class Holder
 	{
-		private String name;
-		private Object task;
-		private AsyncManager manager;
-		private Callback callback;
-		private boolean ready = false;
+		private String mName;
+		private Object mTask;
+		private AsyncManager mManager;
+		private Callback mCallback;
+		private boolean mReady = false;
 
 		private Object[] mArguments;
 		private int mArgumentIndex = 0;
 
+		public final Holder attach(Object task)
+		{
+			mTask = task;
+			return this;
+		}
+
 		public final void storeResult(Object... arguments)
 		{
-			ready = true;
+			mReady = true;
 			mArguments = arguments;
 			mArgumentIndex = 0;
-			if (manager != null && callback != null)
-			{
-				manager.mWorkTasks.remove(name);
-				callback.onFinishTaskExecution(name, this);
-			}
+			if (mManager != null && mCallback != null) mManager.tryFinishTaskExecution(mName, this, mCallback);
 		}
 
 		@SuppressWarnings("unchecked")
@@ -216,6 +243,21 @@ public final class AsyncManager
 		{
 			return getArgument(mArgumentIndex++);
 		}
+	}
+
+	private void tryFinishTaskExecution(String name, Holder holder, Callback callback, Runnable removeCallback)
+	{
+		if (holder.mReady && mFragment.resumed && callback != null)
+		{
+			// Remove before onFinishTaskExecution call
+			removeCallback.run();
+			callback.onFinishTaskExecution(name, holder);
+		}
+	}
+
+	private void tryFinishTaskExecution(String name, Holder holder, Callback callback)
+	{
+		tryFinishTaskExecution(name, holder, callback, () -> mWorkTasks.remove(name));
 	}
 
 	private void removeQueued(String name)
@@ -240,12 +282,14 @@ public final class AsyncManager
 	{
 		if (mQueued != null) removeQueued(name);
 		Holder holder = mWorkTasks.remove(name);
-		if (holder != null)
-		{
-			holder.manager = null;
-			holder.callback = null;
-			callback.onRequestTaskCancel(name, holder.task);
-		}
+		if (holder != null) cancelTaskInternal(name, holder, callback);
+	}
+
+	public void cancelTaskInternal(String name, Holder holder, Callback callback)
+	{
+		holder.mManager = null;
+		holder.mCallback = null;
+		callback.onRequestTaskCancel(name, holder.mTask);
 	}
 
 	private void enqueue(String name, Callback callback, HashMap<String, Object> extra, boolean restart)
@@ -256,37 +300,34 @@ public final class AsyncManager
 			if (restart)
 			{
 				mWorkTasks.remove(name);
-				if (!holder.ready)
-				{
-					holder.manager = null;
-					holder.callback = null;
-					callback.onRequestTaskCancel(name, holder.task);
-				}
+				if (!holder.mReady) cancelTaskInternal(name, holder, callback);
 			}
 			else
 			{
-				if (holder.ready) callback.onFinishTaskExecution(name, holder);
-				else holder.callback = callback;
+				if (holder.mReady) tryFinishTaskExecution(name, holder, callback);
+				else holder.mCallback = callback;
 				return;
 			}
 		}
-		Pair<Object, Holder> pair = callback.onCreateAndExecuteTask(name, extra);
-		holder = pair.second;
-		holder.name = name;
-		holder.task = pair.first;
-		holder.manager = this;
-		holder.callback = callback;
-		mWorkTasks.put(name, holder);
+		holder = callback.onCreateAndExecuteTask(name, extra);
+		if (holder != null)
+		{
+			if (holder.mTask == null) throw new IllegalArgumentException("Task is not attached to Holder");
+			holder.mName = name;
+			holder.mManager = this;
+			holder.mCallback = callback;
+			mWorkTasks.put(name, holder);
+		}
 	}
 
 	@SuppressWarnings("UnusedParameters")
 	public static abstract class SimpleTask<Params, Progress, Result> extends CancellableTask<Params, Progress, Result>
 	{
-		private final Holder mHolder = new Holder();
+		private final Holder mHolder = new Holder().attach(this);
 
-		public final Pair<Object, Holder> getPair()
+		public final Holder getHolder()
 		{
-			return new Pair<>(this, mHolder);
+			return mHolder;
 		}
 
 		@Override

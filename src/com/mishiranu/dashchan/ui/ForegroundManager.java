@@ -36,7 +36,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Parcelable;
-import android.util.Pair;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -123,9 +122,11 @@ public class ForegroundManager implements Handler.Callback
 			args.putInt(EXTRA_PENDING_DATA_INDEX, pendingDataIndex);
 		}
 
-		protected <T extends PendingData> T getPendingData()
+		protected <T extends PendingData> T getPendingData(boolean dismissIfNull)
 		{
-			return getInstance().getPendingData(getArguments().getInt(EXTRA_PENDING_DATA_INDEX));
+			T result = getInstance().getPendingData(getArguments().getInt(EXTRA_PENDING_DATA_INDEX));
+			if (dismissIfNull && result == null) dismiss();
+			return result;
 		}
 	}
 
@@ -188,12 +189,8 @@ public class ForegroundManager implements Handler.Callback
 		public void onActivityCreated(Bundle savedInstanceState)
 		{
 			super.onActivityCreated(savedInstanceState);
-			CaptchaPendingData pendingData = getPendingData();
-			if (pendingData == null)
-			{
-				dismissAllowingStateLoss();
-				return;
-			}
+			CaptchaPendingData pendingData = getPendingData(true);
+			if (pendingData == null) return;
 			boolean needLoad = true;
 			if (pendingData.captchaData != null && savedInstanceState != null)
 			{
@@ -259,20 +256,21 @@ public class ForegroundManager implements Handler.Callback
 		}
 
 		@Override
-		public Pair<Object, AsyncManager.Holder> onCreateAndExecuteTask(String name, HashMap<String, Object> extra)
+		public AsyncManager.Holder onCreateAndExecuteTask(String name, HashMap<String, Object> extra)
 		{
 			Bundle args = getArguments();
 			String chanName = args.getString(EXTRA_CHAN_NAME);
 			boolean forceCaptcha = (boolean) extra.get(EXTRA_FORCE_CAPTCHA);
 			boolean mayShowLoadButton = (boolean) extra.get(EXTRA_MAY_SHOW_LOAD_BUTTON);
 			String[] captchaPass = forceCaptcha || chanName == null ? null : Preferences.getCaptchaPass(chanName);
-			CaptchaPendingData pendingData = getPendingData();
+			CaptchaPendingData pendingData = getPendingData(false);
+			if (pendingData == null) return null;
 			ReadCaptchaHolder holder = new ReadCaptchaHolder();
 			ReadCaptchaTask task = new ReadCaptchaTask(holder, pendingData.captchaReader,
 					args.getString(EXTRA_CAPTCHA_TYPE), args.getString(EXTRA_REQUIREMENT), captchaPass,
 					mayShowLoadButton, chanName, args.getString(EXTRA_BOARD_NAME), args.getString(EXTRA_THREAD_NUMBER));
 			task.executeOnExecutor(ReadCaptchaTask.THREAD_POOL_EXECUTOR);
-			return new Pair<>(task, holder);
+			return holder.attach(task);
 		}
 
 		@Override
@@ -310,12 +308,8 @@ public class ForegroundManager implements Handler.Callback
 				String captchaType, ChanConfiguration.Captcha.Input input, ChanConfiguration.Captcha.Validity validity,
 				Bitmap image, boolean large, boolean blackAndWhite)
 		{
-			CaptchaPendingData pendingData = getPendingData();
-			if (pendingData == null)
-			{
-				dismissAllowingStateLoss();
-				return;
-			}
+			CaptchaPendingData pendingData = getPendingData(true);
+			if (pendingData == null) return;
 			pendingData.captchaData = captchaData != null ? captchaData : new ChanPerformer.CaptchaData();
 			pendingData.loadedCaptchaType = captchaType;
 			showCaptcha(captchaState, captchaType, input, image, large, blackAndWhite);
@@ -324,12 +318,8 @@ public class ForegroundManager implements Handler.Callback
 		@Override
 		public void onReadCaptchaError(ErrorItem errorItem)
 		{
-			CaptchaPendingData pendingData = getPendingData();
-			if (pendingData == null)
-			{
-				dismissAllowingStateLoss();
-				return;
-			}
+			CaptchaPendingData pendingData = getPendingData(true);
+			if (pendingData == null) return;
 			ToastUtils.show(getActivity(), errorItem);
 			mCaptchaForm.showError();
 		}
@@ -405,20 +395,22 @@ public class ForegroundManager implements Handler.Callback
 		@Override
 		public void onRefreshCapctha(boolean forceRefresh)
 		{
-			CaptchaPendingData pendingData = getPendingData();
-			if (pendingData == null) dismissAllowingStateLoss();
-			else reloadCaptcha(pendingData, forceRefresh, false, true);
+			CaptchaPendingData pendingData = getPendingData(true);
+			if (pendingData == null) return;
+			reloadCaptcha(pendingData, forceRefresh, false, true);
 		}
 
 		@Override
 		public void onConfirmCaptcha()
 		{
-			CaptchaPendingData pendingData = getPendingData();
-			if (pendingData != null && pendingData.captchaData != null)
+			CaptchaPendingData pendingData = getPendingData(true);
+			if (pendingData == null) return;
+			if (pendingData.captchaData != null)
 			{
 				pendingData.captchaData.put(ChanPerformer.CaptchaData.INPUT, mCaptchaForm.getInput());
 			}
 			finishDialog(pendingData);
+			dismiss();
 		}
 
 		@Override
@@ -430,7 +422,7 @@ public class ForegroundManager implements Handler.Callback
 
 		private void cancelInternal()
 		{
-			CaptchaPendingData pendingData = getPendingData();
+			CaptchaPendingData pendingData = getPendingData(false);
 			if (pendingData != null)
 			{
 				pendingData.captchaData = null;
@@ -468,38 +460,31 @@ public class ForegroundManager implements Handler.Callback
 		public void onActivityCreated(Bundle savedInstanceState)
 		{
 			super.onActivityCreated(savedInstanceState);
-			CaptchaPendingData pendingData = getPendingData();
-			if (pendingData == null)
-			{
-				dismissAllowingStateLoss();
-				return;
-			}
+			CaptchaPendingData pendingData = getPendingData(true);
+			if (pendingData == null) return;
 			Bundle args = getArguments();
 			AsyncManager.get(this).startTask(args.getString(EXTRA_TASK_NAME), this, null, false);
 		}
 
 		@Override
-		public Pair<Object, AsyncManager.Holder> onCreateAndExecuteTask(String name, HashMap<String, Object> extra)
+		public AsyncManager.Holder onCreateAndExecuteTask(String name, HashMap<String, Object> extra)
 		{
-			CaptchaPendingData pendingData = getPendingData();
+			CaptchaPendingData pendingData = getPendingData(false);
+			if (pendingData == null) return null;
 			String apiKey = pendingData.captchaData.get(ChanPerformer.CaptchaData.API_KEY);
 			String challenge = pendingData.captchaData.get(ChanPerformer.CaptchaData.CHALLENGE);
 			String input = pendingData.captchaData.get(ChanPerformer.CaptchaData.INPUT);
 			CheckCaptchaTask task = new CheckCaptchaTask(getArguments().getString(EXTRA_CAPTCHA_TYPE),
 					apiKey, challenge, input);
 			task.executeOnExecutor(CheckCaptchaTask.THREAD_POOL_EXECUTOR);
-			return task.getPair();
+			return task.getHolder();
 		}
 
 		@Override
 		public void onFinishTaskExecution(String name, AsyncManager.Holder holder)
 		{
-			CaptchaPendingData pendingData = getPendingData();
-			if (pendingData == null)
-			{
-				dismissAllowingStateLoss();
-				return;
-			}
+			CaptchaPendingData pendingData = getPendingData(true);
+			if (pendingData == null) return;
 			String apiKey = holder.nextArgument();
 			String challenge = holder.nextArgument();
 			String input = holder.nextArgument();
@@ -516,7 +501,7 @@ public class ForegroundManager implements Handler.Callback
 				ToastUtils.show(getActivity(), errorItem);
 			}
 			finishDialog(pendingData, false);
-			dismissAllowingStateLoss();
+			dismiss();
 		}
 
 		@Override
@@ -552,7 +537,7 @@ public class ForegroundManager implements Handler.Callback
 		public void onCancel(DialogInterface dialog)
 		{
 			super.onCancel(dialog);
-			CaptchaPendingData pendingData = getPendingData();
+			CaptchaPendingData pendingData = getPendingData(false);
 			if (pendingData != null) pendingData.captchaData = null;
 			finishDialog(pendingData, true);
 		}
@@ -721,8 +706,7 @@ public class ForegroundManager implements Handler.Callback
 		public void onActivityCreated(Bundle savedInstanceState)
 		{
 			super.onActivityCreated(savedInstanceState);
-			PendingData pendingData = getPendingData();
-			if (pendingData == null) dismissAllowingStateLoss();
+			getPendingData(true); // Dismiss if null
 		}
 
 		@Override
@@ -812,7 +796,7 @@ public class ForegroundManager implements Handler.Callback
 
 		private void storeResult(boolean success)
 		{
-			ChoicePendingData pendingData = getPendingData();
+			ChoicePendingData pendingData = getPendingData(false);
 			if (pendingData != null)
 			{
 				synchronized (pendingData)
@@ -878,12 +862,8 @@ public class ForegroundManager implements Handler.Callback
 		public void onActivityCreated(Bundle savedInstanceState)
 		{
 			super.onActivityCreated(savedInstanceState);
-			PendingData pendingData = getPendingData();
-			if (pendingData == null)
-			{
-				dismissAllowingStateLoss();
-				return;
-			}
+			PendingData pendingData = getPendingData(true);
+			if (pendingData == null) return;
 			ensureArrays();
 			boolean[] selected = savedInstanceState != null ? savedInstanceState.getBooleanArray(EXTRA_SELECTED) : null;
 			if (selected == null) selected = getArguments().getBooleanArray(EXTRA_SELECTED);
@@ -1019,7 +999,7 @@ public class ForegroundManager implements Handler.Callback
 
 		private void storeResult(boolean success)
 		{
-			ChoicePendingData pendingData = getPendingData();
+			ChoicePendingData pendingData = getPendingData(false);
 			if (pendingData != null)
 			{
 				synchronized (pendingData)
