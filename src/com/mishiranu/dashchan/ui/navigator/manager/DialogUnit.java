@@ -952,7 +952,7 @@ public class DialogUnit implements DialogStack.Callback
 		View decorView = window.getDecorView();
 		decorView.setBackground(null);
 		decorView.setPadding(0, 0, 0, 0);
-		DialogStack.bindDialogToExpandedScreen(dialog, rootView, mExpandedScreen, true, true);
+		DialogStack.bindDialogToExpandedScreen(dialog, rootView, mExpandedScreen);
 		dialog.show();
 		notifySwitchBackground();
 		mAttachmentDialog = dialog;
