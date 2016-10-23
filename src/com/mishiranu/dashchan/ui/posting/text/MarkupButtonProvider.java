@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.mishiranu.dashchan.ui.posting;
+package com.mishiranu.dashchan.ui.posting.text;
 
 import java.util.ArrayList;
 import java.util.Iterator;

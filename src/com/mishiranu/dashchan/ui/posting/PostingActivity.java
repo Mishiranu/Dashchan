@@ -17,10 +17,6 @@
 package com.mishiranu.dashchan.ui.posting;
 
 import java.io.Serializable;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -32,9 +28,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.annotation.TargetApi;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.DialogFragment;
 import android.app.ProgressDialog;
 import android.content.ClipData;
 import android.content.ComponentName;
@@ -51,14 +44,9 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Parcelable;
 import android.text.Editable;
-import android.text.SpannableString;
-import android.text.TextWatcher;
-import android.text.style.ForegroundColorSpan;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Pair;
-import android.util.SparseBooleanArray;
-import android.util.SparseIntArray;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.Menu;
@@ -67,22 +55,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.Window;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toolbar;
 
-import chan.content.ApiException;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import chan.content.ChanMarkup;
@@ -108,21 +90,26 @@ import com.mishiranu.dashchan.media.JpegData;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.ui.CaptchaForm;
 import com.mishiranu.dashchan.ui.ForegroundManager;
-import com.mishiranu.dashchan.ui.SeekBarForm;
 import com.mishiranu.dashchan.ui.StateActivity;
+import com.mishiranu.dashchan.ui.posting.dialog.AttachmentOptionsDialog;
+import com.mishiranu.dashchan.ui.posting.dialog.AttachmentRatingDialog;
+import com.mishiranu.dashchan.ui.posting.dialog.AttachmentWarningDialog;
+import com.mishiranu.dashchan.ui.posting.dialog.PostingDialog;
+import com.mishiranu.dashchan.ui.posting.dialog.ReencodingDialog;
+import com.mishiranu.dashchan.ui.posting.dialog.SendPostFailDetailsDialog;
+import com.mishiranu.dashchan.ui.posting.text.CommentEditWatcher;
+import com.mishiranu.dashchan.ui.posting.text.MarkupButtonProvider;
+import com.mishiranu.dashchan.ui.posting.text.NameEditWatcher;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.IOUtils;
-import com.mishiranu.dashchan.util.PostDateFormatter;
 import com.mishiranu.dashchan.util.ResourceUtils;
-import com.mishiranu.dashchan.util.StringBlockBuilder;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.DropdownView;
-import com.mishiranu.dashchan.widget.ErrorEditTextSetter;
 
 public class PostingActivity extends StateActivity implements View.OnClickListener, View.OnFocusChangeListener,
 		ServiceConnection, PostingService.Callback, CaptchaForm.Callback, AsyncManager.Callback,
-		ReadCaptchaTask.Callback
+		ReadCaptchaTask.Callback, PostingDialog.Callback
 {
 	private String mChanName;
 	private String mBoardName;
@@ -144,7 +131,6 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	private List<Pair<String, String>> mAttachmentRatingItems;
 
 	private boolean mStoreDraftOnFinish = true;
-	private boolean mWatchTripcodeWarning = false;
 
 	private ResizingScrollView mScrollView;
 	private EditText mCommentView;
@@ -158,8 +144,6 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	private EditText mSubjectView;
 	private DropdownView mIconView;
 	private ViewGroup mTextFormatView;
-	private TextView mTripcodeWarning;
-	private TextView mRemainingCharacters;
 
 	private final CaptchaForm mCaptchaForm = new CaptchaForm(this);
 	private Button mSendButton;
@@ -259,12 +243,14 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		mSubjectView = (EditText) findViewById(R.id.subject);
 		mIconView = (DropdownView) findViewById(R.id.icon);
 		mAttachmentContainer = (LinearLayout) findViewById(R.id.attachment_container);
-		mTripcodeWarning = (TextView) findViewById(R.id.personal_tripcode_warning);
-		mRemainingCharacters = (TextView) findViewById(R.id.remaining_characters);
 		mCommentView.setOnFocusChangeListener(this);
-		mNameView.addTextChangedListener(mNameEditListener);
-		mCommentView.addTextChangedListener(mCommentEditListener);
-		mWatchTripcodeWarning = posting.allowName && !posting.allowTripcode;
+		TextView tripcodeWarning = (TextView) findViewById(R.id.personal_tripcode_warning);
+		TextView remainingCharacters = (TextView) findViewById(R.id.remaining_characters);
+		mNameView.addTextChangedListener(new NameEditWatcher(posting.allowName && !posting.allowTripcode,
+				mNameView, tripcodeWarning, () -> mScrollView.postResizeComment()));
+		mCommentView.addTextChangedListener(new CommentEditWatcher(mPostingConfiguration,
+				mCommentView, remainingCharacters, () -> mScrollView.postResizeComment(),
+				() -> DraftsStorage.getInstance().store(obtainPostDraft())));
 		mTextFormatView = (ViewGroup) findViewById(R.id.text_format_view);
 		mUserIconItems = posting.userIcons.size() > 0 ? posting.userIcons : null;
 		mAttachmentRatingItems = posting.attachmentRatings.size() > 0 ? posting.attachmentRatings : null;
@@ -551,6 +537,12 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		{
 			onSendPostFail(failResult.errorItem, failResult.extra, failResult.captchaError, failResult.keepCaptcha);
 		}
+
+		PostingDialog.bindCallback(this, AttachmentOptionsDialog.TAG, this);
+		PostingDialog.bindCallback(this, AttachmentRatingDialog.TAG, this);
+		PostingDialog.bindCallback(this, AttachmentWarningDialog.TAG, this);
+		PostingDialog.bindCallback(this, ReencodingDialog.TAG, this);
+		PostingDialog.bindCallback(this, SendPostFailDetailsDialog.TAG, this);
 	}
 
 	private DraftsStorage.PostDraft obtainPostDraft()
@@ -686,137 +678,6 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			updateFocusButtons(hasFocus);
 		}
 	}
-
-	private final TextWatcher mNameEditListener = new TextWatcher()
-	{
-		private ForegroundColorSpan mTripcodeSpan;
-
-		@Override
-		public void onTextChanged(CharSequence s, int start, int before, int count)
-		{
-			if (mWatchTripcodeWarning)
-			{
-				mTripcodeWarning.setVisibility(s.toString().indexOf('#') >= 0 ? View.VISIBLE : View.GONE);
-			}
-		}
-
-		@Override
-		public void beforeTextChanged(CharSequence s, int start, int count, int after)
-		{
-
-		}
-
-		@Override
-		public void afterTextChanged(Editable s)
-		{
-			if (!mWatchTripcodeWarning)
-			{
-				if (mTripcodeSpan != null) s.removeSpan(mTripcodeSpan);
-				int index = s.toString().indexOf('#');
-				if (index >= 0)
-				{
-					if (mTripcodeSpan == null)
-					{
-						mTripcodeSpan = new ForegroundColorSpan(ResourceUtils.getColor(PostingActivity.this,
-								R.attr.colorTextTripcode));
-					}
-					s.setSpan(mTripcodeSpan, index, s.length(), SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
-				}
-			}
-		}
-	};
-
-	private final TextWatcher mCommentEditListener = new TextWatcher()
-	{
-		private boolean mShow = false;
-		private boolean mError = false;
-
-		private ErrorEditTextSetter mErrorSetter;
-
-		private CharsetEncoder mEncoder;
-		private boolean mEncoderReady = false;
-		private ByteBuffer mByteBuffer = null;
-
-		@Override
-		public void onTextChanged(CharSequence s, int start, int before, int count)
-		{
-			int length = 0;
-			int maxCommentLength = 0;
-			boolean show = false;
-			if (mPostingConfiguration != null)
-			{
-				maxCommentLength = mPostingConfiguration.maxCommentLength;
-				int threshold = Math.min(maxCommentLength / 2, 1000);
-				length = s.length();
-				if (!mEncoderReady)
-				{
-					mEncoderReady = true;
-					String encoding = mPostingConfiguration.maxCommentLengthEncoding;
-					if (encoding != null)
-					{
-						try
-						{
-							mEncoder = Charset.forName(encoding).newEncoder();
-						}
-						catch (Exception e)
-						{
-
-						}
-					}
-				}
-				if (mEncoder != null)
-				{
-					int capacity = (int) (Math.max(100, length) * mEncoder.maxBytesPerChar());
-					if (mByteBuffer == null || mByteBuffer.capacity() < capacity)
-					{
-						mByteBuffer = ByteBuffer.allocate(4 * capacity);
-					}
-					else mByteBuffer.rewind();
-					mEncoder.reset();
-					mEncoder.encode(CharBuffer.wrap(s), mByteBuffer, true);
-					length = mByteBuffer.position();
-				}
-				show = threshold > 0 && length >= threshold;
-			}
-			boolean error = show && length > maxCommentLength;
-			if (mShow != show)
-			{
-				mRemainingCharacters.setVisibility(show ? View.VISIBLE : View.GONE);
-				mScrollView.postResizeComment();
-				mShow = show;
-			}
-			if (mError != error || mRemainingCharacters.getText().length() == 0)
-			{
-				int color = ResourceUtils.getColor(PostingActivity.this, error ? R.attr.colorTextError
-						: android.R.attr.textColorSecondary);
-				mRemainingCharacters.setTextColor(color);
-				if (C.API_LOLLIPOP)
-				{
-					if (mErrorSetter == null) mErrorSetter = new ErrorEditTextSetter(mCommentView);
-					mErrorSetter.setError(error);
-				}
-				mError = error;
-			}
-			if (show) mRemainingCharacters.setText(length + " / " + maxCommentLength);
-			if (before == 0 && count == 1)
-			{
-				char c = s.charAt(start);
-				if (c == '\n' || c == '.') DraftsStorage.getInstance().store(obtainPostDraft());
-			}
-		}
-
-		@Override
-		public void beforeTextChanged(CharSequence s, int start, int count, int after)
-		{
-
-		}
-
-		@Override
-		public void afterTextChanged(Editable s)
-		{
-
-		}
-	};
 
 	private String getUserIcon()
 	{
@@ -1092,7 +953,8 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			ClickableToast.show(this, errorItem.toString(), getString(R.string.action_details), () ->
 			{
 				SendPostFailDetailsDialog dialog = new SendPostFailDetailsDialog(extra);
-				dialog.show(getFragmentManager(), SendPostFailDetailsDialog.class.getName());
+				dialog.bindCallback(PostingActivity.this);
+				dialog.show(getFragmentManager(), SendPostFailDetailsDialog.TAG);
 
 			}, false);
 		}
@@ -1269,479 +1131,22 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		}
 	}
 
-	private static class AttachmentHolder
+	@Override
+	public AttachmentHolder getAttachmentHolder(int index)
 	{
-		public View self;
-		public TextView fileName;
-		public TextView fileSize;
-		public View options;
-		public ImageView imageView;
-		public FileHolder fileHolder;
-		public String rating;
-		public boolean optionUniqueHash = false;
-		public boolean optionRemoveMetadata = false;
-		public boolean optionRemoveFileName = false;
-		public boolean optionSpoiler = false;
-		public GraphicsUtils.Reencoding reencoding;
+		return mAttachments.get(index);
 	}
 
-	public static class AttachmentOptionsDialog extends DialogFragment implements AdapterView.OnItemClickListener
+	@Override
+	public List<Pair<String, String>> getAttachmentRatingItems()
 	{
-		private static final String EXTRA_ATTACHMENT_INDEX = "attachmentIndex";
-
-		private static final int OPTION_TYPE_UNIQUE_HASH = 0;
-		private static final int OPTION_TYPE_REMOVE_METADATA = 1;
-		private static final int OPTION_TYPE_REENCODE_IMAGE = 2;
-		private static final int OPTION_TYPE_REMOVE_FILE_NAME = 3;
-		private static final int OPTION_TYPE_SPOILER = 4;
-
-		private static class OptionItem
-		{
-			public final String title;
-			public final int type;
-			public final boolean checked;
-
-			public OptionItem(String title, int type, boolean checked)
-			{
-				this.title = title;
-				this.type = type;
-				this.checked = checked;
-			}
-		}
-
-		private final ArrayList<OptionItem> mOptionItems = new ArrayList<>();
-		private final SparseIntArray mOptionIndexes = new SparseIntArray();
-
-		private ListView mListView;
-
-		public AttachmentOptionsDialog()
-		{
-
-		}
-
-		public AttachmentOptionsDialog(int attachmentIndex)
-		{
-			Bundle args = new Bundle();
-			args.putInt(EXTRA_ATTACHMENT_INDEX, attachmentIndex);
-			setArguments(args);
-		}
-
-		private static class ItemsAdapter extends ArrayAdapter<String>
-		{
-			private final SparseBooleanArray mEnabledItems = new SparseBooleanArray();
-
-			public ItemsAdapter(Context context, int resId, ArrayList<String> items)
-			{
-				super(context, resId, android.R.id.text1, items);
-			}
-
-			@Override
-			public View getView(int position, View convertView, ViewGroup parent)
-			{
-				View view = super.getView(position, convertView, parent);
-				view.setEnabled(isEnabled(position));
-				return view;
-			}
-
-			@Override
-			public boolean isEnabled(int position)
-			{
-				return mEnabledItems.get(position, true);
-			}
-
-			public void setEnabled(int index, boolean enabled)
-			{
-				mEnabledItems.put(index, enabled);
-			}
-		}
-
-		private AttachmentHolder getAttachmentHolder()
-		{
-			PostingActivity activity = (PostingActivity) getActivity();
-			return activity.mAttachments.get(getArguments().getInt(EXTRA_ATTACHMENT_INDEX));
-		}
-
-		@SuppressWarnings("UnusedAssignment")
-		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState)
-		{
-			PostingActivity activity = (PostingActivity) getActivity();
-			AttachmentHolder holder = getAttachmentHolder();
-			ChanConfiguration.Posting postingConfiguration = activity.mPostingConfiguration;
-			int index = 0;
-			mOptionItems.clear();
-			mOptionIndexes.clear();
-			mOptionItems.add(new OptionItem(getString(R.string.text_unique_hash), OPTION_TYPE_UNIQUE_HASH,
-					holder.optionUniqueHash));
-			mOptionIndexes.append(OPTION_TYPE_UNIQUE_HASH, index++);
-			if (GraphicsUtils.canRemoveMetadata(holder.fileHolder))
-			{
-				mOptionItems.add(new OptionItem(getString(R.string.text_remove_metadata), OPTION_TYPE_REMOVE_METADATA,
-						holder.optionRemoveMetadata));
-				mOptionIndexes.append(OPTION_TYPE_REMOVE_METADATA, index++);
-			}
-			if (holder.fileHolder.isImage())
-			{
-				mOptionItems.add(new OptionItem(getString(R.string.text_reencode_image), OPTION_TYPE_REENCODE_IMAGE,
-						holder.reencoding != null));
-				mOptionIndexes.append(OPTION_TYPE_REENCODE_IMAGE, index++);
-			}
-			mOptionItems.add(new OptionItem(getString(R.string.text_remove_file_name), OPTION_TYPE_REMOVE_FILE_NAME,
-					holder.optionRemoveFileName));
-			mOptionIndexes.append(OPTION_TYPE_REMOVE_FILE_NAME, index++);
-			if (postingConfiguration.attachmentSpoiler)
-			{
-				mOptionItems.add(new OptionItem(getString(R.string.text_spoiler), OPTION_TYPE_SPOILER,
-						holder.optionSpoiler));
-				mOptionIndexes.append(OPTION_TYPE_SPOILER, index++);
-			}
-			ArrayList<String> items = new ArrayList<>();
-			for (OptionItem optionItem : mOptionItems) items.add(optionItem.title);
-			LinearLayout linearLayout = new LinearLayout(activity);
-			linearLayout.setOrientation(LinearLayout.VERTICAL);
-			ImageView imageView = new ImageView(activity);
-			imageView.setBackground(new TransparentTileDrawable(activity, true));
-			imageView.setImageDrawable(holder.imageView.getDrawable());
-			imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-			linearLayout.addView(imageView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-					0, 1));
-			mListView = new ListView(activity);
-			linearLayout.addView(mListView, LinearLayout.LayoutParams.MATCH_PARENT,
-					LinearLayout.LayoutParams.WRAP_CONTENT);
-			mListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-			int resId = ResourceUtils.obtainAlertDialogLayoutResId(activity, ResourceUtils.DIALOG_LAYOUT_MULTI_CHOICE);
-			if (C.API_LOLLIPOP) mListView.setDividerHeight(0);
-			ItemsAdapter adapter = new ItemsAdapter(activity, resId, items);
-			mListView.setAdapter(adapter);
-			for (int i = 0; i < mOptionItems.size(); i++) mListView.setItemChecked(i, mOptionItems.get(i).checked);
-			mListView.setOnItemClickListener(this);
-			updateItemsEnabled(adapter, holder);
-			AlertDialog dialog = new AlertDialog.Builder(activity).setView(linearLayout).create();
-			dialog.setCanceledOnTouchOutside(true);
-			return dialog;
-		}
-
-		private void updateItemsEnabled(ItemsAdapter adapter, AttachmentHolder holder)
-		{
-			int reencodeIndex = mOptionIndexes.get(OPTION_TYPE_REENCODE_IMAGE, -1);
-			boolean allowRemoveMetadata = reencodeIndex == -1 || holder.reencoding == null;
-			int removeMetadataIndex = mOptionIndexes.get(OPTION_TYPE_REMOVE_METADATA, -1);
-			if (removeMetadataIndex >= 0)
-			{
-				adapter.setEnabled(removeMetadataIndex, allowRemoveMetadata);
-				adapter.notifyDataSetChanged();
-			}
-		}
-
-		@Override
-		public void onItemClick(AdapterView<?> parent, View view, int position, long id)
-		{
-			AttachmentHolder holder = getAttachmentHolder();
-			int type = mOptionItems.get(position).type;
-			boolean checked = mListView.isItemChecked(position);
-			switch (type)
-			{
-				case OPTION_TYPE_UNIQUE_HASH: holder.optionUniqueHash = checked; break;
-				case OPTION_TYPE_REMOVE_METADATA: holder.optionRemoveMetadata = checked; break;
-				case OPTION_TYPE_REENCODE_IMAGE:
-				{
-					if (checked)
-					{
-						mListView.setItemChecked(position, false);
-						new ReencodingDialog().show(getFragmentManager(), ReencodingDialog.class.getName());
-					}
-					else holder.reencoding = null;
-					break;
-				}
-				case OPTION_TYPE_REMOVE_FILE_NAME: holder.optionRemoveFileName = checked; break;
-				case OPTION_TYPE_SPOILER: holder.optionSpoiler = checked; break;
-			}
-			updateItemsEnabled((ItemsAdapter) mListView.getAdapter(), holder);
-		}
-
-		public void setReencoding(GraphicsUtils.Reencoding reencoding)
-		{
-			int reencodeIndex = mOptionIndexes.get(OPTION_TYPE_REENCODE_IMAGE, -1);
-			if (reencodeIndex >= 0)
-			{
-				getAttachmentHolder().reencoding = reencoding;
-				mListView.setItemChecked(reencodeIndex, reencoding != null);
-				updateItemsEnabled((ItemsAdapter) mListView.getAdapter(), getAttachmentHolder());
-			}
-		}
+		return mAttachmentRatingItems;
 	}
 
-	public static class ReencodingDialog extends DialogFragment implements DialogInterface.OnClickListener,
-			RadioGroup.OnCheckedChangeListener
+	@Override
+	public ChanConfiguration.Posting getPostingConfiguration()
 	{
-		private static final String EXTRA_QUALITY = "quality";
-		private static final String EXTRA_REDUCE = "reduce";
-
-		private RadioGroup mRadioGroup;
-		private SeekBarForm mQualityForm;
-		private SeekBarForm mReduceForm;
-
-		private static final String[] OPTIONS = {GraphicsUtils.Reencoding.FORMAT_JPEG.toUpperCase(Locale.US),
-				GraphicsUtils.Reencoding.FORMAT_PNG.toUpperCase(Locale.US)};
-		private static final String[] FORMATS = {GraphicsUtils.Reencoding.FORMAT_JPEG,
-				GraphicsUtils.Reencoding.FORMAT_PNG};
-		private static final int[] IDS = {android.R.id.icon1, android.R.id.icon2};
-
-		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState)
-		{
-			Context context = getActivity();
-			mQualityForm = new SeekBarForm(false);
-			mQualityForm.setConfiguration(1, 100, 1, 1);
-			mQualityForm.setValueFormat(getString(R.string.text_quality_format));
-			mQualityForm.setCurrentValue(savedInstanceState != null ? savedInstanceState.getInt(EXTRA_QUALITY) : 100);
-			mReduceForm = new SeekBarForm(false);
-			mReduceForm.setConfiguration(1, 8, 1, 1);
-			mReduceForm.setValueFormat(getString(R.string.text_reduce_format));
-			mReduceForm.setCurrentValue(savedInstanceState != null ? savedInstanceState.getInt(EXTRA_REDUCE) : 1);
-			int padding = getResources().getDimensionPixelSize(R.dimen.dialog_padding_view);
-			View qualityView = mQualityForm.inflate(context);
-			mQualityForm.getSeekBar().setSaveEnabled(false);
-			qualityView.setPadding(qualityView.getPaddingLeft(), 0, qualityView.getPaddingRight(), padding / 2);
-			View reduceView = mReduceForm.inflate(context);
-			mReduceForm.getSeekBar().setSaveEnabled(false);
-			reduceView.setPadding(reduceView.getPaddingLeft(), 0, reduceView.getPaddingRight(),
-					reduceView.getPaddingBottom());
-			mRadioGroup = new RadioGroup(context);
-			mRadioGroup.setOrientation(RadioGroup.VERTICAL);
-			mRadioGroup.setPadding(padding, padding, padding, padding / 2);
-			mRadioGroup.setOnCheckedChangeListener(this);
-			for (int i = 0; i < OPTIONS.length; i++)
-			{
-				RadioButton radioButton = new RadioButton(context);
-				radioButton.setText(OPTIONS[i]);
-				radioButton.setId(IDS[i]);
-				mRadioGroup.addView(radioButton);
-			}
-			mRadioGroup.check(IDS[0]);
-			LinearLayout linearLayout = new LinearLayout(context);
-			linearLayout.setOrientation(LinearLayout.VERTICAL);
-			FrameLayout qualityLayout = new FrameLayout(context);
-			qualityLayout.setId(android.R.id.text1);
-			qualityLayout.addView(qualityView);
-			FrameLayout reduceLayout = new FrameLayout(context);
-			reduceLayout.setId(android.R.id.text2);
-			reduceLayout.addView(reduceView);
-			linearLayout.addView(mRadioGroup, LinearLayout.LayoutParams.MATCH_PARENT,
-					LinearLayout.LayoutParams.WRAP_CONTENT);
-			linearLayout.addView(qualityLayout, LinearLayout.LayoutParams.MATCH_PARENT,
-					LinearLayout.LayoutParams.WRAP_CONTENT);
-			linearLayout.addView(reduceLayout, LinearLayout.LayoutParams.MATCH_PARENT,
-					LinearLayout.LayoutParams.WRAP_CONTENT);
-			ScrollView scrollView = new ScrollView(context);
-			scrollView.addView(linearLayout, ScrollView.LayoutParams.MATCH_PARENT,
-					ScrollView.LayoutParams.WRAP_CONTENT);
-			return new AlertDialog.Builder(context).setTitle(R.string.text_reencode_image)
-					.setView(scrollView).setNegativeButton(android.R.string.cancel, null)
-					.setPositiveButton(android.R.string.ok, this).create();
-		}
-
-		@Override
-		public void onSaveInstanceState(Bundle outState)
-		{
-			super.onSaveInstanceState(outState);
-			outState.putInt(EXTRA_QUALITY, mQualityForm.getCurrentValue());
-			outState.putInt(EXTRA_REDUCE, mReduceForm.getCurrentValue());
-		}
-
-		@Override
-		public void onClick(DialogInterface dialog, int which)
-		{
-			AttachmentOptionsDialog attachmentOptionsDialog = (AttachmentOptionsDialog) getFragmentManager()
-					.findFragmentByTag(AttachmentOptionsDialog.class.getName());
-			if (attachmentOptionsDialog != null)
-			{
-				String format = null;
-				int id = mRadioGroup.getCheckedRadioButtonId();
-				for (int i = 0; i < IDS.length; i++)
-				{
-					if (IDS[i] == id)
-					{
-						format = FORMATS[i];
-						break;
-					}
-				}
-				attachmentOptionsDialog.setReencoding(new GraphicsUtils.Reencoding(format,
-						mQualityForm.getCurrentValue(), mReduceForm.getCurrentValue()));
-			}
-		}
-
-		@Override
-		public void onCheckedChanged(RadioGroup group, int checkedId)
-		{
-			boolean allowQuality = true;
-			for (int i = 0; i < IDS.length; i++)
-			{
-				if (IDS[i] == checkedId)
-				{
-					allowQuality = GraphicsUtils.Reencoding.allowQuality(FORMATS[i]);
-					break;
-				}
-			}
-			mQualityForm.getSeekBar().setEnabled(allowQuality);
-		}
-	}
-
-	public static class AttachmentWarningDialog extends DialogFragment
-	{
-		private static final String EXTRA_ATTACHMENT_INDEX = "attachmentIndex";
-
-		public AttachmentWarningDialog()
-		{
-
-		}
-
-		public AttachmentWarningDialog(int attachmentIndex)
-		{
-			Bundle args = new Bundle();
-			args.putInt(EXTRA_ATTACHMENT_INDEX, attachmentIndex);
-			setArguments(args);
-		}
-
-		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState)
-		{
-			PostingActivity activity = (PostingActivity) getActivity();
-			AttachmentHolder holder = activity.mAttachments.get(getArguments().getInt(EXTRA_ATTACHMENT_INDEX));
-			JpegData jpegData = holder.fileHolder.getJpegData();
-			boolean hasExif = jpegData != null && jpegData.hasExif;
-			int rotation = holder.fileHolder.getRotation();
-			String geolocation = jpegData != null ? jpegData.getGeolocation(false) : null;
-			StringBuilder builder = new StringBuilder();
-			if (hasExif)
-			{
-				if (builder.length() > 0) builder.append(", ");
-				builder.append(getString(R.string.message_image_warning_exif));
-			}
-			if (rotation != 0)
-			{
-				if (builder.length() > 0) builder.append(", ");
-				builder.append(getString(R.string.message_image_warning_orientation));
-			}
-			if (geolocation != null)
-			{
-				if (builder.length() > 0) builder.append(", ");
-				builder.append(getString(R.string.message_image_warning_geolocation));
-			}
-			return new AlertDialog.Builder(getActivity()).setTitle(R.string.text_warning)
-					.setMessage(getString(R.string.message_image_warning, builder.toString()))
-					.setPositiveButton(android.R.string.ok, null).create();
-		}
-	}
-
-	public static class AttachmentRatingDialog extends DialogFragment implements DialogInterface.OnClickListener
-	{
-		private static final String EXTRA_ATTACHMENT_INDEX = "attachmentIndex";
-
-		public AttachmentRatingDialog()
-		{
-
-		}
-
-		public AttachmentRatingDialog(int attachmentIndex)
-		{
-			Bundle args = new Bundle();
-			args.putInt(EXTRA_ATTACHMENT_INDEX, attachmentIndex);
-			setArguments(args);
-		}
-
-		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState)
-		{
-			PostingActivity activity = (PostingActivity) getActivity();
-			AttachmentHolder holder = activity.mAttachments.get(getArguments().getInt(EXTRA_ATTACHMENT_INDEX));
-			String[] items = new String[activity.mAttachmentRatingItems.size()];
-			int checkedItem = 0;
-			for (int i = 0; i < items.length; i++)
-			{
-				Pair<String, String> ratingItem = activity.mAttachmentRatingItems.get(i);
-				items[i] = ratingItem.second;
-				if (ratingItem.first.equals(holder.rating)) checkedItem = i;
-			}
-			return new AlertDialog.Builder(activity).setTitle(R.string.text_rating).setSingleChoiceItems(items,
-					checkedItem, this).setNegativeButton(android.R.string.cancel, null).create();
-		}
-
-		@Override
-		public void onClick(DialogInterface dialog, int which)
-		{
-			dismiss();
-			PostingActivity activity = (PostingActivity) getActivity();
-			AttachmentHolder holder = activity.mAttachments.get(getArguments().getInt(EXTRA_ATTACHMENT_INDEX));
-			holder.rating = activity.mAttachmentRatingItems.get(which).first;
-		}
-	}
-
-	public static class SendPostFailDetailsDialog extends DialogFragment
-	{
-		private static final String EXTRA_EXTRA = "extra";
-
-		public SendPostFailDetailsDialog()
-		{
-
-		}
-
-		public SendPostFailDetailsDialog(Serializable extra)
-		{
-			Bundle args = new Bundle();
-			args.putSerializable(EXTRA_EXTRA, extra);
-			setArguments(args);
-		}
-
-		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState)
-		{
-			String message = null;
-			Object extra = getArguments().getSerializable(EXTRA_EXTRA);
-			if (extra instanceof ApiException.BanExtra)
-			{
-				StringBlockBuilder builder = new StringBlockBuilder();
-				PostDateFormatter formatter = new PostDateFormatter(getActivity());
-				ApiException.BanExtra banExtra = (ApiException.BanExtra) extra;
-				if (!StringUtils.isEmpty(banExtra.id))
-				{
-					builder.appendLine(getString(R.string.text_ban_id_format, banExtra.id));
-				}
-				if (banExtra.startDate > 0L)
-				{
-					builder.appendLine(getString(R.string.text_ban_start_date_format,
-							formatter.format(banExtra.startDate)));
-				}
-				if (banExtra.expireDate > 0L)
-				{
-					builder.appendLine(getString(R.string.text_ban_expires_format,
-							banExtra.expireDate == Long.MAX_VALUE ? getString(R.string.text_ban_expires_never)
-									: formatter.format(banExtra.expireDate)));
-				}
-				if (!StringUtils.isEmpty(banExtra.message))
-				{
-					builder.appendLine(getString(R.string.text_ban_reason_format, banExtra.message));
-				}
-				message = builder.toString();
-			}
-			else if (extra instanceof ApiException.WordsExtra)
-			{
-				StringBuilder builder = new StringBuilder();
-				ApiException.WordsExtra words = (ApiException.WordsExtra) extra;
-				builder.append(getString(R.string.text_rejected_words)).append(": ");
-				boolean first = true;
-				for (String word : words.words)
-				{
-					if (first) first = false; else builder.append(", ");
-					builder.append(word);
-				}
-				message = builder.toString();
-			}
-			AlertDialog dialog = new AlertDialog.Builder(getActivity()).setTitle(R.string.action_details)
-					.setMessage(message).setPositiveButton(android.R.string.ok, null).create();
-			dialog.setOnShowListener(ViewUtils.ALERT_DIALOG_MESSAGE_SELECTABLE);
-			return dialog;
-		}
+		return mPostingConfiguration;
 	}
 
 	private final View.OnClickListener mAttachmentOptionsListener = v ->
@@ -1749,7 +1154,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		AttachmentHolder holder = (AttachmentHolder) v.getTag();
 		int attachmentIndex = mAttachments.indexOf(holder);
 		AttachmentOptionsDialog dialog = new AttachmentOptionsDialog(attachmentIndex);
-		dialog.show(getFragmentManager(), AttachmentOptionsDialog.class.getName());
+		dialog.bindCallback(this).show(getFragmentManager(), AttachmentOptionsDialog.TAG);
 	};
 
 	private final View.OnClickListener mAttachmentWarningListener = v ->
@@ -1757,7 +1162,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		AttachmentHolder holder = (AttachmentHolder) v.getTag();
 		int attachmentIndex = mAttachments.indexOf(holder);
 		AttachmentWarningDialog dialog = new AttachmentWarningDialog(attachmentIndex);
-		dialog.show(getFragmentManager(), AttachmentWarningDialog.class.getName());
+		dialog.bindCallback(this).show(getFragmentManager(), AttachmentWarningDialog.TAG);
 	};
 
 	private final View.OnClickListener mAttachmentRatingListener = v ->
@@ -1765,7 +1170,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		AttachmentHolder holder = (AttachmentHolder) v.getTag();
 		int attachmentIndex = mAttachments.indexOf(holder);
 		AttachmentRatingDialog dialog = new AttachmentRatingDialog(attachmentIndex);
-		dialog.show(getFragmentManager(), AttachmentRatingDialog.class.getName());
+		dialog.bindCallback(this).show(getFragmentManager(), AttachmentRatingDialog.TAG);
 	};
 
 	private final View.OnClickListener mAttachmentRemoveListener = new View.OnClickListener()
