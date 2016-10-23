@@ -378,8 +378,8 @@
 	<string name="message_thread_closed">Тред закрыт</string>
 	<string name="message_thread_not_exist">Тред не существует</string>
 	<string name="message_too_few_meaningful_words">Слишком мало значащих слов</string>
-	<string name="message_tripcode_warning">В этом разделе отключены трипкоды. Пароль будет отправлен в чистом виде без
-		преобразования в трипкод.</string>
+	<string name="message_tripcode_warning">В данном разделе отключены трипкоды. Пароль будет отправлен в чистом виде
+		без преобразования в трипкод.</string>
 	<string name="message_uninstall_reminder">Изменения вступят в силу после перезапуска приложения.</string>
 	<string name="message_unknown_address">Неизвестный адрес</string>
 	<string name="message_unknown_error">Произошла неизвестная ошибка</string>
