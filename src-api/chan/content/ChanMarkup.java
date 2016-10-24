@@ -16,7 +16,6 @@
 
 package chan.content;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
@@ -53,7 +52,6 @@ import com.mishiranu.dashchan.text.style.UnderlyingSpoilerSpan;
 public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 {
 	private final String mChanName;
-	private final boolean mUseInlineLinkParser;
 
 	public static final ChanManager.Initializer INITIALIZER = new ChanManager.Initializer();
 
@@ -65,25 +63,7 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 
 	public ChanMarkup(boolean useInitializer)
 	{
-		if (useInitializer)
-		{
-			mChanName = INITIALIZER.consume().chanName;
-			Method method = null;
-			try
-			{
-				method = getClass().getMethod("obtainPostLinkThreadPostNumbers", String.class);
-			}
-			catch (Exception e)
-			{
-
-			}
-			mUseInlineLinkParser = method != null && !ChanMarkup.class.equals(method.getDeclaringClass());
-		}
-		else
-		{
-			mChanName = null;
-			mUseInlineLinkParser = true;
-		}
+		mChanName = useInitializer ? INITIALIZER.consume().chanName : null;
 	}
 
 	@Override
@@ -523,21 +503,15 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 		}
 	}
 
-	@Extendable
-	protected Pair<String, String> obtainPostLinkThreadPostNumbers(String uriString)
+	private final class NotImplementedException extends Exception
 	{
-		return null;
+
 	}
 
-	private Pair<String, String> obtainPostLinkThreadPostNumbers(HtmlParser parser, String uriString)
+	@Extendable
+	protected Pair<String, String> obtainPostLinkThreadPostNumbers(String uriString) throws NotImplementedException
 	{
-		MarkupExtra extra = parser.getExtra();
-		if (extra == null) return null;
-		ChanLocator locator = ChanLocator.get(mChanName);
-		Uri uri = locator.validateClickedUriString(uriString, extra.getBoardName(), extra.getThreadNumber());
-		String threadNumber = locator.safe(false).getThreadNumber(uri);
-		String postNumber = locator.safe(false).getPostNumber(uri);
-		return threadNumber == null && postNumber == null ? null : new Pair<>(threadNumber, postNumber);
+		throw new NotImplementedException();
 	}
 
 	@Override
@@ -680,9 +654,12 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 					if (!(i < 2 && c == '>' || i >= 2 && c >= '0' && c <= '9')) return;
 				}
 				String uriString = linkHolder.uriString;
-				Pair<String, String> numbers = null;
-				if (mUseInlineLinkParser)
+				String threadNumber = null;
+				String postNumber = null;
+				boolean success = false;
+				try
 				{
+					Pair<String,String> numbers = null;
 					try
 					{
 						numbers = obtainPostLinkThreadPostNumbers(uriString);
@@ -691,12 +668,28 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup
 					{
 						ExtensionException.logException(e, false);
 					}
+					if (numbers != null)
+					{
+						threadNumber = numbers.first;
+						postNumber = numbers.second;
+						success = true;
+					}
 				}
-				else numbers = obtainPostLinkThreadPostNumbers(parser, uriString);
-				if (numbers != null)
+				catch (NotImplementedException e)
 				{
-					String threadNumber = numbers.first;
-					String postNumber = numbers.second;
+					MarkupExtra extra = parser.getExtra();
+					if (extra != null)
+					{
+						ChanLocator locator = ChanLocator.get(mChanName);
+						Uri uri = locator.validateClickedUriString(uriString, extra.getBoardName(),
+								extra.getThreadNumber());
+						threadNumber = locator.safe(false).getThreadNumber(uri);
+						postNumber = locator.safe(false).getPostNumber(uri);
+						success = threadNumber != null || postNumber != null;
+					}
+				}
+				if (success)
+				{
 					LinkSuffixHolder linkSuffixHolder = new LinkSuffixHolder();
 					linkSuffixHolder.postNumber = postNumber;
 					linkHolder.postNumber = StringUtils.isEmpty(postNumber) ? threadNumber : postNumber;
