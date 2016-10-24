@@ -227,7 +227,7 @@
 	<string name="action_hide_similar">Похожие сообщения</string>
 	<string name="action_history">История</string>
 	<string name="action_load_captcha">Нажмите, чтобы загрузить капчу</string>
-	<string name="action_lock_drawer">Фиксир. меню</string>
+	<string name="action_lock_drawer">Фиксир. панель</string>
 	<string name="action_make_home_page">Сделать домашней</string>
 	<string name="action_make_threadshot">Сделать тредшот</string>
 	<string name="action_technical_info">Технич. информация</string>
@@ -407,6 +407,7 @@
 	<string name="preference_category_downloading">Загрузка</string>
 	<string name="preference_category_images">Изображения</string>
 	<string name="preference_category_navigation">Навигация</string>
+	<string name="preference_category_navigation_drawer">Панель навигации</string>
 	<string name="preference_category_posts">Список сообщений</string>
 	<string name="preference_category_services">Сервисы</string>
 	<string name="preference_category_submission">Форма отправки</string>
@@ -477,6 +478,12 @@
 	</string-array>
 	<string name="preference_download_youtube_titles">Заголовки YouTube видео</string>
 	<string name="preference_download_youtube_titles_summary">Загружать и отображать заголовки вместо ссылок</string>
+	<string name="preference_drawer_initial_position">Начальное положение</string>
+	<string-array name="preference_drawer_initial_position_choices">
+		<item>Закрыта</item>
+		<item>Избранное</item>
+		<item>Форумы</item>
+	</string-array>
 	<string name="preference_favorite_on_reply">Добавлять тред при ответе</string>
 	<string name="preference_favorites_order">Сортировка избранных тредов</string>
 	<string-array name="preference_favorites_order_choices">
@@ -507,7 +514,7 @@
 	<string name="preference_notify_download_complete_summary">Будет показано всплывающее уведомление</string>
 	<string name="preference_page_by_page">Постраничное перелистывание раздела</string>
 	<string name="preference_page_by_page_summary">Не использовать длинный список тредов</string>
-	<string name="preference_pages_list">Порядок категорий меню</string>
+	<string name="preference_pages_list">Порядок категорий</string>
 	<string-array name="preference_pages_list_choices">
 		<item>Сначала страницы</item>
 		<item>Сначала избранное</item>

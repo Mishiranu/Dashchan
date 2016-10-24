@@ -446,7 +446,6 @@
 		download</string>
 	<string name="preference_page_by_page">Navegação página por página</string>
 	<string name="preference_page_by_page_summary">Não mostrar lista longa</string>
-	<string name="preference_pages_list">Ordem dos fios no drawer</string>
 	<string-array name="preference_pages_list_choices">
 		<item>Páginas primeiro</item>
 		<item>Favoritos primeiro</item>

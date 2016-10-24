@@ -387,6 +387,7 @@
 	<string name="preference_category_downloading">Downloading</string>
 	<string name="preference_category_images">Images</string>
 	<string name="preference_category_navigation">Navigation</string>
+	<string name="preference_category_navigation_drawer">Navigation drawer</string>
 	<string name="preference_category_posts">Posts list</string>
 	<string name="preference_category_services">Services</string>
 	<string name="preference_category_submission">Submission form</string>
@@ -456,6 +457,12 @@
 	</string-array>
 	<string name="preference_download_youtube_titles">YouTube video titles</string>
 	<string name="preference_download_youtube_titles_summary">Download and display titles instead of links</string>
+	<string name="preference_drawer_initial_position">Initial position</string>
+	<string-array name="preference_drawer_initial_position_choices">
+		<item>Closed</item>
+		<item>Favorites</item>
+		<item>Forums</item>
+	</string-array>
 	<string name="preference_favorite_on_reply">Add thread on reply</string>
 	<string name="preference_favorites_order">Favorite threads order</string>
 	<string-array name="preference_favorites_order_choices">
@@ -486,7 +493,7 @@
 	<string name="preference_notify_download_complete_summary">Will show \"Heads-Up\" notification</string>
 	<string name="preference_page_by_page">Page by page board navigation</string>
 	<string name="preference_page_by_page_summary">Don\'t use long list</string>
-	<string name="preference_pages_list">Drawer headers order</string>
+	<string name="preference_pages_list">Headers order</string>
 	<string-array name="preference_pages_list_choices">
 		<item>Pages first</item>
 		<item>Favorites first</item>

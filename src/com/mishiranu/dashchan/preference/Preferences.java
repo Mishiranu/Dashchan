@@ -533,6 +533,27 @@ public class Preferences
 		return PREFERENCES.getBoolean(KEY_DOWNLOAD_YOUTUBE_TITLES, DEFAULT_DOWNLOAD_YOUTUBE_TITLES);
 	}
 
+	public static final String KEY_DRAWER_INITIAL_POSITION = "drawer_initial_position";
+	public static final String VALUE_DRAWER_INITIAL_POSITION_CLOSED = "closed";
+	public static final String VALUE_DRAWER_INITIAL_POSITION_FAVORITES = "favorites";
+	public static final String VALUE_DRAWER_INITIAL_POSITION_FORUMS = "forums";
+	public static final String[] VALUES_DRAWER_INITIAL_POSITION = new String[] {VALUE_DRAWER_INITIAL_POSITION_CLOSED,
+			VALUE_DRAWER_INITIAL_POSITION_FAVORITES, VALUE_DRAWER_INITIAL_POSITION_FORUMS};
+	public static final String DEFAULT_DRAWER_INITIAL_POSITION = VALUE_DRAWER_INITIAL_POSITION_CLOSED;
+
+	public static final int DRAWER_INITIAL_POSITION_CLOSED = 0;
+	public static final int DRAWER_INITIAL_POSITION_FAVORITES = 1;
+	public static final int DRAWER_INITIAL_POSITION_FORUMS = 2;
+
+	public static int getDrawerInitialPosition()
+	{
+		String value = PREFERENCES.getString(KEY_DRAWER_INITIAL_POSITION, DEFAULT_DRAWER_INITIAL_POSITION);
+		if (VALUE_DRAWER_INITIAL_POSITION_CLOSED.equals(value)) return DRAWER_INITIAL_POSITION_CLOSED;
+		if (VALUE_DRAWER_INITIAL_POSITION_FAVORITES.equals(value)) return DRAWER_INITIAL_POSITION_FAVORITES;
+		if (VALUE_DRAWER_INITIAL_POSITION_FORUMS.equals(value)) return DRAWER_INITIAL_POSITION_FORUMS;
+		return DRAWER_INITIAL_POSITION_CLOSED;
+	}
+
 	public static final String KEY_EXPANDED_SCREEN = "expanded_screen";
 	public static final boolean DEFAULT_EXPANDED_SCREEN = false;
 
