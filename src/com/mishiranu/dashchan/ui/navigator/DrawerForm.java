@@ -186,7 +186,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		selectorContainer.setOnClickListener(v ->
 		{
 			hideKeyboard();
-			setChanSelectMode(!mChanSelectMode);
+			setChanSelectModeInternal(!mChanSelectMode);
 		});
 		linearLayout.addView(selectorContainer);
 		selectorContainer.setMinimumHeight((int) (40f * density));
@@ -285,7 +285,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		return mHeaderView;
 	}
 
-	private void setChanSelectMode(boolean enabled)
+	private void setChanSelectModeInternal(boolean enabled)
 	{
 		if (mChanSelectMode != enabled)
 		{
@@ -294,6 +294,11 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			notifyDataSetChanged();
 			mListView.setSelection(0);
 		}
+	}
+
+	public void setChanSelectMode(boolean enabled)
+	{
+		if (mChans.size() > 1) setChanSelectModeInternal(enabled);
 	}
 
 	@Override
@@ -443,7 +448,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 				case ListItem.ITEM_CHAN:
 				{
 					mCallback.onSelectChan(listItem.chanName);
-					setChanSelectMode(false);
+					setChanSelectModeInternal(false);
 					if (C.API_LOLLIPOP) mListView.getSelector().jumpToCurrentState();
 					break;
 				}
@@ -623,7 +628,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 	public void onDrawerClosed(View drawerView)
 	{
 		hideKeyboard();
-		setChanSelectMode(false);
+		setChanSelectModeInternal(false);
 	}
 
 	@Override

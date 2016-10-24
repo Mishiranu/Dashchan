@@ -237,7 +237,19 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		if (savedInstanceState == null) savedInstanceState = mPageManager.readFromStorage();
 		PageHolder savedCurrentPage = mPageManager.restore(savedInstanceState);
 		if (savedCurrentPage != null) handleData(savedCurrentPage, false); else handleIntent(getIntent(), false);
-		if (savedInstanceState == null) startUpdateTask();
+		if (savedInstanceState == null)
+		{
+			startUpdateTask();
+			int drawerInitialPosition = Preferences.getDrawerInitialPosition();
+			if (drawerInitialPosition != Preferences.DRAWER_INITIAL_POSITION_CLOSED)
+			{
+				if (!mWideMode) mDrawerLayout.post(() -> mDrawerLayout.openDrawer(Gravity.START));
+				if (drawerInitialPosition == Preferences.DRAWER_INITIAL_POSITION_FORUMS)
+				{
+					mDrawerForm.setChanSelectMode(true);
+				}
+			}
+		}
 	}
 
 	@Override

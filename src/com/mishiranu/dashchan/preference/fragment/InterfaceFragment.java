@@ -41,8 +41,13 @@ public class InterfaceFragment extends BasePreferenceFragment
 				R.string.preference_active_scrollbar, 0);
 		makeCheckBox(null, true, Preferences.KEY_SCROLL_THREAD_GALLERY, Preferences.DEFAULT_SCROLL_THREAD_GALLERY,
 				R.string.preference_scroll_thread_gallery, 0);
-		makeList(null, Preferences.KEY_PAGES_LIST, Preferences.VALUES_PAGES_LIST, Preferences.DEFAULT_PAGES_LIST,
-				R.string.preference_pages_list, R.array.preference_pages_list_choices);
+
+		PreferenceCategory navigationDrawerCategory = makeCategory(R.string.preference_category_navigation_drawer);
+		makeList(navigationDrawerCategory, Preferences.KEY_PAGES_LIST, Preferences.VALUES_PAGES_LIST,
+				Preferences.DEFAULT_PAGES_LIST, R.string.preference_pages_list, R.array.preference_pages_list_choices);
+		makeList(navigationDrawerCategory, Preferences.KEY_DRAWER_INITIAL_POSITION,
+				Preferences.VALUES_DRAWER_INITIAL_POSITION, Preferences.DEFAULT_DRAWER_INITIAL_POSITION,
+				R.string.preference_drawer_initial_position, R.array.preference_drawer_initial_position_choices);
 
 		PreferenceCategory threadsCategory = makeCategory(R.string.preference_category_threads);
 		makeCheckBox(threadsCategory, true, Preferences.KEY_PAGE_BY_PAGE, Preferences.DEFAULT_PAGE_BY_PAGE,
