@@ -702,9 +702,6 @@ public class ChanPerformer implements ChanManager.Linked
 	@Public
 	public static class ReadCaptchaData implements HttpRequest.HolderPreset
 	{
-		@Public public static final String REQUIREMENT_NEW_THREAD = "new_thread";
-		@Public public static final String REQUIREMENT_REPLY_TO_THREAD = "reply_to_thread";
-
 		@Public public final String captchaType;
 		@Public public final String[] captchaPass;
 		@Public public final boolean mayShowLoadButton;
