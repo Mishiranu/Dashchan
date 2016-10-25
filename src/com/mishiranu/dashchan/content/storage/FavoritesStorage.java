@@ -220,9 +220,8 @@ public class FavoritesStorage extends StorageManager.Storage
 			else mFavoriteItemsList.add(favoriteItem);
 			sortIfNeededInternal();
 			notifyFavoritesUpdate(favoriteItem, ACTION_ADD);
-			if (favoriteItem.threadNumber != null && Preferences.isWatcherWatchInitially())
+			if (favoriteItem.threadNumber != null && favoriteItem.watcherEnabled)
 			{
-				favoriteItem.watcherEnabled = true;
 				notifyFavoritesUpdate(favoriteItem, ACTION_WATCHER_ENABLE);
 			}
 			serialize();
@@ -238,12 +237,44 @@ public class FavoritesStorage extends StorageManager.Storage
 		favoriteItem.title = title;
 		favoriteItem.postsCount = postsCount;
 		favoriteItem.newPostsCount = postsCount;
+		favoriteItem.watcherEnabled = favoriteItem.threadNumber != null && Preferences.isWatcherWatchInitially();
 		add(favoriteItem);
 	}
 
 	public void add(String chanName, String boardName)
 	{
 		add(chanName, boardName, null, null, 0);
+	}
+
+	public void move(String chanName, String fromBoardName, String fromThreadNumber,
+			String toBoardName, String toThreadNumber)
+	{
+		String fromKey = makeKey(chanName, fromBoardName, fromThreadNumber);
+		String toKey = makeKey(chanName, toBoardName, toThreadNumber);
+		FavoriteItem fromFavoriteItem = mFavoriteItemsMap.get(fromKey);
+		if (fromFavoriteItem != null)
+		{
+			int fromIndex = mFavoriteItemsList.indexOf(fromFavoriteItem);
+			remove(chanName, fromBoardName, fromThreadNumber);
+			if (mFavoriteItemsMap.get(toKey) == null)
+			{
+				FavoriteItem toFavoriteItem = new FavoriteItem();
+				toFavoriteItem.chanName = chanName;
+				toFavoriteItem.boardName = toBoardName;
+				toFavoriteItem.threadNumber = toThreadNumber;
+				toFavoriteItem.title = fromFavoriteItem.title;
+				toFavoriteItem.modifiedTitle = fromFavoriteItem.modifiedTitle;
+				toFavoriteItem.watcherEnabled = fromFavoriteItem.watcherEnabled
+						|| fromFavoriteItem.threadNumber != null && Preferences.isWatcherWatchInitially();
+				toFavoriteItem.postsCount = fromFavoriteItem.postsCount;
+				toFavoriteItem.newPostsCount = fromFavoriteItem.newPostsCount;
+				toFavoriteItem.hasNewPosts = fromFavoriteItem.hasNewPosts;
+				toFavoriteItem.watcherValidator = fromFavoriteItem.watcherValidator;
+				add(toFavoriteItem);
+				moveAfter(toFavoriteItem, fromIndex > 0 ? mFavoriteItemsList.get(fromIndex - 1) : null);
+			}
+			serialize();
+		}
 	}
 
 	public void moveAfter(FavoriteItem favoriteItem, FavoriteItem afterFavoriteItem)

@@ -940,6 +940,32 @@ public class CacheManager implements Runnable
 		}
 	}
 
+	public void movePostsPage(String chanName, String fromBoardName, String fromThreadNumber,
+			String toBoardName, String toThreadNumber)
+	{
+		String fromFileName = getPostsFileName(chanName, fromBoardName, fromThreadNumber);
+		String toFileName = getPostsFileName(chanName, toBoardName, toThreadNumber);
+		File fromFile = getPagesFile(fromFileName);
+		File toFile = getPagesFile(toFileName);
+		File fromTempFile = getPagesFile(TEMP_PAGE_FILE_PREFIX + fromFileName);
+		File toTempFile = getPagesFile(TEMP_PAGE_FILE_PREFIX + toFileName);
+		if (fromFile == null || toFile == null || fromTempFile == null || toFileName == null) return;
+		synchronized (obtainPageFileLock(fromFile.getName()))
+		{
+			synchronized (obtainPageFileLock(toFile.getName()))
+			{
+				if (fromFile.exists() && !toFile.exists())
+				{
+					toTempFile.delete();
+					fromFile.renameTo(toFile);
+					fromTempFile.renameTo(toTempFile);
+					validateNewCachedFile(fromFile, fromFile.getName(), CacheItem.TYPE_PAGES, false);
+					validateNewCachedFile(toFile, toFile.getName(), CacheItem.TYPE_PAGES, true);
+				}
+			}
+		}
+	}
+
 	public boolean allowPagesCache(String chanName)
 	{
 		return !ChanConfiguration.get(chanName).getOption(ChanConfiguration.OPTION_HIDDEN_DISABLE_SERIALIZATION);
