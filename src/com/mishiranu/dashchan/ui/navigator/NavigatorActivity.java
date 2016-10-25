@@ -70,9 +70,11 @@ import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.async.ReadUpdateTask;
 import com.mishiranu.dashchan.content.service.PostingService;
 import com.mishiranu.dashchan.content.service.WatcherService;
+import com.mishiranu.dashchan.content.storage.DraftsStorage;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.graphics.ThemeChoiceDrawable;
@@ -1542,6 +1544,16 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		if (pageHolder.isThreadsOrPosts())
 		{
 			mPageManager.removeCurrentPage();
+			if (pageHolder.content == PageHolder.Content.POSTS)
+			{
+				FavoritesStorage.getInstance().move(pageHolder.chanName,
+						pageHolder.boardName, pageHolder.threadNumber, boardName, threadNumber);
+				CacheManager.getInstance().movePostsPage(pageHolder.chanName,
+						pageHolder.boardName, pageHolder.threadNumber, boardName, threadNumber);
+				DraftsStorage.getInstance().movePostDraft(pageHolder.chanName,
+						pageHolder.boardName, pageHolder.threadNumber, boardName, threadNumber);
+				mDrawerForm.invalidateItems(true, false);
+			}
 			if (threadNumber == null) navigateBoardsOrThreads(chanName, boardName, false, false);
 			else navigatePosts(chanName, boardName, threadNumber, postNumber, null, false);
 		}

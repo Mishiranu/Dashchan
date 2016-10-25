@@ -131,6 +131,32 @@ public class DraftsStorage extends StorageManager.Storage
 		if (postDraft != null) serialize();
 	}
 
+	public void movePostDraft(String chanName, String fromBoardName, String fromThreadNumber,
+			String toBoardName, String toThreadNumber)
+	{
+		String fromKey = makeKey(chanName, fromBoardName, fromThreadNumber);
+		String toKey = makeKey(chanName, toBoardName, toThreadNumber);
+		PostDraft postDraft = mPostDrafts.get(fromKey);
+		if (postDraft != null)
+		{
+			if (mPostDrafts.get(toKey) == null)
+			{
+				ArrayList<PostDraft> postDrafts = new ArrayList<>(mPostDrafts.values());
+				int index = postDrafts.indexOf(postDraft);
+				postDrafts.remove(index);
+				postDraft = new PostDraft(chanName, toBoardName, toThreadNumber, postDraft.name, postDraft.email,
+						postDraft.password, postDraft.subject, postDraft.comment, postDraft.commentCarriage,
+						postDraft.attachmentDrafts, postDraft.optionSage, postDraft.optionSpoiler,
+						postDraft.optionOriginalPoster, postDraft.userIcon);
+				postDrafts.add(index, postDraft);
+				mPostDrafts.clear();
+				for (PostDraft addPostDraft : postDrafts) mPostDrafts.put(makeKey(addPostDraft), addPostDraft);
+			}
+			else mPostDrafts.remove(fromKey);
+			serialize();
+		}
+	}
+
 	public void store(String chanName, CaptchaDraft captchaDraft)
 	{
 		mCaptchaChanName = chanName;
