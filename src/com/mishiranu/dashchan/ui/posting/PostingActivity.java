@@ -1008,10 +1008,8 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		boolean forceCaptcha = (boolean) extra.get(EXTRA_FORCE_CAPTCHA);
 		boolean mayShowLoadButton = (boolean) extra.get(EXTRA_MAY_SHOW_LOAD_BUTTON);
 		String[] captchaPass = forceCaptcha ? null : Preferences.getCaptchaPass(mChanName);
-		String requirement = mThreadNumber != null ? ChanPerformer.ReadCaptchaData.REQUIREMENT_REPLY_TO_THREAD
-				: ChanPerformer.ReadCaptchaData.REQUIREMENT_NEW_THREAD;
 		ReadCaptchaHolder holder = new ReadCaptchaHolder();
-		ReadCaptchaTask task = new ReadCaptchaTask(holder, null, mCaptchaType, requirement, captchaPass,
+		ReadCaptchaTask task = new ReadCaptchaTask(holder, null, mCaptchaType, null, captchaPass,
 				mayShowLoadButton, mChanName, mBoardName, mThreadNumber);
 		task.executeOnExecutor(ReadCaptchaTask.THREAD_POOL_EXECUTOR);
 		return holder.attach(task);
