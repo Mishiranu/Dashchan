@@ -16,10 +16,12 @@
 
 package com.mishiranu.dashchan.text.style;
 
+import android.annotation.SuppressLint;
 import android.text.TextPaint;
 import android.text.style.TypefaceSpan;
 
 // TypefaceSpan("sans-serif-light") + RelativeSizeSpan(SCALE)
+@SuppressLint("ParcelCreator")
 public class HeadingSpan extends TypefaceSpan
 {
 	private static final float SCALE = 5f / 4f;

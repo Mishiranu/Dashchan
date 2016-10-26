@@ -172,12 +172,6 @@
 	<string name="text_updates_available_format">Доступно обновлений: %d</string>
 	<string name="text_user_banned">Бан</string>
 	<string name="text_user_warned">Предупреждение</string>
-	<plurals name="text_views_count_format">
-		<item quantity="one">%d просмотр</item>
-		<item quantity="few">%d просмотра</item>
-		<item quantity="many">%d просмотров</item>
-		<item quantity="other">%d просмотров</item>
-	</plurals>
 	<string name="text_warning">Предупреждение</string>
 	<string name="text_with_name_format">С именем %s</string>
 	<string name="text_without_updating">Без обновления</string>

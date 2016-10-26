@@ -273,7 +273,6 @@ public abstract class FileHolder implements Serializable
 		{
 			BitmapFactory.Options options = new BitmapFactory.Options();
 			options.inSampleSize = calculateInSampleSize(maxSize, imageData.width, imageData.height);
-			options.inDither = true;
 			Bitmap bitmap = readBitmapInternal(options, mayUseRegionDecoder, mayUseWebViewDecoder);
 			if (bitmap != null && imageData.jpegData != null)
 			{

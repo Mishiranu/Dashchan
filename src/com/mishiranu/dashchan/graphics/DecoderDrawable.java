@@ -35,6 +35,7 @@ import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.view.View;
 
+import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.Log;
@@ -283,7 +284,6 @@ public class DecoderDrawable extends Drawable
 				matrix.mapRect(rectF);
 				mRect.set((int) rectF.left, (int) rectF.top, (int) rectF.right, (int) rectF.bottom);
 			}
-			mOptions.inDither = true;
 			mOptions.inSampleSize = scale;
 		}
 
@@ -315,10 +315,11 @@ public class DecoderDrawable extends Drawable
 			}
 		}
 
+		@SuppressWarnings("deprecation")
 		public void cancel()
 		{
 			cancel(false);
-			mOptions.mCancel = true;
+			if (!C.API_NOUGAT) mOptions.mCancel = true;
 		}
 
 		@Override

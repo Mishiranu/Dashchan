@@ -143,10 +143,6 @@
 	<string name="text_updates_available_format">Atualizações disponíveis: %d</string>
 	<string name="text_user_banned">Usuário foi convidado a visitar os amiguinhosrsrs</string>
 	<string name="text_user_warned">Usuário foi avisado</string>
-	<plurals name="text_views_count_format">
-		<item quantity="one">%d visto</item>
-		<item quantity="other">%d vistos</item>
-	</plurals>
 	<string name="text_with_name_format">Com nome %s</string>
 	<string name="text_without_updating">Sem atualização</string>
 	<string name="text_yesterday">Ontem</string>

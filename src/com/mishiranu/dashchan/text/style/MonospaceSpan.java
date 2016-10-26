@@ -16,8 +16,10 @@
 
 package com.mishiranu.dashchan.text.style;
 
+import android.annotation.SuppressLint;
 import android.text.style.TypefaceSpan;
 
+@SuppressLint("ParcelCreator")
 public class MonospaceSpan extends TypefaceSpan
 {
 	private final boolean mAsciiArt;

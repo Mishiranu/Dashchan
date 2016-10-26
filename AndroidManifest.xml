@@ -17,6 +17,7 @@
 -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
 	package="com.mishiranu.dashchan"
 	android:versionCode="1031"
 	android:versionName="2.8.3">
@@ -28,9 +29,10 @@
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 	<uses-permission android:name="android.permission.WAKE_LOCK" />
 
-	<application android:name=".content.MainApplication" android:allowBackup="true" android:label="@string/const_app_name"
-		android:icon="@drawable/ic_launcher" android:logo="@drawable/ic_logo" android:theme="@style/Theme.Special.Stub"
-		android:largeHeap="true">
+	<application android:name=".content.MainApplication" tools:ignore="GoogleAppIndexingWarning"
+		android:label="@string/const_app_name" android:icon="@drawable/ic_launcher" android:logo="@drawable/ic_logo"
+		android:theme="@style/Theme.Special.Stub" android:largeHeap="true"
+		android:allowBackup="true" android:fullBackupContent="true">
 
 		<activity android:name=".ui.LauncherActivity">
 

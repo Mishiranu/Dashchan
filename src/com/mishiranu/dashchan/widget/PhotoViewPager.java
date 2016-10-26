@@ -18,6 +18,7 @@ package com.mishiranu.dashchan.widget;
 
 import java.util.ArrayList;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.view.MotionEvent;
@@ -30,6 +31,7 @@ import android.widget.OverScroller;
 
 import com.mishiranu.dashchan.util.ResourceUtils;
 
+@SuppressLint("ViewConstructor")
 public class PhotoViewPager extends ViewGroup
 {
 	private static final int MAX_SETTLE_DURATION = 600;
