@@ -21,7 +21,7 @@ import java.lang.reflect.Method;
 
 import android.content.Context;
 import android.content.res.Configuration;
-import android.util.SparseArray;
+import android.util.SparseBooleanArray;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -65,7 +65,7 @@ public class ActionMenuConfigurator
 	}
 
 	// True for SHOW_AS_ACTION_ALWAYS, false for SHOW_AS_ACTION_IF_ROOM
-	private final SparseArray<Boolean> mDisplay = new SparseArray<>();
+	private final SparseBooleanArray mDisplay = new SparseBooleanArray();
 	private Menu mLastMenu;
 
 	public void onConfigurationChanged(Configuration newConfig)
@@ -120,12 +120,8 @@ public class ActionMenuConfigurator
 			MenuItem menuItem = menu.getItem(i);
 			if (menuItem.isVisible())
 			{
-				Boolean display = mDisplay.get(menuItem.getItemId());
-				if (display != null)
-				{
-					if (display) used++;
-				}
-				else if (mayOverflow)
+				if (mDisplay.get(menuItem.getItemId())) used++;
+				else if (mayOverflow && mDisplay.indexOfKey(menuItem.getItemId()) < 0)
 				{
 					mayOverflow = false;
 					used++;
@@ -137,8 +133,7 @@ public class ActionMenuConfigurator
 			MenuItem menuItem = menu.getItem(i);
 			if (menuItem.isVisible())
 			{
-				Boolean display = mDisplay.get(menuItem.getItemId());
-				if (display != null && !display)
+				if (mDisplay.get(menuItem.getItemId()))
 				{
 					if (used < maxCount)
 					{
