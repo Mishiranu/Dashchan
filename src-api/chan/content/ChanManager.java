@@ -707,6 +707,7 @@ public class ChanManager
 		return null;
 	}
 
+	@SuppressWarnings("deprecation")
 	public void updateConfiguration(Configuration newConfig, DisplayMetrics metrics)
 	{
 		for (ChanHolder chanHolder : mChanHolders.values())

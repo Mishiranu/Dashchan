@@ -157,10 +157,6 @@
 	<string name="text_updates_available_format">Updates available: %d</string>
 	<string name="text_user_banned">User banned</string>
 	<string name="text_user_warned">User warned</string>
-	<plurals name="text_views_count_format">
-		<item quantity="one">%d view</item>
-		<item quantity="other">%d views</item>
-	</plurals>
 	<string name="text_warning">Warning</string>
 	<string name="text_with_name_format">With name %s</string>
 	<string name="text_without_updating">Without updating</string>

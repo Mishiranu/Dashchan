@@ -18,6 +18,7 @@ package com.mishiranu.dashchan.content.async;
 
 import chan.http.HttpHolder;
 
+@SuppressWarnings("unchecked")
 public abstract class HttpHolderTask<Params, Progress, Result> extends CancellableTask<Params, Progress, Result>
 {
 	private final HttpHolder mHolder = new HttpHolder();
