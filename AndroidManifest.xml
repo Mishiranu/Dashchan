@@ -19,8 +19,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:tools="http://schemas.android.com/tools"
 	package="com.mishiranu.dashchan"
-	android:versionCode="1031"
-	android:versionName="2.8.3">
+	android:versionCode="1032"
+	android:versionName="2.9.0">
 
 	<uses-sdk android:minSdkVersion="16" android:targetSdkVersion="23"/>
 
