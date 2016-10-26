@@ -100,6 +100,7 @@ import com.mishiranu.dashchan.ui.posting.dialog.SendPostFailDetailsDialog;
 import com.mishiranu.dashchan.ui.posting.text.CommentEditWatcher;
 import com.mishiranu.dashchan.ui.posting.text.MarkupButtonProvider;
 import com.mishiranu.dashchan.ui.posting.text.NameEditWatcher;
+import com.mishiranu.dashchan.ui.posting.text.QuoteEditWatcher;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
@@ -251,6 +252,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		mCommentView.addTextChangedListener(new CommentEditWatcher(mPostingConfiguration,
 				mCommentView, remainingCharacters, () -> mScrollView.postResizeComment(),
 				() -> DraftsStorage.getInstance().store(obtainPostDraft())));
+		mCommentView.addTextChangedListener(new QuoteEditWatcher(this));
 		mTextFormatView = (ViewGroup) findViewById(R.id.text_format_view);
 		mUserIconItems = posting.userIcons.size() > 0 ? posting.userIcons : null;
 		mAttachmentRatingItems = posting.attachmentRatings.size() > 0 ? posting.attachmentRatings : null;
