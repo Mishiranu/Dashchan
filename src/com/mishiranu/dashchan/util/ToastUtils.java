@@ -22,6 +22,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.widget.Toast;
 
+import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.widget.ClickableToast;
 
@@ -80,12 +81,12 @@ public class ToastUtils implements Runnable
 
 	public static void show(Context context, int resId)
 	{
-		show(context, context.getString(resId));
+		show(context, context.getString(resId != 0 ? resId : R.string.message_unknown_error));
 	}
 
 	public static void show(Context context, ErrorItem errorItem)
 	{
-		show(context, errorItem.toString());
+		if (errorItem != null) show(context, errorItem.toString()); else show(context, 0);
 	}
 
 	public static void cancel()
