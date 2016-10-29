@@ -19,6 +19,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | anonfm          | anon.fm              | [DashchanAnonfm.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanAnonfm.apk)                   |
 | apachan         | apachan.net          | [DashchanApachan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanApachan.apk)                 |
 | brchan          | brchan.org           | [DashchanBrchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanBrchan.apk)                   |
+| britfags        | britfa.gs            | [DashchanBritfags.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanBritfags.apk)               |
 | cablesix        | cable6.net           | [DashchanCableSix.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanCableSix.apk)               |
 | chiochan        | 410chan.org          | [DashchanChiochan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanChiochan.apk)               |
 | chuckdfwk       | chuck.dfwk.ru        | [DashchanChuckDfwk.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanChuckDfwk.apk)             |
@@ -34,12 +35,14 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | horochan        | horochan.ru          | [DashchanHorochan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanHorochan.apk)               |
 | infinite        | 8ch.net              | [DashchanInfinite.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanInfinite.apk)               |
 | krautchan       | krautchan.net        | [DashchanKrautchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanKrautchan.apk)             |
+| kropyvach       | kropyva.ch           | [DashchanKropyvach.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanKropyvach.apk)             |
 | kurisach        | kurisa.ch            | [DashchanKurisach.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanKurisach.apk)               |
 | lainchan        | lainchan.org         | [DashchanLainchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanLainchan.apk)               |
 | makabapaid      | 2channel.hk          | [DashchanMakabaPaid.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanMakabaPaid.apk)           |
 | meguca          | meguca.org           | [DashchanMeguca.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanMeguca.apk)                   |
 | nowere          | nowere.net           | [DashchanNowere.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNowere.apk)                   |
 | nulldvachin     | 02ch.in              | [DashchanNulldvachin.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNulldvachin.apk)         |
+| nulldvachnet    | 02ch.net             | [DashchanNulldvachnet.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNulldvachnet.apk)       |
 | nulleu          | 0chan.eu             | [DashchanNulleu.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNulleu.apk)                   |
 | nullnyan        | 0nyan.ml             | [DashchanNullnyan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNullnyan.apk)               |
 | nulltirech      | 0-chan.ru            | [DashchanNulltirech.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNulltirech.apk)           |
@@ -58,6 +61,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | tiretirech      | 2--ch.ru             | [DashchanTiretirech.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanTiretirech.apk)           |
 | tumbach         | tumba.ch             | [DashchanTumbach.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanTumbach.apk)                 |
 | twowatch        | 2watch.su            | [DashchanTwowatch.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanTwowatch.apk)               |
+| uboachan        | uboachan.net         | [DashchanUboachan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanUboachan.apk)               |
 | valkyria        | u18chan.com          | [DashchanValkyria.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanValkyria.apk)               |
 | wizardchan      | wizchan.org          | [DashchanWizardchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanWizardchan.apk)           |
 
