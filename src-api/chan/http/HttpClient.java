@@ -470,15 +470,17 @@ public class HttpClient
 						{
 							Uri.Builder builder = redirectedUri.buildUpon().scheme(requestedUri.getScheme())
 									.authority(requestedUri.getAuthority());
-							String path = redirectedUri.getPath();
-							if (path == null || !path.startsWith("/"))
+							String redirectedPath = StringUtils.emptyIfNull(redirectedUri.getPath());
+							if (!redirectedPath.isEmpty() && !redirectedPath.startsWith("/"))
 							{
-								String requestedPath = requestedUri.getPath();
-								if (!StringUtils.isEmpty(requestedPath))
+								String path = StringUtils.emptyIfNull(requestedUri.getPath());
+								if (!path.endsWith("/"))
 								{
-									builder.path(requestedPath);
-									if (path != null) builder.appendEncodedPath(path);
+									int index = path.lastIndexOf('/');
+									if (index >= 0) path = path.substring(0, index + 1); else path = "/";
 								}
+								path += redirectedPath;
+								builder.path(path);
 							}
 							redirectedUri = builder.build();
 						}
