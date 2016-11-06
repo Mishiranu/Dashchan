@@ -445,9 +445,7 @@ public abstract class AttachmentItem
 			{
 				attachmentItem.thumbnailUri = thumbnailUri;
 			}
-			String displayedExtenstion = C.EXTENSION_TRANSFORMATION.get(extension);
-			if (displayedExtenstion == null) displayedExtenstion = extension;
-			attachmentItem.setDisplayedExtension(displayedExtenstion);
+			attachmentItem.setDisplayedExtension(FileAttachment.getNormalizedExtension(extension));
 			attachmentItem.originalName = attachment.getNormalizedOriginalName(fileName, extension);
 			return attachmentItem;
 		}
