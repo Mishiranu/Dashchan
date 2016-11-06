@@ -16,13 +16,13 @@
 
 package chan.content.model;
 
-import java.util.Locale;
-
 import android.net.Uri;
 
 import chan.annotation.Public;
 import chan.content.ChanLocator;
 import chan.util.StringUtils;
+
+import com.mishiranu.dashchan.C;
 
 @Public
 public final class FileAttachment implements Attachment
@@ -115,17 +115,30 @@ public final class FileAttachment implements Attachment
 		return getNormalizedOriginalName(fileName, StringUtils.getFileExtension(fileName));
 	}
 
-	public String getNormalizedOriginalName(String fileName, String extension)
+	public String getNormalizedOriginalName(String fileName, String fileExtension)
 	{
 		String originalName = getOriginalName();
 		if (!StringUtils.isEmpty(originalName))
 		{
 			originalName = StringUtils.escapeFile(originalName, false);
-			if (!originalName.toLowerCase(Locale.US).endsWith("." + extension)) originalName += "." + extension;
-			if (fileName.equals(originalName)) return null;
+			if (fileExtension == null) fileExtension = StringUtils.getFileExtension(fileName);
+			if (fileExtension != null)
+			{
+				String normalizedOriginalExtension = getNormalizedExtension(StringUtils.getFileExtension(originalName));
+				String normalizedFileExtension = getNormalizedExtension(fileExtension);
+				if (!normalizedFileExtension.equals(normalizedOriginalExtension)) originalName += "." + fileExtension;
+				if (fileName.equals(originalName)) return null;
+			}
 			return originalName;
 		}
 		return null;
+	}
+
+	public static String getNormalizedExtension(String extension)
+	{
+		String normalizedExtenstion = C.EXTENSION_TRANSFORMATION.get(extension);
+		if (normalizedExtenstion == null) normalizedExtenstion = extension;
+		return normalizedExtenstion;
 	}
 
 	@Public
