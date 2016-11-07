@@ -41,6 +41,7 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 {
 	public static final int OPTIONS_MENU_APPEARANCE = -1;
 	public static final int OPTIONS_MENU_SEARCH = -2;
+	public static final int OPTIONS_MENU_SEARCH_VIEW = -3;
 
 	public static final int APPEARANCE_MENU_CHANGE_THEME = 100;
 	public static final int APPEARANCE_MENU_EXPANDED_SCREEN = 101;
@@ -164,6 +165,11 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 		else throw new IllegalStateException("Adapter can be initialized only in onCreate method");
 	}
 
+	protected final void setCustomSearchView(View view)
+	{
+		mCallback.setCustomSearchView(view);
+	}
+
 	protected final void notifyTitleChanged()
 	{
 		mCallback.notifyTitleChanged();
@@ -192,11 +198,6 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 	protected final void handleRedirect(String chanName, String boardName, String threadNumber, String postNumber)
 	{
 		mCallback.handleRedirect(chanName, boardName, threadNumber, postNumber);
-	}
-
-	protected final void setActionBarLocked(boolean locked)
-	{
-		mCallback.setActionBarLocked(locked);
 	}
 
 	protected void onCreate()
@@ -269,30 +270,19 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 
 	}
 
-	public void onSearchTextChange(String newText)
+	public void onSearchQueryChange(String query)
 	{
 
 	}
 
-	/**
-	 * Returns whether need to keep SearchView expanded.
-	 *
-	 * @param query Search query text.
-	 * @return True if need to keep SearchView expanded.
-	 */
-	public boolean onStartSearch(String query)
+	public boolean onSearchSubmit(String query)
 	{
 		return false;
 	}
 
-	public void onStopSearch()
+	public void onSearchCancel()
 	{
 
-	}
-
-	public boolean onBackPressed()
-	{
-		return false;
 	}
 
 	@Override
@@ -371,9 +361,9 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 	{
 		public void notifyTitleChanged();
 		public void updateOptionsMenu(boolean recreate);
+		public void setCustomSearchView(View view);
 		public void switchView(ViewType viewType, String message);
 		public void showScaleAnimation();
 		public void handleRedirect(String chanName, String boardName, String threadNumber, String postNumber);
-		public void setActionBarLocked(boolean locked);
 	}
 }

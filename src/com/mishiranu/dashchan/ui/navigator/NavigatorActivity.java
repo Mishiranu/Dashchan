@@ -16,7 +16,6 @@
 
 package com.mishiranu.dashchan.ui.navigator;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -52,14 +51,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
-import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toolbar;
 
@@ -97,6 +94,7 @@ import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
+import com.mishiranu.dashchan.widget.CustomSearchView;
 import com.mishiranu.dashchan.widget.ExpandedScreen;
 import com.mishiranu.dashchan.widget.ListPosition;
 import com.mishiranu.dashchan.widget.PullableListView;
@@ -141,7 +139,6 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	private static final String LOCKER_DRAWER = "drawer";
 	private static final String LOCKER_SEARCH = "search";
 	private static final String LOCKER_PULL = "pull";
-	private static final String LOCKER_CUSTOM = "custom";
 
 	private final ActionMenuConfigurator mActionMenuConfigurator = new ActionMenuConfigurator();
 	private final ClickableToast.Holder mClickableToastHolder = new ClickableToast.Holder(this);
@@ -415,8 +412,6 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		cleanupPage();
 		mHandler.removeCallbacks(mQueuedHandler);
 		setActionBarLocked(LOCKER_HANDLE, true);
-		setActionBarLocked(LOCKER_SEARCH, false);
-		setActionBarLocked(false);
 		if (animated)
 		{
 			mQueuedHandler = () ->
@@ -506,6 +501,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		if (mPage != null)
 		{
 			PostingService.clearNewThreadData();
+			setSearchMode(false);
 			mPage.cleanup();
 			mPage = null;
 		}
@@ -513,7 +509,11 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 
 	private void invalidateHomeUpState()
 	{
-		if (mPage != null)
+		if (mSearchMode)
+		{
+			mDrawerToggle.setDrawerIndicatorMode(DrawerToggle.MODE_UP);
+		}
+		else if (mPage != null)
 		{
 			boolean displayUp = false;
 			PageHolder pageHolder = mPageManager.getCurrentPage();
@@ -670,12 +670,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	@Override
 	public boolean onSearchRequested()
 	{
-		if (mSearchMenuItem != null)
-		{
-			mSearchMenuItem.expandActionView();
-			return true;
-		}
-		return false;
+		return setSearchMode(true) || mSearchMode;
 	}
 
 	private long mBackPressed = 0;
@@ -686,13 +681,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		if (!mWideMode && mDrawerLayout.isDrawerOpen(Gravity.START)) mDrawerLayout.closeDrawers();
 		else if (mPage != null)
 		{
-			if (mSearchMenuItem != null && mSearchMenuItem.isActionViewExpanded())
-			{
-				// Fix back button on 5.0
-				mSearchMenuItem.collapseActionView();
-				return;
-			}
-			if (mPage.onBackPressed()) return;
+			if (setSearchMode(false)) return;
 			PageHolder previousPageHolder = mPageManager.getTargetPreviousPage();
 			if (previousPageHolder != null)
 			{
@@ -769,96 +758,63 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		mClickableToastHolder.onWindowFocusChanged(hasFocus);
 	}
 
-	private class SearchViewController implements SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener
+	private boolean mSearchMode = false;
+
+	private boolean setSearchMode(boolean search)
 	{
-		private boolean mSearchExpanded = false;
-		private boolean mWasSubmit = false;
-		private boolean mMenuUpdated = false;
-
-		private final Runnable mRestoreLastSearchQueryRunnable = () -> mSearchView.setQuery(mLastSearchQuery, false);
-
-		/*
-		 * In Marshmallow keyboard is not showing when action menu item is not shown as action. Fix it here.
-		 */
-		private final Runnable mMarshmallowShowKeyboardRunnable = () ->
+		if (mSearchMode != search)
 		{
-			View textView = null;
-			try
+			mSearchMode = search;
+			if (search)
 			{
-				Field field = SearchView.class.getDeclaredField("mSearchSrcTextView");
-				field.setAccessible(true);
-				textView = (View) field.get(mSearchView);
-			}
-			catch (Exception e)
-			{
-
-			}
-			if (textView != null)
-			{
-				InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-				if (inputMethodManager != null)
+				if (mCurrentMenu != null)
 				{
-					inputMethodManager.showSoftInput(textView, InputMethodManager.SHOW_IMPLICIT);
+					MenuItem menuItem = mCurrentMenu.findItem(ListPage.OPTIONS_MENU_SEARCH);
+					if (menuItem != null) getSearchView(true).setQueryHint(menuItem.getTitle());
 				}
 			}
-		};
-
-		@Override
-		public boolean onQueryTextSubmit(String query)
-		{
-			if (mPage != null && query.length() > 0)
+			if (mPage != null)
 			{
-				mWasSubmit = true;
-				mMenuUpdated = false;
-				boolean keepExpanded = mPage.onStartSearch(query);
-				// mMenuUpdated can be changed in onStartSearch if it calls updateOptionsMenu
-				if (keepExpanded)
+				if (search) mPage.onSearchQueryChange(getSearchView(true).getQuery().toString()); else
 				{
-					if (mMenuUpdated) mExpandSearchViewOnCreate = true;
+					mPage.onSearchQueryChange("");
+					mPage.onSearchCancel();
 				}
-				else mSearchMenuItem.collapseActionView();
 			}
+			setActionBarLocked(LOCKER_SEARCH, search);
+			invalidateOptionsMenu();
+			invalidateHomeUpState();
 			return true;
 		}
-
-		@Override
-		public boolean onQueryTextChange(String newText)
-		{
-			if (mSearchExpanded)
-			{
-				if (!mWasSubmit || !StringUtils.isEmpty(newText)) mLastSearchQuery = newText;
-				mWasSubmit = false;
-			}
-			if (mPage != null) mPage.onSearchTextChange(newText);
-			return false;
-		}
-
-		@Override
-		public boolean onMenuItemActionExpand(MenuItem item)
-		{
-			mSearchExpanded = true;
-			setActionBarLocked(LOCKER_SEARCH, true);
-			mSearchView.post(mRestoreLastSearchQueryRunnable);
-			if (C.API_MARSHMALLOW) mSearchView.postDelayed(mMarshmallowShowKeyboardRunnable, 250);
-			return true;
-		}
-
-		@Override
-		public boolean onMenuItemActionCollapse(MenuItem item)
-		{
-			mSearchExpanded = false;
-			setActionBarLocked(LOCKER_SEARCH, false);
-			if (!mExpandSearchViewOnCreate && mPage != null) mPage.onStopSearch();
-			return true;
-		}
+		return false;
 	}
 
-	private final SearchViewController mSearchViewController = new SearchViewController();
-	private SearchView mSearchView;
-	private MenuItem mSearchMenuItem;
+	private CustomSearchView mSearchView;
 
-	private boolean mExpandSearchViewOnCreate = false;
-	private String mLastSearchQuery;
+	public CustomSearchView getSearchView(boolean createIfNull)
+	{
+		if (mSearchView == null && createIfNull)
+		{
+			mSearchView = new CustomSearchView(C.API_LOLLIPOP ? new ContextThemeWrapper(this,
+					R.style.Theme_Special_White) : getActionBar().getThemedContext());
+			mSearchView.setOnQueryTextListener(new CustomSearchView.OnQueryTextListener()
+			{
+				@Override
+				public boolean onQueryTextSubmit(String query)
+				{
+					return mPage != null && mPage.onSearchSubmit(query);
+				}
+
+				@Override
+				public boolean onQueryTextChange(String newText)
+				{
+					if (mPage != null) mPage.onSearchQueryChange(newText);
+					return true;
+				}
+			});
+		}
+		return mSearchView;
+	}
 
 	private Menu mCurrentMenu;
 	private boolean mSendPrepareMenuToPage = false;
@@ -866,57 +822,47 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu)
 	{
-		mCurrentMenu = menu;
-		if (mSearchView == null)
+		if (mSearchMode)
 		{
-			mSearchView = new SearchView(C.API_LOLLIPOP ? new ContextThemeWrapper(this, R.style.Theme_Special_White)
-					: getActionBar().getThemedContext());
-			mSearchView.setOnQueryTextListener(mSearchViewController);
+			mCurrentMenu = null;
+			menu.add(0, ListPage.OPTIONS_MENU_SEARCH_VIEW, 0, "").setActionView(getSearchView(true))
+					.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 		}
-		if (mPage != null)
+		else
 		{
-			mPage.onCreateOptionsMenu(menu);
-			mSendPrepareMenuToPage = true;
-		}
-
-		MenuItem appearanceOptionsItem = menu.findItem(ListPage.OPTIONS_MENU_APPEARANCE);
-		if (appearanceOptionsItem != null)
-		{
-			Menu appearanceOptionsMenu = appearanceOptionsItem.getSubMenu();
-			appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_CHANGE_THEME, 0, R.string.action_change_theme);
-			appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_EXPANDED_SCREEN, 0, R.string.action_expanded_screen)
-					.setCheckable(true);
-			appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_SPOILERS, 0, R.string.action_spoilers)
-					.setCheckable(true);
-			appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_MY_POSTS, 0, R.string.action_my_posts)
-					.setCheckable(true);
-			appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_DRAWER, 0, R.string.action_lock_drawer)
-					.setCheckable(true);
-			appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_THREADS_GRID, 0, R.string.action_threads_grid)
-					.setCheckable(true);
-			appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_SFW_MODE, 0, R.string.action_sfw_mode)
-					.setCheckable(true);
-		}
-
-		mSearchMenuItem = menu.findItem(ListPage.OPTIONS_MENU_SEARCH);
-		if (mSearchMenuItem != null)
-		{
-			mSearchMenuItem.setActionView(mSearchView);
-			mSearchMenuItem.setOnActionExpandListener(mSearchViewController);
-			if (mExpandSearchViewOnCreate)
+			mCurrentMenu = menu;
+			if (mPage != null)
 			{
-				mSearchMenuItem.expandActionView();
-				mSearchView.clearFocus();
-				mExpandSearchViewOnCreate = false;
+				mPage.onCreateOptionsMenu(menu);
+				mSendPrepareMenuToPage = true;
 			}
+			MenuItem appearanceOptionsItem = menu.findItem(ListPage.OPTIONS_MENU_APPEARANCE);
+			if (appearanceOptionsItem != null)
+			{
+				Menu appearanceOptionsMenu = appearanceOptionsItem.getSubMenu();
+				appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_CHANGE_THEME, 0, R.string.action_change_theme);
+				appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_EXPANDED_SCREEN, 0, R.string.action_expanded_screen)
+						.setCheckable(true);
+				appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_SPOILERS, 0, R.string.action_spoilers)
+						.setCheckable(true);
+				appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_MY_POSTS, 0, R.string.action_my_posts)
+						.setCheckable(true);
+				appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_DRAWER, 0, R.string.action_lock_drawer)
+						.setCheckable(true);
+				appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_THREADS_GRID, 0, R.string.action_threads_grid)
+						.setCheckable(true);
+				appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_SFW_MODE, 0, R.string.action_sfw_mode)
+						.setCheckable(true);
+			}
+			mActionMenuConfigurator.onAfterCreateOptionsMenu(menu);
 		}
-		mActionMenuConfigurator.onAfterCreateOptionsMenu(menu);
-		return super.onCreateOptionsMenu(menu);
+		return true;
 	}
 
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu)
 	{
+		if (mSearchMode) return true;
 		if (mPage != null && mSendPrepareMenuToPage) mPage.onPrepareOptionsMenu(menu);
 		MenuItem appearanceOptionsItem = menu.findItem(ListPage.OPTIONS_MENU_APPEARANCE);
 		if (appearanceOptionsItem != null)
@@ -934,7 +880,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 			appearanceOptionsMenu.findItem(ListPage.APPEARANCE_MENU_SFW_MODE).setChecked(Preferences.isSfwMode());
 		}
 		mActionMenuConfigurator.onAfterPrepareOptionsMenu(menu);
-		return super.onPrepareOptionsMenu(menu);
+		return true;
 	}
 
 	@Override
@@ -945,14 +891,15 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		{
 			if (item.getItemId() == ListPage.OPTIONS_MENU_SEARCH)
 			{
-				mSearchView.setQueryHint(item.getTitle());
-				return false;
+				setSearchMode(true);
+				return true;
 			}
 			if (mPage.onOptionsItemSelected(item)) return true;
 			switch (item.getItemId())
 			{
 				case android.R.id.home:
 				{
+					if (setSearchMode(false)) return true;
 					mDrawerLayout.closeDrawers();
 					PageHolder pageHolder = mPageManager.getCurrentPage();
 					String newChanName = pageHolder.chanName;
@@ -1426,8 +1373,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 			builder.setVibrate(new long[0]);
 		}
 		else builder.setTicker(text);
-		builder.setContentTitle(getString(R.string.text_app_name_update,
-				getString(R.string.const_app_name)));
+		builder.setContentTitle(getString(R.string.text_app_name_update, getString(R.string.const_app_name)));
 		builder.setContentText(text);
 		builder.setContentIntent(PendingIntent.getActivity(this, 0, PreferencesActivity.createUpdateIntent
 				(this, updateDataMap).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), PendingIntent.FLAG_UPDATE_CURRENT));
@@ -1467,12 +1413,15 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	@Override
 	public void updateOptionsMenu(boolean recreate)
 	{
-		if (recreate || mCurrentMenu == null)
-		{
-			mSearchViewController.mMenuUpdated = true;
-			invalidateOptionsMenu();
-		}
+		if (recreate || mCurrentMenu == null) invalidateOptionsMenu();
 		else onPrepareOptionsMenu(mCurrentMenu);
+	}
+
+	@Override
+	public void setCustomSearchView(View view)
+	{
+		CustomSearchView searchView = getSearchView(view != null);
+		if (searchView != null) searchView.setCustomView(view);
 	}
 
 	@Override
@@ -1562,12 +1511,6 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	private void setActionBarLocked(String locker, boolean locked)
 	{
 		if (locked) mExpandedScreen.addLocker(locker); else mExpandedScreen.removeLocker(locker);
-	}
-
-	@Override
-	public void setActionBarLocked(boolean locked)
-	{
-		setActionBarLocked(LOCKER_CUSTOM, locked);
 	}
 
 	private class ExpandedScreenDrawerLocker implements DrawerLayout.DrawerListener
