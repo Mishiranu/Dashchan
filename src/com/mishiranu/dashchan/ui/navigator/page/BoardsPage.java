@@ -171,9 +171,9 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 	}
 
 	@Override
-	public void onSearchTextChange(String newText)
+	public void onSearchQueryChange(String query)
 	{
-		getAdapter().applyFilter(newText);
+		getAdapter().applyFilter(query);
 	}
 
 	@Override

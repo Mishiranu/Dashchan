@@ -183,10 +183,13 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		mSearchController.addView(forwardButtonView, (int) (48f * density), (int) (48f * density));
 		if (C.API_LOLLIPOP)
 		{
-			for (int i = 0; i < mSearchController.getChildCount() - 1; i++)
+			for (int i = 0, last = mSearchController.getChildCount() - 1; i <= last; i++)
 			{
 				View view = mSearchController.getChildAt(i);
-				((LinearLayout.LayoutParams) view.getLayoutParams()).rightMargin = (int) (-6f * density);
+				LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) view.getLayoutParams();
+				if (i == 0) layoutParams.leftMargin = (int) (-6f * density);
+				if (i == last) layoutParams.rightMargin = (int) (6f * density);
+				else layoutParams.rightMargin = (int) (-6f * density);
 			}
 		}
 
@@ -241,6 +244,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		}
 		ImageLoader.getInstance().clearTasks(getPageHolder().chanName);
 		FavoritesStorage.getInstance().getObservable().unregister(this);
+		setCustomSearchView(null);
 	}
 
 	@Override
@@ -292,7 +296,6 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 	private static final int OPTIONS_MENU_REMOVE_FROM_FAVORITES_ICON = 8;
 	private static final int OPTIONS_MENU_OPEN_ORIGINAL_THREAD = 9;
 	private static final int OPTIONS_MENU_ARCHIVE = 10;
-	private static final int OPTIONS_MENU_SEARCH_CONTROLLER = 11;
 
 	private static final int THREAD_OPTIONS_MENU_RELOAD = 200;
 	private static final int THREAD_OPTIONS_MENU_AUTO_REFRESH = 201;
@@ -305,8 +308,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 	{
 		menu.add(0, OPTIONS_MENU_ADD_POST, 0, R.string.action_add_post).setIcon(obtainIcon(R.attr.actionAddPost))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-		menu.add(0, OPTIONS_MENU_SEARCH, 0, R.string.action_search)
-				.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
+		menu.add(0, OPTIONS_MENU_SEARCH, 0, R.string.action_search);
 		menu.add(0, OPTIONS_MENU_GALLERY, 0, R.string.action_gallery);
 		menu.add(0, OPTIONS_MENU_SELECT, 0, R.string.action_select);
 		menu.add(0, OPTIONS_MENU_REFRESH, 0, R.string.action_refresh).setIcon(obtainIcon(R.attr.actionRefresh))
@@ -321,8 +323,6 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				.setIcon(obtainIcon(R.attr.actionRemoveFromFavorites)).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 		menu.add(0, OPTIONS_MENU_OPEN_ORIGINAL_THREAD, 0, R.string.action_open_the_original);
 		menu.add(0, OPTIONS_MENU_ARCHIVE, 0, R.string.action_archive_add);
-		menu.add(0, OPTIONS_MENU_SEARCH_CONTROLLER, 0, null).setActionView(mSearchController)
-				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 
 		threadOptions.add(0, THREAD_OPTIONS_MENU_RELOAD, 0, R.string.action_reload);
 		threadOptions.add(0, THREAD_OPTIONS_MENU_AUTO_REFRESH, 0, R.string.action_auto_refresh).setCheckable(true);
@@ -334,34 +334,23 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 	@Override
 	public void onPrepareOptionsMenu(Menu menu)
 	{
-		if (mSearching)
-		{
-			for (int i = 0; i < menu.size(); i++) menu.getItem(i).setVisible(false);
-			menu.findItem(OPTIONS_MENU_SEARCH).setVisible(true);
-			menu.findItem(OPTIONS_MENU_SEARCH_CONTROLLER).setVisible(true);
-		}
-		else
-		{
-			for (int i = 0; i < menu.size(); i++) menu.getItem(i).setVisible(true);
-			PageHolder pageHolder = getPageHolder();
-			menu.findItem(OPTIONS_MENU_ADD_POST).setVisible(mReplyable != null);
-			boolean isFavorite = FavoritesStorage.getInstance().hasFavorite(pageHolder.chanName, pageHolder.boardName,
-					pageHolder.threadNumber);
-			boolean iconFavorite = ResourceUtils.isTabletOrLandscape(getResources().getConfiguration());
-			menu.findItem(OPTIONS_MENU_ADD_TO_FAVORITES_TEXT).setVisible(!iconFavorite && !isFavorite);
-			menu.findItem(OPTIONS_MENU_REMOVE_FROM_FAVORITES_TEXT).setVisible(!iconFavorite && isFavorite);
-			menu.findItem(OPTIONS_MENU_ADD_TO_FAVORITES_ICON).setVisible(iconFavorite && !isFavorite);
-			menu.findItem(OPTIONS_MENU_REMOVE_FROM_FAVORITES_ICON).setVisible(iconFavorite && isFavorite);
-			menu.findItem(OPTIONS_MENU_OPEN_ORIGINAL_THREAD).setVisible(mOriginalThreadData != null);
-			menu.findItem(OPTIONS_MENU_ARCHIVE).setVisible(ChanManager.getInstance()
-					.canBeArchived(pageHolder.chanName));
-			menu.findItem(OPTIONS_MENU_SEARCH_CONTROLLER).setVisible(false);
-			menu.findItem(THREAD_OPTIONS_MENU_AUTO_REFRESH).setVisible(Preferences.getAutoRefreshMode()
-					== Preferences.AUTO_REFRESH_MODE_SEPARATE).setEnabled(!getAdapter().isEmpty())
-					.setChecked(mAutoRefreshEnabled);
-			menu.findItem(THREAD_OPTIONS_MENU_HIDDEN_POSTS).setEnabled(mHidePerformer.hasLocalAutohide());
-			menu.findItem(THREAD_OPTIONS_MENU_CLEAR_DELETED).setEnabled(getAdapter().hasDeletedPosts());
-		}
+		PageHolder pageHolder = getPageHolder();
+		menu.findItem(OPTIONS_MENU_ADD_POST).setVisible(mReplyable != null);
+		boolean isFavorite = FavoritesStorage.getInstance().hasFavorite(pageHolder.chanName, pageHolder.boardName,
+				pageHolder.threadNumber);
+		boolean iconFavorite = ResourceUtils.isTabletOrLandscape(getResources().getConfiguration());
+		menu.findItem(OPTIONS_MENU_ADD_TO_FAVORITES_TEXT).setVisible(!iconFavorite && !isFavorite);
+		menu.findItem(OPTIONS_MENU_REMOVE_FROM_FAVORITES_TEXT).setVisible(!iconFavorite && isFavorite);
+		menu.findItem(OPTIONS_MENU_ADD_TO_FAVORITES_ICON).setVisible(iconFavorite && !isFavorite);
+		menu.findItem(OPTIONS_MENU_REMOVE_FROM_FAVORITES_ICON).setVisible(iconFavorite && isFavorite);
+		menu.findItem(OPTIONS_MENU_OPEN_ORIGINAL_THREAD).setVisible(mOriginalThreadData != null);
+		menu.findItem(OPTIONS_MENU_ARCHIVE).setVisible(ChanManager.getInstance()
+				.canBeArchived(pageHolder.chanName));
+		menu.findItem(THREAD_OPTIONS_MENU_AUTO_REFRESH).setVisible(Preferences.getAutoRefreshMode()
+				== Preferences.AUTO_REFRESH_MODE_SEPARATE).setEnabled(!getAdapter().isEmpty())
+				.setChecked(mAutoRefreshEnabled);
+		menu.findItem(THREAD_OPTIONS_MENU_HIDDEN_POSTS).setEnabled(mHidePerformer.hasLocalAutohide());
+		menu.findItem(THREAD_OPTIONS_MENU_CLEAR_DELETED).setEnabled(getAdapter().hasDeletedPosts());
 	}
 
 	@Override
@@ -748,7 +737,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 	}
 
 	@Override
-	public boolean onStartSearch(String query)
+	public boolean onSearchSubmit(String query)
 	{
 		PostsAdapter adapter = getAdapter();
 		if (adapter.isEmpty()) return false;
@@ -859,43 +848,37 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 			}
 		}
 		boolean found = mSearchFoundPosts.size() > 0;
-		setActionBarLocked(true);
 		getUiManager().view().setHighlightText(found ? queries : null);
 		adapter.notifyDataSetChanged();
 		mSearching = true;
 		if (found)
 		{
+			setCustomSearchView(mSearchController);
 			updateOptionsMenu(true);
 			mSearchLastPosition--;
 			findForward();
+			return true;
 		}
 		else
 		{
 			ToastUtils.show(getActivity(), R.string.message_not_found);
 			mSearchLastPosition = -1;
 			updateSearchTitle();
+			return false;
 		}
-		return true;
 	}
 
 	@Override
-	public void onStopSearch()
-	{
-		onStopSearchInternal();
-	}
-
-	private boolean onStopSearchInternal()
+	public void onSearchCancel()
 	{
 		if (mSearching)
 		{
 			mSearching = false;
+			setCustomSearchView(null);
 			updateOptionsMenu(true);
 			getUiManager().view().setHighlightText(null);
 			getAdapter().notifyDataSetChanged();
-			setActionBarLocked(false);
-			return true;
 		}
-		else return false;
 	}
 
 	private void showSearchDialog()
@@ -940,12 +923,6 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 	private void updateSearchTitle()
 	{
 		mSearchTextResult.setText((mSearchLastPosition + 1) + "/" + mSearchFoundPosts.size());
-	}
-
-	@Override
-	public boolean onBackPressed()
-	{
-		return onStopSearchInternal() || super.onBackPressed();
 	}
 
 	private boolean handleNewPostDatas()

@@ -172,11 +172,11 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 	}
 
 	@Override
-	public boolean onStartSearch(String query)
+	public boolean onSearchSubmit(String query)
 	{
 		PageHolder pageHolder = getPageHolder();
 		getUiManager().navigator().navigateSearch(pageHolder.chanName, pageHolder.boardName, query);
-		return false;
+		return true;
 	}
 
 	@Override

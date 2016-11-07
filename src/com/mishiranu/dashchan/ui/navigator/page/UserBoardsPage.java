@@ -150,9 +150,9 @@ public class UserBoardsPage extends ListPage<UserBoardsAdapter> implements ReadU
 	}
 
 	@Override
-	public void onSearchTextChange(String newText)
+	public void onSearchQueryChange(String query)
 	{
-		getAdapter().applyFilter(newText);
+		getAdapter().applyFilter(query);
 	}
 
 	@Override

@@ -455,15 +455,15 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 	}
 
 	@Override
-	public boolean onStartSearch(String query)
+	public boolean onSearchSubmit(String query)
 	{
 		if (mAllowSearch)
 		{
 			PageHolder pageHolder = getPageHolder();
 			getUiManager().navigator().navigateSearch(pageHolder.chanName, pageHolder.boardName, query);
-			return false;
+			return true;
 		}
-		else return super.onStartSearch(query);
+		return false;
 	}
 
 	@Override
@@ -491,9 +491,9 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 	}
 
 	@Override
-	public void onSearchTextChange(String newText)
+	public void onSearchQueryChange(String query)
 	{
-		getAdapter().applyFilter(newText);
+		getAdapter().applyFilter(query);
 	}
 
 	@Override

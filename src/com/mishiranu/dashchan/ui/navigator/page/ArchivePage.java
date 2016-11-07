@@ -160,9 +160,9 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 	}
 
 	@Override
-	public void onSearchTextChange(String newText)
+	public void onSearchQueryChange(String query)
 	{
-		getAdapter().applyFilter(newText);
+		getAdapter().applyFilter(query);
 	}
 
 	@Override
