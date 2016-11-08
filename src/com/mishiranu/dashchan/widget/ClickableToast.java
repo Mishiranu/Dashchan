@@ -48,52 +48,44 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 
-public class ClickableToast
-{
+public class ClickableToast {
 	private static final int Y_OFFSET;
 	private static final int LAYOUT_ID;
 
 	private static final int TIMEOUT = 3500;
 
-	static
-	{
+	static {
 		Resources resources = Resources.getSystem();
 		Y_OFFSET = resources.getDimensionPixelSize(resources.getIdentifier("toast_y_offset", "dimen", "android"));
 		LAYOUT_ID = resources.getIdentifier("transient_notification", "layout", "android");
 	}
 
-	public static class Holder
-	{
+	public static class Holder {
 		private final Context mContext;
 
-		public Holder(Context context)
-		{
+		public Holder(Context context) {
 			mContext = context;
 		}
 
 		private boolean mHasFocus = true;
 		private boolean mResumed = false;
 
-		public void onWindowFocusChanged(boolean hasFocus)
-		{
+		public void onWindowFocusChanged(boolean hasFocus) {
 			mHasFocus = hasFocus;
 			invalidate();
 		}
 
-		public void onResume()
-		{
+		public void onResume() {
 			mResumed = true;
 			invalidate();
 		}
 
-		public void onPause()
-		{
+		public void onPause() {
 			mResumed = false;
 			invalidate();
 		}
 
-		private void invalidate()
-		{
+		private void invalidate() {
 			ClickableToast.invalidate(mContext);
 		}
 	}
@@ -111,56 +103,59 @@ public class ClickableToast
 
 	private static final HashMap<Context, ClickableToast> TOASTS = new HashMap<>();
 
-	private static Context obtainBaseContext(Context context)
-	{
-		while (context instanceof ContextWrapper) context = ((ContextWrapper) context).getBaseContext();
+	private static Context obtainBaseContext(Context context) {
+		while (context instanceof ContextWrapper) {
+			context = ((ContextWrapper) context).getBaseContext();
+		}
 		return context;
 	}
 
-	public static void register(Holder holder)
-	{
+	public static void register(Holder holder) {
 		Context context = obtainBaseContext(holder.mContext);
 		ClickableToast clickableToast = TOASTS.get(context);
-		if (clickableToast == null) TOASTS.put(context, new ClickableToast(holder));
+		if (clickableToast == null) {
+			TOASTS.put(context, new ClickableToast(holder));
+		}
 	}
 
-	public static void unregister(Holder holder)
-	{
+	public static void unregister(Holder holder) {
 		ClickableToast clickableToast = TOASTS.remove(obtainBaseContext(holder.mContext));
-		if (clickableToast != null) clickableToast.cancelInternal();
+		if (clickableToast != null) {
+			clickableToast.cancelInternal();
+		}
 	}
 
-	public static void show(Context context, int message)
-	{
+	public static void show(Context context, int message) {
 		show(context, context.getString(message));
 	}
 
-	public static void show(Context context, CharSequence message)
-	{
+	public static void show(Context context, CharSequence message) {
 		show(context, message, null, null, true);
 	}
 
 	public static void show(Context context, CharSequence message, String button, Runnable listener,
-			boolean clickableOnlyWhenRoot)
-	{
+			boolean clickableOnlyWhenRoot) {
 		ClickableToast clickableToast = TOASTS.get(obtainBaseContext(context));
-		if (clickableToast != null) clickableToast.showInternal(message, button, listener, clickableOnlyWhenRoot);
+		if (clickableToast != null) {
+			clickableToast.showInternal(message, button, listener, clickableOnlyWhenRoot);
+		}
 	}
 
-	public static void cancel(Context context)
-	{
+	public static void cancel(Context context) {
 		ClickableToast clickableToast = TOASTS.get(obtainBaseContext(context));
-		if (clickableToast != null) clickableToast.cancelInternal();
+		if (clickableToast != null) {
+			clickableToast.cancelInternal();
+		}
 	}
 
-	private static void invalidate(Context context)
-	{
+	private static void invalidate(Context context) {
 		ClickableToast clickableToast = TOASTS.get(obtainBaseContext(context));
-		if (clickableToast != null && clickableToast.mShowing) clickableToast.updateLayoutAndRealClickable();
+		if (clickableToast != null && clickableToast.mShowing) {
+			clickableToast.updateLayoutAndRealClickable();
+		}
 	}
 
-	private ClickableToast(Holder holder)
-	{
+	private ClickableToast(Holder holder) {
 		mHolder = holder;
 		Context context = holder.mContext;
 		float density = ResourceUtils.obtainDensity(context);
@@ -183,14 +178,11 @@ public class ClickableToast
 		linearLayout.addView(message2, LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 		((LinearLayout.LayoutParams) message1.getLayoutParams()).weight = 1f;
 		Drawable background = toast1.getBackground();
-		if (background == null)
-		{
+		if (background == null) {
 			background = message1.getBackground();
 			linearLayout.setPadding(message1.getPaddingLeft(), message1.getPaddingTop(),
 					message1.getPaddingRight(), message1.getPaddingBottom());
-		}
-		else
-		{
+		} else {
 			linearLayout.setPadding(toast1.getPaddingLeft(), toast1.getPaddingTop(),
 					toast1.getPaddingRight(), toast1.getPaddingBottom());
 		}
@@ -219,21 +211,17 @@ public class ClickableToast
 		layoutParams.windowAnimations = android.R.style.Animation_Toast;
 		layoutParams.gravity = Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
 		layoutParams.y = Y_OFFSET;
-		try
-		{
+		try {
 			Field field = WindowManager.LayoutParams.class.getField("privateFlags");
 			// PRIVATE_FLAG_NO_MOVE_ANIMATION == 0x00000040
 			field.set(layoutParams, field.getInt(layoutParams) | 0x00000040);
-		}
-		catch (Exception e)
-		{
-
+		} catch (Exception e) {
+			// Ignore
 		}
 		mContainer.setLayoutParams(layoutParams);
 	}
 
-	private void showInternal(CharSequence message, String button, Runnable listener, boolean clickableOnlyWhenRoot)
-	{
+	private void showInternal(CharSequence message, String button, Runnable listener, boolean clickableOnlyWhenRoot) {
 		ToastUtils.cancel();
 		cancelInternal();
 		mMessage.setText(message);
@@ -245,41 +233,35 @@ public class ClickableToast
 		mClickableOnlyWhenRoot = clickableOnlyWhenRoot;
 		WindowManager.LayoutParams layoutParams = updateLayoutAndRealClickableInternal();
 		boolean added = false;
-		if (C.API_LOLLIPOP)
-		{
+		if (C.API_LOLLIPOP) {
 			// TYPE_TOAST works well only on Lollipop and higher, but can throw BadTokenException on some devices
 			layoutParams.type = WindowManager.LayoutParams.TYPE_TOAST;
 			added = addContainerToWindowManager();
 		}
-		if (!added)
-		{
+		if (!added) {
 			layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION;
 			added = addContainerToWindowManager();
 		}
-		if (added)
-		{
+		if (added) {
 			mShowing = true;
 			mContainer.postDelayed(mCancelRunnable, TIMEOUT);
 		}
 	}
 
-	private boolean addContainerToWindowManager()
-	{
-		try
-		{
+	private boolean addContainerToWindowManager() {
+		try {
 			mWindowManager.addView(mContainer, mContainer.getLayoutParams());
 			return true;
-		}
-		catch (WindowManager.BadTokenException e)
-		{
+		} catch (WindowManager.BadTokenException e) {
 			String errorMessage = e.getMessage();
-			if (errorMessage != null && errorMessage.contains("permission denied")) return false;
+			if (errorMessage != null && errorMessage.contains("permission denied")) {
+				return false;
+			}
 			throw e;
 		}
 	}
 
-	private WindowManager.LayoutParams updateLayoutAndRealClickableInternal()
-	{
+	private WindowManager.LayoutParams updateLayoutAndRealClickableInternal() {
 		mRealClickable = mCanClickable && (mHolder.mHasFocus || !mClickableOnlyWhenRoot) && mHolder.mResumed;
 		mButton.setVisibility(mRealClickable ? View.VISIBLE : View.GONE);
 		mMessage.setPadding(0, 0, mRealClickable ? mButton.getPaddingLeft() : 0, 0);
@@ -289,15 +271,17 @@ public class ClickableToast
 		return layoutParams;
 	}
 
-	private void updateLayoutAndRealClickable()
-	{
-		if (!mCanClickable) return;
+	private void updateLayoutAndRealClickable() {
+		if (!mCanClickable) {
+			return;
+		}
 		mWindowManager.updateViewLayout(mContainer, updateLayoutAndRealClickableInternal());
 	}
 
-	private void cancelInternal()
-	{
-		if (!mShowing) return;
+	private void cancelInternal() {
+		if (!mShowing) {
+			return;
+		}
 		mContainer.removeCallbacks(mCancelRunnable);
 		mShowing = false;
 		mCanClickable = false;
@@ -307,57 +291,51 @@ public class ClickableToast
 
 	private final Runnable mCancelRunnable = () -> cancelInternal();
 
-	private void postCancelInternal()
-	{
+	private void postCancelInternal() {
 		mContainer.post(mCancelRunnable);
 	}
 
-	private class PartialClickDrawable extends Drawable implements View.OnTouchListener, Drawable.Callback
-	{
+	private class PartialClickDrawable extends Drawable implements View.OnTouchListener, Drawable.Callback {
 		private final Drawable mDrawable;
 		private final ColorFilter mColorFilter = new ColorMatrixColorFilter(BRIGHTNESS_MATRIX);
 
 		private boolean mClicked = false;
 
-		public PartialClickDrawable(Drawable drawable)
-		{
+		public PartialClickDrawable(Drawable drawable) {
 			mDrawable = drawable;
 			mDrawable.setCallback(this);
 		}
 
-		private View getView()
-		{
+		private View getView() {
 			return getCallback() instanceof View ? ((View) getCallback()) : null;
 		}
 
 		@Override
-		public boolean onTouch(View v, MotionEvent event)
-		{
-			if (!mRealClickable) return false;
-			if (event.getAction() == MotionEvent.ACTION_DOWN)
-			{
-				if (event.getX() >= mButton.getLeft())
-				{
+		public boolean onTouch(View v, MotionEvent event) {
+			if (!mRealClickable) {
+				return false;
+			}
+			if (event.getAction() == MotionEvent.ACTION_DOWN) {
+				if (event.getX() >= mButton.getLeft()) {
 					mClicked = true;
 					View view = getView();
-					if (view != null) view.invalidate();
+					if (view != null) {
+						view.invalidate();
+					}
 				}
 			}
-			if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL)
-			{
-				if (mClicked)
-				{
+			if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
+				if (mClicked) {
 					mClicked = false;
 					View view = getView();
-					if (view != null)
-					{
+					if (view != null) {
 						view.invalidate();
-						if (event.getAction() == MotionEvent.ACTION_UP)
-						{
+						if (event.getAction() == MotionEvent.ACTION_UP) {
 							float x = event.getX(), y = event.getY();
-							if (x >= mButton.getLeft() && x <= view.getWidth() && y >= 0 && y <= view.getHeight())
-							{
-								if (mOnClickListener != null) mOnClickListener.run();
+							if (x >= mButton.getLeft() && x <= view.getWidth() && y >= 0 && y <= view.getHeight()) {
+								if (mOnClickListener != null) {
+									mOnClickListener.run();
+								}
 								postCancelInternal();
 							}
 						}
@@ -369,25 +347,21 @@ public class ClickableToast
 		}
 
 		@Override
-		public void setBounds(int left, int top, int right, int bottom)
-		{
+		public void setBounds(int left, int top, int right, int bottom) {
 			super.setBounds(left, top, right, bottom);
 			mDrawable.setBounds(left, top, right, bottom);
 		}
 
 		@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 		@Override
-		public Rect getDirtyBounds()
-		{
+		public Rect getDirtyBounds() {
 			return mDrawable.getDirtyBounds();
 		}
 
 		@Override
-		public void draw(Canvas canvas)
-		{
+		public void draw(Canvas canvas) {
 			mDrawable.draw(canvas);
-			if (mClicked)
-			{
+			if (mClicked) {
 				mDrawable.setColorFilter(mColorFilter);
 				canvas.save();
 				Rect bounds = getBounds();
@@ -400,75 +374,61 @@ public class ClickableToast
 		}
 
 		@Override
-		public int getOpacity()
-		{
+		public int getOpacity() {
 			return mDrawable.getOpacity();
 		}
 
 		@Override
-		public void setAlpha(int alpha)
-		{
+		public void setAlpha(int alpha) {
 			mDrawable.setAlpha(alpha);
 		}
 
 		@Override
-		public void setColorFilter(ColorFilter cf)
-		{
-
-		}
+		public void setColorFilter(ColorFilter cf) {}
 
 		@Override
-		public int getIntrinsicWidth()
-		{
+		public int getIntrinsicWidth() {
 			return mDrawable.getIntrinsicWidth();
 		}
 
 		@Override
-		public int getIntrinsicHeight()
-		{
+		public int getIntrinsicHeight() {
 			return mDrawable.getIntrinsicHeight();
 		}
 
 		@Override
-		public void invalidateDrawable(Drawable who)
-		{
+		public void invalidateDrawable(Drawable who) {
 			invalidateSelf();
 		}
 
 		@Override
-		public void scheduleDrawable(Drawable who, Runnable what, long when)
-		{
+		public void scheduleDrawable(Drawable who, Runnable what, long when) {
 			scheduleSelf(what, when);
 		}
 
 		@Override
-		public void unscheduleDrawable(Drawable who, Runnable what)
-		{
+		public void unscheduleDrawable(Drawable who, Runnable what) {
 			unscheduleSelf(what);
 		}
 	}
 
-	private static final float[] BRIGHTNESS_MATRIX =
-	{
+	private static final float[] BRIGHTNESS_MATRIX = {
 		2f, 0f, 0f, 0f, 0f,
 		0f, 2f, 0f, 0f, 0f,
 		0f, 0f, 2f, 0f, 0f,
 		0f, 0f, 0f, 1f, 0f
 	};
 
-	private static class ToastDividerDrawable extends ColorDrawable
-	{
+	private static class ToastDividerDrawable extends ColorDrawable {
 		private final int mWidth;
 
-		public ToastDividerDrawable(int color, int width)
-		{
+		public ToastDividerDrawable(int color, int width) {
 			super(color);
 			mWidth = width;
 		}
 
 		@Override
-		public int getIntrinsicWidth()
-		{
+		public int getIntrinsicWidth() {
 			return mWidth;
 		}
 	}

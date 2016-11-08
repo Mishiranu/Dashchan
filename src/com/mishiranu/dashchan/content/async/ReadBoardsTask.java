@@ -26,58 +26,55 @@ import chan.http.HttpHolder;
 
 import com.mishiranu.dashchan.content.model.ErrorItem;
 
-public class ReadBoardsTask extends HttpHolderTask<Void, Long, Boolean>
-{
+public class ReadBoardsTask extends HttpHolderTask<Void, Long, Boolean> {
 	private final String mChanName;
 	private final Callback mCallback;
 
 	private BoardCategory[] mBoardCategories;
 	private ErrorItem mErrorItem;
 
-	public interface Callback
-	{
+	public interface Callback {
 		public void onReadBoardsSuccess(BoardCategory[] boardCategories);
 		public void onReadBoardsFail(ErrorItem errorItem);
 	}
 
-	public ReadBoardsTask(String chanName, Callback callback)
-	{
+	public ReadBoardsTask(String chanName, Callback callback) {
 		mChanName = chanName;
 		mCallback = callback;
 	}
 
 	@Override
-	protected Boolean doInBackground(HttpHolder holder, Void... params)
-	{
-		try
-		{
+	protected Boolean doInBackground(HttpHolder holder, Void... params) {
+		try {
 			ChanPerformer.ReadBoardsResult result = ChanPerformer.get(mChanName).safe()
 					.onReadBoards(new ChanPerformer.ReadBoardsData(holder));
 			BoardCategory[] boardCategories = result != null ? result.boardCategories : null;
-			if (boardCategories != null && boardCategories.length == 0) boardCategories = null;
-			if (boardCategories != null) ChanConfiguration.get(mChanName).updateFromBoards(boardCategories);
+			if (boardCategories != null && boardCategories.length == 0) {
+				boardCategories = null;
+			}
+			if (boardCategories != null) {
+				ChanConfiguration.get(mChanName).updateFromBoards(boardCategories);
+			}
 			mBoardCategories = boardCategories;
 			return true;
-		}
-		catch (ExtensionException | HttpException | InvalidResponseException e)
-		{
+		} catch (ExtensionException | HttpException | InvalidResponseException e) {
 			mErrorItem = e.getErrorItemAndHandle();
 			return false;
-		}
-		finally
-		{
+		} finally {
 			ChanConfiguration.get(mChanName).commit();
 		}
 	}
 
 	@Override
-	public void onPostExecute(Boolean success)
-	{
-		if (success)
-		{
-			if (mBoardCategories != null) mCallback.onReadBoardsSuccess(mBoardCategories);
-			else mCallback.onReadBoardsFail(new ErrorItem(ErrorItem.TYPE_EMPTY_RESPONSE));
+	public void onPostExecute(Boolean success) {
+		if (success) {
+			if (mBoardCategories != null) {
+				mCallback.onReadBoardsSuccess(mBoardCategories);
+			} else {
+				mCallback.onReadBoardsFail(new ErrorItem(ErrorItem.TYPE_EMPTY_RESPONSE));
+			}
+		} else {
+			mCallback.onReadBoardsFail(mErrorItem);
 		}
-		else mCallback.onReadBoardsFail(mErrorItem);
 	}
 }

@@ -27,44 +27,38 @@ import android.util.Pair;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.ui.posting.AttachmentHolder;
 
-public class AttachmentRatingDialog extends PostingDialog implements DialogInterface.OnClickListener
-{
+public class AttachmentRatingDialog extends PostingDialog implements DialogInterface.OnClickListener {
 	public static final String TAG = AttachmentRatingDialog.class.getName();
 
 	private static final String EXTRA_ATTACHMENT_INDEX = "attachmentIndex";
 
-	public AttachmentRatingDialog()
-	{
+	public AttachmentRatingDialog() {}
 
-	}
-
-	public AttachmentRatingDialog(int attachmentIndex)
-	{
+	public AttachmentRatingDialog(int attachmentIndex) {
 		Bundle args = new Bundle();
 		args.putInt(EXTRA_ATTACHMENT_INDEX, attachmentIndex);
 		setArguments(args);
 	}
 
 	@Override
-	public Dialog onCreateDialog(Bundle savedInstanceState)
-	{
+	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		AttachmentHolder holder = getAttachmentHolder(EXTRA_ATTACHMENT_INDEX);
 		List<Pair<String, String>> attachmentRatingItems = getAttachmentRatingItems();
 		String[] items = new String[attachmentRatingItems.size()];
 		int checkedItem = 0;
-		for (int i = 0; i < items.length; i++)
-		{
+		for (int i = 0; i < items.length; i++) {
 			Pair<String, String> ratingItem = attachmentRatingItems.get(i);
 			items[i] = ratingItem.second;
-			if (ratingItem.first.equals(holder.rating)) checkedItem = i;
+			if (ratingItem.first.equals(holder.rating)) {
+				checkedItem = i;
+			}
 		}
 		return new AlertDialog.Builder(getActivity()).setTitle(R.string.text_rating).setSingleChoiceItems(items,
 				checkedItem, this).setNegativeButton(android.R.string.cancel, null).create();
 	}
 
 	@Override
-	public void onClick(DialogInterface dialog, int which)
-	{
+	public void onClick(DialogInterface dialog, int which) {
 		dismiss();
 		AttachmentHolder holder = getAttachmentHolder(EXTRA_ATTACHMENT_INDEX);
 		holder.rating = getAttachmentRatingItems().get(which).first;

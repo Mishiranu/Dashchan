@@ -32,8 +32,7 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.WeakObservable;
 
-public class FavoritesStorage extends StorageManager.Storage
-{
+public class FavoritesStorage extends StorageManager.Storage {
 	private static final String KEY_DATA = "data";
 	private static final String KEY_CHAN_NAME = "chanName";
 	private static final String KEY_BOARD_NAME = "boardName";
@@ -48,30 +47,23 @@ public class FavoritesStorage extends StorageManager.Storage
 
 	private static final FavoritesStorage INSTANCE = new FavoritesStorage();
 
-	public static FavoritesStorage getInstance()
-	{
+	public static FavoritesStorage getInstance() {
 		return INSTANCE;
 	}
 
 	private final HashMap<String, FavoriteItem> mFavoriteItemsMap = new HashMap<>();
 	private final ArrayList<FavoriteItem> mFavoriteItemsList = new ArrayList<>();
 
-	private FavoritesStorage()
-	{
+	private FavoritesStorage() {
 		super("favorites", 2000, 10000);
 		JSONObject jsonObject = read();
-		if (jsonObject != null)
-		{
+		if (jsonObject != null) {
 			JSONArray jsonArray = jsonObject.optJSONArray(KEY_DATA);
-			if (jsonArray != null)
-			{
-				for (int i = 0; i < jsonArray.length(); i++)
-				{
+			if (jsonArray != null) {
+				for (int i = 0; i < jsonArray.length(); i++) {
 					jsonObject = jsonArray.optJSONObject(i);
-					if (jsonObject != null)
-					{
-						try
-						{
+					if (jsonObject != null) {
+						try {
 							String chanName = jsonObject.getString(KEY_CHAN_NAME);
 							String boardName = jsonObject.optString(KEY_BOARD_NAME, null);
 							String threadNumber = jsonObject.optString(KEY_THREAD_NUMBER, null);
@@ -88,9 +80,7 @@ public class FavoritesStorage extends StorageManager.Storage
 									hasNewPosts, watcherValidator);
 							mFavoriteItemsMap.put(makeKey(chanName, boardName, threadNumber), favoriteItem);
 							mFavoriteItemsList.add(favoriteItem);
-						}
-						catch (JSONException e)
-						{
+						} catch (JSONException e) {
 							throw new RuntimeException(e);
 						}
 					}
@@ -100,23 +90,21 @@ public class FavoritesStorage extends StorageManager.Storage
 	}
 
 	@Override
-	public Object onClone()
-	{
+	public Object onClone() {
 		ArrayList<FavoriteItem> favoriteItems = new ArrayList<>(mFavoriteItemsList.size());
-		for (FavoriteItem favoriteItem : mFavoriteItemsList) favoriteItems.add(new FavoriteItem(favoriteItem));
+		for (FavoriteItem favoriteItem : mFavoriteItemsList) {
+			favoriteItems.add(new FavoriteItem(favoriteItem));
+		}
 		return favoriteItems;
 	}
 
 	@Override
-	public JSONObject onSerialize(Object data) throws JSONException
-	{
+	public JSONObject onSerialize(Object data) throws JSONException {
 		@SuppressWarnings("unchecked")
 		ArrayList<FavoriteItem> favoriteItems = (ArrayList<FavoriteItem>) data;
-		if (favoriteItems.size() > 0)
-		{
+		if (favoriteItems.size() > 0) {
 			JSONArray jsonArray = new JSONArray();
-			for (FavoriteItem favoriteItem : favoriteItems)
-			{
+			for (FavoriteItem favoriteItem : favoriteItems) {
 				JSONObject jsonObject = new JSONObject();
 				jsonObject.put(KEY_CHAN_NAME, favoriteItem.chanName);
 				putJson(jsonObject, KEY_BOARD_NAME, favoriteItem.boardName);
@@ -127,8 +115,7 @@ public class FavoritesStorage extends StorageManager.Storage
 				putJson(jsonObject, KEY_POSTS_COUNT, favoriteItem.postsCount);
 				putJson(jsonObject, KEY_NEW_POSTS_COUNT, favoriteItem.newPostsCount);
 				putJson(jsonObject, KEY_HAS_NEW_POSTS, favoriteItem.hasNewPosts);
-				if (favoriteItem.watcherValidator != null)
-				{
+				if (favoriteItem.watcherValidator != null) {
 					putJson(jsonObject, KEY_WATCHER_VALIDATOR, favoriteItem.watcherValidator.toString());
 				}
 				jsonArray.put(jsonObject);
@@ -149,54 +136,44 @@ public class FavoritesStorage extends StorageManager.Storage
 	public static final int ACTION_WATCHER_DISABLE = 4;
 	public static final int ACTION_WATCHER_SYNCHRONIZE = 5;
 
-	public interface Observer
-	{
+	public interface Observer {
 		public void onFavoritesUpdate(FavoriteItem favoriteItem, int action);
 	}
 
-	public WeakObservable<Observer> getObservable()
-	{
+	public WeakObservable<Observer> getObservable() {
 		return mObservable;
 	}
 
-	public boolean canSortManually()
-	{
+	public boolean canSortManually() {
 		return Preferences.getFavoritesOrder() != Preferences.FAVORITES_ORDER_BY_TITLE;
 	}
 
-	private void notifyFavoritesUpdate(FavoriteItem favoriteItem, int action)
-	{
-		for (Observer observer : mObservable) observer.onFavoritesUpdate(favoriteItem, action);
+	private void notifyFavoritesUpdate(FavoriteItem favoriteItem, int action) {
+		for (Observer observer : mObservable) {
+			observer.onFavoritesUpdate(favoriteItem, action);
+		}
 	}
 
-	private static String makeKey(String chanName, String boardName, String threadNumber)
-	{
+	private static String makeKey(String chanName, String boardName, String threadNumber) {
 		return chanName + "/" + boardName + "/" + threadNumber;
 	}
 
-	private static String makeKey(FavoriteItem favoriteItem)
-	{
+	private static String makeKey(FavoriteItem favoriteItem) {
 		return makeKey(favoriteItem.chanName, favoriteItem.boardName, favoriteItem.threadNumber);
 	}
 
-	public FavoriteItem getFavorite(String chanName, String boardName, String threadNumber)
-	{
+	public FavoriteItem getFavorite(String chanName, String boardName, String threadNumber) {
 		return mFavoriteItemsMap.get(makeKey(chanName, boardName, threadNumber));
 	}
 
-	public boolean hasFavorite(String chanName, String boardName, String threadNumber)
-	{
+	public boolean hasFavorite(String chanName, String boardName, String threadNumber) {
 		return getFavorite(chanName, boardName, threadNumber) != null;
 	}
 
-	private boolean sortIfNeededInternal()
-	{
-		if (!canSortManually())
-		{
-			switch (Preferences.getFavoritesOrder())
-			{
-				case Preferences.FAVORITES_ORDER_BY_TITLE:
-				{
+	private boolean sortIfNeededInternal() {
+		if (!canSortManually()) {
+			switch (Preferences.getFavoritesOrder()) {
+				case Preferences.FAVORITES_ORDER_BY_TITLE: {
 					Collections.sort(mFavoriteItemsList, mTitlesComparator);
 					return true;
 				}
@@ -205,31 +182,31 @@ public class FavoritesStorage extends StorageManager.Storage
 		return false;
 	}
 
-	public void sortIfNeeded()
-	{
-		if (sortIfNeededInternal()) serialize();
+	public void sortIfNeeded() {
+		if (sortIfNeededInternal()) {
+			serialize();
+		}
 	}
 
-	public void add(FavoriteItem favoriteItem)
-	{
-		if (!hasFavorite(favoriteItem.chanName, favoriteItem.boardName, favoriteItem.threadNumber))
-		{
+	public void add(FavoriteItem favoriteItem) {
+		if (!hasFavorite(favoriteItem.chanName, favoriteItem.boardName, favoriteItem.threadNumber)) {
 			mFavoriteItemsMap.put(makeKey(favoriteItem), favoriteItem);
 			int order = Preferences.getFavoritesOrder();
-			if (order == Preferences.FAVORITES_ORDER_ADD_TO_THE_TOP) mFavoriteItemsList.add(0, favoriteItem);
-			else mFavoriteItemsList.add(favoriteItem);
+			if (order == Preferences.FAVORITES_ORDER_ADD_TO_THE_TOP) {
+				mFavoriteItemsList.add(0, favoriteItem);
+			} else {
+				mFavoriteItemsList.add(favoriteItem);
+			}
 			sortIfNeededInternal();
 			notifyFavoritesUpdate(favoriteItem, ACTION_ADD);
-			if (favoriteItem.threadNumber != null && favoriteItem.watcherEnabled)
-			{
+			if (favoriteItem.threadNumber != null && favoriteItem.watcherEnabled) {
 				notifyFavoritesUpdate(favoriteItem, ACTION_WATCHER_ENABLE);
 			}
 			serialize();
 		}
 	}
 
-	public void add(String chanName, String boardName, String threadNumber, String title, int postsCount)
-	{
+	public void add(String chanName, String boardName, String threadNumber, String title, int postsCount) {
 		FavoriteItem favoriteItem = new FavoriteItem();
 		favoriteItem.chanName = chanName;
 		favoriteItem.boardName = boardName;
@@ -241,23 +218,19 @@ public class FavoritesStorage extends StorageManager.Storage
 		add(favoriteItem);
 	}
 
-	public void add(String chanName, String boardName)
-	{
+	public void add(String chanName, String boardName) {
 		add(chanName, boardName, null, null, 0);
 	}
 
 	public void move(String chanName, String fromBoardName, String fromThreadNumber,
-			String toBoardName, String toThreadNumber)
-	{
+			String toBoardName, String toThreadNumber) {
 		String fromKey = makeKey(chanName, fromBoardName, fromThreadNumber);
 		String toKey = makeKey(chanName, toBoardName, toThreadNumber);
 		FavoriteItem fromFavoriteItem = mFavoriteItemsMap.get(fromKey);
-		if (fromFavoriteItem != null)
-		{
+		if (fromFavoriteItem != null) {
 			int fromIndex = mFavoriteItemsList.indexOf(fromFavoriteItem);
 			remove(chanName, fromBoardName, fromThreadNumber);
-			if (mFavoriteItemsMap.get(toKey) == null)
-			{
+			if (mFavoriteItemsMap.get(toKey) == null) {
 				FavoriteItem toFavoriteItem = new FavoriteItem();
 				toFavoriteItem.chanName = chanName;
 				toFavoriteItem.boardName = toBoardName;
@@ -277,41 +250,37 @@ public class FavoritesStorage extends StorageManager.Storage
 		}
 	}
 
-	public void moveAfter(FavoriteItem favoriteItem, FavoriteItem afterFavoriteItem)
-	{
-		if (canSortManually() && mFavoriteItemsList.remove(favoriteItem))
-		{
+	public void moveAfter(FavoriteItem favoriteItem, FavoriteItem afterFavoriteItem) {
+		if (canSortManually() && mFavoriteItemsList.remove(favoriteItem)) {
 			int index = mFavoriteItemsList.indexOf(afterFavoriteItem) + 1;
 			mFavoriteItemsList.add(index, favoriteItem);
 			serialize();
 		}
 	}
 
-	public void modifyTitle(String chanName, String boardName, String threadNumber, String title, boolean fromUser)
-	{
+	public void modifyTitle(String chanName, String boardName, String threadNumber, String title, boolean fromUser) {
 		boolean empty = StringUtils.isEmpty(title);
-		if (!empty || fromUser)
-		{
-			if (empty) title = null;
+		if (!empty || fromUser) {
+			if (empty) {
+				title = null;
+			}
 			FavoriteItem favoriteItem = getFavorite(chanName, boardName, threadNumber);
-			if (favoriteItem != null && (fromUser || !favoriteItem.modifiedTitle))
-			{
+			if (favoriteItem != null && (fromUser || !favoriteItem.modifiedTitle)) {
 				boolean titleChanged = !StringUtils.equals(favoriteItem.title, title);
 				boolean stateChanged = false;
-				if (titleChanged)
-				{
+				if (titleChanged) {
 					favoriteItem.title = title;
 					stateChanged = true;
 				}
-				if (fromUser)
-				{
+				if (fromUser) {
 					boolean mofidiedTitle = !empty;
 					stateChanged = favoriteItem.modifiedTitle != mofidiedTitle;
 					favoriteItem.modifiedTitle = mofidiedTitle;
 				}
-				if (stateChanged)
-				{
-					if (titleChanged) sortIfNeededInternal();
+				if (stateChanged) {
+					if (titleChanged) {
+						sortIfNeededInternal();
+					}
 					notifyFavoritesUpdate(favoriteItem, ACTION_MODIFY_TITLE);
 					serialize();
 				}
@@ -319,11 +288,9 @@ public class FavoritesStorage extends StorageManager.Storage
 		}
 	}
 
-	public void modifyPostsCount(String chanName, String boardName, String threadNumber, int postsCount)
-	{
+	public void modifyPostsCount(String chanName, String boardName, String threadNumber, int postsCount) {
 		FavoriteItem favoriteItem = getFavorite(chanName, boardName, threadNumber);
-		if (favoriteItem != null)
-		{
+		if (favoriteItem != null) {
 			favoriteItem.postsCount = postsCount;
 			favoriteItem.newPostsCount = postsCount;
 			favoriteItem.hasNewPosts = false;
@@ -333,11 +300,9 @@ public class FavoritesStorage extends StorageManager.Storage
 	}
 
 	public void modifyWatcherData(String chanName, String boardName, String threadNumber,
-			int newPostsCount, boolean hasNewPosts, HttpValidator watcherValidator)
-	{
+			int newPostsCount, boolean hasNewPosts, HttpValidator watcherValidator) {
 		FavoriteItem favoriteItem = getFavorite(chanName, boardName, threadNumber);
-		if (favoriteItem != null)
-		{
+		if (favoriteItem != null) {
 			favoriteItem.newPostsCount = newPostsCount;
 			favoriteItem.hasNewPosts = hasNewPosts;
 			favoriteItem.watcherValidator = watcherValidator;
@@ -345,11 +310,9 @@ public class FavoritesStorage extends StorageManager.Storage
 		}
 	}
 
-	public void toggleWatcher(String chanName, String boardName, String threadNumber)
-	{
+	public void toggleWatcher(String chanName, String boardName, String threadNumber) {
 		FavoriteItem favoriteItem = getFavorite(chanName, boardName, threadNumber);
-		if (favoriteItem != null)
-		{
+		if (favoriteItem != null) {
 			favoriteItem.watcherEnabled = !favoriteItem.watcherEnabled;
 			notifyFavoritesUpdate(favoriteItem, favoriteItem.watcherEnabled
 					? ACTION_WATCHER_ENABLE : ACTION_WATCHER_DISABLE);
@@ -357,14 +320,11 @@ public class FavoritesStorage extends StorageManager.Storage
 		}
 	}
 
-	public void remove(String chanName, String boardName, String threadNumber)
-	{
+	public void remove(String chanName, String boardName, String threadNumber) {
 		FavoriteItem favoriteItem = mFavoriteItemsMap.remove(makeKey(chanName, boardName, threadNumber));
-		if (favoriteItem != null)
-		{
+		if (favoriteItem != null) {
 			mFavoriteItemsList.remove(favoriteItem);
-			if (favoriteItem.watcherEnabled)
-			{
+			if (favoriteItem.watcherEnabled) {
 				favoriteItem.watcherEnabled = false;
 				notifyFavoritesUpdate(favoriteItem, ACTION_WATCHER_DISABLE);
 			}
@@ -373,25 +333,20 @@ public class FavoritesStorage extends StorageManager.Storage
 		}
 	}
 
-	public ArrayList<FavoriteItem> getThreads(String chanName)
-	{
+	public ArrayList<FavoriteItem> getThreads(String chanName) {
 		return getFavorites(chanName, true, false, false);
 	}
 
-	public ArrayList<FavoriteItem> getBoards(String chanName)
-	{
+	public ArrayList<FavoriteItem> getBoards(String chanName) {
 		return getFavorites(chanName, false, true, true);
 	}
 
 	private ArrayList<FavoriteItem> getFavorites(String chanName, boolean threads, boolean boards,
-			boolean orderByBoardName)
-	{
+			boolean orderByBoardName) {
 		ArrayList<FavoriteItem> favoriteItems = new ArrayList<>();
-		for (FavoriteItem favoriteItem : mFavoriteItemsList)
-		{
+		for (FavoriteItem favoriteItem : mFavoriteItemsList) {
 			if ((chanName == null || favoriteItem.chanName.equals(chanName)) && (threads && boards
-					|| favoriteItem.threadNumber != null && threads || favoriteItem.threadNumber == null && boards))
-			{
+					|| favoriteItem.threadNumber != null && threads || favoriteItem.threadNumber == null && boards)) {
 				favoriteItems.add(favoriteItem);
 			}
 		}
@@ -401,52 +356,59 @@ public class FavoritesStorage extends StorageManager.Storage
 		return favoriteItems;
 	}
 
-	private static int compareChanNames(FavoriteItem lhs, FavoriteItem rhs)
-	{
+	private static int compareChanNames(FavoriteItem lhs, FavoriteItem rhs) {
 		return ChanManager.getInstance().compareChanNames(lhs.chanName, rhs.chanName);
 	}
 
-	private static int compareBoardNames(FavoriteItem lhs, FavoriteItem rhs)
-	{
+	private static int compareBoardNames(FavoriteItem lhs, FavoriteItem rhs) {
 		return StringUtils.compare(lhs.boardName, rhs.boardName, false);
 	}
 
-	private static int compareThreadNumbers(FavoriteItem lhs, FavoriteItem rhs)
-	{
+	private static int compareThreadNumbers(FavoriteItem lhs, FavoriteItem rhs) {
 		return StringUtils.compare(lhs.threadNumber, rhs.threadNumber, false);
 	}
 
-	private final Comparator<FavoriteItem> mChanNameIndexAscendingComparator = (lhs, rhs) ->
-	{
+	private final Comparator<FavoriteItem> mChanNameIndexAscendingComparator = (lhs, rhs) -> {
 		int result = compareChanNames(lhs, rhs);
-		if (result != 0) return result;
+		if (result != 0) {
+			return result;
+		}
 		return mFavoriteItemsList.indexOf(lhs) - mFavoriteItemsList.indexOf(rhs);
 	};
 
-	private final Comparator<FavoriteItem> mIdentifiersComparator = (lhs, rhs) ->
-	{
+	private final Comparator<FavoriteItem> mIdentifiersComparator = (lhs, rhs) -> {
 		int result = compareChanNames(lhs, rhs);
-		if (result != 0) return result;
+		if (result != 0) {
+			return result;
+		}
 		result = compareBoardNames(lhs, rhs);
-		if (result != 0) return result;
+		if (result != 0) {
+			return result;
+		}
 		result = compareThreadNumbers(lhs, rhs);
-		if (result != 0) return result;
+		if (result != 0) {
+			return result;
+		}
 		return mFavoriteItemsList.indexOf(lhs) - mFavoriteItemsList.indexOf(rhs);
 	};
 
-	private final Comparator<FavoriteItem> mTitlesComparator = (lhs, rhs) ->
-	{
+	private final Comparator<FavoriteItem> mTitlesComparator = (lhs, rhs) -> {
 		int result = compareChanNames(lhs, rhs);
-		if (result != 0) return result;
+		if (result != 0) {
+			return result;
+		}
 		result = StringUtils.compare(lhs.title, rhs.title, true);
-		if (result != 0) return result;
+		if (result != 0) {
+			return result;
+		}
 		result = compareBoardNames(lhs, rhs);
-		if (result != 0) return result;
+		if (result != 0) {
+			return result;
+		}
 		return compareThreadNumbers(lhs, rhs);
 	};
 
-	public static class FavoriteItem
-	{
+	public static class FavoriteItem {
 		public String chanName;
 		public String boardName;
 		public String threadNumber;
@@ -460,13 +422,9 @@ public class FavoritesStorage extends StorageManager.Storage
 		public boolean hasNewPosts;
 		public HttpValidator watcherValidator;
 
-		public FavoriteItem()
-		{
+		public FavoriteItem() {}
 
-		}
-
-		public FavoriteItem(FavoriteItem favoriteItem)
-		{
+		public FavoriteItem(FavoriteItem favoriteItem) {
 			this(favoriteItem.chanName, favoriteItem.boardName, favoriteItem.threadNumber, favoriteItem.title,
 					favoriteItem.modifiedTitle, favoriteItem.watcherEnabled, favoriteItem.postsCount,
 					favoriteItem.newPostsCount, favoriteItem.hasNewPosts, favoriteItem.watcherValidator);
@@ -474,8 +432,7 @@ public class FavoritesStorage extends StorageManager.Storage
 
 		public FavoriteItem(String chanName, String boardName, String threadNumber, String title, boolean modifiedTitle,
 				boolean watcherEnabled, int postsCount, int newPostsCount, boolean hasNewPosts,
-				HttpValidator watcherValidator)
-		{
+				HttpValidator watcherValidator) {
 			this.chanName = chanName;
 			this.boardName = boardName;
 			this.threadNumber = threadNumber;
@@ -488,8 +445,7 @@ public class FavoritesStorage extends StorageManager.Storage
 			this.watcherValidator = watcherValidator;
 		}
 
-		public boolean equals(String chanName, String boardName, String threadNumber)
-		{
+		public boolean equals(String chanName, String boardName, String threadNumber) {
 			return this.chanName.equals(chanName) && StringUtils.equals(this.boardName, boardName)
 					&& StringUtils.equals(this.threadNumber, threadNumber);
 		}

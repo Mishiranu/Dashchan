@@ -40,8 +40,7 @@ import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.util.IOUtils;
 
-public class WebViewBitmapDecoder extends WebViewClient
-{
+public class WebViewBitmapDecoder extends WebViewClient {
 	private static final int MESSAGE_INIT_WEB_VIEW = 1;
 	private static final int MESSAGE_MEASURE_PICTURE = 2;
 	private static final int MESSAGE_CHECK_PICTURE_SIZE = 3;
@@ -56,18 +55,16 @@ public class WebViewBitmapDecoder extends WebViewClient
 
 	private WebView mWebView;
 
-	private WebViewBitmapDecoder(FileHolder fileHolder, BitmapFactory.Options options) throws IOException
-	{
+	private WebViewBitmapDecoder(FileHolder fileHolder, BitmapFactory.Options options) throws IOException {
 		mFileHolder = fileHolder;
 		mSampleSize = options != null ? Math.max(options.inSampleSize, 1) : 1;
-		if (!fileHolder.isImage()) throw new IOException();
-		HANDLER.obtainMessage(MESSAGE_INIT_WEB_VIEW, this).sendToTarget();
-		try
-		{
-			mLatch.await();
+		if (!fileHolder.isImage()) {
+			throw new IOException();
 		}
-		catch (InterruptedException e)
-		{
+		HANDLER.obtainMessage(MESSAGE_INIT_WEB_VIEW, this).sendToTarget();
+		try {
+			mLatch.await();
+		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 			throw new InterruptedIOException();
 		}
@@ -75,114 +72,93 @@ public class WebViewBitmapDecoder extends WebViewClient
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public WebResourceResponse shouldInterceptRequest(WebView view, String url)
-	{
-		if (url.startsWith("http://") || url.startsWith("https://"))
-		{
-			if (url.endsWith("//127.0.0.1/image.jpeg"))
-			{
+	public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
+		if (url.startsWith("http://") || url.startsWith("https://")) {
+			if (url.endsWith("//127.0.0.1/image.jpeg")) {
 				InputStream inputStream = null;
-				try
-				{
+				try {
 					inputStream = mFileHolder.openInputStream();
 					return new WebResourceResponse(mFileHolder.getImageType() == FileHolder.ImageType.IMAGE_SVG
 							? "image/svg+xml" : "image/jpeg", null, inputStream);
-				}
-				catch (IOException e)
-				{
+				} catch (IOException e) {
 					IOUtils.close(inputStream);
 				}
 			}
 			return new WebResourceResponse("text/html", "UTF-8", null);
+		} else {
+			return null;
 		}
-		else return null;
 	}
 
 	private boolean mPageFinished = false;
 
 	@Override
-	public void onPageFinished(WebView view, String url)
-	{
+	public void onPageFinished(WebView view, String url) {
 		super.onPageFinished(view, url);
 		mPageFinished = true;
 		notifyExtract(view);
 	}
 
 	@SuppressWarnings("deprecation")
-	private final WebView.PictureListener mPictureListener = (view, picture) ->
-	{
-		if (mPageFinished) notifyExtract(view);
+	private final WebView.PictureListener mPictureListener = (view, picture) -> {
+		if (mPageFinished) {
+			notifyExtract(view);
+		}
 	};
 
-	private void notifyExtract(WebView view)
-	{
+	private void notifyExtract(WebView view) {
 		HANDLER.removeMessages(MESSAGE_MEASURE_PICTURE);
 		HANDLER.sendMessageDelayed(HANDLER.obtainMessage(MESSAGE_MEASURE_PICTURE, new Object[] {this, view}), 1000);
 	}
 
 	private boolean mMeasured = false;
 
-	private void measurePicture(WebView view)
-	{
-		if (!mMeasured)
-		{
+	private void measurePicture(WebView view) {
+		if (!mMeasured) {
 			mMeasured = true;
 			mWebView = view;
 			view.loadUrl("javascript:calculateSize();");
 		}
 	}
 
-	private void countDownAndDestroy(WebView view)
-	{
+	private void countDownAndDestroy(WebView view) {
 		mLatch.countDown();
 		view.destroy();
 	}
 
-	private void checkPictureSize(int width, int height)
-	{
-		if (width > 0 && height > 0)
-		{
-			if (mWebView.getWidth() <= 0 || mWebView.getHeight() <= 0)
-			{
+	private void checkPictureSize(int width, int height) {
+		if (width > 0 && height > 0) {
+			if (mWebView.getWidth() <= 0 || mWebView.getHeight() <= 0) {
 				mMeasured = false;
 				mWebView.layout(0, 0, width, height);
 				mWebView.reload();
-			}
-			else
-			{
-				if (mWebView.getWidth() != width || mWebView.getHeight() != height) countDownAndDestroy(mWebView); else
-				{
-					try
-					{
+			} else {
+				if (mWebView.getWidth() != width || mWebView.getHeight() != height) {
+					countDownAndDestroy(mWebView);
+				} else {
+					try {
 						mBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
 						mWebView.draw(new Canvas(mBitmap));
-					}
-					catch (OutOfMemoryError e)
-					{
+					} catch (OutOfMemoryError e) {
 						mBitmap = null;
-					}
-					finally
-					{
+					} finally {
 						countDownAndDestroy(mWebView);
 					}
 				}
 			}
+		} else {
+			countDownAndDestroy(mWebView);
 		}
-		else countDownAndDestroy(mWebView);
 		mWebView = null;
 	}
 
-	private static class Callback implements Handler.Callback
-	{
+	private static class Callback implements Handler.Callback {
 		@SuppressWarnings("deprecation")
 		@SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
 		@Override
-		public boolean handleMessage(Message msg)
-		{
-			switch (msg.what)
-			{
-				case MESSAGE_INIT_WEB_VIEW:
-				{
+		public boolean handleMessage(Message msg) {
+			switch (msg.what) {
+				case MESSAGE_INIT_WEB_VIEW: {
 					WebViewBitmapDecoder decoder = (WebViewBitmapDecoder) msg.obj;
 					int width = decoder.mFileHolder.getImageWidth();
 					int height = decoder.mFileHolder.getImageHeight();
@@ -200,7 +176,9 @@ public class WebViewBitmapDecoder extends WebViewClient
 					webView.setBackgroundColor(Color.TRANSPARENT);
 					webView.setPictureListener(decoder.mPictureListener);
 					webView.addJavascriptInterface(decoder, "jsi");
-					if (width > 0 && height > 0) webView.layout(0, 0, width, height);
+					if (width > 0 && height > 0) {
+						webView.layout(0, 0, width, height);
+					}
 					webView.loadData("<!DOCTYPE html><html><head><script type=\"text/javascript\">"
 							+ "function calculateSize() {jsi.onCalculateSize(document.body.children[0].naturalWidth, "
 							+ "document.body.children[0].naturalHeight);}</script></head>"
@@ -208,16 +186,14 @@ public class WebViewBitmapDecoder extends WebViewClient
 							"text/html", "UTF-8");
 					return true;
 				}
-				case MESSAGE_MEASURE_PICTURE:
-				{
+				case MESSAGE_MEASURE_PICTURE: {
 					Object[] data = (Object[]) msg.obj;
 					WebViewBitmapDecoder decoder = (WebViewBitmapDecoder) data[0];
 					WebView webView = (WebView) data[1];
 					decoder.measurePicture(webView);
 					return true;
 				}
-				case MESSAGE_CHECK_PICTURE_SIZE:
-				{
+				case MESSAGE_CHECK_PICTURE_SIZE: {
 					Object[] data = (Object[]) msg.obj;
 					WebViewBitmapDecoder decoder = (WebViewBitmapDecoder) data[0];
 					int width = (int) data[1];
@@ -232,24 +208,18 @@ public class WebViewBitmapDecoder extends WebViewClient
 
 	@SuppressWarnings("unused")
 	@JavascriptInterface
-	public void onCalculateSize(int width, int height)
-	{
+	public void onCalculateSize(int width, int height) {
 		width /= mSampleSize;
 		height /= mSampleSize;
 		HANDLER.obtainMessage(MESSAGE_CHECK_PICTURE_SIZE, new Object[] {this, width, height}).sendToTarget();
 	}
 
-	public static Bitmap loadBitmap(FileHolder fileHolder, BitmapFactory.Options options)
-	{
-		if (C.WEB_VIEW_BITMAP_DECODER_SUPPORTED && !MainApplication.getInstance().isLowRam())
-		{
+	public static Bitmap loadBitmap(FileHolder fileHolder, BitmapFactory.Options options) {
+		if (C.WEB_VIEW_BITMAP_DECODER_SUPPORTED && !MainApplication.getInstance().isLowRam()) {
 			WebViewBitmapDecoder decoder;
-			try
-			{
+			try {
 				decoder = new WebViewBitmapDecoder(fileHolder, options);
-			}
-			catch (IOException e)
-			{
+			} catch (IOException e) {
 				return null;
 			}
 			return decoder.mBitmap;

@@ -27,14 +27,12 @@
 typedef struct QueueItem QueueItem;
 typedef struct Queue Queue;
 
-struct QueueItem
-{
+struct QueueItem {
 	void * data;
 	QueueItem * next;
 };
 
-struct Queue
-{
+struct Queue {
 	QueueItem * first;
 	QueueItem * last;
 	int count;
@@ -48,8 +46,7 @@ void * queueGet(Queue * queue);
 
 typedef struct BlockingQueue BlockingQueue;
 
-struct BlockingQueue
-{
+struct BlockingQueue {
 	Queue queue;
 	int interrupted;
 	pthread_cond_t cond;
@@ -67,15 +64,13 @@ int blockingQueueCount(BlockingQueue * blockingQueue);
 typedef struct BufferItem BufferItem;
 typedef struct BufferQueue BufferQueue;
 
-struct BufferItem
-{
+struct BufferItem {
 	uint8_t * buffer;
 	int bufferSize;
 	void * extra;
 };
 
-struct BufferQueue
-{
+struct BufferQueue {
 	Queue freeQueue;
 	Queue busyQueue;
 	int bufferSize;
@@ -94,14 +89,12 @@ int bufferQueueCount(BufferQueue * bufferQueue);
 typedef struct SparceArrayItem SparceArrayItem;
 typedef struct SparceArray SparceArray;
 
-struct SparceArrayItem
-{
+struct SparceArrayItem {
 	int index;
 	void * data;
 };
 
-struct SparceArray
-{
+struct SparceArray {
 	SparceArrayItem * items;
 	int capacity;
 	int count;

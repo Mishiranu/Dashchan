@@ -20,18 +20,15 @@ import android.annotation.SuppressLint;
 import android.text.style.TypefaceSpan;
 
 @SuppressLint("ParcelCreator")
-public class MonospaceSpan extends TypefaceSpan
-{
+public class MonospaceSpan extends TypefaceSpan {
 	private final boolean mAsciiArt;
 
-	public MonospaceSpan(boolean asciiArt)
-	{
+	public MonospaceSpan(boolean asciiArt) {
 		super("monospace");
 		mAsciiArt = asciiArt;
 	}
 
-	public boolean isAsciiArt()
-	{
+	public boolean isAsciiArt() {
 		return mAsciiArt;
 	}
 }

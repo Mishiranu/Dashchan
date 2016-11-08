@@ -34,8 +34,7 @@ import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.FlagUtils;
 
-public class DatabaseHelper extends SQLiteOpenHelper
-{
+public class DatabaseHelper extends SQLiteOpenHelper {
 	private static final String DATABASE_NAME = "dashchan.db";
 	private static final int DATABASE_VERSION = 8;
 
@@ -51,30 +50,25 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
 	private static final DatabaseHelper INSTANCE = new DatabaseHelper();
 
-	public static DatabaseHelper getInstance()
-	{
+	public static DatabaseHelper getInstance() {
 		return INSTANCE;
 	}
 
-	private DatabaseHelper()
-	{
+	private DatabaseHelper() {
 		super(MainApplication.getInstance(), DATABASE_NAME, null, DATABASE_VERSION);
 		getWritableDatabase(); // Perform create and upgrade here
 	}
 
-	public Executor getExecutor()
-	{
+	public Executor getExecutor() {
 		return mExecutor;
 	}
 
-	public static File getDatabaseFile()
-	{
+	public static File getDatabaseFile() {
 		return MainApplication.getInstance().getDatabasePath(DATABASE_NAME);
 	}
 
 	@Override
-	public void onCreate(SQLiteDatabase db)
-	{
+	public void onCreate(SQLiteDatabase db) {
 		new TableCreator(TABLE_HISTORY)
 				.addColumn(HistoryDatabase.COLUMN_CHAN_NAME, TYPE_TEXT)
 				.addColumn(HistoryDatabase.COLUMN_BOARD_NAME, TYPE_TEXT)
@@ -89,12 +83,9 @@ public class DatabaseHelper extends SQLiteOpenHelper
 	}
 
 	@Override
-	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
-	{
-		switch (oldVersion)
-		{
-			case 5:
-			{
+	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+		switch (oldVersion) {
+			case 5: {
 				// Version upgrade from 5 to 6
 				// Added watcher_validator column to favorites table
 				new TableModifier(null, "favorites")
@@ -107,8 +98,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
 						.addColumn("new_posts_count", TYPE_INTEGER, "new_posts_count")
 						.addColumn("watcher_validator", TYPE_TEXT, null).execute(db);
 			}
-			case 6:
-			{
+			case 6: {
 				// Version upgrade from 6 to 7
 				// Renamed params column to flags in autohide table
 				// Renamed regex column to value in autohide table
@@ -119,18 +109,15 @@ public class DatabaseHelper extends SQLiteOpenHelper
 						.addColumn("flags", TYPE_INTEGER, "params")
 						.addColumn("value", TYPE_TEXT, "regex").execute(db);
 			}
-			case 7:
-			{
+			case 7: {
 				// Version upgrade from 7 to 8
 				// Remove favorites and autohide tables
 				FavoritesStorage favoritesStorage = FavoritesStorage.getInstance();
 				String[] favoritesColumns = {"chan_name", "board_name", "thread_number",
 					"title", "flags", "posts_count", "new_posts_count", "watcher_validator"};
 				Cursor cursor = db.query("favorites", favoritesColumns, null, null, null, null, "_id ASC");
-				if (cursor.moveToFirst())
-				{
-					do
-					{
+				if (cursor.moveToFirst()) {
+					do {
 						String chanName = cursor.getString(0);
 						String boardName = cursor.getString(1);
 						String threadNumber = cursor.getString(2);
@@ -145,26 +132,21 @@ public class DatabaseHelper extends SQLiteOpenHelper
 						favoritesStorage.add(new FavoritesStorage.FavoriteItem(chanName, boardName, threadNumber, title,
 								modifiedTitle, watcherEnabled, postsCount, newPostsCount, hasNewPosts,
 								watcherValidator));
-					}
-					while (cursor.moveToNext());
+					} while (cursor.moveToNext());
 				}
 				cursor.close();
 				favoritesStorage.await(false);
 				AutohideStorage autohideStorage = AutohideStorage.getInstance();
 				String[] autohideColumns = {"chan_name", "board_name", "thread_number", "flags", "value"};
 				cursor = db.query("autohide", autohideColumns, null, null, null, null, "_id ASC");
-				if (cursor.moveToFirst())
-				{
-					do
-					{
+				if (cursor.moveToFirst()) {
+					do {
 						int params = cursor.getInt(3);
 						String chanNamesString = StringUtils.nullIfEmpty(cursor.getString(0));
 						HashSet<String> chanNames = null;
-						if (chanNamesString != null)
-						{
+						if (chanNamesString != null) {
 							String[] chanNamesArray = chanNamesString.split(",");
-							if (chanNamesArray.length > 0)
-							{
+							if (chanNamesArray.length > 0) {
 								chanNames = new HashSet<>();
 								Collections.addAll(chanNames, chanNamesArray);
 							}
@@ -179,8 +161,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
 						String value = cursor.getString(4);
 						autohideStorage.add(new AutohideStorage.AutohideItem(chanNames, boardName, threadNumber,
 								optionOriginalPost, optionSage, optionSubject, optionComment, optionName, value));
-					}
-					while (cursor.moveToNext());
+					} while (cursor.moveToNext());
 				}
 				cursor.close();
 				autohideStorage.await(false);
@@ -190,81 +171,77 @@ public class DatabaseHelper extends SQLiteOpenHelper
 		}
 	}
 
-	private static class TableCreator
-	{
+	private static class TableCreator {
 		private final ArrayList<String> mColumns = new ArrayList<>();
 		private final String mTableName;
 
-		public TableCreator(String tableName)
-		{
+		public TableCreator(String tableName) {
 			mTableName = tableName;
 		}
 
-		public TableCreator addColumn(String columnName, String columnType)
-		{
+		public TableCreator addColumn(String columnName, String columnType) {
 			String columnString = columnName + " " + columnType + " NULL";
 			mColumns.add(columnString);
 			return this;
 		}
 
-		public void execute(SQLiteDatabase db)
-		{
+		public void execute(SQLiteDatabase db) {
 			StringBuilder builder = new StringBuilder().append("CREATE TABLE ").append(mTableName).append(" (");
 			builder.append("_id INTEGER PRIMARY KEY AUTOINCREMENT");
-			for (int i = 0; i < mColumns.size(); i++) builder.append(", ").append(mColumns.get(i));
+			for (int i = 0; i < mColumns.size(); i++) {
+				builder.append(", ").append(mColumns.get(i));
+			}
 			builder.append(')');
 			db.execSQL(builder.toString());
 		}
 	}
 
-	private static class TableModifier
-	{
+	private static class TableModifier {
 		private final TableCreator mTableCreator;
 		private final String mFromTableName;
 
 		private final ArrayList<String> mFrom = new ArrayList<>(), mTo = new ArrayList<>();
 
-		public TableModifier(String newTableName, String oldTableName)
-		{
-			if (newTableName == null) newTableName = oldTableName;
+		public TableModifier(String newTableName, String oldTableName) {
+			if (newTableName == null) {
+				newTableName = oldTableName;
+			}
 			mTableCreator = new TableCreator(newTableName);
 			mFromTableName = newTableName.equals(oldTableName) ? null : oldTableName;
 		}
 
-		public TableModifier addColumn(String columnName, String columnType, String copyFrom)
-		{
+		public TableModifier addColumn(String columnName, String columnType, String copyFrom) {
 			mTableCreator.addColumn(columnName, columnType);
-			if (copyFrom != null)
-			{
+			if (copyFrom != null) {
 				mFrom.add(copyFrom);
 				mTo.add(columnName);
 			}
 			return this;
 		}
 
-		public void execute(SQLiteDatabase db)
-		{
+		public void execute(SQLiteDatabase db) {
 			String table = mTableCreator.mTableName;
 			String oldTable;
-			if (mFromTableName == null)
-			{
+			if (mFromTableName == null) {
 				oldTable = table + "_temp";
 				db.execSQL("ALTER TABLE " + table + " RENAME TO " + oldTable);
+			} else {
+				oldTable = mFromTableName;
 			}
-			else oldTable = mFromTableName;
 			mTableCreator.execute(db);
-			if (mFrom.size() > 0)
-			{
+			if (mFrom.size() > 0) {
 				StringBuilder builder = new StringBuilder().append("INSERT INTO ").append(table).append(" (");
-				for (int i = 0; i < mTo.size(); i++)
-				{
-					if (i > 0) builder.append(", ");
+				for (int i = 0; i < mTo.size(); i++) {
+					if (i > 0) {
+						builder.append(", ");
+					}
 					builder.append(mTo.get(i));
 				}
 				builder.append(") SELECT ");
-				for (int i = 0; i < mFrom.size(); i++)
-				{
-					if (i > 0) builder.append(", ");
+				for (int i = 0; i < mFrom.size(); i++) {
+					if (i > 0) {
+						builder.append(", ");
+					}
 					builder.append(mFrom.get(i));
 				}
 				builder.append(" FROM ").append(oldTable);

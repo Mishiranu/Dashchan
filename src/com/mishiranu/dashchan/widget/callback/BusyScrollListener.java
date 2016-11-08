@@ -20,45 +20,40 @@ import android.os.Handler;
 import android.widget.AbsListView;
 import android.widget.ListView;
 
-public class BusyScrollListener implements ListView.OnScrollListener, Runnable
-{
-	public interface Callback
-	{
+public class BusyScrollListener implements ListView.OnScrollListener, Runnable {
+	public interface Callback {
 		public void setListViewBusy(boolean isBusy, AbsListView listView);
 	}
 
 	private final Callback mCallback;
 	private final Handler mHandler = new Handler();
 
-	public BusyScrollListener(Callback callback)
-	{
+	public BusyScrollListener(Callback callback) {
 		mCallback = callback;
 	}
 
 	@Override
-	public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount)
-	{
-
-	}
+	public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {}
 
 	private boolean mIsBusy = false, mQueuedIsBusy;
 	private AbsListView mListView;
 
 	@Override
-	public void onScrollStateChanged(AbsListView view, int scrollState)
-	{
+	public void onScrollStateChanged(AbsListView view, int scrollState) {
 		boolean isBusy = scrollState != AbsListView.OnScrollListener.SCROLL_STATE_IDLE;
 		mQueuedIsBusy = isBusy;
 		mListView = view;
 		mHandler.removeCallbacks(this);
-		if (isBusy && !mIsBusy) run(); else if (!isBusy && mIsBusy) mHandler.postDelayed(this, 250);
+		if (isBusy && !mIsBusy) {
+			run();
+		} else if (!isBusy && mIsBusy) {
+			mHandler.postDelayed(this, 250);
+		}
 	}
 
 	@Override
-	public void run()
-	{
-		if (mQueuedIsBusy != mIsBusy)
-		{
+	public void run() {
+		if (mQueuedIsBusy != mIsBusy) {
 			mIsBusy = mQueuedIsBusy;
 			mCallback.setListViewBusy(mIsBusy, mListView);
 		}

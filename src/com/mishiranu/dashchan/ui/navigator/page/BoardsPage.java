@@ -42,51 +42,48 @@ import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.PullableListView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 
-public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTask.Callback
-{
+public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTask.Callback {
 	private ReadBoardsTask mReadTask;
 
 	@Override
-	protected void onCreate()
-	{
+	protected void onCreate() {
 		PullableListView listView = getListView();
 		PageHolder pageHolder = getPageHolder();
-		if (C.API_LOLLIPOP) listView.setDivider(null);
+		if (C.API_LOLLIPOP) {
+			listView.setDivider(null);
+		}
 		BoardsAdapter adapter = new BoardsAdapter(pageHolder.chanName);
 		initAdapter(adapter, null);
 		adapter.update();
 		listView.getWrapper().setPullSides(PullableWrapper.Side.TOP);
-		if (!adapter.isEmpty())
-		{
+		if (!adapter.isEmpty()) {
 			showScaleAnimation();
-			if (pageHolder.position != null) pageHolder.position.apply(getListView());
+			if (pageHolder.position != null) {
+				pageHolder.position.apply(getListView());
+			}
+		} else {
+			refreshBoards(false);
 		}
-		else refreshBoards(false);
 	}
 
 	@Override
-	protected void onDestroy()
-	{
-		if (mReadTask != null)
-		{
+	protected void onDestroy() {
+		if (mReadTask != null) {
 			mReadTask.cancel();
 			mReadTask = null;
 		}
 	}
 
 	@Override
-	public String obtainTitle()
-	{
+	public String obtainTitle() {
 		boolean hasUserBoards = getChanConfiguration().getOption(ChanConfiguration.OPTION_READ_USER_BOARDS);
 		return getString(hasUserBoards ? R.string.action_general_boards : R.string.action_boards);
 	}
 
 	@Override
-	public void onItemClick(View view, int position, long id)
-	{
+	public void onItemClick(View view, int position, long id) {
 		String boardName = getAdapter().getItem(position).boardName;
-		if (boardName != null)
-		{
+		if (boardName != null) {
 			getUiManager().navigator().navigateBoardsOrThreads(getPageHolder().chanName, boardName, false, false);
 		}
 	}
@@ -95,8 +92,7 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 	private static final int OPTIONS_MENU_MAKE_HOME_PAGE = 1;
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu)
-	{
+	public void onCreateOptionsMenu(Menu menu) {
 		PageHolder pageHolder = getPageHolder();
 		menu.add(0, OPTIONS_MENU_SEARCH, 0, R.string.action_filter)
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
@@ -109,17 +105,13 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item)
-	{
-		switch (item.getItemId())
-		{
-			case OPTIONS_MENU_REFRESH:
-			{
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+			case OPTIONS_MENU_REFRESH: {
 				refreshBoards(!getAdapter().isEmpty());
 				return true;
 			}
-			case OPTIONS_MENU_MAKE_HOME_PAGE:
-			{
+			case OPTIONS_MENU_MAKE_HOME_PAGE: {
 				Preferences.setDefaultBoardName(getPageHolder().chanName, null);
 				item.setVisible(false);
 				return true;
@@ -132,36 +124,30 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 	private static final int CONTEXT_MENU_ADD_FAVORITES = 1;
 
 	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v, int position, View targetView)
-	{
+	public void onCreateContextMenu(ContextMenu menu, View v, int position, View targetView) {
 		PageHolder pageHolder = getPageHolder();
 		String boardName = getAdapter().getItem(position).boardName;
-		if (boardName != null)
-		{
+		if (boardName != null) {
 			menu.add(0, CONTEXT_MENU_COPY_LINK, 0, R.string.action_copy_link);
-			if (!FavoritesStorage.getInstance().hasFavorite(pageHolder.chanName, boardName, null))
-			{
+			if (!FavoritesStorage.getInstance().hasFavorite(pageHolder.chanName, boardName, null)) {
 				menu.add(0, CONTEXT_MENU_ADD_FAVORITES, 0, R.string.action_add_to_favorites);
 			}
 		}
 	}
 
 	@Override
-	public boolean onContextItemSelected(MenuItem item, int position, View targetView)
-	{
+	public boolean onContextItemSelected(MenuItem item, int position, View targetView) {
 		String boardName = getAdapter().getItem(position).boardName;
-		if (boardName != null)
-		{
-			switch (item.getItemId())
-			{
-				case CONTEXT_MENU_COPY_LINK:
-				{
+		if (boardName != null) {
+			switch (item.getItemId()) {
+				case CONTEXT_MENU_COPY_LINK: {
 					Uri uri = getChanLocator().safe(true).createBoardUri(boardName, 0);
-					if (uri != null) StringUtils.copyToClipboard(getActivity(), uri.toString());
+					if (uri != null) {
+						StringUtils.copyToClipboard(getActivity(), uri.toString());
+					}
 					return true;
 				}
-				case CONTEXT_MENU_ADD_FAVORITES:
-				{
+				case CONTEXT_MENU_ADD_FAVORITES: {
 					FavoritesStorage.getInstance().add(getPageHolder().chanName, boardName);
 					return true;
 				}
@@ -171,63 +157,56 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 	}
 
 	@Override
-	public void onSearchQueryChange(String query)
-	{
+	public void onSearchQueryChange(String query) {
 		getAdapter().applyFilter(query);
 	}
 
 	@Override
-	public void onListPulled(PullableWrapper wrapper, PullableWrapper.Side side)
-	{
+	public void onListPulled(PullableWrapper wrapper, PullableWrapper.Side side) {
 		refreshBoards(true);
 	}
 
-	private void refreshBoards(boolean showPull)
-	{
-		if (mReadTask != null) mReadTask.cancel();
+	private void refreshBoards(boolean showPull) {
+		if (mReadTask != null) {
+			mReadTask.cancel();
+		}
 		mReadTask = new ReadBoardsTask(getPageHolder().chanName, this);
 		mReadTask.executeOnExecutor(ReadBoardsTask.THREAD_POOL_EXECUTOR);
-		if (showPull)
-		{
+		if (showPull) {
 			getListView().getWrapper().startBusyState(PullableWrapper.Side.TOP);
 			switchView(ViewType.LIST, null);
-		}
-		else
-		{
+		} else {
 			getListView().getWrapper().startBusyState(PullableWrapper.Side.BOTH);
 			switchView(ViewType.PROGRESS, null);
 		}
 	}
 
 	@Override
-	public void onReadBoardsSuccess(BoardCategory[] boardCategories)
-	{
+	public void onReadBoardsSuccess(BoardCategory[] boardCategories) {
 		mReadTask = null;
 		getListView().getWrapper().cancelBusyState();
 		switchView(ViewType.LIST, null);
 		JSONArray jsonArray = null;
-		if (boardCategories != null && boardCategories.length > 0)
-		{
-			try
-			{
-				for (BoardCategory boardCategory : boardCategories)
-				{
+		if (boardCategories != null && boardCategories.length > 0) {
+			try {
+				for (BoardCategory boardCategory : boardCategories) {
 					Board[] boards = boardCategory.getBoards();
-					if (boards != null && boards.length > 0)
-					{
+					if (boards != null && boards.length > 0) {
 						JSONObject jsonObject = new JSONObject();
 						jsonObject.put(BoardsAdapter.KEY_TITLE, StringUtils.emptyIfNull(boardCategory.getTitle()));
 						JSONArray boardsArray = new JSONArray();
-						for (Board board : boards) boardsArray.put(board.getBoardName());
+						for (Board board : boards) {
+							boardsArray.put(board.getBoardName());
+						}
 						jsonObject.put(BoardsAdapter.KEY_BOARDS, boardsArray);
-						if (jsonArray == null) jsonArray = new JSONArray();
+						if (jsonArray == null) {
+							jsonArray = new JSONArray();
+						}
 						jsonArray.put(jsonObject);
 					}
 				}
-			}
-			catch (JSONException e)
-			{
-
+			} catch (JSONException e) {
+				// Ignore
 			}
 		}
 		ChanConfiguration configuration = getChanConfiguration();
@@ -238,11 +217,13 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 	}
 
 	@Override
-	public void onReadBoardsFail(ErrorItem errorItem)
-	{
+	public void onReadBoardsFail(ErrorItem errorItem) {
 		mReadTask = null;
 		getListView().getWrapper().cancelBusyState();
-		if (getAdapter().isEmpty()) switchView(ViewType.ERROR, errorItem.toString());
-		else ClickableToast.show(getActivity(), errorItem.toString());
+		if (getAdapter().isEmpty()) {
+			switchView(ViewType.ERROR, errorItem.toString());
+		} else {
+			ClickableToast.show(getActivity(), errorItem.toString());
+		}
 	}
 }

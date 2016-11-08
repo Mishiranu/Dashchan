@@ -25,13 +25,11 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.preference.Preferences;
 
-public class FavoritesFragment extends BasePreferenceFragment
-{
+public class FavoritesFragment extends BasePreferenceFragment {
 	private ListPreference mFavoritesOrderPreference;
 
 	@Override
-	public void onCreate(Bundle savedInstanceState)
-	{
+	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		mFavoritesOrderPreference = makeList(null, Preferences.KEY_FAVORITES_ORDER, Preferences.VALUES_FAVORITES_ORDER,
@@ -60,11 +58,9 @@ public class FavoritesFragment extends BasePreferenceFragment
 	}
 
 	@Override
-	public void onPreferenceAfterChange(Preference preference)
-	{
+	public void onPreferenceAfterChange(Preference preference) {
 		super.onPreferenceAfterChange(preference);
-		if (preference == mFavoritesOrderPreference)
-		{
+		if (preference == mFavoritesOrderPreference) {
 			FavoritesStorage.getInstance().sortIfNeeded();
 		}
 	}

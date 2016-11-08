@@ -16,16 +16,17 @@
 
 package com.mishiranu.dashchan.util;
 
-public class FlagUtils
-{
-	public static boolean get(int flags, int flag)
-	{
+public class FlagUtils {
+	public static boolean get(int flags, int flag) {
 		return (flags & flag) == flag;
 	}
 
-	public static int set(int flags, int flag, boolean value)
-	{
-		if (value) flags |= flag; else flags &= ~flag;
+	public static int set(int flags, int flag, boolean value) {
+		if (value) {
+			flags |= flag;
+		} else {
+			flags &= ~flag;
+		}
 		return flags;
 	}
 }

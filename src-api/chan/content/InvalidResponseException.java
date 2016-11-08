@@ -22,25 +22,19 @@ import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.util.Log;
 
 @Public
-public final class InvalidResponseException extends Exception implements ErrorItem.Holder
-{
+public final class InvalidResponseException extends Exception implements ErrorItem.Holder {
 	private static final long serialVersionUID = 1L;
 
 	@Public
-	public InvalidResponseException()
-	{
-
-	}
+	public InvalidResponseException() {}
 
 	@Public
-	public InvalidResponseException(Throwable throwable)
-	{
+	public InvalidResponseException(Throwable throwable) {
 		super(throwable);
 	}
 
 	@Override
-	public ErrorItem getErrorItemAndHandle()
-	{
+	public ErrorItem getErrorItemAndHandle() {
 		Log.persistent().stack(this);
 		return new ErrorItem(ErrorItem.TYPE_INVALID_RESPONSE);
 	}

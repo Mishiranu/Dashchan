@@ -28,8 +28,7 @@ import chan.content.ChanLocator;
 import com.mishiranu.dashchan.content.DownloadManager;
 import com.mishiranu.dashchan.util.NavigationUtils;
 
-public class GalleryItem implements Serializable
-{
+public class GalleryItem implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private final String mFileUriString;
@@ -50,8 +49,7 @@ public class GalleryItem implements Serializable
 	private transient Uri mThumbnailUri;
 
 	public GalleryItem(Uri fileUri, Uri thumbnailUri, String boardName, String threadNumber, String postNumber,
-			String originalName, int width, int height, int size)
-	{
+			String originalName, int width, int height, int size) {
 		mFileUriString = fileUri != null ? fileUri.toString() : null;
 		mThumbnailUriString = thumbnailUri != null ? thumbnailUri.toString() : null;
 		this.boardName = boardName;
@@ -63,8 +61,7 @@ public class GalleryItem implements Serializable
 		this.size = size;
 	}
 
-	public GalleryItem(Uri fileUri, String boardName, String threadNumber)
-	{
+	public GalleryItem(Uri fileUri, String boardName, String threadNumber) {
 		mFileUriString = null;
 		mThumbnailUriString = null;
 		this.boardName = boardName;
@@ -77,120 +74,104 @@ public class GalleryItem implements Serializable
 		mFileUri = fileUri;
 	}
 
-	public boolean isImage(ChanLocator locator)
-	{
+	public boolean isImage(ChanLocator locator) {
 		return locator.isImageExtension(getFileName(locator));
 	}
 
-	public boolean isVideo(ChanLocator locator)
-	{
+	public boolean isVideo(ChanLocator locator) {
 		return locator.isVideoExtension(getFileName(locator));
 	}
 
-	public boolean isOpenableVideo(ChanLocator locator)
-	{
+	public boolean isOpenableVideo(ChanLocator locator) {
 		return NavigationUtils.isOpenableVideoPath(getFileName(locator));
 	}
 
-	public Uri getFileUri(ChanLocator locator)
-	{
-		if (mFileUri == null && mFileUriString != null)
-		{
+	public Uri getFileUri(ChanLocator locator) {
+		if (mFileUri == null && mFileUriString != null) {
 			mFileUri = locator.convert(Uri.parse(mFileUriString));
 		}
 		return mFileUri;
 	}
 
-	public Uri getThumbnailUri(ChanLocator locator)
-	{
-		if (mThumbnailUri == null && mThumbnailUriString != null)
-		{
+	public Uri getThumbnailUri(ChanLocator locator) {
+		if (mThumbnailUri == null && mThumbnailUriString != null) {
 			mThumbnailUri = locator.convert(Uri.parse(mThumbnailUriString));
 		}
 		return mThumbnailUri;
 	}
 
-	public Uri getDisplayImageUri(ChanLocator locator)
-	{
+	public Uri getDisplayImageUri(ChanLocator locator) {
 		return isImage(locator) ? getFileUri(locator) : getThumbnailUri(locator);
 	}
 
-	public String getFileName(ChanLocator locator)
-	{
+	public String getFileName(ChanLocator locator) {
 		Uri fileUri = getFileUri(locator);
 		return locator.createAttachmentFileName(fileUri);
 	}
 
-	public void downloadStorage(Context context, ChanLocator locator, String threadTitle)
-	{
+	public void downloadStorage(Context context, ChanLocator locator, String threadTitle) {
 		DownloadManager.getInstance().downloadStorage(context, getFileUri(locator), getFileName(locator), originalName,
 				locator.getChanName(), boardName, threadNumber, threadTitle);
 	}
 
-	public void cleanup()
-	{
-		if (mFileUriString != null) mFileUri = null;
-		if (mThumbnailUriString != null) mThumbnailUri = null;
+	public void cleanup() {
+		if (mFileUriString != null) {
+			mFileUri = null;
+		}
+		if (mThumbnailUriString != null) {
+			mThumbnailUri = null;
+		}
 	}
 
-	public static class GallerySet
-	{
+	public static class GallerySet {
 		private final boolean mAllowGoToPost;
 		private final ArrayList<GalleryItem> mGalleryItems = new ArrayList<>();
 
 		private String mThreadTitle;
 
-		public GallerySet(boolean allowGoToPost)
-		{
+		public GallerySet(boolean allowGoToPost) {
 			mAllowGoToPost = allowGoToPost;
 		}
 
-		public void setThreadTitle(String threadTitle)
-		{
+		public void setThreadTitle(String threadTitle) {
 			mThreadTitle = threadTitle;
 		}
 
-		public String getThreadTitle()
-		{
+		public String getThreadTitle() {
 			return mThreadTitle;
 		}
 
-		public void add(Collection<AttachmentItem> attachmentItems)
-		{
-			if (attachmentItems != null)
-			{
-				for (AttachmentItem attachmentItem : attachmentItems)
-				{
-					if (attachmentItem.isShowInGallery() && attachmentItem.canDownloadToStorage())
-					{
+		public void add(Collection<AttachmentItem> attachmentItems) {
+			if (attachmentItems != null) {
+				for (AttachmentItem attachmentItem : attachmentItems) {
+					if (attachmentItem.isShowInGallery() && attachmentItem.canDownloadToStorage()) {
 						add(attachmentItem.createGalleryItem());
 					}
 				}
 			}
 		}
 
-		public void add(GalleryItem galleryItem)
-		{
-			if (galleryItem != null) mGalleryItems.add(galleryItem);
+		public void add(GalleryItem galleryItem) {
+			if (galleryItem != null) {
+				mGalleryItems.add(galleryItem);
+			}
 		}
 
-		public void cleanup()
-		{
-			for (GalleryItem galleryItem : mGalleryItems) galleryItem.cleanup();
+		public void cleanup() {
+			for (GalleryItem galleryItem : mGalleryItems) {
+				galleryItem.cleanup();
+			}
 		}
 
-		public void clear()
-		{
+		public void clear() {
 			mGalleryItems.clear();
 		}
 
-		public ArrayList<GalleryItem> getItems()
-		{
+		public ArrayList<GalleryItem> getItems() {
 			return mGalleryItems.size() > 0 ? mGalleryItems : null;
 		}
 
-		public boolean isAllowGoToPost()
-		{
+		public boolean isAllowGoToPost() {
 			return mAllowGoToPost;
 		}
 	}

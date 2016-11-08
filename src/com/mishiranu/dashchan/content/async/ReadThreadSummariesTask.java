@@ -31,8 +31,7 @@ import chan.util.CommonUtils;
 
 import com.mishiranu.dashchan.content.model.ErrorItem;
 
-public class ReadThreadSummariesTask extends HttpHolderTask<Void, Void, ThreadSummary[]>
-{
+public class ReadThreadSummariesTask extends HttpHolderTask<Void, Void, ThreadSummary[]> {
 	private final String mChanName;
 	private final String mBoardName;
 	private final int mPageNumber;
@@ -41,14 +40,12 @@ public class ReadThreadSummariesTask extends HttpHolderTask<Void, Void, ThreadSu
 
 	private ErrorItem mErrorItem;
 
-	public interface Callback
-	{
+	public interface Callback {
 		public void onReadThreadSummariesSuccess(ThreadSummary[] threadSummaries, int pageNumber);
 		public void onReadThreadSummariesFail(ErrorItem errorItem);
 	}
 
-	public ReadThreadSummariesTask(String chanName, String boardName, int pageNumber, int type, Callback callback)
-	{
+	public ReadThreadSummariesTask(String chanName, String boardName, int pageNumber, int type, Callback callback) {
 		mChanName = chanName;
 		mBoardName = boardName;
 		mPageNumber = pageNumber;
@@ -57,49 +54,42 @@ public class ReadThreadSummariesTask extends HttpHolderTask<Void, Void, ThreadSu
 	}
 
 	@Override
-	protected ThreadSummary[] doInBackground(HttpHolder holder, Void... params)
-	{
-		try
-		{
+	protected ThreadSummary[] doInBackground(HttpHolder holder, Void... params) {
+		try {
 			ChanPerformer performer = ChanPerformer.get(mChanName);
 			ChanPerformer.ReadThreadSummariesResult result = performer.safe().onReadThreadSummaries(new ChanPerformer
 					.ReadThreadSummariesData(mBoardName, mPageNumber, mType, holder));
 			ThreadSummary[] threadSummaries = result != null ? result.threadSummaries : null;
 			return threadSummaries != null && threadSummaries.length > 0 ? threadSummaries : null;
-		}
-		catch (ExtensionException | HttpException | InvalidResponseException e)
-		{
+		} catch (ExtensionException | HttpException | InvalidResponseException e) {
 			mErrorItem = e.getErrorItemAndHandle();
 			return null;
-		}
-		finally
-		{
+		} finally {
 			ChanConfiguration.get(mChanName).commit();
 		}
 	}
 
 	@Override
-	public void onPostExecute(ThreadSummary[] threadSummaries)
-	{
-		if (mErrorItem == null) mCallback.onReadThreadSummariesSuccess(threadSummaries, mPageNumber);
-		else mCallback.onReadThreadSummariesFail(mErrorItem);
+	public void onPostExecute(ThreadSummary[] threadSummaries) {
+		if (mErrorItem == null) {
+			mCallback.onReadThreadSummariesSuccess(threadSummaries, mPageNumber);
+		} else {
+			mCallback.onReadThreadSummariesFail(mErrorItem);
+		}
 	}
 
-	public static ThreadSummary[] concatenate(ThreadSummary[] threadSummaries1, ThreadSummary[] threadSummaries2)
-	{
+	public static ThreadSummary[] concatenate(ThreadSummary[] threadSummaries1, ThreadSummary[] threadSummaries2) {
 		ArrayList<ThreadSummary> threadSummaries = new ArrayList<>();
-		if (threadSummaries1 != null) Collections.addAll(threadSummaries, threadSummaries1);
+		if (threadSummaries1 != null) {
+			Collections.addAll(threadSummaries, threadSummaries1);
+		}
 		HashSet<String> identifiers = new HashSet<>();
-		for (ThreadSummary threadSummary : threadSummaries)
-		{
+		for (ThreadSummary threadSummary : threadSummaries) {
 			identifiers.add(threadSummary.getBoardName() + '/' + threadSummary.getThreadNumber());
 		}
-		if (threadSummaries2 != null)
-		{
-			for (ThreadSummary threadSummary : threadSummaries2)
-			{
-				if (!identifiers.contains(threadSummary.getBoardName() + '/' + threadSummary.getThreadNumber()))
-				{
+		if (threadSummaries2 != null) {
+			for (ThreadSummary threadSummary : threadSummaries2) {
+				if (!identifiers.contains(threadSummary.getBoardName() + '/' + threadSummary.getThreadNumber())) {
 					threadSummaries.add(threadSummary);
 				}
 			}

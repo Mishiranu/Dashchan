@@ -32,8 +32,7 @@ import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.net.YouTubeTitlesReader;
 
-public class ReadSinglePostTask extends HttpHolderTask<Void, Void, PostItem>
-{
+public class ReadSinglePostTask extends HttpHolderTask<Void, Void, PostItem> {
 	private final Callback mCallback;
 	private final String mBoardName;
 	private final String mChanName;
@@ -41,14 +40,12 @@ public class ReadSinglePostTask extends HttpHolderTask<Void, Void, PostItem>
 
 	private ErrorItem mErrorItem;
 
-	public interface Callback
-	{
+	public interface Callback {
 		public void onReadSinglePostSuccess(PostItem postItem);
 		public void onReadSinglePostFail(ErrorItem errorItem);
 	}
 
-	public ReadSinglePostTask(Callback callback, String chanName, String boardName, String postNumber)
-	{
+	public ReadSinglePostTask(Callback callback, String chanName, String boardName, String postNumber) {
 		mCallback = callback;
 		mBoardName = boardName;
 		mChanName = chanName;
@@ -56,11 +53,9 @@ public class ReadSinglePostTask extends HttpHolderTask<Void, Void, PostItem>
 	}
 
 	@Override
-	protected PostItem doInBackground(HttpHolder holder, Void... params)
-	{
+	protected PostItem doInBackground(HttpHolder holder, Void... params) {
 		long startTime = System.currentTimeMillis();
-		try
-		{
+		try {
 			ChanPerformer performer = ChanPerformer.get(mChanName);
 			ChanPerformer.ReadSinglePostResult result = performer.safe().onReadSinglePost(new ChanPerformer
 					.ReadSinglePostData(mBoardName, mPostNumber, holder));
@@ -68,21 +63,14 @@ public class ReadSinglePostTask extends HttpHolderTask<Void, Void, PostItem>
 			YouTubeTitlesReader.getInstance().readAndApplyIfNecessary(Collections.singletonList(post), holder);
 			startTime = 0L;
 			return new PostItem(post, mChanName, mBoardName);
-		}
-		catch (HttpException e)
-		{
+		} catch (HttpException e) {
 			mErrorItem = e.getErrorItemAndHandle();
-			if (mErrorItem.httpResponseCode == HttpURLConnection.HTTP_NOT_FOUND)
-			{
+			if (mErrorItem.httpResponseCode == HttpURLConnection.HTTP_NOT_FOUND) {
 				mErrorItem = new ErrorItem(ErrorItem.TYPE_POST_NOT_FOUND);
 			}
-		}
-		catch (ExtensionException | InvalidResponseException e)
-		{
+		} catch (ExtensionException | InvalidResponseException e) {
 			mErrorItem = e.getErrorItemAndHandle();
-		}
-		finally
-		{
+		} finally {
 			ChanConfiguration.get(mChanName).commit();
 			CommonUtils.sleepMaxTime(startTime, 500);
 		}
@@ -90,9 +78,11 @@ public class ReadSinglePostTask extends HttpHolderTask<Void, Void, PostItem>
 	}
 
 	@Override
-	protected void onPostExecute(PostItem result)
-	{
-		if (result != null) mCallback.onReadSinglePostSuccess(result);
-		else mCallback.onReadSinglePostFail(mErrorItem);
+	protected void onPostExecute(PostItem result) {
+		if (result != null) {
+			mCallback.onReadSinglePostSuccess(result);
+		} else {
+			mCallback.onReadSinglePostFail(mErrorItem);
+		}
 	}
 }

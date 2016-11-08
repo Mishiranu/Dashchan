@@ -20,34 +20,35 @@ import java.util.ArrayList;
 
 import chan.util.StringUtils;
 
-public class StringBlockBuilder
-{
+public class StringBlockBuilder {
 	private final ArrayList<String> mStrings = new ArrayList<>();
 
-	public void appendLine(String line)
-	{
-		if (!StringUtils.isEmpty(line)) mStrings.add(line);
+	public void appendLine(String line) {
+		if (!StringUtils.isEmpty(line)) {
+			mStrings.add(line);
+		}
 	}
 
-	public void appendEmptyLine()
-	{
+	public void appendEmptyLine() {
 		mStrings.add(null);
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		int linesToAppend = 0;
-		for (int i = 0, size = mStrings.size(); i < size; i++)
-		{
+		for (int i = 0, size = mStrings.size(); i < size; i++) {
 			String line = mStrings.get(i);
-			if (line == null) linesToAppend++; else
-			{
-				if (builder.length() > 0)
-				{
-					if (linesToAppend > 2) linesToAppend = 2;
-					for (int j = 0; j < linesToAppend; j++) builder.append('\n');
+			if (line == null) {
+				linesToAppend++;
+			} else {
+				if (builder.length() > 0) {
+					if (linesToAppend > 2) {
+						linesToAppend = 2;
+					}
+					for (int j = 0; j < linesToAppend; j++) {
+						builder.append('\n');
+					}
 				}
 				builder.append(line);
 				linesToAppend = 1;

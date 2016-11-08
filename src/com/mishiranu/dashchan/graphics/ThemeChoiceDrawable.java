@@ -28,8 +28,7 @@ import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 
-public class ThemeChoiceDrawable extends Drawable
-{
+public class ThemeChoiceDrawable extends Drawable {
 	private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 	private final RectF mRectF = new RectF();
 
@@ -37,16 +36,14 @@ public class ThemeChoiceDrawable extends Drawable
 	private final int mPrimary;
 	private final int mAccent;
 
-	public ThemeChoiceDrawable(int colorBackground, int colorPrimary, int colorAccent)
-	{
+	public ThemeChoiceDrawable(int colorBackground, int colorPrimary, int colorAccent) {
 		mBackground = colorBackground;
 		mPrimary = colorPrimary;
 		mAccent = colorAccent;
 	}
 
 	@Override
-	public void draw(Canvas canvas)
-	{
+	public void draw(Canvas canvas) {
 		Rect bounds = getBounds();
 		int radius = Math.min(bounds.width(), bounds.height()) / 2;
 		int cx = bounds.centerX();
@@ -54,8 +51,7 @@ public class ThemeChoiceDrawable extends Drawable
 		Paint paint = mPaint;
 		paint.setColor(mBackground);
 		canvas.drawCircle(cx, cy, radius * 1f, paint);
-		if (mAccent != mPrimary && mAccent != Color.TRANSPARENT)
-		{
+		if (mAccent != mPrimary && mAccent != Color.TRANSPARENT) {
 			RectF rectF = mRectF;
 			applyRectRadius(rectF, cx, cy, radius * 0.8f);
 			paint.setColor(mAccent);
@@ -65,41 +61,30 @@ public class ThemeChoiceDrawable extends Drawable
 			paint.setColor(mPrimary);
 			canvas.drawCircle(cx, cy, radius * 0.65f, paint);
 			canvas.drawArc(rectF, 114, 222, true, paint);
-		}
-		else
-		{
+		} else {
 			paint.setColor(mPrimary);
 			canvas.drawCircle(cx, cy, radius * 0.8f, paint);
 		}
 	}
 
-	private static void applyRectRadius(RectF rectF, int cx, int cy, float radius)
-	{
+	private static void applyRectRadius(RectF rectF, int cx, int cy, float radius) {
 		rectF.set(cx - radius, cy - radius, cx + radius, cy + radius);
 	}
 
 	@Override
-	public int getOpacity()
-	{
+	public int getOpacity() {
 		return PixelFormat.TRANSLUCENT;
 	}
 
 	@Override
-	public void setAlpha(int alpha)
-	{
-
-	}
+	public void setAlpha(int alpha) {}
 
 	@Override
-	public void setColorFilter(ColorFilter cf)
-	{
-
-	}
+	public void setColorFilter(ColorFilter cf) {}
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	@Override
-	public void getOutline(Outline outline)
-	{
+	public void getOutline(Outline outline) {
 		Rect bounds = getBounds();
 		int radius = (int) ((Math.min(bounds.width(), bounds.height()) / 2) * 0.95f);
 		int cx = bounds.centerX();

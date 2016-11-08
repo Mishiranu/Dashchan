@@ -30,18 +30,15 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.content.storage.DatabaseHelper;
 import com.mishiranu.dashchan.util.Log;
 
-public class MainApplication extends Application
-{
+public class MainApplication extends Application {
 	private static MainApplication sInstance;
 
-	public MainApplication()
-	{
+	public MainApplication() {
 		sInstance = this;
 	}
 
 	@Override
-	public void onCreate()
-	{
+	public void onCreate() {
 		super.onCreate();
 		Log.init(this);
 		// Init
@@ -54,25 +51,22 @@ public class MainApplication extends Application
 	}
 
 	@Override
-	public void onConfigurationChanged(Configuration newConfig)
-	{
+	public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
 		LocaleManager.getInstance().apply(this, true);
 	}
 
-	public static MainApplication getInstance()
-	{
+	public static MainApplication getInstance() {
 		return sInstance;
 	}
 
 	@TargetApi(Build.VERSION_CODES.KITKAT)
-	public boolean isLowRam()
-	{
-		if (C.API_KITKAT)
-		{
+	public boolean isLowRam() {
+		if (C.API_KITKAT) {
 			ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
 			return activityManager != null && activityManager.isLowRamDevice();
+		} else {
+			return Runtime.getRuntime().maxMemory() <= 64 * 1024 * 1024;
 		}
-		else return Runtime.getRuntime().maxMemory() <= 64 * 1024 * 1024;
 	}
 }

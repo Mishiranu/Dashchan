@@ -42,17 +42,14 @@ import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.util.PostDateFormatter;
 import com.mishiranu.dashchan.widget.ViewFactory;
 
-public class StatisticsFragment extends BaseListFragment
-{
-	private static class ListItem
-	{
+public class StatisticsFragment extends BaseListFragment {
+	private static class ListItem {
 		public final String title;
 		public final int views;
 		public final int posts;
 		public final int threads;
 
-		public ListItem(String title, int views, int posts, int threads)
-		{
+		public ListItem(String title, int views, int posts, int threads) {
 			this.title = title;
 			this.views = views;
 			this.posts = posts;
@@ -63,14 +60,12 @@ public class StatisticsFragment extends BaseListFragment
 	private final ArrayList<ListItem> mListItems = new ArrayList<>();
 
 	@Override
-	public void onActivityCreated(Bundle savedInstanceState)
-	{
+	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		setHasOptionsMenu(true);
 		getActivity().setTitle(R.string.preference_statistics);
 		long startTime = StatisticsStorage.getInstance().getStartTime();
-		if (startTime > 0)
-		{
+		if (startTime > 0) {
 			getActivity().getActionBar().setSubtitle(getString(R.string.text_since_format,
 					new PostDateFormatter(getActivity()).format(startTime)));
 		}
@@ -78,54 +73,47 @@ public class StatisticsFragment extends BaseListFragment
 		int totalThreadsViewed = 0;
 		int totalPostsSent = 0;
 		int totalThreadsCreated = 0;
-		for (HashMap.Entry<String, StatisticsStorage.StatisticsItem> entry : statisticsItems.entrySet())
-		{
+		for (HashMap.Entry<String, StatisticsStorage.StatisticsItem> entry : statisticsItems.entrySet()) {
 			ChanConfiguration.Statistics statistics = ChanConfiguration.get(entry.getKey()).safe().obtainStatistics();
 			StatisticsStorage.StatisticsItem statisticsItem = entry.getValue();
-			if (statistics.threadsViewed && statisticsItem.threadsViewed > 0)
-			{
+			if (statistics.threadsViewed && statisticsItem.threadsViewed > 0) {
 				totalThreadsViewed += statisticsItem.threadsViewed;
 			}
-			if (statistics.postsSent && statisticsItem.postsSent > 0)
-			{
+			if (statistics.postsSent && statisticsItem.postsSent > 0) {
 				totalPostsSent += statisticsItem.postsSent;
 			}
-			if (statistics.threadsCreated && statisticsItem.threadsCreated > 0)
-			{
+			if (statistics.threadsCreated && statisticsItem.threadsCreated > 0) {
 				totalThreadsCreated += statisticsItem.threadsCreated;
 			}
 		}
 		mListItems.add(new ListItem(getString(R.string.text_general), totalThreadsViewed, totalPostsSent,
 				totalThreadsCreated));
-		for (String chanName : ChanManager.getInstance().getAvailableChanNames())
-		{
+		for (String chanName : ChanManager.getInstance().getAvailableChanNames()) {
 			StatisticsStorage.StatisticsItem statisticsItem = statisticsItems.get(chanName);
-			if (statisticsItem != null)
-			{
+			if (statisticsItem != null) {
 				ChanConfiguration.Statistics statistics = ChanConfiguration.get(chanName).safe().obtainStatistics();
-				if (statistics.threadsViewed && statistics.postsSent && statistics.threadsCreated)
-				{
+				if (statistics.threadsViewed && statistics.postsSent && statistics.threadsCreated) {
 					int threadsViewed = statistics.threadsViewed ? statisticsItem.threadsViewed : -1;
 					int postsSent = statistics.postsSent ? statisticsItem.postsSent : -1;
 					int threadsCreated = statistics.threadsCreated ? statisticsItem.threadsCreated : -1;
 					String title = ChanConfiguration.get(chanName).getTitle();
-					if (StringUtils.isEmpty(title)) title = chanName;
+					if (StringUtils.isEmpty(title)) {
+						title = chanName;
+					}
 					mListItems.add(new ListItem(title, threadsViewed, postsSent, threadsCreated));
 				}
 			}
 		}
-		setListAdapter(new BaseAdapter()
-		{
+		setListAdapter(new BaseAdapter() {
 			@Override
-			public View getView(int position, View convertView, ViewGroup parent)
-			{
+			public View getView(int position, View convertView, ViewGroup parent) {
 				ViewFactory.TwoLinesViewHolder holder;
-				if (convertView == null)
-				{
+				if (convertView == null) {
 					convertView = ViewFactory.makeTwoLinesListItem(parent, false);
 					holder = (ViewFactory.TwoLinesViewHolder) convertView.getTag();
+				} else {
+					holder = (ViewFactory.TwoLinesViewHolder) convertView.getTag();
 				}
-				else holder = (ViewFactory.TwoLinesViewHolder) convertView.getTag();
 				ListItem listItem = getItem(position);
 				holder.text1.setText(listItem.title);
 				SpannableStringBuilder spannable = new SpannableStringBuilder();
@@ -136,48 +124,42 @@ public class StatisticsFragment extends BaseListFragment
 				return convertView;
 			}
 
-			private void appendSpannedLine(SpannableStringBuilder spannable, int resId, int value)
-			{
-				if (value >= 0)
-				{
-					if (spannable.length() > 0) spannable.append('\n');
+			private void appendSpannedLine(SpannableStringBuilder spannable, int resId, int value) {
+				if (value >= 0) {
+					if (spannable.length() > 0) {
+						spannable.append('\n');
+					}
 					spannable.append(getString(resId)).append(": ");
 					StringUtils.appendSpan(spannable, Integer.toString(value), getBoldSpan());
 				}
 			}
 
-			private Object getBoldSpan()
-			{
+			private Object getBoldSpan() {
 				return C.API_LOLLIPOP ? new TypefaceSpan("sans-serif-medium") : new StyleSpan(Typeface.BOLD);
 			}
 
 			@Override
-			public long getItemId(int position)
-			{
+			public long getItemId(int position) {
 				return 0;
 			}
 
 			@Override
-			public ListItem getItem(int position)
-			{
+			public ListItem getItem(int position) {
 				return mListItems.get(position);
 			}
 
 			@Override
-			public int getCount()
-			{
+			public int getCount() {
 				return mListItems.size();
 			}
 
 			@Override
-			public boolean areAllItemsEnabled()
-			{
+			public boolean areAllItemsEnabled() {
 				return false;
 			}
 
 			@Override
-			public boolean isEnabled(int position)
-			{
+			public boolean isEnabled(int position) {
 				return false;
 			}
 		});
@@ -186,8 +168,7 @@ public class StatisticsFragment extends BaseListFragment
 	private static final int OPTIONS_MENU_CLEAR = 0;
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater)
-	{
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		ActionIconSet set = new ActionIconSet(getActivity());
 		menu.add(0, OPTIONS_MENU_CLEAR, 0, R.string.action_clear).setIcon(set.getId(R.attr.actionDelete))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
@@ -195,12 +176,9 @@ public class StatisticsFragment extends BaseListFragment
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item)
-	{
-		switch (item.getItemId())
-		{
-			case OPTIONS_MENU_CLEAR:
-			{
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+			case OPTIONS_MENU_CLEAR: {
 				StatisticsStorage.getInstance().clear();
 				getActivity().finish();
 				break;

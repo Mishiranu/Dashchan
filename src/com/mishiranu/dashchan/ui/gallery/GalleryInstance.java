@@ -24,8 +24,7 @@ import chan.content.ChanLocator;
 
 import com.mishiranu.dashchan.content.model.GalleryItem;
 
-public class GalleryInstance
-{
+public class GalleryInstance {
 	public static final int FLAG_LOCKED_USER = 0x00000001;
 	public static final int FLAG_LOCKED_GRID = 0x00000002;
 	public static final int FLAG_LOCKED_ERROR = 0x00000004;
@@ -39,14 +38,12 @@ public class GalleryInstance
 
 	public int actionBarColor;
 
-	public GalleryInstance(Context context, Callback callback)
-	{
+	public GalleryInstance(Context context, Callback callback) {
 		this.context = context;
 		this.callback = callback;
 	}
 
-	public interface Callback
-	{
+	public interface Callback {
 		public void downloadGalleryItem(GalleryItem galleryItem);
 		public void downloadGalleryItems(ArrayList<GalleryItem> galleryItems);
 

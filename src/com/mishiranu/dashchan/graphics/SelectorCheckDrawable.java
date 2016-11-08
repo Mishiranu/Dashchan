@@ -31,8 +31,7 @@ import android.os.Build;
 import com.mishiranu.dashchan.util.AnimationUtils;
 
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-public class SelectorCheckDrawable extends Drawable
-{
+public class SelectorCheckDrawable extends Drawable {
 	private static final int DURATION = 200;
 
 	private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -42,8 +41,7 @@ public class SelectorCheckDrawable extends Drawable
 	private long mStart;
 	private boolean mSelected = false;
 
-	public SelectorCheckDrawable()
-	{
+	public SelectorCheckDrawable() {
 		mPaint.setStyle(Paint.Style.STROKE);
 		mPaint.setStrokeCap(Paint.Cap.SQUARE);
 		mPaint.setStrokeJoin(Paint.Join.MITER);
@@ -51,8 +49,7 @@ public class SelectorCheckDrawable extends Drawable
 	}
 
 	@Override
-	public void draw(Canvas canvas)
-	{
+	public void draw(Canvas canvas) {
 		long dt = System.currentTimeMillis() - mStart;
 		float value = mStart == 0L ? 1f : dt < 0 ? 0f : Math.min((float) dt / DURATION, 1f);
 		value = AnimationUtils.DECELERATE_INTERPOLATOR.getInterpolation(value);
@@ -63,17 +60,15 @@ public class SelectorCheckDrawable extends Drawable
 		int size;
 		int width = bounds.width();
 		int height = bounds.height();
-		if (width > height)
-		{
+		if (width > height) {
 			canvas.translate((width - height) / 2, 0);
 			size = height;
-		}
-		else if (height > width)
-		{
+		} else if (height > width) {
 			canvas.translate(0, (height - width) / 2);
 			size = width;
+		} else {
+			size = width;
 		}
-		else size = width;
 		final float strokeSize = 0.03f;
 		mPaint.setStrokeWidth(strokeSize * size);
 
@@ -83,8 +78,11 @@ public class SelectorCheckDrawable extends Drawable
 		mPathMeasure.setPath(mPath, false);
 		mPath.rewind();
 		float length = mPathMeasure.getLength();
-		if (mSelected) mPathMeasure.getSegment(0f, value * length, mPath, true);
-		else mPathMeasure.getSegment(value * length, length, mPath, true);
+		if (mSelected) {
+			mPathMeasure.getSegment(0f, value * length, mPath, true);
+		} else {
+			mPathMeasure.getSegment(value * length, length, mPath, true);
+		}
 		canvas.drawPath(mPath, mPaint);
 		mPath.rewind();
 
@@ -95,43 +93,42 @@ public class SelectorCheckDrawable extends Drawable
 		mPathMeasure.setPath(mPath, false);
 		mPath.rewind();
 		length = mPathMeasure.getLength();
-		if (mSelected) mPathMeasure.getSegment(0f, value * length, mPath, true);
-		else mPathMeasure.getSegment(value * length, length, mPath, true);
+		if (mSelected) {
+			mPathMeasure.getSegment(0f, value * length, mPath, true);
+		} else {
+			mPathMeasure.getSegment(value * length, length, mPath, true);
+		}
 		canvas.drawPath(mPath, mPaint);
 		mPath.rewind();
 
 		canvas.restore();
-		if (value < 1f) invalidateSelf();
+		if (value < 1f) {
+			invalidateSelf();
+		}
 	}
 
 	@Override
-	public int getOpacity()
-	{
+	public int getOpacity() {
 		return PixelFormat.TRANSLUCENT;
 	}
 
 	@Override
-	public void setAlpha(int alpha)
-	{
-
-	}
+	public void setAlpha(int alpha) {}
 
 	@Override
-	public void setColorFilter(ColorFilter cf)
-	{
+	public void setColorFilter(ColorFilter cf) {}
 
-	}
-
-	public boolean isSelected()
-	{
+	public boolean isSelected() {
 		return mSelected;
 	}
 
-	public void setSelected(boolean selected, boolean animate)
-	{
-		if (mSelected != selected)
-		{
-			if (animate) mStart = System.currentTimeMillis(); else mStart = 0L;
+	public void setSelected(boolean selected, boolean animate) {
+		if (mSelected != selected) {
+			if (animate) {
+				mStart = System.currentTimeMillis();
+			} else {
+				mStart = 0L;
+			}
 			mSelected = selected;
 			invalidateSelf();
 		}

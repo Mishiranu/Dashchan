@@ -45,8 +45,7 @@ import com.mishiranu.dashchan.util.NavigationUtils;
 /*
  * MainActivity can't be both singleTask and launcher activity, so I use this launcher activity.
  */
-public class LauncherActivity extends Activity
-{
+public class LauncherActivity extends Activity {
 	private static final int STATE_START = 0;
 	private static final int STATE_PERMISSION_REQUEST = 1;
 
@@ -55,41 +54,40 @@ public class LauncherActivity extends Activity
 	private int mState;
 
 	@Override
-	protected void onCreate(Bundle savedInstanceState)
-	{
+	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		getIntent().setPackage(null);
 		mState = STATE_START;
-		if (savedInstanceState != null) mState = savedInstanceState.getInt(EXTRA_STATE, mState);
-		switch (mState)
-		{
-			case STATE_START: navigatePermissionRequest(); break;
-			case STATE_PERMISSION_REQUEST: break;
+		if (savedInstanceState != null) {
+			mState = savedInstanceState.getInt(EXTRA_STATE, mState);
+		}
+		switch (mState) {
+			case STATE_START: {
+				navigatePermissionRequest();
+				break;
+			}
+			case STATE_PERMISSION_REQUEST: {
+				break;
+			}
 		}
 	}
 
 	@Override
-	protected void onSaveInstanceState(Bundle outState)
-	{
+	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		outState.putInt(EXTRA_STATE, mState);
 	}
 
 	@TargetApi(Build.VERSION_CODES.M)
-	private void navigatePermissionRequest()
-	{
-		if (C.API_MARSHMALLOW)
-		{
+	private void navigatePermissionRequest() {
+		if (C.API_MARSHMALLOW) {
 			if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-					!= PackageManager.PERMISSION_GRANTED)
-			{
+					!= PackageManager.PERMISSION_GRANTED) {
 				Context context = new ContextThemeWrapper(this, Preferences.getThemeResource());
 				new AlertDialog.Builder(context).setMessage(R.string.message_memory_access_permission)
-						.setPositiveButton(android.R.string.ok, (dialog, which) ->
-				{
+						.setPositiveButton(android.R.string.ok, (dialog, which) -> {
 					mState = STATE_PERMISSION_REQUEST;
 					requestPermissions(new String[] {android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
-
 				}).setCancelable(false).show();
 				return;
 			}
@@ -97,30 +95,23 @@ public class LauncherActivity extends Activity
 		navigateExtensionsTrust();
 	}
 
-	private void navigateExtensionsTrust()
-	{
+	private void navigateExtensionsTrust() {
 		navigateExtensionsTrust(ChanManager.getInstance().getUntrustedExtensionItems());
 	}
 
-	private void navigateExtensionsTrust(final Collection<ChanManager.ExtensionItem> extensionItems)
-	{
-		if (!extensionItems.isEmpty())
-		{
+	private void navigateExtensionsTrust(final Collection<ChanManager.ExtensionItem> extensionItems) {
+		if (!extensionItems.isEmpty()) {
 			final ChanManager.ExtensionItem extensionItem = extensionItems.iterator().next();
-			DialogInterface.OnClickListener onClickListener = (dialog, which) ->
-			{
-				switch (which)
-				{
+			DialogInterface.OnClickListener onClickListener = (dialog, which) -> {
+				switch (which) {
 					case AlertDialog.BUTTON_POSITIVE:
-					case AlertDialog.BUTTON_NEGATIVE:
-					{
+					case AlertDialog.BUTTON_NEGATIVE: {
 						ChanManager.getInstance().changeUntrustedExtensionState(extensionItem.extensionName,
 								which == AlertDialog.BUTTON_POSITIVE);
 						extensionItems.remove(extensionItem);
 						break;
 					}
-					case AlertDialog.BUTTON_NEUTRAL:
-					{
+					case AlertDialog.BUTTON_NEUTRAL: {
 						startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
 								.setData(Uri.parse("package:" + extensionItem.packageInfo.packageName)));
 						break;
@@ -139,15 +130,16 @@ public class LauncherActivity extends Activity
 					.setPositiveButton(android.R.string.ok, onClickListener)
 					.setNegativeButton(android.R.string.cancel, onClickListener)
 					.setNeutralButton(R.string.action_details, onClickListener).setCancelable(false).show();
+		} else {
+			navigateMainActivity();
 		}
-		else navigateMainActivity();
 	}
 
-	private void navigateMainActivity()
-	{
+	private void navigateMainActivity() {
 		String chanName = ChanManager.getInstance().getDefaultChanName();
-		if (chanName == null) startActivity(new Intent(this, PreferencesActivity.class)); else
-		{
+		if (chanName == null) {
+			startActivity(new Intent(this, PreferencesActivity.class));
+		} else {
 			startActivity(NavigationUtils.obtainThreadsIntent(this, chanName, Preferences.getDefaultBoardName(chanName),
 					false, false, false, true));
 		}
@@ -155,9 +147,11 @@ public class LauncherActivity extends Activity
 	}
 
 	@Override
-	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
-	{
-		if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) navigateMainActivity();
-		else finish();
+	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+		if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+			navigateMainActivity();
+		} else {
+			finish();
+		}
 	}
 }

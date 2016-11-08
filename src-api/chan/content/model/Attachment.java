@@ -21,7 +21,4 @@ import java.io.Serializable;
 import chan.annotation.Public;
 
 @Public
-public interface Attachment extends Serializable
-{
-
-}
+public interface Attachment extends Serializable {}

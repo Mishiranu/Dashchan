@@ -39,14 +39,12 @@ import com.mishiranu.dashchan.widget.ListScroller;
 import com.mishiranu.dashchan.widget.PullableListView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 
-public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTask.Callback
-{
+public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTask.Callback {
 	private ReadSearchTask mReadTask;
 	private boolean mShowScaleOnSuccess;
 
 	@Override
-	protected void onCreate()
-	{
+	protected void onCreate() {
 		PullableListView listView = getListView();
 		PageHolder pageHolder = getPageHolder();
 		UiManager uiManager = getUiManager();
@@ -56,23 +54,19 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 		uiManager.view().setHighlightText(Collections.singleton(pageHolder.searchQuery));
 		listView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
 		SearchExtra extra = getExtra();
-		if (pageHolder.initialFromCache)
-		{
+		if (pageHolder.initialFromCache) {
 			adapter.setGroupMode(extra.groupMode);
-			if (!extra.postItems.isEmpty())
-			{
+			if (!extra.postItems.isEmpty()) {
 				adapter.setItems(extra.postItems);
-				if (pageHolder.position != null) pageHolder.position.apply(listView);
+				if (pageHolder.position != null) {
+					pageHolder.position.apply(listView);
+				}
 				showScaleAnimation();
-			}
-			else
-			{
+			} else {
 				mShowScaleOnSuccess = true;
 				refreshSearch(false, false);
 			}
-		}
-		else
-		{
+		} else {
 			extra.groupMode = false;
 			mShowScaleOnSuccess = true;
 			refreshSearch(false, false);
@@ -81,10 +75,8 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 	}
 
 	@Override
-	protected void onDestroy()
-	{
-		if (mReadTask != null)
-		{
+	protected void onDestroy() {
+		if (mReadTask != null) {
 			mReadTask.cancel();
 			mReadTask = null;
 		}
@@ -92,17 +84,14 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 	}
 
 	@Override
-	public String obtainTitle()
-	{
+	public String obtainTitle() {
 		return getPageHolder().searchQuery;
 	}
 
 	@Override
-	public void onItemClick(View view, int position, long id)
-	{
+	public void onItemClick(View view, int position, long id) {
 		PostItem postItem = getAdapter().getPostItem(position);
-		if (postItem != null)
-		{
+		if (postItem != null) {
 			PageHolder pageHolder = getPageHolder();
 			getUiManager().navigator().navigatePosts(pageHolder.chanName, pageHolder.boardName,
 					postItem.getThreadNumber(), postItem.getPostNumber(), null, false);
@@ -110,8 +99,7 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 	}
 
 	@Override
-	public boolean onItemLongClick(View view, int position, long id)
-	{
+	public boolean onItemLongClick(View view, int position, long id) {
 		PostItem postItem = getAdapter().getPostItem(position);
 		return postItem != null && getUiManager().interaction().handlePostContextMenu(postItem, null, false, false);
 	}
@@ -120,8 +108,7 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 	private static final int OPTIONS_MENU_GROUP = 1;
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu)
-	{
+	public void onCreateOptionsMenu(Menu menu) {
 		menu.add(0, OPTIONS_MENU_SEARCH, 0, R.string.action_search).setIcon(obtainIcon(R.attr.actionSearch))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
 		menu.add(0, OPTIONS_MENU_REFRESH, 0, R.string.action_refresh);
@@ -130,23 +117,18 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 	}
 
 	@Override
-	public void onPrepareOptionsMenu(Menu menu)
-	{
+	public void onPrepareOptionsMenu(Menu menu) {
 		menu.findItem(OPTIONS_MENU_GROUP).setChecked(getAdapter().isGroupMode());
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item)
-	{
-		switch (item.getItemId())
-		{
-			case OPTIONS_MENU_REFRESH:
-			{
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+			case OPTIONS_MENU_REFRESH: {
 				refreshSearch(!getAdapter().isEmpty(), false);
 				return true;
 			}
-			case OPTIONS_MENU_GROUP:
-			{
+			case OPTIONS_MENU_GROUP: {
 				SearchAdapter adapter = getAdapter();
 				boolean groupMode = !adapter.isGroupMode();
 				adapter.setGroupMode(groupMode);
@@ -158,13 +140,10 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 	}
 
 	@Override
-	public void onAppearanceOptionChanged(int what)
-	{
-		switch (what)
-		{
+	public void onAppearanceOptionChanged(int what) {
+		switch (what) {
 			case APPEARANCE_MENU_SPOILERS:
-			case APPEARANCE_MENU_SFW_MODE:
-			{
+			case APPEARANCE_MENU_SFW_MODE: {
 				notifyAllAdaptersChanged();
 				break;
 			}
@@ -172,47 +151,43 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 	}
 
 	@Override
-	public boolean onSearchSubmit(String query)
-	{
+	public boolean onSearchSubmit(String query) {
 		PageHolder pageHolder = getPageHolder();
 		getUiManager().navigator().navigateSearch(pageHolder.chanName, pageHolder.boardName, query);
 		return true;
 	}
 
 	@Override
-	public void onListPulled(PullableWrapper wrapper, PullableWrapper.Side side)
-	{
+	public void onListPulled(PullableWrapper wrapper, PullableWrapper.Side side) {
 		refreshSearch(true, side == PullableWrapper.Side.BOTTOM);
 	}
 
-	private void refreshSearch(boolean showPull, boolean nextPage)
-	{
+	private void refreshSearch(boolean showPull, boolean nextPage) {
 		PageHolder pageHolder = getPageHolder();
-		if (mReadTask != null) mReadTask.cancel();
+		if (mReadTask != null) {
+			mReadTask.cancel();
+		}
 		int pageNumber = 0;
-		if (nextPage)
-		{
+		if (nextPage) {
 			SearchExtra extra = getExtra();
-			if (!extra.postItems.isEmpty()) pageNumber = extra.pageNumber + 1;
+			if (!extra.postItems.isEmpty()) {
+				pageNumber = extra.pageNumber + 1;
+			}
 		}
 		mReadTask = new ReadSearchTask(this, pageHolder.chanName, pageHolder.boardName, pageHolder.searchQuery,
 				pageNumber);
 		mReadTask.executeOnExecutor(ReadSearchTask.THREAD_POOL_EXECUTOR);
-		if (showPull)
-		{
+		if (showPull) {
 			getListView().getWrapper().startBusyState(PullableWrapper.Side.TOP);
 			switchView(ViewType.LIST, null);
-		}
-		else
-		{
+		} else {
 			getListView().getWrapper().startBusyState(PullableWrapper.Side.BOTH);
 			switchView(ViewType.PROGRESS, null);
 		}
 	}
 
 	@Override
-	public void onReadSearchSuccess(ArrayList<PostItem> postItems, int pageNumber)
-	{
+	public void onReadSearchSuccess(ArrayList<PostItem> postItems, int pageNumber) {
 		mReadTask = null;
 		PullableListView listView = getListView();
 		listView.getWrapper().cancelBusyState();
@@ -220,103 +195,101 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 		boolean showScale = mShowScaleOnSuccess;
 		mShowScaleOnSuccess = false;
 		SearchExtra extra = getExtra();
-		if (pageNumber == 0 && (postItems == null || postItems.isEmpty()))
-		{
+		if (pageNumber == 0 && (postItems == null || postItems.isEmpty())) {
 			switchView(ViewType.ERROR, R.string.message_not_found);
 			adapter.setItems(null);
 			extra.postItems.clear();
-		}
-		else
-		{
+		} else {
 			switchView(ViewType.LIST, null);
-			if (pageNumber == 0)
-			{
+			if (pageNumber == 0) {
 				adapter.setItems(postItems);
 				extra.postItems.clear();
 				extra.postItems.addAll(postItems);
 				extra.pageNumber = 0;
 				ListViewUtils.cancelListFling(listView);
 				listView.setSelection(0);
-				if (showScale) showScaleAnimation();
-			}
-			else
-			{
+				if (showScale) {
+					showScaleAnimation();
+				}
+			} else {
 				HashSet<String> existingPostNumbers = new HashSet<>();
-				for (PostItem postItem : extra.postItems) existingPostNumbers.add(postItem.getPostNumber());
-				if (postItems != null)
-				{
-					for (PostItem postItem : postItems)
-					{
-						if (!existingPostNumbers.contains(postItem.getPostNumber())) extra.postItems.add(postItem);
+				for (PostItem postItem : extra.postItems) {
+					existingPostNumbers.add(postItem.getPostNumber());
+				}
+				if (postItems != null) {
+					for (PostItem postItem : postItems) {
+						if (!existingPostNumbers.contains(postItem.getPostNumber())) {
+							extra.postItems.add(postItem);
+						}
 					}
 				}
-				if (extra.postItems.size() > existingPostNumbers.size())
-				{
+				if (extra.postItems.size() > existingPostNumbers.size()) {
 					int count = listView.getCount();
 					boolean fromGroupMode = adapter.isGroupMode();
 					adapter.setItems(null);
 					adapter.setGroupMode(false);
 					adapter.setItems(extra.postItems);
 					extra.pageNumber = pageNumber;
-					if (listView.getLastVisiblePosition() + 1 == count)
-					{
+					if (listView.getLastVisiblePosition() + 1 == count) {
 						View view = listView.getChildAt(listView.getChildCount() - 1);
-						if (listView.getHeight() - listView.getPaddingBottom() - view.getBottom() >= 0)
-						{
-							if (fromGroupMode)
-							{
+						if (listView.getHeight() - listView.getPaddingBottom() - view.getBottom() >= 0) {
+							if (fromGroupMode) {
 								final int firstNewIndex = existingPostNumbers.size();
-								listView.post(() ->
-								{
-									if (isDestroyed()) return;
+								listView.post(() -> {
+									if (isDestroyed()) {
+										return;
+									}
 									getListView().setSelection(Math.max(firstNewIndex - 8, 0));
-									getListView().post(() ->
-									{
-										if (!isDestroyed()) ListScroller.scrollTo(getListView(), firstNewIndex);
+									getListView().post(() -> {
+										if (!isDestroyed()) {
+											ListScroller.scrollTo(getListView(), firstNewIndex);
+										}
 									});
 								});
+							} else {
+								ListScroller.scrollTo(getListView(), existingPostNumbers.size());
 							}
-							else ListScroller.scrollTo(getListView(), existingPostNumbers.size());
 						}
 					}
+				} else {
+					ClickableToast.show(getActivity(), R.string.message_search_completed);
 				}
-				else ClickableToast.show(getActivity(), R.string.message_search_completed);
 			}
 		}
 	}
 
 	@Override
-	public void onReadSearchFail(ErrorItem errorItem)
-	{
+	public void onReadSearchFail(ErrorItem errorItem) {
 		mReadTask = null;
 		getListView().getWrapper().cancelBusyState();
-		if (getAdapter().isEmpty()) switchView(ViewType.ERROR, errorItem.toString());
-		else ClickableToast.show(getActivity(), errorItem.toString());
+		if (getAdapter().isEmpty()) {
+			switchView(ViewType.ERROR, errorItem.toString());
+		} else {
+			ClickableToast.show(getActivity(), errorItem.toString());
+		}
 	}
 
-	public static class SearchExtra implements PageHolder.ParcelableExtra
-	{
+	public static class SearchExtra implements PageHolder.ParcelableExtra {
 		public final ArrayList<PostItem> postItems = new ArrayList<>();
 		public int pageNumber;
 		public boolean groupMode = false;
 
 		@Override
-		public void writeToParcel(Parcel dest)
-		{
+		public void writeToParcel(Parcel dest) {
 			dest.writeInt(groupMode ? 1 : 0);
 		}
 
 		@Override
-		public void readFromParcel(Parcel source)
-		{
+		public void readFromParcel(Parcel source) {
 			groupMode = source.readInt() != 0;
 		}
 	}
 
-	private SearchExtra getExtra()
-	{
+	private SearchExtra getExtra() {
 		PageHolder pageHolder = getPageHolder();
-		if (!(pageHolder.extra instanceof SearchExtra)) pageHolder.extra = new SearchExtra();
+		if (!(pageHolder.extra instanceof SearchExtra)) {
+			pageHolder.extra = new SearchExtra();
+		}
 		return (SearchExtra) pageHolder.extra;
 	}
 }

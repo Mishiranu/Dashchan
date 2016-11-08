@@ -82,8 +82,7 @@ typedef struct AudioBuffer AudioBuffer;
 typedef struct VideoFrameExtra VideoFrameExtra;
 typedef struct ScaleHolder ScaleHolder;
 
-struct Player
-{
+struct Player {
 	int errorCode;
 	int seekAnyFrame;
 
@@ -156,8 +155,7 @@ struct Player
 	int drawIgnoreWorkFrame;
 };
 
-struct Bridge
-{
+struct Bridge {
 	JNIEnv * env;
 	jmethodID methodGetBuffer;
 	jmethodID methodOnRead;
@@ -165,14 +163,12 @@ struct Bridge
 	jmethodID methodOnMessage;
 };
 
-struct PacketHolder
-{
+struct PacketHolder {
 	AVPacket * packet;
 	int finish;
 };
 
-struct AudioBuffer
-{
+struct AudioBuffer {
 	uint8_t * buffer;
 	int size;
 	int index;
@@ -180,27 +176,23 @@ struct AudioBuffer
 	int64_t divider;
 };
 
-struct VideoFrameExtra
-{
+struct VideoFrameExtra {
 	int width;
 	int height;
 	int64_t position;
 };
 
-struct ScaleHolder
-{
+struct ScaleHolder {
 	int bufferSize;
 	uint8_t * scaleBuffer;
 	uint8_t * scaleData[4];
 	int scaleLinesize[4];
 };
 
-static Bridge * obtainBridge(Player * player, JNIEnv * env)
-{
+static Bridge * obtainBridge(Player * player, JNIEnv * env) {
 	int index = pthread_self();
 	Bridge * bridge = sparceArrayGet(&player->bridges, index);
-	if (bridge == NULL)
-	{
+	if (bridge == NULL) {
 		bridge = malloc(sizeof(Bridge));
 		jclass class = (*env)->GetObjectClass(env, player->nativeBridge);
 		bridge->env = env;
@@ -213,10 +205,8 @@ static Bridge * obtainBridge(Player * player, JNIEnv * env)
 	return bridge;
 }
 
-static int getBytesPerPixel(int videoFormat)
-{
-	switch (videoFormat)
-	{
+static int getBytesPerPixel(int videoFormat) {
+	switch (videoFormat) {
 		case AV_PIX_FMT_YUV420P: return 1;
 		case AV_PIX_FMT_RGBA: return 4;
 		case AV_PIX_FMT_RGB565LE: return 2;
@@ -224,131 +214,116 @@ static int getBytesPerPixel(int videoFormat)
 	return 0;
 }
 
-static void packetQueueFreeCallback(void * data)
-{
+static void packetQueueFreeCallback(void * data) {
 	PacketHolder * packetHolder = (PacketHolder *) data;
-	if (packetHolder->packet != NULL)
-	{
+	if (packetHolder->packet != NULL) {
 		av_packet_unref(packetHolder->packet);
 		free(packetHolder->packet);
 	}
 	free(packetHolder);
 }
 
-static void audioBufferQueueFreeCallback(void * data)
-{
+static void audioBufferQueueFreeCallback(void * data) {
 	AudioBuffer * audioBuffer = (AudioBuffer *) data;
-	if (audioBuffer != NULL)
-	{
+	if (audioBuffer != NULL) {
 		av_freep(&audioBuffer->buffer);
 		free(audioBuffer);
 	}
 }
 
-static void videoBufferQueueFreeCallback(BufferItem * bufferItem)
-{
-	if (bufferItem->extra != NULL)
-	{
+static void videoBufferQueueFreeCallback(BufferItem * bufferItem) {
+	if (bufferItem->extra != NULL) {
 		free(bufferItem->extra);
 		bufferItem->extra = NULL;
 	}
 }
 
-static void updateAudioPositionSurrogate(Player * player, int64_t position, int forceUpdate)
-{
-	if (forceUpdate || player->audioPositionNotSync)
-	{
+static void updateAudioPositionSurrogate(Player * player, int64_t position, int forceUpdate) {
+	if (forceUpdate || player->audioPositionNotSync) {
 		player->startTime = getTime() - position;
-		if ((player->audioStreamIndex == UNDEFINED || player->audioFinished) && !forceUpdate)
-		{
+		if ((player->audioStreamIndex == UNDEFINED || player->audioFinished) && !forceUpdate) {
 			player->audioPositionNotSync = 0;
 		}
 	}
 }
 
-static int64_t calculatePosition(Player * player, int mayCalculateStartTime)
-{
-	if (player->audioStreamIndex == UNDEFINED || player->audioFinished)
-	{
-		if (player->playing)
-		{
-			if (mayCalculateStartTime || !player->videoFinished) return getTime() - player->startTime;
-			else return player->videoPosition;
+static int64_t calculatePosition(Player * player, int mayCalculateStartTime) {
+	if (player->audioStreamIndex == UNDEFINED || player->audioFinished) {
+		if (player->playing) {
+			if (mayCalculateStartTime || !player->videoFinished) {
+				return getTime() - player->startTime;
+			} else {
+				return player->videoPosition;
+			}
+		} else {
+			return player->pausedPosition;
 		}
-		else return player->pausedPosition;
+	} else {
+		return player->audioPosition;
 	}
-	else return player->audioPosition;
 }
 
-static void markStreamFinished(Player * player, int video)
-{
-	if (video)
-	{
-		if (bufferQueueCount(player->videoBufferQueue) == 0 && blockingQueueCount(&player->videoPacketQueue) == 0)
-		{
+static void markStreamFinished(Player * player, int video) {
+	if (video) {
+		if (bufferQueueCount(player->videoBufferQueue) == 0 && blockingQueueCount(&player->videoPacketQueue) == 0) {
 			player->videoFinished = 1;
 			condBroadcastLocked(&player->playFinishCond, &player->playFinishMutex);
 		}
-	}
-	else
-	{
+	} else {
 		if (player->audioBuffer == NULL && blockingQueueCount(&player->audioBufferQueue) == 0
-				&& blockingQueueCount(&player->audioPacketQueue) == 0)
-		{
+				&& blockingQueueCount(&player->audioPacketQueue) == 0) {
 			player->audioFinished = 1;
 			condBroadcastLocked(&player->playFinishCond, &player->playFinishMutex);
 		}
 	}
 }
 
-static int64_t calculateFrameTime(int64_t waitTime)
-{
+static int64_t calculateFrameTime(int64_t waitTime) {
 	return getTime() + waitTime - min64(max64(waitTime / 2, 25), 100);
 }
 
-static int decodeFrame(AVStream * stream, AVPacket * packet, AVFrame * frame, int video, int finish)
-{
+static int decodeFrame(AVStream * stream, AVPacket * packet, AVFrame * frame, int video, int finish) {
 	int ready;
-	if (video) avcodec_decode_video2(stream->codec, frame, &ready, packet);
-	else avcodec_decode_audio4(stream->codec, frame, &ready, packet);
-	if (finish)
-	{
+	if (video) {
+		avcodec_decode_video2(stream->codec, frame, &ready, packet);
+	} else {
+		avcodec_decode_audio4(stream->codec, frame, &ready, packet);
+	}
+	if (finish) {
 		// Sometimes need to decode more times after packets decoding finished to get more frames
 		int finishAttempts = 10;
-		while (!ready && finishAttempts-- > 0)
-		{
-			if (video) avcodec_decode_video2(stream->codec, frame, &ready, packet);
-			else avcodec_decode_audio4(stream->codec, frame, &ready, packet);
+		while (!ready && finishAttempts-- > 0) {
+			if (video) {
+				avcodec_decode_video2(stream->codec, frame, &ready, packet);
+			} else {
+				avcodec_decode_audio4(stream->codec, frame, &ready, packet);
+			}
 		}
 	}
 	return ready;
 }
 
-static int enqueueAudioBuffer(Player * player)
-{
-	if (!player->playing)
-	{
+static int enqueueAudioBuffer(Player * player) {
+	if (!player->playing) {
 		player->audioBufferNeedEnqueueAfterDecode = 1;
 		return 0;
 	}
 	int64_t endAudioPosition = -1;
-	if (player->audioBuffer != NULL)
-	{
+	if (player->audioBuffer != NULL) {
 		AudioBuffer * audioBuffer = player->audioBuffer;
-		if (audioBuffer->index >= audioBuffer->size)
-		{
+		if (audioBuffer->index >= audioBuffer->size) {
 			endAudioPosition = audioBuffer->position + audioBuffer->size * 1000 / audioBuffer->divider;
 			player->audioBuffer = NULL;
 			av_freep(&audioBuffer->buffer);
 			free(audioBuffer);
 		}
 	}
-	if (player->audioBuffer == NULL) player->audioBuffer = blockingQueueGet(&player->audioBufferQueue, 0);
-	if (player->audioBuffer != NULL)
-	{
+	if (player->audioBuffer == NULL) {
+		player->audioBuffer = blockingQueueGet(&player->audioBufferQueue, 0);
+	}
+	if (player->audioBuffer != NULL) {
 		AudioBuffer * audioBuffer = player->audioBuffer;
-		if (audioBuffer->position >= 0)
-		{
+		if (audioBuffer->position >= 0) {
 			player->audioPosition = audioBuffer->position + audioBuffer->index * 1000 / audioBuffer->divider;
 			player->audioPositionNotSync = 0;
 			logp("play audio %" PRId64, player->audioPosition);
@@ -358,32 +333,31 @@ static int enqueueAudioBuffer(Player * player)
 		audioBuffer->index += enqueueSize;
 		player->audioBufferNeedEnqueueAfterDecode = 0;
 		return 1;
-	}
-	else
-	{
+	} else {
 		player->audioBufferNeedEnqueueAfterDecode = 1;
-		if (blockingQueueCount(&player->audioPacketQueue) == 0 && endAudioPosition >= 0)
-		{
+		if (blockingQueueCount(&player->audioPacketQueue) == 0 && endAudioPosition >= 0) {
 			updateAudioPositionSurrogate(player, endAudioPosition, 1);
 		}
 		return 0;
 	}
 }
 
-static void audioPlayerCallback(SLAndroidSimpleBufferQueueItf slQueue, void * context)
-{
+static void audioPlayerCallback(SLAndroidSimpleBufferQueueItf slQueue, void * context) {
 	Player * player = (Player *) context;
-	if (player->interrupt) return;
+	if (player->interrupt) {
+		return;
+	}
 	logp("audio callback");
 	pthread_mutex_lock(&player->audioSleepBufferMutex);
 	int result = enqueueAudioBuffer(player);
-	if (result) pthread_cond_broadcast(&player->audioBufferCond);
+	if (result) {
+		pthread_cond_broadcast(&player->audioBufferCond);
+	}
 	pthread_mutex_unlock(&player->audioSleepBufferMutex);
 	markStreamFinished(player, 0);
 }
 
-static void * performDecodeAudio(void * data)
-{
+static void * performDecodeAudio(void * data) {
 	Player * player = (Player *) data;
 	player->audioBufferNeedEnqueueAfterDecode = 1;
 	AVStream * stream = AUDIO_STREAM;
@@ -394,64 +368,74 @@ static void * performDecodeAudio(void * data)
 	AVPacket lastPacket;
 	int lastPacketValid = 0;
 
-	while (!player->interrupt)
-	{
+	while (!player->interrupt) {
 		packetHolder = (PacketHolder *) blockingQueueGet(&player->audioPacketQueue, 1);
-		if (player->audioIgnoreWorkFrame)
-		{
-			if (lastPacketValid)
-			{
+		if (player->audioIgnoreWorkFrame) {
+			if (lastPacketValid) {
 				av_packet_unref(&lastPacket);
 				lastPacketValid = 0;
 			}
 			player->audioIgnoreWorkFrame = 0;
 		}
-		if (packetHolder == NULL || player->interrupt) break;
-		if (packetHolder->packet != NULL)
-		{
-			if (lastPacketValid) av_packet_unref(&lastPacket);
+		if (packetHolder == NULL || player->interrupt) {
+			break;
+		}
+		if (packetHolder->packet != NULL) {
+			if (lastPacketValid) {
+				av_packet_unref(&lastPacket);
+			}
 			av_copy_packet(&lastPacket, packetHolder->packet);
 			lastPacketValid = 1;
 		}
 		condBroadcastLocked(&player->decodePacketsFlowCond, &player->decodePacketsFlowMutex);
-		if (player->interrupt) break;
+		if (player->interrupt) {
+			break;
+		}
 
 		pthread_mutex_lock(&player->playFinishMutex);
-		while (!player->interrupt && !player->playing)
-		{
+		while (!player->interrupt && !player->playing) {
 			pthread_cond_wait(&player->playFinishCond, &player->playFinishMutex);
 		}
 		pthread_mutex_unlock(&player->playFinishMutex);
-		if (player->interrupt) break;
+		if (player->interrupt) {
+			break;
+		}
 
-		while (1)
-		{
+		while (1) {
 			int success = 0;
 			uint8_t ** dstData = NULL;
-			if (player->audioIgnoreWorkFrame) goto IGNORE_AUDIO_FRAME;
+			if (player->audioIgnoreWorkFrame) {
+				goto IGNORE_AUDIO_FRAME;
+			}
 			AVPacket * packet = packetHolder->packet;
-			if (packet == NULL)
-			{
-				if (!lastPacketValid) goto IGNORE_AUDIO_FRAME;
+			if (packet == NULL) {
+				if (!lastPacketValid) {
+					goto IGNORE_AUDIO_FRAME;
+				}
 				packet = &lastPacket;
 			}
 			pthread_mutex_lock(&player->decodeAudioFrameMutex);
-			if (player->audioIgnoreWorkFrame) unlockAndGoTo(&player->decodeAudioFrameMutex, IGNORE_AUDIO_FRAME);
+			if (player->audioIgnoreWorkFrame) {
+				unlockAndGoTo(&player->decodeAudioFrameMutex, IGNORE_AUDIO_FRAME);
+			}
 			int ready = decodeFrame(stream, packet, frame, 0, packetHolder->finish);
 			pthread_mutex_unlock(&player->decodeAudioFrameMutex);
 
-			if (ready)
-			{
+			if (ready) {
 				int64_t position;
-				if (frame->pkt_pts == AV_NOPTS_VALUE) position = -1;
-				else position = max64(frame->pkt_pts * 1000 * stream->time_base.num / stream->time_base.den, 0);
-				if (player->seekAnyFrame && player->audioPositionNotSync && position < player->audioPosition)
-				{
+				if (frame->pkt_pts == AV_NOPTS_VALUE) {
+					position = -1;
+				} else {
+					position = max64(frame->pkt_pts * 1000 * stream->time_base.num / stream->time_base.den, 0);
+				}
+				if (player->seekAnyFrame && player->audioPositionNotSync && position < player->audioPosition) {
 					success = 1;
 					goto IGNORE_AUDIO_FRAME;
 				}
 
-				if (frame->channel_layout == 0) frame->channel_layout = av_get_default_channel_layout(frame->channels);
+				if (frame->channel_layout == 0) {
+					frame->channel_layout = av_get_default_channel_layout(frame->channels);
+				}
 				uint64_t srcChannelLayout = frame->channel_layout;
 				uint64_t dstChannelLayout = player->resampleChannels != 0 ? player->resampleChannels : srcChannelLayout;
 				int srcSamples = frame->nb_samples;
@@ -464,48 +448,61 @@ static void * performDecodeAudio(void * data)
 				av_opt_set_int(resampleContext, "out_sample_rate", dstSampleRate, 0);
 				av_opt_set_sample_fmt(resampleContext, "in_sample_fmt", frame->format, 0);
 				av_opt_set_sample_fmt(resampleContext, "out_sample_fmt", dstFormat,  0);
-				if (swr_init(resampleContext) < 0 || player->audioIgnoreWorkFrame) goto IGNORE_AUDIO_FRAME;
+				if (swr_init(resampleContext) < 0 || player->audioIgnoreWorkFrame) {
+					goto IGNORE_AUDIO_FRAME;
+				}
 				int dstSamples = av_rescale_rnd(srcSamples, dstSampleRate, srcSampleRate, AV_ROUND_UP);
 				int dstChannels = av_get_channel_layout_nb_channels(dstChannelLayout);
 				int result = av_samples_alloc_array_and_samples(&dstData, frame->linesize, dstChannels,
 						dstSamples, dstFormat, 0);
-				if (result < 0 || player->audioIgnoreWorkFrame) goto IGNORE_AUDIO_FRAME;
+				if (result < 0 || player->audioIgnoreWorkFrame) {
+					goto IGNORE_AUDIO_FRAME;
+				}
 				dstSamples = av_rescale_rnd(swr_get_delay(resampleContext, srcSampleRate) + srcSamples,
 						dstSampleRate, srcSampleRate, AV_ROUND_UP);
 				result = swr_convert(resampleContext, dstData, dstSamples, (const uint8_t **) frame->data, srcSamples);
-				if (result < 0 || player->audioIgnoreWorkFrame) goto IGNORE_AUDIO_FRAME;
+				if (result < 0 || player->audioIgnoreWorkFrame) {
+					goto IGNORE_AUDIO_FRAME;
+				}
 
 				int size = av_samples_get_buffer_size(NULL, dstChannels, result, dstFormat, 1);
-				if (size < 0) goto IGNORE_AUDIO_FRAME;
+				if (size < 0) {
+					goto IGNORE_AUDIO_FRAME;
+				}
 				pthread_mutex_lock(&player->audioSleepBufferMutex);
-				if (player->audioIgnoreWorkFrame) unlockAndGoTo(&player->audioSleepBufferMutex, IGNORE_AUDIO_FRAME);
-				while (!player->interrupt && blockingQueueCount(&player->audioBufferQueue) >= 5)
-				{
+				if (player->audioIgnoreWorkFrame) {
+					unlockAndGoTo(&player->audioSleepBufferMutex, IGNORE_AUDIO_FRAME);
+				}
+				while (!player->interrupt && blockingQueueCount(&player->audioBufferQueue) >= 5) {
 					pthread_cond_wait(&player->audioBufferCond, &player->audioSleepBufferMutex);
 				}
-				if (player->audioIgnoreWorkFrame) unlockAndGoTo(&player->audioSleepBufferMutex, IGNORE_AUDIO_FRAME);
-				if (position >= 0 && player->audioBufferNeedEnqueueAfterDecode)
-				{
+				if (player->audioIgnoreWorkFrame) {
+					unlockAndGoTo(&player->audioSleepBufferMutex, IGNORE_AUDIO_FRAME);
+				}
+				if (position >= 0 && player->audioBufferNeedEnqueueAfterDecode) {
 					player->audioPosition = position;
 					player->audioPositionNotSync = 0;
 				}
-				while (!player->interrupt && player->videoPositionNotSync)
-				{
+				while (!player->interrupt && player->videoPositionNotSync) {
 					pthread_cond_wait(&player->audioSleepCond, &player->audioSleepBufferMutex);
 				}
-				if (player->audioIgnoreWorkFrame) unlockAndGoTo(&player->audioSleepBufferMutex, IGNORE_AUDIO_FRAME);
+				if (player->audioIgnoreWorkFrame) {
+					unlockAndGoTo(&player->audioSleepBufferMutex, IGNORE_AUDIO_FRAME);
+				}
 				int64_t videoPosition = player->videoPosition;
 				int64_t gaining = player->videoFinished ? 0 : position - videoPosition;
-				if (gaining > GAINING_THRESHOLD)
-				{
+				if (gaining > GAINING_THRESHOLD) {
 					logp("sleep audio %" PRId64 " %" PRId64, gaining, position);
 					int64_t time = calculateFrameTime(gaining);
-					while (!player->interrupt && !player->audioIgnoreWorkFrame)
-					{
-						if (condSleepUntilMs(&player->audioSleepCond, &player->audioSleepBufferMutex, time)) break;
+					while (!player->interrupt && !player->audioIgnoreWorkFrame) {
+						if (condSleepUntilMs(&player->audioSleepCond, &player->audioSleepBufferMutex, time)) {
+							break;
+						}
 					}
 				}
-				if (player->audioIgnoreWorkFrame) unlockAndGoTo(&player->audioSleepBufferMutex, IGNORE_AUDIO_FRAME);
+				if (player->audioIgnoreWorkFrame) {
+					unlockAndGoTo(&player->audioSleepBufferMutex, IGNORE_AUDIO_FRAME);
+				}
 				AudioBuffer * audioBuffer = malloc(sizeof(AudioBuffer));
 				audioBuffer->buffer = dstData[0];
 				audioBuffer->index = 0;
@@ -513,31 +510,38 @@ static void * performDecodeAudio(void * data)
 				audioBuffer->position = position;
 				audioBuffer->divider = 2 * frame->channels * dstSampleRate;
 				// Fix loud click on video start even on low sound level by muting sound buffer for 40 milliseconds
-				if (silentAudioLength == UNDEFINED) silentAudioLength = 40 * audioBuffer->divider / 1000;
-				if (silentAudioLength > 0)
-				{
+				if (silentAudioLength == UNDEFINED) {
+					silentAudioLength = 40 * audioBuffer->divider / 1000;
+				}
+				if (silentAudioLength > 0) {
 					int count = silentAudioLength >= size ? size : silentAudioLength;
 					memset(audioBuffer->buffer, 0, count);
 					silentAudioLength -= count;
 				}
 				int needEnqueue = player->audioBufferNeedEnqueueAfterDecode;
 				blockingQueueAdd(&player->audioBufferQueue, audioBuffer);
-				if (needEnqueue) enqueueAudioBuffer(player);
+				if (needEnqueue) {
+					enqueueAudioBuffer(player);
+				}
 				pthread_mutex_unlock(&player->audioSleepBufferMutex);
 				success = 1;
 			}
 
 			IGNORE_AUDIO_FRAME:
-			if (dstData != NULL)
-			{
-				if (!success) av_freep(&dstData[0]);
+			if (dstData != NULL) {
+				if (!success) {
+					av_freep(&dstData[0]);
+				}
 				av_freep(&dstData);
 			}
-			if (!success || !packetHolder->finish) break;
-			if (packetHolder->finish && frame->pkt_pts >= packet->pts)
-			{
+			if (!success || !packetHolder->finish) {
+				break;
+			}
+			if (packetHolder->finish && frame->pkt_pts >= packet->pts) {
 				pthread_mutex_lock(&player->decodeAudioFrameMutex);
-				if (!player->audioIgnoreWorkFrame) avcodec_flush_buffers(stream->codec);
+				if (!player->audioIgnoreWorkFrame) {
+					avcodec_flush_buffers(stream->codec);
+				}
 				pthread_mutex_unlock(&player->decodeAudioFrameMutex);
 				break;
 			}
@@ -545,62 +549,55 @@ static void * performDecodeAudio(void * data)
 		packetQueueFreeCallback(packetHolder);
 		packetHolder = NULL;
 	}
-	if (packetHolder != NULL) packetQueueFreeCallback(packetHolder);
-	if (lastPacketValid) av_packet_unref(&lastPacket);
+	if (packetHolder != NULL) {
+		packetQueueFreeCallback(packetHolder);
+	}
+	if (lastPacketValid) {
+		av_packet_unref(&lastPacket);
+	}
 	swr_free(&resampleContext);
 	av_frame_free(&frame);
 	return NULL;
 }
 
 static void drawWindow(Player * player, uint8_t * buffer, int width, int height, int lastWidth, int lastHeight,
-		JNIEnv * env)
-{
-	if (player->videoWindow != NULL)
-	{
-		if (width != lastWidth || height != lastHeight)
-		{
+		JNIEnv * env) {
+	if (player->videoWindow != NULL) {
+		if (width != lastWidth || height != lastHeight) {
 			ANativeWindow_setBuffersGeometry(player->videoWindow, width, height,
 					ANativeWindow_getFormat(player->videoWindow));
 			Bridge * bridge = obtainBridge(player, env);
 			sendBridgeMessage(BRIDGE_MESSAGE_SIZE_CHANGED);
 		}
 		ANativeWindow_Buffer canvas;
-		if (ANativeWindow_lock(player->videoWindow, &canvas, NULL) == 0)
-		{
-			if (canvas.width >= width && canvas.height >= height)
-			{
+		if (ANativeWindow_lock(player->videoWindow, &canvas, NULL) == 0) {
+			if (canvas.width >= width && canvas.height >= height) {
 				// Width and height can be smaller in the moment of surface changing and before it was handled
 				void * to = canvas.bits;
-				if (player->videoFormat == AV_PIX_FMT_YUV420P)
-				{
-					for (int i = 0; i < height; i++)
-					{
+				if (player->videoFormat == AV_PIX_FMT_YUV420P) {
+					for (int i = 0; i < height; i++) {
 						memcpy(to, buffer, width);
 						to += canvas.stride;
 						buffer += width;
 					}
 					memset(to, 127, canvas.stride * height / 2);
-					for (int i = 0; i < height / 2; i++)
-					{
+					for (int i = 0; i < height / 2; i++) {
 						memcpy(to, buffer, width / 2);
 						to += canvas.stride / 2;
 						buffer += width / 2;
 					}
-					if (canvas.stride % 32 != 0) to += height / 2 * 8; // Align to 16
-					for (int i = 0; i < height / 2; i++)
-					{
+					if (canvas.stride % 32 != 0) {
+						to += height / 2 * 8; // Align to 16
+					}
+					for (int i = 0; i < height / 2; i++) {
 						memcpy(to, buffer, width / 2);
 						to += canvas.stride / 2;
 						buffer += width / 2;
 					}
-				}
-				else
-				{
+				} else {
 					int bytesPerPixel = getBytesPerPixel(player->videoFormat);
-					if (bytesPerPixel > 0)
-					{
-						for (int i = 0; i < height; i++)
-						{
+					if (bytesPerPixel > 0) {
+						for (int i = 0; i < height; i++) {
 							memcpy(to, buffer, bytesPerPixel * width);
 							to += bytesPerPixel * canvas.stride;
 							buffer += bytesPerPixel * width;
@@ -613,75 +610,85 @@ static void drawWindow(Player * player, uint8_t * buffer, int width, int height,
 	}
 }
 
-static void * performDraw(void * data)
-{
+static void * performDraw(void * data) {
 	Player * player = (Player *) data;
 	JNIEnv * env;
 	(*loadJavaVM)->AttachCurrentThread(loadJavaVM, &env, NULL);
 	AVStream * stream = VIDEO_STREAM;
 	int lastWidth = stream->codec->width;
 	int lastHeight = stream->codec->height;
-	while (!player->interrupt)
-	{
+	while (!player->interrupt) {
 		BufferItem * bufferItem = NULL;
 		pthread_mutex_lock(&player->videoQueueMutex);
-		while (!player->interrupt && bufferItem == NULL)
-		{
-			if (player->videoBufferQueue != NULL) bufferItem = bufferQueueSeize(player->videoBufferQueue);
-			if (bufferItem == NULL) pthread_cond_wait(&player->videoQueueCond, &player->videoQueueMutex);
+		while (!player->interrupt && bufferItem == NULL) {
+			if (player->videoBufferQueue != NULL) {
+				bufferItem = bufferQueueSeize(player->videoBufferQueue);
+			}
+			if (bufferItem == NULL) {
+				pthread_cond_wait(&player->videoQueueCond, &player->videoQueueMutex);
+			}
 		}
 		player->drawIgnoreWorkFrame = 0;
 		pthread_mutex_unlock(&player->videoQueueMutex);
-		if (player->interrupt) goto IGNORE_DRAW_FRAME;
+		if (player->interrupt) {
+			goto IGNORE_DRAW_FRAME;
+		}
 
 		pthread_mutex_lock(&player->playFinishMutex);
-		while (!player->interrupt && !player->playing)
-		{
+		while (!player->interrupt && !player->playing) {
 			pthread_cond_wait(&player->playFinishCond, &player->playFinishMutex);
 		}
 		pthread_mutex_unlock(&player->playFinishMutex);
-		if (player->interrupt) goto IGNORE_DRAW_FRAME;
+		if (player->interrupt) {
+			goto IGNORE_DRAW_FRAME;
+		}
 
 		pthread_mutex_lock(&player->videoSleepDrawMutex);
-		if (player->drawIgnoreWorkFrame) unlockAndGoTo(&player->videoSleepDrawMutex, IGNORE_DRAW_FRAME);
+		if (player->drawIgnoreWorkFrame) {
+			unlockAndGoTo(&player->videoSleepDrawMutex, IGNORE_DRAW_FRAME);
+		}
 		VideoFrameExtra * extra = bufferItem->extra;
 		int64_t position = calculatePosition(player, 1);
 		int64_t waitTime = 0;
-		if (extra->position >= 0)
-		{
+		if (extra->position >= 0) {
 			player->videoPosition = extra->position;
 			waitTime = extra->position - position;
-			if (player->videoPositionNotSync)
-			{
+			if (player->videoPositionNotSync) {
 				player->videoPositionNotSync = 0;
 				Bridge * bridge = obtainBridge(player, env);
 				sendBridgeMessage(BRIDGE_MESSAGE_END_SEEKING);
 				pthread_mutex_unlock(&player->videoSleepDrawMutex);
 				condBroadcastLocked(&player->audioSleepCond, &player->audioSleepBufferMutex);
 				pthread_mutex_lock(&player->videoSleepDrawMutex);
-				if (player->drawIgnoreWorkFrame) unlockAndGoTo(&player->videoSleepDrawMutex, IGNORE_DRAW_FRAME);
+				if (player->drawIgnoreWorkFrame) {
+					unlockAndGoTo(&player->videoSleepDrawMutex, IGNORE_DRAW_FRAME);
+				}
 			}
 		}
-		if (waitTime > 0)
-		{
+		if (waitTime > 0) {
 			logp("sleep video %" PRId64 " %" PRId64 " %" PRId64, waitTime, player->videoPosition, position);
 			int64_t time = calculateFrameTime(waitTime);
-			while (!player->interrupt && !player->drawIgnoreWorkFrame)
-			{
-				if (condSleepUntilMs(&player->videoSleepCond, &player->videoSleepDrawMutex, time)) break;
+			while (!player->interrupt && !player->drawIgnoreWorkFrame) {
+				if (condSleepUntilMs(&player->videoSleepCond, &player->videoSleepDrawMutex, time)) {
+					break;
+				}
 			}
 			waitTime = 0;
 		}
-		if (player->drawIgnoreWorkFrame) unlockAndGoTo(&player->videoSleepDrawMutex, IGNORE_DRAW_FRAME);
-		if (player->audioPositionNotSync) updateAudioPositionSurrogate(player, position, 0); else
-		{
+		if (player->drawIgnoreWorkFrame) {
+			unlockAndGoTo(&player->videoSleepDrawMutex, IGNORE_DRAW_FRAME);
+		}
+		if (player->audioPositionNotSync) {
+			updateAudioPositionSurrogate(player, position, 0);
+		} else {
 			int64_t gaining = -waitTime;
-			if (player->audioStreamIndex == UNDEFINED && gaining > GAINING_THRESHOLD) player->startTime += gaining;
+			if (player->audioStreamIndex == UNDEFINED && gaining > GAINING_THRESHOLD) {
+				player->startTime += gaining;
+			}
 		}
 		logp("draw video %" PRId64, player->videoPosition);
 		int bufferSize = bufferItem->bufferSize;
-		if (bufferSize > player->videoLastBufferSize)
-		{
+		if (bufferSize > player->videoLastBufferSize) {
 			player->videoLastBuffer = realloc(player->videoLastBuffer, bufferSize);
 			player->videoLastBufferSize = bufferSize;
 		}
@@ -689,8 +696,7 @@ static void * performDraw(void * data)
 		player->videoLastBufferWidth = extra->width;
 		player->videoLastBufferHeight = extra->height;
 		if ((player->lastDrawTimes[0] - player->lastDrawTimes[1]) * MAX_FPS >= 1000
-				|| (getTime() - player->lastDrawTimes[0]) * MAX_FPS >= 1000)
-		{
+				|| (getTime() - player->lastDrawTimes[0]) * MAX_FPS >= 1000) {
 			// Avoid FPS > MAX_FPS
 			drawWindow(player, bufferItem->buffer, extra->width, extra->height, lastWidth, lastHeight, env);
 			lastWidth = extra->width;
@@ -701,8 +707,7 @@ static void * performDraw(void * data)
 		pthread_mutex_unlock(&player->videoSleepDrawMutex);
 
 		IGNORE_DRAW_FRAME:
-		if (bufferItem != NULL)
-		{
+		if (bufferItem != NULL) {
 			free(bufferItem->extra);
 			bufferItem->extra = NULL;
 			pthread_mutex_lock(&player->videoQueueMutex);
@@ -716,10 +721,8 @@ static void * performDraw(void * data)
 	return NULL;
 }
 
-static int getVideoBufferSize(int videoFormat, int width, int height)
-{
-	switch (videoFormat)
-	{
+static int getVideoBufferSize(int videoFormat, int width, int height) {
+	switch (videoFormat) {
 		case AV_PIX_FMT_RGBA: return width * height * 4;
 		case AV_PIX_FMT_RGB565LE: return width * height * 2;
 		case AV_PIX_FMT_YUV420P: return width * height * 3 / 2;
@@ -728,12 +731,12 @@ static int getVideoBufferSize(int videoFormat, int width, int height)
 }
 
 static void extendScaleHolder(ScaleHolder * scaleHolder, int bufferSize, int width, int height,
-		int bytesPerPixel, int isYUV)
-{
-	if (bufferSize > scaleHolder->bufferSize)
-	{
+		int bytesPerPixel, int isYUV) {
+	if (bufferSize > scaleHolder->bufferSize) {
 		scaleHolder->bufferSize = bufferSize;
-		if (scaleHolder->scaleBuffer != NULL) av_free(scaleHolder->scaleBuffer);
+		if (scaleHolder->scaleBuffer != NULL) {
+			av_free(scaleHolder->scaleBuffer);
+		}
 		scaleHolder->scaleBuffer = av_malloc(bufferSize);
 	}
 	scaleHolder->scaleData[0] = scaleHolder->scaleBuffer;
@@ -746,17 +749,17 @@ static void extendScaleHolder(ScaleHolder * scaleHolder, int bufferSize, int wid
 	scaleHolder->scaleLinesize[3] = 0;
 }
 
-static void * performDecodeVideo(void * data)
-{
+static void * performDecodeVideo(void * data) {
 	Player * player = (Player *) data;
 	AVStream * stream = VIDEO_STREAM;
 	pthread_mutex_lock(&player->videoSleepDrawMutex);
-	while (!player->interrupt && player->videoBufferQueue == NULL)
-	{
+	while (!player->interrupt && player->videoBufferQueue == NULL) {
 		pthread_cond_wait(&player->videoSleepCond, &player->videoSleepDrawMutex);
 	}
 	pthread_mutex_unlock(&player->videoSleepDrawMutex);
-	if (player->interrupt) return NULL;
+	if (player->interrupt) {
+		return NULL;
+	}
 
 	int bytesPerPixel = getBytesPerPixel(player->videoFormat);
 	int isYUV = player->videoFormat == AV_PIX_FMT_YUV420P;
@@ -777,68 +780,75 @@ static void * performDecodeVideo(void * data)
 	int currentMeasurement = 0;
 	int measurements[2 * totalMeasurements];
 
-	while (!player->interrupt)
-	{
+	while (!player->interrupt) {
 		packetHolder = (PacketHolder *) blockingQueueGet(&player->videoPacketQueue, 1);
-		if (player->videoIgnoreWorkFrame)
-		{
-			if (lastPacketValid)
-			{
+		if (player->videoIgnoreWorkFrame) {
+			if (lastPacketValid) {
 				av_packet_unref(&lastPacket);
 				lastPacketValid = 0;
 			}
 			player->videoIgnoreWorkFrame = 0;
 		}
-		if (packetHolder == NULL || player->interrupt) break;
-		if (packetHolder->packet != NULL)
-		{
-			if (lastPacketValid) av_packet_unref(&lastPacket);
+		if (packetHolder == NULL || player->interrupt) {
+			break;
+		}
+		if (packetHolder->packet != NULL) {
+			if (lastPacketValid) {
+				av_packet_unref(&lastPacket);
+			}
 			av_copy_packet(&lastPacket, packetHolder->packet);
 			lastPacketValid = 1;
 		}
 		condBroadcastLocked(&player->decodePacketsFlowCond, &player->decodePacketsFlowMutex);
-		if (player->interrupt) break;
+		if (player->interrupt) {
+			break;
+		}
 
 		pthread_mutex_lock(&player->playFinishMutex);
-		while (!player->interrupt && !player->playing)
-		{
+		while (!player->interrupt && !player->playing) {
 			pthread_cond_wait(&player->playFinishCond, &player->playFinishMutex);
 		}
 		pthread_mutex_unlock(&player->playFinishMutex);
-		if (player->interrupt) break;
+		if (player->interrupt) {
+			break;
+		}
 
-		while (1)
-		{
+		while (1) {
 			int success = 0;
 			VideoFrameExtra * extra = NULL;
-			if (player->videoIgnoreWorkFrame) goto IGNORE_VIDEO_FRAME;
+			if (player->videoIgnoreWorkFrame) {
+				goto IGNORE_VIDEO_FRAME;
+			}
 			AVPacket * packet = packetHolder->packet;
-			if (packet == NULL)
-			{
-				if (!lastPacketValid) goto IGNORE_VIDEO_FRAME;
+			if (packet == NULL) {
+				if (!lastPacketValid) {
+					goto IGNORE_VIDEO_FRAME;
+				}
 				packet = &lastPacket;
 			}
 			pthread_mutex_lock(&player->decodeVideoFrameMutex);
-			if (player->videoIgnoreWorkFrame) unlockAndGoTo(&player->decodeVideoFrameMutex, IGNORE_VIDEO_FRAME);
+			if (player->videoIgnoreWorkFrame) {
+				unlockAndGoTo(&player->decodeVideoFrameMutex, IGNORE_VIDEO_FRAME);
+			}
 			int ready = decodeFrame(stream, packet, frame, 1, packetHolder->finish);
 			pthread_mutex_unlock(&player->decodeVideoFrameMutex);
 
-			if (ready)
-			{
+			if (ready) {
 				extra = malloc(sizeof(VideoFrameExtra));
 				extra->width = frame->width;
 				extra->height = frame->height;
-				if (frame->pkt_pts == AV_NOPTS_VALUE) extra->position = -1;
-				else extra->position = max64(frame->pkt_pts * 1000 * stream->time_base.num / stream->time_base.den, 0);
-				if (player->seekAnyFrame && player->videoPositionNotSync && extra->position < player->videoPosition)
-				{
+				if (frame->pkt_pts == AV_NOPTS_VALUE) {
+					extra->position = -1;
+				} else {
+					extra->position = max64(frame->pkt_pts * 1000 * stream->time_base.num / stream->time_base.den, 0);
+				}
+				if (player->seekAnyFrame && player->videoPositionNotSync && extra->position < player->videoPosition) {
 					success = 1;
 					goto IGNORE_VIDEO_FRAME;
 				}
 
 				int extendedBufferSize = 0;
-				if (lastWidth != frame->width || lastHeight != frame->height)
-				{
+				if (lastWidth != frame->width || lastHeight != frame->height) {
 					extendedBufferSize = getVideoBufferSize(player->videoFormat, frame->width, frame->height);
 					extendScaleHolder(&scaleHolder, extendedBufferSize, frame->width, frame->height,
 							bytesPerPixel, isYUV);
@@ -847,26 +857,26 @@ static void * performDecodeVideo(void * data)
 				}
 				int useLibyuv = frame->format == AV_PIX_FMT_YUV420P && player->videoFormat == AV_PIX_FMT_RGBA;
 				uint64_t startTime = 0;
-				if (useLibyuv)
-				{
-					if (player->videoUseLibyuv >= 0) useLibyuv = player->videoUseLibyuv; else
-					{
-						if (currentMeasurement < totalMeasurements) useLibyuv = 0;
-						if (currentMeasurement < 2 * totalMeasurements) startTime = getTimeUs();
+				if (useLibyuv) {
+					if (player->videoUseLibyuv >= 0) {
+						useLibyuv = player->videoUseLibyuv;
+					} else {
+						if (currentMeasurement < totalMeasurements) {
+							useLibyuv = 0;
+						}
+						if (currentMeasurement < 2 * totalMeasurements) {
+							startTime = getTimeUs();
+						}
 					}
 				}
-				if (useLibyuv)
-				{
+				if (useLibyuv) {
 					I420ToABGR(frame->data[0], frame->linesize[0], frame->data[1], frame->linesize[1],
 							frame->data[2], frame->linesize[2], scaleHolder.scaleBuffer, 4 * frame->width,
 							frame->width, frame->height);
-				}
-				else
-				{
+				} else {
 					int scaleContextIndex = (frame->width) << 16 | frame->height;
 					struct SwsContext * scaleContext = sparceArrayGet(&scaleContexts, scaleContextIndex);
-					if (scaleContext == NULL)
-					{
+					if (scaleContext == NULL) {
 						scaleContext = sws_getContext(frame->width, frame->height, frame->format,
 								frame->width, frame->height, player->videoFormat, SWS_FAST_BILINEAR, NULL, NULL, NULL);
 						sparceArrayAdd(&scaleContexts, scaleContextIndex, scaleContext);
@@ -874,33 +884,38 @@ static void * performDecodeVideo(void * data)
 					sws_scale(scaleContext, (uint8_t const * const *) frame->data, frame->linesize,
 							0, frame->height, scaleHolder.scaleData, scaleHolder.scaleLinesize);
 				}
-				if (startTime != 0)
-				{
-					if (currentMeasurement < 2 * totalMeasurements)
-					{
+				if (startTime != 0) {
+					if (currentMeasurement < 2 * totalMeasurements) {
 						measurements[currentMeasurement++] = (int) (getTimeUs() - startTime);
-						if (currentMeasurement == 2 * totalMeasurements)
-						{
+						if (currentMeasurement == 2 * totalMeasurements) {
 							int avg1 = 0;
 							int avg2 = 0;
-							for (int i = 0; i < totalMeasurements; i++) avg1 += measurements[i];
-							for (int i = totalMeasurements; i < 2 * totalMeasurements; i++) avg2 += measurements[i];
+							for (int i = 0; i < totalMeasurements; i++) {
+								avg1 += measurements[i];
+							}
+							for (int i = totalMeasurements; i < 2 * totalMeasurements; i++) {
+								avg2 += measurements[i];
+							}
 							player->videoUseLibyuv = avg2 <= avg1 ? 1 : 0;
 						}
 					}
 				}
 
 				pthread_mutex_lock(&player->videoQueueMutex);
-				if (player->videoIgnoreWorkFrame) unlockAndGoTo(&player->videoQueueMutex, IGNORE_VIDEO_FRAME);
-				if (extendedBufferSize > 0) bufferQueueExtend(player->videoBufferQueue, extendedBufferSize);
-				BufferItem * bufferItem = NULL;
-				while (!player->interrupt && !player->videoIgnoreWorkFrame && bufferItem == NULL)
-				{
-					bufferItem = bufferQueuePrepare(player->videoBufferQueue);
-					if (bufferItem == NULL) pthread_cond_wait(&player->videoQueueCond, &player->videoQueueMutex);
+				if (player->videoIgnoreWorkFrame) {
+					unlockAndGoTo(&player->videoQueueMutex, IGNORE_VIDEO_FRAME);
 				}
-				if (bufferItem != NULL)
-				{
+				if (extendedBufferSize > 0) {
+					bufferQueueExtend(player->videoBufferQueue, extendedBufferSize);
+				}
+				BufferItem * bufferItem = NULL;
+				while (!player->interrupt && !player->videoIgnoreWorkFrame && bufferItem == NULL) {
+					bufferItem = bufferQueuePrepare(player->videoBufferQueue);
+					if (bufferItem == NULL) {
+						pthread_cond_wait(&player->videoQueueCond, &player->videoQueueMutex);
+					}
+				}
+				if (bufferItem != NULL) {
 					memcpy(bufferItem->buffer, scaleHolder.scaleBuffer, player->videoBufferQueue->bufferSize);
 					bufferItem->extra = extra;
 					bufferQueueAdd(player->videoBufferQueue, bufferItem);
@@ -911,12 +926,17 @@ static void * performDecodeVideo(void * data)
 			}
 
 			IGNORE_VIDEO_FRAME:
-			if (!success && extra != NULL) free(extra);
-			if (!success || !packetHolder->finish) break;
-			if (packetHolder->finish && frame->pkt_pts >= packet->pts)
-			{
+			if (!success && extra != NULL) {
+				free(extra);
+			}
+			if (!success || !packetHolder->finish) {
+				break;
+			}
+			if (packetHolder->finish && frame->pkt_pts >= packet->pts) {
 				pthread_mutex_lock(&player->decodeVideoFrameMutex);
-				if (!player->videoIgnoreWorkFrame) avcodec_flush_buffers(stream->codec);
+				if (!player->videoIgnoreWorkFrame) {
+					avcodec_flush_buffers(stream->codec);
+				}
 				pthread_mutex_unlock(&player->decodeVideoFrameMutex);
 				break;
 			}
@@ -925,62 +945,63 @@ static void * performDecodeVideo(void * data)
 		packetQueueFreeCallback(packetHolder);
 		packetHolder = NULL;
 	}
-	if (packetHolder != NULL) packetQueueFreeCallback(packetHolder);
-	if (lastPacketValid) av_packet_unref(&lastPacket);
+	if (packetHolder != NULL) {
+		packetQueueFreeCallback(packetHolder);
+	}
+	if (lastPacketValid) {
+		av_packet_unref(&lastPacket);
+	}
 	sparceArrayDestroyEach(&scaleContexts, sws_freeContext(data));
 	av_free(scaleHolder.scaleBuffer);
 	av_frame_free(&frame);
 	return NULL;
 }
 
-static PacketHolder * createPacketHolder(int allocPacket, int finish)
-{
+static PacketHolder * createPacketHolder(int allocPacket, int finish) {
 	PacketHolder * packetHolder = malloc(sizeof(PacketHolder));
 	packetHolder->packet = allocPacket ? malloc(sizeof(AVPacket)) : NULL;
 	packetHolder->finish = finish;
 	return packetHolder;
 }
 
-static void * performDecodePackets(void * data)
-{
+static void * performDecodePackets(void * data) {
 	Player * player = (Player *) data;
 	JNIEnv * env;
 	(*loadJavaVM)->AttachCurrentThread(loadJavaVM, &env, NULL);
 	Bridge * bridge = obtainBridge(player, env);
 	AVFormatContext * formatContext = player->formatContext;
 	AVPacket packet;
-	while (!player->interrupt)
-	{
-		while (!player->interrupt)
-		{
+	while (!player->interrupt) {
+		while (!player->interrupt) {
 			player->ignoreReadFrame = 0;
 			pthread_mutex_lock(&player->decodePacketsReadMutex);
 			int success = av_read_frame(formatContext, &packet) >= 0;
 			pthread_mutex_unlock(&player->decodePacketsReadMutex);
-			if (!success) break;
+			if (!success) {
+				break;
+			}
 			pthread_mutex_lock(&player->decodePacketsFlowMutex);
-			if (player->ignoreReadFrame) goto SKIP_FRAME;
+			if (player->ignoreReadFrame) {
+				goto SKIP_FRAME;
+			}
 			while (!player->interrupt
 					&& (player->videoStreamIndex == UNDEFINED || blockingQueueCount(&player->videoPacketQueue) >= 10)
-					&& (player->audioStreamIndex == UNDEFINED || blockingQueueCount(&player->audioPacketQueue) >= 20))
-			{
+					&& (player->audioStreamIndex == UNDEFINED || blockingQueueCount(&player->audioPacketQueue) >= 20)) {
 				pthread_cond_wait(&player->decodePacketsFlowCond, &player->decodePacketsFlowMutex);
 			}
-			if (player->ignoreReadFrame) goto SKIP_FRAME;
+			if (player->ignoreReadFrame) {
+				goto SKIP_FRAME;
+			}
 			int isAudio = packet.stream_index == player->audioStreamIndex;
 			int isVideo = packet.stream_index == player->videoStreamIndex;
-			if (isAudio || isVideo)
-			{
+			if (isAudio || isVideo) {
 				PacketHolder * packetHolder = createPacketHolder(1, 0);
 				av_copy_packet(packetHolder->packet, &packet);
-				if (isAudio)
-				{
+				if (isAudio) {
 					blockingQueueAdd(&player->audioPacketQueue, packetHolder);
 					player->audioFinished = 0;
 					logp("enqueue audio %" PRId64, packet.pts);
-				}
-				else if (isVideo)
-				{
+				} else if (isVideo) {
 					blockingQueueAdd(&player->videoPacketQueue, packetHolder);
 					player->videoFinished = 0;
 					logp("enqueue video %" PRId64, packet.pts);
@@ -991,15 +1012,12 @@ static void * performDecodePackets(void * data)
 			pthread_mutex_unlock(&player->decodePacketsFlowMutex);
 		}
 		pthread_mutex_lock(&player->decodePacketsFlowMutex);
-		if (!player->ignoreReadFrame)
-		{
-			if (player->audioStreamIndex != UNDEFINED)
-			{
+		if (!player->ignoreReadFrame) {
+			if (player->audioStreamIndex != UNDEFINED) {
 				blockingQueueAdd(&player->audioPacketQueue, createPacketHolder(0, 1));
 				player->audioFinished = 0;
 			}
-			if (player->videoStreamIndex != UNDEFINED)
-			{
+			if (player->videoStreamIndex != UNDEFINED) {
 				blockingQueueAdd(&player->videoPacketQueue, createPacketHolder(0, 1));
 				player->videoFinished = 0;
 			}
@@ -1008,11 +1026,9 @@ static void * performDecodePackets(void * data)
 		pthread_mutex_lock(&player->playFinishMutex);
 		player->decodeFinished = 1;
 		int needSendFinishMessage = 1;
-		while (!player->interrupt && player->decodeFinished)
-		{
+		while (!player->interrupt && player->decodeFinished) {
 			if (needSendFinishMessage && (player->audioFinished || player->audioStreamIndex == UNDEFINED)
-					&& (player->videoFinished || player->videoStreamIndex == UNDEFINED))
-			{
+					&& (player->videoFinished || player->videoStreamIndex == UNDEFINED)) {
 				needSendFinishMessage = 0;
 				sendBridgeMessage(BRIDGE_MESSAGE_PLAYBACK_COMPLETE);
 			}
@@ -1029,65 +1045,55 @@ static void * performDecodePackets(void * data)
 	return NULL;
 }
 
-static void updatePlayerSurface(JNIEnv * env, Player * player, jobject surface, int lockAndCheck)
-{
-	if (lockAndCheck) pthread_mutex_lock(&player->videoSleepDrawMutex);
-	if (player->videoWindow != NULL)
-	{
+static void updatePlayerSurface(JNIEnv * env, Player * player, jobject surface, int lockAndCheck) {
+	if (lockAndCheck) {
+		pthread_mutex_lock(&player->videoSleepDrawMutex);
+	}
+	if (player->videoWindow != NULL) {
 		ANativeWindow_release(player->videoWindow);
 		player->videoWindow = NULL;
 	}
-	if (surface != NULL)
-	{
+	if (surface != NULL) {
 		player->videoWindow = ANativeWindow_fromSurface(env, surface);
 		int format = ANativeWindow_getFormat(player->videoWindow);
 		AVStream * stream = VIDEO_STREAM;
 		int width = stream->codec->width;
 		int height = stream->codec->height;
-		if (player->videoBufferQueue == NULL)
-		{
+		if (player->videoBufferQueue == NULL) {
 			int videoFormat = -1;
-			switch (format)
-			{
+			switch (format) {
 				case WINDOW_FORMAT_RGBA_8888:
-				case WINDOW_FORMAT_RGBX_8888:
-				{
+				case WINDOW_FORMAT_RGBX_8888: {
 					videoFormat = AV_PIX_FMT_RGBA;
 					break;
 				}
-				case WINDOW_FORMAT_RGB_565:
-				{
+				case WINDOW_FORMAT_RGB_565: {
 					videoFormat = AV_PIX_FMT_RGB565LE;
 					break;
 				}
-				case WINDOW_FORMAT_YV12:
-				{
+				case WINDOW_FORMAT_YV12: {
 					videoFormat = AV_PIX_FMT_YUV420P;
 					break;
 				}
 			}
-			if (videoFormat >= 0)
-			{
+			if (videoFormat >= 0) {
 				int videoBufferSize = getVideoBufferSize(videoFormat, width, height);
 				player->videoFormat = videoFormat;
 				player->videoBufferQueue = malloc(sizeof(BufferQueue));
 				bufferQueueInit(player->videoBufferQueue, videoBufferSize, 3);
 				player->videoLastBuffer = malloc(videoBufferSize);
 				player->videoLastBufferSize = videoBufferSize;
-				if (videoFormat == AV_PIX_FMT_RGBA)
-				{
+				if (videoFormat == AV_PIX_FMT_RGBA) {
 					// RGBA_8888 "black" buffer
 					int count = 4 * width * height;
 					memset(player->videoLastBuffer, 0x00, count);
-					for (int i = 3; i < count; i += 4) player->videoLastBuffer[i] = 0xff;
-				}
-				else if (videoFormat == AV_PIX_FMT_RGB565LE)
-				{
+					for (int i = 3; i < count; i += 4) {
+						player->videoLastBuffer[i] = 0xff;
+					}
+				} else if (videoFormat == AV_PIX_FMT_RGB565LE) {
 					// RGB_565 "black" buffer
 					memset(player->videoLastBuffer, 0x00, 2 * width * height);
-				}
-				else if (videoFormat == AV_PIX_FMT_YUV420P)
-				{
+				} else if (videoFormat == AV_PIX_FMT_YUV420P) {
 					// YV12 "black" buffer
 					memset(player->videoLastBuffer, 0, width * height);
 					memset(player->videoLastBuffer + width * height, 0x7f, width * height / 2);
@@ -1095,26 +1101,33 @@ static void updatePlayerSurface(JNIEnv * env, Player * player, jobject surface, 
 				pthread_cond_broadcast(&player->videoSleepCond);
 			}
 		}
-		if (player->videoLastBufferWidth >= 0) width = player->videoLastBufferWidth;
-		if (player->videoLastBufferHeight >= 0) height = player->videoLastBufferHeight;
+		if (player->videoLastBufferWidth >= 0) {
+			width = player->videoLastBufferWidth;
+		}
+		if (player->videoLastBufferHeight >= 0) {
+			height = player->videoLastBufferHeight;
+		}
 		ANativeWindow_setBuffersGeometry(player->videoWindow, width, height, format);
-		if (player->videoLastBuffer != NULL)
-		{
+		if (player->videoLastBuffer != NULL) {
 			drawWindow(player, player->videoLastBuffer, width, height, width, height, env);
 		}
 	}
-	if (lockAndCheck) pthread_mutex_unlock(&player->videoSleepDrawMutex);
+	if (lockAndCheck) {
+		pthread_mutex_unlock(&player->videoSleepDrawMutex);
+	}
 }
 
-static int bufferReadData(void * opaque, uint8_t * buf, int buf_size)
-{
+static int bufferReadData(void * opaque, uint8_t * buf, int buf_size) {
 	Player * player = opaque;
-	if (player->interrupt) return -1;
+	if (player->interrupt) {
+		return -1;
+	}
 	Bridge * bridge = sparceArrayGet(&player->bridges, (int) pthread_self());
-	if (bridge == NULL) return -1;
+	if (bridge == NULL) {
+		return -1;
+	}
 	int count = (*bridge->env)->CallIntMethod(bridge->env, player->nativeBridge, bridge->methodOnRead, buf_size);
-	if (count > 0)
-	{
+	if (count > 0) {
 		jbyteArray buffer = (*bridge->env)->CallObjectMethod(bridge->env, player->nativeBridge,
 				bridge->methodGetBuffer);
 		(*bridge->env)->GetByteArrayRegion(bridge->env, buffer, 0, count, buf);
@@ -1123,18 +1136,20 @@ static int bufferReadData(void * opaque, uint8_t * buf, int buf_size)
 	return count;
 }
 
-static int64_t bufferSeekData(void * opaque, int64_t offset, int whence)
-{
+static int64_t bufferSeekData(void * opaque, int64_t offset, int whence) {
 	Player * player = opaque;
-	if (player->interrupt) return -1;
+	if (player->interrupt) {
+		return -1;
+	}
 	Bridge * bridge = sparceArrayGet(&player->bridges, (int) pthread_self());
-	if (bridge == NULL) return -1;
+	if (bridge == NULL) {
+		return -1;
+	}
 	jlong value = offset;
 	return (*bridge->env)->CallLongMethod(bridge->env, player->nativeBridge, bridge->methodOnSeek, value, whence);
 }
 
-static Player * createPlayer()
-{
+static Player * createPlayer() {
 	Player * player = malloc(sizeof(Player));
 	memset(player, 0, sizeof(Player));
 	player->audioStreamIndex = UNDEFINED;
@@ -1167,8 +1182,7 @@ static Player * createPlayer()
 #define NEED_RESAMPLE_MAY_48000 1
 #define NEED_RESAMPLE_FORCE_44100 2
 
-jlong init(JNIEnv * env, jobject nativeBridge, jboolean seekAnyFrame)
-{
+jlong init(JNIEnv * env, jobject nativeBridge, jboolean seekAnyFrame) {
 	Player * player = createPlayer();
 	player->seekAnyFrame = !!seekAnyFrame;
 	player->nativeBridge = (*env)->NewGlobalRef(env, nativeBridge);
@@ -1178,8 +1192,7 @@ jlong init(JNIEnv * env, jobject nativeBridge, jboolean seekAnyFrame)
 	uint8_t * contextBuffer = av_malloc(contextBufferSize);
 	AVIOContext * ioContext = avio_alloc_context(contextBuffer, contextBufferSize, 0, player,
 			&bufferReadData, NULL, &bufferSeekData);
-	if (ioContext == NULL)
-	{
+	if (ioContext == NULL) {
 		av_free(contextBuffer);
 		player->errorCode = ERROR_LOAD_FORMAT;
 		return jlongCast(player);
@@ -1188,27 +1201,26 @@ jlong init(JNIEnv * env, jobject nativeBridge, jboolean seekAnyFrame)
 	AVFormatContext * formatContext = avformat_alloc_context();
 	formatContext->pb = ioContext;
 	int result = avformat_open_input(&formatContext, "", NULL, NULL);
-	if (result != 0)
-	{
+	if (result != 0) {
 		player->errorCode = ERROR_LOAD_FORMAT;
 		return jlongCast(player);
 	}
 	player->formatContext = formatContext;
-	if (avformat_find_stream_info(formatContext, NULL) < 0)
-	{
+	if (avformat_find_stream_info(formatContext, NULL) < 0) {
 		player->errorCode = ERROR_FIND_STREAM_INFO;
 		return jlongCast(player);
 	}
 	int audioStreamIndex = UNDEFINED;
 	int videoStreamIndex = UNDEFINED;
-	for (int i = 0; i < formatContext->nb_streams; i++)
-	{
+	for (int i = 0; i < formatContext->nb_streams; i++) {
 		int codecType = formatContext->streams[i]->codec->codec_type;
-		if (audioStreamIndex == UNDEFINED && codecType == AVMEDIA_TYPE_AUDIO) audioStreamIndex = i;
-		else if (videoStreamIndex == UNDEFINED && codecType == AVMEDIA_TYPE_VIDEO) videoStreamIndex = i;
+		if (audioStreamIndex == UNDEFINED && codecType == AVMEDIA_TYPE_AUDIO) {
+			audioStreamIndex = i;
+		} else if (videoStreamIndex == UNDEFINED && codecType == AVMEDIA_TYPE_VIDEO) {
+			videoStreamIndex = i;
+		}
 	}
-	if (videoStreamIndex == UNDEFINED)
-	{
+	if (videoStreamIndex == UNDEFINED) {
 		player->errorCode = ERROR_FIND_STREAM;
 		return jlongCast(player);
 	}
@@ -1218,28 +1230,23 @@ jlong init(JNIEnv * env, jobject nativeBridge, jboolean seekAnyFrame)
 	AVStream * videoStream = videoStreamIndex != UNDEFINED ? formatContext->streams[videoStreamIndex] : NULL;
 	AVCodec * audioCodec = audioStream != NULL ? avcodec_find_decoder(audioStream->codec->codec_id) : NULL;
 	AVCodec * videoCodec = videoStream != NULL ? avcodec_find_decoder(videoStream->codec->codec_id) : NULL;
-	if (videoCodec == NULL)
-	{
+	if (videoCodec == NULL) {
 		player->errorCode = ERROR_FIND_CODEC;
 		return jlongCast(player);
 	}
-	if (audioCodec != NULL && avcodec_open2(audioStream->codec, audioCodec, NULL) < 0)
-	{
+	if (audioCodec != NULL && avcodec_open2(audioStream->codec, audioCodec, NULL) < 0) {
 		player->errorCode = ERROR_OPEN_CODEC;
 		return jlongCast(player);
 	}
-	if (videoCodec != NULL && avcodec_open2(videoStream->codec, videoCodec, NULL) < 0)
-	{
+	if (videoCodec != NULL && avcodec_open2(videoStream->codec, videoCodec, NULL) < 0) {
 		player->errorCode = ERROR_OPEN_CODEC;
 		return jlongCast(player);
 	}
-	if (audioStream != NULL)
-	{
+	if (audioStream != NULL) {
 		SLresult result;
 		int success = 0;
 		int channels = audioStream->codec->channels;
-		if (channels != 1 && channels != 2)
-		{
+		if (channels != 1 && channels != 2) {
 			channels = 2;
 			player->resampleChannels = AV_CH_FRONT_LEFT | AV_CH_FRONT_RIGHT;
 		}
@@ -1247,9 +1254,13 @@ jlong init(JNIEnv * env, jobject nativeBridge, jboolean seekAnyFrame)
 		const SLInterfaceID volumeIds[] = {SL_IID_VOLUME};
 		const SLboolean volumeRequired[] = {SL_BOOLEAN_FALSE};
 		result = (*slEngine)->CreateOutputMix(slEngine, &player->slOutputMix, 1, volumeIds, volumeRequired);
-		if (result != SL_RESULT_SUCCESS) goto HANDLE_SL_INIT_ERROR;
+		if (result != SL_RESULT_SUCCESS) {
+			goto HANDLE_SL_INIT_ERROR;
+		}
 		result = (*player->slOutputMix)->Realize(player->slOutputMix, SL_BOOLEAN_FALSE);
-		if (result != SL_RESULT_SUCCESS) goto HANDLE_SL_INIT_ERROR;
+		if (result != SL_RESULT_SUCCESS) {
+			goto HANDLE_SL_INIT_ERROR;
+		}
 		SLDataLocator_AndroidSimpleBufferQueue locatorQueue = {SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, 2};
 		SLDataFormat_PCM formatPCM = {SL_DATAFORMAT_PCM, channels, 0, SL_PCMSAMPLEFORMAT_FIXED_16,
 				SL_PCMSAMPLEFORMAT_FIXED_16, channelMask, SL_BYTEORDER_LITTLEENDIAN};
@@ -1261,8 +1272,7 @@ jlong init(JNIEnv * env, jobject nativeBridge, jboolean seekAnyFrame)
 		int needResampleSR = NEED_RESAMPLE_NO;
 		int slSampleRate = 0;
 		int sampleRate = audioStream->codec->sample_rate;
-		switch (sampleRate)
-		{
+		switch (sampleRate) {
 			case 8000: slSampleRate = SL_SAMPLINGRATE_8; break;
 			case 11025: slSampleRate = SL_SAMPLINGRATE_11_025; break;
 			case 12000: slSampleRate = SL_SAMPLINGRATE_12; break;
@@ -1278,16 +1288,12 @@ jlong init(JNIEnv * env, jobject nativeBridge, jboolean seekAnyFrame)
 			case 192000: slSampleRate = SL_SAMPLINGRATE_192; break;
 			default: needResampleSR = NEED_RESAMPLE_MAY_48000;
 		}
-		while (1)
-		{
+		while (1) {
 			int mayRepeat = 1;
-			if (needResampleSR == NEED_RESAMPLE_MAY_48000 && sampleRate % 48000 == 0)
-			{
+			if (needResampleSR == NEED_RESAMPLE_MAY_48000 && sampleRate % 48000 == 0) {
 				slSampleRate = SL_SAMPLINGRATE_48;
 				player->resampleSampleRate = 48000;
-			}
-			else if (needResampleSR == NEED_RESAMPLE_MAY_48000 || needResampleSR == NEED_RESAMPLE_FORCE_44100)
-			{
+			} else if (needResampleSR == NEED_RESAMPLE_MAY_48000 || needResampleSR == NEED_RESAMPLE_FORCE_44100) {
 				slSampleRate = SL_SAMPLINGRATE_44_1;
 				player->resampleSampleRate = 44100;
 				mayRepeat = 0;
@@ -1295,28 +1301,42 @@ jlong init(JNIEnv * env, jobject nativeBridge, jboolean seekAnyFrame)
 			formatPCM.samplesPerSec = slSampleRate;
 			result = (*slEngine)->CreateAudioPlayer(slEngine, &player->slPlayer, &dataSource, &dataSink, 1, queueIds,
 					queueRequired);
-			if (result == SL_RESULT_CONTENT_UNSUPPORTED && mayRepeat)
-			{
-				if (needResampleSR == NEED_RESAMPLE_NO) needResampleSR = NEED_RESAMPLE_MAY_48000;
-				else if (needResampleSR == NEED_RESAMPLE_MAY_48000) needResampleSR = NEED_RESAMPLE_FORCE_44100;
+			if (result == SL_RESULT_CONTENT_UNSUPPORTED && mayRepeat) {
+				if (needResampleSR == NEED_RESAMPLE_NO) {
+					needResampleSR = NEED_RESAMPLE_MAY_48000;
+				} else if (needResampleSR == NEED_RESAMPLE_MAY_48000) {
+					needResampleSR = NEED_RESAMPLE_FORCE_44100;
+				}
+			} else {
+				break;
 			}
-			else break;
 		}
-		if (result != SL_RESULT_SUCCESS) goto HANDLE_SL_INIT_ERROR;
+		if (result != SL_RESULT_SUCCESS) {
+			goto HANDLE_SL_INIT_ERROR;
+		}
 		result = (*player->slPlayer)->Realize(player->slPlayer, SL_BOOLEAN_FALSE);
-		if (result != SL_RESULT_SUCCESS) goto HANDLE_SL_INIT_ERROR;
+		if (result != SL_RESULT_SUCCESS) {
+			goto HANDLE_SL_INIT_ERROR;
+		}
 		result = (*player->slPlayer)->GetInterface(player->slPlayer, SL_IID_BUFFERQUEUE, &player->slQueue);
-		if (result != SL_RESULT_SUCCESS) goto HANDLE_SL_INIT_ERROR;
+		if (result != SL_RESULT_SUCCESS) {
+			goto HANDLE_SL_INIT_ERROR;
+		}
 		result = (*player->slPlayer)->GetInterface(player->slPlayer, SL_IID_PLAY, &player->slPlay);
-		if (result != SL_RESULT_SUCCESS) goto HANDLE_SL_INIT_ERROR;
+		if (result != SL_RESULT_SUCCESS) {
+			goto HANDLE_SL_INIT_ERROR;
+		}
 		result = (*player->slQueue)->RegisterCallback(player->slQueue, audioPlayerCallback, player);
-		if (result != SL_RESULT_SUCCESS) goto HANDLE_SL_INIT_ERROR;
+		if (result != SL_RESULT_SUCCESS) {
+			goto HANDLE_SL_INIT_ERROR;
+		}
 		result = (*player->slPlay)->SetPlayState(player->slPlay, SL_PLAYSTATE_PLAYING);
-		if (result != SL_RESULT_SUCCESS) goto HANDLE_SL_INIT_ERROR;
+		if (result != SL_RESULT_SUCCESS) {
+			goto HANDLE_SL_INIT_ERROR;
+		}
 		success = 1;
 		HANDLE_SL_INIT_ERROR:
-		if (!success)
-		{
+		if (!success) {
 			avcodec_close(audioStream->codec);
 			audioStreamIndex = UNDEFINED;
 			player->audioStreamIndex = UNDEFINED;
@@ -1324,31 +1344,26 @@ jlong init(JNIEnv * env, jobject nativeBridge, jboolean seekAnyFrame)
 			audioCodec = NULL;
 		}
 	}
-	if (videoStream != NULL && pthread_create(&player->drawThread, NULL, &performDraw, player) != 0)
-	{
+	if (videoStream != NULL && pthread_create(&player->drawThread, NULL, &performDraw, player) != 0) {
 		player->errorCode = ERROR_START_THREAD;
 		return jlongCast(player);
 	}
-	if (audioStream != NULL && pthread_create(&player->decodeAudioThread, NULL, &performDecodeAudio, player) != 0)
-	{
+	if (audioStream != NULL && pthread_create(&player->decodeAudioThread, NULL, &performDecodeAudio, player) != 0) {
 		player->errorCode = ERROR_START_THREAD;
 		return jlongCast(player);
 	}
-	if (videoStream != NULL && pthread_create(&player->decodeVideoThread, NULL, &performDecodeVideo, player) != 0)
-	{
+	if (videoStream != NULL && pthread_create(&player->decodeVideoThread, NULL, &performDecodeVideo, player) != 0) {
 		player->errorCode = ERROR_START_THREAD;
 		return jlongCast(player);
 	}
-	if (pthread_create(&player->decodePacketsThread, NULL, &performDecodePackets, player) != 0)
-	{
+	if (pthread_create(&player->decodePacketsThread, NULL, &performDecodePackets, player) != 0) {
 		player->errorCode = ERROR_START_THREAD;
 		return jlongCast(player);
 	}
 	return jlongCast(player);
 }
 
-void destroy(JNIEnv * env, jlong pointer)
-{
+void destroy(JNIEnv * env, jlong pointer) {
 	Player * player = pointerCast(pointer);
 	player->interrupt = 1;
 	blockingQueueInterrupt(&player->audioPacketQueue);
@@ -1381,38 +1396,46 @@ void destroy(JNIEnv * env, jlong pointer)
 	blockingQueueDestroy(&player->audioPacketQueue, packetQueueFreeCallback);
 	blockingQueueDestroy(&player->videoPacketQueue, packetQueueFreeCallback);
 	blockingQueueDestroy(&player->audioBufferQueue, audioBufferQueueFreeCallback);
-	if (player->videoBufferQueue != NULL)
-	{
+	if (player->videoBufferQueue != NULL) {
 		bufferQueueDestroy(player->videoBufferQueue, videoBufferQueueFreeCallback);
 		free(player->videoBufferQueue);
 		free(player->videoLastBuffer);
 	}
 
-	if (player->slPlayer != NULL) (*player->slPlayer)->Destroy(player->slPlayer);
-	if (player->slOutputMix != NULL) (*player->slOutputMix)->Destroy(player->slOutputMix);
-	if (player->audioStreamIndex != UNDEFINED) avcodec_close(AUDIO_STREAM->codec);
-	if (player->videoStreamIndex != UNDEFINED) avcodec_close(VIDEO_STREAM->codec);
-	if (player->formatContext != NULL) avformat_close_input(&player->formatContext);
-	if (player->ioContext != NULL)
-	{
+	if (player->slPlayer != NULL) {
+		(*player->slPlayer)->Destroy(player->slPlayer);
+	}
+	if (player->slOutputMix != NULL) {
+		(*player->slOutputMix)->Destroy(player->slOutputMix);
+	}
+	if (player->audioStreamIndex != UNDEFINED) {
+		avcodec_close(AUDIO_STREAM->codec);
+	}
+	if (player->videoStreamIndex != UNDEFINED) {
+		avcodec_close(VIDEO_STREAM->codec);
+	}
+	if (player->formatContext != NULL) {
+		avformat_close_input(&player->formatContext);
+	}
+	if (player->ioContext != NULL) {
 		av_free(player->ioContext->buffer);
 		av_free(player->ioContext);
 	}
-	if (player->audioBuffer != NULL) free(player->audioBuffer);
+	if (player->audioBuffer != NULL) {
+		free(player->audioBuffer);
+	}
 	updatePlayerSurface(env, player, NULL, 0);
 	sparceArrayDestroyEach(&player->bridges, free(data));
 	(*env)->DeleteGlobalRef(env, player->nativeBridge);
 	free(player);
 }
 
-jint getErrorCode(JNIEnv * env, jlong pointer)
-{
+jint getErrorCode(JNIEnv * env, jlong pointer) {
 	Player * player = pointerCast(pointer);
 	return player->errorCode;
 }
 
-void getSummary(JNIEnv * env, jlong pointer, jintArray output)
-{
+void getSummary(JNIEnv * env, jlong pointer, jintArray output) {
 	Player * player = pointerCast(pointer);
 	jint result[3];
 	AVStream * stream = VIDEO_STREAM;
@@ -1422,23 +1445,19 @@ void getSummary(JNIEnv * env, jlong pointer, jintArray output)
 	(*env)->SetIntArrayRegion(env, output, 0, 3, result);
 }
 
-jlong getDuration(JNIEnv * env, jlong pointer)
-{
+jlong getDuration(JNIEnv * env, jlong pointer) {
 	Player * player = pointerCast(pointer);
 	return max64(player->formatContext->duration / 1000, 0);
 }
 
-jlong getPosition(JNIEnv * env, jlong pointer)
-{
+jlong getPosition(JNIEnv * env, jlong pointer) {
 	Player * player = pointerCast(pointer);
 	return max64(calculatePosition(player, 0), 0);
 }
 
-void setPosition(JNIEnv * env, jlong pointer, jlong position)
-{
+void setPosition(JNIEnv * env, jlong pointer, jlong position) {
 	Player * player = pointerCast(pointer);
-	if (position >= 0)
-	{
+	if (position >= 0) {
 		// Leave the call below even without variable declaration to init a bridge here
 		Bridge * bridge = obtainBridge(player, env);
 		pthread_mutex_lock(&player->playFinishMutex);
@@ -1453,51 +1472,63 @@ void setPosition(JNIEnv * env, jlong pointer, jlong position)
 		blockingQueueClear(&player->videoPacketQueue, packetQueueFreeCallback);
 		blockingQueueClear(&player->audioBufferQueue, audioBufferQueueFreeCallback);
 		audioBufferQueueFreeCallback(player->audioBuffer);
-		if (player->slQueue != NULL)
-		{
+		if (player->slQueue != NULL) {
 			(*player->slQueue)->Clear(player->slQueue);
 			player->audioBufferNeedEnqueueAfterDecode = 1;
 		}
 		player->audioBuffer = NULL;
-		if (player->videoBufferQueue != NULL) bufferQueueClear(player->videoBufferQueue, videoBufferQueueFreeCallback);
-		if (player->audioStreamIndex != UNDEFINED) avcodec_flush_buffers(AUDIO_STREAM->codec);
-		if (player->videoStreamIndex != UNDEFINED) avcodec_flush_buffers(VIDEO_STREAM->codec);
-		if (player->seekAnyFrame)
-		{
+		if (player->videoBufferQueue != NULL) {
+			bufferQueueClear(player->videoBufferQueue, videoBufferQueueFreeCallback);
+		}
+		if (player->audioStreamIndex != UNDEFINED) {
+			avcodec_flush_buffers(AUDIO_STREAM->codec);
+		}
+		if (player->videoStreamIndex != UNDEFINED) {
+			avcodec_flush_buffers(VIDEO_STREAM->codec);
+		}
+		if (player->seekAnyFrame) {
 			int64_t audioPosition = player->audioStreamIndex != UNDEFINED ? -1 : position;
 			int64_t videoPosition = player->videoStreamIndex != UNDEFINED ? -1 : position;
 			AVPacket packet;
-			for (int i = 1; audioPosition == -1 || videoPosition == -1; i++)
-			{
+			for (int i = 1; audioPosition == -1 || videoPosition == -1; i++) {
 				int64_t seekPosition = max64(position - i * i * 1000, 0);
 				int64_t maxPosition = max64(position - (i - 1) * (i - 1) * 1000, 0);
 				av_seek_frame(player->formatContext, -1, seekPosition * 1000, AVSEEK_FLAG_BACKWARD | AVSEEK_FLAG_ANY);
-				while (1)
-				{
-					if (av_read_frame(player->formatContext, &packet) < 0) break;
-					if (packet.pts != AV_NOPTS_VALUE)
-					{
+				while (1) {
+					if (av_read_frame(player->formatContext, &packet) < 0) {
+						break;
+					}
+					if (packet.pts != AV_NOPTS_VALUE) {
 						int64_t * outPosition = NULL;
-						if (packet.stream_index == player->audioStreamIndex) outPosition = &audioPosition;
-						else if (packet.stream_index == player->videoStreamIndex) outPosition = &videoPosition;
-						if (outPosition != NULL)
-						{
+						if (packet.stream_index == player->audioStreamIndex) {
+							outPosition = &audioPosition;
+						} else if (packet.stream_index == player->videoStreamIndex) {
+							outPosition = &videoPosition;
+						}
+						if (outPosition != NULL) {
 							AVRational timeBase = player->formatContext->streams[packet.stream_index]->time_base;
 							int64_t timestamp = packet.pts * 1000 * timeBase.num / timeBase.den;
-							if (timestamp > maxPosition)
-							{
+							if (timestamp > maxPosition) {
 								av_packet_unref(&packet);
 								break;
 							}
-							if (timestamp > *outPosition) *outPosition = timestamp;
+							if (timestamp > *outPosition) {
+								*outPosition = timestamp;
+							}
 						}
 					}
 					av_packet_unref(&packet);
 				}
-				if (seekPosition <= 0) break;
+				if (seekPosition <= 0) {
+					break;
+				}
 			}
-			if (audioPosition == -1) audioPosition = position;
-			if (videoPosition == -1) videoPosition = position;
+			if (audioPosition == -1) {
+				audioPosition = position;
+			}
+			if (videoPosition == -1) {
+				videoPosition = position;
+			}
 			position = min64(audioPosition, videoPosition);
 		}
 		logp("seek %lld", position);
@@ -1517,7 +1548,9 @@ void setPosition(JNIEnv * env, jlong pointer, jlong position)
 		player->drawIgnoreWorkFrame = 1;
 		player->lastDrawTimes[0] = 0;
 		player->lastDrawTimes[1] = 0;
-		if (player->videoStreamIndex != UNDEFINED) sendBridgeMessage(BRIDGE_MESSAGE_START_SEEKING);
+		if (player->videoStreamIndex != UNDEFINED) {
+			sendBridgeMessage(BRIDGE_MESSAGE_START_SEEKING);
+		}
 		pthread_cond_broadcast(&player->playFinishCond);
 		pthread_cond_broadcast(&player->decodePacketsFlowCond);
 		pthread_cond_broadcast(&player->audioSleepCond);
@@ -1535,26 +1568,25 @@ void setPosition(JNIEnv * env, jlong pointer, jlong position)
 	}
 }
 
-void setPlaying(JNIEnv * env, jlong pointer, jboolean playing)
-{
+void setPlaying(JNIEnv * env, jlong pointer, jboolean playing) {
 	Player * player = pointerCast(pointer);
 	playing = !!playing;
-	if (player->playing != playing)
-	{
+	if (player->playing != playing) {
 		logp("switch playing %d", playing);
 		pthread_mutex_lock(&player->playFinishMutex);
-		if (playing) updateAudioPositionSurrogate(player, player->pausedPosition, 1);
-		else player->pausedPosition = calculatePosition(player, 1);
+		if (playing) {
+			updateAudioPositionSurrogate(player, player->pausedPosition, 1);
+		} else {
+			player->pausedPosition = calculatePosition(player, 1);
+		}
 		player->playing = playing;
 		pthread_cond_broadcast(&player->playFinishCond);
 		pthread_mutex_unlock(&player->playFinishMutex);
-		if (player->audioStreamIndex != UNDEFINED)
-		{
+		if (player->audioStreamIndex != UNDEFINED) {
 			pthread_mutex_lock(&player->audioSleepBufferMutex);
 			(*player->slPlay)->SetPlayState(player->slPlay, playing ? SL_PLAYSTATE_PLAYING : SL_PLAYSTATE_PAUSED);
 			if (playing && player->audioBufferNeedEnqueueAfterDecode
-					&& blockingQueueCount(&player->audioBufferQueue) > 0)
-			{
+					&& blockingQueueCount(&player->audioBufferQueue) > 0) {
 				// Queue count checked to free from obligation to handle audio finish flag
 				enqueueAudioBuffer(player);
 			}
@@ -1563,26 +1595,22 @@ void setPlaying(JNIEnv * env, jlong pointer, jboolean playing)
 	}
 }
 
-void setSurface(JNIEnv * env, jlong pointer, jobject surface)
-{
+void setSurface(JNIEnv * env, jlong pointer, jobject surface) {
 	Player * player = pointerCast(pointer);
 	updatePlayerSurface(env, player, surface, 1);
 }
 
-jintArray getCurrentFrame(JNIEnv * env, jlong pointer)
-{
+jintArray getCurrentFrame(JNIEnv * env, jlong pointer) {
 	Player * player = pointerCast(pointer);
 	pthread_mutex_lock(&player->videoSleepDrawMutex);
 	uint8_t * buffer = player->videoLastBuffer;
 	int width = player->videoLastBufferWidth;
 	int height = player->videoLastBufferHeight;
 	jintArray result = 0;
-	if (buffer != 0 && width > 0 && height > 0)
-	{
+	if (buffer != 0 && width > 0 && height > 0) {
 		int size = 4 * width * height;
 		if (player->videoFormat != AV_PIX_FMT_RGB565LE && player->videoFormat != AV_PIX_FMT_YUV420P
-				&& player->videoFormat != AV_PIX_FMT_RGBA)
-		{
+				&& player->videoFormat != AV_PIX_FMT_RGBA) {
 			goto CANCEL;
 		}
 		struct SwsContext * scaleContext = sws_getContext(width, height, player->videoFormat, width, height,
@@ -1590,32 +1618,24 @@ jintArray getCurrentFrame(JNIEnv * env, jlong pointer)
 		uint8_t * newBuffer = malloc(size);
 		uint8_t * newData[4] = {newBuffer, 0, 0, 0};
 		int newLinesize[4] = {4 * width, 0, 0, 0};
-		if (player->videoFormat == AV_PIX_FMT_RGBA)
-		{
-			if (player->videoLastBufferSize < 4 * width * height)
-			{
+		if (player->videoFormat == AV_PIX_FMT_RGBA) {
+			if (player->videoLastBufferSize < 4 * width * height) {
 				sws_freeContext(scaleContext);
 				goto CANCEL;
 			}
 			const uint8_t * const oldData[4] = {buffer, 0, 0, 0};
 			int oldLinesize[4] = {4 * width, 0, 0, 0};
 			sws_scale(scaleContext, oldData, oldLinesize, 0, height, newData, newLinesize);
-		}
-		else if (player->videoFormat == AV_PIX_FMT_RGB565LE)
-		{
-			if (player->videoLastBufferSize < 2 * width * height)
-			{
+		} else if (player->videoFormat == AV_PIX_FMT_RGB565LE) {
+			if (player->videoLastBufferSize < 2 * width * height) {
 				sws_freeContext(scaleContext);
 				goto CANCEL;
 			}
 			const uint8_t * const oldData[4] = {buffer, 0, 0, 0};
 			int oldLinesize[4] = {2 * width, 0, 0, 0};
 			sws_scale(scaleContext, oldData, oldLinesize, 0, height, newData, newLinesize);
-		}
-		else if (player->videoFormat == AV_PIX_FMT_YUV420P)
-		{
-			if (player->videoLastBufferSize < width * height * 3 / 2)
-			{
+		} else if (player->videoFormat == AV_PIX_FMT_YUV420P) {
+			if (player->videoLastBufferSize < width * height * 3 / 2) {
 				sws_freeContext(scaleContext);
 				goto CANCEL;
 			}
@@ -1633,21 +1653,23 @@ jintArray getCurrentFrame(JNIEnv * env, jlong pointer)
 	return result;
 }
 
-jobjectArray getTechnicalInfo(JNIEnv * env, jlong pointer)
-{
+jobjectArray getTechnicalInfo(JNIEnv * env, jlong pointer) {
 	char buffer[24];
 	Player * player = pointerCast(pointer);
 	AVStream * audioStream = player->audioStreamIndex != UNDEFINED ? AUDIO_STREAM : NULL;
 	AVStream * videoStream = player->videoStreamIndex != UNDEFINED ? VIDEO_STREAM : NULL;
 	int entries = av_dict_count(player->formatContext->metadata);
-	// Format, width, height, frame rate, pixel format, canvas format, libyuv
-	if (videoStream != NULL) entries += 7;
-	// Format, channels, sample rate
-	if (audioStream != NULL) entries += 3;
+	if (videoStream != NULL) {
+		// Format, width, height, frame rate, pixel format, canvas format, libyuv
+		entries += 7;
+	}
+	if (audioStream != NULL) {
+		// Format, channels, sample rate
+		entries += 3;
+	}
 	jobjectArray result = (*env)->NewObjectArray(env, 2 * entries, (*env)->FindClass(env, "java/lang/String"), NULL);
 	int index = 0;
-	if (videoStream != NULL)
-	{
+	if (videoStream != NULL) {
 		(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env, "video_format"));
 		(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env,
 				videoStream->codec->codec->long_name));
@@ -1666,30 +1688,24 @@ jobjectArray getTechnicalInfo(JNIEnv * env, jlong pointer)
 				pixFmtDesctiptor != NULL ? pixFmtDesctiptor->name : "Unknown"));
 		(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env, "surface_format"));
 		int format = player->videoWindow != 0 ? ANativeWindow_getFormat(player->videoWindow) : -1;
-		switch (format)
-		{
-			case WINDOW_FORMAT_RGBA_8888:
-			{
+		switch (format) {
+			case WINDOW_FORMAT_RGBA_8888: {
 				(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env, "RGBA 8888"));
 				break;
 			}
-			case WINDOW_FORMAT_RGBX_8888:
-			{
+			case WINDOW_FORMAT_RGBX_8888: {
 				(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env, "RGBX 8888"));
 				break;
 			}
-			case WINDOW_FORMAT_RGB_565:
-			{
+			case WINDOW_FORMAT_RGB_565: {
 				(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env, "RGB 565"));
 				break;
 			}
-			case WINDOW_FORMAT_YV12:
-			{
+			case WINDOW_FORMAT_YV12: {
 				(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env, "YV12"));
 				break;
 			}
-			default:
-			{
+			default: {
 				(*env)->SetObjectArrayElement(env, result, index++, NULL);
 				break;
 			}
@@ -1698,8 +1714,7 @@ jobjectArray getTechnicalInfo(JNIEnv * env, jlong pointer)
 		(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env, "use_libyuv"));
 		(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env, buffer));
 	}
-	if (audioStream != NULL)
-	{
+	if (audioStream != NULL) {
 		(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env, "audio_format"));
 		(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env,
 				audioStream->codec->codec->long_name));
@@ -1711,16 +1726,14 @@ jobjectArray getTechnicalInfo(JNIEnv * env, jlong pointer)
 		(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env, buffer));
 	}
 	AVDictionaryEntry * entry = NULL;
-	while ((entry = av_dict_get(player->formatContext->metadata, "", entry, AV_DICT_IGNORE_SUFFIX)) != NULL)
-	{
+	while ((entry = av_dict_get(player->formatContext->metadata, "", entry, AV_DICT_IGNORE_SUFFIX)) != NULL) {
 		(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env, entry->key));
 		(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env, entry->value));
 	}
 	return result;
 }
 
-void initLibs(JavaVM * javaVM)
-{
+void initLibs(JavaVM * javaVM) {
 	loadJavaVM = javaVM;
 	av_register_all();
 	SLObjectItf engineObject;

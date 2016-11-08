@@ -26,49 +26,43 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.widget.ClickableToast;
 
-public class ToastUtils implements Runnable
-{
+public class ToastUtils implements Runnable {
 	private static Toast sToast;
 
 	@SuppressLint("ShowToast")
-	private static void makeNewToast(Context context)
-	{
-		synchronized (ToastUtils.class)
-		{
-			if (sToast == null) sToast = Toast.makeText(context, "", Toast.LENGTH_LONG);
+	private static void makeNewToast(Context context) {
+		synchronized (ToastUtils.class) {
+			if (sToast == null) {
+				sToast = Toast.makeText(context, "", Toast.LENGTH_LONG);
+			}
 			ToastUtils.class.notifyAll();
 		}
 	}
 
 	private final Context mContext;
 
-	private ToastUtils(Context context)
-	{
+	private ToastUtils(Context context) {
 		mContext = context;
 	}
 
 	@Override
-	public void run()
-	{
+	public void run() {
 		makeNewToast(mContext);
 	}
 
-	public static void show(Context context, String message)
-	{
-		synchronized (ToastUtils.class)
-		{
+	public static void show(Context context, String message) {
+		synchronized (ToastUtils.class) {
 			ClickableToast.cancel(context);
-			if (sToast == null)
-			{
-				if (ConcurrentUtils.isMain()) makeNewToast(context.getApplicationContext()); else
-				{
+			if (sToast == null) {
+				if (ConcurrentUtils.isMain()) {
+					makeNewToast(context.getApplicationContext());
+				} else {
 					new Handler(Looper.getMainLooper()).post(new ToastUtils(context.getApplicationContext()));
-					try
-					{
-						while (sToast == null) ToastUtils.class.wait();
-					}
-					catch (InterruptedException e)
-					{
+					try {
+						while (sToast == null) {
+							ToastUtils.class.wait();
+						}
+					} catch (InterruptedException e) {
 						Thread.currentThread().interrupt();
 						return;
 					}
@@ -79,22 +73,21 @@ public class ToastUtils implements Runnable
 		}
 	}
 
-	public static void show(Context context, int resId)
-	{
+	public static void show(Context context, int resId) {
 		show(context, context.getString(resId != 0 ? resId : R.string.message_unknown_error));
 	}
 
-	public static void show(Context context, ErrorItem errorItem)
-	{
-		if (errorItem != null) show(context, errorItem.toString()); else show(context, 0);
+	public static void show(Context context, ErrorItem errorItem) {
+		if (errorItem != null) {
+			show(context, errorItem.toString());
+		} else {
+			show(context, 0);
+		}
 	}
 
-	public static void cancel()
-	{
-		synchronized (ToastUtils.class)
-		{
-			if (sToast != null)
-			{
+	public static void cancel() {
+		synchronized (ToastUtils.class) {
+			if (sToast != null) {
 				sToast.cancel();
 				// Toast can't be recycled, so I reset reference and create new toast later
 				sToast = null;

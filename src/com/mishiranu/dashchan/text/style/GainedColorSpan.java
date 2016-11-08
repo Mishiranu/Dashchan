@@ -23,30 +23,27 @@ import android.text.style.UpdateAppearance;
 import com.mishiranu.dashchan.graphics.ColorScheme;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 
-public class GainedColorSpan extends CharacterStyle implements UpdateAppearance, ColorScheme.Span
-{
+public class GainedColorSpan extends CharacterStyle implements UpdateAppearance, ColorScheme.Span {
 	private final int mForegroundColor;
 	private float mColorGainFactor;
 
-	public GainedColorSpan(int foregroundColor)
-	{
+	public GainedColorSpan(int foregroundColor) {
 		mForegroundColor = foregroundColor;
 	}
 
 	@Override
-	public void applyColorScheme(ColorScheme colorScheme)
-	{
-		if (colorScheme != null) mColorGainFactor = colorScheme.colorGainFactor;
+	public void applyColorScheme(ColorScheme colorScheme) {
+		if (colorScheme != null) {
+			mColorGainFactor = colorScheme.colorGainFactor;
+		}
 	}
 
-	public int getForegroundColor()
-	{
+	public int getForegroundColor() {
 		return mForegroundColor;
 	}
 
 	@Override
-	public void updateDrawState(TextPaint paint)
-	{
+	public void updateDrawState(TextPaint paint) {
 		paint.setColor(GraphicsUtils.modifyColorGain(mForegroundColor, mColorGainFactor));
 	}
 }

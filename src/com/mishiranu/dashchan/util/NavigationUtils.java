@@ -65,146 +65,127 @@ import com.mishiranu.dashchan.ui.WebBrowserActivity;
 import com.mishiranu.dashchan.ui.gallery.GalleryActivity;
 import com.mishiranu.dashchan.ui.navigator.NavigatorActivity;
 
-public class NavigationUtils
-{
-	private static Intent obtainMainIntent(Context context, boolean animated, boolean fromCache)
-	{
+public class NavigationUtils {
+	private static Intent obtainMainIntent(Context context, boolean animated, boolean fromCache) {
 		return new Intent().setComponent(new ComponentName(context, NavigatorActivity.class))
 				.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP)
 				.putExtra(C.EXTRA_ANIMATED_TRANSITION, animated).putExtra(C.EXTRA_FROM_CACHE, fromCache);
 	}
 
 	public static Intent obtainThreadsIntent(Context context, String chanName, String boardName, boolean navigateTop,
-			boolean animated, boolean fromCache, boolean launcher)
-	{
+			boolean animated, boolean fromCache, boolean launcher) {
 		return obtainMainIntent(context, animated, fromCache).putExtra(C.EXTRA_CHAN_NAME, chanName)
 				.putExtra(C.EXTRA_BOARD_NAME, boardName).putExtra(C.EXTRA_NAVIGATE_TOP, navigateTop)
 				.putExtra(C.EXTRA_LAUNCHER, launcher);
 	}
 
 	public static Intent obtainPostsIntent(Context context, String chanName, String boardName, String threadNumber,
-			String postNumber, String threadTitle, boolean animated, boolean fromCache)
-	{
+			String postNumber, String threadTitle, boolean animated, boolean fromCache) {
 		return obtainMainIntent(context, animated, fromCache).putExtra(C.EXTRA_CHAN_NAME, chanName)
 				.putExtra(C.EXTRA_BOARD_NAME, boardName).putExtra(C.EXTRA_THREAD_NUMBER, threadNumber)
 				.putExtra(C.EXTRA_POST_NUMBER, postNumber).putExtra(C.EXTRA_THREAD_TITLE, threadTitle);
 	}
 
 	public static Intent obtainSearchIntent(Context context, String chanName, String boardName, String searchQuery,
-			boolean animated)
-	{
+			boolean animated) {
 		return obtainMainIntent(context, animated, false).putExtra(C.EXTRA_CHAN_NAME, chanName)
 				.putExtra(C.EXTRA_BOARD_NAME, boardName).putExtra(C.EXTRA_SEARCH_QUERY, searchQuery);
 	}
 
 	public static Intent obtainTargetIntent(Context context, String chanName, ChanLocator.NavigationData data,
-			boolean animated, boolean fromCache)
-	{
-		switch (data.target)
-		{
-			case ChanLocator.NavigationData.TARGET_THREADS:
-			{
+			boolean animated, boolean fromCache) {
+		switch (data.target) {
+			case ChanLocator.NavigationData.TARGET_THREADS: {
 				return obtainThreadsIntent(context, chanName, data.boardName, false, animated, fromCache, false);
 			}
-			case ChanLocator.NavigationData.TARGET_POSTS:
-			{
+			case ChanLocator.NavigationData.TARGET_POSTS: {
 				return obtainPostsIntent(context, chanName, data.boardName, data.threadNumber, data.postNumber, null,
 						animated, fromCache);
 			}
-			case ChanLocator.NavigationData.TARGET_SEARCH:
-			{
+			case ChanLocator.NavigationData.TARGET_SEARCH: {
 				return obtainSearchIntent(context, chanName, data.boardName, data.searchQuery, animated);
 			}
-			default:
-			{
+			default: {
 				throw new IllegalStateException();
 			}
 		}
 	}
 
 	public static void handleGalleryUpButtonClick(Activity activity, boolean overrideUpButton,
-			String chanName, GalleryItem galleryItem)
-	{
+			String chanName, GalleryItem galleryItem) {
 		boolean success = false;
-		if (overrideUpButton)
-		{
+		if (overrideUpButton) {
 			String boardName = null, threadNumber = null;
-			if (galleryItem != null)
-			{
+			if (galleryItem != null) {
 				boardName = galleryItem.boardName;
 				threadNumber = galleryItem.threadNumber;
 			}
-			if (threadNumber != null)
-			{
+			if (threadNumber != null) {
 				activity.finish();
 				activity.startActivity(obtainPostsIntent(activity, chanName, boardName, threadNumber,
 						null, null, true, false));
 				success = true;
 			}
 		}
-		if (!success) activity.finish();
+		if (!success) {
+			activity.finish();
+		}
 	}
 
-	public static Activity getActivity(Context context)
-	{
-		while (!(context instanceof Activity) && context instanceof ContextWrapper)
-		{
+	public static Activity getActivity(Context context) {
+		while (!(context instanceof Activity) && context instanceof ContextWrapper) {
 			context = ((ContextWrapper) context).getBaseContext();
 		}
-		if (context instanceof Activity) return (Activity) context;
+		if (context instanceof Activity) {
+			return (Activity) context;
+		}
 		return null;
 	}
 
 	public enum BrowserType {AUTO, INTERNAL, EXTERNAL}
 
-	public static void handleUri(Context context, String chanName, Uri uri, BrowserType browserType)
-	{
-		if (chanName != null) uri = ChanLocator.get(chanName).convert(uri);
+	public static void handleUri(Context context, String chanName, Uri uri, BrowserType browserType) {
+		if (chanName != null) {
+			uri = ChanLocator.get(chanName).convert(uri);
+		}
 		boolean isWeb = ChanLocator.getDefault().isWebScheme(uri);
 		Intent intent;
 		boolean internalBrowser = isWeb && (browserType == BrowserType.INTERNAL || browserType == BrowserType.AUTO &&
 				Preferences.isUseInternalBrowser());
-		if (internalBrowser && browserType != BrowserType.INTERNAL)
-		{
+		if (internalBrowser && browserType != BrowserType.INTERNAL) {
 			ChanManager manager = ChanManager.getInstance();
 			PackageManager packageManager = context.getPackageManager();
 			HashSet<ComponentName> names = new HashSet<>();
 			List<ResolveInfo> infos = packageManager.queryIntentActivities(new Intent(Intent.ACTION_VIEW, uri),
 					PackageManager.MATCH_DEFAULT_ONLY);
-			for (ResolveInfo info : infos)
-			{
+			for (ResolveInfo info : infos) {
 				ActivityInfo activityInfo = info.activityInfo;
 				String packageName = activityInfo.applicationInfo.packageName;
-				if (!manager.isExtensionPackage(packageName))
-				{
+				if (!manager.isExtensionPackage(packageName)) {
 					names.add(new ComponentName(packageName, activityInfo.name));
 				}
 			}
 			infos = packageManager.queryIntentActivities(new Intent(Intent.ACTION_VIEW, Uri.parse("http://google.com")),
 					PackageManager.MATCH_DEFAULT_ONLY);
-			for (ResolveInfo info : infos)
-			{
+			for (ResolveInfo info : infos) {
 				ActivityInfo activityInfo = info.activityInfo;
 				names.remove(new ComponentName(activityInfo.applicationInfo.packageName, activityInfo.name));
 			}
 			internalBrowser = names.size() == 0;
 		}
-		if (internalBrowser)
-		{
+		if (internalBrowser) {
 			intent = new Intent(context, WebBrowserActivity.class).setData(uri);
-			if (getActivity(context) == null) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		}
-		else
-		{
+			if (getActivity(context) == null) {
+				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			}
+		} else {
 			intent = new Intent(Intent.ACTION_VIEW, uri);
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 			intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
 			intent.putExtra(C.EXTRA_FROM_CLIENT, true);
-			if (chanName != null && ChanLocator.get(chanName).safe(false).isAttachmentUri(uri))
-			{
+			if (chanName != null && ChanLocator.get(chanName).safe(false).isAttachmentUri(uri)) {
 				String cloudFlareCookie = CloudFlarePasser.getCookie(chanName);
-				if (cloudFlareCookie != null)
-				{
+				if (cloudFlareCookie != null) {
 					// For MX Player, see https://sites.google.com/site/mxvpen/api
 					String userAgent = AdvancedPreferences.getUserAgent(chanName);
 					String cookie = new CookieBuilder().append(CloudFlarePasser.COOKIE_CLOUDFLARE,
@@ -212,63 +193,55 @@ public class NavigationUtils
 					intent.putExtra("headers", new String[] {"User-Agent", userAgent, "Cookie", cookie});
 				}
 			}
-			if (!isWeb) intent = Intent.createChooser(intent, null);
+			if (!isWeb) {
+				intent = Intent.createChooser(intent, null);
+			}
 		}
-		try
-		{
+		try {
 			context.startActivity(intent);
-		}
-		catch (ActivityNotFoundException e)
-		{
+		} catch (ActivityNotFoundException e) {
 			ToastUtils.show(context, R.string.message_unknown_address);
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			ToastUtils.show(context, e.getMessage());
 		}
 	}
 
-	public static void handleUriInternal(Context context, String chanName, Uri uri, boolean allowExpandedScreen)
-	{
+	public static void handleUriInternal(Context context, String chanName, Uri uri, boolean allowExpandedScreen) {
 		String uriChanName = ChanManager.getInstance().getChanNameByHost(uri.getAuthority());
-		if (uriChanName != null) chanName = uriChanName;
+		if (uriChanName != null) {
+			chanName = uriChanName;
+		}
 		ChanLocator locator = ChanLocator.get(chanName);
 		boolean handled = false;
-		if (chanName != null && locator.safe(false).isAttachmentUri(uri))
-		{
+		if (chanName != null && locator.safe(false).isAttachmentUri(uri)) {
 			Uri internalUri = locator.convert(uri);
 			String fileName = locator.createAttachmentFileName(internalUri);
-			if (locator.isImageUri(internalUri) || locator.isVideoUri(internalUri) && isOpenableVideoPath(fileName))
-			{
+			if (locator.isImageUri(internalUri) || locator.isVideoUri(internalUri) && isOpenableVideoPath(fileName)) {
 				openImageVideo(context, internalUri, allowExpandedScreen);
 				handled = true;
-			}
-			else if (locator.isAudioUri(internalUri))
-			{
+			} else if (locator.isAudioUri(internalUri)) {
 				AudioPlayerService.start(context, chanName, internalUri, fileName);
 				handled = true;
 			}
 		}
-		if (!handled && locator.isWebScheme(uri))
-		{
+		if (!handled && locator.isWebScheme(uri)) {
 			String path = uri.getPath();
-			if (locator.isImageExtension(path) || locator.isVideoExtension(path) && isOpenableVideoPath(path))
-			{
+			if (locator.isImageExtension(path) || locator.isVideoExtension(path) && isOpenableVideoPath(path)) {
 				openImageVideo(context, uri, allowExpandedScreen);
 				handled = true;
 			}
 		}
-		if (!handled) handleUri(context, chanName, uri, BrowserType.AUTO);
+		if (!handled) {
+			handleUri(context, chanName, uri, BrowserType.AUTO);
+		}
 	}
 
 	private static WeakReference<ArrayList<GalleryItem>> sGalleryItems;
 
 	public static void openGallery(Context context, View imageView, String chanName, int imageIndex,
-			GalleryItem.GallerySet gallerySet, boolean allowExpandedScreen, boolean galleryMode)
-	{
+			GalleryItem.GallerySet gallerySet, boolean allowExpandedScreen, boolean galleryMode) {
 		int[] viewPosition = null;
-		if (imageView != null)
-		{
+		if (imageView != null) {
 			int[] location = new int[2];
 			imageView.getLocationOnScreen(location);
 			viewPosition = new int[] {location[0], location[1], imageView.getWidth(), imageView.getHeight()};
@@ -286,8 +259,7 @@ public class NavigationUtils
 		intent.putExtra(C.EXTRA_GALLERY_MODE, galleryMode);
 		intent.putExtra(C.EXTRA_VIEW_POSITION, viewPosition);
 		context.startActivity(intent);
-		synchronized (NavigationUtils.class)
-		{
+		synchronized (NavigationUtils.class) {
 			File file = getSerializedImagesFile(context);
 			file.delete();
 			// Serialize images to load them if process was killed
@@ -297,25 +269,17 @@ public class NavigationUtils
 	}
 
 	@SuppressWarnings("unchecked")
-	public static ArrayList<GalleryItem> obtainImagesProvider(Context context)
-	{
+	public static ArrayList<GalleryItem> obtainImagesProvider(Context context) {
 		ArrayList<GalleryItem> galleryItems = sGalleryItems != null ? sGalleryItems.get() : null;
-		if (galleryItems == null)
-		{
-			synchronized (NavigationUtils.class)
-			{
+		if (galleryItems == null) {
+			synchronized (NavigationUtils.class) {
 				FileInputStream input = null;
-				try
-				{
+				try {
 					input = new FileInputStream(getSerializedImagesFile(context));
 					galleryItems = (ArrayList<GalleryItem>) new ObjectInputStream(input).readObject();
-				}
-				catch (Exception e)
-				{
-
-				}
-				finally
-				{
+				} catch (Exception e) {
+					// Ignore
+				} finally {
 					IOUtils.close(input);
 				}
 			}
@@ -323,103 +287,80 @@ public class NavigationUtils
 		return galleryItems;
 	}
 
-	private static File getSerializedImagesFile(Context context)
-	{
+	private static File getSerializedImagesFile(Context context) {
 		return new File(context.getCacheDir(), "images");
 	}
 
-	private static class SerializeGalleryItems implements Runnable
-	{
+	private static class SerializeGalleryItems implements Runnable {
 		private final ArrayList<GalleryItem> mGalleryItems;
 		private final File mFile;
 
-		public SerializeGalleryItems(ArrayList<GalleryItem> galleryItems, File file)
-		{
+		public SerializeGalleryItems(ArrayList<GalleryItem> galleryItems, File file) {
 			mGalleryItems = galleryItems;
 			mFile = file;
 		}
 
 		@Override
-		public void run()
-		{
-			synchronized (NavigationUtils.class)
-			{
+		public void run() {
+			synchronized (NavigationUtils.class) {
 				FileOutputStream output = null;
-				try
-				{
+				try {
 					output = new FileOutputStream(mFile);
 					new ObjectOutputStream(output).writeObject(mGalleryItems);
-				}
-				catch (Exception e)
-				{
-
-				}
-				finally
-				{
+				} catch (Exception e) {
+					// Ignore
+				} finally {
 					IOUtils.close(output);
 				}
 			}
 		}
 	}
 
-	public static void openImageVideo(Context context, Uri uri, boolean allowExpandedScreen)
-	{
+	public static void openImageVideo(Context context, Uri uri, boolean allowExpandedScreen) {
 		context.startActivity(new Intent(context, GalleryActivity.class).setData(uri)
 				.putExtra(C.EXTRA_ALLOW_EXPANDED_SCREEN, allowExpandedScreen));
 	}
 
-	public static boolean isOpenableVideoPath(String path)
-	{
+	public static boolean isOpenableVideoPath(String path) {
 		return isOpenableVideoExtension(StringUtils.getFileExtension(path));
 	}
 
-	public static boolean isOpenableVideoExtension(String extension)
-	{
+	public static boolean isOpenableVideoExtension(String extension) {
 		return Preferences.isUseVideoPlayer() && VideoPlayer.isLoaded() && "webm".equals(extension);
 	}
 
-	public static void searchImage(Context context, final String chanName, Uri uri)
-	{
+	public static void searchImage(Context context, final String chanName, Uri uri) {
 		ChanLocator locator = ChanLocator.get(chanName);
 		final String imageUriString = locator.convert(uri).toString();
-		new DialogMenu(context, new DialogMenu.Callback()
-		{
+		new DialogMenu(context, new DialogMenu.Callback() {
 			@Override
-			public void onItemClick(Context context, int id, Map<String, Object> extra)
-			{
+			public void onItemClick(Context context, int id, Map<String, Object> extra) {
 				ChanLocator locator = ChanLocator.getDefault();
 				Uri uri;
-				switch (id)
-				{
-					case 0:
-					{
+				switch (id) {
+					case 0: {
 						uri = locator.buildQueryWithHost("www.google.com", "searchbyimage",
 								"image_url", imageUriString);
 						break;
 					}
-					case 1:
-					{
+					case 1: {
 						uri = locator.buildQueryWithHost("yandex.ru", "images/search", "rpt", "imageview",
 								"img_url", imageUriString);
 						break;
 					}
-					case 2:
-					{
+					case 2: {
 						uri = locator.buildQueryWithHost("www.tineye.com", "search", "url", imageUriString);
 						break;
 					}
-					case 3:
-					{
+					case 3: {
 						uri = locator.buildQueryWithHost("saucenao.com", "search.php", "url", imageUriString);
 						break;
 					}
-					case 4:
-					{
+					case 4: {
 						uri = locator.buildQueryWithSchemeHost(false, "iqdb.org", null, "url", imageUriString);
 						break;
 					}
-					default:
-					{
+					default: {
 						return;
 					}
 				}
@@ -434,15 +375,13 @@ public class NavigationUtils
 		.show();
 	}
 
-	public static void share(Context context, String subject, String text, Uri uri)
-	{
+	public static void share(Context context, String subject, String text, Uri uri) {
 		Intent intent = new Intent(Intent.ACTION_SEND);
 		intent.setType("text/plain");
 		intent.putExtra(Intent.EXTRA_SUBJECT, subject);
 		intent.putExtra(Intent.EXTRA_TEXT, text);
 		intent = Intent.createChooser(intent, null);
-		if (uri != null)
-		{
+		if (uri != null) {
 			LabeledIntent viewIntent = new LabeledIntent(new Intent(context, UriHandlerActivity.class)
 					.setAction(Intent.ACTION_VIEW).setData(uri).putExtra(C.EXTRA_EXTERNAL_BROWSER, true),
 					context.getPackageName(), R.string.action_browser, android.R.mipmap.sym_def_app_icon);
@@ -451,16 +390,13 @@ public class NavigationUtils
 		context.startActivity(intent);
 	}
 
-	public static void share(Context context, Uri uri)
-	{
+	public static void share(Context context, Uri uri) {
 		share(context, uri.toString(), uri.toString(), uri);
 	}
 
-	public static void shareFile(Context context, File file, String fileName)
-	{
+	public static void shareFile(Context context, File file, String fileName) {
 		Pair<File, String> data = CacheManager.getInstance().prepareFileForShare(file, fileName);
-		if (data == null)
-		{
+		if (data == null) {
 			ToastUtils.show(context, R.string.message_cache_unavailable);
 			return;
 		}
@@ -470,14 +406,10 @@ public class NavigationUtils
 		context.startActivity(Intent.createChooser(intent, null));
 	}
 
-	public static void restartApplication(Context context)
-	{
-		try
-		{
+	public static void restartApplication(Context context) {
+		try {
 			CacheManager.getInstance().waitSerializationFinished();
-		}
-		catch (InterruptedException e)
-		{
+		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 			return;
 		}

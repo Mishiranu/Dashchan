@@ -44,8 +44,7 @@ import com.mishiranu.dashchan.ui.StateActivity;
 import com.mishiranu.dashchan.util.ResourceUtils;
 
 public class AudioPlayerActivity extends StateActivity implements Runnable, SeekBar.OnSeekBarChangeListener,
-		DialogInterface.OnCancelListener, DialogInterface.OnClickListener, View.OnClickListener, ServiceConnection
-{
+		DialogInterface.OnCancelListener, DialogInterface.OnClickListener, View.OnClickListener, ServiceConnection {
 	private Context mContext;
 	private TextView mTextView;
 	private SeekBar mSeekBar;
@@ -57,8 +56,7 @@ public class AudioPlayerActivity extends StateActivity implements Runnable, Seek
 	private AudioPlayerService.Binder mAudioPlayerBinder;
 
 	@Override
-	protected void onCreate(Bundle savedInstanceState)
-	{
+	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mContext = new ContextThemeWrapper(this, Preferences.getThemeResource());
 		setVolumeControlStream(AudioManager.STREAM_MUSIC);
@@ -97,18 +95,13 @@ public class AudioPlayerActivity extends StateActivity implements Runnable, Seek
 		bindService(new Intent(this, AudioPlayerService.class), this, 0);
 	}
 
-	private final BroadcastReceiver mAudioPlayerReceiver = new BroadcastReceiver()
-	{
+	private final BroadcastReceiver mAudioPlayerReceiver = new BroadcastReceiver() {
 		@Override
-		public void onReceive(Context context, Intent intent)
-		{
+		public void onReceive(Context context, Intent intent) {
 			String action = intent.getAction();
-			if (AudioPlayerService.ACTION_TOGGLE.equals(action))
-			{
+			if (AudioPlayerService.ACTION_TOGGLE.equals(action)) {
 				setPlayState(mAudioPlayerBinder.isPlaying());
-			}
-			else if (AudioPlayerService.ACTION_CANCEL.equals(action))
-			{
+			} else if (AudioPlayerService.ACTION_CANCEL.equals(action)) {
 				mSeekBar.removeCallbacks(AudioPlayerActivity.this);
 				finish();
 			}
@@ -116,8 +109,7 @@ public class AudioPlayerActivity extends StateActivity implements Runnable, Seek
 	};
 
 	@Override
-	public void onServiceConnected(ComponentName name, IBinder service)
-	{
+	public void onServiceConnected(ComponentName name, IBinder service) {
 		mAudioPlayerBinder = (AudioPlayerService.Binder) service;
 		mSeekBar.removeCallbacks(this);
 		mTextView.setText(mAudioPlayerBinder.getFileName());
@@ -127,27 +119,23 @@ public class AudioPlayerActivity extends StateActivity implements Runnable, Seek
 	}
 
 	@Override
-	public void onServiceDisconnected(ComponentName name)
-	{
+	public void onServiceDisconnected(ComponentName name) {
 		mAudioPlayerBinder = null;
 		finish();
 	}
 
 	@Override
-	public void onClick(View v)
-	{
+	public void onClick(View v) {
 		mAudioPlayerBinder.togglePlayback();
 	}
 
-	private void setPlayState(boolean playing)
-	{
+	private void setPlayState(boolean playing) {
 		mButton.setImageResource(ResourceUtils.getResourceId(mContext, playing ? R.attr.buttonPause
 				: R.attr.buttonPlay, 0));
 	}
 
 	@Override
-	protected void onStart()
-	{
+	protected void onStart() {
 		super.onStart();
 		mAlertDialog.show();
 		mSeekBar.removeCallbacks(this);
@@ -155,41 +143,39 @@ public class AudioPlayerActivity extends StateActivity implements Runnable, Seek
 	}
 
 	@Override
-	protected void onStop()
-	{
+	protected void onStop() {
 		super.onStop();
 		mAlertDialog.dismiss();
 		mSeekBar.removeCallbacks(this);
 	}
 
 	@Override
-	protected void onFinish()
-	{
+	protected void onFinish() {
 		super.onFinish();
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mAudioPlayerReceiver);
-		if (mAudioPlayerBinder != null) unbindService(this);
+		if (mAudioPlayerBinder != null) {
+			unbindService(this);
+		}
 	}
 
 	@Override
-	public void run()
-	{
-		if (mAudioPlayerBinder != null)
-		{
-			if (!mTracking) mSeekBar.setProgress(mAudioPlayerBinder.getPosition());
+	public void run() {
+		if (mAudioPlayerBinder != null) {
+			if (!mTracking) {
+				mSeekBar.setProgress(mAudioPlayerBinder.getPosition());
+			}
 			mSeekBar.postDelayed(this, 500);
 		}
 	}
 
 	@Override
-	public void onCancel(DialogInterface dialog)
-	{
+	public void onCancel(DialogInterface dialog) {
 		mSeekBar.removeCallbacks(this);
 		finish();
 	}
 
 	@Override
-	public void onClick(DialogInterface dialog, int which)
-	{
+	public void onClick(DialogInterface dialog, int which) {
 		mSeekBar.removeCallbacks(this);
 		mAudioPlayerBinder.stop();
 		unbindService(this);
@@ -198,20 +184,19 @@ public class AudioPlayerActivity extends StateActivity implements Runnable, Seek
 	}
 
 	@Override
-	public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
-	{
-		if (fromUser) mAudioPlayerBinder.seekTo(progress);
+	public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+		if (fromUser) {
+			mAudioPlayerBinder.seekTo(progress);
+		}
 	}
 
 	@Override
-	public void onStartTrackingTouch(SeekBar seekBar)
-	{
+	public void onStartTrackingTouch(SeekBar seekBar) {
 		mTracking = true;
 	}
 
 	@Override
-	public void onStopTrackingTouch(SeekBar seekBar)
-	{
+	public void onStopTrackingTouch(SeekBar seekBar) {
 		mTracking = false;
 	}
 }

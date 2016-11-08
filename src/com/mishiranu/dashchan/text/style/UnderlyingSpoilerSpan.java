@@ -22,19 +22,18 @@ import android.text.style.UpdateAppearance;
 
 import com.mishiranu.dashchan.graphics.ColorScheme;
 
-public class UnderlyingSpoilerSpan extends CharacterStyle implements UpdateAppearance, ColorScheme.Span
-{
+public class UnderlyingSpoilerSpan extends CharacterStyle implements UpdateAppearance, ColorScheme.Span {
 	private int mBackgroundColor;
 
 	@Override
-	public void applyColorScheme(ColorScheme colorScheme)
-	{
-		if (colorScheme != null) mBackgroundColor = colorScheme.spoilerBackgroundColor;
+	public void applyColorScheme(ColorScheme colorScheme) {
+		if (colorScheme != null) {
+			mBackgroundColor = colorScheme.spoilerBackgroundColor;
+		}
 	}
 
 	@Override
-	public void updateDrawState(TextPaint paint)
-	{
+	public void updateDrawState(TextPaint paint) {
 		paint.bgColor = mBackgroundColor;
 	}
 }

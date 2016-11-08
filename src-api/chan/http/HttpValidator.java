@@ -30,8 +30,7 @@ import chan.util.CommonUtils;
 import chan.util.StringUtils;
 
 @Public
-public final class HttpValidator implements Parcelable, Serializable
-{
+public final class HttpValidator implements Parcelable, Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private static final String KEY_ETAG = "ETag";
@@ -40,86 +39,81 @@ public final class HttpValidator implements Parcelable, Serializable
 	private final String mETag;
 	private final String mLastModified;
 
-	private HttpValidator(String eTag, String lastModified)
-	{
+	private HttpValidator(String eTag, String lastModified) {
 		mETag = eTag;
 		mLastModified = lastModified;
 	}
 
-	static HttpValidator obtain(HttpURLConnection connection)
-	{
+	static HttpValidator obtain(HttpURLConnection connection) {
 		String eTag = connection.getHeaderField("ETag");
 		String lastModified = connection.getHeaderField("Last-Modified");
-		if (eTag != null || lastModified != null) return new HttpValidator(eTag, lastModified);
+		if (eTag != null || lastModified != null) {
+			return new HttpValidator(eTag, lastModified);
+		}
 		return null;
 	}
 
-	public void write(HttpURLConnection connection)
-	{
-		if (mETag != null) connection.setRequestProperty("If-None-Match", mETag);
-		if (mLastModified != null) connection.setRequestProperty("If-Modified-Since", mLastModified);
+	public void write(HttpURLConnection connection) {
+		if (mETag != null) {
+			connection.setRequestProperty("If-None-Match", mETag);
+		}
+		if (mLastModified != null) {
+			connection.setRequestProperty("If-Modified-Since", mLastModified);
+		}
 	}
 
 	@Override
-	public int describeContents()
-	{
+	public int describeContents() {
 		return 0;
 	}
 
 	@Override
-	public void writeToParcel(Parcel dest, int flags)
-	{
+	public void writeToParcel(Parcel dest, int flags) {
 		dest.writeString(mETag);
 		dest.writeString(mLastModified);
 	}
 
-	public static final Creator<HttpValidator> CREATOR = new Creator<HttpValidator>()
-	{
+	public static final Creator<HttpValidator> CREATOR = new Creator<HttpValidator>() {
 		@Override
-		public HttpValidator createFromParcel(Parcel source)
-		{
+		public HttpValidator createFromParcel(Parcel source) {
 			String eTag = source.readString();
 			String lastModified = source.readString();
 			return new HttpValidator(eTag, lastModified);
 		}
 
 		@Override
-		public HttpValidator[] newArray(int size)
-		{
+		public HttpValidator[] newArray(int size) {
 			return new HttpValidator[size];
 		}
 	};
 
-	public static HttpValidator fromString(String validator)
-	{
-		if (validator != null)
-		{
-			try
-			{
+	public static HttpValidator fromString(String validator) {
+		if (validator != null) {
+			try {
 				JSONObject jsonObject = new JSONObject(validator);
 				String eTag = CommonUtils.optJsonString(jsonObject, KEY_ETAG);
 				String lastModified = CommonUtils.optJsonString(jsonObject, KEY_LAST_MODIFIED);
-				if (eTag != null || lastModified != null) return new HttpValidator(eTag, lastModified);
-			}
-			catch (JSONException e)
-			{
-
+				if (eTag != null || lastModified != null) {
+					return new HttpValidator(eTag, lastModified);
+				}
+			} catch (JSONException e) {
+				// Ignore
 			}
 		}
 		return null;
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		JSONObject jsonObject = new JSONObject();
-		try
-		{
-			if (!StringUtils.isEmpty(mETag)) jsonObject.put(KEY_ETAG, mETag);
-			if (!StringUtils.isEmpty(mLastModified)) jsonObject.put(KEY_LAST_MODIFIED, mLastModified);
-		}
-		catch (JSONException e)
-		{
+		try {
+			if (!StringUtils.isEmpty(mETag)) {
+				jsonObject.put(KEY_ETAG, mETag);
+			}
+			if (!StringUtils.isEmpty(mLastModified)) {
+				jsonObject.put(KEY_LAST_MODIFIED, mLastModified);
+			}
+		} catch (JSONException e) {
 			throw new RuntimeException(e);
 		}
 		return jsonObject.toString();

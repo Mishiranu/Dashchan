@@ -28,8 +28,7 @@ import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.widget.CommentTextView;
 
 public class LinkSpan extends CharacterStyle implements UpdateAppearance, CommentTextView.ClickableSpan,
-		ColorScheme.Span
-{
+		ColorScheme.Span {
 	private final String mUriString;
 	private final String mPostNumber;
 
@@ -38,57 +37,48 @@ public class LinkSpan extends CharacterStyle implements UpdateAppearance, Commen
 	private boolean mClicked;
 	private boolean mHidden;
 
-	public LinkSpan(String uriString, String postNumber)
-	{
+	public LinkSpan(String uriString, String postNumber) {
 		mUriString = StringUtils.fixParsedUriString(uriString);
 		mPostNumber = postNumber;
 	}
 
 	@Override
-	public void applyColorScheme(ColorScheme colorScheme)
-	{
-		if (colorScheme != null)
-		{
+	public void applyColorScheme(ColorScheme colorScheme) {
+		if (colorScheme != null) {
 			mForegroundColor = colorScheme.linkColor;
 			mClickedColor = colorScheme.clickedColor;
 		}
 	}
 
 	@Override
-	public void updateDrawState(TextPaint paint)
-	{
-		if (mHidden)
-		{
+	public void updateDrawState(TextPaint paint) {
+		if (mHidden) {
 			paint.setColor(mForegroundColor & 0x00ffffff | Color.argb(Color.alpha(mForegroundColor) / 2, 0, 0, 0));
 			paint.setStrikeThruText(true);
+		} else {
+			paint.setColor(mForegroundColor);
 		}
-		else paint.setColor(mForegroundColor);
 		paint.setUnderlineText(true);
-		if (mClicked)
-		{
+		if (mClicked) {
 			paint.bgColor = Color.alpha(paint.bgColor) == 0x00 ? mClickedColor
 					: GraphicsUtils.mixColors(paint.bgColor, mClickedColor);
 		}
 	}
 
 	@Override
-	public void setClicked(boolean clicked)
-	{
+	public void setClicked(boolean clicked) {
 		mClicked = clicked;
 	}
 
-	public void setHidden(boolean hidden)
-	{
+	public void setHidden(boolean hidden) {
 		mHidden = hidden;
 	}
 
-	public String getUriString()
-	{
+	public String getUriString() {
 		return mUriString;
 	}
 
-	public String getPostNumber()
-	{
+	public String getPostNumber() {
 		return mPostNumber;
 	}
 }

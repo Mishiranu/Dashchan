@@ -26,18 +26,17 @@ import android.webkit.WebViewDatabase;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.content.MainApplication;
 
-public class WebViewUtils
-{
+public class WebViewUtils {
 	@SuppressWarnings("deprecation")
-	public static void clearCookie()
-	{
+	public static void clearCookie() {
 		CookieManager.getInstance().removeAllCookie();
 	}
 
-	public static void clearAll(WebView webView)
-	{
+	public static void clearAll(WebView webView) {
 		clearCookie();
-		if (webView != null) webView.clearCache(true);
+		if (webView != null) {
+			webView.clearCache(true);
+		}
 		WebViewDatabase webViewDatabase = WebViewDatabase.getInstance(MainApplication.getInstance());
 		webViewDatabase.clearFormData();
 		webViewDatabase.clearHttpAuthUsernamePassword();
@@ -45,8 +44,9 @@ public class WebViewUtils
 	}
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
-	public static void setThirdPartyCookiesEnabled(WebView webView)
-	{
-		if (C.API_LOLLIPOP) CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);
+	public static void setThirdPartyCookiesEnabled(WebView webView) {
+		if (C.API_LOLLIPOP) {
+			CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);
+		}
 	}
 }

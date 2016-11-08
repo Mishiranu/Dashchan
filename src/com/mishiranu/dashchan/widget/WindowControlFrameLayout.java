@@ -25,63 +25,52 @@ import android.widget.FrameLayout;
 
 import com.mishiranu.dashchan.C;
 
-public class WindowControlFrameLayout extends FrameLayout
-{
-	public interface OnApplyWindowPaddingsListener
-	{
+public class WindowControlFrameLayout extends FrameLayout {
+	public interface OnApplyWindowPaddingsListener {
 		public void onApplyWindowPaddings(WindowControlFrameLayout view, Rect rect);
 	}
 
 	private OnApplyWindowPaddingsListener mOnApplyWindowPaddingsListener;
 
-	public WindowControlFrameLayout(Context context)
-	{
+	public WindowControlFrameLayout(Context context) {
 		super(context);
 		super.setFitsSystemWindows(true);
 		super.setClipToPadding(false);
 	}
 
-	public void setOnApplyWindowPaddingsListener(OnApplyWindowPaddingsListener listener)
-	{
+	public void setOnApplyWindowPaddingsListener(OnApplyWindowPaddingsListener listener) {
 		mOnApplyWindowPaddingsListener = listener;
 	}
 
 	@Override
-	public void setFitsSystemWindows(boolean fitSystemWindows)
-	{
+	public void setFitsSystemWindows(boolean fitSystemWindows) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public void setClipToPadding(boolean clipToPadding)
-	{
+	public void setClipToPadding(boolean clipToPadding) {
 		throw new UnsupportedOperationException();
 	}
 
 	private Rect mPreviousRect;
 
-	private void onSystemWindowInsetsChangedInternal(Rect rect)
-	{
-		if (mPreviousRect != null && mPreviousRect.equals(rect)) return;
+	private void onSystemWindowInsetsChangedInternal(Rect rect) {
+		if (mPreviousRect != null && mPreviousRect.equals(rect)) {
+			return;
+		}
 		mPreviousRect = rect;
-		if (mOnApplyWindowPaddingsListener != null)
-		{
+		if (mOnApplyWindowPaddingsListener != null) {
 			mOnApplyWindowPaddingsListener.onApplyWindowPaddings(this, rect);
 		}
 	}
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	@Override
-	public WindowInsets onApplyWindowInsets(WindowInsets insets)
-	{
-		try
-		{
+	public WindowInsets onApplyWindowInsets(WindowInsets insets) {
+		try {
 			return super.onApplyWindowInsets(insets);
-		}
-		finally
-		{
-			if (C.API_LOLLIPOP)
-			{
+		} finally {
+			if (C.API_LOLLIPOP) {
 				setPadding(0, 0, 0, 0);
 				onSystemWindowInsetsChangedInternal(new Rect(insets.getSystemWindowInsetLeft(),
 						insets.getSystemWindowInsetTop(), insets.getSystemWindowInsetRight(),
@@ -92,17 +81,12 @@ public class WindowControlFrameLayout extends FrameLayout
 
 	@SuppressWarnings("deprecation")
 	@Override
-	protected boolean fitSystemWindows(Rect insets)
-	{
+	protected boolean fitSystemWindows(Rect insets) {
 		Rect rect = !C.API_LOLLIPOP ? new Rect(insets) : null;
-		try
-		{
+		try {
 			return super.fitSystemWindows(insets);
-		}
-		finally
-		{
-			if (!C.API_LOLLIPOP)
-			{
+		} finally {
+			if (!C.API_LOLLIPOP) {
 				setPadding(0, 0, 0, 0);
 				onSystemWindowInsetsChangedInternal(rect);
 			}

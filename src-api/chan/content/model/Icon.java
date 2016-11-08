@@ -25,39 +25,33 @@ import chan.content.ChanLocator;
 import chan.util.StringUtils;
 
 @Public
-public final class Icon implements Serializable
-{
+public final class Icon implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private final String mUriString;
 	private final String mTitle;
 
 	@Public
-	public Icon(ChanLocator locator, Uri uri, String title)
-	{
+	public Icon(ChanLocator locator, Uri uri, String title) {
 		mUriString = uri != null ? locator.makeRelative(uri).toString() : null;
 		mTitle = title;
 	}
 
-	public Uri getRelativeUri()
-	{
+	public Uri getRelativeUri() {
 		return mUriString != null ? Uri.parse(mUriString) : null;
 	}
 
 	@Public
-	public Uri getUri(ChanLocator locator)
-	{
+	public Uri getUri(ChanLocator locator) {
 		return mUriString != null ? locator.convert(Uri.parse(mUriString)) : null;
 	}
 
 	@Public
-	public String getTitle()
-	{
+	public String getTitle() {
 		return mTitle;
 	}
 
-	public boolean contentEquals(Icon o)
-	{
+	public boolean contentEquals(Icon o) {
 		return StringUtils.equals(mUriString, o.mUriString) && StringUtils.equals(mTitle, o.mTitle);
 	}
 }

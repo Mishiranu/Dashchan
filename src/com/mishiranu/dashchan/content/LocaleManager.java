@@ -34,21 +34,18 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 
-public class LocaleManager
-{
+public class LocaleManager {
 	public static final String[] ENTRIES_LOCALE;
 	public static final String[] VALUES_LOCALE;
 	public static final String DEFAULT_LOCALE = "";
 	private static final HashMap<String, Locale> VALUES_LOCALE_OBJECTS;
 
-	static
-	{
+	static {
 		String[] codes = {DEFAULT_LOCALE, "ru", "en", "pt_BR"};
 		String[] names = new String[codes.length];
 		Locale[] locales = new Locale[codes.length];
 		names[0] = "System";
-		for (int i = 1; i < names.length; i++)
-		{
+		for (int i = 1; i < names.length; i++) {
 			String[] splitted = codes[i].split("_");
 			String language = splitted[0];
 			String country = splitted.length > 1 ? splitted[1] : null;
@@ -60,66 +57,62 @@ public class LocaleManager
 		ENTRIES_LOCALE = names;
 		VALUES_LOCALE = codes;
 		VALUES_LOCALE_OBJECTS = new HashMap<>();
-		for (int i = 0; i < codes.length; i++) VALUES_LOCALE_OBJECTS.put(codes[i], locales[i]);
+		for (int i = 0; i < codes.length; i++) {
+			VALUES_LOCALE_OBJECTS.put(codes[i], locales[i]);
+		}
 	}
 
 	private static final LocaleManager INSTANCE = new LocaleManager();
 
-	public static LocaleManager getInstance()
-	{
+	public static LocaleManager getInstance() {
 		return INSTANCE;
 	}
 
-	private LocaleManager()
-	{
-
-	}
+	private LocaleManager() {}
 
 	private ArrayList<Locale> mSystemLocales;
 	private ArrayList<Locale> mPreviousLocales;
 
 	@SuppressWarnings("deprecation")
 	@TargetApi(Build.VERSION_CODES.N)
-	public void apply(Context context, boolean configChanged)
-	{
-		if (!ConcurrentUtils.isMain()) return;
+	public void apply(Context context, boolean configChanged) {
+		if (!ConcurrentUtils.isMain()) {
+			return;
+		}
 		Resources resources = context.getApplicationContext().getResources();
 		Configuration configuration = resources.getConfiguration();
-		if (mSystemLocales == null) mSystemLocales = list(configuration);
-		if (configChanged)
-		{
+		if (mSystemLocales == null) {
+			mSystemLocales = list(configuration);
+		}
+		if (configChanged) {
 			ArrayList<Locale> locales = list(configuration);
-			if (mPreviousLocales != null)
-			{
-				if (locales.equals(mPreviousLocales)) return;
+			if (mPreviousLocales != null) {
+				if (locales.equals(mPreviousLocales)) {
+					return;
+				}
 				mSystemLocales = locales;
 			}
 		}
 		Locale locale = VALUES_LOCALE_OBJECTS.get(Preferences.getLocale());
 		boolean applySystem = false;
-		if (locale == null)
-		{
+		if (locale == null) {
 			locale = mSystemLocales.isEmpty() ? Locale.getDefault() : mSystemLocales.get(0);
 			applySystem = true;
 		}
-		if (C.API_NOUGAT)
-		{
-			if (applySystem)
-			{
+		if (C.API_NOUGAT) {
+			if (applySystem) {
 				configuration.setLocales(new LocaleList(CommonUtils.toArray(mSystemLocales, Locale.class)));
 				mPreviousLocales = mSystemLocales;
-			}
-			else
-			{
+			} else {
 				ArrayList<Locale> locales = new ArrayList<>();
-				if (!locale.equals(Locale.US)) locales.add(locale);
+				if (!locale.equals(Locale.US)) {
+					locales.add(locale);
+				}
 				locales.add(Locale.US);
 				configuration.setLocales(new LocaleList(CommonUtils.toArray(locales, Locale.class)));
 				mPreviousLocales = locales;
 			}
-		}
-		else
-		{
+		} else {
 			configuration.locale = locale;
 			mPreviousLocales = list(configuration);
 		}
@@ -129,20 +122,20 @@ public class LocaleManager
 
 	@SuppressWarnings("deprecation")
 	@TargetApi(Build.VERSION_CODES.N)
-	private ArrayList<Locale> list(Configuration configuration)
-	{
+	private ArrayList<Locale> list(Configuration configuration) {
 		ArrayList<Locale> arrayList = new ArrayList<>();
-		if (C.API_NOUGAT)
-		{
+		if (C.API_NOUGAT) {
 			LocaleList localeList = configuration.getLocales();
-			for (int i = 0; i < localeList.size(); i++) arrayList.add(localeList.get(i));
+			for (int i = 0; i < localeList.size(); i++) {
+				arrayList.add(localeList.get(i));
+			}
+		} else {
+			arrayList.add(configuration.locale);
 		}
-		else arrayList.add(configuration.locale);
 		return arrayList;
 	}
 
-	public ArrayList<Locale> list(Context context)
-	{
+	public ArrayList<Locale> list(Context context) {
 		return list(context.getApplicationContext().getResources().getConfiguration());
 	}
 }

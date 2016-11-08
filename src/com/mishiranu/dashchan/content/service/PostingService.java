@@ -52,8 +52,7 @@ import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 
-public class PostingService extends Service implements Runnable, SendPostTask.Callback
-{
+public class PostingService extends Service implements Runnable, SendPostTask.Callback {
 	private static final String ACTION_CANCEL_POSTING = "com.mishiranu.dashchan.action.CANCEL_POSTING";
 
 	private static final String EXTRA_KEY = "com.mishiranu.dashchan.extra.KEY";
@@ -70,8 +69,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 
 	private static int sNotificationId = 0;
 
-	private static class TaskState
-	{
+	private static class TaskState {
 		public final String key;
 		public final SendPostTask task;
 		public final Notification.Builder builder;
@@ -89,8 +87,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 		private boolean cancel;
 
 		public TaskState(String key, SendPostTask task, Context context, String chanName,
-				ChanPerformer.SendPostData data)
-		{
+				ChanPerformer.SendPostData data) {
 			this.key = key;
 			this.task = task;
 			builder = new Notification.Builder(context);
@@ -99,18 +96,18 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 	}
 
 	public static String buildNotificationText(String chanName, String boardName, String threadNumber,
-			String postNumber)
-	{
+			String postNumber) {
 		ChanConfiguration configuration = ChanConfiguration.get(chanName);
 		StringBuilder builder = new StringBuilder(configuration.getTitle()).append(", ");
 		builder.append(StringUtils.formatThreadTitle(chanName, boardName, threadNumber != null ? threadNumber : "?"));
-		if (!StringUtils.isEmpty(postNumber)) builder.append(", #").append(postNumber);
+		if (!StringUtils.isEmpty(postNumber)) {
+			builder.append(", #").append(postNumber);
+		}
 		return builder.toString();
 	}
 
 	@Override
-	public void onCreate()
-	{
+	public void onCreate() {
 		super.onCreate();
 		mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
@@ -121,55 +118,49 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 	}
 
 	@Override
-	public void onDestroy()
-	{
+	public void onDestroy() {
 		super.onDestroy();
 		mWakeLock.release();
 		mNotificationsWorker.interrupt();
 	}
 
 	@Override
-	public int onStartCommand(Intent intent, int flags, int startId)
-	{
-		if (intent != null && ACTION_CANCEL_POSTING.equals(intent.getAction()))
-		{
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		if (intent != null && ACTION_CANCEL_POSTING.equals(intent.getAction())) {
 			performCancel(intent.getStringExtra(EXTRA_KEY));
 		}
 		return START_NOT_STICKY;
 	}
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
-	private void setNotificationColor(Notification.Builder builder)
-	{
+	private void setNotificationColor(Notification.Builder builder) {
 		Context themedContext = new ContextThemeWrapper(this, Preferences.getThemeResource());
 		builder.setColor(ResourceUtils.getColor(themedContext, android.R.attr.colorAccent));
 	}
 
 	@Override
-	public void run()
-	{
+	public void run() {
 		boolean interrupted = false;
-		while (true)
-		{
+		while (true) {
 			TaskState taskState = null;
-			if (!interrupted)
-			{
-				try
-				{
+			if (!interrupted) {
+				try {
 					taskState = mNotificationsQueue.take();
-				}
-				catch (InterruptedException e)
-				{
+				} catch (InterruptedException e) {
 					interrupted = true;
 				}
 			}
-			if (interrupted) taskState = mNotificationsQueue.poll();
-			if (taskState == null) return;
-			if (taskState.cancel) mNotificationManager.cancel(taskState.notificationId); else
-			{
+			if (interrupted) {
+				taskState = mNotificationsQueue.poll();
+			}
+			if (taskState == null) {
+				return;
+			}
+			if (taskState.cancel) {
+				mNotificationManager.cancel(taskState.notificationId);
+			} else {
 				Notification.Builder builder = taskState.builder;
-				if (taskState.first)
-				{
+				if (taskState.first) {
 					builder.setOngoing(true);
 					builder.setSmallIcon(android.R.drawable.stat_sys_upload);
 					PendingIntent cancelIntent = PendingIntent.getService(this, taskState.notificationId,
@@ -178,31 +169,33 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 					Context themedContext = new ContextThemeWrapper(this, R.style.Theme_Special_Notification);
 					ViewUtils.addNotificationAction(builder, this, ResourceUtils.getResourceId(themedContext,
 							R.attr.notificationCancel, 0), getString(android.R.string.cancel), cancelIntent);
-					if (C.API_LOLLIPOP) setNotificationColor(builder);
+					if (C.API_LOLLIPOP) {
+						setNotificationColor(builder);
+					}
 				}
 				boolean progressMode = taskState.task.isProgressMode();
-				switch (taskState.progressState)
-				{
-					case CONNECTING:
-					{
-						if (progressMode) builder.setProgress(1, 0, true);
+				switch (taskState.progressState) {
+					case CONNECTING: {
+						if (progressMode) {
+							builder.setProgress(1, 0, true);
+						}
 						builder.setContentTitle(getString(R.string.message_sending));
 						break;
 					}
-					case SENDING:
-					{
-						if (progressMode)
-						{
+					case SENDING: {
+						if (progressMode) {
 							builder.setProgress(taskState.progressMax, taskState.progress, taskState.progressMax <= 0);
 							builder.setContentTitle(getString(R.string.message_sending_index_format,
 									taskState.attachmentIndex + 1, taskState.attachmentsCount));
+						} else {
+							builder.setContentTitle(getString(R.string.message_sending));
 						}
-						else builder.setContentTitle(getString(R.string.message_sending));
 						break;
 					}
-					case PROCESSING:
-					{
-						if (progressMode) builder.setProgress(1, 1, false);
+					case PROCESSING: {
+						if (progressMode) {
+							builder.setProgress(1, 1, false);
+						}
 						builder.setContentTitle(getString(R.string.message_processing_data));
 						break;
 					}
@@ -214,24 +207,20 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 	}
 
 	@Override
-	public Binder onBind(Intent intent)
-	{
+	public Binder onBind(Intent intent) {
 		return new Binder();
 	}
 
-	private void stopSelfAndReleaseWakeLock()
-	{
+	private void stopSelfAndReleaseWakeLock() {
 		stopSelf();
 		mWakeLock.release();
 	}
 
-	private static String makeKey(String chanName, String boardName, String threadNumber)
-	{
+	private static String makeKey(String chanName, String boardName, String threadNumber) {
 		return chanName + '/' + boardName + '/' + threadNumber;
 	}
 
-	public interface Callback
-	{
+	public interface Callback {
 		public void onSendPostStart(boolean progressMode);
 		public void onSendPostChangeProgressState(boolean progressMode, SendPostTask.ProgressState progressState,
 				int attachmentIndex, int attachmentsCount);
@@ -242,12 +231,12 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 		public void onSendPostCancel();
 	}
 
-	public class Binder extends android.os.Binder
-	{
-		public void executeSendPost(String chanName, ChanPerformer.SendPostData data)
-		{
+	public class Binder extends android.os.Binder {
+		public void executeSendPost(String chanName, ChanPerformer.SendPostData data) {
 			String key = makeKey(chanName, data.boardName, data.threadNumber);
-			if (mTasks.containsKey(key)) return;
+			if (mTasks.containsKey(key)) {
+				return;
+			}
 			startService(new Intent(PostingService.this, PostingService.class));
 			mWakeLock.acquire();
 			SendPostTask task = new SendPostTask(key, chanName, PostingService.this, data);
@@ -256,96 +245,90 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 			enqueueUpdateNotification(taskState, true, false);
 			mTasks.put(key, taskState);
 			ArrayList<Callback> callbacks = mCallbacks.get(key);
-			if (callbacks != null)
-			{
-				for (Callback callback : callbacks) notifyInitDownloading(callback, taskState, false);
+			if (callbacks != null) {
+				for (Callback callback : callbacks) {
+					notifyInitDownloading(callback, taskState, false);
+				}
 			}
 		}
 
-		public void cancelSendPost(String chanName, String boardName, String threadNumber)
-		{
+		public void cancelSendPost(String chanName, String boardName, String threadNumber) {
 			performCancel(makeKey(chanName, boardName, threadNumber));
 		}
 
-		public void register(Callback callback, String chanName, String boardName, String threadNumber)
-		{
+		public void register(Callback callback, String chanName, String boardName, String threadNumber) {
 			String key = makeKey(chanName, boardName, threadNumber);
 			mCallbackKeys.put(callback, key);
 			ArrayList<Callback> callbacks = mCallbacks.get(key);
-			if (callbacks == null)
-			{
+			if (callbacks == null) {
 				callbacks = new ArrayList<>(1);
 				mCallbacks.put(key, callbacks);
 			}
 			callbacks.add(callback);
 			TaskState taskState = mTasks.get(key);
-			if (taskState != null) notifyInitDownloading(callback, taskState, true);
+			if (taskState != null) {
+				notifyInitDownloading(callback, taskState, true);
+			}
 		}
 
-		public void unregister(Callback callback)
-		{
+		public void unregister(Callback callback) {
 			String key = mCallbackKeys.remove(callback);
-			if (key != null)
-			{
+			if (key != null) {
 				ArrayList<Callback> callbacks = mCallbacks.get(key);
 				callbacks.remove(callback);
-				if (callbacks.isEmpty()) mCallbacks.remove(key);
+				if (callbacks.isEmpty()) {
+					mCallbacks.remove(key);
+				}
 			}
 		}
 	}
 
-	private void enqueueUpdateNotification(TaskState taskState, boolean first, boolean cancel)
-	{
+	private void enqueueUpdateNotification(TaskState taskState, boolean first, boolean cancel) {
 		taskState.first = first;
 		taskState.cancel = cancel;
 		mNotificationsQueue.add(taskState);
 	}
 
-	private void notifyInitDownloading(Callback callback, TaskState taskState, boolean notifyState)
-	{
+	private void notifyInitDownloading(Callback callback, TaskState taskState, boolean notifyState) {
 		boolean progressMode = taskState.task.isProgressMode();
 		callback.onSendPostStart(progressMode);
-		if (notifyState)
-		{
+		if (notifyState) {
 			callback.onSendPostChangeProgressState(progressMode, taskState.progressState, taskState.attachmentIndex,
 					taskState.attachmentsCount);
 			callback.onSendPostChangeProgressValue(taskState.progress, taskState.progressMax);
 		}
 	}
 
-	private void performCancel(String key)
-	{
+	private void performCancel(String key) {
 		TaskState taskState = mTasks.remove(key);
-		if (taskState != null)
-		{
+		if (taskState != null) {
 			taskState.task.cancel();
 			enqueueUpdateNotification(taskState, false, true);
-			if (mTasks.isEmpty()) stopSelfAndReleaseWakeLock();
+			if (mTasks.isEmpty()) {
+				stopSelfAndReleaseWakeLock();
+			}
 			ArrayList<Callback> callbacks = mCallbacks.get(key);
-			if (callbacks != null)
-			{
-				for (Callback callback : callbacks) callback.onSendPostCancel();
+			if (callbacks != null) {
+				for (Callback callback : callbacks) {
+					callback.onSendPostCancel();
+				}
 			}
 		}
 	}
 
 	@Override
 	public void onSendPostChangeProgressState(String key, SendPostTask.ProgressState progressState,
-			int attachmentIndex, int attachmentsCount)
-	{
+			int attachmentIndex, int attachmentsCount) {
 		TaskState taskState = mTasks.get(key);
-		if (taskState != null)
-		{
+		if (taskState != null) {
 			taskState.progressState = progressState;
 			taskState.attachmentIndex = attachmentIndex;
 			taskState.attachmentsCount = attachmentsCount;
 			enqueueUpdateNotification(taskState, false, false);
 			ArrayList<Callback> callbacks = mCallbacks.get(key);
-			if (callbacks != null)
-			{
+			if (callbacks != null) {
 				boolean progressMode = taskState.task.isProgressMode();
-				for (Callback callback : callbacks)
-				{
+				for (Callback callback : callbacks) {
 					callback.onSendPostChangeProgressState(progressMode, progressState, attachmentIndex,
 							attachmentsCount);
 				}
@@ -354,29 +337,28 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 	}
 
 	@Override
-	public void onSendPostChangeProgressValue(String key, int progress, int progressMax)
-	{
+	public void onSendPostChangeProgressValue(String key, int progress, int progressMax) {
 		TaskState taskState = mTasks.get(key);
-		if (taskState != null)
-		{
+		if (taskState != null) {
 			taskState.progress = progress;
 			taskState.progressMax = progressMax;
 			enqueueUpdateNotification(taskState, false, false);
 			ArrayList<Callback> callbacks = mCallbacks.get(key);
-			if (callbacks != null)
-			{
-				for (Callback callback : callbacks) callback.onSendPostChangeProgressValue(progress, progressMax);
+			if (callbacks != null) {
+				for (Callback callback : callbacks) {
+					callback.onSendPostChangeProgressValue(progress, progressMax);
+				}
 			}
 		}
 	}
 
-	private boolean removeTask(String key)
-	{
+	private boolean removeTask(String key) {
 		TaskState taskState = mTasks.remove(key);
-		if (taskState != null)
-		{
+		if (taskState != null) {
 			enqueueUpdateNotification(taskState, false, true);
-			if (mTasks.isEmpty()) stopSelfAndReleaseWakeLock();
+			if (mTasks.isEmpty()) {
+				stopSelfAndReleaseWakeLock();
+			}
 			return true;
 		}
 		return false;
@@ -384,60 +366,56 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 
 	@Override
 	public void onSendPostSuccess(String key, ChanPerformer.SendPostData data,
-			String chanName, String threadNumber, String postNumber)
-	{
-		if (removeTask(key))
-		{
+			String chanName, String threadNumber, String postNumber) {
+		if (removeTask(key)) {
 			String targetThreadNumber = data.threadNumber != null ? data.threadNumber
 					: StringUtils.nullIfEmpty(threadNumber);
-			if (targetThreadNumber != null && Preferences.isFavoriteOnReply())
-			{
+			if (targetThreadNumber != null && Preferences.isFavoriteOnReply()) {
 				FavoritesStorage.getInstance().add(chanName, data.boardName, targetThreadNumber, null, 0);
 			}
 			StatisticsStorage.getInstance().incrementPostsSent(chanName, data.threadNumber == null);
 			DraftsStorage draftsStorage = DraftsStorage.getInstance();
 			draftsStorage.removeCaptchaDraft();
 			draftsStorage.removePostDraft(chanName, data.boardName, data.threadNumber);
-			if (targetThreadNumber != null)
-			{
+			if (targetThreadNumber != null) {
 				String password = Preferences.getPassword(chanName);
-				if (StringUtils.equals(password, data.password)) password = null;
+				if (StringUtils.equals(password, data.password)) {
+					password = null;
+				}
 				draftsStorage.store(new DraftsStorage.PostDraft(chanName, data.boardName, targetThreadNumber,
 						data.name, data.email, password, data.optionSage, data.optionOriginalPoster, data.userIcon));
 			}
-			if (targetThreadNumber != null)
-			{
+			if (targetThreadNumber != null) {
 				postNumber = StringUtils.nullIfEmpty(postNumber);
 				String comment = data.comment;
-				if (comment != null)
-				{
+				if (comment != null) {
 					CommentEditor commentEditor = ChanMarkup.get(chanName).safe().obtainCommentEditor(data.boardName);
-					if (commentEditor != null) comment = commentEditor.removeTags(comment);
+					if (commentEditor != null) {
+						comment = commentEditor.removeTags(comment);
+					}
 				}
 				NewPostData newPostData = new NewPostData(chanName, data.boardName, targetThreadNumber, postNumber,
 						comment, data.threadNumber == null);
 				String arrayKey = makeKey(chanName, data.boardName, targetThreadNumber);
 				ArrayList<NewPostData> newPostDatas = NEW_POST_DATAS.get(arrayKey);
-				if (newPostDatas == null)
-				{
+				if (newPostDatas == null) {
 					newPostDatas = new ArrayList<>(1);
 					NEW_POST_DATAS.put(arrayKey, newPostDatas);
 				}
 				newPostDatas.add(newPostData);
-				if (newPostData.newThread)
-				{
+				if (newPostData.newThread) {
 					sNewThreadData = newPostData;
 					sNewThreadDataKey = makeKey(chanName, data.boardName, null);
 				}
 				Notification.Builder builder = new Notification.Builder(this);
 				builder.setSmallIcon(android.R.drawable.stat_sys_upload_done);
-				if (C.API_LOLLIPOP)
-				{
+				if (C.API_LOLLIPOP) {
 					setNotificationColor(builder);
 					builder.setPriority(Notification.PRIORITY_HIGH);
 					builder.setVibrate(new long[0]);
+				} else {
+					builder.setTicker(getString(R.string.text_post_sent));
 				}
-				else builder.setTicker(getString(R.string.text_post_sent));
 				builder.setContentTitle(getString(R.string.text_post_sent));
 				builder.setContentText(buildNotificationText(chanName, data.boardName, targetThreadNumber, postNumber));
 				String tag = newPostData.getNotificationTag();
@@ -448,9 +426,10 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 				mNotificationManager.notify(tag, 0, builder.build());
 			}
 			ArrayList<Callback> callbacks = mCallbacks.get(key);
-			if (callbacks != null)
-			{
-				for (Callback callback : callbacks) callback.onSendPostSuccess();
+			if (callbacks != null) {
+				for (Callback callback : callbacks) {
+					callback.onSendPostSuccess();
+				}
 			}
 			LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(C.ACTION_POST_SENT));
 		}
@@ -458,21 +437,15 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 
 	@Override
 	public void onSendPostFail(String key, ChanPerformer.SendPostData data, String chanName, ErrorItem errorItem,
-			Serializable extra, boolean captchaError, boolean keepCaptcha)
-	{
-		if (removeTask(key))
-		{
+			Serializable extra, boolean captchaError, boolean keepCaptcha) {
+		if (removeTask(key)) {
 			ArrayList<Callback> callbacks = mCallbacks.get(key);
 			boolean hasCallback = callbacks != null && !callbacks.isEmpty();
-			if (hasCallback)
-			{
-				for (Callback callback : callbacks)
-				{
+			if (hasCallback) {
+				for (Callback callback : callbacks) {
 					callback.onSendPostFail(errorItem, extra, captchaError, keepCaptcha);
 				}
-			}
-			else
-			{
+			} else {
 				startActivity(new Intent(this, PostingActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 						.putExtra(C.EXTRA_CHAN_NAME, chanName).putExtra(C.EXTRA_BOARD_NAME, data.boardName)
 						.putExtra(C.EXTRA_THREAD_NUMBER, data.threadNumber).putExtra(C.EXTRA_FAIL_RESULT,
@@ -481,8 +454,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 		}
 	}
 
-	public static class FailResult implements Serializable
-	{
+	public static class FailResult implements Serializable {
 		private static final long serialVersionUID = 1L;
 
 		public final ErrorItem errorItem;
@@ -490,8 +462,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 		public final boolean captchaError;
 		public final boolean keepCaptcha;
 
-		public FailResult(ErrorItem errorItem, Serializable extra, boolean captchaError, boolean keepCaptcha)
-		{
+		public FailResult(ErrorItem errorItem, Serializable extra, boolean captchaError, boolean keepCaptcha) {
 			this.errorItem = errorItem;
 			this.extra = extra;
 			this.captchaError = captchaError;
@@ -499,8 +470,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 		}
 	}
 
-	public static class NewPostData
-	{
+	public static class NewPostData {
 		public final String chanName;
 		public final String boardName;
 		public final String threadNumber;
@@ -509,8 +479,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 		public final boolean newThread;
 
 		public NewPostData(String chanName, String boardName, String threadNumber, String postNumber,
-				String comment, boolean newThread)
-		{
+				String comment, boolean newThread) {
 			this.chanName = chanName;
 			this.boardName = boardName;
 			this.threadNumber = threadNumber;
@@ -521,10 +490,8 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 
 		private String mNotificationTag;
 
-		private String getNotificationTag()
-		{
-			if (mNotificationTag == null)
-			{
+		private String getNotificationTag() {
+			if (mNotificationTag == null) {
 				mNotificationTag = C.NOTIFICATION_TAG_POSTING + "/" + StringUtils.calculateSha256(chanName +
 						"/" + boardName + "/" + threadNumber + "/" + postNumber + "/" + comment + "/" + newThread);
 			}
@@ -535,15 +502,12 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 	private static final HashMap<String, ArrayList<NewPostData>> NEW_POST_DATAS = new HashMap<>();
 
 	public static ArrayList<NewPostData> getNewPostDatas(Context context, String chanName, String boardName,
-			String threadNumber)
-	{
+			String threadNumber) {
 		ArrayList<NewPostData> newPostDatas = NEW_POST_DATAS.remove(makeKey(chanName, boardName, threadNumber));
-		if (newPostDatas != null)
-		{
+		if (newPostDatas != null) {
 			NotificationManager notificationManager = (NotificationManager) context
 					.getSystemService(NOTIFICATION_SERVICE);
-			for (NewPostData newPostData : newPostDatas)
-			{
+			for (NewPostData newPostData : newPostDatas) {
 				notificationManager.cancel(newPostData.getNotificationTag(), 0);
 			}
 		}
@@ -553,10 +517,8 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 	private static NewPostData sNewThreadData;
 	private static String sNewThreadDataKey;
 
-	public static NewPostData obtainNewThreadData(Context context, String chanName, String boardName)
-	{
-		if (makeKey(chanName, boardName, null).equals(sNewThreadDataKey))
-		{
+	public static NewPostData obtainNewThreadData(Context context, String chanName, String boardName) {
+		if (makeKey(chanName, boardName, null).equals(sNewThreadDataKey)) {
 			NewPostData newThreadData = sNewThreadData;
 			clearNewThreadData();
 			NotificationManager notificationManager = (NotificationManager) context
@@ -567,8 +529,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 		return null;
 	}
 
-	public static void clearNewThreadData()
-	{
+	public static void clearNewThreadData() {
 		sNewThreadData = null;
 		sNewThreadDataKey = null;
 	}

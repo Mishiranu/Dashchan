@@ -17,28 +17,23 @@
 #include <jni.h>
 #include "gif.h"
 
-jlong Java_com_mishiranu_dashchan_media_GifDecoder_init(JNIEnv * env, jobject this, jstring fileName)
-{
+jlong Java_com_mishiranu_dashchan_media_GifDecoder_init(JNIEnv * env, jobject this, jstring fileName) {
 	return init(env, fileName);
 }
 
-void Java_com_mishiranu_dashchan_media_GifDecoder_destroy(JNIEnv * env, jobject this, jlong pointer)
-{
+void Java_com_mishiranu_dashchan_media_GifDecoder_destroy(JNIEnv * env, jobject this, jlong pointer) {
 	destroy(env, pointer);
 }
 
-jint Java_com_mishiranu_dashchan_media_GifDecoder_getErrorCode(JNIEnv * env, jobject this, jlong pointer)
-{
+jint Java_com_mishiranu_dashchan_media_GifDecoder_getErrorCode(JNIEnv * env, jobject this, jlong pointer) {
 	return getErrorCode(env, pointer);
 }
 
 void Java_com_mishiranu_dashchan_media_GifDecoder_getSummary(JNIEnv * env, jobject this, jlong pointer,
-		jintArray output)
-{
+		jintArray output) {
 	getSummary(env, pointer, output);
 }
 
-jint Java_com_mishiranu_dashchan_media_GifDecoder_draw(JNIEnv * env, jobject this, jlong pointer, jobject bitmap)
-{
+jint Java_com_mishiranu_dashchan_media_GifDecoder_draw(JNIEnv * env, jobject this, jlong pointer, jobject bitmap) {
 	return draw(env, pointer, bitmap);
 }

@@ -24,8 +24,7 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.MainApplication;
 
-public class ErrorItem implements Serializable
-{
+public class ErrorItem implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	public static final int TYPE_UNKNOWN = 0;
@@ -55,63 +54,115 @@ public class ErrorItem implements Serializable
 	public final int httpResponseCode;
 	public final String message;
 
-	public interface Holder
-	{
+	public interface Holder {
 		public ErrorItem getErrorItemAndHandle();
 	}
 
-	public ErrorItem(int type, int specialType)
-	{
+	public ErrorItem(int type, int specialType) {
 		this.type = type;
 		this.specialType = specialType;
 		httpResponseCode = 0;
 		message = null;
 	}
 
-	public ErrorItem(int httpResponseCode, String message)
-	{
+	public ErrorItem(int httpResponseCode, String message) {
 		type = 0;
 		specialType = 0;
 		this.httpResponseCode = httpResponseCode;
 		this.message = StringUtils.removeSingleDot(message);
 	}
 
-	public ErrorItem(int type)
-	{
+	public ErrorItem(int type) {
 		this(type, 0);
 	}
 
 	@Override
-	public String toString()
-	{
-		if (!StringUtils.isEmpty(message))
-		{
+	public String toString() {
+		if (!StringUtils.isEmpty(message)) {
 			return httpResponseCode != 0 ? "HTTP " + httpResponseCode + ": " + message : message;
 		}
 		int resId = 0;
-		switch (type)
-		{
-			case TYPE_API: resId = ApiException.getResId(specialType); break;
-			case TYPE_SSL: resId = R.string.message_ssl_error; break;
-			case TYPE_DOWNLOAD: resId = R.string.message_download_error; break;
-			case TYPE_READ_TIMEOUT: resId = R.string.message_read_timeout; break;
-			case TYPE_CONNECT_TIMEOUT: resId = R.string.message_connect_timeout; break;
-			case TYPE_CONNECTION_RESET: resId = R.string.message_connection_reset; break;
-			case TYPE_INVALID_CERTIFICATE: resId = R.string.message_invalid_certificate; break;
-			case TYPE_UNSAFE_REDIRECT: resId = R.string.message_unsafe_redirect; break;
-			case TYPE_UNSUPPORTED_SCHEME: resId = R.string.message_unsupported_scheme; break;
-			case TYPE_CAPTCHA_EXPIRED: resId = R.string.message_captcha_expired; break;
-			case TYPE_EMPTY_RESPONSE: resId = R.string.message_empty_response; break;
-			case TYPE_INVALID_RESPONSE: resId = R.string.message_invalid_response; break;
-			case TYPE_INVALID_DATA_FORMAT: resId = R.string.message_invalid_data_format; break;
-			case TYPE_BOARD_NOT_EXISTS: resId = R.string.message_board_not_exist; break;
-			case TYPE_THREAD_NOT_EXISTS: resId = R.string.message_thread_not_exist; break;
-			case TYPE_POST_NOT_FOUND: resId = R.string.message_post_not_found; break;
-			case TYPE_NO_ACCESS_TO_MEMORY: resId = R.string.message_no_access_to_memory; break;
-			case TYPE_INSUFFICIENT_SPACE: resId = R.string.message_insufficient_space; break;
-			case TYPE_EXTENSION: resId = R.string.message_extension_error; break;
+		switch (type) {
+			case TYPE_API: {
+				resId = ApiException.getResId(specialType);
+				break;
+			}
+			case TYPE_SSL: {
+				resId = R.string.message_ssl_error;
+				break;
+			}
+			case TYPE_DOWNLOAD: {
+				resId = R.string.message_download_error;
+				break;
+			}
+			case TYPE_READ_TIMEOUT: {
+				resId = R.string.message_read_timeout;
+				break;
+			}
+			case TYPE_CONNECT_TIMEOUT: {
+				resId = R.string.message_connect_timeout;
+				break;
+			}
+			case TYPE_CONNECTION_RESET: {
+				resId = R.string.message_connection_reset;
+				break;
+			}
+			case TYPE_INVALID_CERTIFICATE: {
+				resId = R.string.message_invalid_certificate;
+				break;
+			}
+			case TYPE_UNSAFE_REDIRECT: {
+				resId = R.string.message_unsafe_redirect;
+				break;
+			}
+			case TYPE_UNSUPPORTED_SCHEME: {
+				resId = R.string.message_unsupported_scheme;
+				break;
+			}
+			case TYPE_CAPTCHA_EXPIRED: {
+				resId = R.string.message_captcha_expired;
+				break;
+			}
+			case TYPE_EMPTY_RESPONSE: {
+				resId = R.string.message_empty_response;
+				break;
+			}
+			case TYPE_INVALID_RESPONSE: {
+				resId = R.string.message_invalid_response;
+				break;
+			}
+			case TYPE_INVALID_DATA_FORMAT: {
+				resId = R.string.message_invalid_data_format;
+				break;
+			}
+			case TYPE_BOARD_NOT_EXISTS: {
+				resId = R.string.message_board_not_exist;
+				break;
+			}
+			case TYPE_THREAD_NOT_EXISTS: {
+				resId = R.string.message_thread_not_exist;
+				break;
+			}
+			case TYPE_POST_NOT_FOUND: {
+				resId = R.string.message_post_not_found;
+				break;
+			}
+			case TYPE_NO_ACCESS_TO_MEMORY: {
+				resId = R.string.message_no_access_to_memory;
+				break;
+			}
+			case TYPE_INSUFFICIENT_SPACE: {
+				resId = R.string.message_insufficient_space;
+				break;
+			}
+			case TYPE_EXTENSION: {
+				resId = R.string.message_extension_error;
+				break;
+			}
 		}
-		if (resId == 0) resId = R.string.message_unknown_error;
+		if (resId == 0) {
+			resId = R.string.message_unknown_error;
+		}
 		return MainApplication.getInstance().getString(resId);
 	}
 }

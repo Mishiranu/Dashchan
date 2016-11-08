@@ -25,8 +25,7 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 
 @Public
-public final class FileAttachment implements Attachment
-{
+public final class FileAttachment implements Attachment {
 	private static final long serialVersionUID = 1L;
 
 	private String mFileUriString;
@@ -40,161 +39,147 @@ public final class FileAttachment implements Attachment
 	private boolean mSpoiler;
 
 	@Public
-	public FileAttachment()
-	{
+	public FileAttachment() {}
 
-	}
-
-	private static String fixRelativeUriString(String uriString)
-	{
+	private static String fixRelativeUriString(String uriString) {
 		int index = uriString.indexOf("//");
-		if (index >= 0)
-		{
+		if (index >= 0) {
 			index = uriString.indexOf('/', index + 2);
-			if (index >= 0) index++; else return uriString;
+			if (index >= 0) {
+				index++;
+			} else {
+				return uriString;
+			}
 		}
-		if (index < 0) index = 0;
-		if (uriString.indexOf(':', index) >= 0)
-		{
+		if (index < 0) {
+			index = 0;
+		}
+		if (uriString.indexOf(':', index) >= 0) {
 			uriString = uriString.substring(0, index) + uriString.substring(index).replace(":", "%3A");
 		}
 		return uriString;
 	}
 
-	public Uri getRelativeFileUri()
-	{
+	public Uri getRelativeFileUri() {
 		return mFileUriString != null ? Uri.parse(fixRelativeUriString(mFileUriString)) : null;
 	}
 
 	@Public
-	public Uri getFileUri(ChanLocator locator)
-	{
+	public Uri getFileUri(ChanLocator locator) {
 		return locator.convert(getRelativeFileUri());
 	}
 
 	@Public
-	public FileAttachment setFileUri(ChanLocator locator, Uri fileUri)
-	{
+	public FileAttachment setFileUri(ChanLocator locator, Uri fileUri) {
 		mFileUriString = fileUri != null ? locator.makeRelative(fileUri).toString() : null;
 		return this;
 	}
 
-	public Uri getRelativeThumbnailUri()
-	{
+	public Uri getRelativeThumbnailUri() {
 		return mThumbnailUriString != null ? Uri.parse(fixRelativeUriString(mThumbnailUriString)) : null;
 	}
 
 	@Public
-	public Uri getThumbnailUri(ChanLocator locator)
-	{
+	public Uri getThumbnailUri(ChanLocator locator) {
 		return locator.convert(getRelativeThumbnailUri());
 	}
 
 	@Public
-	public FileAttachment setThumbnailUri(ChanLocator locator, Uri thumbnailUri)
-	{
+	public FileAttachment setThumbnailUri(ChanLocator locator, Uri thumbnailUri) {
 		mThumbnailUriString = thumbnailUri != null ? locator.makeRelative(thumbnailUri).toString() : null;
 		return this;
 	}
 
 	@Public
-	public String getOriginalName()
-	{
+	public String getOriginalName() {
 		return mOriginalName;
 	}
 
 	@Public
-	public FileAttachment setOriginalName(String originalName)
-	{
+	public FileAttachment setOriginalName(String originalName) {
 		mOriginalName = originalName;
 		return this;
 	}
 
-	public String getNormalizedOriginalName(String fileName)
-	{
+	public String getNormalizedOriginalName(String fileName) {
 		return getNormalizedOriginalName(fileName, StringUtils.getFileExtension(fileName));
 	}
 
-	public String getNormalizedOriginalName(String fileName, String fileExtension)
-	{
+	public String getNormalizedOriginalName(String fileName, String fileExtension) {
 		String originalName = getOriginalName();
-		if (!StringUtils.isEmpty(originalName))
-		{
+		if (!StringUtils.isEmpty(originalName)) {
 			originalName = StringUtils.escapeFile(originalName, false);
-			if (fileExtension == null) fileExtension = StringUtils.getFileExtension(fileName);
-			if (fileExtension != null)
-			{
+			if (fileExtension == null) {
+				fileExtension = StringUtils.getFileExtension(fileName);
+			}
+			if (fileExtension != null) {
 				String normalizedOriginalExtension = getNormalizedExtension(StringUtils.getFileExtension(originalName));
 				String normalizedFileExtension = getNormalizedExtension(fileExtension);
-				if (!normalizedFileExtension.equals(normalizedOriginalExtension)) originalName += "." + fileExtension;
-				if (fileName.equals(originalName)) return null;
+				if (!normalizedFileExtension.equals(normalizedOriginalExtension)) {
+					originalName += "." + fileExtension;
+				}
+				if (fileName.equals(originalName)) {
+					return null;
+				}
 			}
 			return originalName;
 		}
 		return null;
 	}
 
-	public static String getNormalizedExtension(String extension)
-	{
+	public static String getNormalizedExtension(String extension) {
 		String normalizedExtenstion = C.EXTENSION_TRANSFORMATION.get(extension);
-		if (normalizedExtenstion == null) normalizedExtenstion = extension;
+		if (normalizedExtenstion == null) {
+			normalizedExtenstion = extension;
+		}
 		return normalizedExtenstion;
 	}
 
 	@Public
-	public int getSize()
-	{
+	public int getSize() {
 		return mSize;
 	}
 
 	@Public
-	public FileAttachment setSize(int size)
-	{
+	public FileAttachment setSize(int size) {
 		mSize = size;
 		return this;
 	}
 
 	@Public
-	public int getWidth()
-	{
+	public int getWidth() {
 		return mWidth;
 	}
 
 	@Public
-	public FileAttachment setWidth(int width)
-	{
+	public FileAttachment setWidth(int width) {
 		mWidth = width;
 		return this;
 	}
 
 	@Public
-	public int getHeight()
-	{
+	public int getHeight() {
 		return mHeight;
 	}
 
 	@Public
-	public FileAttachment setHeight(int height)
-	{
+	public FileAttachment setHeight(int height) {
 		mHeight = height;
 		return this;
 	}
 
 	@Public
-	public boolean isSpoiler()
-	{
+	public boolean isSpoiler() {
 		return mSpoiler;
 	}
 
 	@Public
-	public FileAttachment setSpoiler(boolean spoiler)
-	{
+	public FileAttachment setSpoiler(boolean spoiler) {
 		mSpoiler = spoiler;
 		return this;
 	}
 
-	public boolean contentEquals(FileAttachment o)
-	{
+	public boolean contentEquals(FileAttachment o) {
 		return StringUtils.equals(mFileUriString, o.mFileUriString) &&
 				StringUtils.equals(mThumbnailUriString, o.mThumbnailUriString) &&
 				StringUtils.equals(mOriginalName, o.mOriginalName) &&

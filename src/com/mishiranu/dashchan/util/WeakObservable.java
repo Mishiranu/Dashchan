@@ -21,68 +21,61 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class WeakObservable<T> implements Iterable<T>
-{
+public class WeakObservable<T> implements Iterable<T> {
 	private final ArrayList<WeakReference<T>> mObservers = new ArrayList<>();
 
-	public void register(T observer)
-	{
+	public void register(T observer) {
 		mObservers.add(new WeakReference<>(observer));
 	}
 
-	public void unregister(T observer)
-	{
+	public void unregister(T observer) {
 		Iterator<WeakReference<T>> iterator = mObservers.iterator();
-		while (iterator.hasNext())
-		{
+		while (iterator.hasNext()) {
 			T item = iterator.next().get();
-			if (item == observer || item == null) iterator.remove();
+			if (item == observer || item == null) {
+				iterator.remove();
+			}
 		}
 	}
 
 	@Override
-	public Iterator<T> iterator()
-	{
+	public Iterator<T> iterator() {
 		return new WeakIterator();
 	}
 
-	private class WeakIterator implements Iterator<T>
-	{
+	private class WeakIterator implements Iterator<T> {
 		private final Iterator<WeakReference<T>> mIterator = mObservers.iterator();
 
 		private T mNext;
 
 		@Override
-		public boolean hasNext()
-		{
-			if (mNext == null)
-			{
-				while (mIterator.hasNext())
-				{
+		public boolean hasNext() {
+			if (mNext == null) {
+				while (mIterator.hasNext()) {
 					T next = mIterator.next().get();
-					if (next != null)
-					{
+					if (next != null) {
 						mNext = next;
 						break;
+					} else {
+						mIterator.remove();
 					}
-					else mIterator.remove();
 				}
 			}
 			return mNext != null;
 		}
 
 		@Override
-		public T next()
-		{
-			if (!hasNext()) throw new NoSuchElementException();
+		public T next() {
+			if (!hasNext()) {
+				throw new NoSuchElementException();
+			}
 			T next = mNext;
 			mNext = null;
 			return next;
 		}
 
 		@Override
-		public void remove()
-		{
+		public void remove() {
 			throw new UnsupportedOperationException();
 		}
 	}

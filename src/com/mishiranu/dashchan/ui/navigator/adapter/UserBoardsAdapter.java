@@ -30,8 +30,7 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ViewFactory;
 
-public class UserBoardsAdapter extends BaseAdapter
-{
+public class UserBoardsAdapter extends BaseAdapter {
 	private final String mChanName;
 
 	private final ArrayList<ListItem> mListItems = new ArrayList<>();
@@ -40,39 +39,30 @@ public class UserBoardsAdapter extends BaseAdapter
 	private boolean mFilterMode = false;
 	private String mFilterText;
 
-	public UserBoardsAdapter(String chanName)
-	{
+	public UserBoardsAdapter(String chanName) {
 		mChanName = chanName;
 	}
 
-	/*
-	 * Returns true, if adapter isn't empty.
-	 */
-	public boolean applyFilter(String text)
-	{
+	// Returns true, if adapter isn't empty.
+	public boolean applyFilter(String text) {
 		mFilterText = text;
 		mFilterMode = !StringUtils.isEmpty(text);
 		mFilteredListItems.clear();
-		if (mFilterMode)
-		{
+		if (mFilterMode) {
 			text = text.toLowerCase(Locale.getDefault());
-			for (ListItem listItem : mListItems)
-			{
+			for (ListItem listItem : mListItems) {
 				boolean add = false;
-				if (listItem.boardName.toLowerCase(Locale.US).contains(text))
-				{
+				if (listItem.boardName.toLowerCase(Locale.US).contains(text)) {
+					add = true;
+				} else if (listItem.title != null && listItem.title.toLowerCase(Locale.getDefault()).contains(text)) {
+					add = true;
+				} else if (listItem.description != null && listItem.description.toLowerCase(Locale.getDefault())
+						.contains(text)) {
 					add = true;
 				}
-				else if (listItem.title != null && listItem.title.toLowerCase(Locale.getDefault()).contains(text))
-				{
-					add = true;
+				if (add){
+					mFilteredListItems.add(listItem);
 				}
-				else if (listItem.description != null && listItem.description.toLowerCase(Locale.getDefault())
-						.contains(text))
-				{
-					add = true;
-				}
-				if (add) mFilteredListItems.add(listItem);
 			}
 		}
 		notifyDataSetChanged();
@@ -80,56 +70,49 @@ public class UserBoardsAdapter extends BaseAdapter
 	}
 
 	@Override
-	public View getView(int position, View convertView, ViewGroup parent)
-	{
+	public View getView(int position, View convertView, ViewGroup parent) {
 		ListItem listItem = getItem(position);
 		ViewFactory.TwoLinesViewHolder holder;
-		if (convertView == null)
-		{
+		if (convertView == null) {
 			convertView = ViewFactory.makeTwoLinesListItem(parent, true);
 			float density = ResourceUtils.obtainDensity(parent);
 			convertView.setPadding((int) (16f * density), convertView.getPaddingTop(),
 					(int) (16f * density), convertView.getPaddingBottom());
 			holder = (ViewFactory.TwoLinesViewHolder) convertView.getTag();
 			holder.text2.setSingleLine(false);
+		} else {
+			holder = (ViewFactory.TwoLinesViewHolder) convertView.getTag();
 		}
-		else holder = (ViewFactory.TwoLinesViewHolder) convertView.getTag();
 		holder.text1.setText(listItem.title);
-		if (!StringUtils.isEmpty(listItem.description))
-		{
+		if (!StringUtils.isEmpty(listItem.description)) {
 			holder.text2.setVisibility(View.VISIBLE);
 			holder.text2.setText(listItem.description);
+		} else {
+			holder.text2.setVisibility(View.GONE);
 		}
-		else holder.text2.setVisibility(View.GONE);
 		return convertView;
 	}
 
 	@Override
-	public int getCount()
-	{
+	public int getCount() {
 		return (mFilterMode ? mFilteredListItems : mListItems).size();
 	}
 
 	@Override
-	public ListItem getItem(int position)
-	{
+	public ListItem getItem(int position) {
 		return (mFilterMode ? mFilteredListItems : mListItems).get(position);
 	}
 
 	@Override
-	public long getItemId(int position)
-	{
+	public long getItemId(int position) {
 		return 0;
 	}
 
-	public void setItems(Board[] boards)
-	{
+	public void setItems(Board[] boards) {
 		mListItems.clear();
 		ChanConfiguration configuration = ChanConfiguration.get(mChanName);
-		if (boards != null)
-		{
-			for (Board board : boards)
-			{
+		if (boards != null) {
+			for (Board board : boards) {
 				String boardName = board.getBoardName();
 				String title = configuration.getBoardTitle(boardName);
 				String description = configuration.getBoardDescription(boardName);
@@ -138,15 +121,15 @@ public class UserBoardsAdapter extends BaseAdapter
 			}
 		}
 		notifyDataSetChanged();
-		if (mFilterMode) applyFilter(mFilterText);
+		if (mFilterMode) {
+			applyFilter(mFilterText);
+		}
 	}
 
-	public static class ListItem
-	{
+	public static class ListItem {
 		public final String boardName, title, description;
 
-		public ListItem(String boardName, String title, String description)
-		{
+		public ListItem(String boardName, String title, String description) {
 			this.boardName = boardName;
 			this.title = title;
 			this.description = description;

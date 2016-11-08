@@ -21,28 +21,25 @@ import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.ToastUtils;
 
-public class ExtensionException extends Exception implements ErrorItem.Holder
-{
+public class ExtensionException extends Exception implements ErrorItem.Holder {
 	private static final long serialVersionUID = 1L;
 
-	public ExtensionException(Throwable throwable)
-	{
+	public ExtensionException(Throwable throwable) {
 		super(throwable);
 	}
 
 	@Override
-	public ErrorItem getErrorItemAndHandle()
-	{
+	public ErrorItem getErrorItemAndHandle() {
 		logException(getCause(), false);
 		return new ErrorItem(ErrorItem.TYPE_EXTENSION);
 	}
 
-	public static void logException(Throwable t, boolean showToast)
-	{
-		if (t instanceof LinkageError || t instanceof RuntimeException)
-		{
+	public static void logException(Throwable t, boolean showToast) {
+		if (t instanceof LinkageError || t instanceof RuntimeException) {
 			Log.persistent().stack(t);
-			if (showToast) ToastUtils.show(MainApplication.getInstance(), new ErrorItem(ErrorItem.TYPE_EXTENSION));
+			if (showToast) {
+				ToastUtils.show(MainApplication.getInstance(), new ErrorItem(ErrorItem.TYPE_EXTENSION));
+			}
 		}
 	}
 }

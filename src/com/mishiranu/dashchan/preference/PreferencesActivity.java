@@ -43,44 +43,43 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 
-public class PreferencesActivity extends PreferenceActivity
-{
+public class PreferencesActivity extends PreferenceActivity {
 	@Override
-	protected void onCreate(Bundle savedInstanceState)
-	{
+	protected void onCreate(Bundle savedInstanceState) {
 		ResourceUtils.applyPreferredTheme(this);
 		super.onCreate(savedInstanceState);
 		boolean root = getIntent().getExtras() == null;
 		boolean hasChans = !ChanManager.getInstance().getAvailableChanNames().isEmpty();
-		if (hasChans && root) setTitle(R.string.action_preferences);
-		if (hasChans || !root) getActionBar().setDisplayHomeAsUpEnabled(true);
-		if (!hasChans && root && savedInstanceState == null) ToastUtils.show(this, R.string.message_no_extensions);
+		if (hasChans && root) {
+			setTitle(R.string.action_preferences);
+		}
+		if (hasChans || !root) {
+			getActionBar().setDisplayHomeAsUpEnabled(true);
+		}
+		if (!hasChans && root && savedInstanceState == null) {
+			ToastUtils.show(this, R.string.message_no_extensions);
+		}
 		ViewUtils.applyToolbarStyle(this, null);
 	}
 
 	@Override
-	protected boolean isValidFragment(String fragmentName)
-	{
+	protected boolean isValidFragment(String fragmentName) {
 		return true;
 	}
 
 	@Override
-	public void onBuildHeaders(List<Header> target)
-	{
+	public void onBuildHeaders(List<Header> target) {
 		Collection<String> chanNames = ChanManager.getInstance().getAvailableChanNames();
 		Header generalHeader = new Header();
 		generalHeader.titleRes = R.string.preference_header_general;
 		generalHeader.fragment = GeneralFragment.class.getName();
 		target.add(generalHeader);
-		if (chanNames.size() == 1)
-		{
+		if (chanNames.size() == 1) {
 			Header chanHeader = new Header();
 			chanHeader.titleRes = R.string.preference_header_forum;
 			chanHeader.fragment = ChanFragment.class.getName();
 			target.add(chanHeader);
-		}
-		else if (chanNames.size() > 1)
-		{
+		} else if (chanNames.size() > 1) {
 			Header chansHeader = new Header();
 			chansHeader.titleRes = R.string.preference_header_forums;
 			chansHeader.fragment = ChansFragment.class.getName();
@@ -109,12 +108,9 @@ public class PreferencesActivity extends PreferenceActivity
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item)
-	{
-		switch (item.getItemId())
-		{
-			case android.R.id.home:
-			{
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+			case android.R.id.home: {
 				finish();
 				break;
 			}
@@ -123,26 +119,22 @@ public class PreferencesActivity extends PreferenceActivity
 	}
 
 	@Override
-	protected void onResume()
-	{
+	protected void onResume() {
 		super.onResume();
 		ForegroundManager.register(this);
 	}
 
 	@Override
-	protected void onPause()
-	{
+	protected void onPause() {
 		super.onPause();
 		ForegroundManager.unregister(this);
 	}
 
-	public static int checkNewVersions(ReadUpdateTask.UpdateDataMap updateDataMap)
-	{
+	public static int checkNewVersions(ReadUpdateTask.UpdateDataMap updateDataMap) {
 		return UpdateFragment.checkNewVersions(updateDataMap);
 	}
 
-	public static Intent createUpdateIntent(Context context, ReadUpdateTask.UpdateDataMap updateDataMap)
-	{
+	public static Intent createUpdateIntent(Context context, ReadUpdateTask.UpdateDataMap updateDataMap) {
 		return UpdateFragment.createUpdateIntent(context, updateDataMap);
 	}
 }

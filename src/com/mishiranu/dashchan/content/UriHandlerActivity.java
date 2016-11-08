@@ -30,25 +30,20 @@ import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 
-public class UriHandlerActivity extends Activity
-{
+public class UriHandlerActivity extends Activity {
 	@Override
-	protected void onCreate(Bundle savedInstanceState)
-	{
+	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		boolean success = false;
 		Uri uri = getIntent().getData();
-		CONDITION: if (uri != null)
-		{
-			if (getIntent().getBooleanExtra(C.EXTRA_EXTERNAL_BROWSER, false))
-			{
+		CONDITION: if (uri != null) {
+			if (getIntent().getBooleanExtra(C.EXTRA_EXTERNAL_BROWSER, false)) {
 				NavigationUtils.handleUri(this, null, uri, NavigationUtils.BrowserType.EXTERNAL);
 				success = true;
 				break CONDITION;
 			}
 			String chanName = ChanManager.getInstance().getChanNameByHost(uri.getAuthority());
-			if (chanName != null)
-			{
+			if (chanName != null) {
 				boolean fromClient = getIntent().getBooleanExtra(C.EXTRA_FROM_CLIENT, false);
 				ChanLocator locator = ChanLocator.get(chanName);
 				boolean boardUri = locator.safe(false).isBoardUri(uri);
@@ -56,61 +51,50 @@ public class UriHandlerActivity extends Activity
 				String boardName = boardUri || threadUri ? locator.safe(false).getBoardName(uri) : null;
 				String threadNumber = threadUri ? locator.safe(false).getThreadNumber(uri) : null;
 				String postNumber = threadUri ? locator.safe(false).getPostNumber(uri) : null;
-				if (boardUri)
-				{
-					if (!fromClient)
-					{
+				if (boardUri) {
+					if (!fromClient) {
 						startActivity(NavigationUtils.obtainThreadsIntent(this, chanName, boardName,
 								false, false, false, false));
 					}
 					success = true;
-				}
-				else if (threadUri)
-				{
-					if (!fromClient)
-					{
+				} else if (threadUri) {
+					if (!fromClient) {
 						startActivity(NavigationUtils.obtainPostsIntent(this, chanName, boardName, threadNumber,
 								postNumber, null, false, false));
 					}
 					success = true;
-				}
-				else if (locator.isImageUri(uri))
-				{
-					if (!fromClient) NavigationUtils.openImageVideo(this, locator.convert(uri), false);
+				} else if (locator.isImageUri(uri)) {
+					if (!fromClient) {
+						NavigationUtils.openImageVideo(this, locator.convert(uri), false);
+					}
 					success = true;
-				}
-				else if (locator.isAudioUri(uri))
-				{
-					if (!fromClient)
-					{
+				} else if (locator.isAudioUri(uri)) {
+					if (!fromClient) {
 						AudioPlayerService.start(this, chanName, uri, locator.createAttachmentFileName(uri));
 					}
 					success = true;
-				}
-				else if (locator.isVideoUri(uri))
-				{
+				} else if (locator.isVideoUri(uri)) {
 					String fileName = locator.createAttachmentFileName(uri);
-					if (NavigationUtils.isOpenableVideoPath(fileName))
-					{
-						if (!fromClient) NavigationUtils.openImageVideo(this, locator.convert(uri), false);
+					if (NavigationUtils.isOpenableVideoPath(fileName)) {
+						if (!fromClient) {
+							NavigationUtils.openImageVideo(this, locator.convert(uri), false);
+						}
 						success = true;
-					}
-					else if (!fromClient)
-					{
+					} else if (!fromClient) {
 						NavigationUtils.handleUri(this, chanName, locator.convert(uri),
 								NavigationUtils.BrowserType.EXTERNAL);
 						success = true;
 					}
-				}
-				else if (fromClient && Preferences.isUseInternalBrowser())
-				{
+				} else if (fromClient && Preferences.isUseInternalBrowser()) {
 					NavigationUtils.handleUri(this, chanName, locator.convert(uri),
 							NavigationUtils.BrowserType.INTERNAL);
 					success = true;
 				}
 			}
 		}
-		if (!success) ToastUtils.show(this, R.string.message_unknown_address);
+		if (!success) {
+			ToastUtils.show(this, R.string.message_unknown_address);
+		}
 		finish();
 	}
 }

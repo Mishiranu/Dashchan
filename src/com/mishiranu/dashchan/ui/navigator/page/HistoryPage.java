@@ -32,35 +32,33 @@ import com.mishiranu.dashchan.ui.navigator.adapter.HistoryAdapter;
 import com.mishiranu.dashchan.widget.PullableListView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 
-public class HistoryPage extends ListPage<HistoryAdapter>
-{
+public class HistoryPage extends ListPage<HistoryAdapter> {
 	@Override
-	protected void onCreate()
-	{
+	protected void onCreate() {
 		PullableListView listView = getListView();
 		PageHolder pageHolder = getPageHolder();
 		HistoryAdapter adapter = new HistoryAdapter(pageHolder.chanName);
 		initAdapter(adapter, null);
 		listView.getWrapper().setPullSides(PullableWrapper.Side.NONE);
-		if (adapter.isEmpty()) switchView(ViewType.ERROR, R.string.message_empty_history); else
-		{
+		if (adapter.isEmpty()) {
+			switchView(ViewType.ERROR, R.string.message_empty_history);
+		} else {
 			showScaleAnimation();
-			if (pageHolder.position != null) pageHolder.position.apply(getListView());
+			if (pageHolder.position != null) {
+				pageHolder.position.apply(getListView());
+			}
 		}
 	}
 
 	@Override
-	public String obtainTitle()
-	{
+	public String obtainTitle() {
 		return getString(R.string.action_history);
 	}
 
 	@Override
-	public void onItemClick(View view, int position, long id)
-	{
+	public void onItemClick(View view, int position, long id) {
 		HistoryDatabase.HistoryItem historyItem = getAdapter().getHistoryItem(position);
-		if (historyItem != null)
-		{
+		if (historyItem != null) {
 			getUiManager().navigator().navigatePosts(historyItem.chanName, historyItem.boardName,
 					historyItem.threadNumber, null, null, false);
 		}
@@ -69,8 +67,7 @@ public class HistoryPage extends ListPage<HistoryAdapter>
 	private static final int OPTIONS_MENU_CLEAR_HISTORY = 0;
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu)
-	{
+	public void onCreateOptionsMenu(Menu menu) {
 		menu.add(0, OPTIONS_MENU_SEARCH, 0, R.string.action_filter)
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
 		menu.add(0, OPTIONS_MENU_CLEAR_HISTORY, 0, R.string.action_clear_history);
@@ -78,20 +75,15 @@ public class HistoryPage extends ListPage<HistoryAdapter>
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item)
-	{
-		switch (item.getItemId())
-		{
-			case OPTIONS_MENU_CLEAR_HISTORY:
-			{
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+			case OPTIONS_MENU_CLEAR_HISTORY: {
 				new AlertDialog.Builder(getActivity()).setMessage(R.string.message_clear_history_confirm)
 						.setNegativeButton(android.R.string.cancel, null)
-						.setPositiveButton(android.R.string.ok, (dialog, which1) ->
-				{
+						.setPositiveButton(android.R.string.ok, (dialog, which1) -> {
 					HistoryDatabase.getInstance().clearAllHistory(getPageHolder().chanName);
 					getAdapter().clear();
 					switchView(ViewType.ERROR, R.string.message_empty_history);
-
 				}).show();
 				return true;
 			}
@@ -104,15 +96,12 @@ public class HistoryPage extends ListPage<HistoryAdapter>
 	private static final int CONTEXT_MENU_REMOVE_FROM_HISTORY = 2;
 
 	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v, int position, View targetView)
-	{
+	public void onCreateContextMenu(ContextMenu menu, View v, int position, View targetView) {
 		HistoryDatabase.HistoryItem historyItem = getAdapter().getHistoryItem(position);
-		if (historyItem != null)
-		{
+		if (historyItem != null) {
 			menu.add(0, CONTEXT_MENU_COPY_LINK, 0, R.string.action_copy_link);
 			if (!FavoritesStorage.getInstance().hasFavorite(historyItem.chanName,
-					historyItem.boardName, historyItem.threadNumber))
-			{
+					historyItem.boardName, historyItem.threadNumber)) {
 				menu.add(0, CONTEXT_MENU_ADD_FAVORITES, 0, R.string.action_add_to_favorites);
 			}
 			menu.add(0, CONTEXT_MENU_REMOVE_FROM_HISTORY, 0, R.string.action_remove_from_history);
@@ -120,31 +109,26 @@ public class HistoryPage extends ListPage<HistoryAdapter>
 	}
 
 	@Override
-	public boolean onContextItemSelected(MenuItem item, int position, View targetView)
-	{
+	public boolean onContextItemSelected(MenuItem item, int position, View targetView) {
 		HistoryDatabase.HistoryItem historyItem = getAdapter().getHistoryItem(position);
-		if (historyItem != null)
-		{
-			switch (item.getItemId())
-			{
-				case CONTEXT_MENU_COPY_LINK:
-				{
+		if (historyItem != null) {
+			switch (item.getItemId()) {
+				case CONTEXT_MENU_COPY_LINK: {
 					Uri uri = getChanLocator().safe(true).createThreadUri(historyItem.boardName,
 							historyItem.threadNumber);
-					if (uri != null) StringUtils.copyToClipboard(getActivity(), uri.toString());
+					if (uri != null) {
+						StringUtils.copyToClipboard(getActivity(), uri.toString());
+					}
 					return true;
 				}
-				case CONTEXT_MENU_ADD_FAVORITES:
-				{
+				case CONTEXT_MENU_ADD_FAVORITES: {
 					FavoritesStorage.getInstance().add(historyItem.chanName, historyItem.boardName,
 							historyItem.threadNumber, historyItem.title, 0);
 					return true;
 				}
-				case CONTEXT_MENU_REMOVE_FROM_HISTORY:
-				{
+				case CONTEXT_MENU_REMOVE_FROM_HISTORY: {
 					if (HistoryDatabase.getInstance().remove(historyItem.chanName, historyItem.boardName,
-							historyItem.threadNumber))
-					{
+							historyItem.threadNumber)) {
 						getAdapter().remove(historyItem);
 					}
 					return true;
@@ -155,8 +139,7 @@ public class HistoryPage extends ListPage<HistoryAdapter>
 	}
 
 	@Override
-	public void onSearchQueryChange(String query)
-	{
+	public void onSearchQueryChange(String query) {
 		getAdapter().applyFilter(query);
 	}
 }

@@ -29,7 +29,4 @@ import java.lang.annotation.Target;
 @Inherited
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.SOURCE)
-public @interface Extendable
-{
-
-}
+public @interface Extendable {}

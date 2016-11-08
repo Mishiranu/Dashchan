@@ -32,8 +32,7 @@ import android.os.Parcelable;
 import chan.util.CommonUtils;
 import chan.util.StringUtils;
 
-public class AutohideStorage extends StorageManager.Storage
-{
+public class AutohideStorage extends StorageManager.Storage {
 	private static final String KEY_DATA = "data";
 	private static final String KEY_CHAN_NAMES = "chanNames";
 	private static final String KEY_BOARD_NAME = "boardName";
@@ -47,37 +46,30 @@ public class AutohideStorage extends StorageManager.Storage
 
 	private static final AutohideStorage INSTANCE = new AutohideStorage();
 
-	public static AutohideStorage getInstance()
-	{
+	public static AutohideStorage getInstance() {
 		return INSTANCE;
 	}
 
 	private final ArrayList<AutohideItem> mAutohideItems = new ArrayList<>();
 
-	private AutohideStorage()
-	{
+	private AutohideStorage() {
 		super("autohide", 1000, 10000);
 		JSONObject jsonObject = read();
-		if (jsonObject != null)
-		{
+		if (jsonObject != null) {
 			JSONArray jsonArray = jsonObject.optJSONArray(KEY_DATA);
-			if (jsonArray != null)
-			{
-				for (int i = 0; i < jsonArray.length(); i++)
-				{
+			if (jsonArray != null) {
+				for (int i = 0; i < jsonArray.length(); i++) {
 					jsonObject = jsonArray.optJSONObject(i);
-					if (jsonObject != null)
-					{
+					if (jsonObject != null) {
 						HashSet<String> chanNames = null;
 						JSONArray chanNamesArray = jsonObject.optJSONArray(KEY_CHAN_NAMES);
-						if (chanNamesArray != null)
-						{
-							for (int j = 0; j < chanNamesArray.length(); j++)
-							{
+						if (chanNamesArray != null) {
+							for (int j = 0; j < chanNamesArray.length(); j++) {
 								String chanName = chanNamesArray.optString(j, null);
-								if (!StringUtils.isEmpty(chanName))
-								{
-									if (chanNames == null) chanNames = new HashSet<>();
+								if (!StringUtils.isEmpty(chanName)) {
+									if (chanNames == null) {
+										chanNames = new HashSet<>();
+									}
 									chanNames.add(chanName);
 								}
 							}
@@ -98,34 +90,32 @@ public class AutohideStorage extends StorageManager.Storage
 		}
 	}
 
-	public ArrayList<AutohideItem> getItems()
-	{
+	public ArrayList<AutohideItem> getItems() {
 		return mAutohideItems;
 	}
 
 	@Override
-	public Object onClone()
-	{
+	public Object onClone() {
 		ArrayList<AutohideItem> autohideItems = new ArrayList<>(mAutohideItems.size());
-		for (AutohideItem autohideItem : mAutohideItems) autohideItems.add(new AutohideItem(autohideItem));
+		for (AutohideItem autohideItem : mAutohideItems) {
+			autohideItems.add(new AutohideItem(autohideItem));
+		}
 		return autohideItems;
 	}
 
 	@Override
-	public JSONObject onSerialize(Object data) throws JSONException
-	{
+	public JSONObject onSerialize(Object data) throws JSONException {
 		@SuppressWarnings("unchecked")
 		ArrayList<AutohideItem> autohideItems = (ArrayList<AutohideItem>) data;
-		if (autohideItems.size() > 0)
-		{
+		if (autohideItems.size() > 0) {
 			JSONArray jsonArray = new JSONArray();
-			for (AutohideItem autohideItem : autohideItems)
-			{
+			for (AutohideItem autohideItem : autohideItems) {
 				JSONObject jsonObject = new JSONObject();
-				if (autohideItem.chanNames != null && autohideItem.chanNames.size() > 0)
-				{
+				if (autohideItem.chanNames != null && autohideItem.chanNames.size() > 0) {
 					JSONArray chanNamesArray = new JSONArray();
-					for (String chanName : autohideItem.chanNames) chanNamesArray.put(chanName);
+					for (String chanName : autohideItem.chanNames) {
+						chanNamesArray.put(chanName);
+					}
 					jsonObject.put(KEY_CHAN_NAMES, chanNamesArray);
 				}
 				putJson(jsonObject, KEY_BOARD_NAME, autohideItem.boardName);
@@ -145,26 +135,22 @@ public class AutohideStorage extends StorageManager.Storage
 		return null;
 	}
 
-	public void add(AutohideItem autohideItem)
-	{
+	public void add(AutohideItem autohideItem) {
 		mAutohideItems.add(autohideItem);
 		serialize();
 	}
 
-	public void update(int index, AutohideItem autohideItem)
-	{
+	public void update(int index, AutohideItem autohideItem) {
 		mAutohideItems.set(index, autohideItem);
 		serialize();
 	}
 
-	public void delete(int index)
-	{
+	public void delete(int index) {
 		mAutohideItems.remove(index);
 		serialize();
 	}
 
-	public static class AutohideItem implements Parcelable
-	{
+	public static class AutohideItem implements Parcelable {
 		public HashSet<String> chanNames;
 
 		public String boardName;
@@ -182,34 +168,27 @@ public class AutohideStorage extends StorageManager.Storage
 		private volatile boolean mReady = false;
 		private Pattern mPattern;
 
-		public AutohideItem()
-		{
+		public AutohideItem() {}
 
-		}
-
-		public AutohideItem(AutohideItem autohideItem)
-		{
+		public AutohideItem(AutohideItem autohideItem) {
 			this(autohideItem.chanNames, autohideItem.boardName, autohideItem.threadNumber,
 					autohideItem.optionOriginalPost, autohideItem.optionSage, autohideItem.optionSubject,
 					autohideItem.optionComment, autohideItem.optionName, autohideItem.value);
 		}
 
 		public AutohideItem(HashSet<String> chanNames, String boardName, String threadNumber, boolean optionOriginalPost,
-				boolean optionSage, boolean optionSubject, boolean optionComment, boolean optionName, String value)
-		{
+				boolean optionSage, boolean optionSubject, boolean optionComment, boolean optionName, String value) {
 			update(chanNames, boardName, threadNumber, optionOriginalPost, optionSage,
 					optionSubject, optionComment, optionName, value);
 		}
 
-		public static Pattern makePattern(String value)
-		{
+		public static Pattern makePattern(String value) {
 			return Pattern.compile(value, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 		}
 
 		public void update(HashSet<String> chanNames, String boardName, String threadNumber,
 				boolean optionOriginalPost, boolean optionSage, boolean optionSubject,
-				boolean optionComment, boolean optionName, String value)
-		{
+				boolean optionComment, boolean optionName, String value) {
 			this.chanNames = chanNames;
 			this.boardName = boardName;
 			this.threadNumber = threadNumber;
@@ -221,63 +200,60 @@ public class AutohideStorage extends StorageManager.Storage
 			this.value = value;
 		}
 
-		public String find(String data)
-		{
-			if (!mReady)
-			{
-				synchronized (this)
-				{
-					if (!mReady)
-					{
-						try
-						{
+		public String find(String data) {
+			if (!mReady) {
+				synchronized (this) {
+					if (!mReady) {
+						try {
 							mPattern = makePattern(value);
-						}
-						catch (Exception e)
-						{
-
+						} catch (Exception e) {
+							// Ignore
 						}
 						mReady = true;
 					}
 				}
 			}
-			try
-			{
+			try {
 				Matcher matcher = mPattern.matcher(data);
-				if (matcher.find())
-				{
+				if (matcher.find()) {
 					String result = matcher.group();
-					if (StringUtils.isEmpty(result)) result = value;
+					if (StringUtils.isEmpty(result)) {
+						result = value;
+					}
 					return result;
 				}
-			}
-			catch (Exception e)
-			{
-
+			} catch (Exception e) {
+				// Ignore
 			}
 			return null;
 		}
 
-		public String getReason(boolean subject, boolean name, String text, String findResult)
-		{
+		public String getReason(boolean subject, boolean name, String text, String findResult) {
 			StringBuilder builder = new StringBuilder();
-			if (optionSage) builder.append("sage ");
-			if (optionSubject && subject) builder.append("subject ");
-			if (optionName && name) builder.append("name ");
-			if (!StringUtils.isEmpty(findResult)) builder.append(findResult);
-			else if (!StringUtils.isEmpty(text)) builder.append(StringUtils.cutIfLongerToLine(text, 80, true));
+			if (optionSage) {
+				builder.append("sage ");
+			}
+			if (optionSubject && subject) {
+				builder.append("subject ");
+			}
+			if (optionName && name) {
+				builder.append("name ");
+			}
+			if (!StringUtils.isEmpty(findResult)) {
+				builder.append(findResult);
+			} else if (!StringUtils.isEmpty(text)) {
+				builder.append(StringUtils.cutIfLongerToLine(text, 80, true));
+			}
 			return builder.toString();
 		}
 
 		@Override
-		public int describeContents()
-		{
+		public int describeContents() {
 			return 0;
 		}
 
 		@Override
-		public void writeToParcel(Parcel dest, int flags)
-		{
+		public void writeToParcel(Parcel dest, int flags) {
 			dest.writeStringArray(CommonUtils.toArray(chanNames, String.class));
 			dest.writeString(boardName);
 			dest.writeString(threadNumber);
@@ -289,15 +265,12 @@ public class AutohideStorage extends StorageManager.Storage
 			dest.writeString(value);
 		}
 
-		public static final Creator<AutohideItem> CREATOR = new Creator<AutohideItem>()
-		{
+		public static final Creator<AutohideItem> CREATOR = new Creator<AutohideItem>() {
 			@Override
-			public AutohideItem createFromParcel(Parcel source)
-			{
+			public AutohideItem createFromParcel(Parcel source) {
 				AutohideItem autohideItem = new AutohideItem();
 				String[] chanNames = source.createStringArray();
-				if (chanNames != null)
-				{
+				if (chanNames != null) {
 					autohideItem.chanNames = new HashSet<>();
 					Collections.addAll(autohideItem.chanNames, chanNames);
 				}
@@ -313,8 +286,7 @@ public class AutohideStorage extends StorageManager.Storage
 			}
 
 			@Override
-			public AutohideItem[] newArray(int size)
-			{
+			public AutohideItem[] newArray(int size) {
 				return new AutohideItem[size];
 			}
 		};

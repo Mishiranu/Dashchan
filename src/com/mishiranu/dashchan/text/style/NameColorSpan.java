@@ -22,35 +22,35 @@ import android.text.style.UpdateAppearance;
 
 import com.mishiranu.dashchan.graphics.ColorScheme;
 
-public class NameColorSpan extends CharacterStyle implements UpdateAppearance, ColorScheme.Span
-{
+public class NameColorSpan extends CharacterStyle implements UpdateAppearance, ColorScheme.Span {
 	public static final int TYPE_TRIPCODE = 1;
 	public static final int TYPE_CAPCODE = 2;
 
 	private final int mType;
 	private int mForegroundColor;
 
-	public NameColorSpan(int type)
-	{
+	public NameColorSpan(int type) {
 		mType = type;
 	}
 
 	@Override
-	public void applyColorScheme(ColorScheme colorScheme)
-	{
-		if (colorScheme != null)
-		{
-			switch (mType)
-			{
-				case TYPE_TRIPCODE: mForegroundColor = colorScheme.tripcodeColor; break;
-				case TYPE_CAPCODE: mForegroundColor = colorScheme.capcodeColor; break;
+	public void applyColorScheme(ColorScheme colorScheme) {
+		if (colorScheme != null) {
+			switch (mType) {
+				case TYPE_TRIPCODE: {
+					mForegroundColor = colorScheme.tripcodeColor;
+					break;
+				}
+				case TYPE_CAPCODE: {
+					mForegroundColor = colorScheme.capcodeColor;
+					break;
+				}
 			}
 		}
 	}
 
 	@Override
-	public void updateDrawState(TextPaint paint)
-	{
+	public void updateDrawState(TextPaint paint) {
 		paint.setColor(mForegroundColor);
 	}
 }

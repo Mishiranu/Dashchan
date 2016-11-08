@@ -23,8 +23,7 @@ import android.widget.TextView;
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 
-public class AttachmentHolder
-{
+public class AttachmentHolder {
 	public View self;
 	public TextView fileName;
 	public TextView fileSize;

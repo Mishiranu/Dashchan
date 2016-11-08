@@ -37,8 +37,7 @@ import com.mishiranu.dashchan.content.net.EmbeddedManager;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.widget.AttachmentView;
 
-public abstract class AttachmentItem
-{
+public abstract class AttachmentItem {
 	private final Binder mBinder;
 
 	public static final int TYPE_IMAGE = 0;
@@ -65,28 +64,23 @@ public abstract class AttachmentItem
 	public abstract String getOriginalName();
 	public abstract String getDescription(AttachmentItem.FormatMode formatMode);
 
-	public String getChanName()
-	{
+	public String getChanName() {
 		return mBinder.getChanName();
 	}
 
-	public String getBoardName()
-	{
+	public String getBoardName() {
 		return mBinder.getBoardName();
 	}
 
-	public String getThreadNumber()
-	{
+	public String getThreadNumber() {
 		return mBinder.getThreadNumber();
 	}
 
-	public String getPostNumber()
-	{
+	public String getPostNumber() {
 		return mBinder.getPostNumber();
 	}
 
-	private static class FileAttachmentItem extends AttachmentItem
-	{
+	private static class FileAttachmentItem extends AttachmentItem {
 		public Uri fileUri;
 		public Uri thumbnailUri;
 
@@ -99,151 +93,140 @@ public abstract class AttachmentItem
 		private String mThumbnailKey;
 		private int mType = TYPE_IMAGE;
 
-		public FileAttachmentItem(Binder binder)
-		{
+		public FileAttachmentItem(Binder binder) {
 			super(binder);
 		}
 
-		private ChanLocator getLocator()
-		{
+		private ChanLocator getLocator() {
 			return ChanLocator.get(getChanName());
 		}
 
 		@Override
-		public Uri getFileUri()
-		{
+		public Uri getFileUri() {
 			return getLocator().convert(fileUri);
 		}
 
 		@Override
-		public Uri getThumbnailUri()
-		{
+		public Uri getThumbnailUri() {
 			return getLocator().convert(thumbnailUri);
 		}
 
 		@Override
-		public String getThumbnailKey()
-		{
-			if (mThumbnailKey == null && thumbnailUri != null)
-			{
+		public String getThumbnailKey() {
+			if (mThumbnailKey == null && thumbnailUri != null) {
 				mThumbnailKey = CacheManager.getInstance().getCachedFileKey(getThumbnailUri());
 			}
 			return mThumbnailKey;
 		}
 
 		@Override
-		public String getDialogTitle()
-		{
+		public String getDialogTitle() {
 			return originalName != null ? originalName : getFileName();
 		}
 
 		@Override
-		public int getSize()
-		{
+		public int getSize() {
 			return size;
 		}
 
 		@Override
-		public int getType()
-		{
+		public int getType() {
 			return mType;
 		}
 
 		@Override
-		public int getGeneralType()
-		{
+		public int getGeneralType() {
 			return GENERAL_TYPE_FILE;
 		}
 
 		@Override
-		public boolean isShowInGallery()
-		{
+		public boolean isShowInGallery() {
 			return mType == TYPE_IMAGE || mType == TYPE_VIDEO;
 		}
 
 		@Override
-		public boolean canDownloadToStorage()
-		{
+		public boolean canDownloadToStorage() {
 			return true;
 		}
 
 		@Override
-		public GalleryItem createGalleryItem()
-		{
+		public GalleryItem createGalleryItem() {
 			return new GalleryItem(fileUri, thumbnailUri, getBoardName(), getThreadNumber(),
 					getPostNumber(), originalName, width, height, size);
 		}
 
 		@Override
-		public String getExtension()
-		{
+		public String getExtension() {
 			return displayedExtension;
 		}
 
 		@Override
-		public String getFileName()
-		{
+		public String getFileName() {
 			return getLocator().createAttachmentFileName(getFileUri());
 		}
 
 		@Override
-		public String getOriginalName()
-		{
+		public String getOriginalName() {
 			return originalName;
 		}
 
 		@Override
-		public String getDescription(AttachmentItem.FormatMode formatMode)
-		{
+		public String getDescription(AttachmentItem.FormatMode formatMode) {
 			StringBuilder builder = new StringBuilder();
-			switch (formatMode)
-			{
-				case LONG:
-				{
-					if (displayedExtension != null) builder.append(displayedExtension.toUpperCase(Locale.US));
+			switch (formatMode) {
+				case LONG: {
+					if (displayedExtension != null) {
+						builder.append(displayedExtension.toUpperCase(Locale.US));
+					}
 				}
-				case SIMPLE:
-				{
-					if (width > 0 && height > 0)
-					{
-						if (builder.length() > 0) builder.append(' ');
+				case SIMPLE: {
+					if (width > 0 && height > 0) {
+						if (builder.length() > 0) {
+							builder.append(' ');
+						}
 						builder.append(width).append('x').append(height);
 					}
-					if (size > 0)
-					{
-						if (builder.length() > 0) builder.append(' ');
+					if (size > 0) {
+						if (builder.length() > 0) {
+							builder.append(' ');
+						}
 						builder.append(formatSize(size));
 					}
 					break;
 				}
 				case TWO_LINES:
-				case THREE_LINES:
-				{
-					if (displayedExtension != null) builder.append(displayedExtension.toUpperCase(Locale.US));
-					if (size > 0)
-					{
+				case THREE_LINES: {
+					if (displayedExtension != null) {
+						builder.append(displayedExtension.toUpperCase(Locale.US));
+					}
+					if (size > 0) {
 						builder.append(formatMode == FormatMode.THREE_LINES ? '\n' : ' ');
 						builder.append(formatSize(size));
 					}
-					if (width > 0 && height > 0) builder.append('\n').append(width).append('x').append(height);
+					if (width > 0 && height > 0) {
+						builder.append('\n').append(width).append('x').append(height);
+					}
 					break;
 				}
 			}
 			return builder.toString();
 		}
 
-		public void setDisplayedExtension(String displayedExtension)
-		{
+		public void setDisplayedExtension(String displayedExtension) {
 			this.displayedExtension = displayedExtension;
-			if (C.IMAGE_EXTENSIONS.contains(displayedExtension)) mType = TYPE_IMAGE;
-			else if (C.VIDEO_EXTENSIONS.contains(displayedExtension)) mType = TYPE_VIDEO;
-			else if (C.AUDIO_EXTENSIONS.contains(displayedExtension)) mType = TYPE_AUDIO;
-			else mType = TYPE_FILE;
+			if (C.IMAGE_EXTENSIONS.contains(displayedExtension)) {
+				mType = TYPE_IMAGE;
+			} else if (C.VIDEO_EXTENSIONS.contains(displayedExtension)) {
+				mType = TYPE_VIDEO;
+			} else if (C.AUDIO_EXTENSIONS.contains(displayedExtension)) {
+				mType = TYPE_AUDIO;
+			} else {
+				mType = TYPE_FILE;
+			}
 		}
 	}
 
-	private static class EmbeddedAttachmentItem extends AttachmentItem
-	{
+	private static class EmbeddedAttachmentItem extends AttachmentItem {
 		public boolean isAudio;
 		public boolean isVideo;
 
@@ -258,100 +241,83 @@ public abstract class AttachmentItem
 
 		private String mThumbnailKey;
 
-		public EmbeddedAttachmentItem(Binder binder)
-		{
+		public EmbeddedAttachmentItem(Binder binder) {
 			super(binder);
 		}
 
 		@Override
-		public Uri getFileUri()
-		{
+		public Uri getFileUri() {
 			return fileUri;
 		}
 
 		@Override
-		public Uri getThumbnailUri()
-		{
+		public Uri getThumbnailUri() {
 			return thumbnailUri;
 		}
 
 		@Override
-		public String getThumbnailKey()
-		{
-			if (mThumbnailKey == null && thumbnailUri != null)
-			{
+		public String getThumbnailKey() {
+			if (mThumbnailKey == null && thumbnailUri != null) {
 				mThumbnailKey = CacheManager.getInstance().getCachedFileKey(getThumbnailUri());
 			}
 			return mThumbnailKey;
 		}
 
 		@Override
-		public String getDialogTitle()
-		{
+		public String getDialogTitle() {
 			return title != null ? embeddedType + ": " + title : embeddedType;
 		}
 
 		@Override
-		public int getSize()
-		{
+		public int getSize() {
 			return 0;
 		}
 
 		@Override
-		public int getType()
-		{
+		public int getType() {
 			return isAudio ? TYPE_AUDIO : isVideo ? TYPE_VIDEO : TYPE_FILE;
 		}
 
 		@Override
-		public int getGeneralType()
-		{
+		public int getGeneralType() {
 			return fromComment ? GENERAL_TYPE_LINK : GENERAL_TYPE_FILE;
 		}
 
 		@Override
-		public boolean isShowInGallery()
-		{
+		public boolean isShowInGallery() {
 			return false;
 		}
 
 		@Override
-		public boolean canDownloadToStorage()
-		{
+		public boolean canDownloadToStorage() {
 			return canDownload;
 		}
 
 		@Override
-		public GalleryItem createGalleryItem()
-		{
+		public GalleryItem createGalleryItem() {
 			return null;
 		}
 
 		@Override
-		public String getExtension()
-		{
+		public String getExtension() {
 			return null;
 		}
 
 		@Override
-		public String getFileName()
-		{
+		public String getFileName() {
 			return fileName;
 		}
 
 		@Override
-		public String getOriginalName()
-		{
+		public String getOriginalName() {
 			return null;
 		}
 
 		@Override
-		public String getDescription(FormatMode formatMode)
-		{
+		public String getDescription(FormatMode formatMode) {
 			StringBuilder builder = new StringBuilder();
 			if (formatMode == FormatMode.LONG || formatMode == FormatMode.TWO_LINES
-					|| formatMode == FormatMode.THREE_LINES)
-			{
+					|| formatMode == FormatMode.THREE_LINES) {
 				builder.append(fromComment ? "URL" : "Embedded");
 				builder.append(formatMode == FormatMode.TWO_LINES || formatMode == FormatMode.THREE_LINES
 						? '\n' : ' ');
@@ -361,55 +327,47 @@ public abstract class AttachmentItem
 		}
 	}
 
-	public interface Binder
-	{
+	public interface Binder {
 		public String getChanName();
 		public String getBoardName();
 		public String getThreadNumber();
 		public String getPostNumber();
 	}
 
-	protected AttachmentItem(Binder binder)
-	{
+	protected AttachmentItem(Binder binder) {
 		mBinder = binder;
 	}
 
-	public static ArrayList<AttachmentItem> obtain(PostItem postItem)
-	{
+	public static ArrayList<AttachmentItem> obtain(PostItem postItem) {
 		ArrayList<AttachmentItem> attachmentItems = new ArrayList<>();
 		ChanLocator locator = ChanLocator.get(postItem.getChanName());
 		Post post = postItem.getPost();
-		for (int i = 0, count = post.getAttachmentsCount(); i < count; i++)
-		{
+		for (int i = 0, count = post.getAttachmentsCount(); i < count; i++) {
 			AttachmentItem attachmentItem = null;
 			Attachment attachment = post.getAttachmentAt(i);
-			if (attachment instanceof FileAttachment)
-			{
+			if (attachment instanceof FileAttachment) {
 				attachmentItem = obtainFileAttachmentItem(postItem, locator, (FileAttachment) attachment);
-			}
-			else if (attachment instanceof EmbeddedAttachment)
-			{
+			} else if (attachment instanceof EmbeddedAttachment) {
 				attachmentItem = obtainEmbeddedAttachmentItem(postItem, locator, (EmbeddedAttachment) attachment);
 			}
-			if (attachmentItem != null) attachmentItems.add(attachmentItem);
+			if (attachmentItem != null) {
+				attachmentItems.add(attachmentItem);
+			}
 		}
 		String comment = postItem.getRawComment();
 		addCommentAttachmentItems(attachmentItems, postItem, locator, comment, URI_TYPE_YOUTUBE);
 		addCommentAttachmentItems(attachmentItems, postItem, locator, comment, URI_TYPE_VIMEO);
 		addCommentAttachmentItems(attachmentItems, postItem, locator, comment, URI_TYPE_VOCAROO);
 		addCommentAttachmentItems(attachmentItems, postItem, locator, comment, URI_TYPE_SOUNDCLOUD);
-		if (attachmentItems.size() > 0)
-		{
+		if (attachmentItems.size() > 0) {
 			attachmentItems.trimToSize();
 			return attachmentItems;
 		}
 		return null;
 	}
 
-	private static ArrayList<String> getAllCodes(String... codes)
-	{
-		if (codes != null && codes.length > 0)
-		{
+	private static ArrayList<String> getAllCodes(String... codes) {
+		if (codes != null && codes.length > 0) {
 			ArrayList<String> list = new ArrayList<>(codes.length);
 			Collections.addAll(list, codes);
 			return list;
@@ -417,8 +375,7 @@ public abstract class AttachmentItem
 		return null;
 	}
 
-	public static String formatSize(int size)
-	{
+	public static String formatSize(int size) {
 		size /= 1024;
 		return size >= 1024 ? String.format(Locale.US, "%.1f", size / 1024f) + " MB" : size + " KB";
 	}
@@ -426,23 +383,24 @@ public abstract class AttachmentItem
 	public enum FormatMode {LONG, SIMPLE, TWO_LINES, THREE_LINES}
 
 	private static FileAttachmentItem obtainFileAttachmentItem(Binder binder, ChanLocator locator,
-			FileAttachment attachment)
-	{
-		if (attachment == null) return null;
+			FileAttachment attachment) {
+		if (attachment == null) {
+			return null;
+		}
 		FileAttachmentItem attachmentItem = new FileAttachmentItem(binder);
 		attachmentItem.size = attachment.getSize();
 		attachmentItem.width = attachment.getWidth();
 		attachmentItem.height = attachment.getHeight();
 		Uri fileUri = attachment.getRelativeFileUri();
 		Uri thumbnailUri = attachment.getRelativeThumbnailUri();
-		if (fileUri != null || thumbnailUri != null)
-		{
-			if (fileUri == null) fileUri = thumbnailUri;
+		if (fileUri != null || thumbnailUri != null) {
+			if (fileUri == null) {
+				fileUri = thumbnailUri;
+			}
 			String fileName = locator.createAttachmentFileName(fileUri);
 			String extension = StringUtils.getFileExtension(fileName);
 			attachmentItem.fileUri = fileUri;
-			if (C.IMAGE_EXTENSIONS.contains(extension) || C.VIDEO_EXTENSIONS.contains(extension))
-			{
+			if (C.IMAGE_EXTENSIONS.contains(extension) || C.VIDEO_EXTENSIONS.contains(extension)) {
 				attachmentItem.thumbnailUri = thumbnailUri;
 			}
 			attachmentItem.setDisplayedExtension(FileAttachment.getNormalizedExtension(extension));
@@ -453,11 +411,14 @@ public abstract class AttachmentItem
 	}
 
 	private static EmbeddedAttachmentItem obtainEmbeddedAttachmentItem(Binder binder, ChanLocator locator,
-			EmbeddedAttachment attachment)
-	{
-		if (attachment == null) return null;
+			EmbeddedAttachment attachment) {
+		if (attachment == null) {
+			return null;
+		}
 		Uri fileUri = attachment.getFileUri();
-		if (fileUri == null) return null;
+		if (fileUri == null) {
+			return null;
+		}
 		EmbeddedAttachmentItem attachmentItem = new EmbeddedAttachmentItem(binder);
 		attachmentItem.fileUri = fileUri;
 		attachmentItem.thumbnailUri = attachment.getThumbnailUri();
@@ -478,37 +439,30 @@ public abstract class AttachmentItem
 	private static final int URI_TYPE_SOUNDCLOUD = 3;
 
 	private static EmbeddedAttachmentItem obtainCommentAttachmentItem(Binder binder, ChanLocator locator,
-			String embeddedCode, int uriType)
-	{
+			String embeddedCode, int uriType) {
 		EmbeddedAttachmentItem attachmentItem;
-		switch (uriType)
-		{
-			case URI_TYPE_YOUTUBE:
-			{
+		switch (uriType) {
+			case URI_TYPE_YOUTUBE: {
 				attachmentItem = obtainEmbeddedAttachmentItem(binder, locator,
 						EmbeddedManager.getInstance().obtainYouTubeAttachment(locator, embeddedCode));
 				break;
 			}
-			case URI_TYPE_VIMEO:
-			{
+			case URI_TYPE_VIMEO: {
 				attachmentItem = obtainEmbeddedAttachmentItem(binder, locator,
 						EmbeddedManager.getInstance().obtainVimeoAttachment(locator, embeddedCode));
 				break;
 			}
-			case URI_TYPE_VOCAROO:
-			{
+			case URI_TYPE_VOCAROO: {
 				attachmentItem = obtainEmbeddedAttachmentItem(binder, locator,
 						EmbeddedManager.getInstance().obtainVocarooAttachment(locator, embeddedCode));
 				break;
 			}
-			case URI_TYPE_SOUNDCLOUD:
-			{
+			case URI_TYPE_SOUNDCLOUD: {
 				attachmentItem = obtainEmbeddedAttachmentItem(binder, locator,
 						EmbeddedManager.getInstance().obtainSoundCloudAttachment(locator, embeddedCode));
 				break;
 			}
-			default:
-			{
+			default: {
 				throw new RuntimeException();
 			}
 		}
@@ -517,40 +471,31 @@ public abstract class AttachmentItem
 	}
 
 	private static void addCommentAttachmentItems(ArrayList<AttachmentItem> attachmentItems, Binder binder,
-			ChanLocator locator, String comment, int uriType)
-	{
+			ChanLocator locator, String comment, int uriType) {
 		ArrayList<String> embeddedCodes;
-		switch (uriType)
-		{
-			case URI_TYPE_YOUTUBE:
-			{
+		switch (uriType) {
+			case URI_TYPE_YOUTUBE: {
 				embeddedCodes = getAllCodes(locator.getYouTubeEmbeddedCodes(comment));
 				break;
 			}
-			case URI_TYPE_VIMEO:
-			{
+			case URI_TYPE_VIMEO: {
 				embeddedCodes = getAllCodes(locator.getVimeoEmbeddedCodes(comment));
 				break;
 			}
-			case URI_TYPE_VOCAROO:
-			{
+			case URI_TYPE_VOCAROO: {
 				embeddedCodes = getAllCodes(locator.getVocarooEmbeddedCodes(comment));
 				break;
 			}
-			case URI_TYPE_SOUNDCLOUD:
-			{
+			case URI_TYPE_SOUNDCLOUD: {
 				embeddedCodes = getAllCodes(locator.getSoundCloudEmbeddedCodes(comment));
 				break;
 			}
-			default:
-			{
+			default: {
 				throw new RuntimeException();
 			}
 		}
-		if (embeddedCodes != null && embeddedCodes.size() > 0)
-		{
-			for (String embeddedCode : embeddedCodes)
-			{
+		if (embeddedCodes != null && embeddedCodes.size() > 0) {
+			for (String embeddedCode : embeddedCodes) {
 				attachmentItems.add(obtainCommentAttachmentItem(binder, locator, embeddedCode, uriType));
 			}
 		}
@@ -558,51 +503,42 @@ public abstract class AttachmentItem
 
 	private boolean mForceLoadThumbnail = false;
 
-	public void setForceLoadThumbnail()
-	{
+	public void setForceLoadThumbnail() {
 		mForceLoadThumbnail = true;
 	}
 
-	public void displayThumbnail(AttachmentView view, boolean needShowSeveralIcon, boolean isBusy, boolean force)
-	{
+	public void displayThumbnail(AttachmentView view, boolean needShowSeveralIcon, boolean isBusy, boolean force) {
 		view.setCropEnabled(Preferences.isCutThumbnails());
 		view.setImage(null);
 		int type = getType();
 		int additionalOverlayAttrId;
 		boolean mayReplaceOverlay = true;
 		String key = getThumbnailKey();
-		if (needShowSeveralIcon)
-		{
+		if (needShowSeveralIcon) {
 			additionalOverlayAttrId = R.attr.attachmentSeveral;
 			mayReplaceOverlay = false;
-		}
-		else
-		{
-			switch (type)
-			{
-				case TYPE_IMAGE:
-				{
+		} else {
+			switch (type) {
+				case TYPE_IMAGE: {
 					additionalOverlayAttrId = 0;
-					if (StringUtils.isEmpty(key)) additionalOverlayAttrId = R.attr.attachmentWarning;
+					if (StringUtils.isEmpty(key)) {
+						additionalOverlayAttrId = R.attr.attachmentWarning;
+					}
 					break;
 				}
-				case TYPE_VIDEO:
-				{
+				case TYPE_VIDEO: {
 					additionalOverlayAttrId = R.attr.attachmentVideo;
 					break;
 				}
-				case TYPE_AUDIO:
-				{
+				case TYPE_AUDIO: {
 					additionalOverlayAttrId = R.attr.attachmentAudio;
 					break;
 				}
-				case TYPE_FILE:
-				{
+				case TYPE_FILE: {
 					additionalOverlayAttrId = R.attr.attachmentFile;
 					break;
 				}
-				default:
-				{
+				default: {
 					additionalOverlayAttrId = R.attr.attachmentWarning;
 					break;
 				}
@@ -611,14 +547,12 @@ public abstract class AttachmentItem
 		view.setAdditionalOverlay(additionalOverlayAttrId, true);
 		ImageLoader imageLoader = ImageLoader.getInstance();
 		imageLoader.unbind(view);
-		if (key != null)
-		{
+		if (key != null) {
 			Uri uri = getThumbnailUri();
 			boolean loadThumbnails = Preferences.isLoadThumbnails();
 			boolean isCachedMemory = CacheManager.getInstance().isThumbnailCachedMemory(key);
 			// Load image if cached in RAM or list isn't scrolling (for better performance)
-			if (!isBusy || isCachedMemory)
-			{
+			if (!isBusy || isCachedMemory) {
 				boolean fromCacheOnly = isCachedMemory || !(loadThumbnails || force || mForceLoadThumbnail);
 				int errorAttrId = mayReplaceOverlay && !fromCacheOnly ? R.attr.attachmentWarning : 0;
 				imageLoader.loadImage(uri, getChanName(), key, fromCacheOnly, view, additionalOverlayAttrId,
@@ -627,14 +561,12 @@ public abstract class AttachmentItem
 		}
 	}
 
-	public boolean isThumbnailReady()
-	{
+	public boolean isThumbnailReady() {
 		String thumbnailKey = getThumbnailKey();
 		return thumbnailKey == null || CacheManager.getInstance().isThumbnailCachedMemory(thumbnailKey);
 	}
 
-	public boolean canLoadThumbnailManually()
-	{
+	public boolean canLoadThumbnailManually() {
 		return !isThumbnailReady() && !mForceLoadThumbnail && !Preferences.isLoadThumbnails();
 	}
 }

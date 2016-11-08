@@ -22,8 +22,7 @@ import java.io.OutputStream;
 import chan.annotation.Extendable;
 
 @Extendable
-public interface RequestEntity extends Cloneable
-{
+public interface RequestEntity extends Cloneable {
 	@Extendable
 	public abstract void add(String name, String value);
 

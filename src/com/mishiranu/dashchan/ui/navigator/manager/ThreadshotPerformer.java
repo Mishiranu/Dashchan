@@ -39,8 +39,7 @@ import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 
-public class ThreadshotPerformer implements DialogInterface.OnCancelListener
-{
+public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
 	private final ListView mListView;
 	private final UiManager mUiManager;
 	private final String mChanName;
@@ -55,8 +54,7 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener
 			null, null, null, false, false, false, false, null);
 
 	public ThreadshotPerformer(ListView listView, UiManager uiManager, String chanName, String boardName,
-			String threadNumber, String threadTitle, List<PostItem> postItems)
-	{
+			String threadNumber, String threadTitle, List<PostItem> postItems) {
 		mListView = listView;
 		mUiManager = uiManager;
 		mChanName = chanName;
@@ -75,16 +73,13 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener
 		mAsyncTask.executeOnExecutor(ConcurrentUtils.SEPARATE_EXECUTOR);
 	}
 
-	private View getPostItem(PostItem postItem, View convertView)
-	{
+	private View getPostItem(PostItem postItem, View convertView) {
 		return mUiManager.view().getPostView(postItem, convertView, mListView, mDemandSet, mConfigurationSet);
 	}
 
-	private final AsyncTask<Void, Void, InputStream> mAsyncTask = new AsyncTask<Void, Void, InputStream>()
-	{
+	private final AsyncTask<Void, Void, InputStream> mAsyncTask = new AsyncTask<Void, Void, InputStream>() {
 		@Override
-		protected InputStream doInBackground(Void... params)
-		{
+		protected InputStream doInBackground(Void... params) {
 			Looper.prepare();
 			long time = System.currentTimeMillis();
 			View convertView = null;
@@ -95,30 +90,34 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener
 			int width = mListView.getWidth();
 			int widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY);
 			int heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
-			for (PostItem postItem : mPostItems)
-			{
+			for (PostItem postItem : mPostItems) {
 				convertView = getPostItem(postItem, convertView);
 				convertView.measure(widthMeasureSpec, heightMeasureSpec);
-				if (!first) height += dividerHeight; else first = false;
+				if (!first) {
+					height += dividerHeight;
+				} else {
+					first = false;
+				}
 				height += convertView.getMeasuredHeight();
 			}
-			if (isCancelled()) return null;
+			if (isCancelled()) {
+				return null;
+			}
 			InputStream input = null;
-			if (height > 0)
-			{
+			if (height > 0) {
 				Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
 				Canvas canvas = new Canvas(bitmap);
 				canvas.drawColor(mUiManager.getColorScheme().windowBackgroundColor);
-				for (PostItem postItem : mPostItems)
-				{
-					if (isCancelled()) return null;
+				for (PostItem postItem : mPostItems) {
+					if (isCancelled()) {
+						return null;
+					}
 					convertView = getPostItem(postItem, convertView);
 					convertView.measure(widthMeasureSpec, heightMeasureSpec);
 					convertView.layout(0, 0, convertView.getMeasuredWidth(), convertView.getMeasuredHeight());
 					convertView.draw(canvas);
 					canvas.translate(0, convertView.getHeight());
-					if (divider != null && dividerHeight > 0)
-					{
+					if (divider != null && dividerHeight > 0) {
 						divider.setBounds(0, 0, width, dividerHeight);
 						divider.draw(canvas);
 						canvas.translate(0, dividerHeight);
@@ -134,21 +133,19 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener
 		}
 
 		@Override
-		protected void onPostExecute(InputStream result)
-		{
+		protected void onPostExecute(InputStream result) {
 			mDialog.dismiss();
-			if (result != null)
-			{
+			if (result != null) {
 				DownloadManager.getInstance().saveStreamStorage(mListView.getContext(), result, mChanName, mBoardName,
 						mThreadNumber, mThreadTitle, "threadshot-" + System.currentTimeMillis() + ".png", false);
+			} else {
+				ToastUtils.show(mListView.getContext(), R.string.message_unknown_error);
 			}
-			else ToastUtils.show(mListView.getContext(), R.string.message_unknown_error);
 		}
 	};
 
 	@Override
-	public void onCancel(DialogInterface dialog)
-	{
+	public void onCancel(DialogInterface dialog) {
 		mAsyncTask.cancel(true);
 	}
 }

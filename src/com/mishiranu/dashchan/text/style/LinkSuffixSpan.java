@@ -24,8 +24,7 @@ import com.mishiranu.dashchan.graphics.ColorScheme;
 import com.mishiranu.dashchan.util.FlagUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 
-public class LinkSuffixSpan extends ReplacementSpan implements ColorScheme.Span
-{
+public class LinkSuffixSpan extends ReplacementSpan implements ColorScheme.Span {
 	private int mSuffix;
 	private final String mPostNumber;
 
@@ -35,46 +34,47 @@ public class LinkSuffixSpan extends ReplacementSpan implements ColorScheme.Span
 
 	private int mForegroundColor;
 
-	public LinkSuffixSpan(int suffix, String postNumber)
-	{
+	public LinkSuffixSpan(int suffix, String postNumber) {
 		mPostNumber = postNumber;
 		mSuffix = suffix;
 	}
 
-	public boolean isSuffixPresent(int suffix)
-	{
+	public boolean isSuffixPresent(int suffix) {
 		return FlagUtils.get(mSuffix, suffix);
 	}
 
-	public void setSuffix(int suffix, boolean present)
-	{
+	public void setSuffix(int suffix, boolean present) {
 		mSuffix = FlagUtils.set(mSuffix, suffix, present);
 	}
 
-	public String getPostNumber()
-	{
+	public String getPostNumber() {
 		return mPostNumber;
 	}
 
-	private String getSuffixText()
-	{
-		if (isSuffixPresent(SUFFIX_ORIGINAL_POSTER)) return "OP";
-		else if (isSuffixPresent(SUFFIX_DIFFERENT_THREAD)) return "DT";
-		else if (isSuffixPresent(SUFFIX_USER_POST)) return "Y";
+	private String getSuffixText() {
+		if (isSuffixPresent(SUFFIX_ORIGINAL_POSTER)) {
+			return "OP";
+		} else if (isSuffixPresent(SUFFIX_DIFFERENT_THREAD)) {
+			return "DT";
+		} else if (isSuffixPresent(SUFFIX_USER_POST)) {
+			return "Y";
+		}
 		return null;
 	}
 
 	@Override
-	public void applyColorScheme(ColorScheme colorScheme)
-	{
-		if (colorScheme != null) mForegroundColor = colorScheme.linkColor;
+	public void applyColorScheme(ColorScheme colorScheme) {
+		if (colorScheme != null) {
+			mForegroundColor = colorScheme.linkColor;
+		}
 	}
 
 	@Override
-	public int getSize(Paint paint, CharSequence text, int start, int end, Paint.FontMetricsInt fm)
-	{
+	public int getSize(Paint paint, CharSequence text, int start, int end, Paint.FontMetricsInt fm) {
 		String suffixText = getSuffixText();
-		if (suffixText == null) return 0;
+		if (suffixText == null) {
+			return 0;
+		}
 		char after = end >= text.length() ? '\n' : text.charAt(end);
 		boolean addSpace = after > ' ' && after != '.' && after != ',' && after != '!' && after != '?' && after != ')'
 				&& after != ']' && after != ']' && after != ':' && after != ';';
@@ -84,11 +84,9 @@ public class LinkSuffixSpan extends ReplacementSpan implements ColorScheme.Span
 
 	@Override
 	public void draw(Canvas canvas, CharSequence text, int start, int end,
-			float x, int top, int y, int bottom, Paint paint)
-	{
+			float x, int top, int y, int bottom, Paint paint) {
 		String suffixText = getSuffixText();
-		if (suffixText != null)
-		{
+		if (suffixText != null) {
 			paint.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
 			paint.setColor(mForegroundColor);
 			canvas.drawText(" " + suffixText, x, y, paint);

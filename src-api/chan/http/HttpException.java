@@ -24,8 +24,7 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 
 @Public
-public final class HttpException extends Exception implements ErrorItem.Holder
-{
+public final class HttpException extends Exception implements ErrorItem.Holder {
 	private static final long serialVersionUID = 1L;
 
 	private final int mResponseCode;
@@ -35,8 +34,7 @@ public final class HttpException extends Exception implements ErrorItem.Holder
 	private final boolean mHttpException;
 	private final boolean mSocketException;
 
-	public HttpException(int errorItemType, boolean httpException, boolean socketException)
-	{
+	public HttpException(int errorItemType, boolean httpException, boolean socketException) {
 		mResponseCode = 0;
 		mErrorItemType = errorItemType;
 		mResponseText = null;
@@ -44,8 +42,7 @@ public final class HttpException extends Exception implements ErrorItem.Holder
 		mSocketException = socketException;
 	}
 
-	public HttpException(int errorItemType, boolean httpException, boolean socketException, Throwable throwable)
-	{
+	public HttpException(int errorItemType, boolean httpException, boolean socketException, Throwable throwable) {
 		super(throwable);
 		mResponseCode = 0;
 		mErrorItemType = errorItemType;
@@ -55,8 +52,7 @@ public final class HttpException extends Exception implements ErrorItem.Holder
 	}
 
 	@Public
-	public HttpException(int responseCode, String responseText)
-	{
+	public HttpException(int responseCode, String responseText) {
 		mResponseCode = responseCode;
 		mErrorItemType = 0;
 		mResponseText = responseText;
@@ -65,33 +61,30 @@ public final class HttpException extends Exception implements ErrorItem.Holder
 	}
 
 	@Public
-	public int getResponseCode()
-	{
+	public int getResponseCode() {
 		return mResponseCode;
 	}
 
 	@Public
-	public boolean isHttpException()
-	{
+	public boolean isHttpException() {
 		return mHttpException;
 	}
 
 	@Public
-	public boolean isSocketException()
-	{
+	public boolean isSocketException() {
 		return mSocketException;
 	}
 
 	@Override
-	public ErrorItem getErrorItemAndHandle()
-	{
-		if (!StringUtils.isEmpty(mResponseText)) return new ErrorItem(mResponseCode, mResponseText);
+	public ErrorItem getErrorItemAndHandle() {
+		if (!StringUtils.isEmpty(mResponseText)) {
+			return new ErrorItem(mResponseCode, mResponseText);
+		}
 		return new ErrorItem(mErrorItemType);
 	}
 
 	@Public
-	public static HttpException createNotFoundException()
-	{
+	public static HttpException createNotFoundException() {
 		return new HttpException(HttpURLConnection.HTTP_NOT_FOUND, "Not Found");
 	}
 }

@@ -24,8 +24,7 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.widget.ListPosition;
 
-public class PageHolder implements Parcelable
-{
+public class PageHolder implements Parcelable {
 	public enum Content {THREADS, POSTS, SEARCH, ARCHIVE, ALL_BOARDS, USER_BOARDS, HISTORY}
 
 	boolean inStack = true;
@@ -40,14 +39,12 @@ public class PageHolder implements Parcelable
 	public String initialPostNumber;
 
 	public PageHolder(Content content, String chanName, String boardName, String threadNumber, String threadTitle,
-			String searchQuery)
-	{
+			String searchQuery) {
 		this(content, chanName, boardName, threadNumber, threadTitle, searchQuery, System.currentTimeMillis());
 	}
 
 	public PageHolder(Content content, String chanName, String boardName, String threadNumber, String threadTitle,
-			String searchQuery, long creationTime)
-	{
+			String searchQuery, long creationTime) {
 		this.content = content;
 		this.chanName = chanName;
 		this.boardName = boardName;
@@ -57,40 +54,33 @@ public class PageHolder implements Parcelable
 		this.creationTime = creationTime;
 	}
 
-	public PageHolder setInitialThreadsData(boolean fromCache)
-	{
+	public PageHolder setInitialThreadsData(boolean fromCache) {
 		initialFromCache = fromCache;
 		return this;
 	}
 
-	public PageHolder setInitialPostsData(boolean fromCache, String postNumber)
-	{
+	public PageHolder setInitialPostsData(boolean fromCache, String postNumber) {
 		initialFromCache = fromCache;
 		initialPostNumber = postNumber;
 		return this;
 	}
 
-	public PageHolder setInitialSearchData(boolean fromCache)
-	{
+	public PageHolder setInitialSearchData(boolean fromCache) {
 		initialFromCache = fromCache;
 		return this;
 	}
 
-	public boolean isThreadsOrPosts()
-	{
+	public boolean isThreadsOrPosts() {
 		return content == Content.THREADS || content == Content.POSTS;
 	}
 
-	public boolean canDestroyIfNotInStack()
-	{
+	public boolean canDestroyIfNotInStack() {
 		return content == Content.SEARCH || content == Content.ARCHIVE || content == Content.ALL_BOARDS
 				|| content == Content.HISTORY;
 	}
 
-	public boolean canRemoveFromStackIfDeep()
-	{
-		if (content == Content.ALL_BOARDS)
-		{
+	public boolean canRemoveFromStackIfDeep() {
+		if (content == Content.ALL_BOARDS) {
 			String boardName = Preferences.getDefaultBoardName(chanName);
 			return boardName != null;
 		}
@@ -98,50 +88,55 @@ public class PageHolder implements Parcelable
 				|| content == Content.HISTORY;
 	}
 
-	public boolean is(String chanName, String boardName, String threadNumber, Content content)
-	{
-		if (this.content != content) return false;
-		if (!StringUtils.equals(this.chanName, chanName)) return false;
+	public boolean is(String chanName, String boardName, String threadNumber, Content content) {
+		if (this.content != content) {
+			return false;
+		}
+		if (!StringUtils.equals(this.chanName, chanName)) {
+			return false;
+		}
 		boolean compareContentTypeOnly1 = false;
 		boolean compareContentTypeOnly2 = false;
-		switch (this.content)
-		{
+		switch (this.content) {
 			case SEARCH:
 			case ALL_BOARDS:
 			case USER_BOARDS:
-			case HISTORY:
-			{
+			case HISTORY: {
 				compareContentTypeOnly1 = true;
 				break;
 			}
-			default: break;
+			default: {
+				break;
+			}
 		}
-		switch (content)
-		{
+		switch (content) {
 			case SEARCH:
 			case ALL_BOARDS:
 			case USER_BOARDS:
-			case HISTORY:
-			{
+			case HISTORY: {
 				compareContentTypeOnly2 = true;
 				break;
 			}
-			default: break;
+			default: {
+				break;
+			}
 		}
-		if (compareContentTypeOnly1 && compareContentTypeOnly2) return this.content == content;
-		if (compareContentTypeOnly1 || compareContentTypeOnly2) return false;
+		if (compareContentTypeOnly1 && compareContentTypeOnly2) {
+			return this.content == content;
+		}
+		if (compareContentTypeOnly1 || compareContentTypeOnly2) {
+			return false;
+		}
 		return StringUtils.equals(this.boardName, boardName) && StringUtils.equals(this.threadNumber, threadNumber);
 	}
 
 	@Override
-	public int describeContents()
-	{
+	public int describeContents() {
 		return 0;
 	}
 
 	@Override
-	public void writeToParcel(Parcel dest, int flags)
-	{
+	public void writeToParcel(Parcel dest, int flags) {
 		dest.writeInt(inStack ? 1 : 0);
 		dest.writeString(content.name());
 		dest.writeString(chanName);
@@ -151,19 +146,17 @@ public class PageHolder implements Parcelable
 		dest.writeString(searchQuery);
 		dest.writeLong(creationTime);
 		ListPosition.writeToParcel(dest, position);
-		if (extra instanceof ParcelableExtra)
-		{
+		if (extra instanceof ParcelableExtra) {
 			dest.writeString(extra.getClass().getName());
 			((ParcelableExtra) extra).writeToParcel(dest);
+		} else {
+			dest.writeString(null);
 		}
-		else dest.writeString(null);
 	}
 
-	public static final Creator<PageHolder> CREATOR = new Creator<PageHolder>()
-	{
+	public static final Creator<PageHolder> CREATOR = new Creator<PageHolder>() {
 		@Override
-		public PageHolder createFromParcel(Parcel source)
-		{
+		public PageHolder createFromParcel(Parcel source) {
 			boolean inStack = source.readInt() != 0;
 			Content content = Content.valueOf(source.readString());
 			String chanName = source.readString();
@@ -177,16 +170,12 @@ public class PageHolder implements Parcelable
 			pageHolder.inStack = inStack;
 			pageHolder.position = ListPosition.readFromParcel(source);
 			String extraClassName = source.readString();
-			if (extraClassName != null)
-			{
-				try
-				{
+			if (extraClassName != null) {
+				try {
 					@SuppressWarnings("unchecked")
 					Class<ParcelableExtra> extraClass = (Class<ParcelableExtra>) Class.forName(extraClassName);
 					pageHolder.extra = extraClass.newInstance();
-				}
-				catch (Exception e)
-				{
+				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
 				((ParcelableExtra) pageHolder.extra).readFromParcel(source);
@@ -195,19 +184,14 @@ public class PageHolder implements Parcelable
 		}
 
 		@Override
-		public PageHolder[] newArray(int size)
-		{
+		public PageHolder[] newArray(int size) {
 			return new PageHolder[size];
 		}
 	};
 
-	public interface Extra
-	{
+	public interface Extra {}
 
-	}
-
-	public interface ParcelableExtra extends Extra
-	{
+	public interface ParcelableExtra extends Extra {
 		public void writeToParcel(Parcel dest);
 		public void readFromParcel(Parcel source);
 	}

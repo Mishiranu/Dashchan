@@ -25,17 +25,14 @@ import android.widget.FrameLayout;
 import android.widget.SearchView;
 import android.widget.TextView;
 
-public class CustomSearchView extends SearchView
-{
+public class CustomSearchView extends SearchView {
 	private final FrameLayout mCustomViewLayout;
 	private final TextView mTextView;
 
-	public CustomSearchView(Context context)
-	{
+	public CustomSearchView(Context context) {
 		super(context);
 		setMaxWidth(Integer.MAX_VALUE);
-		if (getChildCount() == 1)
-		{
+		if (getChildCount() == 1) {
 			View view = getChildAt(0);
 			LayoutParams layoutParams = (LayoutParams) view.getLayoutParams();
 			layoutParams.width = LayoutParams.WRAP_CONTENT;
@@ -47,107 +44,96 @@ public class CustomSearchView extends SearchView
 		super.setIconified(false); // Always expanded
 		super.onActionViewExpanded();
 		TextView textView;
-		try
-		{
+		try {
 			Field field = SearchView.class.getDeclaredField("mSearchSrcTextView");
 			field.setAccessible(true);
 			textView = (TextView) field.get(this);
-		}
-		catch (Exception e1)
-		{
-			try
-			{
+		} catch (Exception e1) {
+			try {
 				Field field = SearchView.class.getDeclaredField("mQueryTextView");
 				field.setAccessible(true);
 				textView = (TextView) field.get(this);
-			}
-			catch (Exception e2)
-			{
+			} catch (Exception e2) {
 				textView = null;
 			}
 		}
 		mTextView = textView;
 		View closeButton;
-		try
-		{
+		try {
 			Field field = SearchView.class.getDeclaredField("mCloseButton");
 			field.setAccessible(true);
 			closeButton = (View) field.get(this);
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			closeButton = null;
 		}
-		if (closeButton != null)
-		{
+		if (closeButton != null) {
 			closeButton.setBackground(null);
-			closeButton.setOnClickListener(v ->
-			{
+			closeButton.setOnClickListener(v -> {
 				setQuery("", false);
 				showKeyboard();
 			});
 		}
-		super.setOnQueryTextListener(new OnQueryTextListener()
-		{
+		super.setOnQueryTextListener(new OnQueryTextListener() {
 			@Override
-			public boolean onQueryTextSubmit(String query)
-			{
+			public boolean onQueryTextSubmit(String query) {
 				boolean hideKeyboard = true;
-				if (mOnQueryTextListener != null) hideKeyboard = mOnQueryTextListener.onQueryTextSubmit(query);
-				if (hideKeyboard) hideKeyboard();
+				if (mOnQueryTextListener != null) {
+					hideKeyboard = mOnQueryTextListener.onQueryTextSubmit(query);
+				}
+				if (hideKeyboard) {
+					hideKeyboard();
+				}
 				return true;
 			}
 
 			@Override
-			public boolean onQueryTextChange(String newText)
-			{
-				if (mOnQueryTextListener != null) mOnQueryTextListener.onQueryTextChange(newText);
+			public boolean onQueryTextChange(String newText) {
+				if (mOnQueryTextListener != null) {
+					mOnQueryTextListener.onQueryTextChange(newText);
+				}
 				return true;
 			}
 		});
 	}
 
-	private void showKeyboard()
-	{
-		if (mTextView != null)
-		{
+	private void showKeyboard() {
+		if (mTextView != null) {
 			mTextView.requestFocus();
 			InputMethodManager inputMethodManager = (InputMethodManager) getContext()
 					.getSystemService(Context.INPUT_METHOD_SERVICE);
-			if (inputMethodManager != null) inputMethodManager.showSoftInput(mTextView, 0);
+			if (inputMethodManager != null) {
+				inputMethodManager.showSoftInput(mTextView, 0);
+			}
 		}
 	}
 
-	private void hideKeyboard()
-	{
+	private void hideKeyboard() {
 		InputMethodManager inputMethodManager = (InputMethodManager) getContext()
 				.getSystemService(Context.INPUT_METHOD_SERVICE);
-		if (inputMethodManager != null) inputMethodManager.hideSoftInputFromWindow(getWindowToken(), 0);
+		if (inputMethodManager != null) {
+			inputMethodManager.hideSoftInputFromWindow(getWindowToken(), 0);
+		}
 		clearFocus();
 	}
 
 	private boolean mShowKeyboard;
 
 	@Override
-	protected void onAttachedToWindow()
-	{
+	protected void onAttachedToWindow() {
 		super.onAttachedToWindow();
 		mShowKeyboard = true;
 	}
 
 	@Override
-	protected void onDetachedFromWindow()
-	{
+	protected void onDetachedFromWindow() {
 		hideKeyboard();
 		super.onDetachedFromWindow();
 	}
 
 	@Override
-	protected void onLayout(boolean changed, int left, int top, int right, int bottom)
-	{
+	protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
 		super.onLayout(changed, left, top, right, bottom);
-		if (mShowKeyboard)
-		{
+		if (mShowKeyboard) {
 			mShowKeyboard = false;
 			post(() -> post(() -> showKeyboard()));
 		}
@@ -156,38 +142,34 @@ public class CustomSearchView extends SearchView
 	private OnQueryTextListener mOnQueryTextListener;
 
 	@Override
-	public void setOnQueryTextListener(OnQueryTextListener listener)
-	{
+	public void setOnQueryTextListener(OnQueryTextListener listener) {
 		mOnQueryTextListener = listener;
 	}
 
 	@Override
-	public void setIconified(boolean iconify)
-	{
+	public void setIconified(boolean iconify) {
 		// Block super method call
 	}
 
 	@Override
-	public void setIconifiedByDefault(boolean iconified)
-	{
+	public void setIconifiedByDefault(boolean iconified) {
 		// Block super method call
 	}
 
 	@Override
-	public void onActionViewExpanded()
-	{
+	public void onActionViewExpanded() {
 		// Block super method call
 	}
 
 	@Override
-	public void onActionViewCollapsed()
-	{
+	public void onActionViewCollapsed() {
 		// Block super method call
 	}
 
-	public void setCustomView(View view)
-	{
+	public void setCustomView(View view) {
 		mCustomViewLayout.removeAllViews();
-		if (view != null) mCustomViewLayout.addView(view, LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT);
+		if (view != null) {
+			mCustomViewLayout.addView(view, LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT);
+		}
 	}
 }

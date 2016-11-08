@@ -37,97 +37,75 @@ import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
 
-public class AdvancedPreferences
-{
+public class AdvancedPreferences {
 	private static final HashMap<String, String> USER_AGENTS = new HashMap<>();
 	private static final HashSet<String> SINGLE_CONNECTIONS = new HashSet<>();
 	private static final String GOOGLE_COOKIE;
 	private static final int TAB_SIZE;
 
-	static
-	{
+	static {
 		CookieBuilder googleCookieBuilder = null;
 		int tabSize = 0;
 		File file = MainApplication.getInstance().getExternalCacheDir();
-		if (file != null)
-		{
+		if (file != null) {
 			file = new File(file.getParentFile(), "files/advanced.json");
-			if (file.exists())
-			{
+			if (file.exists()) {
 				String jsonString = null;
 				FileInputStream inputStream = null;
-				try
-				{
+				try {
 					inputStream = new FileInputStream(file);
 					ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 					IOUtils.copyStream(inputStream, outputStream);
 					jsonString = new String(outputStream.toByteArray(), "UTF-8");
-				}
-				catch (IOException e)
-				{
+				} catch (IOException e) {
 					Log.persistent().stack(e);
-				}
-				finally
-				{
+				} finally {
 					IOUtils.close(inputStream);
 				}
-				if (jsonString != null)
-				{
-					try
-					{
+				if (jsonString != null) {
+					try {
 						JSONObject jsonObject = new JSONObject(jsonString);
 						JSONObject userAgentObject = jsonObject.optJSONObject("userAgent");
-						if (userAgentObject != null)
-						{
-							for (Iterator<String> keys = userAgentObject.keys(); keys.hasNext();)
-							{
+						if (userAgentObject != null) {
+							for (Iterator<String> keys = userAgentObject.keys(); keys.hasNext();) {
 								String chanName = keys.next();
 								String userAgent = userAgentObject.getString(chanName);
-								if (!StringUtils.isEmpty(userAgent)) USER_AGENTS.put(chanName, userAgent);
+								if (!StringUtils.isEmpty(userAgent)) {
+									USER_AGENTS.put(chanName, userAgent);
+								}
 							}
-						}
-						else
-						{
+						} else {
 							String userAgent = jsonObject.optString("userAgent", null);
-							if (!StringUtils.isEmpty(userAgent))
-							{
+							if (!StringUtils.isEmpty(userAgent)) {
 								USER_AGENTS.put(ChanManager.EXTENSION_NAME_CLIENT, userAgent);
 							}
 						}
 						JSONArray singleConnectionArray = jsonObject.optJSONArray("singleConnection");
-						if (singleConnectionArray != null)
-						{
-							for (int i = 0; i < singleConnectionArray.length(); i++)
-							{
+						if (singleConnectionArray != null) {
+							for (int i = 0; i < singleConnectionArray.length(); i++) {
 								SINGLE_CONNECTIONS.add(singleConnectionArray.getString(i));
 							}
 						}
 						JSONObject googleCookieObject = jsonObject.optJSONObject("googleCookie");
-						if (googleCookieObject != null)
-						{
-							for (Iterator<String> keys = googleCookieObject.keys(); keys.hasNext();)
-							{
+						if (googleCookieObject != null) {
+							for (Iterator<String> keys = googleCookieObject.keys(); keys.hasNext();) {
 								String name = keys.next();
 								String value = googleCookieObject.getString(name);
-								if (!StringUtils.isEmpty(value))
-								{
-									if (googleCookieBuilder == null) googleCookieBuilder = new CookieBuilder();
+								if (!StringUtils.isEmpty(value)) {
+									if (googleCookieBuilder == null) {
+										googleCookieBuilder = new CookieBuilder();
+									}
 									googleCookieBuilder.append(name, value);
 								}
 							}
-						}
-						else
-						{
+						} else {
 							String googleCookie = jsonObject.optString("googleCookie", null);
-							if (!StringUtils.isEmpty(googleCookie))
-							{
+							if (!StringUtils.isEmpty(googleCookie)) {
 								googleCookieBuilder = new CookieBuilder().append(googleCookie);
 							}
 						}
 						tabSize = jsonObject.optInt("tabSize");
-					}
-					catch (JSONException e)
-					{
+					} catch (JSONException e) {
 						Log.persistent().stack(e);
 					}
 				}
@@ -137,27 +115,27 @@ public class AdvancedPreferences
 		TAB_SIZE = tabSize;
 	}
 
-	public static String getUserAgent(String chanName)
-	{
+	public static String getUserAgent(String chanName) {
 		String userAgent = USER_AGENTS.get(chanName);
-		if (userAgent == null) userAgent = USER_AGENTS.get(ChanManager.EXTENSION_NAME_CLIENT);
-		if (userAgent == null) userAgent = C.USER_AGENT;
+		if (userAgent == null) {
+			userAgent = USER_AGENTS.get(ChanManager.EXTENSION_NAME_CLIENT);
+		}
+		if (userAgent == null) {
+			userAgent = C.USER_AGENT;
+		}
 		return userAgent;
 	}
 
-	public static boolean isSingleConnection(String chanName)
-	{
+	public static boolean isSingleConnection(String chanName) {
 		return SINGLE_CONNECTIONS.contains(chanName != null ? chanName : ChanManager.EXTENSION_NAME_CLIENT);
 	}
 
-	public static String getGoogleCookie()
-	{
+	public static String getGoogleCookie() {
 		// Google reCAPTCHA becomes easier with HSID, SSID, SID, NID cookies
 		return GOOGLE_COOKIE;
 	}
 
-	public static int getTabSize()
-	{
+	public static int getTabSize() {
 		return TAB_SIZE;
 	}
 }

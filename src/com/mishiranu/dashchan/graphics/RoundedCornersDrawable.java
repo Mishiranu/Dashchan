@@ -24,34 +24,28 @@ import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 
-public class RoundedCornersDrawable extends Drawable
-{
+public class RoundedCornersDrawable extends Drawable {
 	private final Path mPath = new Path();
 	private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 	private final int mRadius;
 
-	public RoundedCornersDrawable(int radius)
-	{
+	public RoundedCornersDrawable(int radius) {
 		mRadius = radius;
 	}
 
-	public RoundedCornersDrawable(int radius, int color)
-	{
+	public RoundedCornersDrawable(int radius, int color) {
 		this(radius);
 		setColor(color);
 	}
 
-	public void setColor(int color)
-	{
+	public void setColor(int color) {
 		mPaint.setColor(color);
 	}
 
 	@Override
-	public void setBounds(int left, int top, int right, int bottom)
-	{
+	public void setBounds(int left, int top, int right, int bottom) {
 		Rect bounds = getBounds();
-		if (bounds.left != left || bounds.top != top || bounds.right != right || bounds.bottom != bottom)
-		{
+		if (bounds.left != left || bounds.top != top || bounds.right != right || bounds.bottom != bottom) {
 			Path path = mPath;
 			path.rewind();
 			float radius = mRadius;
@@ -77,26 +71,18 @@ public class RoundedCornersDrawable extends Drawable
 	}
 
 	@Override
-	public void draw(Canvas canvas)
-	{
+	public void draw(Canvas canvas) {
 		canvas.drawPath(mPath, mPaint);
 	}
 
 	@Override
-	public int getOpacity()
-	{
+	public int getOpacity() {
 		return PixelFormat.TRANSLUCENT;
 	}
 
 	@Override
-	public void setAlpha(int alpha)
-	{
-
-	}
+	public void setAlpha(int alpha) {}
 
 	@Override
-	public void setColorFilter(ColorFilter cf)
-	{
-
-	}
+	public void setColorFilter(ColorFilter cf) {}
 }

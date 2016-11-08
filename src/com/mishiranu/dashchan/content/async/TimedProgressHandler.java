@@ -21,15 +21,12 @@ import chan.http.HttpRequest;
 import chan.http.MultipartEntity;
 
 public class TimedProgressHandler implements HttpHolder.InputListener, HttpRequest.OutputListener,
-		MultipartEntity.OpenableOutputListener
-{
+		MultipartEntity.OpenableOutputListener {
 	private final long[] mLastProgressUpdate = new long[3];
 
-	private boolean checkNeedToUpdate(int index, long progress, long progressMax)
-	{
+	private boolean checkNeedToUpdate(int index, long progress, long progressMax) {
 		long time = System.currentTimeMillis();
-		if (time - mLastProgressUpdate[index] >= 200 || progress == 0 || progress == progressMax)
-		{
+		if (time - mLastProgressUpdate[index] >= 200 || progress == 0 || progress == progressMax) {
 			mLastProgressUpdate[index] = time;
 			return true;
 		}
@@ -37,39 +34,27 @@ public class TimedProgressHandler implements HttpHolder.InputListener, HttpReque
 	}
 
 	@Override
-	public final void onInputProgressChange(long progress, long progressMax)
-	{
-		if (checkNeedToUpdate(0, progress, progressMax))
-		{
+	public final void onInputProgressChange(long progress, long progressMax) {
+		if (checkNeedToUpdate(0, progress, progressMax)) {
 			onProgressChange(progress, progressMax);
 		}
 	}
 
 	@Override
-	public final void onOutputProgressChange(long progress, long progressMax)
-	{
-		if (checkNeedToUpdate(1, progress, progressMax))
-		{
+	public final void onOutputProgressChange(long progress, long progressMax) {
+		if (checkNeedToUpdate(1, progress, progressMax)) {
 			onProgressChange(progress, progressMax);
 		}
 	}
 
 	@Override
-	public final void onOutputProgressChange(MultipartEntity.Openable openable, long progress, long progressMax)
-	{
-		if (checkNeedToUpdate(2, progress, progressMax))
-		{
+	public final void onOutputProgressChange(MultipartEntity.Openable openable, long progress, long progressMax) {
+		if (checkNeedToUpdate(2, progress, progressMax)) {
 			onProgressChange(openable, progress, progressMax);
 		}
 	}
 
-	public void onProgressChange(long progress, long progressMax)
-	{
+	public void onProgressChange(long progress, long progressMax) {}
 
-	}
-
-	public void onProgressChange(MultipartEntity.Openable openable, long progress, long progressMax)
-	{
-
-	}
+	public void onProgressChange(MultipartEntity.Openable openable, long progress, long progressMax) {}
 }

@@ -35,8 +35,7 @@ import com.mishiranu.dashchan.ui.SeekBarForm;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 
 public class ReencodingDialog extends PostingDialog implements DialogInterface.OnClickListener,
-		RadioGroup.OnCheckedChangeListener
-{
+		RadioGroup.OnCheckedChangeListener {
 	public static final String TAG = ReencodingDialog.class.getName();
 
 	private static final String EXTRA_QUALITY = "quality";
@@ -53,8 +52,7 @@ public class ReencodingDialog extends PostingDialog implements DialogInterface.O
 	private static final int[] IDS = {android.R.id.icon1, android.R.id.icon2};
 
 	@Override
-	public Dialog onCreateDialog(Bundle savedInstanceState)
-	{
+	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		Context context = getActivity();
 		mQualityForm = new SeekBarForm(false);
 		mQualityForm.setConfiguration(1, 100, 1, 1);
@@ -76,8 +74,7 @@ public class ReencodingDialog extends PostingDialog implements DialogInterface.O
 		mRadioGroup.setOrientation(RadioGroup.VERTICAL);
 		mRadioGroup.setPadding(padding, padding, padding, padding / 2);
 		mRadioGroup.setOnCheckedChangeListener(this);
-		for (int i = 0; i < OPTIONS.length; i++)
-		{
+		for (int i = 0; i < OPTIONS.length; i++) {
 			RadioButton radioButton = new RadioButton(context);
 			radioButton.setText(OPTIONS[i]);
 			radioButton.setId(IDS[i]);
@@ -107,26 +104,21 @@ public class ReencodingDialog extends PostingDialog implements DialogInterface.O
 	}
 
 	@Override
-	public void onSaveInstanceState(Bundle outState)
-	{
+	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		outState.putInt(EXTRA_QUALITY, mQualityForm.getCurrentValue());
 		outState.putInt(EXTRA_REDUCE, mReduceForm.getCurrentValue());
 	}
 
 	@Override
-	public void onClick(DialogInterface dialog, int which)
-	{
+	public void onClick(DialogInterface dialog, int which) {
 		AttachmentOptionsDialog attachmentOptionsDialog = (AttachmentOptionsDialog) getFragmentManager()
 				.findFragmentByTag(AttachmentOptionsDialog.TAG);
-		if (attachmentOptionsDialog != null)
-		{
+		if (attachmentOptionsDialog != null) {
 			String format = null;
 			int id = mRadioGroup.getCheckedRadioButtonId();
-			for (int i = 0; i < IDS.length; i++)
-			{
-				if (IDS[i] == id)
-				{
+			for (int i = 0; i < IDS.length; i++) {
+				if (IDS[i] == id) {
 					format = FORMATS[i];
 					break;
 				}
@@ -137,13 +129,10 @@ public class ReencodingDialog extends PostingDialog implements DialogInterface.O
 	}
 
 	@Override
-	public void onCheckedChanged(RadioGroup group, int checkedId)
-	{
+	public void onCheckedChanged(RadioGroup group, int checkedId) {
 		boolean allowQuality = true;
-		for (int i = 0; i < IDS.length; i++)
-		{
-			if (IDS[i] == checkedId)
-			{
+		for (int i = 0; i < IDS.length; i++) {
+			if (IDS[i] == checkedId) {
 				allowQuality = GraphicsUtils.Reencoding.allowQuality(FORMATS[i]);
 				break;
 			}

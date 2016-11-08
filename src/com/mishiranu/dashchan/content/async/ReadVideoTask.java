@@ -33,8 +33,7 @@ import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.media.CachingInputStream;
 import com.mishiranu.dashchan.util.IOUtils;
 
-public class ReadVideoTask extends HttpHolderTask<Void, Long, Boolean>
-{
+public class ReadVideoTask extends HttpHolderTask<Void, Long, Boolean> {
 	private final String mChanName;
 	private final Uri mUri;
 	private final CachingInputStream mInputStream;
@@ -42,24 +41,20 @@ public class ReadVideoTask extends HttpHolderTask<Void, Long, Boolean>
 
 	private ErrorItem mErrorItem;
 
-	public interface Callback
-	{
+	public interface Callback {
 		public void onReadVideoProgressUpdate(long progress, long progressMax);
 		public void onReadVideoSuccess(CachingInputStream inputStream);
 		public void onReadVideoFail(ErrorItem errorItem);
 	}
 
-	private final TimedProgressHandler mProgressHandler = new TimedProgressHandler()
-	{
+	private final TimedProgressHandler mProgressHandler = new TimedProgressHandler() {
 		@Override
-		public void onProgressChange(long progress, long progressMax)
-		{
+		public void onProgressChange(long progress, long progressMax) {
 			publishProgress(progress, progressMax);
 		}
 	};
 
-	public ReadVideoTask(String chanName, Uri uri, CachingInputStream inputStream, Callback callback)
-	{
+	public ReadVideoTask(String chanName, Uri uri, CachingInputStream inputStream, Callback callback) {
 		mChanName = chanName;
 		mUri = uri;
 		mInputStream = inputStream;
@@ -67,65 +62,54 @@ public class ReadVideoTask extends HttpHolderTask<Void, Long, Boolean>
 	}
 
 	@Override
-	protected Boolean doInBackground(HttpHolder holder, Void... params)
-	{
-		try
-		{
+	protected Boolean doInBackground(HttpHolder holder, Void... params) {
+		try {
 			int connectTimeout = 15000, readTimeout = 15000;
 			ChanPerformer.ReadContentResult result = ChanPerformer.get(mChanName).safe()
 					.onReadContent(new ChanPerformer.ReadContentData(mUri, connectTimeout, readTimeout, holder,
 					mProgressHandler, mInputStream.getOutputStream()));
 			HttpResponse response = result != null ? result.response : null;
-			if (response != null)
-			{
+			if (response != null) {
 				byte[] data = response.getBytes();
-				if (data == null)
-				{
+				if (data == null) {
 					mErrorItem = new ErrorItem(ErrorItem.TYPE_UNKNOWN);
 					return false;
 				}
 				OutputStream output = mInputStream.getOutputStream();
-				try
-				{
+				try {
 					output.write(data);
-				}
-				catch (IOException e)
-				{
-
-				}
-				finally
-				{
+				} catch (IOException e) {
+					// Ignore
+				} finally {
 					IOUtils.close(output);
 				}
 			}
 			return true;
-		}
-		catch (ExtensionException | HttpException | InvalidResponseException e)
-		{
+		} catch (ExtensionException | HttpException | InvalidResponseException e) {
 			mErrorItem = e.getErrorItemAndHandle();
 			return false;
-		}
-		finally
-		{
-			if (mChanName != null) ChanConfiguration.get(mChanName).commit();
+		} finally {
+			if (mChanName != null) {
+				ChanConfiguration.get(mChanName).commit();
+			}
 		}
 	}
 
 	@Override
-	protected void onProgressUpdate(Long... values)
-	{
+	protected void onProgressUpdate(Long... values) {
 		mCallback.onReadVideoProgressUpdate(values[0], values[1]);
 	}
 
 	@Override
-	public void onPostExecute(Boolean success)
-	{
-		if (success) mCallback.onReadVideoSuccess(mInputStream);
-		else mCallback.onReadVideoFail(mErrorItem);
+	public void onPostExecute(Boolean success) {
+		if (success) {
+			mCallback.onReadVideoSuccess(mInputStream);
+		} else {
+			mCallback.onReadVideoFail(mErrorItem);
+		}
 	}
 
-	public boolean isError()
-	{
+	public boolean isError() {
 		return mErrorItem != null;
 	}
 }

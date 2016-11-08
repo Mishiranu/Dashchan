@@ -34,8 +34,7 @@ import com.mishiranu.dashchan.content.storage.HistoryDatabase;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ViewFactory;
 
-public class HistoryAdapter extends BaseAdapter
-{
+public class HistoryAdapter extends BaseAdapter {
 	private final String mChanName;
 
 	private final ArrayList<Object> mItems = new ArrayList<>();
@@ -53,8 +52,7 @@ public class HistoryAdapter extends BaseAdapter
 	private static final int HEADER_WEEK = 3;
 	private static final int HEADER_OLD = 4;
 
-	public HistoryAdapter(String chanName)
-	{
+	public HistoryAdapter(String chanName) {
 		mChanName = chanName;
 		ArrayList<HistoryDatabase.HistoryItem> historyItems = HistoryDatabase.getInstance().getAllHistory(chanName);
 		Calendar calendar = Calendar.getInstance();
@@ -66,28 +64,39 @@ public class HistoryAdapter extends BaseAdapter
 		long yesterday = thisDay - 24 * 60 * 60 * 1000;
 		long thisWeek = thisDay - 7 * 24 * 60 * 60 * 1000;
 		int header = HEADER_NONE;
-		for (HistoryDatabase.HistoryItem historyItem : historyItems)
-		{
+		for (HistoryDatabase.HistoryItem historyItem : historyItems) {
 			int targetHeader = HEADER_TODAY;
-			if (historyItem.time < thisDay)
-			{
-				if (historyItem.time < yesterday)
-				{
-					if (historyItem.time < thisWeek) targetHeader = HEADER_OLD;
-					else targetHeader = HEADER_WEEK;
+			if (historyItem.time < thisDay) {
+				if (historyItem.time < yesterday) {
+					if (historyItem.time < thisWeek) {
+						targetHeader = HEADER_OLD;
+					} else {
+						targetHeader = HEADER_WEEK;
+					}
+				} else {
+					targetHeader = HEADER_YESTERDAY;
 				}
-				else targetHeader = HEADER_YESTERDAY;
 			}
-			if (targetHeader > header)
-			{
+			if (targetHeader > header) {
 				header = targetHeader;
 				int resId = 0;
-				switch (header)
-				{
-					case HEADER_TODAY: resId = R.string.text_today; break;
-					case HEADER_YESTERDAY: resId = R.string.text_yesterday; break;
-					case HEADER_WEEK: resId = R.string.text_this_week; break;
-					case HEADER_OLD: resId = R.string.text_older_7_days; break;
+				switch (header) {
+					case HEADER_TODAY: {
+						resId = R.string.text_today;
+						break;
+					}
+					case HEADER_YESTERDAY: {
+						resId = R.string.text_yesterday;
+						break;
+					}
+					case HEADER_WEEK: {
+						resId = R.string.text_this_week;
+						break;
+					}
+					case HEADER_OLD: {
+						resId = R.string.text_older_7_days;
+						break;
+					}
 				}
 				mItems.add(MainApplication.getInstance().getString(resId));
 			}
@@ -95,24 +104,18 @@ public class HistoryAdapter extends BaseAdapter
 		}
 	}
 
-	/*
-	 * Returns true, if adapter isn't empty.
-	 */
-	public boolean applyFilter(String text)
-	{
+	// Returns true, if adapter isn't empty.
+	public boolean applyFilter(String text) {
 		mFilterText = text;
 		mFilterMode = !StringUtils.isEmpty(text);
 		mFilteredItems.clear();
-		if (mFilterMode)
-		{
+		if (mFilterMode) {
 			text = text.toLowerCase(Locale.getDefault());
-			for (Object item : mItems)
-			{
-				if (item instanceof HistoryDatabase.HistoryItem)
-				{
+			for (Object item : mItems) {
+				if (item instanceof HistoryDatabase.HistoryItem) {
 					HistoryDatabase.HistoryItem historyItem = (HistoryDatabase.HistoryItem) item;
-					if (historyItem.title != null && historyItem.title.toLowerCase(Locale.getDefault()).contains(text))
-					{
+					if (historyItem.title != null && historyItem.title.toLowerCase(Locale.getDefault())
+							.contains(text)) {
 						mFilteredItems.add(historyItem);
 					}
 				}
@@ -122,113 +125,103 @@ public class HistoryAdapter extends BaseAdapter
 		return !mFilterMode || mFilteredItems.size() > 0;
 	}
 
-	public void remove(HistoryDatabase.HistoryItem historyItem)
-	{
+	public void remove(HistoryDatabase.HistoryItem historyItem) {
 		int index = mItems.indexOf(historyItem);
-		if (index >= 0)
-		{
+		if (index >= 0) {
 			mItems.remove(index);
 			if (index > 0 && (index == mItems.size() || getItemViewType(index) == TYPE_HEADER) &&
-					getItemViewType(index - 1) == TYPE_HEADER)
-			{
+					getItemViewType(index - 1) == TYPE_HEADER) {
 				mItems.remove(index - 1);
 			}
-			if (mFilterMode) applyFilter(mFilterText); else notifyDataSetChanged();
+			if (mFilterMode) {
+				applyFilter(mFilterText);
+			} else {
+				notifyDataSetChanged();
+			}
 		}
 	}
 
-	public void clear()
-	{
+	public void clear() {
 		mItems.clear();
 		mFilteredItems.clear();
 		notifyDataSetChanged();
 	}
 
 	@Override
-	public int getCount()
-	{
+	public int getCount() {
 		return (mFilterMode ? mFilteredItems : mItems).size();
 	}
 
 	@Override
-	public long getItemId(int position)
-	{
+	public long getItemId(int position) {
 		return 0;
 	}
 
 	@Override
-	public Object getItem(int position)
-	{
+	public Object getItem(int position) {
 		return (mFilterMode ? mFilteredItems : mItems).get(position);
 	}
 
-	public HistoryDatabase.HistoryItem getHistoryItem(int position)
-	{
+	public HistoryDatabase.HistoryItem getHistoryItem(int position) {
 		Object item = getItem(position);
-		if (item instanceof HistoryDatabase.HistoryItem) return (HistoryDatabase.HistoryItem) item;
+		if (item instanceof HistoryDatabase.HistoryItem) {
+			return (HistoryDatabase.HistoryItem) item;
+		}
 		return null;
 	}
 
 	@Override
-	public boolean areAllItemsEnabled()
-	{
+	public boolean areAllItemsEnabled() {
 		return false;
 	}
 
 	@Override
-	public boolean isEnabled(int position)
-	{
+	public boolean isEnabled(int position) {
 		return getItem(position) instanceof HistoryDatabase.HistoryItem;
 	}
 
 	@Override
-	public int getViewTypeCount()
-	{
+	public int getViewTypeCount() {
 		return 2;
 	}
 
 	@Override
-	public int getItemViewType(int position)
-	{
+	public int getItemViewType(int position) {
 		return getItem(position) instanceof HistoryDatabase.HistoryItem ? TYPE_ITEM : TYPE_HEADER;
 	}
 
 	@Override
-	public View getView(int position, View convertView, ViewGroup parent)
-	{
+	public View getView(int position, View convertView, ViewGroup parent) {
 		Object item = getItem(position);
 		HistoryDatabase.HistoryItem historyItem = item instanceof HistoryDatabase.HistoryItem
 				? (HistoryDatabase.HistoryItem) item : null;
 		ViewFactory.TwoLinesViewHolder holder;
-		if (convertView == null)
-		{
-			if (historyItem != null)
-			{
+		if (convertView == null) {
+			if (historyItem != null) {
 				convertView = ViewFactory.makeTwoLinesListItem(parent, true);
 				float density = ResourceUtils.obtainDensity(parent);
 				convertView.setPadding((int) (16f * density), convertView.getPaddingTop(),
 						(int) (16f * density), convertView.getPaddingBottom());
 				holder = (ViewFactory.TwoLinesViewHolder) convertView.getTag();
-			}
-			else
-			{
+			} else {
 				convertView = ViewFactory.makeListTextHeader(parent, true);
 				holder = null;
 			}
+		} else {
+			if (historyItem != null) {
+				holder = (ViewFactory.TwoLinesViewHolder) convertView.getTag();
+			} else {
+				holder = null;
+			}
 		}
-		else
-		{
-			if (historyItem != null) holder = (ViewFactory.TwoLinesViewHolder) convertView.getTag();
-			else holder = null;
-		}
-		if (historyItem != null)
-		{
+		if (historyItem != null) {
 			holder.text1.setText(historyItem.title);
 			String title = ChanConfiguration.get(mChanName).getBoardTitle(historyItem.boardName);
 			holder.text2.setText(StringUtils.isEmpty(historyItem.boardName) ? title
 					: StringUtils.formatBoardTitle(mChanName, historyItem.boardName, title));
+		} else {
+			((TextView) convertView).setText((String) item);
 		}
-		else ((TextView) convertView).setText((String) item);
 		return convertView;
 	}
 }
