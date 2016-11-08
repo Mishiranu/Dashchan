@@ -36,32 +36,28 @@ import android.graphics.Color;
 
 import chan.util.StringUtils;
 
-public class HtmlParser implements ContentHandler
-{
-	public static CharSequence spanify(String source, Markup markup, String parentPostNumber, Object extra)
-	{
+public class HtmlParser implements ContentHandler {
+	public static CharSequence spanify(String source, Markup markup, String parentPostNumber, Object extra) {
 		return parse(source, markup, MODE_SPANIFY, parentPostNumber, extra);
 	}
 
-	public static String clear(String source)
-	{
+	public static String clear(String source) {
 		return parse(source, null, MODE_CLEAR, null, null).toString();
 	}
 
-	public static String unmark(String source, Markup markup, Object extra)
-	{
+	public static String unmark(String source, Markup markup, Object extra) {
 		return parse(source, markup, MODE_UNMARK, null, extra).toString();
 	}
 
 	private static CharSequence parse(String source, Markup markup, int parsingMode, String parentPostNumber,
-			Object extra)
-	{
-		if (StringUtils.isEmpty(source)) return "";
+			Object extra) {
+		if (StringUtils.isEmpty(source)) {
+			return "";
+		}
 		return new HtmlParser(source, markup, parsingMode, parentPostNumber, extra).convert();
 	}
 
-	public interface Markup
-	{
+	public interface Markup {
 		public Object onBeforeTagStart(HtmlParser parser, StringBuilder builder, String tagName,
 				Attributes attributes, TagData tagData);
 		public void onTagStart(HtmlParser parser, StringBuilder builder, String tagName,
@@ -74,13 +70,11 @@ public class HtmlParser implements ContentHandler
 		public SpanProvider initSpanProvider(HtmlParser parser);
 	}
 
-	public interface SpanProvider
-	{
+	public interface SpanProvider {
 		public CharSequence transformBuilder(HtmlParser parser, StringBuilder builder);
 	}
 
-	public static class TagData
-	{
+	public static class TagData {
 		public static final int UNDEFINED = 0;
 		public static final int ENABLED = 1;
 		public static final int DISABLED = 2;
@@ -89,8 +83,7 @@ public class HtmlParser implements ContentHandler
 		public boolean spaced;
 		public int preformatted;
 
-		public TagData(boolean block, boolean spaced, boolean preformatted)
-		{
+		public TagData(boolean block, boolean spaced, boolean preformatted) {
 			this.block = block;
 			this.spaced = spaced;
 			this.preformatted = preformatted ? ENABLED : UNDEFINED;
@@ -111,9 +104,10 @@ public class HtmlParser implements ContentHandler
 
 	private final Object mExtra;
 
-	private HtmlParser(String source, Markup markup, int parsingMode, String parentPostNumber, Object extra)
-	{
-		if (markup == null) markup = IDLE_MARKUP;
+	private HtmlParser(String source, Markup markup, int parsingMode, String parentPostNumber, Object extra) {
+		if (markup == null) {
+			markup = IDLE_MARKUP;
+		}
 		mSource = source;
 		mMarkup = markup;
 		mParsingMode = parsingMode;
@@ -124,25 +118,18 @@ public class HtmlParser implements ContentHandler
 
 	public static final HTMLSchema SCHEMA = new HTMLSchema();
 
-	public CharSequence convert()
-	{
+	public CharSequence convert() {
 		Parser parser = new Parser();
-		try
-		{
+		try {
 			parser.setProperty(Parser.schemaProperty, SCHEMA);
-		}
-		catch (SAXNotRecognizedException | SAXNotSupportedException e)
-		{
+		} catch (SAXNotRecognizedException | SAXNotSupportedException e) {
 			throw new RuntimeException(e);
 		}
 		parser.setContentHandler(this);
 		StringBuilder builder = mBuilder;
-		try
-		{
+		try {
 			parser.parse(new InputSource(new StringReader(mSource)));
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 		removeBlockLastWhitespaces();
@@ -151,134 +138,109 @@ public class HtmlParser implements ContentHandler
 		boolean substring = false;
 		boolean found = false;
 		int length = builder.length();
-		for (int i = 0; i < length; i++)
-		{
-			if (builder.charAt(i) != '\n')
-			{
+		for (int i = 0; i < length; i++) {
+			if (builder.charAt(i) != '\n') {
 				start = i;
 				found = true;
 				substring |= i > 0;
 				break;
 			}
 		}
-		if (!found) return "";
-		for (int i = length - 1; i >= start; i--)
-		{
-			if (builder.charAt(i) != '\n')
-			{
+		if (!found) {
+			return "";
+		}
+		for (int i = length - 1; i >= start; i--) {
+			if (builder.charAt(i) != '\n') {
 				end = i + 1;
 				substring |= end < length;
 				break;
 			}
 		}
-		if (isSpanifyMode() || isClearMode())
-		{
+		if (isSpanifyMode() || isClearMode()) {
 			// Replace non-breaking spaces with regular spaces
-			for (int i = 0; i < length; i++)
-			{
+			for (int i = 0; i < length; i++) {
 				char c = builder.charAt(i);
-				if (c == '\u00a0') builder.setCharAt(i, ' ');
+				if (c == '\u00a0') {
+					builder.setCharAt(i, ' ');
+				}
 			}
 		}
-		if (isSpanifyMode() && mSpanProvider != null)
-		{
+		if (isSpanifyMode() && mSpanProvider != null) {
 			CharSequence charSequence = mSpanProvider.transformBuilder(this, builder);
-			if (charSequence == null) return "";
+			if (charSequence == null) {
+				return "";
+			}
 			return substring ? charSequence.subSequence(start, end) : charSequence;
 		}
 		return substring ? builder.substring(start, end) : builder;
 	}
 
-	public boolean isSpanifyMode()
-	{
+	public boolean isSpanifyMode() {
 		return mParsingMode == MODE_SPANIFY;
 	}
 
-	public boolean isClearMode()
-	{
+	public boolean isClearMode() {
 		return mParsingMode == MODE_CLEAR;
 	}
 
-	public boolean isUnmarkMode()
-	{
+	public boolean isUnmarkMode() {
 		return mParsingMode == MODE_UNMARK;
 	}
 
-	public StringBuilder getBuilder()
-	{
+	public StringBuilder getBuilder() {
 		return mBuilder;
 	}
 
-	public String getParentPostNumber()
-	{
+	public String getParentPostNumber() {
 		return mParentPostNumber;
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> T getExtra()
-	{
+	public <T> T getExtra() {
 		return (T) mExtra;
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T extends SpanProvider> T getSpanProvider()
-	{
+	public <T extends SpanProvider> T getSpanProvider() {
 		return (T) mSpanProvider;
 	}
 
 	@Override
-	public void setDocumentLocator(Locator locator)
-	{
-
-	}
+	public void setDocumentLocator(Locator locator) {}
 
 	@Override
-	public void startDocument()
-	{
-
-	}
+	public void startDocument() {}
 
 	@Override
-	public void endDocument()
-	{
-
-	}
+	public void endDocument() {}
 
 	@Override
-	public void startPrefixMapping(String prefix, String uri)
-	{
-
-	}
+	public void startPrefixMapping(String prefix, String uri) {}
 
 	@Override
-	public void endPrefixMapping(String prefix)
-	{
+	public void endPrefixMapping(String prefix) {}
 
-	}
-
-	private static class PositiveStateStack
-	{
+	private static class PositiveStateStack {
 		private boolean[] mState = null;
 		private int mPosition = -1;
 
-		public void push(boolean state)
-		{
-			if (state || mPosition >= 0)
-			{
+		public void push(boolean state) {
+			if (state || mPosition >= 0) {
 				mPosition++;
-				if (mState == null) mState = new boolean[4];
-				else if (mPosition == mState.length) mState = Arrays.copyOf(mState, mState.length * 2);
+				if (mState == null) {
+					mState = new boolean[4];
+				} else if (mPosition == mState.length) {
+					mState = Arrays.copyOf(mState, mState.length * 2);
+				}
 				mState[mPosition] = state;
 			}
 		}
 
-		public boolean pop()
-		{
+		public boolean pop() {
 			return mPosition >= 0 ? mState[mPosition--] : false;
 		}
 
-		public boolean check()
-		{
+		public boolean check() {
 			return mPosition >= 0 ? mState[mPosition] : false;
 		}
 	}
@@ -286,8 +248,7 @@ public class HtmlParser implements ContentHandler
 	private static final HashMap<String, TagData> DEFAULT_TAGS = new HashMap<>();
 	private static final HashSet<String> HIDDEN_TAGS = new HashSet<>();
 
-	static
-	{
+	static {
 		DEFAULT_TAGS.put("blockquote", new TagData(true, true, false));
 		DEFAULT_TAGS.put("center", new TagData(true, false, false));
 		DEFAULT_TAGS.put("div", new TagData(true, false, false));
@@ -316,18 +277,14 @@ public class HtmlParser implements ContentHandler
 
 	private final TagData mTagData = new TagData(false, false, false);
 
-	private TagData fillBaseTagData(String tagName)
-	{
+	private TagData fillBaseTagData(String tagName) {
 		TagData tagData = mTagData;
 		TagData copyTagData = DEFAULT_TAGS.get(tagName);
-		if (copyTagData != null)
-		{
+		if (copyTagData != null) {
 			tagData.block = copyTagData.block;
 			tagData.spaced = copyTagData.spaced;
 			tagData.preformatted = copyTagData.preformatted;
-		}
-		else
-		{
+		} else {
 			tagData.block = false;
 			tagData.spaced = false;
 			tagData.preformatted = TagData.UNDEFINED;
@@ -335,59 +292,59 @@ public class HtmlParser implements ContentHandler
 		return tagData;
 	}
 
-	private void appendLineBreak()
-	{
+	private void appendLineBreak() {
 		StringBuilder builder = mBuilder;
 		boolean mayAppend = true;
-		if (isSpanifyMode())
-		{
+		if (isSpanifyMode()) {
 			int length = builder.length();
-			if (length >= 2) mayAppend = builder.charAt(length - 1) != '\n' || builder.charAt(length - 2) != '\n';
-			else mayAppend = length == 1 && builder.charAt(0) != '\n';
+			if (length >= 2) {
+				mayAppend = builder.charAt(length - 1) != '\n' || builder.charAt(length - 2) != '\n';
+			} else {
+				mayAppend = length == 1 && builder.charAt(0) != '\n';
+			}
 		}
-		if (mayAppend) builder.append("\n");
+		if (mayAppend) {
+			builder.append("\n");
+		}
 	}
 
-	private void appendBlockBreak(boolean spacedTag)
-	{
-		switch (mLastBlock)
-		{
-			case LAST_BLOCK_NONE:
-			{
+	private void appendBlockBreak(boolean spacedTag) {
+		switch (mLastBlock) {
+			case LAST_BLOCK_NONE: {
 				appendLineBreak();
-				if (spacedTag) appendLineBreak();
+				if (spacedTag) {
+					appendLineBreak();
+				}
 				break;
 			}
-			case LAST_BLOCK_COMMON:
-			{
-				if (spacedTag) appendLineBreak();
+			case LAST_BLOCK_COMMON: {
+				if (spacedTag) {
+					appendLineBreak();
+				}
 				break;
 			}
-			case LAST_BLOCK_SPACED:
-			{
+			case LAST_BLOCK_SPACED: {
 				// Do nothing
 				break;
 			}
 		}
 	}
 
-	/*
-	 * Removes unnecessary whitespaces in the end of block.
-	 */
-	private void removeBlockLastWhitespaces()
-	{
-		if (!mPreformattedMode.check())
-		{
+	// Removes unnecessary whitespaces in the end of block.
+	private void removeBlockLastWhitespaces() {
+		if (!mPreformattedMode.check()) {
 			StringBuilder builder = mBuilder;
 			int length = builder.length();
 			int remove = 0;
-			for (int i = length - 1, s = length - mLastCharactersLength; i >= s; i--)
-			{
+			for (int i = length - 1, s = length - mLastCharactersLength; i >= s; i--) {
 				char c = builder.charAt(i);
-				if (c == ' ') remove++; else break;
+				if (c == ' ') {
+					remove++;
+				} else {
+					break;
+				}
 			}
-			if (remove > 0)
-			{
+			if (remove > 0) {
 				builder.delete(length - remove, length);
 				mMarkup.onCutBlock(this, builder);
 				mLastCharactersLength -= remove;
@@ -413,58 +370,52 @@ public class HtmlParser implements ContentHandler
 	private boolean mHidden = false;
 
 	@Override
-	public void startElement(String uri, String tagName, String qName, Attributes attributes)
-	{
-		if (HIDDEN_TAGS.contains(tagName))
-		{
+	public void startElement(String uri, String tagName, String qName, Attributes attributes) {
+		if (HIDDEN_TAGS.contains(tagName)) {
 			mHidden = true;
 			return;
 		}
 		StringBuilder builder = mBuilder;
-		if ("br".equals(tagName)) return; // Ignore
+		if ("br".equals(tagName)) {
+			return; // Ignore
+		}
 		TagData tagData = fillBaseTagData(tagName);
 		Object object = mMarkup.onBeforeTagStart(this, builder, tagName, attributes, tagData);
 		boolean blockTag = tagData.block;
 		boolean spacedTag = blockTag && tagData.spaced;
 		boolean preformattedTag = tagData.preformatted == TagData.ENABLED ||
 				tagData.preformatted == TagData.UNDEFINED && mPreformattedMode.check();
-		if (blockTag) appendBlockBreak(spacedTag);
+		if (blockTag) {
+			appendBlockBreak(spacedTag);
+		}
 		mMarkup.onTagStart(this, builder, tagName, attributes, object);
 		mBlockMode.push(blockTag);
 		mSpacedMode.push(spacedTag);
 		mPreformattedMode.push(preformattedTag);
 		mLastBlock = blockTag ? spacedTag ? LAST_BLOCK_SPACED : LAST_BLOCK_COMMON : LAST_BLOCK_NONE;
 
-		if (tagName.equals("tr") || tagName.equals("th") || tagName.equals("td"))
-		{
-			if (tagName.equals("tr")) mTableStart = 1; else
-			{
+		if (tagName.equals("tr") || tagName.equals("th") || tagName.equals("td")) {
+			if (tagName.equals("tr")) {
+				mTableStart = 1;
+			} else {
 				int length = builder.length();
 				builder.append(mTableStart).append(". ");
 				mLastBlock = LAST_BLOCK_NONE;
 				mLastCharactersLength = builder.length() - length;
 				int colspan;
-				try
-				{
+				try {
 					colspan = Integer.parseInt(attributes.getValue("", "colspan"));
-				}
-				catch (Exception e)
-				{
+				} catch (Exception e) {
 					colspan = 1;
 				}
 				mTableStart += colspan;
 			}
-		}
-		else if (tagName.equals("ol") || tagName.equals("ul"))
-		{
+		} else if (tagName.equals("ol") || tagName.equals("ul")) {
 			mOrderedList = tagName.equals("ol");
 			mListStart = 0;
-		}
-		else if (tagName.equals("li") && mListStart >= 0)
-		{
+		} else if (tagName.equals("li") && mListStart >= 0) {
 			int added = mMarkup.onListLineStart(this, builder, mOrderedList, ++mListStart);
-			if (added > 0)
-			{
+			if (added > 0) {
 				mLastBlock = LAST_BLOCK_NONE;
 				mLastCharactersLength = added;
 			}
@@ -472,16 +423,15 @@ public class HtmlParser implements ContentHandler
 	}
 
 	@Override
-	public void endElement(String uri, String tagName, String qName)
-	{
-		if (mHidden)
-		{
-			if (HIDDEN_TAGS.contains(tagName)) mHidden = false;
+	public void endElement(String uri, String tagName, String qName) {
+		if (mHidden) {
+			if (HIDDEN_TAGS.contains(tagName)) {
+				mHidden = false;
+			}
 			return;
 		}
 		StringBuilder builder = mBuilder;
-		if ("br".equals(tagName))
-		{
+		if ("br".equals(tagName)) {
 			removeBlockLastWhitespaces();
 			appendLineBreak();
 			mLastBlock = LAST_BLOCK_COMMON;
@@ -490,53 +440,56 @@ public class HtmlParser implements ContentHandler
 		boolean blockTag = mBlockMode.pop();
 		boolean spacedTag = mSpacedMode.pop();
 		mPreformattedMode.pop();
-		if (blockTag) removeBlockLastWhitespaces();
+		if (blockTag) {
+			removeBlockLastWhitespaces();
+		}
 		mMarkup.onTagEnd(this, builder, tagName);
-		if (blockTag) appendBlockBreak(spacedTag);
-		if ((tagName.equals("ol") || tagName.equals("ul"))) mListStart = -1;
+		if (blockTag) {
+			appendBlockBreak(spacedTag);
+		}
+		if ((tagName.equals("ol") || tagName.equals("ul"))) {
+			mListStart = -1;
+		}
 		mLastBlock = blockTag ? spacedTag ? LAST_BLOCK_SPACED : LAST_BLOCK_COMMON : LAST_BLOCK_NONE;
 	}
 
 	@Override
-	public void characters(char ch[], int start, int length)
-	{
-		if (mHidden) return;
+	public void characters(char ch[], int start, int length) {
+		if (mHidden) {
+			return;
+		}
 		StringBuilder builder = mBuilder;
 		int realLength = 0;
-		if (mPreformattedMode.check())
-		{
+		if (mPreformattedMode.check()) {
 			char p = '\0';
-			for (int i = start, to = start + length; i < to; i++)
-			{
+			for (int i = start, to = start + length; i < to; i++) {
 				char c = ch[i];
-				if (c == '\n' && i - 1 == to) break; // Last line break may be ignored
+				// Last line break may be ignored
+				if (c == '\n' && i - 1 == to) {
+					break;
+				}
 				// \r\r - 2 spaces, \n\n - 2 spaces, \n\r - 2 spaces, \r\n - 1 space
-				if ((c >= ' ' || c == '\t' || c == '\n' || c == '\r') && !(c == '\n' && p == '\r'))
-				{
+				if ((c >= ' ' || c == '\t' || c == '\n' || c == '\r') && !(c == '\n' && p == '\r')) {
 					builder.append(c == '\r' ? '\n' : c);
 					realLength++;
 				}
 				p = c;
 			}
-		}
-		else
-		{
-			for (int i = start, to = start + length; i < to; i++)
-			{
+		} else {
+			for (int i = start, to = start + length; i < to; i++) {
 				char c = ch[i];
 				// Special characters (< 0x20): \n, \r and \t are handled as whitespace. The rest are ignored.
 				// This behavior is the same as in Firefox.
-				if (c == '\n' || c == '\r' || c == '\t') ch[i] = ' ';
+				if (c == '\n' || c == '\r' || c == '\t') {
+					ch[i] = ' ';
+				}
 			}
 			char p = builder.length() > 0 ? builder.charAt(builder.length() - 1) : ' ';
-			for (int i = start, to = start + length; i < to; i++)
-			{
+			for (int i = start, to = start + length; i < to; i++) {
 				char c = ch[i];
 				// Ignore special characters
-				if (c >= ' ')
-				{
-					if (c != ' ' || p != ' ' && p != '\n')
-					{
+				if (c >= ' ') {
+					if (c != ' ' || p != ' ' && p != '\n') {
 						builder.append(c);
 						realLength++;
 					}
@@ -544,43 +497,35 @@ public class HtmlParser implements ContentHandler
 				}
 			}
 		}
-		if (mLastBlock == LAST_BLOCK_NONE) mLastCharactersLength += realLength;
-		else mLastCharactersLength = realLength;
-		if (realLength > 0) mLastBlock = LAST_BLOCK_NONE;
+		if (mLastBlock == LAST_BLOCK_NONE) {
+			mLastCharactersLength += realLength;
+		} else {
+			mLastCharactersLength = realLength;
+		}
+		if (realLength > 0) {
+			mLastBlock = LAST_BLOCK_NONE;
+		}
 	}
 
 	@Override
-	public void ignorableWhitespace(char ch[], int start, int length)
-	{
-
-	}
+	public void ignorableWhitespace(char ch[], int start, int length) {}
 
 	@Override
-	public void processingInstruction(String target, String data)
-	{
-
-	}
+	public void processingInstruction(String target, String data) {}
 
 	@Override
-	public void skippedEntity(String name)
-	{
-
-	}
+	public void skippedEntity(String name) {}
 
 	private static final Pattern COLOR_PATTERN = Pattern.compile("color: ?(?:rgba?\\((\\d+), ?(\\d+)," +
 			" ?(\\d+)(?:, ?\\d+)?\\)|(#[0-9A-Fa-f]+|[A-Za-z]+))");
 
-	public Integer getColorAttribute(Attributes attributes)
-	{
+	public Integer getColorAttribute(Attributes attributes) {
 		String style = attributes.getValue("", "style");
 		String color = null;
-		if (style != null)
-		{
+		if (style != null) {
 			Matcher matcher = COLOR_PATTERN.matcher(style);
-			if (matcher.find())
-			{
-				if (matcher.group(1) != null)
-				{
+			if (matcher.find()) {
+				if (matcher.group(1) != null) {
 					int r = Integer.parseInt(matcher.group(1));
 					int g = Integer.parseInt(matcher.group(2));
 					int b = Integer.parseInt(matcher.group(3));
@@ -589,67 +534,53 @@ public class HtmlParser implements ContentHandler
 				color = matcher.group(4);
 			}
 		}
-		if (StringUtils.isEmpty(color)) color = attributes.getValue("", "color");
-		if (!StringUtils.isEmpty(color))
-		{
-			if (color.charAt(0) == '#' && color.length() != 7)
-			{
-				if (color.length() == 4)
-				{
+		if (StringUtils.isEmpty(color)) {
+			color = attributes.getValue("", "color");
+		}
+		if (!StringUtils.isEmpty(color)) {
+			if (color.charAt(0) == '#' && color.length() != 7) {
+				if (color.length() == 4) {
 					color = "#" + color.charAt(1) + color.charAt(1) + color.charAt(2) + color.charAt(2)
 							+ color.charAt(3) + color.charAt(3);
+				} else if (color.length() < 7) {
+					color = color + "000000".substring(color.length() - 1);
+				} else {
+					return null;
 				}
-				else if (color.length() < 7) color = color + "000000".substring(color.length() - 1); else return null;
 			}
-			try
-			{
+			try {
 				return Color.BLACK | Color.parseColor(color);
-			}
-			catch (IllegalArgumentException e)
-			{
-
+			} catch (IllegalArgumentException e) {
+				// Ignore
 			}
 		}
 		return null;
 	}
 
-	private static final Markup IDLE_MARKUP = new Markup()
-	{
+	private static final Markup IDLE_MARKUP = new Markup() {
 		@Override
 		public Object onBeforeTagStart(HtmlParser parser, StringBuilder builder, String tagName,
-				Attributes attributes, TagData tagData)
-		{
+				Attributes attributes, TagData tagData) {
 			return null;
 		}
 
 		@Override
 		public void onTagStart(HtmlParser parser, StringBuilder builder, String tagName,
-				Attributes attributes, Object object)
-		{
-
-		}
+				Attributes attributes, Object object) {}
 
 		@Override
-		public void onTagEnd(HtmlParser parser, StringBuilder builder, String tagName)
-		{
-
-		}
+		public void onTagEnd(HtmlParser parser, StringBuilder builder, String tagName) {}
 
 		@Override
-		public int onListLineStart(HtmlParser parser, StringBuilder builder, boolean ordered, int line)
-		{
+		public int onListLineStart(HtmlParser parser, StringBuilder builder, boolean ordered, int line) {
 			return 0;
 		}
 
 		@Override
-		public void onCutBlock(HtmlParser parser, StringBuilder builder)
-		{
-
-		}
+		public void onCutBlock(HtmlParser parser, StringBuilder builder) {}
 
 		@Override
-		public SpanProvider initSpanProvider(HtmlParser parser)
-		{
+		public SpanProvider initSpanProvider(HtmlParser parser) {
 			return null;
 		}
 	};

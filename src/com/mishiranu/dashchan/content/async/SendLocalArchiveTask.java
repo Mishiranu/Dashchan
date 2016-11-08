@@ -55,8 +55,7 @@ import com.mishiranu.dashchan.text.style.ScriptSpan;
 import com.mishiranu.dashchan.text.style.SpoilerSpan;
 import com.mishiranu.dashchan.util.IOUtils;
 
-public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object> implements ChanMarkup.MarkupExtra
-{
+public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object> implements ChanMarkup.MarkupExtra {
 	private final String mChanName;
 	private final String mBoardName;
 	private final String mThreadNumber;
@@ -65,15 +64,13 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 	private final boolean mSaveFiles;
 	private final Callback mCallback;
 
-	public interface Callback
-	{
+	public interface Callback {
 		public void onLocalArchivationProgressUpdate(int handledPostsCount);
 		public void onLocalArchivationComplete(boolean success, boolean showSuccess);
 	}
 
 	public SendLocalArchiveTask(String chanName, String boardName, String threadNumber,
-			Posts posts, boolean saveThumbnails, boolean saveFiles, Callback callback)
-	{
+			Posts posts, boolean saveThumbnails, boolean saveFiles, Callback callback) {
 		mChanName = chanName;
 		mBoardName = boardName;
 		mThreadNumber = threadNumber;
@@ -84,35 +81,30 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 	}
 
 	@Override
-	public String getBoardName()
-	{
+	public String getBoardName() {
 		return mBoardName;
 	}
 
 	@Override
-	public String getThreadNumber()
-	{
+	public String getThreadNumber() {
 		return mThreadNumber;
 	}
 
-	private static class SpanItem
-	{
+	private static class SpanItem {
 		public int start;
 		public int end;
 
 		public final String openTag;
 		public final String closeTag;
 
-		public SpanItem(String openTag, String closeTag)
-		{
+		public SpanItem(String openTag, String closeTag) {
 			this.openTag = openTag;
 			this.closeTag = closeTag;
 		}
 	}
 
 	@Override
-	protected Result doInBackground(Void... params)
-	{
+	protected Result doInBackground(Void... params) {
 		String chanName = mChanName;
 		String boardName = mBoardName;
 		String threadNumber = mThreadNumber;
@@ -126,19 +118,24 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 		String archiveDirectoryName = chanName + '-' + boardName + '-' + threadNumber;
 		File filesDirectory = mSaveFiles ? new File(directory, archiveDirectoryName + "/src") : null;
 		File thumbnailsDirectory = mSaveThumbnails ? new File(directory, archiveDirectoryName + "/thumb") : null;
-		if (filesDirectory != null) filesDirectory.mkdirs();
-		if (thumbnailsDirectory != null) thumbnailsDirectory.mkdirs();
+		if (filesDirectory != null) {
+			filesDirectory.mkdirs();
+		}
+		if (thumbnailsDirectory != null) {
+			thumbnailsDirectory.mkdirs();
+		}
 		int totalFilesCount = 0;
 		ArrayList<String> existFilesLc = new ArrayList<>();
 		ArrayList<String> existThumbnailsLc = new ArrayList<>();
-		for (Post post : posts) totalFilesCount += post.getAttachmentsCount();
+		for (Post post : posts) {
+			totalFilesCount += post.getAttachmentsCount();
+		}
 		String defaultName = configuration.getDefaultName(boardName);
 		WakabaLikeHtmlBuilder htmlBuilder = new WakabaLikeHtmlBuilder(posts[0].getSubject(), chanName, boardName,
 				configuration .getBoardTitle(boardName), configuration.getTitle(),
 				locator.safe(false).createThreadUri(boardName, threadNumber), posts.length, totalFilesCount);
 		Result result = new Result(thumbnailsDirectory, filesDirectory);
-		for (Post post : posts)
-		{
+		for (Post post : posts) {
 			String number = post.getPostNumber();
 			String name = StringUtils.emptyIfNull(post.getName()).trim();
 			String identifier = post.getIdentifier();
@@ -152,7 +149,9 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 			boolean originalPoster = post.isOriginalPoster();
 			boolean deleted = post.isDeleted();
 			boolean useDefaultName = name.equals(defaultName) || name.isEmpty();
-			if (name.isEmpty()) name = defaultName;
+			if (name.isEmpty()) {
+				name = defaultName;
+			}
 			int attachmentsCount = post.getAttachmentsCount();
 			int iconsCount = post.getIconsCount();
 			CharSequence charSequence = HtmlParser.spanify(comment, markup, null, this);
@@ -161,33 +160,30 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 			replaceSpannable(spannable, '<', "&lt;");
 			replaceSpannable(spannable, '>', "&gt;");
 			Object[] spans = spannable.getSpans(0, spannable.length(), Object.class);
-			for (Object span : spans)
-			{
+			for (Object span : spans) {
 				getSpanType(span, decodeTo);
 				int what = (int) decodeTo[0];
-				if (what != 0)
-				{
+				if (what != 0) {
 					int start = spannable.getSpanStart(span);
 					int end = spannable.getSpanEnd(span);
 					Object extra = decodeTo[1];
-					if (what == ChanMarkup.TAG_SPECIAL_LINK)
-					{
+					if (what == ChanMarkup.TAG_SPECIAL_LINK) {
 						String text = spannable.subSequence(start, end).toString();
-						if (text.startsWith("&gt;&gt;"))
-						{
+						if (text.startsWith("&gt;&gt;")) {
 							Uri uri = locator.validateClickedUriString((String) decodeTo[1], boardName, threadNumber);
-							if (threadNumber.equals(locator.safe(false).getThreadNumber(uri)))
-							{
+							if (threadNumber.equals(locator.safe(false).getThreadNumber(uri))) {
 								String postNumber = locator.safe(false).getPostNumber(uri);
-								if (postNumber == null) postNumber = threadNumber;
+								if (postNumber == null) {
+									postNumber = threadNumber;
+								}
 								extra = "#" + postNumber;
+							} else {
+								extra = uri.toString();
 							}
-							else extra = uri.toString();
 						}
 					}
 					SpanItem spanItem = makeSpanItem(what, extra);
-					if (spanItem != null)
-					{
+					if (spanItem != null) {
 						spanItem.start = start;
 						spanItem.end = end;
 						spanItems.add(spanItem);
@@ -195,57 +191,57 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 				}
 			}
 			StringBuilder builder = new StringBuilder(spannable.toString());
-			for (int i = 0; i < spanItems.size(); i++)
-			{
+			for (int i = 0; i < spanItems.size(); i++) {
 				SpanItem spanItem = spanItems.get(i);
 				int openLength = spanItem.openTag.length();
 				int closeLength = spanItem.closeTag.length();
 				builder.insert(spanItem.start, spanItem.openTag).insert(spanItem.end + openLength, spanItem.closeTag);
-				for (int j = i + 1; j < spanItems.size(); j++)
-				{
+				for (int j = i + 1; j < spanItems.size(); j++) {
 					SpanItem editingItem = spanItems.get(j);
-					if (editingItem.start >= spanItem.start)
-					{
-						if (editingItem.start >= spanItem.end) editingItem.start += openLength + closeLength;
-						else editingItem.start += openLength;
+					if (editingItem.start >= spanItem.start) {
+						if (editingItem.start >= spanItem.end) {
+							editingItem.start += openLength + closeLength;
+						} else {
+							editingItem.start += openLength;
+						}
 					}
-					if (editingItem.end > spanItem.start)
-					{
-						if (editingItem.end > spanItem.end) editingItem.end += openLength + closeLength;
-						else editingItem.end += openLength;
+					if (editingItem.end > spanItem.start) {
+						if (editingItem.end > spanItem.end) {
+							editingItem.end += openLength + closeLength;
+						} else {
+							editingItem.end += openLength;
+						}
 					}
 				}
 			}
 			comment = builder.toString().replaceAll("\r", "").replaceAll("\n", "<br />");
 			htmlBuilder.addPost(number, subject, name, identifier, tripcode, capcode, email,
 					sage, originalPoster, timestamp, deleted, useDefaultName, comment);
-			if (iconsCount > 0)
-			{
-				for (int i = 0; i < iconsCount; i++)
-				{
+			if (iconsCount > 0) {
+				for (int i = 0; i < iconsCount; i++) {
 					Icon icon = post.getIconAt(i);
 					Uri uri = icon.getUri(locator);
-					if (uri != null) htmlBuilder.addIcon(locator.convert(uri), icon.getTitle());
+					if (uri != null) {
+						htmlBuilder.addIcon(locator.convert(uri), icon.getTitle());
+					}
 				}
 			}
-			for (int i = 0; i < attachmentsCount; i++)
-			{
+			for (int i = 0; i < attachmentsCount; i++) {
 				Attachment attachment = post.getAttachmentAt(i);
-				if (attachment instanceof FileAttachment)
-				{
+				if (attachment instanceof FileAttachment) {
 					FileAttachment fileAttachment = (FileAttachment) attachment;
 					Uri fileUri = fileAttachment.getFileUri(locator);
 					Uri thumbnailUri = fileAttachment.getThumbnailUri(locator);
-					if (fileUri == null) fileUri = thumbnailUri;
-					if (fileUri != null)
-					{
+					if (fileUri == null) {
+						fileUri = thumbnailUri;
+					}
+					if (fileUri != null) {
 						String fileName = locator.createAttachmentFileName(fileUri);
 						fileName = chooseFileName(existFilesLc, fileName);
 						String filePath = archiveDirectoryName + "/src/" + fileName;
 						String thumbnailName = null;
 						String thumbnailPath = null;
-						if (thumbnailUri != null)
-						{
+						if (thumbnailUri != null) {
 							thumbnailName = locator.createAttachmentFileName(thumbnailUri);
 							thumbnailName = chooseFileName(existThumbnailsLc, thumbnailName);
 							thumbnailPath = archiveDirectoryName + "/thumb/" + thumbnailName;
@@ -253,18 +249,14 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 						String originalName = fileAttachment.getNormalizedOriginalName(fileName);
 						htmlBuilder.addFile(filePath, thumbnailPath, originalName, fileAttachment.getSize(),
 								fileAttachment.getWidth(), fileAttachment.getHeight());
-						if (mSaveFiles)
-						{
-							if (!new File(filesDirectory, fileName).exists())
-							{
+						if (mSaveFiles) {
+							if (!new File(filesDirectory, fileName).exists()) {
 								result.filesToDownload.add(new DownloadService.DownloadItem(chanName,
 										fileUri, fileName));
 							}
 						}
-						if (mSaveThumbnails && thumbnailUri != null)
-						{
-							if (!new File(thumbnailsDirectory, thumbnailName).exists())
-							{
+						if (mSaveThumbnails && thumbnailUri != null) {
+							if (!new File(thumbnailsDirectory, thumbnailName).exists()) {
 								result.thumbnailsToDownload.add(new DownloadService.DownloadItem(chanName,
 										thumbnailUri, thumbnailName));
 							}
@@ -272,41 +264,35 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 					}
 				}
 			}
-			if (isCancelled()) return null;
+			if (isCancelled()) {
+				return null;
+			}
 			notifyIncrement();
 		}
 		String postHtml = htmlBuilder.build();
 		String fileName = chanName + "-" + boardName + "-" + threadNumber + ".html";
 		BufferedWriter writer = null;
-		try
-		{
+		try {
 			writer = new BufferedWriter(new FileWriter(new File(directory, fileName)));
 			writer.write(postHtml);
-		}
-		catch (IOException e)
-		{
+		} catch (IOException e) {
 			return null;
-		}
-		finally
-		{
+		} finally {
 			IOUtils.close(writer);
 		}
 		return result;
 	}
 
 	@Override
-	protected void onProgressUpdate(Integer... values)
-	{
+	protected void onProgressUpdate(Integer... values) {
 		mCallback.onLocalArchivationProgressUpdate(values[0]);
 	}
 
 	@Override
-	protected void onPostExecute(Object resultObject)
-	{
+	protected void onPostExecute(Object resultObject) {
 		Result result = (Result) resultObject;
 		boolean showSuccess = false;
-		if (result != null)
-		{
+		if (result != null) {
 			boolean willDownload = false;
 			willDownload |= performDownload(result.thumbnailsDirectory, result.thumbnailsToDownload);
 			willDownload |= performDownload(result.filesDirectory, result.filesToDownload);
@@ -316,256 +302,207 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 	}
 
 	@Override
-	public void cancel()
-	{
+	public void cancel() {
 		cancel(true);
 	}
 
 	private long mLastNotifyIncrement = 0L;
 	private int mProgress = 0;
 
-	public void notifyIncrement()
-	{
+	public void notifyIncrement() {
 		mProgress++;
 		long t = System.currentTimeMillis();
-		if (t - mLastNotifyIncrement >= 100)
-		{
+		if (t - mLastNotifyIncrement >= 100) {
 			mLastNotifyIncrement = t;
 			publishProgress(mProgress);
 		}
 	}
 
-	private boolean performDownload(File directory, ArrayList<DownloadService.DownloadItem> downloadItems)
-	{
-		if (directory != null && downloadItems.size() > 0)
-		{
+	private boolean performDownload(File directory, ArrayList<DownloadService.DownloadItem> downloadItems) {
+		if (directory != null && downloadItems.size() > 0) {
 			DownloadService.downloadDirect(MainApplication.getInstance(), directory, downloadItems);
 			return true;
 		}
 		return false;
 	}
 
-	private static class Result
-	{
+	private static class Result {
 		public final File filesDirectory;
 		public final File thumbnailsDirectory;
 
 		public final ArrayList<DownloadService.DownloadItem> filesToDownload = new ArrayList<>();
 		public final ArrayList<DownloadService.DownloadItem> thumbnailsToDownload = new ArrayList<>();
 
-		public Result(File thumbnailsDirectory, File filesDirectory)
-		{
+		public Result(File thumbnailsDirectory, File filesDirectory) {
 			this.thumbnailsDirectory = thumbnailsDirectory;
 			this.filesDirectory = filesDirectory;
 		}
 	}
 
-	private void replaceSpannable(SpannableStringBuilder spannable, char what, String with)
-	{
-		for (int i = 0; i < spannable.length(); i++)
-		{
-			if (spannable.charAt(i) == what) spannable.replace(i, i + 1, with);
+	private void replaceSpannable(SpannableStringBuilder spannable, char what, String with) {
+		for (int i = 0; i < spannable.length(); i++) {
+			if (spannable.charAt(i) == what) {
+				spannable.replace(i, i + 1, with);
+			}
 		}
 	}
 
-	private SpanItem makeSpanItem(int what, Object extra)
-	{
+	private SpanItem makeSpanItem(int what, Object extra) {
 		String openTag;
 		String closeTag;
-		switch (what)
-		{
-			case ChanMarkup.TAG_BOLD:
-			{
+		switch (what) {
+			case ChanMarkup.TAG_BOLD: {
 				openTag = "<b>";
 				closeTag = "</b>";
 				break;
 			}
-			case ChanMarkup.TAG_ITALIC:
-			{
+			case ChanMarkup.TAG_ITALIC: {
 				openTag = "<i>";
 				closeTag = "</i>";
 				break;
 			}
-			case ChanMarkup.TAG_UNDERLINE:
-			{
+			case ChanMarkup.TAG_UNDERLINE: {
 				openTag = "<span class=\"underline\">";
 				closeTag = "</span>";
 				break;
 			}
-			case ChanMarkup.TAG_OVERLINE:
-			{
+			case ChanMarkup.TAG_OVERLINE: {
 				openTag = "<span class=\"overline\">";
 				closeTag = "</span>";
 				break;
 			}
-			case ChanMarkup.TAG_STRIKE:
-			{
+			case ChanMarkup.TAG_STRIKE: {
 				openTag = "<span class=\"strike\">";
 				closeTag = "</span>";
 				break;
 			}
-			case ChanMarkup.TAG_SUBSCRIPT:
-			{
+			case ChanMarkup.TAG_SUBSCRIPT: {
 				openTag = "<sub>";
 				closeTag = "</sub>";
 				break;
 			}
-			case ChanMarkup.TAG_SUPERSCRIPT:
-			{
+			case ChanMarkup.TAG_SUPERSCRIPT: {
 				openTag = "<sup>";
 				closeTag = "</sup>";
 				break;
 			}
-			case ChanMarkup.TAG_SPOILER:
-			{
+			case ChanMarkup.TAG_SPOILER: {
 				openTag = "<span class=\"spoiler\">";
 				closeTag = "</span>";
 				break;
 			}
-			case ChanMarkup.TAG_QUOTE:
-			{
+			case ChanMarkup.TAG_QUOTE: {
 				openTag = "<span class=\"unkfunc\">";
 				closeTag = "</span>";
 				break;
 			}
-			case ChanMarkup.TAG_CODE:
-			{
+			case ChanMarkup.TAG_CODE: {
 				openTag = "<span class=\"code\">";
 				closeTag = "</span>";
 				break;
 			}
-			case ChanMarkup.TAG_ASCII_ART:
-			{
+			case ChanMarkup.TAG_ASCII_ART: {
 				openTag = "<span class=\"aa\">";
 				closeTag = "</span>";
 				break;
 			}
-			case ChanMarkup.TAG_HEADING:
-			{
+			case ChanMarkup.TAG_HEADING: {
 				openTag = "<span class=\"heading\">";
 				closeTag = "</span>";
 				break;
 			}
-			case ChanMarkup.TAG_SPECIAL_LINK:
-			{
+			case ChanMarkup.TAG_SPECIAL_LINK: {
 				openTag = "<a href=\"" + extra + "\">";
 				closeTag = "</a>";
 				break;
 			}
-			case ChanMarkup.TAG_SPECIAL_COLOR:
-			{
+			case ChanMarkup.TAG_SPECIAL_COLOR: {
 				openTag = "<span style=\"color: #" + String.format("%06x", 0x00ffffff & (int) extra) + "\">";
 				closeTag = "</span>";
 				break;
 			}
-			default:
-			{
+			default: {
 				return null;
 			}
 		}
 		return new SpanItem(openTag, closeTag);
 	}
 
-	private Object[] getSpanType(Object span, Object[] result)
-	{
+	private Object[] getSpanType(Object span, Object[] result) {
 		result[0] = 0;
 		result[1] = null;
-		if (span instanceof LinkSpan)
-		{
+		if (span instanceof LinkSpan) {
 			result[0] = ChanMarkup.TAG_SPECIAL_LINK;
 			result[1] = ((LinkSpan) span).getUriString();
-		}
-		else if (span instanceof SpoilerSpan)
-		{
+		} else if (span instanceof SpoilerSpan) {
 			result[0] = ChanMarkup.TAG_SPOILER;
-		}
-		else if (span instanceof QuoteSpan)
-		{
+		} else if (span instanceof QuoteSpan) {
 			result[0] = ChanMarkup.TAG_QUOTE;
-		}
-		else if (span instanceof ScriptSpan)
-		{
+		} else if (span instanceof ScriptSpan) {
 			result[0] = ((ScriptSpan) span).isSuperscript() ? ChanMarkup.TAG_SUPERSCRIPT : ChanMarkup.TAG_SUBSCRIPT;
-		}
-		else if (span instanceof StyleSpan)
-		{
+		} else if (span instanceof StyleSpan) {
 			int style = ((StyleSpan) span).getStyle();
-			if (style == Typeface.BOLD) result[0] = ChanMarkup.TAG_BOLD;
-			else if (style == Typeface.ITALIC) result[0] = ChanMarkup.TAG_ITALIC;
-		}
-		else if (span instanceof UnderlineSpan)
-		{
+			if (style == Typeface.BOLD) {
+				result[0] = ChanMarkup.TAG_BOLD;
+			} else {
+				if (style == Typeface.ITALIC) {
+					result[0] = ChanMarkup.TAG_ITALIC;
+				}
+			}
+		} else if (span instanceof UnderlineSpan) {
 			result[0] = ChanMarkup.TAG_UNDERLINE;
-		}
-		else if (span instanceof OverlineSpan)
-		{
+		} else if (span instanceof OverlineSpan) {
 			result[0] = ChanMarkup.TAG_OVERLINE;
-		}
-		else if (span instanceof StrikethroughSpan)
-		{
+		} else if (span instanceof StrikethroughSpan) {
 			result[0] = ChanMarkup.TAG_STRIKE;
-		}
-		else if (span instanceof GainedColorSpan)
-		{
+		} else if (span instanceof GainedColorSpan) {
 			result[0] = ChanMarkup.TAG_SPECIAL_COLOR;
 			result[1] = ((GainedColorSpan) span).getForegroundColor();
-		}
-		else if (span instanceof MonospaceSpan)
-		{
+		} else if (span instanceof MonospaceSpan) {
 			result[0] = ((MonospaceSpan) span).isAsciiArt() ? ChanMarkup.TAG_ASCII_ART : ChanMarkup.TAG_CODE;
-		}
-		else if (span instanceof HeadingSpan)
-		{
+		} else if (span instanceof HeadingSpan) {
 			result[0] = ChanMarkup.TAG_HEADING;
 		}
 		return result;
 	}
 
-	public static File getLocalDownloadDirectory(boolean prepare)
-	{
+	public static File getLocalDownloadDirectory(boolean prepare) {
 		File directory = new File(Preferences.getDownloadDirectory(), "Archive");
-		if (prepare)
-		{
+		if (prepare) {
 			directory.mkdirs();
 			File nomedia = new File(directory, ".nomedia");
-			if (!nomedia.exists())
-			{
-				try
-				{
+			if (!nomedia.exists()) {
+				try {
 					nomedia.createNewFile();
-				}
-				catch (IOException e)
-				{
-
+				} catch (IOException e) {
+					// Ignore
 				}
 			}
 		}
 		return directory;
 	}
 
-	private String chooseFileName(ArrayList<String> fileNamesLc, String fileName)
-	{
-		if (fileName != null)
-		{
+	private String chooseFileName(ArrayList<String> fileNamesLc, String fileName) {
+		if (fileName != null) {
 			Locale locale = Locale.getDefault();
 			String fileNameLc = fileName.toLowerCase(locale);
-			if (fileNamesLc.contains(fileNameLc))
-			{
+			if (fileNamesLc.contains(fileNameLc)) {
 				String extension = StringUtils.getFileExtension(fileName);
-				if (extension != null) fileName = fileName.substring(0, fileName.length() - extension.length() - 1);
+				if (extension != null) {
+					fileName = fileName.substring(0, fileName.length() - extension.length() - 1);
+				}
 				String newFileName;
 				String newFileNameLc;
 				int i = 0;
-				do
-				{
+				do {
 					newFileName = fileName + "-" + ++i + (extension != null ? "." + extension : "");
 					newFileNameLc = newFileName.toLowerCase(locale);
-				}
-				while (fileNamesLc.contains(newFileNameLc));
+				} while (fileNamesLc.contains(newFileNameLc));
 				fileNamesLc.add(newFileNameLc);
 				fileName = newFileName;
+			} else {
+				fileNamesLc.add(fileNameLc);
 			}
-			else fileNamesLc.add(fileNameLc);
 		}
 		return fileName;
 	}

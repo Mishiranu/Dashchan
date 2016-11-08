@@ -43,8 +43,7 @@ import com.mishiranu.dashchan.text.style.ScriptSpan;
 import com.mishiranu.dashchan.util.FlagUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 
-public class MarkupButtonProvider
-{
+public class MarkupButtonProvider {
 	public final int tag;
 	public final int widthDp;
 	public final int priority;
@@ -52,8 +51,7 @@ public class MarkupButtonProvider
 	public final String mText;
 	private final Object mSpan;
 
-	private MarkupButtonProvider(int tag, int widthDp, int priority, String text, Object span)
-	{
+	private MarkupButtonProvider(int tag, int widthDp, int priority, String text, Object span) {
 		this.tag = tag;
 		this.widthDp = widthDp;
 		this.priority = priority;
@@ -61,56 +59,48 @@ public class MarkupButtonProvider
 		mSpan = span;
 	}
 
-	public Button createButton(Context context, int defStyleAttr)
-	{
-		return new Button(context, null, defStyleAttr)
-		{
+	public Button createButton(Context context, int defStyleAttr) {
+		return new Button(context, null, defStyleAttr) {
 			@Override
-			protected void onDraw(Canvas canvas)
-			{
+			protected void onDraw(Canvas canvas) {
 				super.onDraw(canvas);
 				OverlineSpan.draw(this, canvas);
 			}
 		};
 	}
 
-	public Object getSpan(Context context)
-	{
+	public Object getSpan(Context context) {
 		return mSpan;
 	}
 
-	public void applyTextAndStyle(Button button)
-	{
+	public void applyTextAndStyle(Button button) {
 		Object span = getSpan(button.getContext());
-		if (span != null)
-		{
+		if (span != null) {
 			SpannableString spannable = new SpannableString(mText);
 			spannable.setSpan(span, 0, spannable.length(), SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
 			button.setText(spannable);
+		} else {
+			button.setText(mText);
 		}
-		else button.setText(mText);
 	}
 
 	public static Pair<Integer, Integer> obtainSupportedAndDisplayedTags(ChanMarkup markup, String boardName,
-			float density, int maxButtonsWidth, int buttonMarginLeft)
-	{
+			float density, int maxButtonsWidth, int buttonMarginLeft) {
 		int handledButtons = 0;
 		int buttonsWidth = 0;
 		int supportedTags = 0;
 		int displayedTags = 0;
-		for (int i = 0; handledButtons != PROVIDERS.size(); i++)
-		{
+		for (int i = 0; handledButtons != PROVIDERS.size(); i++) {
 			int futureTags = 0;
 			int futureWidth = buttonsWidth;
-			for (int j = 0; j < PROVIDERS.size(); j++)
-			{
+			for (int j = 0; j < PROVIDERS.size(); j++) {
 				MarkupButtonProvider provider = PROVIDERS.get(j);
-				if (provider.priority == i)
-				{
-					if (markup.safe().isTagSupported(boardName, provider.tag) || provider.tag == ChanMarkup.TAG_QUOTE)
-					{
+				if (provider.priority == i) {
+					if (markup.safe().isTagSupported(boardName, provider.tag) || provider.tag == ChanMarkup.TAG_QUOTE) {
 						int width = (int) (provider.widthDp * density);
-						if (futureWidth > 0) width += buttonMarginLeft;
+						if (futureWidth > 0) {
+							width += buttonMarginLeft;
+						}
 						futureWidth += width;
 						futureTags |= provider.tag;
 						supportedTags |= provider.tag;
@@ -118,8 +108,7 @@ public class MarkupButtonProvider
 					handledButtons++;
 				}
 			}
-			if (futureWidth <= maxButtonsWidth)
-			{
+			if (futureWidth <= maxButtonsWidth) {
 				buttonsWidth = futureWidth;
 				displayedTags |= futureTags;
 			}
@@ -127,24 +116,18 @@ public class MarkupButtonProvider
 		return new Pair<>(supportedTags, displayedTags);
 	}
 
-	public static Iterable<MarkupButtonProvider> iterable(int displayedTags)
-	{
-		return () -> new Iterator<MarkupButtonProvider>()
-		{
+	public static Iterable<MarkupButtonProvider> iterable(int displayedTags) {
+		return () -> new Iterator<MarkupButtonProvider>() {
 			private int mDisplayedTags = displayedTags;
 			private MarkupButtonProvider mNext;
 			private int mLast = -1;
 
 			@Override
-			public boolean hasNext()
-			{
-				if (mNext == null)
-				{
-					for (int i = mLast + 1; i < PROVIDERS.size(); i++)
-					{
+			public boolean hasNext() {
+				if (mNext == null) {
+					for (int i = mLast + 1; i < PROVIDERS.size(); i++) {
 						MarkupButtonProvider provider = PROVIDERS.get(i);
-						if (FlagUtils.get(mDisplayedTags, provider.tag))
-						{
+						if (FlagUtils.get(mDisplayedTags, provider.tag)) {
 							mDisplayedTags = FlagUtils.set(mDisplayedTags, provider.tag, false);
 							mLast = i;
 							mNext = provider;
@@ -156,17 +139,17 @@ public class MarkupButtonProvider
 			}
 
 			@Override
-			public MarkupButtonProvider next()
-			{
-				if (!hasNext()) throw new NoSuchElementException();
+			public MarkupButtonProvider next() {
+				if (!hasNext()) {
+					throw new NoSuchElementException();
+				}
 				MarkupButtonProvider provider = mNext;
 				mNext = null;
 				return provider;
 			}
 
 			@Override
-			public void remove()
-			{
+			public void remove() {
 				throw new UnsupportedOperationException();
 			}
 		};
@@ -174,8 +157,7 @@ public class MarkupButtonProvider
 
 	private static final ArrayList<MarkupButtonProvider> PROVIDERS = new ArrayList<>();
 
-	static
-	{
+	static {
 		PROVIDERS.add(new MarkupButtonProvider(ChanMarkup.TAG_BOLD, 40, 0, "B", new StyleSpan(Typeface.BOLD)));
 		PROVIDERS.add(new MarkupButtonProvider(ChanMarkup.TAG_ITALIC, 40, 1, "I", new StyleSpan(Typeface.ITALIC)));
 		PROVIDERS.add(new MarkupButtonProvider(ChanMarkup.TAG_UNDERLINE, 40, 2, "U", new UnderlineSpan()));
@@ -186,19 +168,15 @@ public class MarkupButtonProvider
 		PROVIDERS.add(new MarkupButtonProvider(ChanMarkup.TAG_HEADING, 44, 7, "H", new HeadingSpan()));
 		PROVIDERS.add(new MarkupButtonProvider(ChanMarkup.TAG_SUBSCRIPT, 44, 8, "SUB", new ScriptSpan(false)));
 		PROVIDERS.add(new MarkupButtonProvider(ChanMarkup.TAG_SUPERSCRIPT, 44, 8, "SUP", new ScriptSpan(true)));
-		PROVIDERS.add(new MarkupButtonProvider(ChanMarkup.TAG_SPOILER, 44, 5, "SP", null)
-		{
+		PROVIDERS.add(new MarkupButtonProvider(ChanMarkup.TAG_SPOILER, 44, 5, "SP", null) {
 			@Override
-			public Object getSpan(Context context)
-			{
+			public Object getSpan(Context context) {
 				return new BackgroundColorSpan(ResourceUtils.getColor(context, R.attr.backgroundSpoiler));
 			}
 		});
-		PROVIDERS.add(new MarkupButtonProvider(ChanMarkup.TAG_QUOTE, 40, 4, ">", null)
-		{
+		PROVIDERS.add(new MarkupButtonProvider(ChanMarkup.TAG_QUOTE, 40, 4, ">", null) {
 			@Override
-			public Object getSpan(Context context)
-			{
+			public Object getSpan(Context context) {
 				return C.API_LOLLIPOP ? null : new ForegroundColorSpan(ResourceUtils.getColor(context,
 						R.attr.colorTextQuote));
 			}

@@ -26,8 +26,7 @@ import android.os.Bundle;
 
 import com.mishiranu.dashchan.R;
 
-public class MessageDialog extends DialogFragment implements DialogInterface.OnClickListener
-{
+public class MessageDialog extends DialogFragment implements DialogInterface.OnClickListener {
 	private static final String TAG = MessageDialog.class.getName();
 
 	public static final int TYPE_LOADING = 0;
@@ -36,52 +35,45 @@ public class MessageDialog extends DialogFragment implements DialogInterface.OnC
 
 	private static final String EXTRA_TYPE = "type";
 
-	public MessageDialog()
-	{
+	public MessageDialog() {}
 
-	}
-
-	public static void create(int type, Fragment fragment, boolean setTarget)
-	{
+	public static void create(int type, Fragment fragment, boolean setTarget) {
 		dismissIfOpen(fragment);
 		MessageDialog dialog = new MessageDialog();
 		Bundle args = new Bundle();
 		args.putInt(EXTRA_TYPE, type);
 		dialog.setArguments(args);
-		if (setTarget) dialog.setTargetFragment(fragment, 0);
+		if (setTarget) {
+			dialog.setTargetFragment(fragment, 0);
+		}
 		dialog.show(fragment.getFragmentManager(), TAG);
 	}
 
-	public static void dismissIfOpen(Fragment fragment)
-	{
+	public static void dismissIfOpen(Fragment fragment) {
 		MessageDialog dialog = (MessageDialog) fragment.getFragmentManager().findFragmentByTag(MessageDialog.TAG);
-		if (dialog != null) dialog.dismissAllowingStateLoss();
+		if (dialog != null) {
+			dialog.dismissAllowingStateLoss();
+		}
 	}
 
-	private int getType()
-	{
+	private int getType() {
 		return getArguments().getInt(EXTRA_TYPE);
 	}
 
 	@Override
-	public Dialog onCreateDialog(Bundle savedInstanceState)
-	{
-		switch (getType())
-		{
-			case TYPE_LOADING:
-			{
+	public Dialog onCreateDialog(Bundle savedInstanceState) {
+		switch (getType()) {
+			case TYPE_LOADING: {
 				ProgressDialog dialog = new ProgressDialog(getActivity());
 				dialog.setMessage(getString(R.string.message_loading));
 				dialog.setCanceledOnTouchOutside(false);
 				return dialog;
 			}
-			case TYPE_UPDATE_REMINDER:
-			{
+			case TYPE_UPDATE_REMINDER: {
 				return new AlertDialog.Builder(getActivity()).setMessage(R.string.message_update_reminder)
 						.setPositiveButton(android.R.string.ok, this).create();
 			}
-			case TYPE_UNINSTALL_REMINDER:
-			{
+			case TYPE_UNINSTALL_REMINDER: {
 				return new AlertDialog.Builder(getActivity()).setMessage(R.string.message_uninstall_reminder)
 						.setPositiveButton(android.R.string.ok, this).create();
 			}
@@ -90,13 +82,10 @@ public class MessageDialog extends DialogFragment implements DialogInterface.OnC
 	}
 
 	@Override
-	public void onClick(DialogInterface dialog, int which)
-	{
-		switch (getType())
-		{
+	public void onClick(DialogInterface dialog, int which) {
+		switch (getType()) {
 			case TYPE_UPDATE_REMINDER:
-			case TYPE_UNINSTALL_REMINDER:
-			{
+			case TYPE_UNINSTALL_REMINDER: {
 				getActivity().finish();
 				break;
 			}
@@ -104,15 +93,12 @@ public class MessageDialog extends DialogFragment implements DialogInterface.OnC
 	}
 
 	@Override
-	public void onCancel(DialogInterface dialog)
-	{
+	public void onCancel(DialogInterface dialog) {
 		super.onCancel(dialog);
-		switch (getType())
-		{
+		switch (getType()) {
 			case TYPE_LOADING:
 			case TYPE_UPDATE_REMINDER:
-			case TYPE_UNINSTALL_REMINDER:
-			{
+			case TYPE_UNINSTALL_REMINDER: {
 				getActivity().finish();
 				break;
 			}

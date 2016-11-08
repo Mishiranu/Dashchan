@@ -24,13 +24,11 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.content.net.EmbeddedManager;
 
 @Public
-public final class EmbeddedAttachment implements Attachment
-{
+public final class EmbeddedAttachment implements Attachment {
 	private static final long serialVersionUID = 1L;
 
 	@Public
-	public enum ContentType
-	{
+	public enum ContentType {
 		@Public AUDIO,
 		@Public VIDEO
 	}
@@ -46,11 +44,16 @@ public final class EmbeddedAttachment implements Attachment
 
 	@Public
 	public EmbeddedAttachment(Uri fileUri, Uri thumbnailUri, String embeddedType, ContentType contentType,
-			boolean canDownload, String forcedName)
-	{
-		if (fileUri == null) throw new IllegalArgumentException("fileUri is null");
-		if (embeddedType == null) throw new IllegalArgumentException("embeddedType is null");
-		if (contentType == null) throw new IllegalArgumentException("contentType is null");
+			boolean canDownload, String forcedName) {
+		if (fileUri == null) {
+			throw new IllegalArgumentException("fileUri is null");
+		}
+		if (embeddedType == null) {
+			throw new IllegalArgumentException("embeddedType is null");
+		}
+		if (contentType == null) {
+			throw new IllegalArgumentException("contentType is null");
+		}
 		mFileUriString = fileUri != null ? fileUri.toString() : null;
 		mThumbnailUriString = thumbnailUri != null ? thumbnailUri.toString() : null;
 		mEmbeddedType = embeddedType;
@@ -60,67 +63,58 @@ public final class EmbeddedAttachment implements Attachment
 	}
 
 	@Public
-	public Uri getFileUri()
-	{
+	public Uri getFileUri() {
 		return mFileUriString != null ? Uri.parse(mFileUriString) : null;
 	}
 
 	@Public
-	public Uri getThumbnailUri()
-	{
+	public Uri getThumbnailUri() {
 		return mThumbnailUriString != null ? Uri.parse(mThumbnailUriString) : null;
 	}
 
 	@Public
-	public String getEmbeddedType()
-	{
+	public String getEmbeddedType() {
 		return mEmbeddedType;
 	}
 
 	@Public
-	public ContentType getContentType()
-	{
+	public ContentType getContentType() {
 		return mContentType;
 	}
 
 	@Public
-	public boolean isCanDownload()
-	{
+	public boolean isCanDownload() {
 		return mCanDownload;
 	}
 
 	@Public
-	public String getForcedName()
-	{
+	public String getForcedName() {
 		return mForcedName;
 	}
 
-	public String getNormalizedForcedName()
-	{
+	public String getNormalizedForcedName() {
 		String forcedName = getForcedName();
-		if (forcedName != null) return StringUtils.escapeFile(forcedName, false);
+		if (forcedName != null) {
+			return StringUtils.escapeFile(forcedName, false);
+		}
 		return null;
 	}
 
-	public String getTitle()
-	{
+	public String getTitle() {
 		return mTitle;
 	}
 
-	public EmbeddedAttachment setTitle(String title)
-	{
+	public EmbeddedAttachment setTitle(String title) {
 		mTitle = title;
 		return this;
 	}
 
 	@Public
-	public static EmbeddedAttachment obtain(String data)
-	{
+	public static EmbeddedAttachment obtain(String data) {
 		return EmbeddedManager.getInstance().obtainAttachment(data);
 	}
 
-	public boolean contentEquals(EmbeddedAttachment o)
-	{
+	public boolean contentEquals(EmbeddedAttachment o) {
 		return StringUtils.equals(mFileUriString, o.mFileUriString) &&
 				StringUtils.equals(mThumbnailUriString, o.mThumbnailUriString) &&
 				StringUtils.equals(mEmbeddedType, o.mEmbeddedType) &&

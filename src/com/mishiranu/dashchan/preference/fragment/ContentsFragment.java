@@ -55,14 +55,12 @@ import com.mishiranu.dashchan.preference.ExtendedEditTextPreference;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.ToastUtils;
 
-public class ContentsFragment extends BasePreferenceFragment implements DialogInterface.OnClickListener
-{
+public class ContentsFragment extends BasePreferenceFragment implements DialogInterface.OnClickListener {
 	private ExtendedEditTextPreference mDownloadPathPreference;
 	private Preference mClearCachePreference;
 
 	@Override
-	public void onCreate(Bundle savedInstanceState)
-	{
+	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		makeList(null, Preferences.KEY_LOAD_THUMBNAILS, Preferences.GENERIC_VALUES_NETWORK,
@@ -90,7 +88,9 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 		mDownloadPathPreference = makeEditText(downloadingCategory, Preferences.KEY_DOWNLOAD_PATH, null,
 				R.string.preference_download_path, 0, C.DEFAULT_DOWNLOAD_PATH, InputType.TYPE_CLASS_TEXT
 				| InputType.TYPE_TEXT_VARIATION_URI, true);
-		if (C.API_LOLLIPOP) mDownloadPathPreference.setNeutralButton(getString(R.string.action_choose), this, false);
+		if (C.API_LOLLIPOP) {
+			mDownloadPathPreference.setNeutralButton(getString(R.string.action_choose), this, false);
+		}
 		makeList(downloadingCategory, Preferences.KEY_DOWNLOAD_SUBDIR, Preferences.VALUES_DOWNLOAD_SUBDIR,
 				Preferences.DEFAULT_DOWNLOAD_SUBDIR, R.string.preference_download_subdir,
 				R.array.preference_download_subdir_choices);
@@ -98,8 +98,7 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 				R.string.preference_subdirectory_pattern, 0, Preferences.DEFAULT_SUBDIR_PATTERN,
 				InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI, true)
 				.setDescription(makeSubdirDescrption());
-		if (C.API_LOLLIPOP)
-		{
+		if (C.API_LOLLIPOP) {
 			makeCheckBox(downloadingCategory, true, Preferences.KEY_NOTIFY_DOWNLOAD_COMPLETE,
 					Preferences.DEFAULT_NOTIFY_DOWNLOAD_COMPLETE, R.string.preference_notify_download_complete,
 					R.string.preference_notify_download_complete_summary);
@@ -112,8 +111,7 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 
 		PreferenceCategory videoPlayerCategory = makeCategory(R.string.preference_category_video_player);
 		boolean playerAvailable = VideoPlayer.loadLibraries(getActivity());
-		if (!playerAvailable)
-		{
+		if (!playerAvailable) {
 			makeButton(videoPlayerCategory, 0, R.string.preference_use_video_player_warning, true).setSelectable(false);
 		}
 		makeCheckBox(videoPlayerCategory, true, Preferences.KEY_USE_VIDEO_PLAYER, Preferences.DEFAULT_USE_VIDEO_PLAYER,
@@ -128,8 +126,7 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 		makeCheckBox(videoPlayerCategory, true, Preferences.KEY_VIDEO_SEEK_ANY_FRAME,
 				Preferences.DEFAULT_VIDEO_SEEK_ANY_FRAME, R.string.preference_video_seek_any_frame,
 				R.string.preference_video_seek_any_frame_summary).setEnabled(playerAvailable);
-		if (playerAvailable)
-		{
+		if (playerAvailable) {
 			addDependency(Preferences.KEY_VIDEO_COMPLETION, Preferences.KEY_USE_VIDEO_PLAYER, true);
 			addDependency(Preferences.KEY_VIDEO_PLAY_AFTER_SCROLL, Preferences.KEY_USE_VIDEO_PLAYER, true);
 			addDependency(Preferences.KEY_VIDEO_SEEK_ANY_FRAME, Preferences.KEY_USE_VIDEO_PLAYER, true);
@@ -147,14 +144,14 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 		updateCacheSize();
 	}
 
-	private CharSequence makeSubdirDescrption()
-	{
+	private CharSequence makeSubdirDescrption() {
 		String[] formats = {"\\c", "\\d", "\\b", "\\t", "\\e", "<\u2026>"};
 		String[] descriptions = getResources().getStringArray(R.array.preference_subdirectory_pattern_descriptions);
 		SpannableStringBuilder builder = new SpannableStringBuilder();
-		for (int i = 0; i < formats.length; i++)
-		{
-			if (builder.length() > 0) builder.append('\n');
+		for (int i = 0; i < formats.length; i++) {
+			if (builder.length() > 0) {
+				builder.append('\n');
+			}
 			StringUtils.appendSpan(builder, formats[i], new TypefaceSpan("sans-serif-medium"));
 			builder.append(" — ");
 			builder.append(descriptions[i]);
@@ -163,10 +160,8 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 	}
 
 	@Override
-	public boolean onPreferenceClick(Preference preference)
-	{
-		if (preference == mClearCachePreference)
-		{
+	public boolean onPreferenceClick(Preference preference) {
+		if (preference == mClearCachePreference) {
 			ClearCacheFragment fragment = new ClearCacheFragment();
 			fragment.setTargetFragment(this, 0);
 			fragment.show(getFragmentManager(), ClearCacheFragment.class.getName());
@@ -174,8 +169,7 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 		return super.onPreferenceClick(preference);
 	}
 
-	private void updateCacheSize()
-	{
+	private void updateCacheSize() {
 		long cacheSize = CacheManager.getInstance().getCacheSize();
 		String summary = String.format(Locale.US, "%.2f", cacheSize / 1024. / 1024.) + " MB";
 		mClearCachePreference.setSummary(summary);
@@ -184,26 +178,21 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	@Override
-	public void onClick(DialogInterface dialog, int which)
-	{
+	public void onClick(DialogInterface dialog, int which) {
 		startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
 				.putExtra("android.content.extra.SHOW_ADVANCED", true), C.REQUEST_CODE_OPEN_PATH);
 	}
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	@Override
-	public void onActivityResult(int requestCode, int resultCode, Intent data)
-	{
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		if (requestCode == C.REQUEST_CODE_OPEN_PATH && resultCode == Activity.RESULT_OK)
-		{
+		if (requestCode == C.REQUEST_CODE_OPEN_PATH && resultCode == Activity.RESULT_OK) {
 			boolean success = false;
 			Uri uri = data.getData();
 			ContentResolver contentResolver = getActivity().getContentResolver();
-			for (UriPermission uriPermission : contentResolver.getPersistedUriPermissions())
-			{
-				if (!uri.equals(uriPermission.getUri()))
-				{
+			for (UriPermission uriPermission : contentResolver.getPersistedUriPermissions()) {
+				if (!uri.equals(uriPermission.getUri())) {
 					contentResolver.releasePersistableUriPermission(uriPermission.getUri(),
 							(uriPermission.isReadPermission() ? Intent.FLAG_GRANT_READ_URI_PERMISSION : 0) |
 							(uriPermission.isWritePermission() ? Intent.FLAG_GRANT_WRITE_URI_PERMISSION : 0));
@@ -212,104 +201,98 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 			contentResolver.takePersistableUriPermission(uri, data.getFlags() & (Intent.FLAG_GRANT_READ_URI_PERMISSION
 					| Intent.FLAG_GRANT_WRITE_URI_PERMISSION));
 			String id = DocumentsContract.getTreeDocumentId(uri);
-			if (id != null)
-			{
+			if (id != null) {
 				String[] splitted = id.split(":", -1);
-				if (splitted.length == 2)
-				{
+				if (splitted.length == 2) {
 					String volumeName = splitted[0];
 					String path = splitted[1];
 					File storageDirectory = null;
-					if ("primary".equals(volumeName)) storageDirectory = Environment.getExternalStorageDirectory(); else
-					{
+					if ("primary".equals(volumeName)) {
+						storageDirectory = Environment.getExternalStorageDirectory();
+					} else {
 						StorageManager storageManager = (StorageManager) getActivity()
 								.getSystemService(Context.STORAGE_SERVICE);
-						try
-						{
+						try {
 							Object[] list = (Object[]) StorageManager.class.getMethod("getVolumeList")
 									.invoke(storageManager);
-							if (list != null)
-							{
-								for (Object volume : list)
-								{
+							if (list != null) {
+								for (Object volume : list) {
 									Class<?> volumeClass = volume.getClass();
 									String uuid = (String) volumeClass.getMethod("getUuid").invoke(volume);
-									if (volumeName.equals(uuid))
-									{
+									if (volumeName.equals(uuid)) {
 										storageDirectory = (File) volumeClass.getMethod("getPathFile").invoke(volume);
 										break;
 									}
 								}
 							}
-						}
-						catch (Exception e)
-						{
-
+						} catch (Exception e) {
+							// Ignore
 						}
 					}
-					if (storageDirectory != null)
-					{
-						if (storageDirectory.equals(Environment.getExternalStorageDirectory())) path = "/" + path;
-						else path = new File(storageDirectory, path).getAbsolutePath();
-						if (!path.endsWith("/")) path += "/";
+					if (storageDirectory != null) {
+						if (storageDirectory.equals(Environment.getExternalStorageDirectory())) {
+							path = "/" + path;
+						} else {
+							path = new File(storageDirectory, path).getAbsolutePath();
+						}
+						if (!path.endsWith("/")) {
+							path += "/";
+						}
 						mDownloadPathPreference.getEditText().setText(path);
 						success = true;
 					}
 				}
 			}
-			if (!success) ToastUtils.show(getActivity(), R.string.message_unknown_error);
+			if (!success) {
+				ToastUtils.show(getActivity(), R.string.message_unknown_error);
+			}
 		}
 	}
 
 	public static class ClearCacheFragment extends DialogFragment implements DialogInterface.OnMultiChoiceClickListener,
-			DialogInterface.OnClickListener, DialogInterface.OnShowListener
-	{
+			DialogInterface.OnClickListener, DialogInterface.OnShowListener {
 		private static final String EXTRA_CHECKED_ITEMS = "checkedItems";
 
 		private boolean[] mCheckedItems;
 
 		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState)
-		{
+		public Dialog onCreateDialog(Bundle savedInstanceState) {
 			mCheckedItems = savedInstanceState != null ? savedInstanceState.getBooleanArray(EXTRA_CHECKED_ITEMS) : null;
-			if (mCheckedItems == null) mCheckedItems = new boolean[] {true, true, true, false};
+			if (mCheckedItems == null) {
+				mCheckedItems = new boolean[] {true, true, true, false};
+			}
 			String[] items = getResources().getStringArray(R.array.preference_clear_cache_choices);
-			AlertDialog dialog = new AlertDialog.Builder(getActivity()).setTitle(getString(R.string
-					.preference_clear_cache)).setMultiChoiceItems(items, mCheckedItems, this).setNegativeButton
-					(android.R.string.cancel, null).setPositiveButton(android.R.string.ok, this).create();
+			AlertDialog dialog = new AlertDialog.Builder(getActivity())
+					.setTitle(getString(R.string.preference_clear_cache))
+					.setMultiChoiceItems(items, mCheckedItems, this)
+					.setNegativeButton(android.R.string.cancel, null).setPositiveButton(android.R.string.ok, this)
+					.create();
 			dialog.setOnShowListener(this);
 			return dialog;
 		}
 
 		@Override
-		public void onSaveInstanceState(Bundle outState)
-		{
+		public void onSaveInstanceState(Bundle outState) {
 			super.onSaveInstanceState(outState);
 			outState.putBooleanArray(EXTRA_CHECKED_ITEMS, mCheckedItems);
 		}
 
 		@Override
-		public void onShow(DialogInterface dialog)
-		{
+		public void onShow(DialogInterface dialog) {
 			((AlertDialog) dialog).getListView().getChildAt(2).setEnabled(!mCheckedItems[3]);
 		}
 
 		@Override
-		public void onClick(DialogInterface dialog, int which, boolean isChecked)
-		{
-			switch (which)
-			{
-				case 2:
-				{
-					if (mCheckedItems[3])
-					{
+		public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+			switch (which) {
+				case 2: {
+					if (mCheckedItems[3]) {
 						isChecked = !isChecked;
 						((AlertDialog) dialog).getListView().setItemChecked(which, isChecked);
 					}
 					break;
 				}
-				case 3:
-				{
+				case 3: {
 					ListView listView = ((AlertDialog) dialog).getListView();
 					listView.getChildAt(2).setEnabled(!isChecked);
 					break;
@@ -319,8 +302,7 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 		}
 
 		@Override
-		public void onClick(DialogInterface dialog, int which)
-		{
+		public void onClick(DialogInterface dialog, int which) {
 			ClearingDialog clearingDialog = new ClearingDialog(mCheckedItems[0], mCheckedItems[1],
 					mCheckedItems[2], mCheckedItems[3]);
 			clearingDialog.setTargetFragment(getTargetFragment(), 0);
@@ -328,8 +310,7 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 		}
 	}
 
-	public static class ClearingDialog extends DialogFragment implements AsyncManager.Callback
-	{
+	public static class ClearingDialog extends DialogFragment implements AsyncManager.Callback {
 		private static final String EXTRA_THUMBNAILS = "thumbnails";
 		private static final String EXTRA_MEDIA = "media";
 		private static final String EXTRA_OLD_PAGES = "oldPages";
@@ -337,13 +318,9 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 
 		private static final String TASK_CLEAR_CACHE = "clear_cache";
 
-		public ClearingDialog()
-		{
+		public ClearingDialog() {}
 
-		}
-
-		public ClearingDialog(boolean thumbnails, boolean media, boolean oldPages, boolean allPages)
-		{
+		public ClearingDialog(boolean thumbnails, boolean media, boolean oldPages, boolean allPages) {
 			Bundle args = new Bundle();
 			args.putBoolean(EXTRA_THUMBNAILS, thumbnails);
 			args.putBoolean(EXTRA_MEDIA, media);
@@ -353,8 +330,7 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 		}
 
 		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState)
-		{
+		public Dialog onCreateDialog(Bundle savedInstanceState) {
 			ProgressDialog dialog = new ProgressDialog(getActivity());
 			dialog.setMessage(getString(R.string.message_clearing));
 			dialog.setCanceledOnTouchOutside(false);
@@ -362,28 +338,24 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 		}
 
 		@Override
-		public void onActivityCreated(Bundle savedInstanceState)
-		{
+		public void onActivityCreated(Bundle savedInstanceState) {
 			super.onActivityCreated(savedInstanceState);
 			AsyncManager.get(this).startTask(TASK_CLEAR_CACHE, this, null, false);
 		}
 
-		private void sendUpdateCacheSize()
-		{
+		private void sendUpdateCacheSize() {
 			((ContentsFragment) getTargetFragment()).updateCacheSize();
 		}
 
 		@Override
-		public void onCancel(DialogInterface dialog)
-		{
+		public void onCancel(DialogInterface dialog) {
 			super.onCancel(dialog);
 			AsyncManager.get(this).cancelTask(TASK_CLEAR_CACHE, this);
 			sendUpdateCacheSize();
 		}
 
 		@Override
-		public AsyncManager.Holder onCreateAndExecuteTask(String name, HashMap<String, Object> extra)
-		{
+		public AsyncManager.Holder onCreateAndExecuteTask(String name, HashMap<String, Object> extra) {
 			Bundle args = getArguments();
 			ClearCacheTask task = new ClearCacheTask(args.getBoolean(EXTRA_THUMBNAILS), args.getBoolean(EXTRA_MEDIA),
 					args.getBoolean(EXTRA_OLD_PAGES), args.getBoolean(EXTRA_ALL_PAGES));
@@ -392,28 +364,24 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 		}
 
 		@Override
-		public void onFinishTaskExecution(String name, AsyncManager.Holder holder)
-		{
+		public void onFinishTaskExecution(String name, AsyncManager.Holder holder) {
 			dismiss();
 			sendUpdateCacheSize();
 		}
 
 		@Override
-		public void onRequestTaskCancel(String name, Object task)
-		{
+		public void onRequestTaskCancel(String name, Object task) {
 			((ClearCacheTask) task).cancel();
 		}
 	}
 
-	private static class ClearCacheTask extends AsyncManager.SimpleTask<Void, Void, Void>
-	{
+	private static class ClearCacheTask extends AsyncManager.SimpleTask<Void, Void, Void> {
 		private final boolean mThumbnails;
 		private final boolean mMedia;
 		private final boolean mOldPages;
 		private final boolean mAllPages;
 
-		public ClearCacheTask(boolean thumbnails, boolean media, boolean oldPages, boolean allPages)
-		{
+		public ClearCacheTask(boolean thumbnails, boolean media, boolean oldPages, boolean allPages) {
 			mThumbnails = thumbnails;
 			mMedia = media;
 			mOldPages = oldPages;
@@ -421,26 +389,29 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 		}
 
 		@Override
-		protected Void doInBackground(Void... params)
-		{
+		protected Void doInBackground(Void... params) {
 			CacheManager cacheManager = CacheManager.getInstance();
-			try
-			{
-				if (mThumbnails) cacheManager.eraseThumbnailsCache();
-				if (mMedia) cacheManager.eraseMediaCache();
-				if (mOldPages && !mAllPages) cacheManager.erasePagesCache(true);
-				if (mAllPages) cacheManager.erasePagesCache(false);
-			}
-			catch (InterruptedException e)
-			{
+			try {
+				if (mThumbnails) {
+					cacheManager.eraseThumbnailsCache();
+				}
+				if (mMedia) {
+					cacheManager.eraseMediaCache();
+				}
+				if (mOldPages && !mAllPages) {
+					cacheManager.erasePagesCache(true);
+				}
+				if (mAllPages) {
+					cacheManager.erasePagesCache(false);
+				}
+			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
 			}
 			return null;
 		}
 
 		@Override
-		public void cancel()
-		{
+		public void cancel() {
 			cancel(true);
 		}
 	}

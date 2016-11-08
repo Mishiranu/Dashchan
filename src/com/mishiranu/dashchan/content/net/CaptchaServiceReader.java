@@ -33,23 +33,19 @@ import chan.http.HttpRequest;
 
 import com.mishiranu.dashchan.util.GraphicsUtils;
 
-public class CaptchaServiceReader
-{
+public class CaptchaServiceReader {
 	private static final CaptchaServiceReader INSTANCE = new CaptchaServiceReader();
 
-	public static CaptchaServiceReader getInstance()
-	{
+	public static CaptchaServiceReader getInstance() {
 		return INSTANCE;
 	}
 
-	public static class Result
-	{
+	public static class Result {
 		public final String challenge;
 		public final Bitmap image;
 		public final boolean blackAndWhite;
 
-		private Result(String challenge, Bitmap image, boolean blackAndWhite)
-		{
+		private Result(String challenge, Bitmap image, boolean blackAndWhite) {
 			this.challenge = challenge;
 			this.image = image;
 			this.blackAndWhite = blackAndWhite;
@@ -59,51 +55,51 @@ public class CaptchaServiceReader
 	private static final Pattern PATTERN_MAILRU = Pattern.compile("id: \"(.*?)\"[\\s\\S]*url: \"(.*?)\"");
 
 	public Result readMailru(HttpHolder holder, String chanName, String apiKey) throws HttpException,
-			InvalidResponseException
-	{
+			InvalidResponseException {
 		Thread thread = Thread.currentThread();
 		ChanLocator locator = ChanLocator.get(chanName);
 		Uri uri = locator.buildQueryWithSchemeHost(true, "api-nocaptcha.mail.ru", "captcha", "public_key", apiKey);
 		String responseText = new HttpRequest(uri, holder).addHeader("Referer",
 				locator.buildPath().toString()).read().getString();
-		if (thread.isInterrupted()) return null;
+		if (thread.isInterrupted()) {
+			return null;
+		}
 		String mrcu = holder.getCookieValue("mrcu");
 		Matcher matcher = PATTERN_MAILRU.matcher(responseText);
-		if (matcher.find())
-		{
+		if (matcher.find()) {
 			String challenge = matcher.group(1);
 			String uriString = matcher.group(2);
 			Bitmap image = new HttpRequest(Uri.parse(uriString), holder).addCookie("mrcu", mrcu).read().getBitmap();
-			if (image == null) throw new InvalidResponseException();
+			if (image == null) {
+				throw new InvalidResponseException();
+			}
 			int[] pixels = new int[image.getWidth()];
 			int top = 0;
 			int bottom = image.getHeight();
-			OUT: for (int i = 0; i < image.getHeight(); i++)
-			{
+			OUT: for (int i = 0; i < image.getHeight(); i++) {
 				image.getPixels(pixels, 0, image.getWidth(), 0, i, image.getWidth(), 1);
-				for (int pixel : pixels)
-				{
-					if (pixel != -1)
-					{
+				for (int pixel : pixels) {
+					if (pixel != -1) {
 						top = i;
 						break OUT;
 					}
 				}
 			}
-			OUT: for (int i = image.getHeight() - 1; i >= 0; i--)
-			{
+			OUT: for (int i = image.getHeight() - 1; i >= 0; i--) {
 				image.getPixels(pixels, 0, image.getWidth(), 0, i, image.getWidth(), 1);
-				for (int pixel : pixels)
-				{
-					if (pixel != -1)
-					{
+				for (int pixel : pixels) {
+					if (pixel != -1) {
 						bottom = i + 1;
 						break OUT;
 					}
 				}
 			}
-			if (bottom <= top) throw new InvalidResponseException();
-			if (thread.isInterrupted()) return null;
+			if (bottom <= top) {
+				throw new InvalidResponseException();
+			}
+			if (thread.isInterrupted()) {
+				return null;
+			}
 			Bitmap newImage = Bitmap.createBitmap((int) (image.getWidth() * 1.5f), bottom - top,
 					Bitmap.Config.ARGB_8888);
 			Canvas canvas = new Canvas(newImage);

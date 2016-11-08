@@ -21,27 +21,25 @@ import android.text.style.CharacterStyle;
 import android.text.style.ParagraphStyle;
 import android.text.style.UpdateAppearance;
 
-public class ScriptSpan extends CharacterStyle implements UpdateAppearance, ParagraphStyle
-{
+public class ScriptSpan extends CharacterStyle implements UpdateAppearance, ParagraphStyle {
 	private final boolean mSuperscript;
 
-	public ScriptSpan(boolean superscript)
-	{
+	public ScriptSpan(boolean superscript) {
 		mSuperscript = superscript;
 	}
 
-	public boolean isSuperscript()
-	{
+	public boolean isSuperscript() {
 		return mSuperscript;
 	}
 
 	@Override
-	public void updateDrawState(TextPaint paint)
-	{
+	public void updateDrawState(TextPaint paint) {
 		float oldSize = paint.getTextSize();
         float newSize = oldSize * 3f / 4f;
         paint.setTextSize(newSize);
         int shift = (int) (oldSize - newSize);
-		if (mSuperscript) paint.baselineShift -= shift;
+		if (mSuperscript) {
+			paint.baselineShift -= shift;
+		}
 	}
 }

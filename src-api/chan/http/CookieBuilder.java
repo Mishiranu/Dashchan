@@ -20,56 +20,52 @@ import chan.annotation.Public;
 import chan.util.StringUtils;
 
 @Public
-public final class CookieBuilder
-{
+public final class CookieBuilder {
 	private final StringBuilder mBuilder = new StringBuilder();
 
 	@Public
-	public CookieBuilder()
-	{
+	public CookieBuilder() {}
 
-	}
-
-	public CookieBuilder(CookieBuilder builder)
-	{
+	public CookieBuilder(CookieBuilder builder) {
 		append(builder);
 	}
 
 	@Public
-	public CookieBuilder append(String name, String value)
-	{
-		if (!StringUtils.isEmpty(value))
-		{
-			if (mBuilder.length() > 0) mBuilder.append("; ");
+	public CookieBuilder append(String name, String value) {
+		if (!StringUtils.isEmpty(value)) {
+			if (mBuilder.length() > 0) {
+				mBuilder.append("; ");
+			}
 			mBuilder.append(name).append("=").append(value);
 		}
 		return this;
 	}
 
-	public CookieBuilder append(String cookie)
-	{
-		if (!StringUtils.isEmpty(cookie))
-		{
-			if (cookie.matches(".*; *")) cookie = cookie.substring(0, cookie.lastIndexOf(';'));
-			if (mBuilder.length() > 0) mBuilder.append("; ");
+	public CookieBuilder append(String cookie) {
+		if (!StringUtils.isEmpty(cookie)) {
+			if (cookie.matches(".*; *")) {
+				cookie = cookie.substring(0, cookie.lastIndexOf(';'));
+			}
+			if (mBuilder.length() > 0) {
+				mBuilder.append("; ");
+			}
 			mBuilder.append(cookie);
 		}
 		return this;
 	}
 
-	public CookieBuilder append(CookieBuilder builder)
-	{
-		if (builder != null)
-		{
-			if (mBuilder.length() > 0) mBuilder.append("; ");
+	public CookieBuilder append(CookieBuilder builder) {
+		if (builder != null) {
+			if (mBuilder.length() > 0) {
+				mBuilder.append("; ");
+			}
 			mBuilder.append(builder.mBuilder);
 		}
 		return this;
 	}
 
 	@Public
-	public String build()
-	{
+	public String build() {
 		return mBuilder.toString();
 	}
 }

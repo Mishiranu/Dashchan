@@ -13,8 +13,7 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ErrorEditTextSetter;
 
-public class NameEditWatcher implements TextWatcher
-{
+public class NameEditWatcher implements TextWatcher {
 	private final boolean mWatchTripcodeWarning;
 	private final EditText mNameView;
 	private final TextView mTripcodeWarning;
@@ -22,8 +21,7 @@ public class NameEditWatcher implements TextWatcher
 	private final Runnable mLayoutCallback;
 
 	public NameEditWatcher(boolean watchTripcodeWarning, EditText nameView, TextView tripcodeWarning,
-			Runnable layoutCallback)
-	{
+			Runnable layoutCallback) {
 		mWatchTripcodeWarning = watchTripcodeWarning;
 		mNameView = nameView;
 		mTripcodeWarning = tripcodeWarning;
@@ -36,29 +34,21 @@ public class NameEditWatcher implements TextWatcher
 	private ErrorEditTextSetter mErrorSetter;
 
 	@Override
-	public void beforeTextChanged(CharSequence s, int start, int count, int after)
-	{
-
-	}
+	public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
 	@Override
-	public void onTextChanged(CharSequence s, int start, int before, int count)
-	{
-
-	}
+	public void onTextChanged(CharSequence s, int start, int before, int count) {}
 
 	@Override
-	public void afterTextChanged(Editable s)
-	{
+	public void afterTextChanged(Editable s) {
 		int index = s.toString().indexOf('#');
-		if (mWatchTripcodeWarning)
-		{
+		if (mWatchTripcodeWarning) {
 			boolean error = index >= 0;
-			if (mError != error)
-			{
-				if (C.API_LOLLIPOP)
-				{
-					if (mErrorSetter == null) mErrorSetter = new ErrorEditTextSetter(mNameView);
+			if (mError != error) {
+				if (C.API_LOLLIPOP) {
+					if (mErrorSetter == null) {
+						mErrorSetter = new ErrorEditTextSetter(mNameView);
+					}
 					mErrorSetter.setError(error);
 				}
 				mTripcodeWarning.setVisibility(error ? View.VISIBLE : View.GONE);
@@ -66,11 +56,11 @@ public class NameEditWatcher implements TextWatcher
 				mError = error;
 			}
 		}
-		if (mTripcodeSpan != null) s.removeSpan(mTripcodeSpan);
-		if (index >= 0)
-		{
-			if (mTripcodeSpan == null)
-			{
+		if (mTripcodeSpan != null) {
+			s.removeSpan(mTripcodeSpan);
+		}
+		if (index >= 0) {
+			if (mTripcodeSpan == null) {
 				mTripcodeSpan = new ForegroundColorSpan(ResourceUtils.getColor(mNameView.getContext(),
 						mWatchTripcodeWarning ? R.attr.colorTextError : R.attr.colorTextTripcode));
 			}

@@ -26,44 +26,37 @@ import chan.util.CommonUtils;
 // apachan archiverbt endchan nulldvachin
 // Added: 24.08.16 03:39
 @Public
-public final class Threads
-{
+public final class Threads {
 	private Posts[] mThreads;
 	private int mBoardSpeed;
 
-	public Posts[] getThreads()
-	{
+	public Posts[] getThreads() {
 		return mThreads;
 	}
 
-	public Threads setThreads(Posts[] threads)
-	{
+	public Threads setThreads(Posts[] threads) {
 		mThreads = threads;
 		return this;
 	}
 
 	@Public
-	public int getBoardSpeed()
-	{
+	public int getBoardSpeed() {
 		return mBoardSpeed;
 	}
 
 	@Public
-	public Threads setBoardSpeed(int boardSpeed)
-	{
+	public Threads setBoardSpeed(int boardSpeed) {
 		mBoardSpeed = boardSpeed;
 		return this;
 	}
 
 	@Public
-	public Threads(Posts... threads)
-	{
+	public Threads(Posts... threads) {
 		setThreads(CommonUtils.removeNullItems(threads, Posts.class));
 	}
 
 	@Public
-	public Threads(Collection<? extends Posts> threads)
-	{
+	public Threads(Collection<? extends Posts> threads) {
 		this(CommonUtils.toArray(threads, Posts.class));
 	}
 }

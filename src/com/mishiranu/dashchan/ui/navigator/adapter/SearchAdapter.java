@@ -36,8 +36,7 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ViewFactory;
 import com.mishiranu.dashchan.widget.callback.BusyScrollListener;
 
-public class SearchAdapter extends BaseAdapter implements BusyScrollListener.Callback
-{
+public class SearchAdapter extends BaseAdapter implements BusyScrollListener.Callback {
 	private static final int TYPE_VIEW = 0;
 	private static final int TYPE_HEADER = 1;
 
@@ -50,54 +49,43 @@ public class SearchAdapter extends BaseAdapter implements BusyScrollListener.Cal
 
 	private boolean mGroupMode = false;
 
-	public SearchAdapter(UiManager uiManager)
-	{
+	public SearchAdapter(UiManager uiManager) {
 		mUiManager = uiManager;
 		mConfigurationSet = new UiManager.ConfigurationSet(null, null, new HidePerformer(),
 				new GalleryItem.GallerySet(false), null, null, true, false, false, false, null);
 	}
 
 	@Override
-	public int getViewTypeCount()
-	{
+	public int getViewTypeCount() {
 		return 2;
 	}
 
 	@Override
-	public int getItemViewType(int position)
-	{
+	public int getItemViewType(int position) {
 		Object item = getItem(position);
 		return item instanceof PostItem ? TYPE_VIEW : TYPE_HEADER;
 	}
 
 	@Override
-	public boolean isEnabled(int position)
-	{
+	public boolean isEnabled(int position) {
 		Object item = getItem(position);
 		return item instanceof PostItem;
 	}
 
 	@Override
-	public boolean areAllItemsEnabled()
-	{
+	public boolean areAllItemsEnabled() {
 		return false;
 	}
 
 	@Override
-	public View getView(int position, View convertView, ViewGroup parent)
-	{
+	public View getView(int position, View convertView, ViewGroup parent) {
 		Object item = getItem(position);
-		if (item instanceof PostItem)
-		{
+		if (item instanceof PostItem) {
 			return mUiManager.view().getPostView((PostItem) item, convertView, parent, mDemandSet, mConfigurationSet);
-		}
-		else
-		{
-			if (convertView == null)
-			{
+		} else {
+			if (convertView == null) {
 				convertView = ViewFactory.makeListTextHeader(parent, false);
-				if (C.API_LOLLIPOP)
-				{
+				if (C.API_LOLLIPOP) {
 					float density = ResourceUtils.obtainDensity(parent);
 					convertView.setPadding((int) (12f * density), convertView.getPaddingTop() + (int) (12f * density),
 							(int) (12f * density), convertView.getPaddingBottom());
@@ -109,109 +97,95 @@ public class SearchAdapter extends BaseAdapter implements BusyScrollListener.Cal
 	}
 
 	@Override
-	public int getCount()
-	{
+	public int getCount() {
 		return mGroupMode ? mGroupItems.size() : mPostItems.size();
 	}
 
 	@Override
-	public Object getItem(int position)
-	{
+	public Object getItem(int position) {
 		return mGroupMode ? mGroupItems.get(position) : mPostItems.get(position);
 	}
 
-	public PostItem getPostItem(int position)
-	{
+	public PostItem getPostItem(int position) {
 		Object item = getItem(position);
-		if (item instanceof PostItem) return (PostItem) item;
+		if (item instanceof PostItem) {
+			return (PostItem) item;
+		}
 		return null;
 	}
 
 	@Override
-	public long getItemId(int position)
-	{
+	public long getItemId(int position) {
 		return 0;
 	}
 
 	@Override
-	public void setListViewBusy(boolean isBusy, AbsListView listView)
-	{
+	public void setListViewBusy(boolean isBusy, AbsListView listView) {
 		mUiManager.view().handleListViewBusyStateChange(isBusy, listView, mDemandSet);
 	}
 
-	public void setItems(ArrayList<PostItem> postItems)
-	{
+	public void setItems(ArrayList<PostItem> postItems) {
 		mPostItems.clear();
-		if (postItems != null) mPostItems.addAll(postItems);
+		if (postItems != null) {
+			mPostItems.addAll(postItems);
+		}
 		handleItems();
 	}
 
-	public void setGroupMode(boolean groupMode)
-	{
-		if (mGroupMode != groupMode)
-		{
+	public void setGroupMode(boolean groupMode) {
+		if (mGroupMode != groupMode) {
 			mGroupMode = groupMode;
 			handleItems();
 		}
 	}
 
-	public boolean isGroupMode()
-	{
+	public boolean isGroupMode() {
 		return mGroupMode;
 	}
 
-	private void handleItems()
-	{
+	private void handleItems() {
 		mGroupItems.clear();
 		mConfigurationSet.gallerySet.clear();
-		if (mPostItems.size() > 0)
-		{
-			if (mGroupMode)
-			{
+		if (mPostItems.size() > 0) {
+			if (mGroupMode) {
 				LinkedHashMap<String, ArrayList<PostItem>> map = new LinkedHashMap<>();
-				for (PostItem postItem : mPostItems)
-				{
+				for (PostItem postItem : mPostItems) {
 					String threadNumber = postItem.getThreadNumber();
 					ArrayList<PostItem> postItems = map.get(threadNumber);
-					if (postItems == null)
-					{
+					if (postItems == null) {
 						postItems = new ArrayList<>();
 						map.put(threadNumber, postItems);
 					}
 					postItems.add(postItem);
 				}
-				for (LinkedHashMap.Entry<String, ArrayList<PostItem>> entry : map.entrySet())
-				{
+				for (LinkedHashMap.Entry<String, ArrayList<PostItem>> entry : map.entrySet()) {
 					String threadNumber = entry.getKey();
 					boolean number;
-					try
-					{
+					try {
 						Integer.parseInt(threadNumber);
 						number = true;
-					}
-					catch (NumberFormatException e)
-					{
+					} catch (NumberFormatException e) {
 						number = false;
 					}
 					mGroupItems.add(MainApplication.getInstance().getString(R.string.text_in_thread_format_format,
 							number ? "#" + threadNumber : threadNumber));
 					int ordinalIndex = 0;
-					for (PostItem postItem : entry.getValue())
-					{
+					for (PostItem postItem : entry.getValue()) {
 						mGroupItems.add(postItem);
 						postItem.setOrdinalIndex(ordinalIndex++);
 					}
 				}
-			}
-			else
-			{
-				for (int i = 0; i < mPostItems.size(); i++) mPostItems.get(i).setOrdinalIndex(i);
+			} else {
+				for (int i = 0; i < mPostItems.size(); i++) {
+					mPostItems.get(i).setOrdinalIndex(i);
+				}
 			}
 		}
-		for (int i = 0, count = getCount(); i < count; i++)
-		{
+		for (int i = 0, count = getCount(); i < count; i++) {
 			PostItem postItem = getPostItem(i);
-			if (postItem != null) mConfigurationSet.gallerySet.add(postItem.getAttachmentItems());
+			if (postItem != null) {
+				mConfigurationSet.gallerySet.add(postItem.getAttachmentItems());
+			}
 		}
 		notifyDataSetChanged();
 	}

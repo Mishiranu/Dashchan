@@ -28,15 +28,13 @@ import android.graphics.drawable.Drawable;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 
-public class TransparentTileDrawable extends Drawable
-{
+public class TransparentTileDrawable extends Drawable {
 	private static final int COLOR_MIN = 0xe0;
 	private static final int COLOR_MAX = 0xf0;
 
 	private final Paint mPaint;
 
-	public TransparentTileDrawable(Context context, boolean large)
-	{
+	public TransparentTileDrawable(Context context, boolean large) {
 		mPaint = new Paint();
 		float density = ResourceUtils.obtainDensity(context);
 		Bitmap bitmap = GraphicsUtils.generateNoise(large ? 80 : 40, (int) density, COLOR_MIN << 24 | 0x00ffffff,
@@ -45,32 +43,25 @@ public class TransparentTileDrawable extends Drawable
 	}
 
 	@Override
-	public void draw(Canvas canvas)
-	{
+	public void draw(Canvas canvas) {
 		canvas.drawRect(getBounds(), mPaint);
 	}
 
 	@Override
-	public int getOpacity()
-	{
+	public int getOpacity() {
 		return PixelFormat.OPAQUE;
 	}
 
 	@Override
-	public int getAlpha()
-	{
+	public int getAlpha() {
 		return mPaint.getAlpha();
 	}
 
 	@Override
-	public void setAlpha(int alpha)
-	{
+	public void setAlpha(int alpha) {
 		mPaint.setAlpha(alpha);
 	}
 
 	@Override
-	public void setColorFilter(ColorFilter cf)
-	{
-
-	}
+	public void setColorFilter(ColorFilter cf) {}
 }

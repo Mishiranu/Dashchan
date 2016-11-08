@@ -32,15 +32,13 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.util.ResourceUtils;
 
-public abstract class BaseListFragment extends Fragment implements AdapterView.OnItemClickListener
-{
+public abstract class BaseListFragment extends Fragment implements AdapterView.OnItemClickListener {
 	private ListView mListView;
 	private View mEmptyView;
 	private TextView mEmptyText;
 
 	@Override
-	public final View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
-	{
+	public final View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.activity_common, container, false);
 		ListView listView = (ListView) view.findViewById(android.R.id.list);
 		mEmptyView = view.findViewById(R.id.error);
@@ -49,58 +47,44 @@ public abstract class BaseListFragment extends Fragment implements AdapterView.O
 		listView.setOnItemClickListener(this);
 		registerForContextMenu(listView);
 		ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
-		try
-		{
+		try {
 			layoutParams.getClass().getDeclaredField("removeBorders").set(layoutParams, true);
-			if (!C.API_MARSHMALLOW)
-			{
+			if (!C.API_MARSHMALLOW) {
 				float density = ResourceUtils.obtainDensity(inflater.getContext());
 				int padding = (int) ((C.API_LOLLIPOP ? 8f : 16f) * density);
 				listView.setPadding(padding, 0, padding, 0);
 			}
 			listView.setScrollBarStyle(ListView.SCROLLBARS_OUTSIDE_OVERLAY);
-		}
-		catch (Exception e)
-		{
-
+		} catch (Exception e) {
+			// Ignore
 		}
 		mListView = listView;
 		return view;
 	}
 
-	public ListView getListView()
-	{
+	public ListView getListView() {
 		return mListView;
 	}
 
-	public void setListAdapter(ListAdapter adapter)
-	{
+	public void setListAdapter(ListAdapter adapter) {
 		mListView.setAdapter(adapter);
 	}
 
-	public void setEmptyText(CharSequence text)
-	{
+	public void setEmptyText(CharSequence text) {
 		mEmptyText.setText(text);
-		if (StringUtils.isEmpty(text))
-		{
+		if (StringUtils.isEmpty(text)) {
 			mListView.setEmptyView(null);
 			mEmptyView.setVisibility(View.GONE);
-		}
-		else
-		{
+		} else {
 			mEmptyView.setVisibility(View.VISIBLE);
 			mListView.setEmptyView(mEmptyView);
 		}
 	}
 
-	public void setEmptyText(int resId)
-	{
+	public void setEmptyText(int resId) {
 		setEmptyText(getString(resId));
 	}
 
 	@Override
-	public void onItemClick(AdapterView<?> parent, View view, int position, long id)
-	{
-
-	}
+	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {}
 }

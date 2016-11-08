@@ -29,8 +29,7 @@ import android.widget.TextView;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 
-public class SeekBarForm implements SeekBar.OnSeekBarChangeListener, CompoundButton.OnCheckedChangeListener
-{
+public class SeekBarForm implements SeekBar.OnSeekBarChangeListener, CompoundButton.OnCheckedChangeListener {
 	private final boolean mShowSwitch;
 	private int mMinValue = 0;
 	private int mMaxValue = 100;
@@ -45,27 +44,23 @@ public class SeekBarForm implements SeekBar.OnSeekBarChangeListener, CompoundBut
 	private Switch mSwitch;
 	private TextView mValueText;
 
-	public SeekBarForm(boolean showSwitch)
-	{
+	public SeekBarForm(boolean showSwitch) {
 		mShowSwitch = showSwitch;
 	}
 
-	public void setConfiguration(int minValue, int maxValue, int step, float multipler)
-	{
+	public void setConfiguration(int minValue, int maxValue, int step, float multipler) {
 		mMaxValue = maxValue;
 		mMinValue = minValue;
 		mStep = step;
 		mMultipler = multipler;
 	}
 
-	public void setValueFormat(String valueFormat)
-	{
+	public void setValueFormat(String valueFormat) {
 		mValueFormat = valueFormat;
 	}
 
 	@SuppressLint("InflateParams")
-	public View inflate(Context context)
-	{
+	public View inflate(Context context) {
 		LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		View view = inflater.inflate(R.layout.dialog_seek_bar_preference, null);
 		((TextView) view.findViewById(R.id.min_value)).setText(Integer.toString((int) (mMinValue * mMultipler)));
@@ -75,44 +70,41 @@ public class SeekBarForm implements SeekBar.OnSeekBarChangeListener, CompoundBut
 		mSeekBar.setProgress((mCurrentValue - mMinValue) / mStep);
 		mSeekBar.setOnSeekBarChangeListener(this);
 		mSwitch = (Switch) view.findViewById(R.id.switch_view);
-		if (!mShowSwitch) mSwitch.setVisibility(View.GONE); else
-		{
+		if (!mShowSwitch) {
+			mSwitch.setVisibility(View.GONE);
+		} else {
 			mSwitch.setChecked(mSwitchValue);
 			mSwitch.setOnCheckedChangeListener(this);
-			if (C.API_LOLLIPOP) ((ViewGroup.MarginLayoutParams) mSwitch.getLayoutParams()).rightMargin = 0;
+			if (C.API_LOLLIPOP) {
+				((ViewGroup.MarginLayoutParams) mSwitch.getLayoutParams()).rightMargin = 0;
+			}
 		}
 		mValueText = (TextView) view.findViewById(R.id.current_value);
 		updateCurrentValueText();
 		return view;
 	}
 
-	public void setCurrentValue(int currentValue)
-	{
+	public void setCurrentValue(int currentValue) {
 		mCurrentValue = currentValue;
 	}
 
-	public void setSwitchValue(boolean switchValue)
-	{
+	public void setSwitchValue(boolean switchValue) {
 		mSwitchValue = switchValue;
 	}
 
-	public int getCurrentValue()
-	{
+	public int getCurrentValue() {
 		return mCurrentValue;
 	}
 
-	public float getMultipler()
-	{
+	public float getMultipler() {
 		return mMultipler;
 	}
 
-	public boolean getSwitchValue()
-	{
+	public boolean getSwitchValue() {
 		return mSwitchValue;
 	}
 
-	public void updateCurrentValueText()
-	{
+	public void updateCurrentValueText() {
 		int currentValue = (int) (mMultipler * mCurrentValue);
 		String currentValueText = mValueFormat != null ? String.format(mValueFormat, currentValue)
 				: Integer.toString(currentValue);
@@ -120,32 +112,23 @@ public class SeekBarForm implements SeekBar.OnSeekBarChangeListener, CompoundBut
 	}
 
 	@Override
-	public void onProgressChanged(SeekBar seek, int value, boolean fromTouch)
-	{
+	public void onProgressChanged(SeekBar seek, int value, boolean fromTouch) {
 		mCurrentValue = value * mStep + mMinValue;
 		updateCurrentValueText();
 	}
 
 	@Override
-	public void onStartTrackingTouch(SeekBar seek)
-	{
-
-	}
+	public void onStartTrackingTouch(SeekBar seek) {}
 
 	@Override
-	public void onStopTrackingTouch(SeekBar seek)
-	{
-
-	}
+	public void onStopTrackingTouch(SeekBar seek) {}
 
 	@Override
-	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
-	{
+	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 		mSwitchValue = isChecked;
 	}
 
-	public SeekBar getSeekBar()
-	{
+	public SeekBar getSeekBar() {
 		return mSeekBar;
 	}
 }

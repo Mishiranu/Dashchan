@@ -39,49 +39,41 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.text.HtmlParser;
 
-public class YouTubeTitlesReader
-{
+public class YouTubeTitlesReader {
 	private static final YouTubeTitlesReader INSTANCE = new YouTubeTitlesReader();
 
-	private YouTubeTitlesReader()
-	{
+	private YouTubeTitlesReader() {}
 
-	}
-
-	public static YouTubeTitlesReader getInstance()
-	{
+	public static YouTubeTitlesReader getInstance() {
 		return INSTANCE;
 	}
 
 	private void readYouTubeTitles(HashMap<String, String> writeTo, ArrayList<String> embeddedCodes,
-			int from, int count, HttpHolder holder) throws HttpException, InvalidResponseException
-	{
+			int from, int count, HttpHolder holder) throws HttpException, InvalidResponseException {
 		StringBuilder builder = new StringBuilder();
-		for (int i = from, size = Math.min(embeddedCodes.size(), from + count); i < size; i++)
-		{
-			if (builder.length() > 0) builder.append(',');
+		for (int i = from, size = Math.min(embeddedCodes.size(), from + count); i < size; i++) {
+			if (builder.length() > 0) {
+				builder.append(',');
+			}
 			builder.append(embeddedCodes.get(i));
 		}
 		// This api is HTTPS-only
 		Uri uri = ChanLocator.getDefault().buildQueryWithSchemeHost(true, "www.googleapis.com", "youtube/v3/videos",
 				"key", C.API_KEY_GOOGLE, "part", "snippet", "id", builder.toString());
 		JSONObject response = new HttpRequest(uri, holder).read().getJsonObject();
-		if (response != null)
-		{
+		if (response != null) {
 			JSONArray jsonArray = (response).optJSONArray("items");
-			if (jsonArray != null)
-			{
-				for (int i = 0; i < jsonArray.length(); i++)
-				{
+			if (jsonArray != null) {
+				for (int i = 0; i < jsonArray.length(); i++) {
 					JSONObject jsonObject = jsonArray.optJSONObject(i);
-					if (jsonObject != null)
-					{
+					if (jsonObject != null) {
 						String id = jsonObject.optString("id");
 						jsonObject = jsonObject.optJSONObject("snippet");
-						if (jsonObject != null && id != null)
-						{
+						if (jsonObject != null && id != null) {
 							String title = jsonObject.optString("title");
-							if (title != null) writeTo.put(id, title);
+							if (title != null) {
+								writeTo.put(id, title);
+							}
 						}
 					}
 				}
@@ -92,39 +84,34 @@ public class YouTubeTitlesReader
 	private final HashMap<String, String> mCachedYouTubeTitles = new HashMap<>();
 
 	public final HashMap<String, String> readYouTubeTitles(ArrayList<String> embeddedCodes, HttpHolder holder)
-			throws HttpException, InvalidResponseException
-	{
+			throws HttpException, InvalidResponseException {
 		HashMap<String, String> result = new HashMap<>();
-		for (int i = embeddedCodes.size() - 1; i >= 0; i--)
-		{
+		for (int i = embeddedCodes.size() - 1; i >= 0; i--) {
 			String id = embeddedCodes.get(i);
 			String title = mCachedYouTubeTitles.get(embeddedCodes.get(i));
-			if (title != null)
-			{
+			if (title != null) {
 				result.put(id, title);
 				embeddedCodes.remove(i);
 			}
 		}
 		final int maxCount = 50; // Max allowed count per request.
-		for (int i = 0; i < embeddedCodes.size(); i += maxCount)
-		{
+		for (int i = 0; i < embeddedCodes.size(); i += maxCount) {
 			readYouTubeTitles(result, embeddedCodes, i, maxCount, holder);
 		}
-		if (result.size() > 0)
-		{
-			for (String id : result.keySet()) mCachedYouTubeTitles.put(id, result.get(id));
+		if (result.size() > 0) {
+			for (String id : result.keySet()) {
+				mCachedYouTubeTitles.put(id, result.get(id));
+			}
 			return result;
 		}
 		return null;
 	}
 
-	private static abstract class EmbeddedCodeData
-	{
+	private static abstract class EmbeddedCodeData {
 		public final EmbeddedApplyHolder applyHolder;
 		public final String embeddedCode;
 
-		public EmbeddedCodeData(EmbeddedApplyHolder applyHolder, String embeddedCode)
-		{
+		public EmbeddedCodeData(EmbeddedApplyHolder applyHolder, String embeddedCode) {
 			this.applyHolder = applyHolder;
 			this.embeddedCode = embeddedCode;
 		}
@@ -133,23 +120,19 @@ public class YouTubeTitlesReader
 		public abstract void fixPositions(int shift);
 	}
 
-	private static class LinkCodeData extends EmbeddedCodeData
-	{
+	private static class LinkCodeData extends EmbeddedCodeData {
 		public int start, end;
 
-		public LinkCodeData(EmbeddedApplyHolder applyHolder, String embeddedCode, int start, int end)
-		{
+		public LinkCodeData(EmbeddedApplyHolder applyHolder, String embeddedCode, int start, int end) {
 			super(applyHolder, embeddedCode);
 			this.start = start;
 			this.end = end;
 		}
 
 		@Override
-		public int applyTitle(String title)
-		{
+		public int applyTitle(String title) {
 			title = "YouTube: " + title;
-			if (applyHolder.commentBuilder == null)
-			{
+			if (applyHolder.commentBuilder == null) {
 				applyHolder.commentBuilder = new StringBuilder(applyHolder.post.getComment());
 			}
 			int shift = title.length() - (end - start);
@@ -158,124 +141,102 @@ public class YouTubeTitlesReader
 		}
 
 		@Override
-		public void fixPositions(int shift)
-		{
-			if (shift != 0)
-			{
+		public void fixPositions(int shift) {
+			if (shift != 0) {
 				start += shift;
 				end += shift;
 			}
 		}
 	}
 
-	private static class FileCodeData extends EmbeddedCodeData
-	{
+	private static class FileCodeData extends EmbeddedCodeData {
 		public final EmbeddedAttachment attachment;
 
-		public FileCodeData(EmbeddedApplyHolder applyHolder, String embeddedCode, EmbeddedAttachment attachment)
-		{
+		public FileCodeData(EmbeddedApplyHolder applyHolder, String embeddedCode, EmbeddedAttachment attachment) {
 			super(applyHolder, embeddedCode);
 			this.attachment = attachment;
 		}
 
 		@Override
-		public int applyTitle(String title)
-		{
+		public int applyTitle(String title) {
 			attachment.setTitle(title);
 			return 0;
 		}
 
 		@Override
-		public void fixPositions(int shift)
-		{
-
-		}
+		public void fixPositions(int shift) {}
 	}
 
-	private static class EmbeddedApplyHolder
-	{
+	private static class EmbeddedApplyHolder {
 		public final Post post;
 		public final ArrayList<EmbeddedCodeData> embeddedCodeDatas = new ArrayList<>();
 
 		public StringBuilder commentBuilder;
 
-		public EmbeddedApplyHolder(Post post)
-		{
+		public EmbeddedApplyHolder(Post post) {
 			this.post = post;
 		}
 	}
 
-	private EmbeddedApplyHolder getYouTubeApplyHolder(ChanLocator locator, Post post)
-	{
+	private EmbeddedApplyHolder getYouTubeApplyHolder(ChanLocator locator, Post post) {
 		EmbeddedApplyHolder applyHolder = null;
 		String comment = post.getComment();
-		if (comment != null)
-		{
+		if (comment != null) {
 			int indexStart = -1;
-			while (true)
-			{
+			while (true) {
 				indexStart = StringUtils.nearestIndexOf(comment, indexStart + 1, "<a ", "<a\n", "<a\r");
-				if (indexStart >= 0)
-				{
+				if (indexStart >= 0) {
 					int indexStartClose = comment.indexOf(">", indexStart);
 					int indexHref = comment.indexOf("href=", indexStart);
-					if (indexStartClose > indexHref && indexHref > indexStart)
-					{
+					if (indexStartClose > indexHref && indexHref > indexStart) {
 						indexHref += 6;
 						int indexHrefEnd = -1;
 						char c = comment.charAt(indexHref);
-						if (c == '\'' || c == '"')
-						{
+						if (c == '\'' || c == '"') {
 							indexHrefEnd = comment.indexOf(c, indexHref + 1);
-						}
-						else
-						{
-							for (int i = indexHref + 1; i < comment.length(); i++)
-							{
+						} else {
+							for (int i = indexHref + 1; i < comment.length(); i++) {
 								char t = comment.charAt(i);
-								if (t == ' ' || t == '>')
-								{
+								if (t == ' ' || t == '>') {
 									indexHrefEnd = i;
 									break;
 								}
 							}
 						}
-						if (indexHrefEnd > indexHref)
-						{
+						if (indexHrefEnd > indexHref) {
 							String href = comment.substring(indexHref, indexHrefEnd);
 							String embeddedCode = null;
-							if (href.contains("youtu"))
-							{
+							if (href.contains("youtu")) {
 								href = HtmlParser.clear(href);
 								embeddedCode = locator.getYouTubeEmbeddedCode(href);
 							}
-							if (embeddedCode != null)
-							{
+							if (embeddedCode != null) {
 								int indexEnd = comment.indexOf("</a>", indexStartClose);
-								if (indexEnd > indexStartClose)
-								{
-									if (applyHolder == null) applyHolder = new EmbeddedApplyHolder(post);
+								if (indexEnd > indexStartClose) {
+									if (applyHolder == null) {
+										applyHolder = new EmbeddedApplyHolder(post);
+									}
 									applyHolder.embeddedCodeDatas.add(new LinkCodeData(applyHolder, embeddedCode,
 											indexStartClose + 1, indexEnd));
 								}
 							}
 						}
 					}
+				} else {
+					break;
 				}
-				else break;
 			}
 		}
-		for (int i = 0, count = post.getAttachmentsCount(); i < count; i++)
-		{
+		for (int i = 0, count = post.getAttachmentsCount(); i < count; i++) {
 			Attachment attachment = post.getAttachmentAt(i);
-			if (attachment instanceof EmbeddedAttachment)
-			{
+			if (attachment instanceof EmbeddedAttachment) {
 				EmbeddedAttachment embeddedAttachment = (EmbeddedAttachment) attachment;
 				Uri uri = embeddedAttachment.getFileUri();
 				String embeddedCode = uri != null ? locator.getYouTubeEmbeddedCode(uri.toString()) : null;
-				if (embeddedCode != null)
-				{
-					if (applyHolder == null) applyHolder = new EmbeddedApplyHolder(post);
+				if (embeddedCode != null) {
+					if (applyHolder == null) {
+						applyHolder = new EmbeddedApplyHolder(post);
+					}
 					applyHolder.embeddedCodeDatas.add(new FileCodeData(applyHolder, embeddedCode, embeddedAttachment));
 				}
 			}
@@ -284,53 +245,40 @@ public class YouTubeTitlesReader
 	}
 
 	private void readYouTubeTitlesAndApplyChecked(List<Post> posts, HttpHolder holder)
-			throws HttpException, InvalidResponseException
-	{
+			throws HttpException, InvalidResponseException {
 		ChanLocator locator = ChanLocator.getDefault();
 		ArrayList<EmbeddedApplyHolder> applyHolders = null;
 		ArrayList<String> embeddedCodes = null;
-		for (Post post : posts)
-		{
+		for (Post post : posts) {
 			EmbeddedApplyHolder applyHolder = getYouTubeApplyHolder(locator, post);
-			if (applyHolder != null)
-			{
-				if (applyHolders == null)
-				{
+			if (applyHolder != null) {
+				if (applyHolders == null) {
 					applyHolders = new ArrayList<>();
 					embeddedCodes = new ArrayList<>();
 				}
 				applyHolders.add(applyHolder);
-				for (EmbeddedCodeData embeddedCodeData : applyHolder.embeddedCodeDatas)
-				{
+				for (EmbeddedCodeData embeddedCodeData : applyHolder.embeddedCodeDatas) {
 					embeddedCodes.add(embeddedCodeData.embeddedCode);
 				}
 			}
 		}
-		if (embeddedCodes != null)
-		{
+		if (embeddedCodes != null) {
 			HashMap<String, String> titles = readYouTubeTitles(embeddedCodes, holder);
-			if (titles != null)
-			{
-				for (String embeddedCode : titles.keySet())
-				{
-					for (EmbeddedApplyHolder applyHolder : applyHolders)
-					{
+			if (titles != null) {
+				for (String embeddedCode : titles.keySet()) {
+					for (EmbeddedApplyHolder applyHolder : applyHolders) {
 						int shift = 0;
-						for (EmbeddedCodeData embeddedCodeData : applyHolder.embeddedCodeDatas)
-						{
+						for (EmbeddedCodeData embeddedCodeData : applyHolder.embeddedCodeDatas) {
 							embeddedCodeData.fixPositions(shift);
-							if (embeddedCodeData.embeddedCode.equals(embeddedCode))
-							{
+							if (embeddedCodeData.embeddedCode.equals(embeddedCode)) {
 								shift += embeddedCodeData.applyTitle(titles.get(embeddedCode));
 							}
 						}
 					}
 				}
 			}
-			for (EmbeddedApplyHolder applyHolder : applyHolders)
-			{
-				if (applyHolder.commentBuilder != null)
-				{
+			for (EmbeddedApplyHolder applyHolder : applyHolders) {
+				if (applyHolder.commentBuilder != null) {
 					Post post = applyHolder.post;
 					post.setEditedComment(applyHolder.commentBuilder.toString());
 				}
@@ -338,17 +286,12 @@ public class YouTubeTitlesReader
 		}
 	}
 
-	public final void readAndApplyIfNecessary(List<Post> posts, HttpHolder holder)
-	{
-		if (Preferences.isDownloadYouTubeTitles() && !StringUtils.isEmpty(C.API_KEY_GOOGLE))
-		{
-			try
-			{
+	public final void readAndApplyIfNecessary(List<Post> posts, HttpHolder holder) {
+		if (Preferences.isDownloadYouTubeTitles() && !StringUtils.isEmpty(C.API_KEY_GOOGLE)) {
+			try {
 				readYouTubeTitlesAndApplyChecked(posts, holder);
-			}
-			catch (HttpException | InvalidResponseException e)
-			{
-
+			} catch (HttpException | InvalidResponseException e) {
+				// Ignore
 			}
 		}
 	}

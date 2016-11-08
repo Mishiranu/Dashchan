@@ -54,8 +54,7 @@ import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.ui.ForegroundManager;
 import com.mishiranu.dashchan.util.WebViewUtils;
 
-public class CloudFlarePasser implements Handler.Callback
-{
+public class CloudFlarePasser implements Handler.Callback {
 	private static final CloudFlarePasser INSTANCE = new CloudFlarePasser();
 	private static final int WEB_VIEW_TIMEOUT = 20000;
 
@@ -69,42 +68,37 @@ public class CloudFlarePasser implements Handler.Callback
 
 	public static final String COOKIE_CLOUDFLARE = "cf_clearance";
 
-	private CloudFlarePasser()
-	{
-
-	}
+	private CloudFlarePasser() {}
 
 	private final Handler mHandler = new Handler(Looper.getMainLooper(), this);
 
-	private static class CheckHolder
-	{
+	private static class CheckHolder {
 		public final String chanName;
 
 		public volatile boolean started;
 		public volatile boolean ready;
 		public volatile boolean success;
 
-		public CheckHolder(String chanName)
-		{
+		public CheckHolder(String chanName) {
 			this.chanName = chanName;
 		}
 
-		public void waitReady(boolean infinite) throws InterruptedException
-		{
-			synchronized (this)
-			{
-				if (infinite)
-				{
-					while (!ready) wait();
-				}
-				else
-				{
-					while (!started) wait();
+		public void waitReady(boolean infinite) throws InterruptedException {
+			synchronized (this) {
+				if (infinite) {
+					while (!ready) {
+						wait();
+					}
+				} else {
+					while (!started) {
+						wait();
+					}
 					long t = System.currentTimeMillis();
-					while (!ready)
-					{
+					while (!ready) {
 						long dt = WEB_VIEW_TIMEOUT + t - System.currentTimeMillis();
-						if (dt <= 0) return;
+						if (dt <= 0) {
+							return;
+						}
 						wait(dt);
 					}
 				}
@@ -118,30 +112,25 @@ public class CloudFlarePasser implements Handler.Callback
 	private static final int MESSAGE_HANDLE_NEXT_JAVASCRIPT = 2;
 
 	@Override
-	public boolean handleMessage(Message msg)
-	{
-		switch (msg.what)
-		{
-			case MESSAGE_CHECK_JAVASCRIPT:
-			{
+	public boolean handleMessage(Message msg) {
+		switch (msg.what) {
+			case MESSAGE_CHECK_JAVASCRIPT: {
 				initWebView();
 				CheckHolder checkHolder = (CheckHolder) msg.obj;
 				CloudFlareClient client = mClientHandlers.get(checkHolder.chanName);
-				if (client == null)
-				{
+				if (client == null) {
 					client = new CloudFlareClient(checkHolder.chanName, checkHolder);
 					mClientHandlers.put(checkHolder.chanName, client);
+				} else {
+					client.add(checkHolder);
 				}
-				else client.add(checkHolder);
-				if (!mHandler.hasMessages(MESSAGE_HANDLE_NEXT_JAVASCRIPT))
-				{
+				if (!mHandler.hasMessages(MESSAGE_HANDLE_NEXT_JAVASCRIPT)) {
 					handleJavaScript(client);
 					mHandler.sendEmptyMessageDelayed(MESSAGE_HANDLE_NEXT_JAVASCRIPT, WEB_VIEW_TIMEOUT);
 				}
 				return true;
 			}
-			case MESSAGE_HANDLE_NEXT_JAVASCRIPT:
-			{
+			case MESSAGE_HANDLE_NEXT_JAVASCRIPT: {
 				handleNextJavaScript();
 				return true;
 			}
@@ -149,26 +138,24 @@ public class CloudFlarePasser implements Handler.Callback
 		return false;
 	}
 
-	private void handleNextJavaScript()
-	{
+	private void handleNextJavaScript() {
 		mHandler.removeMessages(MESSAGE_HANDLE_NEXT_JAVASCRIPT);
 		Iterator<LinkedHashMap.Entry<String, CloudFlareClient>> iterator = mClientHandlers.entrySet().iterator();
 		CloudFlareClient client = null;
-		if (iterator.hasNext())
-		{
+		if (iterator.hasNext()) {
 			iterator.next();
 			iterator.remove();
-			if (iterator.hasNext()) client = iterator.next().getValue();
+			if (iterator.hasNext()) {
+				client = iterator.next().getValue();
+			}
 		}
-		if (client != null)
-		{
+		if (client != null) {
 			handleJavaScript(client);
 			mHandler.sendEmptyMessageDelayed(MESSAGE_HANDLE_NEXT_JAVASCRIPT, WEB_VIEW_TIMEOUT);
 		}
 	}
 
-	private void handleJavaScript(CloudFlareClient client)
-	{
+	private void handleJavaScript(CloudFlareClient client) {
 		String chanName = client.mChanName;
 		client.notifyStarted();
 		mWebView.stopLoading();
@@ -179,40 +166,32 @@ public class CloudFlarePasser implements Handler.Callback
 		mWebView.loadUrl(locator.buildPath().toString());
 	}
 
-	private class CloudFlareClient extends WebViewClient
-	{
+	private class CloudFlareClient extends WebViewClient {
 		private final String mChanName;
 		private final ArrayList<CheckHolder> mCheckHolders = new ArrayList<>();
 
 		private boolean mStarted = false;
 		private boolean mWasChecked = false;
 
-		public CloudFlareClient(String chanName, CheckHolder checkHolder)
-		{
+		public CloudFlareClient(String chanName, CheckHolder checkHolder) {
 			mChanName = chanName;
 			add(checkHolder);
 		}
 
-		public void add(CheckHolder checkHolder)
-		{
+		public void add(CheckHolder checkHolder) {
 			mCheckHolders.add(checkHolder);
-			if (mStarted)
-			{
-				synchronized (checkHolder)
-				{
+			if (mStarted) {
+				synchronized (checkHolder) {
 					checkHolder.started = true;
 					checkHolder.notifyAll();
 				}
 			}
 		}
 
-		public void notifyStarted()
-		{
+		public void notifyStarted() {
 			mStarted = true;
-			for (CheckHolder checkHolder : mCheckHolders)
-			{
-				synchronized (checkHolder)
-				{
+			for (CheckHolder checkHolder : mCheckHolders) {
+				synchronized (checkHolder) {
 					checkHolder.started = true;
 					checkHolder.notifyAll();
 				}
@@ -220,24 +199,23 @@ public class CloudFlarePasser implements Handler.Callback
 		}
 
 		@Override
-		public void onPageFinished(WebView view, String url)
-		{
+		public void onPageFinished(WebView view, String url) {
 			super.onPageFinished(view, url);
-			if ("Just a moment...".equals(view.getTitle())) mWasChecked = true; else
-			{
+			if ("Just a moment...".equals(view.getTitle())) {
+				mWasChecked = true;
+			} else {
 				String cookie = null;
 				boolean success = false;
-				if (mWasChecked)
-				{
+				if (mWasChecked) {
 					cookie = StringUtils.nullIfEmpty(extractCookie(url, COOKIE_CLOUDFLARE));
-					if (cookie != null) success = true;
+					if (cookie != null) {
+						success = true;
+					}
 				}
 				storeCookie(mChanName, cookie, url);
 				view.stopLoading();
-				for (CheckHolder checkHolder : mCheckHolders)
-				{
-					synchronized (checkHolder)
-					{
+				for (CheckHolder checkHolder : mCheckHolders) {
+					synchronized (checkHolder) {
 						checkHolder.success = success;
 						checkHolder.ready = true;
 						checkHolder.notifyAll();
@@ -249,31 +227,26 @@ public class CloudFlarePasser implements Handler.Callback
 
 		@SuppressWarnings("deprecation")
 		@Override
-		public WebResourceResponse shouldInterceptRequest(WebView view, String url)
-		{
+		public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
 			Uri uri = Uri.parse(url);
 			// Disallow downloading all resources instead of chan and cloudflare redirects (see regex pattern)
-			if (ALLOWED_LINKS.matcher(uri.getPath()).matches()) return null;
+			if (ALLOWED_LINKS.matcher(uri.getPath()).matches()) {
+				return null;
+			}
 			return new WebResourceResponse("text/html", "UTF-8", null);
 		}
 
-		private String extractCookie(String url, String name)
-		{
-			try
-			{
+		private String extractCookie(String url, String name) {
+			try {
 				String data = CookieManager.getInstance().getCookie(url);
 				String[] splitted = data.split(";\\s*");
-				for (int i = 0; i < splitted.length; i++)
-				{
-					if (!StringUtils.isEmptyOrWhitespace(splitted[i]) && splitted[i].startsWith(name + "="))
-					{
+				for (int i = 0; i < splitted.length; i++) {
+					if (!StringUtils.isEmptyOrWhitespace(splitted[i]) && splitted[i].startsWith(name + "=")) {
 						return splitted[i].substring(name.length() + 1);
 					}
 				}
-			}
-			catch (Exception e)
-			{
-
+			} catch (Exception e) {
+				// Ignore
 			}
 			return null;
 		}
@@ -282,10 +255,8 @@ public class CloudFlarePasser implements Handler.Callback
 	private WebView mWebView;
 
 	@SuppressLint("SetJavaScriptEnabled")
-	private void initWebView()
-	{
-		if (mWebView == null)
-		{
+	private void initWebView() {
+		if (mWebView == null) {
 			Context context = MainApplication.getInstance();
 			mWebView = new WebView(context);
 			WebSettings settings = mWebView.getSettings();
@@ -295,13 +266,11 @@ public class CloudFlarePasser implements Handler.Callback
 		}
 	}
 
-	public static class Result
-	{
+	public static class Result {
 		public final boolean success;
 		public final HttpHolder replaceHolder;
 
-		private Result(boolean success, HttpHolder replaceHolder)
-		{
+		private Result(boolean success, HttpHolder replaceHolder) {
 			this.success = success;
 			this.replaceHolder = replaceHolder;
 		}
@@ -310,39 +279,30 @@ public class CloudFlarePasser implements Handler.Callback
 	private final HashMap<String, CheckHolder> mCaptchaHolders = new HashMap<>();
 	private final HashMap<String, Long> mCaptchaLastCancel = new HashMap<>();
 
-	private Result handleCaptcha(String chanName, Uri specialUri, String recaptchaApiKey) throws HttpException
-	{
+	private Result handleCaptcha(String chanName, Uri specialUri, String recaptchaApiKey) throws HttpException {
 		CheckHolder checkHolder = null;
-		synchronized (mCaptchaLastCancel)
-		{
+		synchronized (mCaptchaLastCancel) {
 			Long lastCancelTime = mCaptchaLastCancel.get(chanName);
-			if (lastCancelTime != null && System.currentTimeMillis() - lastCancelTime < 5000)
-			{
+			if (lastCancelTime != null && System.currentTimeMillis() - lastCancelTime < 5000) {
 				return new Result(false, null);
 			}
 		}
-		if (specialUri == null)
-		{
+		if (specialUri == null) {
 			boolean handle;
-			synchronized (mCaptchaHolders)
-			{
+			synchronized (mCaptchaHolders) {
 				checkHolder = mCaptchaHolders.get(chanName);
-				if (checkHolder == null)
-				{
+				if (checkHolder == null) {
 					checkHolder = new CheckHolder(chanName);
 					mCaptchaHolders.put(chanName, checkHolder);
 					handle = true;
+				} else {
+					handle = false;
 				}
-				else handle = false;
 			}
-			if (!handle)
-			{
-				try
-				{
+			if (!handle) {
+				try {
 					checkHolder.waitReady(true);
-				}
-				catch (InterruptedException e)
-				{
+				} catch (InterruptedException e) {
 					Thread.currentThread().interrupt();
 					return new Result(false, null);
 				}
@@ -350,58 +310,49 @@ public class CloudFlarePasser implements Handler.Callback
 			}
 		}
 		HttpHolder holder = new HttpHolder();
-		try
-		{
+		try {
 			boolean retry = false;
-			while (true)
-			{
+			while (true) {
 				ChanPerformer.CaptchaData captchaData = ForegroundManager.getInstance().requireUserCaptcha
 						(new CloudFlareCaptchaReader(recaptchaApiKey), ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2,
 						null, null, null, null, R.string.message_cloudflate_block, retry);
-				if (captchaData == null)
-				{
-					synchronized (mCaptchaLastCancel)
-					{
+				if (captchaData == null) {
+					synchronized (mCaptchaLastCancel) {
 						mCaptchaLastCancel.put(chanName, System.currentTimeMillis());
 					}
 					return new Result(false, null);
 				}
-				if (Thread.currentThread().isInterrupted()) return new Result(false, null);
+				if (Thread.currentThread().isInterrupted()) {
+					return new Result(false, null);
+				}
 				String recaptchaResponse = captchaData.get(ChanPerformer.CaptchaData.INPUT);
 				ChanLocator locator = ChanLocator.get(chanName);
-				if (specialUri != null)
-				{
+				if (specialUri != null) {
 					new HttpRequest(specialUri, holder).setRedirectHandler(HttpRequest.RedirectHandler.NONE)
 							.setPostMethod(new UrlEncodedEntity("g-recaptcha-response", recaptchaResponse))
 							.setSuccessOnly(false).setCheckCloudFlare(false).read();
-				}
-				else
-				{
+				} else {
 					Uri uri = locator.buildQuery("cdn-cgi/l/chk_captcha", "g-recaptcha-response", recaptchaResponse);
 					new HttpRequest(uri, holder).setRedirectHandler(HttpRequest.RedirectHandler.NONE)
 							.setSuccessOnly(false).setCheckCloudFlare(false).read();
 				}
 				String cookie = holder.getCookieValue(COOKIE_CLOUDFLARE);
-				if (cookie != null)
-				{
+				if (cookie != null) {
 					storeCookie(chanName, cookie, null);
-					if (checkHolder != null) checkHolder.success = true;
+					if (checkHolder != null) {
+						checkHolder.success = true;
+					}
 					return new Result(true, specialUri != null ? holder : null);
 				}
 				retry = true;
 			}
-		}
-		finally
-		{
+		} finally {
 			holder.cleanup();
-			if (checkHolder != null)
-			{
-				synchronized (mCaptchaHolders)
-				{
+			if (checkHolder != null) {
+				synchronized (mCaptchaHolders) {
 					mCaptchaHolders.remove(chanName);
 				}
-				synchronized (checkHolder)
-				{
+				synchronized (checkHolder) {
 					checkHolder.ready = true;
 					checkHolder.notifyAll();
 				}
@@ -409,68 +360,52 @@ public class CloudFlarePasser implements Handler.Callback
 		}
 	}
 
-	private static class CloudFlareCaptchaReader implements ReadCaptchaTask.CaptchaReader
-	{
+	private static class CloudFlareCaptchaReader implements ReadCaptchaTask.CaptchaReader {
 		private final String mRecaptchaApiKey;
 
-		public CloudFlareCaptchaReader(String recaptchaApiKey)
-		{
+		public CloudFlareCaptchaReader(String recaptchaApiKey) {
 			mRecaptchaApiKey = recaptchaApiKey;
 		}
 
 		@Override
 		public ChanPerformer.ReadCaptchaResult onReadCaptcha(ChanPerformer.ReadCaptchaData data)
-				throws HttpException, InvalidResponseException
-		{
+				throws HttpException, InvalidResponseException {
 			ChanPerformer.CaptchaData captchaData = new ChanPerformer.CaptchaData();
 			captchaData.put(ChanPerformer.CaptchaData.API_KEY, mRecaptchaApiKey);
 			return new ChanPerformer.ReadCaptchaResult(ChanPerformer.CaptchaState.CAPTCHA, captchaData);
 		}
 	}
 
-	public static Result checkResponse(String chanName, Uri uri, HttpHolder holder) throws HttpException
-	{
+	public static Result checkResponse(String chanName, Uri uri, HttpHolder holder) throws HttpException {
 		int responseCode = holder.getResponseCode();
 		if ((responseCode == HttpURLConnection.HTTP_FORBIDDEN || responseCode == HttpURLConnection.HTTP_UNAVAILABLE)
-				&& holder.getHeaderFields().containsKey("CF-RAY"))
-		{
+				&& holder.getHeaderFields().containsKey("CF-RAY")) {
 			String responseText = holder.read().getString();
-			switch (responseCode)
-			{
-				case HttpURLConnection.HTTP_FORBIDDEN:
-				{
+			switch (responseCode) {case HttpURLConnection.HTTP_FORBIDDEN: {
 					Matcher matcher = PATTERN_FORBIDDEN.matcher(responseText);
-					if (matcher.find())
-					{
+					if (matcher.find()) {
 						Uri specialUri = null;
-						if ("post".equals(matcher.group(2)))
-						{
+						if ("post".equals(matcher.group(2))) {
 							specialUri = Uri.parse(matcher.group(1));
 							specialUri = specialUri.buildUpon().scheme(uri.getScheme())
 									.authority(uri.getAuthority()).build();
 						}
 						matcher = PATTERN_CAPTCHA.matcher(responseText);
-						if (matcher.find())
-						{
+						if (matcher.find()) {
 							String captchaApiKey = matcher.group(1);
 							return INSTANCE.handleCaptcha(chanName, specialUri, captchaApiKey);
 						}
 					}
 					break;
 				}
-				case HttpURLConnection.HTTP_UNAVAILABLE:
-				{
+				case HttpURLConnection.HTTP_UNAVAILABLE: {
 					Matcher matcher = PATTERN_UNAVAILABLE.matcher(responseText);
-					if (matcher.find())
-					{
+					if (matcher.find()) {
 						CheckHolder checkHolder = new CheckHolder(chanName);
 						INSTANCE.mHandler.obtainMessage(MESSAGE_CHECK_JAVASCRIPT, checkHolder).sendToTarget();
-						try
-						{
+						try {
 							checkHolder.waitReady(false);
-						}
-						catch (InterruptedException e)
-						{
+						} catch (InterruptedException e) {
 							Thread.currentThread().interrupt();
 							return new Result(false, null);
 						}
@@ -483,23 +418,22 @@ public class CloudFlarePasser implements Handler.Callback
 		return new Result(false, null);
 	}
 
-	private static void storeCookie(String chanName, String cookie, String uriString)
-	{
+	private static void storeCookie(String chanName, String cookie, String uriString) {
 		ChanConfiguration configuration = ChanConfiguration.get(chanName);
 		configuration.storeCookie(COOKIE_CLOUDFLARE, cookie, cookie != null ? "CloudFlare" : null);
 		configuration.commit();
 		Uri uri = uriString != null ? Uri.parse(uriString) : null;
-		if (uri != null)
-		{
+		if (uri != null) {
 			ChanLocator locator = ChanLocator.get(chanName);
 			String host = uri.getHost();
-			if (locator.isConvertableChanHost(host)) locator.setPreferredHost(host);
+			if (locator.isConvertableChanHost(host)) {
+				locator.setPreferredHost(host);
+			}
 			Preferences.setUseHttps(chanName, "https".equals(uri.getScheme()));
 		}
 	}
 
-	public static String getCookie(String chanName)
-	{
+	public static String getCookie(String chanName) {
 		return StringUtils.nullIfEmpty(ChanConfiguration.get(chanName).getCookie(COOKIE_CLOUDFLARE));
 	}
 }

@@ -23,79 +23,64 @@ import android.app.FragmentManager;
 import android.os.Bundle;
 
 @SuppressLint("Registered")
-public class StateActivity extends Activity
-{
-	public static class InstanceFragment extends Fragment
-	{
+public class StateActivity extends Activity {
+	public static class InstanceFragment extends Fragment {
 		@Override
-		public void onDetach()
-		{
+		public void onDetach() {
 			((StateActivity) getActivity()).callOnFinish(true);
 			super.onDetach();
 		}
 	}
 
 	@Override
-	protected void onCreate(Bundle savedInstanceState)
-	{
+	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		String tag = "instance";
 		FragmentManager fragmentManager = getFragmentManager();
 		InstanceFragment fragment = (InstanceFragment) fragmentManager.findFragmentByTag(tag);
-		if (fragment == null)
-		{
+		if (fragment == null) {
 			fragment = new InstanceFragment();
 			fragment.setRetainInstance(true);
 			fragmentManager.beginTransaction().add(fragment, tag).commit();
 		}
 	}
 
-	public void postRecreate()
-	{
+	public void postRecreate() {
 		getWindow().getDecorView().post(() -> recreate());
 	}
 
 	private boolean mOnFinishCalled = false;
 
 	@Override
-	public void recreate()
-	{
+	public void recreate() {
 		super.recreate();
 		callOnFinish(true);
 	}
 
 	@Override
-	protected void onPause()
-	{
+	protected void onPause() {
 		super.onPause();
 		callOnFinish(false);
 	}
 
 	@Override
-	protected void onStop()
-	{
+	protected void onStop() {
 		super.onStop();
 		callOnFinish(false);
 	}
 
 	@Override
-	protected void onDestroy()
-	{
+	protected void onDestroy() {
 		super.onDestroy();
 		callOnFinish(false);
 	}
 
-	private void callOnFinish(boolean force)
-	{
-		if (!mOnFinishCalled && (isFinishing() || force))
-		{
+	private void callOnFinish(boolean force) {
+		if (!mOnFinishCalled && (isFinishing() || force)) {
 			onFinish();
 			mOnFinishCalled = true;
 		}
 	}
 
-	protected void onFinish()
-	{
-
-	}
+	protected void onFinish() {}
 }

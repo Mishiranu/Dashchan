@@ -26,8 +26,7 @@ import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.IOUtils;
 
-public class ChanFileOpenable implements MultipartEntity.Openable
-{
+public class ChanFileOpenable implements MultipartEntity.Openable {
 	private static final Random RANDOM = new Random(System.currentTimeMillis());
 
 	private final FileHolder mFileHolder;
@@ -40,21 +39,19 @@ public class ChanFileOpenable implements MultipartEntity.Openable
 	private final long mRealSize;
 
 	public ChanFileOpenable(FileHolder fileHolder, boolean uniqueHash, boolean removeMetadata, boolean removeFileName,
-			GraphicsUtils.Reencoding reencoding)
-	{
+			GraphicsUtils.Reencoding reencoding) {
 		mFileHolder = fileHolder;
 		String fileName = MultipartEntity.obtainFileName(fileHolder, removeFileName);
 		mRandomBytes = uniqueHash ? 6 : 0;
 		GraphicsUtils.TransformationData transformationData = GraphicsUtils.transformImageForPosting(fileHolder,
 				fileName, removeMetadata, reencoding);
-		if (transformationData != null)
-		{
+		if (transformationData != null) {
 			mSkipRanges = transformationData.skipRanges;
 			mDecodedBytes = transformationData.decodedBytes;
-			if (transformationData.newFileName != null) fileName = transformationData.newFileName;
-		}
-		else
-		{
+			if (transformationData.newFileName != null) {
+				fileName = transformationData.newFileName;
+			}
+		} else {
 			mSkipRanges = null;
 			mDecodedBytes = null;
 		}
@@ -64,44 +61,38 @@ public class ChanFileOpenable implements MultipartEntity.Openable
 	}
 
 	@Override
-	public String getFileName()
-	{
+	public String getFileName() {
 		return mFileName;
 	}
 
 	@Override
-	public String getMimeType()
-	{
+	public String getMimeType() {
 		return mMimeType;
 	}
 
 	@Override
-	public InputStream openInputStream() throws IOException
-	{
+	public InputStream openInputStream() throws IOException {
 		return new ChanFileInputStream();
 	}
 
 	@Override
-	public long getSize()
-	{
-		long totalSkip = 0L;
-		if (mSkipRanges != null)
-		{
-			for (GraphicsUtils.SkipRange skipRange : mSkipRanges) totalSkip += skipRange.count;
+	public long getSize() {
+		long totalSkip = 0L;if (mSkipRanges != null) {
+			for (GraphicsUtils.SkipRange skipRange : mSkipRanges) {
+				totalSkip += skipRange.count;
+			}
 		}
 		return mRealSize + mRandomBytes - totalSkip;
 	}
 
-	private class ChanFileInputStream extends InputStream
-	{
+	private class ChanFileInputStream extends InputStream {
 		private final InputStream mInputStream;
 
 		private long mPosition;
 		private int mSkipIndex = 0;
 		private int mRandomBytesLeft;
 
-		public ChanFileInputStream() throws IOException
-		{
+		public ChanFileInputStream() throws IOException {
 			mInputStream = mDecodedBytes != null ? new ByteArrayInputStream(mDecodedBytes)
 					: mFileHolder.openInputStream();
 			mRandomBytesLeft = mRandomBytes;
@@ -109,40 +100,36 @@ public class ChanFileOpenable implements MultipartEntity.Openable
 
 		private byte[] mTempBuffer;
 
-		private void ensureTempBuffer()
-		{
-			if (mTempBuffer == null) mTempBuffer = new byte[4096];
+		private void ensureTempBuffer() {
+			if (mTempBuffer == null) {
+				mTempBuffer = new byte[4096];
+			}
 		}
 
 		@Override
-		public int read() throws IOException
-		{
+		public int read() throws IOException {
 			ensureTempBuffer();
 			int result = read(mTempBuffer, 0, 1);
-			if (result == 1) return mTempBuffer[0];
+			if (result == 1) {
+				return mTempBuffer[0];
+			}
 			return -1;
 		}
 
 		@Override
-		public int read(byte[] buffer) throws IOException
-		{
+		public int read(byte[] buffer) throws IOException {
 			return read(buffer, 0, buffer.length);
 		}
 
 		@Override
-		public int read(byte[] buffer, int byteOffset, int byteCount) throws IOException
-		{
+		public int read(byte[] buffer, int byteOffset, int byteCount) throws IOException {
 			int totalRead = 0;
-			while (byteCount > totalRead)
-			{
+			while (byteCount > totalRead) {
 				int result = readAndSkip(buffer, byteOffset + totalRead, byteCount - totalRead);
-				if (result < 0)
-				{
-					if (mRandomBytesLeft > 0)
-					{
+				if (result < 0) {
+					if (mRandomBytesLeft > 0) {
 						int randomBytesCount = Math.min(byteCount - result, mRandomBytesLeft);
-						for (int i = 0; i < randomBytesCount; i++)
-						{
+						for (int i = 0; i < randomBytesCount; i++) {
 							buffer[byteOffset + totalRead + i] = (byte) (RANDOM.nextInt(0x49) + 0x30);
 						}
 						mRandomBytesLeft -= randomBytesCount;
@@ -155,29 +142,29 @@ public class ChanFileOpenable implements MultipartEntity.Openable
 			return totalRead;
 		}
 
-		private int readAndSkip(byte[] buffer, int byteOffset, int byteCount) throws IOException
-		{
+		private int readAndSkip(byte[] buffer, int byteOffset, int byteCount) throws IOException {
 			GraphicsUtils.SkipRange skipRange = mSkipRanges != null && mSkipIndex < mSkipRanges.size()
 					? mSkipRanges.get(mSkipIndex) : null;
 			long canRead = skipRange != null ? skipRange.start - mPosition : byteCount;
-			if (canRead > 0)
-			{
+			if (canRead > 0) {
 				int count = mInputStream.read(buffer, byteOffset, canRead >= byteCount ? byteCount : (int) canRead);
-				if (count > 0) mPosition += count;
+				if (count > 0) {
+					mPosition += count;
+				}
 				return count;
 			}
 			mSkipIndex++;
-			if (skipRange.count > 0)
-			{
+			if (skipRange.count > 0) {
 				mPosition += skipRange.count;
-				if (!IOUtils.skipExactlyCheck(mInputStream, skipRange.count)) throw new IOException();
+				if (!IOUtils.skipExactlyCheck(mInputStream, skipRange.count)) {
+					throw new IOException();
+				}
 			}
 			return 0;
 		}
 
 		@Override
-		public void close() throws IOException
-		{
+		public void close() throws IOException {
 			mInputStream.close();
 		}
 	}

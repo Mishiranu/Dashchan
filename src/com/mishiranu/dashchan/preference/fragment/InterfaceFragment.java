@@ -23,11 +23,9 @@ import android.text.InputType;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.preference.Preferences;
 
-public class InterfaceFragment extends BasePreferenceFragment
-{
+public class InterfaceFragment extends BasePreferenceFragment {
 	@Override
-	public void onCreate(Bundle savedInstanceState)
-	{
+	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		makeSeekBar(null, Preferences.KEY_TEXT_SCALE, Preferences.DEFAULT_TEXT_SCALE,

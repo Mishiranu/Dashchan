@@ -26,10 +26,8 @@ import chan.content.ChanConfiguration;
 
 import com.mishiranu.dashchan.ui.posting.AttachmentHolder;
 
-public class PostingDialog extends DialogFragment
-{
-	public interface Callback
-	{
+public class PostingDialog extends DialogFragment {
+	public interface Callback {
 		public AttachmentHolder getAttachmentHolder(int index);
 		public List<Pair<String, String>> getAttachmentRatingItems();
 		public ChanConfiguration.Posting getPostingConfiguration();
@@ -37,42 +35,37 @@ public class PostingDialog extends DialogFragment
 
 	private Callback mCallback;
 
-	public PostingDialog bindCallback(Callback callback)
-	{
+	public PostingDialog bindCallback(Callback callback) {
 		mCallback = callback;
 		return this;
 	}
 
-	public PostingDialog bindCallback(PostingDialog dialog)
-	{
+	public PostingDialog bindCallback(PostingDialog dialog) {
 		return bindCallback(dialog.mCallback);
 	}
 
-	public static void bindCallback(Activity activity, String tag, Callback callback)
-	{
+	public static void bindCallback(Activity activity, String tag, Callback callback) {
 		PostingDialog dialog = (PostingDialog) activity.getFragmentManager().findFragmentByTag(tag);
-		if (dialog != null) dialog.bindCallback(callback);
+		if (dialog != null) {
+			dialog.bindCallback(callback);
+		}
 	}
 
 	@Override
-	public void onDetach()
-	{
+	public void onDetach() {
 		super.onDetach();
 		mCallback = null;
 	}
 
-	public final AttachmentHolder getAttachmentHolder(String key)
-	{
+	public final AttachmentHolder getAttachmentHolder(String key) {
 		return mCallback.getAttachmentHolder(getArguments().getInt(key));
 	}
 
-	public final List<Pair<String, String>> getAttachmentRatingItems()
-	{
+	public final List<Pair<String, String>> getAttachmentRatingItems() {
 		return mCallback.getAttachmentRatingItems();
 	}
 
-	public final ChanConfiguration.Posting getPostingConfiguration()
-	{
+	public final ChanConfiguration.Posting getPostingConfiguration() {
 		return mCallback.getPostingConfiguration();
 	}
 }

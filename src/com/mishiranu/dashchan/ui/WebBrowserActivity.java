@@ -55,15 +55,13 @@ import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.util.WebViewUtils;
 
-public class WebBrowserActivity extends StateActivity implements DownloadListener
-{
+public class WebBrowserActivity extends StateActivity implements DownloadListener {
 	private WebView mWebView;
 	private ProgressView mProgressView;
 
 	@SuppressLint("SetJavaScriptEnabled")
 	@Override
-	protected void onCreate(Bundle savedInstanceState)
-	{
+	protected void onCreate(Bundle savedInstanceState) {
 		ResourceUtils.applyPreferredTheme(this);
 		super.onCreate(savedInstanceState);
 		setTitle(R.string.action_browser);
@@ -94,8 +92,7 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 	}
 
 	@Override
-	protected void onFinish()
-	{
+	protected void onFinish() {
 		super.onFinish();
 		mWebView.stopLoading();
 		ViewUtils.removeFromParent(mWebView);
@@ -108,8 +105,7 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 	private static final int OPTIONS_MENU_SHARE_LINK = 2;
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu)
-	{
+	public boolean onCreateOptionsMenu(Menu menu) {
 		ActionIconSet set = new ActionIconSet(this);
 		menu.add(0, OPTIONS_MENU_RELOAD, 0, R.string.action_reload).setIcon(set.getId(R.attr.actionRefresh))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
@@ -119,27 +115,21 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item)
-	{
-		switch (item.getItemId())
-		{
-			case android.R.id.home:
-			{
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+			case android.R.id.home: {
 				finish();
 				break;
 			}
-			case OPTIONS_MENU_RELOAD:
-			{
+			case OPTIONS_MENU_RELOAD: {
 				mWebView.reload();
 				break;
 			}
-			case OPTIONS_MENU_COPY_LINK:
-			{
+			case OPTIONS_MENU_COPY_LINK: {
 				StringUtils.copyToClipboard(this, mWebView.getUrl());
 				break;
 			}
-			case OPTIONS_MENU_SHARE_LINK:
-			{
+			case OPTIONS_MENU_SHARE_LINK: {
 				NavigationUtils.share(this, Uri.parse(mWebView.getUrl()));
 				break;
 			}
@@ -148,20 +138,15 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 	}
 
 	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo)
-	{
+	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
 		WebView.HitTestResult hitTestResult = mWebView.getHitTestResult();
-		switch (hitTestResult.getType())
-		{
+		switch (hitTestResult.getType()) {
 			case WebView.HitTestResult.IMAGE_TYPE:
-			case WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE:
-			{
+			case WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE: {
 				final Uri uri = Uri.parse(hitTestResult.getExtra());
 				ChanLocator locator = ChanLocator.getDefault();
-				if (locator.isWebScheme(uri) && locator.isImageExtension(uri.getPath()))
-				{
-					menu.add(R.string.action_view).setOnMenuItemClickListener(item ->
-					{
+				if (locator.isWebScheme(uri) && locator.isImageExtension(uri.getPath())) {
+					menu.add(R.string.action_view).setOnMenuItemClickListener(item -> {
 						NavigationUtils.openImageVideo(WebBrowserActivity.this, uri, false);
 						return true;
 					});
@@ -172,67 +157,57 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 	}
 
 	@Override
-	public void onConfigurationChanged(Configuration newConfig)
-	{
+	public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
 		ViewUtils.applyToolbarStyle(this, null);
 	}
 
 	@Override
-	public void onBackPressed()
-	{
-		if (mWebView.canGoBack()) mWebView.goBack(); else super.onBackPressed();
+	public void onBackPressed() {
+		if (mWebView.canGoBack()) {
+			mWebView.goBack();
+		} else {
+			super.onBackPressed();
+		}
 	}
 
 	@Override
 	public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimetype,
-			long contentLength)
-	{
-		try
-		{
+			long contentLength) {
+		try {
 			startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse(url))
 					.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-		}
-		catch (ActivityNotFoundException e)
-		{
+		} catch (ActivityNotFoundException e) {
 			ToastUtils.show(this, R.string.message_unknown_address);
 		}
 	}
 
-	private class CustomWebViewClient extends WebViewClient
-	{
+	private class CustomWebViewClient extends WebViewClient {
 		@SuppressWarnings("deprecation")
 		@Override
-		public boolean shouldOverrideUrlLoading(WebView view, String url)
-		{
+		public boolean shouldOverrideUrlLoading(WebView view, String url) {
 			Uri uri = Uri.parse(url);
 			String chanName = ChanManager.getInstance().getChanNameByHost(uri.getHost());
-			if (chanName != null)
-			{
+			if (chanName != null) {
 				ChanLocator locator = ChanLocator.get(chanName);
 				ChanLocator.NavigationData navigationData;
-				if (locator.safe(true).isBoardUri(uri))
-				{
+				if (locator.safe(true).isBoardUri(uri)) {
 					navigationData = new ChanLocator.NavigationData(ChanLocator.NavigationData.TARGET_THREADS,
 							locator.safe(true).getBoardName(uri), null, null, null);
-				}
-				else if (locator.safe(true).isThreadUri(uri))
-				{
+				} else if (locator.safe(true).isThreadUri(uri)) {
 					navigationData = new ChanLocator.NavigationData(ChanLocator.NavigationData.TARGET_POSTS,
 							locator.safe(true).getBoardName(uri), locator.safe(true).getThreadNumber(uri),
 							locator.safe(true).getPostNumber(uri), null);
+				} else {
+					navigationData = locator.safe(true).handleUriClickSpecial(uri);
 				}
-				else navigationData = locator.safe(true).handleUriClickSpecial(uri);
-				if (navigationData != null)
-				{
+				if (navigationData != null) {
 					new AlertDialog.Builder(WebBrowserActivity.this).setMessage(R.string.message_open_link_confirm)
 							.setNegativeButton(android.R.string.cancel, null)
-							.setPositiveButton(android.R.string.ok, (dialog, which) ->
-					{
+							.setPositiveButton(android.R.string.ok, (dialog, which) -> {
 						finish();
 						startActivity(NavigationUtils.obtainTargetIntent(WebBrowserActivity.this,
 								chanName, navigationData, true, false));
-
 					}).show();
 					return true;
 				}
@@ -242,36 +217,34 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 		}
 
 		@Override
-		public void onPageFinished(WebView view, String url)
-		{
+		public void onPageFinished(WebView view, String url) {
 			String title = view.getTitle();
-			if (StringUtils.isEmptyOrWhitespace(title)) setTitle(R.string.action_browser);
-			else setTitle(view.getTitle());
+			if (StringUtils.isEmptyOrWhitespace(title)) {
+				setTitle(R.string.action_browser);
+			} else {
+				setTitle(view.getTitle());
+			}
 		}
 
 		@Override
-		public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error)
-		{
-			if (Preferences.isVerifyCertificate())
-			{
+		public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
+			if (Preferences.isVerifyCertificate()) {
 				ToastUtils.show(WebBrowserActivity.this, R.string.message_invalid_certificate);
 				super.onReceivedSslError(view, handler, error);
+			} else {
+				handler.proceed();
 			}
-			else handler.proceed();
 		}
 	}
 
-	private class CustomWebChromeClient extends WebChromeClient
-	{
+	private class CustomWebChromeClient extends WebChromeClient {
 		@Override
-		public void onProgressChanged(WebView view, int newProgress)
-		{
+		public void onProgressChanged(WebView view, int newProgress) {
 			mProgressView.setProgress(newProgress);
 		}
 	}
 
-	private static class ProgressView extends View
-	{
+	private static class ProgressView extends View {
 		private static final int TRANSIENT_TIME = 200;
 
 		private final Paint mPaint = new Paint();
@@ -280,53 +253,48 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 		private float mTransientProgress = 0f;
 		private int mProgress = 0;
 
-		public ProgressView(Context context)
-		{
+		public ProgressView(Context context) {
 			super(context);
 			int color = ResourceUtils.getColor(context, R.attr.colorAccentSupport);
 			mPaint.setColor(Color.BLACK | color);
 		}
 
-		public void setProgress(int progress)
-		{
+		public void setProgress(int progress) {
 			mTransientProgress = calculateTransient();
 			mProgressSetTime = System.currentTimeMillis();
 			mProgress = progress;
 			invalidate();
 		}
 
-		private float getTime()
-		{
+		private float getTime() {
 			return Math.min((float) (System.currentTimeMillis() - mProgressSetTime) / TRANSIENT_TIME, 1f);
 		}
 
-		private float calculateTransient()
-		{
+		private float calculateTransient() {
 			return AnimationUtils.lerp(mTransientProgress, mProgress, getTime());
 		}
 
 		@Override
-		protected void onDraw(Canvas canvas)
-		{
+		protected void onDraw(Canvas canvas) {
 			super.onDraw(canvas);
 			Paint paint = mPaint;
 			int progress = mProgress;
 			float transientProgress = calculateTransient();
 			int alpha = 0xff;
 			boolean needInvalidate = transientProgress != progress;
-			if (progress == 100)
-			{
+			if (progress == 100) {
 				float t = getTime();
 				alpha = (int) (0xff * (1f - t));
 				needInvalidate |= t < 1f;
 			}
 			paint.setAlpha(alpha);
-			if (transientProgress > 0 && alpha > 0x00)
-			{
+			if (transientProgress > 0 && alpha > 0x00) {
 				float width = getWidth() * transientProgress / 100;
 				canvas.drawRect(0, 0, width, getHeight(), paint);
 			}
-			if (needInvalidate) invalidate();
+			if (needInvalidate) {
+				invalidate();
+			}
 		}
 	}
 }

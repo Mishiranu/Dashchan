@@ -19,26 +19,22 @@ package com.mishiranu.dashchan.widget;
 import android.os.Handler;
 import android.widget.BaseAdapter;
 
-public class BaseAdapterNotifier implements Runnable
-{
+public class BaseAdapterNotifier implements Runnable {
 	private static final Handler HANDLER = new Handler();
 
 	private final BaseAdapter mAdapter;
 
-	public BaseAdapterNotifier(BaseAdapter adapter)
-	{
+	public BaseAdapterNotifier(BaseAdapter adapter) {
 		mAdapter = adapter;
 	}
 
-	public void postNotifyDataSetChanged()
-	{
+	public void postNotifyDataSetChanged() {
 		HANDLER.removeCallbacks(this);
 		HANDLER.post(this);
 	}
 
 	@Override
-	public void run()
-	{
+	public void run() {
 		mAdapter.notifyDataSetChanged();
 	}
 }

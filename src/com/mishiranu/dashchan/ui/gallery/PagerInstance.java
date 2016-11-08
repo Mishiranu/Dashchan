@@ -29,8 +29,7 @@ import com.mishiranu.dashchan.media.JpegData;
 import com.mishiranu.dashchan.widget.CircularProgressBar;
 import com.mishiranu.dashchan.widget.PhotoView;
 
-public class PagerInstance
-{
+public class PagerInstance {
 	public final GalleryInstance galleryInstance;
 	public final Callback callback;
 
@@ -40,14 +39,12 @@ public class PagerInstance
 	public ViewHolder currentHolder;
 	public ViewHolder rightHolder;
 
-	public PagerInstance(GalleryInstance galleryInstance, Callback callback)
-	{
+	public PagerInstance(GalleryInstance galleryInstance, Callback callback) {
 		this.galleryInstance = galleryInstance;
 		this.callback = callback;
 	}
 
-	public static class ViewHolder
-	{
+	public static class ViewHolder {
 		public GalleryItem galleryItem;
 		public PhotoView photoView;
 		public FrameLayout surfaceParent;
@@ -67,26 +64,21 @@ public class PagerInstance
 		public boolean fullLoaded;
 		public Object decodeBitmapTask;
 
-		public void recyclePhotoView()
-		{
+		public void recyclePhotoView() {
 			photoView.recycle();
-			if (simpleBitmapDrawable != null)
-			{
+			if (simpleBitmapDrawable != null) {
 				simpleBitmapDrawable.recycle();
 				simpleBitmapDrawable = null;
 			}
-			if (decoderDrawable != null)
-			{
+			if (decoderDrawable != null) {
 				decoderDrawable.recycle();
 				decoderDrawable = null;
 			}
-			if (animatedPngDecoder != null)
-			{
+			if (animatedPngDecoder != null) {
 				animatedPngDecoder.recycle();
 				animatedPngDecoder = null;
 			}
-			if (gifDecoder != null)
-			{
+			if (gifDecoder != null) {
 				gifDecoder.recycle();
 				gifDecoder = null;
 			}
@@ -95,8 +87,7 @@ public class PagerInstance
 		}
 	}
 
-	public interface Callback
-	{
+	public interface Callback {
 		public void showError(ViewHolder holder, String message);
 	}
 }

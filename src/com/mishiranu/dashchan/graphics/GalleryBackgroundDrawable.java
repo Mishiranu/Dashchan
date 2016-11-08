@@ -32,8 +32,7 @@ import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 
-public class GalleryBackgroundDrawable extends Drawable
-{
+public class GalleryBackgroundDrawable extends Drawable {
 	private final View mView;
 	private final float mCenterX;
 	private final float mCenterY;
@@ -44,16 +43,12 @@ public class GalleryBackgroundDrawable extends Drawable
 	private ValueAnimator mAnimator;
 	private int mAlpha = 0xff;
 
-	public GalleryBackgroundDrawable(View view, int[] imageViewPosition, int color)
-	{
-		if (imageViewPosition != null)
-		{
+	public GalleryBackgroundDrawable(View view, int[] imageViewPosition, int color) {
+		if (imageViewPosition != null) {
 			mView = view;
 			mCenterX = imageViewPosition[0] + imageViewPosition[2] / 2f;
 			mCenterY = imageViewPosition[1] + imageViewPosition[3] / 2f;
-		}
-		else
-		{
+		} else {
 			mView = null;
 			mCenterX = -1;
 			mCenterY = -1;
@@ -66,15 +61,12 @@ public class GalleryBackgroundDrawable extends Drawable
 	}
 
 	@Override
-	public void draw(Canvas canvas)
-	{
+	public void draw(Canvas canvas) {
 		Paint paint = mPaint;
 		Rect bounds = getBounds();
 		float t;
-		if (mView != null)
-		{
-			if (mAnimator == null)
-			{
+		if (mView != null) {
+			if (mAnimator == null) {
 				mAnimator = ValueAnimator.ofFloat(0f, 1f);
 				mAnimator.setInterpolator(AnimationUtils.ACCELERATE_INTERPOLATOR);
 				mAnimator.setDuration(300);
@@ -82,15 +74,13 @@ public class GalleryBackgroundDrawable extends Drawable
 				mView.getLocationOnScreen(mLocation);
 			}
 			t = (float) mAnimator.getAnimatedValue();
+		} else {
+			t = 1f;
 		}
-		else t = 1f;
-		if (t >= 1f)
-		{
+		if (t >= 1f) {
 			paint.setAlpha(mAlpha);
 			canvas.drawRect(bounds, paint);
-		}
-		else
-		{
+		} else {
 			int width = bounds.width();
 			int height = bounds.height();
 			float cx = AnimationUtils.lerp(mCenterX - mLocation[0], bounds.left + width / 2f, t / 2f);
@@ -105,30 +95,23 @@ public class GalleryBackgroundDrawable extends Drawable
 	}
 
 	@Override
-	public int getOpacity()
-	{
+	public int getOpacity() {
 		return PixelFormat.TRANSLUCENT;
 	}
 
 	@Override
-	public int getAlpha()
-	{
+	public int getAlpha() {
 		return mAlpha;
 	}
 
 	@Override
-	public void setAlpha(int alpha)
-	{
-		if (mAlpha != alpha)
-		{
+	public void setAlpha(int alpha) {
+		if (mAlpha != alpha) {
 			mAlpha = alpha;
 			invalidateSelf();
 		}
 	}
 
 	@Override
-	public void setColorFilter(ColorFilter cf)
-	{
-
-	}
+	public void setColorFilter(ColorFilter cf) {}
 }

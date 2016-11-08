@@ -29,7 +29,4 @@ import java.lang.annotation.Target;
 @Inherited
 @Target({ElementType.TYPE, ElementType.CONSTRUCTOR, ElementType.METHOD, ElementType.FIELD})
 @Retention(RetentionPolicy.SOURCE)
-public @interface Public
-{
-
-}
+public @interface Public {}

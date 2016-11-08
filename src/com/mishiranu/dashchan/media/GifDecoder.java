@@ -29,8 +29,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
 
-public class GifDecoder implements Runnable
-{
+public class GifDecoder implements Runnable {
 	private static native long init(String fileName);
 	private static native void destroy(long pointer);
 
@@ -50,18 +49,12 @@ public class GifDecoder implements Runnable
 
 	private static boolean sLoaded = false;
 
-	public GifDecoder(File file) throws IOException
-	{
-		synchronized (GifDecoder.class)
-		{
-			if (!sLoaded)
-			{
-				try
-				{
+	public GifDecoder(File file) throws IOException {
+		synchronized (GifDecoder.class) {
+			if (!sLoaded) {
+				try {
 					System.loadLibrary("gif");
-				}
-				catch (LinkageError e)
-				{
+				} catch (LinkageError e) {
 					throw new IOException(e);
 				}
 				sLoaded = true;
@@ -69,8 +62,7 @@ public class GifDecoder implements Runnable
 		}
 		mPointer = init(file.getAbsolutePath());
 		int errorCode = getErrorCode(mPointer);
-		if (errorCode != 0)
-		{
+		if (errorCode != 0) {
 			recycle();
 			throw new IOException("Can't initialize decoder: CODE=" + errorCode);
 		}
@@ -81,89 +73,74 @@ public class GifDecoder implements Runnable
 		mBitmap = Bitmap.createBitmap(summary[0], summary[1], Bitmap.Config.ARGB_8888);
 	}
 
-	public void recycle()
-	{
-		if (!mConsumed)
-		{
+	public void recycle() {
+		if (!mConsumed) {
 			mConsumed = true;
-			if (mBitmap != null) mBitmap.recycle();
+			if (mBitmap != null) {
+				mBitmap.recycle();
+			}
 			destroy(mPointer);
 		}
 	}
 
 	@Override
-	protected void finalize() throws Throwable
-	{
-		try
-		{
+	protected void finalize() throws Throwable {
+		try {
 			recycle();
-		}
-		finally
-		{
+		} finally {
 			super.finalize();
 		}
 	}
 
 	private Drawable mDrawable;
 
-	public Drawable getDrawable()
-	{
-		if (mDrawable == null)
-		{
-			mDrawable = new Drawable()
-			{
+	public Drawable getDrawable() {
+		if (mDrawable == null) {
+			mDrawable = new Drawable() {
 				private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG);
 
 				@Override
-				public int getIntrinsicWidth()
-				{
+				public int getIntrinsicWidth() {
 					return mWidth;
 				}
 
 				@Override
-				public int getIntrinsicHeight()
-				{
+				public int getIntrinsicHeight() {
 					return mHeight;
 				}
 
 				@Override
-				public void setColorFilter(ColorFilter colorFilter)
-				{
+				public void setColorFilter(ColorFilter colorFilter) {
 					mPaint.setColorFilter(colorFilter);
 				}
 
 				@Override
-				public void setAlpha(int alpha)
-				{
+				public void setAlpha(int alpha) {
 					mPaint.setAlpha(alpha);
 				}
 
 				@Override
-				public int getOpacity()
-				{
+				public int getOpacity() {
 					return PixelFormat.TRANSPARENT;
 				}
 
 				@Override
-				public void draw(Canvas canvas)
-				{
-					if (!mConsumed)
-					{
+				public void draw(Canvas canvas) {
+					if (!mConsumed) {
 						Rect bounds = getBounds();
 						canvas.save();
 						canvas.scale((float) bounds.width() / mWidth, (float) bounds.height() / mHeight);
 						int delay = GifDecoder.draw(mPointer, mBitmap);
 						canvas.drawBitmap(mBitmap, 0, 0, mPaint);
 						canvas.restore();
-						if (delay >= 0)
-						{
+						if (delay >= 0) {
 							delay -= 20;
-							if (delay > 0)
-							{
+							if (delay > 0) {
 								delay = Math.min(delay, 500);
 								HANDLER.postDelayed(GifDecoder.this, delay);
+							} else {
+								invalidateSelf();
 							}
-							else invalidateSelf();
 						}
 					}
 				}
@@ -173,8 +150,7 @@ public class GifDecoder implements Runnable
 	}
 
 	@Override
-	public void run()
-	{
+	public void run() {
 		mDrawable.invalidateSelf();
 	}
 }

@@ -26,51 +26,39 @@ import android.util.Pair;
 import chan.annotation.Public;
 
 @Public
-public final class HttpRequest
-{
+public final class HttpRequest {
 	@Public
-	public interface Preset
-	{
+	public interface Preset {}
 
-	}
-
-	public interface HolderPreset extends Preset
-	{
+	public interface HolderPreset extends Preset {
 		public HttpHolder getHolder();
 	}
 
-	public interface TimeoutsPreset extends Preset
-	{
+	public interface TimeoutsPreset extends Preset {
 		public int getConnectTimeout();
 		public int getReadTimeout();
 	}
 
-	public interface InputListenerPreset extends Preset
-	{
+	public interface InputListenerPreset extends Preset {
 		public HttpHolder.InputListener getInputListener();
 	}
 
-	public interface OutputListenerPreset extends Preset
-	{
+	public interface OutputListenerPreset extends Preset {
 		public OutputListener getOutputListener();
 	}
 
-	public interface OutputStreamPreset extends Preset
-	{
+	public interface OutputStreamPreset extends Preset {
 		public OutputStream getOutputStream();
 	}
 
-	public interface OutputListener
-	{
+	public interface OutputListener {
 		public void onOutputProgressChange(long progress, long progressMax);
 	}
 
 	@Public
-	public interface RedirectHandler
-	{
+	public interface RedirectHandler {
 		@Public
-		public enum Action
-		{
+		public enum Action {
 			@Public CANCEL,
 			@Public GET,
 			@Public RETRANSMIT;
@@ -78,24 +66,20 @@ public final class HttpRequest
 			private Uri mRedirectedUri;
 
 			@Public
-			public Action setRedirectedUri(Uri redirectedUri)
-			{
+			public Action setRedirectedUri(Uri redirectedUri) {
 				mRedirectedUri = redirectedUri;
 				return this;
 			}
 
-			public Uri getRedirectedUri()
-			{
+			public Uri getRedirectedUri() {
 				return mRedirectedUri;
 			}
 
-			private void reset()
-			{
+			private void reset() {
 				mRedirectedUri = null;
 			}
 
-			public static void resetAll()
-			{
+			public static void resetAll() {
 				CANCEL.reset();
 				GET.reset();
 				RETRANSMIT.reset();
@@ -113,13 +97,15 @@ public final class HttpRequest
 		public static final RedirectHandler BROWSER = (responseCode, requestedUri, redirectedUri, holder) -> Action.GET;
 
 		@Public
-		public static final RedirectHandler STRICT = (responseCode, requestedUri, redirectedUri, holder) ->
-		{
-			switch (responseCode)
-			{
+		public static final RedirectHandler STRICT = (responseCode, requestedUri, redirectedUri, holder) -> {
+			switch (responseCode) {
 				case HttpURLConnection.HTTP_MOVED_PERM:
-				case HttpURLConnection.HTTP_MOVED_TEMP: return Action.RETRANSMIT;
-				default: return Action.GET;
+				case HttpURLConnection.HTTP_MOVED_TEMP: {
+					return Action.RETRANSMIT;
+				}
+				default: {
+					return Action.GET;
+				}
 			}
 		};
 	}
@@ -155,214 +141,197 @@ public final class HttpRequest
 	boolean mCheckCloudFlare = true;
 
 	@Public
-	public HttpRequest(Uri uri, HttpHolder holder, Preset preset)
-	{
-		if (holder == null && preset instanceof HolderPreset) holder = ((HolderPreset) preset).getHolder();
-		if (holder == null) holder = new HttpHolder();
+	public HttpRequest(Uri uri, HttpHolder holder, Preset preset) {
+		if (holder == null && preset instanceof HolderPreset) {
+			holder = ((HolderPreset) preset).getHolder();
+		}
+		if (holder == null) {
+			holder = new HttpHolder();
+		}
 		mUri = uri;
 		mHolder = holder;
-		if (preset instanceof TimeoutsPreset)
-		{
+		if (preset instanceof TimeoutsPreset) {
 			setTimeouts(((TimeoutsPreset) preset).getConnectTimeout(), ((TimeoutsPreset) preset).getReadTimeout());
 		}
-		if (preset instanceof OutputListenerPreset)
-		{
+		if (preset instanceof OutputListenerPreset) {
 			setOutputListener(((OutputListenerPreset) preset).getOutputListener());
 		}
-		if (preset instanceof InputListenerPreset)
-		{
+		if (preset instanceof InputListenerPreset) {
 			setInputListener(((InputListenerPreset) preset).getInputListener());
 		}
-		if (preset instanceof OutputStreamPreset)
-		{
+		if (preset instanceof OutputStreamPreset) {
 			setOutputStream(((OutputStreamPreset) preset).getOutputStream());
 		}
 	}
 
 	@Public
-	public HttpRequest(Uri uri, HttpHolder holder)
-	{
+	public HttpRequest(Uri uri, HttpHolder holder) {
 		this(uri, holder, null);
 	}
 
 	@Public
-	public HttpRequest(Uri uri, Preset preset)
-	{
+	public HttpRequest(Uri uri, Preset preset) {
 		this(uri, null, preset);
 	}
 
-	private HttpRequest setMethod(int method, RequestEntity entity)
-	{
+	private HttpRequest setMethod(int method, RequestEntity entity) {
 		mRequestMethod = method;
 		mRequestEntity = entity;
 		return this;
 	}
 
 	@Public
-	public HttpRequest setGetMethod()
-	{
+	public HttpRequest setGetMethod() {
 		return setMethod(REQUEST_METHOD_GET, null);
 	}
 
 	@Public
-	public HttpRequest setHeadMethod()
-	{
+	public HttpRequest setHeadMethod() {
 		return setMethod(REQUEST_METHOD_HEAD, null);
 	}
 
 	@Public
-	public HttpRequest setPostMethod(RequestEntity entity)
-	{
+	public HttpRequest setPostMethod(RequestEntity entity) {
 		return setMethod(REQUEST_METHOD_POST, entity);
 	}
 
 	@Public
-	public HttpRequest setPutMethod(RequestEntity entity)
-	{
+	public HttpRequest setPutMethod(RequestEntity entity) {
 		return setMethod(REQUEST_METHOD_PUT, entity);
 	}
 
 	@Public
-	public HttpRequest setDeleteMethod(RequestEntity entity)
-	{
+	public HttpRequest setDeleteMethod(RequestEntity entity) {
 		return setMethod(REQUEST_METHOD_DELETE, entity);
 	}
 
 	@Public
-	public HttpRequest setSuccessOnly(boolean successOnly)
-	{
+	public HttpRequest setSuccessOnly(boolean successOnly) {
 		mSuccessOnly = successOnly;
 		return this;
 	}
 
 	@Public
-	public HttpRequest setRedirectHandler(RedirectHandler redirectHandler)
-	{
-		if (redirectHandler == null) throw new NullPointerException();
+	public HttpRequest setRedirectHandler(RedirectHandler redirectHandler) {
+		if (redirectHandler == null) {
+			throw new NullPointerException();
+		}
 		mRedirectHandler = redirectHandler;
 		return this;
 	}
 
 	@Public
-	public HttpRequest setValidator(HttpValidator validator)
-	{
+	public HttpRequest setValidator(HttpValidator validator) {
 		mValidator = validator;
 		return this;
 	}
 
 	@Public
-	public HttpRequest setKeepAlive(boolean keepAlive)
-	{
+	public HttpRequest setKeepAlive(boolean keepAlive) {
 		mKeepAlive = keepAlive;
 		return this;
 	}
 
 	@Public
-	public HttpRequest setTimeouts(int connectTimeout, int readTimeout)
-	{
-		if (connectTimeout >= 0) mConnectTimeout = connectTimeout;
-		if (readTimeout >= 0) mReadTimeout = readTimeout;
+	public HttpRequest setTimeouts(int connectTimeout, int readTimeout) {
+		if (connectTimeout >= 0) {
+			mConnectTimeout = connectTimeout;
+		}
+		if (readTimeout >= 0) {
+			mReadTimeout = readTimeout;
+		}
 		return this;
 	}
 
 	@Public
-	public HttpRequest setDelay(int delay)
-	{
+	public HttpRequest setDelay(int delay) {
 		mDelay = delay;
 		return this;
 	}
 
-	public HttpRequest setInputListener(HttpHolder.InputListener listener)
-	{
+	public HttpRequest setInputListener(HttpHolder.InputListener listener) {
 		mInputListener = listener;
 		return this;
 	}
 
-	public HttpRequest setOutputListener(OutputListener listener)
-	{
+	public HttpRequest setOutputListener(OutputListener listener) {
 		mOutputListener = listener;
 		return this;
 	}
 
 	@Public
-	public HttpRequest setOutputStream(OutputStream outputStream)
-	{
+	public HttpRequest setOutputStream(OutputStream outputStream) {
 		mOutputStream = outputStream;
 		return this;
 	}
 
-	private HttpRequest addHeader(Pair<String, String> header)
-	{
-		if (header != null)
-		{
-			if (mHeaders == null) mHeaders = new ArrayList<>();
+	private HttpRequest addHeader(Pair<String, String> header) {
+		if (header != null) {
+			if (mHeaders == null) {
+				mHeaders = new ArrayList<>();
+			}
 			mHeaders.add(header);
 		}
 		return this;
 	}
 
 	@Public
-	public HttpRequest addHeader(String name, String value)
-	{
+	public HttpRequest addHeader(String name, String value) {
 		return addHeader(new Pair<>(name, value));
 	}
 
 	@Public
-	public HttpRequest clearHeaders()
-	{
+	public HttpRequest clearHeaders() {
 		mHeaders = null;
 		return this;
 	}
 
 	@Public
-	public HttpRequest addCookie(String name, String value)
-	{
-		if (value != null)
-		{
-			if (mCookieBuilder == null) mCookieBuilder = new CookieBuilder();
+	public HttpRequest addCookie(String name, String value) {
+		if (value != null) {
+			if (mCookieBuilder == null) {
+				mCookieBuilder = new CookieBuilder();
+			}
 			mCookieBuilder.append(name, value);
 		}
 		return this;
 	}
 
 	@Public
-	public HttpRequest addCookie(String cookie)
-	{
-		if (cookie != null)
-		{
-			if (mCookieBuilder == null) mCookieBuilder = new CookieBuilder();
+	public HttpRequest addCookie(String cookie) {
+		if (cookie != null) {
+			if (mCookieBuilder == null) {
+				mCookieBuilder = new CookieBuilder();
+			}
 			mCookieBuilder.append(cookie);
 		}
 		return this;
 	}
 
 	@Public
-	public HttpRequest addCookie(CookieBuilder builder)
-	{
-		if (builder != null)
-		{
-			if (mCookieBuilder == null) mCookieBuilder = new CookieBuilder();
+	public HttpRequest addCookie(CookieBuilder builder) {
+		if (builder != null) {
+			if (mCookieBuilder == null) {
+				mCookieBuilder = new CookieBuilder();
+			}
 			mCookieBuilder.append(builder);
 		}
 		return this;
 	}
 
 	@Public
-	public HttpRequest clearCookies()
-	{
+	public HttpRequest clearCookies() {
 		mCookieBuilder = null;
 		return this;
 	}
 
-	public HttpRequest setCheckCloudFlare(boolean checkCloudFlare)
-	{
+	public HttpRequest setCheckCloudFlare(boolean checkCloudFlare) {
 		mCheckCloudFlare = checkCloudFlare;
 		return this;
 	}
 
 	@Public
-	public HttpRequest copy()
-	{
+	public HttpRequest copy() {
 		HttpRequest request = new HttpRequest(mUri, mHolder);
 		request.setMethod(mRequestMethod, mRequestEntity);
 		request.setSuccessOnly(mSuccessOnly);
@@ -374,38 +343,34 @@ public final class HttpRequest
 		request.setOutputStream(mOutputStream);
 		request.setTimeouts(mConnectTimeout, mReadTimeout);
 		request.setDelay(mDelay);
-		if (mHeaders != null) request.mHeaders = new ArrayList<>(mHeaders);
+		if (mHeaders != null) {
+			request.mHeaders = new ArrayList<>(mHeaders);
+		}
 		request.addCookie(mCookieBuilder);
 		request.setCheckCloudFlare(mCheckCloudFlare);
 		return request;
 	}
 
 	@Public
-	public HttpHolder execute() throws HttpException
-	{
-		try
-		{
+	public HttpHolder execute() throws HttpException {
+		try {
 			HttpClient.getInstance().execute(this);
 			return mHolder;
-		}
-		catch (HttpException e)
-		{
+		} catch (HttpException e) {
 			mHolder.disconnect();
 			throw e;
 		}
 	}
 
 	@Public
-	public HttpResponse read() throws HttpException
-	{
+	public HttpResponse read() throws HttpException {
 		execute();
-		try
-		{
-			if (mRequestMethod == REQUEST_METHOD_HEAD) return null;
+		try {
+			if (mRequestMethod == REQUEST_METHOD_HEAD) {
+				return null;
+			}
 			return mHolder.read();
-		}
-		catch (HttpException e)
-		{
+		} catch (HttpException e) {
 			mHolder.disconnect();
 			throw e;
 		}

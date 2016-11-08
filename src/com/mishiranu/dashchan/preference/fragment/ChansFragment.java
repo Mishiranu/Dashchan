@@ -29,20 +29,19 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.preference.PreferencesActivity;
 import com.mishiranu.dashchan.util.ResourceUtils;
 
-public class ChansFragment extends BasePreferenceFragment
-{
+public class ChansFragment extends BasePreferenceFragment {
 	@Override
-	public void onCreate(Bundle savedInstanceState)
-	{
+	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		ChanManager manager = ChanManager.getInstance();
 		int color = ResourceUtils.getColor(getActivity(), R.attr.drawerIconColor);
-		for (String chanName : manager.getAvailableChanNames())
-		{
+		for (String chanName : manager.getAvailableChanNames()) {
 			Preference preference = makeButton(null, ChanConfiguration.get(chanName).getTitle(), null, false);
 			Drawable drawable = manager.getIcon(chanName, color);
-			if (drawable != null) preference.setIcon(drawable);
+			if (drawable != null) {
+				preference.setIcon(drawable);
+			}
 			Intent intent = new Intent(getActivity(), PreferencesActivity.class);
 			intent.putExtra(PreferencesActivity.EXTRA_SHOW_FRAGMENT, ChanFragment.class.getName());
 			intent.putExtra(PreferencesActivity.EXTRA_NO_HEADERS, true);

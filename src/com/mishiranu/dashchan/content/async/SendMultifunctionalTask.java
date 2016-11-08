@@ -34,8 +34,7 @@ import chan.http.HttpHolder;
 
 import com.mishiranu.dashchan.content.model.ErrorItem;
 
-public class SendMultifunctionalTask extends HttpHolderTask<Void, Void, Boolean>
-{
+public class SendMultifunctionalTask extends HttpHolderTask<Void, Void, Boolean> {
 	private final State mState;
 	private final String mType;
 	private final String mText;
@@ -48,16 +47,14 @@ public class SendMultifunctionalTask extends HttpHolderTask<Void, Void, Boolean>
 
 	public enum Operation {DELETE, REPORT, ARCHIVE}
 
-	public interface Callback
-	{
+	public interface Callback {
 		public void onSendSuccess(State state, String archiveBoardName, String archiveThreadNumber);
 		public void onSendFail(State state, String type, String text, ArrayList<String> options, ErrorItem errorItem);
 	}
 
 	public static final String OPTION_FILES_ONLY = "filesOnly";
 
-	public static class State
-	{
+	public static class State {
 		public Operation operation;
 		public String chanName;
 		public String boardName;
@@ -73,8 +70,7 @@ public class SendMultifunctionalTask extends HttpHolderTask<Void, Void, Boolean>
 		public String archiveChanName;
 
 		public State(Operation operation, String chanName, String boardName, String threadNumber,
-				List<Pair<String, String>> types, List<Pair<String, String>> options, boolean commentField)
-		{
+				List<Pair<String, String>> types, List<Pair<String, String>> options, boolean commentField) {
 			this.operation = operation;
 			this.chanName = chanName;
 			this.boardName = boardName;
@@ -85,8 +81,8 @@ public class SendMultifunctionalTask extends HttpHolderTask<Void, Void, Boolean>
 		}
 	}
 
-	public SendMultifunctionalTask(State state, String type, String text, ArrayList<String> options, Callback callback)
-	{
+	public SendMultifunctionalTask(State state, String type, String text, ArrayList<String> options,
+			Callback callback) {
 		mState = state;
 		mType = type;
 		mText = text;
@@ -95,40 +91,32 @@ public class SendMultifunctionalTask extends HttpHolderTask<Void, Void, Boolean>
 	}
 
 	@Override
-	protected Boolean doInBackground(HttpHolder holder, Void... params)
-	{
-		try
-		{
-			switch (mState.operation)
-			{
-				case DELETE:
-				{
+	protected Boolean doInBackground(HttpHolder holder, Void... params) {
+		try {
+			switch (mState.operation) {
+				case DELETE: {
 					ChanPerformer.get(mState.chanName).safe().onSendDeletePosts(new ChanPerformer.SendDeletePostsData
 							(mState.boardName, mState.threadNumber, Collections.unmodifiableList(mState.postNumbers),
 							mText, mOptions != null && mOptions.contains(OPTION_FILES_ONLY), holder));
 					break;
 				}
-				case REPORT:
-				{
+				case REPORT: {
 					ChanPerformer.get(mState.chanName).safe().onSendReportPosts(new ChanPerformer.SendReportPostsData
 							(mState.boardName, mState.threadNumber, Collections.unmodifiableList(mState.postNumbers),
 							mType, mOptions, mText, holder));
 					break;
 				}
-				case ARCHIVE:
-				{
+				case ARCHIVE: {
 					Uri uri = ChanLocator.get(mState.chanName).safe(false).createThreadUri(mState.boardName,
 							mState.threadNumber);
-					if (uri == null)
-					{
+					if (uri == null) {
 						mErrorItem = new ErrorItem(ErrorItem.TYPE_UNKNOWN);
 						return false;
 					}
 					ChanPerformer.SendAddToArchiveResult result = ChanPerformer.get(mState.archiveChanName).safe()
 							.onSendAddToArchive(new ChanPerformer.SendAddToArchiveData(uri, mState.boardName,
 							mState.threadNumber, mOptions, holder));
-					if (result != null && result.threadNumber != null)
-					{
+					if (result != null && result.threadNumber != null) {
 						mArchiveBoardName = result.boardName;
 						mArchiveThreadNumber = result.threadNumber;
 					}
@@ -136,27 +124,23 @@ public class SendMultifunctionalTask extends HttpHolderTask<Void, Void, Boolean>
 				}
 			}
 			return true;
-		}
-		catch (ExtensionException | HttpException | InvalidResponseException e)
-		{
+		} catch (ExtensionException | HttpException | InvalidResponseException e) {
 			mErrorItem = e.getErrorItemAndHandle();
 			return false;
-		}
-		catch (ApiException e)
-		{
+		} catch (ApiException e) {
 			mErrorItem = e.getErrorItem();
 			return false;
-		}
-		finally
-		{
+		} finally {
 			ChanConfiguration.get(mState.chanName).commit();
 		}
 	}
 
 	@Override
-	protected void onPostExecute(Boolean result)
-	{
-		if (result) mCallback.onSendSuccess(mState, mArchiveBoardName, mArchiveThreadNumber);
-		else mCallback.onSendFail(mState, mType, mText, mOptions, mErrorItem);
+	protected void onPostExecute(Boolean result) {
+		if (result) {
+			mCallback.onSendSuccess(mState, mArchiveBoardName, mArchiveThreadNumber);
+		} else {
+			mCallback.onSendFail(mState, mType, mText, mOptions, mErrorItem);
+		}
 	}
 }

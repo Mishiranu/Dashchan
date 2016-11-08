@@ -29,8 +29,7 @@ import android.net.Uri;
 import chan.annotation.Public;
 
 @Public
-public final class HttpHolder
-{
+public final class HttpHolder {
 	Uri mRequestedUri;
 	Proxy mProxy;
 	String mChanName;
@@ -41,14 +40,10 @@ public final class HttpHolder
 	boolean mForceGet = false;
 
 	@Public
-	public HttpHolder()
-	{
-
-	}
+	public HttpHolder() {}
 
 	void initRequest(HttpRequest request, Proxy proxy, String chanName, boolean verifyCertificate, int delay,
-			int maxAttempts)
-	{
+			int maxAttempts) {
 		mRequestedUri = request.mUri;
 		mProxy = proxy;
 		mChanName = chanName;
@@ -58,8 +53,7 @@ public final class HttpHolder
 		mForceGet = false;
 	}
 
-	boolean nextAttempt()
-	{
+	boolean nextAttempt() {
 		return mAttempt-- > 0;
 	}
 
@@ -78,21 +72,17 @@ public final class HttpHolder
 	InputListener mInputListener;
 	OutputStream mOutputStream;
 
-	public interface InputListener
-	{
+	public interface InputListener {
 		public void onInputProgressChange(long progress, long progressMax);
 	}
 
-	public void interrupt()
-	{
+	public void interrupt() {
 		mInterrupted = true;
 		disconnect();
 	}
 
-	public void cleanup()
-	{
-		if (mRequestThread == Thread.currentThread() && mHasUnreadBody)
-		{
+	public void cleanup() {
+		if (mRequestThread == Thread.currentThread() && mHasUnreadBody) {
 			disconnectAndClear();
 			mHasUnreadBody = false;
 			mResponse = null;
@@ -100,16 +90,16 @@ public final class HttpHolder
 	}
 
 	@Public
-	public void disconnect()
-	{
+	public void disconnect() {
 		mDisconnectRequested = true;
-		if (mRequestThread == Thread.currentThread()) disconnectAndClear();
+		if (mRequestThread == Thread.currentThread()) {
+			disconnectAndClear();
+		}
 		mResponse = null;
 	}
 
 	void setConnection(HttpURLConnection connection, InputListener inputListener, OutputStream outputStream)
-			throws HttpClient.DisconnectedIOException
-	{
+			throws HttpClient.DisconnectedIOException {
 		mDisconnectRequested = false;
 		mRequestThread = Thread.currentThread();
 		mConnection = connection;
@@ -118,8 +108,7 @@ public final class HttpHolder
 		mRedirectedUri = null;
 		mValidator = null;
 		mResponse = null;
-		if (mInterrupted)
-		{
+		if (mInterrupted) {
 			mConnection = null;
 			mInputListener = null;
 			mOutputStream = null;
@@ -128,51 +117,42 @@ public final class HttpHolder
 		HttpClient.getInstance().onConnect(mChanName, connection, mDelay);
 	}
 
-	HttpURLConnection getConnection() throws HttpClient.DisconnectedIOException
-	{
+	HttpURLConnection getConnection() throws HttpClient.DisconnectedIOException {
 		HttpURLConnection connection = mConnection;
-		if (connection == null) throw new HttpClient.DisconnectedIOException();
+		if (connection == null) {
+			throw new HttpClient.DisconnectedIOException();
+		}
 		return connection;
 	}
 
-	void checkDisconnected() throws HttpClient.DisconnectedIOException
-	{
+	void checkDisconnected() throws HttpClient.DisconnectedIOException {
 		checkDisconnected(null);
 	}
 
-	void checkDisconnected(Closeable closeable) throws HttpClient.DisconnectedIOException
-	{
-		if (mDisconnectRequested)
-		{
-			if (closeable != null)
-			{
-				try
-				{
+	void checkDisconnected(Closeable closeable) throws HttpClient.DisconnectedIOException {
+		if (mDisconnectRequested) {
+			if (closeable != null) {
+				try {
 					closeable.close();
-				}
-				catch (IOException e)
-				{
-
+				} catch (IOException e) {
+					// Ignore
 				}
 			}
 			throw new HttpClient.DisconnectedIOException();
 		}
 	}
 
-	void checkDisconnectedAndSetHasUnreadBody(boolean hasUnreadBody) throws HttpClient.DisconnectedIOException
-	{
+	void checkDisconnectedAndSetHasUnreadBody(boolean hasUnreadBody) throws HttpClient.DisconnectedIOException {
 		checkDisconnected();
 		mHasUnreadBody = hasUnreadBody;
 	}
 
-	void disconnectAndClear()
-	{
+	void disconnectAndClear() {
 		HttpURLConnection connection = mConnection;
 		mConnection = null;
 		mInputListener = null;
 		mOutputStream = null;
-		if (connection != null)
-		{
+		if (connection != null) {
 			connection.disconnect();
 			mDeadConnection = connection;
 			HttpClient.getInstance().onDisconnect(connection);
@@ -180,40 +160,36 @@ public final class HttpHolder
 	}
 
 	@Public
-	public HttpResponse read() throws HttpException
-	{
+	public HttpResponse read() throws HttpException {
 		HttpResponse response = mResponse;
-		if (response != null) return response;
+		if (response != null) {
+			return response;
+		}
 		response = HttpClient.getInstance().read(this);
 		mResponse = response;
 		return response;
 	}
 
 	@Public
-	public void checkResponseCode() throws HttpException
-	{
+	public void checkResponseCode() throws HttpException {
 		HttpClient.getInstance().checkResponseCode(this);
 	}
 
-	private HttpURLConnection getConnectionForHeaders()
-	{
+	private HttpURLConnection getConnectionForHeaders() {
 		HttpURLConnection connection = mConnection;
-		if (connection == null) connection = mDeadConnection;
+		if (connection == null) {
+			connection = mDeadConnection;
+		}
 		return connection;
 	}
 
 	@Public
-	public int getResponseCode()
-	{
+	public int getResponseCode() {
 		HttpURLConnection connection = getConnectionForHeaders();
-		if (connection != null)
-		{
-			try
-			{
+		if (connection != null) {
+			try {
 				return connection.getResponseCode();
-			}
-			catch (IOException e)
-			{
+			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
 		}
@@ -221,17 +197,12 @@ public final class HttpHolder
 	}
 
 	@Public
-	public String getResponseMessage()
-	{
+	public String getResponseMessage() {
 		HttpURLConnection connection = getConnectionForHeaders();
-		if (connection != null)
-		{
-			try
-			{
+		if (connection != null) {
+			try {
 				return connection.getResponseMessage();
-			}
-			catch (IOException e)
-			{
+			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
 		}
@@ -239,35 +210,34 @@ public final class HttpHolder
 	}
 
 	@Public
-	public Uri getRedirectedUri()
-	{
+	public Uri getRedirectedUri() {
 		return mRedirectedUri;
 	}
 
 	@Public
-	public Map<String, List<String>> getHeaderFields()
-	{
+	public Map<String, List<String>> getHeaderFields() {
 		HttpURLConnection connection = getConnectionForHeaders();
 		return connection != null ? connection.getHeaderFields() : null;
 	}
 
 	@Public
-	public String getCookieValue(String name)
-	{
+	public String getCookieValue(String name) {
 		Map<String, List<String>> headers = getHeaderFields();
-		if (headers == null) return null;
+		if (headers == null) {
+			return null;
+		}
 		String start = name + "=";
 		List<String> cookies = headers.get("Set-Cookie");
-		if (cookies != null)
-		{
-			for (String cookie : cookies)
-			{
-				if (cookie.startsWith(start))
-				{
+		if (cookies != null) {
+			for (String cookie : cookies) {
+				if (cookie.startsWith(start)) {
 					int startIndex = start.length();
 					int endIndex = cookie.indexOf(';');
-					if (endIndex >= 0) return cookie.substring(startIndex, endIndex);
-					else return cookie.substring(startIndex);
+					if (endIndex >= 0) {
+						return cookie.substring(startIndex, endIndex);
+					} else {
+						return cookie.substring(startIndex);
+					}
 				}
 			}
 		}
@@ -275,8 +245,7 @@ public final class HttpHolder
 	}
 
 	@Public
-	public HttpValidator getValidator()
-	{
+	public HttpValidator getValidator() {
 		return mValidator;
 	}
 }

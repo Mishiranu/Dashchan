@@ -22,8 +22,7 @@ import java.util.HashSet;
 
 import android.os.Build;
 
-public class C
-{
+public class C {
 	public static final boolean API_JELLY_BEAN_MR1 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1;
 	public static final boolean API_JELLY_BEAN_MR2 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2;
 	public static final boolean API_KITKAT = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
@@ -42,13 +41,14 @@ public class C
 
 	public static final boolean WEB_VIEW_BITMAP_DECODER_SUPPORTED;
 
-	static
-	{
+	static {
 		Collections.addAll(IMAGE_EXTENSIONS, "jpg", "jpe", "jpeg", "png", "apng", "gif", "webp", "bmp");
 		Collections.addAll(AUDIO_EXTENSIONS, "mp3", "ogg", "flac", "wav");
 		Collections.addAll(VIDEO_EXTENSIONS, "webm", "mp4");
 		WEB_VIEW_BITMAP_DECODER_SUPPORTED = API_KITKAT;
-		if (WEB_VIEW_BITMAP_DECODER_SUPPORTED) IMAGE_EXTENSIONS.add("svg");
+		if (WEB_VIEW_BITMAP_DECODER_SUPPORTED) {
+			IMAGE_EXTENSIONS.add("svg");
+		}
 		EXTENSION_TRANSFORMATION.put("jpg", "jpeg");
 		EXTENSION_TRANSFORMATION.put("jpe", "jpeg");
 		EXTENSION_TRANSFORMATION.put("apng", "png");

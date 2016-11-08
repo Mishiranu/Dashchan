@@ -28,92 +28,71 @@ import android.graphics.BitmapFactory;
 import chan.annotation.Public;
 
 @Public
-public class HttpResponse
-{
+public class HttpResponse {
 	private final byte[] mBytes;
 	private String mData;
 
 	private String mCharsetName;
 
 	@Public
-	public HttpResponse(byte[] bytes)
-	{
+	public HttpResponse(byte[] bytes) {
 		mBytes = bytes;
 		mCharsetName = "UTF-8";
 	}
 
 	@Public
-	public void setEncoding(String charsetName)
-	{
+	public void setEncoding(String charsetName) {
 		mData = null;
 		mCharsetName = charsetName;
 	}
 
 	@Public
-	public byte[] getBytes()
-	{
+	public byte[] getBytes() {
 		return mBytes;
 	}
 
-	private void obtainString()
-	{
-		if (mData == null && mBytes != null)
-		{
-			try
-			{
+	private void obtainString() {
+		if (mData == null && mBytes != null) {
+			try {
 				mData = new String(mBytes, mCharsetName);
-			}
-			catch (UnsupportedEncodingException e)
-			{
+			} catch (UnsupportedEncodingException e) {
 				throw new RuntimeException(e);
 			}
 		}
 	}
 
 	@Public
-	public String getString()
-	{
+	public String getString() {
 		obtainString();
 		return mData;
 	}
 
 	@Public
-	public Bitmap getBitmap()
-	{
+	public Bitmap getBitmap() {
 		return BitmapFactory.decodeByteArray(mBytes, 0, mBytes.length);
 	}
 
 	@Public
-	public JSONObject getJsonObject()
-	{
+	public JSONObject getJsonObject() {
 		obtainString();
-		if (mData != null)
-		{
-			try
-			{
+		if (mData != null) {
+			try {
 				return new JSONObject(mData);
-			}
-			catch (JSONException e)
-			{
-
+			} catch (JSONException e) {
+				// Ignore
 			}
 		}
 		return null;
 	}
 
 	@Public
-	public JSONArray getJsonArray()
-	{
+	public JSONArray getJsonArray() {
 		obtainString();
-		if (mData != null)
-		{
-			try
-			{
+		if (mData != null) {
+			try {
 				return new JSONArray(mData);
-			}
-			catch (JSONException e)
-			{
-
+			} catch (JSONException e) {
+				// Ignore
 			}
 		}
 		return null;

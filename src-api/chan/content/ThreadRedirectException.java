@@ -23,8 +23,7 @@ import chan.annotation.Public;
 // apachan archiveliom archiverbt desustorage dvach exach fourplebs krautchan meguca onechanca ronery
 // Added: 13.10.16 14:55
 @Public
-public final class ThreadRedirectException extends Exception
-{
+public final class ThreadRedirectException extends Exception {
 	private static final long serialVersionUID = 1L;
 
 	private final String mBoardName;
@@ -32,22 +31,19 @@ public final class ThreadRedirectException extends Exception
 	private final String mPostNumber;
 
 	@Public
-	public ThreadRedirectException(String boardName, String threadNumber, String postNumber)
-	{
+	public ThreadRedirectException(String boardName, String threadNumber, String postNumber) {
 		mBoardName = boardName;
 		mThreadNumber = threadNumber;
 		mPostNumber = postNumber;
 	}
 
 	@Public
-	public ThreadRedirectException(String threadNumber, String postNumber)
-	{
+	public ThreadRedirectException(String threadNumber, String postNumber) {
 		this(null, threadNumber, postNumber);
 	}
 
 	@SuppressWarnings("ThrowableResultOfMethodCallIgnored")
-	public RedirectException.Target obtainTarget(String chanName, String boardName) throws ExtensionException
-	{
+	public RedirectException.Target obtainTarget(String chanName, String boardName) throws ExtensionException {
 		return RedirectException.toThread(mBoardName != null ? mBoardName : boardName, mThreadNumber, mPostNumber)
 				.obtainTarget(chanName);
 	}

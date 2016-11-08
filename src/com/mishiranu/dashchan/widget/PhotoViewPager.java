@@ -32,8 +32,7 @@ import android.widget.OverScroller;
 import com.mishiranu.dashchan.util.ResourceUtils;
 
 @SuppressLint("ViewConstructor")
-public class PhotoViewPager extends ViewGroup
-{
+public class PhotoViewPager extends ViewGroup {
 	private static final int MAX_SETTLE_DURATION = 600;
 	private static final int MIN_FLING_VELOCITY = 400;
 
@@ -50,8 +49,7 @@ public class PhotoViewPager extends ViewGroup
 
 	private int mInnerPadding;
 
-	public PhotoViewPager(Context context, Adapter adapter)
-	{
+	public PhotoViewPager(Context context, Adapter adapter) {
 		super(context);
 		setWillNotDraw(false);
 		float density = ResourceUtils.obtainDensity(context);
@@ -63,16 +61,14 @@ public class PhotoViewPager extends ViewGroup
 		mScroller = new OverScroller(context);
 		mEdgeEffect = new EdgeEffect(context);
 		mAdapter = adapter;
-		for (int i = 0; i < 3; i++)
-		{
+		for (int i = 0; i < 3; i++) {
 			View view = adapter.onCreateView(this);
 			super.addView(view, -1, generateDefaultLayoutParams());
 			mPhotoViews.add(adapter.getPhotoView(view));
 		}
 	}
 
-	public interface Adapter
-	{
+	public interface Adapter {
 		public View onCreateView(ViewGroup parent);
 		public PhotoView getPhotoView(View view);
 		public void onPositionChange(PhotoViewPager view, int index, View currentView, View leftView, View rightView,
@@ -80,101 +76,85 @@ public class PhotoViewPager extends ViewGroup
 		public void onSwipingStateChange(PhotoViewPager view, boolean swiping);
 	}
 
-	@Override
-	protected LayoutParams generateDefaultLayoutParams()
-	{
+	@Override protected LayoutParams generateDefaultLayoutParams() {
 		return new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 	}
 
 	@Override
-	public void addView(View child, int index, LayoutParams params)
-	{
+	public void addView(View child, int index, LayoutParams params) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
-	{
+	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 		int childWidthMeasureSpec = MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec),
 				MeasureSpec.EXACTLY);
 		int childHeightMeasureSpec = MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(heightMeasureSpec),
 				MeasureSpec.EXACTLY);
-		for (int i = 0; i < getChildCount(); i++)
-		{
+		for (int i = 0; i < getChildCount(); i++) {
 			getChildAt(i).measure(childWidthMeasureSpec, childHeightMeasureSpec);
 		}
 	}
 
 	@Override
-	protected void onLayout(boolean changed, int l, int t, int r, int b)
-	{
+	protected void onLayout(boolean changed, int l, int t, int r, int b) {
 		int width = r - l;
 		int height = b - t;
 		int start = mCurrentIndex * (width + mInnerPadding);
 		scrollTo(start, 0);
 		int current = (int) ((start + width / 2f) / (width + mInnerPadding));
 		int left = (current - 1) * (width + mInnerPadding);
-		for (int i = current - 1; i < current + 2; i++)
-		{
+		for (int i = current - 1; i < current + 2; i++) {
 			getChildAt((i + 3) % 3).layout(left, 0, left + width, height);
 			left += width + mInnerPadding;
 		}
 	}
 
-	public void setInnerPadding(int padding)
-	{
+	public void setInnerPadding(int padding) {
 		mInnerPadding = padding;
 		requestLayout();
 	}
 
-	public void setCount(int count)
-	{
-		if (count > 0)
-		{
+	public void setCount(int count) {
+		if (count > 0) {
 			mCount = count;
-			if (mCurrentIndex >= count) mCurrentIndex = count - 1;
+			if (mCurrentIndex >= count) {
+				mCurrentIndex = count - 1;
+			}
 			requestLayout();
 		}
 	}
 
-	public int getCount()
-	{
+	public int getCount() {
 		return mCount;
 	}
 
-	public void setCurrentIndex(int index)
-	{
-		if (index >= 0 && index < mCount)
-		{
+	public void setCurrentIndex(int index) {
+		if (index >= 0 && index < mCount) {
 			mCurrentIndex = index;
 			updateCurrentScrollIndex(true);
 		}
 	}
 
-	public int getCurrentIndex()
-	{
+	public int getCurrentIndex() {
 		return mCurrentIndex;
 	}
 
-	public View getCurrentView()
-	{
+	public View getCurrentView() {
 		return getChildAt(mCurrentIndex % 3);
 	}
 
-	private void updateCurrentScrollIndex(boolean manually)
-	{
+	private void updateCurrentScrollIndex(boolean manually) {
 		mQueueScrollFinish = false;
 		mScroller.abortAnimation();
 		onScrollFinish(manually);
 	}
 
-	private void onScrollFinish(boolean manually)
-	{
+	private void onScrollFinish(boolean manually) {
 		requestLayout();
 		notifySwiping(false);
-		if (mPreviousIndex != mCurrentIndex || manually)
-		{
+		if (mPreviousIndex != mCurrentIndex || manually) {
 			int currentIndex = mCurrentIndex % 3;
 			int leftIndex = (mCurrentIndex + 2) % 3;
 			int rightIndex = (mCurrentIndex + 1) % 3;
@@ -203,20 +183,16 @@ public class PhotoViewPager extends ViewGroup
 	private VelocityTracker mVelocityTracker;
 
 	@Override
-	public boolean onInterceptTouchEvent(MotionEvent ev)
-	{
+	public boolean onInterceptTouchEvent(MotionEvent ev) {
 		return true;
 	}
 
 	@Override
-	public boolean onTouchEvent(MotionEvent event)
-	{
+	public boolean onTouchEvent(MotionEvent event) {
 		PhotoView photoView = mPhotoViews.get(mCurrentIndex % 3);
 		int action = event.getActionMasked();
-		switch (action)
-		{
-			case MotionEvent.ACTION_DOWN:
-			{
+		switch (action) {
+			case MotionEvent.ACTION_DOWN: {
 				photoView.dispatchSpecialTouchEvent(event);
 				mAllowMove = false;
 				mLastEventToPhotoView = true;
@@ -228,27 +204,25 @@ public class PhotoViewPager extends ViewGroup
 				mVelocityTracker.addMovement(event);
 				return true;
 			}
-			case MotionEvent.ACTION_MOVE:
-			{
+			case MotionEvent.ACTION_MOVE: {
 				float x = event.getX();
 				float y = event.getY();
 				float previousX = x;
 				float previousY = y;
 				boolean previousValid = false;
 				boolean singlePointer = event.getPointerCount() == 1;
-				if (event.getHistorySize() > 0)
-				{
+				if (event.getHistorySize() > 0) {
 					previousX = event.getHistoricalX(0);
 					previousY = event.getHistoricalY(0);
 					// Don't track repeating movements
-					if (previousX == x && previousY == y && singlePointer) return true;
+					if (previousX == x && previousY == y && singlePointer) {
+						return true;
+					}
 					previousValid = true;
 				}
-				if (!mAllowMove)
-				{
+				if (!mAllowMove) {
 					if (Math.abs(event.getX() - mStartX) <= mTouchSlop &&
-							Math.abs(event.getY() - mStartY) <= mTouchSlop)
-					{
+							Math.abs(event.getY() - mStartY) <= mTouchSlop) {
 						// Too short movement, skip it
 						return true;
 					}
@@ -262,55 +236,54 @@ public class PhotoViewPager extends ViewGroup
 				boolean canScrollRight = photoView.canScrollRight();
 				boolean canScrollPhotoView = canScrollLeft && !scrollingRight || canScrollRight && scrollingRight;
 				boolean canScalePhotoView = !singlePointer;
-				if (mStartScrollX == currentScrollX)
-				{
-					if (!sendToPhotoView)
-					{
-						if (canScrollPhotoView || canScalePhotoView) sendToPhotoView = true; else if (previousValid)
-						{
+				if (mStartScrollX == currentScrollX) {
+					if (!sendToPhotoView) {
+						if (canScrollPhotoView || canScalePhotoView) {
+							sendToPhotoView = true;
+						} else if (previousValid) {
 							float vX = x - previousX;
 							float vY = y - previousY;
 							float length = (float) Math.sqrt(vX * vX + vY * vY);
 							float angle = (float) (Math.acos(Math.abs(vX / length)) * 180f / Math.PI);
 							// angle >= 30 means vertical movement (angle is from 0 to 90)
-							if (angle >= 30f) sendToPhotoView = true;
+							if (angle >= 30f) {
+								sendToPhotoView = true;
+							}
 						}
 					}
 				}
-				if (sendToPhotoView)
-				{
+				if (sendToPhotoView) {
 					mStartX += x - mLastX;
 					photoView.dispatchSpecialTouchEvent(event);
 					notifySwiping(false);
-				}
-				else
-				{
+				} else {
 					int width = getWidth();
 					int deltaX = (int) (mStartX - x);
 					int desiredScroll = mStartScrollX + deltaX;
 					int actualScroll = Math.max(0, Math.min((mCount - 1) * (width + mInnerPadding), desiredScroll));
 					boolean canFocusPhotoView = currentScrollX < mStartScrollX && actualScroll >= mStartScrollX ||
 							currentScrollX > mStartScrollX && actualScroll <= mStartScrollX;
-					if (canFocusPhotoView && canScrollPhotoView)
-					{
+					if (canFocusPhotoView && canScrollPhotoView) {
 						// Fix scrolling to make PhotoView fill PhotoViewPager
 						// to ensure sendToPhotoView = true on next touch event
 						mStartX -= actualScroll - mStartScrollX;
 						actualScroll = mStartScrollX;
 					}
-					if (desiredScroll > actualScroll)
-					{
-						if (!scrollingRight) mStartX = x;
+					if (desiredScroll > actualScroll) {
+						if (!scrollingRight) {
+							mStartX = x;
+						}
 						mEdgeEffect.onPull((float) (desiredScroll - actualScroll) / width);
 						invalidate();
-					}
-					else if (desiredScroll < actualScroll)
-					{
-						if (scrollingRight) mStartX = x;
+					} else if (desiredScroll < actualScroll) {
+						if (scrollingRight) {
+							mStartX = x;
+						}
 						mEdgeEffect.onPull((float) (actualScroll - desiredScroll) / width);
 						invalidate();
+					} else {
+						notifySwiping(true);
 					}
-					else notifySwiping(true);
 					scrollTo(actualScroll, 0);
 					mVelocityTracker.addMovement(event);
 					photoView.dispatchIdleMoveTouchEvent(event);
@@ -320,14 +293,10 @@ public class PhotoViewPager extends ViewGroup
 				return true;
 			}
 			case MotionEvent.ACTION_CANCEL:
-			case MotionEvent.ACTION_UP:
-			{
-				if (mLastEventToPhotoView || action == MotionEvent.ACTION_CANCEL)
-				{
+			case MotionEvent.ACTION_UP: {
+				if (mLastEventToPhotoView || action == MotionEvent.ACTION_CANCEL) {
 					photoView.dispatchSpecialTouchEvent(event);
-				}
-				else
-				{
+				} else {
 					MotionEvent fakeEvent = MotionEvent.obtain(event);
 					fakeEvent.setAction(MotionEvent.ACTION_CANCEL);
 					photoView.dispatchSpecialTouchEvent(fakeEvent);
@@ -335,13 +304,14 @@ public class PhotoViewPager extends ViewGroup
 				}
 				int index = mCurrentIndex;
 				int velocity = 0;
-				if (action == MotionEvent.ACTION_UP)
-				{
+				if (action == MotionEvent.ACTION_UP) {
 					int deltaX = (int) (mStartX - event.getX());
 					mVelocityTracker.computeCurrentVelocity(1000, mMaximumVelocity);
                     velocity = (int) mVelocityTracker.getXVelocity(0);
 					index = determineTargetIndex(velocity, deltaX);
-					if (!mAllowMove) photoView.dispatchSimpleClick(event.getX(), event.getY());
+					if (!mAllowMove) {
+						photoView.dispatchSimpleClick(event.getX(), event.getY());
+					}
 				}
 				mVelocityTracker.recycle();
 				mVelocityTracker = null;
@@ -350,11 +320,9 @@ public class PhotoViewPager extends ViewGroup
 				mEdgeEffect.onRelease();
 				return true;
 			}
-			case MotionEvent.ACTION_POINTER_UP:
-			{
+			case MotionEvent.ACTION_POINTER_UP: {
 				// Replace active pointer
-				if (event.getActionIndex() == 0)
-				{
+				if (event.getActionIndex() == 0) {
 					float deltaX = event.getX(1) - event.getX(0);
 					float deltaY = event.getY(1) - event.getY(0);
 					mStartX += deltaX;
@@ -362,8 +330,7 @@ public class PhotoViewPager extends ViewGroup
 					mLastX += deltaX;
 				}
 			}
-			default:
-			{
+			default: {
 				photoView.dispatchSpecialTouchEvent(event);
 				return true;
 			}
@@ -371,61 +338,49 @@ public class PhotoViewPager extends ViewGroup
 	}
 
 	@Override
-	public void draw(Canvas canvas)
-	{
+	public void draw(Canvas canvas) {
 		super.draw(canvas);
-		if (!mEdgeEffect.isFinished() && (mCurrentIndex == 0 || mCurrentIndex == mCount - 1))
-		{
+		if (!mEdgeEffect.isFinished() && (mCurrentIndex == 0 || mCurrentIndex == mCount - 1)) {
 			int width = getWidth();
 			int height = getHeight();
 			canvas.save();
-			if (mCurrentIndex == 0)
-			{
+			if (mCurrentIndex == 0) {
 				canvas.rotate(270f);
 				canvas.translate(-height, 0f);
-			}
-			else
-			{
+			} else {
 				canvas.rotate(90f);
 				canvas.translate(0f, -((mCount - 1) * (width + mInnerPadding) + width));
 			}
 			mEdgeEffect.setSize(height, width);
 			boolean invalidate = mEdgeEffect.draw(canvas);
 			canvas.restore();
-			if (invalidate) invalidate();
+			if (invalidate) {
+				invalidate();
+			}
 		}
 	}
 
-	private int determineTargetIndex(int velocity, int deltaX)
-	{
+	private int determineTargetIndex(int velocity, int deltaX) {
 		int index = mCurrentIndex;
 		int targetIndex;
-		if (Math.abs(deltaX) > mFlingDistance && Math.abs(velocity) > mMinimumVelocity)
-		{
+		if (Math.abs(deltaX) > mFlingDistance && Math.abs(velocity) > mMinimumVelocity) {
 			// First condition to ensure not scrolling through 2 pages (from 4.8 to 3, for example)
 			targetIndex = deltaX * velocity > 0 ? index : velocity > 0 ? index - 1 : index + 1;
-		}
-		else
-		{
+		} else {
 			targetIndex = (int) (index + (float) deltaX / getWidth() + 0.5f);
 		}
 		return Math.max(0, Math.min(mCount - 1, targetIndex));
 	}
 
-	private void smoothScrollTo(int index, int velocity)
-	{
+	private void smoothScrollTo(int index, int velocity) {
 		int startX = getScrollX();
 		int endX = index * (getWidth() + mInnerPadding);
 		int deltaX = endX - startX;
-		if (startX != endX)
-		{
+		if (startX != endX) {
 			int duration;
-			if (Math.abs(velocity) > mMinimumVelocity)
-			{
+			if (Math.abs(velocity) > mMinimumVelocity) {
 				duration = 4 * Math.round(1000 * Math.abs((float) deltaX / velocity));
-			}
-			else
-			{
+			} else {
 				float pageDelta = (float) Math.abs(deltaX) / getWidth();
 				duration = (int) ((pageDelta + 1) * 200);
 			}
@@ -434,16 +389,15 @@ public class PhotoViewPager extends ViewGroup
 			notifySwiping(true);
 			mScroller.startScroll(startX, 0, deltaX, 0, duration);
 			invalidate();
+		} else {
+			onScrollFinish(false);
 		}
-		else onScrollFinish(false);
 	}
 
 	private boolean mSwiping = false;
 
-	private void notifySwiping(boolean swiping)
-	{
-		if (mSwiping != swiping)
-		{
+	private void notifySwiping(boolean swiping) {
+		if (mSwiping != swiping) {
 			mSwiping = swiping;
 			post(swiping ? mSwipingStateRunnableTrue : mSwipingStateRunnableFalse);
 		}
@@ -452,18 +406,15 @@ public class PhotoViewPager extends ViewGroup
 	private final Runnable mSwipingStateRunnableTrue = new SwipingStateRunnable(true);
 	private final Runnable mSwipingStateRunnableFalse = new SwipingStateRunnable(false);
 
-	private class SwipingStateRunnable implements Runnable
-	{
+	private class SwipingStateRunnable implements Runnable {
 		private final boolean mSwiping;
 
-		public SwipingStateRunnable(boolean swiping)
-		{
+		public SwipingStateRunnable(boolean swiping) {
 			mSwiping = swiping;
 		}
 
 		@Override
-		public void run()
-		{
+		public void run() {
 			mAdapter.onSwipingStateChange(PhotoViewPager.this, mSwiping);
 		}
 	}
@@ -471,18 +422,13 @@ public class PhotoViewPager extends ViewGroup
 	private boolean mQueueScrollFinish = false;
 
 	@Override
-	public void computeScroll()
-	{
-		if (mScroller.isFinished())
-		{
-			if (mQueueScrollFinish)
-			{
+	public void computeScroll() {
+		if (mScroller.isFinished()) {
+			if (mQueueScrollFinish) {
 				mQueueScrollFinish = false;
 				onScrollFinish(false);
 			}
-		}
-		else if (mScroller.computeScrollOffset())
-		{
+		} else if (mScroller.computeScrollOffset()) {
 			scrollTo(mScroller.getCurrX(), 0);
 			invalidate();
 		}

@@ -32,34 +32,29 @@ import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.util.ResourceUtils;
 
-public class ArchiveAdapter extends BaseAdapter
-{
+public class ArchiveAdapter extends BaseAdapter {
 	private final ArrayList<ThreadSummary> mArchiveItems = new ArrayList<>();
 	private final ArrayList<ThreadSummary> mFilteredArchiveItems = new ArrayList<>();
 
 	private boolean mFilterMode = false;
 	private String mFilterText;
 
-	/*
-	 * Returns true, if adapter isn't empty.
-	 */
-	public boolean applyFilter(String text)
-	{
+	// Returns true, if adapter isn't empty.
+	public boolean applyFilter(String text) {
 		mFilterText = text;
 		mFilterMode = !StringUtils.isEmpty(text);
 		mFilteredArchiveItems.clear();
-		if (mFilterMode)
-		{
+		if (mFilterMode) {
 			text = text.toLowerCase(Locale.getDefault());
-			for (ThreadSummary threadSummary : mArchiveItems)
-			{
+			for (ThreadSummary threadSummary : mArchiveItems) {
 				boolean add = false;
 				String title = threadSummary.getDescription();
-				if (title != null && title.toLowerCase(Locale.getDefault()).contains(text))
-				{
+				if (title != null && title.toLowerCase(Locale.getDefault()).contains(text)) {
 					add = true;
 				}
-				if (add) mFilteredArchiveItems.add(threadSummary);
+				if (add) {
+					mFilteredArchiveItems.add(threadSummary);
+				}
 			}
 		}
 		notifyDataSetChanged();
@@ -67,11 +62,9 @@ public class ArchiveAdapter extends BaseAdapter
 	}
 
 	@Override
-	public View getView(int position, View convertView, ViewGroup parent)
-	{
+	public View getView(int position, View convertView, ViewGroup parent) {
 		ThreadSummary threadSummary = getItem(position);
-		if (convertView == null)
-		{
+		if (convertView == null) {
 			float density = ResourceUtils.obtainDensity(parent);
 			TextView textView = (TextView) LayoutInflater.from(parent.getContext())
 					.inflate(android.R.layout.simple_list_item_1, parent, false);
@@ -85,28 +78,28 @@ public class ArchiveAdapter extends BaseAdapter
 	}
 
 	@Override
-	public int getCount()
-	{
+	public int getCount() {
 		return (mFilterMode ? mFilteredArchiveItems : mArchiveItems).size();
 	}
 
 	@Override
-	public ThreadSummary getItem(int position)
-	{
+	public ThreadSummary getItem(int position) {
 		return (mFilterMode ? mFilteredArchiveItems : mArchiveItems).get(position);
 	}
 
 	@Override
-	public long getItemId(int position)
-	{
+	public long getItemId(int position) {
 		return 0;
 	}
 
-	public void setItems(ThreadSummary[] threadSummaries)
-	{
+	public void setItems(ThreadSummary[] threadSummaries) {
 		mArchiveItems.clear();
-		if (threadSummaries != null) Collections.addAll(mArchiveItems, threadSummaries);
+		if (threadSummaries != null) {
+			Collections.addAll(mArchiveItems, threadSummaries);
+		}
 		notifyDataSetChanged();
-		if (mFilterMode) applyFilter(mFilterText);
+		if (mFilterMode) {
+			applyFilter(mFilterText);
+		}
 	}
 }

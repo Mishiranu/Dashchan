@@ -27,15 +27,13 @@ import android.graphics.drawable.Drawable;
 
 import com.mishiranu.dashchan.util.ResourceUtils;
 
-public class SelectorBorderDrawable extends Drawable
-{
+public class SelectorBorderDrawable extends Drawable {
 	private static final int THICKNESS_DP = 2;
 
 	private final Paint mPaint;
 	private final float mDensity;
 
-	public SelectorBorderDrawable(Context context)
-	{
+	public SelectorBorderDrawable(Context context) {
 		mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		mPaint.setColor(Color.WHITE);
 		mDensity = ResourceUtils.obtainDensity(context);
@@ -43,17 +41,14 @@ public class SelectorBorderDrawable extends Drawable
 
 	private boolean mSelected = false;
 
-	public void setSelected(boolean selected)
-	{
+	public void setSelected(boolean selected) {
 		mSelected = selected;
 		invalidateSelf();
 	}
 
 	@Override
-	public void draw(Canvas canvas)
-	{
-		if (mSelected)
-		{
+	public void draw(Canvas canvas) {
+		if (mSelected) {
 			canvas.drawColor(0x44ffffff);
 			Rect bounds = getBounds();
 			int thickness = (int) (THICKNESS_DP * mDensity);
@@ -65,20 +60,13 @@ public class SelectorBorderDrawable extends Drawable
 	}
 
 	@Override
-	public int getOpacity()
-	{
+	public int getOpacity() {
 		return PixelFormat.TRANSLUCENT;
 	}
 
 	@Override
-	public void setAlpha(int alpha)
-	{
-
-	}
+	public void setAlpha(int alpha) {}
 
 	@Override
-	public void setColorFilter(ColorFilter cf)
-	{
-
-	}
+	public void setColorFilter(ColorFilter cf) {}
 }

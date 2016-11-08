@@ -24,8 +24,7 @@ import com.mishiranu.dashchan.content.model.PostItem;
 
 import java.util.ArrayList;
 
-public class DeserializePostsTask extends CancellableTask<Void, Void, Boolean>
-{
+public class DeserializePostsTask extends CancellableTask<Void, Void, Boolean> {
 	private final Callback mCallback;
 	private final String mChanName;
 	private final String mBoardName;
@@ -37,14 +36,12 @@ public class DeserializePostsTask extends CancellableTask<Void, Void, Boolean>
 	private Posts mPosts;
 	private ArrayList<PostItem> mPostItems;
 
-	public interface Callback
-	{
+	public interface Callback {
 		public void onDeserializePostsComplete(boolean success, Posts posts, ArrayList<PostItem> postItems);
 	}
 
 	public DeserializePostsTask(Callback callback, String chanName, String boardName, String threadNumber,
-			Posts cachedPosts)
-	{
+			Posts cachedPosts) {
 		mCallback = callback;
 		mChanName = chanName;
 		mBoardName = boardName;
@@ -53,27 +50,33 @@ public class DeserializePostsTask extends CancellableTask<Void, Void, Boolean>
 	}
 
 	@Override
-	protected Boolean doInBackground(Void... params)
-	{
-		if (mCachedPosts != null) mPosts = mCachedPosts;
-		else mPosts = CacheManager.getInstance().deserializePosts(mChanName, mBoardName, mThreadNumber, mHolder);
-		if (mPosts == null) return false;
+	protected Boolean doInBackground(Void... params) {
+		if (mCachedPosts != null) {
+			mPosts = mCachedPosts;
+		} else {
+			mPosts = CacheManager.getInstance().deserializePosts(mChanName, mBoardName, mThreadNumber, mHolder);
+		}
+		if (mPosts == null) {
+			return false;
+		}
 		Post[] posts = mPosts.getPosts();
-		if (posts == null || posts.length == 0) return false;
+		if (posts == null || posts.length == 0) {
+			return false;
+		}
 		mPostItems = new ArrayList<>(posts.length);
-		for (Post post : posts) mPostItems.add(new PostItem(post, mChanName, mBoardName));
+		for (Post post : posts) {
+			mPostItems.add(new PostItem(post, mChanName, mBoardName));
+		}
 		return true;
 	}
 
 	@Override
-	public void onPostExecute(Boolean success)
-	{
+	public void onPostExecute(Boolean success) {
 		mCallback.onDeserializePostsComplete(success, mPosts, mPostItems);
 	}
 
 	@Override
-	public void cancel()
-	{
+	public void cancel() {
 		cancel(true);
 		mHolder.cancel();
 	}

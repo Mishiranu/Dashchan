@@ -27,8 +27,7 @@ import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.util.FlagUtils;
 
 @Public
-public final class ApiException extends Exception
-{
+public final class ApiException extends Exception {
 	private static final long serialVersionUID = 1L;
 
 	@Public public static final int SEND_ERROR_NO_BOARD = 100;
@@ -69,216 +68,178 @@ public final class ApiException extends Exception
 	private final Object mExtra;
 
 	@Public
-	public ApiException(int errorType)
-	{
+	public ApiException(int errorType) {
 		this(errorType, 0, null);
 	}
 
 	@Public
-	public ApiException(int errorType, int flags)
-	{
+	public ApiException(int errorType, int flags) {
 		this(errorType, flags, null);
 	}
 
 	@Public
-	public ApiException(int errorType, Object extra)
-	{
+	public ApiException(int errorType, Object extra) {
 		this(errorType, 0, extra);
 	}
 
 	@Public
-	public ApiException(int errorType, int flags, Object extra)
-	{
+	public ApiException(int errorType, int flags, Object extra) {
 		mErrorType = errorType;
 		mFlags = flags;
 		mExtra = extra;
 	}
 
 	@Public
-	public ApiException(String detailMessage)
-	{
+	public ApiException(String detailMessage) {
 		this(detailMessage, 0);
 	}
 
 	@Public
-	public ApiException(String detailMessage, int flags)
-	{
+	public ApiException(String detailMessage, int flags) {
 		super(detailMessage);
 		mErrorType = 0;
 		mFlags = flags;
 		mExtra = null;
 	}
 
-	public int getErrorType()
-	{
+	public int getErrorType() {
 		return mErrorType;
 	}
 
-	public boolean checkFlag(int flag)
-	{
+	public boolean checkFlag(int flag) {
 		return FlagUtils.get(mFlags, flag);
 	}
 
-	public Serializable getExtra()
-	{
-		switch (mErrorType)
-		{
-			case ApiException.SEND_ERROR_BANNED:
-			{
-				if (mExtra instanceof BanExtra) return (BanExtra) mExtra;
+	public Serializable getExtra() {
+		switch (mErrorType) {
+			case ApiException.SEND_ERROR_BANNED: {
+				if (mExtra instanceof BanExtra) {
+					return (BanExtra) mExtra;
+				}
 				break;
 			}
-			case ApiException.SEND_ERROR_SPAM_LIST:
-			{
-				if (mExtra instanceof WordsExtra) return (WordsExtra) mExtra;
+			case ApiException.SEND_ERROR_SPAM_LIST: {
+				if (mExtra instanceof WordsExtra) {
+					return (WordsExtra) mExtra;
+				}
 				break;
 			}
 		}
 		return null;
 	}
 
-	public static int getResId(int errorType)
-	{
+	public static int getResId(int errorType) {
 		int resId = 0;
-		switch (errorType)
-		{
-			case ApiException.SEND_ERROR_NO_BOARD:
-			{
+		switch (errorType) {
+			case ApiException.SEND_ERROR_NO_BOARD: {
 				resId = R.string.message_board_not_exist;
 				break;
 			}
-			case ApiException.SEND_ERROR_NO_THREAD:
-			{
+			case ApiException.SEND_ERROR_NO_THREAD: {
 				resId = R.string.message_thread_not_exist;
 				break;
 			}
-			case ApiException.SEND_ERROR_NO_ACCESS:
-			{
+			case ApiException.SEND_ERROR_NO_ACCESS: {
 				resId = R.string.message_no_access;
 				break;
 			}
-			case ApiException.SEND_ERROR_CAPTCHA:
-			{
+			case ApiException.SEND_ERROR_CAPTCHA: {
 				resId = R.string.message_captcha_not_valid;
 				break;
 			}
-			case ApiException.SEND_ERROR_BANNED:
-			{
+			case ApiException.SEND_ERROR_BANNED: {
 				resId = R.string.message_banned;
 				break;
 			}
-			case ApiException.SEND_ERROR_CLOSED:
-			{
+			case ApiException.SEND_ERROR_CLOSED: {
 				resId = R.string.message_thread_closed;
 				break;
 			}
-			case ApiException.SEND_ERROR_TOO_FAST:
-			{
+			case ApiException.SEND_ERROR_TOO_FAST: {
 				resId = R.string.message_posting_too_fast;
 				break;
 			}
-			case ApiException.SEND_ERROR_FIELD_TOO_LONG:
-			{
+			case ApiException.SEND_ERROR_FIELD_TOO_LONG: {
 				resId = R.string.message_field_too_long;
 				break;
 			}
-			case ApiException.SEND_ERROR_FILE_EXISTS:
-			{
+			case ApiException.SEND_ERROR_FILE_EXISTS: {
 				resId = R.string.message_file_exists;
 				break;
 			}
-			case ApiException.SEND_ERROR_FILE_NOT_SUPPORTED:
-			{
+			case ApiException.SEND_ERROR_FILE_NOT_SUPPORTED: {
 				resId = R.string.message_file_not_support;
 				break;
 			}
-			case ApiException.SEND_ERROR_FILE_TOO_BIG:
-			{
+			case ApiException.SEND_ERROR_FILE_TOO_BIG: {
 				resId = R.string.message_files_too_big;
 				break;
 			}
-			case ApiException.SEND_ERROR_FILES_TOO_MANY:
-			{
+			case ApiException.SEND_ERROR_FILES_TOO_MANY: {
 				resId = R.string.message_files_too_many;
 				break;
 			}
-			case ApiException.SEND_ERROR_SPAM_LIST:
-			{
+			case ApiException.SEND_ERROR_SPAM_LIST: {
 				resId = R.string.message_spam_list;
 				break;
 			}
-			case ApiException.SEND_ERROR_EMPTY_FILE:
-			{
+			case ApiException.SEND_ERROR_EMPTY_FILE: {
 				resId = R.string.message_empty_file;
 				break;
 			}
-			case ApiException.SEND_ERROR_EMPTY_SUBJECT:
-			{
+			case ApiException.SEND_ERROR_EMPTY_SUBJECT: {
 				resId = R.string.message_subject_too_short;
 				break;
 			}
-			case ApiException.SEND_ERROR_EMPTY_COMMENT:
-			{
+			case ApiException.SEND_ERROR_EMPTY_COMMENT: {
 				resId = R.string.message_comment_too_short;
 				break;
 			}
-			case ApiException.SEND_ERROR_FILES_LIMIT:
-			{
+			case ApiException.SEND_ERROR_FILES_LIMIT: {
 				resId = R.string.message_files_limit_reached;
 				break;
 			}
-			case ApiException.DELETE_ERROR_NO_ACCESS:
-			{
+			case ApiException.DELETE_ERROR_NO_ACCESS: {
 				resId = R.string.message_no_access;
 				break;
 			}
-			case ApiException.DELETE_ERROR_PASSWORD:
-			{
+			case ApiException.DELETE_ERROR_PASSWORD: {
 				resId = R.string.message_incorrect_password;
 				break;
 			}
-			case ApiException.DELETE_ERROR_NOT_FOUND:
-			{
+			case ApiException.DELETE_ERROR_NOT_FOUND: {
 				resId = R.string.message_not_found;
 				break;
 			}
-			case ApiException.DELETE_ERROR_TOO_NEW:
-			{
+			case ApiException.DELETE_ERROR_TOO_NEW: {
 				resId = R.string.message_delete_too_new_error;
 				break;
 			}
-			case ApiException.DELETE_ERROR_TOO_OLD:
-			{
+			case ApiException.DELETE_ERROR_TOO_OLD: {
 				resId = R.string.message_delete_too_old_error;
 				break;
 			}
-			case ApiException.DELETE_ERROR_TOO_OFTEN:
-			{
+			case ApiException.DELETE_ERROR_TOO_OFTEN: {
 				resId = R.string.message_delete_too_often_error;
 				break;
 			}
-			case ApiException.REPORT_ERROR_NO_ACCESS:
-			{
+			case ApiException.REPORT_ERROR_NO_ACCESS: {
 				resId = R.string.message_no_access;
 				break;
 			}
-			case ApiException.REPORT_ERROR_TOO_OFTEN:
-			{
+			case ApiException.REPORT_ERROR_TOO_OFTEN: {
 				resId = R.string.message_report_too_often_error;
 				break;
 			}
-			case ApiException.REPORT_ERROR_EMPTY_COMMENT:
-			{
+			case ApiException.REPORT_ERROR_EMPTY_COMMENT: {
 				resId = R.string.message_comment_too_short;
 				break;
 			}
-			case ApiException.ARCHIVE_ERROR_NO_ACCESS:
-			{
+			case ApiException.ARCHIVE_ERROR_NO_ACCESS: {
 				resId = R.string.message_no_access;
 				break;
 			}
-			case ApiException.ARCHIVE_ERROR_TOO_OFTEN:
-			{
+			case ApiException.ARCHIVE_ERROR_TOO_OFTEN: {
 				resId = R.string.message_archive_too_often_error;
 				break;
 			}
@@ -286,16 +247,16 @@ public final class ApiException extends Exception
 		return resId;
 	}
 
-	public ErrorItem getErrorItem()
-	{
+	public ErrorItem getErrorItem() {
 		String message = getMessage();
-		if (!StringUtils.isEmpty(message)) return new ErrorItem(0, message);
+		if (!StringUtils.isEmpty(message)) {
+			return new ErrorItem(0, message);
+		}
 		return new ErrorItem(ErrorItem.TYPE_API, mErrorType);
 	}
 
 	@Public
-	public static final class BanExtra implements Serializable
-	{
+	public static final class BanExtra implements Serializable {
 		private static final long serialVersionUID = 1L;
 
 		public String id;
@@ -304,56 +265,44 @@ public final class ApiException extends Exception
 		public long expireDate;
 
 		@Public
-		public BanExtra()
-		{
-
-		}
+		public BanExtra() {}
 
 		@Public
-		public BanExtra setId(String id)
-		{
+		public BanExtra setId(String id) {
 			this.id = id;
 			return this;
 		}
 
 		@Public
-		public BanExtra setMessage(String message)
-		{
+		public BanExtra setMessage(String message) {
 			this.message = message;
 			return this;
 		}
 
 		@Public
-		public BanExtra setStartDate(long startDate)
-		{
+		public BanExtra setStartDate(long startDate) {
 			this.startDate = startDate;
 			return this;
 		}
 
 		@Public
-		public BanExtra setExpireDate(long expireDate)
-		{
+		public BanExtra setExpireDate(long expireDate) {
 			this.expireDate = expireDate;
 			return this;
 		}
 	}
 
 	@Public
-	public static final class WordsExtra implements Serializable
-	{
+	public static final class WordsExtra implements Serializable {
 		private static final long serialVersionUID = 1L;
 
 		public final LinkedHashSet<String> words = new LinkedHashSet<>();
 
 		@Public
-		public WordsExtra()
-		{
-
-		}
+		public WordsExtra() {}
 
 		@Public
-		public WordsExtra addWord(String word)
-		{
+		public WordsExtra addWord(String word) {
 			words.add(word);
 			return this;
 		}

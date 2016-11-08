@@ -19,8 +19,7 @@ package chan.content.model;
 import chan.annotation.Public;
 
 @Public
-public final class ThreadSummary
-{
+public final class ThreadSummary {
 	private final String mBoardName;
 	private final String mThreadNumber;
 	private final String mDescription;
@@ -28,40 +27,34 @@ public final class ThreadSummary
 	private int mPostsCount = -1;
 
 	@Public
-	public ThreadSummary(String boardName, String threadNumber, String description)
-	{
+	public ThreadSummary(String boardName, String threadNumber, String description) {
 		mBoardName = boardName;
 		mThreadNumber = threadNumber;
 		mDescription = description;
 	}
 
 	@Public
-	public String getBoardName()
-	{
+	public String getBoardName() {
 		return mBoardName;
 	}
 
 	@Public
-	public String getThreadNumber()
-	{
+	public String getThreadNumber() {
 		return mThreadNumber;
 	}
 
 	@Public
-	public String getDescription()
-	{
+	public String getDescription() {
 		return mDescription;
 	}
 
 	@Public
-	public int getPostsCount()
-	{
+	public int getPostsCount() {
 		return mPostsCount;
 	}
 
 	@Public
-	public ThreadSummary setPostsCount(int postsCount)
-	{
+	public ThreadSummary setPostsCount(int postsCount) {
 		mPostsCount = postsCount;
 		return this;
 	}

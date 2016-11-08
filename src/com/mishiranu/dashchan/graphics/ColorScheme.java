@@ -25,14 +25,12 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 
-public class ColorScheme
-{
+public class ColorScheme {
 	private static final int[] ATTRS = {android.R.attr.windowBackground, R.attr.backgroundSpoiler,
 		android.R.attr.textColorLink, R.attr.colorTextQuote, R.attr.colorTextTripcode, R.attr.colorTextCapcode,
 		R.attr.colorGainFactor};
 
-	public ColorScheme(Context context)
-	{
+	public ColorScheme(Context context) {
 		TypedArray typedArray = context.obtainStyledAttributes(ATTRS);
 		windowBackgroundColor = typedArray.getColor(0, 0);
 		tripcodeColor = typedArray.getColor(4, 0);
@@ -68,26 +66,23 @@ public class ColorScheme
 
 	public final float colorGainFactor;
 
-	public interface Span
-	{
+	public interface Span {
 		public void applyColorScheme(ColorScheme colorScheme);
 	}
 
-	public static Span[] getSpans(CharSequence text)
-	{
+	public static Span[] getSpans(CharSequence text) {
 		return text instanceof Spanned ? ((Spanned) text).getSpans(0, text.length(), Span.class) : null;
 	}
 
-	public void apply(CharSequence text)
-	{
+	public void apply(CharSequence text) {
 		apply(getSpans(text));
 	}
 
-	public void apply(Span[] spans)
-	{
-		if (spans != null)
-		{
-			for (Span span : spans) span.applyColorScheme(this);
+	public void apply(Span[] spans) {
+		if (spans != null) {
+			for (Span span : spans) {
+				span.applyColorScheme(this);
+			}
 		}
 	}
 }

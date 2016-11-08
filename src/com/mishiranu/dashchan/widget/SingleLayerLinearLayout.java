@@ -20,54 +20,49 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.LinearLayout;
 
-public class SingleLayerLinearLayout extends LinearLayout
-{
-	public SingleLayerLinearLayout(Context context)
-	{
+public class SingleLayerLinearLayout extends LinearLayout {
+	public SingleLayerLinearLayout(Context context) {
 		super(context);
 	}
 
-	public SingleLayerLinearLayout(Context context, AttributeSet attrs)
-	{
+	public SingleLayerLinearLayout(Context context, AttributeSet attrs) {
 		super(context, attrs);
 	}
 
-	public SingleLayerLinearLayout(Context context, AttributeSet attrs, int defStyleAttr)
-	{
+	public SingleLayerLinearLayout(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
 	}
 
 	@Override
-	public boolean hasOverlappingRendering()
-	{
+	public boolean hasOverlappingRendering() {
 		// Makes setAlpha faster, see https://plus.google.com/+RomanNurik/posts/NSgQvbfXGQN
 		// Thumbnails will become strange with alpha because background alpha and image alpha are separate now
 		return false;
 	}
 
-	public interface OnTemporaryDetatchListener
-	{
+	public interface OnTemporaryDetatchListener {
 		public void onTemporaryDetatch(SingleLayerLinearLayout view, boolean start);
 	}
 
 	private OnTemporaryDetatchListener mOnTemporaryDetatchListener;
 
-	public void setOnTemporaryDetatchListener(OnTemporaryDetatchListener listener)
-	{
+	public void setOnTemporaryDetatchListener(OnTemporaryDetatchListener listener) {
 		mOnTemporaryDetatchListener = listener;
 	}
 
 	@Override
-	public void onStartTemporaryDetach()
-	{
+	public void onStartTemporaryDetach() {
 		super.onStartTemporaryDetach();
-		if (mOnTemporaryDetatchListener != null) mOnTemporaryDetatchListener.onTemporaryDetatch(this, true);
+		if (mOnTemporaryDetatchListener != null) {
+			mOnTemporaryDetatchListener.onTemporaryDetatch(this, true);
+		}
 	}
 
 	@Override
-	public void onFinishTemporaryDetach()
-	{
+	public void onFinishTemporaryDetach() {
 		super.onFinishTemporaryDetach();
-		if (mOnTemporaryDetatchListener != null) mOnTemporaryDetatchListener.onTemporaryDetatch(this, false);
+		if (mOnTemporaryDetatchListener != null) {
+			mOnTemporaryDetatchListener.onTemporaryDetatch(this, false);
+		}
 	}
 }

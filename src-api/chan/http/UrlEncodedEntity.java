@@ -25,38 +25,34 @@ import chan.annotation.Extendable;
 import chan.annotation.Public;
 
 @Extendable
-public class UrlEncodedEntity implements RequestEntity
-{
+public class UrlEncodedEntity implements RequestEntity {
 	private final StringBuilder mBuilder = new StringBuilder();
 	private byte[] mBytes;
 
 	private String mCharsetName = "UTF-8";
 
 	@Public
-	public UrlEncodedEntity()
-	{
+	public UrlEncodedEntity() {}
 
+	@Public
+	public UrlEncodedEntity(String... params) {
+		for (int i = 0; i < params.length; i += 2) {
+			add(params[i], params[i + 1]);
+		}
 	}
 
 	@Public
-	public UrlEncodedEntity(String... params)
-	{
-		for (int i = 0; i < params.length; i += 2) add(params[i], params[i + 1]);
-	}
-
-	@Public
-	public void setEncoding(String charsetName)
-	{
+	public void setEncoding(String charsetName) {
 		mCharsetName = charsetName;
 	}
 
 	@Override
-	public void add(String name, String value)
-	{
-		if (value != null)
-		{
+	public void add(String name, String value) {
+		if (value != null) {
 			mBytes = null;
-			if (mBuilder.length() > 0) mBuilder.append('&');
+			if (mBuilder.length() > 0) {
+				mBuilder.append('&');
+			}
 			mBuilder.append(encode(name));
 			mBuilder.append('=');
 			mBuilder.append(encode(value));
@@ -64,55 +60,42 @@ public class UrlEncodedEntity implements RequestEntity
 	}
 
 	@Override
-	public String getContentType()
-	{
+	public String getContentType() {
 		return "application/x-www-form-urlencoded";
 	}
 
 	@Override
-	public long getContentLength()
-	{
+	public long getContentLength() {
 		return getBytes().length;
 	}
 
 	@Override
-	public void write(OutputStream output) throws IOException
-	{
+	public void write(OutputStream output) throws IOException {
 		output.write(getBytes());
 		output.flush();
 	}
 
 	@Override
-	public RequestEntity copy()
-	{
+	public RequestEntity copy() {
 		UrlEncodedEntity entity = new UrlEncodedEntity();
 		entity.setEncoding(mCharsetName);
 		entity.mBuilder.append(mBuilder);
 		return entity;
 	}
 
-	private String encode(String string)
-	{
-		try
-		{
+	private String encode(String string) {
+		try {
 			return URLEncoder.encode(string, mCharsetName);
-		}
-		catch (UnsupportedEncodingException e)
-		{
+		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	private byte[] getBytes()
-	{
-		if (mBytes == null)
-		{
-			try
-			{
+	private byte[] getBytes() {
+		if (mBytes == null) {
+			try {
 				mBytes = mBuilder.toString().getBytes("ISO-8859-1");
-			}
-			catch (UnsupportedEncodingException e)
-			{
+			} catch (UnsupportedEncodingException e) {
 				throw new RuntimeException(e);
 			}
 		}

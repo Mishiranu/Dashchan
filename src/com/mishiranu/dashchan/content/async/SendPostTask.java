@@ -39,8 +39,7 @@ import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.text.HtmlParser;
 import com.mishiranu.dashchan.text.SimilarTextEstimator;
 
-public class SendPostTask extends HttpHolderTask<Void, Long, Boolean>
-{
+public class SendPostTask extends HttpHolderTask<Void, Long, Boolean> {
 	private final String mKey;
 	private final String mChanName;
 	private final Callback mCallback;
@@ -54,13 +53,10 @@ public class SendPostTask extends HttpHolderTask<Void, Long, Boolean>
 	private boolean mCaptchaError = false;
 	private boolean mKeepCaptcha = false;
 
-	private final TimedProgressHandler mProgressHandler = new TimedProgressHandler()
-	{
+	private final TimedProgressHandler mProgressHandler = new TimedProgressHandler() {
 		@Override
-		public void onProgressChange(long progress, long progressMax)
-		{
-			if (!mProgressMode)
-			{
+		public void onProgressChange(long progress, long progressMax) {
+			if (!mProgressMode) {
 				publishProgress(0L, progress, progressMax);
 			}
 		}
@@ -69,16 +65,14 @@ public class SendPostTask extends HttpHolderTask<Void, Long, Boolean>
 		private MultipartEntity.Openable mLastOpenable = null;
 
 		@Override
-		public void onProgressChange(MultipartEntity.Openable openable, long progress, long progressMax)
-		{
-			if (mProgressMode)
-			{
-				if (mLastOpenable != openable)
-				{
-					if (mLastOpenable != null)
-					{
+		public void onProgressChange(MultipartEntity.Openable openable, long progress, long progressMax) {
+			if (mProgressMode) {
+				if (mLastOpenable != openable) {
+					if (mLastOpenable != null) {
 						mCompleteOpenables.add(mLastOpenable);
-						if (mCompleteOpenables.size() == mData.attachments.length) mCompleteOpenables.clear();
+						if (mCompleteOpenables.size() == mData.attachments.length) {
+							mCompleteOpenables.clear();
+						}
 					}
 					mLastOpenable = openable;
 				}
@@ -87,8 +81,7 @@ public class SendPostTask extends HttpHolderTask<Void, Long, Boolean>
 		}
 	};
 
-	public interface Callback
-	{
+	public interface Callback {
 		public void onSendPostChangeProgressState(String key, ProgressState progressState,
 				int attachmentIndex, int attachmentsCount);
 		public void onSendPostChangeProgressValue(String key, int progress, int progressMax);
@@ -98,24 +91,20 @@ public class SendPostTask extends HttpHolderTask<Void, Long, Boolean>
 				Serializable extra, boolean captchaError, boolean keepCaptcha);
 	}
 
-	public SendPostTask(String key, String chanName, Callback callback, ChanPerformer.SendPostData data)
-	{
+	public SendPostTask(String key, String chanName, Callback callback, ChanPerformer.SendPostData data) {
 		mKey = key;
 		mChanName = chanName;
 		mCallback = callback;
 		mData = data;
 		mProgressMode = data.attachments != null;
-		if (mProgressMode)
-		{
-			for (ChanPerformer.SendPostData.Attachment attachment : data.attachments)
-			{
+		if (mProgressMode) {
+			for (ChanPerformer.SendPostData.Attachment attachment : data.attachments) {
 				attachment.listener = mProgressHandler;
 			}
 		}
 	}
 
-	public boolean isProgressMode()
-	{
+	public boolean isProgressMode() {
 		return mProgressMode;
 	}
 
@@ -123,89 +112,78 @@ public class SendPostTask extends HttpHolderTask<Void, Long, Boolean>
 
 	private ProgressState mLastProgressState = ProgressState.CONNECTING;
 
-	private void switchProgressState(ProgressState progressState, int attachmentIndex, boolean force)
-	{
-		if (mLastProgressState != progressState || force)
-		{
+	private void switchProgressState(ProgressState progressState, int attachmentIndex, boolean force) {
+		if (mLastProgressState != progressState || force) {
 			mLastProgressState = progressState;
-			if (mCallback != null)
-			{
+			if (mCallback != null) {
 				mCallback.onSendPostChangeProgressState(mKey, progressState, attachmentIndex, mProgressMode
 						? mData.attachments.length : 0);
 			}
 		}
 	}
 
-	private void updateProgressValue(int index, long progress, long progressMax)
-	{
-		if (progress == 0) switchProgressState(ProgressState.SENDING, index, true);
-		else if (progress == progressMax) switchProgressState(ProgressState.PROCESSING, 0, false);
-		if (mProgressMode && mCallback != null)
-		{
+	private void updateProgressValue(int index, long progress, long progressMax) {
+		if (progress == 0) {
+			switchProgressState(ProgressState.SENDING, index, true);
+		} else if (progress == progressMax) {
+			switchProgressState(ProgressState.PROCESSING, 0, false);
+		}
+		if (mProgressMode && mCallback != null) {
 			mCallback.onSendPostChangeProgressValue(mKey, (int) (progress / 1024), (int) (progressMax / 1024));
 		}
 	}
 
 	@Override
-	protected Boolean doInBackground(HttpHolder holder, Void... params)
-	{
-		try
-		{
+	protected Boolean doInBackground(HttpHolder holder, Void... params) {
+		try {
 			ChanPerformer.SendPostData data = mData;
-			if (data.captchaData != null && ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2.equals(data.captchaType))
-			{
+			if (data.captchaData != null && ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2.equals(data.captchaType)) {
 				String apiKey = data.captchaData.get(ChanPerformer.CaptchaData.API_KEY);
 				String recaptchaResponse = data.captchaData.get(ReadCaptchaTask.RECAPTCHA_SKIP_RESPONSE);
-				if (apiKey != null && recaptchaResponse == null)
-				{
+				if (apiKey != null && recaptchaResponse == null) {
 					String challenge = data.captchaData.get(ChanPerformer.CaptchaData.CHALLENGE);
 					String input = data.captchaData.get(ChanPerformer.CaptchaData.INPUT);
 					recaptchaResponse = RecaptchaReader.getInstance().getResponseField2(holder, apiKey,
 							challenge, input, Preferences.isRecaptchaJavascript());
-					if (recaptchaResponse == null) throw new ApiException(ApiException.SEND_ERROR_CAPTCHA);
+					if (recaptchaResponse == null) {
+						throw new ApiException(ApiException.SEND_ERROR_CAPTCHA);
+					}
 				}
 				data.captchaData.put(ChanPerformer.CaptchaData.INPUT, recaptchaResponse);
 			}
-			if (isCancelled()) return false;
+			if (isCancelled()) {
+				return false;
+			}
 			data.holder = holder;
 			data.listener = mProgressHandler;
 			ChanPerformer performer = ChanPerformer.get(mChanName);
 			ChanPerformer.SendPostResult result = performer.safe().onSendPost(data);
-			if (data.threadNumber == null && (result == null || result.threadNumber == null))
-			{
+			if (data.threadNumber == null && (result == null || result.threadNumber == null)) {
 				// New thread created with undefined number
 				ChanPerformer.ReadThreadsResult readThreadsResult;
-				try
-				{
+				try {
 					readThreadsResult = performer.safe().onReadThreads(new ChanPerformer
 							.ReadThreadsData(data.boardName, 0, data.holder, null));
-				}
-				catch (RedirectException e)
-				{
+				} catch (RedirectException e) {
 					readThreadsResult = null;
 				}
 				Posts[] threads = readThreadsResult != null ? readThreadsResult.threads : null;
-				if (threads != null && threads.length > 0)
-				{
+				if (threads != null && threads.length > 0) {
 					String postComment = data.comment;
 					CommentEditor commentEditor = ChanMarkup.get(mChanName).safe().obtainCommentEditor(data.boardName);
-					if (commentEditor != null && postComment != null)
-					{
+					if (commentEditor != null && postComment != null) {
 						postComment = commentEditor.removeTags(postComment);
 					}
 					SimilarTextEstimator estimator = new SimilarTextEstimator(Integer.MAX_VALUE, true);
 					SimilarTextEstimator.WordsData wordsData1 = estimator.getWords(postComment);
-					for (Posts thread : threads)
-					{
+					for (Posts thread : threads) {
 						Post[] posts = thread.getPosts();
-						if (posts != null && posts.length > 0)
-						{
+						if (posts != null && posts.length > 0) {
 							Post post = posts[0];
 							String comment = HtmlParser.clear(post.getComment());
 							SimilarTextEstimator.WordsData wordsData2 = estimator.getWords(comment);
 							if (estimator.checkSimiliar(wordsData1, wordsData2)
-									|| wordsData1 == null && wordsData2 == null)
-							{
+									|| wordsData1 == null && wordsData2 == null) {
 								result = new ChanPerformer.SendPostResult(thread.getThreadNumber(), null);
 								break;
 							}
@@ -215,30 +193,23 @@ public class SendPostTask extends HttpHolderTask<Void, Long, Boolean>
 			}
 			mResult = result;
 			return true;
-		}
-		catch (ExtensionException | HttpException | InvalidResponseException e)
-		{
+		} catch (ExtensionException | HttpException | InvalidResponseException e) {
 			mErrorItem = e.getErrorItemAndHandle();
 			return false;
-		}
-		catch (ApiException e)
-		{
+		} catch (ApiException e) {
 			mErrorItem = e.getErrorItem();
 			mExtra = e.getExtra();
 			int errorType = e.getErrorType();
 			mCaptchaError = errorType == ApiException.SEND_ERROR_CAPTCHA;
 			mKeepCaptcha = !mCaptchaError && e.checkFlag(ApiException.FLAG_KEEP_CAPTCHA);
 			return false;
-		}
-		finally
-		{
+		} finally {
 			ChanConfiguration.get(mChanName).commit();
 		}
 	}
 
 	@Override
-	protected void onProgressUpdate(Long... values)
-	{
+	protected void onProgressUpdate(Long... values) {
 		int index = values[0].intValue();
 		long progress = values[1];
 		long progressMax = values[2];
@@ -246,16 +217,14 @@ public class SendPostTask extends HttpHolderTask<Void, Long, Boolean>
 	}
 
 	@Override
-	protected void onPostExecute(final Boolean result)
-	{
-		if (mCallback != null)
-		{
-			if (result)
-			{
+	protected void onPostExecute(final Boolean result) {
+		if (mCallback != null) {
+			if (result) {
 				mCallback.onSendPostSuccess(mKey, mData, mChanName, mResult != null ? mResult.threadNumber : null,
 						mResult != null ? mResult.postNumber : null);
+			} else {
+				mCallback.onSendPostFail(mKey, mData, mChanName, mErrorItem, mExtra, mCaptchaError, mKeepCaptcha);
 			}
-			else mCallback.onSendPostFail(mKey, mData, mChanName, mErrorItem, mExtra, mCaptchaError, mKeepCaptcha);
 		}
 	}
 }

@@ -37,8 +37,7 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ViewFactory;
 
-public class BoardsAdapter extends BaseAdapter
-{
+public class BoardsAdapter extends BaseAdapter {
 	public static final String KEY_TITLE = "title";
 	public static final String KEY_BOARDS = "boards";
 
@@ -53,36 +52,29 @@ public class BoardsAdapter extends BaseAdapter
 	private boolean mFilterMode = false;
 	private String mFilterText;
 
-	public BoardsAdapter(String chanName)
-	{
+	public BoardsAdapter(String chanName) {
 		mChanName = chanName;
 	}
 
-	/*
-	 * Returns true, if adapter isn't empty.
-	 */
-	public boolean applyFilter(String text)
-	{
+	// Returns true, if adapter isn't empty.
+	public boolean applyFilter(String text) {
 		mFilterText = text;
 		mFilterMode = !StringUtils.isEmpty(text);
 		mFilteredListItems.clear();
-		if (mFilterMode)
-		{
+		if (mFilterMode) {
 			text = text.toLowerCase(Locale.getDefault());
-			for (ListItem listItem : mListItems)
-			{
-				if (listItem.boardName != null)
-				{
+			for (ListItem listItem : mListItems) {
+				if (listItem.boardName != null) {
 					boolean add = false;
-					if (listItem.boardName.toLowerCase(Locale.US).contains(text))
-					{
+					if (listItem.boardName.toLowerCase(Locale.US).contains(text)) {
+						add = true;
+					} else if (listItem.title != null && listItem.title.toLowerCase(Locale.getDefault())
+							.contains(text)) {
 						add = true;
 					}
-					else if (listItem.title != null && listItem.title.toLowerCase(Locale.getDefault()).contains(text))
-					{
-						add = true;
+					if (add) {
+						mFilteredListItems.add(listItem);
 					}
-					if (add) mFilteredListItems.add(listItem);
 				}
 			}
 		}
@@ -90,74 +82,63 @@ public class BoardsAdapter extends BaseAdapter
 		return !mFilterMode || mFilteredListItems.size() > 0;
 	}
 
-	public void update()
-	{
+	public void update() {
 		mListItems.clear();
 		ChanConfiguration configuration = ChanConfiguration.get(mChanName);
 		JSONArray jsonArray = configuration.getBoards();
-		if (jsonArray != null)
-		{
-			try
-			{
-				for (int i = 0, length = jsonArray.length(); i < length; i++)
-				{
+		if (jsonArray != null) {
+			try {
+				for (int i = 0, length = jsonArray.length(); i < length; i++) {
 					JSONObject jsonObject = jsonArray.getJSONObject(i);
 					String title = CommonUtils.getJsonString(jsonObject, KEY_TITLE);
-					if (length > 1) mListItems.add(new ListItem(null, title));
+					if (length > 1) {
+						mListItems.add(new ListItem(null, title));
+					}
 					JSONArray boardsArray = jsonObject.getJSONArray(KEY_BOARDS);
-					for (int j = 0; j < boardsArray.length(); j++)
-					{
+					for (int j = 0; j < boardsArray.length(); j++) {
 						String boardName = boardsArray.isNull(j) ? null : boardsArray.getString(j);
-						if (!StringUtils.isEmpty(boardName))
-						{
+						if (!StringUtils.isEmpty(boardName)) {
 							title = configuration.getBoardTitle(boardName);
 							mListItems.add(new ListItem(boardName, StringUtils.formatBoardTitle(mChanName,
 									boardName, title)));
 						}
 					}
 				}
-			}
-			catch (JSONException e)
-			{
-
+			} catch (JSONException e) {
+				// Ignore
 			}
 		}
 		notifyDataSetChanged();
-		if (mFilterMode) applyFilter(mFilterText);
+		if (mFilterMode) {
+			applyFilter(mFilterText);
+		}
 	}
 
 	@Override
-	public int getViewTypeCount()
-	{
+	public int getViewTypeCount() {
 		return 2;
 	}
 
 	@Override
-	public int getItemViewType(int position)
-	{
+	public int getItemViewType(int position) {
 		return getItem(position).boardName == null ? TYPE_HEADER : TYPE_VIEW;
 	}
 
 	@Override
-	public boolean isEnabled(int position)
-	{
+	public boolean isEnabled(int position) {
 		return getItem(position).boardName != null;
 	}
 
 	@Override
-	public boolean areAllItemsEnabled()
-	{
+	public boolean areAllItemsEnabled() {
 		return false;
 	}
 
 	@Override
-	public View getView(int position, View convertView, ViewGroup parent)
-	{
+	public View getView(int position, View convertView, ViewGroup parent) {
 		ListItem listItem = getItem(position);
-		if (convertView == null)
-		{
-			if (listItem.boardName != null)
-			{
+		if (convertView == null) {
+			if (listItem.boardName != null) {
 				float density = ResourceUtils.obtainDensity(parent);
 				TextView textView = (TextView) LayoutInflater.from(parent.getContext())
 						.inflate(android.R.layout.simple_list_item_1, parent, false);
@@ -165,37 +146,33 @@ public class BoardsAdapter extends BaseAdapter
 				textView.setEllipsize(TextUtils.TruncateAt.END);
 				textView.setSingleLine(true);
 				convertView = textView;
+			} else {
+				convertView = ViewFactory.makeListTextHeader(parent, false);
 			}
-			else convertView = ViewFactory.makeListTextHeader(parent, false);
 		}
 		((TextView) convertView).setText(listItem.title);
 		return convertView;
 	}
 
 	@Override
-	public int getCount()
-	{
+	public int getCount() {
 		return (mFilterMode ? mFilteredListItems : mListItems).size();
 	}
 
 	@Override
-	public ListItem getItem(int position)
-	{
+	public ListItem getItem(int position) {
 		return (mFilterMode ? mFilteredListItems : mListItems).get(position);
 	}
 
 	@Override
-	public long getItemId(int position)
-	{
+	public long getItemId(int position) {
 		return 0;
 	}
 
-	public static class ListItem
-	{
+	public static class ListItem {
 		public final String boardName, title;
 
-		public ListItem(String boardName, String title)
-		{
+		public ListItem(String boardName, String title) {
 			this.boardName = boardName;
 			this.title = title;
 		}

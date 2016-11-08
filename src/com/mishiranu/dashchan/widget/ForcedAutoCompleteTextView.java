@@ -20,33 +20,27 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.AutoCompleteTextView;
 
-public class ForcedAutoCompleteTextView extends AutoCompleteTextView
-{
-	public ForcedAutoCompleteTextView(Context context)
-	{
+public class ForcedAutoCompleteTextView extends AutoCompleteTextView {
+	public ForcedAutoCompleteTextView(Context context) {
 		super(context);
 	}
 
-	public ForcedAutoCompleteTextView(Context context, AttributeSet attrs)
-	{
+	public ForcedAutoCompleteTextView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 	}
 
 	@Override
-	public int getThreshold()
-	{
+	public int getThreshold() {
 		return 0;
 	}
 
 	@Override
-	public void setThreshold(int threshold)
-	{
+	public void setThreshold(int threshold) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public boolean enoughToFilter()
-	{
+	public boolean enoughToFilter() {
 		return isEnabled();
 	}
 }

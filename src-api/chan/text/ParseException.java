@@ -20,24 +20,20 @@ import chan.annotation.Extendable;
 import chan.annotation.Public;
 
 @Extendable
-public class ParseException extends Exception
-{
+public class ParseException extends Exception {
 	private static final long serialVersionUID = 1L;
 
 	@Public
-	public ParseException()
-	{
+	public ParseException() {
 		super();
 	}
 
-	public ParseException(String detailMessage)
-	{
+	public ParseException(String detailMessage) {
 		super(detailMessage);
 	}
 
 	@Public
-	public ParseException(Throwable throwable)
-	{
+	public ParseException(Throwable throwable) {
 		super(throwable);
 	}
 }

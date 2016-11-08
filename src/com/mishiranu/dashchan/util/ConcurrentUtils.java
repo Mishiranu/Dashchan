@@ -28,103 +28,92 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Process;
 
-public class ConcurrentUtils
-{
+public class ConcurrentUtils {
 	private static final Handler HANDLER = new Handler(Looper.getMainLooper());
 
 	public static final Executor SEPARATE_EXECUTOR = command -> new Thread(command).start();
 
 	public static ThreadPoolExecutor newSingleThreadPool(int lifeTimeMs, String componentName, String componentPart,
-			int threadPriority)
-	{
+			int threadPriority) {
 		return newThreadPool(lifeTimeMs > 0 ? 0 : 1, 1, lifeTimeMs, componentName, componentPart, threadPriority);
 	}
 
 	public static ThreadPoolExecutor newThreadPool(int from, int to, long lifeTimeMs,
-			String componentName, String componentPart, int threadPriority)
-	{
+			String componentName, String componentPart, int threadPriority) {
 		return new ThreadPoolExecutor(from, to, lifeTimeMs, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(),
 				new ComponentThreadFactory(componentName, componentPart, threadPriority));
 	}
 
-	private static class ComponentThreadFactory implements ThreadFactory
-	{
+	private static class ComponentThreadFactory implements ThreadFactory {
 		private final String mComponentName;
 		private final String mComponentPart;
 		private final int mThreadPriority;
 
-		public ComponentThreadFactory(String componentName, String componentPart, int threadPriority)
-		{
+		public ComponentThreadFactory(String componentName, String componentPart, int threadPriority) {
 			mComponentName = componentName;
 			mComponentPart = componentPart;
 			mThreadPriority = threadPriority;
 		}
 
 		@Override
-		public Thread newThread(Runnable r)
-		{
-			Thread thread = new Thread(r)
-			{
+		public Thread newThread(Runnable r) {
+			Thread thread = new Thread(r) {
 				@Override
-				public void run()
-				{
+				public void run() {
 					Process.setThreadPriority(mThreadPriority);
 					super.run();
 				}
 			};
-			if (mComponentName != null)
-			{
+			if (mComponentName != null) {
 				thread.setName(mComponentName + (mComponentPart != null ? " #" + mComponentPart : ""));
 			}
 			return thread;
 		}
 	}
 
-	public static boolean isMain()
-	{
+	public static boolean isMain() {
 		return Looper.myLooper() == Looper.getMainLooper();
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T> T mainGet(Callable<T> callable)
-	{
-		if (callable == null) return null;
+	public static <T> T mainGet(Callable<T> callable) {
+		if (callable == null) {
+			return null;
+		}
 		CountDownLatch latch = new CountDownLatch(1);
 		Object[] result = new Object[2];
-		Runnable runnable = () ->
-		{
-			try
-			{
+		Runnable runnable = () -> {
+			try {
 				result[0] = callable.call();
-			}
-			catch (Throwable t)
-			{
+			} catch (Throwable t) {
 				result[1] = t;
 			}
 			latch.countDown();
 		};
-		if (isMain()) runnable.run(); else
-		{
+		if (isMain()) {
+			runnable.run();
+		} else {
 			HANDLER.post(runnable);
 			boolean interrupted = false;
-			while (true)
-			{
-				try
-				{
+			while (true) {
+				try {
 					latch.await();
-					if (interrupted) Thread.currentThread().interrupt();
+					if (interrupted) {
+						Thread.currentThread().interrupt();
+					}
 					break;
-				}
-				catch (InterruptedException e)
-				{
+				} catch (InterruptedException e) {
 					interrupted = true;
 				}
 			}
 		}
-		if (result[1] != null)
-		{
-			if (result[1] instanceof RuntimeException) throw ((RuntimeException) result[1]);
-			if (result[1] instanceof Error) throw ((Error) result[1]);
+		if (result[1] != null) {
+			if (result[1] instanceof RuntimeException) {
+				throw ((RuntimeException) result[1]);
+			}
+			if (result[1] instanceof Error) {
+				throw ((Error) result[1]);
+			}
 			throw new RuntimeException((Throwable) result[1]);
 		}
 		return (T) result[0];

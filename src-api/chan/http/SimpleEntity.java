@@ -25,76 +25,64 @@ import chan.annotation.Public;
 import chan.util.StringUtils;
 
 @Extendable
-public class SimpleEntity implements RequestEntity
-{
+public class SimpleEntity implements RequestEntity {
 	private byte[] mData;
 	private String mContentType = "text/plain";
 
 	@Public
-	public SimpleEntity()
-	{
-
-	}
+	public SimpleEntity() {}
 
 	@Override
-	public void add(String name, String value)
-	{
+	public void add(String name, String value) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Extendable
-	public void setData(String data)
-	{
+	public void setData(String data) {
 		setData(data, "UTF-8");
 	}
 
 	@Extendable
-	public void setData(String data, String charsetName)
-	{
-		try
-		{
+	public void setData(String data, String charsetName) {
+		try {
 			setData(data != null ? data.getBytes(charsetName) : null);
-		}
-		catch (UnsupportedEncodingException e)
-		{
+		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
 	@Extendable
-	public void setData(byte[] data)
-	{
+	public void setData(byte[] data) {
 		mData = data;
 	}
 
 	@Extendable
-	public void setContentType(String contentType)
-	{
-		if (StringUtils.isEmpty(contentType)) throw new IllegalArgumentException("Invalid content type");
+	public void setContentType(String contentType) {
+		if (StringUtils.isEmpty(contentType)) {
+			throw new IllegalArgumentException("Invalid content type");
+		}
 		mContentType = contentType;
 	}
 
 	@Override
-	public String getContentType()
-	{
+	public String getContentType() {
 		return mContentType;
 	}
 
 	@Override
-	public long getContentLength()
-	{
+	public long getContentLength() {
 		return mData != null ? mData.length : 0;
 	}
 
 	@Override
-	public void write(OutputStream output) throws IOException
-	{
-		if (mData != null) output.write(mData);
+	public void write(OutputStream output) throws IOException {
+		if (mData != null) {
+			output.write(mData);
+		}
 	}
 
 	@Override
-	public RequestEntity copy()
-	{
+	public RequestEntity copy() {
 		SimpleEntity entity = new SimpleEntity();
 		entity.setData(mData);
 		entity.setContentType(mContentType);

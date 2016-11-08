@@ -30,17 +30,17 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.util.ResourceUtils;
 
-public class ViewFactory
-{
+public class ViewFactory {
 	@TargetApi(Build.VERSION_CODES.M)
 	@SuppressWarnings("deprecation")
-	public static TextView makeListTextHeader(ViewGroup parent, boolean tiny)
-	{
-		if (C.API_LOLLIPOP)
-		{
+	public static TextView makeListTextHeader(ViewGroup parent, boolean tiny) {
+		if (C.API_LOLLIPOP) {
 			TextView textView = new TextView(parent.getContext());
-			if (C.API_MARSHMALLOW) textView.setTextAppearance(R.style.Widget_CategoryHeader);
-			else textView.setTextAppearance(parent.getContext(), R.style.Widget_CategoryHeader);
+			if (C.API_MARSHMALLOW) {
+				textView.setTextAppearance(R.style.Widget_CategoryHeader);
+			} else {
+				textView.setTextAppearance(parent.getContext(), R.style.Widget_CategoryHeader);
+			}
 			float density = ResourceUtils.obtainDensity(parent);
 			textView.setLayoutParams(new AbsListView.LayoutParams(AbsListView.LayoutParams.MATCH_PARENT,
 					AbsListView.LayoutParams.WRAP_CONTENT));
@@ -48,9 +48,7 @@ public class ViewFactory
 			textView.setPadding((int) (16f * density), (int) (8f * density), (int) (16f * density),
 					tiny ? 0 : (int) (8f * density));
 			return textView;
-		}
-		else
-		{
+		} else {
 			TextView textView = (TextView) LayoutInflater.from(parent.getContext())
 					.inflate(android.R.layout.preference_category, parent, false);
 			float density = ResourceUtils.obtainDensity(parent);
@@ -60,31 +58,28 @@ public class ViewFactory
 		}
 	}
 
-	public static class TwoLinesViewHolder
-	{
+	public static class TwoLinesViewHolder {
 		public TextView text1, text2;
 	}
 
-	public static View makeTwoLinesListItem(ViewGroup parent, boolean singleLine)
-	{
+	public static View makeTwoLinesListItem(ViewGroup parent, boolean singleLine) {
 		ViewGroup view = (ViewGroup) LayoutInflater.from(parent.getContext())
 				.inflate(ResourceUtils.getResourceId(parent.getContext(), android.R.attr.preferenceStyle,
 				android.R.attr.layout, android.R.layout.simple_list_item_2), parent, false);
 		TwoLinesViewHolder holder = new TwoLinesViewHolder();
-		if (view.findViewById(android.R.id.icon) != null)
-		{
+		if (view.findViewById(android.R.id.icon) != null) {
 			holder.text1 = (TextView) view.findViewById(android.R.id.title);
 			holder.text2 = (TextView) view.findViewById(android.R.id.summary);
 			view.removeViewAt(view.getChildCount() - 1);
 			view.removeViewAt(0);
-		}
-		else
-		{
+		} else {
 			holder.text1 = (TextView) view.findViewById(android.R.id.text1);
 			holder.text2 = (TextView) view.findViewById(android.R.id.text2);
 		}
 		holder.text1.setSingleLine(true);
-		if (singleLine) holder.text2.setSingleLine(true);
+		if (singleLine) {
+			holder.text2.setSingleLine(true);
+		}
 		holder.text1.setEllipsize(TextUtils.TruncateAt.END);
 		holder.text2.setEllipsize(TextUtils.TruncateAt.END);
 		view.setTag(holder);

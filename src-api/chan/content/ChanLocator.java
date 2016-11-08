@@ -33,8 +33,7 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.preference.Preferences;
 
 @Extendable
-public class ChanLocator implements ChanManager.Linked
-{
+public class ChanLocator implements ChanManager.Linked {
 	private final String mChanName;
 
 	private static final int HOST_TYPE_CONFIGURABLE = 0;
@@ -45,16 +44,14 @@ public class ChanLocator implements ChanManager.Linked
 	private HttpsMode mHttpsMode = HttpsMode.NO_HTTPS;
 
 	@Public
-	public enum HttpsMode
-	{
+	public enum HttpsMode {
 		@Public NO_HTTPS,
 		@Public HTTPS_ONLY,
 		@Public CONFIGURABLE
 	}
 
 	@Public
-	public static final class NavigationData
-	{
+	public static final class NavigationData {
 		@Public public static final int TARGET_THREADS = 0;
 		@Public public static final int TARGET_POSTS = 1;
 		@Public public static final int TARGET_SEARCH = 2;
@@ -66,15 +63,14 @@ public class ChanLocator implements ChanManager.Linked
 		public final String searchQuery;
 
 		@Public
-		public NavigationData(int target, String boardName, String threadNumber, String postNumber, String searchQuery)
-		{
+		public NavigationData(int target, String boardName, String threadNumber, String postNumber,
+				String searchQuery) {
 			this.target = target;
 			this.boardName = boardName;
 			this.threadNumber = threadNumber;
 			this.postNumber = postNumber;
 			this.searchQuery = searchQuery;
-			if (target == TARGET_POSTS && StringUtils.isEmpty(threadNumber))
-			{
+			if (target == TARGET_POSTS && StringUtils.isEmpty(threadNumber)) {
 				throw new IllegalArgumentException("threadNumber must not be empty!");
 			}
 		}
@@ -83,255 +79,236 @@ public class ChanLocator implements ChanManager.Linked
 	public static final ChanManager.Initializer INITIALIZER = new ChanManager.Initializer();
 
 	@Public
-	public ChanLocator()
-	{
+	public ChanLocator() {
 		this(true);
 	}
 
-	ChanLocator(boolean useInitializer)
-	{
+	ChanLocator(boolean useInitializer) {
 		mChanName = useInitializer ? INITIALIZER.consume().chanName : null;
-		if (!useInitializer) setHttpsMode(HttpsMode.CONFIGURABLE);
+		if (!useInitializer) {
+			setHttpsMode(HttpsMode.CONFIGURABLE);
+		}
 	}
 
 	@Override
-	public final String getChanName()
-	{
+	public final String getChanName() {
 		return mChanName;
 	}
 
 	@Override
-	public final void init()
-	{
-		if (getChanHosts(true).size() == 0) throw new RuntimeException("Chan hosts not defined");
+	public final void init() {
+		if (getChanHosts(true).size() == 0) {
+			throw new RuntimeException("Chan hosts not defined");
+		}
 	}
 
-	public static <T extends ChanLocator> T get(String chanName)
-	{
+	public static <T extends ChanLocator> T get(String chanName) {
 		return ChanManager.getInstance().getLocator(chanName, true);
 	}
 
 	@Public
-	public static <T extends ChanLocator> T get(Object object)
-	{
+	public static <T extends ChanLocator> T get(Object object) {
 		ChanManager manager = ChanManager.getInstance();
 		return ChanManager.getInstance().getLocator(manager.getLinkedChanName(object), false);
 	}
 
-	public static ChanLocator getDefault()
-	{
+	public static ChanLocator getDefault() {
 		return ChanManager.getInstance().getLocator(null, true);
 	}
 
 	@Public
-	public final void addChanHost(String host)
-	{
+	public final void addChanHost(String host) {
 		mHosts.put(host, HOST_TYPE_CONFIGURABLE);
 	}
 
 	@Public
-	public final void addConvertableChanHost(String host)
-	{
+	public final void addConvertableChanHost(String host) {
 		mHosts.put(host, HOST_TYPE_CONVERTABLE);
 	}
 
 	@Public
-	public final void addSpecialChanHost(String host)
-	{
+	public final void addSpecialChanHost(String host) {
 		mHosts.put(host, HOST_TYPE_SPECIAL);
 	}
 
 	@Public
-	public final void setHttpsMode(HttpsMode httpsMode)
-	{
-		if (httpsMode == null) throw new NullPointerException();
+	public final void setHttpsMode(HttpsMode httpsMode) {
+		if (httpsMode == null) {
+			throw new NullPointerException();
+		}
 		mHttpsMode = httpsMode;
 	}
 
-	public final boolean isHttpsConfigurable()
-	{
+	public final boolean isHttpsConfigurable() {
 		return mHttpsMode == HttpsMode.CONFIGURABLE;
 	}
 
 	@Public
-	public final boolean isUseHttps()
-	{
+	public final boolean isUseHttps() {
 		HttpsMode httpsMode = mHttpsMode;
-		if (httpsMode == HttpsMode.CONFIGURABLE)
-		{
+		if (httpsMode == HttpsMode.CONFIGURABLE) {
 			String chanName = getChanName();
 			return chanName != null ? Preferences.isUseHttps(chanName) : Preferences.isUseHttpsGeneral();
 		}
 		return httpsMode == HttpsMode.HTTPS_ONLY;
 	}
 
-	public final ArrayList<String> getChanHosts(boolean confiruableOnly)
-	{
-		if (confiruableOnly)
-		{
+	public final ArrayList<String> getChanHosts(boolean confiruableOnly) {
+		if (confiruableOnly) {
 			ArrayList<String> hosts = new ArrayList<>();
-			for (LinkedHashMap.Entry<String, Integer> entry : mHosts.entrySet())
-			{
-				if (entry.getValue() == HOST_TYPE_CONFIGURABLE) hosts.add(entry.getKey());
+			for (LinkedHashMap.Entry<String, Integer> entry : mHosts.entrySet()) {
+				if (entry.getValue() == HOST_TYPE_CONFIGURABLE) {
+					hosts.add(entry.getKey());
+				}
 			}
 			return hosts;
+		} else {
+			return new ArrayList<>(mHosts.keySet());
 		}
-		else return new ArrayList<>(mHosts.keySet());
 	}
 
-	public final boolean isChanHost(String host)
-	{
-		if (StringUtils.isEmpty(host)) return false;
+	public final boolean isChanHost(String host) {
+		if (StringUtils.isEmpty(host)) {
+			return false;
+		}
 		return mHosts.containsKey(host) || host.equals(Preferences.getDomainUnhandled(getChanName()));
 	}
 
 	@Public
-	public final boolean isChanHostOrRelative(Uri uri)
-	{
-		if (uri != null)
-		{
-			if (uri.isRelative()) return true;
+	public final boolean isChanHostOrRelative(Uri uri) {
+		if (uri != null) {
+			if (uri.isRelative()) {
+				return true;
+			}
 			String host = uri.getHost();
 			return host != null ? isChanHost(host) : false;
 		}
 		return false;
 	}
 
-	public final boolean isConvertableChanHost(String host)
-	{
-		if (StringUtils.isEmpty(host)) return false;
-		if (host.equals(Preferences.getDomainUnhandled(getChanName()))) return true;
+	public final boolean isConvertableChanHost(String host) {
+		if (StringUtils.isEmpty(host)) {
+			return false;
+		}
+		if (host.equals(Preferences.getDomainUnhandled(getChanName()))) {
+			return true;
+		}
 		Integer hostType = mHosts.get(host);
 		return hostType != null && (hostType == HOST_TYPE_CONFIGURABLE || hostType == HOST_TYPE_CONVERTABLE);
 	}
 
-	public final Uri convert(Uri uri)
-	{
-		if (uri != null)
-		{
+	public final Uri convert(Uri uri) {
+		if (uri != null) {
 			String preferredScheme = getPreferredScheme();
 			String host = uri.getHost();
 			boolean mayConvert = uri.isRelative() || isWebScheme(uri) && isConvertableChanHost(host);
-			if (mayConvert || !preferredScheme.equals(uri.getScheme()) && isChanHost(host))
-			{
+			if (mayConvert || !preferredScheme.equals(uri.getScheme()) && isChanHost(host)) {
 				Uri.Builder builder = uri.buildUpon().scheme(preferredScheme);
-				if (mayConvert) builder.authority(getPreferredHost());
+				if (mayConvert) {
+					builder.authority(getPreferredHost());
+				}
 				return builder.build();
 			}
 		}
 		return uri;
 	}
 
-	public final Uri makeRelative(Uri uri)
-	{
-		if (isWebScheme(uri))
-		{
+	public final Uri makeRelative(Uri uri) {
+		if (isWebScheme(uri)) {
 			String host = uri.getHost();
-			if (isConvertableChanHost(host)) uri = uri.buildUpon().scheme(null).authority(null).build();
+			if (isConvertableChanHost(host)) {
+				uri = uri.buildUpon().scheme(null).authority(null).build();
+			}
 		}
 		return uri;
 	}
 
 	@Extendable
-	protected boolean isBoardUri(Uri uri)
-	{
+	protected boolean isBoardUri(Uri uri) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Extendable
-	protected boolean isThreadUri(Uri uri)
-	{
+	protected boolean isThreadUri(Uri uri) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Extendable
-	protected boolean isAttachmentUri(Uri uri)
-	{
+	protected boolean isAttachmentUri(Uri uri) {
 		throw new UnsupportedOperationException();
 	}
 
-	public final boolean isImageUri(Uri uri)
-	{
+	public final boolean isImageUri(Uri uri) {
 		return uri != null && isImageExtension(uri.getPath()) && mSafe.isAttachmentUri(uri);
 	}
 
-	public final boolean isAudioUri(Uri uri)
-	{
+	public final boolean isAudioUri(Uri uri) {
 		return uri != null && isAudioExtension(uri.getPath()) && mSafe.isAttachmentUri(uri);
 	}
 
-	public final boolean isVideoUri(Uri uri)
-	{
+	public final boolean isVideoUri(Uri uri) {
 		return uri != null && isVideoExtension(uri.getPath()) && mSafe.isAttachmentUri(uri);
 	}
 
 	@Extendable
-	protected String getBoardName(Uri uri)
-	{
+	protected String getBoardName(Uri uri) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Extendable
-	protected String getThreadNumber(Uri uri)
-	{
+	protected String getThreadNumber(Uri uri) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Extendable
-	protected String getPostNumber(Uri uri)
-	{
+	protected String getPostNumber(Uri uri) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Extendable
-	protected Uri createBoardUri(String boardName, int pageNumber)
-	{
+	protected Uri createBoardUri(String boardName, int pageNumber) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Extendable
-	protected Uri createThreadUri(String boardName, String threadNumber)
-	{
+	protected Uri createThreadUri(String boardName, String threadNumber) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Extendable
-	protected Uri createPostUri(String boardName, String threadNumber, String postNumber)
-	{
+	protected Uri createPostUri(String boardName, String threadNumber, String postNumber) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Extendable
-	protected String createAttachmentForcedName(Uri fileUri)
-	{
+	protected String createAttachmentForcedName(Uri fileUri) {
 		return null;
 	}
 
-	public final String createAttachmentFileName(Uri fileUri)
-	{
+	public final String createAttachmentFileName(Uri fileUri) {
 		return createAttachmentFileName(fileUri, mSafe.createAttachmentForcedName(fileUri));
 	}
 
-	public final String createAttachmentFileName(Uri fileUri, String forcedName)
-	{
+	public final String createAttachmentFileName(Uri fileUri, String forcedName) {
 		String fileName = forcedName != null ? forcedName : fileUri.getLastPathSegment();
-		if (fileName != null) return StringUtils.escapeFile(fileName, false);
+		if (fileName != null) {
+			return StringUtils.escapeFile(fileName, false);
+		}
 		return null;
 	}
 
-	public final Uri validateClickedUriString(String uriString, String boardName, String threadNumber)
-	{
+	public final Uri validateClickedUriString(String uriString, String boardName, String threadNumber) {
 		Uri uri = uriString != null ? Uri.parse(uriString) : null;
-		if (uri != null && uri.isRelative())
-		{
+		if (uri != null && uri.isRelative()) {
 			Uri baseUri = mSafe.createThreadUri(boardName, threadNumber);
-			if (baseUri != null)
-			{
+			if (baseUri != null) {
 				String query = StringUtils.nullIfEmpty(uri.getQuery());
 				String fragment = StringUtils.nullIfEmpty(uri.getFragment());
 				Uri.Builder builder = baseUri.buildUpon().encodedQuery(query).encodedFragment(fragment);
 				String path = uri.getPath();
-				if (!StringUtils.isEmpty(path)) builder.encodedPath(path);
+				if (!StringUtils.isEmpty(path)) {
+					builder.encodedPath(path);
+				}
 				return builder.build();
 			}
 		}
@@ -339,50 +316,40 @@ public class ChanLocator implements ChanManager.Linked
 	}
 
 	@Extendable
-	protected NavigationData handleUriClickSpecial(Uri uri)
-	{
+	protected NavigationData handleUriClickSpecial(Uri uri) {
 		return null;
 	}
 
-	public final boolean isWebScheme(Uri uri)
-	{
+	public final boolean isWebScheme(Uri uri) {
 		String scheme = uri.getScheme();
 		return "http".equals(scheme) || "https".equals(scheme);
 	}
 
 	@Public
-	public final boolean isImageExtension(String path)
-	{
+	public final boolean isImageExtension(String path) {
 		return C.IMAGE_EXTENSIONS.contains(getFileExtension(path));
 	}
 
 	@Public
-	public final boolean isAudioExtension(String path)
-	{
+	public final boolean isAudioExtension(String path) {
 		return C.AUDIO_EXTENSIONS.contains(getFileExtension(path));
 	}
 
 	@Public
-	public final boolean isVideoExtension(String path)
-	{
+	public final boolean isVideoExtension(String path) {
 		return C.VIDEO_EXTENSIONS.contains(getFileExtension(path));
 	}
 
 	@Public
-	public final String getFileExtension(String path)
-	{
+	public final String getFileExtension(String path) {
 		return StringUtils.getFileExtension(path);
 	}
 
-	public final String getPreferredHost()
-	{
+	public final String getPreferredHost() {
 		String host = Preferences.getDomainUnhandled(getChanName());
-		if (StringUtils.isEmpty(host))
-		{
-			for (LinkedHashMap.Entry<String, Integer> entry : mHosts.entrySet())
-			{
-				if (entry.getValue() == HOST_TYPE_CONFIGURABLE)
-				{
+		if (StringUtils.isEmpty(host)) {
+			for (LinkedHashMap.Entry<String, Integer> entry : mHosts.entrySet()) {
+				if (entry.getValue() == HOST_TYPE_CONFIGURABLE) {
 					host = entry.getKey();
 					break;
 				}
@@ -391,78 +358,70 @@ public class ChanLocator implements ChanManager.Linked
 		return host;
 	}
 
-	public final void setPreferredHost(String host)
-	{
-		if (host == null || getChanHosts(true).get(0).equals(host)) host = "";
+	public final void setPreferredHost(String host) {
+		if (host == null || getChanHosts(true).get(0).equals(host)) {
+			host = "";
+		}
 		Preferences.setDomainUnhandled(mChanName, host);
 	}
 
-	private static String getPreferredScheme(boolean useHttps)
-	{
+	private static String getPreferredScheme(boolean useHttps) {
 		return useHttps ? "https" : "http";
 	}
 
-	private String getPreferredScheme()
-	{
+	private String getPreferredScheme() {
 		return getPreferredScheme(isUseHttps());
 	}
 
 	@Public
-	public final Uri buildPath(String... segments)
-	{
+	public final Uri buildPath(String... segments) {
 		return buildPathWithHost(getPreferredHost(), segments);
 	}
 
 	@Public
-	public final Uri buildPathWithHost(String host, String... segments)
-	{
+	public final Uri buildPathWithHost(String host, String... segments) {
 		return buildPathWithSchemeHost(isUseHttps(), host, segments);
 	}
 
 	@Public
-	public final Uri buildPathWithSchemeHost(boolean useHttps, String host, String... segments)
-	{
+	public final Uri buildPathWithSchemeHost(boolean useHttps, String host, String... segments) {
 		Uri.Builder builder = new Uri.Builder().scheme(getPreferredScheme(useHttps)).authority(host);
-		for (int i = 0; i < segments.length; i++)
-		{
+		for (int i = 0; i < segments.length; i++) {
 			String segment = segments[i];
-			if (segment != null) builder.appendEncodedPath(segment.replaceFirst("^/+", ""));
+			if (segment != null) {
+				builder.appendEncodedPath(segment.replaceFirst("^/+", ""));
+			}
 		}
 		return builder.build();
 	}
 
 	@Public
-	public final Uri buildQuery(String path, String... alternation)
-	{
+	public final Uri buildQuery(String path, String... alternation) {
 		return buildQueryWithHost(getPreferredHost(), path, alternation);
 	}
 
 	@Public
-	public final Uri buildQueryWithHost(String host, String path, String... alternation)
-	{
+	public final Uri buildQueryWithHost(String host, String path, String... alternation) {
 		return buildQueryWithSchemeHost(isUseHttps(), host, path, alternation);
 	}
 
 	@Public
-	public final Uri buildQueryWithSchemeHost(boolean useHttps, String host, String path, String... alternation)
-	{
+	public final Uri buildQueryWithSchemeHost(boolean useHttps, String host, String path, String... alternation) {
 		Uri.Builder builder = new Uri.Builder().scheme(getPreferredScheme(useHttps)).authority(host);
-		if (path != null) builder.appendEncodedPath(path.replaceFirst("^/+", ""));
-		if (alternation.length % 2 != 0)
-		{
+		if (path != null) {
+			builder.appendEncodedPath(path.replaceFirst("^/+", ""));
+		}
+		if (alternation.length % 2 != 0) {
 			throw new IllegalArgumentException("Length of alternation must be a multiple of 2.");
 		}
-		for (int i = 0; i < alternation.length; i += 2)
-		{
+		for (int i = 0; i < alternation.length; i += 2) {
 			builder.appendQueryParameter(alternation[i], alternation[i + 1]);
 		}
 		return builder.build();
 	}
 
-	public final Uri setScheme(Uri uri)
-	{
-		if (uri != null && StringUtils.isEmpty(uri.getScheme()))
-		{
+	public final Uri setScheme(Uri uri) {
+		if (uri != null && StringUtils.isEmpty(uri.getScheme())) {
 			return uri.buildUpon().scheme(getPreferredScheme()).build();
 		}
 		return uri;
@@ -479,265 +438,233 @@ public class ChanLocator implements ChanManager.Linked
 
 	private static final Pattern SOUNDCLOUD_URI = Pattern.compile("(?:https?://)soundcloud\\.com/([\\w/_-]*)");
 
-	private boolean isMayContainEmbeddedCode(String text, String what)
-	{
+	private boolean isMayContainEmbeddedCode(String text, String what) {
 		return !StringUtils.isEmpty(text) && text.contains(what);
 	}
 
-	public final String getYouTubeEmbeddedCode(String text)
-	{
-		if (!isMayContainEmbeddedCode(text, "youtu")) return null;
+	public final String getYouTubeEmbeddedCode(String text) {
+		if (!isMayContainEmbeddedCode(text, "youtu")) {
+			return null;
+		}
 		return getGroupValue(text, YOUTUBE_URI, 1);
 	}
 
-	public final String[] getYouTubeEmbeddedCodes(String text)
-	{
-		if (!isMayContainEmbeddedCode(text, "youtu")) return null;
+	public final String[] getYouTubeEmbeddedCodes(String text) {
+		if (!isMayContainEmbeddedCode(text, "youtu")) {
+			return null;
+		}
 		return getUniqueGroupValues(text, YOUTUBE_URI, 1);
 	}
 
-	public final String getVimeoEmbeddedCode(String text)
-	{
-		if (!isMayContainEmbeddedCode(text, "vimeo")) return null;
+	public final String getVimeoEmbeddedCode(String text) {
+		if (!isMayContainEmbeddedCode(text, "vimeo")) {
+			return null;
+		}
 		return getGroupValue(text, VIMEO_URI, 1);
 	}
 
-	public final String[] getVimeoEmbeddedCodes(String text)
-	{
-		if (!isMayContainEmbeddedCode(text, "vimeo")) return null;
+	public final String[] getVimeoEmbeddedCodes(String text) {
+		if (!isMayContainEmbeddedCode(text, "vimeo")) {
+			return null;
+		}
 		return getUniqueGroupValues(text, VIMEO_URI, 1);
 	}
-
-	public final String getVocarooEmbeddedCode(String text)
-	{
-		if (!isMayContainEmbeddedCode(text, "vocaroo")) return null;
+	public final String getVocarooEmbeddedCode(String text) {
+		if (!isMayContainEmbeddedCode(text, "vocaroo")) {
+			return null;
+		}
 		return getGroupValue(text, VOCAROO_URI, 1);
 	}
 
-	public final String[] getVocarooEmbeddedCodes(String text)
-	{
-		if (!isMayContainEmbeddedCode(text, "vocaroo")) return null;
+	public final String[] getVocarooEmbeddedCodes(String text) {
+		if (!isMayContainEmbeddedCode(text, "vocaroo")) {
+			return null;
+		}
 		return getUniqueGroupValues(text, VOCAROO_URI, 1);
 	}
 
-	public final String getSoundCloudEmbeddedCode(String text)
-	{
-		if (!isMayContainEmbeddedCode(text, "soundcloud")) return null;
+	public final String getSoundCloudEmbeddedCode(String text) {
+		if (!isMayContainEmbeddedCode(text, "soundcloud")) {
+			return null;
+		}
 		String value = getGroupValue(text, SOUNDCLOUD_URI, 1);
-		if (value != null && value.contains("/")) return value;
+		if (value != null && value.contains("/")) {
+			return value;
+		}
 		return null;
 	}
 
-	public final String[] getSoundCloudEmbeddedCodes(String text)
-	{
-		if (!isMayContainEmbeddedCode(text, "soundcloud")) return null;
+	public final String[] getSoundCloudEmbeddedCodes(String text) {
+		if (!isMayContainEmbeddedCode(text, "soundcloud")) {
+			return null;
+		}
 		String[] embeddedCodes = getUniqueGroupValues(text, SOUNDCLOUD_URI, 1);
-		if (embeddedCodes != null)
-		{
+		if (embeddedCodes != null) {
 			int deleteCount = 0;
-			for (int i = 0; i < embeddedCodes.length; i++)
-			{
-				if (!embeddedCodes[i].contains("/"))
-				{
+			for (int i = 0; i < embeddedCodes.length; i++) {
+				if (!embeddedCodes[i].contains("/")) {
 					embeddedCodes[i] = null;
 					deleteCount++;
 				}
 			}
-			if (deleteCount > 0)
-			{
+			if (deleteCount > 0) {
 				int newLength = embeddedCodes.length - deleteCount;
-				if (newLength == 0) return null;
+				if (newLength == 0) {
+					return null;
+				}
 				String[] newEmbeddedCodes = new String[newLength];
-				for (int i = 0, j = 0; i < embeddedCodes.length; i++)
-				{
+				for (int i = 0, j = 0; i < embeddedCodes.length; i++) {
 					String embeddedCode = embeddedCodes[i];
-					if (embeddedCode != null) newEmbeddedCodes[j++] = embeddedCode;
+					if (embeddedCode != null) {
+						newEmbeddedCodes[j++] = embeddedCode;
+					}
 				}
 				return newEmbeddedCodes;
+			} else {
+				return embeddedCodes;
 			}
-			else return embeddedCodes;
 		}
 		return null;
 	}
 
 	@Public
-	public final boolean isPathMatches(Uri uri, Pattern pattern)
-	{
-		if (uri != null)
-		{
+	public final boolean isPathMatches(Uri uri, Pattern pattern) {
+		if (uri != null) {
 			String path = uri.getPath();
-			if (path != null) return pattern.matcher(path).matches();
+			if (path != null) {
+				return pattern.matcher(path).matches();
+			}
 		}
 		return false;
 	}
 
 	@Public
-	public final String getGroupValue(String from, Pattern pattern, int groupIndex)
-	{
-		if (from == null) return null;
+	public final String getGroupValue(String from, Pattern pattern, int groupIndex) {
+		if (from == null) {
+			return null;
+		}
 		Matcher matcher = pattern.matcher(from);
-		if (matcher.find() && matcher.groupCount() > 0) return matcher.group(groupIndex);
+		if (matcher.find() && matcher.groupCount() > 0) {
+			return matcher.group(groupIndex);
+		}
 		return null;
 	}
 
-	public final String[] getUniqueGroupValues(String from, Pattern pattern, int groupIndex)
-	{
-		if (from == null) return null;
+	public final String[] getUniqueGroupValues(String from, Pattern pattern, int groupIndex) {
+		if (from == null) {
+			return null;
+		}
 		Matcher matcher = pattern.matcher(from);
 		LinkedHashSet<String> data = new LinkedHashSet<>();
-		while (matcher.find() && matcher.groupCount() > 0) data.add(matcher.group(groupIndex));
+		while (matcher.find() && matcher.groupCount() > 0) {
+			data.add(matcher.group(groupIndex));
+		}
 		return CommonUtils.toArray(data, String.class);
 	}
 
-	public static final class Safe
-	{
+	public static final class Safe {
 		private final ChanLocator mLocator;
 		private final boolean mShowToastOnError;
 
-		private Safe(ChanLocator locator, boolean showToastOnError)
-		{
+		private Safe(ChanLocator locator, boolean showToastOnError) {
 			mLocator = locator;
 			mShowToastOnError = showToastOnError;
 		}
 
-		public boolean isBoardUri(Uri uri)
-		{
-			try
-			{
+		public boolean isBoardUri(Uri uri) {
+			try {
 				return mLocator.isBoardUri(uri);
-			}
-			catch (LinkageError | RuntimeException e)
-			{
+			} catch (LinkageError | RuntimeException e) {
 				ExtensionException.logException(e, mShowToastOnError);
 				return false;
 			}
 		}
 
-		public boolean isThreadUri(Uri uri)
-		{
-			try
-			{
+		public boolean isThreadUri(Uri uri) {
+			try {
 				return mLocator.isThreadUri(uri);
-			}
-			catch (LinkageError | RuntimeException e)
-			{
+			} catch (LinkageError | RuntimeException e) {
 				ExtensionException.logException(e, mShowToastOnError);
 				return false;
 			}
 		}
 
-		public boolean isAttachmentUri(Uri uri)
-		{
-			try
-			{
+		public boolean isAttachmentUri(Uri uri) {
+			try {
 				return mLocator.isAttachmentUri(uri);
-			}
-			catch (LinkageError | RuntimeException e)
-			{
+			} catch (LinkageError | RuntimeException e) {
 				ExtensionException.logException(e, mShowToastOnError);
 				return false;
 			}
 		}
 
-		public String getBoardName(Uri uri)
-		{
-			try
-			{
+		public String getBoardName(Uri uri) {
+			try {
 				return mLocator.getBoardName(uri);
-			}
-			catch (LinkageError | RuntimeException e)
-			{
+			} catch (LinkageError | RuntimeException e) {
 				ExtensionException.logException(e, mShowToastOnError);
 				return null;
 			}
 		}
 
-		public String getThreadNumber(Uri uri)
-		{
-			try
-			{
+		public String getThreadNumber(Uri uri) {
+			try {
 				return mLocator.getThreadNumber(uri);
-			}
-			catch (LinkageError | RuntimeException e)
-			{
+			} catch (LinkageError | RuntimeException e) {
 				ExtensionException.logException(e, mShowToastOnError);
 				return null;
 			}
 		}
 
-		public String getPostNumber(Uri uri)
-		{
-			try
-			{
+		public String getPostNumber(Uri uri) {
+			try {
 				return mLocator.getPostNumber(uri);
-			}
-			catch (LinkageError | RuntimeException e)
-			{
+			} catch (LinkageError | RuntimeException e) {
 				ExtensionException.logException(e, mShowToastOnError);
 				return null;
 			}
 		}
 
-		public Uri createBoardUri(String boardName, int pageNumber)
-		{
-			try
-			{
+		public Uri createBoardUri(String boardName, int pageNumber) {
+			try {
 				return mLocator.createBoardUri(boardName, pageNumber);
-			}
-			catch (LinkageError | RuntimeException e)
-			{
+			} catch (LinkageError | RuntimeException e) {
 				ExtensionException.logException(e, mShowToastOnError);
 				return null;
 			}
 		}
 
-		public Uri createThreadUri(String boardName, String threadNumber)
-		{
-			try
-			{
+		public Uri createThreadUri(String boardName, String threadNumber) {
+			try {
 				return mLocator.createThreadUri(boardName, threadNumber);
-			}
-			catch (LinkageError | RuntimeException e)
-			{
+			} catch (LinkageError | RuntimeException e) {
 				ExtensionException.logException(e, mShowToastOnError);
 				return null;
 			}
 		}
 
-		public Uri createPostUri(String boardName, String threadNumber, String postNumber)
-		{
-			try
-			{
+		public Uri createPostUri(String boardName, String threadNumber, String postNumber) {
+			try {
 				return mLocator.createPostUri(boardName, threadNumber, postNumber);
-			}
-			catch (LinkageError | RuntimeException e)
-			{
+			} catch (LinkageError | RuntimeException e) {
 				ExtensionException.logException(e, mShowToastOnError);
 				return null;
 			}
 		}
 
-		public String createAttachmentForcedName(Uri fileUri)
-		{
-			try
-			{
+		public String createAttachmentForcedName(Uri fileUri) {
+			try {
 				return mLocator.createAttachmentForcedName(fileUri);
-			}
-			catch (LinkageError | RuntimeException e)
-			{
+			} catch (LinkageError | RuntimeException e) {
 				ExtensionException.logException(e, mShowToastOnError);
 				return null;
 			}
 		}
 
-		public NavigationData handleUriClickSpecial(Uri uri)
-		{
-			try
-			{
+		public NavigationData handleUriClickSpecial(Uri uri) {
+			try {
 				return mLocator.handleUriClickSpecial(uri);
-			}
-			catch (LinkageError | RuntimeException e)
-			{
+			} catch (LinkageError | RuntimeException e) {
 				ExtensionException.logException(e, mShowToastOnError);
 				return null;
 			}
@@ -747,8 +674,7 @@ public class ChanLocator implements ChanManager.Linked
 	private final Safe mSafeToast = new Safe(this, true);
 	private final Safe mSafe = new Safe(this, false);
 
-	public final Safe safe(boolean showToastOnError)
-	{
+	public final Safe safe(boolean showToastOnError) {
 		return showToastOnError ? mSafeToast : mSafe;
 	}
 }

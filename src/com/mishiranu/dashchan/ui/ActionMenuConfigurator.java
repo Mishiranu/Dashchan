@@ -27,21 +27,18 @@ import android.view.MenuItem;
 
 import com.mishiranu.dashchan.content.MainApplication;
 
-public class ActionMenuConfigurator
-{
+public class ActionMenuConfigurator {
 	private static final Field SHOW_AS_ACTION_FIELD;
 	private static final Object ACTION_BAR_POLICY;
 	private static final Method GET_MAX_ACTION_BUTTONS_METHOD;
 	private static final Method SHOWS_OVERFLOW_MENU_BUTTON_METHOD;
 
-	static
-	{
+	static {
 		Field showAsActionField;
 		Object actionBarPolicy;
 		Method getMaxActionButtonsMethod;
 		Method showsOverflowMenuButtonMethod;
-		try
-		{
+		try {
 			Class<?> menuItemImplClass = Class.forName("com.android.internal.view.menu.MenuItemImpl");
 			showAsActionField = menuItemImplClass.getDeclaredField("mShowAsAction");
 			showAsActionField.setAccessible(true);
@@ -50,9 +47,7 @@ public class ActionMenuConfigurator
 					.invoke(null, MainApplication.getInstance());
 			getMaxActionButtonsMethod = actionBarPolicyClass.getMethod("getMaxActionButtons");
 			showsOverflowMenuButtonMethod = actionBarPolicyClass.getMethod("showsOverflowMenuButton");
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			showAsActionField = null;
 			actionBarPolicy = null;
 			getMaxActionButtonsMethod = null;
@@ -68,32 +63,25 @@ public class ActionMenuConfigurator
 	private final SparseBooleanArray mDisplay = new SparseBooleanArray();
 	private Menu mLastMenu;
 
-	public void onConfigurationChanged(Configuration newConfig)
-	{
-		if (newConfig.orientation != Configuration.ORIENTATION_UNDEFINED && mLastMenu != null)
-		{
+	public void onConfigurationChanged(Configuration newConfig) {
+		if (newConfig.orientation != Configuration.ORIENTATION_UNDEFINED && mLastMenu != null) {
 			onAfterPrepareOptionsMenu(mLastMenu);
 		}
 	}
 
-	public void onAfterCreateOptionsMenu(Menu menu)
-	{
+	public void onAfterCreateOptionsMenu(Menu menu) {
 		mDisplay.clear();
 		mLastMenu = menu;
-		for (int i = 0; i < menu.size(); i++)
-		{
+		for (int i = 0; i < menu.size(); i++) {
 			MenuItem menuItem = menu.getItem(i);
 			int id = menuItem.getItemId();
 			int showAsAction = getShowAsAction(menuItem);
-			switch (showAsAction)
-			{
-				case MenuItem.SHOW_AS_ACTION_ALWAYS:
-				{
+			switch (showAsAction) {
+				case MenuItem.SHOW_AS_ACTION_ALWAYS: {
 					mDisplay.put(id, true);
 					break;
 				}
-				case MenuItem.SHOW_AS_ACTION_IF_ROOM:
-				{
+				case MenuItem.SHOW_AS_ACTION_IF_ROOM: {
 					mDisplay.put(id, false);
 					break;
 				}
@@ -101,59 +89,46 @@ public class ActionMenuConfigurator
 		}
 	}
 
-	public void onAfterPrepareOptionsMenu(Menu menu)
-	{
+	public void onAfterPrepareOptionsMenu(Menu menu) {
 		int maxCount;
 		boolean mayOverflow;
-		try
-		{
+		try {
 			maxCount = (int) GET_MAX_ACTION_BUTTONS_METHOD.invoke(ACTION_BAR_POLICY);
 			mayOverflow = (boolean) SHOWS_OVERFLOW_MENU_BUTTON_METHOD.invoke(ACTION_BAR_POLICY);
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			return;
 		}
 		int used = 0;
-		for (int i = 0; i < menu.size(); i++)
-		{
+		for (int i = 0; i < menu.size(); i++) {
 			MenuItem menuItem = menu.getItem(i);
-			if (menuItem.isVisible())
-			{
-				if (mDisplay.get(menuItem.getItemId())) used++;
-				else if (mayOverflow && mDisplay.indexOfKey(menuItem.getItemId()) < 0)
-				{
+			if (menuItem.isVisible()) {
+				if (mDisplay.get(menuItem.getItemId())) {
+					used++;
+				} else if (mayOverflow && mDisplay.indexOfKey(menuItem.getItemId()) < 0) {
 					mayOverflow = false;
 					used++;
 				}
 			}
 		}
-		for (int i = 0; i < menu.size(); i++)
-		{
+		for (int i = 0; i < menu.size(); i++) {
 			MenuItem menuItem = menu.getItem(i);
-			if (menuItem.isVisible())
-			{
-				if (mDisplay.get(menuItem.getItemId()))
-				{
-					if (used < maxCount)
-					{
+			if (menuItem.isVisible()) {
+				if (mDisplay.get(menuItem.getItemId())) {
+					if (used < maxCount) {
 						used++;
 						menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+					} else {
+						menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
 					}
-					else menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
 				}
 			}
 		}
 	}
 
-	private static int getShowAsAction(MenuItem menuItem)
-	{
-		try
-		{
+	private static int getShowAsAction(MenuItem menuItem) {
+		try {
 			return SHOW_AS_ACTION_FIELD.getInt(menuItem);
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			return MenuItem.SHOW_AS_ACTION_NEVER;
 		}
 	}

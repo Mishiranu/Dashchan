@@ -40,8 +40,7 @@ import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.CommentTextView;
 
-public class TextFragment extends Fragment implements View.OnClickListener
-{
+public class TextFragment extends Fragment implements View.OnClickListener {
 	private static final String EXTRA_TYPE = "type";
 	private static final String EXTRA_CONTENT = "content";
 
@@ -50,13 +49,9 @@ public class TextFragment extends Fragment implements View.OnClickListener
 
 	private CommentTextView mTextView;
 
-	public TextFragment()
-	{
+	public TextFragment() {}
 
-	}
-
-	public static Bundle createArguments(int type, String content)
-	{
+	public static Bundle createArguments(int type, String content) {
 		Bundle args = new Bundle();
 		args.putInt(EXTRA_TYPE, type);
 		args.putString(EXTRA_CONTENT, content);
@@ -64,29 +59,21 @@ public class TextFragment extends Fragment implements View.OnClickListener
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
-	{
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		Bundle args = getArguments();
 		int type = args.getInt(EXTRA_TYPE);
 		String content = args.getString(EXTRA_CONTENT);
-		switch (type)
-		{
-			case TYPE_LICENSES:
-			{
+		switch (type) {
+			case TYPE_LICENSES: {
 				InputStream input = null;
-				try
-				{
+				try {
 					input = getActivity().getAssets().open("licenses.txt");
 					ByteArrayOutputStream output = new ByteArrayOutputStream();
 					IOUtils.copyStream(input, output);
 					content = new String(output.toByteArray()).replaceAll("\r?\n", "<br/>");
-				}
-				catch (IOException e)
-				{
+				} catch (IOException e) {
 					throw new RuntimeException(e);
-				}
-				finally
-				{
+				} finally {
 					IOUtils.close(input);
 				}
 				break;
@@ -110,19 +97,17 @@ public class TextFragment extends Fragment implements View.OnClickListener
 	}
 
 	@Override
-	public void onActivityCreated(Bundle savedInstanceState)
-	{
+	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		if (!C.API_MARSHMALLOW) ((View) getView().getParent()).setPadding(0, 0, 0, 0);
-		switch (getArguments().getInt(EXTRA_TYPE))
-		{
-			case TYPE_LICENSES:
-			{
+		if (!C.API_MARSHMALLOW) {
+			((View) getView().getParent()).setPadding(0, 0, 0, 0);
+		}
+		switch (getArguments().getInt(EXTRA_TYPE)) {
+			case TYPE_LICENSES: {
 				getActivity().setTitle(R.string.preference_licenses);
 				break;
 			}
-			case TYPE_CHANGELOG:
-			{
+			case TYPE_CHANGELOG: {
 				getActivity().setTitle(R.string.preference_changelog);
 				break;
 			}
@@ -132,21 +117,18 @@ public class TextFragment extends Fragment implements View.OnClickListener
 	private long mLastClickTime;
 
 	@Override
-	public void onClick(View v)
-	{
+	public void onClick(View v) {
 		long time = System.currentTimeMillis();
-		if (time - mLastClickTime < ViewConfiguration.getDoubleTapTimeout())
-		{
+		if (time - mLastClickTime < ViewConfiguration.getDoubleTapTimeout()) {
 			mLastClickTime = 0L;
 			mTextView.startSelection();
+		} else {
+			mLastClickTime = time;
 		}
-		else mLastClickTime = time;
 	}
 
-	private static class Markup extends ChanMarkup
-	{
-		public Markup()
-		{
+	private static class Markup extends ChanMarkup {
+		public Markup() {
 			super(false);
 			addTag("h1", TAG_HEADING);
 			addTag("h2", TAG_HEADING);

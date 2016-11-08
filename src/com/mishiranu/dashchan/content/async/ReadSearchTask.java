@@ -37,8 +37,7 @@ import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.net.YouTubeTitlesReader;
 import com.mishiranu.dashchan.text.HtmlParser;
 
-public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostItem>> implements Comparator<Post>
-{
+public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostItem>> implements Comparator<Post> {
 	private final Callback mCallback;
 	private final String mChanName;
 	private final String mBoardName;
@@ -47,14 +46,12 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostIte
 
 	private ErrorItem mErrorItem;
 
-	public interface Callback
-	{
+	public interface Callback {
 		public void onReadSearchSuccess(ArrayList<PostItem> postItems, int pageNumber);
 		public void onReadSearchFail(ErrorItem errorItem);
 	}
 
-	public ReadSearchTask(Callback callback, String chanName, String boardName, String searchQuery, int pageNumber)
-	{
+	public ReadSearchTask(Callback callback, String chanName, String boardName, String searchQuery, int pageNumber) {
 		mCallback = callback;
 		mChanName = chanName;
 		mBoardName = boardName;
@@ -63,60 +60,49 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostIte
 	}
 
 	@Override
-	public int compare(Post lhs, Post rhs)
-	{
+	public int compare(Post lhs, Post rhs) {
 		return ((Long) rhs.getTimestamp()).compareTo(lhs.getTimestamp());
 	}
 
 	@Override
-	protected ArrayList<PostItem> doInBackground(HttpHolder holder, Void... params)
-	{
-		try
-		{
+	protected ArrayList<PostItem> doInBackground(HttpHolder holder, Void... params) {
+		try {
 			ChanPerformer performer = ChanPerformer.get(mChanName);
 			ChanConfiguration configuration = ChanConfiguration.get(mChanName);
 			ChanConfiguration.Board board = configuration.safe().obtainBoard(mBoardName);
 			ArrayList<Post> posts = new ArrayList<>();
 			HashSet<String> postNumbers = null;
-			if (board.allowSearch)
-			{
+			if (board.allowSearch) {
 				ChanPerformer.ReadSearchPostsResult result = performer.safe().onReadSearchPosts(new ChanPerformer
 						.ReadSearchPostsData(mBoardName, mSearchQuery, mPageNumber, holder));
 				Post[] readPosts = result != null ? result.posts : null;
-				if (readPosts != null && readPosts.length > 0)
-				{
+				if (readPosts != null && readPosts.length > 0) {
 					Collections.addAll(posts, readPosts);
 					postNumbers = new HashSet<>();
-					for (Post post : readPosts) postNumbers.add(post.getPostNumber());
+					for (Post post : readPosts) {
+						postNumbers.add(post.getPostNumber());
+					}
 				}
 			}
-			if (board.allowCatalog && board.allowCatalogSearch && mPageNumber == 0)
-			{
+			if (board.allowCatalog && board.allowCatalogSearch && mPageNumber == 0) {
 				ChanPerformer.ReadThreadsResult result;
-				try
-				{
+				try {
 					result = performer.safe().onReadThreads(new ChanPerformer.ReadThreadsData(mBoardName,
 							ChanPerformer.ReadThreadsData.PAGE_NUMBER_CATALOG, holder, null));
-				}
-				catch (RedirectException e)
-				{
+				} catch (RedirectException e) {
 					result = null;
 				}
 				Posts[] threads = result != null ? result.threads : null;
 				ArrayList<Post> matched = new ArrayList<>();
 				Locale locale = Locale.getDefault();
 				String searchQuery = mSearchQuery.toUpperCase(locale);
-				for (Posts thread : threads)
-				{
-					for (Post post : thread.getPosts())
-					{
-						if (postNumbers == null || !postNumbers.contains(post.getPostNumber()))
-						{
+				for (Posts thread : threads) {
+					for (Post post : thread.getPosts()) {
+						if (postNumbers == null || !postNumbers.contains(post.getPostNumber())) {
 							String comment = post.getComment();
 							String subject = post.getSubject();
 							if (comment != null && HtmlParser.clear(comment).toUpperCase(locale).contains(searchQuery)
-									|| subject != null && subject.toUpperCase(locale).contains(searchQuery))
-							{
+									|| subject != null && subject.toUpperCase(locale).contains(searchQuery)) {
 								matched.add(post);
 							}
 						}
@@ -124,13 +110,11 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostIte
 				}
 				posts.addAll(matched);
 			}
-			if (posts.size() > 0)
-			{
+			if (posts.size() > 0) {
 				Collections.sort(posts, this);
 				YouTubeTitlesReader.getInstance().readAndApplyIfNecessary(posts, holder);
 				ArrayList<PostItem> postItems = new ArrayList<>(posts.size());
-				for (int i = 0; i < posts.size() && !Thread.interrupted(); i++)
-				{
+				for (int i = 0; i < posts.size() && !Thread.interrupted(); i++) {
 					PostItem postItem = new PostItem(posts.get(i), mChanName, mBoardName);
 					postItem.setOrdinalIndex(i);
 					postItem.preload();
@@ -139,22 +123,20 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostIte
 				return postItems;
 			}
 			return null;
-		}
-		catch (ExtensionException | HttpException | InvalidResponseException e)
-		{
+		} catch (ExtensionException | HttpException | InvalidResponseException e) {
 			mErrorItem = e.getErrorItemAndHandle();
 			return null;
-		}
-		finally
-		{
+		} finally {
 			ChanConfiguration.get(mChanName).commit();
 		}
 	}
 
 	@Override
-	public void onPostExecute(ArrayList<PostItem> postItems)
-	{
-		if (mErrorItem == null) mCallback.onReadSearchSuccess(postItems, mPageNumber);
-		else mCallback.onReadSearchFail(mErrorItem);
+	public void onPostExecute(ArrayList<PostItem> postItems) {
+		if (mErrorItem == null) {
+			mCallback.onReadSearchSuccess(postItems, mPageNumber);
+		} else {
+			mCallback.onReadSearchFail(mErrorItem);
+		}
 	}
 }

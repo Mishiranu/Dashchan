@@ -23,64 +23,50 @@ import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 
-public class SimpleBitmapDrawable extends Drawable
-{
+public class SimpleBitmapDrawable extends Drawable {
 	private final Bitmap mBitmap;
 	private final int mWidth;
 	private final int mHeight;
 
 	private final Paint mPaint = new Paint(Paint.FILTER_BITMAP_FLAG);
 
-	public SimpleBitmapDrawable(Bitmap bitmap, int width, int height)
-	{
+	public SimpleBitmapDrawable(Bitmap bitmap, int width, int height) {
 		mBitmap = bitmap;
 		mWidth = width;
 		mHeight = height;
 	}
 
-	public SimpleBitmapDrawable(Bitmap bitmap)
-	{
+	public SimpleBitmapDrawable(Bitmap bitmap) {
 		this(bitmap, bitmap.getWidth(), bitmap.getHeight());
 	}
 
 	@Override
-	public void draw(Canvas canvas)
-	{
+	public void draw(Canvas canvas) {
 		canvas.drawBitmap(mBitmap, null, getBounds(), mPaint);
 	}
 
 	@Override
-	public int getOpacity()
-	{
+	public int getOpacity() {
 		return PixelFormat.TRANSLUCENT;
 	}
 
 	@Override
-	public void setAlpha(int alpha)
-	{
-
-	}
+	public void setAlpha(int alpha) {}
 
 	@Override
-	public void setColorFilter(ColorFilter colorFilter)
-	{
-
-	}
+	public void setColorFilter(ColorFilter colorFilter) {}
 
 	@Override
-	public int getIntrinsicWidth()
-	{
+	public int getIntrinsicWidth() {
 		return mWidth;
 	}
 
 	@Override
-	public int getIntrinsicHeight()
-	{
+	public int getIntrinsicHeight() {
 		return mHeight;
 	}
 
-	public void recycle()
-	{
+	public void recycle() {
 		mBitmap.recycle();
 	}
 }

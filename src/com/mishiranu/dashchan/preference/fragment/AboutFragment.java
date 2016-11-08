@@ -52,15 +52,13 @@ import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.preference.PreferencesActivity;
 import com.mishiranu.dashchan.util.ToastUtils;
 
-public class AboutFragment extends BasePreferenceFragment
-{
+public class AboutFragment extends BasePreferenceFragment {
 	private Preference mBackupDataPreference;
 	private Preference mChangelogPreference;
 	private Preference mCheckForUpdatesPreference;
 
 	@Override
-	public void onCreate(Bundle savedInstanceState)
-	{
+	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		Preference statisticsPreference = makeButton(null, R.string.preference_statistics, 0, false);
@@ -87,71 +85,53 @@ public class AboutFragment extends BasePreferenceFragment
 	}
 
 	@Override
-	public boolean onPreferenceClick(Preference preference)
-	{
-		if (preference == mBackupDataPreference)
-		{
+	public boolean onPreferenceClick(Preference preference) {
+		if (preference == mBackupDataPreference) {
 			new BackupDialog().show(getFragmentManager(), BackupDialog.class.getName());
 			return true;
-		}
-		else if (preference == mChangelogPreference)
-		{
+		} else if (preference == mChangelogPreference) {
 			new ReadDialog(ReadDialog.TYPE_CHANGELOG).show(getFragmentManager(), ReadDialog.class.getName());
 			return true;
-		}
-		else if (preference == mCheckForUpdatesPreference)
-		{
+		} else if (preference == mCheckForUpdatesPreference) {
 			new ReadDialog(ReadDialog.TYPE_UPDATE).show(getFragmentManager(), ReadDialog.class.getName());
 			return true;
 		}
 		return super.onPreferenceClick(preference);
 	}
 
-	public static class BackupDialog extends DialogFragment implements DialogInterface.OnClickListener
-	{
+	public static class BackupDialog extends DialogFragment implements DialogInterface.OnClickListener {
 		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState)
-		{
+		public Dialog onCreateDialog(Bundle savedInstanceState) {
 			String[] items = getResources().getStringArray(R.array.preference_backup_data_choices);
 			return new AlertDialog.Builder(getActivity()).setItems(items, this).create();
 		}
 
 		@Override
-		public void onClick(DialogInterface dialog, int which)
-		{
-			if (which == 0)
-			{
+		public void onClick(DialogInterface dialog, int which) {
+			if (which == 0) {
 				BackupManager.makeBackup(getActivity());
-			}
-			else if (which == 1)
-			{
+			} else if (which == 1) {
 				LinkedHashMap<File, String> filesMap = BackupManager.getAvailableBackups(getActivity());
-				if (filesMap != null && filesMap.size() > 0)
-				{
+				if (filesMap != null && filesMap.size() > 0) {
 					new RestoreFragment(filesMap).show(getFragmentManager(), RestoreFragment.class.getName());
+				} else {
+					ToastUtils.show(getActivity(), R.string.message_no_backups);
 				}
-				else ToastUtils.show(getActivity(), R.string.message_no_backups);
 			}
 		}
 	}
 
-	public static class RestoreFragment extends DialogFragment implements DialogInterface.OnClickListener
-	{
+	public static class RestoreFragment extends DialogFragment implements DialogInterface.OnClickListener {
 		private static final String EXTRA_FILES = "files";
 		private static final String EXTRA_NAMES = "names";
 
-		public RestoreFragment()
-		{
+		public RestoreFragment() {}
 
-		}
-
-		public RestoreFragment(LinkedHashMap<File, String> filesMap)
-		{
+		public RestoreFragment(LinkedHashMap<File, String> filesMap) {
 			Bundle args = new Bundle();
 			ArrayList<String> files = new ArrayList<>(filesMap.size());
 			ArrayList<String> names = new ArrayList<>(filesMap.size());
-			for (LinkedHashMap.Entry<File, String> pair : filesMap.entrySet())
-			{
+			for (LinkedHashMap.Entry<File, String> pair : filesMap.entrySet()) {
 				files.add(pair.getKey().getAbsolutePath());
 				names.add(pair.getValue());
 			}
@@ -161,8 +141,7 @@ public class AboutFragment extends BasePreferenceFragment
 		}
 
 		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState)
-		{
+		public Dialog onCreateDialog(Bundle savedInstanceState) {
 			ArrayList<String> names = getArguments().getStringArrayList(EXTRA_NAMES);
 			String[] items = CommonUtils.toArray(names, String.class);
 			return new AlertDialog.Builder(getActivity()).setSingleChoiceItems(items, 0, null).setNegativeButton
@@ -170,16 +149,14 @@ public class AboutFragment extends BasePreferenceFragment
 		}
 
 		@Override
-		public void onClick(DialogInterface dialog, int which)
-		{
+		public void onClick(DialogInterface dialog, int which) {
 			int index = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
 			File file = new File(getArguments().getStringArrayList(EXTRA_FILES).get(index));
 			BackupManager.loadBackup(getActivity(), file);
 		}
 	}
 
-	public static class ReadDialog extends DialogFragment implements AsyncManager.Callback
-	{
+	public static class ReadDialog extends DialogFragment implements AsyncManager.Callback {
 		private static final String EXTRA_TYPE = "type";
 
 		private static final int TYPE_CHANGELOG = 0;
@@ -188,21 +165,16 @@ public class AboutFragment extends BasePreferenceFragment
 		private static final String TASK_READ_CHANGELOG = "read_changelog";
 		private static final String TASK_READ_UPDATE = "read_update";
 
-		public ReadDialog()
-		{
+		public ReadDialog() {}
 
-		}
-
-		public ReadDialog(int type)
-		{
+		public ReadDialog(int type) {
 			Bundle args = new Bundle();
 			args.putInt(EXTRA_TYPE, type);
 			setArguments(args);
 		}
 
 		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState)
-		{
+		public Dialog onCreateDialog(Bundle savedInstanceState) {
 			ProgressDialog dialog = new ProgressDialog(getActivity());
 			dialog.setMessage(getString(R.string.message_loading));
 			dialog.setCanceledOnTouchOutside(false);
@@ -210,18 +182,14 @@ public class AboutFragment extends BasePreferenceFragment
 		}
 
 		@Override
-		public void onActivityCreated(Bundle savedInstanceState)
-		{
+		public void onActivityCreated(Bundle savedInstanceState) {
 			super.onActivityCreated(savedInstanceState);
-			switch (getArguments().getInt(EXTRA_TYPE))
-			{
-				case TYPE_CHANGELOG:
-				{
+			switch (getArguments().getInt(EXTRA_TYPE)) {
+				case TYPE_CHANGELOG: {
 					AsyncManager.get(this).startTask(TASK_READ_CHANGELOG, this, null, false);
 					break;
 				}
-				case TYPE_UPDATE:
-				{
+				case TYPE_UPDATE: {
 					AsyncManager.get(this).startTask(TASK_READ_UPDATE, this, null, false);
 					break;
 				}
@@ -229,46 +197,36 @@ public class AboutFragment extends BasePreferenceFragment
 		}
 
 		@Override
-		public void onCancel(DialogInterface dialog)
-		{
+		public void onCancel(DialogInterface dialog) {
 			super.onCancel(dialog);
-			switch (getArguments().getInt(EXTRA_TYPE))
-			{
-				case TYPE_CHANGELOG:
-				{
+			switch (getArguments().getInt(EXTRA_TYPE)) {
+				case TYPE_CHANGELOG: {
 					AsyncManager.get(this).cancelTask(TASK_READ_CHANGELOG, this);
 					break;
 				}
-				case TYPE_UPDATE:
-				{
+				case TYPE_UPDATE: {
 					AsyncManager.get(this).cancelTask(TASK_READ_UPDATE, this);
 					break;
 				}
 			}
 		}
 
-		private static class ReadUpdateHolder extends AsyncManager.Holder implements ReadUpdateTask.Callback
-		{
+		private static class ReadUpdateHolder extends AsyncManager.Holder implements ReadUpdateTask.Callback {
 			@Override
-			public void onReadUpdateComplete(ReadUpdateTask.UpdateDataMap updateDataMap)
-			{
+			public void onReadUpdateComplete(ReadUpdateTask.UpdateDataMap updateDataMap) {
 				storeResult(updateDataMap);
 			}
 		}
 
 		@Override
-		public AsyncManager.Holder onCreateAndExecuteTask(String name, HashMap<String, Object> extra)
-		{
-			switch (name)
-			{
-				case TASK_READ_CHANGELOG:
-				{
+		public AsyncManager.Holder onCreateAndExecuteTask(String name, HashMap<String, Object> extra) {
+			switch (name) {
+				case TASK_READ_CHANGELOG: {
 					ReadChangelogTask task = new ReadChangelogTask(getActivity());
 					task.executeOnExecutor(ReadChangelogTask.THREAD_POOL_EXECUTOR);
 					return task.getHolder();
 				}
-				case TASK_READ_UPDATE:
-				{
+				case TASK_READ_UPDATE: {
 					ReadUpdateHolder holder = new ReadUpdateHolder();
 					ReadUpdateTask task = new ReadUpdateTask(getActivity(), holder);
 					task.executeOnExecutor(ReadChangelogTask.THREAD_POOL_EXECUTOR);
@@ -279,29 +237,25 @@ public class AboutFragment extends BasePreferenceFragment
 		}
 
 		@Override
-		public void onFinishTaskExecution(String name, AsyncManager.Holder holder)
-		{
+		public void onFinishTaskExecution(String name, AsyncManager.Holder holder) {
 			dismissAllowingStateLoss();
-			switch (name)
-			{
-				case TASK_READ_CHANGELOG:
-				{
+			switch (name) {
+				case TASK_READ_CHANGELOG: {
 					String content = holder.nextArgument();
 					ErrorItem errorItem = holder.nextArgument();
-					if (errorItem == null)
-					{
+					if (errorItem == null) {
 						Intent intent = new Intent(getActivity(), PreferencesActivity.class);
 						intent.putExtra(PreferencesActivity.EXTRA_SHOW_FRAGMENT, TextFragment.class.getName());
 						intent.putExtra(PreferencesActivity.EXTRA_SHOW_FRAGMENT_ARGUMENTS,
 								TextFragment.createArguments(TextFragment.TYPE_CHANGELOG, content));
 						intent.putExtra(PreferencesActivity.EXTRA_NO_HEADERS, true);
 						startActivity(intent);
+					} else {
+						ToastUtils.show(getActivity(), errorItem);
 					}
-					else ToastUtils.show(getActivity(), errorItem);
 					break;
 				}
-				case TASK_READ_UPDATE:
-				{
+				case TASK_READ_UPDATE: {
 					ReadUpdateTask.UpdateDataMap updateDataMap = holder.nextArgument();
 					startActivity(UpdateFragment.createUpdateIntent(getActivity(), updateDataMap));
 					break;
@@ -310,17 +264,13 @@ public class AboutFragment extends BasePreferenceFragment
 		}
 
 		@Override
-		public void onRequestTaskCancel(String name, Object task)
-		{
-			switch (name)
-			{
-				case TASK_READ_CHANGELOG:
-				{
+		public void onRequestTaskCancel(String name, Object task) {
+			switch (name) {
+				case TASK_READ_CHANGELOG: {
 					((ReadChangelogTask) task).cancel();
 					break;
 				}
-				case TASK_READ_UPDATE:
-				{
+				case TASK_READ_UPDATE: {
 					((ReadUpdateTask) task).cancel();
 					break;
 				}
@@ -328,8 +278,7 @@ public class AboutFragment extends BasePreferenceFragment
 		}
 	}
 
-	private static class ReadChangelogTask extends AsyncManager.SimpleTask<Void, Void, Boolean>
-	{
+	private static class ReadChangelogTask extends AsyncManager.SimpleTask<Void, Void, Boolean> {
 		private final HttpHolder mHolder = new HttpHolder();
 
 		private final Context mContext;
@@ -337,105 +286,80 @@ public class AboutFragment extends BasePreferenceFragment
 		private String mResult;
 		private ErrorItem mErrorItem;
 
-		public ReadChangelogTask(Context context)
-		{
+		public ReadChangelogTask(Context context) {
 			mContext = context.getApplicationContext();
 		}
 
 		@Override
-		public Boolean doInBackground(Void... params)
-		{
+		public Boolean doInBackground(Void... params) {
 			String page = "Changelog-EN";
-			for (Locale locale : LocaleManager.getInstance().list(mContext))
-			{
+			for (Locale locale : LocaleManager.getInstance().list(mContext)) {
 				String language = locale.getLanguage();
-				if ("ru".equals(language))
-				{
+				if ("ru".equals(language)) {
 					page = "Changelog-RU";
 					break;
 				}
 			}
 			Uri uri = ChanLocator.getDefault().buildPathWithHost("github.com", "Mishiranu", "Dashchan", "wiki", page);
-			try
-			{
+			try {
 				String result = new HttpRequest(uri, mHolder).read().getString();
-				if (result != null) result = ChangelogGroupCallback.parse(result);
-				if (result == null)
-				{
+				if (result != null) {
+					result = ChangelogGroupCallback.parse(result);
+				}
+				if (result == null) {
 					mErrorItem = new ErrorItem(ErrorItem.TYPE_UNKNOWN);
 					return false;
-				}
-				else
-				{
+				} else {
 					mResult = result;
 					return true;
 				}
-			}
-			catch (HttpException e)
-			{
+			} catch (HttpException e) {
 				mErrorItem = e.getErrorItemAndHandle();
 				mHolder.disconnect();
 				return false;
-			}
-			finally
-			{
+			} finally {
 				mHolder.cleanup();
 			}
 		}
 
 		@Override
-		protected void onStoreResult(AsyncManager.Holder holder, Boolean result)
-		{
+		protected void onStoreResult(AsyncManager.Holder holder, Boolean result) {
 			holder.storeResult(mResult, mErrorItem);
 		}
 
 		@Override
-		public void cancel()
-		{
+		public void cancel() {
 			cancel(true);
 			mHolder.interrupt();
 		}
 	}
 
-	private static class ChangelogGroupCallback implements GroupParser.Callback
-	{
+	private static class ChangelogGroupCallback implements GroupParser.Callback {
 		private String mResult;
 
-		public static String parse(String source)
-		{
+		public static String parse(String source) {
 			ChangelogGroupCallback callback = new ChangelogGroupCallback();
-			try
-			{
+			try {
 				GroupParser.parse(source, callback);
-			}
-			catch (ParseException e)
-			{
-
+			} catch (ParseException e) {
+				// Ignore
 			}
 			return callback.mResult;
 		}
 
 		@Override
-		public boolean onStartElement(GroupParser parser, String tagName, String attrs)
-		{
+		public boolean onStartElement(GroupParser parser, String tagName, String attrs) {
 			return "div".equals(tagName) && "markdown-body".equals(parser.getAttr(attrs, "class"));
 		}
 
 		@Override
-		public void onEndElement(GroupParser parser, String tagName)
-		{
-
-		}
+		public void onEndElement(GroupParser parser, String tagName) {}
 
 		@Override
-		public void onText(GroupParser parser, String source, int start, int end) throws ParseException
-		{
-
-		}
+		public void onText(GroupParser parser, String source, int start, int end) throws ParseException {}
 
 		@Override
-		public void onGroupComplete(GroupParser parser, String text) throws ParseException
-		{
+		public void onGroupComplete(GroupParser parser, String text) throws ParseException {
 			mResult = text;
 			throw new ParseException();
 		}

@@ -18,69 +18,57 @@
 #include "player.h"
 
 jlong Java_com_mishiranu_dashchan_media_VideoPlayer_00024Holder_init(JNIEnv * env, jobject this, jobject nativeBridge,
-		jboolean seekAnyFrame)
-{
+		jboolean seekAnyFrame) {
 	return init(env, nativeBridge, seekAnyFrame);
 }
 
-void Java_com_mishiranu_dashchan_media_VideoPlayer_00024Holder_destroy(JNIEnv * env, jobject this, jlong pointer)
-{
+void Java_com_mishiranu_dashchan_media_VideoPlayer_00024Holder_destroy(JNIEnv * env, jobject this, jlong pointer) {
 	destroy(env, pointer);
 }
 
-jint Java_com_mishiranu_dashchan_media_VideoPlayer_00024Holder_getErrorCode(JNIEnv * env, jobject this, jlong pointer)
-{
+jint Java_com_mishiranu_dashchan_media_VideoPlayer_00024Holder_getErrorCode(JNIEnv * env, jobject this, jlong pointer) {
 	return getErrorCode(env, pointer);
 }
 
 void Java_com_mishiranu_dashchan_media_VideoPlayer_00024Holder_getSummary(JNIEnv * env, jobject this, jlong pointer,
-		jintArray output)
-{
+		jintArray output) {
 	getSummary(env, pointer, output);
 }
 
-jlong Java_com_mishiranu_dashchan_media_VideoPlayer_00024Holder_getDuration(JNIEnv * env, jobject this, jlong pointer)
-{
+jlong Java_com_mishiranu_dashchan_media_VideoPlayer_00024Holder_getDuration(JNIEnv * env, jobject this, jlong pointer) {
 	return getDuration(env, pointer);
 }
 
-jlong Java_com_mishiranu_dashchan_media_VideoPlayer_00024Holder_getPosition(JNIEnv * env, jobject this, jlong pointer)
-{
+jlong Java_com_mishiranu_dashchan_media_VideoPlayer_00024Holder_getPosition(JNIEnv * env, jobject this, jlong pointer) {
 	return getPosition(env, pointer);
 }
 
 void Java_com_mishiranu_dashchan_media_VideoPlayer_00024Holder_setPosition(JNIEnv * env, jobject this, jlong pointer,
-		jlong position)
-{
+		jlong position) {
 	setPosition(env, pointer, position);
 }
 
 void Java_com_mishiranu_dashchan_media_VideoPlayer_00024Holder_setPlaying(JNIEnv * env, jobject this, jlong pointer,
-		jboolean playing)
-{
+		jboolean playing) {
 	setPlaying(env, pointer, playing);
 }
 
 void Java_com_mishiranu_dashchan_media_VideoPlayer_00024Holder_setSurface(JNIEnv * env, jobject this, jlong pointer,
-		jobject surface)
-{
+		jobject surface) {
 	setSurface(env, pointer, surface);
 }
 
 jintArray Java_com_mishiranu_dashchan_media_VideoPlayer_00024Holder_getCurrentFrame(JNIEnv * env, jobject this,
-		jlong pointer)
-{
+		jlong pointer) {
 	return getCurrentFrame(env, pointer);
 }
 
 jobjectArray Java_com_mishiranu_dashchan_media_VideoPlayer_00024Holder_getTechnicalInfo(JNIEnv * env, jobject this,
-		jlong pointer)
-{
+		jlong pointer) {
 	return getTechnicalInfo(env, pointer);
 }
 
-jint JNI_OnLoad(JavaVM * javaVM, void * reserved)
-{
+jint JNI_OnLoad(JavaVM * javaVM, void * reserved) {
 	initLibs(javaVM);
 	return JNI_VERSION_1_6;
 }

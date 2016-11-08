@@ -20,27 +20,24 @@ import java.util.ArrayList;
 
 import android.widget.AbsListView;
 
-public class ScrollListenerComposite implements AbsListView.OnScrollListener
-{
+public class ScrollListenerComposite implements AbsListView.OnScrollListener {
 	private final ArrayList<AbsListView.OnScrollListener> mListeners = new ArrayList<>();
 
 	@Override
-	public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount)
-	{
-		for (AbsListView.OnScrollListener listener : mListeners)
-		{
+	public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+		for (AbsListView.OnScrollListener listener : mListeners) {
 			listener.onScroll(view, firstVisibleItem, visibleItemCount, totalItemCount);
 		}
 	}
 
 	@Override
-	public void onScrollStateChanged(AbsListView view, int scrollState)
-	{
-		for (AbsListView.OnScrollListener listener : mListeners) listener.onScrollStateChanged(view, scrollState);
+	public void onScrollStateChanged(AbsListView view, int scrollState) {
+		for (AbsListView.OnScrollListener listener : mListeners) {
+			listener.onScrollStateChanged(view, scrollState);
+		}
 	}
 
-	public void add(AbsListView.OnScrollListener listener)
-	{
+	public void add(AbsListView.OnScrollListener listener) {
 		mListeners.add(listener);
 	}
 }

@@ -29,13 +29,11 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.LocaleManager;
 import com.mishiranu.dashchan.preference.Preferences;
 
-public class GeneralFragment extends BasePreferenceFragment
-{
+public class GeneralFragment extends BasePreferenceFragment {
 	private ListPreference mLocalePreference;
 
 	@Override
-	public void onCreate(Bundle savedInstanceState)
-	{
+	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Collection<String> chanNames = ChanManager.getInstance().getAvailableChanNames();
 
@@ -45,8 +43,7 @@ public class GeneralFragment extends BasePreferenceFragment
 		PreferenceCategory navigationCategory = makeCategory(R.string.preference_category_navigation);
 		makeCheckBox(navigationCategory, true, Preferences.KEY_CLOSE_ON_BACK, Preferences.DEFAULT_CLOSE_ON_BACK,
 				R.string.preference_close_on_back, R.string.preference_close_on_back_summary);
-		if (chanNames.size() > 1)
-		{
+		if (chanNames.size() > 1) {
 			makeCheckBox(navigationCategory, true, Preferences.KEY_MERGE_CHANS, Preferences.DEFAULT_MERGE_CHANS,
 					R.string.preference_merge_chans, R.string.preference_merge_chans_summary);
 		}
@@ -70,11 +67,9 @@ public class GeneralFragment extends BasePreferenceFragment
 	}
 
 	@Override
-	public void onPreferenceAfterChange(Preference preference)
-	{
+	public void onPreferenceAfterChange(Preference preference) {
 		super.onPreferenceAfterChange(preference);
-		if (preference == mLocalePreference)
-		{
+		if (preference == mLocalePreference) {
 			LocaleManager.getInstance().apply(getActivity(), false);
 		}
 	}

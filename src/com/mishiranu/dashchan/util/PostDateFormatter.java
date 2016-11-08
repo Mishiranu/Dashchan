@@ -25,13 +25,11 @@ import android.content.Context;
 
 import chan.util.StringUtils;
 
-public class PostDateFormatter
-{
+public class PostDateFormatter {
 	private final String mInstance;
 	private final DateFormat mDateFormat, mDateFormatLong, mTimeFormat;
 
-	public PostDateFormatter(Context context)
-	{
+	public PostDateFormatter(Context context) {
 		SimpleDateFormat systemFormat = (SimpleDateFormat) android.text.format.DateFormat.getDateFormat(context);
 		String systemPattern = systemFormat.toPattern();
 		String dayFormat = systemPattern.contains("dd") ? "dd" : "d";
@@ -49,8 +47,7 @@ public class PostDateFormatter
 		mTimeFormat = new SimpleDateFormat(timeFormat, Locale.US);
 	}
 
-	public String format(long timestamp)
-	{
+	public String format(long timestamp) {
 		Calendar calendar = Calendar.getInstance();
 		int year = calendar.get(Calendar.YEAR);
 		calendar.setTimeInMillis(timestamp);
@@ -58,19 +55,18 @@ public class PostDateFormatter
 				+ " " + mTimeFormat.format(timestamp);
 	}
 
-	public Holder format(long timestamp, Holder holder)
-	{
-		if (holder != null && holder.instance.equals(mInstance)) return holder;
+	public Holder format(long timestamp, Holder holder) {
+		if (holder != null && holder.instance.equals(mInstance)) {
+			return holder;
+		}
 		return new Holder(format(timestamp), mInstance);
 	}
 
-	public static class Holder
-	{
+	public static class Holder {
 		public final String text;
 		private final String instance;
 
-		private Holder(String text, String instance)
-		{
+		private Holder(String text, String instance) {
 			this.text = text;
 			this.instance = instance;
 		}

@@ -34,59 +34,57 @@ import chan.annotation.Public;
 import com.mishiranu.dashchan.text.HtmlParser;
 
 @Public
-public class StringUtils
-{
-	public static String cutIfLongerToLine(String string, int maxLength, boolean dots)
-	{
+public class StringUtils {
+	public static String cutIfLongerToLine(String string, int maxLength, boolean dots) {
 		string = string.replaceAll("\r", "").trim();
 		int index = string.indexOf("\n");
-		if (index > maxLength / 3) return string.substring(0, index).trim();
-		if (string.length() > maxLength)
-		{
+		if (index > maxLength / 3) {
+			return string.substring(0, index).trim();
+		}
+		if (string.length() > maxLength) {
 			return string.substring(0, maxLength).trim().replaceAll(" +", " ") + (dots ? "\u2026" : "");
 		}
 		return string.replaceAll(" +", " ");
 	}
 
 	@Public
-	public static boolean isEmpty(CharSequence string)
-	{
+	public static boolean isEmpty(CharSequence string) {
 		return string == null || string.length() == 0;
 	}
 
 	@Public
-	public static boolean isEmptyOrWhitespace(CharSequence string)
-	{
+	public static boolean isEmptyOrWhitespace(CharSequence string) {
 		return string == null || string.toString().trim().length() == 0;
 	}
 
 	@Public
-	public static String emptyIfNull(CharSequence string)
-	{
+	public static String emptyIfNull(CharSequence string) {
 		return string == null ? "" : string.toString();
 	}
 
 	@Public
-	public static String nullIfEmpty(String string)
-	{
+	public static String nullIfEmpty(String string) {
 		return isEmpty(string) ? null : string;
 	}
 
 	@SuppressWarnings("StringEquality")
 	@Public
-	public static boolean equals(String first, String second)
-	{
+	public static boolean equals(String first, String second) {
 		return first == second || first != null && first.equals(second);
 	}
 
 	@SuppressWarnings("StringEquality")
-	public static int compare(String first, String second, boolean ignoreCase)
-	{
-		if (first == second) return 0;
-		if (first == null) return -1;
-		if (second == null) return 1;
-		if (ignoreCase)
-		{
+	public static int compare(String first, String second, boolean ignoreCase) {
+		if (first == second) {
+			return 0;
+		}
+		if (first == null) {
+			return -1;
+		}
+		if (second == null) {
+			return 1;
+		}
+		if (ignoreCase) {
 			first = first.toUpperCase(Locale.getDefault());
 			second = second.toUpperCase(Locale.getDefault());
 		}
@@ -94,60 +92,62 @@ public class StringUtils
 	}
 
 	@Public
-	public static int nearestIndexOf(String string, int start, String... what)
-	{
+	public static int nearestIndexOf(String string, int start, String... what) {
 		int index = -1;
-		for (String itWhat : what)
-		{
+		for (String itWhat : what) {
 			int itIndex = string.indexOf(itWhat, start);
-			if (itIndex >= 0 && (itIndex < index || index == -1)) index = itIndex;
+			if (itIndex >= 0 && (itIndex < index || index == -1)) {
+				index = itIndex;
+			}
 		}
 		return index;
 	}
 
 	@Public
-	public static int nearestIndexOf(String string, int start, char... what)
-	{
+	public static int nearestIndexOf(String string, int start, char... what) {
 		int index = -1;
-		for (char itWhat : what)
-		{
+		for (char itWhat : what) {
 			int itIndex = string.indexOf(itWhat, start);
-			if (itIndex >= 0 && (itIndex < index || index == -1)) index = itIndex;
+			if (itIndex >= 0 && (itIndex < index || index == -1)) {
+				index = itIndex;
+			}
 		}
 		return index;
 	}
 
 	@Extendable
-	public interface ReplacementCallback
-	{
+	public interface ReplacementCallback {
 		@Extendable
 		public String getReplacement(Matcher matcher);
 	}
 
 	@Public
-	public static String replaceAll(String string, String regularExpression, ReplacementCallback replacementCallback)
-	{
+	public static String replaceAll(String string, String regularExpression, ReplacementCallback replacementCallback) {
 		return replaceAll(string, Pattern.compile(regularExpression), replacementCallback);
 	}
 
 	@Public
-	public static String replaceAll(String string, Pattern pattern, ReplacementCallback replacementCallback)
-	{
-		if (string != null)
-		{
-			if (pattern == null) throw new NullPointerException("pattern is null");
-			if (replacementCallback == null) throw new NullPointerException("replacementCallback is null");
+	public static String replaceAll(String string, Pattern pattern, ReplacementCallback replacementCallback) {
+		if (string != null) {
+			if (pattern == null) {
+				throw new NullPointerException("pattern is null");
+			}
+			if (replacementCallback == null) {
+				throw new NullPointerException("replacementCallback is null");
+			}
 			StringBuffer buffer = null;
 			Matcher matcher = pattern.matcher(string);
-			while (matcher.find())
-			{
-				if (buffer == null) buffer = new StringBuffer();
+			while (matcher.find()) {
+				if (buffer == null) {
+					buffer = new StringBuffer();
+				}
 				String replacement = replacementCallback.getReplacement(matcher);
-				if (replacement != null) replacement = Matcher.quoteReplacement(replacement);
+				if (replacement != null) {
+					replacement = Matcher.quoteReplacement(replacement);
+				}
 				matcher.appendReplacement(buffer, replacement);
 			}
-			if (buffer != null)
-			{
+			if (buffer != null) {
 				matcher.appendTail(buffer);
 				string = buffer.toString();
 			}
@@ -155,55 +155,55 @@ public class StringUtils
 		return string;
 	}
 
-	public static SpannableStringBuilder appendSpan(SpannableStringBuilder builder, CharSequence text, Object... spans)
-	{
+	public static SpannableStringBuilder appendSpan(SpannableStringBuilder builder, CharSequence text,
+			Object... spans) {
 		int start = builder.length();
 		builder.append(text);
 		int end = builder.length();
-		for (Object what : spans) builder.setSpan(what, start, end, SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE);
+		for (Object what : spans) {
+			builder.setSpan(what, start, end, SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE);
+		}
 		return builder;
 	}
 
-	public static String removeSingleDot(String string)
-	{
-		if (string == null) return null;
-		if (!string.endsWith(".")) return string;
+	public static String removeSingleDot(String string) {
+		if (string == null) {
+			return null;
+		}
+		if (!string.endsWith(".")) {
+			return string;
+		}
 		String temp = string.replace(".", "");
-		if (string.length() - temp.length() == 1) string = temp;
+		if (string.length() - temp.length() == 1) {
+			string = temp;
+		}
 		return string;
 	}
 
-	public static String escapeFile(String string, boolean isPath)
-	{
+	public static String escapeFile(String string, boolean isPath) {
 		return string != null ? string.replaceAll(isPath ? "[:\\\\*?|<>]" : "[:\\\\/*?|<>]", "_") : null;
 	}
 
-	private static int findLinkEnd(String string, int start)
-	{
+	private static int findLinkEnd(String string, int start) {
 		int end = -1;
 		int braces = 0;
 		boolean validEndReached = false;
 		int length = string.length();
-		CYCLE: for (int i = start;; i++)
-		{
+		CYCLE: for (int i = start;; i++) {
 			boolean prevValidEndReached = validEndReached;
 			validEndReached = false;
 			char c = i < length ? string.charAt(i) : '\0';
-			switch (c)
-			{
+			switch (c) {
 				case '(':
 				case '[':
-				case '{':
-				{
+				case '{': {
 					braces++;
 					break;
 				}
 				case ')':
 				case ']':
-				case '}':
-				{
-					if (--braces < 0)
-					{
+				case '}': {
+					if (--braces < 0) {
 						end = i;
 						break CYCLE;
 					}
@@ -215,93 +215,84 @@ public class StringUtils
 				case '\t':
 				case ' ':
 				case '<':
-				case '"':
-				{
+				case '"': {
 					end = prevValidEndReached ? i - 1 : i;
 					break CYCLE;
 				}
 				case '.':
 				case ',':
 				case ':':
-				case ';':
-				{
+				case ';': {
 					validEndReached = true;
 					break;
 				}
 			}
-			if (c == '\0') break;
+			if (c == '\0') {
+				break;
+			}
 		}
 		return end;
 	}
 
 	@Public
-	public static String linkify(String string)
-	{
-		if (string != null)
-		{
+	public static String linkify(String string) {
+		if (string != null) {
 			ArrayList<int[]> candidates = null;
 			int index = -1;
 			int length = string.length();
 			boolean insideLink = false;
-			while (true)
-			{
-				if (insideLink)
-				{
+			while (true) {
+				if (insideLink) {
 					index = string.indexOf("</a>", index + 1);
-					if (index == -1) break;
+					if (index == -1) {
+						break;
+					}
 					insideLink = false;
 					continue;
-				}
-				else
-				{
+				} else {
 					int httpIndex = string.indexOf("http", index + 1);
-					if (httpIndex == -1) break;
+					if (httpIndex == -1) {
+						break;
+					}
 					int openLinkIndex = string.indexOf("<a ", index + 1);
-					if (openLinkIndex != -1 && openLinkIndex < httpIndex)
-					{
+					if (openLinkIndex != -1 && openLinkIndex < httpIndex) {
 						insideLink = true;
 						index = openLinkIndex;
 						continue;
 					}
 					index = httpIndex;
 				}
-				if (index + 8 < length)
-				{
+				if (index + 8 < length) {
 					boolean https = string.charAt(index + 4) == 's';
-					if ("://".equals(string.substring(index + 4 + (https ? 1 : 0), index + 7 + (https ? 1 : 0))))
-					{
+					if ("://".equals(string.substring(index + 4 + (https ? 1 : 0), index + 7 + (https ? 1 : 0)))) {
 						// http:// or https:// reached
-						if (index >= 6)
-						{
+						if (index >= 6) {
 							String before = string.substring(index - 6, index);
 							if (before.contains("href=")) continue; // Ignore <a href="https://..."> reached
 						}
 						int start = index + 7 + (https ? 1 : 0);
 						int end = findLinkEnd(string, start);
-						if (end > start)
-						{
-							if (end + 4 <= length)
-							{
+						if (end > start) {
+							if (end + 4 <= length) {
 								String after = string.substring(end, end + 4);
-								if ("</a>".equals(after))
-								{
+								if ("</a>".equals(after)) {
 									index = end + 3;
 									continue; // Ignore <a ...>https://...</a>
 								}
 							}
-							if (candidates == null) candidates = new ArrayList<>();
+							if (candidates == null) {
+								candidates = new ArrayList<>();
+							}
 							candidates.add(new int[] {index, end});
 							index = end - 1;
 						}
 					}
 				}
 			}
-			if (candidates != null)
-			{
+			if (candidates != null) {
 				StringBuilder builder = new StringBuilder();
 				int[] prev = null;
-				for (int[] links : candidates)
-				{
+				for (int[] links : candidates) {
 					int from = prev != null ? prev[1] : 0;
 					builder.append(string, from, links[0]);
 					builder.append("<a href=\"");
@@ -318,109 +309,101 @@ public class StringUtils
 		return string;
 	}
 
-	public static String fixParsedUriString(String uriString)
-	{
-		if (uriString != null)
-		{
+	public static String fixParsedUriString(String uriString) {
+		if (uriString != null) {
 			int end = findLinkEnd(uriString, 0);
-			if (end >= 0) uriString = uriString.substring(0, end);
+			if (end >= 0) {
+				uriString = uriString.substring(0, end);
+			}
 		}
 		return uriString;
 	}
 
-	public static void copyToClipboard(Context context, String string)
-	{
+	public static void copyToClipboard(Context context, String string) {
 		ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
 		clipboard.setPrimaryClip(ClipData.newPlainText(null, string));
 	}
 
 	private static final Pattern PATTERN_BOARD_NAME = Pattern.compile("/?([\\w_-]+)/?");
 
-	public static String validateBoardName(String boardName)
-	{
-		if (boardName != null)
-		{
+	public static String validateBoardName(String boardName) {
+		if (boardName != null) {
 			Matcher matcher = PATTERN_BOARD_NAME.matcher(boardName);
-			if (matcher.matches()) return matcher.group(1);
+			if (matcher.matches()) {
+				return matcher.group(1);
+			}
 		}
 		return null;
 	}
 
-	public static String getFileExtension(String path)
-	{
-		if (path != null)
-		{
+	public static String getFileExtension(String path) {
+		if (path != null) {
 			int index1 = path.lastIndexOf('/');
 			int index2 = path.lastIndexOf('.');
-			if (index1 > index2 || index2 < 0) return null;
+			if (index1 > index2 || index2 < 0) {
+				return null;
+			}
 			return path.substring(index2 + 1).toLowerCase(Locale.US);
 		}
 		return null;
 	}
 
-	public static String formatBoardTitle(String chanName, String boardName, String title)
-	{
+	public static String formatBoardTitle(String chanName, String boardName, String title) {
 		return '/' + (isEmpty(boardName) ? chanName : boardName) + (isEmpty(title) ? '/'
 				: "/ — " + title);
 	}
 
-	public static String formatThreadTitle(String chanName, String boardName, String threadNumber)
-	{
+	public static String formatThreadTitle(String chanName, String boardName, String threadNumber) {
 		return '/' + (isEmpty(boardName) ? chanName : boardName) + '/' + threadNumber;
 	}
 
 	@Public
-	public static String clearHtml(String string)
-	{
+	public static String clearHtml(String string) {
 		return HtmlParser.clear(string);
 	}
 
 	@Public
-	public static String unescapeHtml(String string)
-	{
-		if (StringUtils.isEmpty(string)) return "";
+	public static String unescapeHtml(String string) {
+		if (StringUtils.isEmpty(string)) {
+			return "";
+		}
 		StringBuilder builder = new StringBuilder(string.length());
 		int index = 0;
-		while (index < string.length())
-		{
+		while (index < string.length()) {
 			int start = string.indexOf('&', index);
 			int end = start >= index ? string.indexOf(';', start) : -1;
-			if (start >= index && end > start)
-			{
+			if (start >= index && end > start) {
 				builder.append(string, index, start);
 				int realStart = string.lastIndexOf('&', end);
-				if (realStart > start)
-				{
+				if (realStart > start) {
 					builder.append(string, start, realStart);
 					start = realStart;
 				}
 				int value = -1;
 				String entity = string.substring(start + 1, end);
-				if (entity.startsWith("#") && !entity.contains("+") && !entity.contains("-"))
-				{
-					try
-					{
-						if (entity.startsWith("#x") || entity.startsWith("#X"))
-						{
+				if (entity.startsWith("#") && !entity.contains("+") && !entity.contains("-")) {
+					try {
+						if (entity.startsWith("#x") || entity.startsWith("#X")) {
 							value = Integer.parseInt(entity.substring(2), 16);
+						} else {
+							value = Integer.parseInt(entity.substring(1));
 						}
-						else value = Integer.parseInt(entity.substring(1));
+					} catch (NumberFormatException e) {
+						// Ignore
 					}
-					catch (NumberFormatException e)
-					{
-
-					}
-				}
-				else
-				{
+				} else {
 					value = HtmlParser.SCHEMA.getEntity(entity);
-					if (value == 0) value = -1;
+					if (value == 0) {
+						value = -1;
+					}
 				}
-				if (value >= 0) builder.append((char) value); else builder.append(string, start, end + 1);
+				if (value >= 0) {
+					builder.append((char) value);
+				} else {
+					builder.append(string, start, end + 1);
+				}
 				index = end + 1;
-			}
-			else
-			{
+			} else {
 				builder.append(string, index, string.length());
 				break;
 			}
@@ -430,30 +413,25 @@ public class StringUtils
 
 	private static final MessageDigest DIGEST_SHA_256;
 
-	static
-	{
-		try
-		{
+	static {
+		try {
 			DIGEST_SHA_256 = MessageDigest.getInstance("SHA-256");
-		}
-		catch (NoSuchAlgorithmException e)
-		{
+		} catch (NoSuchAlgorithmException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	public static String calculateSha256(String string)
-	{
+	public static String calculateSha256(String string) {
 		byte[] bytes;
-		synchronized (DIGEST_SHA_256)
-		{
+		synchronized (DIGEST_SHA_256) {
 			DIGEST_SHA_256.reset();
 			bytes = DIGEST_SHA_256.digest(emptyIfNull(string).getBytes());
 		}
 		StringBuilder hashBuilder = new StringBuilder(bytes.length * 2);
-		for (byte b : bytes)
-		{
-			if ((b & 0xf0) == 0) hashBuilder.append(0);
+		for (byte b : bytes) {
+			if ((b & 0xf0) == 0) {
+				hashBuilder.append(0);
+			}
 			hashBuilder.append(Integer.toString(b & 0xf, 16));
 		}
 		return hashBuilder.toString();

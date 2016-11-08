@@ -42,30 +42,25 @@ import chan.util.CommonUtils;
 
 import com.mishiranu.dashchan.C;
 
-public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object>
-{
+public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object> {
 	private final Context mContext;
 	private final Callback mCallback;
 
-	public static class UpdateDataMap implements Serializable
-	{
+	public static class UpdateDataMap implements Serializable {
 		private static final long serialVersionUID = 1L;
 
 		private final HashMap<String, ArrayList<ReadUpdateTask.UpdateItem>> mMap = new HashMap<>();
 
-		public ArrayList<ReadUpdateTask.UpdateItem> get(String extensionName)
-		{
+		public ArrayList<ReadUpdateTask.UpdateItem> get(String extensionName) {
 			return mMap.get(extensionName);
 		}
 
-		public Iterable<String> extensionNames()
-		{
+		public Iterable<String> extensionNames() {
 			return mMap.keySet();
 		}
 	}
 
-	public static class UpdateItem implements Serializable
-	{
+	public static class UpdateItem implements Serializable {
 		private static final long serialVersionUID = 1L;
 
 		public final String title;
@@ -78,8 +73,7 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object>
 		public final boolean ignoreVersion;
 
 		public UpdateItem(String title, String name, int code, int version, long length, String source,
-				boolean ignoreVersion)
-		{
+				boolean ignoreVersion) {
 			this.title = title;
 			this.name = name;
 			this.code = code;
@@ -91,8 +85,7 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object>
 		}
 
 		public UpdateItem(String title, String name, int code, int minVersion, int maxVersion, long length,
-				String source)
-		{
+				String source) {
 			this.title = title;
 			this.name = name;
 			this.code = code;
@@ -104,51 +97,53 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object>
 		}
 	}
 
-	public interface Callback
-	{
+	public interface Callback {
 		public void onReadUpdateComplete(UpdateDataMap updateDataMap);
 	}
 
-	public ReadUpdateTask(Context context, Callback callback)
-	{
+	public ReadUpdateTask(Context context, Callback callback) {
 		mContext = context.getApplicationContext();
 		mCallback = callback;
 	}
 
-	public static File getDownloadDirectory(Context context)
-	{
+	public static File getDownloadDirectory(Context context) {
 		String dirType = "updates";
 		File directory = context.getExternalFilesDir(dirType);
-		if (directory != null) directory.mkdirs();
+		if (directory != null) {
+			directory.mkdirs();
+		}
 		return directory;
 	}
 
-	private static Uri normalizeUri(Uri uri, Uri base)
-	{
+	private static Uri normalizeUri(Uri uri, Uri base) {
 		boolean noScheme = uri.getScheme() == null;
 		boolean noHost = uri.getHost() == null;
-		if (noScheme || noHost)
-		{
+		if (noScheme || noHost) {
 			Uri.Builder redirectUriBuilder = uri.buildUpon();
-			if (noScheme) redirectUriBuilder.scheme(base.getScheme());
-			if (noHost) redirectUriBuilder.authority(base.getHost());
+			if (noScheme) {
+				redirectUriBuilder.scheme(base.getScheme());
+			}
+			if (noHost) {
+				redirectUriBuilder.authority(base.getHost());
+			}
 			uri = redirectUriBuilder.build();
 		}
 		return uri;
 	}
 
 	@Override
-	protected Object doInBackground(HttpHolder holder, Void... params)
-	{
+	protected Object doInBackground(HttpHolder holder, Void... params) {
 		long timeThreshold = System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000; // One week left
 		File directory = getDownloadDirectory(mContext);
-		if (directory == null) return null;
+		if (directory == null) {
+			return null;
+		}
 		File[] files = directory.listFiles();
-		if (files != null)
-		{
-			for (File file : files)
-			{
-				if (file.lastModified() < timeThreshold) file.delete();
+		if (files != null) {
+			for (File file : files) {
+				if (file.lastModified() < timeThreshold) {
+					file.delete();
+				}
 			}
 		}
 		ChanLocator locator = ChanLocator.getDefault();
@@ -158,14 +153,11 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object>
 		extensionNames.add(ChanManager.EXTENSION_NAME_CLIENT);
 		targets.put(appUri, extensionNames);
 		Collection<ChanManager.ExtensionItem> extensionItems = ChanManager.getInstance().getExtensionItems();
-		for (ChanManager.ExtensionItem extensionItem : extensionItems)
-		{
-			if (extensionItem.updateUri != null)
-			{
+		for (ChanManager.ExtensionItem extensionItem : extensionItems) {
+			if (extensionItem.updateUri != null) {
 				Uri uri = locator.setScheme(extensionItem.updateUri);
 				extensionNames = targets.get(uri);
-				if (extensionNames == null)
-				{
+				if (extensionNames == null) {
 					extensionNames = new ArrayList<>();
 					targets.put(uri, extensionNames);
 				}
@@ -174,14 +166,11 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object>
 		}
 		String appVersionName;
 		int appVersionCode;
-		try
-		{
+		try {
 			PackageInfo packageInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
 			appVersionName = packageInfo.versionName;
 			appVersionCode = packageInfo.versionCode;
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 		UpdateDataMap updateDataMap = new UpdateDataMap();
@@ -189,8 +178,7 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object>
 		updateItems.add(new UpdateItem(null, appVersionName, appVersionCode, ChanManager.MIN_VERSION,
 				ChanManager.MAX_VERSION, -1, null));
 		updateDataMap.mMap.put(ChanManager.EXTENSION_NAME_CLIENT, updateItems);
-		for (ChanManager.ExtensionItem extensionItem : extensionItems)
-		{
+		for (ChanManager.ExtensionItem extensionItem : extensionItems) {
 			updateItems = new ArrayList<>();
 			updateItems.add(new UpdateItem(null, extensionItem.packageInfo.versionName,
 					extensionItem.packageInfo.versionCode, extensionItem.version, -1, null,
@@ -198,57 +186,54 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object>
 			updateDataMap.mMap.put(extensionItem.extensionName, updateItems);
 		}
 		Thread thread = Thread.currentThread();
-		if (thread.isInterrupted()) return null;
-		for (LinkedHashMap.Entry<Uri, ArrayList<String>> target : targets.entrySet())
-		{
-			try
-			{
+		if (thread.isInterrupted()) {
+			return null;
+		}
+		for (LinkedHashMap.Entry<Uri, ArrayList<String>> target : targets.entrySet()) {
+			try {
 				Uri uri = target.getKey();
 				int redirects = 0;
-				while (redirects++ < 5)
-				{
+				while (redirects++ < 5) {
 					JSONObject jsonObject = new HttpRequest(uri, holder).read().getJsonObject();
-					if (jsonObject != null)
-					{
+					if (jsonObject != null) {
 						String redirect = CommonUtils.optJsonString(jsonObject, "redirect");
-						if (redirect != null)
-						{
+						if (redirect != null) {
 							uri = normalizeUri(Uri.parse(redirect), uri);
 							continue;
 						}
 						Iterator<String> keys = jsonObject.keys();
-						while (keys.hasNext())
-						{
+						while (keys.hasNext()) {
 							String extensionName = keys.next();
-							if (target.getValue().contains(extensionName))
-							{
+							if (target.getValue().contains(extensionName)) {
 								updateItems = updateDataMap.get(extensionName);
 								boolean ignoreVersion = updateItems.get(0).ignoreVersion;
 								JSONArray jsonArray = jsonObject.getJSONArray(extensionName);
-								for (int i = 0; i < jsonArray.length(); i++)
-								{
+								for (int i = 0; i < jsonArray.length(); i++) {
 									JSONObject chanObject = jsonArray.getJSONObject(i);
 									int minSdk = chanObject.optInt("minSdk");
-									if (minSdk > Build.VERSION.SDK_INT) continue;
+									if (minSdk > Build.VERSION.SDK_INT) {
+										continue;
+									}
 									String title = CommonUtils.getJsonString(chanObject, "title");
 									String name = CommonUtils.getJsonString(chanObject, "name");
 									int code = chanObject.getInt("code");
-									if (code < updateItems.get(0).code) continue;
+									if (code < updateItems.get(0).code) {
+										continue;
+									}
 									long length = chanObject.getLong("length");
 									String source = CommonUtils.getJsonString(chanObject, "source");
-									if (source == null) break;
+									if (source == null) {
+										break;
+									}
 									Uri sourceUri = normalizeUri(Uri.parse(source), uri);
 									source = sourceUri.toString();
 									UpdateItem updateItem;
-									if (ChanManager.EXTENSION_NAME_CLIENT.equals(extensionName))
-									{
+									if (ChanManager.EXTENSION_NAME_CLIENT.equals(extensionName)) {
 										int minVersion = chanObject.getInt("minVersion");
 										int maxVersion = chanObject.getInt("maxVersion");
 										updateItem = new UpdateItem(title, name, code,
 												minVersion, maxVersion, length, source);
-									}
-									else
-									{
+									} else {
 										int version = chanObject.optInt("version");
 										updateItem = new UpdateItem(title, name, code, version, length,
 												source, ignoreVersion);
@@ -260,19 +245,18 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object>
 					}
 					break;
 				}
+			} catch (HttpException | JSONException e) {
+				// Ignore
 			}
-			catch (HttpException | JSONException e)
-			{
-
+			if (thread.isInterrupted()) {
+				return null;
 			}
-			if (thread.isInterrupted()) return null;
 		}
 		return updateDataMap;
 	}
 
 	@Override
-	protected void onPostExecute(Object result)
-	{
+	protected void onPostExecute(Object result) {
 		mCallback.onReadUpdateComplete((UpdateDataMap) result);
 	}
 }

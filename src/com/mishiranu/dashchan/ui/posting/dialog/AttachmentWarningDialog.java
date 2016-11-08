@@ -24,46 +24,43 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.media.JpegData;
 import com.mishiranu.dashchan.ui.posting.AttachmentHolder;
 
-public class AttachmentWarningDialog extends PostingDialog
-{
+public class AttachmentWarningDialog extends PostingDialog {
 	public static final String TAG = AttachmentWarningDialog.class.getName();
 
 	private static final String EXTRA_ATTACHMENT_INDEX = "attachmentIndex";
 
-	public AttachmentWarningDialog()
-	{
+	public AttachmentWarningDialog() {}
 
-	}
-
-	public AttachmentWarningDialog(int attachmentIndex)
-	{
+	public AttachmentWarningDialog(int attachmentIndex) {
 		Bundle args = new Bundle();
 		args.putInt(EXTRA_ATTACHMENT_INDEX, attachmentIndex);
 		setArguments(args);
 	}
 
 	@Override
-	public Dialog onCreateDialog(Bundle savedInstanceState)
-	{
+	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		AttachmentHolder holder = getAttachmentHolder(EXTRA_ATTACHMENT_INDEX);
 		JpegData jpegData = holder.fileHolder.getJpegData();
 		boolean hasExif = jpegData != null && jpegData.hasExif;
 		int rotation = holder.fileHolder.getRotation();
 		String geolocation = jpegData != null ? jpegData.getGeolocation(false) : null;
 		StringBuilder builder = new StringBuilder();
-		if (hasExif)
-		{
-			if (builder.length() > 0) builder.append(", ");
+		if (hasExif) {
+			if (builder.length() > 0) {
+				builder.append(", ");
+			}
 			builder.append(getString(R.string.message_image_warning_exif));
 		}
-		if (rotation != 0)
-		{
-			if (builder.length() > 0) builder.append(", ");
+		if (rotation != 0) {
+			if (builder.length() > 0) {
+				builder.append(", ");
+			}
 			builder.append(getString(R.string.message_image_warning_orientation));
 		}
-		if (geolocation != null)
-		{
-			if (builder.length() > 0) builder.append(", ");
+		if (geolocation != null) {
+			if (builder.length() > 0) {
+				builder.append(", ");
+			}
 			builder.append(getString(R.string.message_image_warning_geolocation));
 		}
 		return new AlertDialog.Builder(getActivity()).setTitle(R.string.text_warning)

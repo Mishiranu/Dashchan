@@ -23,26 +23,21 @@ import android.widget.EditText;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.util.ResourceUtils;
 
-public class ErrorEditTextSetter
-{
+public class ErrorEditTextSetter {
 	private final EditText mEditText;
 	private boolean mError = false;
 
 	private Drawable mBackgroundNormal;
 	private Drawable mBackgroundError;
 
-	public ErrorEditTextSetter(EditText editText)
-	{
+	public ErrorEditTextSetter(EditText editText) {
 		mEditText = editText;
 	}
 
-	public void setError(boolean error)
-	{
-		if (mError != error)
-		{
+	public void setError(boolean error) {
+		if (mError != error) {
 			mError = error;
-			if (mBackgroundNormal == null)
-			{
+			if (mBackgroundNormal == null) {
 				mBackgroundNormal = ResourceUtils.getDrawable(mEditText.getContext(),
 						android.R.attr.editTextBackground, 0);
 				mBackgroundError = ResourceUtils.getDrawable(mEditText.getContext(),
