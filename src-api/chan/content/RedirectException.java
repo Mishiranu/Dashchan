@@ -24,23 +24,23 @@ import chan.annotation.Public;
 public final class RedirectException extends Exception {
 	private static final long serialVersionUID = 1L;
 
-	private final Uri mUri;
-	private final String mBoardName;
-	private final String mThreadNumber;
-	private final String mPostNumber;
+	private final Uri uri;
+	private final String boardName;
+	private final String threadNumber;
+	private final String postNumber;
 
 	private RedirectException(String boardName, String threadNumber, String postNumber) {
-		mUri = null;
-		mBoardName = boardName;
-		mThreadNumber = threadNumber;
-		mPostNumber = postNumber;
+		this.uri = null;
+		this.boardName = boardName;
+		this.threadNumber = threadNumber;
+		this.postNumber = postNumber;
 	}
 
 	private RedirectException(Uri uri) {
-		mUri = uri;
-		mBoardName = null;
-		mThreadNumber = null;
-		mPostNumber = null;
+		this.uri = uri;
+		this.boardName = null;
+		this.threadNumber = null;
+		this.postNumber = null;
 	}
 
 	@Public
@@ -79,18 +79,18 @@ public final class RedirectException extends Exception {
 	}
 
 	public final Target obtainTarget(String chanName) throws ExtensionException {
-		if (mUri != null) {
-			chanName = ChanManager.getInstance().getChanNameByHost(mUri.getHost());
+		if (uri != null) {
+			chanName = ChanManager.getInstance().getChanNameByHost(uri.getHost());
 			if (chanName != null) {
 				ChanLocator locator = ChanLocator.get(chanName);
 				try {
-					if (locator.isBoardUri(mUri)) {
-						String boardName = locator.getBoardName(mUri);
+					if (locator.isBoardUri(uri)) {
+						String boardName = locator.getBoardName(uri);
 						return new Target(chanName, boardName, null, null);
-					} else if (locator.isThreadUri(mUri)) {
-						String boardName = locator.getBoardName(mUri);
-						String threadNumber = locator.getThreadNumber(mUri);
-						String postNumber = locator.getPostNumber(mUri);
+					} else if (locator.isThreadUri(uri)) {
+						String boardName = locator.getBoardName(uri);
+						String threadNumber = locator.getThreadNumber(uri);
+						String postNumber = locator.getPostNumber(uri);
 						return new Target(chanName, boardName, threadNumber, postNumber);
 					} else {
 						return null;
@@ -102,7 +102,7 @@ public final class RedirectException extends Exception {
 				return null;
 			}
 		} else {
-			return new Target(chanName, mBoardName, mThreadNumber, mPostNumber);
+			return new Target(chanName, boardName, threadNumber, postNumber);
 		}
 	}
 }

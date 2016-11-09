@@ -22,10 +22,10 @@ import android.widget.BaseAdapter;
 public class BaseAdapterNotifier implements Runnable {
 	private static final Handler HANDLER = new Handler();
 
-	private final BaseAdapter mAdapter;
+	private final BaseAdapter adapter;
 
 	public BaseAdapterNotifier(BaseAdapter adapter) {
-		mAdapter = adapter;
+		this.adapter = adapter;
 	}
 
 	public void postNotifyDataSetChanged() {
@@ -35,6 +35,6 @@ public class BaseAdapterNotifier implements Runnable {
 
 	@Override
 	public void run() {
-		mAdapter.notifyDataSetChanged();
+		adapter.notifyDataSetChanged();
 	}
 }

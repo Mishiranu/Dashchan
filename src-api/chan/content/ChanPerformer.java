@@ -53,7 +53,7 @@ import com.mishiranu.dashchan.util.GraphicsUtils;
 
 @Extendable
 public class ChanPerformer implements ChanManager.Linked {
-	private String mChanName;
+	private String chanName;
 
 	public static final ChanManager.Initializer INITIALIZER = new ChanManager.Initializer();
 
@@ -63,12 +63,12 @@ public class ChanPerformer implements ChanManager.Linked {
 	}
 
 	ChanPerformer(boolean useInitializer) {
-		mChanName = useInitializer ? INITIALIZER.consume().chanName : null;
+		chanName = useInitializer ? INITIALIZER.consume().chanName : null;
 	}
 
 	@Override
 	public final String getChanName() {
-		return mChanName;
+		return chanName;
 	}
 
 	@Override
@@ -698,16 +698,16 @@ public class ChanPerformer implements ChanManager.Linked {
 		@Public public static final String INPUT = "input";
 		@Public public static final String API_KEY = "api_key";
 
-		private final HashMap<String, String> mData = new HashMap<>();
+		private final HashMap<String, String> data = new HashMap<>();
 
 		@Public
 		public void put(String key, String value) {
-			mData.put(key, value);
+			data.put(key, value);
 		}
 
 		@Public
 		public String get(String key) {
-			return mData.get(key);
+			return data.get(key);
 		}
 	}
 
@@ -751,7 +751,7 @@ public class ChanPerformer implements ChanManager.Linked {
 
 			public MultipartEntity.OpenableOutputListener listener;
 
-			private ChanFileOpenable mOpenable;
+			private ChanFileOpenable openable;
 
 			public Attachment(FileHolder fileHolder, String rating, boolean optionUniqueHash,
 					boolean optionRemoveMetadata, boolean optionRemoveFileName, boolean optionSpoiler,
@@ -766,8 +766,8 @@ public class ChanPerformer implements ChanManager.Linked {
 			}
 
 			private void ensureOpenable() {
-				if (mOpenable == null) {
-					mOpenable = new ChanFileOpenable(fileHolder, optionUniqueHash, optionRemoveMetadata,
+				if (openable == null) {
+					openable = new ChanFileOpenable(fileHolder, optionUniqueHash, optionRemoveMetadata,
 							optionRemoveFileName, reencoding);
 				}
 			}
@@ -775,31 +775,31 @@ public class ChanPerformer implements ChanManager.Linked {
 			@Public
 			public void addToEntity(MultipartEntity entity, String name) {
 				ensureOpenable();
-				entity.add(name, mOpenable, listener);
+				entity.add(name, openable, listener);
 			}
 
 			@Public
 			public String getFileName() {
 				ensureOpenable();
-				return mOpenable.getFileName();
+				return openable.getFileName();
 			}
 
 			@Public
 			public String getMimeType() {
 				ensureOpenable();
-				return mOpenable.getMimeType();
+				return openable.getMimeType();
 			}
 
 			@Public
 			public InputStream openInputSteam() throws IOException {
 				ensureOpenable();
-				return mOpenable.openInputStream();
+				return openable.openInputStream();
 			}
 
 			@Public
 			public long getSize() {
 				ensureOpenable();
-				return mOpenable.getSize();
+				return openable.getSize();
 			}
 
 			@Override
@@ -1031,16 +1031,16 @@ public class ChanPerformer implements ChanManager.Linked {
 	}
 
 	public static final class Safe {
-		private final ChanPerformer mPerformer;
+		private final ChanPerformer performer;
 
 		private Safe(ChanPerformer performer) {
-			mPerformer = performer;
+			this.performer = performer;
 		}
 
 		public ReadThreadsResult onReadThreads(ReadThreadsData data) throws ExtensionException, HttpException,
 				InvalidResponseException, RedirectException {
 			try {
-				return mPerformer.onReadThreads(data);
+				return performer.onReadThreads(data);
 			} catch (LinkageError | RuntimeException e) {
 				throw new ExtensionException(e);
 			}
@@ -1049,7 +1049,7 @@ public class ChanPerformer implements ChanManager.Linked {
 		public ReadPostsResult onReadPosts(ReadPostsData data) throws ExtensionException, HttpException,
 				InvalidResponseException, RedirectException, ThreadRedirectException {
 			try {
-				return mPerformer.onReadPosts(data);
+				return performer.onReadPosts(data);
 			} catch (LinkageError | RuntimeException e) {
 				throw new ExtensionException(e);
 			}
@@ -1058,7 +1058,7 @@ public class ChanPerformer implements ChanManager.Linked {
 		public ReadSinglePostResult onReadSinglePost(ReadSinglePostData data) throws ExtensionException, HttpException,
 				InvalidResponseException {
 			try {
-				return mPerformer.onReadSinglePost(data);
+				return performer.onReadSinglePost(data);
 			} catch (LinkageError | RuntimeException e) {
 				throw new ExtensionException(e);
 			}
@@ -1067,7 +1067,7 @@ public class ChanPerformer implements ChanManager.Linked {
 		public ReadSearchPostsResult onReadSearchPosts(ReadSearchPostsData data) throws ExtensionException,
 				HttpException, InvalidResponseException {
 			try {
-				return mPerformer.onReadSearchPosts(data);
+				return performer.onReadSearchPosts(data);
 			} catch (LinkageError | RuntimeException e) {
 				throw new ExtensionException(e);
 			}
@@ -1076,7 +1076,7 @@ public class ChanPerformer implements ChanManager.Linked {
 		public ReadBoardsResult onReadBoards(ReadBoardsData data) throws ExtensionException, HttpException,
 				InvalidResponseException {
 			try {
-				return mPerformer.onReadBoards(data);
+				return performer.onReadBoards(data);
 			} catch (LinkageError | RuntimeException e) {
 				throw new ExtensionException(e);
 			}
@@ -1085,7 +1085,7 @@ public class ChanPerformer implements ChanManager.Linked {
 		public ReadUserBoardsResult onReadUserBoards(ReadUserBoardsData data) throws ExtensionException, HttpException,
 				InvalidResponseException {
 			try {
-				return mPerformer.onReadUserBoards(data);
+				return performer.onReadUserBoards(data);
 			} catch (LinkageError | RuntimeException e) {
 				throw new ExtensionException(e);
 			}
@@ -1094,7 +1094,7 @@ public class ChanPerformer implements ChanManager.Linked {
 		public ReadThreadSummariesResult onReadThreadSummaries(ReadThreadSummariesData data) throws ExtensionException,
 				HttpException, InvalidResponseException {
 			try {
-				return mPerformer.onReadThreadSummaries(data);
+				return performer.onReadThreadSummaries(data);
 			} catch (LinkageError | RuntimeException e) {
 				throw new ExtensionException(e);
 			}
@@ -1103,7 +1103,7 @@ public class ChanPerformer implements ChanManager.Linked {
 		public ReadPostsCountResult onReadPostsCount(ReadPostsCountData data) throws ExtensionException, HttpException,
 				InvalidResponseException {
 			try {
-				return mPerformer.onReadPostsCount(data);
+				return performer.onReadPostsCount(data);
 			} catch (LinkageError | RuntimeException e) {
 				throw new ExtensionException(e);
 			}
@@ -1112,7 +1112,7 @@ public class ChanPerformer implements ChanManager.Linked {
 		public ReadContentResult onReadContent(ReadContentData data) throws ExtensionException, HttpException,
 				InvalidResponseException {
 			try {
-				return mPerformer.onReadContent(data);
+				return performer.onReadContent(data);
 			} catch (LinkageError | RuntimeException e) {
 				throw new ExtensionException(e);
 			}
@@ -1121,7 +1121,7 @@ public class ChanPerformer implements ChanManager.Linked {
 		public CheckAuthorizationResult onCheckAuthorization(CheckAuthorizationData data) throws ExtensionException,
 				HttpException, InvalidResponseException {
 			try {
-				return mPerformer.onCheckAuthorization(data);
+				return performer.onCheckAuthorization(data);
 			} catch (LinkageError | RuntimeException e) {
 				throw new ExtensionException(e);
 			}
@@ -1130,7 +1130,7 @@ public class ChanPerformer implements ChanManager.Linked {
 		public ReadCaptchaResult onReadCaptcha(ReadCaptchaData data) throws ExtensionException, HttpException,
 				InvalidResponseException {
 			try {
-				return mPerformer.onReadCaptcha(data);
+				return performer.onReadCaptcha(data);
 			} catch (LinkageError | RuntimeException e) {
 				throw new ExtensionException(e);
 			}
@@ -1139,7 +1139,7 @@ public class ChanPerformer implements ChanManager.Linked {
 		public SendPostResult onSendPost(SendPostData data) throws ExtensionException, HttpException, ApiException,
 				InvalidResponseException {
 			try {
-				return mPerformer.onSendPost(data);
+				return performer.onSendPost(data);
 			} catch (LinkageError | RuntimeException e) {
 				throw new ExtensionException(e);
 			}
@@ -1148,7 +1148,7 @@ public class ChanPerformer implements ChanManager.Linked {
 		public SendDeletePostsResult onSendDeletePosts(SendDeletePostsData data) throws ExtensionException,
 				HttpException, ApiException, InvalidResponseException {
 			try {
-				return mPerformer.onSendDeletePosts(data);
+				return performer.onSendDeletePosts(data);
 			} catch (LinkageError | RuntimeException e) {
 				throw new ExtensionException(e);
 			}
@@ -1157,7 +1157,7 @@ public class ChanPerformer implements ChanManager.Linked {
 		public SendReportPostsResult onSendReportPosts(SendReportPostsData data) throws ExtensionException,
 				HttpException, ApiException, InvalidResponseException {
 			try {
-				return mPerformer.onSendReportPosts(data);
+				return performer.onSendReportPosts(data);
 			} catch (LinkageError | RuntimeException e) {
 				throw new ExtensionException(e);
 			}
@@ -1166,16 +1166,16 @@ public class ChanPerformer implements ChanManager.Linked {
 		public SendAddToArchiveResult onSendAddToArchive(SendAddToArchiveData data) throws ExtensionException,
 				HttpException, ApiException, InvalidResponseException {
 			try {
-				return mPerformer.onSendAddToArchive(data);
+				return performer.onSendAddToArchive(data);
 			} catch (LinkageError | RuntimeException e) {
 				throw new ExtensionException(e);
 			}
 		}
 	}
 
-	private final Safe mSafe = new Safe(this);
+	private final Safe safe = new Safe(this);
 
 	public final Safe safe() {
-		return mSafe;
+		return safe;
 	}
 }

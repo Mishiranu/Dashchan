@@ -31,26 +31,26 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ViewFactory;
 
 public class UserBoardsAdapter extends BaseAdapter {
-	private final String mChanName;
+	private final String chanName;
 
-	private final ArrayList<ListItem> mListItems = new ArrayList<>();
-	private final ArrayList<ListItem> mFilteredListItems = new ArrayList<>();
+	private final ArrayList<ListItem> listItems = new ArrayList<>();
+	private final ArrayList<ListItem> filteredListItems = new ArrayList<>();
 
-	private boolean mFilterMode = false;
-	private String mFilterText;
+	private boolean filterMode = false;
+	private String filterText;
 
 	public UserBoardsAdapter(String chanName) {
-		mChanName = chanName;
+		this.chanName = chanName;
 	}
 
 	// Returns true, if adapter isn't empty.
 	public boolean applyFilter(String text) {
-		mFilterText = text;
-		mFilterMode = !StringUtils.isEmpty(text);
-		mFilteredListItems.clear();
-		if (mFilterMode) {
+		filterText = text;
+		filterMode = !StringUtils.isEmpty(text);
+		filteredListItems.clear();
+		if (filterMode) {
 			text = text.toLowerCase(Locale.getDefault());
-			for (ListItem listItem : mListItems) {
+			for (ListItem listItem : listItems) {
 				boolean add = false;
 				if (listItem.boardName.toLowerCase(Locale.US).contains(text)) {
 					add = true;
@@ -61,12 +61,12 @@ public class UserBoardsAdapter extends BaseAdapter {
 					add = true;
 				}
 				if (add){
-					mFilteredListItems.add(listItem);
+					filteredListItems.add(listItem);
 				}
 			}
 		}
 		notifyDataSetChanged();
-		return !mFilterMode || mFilteredListItems.size() > 0;
+		return !filterMode || filteredListItems.size() > 0;
 	}
 
 	@Override
@@ -95,12 +95,12 @@ public class UserBoardsAdapter extends BaseAdapter {
 
 	@Override
 	public int getCount() {
-		return (mFilterMode ? mFilteredListItems : mListItems).size();
+		return (filterMode ? filteredListItems : listItems).size();
 	}
 
 	@Override
 	public ListItem getItem(int position) {
-		return (mFilterMode ? mFilteredListItems : mListItems).get(position);
+		return (filterMode ? filteredListItems : listItems).get(position);
 	}
 
 	@Override
@@ -109,20 +109,20 @@ public class UserBoardsAdapter extends BaseAdapter {
 	}
 
 	public void setItems(Board[] boards) {
-		mListItems.clear();
-		ChanConfiguration configuration = ChanConfiguration.get(mChanName);
+		listItems.clear();
+		ChanConfiguration configuration = ChanConfiguration.get(chanName);
 		if (boards != null) {
 			for (Board board : boards) {
 				String boardName = board.getBoardName();
 				String title = configuration.getBoardTitle(boardName);
 				String description = configuration.getBoardDescription(boardName);
-				mListItems.add(new ListItem(boardName, StringUtils.formatBoardTitle(mChanName, boardName, title),
+				listItems.add(new ListItem(boardName, StringUtils.formatBoardTitle(chanName, boardName, title),
 						description));
 			}
 		}
 		notifyDataSetChanged();
-		if (mFilterMode) {
-			applyFilter(mFilterText);
+		if (filterMode) {
+			applyFilter(filterText);
 		}
 	}
 

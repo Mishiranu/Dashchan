@@ -26,8 +26,8 @@ import android.content.Context;
 import chan.util.StringUtils;
 
 public class PostDateFormatter {
-	private final String mInstance;
-	private final DateFormat mDateFormat, mDateFormatLong, mTimeFormat;
+	private final String instance;
+	private final DateFormat dateFormat, dateFormatLong, timeFormat;
 
 	public PostDateFormatter(Context context) {
 		SimpleDateFormat systemFormat = (SimpleDateFormat) android.text.format.DateFormat.getDateFormat(context);
@@ -41,25 +41,25 @@ public class PostDateFormatter {
 		String longDateFormat = systemPattern.indexOf('d') > systemPattern.indexOf('y')
 				? "yy" + divider + shortDateFormat : shortDateFormat + divider + "yy";
 		String timeFormat = android.text.format.DateFormat.is24HourFormat(context) ? "HH:mm:ss" : "hh:mm:ss aa";
-		mInstance = longDateFormat + timeFormat + Locale.getDefault().toString();
-		mDateFormat = new SimpleDateFormat(shortDateFormat, Locale.getDefault());
-		mDateFormatLong = new SimpleDateFormat(longDateFormat, Locale.getDefault());
-		mTimeFormat = new SimpleDateFormat(timeFormat, Locale.US);
+		this.instance = longDateFormat + timeFormat + Locale.getDefault().toString();
+		this.dateFormat = new SimpleDateFormat(shortDateFormat, Locale.getDefault());
+		this.dateFormatLong = new SimpleDateFormat(longDateFormat, Locale.getDefault());
+		this.timeFormat = new SimpleDateFormat(timeFormat, Locale.US);
 	}
 
 	public String format(long timestamp) {
 		Calendar calendar = Calendar.getInstance();
 		int year = calendar.get(Calendar.YEAR);
 		calendar.setTimeInMillis(timestamp);
-		return (calendar.get(Calendar.YEAR) != year ? mDateFormatLong : mDateFormat).format(timestamp)
-				+ " " + mTimeFormat.format(timestamp);
+		return (calendar.get(Calendar.YEAR) != year ? dateFormatLong : dateFormat).format(timestamp)
+				+ " " + timeFormat.format(timestamp);
 	}
 
 	public Holder format(long timestamp, Holder holder) {
-		if (holder != null && holder.instance.equals(mInstance)) {
+		if (holder != null && holder.instance.equals(instance)) {
 			return holder;
 		}
-		return new Holder(format(timestamp), mInstance);
+		return new Holder(format(timestamp), instance);
 	}
 
 	public static class Holder {

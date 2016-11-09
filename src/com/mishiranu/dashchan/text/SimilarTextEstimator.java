@@ -22,12 +22,12 @@ import java.util.Locale;
 public class SimilarTextEstimator {
 	private static final int MIN_WORDS_COUNT = 1;
 
-	private final int mMaxLength;
-	private final boolean mRemovePostLinks;
+	private final int maxLength;
+	private final boolean removePostLinks;
 
 	public SimilarTextEstimator(int maxLength, boolean removePostLinks) {
-		mMaxLength = maxLength;
-		mRemovePostLinks = removePostLinks;
+		this.maxLength = maxLength;
+		this.removePostLinks = removePostLinks;
 	}
 
 	public boolean checkSimiliar(WordsData wordsData1, WordsData wordsData2) {
@@ -59,12 +59,12 @@ public class SimilarTextEstimator {
 		}
 		HashSet<String> words = null;
 		int count = 0;
-		if (text.length() > mMaxLength) {
-			text = text.substring(0, mMaxLength);
+		if (text.length() > maxLength) {
+			text = text.substring(0, maxLength);
 		}
 		text = text.toLowerCase(Locale.getDefault());
 		StringBuilder builder = new StringBuilder(text);
-		if (mRemovePostLinks) {
+		if (removePostLinks) {
 			int index = 0;
 			while (true) {
 				index = builder.indexOf(">>", index);

@@ -38,23 +38,23 @@ import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 
 public class PullableWrapper implements AbsListView.OnScrollListener {
-	private final Wrapped mListView;
-	private final PullView mTopView, mBottomView;
+	private final Wrapped listView;
+	private final PullView topView, bottomView;
 
-	private final float mPullDeltaGain;
+	private final float pullDeltaGain;
 
 	public enum Side {NONE, BOTH, TOP, BOTTOM}
 
 	public PullableWrapper(Wrapped listView) {
-		mListView = listView;
+		this.listView = listView;
 		Context context = listView.getContext();
-		mTopView = C.API_LOLLIPOP ? new LollipopView(listView, true) : new JellyBeanView(listView, true);
-		mBottomView = C.API_LOLLIPOP ? new LollipopView(listView, false) : new JellyBeanView(listView, false);
-		mPullDeltaGain = ResourceUtils.isTablet(context.getResources().getConfiguration()) ? 6f : 4f;
+		topView = C.API_LOLLIPOP ? new LollipopView(listView, true) : new JellyBeanView(listView, true);
+		bottomView = C.API_LOLLIPOP ? new LollipopView(listView, false) : new JellyBeanView(listView, false);
+		pullDeltaGain = ResourceUtils.isTablet(context.getResources().getConfiguration()) ? 6f : 4f;
 	}
 
 	public void handleAttrs(AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-		TypedArray typedArray = mListView.getContext().obtainStyledAttributes(attrs,
+		TypedArray typedArray = listView.getContext().obtainStyledAttributes(attrs,
 				new int[] {android.R.attr.color}, defStyleAttr, defStyleRes);
 		int color = typedArray.getColor(0, 0);
 		typedArray.recycle();
@@ -62,8 +62,8 @@ public class PullableWrapper implements AbsListView.OnScrollListener {
 	}
 
 	public void setColor(int color) {
-		mTopView.setColor(color);
-		mBottomView.setColor(color);
+		topView.setColor(color);
+		bottomView.setColor(color);
 	}
 
 	public interface PullCallback {
@@ -74,25 +74,25 @@ public class PullableWrapper implements AbsListView.OnScrollListener {
 		public void onPullStateChanged(PullableWrapper wrapper, boolean busy);
 	}
 
-	private PullCallback mPullCallback;
-	private PullStateListener mPullStateListener;
+	private PullCallback pullCallback;
+	private PullStateListener pullStateListener;
 
 	public void setOnPullListener(PullCallback callback) {
-		mPullCallback = callback;
+		this.pullCallback = callback;
 	}
 
-	public void setPullStateListener(PullStateListener l) {
-		mPullStateListener = l;
+	public void setPullStateListener(PullStateListener listener) {
+		this.pullStateListener = listener;
 	}
 
-	private Side mPullSides = Side.NONE;
-	private Side mBusySide = Side.NONE;
+	private Side pullSides = Side.NONE;
+	private Side busySide = Side.NONE;
 
 	public void setPullSides(Side sides) {
 		if (sides == null) {
 			sides = Side.NONE;
 		}
-		mPullSides = sides;
+		pullSides = sides;
 	}
 
 	public void startBusyState(Side side) {
@@ -100,201 +100,201 @@ public class PullableWrapper implements AbsListView.OnScrollListener {
 	}
 
 	private PullView getSidePullView(Side side) {
-		return side == Side.TOP ? mTopView : side == Side.BOTTOM ? mBottomView : null;
+		return side == Side.TOP ? topView : side == Side.BOTTOM ? bottomView : null;
 	}
 
 	private boolean startBusyState(Side side, boolean useCallback) {
 		if (side == null || side == Side.NONE) {
 			return false;
 		}
-		if (mBusySide != Side.NONE || side != mPullSides && mPullSides != Side.BOTH) {
-			if (side == Side.BOTH && (mBusySide == Side.TOP || mBusySide == Side.BOTTOM)) {
-				PullView pullView = getSidePullView(mBusySide);
-				pullView.setState(PullView.State.IDLE, mListView.getEdgeEffectShift(side == Side.TOP));
-				mBusySide = Side.BOTH;
+		if (busySide != Side.NONE || side != pullSides && pullSides != Side.BOTH) {
+			if (side == Side.BOTH && (busySide == Side.TOP || busySide == Side.BOTTOM)) {
+				PullView pullView = getSidePullView(busySide);
+				pullView.setState(PullView.State.IDLE, listView.getEdgeEffectShift(side == Side.TOP));
+				busySide = Side.BOTH;
 			}
 			return false;
 		}
-		mBusySide = side;
+		busySide = side;
 		PullView pullView = getSidePullView(side);
 		if (pullView != null) {
-			pullView.setState(PullView.State.LOADING, mListView.getEdgeEffectShift(side == Side.TOP));
+			pullView.setState(PullView.State.LOADING, listView.getEdgeEffectShift(side == Side.TOP));
 		}
 		if (useCallback) {
-			mPullCallback.onListPulled(this, side);
+			pullCallback.onListPulled(this, side);
 		}
 		notifyPullStateChanged(true);
 		return true;
 	}
 
 	public void cancelBusyState() {
-		if (mBusySide != Side.NONE) {
-			mBusySide = Side.NONE;
-			mTopView.setState(PullView.State.IDLE, mListView.getEdgeEffectShift(true));
-			mBottomView.setState(PullView.State.IDLE, mListView.getEdgeEffectShift(false));
+		if (busySide != Side.NONE) {
+			busySide = Side.NONE;
+			topView.setState(PullView.State.IDLE, listView.getEdgeEffectShift(true));
+			bottomView.setState(PullView.State.IDLE, listView.getEdgeEffectShift(false));
 			notifyPullStateChanged(false);
-			mUpdateStartY = true;
+			updateStartY = true;
 		}
 	}
 
 	private void notifyPullStateChanged(boolean busy) {
-		if (mPullStateListener != null) {
-			mPullStateListener.onPullStateChanged(this, busy);
+		if (pullStateListener != null) {
+			pullStateListener.onPullStateChanged(this, busy);
 		}
 	}
 
-	private boolean mUpdateStartY = true;
-	private float mStartY;
+	private boolean updateStartY = true;
+	private float startY;
 
 	private int deltaToPullStrain(float delta) {
-		return (int) (mPullDeltaGain * delta / mListView.getHeight() * PullView.MAX_STRAIN);
+		return (int) (pullDeltaGain * delta / listView.getHeight() * PullView.MAX_STRAIN);
 	}
 
 	private int pullStrainToDelta(int pullStrain) {
-		return (int) (pullStrain * mListView.getHeight() / (mPullDeltaGain * PullView.MAX_STRAIN));
+		return (int) (pullStrain * listView.getHeight() / (pullDeltaGain * PullView.MAX_STRAIN));
 	}
 
 	// Used to calculate list transition animation.
-	private long mTopJumpStartTime;
-	private long mBottomJumpStartTime;
+	private long topJumpStartTime;
+	private long bottomJumpStartTime;
 
 	private static final int BUSY_JUMP_TIME = 200;
 
 	public void onTouchEvent(MotionEvent ev) {
 		int action = ev.getAction();
-		if (action == MotionEvent.ACTION_DOWN || !mScrolledToTop && !mScrolledToBottom) {
-			mStartY = ev.getY();
-		} else if (mUpdateStartY) {
+		if (action == MotionEvent.ACTION_DOWN || !scrolledToTop && !scrolledToBottom) {
+			startY = ev.getY();
+		} else if (updateStartY) {
 			int hsize = ev.getHistorySize();
-			mStartY = hsize > 0 ? ev.getHistoricalY(hsize - 1) : ev.getY();
+			startY = hsize > 0 ? ev.getHistoricalY(hsize - 1) : ev.getY();
 		}
-		mUpdateStartY = action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL;
-		if (mBusySide == Side.NONE) {
+		updateStartY = action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL;
+		if (busySide == Side.NONE) {
 			if (action != MotionEvent.ACTION_DOWN) {
-				float dy = ev.getY() - mStartY;
+				float dy = ev.getY() - startY;
 				boolean resetTop = true, resetBottom = true;
-				EdgeEffectHandler edgeEffectHandler = mListView.getEdgeEffectHandler();
+				EdgeEffectHandler edgeEffectHandler = listView.getEdgeEffectHandler();
 				if (edgeEffectHandler != null) {
 					edgeEffectHandler.setPullable(true, true);
 					edgeEffectHandler.setPullable(false, true);
 				}
 				if (action == MotionEvent.ACTION_MOVE) {
 					// Call getIdlePullStrain to get previous transient value
-					if (dy > 0 && mScrolledToTop && (mPullSides == Side.BOTH || mPullSides == Side.TOP)) {
+					if (dy > 0 && scrolledToTop && (pullSides == Side.BOTH || pullSides == Side.TOP)) {
 						resetTop = false;
-						int pullStrain = mTopView.getAndResetIdlePullStrain();
+						int pullStrain = topView.getAndResetIdlePullStrain();
 						if (pullStrain > 0) {
-							mStartY -= pullStrainToDelta(pullStrain);
-							dy = ev.getY() - mStartY;
+							startY -= pullStrainToDelta(pullStrain);
+							dy = ev.getY() - startY;
 						}
-						int padding = mListView.getEdgeEffectShift(true);
-						mTopView.setState(PullView.State.PULL, padding);
-						mTopView.setPullStrain(deltaToPullStrain(dy), padding);
+						int padding = listView.getEdgeEffectShift(true);
+						topView.setState(PullView.State.PULL, padding);
+						topView.setPullStrain(deltaToPullStrain(dy), padding);
 						if (edgeEffectHandler != null) {
 							edgeEffectHandler.finish(true);
 							edgeEffectHandler.setPullable(true, false);
 						}
-					} else if (dy < 0 && mScrolledToBottom && (mPullSides == Side.BOTH || mPullSides == Side.BOTTOM)) {
+					} else if (dy < 0 && scrolledToBottom && (pullSides == Side.BOTH || pullSides == Side.BOTTOM)) {
 						resetBottom = false;
-						int pullStrain = mBottomView.getAndResetIdlePullStrain();
+						int pullStrain = bottomView.getAndResetIdlePullStrain();
 						if (pullStrain > 0) {
-							mStartY += pullStrainToDelta(pullStrain);
-							dy = ev.getY() - mStartY;
+							startY += pullStrainToDelta(pullStrain);
+							dy = ev.getY() - startY;
 						}
-						int padding = mListView.getEdgeEffectShift(false);
-						mBottomView.setState(PullView.State.PULL, padding);
-						mBottomView.setPullStrain(-deltaToPullStrain(dy), padding);
+						int padding = listView.getEdgeEffectShift(false);
+						bottomView.setState(PullView.State.PULL, padding);
+						bottomView.setPullStrain(-deltaToPullStrain(dy), padding);
 						if (edgeEffectHandler != null) {
 							edgeEffectHandler.finish(false);
 							edgeEffectHandler.setPullable(false, false);
 						}
 					}
 				}
-				int topPullStrain = mTopView.getPullStrain();
-				int bottomPullStrain = mBottomView.getPullStrain();
+				int topPullStrain = topView.getPullStrain();
+				int bottomPullStrain = bottomView.getPullStrain();
 				if (resetTop && resetBottom && (topPullStrain > 0 || bottomPullStrain > 0)) {
 					if (topPullStrain > bottomPullStrain) {
-						mTopJumpStartTime = mTopView.calculateJumpStartTime();
+						topJumpStartTime = topView.calculateJumpStartTime();
 					} else {
-						mBottomJumpStartTime = mBottomView.calculateJumpStartTime();
+						bottomJumpStartTime = bottomView.calculateJumpStartTime();
 					}
 				}
 				if (action == MotionEvent.ACTION_UP) {
 					if (topPullStrain >= PullView.MAX_STRAIN) {
-						mTopJumpStartTime = System.currentTimeMillis();
+						topJumpStartTime = System.currentTimeMillis();
 						boolean success = startBusyState(Side.TOP, true);
 						resetTop &= !success;
 					}
 					if (bottomPullStrain >= PullView.MAX_STRAIN) {
-						mBottomJumpStartTime = System.currentTimeMillis();
+						bottomJumpStartTime = System.currentTimeMillis();
 						boolean success = startBusyState(Side.BOTTOM, true);
 						resetBottom &= !success;
 					}
 				}
 				if (resetTop) {
-					mTopView.setState(PullView.State.IDLE, mListView.getEdgeEffectShift(true));
+					topView.setState(PullView.State.IDLE, listView.getEdgeEffectShift(true));
 				}
 				if (resetBottom) {
-					mBottomView.setState(PullView.State.IDLE, mListView.getEdgeEffectShift(false));
+					bottomView.setState(PullView.State.IDLE, listView.getEdgeEffectShift(false));
 				}
 			}
 		}
 	}
 
 	// States of list, can be defined only in scroll listener.
-	private boolean mScrolledToTop = true, mScrolledToBottom = true;
+	private boolean scrolledToTop = true, scrolledToBottom = true;
 
 	@Override
 	public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
 		try {
-			mScrolledToTop = totalItemCount == 0 || firstVisibleItem == 0 &&
-					view.getChildAt(0).getTop() >= mListView.getEdgeEffectShift(true);
+			scrolledToTop = totalItemCount == 0 || firstVisibleItem == 0 &&
+					view.getChildAt(0).getTop() >= listView.getEdgeEffectShift(true);
 		} catch (Exception e) {
-			mScrolledToTop = false;
+			scrolledToTop = false;
 		}
 		try {
-			mScrolledToBottom = totalItemCount == 0 || firstVisibleItem + visibleItemCount == totalItemCount &&
+			scrolledToBottom = totalItemCount == 0 || firstVisibleItem + visibleItemCount == totalItemCount &&
 					view.getChildAt(visibleItemCount - 1).getBottom() <= view.getHeight() -
-					mListView.getEdgeEffectShift(false);
+					listView.getEdgeEffectShift(false);
 		} catch (Exception e) {
-			mScrolledToBottom = false;
+			scrolledToBottom = false;
 		}
 	}
 
 	@Override
 	public void onScrollStateChanged(AbsListView view, int scrollState) {}
 
-	private int mLastShiftValue = 0;
-	private int mBeforeShiftValue = 0;
-	private boolean mBeforeRestoreCanvas = false;
+	private int lastShiftValue = 0;
+	private int beforeShiftValue = 0;
+	private boolean beforeRestoreCanvas = false;
 
 	public void drawBefore(Canvas canvas) {
-		int top = mTopView.calculateJumpValue(mTopJumpStartTime);
-		int bottom = mBottomView.calculateJumpValue(mBottomJumpStartTime);
+		int top = topView.calculateJumpValue(topJumpStartTime);
+		int bottom = bottomView.calculateJumpValue(bottomJumpStartTime);
 		int shift = top > bottom ? top : -bottom;
 		if (shift != 0) {
 			canvas.save();
-			float height = mListView.getHeight();
+			float height = listView.getHeight();
 			float dy = (float) (Math.pow(Math.abs(pullStrainToDelta(shift)) / height, 2.5f))
 					* height * Math.signum(shift);
 			canvas.translate(0, dy);
-			mBeforeRestoreCanvas = true;
+			beforeRestoreCanvas = true;
 		}
-		mBeforeShiftValue = shift;
+		beforeShiftValue = shift;
 	}
 
 	public void drawAfter(Canvas canvas) {
-		if (mBeforeRestoreCanvas) {
-			mBeforeRestoreCanvas = false;
+		if (beforeRestoreCanvas) {
+			beforeRestoreCanvas = false;
 			canvas.restore();
 		}
-		int shift = mBeforeShiftValue;
-		float density = ResourceUtils.obtainDensity(mListView.getResources());
-		mTopView.draw(canvas, mListView.getEdgeEffectShift(true), density);
-		mBottomView.draw(canvas, mListView.getEdgeEffectShift(false), density);
-		if (mLastShiftValue != shift) {
-			mLastShiftValue = shift;
-			mListView.invalidate();
+		int shift = beforeShiftValue;
+		float density = ResourceUtils.obtainDensity(listView.getResources());
+		topView.draw(canvas, listView.getEdgeEffectShift(true), density);
+		bottomView.draw(canvas, listView.getEdgeEffectShift(false), density);
+		if (lastShiftValue != shift) {
+			lastShiftValue = shift;
+			listView.invalidate();
 		}
 	}
 
@@ -317,44 +317,44 @@ public class PullableWrapper implements AbsListView.OnScrollListener {
 		private static final int IDLE_FOLD_TIME = 500;
 		private static final int LOADING_HALF_CYCLE_TIME = 600;
 
-		private final WeakReference<Wrapped> mWrapped;
-		private final Paint mPaint = new Paint();
-		private final int mHeight;
-		private final boolean mTop;
+		private final WeakReference<Wrapped> wrapped;
+		private final Paint paint = new Paint();
+		private final int height;
+		private final boolean top;
 
-		private State mPreviousState = State.IDLE;
-		private State mState = State.IDLE;
+		private State previousState = State.IDLE;
+		private State state = State.IDLE;
 
-		private int mStartIdlePullStrain = 0;
-		private long mTimeIdleStart = 0L;
-		private long mTimeLoadingStart = 0L;
-		private long mTimeLoadingToIdleStart = 0L;
+		private int startIdlePullStrain = 0;
+		private long timeIdleStart = 0L;
+		private long timeLoadingStart = 0L;
+		private long timeLoadingToIdleStart = 0L;
 
-		private int mPullStrain = 0;
+		private int pullStrain = 0;
 
-		private int mColor;
+		private int color;
 
 		public JellyBeanView(Wrapped wrapped, boolean top) {
-			mWrapped = new WeakReference<>(wrapped);
-			mHeight = (int) (3f * ResourceUtils.obtainDensity(wrapped.getContext()) + 0.5f);
-			mTop = top;
+			this.wrapped = new WeakReference<>(wrapped);
+			this.height = (int) (3f * ResourceUtils.obtainDensity(wrapped.getContext()) + 0.5f);
+			this.top = top;
 		}
 
 		@Override
 		public void setColor(int color) {
-			mColor = color;
+			this.color = color;
 		}
 
 		private void invalidate(int padding) {
-			Wrapped wrapped = mWrapped.get();
+			Wrapped wrapped = this.wrapped.get();
 			if (wrapped != null) {
-				int offset = mTop ? padding : wrapped.getHeight() - mHeight - padding;
-				invalidate(0, offset, wrapped.getWidth(), offset + mHeight);
+				int offset = top ? padding : wrapped.getHeight() - height - padding;
+				invalidate(0, offset, wrapped.getWidth(), offset + height);
 			}
 		}
 
 		private void invalidate(int l, int t, int r, int b) {
-			Wrapped wrapped = mWrapped.get();
+			Wrapped wrapped = this.wrapped.get();
 			if (wrapped != null) {
 				wrapped.invalidate(l, t, r, b);
 			}
@@ -362,19 +362,19 @@ public class PullableWrapper implements AbsListView.OnScrollListener {
 
 		@Override
 		public void setState(State state, int padding) {
-			if (mState != state) {
-				State prePreviousState = mPreviousState;
-				mPreviousState = mState;
-				mState = state;
+			if (this.state != state) {
+				State prePreviousState = previousState;
+				previousState = this.state;
+				this.state = state;
 				long time = System.currentTimeMillis();
-				switch (mState) {
+				switch (this.state) {
 					case IDLE: {
-						mTimeIdleStart = time;
-						if (mPreviousState == State.LOADING) {
-							mTimeLoadingToIdleStart = time;
+						timeIdleStart = time;
+						if (previousState == State.LOADING) {
+							timeLoadingToIdleStart = time;
 						}
-						mStartIdlePullStrain = mPreviousState == State.LOADING ? 0 : mPullStrain;
-						mPullStrain = 0;
+						startIdlePullStrain = previousState == State.LOADING ? 0 : pullStrain;
+						pullStrain = 0;
 						break;
 					}
 					case PULL: {
@@ -383,11 +383,11 @@ public class PullableWrapper implements AbsListView.OnScrollListener {
 					case LOADING: {
 						// May continue use old animation until it over
 						boolean loadingToLoading = prePreviousState == State.LOADING &&
-								mPreviousState == State.IDLE && time - mTimeIdleStart < LOADING_HALF_CYCLE_TIME;
+								previousState == State.IDLE && time - timeIdleStart < LOADING_HALF_CYCLE_TIME;
 						if (!loadingToLoading) {
-							mTimeLoadingStart = mPreviousState == State.IDLE ? time + LOADING_HALF_CYCLE_TIME : time;
+							timeLoadingStart = previousState == State.IDLE ? time + LOADING_HALF_CYCLE_TIME : time;
 						}
-						mTimeLoadingToIdleStart = 0L;
+						timeLoadingToIdleStart = 0L;
 						break;
 					}
 				}
@@ -397,62 +397,62 @@ public class PullableWrapper implements AbsListView.OnScrollListener {
 
 		@Override
 		public void setPullStrain(int pullStrain, int padding) {
-			mPullStrain = pullStrain;
-			if (mPullStrain > MAX_STRAIN) {
-				mPullStrain = MAX_STRAIN;
-			} else if (mPullStrain < 0) {
-				mPullStrain = 0;
+			this.pullStrain = pullStrain;
+			if (this.pullStrain > MAX_STRAIN) {
+				this.pullStrain = MAX_STRAIN;
+			} else if (this.pullStrain < 0) {
+				this.pullStrain = 0;
 			}
-			if (mState == State.PULL) {
+			if (state == State.PULL) {
 				invalidate(padding);
 			}
 		}
 
 		@Override
 		public int getPullStrain() {
-			return mPullStrain;
+			return pullStrain;
 		}
 
 		@Override
 		public int getAndResetIdlePullStrain() {
-			if (mStartIdlePullStrain == 0) {
+			if (startIdlePullStrain == 0) {
 				return 0;
 			}
 			try {
 				return (int) (MAX_STRAIN * getIdleTransientPullStrainValue(System.currentTimeMillis()));
 			} finally {
-				mStartIdlePullStrain = 0;
+				startIdlePullStrain = 0;
 			}
 		}
 
 		private float getIdleTransientPullStrainValue(long time) {
-			int foldTime = IDLE_FOLD_TIME * mStartIdlePullStrain / MAX_STRAIN;
+			int foldTime = IDLE_FOLD_TIME * startIdlePullStrain / MAX_STRAIN;
 			if (foldTime <= 0) {
 				return 0f;
 			}
-			float value = Math.min((float) (time - mTimeIdleStart) / foldTime, 1f);
-			return (1f - value) * mStartIdlePullStrain / MAX_STRAIN;
+			float value = Math.min((float) (time - timeIdleStart) / foldTime, 1f);
+			return (1f - value) * startIdlePullStrain / MAX_STRAIN;
 		}
 
 		@Override
 		public void draw(Canvas canvas, int padding, float density) {
-			Wrapped wrapped = mWrapped.get();
+			Wrapped wrapped = this.wrapped.get();
 			if (wrapped == null) {
 				return;
 			}
-			Paint paint = mPaint;
+			Paint paint = this.paint;
 			long time = System.currentTimeMillis();
 			int width = wrapped.getWidth();
-			int height = mHeight;
-			int offset = mTop ? padding : wrapped.getHeight() - height - padding;
-			State state = mState;
-			State previousState = mPreviousState;
-			int primaryColor = mColor;
-			int secondaryColor = 0x80 << 24 | 0x00ffffff & mColor;
+			int height = this.height;
+			int offset = top ? padding : wrapped.getHeight() - height - padding;
+			State state = this.state;
+			State previousState = this.previousState;
+			int primaryColor = color;
+			int secondaryColor = 0x80 << 24 | 0x00ffffff & color;
 			boolean needInvalidate = false;
 
 			if (state == State.PULL) {
-				int size = (int) (width / 2f * Math.pow((float) mPullStrain / MAX_STRAIN, 2f));
+				int size = (int) (width / 2f * Math.pow((float) pullStrain / MAX_STRAIN, 2f));
 				paint.setColor(primaryColor);
 				canvas.drawRect(width / 2 - size, offset, width / 2 + size, offset + height, paint);
 			}
@@ -467,11 +467,11 @@ public class PullableWrapper implements AbsListView.OnScrollListener {
 				}
 			}
 
-			if (state == State.LOADING || mTimeLoadingToIdleStart > 0L) {
+			if (state == State.LOADING || timeLoadingToIdleStart > 0L) {
 				Interpolator interpolator = AnimationUtils.ACCELERATE_DECELERATE_INTERPOLATOR;
 				final int cycle = 2 * LOADING_HALF_CYCLE_TIME;
 				final int half = LOADING_HALF_CYCLE_TIME;
-				long elapsed = time - mTimeLoadingStart;
+				long elapsed = time - timeLoadingStart;
 				boolean startTransient = elapsed < 0;
 				if (startTransient) {
 					elapsed += cycle;
@@ -479,12 +479,12 @@ public class PullableWrapper implements AbsListView.OnScrollListener {
 				int phase = (int) (elapsed % cycle);
 				int partWidth;
 				if (state != State.LOADING) {
-					long elapsedIdle = time - mTimeLoadingToIdleStart;
+					long elapsedIdle = time - timeLoadingToIdleStart;
 					float value = Math.min((float) elapsedIdle / half, 1f);
 					partWidth = (int) (width / 2f * (1f - interpolator.getInterpolation(value)));
 					if (partWidth <= 0) {
 						partWidth = 0;
-						mTimeLoadingToIdleStart = 0L;
+						timeLoadingToIdleStart = 0L;
 					}
 				} else {
 					partWidth = (int) (width / 2f);
@@ -522,15 +522,15 @@ public class PullableWrapper implements AbsListView.OnScrollListener {
 
 		@Override
 		public long calculateJumpStartTime() {
-			return System.currentTimeMillis() - BUSY_JUMP_TIME * (MAX_STRAIN - mPullStrain) / MAX_STRAIN;
+			return System.currentTimeMillis() - BUSY_JUMP_TIME * (MAX_STRAIN - pullStrain) / MAX_STRAIN;
 		}
 
 		@Override
 		public int calculateJumpValue(long jumpStartTime) {
 			int value = 0;
-			switch (mState) {
+			switch (state) {
 				case PULL: {
-					value = mPullStrain;
+					value = pullStrain;
 					break;
 				}
 				case IDLE:
@@ -557,49 +557,49 @@ public class PullableWrapper implements AbsListView.OnScrollListener {
 		private static final float CENTER_RADIUS = 8.75f;
 		private static final float STROKE_WIDTH = 2.5f;
 
-		private final WeakReference<Wrapped> mWrapped;
-		private final Paint mCirclePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-		private final Paint mRingPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-		private final Path mPath = new Path();
-		private final RectF mRectF = new RectF();
-		private final boolean mTop;
+		private final WeakReference<Wrapped> wrapped;
+		private final Paint circlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+		private final Paint ringPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+		private final Path path = new Path();
+		private final RectF rectF = new RectF();
+		private final boolean top;
 
-		private final Interpolator mStartInterpolator;
-		private final Interpolator mEndInterpolator;
+		private final Interpolator startInterpolator;
+		private final Interpolator endInterpolator;
 
-		private State mPreviousState = State.IDLE;
-		private State mState = State.IDLE;
+		private State previousState = State.IDLE;
+		private State state = State.IDLE;
 
-		private int mStartFoldingPullStrain = 0;
-		private long mTimeStateStart = 0L;
-		private long mTimeSpinStart = 0L;
-		private float mSpinOffset = 0f;
+		private int startFoldingPullStrain = 0;
+		private long timeStateStart = 0L;
+		private long timeSpinStart = 0L;
+		private float spinOffset = 0f;
 
-		private int mPullStrain = 0;
+		private int pullStrain = 0;
 
 		public LollipopView(Wrapped wrapped, boolean top) {
-			mWrapped = new WeakReference<>(wrapped);
-			mTop = top;
+			this.wrapped = new WeakReference<>(wrapped);
+			this.top = top;
 			Path startPath = new Path();
 			startPath.lineTo(0.5f, 0f);
 			startPath.cubicTo(0.7f, 0f, 0.6f, 1f, 1f, 1f);
-			mStartInterpolator = new PathInterpolator(startPath);
+			startInterpolator = new PathInterpolator(startPath);
 			Path endPath = new Path();
 			endPath.cubicTo(0.2f, 0f, 0.1f, 1f, 0.5f, 1f);
 			endPath.lineTo(1f, 1f);
-			mEndInterpolator = new PathInterpolator(endPath);
-			mRingPaint.setStyle(Paint.Style.STROKE);
-			mRingPaint.setStrokeCap(Paint.Cap.SQUARE);
-			mRingPaint.setStrokeJoin(Paint.Join.MITER);
+			endInterpolator = new PathInterpolator(endPath);
+			ringPaint.setStyle(Paint.Style.STROKE);
+			ringPaint.setStrokeCap(Paint.Cap.SQUARE);
+			ringPaint.setStrokeJoin(Paint.Join.MITER);
 		}
 
 		@Override
 		public void setColor(int color) {
-			mCirclePaint.setColor(color);
+			circlePaint.setColor(color);
 		}
 
 		private void invalidate(int padding) {
-			Wrapped wrapped = mWrapped.get();
+			Wrapped wrapped = this.wrapped.get();
 			if (wrapped != null) {
 				float density = ResourceUtils.obtainDensity(wrapped.getContext());
 				float commonShift = DEFAULT_CIRCLE_TARGET * density;
@@ -615,7 +615,7 @@ public class PullableWrapper implements AbsListView.OnScrollListener {
 			int r = hw + (int) radius + 1;
 			int t = padding - (int) (2f * radius) - 1;
 			int b = padding + (int) (2f * commonShift) + 1;
-			if (!mTop) {
+			if (!top) {
 				int height = wrapped.getHeight();
 				int nt = height - t;
 				int nb = height - b;
@@ -627,16 +627,16 @@ public class PullableWrapper implements AbsListView.OnScrollListener {
 
 		@Override
 		public void setState(State state, int padding) {
-			if (mState != state) {
-				State prePreviousState = mPreviousState;
-				mPreviousState = mState;
-				mState = state;
+			if (this.state != state) {
+				State prePreviousState = previousState;
+				previousState = this.state;
+				this.state = state;
 				long time = System.currentTimeMillis();
-				switch (mState) {
+				switch (this.state) {
 					case IDLE: {
-						mTimeStateStart = time;
-						mStartFoldingPullStrain = mPreviousState == State.LOADING ? MAX_STRAIN : mPullStrain;
-						mPullStrain = 0;
+						timeStateStart = time;
+						startFoldingPullStrain = previousState == State.LOADING ? MAX_STRAIN : pullStrain;
+						pullStrain = 0;
 						break;
 					}
 					case PULL: {
@@ -645,13 +645,13 @@ public class PullableWrapper implements AbsListView.OnScrollListener {
 					case LOADING: {
 						// May continue use old animation until it over
 						boolean loadingToLoading = prePreviousState == State.LOADING &&
-								mPreviousState == State.IDLE && time - mTimeStateStart < 50;
+								previousState == State.IDLE && time - timeStateStart < 50;
 						if (!loadingToLoading) {
-							mTimeStateStart = time;
-							mStartFoldingPullStrain = mPullStrain;
-							mTimeSpinStart = mPreviousState == State.IDLE ? time : time - FULL_CYCLE_TIME / 10;
-							if (mPreviousState == State.IDLE) {
-								mSpinOffset = 0f;
+							timeStateStart = time;
+							startFoldingPullStrain = pullStrain;
+							timeSpinStart = previousState == State.IDLE ? time : time - FULL_CYCLE_TIME / 10;
+							if (previousState == State.IDLE) {
+								spinOffset = 0f;
 							}
 						}
 						break;
@@ -663,56 +663,56 @@ public class PullableWrapper implements AbsListView.OnScrollListener {
 
 		@Override
 		public void setPullStrain(int pullStrain, int padding) {
-			mPullStrain = pullStrain;
-			if (mPullStrain > 2 * MAX_STRAIN) {
-				mPullStrain = 2 * MAX_STRAIN;
-			} else if (mPullStrain < 0) {
-				mPullStrain = 0;
+			this.pullStrain = pullStrain;
+			if (this.pullStrain > 2 * MAX_STRAIN) {
+				this.pullStrain = 2 * MAX_STRAIN;
+			} else if (this.pullStrain < 0) {
+				this.pullStrain = 0;
 			}
-			if (mState == State.PULL) {
+			if (state == State.PULL) {
 				invalidate(padding);
 			}
 		}
 
 		@Override
 		public int getPullStrain() {
-			return mPullStrain > MAX_STRAIN ? MAX_STRAIN : mPullStrain;
+			return pullStrain > MAX_STRAIN ? MAX_STRAIN : pullStrain;
 		}
 
 		@Override
 		public int getAndResetIdlePullStrain() {
-			if (mStartFoldingPullStrain == 0) {
+			if (startFoldingPullStrain == 0) {
 				return 0;
 			}
 			try {
 				return (int) (MAX_STRAIN * getIdleTransientPullStrainValue(IDLE_FOLD_TIME, System.currentTimeMillis()));
 			} finally {
-				mStartFoldingPullStrain = 0;
+				startFoldingPullStrain = 0;
 			}
 		}
 
 		private float getIdleTransientPullStrainValue(int maxFoldTime, long time) {
-			int foldTime = maxFoldTime * mStartFoldingPullStrain / MAX_STRAIN;
+			int foldTime = maxFoldTime * startFoldingPullStrain / MAX_STRAIN;
 			if (foldTime <= 0) {
 				return 0f;
 			}
-			float value = Math.min((float) (time - mTimeStateStart) / foldTime, 1f);
-			return (1f - value) * mStartFoldingPullStrain / MAX_STRAIN;
+			float value = Math.min((float) (time - timeStateStart) / foldTime, 1f);
+			return (1f - value) * startFoldingPullStrain / MAX_STRAIN;
 		}
 
 		@Override
 		public void draw(Canvas canvas, int padding, float density) {
-			Wrapped wrapped = mWrapped.get();
+			Wrapped wrapped = this.wrapped.get();
 			if (wrapped == null) {
 				return;
 			}
-			Paint circlePaint = mCirclePaint;
-			Paint ringPaint = mRingPaint;
+			Paint circlePaint = this.circlePaint;
+			Paint ringPaint = this.ringPaint;
 			long time = System.currentTimeMillis();
 			int width = wrapped.getWidth();
 			int height = wrapped.getHeight();
-			State state = mState;
-			State previousState = mPreviousState;
+			State state = this.state;
+			State previousState = this.previousState;
 			boolean needInvalidate = false;
 			float commonShift = DEFAULT_CIRCLE_TARGET * density;
 			float radius = CIRCLE_RADIUS * density;
@@ -722,7 +722,7 @@ public class PullableWrapper implements AbsListView.OnScrollListener {
 			boolean spin = false;
 
 			if (state == State.PULL) {
-				value = (float) mPullStrain / MAX_STRAIN;
+				value = (float) pullStrain / MAX_STRAIN;
 			}
 
 			if (state == State.IDLE) {
@@ -749,18 +749,18 @@ public class PullableWrapper implements AbsListView.OnScrollListener {
 				}
 				spin = true;
 				if (previousState == State.IDLE) {
-					scale = Math.min((float) (time - mTimeStateStart) / LOADING_FOLD_TIME, 1f);
+					scale = Math.min((float) (time - timeStateStart) / LOADING_FOLD_TIME, 1f);
 				}
 				needInvalidate = true;
 			}
 
 			if (value != 0f) {
 				int shift = (int) (commonShift * value) + padding;
-				if (!mTop) {
+				if (!top) {
 					shift = height - shift;
 				}
 				float centerX = width / 2f;
-				float centerY = mTop ? shift - radius : shift + radius;
+				float centerY = top ? shift - radius : shift + radius;
 				boolean needRestore = false;
 				if (scale != 1f && scale != 0f) {
 					canvas.save();
@@ -775,15 +775,15 @@ public class PullableWrapper implements AbsListView.OnScrollListener {
 				float arcLength;
 				int ringAlpha = 0xff;
 				if (spin) {
-					float rotationValue = (float) ((time - mTimeSpinStart) % FULL_CYCLE_TIME) / FULL_CYCLE_TIME;
+					float rotationValue = (float) ((time - timeSpinStart) % FULL_CYCLE_TIME) / FULL_CYCLE_TIME;
 					float animationValue = rotationValue * 5f % 1f;
 					float trimOffset = 0.25f * animationValue;
-					float trimStart = 0.75f * mStartInterpolator.getInterpolation(animationValue) + trimOffset;
-					float trimEnd = 0.75f * mEndInterpolator.getInterpolation(animationValue) + trimOffset;
+					float trimStart = 0.75f * startInterpolator.getInterpolation(animationValue) + trimOffset;
+					float trimEnd = 0.75f * endInterpolator.getInterpolation(animationValue) + trimOffset;
 					float rotation = 2f * rotationValue;
 					arcStart = trimStart;
 					arcLength = trimEnd - arcStart;
-					arcStart += rotation + mSpinOffset;
+					arcStart += rotation + spinOffset;
 				} else {
 					float alphaThreshold = 0.95f;
 					ringAlpha = (int) AnimationUtils.lerp(0x7f, 0xff, (Math.min(1f, Math.max(value, alphaThreshold))
@@ -791,11 +791,11 @@ public class PullableWrapper implements AbsListView.OnScrollListener {
 					arcStart = value > 1f ? 0.25f + (value - 1f) * 0.5f : 0.25f * value;
 					arcLength = 0.75f * (float) Math.pow(Math.min(value, 1f), 0.75f);
 					if (value >= 1f) {
-						mSpinOffset = (value - 1f) * 0.5f;
+						spinOffset = (value - 1f) * 0.5f;
 					}
 				}
 				ringPaint.setColor(0xffffff | (ringAlpha << 24));
-				RectF size = mRectF;
+				RectF size = rectF;
 				size.set(centerX - ringRadius, centerY - ringRadius, centerX + ringRadius, centerY + ringRadius);
 				drawArc(canvas, ringPaint, size, arcStart, arcLength);
 				if (needRestore) {
@@ -812,7 +812,7 @@ public class PullableWrapper implements AbsListView.OnScrollListener {
 			if (length < 0.001f) {
 				length = 0.001f;
 			}
-			Path path = mPath;
+			Path path = this.path;
 			path.reset();
 			if (length >= 1f) {
 				path.arcTo(size, 0f, 180f, false);

@@ -25,16 +25,16 @@ import com.mishiranu.dashchan.content.model.PostItem;
 import java.util.ArrayList;
 
 public class DeserializePostsTask extends CancellableTask<Void, Void, Boolean> {
-	private final Callback mCallback;
-	private final String mChanName;
-	private final String mBoardName;
-	private final String mThreadNumber;
-	private final Posts mCachedPosts;
+	private final Callback callback;
+	private final String chanName;
+	private final String boardName;
+	private final String threadNumber;
+	private final Posts cachedPosts;
 
-	private final CacheManager.SerializationHolder mHolder = new CacheManager.SerializationHolder();
+	private final CacheManager.SerializationHolder holder = new CacheManager.SerializationHolder();
 
-	private Posts mPosts;
-	private ArrayList<PostItem> mPostItems;
+	private Posts posts;
+	private ArrayList<PostItem> postItems;
 
 	public interface Callback {
 		public void onDeserializePostsComplete(boolean success, Posts posts, ArrayList<PostItem> postItems);
@@ -42,42 +42,42 @@ public class DeserializePostsTask extends CancellableTask<Void, Void, Boolean> {
 
 	public DeserializePostsTask(Callback callback, String chanName, String boardName, String threadNumber,
 			Posts cachedPosts) {
-		mCallback = callback;
-		mChanName = chanName;
-		mBoardName = boardName;
-		mThreadNumber = threadNumber;
-		mCachedPosts = cachedPosts;
+		this.callback = callback;
+		this.chanName = chanName;
+		this.boardName = boardName;
+		this.threadNumber = threadNumber;
+		this.cachedPosts = cachedPosts;
 	}
 
 	@Override
 	protected Boolean doInBackground(Void... params) {
-		if (mCachedPosts != null) {
-			mPosts = mCachedPosts;
+		if (cachedPosts != null) {
+			posts = cachedPosts;
 		} else {
-			mPosts = CacheManager.getInstance().deserializePosts(mChanName, mBoardName, mThreadNumber, mHolder);
+			posts = CacheManager.getInstance().deserializePosts(chanName, boardName, threadNumber, holder);
 		}
-		if (mPosts == null) {
+		if (posts == null) {
 			return false;
 		}
-		Post[] posts = mPosts.getPosts();
+		Post[] posts = this.posts.getPosts();
 		if (posts == null || posts.length == 0) {
 			return false;
 		}
-		mPostItems = new ArrayList<>(posts.length);
+		postItems = new ArrayList<>(posts.length);
 		for (Post post : posts) {
-			mPostItems.add(new PostItem(post, mChanName, mBoardName));
+			postItems.add(new PostItem(post, chanName, boardName));
 		}
 		return true;
 	}
 
 	@Override
 	public void onPostExecute(Boolean success) {
-		mCallback.onDeserializePostsComplete(success, mPosts, mPostItems);
+		callback.onDeserializePostsComplete(success, posts, postItems);
 	}
 
 	@Override
 	public void cancel() {
 		cancel(true);
-		mHolder.cancel();
+		holder.cancel();
 	}
 }

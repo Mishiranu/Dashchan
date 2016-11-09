@@ -67,61 +67,61 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 		ActionMode.Callback {
 	private static final int GRID_SPACING_DP = 4;
 
-	private final GalleryInstance mInstance;
+	private final GalleryInstance instance;
 
-	private final ScrollBarGridView mGridView;
-	private final GridAdapter mGridAdapter;
+	private final ScrollBarGridView gridView;
+	private final GridAdapter gridAdapter;
 
-	private int mGridRowCount;
-	private ActionMode mSelectionMode;
+	private int gridRowCount;
+	private ActionMode selectionMode;
 
 	public ListUnit(GalleryInstance instance) {
-		mInstance = instance;
+		this.instance = instance;
 		float density = ResourceUtils.obtainDensity(instance.context);
 		int spacing = (int) (GRID_SPACING_DP * density);
-		mGridView = new ScrollBarGridView(instance.context);
-		mGridView.setClipToPadding(false);
-		mGridView.setPadding(spacing, spacing, spacing, spacing);
-		mGridView.setHorizontalSpacing(spacing);
-		mGridView.setVerticalSpacing(spacing);
-		mGridView.setId(android.R.id.list);
-		mGridAdapter = new GridAdapter(instance.galleryItems);
-		mGridView.setAdapter(mGridAdapter);
-		mGridView.setOnScrollListener(new BusyScrollListener(mGridAdapter));
-		mGridView.setOnItemClickListener(this);
-		mGridView.setOnItemLongClickListener(this);
+		gridView = new ScrollBarGridView(instance.context);
+		gridView.setClipToPadding(false);
+		gridView.setPadding(spacing, spacing, spacing, spacing);
+		gridView.setHorizontalSpacing(spacing);
+		gridView.setVerticalSpacing(spacing);
+		gridView.setId(android.R.id.list);
+		gridAdapter = new GridAdapter(instance.galleryItems);
+		gridView.setAdapter(gridAdapter);
+		gridView.setOnScrollListener(new BusyScrollListener(gridAdapter));
+		gridView.setOnItemClickListener(this);
+		gridView.setOnItemLongClickListener(this);
 		updateGridMetrics(instance.context.getResources().getConfiguration());
 	}
 
 	public AbsListView getListView() {
-		return mGridView;
+		return gridView;
 	}
 
 	public void setListSelection(int position, boolean checkVisibility) {
 		if (checkVisibility) {
-			int delta = position - mGridView.getFirstVisiblePosition();
-			if (delta >= 0 && delta <= mGridView.getChildCount()) {
+			int delta = position - gridView.getFirstVisiblePosition();
+			if (delta >= 0 && delta <= gridView.getChildCount()) {
 				return;
 			}
 		}
-		mGridView.setSelection(position);
+		gridView.setSelection(position);
 	}
 
 	public boolean areItemsSelectable() {
-		return mGridAdapter.getCount() > 0;
+		return gridAdapter.getCount() > 0;
 	}
 
 	public void startSelectionMode() {
-		mSelectionMode = mGridView.startActionMode(this);
+		selectionMode = gridView.startActionMode(this);
 	}
 
 	public boolean onApplyWindowPaddings(Rect rect) {
 		if (C.API_LOLLIPOP) {
-			float density = ResourceUtils.obtainDensity(mInstance.context);
+			float density = ResourceUtils.obtainDensity(instance.context);
 			int spacing = (int) (GRID_SPACING_DP * density);
 			// Add spacing to right to fix padding when navbar is right
-			mGridView.setPadding(spacing, rect.top + spacing, rect.right + spacing, rect.bottom + spacing);
-			mGridView.applyEdgeEffectShift(rect.top, rect.bottom);
+			gridView.setPadding(spacing, rect.top + spacing, rect.right + spacing, rect.bottom + spacing);
+			gridView.applyEdgeEffectShift(rect.top, rect.bottom);
 			return true;
 		}
 		return false;
@@ -131,36 +131,36 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 
 	public void switchMode(boolean galleryMode, int duration) {
 		if (galleryMode) {
-			mGridView.setVisibility(View.VISIBLE);
-			mGridAdapter.activate();
+			gridView.setVisibility(View.VISIBLE);
+			gridAdapter.activate();
 			if (duration > 0) {
-				mGridView.setAlpha(0f);
-				mGridView.setScaleX(GRID_SCALE);
-				mGridView.setScaleY(GRID_SCALE);
-				mGridView.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(duration).setListener(null).start();
+				gridView.setAlpha(0f);
+				gridView.setScaleX(GRID_SCALE);
+				gridView.setScaleY(GRID_SCALE);
+				gridView.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(duration).setListener(null).start();
 			}
 		} else {
 			if (duration > 0) {
-				mGridView.setAlpha(1f);
-				mGridView.setScaleX(1f);
-				mGridView.setScaleY(1f);
-				mGridView.animate().alpha(0f).scaleX(GRID_SCALE).scaleY(GRID_SCALE).setDuration(duration)
-						.setListener(new AnimationUtils.VisibilityListener(mGridView, View.GONE)).start();
+				gridView.setAlpha(1f);
+				gridView.setScaleX(1f);
+				gridView.setScaleY(1f);
+				gridView.animate().alpha(0f).scaleX(GRID_SCALE).scaleY(GRID_SCALE).setDuration(duration)
+						.setListener(new AnimationUtils.VisibilityListener(gridView, View.GONE)).start();
 			} else {
-				mGridView.setVisibility(View.GONE);
+				gridView.setVisibility(View.GONE);
 			}
 		}
 	}
 
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		if (mSelectionMode != null) {
-			int index = position - mGridView.getFirstVisiblePosition();
-			updateGalleryItemChecked(mGridView.getChildAt(index), position);
-			mSelectionMode.setTitle(mInstance.context.getString(R.string.text_selected_format,
-					mGridView.getCheckedItemCount()));
+		if (selectionMode != null) {
+			int index = position - gridView.getFirstVisiblePosition();
+			updateGalleryItemChecked(gridView.getChildAt(index), position);
+			selectionMode.setTitle(instance.context.getString(R.string.text_selected_format,
+					gridView.getCheckedItemCount()));
 		} else {
-			mInstance.callback.navigatePageFromList(position);
+			instance.callback.navigatePageFromList(position);
 		}
 	}
 
@@ -172,41 +172,41 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 
 	@Override
 	public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id0) {
-		if (mSelectionMode != null) {
+		if (selectionMode != null) {
 			return false;
 		}
-		GalleryItem galleryItem = mGridAdapter.getItem(position);
-		DialogMenu dialogMenu = new DialogMenu(mInstance.context, (context, id, extra) -> {
+		GalleryItem galleryItem = gridAdapter.getItem(position);
+		DialogMenu dialogMenu = new DialogMenu(instance.context, (context, id, extra) -> {
 			switch (id) {
 				case MENU_DOWNLOAD_FILE: {
-					mInstance.callback.downloadGalleryItem(galleryItem);
+					instance.callback.downloadGalleryItem(galleryItem);
 					break;
 				}
 				case MENU_SEARCH_IMAGE: {
-					NavigationUtils.searchImage(mInstance.context, mInstance.chanName, galleryItem
-							.getDisplayImageUri(mInstance.locator));
+					NavigationUtils.searchImage(instance.context, instance.chanName, galleryItem
+							.getDisplayImageUri(instance.locator));
 					break;
 				}
 				case MENU_COPY_LINK: {
-					StringUtils.copyToClipboard(mInstance.context, galleryItem.getFileUri(mInstance.locator)
+					StringUtils.copyToClipboard(instance.context, galleryItem.getFileUri(instance.locator)
 							.toString());
 					break;
 				}
 				case MENU_GO_TO_POST: {
-					mInstance.callback.navigatePost(galleryItem, true);
+					instance.callback.navigatePost(galleryItem, true);
 					break;
 				}
 				case MENU_SHARE_LINK: {
-					NavigationUtils.share(mInstance.context, galleryItem.getFileUri(mInstance.locator));
+					NavigationUtils.share(instance.context, galleryItem.getFileUri(instance.locator));
 					break;
 				}
 			}
 
 		});
 		dialogMenu.setTitle(galleryItem.originalName != null ? galleryItem.originalName
-				: galleryItem.getFileName(mInstance.locator), true);
+				: galleryItem.getFileName(instance.locator), true);
 		dialogMenu.addItem(MENU_DOWNLOAD_FILE, R.string.action_download_file);
-		if (galleryItem.getDisplayImageUri(mInstance.locator) != null) {
+		if (galleryItem.getDisplayImageUri(instance.locator) != null) {
 			dialogMenu.addItem(MENU_SEARCH_IMAGE, R.string.action_search_image);
 		}
 		dialogMenu.addItem(MENU_COPY_LINK, R.string.action_copy_link);
@@ -225,7 +225,7 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 	}
 
 	private void updateGalleryItemChecked(View view, int position) {
-		boolean checked = mGridView.isItemChecked(position);
+		boolean checked = gridView.isItemChecked(position);
 		GridViewHolder holder = (GridViewHolder) view.getTag();
 		if (C.API_LOLLIPOP) {
 			holder.selectorCheckDrawable.setSelected(checked, true);
@@ -235,10 +235,10 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 	}
 
 	private void updateAllGalleryItemsChecked() {
-		int startPosition = mGridView.getFirstVisiblePosition();
-		int count = mGridView.getChildCount();
+		int startPosition = gridView.getFirstVisiblePosition();
+		int count = gridView.getChildCount();
 		for (int i = 0; i < count; i++) {
-			updateGalleryItemChecked(mGridView.getChildAt(i), startPosition + i);
+			updateGalleryItemChecked(gridView.getChildAt(i), startPosition + i);
 		}
 	}
 
@@ -247,13 +247,13 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 
 	@Override
 	public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-		mGridView.setChoiceMode(GridView.CHOICE_MODE_MULTIPLE);
-		mGridView.clearChoices();
-		mode.setTitle(mInstance.context.getString(R.string.text_selected_format, 0));
-		int selectAllResId = ResourceUtils.getSystemSelectionIcon(mInstance.context, "actionModeSelectAllDrawable",
+		gridView.setChoiceMode(GridView.CHOICE_MODE_MULTIPLE);
+		gridView.clearChoices();
+		mode.setTitle(instance.context.getString(R.string.text_selected_format, 0));
+		int selectAllResId = ResourceUtils.getSystemSelectionIcon(instance.context, "actionModeSelectAllDrawable",
 				"ic_menu_selectall_holo_dark");
 		int flags = MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT;
-		ActionIconSet set = new ActionIconSet(mInstance.context);
+		ActionIconSet set = new ActionIconSet(instance.context);
 		menu.add(0, ACTION_MENU_SELECT_ALL, 0, R.string.action_select_all)
 				.setIcon(selectAllResId).setShowAsAction(flags);
 		menu.add(0, ACTION_MENU_DOWNLOAD_FILES, 0, R.string.action_download_files)
@@ -270,22 +270,22 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 	public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
 		switch (item.getItemId()) {
 			case ACTION_MENU_SELECT_ALL: {
-				for (int i = 0; i < mGridView.getCount(); i++) {
-					mGridView.setItemChecked(i, true);
+				for (int i = 0; i < gridView.getCount(); i++) {
+					gridView.setItemChecked(i, true);
 				}
-				mSelectionMode.setTitle(mInstance.context.getString(R.string.text_selected_format,
-						mGridView.getCount()));
+				selectionMode.setTitle(instance.context.getString(R.string.text_selected_format,
+						gridView.getCount()));
 				updateAllGalleryItemsChecked();
 				return true;
 			}
 			case ACTION_MENU_DOWNLOAD_FILES: {
 				ArrayList<GalleryItem> galleryItems = new ArrayList<>();
-				for (int i = 0; i < mGridView.getCount(); i++) {
-					if (mGridView.isItemChecked(i)) {
-						galleryItems.add(mGridAdapter.getItem(i));
+				for (int i = 0; i < gridView.getCount(); i++) {
+					if (gridView.isItemChecked(i)) {
+						galleryItems.add(gridAdapter.getItem(i));
 					}
 				}
-				mInstance.callback.downloadGalleryItems(galleryItems);
+				instance.callback.downloadGalleryItems(galleryItems);
 				mode.finish();
 				return true;
 			}
@@ -295,39 +295,39 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 
 	@Override
 	public void onDestroyActionMode(ActionMode mode) {
-		mSelectionMode = null;
-		mGridView.setChoiceMode(GridView.CHOICE_MODE_NONE);
+		selectionMode = null;
+		gridView.setChoiceMode(GridView.CHOICE_MODE_NONE);
 		updateAllGalleryItemsChecked();
 	}
 
 	private void updateGridMetrics(Configuration configuration) {
-		if (mGridView != null) {
+		if (gridView != null) {
 			if (!C.API_LOLLIPOP) {
 				// Update top padding on old devices, on new devices paddings will be updated in onApplyWindowPaddings
-				TypedArray typedArray = mInstance.context.obtainStyledAttributes
+				TypedArray typedArray = instance.context.obtainStyledAttributes
 						(new int[] {android.R.attr.actionBarSize});
 				int height = typedArray.getDimensionPixelSize(0, 0);
 				typedArray.recycle();
-				float density = ResourceUtils.obtainDensity(mInstance.context);
+				float density = ResourceUtils.obtainDensity(instance.context);
 				int spacing = (int) (GRID_SPACING_DP * density);
-				mGridView.setPadding(spacing, spacing + height, spacing, spacing);
-				mGridView.applyEdgeEffectShift(height, 0);
+				gridView.setPadding(spacing, spacing + height, spacing, spacing);
+				gridView.applyEdgeEffectShift(height, 0);
 			}
 			// Items count in row must fit to this inequality: (widthDp - (i + 1) * GRID_SPACING_DP) / i >= SIZE
 			// Where SIZE - size of item in grid, i - items count in row, unknown quantity
 			// The solution is: i <= (widthDp + GRID_SPACING_DP) / (SIZE + GRID_SPACING_DP)
 			int widthDp = configuration.screenWidthDp;
 			int size = ResourceUtils.isTablet(configuration) ? 160 : 100;
-			mGridRowCount = (widthDp - GRID_SPACING_DP) / (size + GRID_SPACING_DP);
-			mGridView.setNumColumns(mGridRowCount);
-			mGridView.post(() -> {
-				float density = ResourceUtils.obtainDensity(mInstance.context);
-				int spaceForRows = mGridView.getWidth() - mGridView.getPaddingLeft() - mGridView.getPaddingRight()
-						- (int) ((mGridRowCount - 1) * GRID_SPACING_DP * density);
-				int unusedSpace = (spaceForRows - spaceForRows / mGridRowCount * mGridRowCount) / 2;
+			gridRowCount = (widthDp - GRID_SPACING_DP) / (size + GRID_SPACING_DP);
+			gridView.setNumColumns(gridRowCount);
+			gridView.post(() -> {
+				float density = ResourceUtils.obtainDensity(instance.context);
+				int spaceForRows = gridView.getWidth() - gridView.getPaddingLeft() - gridView.getPaddingRight()
+						- (int) ((gridRowCount - 1) * GRID_SPACING_DP * density);
+				int unusedSpace = (spaceForRows - spaceForRows / gridRowCount * gridRowCount) / 2;
 				if (unusedSpace > 0) {
-					mGridView.setPadding(mGridView.getPaddingLeft() + unusedSpace, mGridView.getPaddingTop(),
-							mGridView.getPaddingRight() + unusedSpace, mGridView.getPaddingBottom());
+					gridView.setPadding(gridView.getPaddingLeft() + unusedSpace, gridView.getPaddingTop(),
+							gridView.getPaddingRight() + unusedSpace, gridView.getPaddingBottom());
 				}
 			});
 		}
@@ -341,27 +341,27 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 	}
 
 	private class GridAdapter extends BaseAdapter implements BusyScrollListener.Callback {
-		private final ArrayList<GalleryItem> mGalleryItems;
+		private final ArrayList<GalleryItem> galleryItems;
 
-		private boolean mEnabled = false;
-		private boolean mBusy = false;
+		private boolean enabled = false;
+		private boolean busy = false;
 
 		public GridAdapter(ArrayList<GalleryItem> galleryItems) {
-			mGalleryItems = galleryItems;
+			this.galleryItems = galleryItems;
 		}
 
 		public void activate() {
-			mEnabled = true;
+			enabled = true;
 		}
 
 		@Override
 		public int getCount() {
-			return mEnabled ? mGalleryItems.size() : 0;
+			return enabled ? galleryItems.size() : 0;
 		}
 
 		@Override
 		public GalleryItem getItem(int position) {
-			return mGalleryItems.get(position);
+			return galleryItems.get(position);
 		}
 
 		@Override
@@ -374,7 +374,7 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 			GridViewHolder holder;
 			if (convertView == null) {
 				holder = new GridViewHolder();
-				convertView = LayoutInflater.from(mInstance.context).inflate(R.layout.list_item_attachment,
+				convertView = LayoutInflater.from(instance.context).inflate(R.layout.list_item_attachment,
 						parent, false);
 				holder.thumbnail = (AttachmentView) convertView.findViewById(R.id.thumbnail);
 				holder.thumbnail.setBackgroundColor(0xff333333);
@@ -388,7 +388,7 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 					// noinspection RedundantCast
 					((FrameLayout) convertView).setForeground(holder.selectorCheckDrawable);
 				} else {
-					holder.selectorBorderDrawable = new SelectorBorderDrawable(mInstance.context);
+					holder.selectorBorderDrawable = new SelectorBorderDrawable(instance.context);
 					// noinspection RedundantCast
 					((FrameLayout) convertView).setForeground(holder.selectorBorderDrawable);
 				}
@@ -396,26 +396,26 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 			} else {
 				holder = (GridViewHolder) convertView.getTag();
 			}
-			float density = ResourceUtils.obtainDensity(mInstance.context);
+			float density = ResourceUtils.obtainDensity(instance.context);
 			int padding = (int) (GRID_SPACING_DP * density);
-			int size = (mGridView.getWidth() - (mGridRowCount - 1) * padding - mGridView.getPaddingLeft()
-					- mGridView.getPaddingRight()) / mGridRowCount;
+			int size = (gridView.getWidth() - (gridRowCount - 1) * padding - gridView.getPaddingLeft()
+					- gridView.getPaddingRight()) / gridRowCount;
 			convertView.getLayoutParams().width = size;
 			convertView.getLayoutParams().height = size;
 			GalleryItem galleryItem = getItem(position);
-			holder.attachmentInfo.setText(StringUtils.getFileExtension(galleryItem.getFileUri(mInstance.locator)
+			holder.attachmentInfo.setText(StringUtils.getFileExtension(galleryItem.getFileUri(instance.locator)
 					.toString()).toUpperCase(Locale.getDefault()) + (galleryItem.size > 0 ? " " +
 					AttachmentItem.formatSize(galleryItem.size) : ""));
 			ImageLoader imageLoader = ImageLoader.getInstance();
 			imageLoader.unbind(holder.thumbnail);
-			Uri thumbnailUri = galleryItem.getThumbnailUri(mInstance.locator);
+			Uri thumbnailUri = galleryItem.getThumbnailUri(instance.locator);
 			if (thumbnailUri != null) {
 				CacheManager cacheManager = CacheManager.getInstance();
-				if (mBusy) {
+				if (busy) {
 					holder.thumbnail.setAdditionalOverlay(0, false);
 					String key = cacheManager.getCachedFileKey(thumbnailUri);
 					if (cacheManager.isThumbnailCachedMemory(key)) {
-						imageLoader.loadImage(thumbnailUri, mInstance.chanName, key, true, holder.thumbnail, 0,
+						imageLoader.loadImage(thumbnailUri, instance.chanName, key, true, holder.thumbnail, 0,
 								R.attr.attachmentWarning);
 					} else {
 						holder.thumbnail.setImage(null);
@@ -427,7 +427,7 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 				holder.thumbnail.setImage(null);
 				holder.thumbnail.setAdditionalOverlay(R.attr.attachmentWarning, false);
 			}
-			boolean checked = mGridView.isItemChecked(position);
+			boolean checked = gridView.isItemChecked(position);
 			if (C.API_LOLLIPOP) {
 				holder.selectorCheckDrawable.setSelected(checked, false);
 			} else {
@@ -438,15 +438,15 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 
 		@Override
 		public void setListViewBusy(boolean isBusy, AbsListView listView) {
-			mBusy = isBusy;
-			if (!mBusy) {
+			busy = isBusy;
+			if (!busy) {
 				CacheManager cacheManager = CacheManager.getInstance();
 				int count = listView.getChildCount();
 				for (int i = 0; i < count; i++) {
 					View view = listView.getChildAt(i);
 					int position = listView.getPositionForView(view);
 					GalleryItem galleryItem = getItem(position);
-					if (galleryItem.getThumbnailUri(mInstance.locator) != null) {
+					if (galleryItem.getThumbnailUri(instance.locator) != null) {
 						displayThumbnail((GridViewHolder) view.getTag(), cacheManager, galleryItem);
 					}
 				}
@@ -457,18 +457,18 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 			ImageLoader imageLoader = ImageLoader.getInstance();
 			imageLoader.unbind(holder.thumbnail);
 			holder.thumbnail.setAdditionalOverlay(0, true);
-			Uri thumbnailUri = galleryItem.getThumbnailUri(mInstance.locator);
+			Uri thumbnailUri = galleryItem.getThumbnailUri(instance.locator);
 			if (thumbnailUri != null) {
 				String key = cacheManager.getCachedFileKey(thumbnailUri);
-				imageLoader.loadImage(thumbnailUri, mInstance.chanName, key, false, holder.thumbnail, 0,
+				imageLoader.loadImage(thumbnailUri, instance.chanName, key, false, holder.thumbnail, 0,
 						R.attr.attachmentWarning);
 			}
 		}
 	}
 
 	private class ScrollBarGridView extends GridView {
-		private final Rect mRect = new Rect();
-		private final Paint mPaint = new Paint();
+		private final Rect rect = new Rect();
+		private final Paint paint = new Paint();
 
 		public ScrollBarGridView(Context context) {
 			super(context);
@@ -491,33 +491,33 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 				if (offset + length > size) {
 					offset = size - length;
 				}
-				mRect.set(r + spacing - thickness, t + offset, r + spacing, t + offset + length);
-				mPaint.setColor(Color.argb(0x7f * (C.API_KITKAT ? scrollBar.getAlpha() : 0xff) / 0xff,
+				rect.set(r + spacing - thickness, t + offset, r + spacing, t + offset + length);
+				paint.setColor(Color.argb(0x7f * (C.API_KITKAT ? scrollBar.getAlpha() : 0xff) / 0xff,
 						0xff, 0xff, 0xff));
-				canvas.drawRect(mRect, mPaint);
+				canvas.drawRect(rect, paint);
 			}
 		}
 
-		private EdgeEffectHandler mEdgeEffectHandler;
+		private EdgeEffectHandler edgeEffectHandler;
 
 		@Override
 		public void setOverScrollMode(int mode) {
 			super.setOverScrollMode(mode);
 			if (mode == View.OVER_SCROLL_NEVER) {
-				mEdgeEffectHandler = null;
+				edgeEffectHandler = null;
 			} else {
 				EdgeEffectHandler edgeEffectHandler = EdgeEffectHandler.bind(this, null);
 				if (edgeEffectHandler != null) {
-					edgeEffectHandler.setColor(mInstance.actionBarColor);
-					mEdgeEffectHandler = edgeEffectHandler;
+					edgeEffectHandler.setColor(instance.actionBarColor);
+					this.edgeEffectHandler = edgeEffectHandler;
 				}
 			}
 		}
 
 		public void applyEdgeEffectShift(int top, int bottom) {
-			if (mEdgeEffectHandler != null) {
-				mEdgeEffectHandler.setShift(true, top);
-				mEdgeEffectHandler.setShift(false, bottom);
+			if (edgeEffectHandler != null) {
+				edgeEffectHandler.setShift(true, top);
+				edgeEffectHandler.setShift(false, bottom);
 			}
 		}
 	}

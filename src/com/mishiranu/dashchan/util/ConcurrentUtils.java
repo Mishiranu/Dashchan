@@ -45,14 +45,14 @@ public class ConcurrentUtils {
 	}
 
 	private static class ComponentThreadFactory implements ThreadFactory {
-		private final String mComponentName;
-		private final String mComponentPart;
-		private final int mThreadPriority;
+		private final String componentName;
+		private final String componentPart;
+		private final int threadPriority;
 
 		public ComponentThreadFactory(String componentName, String componentPart, int threadPriority) {
-			mComponentName = componentName;
-			mComponentPart = componentPart;
-			mThreadPriority = threadPriority;
+			this.componentName = componentName;
+			this.componentPart = componentPart;
+			this.threadPriority = threadPriority;
 		}
 
 		@Override
@@ -60,12 +60,12 @@ public class ConcurrentUtils {
 			Thread thread = new Thread(r) {
 				@Override
 				public void run() {
-					Process.setThreadPriority(mThreadPriority);
+					Process.setThreadPriority(threadPriority);
 					super.run();
 				}
 			};
-			if (mComponentName != null) {
-				thread.setName(mComponentName + (mComponentPart != null ? " #" + mComponentPart : ""));
+			if (componentName != null) {
+				thread.setName(componentName + (componentPart != null ? " #" + componentPart : ""));
 			}
 			return thread;
 		}

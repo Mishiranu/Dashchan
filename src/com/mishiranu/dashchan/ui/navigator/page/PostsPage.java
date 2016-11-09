@@ -90,28 +90,28 @@ import com.mishiranu.dashchan.widget.PullableWrapper;
 
 public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorage.Observer, UiManager.Observer,
 		DeserializePostsTask.Callback, ReadPostsTask.Callback, ActionMode.Callback {
-	private DeserializePostsTask mDeserializeTask;
-	private ReadPostsTask mReadTask;
+	private DeserializePostsTask deserializeTask;
+	private ReadPostsTask readTask;
 
-	private Replyable mReplyable;
-	private HidePerformer mHidePerformer;
-	private Pair<String, Uri> mOriginalThreadData;
+	private Replyable replyable;
+	private HidePerformer hidePerformer;
+	private Pair<String, Uri> originalThreadData;
 
-	private String mScrollToPostNumber;
-	private ActionMode mSelectionMode;
+	private String scrollToPostNumber;
+	private ActionMode selectionMode;
 
-	private LinearLayout mSearchController;
-	private Button mSearchTextResult;
-	private final ArrayList<Integer> mSearchFoundPosts = new ArrayList<>();
-	private boolean mSearching = false;
-	private int mSearchLastPosition;
+	private LinearLayout searchController;
+	private Button searchTextResult;
+	private final ArrayList<Integer> searchFoundPosts = new ArrayList<>();
+	private boolean searching = false;
+	private int searchLastPosition;
 
-	private int mAutoRefreshInterval = 30;
-	private boolean mAutoRefreshEnabled = false;
+	private int autoRefreshInterval = 30;
+	private boolean autoRefreshEnabled = false;
 
-	private final ArrayList<String> mLastEditedPostNumbers = new ArrayList<>();
+	private final ArrayList<String> lastEditedPostNumbers = new ArrayList<>();
 
-	private final BroadcastReceiver mGalleryPagerReceiver = new BroadcastReceiver() {
+	private final BroadcastReceiver galleryPagerReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			String chanName = intent.getStringExtra(C.EXTRA_CHAN_NAME);
@@ -135,53 +135,53 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		PullableListView listView = getListView();
 		PageHolder pageHolder = getPageHolder();
 		UiManager uiManager = getUiManager();
-		mHidePerformer = new HidePerformer();
+		hidePerformer = new HidePerformer();
 		PostsExtra extra = getExtra();
 		listView.setDivider(ResourceUtils.getDrawable(activity, R.attr.postsDivider, 0));
 		ChanConfiguration.Board board = getChanConfiguration().safe().obtainBoard(pageHolder.boardName);
 		if (board.allowPosting) {
-			mReplyable = data -> getUiManager().navigator().navigatePosting(pageHolder.chanName, pageHolder.boardName,
+			replyable = data -> getUiManager().navigator().navigatePosting(pageHolder.chanName, pageHolder.boardName,
 					pageHolder.threadNumber, data);
 		}
 		PostsAdapter adapter = new PostsAdapter(activity, pageHolder.chanName, pageHolder.boardName, uiManager,
-				mReplyable, mHidePerformer, extra.userPostNumbers, listView);
+				replyable, hidePerformer, extra.userPostNumbers, listView);
 		initAdapter(adapter, adapter);
 		listView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
 		uiManager.observable().register(this);
-		mHidePerformer.setPostsProvider(adapter);
+		hidePerformer.setPostsProvider(adapter);
 
 		Context darkStyledContext = new ContextThemeWrapper(activity, R.style.Theme_General_Main_Dark);
-		mSearchController = new LinearLayout(darkStyledContext);
-		mSearchController.setOrientation(LinearLayout.HORIZONTAL);
-		mSearchController.setGravity(Gravity.CENTER_VERTICAL);
+		searchController = new LinearLayout(darkStyledContext);
+		searchController.setOrientation(LinearLayout.HORIZONTAL);
+		searchController.setGravity(Gravity.CENTER_VERTICAL);
 		float density = ResourceUtils.obtainDensity(getResources());
 		int padding = (int) (10f * density);
-		mSearchTextResult = new Button(darkStyledContext, null, android.R.attr.borderlessButtonStyle);
-		mSearchTextResult.setTextSize(11f);
+		searchTextResult = new Button(darkStyledContext, null, android.R.attr.borderlessButtonStyle);
+		searchTextResult.setTextSize(11f);
 		if (!C.API_LOLLIPOP) {
-			mSearchTextResult.setTypeface(null, Typeface.BOLD);
+			searchTextResult.setTypeface(null, Typeface.BOLD);
 		}
-		mSearchTextResult.setPadding((int) (14f * density), 0, (int) (14f * density), 0);
-		mSearchTextResult.setMinimumWidth(0);
-		mSearchTextResult.setMinWidth(0);
-		mSearchTextResult.setOnClickListener(v -> showSearchDialog());
-		mSearchController.addView(mSearchTextResult, LinearLayout.LayoutParams.WRAP_CONTENT,
+		searchTextResult.setPadding((int) (14f * density), 0, (int) (14f * density), 0);
+		searchTextResult.setMinimumWidth(0);
+		searchTextResult.setMinWidth(0);
+		searchTextResult.setOnClickListener(v -> showSearchDialog());
+		searchController.addView(searchTextResult, LinearLayout.LayoutParams.WRAP_CONTENT,
 				LinearLayout.LayoutParams.WRAP_CONTENT);
 		ImageView backButtonView = new ImageView(darkStyledContext, null, android.R.attr.borderlessButtonStyle);
 		backButtonView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
 		backButtonView.setImageResource(obtainIcon(R.attr.actionBack));
 		backButtonView.setPadding(padding, padding, padding, padding);
 		backButtonView.setOnClickListener(v -> findBack());
-		mSearchController.addView(backButtonView, (int) (48f * density), (int) (48f * density));
+		searchController.addView(backButtonView, (int) (48f * density), (int) (48f * density));
 		ImageView forwardButtonView = new ImageView(darkStyledContext, null, android.R.attr.borderlessButtonStyle);
 		forwardButtonView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
 		forwardButtonView.setImageResource(obtainIcon(R.attr.actionForward));
 		forwardButtonView.setPadding(padding, padding, padding, padding);
 		forwardButtonView.setOnClickListener(v -> findForward());
-		mSearchController.addView(forwardButtonView, (int) (48f * density), (int) (48f * density));
+		searchController.addView(forwardButtonView, (int) (48f * density), (int) (48f * density));
 		if (C.API_LOLLIPOP) {
-			for (int i = 0, last = mSearchController.getChildCount() - 1; i <= last; i++) {
-				View view = mSearchController.getChildAt(i);
+			for (int i = 0, last = searchController.getChildCount() - 1; i <= last; i++) {
+				View view = searchController.getChildAt(i);
 				LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) view.getLayoutParams();
 				if (i == 0) {
 					layoutParams.leftMargin = (int) (-6f * density);
@@ -194,18 +194,18 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 			}
 		}
 
-		mScrollToPostNumber = pageHolder.initialPostNumber;
+		scrollToPostNumber = pageHolder.initialPostNumber;
 		FavoritesStorage.getInstance().getObservable().register(this);
-		LocalBroadcastManager.getInstance(activity).registerReceiver(mGalleryPagerReceiver,
+		LocalBroadcastManager.getInstance(activity).registerReceiver(galleryPagerReceiver,
 				new IntentFilter(C.ACTION_GALLERY_GO_TO_POST));
 		boolean hasNewPostDatas = handleNewPostDatas();
 		extra.forceRefresh = hasNewPostDatas || !pageHolder.initialFromCache;
 		if (extra.cachedPosts != null && extra.cachedPostItems.size() > 0) {
 			onDeserializePostsCompleteInternal(true, extra.cachedPosts, new ArrayList<>(extra.cachedPostItems), true);
 		} else {
-			mDeserializeTask = new DeserializePostsTask(this, pageHolder.chanName, pageHolder.boardName,
+			deserializeTask = new DeserializePostsTask(this, pageHolder.chanName, pageHolder.boardName,
 					pageHolder.threadNumber, extra.cachedPosts);
-			mDeserializeTask.executeOnExecutor(DeserializePostsTask.THREAD_POOL_EXECUTOR);
+			deserializeTask.executeOnExecutor(DeserializePostsTask.THREAD_POOL_EXECUTOR);
 			getListView().getWrapper().startBusyState(PullableWrapper.Side.BOTH);
 			switchView(ViewType.PROGRESS, null);
 		}
@@ -225,15 +225,15 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 	@Override
 	protected void onDestroy() {
 		getAdapter().cleanup();
-		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mGalleryPagerReceiver);
+		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(galleryPagerReceiver);
 		getUiManager().observable().unregister(this);
-		if (mDeserializeTask != null) {
-			mDeserializeTask.cancel();
-			mDeserializeTask = null;
+		if (deserializeTask != null) {
+			deserializeTask.cancel();
+			deserializeTask = null;
 		}
-		if (mReadTask != null) {
-			mReadTask.cancel();
-			mReadTask = null;
+		if (readTask != null) {
+			readTask.cancel();
+			readTask = null;
 		}
 		ImageLoader.getInstance().clearTasks(getPageHolder().chanName);
 		FavoritesStorage.getInstance().getObservable().unregister(this);
@@ -260,9 +260,9 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 
 	@Override
 	public void onItemClick(View view, int position, long id) {
-		if (mSelectionMode != null) {
+		if (selectionMode != null) {
 			getAdapter().toggleItemSelected(getListView(), position);
-			mSelectionMode.setTitle(getString(R.string.text_selected_format, getAdapter().getSelectedCount()));
+			selectionMode.setTitle(getString(R.string.text_selected_format, getAdapter().getSelectedCount()));
 			return;
 		}
 		PostsAdapter adapter = getAdapter();
@@ -274,12 +274,12 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 
 	@Override
 	public boolean onItemLongClick(View view, int position, long id) {
-		if (mSelectionMode != null) {
+		if (selectionMode != null) {
 			return false;
 		}
 		PostsAdapter adapter = getAdapter();
 		PostItem postItem = adapter.getItem(position);
-		return postItem != null && getUiManager().interaction().handlePostContextMenu(postItem, mReplyable, true, true);
+		return postItem != null && getUiManager().interaction().handlePostContextMenu(postItem, replyable, true, true);
 	}
 
 	private static final int OPTIONS_MENU_ADD_POST = 0;
@@ -330,7 +330,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 	@Override
 	public void onPrepareOptionsMenu(Menu menu) {
 		PageHolder pageHolder = getPageHolder();
-		menu.findItem(OPTIONS_MENU_ADD_POST).setVisible(mReplyable != null);
+		menu.findItem(OPTIONS_MENU_ADD_POST).setVisible(replyable != null);
 		boolean isFavorite = FavoritesStorage.getInstance().hasFavorite(pageHolder.chanName, pageHolder.boardName,
 				pageHolder.threadNumber);
 		boolean iconFavorite = ResourceUtils.isTabletOrLandscape(getResources().getConfiguration());
@@ -338,13 +338,13 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		menu.findItem(OPTIONS_MENU_REMOVE_FROM_FAVORITES_TEXT).setVisible(!iconFavorite && isFavorite);
 		menu.findItem(OPTIONS_MENU_ADD_TO_FAVORITES_ICON).setVisible(iconFavorite && !isFavorite);
 		menu.findItem(OPTIONS_MENU_REMOVE_FROM_FAVORITES_ICON).setVisible(iconFavorite && isFavorite);
-		menu.findItem(OPTIONS_MENU_OPEN_ORIGINAL_THREAD).setVisible(mOriginalThreadData != null);
+		menu.findItem(OPTIONS_MENU_OPEN_ORIGINAL_THREAD).setVisible(originalThreadData != null);
 		menu.findItem(OPTIONS_MENU_ARCHIVE).setVisible(ChanManager.getInstance()
 				.canBeArchived(pageHolder.chanName));
 		menu.findItem(THREAD_OPTIONS_MENU_AUTO_REFRESH).setVisible(Preferences.getAutoRefreshMode()
 				== Preferences.AUTO_REFRESH_MODE_SEPARATE).setEnabled(!getAdapter().isEmpty())
-				.setChecked(mAutoRefreshEnabled);
-		menu.findItem(THREAD_OPTIONS_MENU_HIDDEN_POSTS).setEnabled(mHidePerformer.hasLocalAutohide());
+				.setChecked(autoRefreshEnabled);
+		menu.findItem(THREAD_OPTIONS_MENU_HIDDEN_POSTS).setEnabled(hidePerformer.hasLocalAutohide());
 		menu.findItem(THREAD_OPTIONS_MENU_CLEAR_DELETED).setEnabled(getAdapter().hasDeletedPosts());
 	}
 
@@ -381,7 +381,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				return true;
 			}
 			case OPTIONS_MENU_SELECT: {
-				mSelectionMode = getActivity().startActionMode(this);
+				selectionMode = getActivity().startActionMode(this);
 				return true;
 			}
 			case OPTIONS_MENU_REFRESH: {
@@ -403,8 +403,8 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				return true;
 			}
 			case OPTIONS_MENU_OPEN_ORIGINAL_THREAD: {
-				String chanName = mOriginalThreadData.first;
-				Uri uri = mOriginalThreadData.second;
+				String chanName = originalThreadData.first;
+				Uri uri = originalThreadData.second;
 				ChanLocator locator = ChanLocator.get(chanName);
 				String boardName = locator.safe(true).getBoardName(uri);
 				String threadNumber = locator.safe(true).getThreadNumber(uri);
@@ -433,14 +433,14 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				seekBarForm.setConfiguration(Preferences.MIN_AUTO_REFRESH_INTERVAL,
 						Preferences.MAX_AUTO_REFRESH_INTERVAL, Preferences.STEP_AUTO_REFRESH_INTERVAL, 1f);
 				seekBarForm.setValueFormat(getString(R.string.preference_auto_refresh_interval_summary_format));
-				seekBarForm.setCurrentValue(mAutoRefreshInterval);
-				seekBarForm.setSwitchValue(mAutoRefreshEnabled);
+				seekBarForm.setCurrentValue(autoRefreshInterval);
+				seekBarForm.setSwitchValue(autoRefreshEnabled);
 				new AlertDialog.Builder(activity).setTitle(R.string.action_auto_refresh).setView(seekBarForm.inflate
 						(getActivity())).setPositiveButton(android.R.string.ok, (dialog, which) -> {
-					mAutoRefreshEnabled = seekBarForm.getSwitchValue();
-					mAutoRefreshInterval = seekBarForm.getCurrentValue();
+					autoRefreshEnabled = seekBarForm.getSwitchValue();
+					autoRefreshInterval = seekBarForm.getCurrentValue();
 					Posts posts = getExtra().cachedPosts;
-					boolean changed = posts.setAutoRefreshData(mAutoRefreshEnabled, mAutoRefreshInterval);
+					boolean changed = posts.setAutoRefreshData(autoRefreshEnabled, autoRefreshInterval);
 					if (changed) {
 						serializePosts();
 					}
@@ -449,7 +449,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				return true;
 			}
 			case THREAD_OPTIONS_MENU_HIDDEN_POSTS: {
-				ArrayList<String> localAutohide = mHidePerformer.getReadableLocalAutohide();
+				ArrayList<String> localAutohide = hidePerformer.getReadableLocalAutohide();
 				final boolean[] checked = new boolean[localAutohide.size()];
 				new AlertDialog.Builder(activity).setMultiChoiceItems(CommonUtils.toArray(localAutohide, String.class),
 						checked, (dialog, which, isChecked) -> checked[which] = isChecked)
@@ -457,14 +457,14 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 					boolean hasDeleted = false;
 					for (int i = 0, j = 0; i < checked.length; i++, j++) {
 						if (checked[i]) {
-							mHidePerformer.removeLocalAutohide(j--);
+							hidePerformer.removeLocalAutohide(j--);
 							hasDeleted = true;
 						}
 					}
 					if (hasDeleted) {
 						adapter.invalidateHidden();
 						notifyAllAdaptersChanged();
-						mHidePerformer.encodeLocalAutohide(getExtra().cachedPosts);
+						hidePerformer.encodeLocalAutohide(getExtra().cachedPosts);
 						serializePosts();
 						adapter.preloadPosts(getListView().getFirstVisiblePosition());
 					}
@@ -585,7 +585,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		ChanConfiguration.Board board = configuration.safe().obtainBoard(pageHolder.boardName);
 		menu.add(0, ACTION_MENU_MAKE_THREADSHOT, 0, R.string.action_make_threadshot)
 				.setIcon(obtainIcon(R.attr.actionMakeThreadshot)).setShowAsAction(flags);
-		if (mReplyable != null) {
+		if (replyable != null) {
 			menu.add(0, ACTION_MENU_REPLY, 0, R.string.action_reply).setIcon(pasteResId).setShowAsAction(flags);
 		}
 		if (board.allowDeleting) {
@@ -630,7 +630,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 					data.add(new Replyable.ReplyData(postItem.getPostNumber(), null));
 				}
 				if (data.size() > 0) {
-					mReplyable.onRequestReply(CommonUtils.toArray(data, Replyable.ReplyData.class));
+					replyable.onRequestReply(CommonUtils.toArray(data, Replyable.ReplyData.class));
 				}
 				mode.finish();
 				return true;
@@ -674,7 +674,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 	@Override
 	public void onDestroyActionMode(ActionMode mode) {
 		getAdapter().setSelectionModeEnabled(false);
-		mSelectionMode = null;
+		selectionMode = null;
 	}
 
 	@Override
@@ -683,9 +683,9 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		if (adapter.isEmpty()) {
 			return false;
 		}
-		mSearchFoundPosts.clear();
+		searchFoundPosts.clear();
 		int listPosition = ListPosition.obtain(getListView()).position;
-		mSearchLastPosition = 0;
+		searchLastPosition = 0;
 		boolean positionDefined = false;
 		Locale locale = Locale.getDefault();
 		SearchHelper helper = new SearchHelper();
@@ -695,7 +695,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		PostsExtra extra = getExtra();
 		OUTER: for (int i = 0; i < adapter.getCount(); i++) {
 			PostItem postItem = adapter.getItem(i);
-			if (postItem != null && !postItem.isHidden(mHidePerformer)) {
+			if (postItem != null && !postItem.isHidden(hidePerformer)) {
 				String postNumber = postItem.getPostNumber();
 				String comment = postItem.getComment().toString().toLowerCase(locale);
 				boolean userPost = postItem.isUserPost();
@@ -711,7 +711,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				}
 				boolean hasAttachments = postItem.hasAttachments();
 				boolean deleted = postItem.isDeleted();
-				boolean edited = mLastEditedPostNumbers.contains(postNumber);
+				boolean edited = lastEditedPostNumbers.contains(postNumber);
 				boolean originalPoster = postItem.isOriginalPoster();
 				if (!helper.checkFlags("m", userPost, "r", reply, "a", hasAttachments, "d", deleted, "e", edited,
 						"op", originalPoster)) {
@@ -764,26 +764,26 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				}
 				if (found) {
 					if (!positionDefined && i > listPosition) {
-						mSearchLastPosition = mSearchFoundPosts.size();
+						searchLastPosition = searchFoundPosts.size();
 						positionDefined = true;
 					}
-					mSearchFoundPosts.add(i);
+					searchFoundPosts.add(i);
 				}
 			}
 		}
-		boolean found = mSearchFoundPosts.size() > 0;
+		boolean found = searchFoundPosts.size() > 0;
 		getUiManager().view().setHighlightText(found ? queries : null);
 		adapter.notifyDataSetChanged();
-		mSearching = true;
+		searching = true;
 		if (found) {
-			setCustomSearchView(mSearchController);
+			setCustomSearchView(searchController);
 			updateOptionsMenu(true);
-			mSearchLastPosition--;
+			searchLastPosition--;
 			findForward();
 			return true;
 		} else {
 			ToastUtils.show(getActivity(), R.string.message_not_found);
-			mSearchLastPosition = -1;
+			searchLastPosition = -1;
 			updateSearchTitle();
 			return false;
 		}
@@ -791,8 +791,8 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 
 	@Override
 	public void onSearchCancel() {
-		if (mSearching) {
-			mSearching = false;
+		if (searching) {
+			searching = false;
 			setCustomSearchView(null);
 			updateOptionsMenu(true);
 			getUiManager().view().setHighlightText(null);
@@ -801,10 +801,10 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 	}
 
 	private void showSearchDialog() {
-		if (!mSearchFoundPosts.isEmpty()) {
+		if (!searchFoundPosts.isEmpty()) {
 			PostsAdapter adapter = getAdapter();
 			HashSet<String> postNumbers = new HashSet<>();
-			for (Integer position : mSearchFoundPosts) {
+			for (Integer position : searchFoundPosts) {
 				PostItem postItem = adapter.getItem(position);
 				postNumbers.add(postItem.getPostNumber());
 			}
@@ -813,31 +813,31 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 	}
 
 	private void findBack() {
-		int count = mSearchFoundPosts.size();
+		int count = searchFoundPosts.size();
 		if (count > 0) {
-			mSearchLastPosition--;
-			if (mSearchLastPosition < 0) {
-				mSearchLastPosition += count;
+			searchLastPosition--;
+			if (searchLastPosition < 0) {
+				searchLastPosition += count;
 			}
-			ListScroller.scrollTo(getListView(), mSearchFoundPosts.get(mSearchLastPosition));
+			ListScroller.scrollTo(getListView(), searchFoundPosts.get(searchLastPosition));
 			updateSearchTitle();
 		}
 	}
 
 	private void findForward() {
-		int count = mSearchFoundPosts.size();
+		int count = searchFoundPosts.size();
 		if (count > 0) {
-			mSearchLastPosition++;
-			if (mSearchLastPosition >= count) {
-				mSearchLastPosition -= count;
+			searchLastPosition++;
+			if (searchLastPosition >= count) {
+				searchLastPosition -= count;
 			}
-			ListScroller.scrollTo(getListView(), mSearchFoundPosts.get(mSearchLastPosition));
+			ListScroller.scrollTo(getListView(), searchFoundPosts.get(searchLastPosition));
 			updateSearchTitle();
 		}
 	}
 
 	private void updateSearchTitle() {
-		mSearchTextResult.setText((mSearchLastPosition + 1) + "/" + mSearchFoundPosts.size());
+		searchTextResult.setText((searchLastPosition + 1) + "/" + searchFoundPosts.size());
 	}
 
 	private boolean handleNewPostDatas() {
@@ -918,8 +918,8 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 
 	@Override
 	public void updatePageConfiguration(String postNumber, String threadTitle) {
-		mScrollToPostNumber = postNumber;
-		if (mReadTask == null && mDeserializeTask == null) {
+		scrollToPostNumber = postNumber;
+		if (readTask == null && deserializeTask == null) {
 			if (!scrollToSpecifiedPost(false)) {
 				refreshPosts(true, false);
 			}
@@ -932,22 +932,22 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 	}
 
 	private boolean scrollToSpecifiedPost(boolean instantly) {
-		if (mScrollToPostNumber != null) {
-			int position = getAdapter().findPositionByPostNumber(mScrollToPostNumber);
+		if (scrollToPostNumber != null) {
+			int position = getAdapter().findPositionByPostNumber(scrollToPostNumber);
 			if (position >= 0) {
 				if (instantly) {
 					getListView().setSelection(position);
 				} else {
 					ListScroller.scrollTo(getListView(), position);
 				}
-				mScrollToPostNumber = null;
+				scrollToPostNumber = null;
 			}
 		}
-		return mScrollToPostNumber == null;
+		return scrollToPostNumber == null;
 	}
 
 	private void onFirstPostsLoad() {
-		if (mScrollToPostNumber == null) {
+		if (scrollToPostNumber == null) {
 			PageHolder pageHolder = getPageHolder();
 			if (pageHolder.position != null) {
 				pageHolder.position.apply(getListView());
@@ -972,8 +972,8 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 					originalThreadData = new Pair<>(chanName, archivedThreadUri);
 				}
 			}
-			if ((mOriginalThreadData == null) != (originalThreadData == null)) {
-				mOriginalThreadData = originalThreadData;
+			if ((this.originalThreadData == null) != (originalThreadData == null)) {
+				this.originalThreadData = originalThreadData;
 				updateOptionsMenu(false);
 			}
 		}
@@ -1000,31 +1000,31 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 
 	private static final Handler HANDLER = new Handler();
 
-	private final Runnable mRefreshRunnable = () -> {
-		if (mDeserializeTask == null && mReadTask == null) {
+	private final Runnable refreshRunnable = () -> {
+		if (deserializeTask == null && readTask == null) {
 			refreshPosts(true, false);
 		}
 		queueNextRefresh(false);
 	};
 
 	private void queueNextRefresh(boolean instant) {
-		HANDLER.removeCallbacks(mRefreshRunnable);
+		HANDLER.removeCallbacks(refreshRunnable);
 		int mode = Preferences.getAutoRefreshMode();
-		boolean enabled = mode == Preferences.AUTO_REFRESH_MODE_SEPARATE && mAutoRefreshEnabled ||
+		boolean enabled = mode == Preferences.AUTO_REFRESH_MODE_SEPARATE && autoRefreshEnabled ||
 				mode == Preferences.AUTO_REFRESH_MODE_ENABLED;
 		if (enabled) {
-			int interval = mode == Preferences.AUTO_REFRESH_MODE_SEPARATE ? mAutoRefreshInterval
+			int interval = mode == Preferences.AUTO_REFRESH_MODE_SEPARATE ? autoRefreshInterval
 					: Preferences.getAutoRefreshInterval();
 			if (instant) {
-				HANDLER.post(mRefreshRunnable);
+				HANDLER.post(refreshRunnable);
 			} else {
-				HANDLER.postDelayed(mRefreshRunnable, interval * 1000);
+				HANDLER.postDelayed(refreshRunnable, interval * 1000);
 			}
 		}
 	}
 
 	private void stopRefresh() {
-		HANDLER.removeCallbacks(mRefreshRunnable);
+		HANDLER.removeCallbacks(refreshRunnable);
 	}
 
 	private void refreshPosts(boolean checkModified, boolean reload) {
@@ -1033,22 +1033,22 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 
 	private void refreshPosts(boolean checkModified, boolean reload, boolean showPull) {
 		PostsExtra extra = getExtra();
-		if (mDeserializeTask != null) {
+		if (deserializeTask != null) {
 			if (!reload) {
 				extra.forceRefresh = true;
 			}
 			return;
 		}
-		if (mReadTask != null) {
-			mReadTask.cancel();
+		if (readTask != null) {
+			readTask.cancel();
 		}
 		PageHolder pageHolder = getPageHolder();
 		PostsAdapter adapter = getAdapter();
 		boolean partialLoading = !adapter.isEmpty();
 		boolean useValidator = checkModified && partialLoading && !reload;
-		mReadTask = new ReadPostsTask(this, pageHolder.chanName, pageHolder.boardName, pageHolder.threadNumber,
+		readTask = new ReadPostsTask(this, pageHolder.chanName, pageHolder.boardName, pageHolder.threadNumber,
 				extra.cachedPosts, useValidator, reload, adapter.getLastPostNumber(), extra.userPostPendings);
-		mReadTask.executeOnExecutor(ReadPostsTask.THREAD_POOL_EXECUTOR);
+		readTask.executeOnExecutor(ReadPostsTask.THREAD_POOL_EXECUTOR);
 		if (showPull) {
 			getListView().getWrapper().startBusyState(PullableWrapper.Side.BOTTOM);
 			switchView(ViewType.LIST, null);
@@ -1091,14 +1091,14 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				latch.await();
 				break;
 			} catch (InterruptedException e) {
-				// Ignore
+				// Uninterruptible wait, ignore exception
 			}
 		}
 	}
 
 	@Override
 	public void onDeserializePostsComplete(boolean success, Posts posts, ArrayList<PostItem> postItems) {
-		mDeserializeTask = null;
+		deserializeTask = null;
 		getListView().getWrapper().cancelBusyState();
 		switchView(ViewType.LIST, null);
 		if (success && postItems != null) {
@@ -1120,7 +1120,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		extra.cachedPosts = null;
 		extra.cachedPostItems.clear();
 		if (success) {
-			mHidePerformer.decodeLocalAutohide(posts);
+			hidePerformer.decodeLocalAutohide(posts);
 			extra.cachedPosts = posts;
 			extra.cachedPostItems.addAll(postItems);
 			ArrayList<ReadPostsTask.Patch> patches = new ArrayList<>();
@@ -1134,8 +1134,8 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				}
 			}
 			Pair<Boolean, Integer> autoRefreshData = posts.getAutoRefreshData();
-			mAutoRefreshEnabled = autoRefreshData.first;
-			mAutoRefreshInterval = Math.min(Math.max(autoRefreshData.second, Preferences.MIN_AUTO_REFRESH_INTERVAL),
+			autoRefreshEnabled = autoRefreshData.first;
+			autoRefreshInterval = Math.min(Math.max(autoRefreshData.second, Preferences.MIN_AUTO_REFRESH_INTERVAL),
 					Preferences.MAX_AUTO_REFRESH_INTERVAL);
 			onFirstPostsLoad();
 			onAfterPostsLoad(true);
@@ -1155,7 +1155,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 	@Override
 	public void onReadPostsSuccess(ReadPostsTask.Result result, boolean fullThread,
 			ArrayList<ReadPostsTask.UserPostPending> removedUserPostPendings) {
-		mReadTask = null;
+		readTask = null;
 		getListView().getWrapper().cancelBusyState();
 		switchView(ViewType.LIST, null);
 		PostsAdapter adapter = getAdapter();
@@ -1273,10 +1273,10 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		boolean updateAdapters = result.newCount > 0 || result.deletedCount > 0 || result.hasEdited;
 		serializePosts();
 		if (result.hasEdited) {
-			mLastEditedPostNumbers.clear();
+			lastEditedPostNumbers.clear();
 			for (ReadPostsTask.Patch patch : result.patches) {
 				if (!patch.newPostAddedToEnd) {
-					mLastEditedPostNumbers.add(patch.newPost.getPostNumber());
+					lastEditedPostNumbers.add(patch.newPost.getPostNumber());
 				}
 			}
 		}
@@ -1289,13 +1289,13 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 			showScaleAnimation();
 		}
 		scrollToSpecifiedPost(wasEmpty);
-		mScrollToPostNumber = null;
+		scrollToPostNumber = null;
 		updateOptionsMenu(false);
 	}
 
 	@Override
 	public void onReadPostsEmpty() {
-		mReadTask = null;
+		readTask = null;
 		getListView().getWrapper().cancelBusyState();
 		switchView(ViewType.LIST, null);
 		if (getAdapter().isEmpty()) {
@@ -1307,17 +1307,17 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 
 	@Override
 	public void onReadPostsRedirect(RedirectException.Target target) {
-		mReadTask = null;
+		readTask = null;
 		getListView().getWrapper().cancelBusyState();
 		handleRedirect(target.chanName, target.boardName, target.threadNumber, target.postNumber);
 	}
 
 	@Override
 	public void onReadPostsFail(ErrorItem errorItem) {
-		mReadTask = null;
+		readTask = null;
 		getListView().getWrapper().cancelBusyState();
 		displayDownloadError(true, errorItem.toString());
-		mScrollToPostNumber = null;
+		scrollToPostNumber = null;
 	}
 
 	private void displayDownloadError(boolean show, String message) {
@@ -1356,7 +1356,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				break;
 			}
 			case UiManager.MESSAGE_PERFORM_SWITCH_HIDE: {
-				postItem.setHidden(!postItem.isHidden(mHidePerformer));
+				postItem.setHidden(!postItem.isHidden(hidePerformer));
 				getUiManager().sendPostItemMessage(postItem, UiManager.MESSAGE_INVALIDATE_VIEW);
 				serializePosts();
 				break;
@@ -1369,15 +1369,15 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				int result;
 				switch (message) {
 					case UiManager.MESSAGE_PERFORM_HIDE_REPLIES: {
-						result = mHidePerformer.addHideByReplies(postItem);
+						result = hidePerformer.addHideByReplies(postItem);
 						break;
 					}
 					case UiManager.MESSAGE_PERFORM_HIDE_NAME: {
-						result = mHidePerformer.addHideByName(postItem);
+						result = hidePerformer.addHideByName(postItem);
 						break;
 					}
 					case UiManager.MESSAGE_PERFORM_HIDE_SIMILAR: {
-						result = mHidePerformer.addHideSimilar(postItem);
+						result = hidePerformer.addHideSimilar(postItem);
 						break;
 					}
 					default: {
@@ -1388,7 +1388,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 					postItem.resetHidden();
 					adapter.invalidateHidden();
 					notifyAllAdaptersChanged();
-					mHidePerformer.encodeLocalAutohide(getExtra().cachedPosts);
+					hidePerformer.encodeLocalAutohide(getExtra().cachedPosts);
 					serializePosts();
 				} else if (result == HidePerformer.ADD_EXISTS && !postItem.isHiddenUnchecked()) {
 					postItem.resetHidden();

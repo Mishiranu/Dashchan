@@ -62,14 +62,14 @@ import com.mishiranu.dashchan.widget.ErrorEditTextSetter;
 import com.mishiranu.dashchan.widget.ViewFactory;
 
 public class AutohideFragment extends BaseListFragment {
-	private ArrayAdapter<AutohideStorage.AutohideItem> mAdapter;
+	private ArrayAdapter<AutohideStorage.AutohideItem> adapter;
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		setHasOptionsMenu(true);
 		setEmptyText(R.string.message_no_rules);
-		mAdapter = new ArrayAdapter<AutohideStorage.AutohideItem>(getActivity(), 0) {
+		adapter = new ArrayAdapter<AutohideStorage.AutohideItem>(getActivity(), 0) {
 			@SuppressWarnings("UnusedAssignment")
 			@Override
 			public View getView(int position, View convertView, ViewGroup parent) {
@@ -158,13 +158,13 @@ public class AutohideFragment extends BaseListFragment {
 				return convertView;
 			}
 		};
-		mAdapter.addAll(AutohideStorage.getInstance().getItems());
-		setListAdapter(mAdapter);
+		adapter.addAll(AutohideStorage.getInstance().getItems());
+		setListAdapter(adapter);
 	}
 
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		editRule(mAdapter.getItem(position), position);
+		editRule(adapter.getItem(position), position);
 	}
 
 	private static final int OPTIONS_MENU_NEW_RULE = 0;
@@ -202,7 +202,7 @@ public class AutohideFragment extends BaseListFragment {
 		switch (item.getItemId()) {
 			case CONTEXT_MENU_REMOVE_RULE: {
 				AutohideStorage.getInstance().delete(menuInfo.position);
-				mAdapter.remove(mAdapter.getItem(menuInfo.position));
+				adapter.remove(adapter.getItem(menuInfo.position));
 				break;
 			}
 		}
@@ -219,11 +219,11 @@ public class AutohideFragment extends BaseListFragment {
 		if (index == -1) {
 			// Also will set id to item
 			AutohideStorage.getInstance().add(autohideItem);
-			mAdapter.add(autohideItem);
+			adapter.add(autohideItem);
 		} else if (index >= 0) {
 			AutohideStorage.getInstance().update(index, autohideItem);
-			mAdapter.remove(mAdapter.getItem(index));
-			mAdapter.insert(autohideItem, index);
+			adapter.remove(adapter.getItem(index));
+			adapter.insert(autohideItem, index);
 		}
 	}
 
@@ -232,21 +232,21 @@ public class AutohideFragment extends BaseListFragment {
 		private static final String EXTRA_ITEM = "item";
 		private static final String EXTRA_INDEX = "index";
 
-		private final HashSet<String> mSelectedChanNames = new HashSet<>();
+		private final HashSet<String> selectedChanNames = new HashSet<>();
 
-		private ScrollView mScrollView;
-		private TextView mChanNameSelector;
-		private EditText mBoardNameEdit;
-		private EditText mThreadNumberEdit;
-		private CheckBox mAutohideOriginalPost;
-		private CheckBox mAutohideSage;
-		private CheckBox mAutohideSubject;
-		private CheckBox mAutohideComment;
-		private CheckBox mAutohideName;
-		private EditText mValueEdit;
-		private TextView mErrorText;
-		private TextView mMatcherText;
-		private EditText mTestStringEdit;
+		private ScrollView scrollView;
+		private TextView chanNameSelector;
+		private EditText boardNameEdit;
+		private EditText threadNumberEdit;
+		private CheckBox autohideOriginalPost;
+		private CheckBox autohideSage;
+		private CheckBox autohideSubject;
+		private CheckBox autohideComment;
+		private CheckBox autohideName;
+		private EditText valueEdit;
+		private TextView errorText;
+		private TextView matcherText;
+		private EditText testStringEdit;
 
 		public AutohideDialog() {}
 
@@ -262,25 +262,25 @@ public class AutohideFragment extends BaseListFragment {
 		public void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
 			ScrollView view = (ScrollView) LayoutInflater.from(getActivity()).inflate(R.layout.dialog_autohide, null);
-			mScrollView = view;
-			mChanNameSelector = (TextView) view.findViewById(R.id.chan_name);
-			mBoardNameEdit = (EditText) view.findViewById(R.id.board_name);
-			mThreadNumberEdit = (EditText) view.findViewById(R.id.thread_number);
-			mAutohideOriginalPost = (CheckBox) view.findViewById(R.id.autohide_original_post);
-			mAutohideSage = (CheckBox) view.findViewById(R.id.autohide_sage);
-			mAutohideSubject = (CheckBox) view.findViewById(R.id.autohide_subject);
-			mAutohideComment = (CheckBox) view.findViewById(R.id.autohide_comment);
-			mAutohideName = (CheckBox) view.findViewById(R.id.autohide_name);
-			mValueEdit = (EditText) view.findViewById(R.id.value);
-			mErrorText = (TextView) view.findViewById(R.id.error_text);
-			mMatcherText = (TextView) view.findViewById(R.id.matcher_result);
-			mTestStringEdit = (EditText) view.findViewById(R.id.test_string);
-			mValueEdit.addTextChangedListener(mValueListener);
-			mTestStringEdit.addTextChangedListener(mTestStringListener);
-			mChanNameSelector.setOnClickListener(this);
+			scrollView = view;
+			chanNameSelector = (TextView) view.findViewById(R.id.chan_name);
+			boardNameEdit = (EditText) view.findViewById(R.id.board_name);
+			threadNumberEdit = (EditText) view.findViewById(R.id.thread_number);
+			autohideOriginalPost = (CheckBox) view.findViewById(R.id.autohide_original_post);
+			autohideSage = (CheckBox) view.findViewById(R.id.autohide_sage);
+			autohideSubject = (CheckBox) view.findViewById(R.id.autohide_subject);
+			autohideComment = (CheckBox) view.findViewById(R.id.autohide_comment);
+			autohideName = (CheckBox) view.findViewById(R.id.autohide_name);
+			valueEdit = (EditText) view.findViewById(R.id.value);
+			errorText = (TextView) view.findViewById(R.id.error_text);
+			matcherText = (TextView) view.findViewById(R.id.matcher_result);
+			testStringEdit = (EditText) view.findViewById(R.id.test_string);
+			valueEdit.addTextChangedListener(valueListener);
+			testStringEdit.addTextChangedListener(testStringListener);
+			chanNameSelector.setOnClickListener(this);
 			Collection<String> chanNames = ChanManager.getInstance().getAvailableChanNames();
 			if (chanNames.size() <= 1) {
-				mChanNameSelector.setVisibility(View.GONE);
+				chanNameSelector.setVisibility(View.GONE);
 			}
 			AutohideStorage.AutohideItem autohideItem = null;
 			if (savedInstanceState != null) {
@@ -291,27 +291,27 @@ public class AutohideFragment extends BaseListFragment {
 			}
 			if (autohideItem != null) {
 				if (autohideItem.chanNames != null) {
-					mSelectedChanNames.addAll(autohideItem.chanNames);
+					selectedChanNames.addAll(autohideItem.chanNames);
 				}
 				updateSelectedText();
-				mBoardNameEdit.setText(autohideItem.boardName);
-				mThreadNumberEdit.setText(autohideItem.threadNumber);
-				mAutohideOriginalPost.setChecked(autohideItem.optionOriginalPost);
-				mAutohideSage.setChecked(autohideItem.optionSage);
-				mAutohideSubject.setChecked(autohideItem.optionSubject);
-				mAutohideComment.setChecked(autohideItem.optionComment);
-				mAutohideName.setChecked(autohideItem.optionName);
-				mValueEdit.setText(autohideItem.value);
+				boardNameEdit.setText(autohideItem.boardName);
+				threadNumberEdit.setText(autohideItem.threadNumber);
+				autohideOriginalPost.setChecked(autohideItem.optionOriginalPost);
+				autohideSage.setChecked(autohideItem.optionSage);
+				autohideSubject.setChecked(autohideItem.optionSubject);
+				autohideComment.setChecked(autohideItem.optionComment);
+				autohideName.setChecked(autohideItem.optionName);
+				valueEdit.setText(autohideItem.value);
 			} else {
-				mChanNameSelector.setText(R.string.text_all_forums);
-				mBoardNameEdit.setText(null);
-				mThreadNumberEdit.setText(null);
-				mAutohideOriginalPost.setChecked(false);
-				mAutohideSage.setChecked(false);
-				mAutohideSubject.setChecked(true);
-				mAutohideComment.setChecked(true);
-				mAutohideName.setChecked(true);
-				mValueEdit.setText(null);
+				chanNameSelector.setText(R.string.text_all_forums);
+				boardNameEdit.setText(null);
+				threadNumberEdit.setText(null);
+				autohideOriginalPost.setChecked(false);
+				autohideSage.setChecked(false);
+				autohideSubject.setChecked(true);
+				autohideComment.setChecked(true);
+				autohideName.setChecked(true);
+				valueEdit.setText(null);
 			}
 			updateTestResult();
 		}
@@ -324,7 +324,7 @@ public class AutohideFragment extends BaseListFragment {
 
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState) {
-			AlertDialog dialog = new AlertDialog.Builder(getActivity()).setView(mScrollView).setPositiveButton
+			AlertDialog dialog = new AlertDialog.Builder(getActivity()).setView(scrollView).setPositiveButton
 					(R.string.action_save, this).setNegativeButton(android.R.string.cancel, null).create();
 			dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 			return dialog;
@@ -332,37 +332,37 @@ public class AutohideFragment extends BaseListFragment {
 
 		@Override
 		public void onClick(View v) {
-			MultipleChanDialog dialog = new MultipleChanDialog(new ArrayList<>(mSelectedChanNames));
+			MultipleChanDialog dialog = new MultipleChanDialog(new ArrayList<>(selectedChanNames));
 			dialog.setTargetFragment(this, 0);
 			dialog.show(getFragmentManager(), MultipleChanDialog.class.getName());
 		}
 
 		private void updateSelectedText() {
 			String chanNameText;
-			int size = mSelectedChanNames.size();
+			int size = selectedChanNames.size();
 			if (size == 0) {
 				chanNameText = getString(R.string.text_all_forums);
 			} else if (size > 1) {
 				chanNameText = getString(R.string.text_several_forums);
 			} else {
-				String chanName = mSelectedChanNames.iterator().next();
+				String chanName = selectedChanNames.iterator().next();
 				ChanConfiguration configuration = ChanConfiguration.get(chanName);
 				String title = configuration != null ? configuration.getTitle() : chanName;
 				chanNameText = getString(R.string.text_only_forum_format, title);
 			}
-			mChanNameSelector.setText(chanNameText);
+			chanNameSelector.setText(chanNameText);
 		}
 
 		private AutohideStorage.AutohideItem readDialogView() {
-			String boardName = mBoardNameEdit.getText().toString();
-			String threadNumber = mThreadNumberEdit.getText().toString();
-			boolean optionOriginalPost = mAutohideOriginalPost.isChecked();
-			boolean optionSage = mAutohideSage.isChecked();
-			boolean optionSubject = mAutohideSubject.isChecked();
-			boolean optionComment = mAutohideComment.isChecked();
-			boolean optionName = mAutohideName.isChecked();
-			String value = mValueEdit.getText().toString();
-			return new AutohideStorage.AutohideItem(mSelectedChanNames.size() > 0 ? mSelectedChanNames : null,
+			String boardName = boardNameEdit.getText().toString();
+			String threadNumber = threadNumberEdit.getText().toString();
+			boolean optionOriginalPost = autohideOriginalPost.isChecked();
+			boolean optionSage = autohideSage.isChecked();
+			boolean optionSubject = autohideSubject.isChecked();
+			boolean optionComment = autohideComment.isChecked();
+			boolean optionName = autohideName.isChecked();
+			String value = valueEdit.getText().toString();
+			return new AutohideStorage.AutohideItem(selectedChanNames.size() > 0 ? selectedChanNames : null,
 					boardName, threadNumber, optionOriginalPost, optionSage,
 					optionSubject, optionComment, optionName, value);
 		}
@@ -374,79 +374,79 @@ public class AutohideFragment extends BaseListFragment {
 		}
 
 		private void onChansSelected(ArrayList<String> selected) {
-			mSelectedChanNames.clear();
-			mSelectedChanNames.addAll(selected);
+			selectedChanNames.clear();
+			selectedChanNames.addAll(selected);
 			updateSelectedText();
 		}
 
-		private BackgroundColorSpan mErrorSpan;
-		private ErrorEditTextSetter mErrorValueSetter;
+		private BackgroundColorSpan errorSpan;
+		private ErrorEditTextSetter errorValueSetter;
 
 		private void updateError(int index, String text) {
 			boolean error = index >= 0;
-			Editable value = mValueEdit.getEditableText();
+			Editable value = valueEdit.getEditableText();
 			if (error) {
-				if (mErrorSpan == null) {
-					mErrorSpan = new BackgroundColorSpan(ResourceUtils.getColor(getActivity(), R.attr.colorTextError));
+				if (errorSpan == null) {
+					errorSpan = new BackgroundColorSpan(ResourceUtils.getColor(getActivity(), R.attr.colorTextError));
 				} else {
-					value.removeSpan(mErrorSpan);
+					value.removeSpan(errorSpan);
 				}
 				if (index > 0) {
-					value.setSpan(mErrorSpan, index - 1, index, Editable.SPAN_EXCLUSIVE_EXCLUSIVE);
+					value.setSpan(errorSpan, index - 1, index, Editable.SPAN_EXCLUSIVE_EXCLUSIVE);
 				}
-			} else if (mErrorSpan != null) {
-				value.removeSpan(mErrorSpan);
+			} else if (errorSpan != null) {
+				value.removeSpan(errorSpan);
 			}
 			if (C.API_LOLLIPOP) {
-				if (mErrorValueSetter == null) {
-					mErrorValueSetter = new ErrorEditTextSetter(mValueEdit);
+				if (errorValueSetter == null) {
+					errorValueSetter = new ErrorEditTextSetter(valueEdit);
 				}
-				mErrorValueSetter.setError(error);
+				errorValueSetter.setError(error);
 			}
 			if (StringUtils.isEmpty(text)) {
-				mErrorText.setVisibility(View.GONE);
+				errorText.setVisibility(View.GONE);
 			} else {
-				mScrollView.post(() -> {
-					int position = mErrorText.getBottom() - mScrollView.getHeight();
-					if (mScrollView.getScrollY() < position) {
+				scrollView.post(() -> {
+					int position = errorText.getBottom() - scrollView.getHeight();
+					if (scrollView.getScrollY() < position) {
 						int limit = Integer.MAX_VALUE;
-						int start = mValueEdit.getSelectionStart();
+						int start = valueEdit.getSelectionStart();
 						if (start >= 0) {
-							Layout layout = mValueEdit.getLayout();
-							limit = layout.getLineTop(layout.getLineForOffset(start)) + mValueEdit.getTop();
+							Layout layout = valueEdit.getLayout();
+							limit = layout.getLineTop(layout.getLineForOffset(start)) + valueEdit.getTop();
 						}
 						if (limit > position) {
-							mScrollView.smoothScrollTo(0, position);
+							scrollView.smoothScrollTo(0, position);
 						}
 					}
 				});
-				mErrorText.setVisibility(View.VISIBLE);
-				mErrorText.setText(text);
+				errorText.setVisibility(View.VISIBLE);
+				errorText.setText(text);
 			}
 		}
 
-		private Pattern mWorkPattern;
+		private Pattern workPattern;
 
 		private void updateTestResult() {
 			String matchedText = null;
-			if (mWorkPattern != null) {
-				Matcher matcher = mWorkPattern.matcher(mTestStringEdit.getText().toString());
+			if (workPattern != null) {
+				Matcher matcher = workPattern.matcher(testStringEdit.getText().toString());
 				if (matcher.find()) {
 					matchedText = StringUtils.emptyIfNull(matcher.group());
 				}
 			}
 			if (matchedText != null) {
 				if (StringUtils.isEmptyOrWhitespace(matchedText)) {
-					mMatcherText.setText(R.string.text_match_found);
+					matcherText.setText(R.string.text_match_found);
 				} else {
-					mMatcherText.setText(getString(R.string.text_match_found_format, matchedText));
+					matcherText.setText(getString(R.string.text_match_found_format, matchedText));
 				}
 			} else {
-				mMatcherText.setText(R.string.text_no_matches_found);
+				matcherText.setText(R.string.text_no_matches_found);
 			}
 		}
 
-		private final TextWatcher mValueListener = new TextWatcher() {
+		private final TextWatcher valueListener = new TextWatcher() {
 			@Override
 			public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
@@ -474,12 +474,12 @@ public class AutohideFragment extends BaseListFragment {
 				} catch (PatternSyntaxException e) {
 					updateError(e.getIndex(), e.getDescription());
 				}
-				mWorkPattern = pattern;
+				workPattern = pattern;
 				updateTestResult();
 			}
 		};
 
-		private final TextWatcher mTestStringListener = new TextWatcher() {
+		private final TextWatcher testStringListener = new TextWatcher() {
 			@Override
 			public void onTextChanged(CharSequence s, int start, int before, int count) {
 				updateTestResult();
@@ -506,28 +506,28 @@ public class AutohideFragment extends BaseListFragment {
 			setArguments(args);
 		}
 
-		private List<String> mChanNames;
-		private boolean[] mCheckedItems;
+		private List<String> chanNames;
+		private boolean[] checkedItems;
 
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState) {
 			Collection<String> chanNames = ChanManager.getInstance().getAvailableChanNames();
-			mChanNames = new ArrayList<>(chanNames);
-			String[] items = new String[chanNames.size()];
-			for (int i = 0; i < chanNames.size(); i++) {
-				items[i] = ChanConfiguration.get(mChanNames.get(i)).getTitle();
+			this.chanNames = new ArrayList<>(chanNames);
+			String[] items = new String[this.chanNames.size()];
+			for (int i = 0; i < this.chanNames.size(); i++) {
+				items[i] = ChanConfiguration.get(this.chanNames.get(i)).getTitle();
 			}
 			boolean[] checkedItems = savedInstanceState != null ? savedInstanceState
 					.getBooleanArray(EXTRA_CHECKED) : null;
 			// size != length means some chans were added or deleted while configuration was changing (very rare case)
-			if (checkedItems == null || chanNames.size() != checkedItems.length) {
+			if (checkedItems == null || this.chanNames.size() != checkedItems.length) {
 				ArrayList<String> selected = getArguments().getStringArrayList(EXTRA_SELECTED);
 				checkedItems = new boolean[items.length];
-				for (int i = 0; i < chanNames.size(); i++) {
-					checkedItems[i] = selected.contains(mChanNames.get(i));
+				for (int i = 0; i < this.chanNames.size(); i++) {
+					checkedItems[i] = selected.contains(this.chanNames.get(i));
 				}
 			}
-			mCheckedItems = checkedItems;
+			this.checkedItems = checkedItems;
 			return new AlertDialog.Builder(getActivity()).setMultiChoiceItems(items, checkedItems, this)
 					.setNegativeButton(android.R.string.cancel, null)
 					.setPositiveButton(android.R.string.ok, this).create();
@@ -536,20 +536,20 @@ public class AutohideFragment extends BaseListFragment {
 		@Override
 		public void onSaveInstanceState(Bundle outState) {
 			super.onSaveInstanceState(outState);
-			outState.putBooleanArray(EXTRA_CHECKED, mCheckedItems);
+			outState.putBooleanArray(EXTRA_CHECKED, checkedItems);
 		}
 
 		@Override
 		public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-			mCheckedItems[which] = isChecked;
+			checkedItems[which] = isChecked;
 		}
 
 		@Override
 		public void onClick(DialogInterface dialog, int which) {
 			ArrayList<String> selected = new ArrayList<>();
-			for (int i = 0; i < mChanNames.size(); i++) {
-				if (mCheckedItems[i]) {
-					selected.add(mChanNames.get(i));
+			for (int i = 0; i < chanNames.size(); i++) {
+				if (checkedItems[i]) {
+					selected.add(chanNames.get(i));
 				}
 			}
 			((AutohideDialog) getTargetFragment()).onChansSelected(selected);

@@ -25,22 +25,22 @@ import java.util.Arrays;
 public class CachingInputStream extends InputStream {
 	enum Whence {START, RELATIVE, END}
 
-	private final Object mDataBufferLock = new Object();
-	private byte[] mDataBuffer = new byte[1024];
-	private boolean mDataBufferEnd = false;
-	private int mDataBufferCount = 0;
-	private int mDataBufferIndex = 0;
+	private final Object dataBufferLock = new Object();
+	private byte[] dataBuffer = new byte[1024];
+	private boolean dataBufferEnd = false;
+	private int dataBufferCount = 0;
+	private int dataBufferIndex = 0;
 
-	private boolean mAllowReadBeyondBuffer = true;
-	private boolean mClosed = false;
+	private boolean allowReadBeyondBuffer = true;
+	private boolean closed = false;
 
-	private final byte[] mOneByteBuffer = new byte[1];
+	private final byte[] oneByteBuffer = new byte[1];
 
 	@Override
 	public int read() throws IOException {
-		synchronized (mDataBufferLock) {
-			int count = read(mOneByteBuffer, 0, 1);
-			return count == 1 ? mOneByteBuffer[0] : -1;
+		synchronized (dataBufferLock) {
+			int count = read(oneByteBuffer, 0, 1);
+			return count == 1 ? oneByteBuffer[0] : -1;
 		}
 	}
 
@@ -51,27 +51,27 @@ public class CachingInputStream extends InputStream {
 
 	@Override
 	public int read(byte[] buffer, int byteOffset, int byteCount) throws IOException {
-		synchronized (mDataBufferLock) {
-			while (mDataBufferCount - mDataBufferIndex < byteCount && !mDataBufferEnd && !mClosed) {
-				if (!mAllowReadBeyondBuffer) {
+		synchronized (dataBufferLock) {
+			while (dataBufferCount - dataBufferIndex < byteCount && !dataBufferEnd && !closed) {
+				if (!allowReadBeyondBuffer) {
 					return 0;
 				}
 				try {
-					mDataBufferLock.wait();
+					dataBufferLock.wait();
 				} catch (InterruptedException e) {
 					Thread.currentThread().interrupt();
 					throw new InterruptedIOException("Thread was interrupted during IO operation");
 				}
 			}
-			if (mDataBufferEnd && mDataBufferIndex >= mDataBufferCount || mClosed) {
+			if (dataBufferEnd && dataBufferIndex >= dataBufferCount || closed) {
 				return -1;
 			}
-			byteCount = Math.min(mDataBufferCount - mDataBufferIndex, byteCount);
+			byteCount = Math.min(dataBufferCount - dataBufferIndex, byteCount);
 			if (byteCount < 0) {
 				byteCount = 0;
 			} else if (byteCount > 0) {
-				System.arraycopy(mDataBuffer, mDataBufferIndex, buffer, byteOffset, byteCount);
-				mDataBufferIndex += byteCount;
+				System.arraycopy(dataBuffer, dataBufferIndex, buffer, byteOffset, byteCount);
+				dataBufferIndex += byteCount;
 			}
 			return byteCount;
 		}
@@ -79,25 +79,25 @@ public class CachingInputStream extends InputStream {
 
 	@Override
 	public void close() throws IOException {
-		synchronized (mDataBufferLock) {
-			if (!mDataBufferEnd) {
-				mClosed = true;
-				mDataBufferEnd = true;
-				mDataBufferLock.notifyAll();
+		synchronized (dataBufferLock) {
+			if (!dataBufferEnd) {
+				closed = true;
+				dataBufferEnd = true;
+				dataBufferLock.notifyAll();
 			}
 		}
 	}
 
 	public void setAllowReadBeyondBuffer(boolean allow) {
-		synchronized (mDataBufferLock) {
-			mAllowReadBeyondBuffer = allow;
-			mDataBufferLock.notifyAll();
+		synchronized (dataBufferLock) {
+			allowReadBeyondBuffer = allow;
+			dataBufferLock.notifyAll();
 		}
 	}
 
 	public int seek(int position, Whence whence) {
-		synchronized (mDataBufferLock) {
-			int index = mDataBufferIndex;
+		synchronized (dataBufferLock) {
+			int index = dataBufferIndex;
 			switch (whence) {
 				case START: {
 					index = Math.max(position, 0);
@@ -108,40 +108,40 @@ public class CachingInputStream extends InputStream {
 					break;
 				}
 				case END: {
-					if (mDataBufferEnd) {
-						index = mDataBufferCount + position;
+					if (dataBufferEnd) {
+						index = dataBufferCount + position;
 					} else {
 						return -1;
 					}
 					break;
 				}
 			}
-			if (!mAllowReadBeyondBuffer && index >= mDataBufferCount) {
+			if (!allowReadBeyondBuffer && index >= dataBufferCount) {
 				return -1;
 			}
-			mDataBufferIndex = index;
+			dataBufferIndex = index;
 			return index;
 		}
 	}
 
 	public int getPosition() {
-		synchronized (mDataBufferLock) {
-			return mDataBufferIndex;
+		synchronized (dataBufferLock) {
+			return dataBufferIndex;
 		}
 	}
 
 	public int getTotalCount() {
-		synchronized (mDataBufferLock) {
-			return mDataBufferEnd ? mDataBufferCount : -1;
+		synchronized (dataBufferLock) {
+			return dataBufferEnd ? dataBufferCount : -1;
 		}
 	}
 
-	private final OutputStream mOutputStream = new OutputStream() {
+	private final OutputStream outputStream = new OutputStream() {
 		@Override
 		public void write(int oneByte) throws IOException {
-			synchronized (mDataBufferLock) {
-				mOneByteBuffer[0] = (byte) oneByte;
-				write(mOneByteBuffer, 0, 1);
+			synchronized (dataBufferLock) {
+				oneByteBuffer[0] = (byte) oneByte;
+				write(oneByteBuffer, 0, 1);
 			}
 		}
 
@@ -152,38 +152,38 @@ public class CachingInputStream extends InputStream {
 
 		@Override
 		public void write(byte[] buffer, int offset, int count) throws IOException {
-			synchronized (mDataBufferLock) {
-				if (mDataBufferEnd || mClosed) {
+			synchronized (dataBufferLock) {
+				if (dataBufferEnd || closed) {
 					throw new IOException("Stream is closed");
 				}
 				if (count > 0) {
-					int newCount = mDataBufferCount + count;
-					if (newCount > mDataBuffer.length) {
-						mDataBuffer = Arrays.copyOf(mDataBuffer, Math.max(mDataBuffer.length * 2, newCount));
+					int newCount = dataBufferCount + count;
+					if (newCount > dataBuffer.length) {
+						dataBuffer = Arrays.copyOf(dataBuffer, Math.max(dataBuffer.length * 2, newCount));
 					}
-					System.arraycopy(buffer, offset, mDataBuffer, mDataBufferCount, count);
-					mDataBufferCount = newCount;
-					mDataBufferLock.notifyAll();
+					System.arraycopy(buffer, offset, dataBuffer, dataBufferCount, count);
+					dataBufferCount = newCount;
+					dataBufferLock.notifyAll();
 				}
 			}
 		}
 
 		@Override
 		public void close() throws IOException {
-			synchronized (mDataBufferLock) {
-				if (!mDataBufferEnd && !mClosed) {
-					mDataBufferEnd = true;
-					mDataBufferLock.notifyAll();
+			synchronized (dataBufferLock) {
+				if (!dataBufferEnd && !closed) {
+					dataBufferEnd = true;
+					dataBufferLock.notifyAll();
 				}
 			}
 		}
 	};
 
 	public OutputStream getOutputStream() {
-		return mOutputStream;
+		return outputStream;
 	}
 
 	public void writeTo(OutputStream output) throws IOException {
-		output.write(mDataBuffer, 0, mDataBufferCount);
+		output.write(dataBuffer, 0, dataBufferCount);
 	}
 }

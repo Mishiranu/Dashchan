@@ -26,23 +26,23 @@ public class NameColorSpan extends CharacterStyle implements UpdateAppearance, C
 	public static final int TYPE_TRIPCODE = 1;
 	public static final int TYPE_CAPCODE = 2;
 
-	private final int mType;
-	private int mForegroundColor;
+	private final int type;
+	private int foregroundColor;
 
 	public NameColorSpan(int type) {
-		mType = type;
+		this.type = type;
 	}
 
 	@Override
 	public void applyColorScheme(ColorScheme colorScheme) {
 		if (colorScheme != null) {
-			switch (mType) {
+			switch (type) {
 				case TYPE_TRIPCODE: {
-					mForegroundColor = colorScheme.tripcodeColor;
+					foregroundColor = colorScheme.tripcodeColor;
 					break;
 				}
 				case TYPE_CAPCODE: {
-					mForegroundColor = colorScheme.capcodeColor;
+					foregroundColor = colorScheme.capcodeColor;
 					break;
 				}
 			}
@@ -51,6 +51,6 @@ public class NameColorSpan extends CharacterStyle implements UpdateAppearance, C
 
 	@Override
 	public void updateDrawState(TextPaint paint) {
-		paint.setColor(mForegroundColor);
+		paint.setColor(foregroundColor);
 	}
 }

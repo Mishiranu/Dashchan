@@ -24,16 +24,16 @@ import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 
 public class SimpleBitmapDrawable extends Drawable {
-	private final Bitmap mBitmap;
-	private final int mWidth;
-	private final int mHeight;
+	private final Bitmap bitmap;
+	private final int width;
+	private final int height;
 
-	private final Paint mPaint = new Paint(Paint.FILTER_BITMAP_FLAG);
+	private final Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
 
 	public SimpleBitmapDrawable(Bitmap bitmap, int width, int height) {
-		mBitmap = bitmap;
-		mWidth = width;
-		mHeight = height;
+		this.bitmap = bitmap;
+		this.width = width;
+		this.height = height;
 	}
 
 	public SimpleBitmapDrawable(Bitmap bitmap) {
@@ -42,7 +42,7 @@ public class SimpleBitmapDrawable extends Drawable {
 
 	@Override
 	public void draw(Canvas canvas) {
-		canvas.drawBitmap(mBitmap, null, getBounds(), mPaint);
+		canvas.drawBitmap(bitmap, null, getBounds(), paint);
 	}
 
 	@Override
@@ -58,15 +58,15 @@ public class SimpleBitmapDrawable extends Drawable {
 
 	@Override
 	public int getIntrinsicWidth() {
-		return mWidth;
+		return width;
 	}
 
 	@Override
 	public int getIntrinsicHeight() {
-		return mHeight;
+		return height;
 	}
 
 	public void recycle() {
-		mBitmap.recycle();
+		bitmap.recycle();
 	}
 }

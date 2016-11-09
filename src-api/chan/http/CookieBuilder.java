@@ -21,7 +21,7 @@ import chan.util.StringUtils;
 
 @Public
 public final class CookieBuilder {
-	private final StringBuilder mBuilder = new StringBuilder();
+	private final StringBuilder builder = new StringBuilder();
 
 	@Public
 	public CookieBuilder() {}
@@ -33,10 +33,10 @@ public final class CookieBuilder {
 	@Public
 	public CookieBuilder append(String name, String value) {
 		if (!StringUtils.isEmpty(value)) {
-			if (mBuilder.length() > 0) {
-				mBuilder.append("; ");
+			if (builder.length() > 0) {
+				builder.append("; ");
 			}
-			mBuilder.append(name).append("=").append(value);
+			builder.append(name).append("=").append(value);
 		}
 		return this;
 	}
@@ -46,26 +46,26 @@ public final class CookieBuilder {
 			if (cookie.matches(".*; *")) {
 				cookie = cookie.substring(0, cookie.lastIndexOf(';'));
 			}
-			if (mBuilder.length() > 0) {
-				mBuilder.append("; ");
+			if (builder.length() > 0) {
+				builder.append("; ");
 			}
-			mBuilder.append(cookie);
+			builder.append(cookie);
 		}
 		return this;
 	}
 
 	public CookieBuilder append(CookieBuilder builder) {
 		if (builder != null) {
-			if (mBuilder.length() > 0) {
-				mBuilder.append("; ");
+			if (this.builder.length() > 0) {
+				this.builder.append("; ");
 			}
-			mBuilder.append(builder.mBuilder);
+			this.builder.append(builder.builder);
 		}
 		return this;
 	}
 
 	@Public
 	public String build() {
-		return mBuilder.toString();
+		return builder.toString();
 	}
 }

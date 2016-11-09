@@ -21,8 +21,8 @@ import java.util.LinkedHashMap;
 public class LruCache<K, V> extends LinkedHashMap<K, V> {
 	private static final long serialVersionUID = 1L;
 
-	private final RemoveCallback<? super K, ? super V> mCallback;
-	private int mMaxEntries;
+	private final RemoveCallback<? super K, ? super V> callback;
+	private int maxEntries;
 
 	public LruCache(int maxEntries) {
 		this(null, maxEntries);
@@ -30,19 +30,19 @@ public class LruCache<K, V> extends LinkedHashMap<K, V> {
 
 	public LruCache(RemoveCallback<? super K, ? super V> callback, int maxEntries) {
 		super(0, 0.75f, true);
-		mCallback = callback;
+		this.callback = callback;
 		setMaxEntries(maxEntries);
 	}
 
 	public void setMaxEntries(int maxEntries) {
-		mMaxEntries = maxEntries;
+		this.maxEntries = maxEntries;
 	}
 
 	@Override
 	protected boolean removeEldestEntry(Entry<K, V> eldest) {
-		boolean remove = size() > mMaxEntries;
-		if (remove && mCallback != null) {
-			mCallback.onRemoveEldestEntry(eldest.getKey(), eldest.getValue());
+		boolean remove = size() > maxEntries;
+		if (remove && callback != null) {
+			callback.onRemoveEldestEntry(eldest.getKey(), eldest.getValue());
 		}
 		return remove;
 	}

@@ -35,7 +35,7 @@ import com.mishiranu.dashchan.widget.PullableListView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 
 public class UserBoardsPage extends ListPage<UserBoardsAdapter> implements ReadUserBoardsTask.Callback {
-	private ReadUserBoardsTask mReadTask;
+	private ReadUserBoardsTask readTask;
 
 	@Override
 	protected void onCreate() {
@@ -58,9 +58,9 @@ public class UserBoardsPage extends ListPage<UserBoardsAdapter> implements ReadU
 
 	@Override
 	protected void onDestroy() {
-		if (mReadTask != null) {
-			mReadTask.cancel();
-			mReadTask = null;
+		if (readTask != null) {
+			readTask.cancel();
+			readTask = null;
 		}
 	}
 
@@ -145,11 +145,11 @@ public class UserBoardsPage extends ListPage<UserBoardsAdapter> implements ReadU
 	}
 
 	private void refreshBoards(boolean showPull) {
-		if (mReadTask != null) {
-			mReadTask.cancel();
+		if (readTask != null) {
+			readTask.cancel();
 		}
-		mReadTask = new ReadUserBoardsTask(getPageHolder().chanName, this);
-		mReadTask.executeOnExecutor(ReadUserBoardsTask.THREAD_POOL_EXECUTOR);
+		readTask = new ReadUserBoardsTask(getPageHolder().chanName, this);
+		readTask.executeOnExecutor(ReadUserBoardsTask.THREAD_POOL_EXECUTOR);
 		if (showPull) {
 			getListView().getWrapper().startBusyState(PullableWrapper.Side.TOP);
 			switchView(ViewType.LIST, null);
@@ -161,7 +161,7 @@ public class UserBoardsPage extends ListPage<UserBoardsAdapter> implements ReadU
 
 	@Override
 	public void onReadUserBoardsSuccess(Board[] boards) {
-		mReadTask = null;
+		readTask = null;
 		getListView().getWrapper().cancelBusyState();
 		switchView(ViewType.LIST, null);
 		getExtra().boards = boards;
@@ -171,7 +171,7 @@ public class UserBoardsPage extends ListPage<UserBoardsAdapter> implements ReadU
 
 	@Override
 	public void onReadUserBoardsFail(ErrorItem errorItem) {
-		mReadTask = null;
+		readTask = null;
 		getListView().getWrapper().cancelBusyState();
 		if (getAdapter().isEmpty()) {
 			switchView(ViewType.ERROR, errorItem.toString());

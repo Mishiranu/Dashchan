@@ -57,20 +57,20 @@ public class ReadFileTask extends HttpHolderTask<String, Long, Boolean> {
 		public void onFinishDownloadingInThread();
 	}
 
-	private final Context mContext;
-	private final Callback mCallback;
+	private final Context context;
+	private final Callback callback;
 
-	private final String mChanName;
-	private final Uri mFromUri;
-	private final File mToFile;
-	private final File mCachedMediaFile;
-	private final boolean mOverwrite;
+	private final String chanName;
+	private final Uri fromUri;
+	private final File toFile;
+	private final File cachedMediaFile;
+	private final boolean overwrite;
 
-	private ErrorItem mErrorItem;
+	private ErrorItem errorItem;
 
-	private boolean mLoadingStarted;
+	private boolean loadingStarted;
 
-	private final TimedProgressHandler mProgressHandler = new TimedProgressHandler() {
+	private final TimedProgressHandler progressHandler = new TimedProgressHandler() {
 		@Override
 		public void onProgressChange(long progress, long progressMax) {
 			publishProgress(progress, progressMax);
@@ -78,127 +78,127 @@ public class ReadFileTask extends HttpHolderTask<String, Long, Boolean> {
 	};
 
 	public ReadFileTask(Context context, String chanName, Uri from, File to, boolean overwrite, Callback callback) {
-		mContext = context.getApplicationContext();
-		mChanName = chanName;
-		mCallback = callback;
-		mFromUri = from;
-		mToFile = to;
+		this.context = context.getApplicationContext();
+		this.chanName = chanName;
+		this.callback = callback;
+		this.fromUri = from;
+		this.toFile = to;
 		File cachedMediaFile = CacheManager.getInstance().getMediaFile(from, true);
 		if (cachedMediaFile == null || !cachedMediaFile.exists() || CacheManager.getInstance()
 				.cancelCachedMediaBusy(cachedMediaFile) || cachedMediaFile.equals(to)) {
 			cachedMediaFile = null;
 		}
-		mCachedMediaFile = cachedMediaFile;
-		mOverwrite = overwrite;
+		this.cachedMediaFile = cachedMediaFile;
+		this.overwrite = overwrite;
 	}
 
 	@Override
 	public void onPreExecute() {
-		if (!mOverwrite && mToFile.exists()) {
+		if (!overwrite && toFile.exists()) {
 			cancel(false);
-			mCallback.onFileExists(mFromUri, mToFile);
+			callback.onFileExists(fromUri, toFile);
 		} else {
-			mCallback.onStartDownloading(mFromUri, mToFile);
+			callback.onStartDownloading(fromUri, toFile);
 		}
 	}
 
 	@Override
 	protected Boolean doInBackground(HttpHolder holder, String... params) {
 		try {
-			mLoadingStarted = true;
-			if (mCachedMediaFile != null) {
+			loadingStarted = true;
+			if (cachedMediaFile != null) {
 				InputStream input = null;
 				OutputStream output = null;
 				try {
-					input = HttpClient.wrapWithProgressListener(new FileInputStream(mCachedMediaFile),
-							mProgressHandler, mCachedMediaFile.length());
-					output = IOUtils.openOutputStream(mContext, mToFile);
+					input = HttpClient.wrapWithProgressListener(new FileInputStream(cachedMediaFile),
+							progressHandler, cachedMediaFile.length());
+					output = IOUtils.openOutputStream(context, toFile);
 					IOUtils.copyStream(input, output);
 				} finally {
 					IOUtils.close(input);
 					IOUtils.close(output);
 				}
 			} else {
-				Uri uri = mFromUri;
+				Uri uri = fromUri;
 				uri = EmbeddedManager.getInstance().doReadRealUri(uri, holder);
 				final int connectTimeout = 15000, readTimeout = 15000;
 				byte[] response;
-				String chanName = mChanName;
+				String chanName = this.chanName;
 				if (chanName == null) {
 					chanName = ChanManager.getInstance().getChanNameByHost(uri.getAuthority());
 				}
 				if (chanName != null) {
 					ChanPerformer.ReadContentResult result = ChanPerformer.get(chanName).safe()
 							.onReadContent(new ChanPerformer.ReadContentData (uri, connectTimeout, readTimeout,
-							holder, mProgressHandler, null));
+							holder, progressHandler, null));
 					response = result.response.getBytes();
 				} else {
 					response = new HttpRequest(uri, holder).setTimeouts(connectTimeout, readTimeout)
-							.setInputListener(mProgressHandler).read().getBytes();
+							.setInputListener(progressHandler).read().getBytes();
 				}
 				ByteArrayInputStream input = new ByteArrayInputStream(response);
 				OutputStream output = null;
 				boolean success = false;
 				try {
-					output = IOUtils.openOutputStream(mContext, mToFile);
+					output = IOUtils.openOutputStream(context, toFile);
 					IOUtils.copyStream(input, output);
 					success = true;
 				} finally {
 					IOUtils.close(output);
-					CacheManager.getInstance().handleDownloadedFile(mToFile, success);
+					CacheManager.getInstance().handleDownloadedFile(toFile, success);
 				}
 			}
 			return true;
 		} catch (ExtensionException | HttpException | InvalidResponseException e) {
-			mErrorItem = e.getErrorItemAndHandle();
+			errorItem = e.getErrorItemAndHandle();
 			return false;
 		} catch (FileNotFoundException e) {
-			mErrorItem = new ErrorItem(ErrorItem.TYPE_NO_ACCESS_TO_MEMORY);
+			errorItem = new ErrorItem(ErrorItem.TYPE_NO_ACCESS_TO_MEMORY);
 			return false;
 		} catch (IOException e) {
 			String message = e.getMessage();
 			if (message != null && message.contains("ENOSPC")) {
-				mToFile.delete();
-				CacheManager.getInstance().handleDownloadedFile(mToFile, false);
-				mErrorItem = new ErrorItem(ErrorItem.TYPE_INSUFFICIENT_SPACE);
+				toFile.delete();
+				CacheManager.getInstance().handleDownloadedFile(toFile, false);
+				errorItem = new ErrorItem(ErrorItem.TYPE_INSUFFICIENT_SPACE);
 			} else {
-				mErrorItem = new ErrorItem(ErrorItem.TYPE_UNKNOWN);
+				errorItem = new ErrorItem(ErrorItem.TYPE_UNKNOWN);
 			}
 			return false;
 		} finally {
-			if (mCallback instanceof AsyncFinishCallback) {
-				((AsyncFinishCallback) mCallback).onFinishDownloadingInThread();
+			if (callback instanceof AsyncFinishCallback) {
+				((AsyncFinishCallback) callback).onFinishDownloadingInThread();
 			}
 		}
 	}
 
 	@Override
 	public void onPostExecute(Boolean success) {
-		mCallback.onFinishDownloading(success, mFromUri, mToFile, mErrorItem);
+		callback.onFinishDownloading(success, fromUri, toFile, errorItem);
 	}
 
 	@Override
 	protected void onProgressUpdate(Long... values) {
-		mCallback.onUpdateProgress(values[0], values[1]);
+		callback.onUpdateProgress(values[0], values[1]);
 	}
 
 	public boolean isDownloadingFromCache() {
-		return mCachedMediaFile != null;
+		return cachedMediaFile != null;
 	}
 
 	public String getFileName() {
-		return mToFile.getName();
+		return toFile.getName();
 	}
 
 	@Override
 	public void cancel() {
 		super.cancel();
-		if (mLoadingStarted) {
-			mToFile.delete();
-			CacheManager.getInstance().handleDownloadedFile(mToFile, false);
+		if (loadingStarted) {
+			toFile.delete();
+			CacheManager.getInstance().handleDownloadedFile(toFile, false);
 		}
-		if (mCallback instanceof CancelCallback) {
-			((CancelCallback) mCallback).onCancelDownloading(mFromUri, mToFile);
+		if (callback instanceof CancelCallback) {
+			((CancelCallback) callback).onCancelDownloading(fromUri, toFile);
 		}
 	}
 }

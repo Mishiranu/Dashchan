@@ -56,8 +56,8 @@ import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.util.WebViewUtils;
 
 public class WebBrowserActivity extends StateActivity implements DownloadListener {
-	private WebView mWebView;
-	private ProgressView mProgressView;
+	private WebView webView;
+	private ProgressView progressView;
 
 	@SuppressLint("SetJavaScriptEnabled")
 	@Override
@@ -68,7 +68,7 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 		ViewUtils.applyToolbarStyle(this, null);
 		WebView webView = new WebView(this);
-		mWebView = webView;
+		this.webView = webView;
 		WebSettings settings = webView.getSettings();
 		settings.setBuiltInZoomControls(true);
 		settings.setDisplayZoomControls(false);
@@ -78,11 +78,11 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 		settings.setDomStorageEnabled(true);
 		webView.setWebViewClient(new CustomWebViewClient());
 		webView.setWebChromeClient(new CustomWebChromeClient());
-		mProgressView = new ProgressView(this);
+		progressView = new ProgressView(this);
 		float density = ResourceUtils.obtainDensity(this);
 		FrameLayout frameLayout = new FrameLayout(this);
-		frameLayout.addView(mWebView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
-		frameLayout.addView(mProgressView, FrameLayout.LayoutParams.MATCH_PARENT, (int) (3f * density + 0.5f));
+		frameLayout.addView(webView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
+		frameLayout.addView(progressView, FrameLayout.LayoutParams.MATCH_PARENT, (int) (3f * density + 0.5f));
 		setContentView(frameLayout, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
 				ViewGroup.LayoutParams.MATCH_PARENT));
 		webView.setDownloadListener(this);
@@ -94,10 +94,10 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 	@Override
 	protected void onFinish() {
 		super.onFinish();
-		mWebView.stopLoading();
-		ViewUtils.removeFromParent(mWebView);
-		WebViewUtils.clearAll(mWebView);
-		mWebView.destroy();
+		webView.stopLoading();
+		ViewUtils.removeFromParent(webView);
+		WebViewUtils.clearAll(webView);
+		webView.destroy();
 	}
 
 	private static final int OPTIONS_MENU_RELOAD = 0;
@@ -122,15 +122,15 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 				break;
 			}
 			case OPTIONS_MENU_RELOAD: {
-				mWebView.reload();
+				webView.reload();
 				break;
 			}
 			case OPTIONS_MENU_COPY_LINK: {
-				StringUtils.copyToClipboard(this, mWebView.getUrl());
+				StringUtils.copyToClipboard(this, webView.getUrl());
 				break;
 			}
 			case OPTIONS_MENU_SHARE_LINK: {
-				NavigationUtils.share(this, Uri.parse(mWebView.getUrl()));
+				NavigationUtils.share(this, Uri.parse(webView.getUrl()));
 				break;
 			}
 		}
@@ -139,7 +139,7 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-		WebView.HitTestResult hitTestResult = mWebView.getHitTestResult();
+		WebView.HitTestResult hitTestResult = webView.getHitTestResult();
 		switch (hitTestResult.getType()) {
 			case WebView.HitTestResult.IMAGE_TYPE:
 			case WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE: {
@@ -164,8 +164,8 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 
 	@Override
 	public void onBackPressed() {
-		if (mWebView.canGoBack()) {
-			mWebView.goBack();
+		if (webView.canGoBack()) {
+			webView.goBack();
 		} else {
 			super.onBackPressed();
 		}
@@ -240,45 +240,45 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 	private class CustomWebChromeClient extends WebChromeClient {
 		@Override
 		public void onProgressChanged(WebView view, int newProgress) {
-			mProgressView.setProgress(newProgress);
+			progressView.setProgress(newProgress);
 		}
 	}
 
 	private static class ProgressView extends View {
 		private static final int TRANSIENT_TIME = 200;
 
-		private final Paint mPaint = new Paint();
+		private final Paint paint = new Paint();
 
-		private long mProgressSetTime;
-		private float mTransientProgress = 0f;
-		private int mProgress = 0;
+		private long progressSetTime;
+		private float transientProgress = 0f;
+		private int progress = 0;
 
 		public ProgressView(Context context) {
 			super(context);
 			int color = ResourceUtils.getColor(context, R.attr.colorAccentSupport);
-			mPaint.setColor(Color.BLACK | color);
+			paint.setColor(Color.BLACK | color);
 		}
 
 		public void setProgress(int progress) {
-			mTransientProgress = calculateTransient();
-			mProgressSetTime = System.currentTimeMillis();
-			mProgress = progress;
+			transientProgress = calculateTransient();
+			progressSetTime = System.currentTimeMillis();
+			this.progress = progress;
 			invalidate();
 		}
 
 		private float getTime() {
-			return Math.min((float) (System.currentTimeMillis() - mProgressSetTime) / TRANSIENT_TIME, 1f);
+			return Math.min((float) (System.currentTimeMillis() - progressSetTime) / TRANSIENT_TIME, 1f);
 		}
 
 		private float calculateTransient() {
-			return AnimationUtils.lerp(mTransientProgress, mProgress, getTime());
+			return AnimationUtils.lerp(transientProgress, progress, getTime());
 		}
 
 		@Override
 		protected void onDraw(Canvas canvas) {
 			super.onDraw(canvas);
-			Paint paint = mPaint;
-			int progress = mProgress;
+			Paint paint = this.paint;
+			int progress = this.progress;
 			float transientProgress = calculateTransient();
 			int alpha = 0xff;
 			boolean needInvalidate = transientProgress != progress;

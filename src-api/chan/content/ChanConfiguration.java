@@ -47,11 +47,11 @@ import com.mishiranu.dashchan.preference.Preferences;
 
 @Extendable
 public class ChanConfiguration implements ChanManager.Linked {
-	private final String mChanName;
-	private final Resources mResources;
-	private final SharedPreferences mPreferences;
+	private final String chanName;
+	private final Resources resources;
+	private final SharedPreferences preferences;
 
-	private boolean mCanSetOptions = true;
+	private boolean canSetOptions = true;
 
 	public static final ChanManager.Initializer INITIALIZER = new ChanManager.Initializer();
 
@@ -63,25 +63,25 @@ public class ChanConfiguration implements ChanManager.Linked {
 	ChanConfiguration(boolean useInitializer) {
 		if (useInitializer) {
 			ChanManager.Initializer.Holder holder = INITIALIZER.consume();
-			mChanName = holder.chanName;
-			mResources = holder.resources;
-			mPreferences = MainApplication.getInstance().getSharedPreferences("chan." + mChanName,
+			chanName = holder.chanName;
+			resources = holder.resources;
+			preferences = MainApplication.getInstance().getSharedPreferences("chan." + chanName,
 					Context.MODE_PRIVATE);
 		} else {
-			mChanName = null;
-			mResources = null;
-			mPreferences = null;
+			chanName = null;
+			resources = null;
+			preferences = null;
 		}
 	}
 
 	@Override
 	public final String getChanName() {
-		return mChanName;
+		return chanName;
 	}
 
 	@Override
 	public final void init() {
-		mCanSetOptions = false;
+		canSetOptions = false;
 	}
 
 	@Public public static final String OPTION_SINGLE_BOARD_MODE = "single_board_mode";
@@ -254,13 +254,13 @@ public class ChanConfiguration implements ChanManager.Linked {
 		public CustomPreference() {}
 	}
 
-	private final HashMap<String, Object> mEditData = new HashMap<>();
+	private final HashMap<String, Object> editData = new HashMap<>();
 
 	public final void commit() {
-		if (mPreferences != null) {
-			synchronized (mEditData) {
-				SharedPreferences.Editor editor = mPreferences.edit();
-				for (HashMap.Entry<String, Object> entry : mEditData.entrySet()) {
+		if (preferences != null) {
+			synchronized (editData) {
+				SharedPreferences.Editor editor = preferences.edit();
+				for (HashMap.Entry<String, Object> entry : editData.entrySet()) {
 					String key = entry.getKey();
 					Object value = entry.getValue();
 					if (value instanceof Boolean) {
@@ -272,7 +272,7 @@ public class ChanConfiguration implements ChanManager.Linked {
 					}
 				}
 				editor.commit();
-				mEditData.clear();
+				editData.clear();
 			}
 		}
 	}
@@ -288,53 +288,53 @@ public class ChanConfiguration implements ChanManager.Linked {
 
 	@Public
 	public final boolean get(String boardName, String key, boolean defaultValue) {
-		if (mPreferences == null) {
+		if (preferences == null) {
 			return defaultValue;
 		}
 		String realKey = buildKey(boardName, key);
-		synchronized (mEditData) {
-			Object result = mEditData.get(realKey);
+		synchronized (editData) {
+			Object result = editData.get(realKey);
 			if (result != null) {
 				return (boolean) result;
 			}
 		}
-		return mPreferences.getBoolean(realKey, defaultValue);
+		return preferences.getBoolean(realKey, defaultValue);
 	}
 
 	@Public
 	public final int get(String boardName, String key, int defaultValue) {
-		if (mPreferences == null) {
+		if (preferences == null) {
 			return defaultValue;
 		}
 		String realKey = buildKey(boardName, key);
-		synchronized (mEditData) {
-			Object result = mEditData.get(realKey);
+		synchronized (editData) {
+			Object result = editData.get(realKey);
 			if (result != null) {
 				return (int) result;
 			}
 		}
-		return mPreferences.getInt(realKey, defaultValue);
+		return preferences.getInt(realKey, defaultValue);
 	}
 
 	@Public
 	public final String get(String boardName, String key, String defaultValue) {
-		if (mPreferences == null) {
+		if (preferences == null) {
 			return defaultValue;
 		}
 		String realKey = buildKey(boardName, key);
-		synchronized (mEditData) {
-			Object result = mEditData.get(realKey);
+		synchronized (editData) {
+			Object result = editData.get(realKey);
 			if (result != null) {
 				return (String) result;
 			}
 		}
-		return mPreferences.getString(realKey, defaultValue);
+		return preferences.getString(realKey, defaultValue);
 	}
 
 	private void set(String boardName, String key, Object value) {
-		if (mPreferences != null) {
-			synchronized (mEditData) {
-				mEditData.put(buildKey(boardName, key), value);
+		if (preferences != null) {
+			synchronized (editData) {
+				editData.put(buildKey(boardName, key), value);
 			}
 		}
 	}
@@ -354,12 +354,12 @@ public class ChanConfiguration implements ChanManager.Linked {
 		set(boardName, key, (Object) value);
 	}
 
-	private String mTitle;
+	private String title;
 
 	@Public
 	public final String getTitle() {
-		if (mChanName != null) {
-			if (mTitle == null) {
+		if (chanName != null) {
+			if (title == null) {
 				String title = null;
 				ArrayList<String> hosts = ChanLocator.get(this).getChanHosts(false);
 				if (hosts.size() > 0) {
@@ -368,41 +368,41 @@ public class ChanConfiguration implements ChanManager.Linked {
 				if (title == null) {
 					title = "";
 				}
-				mTitle = title;
+				this.title = title;
 			}
-			return mTitle;
+			return title;
 		}
 		return null;
 	}
 
 	private void checkInit() {
-		if (!mCanSetOptions) {
+		if (!canSetOptions) {
 			throw new IllegalStateException("This method available only from constructor");
 		}
 	}
 
-	private final HashSet<String> mOptions = new HashSet<>();
+	private final HashSet<String> options = new HashSet<>();
 
 	@Public
 	public final void request(String option) {
 		checkInit();
-		mOptions.add(option);
+		options.add(option);
 	}
 
 	public final boolean getOption(String option) {
-		return mOptions.contains(option);
+		return options.contains(option);
 	}
 
-	private String mSingleBoardName;
+	private String singleBoardName;
 
 	@Public
 	public final void setSingleBoardName(String boardName) {
 		checkInit();
-		mSingleBoardName = boardName;
+		singleBoardName = boardName;
 	}
 
 	public final String getSingleBoardName() {
-		return mSingleBoardName;
+		return singleBoardName;
 	}
 
 	public final void storeBoards(JSONArray jsonArray) {
@@ -415,21 +415,21 @@ public class ChanConfiguration implements ChanManager.Linked {
 			try {
 				return new JSONArray(data);
 			} catch (JSONException e) {
-				// Ignore
+				// Invalid or unspecified data, ignore exception
 			}
 		}
 		return null;
 	}
 
-	private HashMap<String, String> mBoardTitlesMap;
+	private HashMap<String, String> boardTitlesMap;
 
 	@Public
 	public final void setBoardTitle(String boardName, String title) {
 		checkInit();
-		if (mBoardTitlesMap == null) {
-			mBoardTitlesMap = new HashMap<>();
+		if (boardTitlesMap == null) {
+			boardTitlesMap = new HashMap<>();
 		}
-		mBoardTitlesMap.put(boardName, title);
+		boardTitlesMap.put(boardName, title);
 	}
 
 	@Public
@@ -438,8 +438,8 @@ public class ChanConfiguration implements ChanManager.Linked {
 	}
 
 	public final String getBoardTitle(String boardName) {
-		if (mBoardTitlesMap != null) {
-			String title = mBoardTitlesMap.get(boardName);
+		if (boardTitlesMap != null) {
+			String title = boardTitlesMap.get(boardName);
 			if (title != null) {
 				return title;
 			}
@@ -447,15 +447,15 @@ public class ChanConfiguration implements ChanManager.Linked {
 		return get(boardName, KEY_TITLE, null);
 	}
 
-	private HashMap<String, String> mBoardDescriptionsMap;
+	private HashMap<String, String> boardDescriptionsMap;
 
 	@Public
 	public final void setBoardDescription(String boardName, String description) {
 		checkInit();
-		if (mBoardDescriptionsMap == null) {
-			mBoardDescriptionsMap = new HashMap<>();
+		if (boardDescriptionsMap == null) {
+			boardDescriptionsMap = new HashMap<>();
 		}
-		mBoardDescriptionsMap.put(boardName, description);
+		boardDescriptionsMap.put(boardName, description);
 	}
 
 	@Public
@@ -464,8 +464,8 @@ public class ChanConfiguration implements ChanManager.Linked {
 	}
 
 	public final String getBoardDescription(String boardName) {
-		if (mBoardDescriptionsMap != null) {
-			String description = mBoardDescriptionsMap.get(boardName);
+		if (boardDescriptionsMap != null) {
+			String description = boardDescriptionsMap.get(boardName);
 			if (description != null) {
 				return description;
 			}
@@ -473,22 +473,22 @@ public class ChanConfiguration implements ChanManager.Linked {
 		return get(boardName, KEY_DESCRIPTION, null);
 	}
 
-	private String mDefaultName;
-	private HashMap<String, String> mDefaultNameMap;
+	private String defaultName;
+	private HashMap<String, String> defaultNameMap;
 
 	@Public
 	public final void setDefaultName(String defaultName) {
 		checkInit();
-		mDefaultName = defaultName;
+		this.defaultName = defaultName;
 	}
 
 	@Public
 	public final void setDefaultName(String boardName, String defaultName) {
 		checkInit();
-		if (mDefaultNameMap == null) {
-			mDefaultNameMap = new HashMap<>();
+		if (defaultNameMap == null) {
+			defaultNameMap = new HashMap<>();
 		}
-		mDefaultNameMap.put(boardName, defaultName);
+		defaultNameMap.put(boardName, defaultName);
 	}
 
 	@Public
@@ -497,8 +497,8 @@ public class ChanConfiguration implements ChanManager.Linked {
 	}
 
 	public final String getDefaultName(String boardName) {
-		if (mDefaultNameMap != null) {
-			String defaultName = mDefaultNameMap.get(boardName);
+		if (defaultNameMap != null) {
+			String defaultName = defaultNameMap.get(boardName);
 			if (defaultName != null) {
 				return defaultName;
 			}
@@ -507,28 +507,28 @@ public class ChanConfiguration implements ChanManager.Linked {
 		if (!StringUtils.isEmpty(defaultName)) {
 			return defaultName;
 		}
-		if (!StringUtils.isEmpty(mDefaultName)) {
-			return mDefaultName;
+		if (!StringUtils.isEmpty(this.defaultName)) {
+			return this.defaultName;
 		}
 		return "Anonymous";
 	}
 
-	private int mBumpLimit = BUMP_LIMIT_INVALID;
-	private HashMap<String, Integer> mBumpLimitMap;
+	private int bumpLimit = BUMP_LIMIT_INVALID;
+	private HashMap<String, Integer> bumpLimitMap;
 
 	@Public
 	public final void setBumpLimit(int bumpLimit) {
 		checkInit();
-		mBumpLimit = bumpLimit;
+		this.bumpLimit = bumpLimit;
 	}
 
 	@Public
 	public final void setBumpLimit(String boardName, int bumpLimit) {
 		checkInit();
-		if (mBumpLimitMap == null) {
-			mBumpLimitMap = new HashMap<>();
+		if (bumpLimitMap == null) {
+			bumpLimitMap = new HashMap<>();
 		}
-		mBumpLimitMap.put(boardName, bumpLimit);
+		bumpLimitMap.put(boardName, bumpLimit);
 	}
 
 	@Public
@@ -538,8 +538,8 @@ public class ChanConfiguration implements ChanManager.Linked {
 
 	public final int getBumpLimit(String boardName) {
 		int bumpLimit = BUMP_LIMIT_INVALID;
-		if (mBumpLimitMap != null) {
-			Integer bumpLimitValue = mBumpLimitMap.get(boardName);
+		if (bumpLimitMap != null) {
+			Integer bumpLimitValue = bumpLimitMap.get(boardName);
 			if (bumpLimitValue != null) {
 				bumpLimit = bumpLimitValue;
 			}
@@ -548,7 +548,7 @@ public class ChanConfiguration implements ChanManager.Linked {
 			bumpLimit = get(boardName, KEY_BUMP_LIMIT, BUMP_LIMIT_INVALID);
 		}
 		if (bumpLimit == BUMP_LIMIT_INVALID) {
-			bumpLimit = mBumpLimit;
+			bumpLimit = this.bumpLimit;
 		}
 		return bumpLimit > 0 ? bumpLimit : BUMP_LIMIT_INVALID;
 	}
@@ -556,7 +556,7 @@ public class ChanConfiguration implements ChanManager.Linked {
 	public final int getBumpLimitWithMode(String boardName) {
 		int bumpLimit = getBumpLimit(boardName);
 		if (bumpLimit != ChanConfiguration.BUMP_LIMIT_INVALID) {
-			switch (mBumpLimitMode) {
+			switch (bumpLimitMode) {
 				case AFTER_POST: {
 					break;
 				}
@@ -573,7 +573,7 @@ public class ChanConfiguration implements ChanManager.Linked {
 		return bumpLimit;
 	}
 
-	private BumpLimitMode mBumpLimitMode = BumpLimitMode.AFTER_POST;
+	private BumpLimitMode bumpLimitMode = BumpLimitMode.AFTER_POST;
 
 	@Public
 	public final void setBumpLimitMode(BumpLimitMode mode) {
@@ -581,18 +581,18 @@ public class ChanConfiguration implements ChanManager.Linked {
 		if (mode == null) {
 			throw new NullPointerException();
 		}
-		mBumpLimitMode = mode;
+		bumpLimitMode = mode;
 	}
 
-	private HashMap<String, Integer> mPagesCountMap;
+	private HashMap<String, Integer> pagesCountMap;
 
 	@Public
 	public final void setPagesCount(String boardName, int pagesCount) {
 		checkInit();
-		if (mPagesCountMap == null) {
-			mPagesCountMap = new HashMap<>();
+		if (pagesCountMap == null) {
+			pagesCountMap = new HashMap<>();
 		}
-		mPagesCountMap.put(boardName, pagesCount);
+		pagesCountMap.put(boardName, pagesCount);
 	}
 
 	@Public
@@ -601,8 +601,8 @@ public class ChanConfiguration implements ChanManager.Linked {
 	}
 
 	public final int getPagesCount(String boardName) {
-		if (mPagesCountMap != null) {
-			Integer pagesCount = mPagesCountMap.get(boardName);
+		if (pagesCountMap != null) {
+			Integer pagesCount = pagesCountMap.get(boardName);
 			if (pagesCount != null) {
 				return pagesCount;
 			}
@@ -614,7 +614,7 @@ public class ChanConfiguration implements ChanManager.Linked {
 		return PAGES_COUNT_INVALID;
 	}
 
-	private LinkedHashSet<String> mSupportedCaptchaTypes;
+	private LinkedHashSet<String> supportedCaptchaTypes;
 
 	@Public
 	public final void addCaptchaType(String captchaType) {
@@ -622,32 +622,32 @@ public class ChanConfiguration implements ChanManager.Linked {
 		if (captchaType == null) {
 			throw new NullPointerException();
 		}
-		if (mSupportedCaptchaTypes == null) {
-			mSupportedCaptchaTypes = new LinkedHashSet<>();
+		if (supportedCaptchaTypes == null) {
+			supportedCaptchaTypes = new LinkedHashSet<>();
 		}
-		mSupportedCaptchaTypes.add(captchaType);
+		supportedCaptchaTypes.add(captchaType);
 	}
 
 	public final Collection<String> getSupportedCaptchaTypes() {
-		return mSupportedCaptchaTypes;
+		return supportedCaptchaTypes;
 	}
 
 	public final String getCaptchaType() {
 		return Preferences.getCaptchaTypeForChanConfiguration(getChanName());
 	}
 
-	private LinkedHashMap<String, Boolean> mCustomPreferences;
+	private LinkedHashMap<String, Boolean> customPreferences;
 
 	@Public
 	public final void addCustomPreference(String key, boolean defaultValue) {
-		if (mCustomPreferences == null) {
-			mCustomPreferences = new LinkedHashMap<>();
+		if (customPreferences == null) {
+			customPreferences = new LinkedHashMap<>();
 		}
-		mCustomPreferences.put(key, defaultValue);
+		customPreferences.put(key, defaultValue);
 	}
 
 	public final LinkedHashMap<String, Boolean> getCustomPreferences() {
-		return mCustomPreferences;
+		return customPreferences;
 	}
 
 	@Extendable
@@ -742,7 +742,7 @@ public class ChanConfiguration implements ChanManager.Linked {
 
 	@Public
 	public final Resources getResources() {
-		return mResources;
+		return resources;
 	}
 
 	@Public
@@ -753,14 +753,14 @@ public class ChanConfiguration implements ChanManager.Linked {
 		return get(null, KEY_COOKIE + "_" + cookie, null);
 	}
 
-	private final Object mCookieLock = new Object();
+	private final Object cookieLock = new Object();
 
 	@Public
 	public final void storeCookie(String cookie, String value, String displayName) {
 		if (cookie == null) {
 			throw new NullPointerException("cookie must not be null");
 		}
-		synchronized (mCookieLock) {
+		synchronized (cookieLock) {
 			set(null, KEY_COOKIE + "_" + cookie, value);
 			JSONObject jsonObject;
 			try {
@@ -792,7 +792,7 @@ public class ChanConfiguration implements ChanManager.Linked {
 			JSONObject jsonObject = new JSONObject(data);
 			return jsonObject.length() > 0;
 		} catch (Exception e) {
-			// Ignore
+			// Invalid or unspecified data, ignore exception
 		}
 		return false;
 	}
@@ -807,8 +807,8 @@ public class ChanConfiguration implements ChanManager.Linked {
 				String key = keys.next();
 				result.put(key, jsonObject.getString(key));
 			}
-		} catch (Exception e) {
-			// Ignore
+		} catch (JSONException e) {
+			// Invalid or unspecified data, ignore exception
 		}
 		return result;
 	}
@@ -849,16 +849,16 @@ public class ChanConfiguration implements ChanManager.Linked {
 			DEFAULT_CAPTCHA.input = Captcha.Input.ALL;
 		}
 
-		private final ChanConfiguration mConfiguration;
+		private final ChanConfiguration configuration;
 
 		private Safe(ChanConfiguration configuration) {
-			mConfiguration = configuration;
+			this.configuration = configuration;
 		}
 
 		public Board obtainBoard(String boardName) {
 			Board board = null;
 			try {
-				board = mConfiguration.obtainBoardConfiguration(boardName);
+				board = configuration.obtainBoardConfiguration(boardName);
 			} catch (LinkageError | RuntimeException e) {
 				ExtensionException.logException(e, false);
 			}
@@ -869,7 +869,7 @@ public class ChanConfiguration implements ChanManager.Linked {
 		}
 
 		public Captcha obtainCaptcha(String captchaType) {
-			Captcha captcha = mConfiguration.obtainCaptchaConfigurationSafe(captchaType);
+			Captcha captcha = configuration.obtainCaptchaConfigurationSafe(captchaType);
 			if (captcha == null) {
 				captcha = DEFAULT_CAPTCHA;
 			}
@@ -879,7 +879,7 @@ public class ChanConfiguration implements ChanManager.Linked {
 		public Posting obtainPosting(String boardName, boolean newThread) {
 			Posting posting = null;
 			try {
-				posting = mConfiguration.obtainPostingConfiguration(boardName, newThread);
+				posting = configuration.obtainPostingConfiguration(boardName, newThread);
 			} catch (LinkageError | RuntimeException e) {
 				ExtensionException.logException(e, false);
 			}
@@ -889,7 +889,7 @@ public class ChanConfiguration implements ChanManager.Linked {
 		public Deleting obtainDeleting(String boardName) {
 			Deleting deleting = null;
 			try {
-				deleting = mConfiguration.obtainDeletingConfiguration(boardName);
+				deleting = configuration.obtainDeletingConfiguration(boardName);
 			} catch (LinkageError | RuntimeException e) {
 				ExtensionException.logException(e, false);
 			}
@@ -899,7 +899,7 @@ public class ChanConfiguration implements ChanManager.Linked {
 		public Reporting obtainReporting(String boardName) {
 			Reporting reporting = null;
 			try {
-				reporting = mConfiguration.obtainReportingConfiguration(boardName);
+				reporting = configuration.obtainReportingConfiguration(boardName);
 			} catch (LinkageError | RuntimeException e) {
 				ExtensionException.logException(e, false);
 			}
@@ -909,7 +909,7 @@ public class ChanConfiguration implements ChanManager.Linked {
 		public Authorization obtainCaptchaPass() {
 			Authorization authorization = null;
 			try {
-				authorization = mConfiguration.obtainCaptchaPassConfiguration();
+				authorization = configuration.obtainCaptchaPassConfiguration();
 			} catch (LinkageError | RuntimeException e) {
 				ExtensionException.logException(e, false);
 			}
@@ -922,7 +922,7 @@ public class ChanConfiguration implements ChanManager.Linked {
 		public Authorization obtainUserAuthorization() {
 			Authorization authorization = null;
 			try {
-				authorization = mConfiguration.obtainUserAuthorizationConfiguration();
+				authorization = configuration.obtainUserAuthorizationConfiguration();
 			} catch (LinkageError | RuntimeException e) {
 				ExtensionException.logException(e, false);
 			}
@@ -935,7 +935,7 @@ public class ChanConfiguration implements ChanManager.Linked {
 		public Archivation obtainArchivation() {
 			Archivation archivation = null;
 			try {
-				archivation = mConfiguration.obtainArchivationConfiguration();
+				archivation = configuration.obtainArchivationConfiguration();
 			} catch (LinkageError | RuntimeException e) {
 				ExtensionException.logException(e, false);
 			}
@@ -945,7 +945,7 @@ public class ChanConfiguration implements ChanManager.Linked {
 		public Statistics obtainStatistics() {
 			Statistics statistics = null;
 			try {
-				statistics = mConfiguration.obtainStatisticsConfiguration();
+				statistics = configuration.obtainStatisticsConfiguration();
 			} catch (LinkageError | RuntimeException e) {
 				ExtensionException.logException(e, false);
 			}
@@ -955,7 +955,7 @@ public class ChanConfiguration implements ChanManager.Linked {
 		public CustomPreference obtainCustomPreference(String key) {
 			CustomPreference customPreference = null;
 			try {
-				customPreference = mConfiguration.obtainCustomPreferenceConfiguration(key);
+				customPreference = configuration.obtainCustomPreferenceConfiguration(key);
 			} catch (LinkageError | RuntimeException e) {
 				ExtensionException.logException(e, false);
 			}
@@ -963,9 +963,9 @@ public class ChanConfiguration implements ChanManager.Linked {
 		}
 	}
 
-	private final Safe mSafe = new Safe(this);
+	private final Safe safe = new Safe(this);
 
 	public final Safe safe() {
-		return mSafe;
+		return safe;
 	}
 }

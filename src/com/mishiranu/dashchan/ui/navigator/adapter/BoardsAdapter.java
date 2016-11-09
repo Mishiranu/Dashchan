@@ -44,26 +44,26 @@ public class BoardsAdapter extends BaseAdapter {
 	private static final int TYPE_VIEW = 0;
 	private static final int TYPE_HEADER = 1;
 
-	private final String mChanName;
+	private final String chanName;
 
-	private final ArrayList<ListItem> mListItems = new ArrayList<>();
-	private final ArrayList<ListItem> mFilteredListItems = new ArrayList<>();
+	private final ArrayList<ListItem> listItems = new ArrayList<>();
+	private final ArrayList<ListItem> filteredListItems = new ArrayList<>();
 
-	private boolean mFilterMode = false;
-	private String mFilterText;
+	private boolean filterMode = false;
+	private String filterText;
 
 	public BoardsAdapter(String chanName) {
-		mChanName = chanName;
+		this.chanName = chanName;
 	}
 
 	// Returns true, if adapter isn't empty.
 	public boolean applyFilter(String text) {
-		mFilterText = text;
-		mFilterMode = !StringUtils.isEmpty(text);
-		mFilteredListItems.clear();
-		if (mFilterMode) {
+		filterText = text;
+		filterMode = !StringUtils.isEmpty(text);
+		filteredListItems.clear();
+		if (filterMode) {
 			text = text.toLowerCase(Locale.getDefault());
-			for (ListItem listItem : mListItems) {
+			for (ListItem listItem : listItems) {
 				if (listItem.boardName != null) {
 					boolean add = false;
 					if (listItem.boardName.toLowerCase(Locale.US).contains(text)) {
@@ -73,18 +73,18 @@ public class BoardsAdapter extends BaseAdapter {
 						add = true;
 					}
 					if (add) {
-						mFilteredListItems.add(listItem);
+						filteredListItems.add(listItem);
 					}
 				}
 			}
 		}
 		notifyDataSetChanged();
-		return !mFilterMode || mFilteredListItems.size() > 0;
+		return !filterMode || filteredListItems.size() > 0;
 	}
 
 	public void update() {
-		mListItems.clear();
-		ChanConfiguration configuration = ChanConfiguration.get(mChanName);
+		listItems.clear();
+		ChanConfiguration configuration = ChanConfiguration.get(chanName);
 		JSONArray jsonArray = configuration.getBoards();
 		if (jsonArray != null) {
 			try {
@@ -92,25 +92,25 @@ public class BoardsAdapter extends BaseAdapter {
 					JSONObject jsonObject = jsonArray.getJSONObject(i);
 					String title = CommonUtils.getJsonString(jsonObject, KEY_TITLE);
 					if (length > 1) {
-						mListItems.add(new ListItem(null, title));
+						listItems.add(new ListItem(null, title));
 					}
 					JSONArray boardsArray = jsonObject.getJSONArray(KEY_BOARDS);
 					for (int j = 0; j < boardsArray.length(); j++) {
 						String boardName = boardsArray.isNull(j) ? null : boardsArray.getString(j);
 						if (!StringUtils.isEmpty(boardName)) {
 							title = configuration.getBoardTitle(boardName);
-							mListItems.add(new ListItem(boardName, StringUtils.formatBoardTitle(mChanName,
+							listItems.add(new ListItem(boardName, StringUtils.formatBoardTitle(chanName,
 									boardName, title)));
 						}
 					}
 				}
 			} catch (JSONException e) {
-				// Ignore
+				// Invalid data, ignore exception
 			}
 		}
 		notifyDataSetChanged();
-		if (mFilterMode) {
-			applyFilter(mFilterText);
+		if (filterMode) {
+			applyFilter(filterText);
 		}
 	}
 
@@ -156,12 +156,12 @@ public class BoardsAdapter extends BaseAdapter {
 
 	@Override
 	public int getCount() {
-		return (mFilterMode ? mFilteredListItems : mListItems).size();
+		return (filterMode ? filteredListItems : listItems).size();
 	}
 
 	@Override
 	public ListItem getItem(int position) {
-		return (mFilterMode ? mFilteredListItems : mListItems).get(position);
+		return (filterMode ? filteredListItems : listItems).get(position);
 	}
 
 	@Override

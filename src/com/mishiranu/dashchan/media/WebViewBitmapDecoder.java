@@ -47,23 +47,23 @@ public class WebViewBitmapDecoder extends WebViewClient {
 
 	private static final Handler HANDLER = new Handler(Looper.getMainLooper(), new Callback());
 
-	private final FileHolder mFileHolder;
-	private final int mSampleSize;
-	private final CountDownLatch mLatch = new CountDownLatch(1);
+	private final FileHolder fileHolder;
+	private final int sampleSize;
+	private final CountDownLatch latch = new CountDownLatch(1);
 
-	private volatile Bitmap mBitmap;
+	private volatile Bitmap bitmap;
 
-	private WebView mWebView;
+	private WebView webView;
 
 	private WebViewBitmapDecoder(FileHolder fileHolder, BitmapFactory.Options options) throws IOException {
-		mFileHolder = fileHolder;
-		mSampleSize = options != null ? Math.max(options.inSampleSize, 1) : 1;
+		this.fileHolder = fileHolder;
+		sampleSize = options != null ? Math.max(options.inSampleSize, 1) : 1;
 		if (!fileHolder.isImage()) {
 			throw new IOException();
 		}
 		HANDLER.obtainMessage(MESSAGE_INIT_WEB_VIEW, this).sendToTarget();
 		try {
-			mLatch.await();
+			latch.await();
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 			throw new InterruptedIOException();
@@ -77,8 +77,8 @@ public class WebViewBitmapDecoder extends WebViewClient {
 			if (url.endsWith("//127.0.0.1/image.jpeg")) {
 				InputStream inputStream = null;
 				try {
-					inputStream = mFileHolder.openInputStream();
-					return new WebResourceResponse(mFileHolder.getImageType() == FileHolder.ImageType.IMAGE_SVG
+					inputStream = fileHolder.openInputStream();
+					return new WebResourceResponse(fileHolder.getImageType() == FileHolder.ImageType.IMAGE_SVG
 							? "image/svg+xml" : "image/jpeg", null, inputStream);
 				} catch (IOException e) {
 					IOUtils.close(inputStream);
@@ -90,18 +90,18 @@ public class WebViewBitmapDecoder extends WebViewClient {
 		}
 	}
 
-	private boolean mPageFinished = false;
+	private boolean pageFinished = false;
 
 	@Override
 	public void onPageFinished(WebView view, String url) {
 		super.onPageFinished(view, url);
-		mPageFinished = true;
+		pageFinished = true;
 		notifyExtract(view);
 	}
 
 	@SuppressWarnings("deprecation")
-	private final WebView.PictureListener mPictureListener = (view, picture) -> {
-		if (mPageFinished) {
+	private final WebView.PictureListener pictureListener = (view, picture) -> {
+		if (pageFinished) {
 			notifyExtract(view);
 		}
 	};
@@ -111,45 +111,45 @@ public class WebViewBitmapDecoder extends WebViewClient {
 		HANDLER.sendMessageDelayed(HANDLER.obtainMessage(MESSAGE_MEASURE_PICTURE, new Object[] {this, view}), 1000);
 	}
 
-	private boolean mMeasured = false;
+	private boolean measured = false;
 
 	private void measurePicture(WebView view) {
-		if (!mMeasured) {
-			mMeasured = true;
-			mWebView = view;
+		if (!measured) {
+			measured = true;
+			webView = view;
 			view.loadUrl("javascript:calculateSize();");
 		}
 	}
 
 	private void countDownAndDestroy(WebView view) {
-		mLatch.countDown();
+		latch.countDown();
 		view.destroy();
 	}
 
 	private void checkPictureSize(int width, int height) {
 		if (width > 0 && height > 0) {
-			if (mWebView.getWidth() <= 0 || mWebView.getHeight() <= 0) {
-				mMeasured = false;
-				mWebView.layout(0, 0, width, height);
-				mWebView.reload();
+			if (webView.getWidth() <= 0 || webView.getHeight() <= 0) {
+				measured = false;
+				webView.layout(0, 0, width, height);
+				webView.reload();
 			} else {
-				if (mWebView.getWidth() != width || mWebView.getHeight() != height) {
-					countDownAndDestroy(mWebView);
+				if (webView.getWidth() != width || webView.getHeight() != height) {
+					countDownAndDestroy(webView);
 				} else {
 					try {
-						mBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-						mWebView.draw(new Canvas(mBitmap));
+						bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+						webView.draw(new Canvas(bitmap));
 					} catch (OutOfMemoryError e) {
-						mBitmap = null;
+						bitmap = null;
 					} finally {
-						countDownAndDestroy(mWebView);
+						countDownAndDestroy(webView);
 					}
 				}
 			}
 		} else {
-			countDownAndDestroy(mWebView);
+			countDownAndDestroy(webView);
 		}
-		mWebView = null;
+		webView = null;
 	}
 
 	private static class Callback implements Handler.Callback {
@@ -160,21 +160,21 @@ public class WebViewBitmapDecoder extends WebViewClient {
 			switch (msg.what) {
 				case MESSAGE_INIT_WEB_VIEW: {
 					WebViewBitmapDecoder decoder = (WebViewBitmapDecoder) msg.obj;
-					int width = decoder.mFileHolder.getImageWidth();
-					int height = decoder.mFileHolder.getImageHeight();
-					int rotation = decoder.mFileHolder.getRotation();
+					int width = decoder.fileHolder.getImageWidth();
+					int height = decoder.fileHolder.getImageHeight();
+					int rotation = decoder.fileHolder.getRotation();
 					if (rotation == 90 || rotation == 270) width = height ^ width ^ (height = width); // Swap
-					width /= decoder.mSampleSize;
-					height /= decoder.mSampleSize;
+					width /= decoder.sampleSize;
+					height /= decoder.sampleSize;
 					WebView webView = new WebView(MainApplication.getInstance());
 					WebSettings settings = webView.getSettings();
 					settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
 					settings.setAppCacheEnabled(false);
 					settings.setJavaScriptEnabled(true);
-					webView.setInitialScale(100 / decoder.mSampleSize);
+					webView.setInitialScale(100 / decoder.sampleSize);
 					webView.setWebViewClient(decoder);
 					webView.setBackgroundColor(Color.TRANSPARENT);
-					webView.setPictureListener(decoder.mPictureListener);
+					webView.setPictureListener(decoder.pictureListener);
 					webView.addJavascriptInterface(decoder, "jsi");
 					if (width > 0 && height > 0) {
 						webView.layout(0, 0, width, height);
@@ -209,8 +209,8 @@ public class WebViewBitmapDecoder extends WebViewClient {
 	@SuppressWarnings("unused")
 	@JavascriptInterface
 	public void onCalculateSize(int width, int height) {
-		width /= mSampleSize;
-		height /= mSampleSize;
+		width /= sampleSize;
+		height /= sampleSize;
 		HANDLER.obtainMessage(MESSAGE_CHECK_PICTURE_SIZE, new Object[] {this, width, height}).sendToTarget();
 	}
 
@@ -222,7 +222,7 @@ public class WebViewBitmapDecoder extends WebViewClient {
 			} catch (IOException e) {
 				return null;
 			}
-			return decoder.mBitmap;
+			return decoder.bitmap;
 		}
 		return null;
 	}

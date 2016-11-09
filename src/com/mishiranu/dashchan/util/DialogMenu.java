@@ -33,13 +33,13 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class DialogMenu implements DialogInterface.OnClickListener {
-	private final Context mContext;
-	private final AlertDialog.Builder mDialog;
+	private final Context context;
+	private final AlertDialog.Builder dialog;
 
-	private final Callback mCallback;
+	private final Callback callback;
 
-	private final ArrayList<ListItem> mListItems = new ArrayList<>();
-	private boolean mLongTitle;
+	private final ArrayList<ListItem> listItems = new ArrayList<>();
+	private boolean longTitle;
 
 	private static class ListItem {
 		public final int id;
@@ -55,25 +55,25 @@ public class DialogMenu implements DialogInterface.OnClickListener {
 		}
 	}
 
-	private HashMap<String, Object> mExtra;
-	private boolean mConsumed = false;
+	private HashMap<String, Object> extra;
+	private boolean consumed = false;
 
 	public DialogMenu(Context context, Callback callback) {
-		mContext = context;
-		mDialog = new AlertDialog.Builder(context);
-		mCallback = callback;
+		this.context = context;
+		this.dialog = new AlertDialog.Builder(context);
+		this.callback = callback;
 	}
 
 	public DialogMenu setTitle(String title, boolean longTitle) {
 		checkConsumed();
-		mDialog.setTitle(title);
-		mLongTitle = longTitle;
+		dialog.setTitle(title);
+		this.longTitle = longTitle;
 		return this;
 	}
 
 	private DialogMenu addItem(int id, String title, boolean checkable, boolean checked) {
 		checkConsumed();
-		mListItems.add(new ListItem(id, title, checkable, checked));
+		listItems.add(new ListItem(id, title, checkable, checked));
 		return this;
 	}
 
@@ -82,7 +82,7 @@ public class DialogMenu implements DialogInterface.OnClickListener {
 	}
 
 	public DialogMenu addItem(int id, int titleRes) {
-		return addItem(id, mContext.getString(titleRes));
+		return addItem(id, context.getString(titleRes));
 	}
 
 	public DialogMenu addCheckableItem(int id, String title, boolean checked) {
@@ -90,38 +90,38 @@ public class DialogMenu implements DialogInterface.OnClickListener {
 	}
 
 	public DialogMenu addCheckableItem(int id, int titleRes, boolean checked) {
-		return addCheckableItem(id, mContext.getString(titleRes), checked);
+		return addCheckableItem(id, context.getString(titleRes), checked);
 	}
 
 	public DialogMenu putExtra(String key, Object value) {
-		if (mExtra == null) {
-			mExtra = new HashMap<>();
+		if (extra == null) {
+			extra = new HashMap<>();
 		}
-		mExtra.put(key, value);
+		extra.put(key, value);
 		return this;
 	}
 
 	public void show() {
 		checkConsumed();
-		if (mListItems.size() > 0) {
-			AlertDialog dialog = mDialog.setAdapter(new DialogAdapter(), this).create();
-			if (mLongTitle) {
+		if (listItems.size() > 0) {
+			AlertDialog dialog = this.dialog.setAdapter(new DialogAdapter(), this).create();
+			if (longTitle) {
 				dialog.setOnShowListener(ViewUtils.ALERT_DIALOG_LONGER_TITLE);
 			}
 			dialog.show();
 		}
-		mConsumed = true;
+		consumed = true;
 	}
 
 	private void checkConsumed() {
-		if (mConsumed) {
+		if (consumed) {
 			throw new RuntimeException("DialogMenu is already consumed.");
 		}
 	}
 
 	@Override
 	public void onClick(DialogInterface dialog, int which) {
-		mCallback.onItemClick(mContext, mListItems.get(which).id, mExtra);
+		callback.onItemClick(context, listItems.get(which).id, extra);
 	}
 
 	public interface Callback {
@@ -132,10 +132,10 @@ public class DialogMenu implements DialogInterface.OnClickListener {
 		private static final int TYPE_SIMPLE = 0;
 		private static final int TYPE_CHECKABLE = 1;
 
-		private final int mLayoutResId;
+		private final int layoutResId;
 
 		public DialogAdapter() {
-			mLayoutResId = ResourceUtils.obtainAlertDialogLayoutResId(mContext, ResourceUtils.DIALOG_LAYOUT_SIMPLE);
+			layoutResId = ResourceUtils.obtainAlertDialogLayoutResId(context, ResourceUtils.DIALOG_LAYOUT_SIMPLE);
 		}
 
 		@Override
@@ -150,12 +150,12 @@ public class DialogMenu implements DialogInterface.OnClickListener {
 
 		@Override
 		public int getCount() {
-			return mListItems.size();
+			return listItems.size();
 		}
 
 		@Override
 		public ListItem getItem(int position) {
-			return mListItems.get(position);
+			return listItems.get(position);
 		}
 
 		@Override
@@ -169,7 +169,7 @@ public class DialogMenu implements DialogInterface.OnClickListener {
 			ViewHolder viewHolder;
 			if (convertView == null) {
 				viewHolder = new ViewHolder();
-				View view = LayoutInflater.from(parent.getContext()).inflate(mLayoutResId, parent, false);
+				View view = LayoutInflater.from(parent.getContext()).inflate(layoutResId, parent, false);
 				if (listItem.checkable) {
 					LinearLayout linearLayout = new LinearLayout(parent.getContext());
 					linearLayout.setOrientation(LinearLayout.HORIZONTAL);

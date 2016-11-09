@@ -39,57 +39,57 @@ import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 
 public class AttachmentView extends ClickableView {
-	private final Rect mSource = new Rect();
-	private final RectF mDestination = new RectF();
-	private final Paint mBitmapPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
-	private TransparentTileDrawable mTileDrawable;
+	private final Rect source = new Rect();
+	private final RectF destination = new RectF();
+	private final Paint bitmapPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
+	private TransparentTileDrawable tileDrawable;
 
-	private int mBackgroundColor;
-	private Drawable mAdditionalOverlay;
-	private boolean mCropEnabled = false;
-	private boolean mFitSquare = false;
-	private boolean mSfwMode = false;
-	private boolean mDrawTouching = false;
-	private RoundedCornersDrawable mCornersDrawable;
+	private int backgroundColor;
+	private Drawable additionalOverlay;
+	private boolean cropEnabled = false;
+	private boolean fitSquare = false;
+	private boolean sfwMode = false;
+	private boolean drawTouching = false;
+	private RoundedCornersDrawable cornersDrawable;
 
-	private long mLastClickTime;
+	private long lastClickTime;
 
-	private final float[] mWorkColorMatrix;
-	private final ColorMatrix mColorMatrix1;
-	private final ColorMatrix mColorMatrix2;
+	private final float[] workColorMatrix;
+	private final ColorMatrix colorMatrix1;
+	private final ColorMatrix colorMatrix2;
 
 	public AttachmentView(Context context, AttributeSet attrs) {
 		super(new ContextThemeWrapper(context, R.style.Theme_Gallery), attrs);
 		setDrawingCacheEnabled(false);
 		// Use old context to obtain background color.
-		mBackgroundColor = ResourceUtils.getColor(context, R.attr.backgroundAttachment);
+		backgroundColor = ResourceUtils.getColor(context, R.attr.backgroundAttachment);
 		if (C.API_LOLLIPOP) {
-			mWorkColorMatrix = new float[] {1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0};
-			mColorMatrix1 = new ColorMatrix(mWorkColorMatrix);
-			mColorMatrix2 = new ColorMatrix(mWorkColorMatrix);
+			workColorMatrix = new float[] {1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0};
+			colorMatrix1 = new ColorMatrix(workColorMatrix);
+			colorMatrix2 = new ColorMatrix(workColorMatrix);
 		} else {
-			mWorkColorMatrix = null;
-			mColorMatrix1 = null;
-			mColorMatrix2 = null;
+			workColorMatrix = null;
+			colorMatrix1 = null;
+			colorMatrix2 = null;
 		}
 	}
 
 	public void setCropEnabled(boolean enabled) {
-		mCropEnabled = enabled;
+		cropEnabled = enabled;
 	}
 
 	public void setFitSquare(boolean fitSquare) {
-		mFitSquare = fitSquare;
+		this.fitSquare = fitSquare;
 	}
 
 	public void setSfwMode(boolean sfwMode) {
-		mSfwMode = sfwMode;
+		this.sfwMode = sfwMode;
 	}
 
 	public void setAdditionalOverlay(int attrId, boolean invalidate) {
 		Drawable drawable = attrId != 0 ? ResourceUtils.getDrawable(getContext(), attrId, 0) : null;
-		if (mAdditionalOverlay != drawable) {
-			mAdditionalOverlay = drawable;
+		if (additionalOverlay != drawable) {
+			additionalOverlay = drawable;
 		}
 		if (invalidate) {
 			invalidate();
@@ -100,7 +100,7 @@ public class AttachmentView extends ClickableView {
 	public boolean onTouchEvent(MotionEvent event) {
 		switch (event.getAction()) {
 			case MotionEvent.ACTION_DOWN: {
-				if (System.currentTimeMillis() - mLastClickTime <= ViewConfiguration.getDoubleTapTimeout()) {
+				if (System.currentTimeMillis() - lastClickTime <= ViewConfiguration.getDoubleTapTimeout()) {
 					event.setAction(MotionEvent.ACTION_CANCEL);
 					return false;
 				}
@@ -108,7 +108,7 @@ public class AttachmentView extends ClickableView {
 			}
 			case MotionEvent.ACTION_UP:
 			case MotionEvent.ACTION_CANCEL: {
-				mLastClickTime = System.currentTimeMillis();
+				lastClickTime = System.currentTimeMillis();
 				break;
 			}
 		}
@@ -117,18 +117,18 @@ public class AttachmentView extends ClickableView {
 
 	@Override
 	public void setBackgroundColor(int color) {
-		mBackgroundColor = color;
+		backgroundColor = color;
 	}
 
 	public void setDrawTouching(boolean drawTouching) {
-		mDrawTouching = drawTouching;
+		this.drawTouching = drawTouching;
 	}
 
 	public void applyRoundedCorners(int backgroundColor) {
 		float density = ResourceUtils.obtainDensity(this);
 		int radius = (int) (2f * density + 0.5f);
-		mCornersDrawable = new RoundedCornersDrawable(radius);
-		mCornersDrawable.setColor(backgroundColor);
+		cornersDrawable = new RoundedCornersDrawable(radius);
+		cornersDrawable.setColor(backgroundColor);
 		if (getWidth() > 0) {
 			updateCornersBounds(getWidth(), getHeight());
 		}
@@ -137,7 +137,7 @@ public class AttachmentView extends ClickableView {
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-		if (mFitSquare) {
+		if (fitSquare) {
 			int width = getMeasuredWidth();
 			setMeasuredDimension(width, width);
 		}
@@ -150,13 +150,13 @@ public class AttachmentView extends ClickableView {
 	}
 
 	private void updateCornersBounds(int width, int height) {
-		if (mCornersDrawable != null) {
-			mCornersDrawable.setBounds(0, 0, width, height);
+		if (cornersDrawable != null) {
+			cornersDrawable.setBounds(0, 0, width, height);
 		}
 	}
 
-	private boolean mEnqueuedTranslation = false;
-	private long mImageApplyTime = 0L;
+	private boolean enqueuedTranslation = false;
+	private long imageApplyTime = 0L;
 
 	public void resetTransition() {
 		setNextTransitionEnabled(false);
@@ -167,24 +167,24 @@ public class AttachmentView extends ClickableView {
 	}
 
 	private void setNextTransitionEnabled(boolean enabled) {
-		mImageApplyTime = 0L;
-		mEnqueuedTranslation = enabled;
+		imageApplyTime = 0L;
+		enqueuedTranslation = enabled;
 	}
 
 	@Override
 	public void draw(Canvas canvas) {
 		Interpolator interpolator = AnimationUtils.DECELERATE_INTERPOLATOR;
-		canvas.drawColor(mBackgroundColor);
-		Bitmap bitmap = mBitmap != null && !mBitmap.isRecycled() ? mBitmap : null;
+		canvas.drawColor(backgroundColor);
+		Bitmap bitmap = this.bitmap != null && !this.bitmap.isRecycled() ? this.bitmap : null;
 		boolean hasImage = bitmap != null;
 		int vw = getWidth(), vh = getHeight();
-		int dt = mImageApplyTime > 0L ? (int) (System.currentTimeMillis() - mImageApplyTime) : Integer.MAX_VALUE;
+		int dt = imageApplyTime > 0L ? (int) (System.currentTimeMillis() - imageApplyTime) : Integer.MAX_VALUE;
 		float alpha = interpolator.getInterpolation(Math.min(dt / 200f, 1f));
 		boolean invalidate = false;
 		if (hasImage) {
 			int bw = bitmap.getWidth(), bh = bitmap.getHeight();
 			float scale, dx, dy;
-			if (bw * vh > vw * bh ^ !mCropEnabled) {
+			if (bw * vh > vw * bh ^ !cropEnabled) {
 				scale = (float) vh / (float) bh;
 				dx = (int) ((vw - bw * scale) * 0.5f + 0.5f);
 				dy = 0f;
@@ -193,72 +193,72 @@ public class AttachmentView extends ClickableView {
 				dx = 0f;
 				dy = (int) ((vh - bh * scale) * 0.5f + 0.5f);
 			}
-			mSource.set(0, 0, bw, bh);
-			mDestination.set(dx, dy, dx + bw * scale, dy + bh * scale);
+			source.set(0, 0, bw, bh);
+			destination.set(dx, dy, dx + bw * scale, dy + bh * scale);
 			if (bitmap.hasAlpha()) {
-				int left = Math.max((int) (mDestination.left + 0.5f), 0);
-				int top = Math.max((int) (mDestination.top + 0.5f), 0);
-				int right = Math.min((int) (mDestination.right + 0.5f), vw);
-				int bottom = Math.min((int) (mDestination.bottom + 0.5f), vh);
-				if (mTileDrawable == null) {
-					mTileDrawable = new TransparentTileDrawable(getContext(), false);
+				int left = Math.max((int) (destination.left + 0.5f), 0);
+				int top = Math.max((int) (destination.top + 0.5f), 0);
+				int right = Math.min((int) (destination.right + 0.5f), vw);
+				int bottom = Math.min((int) (destination.bottom + 0.5f), vh);
+				if (tileDrawable == null) {
+					tileDrawable = new TransparentTileDrawable(getContext(), false);
 				}
-				mTileDrawable.setBounds(left, top, right, bottom);
-				mTileDrawable.draw(canvas);
+				tileDrawable.setBounds(left, top, right, bottom);
+				tileDrawable.draw(canvas);
 			}
-			mBitmapPaint.setAlpha((int) (0xff * alpha));
+			bitmapPaint.setAlpha((int) (0xff * alpha));
 			if (C.API_LOLLIPOP) {
 				float contrast = interpolator.getInterpolation(Math.min(dt / 300f, 1f));
 				float saturation = interpolator.getInterpolation(Math.min(dt / 400f, 1f));
 				if (saturation < 1f) {
-					float[] matrix = mWorkColorMatrix;
+					float[] matrix = workColorMatrix;
 					float contrastGain = 1f + 2f * (1f -  contrast);
 					float contrastExtra = (1f - contrastGain) * 255f;
 					matrix[0] = matrix[6] = matrix[12] = contrastGain;
 					matrix[4] = matrix[9] = matrix[14] = contrastExtra;
-					mColorMatrix2.set(matrix);
-					mColorMatrix1.setSaturation(saturation);
-					mColorMatrix1.postConcat(mColorMatrix2);
-					mBitmapPaint.setColorFilter(new ColorMatrixColorFilter(mColorMatrix1));
+					colorMatrix2.set(matrix);
+					colorMatrix1.setSaturation(saturation);
+					colorMatrix1.postConcat(colorMatrix2);
+					bitmapPaint.setColorFilter(new ColorMatrixColorFilter(colorMatrix1));
 				} else {
-					mBitmapPaint.setColorFilter(null);
+					bitmapPaint.setColorFilter(null);
 				}
 				invalidate = saturation < 1f;
 			} else {
 				invalidate = alpha < 1f;
 			}
-			canvas.drawBitmap(bitmap, mSource, mDestination, mBitmapPaint);
+			canvas.drawBitmap(bitmap, source, destination, bitmapPaint);
 		}
-		if (mSfwMode) {
-			canvas.drawColor(mBackgroundColor & 0x00ffffff | 0xe0000000);
+		if (sfwMode) {
+			canvas.drawColor(backgroundColor & 0x00ffffff | 0xe0000000);
 		}
-		if (mAdditionalOverlay != null) {
-			if (hasImage && !mSfwMode) {
+		if (additionalOverlay != null) {
+			if (hasImage && !sfwMode) {
 				canvas.drawColor((int) (0x66 * alpha) << 24);
 			}
-			int dw = mAdditionalOverlay.getIntrinsicWidth(), dh = mAdditionalOverlay.getIntrinsicHeight();
+			int dw = additionalOverlay.getIntrinsicWidth(), dh = additionalOverlay.getIntrinsicHeight();
 			int left = (vw - dw) / 2, top = (vh - dh) / 2, right = left + dw, bottom = top + dh;
-			mAdditionalOverlay.setBounds(left, top, right, bottom);
-			mAdditionalOverlay.draw(canvas);
+			additionalOverlay.setBounds(left, top, right, bottom);
+			additionalOverlay.draw(canvas);
 		}
-		if (mDrawTouching) {
+		if (drawTouching) {
 			super.draw(canvas);
 		}
-		if (mCornersDrawable != null) {
-			mCornersDrawable.draw(canvas);
+		if (cornersDrawable != null) {
+			cornersDrawable.draw(canvas);
 		}
 		if (invalidate) {
 			invalidate();
 		}
 	}
 
-	private Bitmap mBitmap;
+	private Bitmap bitmap;
 
 	public void setImage(Bitmap bitmap) {
-		mBitmap = bitmap;
-		if (mEnqueuedTranslation) {
-			mEnqueuedTranslation = false;
-			mImageApplyTime = System.currentTimeMillis();
+		this.bitmap = bitmap;
+		if (enqueuedTranslation) {
+			enqueuedTranslation = false;
+			imageApplyTime = System.currentTimeMillis();
 		}
 		invalidate();
 	}

@@ -23,7 +23,7 @@ import android.util.SparseIntArray;
 import com.mishiranu.dashchan.R;
 
 public class ActionIconSet {
-	private final SparseIntArray mIds = new SparseIntArray();
+	private final SparseIntArray ids = new SparseIntArray();
 
 	private static final int[] ATTRS = new int[] {R.attr.actionAttach, R.attr.actionAddPost, R.attr.actionAddRule,
 		R.attr.actionAddToFavorites, R.attr.actionBack, R.attr.actionDelete, R.attr.actionDownload,
@@ -34,12 +34,12 @@ public class ActionIconSet {
 	public ActionIconSet(Context context) {
 		TypedArray typedArray = context.obtainStyledAttributes(ATTRS);
 		for (int i = 0; i < typedArray.length(); i++) {
-			mIds.append(ATTRS[i], typedArray.getResourceId(i, 0));
+			ids.append(ATTRS[i], typedArray.getResourceId(i, 0));
 		}
 		typedArray.recycle();
 	}
 
 	public int getId(int attr) {
-		return mIds.get(attr);
+		return ids.get(attr);
 	}
 }

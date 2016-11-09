@@ -60,8 +60,8 @@ public class UpdateFragment extends BaseListFragment {
 	private static final String EXTRA_UPDATE_DATA_MAP = "update_data_map";
 	private static final String EXTRA_TARGET_PREFIX = "target_";
 
-	private ArrayAdapter<ListItem> mAdapter;
-	private ReadUpdateTask.UpdateDataMap mUpdateDataMap;
+	private ArrayAdapter<ListItem> adapter;
+	private ReadUpdateTask.UpdateDataMap updateDataMap;
 
 	private static final class ListItem {
 		public final String extensionName;
@@ -109,9 +109,9 @@ public class UpdateFragment extends BaseListFragment {
 
 	private void updateTitle() {
 		int count = 0;
-		if (mUpdateDataMap != null) {
-			for (int i = 0; i < mAdapter.getCount(); i++) {
-				ListItem listItem = mAdapter.getItem(i);
+		if (updateDataMap != null) {
+			for (int i = 0; i < adapter.getCount(); i++) {
+				ListItem listItem = adapter.getItem(i);
 				if (listItem.targetIndex > 0) {
 					count++;
 				}
@@ -125,37 +125,37 @@ public class UpdateFragment extends BaseListFragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		setHasOptionsMenu(true);
-		mAdapter = new ArrayAdapter<ListItem>(getActivity(), 0) {
-			private final CheckBoxPreference mCheckBoxViewGetter = new CheckBoxPreference(getContext());
+		adapter = new ArrayAdapter<ListItem>(getActivity(), 0) {
+			private final CheckBoxPreference checkBoxViewGetter = new CheckBoxPreference(getContext());
 
 			@Override
 			public View getView(int position, View convertView, ViewGroup parent) {
 				ListItem listItem = getItem(position);
-				mCheckBoxViewGetter.setTitle(listItem.title);
+				checkBoxViewGetter.setTitle(listItem.title);
 				if (listItem.warning != null) {
 					SpannableString spannable = new SpannableString(listItem.target + "\n" + listItem.warning);
 					int length = spannable.length();
 					spannable.setSpan(new ForegroundColorSpan(ResourceUtils.getColor(getContext(),
 							R.attr.colorTextError)), length - listItem.warning.length(), length,
 							SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
-					mCheckBoxViewGetter.setSummary(spannable);
+					checkBoxViewGetter.setSummary(spannable);
 				} else {
-					mCheckBoxViewGetter.setSummary(listItem.target);
+					checkBoxViewGetter.setSummary(listItem.target);
 				}
-				mCheckBoxViewGetter.setChecked(listItem.targetIndex > 0);
-				return mCheckBoxViewGetter.getView(convertView, parent);
+				checkBoxViewGetter.setChecked(listItem.targetIndex > 0);
+				return checkBoxViewGetter.getView(convertView, parent);
 			}
 		};
-		setListAdapter(mAdapter);
-		mUpdateDataMap = (ReadUpdateTask.UpdateDataMap) getArguments().getSerializable(EXTRA_UPDATE_DATA_MAP);
+		setListAdapter(adapter);
+		updateDataMap = (ReadUpdateTask.UpdateDataMap) getArguments().getSerializable(EXTRA_UPDATE_DATA_MAP);
 		buildData(savedInstanceState);
 	}
 
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		for (int i = 0; i < mAdapter.getCount(); i++) {
-			ListItem listItem = mAdapter.getItem(i);
+		for (int i = 0; i < adapter.getCount(); i++) {
+			ListItem listItem = adapter.getItem(i);
 			outState.putInt(EXTRA_TARGET_PREFIX + listItem.extensionName, listItem.targetIndex);
 		}
 	}
@@ -259,15 +259,15 @@ public class UpdateFragment extends BaseListFragment {
 	}
 
 	private void buildData(Bundle savedInstanceState) {
-		mAdapter.clear();
-		mAdapter.addAll(buildData(getActivity(), mUpdateDataMap, savedInstanceState));
+		adapter.clear();
+		adapter.addAll(buildData(getActivity(), updateDataMap, savedInstanceState));
 		updateTitle();
 	}
 
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		ListItem listItem = mAdapter.getItem(position);
-		ArrayList<ReadUpdateTask.UpdateItem> updateItems = mUpdateDataMap.get(listItem.extensionName);
+		ListItem listItem = adapter.getItem(position);
+		ArrayList<ReadUpdateTask.UpdateItem> updateItems = updateDataMap.get(listItem.extensionName);
 		ArrayList<String> targets = new ArrayList<>();
 		targets.add(getString(R.string.text_without_updating));
 		for (int i = 1; i < updateItems.size(); i++) {
@@ -285,11 +285,11 @@ public class UpdateFragment extends BaseListFragment {
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		ActionIconSet set = new ActionIconSet(getActivity());
 		long length = 0;
-		if (mUpdateDataMap != null) {
-			for (int i = 0; i < mAdapter.getCount(); i++) {
-				ListItem listItem = mAdapter.getItem(i);
+		if (updateDataMap != null) {
+			for (int i = 0; i < adapter.getCount(); i++) {
+				ListItem listItem = adapter.getItem(i);
 				if (listItem.targetIndex > 0) {
-					length += mUpdateDataMap.get(listItem.extensionName).get(listItem.targetIndex).length;
+					length += updateDataMap.get(listItem.extensionName).get(listItem.targetIndex).length;
 				}
 			}
 		}
@@ -318,9 +318,9 @@ public class UpdateFragment extends BaseListFragment {
 				boolean downloadManagerError = false;
 				long clientId = -1;
 				ArrayList<Long> ids = new ArrayList<>();
-				for (int i = 0; i < mAdapter.getCount(); i++) {
-					ListItem listItem = mAdapter.getItem(i);
-					ReadUpdateTask.UpdateItem updateItem = mUpdateDataMap.get(listItem.extensionName)
+				for (int i = 0; i < adapter.getCount(); i++) {
+					ListItem listItem = adapter.getItem(i);
+					ReadUpdateTask.UpdateItem updateItem = updateDataMap.get(listItem.extensionName)
 							.get(listItem.targetIndex);
 					if (updateItem.source != null) {
 						String name = listItem.extensionName + "_" + updateItem.name;
@@ -377,7 +377,7 @@ public class UpdateFragment extends BaseListFragment {
 	}
 
 	private void handleListItemValidity(ListItem listItem, int minVersion, int maxVersion, String warningUnsupported) {
-		ReadUpdateTask.UpdateItem targetUpdateItem = mUpdateDataMap.get(listItem.extensionName)
+		ReadUpdateTask.UpdateItem targetUpdateItem = updateDataMap.get(listItem.extensionName)
 				.get(listItem.targetIndex);
 		boolean valid = checkVersionValid(targetUpdateItem, minVersion, maxVersion);
 		if (valid) {
@@ -390,16 +390,16 @@ public class UpdateFragment extends BaseListFragment {
 	private void onTargetChanged(ListItem listItem) {
 		String warningUnsupported = getString(R.string.text_unsupported_version);
 		if (ChanManager.EXTENSION_NAME_CLIENT.equals(listItem.extensionName)) {
-			ReadUpdateTask.UpdateItem targetAppUpdateItem = mUpdateDataMap.get(listItem.extensionName)
+			ReadUpdateTask.UpdateItem targetAppUpdateItem = updateDataMap.get(listItem.extensionName)
 					.get(listItem.targetIndex);
 			int minVersion = targetAppUpdateItem.minVersion;
 			int maxVersion = targetAppUpdateItem.version;
-			for (int i = 1; i < mAdapter.getCount(); i++) {
-				handleListItemValidity(mAdapter.getItem(i), minVersion, maxVersion, warningUnsupported);
+			for (int i = 1; i < adapter.getCount(); i++) {
+				handleListItemValidity(adapter.getItem(i), minVersion, maxVersion, warningUnsupported);
 			}
 		} else {
-			ListItem appItem = mAdapter.getItem(0);
-			ReadUpdateTask.UpdateItem targetUpdateItem = mUpdateDataMap.get(appItem.extensionName)
+			ListItem appItem = adapter.getItem(0);
+			ReadUpdateTask.UpdateItem targetUpdateItem = updateDataMap.get(appItem.extensionName)
 					.get(appItem.targetIndex);
 			handleListItemValidity(listItem, targetUpdateItem.minVersion, targetUpdateItem.version, warningUnsupported);
 		}
@@ -407,14 +407,14 @@ public class UpdateFragment extends BaseListFragment {
 	}
 
 	private void onTargetSelected(String extensionName, int targetIndex) {
-		for (int i = 0; i < mAdapter.getCount(); i++) {
-			ListItem listItem = mAdapter.getItem(i);
+		for (int i = 0; i < adapter.getCount(); i++) {
+			ListItem listItem = adapter.getItem(i);
 			if (extensionName.equals(listItem.extensionName)) {
-				ArrayList<ReadUpdateTask.UpdateItem> updateItems = mUpdateDataMap.get(extensionName);
+				ArrayList<ReadUpdateTask.UpdateItem> updateItems = updateDataMap.get(extensionName);
 				if (listItem.targetIndex != targetIndex) {
 					listItem.setTarget(getActivity(), updateItems, targetIndex);
 					onTargetChanged(listItem);
-					mAdapter.notifyDataSetChanged();
+					adapter.notifyDataSetChanged();
 					updateTitle();
 				}
 				break;

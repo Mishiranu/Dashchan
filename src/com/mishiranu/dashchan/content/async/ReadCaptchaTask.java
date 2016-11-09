@@ -35,26 +35,26 @@ import com.mishiranu.dashchan.util.GraphicsUtils;
 public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 	public static final String RECAPTCHA_SKIP_RESPONSE = "recaptcha_skip_response";
 
-	private final Callback mCallback;
-	private final CaptchaReader mCaptchaReader;
+	private final Callback callback;
+	private final CaptchaReader captchaReader;
 
-	private final String mCaptchaType;
-	private final String[] mCaptchaPass;
-	private final boolean mMayShowLoadButton;
-	private final String mRequirement;
-	private final String mChanName;
-	private final String mBoardName;
-	private final String mThreadNumber;
+	private final String captchaType;
+	private final String[] captchaPass;
+	private final boolean mayShowLoadButton;
+	private final String requirement;
+	private final String chanName;
+	private final String boardName;
+	private final String threadNumber;
 
-	private ChanPerformer.CaptchaState mCaptchaState;
-	private ChanPerformer.CaptchaData mCaptchaData;
-	private String mLoadedCaptchaType;
-	private ChanConfiguration.Captcha.Input mInput;
-	private ChanConfiguration.Captcha.Validity mValidity;
-	private Bitmap mImage;
-	private boolean mLarge;
-	private boolean mBlackAndWhite;
-	private ErrorItem mErrorItem;
+	private ChanPerformer.CaptchaState captchaState;
+	private ChanPerformer.CaptchaData captchaData;
+	private String loadedCaptchaType;
+	private ChanConfiguration.Captcha.Input input;
+	private ChanConfiguration.Captcha.Validity validity;
+	private Bitmap image;
+	private boolean large;
+	private boolean blackAndWhite;
+	private ErrorItem errorItem;
 
 	public interface Callback {
 		public void onReadCaptchaSuccess(ChanPerformer.CaptchaState captchaState, ChanPerformer.CaptchaData captchaData,
@@ -69,16 +69,16 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 	}
 
 	private static class ChanCaptchaReader implements CaptchaReader {
-		private final String mChanName;
+		private final String chanName;
 
 		public ChanCaptchaReader(String chanName) {
-			mChanName = chanName;
+			this.chanName = chanName;
 		}
 
 		@Override
 		public ChanPerformer.ReadCaptchaResult onReadCaptcha(ChanPerformer.ReadCaptchaData data)
 				throws ExtensionException, HttpException, InvalidResponseException {
-			return ChanPerformer.get(mChanName).safe().onReadCaptcha(data);
+			return ChanPerformer.get(chanName).safe().onReadCaptcha(data);
 		}
 	}
 
@@ -88,15 +88,15 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 		if (captchaReader == null) {
 			captchaReader = new ChanCaptchaReader(chanName);
 		}
-		mCallback = callback;
-		mCaptchaReader = captchaReader;
-		mCaptchaType = captchaType;
-		mCaptchaPass = captchaPass;
-		mMayShowLoadButton = mayShowLoadButton;
-		mRequirement = requirement;
-		mChanName = chanName;
-		mBoardName = boardName;
-		mThreadNumber = threadNumber;
+		this.callback = callback;
+		this.captchaReader = captchaReader;
+		this.captchaType = captchaType;
+		this.captchaPass = captchaPass;
+		this.mayShowLoadButton = mayShowLoadButton;
+		this.requirement = requirement;
+		this.chanName = chanName;
+		this.boardName = boardName;
+		this.threadNumber = threadNumber;
 	}
 
 	@Override
@@ -104,39 +104,39 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 		Thread thread = Thread.currentThread();
 		ChanPerformer.ReadCaptchaResult result;
 		try {
-			result = mCaptchaReader.onReadCaptcha(new ChanPerformer.ReadCaptchaData(mCaptchaType,
-					mCaptchaPass, mMayShowLoadButton, mRequirement, mBoardName, mThreadNumber, holder));
+			result = captchaReader.onReadCaptcha(new ChanPerformer.ReadCaptchaData(captchaType,
+					captchaPass, mayShowLoadButton, requirement, boardName, threadNumber, holder));
 		} catch (ExtensionException | HttpException | InvalidResponseException e) {
-			mErrorItem = e.getErrorItemAndHandle();
+			errorItem = e.getErrorItemAndHandle();
 			return false;
 		} finally {
-			ChanConfiguration.get(mChanName).commit();
+			ChanConfiguration.get(chanName).commit();
 		}
-		mCaptchaState = result.captchaState;
-		mCaptchaData = result.captchaData;
-		mLoadedCaptchaType = result.captchaType != null ? result.captchaType : null;
-		mInput = result.input;
-		mValidity = result.validity;
-		String captchaType = mLoadedCaptchaType != null ? mLoadedCaptchaType : mCaptchaType;
+		captchaState = result.captchaState;
+		captchaData = result.captchaData;
+		loadedCaptchaType = result.captchaType != null ? result.captchaType : null;
+		input = result.input;
+		validity = result.validity;
+		String captchaType = loadedCaptchaType != null ? loadedCaptchaType : this.captchaType;
 		boolean recaptcha2 = ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2.equals(captchaType);
 		boolean recaptcha1 = ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_1.equals(captchaType);
 		boolean mailru = ChanConfiguration.CAPTCHA_TYPE_MAILRU.equals(captchaType);
-		if (mCaptchaState != ChanPerformer.CaptchaState.CAPTCHA) {
+		if (captchaState != ChanPerformer.CaptchaState.CAPTCHA) {
 			return true;
 		}
 		if (thread.isInterrupted()) {
 			return null;
 		}
-		if (mMayShowLoadButton && recaptcha2) {
-			String apiKey = mCaptchaData.get(ChanPerformer.CaptchaData.API_KEY);
+		if (mayShowLoadButton && recaptcha2) {
+			String apiKey = captchaData.get(ChanPerformer.CaptchaData.API_KEY);
 			if (Preferences.isRecaptchaJavascript()) {
 				RecaptchaReader.getInstance().preloadNewWidget(apiKey);
 			}
-			mCaptchaState = ChanPerformer.CaptchaState.NEED_LOAD;
+			captchaState = ChanPerformer.CaptchaState.NEED_LOAD;
 			return true;
 		}
 		if (recaptcha2 || recaptcha1) {
-			String apiKey = mCaptchaData.get(ChanPerformer.CaptchaData.API_KEY);
+			String apiKey = captchaData.get(ChanPerformer.CaptchaData.API_KEY);
 			try {
 				RecaptchaReader recaptchaReader = RecaptchaReader.getInstance();
 				String challenge;
@@ -145,7 +145,7 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 				} else {
 					challenge = recaptchaReader.getChallenge1(holder, apiKey, Preferences.isRecaptchaJavascript());
 				}
-				mCaptchaData.put(ChanPerformer.CaptchaData.CHALLENGE, challenge);
+				captchaData.put(ChanPerformer.CaptchaData.CHALLENGE, challenge);
 				if (thread.isInterrupted()) {
 					return null;
 				}
@@ -155,18 +155,18 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 				} else {
 					pair = recaptchaReader.getImage1(holder, challenge, true);
 				}
-				mImage = pair.first;
-				mBlackAndWhite = pair.second;
+				image = pair.first;
+				blackAndWhite = pair.second;
 				return true;
 			} catch (RecaptchaReader.SkipException e) {
-				mCaptchaData.put(RECAPTCHA_SKIP_RESPONSE, e.getResponse());
-				mCaptchaState = ChanPerformer.CaptchaState.SKIP;
+				captchaData.put(RECAPTCHA_SKIP_RESPONSE, e.getResponse());
+				captchaState = ChanPerformer.CaptchaState.SKIP;
 				return true;
 			} catch (RecaptchaReader.CancelException e) {
-				mCaptchaState = ChanPerformer.CaptchaState.NEED_LOAD;
+				captchaState = ChanPerformer.CaptchaState.NEED_LOAD;
 				return true;
 			} catch (HttpException e) {
-				mErrorItem = e.getErrorItemAndHandle();
+				errorItem = e.getErrorItemAndHandle();
 				return false;
 			}
 		} else if (mailru) {
@@ -174,37 +174,37 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 			CaptchaServiceReader.Result captchaResult;
 			try {
 				if (mailru) {
-					captchaResult = reader.readMailru(holder, mChanName, mCaptchaData
+					captchaResult = reader.readMailru(holder, chanName, captchaData
 							.get(ChanPerformer.CaptchaData.API_KEY));
 				} else {
 					throw new RuntimeException();
 				}
 			} catch (HttpException | InvalidResponseException e) {
-				mErrorItem = e.getErrorItemAndHandle();
+				errorItem = e.getErrorItemAndHandle();
 				return false;
 			}
-			mCaptchaData.put(ChanPerformer.CaptchaData.CHALLENGE, captchaResult.challenge);
-			mImage = captchaResult.image;
-			mBlackAndWhite = captchaResult.blackAndWhite;
+			captchaData.put(ChanPerformer.CaptchaData.CHALLENGE, captchaResult.challenge);
+			image = captchaResult.image;
+			blackAndWhite = captchaResult.blackAndWhite;
 			return true;
 		} else if (result.image != null) {
 			Bitmap image = result.image;
-			mBlackAndWhite = GraphicsUtils.isBlackAndWhiteCaptchaImage(image);
-			mImage = mBlackAndWhite ? GraphicsUtils.handleBlackAndWhiteCaptchaImage(image).first : image;
-			mLarge = result.large;
+			blackAndWhite = GraphicsUtils.isBlackAndWhiteCaptchaImage(image);
+			this.image = blackAndWhite ? GraphicsUtils.handleBlackAndWhiteCaptchaImage(image).first : image;
+			large = result.large;
 			return true;
 		}
-		mErrorItem = new ErrorItem(ErrorItem.TYPE_UNKNOWN);
+		errorItem = new ErrorItem(ErrorItem.TYPE_UNKNOWN);
 		return false;
 	}
 
 	@Override
 	protected void onPostExecute(Boolean result) {
 		if (result) {
-			mCallback.onReadCaptchaSuccess(mCaptchaState, mCaptchaData, mLoadedCaptchaType, mInput, mValidity,
-					mImage, mLarge, mBlackAndWhite);
+			callback.onReadCaptchaSuccess(captchaState, captchaData, loadedCaptchaType, input, validity,
+					image, large, blackAndWhite);
 		} else {
-			mCallback.onReadCaptchaError(mErrorItem);
+			callback.onReadCaptchaError(errorItem);
 		}
 	}
 }

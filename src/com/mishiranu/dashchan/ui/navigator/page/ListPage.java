@@ -54,52 +54,52 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 
 	public enum ViewType {LIST, PROGRESS, ERROR}
 
-	private Activity mActivity;
-	private Callback mCallback;
-	private PageHolder mPageHolder;
-	private PullableListView mListView;
-	private UiManager mUiManager;
-	private ActionIconSet mActionIconSet;
+	private Activity activity;
+	private Callback callback;
+	private PageHolder pageHolder;
+	private PullableListView listView;
+	private UiManager uiManager;
+	private ActionIconSet actionIconSet;
 
-	private Adapter mAdapter;
-	private BusyScrollListener.Callback mBusyScrollListenerCallback;
-	private State mState = State.INIT;
+	private Adapter adapter;
+	private BusyScrollListener.Callback busyScrollListenerCallback;
+	private State state = State.INIT;
 
 	public final void init(Activity activity, Callback callback, PageHolder pageHolder, PullableListView listView,
 			UiManager uiManager, ActionIconSet actionIconSet) {
-		if (mState == State.INIT) {
-			mState = State.LOCKED;
-			mActivity = activity;
-			mCallback = callback;
-			mPageHolder = pageHolder;
-			mListView = listView;
-			mUiManager = uiManager;
-			mActionIconSet = actionIconSet;
+		if (state == State.INIT) {
+			state = State.LOCKED;
+			this.activity = activity;
+			this.callback = callback;
+			this.pageHolder = pageHolder;
+			this.listView = listView;
+			this.uiManager = uiManager;
+			this.actionIconSet = actionIconSet;
 			listView.setDivider(ResourceUtils.getDrawable(activity, android.R.attr.listDivider, 0));
 			ListScroller.cancel(listView);
 			onCreate();
-			if (mAdapter == null) {
+			if (this.adapter == null) {
 				throw new IllegalStateException("Adapter wasn't initialized");
 			}
-			mState = State.RESUMED;
+			state = State.RESUMED;
 			performResume();
 		}
 	}
 
 	protected final Activity getActivity() {
-		return mActivity;
+		return activity;
 	}
 
 	protected final Resources getResources() {
-		return mActivity.getResources();
+		return activity.getResources();
 	}
 
 	protected final String getString(int resId) {
-		return mActivity.getString(resId);
+		return activity.getString(resId);
 	}
 
 	protected final String getString(int resId, Object... formatArgs) {
-		return mActivity.getString(resId, formatArgs);
+		return activity.getString(resId, formatArgs);
 	}
 
 	protected final String getQuantityString(int resId, int quantity, Object... formatArgs) {
@@ -107,81 +107,81 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 	}
 
 	protected final PageHolder getPageHolder() {
-		return mPageHolder;
+		return pageHolder;
 	}
 
 	protected final UiManager getUiManager() {
-		return mUiManager;
+		return uiManager;
 	}
 
 	protected final Adapter getAdapter() {
-		return mAdapter;
+		return adapter;
 	}
 
 	protected final ChanLocator getChanLocator() {
-		return ChanLocator.get(mPageHolder.chanName);
+		return ChanLocator.get(pageHolder.chanName);
 	}
 
 	protected final ChanConfiguration getChanConfiguration() {
-		return ChanConfiguration.get(mPageHolder.chanName);
+		return ChanConfiguration.get(pageHolder.chanName);
 	}
 
 	protected final PullableListView getListView() {
-		return mListView;
+		return listView;
 	}
 
 	protected final void notifyAllAdaptersChanged() {
-		mAdapter.notifyDataSetChanged();
-		mUiManager.dialog().notifyDataSetChangedToAll();
+		adapter.notifyDataSetChanged();
+		uiManager.dialog().notifyDataSetChangedToAll();
 	}
 
 	protected final int obtainIcon(int attr) {
-		if (mActionIconSet != null) {
-			return mActionIconSet.getId(attr);
+		if (actionIconSet != null) {
+			return actionIconSet.getId(attr);
 		} else {
 			return 0;
 		}
 	}
 
 	protected final void initAdapter(Adapter adapter, BusyScrollListener.Callback callback) {
-		if (mState == State.LOCKED) {
-			mAdapter = adapter;
-			mBusyScrollListenerCallback = callback;
-			mUiManager.view().notifyUnbindListView(mListView);
-			mListView.setAdapter(adapter);
+		if (state == State.LOCKED) {
+			this.adapter = adapter;
+			busyScrollListenerCallback = callback;
+			uiManager.view().notifyUnbindListView(listView);
+			listView.setAdapter(adapter);
 		} else {
 			throw new IllegalStateException("Adapter can be initialized only in onCreate method");
 		}
 	}
 
 	protected final void setCustomSearchView(View view) {
-		mCallback.setCustomSearchView(view);
+		callback.setCustomSearchView(view);
 	}
 
 	protected final void notifyTitleChanged() {
-		mCallback.notifyTitleChanged();
+		callback.notifyTitleChanged();
 	}
 
 	protected final void updateOptionsMenu(boolean recreate) {
-		if (mState == State.RESUMED || mState == State.PAUSED) {
-			mCallback.updateOptionsMenu(recreate);
+		if (state == State.RESUMED || state == State.PAUSED) {
+			callback.updateOptionsMenu(recreate);
 		}
 	}
 
 	protected final void switchView(ViewType viewType, String message) {
-		mCallback.switchView(viewType, message);
+		callback.switchView(viewType, message);
 	}
 
 	protected final void switchView(ViewType viewType, int message) {
-		mCallback.switchView(viewType, message != 0 ? getString(message) : null);
+		callback.switchView(viewType, message != 0 ? getString(message) : null);
 	}
 
 	protected final void showScaleAnimation() {
-		mCallback.showScaleAnimation();
+		callback.showScaleAnimation();
 	}
 
 	protected final void handleRedirect(String chanName, String boardName, String threadNumber, String postNumber) {
-		mCallback.handleRedirect(chanName, boardName, threadNumber, postNumber);
+		callback.handleRedirect(chanName, boardName, threadNumber, postNumber);
 	}
 
 	protected void onCreate() {}
@@ -233,8 +233,8 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 
 	@Override
 	public void setListViewBusy(boolean isBusy, AbsListView listView) {
-		if (mBusyScrollListenerCallback != null) {
-			mBusyScrollListenerCallback.setListViewBusy(isBusy, listView);
+		if (busyScrollListenerCallback != null) {
+			busyScrollListenerCallback.setListViewBusy(isBusy, listView);
 		}
 	}
 
@@ -247,7 +247,7 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 	public void updatePageConfiguration(String postNumber, String threadTitle) {}
 
 	public final boolean isDestroyed() {
-		return mState == State.CONSUMED;
+		return state == State.CONSUMED;
 	}
 
 	private void performResume() {
@@ -256,32 +256,32 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 	}
 
 	public final void resume() {
-		if (mState == State.PAUSED) {
-			mState = State.RESUMED;
-			setListViewBusy(false, mListView); // Refresh list view contents
+		if (state == State.PAUSED) {
+			state = State.RESUMED;
+			setListViewBusy(false, listView); // Refresh list view contents
 			performResume();
 		}
 	}
 
 	public final void pause() {
-		if (mState == State.RESUMED) {
-			mState = State.PAUSED;
+		if (state == State.RESUMED) {
+			state = State.PAUSED;
 			onPause();
 		}
 	}
 
 	public final void cleanup() {
-		if (mState == State.RESUMED || mState == State.PAUSED) {
-			if (mState == State.RESUMED) {
+		if (state == State.RESUMED || state == State.PAUSED) {
+			if (state == State.RESUMED) {
 				onPause();
 			}
-			mState = State.CONSUMED;
+			state = State.CONSUMED;
 			onDestroy();
 		}
 	}
 
 	public final void handleNewPostDatasNow() {
-		if (mState == State.RESUMED) {
+		if (state == State.RESUMED) {
 			onHandleNewPostDatas();
 		}
 	}

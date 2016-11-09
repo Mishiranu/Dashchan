@@ -51,17 +51,17 @@ public class StorageManager implements Handler.Callback, Runnable {
 		new Thread(this, "StorageManagerWorker").start();
 	}
 
-	private final Handler mHandler = new Handler(Looper.getMainLooper(), this);
-	private final LinkedBlockingQueue<Pair<Storage, Object>> mQueue = new LinkedBlockingQueue<>();
+	private final Handler handler = new Handler(Looper.getMainLooper(), this);
+	private final LinkedBlockingQueue<Pair<Storage, Object>> queue = new LinkedBlockingQueue<>();
 
-	private int mNextIdentifier = 1;
+	private int nextIdentifier = 1;
 
 	@Override
 	public void run() {
 		while (true) {
 			Pair<Storage, Object> pair;
 			try {
-				pair = mQueue.take();
+				pair = queue.take();
 			} catch (InterruptedException e) {
 				return;
 			}
@@ -70,7 +70,7 @@ public class StorageManager implements Handler.Callback, Runnable {
 	}
 
 	private void performSerialize(Storage storage, Object data) {
-		synchronized (storage.mLock) {
+		synchronized (storage.lock) {
 			JSONObject jsonObject;
 			try {
 				jsonObject = storage.onSerialize(data);
@@ -117,17 +117,17 @@ public class StorageManager implements Handler.Callback, Runnable {
 	}
 
 	public static abstract class Storage {
-		private final String mName;
-		private final int mTimeout;
-		private final int mMaxTimeout;
+		private final String name;
+		private final int timeout;
+		private final int maxTimeout;
 
-		private int mIdentifier = 0;
-		private final Object mLock = new Object();
+		private int identifier = 0;
+		private final Object lock = new Object();
 
 		public Storage(String name, int timeout, int maxTimeout) {
-			mName = name;
-			mTimeout = timeout;
-			mMaxTimeout = maxTimeout;
+			this.name = name;
+			this.timeout = timeout;
+			this.maxTimeout = maxTimeout;
 		}
 
 		public final File getFile() {
@@ -189,7 +189,7 @@ public class StorageManager implements Handler.Callback, Runnable {
 	}
 
 	private File getFile(Storage storage) {
-		return getFile(storage.mName);
+		return getFile(storage.name);
 	}
 
 	private JSONObject read(Storage storage) {
@@ -207,7 +207,7 @@ public class StorageManager implements Handler.Callback, Runnable {
 			IOUtils.copyStream(input, output);
 			bytes = output.toByteArray();
 		} catch (IOException e) {
-			// Ignore
+			// Ignore exception
 		} finally {
 			IOUtils.close(input);
 		}
@@ -215,39 +215,39 @@ public class StorageManager implements Handler.Callback, Runnable {
 			try {
 				return new JSONObject(new String(bytes, CHARSET));
 			} catch (JSONException e) {
-				// Ignore
+				// Invalid JSON object, ignore exception
 			}
 		}
 		return null;
 	}
 
-	private final SparseArray<Long> mSerializeTimes = new SparseArray<>();
+	private final SparseArray<Long> serializeTimes = new SparseArray<>();
 
 	private void serialize(Storage storage) {
-		if (storage.mIdentifier == 0) {
-			storage.mIdentifier = mNextIdentifier++;
+		if (storage.identifier == 0) {
+			storage.identifier = nextIdentifier++;
 		}
-		Long timeObject = mSerializeTimes.get(storage.mIdentifier);
+		Long timeObject = serializeTimes.get(storage.identifier);
 		long timeout;
 		if (timeObject == null) {
-			mSerializeTimes.put(storage.mIdentifier, System.currentTimeMillis());
-			timeout = storage.mTimeout;
+			serializeTimes.put(storage.identifier, System.currentTimeMillis());
+			timeout = storage.timeout;
 		} else {
-			timeout = Math.min(storage.mTimeout, timeObject + storage.mMaxTimeout - System.currentTimeMillis());
+			timeout = Math.min(storage.timeout, timeObject + storage.maxTimeout - System.currentTimeMillis());
 		}
-		mHandler.removeMessages(storage.mIdentifier);
+		handler.removeMessages(storage.identifier);
 		if (timeout <= 0) {
 			enqueueSerialize(storage);
-			mSerializeTimes.remove(storage.mIdentifier);
+			serializeTimes.remove(storage.identifier);
 		} else {
-			mHandler.sendMessageDelayed(mHandler.obtainMessage(storage.mIdentifier, storage), timeout);
+			handler.sendMessageDelayed(handler.obtainMessage(storage.identifier, storage), timeout);
 		}
 	}
 
 	public void await(Storage storage, boolean async) {
-		if (mHandler.hasMessages(storage.mIdentifier)) {
-			mSerializeTimes.remove(storage.mIdentifier);
-			mHandler.removeMessages(storage.mIdentifier);
+		if (handler.hasMessages(storage.identifier)) {
+			serializeTimes.remove(storage.identifier);
+			handler.removeMessages(storage.identifier);
 			if (async) {
 				enqueueSerialize(storage);
 			} else {
@@ -257,13 +257,13 @@ public class StorageManager implements Handler.Callback, Runnable {
 	}
 
 	private void enqueueSerialize(Storage storage) {
-		mQueue.add(new Pair<>(storage, storage.onClone()));
+		queue.add(new Pair<>(storage, storage.onClone()));
 	}
 
 	@Override
 	public boolean handleMessage(Message msg) {
 		Storage storage = (Storage) msg.obj;
-		mSerializeTimes.remove(storage.mIdentifier);
+		serializeTimes.remove(storage.identifier);
 		enqueueSerialize(storage);
 		return true;
 	}

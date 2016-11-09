@@ -75,14 +75,14 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 	private static final String EXTRA_FILE = "com.mishiranu.dashchan.extra.FILE";
 	private static final String EXTRA_SUCCESS = "com.mishiranu.dashchan.extra.SUCCESS";
 
-	private Context mContext;
-	private NotificationManager mNotificationManager;
-	private int mNotificationColor;
-	private PowerManager.WakeLock mWakeLock;
-	private boolean mFirstStart;
+	private Context context;
+	private NotificationManager notificationManager;
+	private int notificationColor;
+	private PowerManager.WakeLock wakeLock;
+	private boolean firstStart;
 
-	private Thread mNotificationsWorker;
-	private final LinkedBlockingQueue<NotificationData> mNotificationsQueue = new LinkedBlockingQueue<>();
+	private Thread notificationsWorker;
+	private final LinkedBlockingQueue<NotificationData> notificationsQueue = new LinkedBlockingQueue<>();
 
 	private static Intent obtainIntent(Context context, String action) {
 		return new Intent(context, DownloadService.class).setAction(action);
@@ -92,44 +92,44 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		mNotificationsWorker = new Thread(this, "DownloadServiceNotificationThread");
-		mNotificationsWorker.start();
-		mFirstStart = true;
-		mContext = new ContextThemeWrapper(this, R.style.Theme_Special_Notification);
-		mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+		notificationsWorker = new Thread(this, "DownloadServiceNotificationThread");
+		notificationsWorker.start();
+		firstStart = true;
+		context = new ContextThemeWrapper(this, R.style.Theme_Special_Notification);
+		notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		int notificationColor = 0;
 		if (C.API_LOLLIPOP) {
 			Context themedContext = new ContextThemeWrapper(this, Preferences.getThemeResource());
 			notificationColor = ResourceUtils.getColor(themedContext, android.R.attr.colorAccent);
 		}
-		mNotificationColor = notificationColor;
+		this.notificationColor = notificationColor;
 		PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
-		mWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "DownloadServiceWakeLock");
-		mWakeLock.setReferenceCounted(false);
+		wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "DownloadServiceWakeLock");
+		wakeLock.setReferenceCounted(false);
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		mNotificationsWorker.interrupt();
-		mWakeLock.release();
+		notificationsWorker.interrupt();
+		wakeLock.release();
 		DownloadManager.getInstance().notifyServiceDestroy();
-		if (mReadFileTask != null) {
-			mReadFileTask.cancel();
+		if (readFileTask != null) {
+			readFileTask.cancel();
 		}
 		try {
-			mNotificationsWorker.join();
+			notificationsWorker.join();
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 		}
 		stopForeground(true);
-		mNotificationManager.cancel(C.NOTIFICATION_ID_DOWNLOAD);
+		notificationManager.cancel(C.NOTIFICATION_ID_DOWNLOAD);
 	}
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		boolean firstStart = mFirstStart;
-		mFirstStart = false;
+		boolean firstStart = this.firstStart;
+		this.firstStart = false;
 		if (intent != null) {
 			String action = intent.getAction();
 			if (ACTION_START.equals(action)) {
@@ -146,28 +146,28 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 				TaskData taskData = new TaskData(null, Uri.fromFile(file), file);
 				taskData.retryable = false;
 				taskData.local = true;
-				mErrorTasks.remove(taskData);
-				mSuccessTasks.remove(taskData);
+				errorTasks.remove(taskData);
+				successTasks.remove(taskData);
 				if (success) {
-					mSuccessTasks.add(taskData);
+					successTasks.add(taskData);
 				} else {
-					mErrorTasks.add(taskData);
+					errorTasks.add(taskData);
 				}
-				mNotificationsQueue.add(new NotificationData(mSuccessTasks.get(mSuccessTasks.size() - 1)));
+				notificationsQueue.add(new NotificationData(successTasks.get(successTasks.size() - 1)));
 				refreshNotification(true);
 			} else if (firstStart) {
 				// Start caused by clicking on notification when application was closed
 				stopSelf();
 			} else if (ACTION_OPEN_FILE.equals(action)) {
-				mBuilder = null;
+				builder = null;
 				refreshNotification(false);
-				if (mSuccessTasks.size() > 0) {
-					TaskData taskData = mSuccessTasks.get(mSuccessTasks.size() - 1);
+				if (successTasks.size() > 0) {
+					TaskData taskData = successTasks.get(successTasks.size() - 1);
 					String extension = StringUtils.getFileExtension(taskData.to.getPath());
 					String type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
-					Uri uri = taskData.to.equals(mScannedMediaFile) ? mScannedMediaUri : Uri.fromFile(taskData.to);
+					Uri uri = taskData.to.equals(scannedMediaFile) ? scannedMediaUri : Uri.fromFile(taskData.to);
 					try {
-						mContext.startActivity(new Intent(Intent.ACTION_VIEW).setDataAndType(uri,
+						context.startActivity(new Intent(Intent.ACTION_VIEW).setDataAndType(uri,
 								type).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
 					} catch (ActivityNotFoundException e) {
 						ToastUtils.show(this, R.string.message_unknown_address);
@@ -176,18 +176,18 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 			} else if (ACTION_CANCEL_DOWNLOADING.equals(action)) {
 				stopSelf();
 			} else if (ACTION_RETRY_DOWNLOADING.equals(action)) {
-				if (mReadFileTask != null) {
-					mReadFileTask.cancel();
+				if (readFileTask != null) {
+					readFileTask.cancel();
 				}
-				mSuccessTasks.clear();
-				for (TaskData taskData : mErrorTasks) {
+				successTasks.clear();
+				for (TaskData taskData : errorTasks) {
 					if (taskData.retryable) {
-						mQueuedTasks.add(taskData);
+						queuedTasks.add(taskData);
 					}
 				}
-				mErrorTasks.clear();
-				if (mQueuedTasks.size() > 0) {
-					TaskData taskData = mQueuedTasks.get(0);
+				errorTasks.clear();
+				if (queuedTasks.size() > 0) {
+					TaskData taskData = queuedTasks.get(0);
 					start(taskData.chanName, taskData.from, taskData.to);
 				}
 			}
@@ -248,19 +248,19 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 			NotificationData notificationData = null;
 			if (!interrupted) {
 				try {
-					notificationData = mNotificationsQueue.take();
+					notificationData = notificationsQueue.take();
 				} catch (InterruptedException e) {
 					interrupted = true;
 				}
 			}
 			if (interrupted) {
-				notificationData = mNotificationsQueue.poll();
+				notificationData = notificationsQueue.poll();
 			}
 			if (notificationData == null) {
 				return;
 			}
 			if (notificationData.forceSetImage) {
-				if (mBuilder != null) {
+				if (builder != null) {
 					setBuilderImage(notificationData.lastSuccessTaskData);
 				}
 			} else {
@@ -269,21 +269,21 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 		}
 	}
 
-	private final ArrayList<TaskData> mQueuedTasks = new ArrayList<>();
-	private final ArrayList<TaskData> mSuccessTasks = new ArrayList<>();
-	private final ArrayList<TaskData> mErrorTasks = new ArrayList<>();
+	private final ArrayList<TaskData> queuedTasks = new ArrayList<>();
+	private final ArrayList<TaskData> successTasks = new ArrayList<>();
+	private final ArrayList<TaskData> errorTasks = new ArrayList<>();
 
-	private Notification.Builder mBuilder;
-	private Notification.BigTextStyle mNotificationStyle;
-	private CharSequence mNotificationBigText;
+	private Notification.Builder builder;
+	private Notification.BigTextStyle notificationStyle;
+	private CharSequence notificationBigText;
 
-	private volatile int mProgress, mProgressMax;
-	private volatile long mLastUpdate;
+	private volatile int progress, progressMax;
+	private volatile long lastUpdate;
 
-	private ReadFileTask mReadFileTask;
+	private ReadFileTask readFileTask;
 
-	private File mScannedMediaFile;
-	private Uri mScannedMediaUri;
+	private File scannedMediaFile;
+	private Uri scannedMediaUri;
 
 	private static class TaskData {
 		public final String chanName;
@@ -318,65 +318,65 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 
 	private void enqueue(String chanName, Uri from, File to, boolean refreshNotification) {
 		TaskData taskData = new TaskData(chanName, from, to);
-		boolean success = mSuccessTasks.contains(taskData);
-		if (!success && !mQueuedTasks.contains(taskData)) {
-			if (mErrorTasks.contains(taskData)) {
-				mErrorTasks.remove(taskData);
+		boolean success = successTasks.contains(taskData);
+		if (!success && !queuedTasks.contains(taskData)) {
+			if (errorTasks.contains(taskData)) {
+				errorTasks.remove(taskData);
 			}
-			mQueuedTasks.add(taskData);
+			queuedTasks.add(taskData);
 			DownloadManager.getInstance().notifyFileAddedToDownloadQueue(taskData.to);
 			boolean started = start(chanName, from, to);
 			if (!started && refreshNotification) {
 				refreshNotification(false);
 			}
-		} else if (success && mReadFileTask == null) {
+		} else if (success && readFileTask == null) {
 			refreshNotification(true);
 		}
 	}
 
 	private boolean start(String chanName, Uri from, File to) {
-		if (mReadFileTask == null) {
-			mProgressMax = 0;
-			mProgress = 0;
-			mLastUpdate = 0L;
-			mReadFileTask = new ReadFileTask(this, chanName, from, to, true, this);
-			mReadFileTask.executeOnExecutor(SINGLE_THREAD_EXECUTOR);
+		if (readFileTask == null) {
+			progressMax = 0;
+			progress = 0;
+			lastUpdate = 0L;
+			readFileTask = new ReadFileTask(this, chanName, from, to, true, this);
+			readFileTask.executeOnExecutor(SINGLE_THREAD_EXECUTOR);
 			return true;
 		}
 		return false;
 	}
 
-	private boolean mOldStateWithTask = false;
+	private boolean oldStateWithTask = false;
 
 	private static final int[] ICON_ATTRS = {R.attr.notificationRefresh, R.attr.notificationCancel};
 
 	private void setBuilderImage(TaskData taskData) {
 		if (taskData.to.exists()) {
 			FileHolder fileHolder = FileHolder.obtain(taskData.to);
-			DisplayMetrics metrics = mContext.getResources().getDisplayMetrics();
+			DisplayMetrics metrics = context.getResources().getDisplayMetrics();
 			int size = Math.max(metrics.widthPixels, metrics.heightPixels);
-			mBuilder.setLargeIcon(fileHolder.readImageBitmap(size / 4, false, false));
+			builder.setLargeIcon(fileHolder.readImageBitmap(size / 4, false, false));
 		}
 	}
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private void refreshNotificationFromThread(NotificationData notificationData) {
-		if (mBuilder == null || (notificationData.hasTask) != mOldStateWithTask) {
-			mOldStateWithTask = notificationData.hasTask;
-			mNotificationManager.cancel(C.NOTIFICATION_ID_DOWNLOAD);
-			mBuilder = new Notification.Builder(mContext);
-			mBuilder.setDeleteIntent(PendingIntent.getService(mContext, 0,
+		if (builder == null || (notificationData.hasTask) != oldStateWithTask) {
+			oldStateWithTask = notificationData.hasTask;
+			notificationManager.cancel(C.NOTIFICATION_ID_DOWNLOAD);
+			builder = new Notification.Builder(context);
+			builder.setDeleteIntent(PendingIntent.getService(context, 0,
 					obtainIntent(this, ACTION_CANCEL_DOWNLOADING), PendingIntent.FLAG_UPDATE_CURRENT));
-			mBuilder.setSmallIcon(notificationData.hasTask ? android.R.drawable.stat_sys_download
+			builder.setSmallIcon(notificationData.hasTask ? android.R.drawable.stat_sys_download
 					: android.R.drawable.stat_sys_download_done);
 			if (notificationData.lastSuccessTaskData != null) {
 				setBuilderImage(notificationData.lastSuccessTaskData);
 			}
-			TypedArray typedArray = mContext.obtainStyledAttributes(ICON_ATTRS);
+			TypedArray typedArray = context.obtainStyledAttributes(ICON_ATTRS);
 			if (notificationData.hasTask) {
-				PendingIntent cancelIntent = PendingIntent.getService(mContext, 0,
+				PendingIntent cancelIntent = PendingIntent.getService(context, 0,
 						obtainIntent(this, ACTION_CANCEL_DOWNLOADING), PendingIntent.FLAG_UPDATE_CURRENT);
-				ViewUtils.addNotificationAction(mBuilder, mContext, typedArray, 1,
+				ViewUtils.addNotificationAction(builder, context, typedArray, 1,
 						android.R.string.cancel, cancelIntent);
 			} else if (notificationData.errorTasks.size() > 0) {
 				boolean hasRetryable = false;
@@ -387,20 +387,20 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 					}
 				}
 				if (hasRetryable) {
-					PendingIntent retryIntent = PendingIntent.getService(mContext, 0,
+					PendingIntent retryIntent = PendingIntent.getService(context, 0,
 							obtainIntent(this, ACTION_RETRY_DOWNLOADING), PendingIntent.FLAG_UPDATE_CURRENT);
-					ViewUtils.addNotificationAction(mBuilder, mContext, typedArray, 0,
+					ViewUtils.addNotificationAction(builder, context, typedArray, 0,
 							R.string.action_retry, retryIntent);
 				}
 			}
 			typedArray.recycle();
-			mNotificationBigText = null;
-			mNotificationStyle = new Notification.BigTextStyle();
-			mBuilder.setStyle(mNotificationStyle);
+			notificationBigText = null;
+			notificationStyle = new Notification.BigTextStyle();
+			builder.setStyle(notificationStyle);
 			if (notificationData.errorTasks.size() > 0) {
 				SpannableStringBuilder spannable = new SpannableStringBuilder();
 				spannable.append("\n\n");
-				StringUtils.appendSpan(spannable, mContext.getString(R.string.message_download_not_loaded),
+				StringUtils.appendSpan(spannable, context.getString(R.string.message_download_not_loaded),
 						C.API_LOLLIPOP ? new TypefaceSpan("sans-serif-medium") : new StyleSpan(Typeface.BOLD));
 				for (int i = 0; i < notificationData.errorTasks.size(); i++) {
 					spannable.append('\n');
@@ -410,10 +410,10 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 						spannable.append(" (").append(taskData.errorInfo).append(')');
 					}
 				}
-				mNotificationBigText = spannable;
+				notificationBigText = spannable;
 			}
 			if (notificationData.successTasksSize > 0) {
-				mBuilder.setContentIntent(PendingIntent.getService(mContext, 0,
+				builder.setContentIntent(PendingIntent.getService(context, 0,
 						obtainIntent(this, ACTION_OPEN_FILE), PendingIntent.FLAG_UPDATE_CURRENT));
 			}
 		}
@@ -424,74 +424,74 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 			int ready = notificationData.errorTasks.size() + notificationData.successTasksSize;
 			int total = ready + notificationData.queudTasksSize;
 			ready++;
-			contentTitle = mContext.getString(R.string.message_download_count_format, ready, total);
-			contentText = mContext.getString(R.string.message_download_name_format,
+			contentTitle = context.getString(R.string.message_download_count_format, ready, total);
+			contentText = context.getString(R.string.message_download_name_format,
 					notificationData.currentTaskFileName);
 			headsUp = false;
-			mBuilder.setProgress(notificationData.progressMax, notificationData.progress,
+			builder.setProgress(notificationData.progressMax, notificationData.progress,
 					notificationData.progressMax == 0 || notificationData.progress > notificationData.progressMax
 					|| notificationData.progress < 0);
 		} else {
-			contentTitle = mContext.getString(notificationData.hasExternal ? R.string.message_download_completed
+			contentTitle = context.getString(notificationData.hasExternal ? R.string.message_download_completed
 					: R.string.message_save_completed);
-			contentText = mContext.getString(R.string.message_download_result_format, notificationData.successTasksSize,
+			contentText = context.getString(R.string.message_download_result_format, notificationData.successTasksSize,
 					notificationData.errorTasks.size());
 			headsUp = notificationData.allowHeadsUp;
-			mBuilder.setOngoing(false);
+			builder.setOngoing(false);
 		}
-		mBuilder.setContentTitle(contentTitle);
-		mBuilder.setContentText(contentText);
-		if (mNotificationBigText != null) {
+		builder.setContentTitle(contentTitle);
+		builder.setContentText(contentText);
+		if (notificationBigText != null) {
 			SpannableStringBuilder spannable = new SpannableStringBuilder(contentText);
-			spannable.append(mNotificationBigText);
-			mNotificationStyle.bigText(spannable);
+			spannable.append(notificationBigText);
+			notificationStyle.bigText(spannable);
 		} else {
-			mNotificationStyle.bigText(contentText);
+			notificationStyle.bigText(contentText);
 		}
 		if (C.API_LOLLIPOP) {
-			mBuilder.setColor(mNotificationColor);
+			builder.setColor(notificationColor);
 			if (headsUp && Preferences.isNotifyDownloadComplete()) {
-				mBuilder.setPriority(Notification.PRIORITY_HIGH);
-				mBuilder.setVibrate(new long[0]);
+				builder.setPriority(Notification.PRIORITY_HIGH);
+				builder.setVibrate(new long[0]);
 			} else {
-				mBuilder.setPriority(Notification.PRIORITY_DEFAULT);
-				mBuilder.setVibrate(null);
+				builder.setPriority(Notification.PRIORITY_DEFAULT);
+				builder.setVibrate(null);
 			}
 		} else {
-			mBuilder.setTicker(headsUp ? contentTitle : null);
+			builder.setTicker(headsUp ? contentTitle : null);
 		}
-		Notification notification = mBuilder.build();
+		Notification notification = builder.build();
 		if (notificationData.hasTask) {
 			startForeground(C.NOTIFICATION_ID_DOWNLOAD, notification);
 		} else {
 			stopForeground(true);
-			mNotificationManager.notify(C.NOTIFICATION_ID_DOWNLOAD, notification);
+			notificationManager.notify(C.NOTIFICATION_ID_DOWNLOAD, notification);
 		}
 	}
 
 	private void refreshNotification(boolean allowHeadsUp) {
-		boolean hasTask = mReadFileTask != null;
-		TaskData lastSuccessTaskData = mSuccessTasks.size() > 0 ? mSuccessTasks.get(mSuccessTasks.size() - 1) : null;
+		boolean hasTask = readFileTask != null;
+		TaskData lastSuccessTaskData = successTasks.size() > 0 ? successTasks.get(successTasks.size() - 1) : null;
 		boolean hasExternal = false;
-		for (TaskData taskData : mSuccessTasks) {
+		for (TaskData taskData : successTasks) {
 			if (!taskData.local) {
 				hasExternal = true;
 				break;
 			}
 		}
-		for (TaskData taskData : mErrorTasks) {
+		for (TaskData taskData : errorTasks) {
 			if (!taskData.local) {
 				hasExternal = true;
 				break;
 			}
 		}
-		mNotificationsQueue.add(new NotificationData(allowHeadsUp, hasTask, mQueuedTasks.size(), mSuccessTasks.size(),
-				mErrorTasks, hasExternal, lastSuccessTaskData, hasTask ? mReadFileTask.getFileName() : null,
-				mProgress, mProgressMax));
+		notificationsQueue.add(new NotificationData(allowHeadsUp, hasTask, queuedTasks.size(), successTasks.size(),
+				errorTasks, hasExternal, lastSuccessTaskData, hasTask ? readFileTask.getFileName() : null,
+				progress, progressMax));
 		if (hasTask) {
-			mWakeLock.acquire();
+			wakeLock.acquire();
 		} else {
-			mWakeLock.acquire(15000);
+			wakeLock.acquire(15000);
 		}
 	}
 
@@ -508,16 +508,16 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 	@Override
 	public void onFinishDownloading(boolean success, Uri uri, File file, ErrorItem errorItem) {
 		if (success) {
-			MediaScannerConnection.scanFile(mContext, new String[] {file.getAbsolutePath()}, null, this);
+			MediaScannerConnection.scanFile(context, new String[] {file.getAbsolutePath()}, null, this);
 		}
-		boolean local = mReadFileTask.isDownloadingFromCache();
-		mReadFileTask = null;
+		boolean local = readFileTask.isDownloadingFromCache();
+		readFileTask = null;
 		TaskData taskData = new TaskData(null, uri, file);
 		taskData.local = local;
-		mQueuedTasks.remove(taskData);
+		queuedTasks.remove(taskData);
 		if (success) {
 			DownloadManager.getInstance().notifyFileRemovedFromDownloadQueue(file);
-			mSuccessTasks.add(taskData);
+			successTasks.add(taskData);
 		} else {
 			if (errorItem != null) {
 				int code = errorItem.httpResponseCode;
@@ -525,14 +525,14 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 					taskData.errorInfo = "HTTP " + code;
 				}
 			}
-			mErrorTasks.add(taskData);
+			errorTasks.add(taskData);
 		}
-		if (mQueuedTasks.size() > 0) {
+		if (queuedTasks.size() > 0) {
 			// Update image explicitly, because task state won't be changed
 			if (success) {
-				mNotificationsQueue.add(new NotificationData(taskData));
+				notificationsQueue.add(new NotificationData(taskData));
 			}
-			taskData = mQueuedTasks.get(0);
+			taskData = queuedTasks.get(0);
 			start(taskData.chanName, taskData.from, taskData.to);
 		} else {
 			refreshNotification(true);
@@ -541,11 +541,11 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 
 	@Override
 	public void onUpdateProgress(long progress, long progressMax) {
-		mProgress = (int) progress;
-		mProgressMax = (int) progressMax;
+		this.progress = (int) progress;
+		this.progressMax = (int) progressMax;
 		long t = System.currentTimeMillis();
-		if (t - mLastUpdate >= 1000L) {
-			mLastUpdate = t;
+		if (t - lastUpdate >= 1000L) {
+			lastUpdate = t;
 			refreshNotification(false);
 		}
 	}
@@ -560,8 +560,8 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 
 	@Override
 	public void onScanCompleted(String path, Uri uri) {
-		mScannedMediaFile = new File(path);
-		mScannedMediaUri = uri;
+		scannedMediaFile = new File(path);
+		scannedMediaUri = uri;
 	}
 
 	public static class DownloadItem implements Parcelable {

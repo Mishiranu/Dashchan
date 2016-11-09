@@ -29,20 +29,20 @@ public class ListScroller implements Runnable {
 	private static final int SCROLL_DURATION = 250;
 	private static final int MIN_SCROLL_DURATION = 10;
 
-	private final ListView mListView;
-	private final int mAdditionalScroll;
+	private final ListView listView;
+	private final int additionalScroll;
 
-	private int mScrollDuration;
-	private int mToPosition;
-	private int mCurrentPosition;
+	private int scrollDuration;
+	private int toPosition;
+	private int currentPosition;
 
-	private boolean mIdleState;
-	private long mIdleStart;
-	private int mIdleTop;
+	private boolean idleState;
+	private long idleStart;
+	private int idleTop;
 
 	private ListScroller(ListView listView) {
-		mListView = listView;
-		mAdditionalScroll = (int) (16f * ResourceUtils.obtainDensity(listView));
+		this.listView = listView;
+		additionalScroll = (int) (16f * ResourceUtils.obtainDensity(listView));
 	}
 
 	public static int getJumpThreshold(Context context) {
@@ -66,8 +66,8 @@ public class ListScroller implements Runnable {
 	}
 
 	private void cancel() {
-		mListView.removeCallbacks(this);
-		ListViewUtils.cancelListFling(mListView);
+		listView.removeCallbacks(this);
+		ListViewUtils.cancelListFling(listView);
 	}
 
 	public static void scrollTo(ListView listView, int position) {
@@ -78,66 +78,66 @@ public class ListScroller implements Runnable {
 		cancel();
 		float scale = AnimationUtils.getAnimatorDurationScale();
 		if (scale > 0f) {
-			int first = mListView.getFirstVisiblePosition();
-			mToPosition = position;
-			int jumpThreshold = getJumpThreshold(mListView.getContext());
-			if (mToPosition > first + jumpThreshold) {
-				mListView.setSelection(mToPosition - jumpThreshold);
-			} else if (mToPosition < first - jumpThreshold) {
-				mListView.setSelection(mToPosition + jumpThreshold);
+			int first = listView.getFirstVisiblePosition();
+			toPosition = position;
+			int jumpThreshold = getJumpThreshold(listView.getContext());
+			if (toPosition > first + jumpThreshold) {
+				listView.setSelection(toPosition - jumpThreshold);
+			} else if (toPosition < first - jumpThreshold) {
+				listView.setSelection(toPosition + jumpThreshold);
 			}
-			int delta = Math.abs(mToPosition - first);
-			mScrollDuration = delta > 0 ? Math.max(SCROLL_DURATION / delta, MIN_SCROLL_DURATION) : SCROLL_DURATION;
-			mCurrentPosition = -1;
-			mIdleState = false;
-			mListView.post(this);
+			int delta = Math.abs(toPosition - first);
+			scrollDuration = delta > 0 ? Math.max(SCROLL_DURATION / delta, MIN_SCROLL_DURATION) : SCROLL_DURATION;
+			currentPosition = -1;
+			idleState = false;
+			listView.post(this);
 		} else {
-			mListView.setSelection(position);
+			listView.setSelection(position);
 		}
 	}
 
 	@Override
 	public void run() {
-		int childCount = mListView.getChildCount();
+		int childCount = listView.getChildCount();
 		if (childCount == 0) {
 			return;
 		}
 		boolean post = false;
 		int postInterval = 0;
-		int listHeight = mListView.getHeight();
-		int first = mListView.getFirstVisiblePosition();
+		int listHeight = listView.getHeight();
+		int first = listView.getFirstVisiblePosition();
 		boolean idle = false;
-		if (mToPosition > first) {
+		if (toPosition > first) {
 			int last = first + childCount - 1;
-			if (last != mCurrentPosition) {
-				mCurrentPosition = last;
-				View view = mListView.getChildAt(childCount - 1);
+			if (last != currentPosition) {
+				currentPosition = last;
+				View view = listView.getChildAt(childCount - 1);
 				// More attention to scrolling near the end, because additional bottom padding bug may appear
-				boolean closeToEnd = last >= mListView.getCount() - childCount;
-				int distance = view.getHeight() + view.getTop() - listHeight + mListView.getPaddingBottom();
-				int duration = mScrollDuration;
+				boolean closeToEnd = last >= listView.getCount() - childCount;
+				int distance = view.getHeight() + view.getTop() - listHeight + listView.getPaddingBottom();
+				int duration = scrollDuration;
 				// Fix jamming
-				if (distance > mListView.getHeight() / 2) {
-					mCurrentPosition = -1;
+				if (distance > listView.getHeight() / 2) {
+					currentPosition = -1;
 				}
-				boolean hasScroll = last + 1 < mListView.getCount();
+				boolean hasScroll = last + 1 < listView.getCount();
 				if (hasScroll) {
-					distance += mAdditionalScroll;
+					distance += additionalScroll;
 				}
-				if (last >= mToPosition) {
-					int index = mToPosition - first;
-					view = mListView.getChildAt(index);
-					int topDistance = view.getTop() - mListView.getPaddingTop();
+				if (last >= toPosition) {
+					int index = toPosition - first;
+					view = listView.getChildAt(index);
+					int topDistance = view.getTop() - listView.getPaddingTop();
 					if (topDistance < distance || !closeToEnd) {
 						distance = topDistance;
-						duration = mScrollDuration * (index + 1);
+						duration = scrollDuration * (index + 1);
 					} else {
 						post = hasScroll;
 					}
 				} else {
 					post = hasScroll;
 				}
-				mListView.smoothScrollBy(distance, duration);
+				listView.smoothScrollBy(distance, duration);
 				if (!closeToEnd) {
 					postInterval = duration * 2 / 3;
 				}
@@ -146,25 +146,25 @@ public class ListScroller implements Runnable {
 				post = true;
 			}
 		} else {
-			if (first != mCurrentPosition || first == mToPosition) {
-				mCurrentPosition = first;
-				View view = mListView.getChildAt(0);
-				if (first == mToPosition) {
-					int distance = view.getTop() - mListView.getPaddingTop();
+			if (first != currentPosition || first == toPosition) {
+				currentPosition = first;
+				View view = listView.getChildAt(0);
+				if (first == toPosition) {
+					int distance = view.getTop() - listView.getPaddingTop();
 					if (distance < 0) {
-						mListView.smoothScrollBy(distance, mScrollDuration);
+						listView.smoothScrollBy(distance, scrollDuration);
 					}
-					if (distance + mAdditionalScroll < 0) {
+					if (distance + additionalScroll < 0) {
 						post = true;
 					}
-					postInterval = mScrollDuration;
-				} else if (first > mToPosition) {
-					int distance = view.getTop() - mListView.getPaddingTop() - mAdditionalScroll;
+					postInterval = scrollDuration;
+				} else if (first > toPosition) {
+					int distance = view.getTop() - listView.getPaddingTop() - additionalScroll;
 					// Fix jamming
-					if (distance < -mListView.getHeight() / 2) {
-						mCurrentPosition = -1;
+					if (distance < -listView.getHeight() / 2) {
+						currentPosition = -1;
 					}
-					mListView.smoothScrollBy(distance, mScrollDuration);
+					listView.smoothScrollBy(distance, scrollDuration);
 					post = true;
 				}
 			} else {
@@ -175,23 +175,23 @@ public class ListScroller implements Runnable {
 		// Fix infinite loops
 		if (idle) {
 			long time = System.currentTimeMillis();
-			if (!mIdleState) {
-				mIdleState = true;
-				mIdleStart = time;
-				mIdleTop = mListView.getChildAt(0).getTop();
+			if (!idleState) {
+				idleState = true;
+				idleStart = time;
+				idleTop = listView.getChildAt(0).getTop();
 			} else {
-				if (time - mIdleStart > SCROLL_DURATION && mIdleTop == mListView.getChildAt(0).getTop()) {
+				if (time - idleStart > SCROLL_DURATION && idleTop == listView.getChildAt(0).getTop()) {
 					post = false;
 				}
 			}
 		} else {
-			mIdleState = false;
+			idleState = false;
 		}
 		if (post) {
 			if (postInterval > 0) {
-				mListView.postDelayed(this, postInterval);
+				listView.postDelayed(this, postInterval);
 			} else {
-				mListView.post(this);
+				listView.post(this);
 			}
 		}
 	}

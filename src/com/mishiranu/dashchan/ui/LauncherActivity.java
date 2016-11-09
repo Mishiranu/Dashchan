@@ -51,17 +51,17 @@ public class LauncherActivity extends Activity {
 
 	private static final String EXTRA_STATE = "state";
 
-	private int mState;
+	private int state;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		getIntent().setPackage(null);
-		mState = STATE_START;
+		state = STATE_START;
 		if (savedInstanceState != null) {
-			mState = savedInstanceState.getInt(EXTRA_STATE, mState);
+			state = savedInstanceState.getInt(EXTRA_STATE, state);
 		}
-		switch (mState) {
+		switch (state) {
 			case STATE_START: {
 				navigatePermissionRequest();
 				break;
@@ -75,7 +75,7 @@ public class LauncherActivity extends Activity {
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		outState.putInt(EXTRA_STATE, mState);
+		outState.putInt(EXTRA_STATE, state);
 	}
 
 	@TargetApi(Build.VERSION_CODES.M)
@@ -86,7 +86,7 @@ public class LauncherActivity extends Activity {
 				Context context = new ContextThemeWrapper(this, Preferences.getThemeResource());
 				new AlertDialog.Builder(context).setMessage(R.string.message_memory_access_permission)
 						.setPositiveButton(android.R.string.ok, (dialog, which) -> {
-					mState = STATE_PERMISSION_REQUEST;
+					state = STATE_PERMISSION_REQUEST;
 					requestPermissions(new String[] {android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
 				}).setCancelable(false).show();
 				return;

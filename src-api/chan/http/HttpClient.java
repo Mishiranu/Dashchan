@@ -24,6 +24,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.CookieHandler;
@@ -104,7 +105,7 @@ public class HttpClient {
 			maxIdleConnectionsField.setAccessible(true);
 			maxIdleConnectionsField.setInt(connectionPool, poolSize);
 		} catch (Exception e) {
-			// Ignore
+			// Reflective operation, ignore exception
 		}
 
 		SHORT_RESPONSE_MESSAGES.put("Internal Server Error", "Internal Error");
@@ -143,7 +144,7 @@ public class HttpClient {
 				Method insertProviderMethod = providerInstallerImplClass.getMethod("insertProvider", Context.class);
 				insertProviderMethod.invoke(null, context);
 			} catch (Exception e) {
-				// Ignore
+				// Reflective operation, ignore exception
 			}
 		}
 
@@ -154,7 +155,7 @@ public class HttpClient {
 		 * This CookieHandler doesn't allow app to store cookies when chan HttpClient used.
 		 */
 		CookieHandler.setDefault(new CookieHandler() {
-			private final CookieManager mCookieManager = new CookieManager();
+			private final CookieManager cookieManager = new CookieManager();
 
 			private boolean isInternalRequest() {
 				StackTraceElement[] elements = Thread.currentThread().getStackTrace();
@@ -171,7 +172,7 @@ public class HttpClient {
 				if (isInternalRequest()) {
 					return;
 				}
-				mCookieManager.put(uri, responseHeaders);
+				cookieManager.put(uri, responseHeaders);
 			}
 
 			@Override
@@ -179,7 +180,7 @@ public class HttpClient {
 				if (isInternalRequest()) {
 					return Collections.emptyMap();
 				}
-				return mCookieManager.get(uri, requestHeaders);
+				return cookieManager.get(uri, requestHeaders);
 			}
 		});
 	}
@@ -190,8 +191,8 @@ public class HttpClient {
 		return INSTANCE;
 	}
 
-	private final HashMap<String, Proxy> mProxies = new HashMap<>();
-	private boolean mUseNoSSLv3SSLSocketFactory = false;
+	private final HashMap<String, Proxy> proxies = new HashMap<>();
+	private boolean useNoSSLv3SSLSocketFactory = false;
 
 	private HttpClient() {
 		for (String chanName : ChanManager.getInstance().getAllChanNames()) {
@@ -203,7 +204,7 @@ public class HttpClient {
 				throw new RuntimeException(e);
 			}
 			if (proxy != null) {
-				mProxies.put(chanName, proxy);
+				proxies.put(chanName, proxy);
 			}
 		}
 	}
@@ -233,9 +234,9 @@ public class HttpClient {
 			return false;
 		}
 		if (proxy != null) {
-			mProxies.put(chanName, proxy);
+			proxies.put(chanName, proxy);
 		} else {
-			mProxies.remove(chanName);
+			proxies.remove(chanName);
 		}
 		return true;
 	}
@@ -245,10 +246,10 @@ public class HttpClient {
 	}
 
 	void execute(HttpRequest request) throws HttpException {
-		String chanName = ChanManager.getInstance().getChanNameByHost(request.mUri.getAuthority());
+		String chanName = ChanManager.getInstance().getChanNameByHost(request.uri.getAuthority());
 		ChanLocator locator = ChanLocator.get(chanName);
 		boolean verifyCertificate = locator.isUseHttps() && Preferences.isVerifyCertificate();
-		request.mHolder.initRequest(request, mProxies.get(chanName), chanName, verifyCertificate, request.mDelay,
+		request.holder.initRequest(request, proxies.get(chanName), chanName, verifyCertificate, request.delay,
 				MAX_ATTEMPS_COUNT);
 		executeInternal(request);
 	}
@@ -261,8 +262,8 @@ public class HttpClient {
 					uriStringBuilder.append('%');
 					uriStringBuilder.append(s);
 				}
-			} catch (Exception e) {
-				// Ignore
+			} catch (UnsupportedEncodingException e) {
+				throw new RuntimeException(e);
 			}
 		} else {
 			uriStringBuilder.append(chars, start, i - start);
@@ -308,44 +309,44 @@ public class HttpClient {
 
 	@TargetApi(Build.VERSION_CODES.KITKAT)
 	private void executeInternal(HttpRequest request) throws HttpException {
-		HttpHolder holder = request.mHolder;
+		HttpHolder holder = request.holder;
 		holder.cleanup();
 		try {
-			Uri requestedUri = request.mHolder.mRequestedUri;
+			Uri requestedUri = request.holder.requestedUri;
 			if (!ChanLocator.getDefault().isWebScheme(requestedUri)) {
 				throw new HttpException(ErrorItem.TYPE_UNSUPPORTED_SCHEME, false, false);
 			}
 			URL url = encodeUri(requestedUri);
-			HttpURLConnection connection = (HttpURLConnection) (holder.mProxy != null
-					? url.openConnection(holder.mProxy) : url.openConnection());
+			HttpURLConnection connection = (HttpURLConnection) (holder.proxy != null
+					? url.openConnection(holder.proxy) : url.openConnection());
 			if (connection instanceof HttpsURLConnection) {
 				HttpsURLConnection secureConnection = (HttpsURLConnection) connection;
-				secureConnection.setHostnameVerifier(holder.mVerifyCertificate
+				secureConnection.setHostnameVerifier(holder.verifyCertificate
 						? DEFAULT_HOSTNAME_VERIFIER : UNSAFE_HOSTNAME_VERIFIER);
-				secureConnection.setSSLSocketFactory(holder.mVerifyCertificate
+				secureConnection.setSSLSocketFactory(holder.verifyCertificate
 						? DEFAULT_SSL_SOCKET_FACTORY : UNSAFE_SSL_SOCKET_FACTORY);
 			}
 			try {
-				holder.setConnection(connection, request.mInputListener, request.mOutputStream);
+				holder.setConnection(connection, request.inputListener, request.outputStream);
 			} catch (DisconnectedIOException e) {
 				connection.disconnect();
 				throw e;
 			}
-			String chanName = holder.mChanName;
+			String chanName = holder.chanName;
 
 			connection.setUseCaches(false);
-			connection.setConnectTimeout(request.mConnectTimeout);
-			connection.setReadTimeout(request.mReadTimeout);
+			connection.setConnectTimeout(request.connectTimeout);
+			connection.setReadTimeout(request.readTimeout);
 			connection.setRequestProperty("User-Agent", AdvancedPreferences.getUserAgent(chanName));
 			connection.setInstanceFollowRedirects(false);
-			connection.setRequestProperty("Connection", request.mKeepAlive ? "keep-alive" : "close");
+			connection.setRequestProperty("Connection", request.keepAlive ? "keep-alive" : "close");
 			connection.setRequestProperty("Accept-Encoding", "gzip");
-			if (request.mHeaders != null) {
-				for (Pair<String, String> header : request.mHeaders) {
+			if (request.headers != null) {
+				for (Pair<String, String> header : request.headers) {
 					connection.setRequestProperty(header.first, header.second);
 				}
 			}
-			CookieBuilder cookieBuilder = request.mCookieBuilder;
+			CookieBuilder cookieBuilder = request.cookieBuilder;
 			String cloudFlareCookie = CloudFlarePasser.getCookie(chanName);
 			if (cloudFlareCookie != null) {
 				cookieBuilder = new CookieBuilder(cookieBuilder).append(CloudFlarePasser.COOKIE_CLOUDFLARE,
@@ -354,14 +355,14 @@ public class HttpClient {
 			if (cookieBuilder != null) {
 				connection.setRequestProperty("Cookie", cookieBuilder.build());
 			}
-			HttpValidator validator = request.mValidator;
+			HttpValidator validator = request.validator;
 			if (validator != null) {
 				validator.write(connection);
 			}
 
-			boolean forceGet = holder.mForceGet;
-			int method = forceGet ? HttpRequest.REQUEST_METHOD_GET : request.mRequestMethod;
-			RequestEntity entity = forceGet ? null : request.mRequestEntity;
+			boolean forceGet = holder.forceGet;
+			int method = forceGet ? HttpRequest.REQUEST_METHOD_GET : request.requestMethod;
+			RequestEntity entity = forceGet ? null : request.requestEntity;
 			String methodString;
 			switch (method) {
 				case HttpRequest.REQUEST_METHOD_GET: {
@@ -401,7 +402,7 @@ public class HttpClient {
 					}
 				}
 				ClientOutputStream output = new ClientOutputStream(new BufferedOutputStream(connection
-						.getOutputStream(), 1024), holder, forceGet ? null : request.mOutputListener, contentLength);
+						.getOutputStream(), 1024), holder, forceGet ? null : request.outputListener, contentLength);
 				entity.write(output);
 				output.flush();
 				output.close();
@@ -409,7 +410,7 @@ public class HttpClient {
 			}
 			int responseCode = connection.getResponseCode();
 
-			if (chanName != null && request.mCheckCloudFlare) {
+			if (chanName != null && request.checkCloudFlare) {
 				CloudFlarePasser.Result result = CloudFlarePasser.checkResponse(chanName, requestedUri, holder);
 				if (result.success) {
 					// TODO Handle possible connection replacement
@@ -423,7 +424,7 @@ public class HttpClient {
 				}
 			}
 
-			HttpRequest.RedirectHandler redirectHandler = request.mRedirectHandler;
+			HttpRequest.RedirectHandler redirectHandler = request.redirectHandler;
 			switch (responseCode) {
 				case HttpURLConnection.HTTP_MOVED_PERM:
 				case HttpURLConnection.HTTP_MOVED_TEMP:
@@ -457,7 +458,7 @@ public class HttpClient {
 					} else {
 						redirectedUri = requestedUri;
 					}
-					holder.mRedirectedUri = redirectedUri;
+					holder.redirectedUri = redirectedUri;
 					HttpRequest.RedirectHandler.Action action;
 					Uri overriddenRedirectedUri;
 					try {
@@ -478,15 +479,15 @@ public class HttpClient {
 							action == HttpRequest.RedirectHandler.Action.RETRANSMIT) {
 						holder.disconnectAndClear();
 						boolean newHttps = "https".equals(redirectedUri.getScheme());
-						if (holder.mVerifyCertificate && oldHttps && !newHttps) {
+						if (holder.verifyCertificate && oldHttps && !newHttps) {
 							// Redirect from https to http is unsafe
 							throw new HttpException(ErrorItem.TYPE_UNSAFE_REDIRECT, true, false);
 						}
 						if (action == HttpRequest.RedirectHandler.Action.GET) {
-							holder.mForceGet = true;
+							holder.forceGet = true;
 						}
-						holder.mRequestedUri = redirectedUri;
-						holder.mRedirectedUri = null;
+						holder.requestedUri = redirectedUri;
+						holder.redirectedUri = null;
 						if (holder.nextAttempt()) {
 							executeInternal(request);
 							return;
@@ -503,10 +504,10 @@ public class HttpClient {
 				holder.disconnectAndClear();
 				throw new HttpException(responseCode, responseMessage);
 			}
-			if (request.mSuccessOnly) {
+			if (request.successOnly) {
 				checkResponseCode(holder);
 			}
-			holder.mValidator = HttpValidator.obtain(connection);
+			holder.validator = HttpValidator.obtain(connection);
 			holder.checkDisconnectedAndSetHasUnreadBody(true);
 		} catch (DisconnectedIOException e) {
 			holder.disconnectAndClear();
@@ -524,11 +525,11 @@ public class HttpClient {
 				String message = e.getMessage();
 				if (message != null && message.contains("routines:SSL23_GET_SERVER_HELLO:sslv3")) {
 					synchronized (this) {
-						if (!mUseNoSSLv3SSLSocketFactory) {
+						if (!useNoSSLv3SSLSocketFactory) {
 							// Fix https://code.google.com/p/android/issues/detail?id=78187
 							HttpsURLConnection.setDefaultSSLSocketFactory(new NoSSLv3SSLSocketFactory
 									(HttpsURLConnection.getDefaultSSLSocketFactory()));
-							mUseNoSSLv3SSLSocketFactory = true;
+							useNoSSLv3SSLSocketFactory = true;
 						}
 					}
 					if (holder.nextAttempt()) {
@@ -560,8 +561,8 @@ public class HttpClient {
 				commonInput = new GZIPInputStream(commonInput);
 				contentLength = -1;
 			}
-			OutputStream output = holder.mOutputStream;
-			ClientInputStream input = new ClientInputStream(commonInput, holder, holder.mInputListener, contentLength);
+			OutputStream output = holder.outputStream;
+			ClientInputStream input = new ClientInputStream(commonInput, holder, holder.inputListener, contentLength);
 			ByteArrayOutputStream writeTo = output == null ? new ByteArrayOutputStream() : null;
 			if (output == null) {
 				output = writeTo;
@@ -680,29 +681,29 @@ public class HttpClient {
 	}
 
 	private static class ClientInputStream extends InputStream {
-		private final InputStream mInput;
-		private final HttpHolder mHolder;
+		private final InputStream input;
+		private final HttpHolder holder;
 
-		private final HttpHolder.InputListener mListener;
-		private final long mContentLength;
+		private final HttpHolder.InputListener listener;
+		private final long contentLength;
 
-		private volatile long mProgress;
+		private volatile long progress;
 
 		public ClientInputStream(InputStream input, HttpHolder holder,
 				HttpHolder.InputListener listener, long contentLength) {
-			mInput = input;
-			mHolder = holder;
-			mListener = contentLength > 0 ? listener : null;
-			mContentLength = contentLength;
-			if (mListener != null) {
-				mListener.onInputProgressChange(0, contentLength);
+			this.input = input;
+			this.holder = holder;
+			this.listener = contentLength > 0 ? listener : null;
+			this.contentLength = contentLength;
+			if (this.listener != null) {
+				this.listener.onInputProgressChange(0, contentLength);
 			}
 		}
 
 		@Override
 		public int read() throws IOException {
-			mHolder.checkDisconnected(this);
-			int value = mInput.read();
+			holder.checkDisconnected(this);
+			int value = input.read();
 			updateProgress(value);
 			return value;
 		}
@@ -714,144 +715,144 @@ public class HttpClient {
 
 		@Override
 		public int read(byte[] b, int off, int len) throws IOException {
-			mHolder.checkDisconnected(this);
-			int value = mInput.read(b, off, len);
+			holder.checkDisconnected(this);
+			int value = input.read(b, off, len);
 			updateProgress(value);
 			return value;
 		}
 
 		@Override
 		public long skip(long n) throws IOException {
-			mHolder.checkDisconnected(this);
+			holder.checkDisconnected(this);
 			long value = super.skip(n);
 			updateProgress(value);
 			return value;
 		}
 
 		private void updateProgress(long value) {
-			if (mListener != null && value > 0) {
-				mProgress += value;
-				mListener.onInputProgressChange(mProgress, mContentLength);
+			if (listener != null && value > 0) {
+				progress += value;
+				listener.onInputProgressChange(progress, contentLength);
 			}
 		}
 
 		@Override
 		public int available() throws IOException {
-			mHolder.checkDisconnected(this);
-			return mInput.available();
+			holder.checkDisconnected(this);
+			return input.available();
 		}
 
 		@Override
 		public void close() throws IOException {
-			mInput.close();
+			input.close();
 		}
 
 		@Override
 		public void mark(int readlimit) {
-			mInput.mark(readlimit);
+			input.mark(readlimit);
 		}
 
 		@Override
 		public boolean markSupported() {
-			return mInput.markSupported();
+			return input.markSupported();
 		}
 
 		@Override
 		public synchronized void reset() throws IOException {
-			mInput.reset();
+			input.reset();
 		}
 	}
 
 	private static class ClientOutputStream extends OutputStream {
-		private final OutputStream mOutput;
-		private final HttpHolder mHolder;
+		private final OutputStream output;
+		private final HttpHolder holder;
 
-		private final HttpRequest.OutputListener mListener;
-		private final long mContentLength;
+		private final HttpRequest.OutputListener listener;
+		private final long contentLength;
 
-		private volatile long mProgress;
+		private volatile long progress;
 
 		public ClientOutputStream(OutputStream output, HttpHolder holder, HttpRequest.OutputListener listener,
 				long contentLength) {
-			mOutput = output;
-			mHolder = holder;
-			mListener = contentLength > 0 ? listener : null;
-			mContentLength = contentLength;
-			if (mListener != null) {
-				mListener.onOutputProgressChange(0, contentLength);
+			this.output = output;
+			this.holder = holder;
+			this.listener = contentLength > 0 ? listener : null;
+			this.contentLength = contentLength;
+			if (this.listener != null) {
+				this.listener.onOutputProgressChange(0, contentLength);
 			}
 		}
 
 		@Override
 		public void write(int oneByte) throws IOException {
-			mHolder.checkDisconnected(this);
-			mOutput.write(oneByte);
+			holder.checkDisconnected(this);
+			output.write(oneByte);
 			updateProgress(1);
 		}
 
 		@Override
 		public void write(byte[] buffer) throws IOException {
-			mHolder.checkDisconnected(this);
-			mOutput.write(buffer);
+			holder.checkDisconnected(this);
+			output.write(buffer);
 			updateProgress(buffer.length);
 		}
 
 		@Override
 		public void write(byte[] buffer, int offset, int length) throws IOException {
-			mHolder.checkDisconnected(this);
-			mOutput.write(buffer, offset, length);
+			holder.checkDisconnected(this);
+			output.write(buffer, offset, length);
 			updateProgress(length);
 		}
 
 		private void updateProgress(long value) {
-			if (mListener != null && value > 0) {
-				mProgress += value;
-				mListener.onOutputProgressChange(mProgress, mContentLength);
+			if (listener != null && value > 0) {
+				progress += value;
+				listener.onOutputProgressChange(progress, contentLength);
 			}
 		}
 
 		@Override
 		public void close() throws IOException {
-			mOutput.close();
+			output.close();
 		}
 
 		@Override
 		public void flush() throws IOException {
-			mHolder.checkDisconnected(this);
-			mOutput.flush();
+			holder.checkDisconnected(this);
+			output.flush();
 		}
 	}
 
-	private final HashMap<Object, HttpURLConnection> mSingleConnections = new HashMap<>();
-	private final HashMap<HttpURLConnection, Object> mSingleConnectionIdetifiers = new HashMap<>();
+	private final HashMap<Object, HttpURLConnection> singleConnections = new HashMap<>();
+	private final HashMap<HttpURLConnection, Object> singleConnectionIdetifiers = new HashMap<>();
 
-	private final HashMap<String, AtomicBoolean> mDelayLocks = new HashMap<>();
+	private final HashMap<String, AtomicBoolean> delayLocks = new HashMap<>();
 
 	// Called from HttpHolder
 	void onConnect(String chanName, HttpURLConnection connection, int delay) throws DisconnectedIOException {
 		if (AdvancedPreferences.isSingleConnection(chanName)) {
-			synchronized (mSingleConnections) {
-				while (mSingleConnections.containsKey(chanName)) {
+			synchronized (singleConnections) {
+				while (singleConnections.containsKey(chanName)) {
 					try {
-						mSingleConnections.wait();
+						singleConnections.wait();
 					} catch (InterruptedException e) {
 						Thread.currentThread().interrupt();
 						throw new DisconnectedIOException();
 					}
 				}
-				mSingleConnections.put(chanName, connection);
-				mSingleConnectionIdetifiers.put(connection, chanName);
+				singleConnections.put(chanName, connection);
+				singleConnectionIdetifiers.put(connection, chanName);
 			}
 		}
 		if (delay > 0) {
 			URL url = connection.getURL();
 			String key = url.getAuthority();
 			AtomicBoolean delayLock;
-			synchronized (mDelayLocks) {
-				delayLock = mDelayLocks.get(key);
+			synchronized (delayLocks) {
+				delayLock = delayLocks.get(key);
 				if (delayLock == null) {
 					delayLock = new AtomicBoolean(false);
-					mDelayLocks.put(key, delayLock);
+					delayLocks.put(key, delayLock);
 				}
 			}
 			synchronized (delayLock) {
@@ -878,22 +879,22 @@ public class HttpClient {
 
 	// Called from HttpHolder
 	void onDisconnect(HttpURLConnection connection) {
-		synchronized (mSingleConnections) {
-			Object identifier = mSingleConnectionIdetifiers.remove(connection);
+		synchronized (singleConnections) {
+			Object identifier = singleConnectionIdetifiers.remove(connection);
 			if (identifier != null) {
-				if (connection == mSingleConnections.get(identifier)) {
-					mSingleConnections.remove(identifier);
-					mSingleConnections.notifyAll();
+				if (connection == singleConnections.get(identifier)) {
+					singleConnections.remove(identifier);
+					singleConnections.notifyAll();
 				}
 			}
 		}
 	}
 
 	private static class NoSSLv3SSLSocketFactory extends SSLSocketFactory {
-		private final SSLSocketFactory mWrapped;
+		private final SSLSocketFactory wrapped;
 
 		public NoSSLv3SSLSocketFactory(SSLSocketFactory sslSocketFactory) {
-			mWrapped = sslSocketFactory;
+			wrapped = sslSocketFactory;
 		}
 
 		private Socket wrap(Socket socket) {
@@ -905,38 +906,38 @@ public class HttpClient {
 
 		@Override
 		public String[] getDefaultCipherSuites() {
-			return mWrapped.getDefaultCipherSuites();
+			return wrapped.getDefaultCipherSuites();
 		}
 
 		@Override
 		public String[] getSupportedCipherSuites() {
-			return mWrapped.getSupportedCipherSuites();
+			return wrapped.getSupportedCipherSuites();
 		}
 
 		@Override
 		public Socket createSocket(Socket s, String host, int port, boolean autoClose) throws IOException {
-			return wrap(mWrapped.createSocket(s, host, port, autoClose));
+			return wrap(wrapped.createSocket(s, host, port, autoClose));
 		}
 
 		@Override
 		public Socket createSocket(String host, int port) throws IOException {
-			return wrap(mWrapped.createSocket(host, port));
+			return wrap(wrapped.createSocket(host, port));
 		}
 
 		@Override
 		public Socket createSocket(InetAddress address, int port) throws IOException {
-			return wrap(mWrapped.createSocket(address, port));
+			return wrap(wrapped.createSocket(address, port));
 		}
 
 		@Override
 		public Socket createSocket(String host, int port, InetAddress localAddress, int localPort) throws IOException {
-			return wrap(mWrapped.createSocket(host, port, localAddress, localPort));
+			return wrap(wrapped.createSocket(host, port, localAddress, localPort));
 		}
 
 		@Override
 		public Socket createSocket(InetAddress address, int port, InetAddress localAddress, int localPort)
 				throws IOException {
-			return wrap(mWrapped.createSocket(address, port, localAddress, localPort));
+			return wrap(wrapped.createSocket(address, port, localAddress, localPort));
 		}
 	}
 
@@ -946,7 +947,7 @@ public class HttpClient {
 			try {
 				socket.getClass().getMethod("setUseSessionTickets", boolean.class).invoke(socket, true);
 			} catch (Exception e) {
-				// Ignore
+				// Reflective operation, ignore exception
 			}
 		}
 

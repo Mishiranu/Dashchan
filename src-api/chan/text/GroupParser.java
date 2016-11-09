@@ -39,21 +39,21 @@ public final class GroupParser {
 		public void onGroupComplete(GroupParser parser, String text) throws ParseException;
 	}
 
-	private final String mSource;
-	private final Callback mCallback;
+	private final String source;
+	private final Callback callback;
 
-	private final StringBuilder mGroup = new StringBuilder();
+	private final StringBuilder groupBuilder = new StringBuilder();
 
-	private String mGroupTagName;
-	private int mGroupCount = -1;
+	private String groupTagName;
+	private int groupCount = -1;
 
 	private static final int MARK_STATE_NONE = 0;
 	private static final int MARK_STATE_MARK = 1;
 	private static final int MARK_STATE_RESET = 2;
 
-	private boolean mMarkAvailable = false;
-	private int mMarkCalled = MARK_STATE_NONE;
-	private int mMark = 0;
+	private boolean markAvailable = false;
+	private int markCalled = MARK_STATE_NONE;
+	private int markIndex = 0;
 
 	@Public
 	public static void parse(String source, Callback callback) throws ParseException {
@@ -65,12 +65,12 @@ public final class GroupParser {
 	}
 
 	private GroupParser(String source, Callback callback) {
-		mSource = source;
-		mCallback = callback;
+		this.source = source;
+		this.callback = callback;
 	}
 
 	private void convert() throws ParseException {
-		String source = mSource;
+		String source = this.source;
 		int length = source.length();
 		int index = source.indexOf('<');
 		if (index > 0) {
@@ -151,18 +151,18 @@ public final class GroupParser {
 					}
 					end = index + 3 + tagName.length();
 				} else {
-					mMarkCalled = MARK_STATE_NONE;
-					mMarkAvailable = true;
+					markCalled = MARK_STATE_NONE;
+					markAvailable = true;
 					if (close) {
 						onEndElement(tagName, start, end + 1);
 					} else {
 						onStartElement(tagName, attrs, start, end + 1);
 					}
-					mMarkAvailable = false;
-					if (mMarkCalled == MARK_STATE_MARK) {
-						mMark = start;
-					} else if (mMarkCalled == MARK_STATE_RESET) {
-						index = mMark;
+					markAvailable = false;
+					if (markCalled == MARK_STATE_MARK) {
+						markIndex = start;
+					} else if (markCalled == MARK_STATE_RESET) {
+						index = markIndex;
 						continue;
 					}
 				}
@@ -177,50 +177,50 @@ public final class GroupParser {
 	}
 
 	private boolean isGroupMode() {
-		return mGroupTagName != null;
+		return this.groupTagName != null;
 	}
 
 	private void onStartElement(String tagName, String attrs, int start, int end) throws ParseException {
 		if (isGroupMode()) {
-			if (tagName.equals(mGroupTagName)) {
-				mGroupCount++;
+			if (tagName.equals(this.groupTagName)) {
+				this.groupCount++;
 			}
-			mGroup.append(mSource, start, end);
+			this.groupBuilder.append(source, start, end);
 		} else {
-			boolean groupStart = mCallback.onStartElement(this, tagName, attrs);
+			boolean groupStart = callback.onStartElement(this, tagName, attrs);
 			if (groupStart) {
-				mGroupTagName = tagName;
-				mGroupCount = 1;
-				mGroup.setLength(0);
+				groupTagName = tagName;
+				groupCount = 1;
+				groupBuilder.setLength(0);
 			}
 		}
 	}
 
 	private void onEndElement(String tagName, int start, int end) throws ParseException {
 		if (!isGroupMode()) {
-			mCallback.onEndElement(this, tagName);
-		} else if (tagName.equals(mGroupTagName)) {
-			mGroupCount--;
-			if (mGroupCount == 0) {
-				mCallback.onGroupComplete(this, mGroup.toString());
-				mGroupTagName = null;
+			callback.onEndElement(this, tagName);
+		} else if (tagName.equals(groupTagName)) {
+			groupCount--;
+			if (groupCount == 0) {
+				callback.onGroupComplete(this, groupBuilder.toString());
+				groupTagName = null;
 			}
 		}
 		if (isGroupMode()) {
-			mGroup.append(mSource, start, end);
+			groupBuilder.append(source, start, end);
 		}
 	}
 
 	private void onText(int start, int end) throws ParseException {
 		if (isGroupMode()) {
-			mGroup.append(mSource, start, end);
+			groupBuilder.append(source, start, end);
 		} else {
-			mCallback.onText(this, mSource, start, end);
+			callback.onText(this, source, start, end);
 		}
 	}
 
 	private void checkMarkAvailable() {
-		if (!mMarkAvailable) {
+		if (!markAvailable) {
 			throw new IllegalStateException("This method can only be called in onStartElement or onEndElement methods");
 		}
 	}
@@ -228,13 +228,13 @@ public final class GroupParser {
 	@Public
 	public void mark() {
 		checkMarkAvailable();
-		mMarkCalled = MARK_STATE_MARK;
+		markCalled = MARK_STATE_MARK;
 	}
 
 	@Public
 	public void reset() {
 		checkMarkAvailable();
-		mMarkCalled = MARK_STATE_RESET;
+		markCalled = MARK_STATE_RESET;
 	}
 
 	@Public

@@ -69,17 +69,17 @@ public class RecaptchaReader implements Handler.Callback {
 		return INSTANCE;
 	}
 
-	private final Handler mHandler = new Handler(Looper.getMainLooper(), this);
+	private final Handler handler = new Handler(Looper.getMainLooper(), this);
 
 	private RecaptchaReader() {}
 
-	private WebView mWebView;
-	private RecaptchaClient mClient;
+	private WebView webView;
+	private RecaptchaClient client;
 
-	private String mRecaptchaV1Html;
-	private String mRecaptchaV2Html;
+	private String recaptchaV1Html;
+	private String recaptchaV2Html;
 
-	private final Object mAccessLock = new Object();
+	private final Object accessLock = new Object();
 
 	private static final Pattern RECAPTCHA_CHALLENGE_PATTERN = Pattern.compile("[\"'](.{100,}?)[\"']");
 	private static final Pattern RECAPTCHA_FALLBACK_PATTERN = Pattern.compile("(?:(?:<label for=\"response\" " +
@@ -100,17 +100,17 @@ public class RecaptchaReader implements Handler.Callback {
 	public void preloadNewWidget(String apiKey) {
 		LoadingHolder loadingHolder = new LoadingHolder(apiKey, true, null);
 		loadingHolder.preload = PRELOAD_STATE_ENABLED;
-		mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_LOAD, loadingHolder));
+		handler.sendMessage(handler.obtainMessage(MESSAGE_LOAD, loadingHolder));
 	}
 
 	public String getChallenge2(HttpHolder holder, String apiKey, boolean useJavaScript) throws SkipException,
 			CancelException, HttpException {
 		if (useJavaScript) {
-			synchronized (mAccessLock) {
+			synchronized (accessLock) {
 				LoadingHolder loadingHolder = new LoadingHolder(apiKey, true, null);
-				mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_LOAD, loadingHolder));
+				handler.sendMessage(handler.obtainMessage(MESSAGE_LOAD, loadingHolder));
 				if (loadingHolder.waitForExpiredOrReady()) {
-					mHandler.sendEmptyMessage(MESSAGE_CANCEL);
+					handler.sendEmptyMessage(MESSAGE_CANCEL);
 					return null;
 				}
 				if (loadingHolder.imageSelector) {
@@ -181,18 +181,18 @@ public class RecaptchaReader implements Handler.Callback {
 									hasReplace = loadingHolder.replace != null;
 								}
 								if (!hasReplace && loadingHolder.waitForExpiredOrReady()) {
-									mHandler.sendEmptyMessage(MESSAGE_CANCEL);
+									handler.sendEmptyMessage(MESSAGE_CANCEL);
 									return null;
 								}
 								continue;
 							}
-							mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_VERIFY, loadingHolder));
+							handler.sendMessage(handler.obtainMessage(MESSAGE_VERIFY, loadingHolder));
 							if (loadingHolder.waitForExpiredOrReady()) {
-								mHandler.sendEmptyMessage(MESSAGE_CANCEL);
+								handler.sendEmptyMessage(MESSAGE_CANCEL);
 								return null;
 							}
 							if (loadingHolder.response != null) {
-								mHandler.sendEmptyMessage(MESSAGE_CANCEL);
+								handler.sendEmptyMessage(MESSAGE_CANCEL);
 								throw new SkipException(loadingHolder.response);
 							}
 							if (loadingHolder.expired) {
@@ -218,7 +218,7 @@ public class RecaptchaReader implements Handler.Callback {
 				if (loadingHolder.response != null) {
 					throw new SkipException(loadingHolder.response);
 				}
-				mHandler.sendEmptyMessage(MESSAGE_CANCEL);
+				handler.sendEmptyMessage(MESSAGE_CANCEL);
 				throw new HttpException(ErrorItem.TYPE_DOWNLOAD, false, false);
 			}
 		} else {
@@ -274,28 +274,28 @@ public class RecaptchaReader implements Handler.Callback {
 		}
 	}
 
-	private final HashMap<String, Pair<Long, String>> mLastChallenges1 = new HashMap<>();
+	private final HashMap<String, Pair<Long, String>> lastChallenges1 = new HashMap<>();
 
 	public String getChallenge1(HttpHolder holder, String apiKey, boolean useJavaScript) throws HttpException {
 		if (useJavaScript) {
-			synchronized (mAccessLock) {
+			synchronized (accessLock) {
 				LoadingHolder loadingHolder = new LoadingHolder(apiKey, false, null);
-				mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_LOAD, loadingHolder));
+				handler.sendMessage(handler.obtainMessage(MESSAGE_LOAD, loadingHolder));
 				if (loadingHolder.waitForExpiredOrReady()) {
-					mHandler.sendEmptyMessage(MESSAGE_CANCEL);
+					handler.sendEmptyMessage(MESSAGE_CANCEL);
 					return null;
 				}
 				if (loadingHolder.challenge != null) {
 					return loadingHolder.challenge.challenge;
 				}
-				mHandler.sendEmptyMessage(MESSAGE_CANCEL);
+				handler.sendEmptyMessage(MESSAGE_CANCEL);
 				throw new HttpException(ErrorItem.TYPE_DOWNLOAD, false, false);
 			}
 		} else {
 			ChanLocator locator = ChanLocator.getDefault();
 			String challenge = null;
-			synchronized (mLastChallenges1) {
-				Pair<Long, String> pair = mLastChallenges1.get(apiKey);
+			synchronized (lastChallenges1) {
+				Pair<Long, String> pair = lastChallenges1.get(apiKey);
 				if (pair != null && System.currentTimeMillis() - pair.first < 10 * 60 * 1000) {
 					challenge = pair.second;
 				}
@@ -317,8 +317,8 @@ public class RecaptchaReader implements Handler.Callback {
 			Matcher matcher = RECAPTCHA_CHALLENGE_PATTERN.matcher(responseText);
 			if (matcher.find()) {
 				challenge = matcher.group(1);
-				synchronized (mLastChallenges1) {
-					mLastChallenges1.put(apiKey, new Pair<>(System.currentTimeMillis(), challenge));
+				synchronized (lastChallenges1) {
+					lastChallenges1.put(apiKey, new Pair<>(System.currentTimeMillis(), challenge));
 				}
 				return challenge;
 			}
@@ -360,18 +360,18 @@ public class RecaptchaReader implements Handler.Callback {
 			return null;
 		}
 		if (useJavaScript) {
-			if (mClient != null && mClient.getLoadingHolder() != null) {
-				LoadingHolder loadingHolder = mClient.getLoadingHolder();
+			if (client != null && client.getLoadingHolder() != null) {
+				LoadingHolder loadingHolder = client.getLoadingHolder();
 				if (loadingHolder.recaptcha2 && apiKey.equals(loadingHolder.apiKey) &&
 						challenge.equals(loadingHolder.challenge != null ? loadingHolder.challenge.challenge : null)) {
 					loadingHolder = new LoadingHolder(apiKey, true, input);
-					mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_VERIFY, loadingHolder));
+					handler.sendMessage(handler.obtainMessage(MESSAGE_VERIFY, loadingHolder));
 					if (loadingHolder.waitForExpiredOrReady()) {
-						mHandler.sendEmptyMessage(MESSAGE_CANCEL);
+						handler.sendEmptyMessage(MESSAGE_CANCEL);
 						return null;
 					}
 					if (loadingHolder.response != null) {
-						mHandler.sendEmptyMessage(MESSAGE_CANCEL);
+						handler.sendEmptyMessage(MESSAGE_CANCEL);
 						return loadingHolder.response;
 					}
 					if (loadingHolder.expired) {
@@ -547,7 +547,7 @@ public class RecaptchaReader implements Handler.Callback {
 		switch (msg.what) {
 			case MESSAGE_LOAD: {
 				LoadingHolder loadingHolder = (LoadingHolder) msg.obj;
-				LoadingHolder oldLoadingHolder = mClient.getLoadingHolder();
+				LoadingHolder oldLoadingHolder = client.getLoadingHolder();
 				// I can refresh (simulate click or call js method, without reload) if script worked correctly last time
 				boolean canRefresh = loadingHolder.equals(oldLoadingHolder) && oldLoadingHolder.hasValidResult();
 				if (canRefresh && oldLoadingHolder.recaptcha2 && oldLoadingHolder.response != null
@@ -563,7 +563,7 @@ public class RecaptchaReader implements Handler.Callback {
 					}
 					if (oldLoadingHolder.preload == PRELOAD_STATE_ENABLED) {
 						// Will start automatically after old preload complete
-						mClient.setLoadingHolder(loadingHolder);
+						client.setLoadingHolder(loadingHolder);
 						break;
 					}
 				}
@@ -574,79 +574,79 @@ public class RecaptchaReader implements Handler.Callback {
 						time = 1000 - time;
 						if (time > 0) {
 							// You can reload captcha only once per second (recaptcha restriction)
-							mHandler.sendMessageDelayed(Message.obtain(msg), time);
+							handler.sendMessageDelayed(Message.obtain(msg), time);
 						} else {
-							mClient.setLoadingHolder(loadingHolder);
+							client.setLoadingHolder(loadingHolder);
 							if (loadingHolder.recaptcha2) {
 								loadingHolder.updateTime();
 								if (oldLoadingHolder.preload == PRELOAD_STATE_COMPLETE) {
-									mWebView.loadUrl("javascript:recaptchaStartCheck()");
+									webView.loadUrl("javascript:recaptchaStartCheck()");
 								} else {
-									mWebView.loadUrl("javascript:recaptchaStartReload()");
+									webView.loadUrl("javascript:recaptchaStartReload()");
 								}
 							} else {
-								mWebView.loadUrl("javascript:recaptchaReload()");
+								webView.loadUrl("javascript:recaptchaReload()");
 							}
 						}
 					}
 				} else {
-					mWebView.stopLoading();
-					WebViewUtils.clearAll(mWebView);
+					webView.stopLoading();
+					WebViewUtils.clearAll(webView);
 					CookieManager cookieManager = CookieManager.getInstance();
 					String cookies = AdvancedPreferences.getGoogleCookie();
 					if (cookies != null) {
-						WebViewUtils.setThirdPartyCookiesEnabled(mWebView);
+						WebViewUtils.setThirdPartyCookiesEnabled(webView);
 						for (String cookie : cookies.split("; *")) {
 							cookieManager.setCookie("google.com", cookie + "; path=/; domain=.google.com");
 						}
 					}
-					mClient.setLoadingHolder(loadingHolder);
+					client.setLoadingHolder(loadingHolder);
 					ChanLocator locator = ChanLocator.getDefault();
 					String uriString = locator.buildQueryWithSchemeHost(true, "www.google.com", null).toString();
 					String data;
 					if (loadingHolder.recaptcha2) {
-						if (mRecaptchaV2Html == null) {
-							mRecaptchaV2Html = readHtmlAsset("recaptcha-v2.html");
+						if (recaptchaV2Html == null) {
+							recaptchaV2Html = readHtmlAsset("recaptcha-v2.html");
 						}
-						data = mRecaptchaV2Html.replace("__REPLACE_API_KEY__", loadingHolder.apiKey);
+						data = recaptchaV2Html.replace("__REPLACE_API_KEY__", loadingHolder.apiKey);
 					} else {
-						if (mRecaptchaV1Html == null) {
-							mRecaptchaV1Html = readHtmlAsset("recaptcha-v1.html");
+						if (recaptchaV1Html == null) {
+							recaptchaV1Html = readHtmlAsset("recaptcha-v1.html");
 						}
-						data = mRecaptchaV1Html.replace("__REPLACE_API_KEY__", loadingHolder.apiKey);
+						data = recaptchaV1Html.replace("__REPLACE_API_KEY__", loadingHolder.apiKey);
 					}
-					mWebView.loadDataWithBaseURL(uriString, data, "text/html", "UTF-8", null);
+					webView.loadDataWithBaseURL(uriString, data, "text/html", "UTF-8", null);
 				}
 				return true;
 			}
 			case MESSAGE_CANCEL: {
-				mWebView.stopLoading();
-				mClient.setLoadingHolder(null);
+				webView.stopLoading();
+				client.setLoadingHolder(null);
 				return true;
 			}
 			case MESSAGE_URI: {
 				String uriString = (String) msg.obj;
-				mWebView.loadUrl(uriString);
+				webView.loadUrl(uriString);
 				return true;
 			}
 			case MESSAGE_VERIFY: {
 				LoadingHolder loadingHolder = (LoadingHolder) msg.obj;
-				mClient.setLoadingHolder(loadingHolder);
-				mClient.requestCheckCaptchaExpired(MESSAGE_VERIFY_CONTINUE);
+				client.setLoadingHolder(loadingHolder);
+				client.requestCheckCaptchaExpired(MESSAGE_VERIFY_CONTINUE);
 				break;
 			}
 			case MESSAGE_VERIFY_CONTINUE: {
-				LoadingHolder loadingHolder = mClient.getLoadingHolder();
+				LoadingHolder loadingHolder = client.getLoadingHolder();
 				String expired = (String) msg.obj;
 				if ("false".equals(expired)) {
 					if (!loadingHolder.imageSelector) {
 						String input = StringUtils.emptyIfNull(loadingHolder.input)
 								.replace("\\", "\\\\").replace("'", "\\'");
-						mWebView.loadUrl("javascipt:recaptchaPerformInput('" + input + "')");
+						webView.loadUrl("javascipt:recaptchaPerformInput('" + input + "')");
 					}
-					mWebView.loadUrl("javascript:recaptchaStartVerify()");
+					webView.loadUrl("javascript:recaptchaStartVerify()");
 					if (loadingHolder.imageSelector) {
-						mClient.requestCheckImageSelectedTooFew(MESSAGE_CHECK_IMAGE_TOO_FEW);
+						client.requestCheckImageSelectedTooFew(MESSAGE_CHECK_IMAGE_TOO_FEW);
 					}
 				} else {
 					loadingHolder.expired = true;
@@ -655,11 +655,11 @@ public class RecaptchaReader implements Handler.Callback {
 				break;
 			}
 			case MESSAGE_CHECK_IMAGE_SELECT: {
-				mClient.requestCheckImageSelect(MESSAGE_CHECK_IMAGE_SELECT_CONTINUE);
+				client.requestCheckImageSelect(MESSAGE_CHECK_IMAGE_SELECT_CONTINUE);
 				break;
 			}
 			case MESSAGE_CHECK_IMAGE_SELECT_CONTINUE: {
-				LoadingHolder loadingHolder = mClient.getLoadingHolder();
+				LoadingHolder loadingHolder = client.getLoadingHolder();
 				String[] data = (String[]) msg.obj;
 				String imageSelector = data[0];
 				String description = data[1];
@@ -675,7 +675,7 @@ public class RecaptchaReader implements Handler.Callback {
 				break;
 			}
 			case MESSAGE_CHECK_IMAGE_TOO_FEW: {
-				LoadingHolder loadingHolder = mClient.getLoadingHolder();
+				LoadingHolder loadingHolder = client.getLoadingHolder();
 				String[] data = (String[]) msg.obj;
 				boolean few = "true".equals(data[0]);
 				if (few) {
@@ -701,30 +701,30 @@ public class RecaptchaReader implements Handler.Callback {
 			try {
 				return Math.max(Integer.parseInt(size), min);
 			} catch (NumberFormatException e) {
-				// Ignore
+				// Not a number, ignore exception
 			}
 		}
 		return min;
 	}
 
 	private class RecaptchaClient extends WebViewClient {
-		private LoadingHolder mLoadingHolder;
+		private LoadingHolder loadingHolder;
 
-		private final Object mNextRequestLock = new Object();
-		private int mNextRequestType;
-		private int mNextRequestMessage;
+		private final Object nextRequestLock = new Object();
+		private int nextRequestType;
+		private int nextRequestMessage;
 
 		private static final int REQUEST_CHECK_CAPTCHA_EXPIRED = 1;
 		private static final int REQUEST_CHECK_IMAGE_SELECT = 2;
 		private static final int REQUEST_CHECK_IMAGE_SELECTED_TOO_FEW = 3;
 
 		@SuppressWarnings("unused")
-		private final Object mJavascriptInterface = new Object() {
+		private final Object javascriptInterface = new Object() {
 			@JavascriptInterface
 			public void onSuccess(String response) {
-				if (mLoadingHolder != null) {
-					mLoadingHolder.response = response;
-					mLoadingHolder.applyReady();
+				if (loadingHolder != null) {
+					loadingHolder.response = response;
+					loadingHolder.applyReady();
 				}
 			}
 
@@ -745,26 +745,26 @@ public class RecaptchaReader implements Handler.Callback {
 		};
 
 		private void notifyHandler(int checkType, Object object) {
-			synchronized (mNextRequestLock) {
-				if (mNextRequestType == checkType) {
-					mHandler.sendMessage(mHandler.obtainMessage(mNextRequestMessage, object));
-					mNextRequestType = 0;
-					mNextRequestMessage = 0;
+			synchronized (nextRequestLock) {
+				if (nextRequestType == checkType) {
+					handler.sendMessage(handler.obtainMessage(nextRequestMessage, object));
+					nextRequestType = 0;
+					nextRequestMessage = 0;
 				}
 			}
 		}
 
 		@SuppressLint({"JavascriptInterface", "AddJavascriptInterface"})
 		public RecaptchaClient(WebView webView) {
-			webView.addJavascriptInterface(mJavascriptInterface, "jsi");
+			webView.addJavascriptInterface(javascriptInterface, "jsi");
 		}
 
 		public void setLoadingHolder(LoadingHolder loadingHolder) {
-			mLoadingHolder = loadingHolder;
+			this.loadingHolder = loadingHolder;
 		}
 
 		public LoadingHolder getLoadingHolder() {
-			return mLoadingHolder;
+			return loadingHolder;
 		}
 
 		public void requestCheckCaptchaExpired(int message) {
@@ -780,11 +780,11 @@ public class RecaptchaReader implements Handler.Callback {
 		}
 
 		private void request(int type, int message, String url) {
-			synchronized (mNextRequestLock) {
-				mNextRequestType = type;
-				mNextRequestMessage = message;
+			synchronized (nextRequestLock) {
+				nextRequestType = type;
+				nextRequestMessage = message;
 			}
-			mWebView.loadUrl(url);
+			webView.loadUrl(url);
 		}
 
 		private static final int INTERCEPT_NONE = 0;
@@ -792,8 +792,8 @@ public class RecaptchaReader implements Handler.Callback {
 		private static final int INTERCEPT_IMAGE = 2;
 
 		private int interceptRequest(String uriString) {
-			if (mLoadingHolder != null) {
-				mLoadingHolder.updateTime();
+			if (loadingHolder != null) {
+				loadingHolder.updateTime();
 			}
 			Uri uri = Uri.parse(uriString);
 			String host = uri.getAuthority();
@@ -807,11 +807,11 @@ public class RecaptchaReader implements Handler.Callback {
 			}
 			if (google && uri.getPath().startsWith("/js/bg")) {
 				// New recaptcha: make click on "I'm not a robot" card or mark preload complete
-				if (mLoadingHolder != null) {
-					if (mLoadingHolder.preload != PRELOAD_STATE_NONE) {
-						mLoadingHolder.preload = PRELOAD_STATE_COMPLETE;
+				if (loadingHolder != null) {
+					if (loadingHolder.preload != PRELOAD_STATE_NONE) {
+						loadingHolder.preload = PRELOAD_STATE_COMPLETE;
 					} else {
-						mHandler.sendMessageDelayed(mHandler.obtainMessage(MESSAGE_URI,
+						handler.sendMessageDelayed(handler.obtainMessage(MESSAGE_URI,
 								"javascript:recaptchaStartCheck()"), 200);
 					}
 				}
@@ -819,31 +819,31 @@ public class RecaptchaReader implements Handler.Callback {
 			}
 			String path = uri.getPath();
 			if ("/recaptcha/api/image".equals(path) || "/recaptcha/api2/payload".equals(path)) {
-				if (mLoadingHolder != null) {
+				if (loadingHolder != null) {
 					ComplexChallenge challenge = new ComplexChallenge(uri);
-					ComplexChallenge oldChallenge = mLoadingHolder.challenge;
+					ComplexChallenge oldChallenge = loadingHolder.challenge;
 					if (!challenge.equals(oldChallenge)) {
-						if (mLoadingHolder.recaptcha2 && oldChallenge != null && mLoadingHolder.queuedReplace) {
-							synchronized (mLoadingHolder) {
-								mLoadingHolder.queuedReplace = false;
-								mLoadingHolder.replace = challenge;
-								mLoadingHolder.applyReady();
+						if (loadingHolder.recaptcha2 && oldChallenge != null && loadingHolder.queuedReplace) {
+							synchronized (loadingHolder) {
+								loadingHolder.queuedReplace = false;
+								loadingHolder.replace = challenge;
+								loadingHolder.applyReady();
 							}
 						} else {
-							mLoadingHolder.challenge = challenge;
+							loadingHolder.challenge = challenge;
 						}
-						if (mLoadingHolder.recaptcha2) {
-							mHandler.sendEmptyMessage(MESSAGE_CHECK_IMAGE_SELECT);
+						if (loadingHolder.recaptcha2) {
+							handler.sendEmptyMessage(MESSAGE_CHECK_IMAGE_SELECT);
 						} else {
-							mLoadingHolder.applyReady();
+							loadingHolder.applyReady();
 						}
 					}
 				}
 				return INTERCEPT_IMAGE;
 			}
 			if ("/recaptcha/api2/replaceimage".equals(path)) {
-				if (mLoadingHolder != null) {
-					mLoadingHolder.queuedReplace = true;
+				if (loadingHolder != null) {
+					loadingHolder.queuedReplace = true;
 				}
 			}
 			return INTERCEPT_NONE;
@@ -871,22 +871,22 @@ public class RecaptchaReader implements Handler.Callback {
 	}
 
 	private void onImageSelectionImageToggle(int index, int sizeX) {
-		mHandler.obtainMessage(MESSAGE_URI, "javascript:recaptchaToogleImageChoice(" + index + ", " + sizeX + ")")
+		handler.obtainMessage(MESSAGE_URI, "javascript:recaptchaToogleImageChoice(" + index + ", " + sizeX + ")")
 				.sendToTarget();
 	}
 
 	@SuppressWarnings("deprecation")
 	@SuppressLint("SetJavaScriptEnabled")
 	private void initWebView() {
-		if (mWebView == null) {
+		if (webView == null) {
 			Context context = MainApplication.getInstance();
 			if (!C.API_LOLLIPOP) {
 				android.webkit.CookieSyncManager.createInstance(context);
 			}
-			mWebView = new WebView(context);
-			mClient = new RecaptchaClient(mWebView);
-			mWebView.setWebViewClient(mClient);
-			mWebView.setWebChromeClient(new WebChromeClient() {
+			webView = new WebView(context);
+			client = new RecaptchaClient(webView);
+			webView.setWebViewClient(client);
+			webView.setWebChromeClient(new WebChromeClient() {
 				@Override
 				@Deprecated
 				public void onConsoleMessage(String message, int lineNumber, String sourceID) {
@@ -894,11 +894,11 @@ public class RecaptchaReader implements Handler.Callback {
 					super.onConsoleMessage(message, lineNumber, sourceID);
 				}
 			});
-			WebSettings settings = mWebView.getSettings();
+			WebSettings settings = webView.getSettings();
 			settings.setJavaScriptEnabled(true);
 			settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
 			settings.setAppCacheEnabled(false);
-			WebViewUtils.clearAll(mWebView);
+			WebViewUtils.clearAll(webView);
 		}
 	}
 
@@ -906,7 +906,7 @@ public class RecaptchaReader implements Handler.Callback {
 		InputStream input = null;
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try {
-			input = mWebView.getContext().getAssets().open("html/" + fileName);
+			input = webView.getContext().getAssets().open("html/" + fileName);
 			IOUtils.copyStream(input, output);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
@@ -939,14 +939,14 @@ public class RecaptchaReader implements Handler.Callback {
 	public class SkipException extends Exception {
 		private static final long serialVersionUID = 1L;
 
-		private final String mResponse;
+		private final String response;
 
 		public SkipException(String response) {
-			mResponse = response;
+			this.response = response;
 		}
 
 		public String getResponse() {
-			return mResponse;
+			return response;
 		}
 	}
 }

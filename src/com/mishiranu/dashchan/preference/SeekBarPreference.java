@@ -24,41 +24,41 @@ import android.view.View;
 import com.mishiranu.dashchan.ui.SeekBarForm;
 
 public class SeekBarPreference extends DialogPreference {
-	private final SeekBarForm mSeekBarForm;
-	private int mDefaultValue;
+	private final SeekBarForm seekBarForm;
+	private int defaultValue;
 
 	public SeekBarPreference(Context context) {
 		super(context, null);
-		mSeekBarForm = new SeekBarForm(false);
+		seekBarForm = new SeekBarForm(false);
 	}
 
 	public void setSeekBarConfiguration(int minValue, int maxValue, int step, float multiplier) {
-		mSeekBarForm.setConfiguration(minValue, maxValue, step, multiplier);
+		seekBarForm.setConfiguration(minValue, maxValue, step, multiplier);
 	}
 
 	@Override
 	public void setSummary(CharSequence summary) {
 		super.setSummary(summary);
-		mSeekBarForm.setValueFormat(summary != null ? summary.toString() : null);
+		seekBarForm.setValueFormat(summary != null ? summary.toString() : null);
 	}
 
 	@Override
 	public void setDefaultValue(Object defaultValue) {
 		super.setDefaultValue(defaultValue);
-		mDefaultValue = (int) defaultValue;
+		this.defaultValue = (int) defaultValue;
 	}
 
 	@Override
 	protected Object onGetDefaultValue(TypedArray a, int index) {
 		int defaultValue = a.getInt(index, 50);
-		mDefaultValue = defaultValue;
+		this.defaultValue = defaultValue;
 		return defaultValue;
 	}
 
 	@Override
 	protected View onCreateDialogView() {
-		mSeekBarForm.setCurrentValue(getPersistedInt(mDefaultValue));
-		return mSeekBarForm.inflate(getContext());
+		seekBarForm.setCurrentValue(getPersistedInt(defaultValue));
+		return seekBarForm.inflate(getContext());
 	}
 
 	@Override
@@ -68,7 +68,7 @@ public class SeekBarPreference extends DialogPreference {
 			return;
 		}
 		if (shouldPersist()) {
-			persistInt(mSeekBarForm.getCurrentValue());
+			persistInt(seekBarForm.getCurrentValue());
 		}
 		notifyChanged();
 	}
@@ -77,7 +77,7 @@ public class SeekBarPreference extends DialogPreference {
 	public CharSequence getSummary() {
 		String summary = super.getSummary().toString();
 		if (summary != null) {
-			int value = (int) (getPersistedInt(mDefaultValue) * mSeekBarForm.getMultipler());
+			int value = (int) (getPersistedInt(defaultValue) * seekBarForm.getMultipler());
 			return String.format(summary, value);
 		}
 		return summary;

@@ -56,13 +56,13 @@ import com.mishiranu.dashchan.text.style.SpoilerSpan;
 import com.mishiranu.dashchan.util.IOUtils;
 
 public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object> implements ChanMarkup.MarkupExtra {
-	private final String mChanName;
-	private final String mBoardName;
-	private final String mThreadNumber;
-	private final Posts mPosts;
-	private final boolean mSaveThumbnails;
-	private final boolean mSaveFiles;
-	private final Callback mCallback;
+	private final String chanName;
+	private final String boardName;
+	private final String threadNumber;
+	private final Posts posts;
+	private final boolean saveThumbnails;
+	private final boolean saveFiles;
+	private final Callback callback;
 
 	public interface Callback {
 		public void onLocalArchivationProgressUpdate(int handledPostsCount);
@@ -71,23 +71,23 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 
 	public SendLocalArchiveTask(String chanName, String boardName, String threadNumber,
 			Posts posts, boolean saveThumbnails, boolean saveFiles, Callback callback) {
-		mChanName = chanName;
-		mBoardName = boardName;
-		mThreadNumber = threadNumber;
-		mPosts = posts;
-		mSaveThumbnails = saveThumbnails;
-		mSaveFiles = saveFiles;
-		mCallback = callback;
+		this.chanName = chanName;
+		this.boardName = boardName;
+		this.threadNumber = threadNumber;
+		this.posts = posts;
+		this.saveThumbnails = saveThumbnails;
+		this.saveFiles = saveFiles;
+		this.callback = callback;
 	}
 
 	@Override
 	public String getBoardName() {
-		return mBoardName;
+		return boardName;
 	}
 
 	@Override
 	public String getThreadNumber() {
-		return mThreadNumber;
+		return threadNumber;
 	}
 
 	private static class SpanItem {
@@ -105,19 +105,19 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 
 	@Override
 	protected Result doInBackground(Void... params) {
-		String chanName = mChanName;
-		String boardName = mBoardName;
-		String threadNumber = mThreadNumber;
-		Post[] posts = mPosts.getPosts();
+		String chanName = this.chanName;
+		String boardName = this.boardName;
+		String threadNumber = this.threadNumber;
+		Post[] posts = this.posts.getPosts();
 		Object[] decodeTo = new Object[2];
 		ArrayList<SpanItem> spanItems = new ArrayList<>();
-		ChanConfiguration configuration = ChanConfiguration.get(mChanName);
+		ChanConfiguration configuration = ChanConfiguration.get(chanName);
 		ChanLocator locator = ChanLocator.get(configuration);
 		ChanMarkup markup = ChanMarkup.get(configuration);
 		File directory = getLocalDownloadDirectory(true);
 		String archiveDirectoryName = chanName + '-' + boardName + '-' + threadNumber;
-		File filesDirectory = mSaveFiles ? new File(directory, archiveDirectoryName + "/src") : null;
-		File thumbnailsDirectory = mSaveThumbnails ? new File(directory, archiveDirectoryName + "/thumb") : null;
+		File filesDirectory = saveFiles ? new File(directory, archiveDirectoryName + "/src") : null;
+		File thumbnailsDirectory = saveThumbnails ? new File(directory, archiveDirectoryName + "/thumb") : null;
 		if (filesDirectory != null) {
 			filesDirectory.mkdirs();
 		}
@@ -249,13 +249,13 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 						String originalName = fileAttachment.getNormalizedOriginalName(fileName);
 						htmlBuilder.addFile(filePath, thumbnailPath, originalName, fileAttachment.getSize(),
 								fileAttachment.getWidth(), fileAttachment.getHeight());
-						if (mSaveFiles) {
+						if (saveFiles) {
 							if (!new File(filesDirectory, fileName).exists()) {
 								result.filesToDownload.add(new DownloadService.DownloadItem(chanName,
 										fileUri, fileName));
 							}
 						}
-						if (mSaveThumbnails && thumbnailUri != null) {
+						if (saveThumbnails && thumbnailUri != null) {
 							if (!new File(thumbnailsDirectory, thumbnailName).exists()) {
 								result.thumbnailsToDownload.add(new DownloadService.DownloadItem(chanName,
 										thumbnailUri, thumbnailName));
@@ -285,7 +285,7 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 
 	@Override
 	protected void onProgressUpdate(Integer... values) {
-		mCallback.onLocalArchivationProgressUpdate(values[0]);
+		callback.onLocalArchivationProgressUpdate(values[0]);
 	}
 
 	@Override
@@ -298,7 +298,7 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 			willDownload |= performDownload(result.filesDirectory, result.filesToDownload);
 			showSuccess = !willDownload;
 		}
-		mCallback.onLocalArchivationComplete(result != null, showSuccess);
+		callback.onLocalArchivationComplete(result != null, showSuccess);
 	}
 
 	@Override
@@ -306,15 +306,15 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 		cancel(true);
 	}
 
-	private long mLastNotifyIncrement = 0L;
-	private int mProgress = 0;
+	private long lastNotifyIncrement = 0L;
+	private int progress = 0;
 
 	public void notifyIncrement() {
-		mProgress++;
+		progress++;
 		long t = System.currentTimeMillis();
-		if (t - mLastNotifyIncrement >= 100) {
-			mLastNotifyIncrement = t;
-			publishProgress(mProgress);
+		if (t - lastNotifyIncrement >= 100) {
+			lastNotifyIncrement = t;
+			publishProgress(progress);
 		}
 	}
 
@@ -475,7 +475,7 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 				try {
 					nomedia.createNewFile();
 				} catch (IOException e) {
-					// Ignore
+					// Ignore exception
 				}
 			}
 		}

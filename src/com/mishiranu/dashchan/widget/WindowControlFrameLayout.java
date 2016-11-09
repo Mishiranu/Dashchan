@@ -30,7 +30,7 @@ public class WindowControlFrameLayout extends FrameLayout {
 		public void onApplyWindowPaddings(WindowControlFrameLayout view, Rect rect);
 	}
 
-	private OnApplyWindowPaddingsListener mOnApplyWindowPaddingsListener;
+	private OnApplyWindowPaddingsListener onApplyWindowPaddingsListener;
 
 	public WindowControlFrameLayout(Context context) {
 		super(context);
@@ -39,7 +39,7 @@ public class WindowControlFrameLayout extends FrameLayout {
 	}
 
 	public void setOnApplyWindowPaddingsListener(OnApplyWindowPaddingsListener listener) {
-		mOnApplyWindowPaddingsListener = listener;
+		onApplyWindowPaddingsListener = listener;
 	}
 
 	@Override
@@ -52,15 +52,15 @@ public class WindowControlFrameLayout extends FrameLayout {
 		throw new UnsupportedOperationException();
 	}
 
-	private Rect mPreviousRect;
+	private Rect previousRect;
 
 	private void onSystemWindowInsetsChangedInternal(Rect rect) {
-		if (mPreviousRect != null && mPreviousRect.equals(rect)) {
+		if (previousRect != null && previousRect.equals(rect)) {
 			return;
 		}
-		mPreviousRect = rect;
-		if (mOnApplyWindowPaddingsListener != null) {
-			mOnApplyWindowPaddingsListener.onApplyWindowPaddings(this, rect);
+		previousRect = rect;
+		if (onApplyWindowPaddingsListener != null) {
+			onApplyWindowPaddingsListener.onApplyWindowPaddings(this, rect);
 		}
 	}
 

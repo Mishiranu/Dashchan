@@ -23,17 +23,17 @@ import android.text.style.UpdateAppearance;
 import com.mishiranu.dashchan.graphics.ColorScheme;
 
 public class UnderlyingSpoilerSpan extends CharacterStyle implements UpdateAppearance, ColorScheme.Span {
-	private int mBackgroundColor;
+	private int backgroundColor;
 
 	@Override
 	public void applyColorScheme(ColorScheme colorScheme) {
 		if (colorScheme != null) {
-			mBackgroundColor = colorScheme.spoilerBackgroundColor;
+			backgroundColor = colorScheme.spoilerBackgroundColor;
 		}
 	}
 
 	@Override
 	public void updateDrawState(TextPaint paint) {
-		paint.bgColor = mBackgroundColor;
+		paint.bgColor = backgroundColor;
 	}
 }

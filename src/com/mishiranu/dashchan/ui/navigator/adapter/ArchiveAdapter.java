@@ -33,32 +33,32 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 
 public class ArchiveAdapter extends BaseAdapter {
-	private final ArrayList<ThreadSummary> mArchiveItems = new ArrayList<>();
-	private final ArrayList<ThreadSummary> mFilteredArchiveItems = new ArrayList<>();
+	private final ArrayList<ThreadSummary> archiveItems = new ArrayList<>();
+	private final ArrayList<ThreadSummary> filteredArchiveItems = new ArrayList<>();
 
-	private boolean mFilterMode = false;
-	private String mFilterText;
+	private boolean filterMode = false;
+	private String filterText;
 
 	// Returns true, if adapter isn't empty.
 	public boolean applyFilter(String text) {
-		mFilterText = text;
-		mFilterMode = !StringUtils.isEmpty(text);
-		mFilteredArchiveItems.clear();
-		if (mFilterMode) {
+		filterText = text;
+		filterMode = !StringUtils.isEmpty(text);
+		filteredArchiveItems.clear();
+		if (filterMode) {
 			text = text.toLowerCase(Locale.getDefault());
-			for (ThreadSummary threadSummary : mArchiveItems) {
+			for (ThreadSummary threadSummary : archiveItems) {
 				boolean add = false;
 				String title = threadSummary.getDescription();
 				if (title != null && title.toLowerCase(Locale.getDefault()).contains(text)) {
 					add = true;
 				}
 				if (add) {
-					mFilteredArchiveItems.add(threadSummary);
+					filteredArchiveItems.add(threadSummary);
 				}
 			}
 		}
 		notifyDataSetChanged();
-		return !mFilterMode || mFilteredArchiveItems.size() > 0;
+		return !filterMode || filteredArchiveItems.size() > 0;
 	}
 
 	@Override
@@ -79,12 +79,12 @@ public class ArchiveAdapter extends BaseAdapter {
 
 	@Override
 	public int getCount() {
-		return (mFilterMode ? mFilteredArchiveItems : mArchiveItems).size();
+		return (filterMode ? filteredArchiveItems : archiveItems).size();
 	}
 
 	@Override
 	public ThreadSummary getItem(int position) {
-		return (mFilterMode ? mFilteredArchiveItems : mArchiveItems).get(position);
+		return (filterMode ? filteredArchiveItems : archiveItems).get(position);
 	}
 
 	@Override
@@ -93,13 +93,13 @@ public class ArchiveAdapter extends BaseAdapter {
 	}
 
 	public void setItems(ThreadSummary[] threadSummaries) {
-		mArchiveItems.clear();
+		archiveItems.clear();
 		if (threadSummaries != null) {
-			Collections.addAll(mArchiveItems, threadSummaries);
+			Collections.addAll(archiveItems, threadSummaries);
 		}
 		notifyDataSetChanged();
-		if (mFilterMode) {
-			applyFilter(mFilterText);
+		if (filterMode) {
+			applyFilter(filterText);
 		}
 	}
 }

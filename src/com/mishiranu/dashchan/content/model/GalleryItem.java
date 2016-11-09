@@ -31,8 +31,8 @@ import com.mishiranu.dashchan.util.NavigationUtils;
 public class GalleryItem implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	private final String mFileUriString;
-	private final String mThumbnailUriString;
+	private final String fileUriString;
+	private final String thumbnailUriString;
 
 	public final String boardName;
 	public final String threadNumber;
@@ -45,13 +45,13 @@ public class GalleryItem implements Serializable {
 
 	public int size;
 
-	private transient Uri mFileUri;
-	private transient Uri mThumbnailUri;
+	private transient Uri fileUri;
+	private transient Uri thumbnailUri;
 
 	public GalleryItem(Uri fileUri, Uri thumbnailUri, String boardName, String threadNumber, String postNumber,
 			String originalName, int width, int height, int size) {
-		mFileUriString = fileUri != null ? fileUri.toString() : null;
-		mThumbnailUriString = thumbnailUri != null ? thumbnailUri.toString() : null;
+		fileUriString = fileUri != null ? fileUri.toString() : null;
+		thumbnailUriString = thumbnailUri != null ? thumbnailUri.toString() : null;
 		this.boardName = boardName;
 		this.threadNumber = threadNumber;
 		this.postNumber = postNumber;
@@ -62,8 +62,8 @@ public class GalleryItem implements Serializable {
 	}
 
 	public GalleryItem(Uri fileUri, String boardName, String threadNumber) {
-		mFileUriString = null;
-		mThumbnailUriString = null;
+		fileUriString = null;
+		thumbnailUriString = null;
 		this.boardName = boardName;
 		this.threadNumber = threadNumber;
 		postNumber = null;
@@ -71,7 +71,7 @@ public class GalleryItem implements Serializable {
 		width = 0;
 		height = 0;
 		size = 0;
-		mFileUri = fileUri;
+		this.fileUri = fileUri;
 	}
 
 	public boolean isImage(ChanLocator locator) {
@@ -87,17 +87,17 @@ public class GalleryItem implements Serializable {
 	}
 
 	public Uri getFileUri(ChanLocator locator) {
-		if (mFileUri == null && mFileUriString != null) {
-			mFileUri = locator.convert(Uri.parse(mFileUriString));
+		if (fileUri == null && fileUriString != null) {
+			fileUri = locator.convert(Uri.parse(fileUriString));
 		}
-		return mFileUri;
+		return fileUri;
 	}
 
 	public Uri getThumbnailUri(ChanLocator locator) {
-		if (mThumbnailUri == null && mThumbnailUriString != null) {
-			mThumbnailUri = locator.convert(Uri.parse(mThumbnailUriString));
+		if (thumbnailUri == null && thumbnailUriString != null) {
+			thumbnailUri = locator.convert(Uri.parse(thumbnailUriString));
 		}
-		return mThumbnailUri;
+		return thumbnailUri;
 	}
 
 	public Uri getDisplayImageUri(ChanLocator locator) {
@@ -115,30 +115,30 @@ public class GalleryItem implements Serializable {
 	}
 
 	public void cleanup() {
-		if (mFileUriString != null) {
-			mFileUri = null;
+		if (fileUriString != null) {
+			fileUri = null;
 		}
-		if (mThumbnailUriString != null) {
-			mThumbnailUri = null;
+		if (thumbnailUriString != null) {
+			thumbnailUri = null;
 		}
 	}
 
 	public static class GallerySet {
-		private final boolean mAllowGoToPost;
-		private final ArrayList<GalleryItem> mGalleryItems = new ArrayList<>();
+		private final boolean allowGoToPost;
+		private final ArrayList<GalleryItem> galleryItems = new ArrayList<>();
 
-		private String mThreadTitle;
+		private String threadTitle;
 
 		public GallerySet(boolean allowGoToPost) {
-			mAllowGoToPost = allowGoToPost;
+			this.allowGoToPost = allowGoToPost;
 		}
 
 		public void setThreadTitle(String threadTitle) {
-			mThreadTitle = threadTitle;
+			this.threadTitle = threadTitle;
 		}
 
 		public String getThreadTitle() {
-			return mThreadTitle;
+			return threadTitle;
 		}
 
 		public void add(Collection<AttachmentItem> attachmentItems) {
@@ -153,26 +153,26 @@ public class GalleryItem implements Serializable {
 
 		public void add(GalleryItem galleryItem) {
 			if (galleryItem != null) {
-				mGalleryItems.add(galleryItem);
+				galleryItems.add(galleryItem);
 			}
 		}
 
 		public void cleanup() {
-			for (GalleryItem galleryItem : mGalleryItems) {
+			for (GalleryItem galleryItem : galleryItems) {
 				galleryItem.cleanup();
 			}
 		}
 
 		public void clear() {
-			mGalleryItems.clear();
+			galleryItems.clear();
 		}
 
 		public ArrayList<GalleryItem> getItems() {
-			return mGalleryItems.size() > 0 ? mGalleryItems : null;
+			return galleryItems.size() > 0 ? galleryItems : null;
 		}
 
 		public boolean isAllowGoToPost() {
-			return mAllowGoToPost;
+			return allowGoToPost;
 		}
 	}
 }

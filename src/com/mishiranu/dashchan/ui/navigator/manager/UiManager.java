@@ -35,46 +35,46 @@ import com.mishiranu.dashchan.widget.CommentTextView;
 import com.mishiranu.dashchan.widget.ExpandedScreen;
 
 public class UiManager {
-	private final Context mContext;
-	private final ViewUnit mViewUnit;
-	private final DialogUnit mDialogUnit;
-	private final InteractionUnit mInteractionUnit;
-	private final WeakObservable<Observer> mObservable = new WeakObservable<>();
+	private final Context context;
+	private final ViewUnit viewUnit;
+	private final DialogUnit dialogUnit;
+	private final InteractionUnit interactionUnit;
+	private final WeakObservable<Observer> observable = new WeakObservable<>();
 
-	private final LocalNavigator mLocalNavigator;
-	private final ColorScheme mColorScheme;
+	private final LocalNavigator localNavigator;
+	private final ColorScheme colorScheme;
 
 	public UiManager(Context context, LocalNavigator localNavigator, ExpandedScreen expandedScreen) {
-		mContext = context;
-		mViewUnit = new ViewUnit(this);
-		mDialogUnit = new DialogUnit(this, expandedScreen);
-		mInteractionUnit = new InteractionUnit(this);
-		mColorScheme = new ColorScheme(context);
-		mLocalNavigator = localNavigator;
+		this.context = context;
+		viewUnit = new ViewUnit(this);
+		dialogUnit = new DialogUnit(this, expandedScreen);
+		interactionUnit = new InteractionUnit(this);
+		colorScheme = new ColorScheme(context);
+		this.localNavigator = localNavigator;
 	}
 
 	Context getContext() {
-		return mContext;
+		return context;
 	}
 
 	public ColorScheme getColorScheme() {
-		return mColorScheme;
+		return colorScheme;
 	}
 
 	public ViewUnit view() {
-		return mViewUnit;
+		return viewUnit;
 	}
 
 	public DialogUnit dialog() {
-		return mDialogUnit;
+		return dialogUnit;
 	}
 
 	public InteractionUnit interaction() {
-		return mInteractionUnit;
+		return interactionUnit;
 	}
 
 	public LocalNavigator navigator() {
-		return mLocalNavigator;
+		return localNavigator;
 	}
 
 	public static final int MESSAGE_INVALIDATE_VIEW = 1;
@@ -96,13 +96,13 @@ public class UiManager {
 	}
 
 	public void sendPostItemMessage(PostItem postItem, int message) {
-		for (Observer observer : mObservable) {
+		for (Observer observer : observable) {
 			observer.onPostItemMessage(postItem, message);
 		}
 	}
 
 	public WeakObservable<Observer> observable() {
-		return mObservable;
+		return observable;
 	}
 
 	public interface PostsProvider extends Iterable<PostItem> {
@@ -193,6 +193,6 @@ public class UiManager {
 	}
 
 	public void onFinish() {
-		mDialogUnit.onFinish();
+		dialogUnit.onFinish();
 	}
 }

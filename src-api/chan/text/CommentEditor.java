@@ -32,11 +32,11 @@ import chan.content.ChanMarkup;
 public class CommentEditor {
 	@Public public static final int FLAG_ONE_LINE = 0x00000001;
 
-	private final SparseArray<Tag> mTags = new SparseArray<>();
-	private final SparseIntArray mSimilar = new SparseIntArray();
+	private final SparseArray<Tag> tags = new SparseArray<>();
+	private final SparseIntArray similar = new SparseIntArray();
 
-	private String mUnorderedListMark = "- ";
-	private String mOrderedListMark;
+	private String unorderedListMark = "- ";
+	private String orderedListMark;
 
 	public static class Tag {
 		public final String open;
@@ -73,29 +73,29 @@ public class CommentEditor {
 		if (open == null || close == null) {
 			throw new NullPointerException();
 		}
-		mTags.put(what, new Tag(open, close, flags));
+		tags.put(what, new Tag(open, close, flags));
 	}
 
 	@Public
 	public final void setUnorderedListMark(String mark) {
-		mUnorderedListMark = mark;
+		unorderedListMark = mark;
 	}
 
 	@Public
 	public final void setOrderedListMark(String mark) {
-		mOrderedListMark = mark;
+		orderedListMark = mark;
 	}
 
 	public final String getUnorderedListMark() {
-		return mUnorderedListMark;
+		return unorderedListMark;
 	}
 
 	public final String getOrderedListMark() {
-		return mOrderedListMark;
+		return orderedListMark;
 	}
 
 	public final String getTag(int what, boolean close) {
-		Tag tag = mTags.get(what);
+		Tag tag = tags.get(what);
 		if (tag == null) {
 			return null;
 		}
@@ -107,25 +107,25 @@ public class CommentEditor {
 	}
 
 	public final SparseArray<Tag> getAllTags() {
-		return mTags;
+		return tags;
 	}
 
 	public final void handleSimilar(int supportedTags) {
-		mSimilar.clear();
-		int size = mTags.size();
+		similar.clear();
+		int size = tags.size();
 		for (int i = 0; i < size; i++) {
-			int what1 = mTags.keyAt(i);
+			int what1 = tags.keyAt(i);
 			if ((supportedTags & what1) == what1) {
-				Tag tag1 = mTags.get(what1);
+				Tag tag1 = tags.get(what1);
 				for (int j = i + 1; j < size; j++) {
-					int what2 = mTags.keyAt(j);
+					int what2 = tags.keyAt(j);
 					if ((supportedTags & what2) == what2) {
-						Tag tag2 = mTags.get(what2);
+						Tag tag2 = tags.get(what2);
 						if (tag1.open.endsWith(tag2.open) && tag1.close.startsWith(tag2.close)) {
-							mSimilar.put(what2, what1);
+							similar.put(what2, what1);
 						}
 						if (tag2.open.endsWith(tag1.open) && tag2.close.startsWith(tag1.close)) {
-							mSimilar.put(what1, what2);
+							similar.put(what1, what2);
 						}
 					}
 				}
@@ -146,7 +146,7 @@ public class CommentEditor {
 	}
 
 	public FormatResult formatSelectedText(Editable editable, int what, int start, int end) {
-		Tag tag = mTags.get(what);
+		Tag tag = tags.get(what);
 		if (tag == null) {
 			return null;
 		}
@@ -177,9 +177,9 @@ public class CommentEditor {
 						boolean cutEnd = mayCutEnd && line.endsWith(close);
 						int openLength = open.length();
 						int closeLength = close.length();
-						int similar = mSimilar.get(what, -1);
+						int similar = this.similar.get(what, -1);
 						if (similar != -1) {
-							Tag similarTag = mTags.get(similar);
+							Tag similarTag = tags.get(similar);
 							if (cutStart && line.startsWith(similarTag.open) &&
 									!line.startsWith(open + similarTag.open)) {
 								openLength = similarTag.open.length();
@@ -227,10 +227,10 @@ public class CommentEditor {
 	}
 
 	private FormatResult formatSelectedTextLineDirectly(Editable editable, int what, Tag tag, int start, int end) {
-		int similar = mSimilar.get(what, -1);
+		int similar = this.similar.get(what, -1);
 		if (similar != -1) {
 			String text = editable.toString();
-			Tag similarTag = mTags.get(similar);
+			Tag similarTag = tags.get(similar);
 			String textBeforeSelection = text.substring(Math.max(0, start - similarTag.open.length() - 1), start);
 			String textAfterSelection = text.substring(end, Math.min(text.length(),
 					end + similarTag.open.length() + 1));

@@ -71,17 +71,17 @@ import com.mishiranu.dashchan.widget.LinebreakLayout;
 import com.mishiranu.dashchan.widget.SingleLayerLinearLayout;
 
 public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListener {
-	private final UiManager mUiManager;
-	private final PostDateFormatter mPostDateFormatter;
+	private final UiManager uiManager;
+	private final PostDateFormatter postDateFormatter;
 
-	private final int mThumbnailWidth;
-	private final int mMultipleAttachmentInfoWidth;
+	private final int thumbnailWidth;
+	private final int multipleAttachmentInfoWidth;
 
-	private final int mCommentMaxLines;
-	private final int mCommentAdditionalHeight;
-	private final int mCommentAdditionalLines;
+	private final int commentMaxLines;
+	private final int commentAdditionalHeight;
+	private final int commentAdditionalLines;
 
-	private Collection<String> mHighlightText;
+	private Collection<String> highlightText;
 
 	private static final float ALPHA_HIDDEN_POST = 0.2f;
 	private static final float ALPHA_DELETED_POST = 0.5f;
@@ -89,8 +89,8 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 	@SuppressLint("InflateParams")
 	ViewUnit(UiManager uiManager) {
 		Context context = uiManager.getContext();
-		mUiManager = uiManager;
-		mPostDateFormatter = new PostDateFormatter(context);
+		this.uiManager = uiManager;
+		postDateFormatter = new PostDateFormatter(context);
 
 		Configuration configuration = context.getResources().getConfiguration();
 		float density = ResourceUtils.obtainDensity(context);
@@ -106,10 +106,10 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		int widthMeasureSpec = View.MeasureSpec.makeMeasureSpec((int) (320 * density + 0.5f), View.MeasureSpec.AT_MOST);
 		int heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
 		view.measure(widthMeasureSpec, heightMeasureSpec);
-		mCommentMaxLines = Preferences.getPostMaxLines();
-		mCommentAdditionalHeight = bottomBar.getMeasuredHeight();
-		mCommentAdditionalLines = (int) Math.ceil(mCommentAdditionalHeight / comment.getTextSize());
-		mThumbnailWidth = head.getMeasuredHeight();
+		commentMaxLines = Preferences.getPostMaxLines();
+		commentAdditionalHeight = bottomBar.getMeasuredHeight();
+		commentAdditionalLines = (int) Math.ceil(commentAdditionalHeight / comment.getTextSize());
+		thumbnailWidth = head.getMeasuredHeight();
 		int additionalAttachmentInfoWidthDp = 64; // approximately equal to thumbnail width + right padding
 		int minAttachmentInfoWidthDp = additionalAttachmentInfoWidthDp + 68;
 		int maxAttachmentInfoWidthDp = additionalAttachmentInfoWidthDp + 84;
@@ -117,45 +117,45 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		attachmentInfoWidthDp = Math.max(Math.min(attachmentInfoWidthDp, maxAttachmentInfoWidthDp),
 				minAttachmentInfoWidthDp);
 		attachmentInfoWidthDp -= additionalAttachmentInfoWidthDp;
-		mMultipleAttachmentInfoWidth = (int) (attachmentInfoWidthDp * density + 0.5f);
+		multipleAttachmentInfoWidth = (int) (attachmentInfoWidthDp * density + 0.5f);
 	}
 
 	public void resetPages() {
-		mHighlightText = null;
-		mUiManager.dialog().closeDialogs();
+		highlightText = null;
+		uiManager.dialog().closeDialogs();
 	}
 
 	public void setHighlightText(Collection<String> highlightText) {
-		mHighlightText = highlightText;
+		this.highlightText = highlightText;
 	}
 
-	private final CommentTextView.LinkListener mDefaultLinkListener = new CommentTextView.LinkListener() {
+	private final CommentTextView.LinkListener defaultLinkListener = new CommentTextView.LinkListener() {
 		@Override
 		public void onLinkClick(CommentTextView view, String chanName, Uri uri, boolean confirmed) {
-			mUiManager.interaction().handleLinkClick(chanName, uri, confirmed);
+			uiManager.interaction().handleLinkClick(chanName, uri, confirmed);
 		}
 
 		@Override
 		public void onLinkLongClick(CommentTextView view, String chanName, Uri uri) {
-			mUiManager.interaction().handleLinkLongClick(uri);
+			uiManager.interaction().handleLinkLongClick(uri);
 		}
 	};
 
-	private final CommentTextView.CommentListener mCommentListener = new CommentTextView.CommentListener() {
+	private final CommentTextView.CommentListener commentListener = new CommentTextView.CommentListener() {
 		@Override
 		public void onRequestSiblingsInvalidate(CommentTextView view) {
-			mUiManager.sendPostItemMessage(view, UiManager.MESSAGE_INVALIDATE_COMMENT_VIEW);
+			uiManager.sendPostItemMessage(view, UiManager.MESSAGE_INVALIDATE_COMMENT_VIEW);
 		}
 
 		@Override
 		public String onPrepareToCopy(CommentTextView view, Spannable text, int start, int end) {
-			return mUiManager.interaction().getCopyReadyComment(text, start, end);
+			return uiManager.interaction().getCopyReadyComment(text, start, end);
 		}
 	};
 
 	public View getThreadView(PostItem postItem, View convertView, ViewGroup parent, boolean isBusy) {
-		Context context = mUiManager.getContext();
-		ColorScheme colorScheme = mUiManager.getColorScheme();
+		Context context = uiManager.getContext();
+		ColorScheme colorScheme = uiManager.getColorScheme();
 		ThreadViewHolder holder;
 		if (convertView != null && !(convertView.getTag() instanceof ThreadViewHolder)) {
 			convertView = null;
@@ -175,7 +175,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			holder.stateClosed = (ImageView) cardView.findViewById(R.id.state_closed);
 			holder.thumbnail = (AttachmentView) cardView.findViewById(R.id.thumbnail);
 			holder.showOpClickView = cardView.findViewById(R.id.click_view);
-			holder.showOpClickView.setOnClickListener(mThreadShowOpClickListener);
+			holder.showOpClickView.setOnClickListener(threadShowOpClickListener);
 			convertView.setTag(holder);
 
 			holder.thumbnail.setDrawTouching(true);
@@ -249,8 +249,8 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 
 	public View getThreadViewForGrid(PostItem postItem, View convertView, ViewGroup parent,
 			HidePerformer hidePerformer, int contentHeight, boolean isBusy) {
-		Context context = mUiManager.getContext();
-		ColorScheme colorScheme = mUiManager.getColorScheme();
+		Context context = uiManager.getContext();
+		ColorScheme colorScheme = uiManager.getColorScheme();
 		ThreadViewHolder holder;
 		if (convertView != null && !(convertView.getTag() instanceof ThreadViewHolder)) {
 			convertView = null;
@@ -268,7 +268,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			holder.thumbnail = (AttachmentView) cardView.findViewById(R.id.thumbnail);
 			holder.threadContent = cardView.findViewById(R.id.thread_content);
 			holder.showOpClickView = cardView.findViewById(R.id.click_view);
-			holder.showOpClickView.setOnClickListener(mThreadShowOpClickListener);
+			holder.showOpClickView.setOnClickListener(threadShowOpClickListener);
 			convertView.setTag(holder);
 
 			holder.thumbnail.setFitSquare(true);
@@ -359,8 +359,8 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 
 	public View getPostView(PostItem postItem, View convertView, ViewGroup parent, UiManager.DemandSet demandSet,
 			UiManager.ConfigurationSet configurationSet) {
-		Context context = mUiManager.getContext();
-		ColorScheme colorScheme = mUiManager.getColorScheme();
+		Context context = uiManager.getContext();
+		ColorScheme colorScheme = uiManager.getColorScheme();
 		PostViewHolder holder;
 		if (convertView != null && !(convertView.getTag() instanceof PostViewHolder)) {
 			convertView = null;
@@ -398,12 +398,12 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			holder.bottomBarOpenThread = (TextView) convertView.findViewById(R.id.bottom_bar_open_thread);
 			convertView.setTag(holder);
 
-			holder.head.setOnTouchListener(mHeadContentTouchListener);
-			holder.comment.setCommentListener(mCommentListener);
+			holder.head.setOnTouchListener(headContentTouchListener);
+			holder.comment.setCommentListener(commentListener);
 			holder.thumbnail.setOnClickListener(holder.thumbnailClickListener);
 			holder.thumbnail.setOnLongClickListener(holder.thumbnailLongClickListener);
-			holder.bottomBarReplies.setOnClickListener(mRepliesBlockClickListener);
-			holder.bottomBarOpenThread.setOnClickListener(mThreadLinkBlockClickListener);
+			holder.bottomBarReplies.setOnClickListener(repliesBlockClickListener);
+			holder.bottomBarOpenThread.setOnClickListener(threadLinkBlockClickListener);
 
 			holder.index.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
 			int textScale = Preferences.getTextScale();
@@ -421,10 +421,10 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			ViewGroup.LayoutParams thumbnailLayoutParams = holder.thumbnail.getLayoutParams();
 			int thumbnailsScale = Preferences.getThumbnailsScale();
 			if (thumbnailsScale != 100) {
-				thumbnailLayoutParams.width = mThumbnailWidth * thumbnailsScale / 100;
+				thumbnailLayoutParams.width = thumbnailWidth * thumbnailsScale / 100;
 				thumbnailLayoutParams.height = thumbnailLayoutParams.width;
 			} else {
-				thumbnailLayoutParams.width = mThumbnailWidth;
+				thumbnailLayoutParams.width = thumbnailWidth;
 			}
 		} else {
 			holder = (PostViewHolder) convertView.getTag();
@@ -468,7 +468,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		CharSequence name = postItem.getFullName();
 		colorScheme.apply(postItem.getFullNameSpans());
 		holder.name.setText(makeHighlightedText(name));
-		holder.date.setText(postItem.getDateTime(mPostDateFormatter));
+		holder.date.setText(postItem.getDateTime(postDateFormatter));
 
 		String subject = postItem.getSubject();
 		CharSequence comment = !StringUtils.isEmpty(configurationSet.repliesToPost)
@@ -503,7 +503,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		holder.comment.setAppendAdditionalPadding(demandSet.lastInList);
 		holder.comment.setReplyable(configurationSet.replyable, postNumber);
 		holder.comment.setLinkListener(configurationSet.linkListener != null ? configurationSet.linkListener
-				: mDefaultLinkListener, chanName, boardName, threadNumber);
+				: defaultLinkListener, chanName, boardName, threadNumber);
 		holder.comment.setVisibility(subject.length() > 0 || comment.length() > 0 ? View.VISIBLE : View.GONE);
 
 		handlePostViewIcons(holder);
@@ -533,7 +533,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		}
 		if (configurationSet.mayCollapse) {
 			// invalidateBottomBar will be called from these following methods
-			if (mCommentMaxLines == 0 || postItem.isExpanded()) {
+			if (commentMaxLines == 0 || postItem.isExpanded()) {
 				removeMaxHeight(convertView);
 			} else {
 				setMaxHeight(convertView, parent);
@@ -615,14 +615,14 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 	}
 
 	private int getPostBackgroundColor(UiManager.ConfigurationSet configurationSet) {
-		ColorScheme colorScheme = mUiManager.getColorScheme();
+		ColorScheme colorScheme = uiManager.getColorScheme();
 		return configurationSet.isDialog ? colorScheme.dialogBackgroundColor : colorScheme.windowBackgroundColor;
 	}
 
 	@SuppressLint("InflateParams")
 	private void handlePostViewAttachments(PostViewHolder holder, UiManager.ConfigurationSet configurationSet,
 			UiManager.DemandSet demandSet) {
-		Context context = mUiManager.getContext();
+		Context context = uiManager.getContext();
 		PostItem postItem = holder.postItem;
 		holder.thumbnail.resetTransition();
 		List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
@@ -652,14 +652,14 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 						attachmentHolder.thumbnail.applyRoundedCorners(postBackgroundColor);
 						attachmentHolder.thumbnail.setOnClickListener(attachmentHolder.thumbnailClickListener);
 						attachmentHolder.thumbnail.setOnLongClickListener(attachmentHolder.thumbnailLongClickListener);
-						attachmentHolder.attachmentInfo.getLayoutParams().width = mMultipleAttachmentInfoWidth;
+						attachmentHolder.attachmentInfo.getLayoutParams().width = multipleAttachmentInfoWidth;
 						ViewGroup.LayoutParams thumbnailLayoutParams = attachmentHolder.thumbnail.getLayoutParams();
 						if (thumbnailsScale != 100) {
-							thumbnailLayoutParams.width = mThumbnailWidth * thumbnailsScale / 100;
+							thumbnailLayoutParams.width = thumbnailWidth * thumbnailsScale / 100;
 							thumbnailLayoutParams.height = thumbnailLayoutParams.width;
 						} else {
-							thumbnailLayoutParams.width = mThumbnailWidth;
-							thumbnailLayoutParams.height = mThumbnailWidth;
+							thumbnailLayoutParams.width = thumbnailWidth;
+							thumbnailLayoutParams.height = thumbnailWidth;
 						}
 						if (textScale != 100) {
 							ViewUtils.applyScaleSize(attachmentHolder.attachmentInfo);
@@ -710,7 +710,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 	}
 
 	private void handlePostViewIcons(PostViewHolder holder) {
-		Context context = mUiManager.getContext();
+		Context context = uiManager.getContext();
 		PostItem postItem = holder.postItem;
 		String chanName = postItem.getChanName();
 		ArrayList<Pair<Uri, String>> icons = postItem.getIcons();
@@ -779,8 +779,8 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		int widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(parent.getWidth(), View.MeasureSpec.AT_MOST);
 		int heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
 		holder.comment.measure(widthMeasureSpec, heightMeasureSpec);
-		if (holder.comment.getLineCount() >= mCommentMaxLines + mCommentAdditionalLines) {
-			holder.comment.setMaxLines(mCommentMaxLines);
+		if (holder.comment.getLineCount() >= commentMaxLines + commentAdditionalLines) {
+			holder.comment.setMaxLines(commentMaxLines);
 			holder.bottomBarExpand.setVisibility(View.VISIBLE);
 			holder.bottomBarExpand.setOnClickListener(v -> {
 				holder.postItem.setExpanded(true);
@@ -791,7 +791,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 				// When button bar becomes hidden, height of view becomes smaller, so it can cause
 				// little jumping of list; This is solution - start animation from item_height + bar_height
 				if (holder.bottomBar.getVisibility() == View.GONE) {
-					fromHeight += mCommentAdditionalHeight;
+					fromHeight += commentAdditionalHeight;
 				}
 				if (toHeight > fromHeight) {
 					float density = ResourceUtils.obtainDensity(holder.comment);
@@ -828,15 +828,15 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 	}
 
 	private CharSequence makeHighlightedText(CharSequence text) {
-		if (mHighlightText != null && text != null) {
+		if (highlightText != null && text != null) {
 			Locale locale = Locale.getDefault();
 			SpannableString spannable = new SpannableString(text);
 			String searchable = text.toString().toLowerCase(locale);
-			for (String highlight : mHighlightText) {
+			for (String highlight : highlightText) {
 				highlight = highlight.toLowerCase(locale);
 				int textIndex = -1;
 				while ((textIndex = searchable.indexOf(highlight, textIndex + 1)) >= 0) {
-					spannable.setSpan(new BackgroundColorSpan(mUiManager.getColorScheme().highlightTextColor),
+					spannable.setSpan(new BackgroundColorSpan(uiManager.getColorScheme().highlightTextColor),
 							textIndex, textIndex + highlight.length(), SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
 				}
 				text = spannable;
@@ -909,7 +909,8 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		}
 	}
 
-	public void displayThumbnails(ListView listView, int position, List<AttachmentItem> attachmentItems, boolean force) {
+	public void displayThumbnails(ListView listView, int position, List<AttachmentItem> attachmentItems,
+			boolean force) {
 		if (position != ListView.INVALID_POSITION) {
 			View view = listView.getChildAt(position - listView.getFirstVisiblePosition());
 			if (view != null) {
@@ -980,47 +981,47 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		}
 	}
 
-	private final View.OnClickListener mRepliesBlockClickListener = new View.OnClickListener() {
+	private final View.OnClickListener repliesBlockClickListener = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
 			PostViewHolder holder = ListViewUtils.getViewHolder(v, PostViewHolder.class);
 			PostItem postItem = holder.postItem;
-			mUiManager.dialog().displayReplies(postItem, holder.configurationSet);
+			uiManager.dialog().displayReplies(postItem, holder.configurationSet);
 		}
 	};
 
-	private final View.OnClickListener mThreadLinkBlockClickListener = new View.OnClickListener() {
+	private final View.OnClickListener threadLinkBlockClickListener = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
 			PostViewHolder holder = ListViewUtils.getViewHolder(v, PostViewHolder.class);
 			PostItem postItem = holder.postItem;
 			String postNumber = postItem.getParentPostNumber() == null ? null : postItem.getPostNumber();
-			mUiManager.navigator().navigatePosts(postItem.getChanName(), postItem.getBoardName(),
+			uiManager.navigator().navigatePosts(postItem.getChanName(), postItem.getBoardName(),
 					postItem.getThreadNumber(), postNumber, null, false);
 		}
 	};
 
-	private final View.OnClickListener mThreadShowOpClickListener = new View.OnClickListener() {
+	private final View.OnClickListener threadShowOpClickListener = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
 			ThreadViewHolder holder = ListViewUtils.getViewHolder(v, ThreadViewHolder.class);
-			mUiManager.dialog().displayThread(holder.postItem);
+			uiManager.dialog().displayThread(holder.postItem);
 		}
 	};
 
-	private final View.OnTouchListener mHeadContentTouchListener = new View.OnTouchListener() {
+	private final View.OnTouchListener headContentTouchListener = new View.OnTouchListener() {
 		private static final int TYPE_NONE = 0;
 		private static final int TYPE_BADGES = 1;
 		private static final int TYPE_STATES = 2;
 
-		private int mType;
-		private float mStartX, mStartY;
+		private int type;
+		private float startX, startY;
 
 		@Override
 		public boolean onTouch(View v, MotionEvent event) {
 			switch (event.getAction()) {
 				case MotionEvent.ACTION_DOWN: {
-					mType = TYPE_NONE;
+					type = TYPE_NONE;
 					float x = event.getX();
 					float y = event.getY();
 					PostViewHolder holder = ListViewUtils.getViewHolder(v, PostViewHolder.class);
@@ -1035,16 +1036,16 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 							int centerY = child.getTop() + child.getHeight() / 2;
 							int distance = (int) (Math.sqrt(Math.pow(centerX - x, 2) + Math.pow(centerY - y, 2)) / 2f);
 							if (distance <= radius * 3 / 2) {
-								mStartX = x;
-								mStartY = y;
+								startX = x;
+								startY = y;
 								// noinspection SuspiciousMethodCalls
 								if (holder.badgeImages != null && holder.badgeImages.contains(child)) {
-									mType = TYPE_BADGES;
+									type = TYPE_BADGES;
 									return true;
 								}
 								// noinspection SuspiciousMethodCalls
 								if (Arrays.asList(holder.stateImages).contains(child)) {
-									mType = TYPE_STATES;
+									type = TYPE_STATES;
 									return true;
 								}
 							}
@@ -1053,15 +1054,15 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 					break;
 				}
 				case MotionEvent.ACTION_UP: {
-					if (mType != TYPE_NONE) {
-						Context context = mUiManager.getContext();
+					if (type != TYPE_NONE) {
+						Context context = uiManager.getContext();
 						PostViewHolder holder = ListViewUtils.getViewHolder(v, PostViewHolder.class);
 						int touchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
-						if (Math.abs(event.getX() - mStartX) <= touchSlop &&
-								Math.abs(event.getY() - mStartY) <= touchSlop) {
+						if (Math.abs(event.getX() - startX) <= touchSlop &&
+								Math.abs(event.getY() - startY) <= touchSlop) {
 							ArrayList<DialogUnit.IconData> icons = new ArrayList<>();
 							String emailToCopy = null;
-							switch (mType) {
+							switch (type) {
 								case TYPE_BADGES: {
 									ArrayList<Pair<Uri, String>> postIcons = holder.postItem.getIcons();
 									ChanLocator locator = ChanLocator.get(holder.postItem.getChanName());
@@ -1094,7 +1095,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 									break;
 								}
 							}
-							mUiManager.dialog().showPostDescriptionDialog(icons,
+							uiManager.dialog().showPostDescriptionDialog(icons,
 									holder.postItem.getChanName(), emailToCopy);
 						}
 						return true;
@@ -1132,8 +1133,8 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		public TextView attachmentInfo;
 
 		public AttachmentHolder() {
-			thumbnailClickListener = mUiManager.interaction().createThumbnailClickListener();
-			thumbnailLongClickListener = mUiManager.interaction().createThumbnailLongClickListener();
+			thumbnailClickListener = uiManager.interaction().createThumbnailClickListener();
+			thumbnailLongClickListener = uiManager.interaction().createThumbnailLongClickListener();
 		}
 	}
 
@@ -1151,8 +1152,8 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		public View showOpClickView;
 
 		public ThreadViewHolder() {
-			thumbnailClickListener = mUiManager.interaction().createThumbnailClickListener();
-			thumbnailLongClickListener = mUiManager.interaction().createThumbnailLongClickListener();
+			thumbnailClickListener = uiManager.interaction().createThumbnailClickListener();
+			thumbnailLongClickListener = uiManager.interaction().createThumbnailLongClickListener();
 		}
 
 		@Override
@@ -1198,8 +1199,8 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		public final boolean[] states = new boolean[STATE_ATTRS.length];
 
 		public PostViewHolder() {
-			thumbnailClickListener = mUiManager.interaction().createThumbnailClickListener();
-			thumbnailLongClickListener = mUiManager.interaction().createThumbnailLongClickListener();
+			thumbnailClickListener = uiManager.interaction().createThumbnailClickListener();
+			thumbnailLongClickListener = uiManager.interaction().createThumbnailLongClickListener();
 		}
 
 		@Override

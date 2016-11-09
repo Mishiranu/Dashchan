@@ -304,13 +304,9 @@ public class GraphicsUtils {
 				}
 			}
 		} catch (IOException e) {
-			// Ignore
+			// Ignore exception
 		} finally {
-			try {
-				input.close();
-			} catch (Exception e) {
-				// Ignore
-			}
+			IOUtils.close(input);
 		}
 		return skipRanges != null || decodedBytes != null || newFileName != null
 				? new TransformationData(skipRanges, decodedBytes, newFileName) : null;

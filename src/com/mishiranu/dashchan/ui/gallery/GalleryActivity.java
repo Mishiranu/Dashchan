@@ -71,26 +71,26 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 	private static final String EXTRA_GALLERY_MODE = "galleryMode";
 	private static final String EXTRA_SYSTEM_UI_VISIBILITY = "systemUIVisibility";
 
-	private String mThreadTitle;
-	private final GalleryInstance mInstance = new GalleryInstance(this, this);
+	private String threadTitle;
+	private final GalleryInstance instance = new GalleryInstance(this, this);
 
-	private View mActionBar;
-	private WindowControlFrameLayout mRootView;
+	private View actionBar;
+	private WindowControlFrameLayout rootView;
 
-	private GalleryBackgroundDrawable mBackgroundDrawable;
+	private GalleryBackgroundDrawable backgroundDrawable;
 
-	private boolean mGalleryWindow, mGalleryMode;
-	private boolean mAllowGoToPost;
-	private boolean mOverrideUpButton = false;
-	private final boolean mScrollThread = Preferences.isScrollThreadGallery();
+	private boolean galleryWindow, galleryMode;
+	private boolean allowGoToPost;
+	private boolean overrideUpButton = false;
+	private final boolean scrollThread = Preferences.isScrollThreadGallery();
 
 	private static final int ACTION_BAR_COLOR = 0xaa202020;
 	private static final int BACKGROUND_COLOR = 0xf0101010;
 
-	private final ActionMenuConfigurator mActionMenuConfigurator = new ActionMenuConfigurator();
+	private final ActionMenuConfigurator actionMenuConfigurator = new ActionMenuConfigurator();
 
-	private PagerUnit mPagerUnit;
-	private ListUnit mListUnit;
+	private PagerUnit pagerUnit;
+	private ListUnit listUnit;
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private void applyStatusNavigationTranslucency() {
@@ -117,8 +117,8 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		setVolumeControlStream(AudioManager.STREAM_MUSIC);
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 		ViewUtils.applyToolbarStyle(this, null);
-		mExpandedScreen = getIntent().getBooleanExtra(C.EXTRA_ALLOW_EXPANDED_SCREEN, false);
-		mInstance.actionBarColor = ACTION_BAR_COLOR;
+		expandedScreen = getIntent().getBooleanExtra(C.EXTRA_ALLOW_EXPANDED_SCREEN, false);
+		instance.actionBarColor = ACTION_BAR_COLOR;
 		boolean obtainImages = getIntent().getBooleanExtra(C.EXTRA_OBTAIN_ITEMS, false);
 		ArrayList<GalleryItem> galleryItems = obtainImages ? NavigationUtils.obtainImagesProvider(this) : null;
 		String chanName = getIntent().getStringExtra(C.EXTRA_CHAN_NAME);
@@ -131,7 +131,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		if (chanName != null) {
 			locator = ChanLocator.get(chanName);
 		}
-		mThreadTitle = getIntent().getStringExtra(C.EXTRA_THREAD_TITLE);
+		threadTitle = getIntent().getStringExtra(C.EXTRA_THREAD_TITLE);
 		boolean defaultLocator = false;
 		if (locator == null) {
 			locator = ChanLocator.getDefault();
@@ -146,59 +146,59 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 				threadNumber = locator.safe(true).getThreadNumber(uri);
 			}
 			galleryItems.add(new GalleryItem(uri, boardName, threadNumber));
-			mOverrideUpButton = true;
+			overrideUpButton = true;
 			imagePosition = 0;
 		} else if (imagePosition == -1) {
 			imagePosition = getIntent().getIntExtra(C.EXTRA_IMAGE_INDEX, 0);
 		}
-		mInstance.chanName = chanName;
-		mInstance.locator = locator;
-		mInstance.galleryItems = galleryItems;
-		mAllowGoToPost = getIntent().getBooleanExtra(C.EXTRA_ALLOW_GO_TO_POST, false);
-		mActionBar = findViewById(getResources().getIdentifier("action_bar", "id", "android"));
-		mRootView = new WindowControlFrameLayout(this);
-		mRootView.setOnApplyWindowPaddingsListener(this);
-		mRootView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+		instance.chanName = chanName;
+		instance.locator = locator;
+		instance.galleryItems = galleryItems;
+		allowGoToPost = getIntent().getBooleanExtra(C.EXTRA_ALLOW_GO_TO_POST, false);
+		actionBar = findViewById(getResources().getIdentifier("action_bar", "id", "android"));
+		rootView = new WindowControlFrameLayout(this);
+		rootView.setOnApplyWindowPaddingsListener(this);
+		rootView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
 				ViewGroup.LayoutParams.MATCH_PARENT));
-		mBackgroundDrawable = new GalleryBackgroundDrawable(mRootView, C.API_LOLLIPOP ? imageViewPosition : null,
+		backgroundDrawable = new GalleryBackgroundDrawable(rootView, C.API_LOLLIPOP ? imageViewPosition : null,
 				BACKGROUND_COLOR);
-		mRootView.setBackground(mBackgroundDrawable);
-		setContentView(mRootView);
+		rootView.setBackground(backgroundDrawable);
+		setContentView(rootView);
 		if (galleryItems == null || galleryItems.size() == 0) {
-			View errorView = getLayoutInflater().inflate(R.layout.widget_error, mRootView, false);
+			View errorView = getLayoutInflater().inflate(R.layout.widget_error, rootView, false);
 			TextView textView = (TextView) errorView.findViewById(R.id.error_text);
 			textView.setText(R.string.message_empty_gallery);
-			mRootView.addView(errorView);
+			rootView.addView(errorView);
 		} else {
-			mListUnit = new ListUnit(mInstance);
-			mPagerUnit = new PagerUnit(mInstance);
-			mRootView.addView(mListUnit.getListView(), FrameLayout.LayoutParams.MATCH_PARENT,
+			listUnit = new ListUnit(instance);
+			pagerUnit = new PagerUnit(instance);
+			rootView.addView(listUnit.getListView(), FrameLayout.LayoutParams.MATCH_PARENT,
 					FrameLayout.LayoutParams.MATCH_PARENT);
-			mRootView.addView(mPagerUnit.getView(), FrameLayout.LayoutParams.MATCH_PARENT,
+			rootView.addView(pagerUnit.getView(), FrameLayout.LayoutParams.MATCH_PARENT,
 					FrameLayout.LayoutParams.MATCH_PARENT);
-			mPagerUnit.addAndInitViews(mRootView, imagePosition);
+			pagerUnit.addAndInitViews(rootView, imagePosition);
 			if (savedInstanceState != null && savedInstanceState.containsKey(EXTRA_GALLERY_MODE)) {
-				mGalleryMode = savedInstanceState.getBoolean(EXTRA_GALLERY_MODE);
-				mGalleryWindow = savedInstanceState.getBoolean(EXTRA_GALLERY_WINDOW);
-				switchMode(mGalleryMode, false);
+				galleryMode = savedInstanceState.getBoolean(EXTRA_GALLERY_MODE);
+				galleryWindow = savedInstanceState.getBoolean(EXTRA_GALLERY_WINDOW);
+				switchMode(galleryMode, false);
 				modifySystemUiVisibility(GalleryInstance.FLAG_LOCKED_USER, savedInstanceState
 						.getBoolean(EXTRA_SYSTEM_UI_VISIBILITY));
 			} else {
-				mGalleryWindow = imagePosition < 0 || getIntent().getBooleanExtra(C.EXTRA_GALLERY_MODE, false);
-				if (mGalleryWindow && imagePosition >= 0) {
-					mListUnit.setListSelection(imagePosition, false);
+				galleryWindow = imagePosition < 0 || getIntent().getBooleanExtra(C.EXTRA_GALLERY_MODE, false);
+				if (galleryWindow && imagePosition >= 0) {
+					listUnit.setListSelection(imagePosition, false);
 				}
-				switchMode(mGalleryWindow, false);
+				switchMode(galleryWindow, false);
 			}
-			mPagerUnit.onViewsCreated(imageViewPosition);
+			pagerUnit.onViewsCreated(imageViewPosition);
 		}
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
-		if (mPagerUnit != null) {
-			mPagerUnit.onResume();
+		if (pagerUnit != null) {
+			pagerUnit.onResume();
 		}
 		ForegroundManager.register(this);
 	}
@@ -206,8 +206,8 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 	@Override
 	protected void onPause() {
 		super.onPause();
-		if (mPagerUnit != null) {
-			mPagerUnit.onPause();
+		if (pagerUnit != null) {
+			pagerUnit.onPause();
 		}
 		ForegroundManager.unregister(this);
 	}
@@ -215,8 +215,8 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 	@Override
 	protected void onFinish() {
 		super.onFinish();
-		if (mPagerUnit != null) {
-			mPagerUnit.onFinish();
+		if (pagerUnit != null) {
+			pagerUnit.onFinish();
 		}
 	}
 
@@ -227,18 +227,18 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 	}
 
 	private void invalidateListPosition() {
-		mListUnit.setListSelection(mPagerUnit.getCurrentIndex(), true);
+		listUnit.setListSelection(pagerUnit.getCurrentIndex(), true);
 	}
 
-	private final Runnable mReturnToGalleryRunnable = () -> {
+	private final Runnable returnToGalleryRunnable = () -> {
 		switchMode(true, true);
 		invalidateListPosition();
 	};
 
 	private boolean returnToGallery() {
-		if (mGalleryWindow && !mGalleryMode) {
-			mPagerUnit.onBackToGallery();
-			mRootView.post(mReturnToGalleryRunnable);
+		if (galleryWindow && !galleryMode) {
+			pagerUnit.onBackToGallery();
+			rootView.post(returnToGalleryRunnable);
 			return true;
 		}
 		return false;
@@ -278,7 +278,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		menu.add(0, OPTIONS_MENU_SHARE_FILE, 0, R.string.action_share_file);
 		menu.add(0, OPTIONS_MENU_SELECT, 0, R.string.action_select).setIcon(set.getId(R.attr.actionSelect))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-		mActionMenuConfigurator.onAfterCreateOptionsMenu(menu);
+		actionMenuConfigurator.onAfterCreateOptionsMenu(menu);
 		return true;
 	}
 
@@ -287,34 +287,34 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		for (int i = 0; i < menu.size(); i++) {
 			menu.getItem(i).setVisible(false);
 		}
-		if (!mGalleryMode) {
-			PagerUnit.OptionsMenuCapabilities capabilities = mPagerUnit != null
-					? mPagerUnit.obtainOptionsMenuCapabilities() : null;
+		if (!galleryMode) {
+			PagerUnit.OptionsMenuCapabilities capabilities = pagerUnit != null
+					? pagerUnit.obtainOptionsMenuCapabilities() : null;
 			if (capabilities != null && capabilities.available) {
 				menu.findItem(OPTIONS_MENU_SAVE).setVisible(capabilities.save);
-				menu.findItem(OPTIONS_MENU_GALLERY).setVisible(!mGalleryWindow && mInstance.galleryItems.size() > 1);
+				menu.findItem(OPTIONS_MENU_GALLERY).setVisible(!galleryWindow && instance.galleryItems.size() > 1);
 				menu.findItem(OPTIONS_MENU_REFRESH).setVisible(capabilities.refresh);
 				menu.findItem(OPTIONS_MENU_TECHNICAL_INFO).setVisible(capabilities.viewTechnicalInfo);
 				menu.findItem(OPTIONS_MENU_SEARCH_IMAGE).setVisible(capabilities.searchImage);
 				menu.findItem(OPTIONS_MENU_COPY_LINK).setVisible(true);
-				menu.findItem(OPTIONS_MENU_NAVIGATE_POST).setVisible(mAllowGoToPost && !mScrollThread
+				menu.findItem(OPTIONS_MENU_NAVIGATE_POST).setVisible(allowGoToPost && !scrollThread
 						&& capabilities.navigatePost);
 				menu.findItem(OPTIONS_MENU_SHARE_LINK).setVisible(true);
 				menu.findItem(OPTIONS_MENU_SHARE_FILE).setVisible(capabilities.shareFile);
 			}
 		} else {
-			menu.findItem(OPTIONS_MENU_SELECT).setVisible(mListUnit.areItemsSelectable());
+			menu.findItem(OPTIONS_MENU_SELECT).setVisible(listUnit.areItemsSelectable());
 		}
-		mActionMenuConfigurator.onAfterPrepareOptionsMenu(menu);
+		actionMenuConfigurator.onAfterPrepareOptionsMenu(menu);
 		return true;
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		GalleryItem galleryItem = mPagerUnit != null ? mPagerUnit.getCurrentGalleryItem() : null;
+		GalleryItem galleryItem = pagerUnit != null ? pagerUnit.getCurrentGalleryItem() : null;
 		switch (item.getItemId()) {
 			case android.R.id.home: {
-				NavigationUtils.handleGalleryUpButtonClick(this, mOverrideUpButton, mInstance.chanName, galleryItem);
+				NavigationUtils.handleGalleryUpButtonClick(this, overrideUpButton, instance.chanName, galleryItem);
 				break;
 			}
 			case OPTIONS_MENU_SAVE: {
@@ -322,27 +322,27 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 				break;
 			}
 			case OPTIONS_MENU_GALLERY: {
-				mGalleryWindow = true;
+				galleryWindow = true;
 				switchMode(true, true);
 				invalidateListPosition();
 				break;
 			}
 			case OPTIONS_MENU_REFRESH: {
-				mPagerUnit.refreshCurrent();
+				pagerUnit.refreshCurrent();
 				break;
 			}
 			case OPTIONS_MENU_TECHNICAL_INFO: {
-				mPagerUnit.viewTechnicalInfo();
+				pagerUnit.viewTechnicalInfo();
 				break;
 			}
 			case OPTIONS_MENU_SEARCH_IMAGE: {
-				mPagerUnit.forcePauseVideo();
-				NavigationUtils.searchImage(this, mInstance.chanName,
-						galleryItem.getDisplayImageUri(mInstance.locator));
+				pagerUnit.forcePauseVideo();
+				NavigationUtils.searchImage(this, instance.chanName,
+						galleryItem.getDisplayImageUri(instance.locator));
 				break;
 			}
 			case OPTIONS_MENU_COPY_LINK: {
-				StringUtils.copyToClipboard(this, galleryItem.getFileUri(mInstance.locator).toString());
+				StringUtils.copyToClipboard(this, galleryItem.getFileUri(instance.locator).toString());
 				break;
 			}
 			case OPTIONS_MENU_NAVIGATE_POST: {
@@ -350,23 +350,23 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 				break;
 			}
 			case OPTIONS_MENU_SHARE_LINK: {
-				mPagerUnit.forcePauseVideo();
-				NavigationUtils.share(this, galleryItem.getFileUri(mInstance.locator));
+				pagerUnit.forcePauseVideo();
+				NavigationUtils.share(this, galleryItem.getFileUri(instance.locator));
 				break;
 			}
 			case OPTIONS_MENU_SHARE_FILE: {
-				mPagerUnit.forcePauseVideo();
-				Uri uri = galleryItem.getFileUri(mInstance.locator);
+				pagerUnit.forcePauseVideo();
+				Uri uri = galleryItem.getFileUri(instance.locator);
 				File file = CacheManager.getInstance().getMediaFile(uri, false);
 				if (file == null) {
 					ToastUtils.show(this, R.string.message_cache_unavailable);
 				} else {
-					NavigationUtils.shareFile(this, file, galleryItem.getFileName(mInstance.locator));
+					NavigationUtils.shareFile(this, file, galleryItem.getFileName(instance.locator));
 				}
 				break;
 			}
 			case OPTIONS_MENU_SELECT: {
-				mListUnit.startSelectionMode();
+				listUnit.startSelectionMode();
 				break;
 			}
 		}
@@ -375,7 +375,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 
 	@Override
 	public void downloadGalleryItem(GalleryItem galleryItem) {
-		galleryItem.downloadStorage(this, mInstance.locator, mThreadTitle);
+		galleryItem.downloadStorage(this, instance.locator, threadTitle);
 	}
 
 	@Override
@@ -395,24 +395,24 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 					threadNumber = null;
 				}
 			}
-			requestItems.add(new DownloadManager.RequestItem(galleryItem.getFileUri(mInstance.locator),
-					galleryItem.getFileName(mInstance.locator), galleryItem.originalName));
+			requestItems.add(new DownloadManager.RequestItem(galleryItem.getFileUri(instance.locator),
+					galleryItem.getFileName(instance.locator), galleryItem.originalName));
 		}
 		if (requestItems.size() > 0) {
-			DownloadManager.getInstance().downloadStorage(this, requestItems, mInstance.chanName,
-					boardName, threadNumber, mThreadTitle, true);
+			DownloadManager.getInstance().downloadStorage(this, requestItems, instance.chanName,
+					boardName, threadNumber, threadTitle, true);
 		}
 	}
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		if (mPagerUnit != null) {
-			outState.putInt(EXTRA_POSITION, mPagerUnit.getCurrentIndex());
+		if (pagerUnit != null) {
+			outState.putInt(EXTRA_POSITION, pagerUnit.getCurrentIndex());
 		}
-		outState.putBoolean(EXTRA_GALLERY_WINDOW, mGalleryWindow);
-		outState.putBoolean(EXTRA_GALLERY_MODE, mGalleryMode);
-		outState.putBoolean(EXTRA_SYSTEM_UI_VISIBILITY, FlagUtils.get(mSystemUiVisibilityFlags,
+		outState.putBoolean(EXTRA_GALLERY_WINDOW, galleryWindow);
+		outState.putBoolean(EXTRA_GALLERY_MODE, galleryMode);
+		outState.putBoolean(EXTRA_SYSTEM_UI_VISIBILITY, FlagUtils.get(systemUiVisibilityFlags,
 				GalleryInstance.FLAG_LOCKED_USER));
 	}
 
@@ -420,13 +420,13 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 	public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
 		ViewUtils.applyToolbarStyle(this, null);
-		if (mListUnit != null) {
-			mListUnit.onConfigurationChanged(newConfig);
+		if (listUnit != null) {
+			listUnit.onConfigurationChanged(newConfig);
 		}
-		if (mPagerUnit != null) {
-			mPagerUnit.onConfigurationChanged(newConfig);
+		if (pagerUnit != null) {
+			pagerUnit.onConfigurationChanged(newConfig);
 		}
-		mActionMenuConfigurator.onConfigurationChanged(newConfig);
+		actionMenuConfigurator.onConfigurationChanged(newConfig);
 		invalidateSystemUiVisibility();
 	}
 
@@ -434,16 +434,16 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 
 	private void switchMode(boolean galleryMode, boolean animated) {
 		int duration = animated ? GALLERY_TRANSITION_DURATION : 0;
-		mPagerUnit.switchMode(galleryMode, duration);
-		mListUnit.switchMode(galleryMode, duration);
+		pagerUnit.switchMode(galleryMode, duration);
+		listUnit.switchMode(galleryMode, duration);
 		if (galleryMode) {
-			int count = mInstance.galleryItems.size();
+			int count = instance.galleryItems.size();
 			setTitle(R.string.action_gallery);
 			getActionBar().setSubtitle(getResources().getQuantityString(R.plurals.text_several_files_count_format,
 					count, count));
 		}
 		modifySystemUiVisibility(GalleryInstance.FLAG_LOCKED_GRID, galleryMode);
-		mGalleryMode = galleryMode;
+		this.galleryMode = galleryMode;
 		if (galleryMode) {
 			new CornerAnimator(0xa0, 0xc0);
 		} else {
@@ -455,73 +455,73 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private class CornerAnimator implements Runnable {
-		private final long mStartTime = System.currentTimeMillis();
+		private final long startTime = System.currentTimeMillis();
 
-		private final int mFromActionBarAlpha;
-		private final int mToActionBarAlpha;
-		private final int mFromStatusBarAlpha;
-		private final int mToStatusBarAlpha;
+		private final int fromActionBarAlpha;
+		private final int toActionBarAlpha;
+		private final int fromStatusBarAlpha;
+		private final int toStatusBarAlpha;
 
 		private static final int INTERVAL = 200;
 
 		public CornerAnimator(int actionBarAlpha, int statusBarAlpha) {
-			Drawable drawable = mActionBar.getBackground();
-			mFromActionBarAlpha = Color.alpha(drawable instanceof ColorDrawable
+			Drawable drawable = actionBar.getBackground();
+			fromActionBarAlpha = Color.alpha(drawable instanceof ColorDrawable
 					? ((ColorDrawable) drawable).getColor() : statusBarAlpha);
-			mToActionBarAlpha = actionBarAlpha;
+			toActionBarAlpha = actionBarAlpha;
 			if (C.API_LOLLIPOP) {
-				mFromStatusBarAlpha = Color.alpha(getWindow().getStatusBarColor());
-				mToStatusBarAlpha = statusBarAlpha;
+				fromStatusBarAlpha = Color.alpha(getWindow().getStatusBarColor());
+				toStatusBarAlpha = statusBarAlpha;
 			} else {
-				mFromStatusBarAlpha = 0x00;
-				mToStatusBarAlpha = 0x00;
+				fromStatusBarAlpha = 0x00;
+				toStatusBarAlpha = 0x00;
 			}
-			if (mFromActionBarAlpha != mToActionBarAlpha || mFromStatusBarAlpha != mToStatusBarAlpha) {
+			if (fromActionBarAlpha != toActionBarAlpha || fromStatusBarAlpha != toStatusBarAlpha) {
 				run();
 			}
 		}
 
 		@Override
 		public void run() {
-			float t = Math.min((float) (System.currentTimeMillis() - mStartTime) / INTERVAL, 1f);
-			int actionBarColorAlpha = (int) AnimationUtils.lerp(mFromActionBarAlpha, mToActionBarAlpha, t);
-			mActionBar.setBackgroundColor((actionBarColorAlpha << 24) | (0x00ffffff & ACTION_BAR_COLOR));
+			float t = Math.min((float) (System.currentTimeMillis() - startTime) / INTERVAL, 1f);
+			int actionBarColorAlpha = (int) AnimationUtils.lerp(fromActionBarAlpha, toActionBarAlpha, t);
+			actionBar.setBackgroundColor((actionBarColorAlpha << 24) | (0x00ffffff & ACTION_BAR_COLOR));
 			if (C.API_LOLLIPOP) {
-				int statusBarColorAlpha = (int) AnimationUtils.lerp(mFromStatusBarAlpha, mToStatusBarAlpha, t);
+				int statusBarColorAlpha = (int) AnimationUtils.lerp(fromStatusBarAlpha, toStatusBarAlpha, t);
 				int color = (statusBarColorAlpha << 24) | (0x00ffffff & ACTION_BAR_COLOR);
 				Window window = getWindow();
 				window.setStatusBarColor(color);
 				window.setNavigationBarColor(color);
 			}
 			if (t < 1f) {
-				mRootView.postOnAnimation(this);
+				rootView.postOnAnimation(this);
 			}
 		}
 	}
 
 	@Override
 	public void modifyVerticalSwipeState(float value) {
-		if (!mGalleryWindow) {
-			mBackgroundDrawable.setAlpha((int) (0xff * (1f - value)));
+		if (!galleryWindow) {
+			backgroundDrawable.setAlpha((int) (0xff * (1f - value)));
 		}
 	}
 
 	@Override
 	public void updateTitle() {
-		GalleryItem galleryItem = mPagerUnit.getCurrentGalleryItem();
+		GalleryItem galleryItem = pagerUnit.getCurrentGalleryItem();
 		if (galleryItem != null) {
-			setTitle(galleryItem, mPagerUnit.getCurrentIndex(), galleryItem.size);
+			setTitle(galleryItem, pagerUnit.getCurrentIndex(), galleryItem.size);
 		}
 	}
 
 	private void setTitle(GalleryItem galleryItem, int position, int size) {
-		String fileName = galleryItem.getFileName(mInstance.locator);
+		String fileName = galleryItem.getFileName(instance.locator);
 		String originalName = galleryItem.originalName;
 		if (originalName != null) {
 			fileName = originalName;
 		}
 		setTitle(fileName);
-		int count = mInstance.galleryItems.size();
+		int count = instance.galleryItems.size();
 		StringBuilder builder = new StringBuilder().append(position + 1).append('/').append(count);
 		if (size > 0) {
 			builder.append(", ").append(AttachmentItem.formatSize(size));
@@ -539,13 +539,13 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 	@Override
 	public void navigatePageFromList(int position) {
 		switchMode(false, true);
-		mPagerUnit.navigatePageFromList(position, GALLERY_TRANSITION_DURATION);
+		pagerUnit.navigatePageFromList(position, GALLERY_TRANSITION_DURATION);
 	}
 
 	@Override
 	public void navigatePost(GalleryItem galleryItem, boolean force) {
-		if (mAllowGoToPost && (mScrollThread || force)) {
-			Intent intent = new Intent(C.ACTION_GALLERY_GO_TO_POST).putExtra(C.EXTRA_CHAN_NAME, mInstance.chanName)
+		if (allowGoToPost && (scrollThread || force)) {
+			Intent intent = new Intent(C.ACTION_GALLERY_GO_TO_POST).putExtra(C.EXTRA_CHAN_NAME, instance.chanName)
 					.putExtra(C.EXTRA_BOARD_NAME, galleryItem.boardName).putExtra(C.EXTRA_THREAD_NUMBER,
 					galleryItem.threadNumber).putExtra(C.EXTRA_POST_NUMBER, galleryItem.postNumber);
 			LocalBroadcastManager.getInstance(GalleryActivity.this).sendBroadcast(intent);
@@ -567,16 +567,16 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 
 	@Override
 	public boolean isGalleryWindow() {
-		return mGalleryWindow;
+		return galleryWindow;
 	}
 
 	@Override
 	public boolean isGalleryMode() {
-		return mGalleryMode;
+		return galleryMode;
 	}
 
-	private boolean mExpandedScreen;
-	private int mSystemUiVisibilityFlags = GalleryInstance.FLAG_LOCKED_USER;
+	private boolean expandedScreen;
+	private int systemUiVisibilityFlags = GalleryInstance.FLAG_LOCKED_USER;
 
 	@TargetApi(Build.VERSION_CODES.KITKAT)
 	private void invalidateSystemUiVisibility() {
@@ -587,48 +587,48 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		} else {
 			actionBar.hide();
 		}
-		if (C.API_LOLLIPOP && mExpandedScreen) {
+		if (C.API_LOLLIPOP && expandedScreen) {
 			View decorView = getWindow().getDecorView();
 			int visibility = decorView.getSystemUiVisibility();
 			visibility = FlagUtils.set(visibility, View.SYSTEM_UI_FLAG_FULLSCREEN |
 					View.SYSTEM_UI_FLAG_IMMERSIVE | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION, !visible);
 			decorView.setSystemUiVisibility(visibility);
 		}
-		if (mPagerUnit != null) {
-			mPagerUnit.invalidateControlsVisibility();
+		if (pagerUnit != null) {
+			pagerUnit.invalidateControlsVisibility();
 		}
 	}
 
 	private void postInvalidateSystemUIVisibility() {
-		mRootView.post(() -> invalidateSystemUiVisibility());
+		rootView.post(() -> invalidateSystemUiVisibility());
 	}
 
 	@Override
 	public boolean isSystemUiVisible() {
-		return mSystemUiVisibilityFlags != 0;
+		return systemUiVisibilityFlags != 0;
 	}
 
 	@Override
 	public void modifySystemUiVisibility(int flag, boolean value) {
-		mSystemUiVisibilityFlags = FlagUtils.set(mSystemUiVisibilityFlags, flag, value);
+		systemUiVisibilityFlags = FlagUtils.set(systemUiVisibilityFlags, flag, value);
 		invalidateSystemUiVisibility();
 	}
 
 	@Override
 	public void toggleSystemUIVisibility(int flag) {
-		modifySystemUiVisibility(flag, !FlagUtils.get(mSystemUiVisibilityFlags, flag));
+		modifySystemUiVisibility(flag, !FlagUtils.get(systemUiVisibilityFlags, flag));
 	}
 
 	@Override
 	public void onApplyWindowPaddings(WindowControlFrameLayout view, Rect rect) {
-		if (mListUnit != null) {
-			boolean invalidate = mListUnit.onApplyWindowPaddings(rect);
+		if (listUnit != null) {
+			boolean invalidate = listUnit.onApplyWindowPaddings(rect);
 			if (invalidate) {
 				postInvalidateSystemUIVisibility();
 			}
 		}
-		if (mPagerUnit != null) {
-			mPagerUnit.onApplyWindowPaddings(rect);
+		if (pagerUnit != null) {
+			pagerUnit.onApplyWindowPaddings(rect);
 		}
 	}
 }

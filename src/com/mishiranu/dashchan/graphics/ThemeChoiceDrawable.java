@@ -29,17 +29,17 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 
 public class ThemeChoiceDrawable extends Drawable {
-	private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-	private final RectF mRectF = new RectF();
+	private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+	private final RectF rectF = new RectF();
 
-	private final int mBackground;
-	private final int mPrimary;
-	private final int mAccent;
+	private final int background;
+	private final int primary;
+	private final int accent;
 
 	public ThemeChoiceDrawable(int colorBackground, int colorPrimary, int colorAccent) {
-		mBackground = colorBackground;
-		mPrimary = colorPrimary;
-		mAccent = colorAccent;
+		background = colorBackground;
+		primary = colorPrimary;
+		accent = colorAccent;
 	}
 
 	@Override
@@ -48,21 +48,21 @@ public class ThemeChoiceDrawable extends Drawable {
 		int radius = Math.min(bounds.width(), bounds.height()) / 2;
 		int cx = bounds.centerX();
 		int cy = bounds.centerY();
-		Paint paint = mPaint;
-		paint.setColor(mBackground);
+		Paint paint = this.paint;
+		paint.setColor(background);
 		canvas.drawCircle(cx, cy, radius * 1f, paint);
-		if (mAccent != mPrimary && mAccent != Color.TRANSPARENT) {
-			RectF rectF = mRectF;
+		if (accent != primary && accent != Color.TRANSPARENT) {
+			RectF rectF = this.rectF;
 			applyRectRadius(rectF, cx, cy, radius * 0.8f);
-			paint.setColor(mAccent);
+			paint.setColor(accent);
 			canvas.drawArc(rectF, -20, 130, true, paint);
-			paint.setColor(mBackground);
+			paint.setColor(background);
 			canvas.drawCircle(cx, cy, radius * 0.7f, paint);
-			paint.setColor(mPrimary);
+			paint.setColor(primary);
 			canvas.drawCircle(cx, cy, radius * 0.65f, paint);
 			canvas.drawArc(rectF, 114, 222, true, paint);
 		} else {
-			paint.setColor(mPrimary);
+			paint.setColor(primary);
 			canvas.drawCircle(cx, cy, radius * 0.8f, paint);
 		}
 	}

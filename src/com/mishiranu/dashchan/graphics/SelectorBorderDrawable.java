@@ -30,32 +30,32 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 public class SelectorBorderDrawable extends Drawable {
 	private static final int THICKNESS_DP = 2;
 
-	private final Paint mPaint;
-	private final float mDensity;
+	private final Paint paint;
+	private final float density;
 
 	public SelectorBorderDrawable(Context context) {
-		mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-		mPaint.setColor(Color.WHITE);
-		mDensity = ResourceUtils.obtainDensity(context);
+		paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+		paint.setColor(Color.WHITE);
+		density = ResourceUtils.obtainDensity(context);
 	}
 
-	private boolean mSelected = false;
+	private boolean selected = false;
 
 	public void setSelected(boolean selected) {
-		mSelected = selected;
+		this.selected = selected;
 		invalidateSelf();
 	}
 
 	@Override
 	public void draw(Canvas canvas) {
-		if (mSelected) {
+		if (selected) {
 			canvas.drawColor(0x44ffffff);
 			Rect bounds = getBounds();
-			int thickness = (int) (THICKNESS_DP * mDensity);
-			canvas.drawRect(bounds.top, bounds.left, bounds.right, bounds.top + thickness, mPaint);
-			canvas.drawRect(bounds.bottom - thickness, bounds.left, bounds.right, bounds.bottom, mPaint);
-			canvas.drawRect(bounds.top, bounds.left, bounds.left + thickness, bounds.bottom, mPaint);
-			canvas.drawRect(bounds.top, bounds.right - thickness, bounds.right, bounds.bottom, mPaint);
+			int thickness = (int) (THICKNESS_DP * density);
+			canvas.drawRect(bounds.top, bounds.left, bounds.right, bounds.top + thickness, paint);
+			canvas.drawRect(bounds.bottom - thickness, bounds.left, bounds.right, bounds.bottom, paint);
+			canvas.drawRect(bounds.top, bounds.left, bounds.left + thickness, bounds.bottom, paint);
+			canvas.drawRect(bounds.top, bounds.right - thickness, bounds.right, bounds.bottom, paint);
 		}
 	}
 

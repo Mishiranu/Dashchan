@@ -27,60 +27,60 @@ import com.mishiranu.dashchan.content.model.ErrorItem;
 public final class HttpException extends Exception implements ErrorItem.Holder {
 	private static final long serialVersionUID = 1L;
 
-	private final int mResponseCode;
-	private final String mResponseText;
-	private final int mErrorItemType;
+	private final int responseCode;
+	private final String responseText;
+	private final int errorItemType;
 
-	private final boolean mHttpException;
-	private final boolean mSocketException;
+	private final boolean httpException;
+	private final boolean socketException;
 
 	public HttpException(int errorItemType, boolean httpException, boolean socketException) {
-		mResponseCode = 0;
-		mErrorItemType = errorItemType;
-		mResponseText = null;
-		mHttpException = httpException;
-		mSocketException = socketException;
+		this.responseCode = 0;
+		this.errorItemType = errorItemType;
+		this.responseText = null;
+		this.httpException = httpException;
+		this.socketException = socketException;
 	}
 
 	public HttpException(int errorItemType, boolean httpException, boolean socketException, Throwable throwable) {
 		super(throwable);
-		mResponseCode = 0;
-		mErrorItemType = errorItemType;
-		mResponseText = null;
-		mHttpException = httpException;
-		mSocketException = socketException;
+		this.responseCode = 0;
+		this.errorItemType = errorItemType;
+		this.responseText = null;
+		this.httpException = httpException;
+		this.socketException = socketException;
 	}
 
 	@Public
 	public HttpException(int responseCode, String responseText) {
-		mResponseCode = responseCode;
-		mErrorItemType = 0;
-		mResponseText = responseText;
-		mHttpException = true;
-		mSocketException = false;
+		this.responseCode = responseCode;
+		this.errorItemType = 0;
+		this.responseText = responseText;
+		this.httpException = true;
+		this.socketException = false;
 	}
 
 	@Public
 	public int getResponseCode() {
-		return mResponseCode;
+		return responseCode;
 	}
 
 	@Public
 	public boolean isHttpException() {
-		return mHttpException;
+		return httpException;
 	}
 
 	@Public
 	public boolean isSocketException() {
-		return mSocketException;
+		return socketException;
 	}
 
 	@Override
 	public ErrorItem getErrorItemAndHandle() {
-		if (!StringUtils.isEmpty(mResponseText)) {
-			return new ErrorItem(mResponseCode, mResponseText);
+		if (!StringUtils.isEmpty(responseText)) {
+			return new ErrorItem(responseCode, responseText);
 		}
-		return new ErrorItem(mErrorItemType);
+		return new ErrorItem(errorItemType);
 	}
 
 	@Public

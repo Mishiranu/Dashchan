@@ -92,14 +92,14 @@ public class EmbeddedManager {
 				true, forcedName);
 	}
 
-	private final HashMap<String, Uri> mSoundcloudUriMap = new HashMap<>();
+	private final HashMap<String, Uri> soundcloudUriMap = new HashMap<>();
 
 	public Uri doReadRealUri(Uri uri, HttpHolder holder) throws HttpException, InvalidResponseException {
 		if ("soundcloud.com".equals(uri.getHost()) && !StringUtils.isEmpty(C.API_KEY_SOUNDCLOUD)) {
 			String path = uri.getPath();
 			Uri resultUri;
-			synchronized (mSoundcloudUriMap) {
-				resultUri = mSoundcloudUriMap.get(path);
+			synchronized (soundcloudUriMap) {
+				resultUri = soundcloudUriMap.get(path);
 			}
 			if (resultUri == null) {
 				uri = ChanLocator.getDefault().buildQueryWithHost("api.soundcloud.com", "resolve.json",
@@ -117,8 +117,8 @@ public class EmbeddedManager {
 				}
 				resultUri = Uri.parse(uriString).buildUpon().scheme("http").appendQueryParameter("client_id",
 						C.API_KEY_SOUNDCLOUD).build();
-				synchronized (mSoundcloudUriMap) {
-					mSoundcloudUriMap.put(path, resultUri);
+				synchronized (soundcloudUriMap) {
+					soundcloudUriMap.put(path, resultUri);
 				}
 			}
 			return resultUri;

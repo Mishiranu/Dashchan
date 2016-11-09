@@ -40,19 +40,19 @@ import com.mishiranu.dashchan.widget.ListPosition;
 public class PageManager {
 	private static final String EXTRA_SAVED_PAGES = "savedPages";
 
-	private PageHolder mPageHolder;
-	private final ArrayList<PageHolder> mPageHolders = new ArrayList<>();
+	private PageHolder pageHolder;
+	private final ArrayList<PageHolder> pageHolders = new ArrayList<>();
 
 	public PageHolder getCurrentPage() {
-		return mPageHolder;
+		return pageHolder;
 	}
 
 	public ArrayList<PageHolder> getPages() {
-		return mPageHolders;
+		return pageHolders;
 	}
 
 	public void save(Bundle outState) {
-		outState.putParcelableArrayList(EXTRA_SAVED_PAGES, mPageHolders);
+		outState.putParcelableArrayList(EXTRA_SAVED_PAGES, pageHolders);
 	}
 
 	public PageHolder restore(Bundle inState) {
@@ -61,10 +61,10 @@ public class PageManager {
 			PageHolder savedCurrentPage = null;
 			ArrayList<PageHolder> savedPages = inState.getParcelableArrayList(EXTRA_SAVED_PAGES);
 			if (savedPages != null) {
-				mPageHolders.ensureCapacity(savedPages.size());
+				pageHolders.ensureCapacity(savedPages.size());
 				for (PageHolder pageHolder : savedPages) {
 					if (chanNames.contains(pageHolder.chanName)) {
-						mPageHolders.add(pageHolder);
+						pageHolders.add(pageHolder);
 						if (pageHolder.inStack) {
 							savedCurrentPage = pageHolder;
 						}
@@ -116,7 +116,7 @@ public class PageManager {
 				bundle.readFromParcel(parcel);
 				return bundle;
 			} catch (IOException e) {
-				// Ignore
+				// Ignore exception
 			} finally {
 				IOUtils.close(input);
 				parcel.recycle();
@@ -161,28 +161,28 @@ public class PageManager {
 		if (pageHolder != null) {
 			position = pageHolder.position;
 			extra = pageHolder.extra;
-			mPageHolders.remove(pageHolder);
+			pageHolders.remove(pageHolder);
 		}
 		pageHolder = new PageHolder(content, chanName, boardName, threadNumber, threadTitle, searchQuery);
 
-		if (mPageHolder != null && !mPageHolder.inStack && mPageHolder.canDestroyIfNotInStack()) {
-			mPageHolders.remove(mPageHolder);
+		if (this.pageHolder != null && !this.pageHolder.inStack && this.pageHolder.canDestroyIfNotInStack()) {
+			pageHolders.remove(this.pageHolder);
 		}
 
-		mPageHolders.add(pageHolder);
+		pageHolders.add(pageHolder);
 		pageHolder.position = position;
 		pageHolder.extra = extra;
-		mPageHolder = pageHolder;
+		this.pageHolder = pageHolder;
 
 		boolean mergeChans = Preferences.isMergeChans();
 		int depth = 0;
 		// Remove deep search, boards, etc pages if they are deep in stack
-		for (int i = mPageHolders.size() - 1; i >= 0; i--) {
-			PageHolder workPageHolder = mPageHolders.get(i);
+		for (int i = pageHolders.size() - 1; i >= 0; i--) {
+			PageHolder workPageHolder = pageHolders.get(i);
 			if (workPageHolder.inStack && (mergeChans || workPageHolder.chanName.equals(chanName))) {
 				if (depth++ >= 2 && workPageHolder.canRemoveFromStackIfDeep()) {
 					if (workPageHolder.canDestroyIfNotInStack()) {
-						mPageHolders.remove(i);
+						pageHolders.remove(i);
 					} else {
 						workPageHolder.inStack = false;
 					}
@@ -195,7 +195,7 @@ public class PageManager {
 	public int getStackSize(String chanName) {
 		boolean mergeChans = Preferences.isMergeChans();
 		int count = 0;
-		for (PageHolder pageHolder : mPageHolders) {
+		for (PageHolder pageHolder : pageHolders) {
 			if (pageHolder.inStack && (mergeChans || pageHolder.chanName.equals(chanName))) {
 				count++;
 			}
@@ -204,15 +204,15 @@ public class PageManager {
 	}
 
 	public int getStackSize() {
-		return getStackSize(mPageHolder.chanName);
+		return getStackSize(pageHolder.chanName);
 	}
 
 	public PageHolder getTargetPreviousPage() {
 		boolean mergeChans = Preferences.isMergeChans();
-		int current = mPageHolders.indexOf(mPageHolder);
+		int current = pageHolders.indexOf(pageHolder);
 		for (int i = current - 1; i >= 0; i--) {
-			PageHolder pageHolder = mPageHolders.get(i);
-			if (pageHolder.inStack && (mergeChans || pageHolder.chanName.equals(mPageHolder.chanName))) {
+			PageHolder pageHolder = pageHolders.get(i);
+			if (pageHolder.inStack && (mergeChans || pageHolder.chanName.equals(this.pageHolder.chanName))) {
 				return pageHolder;
 			}
 		}
@@ -221,8 +221,8 @@ public class PageManager {
 
 	public PageHolder getLastPage(String chanName) {
 		boolean mergeChans = Preferences.isMergeChans();
-		for (int i = mPageHolders.size() - 1; i >= 0; i--) {
-			PageHolder pageHolder = mPageHolders.get(i);
+		for (int i = pageHolders.size() - 1; i >= 0; i--) {
+			PageHolder pageHolder = pageHolders.get(i);
 			if (pageHolder.inStack && (mergeChans || pageHolder.chanName.equals(chanName))) {
 				return pageHolder;
 			}
@@ -231,21 +231,21 @@ public class PageManager {
 	}
 
 	public void removeCurrentPageFromStack() {
-		mPageHolder.inStack = false;
-		if (mPageHolder.isThreadsOrPosts() && Preferences.isCloseOnBack()) {
-			mPageHolders.remove(mPageHolder);
+		pageHolder.inStack = false;
+		if (pageHolder.isThreadsOrPosts() && Preferences.isCloseOnBack()) {
+			pageHolders.remove(pageHolder);
 		}
 	}
 
 	public void removeCurrentPage() {
-		mPageHolders.remove(mPageHolder);
+		pageHolders.remove(pageHolder);
 	}
 
 	public void clearStack() {
 		boolean mergeChans = Preferences.isMergeChans();
 		boolean closeOnBack = Preferences.isCloseOnBack();
-		String chanName = mPageHolder.chanName;
-		Iterator<PageHolder> iterator = mPageHolders.iterator();
+		String chanName = pageHolder.chanName;
+		Iterator<PageHolder> iterator = pageHolders.iterator();
 		while (iterator.hasNext()) {
 			PageHolder pageHolder = iterator.next();
 			if (mergeChans || pageHolder.chanName.equals(chanName)) {
@@ -258,13 +258,13 @@ public class PageManager {
 	}
 
 	public void moveCurrentPageTop() {
-		mPageHolder.inStack = true;
-		mPageHolders.remove(mPageHolder);
-		mPageHolders.add(mPageHolder);
+		pageHolder.inStack = true;
+		pageHolders.remove(pageHolder);
+		pageHolders.add(pageHolder);
 	}
 
 	public PageHolder get(String chanName, String boardName, String threadNumber, PageHolder.Content content) {
-		for (PageHolder pageHolder : mPageHolders) {
+		for (PageHolder pageHolder : pageHolders) {
 			if (pageHolder.is(chanName, boardName, threadNumber, content)) {
 				return pageHolder;
 			}
@@ -274,8 +274,8 @@ public class PageManager {
 
 	public void closeAllExcept(PageHolder exceptPageHolder) {
 		boolean mergeChans = Preferences.isMergeChans();
-		String chanName = mPageHolder.chanName;
-		Iterator<PageHolder> iterator = mPageHolders.iterator();
+		String chanName = pageHolder.chanName;
+		Iterator<PageHolder> iterator = pageHolders.iterator();
 		while (iterator.hasNext()) {
 			PageHolder pageHolder = iterator.next();
 			if (exceptPageHolder != pageHolder && (mergeChans || pageHolder.chanName.equals(chanName))) {
@@ -284,8 +284,8 @@ public class PageManager {
 				} else {
 					pageHolder.inStack = false;
 				}
-				if (mPageHolder == pageHolder) {
-					mPageHolder = null;
+				if (this.pageHolder == pageHolder) {
+					this.pageHolder = null;
 				}
 			}
 		}
@@ -296,7 +296,7 @@ public class PageManager {
 	}
 
 	public boolean isSingleBoardMode() {
-		return isSingleBoardMode(mPageHolder.chanName);
+		return isSingleBoardMode(pageHolder.chanName);
 	}
 
 	public String getSingleBoardName(String chanName) {

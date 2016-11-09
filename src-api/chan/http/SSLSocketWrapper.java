@@ -30,325 +30,325 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 
 public class SSLSocketWrapper extends SSLSocket {
-	private final SSLSocket mWrapped;
+	private final SSLSocket wrapped;
 
 	public SSLSocketWrapper(SSLSocket socket) {
-		mWrapped = socket;
+		wrapped = socket;
 	}
 
 	@Override
 	public void addHandshakeCompletedListener(HandshakeCompletedListener listener) {
-		mWrapped.addHandshakeCompletedListener(listener);
+		wrapped.addHandshakeCompletedListener(listener);
 	}
 
 	@Override
 	public boolean getEnableSessionCreation() {
-		return mWrapped.getEnableSessionCreation();
+		return wrapped.getEnableSessionCreation();
 	}
 
 	@Override
 	public String[] getEnabledCipherSuites() {
-		return mWrapped.getEnabledCipherSuites();
+		return wrapped.getEnabledCipherSuites();
 	}
 
 	@Override
 	public String[] getEnabledProtocols() {
-		return mWrapped.getEnabledProtocols();
+		return wrapped.getEnabledProtocols();
 	}
 
 	@Override
 	public boolean getNeedClientAuth() {
-		return mWrapped.getNeedClientAuth();
+		return wrapped.getNeedClientAuth();
 	}
 
 	@Override
 	public SSLSession getSession() {
-		return mWrapped.getSession();
+		return wrapped.getSession();
 	}
 
 	@Override
 	public String[] getSupportedCipherSuites() {
-		return mWrapped.getSupportedCipherSuites();
+		return wrapped.getSupportedCipherSuites();
 	}
 
 	@Override
 	public String[] getSupportedProtocols() {
-		return mWrapped.getSupportedProtocols();
+		return wrapped.getSupportedProtocols();
 	}
 
 	@Override
 	public boolean getUseClientMode() {
-		return mWrapped.getUseClientMode();
+		return wrapped.getUseClientMode();
 	}
 
 	@Override
 	public boolean getWantClientAuth() {
-		return mWrapped.getWantClientAuth();
+		return wrapped.getWantClientAuth();
 	}
 
 	@Override
 	public void removeHandshakeCompletedListener(HandshakeCompletedListener listener) {
-		mWrapped.removeHandshakeCompletedListener(listener);
+		wrapped.removeHandshakeCompletedListener(listener);
 	}
 
 	@Override
 	public void setEnableSessionCreation(boolean flag) {
-		mWrapped.setEnableSessionCreation(flag);
+		wrapped.setEnableSessionCreation(flag);
 	}
 
 	@Override
 	public void setEnabledCipherSuites(String[] suites) {
-		mWrapped.setEnabledCipherSuites(suites);
+		wrapped.setEnabledCipherSuites(suites);
 	}
 
 	@Override
 	public void setEnabledProtocols(String[] protocols) {
-		mWrapped.setEnabledProtocols(protocols);
+		wrapped.setEnabledProtocols(protocols);
 	}
 
 	@Override
 	public void setNeedClientAuth(boolean need) {
-		mWrapped.setNeedClientAuth(need);
+		wrapped.setNeedClientAuth(need);
 	}
 
 	@Override
 	public void setUseClientMode(boolean mode) {
-		mWrapped.setUseClientMode(mode);
+		wrapped.setUseClientMode(mode);
 	}
 
 	@Override
 	public void setWantClientAuth(boolean want) {
-		mWrapped.setWantClientAuth(want);
+		wrapped.setWantClientAuth(want);
 	}
 
 	@Override
 	public void startHandshake() throws IOException {
-		mWrapped.startHandshake();
+		wrapped.startHandshake();
 	}
 
 	@Override
 	public void bind(SocketAddress localAddr) throws IOException {
-		mWrapped.bind(localAddr);
+		wrapped.bind(localAddr);
 	}
 
 	@Override
 	public void connect(SocketAddress remoteAddr) throws IOException {
-		mWrapped.connect(remoteAddr);
+		wrapped.connect(remoteAddr);
 	}
 
 	@Override
 	public void connect(SocketAddress remoteAddr, int timeout) throws IOException {
-		mWrapped.connect(remoteAddr, timeout);
+		wrapped.connect(remoteAddr, timeout);
 	}
 
 	@Override
 	public synchronized void close() throws IOException {
-		mWrapped.close();
+		wrapped.close();
 	}
 
 	@SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
 	@Override
 	public boolean equals(Object o) {
-		return mWrapped.equals(o);
+		return wrapped.equals(o);
 	}
 
 	@Override
 	public SocketChannel getChannel() {
-		return mWrapped.getChannel();
+		return wrapped.getChannel();
 	}
 
 	@Override
 	public InetAddress getInetAddress() {
-		return mWrapped.getInetAddress();
+		return wrapped.getInetAddress();
 	}
 
 	@Override
 	public InputStream getInputStream() throws IOException {
-		return mWrapped.getInputStream();
+		return wrapped.getInputStream();
 	}
 
 	@Override
 	public boolean getKeepAlive() throws SocketException {
-		return mWrapped.getKeepAlive();
+		return wrapped.getKeepAlive();
 	}
 
 	@Override
 	public InetAddress getLocalAddress() {
-		return mWrapped.getLocalAddress();
+		return wrapped.getLocalAddress();
 	}
 
 	@Override
 	public int getLocalPort() {
-		return mWrapped.getLocalPort();
+		return wrapped.getLocalPort();
 	}
 
 	@Override
 	public SocketAddress getLocalSocketAddress() {
-		return mWrapped.getLocalSocketAddress();
+		return wrapped.getLocalSocketAddress();
 	}
 
 	@Override
 	public boolean getOOBInline() throws SocketException {
-		return mWrapped.getOOBInline();
+		return wrapped.getOOBInline();
 	}
 
 	@Override
 	public OutputStream getOutputStream() throws IOException {
-		return mWrapped.getOutputStream();
+		return wrapped.getOutputStream();
 	}
 
 	@Override
 	public int getPort() {
-		return mWrapped.getPort();
+		return wrapped.getPort();
 	}
 
 	@Override
 	public synchronized int getReceiveBufferSize() throws SocketException {
-		return mWrapped.getReceiveBufferSize();
+		return wrapped.getReceiveBufferSize();
 	}
 
 	@Override
 	public SocketAddress getRemoteSocketAddress() {
-		return mWrapped.getRemoteSocketAddress();
+		return wrapped.getRemoteSocketAddress();
 	}
 
 	@Override
 	public boolean getReuseAddress() throws SocketException {
-		return mWrapped.getReuseAddress();
+		return wrapped.getReuseAddress();
 	}
 
 	@Override
 	public synchronized int getSendBufferSize() throws SocketException {
-		return mWrapped.getSendBufferSize();
+		return wrapped.getSendBufferSize();
 	}
 
 	@Override
 	public int getSoLinger() throws SocketException {
-		return mWrapped.getSoLinger();
+		return wrapped.getSoLinger();
 	}
 
 	@Override
 	public synchronized int getSoTimeout() throws SocketException {
-		return mWrapped.getSoTimeout();
+		return wrapped.getSoTimeout();
 	}
 
 	@Override
 	public SSLParameters getSSLParameters() {
-		return mWrapped.getSSLParameters();
+		return wrapped.getSSLParameters();
 	}
 
 	@Override
 	public boolean getTcpNoDelay() throws SocketException {
-		return mWrapped.getTcpNoDelay();
+		return wrapped.getTcpNoDelay();
 	}
 
 	@Override
 	public int getTrafficClass() throws SocketException {
-		return mWrapped.getTrafficClass();
+		return wrapped.getTrafficClass();
 	}
 
 	@Override
 	public int hashCode() {
-		return mWrapped.hashCode();
+		return wrapped.hashCode();
 	}
 
 	@Override
 	public boolean isBound() {
-		return mWrapped.isBound();
+		return wrapped.isBound();
 	}
 
 	@Override
 	public boolean isClosed() {
-		return mWrapped.isClosed();
+		return wrapped.isClosed();
 	}
 
 	@Override
 	public boolean isConnected() {
-		return mWrapped.isConnected();
+		return wrapped.isConnected();
 	}
 
 	@Override
 	public boolean isInputShutdown() {
-		return mWrapped.isInputShutdown();
+		return wrapped.isInputShutdown();
 	}
 
 	@Override
 	public boolean isOutputShutdown() {
-		return mWrapped.isOutputShutdown();
+		return wrapped.isOutputShutdown();
 	}
 
 	@Override
 	public void sendUrgentData(int value) throws IOException {
-		mWrapped.sendUrgentData(value);
+		wrapped.sendUrgentData(value);
 	}
 
 	@Override
 	public void setKeepAlive(boolean keepAlive) throws SocketException {
-		mWrapped.setKeepAlive(keepAlive);
+		wrapped.setKeepAlive(keepAlive);
 	}
 
 	@Override
 	public void setOOBInline(boolean oobinline) throws SocketException {
-		mWrapped.setOOBInline(oobinline);
+		wrapped.setOOBInline(oobinline);
 	}
 
 	@Override
 	public void setPerformancePreferences(int connectionTime, int latency, int bandwidth) {
-		mWrapped.setPerformancePreferences(connectionTime, latency, bandwidth);
+		wrapped.setPerformancePreferences(connectionTime, latency, bandwidth);
 	}
 
 	@Override
 	public synchronized void setReceiveBufferSize(int size) throws SocketException {
-		mWrapped.setReceiveBufferSize(size);
+		wrapped.setReceiveBufferSize(size);
 	}
 
 	@Override
 	public void setReuseAddress(boolean reuse) throws SocketException {
-		mWrapped.setReuseAddress(reuse);
+		wrapped.setReuseAddress(reuse);
 	}
 
 	@Override
 	public synchronized void setSendBufferSize(int size) throws SocketException {
-		mWrapped.setSendBufferSize(size);
+		wrapped.setSendBufferSize(size);
 	}
 
 	@Override
 	public void setSoLinger(boolean on, int timeout) throws SocketException {
-		mWrapped.setSoLinger(on, timeout);
+		wrapped.setSoLinger(on, timeout);
 	}
 
 	@Override
 	public synchronized void setSoTimeout(int timeout) throws SocketException {
-		mWrapped.setSoTimeout(timeout);
+		wrapped.setSoTimeout(timeout);
 	}
 
 	@Override
 	public void setSSLParameters(SSLParameters p) {
-		mWrapped.setSSLParameters(p);
+		wrapped.setSSLParameters(p);
 	}
 
 	@Override
 	public void setTcpNoDelay(boolean on) throws SocketException {
-		mWrapped.setTcpNoDelay(on);
+		wrapped.setTcpNoDelay(on);
 	}
 
 	@Override
 	public void setTrafficClass(int value) throws SocketException {
-		mWrapped.setTrafficClass(value);
+		wrapped.setTrafficClass(value);
 	}
 
 	@Override
 	public void shutdownInput() throws IOException {
-		mWrapped.shutdownInput();
+		wrapped.shutdownInput();
 	}
 
 	@Override
 	public void shutdownOutput() throws IOException {
-		mWrapped.shutdownOutput();
+		wrapped.shutdownOutput();
 	}
 
 	@Override
 	public String toString() {
-		return mWrapped.toString();
+		return wrapped.toString();
 	}
 }

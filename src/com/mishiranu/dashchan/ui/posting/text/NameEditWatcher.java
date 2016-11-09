@@ -14,24 +14,24 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ErrorEditTextSetter;
 
 public class NameEditWatcher implements TextWatcher {
-	private final boolean mWatchTripcodeWarning;
-	private final EditText mNameView;
-	private final TextView mTripcodeWarning;
+	private final boolean watchTripcodeWarning;
+	private final EditText nameView;
+	private final TextView tripcodeWarning;
 
-	private final Runnable mLayoutCallback;
+	private final Runnable layoutCallback;
 
 	public NameEditWatcher(boolean watchTripcodeWarning, EditText nameView, TextView tripcodeWarning,
 			Runnable layoutCallback) {
-		mWatchTripcodeWarning = watchTripcodeWarning;
-		mNameView = nameView;
-		mTripcodeWarning = tripcodeWarning;
-		mLayoutCallback = layoutCallback;
+		this.watchTripcodeWarning = watchTripcodeWarning;
+		this.nameView = nameView;
+		this.tripcodeWarning = tripcodeWarning;
+		this.layoutCallback = layoutCallback;
 	}
 
-	private boolean mError = false;
+	private boolean error = false;
 
-	private ForegroundColorSpan mTripcodeSpan;
-	private ErrorEditTextSetter mErrorSetter;
+	private ForegroundColorSpan tripcodeSpan;
+	private ErrorEditTextSetter errorSetter;
 
 	@Override
 	public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -42,29 +42,29 @@ public class NameEditWatcher implements TextWatcher {
 	@Override
 	public void afterTextChanged(Editable s) {
 		int index = s.toString().indexOf('#');
-		if (mWatchTripcodeWarning) {
+		if (watchTripcodeWarning) {
 			boolean error = index >= 0;
-			if (mError != error) {
+			if (this.error != error) {
 				if (C.API_LOLLIPOP) {
-					if (mErrorSetter == null) {
-						mErrorSetter = new ErrorEditTextSetter(mNameView);
+					if (errorSetter == null) {
+						errorSetter = new ErrorEditTextSetter(nameView);
 					}
-					mErrorSetter.setError(error);
+					errorSetter.setError(error);
 				}
-				mTripcodeWarning.setVisibility(error ? View.VISIBLE : View.GONE);
-				mLayoutCallback.run();
-				mError = error;
+				tripcodeWarning.setVisibility(error ? View.VISIBLE : View.GONE);
+				layoutCallback.run();
+				this.error = error;
 			}
 		}
-		if (mTripcodeSpan != null) {
-			s.removeSpan(mTripcodeSpan);
+		if (tripcodeSpan != null) {
+			s.removeSpan(tripcodeSpan);
 		}
 		if (index >= 0) {
-			if (mTripcodeSpan == null) {
-				mTripcodeSpan = new ForegroundColorSpan(ResourceUtils.getColor(mNameView.getContext(),
-						mWatchTripcodeWarning ? R.attr.colorTextError : R.attr.colorTextTripcode));
+			if (tripcodeSpan == null) {
+				tripcodeSpan = new ForegroundColorSpan(ResourceUtils.getColor(nameView.getContext(),
+						watchTripcodeWarning ? R.attr.colorTextError : R.attr.colorTextTripcode));
 			}
-			s.setSpan(mTripcodeSpan, index, s.length(), SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
+			s.setSpan(tripcodeSpan, index, s.length(), SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
 		}
 	}
 }

@@ -31,35 +31,35 @@ public class EdgeEffectHandler {
 		public int getEdgeEffectShift(boolean top);
 	}
 
-	private int mShiftTop = 0;
-	private int mShiftBottom = 0;
+	private int shiftTop = 0;
+	private int shiftBottom = 0;
 
 	private class InternalShift implements Shift {
 		@Override
 		public int getEdgeEffectShift(boolean top) {
-			return top ? mShiftTop : mShiftBottom;
+			return top ? shiftTop : shiftBottom;
 		}
 	}
 
 	private static class ControlledEdgeEffect extends EdgeEffect {
-		private final Shift mShift;
-		private final boolean mTop;
+		private final Shift shift;
+		private final boolean top;
 
 		public ControlledEdgeEffect(Context context, Shift shift, boolean top) {
 			super(context);
-			mShift = shift;
-			mTop = top;
+			this.shift = shift;
+			this.top = top;
 		}
 
-		private boolean mPullable = true;
+		private boolean pullable = true;
 
 		public void setPullable(boolean pullable) {
-			mPullable = pullable;
+			this.pullable = pullable;
 		}
 
 		@Override
 		public void onPull(float deltaDistance) {
-			if (mPullable) {
+			if (pullable) {
 				super.onPull(deltaDistance);
 			}
 		}
@@ -67,39 +67,39 @@ public class EdgeEffectHandler {
 		@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 		@Override
 		public void onPull(float deltaDistance, float displacement) {
-			if (mPullable) {
+			if (pullable) {
 				super.onPull(deltaDistance, displacement);
 			}
 		}
 
-		private int mWidth;
+		private int width;
 
 		@Override
 		public void setSize(int width, int height) {
 			super.setSize(width, height);
-			mWidth = width;
+			this.width = width;
 		}
 
 		@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 		@Override
 		public int getMaxHeight() {
-			return super.getMaxHeight() + mShift.getEdgeEffectShift(mTop);
+			return super.getMaxHeight() + shift.getEdgeEffectShift(top);
 		}
 
-		private final Paint mShiftPaint = new Paint();
+		private final Paint shiftPaint = new Paint();
 
 		@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 		@Override
 		public boolean draw(Canvas canvas) {
-			if (mPullable) {
-				int shift = mShift.getEdgeEffectShift(mTop);
+			if (pullable) {
+				int shift = this.shift.getEdgeEffectShift(top);
 				boolean needShift = shift != 0;
 				if (needShift) {
 					if (C.API_LOLLIPOP) {
 						int color = getColor();
-						Paint paint = mShiftPaint;
+						Paint paint = shiftPaint;
 						paint.setColor(color);
-						canvas.drawRect(0, 0, mWidth, shift, paint);
+						canvas.drawRect(0, 0, width, shift, paint);
 					}
 					canvas.save();
 					canvas.translate(0, shift);
@@ -115,39 +115,39 @@ public class EdgeEffectHandler {
 		}
 	}
 
-	private final ControlledEdgeEffect mTopEdgeEffect;
-	private final ControlledEdgeEffect mBottomEdgeEffect;
+	private final ControlledEdgeEffect topEdgeEffect;
+	private final ControlledEdgeEffect bottomEdgeEffect;
 
 	private EdgeEffectHandler(Context context, Shift shift) {
 		if (shift == null) {
 			shift = new InternalShift();
 		}
-		mTopEdgeEffect = new ControlledEdgeEffect(context, shift, true);
-		mBottomEdgeEffect = new ControlledEdgeEffect(context, shift, false);
+		topEdgeEffect = new ControlledEdgeEffect(context, shift, true);
+		bottomEdgeEffect = new ControlledEdgeEffect(context, shift, false);
 	}
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	public void setColor(int color) {
 		if (C.API_LOLLIPOP) {
-			mTopEdgeEffect.setColor(color);
-			mBottomEdgeEffect.setColor(color);
+			topEdgeEffect.setColor(color);
+			bottomEdgeEffect.setColor(color);
 		}
 	}
 
 	public void setShift(boolean top, int shift) {
 		if (top) {
-			mShiftTop = shift;
+			shiftTop = shift;
 		} else {
-			mShiftBottom = shift;
+			shiftBottom = shift;
 		}
 	}
 
 	public void setPullable(boolean top, boolean pullable) {
-		(top ? mTopEdgeEffect : mBottomEdgeEffect).setPullable(pullable);
+		(top ? topEdgeEffect : bottomEdgeEffect).setPullable(pullable);
 	}
 
 	public void finish(boolean top) {
-		(top ? mTopEdgeEffect : mBottomEdgeEffect).finish();
+		(top ? topEdgeEffect : bottomEdgeEffect).finish();
 	}
 
 	private static final Field EDGE_GLOW_TOP_FIELD, EDGE_GLOW_BOTTOM_FIELD;
@@ -173,8 +173,8 @@ public class EdgeEffectHandler {
 				Object edgeEffect = EDGE_GLOW_TOP_FIELD.get(listView);
 				if (edgeEffect != null && !(edgeEffect instanceof ControlledEdgeEffect)) {
 					EdgeEffectHandler handler = new EdgeEffectHandler(listView.getContext(), shift);
-					EDGE_GLOW_TOP_FIELD.set(listView, handler.mTopEdgeEffect);
-					EDGE_GLOW_BOTTOM_FIELD.set(listView, handler.mBottomEdgeEffect);
+					EDGE_GLOW_TOP_FIELD.set(listView, handler.topEdgeEffect);
+					EDGE_GLOW_BOTTOM_FIELD.set(listView, handler.bottomEdgeEffect);
 					return handler;
 				}
 			} catch (Exception e) {

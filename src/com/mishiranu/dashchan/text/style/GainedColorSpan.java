@@ -24,26 +24,26 @@ import com.mishiranu.dashchan.graphics.ColorScheme;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 
 public class GainedColorSpan extends CharacterStyle implements UpdateAppearance, ColorScheme.Span {
-	private final int mForegroundColor;
-	private float mColorGainFactor;
+	private final int foregroundColor;
+	private float colorGainFactor;
 
 	public GainedColorSpan(int foregroundColor) {
-		mForegroundColor = foregroundColor;
+		this.foregroundColor = foregroundColor;
 	}
 
 	@Override
 	public void applyColorScheme(ColorScheme colorScheme) {
 		if (colorScheme != null) {
-			mColorGainFactor = colorScheme.colorGainFactor;
+			colorGainFactor = colorScheme.colorGainFactor;
 		}
 	}
 
 	public int getForegroundColor() {
-		return mForegroundColor;
+		return foregroundColor;
 	}
 
 	@Override
 	public void updateDrawState(TextPaint paint) {
-		paint.setColor(GraphicsUtils.modifyColorGain(mForegroundColor, mColorGainFactor));
+		paint.setColor(GraphicsUtils.modifyColorGain(foregroundColor, colorGainFactor));
 	}
 }

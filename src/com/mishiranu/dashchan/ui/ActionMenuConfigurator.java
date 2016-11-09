@@ -60,29 +60,29 @@ public class ActionMenuConfigurator {
 	}
 
 	// True for SHOW_AS_ACTION_ALWAYS, false for SHOW_AS_ACTION_IF_ROOM
-	private final SparseBooleanArray mDisplay = new SparseBooleanArray();
-	private Menu mLastMenu;
+	private final SparseBooleanArray display = new SparseBooleanArray();
+	private Menu lastMenu;
 
 	public void onConfigurationChanged(Configuration newConfig) {
-		if (newConfig.orientation != Configuration.ORIENTATION_UNDEFINED && mLastMenu != null) {
-			onAfterPrepareOptionsMenu(mLastMenu);
+		if (newConfig.orientation != Configuration.ORIENTATION_UNDEFINED && lastMenu != null) {
+			onAfterPrepareOptionsMenu(lastMenu);
 		}
 	}
 
 	public void onAfterCreateOptionsMenu(Menu menu) {
-		mDisplay.clear();
-		mLastMenu = menu;
+		display.clear();
+		lastMenu = menu;
 		for (int i = 0; i < menu.size(); i++) {
 			MenuItem menuItem = menu.getItem(i);
 			int id = menuItem.getItemId();
 			int showAsAction = getShowAsAction(menuItem);
 			switch (showAsAction) {
 				case MenuItem.SHOW_AS_ACTION_ALWAYS: {
-					mDisplay.put(id, true);
+					display.put(id, true);
 					break;
 				}
 				case MenuItem.SHOW_AS_ACTION_IF_ROOM: {
-					mDisplay.put(id, false);
+					display.put(id, false);
 					break;
 				}
 			}
@@ -102,9 +102,9 @@ public class ActionMenuConfigurator {
 		for (int i = 0; i < menu.size(); i++) {
 			MenuItem menuItem = menu.getItem(i);
 			if (menuItem.isVisible()) {
-				if (mDisplay.get(menuItem.getItemId())) {
+				if (display.get(menuItem.getItemId())) {
 					used++;
-				} else if (mayOverflow && mDisplay.indexOfKey(menuItem.getItemId()) < 0) {
+				} else if (mayOverflow && display.indexOfKey(menuItem.getItemId()) < 0) {
 					mayOverflow = false;
 					used++;
 				}
@@ -113,7 +113,7 @@ public class ActionMenuConfigurator {
 		for (int i = 0; i < menu.size(); i++) {
 			MenuItem menuItem = menu.getItem(i);
 			if (menuItem.isVisible()) {
-				if (mDisplay.get(menuItem.getItemId())) {
+				if (display.get(menuItem.getItemId())) {
 					if (used < maxCount) {
 						used++;
 						menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);

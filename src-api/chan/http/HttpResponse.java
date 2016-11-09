@@ -29,32 +29,32 @@ import chan.annotation.Public;
 
 @Public
 public class HttpResponse {
-	private final byte[] mBytes;
-	private String mData;
+	private final byte[] bytes;
+	private String data;
 
-	private String mCharsetName;
+	private String charsetName;
 
 	@Public
 	public HttpResponse(byte[] bytes) {
-		mBytes = bytes;
-		mCharsetName = "UTF-8";
+		this.bytes = bytes;
+		this.charsetName = "UTF-8";
 	}
 
 	@Public
 	public void setEncoding(String charsetName) {
-		mData = null;
-		mCharsetName = charsetName;
+		this.data = null;
+		this.charsetName = charsetName;
 	}
 
 	@Public
 	public byte[] getBytes() {
-		return mBytes;
+		return bytes;
 	}
 
 	private void obtainString() {
-		if (mData == null && mBytes != null) {
+		if (data == null && bytes != null) {
 			try {
-				mData = new String(mBytes, mCharsetName);
+				data = new String(bytes, charsetName);
 			} catch (UnsupportedEncodingException e) {
 				throw new RuntimeException(e);
 			}
@@ -64,22 +64,22 @@ public class HttpResponse {
 	@Public
 	public String getString() {
 		obtainString();
-		return mData;
+		return data;
 	}
 
 	@Public
 	public Bitmap getBitmap() {
-		return BitmapFactory.decodeByteArray(mBytes, 0, mBytes.length);
+		return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
 	}
 
 	@Public
 	public JSONObject getJsonObject() {
 		obtainString();
-		if (mData != null) {
+		if (data != null) {
 			try {
-				return new JSONObject(mData);
+				return new JSONObject(data);
 			} catch (JSONException e) {
-				// Ignore
+				// Invalid data, ignore exception
 			}
 		}
 		return null;
@@ -88,11 +88,11 @@ public class HttpResponse {
 	@Public
 	public JSONArray getJsonArray() {
 		obtainString();
-		if (mData != null) {
+		if (data != null) {
 			try {
-				return new JSONArray(mData);
+				return new JSONArray(data);
 			} catch (JSONException e) {
-				// Ignore
+				// Invalid data, ignore exception
 			}
 		}
 		return null;

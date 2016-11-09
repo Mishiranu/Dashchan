@@ -27,26 +27,26 @@ import chan.util.CommonUtils;
 // Added: 24.08.16 03:39
 @Public
 public final class Threads {
-	private Posts[] mThreads;
-	private int mBoardSpeed;
+	private Posts[] threads;
+	private int boardSpeed;
 
 	public Posts[] getThreads() {
-		return mThreads;
+		return threads;
 	}
 
 	public Threads setThreads(Posts[] threads) {
-		mThreads = threads;
+		this.threads = threads;
 		return this;
 	}
 
 	@Public
 	public int getBoardSpeed() {
-		return mBoardSpeed;
+		return boardSpeed;
 	}
 
 	@Public
 	public Threads setBoardSpeed(int boardSpeed) {
-		mBoardSpeed = boardSpeed;
+		this.boardSpeed = boardSpeed;
 		return this;
 	}
 

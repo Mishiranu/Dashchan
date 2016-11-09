@@ -33,15 +33,15 @@ public class PostingDialog extends DialogFragment {
 		public ChanConfiguration.Posting getPostingConfiguration();
 	}
 
-	private Callback mCallback;
+	private Callback callback;
 
 	public PostingDialog bindCallback(Callback callback) {
-		mCallback = callback;
+		this.callback = callback;
 		return this;
 	}
 
 	public PostingDialog bindCallback(PostingDialog dialog) {
-		return bindCallback(dialog.mCallback);
+		return bindCallback(dialog.callback);
 	}
 
 	public static void bindCallback(Activity activity, String tag, Callback callback) {
@@ -54,18 +54,18 @@ public class PostingDialog extends DialogFragment {
 	@Override
 	public void onDetach() {
 		super.onDetach();
-		mCallback = null;
+		callback = null;
 	}
 
 	public final AttachmentHolder getAttachmentHolder(String key) {
-		return mCallback.getAttachmentHolder(getArguments().getInt(key));
+		return callback.getAttachmentHolder(getArguments().getInt(key));
 	}
 
 	public final List<Pair<String, String>> getAttachmentRatingItems() {
-		return mCallback.getAttachmentRatingItems();
+		return callback.getAttachmentRatingItems();
 	}
 
 	public final ChanConfiguration.Posting getPostingConfiguration() {
-		return mCallback.getPostingConfiguration();
+		return callback.getPostingConfiguration();
 	}
 }

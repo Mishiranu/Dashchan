@@ -35,15 +35,15 @@ public class NetworkObserver {
 	private static final int NETWORK_MOBILE = 1;
 	private static final int NETWORK_UNDEFINED = 0;
 
-	private final ConnectivityManager mConnectivityManager;
+	private final ConnectivityManager connectivityManager;
 
-	private int mNetworkState = NETWORK_UNDEFINED;
-	private long mLast3GChecked;
-	private boolean mLast3GAvailable;
+	private int networkState = NETWORK_UNDEFINED;
+	private long last3GChecked;
+	private boolean last3GAvailable;
 
 	private NetworkObserver() {
 		Context context = MainApplication.getInstance();
-		mConnectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+		connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 		onActiveNetworkChange();
 		BroadcastReceiver connectivityReceiver = new BroadcastReceiver() {
 			@Override
@@ -55,19 +55,19 @@ public class NetworkObserver {
 	}
 
 	public boolean isWifiConnected() {
-		return mNetworkState == NETWORK_WIFI;
+		return networkState == NETWORK_WIFI;
 	}
 
 	public boolean isMobile3GConnected() {
-		switch (mNetworkState) {
+		switch (networkState) {
 			case NETWORK_WIFI: {
 				return true;
 			}
 			case NETWORK_MOBILE: {
 				synchronized (this) {
-					if (System.currentTimeMillis() - mLast3GChecked >= 2000) {
+					if (System.currentTimeMillis() - last3GChecked >= 2000) {
 						boolean is3GAvailable = false;
-						NetworkInfo networkInfo = mConnectivityManager.getActiveNetworkInfo();
+						NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
 						if (networkInfo != null && networkInfo.isConnected()) {
 							int type = networkInfo.getType();
 							if (type == ConnectivityManager.TYPE_MOBILE ||
@@ -89,10 +89,10 @@ public class NetworkObserver {
 								}
 							}
 						}
-						mLast3GAvailable = is3GAvailable;
-						mLast3GChecked = System.currentTimeMillis();
+						last3GAvailable = is3GAvailable;
+						last3GChecked = System.currentTimeMillis();
 					}
-					return mLast3GAvailable;
+					return last3GAvailable;
 				}
 			}
 		}
@@ -101,7 +101,7 @@ public class NetworkObserver {
 
 	private void onActiveNetworkChange() {
 		int networkState = NETWORK_UNDEFINED;
-		NetworkInfo networkInfo = mConnectivityManager.getActiveNetworkInfo();
+		NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
 		if (networkInfo != null && networkInfo.isConnected()) {
 			int type = networkInfo.getType();
 			switch (type) {
@@ -117,7 +117,7 @@ public class NetworkObserver {
 				}
 			}
 		}
-		mNetworkState = networkState;
-		mLast3GChecked = 0L;
+		this.networkState = networkState;
+		last3GChecked = 0L;
 	}
 }

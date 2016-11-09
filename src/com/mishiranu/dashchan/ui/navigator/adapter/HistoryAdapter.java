@@ -35,13 +35,13 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ViewFactory;
 
 public class HistoryAdapter extends BaseAdapter {
-	private final String mChanName;
+	private final String chanName;
 
-	private final ArrayList<Object> mItems = new ArrayList<>();
-	private final ArrayList<Object> mFilteredItems = new ArrayList<>();
+	private final ArrayList<Object> items = new ArrayList<>();
+	private final ArrayList<Object> filteredItems = new ArrayList<>();
 
-	private boolean mFilterMode = false;
-	private String mFilterText;
+	private boolean filterMode = false;
+	private String filterText;
 
 	private static final int TYPE_HEADER = 0;
 	private static final int TYPE_ITEM = 1;
@@ -53,7 +53,7 @@ public class HistoryAdapter extends BaseAdapter {
 	private static final int HEADER_OLD = 4;
 
 	public HistoryAdapter(String chanName) {
-		mChanName = chanName;
+		this.chanName = chanName;
 		ArrayList<HistoryDatabase.HistoryItem> historyItems = HistoryDatabase.getInstance().getAllHistory(chanName);
 		Calendar calendar = Calendar.getInstance();
 		calendar.set(Calendar.HOUR_OF_DAY, 0);
@@ -98,43 +98,43 @@ public class HistoryAdapter extends BaseAdapter {
 						break;
 					}
 				}
-				mItems.add(MainApplication.getInstance().getString(resId));
+				items.add(MainApplication.getInstance().getString(resId));
 			}
-			mItems.add(historyItem);
+			items.add(historyItem);
 		}
 	}
 
 	// Returns true, if adapter isn't empty.
 	public boolean applyFilter(String text) {
-		mFilterText = text;
-		mFilterMode = !StringUtils.isEmpty(text);
-		mFilteredItems.clear();
-		if (mFilterMode) {
+		filterText = text;
+		filterMode = !StringUtils.isEmpty(text);
+		filteredItems.clear();
+		if (filterMode) {
 			text = text.toLowerCase(Locale.getDefault());
-			for (Object item : mItems) {
+			for (Object item : items) {
 				if (item instanceof HistoryDatabase.HistoryItem) {
 					HistoryDatabase.HistoryItem historyItem = (HistoryDatabase.HistoryItem) item;
 					if (historyItem.title != null && historyItem.title.toLowerCase(Locale.getDefault())
 							.contains(text)) {
-						mFilteredItems.add(historyItem);
+						filteredItems.add(historyItem);
 					}
 				}
 			}
 		}
 		notifyDataSetChanged();
-		return !mFilterMode || mFilteredItems.size() > 0;
+		return !filterMode || filteredItems.size() > 0;
 	}
 
 	public void remove(HistoryDatabase.HistoryItem historyItem) {
-		int index = mItems.indexOf(historyItem);
+		int index = items.indexOf(historyItem);
 		if (index >= 0) {
-			mItems.remove(index);
-			if (index > 0 && (index == mItems.size() || getItemViewType(index) == TYPE_HEADER) &&
+			items.remove(index);
+			if (index > 0 && (index == items.size() || getItemViewType(index) == TYPE_HEADER) &&
 					getItemViewType(index - 1) == TYPE_HEADER) {
-				mItems.remove(index - 1);
+				items.remove(index - 1);
 			}
-			if (mFilterMode) {
-				applyFilter(mFilterText);
+			if (filterMode) {
+				applyFilter(filterText);
 			} else {
 				notifyDataSetChanged();
 			}
@@ -142,14 +142,14 @@ public class HistoryAdapter extends BaseAdapter {
 	}
 
 	public void clear() {
-		mItems.clear();
-		mFilteredItems.clear();
+		items.clear();
+		filteredItems.clear();
 		notifyDataSetChanged();
 	}
 
 	@Override
 	public int getCount() {
-		return (mFilterMode ? mFilteredItems : mItems).size();
+		return (filterMode ? filteredItems : items).size();
 	}
 
 	@Override
@@ -159,7 +159,7 @@ public class HistoryAdapter extends BaseAdapter {
 
 	@Override
 	public Object getItem(int position) {
-		return (mFilterMode ? mFilteredItems : mItems).get(position);
+		return (filterMode ? filteredItems : items).get(position);
 	}
 
 	public HistoryDatabase.HistoryItem getHistoryItem(int position) {
@@ -216,9 +216,9 @@ public class HistoryAdapter extends BaseAdapter {
 		}
 		if (historyItem != null) {
 			holder.text1.setText(historyItem.title);
-			String title = ChanConfiguration.get(mChanName).getBoardTitle(historyItem.boardName);
+			String title = ChanConfiguration.get(chanName).getBoardTitle(historyItem.boardName);
 			holder.text2.setText(StringUtils.isEmpty(historyItem.boardName) ? title
-					: StringUtils.formatBoardTitle(mChanName, historyItem.boardName, title));
+					: StringUtils.formatBoardTitle(chanName, historyItem.boardName, title));
 		} else {
 			((TextView) convertView).setText((String) item);
 		}

@@ -25,30 +25,30 @@ import com.mishiranu.dashchan.util.FlagUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 
 public class LinkSuffixSpan extends ReplacementSpan implements ColorScheme.Span {
-	private int mSuffix;
-	private final String mPostNumber;
+	private int suffix;
+	private final String postNumber;
 
 	public static final int SUFFIX_ORIGINAL_POSTER = 0x00000001;
 	public static final int SUFFIX_DIFFERENT_THREAD = 0x00000002;
 	public static final int SUFFIX_USER_POST = 0x00000004;
 
-	private int mForegroundColor;
+	private int foregroundColor;
 
 	public LinkSuffixSpan(int suffix, String postNumber) {
-		mPostNumber = postNumber;
-		mSuffix = suffix;
+		this.postNumber = postNumber;
+		this.suffix = suffix;
 	}
 
 	public boolean isSuffixPresent(int suffix) {
-		return FlagUtils.get(mSuffix, suffix);
+		return FlagUtils.get(this.suffix, suffix);
 	}
 
 	public void setSuffix(int suffix, boolean present) {
-		mSuffix = FlagUtils.set(mSuffix, suffix, present);
+		this.suffix = FlagUtils.set(this.suffix, suffix, present);
 	}
 
 	public String getPostNumber() {
-		return mPostNumber;
+		return postNumber;
 	}
 
 	private String getSuffixText() {
@@ -65,7 +65,7 @@ public class LinkSuffixSpan extends ReplacementSpan implements ColorScheme.Span 
 	@Override
 	public void applyColorScheme(ColorScheme colorScheme) {
 		if (colorScheme != null) {
-			mForegroundColor = colorScheme.linkColor;
+			foregroundColor = colorScheme.linkColor;
 		}
 	}
 
@@ -88,7 +88,7 @@ public class LinkSuffixSpan extends ReplacementSpan implements ColorScheme.Span 
 		String suffixText = getSuffixText();
 		if (suffixText != null) {
 			paint.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
-			paint.setColor(mForegroundColor);
+			paint.setColor(foregroundColor);
 			canvas.drawText(" " + suffixText, x, y, paint);
 		}
 	}

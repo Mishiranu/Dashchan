@@ -26,8 +26,8 @@ import android.widget.SearchView;
 import android.widget.TextView;
 
 public class CustomSearchView extends SearchView {
-	private final FrameLayout mCustomViewLayout;
-	private final TextView mTextView;
+	private final FrameLayout customViewLayout;
+	private final TextView textView;
 
 	public CustomSearchView(Context context) {
 		super(context);
@@ -38,8 +38,8 @@ public class CustomSearchView extends SearchView {
 			layoutParams.width = LayoutParams.WRAP_CONTENT;
 			layoutParams.weight = 1f;
 		}
-		mCustomViewLayout = new FrameLayout(context);
-		addView(mCustomViewLayout, LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT);
+		customViewLayout = new FrameLayout(context);
+		addView(customViewLayout, LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT);
 		super.setIconifiedByDefault(true); // Hide search button, show hint image
 		super.setIconified(false); // Always expanded
 		super.onActionViewExpanded();
@@ -57,7 +57,7 @@ public class CustomSearchView extends SearchView {
 				textView = null;
 			}
 		}
-		mTextView = textView;
+		this.textView = textView;
 		View closeButton;
 		try {
 			Field field = SearchView.class.getDeclaredField("mCloseButton");
@@ -77,8 +77,8 @@ public class CustomSearchView extends SearchView {
 			@Override
 			public boolean onQueryTextSubmit(String query) {
 				boolean hideKeyboard = true;
-				if (mOnQueryTextListener != null) {
-					hideKeyboard = mOnQueryTextListener.onQueryTextSubmit(query);
+				if (onQueryTextListener != null) {
+					hideKeyboard = onQueryTextListener.onQueryTextSubmit(query);
 				}
 				if (hideKeyboard) {
 					hideKeyboard();
@@ -88,8 +88,8 @@ public class CustomSearchView extends SearchView {
 
 			@Override
 			public boolean onQueryTextChange(String newText) {
-				if (mOnQueryTextListener != null) {
-					mOnQueryTextListener.onQueryTextChange(newText);
+				if (onQueryTextListener != null) {
+					onQueryTextListener.onQueryTextChange(newText);
 				}
 				return true;
 			}
@@ -97,12 +97,12 @@ public class CustomSearchView extends SearchView {
 	}
 
 	private void showKeyboard() {
-		if (mTextView != null) {
-			mTextView.requestFocus();
+		if (textView != null) {
+			textView.requestFocus();
 			InputMethodManager inputMethodManager = (InputMethodManager) getContext()
 					.getSystemService(Context.INPUT_METHOD_SERVICE);
 			if (inputMethodManager != null) {
-				inputMethodManager.showSoftInput(mTextView, 0);
+				inputMethodManager.showSoftInput(textView, 0);
 			}
 		}
 	}
@@ -116,12 +116,12 @@ public class CustomSearchView extends SearchView {
 		clearFocus();
 	}
 
-	private boolean mShowKeyboard;
+	private boolean showKeyboard;
 
 	@Override
 	protected void onAttachedToWindow() {
 		super.onAttachedToWindow();
-		mShowKeyboard = true;
+		showKeyboard = true;
 	}
 
 	@Override
@@ -133,17 +133,17 @@ public class CustomSearchView extends SearchView {
 	@Override
 	protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
 		super.onLayout(changed, left, top, right, bottom);
-		if (mShowKeyboard) {
-			mShowKeyboard = false;
+		if (showKeyboard) {
+			showKeyboard = false;
 			post(() -> post(() -> showKeyboard()));
 		}
 	}
 
-	private OnQueryTextListener mOnQueryTextListener;
+	private OnQueryTextListener onQueryTextListener;
 
 	@Override
 	public void setOnQueryTextListener(OnQueryTextListener listener) {
-		mOnQueryTextListener = listener;
+		onQueryTextListener = listener;
 	}
 
 	@Override
@@ -167,9 +167,9 @@ public class CustomSearchView extends SearchView {
 	}
 
 	public void setCustomView(View view) {
-		mCustomViewLayout.removeAllViews();
+		customViewLayout.removeAllViews();
 		if (view != null) {
-			mCustomViewLayout.addView(view, LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT);
+			customViewLayout.addView(view, LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT);
 		}
 	}
 }

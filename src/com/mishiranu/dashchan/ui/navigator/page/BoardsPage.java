@@ -43,7 +43,7 @@ import com.mishiranu.dashchan.widget.PullableListView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 
 public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTask.Callback {
-	private ReadBoardsTask mReadTask;
+	private ReadBoardsTask readTask;
 
 	@Override
 	protected void onCreate() {
@@ -68,9 +68,9 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 
 	@Override
 	protected void onDestroy() {
-		if (mReadTask != null) {
-			mReadTask.cancel();
-			mReadTask = null;
+		if (readTask != null) {
+			readTask.cancel();
+			readTask = null;
 		}
 	}
 
@@ -167,11 +167,11 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 	}
 
 	private void refreshBoards(boolean showPull) {
-		if (mReadTask != null) {
-			mReadTask.cancel();
+		if (readTask != null) {
+			readTask.cancel();
 		}
-		mReadTask = new ReadBoardsTask(getPageHolder().chanName, this);
-		mReadTask.executeOnExecutor(ReadBoardsTask.THREAD_POOL_EXECUTOR);
+		readTask = new ReadBoardsTask(getPageHolder().chanName, this);
+		readTask.executeOnExecutor(ReadBoardsTask.THREAD_POOL_EXECUTOR);
 		if (showPull) {
 			getListView().getWrapper().startBusyState(PullableWrapper.Side.TOP);
 			switchView(ViewType.LIST, null);
@@ -183,7 +183,7 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 
 	@Override
 	public void onReadBoardsSuccess(BoardCategory[] boardCategories) {
-		mReadTask = null;
+		readTask = null;
 		getListView().getWrapper().cancelBusyState();
 		switchView(ViewType.LIST, null);
 		JSONArray jsonArray = null;
@@ -206,7 +206,7 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 					}
 				}
 			} catch (JSONException e) {
-				// Ignore
+				// Invalid data, ignore exception
 			}
 		}
 		ChanConfiguration configuration = getChanConfiguration();
@@ -218,7 +218,7 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 
 	@Override
 	public void onReadBoardsFail(ErrorItem errorItem) {
-		mReadTask = null;
+		readTask = null;
 		getListView().getWrapper().cancelBusyState();
 		if (getAdapter().isEmpty()) {
 			switchView(ViewType.ERROR, errorItem.toString());

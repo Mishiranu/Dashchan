@@ -57,7 +57,7 @@ public class StatisticsFragment extends BaseListFragment {
 		}
 	}
 
-	private final ArrayList<ListItem> mListItems = new ArrayList<>();
+	private final ArrayList<ListItem> listItems = new ArrayList<>();
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
@@ -86,7 +86,7 @@ public class StatisticsFragment extends BaseListFragment {
 				totalThreadsCreated += statisticsItem.threadsCreated;
 			}
 		}
-		mListItems.add(new ListItem(getString(R.string.text_general), totalThreadsViewed, totalPostsSent,
+		listItems.add(new ListItem(getString(R.string.text_general), totalThreadsViewed, totalPostsSent,
 				totalThreadsCreated));
 		for (String chanName : ChanManager.getInstance().getAvailableChanNames()) {
 			StatisticsStorage.StatisticsItem statisticsItem = statisticsItems.get(chanName);
@@ -100,7 +100,7 @@ public class StatisticsFragment extends BaseListFragment {
 					if (StringUtils.isEmpty(title)) {
 						title = chanName;
 					}
-					mListItems.add(new ListItem(title, threadsViewed, postsSent, threadsCreated));
+					listItems.add(new ListItem(title, threadsViewed, postsSent, threadsCreated));
 				}
 			}
 		}
@@ -145,12 +145,12 @@ public class StatisticsFragment extends BaseListFragment {
 
 			@Override
 			public ListItem getItem(int position) {
-				return mListItems.get(position);
+				return listItems.get(position);
 			}
 
 			@Override
 			public int getCount() {
-				return mListItems.size();
+				return listItems.size();
 			}
 
 			@Override

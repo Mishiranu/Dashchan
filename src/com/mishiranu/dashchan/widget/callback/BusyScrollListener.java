@@ -25,37 +25,37 @@ public class BusyScrollListener implements ListView.OnScrollListener, Runnable {
 		public void setListViewBusy(boolean isBusy, AbsListView listView);
 	}
 
-	private final Callback mCallback;
-	private final Handler mHandler = new Handler();
+	private final Callback callback;
+	private final Handler handler = new Handler();
 
 	public BusyScrollListener(Callback callback) {
-		mCallback = callback;
+		this.callback = callback;
 	}
 
 	@Override
 	public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {}
 
-	private boolean mIsBusy = false, mQueuedIsBusy;
-	private AbsListView mListView;
+	private boolean isBusy = false, queuedIsBusy;
+	private AbsListView listView;
 
 	@Override
 	public void onScrollStateChanged(AbsListView view, int scrollState) {
 		boolean isBusy = scrollState != AbsListView.OnScrollListener.SCROLL_STATE_IDLE;
-		mQueuedIsBusy = isBusy;
-		mListView = view;
-		mHandler.removeCallbacks(this);
-		if (isBusy && !mIsBusy) {
+		queuedIsBusy = isBusy;
+		listView = view;
+		handler.removeCallbacks(this);
+		if (isBusy && !this.isBusy) {
 			run();
-		} else if (!isBusy && mIsBusy) {
-			mHandler.postDelayed(this, 250);
+		} else if (!isBusy && this.isBusy) {
+			handler.postDelayed(this, 250);
 		}
 	}
 
 	@Override
 	public void run() {
-		if (mQueuedIsBusy != mIsBusy) {
-			mIsBusy = mQueuedIsBusy;
-			mCallback.setListViewBusy(mIsBusy, mListView);
+		if (queuedIsBusy != isBusy) {
+			isBusy = queuedIsBusy;
+			callback.setListViewBusy(isBusy, listView);
 		}
 	}
 }

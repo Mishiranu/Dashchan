@@ -27,11 +27,11 @@ import chan.http.HttpHolder;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 
 public class ReadBoardsTask extends HttpHolderTask<Void, Long, Boolean> {
-	private final String mChanName;
-	private final Callback mCallback;
+	private final String chanName;
+	private final Callback callback;
 
-	private BoardCategory[] mBoardCategories;
-	private ErrorItem mErrorItem;
+	private BoardCategory[] boardCategories;
+	private ErrorItem errorItem;
 
 	public interface Callback {
 		public void onReadBoardsSuccess(BoardCategory[] boardCategories);
@@ -39,42 +39,42 @@ public class ReadBoardsTask extends HttpHolderTask<Void, Long, Boolean> {
 	}
 
 	public ReadBoardsTask(String chanName, Callback callback) {
-		mChanName = chanName;
-		mCallback = callback;
+		this.chanName = chanName;
+		this.callback = callback;
 	}
 
 	@Override
 	protected Boolean doInBackground(HttpHolder holder, Void... params) {
 		try {
-			ChanPerformer.ReadBoardsResult result = ChanPerformer.get(mChanName).safe()
+			ChanPerformer.ReadBoardsResult result = ChanPerformer.get(chanName).safe()
 					.onReadBoards(new ChanPerformer.ReadBoardsData(holder));
 			BoardCategory[] boardCategories = result != null ? result.boardCategories : null;
 			if (boardCategories != null && boardCategories.length == 0) {
 				boardCategories = null;
 			}
 			if (boardCategories != null) {
-				ChanConfiguration.get(mChanName).updateFromBoards(boardCategories);
+				ChanConfiguration.get(chanName).updateFromBoards(boardCategories);
 			}
-			mBoardCategories = boardCategories;
+			this.boardCategories = boardCategories;
 			return true;
 		} catch (ExtensionException | HttpException | InvalidResponseException e) {
-			mErrorItem = e.getErrorItemAndHandle();
+			errorItem = e.getErrorItemAndHandle();
 			return false;
 		} finally {
-			ChanConfiguration.get(mChanName).commit();
+			ChanConfiguration.get(chanName).commit();
 		}
 	}
 
 	@Override
 	public void onPostExecute(Boolean success) {
 		if (success) {
-			if (mBoardCategories != null) {
-				mCallback.onReadBoardsSuccess(mBoardCategories);
+			if (boardCategories != null) {
+				callback.onReadBoardsSuccess(boardCategories);
 			} else {
-				mCallback.onReadBoardsFail(new ErrorItem(ErrorItem.TYPE_EMPTY_RESPONSE));
+				callback.onReadBoardsFail(new ErrorItem(ErrorItem.TYPE_EMPTY_RESPONSE));
 			}
 		} else {
-			mCallback.onReadBoardsFail(mErrorItem);
+			callback.onReadBoardsFail(errorItem);
 		}
 	}
 }

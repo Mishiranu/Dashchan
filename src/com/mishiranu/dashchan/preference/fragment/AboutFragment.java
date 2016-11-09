@@ -50,22 +50,23 @@ import com.mishiranu.dashchan.content.async.AsyncManager;
 import com.mishiranu.dashchan.content.async.ReadUpdateTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.preference.PreferencesActivity;
+import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.ToastUtils;
 
 public class AboutFragment extends BasePreferenceFragment {
-	private Preference mBackupDataPreference;
-	private Preference mChangelogPreference;
-	private Preference mCheckForUpdatesPreference;
+	private Preference backupDataPreference;
+	private Preference changelogPreference;
+	private Preference checkForUpdatesPreference;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		Preference statisticsPreference = makeButton(null, R.string.preference_statistics, 0, false);
-		mBackupDataPreference = makeButton(null, R.string.preference_backup_data,
+		backupDataPreference = makeButton(null, R.string.preference_backup_data,
 				R.string.preference_backup_data_summary, false);
-		mChangelogPreference = makeButton(null, R.string.preference_changelog, 0, false);
-		mCheckForUpdatesPreference = makeButton(null, R.string.preference_check_for_updates, 0, false);
+		changelogPreference = makeButton(null, R.string.preference_changelog, 0, false);
+		checkForUpdatesPreference = makeButton(null, R.string.preference_check_for_updates, 0, false);
 		Preference licensePreference = makeButton(null, R.string.preference_licenses,
 				R.string.preference_licenses_summary, false);
 		makeButton(null, getString(R.string.preference_version), C.BUILD_VERSION +
@@ -86,13 +87,13 @@ public class AboutFragment extends BasePreferenceFragment {
 
 	@Override
 	public boolean onPreferenceClick(Preference preference) {
-		if (preference == mBackupDataPreference) {
+		if (preference == backupDataPreference) {
 			new BackupDialog().show(getFragmentManager(), BackupDialog.class.getName());
 			return true;
-		} else if (preference == mChangelogPreference) {
+		} else if (preference == changelogPreference) {
 			new ReadDialog(ReadDialog.TYPE_CHANGELOG).show(getFragmentManager(), ReadDialog.class.getName());
 			return true;
-		} else if (preference == mCheckForUpdatesPreference) {
+		} else if (preference == checkForUpdatesPreference) {
 			new ReadDialog(ReadDialog.TYPE_UPDATE).show(getFragmentManager(), ReadDialog.class.getName());
 			return true;
 		}
@@ -279,21 +280,21 @@ public class AboutFragment extends BasePreferenceFragment {
 	}
 
 	private static class ReadChangelogTask extends AsyncManager.SimpleTask<Void, Void, Boolean> {
-		private final HttpHolder mHolder = new HttpHolder();
+		private final HttpHolder holder = new HttpHolder();
 
-		private final Context mContext;
+		private final Context context;
 
-		private String mResult;
-		private ErrorItem mErrorItem;
+		private String result;
+		private ErrorItem errorItem;
 
 		public ReadChangelogTask(Context context) {
-			mContext = context.getApplicationContext();
+			this.context = context.getApplicationContext();
 		}
 
 		@Override
 		public Boolean doInBackground(Void... params) {
 			String page = "Changelog-EN";
-			for (Locale locale : LocaleManager.getInstance().list(mContext)) {
+			for (Locale locale : LocaleManager.getInstance().list(context)) {
 				String language = locale.getLanguage();
 				if ("ru".equals(language)) {
 					page = "Changelog-RU";
@@ -302,49 +303,49 @@ public class AboutFragment extends BasePreferenceFragment {
 			}
 			Uri uri = ChanLocator.getDefault().buildPathWithHost("github.com", "Mishiranu", "Dashchan", "wiki", page);
 			try {
-				String result = new HttpRequest(uri, mHolder).read().getString();
+				String result = new HttpRequest(uri, holder).read().getString();
 				if (result != null) {
 					result = ChangelogGroupCallback.parse(result);
 				}
 				if (result == null) {
-					mErrorItem = new ErrorItem(ErrorItem.TYPE_UNKNOWN);
+					errorItem = new ErrorItem(ErrorItem.TYPE_UNKNOWN);
 					return false;
 				} else {
-					mResult = result;
+					this.result = result;
 					return true;
 				}
 			} catch (HttpException e) {
-				mErrorItem = e.getErrorItemAndHandle();
-				mHolder.disconnect();
+				errorItem = e.getErrorItemAndHandle();
+				holder.disconnect();
 				return false;
 			} finally {
-				mHolder.cleanup();
+				holder.cleanup();
 			}
 		}
 
 		@Override
 		protected void onStoreResult(AsyncManager.Holder holder, Boolean result) {
-			holder.storeResult(mResult, mErrorItem);
+			holder.storeResult(this.result, errorItem);
 		}
 
 		@Override
 		public void cancel() {
 			cancel(true);
-			mHolder.interrupt();
+			holder.interrupt();
 		}
 	}
 
 	private static class ChangelogGroupCallback implements GroupParser.Callback {
-		private String mResult;
+		private String result;
 
 		public static String parse(String source) {
 			ChangelogGroupCallback callback = new ChangelogGroupCallback();
 			try {
 				GroupParser.parse(source, callback);
 			} catch (ParseException e) {
-				// Ignore
+				Log.persistent().stack(e);
 			}
-			return callback.mResult;
+			return callback.result;
 		}
 
 		@Override
@@ -360,7 +361,7 @@ public class AboutFragment extends BasePreferenceFragment {
 
 		@Override
 		public void onGroupComplete(GroupParser parser, String text) throws ParseException {
-			mResult = text;
+			result = text;
 			throw new ParseException();
 		}
 	}

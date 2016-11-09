@@ -32,19 +32,19 @@ public class TransparentTileDrawable extends Drawable {
 	private static final int COLOR_MIN = 0xe0;
 	private static final int COLOR_MAX = 0xf0;
 
-	private final Paint mPaint;
+	private final Paint paint;
 
 	public TransparentTileDrawable(Context context, boolean large) {
-		mPaint = new Paint();
+		paint = new Paint();
 		float density = ResourceUtils.obtainDensity(context);
 		Bitmap bitmap = GraphicsUtils.generateNoise(large ? 80 : 40, (int) density, COLOR_MIN << 24 | 0x00ffffff,
 				COLOR_MAX << 24 | 0x00ffffff);
-		mPaint.setShader(new BitmapShader(bitmap, BitmapShader.TileMode.REPEAT, BitmapShader.TileMode.REPEAT));
+		paint.setShader(new BitmapShader(bitmap, BitmapShader.TileMode.REPEAT, BitmapShader.TileMode.REPEAT));
 	}
 
 	@Override
 	public void draw(Canvas canvas) {
-		canvas.drawRect(getBounds(), mPaint);
+		canvas.drawRect(getBounds(), paint);
 	}
 
 	@Override
@@ -54,12 +54,12 @@ public class TransparentTileDrawable extends Drawable {
 
 	@Override
 	public int getAlpha() {
-		return mPaint.getAlpha();
+		return paint.getAlpha();
 	}
 
 	@Override
 	public void setAlpha(int alpha) {
-		mPaint.setAlpha(alpha);
+		paint.setAlpha(alpha);
 	}
 
 	@Override

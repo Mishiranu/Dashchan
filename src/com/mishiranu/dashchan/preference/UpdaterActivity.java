@@ -39,35 +39,35 @@ public class UpdaterActivity extends StateActivity {
 
 	private static final String EXTRA_INDEX = "index";
 
-	private DownloadManager mDownloadManager;
+	private DownloadManager downloadManager;
 
-	private ArrayList<String> mUriStrings;
-	private HashMap<String, Long> mDownloadIds;
-	private int mIndex = 0;
+	private ArrayList<String> uriStrings;
+	private HashMap<String, Long> downloadIds;
+	private int index = 0;
 
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mDownloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
-		mUriStrings = getIntent().getStringArrayListExtra(EXTRA_URI_STRINGS);
-		mDownloadIds = (HashMap<String, Long>) getIntent().getSerializableExtra(EXTRA_DOWNLOAD_IDS);
+		downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+		uriStrings = getIntent().getStringArrayListExtra(EXTRA_URI_STRINGS);
+		downloadIds = (HashMap<String, Long>) getIntent().getSerializableExtra(EXTRA_DOWNLOAD_IDS);
 		if (savedInstanceState == null) {
 			performInstallation();
 		} else {
-			mIndex = savedInstanceState.getInt(EXTRA_INDEX);
+			index = savedInstanceState.getInt(EXTRA_INDEX);
 		}
 	}
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		outState.putInt(EXTRA_INDEX, mIndex);
+		outState.putInt(EXTRA_INDEX, index);
 	}
 
 	private void performInstallation() {
-		if (mUriStrings != null && mUriStrings.size() > mIndex) {
-			Uri uri = Uri.parse(mUriStrings.get(mIndex));
+		if (uriStrings != null && uriStrings.size() > index) {
+			Uri uri = Uri.parse(uriStrings.get(index));
 			startActivityForResult(new Intent(Intent.ACTION_INSTALL_PACKAGE).setData(uri)
 					.putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true).putExtra(Intent.EXTRA_RETURN_RESULT, true), 0);
 		} else {
@@ -79,9 +79,9 @@ public class UpdaterActivity extends StateActivity {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == 0) {
 			if (resultCode == RESULT_OK) {
-				long id = mDownloadIds.get(mUriStrings.get(mIndex));
-				mDownloadManager.remove(id);
-				mIndex++;
+				long id = downloadIds.get(uriStrings.get(index));
+				downloadManager.remove(id);
+				index++;
 				performInstallation();
 			} else {
 				finish();
@@ -89,25 +89,25 @@ public class UpdaterActivity extends StateActivity {
 		}
 	}
 
-	private static BroadcastReceiver sUpdatesReceiver;
+	private static BroadcastReceiver updatesReceiver;
 
 	public static void initUpdater(long clientId, Collection<Long> ids) {
 		Context context = MainApplication.getInstance();
-		if (sUpdatesReceiver != null) {
-			context.unregisterReceiver(sUpdatesReceiver);
+		if (updatesReceiver != null) {
+			context.unregisterReceiver(updatesReceiver);
 		}
 		HashSet<Long> newIds = new HashSet<>(ids);
 		if (clientId >= 0) {
 			newIds.add(clientId);
 		}
-		sUpdatesReceiver = new BroadcastReceiver() {
-			private final HashMap<String, Long> mDownloadIds = new HashMap<>();
-			private final ArrayList<String> mUriStrings = new ArrayList<>();
-			private String mClientUriString = null;
+		updatesReceiver = new BroadcastReceiver() {
+			private final HashMap<String, Long> downloadIds = new HashMap<>();
+			private final ArrayList<String> uriStrings = new ArrayList<>();
+			private String clientUriString = null;
 
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				if (this != sUpdatesReceiver) {
+				if (this != updatesReceiver) {
 					return;
 				}
 				long id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
@@ -124,11 +124,11 @@ public class UpdaterActivity extends StateActivity {
 											(DownloadManager.COLUMN_LOCAL_URI));
 									if (uriString != null) {
 										if (id == clientId) {
-											mClientUriString = uriString;
+											clientUriString = uriString;
 										} else {
-											mUriStrings.add(uriString);
+											uriStrings.add(uriString);
 										}
-										mDownloadIds.put(uriString, id);
+										downloadIds.put(uriString, id);
 										success = true;
 									}
 								}
@@ -142,12 +142,12 @@ public class UpdaterActivity extends StateActivity {
 					boolean unregister = false;
 					if (success) {
 						if (newIds.isEmpty()) {
-							if (mClientUriString != null) {
-								mUriStrings.add(mClientUriString);
+							if (clientUriString != null) {
+								uriStrings.add(clientUriString);
 							}
 							context.startActivity(new Intent(context, UpdaterActivity.class)
-									.putStringArrayListExtra(EXTRA_URI_STRINGS, mUriStrings)
-									.putExtra(EXTRA_DOWNLOAD_IDS, mDownloadIds)
+									.putStringArrayListExtra(EXTRA_URI_STRINGS, uriStrings)
+									.putExtra(EXTRA_DOWNLOAD_IDS, downloadIds)
 									.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
 							unregister = true;
 						}
@@ -155,12 +155,12 @@ public class UpdaterActivity extends StateActivity {
 						unregister = true;
 					}
 					if (unregister) {
-						MainApplication.getInstance().unregisterReceiver(sUpdatesReceiver);
-						sUpdatesReceiver = null;
+						MainApplication.getInstance().unregisterReceiver(updatesReceiver);
+						updatesReceiver = null;
 					}
 				}
 			}
 		};
-		context.registerReceiver(sUpdatesReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+		context.registerReceiver(updatesReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
 	}
 }

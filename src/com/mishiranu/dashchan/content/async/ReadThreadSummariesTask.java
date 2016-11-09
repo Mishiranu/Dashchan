@@ -32,13 +32,13 @@ import chan.util.CommonUtils;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 
 public class ReadThreadSummariesTask extends HttpHolderTask<Void, Void, ThreadSummary[]> {
-	private final String mChanName;
-	private final String mBoardName;
-	private final int mPageNumber;
-	private final int mType;
-	private final Callback mCallback;
+	private final String chanName;
+	private final String boardName;
+	private final int pageNumber;
+	private final int type;
+	private final Callback callback;
 
-	private ErrorItem mErrorItem;
+	private ErrorItem errorItem;
 
 	public interface Callback {
 		public void onReadThreadSummariesSuccess(ThreadSummary[] threadSummaries, int pageNumber);
@@ -46,35 +46,35 @@ public class ReadThreadSummariesTask extends HttpHolderTask<Void, Void, ThreadSu
 	}
 
 	public ReadThreadSummariesTask(String chanName, String boardName, int pageNumber, int type, Callback callback) {
-		mChanName = chanName;
-		mBoardName = boardName;
-		mPageNumber = pageNumber;
-		mType = type;
-		mCallback = callback;
+		this.chanName = chanName;
+		this.boardName = boardName;
+		this.pageNumber = pageNumber;
+		this.type = type;
+		this.callback = callback;
 	}
 
 	@Override
 	protected ThreadSummary[] doInBackground(HttpHolder holder, Void... params) {
 		try {
-			ChanPerformer performer = ChanPerformer.get(mChanName);
+			ChanPerformer performer = ChanPerformer.get(chanName);
 			ChanPerformer.ReadThreadSummariesResult result = performer.safe().onReadThreadSummaries(new ChanPerformer
-					.ReadThreadSummariesData(mBoardName, mPageNumber, mType, holder));
+					.ReadThreadSummariesData(boardName, pageNumber, type, holder));
 			ThreadSummary[] threadSummaries = result != null ? result.threadSummaries : null;
 			return threadSummaries != null && threadSummaries.length > 0 ? threadSummaries : null;
 		} catch (ExtensionException | HttpException | InvalidResponseException e) {
-			mErrorItem = e.getErrorItemAndHandle();
+			errorItem = e.getErrorItemAndHandle();
 			return null;
 		} finally {
-			ChanConfiguration.get(mChanName).commit();
+			ChanConfiguration.get(chanName).commit();
 		}
 	}
 
 	@Override
 	public void onPostExecute(ThreadSummary[] threadSummaries) {
-		if (mErrorItem == null) {
-			mCallback.onReadThreadSummariesSuccess(threadSummaries, mPageNumber);
+		if (errorItem == null) {
+			callback.onReadThreadSummariesSuccess(threadSummaries, pageNumber);
 		} else {
-			mCallback.onReadThreadSummariesFail(mErrorItem);
+			callback.onReadThreadSummariesFail(errorItem);
 		}
 	}
 

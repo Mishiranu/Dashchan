@@ -46,10 +46,10 @@ public class DraftsStorage extends StorageManager.Storage {
 		return INSTANCE;
 	}
 
-	private final LruCache<String, PostDraft> mPostDrafts = new LruCache<>(5);
+	private final LruCache<String, PostDraft> postDrafts = new LruCache<>(5);
 
-	private String mCaptchaChanName;
-	private CaptchaDraft mCaptchaDraft;
+	private String captchaChanName;
+	private CaptchaDraft captchaDraft;
 
 	private DraftsStorage() {
 		super("drafts", 2000, 10000);
@@ -61,11 +61,11 @@ public class DraftsStorage extends StorageManager.Storage {
 					for (int i = 0; i < postsArray.length(); i++) {
 						PostDraft postDraft = PostDraft.fromJsonObject(postsArray.getJSONObject(i));
 						if (postDraft != null) {
-							mPostDrafts.put(makeKey(postDraft), postDraft);
+							postDrafts.put(makeKey(postDraft), postDraft);
 						}
 					}
 				} catch (JSONException e) {
-					// Ignore
+					// Invalid data, ignore exception
 				}
 			}
 		}
@@ -73,7 +73,7 @@ public class DraftsStorage extends StorageManager.Storage {
 
 	@Override
 	public Object onClone() {
-		return new ArrayList<>(mPostDrafts.values());
+		return new ArrayList<>(postDrafts.values());
 	}
 
 	@Override
@@ -103,9 +103,9 @@ public class DraftsStorage extends StorageManager.Storage {
 		if (postDraft != null) {
 			boolean serialize = true;
 			if (postDraft.isEmpty()) {
-				serialize = mPostDrafts.remove(makeKey(postDraft)) != null;
+				serialize = postDrafts.remove(makeKey(postDraft)) != null;
 			} else {
-				mPostDrafts.put(makeKey(postDraft), postDraft);
+				postDrafts.put(makeKey(postDraft), postDraft);
 			}
 			if (serialize) {
 				serialize();
@@ -114,11 +114,11 @@ public class DraftsStorage extends StorageManager.Storage {
 	}
 
 	public PostDraft getPostDraft(String chanName, String boardName, String threadNumber) {
-		return mPostDrafts.get(makeKey(chanName, boardName, threadNumber));
+		return postDrafts.get(makeKey(chanName, boardName, threadNumber));
 	}
 
 	public void removePostDraft(String chanName, String boardName, String threadNumber) {
-		PostDraft postDraft = mPostDrafts.remove(makeKey(chanName, boardName, threadNumber));
+		PostDraft postDraft = postDrafts.remove(makeKey(chanName, boardName, threadNumber));
 		if (postDraft != null) {
 			serialize();
 		}
@@ -128,10 +128,10 @@ public class DraftsStorage extends StorageManager.Storage {
 			String toBoardName, String toThreadNumber) {
 		String fromKey = makeKey(chanName, fromBoardName, fromThreadNumber);
 		String toKey = makeKey(chanName, toBoardName, toThreadNumber);
-		PostDraft postDraft = mPostDrafts.get(fromKey);
+		PostDraft postDraft = postDrafts.get(fromKey);
 		if (postDraft != null) {
-			if (mPostDrafts.get(toKey) == null) {
-				ArrayList<PostDraft> postDrafts = new ArrayList<>(mPostDrafts.values());
+			if (postDrafts.get(toKey) == null) {
+				ArrayList<PostDraft> postDrafts = new ArrayList<>(this.postDrafts.values());
 				int index = postDrafts.indexOf(postDraft);
 				postDrafts.remove(index);
 				postDraft = new PostDraft(chanName, toBoardName, toThreadNumber, postDraft.name, postDraft.email,
@@ -139,33 +139,33 @@ public class DraftsStorage extends StorageManager.Storage {
 						postDraft.attachmentDrafts, postDraft.optionSage, postDraft.optionSpoiler,
 						postDraft.optionOriginalPoster, postDraft.userIcon);
 				postDrafts.add(index, postDraft);
-				mPostDrafts.clear();
+				this.postDrafts.clear();
 				for (PostDraft addPostDraft : postDrafts) {
-					mPostDrafts.put(makeKey(addPostDraft), addPostDraft);
+					this.postDrafts.put(makeKey(addPostDraft), addPostDraft);
 				}
 			} else {
-				mPostDrafts.remove(fromKey);
+				postDrafts.remove(fromKey);
 			}
 			serialize();
 		}
 	}
 
 	public void store(String chanName, CaptchaDraft captchaDraft) {
-		mCaptchaChanName = chanName;
-		mCaptchaDraft = captchaDraft;
+		this.captchaChanName = chanName;
+		this.captchaDraft = captchaDraft;
 	}
 
 	public CaptchaDraft getCaptchaDraft(String chanName) {
-		if (mCaptchaDraft != null && mCaptchaChanName.equals(chanName) && System.currentTimeMillis() -
-				mCaptchaDraft.loadTime <= 5 * 60 * 1000) {
-			return mCaptchaDraft;
+		if (captchaDraft != null && captchaChanName.equals(chanName) && System.currentTimeMillis() -
+				captchaDraft.loadTime <= 5 * 60 * 1000) {
+			return captchaDraft;
 		}
 		return null;
 	}
 
 	public void removeCaptchaDraft() {
-		mCaptchaDraft = null;
-		mCaptchaChanName = null;
+		captchaDraft = null;
+		captchaChanName = null;
 	}
 
 	public static class PostDraft {

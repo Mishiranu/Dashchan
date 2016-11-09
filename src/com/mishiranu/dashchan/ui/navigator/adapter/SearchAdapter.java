@@ -40,18 +40,18 @@ public class SearchAdapter extends BaseAdapter implements BusyScrollListener.Cal
 	private static final int TYPE_VIEW = 0;
 	private static final int TYPE_HEADER = 1;
 
-	private final UiManager mUiManager;
-	private final UiManager.DemandSet mDemandSet = new UiManager.DemandSet();
-	private final UiManager.ConfigurationSet mConfigurationSet;
+	private final UiManager uiManager;
+	private final UiManager.DemandSet demandSet = new UiManager.DemandSet();
+	private final UiManager.ConfigurationSet configurationSet;
 
-	private final ArrayList<PostItem> mPostItems = new ArrayList<>();
-	private final ArrayList<Object> mGroupItems = new ArrayList<>();
+	private final ArrayList<PostItem> postItems = new ArrayList<>();
+	private final ArrayList<Object> groupItems = new ArrayList<>();
 
-	private boolean mGroupMode = false;
+	private boolean groupMode = false;
 
 	public SearchAdapter(UiManager uiManager) {
-		mUiManager = uiManager;
-		mConfigurationSet = new UiManager.ConfigurationSet(null, null, new HidePerformer(),
+		this.uiManager = uiManager;
+		configurationSet = new UiManager.ConfigurationSet(null, null, new HidePerformer(),
 				new GalleryItem.GallerySet(false), null, null, true, false, false, false, null);
 	}
 
@@ -81,7 +81,7 @@ public class SearchAdapter extends BaseAdapter implements BusyScrollListener.Cal
 	public View getView(int position, View convertView, ViewGroup parent) {
 		Object item = getItem(position);
 		if (item instanceof PostItem) {
-			return mUiManager.view().getPostView((PostItem) item, convertView, parent, mDemandSet, mConfigurationSet);
+			return uiManager.view().getPostView((PostItem) item, convertView, parent, demandSet, configurationSet);
 		} else {
 			if (convertView == null) {
 				convertView = ViewFactory.makeListTextHeader(parent, false);
@@ -98,12 +98,12 @@ public class SearchAdapter extends BaseAdapter implements BusyScrollListener.Cal
 
 	@Override
 	public int getCount() {
-		return mGroupMode ? mGroupItems.size() : mPostItems.size();
+		return groupMode ? groupItems.size() : postItems.size();
 	}
 
 	@Override
 	public Object getItem(int position) {
-		return mGroupMode ? mGroupItems.get(position) : mPostItems.get(position);
+		return groupMode ? groupItems.get(position) : postItems.get(position);
 	}
 
 	public PostItem getPostItem(int position) {
@@ -121,35 +121,35 @@ public class SearchAdapter extends BaseAdapter implements BusyScrollListener.Cal
 
 	@Override
 	public void setListViewBusy(boolean isBusy, AbsListView listView) {
-		mUiManager.view().handleListViewBusyStateChange(isBusy, listView, mDemandSet);
+		uiManager.view().handleListViewBusyStateChange(isBusy, listView, demandSet);
 	}
 
 	public void setItems(ArrayList<PostItem> postItems) {
-		mPostItems.clear();
+		this.postItems.clear();
 		if (postItems != null) {
-			mPostItems.addAll(postItems);
+			this.postItems.addAll(postItems);
 		}
 		handleItems();
 	}
 
 	public void setGroupMode(boolean groupMode) {
-		if (mGroupMode != groupMode) {
-			mGroupMode = groupMode;
+		if (this.groupMode != groupMode) {
+			this.groupMode = groupMode;
 			handleItems();
 		}
 	}
 
 	public boolean isGroupMode() {
-		return mGroupMode;
+		return groupMode;
 	}
 
 	private void handleItems() {
-		mGroupItems.clear();
-		mConfigurationSet.gallerySet.clear();
-		if (mPostItems.size() > 0) {
-			if (mGroupMode) {
+		groupItems.clear();
+		configurationSet.gallerySet.clear();
+		if (postItems.size() > 0) {
+			if (groupMode) {
 				LinkedHashMap<String, ArrayList<PostItem>> map = new LinkedHashMap<>();
-				for (PostItem postItem : mPostItems) {
+				for (PostItem postItem : postItems) {
 					String threadNumber = postItem.getThreadNumber();
 					ArrayList<PostItem> postItems = map.get(threadNumber);
 					if (postItems == null) {
@@ -167,24 +167,24 @@ public class SearchAdapter extends BaseAdapter implements BusyScrollListener.Cal
 					} catch (NumberFormatException e) {
 						number = false;
 					}
-					mGroupItems.add(MainApplication.getInstance().getString(R.string.text_in_thread_format_format,
+					groupItems.add(MainApplication.getInstance().getString(R.string.text_in_thread_format_format,
 							number ? "#" + threadNumber : threadNumber));
 					int ordinalIndex = 0;
 					for (PostItem postItem : entry.getValue()) {
-						mGroupItems.add(postItem);
+						groupItems.add(postItem);
 						postItem.setOrdinalIndex(ordinalIndex++);
 					}
 				}
 			} else {
-				for (int i = 0; i < mPostItems.size(); i++) {
-					mPostItems.get(i).setOrdinalIndex(i);
+				for (int i = 0; i < postItems.size(); i++) {
+					postItems.get(i).setOrdinalIndex(i);
 				}
 			}
 		}
 		for (int i = 0, count = getCount(); i < count; i++) {
 			PostItem postItem = getPostItem(i);
 			if (postItem != null) {
-				mConfigurationSet.gallerySet.add(postItem.getAttachmentItems());
+				configurationSet.gallerySet.add(postItem.getAttachmentItems());
 			}
 		}
 		notifyDataSetChanged();

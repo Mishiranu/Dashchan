@@ -25,12 +25,12 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 
 public class RoundedCornersDrawable extends Drawable {
-	private final Path mPath = new Path();
-	private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-	private final int mRadius;
+	private final Path path = new Path();
+	private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+	private final int radius;
 
 	public RoundedCornersDrawable(int radius) {
-		mRadius = radius;
+		this.radius = radius;
 	}
 
 	public RoundedCornersDrawable(int radius, int color) {
@@ -39,16 +39,16 @@ public class RoundedCornersDrawable extends Drawable {
 	}
 
 	public void setColor(int color) {
-		mPaint.setColor(color);
+		paint.setColor(color);
 	}
 
 	@Override
 	public void setBounds(int left, int top, int right, int bottom) {
 		Rect bounds = getBounds();
 		if (bounds.left != left || bounds.top != top || bounds.right != right || bounds.bottom != bottom) {
-			Path path = mPath;
+			Path path = this.path;
 			path.rewind();
-			float radius = mRadius;
+			float radius = this.radius;
 			float shift = ((float) Math.sqrt(2) - 1f) * radius * 4f / 3f;
 			path.moveTo(left, top);
 			path.rLineTo(radius, 0);
@@ -72,7 +72,7 @@ public class RoundedCornersDrawable extends Drawable {
 
 	@Override
 	public void draw(Canvas canvas) {
-		canvas.drawPath(mPath, mPaint);
+		canvas.drawPath(path, paint);
 	}
 
 	@Override

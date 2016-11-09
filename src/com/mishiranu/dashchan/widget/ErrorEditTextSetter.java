@@ -24,28 +24,28 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.util.ResourceUtils;
 
 public class ErrorEditTextSetter {
-	private final EditText mEditText;
-	private boolean mError = false;
+	private final EditText editText;
+	private boolean error = false;
 
-	private Drawable mBackgroundNormal;
-	private Drawable mBackgroundError;
+	private Drawable backgroundNormal;
+	private Drawable backgroundError;
 
 	public ErrorEditTextSetter(EditText editText) {
-		mEditText = editText;
+		this.editText = editText;
 	}
 
 	public void setError(boolean error) {
-		if (mError != error) {
-			mError = error;
-			if (mBackgroundNormal == null) {
-				mBackgroundNormal = ResourceUtils.getDrawable(mEditText.getContext(),
+		if (this.error != error) {
+			this.error = error;
+			if (backgroundNormal == null) {
+				backgroundNormal = ResourceUtils.getDrawable(editText.getContext(),
 						android.R.attr.editTextBackground, 0);
-				mBackgroundError = ResourceUtils.getDrawable(mEditText.getContext(),
+				backgroundError = ResourceUtils.getDrawable(editText.getContext(),
 						android.R.attr.editTextBackground, 0);
-				mBackgroundError.mutate().setColorFilter(ResourceUtils.getColor(mEditText.getContext(),
+				backgroundError.mutate().setColorFilter(ResourceUtils.getColor(editText.getContext(),
 						R.attr.colorTextError), PorterDuff.Mode.SRC_IN);
 			}
-			mEditText.setBackground(error ? mBackgroundError : mBackgroundNormal);
+			editText.setBackground(error ? backgroundError : backgroundNormal);
 		}
 	}
 }

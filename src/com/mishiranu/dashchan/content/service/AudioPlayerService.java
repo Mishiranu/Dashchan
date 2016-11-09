@@ -51,21 +51,21 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 	private static final String EXTRA_CHAN_NAME = "com.mishiranu.dashchan.extra.CHAN_NAME";
 	private static final String EXTRA_FILE_NAME = "com.mishiranu.dashchan.extra.FILE_NAME";
 
-	private AudioManager mAudioManager;
-	private NotificationManager mNotificationManager;
-	private int mNotificationColor;
-	private PowerManager.WakeLock mWakeLock;
+	private AudioManager audioManager;
+	private NotificationManager notificationManager;
+	private int notificationColor;
+	private PowerManager.WakeLock wakeLock;
 
-	private Notification.Builder mBuilder;
-	private ReadFileTask mReadFileTask;
-	private MediaPlayer mMediaPlayer;
+	private Notification.Builder builder;
+	private ReadFileTask readFileTask;
+	private MediaPlayer mediaPlayer;
 
-	private String mChanName;
-	private String mFileName;
-	private File mAudioFile;
+	private String chanName;
+	private String fileName;
+	private File audioFile;
 
-	private Context mContext;
-	private boolean mPausedByTransientLossOfFocus = false;
+	private Context context;
+	private boolean pausedByTransientLossOfFocus = false;
 
 	private static Intent obtainIntent(Context context, String action) {
 		return new Intent(context, AudioPlayerService.class).setAction(action);
@@ -75,18 +75,18 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		mAudioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
-		mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+		audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+		notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		int notificationColor = 0;
 		if (C.API_LOLLIPOP) {
 			Context themedContext = new ContextThemeWrapper(this, Preferences.getThemeResource());
 			notificationColor = ResourceUtils.getColor(themedContext, android.R.attr.colorAccent);
 		}
-		mNotificationColor = notificationColor;
+		this.notificationColor = notificationColor;
 		PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
-		mWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "AudioPlayerWakeLock");
-		mWakeLock.setReferenceCounted(false);
-		mContext = new ContextThemeWrapper(this, R.style.Theme_Special_Notification);
+		wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "AudioPlayerWakeLock");
+		wakeLock.setReferenceCounted(false);
+		context = new ContextThemeWrapper(this, R.style.Theme_Special_Notification);
 	}
 
 	@Override
@@ -102,8 +102,8 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 					sendToActivity(ACTION_CANCEL);
 				} else {
 					Uri uri = intent.getData();
-					mChanName = intent.getStringExtra(EXTRA_CHAN_NAME);
-					mFileName = intent.getStringExtra(EXTRA_FILE_NAME);
+					chanName = intent.getStringExtra(EXTRA_CHAN_NAME);
+					fileName = intent.getStringExtra(EXTRA_FILE_NAME);
 					File cachedFile = cacheManager.getMediaFile(uri, true);
 					if (cachedFile == null) {
 						ToastUtils.show(this, R.string.message_cache_unavailable);
@@ -111,12 +111,12 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 						stopSelf();
 						sendToActivity(ACTION_CANCEL);
 					} else {
-						mWakeLock.acquire();
+						wakeLock.acquire();
 						if (cachedFile.exists()) {
 							initAndPlayAudio(cachedFile);
 						} else {
-							mReadFileTask = new ReadFileTask(this, mChanName, uri, cachedFile, true, this);
-							mReadFileTask.executeOnExecutor(ReadFileTask.THREAD_POOL_EXECUTOR);
+							readFileTask = new ReadFileTask(this, chanName, uri, cachedFile, true, this);
+							readFileTask.executeOnExecutor(ReadFileTask.THREAD_POOL_EXECUTOR);
 						}
 					}
 				}
@@ -142,24 +142,24 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 	}
 
 	private void cleanup() {
-		if (mReadFileTask != null) {
-			mReadFileTask.cancel();
-			mReadFileTask = null;
+		if (readFileTask != null) {
+			readFileTask.cancel();
+			readFileTask = null;
 		}
-		mAudioManager.abandonAudioFocus(this);
-		if (mMediaPlayer != null) {
-			mMediaPlayer.stop();
-			mMediaPlayer.release();
-			mMediaPlayer = null;
+		audioManager.abandonAudioFocus(this);
+		if (mediaPlayer != null) {
+			mediaPlayer.stop();
+			mediaPlayer.release();
+			mediaPlayer = null;
 		}
-		mWakeLock.release();
+		wakeLock.release();
 		stopForeground(true);
 		sendToActivity(ACTION_CANCEL);
 	}
 
 	private void togglePlayback() {
 		boolean success;
-		if (mMediaPlayer.isPlaying()) {
+		if (mediaPlayer.isPlaying()) {
 			success = pause(true);
 		} else {
 			success = play(true);
@@ -168,7 +168,7 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 			refreshPlaybackNotification(true);
 			sendToActivity(ACTION_TOGGLE);
 		} else {
-			ToastUtils.show(mContext, R.string.message_playback_error);
+			ToastUtils.show(context, R.string.message_playback_error);
 			cleanup();
 			stopSelf();
 			sendToActivity(ACTION_CANCEL);
@@ -177,7 +177,7 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 
 	public class Binder extends android.os.Binder {
 		public void togglePlayback() {
-			if (mMediaPlayer != null) {
+			if (mediaPlayer != null) {
 				AudioPlayerService.this.togglePlayback();
 			}
 		}
@@ -188,24 +188,24 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 		}
 
 		public boolean isPlaying() {
-			return mMediaPlayer != null ? mMediaPlayer.isPlaying() : false;
+			return mediaPlayer != null ? mediaPlayer.isPlaying() : false;
 		}
 
 		public String getFileName() {
-			return mFileName;
+			return fileName;
 		}
 
 		public int getPosition() {
-			return mMediaPlayer != null ? mMediaPlayer.getCurrentPosition() : -1;
+			return mediaPlayer != null ? mediaPlayer.getCurrentPosition() : -1;
 		}
 
 		public int getDuration() {
-			return mMediaPlayer != null ? mMediaPlayer.getDuration() : -1;
+			return mediaPlayer != null ? mediaPlayer.getDuration() : -1;
 		}
 
 		public void seekTo(int msec) {
-			if (mMediaPlayer != null) {
-				mMediaPlayer.seekTo(msec);
+			if (mediaPlayer != null) {
+				mediaPlayer.seekTo(msec);
 			}
 		}
 	}
@@ -223,15 +223,15 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 				break;
 			}
 			case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT: {
-				boolean playing = mMediaPlayer.isPlaying();
+				boolean playing = mediaPlayer.isPlaying();
 				pause(false);
 				if (playing) {
-					mPausedByTransientLossOfFocus = true;
+					pausedByTransientLossOfFocus = true;
 				}
 				break;
 			}
 			case AudioManager.AUDIOFOCUS_GAIN: {
-				if (mPausedByTransientLossOfFocus) {
+				if (pausedByTransientLossOfFocus) {
 					play(false);
 				}
 				break;
@@ -242,16 +242,16 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 	@Override
 	public void onCompletion(MediaPlayer mp) {
 		pause(true);
-		mMediaPlayer.stop();
-		mMediaPlayer.release();
-		initAndPlayAudio(mAudioFile);
+		mediaPlayer.stop();
+		mediaPlayer.release();
+		initAndPlayAudio(audioFile);
 	}
 
 	@Override
 	public boolean onError(MediaPlayer mp, int what, int extra) {
-		ToastUtils.show(mContext, R.string.message_playback_error);
-		if (mAudioFile != null) {
-			mAudioFile.delete();
+		ToastUtils.show(context, R.string.message_playback_error);
+		if (audioFile != null) {
+			audioFile.delete();
 		}
 		cleanup();
 		stopSelf();
@@ -261,37 +261,37 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 
 	private boolean pause(boolean resetFocus) {
 		if (resetFocus) {
-			mAudioManager.abandonAudioFocus(this);
+			audioManager.abandonAudioFocus(this);
 		}
-		mMediaPlayer.pause();
-		mWakeLock.acquire(15000);
+		mediaPlayer.pause();
+		wakeLock.acquire(15000);
 		return true;
 	}
 
 	private boolean play(boolean resetFocus) {
-		if (resetFocus && mAudioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
+		if (resetFocus && audioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
 				!= AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
 			return false;
 		}
-		mMediaPlayer.start();
-		mWakeLock.acquire();
+		mediaPlayer.start();
+		wakeLock.acquire();
 		return true;
 	}
 
 	private void initAndPlayAudio(File file) {
-		mAudioFile = file;
-		mPausedByTransientLossOfFocus = false;
-		mMediaPlayer = new MediaPlayer();
-		mMediaPlayer.setLooping(false);
-		mMediaPlayer.setOnCompletionListener(this);
-		mMediaPlayer.setOnErrorListener(this);
+		audioFile = file;
+		pausedByTransientLossOfFocus = false;
+		mediaPlayer = new MediaPlayer();
+		mediaPlayer.setLooping(false);
+		mediaPlayer.setOnCompletionListener(this);
+		mediaPlayer.setOnErrorListener(this);
 		try {
-			mMediaPlayer.setDataSource(file.getPath());
-			mMediaPlayer.prepare();
+			mediaPlayer.setDataSource(file.getPath());
+			mediaPlayer.prepare();
 		} catch (Exception e) {
-			mAudioFile.delete();
-			CacheManager.getInstance().handleDownloadedFile(mAudioFile, false);
-			ToastUtils.show(mContext, R.string.message_playback_error);
+			audioFile.delete();
+			CacheManager.getInstance().handleDownloadedFile(audioFile, false);
+			ToastUtils.show(context, R.string.message_playback_error);
 			cleanup();
 			stopSelf();
 			sendToActivity(ACTION_CANCEL);
@@ -301,98 +301,98 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 		refreshPlaybackNotification(true);
 	}
 
-	private int mProgress, mProgressMax;
-	private long mLastUpdate;
+	private int progress, progressMax;
+	private long lastUpdate;
 
 	private static final int[] ICON_ATTRS = {R.attr.notificationRefresh, R.attr.notificationCancel,
 		R.attr.notificationPlay, R.attr.notificationPause};
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private void refreshPlaybackNotification(boolean recreate) {
-		Notification.Builder builder = mBuilder;
+		Notification.Builder builder = this.builder;
 		if (builder == null || recreate) {
 			builder = new Notification.Builder(this);
 			builder.setSmallIcon(R.drawable.ic_audiotrack_white_24dp);
-			PendingIntent contentIntent = PendingIntent.getActivity(mContext, 0,
+			PendingIntent contentIntent = PendingIntent.getActivity(context, 0,
 					new Intent(this, AudioPlayerActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
 			builder.setContentIntent(contentIntent);
-			TypedArray typedArray = mContext.obtainStyledAttributes(ICON_ATTRS);
-			PendingIntent toggleIntent = PendingIntent.getService(mContext, 0,
+			TypedArray typedArray = context.obtainStyledAttributes(ICON_ATTRS);
+			PendingIntent toggleIntent = PendingIntent.getService(context, 0,
 					obtainIntent(this, ACTION_TOGGLE), PendingIntent.FLAG_UPDATE_CURRENT);
-			boolean playing = mMediaPlayer.isPlaying();
-			ViewUtils.addNotificationAction(builder, mContext, typedArray, playing ? 3 : 2,
+			boolean playing = mediaPlayer.isPlaying();
+			ViewUtils.addNotificationAction(builder, context, typedArray, playing ? 3 : 2,
 					playing ? R.string.action_pause : R.string.action_play, toggleIntent);
-			PendingIntent cancelIntent = PendingIntent.getService(mContext, 0,
+			PendingIntent cancelIntent = PendingIntent.getService(context, 0,
 					obtainIntent(this, ACTION_CANCEL), PendingIntent.FLAG_UPDATE_CURRENT);
-			ViewUtils.addNotificationAction(builder, mContext, typedArray, 1, R.string.action_stop, cancelIntent);
+			ViewUtils.addNotificationAction(builder, context, typedArray, 1, R.string.action_stop, cancelIntent);
 			typedArray.recycle();
 			if (C.API_LOLLIPOP) {
-				builder.setColor(mNotificationColor);
+				builder.setColor(notificationColor);
 			}
-			mBuilder = builder;
+			this.builder = builder;
 			builder.setContentTitle(getString(R.string.message_file_playback));
-			builder.setContentText(getString(R.string.message_download_name_format, mFileName));
+			builder.setContentText(getString(R.string.message_download_name_format, fileName));
 		}
 		startForeground(C.NOTIFICATION_ID_AUDIO_PLAYER, builder.build());
 	}
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private void refreshDownloadingNotification(boolean recreate, boolean error, Uri uri) {
-		Notification.Builder builder = mBuilder;
+		Notification.Builder builder = this.builder;
 		if (builder == null || recreate) {
 			builder = new Notification.Builder(this);
 			builder.setSmallIcon(error ? android.R.drawable.stat_sys_download_done
 					: android.R.drawable.stat_sys_download);
-			builder.setDeleteIntent(PendingIntent.getService(mContext, 0, obtainIntent(this, ACTION_CANCEL),
+			builder.setDeleteIntent(PendingIntent.getService(context, 0, obtainIntent(this, ACTION_CANCEL),
 					PendingIntent.FLAG_UPDATE_CURRENT));
-			TypedArray typedArray = mContext.obtainStyledAttributes(ICON_ATTRS);
+			TypedArray typedArray = context.obtainStyledAttributes(ICON_ATTRS);
 			if (error) {
-				PendingIntent retryIntent = PendingIntent.getService(mContext, 0, obtainIntent(this, ACTION_START)
-						.setData(uri).putExtra(EXTRA_CHAN_NAME, mChanName).putExtra(EXTRA_FILE_NAME, mFileName),
+				PendingIntent retryIntent = PendingIntent.getService(context, 0, obtainIntent(this, ACTION_START)
+						.setData(uri).putExtra(EXTRA_CHAN_NAME, chanName).putExtra(EXTRA_FILE_NAME, fileName),
 						PendingIntent.FLAG_UPDATE_CURRENT);
-				ViewUtils.addNotificationAction(builder, mContext, typedArray, 0,
+				ViewUtils.addNotificationAction(builder, context, typedArray, 0,
 						R.string.action_retry, retryIntent);
 			} else {
-				PendingIntent cancelIntent = PendingIntent.getService(mContext, 0, obtainIntent(this, ACTION_CANCEL),
+				PendingIntent cancelIntent = PendingIntent.getService(context, 0, obtainIntent(this, ACTION_CANCEL),
 						PendingIntent.FLAG_UPDATE_CURRENT);
-				ViewUtils.addNotificationAction(builder, mContext, typedArray, 1,
+				ViewUtils.addNotificationAction(builder, context, typedArray, 1,
 						android.R.string.cancel, cancelIntent);
 			}
 			typedArray.recycle();
 			if (C.API_LOLLIPOP) {
-				builder.setColor(mNotificationColor);
+				builder.setColor(notificationColor);
 			}
-			mBuilder = builder;
+			this.builder = builder;
 		}
 		if (error) {
 			builder.setContentTitle(getString(R.string.message_download_completed));
 			builder.setContentText(getString(R.string.message_download_result_format, 0, 1));
-			mNotificationManager.notify(C.NOTIFICATION_ID_AUDIO_PLAYER, builder.build());
+			notificationManager.notify(C.NOTIFICATION_ID_AUDIO_PLAYER, builder.build());
 		} else {
 			builder.setContentTitle(getString(R.string.message_download_audio));
-			builder.setContentText(getString(R.string.message_download_name_format, mFileName));
-			builder.setProgress(mProgressMax, mProgress, mProgressMax == 0 ||
-					mProgress > mProgressMax || mProgress < 0);
+			builder.setContentText(getString(R.string.message_download_name_format, fileName));
+			builder.setProgress(progressMax, progress, progressMax == 0 ||
+					progress > progressMax || progress < 0);
 			startForeground(C.NOTIFICATION_ID_AUDIO_PLAYER, builder.build());
 		}
 	}
 
 	@Override
 	public void onFileExists(Uri uri, File file) {
-		mReadFileTask = null;
+		readFileTask = null;
 		initAndPlayAudio(file);
 	}
 
 	@Override
 	public void onStartDownloading(Uri uri, File file) {
-		mLastUpdate = 0L;
+		lastUpdate = 0L;
 		refreshDownloadingNotification(true, false, null);
 	}
 
 	@Override
 	public void onFinishDownloading(boolean success, Uri uri, File file, ErrorItem errorItem) {
-		mWakeLock.acquire(15000);
-		mReadFileTask = null;
+		wakeLock.acquire(15000);
+		readFileTask = null;
 		stopForeground(true);
 		if (success) {
 			initAndPlayAudio(file);
@@ -403,11 +403,11 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 
 	@Override
 	public void onUpdateProgress(long progress, long progressMax) {
-		mProgress = (int) progress;
-		mProgressMax = (int) progressMax;
+		this.progress = (int) progress;
+		this.progressMax = (int) progressMax;
 		long t = System.currentTimeMillis();
-		if (t - mLastUpdate >= 1000L) {
-			mLastUpdate = t;
+		if (t - lastUpdate >= 1000L) {
+			lastUpdate = t;
 			refreshDownloadingNotification(false, false, null);
 		}
 	}

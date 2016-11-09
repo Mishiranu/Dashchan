@@ -33,58 +33,58 @@ import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 
 public class GalleryBackgroundDrawable extends Drawable {
-	private final View mView;
-	private final float mCenterX;
-	private final float mCenterY;
+	private final View view;
+	private final float centerX;
+	private final float centerY;
 
-	private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-	private final int[] mLocation = new int[2];
+	private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+	private final int[] location = new int[2];
 
-	private ValueAnimator mAnimator;
-	private int mAlpha = 0xff;
+	private ValueAnimator animator;
+	private int alpha = 0xff;
 
 	public GalleryBackgroundDrawable(View view, int[] imageViewPosition, int color) {
 		if (imageViewPosition != null) {
-			mView = view;
-			mCenterX = imageViewPosition[0] + imageViewPosition[2] / 2f;
-			mCenterY = imageViewPosition[1] + imageViewPosition[3] / 2f;
+			this.view = view;
+			centerX = imageViewPosition[0] + imageViewPosition[2] / 2f;
+			centerY = imageViewPosition[1] + imageViewPosition[3] / 2f;
 		} else {
-			mView = null;
-			mCenterX = -1;
-			mCenterY = -1;
+			this.view = null;
+			centerX = -1;
+			centerY = -1;
 		}
 		float density = ResourceUtils.obtainDensity(view);
 		int colorFrom = Math.max(Color.alpha(color) - 5, 0x00) << 24 | 0x00ffffff & color;
 		int colorTo = Math.min(Color.alpha(color) + 5, 0xff) << 24 | 0x00ffffff & color;
 		Bitmap bitmap = GraphicsUtils.generateNoise(80, (int) density, colorFrom, colorTo);
-		mPaint.setShader(new BitmapShader(bitmap, BitmapShader.TileMode.REPEAT, BitmapShader.TileMode.REPEAT));
+		paint.setShader(new BitmapShader(bitmap, BitmapShader.TileMode.REPEAT, BitmapShader.TileMode.REPEAT));
 	}
 
 	@Override
 	public void draw(Canvas canvas) {
-		Paint paint = mPaint;
+		Paint paint = this.paint;
 		Rect bounds = getBounds();
 		float t;
-		if (mView != null) {
-			if (mAnimator == null) {
-				mAnimator = ValueAnimator.ofFloat(0f, 1f);
-				mAnimator.setInterpolator(AnimationUtils.ACCELERATE_INTERPOLATOR);
-				mAnimator.setDuration(300);
-				mAnimator.start();
-				mView.getLocationOnScreen(mLocation);
+		if (view != null) {
+			if (animator == null) {
+				animator = ValueAnimator.ofFloat(0f, 1f);
+				animator.setInterpolator(AnimationUtils.ACCELERATE_INTERPOLATOR);
+				animator.setDuration(300);
+				animator.start();
+				view.getLocationOnScreen(location);
 			}
-			t = (float) mAnimator.getAnimatedValue();
+			t = (float) animator.getAnimatedValue();
 		} else {
 			t = 1f;
 		}
 		if (t >= 1f) {
-			paint.setAlpha(mAlpha);
+			paint.setAlpha(alpha);
 			canvas.drawRect(bounds, paint);
 		} else {
 			int width = bounds.width();
 			int height = bounds.height();
-			float cx = AnimationUtils.lerp(mCenterX - mLocation[0], bounds.left + width / 2f, t / 2f);
-			float cy = AnimationUtils.lerp(mCenterY - mLocation[1], bounds.top + height / 2f, t / 2f);
+			float cx = AnimationUtils.lerp(centerX - location[0], bounds.left + width / 2f, t / 2f);
+			float cy = AnimationUtils.lerp(centerY - location[1], bounds.top + height / 2f, t / 2f);
 			float radius = AnimationUtils.lerp(0f, (float) Math.sqrt(width * width + height * height), t);
 			paint.setAlpha(((int) (0xff * t)));
 			canvas.drawRect(bounds, paint);
@@ -101,13 +101,13 @@ public class GalleryBackgroundDrawable extends Drawable {
 
 	@Override
 	public int getAlpha() {
-		return mAlpha;
+		return alpha;
 	}
 
 	@Override
 	public void setAlpha(int alpha) {
-		if (mAlpha != alpha) {
-			mAlpha = alpha;
+		if (this.alpha != alpha) {
+			this.alpha = alpha;
 			invalidateSelf();
 		}
 	}

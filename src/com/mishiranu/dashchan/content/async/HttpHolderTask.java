@@ -20,14 +20,14 @@ import chan.http.HttpHolder;
 
 @SuppressWarnings("unchecked")
 public abstract class HttpHolderTask<Params, Progress, Result> extends CancellableTask<Params, Progress, Result> {
-	private final HttpHolder mHolder = new HttpHolder();
+	private final HttpHolder holder = new HttpHolder();
 
 	@Override
 	protected final Result doInBackground(Params... params) {
 		try {
-			return doInBackground(mHolder, params);
+			return doInBackground(holder, params);
 		} finally {
-			mHolder.cleanup();
+			holder.cleanup();
 		}
 	}
 
@@ -36,6 +36,6 @@ public abstract class HttpHolderTask<Params, Progress, Result> extends Cancellab
 	@Override
 	public void cancel() {
 		cancel(true);
-		mHolder.interrupt();
+		holder.interrupt();
 	}
 }

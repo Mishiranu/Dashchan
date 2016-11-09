@@ -52,46 +52,46 @@ import com.mishiranu.dashchan.widget.PhotoView;
 import com.mishiranu.dashchan.widget.PhotoViewPager;
 
 public class PagerUnit implements PagerInstance.Callback {
-	private final GalleryInstance mGalleryInstance;
-	private final PagerInstance mPagerInstance;
+	private final GalleryInstance galleryInstance;
+	private final PagerInstance pagerInstance;
 
-	private final ImageUnit mImageUnit;
-	private final VideoUnit mVideoUnit;
+	private final ImageUnit imageUnit;
+	private final VideoUnit videoUnit;
 
-	private final FrameLayout mViewPagerParent;
-	private final PhotoViewPager mViewPager;
-	private final PagerAdapter mPagerAdapter;
+	private final FrameLayout viewPagerParent;
+	private final PhotoViewPager viewPager;
+	private final PagerAdapter pagerAdapter;
 
 	public PagerUnit(GalleryInstance instance) {
-		mGalleryInstance = instance;
-		mPagerInstance = new PagerInstance(instance, this);
-		mImageUnit = new ImageUnit(mPagerInstance);
-		mVideoUnit = new VideoUnit(mPagerInstance);
+		galleryInstance = instance;
+		pagerInstance = new PagerInstance(instance, this);
+		imageUnit = new ImageUnit(pagerInstance);
+		videoUnit = new VideoUnit(pagerInstance);
 		float density = ResourceUtils.obtainDensity(instance.context);
-		mViewPagerParent = new FrameLayout(instance.context);
-		mPagerAdapter = new PagerAdapter(instance.galleryItems);
-		mPagerAdapter.setWaitBeforeNextVideo(PhotoView.INITIAL_SCALE_TRANSITION_TIME + 100);
-		mViewPager = new PhotoViewPager(instance.context, mPagerAdapter);
-		mViewPager.setInnerPadding((int) (16f * density));
-		mViewPager.setLayoutParams(new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
+		viewPagerParent = new FrameLayout(instance.context);
+		pagerAdapter = new PagerAdapter(instance.galleryItems);
+		pagerAdapter.setWaitBeforeNextVideo(PhotoView.INITIAL_SCALE_TRANSITION_TIME + 100);
+		viewPager = new PhotoViewPager(instance.context, pagerAdapter);
+		viewPager.setInnerPadding((int) (16f * density));
+		viewPager.setLayoutParams(new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
 				FrameLayout.LayoutParams.MATCH_PARENT));
-		mViewPagerParent.addView(mViewPager, FrameLayout.LayoutParams.MATCH_PARENT,
+		viewPagerParent.addView(viewPager, FrameLayout.LayoutParams.MATCH_PARENT,
 				FrameLayout.LayoutParams.MATCH_PARENT);
-		mViewPager.setCount(instance.galleryItems.size());
+		viewPager.setCount(instance.galleryItems.size());
 	}
 
 	public View getView() {
-		return mViewPagerParent;
+		return viewPagerParent;
 	}
 
 	public void addAndInitViews(FrameLayout frameLayout, int initialPosition) {
-		mVideoUnit.addViews(frameLayout);
-		mViewPager.setCurrentIndex(initialPosition >= 0 ? initialPosition : 0);
+		videoUnit.addViews(frameLayout);
+		viewPager.setCurrentIndex(initialPosition >= 0 ? initialPosition : 0);
 	}
 
 	public void onViewsCreated(int[] imageViewPosition) {
-		if (!mGalleryInstance.callback.isGalleryWindow() && imageViewPosition != null) {
-			View view = mViewPager.getCurrentView();
+		if (!galleryInstance.callback.isGalleryWindow() && imageViewPosition != null) {
+			View view = viewPager.getCurrentView();
 			if (view != null) {
 				int[] location = new int[2];
 				view.getLocationOnScreen(location);
@@ -103,32 +103,32 @@ public class PagerUnit implements PagerInstance.Callback {
 		}
 	}
 
-	private boolean mResumed = false;
+	private boolean resumed = false;
 
 	public void onResume() {
-		mResumed = true;
-		mVideoUnit.onResume();
+		resumed = true;
+		videoUnit.onResume();
 	}
 
 	public void onPause() {
-		mResumed = false;
-		mVideoUnit.onPause();
+		resumed = false;
+		videoUnit.onPause();
 	}
 
 	public int getCurrentIndex() {
-		return mViewPager.getCurrentIndex();
+		return viewPager.getCurrentIndex();
 	}
 
 	public void onApplyWindowPaddings(Rect rect) {
-		mVideoUnit.onApplyWindowPaddings(rect);
+		videoUnit.onApplyWindowPaddings(rect);
 	}
 
 	public void invalidateControlsVisibility() {
-		mVideoUnit.invalidateControlsVisibility();
+		videoUnit.invalidateControlsVisibility();
 	}
 
 	public void onBackToGallery() {
-		mVideoUnit.showHideVideoView(false);
+		videoUnit.showHideVideoView(false);
 	}
 
 	private static final float PAGER_SCALE = 0.9f;
@@ -136,40 +136,40 @@ public class PagerUnit implements PagerInstance.Callback {
 	public void switchMode(boolean galleryMode, int duration) {
 		if (galleryMode) {
 			interrupt(true);
-			mPagerInstance.leftHolder = null;
-			mPagerInstance.currentHolder = null;
-			mPagerInstance.rightHolder = null;
+			pagerInstance.leftHolder = null;
+			pagerInstance.currentHolder = null;
+			pagerInstance.rightHolder = null;
 			if (duration > 0) {
-				mViewPager.setAlpha(1f);
-				mViewPager.setScaleX(1f);
-				mViewPager.setScaleY(1f);
-				mViewPager.animate().alpha(0f).scaleX(PAGER_SCALE).scaleY(PAGER_SCALE).setDuration(duration)
-						.setListener(new AnimationUtils.VisibilityListener(mViewPager, View.GONE)).start();
+				viewPager.setAlpha(1f);
+				viewPager.setScaleX(1f);
+				viewPager.setScaleY(1f);
+				viewPager.animate().alpha(0f).scaleX(PAGER_SCALE).scaleY(PAGER_SCALE).setDuration(duration)
+						.setListener(new AnimationUtils.VisibilityListener(viewPager, View.GONE)).start();
 			} else {
-				mViewPager.setVisibility(View.GONE);
+				viewPager.setVisibility(View.GONE);
 			}
 		} else {
-			mViewPager.setVisibility(View.VISIBLE);
+			viewPager.setVisibility(View.VISIBLE);
 			if (duration > 0) {
-				mViewPager.setAlpha(0f);
-				mViewPager.setScaleX(PAGER_SCALE);
-				mViewPager.setScaleY(PAGER_SCALE);
-				mViewPager.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(duration).setListener(null).start();
+				viewPager.setAlpha(0f);
+				viewPager.setScaleX(PAGER_SCALE);
+				viewPager.setScaleY(PAGER_SCALE);
+				viewPager.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(duration).setListener(null).start();
 			}
 		}
 	}
 
 	public void navigatePageFromList(int position, int duration) {
-		mPagerAdapter.setWaitBeforeNextVideo(duration);
-		mViewPager.setCurrentIndex(position);
+		pagerAdapter.setWaitBeforeNextVideo(duration);
+		viewPager.setCurrentIndex(position);
 	}
 
 	public void onConfigurationChanged(Configuration newConfig) {
-		mVideoUnit.onConfigurationChanged(newConfig);
+		videoUnit.onConfigurationChanged(newConfig);
 	}
 
 	public void refreshCurrent() {
-		if (mPagerInstance.currentHolder != null) {
+		if (pagerInstance.currentHolder != null) {
 			loadImageVideo(true, false, 0);
 		}
 	}
@@ -196,7 +196,7 @@ public class PagerUnit implements PagerInstance.Callback {
 	}
 
 	public OptionsMenuCapabilities obtainOptionsMenuCapabilities() {
-		PagerInstance.ViewHolder holder = mPagerInstance.currentHolder;
+		PagerInstance.ViewHolder holder = pagerInstance.currentHolder;
 		boolean available = false;
 		boolean save = false;
 		boolean refresh = false;
@@ -208,21 +208,21 @@ public class PagerUnit implements PagerInstance.Callback {
 			available = true;
 			GalleryItem galleryItem = holder.galleryItem;
 			boolean fullLoaded = holder.fullLoaded;
-			boolean isVideo = galleryItem.isVideo(mGalleryInstance.locator);
-			boolean isOpenableVideo = isVideo && galleryItem.isOpenableVideo(mGalleryInstance.locator);
-			boolean isVideoInitialized = isOpenableVideo && mVideoUnit.isInitialized();
-			boolean imageHasMetadata = mImageUnit.hasMetadata();
+			boolean isVideo = galleryItem.isVideo(galleryInstance.locator);
+			boolean isOpenableVideo = isVideo && galleryItem.isOpenableVideo(galleryInstance.locator);
+			boolean isVideoInitialized = isOpenableVideo && videoUnit.isInitialized();
+			boolean imageHasMetadata = imageUnit.hasMetadata();
 			save = fullLoaded || isVideo && !isOpenableVideo;
 			if (!save && isOpenableVideo) {
 				File cachedFile = CacheManager.getInstance().getMediaFile(galleryItem
-						.getFileUri(mGalleryInstance.locator), false);
+						.getFileUri(galleryInstance.locator), false);
 				if (cachedFile != null && cachedFile.exists()) {
 					save = true;
 				}
 			}
 			refresh = !isOpenableVideo && !isVideo || isVideoInitialized;
 			viewTechnicalInfo = isVideoInitialized || imageHasMetadata;
-			searchImage = galleryItem.getDisplayImageUri(mGalleryInstance.locator) != null;
+			searchImage = galleryItem.getDisplayImageUri(galleryInstance.locator) != null;
 			navigatePost = galleryItem.postNumber != null;
 			shareFile = fullLoaded;
 		}
@@ -231,61 +231,61 @@ public class PagerUnit implements PagerInstance.Callback {
 	}
 
 	public GalleryItem getCurrentGalleryItem() {
-		return mPagerInstance.currentHolder != null ? mPagerInstance.currentHolder.galleryItem : null;
+		return pagerInstance.currentHolder != null ? pagerInstance.currentHolder.galleryItem : null;
 	}
 
 	public void viewTechnicalInfo() {
-		GalleryItem galleryItem = mPagerInstance.currentHolder.galleryItem;
-		if (galleryItem.isImage(mGalleryInstance.locator)) {
-			mImageUnit.viewTechnicalInfo();
-		} else if (galleryItem.isVideo(mGalleryInstance.locator)) {
-			mVideoUnit.viewTechnicalInfo();
+		GalleryItem galleryItem = pagerInstance.currentHolder.galleryItem;
+		if (galleryItem.isImage(galleryInstance.locator)) {
+			imageUnit.viewTechnicalInfo();
+		} else if (galleryItem.isVideo(galleryInstance.locator)) {
+			videoUnit.viewTechnicalInfo();
 		}
 	}
 
 	private void interrupt(boolean force) {
-		mImageUnit.interrupt(force);
-		mVideoUnit.interrupt();
+		imageUnit.interrupt(force);
+		videoUnit.interrupt();
 	}
 
 	public void forcePauseVideo() {
-		mVideoUnit.forcePause();
+		videoUnit.forcePause();
 	}
 
 	public void onFinish() {
 		interrupt(true);
-		mViewPager.postDelayed(() -> {
-			mPagerAdapter.recycleAll();
+		viewPager.postDelayed(() -> {
+			pagerAdapter.recycleAll();
 			System.gc();
 		}, 200);
 	}
 
 	private void loadImageVideo(final boolean reload, boolean mayShowThumbnailOnly, int waitBeforeVideo) {
-		PagerInstance.ViewHolder holder = mPagerInstance.currentHolder;
+		PagerInstance.ViewHolder holder = pagerInstance.currentHolder;
 		if (holder == null) {
 			return;
 		}
 		GalleryItem galleryItem = holder.galleryItem;
 		interrupt(false);
 		holder.fullLoaded = false;
-		mGalleryInstance.callback.invalidateOptionsMenu();
+		galleryInstance.callback.invalidateOptionsMenu();
 		CacheManager cacheManager = CacheManager.getInstance();
 		if (!cacheManager.isCacheAvailable()) {
-			showError(holder, mGalleryInstance.context.getString(R.string.message_cache_unavailable));
+			showError(holder, galleryInstance.context.getString(R.string.message_cache_unavailable));
 			return;
 		}
-		mGalleryInstance.callback.modifySystemUiVisibility(GalleryInstance.FLAG_LOCKED_ERROR, false);
+		galleryInstance.callback.modifySystemUiVisibility(GalleryInstance.FLAG_LOCKED_ERROR, false);
 		holder.errorView.setVisibility(View.GONE);
 		boolean thumbnailReady = holder.photoViewThumbnail;
 		if (!thumbnailReady) {
 			holder.recyclePhotoView();
 			thumbnailReady = presetThumbnail(holder, galleryItem, reload, false);
 		}
-		boolean isImage = galleryItem.isImage(mGalleryInstance.locator);
-		boolean isVideo = galleryItem.isVideo(mGalleryInstance.locator);
-		boolean isOpenableVideo = isVideo && galleryItem.isOpenableVideo(mGalleryInstance.locator);
+		boolean isImage = galleryItem.isImage(galleryInstance.locator);
+		boolean isVideo = galleryItem.isVideo(galleryInstance.locator);
+		boolean isOpenableVideo = isVideo && galleryItem.isOpenableVideo(galleryInstance.locator);
 		if (waitBeforeVideo > 0 && thumbnailReady && isOpenableVideo && !mayShowThumbnailOnly) {
-			mViewPagerParent.postDelayed(() -> loadImageVideo(reload, false, 0), waitBeforeVideo);
+			viewPagerParent.postDelayed(() -> loadImageVideo(reload, false, 0), waitBeforeVideo);
 			return;
 		}
 		if (isVideo && !isOpenableVideo || isOpenableVideo && mayShowThumbnailOnly) {
@@ -297,15 +297,15 @@ public class PagerUnit implements PagerInstance.Callback {
 			holder.photoView.setDrawDimForCurrentImage(false);
 		}
 		holder.playButton.setVisibility(View.GONE);
-		Uri uri = galleryItem.getFileUri(mGalleryInstance.locator);
+		Uri uri = galleryItem.getFileUri(galleryInstance.locator);
 		File cachedFile = cacheManager.getMediaFile(uri, true);
 		if (cachedFile == null) {
-			showError(holder, mGalleryInstance.context.getString(R.string.message_cache_unavailable));
+			showError(holder, galleryInstance.context.getString(R.string.message_cache_unavailable));
 		} else if (isImage) {
-			mImageUnit.applyImage(uri, cachedFile, reload);
+			imageUnit.applyImage(uri, cachedFile, reload);
 		} else if (isVideo) {
-			mImageUnit.interrupt(true);
-			mVideoUnit.applyVideo(uri, cachedFile, reload);
+			imageUnit.interrupt(true);
+			videoUnit.applyVideo(uri, cachedFile, reload);
 		}
 	}
 
@@ -314,7 +314,7 @@ public class PagerUnit implements PagerInstance.Callback {
 		if (unbind) {
 			ImageLoader.getInstance().unbind(holder.photoView);
 		}
-		Uri uri = galleryItem.getThumbnailUri(mGalleryInstance.locator);
+		Uri uri = galleryItem.getThumbnailUri(galleryInstance.locator);
 		if (uri != null && galleryItem.width > 0 && galleryItem.height > 0) {
 			CacheManager cacheManager = CacheManager.getInstance();
 			File file = cacheManager.getThumbnailFile(cacheManager.getCachedFileKey(uri));
@@ -325,7 +325,7 @@ public class PagerUnit implements PagerInstance.Callback {
 					holder.simpleBitmapDrawable = new SimpleBitmapDrawable(bitmap, galleryItem.width,
 							galleryItem.height);
 					boolean fitScreen = false;
-					if (galleryItem.isVideo(mGalleryInstance.locator)) {
+					if (galleryItem.isVideo(galleryInstance.locator)) {
 						fitScreen = true;
 						keepScale = false;
 					}
@@ -340,34 +340,34 @@ public class PagerUnit implements PagerInstance.Callback {
 
 	@Override
 	public void showError(PagerInstance.ViewHolder holder, String message) {
-		if (holder == mPagerInstance.currentHolder) {
-			mGalleryInstance.callback.modifySystemUiVisibility(GalleryInstance.FLAG_LOCKED_ERROR, true);
+		if (holder == pagerInstance.currentHolder) {
+			galleryInstance.callback.modifySystemUiVisibility(GalleryInstance.FLAG_LOCKED_ERROR, true);
 			holder.photoView.clearInitialScaleAnimationData();
 			holder.recyclePhotoView();
 			interrupt(false);
 			holder.errorView.setVisibility(View.VISIBLE);
 			holder.errorText.setText(!StringUtils.isEmpty(message) ? message
-					: mGalleryInstance.context.getString(R.string.message_unknown_error));
+					: galleryInstance.context.getString(R.string.message_unknown_error));
 			holder.progressBar.cancelVisibilityTransient();
 		}
 	}
 
-	private final PhotoView.Listener mPhotoViewListener = new PhotoView.Listener() {
+	private final PhotoView.Listener photoViewListener = new PhotoView.Listener() {
 		@Override
 		public void onClick(PhotoView photoView, boolean image, float x, float y) {
-			if (!mGalleryInstance.callback.isGalleryMode()) {
-				GalleryItem galleryItem = mPagerInstance.currentHolder.galleryItem;
-				View playButton = mPagerInstance.currentHolder.playButton;
-				if (playButton.getVisibility() == View.VISIBLE && galleryItem.isVideo(mGalleryInstance.locator)
-						&& !mVideoUnit.isCreated()) {
+			if (!galleryInstance.callback.isGalleryMode()) {
+				GalleryItem galleryItem = pagerInstance.currentHolder.galleryItem;
+				View playButton = pagerInstance.currentHolder.playButton;
+				if (playButton.getVisibility() == View.VISIBLE && galleryItem.isVideo(galleryInstance.locator)
+						&& !videoUnit.isCreated()) {
 					int centerX = playButton.getLeft() + playButton.getWidth() / 2;
 					int centerY = playButton.getTop() + playButton.getHeight() / 2;
 					int size = Math.min(playButton.getWidth(), playButton.getHeight());
 					float distance = (float) Math.sqrt((centerX - x) * (centerX - x) + (centerY - y) * (centerY - y));
 					if (distance <= size / 3f * 2f) {
-						if (!galleryItem.isOpenableVideo(mGalleryInstance.locator)) {
-							NavigationUtils.handleUri(mGalleryInstance.context, mGalleryInstance.chanName, galleryItem
-									.getFileUri(mGalleryInstance.locator), NavigationUtils.BrowserType.EXTERNAL);
+						if (!galleryItem.isOpenableVideo(galleryInstance.locator)) {
+							NavigationUtils.handleUri(galleryInstance.context, galleryInstance.chanName, galleryItem
+									.getFileUri(galleryInstance.locator), NavigationUtils.BrowserType.EXTERNAL);
 						} else {
 							loadImageVideo(false, false, 0);
 						}
@@ -375,34 +375,34 @@ public class PagerUnit implements PagerInstance.Callback {
 					}
 				}
 				if (image) {
-					mGalleryInstance.callback.toggleSystemUIVisibility(GalleryInstance.FLAG_LOCKED_USER);
+					galleryInstance.callback.toggleSystemUIVisibility(GalleryInstance.FLAG_LOCKED_USER);
 				} else {
-					mGalleryInstance.callback.navigateGalleryOrFinish();
+					galleryInstance.callback.navigateGalleryOrFinish();
 				}
 			}
 		}
 
-		private boolean mSwiping = false;
+		private boolean swiping = false;
 
 		@Override
 		public void onVerticalSwipe(PhotoView photoView, float value) {
 			boolean swiping = value != 0f;
-			if (mSwiping != swiping) {
-				mSwiping = swiping;
-				mVideoUnit.handleSwipingContent(mSwiping, true);
+			if (this.swiping != swiping) {
+				this.swiping = swiping;
+				videoUnit.handleSwipingContent(swiping, true);
 			}
-			mGalleryInstance.callback.modifyVerticalSwipeState(value);
+			galleryInstance.callback.modifyVerticalSwipeState(value);
 		}
 
 		@Override
 		public boolean onClose(PhotoView photoView) {
-			mGalleryInstance.callback.navigateGalleryOrFinish();
+			galleryInstance.callback.navigateGalleryOrFinish();
 			return true;
 		}
 	};
 
 	private static class PlayShape extends Shape {
-		private final Path mPath = new Path();
+		private final Path path = new Path();
 
 		@Override
 		public void draw(Canvas canvas, Paint paint) {
@@ -415,7 +415,7 @@ public class PagerUnit implements PagerInstance.Callback {
 			paint.setColor(Color.WHITE);
 			canvas.drawCircle(width / 2f, height / 2f, radius, paint);
 			paint.setStyle(Paint.Style.FILL);
-			Path path = mPath;
+			Path path = this.path;
 			float side = size / 48f * 16f;
 			float altitude = (float) (side * Math.sqrt(3f) / 2f);
 			path.moveTo(width / 2f + altitude * 2f / 3f, height / 2f);
@@ -428,21 +428,21 @@ public class PagerUnit implements PagerInstance.Callback {
 	}
 
 	private class PagerAdapter implements PhotoViewPager.Adapter {
-		private final ArrayList<GalleryItem> mGalleryItems;
+		private final ArrayList<GalleryItem> galleryItems;
 
-		private int mWaitBeforeVideo = 0;
+		private int waitBeforeVideo = 0;
 
 		public PagerAdapter(ArrayList<GalleryItem> galleryItems) {
-			mGalleryItems = galleryItems;
+			this.galleryItems = galleryItems;
 		}
 
 		public void setWaitBeforeNextVideo(int waitBeforeVideo) {
-			mWaitBeforeVideo = waitBeforeVideo;
+			this.waitBeforeVideo = waitBeforeVideo;
 		}
 
 		@Override
 		public View onCreateView(ViewGroup parent) {
-			View view = LayoutInflater.from(mGalleryInstance.context).inflate(R.layout.list_item_gallery,
+			View view = LayoutInflater.from(galleryInstance.context).inflate(R.layout.list_item_gallery,
 					parent, false);
 			PagerInstance.ViewHolder holder = new PagerInstance.ViewHolder();
 			holder.photoView = (PhotoView) view.findViewById(R.id.photoView);
@@ -452,7 +452,7 @@ public class PagerUnit implements PagerInstance.Callback {
 			holder.progressBar = (CircularProgressBar) view.findViewById(android.R.id.progress);
 			holder.playButton = view.findViewById(R.id.play);
 			holder.playButton.setBackground(new ShapeDrawable(new PlayShape()));
-			holder.photoView.setListener(mPhotoViewListener);
+			holder.photoView.setListener(photoViewListener);
 			view.setTag(holder);
 			return view;
 		}
@@ -463,11 +463,11 @@ public class PagerUnit implements PagerInstance.Callback {
 		}
 
 		private void applySideViewData(PagerInstance.ViewHolder holder, int index, boolean active) {
-			GalleryItem galleryItem = mGalleryItems.get(index);
+			GalleryItem galleryItem = galleryItems.get(index);
 			holder.playButton.setVisibility(View.GONE);
 			holder.errorView.setVisibility(View.GONE);
 			boolean hasValidImage = holder.galleryItem == galleryItem && holder.fullLoaded &&
-					!galleryItem.isVideo(mGalleryInstance.locator);
+					!galleryItem.isVideo(galleryInstance.locator);
 			if (hasValidImage) {
 				if (holder.animatedPngDecoder != null || holder.gifDecoder != null) {
 					holder.recyclePhotoView();
@@ -486,10 +486,10 @@ public class PagerUnit implements PagerInstance.Callback {
 				boolean success = presetThumbnail(holder, galleryItem, false, true);
 				if (!success) {
 					holder.recyclePhotoView();
-					if (mGalleryInstance.callback.isGalleryWindow() || Preferences.isLoadThumbnails()) {
-						Uri thumbnailUri = galleryItem.getThumbnailUri(mGalleryInstance.locator);
+					if (galleryInstance.callback.isGalleryWindow() || Preferences.isLoadThumbnails()) {
+						Uri thumbnailUri = galleryItem.getThumbnailUri(galleryInstance.locator);
 						if (thumbnailUri != null) {
-							ImageLoader.getInstance().loadImage(thumbnailUri, mGalleryInstance.chanName, null,
+							ImageLoader.getInstance().loadImage(thumbnailUri, galleryInstance.chanName, null,
 									new LoadThumbnailCallback(holder.photoView, holder, galleryItem), false);
 						}
 					}
@@ -497,60 +497,60 @@ public class PagerUnit implements PagerInstance.Callback {
 			}
 		}
 
-		private int mPreviousIndex = -1;
+		private int previousIndex = -1;
 
 		@Override
-		public void onPositionChange(PhotoViewPager view, int index, View currentView, View leftView, View rightView,
+		public void onPositionChange(PhotoViewPager view, int index, View centerView, View leftView, View rightView,
 				boolean manually) {
 			boolean mayShowThumbnailOnly = !manually && !Preferences.isVideoPlayAfterScroll();
-			PagerInstance.ViewHolder holder = (PagerInstance.ViewHolder) currentView.getTag();
-			if (index < mPreviousIndex) {
-				mPagerInstance.scrollingLeft = true;
-			} else if (index > mPreviousIndex) {
-				mPagerInstance.scrollingLeft = false;
+			PagerInstance.ViewHolder holder = (PagerInstance.ViewHolder) centerView.getTag();
+			if (index < previousIndex) {
+				pagerInstance.scrollingLeft = true;
+			} else if (index > previousIndex) {
+				pagerInstance.scrollingLeft = false;
 			}
-			mPreviousIndex = index;
-			mPagerInstance.leftHolder = leftView != null ? (PagerInstance.ViewHolder) leftView.getTag() : null;
-			mPagerInstance.currentHolder = holder;
-			mPagerInstance.rightHolder = rightView != null ? (PagerInstance.ViewHolder) rightView.getTag() : null;
+			previousIndex = index;
+			pagerInstance.leftHolder = leftView != null ? (PagerInstance.ViewHolder) leftView.getTag() : null;
+			pagerInstance.currentHolder = holder;
+			pagerInstance.rightHolder = rightView != null ? (PagerInstance.ViewHolder) rightView.getTag() : null;
 			interrupt(false);
-			if (mPagerInstance.leftHolder != null) {
-				applySideViewData(mPagerInstance.leftHolder, index - 1, false);
+			if (pagerInstance.leftHolder != null) {
+				applySideViewData(pagerInstance.leftHolder, index - 1, false);
 			}
-			if (mPagerInstance.rightHolder != null) {
-				applySideViewData(mPagerInstance.rightHolder, index + 1, false);
+			if (pagerInstance.rightHolder != null) {
+				applySideViewData(pagerInstance.rightHolder, index + 1, false);
 			}
 			applySideViewData(holder, index, true);
-			GalleryItem galleryItem = mGalleryItems.get(index);
+			GalleryItem galleryItem = galleryItems.get(index);
 			if (holder.galleryItem != galleryItem || !holder.fullLoaded) {
 				holder.galleryItem = galleryItem;
-				loadImageVideo(false, mayShowThumbnailOnly, mWaitBeforeVideo);
-				mWaitBeforeVideo = 0;
+				loadImageVideo(false, mayShowThumbnailOnly, waitBeforeVideo);
+				waitBeforeVideo = 0;
 			} else {
-				mGalleryInstance.callback.invalidateOptionsMenu();
-				mGalleryInstance.callback.modifySystemUiVisibility(GalleryInstance.FLAG_LOCKED_ERROR, false);
+				galleryInstance.callback.invalidateOptionsMenu();
+				galleryInstance.callback.modifySystemUiVisibility(GalleryInstance.FLAG_LOCKED_ERROR, false);
 			}
 			if (galleryItem.size <= 0) {
-				Uri uri = galleryItem.getFileUri(mGalleryInstance.locator);
+				Uri uri = galleryItem.getFileUri(galleryInstance.locator);
 				File cachedFile = CacheManager.getInstance().getMediaFile(uri, false);
 				if (cachedFile != null && cachedFile.exists()) {
 					galleryItem.size = (int) cachedFile.length();
 				}
 			}
-			mGalleryInstance.callback.updateTitle();
-			if (galleryItem.postNumber != null && mResumed && !mGalleryInstance.callback.isGalleryMode()) {
-				mGalleryInstance.callback.navigatePost(galleryItem, false);
+			galleryInstance.callback.updateTitle();
+			if (galleryItem.postNumber != null && resumed && !galleryInstance.callback.isGalleryMode()) {
+				galleryInstance.callback.navigatePost(galleryItem, false);
 			}
 		}
 
 		@Override
 		public void onSwipingStateChange(PhotoViewPager view, boolean swiping) {
-			mVideoUnit.handleSwipingContent(swiping, false);
+			videoUnit.handleSwipingContent(swiping, false);
 		}
 
 		public void recycleAll() {
-			for (int i = 0; i < mViewPager.getChildCount(); i++) {
-				PagerInstance.ViewHolder holder = (PagerInstance.ViewHolder) mViewPager.getChildAt(i).getTag();
+			for (int i = 0; i < viewPager.getChildCount(); i++) {
+				PagerInstance.ViewHolder holder = (PagerInstance.ViewHolder) viewPager.getChildAt(i).getTag();
 				holder.recyclePhotoView();
 				holder.fullLoaded = false;
 			}
@@ -558,19 +558,19 @@ public class PagerUnit implements PagerInstance.Callback {
 	}
 
 	private class LoadThumbnailCallback extends ImageLoader.Callback<PhotoView> {
-		private final PagerInstance.ViewHolder mHolder;
-		private final GalleryItem mGalleryItem;
+		private final PagerInstance.ViewHolder holder;
+		private final GalleryItem galleryItem;
 
 		public LoadThumbnailCallback(PhotoView view, PagerInstance.ViewHolder holder, GalleryItem galleryItem) {
 			super(view);
-			mHolder = holder;
-			mGalleryItem = galleryItem;
+			this.holder = holder;
+			this.galleryItem = galleryItem;
 		}
 
 		@Override
 		public void onSuccess(Bitmap bitmap) {
-			if (!mHolder.photoView.hasImage() && mHolder.galleryItem == mGalleryItem) {
-				presetThumbnail(mHolder, mGalleryItem, false, true);
+			if (!holder.photoView.hasImage() && holder.galleryItem == galleryItem) {
+				presetThumbnail(holder, galleryItem, false, true);
 			}
 		}
 

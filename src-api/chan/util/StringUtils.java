@@ -389,7 +389,7 @@ public class StringUtils {
 							value = Integer.parseInt(entity.substring(1));
 						}
 					} catch (NumberFormatException e) {
-						// Ignore
+						// Not a number, ignore exception
 					}
 				} else {
 					value = HtmlParser.SCHEMA.getEntity(entity);

@@ -51,8 +51,8 @@ public class FavoritesStorage extends StorageManager.Storage {
 		return INSTANCE;
 	}
 
-	private final HashMap<String, FavoriteItem> mFavoriteItemsMap = new HashMap<>();
-	private final ArrayList<FavoriteItem> mFavoriteItemsList = new ArrayList<>();
+	private final HashMap<String, FavoriteItem> favoriteItemsMap = new HashMap<>();
+	private final ArrayList<FavoriteItem> favoriteItemsList = new ArrayList<>();
 
 	private FavoritesStorage() {
 		super("favorites", 2000, 10000);
@@ -78,8 +78,8 @@ public class FavoritesStorage extends StorageManager.Storage {
 							FavoriteItem favoriteItem = new FavoriteItem(chanName, boardName, threadNumber,
 									title, modifiedTitle, watcherEnabled, postsCount, newPostsCount,
 									hasNewPosts, watcherValidator);
-							mFavoriteItemsMap.put(makeKey(chanName, boardName, threadNumber), favoriteItem);
-							mFavoriteItemsList.add(favoriteItem);
+							favoriteItemsMap.put(makeKey(chanName, boardName, threadNumber), favoriteItem);
+							favoriteItemsList.add(favoriteItem);
 						} catch (JSONException e) {
 							throw new RuntimeException(e);
 						}
@@ -91,8 +91,8 @@ public class FavoritesStorage extends StorageManager.Storage {
 
 	@Override
 	public Object onClone() {
-		ArrayList<FavoriteItem> favoriteItems = new ArrayList<>(mFavoriteItemsList.size());
-		for (FavoriteItem favoriteItem : mFavoriteItemsList) {
+		ArrayList<FavoriteItem> favoriteItems = new ArrayList<>(favoriteItemsList.size());
+		for (FavoriteItem favoriteItem : favoriteItemsList) {
 			favoriteItems.add(new FavoriteItem(favoriteItem));
 		}
 		return favoriteItems;
@@ -127,7 +127,7 @@ public class FavoritesStorage extends StorageManager.Storage {
 		return null;
 	}
 
-	private final WeakObservable<Observer> mObservable = new WeakObservable<>();
+	private final WeakObservable<Observer> observable = new WeakObservable<>();
 
 	public static final int ACTION_ADD = 0;
 	public static final int ACTION_REMOVE = 1;
@@ -141,7 +141,7 @@ public class FavoritesStorage extends StorageManager.Storage {
 	}
 
 	public WeakObservable<Observer> getObservable() {
-		return mObservable;
+		return observable;
 	}
 
 	public boolean canSortManually() {
@@ -149,7 +149,7 @@ public class FavoritesStorage extends StorageManager.Storage {
 	}
 
 	private void notifyFavoritesUpdate(FavoriteItem favoriteItem, int action) {
-		for (Observer observer : mObservable) {
+		for (Observer observer : observable) {
 			observer.onFavoritesUpdate(favoriteItem, action);
 		}
 	}
@@ -163,7 +163,7 @@ public class FavoritesStorage extends StorageManager.Storage {
 	}
 
 	public FavoriteItem getFavorite(String chanName, String boardName, String threadNumber) {
-		return mFavoriteItemsMap.get(makeKey(chanName, boardName, threadNumber));
+		return favoriteItemsMap.get(makeKey(chanName, boardName, threadNumber));
 	}
 
 	public boolean hasFavorite(String chanName, String boardName, String threadNumber) {
@@ -174,7 +174,7 @@ public class FavoritesStorage extends StorageManager.Storage {
 		if (!canSortManually()) {
 			switch (Preferences.getFavoritesOrder()) {
 				case Preferences.FAVORITES_ORDER_BY_TITLE: {
-					Collections.sort(mFavoriteItemsList, mTitlesComparator);
+					Collections.sort(favoriteItemsList, titlesComparator);
 					return true;
 				}
 			}
@@ -190,12 +190,12 @@ public class FavoritesStorage extends StorageManager.Storage {
 
 	public void add(FavoriteItem favoriteItem) {
 		if (!hasFavorite(favoriteItem.chanName, favoriteItem.boardName, favoriteItem.threadNumber)) {
-			mFavoriteItemsMap.put(makeKey(favoriteItem), favoriteItem);
+			favoriteItemsMap.put(makeKey(favoriteItem), favoriteItem);
 			int order = Preferences.getFavoritesOrder();
 			if (order == Preferences.FAVORITES_ORDER_ADD_TO_THE_TOP) {
-				mFavoriteItemsList.add(0, favoriteItem);
+				favoriteItemsList.add(0, favoriteItem);
 			} else {
-				mFavoriteItemsList.add(favoriteItem);
+				favoriteItemsList.add(favoriteItem);
 			}
 			sortIfNeededInternal();
 			notifyFavoritesUpdate(favoriteItem, ACTION_ADD);
@@ -226,11 +226,11 @@ public class FavoritesStorage extends StorageManager.Storage {
 			String toBoardName, String toThreadNumber) {
 		String fromKey = makeKey(chanName, fromBoardName, fromThreadNumber);
 		String toKey = makeKey(chanName, toBoardName, toThreadNumber);
-		FavoriteItem fromFavoriteItem = mFavoriteItemsMap.get(fromKey);
+		FavoriteItem fromFavoriteItem = favoriteItemsMap.get(fromKey);
 		if (fromFavoriteItem != null) {
-			int fromIndex = mFavoriteItemsList.indexOf(fromFavoriteItem);
+			int fromIndex = favoriteItemsList.indexOf(fromFavoriteItem);
 			remove(chanName, fromBoardName, fromThreadNumber);
-			if (mFavoriteItemsMap.get(toKey) == null) {
+			if (favoriteItemsMap.get(toKey) == null) {
 				FavoriteItem toFavoriteItem = new FavoriteItem();
 				toFavoriteItem.chanName = chanName;
 				toFavoriteItem.boardName = toBoardName;
@@ -244,16 +244,16 @@ public class FavoritesStorage extends StorageManager.Storage {
 				toFavoriteItem.hasNewPosts = fromFavoriteItem.hasNewPosts;
 				toFavoriteItem.watcherValidator = fromFavoriteItem.watcherValidator;
 				add(toFavoriteItem);
-				moveAfter(toFavoriteItem, fromIndex > 0 ? mFavoriteItemsList.get(fromIndex - 1) : null);
+				moveAfter(toFavoriteItem, fromIndex > 0 ? favoriteItemsList.get(fromIndex - 1) : null);
 			}
 			serialize();
 		}
 	}
 
 	public void moveAfter(FavoriteItem favoriteItem, FavoriteItem afterFavoriteItem) {
-		if (canSortManually() && mFavoriteItemsList.remove(favoriteItem)) {
-			int index = mFavoriteItemsList.indexOf(afterFavoriteItem) + 1;
-			mFavoriteItemsList.add(index, favoriteItem);
+		if (canSortManually() && favoriteItemsList.remove(favoriteItem)) {
+			int index = favoriteItemsList.indexOf(afterFavoriteItem) + 1;
+			favoriteItemsList.add(index, favoriteItem);
 			serialize();
 		}
 	}
@@ -321,9 +321,9 @@ public class FavoritesStorage extends StorageManager.Storage {
 	}
 
 	public void remove(String chanName, String boardName, String threadNumber) {
-		FavoriteItem favoriteItem = mFavoriteItemsMap.remove(makeKey(chanName, boardName, threadNumber));
+		FavoriteItem favoriteItem = favoriteItemsMap.remove(makeKey(chanName, boardName, threadNumber));
 		if (favoriteItem != null) {
-			mFavoriteItemsList.remove(favoriteItem);
+			favoriteItemsList.remove(favoriteItem);
 			if (favoriteItem.watcherEnabled) {
 				favoriteItem.watcherEnabled = false;
 				notifyFavoritesUpdate(favoriteItem, ACTION_WATCHER_DISABLE);
@@ -344,14 +344,14 @@ public class FavoritesStorage extends StorageManager.Storage {
 	private ArrayList<FavoriteItem> getFavorites(String chanName, boolean threads, boolean boards,
 			boolean orderByBoardName) {
 		ArrayList<FavoriteItem> favoriteItems = new ArrayList<>();
-		for (FavoriteItem favoriteItem : mFavoriteItemsList) {
+		for (FavoriteItem favoriteItem : favoriteItemsList) {
 			if ((chanName == null || favoriteItem.chanName.equals(chanName)) && (threads && boards
 					|| favoriteItem.threadNumber != null && threads || favoriteItem.threadNumber == null && boards)) {
 				favoriteItems.add(favoriteItem);
 			}
 		}
-		Comparator<FavoriteItem> comparator = orderByBoardName ? mIdentifiersComparator
-				: mChanNameIndexAscendingComparator;
+		Comparator<FavoriteItem> comparator = orderByBoardName ? identifiersComparator
+				: chanNameIndexAscendingComparator;
 		Collections.sort(favoriteItems, comparator);
 		return favoriteItems;
 	}
@@ -368,15 +368,15 @@ public class FavoritesStorage extends StorageManager.Storage {
 		return StringUtils.compare(lhs.threadNumber, rhs.threadNumber, false);
 	}
 
-	private final Comparator<FavoriteItem> mChanNameIndexAscendingComparator = (lhs, rhs) -> {
+	private final Comparator<FavoriteItem> chanNameIndexAscendingComparator = (lhs, rhs) -> {
 		int result = compareChanNames(lhs, rhs);
 		if (result != 0) {
 			return result;
 		}
-		return mFavoriteItemsList.indexOf(lhs) - mFavoriteItemsList.indexOf(rhs);
+		return favoriteItemsList.indexOf(lhs) - favoriteItemsList.indexOf(rhs);
 	};
 
-	private final Comparator<FavoriteItem> mIdentifiersComparator = (lhs, rhs) -> {
+	private final Comparator<FavoriteItem> identifiersComparator = (lhs, rhs) -> {
 		int result = compareChanNames(lhs, rhs);
 		if (result != 0) {
 			return result;
@@ -389,10 +389,10 @@ public class FavoritesStorage extends StorageManager.Storage {
 		if (result != 0) {
 			return result;
 		}
-		return mFavoriteItemsList.indexOf(lhs) - mFavoriteItemsList.indexOf(rhs);
+		return favoriteItemsList.indexOf(lhs) - favoriteItemsList.indexOf(rhs);
 	};
 
-	private final Comparator<FavoriteItem> mTitlesComparator = (lhs, rhs) -> {
+	private final Comparator<FavoriteItem> titlesComparator = (lhs, rhs) -> {
 		int result = compareChanNames(lhs, rhs);
 		if (result != 0) {
 			return result;

@@ -36,12 +36,12 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 
 // Shows long click transitions. Can work as ListView parent without click listeners.
 public class ClickableView extends FrameLayout implements View.OnClickListener, View.OnLongClickListener {
-	private WeakReference<AbsListView> mListParent;
+	private WeakReference<AbsListView> listParent;
 
-	private View.OnClickListener mOnClickListener;
-	private View.OnLongClickListener mOnLongClickListener;
+	private View.OnClickListener onClickListener;
+	private View.OnLongClickListener onLongClickListener;
 
-	private boolean mCallClickOnUp = false;
+	private boolean callClickOnUp = false;
 
 	public ClickableView(Context context) {
 		super(context);
@@ -59,10 +59,10 @@ public class ClickableView extends FrameLayout implements View.OnClickListener, 
 		super.setOnLongClickListener(this);
 	}
 
-	private boolean mIsTap = false;
+	private boolean isTap = false;
 
-	private final Runnable mTapRunnable = () -> {
-		mIsTap = true;
+	private final Runnable tapRunnable = () -> {
+		isTap = true;
 		Drawable drawable = getBackground();
 		if (drawable != null) {
 			drawable.setState(ResourceUtils.PRESSED_STATE);
@@ -73,7 +73,7 @@ public class ClickableView extends FrameLayout implements View.OnClickListener, 
 		}
 	};
 
-	private final Runnable mClickRunnable = () -> mOnClickListener.onClick(ClickableView.this);
+	private final Runnable clickRunnable = () -> onClickListener.onClick(ClickableView.this);
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
@@ -82,27 +82,27 @@ public class ClickableView extends FrameLayout implements View.OnClickListener, 
 		}
 		switch (event.getAction()) {
 			case MotionEvent.ACTION_DOWN: {
-				mCallClickOnUp = false;
-				mIsTap = false;
+				callClickOnUp = false;
+				isTap = false;
 				Drawable drawable = getBackground();
 				boolean listParent = isListParent();
-				if ((mOnLongClickListener != null || listParent) && drawable != null) {
+				if ((onLongClickListener != null || listParent) && drawable != null) {
 					if (!(listParent && C.API_LOLLIPOP && drawable instanceof RippleDrawable)) {
-						postDelayed(mTapRunnable, ViewConfiguration.getTapTimeout());
+						postDelayed(tapRunnable, ViewConfiguration.getTapTimeout());
 					}
 				}
 				break;
 			}
 			case MotionEvent.ACTION_UP: {
-				if (mCallClickOnUp) {
-					post(mClickRunnable);
-					mCallClickOnUp = false;
+				if (callClickOnUp) {
+					post(clickRunnable);
+					callClickOnUp = false;
 				}
 			}
 			case MotionEvent.ACTION_CANCEL: {
-				removeCallbacks(mTapRunnable);
+				removeCallbacks(tapRunnable);
 				Drawable drawable = getBackground();
-				if (mIsTap && !C.API_LOLLIPOP && drawable != null) {
+				if (isTap && !C.API_LOLLIPOP && drawable != null) {
 					int[] lastState = drawable.getState();
 					drawable.setState(ResourceUtils.PRESSED_STATE);
 					Drawable current = drawable.getCurrent();
@@ -126,27 +126,27 @@ public class ClickableView extends FrameLayout implements View.OnClickListener, 
 	protected void onAttachedToWindow() {
 		super.onAttachedToWindow();
 		AbsListView listView = getListViewParent(this);
-		mListParent = listView != null ? new WeakReference<>(listView) : null;
+		listParent = listView != null ? new WeakReference<>(listView) : null;
 	}
 
 	@Override
 	protected void onDetachedFromWindow() {
 		super.onDetachedFromWindow();
-		mListParent = null;
+		listParent = null;
 	}
 
 	@Override
-	public void setOnClickListener(OnClickListener l) {
-		mOnClickListener = l;
+	public void setOnClickListener(OnClickListener listener) {
+		onClickListener = listener;
 	}
 
 	@Override
-	public void setOnLongClickListener(OnLongClickListener l) {
-		mOnLongClickListener = l;
+	public void setOnLongClickListener(OnLongClickListener listener) {
+		onLongClickListener = listener;
 	}
 
 	private boolean isListParent() {
-		return mListParent != null && mOnClickListener == null && mOnLongClickListener == null;
+		return listParent != null && onClickListener == null && onLongClickListener == null;
 	}
 
 	private int getListPosition(AbsListView listView) {
@@ -158,19 +158,19 @@ public class ClickableView extends FrameLayout implements View.OnClickListener, 
 		}
 	}
 
-	private long mLastClick;
+	private long lastClick;
 
 	@Override
 	public void onClick(View v) {
 		long t = System.currentTimeMillis();
-		if (t - mLastClick < 200L) {
+		if (t - lastClick < 200L) {
 			return;
 		}
-		mLastClick = t;
-		if (mOnClickListener != null) {
-			mOnClickListener.onClick(v);
+		lastClick = t;
+		if (onClickListener != null) {
+			onClickListener.onClick(v);
 		} else if (isListParent()) {
-			AbsListView listView = mListParent.get();
+			AbsListView listView = listParent.get();
 			if (listView != null) {
 				View view = ListViewUtils.getRootViewInList(this);
 				if (view != null) {
@@ -185,10 +185,10 @@ public class ClickableView extends FrameLayout implements View.OnClickListener, 
 
 	@Override
 	public boolean onLongClick(View v) {
-		if (mOnLongClickListener != null) {
-			return mOnLongClickListener.onLongClick(v);
+		if (onLongClickListener != null) {
+			return onLongClickListener.onLongClick(v);
 		} else if (isListParent()) {
-			AbsListView listView = mListParent.get();
+			AbsListView listView = listParent.get();
 			if (listView != null) {
 				View view = ListViewUtils.getRootViewInList(this);
 				if (view != null) {
@@ -198,13 +198,13 @@ public class ClickableView extends FrameLayout implements View.OnClickListener, 
 							return (boolean) PERFORM_LONG_PRESS.invoke(listView, this, position,
 									listView.getItemIdAtPosition(position));
 						} catch (Exception e) {
-							// Ignore
+							// Reflective operation, ignore exception
 						}
 					}
 				}
 			}
-		} else if (mOnClickListener != null) {
-			mCallClickOnUp = true;
+		} else if (onClickListener != null) {
+			callClickOnUp = true;
 			return true;
 		}
 		return false;
