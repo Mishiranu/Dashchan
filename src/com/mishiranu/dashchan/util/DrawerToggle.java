@@ -47,29 +47,29 @@ import android.widget.ImageView;
 import com.mishiranu.dashchan.C;
 
 public class DrawerToggle implements DrawerLayout.DrawerListener {
-	private final Activity mActivity;
-	private final DrawerLayout mDrawerLayout;
+	private final Activity activity;
+	private final DrawerLayout drawerLayout;
 
-	private final ArrowDrawable mArrowDrawable;
-	private final SlideDrawable mSlideDrawable;
-	private Drawable mHomeAsUpIndicator;
+	private final ArrowDrawable arrowDrawable;
+	private final SlideDrawable slideDrawable;
+	private Drawable homeAsUpIndicator;
 
 	public static final int MODE_DISABLED = 0;
 	public static final int MODE_DRAWER = 1;
 	public static final int MODE_UP = 2;
 
-	private int mMode = MODE_DISABLED;
+	private int mode = MODE_DISABLED;
 
 	public DrawerToggle(Activity activity, DrawerLayout drawerLayout) {
-		mActivity = activity;
-		mDrawerLayout = drawerLayout;
+		this.activity = activity;
+		this.drawerLayout = drawerLayout;
 		if (C.API_LOLLIPOP) {
-			mArrowDrawable = new ArrowDrawable(activity);
-			mSlideDrawable = null;
+			arrowDrawable = new ArrowDrawable(activity);
+			slideDrawable = null;
 		} else {
-			mArrowDrawable = null;
-			mHomeAsUpIndicator = getThemeUpIndicatorObsolete();
-			mSlideDrawable = new SlideDrawable(activity);
+			arrowDrawable = null;
+			homeAsUpIndicator = getThemeUpIndicatorObsolete();
+			slideDrawable = new SlideDrawable(activity);
 		}
 	}
 
@@ -89,9 +89,9 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 	public void setDrawerIndicatorMode(int mode) {
-		if (mMode != mode) {
-			mMode = mode;
-			ActionBar actionBar = mActivity.getActionBar();
+		if (this.mode != mode) {
+			this.mode = mode;
+			ActionBar actionBar = activity.getActionBar();
 			if (mode == MODE_DISABLED) {
 				if (C.API_JELLY_BEAN_MR2) {
 					actionBar.setHomeAsUpIndicator(null);
@@ -100,8 +100,8 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 			} else {
 				actionBar.setDisplayHomeAsUpEnabled(true);
 				if (C.API_LOLLIPOP) {
-					mActivity.getActionBar().setHomeAsUpIndicator(mArrowDrawable);
-					boolean open = mDrawerLayout.isDrawerOpen(Gravity.START) && mArrowDrawable.mPosition == 1f;
+					activity.getActionBar().setHomeAsUpIndicator(arrowDrawable);
+					boolean open = drawerLayout.isDrawerOpen(Gravity.START) && arrowDrawable.position == 1f;
 					if (!open) {
 						ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
 						animator.setDuration(DRAWER_CLOSE_DURATION);
@@ -109,7 +109,7 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 						animator.start();
 					}
 				} else {
-					setActionBarUpIndicatorObsolete(mode == MODE_DRAWER ? mSlideDrawable : mHomeAsUpIndicator);
+					setActionBarUpIndicatorObsolete(mode == MODE_DRAWER ? slideDrawable : homeAsUpIndicator);
 				}
 			}
 		}
@@ -117,39 +117,39 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 	public void syncState() {
-		if (mMode != MODE_DISABLED) {
+		if (mode != MODE_DISABLED) {
 			if (C.API_LOLLIPOP) {
-				mArrowDrawable.setPosition(mMode == MODE_UP || mDrawerLayout.isDrawerOpen(Gravity.START) ? 1f : 0f);
-				mActivity.getActionBar().setHomeAsUpIndicator(mArrowDrawable);
+				arrowDrawable.setPosition(mode == MODE_UP || drawerLayout.isDrawerOpen(Gravity.START) ? 1f : 0f);
+				activity.getActionBar().setHomeAsUpIndicator(arrowDrawable);
 			} else {
-				mSlideDrawable.setPosition(mDrawerLayout.isDrawerOpen(Gravity.START) ? 1f : 0f);
-				setActionBarUpIndicatorObsolete(mMode == MODE_DRAWER ? mSlideDrawable : mHomeAsUpIndicator);
+				slideDrawable.setPosition(drawerLayout.isDrawerOpen(Gravity.START) ? 1f : 0f);
+				setActionBarUpIndicatorObsolete(mode == MODE_DRAWER ? slideDrawable : homeAsUpIndicator);
 			}
 		}
 	}
 
 	public void onConfigurationChanged() {
 		if (!C.API_LOLLIPOP) {
-			mHomeAsUpIndicator = getThemeUpIndicatorObsolete();
+			homeAsUpIndicator = getThemeUpIndicatorObsolete();
 		}
 		syncState();
 	}
 
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if (item != null && item.getItemId() == android.R.id.home) {
-			if (mDrawerLayout.getDrawerLockMode(Gravity.START) != DrawerLayout.LOCK_MODE_UNLOCKED) {
+			if (drawerLayout.getDrawerLockMode(Gravity.START) != DrawerLayout.LOCK_MODE_UNLOCKED) {
 				return false;
 			}
-			if (mMode == MODE_DRAWER) {
-				if (mDrawerLayout.isDrawerVisible(Gravity.START)) {
-					mDrawerLayout.closeDrawer(Gravity.START);
+			if (mode == MODE_DRAWER) {
+				if (drawerLayout.isDrawerVisible(Gravity.START)) {
+					drawerLayout.closeDrawer(Gravity.START);
 				} else {
-					mDrawerLayout.openDrawer(Gravity.START);
+					drawerLayout.openDrawer(Gravity.START);
 				}
 				return true;
-			} else if (mMode == MODE_UP) {
-				if (mDrawerLayout.isDrawerVisible(Gravity.START)) {
-					mDrawerLayout.closeDrawer(Gravity.START);
+			} else if (mode == MODE_UP) {
+				if (drawerLayout.isDrawerVisible(Gravity.START)) {
+					drawerLayout.closeDrawer(Gravity.START);
 					return true;
 				}
 			}
@@ -160,39 +160,39 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 	@Override
 	public void onDrawerSlide(View drawerView, float slideOffset) {
 		if (C.API_LOLLIPOP) {
-			if (mMode == MODE_DRAWER) {
-				mArrowDrawable.setPosition(slideOffset);
+			if (mode == MODE_DRAWER) {
+				arrowDrawable.setPosition(slideOffset);
 			}
 		} else {
-			float glyphOffset = mSlideDrawable.getPosition();
+			float glyphOffset = slideDrawable.getPosition();
 			if (slideOffset > 0.5f) {
 				glyphOffset = Math.max(glyphOffset, Math.max(0.f, slideOffset - 0.5f) * 2);
 			} else {
 				glyphOffset = Math.min(glyphOffset, slideOffset * 2);
 			}
-			mSlideDrawable.setPosition(glyphOffset);
+			slideDrawable.setPosition(glyphOffset);
 		}
 	}
 
 	@Override
 	public void onDrawerOpened(View drawerView) {
 		if (C.API_LOLLIPOP) {
-			if (mMode == MODE_DRAWER) {
-				mArrowDrawable.setPosition(1f);
+			if (mode == MODE_DRAWER) {
+				arrowDrawable.setPosition(1f);
 			}
 		} else {
-			mSlideDrawable.setPosition(1);
+			slideDrawable.setPosition(1);
 		}
 	}
 
 	@Override
 	public void onDrawerClosed(View drawerView) {
 		if (C.API_LOLLIPOP) {
-			if (mMode == MODE_DRAWER) {
-				mArrowDrawable.setPosition(0f);
+			if (mode == MODE_DRAWER) {
+				arrowDrawable.setPosition(0f);
 			}
 		} else {
-			mSlideDrawable.setPosition(0);
+			slideDrawable.setPosition(0);
 		}
 	}
 
@@ -202,83 +202,83 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 	private static final float ARROW_HEAD_ANGLE = (float) Math.toRadians(45);
 
 	private class ArrowDrawable extends Drawable {
-		private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-		private final Path mPath = new Path();
+		private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+		private final Path path = new Path();
 
-		private final float mBarThickness;
-		private final float mTopBottomArrowSize;
-		private final float mBarSize;
-		private final float mMiddleArrowSize;
-		private final float mBarGap;
-		private final int mSize;
+		private final float barThickness;
+		private final float topBottomArrowSize;
+		private final float barSize;
+		private final float middleArrowSize;
+		private final float barGap;
+		private final int size;
 
-		private boolean mVerticalMirror = false;
-		private float mPosition;
+		private boolean verticalMirror = false;
+		private float position;
 
 		public ArrowDrawable(Context context) {
-			mPaint.setAntiAlias(true);
-			mPaint.setColor(0xffffffff);
+			paint.setAntiAlias(true);
+			paint.setColor(0xffffffff);
 			float density = ResourceUtils.obtainDensity(context);
-			mSize = (int) (24f * density);
-			mBarSize = 16f * density;
-			mTopBottomArrowSize = 9.5f * density;
-			mBarThickness = 2f * density;
-			mBarGap = 3f * density;
-			mMiddleArrowSize = 13.6f * density;
-			mPaint.setStyle(Paint.Style.STROKE);
-			mPaint.setStrokeJoin(Paint.Join.ROUND);
-			mPaint.setStrokeCap(Paint.Cap.SQUARE);
-			mPaint.setStrokeWidth(mBarThickness);
+			size = (int) (24f * density);
+			barSize = 16f * density;
+			topBottomArrowSize = 9.5f * density;
+			barThickness = 2f * density;
+			barGap = 3f * density;
+			middleArrowSize = 13.6f * density;
+			paint.setStyle(Paint.Style.STROKE);
+			paint.setStrokeJoin(Paint.Join.ROUND);
+			paint.setStrokeCap(Paint.Cap.SQUARE);
+			paint.setStrokeWidth(barThickness);
 		}
 
 		public void setPosition(float position) {
 			position = Math.min(1f, Math.max(0f, position));
 			if (position == 1f) {
-				mVerticalMirror = true;
+				verticalMirror = true;
 			} else if (position == 0f) {
-				mVerticalMirror = false;
+				verticalMirror = false;
 			}
-			mPosition = position;
+			this.position = position;
 			invalidateSelf();
 		}
 
 		@Override
 		public int getIntrinsicWidth() {
-			return mSize;
+			return size;
 		}
 
 		@Override
 		public int getIntrinsicHeight() {
-			return mSize;
+			return size;
 		}
 
 		@Override
 		public void draw(Canvas canvas) {
 			Rect bounds = getBounds();
 			boolean rtl = isLayoutRtl();
-			float position = mPosition;
-			float arrowSize = AnimationUtils.lerp(mBarSize, mTopBottomArrowSize, position);
-			float middleBarSize = AnimationUtils.lerp(mBarSize, mMiddleArrowSize, position);
-			float middleBarCut = AnimationUtils.lerp(0f, mBarThickness / 2f, position);
+			float position = this.position;
+			float arrowSize = AnimationUtils.lerp(barSize, topBottomArrowSize, position);
+			float middleBarSize = AnimationUtils.lerp(barSize, middleArrowSize, position);
+			float middleBarCut = AnimationUtils.lerp(0f, barThickness / 2f, position);
 			float rotation = AnimationUtils.lerp(0f, ARROW_HEAD_ANGLE, position);
 			float canvasRotate = AnimationUtils.lerp(rtl ? 0f : -180f, rtl ? 180f : 0f, position);
-			float topBottomBarOffset = AnimationUtils.lerp(mBarGap + mBarThickness, 0f, position);
-			mPath.rewind();
+			float topBottomBarOffset = AnimationUtils.lerp(barGap + barThickness, 0f, position);
+			path.rewind();
 			float arrowEdge = -middleBarSize / 2f + 0.5f;
-			mPath.moveTo(arrowEdge + middleBarCut, 0f);
-			mPath.rLineTo(middleBarSize - middleBarCut, 0f);
+			path.moveTo(arrowEdge + middleBarCut, 0f);
+			path.rLineTo(middleBarSize - middleBarCut, 0f);
 			float arrowWidth = Math.round(arrowSize * Math.cos(rotation));
 			float arrowHeight = Math.round(arrowSize * Math.sin(rotation));
-			mPath.moveTo(arrowEdge, topBottomBarOffset);
-			mPath.rLineTo(arrowWidth, arrowHeight);
-			mPath.moveTo(arrowEdge, -topBottomBarOffset);
-			mPath.rLineTo(arrowWidth, -arrowHeight);
-			mPath.moveTo(0f, 0f);
-			mPath.close();
+			path.moveTo(arrowEdge, topBottomBarOffset);
+			path.rLineTo(arrowWidth, arrowHeight);
+			path.moveTo(arrowEdge, -topBottomBarOffset);
+			path.rLineTo(arrowWidth, -arrowHeight);
+			path.moveTo(0f, 0f);
+			path.close();
 			canvas.save();
-			canvas.rotate(canvasRotate * ((mVerticalMirror ^ rtl) ? -1f : 1f), bounds.centerX(), bounds.centerY());
+			canvas.rotate(canvasRotate * ((verticalMirror ^ rtl) ? -1f : 1f), bounds.centerX(), bounds.centerY());
 			canvas.translate(bounds.centerX(), bounds.centerY());
-			canvas.drawPath(mPath, mPaint);
+			canvas.drawPath(path, paint);
 			canvas.restore();
 		}
 
@@ -295,48 +295,48 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 	}
 
 	private class StateArrowAnimatorListener implements ValueAnimator.AnimatorUpdateListener {
-		private final boolean mEnable;
+		private final boolean enable;
 
 		public StateArrowAnimatorListener(boolean enable) {
-			mEnable = enable;
+			this.enable = enable;
 		}
 
 		@Override
 		public void onAnimationUpdate(ValueAnimator animation) {
 			float value = (float) animation.getAnimatedValue();
-			mArrowDrawable.setPosition(mEnable ? 1f - value : value);
+			arrowDrawable.setPosition(enable ? 1f - value : value);
 		}
 	}
 
 	private class SlideDrawable extends Drawable {
-		private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-		private final int mSize;
+		private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+		private final int size;
 
-		private float mPosition;
+		private float position;
 
 		private SlideDrawable(Context context) {
-			mPaint.setColor(0xff979797);
+			paint.setColor(0xff979797);
 			float density = ResourceUtils.obtainDensity(context);
-			mSize = (int) (16f * density);
+			size = (int) (16f * density);
 		}
 
 		public void setPosition(float position) {
-			mPosition = position;
+			this.position = position;
 			invalidateSelf();
 		}
 
 		public float getPosition() {
-			return mPosition;
+			return position;
 		}
 
 		@Override
 		public int getIntrinsicWidth() {
-			return mSize;
+			return size;
 		}
 
 		@Override
 		public int getIntrinsicHeight() {
-			return mSize;
+			return size;
 		}
 
 		@Override
@@ -350,10 +350,10 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 				canvas.scale(-1, 1);
 			}
 			canvas.scale(bounds.width() / 48f, bounds.height() / 48f);
-			canvas.translate(-16f * mPosition, 0);
-			canvas.drawRect(0, 4, 30, 12, mPaint);
-			canvas.drawRect(0, 22, 30, 30, mPaint);
-			canvas.drawRect(0, 40, 30, 48, mPaint);
+			canvas.translate(-16f * position, 0);
+			canvas.drawRect(0, 4, 30, 12, paint);
+			canvas.drawRect(0, 22, 30, 30, paint);
+			canvas.drawRect(0, 40, 30, 48, paint);
 			canvas.restore();
 		}
 
@@ -373,28 +373,28 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 
 	private Drawable getThemeUpIndicatorObsolete() {
 		if (C.API_JELLY_BEAN_MR2) {
-			TypedArray a = mActivity.getActionBar().getThemedContext().obtainStyledAttributes(null,
+			TypedArray a = activity.getActionBar().getThemedContext().obtainStyledAttributes(null,
 					THEME_ATTRS, android.R.attr.actionBarStyle, 0);
 			Drawable result = a.getDrawable(0);
 			a.recycle();
 			return result;
 		} else {
-			TypedArray a = mActivity.obtainStyledAttributes(THEME_ATTRS);
+			TypedArray a = activity.obtainStyledAttributes(THEME_ATTRS);
 			Drawable result = a.getDrawable(0);
 			a.recycle();
 			return result;
 		}
 	}
 
-	private ImageView mUpIndicatorView;
+	private ImageView upIndicatorView;
 
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 	private void setActionBarUpIndicatorObsolete(Drawable upDrawable) {
 		if (C.API_JELLY_BEAN_MR2) {
-			mActivity.getActionBar().setHomeAsUpIndicator(upDrawable);
+			activity.getActionBar().setHomeAsUpIndicator(upDrawable);
 		} else {
-			if (mUpIndicatorView == null) {
-				View home = mActivity.findViewById(android.R.id.home);
+			if (upIndicatorView == null) {
+				View home = activity.findViewById(android.R.id.home);
 				if (home == null) {
 					return;
 				}
@@ -407,18 +407,18 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 				View second = parent.getChildAt(1);
 				View up = first.getId() == android.R.id.home ? second : first;
 				if (up instanceof ImageView) {
-					mUpIndicatorView = (ImageView) up;
+					upIndicatorView = (ImageView) up;
 				}
 			}
-			if (mUpIndicatorView != null) {
-				mUpIndicatorView.setImageDrawable(upDrawable);
+			if (upIndicatorView != null) {
+				upIndicatorView.setImageDrawable(upDrawable);
 			}
 		}
 	}
 
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
 	private boolean isLayoutRtl() {
-		return C.API_JELLY_BEAN_MR1 ? mActivity.getWindow().getDecorView().getLayoutDirection()
+		return C.API_JELLY_BEAN_MR1 ? activity.getWindow().getDecorView().getLayoutDirection()
 				== View.LAYOUT_DIRECTION_RTL : false;
 	}
 }

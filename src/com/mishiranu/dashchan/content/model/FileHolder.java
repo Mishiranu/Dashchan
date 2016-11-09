@@ -74,7 +74,7 @@ public abstract class FileHolder implements Serializable {
 		public int height = -1;
 	}
 
-	private transient ImageData mImageData;
+	private transient ImageData imageData;
 
 	private static final XmlPullParserFactory PARSER_FACTORY;
 
@@ -109,8 +109,8 @@ public abstract class FileHolder implements Serializable {
 
 	private ImageData getImageData() {
 		synchronized (this) {
-			if (mImageData == null) {
-				mImageData = new ImageData();
+			if (imageData == null) {
+				imageData = new ImageData();
 				BitmapFactory.Options options = new BitmapFactory.Options();
 				options.inJustDecodeBounds = true;
 				readBitmapSimple(options);
@@ -123,7 +123,7 @@ public abstract class FileHolder implements Serializable {
 						signature = new byte[12];
 						success = IOUtils.readExactlyCheck(input, signature, 0, signature.length);
 					} catch (IOException e) {
-						// Ignore
+						// Ignore exception
 					} finally {
 						IOUtils.close(input);
 					}
@@ -141,19 +141,19 @@ public abstract class FileHolder implements Serializable {
 							type = ImageType.IMAGE_BMP;
 						}
 						if (type != null) {
-							mImageData.type = type;
+							imageData.type = type;
 							boolean rotate = false;
 							if (type == ImageType.IMAGE_JPEG) {
-								mImageData.jpegData = JpegData.extract(this);
-								int rotation = mImageData.jpegData.getRotation();
+								imageData.jpegData = JpegData.extract(this);
+								int rotation = imageData.jpegData.getRotation();
 								rotate = rotation == 90 || rotation == 270;
 							}
 							if (rotate) {
-								mImageData.width = options.outHeight;
-								mImageData.height = options.outWidth;
+								imageData.width = options.outHeight;
+								imageData.height = options.outWidth;
 							} else {
-								mImageData.width = options.outWidth;
-								mImageData.height = options.outHeight;
+								imageData.width = options.outWidth;
+								imageData.height = options.outHeight;
 							}
 						}
 					}
@@ -176,9 +176,9 @@ public abstract class FileHolder implements Serializable {
 											width = -1;
 											height = -1;
 										}
-										mImageData.type = ImageType.IMAGE_SVG;
-										mImageData.width = width;
-										mImageData.height = height;
+										imageData.type = ImageType.IMAGE_SVG;
+										imageData.width = width;
+										imageData.height = height;
 										break OUTER;
 									}
 									break;
@@ -187,13 +187,13 @@ public abstract class FileHolder implements Serializable {
 							parser.next();
 						}
 					} catch (IOException | XmlPullParserException e) {
-						// Ignore
+						// Ignore exception
 					} finally {
 						IOUtils.close(input);
 					}
 				}
 			}
-			return mImageData;
+			return imageData;
 		}
 	}
 
@@ -316,25 +316,25 @@ public abstract class FileHolder implements Serializable {
 	private static class FileFileHolder extends FileHolder {
 		private static final long serialVersionUID = 1L;
 
-		private final File mFile;
+		private final File file;
 
 		public FileFileHolder(File file) {
-			mFile = file;
+			this.file = file;
 		}
 
 		@Override
 		public String getName() {
-			return mFile.getName();
+			return file.getName();
 		}
 
 		@Override
 		public int getSize() {
-			return (int) mFile.length();
+			return (int) file.length();
 		}
 
 		@Override
 		public FileInputStream openInputStream() throws IOException {
-			return new FileInputStream(mFile);
+			return new FileInputStream(file);
 		}
 
 		@Override
@@ -344,7 +344,7 @@ public abstract class FileHolder implements Serializable {
 
 		@Override
 		public Uri toUri() {
-			return Uri.fromFile(mFile);
+			return Uri.fromFile(file);
 		}
 
 		@Override
@@ -353,31 +353,31 @@ public abstract class FileHolder implements Serializable {
 				return true;
 			}
 			if (o instanceof FileFileHolder) {
-				return ((FileFileHolder) o).mFile.equals(mFile);
+				return ((FileFileHolder) o).file.equals(file);
 			}
 			return false;
 		}
 
 		@Override
 		public int hashCode() {
-			return mFile.hashCode();
+			return file.hashCode();
 		}
 
 		private static class FileFileHolderDescriptor implements Descriptor {
-			private final FileInputStream mFileInputStream;
+			private final FileInputStream fileInputStream;
 
 			public FileFileHolderDescriptor(FileInputStream fileInputStream) {
-				mFileInputStream = fileInputStream;
+				this.fileInputStream = fileInputStream;
 			}
 
 			@Override
 			public FileDescriptor getFileDescriptor() throws IOException {
-				return mFileInputStream.getFD();
+				return fileInputStream.getFD();
 			}
 
 			@Override
 			public void close() throws IOException {
-				mFileInputStream.close();
+				fileInputStream.close();
 			}
 		}
 	}
@@ -385,15 +385,15 @@ public abstract class FileHolder implements Serializable {
 	private static class ContentFileHolder extends FileHolder {
 		private static final long serialVersionUID = 1L;
 
-		private final Context mContext;
-		private final String mUriString;
-		private final String mName;
-		private final int mSize;
+		private final Context context;
+		private final String uriString;
+		private final String name;
+		private final int size;
 
 		public ContentFileHolder(Context context, Uri uri, String name, int size) {
-			mContext = context.getApplicationContext();
-			mUriString = uri.toString();
-			mName = name;
+			this.context = context.getApplicationContext();
+			this.uriString = uri.toString();
+			this.name = name;
 			InputStream input = null;
 			try {
 				int newSize = 0;
@@ -405,27 +405,27 @@ public abstract class FileHolder implements Serializable {
 				}
 				size = newSize;
 			} catch (IOException e) {
-				// Ignore
+				// Ignore exception
 			} finally {
 				IOUtils.close(input);
 			}
-			mSize = size;
+			this.size = size;
 		}
 
 		@Override
 		public String getName() {
-			return mName;
+			return name;
 		}
 
 		@Override
 		public int getSize() {
-			return mSize;
+			return size;
 		}
 
 		@Override
 		public InputStream openInputStream() throws IOException {
 			try {
-				return mContext.getContentResolver().openInputStream(toUri());
+				return context.getContentResolver().openInputStream(toUri());
 			} catch (SecurityException e) {
 				throw new IOException(e);
 			}
@@ -434,7 +434,7 @@ public abstract class FileHolder implements Serializable {
 		@Override
 		public Descriptor openDescriptor() throws IOException {
 			try {
-				return new ContentFileHolderDescriptor(mContext.getContentResolver().openFileDescriptor(toUri(), "r"));
+				return new ContentFileHolderDescriptor(context.getContentResolver().openFileDescriptor(toUri(), "r"));
 			} catch (SecurityException e) {
 				throw new IOException(e);
 			}
@@ -442,7 +442,7 @@ public abstract class FileHolder implements Serializable {
 
 		@Override
 		public Uri toUri() {
-			return Uri.parse(mUriString);
+			return Uri.parse(uriString);
 		}
 
 		@Override
@@ -451,36 +451,36 @@ public abstract class FileHolder implements Serializable {
 				return true;
 			}
 			if (o instanceof ContentFileHolder) {
-				return ((ContentFileHolder) o).mUriString.equals(mUriString);
+				return ((ContentFileHolder) o).uriString.equals(uriString);
 			}
 			return false;
 		}
 
 		@Override
 		public int hashCode() {
-			return mUriString.hashCode();
+			return uriString.hashCode();
 		}
 
 		private static class ContentFileHolderDescriptor implements Descriptor {
-			private final ParcelFileDescriptor mParcelFileDescriptor;
+			private final ParcelFileDescriptor parcelFileDescriptor;
 
 			public ContentFileHolderDescriptor(ParcelFileDescriptor parcelFileDescriptor) {
-				mParcelFileDescriptor = parcelFileDescriptor;
+				this.parcelFileDescriptor = parcelFileDescriptor;
 			}
 
 			@Override
 			public FileDescriptor getFileDescriptor() {
-				return mParcelFileDescriptor.getFileDescriptor();
+				return parcelFileDescriptor.getFileDescriptor();
 			}
 
 			@Override
 			public void close() throws IOException {
-				mParcelFileDescriptor.close();
+				parcelFileDescriptor.close();
 			}
 		}
 	}
 
-	private static long sFileNameStart = System.currentTimeMillis();
+	private static long fileNameStart = System.currentTimeMillis();
 
 	public static FileHolder obtain(File file) {
 		return new FileFileHolder(file);
@@ -516,7 +516,7 @@ public abstract class FileHolder implements Serializable {
 								String mimeType = cursor.getString(mimeTypeIndex);
 								if (mimeType != null) {
 									String extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType);
-									name = ++sFileNameStart + "." + extension;
+									name = ++fileNameStart + "." + extension;
 								}
 							}
 						}

@@ -26,8 +26,8 @@ import chan.util.StringUtils;
 
 @Extendable
 public class SimpleEntity implements RequestEntity {
-	private byte[] mData;
-	private String mContentType = "text/plain";
+	private byte[] data;
+	private String contentType = "text/plain";
 
 	@Public
 	public SimpleEntity() {}
@@ -53,7 +53,7 @@ public class SimpleEntity implements RequestEntity {
 
 	@Extendable
 	public void setData(byte[] data) {
-		mData = data;
+		this.data = data;
 	}
 
 	@Extendable
@@ -61,31 +61,31 @@ public class SimpleEntity implements RequestEntity {
 		if (StringUtils.isEmpty(contentType)) {
 			throw new IllegalArgumentException("Invalid content type");
 		}
-		mContentType = contentType;
+		this.contentType = contentType;
 	}
 
 	@Override
 	public String getContentType() {
-		return mContentType;
+		return contentType;
 	}
 
 	@Override
 	public long getContentLength() {
-		return mData != null ? mData.length : 0;
+		return data != null ? data.length : 0;
 	}
 
 	@Override
 	public void write(OutputStream output) throws IOException {
-		if (mData != null) {
-			output.write(mData);
+		if (data != null) {
+			output.write(data);
 		}
 	}
 
 	@Override
 	public RequestEntity copy() {
 		SimpleEntity entity = new SimpleEntity();
-		entity.setData(mData);
-		entity.setContentType(mContentType);
+		entity.setData(data);
+		entity.setContentType(contentType);
 		return entity;
 	}
 }

@@ -48,24 +48,24 @@ import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.PhotoView;
 
 public class ImageUnit {
-	private final PagerInstance mInstance;
+	private final PagerInstance instance;
 
-	private ReadFileTask mReadFileTask;
-	private ReadBitmapCallback mReadBitmapCallback;
+	private ReadFileTask readFileTask;
+	private ReadBitmapCallback readBitmapCallback;
 
 	public ImageUnit(PagerInstance instance) {
-		mInstance = instance;
+		this.instance = instance;
 	}
 
 	public void interrupt(boolean force) {
-		if (force && mReadFileTask != null) {
-			mReadFileTask.cancel();
-			mReadFileTask = null;
-			mReadBitmapCallback = null;
+		if (force && readFileTask != null) {
+			readFileTask.cancel();
+			readFileTask = null;
+			readBitmapCallback = null;
 		}
-		interruptHolder(mInstance.leftHolder);
-		interruptHolder(mInstance.currentHolder);
-		interruptHolder(mInstance.rightHolder);
+		interruptHolder(instance.leftHolder);
+		interruptHolder(instance.currentHolder);
+		interruptHolder(instance.rightHolder);
 	}
 
 	private void interruptHolder(PagerInstance.ViewHolder holder) {
@@ -81,14 +81,14 @@ public class ImageUnit {
 		if (!reload && file.exists()) {
 			applyImageFromFile(file);
 		} else {
-			loadImage(uri, file, mInstance.currentHolder);
+			loadImage(uri, file, instance.currentHolder);
 		}
 	}
 
 	private static final Executor EXECUTOR = ConcurrentUtils.newSingleThreadPool(20000, "DecodeBitmapTask", null, 0);
 
 	private void applyImageFromFile(File file) {
-		PagerInstance.ViewHolder holder = mInstance.currentHolder;
+		PagerInstance.ViewHolder holder = instance.currentHolder;
 		if (attachReadBitmapCallback(holder)) {
 			return;
 		}
@@ -102,13 +102,13 @@ public class ImageUnit {
 		holder.decodeBitmapTask = decodeBitmapTask;
 		if (galleryItem.size <= 0) {
 			galleryItem.size = (int) file.length();
-			mInstance.galleryInstance.callback.updateTitle();
+			instance.galleryInstance.callback.updateTitle();
 		}
-		PagerInstance.ViewHolder nextHolder = mInstance.scrollingLeft ? mInstance.leftHolder : mInstance.rightHolder;
+		PagerInstance.ViewHolder nextHolder = instance.scrollingLeft ? instance.leftHolder : instance.rightHolder;
 		if (nextHolder != null && Preferences.isLoadNearestImage()) {
 			GalleryItem nextGalleryItem = nextHolder.galleryItem;
-			if (nextGalleryItem.isImage(mInstance.galleryInstance.locator)) {
-				Uri nextUri = nextGalleryItem.getFileUri(mInstance.galleryInstance.locator);
+			if (nextGalleryItem.isImage(instance.galleryInstance.locator)) {
+				Uri nextUri = nextGalleryItem.getFileUri(instance.galleryInstance.locator);
 				File nextCachedFile = CacheManager.getInstance().getMediaFile(nextUri, true);
 				if (nextCachedFile != null && !nextCachedFile.exists()) {
 					loadImage(nextUri, nextCachedFile, nextHolder);
@@ -121,44 +121,44 @@ public class ImageUnit {
 		if (attachReadBitmapCallback(holder)) {
 			return;
 		}
-		if (mReadFileTask != null) {
-			mReadFileTask.cancel();
+		if (readFileTask != null) {
+			readFileTask.cancel();
 		}
-		mReadBitmapCallback = new ReadBitmapCallback(holder);
-		mReadFileTask = new ReadFileTask(mInstance.galleryInstance.context, mInstance.galleryInstance.chanName,
-				uri, cachedFile, true, mReadBitmapCallback);
-		mReadFileTask.executeOnExecutor(ReadFileTask.THREAD_POOL_EXECUTOR);
+		readBitmapCallback = new ReadBitmapCallback(holder);
+		readFileTask = new ReadFileTask(instance.galleryInstance.context, instance.galleryInstance.chanName,
+				uri, cachedFile, true, readBitmapCallback);
+		readFileTask.executeOnExecutor(ReadFileTask.THREAD_POOL_EXECUTOR);
 	}
 
 	private boolean attachReadBitmapCallback(PagerInstance.ViewHolder holder) {
-		if (mReadBitmapCallback != null && mReadBitmapCallback.isHolder(holder)) {
-			mReadBitmapCallback.attachDownloading();
+		if (readBitmapCallback != null && readBitmapCallback.isHolder(holder)) {
+			readBitmapCallback.attachDownloading();
 			return true;
 		}
 		return false;
 	}
 
 	private class ReadBitmapCallback implements ReadFileTask.Callback, ReadFileTask.CancelCallback {
-		private final PagerInstance.ViewHolder mHolder;
-		private final GalleryItem mGalleryItem;
+		private final PagerInstance.ViewHolder holder;
+		private final GalleryItem galleryItem;
 
 		public ReadBitmapCallback(PagerInstance.ViewHolder holder) {
-			mHolder = holder;
-			mGalleryItem = holder.galleryItem;
+			this.holder = holder;
+			galleryItem = holder.galleryItem;
 		}
 
 		private boolean isCurrentHolder() {
-			return isHolder(mInstance.currentHolder);
+			return isHolder(instance.currentHolder);
 		}
 
 		public boolean isHolder(PagerInstance.ViewHolder holder) {
-			return holder != null && holder.galleryItem == mGalleryItem;
+			return holder != null && holder.galleryItem == galleryItem;
 		}
 
 		@Override
 		public void onFileExists(Uri uri, File file) {
-			mReadFileTask = null;
-			mReadBitmapCallback = null;
+			readFileTask = null;
+			readBitmapCallback = null;
 			if (isCurrentHolder()) {
 				applyImageFromFile(file);
 			}
@@ -167,81 +167,81 @@ public class ImageUnit {
 		@Override
 		public void onStartDownloading(Uri uri, File file) {
 			if (isCurrentHolder()) {
-				mHolder.progressBar.setVisible(true, false);
-				mHolder.progressBar.setIndeterminate(true);
+				holder.progressBar.setVisible(true, false);
+				holder.progressBar.setIndeterminate(true);
 			}
 		}
 
-		private int mPendingProgress;
-		private int mPendingProgressMax;
+		private int pendingProgress;
+		private int pendingProgressMax;
 
 		public void attachDownloading() {
 			if (isCurrentHolder()) {
-				mHolder.progressBar.setVisible(true, false);
-				mHolder.progressBar.setIndeterminate(mPendingProgressMax <= 0);
-				if (mPendingProgressMax > 0) {
-					mHolder.progressBar.setProgress(mPendingProgress, mPendingProgressMax, true);
+				holder.progressBar.setVisible(true, false);
+				holder.progressBar.setIndeterminate(pendingProgressMax <= 0);
+				if (pendingProgressMax > 0) {
+					holder.progressBar.setProgress(pendingProgress, pendingProgressMax, true);
 				}
 			}
 		}
 
 		@Override
 		public void onFinishDownloading(boolean success, Uri uri, File file, ErrorItem errorItem) {
-			mReadFileTask = null;
-			mReadBitmapCallback = null;
+			readFileTask = null;
+			readBitmapCallback = null;
 			if (isCurrentHolder()) {
-				mHolder.progressBar.setVisible(false, false);
+				holder.progressBar.setVisible(false, false);
 				if (success) {
 					applyImageFromFile(file);
 				} else {
-					mInstance.callback.showError(mHolder, errorItem.toString());
+					instance.callback.showError(holder, errorItem.toString());
 				}
 			}
 		}
 
 		@Override
 		public void onCancelDownloading(Uri uri, File file) {
-			if (isHolder(mHolder)) {
-				mHolder.progressBar.setVisible(false, true);
+			if (isHolder(holder)) {
+				holder.progressBar.setVisible(false, true);
 			}
 		}
 
 		@Override
 		public void onUpdateProgress(long progress, long progressMax) {
 			if (isCurrentHolder()) {
-				mHolder.progressBar.setIndeterminate(false);
-				mHolder.progressBar.setProgress((int) progress, (int) progressMax, progress == 0);
+				holder.progressBar.setIndeterminate(false);
+				holder.progressBar.setProgress((int) progress, (int) progressMax, progress == 0);
 			} else {
-				mPendingProgress = (int) progress;
-				mPendingProgressMax = (int) progressMax;
+				pendingProgress = (int) progress;
+				pendingProgressMax = (int) progressMax;
 			}
 		}
 	}
 
 	public boolean hasMetadata() {
-		JpegData jpegData = mInstance.currentHolder.jpegData;
+		JpegData jpegData = instance.currentHolder.jpegData;
 		return jpegData != null && !jpegData.getUserMetadata().isEmpty();
 	}
 
 	public void viewTechnicalInfo() {
 		StringBlockBuilder builder = new StringBlockBuilder();
-		for (Pair<String, String> pair : mInstance.currentHolder.jpegData.getUserMetadata()) {
+		for (Pair<String, String> pair : instance.currentHolder.jpegData.getUserMetadata()) {
 			builder.appendLine(pair.first + ": " + pair.second);
 		}
 		String message = builder.toString();
-		AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(mInstance.galleryInstance.context)
+		AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(instance.galleryInstance.context)
 				.setTitle(R.string.action_technical_info).setMessage(message)
 				.setPositiveButton(android.R.string.ok, null);
-		String geolocation = mInstance.currentHolder.jpegData.getGeolocation(false);
+		String geolocation = instance.currentHolder.jpegData.getGeolocation(false);
 		if (geolocation != null) {
-			String fileName = mInstance.currentHolder.galleryItem.getFileName(mInstance.galleryInstance.locator);
+			String fileName = instance.currentHolder.galleryItem.getFileName(instance.galleryInstance.locator);
 			Uri uri = new Uri.Builder().scheme("geo").appendQueryParameter("q",
 					geolocation + "(" + fileName + ")").build();
 			final Intent intent = new Intent(Intent.ACTION_VIEW).setData(uri);
-			if (!mInstance.galleryInstance.context.getPackageManager().queryIntentActivities(intent,
+			if (!instance.galleryInstance.context.getPackageManager().queryIntentActivities(intent,
 					PackageManager.MATCH_DEFAULT_ONLY).isEmpty()) {
 				dialogBuilder.setNeutralButton(R.string.action_show_on_map,
-						(dialog, which) -> mInstance.galleryInstance.context.startActivity(intent));
+						(dialog, which) -> instance.galleryInstance.context.startActivity(intent));
 			}
 		}
 		AlertDialog dialog = dialogBuilder.create();
@@ -250,96 +250,96 @@ public class ImageUnit {
 	}
 
 	private class DecodeBitmapTask extends AsyncTask<Void, Void, Void> {
-		private final File mFile;
-		private final FileHolder mFileHolder;
-		private final PhotoView mPhotoView;
+		private final File file;
+		private final FileHolder fileHolder;
+		private final PhotoView photoView;
 
-		private Bitmap mBitmap;
-		private DecoderDrawable mDecoderDrawable;
-		private AnimatedPngDecoder mAnimatedPngDecoder;
-		private GifDecoder mGifDecoder;
-		private int mErrorMessageId;
+		private Bitmap bitmap;
+		private DecoderDrawable decoderDrawable;
+		private AnimatedPngDecoder animatedPngDecoder;
+		private GifDecoder gifDecoder;
+		private int errorMessageId;
 
 		public DecodeBitmapTask(File file, FileHolder fileHolder) {
-			mFile = file;
-			mFileHolder = fileHolder;
-			mPhotoView = mInstance.currentHolder.photoView;
+			this.file = file;
+			this.fileHolder = fileHolder;
+			photoView = instance.currentHolder.photoView;
 			if (fileHolder.getImageWidth() >= 2048 && fileHolder.getImageHeight() >= 2048
 					|| fileHolder.getImageType() == FileHolder.ImageType.IMAGE_SVG) {
-				mInstance.currentHolder.progressBar.setVisible(true, false);
-				mInstance.currentHolder.progressBar.setIndeterminate(true);
+				instance.currentHolder.progressBar.setVisible(true, false);
+				instance.currentHolder.progressBar.setIndeterminate(true);
 			}
 		}
 
 		@Override
 		protected Void doInBackground(Void... params) {
-			if (!mFileHolder.isImage()) {
-				mErrorMessageId = R.string.message_image_corrupted;
+			if (!fileHolder.isImage()) {
+				errorMessageId = R.string.message_image_corrupted;
 				return null;
 			}
-			if (mFileHolder.getImageType() == FileHolder.ImageType.IMAGE_PNG) {
+			if (fileHolder.getImageType() == FileHolder.ImageType.IMAGE_PNG) {
 				try {
-					mAnimatedPngDecoder = new AnimatedPngDecoder(mFileHolder);
+					animatedPngDecoder = new AnimatedPngDecoder(fileHolder);
 					return null;
 				} catch (IOException e) {
-					// Ignore
+					// Ignore exception
 				}
-			} else if (mFileHolder.getImageType() == FileHolder.ImageType.IMAGE_GIF) {
+			} else if (fileHolder.getImageType() == FileHolder.ImageType.IMAGE_GIF) {
 				try {
-					mGifDecoder = new GifDecoder(mFile);
+					gifDecoder = new GifDecoder(file);
 					return null;
 				} catch (IOException e) {
-					// Ignore
+					// Ignore exception
 				}
 			}
 			try {
-				int maxSize = mPhotoView.getMaximumImageSizeAsync();
-				mBitmap = mFileHolder.readImageBitmap(maxSize, true, true);
-				if (mBitmap == null) {
-					mErrorMessageId = R.string.message_image_corrupted;
+				int maxSize = photoView.getMaximumImageSizeAsync();
+				bitmap = fileHolder.readImageBitmap(maxSize, true, true);
+				if (bitmap == null) {
+					errorMessageId = R.string.message_image_corrupted;
 				} else {
-					if (mBitmap.getWidth() < mFileHolder.getImageWidth() ||
-							mBitmap.getHeight() < mFileHolder.getImageHeight()) {
+					if (bitmap.getWidth() < fileHolder.getImageWidth() ||
+							bitmap.getHeight() < fileHolder.getImageHeight()) {
 						try {
-							mDecoderDrawable = new DecoderDrawable(mBitmap, mFileHolder);
-							mBitmap = null;
+							decoderDrawable = new DecoderDrawable(bitmap, fileHolder);
+							bitmap = null;
 						} catch (OutOfMemoryError | IOException e) {
-							// Ignore
+							// Ignore exception
 						}
 					}
 				}
 			} catch (OutOfMemoryError e) {
-				mErrorMessageId = R.string.message_image_out_of_memory;
+				errorMessageId = R.string.message_image_out_of_memory;
 			} catch (Exception e) {
 				Log.persistent().stack(e);
-				mErrorMessageId = R.string.message_image_corrupted;
+				errorMessageId = R.string.message_image_corrupted;
 			}
 			return null;
 		}
 
 		@Override
 		protected void onPostExecute(Void result) {
-			PagerInstance.ViewHolder holder = mInstance.currentHolder;
+			PagerInstance.ViewHolder holder = instance.currentHolder;
 			holder.decodeBitmapTask = null;
 			holder.progressBar.setVisible(false, false);
-			if (mBitmap != null || mDecoderDrawable != null || mAnimatedPngDecoder != null || mGifDecoder != null) {
-				if (mAnimatedPngDecoder != null) {
-					holder.animatedPngDecoder = mAnimatedPngDecoder;
-					setPhotoViewImage(holder, mAnimatedPngDecoder.getDrawable(), true);
-				} else if (mGifDecoder != null) {
-					holder.gifDecoder = mGifDecoder;
-					setPhotoViewImage(holder, mGifDecoder.getDrawable(), true);
-				} else if (mDecoderDrawable != null) {
-					holder.decoderDrawable = mDecoderDrawable;
-					setPhotoViewImage(holder, mDecoderDrawable, mDecoderDrawable.hasAlpha());
+			if (bitmap != null || decoderDrawable != null || animatedPngDecoder != null || gifDecoder != null) {
+				if (animatedPngDecoder != null) {
+					holder.animatedPngDecoder = animatedPngDecoder;
+					setPhotoViewImage(holder, animatedPngDecoder.getDrawable(), true);
+				} else if (gifDecoder != null) {
+					holder.gifDecoder = gifDecoder;
+					setPhotoViewImage(holder, gifDecoder.getDrawable(), true);
+				} else if (decoderDrawable != null) {
+					holder.decoderDrawable = decoderDrawable;
+					setPhotoViewImage(holder, decoderDrawable, decoderDrawable.hasAlpha());
 				} else {
-					holder.simpleBitmapDrawable = new SimpleBitmapDrawable(mBitmap);
-					setPhotoViewImage(holder, holder.simpleBitmapDrawable, mBitmap.hasAlpha());
+					holder.simpleBitmapDrawable = new SimpleBitmapDrawable(bitmap);
+					setPhotoViewImage(holder, holder.simpleBitmapDrawable, bitmap.hasAlpha());
 				}
 				holder.fullLoaded = true;
-				mInstance.galleryInstance.callback.invalidateOptionsMenu();
+				instance.galleryInstance.callback.invalidateOptionsMenu();
 			} else {
-				mInstance.callback.showError(holder, mInstance.galleryInstance.context.getString(mErrorMessageId));
+				instance.callback.showError(holder, instance.galleryInstance.context.getString(errorMessageId));
 			}
 		}
 
@@ -350,7 +350,7 @@ public class ImageUnit {
 
 		private void setPhotoViewImage(PagerInstance.ViewHolder holder, Drawable drawable, boolean hasAlpha) {
 			holder.photoView.setImage(drawable, hasAlpha, false, holder.photoViewThumbnail);
-			holder.jpegData = mFileHolder.getJpegData();
+			holder.jpegData = fileHolder.getJpegData();
 			holder.photoViewThumbnail = false;
 		}
 	}

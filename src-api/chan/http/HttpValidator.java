@@ -36,12 +36,12 @@ public final class HttpValidator implements Parcelable, Serializable {
 	private static final String KEY_ETAG = "ETag";
 	private static final String KEY_LAST_MODIFIED = "LastModified";
 
-	private final String mETag;
-	private final String mLastModified;
+	private final String eTag;
+	private final String lastModified;
 
 	private HttpValidator(String eTag, String lastModified) {
-		mETag = eTag;
-		mLastModified = lastModified;
+		this.eTag = eTag;
+		this.lastModified = lastModified;
 	}
 
 	static HttpValidator obtain(HttpURLConnection connection) {
@@ -54,11 +54,11 @@ public final class HttpValidator implements Parcelable, Serializable {
 	}
 
 	public void write(HttpURLConnection connection) {
-		if (mETag != null) {
-			connection.setRequestProperty("If-None-Match", mETag);
+		if (eTag != null) {
+			connection.setRequestProperty("If-None-Match", eTag);
 		}
-		if (mLastModified != null) {
-			connection.setRequestProperty("If-Modified-Since", mLastModified);
+		if (lastModified != null) {
+			connection.setRequestProperty("If-Modified-Since", lastModified);
 		}
 	}
 
@@ -69,8 +69,8 @@ public final class HttpValidator implements Parcelable, Serializable {
 
 	@Override
 	public void writeToParcel(Parcel dest, int flags) {
-		dest.writeString(mETag);
-		dest.writeString(mLastModified);
+		dest.writeString(eTag);
+		dest.writeString(lastModified);
 	}
 
 	public static final Creator<HttpValidator> CREATOR = new Creator<HttpValidator>() {
@@ -97,7 +97,7 @@ public final class HttpValidator implements Parcelable, Serializable {
 					return new HttpValidator(eTag, lastModified);
 				}
 			} catch (JSONException e) {
-				// Ignore
+				// Invalid data, ignore exception
 			}
 		}
 		return null;
@@ -107,11 +107,11 @@ public final class HttpValidator implements Parcelable, Serializable {
 	public String toString() {
 		JSONObject jsonObject = new JSONObject();
 		try {
-			if (!StringUtils.isEmpty(mETag)) {
-				jsonObject.put(KEY_ETAG, mETag);
+			if (!StringUtils.isEmpty(eTag)) {
+				jsonObject.put(KEY_ETAG, eTag);
 			}
-			if (!StringUtils.isEmpty(mLastModified)) {
-				jsonObject.put(KEY_LAST_MODIFIED, mLastModified);
+			if (!StringUtils.isEmpty(lastModified)) {
+				jsonObject.put(KEY_LAST_MODIFIED, lastModified);
 			}
 		} catch (JSONException e) {
 			throw new RuntimeException(e);

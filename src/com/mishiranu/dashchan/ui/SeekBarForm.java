@@ -30,90 +30,89 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 
 public class SeekBarForm implements SeekBar.OnSeekBarChangeListener, CompoundButton.OnCheckedChangeListener {
-	private final boolean mShowSwitch;
-	private int mMinValue = 0;
-	private int mMaxValue = 100;
-	private int mStep = 10;
-	private float mMultipler = 1f;
-	private String mValueFormat;
+	private final boolean showSwitch;
+	private int minValue = 0;
+	private int maxValue = 100;
+	private int step = 10;
+	private float multipler = 1f;
+	private String valueFormat;
 
-	private int mCurrentValue;
-	private boolean mSwitchValue;
+	private int currentValue;
+	private boolean switchValue;
 
-	private SeekBar mSeekBar;
-	private Switch mSwitch;
-	private TextView mValueText;
+	private SeekBar seekBar;
+	private TextView valueText;
 
 	public SeekBarForm(boolean showSwitch) {
-		mShowSwitch = showSwitch;
+		this.showSwitch = showSwitch;
 	}
 
 	public void setConfiguration(int minValue, int maxValue, int step, float multipler) {
-		mMaxValue = maxValue;
-		mMinValue = minValue;
-		mStep = step;
-		mMultipler = multipler;
+		this.maxValue = maxValue;
+		this.minValue = minValue;
+		this.step = step;
+		this.multipler = multipler;
 	}
 
 	public void setValueFormat(String valueFormat) {
-		mValueFormat = valueFormat;
+		this.valueFormat = valueFormat;
 	}
 
 	@SuppressLint("InflateParams")
 	public View inflate(Context context) {
 		LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		View view = inflater.inflate(R.layout.dialog_seek_bar_preference, null);
-		((TextView) view.findViewById(R.id.min_value)).setText(Integer.toString((int) (mMinValue * mMultipler)));
-		((TextView) view.findViewById(R.id.max_value)).setText(Integer.toString((int) (mMaxValue * mMultipler)));
-		mSeekBar = (SeekBar) view.findViewById(R.id.seek_bar);
-		mSeekBar.setMax((mMaxValue - mMinValue) / mStep);
-		mSeekBar.setProgress((mCurrentValue - mMinValue) / mStep);
-		mSeekBar.setOnSeekBarChangeListener(this);
-		mSwitch = (Switch) view.findViewById(R.id.switch_view);
-		if (!mShowSwitch) {
-			mSwitch.setVisibility(View.GONE);
+		((TextView) view.findViewById(R.id.min_value)).setText(Integer.toString((int) (minValue * multipler)));
+		((TextView) view.findViewById(R.id.max_value)).setText(Integer.toString((int) (maxValue * multipler)));
+		seekBar = (SeekBar) view.findViewById(R.id.seek_bar);
+		seekBar.setMax((maxValue - minValue) / step);
+		seekBar.setProgress((currentValue - minValue) / step);
+		seekBar.setOnSeekBarChangeListener(this);
+		Switch switchView = (Switch) view.findViewById(R.id.switch_view);
+		if (!showSwitch) {
+			switchView.setVisibility(View.GONE);
 		} else {
-			mSwitch.setChecked(mSwitchValue);
-			mSwitch.setOnCheckedChangeListener(this);
+			switchView.setChecked(switchValue);
+			switchView.setOnCheckedChangeListener(this);
 			if (C.API_LOLLIPOP) {
-				((ViewGroup.MarginLayoutParams) mSwitch.getLayoutParams()).rightMargin = 0;
+				((ViewGroup.MarginLayoutParams) switchView.getLayoutParams()).rightMargin = 0;
 			}
 		}
-		mValueText = (TextView) view.findViewById(R.id.current_value);
+		valueText = (TextView) view.findViewById(R.id.current_value);
 		updateCurrentValueText();
 		return view;
 	}
 
 	public void setCurrentValue(int currentValue) {
-		mCurrentValue = currentValue;
+		this.currentValue = currentValue;
 	}
 
 	public void setSwitchValue(boolean switchValue) {
-		mSwitchValue = switchValue;
+		this.switchValue = switchValue;
 	}
 
 	public int getCurrentValue() {
-		return mCurrentValue;
+		return currentValue;
 	}
 
 	public float getMultipler() {
-		return mMultipler;
+		return multipler;
 	}
 
 	public boolean getSwitchValue() {
-		return mSwitchValue;
+		return switchValue;
 	}
 
 	public void updateCurrentValueText() {
-		int currentValue = (int) (mMultipler * mCurrentValue);
-		String currentValueText = mValueFormat != null ? String.format(mValueFormat, currentValue)
+		int currentValue = (int) (multipler * this.currentValue);
+		String currentValueText = valueFormat != null ? String.format(valueFormat, currentValue)
 				: Integer.toString(currentValue);
-		mValueText.setText(currentValueText);
+		valueText.setText(currentValueText);
 	}
 
 	@Override
 	public void onProgressChanged(SeekBar seek, int value, boolean fromTouch) {
-		mCurrentValue = value * mStep + mMinValue;
+		currentValue = value * step + minValue;
 		updateCurrentValueText();
 	}
 
@@ -125,10 +124,10 @@ public class SeekBarForm implements SeekBar.OnSeekBarChangeListener, CompoundBut
 
 	@Override
 	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-		mSwitchValue = isChecked;
+		switchValue = isChecked;
 	}
 
 	public SeekBar getSeekBar() {
-		return mSeekBar;
+		return seekBar;
 	}
 }

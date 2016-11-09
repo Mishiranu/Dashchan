@@ -38,19 +38,19 @@ import com.mishiranu.dashchan.content.net.YouTubeTitlesReader;
 import com.mishiranu.dashchan.util.Log;
 
 public class ReadThreadsTask extends HttpHolderTask<Void, Void, Boolean> {
-	private final Callback mCallback;
-	private final String mChanName;
-	private final String mBoardName;
-	private final int mPageNumber;
-	private final HttpValidator mValidator;
-	private final boolean mAppend;
+	private final Callback callback;
+	private final String chanName;
+	private final String boardName;
+	private final int pageNumber;
+	private final HttpValidator validator;
+	private final boolean append;
 
-	private ArrayList<PostItem> mPostItems;
-	private int mBoardSpeed = 0;
-	private HttpValidator mResultValidator;
+	private ArrayList<PostItem> postItems;
+	private int boardSpeed = 0;
+	private HttpValidator resultValidator;
 
-	private RedirectException.Target mTarget;
-	private ErrorItem mErrorItem;
+	private RedirectException.Target target;
+	private ErrorItem errorItem;
 
 	public interface Callback {
 		public void onReadThreadsSuccess(ArrayList<PostItem> postItems, int pageNumber,
@@ -61,12 +61,12 @@ public class ReadThreadsTask extends HttpHolderTask<Void, Void, Boolean> {
 
 	public ReadThreadsTask(Callback callback, String chanName, String boardName, int pageNumber,
 			HttpValidator validator, boolean append) {
-		mCallback = callback;
-		mChanName = chanName;
-		mBoardName = boardName;
-		mPageNumber = pageNumber;
-		mValidator = validator;
-		mAppend = append;
+		this.callback = callback;
+		this.chanName = chanName;
+		this.boardName = boardName;
+		this.pageNumber = pageNumber;
+		this.validator = validator;
+		this.append = append;
 	}
 
 	@Override
@@ -74,21 +74,21 @@ public class ReadThreadsTask extends HttpHolderTask<Void, Void, Boolean> {
 		try {
 			ChanPerformer.ReadThreadsResult result;
 			try {
-				result = ChanPerformer.get(mChanName).safe().onReadThreads(new ChanPerformer.ReadThreadsData(mBoardName,
-						mPageNumber, holder, mValidator));
+				result = ChanPerformer.get(chanName).safe().onReadThreads(new ChanPerformer.ReadThreadsData(boardName,
+						pageNumber, holder, validator));
 			} catch (RedirectException e) {
-				RedirectException.Target target = e.obtainTarget(mChanName);
+				RedirectException.Target target = e.obtainTarget(chanName);
 				if (target == null) {
 					throw HttpException.createNotFoundException();
 				}
 				if (target.threadNumber != null) {
 					Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES, "Only board redirects available there");
-					mErrorItem = new ErrorItem(ErrorItem.TYPE_INVALID_DATA_FORMAT);
+					errorItem = new ErrorItem(ErrorItem.TYPE_INVALID_DATA_FORMAT);
 					return false;
-				} else if (mChanName.equals(target.chanName) && StringUtils.equals(mBoardName, target.boardName)) {
+				} else if (chanName.equals(target.chanName) && StringUtils.equals(boardName, target.boardName)) {
 					throw HttpException.createNotFoundException();
 				} else {
-					mTarget = target;
+					this.target = target;
 					return true;
 				}
 			}
@@ -111,46 +111,46 @@ public class ReadThreadsTask extends HttpHolderTask<Void, Void, Boolean> {
 						if (postItems == null) {
 							postItems = new ArrayList<>();
 						}
-						postItems.add(new PostItem(thread, mChanName, mBoardName));
+						postItems.add(new PostItem(thread, chanName, boardName));
 					}
 				}
 			}
 			if (validator == null) {
 				validator = holder.getValidator();
 			}
-			mPostItems = postItems;
-			mBoardSpeed = boardSpeed;
-			mResultValidator = validator;
+			this.postItems = postItems;
+			this.boardSpeed = boardSpeed;
+			this.resultValidator = validator;
 			return true;
 		} catch (HttpException e) {
 			if (e.getResponseCode() == HttpURLConnection.HTTP_NOT_MODIFIED) {
 				return true;
 			}
 			if (e.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND) {
-				mErrorItem = new ErrorItem(ErrorItem.TYPE_BOARD_NOT_EXISTS);
+				errorItem = new ErrorItem(ErrorItem.TYPE_BOARD_NOT_EXISTS);
 			} else {
-				mErrorItem = e.getErrorItemAndHandle();
+				errorItem = e.getErrorItemAndHandle();
 			}
 			return false;
 		} catch (ExtensionException | InvalidResponseException e) {
-			mErrorItem = e.getErrorItemAndHandle();
+			errorItem = e.getErrorItemAndHandle();
 			return false;
 		} finally {
-			ChanConfiguration.get(mChanName).commit();
+			ChanConfiguration.get(chanName).commit();
 		}
 	}
 
 	@Override
 	public void onPostExecute(Boolean success) {
 		if (success) {
-			if (mTarget != null) {
-				mCallback.onReadThreadsRedirect(mTarget);
+			if (target != null) {
+				callback.onReadThreadsRedirect(target);
 			} else {
-				mCallback.onReadThreadsSuccess(mPostItems, mPageNumber, mBoardSpeed, mAppend,
-						mValidator != null, mResultValidator);
+				callback.onReadThreadsSuccess(postItems, pageNumber, boardSpeed, append,
+						validator != null, resultValidator);
 			}
 		} else {
-			mCallback.onReadThreadsFail(mErrorItem, mPageNumber);
+			callback.onReadThreadsFail(errorItem, pageNumber);
 		}
 	}
 }

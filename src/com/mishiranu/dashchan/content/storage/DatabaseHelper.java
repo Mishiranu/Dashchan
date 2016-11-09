@@ -45,7 +45,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	private static final String TYPE_LONG = "LONG";
 	private static final String TYPE_TEXT = "TEXT";
 
-	private final Executor mExecutor = ConcurrentUtils.newSingleThreadPool(10000, "DatabaseHelper", null,
+	private final Executor executor = ConcurrentUtils.newSingleThreadPool(10000, "DatabaseHelper", null,
 			Process.THREAD_PRIORITY_DEFAULT);
 
 	private static final DatabaseHelper INSTANCE = new DatabaseHelper();
@@ -60,7 +60,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	}
 
 	public Executor getExecutor() {
-		return mExecutor;
+		return executor;
 	}
 
 	public static File getDatabaseFile() {
@@ -172,24 +172,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	}
 
 	private static class TableCreator {
-		private final ArrayList<String> mColumns = new ArrayList<>();
-		private final String mTableName;
+		private final ArrayList<String> columns = new ArrayList<>();
+		private final String tableName;
 
 		public TableCreator(String tableName) {
-			mTableName = tableName;
+			this.tableName = tableName;
 		}
 
 		public TableCreator addColumn(String columnName, String columnType) {
 			String columnString = columnName + " " + columnType + " NULL";
-			mColumns.add(columnString);
+			columns.add(columnString);
 			return this;
 		}
 
 		public void execute(SQLiteDatabase db) {
-			StringBuilder builder = new StringBuilder().append("CREATE TABLE ").append(mTableName).append(" (");
+			StringBuilder builder = new StringBuilder().append("CREATE TABLE ").append(tableName).append(" (");
 			builder.append("_id INTEGER PRIMARY KEY AUTOINCREMENT");
-			for (int i = 0; i < mColumns.size(); i++) {
-				builder.append(", ").append(mColumns.get(i));
+			for (int i = 0; i < columns.size(); i++) {
+				builder.append(", ").append(columns.get(i));
 			}
 			builder.append(')');
 			db.execSQL(builder.toString());
@@ -197,52 +197,53 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	}
 
 	private static class TableModifier {
-		private final TableCreator mTableCreator;
-		private final String mFromTableName;
+		private final TableCreator tableCreator;
+		private final String fromTableName;
 
-		private final ArrayList<String> mFrom = new ArrayList<>(), mTo = new ArrayList<>();
+		private final ArrayList<String> from = new ArrayList<>();
+		private final ArrayList<String> to = new ArrayList<>();
 
 		public TableModifier(String newTableName, String oldTableName) {
 			if (newTableName == null) {
 				newTableName = oldTableName;
 			}
-			mTableCreator = new TableCreator(newTableName);
-			mFromTableName = newTableName.equals(oldTableName) ? null : oldTableName;
+			tableCreator = new TableCreator(newTableName);
+			fromTableName = newTableName.equals(oldTableName) ? null : oldTableName;
 		}
 
 		public TableModifier addColumn(String columnName, String columnType, String copyFrom) {
-			mTableCreator.addColumn(columnName, columnType);
+			tableCreator.addColumn(columnName, columnType);
 			if (copyFrom != null) {
-				mFrom.add(copyFrom);
-				mTo.add(columnName);
+				from.add(copyFrom);
+				to.add(columnName);
 			}
 			return this;
 		}
 
 		public void execute(SQLiteDatabase db) {
-			String table = mTableCreator.mTableName;
+			String table = tableCreator.tableName;
 			String oldTable;
-			if (mFromTableName == null) {
+			if (fromTableName == null) {
 				oldTable = table + "_temp";
 				db.execSQL("ALTER TABLE " + table + " RENAME TO " + oldTable);
 			} else {
-				oldTable = mFromTableName;
+				oldTable = fromTableName;
 			}
-			mTableCreator.execute(db);
-			if (mFrom.size() > 0) {
+			tableCreator.execute(db);
+			if (from.size() > 0) {
 				StringBuilder builder = new StringBuilder().append("INSERT INTO ").append(table).append(" (");
-				for (int i = 0; i < mTo.size(); i++) {
+				for (int i = 0; i < to.size(); i++) {
 					if (i > 0) {
 						builder.append(", ");
 					}
-					builder.append(mTo.get(i));
+					builder.append(to.get(i));
 				}
 				builder.append(") SELECT ");
-				for (int i = 0; i < mFrom.size(); i++) {
+				for (int i = 0; i < from.size(); i++) {
 					if (i > 0) {
 						builder.append(", ");
 					}
-					builder.append(mFrom.get(i));
+					builder.append(from.get(i));
 				}
 				builder.append(" FROM ").append(oldTable);
 				db.execSQL(builder.toString());

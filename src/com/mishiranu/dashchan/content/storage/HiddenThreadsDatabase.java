@@ -37,10 +37,10 @@ public class HiddenThreadsDatabase implements BaseColumns {
 		return INSTANCE;
 	}
 
-	private final SQLiteDatabase mDatabase;
+	private final SQLiteDatabase database;
 
 	private HiddenThreadsDatabase() {
-		mDatabase = DatabaseHelper.getInstance().getWritableDatabase();
+		database = DatabaseHelper.getInstance().getWritableDatabase();
 	}
 
 	private String buildWhere(String chanName, String boardName, String threadNumber) {
@@ -50,17 +50,17 @@ public class HiddenThreadsDatabase implements BaseColumns {
 	}
 
 	public void set(String chanName, String boardName, String threadNumber, boolean hidden) {
-		mDatabase.delete(DatabaseHelper.TABLE_HIDDEN_THREADS, buildWhere(chanName, boardName, threadNumber), null);
+		database.delete(DatabaseHelper.TABLE_HIDDEN_THREADS, buildWhere(chanName, boardName, threadNumber), null);
 		ContentValues values = new ContentValues();
 		values.put(COLUMN_CHAN_NAME, chanName);
 		values.put(COLUMN_BOARD_NAME, boardName);
 		values.put(COLUMN_THREAD_NUMBER, threadNumber);
 		values.put(COLUMN_HIDDEN, hidden);
-		mDatabase.insert(DatabaseHelper.TABLE_HIDDEN_THREADS, null, values);
+		database.insert(DatabaseHelper.TABLE_HIDDEN_THREADS, null, values);
 	}
 
 	public int check(String chanName, String boardName, String threadNumber) {
-		Cursor cursor = mDatabase.query(DatabaseHelper.TABLE_HIDDEN_THREADS, STATE_COLUMNS,
+		Cursor cursor = database.query(DatabaseHelper.TABLE_HIDDEN_THREADS, STATE_COLUMNS,
 				buildWhere(chanName, boardName, threadNumber), null, null, null, null);
 		try {
 			if (cursor.moveToFirst()) {

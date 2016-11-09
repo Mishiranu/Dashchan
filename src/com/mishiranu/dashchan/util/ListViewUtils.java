@@ -123,7 +123,7 @@ public class ListViewUtils {
 				}
 			}
 		} catch (Exception e) {
-			// Ignore
+			// Reflective operation, ignore exception
 		}
 	}
 }

@@ -94,26 +94,26 @@ public class HtmlParser implements ContentHandler {
 	private static final int MODE_CLEAR = 1;
 	private static final int MODE_UNMARK = 2;
 
-	private final String mSource;
-	private final StringBuilder mBuilder = new StringBuilder();
-	private final Markup mMarkup;
-	private final int mParsingMode;
-	private final SpanProvider mSpanProvider;
+	private final String source;
+	private final StringBuilder builder = new StringBuilder();
+	private final Markup markup;
+	private final int parsingMode;
+	private final SpanProvider spanProvider;
 
-	private final String mParentPostNumber;
+	private final String parentPostNumber;
 
-	private final Object mExtra;
+	private final Object extra;
 
 	private HtmlParser(String source, Markup markup, int parsingMode, String parentPostNumber, Object extra) {
 		if (markup == null) {
 			markup = IDLE_MARKUP;
 		}
-		mSource = source;
-		mMarkup = markup;
-		mParsingMode = parsingMode;
-		mParentPostNumber = parentPostNumber;
-		mExtra = extra;
-		mSpanProvider = isSpanifyMode() || isUnmarkMode() ? markup.initSpanProvider(this) : null;
+		this.source = source;
+		this.markup = markup;
+		this.parsingMode = parsingMode;
+		this.parentPostNumber = parentPostNumber;
+		this.extra = extra;
+		spanProvider = isSpanifyMode() || isUnmarkMode() ? markup.initSpanProvider(this) : null;
 	}
 
 	public static final HTMLSchema SCHEMA = new HTMLSchema();
@@ -126,9 +126,9 @@ public class HtmlParser implements ContentHandler {
 			throw new RuntimeException(e);
 		}
 		parser.setContentHandler(this);
-		StringBuilder builder = mBuilder;
+		StringBuilder builder = this.builder;
 		try {
-			parser.parse(new InputSource(new StringReader(mSource)));
+			parser.parse(new InputSource(new StringReader(source)));
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -165,8 +165,8 @@ public class HtmlParser implements ContentHandler {
 				}
 			}
 		}
-		if (isSpanifyMode() && mSpanProvider != null) {
-			CharSequence charSequence = mSpanProvider.transformBuilder(this, builder);
+		if (isSpanifyMode() && spanProvider != null) {
+			CharSequence charSequence = spanProvider.transformBuilder(this, builder);
 			if (charSequence == null) {
 				return "";
 			}
@@ -176,33 +176,33 @@ public class HtmlParser implements ContentHandler {
 	}
 
 	public boolean isSpanifyMode() {
-		return mParsingMode == MODE_SPANIFY;
+		return parsingMode == MODE_SPANIFY;
 	}
 
 	public boolean isClearMode() {
-		return mParsingMode == MODE_CLEAR;
+		return parsingMode == MODE_CLEAR;
 	}
 
 	public boolean isUnmarkMode() {
-		return mParsingMode == MODE_UNMARK;
+		return parsingMode == MODE_UNMARK;
 	}
 
 	public StringBuilder getBuilder() {
-		return mBuilder;
+		return builder;
 	}
 
 	public String getParentPostNumber() {
-		return mParentPostNumber;
+		return parentPostNumber;
 	}
 
 	@SuppressWarnings("unchecked")
 	public <T> T getExtra() {
-		return (T) mExtra;
+		return (T) extra;
 	}
 
 	@SuppressWarnings("unchecked")
 	public <T extends SpanProvider> T getSpanProvider() {
-		return (T) mSpanProvider;
+		return (T) spanProvider;
 	}
 
 	@Override
@@ -221,27 +221,27 @@ public class HtmlParser implements ContentHandler {
 	public void endPrefixMapping(String prefix) {}
 
 	private static class PositiveStateStack {
-		private boolean[] mState = null;
-		private int mPosition = -1;
+		private boolean[] state = null;
+		private int position = -1;
 
 		public void push(boolean state) {
-			if (state || mPosition >= 0) {
-				mPosition++;
-				if (mState == null) {
-					mState = new boolean[4];
-				} else if (mPosition == mState.length) {
-					mState = Arrays.copyOf(mState, mState.length * 2);
+			if (state || position >= 0) {
+				position++;
+				if (this.state == null) {
+					this.state = new boolean[4];
+				} else if (position == this.state.length) {
+					this.state = Arrays.copyOf(this.state, this.state.length * 2);
 				}
-				mState[mPosition] = state;
+				this.state[position] = state;
 			}
 		}
 
 		public boolean pop() {
-			return mPosition >= 0 ? mState[mPosition--] : false;
+			return position >= 0 ? state[position--] : false;
 		}
 
 		public boolean check() {
-			return mPosition >= 0 ? mState[mPosition] : false;
+			return position >= 0 ? state[position] : false;
 		}
 	}
 
@@ -275,10 +275,10 @@ public class HtmlParser implements ContentHandler {
 		HIDDEN_TAGS.add("style");
 	}
 
-	private final TagData mTagData = new TagData(false, false, false);
+	private final TagData tagData = new TagData(false, false, false);
 
 	private TagData fillBaseTagData(String tagName) {
-		TagData tagData = mTagData;
+		TagData tagData = this.tagData;
 		TagData copyTagData = DEFAULT_TAGS.get(tagName);
 		if (copyTagData != null) {
 			tagData.block = copyTagData.block;
@@ -293,7 +293,7 @@ public class HtmlParser implements ContentHandler {
 	}
 
 	private void appendLineBreak() {
-		StringBuilder builder = mBuilder;
+		StringBuilder builder = this.builder;
 		boolean mayAppend = true;
 		if (isSpanifyMode()) {
 			int length = builder.length();
@@ -309,7 +309,7 @@ public class HtmlParser implements ContentHandler {
 	}
 
 	private void appendBlockBreak(boolean spacedTag) {
-		switch (mLastBlock) {
+		switch (lastBlock) {
 			case LAST_BLOCK_NONE: {
 				appendLineBreak();
 				if (spacedTag) {
@@ -332,11 +332,11 @@ public class HtmlParser implements ContentHandler {
 
 	// Removes unnecessary whitespaces in the end of block.
 	private void removeBlockLastWhitespaces() {
-		if (!mPreformattedMode.check()) {
-			StringBuilder builder = mBuilder;
+		if (!preformattedMode.check()) {
+			StringBuilder builder = this.builder;
 			int length = builder.length();
 			int remove = 0;
-			for (int i = length - 1, s = length - mLastCharactersLength; i >= s; i--) {
+			for (int i = length - 1, s = length - lastCharactersLength; i >= s; i--) {
 				char c = builder.charAt(i);
 				if (c == ' ') {
 					remove++;
@@ -346,8 +346,8 @@ public class HtmlParser implements ContentHandler {
 			}
 			if (remove > 0) {
 				builder.delete(length - remove, length);
-				mMarkup.onCutBlock(this, builder);
-				mLastCharactersLength -= remove;
+				markup.onCutBlock(this, builder);
+				lastCharactersLength -= remove;
 			}
 		}
 	}
@@ -356,111 +356,111 @@ public class HtmlParser implements ContentHandler {
 	private static final int LAST_BLOCK_COMMON = 1;
 	private static final int LAST_BLOCK_SPACED = 2;
 
-	private int mLastCharactersLength = 0;
-	private int mLastBlock = LAST_BLOCK_NONE;
-	private final PositiveStateStack mBlockMode = new PositiveStateStack();
-	private final PositiveStateStack mSpacedMode = new PositiveStateStack();
-	private final PositiveStateStack mPreformattedMode = new PositiveStateStack();
+	private int lastCharactersLength = 0;
+	private int lastBlock = LAST_BLOCK_NONE;
+	private final PositiveStateStack blockMode = new PositiveStateStack();
+	private final PositiveStateStack spacedMode = new PositiveStateStack();
+	private final PositiveStateStack preformattedMode = new PositiveStateStack();
 
-	private int mTableStart = 0;
+	private int tableStart = 0;
 
-	private boolean mOrderedList;
-	private int mListStart = -1;
+	private boolean orderedList;
+	private int listStart = -1;
 
-	private boolean mHidden = false;
+	private boolean hidden = false;
 
 	@Override
 	public void startElement(String uri, String tagName, String qName, Attributes attributes) {
 		if (HIDDEN_TAGS.contains(tagName)) {
-			mHidden = true;
+			hidden = true;
 			return;
 		}
-		StringBuilder builder = mBuilder;
+		StringBuilder builder = this.builder;
 		if ("br".equals(tagName)) {
-			return; // Ignore
+			return; // Ignore tag
 		}
 		TagData tagData = fillBaseTagData(tagName);
-		Object object = mMarkup.onBeforeTagStart(this, builder, tagName, attributes, tagData);
+		Object object = markup.onBeforeTagStart(this, builder, tagName, attributes, tagData);
 		boolean blockTag = tagData.block;
 		boolean spacedTag = blockTag && tagData.spaced;
 		boolean preformattedTag = tagData.preformatted == TagData.ENABLED ||
-				tagData.preformatted == TagData.UNDEFINED && mPreformattedMode.check();
+				tagData.preformatted == TagData.UNDEFINED && preformattedMode.check();
 		if (blockTag) {
 			appendBlockBreak(spacedTag);
 		}
-		mMarkup.onTagStart(this, builder, tagName, attributes, object);
-		mBlockMode.push(blockTag);
-		mSpacedMode.push(spacedTag);
-		mPreformattedMode.push(preformattedTag);
-		mLastBlock = blockTag ? spacedTag ? LAST_BLOCK_SPACED : LAST_BLOCK_COMMON : LAST_BLOCK_NONE;
+		markup.onTagStart(this, builder, tagName, attributes, object);
+		blockMode.push(blockTag);
+		spacedMode.push(spacedTag);
+		preformattedMode.push(preformattedTag);
+		lastBlock = blockTag ? spacedTag ? LAST_BLOCK_SPACED : LAST_BLOCK_COMMON : LAST_BLOCK_NONE;
 
 		if (tagName.equals("tr") || tagName.equals("th") || tagName.equals("td")) {
 			if (tagName.equals("tr")) {
-				mTableStart = 1;
+				tableStart = 1;
 			} else {
 				int length = builder.length();
-				builder.append(mTableStart).append(". ");
-				mLastBlock = LAST_BLOCK_NONE;
-				mLastCharactersLength = builder.length() - length;
+				builder.append(tableStart).append(". ");
+				lastBlock = LAST_BLOCK_NONE;
+				lastCharactersLength = builder.length() - length;
 				int colspan;
 				try {
 					colspan = Integer.parseInt(attributes.getValue("", "colspan"));
 				} catch (Exception e) {
 					colspan = 1;
 				}
-				mTableStart += colspan;
+				tableStart += colspan;
 			}
 		} else if (tagName.equals("ol") || tagName.equals("ul")) {
-			mOrderedList = tagName.equals("ol");
-			mListStart = 0;
-		} else if (tagName.equals("li") && mListStart >= 0) {
-			int added = mMarkup.onListLineStart(this, builder, mOrderedList, ++mListStart);
+			orderedList = tagName.equals("ol");
+			listStart = 0;
+		} else if (tagName.equals("li") && listStart >= 0) {
+			int added = markup.onListLineStart(this, builder, orderedList, ++listStart);
 			if (added > 0) {
-				mLastBlock = LAST_BLOCK_NONE;
-				mLastCharactersLength = added;
+				lastBlock = LAST_BLOCK_NONE;
+				lastCharactersLength = added;
 			}
 		}
 	}
 
 	@Override
 	public void endElement(String uri, String tagName, String qName) {
-		if (mHidden) {
+		if (hidden) {
 			if (HIDDEN_TAGS.contains(tagName)) {
-				mHidden = false;
+				hidden = false;
 			}
 			return;
 		}
-		StringBuilder builder = mBuilder;
+		StringBuilder builder = this.builder;
 		if ("br".equals(tagName)) {
 			removeBlockLastWhitespaces();
 			appendLineBreak();
-			mLastBlock = LAST_BLOCK_COMMON;
+			lastBlock = LAST_BLOCK_COMMON;
 			return;
 		}
-		boolean blockTag = mBlockMode.pop();
-		boolean spacedTag = mSpacedMode.pop();
-		mPreformattedMode.pop();
+		boolean blockTag = blockMode.pop();
+		boolean spacedTag = spacedMode.pop();
+		preformattedMode.pop();
 		if (blockTag) {
 			removeBlockLastWhitespaces();
 		}
-		mMarkup.onTagEnd(this, builder, tagName);
+		markup.onTagEnd(this, builder, tagName);
 		if (blockTag) {
 			appendBlockBreak(spacedTag);
 		}
 		if ((tagName.equals("ol") || tagName.equals("ul"))) {
-			mListStart = -1;
+			listStart = -1;
 		}
-		mLastBlock = blockTag ? spacedTag ? LAST_BLOCK_SPACED : LAST_BLOCK_COMMON : LAST_BLOCK_NONE;
+		lastBlock = blockTag ? spacedTag ? LAST_BLOCK_SPACED : LAST_BLOCK_COMMON : LAST_BLOCK_NONE;
 	}
 
 	@Override
 	public void characters(char ch[], int start, int length) {
-		if (mHidden) {
+		if (hidden) {
 			return;
 		}
-		StringBuilder builder = mBuilder;
+		StringBuilder builder = this.builder;
 		int realLength = 0;
-		if (mPreformattedMode.check()) {
+		if (preformattedMode.check()) {
 			char p = '\0';
 			for (int i = start, to = start + length; i < to; i++) {
 				char c = ch[i];
@@ -497,13 +497,13 @@ public class HtmlParser implements ContentHandler {
 				}
 			}
 		}
-		if (mLastBlock == LAST_BLOCK_NONE) {
-			mLastCharactersLength += realLength;
+		if (lastBlock == LAST_BLOCK_NONE) {
+			lastCharactersLength += realLength;
 		} else {
-			mLastCharactersLength = realLength;
+			lastCharactersLength = realLength;
 		}
 		if (realLength > 0) {
-			mLastBlock = LAST_BLOCK_NONE;
+			lastBlock = LAST_BLOCK_NONE;
 		}
 	}
 
@@ -551,7 +551,7 @@ public class HtmlParser implements ContentHandler {
 			try {
 				return Color.BLACK | Color.parseColor(color);
 			} catch (IllegalArgumentException e) {
-				// Ignore
+				// Not a color, ignore exception
 			}
 		}
 		return null;

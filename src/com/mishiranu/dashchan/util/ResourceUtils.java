@@ -92,7 +92,7 @@ public class ResourceUtils {
 				return resId;
 			}
 		} catch (Exception e) {
-			// Ignore
+			// Ignore exception
 		}
 		return notFound;
 	}
@@ -108,7 +108,7 @@ public class ResourceUtils {
 				return resId;
 			}
 		} catch (Exception e) {
-			// Ignore
+			// Ignore exception
 		}
 		return notFound;
 	}

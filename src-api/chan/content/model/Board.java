@@ -20,23 +20,23 @@ import chan.annotation.Public;
 
 @Public
 public final class Board implements Comparable<Board> {
-	private final String mBoardName;
-	private final String mTitle;
-	private final String mDescription;
+	private final String boardName;
+	private final String title;
+	private final String description;
 
 	@Public
 	public String getBoardName() {
-		return mBoardName;
+		return boardName;
 	}
 
 	@Public
 	public String getTitle() {
-		return mTitle;
+		return title;
 	}
 
 	@Public
 	public String getDescription() {
-		return mDescription;
+		return description;
 	}
 
 	@Public
@@ -46,14 +46,14 @@ public final class Board implements Comparable<Board> {
 
 	@Public
 	public Board(String boardName, String title, String description) {
-		mBoardName = boardName;
-		mTitle = title;
-		mDescription = description;
+		this.boardName = boardName;
+		this.title = title;
+		this.description = description;
 	}
 
 	@Public
 	@Override
 	public int compareTo(Board another) {
-		return mBoardName.compareTo(another.mBoardName);
+		return boardName.compareTo(another.boardName);
 	}
 }

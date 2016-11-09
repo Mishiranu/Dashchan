@@ -43,12 +43,12 @@ public class AnimatedPngDecoder implements Runnable {
 	private static final Handler HANDLER = new Handler(Looper.getMainLooper());
 	private static final byte[] IEND_CHUNK = {0, 0, 0, 0, 'I', 'E', 'N', 'D', (byte) 0xae, 0x42, 0x60, (byte) 0x82};
 
-	private final Bitmap mBitmap;
-	private final Canvas mCanvas;
-	private final Frame[] mFrames;
-	private final int mDuration;
+	private final Bitmap bitmap;
+	private final Canvas canvas;
+	private final Frame[] frames;
+	private final int duration;
 
-	private long mStartTime;
+	private long startTime;
 
 	private static class Frame {
 		public byte[] bytes;
@@ -240,15 +240,15 @@ public class AnimatedPngDecoder implements Runnable {
 					throw new IOException();
 				}
 			}
-			mBitmap = Bitmap.createBitmap(frames[0].width, frames[0].height, Bitmap.Config.ARGB_8888);
-			mCanvas = new Canvas(mBitmap);
+			bitmap = Bitmap.createBitmap(frames[0].width, frames[0].height, Bitmap.Config.ARGB_8888);
+			canvas = new Canvas(bitmap);
 		} catch (OutOfMemoryError e) {
 			recycleFrames(frames);
 			throw new IOException(e);
 		}
-		mFrames = frames;
-		mDuration = totalTime;
-		mStartTime = System.currentTimeMillis();
+		this.frames = frames;
+		duration = totalTime;
+		startTime = System.currentTimeMillis();
 	}
 
 	private static void recycleFrames(Frame[] frames) {
@@ -261,35 +261,35 @@ public class AnimatedPngDecoder implements Runnable {
 	}
 
 	private static class FrameInputStream extends InputStream {
-		private final byte[] mHead;
-		private final Frame mFrame;
+		private final byte[] head;
+		private final Frame frame;
 
-		private int mPosition;
+		private int position;
 
 		private int getTotalCount() {
-			return mHead.length + mFrame.bytes.length + IEND_CHUNK.length;
+			return head.length + frame.bytes.length + IEND_CHUNK.length;
 		}
 
 		public FrameInputStream(byte[] head, Frame frame) {
-			mHead = head;
-			mFrame = frame;
+			this.head = head;
+			this.frame = frame;
 		}
 
 		@Override
 		public int read() {
-			int position = mPosition;
-			if (position < mHead.length) {
-				mPosition++;
-				return mHead[position] & 0xff;
+			int position = this.position;
+			if (position < head.length) {
+				this.position++;
+				return head[position] & 0xff;
 			}
-			position -= mHead.length;
-			if (position < mFrame.bytes.length) {
-				mPosition++;
-				return mFrame.bytes[position] & 0xff;
+			position -= head.length;
+			if (position < frame.bytes.length) {
+				this.position++;
+				return frame.bytes[position] & 0xff;
 			}
-			position -= mFrame.bytes.length;
+			position -= frame.bytes.length;
 			if (position < IEND_CHUNK.length) {
-				mPosition++;
+				this.position++;
 				return IEND_CHUNK[position] & 0xff;
 			}
 			return -1;
@@ -302,15 +302,15 @@ public class AnimatedPngDecoder implements Runnable {
 
 		@Override
 		public int read(byte[] buffer, int byteOffset, int byteCount) {
-			int position = mPosition;
-			if (position < mHead.length) {
-				return copy(buffer, byteOffset, byteCount, mHead, position);
+			int position = this.position;
+			if (position < head.length) {
+				return copy(buffer, byteOffset, byteCount, head, position);
 			}
-			position -= mHead.length;
-			if (position < mFrame.bytes.length) {
-				return copy(buffer, byteOffset, byteCount, mFrame.bytes, position);
+			position -= head.length;
+			if (position < frame.bytes.length) {
+				return copy(buffer, byteOffset, byteCount, frame.bytes, position);
 			}
-			position -= mFrame.bytes.length;
+			position -= frame.bytes.length;
 			if (position < IEND_CHUNK.length) {
 				return copy(buffer, byteOffset, byteCount, IEND_CHUNK, position);
 			}
@@ -320,136 +320,136 @@ public class AnimatedPngDecoder implements Runnable {
 		private int copy(byte[] buffer, int byteOffset, int byteCount, byte[] from, int position) {
 			int count = Math.min(from.length - position, byteCount);
 			System.arraycopy(from, position, buffer, byteOffset, count);
-			mPosition += count;
+			this.position += count;
 			return count;
 		}
 
 		@Override
 		public long skip(long byteCount) {
 			int totalCount = getTotalCount();
-			int left = totalCount - mPosition;
+			int left = totalCount - position;
 			if (left < byteCount) {
-				mPosition = totalCount;
+				position = totalCount;
 				return left;
 			} else {
-				mPosition += byteCount;
+				position += byteCount;
 				return byteCount;
 			}
 		}
 
 		@Override
 		public int available() {
-			return getTotalCount() - mPosition;
+			return getTotalCount() - position;
 		}
 	}
 
 	public void recycle() {
-		recycleFrames(mFrames);
+		recycleFrames(frames);
 	}
 
-	private int mLastIndex = -1;
-	private boolean mHasPrevious = false;
-	private int[] mPreviousColors;
+	private int lastIndex = -1;
+	private boolean hasPrevious = false;
+	private int[] previousColors;
 
-	private final Paint mClearPaint = new Paint(); {
-		mClearPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+	private final Paint clearPaint = new Paint(); {
+		clearPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
 	}
 
-	private final Paint mDrawPaint = new Paint(Paint.FILTER_BITMAP_FLAG);
+	private final Paint drawPaint = new Paint(Paint.FILTER_BITMAP_FLAG);
 
 	private void drawImage(int index) {
 		if (index > 0) {
-			Frame frame = mFrames[index - 1];
+			Frame frame = frames[index - 1];
 			if (frame.restoreBackground) {
-				mCanvas.drawRect(frame.x, frame.y, frame.x + frame.width, frame.y + frame.height, mClearPaint);
+				canvas.drawRect(frame.x, frame.y, frame.x + frame.width, frame.y + frame.height, clearPaint);
 			} else if (frame.restorePrevious) {
-				mBitmap.setPixels(mPreviousColors, 0, mBitmap.getWidth(), 0, 0,
-						mBitmap.getWidth(), mBitmap.getHeight());
+				bitmap.setPixels(previousColors, 0, bitmap.getWidth(), 0, 0,
+						bitmap.getWidth(), bitmap.getHeight());
 			}
 		}
-		Frame frame = mFrames[index];
+		Frame frame = frames[index];
 		if (frame.restorePrevious) {
-			if (!mHasPrevious) {
-				if (mPreviousColors == null) {
-					mPreviousColors = new int[mBitmap.getWidth() * mBitmap.getHeight()];
+			if (!hasPrevious) {
+				if (previousColors == null) {
+					previousColors = new int[bitmap.getWidth() * bitmap.getHeight()];
 				}
-				mBitmap.getPixels(mPreviousColors, 0, mBitmap.getWidth(), 0, 0,
-						mBitmap.getWidth(), mBitmap.getHeight());
-				mHasPrevious = true;
+				bitmap.getPixels(previousColors, 0, bitmap.getWidth(), 0, 0,
+						bitmap.getWidth(), bitmap.getHeight());
+				hasPrevious = true;
 			}
 		} else {
-			mHasPrevious = false;
+			hasPrevious = false;
 		}
 		if (!frame.blendOver) {
-			mCanvas.drawRect(frame.x, frame.y, frame.x + frame.width, frame.y + frame.height, mClearPaint);
+			canvas.drawRect(frame.x, frame.y, frame.x + frame.width, frame.y + frame.height, clearPaint);
 		}
-		mCanvas.drawBitmap(frame.bitmap, frame.x, frame.y, mDrawPaint);
+		canvas.drawBitmap(frame.bitmap, frame.x, frame.y, drawPaint);
 	}
 
 	private int draw() {
 		int position = 0;
-		if (mDuration > 0) {
+		if (duration > 0) {
 			long time = System.currentTimeMillis();
-			if (mStartTime == 0) {
-				mStartTime = time;
+			if (startTime == 0) {
+				startTime = time;
 			}
-			position = (int) ((time - mStartTime) % mDuration);
+			position = (int) ((time - startTime) % duration);
 		}
 		int index = 0;
 		int delay = -1;
-		int count = mFrames.length;
+		int count = frames.length;
 		for (int i = 0; i < count; i++) {
-			if (position >= mFrames[i].startTime) {
+			if (position >= frames[i].startTime) {
 				index = i;
 			} else {
 				break;
 			}
 		}
 		if (count > 1) {
-			delay = (index + 1 < count ? mFrames[index + 1].startTime : mDuration) - position;
+			delay = (index + 1 < count ? frames[index + 1].startTime : duration) - position;
 		}
-		if (mLastIndex != index) {
-			if (index > mLastIndex) {
-				for (int i = mLastIndex + 1; i <= index; i++) {
+		if (lastIndex != index) {
+			if (index > lastIndex) {
+				for (int i = lastIndex + 1; i <= index; i++) {
 					drawImage(i);
 				}
 			} else {
-				mHasPrevious = false;
-				mBitmap.eraseColor(0x00000000);
+				hasPrevious = false;
+				bitmap.eraseColor(0x00000000);
 				for (int i = 0; i <= index; i++) {
 					drawImage(i);
 				}
 			}
-			mLastIndex = index;
+			lastIndex = index;
 		}
 		return delay;
 	}
 
-	private Drawable mDrawable;
+	private Drawable drawable;
 
 	public Drawable getDrawable() {
-		if (mDrawable == null) {
-			mDrawable = new Drawable() {
-				private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG);
+		if (drawable == null) {
+			drawable = new Drawable() {
+				private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG);
 
 				@Override
 				public int getIntrinsicWidth() {
-					return mFrames[0].width;
+					return frames[0].width;
 				}
 
 				@Override
 				public int getIntrinsicHeight() {
-					return mFrames[0].height;
+					return frames[0].height;
 				}
 
 				@Override
 				public void setColorFilter(ColorFilter colorFilter) {
-					mPaint.setColorFilter(colorFilter);
+					paint.setColorFilter(colorFilter);
 				}
 
 				@Override
 				public void setAlpha(int alpha) {
-					mPaint.setAlpha(alpha);
+					paint.setAlpha(alpha);
 				}
 
 				@Override
@@ -464,7 +464,7 @@ public class AnimatedPngDecoder implements Runnable {
 					canvas.scale((float) bounds.width() / getIntrinsicWidth(),
 							(float) bounds.height() / getIntrinsicHeight());
 					int delay = AnimatedPngDecoder.this.draw();
-					canvas.drawBitmap(mBitmap, 0, 0, mPaint);
+					canvas.drawBitmap(bitmap, 0, 0, paint);
 					canvas.restore();
 					if (delay >= 0) {
 						delay -= 20;
@@ -478,11 +478,11 @@ public class AnimatedPngDecoder implements Runnable {
 				}
 			};
 		}
-		return mDrawable;
+		return drawable;
 	}
 
 	@Override
 	public void run() {
-		mDrawable.invalidateSelf();
+		drawable.invalidateSelf();
 	}
 }

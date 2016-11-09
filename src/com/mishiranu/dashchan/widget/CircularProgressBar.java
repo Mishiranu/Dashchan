@@ -44,30 +44,30 @@ public class CircularProgressBar extends View {
 	private static final int TRANSIENT_INDETERMINATE_PROGRESS = 1;
 	private static final int TRANSIENT_PROGRESS_INDETERMINATE = 2;
 
-	private final Paint mPaint;
-	private final Path mPath = new Path();
-	private final RectF mRectF = new RectF();
+	private final Paint paint;
+	private final Path path = new Path();
+	private final RectF rectF = new RectF();
 
-	private final Drawable mIndeterminateDrawable;
-	private final int mIndeterminateDuration;
+	private final Drawable indeterminateDrawable;
+	private final int indeterminateDuration;
 
-	private final Interpolator mLollipopStartInterpolator;
-	private final Interpolator mLollipopEndInterpolator;
+	private final Interpolator lollipopStartInterpolator;
+	private final Interpolator lollipopEndInterpolator;
 
-	private final long mStartTime = System.currentTimeMillis();
+	private final long startTime = System.currentTimeMillis();
 
-	private int mTransientState = TRANSIENT_NONE;
-	private final float[] mCircularData = C.API_LOLLIPOP ? new float[2] : null;
-	private final float[] mTransientData = C.API_LOLLIPOP ? new float[2] : null;
-	private long mTimeTransientStart;
+	private int transientState = TRANSIENT_NONE;
+	private final float[] circularData = C.API_LOLLIPOP ? new float[2] : null;
+	private final float[] transientData = C.API_LOLLIPOP ? new float[2] : null;
+	private long timeTransientStart;
 
-	private boolean mIndeterminate = true;
-	private boolean mVisible = false;
-	private long mTimeVisibilitySet;
+	private boolean indeterminate = true;
+	private boolean visible = false;
+	private long timeVisibilitySet;
 
-	private float mProgress = 0f;
-	private float mTransientProgress = 0;
-	private long mTimeProgressChange;
+	private float progress = 0f;
+	private float transientProgress = 0;
+	private long timeProgressChange;
 
 	public CircularProgressBar(Context context) {
 		this(context, null);
@@ -76,28 +76,28 @@ public class CircularProgressBar extends View {
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	public CircularProgressBar(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-		mPaint.setStyle(Paint.Style.STROKE);
-		mPaint.setStrokeCap(Paint.Cap.SQUARE);
-		mPaint.setStrokeJoin(Paint.Join.MITER);
+		paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+		paint.setStyle(Paint.Style.STROKE);
+		paint.setStrokeCap(Paint.Cap.SQUARE);
+		paint.setStrokeJoin(Paint.Join.MITER);
 		if (C.API_LOLLIPOP) {
 			Path startPath = new Path();
 			startPath.lineTo(0.5f, 0f);
 			startPath.cubicTo(0.7f, 0f, 0.6f, 1f, 1f, 1f);
-			mLollipopStartInterpolator = new PathInterpolator(startPath);
+			lollipopStartInterpolator = new PathInterpolator(startPath);
 			Path endPath = new Path();
 			endPath.cubicTo(0.2f, 0f, 0.1f, 1f, 0.5f, 1f);
 			endPath.lineTo(1f, 1f);
-			mLollipopEndInterpolator = new PathInterpolator(endPath);
-			mIndeterminateDrawable = null;
-			mIndeterminateDuration = 0;
+			lollipopEndInterpolator = new PathInterpolator(endPath);
+			indeterminateDrawable = null;
+			indeterminateDuration = 0;
 		} else {
-			mLollipopStartInterpolator = null;
-			mLollipopEndInterpolator = null;
+			lollipopStartInterpolator = null;
+			lollipopEndInterpolator = null;
 			TypedArray typedArray = context.obtainStyledAttributes(android.R.style.Widget_Holo_ProgressBar_Large,
 					new int[] {android.R.attr.indeterminateDrawable, android.R.attr.indeterminateDuration});
-			mIndeterminateDrawable = typedArray.getDrawable(0);
-			mIndeterminateDuration = typedArray.getInteger(1, 3500);
+			indeterminateDrawable = typedArray.getDrawable(0);
+			indeterminateDuration = typedArray.getInteger(1, 3500);
 			typedArray.recycle();
 		}
 	}
@@ -116,35 +116,35 @@ public class CircularProgressBar extends View {
 		return ((currentTime - fromTime) % max) / max;
 	}
 
-	private boolean mQueuedVisible;
+	private boolean queuedVisible;
 
-	private final Runnable mSetVisibleRunnable = () -> {
-		mVisible = mQueuedVisible;
-		mTimeVisibilitySet = System.currentTimeMillis();
+	private final Runnable setVisibleRunnable = () -> {
+		visible = queuedVisible;
+		timeVisibilitySet = System.currentTimeMillis();
 		invalidate();
 	};
 
 	public void setVisible(boolean visible, boolean forced) {
-		removeCallbacks(mSetVisibleRunnable);
-		if (mVisible != visible) {
-			mQueuedVisible = visible;
-			long delta = System.currentTimeMillis() - mTimeVisibilitySet;
+		removeCallbacks(setVisibleRunnable);
+		if (this.visible != visible) {
+			queuedVisible = visible;
+			long delta = System.currentTimeMillis() - timeVisibilitySet;
 			if (delta < 10) {
-				mVisible = visible;
-				mTimeVisibilitySet = 0L;
+				this.visible = visible;
+				timeVisibilitySet = 0L;
 				invalidate();
 			} else if (!visible && !forced && delta < VISIBILITY_TRANSIENT_TIME) {
-				postDelayed(mSetVisibleRunnable, VISIBILITY_TRANSIENT_TIME - delta);
+				postDelayed(setVisibleRunnable, VISIBILITY_TRANSIENT_TIME - delta);
 			} else {
-				mSetVisibleRunnable.run();
+				setVisibleRunnable.run();
 			}
 		}
 	}
 
 	public void cancelVisibilityTransient() {
-		removeCallbacks(mSetVisibleRunnable);
-		mTimeVisibilitySet = 0L;
-		mVisible = mQueuedVisible;
+		removeCallbacks(setVisibleRunnable);
+		timeVisibilitySet = 0L;
+		visible = queuedVisible;
 		invalidate();
 	}
 
@@ -152,29 +152,29 @@ public class CircularProgressBar extends View {
 		float progress = calculateTransientProgress();
 		float arcStart = (progress - 1f) / 4f;
 		float arcLength = progress - arcStart;
-		mCircularData[0] = arcStart;
-		mCircularData[1] = arcLength;
-		return progress != mProgress;
+		circularData[0] = arcStart;
+		circularData[1] = arcLength;
+		return progress != this.progress;
 	}
 
 	private void calculateLollipopIndeterminate(long currentTime) {
-		float rotationValue = getValue(currentTime, mStartTime, INDETERMINATE_LOLLIPOP_TIME);
+		float rotationValue = getValue(currentTime, startTime, INDETERMINATE_LOLLIPOP_TIME);
 		float animationValue = rotationValue * 5f % 1f;
 		float trimOffset = 0.25f * animationValue;
-		float trimStart = 0.75f * mLollipopStartInterpolator.getInterpolation(animationValue) + trimOffset;
-		float trimEnd = 0.75f * mLollipopEndInterpolator.getInterpolation(animationValue) + trimOffset;
+		float trimStart = 0.75f * lollipopStartInterpolator.getInterpolation(animationValue) + trimOffset;
+		float trimEnd = 0.75f * lollipopEndInterpolator.getInterpolation(animationValue) + trimOffset;
 		float rotation = 2f * rotationValue;
 		float arcStart = trimStart;
 		float arcLength = trimEnd - arcStart;
 		arcStart += rotation;
-		mCircularData[0] = arcStart % 1f;
-		mCircularData[1] = arcLength;
+		circularData[0] = arcStart % 1f;
+		circularData[1] = arcLength;
 	}
 
 	private boolean calculateLollipopTransient(float arcStart, float arcLength,
 			float desiredStart, float desiredLength, long interval) {
 		boolean finished = false;
-		long timeDelta = System.currentTimeMillis() - mTimeTransientStart;
+		long timeDelta = System.currentTimeMillis() - timeTransientStart;
 		if (timeDelta >= interval) {
 			timeDelta = interval;
 			finished = true;
@@ -182,14 +182,14 @@ public class CircularProgressBar extends View {
 		float value = AnimationUtils.ACCELERATE_DECELERATE_INTERPOLATOR.getInterpolation((float) timeDelta / interval);
 		arcStart = arcStart + (desiredStart - arcStart) * value;
 		arcLength = arcLength + (desiredLength - arcLength) * value;
-		mCircularData[0] = arcStart % 1f;
-		mCircularData[1] = arcLength;
+		circularData[0] = arcStart % 1f;
+		circularData[1] = arcLength;
 		return finished;
 	}
 
 	private boolean calculateLollipopTransientIndeterminateProgress() {
-		float arcStart = mTransientData[0];
-		float arcLength = mTransientData[1];
+		float arcStart = transientData[0];
+		float arcLength = transientData[1];
 		float desiredStart = 0.75f;
 		float desiredLength = 0.25f;
 		if (arcStart >= desiredStart - 0.15f || arcLength >= desiredLength) {
@@ -200,11 +200,11 @@ public class CircularProgressBar extends View {
 	}
 
 	private boolean calculateLollipopTransientProgressIndeterminate() {
-		float arcStart = mTransientData[0];
-		float arcLength = mTransientData[1];
-		calculateLollipopIndeterminate(mTimeTransientStart + 1000L);
-		float desiredStart = mCircularData[0];
-		float desiredLength = mCircularData[1];
+		float arcStart = transientData[0];
+		float arcLength = transientData[1];
+		calculateLollipopIndeterminate(timeTransientStart + 1000L);
+		float desiredStart = circularData[0];
+		float desiredLength = circularData[1];
 		if (arcStart >= desiredStart || arcLength >= desiredLength) {
 			arcStart -= 1f;
 		}
@@ -212,63 +212,63 @@ public class CircularProgressBar extends View {
 	}
 
 	public void setIndeterminate(boolean indeterminate) {
-		if (mIndeterminate != indeterminate) {
+		if (this.indeterminate != indeterminate) {
 			long time = System.currentTimeMillis();
 			if (C.API_LOLLIPOP) {
-				boolean visible = mVisible && time - mTimeVisibilitySet > 50;
+				boolean visible = this.visible && time - timeVisibilitySet > 50;
 				if (indeterminate) {
-					if (mTransientState == TRANSIENT_INDETERMINATE_PROGRESS) {
+					if (transientState == TRANSIENT_INDETERMINATE_PROGRESS) {
 						calculateLollipopTransientIndeterminateProgress();
 					} else {
 						calculateLollipopProgress();
 					}
 					if (visible) {
-						mTransientState = TRANSIENT_PROGRESS_INDETERMINATE;
+						transientState = TRANSIENT_PROGRESS_INDETERMINATE;
 					}
 				} else {
-					if (mTransientState == TRANSIENT_PROGRESS_INDETERMINATE) {
+					if (transientState == TRANSIENT_PROGRESS_INDETERMINATE) {
 						calculateLollipopTransientProgressIndeterminate();
 					} else {
 						calculateLollipopIndeterminate(time);
 					}
 					if (visible) {
-						mTransientState = TRANSIENT_INDETERMINATE_PROGRESS;
+						transientState = TRANSIENT_INDETERMINATE_PROGRESS;
 					}
-					mTimeProgressChange = time;
+					timeProgressChange = time;
 				}
-				mTransientData[0] = mCircularData[0];
-				mTransientData[1] = mCircularData[1];
+				transientData[0] = circularData[0];
+				transientData[1] = circularData[1];
 			}
 			if (!indeterminate) {
-				mTransientProgress = 0f;
-				mProgress = 0f;
+				transientProgress = 0f;
+				progress = 0f;
 			}
-			mTimeTransientStart = time;
+			timeTransientStart = time;
 			invalidate();
-			mIndeterminate = indeterminate;
+			this.indeterminate = indeterminate;
 		}
 	}
 
 	private float calculateTransientProgress() {
-		long time = System.currentTimeMillis() - mTimeProgressChange;
-		float end = mProgress;
+		long time = System.currentTimeMillis() - timeProgressChange;
+		float end = progress;
 		if (time > PROGRESS_TRANSIENT_TIME) {
 			return end;
 		}
-		float start = mTransientProgress;
+		float start = transientProgress;
 		return start + (end - start) * time / PROGRESS_TRANSIENT_TIME;
 	}
 
 	public void setProgress(int progress, int max, boolean ignoreTransient) {
 		float value = (float) progress / max;
-		mTransientProgress = ignoreTransient ? value : calculateTransientProgress();
-		mTimeProgressChange = System.currentTimeMillis();
+		transientProgress = ignoreTransient ? value : calculateTransientProgress();
+		timeProgressChange = System.currentTimeMillis();
 		if (value < 0f) {
 			value = 0f;
 		} else if (value > 1f) {
 			value = 1f;
 		}
-		mProgress = value;
+		this.progress = value;
 		invalidate();
 	}
 
@@ -276,13 +276,13 @@ public class CircularProgressBar extends View {
 		if (length < 0.001f) {
 			length = 0.001f;
 		}
-		Path path = mPath;
+		Path path = this.path;
 		path.reset();
 		if (length >= 1f) {
-			path.arcTo(mRectF, 0f, 180f, false);
-			path.arcTo(mRectF, 180f, 180f, false);
+			path.arcTo(rectF, 0f, 180f, false);
+			path.arcTo(rectF, 180f, 180f, false);
 		} else {
-			path.arcTo(mRectF, start * 360f - 90f, length * 360f, false);
+			path.arcTo(rectF, start * 360f - 90f, length * 360f, false);
 		}
 		canvas.drawPath(path, paint);
 	}
@@ -294,11 +294,11 @@ public class CircularProgressBar extends View {
 		int size = Math.min(width, height);
 		boolean invalidate = false;
 
-		boolean transientVisibility = time - mTimeVisibilitySet < VISIBILITY_TRANSIENT_TIME;
-		float visibilityValue = transientVisibility ? (float) (time - mTimeVisibilitySet) /
+		boolean transientVisibility = time - timeVisibilitySet < VISIBILITY_TRANSIENT_TIME;
+		float visibilityValue = transientVisibility ? (float) (time - timeVisibilitySet) /
 				VISIBILITY_TRANSIENT_TIME : 1f;
 		visibilityValue = AnimationUtils.ACCELERATE_DECELERATE_INTERPOLATOR.getInterpolation(visibilityValue);
-		int alpha = (int) (mVisible ? 0xff * visibilityValue : 0xff * (1f - visibilityValue));
+		int alpha = (int) (visible ? 0xff * visibilityValue : 0xff * (1f - visibilityValue));
 		if (transientVisibility) {
 			invalidate = true;
 		}
@@ -306,42 +306,42 @@ public class CircularProgressBar extends View {
 		if (C.API_LOLLIPOP) {
 			float arcStart;
 			float arcLength;
-			if (mTransientState != TRANSIENT_NONE) {
+			if (transientState != TRANSIENT_NONE) {
 				boolean finished = true;
-				if (mTransientState == TRANSIENT_INDETERMINATE_PROGRESS) {
+				if (transientState == TRANSIENT_INDETERMINATE_PROGRESS) {
 					finished = calculateLollipopTransientIndeterminateProgress();
-				} else if (mTransientState == TRANSIENT_PROGRESS_INDETERMINATE) {
+				} else if (transientState == TRANSIENT_PROGRESS_INDETERMINATE) {
 					finished = calculateLollipopTransientProgressIndeterminate();
 				}
-				arcStart = mCircularData[0];
-				arcLength = mCircularData[1];
+				arcStart = circularData[0];
+				arcLength = circularData[1];
 				if (finished) {
-					mTransientState = TRANSIENT_NONE;
-					mTransientProgress = 0f;
-					mTimeProgressChange = time;
+					transientState = TRANSIENT_NONE;
+					transientProgress = 0f;
+					timeProgressChange = time;
 				}
 				invalidate = true;
-			} else if (mIndeterminate) {
+			} else if (indeterminate) {
 				calculateLollipopIndeterminate(time);
-				arcStart = mCircularData[0];
-				arcLength = mCircularData[1];
+				arcStart = circularData[0];
+				arcLength = circularData[1];
 				invalidate = true;
 			} else {
 				invalidate |= calculateLollipopProgress();
-				arcStart = mCircularData[0];
-				arcLength = mCircularData[1];
+				arcStart = circularData[0];
+				arcLength = circularData[1];
 			}
 			boolean useAlpha = true;
-			if (mVisible) {
+			if (visible) {
 				arcStart -= 0.25f * (1f - visibilityValue);
 				arcLength = arcLength * alpha / 0xff;
 				useAlpha = false;
-			} else if (mIndeterminate || mProgress < 1f || mTransientProgress < 0.75f) {
+			} else if (indeterminate || progress < 1f || transientProgress < 0.75f) {
 				// Note, that visibilityValue always changes from 0 to 1, instead of alpha
 				float newArcLength = arcLength * (1f - visibilityValue);
 				arcStart += arcLength - newArcLength;
 				arcLength = newArcLength;
-				if (!mIndeterminate) {
+				if (!indeterminate) {
 					arcStart += 0.25f * visibilityValue;
 				}
 				useAlpha = false;
@@ -350,8 +350,8 @@ public class CircularProgressBar extends View {
 				canvas.save();
 				canvas.translate(width / 2f, height / 2f);
 				int radius = (int) (size * 38f / 48f / 2f + 0.5f);
-				mRectF.set(-radius, -radius, radius, radius);
-				Paint paint = mPaint;
+				rectF.set(-radius, -radius, radius, radius);
+				Paint paint = this.paint;
 				paint.setStrokeWidth(size / 48f * 4f);
 				paint.setColor(Color.argb(useAlpha ? alpha : 0xff, 0xff, 0xff, 0xff));
 				drawArc(canvas, paint, arcStart, arcLength);
@@ -359,8 +359,8 @@ public class CircularProgressBar extends View {
 			}
 		} else {
 			int interval = 200;
-			float transientValue = time - mTimeTransientStart >= interval ? 1f
-					: getValue(time, mTimeTransientStart, interval);
+			float transientValue = time - timeTransientStart >= interval ? 1f
+					: getValue(time, timeTransientStart, interval);
 			if (transientValue < 1f) {
 				invalidate = true;
 			}
@@ -368,7 +368,7 @@ public class CircularProgressBar extends View {
 			int decreasingAlpha = (int) ((1f - transientValue) * alpha);
 			int indeterminateAlpha;
 			int progressAlpha;
-			if (mIndeterminate) {
+			if (indeterminate) {
 				indeterminateAlpha = increasingAlpha;
 				progressAlpha = decreasingAlpha;
 			} else {
@@ -376,22 +376,22 @@ public class CircularProgressBar extends View {
 				progressAlpha = increasingAlpha;
 			}
 			if (indeterminateAlpha > 0x00) {
-				int dWidth = mIndeterminateDrawable.getIntrinsicWidth();
-				int dHeight = mIndeterminateDrawable.getIntrinsicHeight();
+				int dWidth = indeterminateDrawable.getIntrinsicWidth();
+				int dHeight = indeterminateDrawable.getIntrinsicHeight();
 				int left = (width - dWidth) / 2;
 				int top = (height - dHeight) / 2;
-				mIndeterminateDrawable.setAlpha(indeterminateAlpha);
-				mIndeterminateDrawable.setBounds(left, top, left + dWidth, top + dHeight);
-				mIndeterminateDrawable.setLevel((int) (getValue(time, mStartTime, mIndeterminateDuration) * 10000));
-				mIndeterminateDrawable.draw(canvas);
+				indeterminateDrawable.setAlpha(indeterminateAlpha);
+				indeterminateDrawable.setBounds(left, top, left + dWidth, top + dHeight);
+				indeterminateDrawable.setLevel((int) (getValue(time, startTime, indeterminateDuration) * 10000));
+				indeterminateDrawable.draw(canvas);
 				invalidate = true;
 			}
 			if (progressAlpha > 0x00) {
 				canvas.save();
 				canvas.translate(width / 2f, height / 2f);
 				int radius = (int) (size / 2f * 0.75f + 0.5f);
-				mRectF.set(-radius, -radius, radius, radius);
-				Paint paint = mPaint;
+				rectF.set(-radius, -radius, radius, radius);
+				Paint paint = this.paint;
 				paint.setStrokeWidth(size * 0.065f);
 				paint.setColor(Color.argb(0x80 * progressAlpha / 0xff, 0x80, 0x80, 0x80));
 				drawArc(canvas, paint, 0f, 1f);
@@ -401,16 +401,16 @@ public class CircularProgressBar extends View {
 					drawArc(canvas, paint, 0f, progress);
 				}
 				canvas.restore();
-				if (progress != mProgress) {
+				if (progress != this.progress) {
 					invalidate = true;
 				}
 			}
-			if (alpha == 0x00 && mVisible) {
+			if (alpha == 0x00 && visible) {
 				invalidate = true;
 			}
 		}
 
-		if (invalidate && (alpha > 0x00 || mVisible)) {
+		if (invalidate && (alpha > 0x00 || visible)) {
 			invalidate();
 		}
 	}

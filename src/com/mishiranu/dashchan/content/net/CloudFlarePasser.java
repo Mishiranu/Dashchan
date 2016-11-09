@@ -70,7 +70,7 @@ public class CloudFlarePasser implements Handler.Callback {
 
 	private CloudFlarePasser() {}
 
-	private final Handler mHandler = new Handler(Looper.getMainLooper(), this);
+	private final Handler handler = new Handler(Looper.getMainLooper(), this);
 
 	private static class CheckHolder {
 		public final String chanName;
@@ -106,7 +106,7 @@ public class CloudFlarePasser implements Handler.Callback {
 		}
 	}
 
-	private final LinkedHashMap<String, CloudFlareClient> mClientHandlers = new LinkedHashMap<>();
+	private final LinkedHashMap<String, CloudFlareClient> clientHandlers = new LinkedHashMap<>();
 
 	private static final int MESSAGE_CHECK_JAVASCRIPT = 1;
 	private static final int MESSAGE_HANDLE_NEXT_JAVASCRIPT = 2;
@@ -117,16 +117,16 @@ public class CloudFlarePasser implements Handler.Callback {
 			case MESSAGE_CHECK_JAVASCRIPT: {
 				initWebView();
 				CheckHolder checkHolder = (CheckHolder) msg.obj;
-				CloudFlareClient client = mClientHandlers.get(checkHolder.chanName);
+				CloudFlareClient client = clientHandlers.get(checkHolder.chanName);
 				if (client == null) {
 					client = new CloudFlareClient(checkHolder.chanName, checkHolder);
-					mClientHandlers.put(checkHolder.chanName, client);
+					clientHandlers.put(checkHolder.chanName, client);
 				} else {
 					client.add(checkHolder);
 				}
-				if (!mHandler.hasMessages(MESSAGE_HANDLE_NEXT_JAVASCRIPT)) {
+				if (!handler.hasMessages(MESSAGE_HANDLE_NEXT_JAVASCRIPT)) {
 					handleJavaScript(client);
-					mHandler.sendEmptyMessageDelayed(MESSAGE_HANDLE_NEXT_JAVASCRIPT, WEB_VIEW_TIMEOUT);
+					handler.sendEmptyMessageDelayed(MESSAGE_HANDLE_NEXT_JAVASCRIPT, WEB_VIEW_TIMEOUT);
 				}
 				return true;
 			}
@@ -139,8 +139,8 @@ public class CloudFlarePasser implements Handler.Callback {
 	}
 
 	private void handleNextJavaScript() {
-		mHandler.removeMessages(MESSAGE_HANDLE_NEXT_JAVASCRIPT);
-		Iterator<LinkedHashMap.Entry<String, CloudFlareClient>> iterator = mClientHandlers.entrySet().iterator();
+		handler.removeMessages(MESSAGE_HANDLE_NEXT_JAVASCRIPT);
+		Iterator<LinkedHashMap.Entry<String, CloudFlareClient>> iterator = clientHandlers.entrySet().iterator();
 		CloudFlareClient client = null;
 		if (iterator.hasNext()) {
 			iterator.next();
@@ -151,36 +151,36 @@ public class CloudFlarePasser implements Handler.Callback {
 		}
 		if (client != null) {
 			handleJavaScript(client);
-			mHandler.sendEmptyMessageDelayed(MESSAGE_HANDLE_NEXT_JAVASCRIPT, WEB_VIEW_TIMEOUT);
+			handler.sendEmptyMessageDelayed(MESSAGE_HANDLE_NEXT_JAVASCRIPT, WEB_VIEW_TIMEOUT);
 		}
 	}
 
 	private void handleJavaScript(CloudFlareClient client) {
-		String chanName = client.mChanName;
+		String chanName = client.chanName;
 		client.notifyStarted();
-		mWebView.stopLoading();
-		WebViewUtils.clearAll(mWebView);
-		mWebView.setWebViewClient(client);
+		webView.stopLoading();
+		WebViewUtils.clearAll(webView);
+		webView.setWebViewClient(client);
 		ChanLocator locator = ChanLocator.get(chanName);
-		mWebView.getSettings().setUserAgentString(AdvancedPreferences.getUserAgent(chanName));
-		mWebView.loadUrl(locator.buildPath().toString());
+		webView.getSettings().setUserAgentString(AdvancedPreferences.getUserAgent(chanName));
+		webView.loadUrl(locator.buildPath().toString());
 	}
 
 	private class CloudFlareClient extends WebViewClient {
-		private final String mChanName;
-		private final ArrayList<CheckHolder> mCheckHolders = new ArrayList<>();
+		private final String chanName;
+		private final ArrayList<CheckHolder> checkHolders = new ArrayList<>();
 
-		private boolean mStarted = false;
-		private boolean mWasChecked = false;
+		private boolean started = false;
+		private boolean wasChecked = false;
 
 		public CloudFlareClient(String chanName, CheckHolder checkHolder) {
-			mChanName = chanName;
+			this.chanName = chanName;
 			add(checkHolder);
 		}
 
 		public void add(CheckHolder checkHolder) {
-			mCheckHolders.add(checkHolder);
-			if (mStarted) {
+			checkHolders.add(checkHolder);
+			if (started) {
 				synchronized (checkHolder) {
 					checkHolder.started = true;
 					checkHolder.notifyAll();
@@ -189,8 +189,8 @@ public class CloudFlarePasser implements Handler.Callback {
 		}
 
 		public void notifyStarted() {
-			mStarted = true;
-			for (CheckHolder checkHolder : mCheckHolders) {
+			started = true;
+			for (CheckHolder checkHolder : checkHolders) {
 				synchronized (checkHolder) {
 					checkHolder.started = true;
 					checkHolder.notifyAll();
@@ -202,19 +202,19 @@ public class CloudFlarePasser implements Handler.Callback {
 		public void onPageFinished(WebView view, String url) {
 			super.onPageFinished(view, url);
 			if ("Just a moment...".equals(view.getTitle())) {
-				mWasChecked = true;
+				wasChecked = true;
 			} else {
 				String cookie = null;
 				boolean success = false;
-				if (mWasChecked) {
+				if (wasChecked) {
 					cookie = StringUtils.nullIfEmpty(extractCookie(url, COOKIE_CLOUDFLARE));
 					if (cookie != null) {
 						success = true;
 					}
 				}
-				storeCookie(mChanName, cookie, url);
+				storeCookie(chanName, cookie, url);
 				view.stopLoading();
-				for (CheckHolder checkHolder : mCheckHolders) {
+				for (CheckHolder checkHolder : checkHolders) {
 					synchronized (checkHolder) {
 						checkHolder.success = success;
 						checkHolder.ready = true;
@@ -237,29 +237,29 @@ public class CloudFlarePasser implements Handler.Callback {
 		}
 
 		private String extractCookie(String url, String name) {
-			try {
-				String data = CookieManager.getInstance().getCookie(url);
+			String data = CookieManager.getInstance().getCookie(url);
+			if (data != null) {
 				String[] splitted = data.split(";\\s*");
-				for (int i = 0; i < splitted.length; i++) {
-					if (!StringUtils.isEmptyOrWhitespace(splitted[i]) && splitted[i].startsWith(name + "=")) {
-						return splitted[i].substring(name.length() + 1);
+				if (splitted != null) {
+					for (int i = 0; i < splitted.length; i++) {
+						if (!StringUtils.isEmptyOrWhitespace(splitted[i]) && splitted[i].startsWith(name + "=")) {
+							return splitted[i].substring(name.length() + 1);
+						}
 					}
 				}
-			} catch (Exception e) {
-				// Ignore
 			}
 			return null;
 		}
 	}
 
-	private WebView mWebView;
+	private WebView webView;
 
 	@SuppressLint("SetJavaScriptEnabled")
 	private void initWebView() {
-		if (mWebView == null) {
+		if (webView == null) {
 			Context context = MainApplication.getInstance();
-			mWebView = new WebView(context);
-			WebSettings settings = mWebView.getSettings();
+			webView = new WebView(context);
+			WebSettings settings = webView.getSettings();
 			settings.setJavaScriptEnabled(true);
 			settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
 			settings.setAppCacheEnabled(false);
@@ -276,24 +276,24 @@ public class CloudFlarePasser implements Handler.Callback {
 		}
 	}
 
-	private final HashMap<String, CheckHolder> mCaptchaHolders = new HashMap<>();
-	private final HashMap<String, Long> mCaptchaLastCancel = new HashMap<>();
+	private final HashMap<String, CheckHolder> captchaHolders = new HashMap<>();
+	private final HashMap<String, Long> captchaLastCancel = new HashMap<>();
 
 	private Result handleCaptcha(String chanName, Uri specialUri, String recaptchaApiKey) throws HttpException {
 		CheckHolder checkHolder = null;
-		synchronized (mCaptchaLastCancel) {
-			Long lastCancelTime = mCaptchaLastCancel.get(chanName);
+		synchronized (captchaLastCancel) {
+			Long lastCancelTime = captchaLastCancel.get(chanName);
 			if (lastCancelTime != null && System.currentTimeMillis() - lastCancelTime < 5000) {
 				return new Result(false, null);
 			}
 		}
 		if (specialUri == null) {
 			boolean handle;
-			synchronized (mCaptchaHolders) {
-				checkHolder = mCaptchaHolders.get(chanName);
+			synchronized (captchaHolders) {
+				checkHolder = captchaHolders.get(chanName);
 				if (checkHolder == null) {
 					checkHolder = new CheckHolder(chanName);
-					mCaptchaHolders.put(chanName, checkHolder);
+					captchaHolders.put(chanName, checkHolder);
 					handle = true;
 				} else {
 					handle = false;
@@ -317,8 +317,8 @@ public class CloudFlarePasser implements Handler.Callback {
 						(new CloudFlareCaptchaReader(recaptchaApiKey), ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2,
 						null, null, null, null, R.string.message_cloudflate_block, retry);
 				if (captchaData == null) {
-					synchronized (mCaptchaLastCancel) {
-						mCaptchaLastCancel.put(chanName, System.currentTimeMillis());
+					synchronized (captchaLastCancel) {
+						captchaLastCancel.put(chanName, System.currentTimeMillis());
 					}
 					return new Result(false, null);
 				}
@@ -349,8 +349,8 @@ public class CloudFlarePasser implements Handler.Callback {
 		} finally {
 			holder.cleanup();
 			if (checkHolder != null) {
-				synchronized (mCaptchaHolders) {
-					mCaptchaHolders.remove(chanName);
+				synchronized (captchaHolders) {
+					captchaHolders.remove(chanName);
 				}
 				synchronized (checkHolder) {
 					checkHolder.ready = true;
@@ -361,17 +361,17 @@ public class CloudFlarePasser implements Handler.Callback {
 	}
 
 	private static class CloudFlareCaptchaReader implements ReadCaptchaTask.CaptchaReader {
-		private final String mRecaptchaApiKey;
+		private final String recaptchaApiKey;
 
 		public CloudFlareCaptchaReader(String recaptchaApiKey) {
-			mRecaptchaApiKey = recaptchaApiKey;
+			this.recaptchaApiKey = recaptchaApiKey;
 		}
 
 		@Override
 		public ChanPerformer.ReadCaptchaResult onReadCaptcha(ChanPerformer.ReadCaptchaData data)
 				throws HttpException, InvalidResponseException {
 			ChanPerformer.CaptchaData captchaData = new ChanPerformer.CaptchaData();
-			captchaData.put(ChanPerformer.CaptchaData.API_KEY, mRecaptchaApiKey);
+			captchaData.put(ChanPerformer.CaptchaData.API_KEY, recaptchaApiKey);
 			return new ChanPerformer.ReadCaptchaResult(ChanPerformer.CaptchaState.CAPTCHA, captchaData);
 		}
 	}
@@ -402,7 +402,7 @@ public class CloudFlarePasser implements Handler.Callback {
 					Matcher matcher = PATTERN_UNAVAILABLE.matcher(responseText);
 					if (matcher.find()) {
 						CheckHolder checkHolder = new CheckHolder(chanName);
-						INSTANCE.mHandler.obtainMessage(MESSAGE_CHECK_JAVASCRIPT, checkHolder).sendToTarget();
+						INSTANCE.handler.obtainMessage(MESSAGE_CHECK_JAVASCRIPT, checkHolder).sendToTarget();
 						try {
 							checkHolder.waitReady(false);
 						} catch (InterruptedException e) {

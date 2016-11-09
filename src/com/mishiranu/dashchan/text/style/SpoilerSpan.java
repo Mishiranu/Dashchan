@@ -27,43 +27,43 @@ import com.mishiranu.dashchan.widget.CommentTextView;
 
 public class SpoilerSpan extends CharacterStyle implements UpdateAppearance, CommentTextView.ClickableSpan,
 		ColorScheme.Span {
-	private int mBackgroundColor, mClickedColor;
-	private boolean mClicked, mEnabled, mVisible;
+	private int backgroundColor, clickedColor;
+	private boolean clicked, enabled, visible;
 
 	@Override
 	public void applyColorScheme(ColorScheme colorScheme) {
 		if (colorScheme != null) {
-			mBackgroundColor = colorScheme.spoilerTopBackgroundColor;
-			mClickedColor = colorScheme.clickedColor;
+			backgroundColor = colorScheme.spoilerTopBackgroundColor;
+			clickedColor = colorScheme.clickedColor;
 		}
 	}
 
 	public void setEnabled(boolean enabled) {
-		mEnabled = enabled;
+		this.enabled = enabled;
 	}
 
 	public void setVisible(boolean visible) {
-		mVisible = visible;
+		this.visible = visible;
 	}
 
 	public boolean isVisible() {
-		return mVisible;
+		return visible;
 	}
 
 	@Override
 	public void updateDrawState(TextPaint paint) {
-		if (!mEnabled || mVisible) {
-			if (mEnabled && mClicked) {
-				paint.bgColor = GraphicsUtils.mixColors(mClickedColor, paint.bgColor);
+		if (!enabled || visible) {
+			if (enabled && clicked) {
+				paint.bgColor = GraphicsUtils.mixColors(clickedColor, paint.bgColor);
 			}
 		} else {
-			paint.bgColor = mClicked ? GraphicsUtils.mixColors(mBackgroundColor, mClickedColor) : mBackgroundColor;
+			paint.bgColor = clicked ? GraphicsUtils.mixColors(backgroundColor, clickedColor) : backgroundColor;
 			paint.setColor(Color.TRANSPARENT);
 		}
 	}
 
 	@Override
 	public void setClicked(boolean clicked) {
-		mClicked = clicked;
+		this.clicked = clicked;
 	}
 }

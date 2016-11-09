@@ -63,20 +63,20 @@ public final class HttpRequest {
 			@Public GET,
 			@Public RETRANSMIT;
 
-			private Uri mRedirectedUri;
+			private Uri redirectedUri;
 
 			@Public
 			public Action setRedirectedUri(Uri redirectedUri) {
-				mRedirectedUri = redirectedUri;
+				this.redirectedUri = redirectedUri;
 				return this;
 			}
 
 			public Uri getRedirectedUri() {
-				return mRedirectedUri;
+				return redirectedUri;
 			}
 
 			private void reset() {
-				mRedirectedUri = null;
+				redirectedUri = null;
 			}
 
 			public static void resetAll() {
@@ -110,8 +110,8 @@ public final class HttpRequest {
 		};
 	}
 
-	final HttpHolder mHolder;
-	final Uri mUri;
+	final HttpHolder holder;
+	final Uri uri;
 
 	static final int REQUEST_METHOD_GET = 0;
 	static final int REQUEST_METHOD_HEAD = 1;
@@ -119,26 +119,26 @@ public final class HttpRequest {
 	static final int REQUEST_METHOD_PUT = 3;
 	static final int REQUEST_METHOD_DELETE = 4;
 
-	int mRequestMethod = REQUEST_METHOD_GET;
-	RequestEntity mRequestEntity;
+	int requestMethod = REQUEST_METHOD_GET;
+	RequestEntity requestEntity;
 
-	boolean mSuccessOnly = true;
-	RedirectHandler mRedirectHandler = RedirectHandler.BROWSER;
-	HttpValidator mValidator;
-	boolean mKeepAlive = true;
+	boolean successOnly = true;
+	RedirectHandler redirectHandler = RedirectHandler.BROWSER;
+	HttpValidator validator;
+	boolean keepAlive = true;
 
-	HttpHolder.InputListener mInputListener;
-	OutputListener mOutputListener;
-	OutputStream mOutputStream;
+	HttpHolder.InputListener inputListener;
+	OutputListener outputListener;
+	OutputStream outputStream;
 
-	int mConnectTimeout = 15000;
-	int mReadTimeout = 15000;
-	int mDelay = 0;
+	int connectTimeout = 15000;
+	int readTimeout = 15000;
+	int delay = 0;
 
-	ArrayList<Pair<String, String>> mHeaders;
-	CookieBuilder mCookieBuilder;
+	ArrayList<Pair<String, String>> headers;
+	CookieBuilder cookieBuilder;
 
-	boolean mCheckCloudFlare = true;
+	boolean checkCloudFlare = true;
 
 	@Public
 	public HttpRequest(Uri uri, HttpHolder holder, Preset preset) {
@@ -148,8 +148,8 @@ public final class HttpRequest {
 		if (holder == null) {
 			holder = new HttpHolder();
 		}
-		mUri = uri;
-		mHolder = holder;
+		this.uri = uri;
+		this.holder = holder;
 		if (preset instanceof TimeoutsPreset) {
 			setTimeouts(((TimeoutsPreset) preset).getConnectTimeout(), ((TimeoutsPreset) preset).getReadTimeout());
 		}
@@ -175,8 +175,8 @@ public final class HttpRequest {
 	}
 
 	private HttpRequest setMethod(int method, RequestEntity entity) {
-		mRequestMethod = method;
-		mRequestEntity = entity;
+		requestMethod = method;
+		requestEntity = entity;
 		return this;
 	}
 
@@ -207,7 +207,7 @@ public final class HttpRequest {
 
 	@Public
 	public HttpRequest setSuccessOnly(boolean successOnly) {
-		mSuccessOnly = successOnly;
+		this.successOnly = successOnly;
 		return this;
 	}
 
@@ -216,61 +216,61 @@ public final class HttpRequest {
 		if (redirectHandler == null) {
 			throw new NullPointerException();
 		}
-		mRedirectHandler = redirectHandler;
+		this.redirectHandler = redirectHandler;
 		return this;
 	}
 
 	@Public
 	public HttpRequest setValidator(HttpValidator validator) {
-		mValidator = validator;
+		this.validator = validator;
 		return this;
 	}
 
 	@Public
 	public HttpRequest setKeepAlive(boolean keepAlive) {
-		mKeepAlive = keepAlive;
+		this.keepAlive = keepAlive;
 		return this;
 	}
 
 	@Public
 	public HttpRequest setTimeouts(int connectTimeout, int readTimeout) {
 		if (connectTimeout >= 0) {
-			mConnectTimeout = connectTimeout;
+			this.connectTimeout = connectTimeout;
 		}
 		if (readTimeout >= 0) {
-			mReadTimeout = readTimeout;
+			this.readTimeout = readTimeout;
 		}
 		return this;
 	}
 
 	@Public
 	public HttpRequest setDelay(int delay) {
-		mDelay = delay;
+		this.delay = delay;
 		return this;
 	}
 
 	public HttpRequest setInputListener(HttpHolder.InputListener listener) {
-		mInputListener = listener;
+		inputListener = listener;
 		return this;
 	}
 
 	public HttpRequest setOutputListener(OutputListener listener) {
-		mOutputListener = listener;
+		outputListener = listener;
 		return this;
 	}
 
 	@Public
 	public HttpRequest setOutputStream(OutputStream outputStream) {
-		mOutputStream = outputStream;
+		this.outputStream = outputStream;
 		return this;
 	}
 
 	private HttpRequest addHeader(Pair<String, String> header) {
 		if (header != null) {
-			if (mHeaders == null) {
-				mHeaders = new ArrayList<>();
+			if (headers == null) {
+				headers = new ArrayList<>();
 			}
-			mHeaders.add(header);
+			headers.add(header);
 		}
 		return this;
 	}
@@ -282,17 +282,17 @@ public final class HttpRequest {
 
 	@Public
 	public HttpRequest clearHeaders() {
-		mHeaders = null;
+		headers = null;
 		return this;
 	}
 
 	@Public
 	public HttpRequest addCookie(String name, String value) {
 		if (value != null) {
-			if (mCookieBuilder == null) {
-				mCookieBuilder = new CookieBuilder();
+			if (cookieBuilder == null) {
+				cookieBuilder = new CookieBuilder();
 			}
-			mCookieBuilder.append(name, value);
+			cookieBuilder.append(name, value);
 		}
 		return this;
 	}
@@ -300,10 +300,10 @@ public final class HttpRequest {
 	@Public
 	public HttpRequest addCookie(String cookie) {
 		if (cookie != null) {
-			if (mCookieBuilder == null) {
-				mCookieBuilder = new CookieBuilder();
+			if (cookieBuilder == null) {
+				cookieBuilder = new CookieBuilder();
 			}
-			mCookieBuilder.append(cookie);
+			cookieBuilder.append(cookie);
 		}
 		return this;
 	}
@@ -311,43 +311,43 @@ public final class HttpRequest {
 	@Public
 	public HttpRequest addCookie(CookieBuilder builder) {
 		if (builder != null) {
-			if (mCookieBuilder == null) {
-				mCookieBuilder = new CookieBuilder();
+			if (cookieBuilder == null) {
+				cookieBuilder = new CookieBuilder();
 			}
-			mCookieBuilder.append(builder);
+			cookieBuilder.append(builder);
 		}
 		return this;
 	}
 
 	@Public
 	public HttpRequest clearCookies() {
-		mCookieBuilder = null;
+		cookieBuilder = null;
 		return this;
 	}
 
 	public HttpRequest setCheckCloudFlare(boolean checkCloudFlare) {
-		mCheckCloudFlare = checkCloudFlare;
+		this.checkCloudFlare = checkCloudFlare;
 		return this;
 	}
 
 	@Public
 	public HttpRequest copy() {
-		HttpRequest request = new HttpRequest(mUri, mHolder);
-		request.setMethod(mRequestMethod, mRequestEntity);
-		request.setSuccessOnly(mSuccessOnly);
-		request.setRedirectHandler(mRedirectHandler);
-		request.setValidator(mValidator);
-		request.setKeepAlive(mKeepAlive);
-		request.setInputListener(mInputListener);
-		request.setOutputListener(mOutputListener);
-		request.setOutputStream(mOutputStream);
-		request.setTimeouts(mConnectTimeout, mReadTimeout);
-		request.setDelay(mDelay);
-		if (mHeaders != null) {
-			request.mHeaders = new ArrayList<>(mHeaders);
+		HttpRequest request = new HttpRequest(uri, holder);
+		request.setMethod(requestMethod, requestEntity);
+		request.setSuccessOnly(successOnly);
+		request.setRedirectHandler(redirectHandler);
+		request.setValidator(validator);
+		request.setKeepAlive(keepAlive);
+		request.setInputListener(inputListener);
+		request.setOutputListener(outputListener);
+		request.setOutputStream(outputStream);
+		request.setTimeouts(connectTimeout, readTimeout);
+		request.setDelay(delay);
+		if (headers != null) {
+			request.headers = new ArrayList<>(headers);
 		}
-		request.addCookie(mCookieBuilder);
-		request.setCheckCloudFlare(mCheckCloudFlare);
+		request.addCookie(cookieBuilder);
+		request.setCheckCloudFlare(checkCloudFlare);
 		return request;
 	}
 
@@ -355,9 +355,9 @@ public final class HttpRequest {
 	public HttpHolder execute() throws HttpException {
 		try {
 			HttpClient.getInstance().execute(this);
-			return mHolder;
+			return holder;
 		} catch (HttpException e) {
-			mHolder.disconnect();
+			holder.disconnect();
 			throw e;
 		}
 	}
@@ -366,12 +366,12 @@ public final class HttpRequest {
 	public HttpResponse read() throws HttpException {
 		execute();
 		try {
-			if (mRequestMethod == REQUEST_METHOD_HEAD) {
+			if (requestMethod == REQUEST_METHOD_HEAD) {
 				return null;
 			}
-			return mHolder.read();
+			return holder.read();
 		} catch (HttpException e) {
-			mHolder.disconnect();
+			holder.disconnect();
 			throw e;
 		}
 	}

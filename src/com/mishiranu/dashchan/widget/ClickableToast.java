@@ -61,45 +61,45 @@ public class ClickableToast {
 	}
 
 	public static class Holder {
-		private final Context mContext;
+		private final Context context;
 
 		public Holder(Context context) {
-			mContext = context;
+			this.context = context;
 		}
 
-		private boolean mHasFocus = true;
-		private boolean mResumed = false;
+		private boolean hasFocus = true;
+		private boolean resumed = false;
 
 		public void onWindowFocusChanged(boolean hasFocus) {
-			mHasFocus = hasFocus;
+			this.hasFocus = hasFocus;
 			invalidate();
 		}
 
 		public void onResume() {
-			mResumed = true;
+			resumed = true;
 			invalidate();
 		}
 
 		public void onPause() {
-			mResumed = false;
+			resumed = false;
 			invalidate();
 		}
 
 		private void invalidate() {
-			ClickableToast.invalidate(mContext);
+			ClickableToast.invalidate(context);
 		}
 	}
 
-	private final View mContainer;
-	private final WindowManager mWindowManager;
-	private final Holder mHolder;
+	private final View container;
+	private final WindowManager windowManager;
+	private final Holder holder;
 
-	private final PartialClickDrawable mPartialClickDrawable;
-	private final TextView mMessage;
-	private final TextView mButton;
+	private final PartialClickDrawable partialClickDrawable;
+	private final TextView message;
+	private final TextView button;
 
-	private Runnable mOnClickListener;
-	private boolean mShowing, mCanClickable, mRealClickable, mClickableOnlyWhenRoot;
+	private Runnable onClickListener;
+	private boolean showing, canClickable, realClickable, clickableOnlyWhenRoot;
 
 	private static final HashMap<Context, ClickableToast> TOASTS = new HashMap<>();
 
@@ -111,7 +111,7 @@ public class ClickableToast {
 	}
 
 	public static void register(Holder holder) {
-		Context context = obtainBaseContext(holder.mContext);
+		Context context = obtainBaseContext(holder.context);
 		ClickableToast clickableToast = TOASTS.get(context);
 		if (clickableToast == null) {
 			TOASTS.put(context, new ClickableToast(holder));
@@ -119,7 +119,7 @@ public class ClickableToast {
 	}
 
 	public static void unregister(Holder holder) {
-		ClickableToast clickableToast = TOASTS.remove(obtainBaseContext(holder.mContext));
+		ClickableToast clickableToast = TOASTS.remove(obtainBaseContext(holder.context));
 		if (clickableToast != null) {
 			clickableToast.cancelInternal();
 		}
@@ -150,14 +150,14 @@ public class ClickableToast {
 
 	private static void invalidate(Context context) {
 		ClickableToast clickableToast = TOASTS.get(obtainBaseContext(context));
-		if (clickableToast != null && clickableToast.mShowing) {
+		if (clickableToast != null && clickableToast.showing) {
 			clickableToast.updateLayoutAndRealClickable();
 		}
 	}
 
 	private ClickableToast(Holder holder) {
-		mHolder = holder;
-		Context context = holder.mContext;
+		this.holder = holder;
+		Context context = holder.context;
 		float density = ResourceUtils.obtainDensity(context);
 		int innerPadding = (int) (8f * density);
 		LayoutInflater inflater = LayoutInflater.from(context);
@@ -186,21 +186,21 @@ public class ClickableToast {
 			linearLayout.setPadding(toast1.getPaddingLeft(), toast1.getPaddingTop(),
 					toast1.getPaddingRight(), toast1.getPaddingBottom());
 		}
-		mPartialClickDrawable = new PartialClickDrawable(background);
+		partialClickDrawable = new PartialClickDrawable(background);
 		message1.setBackground(null);
 		message2.setBackground(null);
-		linearLayout.setBackground(mPartialClickDrawable);
-		linearLayout.setOnTouchListener(mPartialClickDrawable);
+		linearLayout.setBackground(partialClickDrawable);
+		linearLayout.setOnTouchListener(partialClickDrawable);
 		message1.setPadding(0, 0, 0, 0);
 		message2.setPadding(innerPadding, 0, 0, 0);
 		message1.setSingleLine(true);
 		message2.setSingleLine(true);
 		message1.setEllipsize(TextUtils.TruncateAt.END);
 		message2.setEllipsize(TextUtils.TruncateAt.END);
-		mContainer = linearLayout;
-		mMessage = message1;
-		mButton = message2;
-		mWindowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+		container = linearLayout;
+		message = message1;
+		button = message2;
+		windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
 		WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
 		layoutParams.format = PixelFormat.TRANSLUCENT;
 		layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
@@ -216,21 +216,21 @@ public class ClickableToast {
 			// PRIVATE_FLAG_NO_MOVE_ANIMATION == 0x00000040
 			field.set(layoutParams, field.getInt(layoutParams) | 0x00000040);
 		} catch (Exception e) {
-			// Ignore
+			// Reflective operation, ignore exception
 		}
-		mContainer.setLayoutParams(layoutParams);
+		container.setLayoutParams(layoutParams);
 	}
 
 	private void showInternal(CharSequence message, String button, Runnable listener, boolean clickableOnlyWhenRoot) {
 		ToastUtils.cancel();
 		cancelInternal();
-		mMessage.setText(message);
-		mButton.setText(button);
-		mOnClickListener = listener;
-		mPartialClickDrawable.mClicked = false;
-		mPartialClickDrawable.invalidateSelf();
-		mCanClickable = !StringUtils.isEmpty(button);
-		mClickableOnlyWhenRoot = clickableOnlyWhenRoot;
+		this.message.setText(message);
+		this.button.setText(button);
+		onClickListener = listener;
+		partialClickDrawable.clicked = false;
+		partialClickDrawable.invalidateSelf();
+		canClickable = !StringUtils.isEmpty(button);
+		this.clickableOnlyWhenRoot = clickableOnlyWhenRoot;
 		WindowManager.LayoutParams layoutParams = updateLayoutAndRealClickableInternal();
 		boolean added = false;
 		if (C.API_LOLLIPOP) {
@@ -243,14 +243,14 @@ public class ClickableToast {
 			added = addContainerToWindowManager();
 		}
 		if (added) {
-			mShowing = true;
-			mContainer.postDelayed(mCancelRunnable, TIMEOUT);
+			showing = true;
+			container.postDelayed(cancelRunnable, TIMEOUT);
 		}
 	}
 
 	private boolean addContainerToWindowManager() {
 		try {
-			mWindowManager.addView(mContainer, mContainer.getLayoutParams());
+			windowManager.addView(container, container.getLayoutParams());
 			return true;
 		} catch (WindowManager.BadTokenException e) {
 			String errorMessage = e.getMessage();
@@ -262,48 +262,48 @@ public class ClickableToast {
 	}
 
 	private WindowManager.LayoutParams updateLayoutAndRealClickableInternal() {
-		mRealClickable = mCanClickable && (mHolder.mHasFocus || !mClickableOnlyWhenRoot) && mHolder.mResumed;
-		mButton.setVisibility(mRealClickable ? View.VISIBLE : View.GONE);
-		mMessage.setPadding(0, 0, mRealClickable ? mButton.getPaddingLeft() : 0, 0);
-		WindowManager.LayoutParams layoutParams = (WindowManager.LayoutParams) mContainer.getLayoutParams();
+		realClickable = canClickable && (holder.hasFocus || !clickableOnlyWhenRoot) && holder.resumed;
+		button.setVisibility(realClickable ? View.VISIBLE : View.GONE);
+		message.setPadding(0, 0, realClickable ? button.getPaddingLeft() : 0, 0);
+		WindowManager.LayoutParams layoutParams = (WindowManager.LayoutParams) container.getLayoutParams();
 		layoutParams.flags = FlagUtils.set(layoutParams.flags, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-				!mRealClickable);
+				!realClickable);
 		return layoutParams;
 	}
 
 	private void updateLayoutAndRealClickable() {
-		if (!mCanClickable) {
+		if (!canClickable) {
 			return;
 		}
-		mWindowManager.updateViewLayout(mContainer, updateLayoutAndRealClickableInternal());
+		windowManager.updateViewLayout(container, updateLayoutAndRealClickableInternal());
 	}
 
 	private void cancelInternal() {
-		if (!mShowing) {
+		if (!showing) {
 			return;
 		}
-		mContainer.removeCallbacks(mCancelRunnable);
-		mShowing = false;
-		mCanClickable = false;
-		mRealClickable = false;
-		mWindowManager.removeView(mContainer);
+		container.removeCallbacks(cancelRunnable);
+		showing = false;
+		canClickable = false;
+		realClickable = false;
+		windowManager.removeView(container);
 	}
 
-	private final Runnable mCancelRunnable = () -> cancelInternal();
+	private final Runnable cancelRunnable = () -> cancelInternal();
 
 	private void postCancelInternal() {
-		mContainer.post(mCancelRunnable);
+		container.post(cancelRunnable);
 	}
 
 	private class PartialClickDrawable extends Drawable implements View.OnTouchListener, Drawable.Callback {
-		private final Drawable mDrawable;
-		private final ColorFilter mColorFilter = new ColorMatrixColorFilter(BRIGHTNESS_MATRIX);
+		private final Drawable drawable;
+		private final ColorFilter colorFilter = new ColorMatrixColorFilter(BRIGHTNESS_MATRIX);
 
-		private boolean mClicked = false;
+		private boolean clicked = false;
 
 		public PartialClickDrawable(Drawable drawable) {
-			mDrawable = drawable;
-			mDrawable.setCallback(this);
+			this.drawable = drawable;
+			drawable.setCallback(this);
 		}
 
 		private View getView() {
@@ -312,12 +312,12 @@ public class ClickableToast {
 
 		@Override
 		public boolean onTouch(View v, MotionEvent event) {
-			if (!mRealClickable) {
+			if (!realClickable) {
 				return false;
 			}
 			if (event.getAction() == MotionEvent.ACTION_DOWN) {
-				if (event.getX() >= mButton.getLeft()) {
-					mClicked = true;
+				if (event.getX() >= button.getLeft()) {
+					clicked = true;
 					View view = getView();
 					if (view != null) {
 						view.invalidate();
@@ -325,16 +325,16 @@ public class ClickableToast {
 				}
 			}
 			if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
-				if (mClicked) {
-					mClicked = false;
+				if (clicked) {
+					clicked = false;
 					View view = getView();
 					if (view != null) {
 						view.invalidate();
 						if (event.getAction() == MotionEvent.ACTION_UP) {
 							float x = event.getX(), y = event.getY();
-							if (x >= mButton.getLeft() && x <= view.getWidth() && y >= 0 && y <= view.getHeight()) {
-								if (mOnClickListener != null) {
-									mOnClickListener.run();
+							if (x >= button.getLeft() && x <= view.getWidth() && y >= 0 && y <= view.getHeight()) {
+								if (onClickListener != null) {
+									onClickListener.run();
 								}
 								postCancelInternal();
 							}
@@ -343,44 +343,44 @@ public class ClickableToast {
 					return true;
 				}
 			}
-			return mClicked;
+			return clicked;
 		}
 
 		@Override
 		public void setBounds(int left, int top, int right, int bottom) {
 			super.setBounds(left, top, right, bottom);
-			mDrawable.setBounds(left, top, right, bottom);
+			drawable.setBounds(left, top, right, bottom);
 		}
 
 		@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 		@Override
 		public Rect getDirtyBounds() {
-			return mDrawable.getDirtyBounds();
+			return drawable.getDirtyBounds();
 		}
 
 		@Override
 		public void draw(Canvas canvas) {
-			mDrawable.draw(canvas);
-			if (mClicked) {
-				mDrawable.setColorFilter(mColorFilter);
+			drawable.draw(canvas);
+			if (clicked) {
+				drawable.setColorFilter(colorFilter);
 				canvas.save();
 				Rect bounds = getBounds();
-				int shift = mButton.getLeft();
+				int shift = button.getLeft();
 				canvas.clipRect(bounds.left + shift, bounds.top, bounds.right, bounds.bottom);
-				mDrawable.draw(canvas);
+				drawable.draw(canvas);
 				canvas.restore();
-				mDrawable.setColorFilter(null);
+				drawable.setColorFilter(null);
 			}
 		}
 
 		@Override
 		public int getOpacity() {
-			return mDrawable.getOpacity();
+			return drawable.getOpacity();
 		}
 
 		@Override
 		public void setAlpha(int alpha) {
-			mDrawable.setAlpha(alpha);
+			drawable.setAlpha(alpha);
 		}
 
 		@Override
@@ -388,12 +388,12 @@ public class ClickableToast {
 
 		@Override
 		public int getIntrinsicWidth() {
-			return mDrawable.getIntrinsicWidth();
+			return drawable.getIntrinsicWidth();
 		}
 
 		@Override
 		public int getIntrinsicHeight() {
-			return mDrawable.getIntrinsicHeight();
+			return drawable.getIntrinsicHeight();
 		}
 
 		@Override
@@ -420,16 +420,16 @@ public class ClickableToast {
 	};
 
 	private static class ToastDividerDrawable extends ColorDrawable {
-		private final int mWidth;
+		private final int width;
 
 		public ToastDividerDrawable(int color, int width) {
 			super(color);
-			mWidth = width;
+			this.width = width;
 		}
 
 		@Override
 		public int getIntrinsicWidth() {
-			return mWidth;
+			return width;
 		}
 	}
 }

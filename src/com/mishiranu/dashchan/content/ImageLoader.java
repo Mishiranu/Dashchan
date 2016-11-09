@@ -60,10 +60,10 @@ public class ImageLoader {
 
 	private ImageLoader() {}
 
-	private final CacheManager mCacheManager = CacheManager.getInstance();
+	private final CacheManager cacheManager = CacheManager.getInstance();
 
-	private final HashMap<String, LoaderTask> mLoaderTasks = new HashMap<>();
-	private final HashMap<String, Long> mNotFoundMap = new HashMap<>();
+	private final HashMap<String, LoaderTask> loaderTasks = new HashMap<>();
+	private final HashMap<String, Long> notFoundMap = new HashMap<>();
 
 	private static final HashMap<String, ThreadPoolExecutor> EXECUTORS = new HashMap<>();
 
@@ -77,7 +77,7 @@ public class ImageLoader {
 	}
 
 	public void clearTasks(String chanName) {
-		Iterator<HashMap.Entry<String, LoaderTask>> iterator = mLoaderTasks.entrySet().iterator();
+		Iterator<HashMap.Entry<String, LoaderTask>> iterator = loaderTasks.entrySet().iterator();
 		while (iterator.hasNext()) {
 			HashMap.Entry<String, LoaderTask> entry = iterator.next();
 			if (StringUtils.equals(chanName, entry.getKey())) {
@@ -88,24 +88,24 @@ public class ImageLoader {
 	}
 
 	public static abstract class Callback<V extends View> {
-		private final WeakReference<V> mView;
+		private final WeakReference<V> view;
 
-		private String mKey;
-		private final int mViewHashCode;
+		private String key;
+		private final int viewHashCode;
 
 		public Callback(V view) {
-			mView = new WeakReference<>(view);
-			mViewHashCode = mView.hashCode();
+			this.view = new WeakReference<>(view);
+			viewHashCode = view.hashCode();
 		}
 
 		Callback<V> setKey(String key) {
-			mKey = key;
-			mView.get().setTag(R.id.thumbnail, key);
+			this.key = key;
+			view.get().setTag(R.id.thumbnail, key);
 			return this;
 		}
 
 		public final V getView() {
-			return mView.get();
+			return view.get();
 		}
 
 		public final void onResult(Bitmap bitmap) {
@@ -125,7 +125,7 @@ public class ImageLoader {
 
 		public final boolean checkKeys() {
 			V view = getView();
-			return view != null && mKey.equals(view.getTag(R.id.thumbnail));
+			return view != null && key.equals(view.getTag(R.id.thumbnail));
 		}
 
 		@Override
@@ -135,11 +135,11 @@ public class ImageLoader {
 			}
 			if (o instanceof Callback) {
 				Callback<?> co = (Callback<?>) o;
-				if (!mKey.equals(co.mKey)) {
+				if (!key.equals(co.key)) {
 					return false;
 				}
-				View v1 = mView.get();
-				View v2 = co.mView.get();
+				View v1 = view.get();
+				View v2 = co.view.get();
 				return v1 == v2;
 			}
 			return false;
@@ -149,28 +149,28 @@ public class ImageLoader {
 		public final int hashCode() {
 			int prime = 31;
 			int result = 1;
-			result = prime * result + mKey.hashCode();
-			result = prime * result + mViewHashCode;
+			result = prime * result + key.hashCode();
+			result = prime * result + viewHashCode;
 			return result;
 		}
 	}
 
 	private class LoaderTask extends HttpHolderTask<Void, Void, Bitmap> {
-		private final Uri mUri;
-		private final String mChanName;
-		private final String mKey;
+		private final Uri uri;
+		private final String chanName;
+		private final String key;
 
 		public final ArrayList<Callback<?>> callbacks;
 		public boolean fromCacheOnly;
 		public boolean fromCacheOnlyChecked;
 
-		private boolean mNotFound;
+		private boolean notFound;
 
 		public LoaderTask(Uri uri, String chanName, String key, ArrayList<Callback<?>> callbacks,
 				boolean fromCacheOnly) {
-			mUri = uri;
-			mChanName = chanName;
-			mKey = key;
+			this.uri = uri;
+			this.chanName = chanName;
+			this.key = key;
 			this.callbacks = callbacks;
 			this.fromCacheOnly = fromCacheOnly;
 		}
@@ -178,13 +178,13 @@ public class ImageLoader {
 		@Override
 		protected Bitmap doInBackground(HttpHolder holder, Void... params) {
 			Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-			String scheme = mUri.getScheme();
+			String scheme = uri.getScheme();
 			boolean chanScheme = "chan".equals(scheme);
 			boolean dataScheme = "data".equals(scheme);
 			boolean storeExternal = !chanScheme && !dataScheme;
 			Bitmap bitmap = null;
 			try {
-				bitmap = storeExternal ? mCacheManager.loadThumbnailExternal(mKey) : null;
+				bitmap = storeExternal ? cacheManager.loadThumbnailExternal(key) : null;
 				synchronized (this) {
 					fromCacheOnlyChecked = true;
 				}
@@ -192,12 +192,12 @@ public class ImageLoader {
 					return null;
 				}
 				if (bitmap != null) {
-					mCacheManager.storeThumbnailMemory(mKey, bitmap);
+					cacheManager.storeThumbnailMemory(key, bitmap);
 				} else if (!fromCacheOnly) {
 					if (chanScheme) {
-						String chanName = mUri.getAuthority();
+						String chanName = uri.getAuthority();
 						if (StringUtils.isEmpty(chanName)) {
-							chanName = mChanName;
+							chanName = this.chanName;
 						}
 						Resources resources = ChanConfiguration.get(chanName).getResources();
 						if (resources != null) {
@@ -208,7 +208,7 @@ public class ImageLoader {
 									break;
 								}
 							}
-							List<String> pathSegments = mUri.getPathSegments();
+							List<String> pathSegments = uri.getPathSegments();
 							if (pathSegments != null && pathSegments.size() == 3) {
 								String entity = pathSegments.get(0);
 								if ("res".equals(entity)) {
@@ -231,7 +231,7 @@ public class ImageLoader {
 							}
 						}
 					} else if (dataScheme) {
-						String data = mUri.toString();
+						String data = uri.toString();
 						int index = data.indexOf("base64,");
 						if (index >= 0) {
 							data = data.substring(index + 7);
@@ -241,9 +241,9 @@ public class ImageLoader {
 							}
 						}
 					} else {
-						String chanName = ChanManager.getInstance().getChanNameByHost(mUri.getAuthority());
+						String chanName = ChanManager.getInstance().getChanNameByHost(uri.getAuthority());
 						if (chanName == null) {
-							chanName = mChanName;
+							chanName = this.chanName;
 						}
 						int connectTimeout = 10000;
 						int readTimeout = 5000;
@@ -251,7 +251,7 @@ public class ImageLoader {
 							ChanPerformer performer = ChanPerformer.get(chanName);
 							try {
 								ChanPerformer.ReadContentResult result = performer.safe()
-										.onReadContent(new ChanPerformer.ReadContentData(mUri, connectTimeout,
+										.onReadContent(new ChanPerformer.ReadContentData(uri, connectTimeout,
 										readTimeout, holder, null, null));
 								bitmap = result != null && result.response != null ? result.response.getBitmap() : null;
 							} catch (ExtensionException e) {
@@ -259,7 +259,7 @@ public class ImageLoader {
 								return null;
 							}
 						} else {
-							bitmap = new HttpRequest(mUri, holder).setTimeouts(connectTimeout, readTimeout)
+							bitmap = new HttpRequest(uri, holder).setTimeouts(connectTimeout, readTimeout)
 									.read().getBitmap();
 						}
 					}
@@ -267,26 +267,26 @@ public class ImageLoader {
 						return null;
 					}
 					bitmap = GraphicsUtils.reduceThumbnailSize(MainApplication.getInstance().getResources(), bitmap);
-					mCacheManager.storeThumbnailMemory(mKey, bitmap);
+					cacheManager.storeThumbnailMemory(key, bitmap);
 					if (storeExternal) {
-						mCacheManager.storeThumbnailExternal(mKey, bitmap);
+						cacheManager.storeThumbnailExternal(key, bitmap);
 					}
 				}
 			} catch (HttpException e) {
 				if (e.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND) {
-					mNotFound = true;
+					notFound = true;
 				}
 			} catch (Exception | OutOfMemoryError e) {
-				// Ignore
+				// Ignore exception
 			}
 			return bitmap;
 		}
 
 		@Override
 		protected void onPostExecute(Bitmap result) {
-			mLoaderTasks.remove(mKey);
-			if (mNotFound) {
-				mNotFoundMap.put(mKey, System.currentTimeMillis());
+			loaderTasks.remove(key);
+			if (notFound) {
+				notFoundMap.put(key, System.currentTimeMillis());
 			}
 			for (Callback<?> callback : callbacks) {
 				callback.onResult(result);
@@ -295,13 +295,13 @@ public class ImageLoader {
 	}
 
 	private class AttachmentCallback extends Callback<AttachmentView> {
-		private final int mSuccessAttrId;
-		private final int mErrorAttrId;
+		private final int successAttrId;
+		private final int errorAttrId;
 
 		public AttachmentCallback(AttachmentView view, int successAttrId, int errorAttrId) {
 			super(view);
-			mSuccessAttrId = successAttrId;
-			mErrorAttrId = errorAttrId;
+			this.successAttrId = successAttrId;
+			this.errorAttrId = errorAttrId;
 		}
 
 		@Override
@@ -314,14 +314,14 @@ public class ImageLoader {
 		@Override
 		public void onSuccess(Bitmap bitmap) {
 			AttachmentView view = getView();
-			view.setAdditionalOverlay(mSuccessAttrId, false);
+			view.setAdditionalOverlay(successAttrId, false);
 			view.setImage(bitmap);
 		}
 
 		@Override
 		public void onError() {
-			if (mErrorAttrId != 0) {
-				getView().setAdditionalOverlay(mErrorAttrId, true);
+			if (errorAttrId != 0) {
+				getView().setAdditionalOverlay(errorAttrId, true);
 			}
 		}
 	}
@@ -351,7 +351,7 @@ public class ImageLoader {
 
 	private void loadImage(Uri uri, String chanName, String key, ArrayList<Callback<?>> callbacks,
 			Callback<?> newCallback, boolean fromCacheOnly) {
-		Bitmap bitmap = mCacheManager.loadThumbnailMemory(key);
+		Bitmap bitmap = cacheManager.loadThumbnailMemory(key);
 		if (bitmap != null) {
 			for (Callback<?> callback : callbacks) {
 				callback.onSuccess(bitmap);
@@ -359,7 +359,7 @@ public class ImageLoader {
 			return;
 		}
 		// Check "not found" images once per 5 minutes
-		Long value = mNotFoundMap.get(key);
+		Long value = notFoundMap.get(key);
 		if (value != null && System.currentTimeMillis() - value < 5 * 60 * 1000) {
 			for (Callback<?> callback : callbacks) {
 				callback.onError();
@@ -370,17 +370,17 @@ public class ImageLoader {
 			newCallback.onPrepare();
 		}
 		LoaderTask loaderTask = new LoaderTask(uri, chanName, key, callbacks, fromCacheOnly);
-		mLoaderTasks.put(key, loaderTask);
+		loaderTasks.put(key, loaderTask);
 		loaderTask.executeOnExecutor(EXECUTORS.get(chanName));
 	}
 
 	public <V extends View> void loadImage(Uri uri, String chanName, String key, Callback<V> callback,
 			boolean fromCacheOnly) {
 		if (key == null) {
-			key = mCacheManager.getCachedFileKey(uri);
+			key = cacheManager.getCachedFileKey(uri);
 		}
 		callback.setKey(key);
-		LoaderTask loaderTask = mLoaderTasks.get(key);
+		LoaderTask loaderTask = loaderTasks.get(key);
 		if (loaderTask != null) {
 			int index = loaderTask.callbacks.indexOf(callback);
 			if (index >= 0) {
@@ -399,7 +399,7 @@ public class ImageLoader {
 				}
 			}
 			if (restart) {
-				mLoaderTasks.remove(key);
+				loaderTasks.remove(key);
 				loaderTask.cancel();
 				ArrayList<Callback<?>> callbacks = loaderTask.callbacks;
 				callbacks.add(callback);

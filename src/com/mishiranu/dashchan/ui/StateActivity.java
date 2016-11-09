@@ -49,7 +49,7 @@ public class StateActivity extends Activity {
 		getWindow().getDecorView().post(() -> recreate());
 	}
 
-	private boolean mOnFinishCalled = false;
+	private boolean onFinishCalled = false;
 
 	@Override
 	public void recreate() {
@@ -76,9 +76,9 @@ public class StateActivity extends Activity {
 	}
 
 	private void callOnFinish(boolean force) {
-		if (!mOnFinishCalled && (isFinishing() || force)) {
+		if (!onFinishCalled && (isFinishing() || force)) {
 			onFinish();
-			mOnFinishCalled = true;
+			onFinishCalled = true;
 		}
 	}
 

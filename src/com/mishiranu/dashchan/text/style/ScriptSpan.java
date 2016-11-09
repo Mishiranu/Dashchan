@@ -22,14 +22,14 @@ import android.text.style.ParagraphStyle;
 import android.text.style.UpdateAppearance;
 
 public class ScriptSpan extends CharacterStyle implements UpdateAppearance, ParagraphStyle {
-	private final boolean mSuperscript;
+	private final boolean superscript;
 
 	public ScriptSpan(boolean superscript) {
-		mSuperscript = superscript;
+		this.superscript = superscript;
 	}
 
 	public boolean isSuperscript() {
-		return mSuperscript;
+		return superscript;
 	}
 
 	@Override
@@ -38,7 +38,7 @@ public class ScriptSpan extends CharacterStyle implements UpdateAppearance, Para
         float newSize = oldSize * 3f / 4f;
         paint.setTextSize(newSize);
         int shift = (int) (oldSize - newSize);
-		if (mSuperscript) {
+		if (superscript) {
 			paint.baselineShift -= shift;
 		}
 	}

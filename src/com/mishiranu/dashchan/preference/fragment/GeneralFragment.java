@@ -30,14 +30,14 @@ import com.mishiranu.dashchan.content.LocaleManager;
 import com.mishiranu.dashchan.preference.Preferences;
 
 public class GeneralFragment extends BasePreferenceFragment {
-	private ListPreference mLocalePreference;
+	private ListPreference localePreference;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Collection<String> chanNames = ChanManager.getInstance().getAvailableChanNames();
 
-		mLocalePreference = makeList(null, Preferences.KEY_LOCALE, LocaleManager.VALUES_LOCALE,
+		localePreference = makeList(null, Preferences.KEY_LOCALE, LocaleManager.VALUES_LOCALE,
 				LocaleManager.DEFAULT_LOCALE, R.string.preference_locale, LocaleManager.ENTRIES_LOCALE);
 
 		PreferenceCategory navigationCategory = makeCategory(R.string.preference_category_navigation);
@@ -69,7 +69,7 @@ public class GeneralFragment extends BasePreferenceFragment {
 	@Override
 	public void onPreferenceAfterChange(Preference preference) {
 		super.onPreferenceAfterChange(preference);
-		if (preference == mLocalePreference) {
+		if (preference == localePreference) {
 			LocaleManager.getInstance().apply(getActivity(), false);
 		}
 	}

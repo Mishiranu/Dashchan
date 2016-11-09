@@ -60,8 +60,8 @@ public class VideoPlayer {
 			switch (msg.what) {
 				case MESSAGE_PLAYBACK_COMPLETE: {
 					VideoPlayer player = (VideoPlayer) msg.obj;
-					if (player.mListener != null && !player.mConsumed) {
-						player.mListener.onComplete(player);
+					if (player.listener != null && !player.consumed) {
+						player.listener.onComplete(player);
 					}
 					return true;
 				}
@@ -74,8 +74,8 @@ public class VideoPlayer {
 				case MESSAGE_END_SEEKING: {
 					boolean seeking = msg.what == MESSAGE_START_SEEKING;
 					VideoPlayer player = (VideoPlayer) msg.obj;
-					if (player.mLastSeeking != seeking) {
-						player.mLastSeeking = seeking;
+					if (player.lastSeeking != seeking) {
+						player.lastSeeking = seeking;
 						player.onSeekingBufferingStateChange(true, false);
 					}
 					return true;
@@ -84,8 +84,8 @@ public class VideoPlayer {
 				case MESSAGE_END_BUFFERING: {
 					boolean buffering = msg.what == MESSAGE_START_BUFFERING;
 					VideoPlayer player = (VideoPlayer) msg.obj;
-					if (player.mLastBuffering != buffering) {
-						player.mLastBuffering = buffering;
+					if (player.lastBuffering != buffering) {
+						player.lastBuffering = buffering;
 						player.onSeekingBufferingStateChange(false, true);
 					}
 					return true;
@@ -105,12 +105,12 @@ public class VideoPlayer {
 	});
 
 	private static final HashMap<String, Method> METHODS = new HashMap<>();
-	private static boolean sLoaded = false;
-	private static Class<?> sHolderClass;
+	private static boolean loaded = false;
+	private static Class<?> holderClass;
 
 	public static boolean loadLibraries(Context context) {
 		synchronized (VideoPlayer.class) {
-			if (sLoaded) {
+			if (loaded) {
 				return true;
 			}
 			ChanManager.ExtensionItem extensionItem = ChanManager.getInstance()
@@ -126,8 +126,8 @@ public class VideoPlayer {
 							.nativeLibraryDir + File.pathSeparatorChar + dir, Context.class.getClassLoader());
 					try {
 						// Initialize class (invoke static block)
-						sHolderClass = Class.forName(Holder.class.getName(), true, classLoader);
-						sLoaded = true;
+						holderClass = Class.forName(Holder.class.getName(), true, classLoader);
+						loaded = true;
 						return true;
 					} catch (Exception | LinkageError e) {
 						Log.persistent().stack(e);
@@ -140,7 +140,7 @@ public class VideoPlayer {
 
 	public static boolean isLoaded() {
 		synchronized (VideoPlayer.class) {
-			return sLoaded;
+			return loaded;
 		}
 	}
 
@@ -149,7 +149,7 @@ public class VideoPlayer {
 		synchronized (METHODS) {
 			method = METHODS.get(methodName);
 			if (method == null) {
-				Method[] methods = sHolderClass.getMethods();
+				Method[] methods = holderClass.getMethods();
 				for (int i = 0; i < methods.length; i++) {
 					if (methodName.equals(methods[i].getName())) {
 						method = methods[i];
@@ -210,17 +210,17 @@ public class VideoPlayer {
 		return (String[]) invoke("getTechnicalInfo", pointer);
 	}
 
-	private final Object mInputLock = new Object();
-	private final byte[] mBuffer;
-	private InputHolder mInputHolder;
+	private final Object inputLock = new Object();
+	private final byte[] buffer;
+	private InputHolder inputHolder;
 
-	private long mPointer;
-	private boolean mConsumed = false;
-	private boolean mPlaying = false;
-	private final boolean mSeekAnyFrame;
+	private long pointer;
+	private boolean consumed = false;
+	private boolean playing = false;
+	private final boolean seekAnyFrame;
 
-	private boolean mInitialized = false;
-	private final int[] mSummaryOutput = new int[3];
+	private boolean initialized = false;
+	private final int[] summaryOutput = new int[3];
 
 	public interface Listener {
 		public void onComplete(VideoPlayer player);
@@ -228,9 +228,9 @@ public class VideoPlayer {
 		public void onDimensionChange(VideoPlayer player);
 	}
 
-	private Listener mListener;
-	private boolean mLastSeeking = false;
-	private volatile boolean mLastBuffering = false;
+	private Listener listener;
+	private boolean lastSeeking = false;
+	private volatile boolean lastBuffering = false;
 
 	private interface InputHolder {
 		public int read(byte[] buffer, int count) throws IOException;
@@ -242,32 +242,32 @@ public class VideoPlayer {
 	}
 
 	private static class FileInputHolder implements InputHolder {
-		private final int mSize;
-		private final FileInputStream mInputStream;
+		private final int size;
+		private final FileInputStream inputStream;
 
 		public FileInputHolder(File file, FileInputStream inputStream) {
-			mSize = (int) file.length();
-			mInputStream = inputStream;
+			size = (int) file.length();
+			this.inputStream = inputStream;
 		}
 
 		@Override
 		public int read(byte[] buffer, int count) throws IOException {
-			return mInputStream.read(buffer, 0, count);
+			return inputStream.read(buffer, 0, count);
 		}
 
 		@Override
 		public int seek(int position, CachingInputStream.Whence whence) throws IOException {
 			switch (whence) {
 				case START: {
-					mInputStream.getChannel().position(position);
+					inputStream.getChannel().position(position);
 					break;
 				}
 				case RELATIVE: {
-					mInputStream.getChannel().position(getPosition() + position);
+					inputStream.getChannel().position(getPosition() + position);
 					break;
 				}
 				case END: {
-					mInputStream.getChannel().position(mSize + position);
+					inputStream.getChannel().position(size + position);
 					break;
 				}
 			}
@@ -279,61 +279,61 @@ public class VideoPlayer {
 
 		@Override
 		public int getPosition() throws IOException {
-			return (int) mInputStream.getChannel().position();
+			return (int) inputStream.getChannel().position();
 		}
 
 		@Override
 		public int getSize() {
-			return mSize;
+			return size;
 		}
 
 		@Override
 		public void close() {
-			IOUtils.close(mInputStream);
+			IOUtils.close(inputStream);
 		}
 	}
 
 	private static class CachingInputHolder implements InputHolder {
-		private final CachingInputStream mInputStream;
+		private final CachingInputStream inputStream;
 
 		public CachingInputHolder(CachingInputStream inputStream) {
-			mInputStream = inputStream;
+			this.inputStream = inputStream;
 		}
 
 		@Override
 		public int read(byte[] buffer, int count) throws IOException {
-			return mInputStream.read(buffer, 0, count);
+			return inputStream.read(buffer, 0, count);
 		}
 
 		@Override
 		public int seek(int position, CachingInputStream.Whence whence) {
-			return mInputStream.seek(position, whence);
+			return inputStream.seek(position, whence);
 		}
 
 		@Override
 		public void setAllowReadBeyondBuffer(boolean allow) {
-			mInputStream.setAllowReadBeyondBuffer(allow);
+			inputStream.setAllowReadBeyondBuffer(allow);
 		}
 
 		@Override
 		public int getPosition() {
-			return mInputStream.getPosition();
+			return inputStream.getPosition();
 		}
 
 		@Override
 		public int getSize() {
-			return mInputStream.getTotalCount();
+			return inputStream.getTotalCount();
 		}
 
 		@Override
 		public void close() {
-			IOUtils.close(mInputStream);
+			IOUtils.close(inputStream);
 		}
 	}
 
 	public VideoPlayer(boolean seekAnyFrame) {
-		mBuffer = new byte[8192];
-		mSeekAnyFrame = seekAnyFrame;
+		buffer = new byte[8192];
+		this.seekAnyFrame = seekAnyFrame;
 	}
 
 	public void init(CachingInputStream inputStream) throws IOException {
@@ -345,20 +345,20 @@ public class VideoPlayer {
 	}
 
 	private void init(InputHolder inputHolder) throws IOException {
-		synchronized (mInputLock) {
-			if (mPointer == 0 && !mConsumed) {
+		synchronized (inputLock) {
+			if (pointer == 0 && !consumed) {
 				int priority = Process.getThreadPriority(Process.myTid());
 				Process.setThreadPriority(Process.THREAD_PRIORITY_DISPLAY);
 				try {
-					mInputHolder = inputHolder;
-					mPointer = init(new NativeBridge(this), mSeekAnyFrame);
-					int errorCode = getErrorCode(mPointer);
+					this.inputHolder = inputHolder;
+					pointer = init(new NativeBridge(this), seekAnyFrame);
+					int errorCode = getErrorCode(pointer);
 					if (errorCode != 0) {
 						free();
 						throw new IOException("Can't initialize player: CODE=" + errorCode);
 					}
-					mInitialized = true;
-					mSeekerThread.start();
+					initialized = true;
+					seekerThread.start();
 				} finally {
 					Process.setThreadPriority(priority);
 				}
@@ -367,19 +367,19 @@ public class VideoPlayer {
 	}
 
 	public void replaceStream(File file) throws IOException {
-		if (mConsumed) {
+		if (consumed) {
 			return;
 		}
 		replaceStream(new FileInputHolder(file, new FileInputStream(file)));
 	}
 
 	private void replaceStream(InputHolder inputHolder) throws IOException {
-		synchronized (mInputLock) {
-			if (!mConsumed && mInitialized) {
-				int position = mInputHolder.getPosition();
+		synchronized (inputLock) {
+			if (!consumed && initialized) {
+				int position = this.inputHolder.getPosition();
 				inputHolder.seek(position, CachingInputStream.Whence.START);
-				mInputHolder.close();
-				mInputHolder = inputHolder;
+				this.inputHolder.close();
+				this.inputHolder = inputHolder;
 			} else {
 				inputHolder.close();
 			}
@@ -387,14 +387,14 @@ public class VideoPlayer {
 	}
 
 	public void setListener(Listener listener) {
-		mListener = listener;
+		this.listener = listener;
 	}
 
 	private boolean obtainSummary() {
-		if (mConsumed) {
+		if (consumed) {
 			return false;
 		}
-		getSummary(mPointer, mSummaryOutput);
+		getSummary(pointer, summaryOutput);
 		return true;
 	}
 
@@ -402,55 +402,55 @@ public class VideoPlayer {
 		if (!obtainSummary()) {
 			return null;
 		}
-		return new Point(mSummaryOutput[0], mSummaryOutput[1]);
+		return new Point(summaryOutput[0], summaryOutput[1]);
 	}
 
 	public boolean isAudioPresent() {
 		if (!obtainSummary()) {
 			return false;
 		}
-		return mSummaryOutput[2] != 0;
+		return summaryOutput[2] != 0;
 	}
 
 	public long getDuration() {
-		if (mConsumed) {
+		if (consumed) {
 			return -1L;
 		}
-		return getDuration(mPointer);
+		return getDuration(pointer);
 	}
 
 	public long getPosition() {
-		if (mConsumed) {
+		if (consumed) {
 			return -1L;
 		}
-		long seekToPosition = mSeekToPosition;
-		return seekToPosition >= 0L ? seekToPosition : getPosition(mPointer);
+		long seekToPosition = this.seekToPosition;
+		return seekToPosition >= 0L ? seekToPosition : getPosition(pointer);
 	}
 
-	private volatile boolean mCancelNativeRequests = false;
+	private volatile boolean cancelNativeRequests = false;
 
 	private static final long SEEK_TO_WAIT = -1L;
 
-	private long mSeekToPosition = SEEK_TO_WAIT;
-	private final Semaphore mSeekerMutex = new Semaphore(1);
-	private final Thread mSeekerThread = new Thread(() -> {
+	private long seekToPosition = SEEK_TO_WAIT;
+	private final Semaphore seekerMutex = new Semaphore(1);
+	private final Thread seekerThread = new Thread(() -> {
 		Thread seekerThread = Thread.currentThread();
 		while (true) {
 			long seekToPosition = SEEK_TO_WAIT;
 			synchronized (seekerThread) {
-				while (mSeekToPosition == SEEK_TO_WAIT && !mConsumed) {
+				while (this.seekToPosition == SEEK_TO_WAIT && !consumed) {
 					try {
 						seekerThread.wait();
 					} catch (InterruptedException e) {
-						// Ignore
+						// Uninterruptible wait, ignore exception
 					}
 				}
-				if (mConsumed) {
+				if (consumed) {
 					return;
 				}
-				if (!mConsumed && mInitialized && mSeekToPosition >= 0L) {
-					seekToPosition = mSeekToPosition;
-					mSeekerMutex.acquireUninterruptibly();
+				if (!consumed && initialized && this.seekToPosition >= 0L) {
+					seekToPosition = this.seekToPosition;
+					seekerMutex.acquireUninterruptibly();
 				}
 			}
 			if (seekToPosition >= 0L) {
@@ -460,70 +460,70 @@ public class VideoPlayer {
 							VideoPlayer.this), 200);
 					HANDLER.sendMessageDelayed(HANDLER.obtainMessage(MESSAGE_RETRY_SET_POSITION,
 							new Object[] {VideoPlayer.this, seekToPosition}), 1000);
-					setPosition(mPointer, seekToPosition);
+					setPosition(pointer, seekToPosition);
 					HANDLER.removeMessages(MESSAGE_RETRY_SET_POSITION);
 					HANDLER.removeMessages(MESSAGE_START_BUFFERING);
 					HANDLER.sendMessageDelayed(HANDLER.obtainMessage(MESSAGE_END_BUFFERING,
 							VideoPlayer.this), 100);
 				} finally {
-					mSeekToPosition = SEEK_TO_WAIT;
-					mSeekerMutex.release();
+					this.seekToPosition = SEEK_TO_WAIT;
+					seekerMutex.release();
 				}
 			}
 		}
 	});
 
 	private void cancelSetPosition() {
-		boolean locked = mSeekerMutex.tryAcquire();
+		boolean locked = seekerMutex.tryAcquire();
 		if (!locked) {
-			mCancelNativeRequests = true;
-			mInputHolder.setAllowReadBeyondBuffer(false);
-			mSeekerMutex.acquireUninterruptibly();
-			mCancelNativeRequests = false;
-			mInputHolder.setAllowReadBeyondBuffer(true);
+			cancelNativeRequests = true;
+			inputHolder.setAllowReadBeyondBuffer(false);
+			seekerMutex.acquireUninterruptibly();
+			cancelNativeRequests = false;
+			inputHolder.setAllowReadBeyondBuffer(true);
 		}
-		mSeekerMutex.release();
+		seekerMutex.release();
 	}
 
 	public void setPosition(long position) {
 		synchronized (this) {
-			if (!mConsumed && mInitialized) {
-				if (mPlaying) {
+			if (!consumed && initialized) {
+				if (playing) {
 					cancelSetPosition();
-					mSeekToPosition = position;
-					synchronized (mSeekerThread) {
-						mSeekerThread.notifyAll();
+					seekToPosition = position;
+					synchronized (seekerThread) {
+						seekerThread.notifyAll();
 					}
 				} else {
-					mSeekToPosition = position;
+					seekToPosition = position;
 				}
 			}
 		}
 	}
 
 	private void onDimensionChange() {
-		if (mVideoView != null) {
-			mVideoView.requestLayout();
+		if (videoView != null) {
+			videoView.requestLayout();
 		}
-		if (mListener != null) {
-			mListener.onDimensionChange(this);
+		if (listener != null) {
+			listener.onDimensionChange(this);
 		}
 	}
 
 	@SuppressLint("ViewConstructor")
 	private static class PlayerTextureView extends TextureView implements TextureView.SurfaceTextureListener {
-		private final WeakReference<VideoPlayer> mPlayer;
+		private final WeakReference<VideoPlayer> player;
 
 		public PlayerTextureView(Context context, VideoPlayer player) {
 			super(context);
-			mPlayer = new WeakReference<>(player);
+			this.player = new WeakReference<>(player);
 			setSurfaceTextureListener(this);
 		}
 
 		@Override
 		protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 			super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-			VideoPlayer player = mPlayer.get();
+			VideoPlayer player = this.player.get();
 			if (player == null) {
 				return;
 			}
@@ -542,7 +542,7 @@ public class VideoPlayer {
 
 		@Override
 		public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-			VideoPlayer player = mPlayer.get();
+			VideoPlayer player = this.player.get();
 			if (player == null) {
 				return;
 			}
@@ -551,7 +551,7 @@ public class VideoPlayer {
 
 		@Override
 		public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-			VideoPlayer player = mPlayer.get();
+			VideoPlayer player = this.player.get();
 			if (player == null) {
 				return true;
 			}
@@ -566,23 +566,23 @@ public class VideoPlayer {
 		public void onSurfaceTextureUpdated(SurfaceTexture surface) {}
 	}
 
-	private View mVideoView;
+	private View videoView;
 
 	public View getVideoView(Context context) {
-		if (mVideoView == null) {
-			mVideoView = new PlayerTextureView(context, this);
+		if (videoView == null) {
+			videoView = new PlayerTextureView(context, this);
 		}
-		return mVideoView;
+		return videoView;
 	}
 
 	private void setSurface(Surface surface) {
 		synchronized (this) {
-			if (!mConsumed && mInitialized) {
+			if (!consumed && initialized) {
 				boolean playing = isPlaying();
 				if (playing) {
 					setPlaying(false);
 				}
-				setSurface(mPointer, surface);
+				setSurface(pointer, surface);
 				if (playing) {
 					setPlaying(true);
 				}
@@ -592,18 +592,18 @@ public class VideoPlayer {
 
 	public void setPlaying(boolean playing) {
 		synchronized (this) {
-			if (!mConsumed && mInitialized && mPlaying != playing) {
-				long seekToPosition = mSeekToPosition;
+			if (!consumed && initialized && this.playing != playing) {
+				long seekToPosition = this.seekToPosition;
 				cancelSetPosition();
-				mPlaying = playing;
+				this.playing = playing;
 				if (playing) {
-					setPlaying(mPointer, true);
+					setPlaying(pointer, true);
 					if (seekToPosition >= 0L) {
 						setPosition(seekToPosition);
 					}
 				} else {
-					setPlaying(mPointer, false);
-					mSeekToPosition = seekToPosition; // Will be reset in cancelSetPosition
+					setPlaying(pointer, false);
+					this.seekToPosition = seekToPosition; // Will be reset in cancelSetPosition
 				}
 			}
 		}
@@ -611,19 +611,19 @@ public class VideoPlayer {
 
 	public boolean isPlaying() {
 		synchronized (this) {
-			return !mConsumed && mInitialized && mPlaying;
+			return !consumed && initialized && playing;
 		}
 	}
 
 	public Bitmap getCurrentFrame() {
 		synchronized (this) {
-			int[] frame = mConsumed ? null : getCurrentFrame(mPointer);
+			int[] frame = consumed ? null : getCurrentFrame(pointer);
 			if (frame != null) {
 				Point dimensions = getDimensions();
 				try {
 					return Bitmap.createBitmap(frame, dimensions.x, dimensions.y, Bitmap.Config.ARGB_8888);
 				} catch (Exception e) {
-					// Ignore
+					// Ignore exception
 				}
 			}
 			return null;
@@ -633,8 +633,8 @@ public class VideoPlayer {
 	public HashMap<String, String> getTechnicalInfo() {
 		synchronized (this) {
 			HashMap<String, String> result = new HashMap<>();
-			if (!mConsumed && mInitialized) {
-				String[] array = getTechnicalInfo(mPointer);
+			if (!consumed && initialized) {
+				String[] array = getTechnicalInfo(pointer);
 				if (array != null) {
 					for (int i = 0; i < array.length; i += 2) {
 						String key = array[i];
@@ -651,16 +651,16 @@ public class VideoPlayer {
 
 	public void free() {
 		synchronized (this) {
-			if (!mConsumed && mPointer != 0) {
-				mConsumed = true;
-				if (mInputHolder != null) {
-					mInputHolder.close();
+			if (!consumed && pointer != 0) {
+				consumed = true;
+				if (inputHolder != null) {
+					inputHolder.close();
 				}
 				cancelSetPosition();
-				synchronized (mSeekerThread) {
-					mSeekerThread.notifyAll();
+				synchronized (seekerThread) {
+					seekerThread.notifyAll();
 				}
-				destroy(mPointer);
+				destroy(pointer);
 			}
 		}
 	}
@@ -675,42 +675,42 @@ public class VideoPlayer {
 	}
 
 	private void onSeekingBufferingStateChange(boolean seekingChange, boolean bufferingChange) {
-		if (seekingChange && mLastBuffering) {
+		if (seekingChange && lastBuffering) {
 			return;
 		}
-		if (bufferingChange && mLastSeeking) {
+		if (bufferingChange && lastSeeking) {
 			return;
 		}
-		if (mListener != null && !mConsumed) {
-			mListener.onBusyStateChange(this, mLastSeeking || mLastBuffering);
+		if (listener != null && !consumed) {
+			listener.onBusyStateChange(this, lastSeeking || lastBuffering);
 		}
 	}
 
 	@SuppressWarnings("unused")
 	private static class NativeBridge {
-		private final WeakReference<VideoPlayer> mPlayer;
+		private final WeakReference<VideoPlayer> player;
 
 		public NativeBridge(VideoPlayer player) {
-			mPlayer = new WeakReference<>(player);
+			this.player = new WeakReference<>(player);
 		}
 
 		public byte[] getBuffer() {
-			VideoPlayer player = mPlayer.get();
-			return player != null ? player.mBuffer : null;
+			VideoPlayer player = this.player.get();
+			return player != null ? player.buffer : null;
 		}
 
 		public int onRead(int size) {
-			VideoPlayer player = mPlayer.get();
+			VideoPlayer player = this.player.get();
 			if (player == null) {
 				return -1;
 			}
-			synchronized (player.mInputLock) {
-				if (player.mInputHolder == null || player.mCancelNativeRequests) {
+			synchronized (player.inputLock) {
+				if (player.inputHolder == null || player.cancelNativeRequests) {
 					return -1;
 				}
-				size = Math.min(size, player.mBuffer.length);
+				size = Math.min(size, player.buffer.length);
 				try {
-					return player.mInputHolder.read(player.mBuffer, size);
+					return player.inputHolder.read(player.buffer, size);
 				} catch (IOException e) {
 					return -1;
 				}
@@ -718,20 +718,20 @@ public class VideoPlayer {
 		}
 
 		public long onSeek(long position, int whence) {
-			VideoPlayer player = mPlayer.get();
+			VideoPlayer player = this.player.get();
 			if (player == null) {
 				return -1;
 			}
-			synchronized (player.mInputLock) {
-				if (player.mInputHolder == null || player.mCancelNativeRequests) {
+			synchronized (player.inputLock) {
+				if (player.inputHolder == null || player.cancelNativeRequests) {
 					return -1;
 				}
 				if (whence == 0x10000) {
 					// AVSEEK_SIZE == 0x10000
-					return player.mInputHolder.getSize();
+					return player.inputHolder.getSize();
 				}
 				try {
-					return player.mInputHolder.seek((int) position, whence == 2 ? CachingInputStream.Whence.END
+					return player.inputHolder.seek((int) position, whence == 2 ? CachingInputStream.Whence.END
 							: whence == 1 ? CachingInputStream.Whence.RELATIVE : CachingInputStream.Whence.START);
 				} catch (IOException e) {
 					return -1;
@@ -740,7 +740,7 @@ public class VideoPlayer {
 		}
 
 		public void onMessage(int what) {
-			VideoPlayer player = mPlayer.get();
+			VideoPlayer player = this.player.get();
 			if (player != null) {
 				switch (what) {
 					case 1: {
@@ -756,7 +756,7 @@ public class VideoPlayer {
 					case 3: {
 						// BRIDGE_MESSAGE_START_SEEKING
 						HANDLER.removeMessages(MESSAGE_END_SEEKING);
-						if (player.mLastBuffering) {
+						if (player.lastBuffering) {
 							HANDLER.obtainMessage(MESSAGE_START_SEEKING, player).sendToTarget();
 						} else {
 							HANDLER.sendMessageDelayed(HANDLER.obtainMessage(MESSAGE_START_SEEKING, player), 500);

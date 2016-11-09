@@ -21,24 +21,24 @@ import java.util.ArrayList;
 import chan.util.StringUtils;
 
 public class StringBlockBuilder {
-	private final ArrayList<String> mStrings = new ArrayList<>();
+	private final ArrayList<String> strings = new ArrayList<>();
 
 	public void appendLine(String line) {
 		if (!StringUtils.isEmpty(line)) {
-			mStrings.add(line);
+			strings.add(line);
 		}
 	}
 
 	public void appendEmptyLine() {
-		mStrings.add(null);
+		strings.add(null);
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		int linesToAppend = 0;
-		for (int i = 0, size = mStrings.size(); i < size; i++) {
-			String line = mStrings.get(i);
+		for (int i = 0, size = strings.size(); i < size; i++) {
+			String line = strings.get(i);
 			if (line == null) {
 				linesToAppend++;
 			} else {

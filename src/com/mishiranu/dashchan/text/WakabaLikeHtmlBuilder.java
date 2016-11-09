@@ -44,13 +44,13 @@ public class WakabaLikeHtmlBuilder {
 		DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("Etc/GMT"));
 	}
 
-	private final StringBuilder mBuilder = new StringBuilder();
-	private final String mChanName;
+	private final StringBuilder builder = new StringBuilder();
+	private final String chanName;
 
 	public WakabaLikeHtmlBuilder(String threadTitle, String chanName, String boardName, String boardTitle,
 			String chanTitle, Uri threadUri, int postsCount, int filesCount) {
-		mChanName = chanName;
-		StringBuilder builder = mBuilder;
+		this.chanName = chanName;
+		StringBuilder builder = this.builder;
 		builder.append("<!DOCTYPE html>\n<html>\n<head>\n")
 				.append("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n");
 		builder.append("<title>");
@@ -105,22 +105,22 @@ public class WakabaLikeHtmlBuilder {
 				.append(filesCount).append("\">\n");
 	}
 
-	private boolean mOriginalPost = true;
-	private String mNumber;
-	private String mSubject;
-	private String mName;
-	private String mIdentifier;
-	private String mTripcode;
-	private String mCapcode;
-	private String mEmail;
-	private boolean mSage;
-	private boolean mOriginalPoster;
-	private long mTimestamp;
-	private boolean mDeleted;
-	private boolean mUseDefaultName;
-	private String mComment;
-	private final ArrayList<Pair<Uri, String>> mIconItems = new ArrayList<>();
-	private final ArrayList<FileItem> mFileItems = new ArrayList<>();
+	private boolean originalPost = true;
+	private String number;
+	private String subject;
+	private String name;
+	private String identifier;
+	private String tripcode;
+	private String capcode;
+	private String email;
+	private boolean sage;
+	private boolean originalPoster;
+	private long timestamp;
+	private boolean deleted;
+	private boolean useDefaultName;
+	private String comment;
+	private final ArrayList<Pair<Uri, String>> iconItems = new ArrayList<>();
+	private final ArrayList<FileItem> fileItems = new ArrayList<>();
 
 	private static class FileItem {
 		public final String imageFile;
@@ -147,27 +147,27 @@ public class WakabaLikeHtmlBuilder {
 			String email, boolean sage, boolean originalPoster, long timestamp, boolean deleted,
 			boolean useDefaultName, String comment) {
 		closePost();
-		mNumber = number;
-		mSubject = subject;
-		mName = name;
-		mIdentifier = identifier;
-		mTripcode = tripcode;
-		mCapcode = capcode;
-		mEmail = email;
-		mSage = sage;
-		mOriginalPoster = originalPoster;
-		mTimestamp = timestamp;
-		mDeleted = deleted;
-		mUseDefaultName = useDefaultName;
-		mComment = comment;
+		this.number = number;
+		this.subject = subject;
+		this.name = name;
+		this.identifier = identifier;
+		this.tripcode = tripcode;
+		this.capcode = capcode;
+		this.email = email;
+		this.sage = sage;
+		this.originalPoster = originalPoster;
+		this.timestamp = timestamp;
+		this.deleted = deleted;
+		this.useDefaultName = useDefaultName;
+		this.comment = comment;
 	}
 
 	public void addIcon(Uri uri, String title) {
 		if (uri != null) {
 			if ("chan".equals(uri.getScheme()) && StringUtils.isEmpty(uri.getAuthority())) {
-				uri = uri.buildUpon().authority(mChanName).build();
+				uri = uri.buildUpon().authority(chanName).build();
 			}
-			mIconItems.add(new Pair<>(uri, title));
+			iconItems.add(new Pair<>(uri, title));
 		}
 	}
 
@@ -188,16 +188,16 @@ public class WakabaLikeHtmlBuilder {
 		if (extension != null) {
 			displayName += extension;
 		}
-		mFileItems.add(new FileItem(imageFile, thumbnailFile, displayName, originalName, size, width, height));
+		fileItems.add(new FileItem(imageFile, thumbnailFile, displayName, originalName, size, width, height));
 	}
 
 	private void closePost() {
-		String number = mNumber;
+		String number = this.number;
 		if (number != null) {
-			StringBuilder builder = mBuilder;
+			StringBuilder builder = this.builder;
 			builder.append("<span data-number=\"").append(number).append("\"></span>\n");
-			if (mOriginalPost) {
-				mOriginalPost = false;
+			if (originalPost) {
+				originalPost = false;
 				appendFiles();
 				appendHeader(true);
 				appendComment();
@@ -210,9 +210,9 @@ public class WakabaLikeHtmlBuilder {
 				builder.append("</td>\n</tr>\n</tbody>\n</table>\n");
 			}
 		}
-		mNumber = null;
-		mIconItems.clear();
-		mFileItems.clear();
+		this.number = null;
+		iconItems.clear();
+		fileItems.clear();
 	}
 
 	private static String escapeHtml(String string) {
@@ -221,22 +221,22 @@ public class WakabaLikeHtmlBuilder {
 	}
 
 	private void appendHeader(boolean originalPost) {
-		String number = mNumber;
-		String subject = mSubject;
-		String name = mName;
-		String identifier = mIdentifier;
-		String tripcode = mTripcode;
-		String capcode = mCapcode;
-		String email = mEmail;
-		long timestamp = mTimestamp;
-		StringBuilder builder = mBuilder;
+		String number = this.number;
+		String subject = this.subject;
+		String name = this.name;
+		String identifier = this.identifier;
+		String tripcode = this.tripcode;
+		String capcode = this.capcode;
+		String email = this.email;
+		long timestamp = this.timestamp;
+		StringBuilder builder = this.builder;
 		builder.append("<div");
 		if (!originalPost) {
 			builder.append(" class=\"replyheader\"");
 		}
 		builder.append(">\n<a name=\"").append(number).append("\"></a>\n<input type=\"checkbox\" value=\"")
 				.append(number).append("\" disabled />\n");
-		for (Pair<Uri, String> icon : mIconItems) {
+		for (Pair<Uri, String> icon : iconItems) {
 			builder.append("<img data-icon=\"true\" class=\"postericon\" src=\"").append(icon.first).append("\"");
 			if (icon.second != null) {
 				builder.append(" title=\"").append(escapeHtml(icon.second)).append("\"");
@@ -258,7 +258,7 @@ public class WakabaLikeHtmlBuilder {
 		if (hasEmail) {
 			builder.append(" data-email=\"").append(escapeHtml(email)).append("\"");
 		}
-		if (mUseDefaultName) {
+		if (useDefaultName) {
 			builder.append(" data-default-name=\"true\"");
 		}
 		builder.append('>');
@@ -278,7 +278,7 @@ public class WakabaLikeHtmlBuilder {
 		builder.append("</span>\n");
 		boolean hasTripcode = !StringUtils.isEmpty(tripcode);
 		boolean hasCapcode = !StringUtils.isEmpty(capcode);
-		boolean originalPoster = mOriginalPoster;
+		boolean originalPoster = this.originalPoster;
 		if (hasTripcode || hasCapcode || originalPoster) {
 			builder.append("<span class=\"postertrip\"");
 			if (hasTripcode) {
@@ -308,30 +308,30 @@ public class WakabaLikeHtmlBuilder {
 			}
 			builder.append("</span>\n");
 		}
-		if (mSage) {
+		if (sage) {
 			builder.append("<a href=\"mailto:sage\" data-sage=\"true\"></a>\n");
 		}
 		builder.append("<span data-timestamp=\"").append(timestamp).append("\">").append(DATE_FORMAT.format(timestamp))
 				.append("</span>\n");
 		builder.append("<span class=\"reflink\">No.").append(number);
-		if (mDeleted) {
+		if (deleted) {
 			builder.append(" <span style=\"color: #f00\">DELETED</span>");
 		}
 		builder.append("</span>\n</div>\n");
 	}
 
 	private void appendComment() {
-		StringBuilder builder = mBuilder;
+		StringBuilder builder = this.builder;
 		builder.append("<blockquote data-comment=\"true\"");
-		if (mFileItems.size() > 0) {
+		if (fileItems.size() > 0) {
 			builder.append(" class=\"withimage\"");
 		}
-		builder.append(">\n").append(mComment).append("\n</blockquote>\n");
+		builder.append(">\n").append(comment).append("\n</blockquote>\n");
 	}
 
 	private void appendFiles() {
-		StringBuilder builder = mBuilder;
-		ArrayList<FileItem> fileItems = mFileItems;
+		StringBuilder builder = this.builder;
+		ArrayList<FileItem> fileItems = this.fileItems;
 		boolean multiple = fileItems.size() > 1;
 		for (FileItem fileItem : fileItems) {
 			appendFile(fileItem, multiple);
@@ -342,7 +342,7 @@ public class WakabaLikeHtmlBuilder {
 	}
 
 	private void appendFile(FileItem fileItem, boolean multiple) {
-		StringBuilder builder = mBuilder;
+		StringBuilder builder = this.builder;
 		if (multiple) {
 			builder.append("<div style=\"float: left;\">\n");
 		}
@@ -407,7 +407,7 @@ public class WakabaLikeHtmlBuilder {
 
 	@SuppressWarnings("UnusedAssignment")
 	private void appendFileInfo(String size, FileItem fileItem, boolean shortInfo) {
-		StringBuilder builder = mBuilder;
+		StringBuilder builder = this.builder;
 		boolean divider = false;
 		if (size != null) {
 			divider = true;
@@ -437,7 +437,7 @@ public class WakabaLikeHtmlBuilder {
 
 	public String build() {
 		closePost();
-		return mBuilder.append("<br style=\"clear: left;\" />\n<hr />\n</div>\n")
+		return builder.append("<br style=\"clear: left;\" />\n<hr />\n</div>\n")
 				.append("<p class=\"footer\">\n- <a href=\"").append(CLIENT_URI).append("\">dashchan</a> + ")
 				.append("<a href=\"http://wakaba.c3.cx/\">wakaba</a> + ")
 				.append("<a href=\"http://www.2chan.net/\">futaba</a> -\n</p>\n</body>\n</html>").toString();

@@ -41,9 +41,9 @@ public class ReencodingDialog extends PostingDialog implements DialogInterface.O
 	private static final String EXTRA_QUALITY = "quality";
 	private static final String EXTRA_REDUCE = "reduce";
 
-	private RadioGroup mRadioGroup;
-	private SeekBarForm mQualityForm;
-	private SeekBarForm mReduceForm;
+	private RadioGroup radioGroup;
+	private SeekBarForm qualityForm;
+	private SeekBarForm reduceForm;
 
 	private static final String[] OPTIONS = {GraphicsUtils.Reencoding.FORMAT_JPEG.toUpperCase(Locale.US),
 			GraphicsUtils.Reencoding.FORMAT_PNG.toUpperCase(Locale.US)};
@@ -54,33 +54,33 @@ public class ReencodingDialog extends PostingDialog implements DialogInterface.O
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		Context context = getActivity();
-		mQualityForm = new SeekBarForm(false);
-		mQualityForm.setConfiguration(1, 100, 1, 1);
-		mQualityForm.setValueFormat(getString(R.string.text_quality_format));
-		mQualityForm.setCurrentValue(savedInstanceState != null ? savedInstanceState.getInt(EXTRA_QUALITY) : 100);
-		mReduceForm = new SeekBarForm(false);
-		mReduceForm.setConfiguration(1, 8, 1, 1);
-		mReduceForm.setValueFormat(getString(R.string.text_reduce_format));
-		mReduceForm.setCurrentValue(savedInstanceState != null ? savedInstanceState.getInt(EXTRA_REDUCE) : 1);
+		qualityForm = new SeekBarForm(false);
+		qualityForm.setConfiguration(1, 100, 1, 1);
+		qualityForm.setValueFormat(getString(R.string.text_quality_format));
+		qualityForm.setCurrentValue(savedInstanceState != null ? savedInstanceState.getInt(EXTRA_QUALITY) : 100);
+		reduceForm = new SeekBarForm(false);
+		reduceForm.setConfiguration(1, 8, 1, 1);
+		reduceForm.setValueFormat(getString(R.string.text_reduce_format));
+		reduceForm.setCurrentValue(savedInstanceState != null ? savedInstanceState.getInt(EXTRA_REDUCE) : 1);
 		int padding = getResources().getDimensionPixelSize(R.dimen.dialog_padding_view);
-		View qualityView = mQualityForm.inflate(context);
-		mQualityForm.getSeekBar().setSaveEnabled(false);
+		View qualityView = qualityForm.inflate(context);
+		qualityForm.getSeekBar().setSaveEnabled(false);
 		qualityView.setPadding(qualityView.getPaddingLeft(), 0, qualityView.getPaddingRight(), padding / 2);
-		View reduceView = mReduceForm.inflate(context);
-		mReduceForm.getSeekBar().setSaveEnabled(false);
+		View reduceView = reduceForm.inflate(context);
+		reduceForm.getSeekBar().setSaveEnabled(false);
 		reduceView.setPadding(reduceView.getPaddingLeft(), 0, reduceView.getPaddingRight(),
 				reduceView.getPaddingBottom());
-		mRadioGroup = new RadioGroup(context);
-		mRadioGroup.setOrientation(RadioGroup.VERTICAL);
-		mRadioGroup.setPadding(padding, padding, padding, padding / 2);
-		mRadioGroup.setOnCheckedChangeListener(this);
+		radioGroup = new RadioGroup(context);
+		radioGroup.setOrientation(RadioGroup.VERTICAL);
+		radioGroup.setPadding(padding, padding, padding, padding / 2);
+		radioGroup.setOnCheckedChangeListener(this);
 		for (int i = 0; i < OPTIONS.length; i++) {
 			RadioButton radioButton = new RadioButton(context);
 			radioButton.setText(OPTIONS[i]);
 			radioButton.setId(IDS[i]);
-			mRadioGroup.addView(radioButton);
+			radioGroup.addView(radioButton);
 		}
-		mRadioGroup.check(IDS[0]);
+		radioGroup.check(IDS[0]);
 		LinearLayout linearLayout = new LinearLayout(context);
 		linearLayout.setOrientation(LinearLayout.VERTICAL);
 		FrameLayout qualityLayout = new FrameLayout(context);
@@ -89,7 +89,7 @@ public class ReencodingDialog extends PostingDialog implements DialogInterface.O
 		FrameLayout reduceLayout = new FrameLayout(context);
 		reduceLayout.setId(android.R.id.text2);
 		reduceLayout.addView(reduceView);
-		linearLayout.addView(mRadioGroup, LinearLayout.LayoutParams.MATCH_PARENT,
+		linearLayout.addView(radioGroup, LinearLayout.LayoutParams.MATCH_PARENT,
 				LinearLayout.LayoutParams.WRAP_CONTENT);
 		linearLayout.addView(qualityLayout, LinearLayout.LayoutParams.MATCH_PARENT,
 				LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -106,8 +106,8 @@ public class ReencodingDialog extends PostingDialog implements DialogInterface.O
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		outState.putInt(EXTRA_QUALITY, mQualityForm.getCurrentValue());
-		outState.putInt(EXTRA_REDUCE, mReduceForm.getCurrentValue());
+		outState.putInt(EXTRA_QUALITY, qualityForm.getCurrentValue());
+		outState.putInt(EXTRA_REDUCE, reduceForm.getCurrentValue());
 	}
 
 	@Override
@@ -116,7 +116,7 @@ public class ReencodingDialog extends PostingDialog implements DialogInterface.O
 				.findFragmentByTag(AttachmentOptionsDialog.TAG);
 		if (attachmentOptionsDialog != null) {
 			String format = null;
-			int id = mRadioGroup.getCheckedRadioButtonId();
+			int id = radioGroup.getCheckedRadioButtonId();
 			for (int i = 0; i < IDS.length; i++) {
 				if (IDS[i] == id) {
 					format = FORMATS[i];
@@ -124,7 +124,7 @@ public class ReencodingDialog extends PostingDialog implements DialogInterface.O
 				}
 			}
 			attachmentOptionsDialog.setReencoding(new GraphicsUtils.Reencoding(format,
-					mQualityForm.getCurrentValue(), mReduceForm.getCurrentValue()));
+					qualityForm.getCurrentValue(), reduceForm.getCurrentValue()));
 		}
 	}
 
@@ -137,6 +137,6 @@ public class ReencodingDialog extends PostingDialog implements DialogInterface.O
 				break;
 			}
 		}
-		mQualityForm.getSeekBar().setEnabled(allowQuality);
+		qualityForm.getSeekBar().setEnabled(allowQuality);
 	}
 }

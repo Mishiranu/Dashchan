@@ -51,33 +51,33 @@ import com.mishiranu.dashchan.text.style.SpoilerSpan;
 import com.mishiranu.dashchan.util.PostDateFormatter;
 
 public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, Comparable<PostItem> {
-	private final String mChanName;
-	private final String mBoardName;
-	private ArrayList<AttachmentItem> mAttachmentItems;
-	private ArrayList<Pair<Uri, String>> mIcons;
+	private final String chanName;
+	private final String boardName;
+	private ArrayList<AttachmentItem> attachmentItems;
+	private ArrayList<Pair<Uri, String>> icons;
 
 	public static final int ORDINAL_INDEX_NONE = -1;
 	public static final int ORDINAL_INDEX_DELETED = -2;
 
-	private int mOrdinalIndex = ORDINAL_INDEX_NONE;
+	private int ordinalIndex = ORDINAL_INDEX_NONE;
 
-	private String mSubject;
-	private CharSequence mComment;
-	private CharSequence mFullName;
-	private ColorScheme.Span[] mCommentSpans;
-	private ColorScheme.Span[] mFullNameSpans;
-	private LinkSpan[] mLinkSpans;
-	private LinkSuffixSpan[] mLinkSuffixSpans;
-	private PostDateFormatter.Holder mDateTimeHolder;
-	private boolean mUseDefaultName;
+	private String subject;
+	private CharSequence comment;
+	private CharSequence fullName;
+	private ColorScheme.Span[] commentSpans;
+	private ColorScheme.Span[] fullNameSpans;
+	private LinkSpan[] linkSpans;
+	private LinkSuffixSpan[] linkSuffixSpans;
+	private PostDateFormatter.Holder dateTimeHolder;
+	private boolean useDefaultName;
 
-	private HashSet<String> mReferencesTo;
-	private LinkedHashSet<String> mReferencesFrom;
+	private HashSet<String> referencesTo;
+	private LinkedHashSet<String> referencesFrom;
 
-	private boolean mExpanded = false;
+	private boolean expanded = false;
 
-	private final Post mPost;
-	private final ThreadData mThreadData;
+	private final Post post;
+	private final ThreadData threadData;
 
 	private static class ThreadData {
 		public int postsCount;
@@ -89,49 +89,49 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 		public GalleryItem.GallerySet gallerySet;
 	}
 
-	private int mHidden = C.HIDDEN_UNKNOWN;
-	private String mHideReason;
-	private boolean mUnread = false;
+	private int hidden = C.HIDDEN_UNKNOWN;
+	private String hideReason;
+	private boolean unread = false;
 
 	public PostItem(Post post, String chanName, String boardName) {
-		mPost = post;
-		mThreadData = null;
-		mChanName = chanName;
-		mBoardName = boardName;
+		this.post = post;
+		threadData = null;
+		this.chanName = chanName;
+		this.boardName = boardName;
 		init();
 	}
 
 	public PostItem(Posts thread, String chanName, String boardName) {
 		Post[] posts = thread.getPosts();
-		mPost = posts[0];
-		mThreadData = new ThreadData();
-		mThreadData.postsCount = thread.getPostsCount();
-		mThreadData.filesCount = thread.getFilesCount();
-		mThreadData.postsWithFilesCount = thread.getPostsWithFilesCount();
-		mThreadData.firstAndLastPosts = posts;
-		mChanName = chanName;
-		mBoardName = boardName;
+		this.post = posts[0];
+		threadData = new ThreadData();
+		threadData.postsCount = thread.getPostsCount();
+		threadData.filesCount = thread.getFilesCount();
+		threadData.postsWithFilesCount = thread.getPostsWithFilesCount();
+		threadData.firstAndLastPosts = posts;
+		this.chanName = chanName;
+		this.boardName = boardName;
 		init();
 	}
 
 	private void init() {
-		mAttachmentItems = AttachmentItem.obtain(this);
+		attachmentItems = AttachmentItem.obtain(this);
 		if (isThreadItem()) {
-			ThreadData threadData = mThreadData;
-			if (mAttachmentItems != null) {
+			ThreadData threadData = this.threadData;
+			if (attachmentItems != null) {
 				threadData.gallerySet = new GalleryItem.GallerySet(false);
 				threadData.gallerySet.setThreadTitle(getSubjectOrComment());
-				threadData.gallerySet.add(mAttachmentItems);
+				threadData.gallerySet.add(attachmentItems);
 			}
-			threadData.commentShort = obtainThreadComment(mPost.getWorkComment(), mChanName, this);
+			threadData.commentShort = obtainThreadComment(post.getWorkComment(), chanName, this);
 			threadData.commentShortSpans = ColorScheme.getSpans(threadData.commentShort);
 		} else {
-			String comment = mPost.getWorkComment();
-			mReferencesTo = parseReferencesTo(mReferencesTo, comment);
+			String comment = post.getWorkComment();
+			referencesTo = parseReferencesTo(referencesTo, comment);
 		}
 		ArrayList<Pair<Uri, String>> icons = null;
-		for (int i = 0, count = mPost.getIconsCount(); i < count; i++) {
-			Icon icon = mPost.getIconAt(i);
+		for (int i = 0, count = post.getIconsCount(); i < count; i++) {
+			Icon icon = post.getIconAt(i);
 			if (icon != null) {
 				if (icons == null) {
 					icons = new ArrayList<>();
@@ -139,11 +139,11 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 				icons.add(new Pair<>(icon.getRelativeUri(), icon.getTitle()));
 			}
 		}
-		mIcons = icons;
+		this.icons = icons;
 	}
 
 	public Post getPost() {
-		return mPost;
+		return post;
 	}
 
 	public static HashSet<String> parseReferencesTo(HashSet<String> referencesTo, String comment) {
@@ -198,26 +198,26 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 	}
 
 	public void addReferenceFrom(String postNumber) {
-		if (mReferencesFrom == null) {
-			mReferencesFrom = new LinkedHashSet<>();
+		if (referencesFrom == null) {
+			referencesFrom = new LinkedHashSet<>();
 		}
-		mReferencesFrom.add(postNumber);
+		referencesFrom.add(postNumber);
 	}
 
 	public void removeReferenceFrom(String postNumber) {
-		if (mReferencesFrom != null) {
-			mReferencesFrom.remove(postNumber);
+		if (referencesFrom != null) {
+			referencesFrom.remove(postNumber);
 		}
 	}
 
 	public void clearReferencesFrom() {
-		if (mReferencesFrom != null) {
-			mReferencesFrom.clear();
+		if (referencesFrom != null) {
+			referencesFrom.clear();
 		}
 	}
 
 	public void setOrdinalIndex(int ordinalIndex) {
-		mOrdinalIndex = ordinalIndex;
+		this.ordinalIndex = ordinalIndex;
 	}
 
 	public void preload() {
@@ -225,14 +225,14 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 	}
 
 	public int getOrdinalIndex() {
-		return mOrdinalIndex;
+		return ordinalIndex;
 	}
 
 	public String getOrdinalIndexString() {
-		if (mOrdinalIndex >= 0) {
-			return Integer.toString(mOrdinalIndex + 1);
+		if (ordinalIndex >= 0) {
+			return Integer.toString(ordinalIndex + 1);
 		}
-		if (mOrdinalIndex == ORDINAL_INDEX_DELETED) {
+		if (ordinalIndex == ORDINAL_INDEX_DELETED) {
 			return "X";
 		}
 		return null;
@@ -240,48 +240,48 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 
 	@Override
 	public String getChanName() {
-		return mChanName;
+		return chanName;
 	}
 
 	@Override
 	public String getBoardName() {
-		return mBoardName;
+		return boardName;
 	}
 
 	@Override
 	public String getThreadNumber() {
-		return mPost.getThreadNumberOrOriginalPostNumber();
+		return post.getThreadNumberOrOriginalPostNumber();
 	}
 
 	@Override
 	public String getPostNumber() {
-		return mPost.getPostNumber();
+		return post.getPostNumber();
 	}
 
 	public String getOriginalPostNumber() {
-		return mPost.getOriginalPostNumber();
+		return post.getOriginalPostNumber();
 	}
 
 	public String getParentPostNumber() {
-		return mPost.getParentPostNumberOrNull();
+		return post.getParentPostNumberOrNull();
 	}
 
 	@Override
 	public int compareTo(PostItem another) {
-		return mPost.compareTo(another.getPost());
+		return post.compareTo(another.getPost());
 	}
 
 	// Returns whether name is default. Call this method only after getFullName.
 	public boolean isUseDefaultName() {
-		return mUseDefaultName;
+		return useDefaultName;
 	}
 
 	private CharSequence makeFullName() {
-		String name = mPost.getName();
-		String identifier = mPost.getIdentifier();
-		String tripcode = mPost.getTripcode();
-		String capcode = mPost.getCapcode();
-		String defaultName = ChanConfiguration.get(getChanName()).getDefaultName(mBoardName);
+		String name = post.getName();
+		String identifier = post.getIdentifier();
+		String tripcode = post.getTripcode();
+		String capcode = post.getCapcode();
+		String defaultName = ChanConfiguration.get(getChanName()).getDefaultName(boardName);
 		if (StringUtils.isEmptyOrWhitespace(defaultName)) {
 			defaultName = "Anonymous";
 		}
@@ -290,7 +290,7 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 		} else {
 			name = name.trim();
 		}
-		boolean useDefaultName = mPost.isDefaultName() || name.equals(defaultName);
+		boolean useDefaultName = post.isDefaultName() || name.equals(defaultName);
 		boolean hasIdentifier = !StringUtils.isEmptyOrWhitespace(identifier);
 		boolean hasTripcode = !StringUtils.isEmptyOrWhitespace(tripcode);
 		boolean hasCapcode = !StringUtils.isEmptyOrWhitespace(capcode);
@@ -323,61 +323,61 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 		} else {
 			fullName = name;
 		}
-		mUseDefaultName = useDefaultName;
+		this.useDefaultName = useDefaultName;
 		return fullName;
 	}
 
 	// Returns spanned name and tripcode, guaranteed not null.
 	public CharSequence getFullName() {
-		if (mFullName == null) {
+		if (fullName == null) {
 			synchronized (this) {
-				if (mFullName == null) {
+				if (fullName == null) {
 					CharSequence fullName = makeFullName();
 					if (StringUtils.isEmpty(fullName)) {
 						fullName = "";
 					}
-					mFullNameSpans = ColorScheme.getSpans(fullName);
-					mFullName = fullName;
+					fullNameSpans = ColorScheme.getSpans(fullName);
+					this.fullName = fullName;
 				}
 			}
 		}
-		return mFullName;
+		return fullName;
 	}
 
 	public ColorScheme.Span[] getFullNameSpans() {
-		return mFullNameSpans;
+		return fullNameSpans;
 	}
 
 	public String getEmail() {
-		return mPost.getEmail();
+		return post.getEmail();
 	}
 
 	public boolean isSage() {
-		return mPost.isSage() && getParentPostNumber() != null;
+		return post.isSage() && getParentPostNumber() != null;
 	}
 
 	public boolean isSticky() {
-		return mPost.isSticky() && getParentPostNumber() == null;
+		return post.isSticky() && getParentPostNumber() == null;
 	}
 
 	public boolean isClosed() {
-		return (mPost.isClosed() || mPost.isArchived()) && getParentPostNumber() == null;
+		return (post.isClosed() || post.isArchived()) && getParentPostNumber() == null;
 	}
 
 	public boolean isCyclical() {
-		return mPost.isCyclical() && getParentPostNumber() == null;
+		return post.isCyclical() && getParentPostNumber() == null;
 	}
 
 	public boolean isOriginalPoster() {
-		return mPost.isOriginalPoster() || getParentPostNumber() == null;
+		return post.isOriginalPoster() || getParentPostNumber() == null;
 	}
 
 	public boolean isPosterWarned() {
-		return mPost.isPosterWarned();
+		return post.isPosterWarned();
 	}
 
 	public boolean isPosterBanned() {
-		return mPost.isPosterBanned();
+		return post.isPosterBanned();
 	}
 
 	public static final int BUMP_LIMIT_NOT_REACHED = 0;
@@ -388,11 +388,11 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 		if (getParentPostNumber() != null || isSticky() || isCyclical()) {
 			return BUMP_LIMIT_NOT_REACHED;
 		}
-		if (mPost.isBumpLimitReached()) {
+		if (post.isBumpLimitReached()) {
 			return BUMP_LIMIT_REACHED;
 		}
-		if (mThreadData != null) {
-			postsCount = mThreadData.postsCount;
+		if (threadData != null) {
+			postsCount = threadData.postsCount;
 		}
 		if (postsCount > 0) {
 			ChanConfiguration configuration = ChanConfiguration.get(getChanName());
@@ -401,19 +401,19 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 				return postsCount >= bumpLimit ? BUMP_LIMIT_REACHED : BUMP_LIMIT_NOT_REACHED;
 			}
 		}
-		return mThreadData != null ? BUMP_LIMIT_NOT_REACHED : BUMP_LIMIT_NEED_COUNT;
+		return threadData != null ? BUMP_LIMIT_NOT_REACHED : BUMP_LIMIT_NEED_COUNT;
 	}
 
 	public boolean isDeleted() {
-		return mPost.isDeleted();
+		return post.isDeleted();
 	}
 
 	public boolean isUserPost() {
-		return mPost.isUserPost();
+		return post.isUserPost();
 	}
 
 	public void setUserPost(boolean userPost) {
-		mPost.setUserPost(userPost);
+		post.setUserPost(userPost);
 	}
 
 	public String getSubjectOrComment() {
@@ -421,15 +421,15 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 		if (!StringUtils.isEmpty(subject)) {
 			return subject;
 		}
-		return StringUtils.cutIfLongerToLine(HtmlParser.clear(mPost.getWorkComment()), 50, true);
+		return StringUtils.cutIfLongerToLine(HtmlParser.clear(post.getWorkComment()), 50, true);
 	}
 
 	// Returns thread subject, guaranteed not null.
 	public String getSubject() {
-		if (mSubject == null) {
+		if (subject == null) {
 			synchronized (this) {
-				if (mSubject == null) {
-					String subject = mPost.getSubject();
+				if (subject == null) {
+					String subject = post.getSubject();
 					if (subject != null) {
 						subject = subject.replace("\r", "").replace("\n", " ").trim();
 						if (subject.length() == 1 && (subject.charAt(0) == '\u202d'
@@ -439,11 +439,11 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 					} else {
 						subject = "";
 					}
-					mSubject = subject;
+					this.subject = subject;
 				}
 			}
 		}
-		return mSubject;
+		return subject;
 	}
 
 	private static CharSequence obtainComment(String comment, String chanName, String parentPostNumber,
@@ -473,10 +473,10 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 	}
 
 	public CharSequence getComment() {
-		if (mComment == null) {
+		if (comment == null) {
 			synchronized (this) {
-				if (mComment == null) {
-					CharSequence comment = obtainComment(mPost.getWorkComment(), getChanName(),
+				if (comment == null) {
+					CharSequence comment = obtainComment(post.getWorkComment(), getChanName(),
 							getParentPostNumber(), this);
 					// Make empty lines take less space
 					SpannableStringBuilder builder = null;
@@ -497,16 +497,16 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 							linebreaks = 0;
 						}
 					}
-					mCommentSpans = ColorScheme.getSpans(comment);
-					mLinkSpans = comment instanceof Spanned ? ((Spanned) comment)
+					commentSpans = ColorScheme.getSpans(comment);
+					linkSpans = comment instanceof Spanned ? ((Spanned) comment)
 							.getSpans(0, comment.length(), LinkSpan.class) : null;
-					mLinkSuffixSpans = comment instanceof Spanned ? ((Spanned) comment)
+					linkSuffixSpans = comment instanceof Spanned ? ((Spanned) comment)
 							.getSpans(0, comment.length(), LinkSuffixSpan.class) : null;
-					mComment = comment;
+					this.comment = comment;
 				}
 			}
 		}
-		return mComment;
+		return comment;
 	}
 
 	// Returns spanned comment (post), guaranteed not null.
@@ -528,13 +528,13 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 	}
 
 	public ColorScheme.Span[] getCommentSpans() {
-		return mCommentSpans;
+		return commentSpans;
 	}
 
 	public CharSequence getThreadCommentShort(int maxWidth, float textSize, int maxLines) {
 		float factor = maxWidth * maxLines / textSize;
 		int count = (int) (factor * 3f);
-		CharSequence comment = mThreadData.commentShort;
+		CharSequence comment = threadData.commentShort;
 		if (comment instanceof Spanned) {
 			SpoilerSpan[] spoilerSpans = ((Spanned) comment).getSpans(0, comment.length(), SpoilerSpan.class);
 			if (spoilerSpans != null) {
@@ -548,19 +548,19 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 	}
 
 	public ColorScheme.Span[] getThreadCommentShortSpans() {
-		return mThreadData.commentShortSpans;
+		return threadData.commentShortSpans;
 	}
 
 	public String getRawComment() {
-		return mPost.getWorkComment();
+		return post.getWorkComment();
 	}
 
 	public String getCommentMarkup() {
-		String commentMarkup = mPost.getCommentMarkup();
-		String comment = mPost.getWorkComment();
+		String commentMarkup = post.getCommentMarkup();
+		String comment = post.getWorkComment();
 		if (StringUtils.isEmpty(commentMarkup)) {
 			if (!StringUtils.isEmpty(comment)) {
-				commentMarkup = HtmlParser.unmark(comment, ChanMarkup.get(mChanName), this);
+				commentMarkup = HtmlParser.unmark(comment, ChanMarkup.get(chanName), this);
 			} else {
 				commentMarkup = "";
 			}
@@ -570,35 +570,35 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 
 	// Must be called only after getComment.
 	public LinkSuffixSpan[] getLinkSuffixSpansAfterComment() {
-		return mLinkSuffixSpans;
+		return linkSuffixSpans;
 	}
 
 	// Must be called only after getComment.
 	public LinkSpan[] getLinkSpansAfterComment() {
-		return mLinkSpans;
+		return linkSpans;
 	}
 
 	public ArrayList<Pair<Uri, String>> getIcons() {
-		return mIcons;
+		return icons;
 	}
 
 	public boolean hasAttachments() {
-		return mAttachmentItems != null;
+		return attachmentItems != null;
 	}
 
 	public ArrayList<AttachmentItem> getAttachmentItems() {
-		return mAttachmentItems;
+		return attachmentItems;
 	}
 
 	public String getAttachmentsDescription(Context context, AttachmentItem.FormatMode formatMode) {
-		int count = mAttachmentItems.size();
+		int count = attachmentItems.size();
 		if (count == 1) {
-			AttachmentItem attachmentItem = mAttachmentItems.get(0);
+			AttachmentItem attachmentItem = attachmentItems.get(0);
 			return attachmentItem.getDescription(formatMode);
 		} else {
 			int size = 0;
 			for (int i = 0; i < count; i++) {
-				size += mAttachmentItems.get(i).getSize();
+				size += attachmentItems.get(i).getSize();
 			}
 			StringBuilder builder = new StringBuilder();
 			if (size > 0) {
@@ -611,34 +611,34 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 	}
 
 	public int getPostReplyCount() {
-		return mReferencesFrom != null ? mReferencesFrom.size() : 0;
+		return referencesFrom != null ? referencesFrom.size() : 0;
 	}
 
 	// May return null set.
 	public HashSet<String> getReferencesTo() {
-		return mReferencesTo;
+		return referencesTo;
 	}
 
 	// May return null set.
 	public LinkedHashSet<String> getReferencesFrom() {
-		return mReferencesFrom;
+		return referencesFrom;
 	}
 
 	public GalleryItem.GallerySet getThreadGallerySet() {
-		return mThreadData.gallerySet;
+		return threadData.gallerySet;
 	}
 
 	public int getThreadPostsCount() {
-		return mThreadData.postsCount;
+		return threadData.postsCount;
 	}
 
 	public PostItem[] getThreadLastPosts() {
-		Post[] posts = mThreadData.firstAndLastPosts;
+		Post[] posts = threadData.firstAndLastPosts;
 		if (posts != null && posts.length > 1) {
 			PostItem[] postItems = new PostItem[posts.length - 1];
-			int startIndex = mThreadData.postsCount - posts.length + 1;
+			int startIndex = threadData.postsCount - posts.length + 1;
 			for (int i = 0; i < postItems.length; i++) {
-				PostItem postItem = new PostItem(posts[i + 1], mChanName, mBoardName);
+				PostItem postItem = new PostItem(posts[i + 1], chanName, boardName);
 				postItem.setOrdinalIndex(startIndex > 0 ? startIndex + i : ORDINAL_INDEX_NONE);
 				postItems[i] = postItem;
 			}
@@ -658,10 +658,10 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 
 	public String formatThreadCardDescription(Context context, boolean repliesOnly) {
 		StringBuilder builder = new StringBuilder();
-		int originalPostFiles = mPost.getAttachmentsCount();
-		int replies = mThreadData.postsCount - 1;
-		int files = mThreadData.filesCount - originalPostFiles;
-		int postsWithFiles = mThreadData.postsWithFilesCount - (originalPostFiles > 0 ? 1 : 0);
+		int originalPostFiles = post.getAttachmentsCount();
+		int replies = threadData.postsCount - 1;
+		int files = threadData.filesCount - originalPostFiles;
+		int postsWithFiles = threadData.postsWithFilesCount - (originalPostFiles > 0 ? 1 : 0);
 		boolean hasInformation = false;
 		Resources resources = context.getResources();
 		if (replies >= 0) {
@@ -688,7 +688,7 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 			}
 			if (hasAttachments()) {
 				int size = 0;
-				for (AttachmentItem attachmentItem : mAttachmentItems) {
+				for (AttachmentItem attachmentItem : attachmentItems) {
 					size += attachmentItem.getSize();
 				}
 				if (size > 0) {
@@ -708,31 +708,31 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 	}
 
 	public long getTimestamp() {
-		return mPost.getTimestamp();
+		return post.getTimestamp();
 	}
 
 	public String getDateTime(PostDateFormatter formatter) {
-		mDateTimeHolder = formatter.format(getTimestamp(), mDateTimeHolder);
-		return mDateTimeHolder.text;
+		dateTimeHolder = formatter.format(getTimestamp(), dateTimeHolder);
+		return dateTimeHolder.text;
 	}
 
 	public boolean isExpanded() {
-		return mExpanded;
+		return expanded;
 	}
 
 	public void setExpanded(boolean expanded) {
-		mExpanded = expanded;
+		this.expanded = expanded;
 	}
 
 	public boolean isThreadItem() {
-		return mThreadData != null;
+		return threadData != null;
 	}
 
 	private int getHiddenStateFromModel() {
-		if (mPost.isHidden()) {
+		if (post.isHidden()) {
 			return C.HIDDEN_TRUE;
 		}
-		if (mPost.isShown()) {
+		if (post.isShown()) {
 			return C.HIDDEN_FALSE;
 		}
 		return C.HIDDEN_UNKNOWN;
@@ -743,15 +743,15 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 	}
 
 	public boolean isHidden(HidePerformer hidePerformer) {
-		if (mHidden == C.HIDDEN_UNKNOWN) {
+		if (hidden == C.HIDDEN_UNKNOWN) {
 			synchronized (this) {
-				int hidden = mHidden;
+				int hidden = this.hidden;
 				if (hidden == C.HIDDEN_UNKNOWN) {
 					String hideReason = null;
-					if (mThreadData == null) {
+					if (threadData == null) {
 						hidden = getHiddenStateFromModel();
 					} else {
-						hidden = HiddenThreadsDatabase.getInstance().check(getChanName(), mBoardName, getPostNumber());
+						hidden = HiddenThreadsDatabase.getInstance().check(getChanName(), boardName, getPostNumber());
 					}
 					if (hidden == C.HIDDEN_UNKNOWN) {
 						hideReason = hidePerformer.checkHidden(this);
@@ -761,46 +761,46 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 							hidden = C.HIDDEN_FALSE;
 						}
 					}
-					mHideReason = hideReason;
-					mHidden = hidden;
+					this.hideReason = hideReason;
+					this.hidden = hidden;
 				}
 			}
 		}
-		return mHidden == C.HIDDEN_TRUE;
+		return hidden == C.HIDDEN_TRUE;
 	}
 
 	// Must be called only after isHidden.
 	public boolean isHiddenUnchecked() {
-		return mHidden == C.HIDDEN_TRUE;
+		return hidden == C.HIDDEN_TRUE;
 	}
 
 	public String getHideReason() {
-		return mHideReason;
+		return hideReason;
 	}
 
 	public void setHidden(boolean hidden) {
-		mHidden = hidden ? C.HIDDEN_TRUE : C.HIDDEN_FALSE;
-		mHideReason = null;
+		this.hidden = hidden ? C.HIDDEN_TRUE : C.HIDDEN_FALSE;
+		hideReason = null;
 		if (!isThreadItem()) {
-			mPost.setHidden(hidden);
+			post.setHidden(hidden);
 		}
 	}
 
 	public void invalidateHidden() {
-		mHidden = C.HIDDEN_UNKNOWN;
-		mHideReason = null;
+		hidden = C.HIDDEN_UNKNOWN;
+		hideReason = null;
 	}
 
 	public void resetHidden() {
 		invalidateHidden();
-		mPost.resetHidden();
+		post.resetHidden();
 	}
 
 	public void setUnread(boolean unread) {
-		mUnread = unread;
+		this.unread = unread;
 	}
 
 	public boolean isUnread() {
-		return mUnread;
+		return unread;
 	}
 }

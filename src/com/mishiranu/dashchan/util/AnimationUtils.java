@@ -115,16 +115,16 @@ public class AnimationUtils {
 
 	private static class HeightAnimatorListener implements Animator.AnimatorListener,
 			ValueAnimator.AnimatorUpdateListener {
-		private final View mView;
-		private final int mResultingHeight;
+		private final View view;
+		private final int resultingHeight;
 
 		public HeightAnimatorListener(View view, int resultingHeight) {
-			mView = view;
-			mResultingHeight = resultingHeight;
+			this.view = view;
+			this.resultingHeight = resultingHeight;
 		}
 
 		private void applyHeight(int height) {
-			View view = mView;
+			View view = this.view;
 			view.getLayoutParams().height = height;
 			view.requestLayout();
 		}
@@ -140,7 +140,7 @@ public class AnimationUtils {
 
 		@Override
 		public void onAnimationEnd(Animator animation) {
-			applyHeight(mResultingHeight);
+			applyHeight(resultingHeight);
 		}
 
 		@Override
@@ -151,12 +151,12 @@ public class AnimationUtils {
 	}
 
 	public static class VisibilityListener implements Animator.AnimatorListener {
-		private final View mView;
-		private final int mVisibility;
+		private final View view;
+		private final int visibility;
 
 		public VisibilityListener(View view, int visibility) {
-			mView = view;
-			mVisibility = visibility;
+			this.view = view;
+			this.visibility = visibility;
 		}
 
 		@Override
@@ -164,7 +164,7 @@ public class AnimationUtils {
 
 		@Override
 		public void onAnimationEnd(Animator animation) {
-			mView.setVisibility(mVisibility);
+			view.setVisibility(visibility);
 		}
 
 		@Override
@@ -175,23 +175,23 @@ public class AnimationUtils {
 	}
 
 	private static class NewPostAnimatorListener implements ValueAnimator.AnimatorUpdateListener {
-		private final ColorDrawable mDrawable;
-		private final PostItem mPostItem;
-		private boolean mApplied = false;
+		private final ColorDrawable drawable;
+		private final PostItem postItem;
+		private boolean applied = false;
 
 		public NewPostAnimatorListener(View view, PostItem postItem, int color) {
-			mDrawable = new ColorDrawable(color);
-			view.setBackground(mDrawable);
-			mPostItem = postItem;
+			drawable = new ColorDrawable(color);
+			view.setBackground(drawable);
+			this.postItem = postItem;
 		}
 
 		@Override
 		public void onAnimationUpdate(ValueAnimator animation) {
-			if (!mApplied) {
-				mApplied = true;
-				mPostItem.setUnread(false);
+			if (!applied) {
+				applied = true;
+				postItem.setUnread(false);
 			}
-			mDrawable.setColor((int) animation.getAnimatedValue());
+			drawable.setColor((int) animation.getAnimatedValue());
 		}
 	}
 

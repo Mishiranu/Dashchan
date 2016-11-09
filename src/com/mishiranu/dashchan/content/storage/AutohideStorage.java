@@ -50,7 +50,7 @@ public class AutohideStorage extends StorageManager.Storage {
 		return INSTANCE;
 	}
 
-	private final ArrayList<AutohideItem> mAutohideItems = new ArrayList<>();
+	private final ArrayList<AutohideItem> autohideItems = new ArrayList<>();
 
 	private AutohideStorage() {
 		super("autohide", 1000, 10000);
@@ -82,7 +82,7 @@ public class AutohideStorage extends StorageManager.Storage {
 						boolean optionComment = jsonObject.optBoolean(KEY_OPTION_COMMENT);
 						boolean optionName = jsonObject.optBoolean(KEY_OPTION_NAME);
 						String value = jsonObject.optString(KEY_VALUE, null);
-						mAutohideItems.add(new AutohideItem(chanNames, boardName, threadNumber, optionOriginalPost,
+						autohideItems.add(new AutohideItem(chanNames, boardName, threadNumber, optionOriginalPost,
 								optionSage, optionSubject, optionComment, optionName, value));
 					}
 				}
@@ -91,13 +91,13 @@ public class AutohideStorage extends StorageManager.Storage {
 	}
 
 	public ArrayList<AutohideItem> getItems() {
-		return mAutohideItems;
+		return autohideItems;
 	}
 
 	@Override
 	public Object onClone() {
-		ArrayList<AutohideItem> autohideItems = new ArrayList<>(mAutohideItems.size());
-		for (AutohideItem autohideItem : mAutohideItems) {
+		ArrayList<AutohideItem> autohideItems = new ArrayList<>(this.autohideItems.size());
+		for (AutohideItem autohideItem : this.autohideItems) {
 			autohideItems.add(new AutohideItem(autohideItem));
 		}
 		return autohideItems;
@@ -136,17 +136,17 @@ public class AutohideStorage extends StorageManager.Storage {
 	}
 
 	public void add(AutohideItem autohideItem) {
-		mAutohideItems.add(autohideItem);
+		autohideItems.add(autohideItem);
 		serialize();
 	}
 
 	public void update(int index, AutohideItem autohideItem) {
-		mAutohideItems.set(index, autohideItem);
+		autohideItems.set(index, autohideItem);
 		serialize();
 	}
 
 	public void delete(int index) {
-		mAutohideItems.remove(index);
+		autohideItems.remove(index);
 		serialize();
 	}
 
@@ -165,8 +165,8 @@ public class AutohideStorage extends StorageManager.Storage {
 
 		public String value;
 
-		private volatile boolean mReady = false;
-		private Pattern mPattern;
+		private volatile boolean ready = false;
+		private Pattern pattern;
 
 		public AutohideItem() {}
 
@@ -176,8 +176,9 @@ public class AutohideStorage extends StorageManager.Storage {
 					autohideItem.optionComment, autohideItem.optionName, autohideItem.value);
 		}
 
-		public AutohideItem(HashSet<String> chanNames, String boardName, String threadNumber, boolean optionOriginalPost,
-				boolean optionSage, boolean optionSubject, boolean optionComment, boolean optionName, String value) {
+		public AutohideItem(HashSet<String> chanNames, String boardName, String threadNumber,
+				boolean optionOriginalPost, boolean optionSage, boolean optionSubject, boolean optionComment,
+				boolean optionName, String value) {
 			update(chanNames, boardName, threadNumber, optionOriginalPost, optionSage,
 					optionSubject, optionComment, optionName, value);
 		}
@@ -201,20 +202,20 @@ public class AutohideStorage extends StorageManager.Storage {
 		}
 
 		public String find(String data) {
-			if (!mReady) {
+			if (!ready) {
 				synchronized (this) {
-					if (!mReady) {
+					if (!ready) {
 						try {
-							mPattern = makePattern(value);
+							pattern = makePattern(value);
 						} catch (Exception e) {
-							// Ignore
+							// Invalid pattern syntax, ignore exception
 						}
-						mReady = true;
+						ready = true;
 					}
 				}
 			}
 			try {
-				Matcher matcher = mPattern.matcher(data);
+				Matcher matcher = pattern.matcher(data);
 				if (matcher.find()) {
 					String result = matcher.group();
 					if (StringUtils.isEmpty(result)) {
@@ -223,7 +224,7 @@ public class AutohideStorage extends StorageManager.Storage {
 					return result;
 				}
 			} catch (Exception e) {
-				// Ignore
+				// Ignore matching exceptions
 			}
 			return null;
 		}

@@ -9,16 +9,16 @@ import com.mishiranu.dashchan.text.style.LinkSpan;
 import com.mishiranu.dashchan.text.style.QuoteSpan;
 
 public class QuoteEditWatcher implements TextWatcher {
-	private final ColorScheme mColorScheme;
+	private final ColorScheme colorScheme;
 
 	public QuoteEditWatcher(Context context) {
-		mColorScheme = new ColorScheme(context);
+		colorScheme = new ColorScheme(context);
 	}
 
-	private boolean mUpdateQuotes = false;
-	private boolean mUpdateLinks = false;
+	private boolean updateQuotes = false;
+	private boolean updateLinks = false;
 
-	private boolean mListen = true;
+	private boolean listen = true;
 
 	private boolean isNumber(char c) {
 		return c >= '0' && c <= '9';
@@ -63,20 +63,20 @@ public class QuoteEditWatcher implements TextWatcher {
 			for (int i = wordStart; i < wordEnd; i++) {
 				char c = s.charAt(i);
 				if (c == '>' && p == '>') {
-					mUpdateLinks = true;
+					updateLinks = true;
 					break;
 				}
 				p = c;
 			}
 		}
 		if (contains(s, start, end, '>') || contains(s, start, end, '\n')) {
-			mUpdateQuotes = true;
+			updateQuotes = true;
 		}
 	}
 
 	@Override
 	public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-		if (!mListen) {
+		if (!listen) {
 			return;
 		}
 		beforeOrOnTextChanged(s, start, count);
@@ -84,7 +84,7 @@ public class QuoteEditWatcher implements TextWatcher {
 
 	@Override
 	public void onTextChanged(CharSequence s, int start, int before, int count) {
-		if (!mListen) {
+		if (!listen) {
 			return;
 		}
 		beforeOrOnTextChanged(s, start, count);
@@ -92,12 +92,12 @@ public class QuoteEditWatcher implements TextWatcher {
 
 	@Override
 	public void afterTextChanged(Editable s) {
-		if (!mListen) {
+		if (!listen) {
 			return;
 		}
-		mListen = false;
+		listen = false;
 		String text = null;
-		if (mUpdateQuotes) {
+		if (updateQuotes) {
 			for (QuoteSpan quoteSpan : s.getSpans(0, s.length(), QuoteSpan.class)) {
 				s.removeSpan(quoteSpan);
 			}
@@ -124,7 +124,7 @@ public class QuoteEditWatcher implements TextWatcher {
 					if (!(end - start >= 3 && text.charAt(start) == '>' && text.charAt(start + 1) == '>'
 							&& isNumber(text.charAt(start + 2)))) {
 						QuoteSpan quoteSpan = new QuoteSpan();
-						quoteSpan.applyColorScheme(mColorScheme);
+						quoteSpan.applyColorScheme(colorScheme);
 						s.setSpan(quoteSpan, start, end, Editable.SPAN_EXCLUSIVE_INCLUSIVE);
 					}
 					if (finish) {
@@ -133,7 +133,7 @@ public class QuoteEditWatcher implements TextWatcher {
 				}
 			}
 		}
-		if (mUpdateLinks) {
+		if (updateLinks) {
 			for (LinkSpan linkSpan : s.getSpans(0, s.length(), LinkSpan.class)) {
 				s.removeSpan(linkSpan);
 			}
@@ -165,11 +165,11 @@ public class QuoteEditWatcher implements TextWatcher {
 					}
 					index = start + 2 + numbers;
 					LinkSpan linkSpan = new LinkSpan(null, null);
-					linkSpan.applyColorScheme(mColorScheme);
+					linkSpan.applyColorScheme(colorScheme);
 					s.setSpan(linkSpan, start, index, Editable.SPAN_EXCLUSIVE_EXCLUSIVE);
 				}
 			}
-		} else if (mUpdateQuotes) {
+		} else if (updateQuotes) {
 			// Reorder spans
 			for (LinkSpan linkSpan : s.getSpans(0, s.length(), LinkSpan.class)) {
 				int start = s.getSpanStart(linkSpan);
@@ -179,8 +179,8 @@ public class QuoteEditWatcher implements TextWatcher {
 				s.setSpan(linkSpan, start, end, flags);
 			}
 		}
-		mUpdateQuotes = false;
-		mUpdateLinks = false;
-		mListen = true;
+		updateQuotes = false;
+		updateLinks = false;
+		listen = true;
 	}
 }

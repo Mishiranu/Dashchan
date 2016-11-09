@@ -40,46 +40,46 @@ public class GifDecoder implements Runnable {
 
 	private static final Handler HANDLER = new Handler(Looper.getMainLooper());
 
-	private final long mPointer;
-	private boolean mConsumed = false;
+	private final long pointer;
+	private boolean consumed = false;
 
-	private final int mWidth;
-	private final int mHeight;
-	private final Bitmap mBitmap;
+	private final int width;
+	private final int height;
+	private final Bitmap bitmap;
 
-	private static boolean sLoaded = false;
+	private static boolean loaded = false;
 
 	public GifDecoder(File file) throws IOException {
 		synchronized (GifDecoder.class) {
-			if (!sLoaded) {
+			if (!loaded) {
 				try {
 					System.loadLibrary("gif");
 				} catch (LinkageError e) {
 					throw new IOException(e);
 				}
-				sLoaded = true;
+				loaded = true;
 			}
 		}
-		mPointer = init(file.getAbsolutePath());
-		int errorCode = getErrorCode(mPointer);
+		pointer = init(file.getAbsolutePath());
+		int errorCode = getErrorCode(pointer);
 		if (errorCode != 0) {
 			recycle();
 			throw new IOException("Can't initialize decoder: CODE=" + errorCode);
 		}
 		int[] summary = new int[2];
-		getSummary(mPointer, summary);
-		mWidth = summary[0];
-		mHeight = summary[1];
-		mBitmap = Bitmap.createBitmap(summary[0], summary[1], Bitmap.Config.ARGB_8888);
+		getSummary(pointer, summary);
+		width = summary[0];
+		height = summary[1];
+		bitmap = Bitmap.createBitmap(summary[0], summary[1], Bitmap.Config.ARGB_8888);
 	}
 
 	public void recycle() {
-		if (!mConsumed) {
-			mConsumed = true;
-			if (mBitmap != null) {
-				mBitmap.recycle();
+		if (!consumed) {
+			consumed = true;
+			if (bitmap != null) {
+				bitmap.recycle();
 			}
-			destroy(mPointer);
+			destroy(pointer);
 		}
 	}
 
@@ -92,31 +92,31 @@ public class GifDecoder implements Runnable {
 		}
 	}
 
-	private Drawable mDrawable;
+	private Drawable drawable;
 
 	public Drawable getDrawable() {
-		if (mDrawable == null) {
-			mDrawable = new Drawable() {
-				private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG);
+		if (drawable == null) {
+			drawable = new Drawable() {
+				private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG);
 
 				@Override
 				public int getIntrinsicWidth() {
-					return mWidth;
+					return width;
 				}
 
 				@Override
 				public int getIntrinsicHeight() {
-					return mHeight;
+					return height;
 				}
 
 				@Override
 				public void setColorFilter(ColorFilter colorFilter) {
-					mPaint.setColorFilter(colorFilter);
+					paint.setColorFilter(colorFilter);
 				}
 
 				@Override
 				public void setAlpha(int alpha) {
-					mPaint.setAlpha(alpha);
+					paint.setAlpha(alpha);
 				}
 
 				@Override
@@ -126,12 +126,12 @@ public class GifDecoder implements Runnable {
 
 				@Override
 				public void draw(Canvas canvas) {
-					if (!mConsumed) {
+					if (!consumed) {
 						Rect bounds = getBounds();
 						canvas.save();
-						canvas.scale((float) bounds.width() / mWidth, (float) bounds.height() / mHeight);
-						int delay = GifDecoder.draw(mPointer, mBitmap);
-						canvas.drawBitmap(mBitmap, 0, 0, mPaint);
+						canvas.scale((float) bounds.width() / width, (float) bounds.height() / height);
+						int delay = GifDecoder.draw(pointer, bitmap);
+						canvas.drawBitmap(bitmap, 0, 0, paint);
 						canvas.restore();
 						if (delay >= 0) {
 							delay -= 20;
@@ -146,11 +146,11 @@ public class GifDecoder implements Runnable {
 				}
 			};
 		}
-		return mDrawable;
+		return drawable;
 	}
 
 	@Override
 	public void run() {
-		mDrawable.invalidateSelf();
+		drawable.invalidateSelf();
 	}
 }

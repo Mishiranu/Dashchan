@@ -65,30 +65,30 @@ import com.mishiranu.dashchan.util.ResourceUtils;
  * This class has method to start text selection directly.
  */
 public class CommentTextView extends TextView {
-	private final int[][] mDeltaAttempts;
-	private final int mTouchSlop;
-	private final int mAdditionalPadding;
+	private final int[][] deltaAttempts;
+	private final int touchSlop;
+	private final int additionalPadding;
 
-	private ClickableSpan mSpanToClick;
-	private float mStartX, mStartY;
-	private float mLastX, mLastY;
-	private long mLastXYSetted;
-	private long mLastStartSelectionCalled;
-	private int mCurrentMax = Integer.MAX_VALUE, mReservedMax;
-	private boolean mMaxModeLines;
-	private boolean mAppendAdditionalPadding;
-	private boolean mUseAdditionalPadding;
+	private ClickableSpan spanToClick;
+	private float startX, startY;
+	private float lastX, lastY;
+	private long lastXYSet;
+	private long lastStartSelectionCalled;
+	private int currentMax = Integer.MAX_VALUE, reservedMax;
+	private boolean maxModeLines;
+	private boolean appendAdditionalPadding;
+	private boolean useAdditionalPadding;
 
-	private CommentListener mCommentListener;
-	private LinkListener mLinkListener;
-	private boolean mSpoilersEnabled;
+	private CommentListener commentListener;
+	private LinkListener linkListener;
+	private boolean spoilersEnabled;
 
-	private String mChanName;
-	private String mBoardName;
-	private String mThreadNumber;
+	private String chanName;
+	private String boardName;
+	private String threadNumber;
 
-	private Replyable mReplyable;
-	private String mPostNumber;
+	private Replyable replyable;
+	private String postNumber;
 
 	private static final double[][] BASE_POINTS;
 	private static final int RING_RADIUS = 6;
@@ -125,20 +125,20 @@ public class CommentTextView extends TextView {
 		super(context, attrs, defStyleAttr);
 		float density = ResourceUtils.obtainDensity(this);
 		int delta = (int) (RING_RADIUS * density);
-		mDeltaAttempts = new int[1 + RINGS * BASE_POINTS.length][2];
-		mDeltaAttempts[0][0] = 0;
-		mDeltaAttempts[0][1] = 0;
+		deltaAttempts = new int[1 + RINGS * BASE_POINTS.length][2];
+		deltaAttempts[0][0] = 0;
+		deltaAttempts[0][1] = 0;
 		int add = 1;
 		for (int r = 0; r < RINGS; r++) {
 			for (int i = 0; i < BASE_POINTS.length; i++) {
 				for (int j = 0; j < BASE_POINTS[i].length; j++) {
-					mDeltaAttempts[i + add][j] = (int) ((r + 1) * delta * BASE_POINTS[i][j]);
+					deltaAttempts[i + add][j] = (int) ((r + 1) * delta * BASE_POINTS[i][j]);
 				}
 			}
 			add += BASE_POINTS.length;
 		}
-		mTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
-		mAdditionalPadding = (int) (64f * density);
+		touchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
+		additionalPadding = (int) (64f * density);
 		super.setCustomSelectionActionModeCallback(new CustomSelectionCallback());
 	}
 
@@ -156,19 +156,19 @@ public class CommentTextView extends TextView {
 		public void onLinkLongClick(CommentTextView view, String chanName, Uri uri);
 	}
 
-	public void setCommentListener(CommentListener l) {
-		mCommentListener = l;
+	public void setCommentListener(CommentListener listener) {
+		commentListener = listener;
 	}
 
-	public void setLinkListener(LinkListener l, String chanName, String boardName, String threadNumber) {
-		mLinkListener = l;
-		mChanName = chanName;
-		mBoardName = boardName;
-		mThreadNumber = threadNumber;
+	public void setLinkListener(LinkListener listener, String chanName, String boardName, String threadNumber) {
+		linkListener = listener;
+		this.chanName = chanName;
+		this.boardName = boardName;
+		this.threadNumber = threadNumber;
 	}
 
 	private LinkListener getLinkListener() {
-		return mLinkListener != null ? mLinkListener : DEFAULT_LINK_LISTENER;
+		return linkListener != null ? linkListener : DEFAULT_LINK_LISTENER;
 	}
 
 	public void setSubjectAndComment(CharSequence subject, CharSequence comment) {
@@ -177,7 +177,7 @@ public class CommentTextView extends TextView {
 		if (hasComment && comment instanceof Spanned) {
 			SpoilerSpan[] spoilerSpans = ((Spanned) comment).getSpans(0, comment.length(), SpoilerSpan.class);
 			if (spoilerSpans != null) {
-				boolean enabled = mSpoilersEnabled;
+				boolean enabled = spoilersEnabled;
 				for (SpoilerSpan spoilerSpan : spoilerSpans) {
 					spoilerSpan.setEnabled(enabled);
 				}
@@ -204,10 +204,10 @@ public class CommentTextView extends TextView {
 
 	public void setSpoilersEnabled(boolean enabled) {
 		// Must invalidate text after changing this field
-		mSpoilersEnabled = enabled;
+		spoilersEnabled = enabled;
 	}
 
-	private final Runnable mSyncRunnable = () -> mCommentListener.onRequestSiblingsInvalidate(CommentTextView.this);
+	private final Runnable syncRunnable = () -> commentListener.onRequestSiblingsInvalidate(CommentTextView.this);
 
 	private static final Pattern LIST_PATTERN = Pattern.compile("^(?:(?:\\d+[\\.\\)]|[\u2022-]) |>(?!>) ?)");
 
@@ -218,11 +218,11 @@ public class CommentTextView extends TextView {
 		}
 		Spannable spannable = (Spannable) text;
 		int length = spannable.length();
-		if (mLastStartSelectionCalled - mLastXYSetted <= getPreferredDoubleTapTimeout() &&
+		if (lastStartSelectionCalled - lastXYSet <= getPreferredDoubleTapTimeout() &&
 				(start < 0 || end < 0 || start > length || end > length || start >= end)) {
 			start = 0;
 			end = spannable.length();
-			int offset = getOffsetForPosition(mLastX, mLastY);
+			int offset = getOffsetForPosition(lastX, lastY);
 			if (offset >= 0 && offset < length) {
 				for (int i = offset; i >= 0; i--) {
 					if (spannable.charAt(i) == '\n') {
@@ -253,15 +253,15 @@ public class CommentTextView extends TextView {
 	}
 
 	public void setReplyable(Replyable replyable, String postNumber) {
-		mReplyable = replyable;
-		mPostNumber = postNumber;
+		this.replyable = replyable;
+		this.postNumber = postNumber;
 	}
 
 	@Override
 	public void setCustomSelectionActionModeCallback(ActionMode.Callback actionModeCallback) {}
 
 	private String getPartialCommentString(Spannable text, int start, int end) {
-		return mCommentListener != null ? mCommentListener.onPrepareToCopy(CommentTextView.this, text, start, end)
+		return commentListener != null ? commentListener.onPrepareToCopy(CommentTextView.this, text, start, end)
 				: text.subSequence(start, end).toString();
 	}
 
@@ -290,8 +290,8 @@ public class CommentTextView extends TextView {
 		return null;
 	}
 
-	private ActionMode mCurrentActionMode;
-	private Menu mCurrentActionModeMenu;
+	private ActionMode currentActionMode;
+	private Menu currentActionModeMenu;
 
 	private class CustomSelectionCallback implements ActionMode.Callback, Runnable {
 		private void addCopyMenuItemIfNotNull(Menu menu, MenuItem menuItem, int flags) {
@@ -304,8 +304,8 @@ public class CommentTextView extends TextView {
 		@TargetApi(Build.VERSION_CODES.M)
 		@Override
 		public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-			mCurrentActionMode = mode;
-			mCurrentActionModeMenu = menu;
+			currentActionMode = mode;
+			currentActionModeMenu = menu;
 			int pasteResId = ResourceUtils.getSystemSelectionIcon(getContext(), "actionModePasteDrawable",
 					"ic_menu_paste_holo_dark");
 			SparseArray<MenuItem> validItems = new SparseArray<>();
@@ -315,7 +315,7 @@ public class CommentTextView extends TextView {
 			ActionIconSet set = new ActionIconSet(getContext());
 			int flags = MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT;
 			if (C.API_MARSHMALLOW && mode.getType() == ActionMode.TYPE_FLOATING) {
-				if (mReplyable != null) {
+				if (replyable != null) {
 					menu.add(0, android.R.id.button1, 0, R.string.action_quote).setIcon(pasteResId)
 							.setShowAsAction(flags);
 				}
@@ -326,7 +326,7 @@ public class CommentTextView extends TextView {
 			} else {
 				addCopyMenuItemIfNotNull(menu, validItems.get(android.R.id.selectAll), flags);
 				addCopyMenuItemIfNotNull(menu, validItems.get(android.R.id.copy), flags);
-				if (mReplyable != null) {
+				if (replyable != null) {
 					menu.add(0, android.R.id.button1, 0, R.string.action_quote).setIcon(pasteResId)
 							.setShowAsAction(flags);
 				}
@@ -345,16 +345,17 @@ public class CommentTextView extends TextView {
 
 		@Override
 		public void onDestroyActionMode(ActionMode mode) {
-			if (mCurrentActionMode == mode) {
-				mCurrentActionMode = null;
-				mCurrentActionModeMenu = null;
+			if (currentActionMode == mode) {
+				currentActionMode = null;
+				currentActionModeMenu = null;
 			}
 			post(this);
 		}
 
 		@Override
 		public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-			Spannable text = getText() instanceof Spannable ? (Spannable) getText() : null;if (text != null) {
+			Spannable text = getText() instanceof Spannable ? (Spannable) getText() : null;
+			if (text != null) {
 				int selStart = getSelectionStart(), selEnd = getSelectionEnd();
 				int min = Math.max(0, Math.min(selStart, selEnd)), max = Math.max(0, Math.max(selStart, selEnd));
 				switch (item.getItemId()) {
@@ -368,8 +369,8 @@ public class CommentTextView extends TextView {
 						break;
 					}
 					case android.R.id.button1: {
-						if (mReplyable != null) {
-							mReplyable.onRequestReply(new Replyable.ReplyData(mPostNumber,
+						if (replyable != null) {
+							replyable.onRequestReply(new Replyable.ReplyData(postNumber,
 									getPartialCommentString(text, min, max)));
 						}
 						mode.finish();
@@ -397,68 +398,68 @@ public class CommentTextView extends TextView {
 	@Override
 	protected void onSelectionChanged(int selStart, int selEnd) {
 		super.onSelectionChanged(selStart, selEnd);
-		if (mCurrentActionMode != null) {
+		if (currentActionMode != null) {
 			// This works better than simple "invalidate" call
 			// because "invalidate" can cause action mode resizing bug in Android 5
-			getCustomSelectionActionModeCallback().onPrepareActionMode(mCurrentActionMode, mCurrentActionModeMenu);
+			getCustomSelectionActionModeCallback().onPrepareActionMode(currentActionMode, currentActionModeMenu);
 		}
 	}
 
 	@Override
 	public void setMaxLines(int maxlines) {
-		mReservedMax = 0;
-		mCurrentMax = maxlines;
-		mMaxModeLines = true;
+		reservedMax = 0;
+		currentMax = maxlines;
+		maxModeLines = true;
 		super.setMaxLines(maxlines);
 	}
 
 	@Override
 	public void setMaxHeight(int maxHeight) {
-		mReservedMax = 0;
-		mCurrentMax = maxHeight;
-		mMaxModeLines = false;
+		reservedMax = 0;
+		currentMax = maxHeight;
+		maxModeLines = false;
 		super.setMaxHeight(maxHeight);
 	}
 
 	@Override
 	public void setPadding(int left, int top, int right, int bottom) {
-		if (mUseAdditionalPadding) {
-			bottom += mAdditionalPadding;
+		if (useAdditionalPadding) {
+			bottom += additionalPadding;
 		}
 		super.setPadding(left, top, right, bottom);
 	}
 
 	public void setAppendAdditionalPadding(boolean appendAdditionalPadding) {
-		mAppendAdditionalPadding = appendAdditionalPadding;
+		this.appendAdditionalPadding = appendAdditionalPadding;
 		updateUseAdditionalPadding();
 	}
 
 	public int getAdditionalPadding() {
-		return mAppendAdditionalPadding ? mAdditionalPadding : 0;
+		return appendAdditionalPadding ? additionalPadding : 0;
 	}
 
 	private void updateUseAdditionalPadding() {
-		boolean needUseAdditionalPadding = mAppendAdditionalPadding && isTextSelectable();
-		if (needUseAdditionalPadding != mUseAdditionalPadding) {
+		boolean needUseAdditionalPadding = appendAdditionalPadding && isTextSelectable();
+		if (needUseAdditionalPadding != useAdditionalPadding) {
 			int bottom = getPaddingBottom();
-			bottom = needUseAdditionalPadding ? bottom + mAdditionalPadding : bottom - mAdditionalPadding;
+			bottom = needUseAdditionalPadding ? bottom + additionalPadding : bottom - additionalPadding;
 			// Set false to normal calculate padding (see setPadding method overriding)
-			mUseAdditionalPadding = false;
+			useAdditionalPadding = false;
 			setPadding(getPaddingLeft(), getPaddingTop(), getPaddingRight(), bottom);
-			mUseAdditionalPadding = needUseAdditionalPadding;
+			useAdditionalPadding = needUseAdditionalPadding;
 		}
 	}
 
 	private void updateSelectablePaddings(boolean selectable) {
 		if (selectable) {
-			mReservedMax = mCurrentMax;
+			reservedMax = currentMax;
 			super.setMaxHeight(Integer.MAX_VALUE);
-		} else if (mReservedMax > 0) {
-			// Also will reset mReservedMax
-			if (mMaxModeLines) {
-				setMaxLines(mReservedMax);
+		} else if (reservedMax > 0) {
+			// Also will reset reservedMax
+			if (maxModeLines) {
+				setMaxLines(reservedMax);
 			} else {
-				setMaxHeight(mReservedMax);
+				setMaxHeight(reservedMax);
 			}
 		}
 	}
@@ -480,12 +481,12 @@ public class CommentTextView extends TextView {
 		updateUseAdditionalPadding();
 	}
 
-	private int mSetTextDepth = 0;
+	private int setTextDepth = 0;
 
 	@Override
 	public void setText(CharSequence text, BufferType type) {
 		// Some devices may call setText recursively; fix it
-		if (mSetTextDepth > 0) {
+		if (setTextDepth > 0) {
 			String className = getClass().getName();
 			StackTraceElement[] elements = Thread.currentThread().getStackTrace();
 			for (int i = 0; i < elements.length; i++) {
@@ -503,11 +504,11 @@ public class CommentTextView extends TextView {
 				}
 			}
 		}
-		mSetTextDepth++;
+		setTextDepth++;
 		try {
 			super.setText(text, type);
 		} finally {
-			mSetTextDepth--;
+			setTextDepth--;
 		}
 	}
 
@@ -515,13 +516,13 @@ public class CommentTextView extends TextView {
 		public boolean call(Object editor, Class<?> editorClass) throws Exception;
 	}
 
-	private final EditorCallable mEditorPerformLongClick = (editor, editorClass) -> {
+	private final EditorCallable editorPerformLongClick = (editor, editorClass) -> {
 		Method method = editorClass.getDeclaredMethod("performLongClick", boolean.class);
 		method.setAccessible(true);
 		return (boolean) method.invoke(editor, false);
 	};
 
-	private final EditorCallable mEditorStartSelectionActionMode = (editor, editorClass) -> {
+	private final EditorCallable editorStartSelectionActionMode = (editor, editorClass) -> {
 		Method method = editorClass.getDeclaredMethod("startSelectionActionMode");
 		method.setAccessible(true);
 		return (boolean) method.invoke(editor);
@@ -553,21 +554,21 @@ public class CommentTextView extends TextView {
 	}
 
 	public void startSelection(int start, int end) {
-		mLastStartSelectionCalled = System.currentTimeMillis();
+		lastStartSelectionCalled = System.currentTimeMillis();
 		setTextIsSelectable(true);
 		if (ENABLE_HTC_TEXT_SELECTION_METHOD != null) {
 			try {
 				ENABLE_HTC_TEXT_SELECTION_METHOD.invoke(this, false, 0);
 			} catch (Exception e) {
-				// Ignore
+				// Ignore exception
 			}
 		}
 		selectNecessaryText(start, end);
 		if (C.API_NOUGAT) {
 			post(() -> {
-				if (callEditor(mEditorPerformLongClick)) {
+				if (callEditor(editorPerformLongClick)) {
 					post(() -> {
-						if (!callEditor(mEditorStartSelectionActionMode)) {
+						if (!callEditor(editorStartSelectionActionMode)) {
 							setTextIsSelectable(false);
 						}
 					});
@@ -576,10 +577,10 @@ public class CommentTextView extends TextView {
 				}
 			});
 		} else {
-			if (!callEditor(mEditorStartSelectionActionMode)) {
+			if (!callEditor(editorStartSelectionActionMode)) {
 				post(() -> {
 					selectNecessaryText(start, end);
-					if (!callEditor(mEditorStartSelectionActionMode)) {
+					if (!callEditor(editorStartSelectionActionMode)) {
 						setTextIsSelectable(false);
 					}
 				});
@@ -596,22 +597,22 @@ public class CommentTextView extends TextView {
 	}
 
 	private Uri createUri(String uriString) {
-		if (mChanName != null) {
-			ChanLocator locator = ChanLocator.get(mChanName);
-			return locator.validateClickedUriString(uriString, mBoardName, mThreadNumber);
+		if (chanName != null) {
+			ChanLocator locator = ChanLocator.get(chanName);
+			return locator.validateClickedUriString(uriString, boardName, threadNumber);
 		} else {
 			return Uri.parse(uriString);
 		}
 	}
 
-	private final Runnable mLinkLongClickRunnable = () -> {
-		if (mSpanToClick instanceof LinkSpan) {
-			Uri uri = createUri(((LinkSpan) mSpanToClick).getUriString());
-			mSpanToClick.setClicked(false);
-			mSpanToClick = null;
+	private final Runnable linkLongClickRunnable = () -> {
+		if (spanToClick instanceof LinkSpan) {
+			Uri uri = createUri(((LinkSpan) spanToClick).getUriString());
+			spanToClick.setClicked(false);
+			spanToClick = null;
 			invalidate();
 			if (uri != null) {
-				getLinkListener().onLinkLongClick(CommentTextView.this, mChanName, uri);
+				getLinkListener().onLinkLongClick(CommentTextView.this, chanName, uri);
 			}
 		}
 	};
@@ -633,17 +634,17 @@ public class CommentTextView extends TextView {
 		iy -= getTotalPaddingTop();
 		ix += getScrollX();
 		iy += getScrollY();
-		mLastX = x;
-		mLastY = y;
-		mLastXYSetted = System.currentTimeMillis();
-		if (action != MotionEvent.ACTION_DOWN && mSpanToClick != null) {
-			boolean insideTouchSlop = Math.abs(x - mStartX) <= mTouchSlop && Math.abs(y - mStartY) <= mTouchSlop;
+		lastX = x;
+		lastY = y;
+		lastXYSet = System.currentTimeMillis();
+		if (action != MotionEvent.ACTION_DOWN && spanToClick != null) {
+			boolean insideTouchSlop = Math.abs(x - startX) <= touchSlop && Math.abs(y - startY) <= touchSlop;
 			if (action == MotionEvent.ACTION_MOVE) {
 				if (!insideTouchSlop) {
-					removeCallbacks(mLinkLongClickRunnable);
+					removeCallbacks(linkLongClickRunnable);
 				}
 			} else if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
-				removeCallbacks(mLinkLongClickRunnable);
+				removeCallbacks(linkLongClickRunnable);
 				if (action == MotionEvent.ACTION_UP) {
 					boolean accept = insideTouchSlop;
 					if (!accept) {
@@ -654,7 +655,7 @@ public class CommentTextView extends TextView {
 							ArrayList<SpanHolder<Object>> spans = findSpansToClick(layout, spanned,
 									Object.class, ix, iy);
 							for (SpanHolder<Object> holder : spans) {
-								if (holder.span == mSpanToClick) {
+								if (holder.span == spanToClick) {
 									accept = true;
 									break;
 								}
@@ -662,20 +663,20 @@ public class CommentTextView extends TextView {
 						}
 					}
 					if (accept) {
-						if (mSpanToClick instanceof LinkSpan) {
-							Uri uri = createUri(((LinkSpan) mSpanToClick).getUriString());
+						if (spanToClick instanceof LinkSpan) {
+							Uri uri = createUri(((LinkSpan) spanToClick).getUriString());
 							if (uri != null) {
-								getLinkListener().onLinkClick(this, mChanName, uri, false);
+								getLinkListener().onLinkClick(this, chanName, uri, false);
 							}
-						} else if (mSpanToClick instanceof SpoilerSpan) {
-							SpoilerSpan spoilerSpan = ((SpoilerSpan) mSpanToClick);
+						} else if (spanToClick instanceof SpoilerSpan) {
+							SpoilerSpan spoilerSpan = ((SpoilerSpan) spanToClick);
 							spoilerSpan.setVisible(!spoilerSpan.isVisible());
-							post(mSyncRunnable);
+							post(syncRunnable);
 						}
 					}
 				}
-				mSpanToClick.setClicked(false);
-				mSpanToClick = null;
+				spanToClick.setClicked(false);
+				spanToClick = null;
 				invalidate();
 			}
 			return true;
@@ -684,14 +685,14 @@ public class CommentTextView extends TextView {
 			Layout layout = getLayout();
 			if (layout != null) {
 				Spanned spanned = (Spanned) getText();
-				if (mSpanToClick != null) {
-					mSpanToClick.setClicked(false);
-					mSpanToClick = null;
+				if (spanToClick != null) {
+					spanToClick.setClicked(false);
+					spanToClick = null;
 					invalidate();
 				}
 				// 1st priority: show spoiler
 				ArrayList<SpanHolder<SpoilerSpan>> spoilerSpans = null;
-				if (mSpoilersEnabled) {
+				if (spoilersEnabled) {
 					spoilerSpans = findSpansToClick(layout, spanned, SpoilerSpan.class, ix, iy);
 					for (SpanHolder<SpoilerSpan> spanHolder : spoilerSpans) {
 						if (!spanHolder.span.isVisible()) {
@@ -707,11 +708,11 @@ public class CommentTextView extends TextView {
 					SpanHolder<LinkSpan> spanHolder = linkSpans.get(0);
 					setSpanToClick(spanHolder);
 					invalidate();
-					postDelayed(mLinkLongClickRunnable, ViewConfiguration.getLongPressTimeout());
+					postDelayed(linkLongClickRunnable, ViewConfiguration.getLongPressTimeout());
 					return true;
 				}
 				// 3rd priority: hide spoiler
-				if (mSpoilersEnabled) {
+				if (spoilersEnabled) {
 					for (SpanHolder<SpoilerSpan> spanHolder : spoilerSpans) {
 						if (spanHolder.span.isVisible()) {
 							setSpanToClick(spanHolder);
@@ -726,10 +727,10 @@ public class CommentTextView extends TextView {
 	}
 
 	private <T extends ClickableSpan> void setSpanToClick(SpanHolder<T> spanHolder) {
-		mSpanToClick = spanHolder.span;
-		mSpanToClick.setClicked(true);
-		mStartX = spanHolder.startX;
-		mStartY = spanHolder.startY;
+		spanToClick = spanHolder.span;
+		spanToClick.setClicked(true);
+		startX = spanHolder.startX;
+		startY = spanHolder.startY;
 	}
 
 	private static class SpanHolder<T> {
@@ -746,7 +747,7 @@ public class CommentTextView extends TextView {
 	private <T> ArrayList<SpanHolder<T>> findSpansToClick(Layout layout, Spanned spanned, Class<T> type, int x, int y) {
 		ArrayList<SpanHolder<T>> result = new ArrayList<>();
 		// Find spans around touch point for better click treatment
-		for (int[] deltaAttempt : mDeltaAttempts) {
+		for (int[] deltaAttempt : deltaAttempts) {
 			int startX = x + deltaAttempt[0], startY = y + deltaAttempt[1];
 			T[] spans = findSpansToClickSingle(layout, spanned, type, startX, startY);
 			if (spans != null) {
@@ -810,60 +811,60 @@ public class CommentTextView extends TextView {
 			public CommentTextView getCommentTextView();
 		}
 
-		private final ListView mListView;
-		private int mPostCount;
+		private final ListView listView;
+		private int postCount;
 
-		private String mText;
-		private int mSelectionStart;
-		private int mSelectionEnd;
-		private int mPosition;
+		private String text;
+		private int selectionStart;
+		private int selectionEnd;
+		private int position;
 
 		public ListSelectionKeeper(ListView listView) {
-			mListView = listView;
+			this.listView = listView;
 		}
 
 		public void onBeforeNotifyDataSetChanged() {
-			mListView.removeCallbacks(this);
+			listView.removeCallbacks(this);
 			int position = -1;
-			for (int i = 0, count = mListView.getChildCount(); i < count; i++) {
-				View view = mListView.getChildAt(i);
+			for (int i = 0, count = listView.getChildCount(); i < count; i++) {
+				View view = listView.getChildAt(i);
 				Object tag = view.getTag();
 				if (tag instanceof Holder) {
 					Holder holder = (Holder) tag;
 					CommentTextView textView = holder.getCommentTextView();
 					if (textView.isSelectionEnabled()) {
-						position = mListView.getPositionForView(view);
-						mText = textView.getText().toString();
-						mSelectionStart = textView.getSelectionStart();
-						mSelectionEnd = textView.getSelectionEnd();
+						position = listView.getPositionForView(view);
+						text = textView.getText().toString();
+						selectionStart = textView.getSelectionStart();
+						selectionEnd = textView.getSelectionEnd();
 						break;
 					}
 				}
 			}
-			mPosition = position;
+			this.position = position;
 		}
 
 		public void onAfterNotifyDataSetChanged() {
-			mPostCount = 2;
-			mListView.removeCallbacks(this);
-			mListView.post(this);
+			postCount = 2;
+			listView.removeCallbacks(this);
+			listView.post(this);
 		}
 
 		public void run() {
-			if (mPostCount-- > 0) {
-				mListView.post(this);
+			if (postCount-- > 0) {
+				listView.post(this);
 				return;
 			}
-			if (mPosition >= 0) {
-				int index = mPosition - mListView.getFirstVisiblePosition();
-				if (index >= 0 && index < mListView.getChildCount()) {
-					Holder holder = (Holder) mListView.getChildAt(index).getTag();
+			if (position >= 0) {
+				int index = position - listView.getFirstVisiblePosition();
+				if (index >= 0 && index < listView.getChildCount()) {
+					Holder holder = (Holder) listView.getChildAt(index).getTag();
 					if (holder != null) {
 						CommentTextView textView = holder.getCommentTextView();
 						String text = textView.getText().toString();
-						if (text.equals(mText)) {
-							textView.startSelection(mSelectionStart, mSelectionEnd);
-							mPosition = -1;
+						if (text.equals(this.text)) {
+							textView.startSelection(selectionStart, selectionEnd);
+							position = -1;
 						}
 					}
 				}

@@ -81,14 +81,14 @@ public class YouTubeTitlesReader {
 		}
 	}
 
-	private final HashMap<String, String> mCachedYouTubeTitles = new HashMap<>();
+	private final HashMap<String, String> cachedYouTubeTitles = new HashMap<>();
 
 	public final HashMap<String, String> readYouTubeTitles(ArrayList<String> embeddedCodes, HttpHolder holder)
 			throws HttpException, InvalidResponseException {
 		HashMap<String, String> result = new HashMap<>();
 		for (int i = embeddedCodes.size() - 1; i >= 0; i--) {
 			String id = embeddedCodes.get(i);
-			String title = mCachedYouTubeTitles.get(embeddedCodes.get(i));
+			String title = cachedYouTubeTitles.get(embeddedCodes.get(i));
 			if (title != null) {
 				result.put(id, title);
 				embeddedCodes.remove(i);
@@ -100,7 +100,7 @@ public class YouTubeTitlesReader {
 		}
 		if (result.size() > 0) {
 			for (String id : result.keySet()) {
-				mCachedYouTubeTitles.put(id, result.get(id));
+				cachedYouTubeTitles.put(id, result.get(id));
 			}
 			return result;
 		}
@@ -291,7 +291,7 @@ public class YouTubeTitlesReader {
 			try {
 				readYouTubeTitlesAndApplyChecked(posts, holder);
 			} catch (HttpException | InvalidResponseException e) {
-				// Ignore
+				// Ignore exception
 			}
 		}
 	}

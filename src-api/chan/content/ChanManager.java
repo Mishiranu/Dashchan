@@ -77,16 +77,16 @@ public class ChanManager {
 	private static final String META_LIB_EXTENSION_NAME = "lib.extension.name";
 	private static final String META_LIB_EXTENSION_SOURCE = "lib.extension.source";
 
-	private LinkedHashSet<String> mAvailableChanNames;
-	private ArrayList<String> mSortedAvailableChanNames;
+	private LinkedHashSet<String> availableChanNames;
+	private ArrayList<String> sortedAvailableChanNames;
 
-	private final ChanHolder mDefaultChanHolder;
-	private final HashMap<String, ChanHolder> mChanHolders = new HashMap<>();
-	private final HashMap<String, ArrayList<String>> mArchiveMap = new HashMap<>();
+	private final ChanHolder defaultChanHolder;
+	private final HashMap<String, ChanHolder> chanHolders = new HashMap<>();
+	private final HashMap<String, ArrayList<String>> archiveMap = new HashMap<>();
 
-	private final LinkedHashMap<String, ExtensionItem> mExtensionItems;
-	private final LinkedHashMap<String, ExtensionItem> mChanItems;
-	private final LinkedHashMap<String, ExtensionItem> mLibItems;
+	private final LinkedHashMap<String, ExtensionItem> extensionItems;
+	private final LinkedHashMap<String, ExtensionItem> chanItems;
+	private final LinkedHashMap<String, ExtensionItem> libItems;
 
 	private static final Pattern VALID_EXTENSION_NAME = Pattern.compile("[a-z][a-z0-9]{3,14}");
 
@@ -201,7 +201,7 @@ public class ChanManager {
 		Collections.addAll(busyExtensionNames, Preferences.SPECIAL_EXTENSION_NAMES);
 		ArrayList<String> busyChanNames = new ArrayList<>(busyExtensionNames);
 		busyChanNames.add(EXTENSION_NAME_LIB_WEBM);
-		mDefaultChanHolder = new ChanHolder(new ChanConfiguration(false), new ChanPerformer(false),
+		defaultChanHolder = new ChanHolder(new ChanConfiguration(false), new ChanPerformer(false),
 				new ChanLocator(false), null, null);
 		PackageManager packageManager = MainApplication.getInstance().getPackageManager();
 		List<PackageInfo> packages = packageManager.getInstalledPackages(PackageManager.GET_CONFIGURATIONS
@@ -306,22 +306,22 @@ public class ChanManager {
 			}
 		}
 
-		mExtensionItems = mapExtensionsList(extensionItems);
-		mChanItems = mapExtensionsList(chanItems);
-		mLibItems = mapExtensionsList(libItems);
+		this.extensionItems = mapExtensionsList(extensionItems);
+		this.chanItems = mapExtensionsList(chanItems);
+		this.libItems = mapExtensionsList(libItems);
 		ArrayList<String> loadedChanNames = new ArrayList<>();
-		if (!mChanItems.isEmpty()) {
-			for (ExtensionItem chanItem : mChanItems.values()) {
+		if (!this.chanItems.isEmpty()) {
+			for (ExtensionItem chanItem : this.chanItems.values()) {
 				if (chanItem.trustState == ExtensionItem.TRUST_STATE_TRUSTED) {
 					ChanHolder holder = loadChan(chanItem, MainApplication.getInstance().getPackageManager());
 					if (holder != null) {
-						mChanHolders.put(chanItem.extensionName, holder);
+						chanHolders.put(chanItem.extensionName, holder);
 						loadedChanNames.add(chanItem.extensionName);
 					}
 				}
 			}
 		}
-		mAvailableChanNames = new LinkedHashSet<>(loadedChanNames);
+		availableChanNames = new LinkedHashSet<>(loadedChanNames);
 		invalidateChansOrder();
 
 		IntentFilter filter = new IntentFilter(Intent.ACTION_PACKAGE_ADDED);
@@ -349,8 +349,8 @@ public class ChanManager {
 					for (FeatureInfo featureInfo : features) {
 						if (FEATURE_CHAN_EXTENSION.equals(featureInfo.name) ||
 								FEATURE_LIB_EXTENSION.equals(featureInfo.name)) {
-							mNewExtensionsInstalled = true;
-							for (Runnable runnable : mInstallationObservable) {
+							newExtensionsInstalled = true;
+							for (Runnable runnable : installationObservable) {
 								runnable.run();
 							}
 							break;
@@ -365,15 +365,15 @@ public class ChanManager {
 	private void invalidateChansOrder() {
 		ArrayList<String> orderedChanNames = Preferences.getChansOrder();
 		if (orderedChanNames != null) {
-			Collection<String> oldAvailableChanNames = mAvailableChanNames;
-			mAvailableChanNames = new LinkedHashSet<>();
+			Collection<String> oldAvailableChanNames = availableChanNames;
+			availableChanNames = new LinkedHashSet<>();
 			for (String chanName : orderedChanNames) {
 				if (oldAvailableChanNames.contains(chanName)) {
-					mAvailableChanNames.add(chanName);
+					availableChanNames.add(chanName);
 				}
 			}
 			for (String chanName : oldAvailableChanNames) {
-				mAvailableChanNames.add(chanName);
+				availableChanNames.add(chanName);
 			}
 		}
 	}
@@ -420,8 +420,8 @@ public class ChanManager {
 	}
 
 	public void loadLibraries() {
-		if (!mLibItems.isEmpty()) {
-			for (ExtensionItem libItem : mLibItems.values()) {
+		if (!libItems.isEmpty()) {
+			for (ExtensionItem libItem : libItems.values()) {
 				if (libItem.trustState == ExtensionItem.TRUST_STATE_TRUSTED) {
 					loadLibrary(libItem);
 				}
@@ -430,19 +430,19 @@ public class ChanManager {
 	}
 
 	public void changeUntrustedExtensionState(String extensionName, boolean trusted) {
-		ExtensionItem extensionItem = mExtensionItems.get(extensionName);
+		ExtensionItem extensionItem = extensionItems.get(extensionName);
 		if (extensionItem == null || extensionItem.trustState != ExtensionItem.TRUST_STATE_UNTRUSTED) {
 			return;
 		}
 		if (trusted) {
 			extensionItem.trustState = ExtensionItem.TRUST_STATE_TRUSTED;
-			if (mLibItems.containsKey(extensionName)) {
+			if (libItems.containsKey(extensionName)) {
 				loadLibrary(extensionItem);
 			} else {
 				ChanHolder holder = loadChan(extensionItem, MainApplication.getInstance().getPackageManager());
 				if (holder != null) {
-					mChanHolders.put(extensionItem.extensionName, holder);
-					mAvailableChanNames.add(extensionItem.extensionName);
+					chanHolders.put(extensionItem.extensionName, holder);
+					availableChanNames.add(extensionItem.extensionName);
 					invalidateChansOrder();
 				}
 			}
@@ -453,17 +453,17 @@ public class ChanManager {
 	}
 
 	private void updateArchiveMap() {
-		mArchiveMap.clear();
-		for (ChanHolder chanHolder : mChanHolders.values()) {
+		archiveMap.clear();
+		for (ChanHolder chanHolder : chanHolders.values()) {
 			ChanConfiguration.Archivation archivation = chanHolder.configuration.obtainArchivationConfiguration();
 			if (archivation != null) {
 				for (String host : archivation.hosts) {
 					String chanName = getChanNameByHost(host);
 					if (chanName != null) {
-						ArrayList<String> archiveChanNames = mArchiveMap.get(chanName);
+						ArrayList<String> archiveChanNames = archiveMap.get(chanName);
 						if (archiveChanNames == null) {
 							archiveChanNames = new ArrayList<>();
-							mArchiveMap.put(chanName, archiveChanNames);
+							archiveMap.put(chanName, archiveChanNames);
 						}
 						archiveChanNames.add(chanHolder.configuration.getChanName());
 					}
@@ -488,18 +488,18 @@ public class ChanManager {
 			}
 		}
 
-		private Holder mHolder;
+		private Holder holder;
 
 		@SuppressWarnings("unchecked")
 		public <T extends Linked> T initialize(ClassLoader classLoader, String className,
 				String chanName, Resources resources) throws LinkageError, Exception {
 			synchronized (this) {
-				mHolder = new Holder(chanName, resources);
+				holder = new Holder(chanName, resources);
 				T result;
 				try {
 					result = (T) Class.forName(className, false, classLoader).newInstance();
 				} finally {
-					mHolder = null;
+					holder = null;
 				}
 				result.init();
 				return result;
@@ -507,9 +507,9 @@ public class ChanManager {
 		}
 
 		public Holder consume() {
-			if (mHolder != null) {
-				Holder holder = mHolder;
-				mHolder = null;
+			if (holder != null) {
+				Holder holder = this.holder;
+				this.holder = null;
 				return holder;
 			} else {
 				throw new IllegalStateException("You can't initiate instance of this object by yourself.");
@@ -518,10 +518,10 @@ public class ChanManager {
 	}
 
 	private ChanHolder getChanHolder(String chanName, boolean defaultIfNotFound) {
-		ChanHolder chanHolder = mChanHolders.get(chanName);
+		ChanHolder chanHolder = chanHolders.get(chanName);
 		if (chanHolder == null) {
 			if (defaultIfNotFound) {
-				return mDefaultChanHolder;
+				return defaultChanHolder;
 			} else {
 				throw new IllegalArgumentException("Unsupported operation for " + chanName);
 			}
@@ -550,20 +550,20 @@ public class ChanManager {
 	}
 
 	public Collection<ExtensionItem> getExtensionItems() {
-		return mExtensionItems.values();
+		return extensionItems.values();
 	}
 
 	public Collection<ExtensionItem> getChanItems() {
-		return mChanItems.values();
+		return chanItems.values();
 	}
 
 	public Collection<ExtensionItem> getLibItems() {
-		return mLibItems.values();
+		return libItems.values();
 	}
 
 	public Collection<ExtensionItem> getUntrustedExtensionItems() {
 		LinkedHashSet<ExtensionItem> extensionItems = new LinkedHashSet<>();
-		for (ExtensionItem extensionItem : mExtensionItems.values()) {
+		for (ExtensionItem extensionItem : this.extensionItems.values()) {
 			if (extensionItem.trustState == ExtensionItem.TRUST_STATE_UNTRUSTED) {
 				extensionItems.add(extensionItem);
 			}
@@ -572,61 +572,61 @@ public class ChanManager {
 	}
 
 	public ExtensionItem getLibExtension(String libName) {
-		return mLibItems.get(libName);
+		return libItems.get(libName);
 	}
 
 	public HashMap<String, ArrayList<String>> getArhiveMap() {
-		return mArchiveMap;
+		return archiveMap;
 	}
 
 	public boolean canBeArchived(String chanName) {
-		return mArchiveMap.containsKey(chanName) || !ChanConfiguration.get(chanName)
+		return archiveMap.containsKey(chanName) || !ChanConfiguration.get(chanName)
 				.getOption(ChanConfiguration.OPTION_HIDDEN_DISALLOW_ARCHIVATION);
 	}
 
 	public Collection<String> getAllChanNames() {
-		return mChanItems.keySet();
+		return chanItems.keySet();
 	}
 
 	public Collection<String> getAvailableChanNames() {
-		return mAvailableChanNames;
+		return availableChanNames;
 	}
 
 	public int compareChanNames(String lhs, String rhs) {
-		if (mSortedAvailableChanNames == null) {
-			if (mAvailableChanNames != null) {
-				mSortedAvailableChanNames = new ArrayList<>(mAvailableChanNames);
+		if (sortedAvailableChanNames == null) {
+			if (availableChanNames != null) {
+				sortedAvailableChanNames = new ArrayList<>(availableChanNames);
 			} else {
 				return 0;
 			}
 		}
-		return mSortedAvailableChanNames.indexOf(lhs) - mSortedAvailableChanNames.indexOf(rhs);
+		return sortedAvailableChanNames.indexOf(lhs) - sortedAvailableChanNames.indexOf(rhs);
 	}
 
 	public String getDefaultChanName() {
-		return mAvailableChanNames.size() > 0 ? mAvailableChanNames.iterator().next() : null;
+		return availableChanNames.size() > 0 ? availableChanNames.iterator().next() : null;
 	}
 
 	public void setChansOrder(ArrayList<String> chanNames) {
 		for (int i = chanNames.size() - 1; i >= 0; i--) {
 			String chanName = chanNames.get(i);
-			if (!mAvailableChanNames.contains(chanName)) {
+			if (!availableChanNames.contains(chanName)) {
 				chanNames.remove(i);
 			}
 		}
-		for (String chanName : mAvailableChanNames) {
+		for (String chanName : availableChanNames) {
 			if (!chanNames.contains(chanName)) {
 				chanNames.add(chanName);
 			}
 		}
-		mAvailableChanNames = new LinkedHashSet<>(chanNames);
-		mSortedAvailableChanNames = null;
+		availableChanNames = new LinkedHashSet<>(chanNames);
+		sortedAvailableChanNames = null;
 		Preferences.setChansOrder(chanNames);
 	}
 
 	public String getChanNameByHost(String host) {
 		if (host != null) {
-			for (HashMap.Entry<String, ChanHolder> entry : mChanHolders.entrySet()) {
+			for (HashMap.Entry<String, ChanHolder> entry : chanHolders.entrySet()) {
 				if (entry.getValue().locator.isChanHost(host)) {
 					return entry.getKey();
 				}
@@ -638,7 +638,7 @@ public class ChanManager {
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	public Drawable getIcon(String chanName, int tint) {
 		if (C.API_LOLLIPOP) {
-			Drawable drawable = mChanHolders.get(chanName).icon;
+			Drawable drawable = chanHolders.get(chanName).icon;
 			if (drawable == null) {
 				drawable = MainApplication.getInstance().getDrawable(R.drawable.ic_extension_white);
 			}
@@ -651,13 +651,13 @@ public class ChanManager {
 
 	@SuppressWarnings("deprecation")
 	public void updateConfiguration(Configuration newConfig, DisplayMetrics metrics) {
-		for (ChanHolder chanHolder : mChanHolders.values()) {
+		for (ChanHolder chanHolder : chanHolders.values()) {
 			chanHolder.configuration.getResources().updateConfiguration(newConfig, metrics);
 		}
 	}
 
 	public boolean isExtensionPackage(String packageName) {
-		for (ExtensionItem extensionItem : mExtensionItems.values()) {
+		for (ExtensionItem extensionItem : extensionItems.values()) {
 			if (packageName.equals(extensionItem.packageInfo.packageName)) {
 				return true;
 			}
@@ -673,17 +673,17 @@ public class ChanManager {
 				"ChanLocator or ChanMarkup.");
 	}
 
-	private boolean mNewExtensionsInstalled = false;
+	private boolean newExtensionsInstalled = false;
 
 	public boolean checkNewExtensionsInstalled() {
-		boolean result = mNewExtensionsInstalled;
-		mNewExtensionsInstalled = false;
+		boolean result = newExtensionsInstalled;
+		newExtensionsInstalled = false;
 		return result;
 	}
 
-	private final WeakObservable<Runnable> mInstallationObservable = new WeakObservable<>();
+	private final WeakObservable<Runnable> installationObservable = new WeakObservable<>();
 
 	public WeakObservable<Runnable> getInstallationObservable() {
-		return mInstallationObservable;
+		return installationObservable;
 	}
 }

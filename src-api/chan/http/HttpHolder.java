@@ -28,97 +28,99 @@ import android.net.Uri;
 
 import chan.annotation.Public;
 
+import com.mishiranu.dashchan.util.IOUtils;
+
 @Public
 public final class HttpHolder {
-	Uri mRequestedUri;
-	Proxy mProxy;
-	String mChanName;
-	boolean mVerifyCertificate;
-	int mDelay;
+	Uri requestedUri;
+	Proxy proxy;
+	String chanName;
+	boolean verifyCertificate;
+	int delay;
 
-	private int mAttempt;
-	boolean mForceGet = false;
+	private int attempt;
+	boolean forceGet = false;
 
 	@Public
 	public HttpHolder() {}
 
 	void initRequest(HttpRequest request, Proxy proxy, String chanName, boolean verifyCertificate, int delay,
 			int maxAttempts) {
-		mRequestedUri = request.mUri;
-		mProxy = proxy;
-		mChanName = chanName;
-		mVerifyCertificate = verifyCertificate;
-		mDelay = delay;
-		mAttempt = maxAttempts;
-		mForceGet = false;
+		requestedUri = request.uri;
+		this.proxy = proxy;
+		this.chanName = chanName;
+		this.verifyCertificate = verifyCertificate;
+		this.delay = delay;
+		attempt = maxAttempts;
+		forceGet = false;
 	}
 
 	boolean nextAttempt() {
-		return mAttempt-- > 0;
+		return attempt-- > 0;
 	}
 
-	Uri mRedirectedUri;
-	HttpValidator mValidator;
-	private HttpResponse mResponse;
+	Uri redirectedUri;
+	HttpValidator validator;
+	private HttpResponse response;
 
-	private volatile Thread mRequestThread;
-	private volatile HttpURLConnection mConnection;
-	private volatile HttpURLConnection mDeadConnection;
-	private volatile boolean mDisconnectRequested = false;
-	private volatile boolean mInterrupted = false;
+	private volatile Thread requestThread;
+	private volatile HttpURLConnection connection;
+	private volatile HttpURLConnection deadConnection;
+	private volatile boolean disconnectRequested = false;
+	private volatile boolean interrupted = false;
 
-	private boolean mHasUnreadBody = false;
+	private boolean hasUnreadBody = false;
 
-	InputListener mInputListener;
-	OutputStream mOutputStream;
+	InputListener inputListener;
+	OutputStream outputStream;
 
 	public interface InputListener {
 		public void onInputProgressChange(long progress, long progressMax);
 	}
 
 	public void interrupt() {
-		mInterrupted = true;
+		interrupted = true;
 		disconnect();
 	}
 
 	public void cleanup() {
-		if (mRequestThread == Thread.currentThread() && mHasUnreadBody) {
+		if (requestThread == Thread.currentThread() && hasUnreadBody) {
 			disconnectAndClear();
-			mHasUnreadBody = false;
-			mResponse = null;
+			hasUnreadBody = false;
+			response = null;
 		}
 	}
 
 	@Public
 	public void disconnect() {
-		mDisconnectRequested = true;
-		if (mRequestThread == Thread.currentThread()) {
+		disconnectRequested = true;
+		if (requestThread == Thread.currentThread()) {
 			disconnectAndClear();
 		}
-		mResponse = null;
+		response = null;
 	}
 
 	void setConnection(HttpURLConnection connection, InputListener inputListener, OutputStream outputStream)
 			throws HttpClient.DisconnectedIOException {
-		mDisconnectRequested = false;
-		mRequestThread = Thread.currentThread();
-		mConnection = connection;
-		mInputListener = inputListener;
-		mOutputStream = outputStream;
-		mRedirectedUri = null;
-		mValidator = null;
-		mResponse = null;
-		if (mInterrupted) {
-			mConnection = null;
-			mInputListener = null;
-			mOutputStream = null;
+		disconnectRequested = false;
+		requestThread = Thread.currentThread();
+		this.connection = connection;
+		this.inputListener = inputListener;
+		this.outputStream = outputStream;
+		redirectedUri = null;
+		validator = null;
+		response = null;
+		if (interrupted) {
+			this.connection = null;
+			this.inputListener = null;
+			this.outputStream = null;
 			throw new HttpClient.DisconnectedIOException();
 		}
-		HttpClient.getInstance().onConnect(mChanName, connection, mDelay);
+		HttpClient.getInstance().onConnect(chanName, connection, delay);
 	}
 
 	HttpURLConnection getConnection() throws HttpClient.DisconnectedIOException {
-		HttpURLConnection connection = mConnection;
+		HttpURLConnection connection = this.connection;
 		if (connection == null) {
 			throw new HttpClient.DisconnectedIOException();
 		}
@@ -130,43 +132,37 @@ public final class HttpHolder {
 	}
 
 	void checkDisconnected(Closeable closeable) throws HttpClient.DisconnectedIOException {
-		if (mDisconnectRequested) {
-			if (closeable != null) {
-				try {
-					closeable.close();
-				} catch (IOException e) {
-					// Ignore
-				}
-			}
+		if (disconnectRequested) {
+			IOUtils.close(closeable);
 			throw new HttpClient.DisconnectedIOException();
 		}
 	}
 
 	void checkDisconnectedAndSetHasUnreadBody(boolean hasUnreadBody) throws HttpClient.DisconnectedIOException {
 		checkDisconnected();
-		mHasUnreadBody = hasUnreadBody;
+		this.hasUnreadBody = hasUnreadBody;
 	}
 
 	void disconnectAndClear() {
-		HttpURLConnection connection = mConnection;
-		mConnection = null;
-		mInputListener = null;
-		mOutputStream = null;
+		HttpURLConnection connection = this.connection;
+		this.connection = null;
+		inputListener = null;
+		outputStream = null;
 		if (connection != null) {
 			connection.disconnect();
-			mDeadConnection = connection;
+			deadConnection = connection;
 			HttpClient.getInstance().onDisconnect(connection);
 		}
 	}
 
 	@Public
 	public HttpResponse read() throws HttpException {
-		HttpResponse response = mResponse;
+		HttpResponse response = this.response;
 		if (response != null) {
 			return response;
 		}
 		response = HttpClient.getInstance().read(this);
-		mResponse = response;
+		this.response = response;
 		return response;
 	}
 
@@ -176,9 +172,9 @@ public final class HttpHolder {
 	}
 
 	private HttpURLConnection getConnectionForHeaders() {
-		HttpURLConnection connection = mConnection;
+		HttpURLConnection connection = this.connection;
 		if (connection == null) {
-			connection = mDeadConnection;
+			connection = deadConnection;
 		}
 		return connection;
 	}
@@ -211,7 +207,7 @@ public final class HttpHolder {
 
 	@Public
 	public Uri getRedirectedUri() {
-		return mRedirectedUri;
+		return redirectedUri;
 	}
 
 	@Public
@@ -246,6 +242,6 @@ public final class HttpHolder {
 
 	@Public
 	public HttpValidator getValidator() {
-		return mValidator;
+		return validator;
 	}
 }

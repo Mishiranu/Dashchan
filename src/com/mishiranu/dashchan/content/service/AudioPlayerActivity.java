@@ -45,64 +45,64 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 
 public class AudioPlayerActivity extends StateActivity implements Runnable, SeekBar.OnSeekBarChangeListener,
 		DialogInterface.OnCancelListener, DialogInterface.OnClickListener, View.OnClickListener, ServiceConnection {
-	private Context mContext;
-	private TextView mTextView;
-	private SeekBar mSeekBar;
-	private ImageButton mButton;
-	private AlertDialog mAlertDialog;
+	private Context context;
+	private TextView textView;
+	private SeekBar seekBar;
+	private ImageButton button;
+	private AlertDialog alertDialog;
 
-	private boolean mTracking = false;
+	private boolean tracking = false;
 
-	private AudioPlayerService.Binder mAudioPlayerBinder;
+	private AudioPlayerService.Binder audioPlayerBinder;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mContext = new ContextThemeWrapper(this, Preferences.getThemeResource());
+		context = new ContextThemeWrapper(this, Preferences.getThemeResource());
 		setVolumeControlStream(AudioManager.STREAM_MUSIC);
 		float density = ResourceUtils.obtainDensity(this);
-		LinearLayout linearLayout = new LinearLayout(mContext);
+		LinearLayout linearLayout = new LinearLayout(context);
 		linearLayout.setOrientation(LinearLayout.VERTICAL);
 		int padding = getResources().getDimensionPixelSize(R.dimen.dialog_padding_view);
 		linearLayout.setPadding(padding, padding, padding, C.API_LOLLIPOP ? (int) (8f * density) : padding);
-		mTextView = new TextView(mContext, null, android.R.attr.textAppearanceListItem);
-		linearLayout.addView(mTextView, LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-		mTextView.setPadding(0, 0, 0, 0);
-		mTextView.setEllipsize(TextUtils.TruncateAt.END);
-		mTextView.setSingleLine(true);
-		LinearLayout horizontal = new LinearLayout(mContext);
+		textView = new TextView(context, null, android.R.attr.textAppearanceListItem);
+		linearLayout.addView(textView, LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+		textView.setPadding(0, 0, 0, 0);
+		textView.setEllipsize(TextUtils.TruncateAt.END);
+		textView.setSingleLine(true);
+		LinearLayout horizontal = new LinearLayout(context);
 		horizontal.setOrientation(LinearLayout.HORIZONTAL);
 		horizontal.setGravity(Gravity.CENTER_VERTICAL);
 		horizontal.setPadding(0, (int) (16f * density), 0, 0);
 		linearLayout.addView(horizontal, LinearLayout.LayoutParams.MATCH_PARENT,
 				LinearLayout.LayoutParams.WRAP_CONTENT);
-		mSeekBar = new SeekBar(mContext);
-		horizontal.addView(mSeekBar, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
-		mSeekBar.setPadding((int) (8f * density), 0, (int) (16f * density), 0);
-		mSeekBar.setOnSeekBarChangeListener(this);
-		mButton = new ImageButton(mContext);
-		horizontal.addView(mButton, (int) (48f * density), (int) (48f * density));
-		mButton.setBackgroundResource(ResourceUtils.getResourceId(mContext,
+		seekBar = new SeekBar(context);
+		horizontal.addView(seekBar, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+		seekBar.setPadding((int) (8f * density), 0, (int) (16f * density), 0);
+		seekBar.setOnSeekBarChangeListener(this);
+		button = new ImageButton(context);
+		horizontal.addView(button, (int) (48f * density), (int) (48f * density));
+		button.setBackgroundResource(ResourceUtils.getResourceId(context,
 				android.R.attr.listChoiceBackgroundIndicator, 0));
 		setPlayState(false);
-		mButton.setOnClickListener(this);
-		mAlertDialog = new AlertDialog.Builder(mContext).setView(linearLayout).setOnCancelListener(this)
+		button.setOnClickListener(this);
+		alertDialog = new AlertDialog.Builder(context).setView(linearLayout).setOnCancelListener(this)
 				.setPositiveButton(R.string.action_stop, this).show();
 		IntentFilter intentFilter = new IntentFilter();
 		intentFilter.addAction(AudioPlayerService.ACTION_TOGGLE);
 		intentFilter.addAction(AudioPlayerService.ACTION_CANCEL);
-		LocalBroadcastManager.getInstance(this).registerReceiver(mAudioPlayerReceiver, intentFilter);
+		LocalBroadcastManager.getInstance(this).registerReceiver(audioPlayerReceiver, intentFilter);
 		bindService(new Intent(this, AudioPlayerService.class), this, 0);
 	}
 
-	private final BroadcastReceiver mAudioPlayerReceiver = new BroadcastReceiver() {
+	private final BroadcastReceiver audioPlayerReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			String action = intent.getAction();
 			if (AudioPlayerService.ACTION_TOGGLE.equals(action)) {
-				setPlayState(mAudioPlayerBinder.isPlaying());
+				setPlayState(audioPlayerBinder.isPlaying());
 			} else if (AudioPlayerService.ACTION_CANCEL.equals(action)) {
-				mSeekBar.removeCallbacks(AudioPlayerActivity.this);
+				seekBar.removeCallbacks(AudioPlayerActivity.this);
 				finish();
 			}
 		}
@@ -110,93 +110,93 @@ public class AudioPlayerActivity extends StateActivity implements Runnable, Seek
 
 	@Override
 	public void onServiceConnected(ComponentName name, IBinder service) {
-		mAudioPlayerBinder = (AudioPlayerService.Binder) service;
-		mSeekBar.removeCallbacks(this);
-		mTextView.setText(mAudioPlayerBinder.getFileName());
-		mSeekBar.setMax(mAudioPlayerBinder.getDuration());
-		setPlayState(mAudioPlayerBinder.isPlaying());
+		audioPlayerBinder = (AudioPlayerService.Binder) service;
+		seekBar.removeCallbacks(this);
+		textView.setText(audioPlayerBinder.getFileName());
+		seekBar.setMax(audioPlayerBinder.getDuration());
+		setPlayState(audioPlayerBinder.isPlaying());
 		run();
 	}
 
 	@Override
 	public void onServiceDisconnected(ComponentName name) {
-		mAudioPlayerBinder = null;
+		audioPlayerBinder = null;
 		finish();
 	}
 
 	@Override
 	public void onClick(View v) {
-		mAudioPlayerBinder.togglePlayback();
+		audioPlayerBinder.togglePlayback();
 	}
 
 	private void setPlayState(boolean playing) {
-		mButton.setImageResource(ResourceUtils.getResourceId(mContext, playing ? R.attr.buttonPause
+		button.setImageResource(ResourceUtils.getResourceId(context, playing ? R.attr.buttonPause
 				: R.attr.buttonPlay, 0));
 	}
 
 	@Override
 	protected void onStart() {
 		super.onStart();
-		mAlertDialog.show();
-		mSeekBar.removeCallbacks(this);
+		alertDialog.show();
+		seekBar.removeCallbacks(this);
 		run();
 	}
 
 	@Override
 	protected void onStop() {
 		super.onStop();
-		mAlertDialog.dismiss();
-		mSeekBar.removeCallbacks(this);
+		alertDialog.dismiss();
+		seekBar.removeCallbacks(this);
 	}
 
 	@Override
 	protected void onFinish() {
 		super.onFinish();
-		LocalBroadcastManager.getInstance(this).unregisterReceiver(mAudioPlayerReceiver);
-		if (mAudioPlayerBinder != null) {
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(audioPlayerReceiver);
+		if (audioPlayerBinder != null) {
 			unbindService(this);
 		}
 	}
 
 	@Override
 	public void run() {
-		if (mAudioPlayerBinder != null) {
-			if (!mTracking) {
-				mSeekBar.setProgress(mAudioPlayerBinder.getPosition());
+		if (audioPlayerBinder != null) {
+			if (!tracking) {
+				seekBar.setProgress(audioPlayerBinder.getPosition());
 			}
-			mSeekBar.postDelayed(this, 500);
+			seekBar.postDelayed(this, 500);
 		}
 	}
 
 	@Override
 	public void onCancel(DialogInterface dialog) {
-		mSeekBar.removeCallbacks(this);
+		seekBar.removeCallbacks(this);
 		finish();
 	}
 
 	@Override
 	public void onClick(DialogInterface dialog, int which) {
-		mSeekBar.removeCallbacks(this);
-		mAudioPlayerBinder.stop();
+		seekBar.removeCallbacks(this);
+		audioPlayerBinder.stop();
 		unbindService(this);
-		mAudioPlayerBinder = null;
+		audioPlayerBinder = null;
 		finish();
 	}
 
 	@Override
 	public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 		if (fromUser) {
-			mAudioPlayerBinder.seekTo(progress);
+			audioPlayerBinder.seekTo(progress);
 		}
 	}
 
 	@Override
 	public void onStartTrackingTouch(SeekBar seekBar) {
-		mTracking = true;
+		tracking = true;
 	}
 
 	@Override
 	public void onStopTrackingTouch(SeekBar seekBar) {
-		mTracking = false;
+		tracking = false;
 	}
 }

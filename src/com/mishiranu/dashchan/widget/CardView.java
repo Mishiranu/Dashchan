@@ -47,7 +47,7 @@ public class CardView extends FrameLayout {
 	private static final Implementation IMPLEMENTATION = C.API_LOLLIPOP
 			? new CardViewLollipop() : new CardViewJellyBean();
 
-	private final boolean mInitialized;
+	private final boolean initialized;
 
 	public CardView(Context context) {
 		this(context, null);
@@ -61,25 +61,25 @@ public class CardView extends FrameLayout {
 		super(context, attrs, defStyleAttr);
 		float density = ResourceUtils.obtainDensity(context);
 		float size = 1f * density + 0.5f;
-		IMPLEMENTATION.initialize(this, context, mBackgroundColor, size);
-		mInitialized = true;
+		IMPLEMENTATION.initialize(this, context, backgroundColor, size);
+		initialized = true;
 	}
 
-	private final int[] mMeasureSpecs = new int[2];
+	private final int[] measureSpecs = new int[2];
 
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-		mMeasureSpecs[0] = widthMeasureSpec;
-		mMeasureSpecs[1] = heightMeasureSpec;
-		IMPLEMENTATION.measure(this, mMeasureSpecs);
-		super.onMeasure(mMeasureSpecs[0], mMeasureSpecs[1]);
+		measureSpecs[0] = widthMeasureSpec;
+		measureSpecs[1] = heightMeasureSpec;
+		IMPLEMENTATION.measure(this, measureSpecs);
+		super.onMeasure(measureSpecs[0], measureSpecs[1]);
 	}
 
-	private int mBackgroundColor;
+	private int backgroundColor;
 
 	private void setBackgroundColorInternal(int color) {
-		mBackgroundColor = color;
-		if (mInitialized) {
+		backgroundColor = color;
+		if (initialized) {
 			IMPLEMENTATION.setBackgroundColor(this, color);
 		}
 	}
@@ -102,7 +102,7 @@ public class CardView extends FrameLayout {
 	}
 
 	public int getBackgroundColor() {
-		return mBackgroundColor;
+		return backgroundColor;
 	}
 
 	private final static double COS_45 = Math.cos(Math.toRadians(45));
@@ -200,48 +200,48 @@ public class CardView extends FrameLayout {
 	}
 
 	private static class RoundRectDrawable extends Drawable {
-		private float mRadius;
-		private final Paint mPaint;
-		private final RectF mBoundsF;
-		private final Rect mBoundsI;
-		private float mPadding;
+		private float radius;
+		private final Paint paint;
+		private final RectF boundsF;
+		private final Rect boundsI;
+		private float padding;
 
 		public RoundRectDrawable(int backgroundColor, float radius) {
-			mRadius = radius;
-			mPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG);
-			mPaint.setColor(backgroundColor);
-			mBoundsF = new RectF();
-			mBoundsI = new Rect();
+			this.radius = radius;
+			paint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG);
+			paint.setColor(backgroundColor);
+			boundsF = new RectF();
+			boundsI = new Rect();
 		}
 
 		public void setPadding(float padding) {
-			if (padding == mPadding) {
+			if (padding == this.padding) {
 				return;
 			}
-			mPadding = padding;
+			this.padding = padding;
 			updateBounds(null);
 			invalidateSelf();
 		}
 
 		public float getPadding() {
-			return mPadding;
+			return padding;
 		}
 
 		@Override
 		public void draw(Canvas canvas) {
-			canvas.drawRoundRect(mBoundsF, mRadius, mRadius, mPaint);
+			canvas.drawRoundRect(boundsF, radius, radius, paint);
 		}
 
 		private void updateBounds(Rect bounds) {
 			if (bounds == null) {
 				bounds = getBounds();
 			}
-			mBoundsF.set(bounds.left, bounds.top, bounds.right, bounds.bottom);
-			mBoundsI.set(bounds);
-			float vInset = calculateVerticalPadding(mPadding, mRadius);
-			float hInset = calculateHorizontalPadding(mPadding, mRadius);
-			mBoundsI.inset((int) Math.ceil(hInset), (int) Math.ceil(vInset));
-			mBoundsF.set(mBoundsI);
+			boundsF.set(bounds.left, bounds.top, bounds.right, bounds.bottom);
+			boundsI.set(bounds);
+			float vInset = calculateVerticalPadding(padding, radius);
+			float hInset = calculateHorizontalPadding(padding, radius);
+			boundsI.inset((int) Math.ceil(hInset), (int) Math.ceil(vInset));
+			boundsF.set(boundsI);
 		}
 
 		@Override
@@ -253,14 +253,14 @@ public class CardView extends FrameLayout {
 		@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 		@Override
 		public void getOutline(Outline outline) {
-			outline.setRoundRect(mBoundsI, mRadius);
+			outline.setRoundRect(boundsI, radius);
 		}
 
 		void setRadius(float radius) {
-			if (radius == mRadius) {
+			if (radius == this.radius) {
 				return;
 			}
-			mRadius = radius;
+			this.radius = radius;
 			updateBounds(null);
 			invalidateSelf();
 		}
@@ -277,44 +277,44 @@ public class CardView extends FrameLayout {
 		}
 
 		public float getRadius() {
-			return mRadius;
+			return radius;
 		}
 
 		public void setColor(int color) {
-			mPaint.setColor(color);
+			paint.setColor(color);
 			invalidateSelf();
 		}
 	}
 
 	private static class RoundRectDrawableWithShadow extends Drawable {
-		private final int mInsetShadow;
+		private final int insetShadow;
 
-		private Paint mPaint;
-		private Paint mCornerShadowPaint;
-		private Paint mEdgeShadowPaint;
+		private Paint paint;
+		private Paint cornerShadowPaint;
+		private Paint edgeShadowPaint;
 
-		private final RectF mCardBounds;
-		private float mCornerRadius;
-		private Path mCornerShadowPath;
+		private final RectF cardBounds;
+		private float cornerRadius;
+		private Path cornerShadowPath;
 
-		private float mRawMaxShadowSize;
-		private float mShadowSize;
-		private float mRawShadowSize;
+		private float rawMaxShadowSize;
+		private float shadowSize;
+		private float rawShadowSize;
 
-		private boolean mDirty = true;
-		private boolean mPrintedShadowClipWarning = false;
+		private boolean dirty = true;
+		private boolean printedShadowClipWarning = false;
 
 		public RoundRectDrawableWithShadow(Resources resources, int backgroundColor, float size) {
 			float density = ResourceUtils.obtainDensity(resources);
-			mInsetShadow = (int) (1f * density + 0.5f);
-			mPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG);
-			mPaint.setColor(backgroundColor);
-			mCornerShadowPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG);
-			mCornerShadowPaint.setStyle(Paint.Style.FILL);
-			mCornerRadius = (int) (size + .5f);
-			mCardBounds = new RectF();
-			mEdgeShadowPaint = new Paint(mCornerShadowPaint);
-			mEdgeShadowPaint.setAntiAlias(false);
+			insetShadow = (int) (1f * density + 0.5f);
+			paint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG);
+			paint.setColor(backgroundColor);
+			cornerShadowPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG);
+			cornerShadowPaint.setStyle(Paint.Style.FILL);
+			cornerRadius = (int) (size + .5f);
+			cardBounds = new RectF();
+			edgeShadowPaint = new Paint(cornerShadowPaint);
+			edgeShadowPaint.setAntiAlias(false);
 			setShadowSize(size, size);
 		}
 
@@ -328,15 +328,15 @@ public class CardView extends FrameLayout {
 
 		@Override
 		public void setAlpha(int alpha) {
-			mPaint.setAlpha(alpha);
-			mCornerShadowPaint.setAlpha(alpha);
-			mEdgeShadowPaint.setAlpha(alpha);
+			paint.setAlpha(alpha);
+			cornerShadowPaint.setAlpha(alpha);
+			edgeShadowPaint.setAlpha(alpha);
 		}
 
 		@Override
 		protected void onBoundsChange(Rect bounds) {
 			super.onBoundsChange(bounds);
-			mDirty = true;
+			dirty = true;
 		}
 
 		public void setShadowSize(float shadowSize, float maxShadowSize) {
@@ -344,33 +344,33 @@ public class CardView extends FrameLayout {
 			maxShadowSize = toEven(maxShadowSize);
 			if (shadowSize > maxShadowSize) {
 				shadowSize = maxShadowSize;
-				if (!mPrintedShadowClipWarning) {
-					mPrintedShadowClipWarning = true;
+				if (!printedShadowClipWarning) {
+					printedShadowClipWarning = true;
 				}
 			}
-			if (mRawShadowSize == shadowSize && mRawMaxShadowSize == maxShadowSize) {
+			if (rawShadowSize == shadowSize && rawMaxShadowSize == maxShadowSize) {
 				return;
 			}
-			mRawShadowSize = shadowSize;
-			mRawMaxShadowSize = maxShadowSize;
-			mShadowSize = (int) (shadowSize * SHADOW_MULTIPLIER + mInsetShadow + .5f);
-			mDirty = true;
+			rawShadowSize = shadowSize;
+			rawMaxShadowSize = maxShadowSize;
+			this.shadowSize = (int) (shadowSize * SHADOW_MULTIPLIER + insetShadow + .5f);
+			dirty = true;
 			invalidateSelf();
 		}
 
 		@Override
 		public boolean getPadding(Rect padding) {
-			int vOffset = (int) Math.ceil(calculateVerticalPadding(mRawMaxShadowSize, mCornerRadius));
-			int hOffset = (int) Math.ceil(calculateHorizontalPadding(mRawMaxShadowSize, mCornerRadius));
+			int vOffset = (int) Math.ceil(calculateVerticalPadding(rawMaxShadowSize, cornerRadius));
+			int hOffset = (int) Math.ceil(calculateHorizontalPadding(rawMaxShadowSize, cornerRadius));
 			padding.set(hOffset, vOffset, hOffset, vOffset);
 			return true;
 		}
 
 		@Override
 		public void setColorFilter(ColorFilter cf) {
-			mPaint.setColorFilter(cf);
-			mCornerShadowPaint.setColorFilter(cf);
-			mEdgeShadowPaint.setColorFilter(cf);
+			paint.setColorFilter(cf);
+			cornerShadowPaint.setColorFilter(cf);
+			edgeShadowPaint.setColorFilter(cf);
 		}
 
 		@Override
@@ -380,51 +380,51 @@ public class CardView extends FrameLayout {
 
 		@Override
 		public void draw(Canvas canvas) {
-			if (mDirty) {
+			if (dirty) {
 				buildComponents(getBounds());
-				mDirty = false;
+				dirty = false;
 			}
-			canvas.translate(0, mRawShadowSize / 2);
+			canvas.translate(0, rawShadowSize / 2);
 			drawShadow(canvas);
-			canvas.translate(0, -mRawShadowSize / 2);
-			canvas.drawRoundRect(mCardBounds, mCornerRadius, mCornerRadius, mPaint);
+			canvas.translate(0, -rawShadowSize / 2);
+			canvas.drawRoundRect(cardBounds, cornerRadius, cornerRadius, paint);
 		}
 
 		private void drawShadow(Canvas canvas) {
-			final float edgeShadowTop = -mCornerRadius - mShadowSize;
-			final float inset = mCornerRadius + mInsetShadow + mRawShadowSize / 2;
-			final boolean drawHorizontalEdges = mCardBounds.width() - 2 * inset > 0;
-			final boolean drawVerticalEdges = mCardBounds.height() - 2 * inset > 0;
+			final float edgeShadowTop = -cornerRadius - shadowSize;
+			final float inset = cornerRadius + insetShadow + rawShadowSize / 2;
+			final boolean drawHorizontalEdges = cardBounds.width() - 2 * inset > 0;
+			final boolean drawVerticalEdges = cardBounds.height() - 2 * inset > 0;
 			int saved = canvas.save();
-			canvas.translate(mCardBounds.left + inset, mCardBounds.top + inset);
-			canvas.drawPath(mCornerShadowPath, mCornerShadowPaint);
+			canvas.translate(cardBounds.left + inset, cardBounds.top + inset);
+			canvas.drawPath(cornerShadowPath, cornerShadowPaint);
 			if (drawHorizontalEdges) {
-				canvas.drawRect(0, edgeShadowTop, mCardBounds.width() - 2 * inset, -mCornerRadius, mEdgeShadowPaint);
+				canvas.drawRect(0, edgeShadowTop, cardBounds.width() - 2 * inset, -cornerRadius, edgeShadowPaint);
 			}
 			canvas.restoreToCount(saved);
 			saved = canvas.save();
-			canvas.translate(mCardBounds.right - inset, mCardBounds.bottom - inset);
+			canvas.translate(cardBounds.right - inset, cardBounds.bottom - inset);
 			canvas.rotate(180f);
-			canvas.drawPath(mCornerShadowPath, mCornerShadowPaint);
+			canvas.drawPath(cornerShadowPath, cornerShadowPaint);
 			if (drawHorizontalEdges) {
-				canvas.drawRect(0, edgeShadowTop, mCardBounds.width() - 2 * inset, -mCornerRadius + mShadowSize,
-						mEdgeShadowPaint);
+				canvas.drawRect(0, edgeShadowTop, cardBounds.width() - 2 * inset, -cornerRadius + shadowSize,
+						edgeShadowPaint);
 			}
 			canvas.restoreToCount(saved);
 			saved = canvas.save();
-			canvas.translate(mCardBounds.left + inset, mCardBounds.bottom - inset);
+			canvas.translate(cardBounds.left + inset, cardBounds.bottom - inset);
 			canvas.rotate(270f);
-			canvas.drawPath(mCornerShadowPath, mCornerShadowPaint);
+			canvas.drawPath(cornerShadowPath, cornerShadowPaint);
 			if (drawVerticalEdges) {
-				canvas.drawRect(0, edgeShadowTop, mCardBounds.height() - 2 * inset, -mCornerRadius, mEdgeShadowPaint);
+				canvas.drawRect(0, edgeShadowTop, cardBounds.height() - 2 * inset, -cornerRadius, edgeShadowPaint);
 			}
 			canvas.restoreToCount(saved);
 			saved = canvas.save();
-			canvas.translate(mCardBounds.right - inset, mCardBounds.top + inset);
+			canvas.translate(cardBounds.right - inset, cardBounds.top + inset);
 			canvas.rotate(90f);
-			canvas.drawPath(mCornerShadowPath, mCornerShadowPaint);
+			canvas.drawPath(cornerShadowPath, cornerShadowPaint);
 			if (drawVerticalEdges) {
-				canvas.drawRect(0, edgeShadowTop, mCardBounds.height() - 2 * inset, -mCornerRadius, mEdgeShadowPaint);
+				canvas.drawRect(0, edgeShadowTop, cardBounds.height() - 2 * inset, -cornerRadius, edgeShadowPaint);
 			}
 			canvas.restoreToCount(saved);
 		}
@@ -432,34 +432,34 @@ public class CardView extends FrameLayout {
 		private void buildShadowCorners() {
 			final int shadowStartColor = 0x37000000;
 			final int shadowEndColor = 0x03000000;
-			RectF innerBounds = new RectF(-mCornerRadius, -mCornerRadius, mCornerRadius, mCornerRadius);
+			RectF innerBounds = new RectF(-cornerRadius, -cornerRadius, cornerRadius, cornerRadius);
 			RectF outerBounds = new RectF(innerBounds);
-			outerBounds.inset(-mShadowSize, -mShadowSize);
-			if (mCornerShadowPath == null) {
-				mCornerShadowPath = new Path();
+			outerBounds.inset(-shadowSize, -shadowSize);
+			if (cornerShadowPath == null) {
+				cornerShadowPath = new Path();
 			} else {
-				mCornerShadowPath.reset();
+				cornerShadowPath.reset();
 			}
-			mCornerShadowPath.setFillType(Path.FillType.EVEN_ODD);
-			mCornerShadowPath.moveTo(-mCornerRadius, 0);
-			mCornerShadowPath.rLineTo(-mShadowSize, 0);
-			mCornerShadowPath.arcTo(outerBounds, 180f, 90f, false);
-			mCornerShadowPath.arcTo(innerBounds, 270f, -90f, false);
-			mCornerShadowPath.close();
-			float startRatio = mCornerRadius / (mCornerRadius + mShadowSize);
-			mCornerShadowPaint.setShader(new RadialGradient(0, 0, mCornerRadius + mShadowSize,
+			cornerShadowPath.setFillType(Path.FillType.EVEN_ODD);
+			cornerShadowPath.moveTo(-cornerRadius, 0);
+			cornerShadowPath.rLineTo(-shadowSize, 0);
+			cornerShadowPath.arcTo(outerBounds, 180f, 90f, false);
+			cornerShadowPath.arcTo(innerBounds, 270f, -90f, false);
+			cornerShadowPath.close();
+			float startRatio = cornerRadius / (cornerRadius + shadowSize);
+			cornerShadowPaint.setShader(new RadialGradient(0, 0, cornerRadius + shadowSize,
 					new int[] {shadowStartColor, shadowStartColor, shadowEndColor},
 					new float[] {0f, startRatio, 1f}, Shader.TileMode.CLAMP));
-			mEdgeShadowPaint.setShader(new LinearGradient(0, -mCornerRadius + mShadowSize, 0,
-					-mCornerRadius - mShadowSize, new int[] {shadowStartColor, shadowStartColor, shadowEndColor},
+			edgeShadowPaint.setShader(new LinearGradient(0, -cornerRadius + shadowSize, 0,
+					-cornerRadius - shadowSize, new int[] {shadowStartColor, shadowStartColor, shadowEndColor},
 					new float[] {0f, .5f, 1f}, Shader.TileMode.CLAMP));
-			mEdgeShadowPaint.setAntiAlias(false);
+			edgeShadowPaint.setAntiAlias(false);
 		}
 
 		private void buildComponents(Rect bounds) {
-			final float verticalOffset = mRawMaxShadowSize * SHADOW_MULTIPLIER;
-			mCardBounds.set(bounds.left + mRawMaxShadowSize, bounds.top + verticalOffset,
-					bounds.right - mRawMaxShadowSize, bounds.bottom - verticalOffset);
+			final float verticalOffset = rawMaxShadowSize * SHADOW_MULTIPLIER;
+			cardBounds.set(bounds.left + rawMaxShadowSize, bounds.top + verticalOffset,
+					bounds.right - rawMaxShadowSize, bounds.bottom - verticalOffset);
 			buildShadowCorners();
 		}
 
@@ -468,18 +468,18 @@ public class CardView extends FrameLayout {
 		}
 
 		public float getMinWidth() {
-			final float content = 2 * Math.max(mRawMaxShadowSize, mCornerRadius + mInsetShadow + mRawMaxShadowSize / 2);
-			return content + (mRawMaxShadowSize + mInsetShadow) * 2;
+			final float content = 2 * Math.max(rawMaxShadowSize, cornerRadius + insetShadow + rawMaxShadowSize / 2);
+			return content + (rawMaxShadowSize + insetShadow) * 2;
 		}
 
 		public float getMinHeight() {
-			final float content = 2 * Math.max(mRawMaxShadowSize, mCornerRadius + mInsetShadow +
-					mRawMaxShadowSize * SHADOW_MULTIPLIER / 2);
-			return content + (mRawMaxShadowSize * SHADOW_MULTIPLIER + mInsetShadow) * 2;
+			final float content = 2 * Math.max(rawMaxShadowSize, cornerRadius + insetShadow +
+					rawMaxShadowSize * SHADOW_MULTIPLIER / 2);
+			return content + (rawMaxShadowSize * SHADOW_MULTIPLIER + insetShadow) * 2;
 		}
 
 		public void setColor(int color) {
-			mPaint.setColor(color);
+			paint.setColor(color);
 			invalidateSelf();
 		}
 	}

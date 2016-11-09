@@ -35,10 +35,10 @@ import com.mishiranu.dashchan.content.model.FileHolder;
 public class MultipartEntity implements RequestEntity {
 	private static final Random RANDOM = new Random(System.currentTimeMillis());
 
-	private final ArrayList<Part> mParts = new ArrayList<>();
-	private final String mBoundary;
+	private final ArrayList<Part> parts = new ArrayList<>();
+	private final String boundary;
 
-	private String mCharsetName = "UTF-8";
+	private String charsetName = "UTF-8";
 
 	@Public
 	public MultipartEntity() {
@@ -49,7 +49,7 @@ public class MultipartEntity implements RequestEntity {
 		for (int i = 0; i < 11; i++) {
 			builder.append(RANDOM.nextInt(10));
 		}
-		mBoundary = builder.toString();
+		boundary = builder.toString();
 	}
 
 	@Public
@@ -62,13 +62,13 @@ public class MultipartEntity implements RequestEntity {
 
 	@Public
 	public void setEncoding(String charsetName) {
-		mCharsetName = charsetName;
+		this.charsetName = charsetName;
 	}
 
 	@Override
 	public void add(String name, String value) {
 		if (value != null) {
-			mParts.add(new StringPart(name, value, mCharsetName));
+			parts.add(new StringPart(name, value, charsetName));
 		}
 	}
 
@@ -78,27 +78,27 @@ public class MultipartEntity implements RequestEntity {
 	}
 
 	public final void add(String name, Openable openable, OpenableOutputListener listener) {
-		mParts.add(new OpenablePart(name, openable, listener));
+		parts.add(new OpenablePart(name, openable, listener));
 	}
 
 	@Override
 	public String getContentType() {
-		return "multipart/form-data; boundary=" + mBoundary;
+		return "multipart/form-data; boundary=" + boundary;
 	}
 
 	@Override
 	public long getContentLength() {
 		try {
 			long contentLength = 0L;
-			int boundaryLength = mBoundary.length();
+			int boundaryLength = boundary.length();
 			int dashesLength = BYTES_TWO_DASHES.length;
 			int lineLength = BYTES_NEW_LINE.length;
-			for (Part part : mParts) {
+			for (Part part : parts) {
 				contentLength += dashesLength + boundaryLength + lineLength;
-				contentLength += 39 + part.getName().getBytes(mCharsetName).length;
+				contentLength += 39 + part.getName().getBytes(charsetName).length;
 				String fileName = part.getFileName();
 				if (fileName != null) {
-					contentLength += 13 + fileName.getBytes(mCharsetName).length;
+					contentLength += 13 + fileName.getBytes(charsetName).length;
 				}
 				contentLength += lineLength;
 				String contentType = part.getContentType();
@@ -119,18 +119,18 @@ public class MultipartEntity implements RequestEntity {
 
 	@Override
 	public void write(OutputStream output) throws IOException {
-		byte[] boundary = mBoundary.getBytes("ISO-8859-1");
-		for (Part part : mParts) {
+		byte[] boundary = this.boundary.getBytes("ISO-8859-1");
+		for (Part part : parts) {
 			output.write(BYTES_TWO_DASHES);
 			output.write(boundary);
 			output.write(BYTES_NEW_LINE);
 			output.write("Content-Disposition: form-data; name=\"".getBytes());
-			output.write(part.getName().getBytes(mCharsetName));
+			output.write(part.getName().getBytes(charsetName));
 			output.write('"');
 			String fileName = part.getFileName();
 			if (fileName != null) {
 				output.write("; filename=\"".getBytes());
-				output.write(fileName.getBytes(mCharsetName));
+				output.write(fileName.getBytes(charsetName));
 				output.write('"');
 			}
 			output.write(BYTES_NEW_LINE);
@@ -153,20 +153,20 @@ public class MultipartEntity implements RequestEntity {
 	@Override
 	public MultipartEntity copy() {
 		MultipartEntity entity = new MultipartEntity();
-		entity.setEncoding(mCharsetName);
-		entity.mParts.addAll(mParts);
+		entity.setEncoding(charsetName);
+		entity.parts.addAll(parts);
 		return entity;
 	}
 
 	private static abstract class Part {
-		private final String mName;
+		private final String name;
 
 		public Part(String name) {
-			mName = name;
+			this.name = name;
 		}
 
 		public String getName() {
-			return mName;
+			return name;
 		}
 
 		public abstract String getFileName();
@@ -176,12 +176,12 @@ public class MultipartEntity implements RequestEntity {
 	}
 
 	private static class StringPart extends Part {
-		private final byte[] mBytes;
+		private final byte[] bytes;
 
 		public StringPart(String name, String value, String charset) {
 			super(name);
 			try {
-				mBytes = value.getBytes(charset);
+				bytes = value.getBytes(charset);
 			} catch (UnsupportedEncodingException e) {
 				throw new RuntimeException(e);
 			}
@@ -199,56 +199,56 @@ public class MultipartEntity implements RequestEntity {
 
 		@Override
 		public long getContentLength() {
-			return mBytes.length;
+			return bytes.length;
 		}
 
 		@Override
 		public void write(OutputStream output) throws IOException {
-			output.write(mBytes);
+			output.write(bytes);
 		}
 	}
 
 	private static class OpenablePart extends Part {
-		private final Openable mOpenable;
-		private final OpenableOutputListener mListener;
+		private final Openable openable;
+		private final OpenableOutputListener listener;
 
 		public OpenablePart(String name, Openable openable, OpenableOutputListener listener) {
 			super(name);
-			mOpenable = openable;
-			mListener = listener;
+			this.openable = openable;
+			this.listener = listener;
 		}
 
 		@Override
 		public String getFileName() {
-			return mOpenable.getFileName();
+			return openable.getFileName();
 		}
 
 		@Override
 		public String getContentType() {
-			return mOpenable.getMimeType();
+			return openable.getMimeType();
 		}
 
 		@Override
 		public long getContentLength() {
-			return mOpenable.getSize();
+			return openable.getSize();
 		}
 
 		@Override
 		public void write(OutputStream output) throws IOException {
-			InputStream input = mOpenable.openInputStream();
+			InputStream input = openable.openInputStream();
 			try {
 				long progress = 0L;
-				long progressMax = mOpenable.getSize();
-				if (mListener != null) {
-					mListener.onOutputProgressChange(mOpenable, 0L, progressMax);
+				long progressMax = openable.getSize();
+				if (listener != null) {
+					listener.onOutputProgressChange(openable, 0L, progressMax);
 				}
 				byte[] buffer = new byte[4096];
 				int count;
 				while ((count = input.read(buffer)) > 0) {
 					output.write(buffer, 0, count);
 					progress += count;
-					if (mListener != null) {
-						mListener.onOutputProgressChange(mOpenable, progress, progressMax);
+					if (listener != null) {
+						listener.onOutputProgressChange(openable, progress, progressMax);
 					}
 				}
 			} finally {
@@ -265,34 +265,34 @@ public class MultipartEntity implements RequestEntity {
 	}
 
 	private static class FileHolderOpenable implements Openable {
-		private final FileHolder mFileHolder;
-		private final String mFileName;
-		private final String mMimeType;
+		private final FileHolder fileHolder;
+		private final String fileName;
+		private final String mimeType;
 
 		public FileHolderOpenable(FileHolder fileHolder) {
-			mFileHolder = fileHolder;
-			mFileName = obtainFileName(mFileHolder, false);
-			mMimeType = obtainMimeType(mFileName);
+			this.fileHolder = fileHolder;
+			fileName = obtainFileName(fileHolder, false);
+			mimeType = obtainMimeType(fileName);
 		}
 
 		@Override
 		public String getFileName() {
-			return mFileName;
+			return fileName;
 		}
 
 		@Override
 		public String getMimeType() {
-			return mMimeType;
+			return mimeType;
 		}
 
 		@Override
 		public InputStream openInputStream() throws IOException {
-			return mFileHolder.openInputStream();
+			return fileHolder.openInputStream();
 		}
 
 		@Override
 		public long getSize() {
-			return mFileHolder.getSize();
+			return fileHolder.getSize();
 		}
 	}
 

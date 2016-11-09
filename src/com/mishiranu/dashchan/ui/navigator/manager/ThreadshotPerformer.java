@@ -40,57 +40,57 @@ import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 
 public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
-	private final ListView mListView;
-	private final UiManager mUiManager;
-	private final String mChanName;
-	private final String mBoardName;
-	private final String mThreadNumber;
-	private final String mThreadTitle;
-	private final List<PostItem> mPostItems;
-	private final ProgressDialog mDialog;
+	private final ListView listView;
+	private final UiManager uiManager;
+	private final String chanName;
+	private final String boardName;
+	private final String threadNumber;
+	private final String threadTitle;
+	private final List<PostItem> postItems;
+	private final ProgressDialog dialog;
 
-	private final UiManager.DemandSet mDemandSet = new UiManager.DemandSet();
-	private final UiManager.ConfigurationSet mConfigurationSet = new UiManager.ConfigurationSet(null, null, null,
+	private final UiManager.DemandSet demandSet = new UiManager.DemandSet();
+	private final UiManager.ConfigurationSet configurationSet = new UiManager.ConfigurationSet(null, null, null,
 			null, null, null, false, false, false, false, null);
 
 	public ThreadshotPerformer(ListView listView, UiManager uiManager, String chanName, String boardName,
 			String threadNumber, String threadTitle, List<PostItem> postItems) {
-		mListView = listView;
-		mUiManager = uiManager;
-		mChanName = chanName;
-		mBoardName = boardName;
-		mThreadNumber = threadNumber;
-		mThreadTitle = threadTitle;
-		mPostItems = postItems;
-		mDialog = new ProgressDialog(listView.getContext());
-		mDialog.setMessage(listView.getContext().getString(R.string.message_processing_data));
-		mDialog.setCanceledOnTouchOutside(false);
-		mDialog.setOnCancelListener(this);
-		mDialog.show();
+		this.listView = listView;
+		this.uiManager = uiManager;
+		this.chanName = chanName;
+		this.boardName = boardName;
+		this.threadNumber = threadNumber;
+		this.threadTitle = threadTitle;
+		this.postItems = postItems;
+		dialog = new ProgressDialog(listView.getContext());
+		dialog.setMessage(listView.getContext().getString(R.string.message_processing_data));
+		dialog.setCanceledOnTouchOutside(false);
+		dialog.setOnCancelListener(this);
+		dialog.show();
 		// isBusy == true, because I must prevent view handling in main thread
-		mDemandSet.isBusy = true;
-		mDemandSet.selectionMode = UiManager.SELECTION_THREADSHOT;
-		mAsyncTask.executeOnExecutor(ConcurrentUtils.SEPARATE_EXECUTOR);
+		demandSet.isBusy = true;
+		demandSet.selectionMode = UiManager.SELECTION_THREADSHOT;
+		asyncTask.executeOnExecutor(ConcurrentUtils.SEPARATE_EXECUTOR);
 	}
 
 	private View getPostItem(PostItem postItem, View convertView) {
-		return mUiManager.view().getPostView(postItem, convertView, mListView, mDemandSet, mConfigurationSet);
+		return uiManager.view().getPostView(postItem, convertView, listView, demandSet, configurationSet);
 	}
 
-	private final AsyncTask<Void, Void, InputStream> mAsyncTask = new AsyncTask<Void, Void, InputStream>() {
+	private final AsyncTask<Void, Void, InputStream> asyncTask = new AsyncTask<Void, Void, InputStream>() {
 		@Override
 		protected InputStream doInBackground(Void... params) {
 			Looper.prepare();
 			long time = System.currentTimeMillis();
 			View convertView = null;
-			Drawable divider = mListView.getDivider();
+			Drawable divider = listView.getDivider();
 			int dividerHeight = divider != null ? divider.getMinimumHeight() : 0;
 			int height = 0;
 			boolean first = true;
-			int width = mListView.getWidth();
+			int width = listView.getWidth();
 			int widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY);
 			int heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
-			for (PostItem postItem : mPostItems) {
+			for (PostItem postItem : postItems) {
 				convertView = getPostItem(postItem, convertView);
 				convertView.measure(widthMeasureSpec, heightMeasureSpec);
 				if (!first) {
@@ -107,8 +107,8 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
 			if (height > 0) {
 				Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
 				Canvas canvas = new Canvas(bitmap);
-				canvas.drawColor(mUiManager.getColorScheme().windowBackgroundColor);
-				for (PostItem postItem : mPostItems) {
+				canvas.drawColor(uiManager.getColorScheme().windowBackgroundColor);
+				for (PostItem postItem : postItems) {
 					if (isCancelled()) {
 						return null;
 					}
@@ -134,18 +134,18 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
 
 		@Override
 		protected void onPostExecute(InputStream result) {
-			mDialog.dismiss();
+			dialog.dismiss();
 			if (result != null) {
-				DownloadManager.getInstance().saveStreamStorage(mListView.getContext(), result, mChanName, mBoardName,
-						mThreadNumber, mThreadTitle, "threadshot-" + System.currentTimeMillis() + ".png", false);
+				DownloadManager.getInstance().saveStreamStorage(listView.getContext(), result, chanName, boardName,
+						threadNumber, threadTitle, "threadshot-" + System.currentTimeMillis() + ".png", false);
 			} else {
-				ToastUtils.show(mListView.getContext(), R.string.message_unknown_error);
+				ToastUtils.show(listView.getContext(), R.string.message_unknown_error);
 			}
 		}
 	};
 
 	@Override
 	public void onCancel(DialogInterface dialog) {
-		mAsyncTask.cancel(true);
+		asyncTask.cancel(true);
 	}
 }

@@ -48,46 +48,47 @@ public class DecoderDrawable extends Drawable {
 	private static final int FRAGMENT_SIZE = 512;
 	private static final int MIN_MAX_ENTRIES = 16;
 
-	private final Bitmap mScaledBitmap;
-	private final BitmapRegionDecoder mDecoder;
+	private final Bitmap scaledBitmap;
+	private final BitmapRegionDecoder decoder;
 
-	private final LinkedHashMap<Integer, DecodeTask> mTasks = new LinkedHashMap<>();
-	private final LruCache<Integer, Bitmap> mFragments = new LruCache<>((key, value) -> value.recycle(),
+	private final LinkedHashMap<Integer, DecodeTask> tasks = new LinkedHashMap<>();
+	private final LruCache<Integer, Bitmap> fragments = new LruCache<>((key, value) -> value.recycle(),
 			MIN_MAX_ENTRIES);
 
-	private final int mRotation;
-	private final int mWidth;
-	private final int mHeight;
+	private final int rotation;
+	private final int width;
+	private final int height;
 
-	private final Rect mRect = new Rect();
-	private final Rect mDstRect = new Rect();
-	private final Paint mPaint = new Paint(Paint.FILTER_BITMAP_FLAG);
+	private final Rect rect = new Rect();
+	private final Rect dstRect = new Rect();
+	private final Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
 
-	private boolean mEnabled = true;
-	private boolean mRecycled = false;
+	private boolean enabled = true;
+	private boolean recycled = false;
 
 	public DecoderDrawable(Bitmap scaledBitmap, FileHolder fileHolder) throws IOException {
-		mScaledBitmap = scaledBitmap;
+		this.scaledBitmap = scaledBitmap;
 		if (!fileHolder.isRegionDecoderSupported()) {
 			throw new IOException("Decoder drawable is not supported");
 		}
-		mDecoder = BitmapRegionDecoder.newInstance(fileHolder.openInputStream(), false);
-		mRotation = fileHolder.getRotation();
-		mWidth = fileHolder.getImageWidth();
-		mHeight = fileHolder.getImageHeight();
+		decoder = BitmapRegionDecoder.newInstance(fileHolder.openInputStream(), false);
+		rotation = fileHolder.getRotation();
+		width = fileHolder.getImageWidth();
+		height = fileHolder.getImageHeight();
 	}
 
 	@Override
 	public void draw(Canvas canvas) {
 		Rect bounds = getBounds();
-		Rect rect = mRect;
-		Rect dstRect = mDstRect;
+		Rect rect = this.rect;
+		Rect dstRect = this.dstRect;
 		if (!(canvas.getClipBounds(rect) && rect.intersect(bounds))) {
 			rect.set(bounds);
 		}
 		int maxEntries = 0;
 		int scale = 1;
-		boolean drawScaled = false;if (!mRecycled) {
+		boolean drawScaled = false;
+		if (!recycled) {
 			Callback callback = getCallback();
 			if (callback instanceof View) {
 				View view = (View) callback;
@@ -100,15 +101,15 @@ public class DecoderDrawable extends Drawable {
 				int rectSize;
 				int size;
 				if (rectWidth * contentHeight > rectHeight * contentWidth) {
-					scaledSize = mScaledBitmap.getWidth();
+					scaledSize = scaledBitmap.getWidth();
 					contentSize = contentWidth;
 					rectSize = rectWidth;
-					size = mWidth;
+					size = width;
 				} else {
-					scaledSize = mScaledBitmap.getHeight();
+					scaledSize = scaledBitmap.getHeight();
 					contentSize = contentHeight;
 					rectSize = rectHeight;
-					size = mHeight;
+					size = height;
 				}
 				scale = Integer.highestOneBit(Math.max(rectSize / contentSize, 1));
 				drawScaled = scaledSize >= size / scale;
@@ -117,34 +118,34 @@ public class DecoderDrawable extends Drawable {
 			drawScaled = true;
 		}
 		int size = FRAGMENT_SIZE * scale;
-		if (mEnabled && !drawScaled) {
-			for (int y = 0; y < mHeight; y += size) {
-				for (int x = 0; x < mWidth; x += size) {
+		if (enabled && !drawScaled) {
+			for (int y = 0; y < height; y += size) {
+				for (int x = 0; x < width; x += size) {
 					if (rect.intersects(x, y, x + size, y + size)) {
 						int key = calculateKey(x, y, scale);
-						Bitmap fragment = mFragments.get(key);
+						Bitmap fragment = fragments.get(key);
 						boolean drawScaledFragment = false;
 						if (fragment != null) {
 							if (fragment != NULL_BITMAP) {
 								dstRect.set(x, y, x + scale * fragment.getWidth(), y + scale * fragment.getHeight());
-								canvas.drawBitmap(fragment, null, dstRect, mPaint);
+								canvas.drawBitmap(fragment, null, dstRect, paint);
 							} else {
 								drawScaledFragment = true;
 							}
 						} else {
-							DecodeTask task = mTasks.get(key);
+							DecodeTask task = tasks.get(key);
 							if (task == null) {
 								task = new DecodeTask(key, x, y, scale);
 								task.executeOnExecutor(EXECUTOR);
-								mTasks.put(key, task);
+								tasks.put(key, task);
 							}
 							drawScaledFragment = true;
 						}
 						if (drawScaledFragment) {
 							canvas.save();
 							canvas.clipRect(x, y, x + size, y + size);
-							dstRect.set(0, 0, mWidth, mHeight);
-							canvas.drawBitmap(mScaledBitmap, null, dstRect, mPaint);
+							dstRect.set(0, 0, width, height);
+							canvas.drawBitmap(scaledBitmap, null, dstRect, paint);
 							canvas.restore();
 						}
 						maxEntries++;
@@ -152,14 +153,14 @@ public class DecoderDrawable extends Drawable {
 				}
 			}
 		} else {
-			dstRect.set(0, 0, mWidth, mHeight);
-			canvas.drawBitmap(mScaledBitmap, null, dstRect, mPaint);
+			dstRect.set(0, 0, width, height);
+			canvas.drawBitmap(scaledBitmap, null, dstRect, paint);
 		}
 		maxEntries = Math.max(MIN_MAX_ENTRIES, maxEntries);
-		mFragments.setMaxEntries(maxEntries);
-		int cancel = mTasks.size() - maxEntries;
+		fragments.setMaxEntries(maxEntries);
+		int cancel = tasks.size() - maxEntries;
 		if (cancel > 0) {
-			Iterator<DecodeTask> iterator = mTasks.values().iterator();
+			Iterator<DecodeTask> iterator = tasks.values().iterator();
 			while (iterator.hasNext() && cancel-- > 0) {
 				iterator.next().cancel();
 				iterator.remove();
@@ -180,32 +181,32 @@ public class DecoderDrawable extends Drawable {
 
 	@Override
 	public int getIntrinsicWidth() {
-		return mWidth;
+		return width;
 	}
 
 	@Override
 	public int getIntrinsicHeight() {
-		return mHeight;
+		return height;
 	}
 
 	public boolean hasAlpha() {
-		return mScaledBitmap.hasAlpha();
+		return scaledBitmap.hasAlpha();
 	}
 
 	private void clear() {
-		for (DecodeTask task : mTasks.values()) {
+		for (DecodeTask task : tasks.values()) {
 			task.cancel();
 		}
-		mTasks.clear();
-		for (Bitmap fragment : mFragments.values()) {
+		tasks.clear();
+		for (Bitmap fragment : fragments.values()) {
 			fragment.recycle();
 		}
-		mFragments.clear();
+		fragments.clear();
 	}
 
 	public void setEnabled(boolean enabled) {
-		if (mEnabled != enabled) {
-			mEnabled = enabled;
+		if (this.enabled != enabled) {
+			this.enabled = enabled;
 			if (!enabled) {
 				clear();
 			}
@@ -217,15 +218,15 @@ public class DecoderDrawable extends Drawable {
 	}
 
 	private void recycle(boolean recycleScaled) {
-		if (!mRecycled) {
-			mRecycled = true;
+		if (!recycled) {
+			recycled = true;
 			clear();
 			synchronized (this) {
-				mDecoder.recycle();
+				decoder.recycle();
 			}
 		}
 		if (recycleScaled) {
-			mScaledBitmap.recycle();
+			scaledBitmap.recycle();
 		}
 	}
 
@@ -234,41 +235,41 @@ public class DecoderDrawable extends Drawable {
 	}
 
 	private class DecodeTask extends AsyncTask<Void, Void, Bitmap> {
-		private final int mKey;
-		private final Rect mRect;
-		private final BitmapFactory.Options mOptions = new BitmapFactory.Options();
+		private final int key;
+		private final Rect rect;
+		private final BitmapFactory.Options options = new BitmapFactory.Options();
 
-		private boolean mError = false;
+		private boolean error = false;
 
 		public DecodeTask(int key, int x, int y, int scale) {
-			mKey = key;
-			mRect = new Rect(x, y, Math.min(x + FRAGMENT_SIZE * scale, mWidth),
-					Math.min(y + FRAGMENT_SIZE * scale, mHeight));
-			if (mRotation != 0) {
+			this.key = key;
+			rect = new Rect(x, y, Math.min(x + FRAGMENT_SIZE * scale, width),
+					Math.min(y + FRAGMENT_SIZE * scale, height));
+			if (rotation != 0) {
 				Matrix matrix = new Matrix();
-				matrix.setRotate(mRotation);
-				if (mRotation == 90) {
-					matrix.postTranslate(mHeight, 0);
-				} else if (mRotation == 270) {
-					matrix.postTranslate(0, mWidth);
+				matrix.setRotate(rotation);
+				if (rotation == 90) {
+					matrix.postTranslate(height, 0);
+				} else if (rotation == 270) {
+					matrix.postTranslate(0, width);
 				} else {
-					matrix.postTranslate(mWidth, mHeight);
+					matrix.postTranslate(width, height);
 				}
-				RectF rectF = new RectF(mRect);
+				RectF rectF = new RectF(rect);
 				matrix.mapRect(rectF);
-				mRect.set((int) rectF.left, (int) rectF.top, (int) rectF.right, (int) rectF.bottom);
+				rect.set((int) rectF.left, (int) rectF.top, (int) rectF.right, (int) rectF.bottom);
 			}
-			mOptions.inSampleSize = scale;
+			options.inSampleSize = scale;
 		}
 
 		@Override
 		protected Bitmap doInBackground(Void... params) {
 			try {
 				synchronized (DecoderDrawable.this) {
-					Bitmap bitmap = mDecoder.decodeRegion(mRect, mOptions);
-					if (bitmap != null && mRotation != 0) {
+					Bitmap bitmap = decoder.decodeRegion(rect, options);
+					if (bitmap != null && rotation != 0) {
 						Matrix matrix = new Matrix();
-						matrix.setRotate(-mRotation);
+						matrix.setRotate(-rotation);
 						Bitmap newBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(),
 								matrix, false);
 						bitmap.recycle();
@@ -277,7 +278,7 @@ public class DecoderDrawable extends Drawable {
 					return bitmap;
 				}
 			} catch (Throwable t) {
-				mError = true;
+				error = true;
 				Log.persistent().stack(t);
 				return null;
 			}
@@ -287,7 +288,7 @@ public class DecoderDrawable extends Drawable {
 		public void cancel() {
 			cancel(false);
 			if (!C.API_NOUGAT) {
-				mOptions.mCancel = true;
+				options.mCancel = true;
 			}
 		}
 
@@ -300,14 +301,14 @@ public class DecoderDrawable extends Drawable {
 
 		@Override
 		protected void onPostExecute(Bitmap result) {
-			mTasks.remove(mKey);
-			if (mError) {
+			tasks.remove(key);
+			if (error) {
 				recycle(false);
 			} else {
 				if (result == null) {
 					result = NULL_BITMAP;
 				}
-				mFragments.put(mKey, result);
+				fragments.put(key, result);
 				invalidateSelf();
 			}
 		}

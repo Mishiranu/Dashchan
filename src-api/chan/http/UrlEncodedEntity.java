@@ -26,10 +26,10 @@ import chan.annotation.Public;
 
 @Extendable
 public class UrlEncodedEntity implements RequestEntity {
-	private final StringBuilder mBuilder = new StringBuilder();
-	private byte[] mBytes;
+	private final StringBuilder builder = new StringBuilder();
+	private byte[] bytes;
 
-	private String mCharsetName = "UTF-8";
+	private String charsetName = "UTF-8";
 
 	@Public
 	public UrlEncodedEntity() {}
@@ -43,19 +43,19 @@ public class UrlEncodedEntity implements RequestEntity {
 
 	@Public
 	public void setEncoding(String charsetName) {
-		mCharsetName = charsetName;
+		this.charsetName = charsetName;
 	}
 
 	@Override
 	public void add(String name, String value) {
 		if (value != null) {
-			mBytes = null;
-			if (mBuilder.length() > 0) {
-				mBuilder.append('&');
+			bytes = null;
+			if (builder.length() > 0) {
+				builder.append('&');
 			}
-			mBuilder.append(encode(name));
-			mBuilder.append('=');
-			mBuilder.append(encode(value));
+			builder.append(encode(name));
+			builder.append('=');
+			builder.append(encode(value));
 		}
 	}
 
@@ -78,27 +78,27 @@ public class UrlEncodedEntity implements RequestEntity {
 	@Override
 	public RequestEntity copy() {
 		UrlEncodedEntity entity = new UrlEncodedEntity();
-		entity.setEncoding(mCharsetName);
-		entity.mBuilder.append(mBuilder);
+		entity.setEncoding(charsetName);
+		entity.builder.append(builder);
 		return entity;
 	}
 
 	private String encode(String string) {
 		try {
-			return URLEncoder.encode(string, mCharsetName);
+			return URLEncoder.encode(string, charsetName);
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
 	private byte[] getBytes() {
-		if (mBytes == null) {
+		if (bytes == null) {
 			try {
-				mBytes = mBuilder.toString().getBytes("ISO-8859-1");
+				bytes = builder.toString().getBytes("ISO-8859-1");
 			} catch (UnsupportedEncodingException e) {
 				throw new RuntimeException(e);
 			}
 		}
-		return mBytes;
+		return bytes;
 	}
 }

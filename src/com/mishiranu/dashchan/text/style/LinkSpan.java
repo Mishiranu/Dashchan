@@ -29,56 +29,56 @@ import com.mishiranu.dashchan.widget.CommentTextView;
 
 public class LinkSpan extends CharacterStyle implements UpdateAppearance, CommentTextView.ClickableSpan,
 		ColorScheme.Span {
-	private final String mUriString;
-	private final String mPostNumber;
+	private final String uriString;
+	private final String postNumber;
 
-	private int mForegroundColor, mClickedColor;
+	private int foregroundColor, clickedColor;
 
-	private boolean mClicked;
-	private boolean mHidden;
+	private boolean clicked;
+	private boolean hidden;
 
 	public LinkSpan(String uriString, String postNumber) {
-		mUriString = StringUtils.fixParsedUriString(uriString);
-		mPostNumber = postNumber;
+		this.uriString = StringUtils.fixParsedUriString(uriString);
+		this.postNumber = postNumber;
 	}
 
 	@Override
 	public void applyColorScheme(ColorScheme colorScheme) {
 		if (colorScheme != null) {
-			mForegroundColor = colorScheme.linkColor;
-			mClickedColor = colorScheme.clickedColor;
+			foregroundColor = colorScheme.linkColor;
+			clickedColor = colorScheme.clickedColor;
 		}
 	}
 
 	@Override
 	public void updateDrawState(TextPaint paint) {
-		if (mHidden) {
-			paint.setColor(mForegroundColor & 0x00ffffff | Color.argb(Color.alpha(mForegroundColor) / 2, 0, 0, 0));
+		if (hidden) {
+			paint.setColor(foregroundColor & 0x00ffffff | Color.argb(Color.alpha(foregroundColor) / 2, 0, 0, 0));
 			paint.setStrikeThruText(true);
 		} else {
-			paint.setColor(mForegroundColor);
+			paint.setColor(foregroundColor);
 		}
 		paint.setUnderlineText(true);
-		if (mClicked) {
-			paint.bgColor = Color.alpha(paint.bgColor) == 0x00 ? mClickedColor
-					: GraphicsUtils.mixColors(paint.bgColor, mClickedColor);
+		if (clicked) {
+			paint.bgColor = Color.alpha(paint.bgColor) == 0x00 ? clickedColor
+					: GraphicsUtils.mixColors(paint.bgColor, clickedColor);
 		}
 	}
 
 	@Override
 	public void setClicked(boolean clicked) {
-		mClicked = clicked;
+		this.clicked = clicked;
 	}
 
 	public void setHidden(boolean hidden) {
-		mHidden = hidden;
+		this.hidden = hidden;
 	}
 
 	public String getUriString() {
-		return mUriString;
+		return uriString;
 	}
 
 	public String getPostNumber() {
-		return mPostNumber;
+		return postNumber;
 	}
 }

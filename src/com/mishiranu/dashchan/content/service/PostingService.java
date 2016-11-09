@@ -57,23 +57,23 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 
 	private static final String EXTRA_KEY = "com.mishiranu.dashchan.extra.KEY";
 
-	private final HashMap<String, ArrayList<Callback>> mCallbacks = new HashMap<>();
-	private final HashMap<Callback, String> mCallbackKeys = new HashMap<>();
-	private final HashMap<String, TaskState> mTasks = new HashMap<>();
+	private final HashMap<String, ArrayList<Callback>> callbacks = new HashMap<>();
+	private final HashMap<Callback, String> callbackKeys = new HashMap<>();
+	private final HashMap<String, TaskState> tasks = new HashMap<>();
 
-	private NotificationManager mNotificationManager;
-	private PowerManager.WakeLock mWakeLock;
+	private NotificationManager notificationManager;
+	private PowerManager.WakeLock wakeLock;
 
-	private Thread mNotificationsWorker;
-	private final LinkedBlockingQueue<TaskState> mNotificationsQueue = new LinkedBlockingQueue<>();
+	private Thread notificationsWorker;
+	private final LinkedBlockingQueue<TaskState> notificationsQueue = new LinkedBlockingQueue<>();
 
-	private static int sNotificationId = 0;
+	private static int nextNotificationId = 0;
 
 	private static class TaskState {
 		public final String key;
 		public final SendPostTask task;
 		public final Notification.Builder builder;
-		public final int notificationId = ++sNotificationId;
+		public final int notificationId = ++nextNotificationId;
 		public final String text;
 
 		private SendPostTask.ProgressState progressState = SendPostTask.ProgressState.CONNECTING;
@@ -109,19 +109,19 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+		notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
-		mWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "PostingWakeLock");
-		mWakeLock.setReferenceCounted(false);
-		mNotificationsWorker = new Thread(this, "PostingServiceNotificationThread");
-		mNotificationsWorker.start();
+		wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "PostingWakeLock");
+		wakeLock.setReferenceCounted(false);
+		notificationsWorker = new Thread(this, "PostingServiceNotificationThread");
+		notificationsWorker.start();
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		mWakeLock.release();
-		mNotificationsWorker.interrupt();
+		wakeLock.release();
+		notificationsWorker.interrupt();
 	}
 
 	@Override
@@ -145,19 +145,19 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 			TaskState taskState = null;
 			if (!interrupted) {
 				try {
-					taskState = mNotificationsQueue.take();
+					taskState = notificationsQueue.take();
 				} catch (InterruptedException e) {
 					interrupted = true;
 				}
 			}
 			if (interrupted) {
-				taskState = mNotificationsQueue.poll();
+				taskState = notificationsQueue.poll();
 			}
 			if (taskState == null) {
 				return;
 			}
 			if (taskState.cancel) {
-				mNotificationManager.cancel(taskState.notificationId);
+				notificationManager.cancel(taskState.notificationId);
 			} else {
 				Notification.Builder builder = taskState.builder;
 				if (taskState.first) {
@@ -201,7 +201,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 					}
 				}
 				builder.setContentText(taskState.text);
-				mNotificationManager.notify(taskState.notificationId, builder.build());
+				notificationManager.notify(taskState.notificationId, builder.build());
 			}
 		}
 	}
@@ -213,7 +213,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 
 	private void stopSelfAndReleaseWakeLock() {
 		stopSelf();
-		mWakeLock.release();
+		wakeLock.release();
 	}
 
 	private static String makeKey(String chanName, String boardName, String threadNumber) {
@@ -234,17 +234,17 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 	public class Binder extends android.os.Binder {
 		public void executeSendPost(String chanName, ChanPerformer.SendPostData data) {
 			String key = makeKey(chanName, data.boardName, data.threadNumber);
-			if (mTasks.containsKey(key)) {
+			if (tasks.containsKey(key)) {
 				return;
 			}
 			startService(new Intent(PostingService.this, PostingService.class));
-			mWakeLock.acquire();
+			wakeLock.acquire();
 			SendPostTask task = new SendPostTask(key, chanName, PostingService.this, data);
 			task.executeOnExecutor(SendPostTask.THREAD_POOL_EXECUTOR);
 			TaskState taskState = new TaskState(key, task, PostingService.this, chanName, data);
 			enqueueUpdateNotification(taskState, true, false);
-			mTasks.put(key, taskState);
-			ArrayList<Callback> callbacks = mCallbacks.get(key);
+			tasks.put(key, taskState);
+			ArrayList<Callback> callbacks = PostingService.this.callbacks.get(key);
 			if (callbacks != null) {
 				for (Callback callback : callbacks) {
 					notifyInitDownloading(callback, taskState, false);
@@ -258,26 +258,26 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 
 		public void register(Callback callback, String chanName, String boardName, String threadNumber) {
 			String key = makeKey(chanName, boardName, threadNumber);
-			mCallbackKeys.put(callback, key);
-			ArrayList<Callback> callbacks = mCallbacks.get(key);
+			callbackKeys.put(callback, key);
+			ArrayList<Callback> callbacks = PostingService.this.callbacks.get(key);
 			if (callbacks == null) {
 				callbacks = new ArrayList<>(1);
-				mCallbacks.put(key, callbacks);
+				PostingService.this.callbacks.put(key, callbacks);
 			}
 			callbacks.add(callback);
-			TaskState taskState = mTasks.get(key);
+			TaskState taskState = tasks.get(key);
 			if (taskState != null) {
 				notifyInitDownloading(callback, taskState, true);
 			}
 		}
 
 		public void unregister(Callback callback) {
-			String key = mCallbackKeys.remove(callback);
+			String key = callbackKeys.remove(callback);
 			if (key != null) {
-				ArrayList<Callback> callbacks = mCallbacks.get(key);
+				ArrayList<Callback> callbacks = PostingService.this.callbacks.get(key);
 				callbacks.remove(callback);
 				if (callbacks.isEmpty()) {
-					mCallbacks.remove(key);
+					PostingService.this.callbacks.remove(key);
 				}
 			}
 		}
@@ -286,7 +286,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 	private void enqueueUpdateNotification(TaskState taskState, boolean first, boolean cancel) {
 		taskState.first = first;
 		taskState.cancel = cancel;
-		mNotificationsQueue.add(taskState);
+		notificationsQueue.add(taskState);
 	}
 
 	private void notifyInitDownloading(Callback callback, TaskState taskState, boolean notifyState) {
@@ -300,14 +300,14 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 	}
 
 	private void performCancel(String key) {
-		TaskState taskState = mTasks.remove(key);
+		TaskState taskState = tasks.remove(key);
 		if (taskState != null) {
 			taskState.task.cancel();
 			enqueueUpdateNotification(taskState, false, true);
-			if (mTasks.isEmpty()) {
+			if (tasks.isEmpty()) {
 				stopSelfAndReleaseWakeLock();
 			}
-			ArrayList<Callback> callbacks = mCallbacks.get(key);
+			ArrayList<Callback> callbacks = this.callbacks.get(key);
 			if (callbacks != null) {
 				for (Callback callback : callbacks) {
 					callback.onSendPostCancel();
@@ -319,13 +319,13 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 	@Override
 	public void onSendPostChangeProgressState(String key, SendPostTask.ProgressState progressState,
 			int attachmentIndex, int attachmentsCount) {
-		TaskState taskState = mTasks.get(key);
+		TaskState taskState = tasks.get(key);
 		if (taskState != null) {
 			taskState.progressState = progressState;
 			taskState.attachmentIndex = attachmentIndex;
 			taskState.attachmentsCount = attachmentsCount;
 			enqueueUpdateNotification(taskState, false, false);
-			ArrayList<Callback> callbacks = mCallbacks.get(key);
+			ArrayList<Callback> callbacks = this.callbacks.get(key);
 			if (callbacks != null) {
 				boolean progressMode = taskState.task.isProgressMode();
 				for (Callback callback : callbacks) {
@@ -338,12 +338,12 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 
 	@Override
 	public void onSendPostChangeProgressValue(String key, int progress, int progressMax) {
-		TaskState taskState = mTasks.get(key);
+		TaskState taskState = tasks.get(key);
 		if (taskState != null) {
 			taskState.progress = progress;
 			taskState.progressMax = progressMax;
 			enqueueUpdateNotification(taskState, false, false);
-			ArrayList<Callback> callbacks = mCallbacks.get(key);
+			ArrayList<Callback> callbacks = this.callbacks.get(key);
 			if (callbacks != null) {
 				for (Callback callback : callbacks) {
 					callback.onSendPostChangeProgressValue(progress, progressMax);
@@ -353,10 +353,10 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 	}
 
 	private boolean removeTask(String key) {
-		TaskState taskState = mTasks.remove(key);
+		TaskState taskState = tasks.remove(key);
 		if (taskState != null) {
 			enqueueUpdateNotification(taskState, false, true);
-			if (mTasks.isEmpty()) {
+			if (tasks.isEmpty()) {
 				stopSelfAndReleaseWakeLock();
 			}
 			return true;
@@ -404,8 +404,8 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 				}
 				newPostDatas.add(newPostData);
 				if (newPostData.newThread) {
-					sNewThreadData = newPostData;
-					sNewThreadDataKey = makeKey(chanName, data.boardName, null);
+					PostingService.newThreadData = newPostData;
+					PostingService.newThreadDataKey = makeKey(chanName, data.boardName, null);
 				}
 				Notification.Builder builder = new Notification.Builder(this);
 				builder.setSmallIcon(android.R.drawable.stat_sys_upload_done);
@@ -423,9 +423,9 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 						postNumber, null, true, false);
 				builder.setContentIntent(PendingIntent.getActivity(this, tag.hashCode(), intent,
 						PendingIntent.FLAG_UPDATE_CURRENT));
-				mNotificationManager.notify(tag, 0, builder.build());
+				notificationManager.notify(tag, 0, builder.build());
 			}
-			ArrayList<Callback> callbacks = mCallbacks.get(key);
+			ArrayList<Callback> callbacks = this.callbacks.get(key);
 			if (callbacks != null) {
 				for (Callback callback : callbacks) {
 					callback.onSendPostSuccess();
@@ -439,7 +439,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 	public void onSendPostFail(String key, ChanPerformer.SendPostData data, String chanName, ErrorItem errorItem,
 			Serializable extra, boolean captchaError, boolean keepCaptcha) {
 		if (removeTask(key)) {
-			ArrayList<Callback> callbacks = mCallbacks.get(key);
+			ArrayList<Callback> callbacks = this.callbacks.get(key);
 			boolean hasCallback = callbacks != null && !callbacks.isEmpty();
 			if (hasCallback) {
 				for (Callback callback : callbacks) {
@@ -488,14 +488,14 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 			this.newThread = newThread;
 		}
 
-		private String mNotificationTag;
+		private String notificationTag;
 
 		private String getNotificationTag() {
-			if (mNotificationTag == null) {
-				mNotificationTag = C.NOTIFICATION_TAG_POSTING + "/" + StringUtils.calculateSha256(chanName +
+			if (notificationTag == null) {
+				notificationTag = C.NOTIFICATION_TAG_POSTING + "/" + StringUtils.calculateSha256(chanName +
 						"/" + boardName + "/" + threadNumber + "/" + postNumber + "/" + comment + "/" + newThread);
 			}
-			return mNotificationTag;
+			return notificationTag;
 		}
 	}
 
@@ -514,12 +514,12 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 		return newPostDatas;
 	}
 
-	private static NewPostData sNewThreadData;
-	private static String sNewThreadDataKey;
+	private static NewPostData newThreadData;
+	private static String newThreadDataKey;
 
 	public static NewPostData obtainNewThreadData(Context context, String chanName, String boardName) {
-		if (makeKey(chanName, boardName, null).equals(sNewThreadDataKey)) {
-			NewPostData newThreadData = sNewThreadData;
+		if (makeKey(chanName, boardName, null).equals(newThreadDataKey)) {
+			NewPostData newThreadData = PostingService.newThreadData;
 			clearNewThreadData();
 			NotificationManager notificationManager = (NotificationManager) context
 					.getSystemService(NOTIFICATION_SERVICE);
@@ -530,7 +530,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 	}
 
 	public static void clearNewThreadData() {
-		sNewThreadData = null;
-		sNewThreadDataKey = null;
+		newThreadData = null;
+		newThreadDataKey = null;
 	}
 }

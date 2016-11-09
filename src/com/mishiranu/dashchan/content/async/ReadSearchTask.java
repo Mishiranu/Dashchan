@@ -38,13 +38,13 @@ import com.mishiranu.dashchan.content.net.YouTubeTitlesReader;
 import com.mishiranu.dashchan.text.HtmlParser;
 
 public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostItem>> implements Comparator<Post> {
-	private final Callback mCallback;
-	private final String mChanName;
-	private final String mBoardName;
-	private final String mSearchQuery;
-	private final int mPageNumber;
+	private final Callback callback;
+	private final String chanName;
+	private final String boardName;
+	private final String searchQuery;
+	private final int pageNumber;
 
-	private ErrorItem mErrorItem;
+	private ErrorItem errorItem;
 
 	public interface Callback {
 		public void onReadSearchSuccess(ArrayList<PostItem> postItems, int pageNumber);
@@ -52,11 +52,11 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostIte
 	}
 
 	public ReadSearchTask(Callback callback, String chanName, String boardName, String searchQuery, int pageNumber) {
-		mCallback = callback;
-		mChanName = chanName;
-		mBoardName = boardName;
-		mSearchQuery = searchQuery;
-		mPageNumber = pageNumber;
+		this.callback = callback;
+		this.chanName = chanName;
+		this.boardName = boardName;
+		this.searchQuery = searchQuery;
+		this.pageNumber = pageNumber;
 	}
 
 	@Override
@@ -67,14 +67,14 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostIte
 	@Override
 	protected ArrayList<PostItem> doInBackground(HttpHolder holder, Void... params) {
 		try {
-			ChanPerformer performer = ChanPerformer.get(mChanName);
-			ChanConfiguration configuration = ChanConfiguration.get(mChanName);
-			ChanConfiguration.Board board = configuration.safe().obtainBoard(mBoardName);
+			ChanPerformer performer = ChanPerformer.get(chanName);
+			ChanConfiguration configuration = ChanConfiguration.get(chanName);
+			ChanConfiguration.Board board = configuration.safe().obtainBoard(boardName);
 			ArrayList<Post> posts = new ArrayList<>();
 			HashSet<String> postNumbers = null;
 			if (board.allowSearch) {
 				ChanPerformer.ReadSearchPostsResult result = performer.safe().onReadSearchPosts(new ChanPerformer
-						.ReadSearchPostsData(mBoardName, mSearchQuery, mPageNumber, holder));
+						.ReadSearchPostsData(boardName, searchQuery, pageNumber, holder));
 				Post[] readPosts = result != null ? result.posts : null;
 				if (readPosts != null && readPosts.length > 0) {
 					Collections.addAll(posts, readPosts);
@@ -84,10 +84,10 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostIte
 					}
 				}
 			}
-			if (board.allowCatalog && board.allowCatalogSearch && mPageNumber == 0) {
+			if (board.allowCatalog && board.allowCatalogSearch && pageNumber == 0) {
 				ChanPerformer.ReadThreadsResult result;
 				try {
-					result = performer.safe().onReadThreads(new ChanPerformer.ReadThreadsData(mBoardName,
+					result = performer.safe().onReadThreads(new ChanPerformer.ReadThreadsData(boardName,
 							ChanPerformer.ReadThreadsData.PAGE_NUMBER_CATALOG, holder, null));
 				} catch (RedirectException e) {
 					result = null;
@@ -95,7 +95,7 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostIte
 				Posts[] threads = result != null ? result.threads : null;
 				ArrayList<Post> matched = new ArrayList<>();
 				Locale locale = Locale.getDefault();
-				String searchQuery = mSearchQuery.toUpperCase(locale);
+				String searchQuery = this.searchQuery.toUpperCase(locale);
 				for (Posts thread : threads) {
 					for (Post post : thread.getPosts()) {
 						if (postNumbers == null || !postNumbers.contains(post.getPostNumber())) {
@@ -115,7 +115,7 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostIte
 				YouTubeTitlesReader.getInstance().readAndApplyIfNecessary(posts, holder);
 				ArrayList<PostItem> postItems = new ArrayList<>(posts.size());
 				for (int i = 0; i < posts.size() && !Thread.interrupted(); i++) {
-					PostItem postItem = new PostItem(posts.get(i), mChanName, mBoardName);
+					PostItem postItem = new PostItem(posts.get(i), chanName, boardName);
 					postItem.setOrdinalIndex(i);
 					postItem.preload();
 					postItems.add(postItem);
@@ -124,19 +124,19 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostIte
 			}
 			return null;
 		} catch (ExtensionException | HttpException | InvalidResponseException e) {
-			mErrorItem = e.getErrorItemAndHandle();
+			errorItem = e.getErrorItemAndHandle();
 			return null;
 		} finally {
-			ChanConfiguration.get(mChanName).commit();
+			ChanConfiguration.get(chanName).commit();
 		}
 	}
 
 	@Override
 	public void onPostExecute(ArrayList<PostItem> postItems) {
-		if (mErrorItem == null) {
-			mCallback.onReadSearchSuccess(postItems, mPageNumber);
+		if (errorItem == null) {
+			callback.onReadSearchSuccess(postItems, pageNumber);
 		} else {
-			mCallback.onReadSearchFail(mErrorItem);
+			callback.onReadSearchFail(errorItem);
 		}
 	}
 }

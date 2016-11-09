@@ -38,7 +38,7 @@ import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.widget.AttachmentView;
 
 public abstract class AttachmentItem {
-	private final Binder mBinder;
+	private final Binder binder;
 
 	public static final int TYPE_IMAGE = 0;
 	public static final int TYPE_VIDEO = 1;
@@ -65,19 +65,19 @@ public abstract class AttachmentItem {
 	public abstract String getDescription(AttachmentItem.FormatMode formatMode);
 
 	public String getChanName() {
-		return mBinder.getChanName();
+		return binder.getChanName();
 	}
 
 	public String getBoardName() {
-		return mBinder.getBoardName();
+		return binder.getBoardName();
 	}
 
 	public String getThreadNumber() {
-		return mBinder.getThreadNumber();
+		return binder.getThreadNumber();
 	}
 
 	public String getPostNumber() {
-		return mBinder.getPostNumber();
+		return binder.getPostNumber();
 	}
 
 	private static class FileAttachmentItem extends AttachmentItem {
@@ -90,8 +90,8 @@ public abstract class AttachmentItem {
 		public int width;
 		public int height;
 
-		private String mThumbnailKey;
-		private int mType = TYPE_IMAGE;
+		private String thumbnailKey;
+		private int type = TYPE_IMAGE;
 
 		public FileAttachmentItem(Binder binder) {
 			super(binder);
@@ -113,10 +113,10 @@ public abstract class AttachmentItem {
 
 		@Override
 		public String getThumbnailKey() {
-			if (mThumbnailKey == null && thumbnailUri != null) {
-				mThumbnailKey = CacheManager.getInstance().getCachedFileKey(getThumbnailUri());
+			if (thumbnailKey == null && thumbnailUri != null) {
+				thumbnailKey = CacheManager.getInstance().getCachedFileKey(getThumbnailUri());
 			}
-			return mThumbnailKey;
+			return thumbnailKey;
 		}
 
 		@Override
@@ -131,7 +131,7 @@ public abstract class AttachmentItem {
 
 		@Override
 		public int getType() {
-			return mType;
+			return type;
 		}
 
 		@Override
@@ -141,7 +141,7 @@ public abstract class AttachmentItem {
 
 		@Override
 		public boolean isShowInGallery() {
-			return mType == TYPE_IMAGE || mType == TYPE_VIDEO;
+			return type == TYPE_IMAGE || type == TYPE_VIDEO;
 		}
 
 		@Override
@@ -215,13 +215,13 @@ public abstract class AttachmentItem {
 		public void setDisplayedExtension(String displayedExtension) {
 			this.displayedExtension = displayedExtension;
 			if (C.IMAGE_EXTENSIONS.contains(displayedExtension)) {
-				mType = TYPE_IMAGE;
+				type = TYPE_IMAGE;
 			} else if (C.VIDEO_EXTENSIONS.contains(displayedExtension)) {
-				mType = TYPE_VIDEO;
+				type = TYPE_VIDEO;
 			} else if (C.AUDIO_EXTENSIONS.contains(displayedExtension)) {
-				mType = TYPE_AUDIO;
+				type = TYPE_AUDIO;
 			} else {
-				mType = TYPE_FILE;
+				type = TYPE_FILE;
 			}
 		}
 	}
@@ -239,7 +239,7 @@ public abstract class AttachmentItem {
 		public String fileName;
 		public String title;
 
-		private String mThumbnailKey;
+		private String thumbnailKey;
 
 		public EmbeddedAttachmentItem(Binder binder) {
 			super(binder);
@@ -257,10 +257,10 @@ public abstract class AttachmentItem {
 
 		@Override
 		public String getThumbnailKey() {
-			if (mThumbnailKey == null && thumbnailUri != null) {
-				mThumbnailKey = CacheManager.getInstance().getCachedFileKey(getThumbnailUri());
+			if (thumbnailKey == null && thumbnailUri != null) {
+				thumbnailKey = CacheManager.getInstance().getCachedFileKey(getThumbnailUri());
 			}
-			return mThumbnailKey;
+			return thumbnailKey;
 		}
 
 		@Override
@@ -335,7 +335,7 @@ public abstract class AttachmentItem {
 	}
 
 	protected AttachmentItem(Binder binder) {
-		mBinder = binder;
+		this.binder = binder;
 	}
 
 	public static ArrayList<AttachmentItem> obtain(PostItem postItem) {
@@ -501,10 +501,10 @@ public abstract class AttachmentItem {
 		}
 	}
 
-	private boolean mForceLoadThumbnail = false;
+	private boolean forceLoadThumbnail = false;
 
 	public void setForceLoadThumbnail() {
-		mForceLoadThumbnail = true;
+		forceLoadThumbnail = true;
 	}
 
 	public void displayThumbnail(AttachmentView view, boolean needShowSeveralIcon, boolean isBusy, boolean force) {
@@ -553,7 +553,7 @@ public abstract class AttachmentItem {
 			boolean isCachedMemory = CacheManager.getInstance().isThumbnailCachedMemory(key);
 			// Load image if cached in RAM or list isn't scrolling (for better performance)
 			if (!isBusy || isCachedMemory) {
-				boolean fromCacheOnly = isCachedMemory || !(loadThumbnails || force || mForceLoadThumbnail);
+				boolean fromCacheOnly = isCachedMemory || !(loadThumbnails || force || forceLoadThumbnail);
 				int errorAttrId = mayReplaceOverlay && !fromCacheOnly ? R.attr.attachmentWarning : 0;
 				imageLoader.loadImage(uri, getChanName(), key, fromCacheOnly, view, additionalOverlayAttrId,
 						errorAttrId);
@@ -567,6 +567,6 @@ public abstract class AttachmentItem {
 	}
 
 	public boolean canLoadThumbnailManually() {
-		return !isThumbnailReady() && !mForceLoadThumbnail && !Preferences.isLoadThumbnails();
+		return !isThumbnailReady() && !forceLoadThumbnail && !Preferences.isLoadThumbnails();
 	}
 }

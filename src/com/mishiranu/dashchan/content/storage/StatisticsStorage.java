@@ -40,14 +40,14 @@ public class StatisticsStorage extends StorageManager.Storage {
 		return INSTANCE;
 	}
 
-	private final HashMap<String, StatisticsItem> mStatisticsItems = new HashMap<>();
-	private long mStartTime;
+	private final HashMap<String, StatisticsItem> statisticsItems = new HashMap<>();
+	private long startTime;
 
 	private StatisticsStorage() {
 		super("statistics", 1000, 10000);
 		JSONObject jsonObject = read();
 		if (jsonObject != null) {
-			mStartTime = Math.max(jsonObject.optLong(KEY_START_TIME), 0L);
+			startTime = Math.max(jsonObject.optLong(KEY_START_TIME), 0L);
 			JSONArray jsonArray = jsonObject.optJSONArray(KEY_DATA);
 			if (jsonArray != null) {
 				for (int i = 0; i < jsonArray.length(); i++) {
@@ -60,7 +60,7 @@ public class StatisticsStorage extends StorageManager.Storage {
 							int threadsCreated = Math.max(jsonObject.optInt(KEY_THREADS_CREATED), 0);
 							StatisticsItem statisticsItem = new StatisticsItem(threadsViewed, postsSent,
 									threadsCreated);
-							mStatisticsItems.put(chanName, statisticsItem);
+							statisticsItems.put(chanName, statisticsItem);
 						}
 					}
 				}
@@ -70,7 +70,7 @@ public class StatisticsStorage extends StorageManager.Storage {
 
 	@Override
 	public Object onClone() {
-		return new HashMap<>(mStatisticsItems);
+		return new HashMap<>(statisticsItems);
 	}
 
 	@Override
@@ -89,7 +89,7 @@ public class StatisticsStorage extends StorageManager.Storage {
 		}
 		JSONObject jsonObject = new JSONObject();
 		jsonObject.put(KEY_DATA, jsonArray);
-		putJson(jsonObject, KEY_START_TIME, mStartTime);
+		putJson(jsonObject, KEY_START_TIME, startTime);
 		return jsonObject;
 	}
 
@@ -106,11 +106,11 @@ public class StatisticsStorage extends StorageManager.Storage {
 	}
 
 	public HashMap<String, StatisticsItem> getItems() {
-		return mStatisticsItems;
+		return statisticsItems;
 	}
 
 	public long getStartTime() {
-		return mStartTime;
+		return startTime;
 	}
 
 	public void convertFromOldFormat(String statistics) {
@@ -120,8 +120,8 @@ public class StatisticsStorage extends StorageManager.Storage {
 		} catch (JSONException e) {
 			return;
 		}
-		mStatisticsItems.clear();
-		mStartTime = 0L;
+		statisticsItems.clear();
+		startTime = 0L;
 		for (Iterator<String> iterator = jsonObject.keys(); iterator.hasNext();) {
 			String chanName = iterator.next();
 			JSONObject statisticsObject = jsonObject.optJSONObject(chanName);
@@ -129,7 +129,7 @@ public class StatisticsStorage extends StorageManager.Storage {
 				int threadsViewed = statisticsObject.optInt("views");
 				int postsSent = statisticsObject.optInt("posts");
 				int threadsCreated = statisticsObject.optInt("threads");
-				mStatisticsItems.put(chanName, new StatisticsItem(threadsViewed, postsSent, threadsCreated));
+				statisticsItems.put(chanName, new StatisticsItem(threadsViewed, postsSent, threadsCreated));
 			}
 		}
 		serialize();
@@ -137,13 +137,13 @@ public class StatisticsStorage extends StorageManager.Storage {
 	}
 
 	private StatisticsItem obtainStatisticsItem(String chanName) {
-		StatisticsItem statisticsItem = mStatisticsItems.get(chanName);
+		StatisticsItem statisticsItem = statisticsItems.get(chanName);
 		if (statisticsItem == null) {
-			if (mStatisticsItems.isEmpty()) {
-				mStartTime = System.currentTimeMillis();
+			if (statisticsItems.isEmpty()) {
+				startTime = System.currentTimeMillis();
 			}
 			statisticsItem = new StatisticsItem(0, 0, 0);
-			mStatisticsItems.put(chanName, statisticsItem);
+			statisticsItems.put(chanName, statisticsItem);
 		}
 		return statisticsItem;
 	}
@@ -174,7 +174,7 @@ public class StatisticsStorage extends StorageManager.Storage {
 	}
 
 	public void clear() {
-		mStatisticsItems.clear();
+		statisticsItems.clear();
 		serialize();
 	}
 }

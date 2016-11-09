@@ -34,29 +34,29 @@ import com.mishiranu.dashchan.util.AnimationUtils;
 public class SelectorCheckDrawable extends Drawable {
 	private static final int DURATION = 200;
 
-	private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-	private final Path mPath = new Path();
-	private final PathMeasure mPathMeasure = new PathMeasure();
+	private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+	private final Path path = new Path();
+	private final PathMeasure pathMeasure = new PathMeasure();
 
-	private long mStart;
-	private boolean mSelected = false;
+	private long start;
+	private boolean selected = false;
 
 	public SelectorCheckDrawable() {
-		mPaint.setStyle(Paint.Style.STROKE);
-		mPaint.setStrokeCap(Paint.Cap.SQUARE);
-		mPaint.setStrokeJoin(Paint.Join.MITER);
-		mPaint.setColor(Color.WHITE);
+		paint.setStyle(Paint.Style.STROKE);
+		paint.setStrokeCap(Paint.Cap.SQUARE);
+		paint.setStrokeJoin(Paint.Join.MITER);
+		paint.setColor(Color.WHITE);
 	}
 
 	@Override
 	public void draw(Canvas canvas) {
-		long dt = System.currentTimeMillis() - mStart;
-		float value = mStart == 0L ? 1f : dt < 0 ? 0f : Math.min((float) dt / DURATION, 1f);
+		long dt = System.currentTimeMillis() - start;
+		float value = start == 0L ? 1f : dt < 0 ? 0f : Math.min((float) dt / DURATION, 1f);
 		value = AnimationUtils.DECELERATE_INTERPOLATOR.getInterpolation(value);
 		Rect bounds = getBounds();
 		canvas.save();
 		canvas.translate(bounds.left, bounds.top);
-		canvas.drawColor(Color.argb((int) ((mSelected ? value : 1f - value) * 0x80), 0, 0, 0));
+		canvas.drawColor(Color.argb((int) ((selected ? value : 1f - value) * 0x80), 0, 0, 0));
 		int size;
 		int width = bounds.width();
 		int height = bounds.height();
@@ -70,36 +70,36 @@ public class SelectorCheckDrawable extends Drawable {
 			size = width;
 		}
 		final float strokeSize = 0.03f;
-		mPaint.setStrokeWidth(strokeSize * size);
+		paint.setStrokeWidth(strokeSize * size);
 
-		mPath.moveTo(0.39f * size, 0.5f * size);
-		mPath.rLineTo(0.08f * size, 0.08f * size);
-		mPath.rLineTo(0.14f * size, -0.14f * size);
-		mPathMeasure.setPath(mPath, false);
-		mPath.rewind();
-		float length = mPathMeasure.getLength();
-		if (mSelected) {
-			mPathMeasure.getSegment(0f, value * length, mPath, true);
+		path.moveTo(0.39f * size, 0.5f * size);
+		path.rLineTo(0.08f * size, 0.08f * size);
+		path.rLineTo(0.14f * size, -0.14f * size);
+		pathMeasure.setPath(path, false);
+		path.rewind();
+		float length = pathMeasure.getLength();
+		if (selected) {
+			pathMeasure.getSegment(0f, value * length, path, true);
 		} else {
-			mPathMeasure.getSegment(value * length, length, mPath, true);
+			pathMeasure.getSegment(value * length, length, path, true);
 		}
-		canvas.drawPath(mPath, mPaint);
-		mPath.rewind();
+		canvas.drawPath(path, paint);
+		path.rewind();
 
-		float append = mSelected ? (1f - value) * 90f : value * -90f - 180f;
-		mPaint.setStrokeWidth(strokeSize * size);
-		mPath.arcTo(0.3f * size, 0.3f * size, 0.7f * size, 0.7f * size, 270f + append, -180f, true);
-		mPath.arcTo(0.3f * size, 0.3f * size, 0.7f * size, 0.7f * size, 90f + append, -180f, false);
-		mPathMeasure.setPath(mPath, false);
-		mPath.rewind();
-		length = mPathMeasure.getLength();
-		if (mSelected) {
-			mPathMeasure.getSegment(0f, value * length, mPath, true);
+		float append = selected ? (1f - value) * 90f : value * -90f - 180f;
+		paint.setStrokeWidth(strokeSize * size);
+		path.arcTo(0.3f * size, 0.3f * size, 0.7f * size, 0.7f * size, 270f + append, -180f, true);
+		path.arcTo(0.3f * size, 0.3f * size, 0.7f * size, 0.7f * size, 90f + append, -180f, false);
+		pathMeasure.setPath(path, false);
+		path.rewind();
+		length = pathMeasure.getLength();
+		if (selected) {
+			pathMeasure.getSegment(0f, value * length, path, true);
 		} else {
-			mPathMeasure.getSegment(value * length, length, mPath, true);
+			pathMeasure.getSegment(value * length, length, path, true);
 		}
-		canvas.drawPath(mPath, mPaint);
-		mPath.rewind();
+		canvas.drawPath(path, paint);
+		path.rewind();
 
 		canvas.restore();
 		if (value < 1f) {
@@ -119,17 +119,17 @@ public class SelectorCheckDrawable extends Drawable {
 	public void setColorFilter(ColorFilter cf) {}
 
 	public boolean isSelected() {
-		return mSelected;
+		return selected;
 	}
 
 	public void setSelected(boolean selected, boolean animate) {
-		if (mSelected != selected) {
+		if (this.selected != selected) {
 			if (animate) {
-				mStart = System.currentTimeMillis();
+				start = System.currentTimeMillis();
 			} else {
-				mStart = 0L;
+				start = 0L;
 			}
-			mSelected = selected;
+			this.selected = selected;
 			invalidateSelf();
 		}
 	}

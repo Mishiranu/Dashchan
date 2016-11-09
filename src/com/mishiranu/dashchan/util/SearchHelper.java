@@ -29,14 +29,14 @@ public class SearchHelper {
 
 	private static final Pattern PATTERN_LONG_QUERY_PART = Pattern.compile("(?:^| )(-)?\"(.*?)\"(?= |$)");
 
-	private final HashMap<String, Integer> mFlags = new HashMap<>();
-	private final HashSet<String> mResultInclude = new HashSet<>();
-	private final HashSet<String> mResultExclude = new HashSet<>();
+	private final HashMap<String, Integer> flags = new HashMap<>();
+	private final HashSet<String> resultInclude = new HashSet<>();
+	private final HashSet<String> resultExclude = new HashSet<>();
 
 	public void setFlags(String... flags) {
-		mFlags.clear();
+		this.flags.clear();
 		for (String flag : flags) {
-			mFlags.put(flag, SEARCH_NONE);
+			this.flags.put(flag, SEARCH_NONE);
 		}
 	}
 
@@ -44,8 +44,8 @@ public class SearchHelper {
 		StringBuilder queryBuilder = null;
 		int shift = 0;
 		HashSet<String> queries = new HashSet<>();
-		HashSet<String> include = mResultInclude;
-		HashSet<String> exclude = mResultExclude;
+		HashSet<String> include = resultInclude;
+		HashSet<String> exclude = resultExclude;
 		include.clear();
 		exclude.clear();
 		Matcher matcher = PATTERN_LONG_QUERY_PART.matcher(query);
@@ -75,12 +75,12 @@ public class SearchHelper {
 		String[] splitted = query.split(" +");
 		OUTER: for (String queryPart : splitted) {
 			String lowQueryPart = queryPart.toLowerCase(locale);
-			for (String flag : mFlags.keySet()) {
+			for (String flag : flags.keySet()) {
 				if ((":" + flag).equals(lowQueryPart)) {
-					mFlags.put(flag, SEARCH_INCLUDE);
+					flags.put(flag, SEARCH_INCLUDE);
 					continue OUTER;
 				} else if ((":-" + flag).equals(lowQueryPart)) {
-					mFlags.put(flag, SEARCH_EXCLUDE);
+					flags.put(flag, SEARCH_EXCLUDE);
 					continue OUTER;
 				}
 			}
@@ -97,21 +97,21 @@ public class SearchHelper {
 		return queries;
 	}
 
-	private final HashMap<String, Boolean> mFlagsState = new HashMap<>();
+	private final HashMap<String, Boolean> flagsState = new HashMap<>();
 
 	// flag-state (String-Boolean) alternation
 	public boolean checkFlags(Object... alernation) {
 		for (int i = 0; i < alernation.length; i += 2) {
-			mFlagsState.put((String) alernation[i], (Boolean) alernation[i + 1]);
+			flagsState.put((String) alernation[i], (Boolean) alernation[i + 1]);
 		}
-		return checkFlags(mFlagsState);
+		return checkFlags(flagsState);
 	}
 
 	private boolean checkFlags(HashMap<String, Boolean> flagsState) {
 		OUTER: for (HashMap.Entry<String, Boolean> flagState : flagsState.entrySet()) {
 			String flag = flagState.getKey();
 			boolean fulfilled = flagState.getValue();
-			int value = mFlags.get(flag);
+			int value = flags.get(flag);
 			if (fulfilled && value == SEARCH_EXCLUDE) {
 				return false;
 			}
@@ -122,7 +122,7 @@ public class SearchHelper {
 						continue;
 					}
 					boolean checkFulfilled = checkFlagState.getValue();
-					int checkValue = mFlags.get(checkFlag);
+					int checkValue = flags.get(checkFlag);
 					if (checkFulfilled && checkValue == SEARCH_INCLUDE) {
 						continue OUTER;
 					}
@@ -134,14 +134,14 @@ public class SearchHelper {
 	}
 
 	public boolean hasIncluded() {
-		return mResultInclude.size() > 0;
+		return resultInclude.size() > 0;
 	}
 
 	public Iterable<String> getIncluded() {
-		return mResultInclude;
+		return resultInclude;
 	}
 
 	public Iterable<String> getExcluded() {
-		return mResultExclude;
+		return resultExclude;
 	}
 }

@@ -88,20 +88,20 @@ public class ForegroundManager implements Handler.Callback {
 	private static final int MESSAGE_REQUIRE_USER_CHOICE = 3;
 	private static final int MESSAGE_SHOW_CAPTCHA_INVALID = 4;
 
-	private final Handler mHandler = new Handler(Looper.getMainLooper(), this);
-	private final SparseArray<PendingData> mPendingDataArray = new SparseArray<>();
+	private final Handler handler = new Handler(Looper.getMainLooper(), this);
+	private final SparseArray<PendingData> pendingDataArray = new SparseArray<>();
 
-	private int mPendingDataStartIndex = 0;
-	private WeakReference<Activity> mActivity;
+	private int pendingDataStartIndex = 0;
+	private WeakReference<Activity> activity;
 
 	private Activity getActivity() {
-		return mActivity != null ? mActivity.get() : null;
+		return activity != null ? activity.get() : null;
 	}
 
 	@SuppressWarnings("unchecked")
 	private <T extends PendingData> T getPendingData(int pendingDataIndex) {
-		synchronized (mPendingDataArray) {
-			return (T) mPendingDataArray.get(pendingDataIndex);
+		synchronized (pendingDataArray) {
+			return (T) pendingDataArray.get(pendingDataIndex);
 		}
 	}
 
@@ -140,15 +140,15 @@ public class ForegroundManager implements Handler.Callback {
 		private static final String EXTRA_FORCE_CAPTCHA = "forceCaptcha";
 		private static final String EXTRA_MAY_SHOW_LOAD_BUTTON = "mayShowLoadButton";
 
-		private ChanPerformer.CaptchaState mCaptchaState;
-		private ChanConfiguration.Captcha.Input mLoadedInput;
-		private Bitmap mImage;
-		private boolean mLarge;
-		private boolean mBlackAndWhite;
+		private ChanPerformer.CaptchaState captchaState;
+		private ChanConfiguration.Captcha.Input loadedInput;
+		private Bitmap image;
+		private boolean large;
+		private boolean blackAndWhite;
 
-		private final CaptchaForm mCaptchaForm = new CaptchaForm(this);
+		private final CaptchaForm captchaForm = new CaptchaForm(this);
 
-		private Button mPositiveButton;
+		private Button positiveButton;
 
 		public CaptchaDialogFragment() {}
 
@@ -198,23 +198,23 @@ public class ForegroundManager implements Handler.Callback {
 		@Override
 		public void onSaveInstanceState(Bundle outState) {
 			super.onSaveInstanceState(outState);
-			outState.putSerializable(EXTRA_CAPTCHA_STATE, mCaptchaState);
-			outState.putSerializable(EXTRA_LOADED_INPUT, mLoadedInput);
-			outState.putParcelable(EXTRA_IMAGE, mImage);
-			outState.putBoolean(EXTRA_LARGE, mLarge);
-			outState.putBoolean(EXTRA_BLACK_AND_WHITE, mBlackAndWhite);
+			outState.putSerializable(EXTRA_CAPTCHA_STATE, captchaState);
+			outState.putSerializable(EXTRA_LOADED_INPUT, loadedInput);
+			outState.putParcelable(EXTRA_IMAGE, image);
+			outState.putBoolean(EXTRA_LARGE, large);
+			outState.putBoolean(EXTRA_BLACK_AND_WHITE, blackAndWhite);
 		}
 
 		private void reloadCaptcha(CaptchaPendingData pendingData, boolean forceCaptcha, boolean mayShowLoadButton,
 				boolean restart) {
 			pendingData.captchaData = null;
 			pendingData.loadedCaptchaType = null;
-			mCaptchaState = null;
-			mImage = null;
-			mLarge = false;
-			mBlackAndWhite = false;
+			captchaState = null;
+			image = null;
+			large = false;
+			blackAndWhite = false;
 			updatePositiveButtonState();
-			mCaptchaForm.showLoading();
+			captchaForm.showLoading();
 			HashMap<String, Object> extra = new HashMap<>();
 			extra.put(EXTRA_FORCE_CAPTCHA, forceCaptcha);
 			extra.put(EXTRA_MAY_SHOW_LOAD_BUTTON, mayShowLoadButton);
@@ -300,26 +300,26 @@ public class ForegroundManager implements Handler.Callback {
 				return;
 			}
 			ToastUtils.show(getActivity(), errorItem);
-			mCaptchaForm.showError();
+			captchaForm.showError();
 		}
 
 		private void showCaptcha(ChanPerformer.CaptchaState captchaState, String captchaType,
 				ChanConfiguration.Captcha.Input input, Bitmap image, boolean large, boolean blackAndWhite) {
-			mCaptchaState = captchaState;
+			this.captchaState = captchaState;
 			if (captchaType != null && input == null) {
 				input = ChanConfiguration.get(getArguments().getString(EXTRA_CHAN_NAME)).safe()
 						.obtainCaptcha(captchaType).input;
 			}
-			mLoadedInput = input;
-			if (mImage != null && mImage != image) {
-				mImage.recycle();
+			loadedInput = input;
+			if (this.image != null && this.image != image) {
+				this.image.recycle();
 			}
-			mImage = image;
-			mLarge = large;
-			mBlackAndWhite = blackAndWhite;
+			this.image = image;
+			this.large = large;
+			this.blackAndWhite = blackAndWhite;
 			boolean invertColors = blackAndWhite && !GraphicsUtils.isLight(ResourceUtils
 					.getDialogBackground(getActivity()));
-			mCaptchaForm.showCaptcha(captchaState, input, image, large, invertColors);
+			captchaForm.showCaptcha(captchaState, input, image, large, invertColors);
 			updatePositiveButtonState();
 		}
 
@@ -334,9 +334,9 @@ public class ForegroundManager implements Handler.Callback {
 		}
 
 		private void updatePositiveButtonState() {
-			if (mPositiveButton != null) {
-				mPositiveButton.setEnabled(mCaptchaState != null &&
-						mCaptchaState != ChanPerformer.CaptchaState.NEED_LOAD);
+			if (positiveButton != null) {
+				positiveButton.setEnabled(captchaState != null &&
+						captchaState != ChanPerformer.CaptchaState.NEED_LOAD);
 			}
 		}
 
@@ -356,13 +356,13 @@ public class ForegroundManager implements Handler.Callback {
 			ChanConfiguration.Captcha captcha = ChanConfiguration.get(args.getString(EXTRA_CHAN_NAME))
 					.safe().obtainCaptcha(args.getString(EXTRA_CAPTCHA_TYPE));
 			EditText captchaInputView = (EditText) container.findViewById(R.id.captcha_input);
-			mCaptchaForm.setupViews(container, null, captchaInputView, true, captcha);
+			captchaForm.setupViews(container, null, captchaInputView, true, captcha);
 			AlertDialog alertDialog = new AlertDialog.Builder(activity).setTitle(R.string.text_confirmation)
 					.setView(container).setPositiveButton(android.R.string.ok, (dialog, which) -> onConfirmCaptcha())
 					.setNegativeButton(android.R.string.cancel, (dialog, which) -> cancelInternal()).create();
 			alertDialog.setCanceledOnTouchOutside(false);
 			alertDialog.setOnShowListener(dialog -> {
-				mPositiveButton = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+				positiveButton = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
 				updatePositiveButtonState();
 			});
 			return alertDialog;
@@ -384,7 +384,7 @@ public class ForegroundManager implements Handler.Callback {
 				return;
 			}
 			if (pendingData.captchaData != null) {
-				pendingData.captchaData.put(ChanPerformer.CaptchaData.INPUT, mCaptchaForm.getInput());
+				pendingData.captchaData.put(ChanPerformer.CaptchaData.INPUT, captchaForm.getInput());
 			}
 			finishDialog(pendingData);
 			dismiss();
@@ -510,54 +510,55 @@ public class ForegroundManager implements Handler.Callback {
 	}
 
 	private static class CheckCaptchaTask extends AsyncManager.SimpleTask<Void, Void, Boolean> {
-		private final HttpHolder mHolder = new HttpHolder();
+		private final HttpHolder holder = new HttpHolder();
 
-		private final String mCaptchaType;
-		private final String mApiKey;
-		private final String mChallenge;
-		private String mInput;
+		private final String captchaType;
+		private final String apiKey;
+		private final String challenge;
+		private String input;
 
-		private ErrorItem mErrorItem;
+		private ErrorItem errorItem;
 
 		public CheckCaptchaTask(String captchaType, String apiKey, String challenge, String input) {
-			mCaptchaType = captchaType;
-			mApiKey = apiKey;
-			mChallenge = challenge;
-			mInput = input;
+			this.captchaType = captchaType;
+			this.apiKey = apiKey;
+			this.challenge = challenge;
+			this.input = input;
 		}
 
 		@Override
 		protected Boolean doInBackground(Void... params) {
-			if (ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2.equals(mCaptchaType)) {
+			if (ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2.equals(captchaType)) {
 				try {
-					mInput = RecaptchaReader.getInstance().getResponseField2(mHolder, mApiKey,
-							mChallenge, mInput, Preferences.isRecaptchaJavascript());
+					input = RecaptchaReader.getInstance().getResponseField2(holder, apiKey,
+							challenge, input, Preferences.isRecaptchaJavascript());
 					return true;
 				} catch (HttpException e) {
-					mErrorItem = e.getErrorItemAndHandle();
+					errorItem = e.getErrorItemAndHandle();
 					return false;
 				} finally {
-					mHolder.cleanup();
+					holder.cleanup();
 				}
 			} else {
-				mErrorItem = new ErrorItem(ErrorItem.TYPE_UNKNOWN);
+				errorItem = new ErrorItem(ErrorItem.TYPE_UNKNOWN);
 				return false;
 			}
 		}
 
 		@Override
 		protected void onStoreResult(AsyncManager.Holder holder, Boolean result) {
-			holder.storeResult(mApiKey, mChallenge, mInput, mErrorItem);
+			holder.storeResult(apiKey, challenge, input, errorItem);
 		}
 
 		@Override
 		public void cancel() {
 			cancel(true);
-			mHolder.interrupt();
+			holder.interrupt();
 		}
 	}
 
-	private static ImageView appendDescriptionImageView(Activity activity, ViewGroup viewGroup, Bitmap descriptionImage) {
+	private static ImageView appendDescriptionImageView(Activity activity, ViewGroup viewGroup,
+			Bitmap descriptionImage) {
 		ImageView imageView = new ImageView(activity) {
 			@Override
 			protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -582,16 +583,16 @@ public class ForegroundManager implements Handler.Callback {
 	}
 
 	private static class ItemsAdapter extends ArrayAdapter<CharSequence> {
-		private final View mHeader;
+		private final View header;
 
 		public ItemsAdapter(Context context, int resource, ArrayList<CharSequence> items, View header) {
 			super(context, resource, android.R.id.text1, items);
-			mHeader = header;
+			this.header = header;
 		}
 
 		@Override
 		public int getItemViewType(int position) {
-			if (mHeader != null && position == 0) {
+			if (header != null && position == 0) {
 				return ListView.ITEM_VIEW_TYPE_IGNORE;
 			}
 			return super.getItemViewType(position);
@@ -599,8 +600,8 @@ public class ForegroundManager implements Handler.Callback {
 
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
-			if (mHeader != null && position == 0) {
-				return mHeader;
+			if (header != null && position == 0) {
+				return header;
 			}
 			return super.getView(position, convertView, parent);
 		}
@@ -612,7 +613,7 @@ public class ForegroundManager implements Handler.Callback {
 
 		@Override
 		public boolean isEnabled(int position) {
-			return mHeader == null || position != 0;
+			return header == null || position != 0;
 		}
 	}
 
@@ -624,8 +625,8 @@ public class ForegroundManager implements Handler.Callback {
 		private static final String EXTRA_DESCRIPTION_IMAGE = "descriptionImage";
 		private static final String EXTRA_MULTIPLE = "multiple";
 
-		private boolean[] mSelected;
-		private boolean mHasImage;
+		private boolean[] selected;
+		private boolean hasImage;
 
 		public ItemChoiceDialogFragment() {}
 
@@ -654,7 +655,7 @@ public class ForegroundManager implements Handler.Callback {
 		@Override
 		public void onSaveInstanceState(Bundle outState) {
 			super.onSaveInstanceState(outState);
-			outState.putBooleanArray(EXTRA_SELECTED, mSelected);
+			outState.putBooleanArray(EXTRA_SELECTED, selected);
 		}
 
 		@SuppressLint("InflateParams")
@@ -668,13 +669,13 @@ public class ForegroundManager implements Handler.Callback {
 			String descriptionText = getArguments().getString(EXTRA_DESCRIPTION_TEXT);
 			Bitmap descriptionImage = getArguments().getParcelable(EXTRA_DESCRIPTION_IMAGE);
 			boolean multiple = getArguments().getBoolean(EXTRA_MULTIPLE);
-			mSelected = new boolean[items.length];
+			selected = new boolean[items.length];
 			boolean[] selected = savedInstanceState != null ? savedInstanceState.getBooleanArray(EXTRA_SELECTED) : null;
 			if (selected == null) {
 				selected = getArguments().getBooleanArray(EXTRA_SELECTED);
 			}
-			if (selected != null && selected.length == mSelected.length) {
-				System.arraycopy(selected, 0, mSelected, 0, selected.length);
+			if (selected != null && selected.length == this.selected.length) {
+				System.arraycopy(selected, 0, this.selected, 0, selected.length);
 			}
 
 			FrameLayout imageLayout = null;
@@ -699,25 +700,25 @@ public class ForegroundManager implements Handler.Callback {
 			ListView listView = alertDialog.getListView();
 			listView.setOnItemClickListener(this);
 			listView.setChoiceMode(multiple ? ListView.CHOICE_MODE_MULTIPLE : ListView.CHOICE_MODE_SINGLE);
-			for (int i = 0, j = imageLayout == null ? 0 : 1; i < mSelected.length; i++, j++) {
-				listView.setItemChecked(j, mSelected[i]);
+			for (int i = 0, j = imageLayout == null ? 0 : 1; i < this.selected.length; i++, j++) {
+				listView.setItemChecked(j, this.selected[i]);
 			}
-			mHasImage = imageLayout != null;
+			hasImage = imageLayout != null;
 			return alertDialog;
 		}
 
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-			if (mHasImage && position == 0) {
+			if (hasImage && position == 0) {
 				return;
 			}
-			int arrayPosition = mHasImage ? position - 1 : position;
+			int arrayPosition = hasImage ? position - 1 : position;
 			if (getArguments().getBoolean(EXTRA_MULTIPLE)) {
-				mSelected[arrayPosition] = !mSelected[arrayPosition];
-				((ListView) parent).setItemChecked(position, mSelected[arrayPosition]);
+				selected[arrayPosition] = !selected[arrayPosition];
+				((ListView) parent).setItemChecked(position, selected[arrayPosition]);
 			} else {
-				for (int i = 0; i < mSelected.length; i++) {
-					mSelected[i] = i == arrayPosition;
+				for (int i = 0; i < selected.length; i++) {
+					selected[i] = i == arrayPosition;
 				}
 				dismiss();
 				storeResult(true);
@@ -739,7 +740,7 @@ public class ForegroundManager implements Handler.Callback {
 			ChoicePendingData pendingData = getPendingData(false);
 			if (pendingData != null) {
 				synchronized (pendingData) {
-					pendingData.result = success ? mSelected : null;
+					pendingData.result = success ? selected : null;
 					pendingData.ready = true;
 					pendingData.notifyAll();
 				}
@@ -756,8 +757,8 @@ public class ForegroundManager implements Handler.Callback {
 		private static final String EXTRA_DESCRIPTION_IMAGE = "descriptionImage";
 		private static final String EXTRA_MULTIPLE = "multiple";
 
-		private FrameLayout[] mSelectionViews;
-		private boolean[] mSelected;
+		private FrameLayout[] selectionViews;
+		private boolean[] selected;
 
 		public ImageChoiceDialogFragment() {}
 
@@ -779,12 +780,12 @@ public class ForegroundManager implements Handler.Callback {
 		}
 
 		private void ensureArrays() {
-			if (mSelectionViews == null) {
+			if (selectionViews == null) {
 				int columns = getArguments().getInt(EXTRA_COLUMNS);
 				Parcelable[] parcelables = getArguments().getParcelableArray(EXTRA_IMAGES);
 				int count = parcelables != null ? parcelables.length : 0;
-				mSelectionViews = new FrameLayout[(count + columns - 1) / columns * columns];
-				mSelected = new boolean[count];
+				selectionViews = new FrameLayout[(count + columns - 1) / columns * columns];
+				selected = new boolean[count];
 			}
 		}
 
@@ -800,10 +801,10 @@ public class ForegroundManager implements Handler.Callback {
 			if (selected == null) {
 				selected = getArguments().getBooleanArray(EXTRA_SELECTED);
 			}
-			if (selected != null && selected.length == mSelected.length) {
-				System.arraycopy(selected, 0, mSelected, 0, selected.length);
+			if (selected != null && selected.length == this.selected.length) {
+				System.arraycopy(selected, 0, this.selected, 0, selected.length);
 			}
-			for (int i = 0; i < mSelected.length; i++) {
+			for (int i = 0; i < this.selected.length; i++) {
 				updateSelection(i);
 			}
 		}
@@ -811,7 +812,7 @@ public class ForegroundManager implements Handler.Callback {
 		@Override
 		public void onSaveInstanceState(Bundle outState) {
 			super.onSaveInstanceState(outState);
-			outState.putBooleanArray(EXTRA_SELECTED, mSelected);
+			outState.putBooleanArray(EXTRA_SELECTED, selected);
 		}
 
 		@SuppressLint("InflateParams")
@@ -847,7 +848,7 @@ public class ForegroundManager implements Handler.Callback {
 				for (int j = 0; j < columns; j++) {
 					int index = columns * i + j;
 					FrameLayout frameLayout = new FrameLayout(activity);
-					mSelectionViews[index] = frameLayout;
+					selectionViews[index] = frameLayout;
 					LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(0,
 							LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
 					if (j < columns - 1) {
@@ -897,11 +898,11 @@ public class ForegroundManager implements Handler.Callback {
 		public void onClick(View v) {
 			int index = (int) v.getTag();
 			if (getArguments().getBoolean(EXTRA_MULTIPLE)) {
-				mSelected[index] = !mSelected[index];
+				selected[index] = !selected[index];
 				updateSelection(index);
 			} else {
-				for (int i = 0; i < mSelected.length; i++) {
-					mSelected[i] = i == index;
+				for (int i = 0; i < selected.length; i++) {
+					selected[i] = i == index;
 				}
 				dismiss();
 				storeResult(true);
@@ -909,11 +910,11 @@ public class ForegroundManager implements Handler.Callback {
 		}
 
 		private void updateSelection(int index) {
-			Drawable drawable = mSelectionViews[index].getForeground();
+			Drawable drawable = selectionViews[index].getForeground();
 			if (C.API_LOLLIPOP) {
-				((SelectorCheckDrawable) drawable).setSelected(mSelected[index], true);
+				((SelectorCheckDrawable) drawable).setSelected(selected[index], true);
 			} else {
-				((SelectorBorderDrawable) drawable).setSelected(mSelected[index]);
+				((SelectorBorderDrawable) drawable).setSelected(selected[index]);
 			}
 		}
 
@@ -932,7 +933,7 @@ public class ForegroundManager implements Handler.Callback {
 			ChoicePendingData pendingData = getPendingData(false);
 			if (pendingData != null) {
 				synchronized (pendingData) {
-					pendingData.result = success ? mSelected : null;
+					pendingData.result = success ? selected : null;
 					pendingData.ready = true;
 					pendingData.notifyAll();
 				}
@@ -950,8 +951,8 @@ public class ForegroundManager implements Handler.Callback {
 				Activity activity = getActivity();
 				if (activity == null) {
 					PendingData pendingData;
-					synchronized (mPendingDataArray) {
-						pendingData = mPendingDataArray.get(handlerData.pendingDataIndex);
+					synchronized (pendingDataArray) {
+						pendingData = pendingDataArray.get(handlerData.pendingDataIndex);
 					}
 					synchronized (pendingData) {
 						pendingData.ready = true;
@@ -1081,17 +1082,17 @@ public class ForegroundManager implements Handler.Callback {
 			int descriptionResId, boolean retry) {
 		CaptchaPendingData pendingData;
 		int pendingDataIndex;
-		synchronized (mPendingDataArray) {
+		synchronized (pendingDataArray) {
 			pendingData = new CaptchaPendingData(captchaReader);
-			pendingDataIndex = mPendingDataStartIndex++;
-			mPendingDataArray.put(pendingDataIndex, pendingData);
+			pendingDataIndex = pendingDataStartIndex++;
+			pendingDataArray.put(pendingDataIndex, pendingData);
 		}
 		try {
 			CaptchaHandlerData handlerData = new CaptchaHandlerData(pendingDataIndex, chanName, captchaType,
 					requirement, boardName, threadNumber, descriptionResId);
-			mHandler.obtainMessage(MESSAGE_REQUIRE_USER_CAPTCHA, handlerData).sendToTarget();
+			handler.obtainMessage(MESSAGE_REQUIRE_USER_CAPTCHA, handlerData).sendToTarget();
 			if (retry) {
-				mHandler.sendEmptyMessage(MESSAGE_SHOW_CAPTCHA_INVALID);
+				handler.sendEmptyMessage(MESSAGE_SHOW_CAPTCHA_INVALID);
 			}
 			synchronized (pendingData) {
 				while (!pendingData.ready) {
@@ -1112,7 +1113,7 @@ public class ForegroundManager implements Handler.Callback {
 					String recaptchaResponse = captchaData.get(ReadCaptchaTask.RECAPTCHA_SKIP_RESPONSE);
 					if (recaptchaResponse == null) {
 						pendingData.ready = false;
-						mHandler.obtainMessage(MESSAGE_REQUIRE_ASYNC_CHECK, handlerData).sendToTarget();
+						handler.obtainMessage(MESSAGE_REQUIRE_ASYNC_CHECK, handlerData).sendToTarget();
 						synchronized (pendingData) {
 							while (!pendingData.ready) {
 								try {
@@ -1135,8 +1136,8 @@ public class ForegroundManager implements Handler.Callback {
 			}
 			return captchaData;
 		} finally {
-			synchronized (mPendingDataArray) {
-				mPendingDataArray.remove(pendingDataIndex);
+			synchronized (pendingDataArray) {
+				pendingDataArray.remove(pendingDataIndex);
 			}
 		}
 	}
@@ -1192,15 +1193,15 @@ public class ForegroundManager implements Handler.Callback {
 		}
 		ChoicePendingData pendingData;
 		int pendingDataIndex;
-		synchronized (mPendingDataArray) {
+		synchronized (pendingDataArray) {
 			pendingData = new ChoicePendingData();
-			pendingDataIndex = mPendingDataStartIndex++;
-			mPendingDataArray.put(pendingDataIndex, pendingData);
+			pendingDataIndex = pendingDataStartIndex++;
+			pendingDataArray.put(pendingDataIndex, pendingData);
 		}
 		try {
 			ChoiceHandlerData handlerData = new ChoiceHandlerData(pendingDataIndex, columns, selected, images, items,
 					descriptionText, descriptionImage, multiple);
-			mHandler.obtainMessage(MESSAGE_REQUIRE_USER_CHOICE, handlerData).sendToTarget();
+			handler.obtainMessage(MESSAGE_REQUIRE_USER_CHOICE, handlerData).sendToTarget();
 			synchronized (pendingData) {
 				while (!pendingData.ready) {
 					try {
@@ -1213,19 +1214,19 @@ public class ForegroundManager implements Handler.Callback {
 			}
 			return pendingData.result;
 		} finally {
-			synchronized (mPendingDataArray) {
-				mPendingDataArray.remove(pendingDataIndex);
+			synchronized (pendingDataArray) {
+				pendingDataArray.remove(pendingDataIndex);
 			}
 		}
 	}
 
 	public static void register(Activity activity) {
-		INSTANCE.mActivity = new WeakReference<>(activity);
+		INSTANCE.activity = new WeakReference<>(activity);
 	}
 
 	public static void unregister(Activity activity) {
 		if (INSTANCE.getActivity() == activity) {
-			INSTANCE.mActivity = null;
+			INSTANCE.activity = null;
 		}
 	}
 }

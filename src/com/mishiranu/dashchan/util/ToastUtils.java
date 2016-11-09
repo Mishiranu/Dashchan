@@ -27,39 +27,39 @@ import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.widget.ClickableToast;
 
 public class ToastUtils implements Runnable {
-	private static Toast sToast;
+	private static Toast toast;
 
 	@SuppressLint("ShowToast")
 	private static void makeNewToast(Context context) {
 		synchronized (ToastUtils.class) {
-			if (sToast == null) {
-				sToast = Toast.makeText(context, "", Toast.LENGTH_LONG);
+			if (toast == null) {
+				toast = Toast.makeText(context, "", Toast.LENGTH_LONG);
 			}
 			ToastUtils.class.notifyAll();
 		}
 	}
 
-	private final Context mContext;
+	private final Context context;
 
 	private ToastUtils(Context context) {
-		mContext = context;
+		this.context = context;
 	}
 
 	@Override
 	public void run() {
-		makeNewToast(mContext);
+		makeNewToast(context);
 	}
 
 	public static void show(Context context, String message) {
 		synchronized (ToastUtils.class) {
 			ClickableToast.cancel(context);
-			if (sToast == null) {
+			if (toast == null) {
 				if (ConcurrentUtils.isMain()) {
 					makeNewToast(context.getApplicationContext());
 				} else {
 					new Handler(Looper.getMainLooper()).post(new ToastUtils(context.getApplicationContext()));
 					try {
-						while (sToast == null) {
+						while (toast == null) {
 							ToastUtils.class.wait();
 						}
 					} catch (InterruptedException e) {
@@ -68,8 +68,8 @@ public class ToastUtils implements Runnable {
 					}
 				}
 			}
-			sToast.setText(message);
-			sToast.show();
+			toast.setText(message);
+			toast.show();
 		}
 	}
 
@@ -87,10 +87,10 @@ public class ToastUtils implements Runnable {
 
 	public static void cancel() {
 		synchronized (ToastUtils.class) {
-			if (sToast != null) {
-				sToast.cancel();
+			if (toast != null) {
+				toast.cancel();
 				// Toast can't be recycled, so I reset reference and create new toast later
-				sToast = null;
+				toast = null;
 			}
 		}
 	}

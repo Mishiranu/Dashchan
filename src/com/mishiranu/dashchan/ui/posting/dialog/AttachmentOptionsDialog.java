@@ -65,10 +65,10 @@ public class AttachmentOptionsDialog extends PostingDialog implements AdapterVie
 		}
 	}
 
-	private final ArrayList<OptionItem> mOptionItems = new ArrayList<>();
-	private final SparseIntArray mOptionIndexes = new SparseIntArray();
+	private final ArrayList<OptionItem> optionItems = new ArrayList<>();
+	private final SparseIntArray optionIndexes = new SparseIntArray();
 
-	private ListView mListView;
+	private ListView listView;
 
 	public AttachmentOptionsDialog() {}
 
@@ -79,7 +79,7 @@ public class AttachmentOptionsDialog extends PostingDialog implements AdapterVie
 	}
 
 	private static class ItemsAdapter extends ArrayAdapter<String> {
-		private final SparseBooleanArray mEnabledItems = new SparseBooleanArray();
+		private final SparseBooleanArray enabledItems = new SparseBooleanArray();
 
 		public ItemsAdapter(Context context, int resId, ArrayList<String> items) {
 			super(context, resId, android.R.id.text1, items);
@@ -94,11 +94,11 @@ public class AttachmentOptionsDialog extends PostingDialog implements AdapterVie
 
 		@Override
 		public boolean isEnabled(int position) {
-			return mEnabledItems.get(position, true);
+			return enabledItems.get(position, true);
 		}
 
 		public void setEnabled(int index, boolean enabled) {
-			mEnabledItems.put(index, enabled);
+			enabledItems.put(index, enabled);
 		}
 	}
 
@@ -109,31 +109,31 @@ public class AttachmentOptionsDialog extends PostingDialog implements AdapterVie
 		AttachmentHolder holder = getAttachmentHolder(EXTRA_ATTACHMENT_INDEX);
 		ChanConfiguration.Posting postingConfiguration = getPostingConfiguration();
 		int index = 0;
-		mOptionItems.clear();
-		mOptionIndexes.clear();
-		mOptionItems.add(new OptionItem(getString(R.string.text_unique_hash), OPTION_TYPE_UNIQUE_HASH,
+		optionItems.clear();
+		optionIndexes.clear();
+		optionItems.add(new OptionItem(getString(R.string.text_unique_hash), OPTION_TYPE_UNIQUE_HASH,
 				holder.optionUniqueHash));
-		mOptionIndexes.append(OPTION_TYPE_UNIQUE_HASH, index++);
+		optionIndexes.append(OPTION_TYPE_UNIQUE_HASH, index++);
 		if (GraphicsUtils.canRemoveMetadata(holder.fileHolder)) {
-			mOptionItems.add(new OptionItem(getString(R.string.text_remove_metadata), OPTION_TYPE_REMOVE_METADATA,
+			optionItems.add(new OptionItem(getString(R.string.text_remove_metadata), OPTION_TYPE_REMOVE_METADATA,
 					holder.optionRemoveMetadata));
-			mOptionIndexes.append(OPTION_TYPE_REMOVE_METADATA, index++);
+			optionIndexes.append(OPTION_TYPE_REMOVE_METADATA, index++);
 		}
 		if (holder.fileHolder.isImage()) {
-			mOptionItems.add(new OptionItem(getString(R.string.text_reencode_image), OPTION_TYPE_REENCODE_IMAGE,
+			optionItems.add(new OptionItem(getString(R.string.text_reencode_image), OPTION_TYPE_REENCODE_IMAGE,
 					holder.reencoding != null));
-			mOptionIndexes.append(OPTION_TYPE_REENCODE_IMAGE, index++);
+			optionIndexes.append(OPTION_TYPE_REENCODE_IMAGE, index++);
 		}
-		mOptionItems.add(new OptionItem(getString(R.string.text_remove_file_name), OPTION_TYPE_REMOVE_FILE_NAME,
+		optionItems.add(new OptionItem(getString(R.string.text_remove_file_name), OPTION_TYPE_REMOVE_FILE_NAME,
 				holder.optionRemoveFileName));
-		mOptionIndexes.append(OPTION_TYPE_REMOVE_FILE_NAME, index++);
+		optionIndexes.append(OPTION_TYPE_REMOVE_FILE_NAME, index++);
 		if (postingConfiguration.attachmentSpoiler) {
-			mOptionItems.add(new OptionItem(getString(R.string.text_spoiler), OPTION_TYPE_SPOILER,
+			optionItems.add(new OptionItem(getString(R.string.text_spoiler), OPTION_TYPE_SPOILER,
 					holder.optionSpoiler));
-			mOptionIndexes.append(OPTION_TYPE_SPOILER, index++);
+			optionIndexes.append(OPTION_TYPE_SPOILER, index++);
 		}
 		ArrayList<String> items = new ArrayList<>();
-		for (OptionItem optionItem : mOptionItems) {
+		for (OptionItem optionItem : optionItems) {
 			items.add(optionItem.title);
 		}
 		LinearLayout linearLayout = new LinearLayout(activity);
@@ -144,20 +144,20 @@ public class AttachmentOptionsDialog extends PostingDialog implements AdapterVie
 		imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
 		linearLayout.addView(imageView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
 				0, 1));
-		mListView = new ListView(activity);
-		linearLayout.addView(mListView, LinearLayout.LayoutParams.MATCH_PARENT,
+		listView = new ListView(activity);
+		linearLayout.addView(listView, LinearLayout.LayoutParams.MATCH_PARENT,
 				LinearLayout.LayoutParams.WRAP_CONTENT);
-		mListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+		listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
 		int resId = ResourceUtils.obtainAlertDialogLayoutResId(activity, ResourceUtils.DIALOG_LAYOUT_MULTI_CHOICE);
 		if (C.API_LOLLIPOP) {
-			mListView.setDividerHeight(0);
+			listView.setDividerHeight(0);
 		}
 		ItemsAdapter adapter = new ItemsAdapter(activity, resId, items);
-		mListView.setAdapter(adapter);
-		for (int i = 0; i < mOptionItems.size(); i++) {
-			mListView.setItemChecked(i, mOptionItems.get(i).checked);
+		listView.setAdapter(adapter);
+		for (int i = 0; i < optionItems.size(); i++) {
+			listView.setItemChecked(i, optionItems.get(i).checked);
 		}
-		mListView.setOnItemClickListener(this);
+		listView.setOnItemClickListener(this);
 		updateItemsEnabled(adapter, holder);
 		AlertDialog dialog = new AlertDialog.Builder(activity).setView(linearLayout).create();
 		dialog.setCanceledOnTouchOutside(true);
@@ -165,9 +165,9 @@ public class AttachmentOptionsDialog extends PostingDialog implements AdapterVie
 	}
 
 	private void updateItemsEnabled(ItemsAdapter adapter, AttachmentHolder holder) {
-		int reencodeIndex = mOptionIndexes.get(OPTION_TYPE_REENCODE_IMAGE, -1);
+		int reencodeIndex = optionIndexes.get(OPTION_TYPE_REENCODE_IMAGE, -1);
 		boolean allowRemoveMetadata = reencodeIndex == -1 || holder.reencoding == null;
-		int removeMetadataIndex = mOptionIndexes.get(OPTION_TYPE_REMOVE_METADATA, -1);
+		int removeMetadataIndex = optionIndexes.get(OPTION_TYPE_REMOVE_METADATA, -1);
 		if (removeMetadataIndex >= 0) {
 			adapter.setEnabled(removeMetadataIndex, allowRemoveMetadata);
 			adapter.notifyDataSetChanged();
@@ -177,8 +177,8 @@ public class AttachmentOptionsDialog extends PostingDialog implements AdapterVie
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 		AttachmentHolder holder = getAttachmentHolder(EXTRA_ATTACHMENT_INDEX);
-		int type = mOptionItems.get(position).type;
-		boolean checked = mListView.isItemChecked(position);
+		int type = optionItems.get(position).type;
+		boolean checked = listView.isItemChecked(position);
 		switch (type) {
 			case OPTION_TYPE_UNIQUE_HASH: {
 				holder.optionUniqueHash = checked;
@@ -190,7 +190,7 @@ public class AttachmentOptionsDialog extends PostingDialog implements AdapterVie
 			}
 			case OPTION_TYPE_REENCODE_IMAGE: {
 				if (checked) {
-					mListView.setItemChecked(position, false);
+					listView.setItemChecked(position, false);
 					ReencodingDialog dialog = new ReencodingDialog();
 					dialog.bindCallback(this).show(getFragmentManager(), ReencodingDialog.TAG);
 				} else {
@@ -207,16 +207,16 @@ public class AttachmentOptionsDialog extends PostingDialog implements AdapterVie
 				break;
 			}
 		}
-		updateItemsEnabled((ItemsAdapter) mListView.getAdapter(), holder);
+		updateItemsEnabled((ItemsAdapter) listView.getAdapter(), holder);
 	}
 
 	public void setReencoding(GraphicsUtils.Reencoding reencoding) {
-		int reencodeIndex = mOptionIndexes.get(OPTION_TYPE_REENCODE_IMAGE, -1);
+		int reencodeIndex = optionIndexes.get(OPTION_TYPE_REENCODE_IMAGE, -1);
 		if (reencodeIndex >= 0) {
 			AttachmentHolder holder = getAttachmentHolder(EXTRA_ATTACHMENT_INDEX);
 			holder.reencoding = reencoding;
-			mListView.setItemChecked(reencodeIndex, reencoding != null);
-			updateItemsEnabled((ItemsAdapter) mListView.getAdapter(), holder);
+			listView.setItemChecked(reencodeIndex, reencoding != null);
+			updateItemsEnabled((ItemsAdapter) listView.getAdapter(), holder);
 		}
 	}
 }

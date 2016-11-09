@@ -50,27 +50,27 @@ public class JpegData {
 
 	public final boolean hasExif;
 	public final boolean forbidRegionDecoder;
-	private final LinkedHashMap<String, String> mExif;
+	private final LinkedHashMap<String, String> exif;
 
 	private JpegData(boolean hasExif, boolean forbidRegionDecoder, LinkedHashMap<String, String> exif) {
 		this.hasExif = hasExif;
 		this.forbidRegionDecoder = forbidRegionDecoder;
-		mExif = exif;
+		this.exif = exif;
 	}
 
-	private List<Pair<String, String>> mUserMetadata = null;
+	private List<Pair<String, String>> userMetadata = null;
 
 	private void addUserMetadata(String key, String title) {
-		String value = mExif.get(key);
+		String value = exif.get(key);
 		if (!StringUtils.isEmpty(value)) {
-			mUserMetadata.add(new Pair<>(title, value));
+			userMetadata.add(new Pair<>(title, value));
 		}
 	}
 
 	public List<Pair<String, String>> getUserMetadata() {
-		if (mUserMetadata == null) {
-			if (mExif != null) {
-				mUserMetadata = new ArrayList<>();
+		if (userMetadata == null) {
+			if (exif != null) {
+				userMetadata = new ArrayList<>();
 				addUserMetadata(KEY_DESCRIPTION, "Description");
 				addUserMetadata(KEY_MAKE, "Manufacturer");
 				addUserMetadata(KEY_MODEL, "Model");
@@ -78,23 +78,23 @@ public class JpegData {
 				addUserMetadata(KEY_DATE_TIME, "Date");
 				int rotation = getRotation();
 				if (rotation != 0) {
-					mUserMetadata.add(new Pair<>("Rotation", rotation + "°"));
+					userMetadata.add(new Pair<>("Rotation", rotation + "°"));
 				}
 				String geolocation = getGeolocation(true);
 				if (geolocation != null) {
-					mUserMetadata.add(new Pair<>("Geolocation", geolocation));
+					userMetadata.add(new Pair<>("Geolocation", geolocation));
 				}
-				mUserMetadata = Collections.unmodifiableList(mUserMetadata);
+				userMetadata = Collections.unmodifiableList(userMetadata);
 			} else {
-				mUserMetadata = Collections.emptyList();
+				userMetadata = Collections.emptyList();
 			}
 		}
-		return mUserMetadata;
+		return userMetadata;
 	}
 
 	public int getRotation() {
-		if (mExif != null) {
-			String orientation = mExif.get(KEY_ORIENTATION);
+		if (exif != null) {
+			String orientation = exif.get(KEY_ORIENTATION);
 			if (orientation != null) {
 				switch (orientation) {
 					case "8": {
@@ -124,12 +124,12 @@ public class JpegData {
 	}
 
 	public String getGeolocation(boolean userReadable) {
-		if (mExif != null) {
-			String latitude = mExif.get(KEY_LATITUDE);
-			String longitude = mExif.get(KEY_LONGITUDE);
+		if (exif != null) {
+			String latitude = exif.get(KEY_LATITUDE);
+			String longitude = exif.get(KEY_LONGITUDE);
 			if (latitude != null && longitude != null) {
-				String latitudeRef = mExif.get(KEY_LATITUDE_REF);
-				String longitudeRef = mExif.get(KEY_LONGITUDE_REF);
+				String latitudeRef = exif.get(KEY_LATITUDE_REF);
+				String longitudeRef = exif.get(KEY_LONGITUDE_REF);
 				if (StringUtils.isEmptyOrWhitespace(latitudeRef)) {
 					latitudeRef = "N";
 				}
@@ -330,7 +330,7 @@ public class JpegData {
 					}
 				}
 			} catch (IOException e) {
-				// Ignore
+				// Ignore exception
 			} finally {
 				IOUtils.close(input);
 			}

@@ -26,15 +26,15 @@ import chan.annotation.Public;
 public final class ThreadRedirectException extends Exception {
 	private static final long serialVersionUID = 1L;
 
-	private final String mBoardName;
-	private final String mThreadNumber;
-	private final String mPostNumber;
+	private final String boardName;
+	private final String threadNumber;
+	private final String postNumber;
 
 	@Public
 	public ThreadRedirectException(String boardName, String threadNumber, String postNumber) {
-		mBoardName = boardName;
-		mThreadNumber = threadNumber;
-		mPostNumber = postNumber;
+		this.boardName = boardName;
+		this.threadNumber = threadNumber;
+		this.postNumber = postNumber;
 	}
 
 	@Public
@@ -44,7 +44,7 @@ public final class ThreadRedirectException extends Exception {
 
 	@SuppressWarnings("ThrowableResultOfMethodCallIgnored")
 	public RedirectException.Target obtainTarget(String chanName, String boardName) throws ExtensionException {
-		return RedirectException.toThread(mBoardName != null ? mBoardName : boardName, mThreadNumber, mPostNumber)
-				.obtainTarget(chanName);
+		return RedirectException.toThread(this.boardName != null ? this.boardName : boardName,
+				threadNumber, postNumber).obtainTarget(chanName);
 	}
 }

@@ -43,8 +43,8 @@ public enum Log {
 	private static final ThreadLocal<Long> MARK_TIME = new ThreadLocal<>();
 	private static final Persistent PERSISTENT = new Persistent();
 
-	private static String sTechnicalData;
-	private static PrintStream sLogOutput;
+	private static String technicalData;
+	private static PrintStream logOutput;
 
 	public static class Persistent {
 		private Persistent() {}
@@ -177,10 +177,10 @@ public enum Log {
 				android.util.Log.d(TAG, part);
 			}
 		}
-		if (sLogOutput != null) {
-			synchronized (sLogOutput) {
-				sLogOutput.append(TIME_FORMAT.format(System.currentTimeMillis())).append(": ").append(message);
-				sLogOutput.append('\n');
+		if (logOutput != null) {
+			synchronized (logOutput) {
+				logOutput.append(TIME_FORMAT.format(System.currentTimeMillis())).append(": ").append(message);
+				logOutput.append('\n');
 			}
 		}
 	}
@@ -189,13 +189,13 @@ public enum Log {
 	public static void stack(Throwable t) {
 		if (t != null) {
 			t.printStackTrace();
-			if (sLogOutput != null) {
-				synchronized (sLogOutput) {
-					sLogOutput.println(STACK_TRACE_DIVIDER);
-					sLogOutput.print(sTechnicalData);
-					sLogOutput.println(STACK_TRACE_DIVIDER);
-					t.printStackTrace(sLogOutput);
-					sLogOutput.println(STACK_TRACE_DIVIDER);
+			if (logOutput != null) {
+				synchronized (logOutput) {
+					logOutput.println(STACK_TRACE_DIVIDER);
+					logOutput.print(technicalData);
+					logOutput.println(STACK_TRACE_DIVIDER);
+					t.printStackTrace(logOutput);
+					logOutput.println(STACK_TRACE_DIVIDER);
 				}
 			}
 		}
@@ -213,7 +213,7 @@ public enum Log {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-		sTechnicalData = "Device: " + Build.MANUFACTURER + " " + Build.DEVICE + " (" + Build.MODEL + ")\n"
+		technicalData = "Device: " + Build.MANUFACTURER + " " + Build.DEVICE + " (" + Build.MODEL + ")\n"
 				+ "SDK: " + Build.VERSION.SDK_INT + " (" + Build.VERSION.RELEASE + ")\n"
 				+ "Application: " + packageInfo.versionCode + " (" + packageInfo.versionName + ")\n";
 		File packageDirectory = new File(Environment.getExternalStorageDirectory(),  "Android/data/"
@@ -241,9 +241,9 @@ public enum Log {
 			}
 			File logFile = new File(logsDirectory, "log-" + System.currentTimeMillis() + ".txt");
 			try {
-				sLogOutput = new PrintStream(logFile);
+				logOutput = new PrintStream(logFile);
 			} catch (Exception e) {
-				// Ignore
+				// Ignore exception
 			}
 		}
 		File errorsDirectory = new File(packageDirectory, "errors");
@@ -253,7 +253,7 @@ public enum Log {
 				try {
 					File errorFile = new File(errorsDirectory, "error-" + System.currentTimeMillis() + ".txt");
 					PrintStream stream = new PrintStream(errorFile);
-					stream.print(sTechnicalData);
+					stream.print(technicalData);
 					stream.println(STACK_TRACE_DIVIDER);
 					ex.printStackTrace(stream);
 				} catch (Throwable t) {

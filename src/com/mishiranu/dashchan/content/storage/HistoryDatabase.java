@@ -44,10 +44,10 @@ public class HistoryDatabase implements BaseColumns {
 		return INSTANCE;
 	}
 
-	private final SQLiteDatabase mDatabase;
+	private final SQLiteDatabase database;
 
 	private HistoryDatabase() {
-		mDatabase = DatabaseHelper.getInstance().getWritableDatabase();
+		database = DatabaseHelper.getInstance().getWritableDatabase();
 	}
 
 	public void addHistory(final String chanName, final String boardName, final String threadNumber,
@@ -55,7 +55,7 @@ public class HistoryDatabase implements BaseColumns {
 		DatabaseHelper.getInstance().getExecutor().execute(() -> {
 			synchronized (HistoryDatabase.this) {
 				clearOldHistory(chanName);
-				mDatabase.delete(DatabaseHelper.TABLE_HISTORY, buildWhere(chanName, boardName, threadNumber), null);
+				database.delete(DatabaseHelper.TABLE_HISTORY, buildWhere(chanName, boardName, threadNumber), null);
 				long currentTime = System.currentTimeMillis();
 				ContentValues values = new ContentValues();
 				values.put(COLUMN_CHAN_NAME, chanName);
@@ -63,7 +63,7 @@ public class HistoryDatabase implements BaseColumns {
 				values.put(COLUMN_THREAD_NUMBER, threadNumber);
 				values.put(COLUMN_TITLE, threadTitle);
 				values.put(COLUMN_CREATED, currentTime);
-				mDatabase.insert(DatabaseHelper.TABLE_HISTORY, null, values);
+				database.insert(DatabaseHelper.TABLE_HISTORY, null, values);
 			}
 		});
 	}
@@ -75,7 +75,7 @@ public class HistoryDatabase implements BaseColumns {
 				synchronized (HistoryDatabase.this) {
 					ContentValues values = new ContentValues();
 					values.put(COLUMN_TITLE, threadTitle);
-					mDatabase.update(DatabaseHelper.TABLE_HISTORY, values,
+					database.update(DatabaseHelper.TABLE_HISTORY, values,
 							buildWhere(chanName, boardName, threadNumber), null);
 				}
 			});
@@ -96,7 +96,7 @@ public class HistoryDatabase implements BaseColumns {
 		synchronized (this) {
 			clearOldHistory(chanName);
 			ArrayList<HistoryItem> historyItems = new ArrayList<>();
-			Cursor cursor = mDatabase.query(DatabaseHelper.TABLE_HISTORY, ALL_COLUMNS, buildWhere(chanName), null, null,
+			Cursor cursor = database.query(DatabaseHelper.TABLE_HISTORY, ALL_COLUMNS, buildWhere(chanName), null, null,
 					null, COLUMN_CREATED + " desc", Integer.toString(HISTORY_SIZE));
 			cursor.moveToFirst();
 			while (!cursor.isAfterLast()) {
@@ -118,7 +118,7 @@ public class HistoryDatabase implements BaseColumns {
 
 	public boolean remove(String chanName, String boardName, String threadNumber) {
 		synchronized (this) {
-			return mDatabase.delete(DatabaseHelper.TABLE_HISTORY, buildWhere(chanName, boardName,
+			return database.delete(DatabaseHelper.TABLE_HISTORY, buildWhere(chanName, boardName,
 					threadNumber), null) > 0;
 		}
 	}
@@ -126,13 +126,13 @@ public class HistoryDatabase implements BaseColumns {
 	private void clearOldHistory(String chanName) {
 		synchronized (this) {
 			String where = buildWhere(chanName);
-			Cursor cursor = mDatabase.rawQuery("SELECT COUNT(*) FROM " + DatabaseHelper.TABLE_HISTORY + " WHERE " +
+			Cursor cursor = database.rawQuery("SELECT COUNT(*) FROM " + DatabaseHelper.TABLE_HISTORY + " WHERE " +
 					where, null);
 			cursor.moveToFirst();
 			long count = cursor.getLong(0);
 			cursor.close();
 			if (count >= HISTORY_THRESHOLD) {
-				cursor = mDatabase.query(DatabaseHelper.TABLE_HISTORY, ALL_COLUMNS, where, null, null, null,
+				cursor = database.query(DatabaseHelper.TABLE_HISTORY, ALL_COLUMNS, where, null, null, null,
 						COLUMN_CREATED + " desc", HISTORY_SIZE + ", " + (HISTORY_SIZE + 1));
 				long id = -1;
 				if (cursor.moveToFirst()) {
@@ -140,7 +140,7 @@ public class HistoryDatabase implements BaseColumns {
 				}
 				cursor.close();
 				if (id >= 0) {
-					mDatabase.delete(DatabaseHelper.TABLE_HISTORY, _ID + " <= " + id + " AND " + where, null);
+					database.delete(DatabaseHelper.TABLE_HISTORY, _ID + " <= " + id + " AND " + where, null);
 				}
 			}
 		}
@@ -148,7 +148,7 @@ public class HistoryDatabase implements BaseColumns {
 
 	public void clearAllHistory(String chanName) {
 		synchronized (this) {
-			mDatabase.delete(DatabaseHelper.TABLE_HISTORY, buildWhere(chanName), null);
+			database.delete(DatabaseHelper.TABLE_HISTORY, buildWhere(chanName), null);
 		}
 	}
 

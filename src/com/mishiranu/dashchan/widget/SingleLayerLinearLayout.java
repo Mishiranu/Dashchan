@@ -44,25 +44,25 @@ public class SingleLayerLinearLayout extends LinearLayout {
 		public void onTemporaryDetatch(SingleLayerLinearLayout view, boolean start);
 	}
 
-	private OnTemporaryDetatchListener mOnTemporaryDetatchListener;
+	private OnTemporaryDetatchListener onTemporaryDetatchListener;
 
 	public void setOnTemporaryDetatchListener(OnTemporaryDetatchListener listener) {
-		mOnTemporaryDetatchListener = listener;
+		onTemporaryDetatchListener = listener;
 	}
 
 	@Override
 	public void onStartTemporaryDetach() {
 		super.onStartTemporaryDetach();
-		if (mOnTemporaryDetatchListener != null) {
-			mOnTemporaryDetatchListener.onTemporaryDetatch(this, true);
+		if (onTemporaryDetatchListener != null) {
+			onTemporaryDetatchListener.onTemporaryDetatch(this, true);
 		}
 	}
 
 	@Override
 	public void onFinishTemporaryDetach() {
 		super.onFinishTemporaryDetach();
-		if (mOnTemporaryDetatchListener != null) {
-			mOnTemporaryDetatchListener.onTemporaryDetatch(this, false);
+		if (onTemporaryDetatchListener != null) {
+			onTemporaryDetatchListener.onTemporaryDetatch(this, false);
 		}
 	}
 }

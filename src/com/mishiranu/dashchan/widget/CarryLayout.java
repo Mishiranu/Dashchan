@@ -23,8 +23,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 public class CarryLayout extends ViewGroup {
-	private int mHorizontalSpacing;
-	private int mVerticalSpacing;
+	private int horizontalSpacing;
+	private int verticalSpacing;
 
 	private static final int[] ATTRS = new int[] {android.R.attr.horizontalSpacing, android.R.attr.verticalSpacing};
 
@@ -39,31 +39,31 @@ public class CarryLayout extends ViewGroup {
 	public CarryLayout(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
 		TypedArray typedArray = context.obtainStyledAttributes(attrs, ATTRS, defStyleAttr, 0);
-		mHorizontalSpacing = typedArray.getDimensionPixelSize(0, 0);
-		mVerticalSpacing = typedArray.getDimensionPixelSize(1, 0);
+		horizontalSpacing = typedArray.getDimensionPixelSize(0, 0);
+		verticalSpacing = typedArray.getDimensionPixelSize(1, 0);
 		typedArray.recycle();
 	}
 
 	@SuppressWarnings("unused")
 	public void setHorizontalSpacing(int horizontalSpacing) {
-		mHorizontalSpacing = horizontalSpacing;
+		this.horizontalSpacing = horizontalSpacing;
 		requestLayout();
 	}
 
 	@SuppressWarnings("unused")
 	public void setVerticalSpacing(int verticalSpacing) {
-		mVerticalSpacing = verticalSpacing;
+		this.verticalSpacing = verticalSpacing;
 		requestLayout();
 	}
 
 	@SuppressWarnings("unused")
 	public int getHorizontalSpacing() {
-		return mHorizontalSpacing;
+		return horizontalSpacing;
 	}
 
 	@SuppressWarnings("unused")
 	public int getVerticalSpacing() {
-		return mVerticalSpacing;
+		return verticalSpacing;
 	}
 
 	@Override
@@ -77,8 +77,8 @@ public class CarryLayout extends ViewGroup {
 		int minHeight = 0;
 		int lineWidth = 0;
 		int lineHeight = 0;
-		int horizontalSpacing = mHorizontalSpacing;
-		int verticalSpacing = mVerticalSpacing;
+		int horizontalSpacing = this.horizontalSpacing;
+		int verticalSpacing = this.verticalSpacing;
 		int count = getChildCount();
 		int childWidthMeasureSpec = widthUnspecified ? MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED)
 				: MeasureSpec.makeMeasureSpec(maxWidth, MeasureSpec.AT_MOST);
@@ -124,8 +124,8 @@ public class CarryLayout extends ViewGroup {
 		int rleft = 0;
 		int rtop = 0;
 		int lineHeight = 0;
-		int horizontalSpacing = mHorizontalSpacing;
-		int verticalSpacing = mVerticalSpacing;
+		int horizontalSpacing = this.horizontalSpacing;
+		int verticalSpacing = this.verticalSpacing;
 		int count = getChildCount();
 		for (int i = 0; i < count; i++) {
 			View child = getChildAt(i);

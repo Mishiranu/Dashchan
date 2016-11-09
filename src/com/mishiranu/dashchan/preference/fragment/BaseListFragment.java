@@ -33,17 +33,17 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.util.ResourceUtils;
 
 public abstract class BaseListFragment extends Fragment implements AdapterView.OnItemClickListener {
-	private ListView mListView;
-	private View mEmptyView;
-	private TextView mEmptyText;
+	private ListView listView;
+	private View emptyView;
+	private TextView emptyText;
 
 	@Override
 	public final View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.activity_common, container, false);
 		ListView listView = (ListView) view.findViewById(android.R.id.list);
-		mEmptyView = view.findViewById(R.id.error);
-		mEmptyText = (TextView) view.findViewById(R.id.error_text);
-		mEmptyView.setVisibility(View.GONE);
+		emptyView = view.findViewById(R.id.error);
+		emptyText = (TextView) view.findViewById(R.id.error_text);
+		emptyView.setVisibility(View.GONE);
 		listView.setOnItemClickListener(this);
 		registerForContextMenu(listView);
 		ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
@@ -56,28 +56,28 @@ public abstract class BaseListFragment extends Fragment implements AdapterView.O
 			}
 			listView.setScrollBarStyle(ListView.SCROLLBARS_OUTSIDE_OVERLAY);
 		} catch (Exception e) {
-			// Ignore
+			// Reflective operation, ignore exception
 		}
-		mListView = listView;
+		this.listView = listView;
 		return view;
 	}
 
 	public ListView getListView() {
-		return mListView;
+		return listView;
 	}
 
 	public void setListAdapter(ListAdapter adapter) {
-		mListView.setAdapter(adapter);
+		listView.setAdapter(adapter);
 	}
 
 	public void setEmptyText(CharSequence text) {
-		mEmptyText.setText(text);
+		emptyText.setText(text);
 		if (StringUtils.isEmpty(text)) {
-			mListView.setEmptyView(null);
-			mEmptyView.setVisibility(View.GONE);
+			listView.setEmptyView(null);
+			emptyView.setVisibility(View.GONE);
 		} else {
-			mEmptyView.setVisibility(View.VISIBLE);
-			mListView.setEmptyView(mEmptyView);
+			emptyView.setVisibility(View.VISIBLE);
+			listView.setEmptyView(emptyView);
 		}
 	}
 

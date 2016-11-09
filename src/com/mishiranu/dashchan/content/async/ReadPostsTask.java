@@ -49,22 +49,22 @@ import com.mishiranu.dashchan.text.SimilarTextEstimator;
 import com.mishiranu.dashchan.util.Log;
 
 public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
-	private final Callback mCallback;
-	private final String mChanName;
-	private final String mBoardName;
-	private final String mThreadNumber;
-	private final Posts mCachedPosts;
-	private final HttpValidator mValidator;
-	private final boolean mForceLoadFullThread;
-	private final String mLastPostNumber;
-	private final ArrayList<UserPostPending> mUserPostPendings;
+	private final Callback callback;
+	private final String chanName;
+	private final String boardName;
+	private final String threadNumber;
+	private final Posts cachedPosts;
+	private final HttpValidator validator;
+	private final boolean forceLoadFullThread;
+	private final String lastPostNumber;
+	private final ArrayList<UserPostPending> userPostPendings;
 
-	private Result mResult;
-	private boolean mFullThread = false;
+	private Result result;
+	private boolean fullThread = false;
 
-	private ArrayList<UserPostPending> mRemovedUserPostPendings;
-	private RedirectException.Target mTarget;
-	private ErrorItem mErrorItem;
+	private ArrayList<UserPostPending> removedUserPostPendings;
+	private RedirectException.Target target;
+	private ErrorItem errorItem;
 
 	public interface Callback {
 		public void onRequestPreloadPosts(ArrayList<Patch> patches, int oldCount);
@@ -78,49 +78,49 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 	public ReadPostsTask(Callback callback, String chanName, String boardName, String threadNumber, Posts cachedPosts,
 			boolean useValidator, boolean forceLoadFullThread, String lastPostNumber,
 			ArrayList<UserPostPending> userPostPendings) {
-		mCallback = callback;
-		mChanName = chanName;
-		mBoardName = boardName;
-		mThreadNumber = threadNumber;
-		mCachedPosts = cachedPosts;
-		mValidator = useValidator && cachedPosts != null ? cachedPosts.getValidator() : null;
-		mForceLoadFullThread = forceLoadFullThread;
-		mLastPostNumber = lastPostNumber;
-		mUserPostPendings = userPostPendings.size() > 0 ? userPostPendings : null;
+		this.callback = callback;
+		this.chanName = chanName;
+		this.boardName = boardName;
+		this.threadNumber = threadNumber;
+		this.cachedPosts = cachedPosts;
+		this.validator = useValidator && cachedPosts != null ? cachedPosts.getValidator() : null;
+		this.forceLoadFullThread = forceLoadFullThread;
+		this.lastPostNumber = lastPostNumber;
+		this.userPostPendings = userPostPendings.size() > 0 ? userPostPendings : null;
 	}
 
 	@Override
 	protected Boolean doInBackground(HttpHolder holder, Void... params) {
-		String lastPostNumber = mForceLoadFullThread ? null : mLastPostNumber;
-		boolean partialThreadLoading = Preferences.isPartialThreadLoading(mChanName) && !mForceLoadFullThread;
-		ChanPerformer performer = ChanPerformer.get(mChanName);
+		String lastPostNumber = forceLoadFullThread ? null : this.lastPostNumber;
+		boolean partialThreadLoading = Preferences.isPartialThreadLoading(chanName) && !forceLoadFullThread;
+		ChanPerformer performer = ChanPerformer.get(chanName);
 		try {
 			ChanPerformer.ReadPostsResult result;
 			try {
-				result = performer.safe().onReadPosts(new ChanPerformer.ReadPostsData(mBoardName, mThreadNumber,
-						lastPostNumber, partialThreadLoading, mCachedPosts, holder, mValidator));
+				result = performer.safe().onReadPosts(new ChanPerformer.ReadPostsData(boardName, threadNumber,
+						lastPostNumber, partialThreadLoading, cachedPosts, holder, validator));
 			} catch (ThreadRedirectException e) {
-				RedirectException.Target target = e.obtainTarget(mChanName, mBoardName);
+				RedirectException.Target target = e.obtainTarget(chanName, boardName);
 				if (target == null) {
 					throw HttpException.createNotFoundException();
 				}
-				mTarget = target;
+				this.target = target;
 				return true;
 			} catch (RedirectException e) {
-				RedirectException.Target target = e.obtainTarget(mChanName);
+				RedirectException.Target target = e.obtainTarget(chanName);
 				if (target == null) {
 					throw HttpException.createNotFoundException();
 				}
-				if (!mChanName.equals(target.chanName) || target.threadNumber == null) {
+				if (!chanName.equals(target.chanName) || target.threadNumber == null) {
 					Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES,
 							"Only local thread redirects available there");
-					mErrorItem = new ErrorItem(ErrorItem.TYPE_INVALID_DATA_FORMAT);
+					errorItem = new ErrorItem(ErrorItem.TYPE_INVALID_DATA_FORMAT);
 					return false;
-				} else if (StringUtils.equals(mBoardName, target.boardName) &&
-						mThreadNumber.equals(target.threadNumber)) {
+				} else if (StringUtils.equals(boardName, target.boardName) &&
+						threadNumber.equals(target.threadNumber)) {
 					throw HttpException.createNotFoundException();
 				} else {
-					mTarget = target;
+					this.target = target;
 					return true;
 				}
 			}
@@ -145,18 +145,18 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 				readPosts.setPosts(posts);
 
 				// Validate model data format
-				Post firstPost = mCachedPosts != null ? mCachedPosts.getPosts()[0] : posts[0];
+				Post firstPost = cachedPosts != null ? cachedPosts.getPosts()[0] : posts[0];
 				String firstPostNumber = firstPost.getPostNumber();
 				if (firstPostNumber == null) {
 					Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES, "The getPostNumber() method of",
 							"original post returned null.");
-					mErrorItem = new ErrorItem(ErrorItem.TYPE_INVALID_DATA_FORMAT);
+					errorItem = new ErrorItem(ErrorItem.TYPE_INVALID_DATA_FORMAT);
 					return false;
 				}
 				if (firstPost.getParentPostNumberOrNull() != null) {
 					Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES, "The getParentPostNumber() method of",
 							"original post must return null, \"0\" or post number.");
-					mErrorItem = new ErrorItem(ErrorItem.TYPE_INVALID_DATA_FORMAT);
+					errorItem = new ErrorItem(ErrorItem.TYPE_INVALID_DATA_FORMAT);
 					return false;
 				}
 				boolean resultWithOriginalPost = posts[0].getPostNumber().equals(firstPostNumber);
@@ -166,20 +166,20 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 					if (postNumber == null) {
 						Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES, "The getPostNumber() method of", i,
 								"post returned null.");
-						mErrorItem = new ErrorItem(ErrorItem.TYPE_INVALID_DATA_FORMAT);
+						errorItem = new ErrorItem(ErrorItem.TYPE_INVALID_DATA_FORMAT);
 						return false;
 					}
-					if (!mThreadNumber.equals(post.getThreadNumberOrOriginalPostNumber())) {
+					if (!threadNumber.equals(post.getThreadNumberOrOriginalPostNumber())) {
 						Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES, "The number of requested thread and",
 								"number of thread in post", postNumber, "are not equal.");
-						mErrorItem = new ErrorItem(ErrorItem.TYPE_INVALID_DATA_FORMAT);
+						errorItem = new ErrorItem(ErrorItem.TYPE_INVALID_DATA_FORMAT);
 						return false;
 					}
 					if (!resultWithOriginalPost || i > 0) {
 						if (!firstPostNumber.equals(post.getParentPostNumberOrNull())) {
 							Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES, "The getParentPostNumber()",
 									"method of post", postNumber, "is not equal to original post's number.");
-							mErrorItem = new ErrorItem(ErrorItem.TYPE_INVALID_DATA_FORMAT);
+							errorItem = new ErrorItem(ErrorItem.TYPE_INVALID_DATA_FORMAT);
 							return false;
 						}
 					}
@@ -188,9 +188,9 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 
 			Result handleResult = null;
 			boolean fullThread = false;
-			if (mCachedPosts != null) {
+			if (cachedPosts != null) {
 				boolean partial = partialThreadLoading && lastPostNumber != null;
-				handleResult = mergePosts(mCachedPosts, readPosts, partial);
+				handleResult = mergePosts(cachedPosts, readPosts, partial);
 			} else if (readPosts != null && readPosts.length() > 0) {
 				Post[] readPostsArray = readPosts.getPosts();
 				ArrayList<Patch> patches = new ArrayList<>();
@@ -202,8 +202,8 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 			}
 			if (handleResult != null) {
 				if (!handleResult.patches.isEmpty()) {
-					if (mUserPostPendings != null) {
-						ArrayList<UserPostPending> workUserPostPendings = new ArrayList<>(mUserPostPendings);
+					if (userPostPendings != null) {
+						ArrayList<UserPostPending> workUserPostPendings = new ArrayList<>(userPostPendings);
 						OUTER: for (int i = handleResult.patches.size() - 1; i >= 0; i--) {
 							Post post = handleResult.patches.get(i).newPost;
 							for (int j = workUserPostPendings.size() - 1; j >= 0; j--) {
@@ -211,10 +211,10 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 								if (userPostPending.isUserPost(post)) {
 									post.setUserPost(true);
 									workUserPostPendings.remove(j);
-									if (mRemovedUserPostPendings == null) {
-										mRemovedUserPostPendings = new ArrayList<>();
+									if (removedUserPostPendings == null) {
+										removedUserPostPendings = new ArrayList<>();
 									}
-									mRemovedUserPostPendings.add(userPostPending);
+									removedUserPostPendings.add(userPostPending);
 									if (workUserPostPendings.isEmpty()) {
 										break OUTER;
 									}
@@ -229,18 +229,18 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 					YouTubeTitlesReader.getInstance().readAndApplyIfNecessary(handlePosts, holder);
 				}
 				for (Patch patch : handleResult.patches) {
-					patch.postItem = new PostItem(patch.newPost, mChanName, mBoardName);
+					patch.postItem = new PostItem(patch.newPost, chanName, boardName);
 				}
-				mCallback.onRequestPreloadPosts(handleResult.patches, mCachedPosts != null ? mCachedPosts.length() : 0);
+				callback.onRequestPreloadPosts(handleResult.patches, cachedPosts != null ? cachedPosts.length() : 0);
 				if (validator == null) {
 					validator = holder.getValidator();
 				}
-				if (validator == null && mCachedPosts != null) {
-					validator = mCachedPosts.getValidator();
+				if (validator == null && cachedPosts != null) {
+					validator = cachedPosts.getValidator();
 				}
 				handleResult.posts.setValidator(validator);
-				mResult = handleResult;
-				mFullThread = fullThread;
+				this.result = handleResult;
+				this.fullThread = fullThread;
 			}
 			return true;
 		} catch (HttpException e) {
@@ -249,47 +249,47 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 				return true;
 			}
 			if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
-				if (ChanConfiguration.get(mChanName).getOption(ChanConfiguration.OPTION_READ_SINGLE_POST)) {
+				if (ChanConfiguration.get(chanName).getOption(ChanConfiguration.OPTION_READ_SINGLE_POST)) {
 					try {
 						ChanPerformer.ReadSinglePostResult result = performer.safe().onReadSinglePost
-								(new ChanPerformer.ReadSinglePostData(mBoardName, mThreadNumber, holder));
+								(new ChanPerformer.ReadSinglePostData(boardName, threadNumber, holder));
 						Post post = result != null ? result.post : null;
 						String threadNumber = post.getThreadNumberOrOriginalPostNumber();
-						if (threadNumber != null && !threadNumber.equals(mThreadNumber)) {
+						if (threadNumber != null && !threadNumber.equals(this.threadNumber)) {
 							// noinspection ThrowableResultOfMethodCallIgnored
-							mTarget = RedirectException.toThread(mBoardName, threadNumber, post.getPostNumber())
-									.obtainTarget(mChanName);
+							target = RedirectException.toThread(boardName, threadNumber, post.getPostNumber())
+									.obtainTarget(chanName);
 							return true;
 						}
 					} catch (ExtensionException | HttpException | InvalidResponseException e2) {
-						// Ignore
+						// Ignore exception
 					}
 				}
-				mErrorItem = new ErrorItem(ErrorItem.TYPE_THREAD_NOT_EXISTS);
+				errorItem = new ErrorItem(ErrorItem.TYPE_THREAD_NOT_EXISTS);
 			} else {
-				mErrorItem = e.getErrorItemAndHandle();
+				errorItem = e.getErrorItemAndHandle();
 			}
 			return false;
 		} catch (ExtensionException | InvalidResponseException e) {
-			mErrorItem = e.getErrorItemAndHandle();
+			errorItem = e.getErrorItemAndHandle();
 			return false;
 		} finally {
-			ChanConfiguration.get(mChanName).commit();
+			ChanConfiguration.get(chanName).commit();
 		}
 	}
 
 	@Override
 	public void onPostExecute(Boolean success) {
 		if (success) {
-			if (mResult != null) {
-				mCallback.onReadPostsSuccess(mResult, mFullThread, mRemovedUserPostPendings);
-			} else if (mTarget != null) {
-				mCallback.onReadPostsRedirect(mTarget);
+			if (result != null) {
+				callback.onReadPostsSuccess(result, fullThread, removedUserPostPendings);
+			} else if (target != null) {
+				callback.onReadPostsRedirect(target);
 			} else {
-				mCallback.onReadPostsEmpty();
+				callback.onReadPostsEmpty();
 			}
 		} else {
-			mCallback.onReadPostsFail(mErrorItem);
+			callback.onReadPostsFail(errorItem);
 		}
 	}
 
@@ -446,15 +446,15 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 	}
 
 	public static class PostNumberUserPostPending implements UserPostPending {
-		private final String mPostNumber;
+		private final String postNumber;
 
 		public PostNumberUserPostPending(String postNumber) {
-			mPostNumber = postNumber;
+			this.postNumber = postNumber;
 		}
 
 		@Override
 		public boolean isUserPost(Post post) {
-			return mPostNumber.equals(post.getPostNumber());
+			return postNumber.equals(post.getPostNumber());
 		}
 
 		@Override
@@ -463,14 +463,14 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 				return true;
 			}
 			if (o instanceof PostNumberUserPostPending) {
-				return ((PostNumberUserPostPending) o).mPostNumber.equals(mPostNumber);
+				return ((PostNumberUserPostPending) o).postNumber.equals(postNumber);
 			}
 			return false;
 		}
 
 		@Override
 		public int hashCode() {
-			return mPostNumber.hashCode();
+			return postNumber.hashCode();
 		}
 
 		@Override
@@ -480,7 +480,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 
 		@Override
 		public void writeToParcel(Parcel dest, int flags) {
-			dest.writeString(mPostNumber);
+			dest.writeString(postNumber);
 		}
 
 		public static final Creator<PostNumberUserPostPending> CREATOR = new Creator<PostNumberUserPostPending>() {
@@ -543,21 +543,21 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 	public static class CommentUserPostPending implements UserPostPending {
 		private static final SimilarTextEstimator ESTIMATOR = new SimilarTextEstimator(Integer.MAX_VALUE, true);
 
-		private final SimilarTextEstimator.WordsData mWordsData;
+		private final SimilarTextEstimator.WordsData wordsData;
 
 		public CommentUserPostPending(String comment) {
 			this(ESTIMATOR.getWords(comment));
 		}
 
 		private CommentUserPostPending(SimilarTextEstimator.WordsData wordsData) {
-			mWordsData = wordsData;
+			this.wordsData = wordsData;
 		}
 
 		@Override
 		public boolean isUserPost(Post post) {
 			String comment = HtmlParser.clear(post.getComment());
 			SimilarTextEstimator.WordsData wordsData = ESTIMATOR.getWords(comment);
-			return ESTIMATOR.checkSimiliar(mWordsData, wordsData) || mWordsData == null && wordsData == null;
+			return ESTIMATOR.checkSimiliar(this.wordsData, wordsData) || this.wordsData == null && wordsData == null;
 		}
 
 		@Override
@@ -567,8 +567,8 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 			}
 			if (o instanceof CommentUserPostPending) {
 				CommentUserPostPending co = (CommentUserPostPending) o;
-				return co.mWordsData == mWordsData || co.mWordsData != null && mWordsData != null
-						&& co.mWordsData.count == mWordsData.count && co.mWordsData.words.equals(mWordsData.words);
+				return co.wordsData == wordsData || co.wordsData != null && wordsData != null
+						&& co.wordsData.count == wordsData.count && co.wordsData.words.equals(wordsData.words);
 			}
 			return false;
 		}
@@ -577,9 +577,9 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 		public int hashCode() {
 			int prime = 31;
 			int result = 1;
-			if (mWordsData != null) {
-				result = prime * result + mWordsData.words.hashCode();
-				result = prime * result + mWordsData.count;
+			if (wordsData != null) {
+				result = prime * result + wordsData.words.hashCode();
+				result = prime * result + wordsData.count;
 			}
 			return result;
 		}
@@ -591,8 +591,8 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 
 		@Override
 		public void writeToParcel(Parcel dest, int flags) {
-			dest.writeSerializable(mWordsData != null ? mWordsData.words : null);
-			dest.writeInt(mWordsData != null ? mWordsData.count : 0);
+			dest.writeSerializable(wordsData != null ? wordsData.words : null);
+			dest.writeInt(wordsData != null ? wordsData.count : 0);
 		}
 
 		public static final Creator<CommentUserPostPending> CREATOR = new Creator<CommentUserPostPending>() {

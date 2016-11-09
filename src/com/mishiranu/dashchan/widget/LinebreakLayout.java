@@ -25,8 +25,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 public class LinebreakLayout extends ViewGroup {
-	private int mHorizontalSpacing;
-	private int mVerticalSpacing;
+	private int horizontalSpacing;
+	private int verticalSpacing;
 
 	private static final int[] ATTRS = new int[] {android.R.attr.horizontalSpacing, android.R.attr.verticalSpacing};
 
@@ -41,34 +41,34 @@ public class LinebreakLayout extends ViewGroup {
 	public LinebreakLayout(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
 		TypedArray typedArray = context.obtainStyledAttributes(attrs, ATTRS, defStyleAttr, 0);
-		mHorizontalSpacing = typedArray.getDimensionPixelSize(0, 0);
-		mVerticalSpacing = typedArray.getDimensionPixelSize(1, 0);
+		horizontalSpacing = typedArray.getDimensionPixelSize(0, 0);
+		verticalSpacing = typedArray.getDimensionPixelSize(1, 0);
 		typedArray.recycle();
 	}
 
 	@SuppressWarnings("unused")
 	public void setHorizontalSpacing(int horizontalSpacing) {
-		mHorizontalSpacing = horizontalSpacing;
+		this.horizontalSpacing = horizontalSpacing;
 		requestLayout();
 	}
 
 	@SuppressWarnings("unused")
 	public void setVerticalSpacing(int verticalSpacing) {
-		mVerticalSpacing = verticalSpacing;
+		this.verticalSpacing = verticalSpacing;
 		requestLayout();
 	}
 
 	@SuppressWarnings("unused")
 	public int getHorizontalSpacing() {
-		return mHorizontalSpacing;
+		return horizontalSpacing;
 	}
 
 	@SuppressWarnings("unused")
 	public int getVerticalSpacing() {
-		return mVerticalSpacing;
+		return verticalSpacing;
 	}
 
-	private final ArrayList<View> mPostMeasurements = new ArrayList<>();
+	private final ArrayList<View> postMeasurements = new ArrayList<>();
 
 	private static int measureChild(View child, LayoutParams layoutParams, boolean widthUnspecified,
 			boolean linebreak, int maxWidth, int lineWidth, int heightMeasureSpec, int vertialPaddings,
@@ -98,9 +98,9 @@ public class LinebreakLayout extends ViewGroup {
 		int minHeight = 0;
 		int lineWidth = 0;
 		int lineHeight = 0;
-		ArrayList<View> postMeasurements = mPostMeasurements;
-		int horizontalSpacing = mHorizontalSpacing;
-		int verticalSpacing = mVerticalSpacing;
+		ArrayList<View> postMeasurements = this.postMeasurements;
+		int horizontalSpacing = this.horizontalSpacing;
+		int verticalSpacing = this.verticalSpacing;
 		int count = getChildCount();
 		for (int i = 0; i < count; i++) {
 			View child = getChildAt(i);
@@ -148,8 +148,8 @@ public class LinebreakLayout extends ViewGroup {
 		int rtop = 0;
 		int lineHeight = 0;
 		boolean newLine = true;
-		int horizontalSpacing = mHorizontalSpacing;
-		int verticalSpacing = mVerticalSpacing;
+		int horizontalSpacing = this.horizontalSpacing;
+		int verticalSpacing = this.verticalSpacing;
 		int count = getChildCount();
 		for (int i = 0; i < count; i++) {
 			if (newLine) {

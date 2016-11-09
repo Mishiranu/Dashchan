@@ -32,7 +32,7 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 
 public class CookiesFragment extends BasePreferenceFragment implements Comparator<Map.Entry<String, String>> {
-	private ChanConfiguration mConfiguration;
+	private ChanConfiguration configuration;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -41,14 +41,14 @@ public class CookiesFragment extends BasePreferenceFragment implements Comparato
 		if (chanName == null) {
 			throw new IllegalStateException();
 		}
-		mConfiguration = ChanConfiguration.get(chanName);
+		configuration = ChanConfiguration.get(chanName);
 		getActivity().setTitle(R.string.preference_delete_cookies);
-		Map<String, String> cookies = mConfiguration.getCookiesWithDisplayName();
+		Map<String, String> cookies = configuration.getCookiesWithDisplayName();
 
 		ArrayList<Map.Entry<String, String>> entries = new ArrayList<>(cookies.entrySet());
 		Collections.sort(entries, this);
 		for (Map.Entry<String, String> entry : entries) {
-			String cookie = mConfiguration.getCookie(entry.getKey());
+			String cookie = configuration.getCookie(entry.getKey());
 			Preference preference = makeButton(null, entry.getValue(), cookie, false);
 			preference.setOnPreferenceClickListener(this);
 			preference.setKey(entry.getKey());
@@ -65,8 +65,8 @@ public class CookiesFragment extends BasePreferenceFragment implements Comparato
 	public boolean onPreferenceClick(Preference preference) {
 		preference.setEnabled(false);
 		preference.setSummary(null);
-		mConfiguration.storeCookie(preference.getKey(), null, null);
-		mConfiguration.commit();
+		configuration.storeCookie(preference.getKey(), null, null);
+		configuration.commit();
 		PreferenceGroup preferenceGroup = getParentGroup(preference);
 		if (preference != null) {
 			preferenceGroup.removePreference(preference);

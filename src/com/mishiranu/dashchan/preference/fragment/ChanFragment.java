@@ -64,25 +64,25 @@ import com.mishiranu.dashchan.preference.PreferencesActivity;
 import com.mishiranu.dashchan.util.ToastUtils;
 
 public class ChanFragment extends BasePreferenceFragment {
-	private String mChanName;
+	private String chanName;
 
-	private EditTextPreference mDefaultBoardPreference;
-	private MultipleEditTextPreference mCaptchaPassPreference;
-	private MultipleEditTextPreference mUserAuthorizationPreference;
-	private Preference mCookiePreference;
-	private ListPreference mDomainPreference1;
-	private EditTextPreference mDomainPreference2;
-	private EditTextPreference mPasswordPreference;
-	private CheckBoxPreference mUseHttpsPreference;
-	private MultipleEditTextPreference mProxyPreference;
-	private Preference mUninstallExtensionPreference;
+	private EditTextPreference defaultBoardPreference;
+	private MultipleEditTextPreference captchaPassPreference;
+	private MultipleEditTextPreference userAuthorizationPreference;
+	private Preference cookiePreference;
+	private ListPreference domainPreference1;
+	private EditTextPreference domainPreference2;
+	private EditTextPreference passwordPreference;
+	private CheckBoxPreference useHttpsPreference;
+	private MultipleEditTextPreference proxyPreference;
+	private Preference uninstallExtensionPreference;
 
-	private HashSet<String> mCustomPreferenceKeys;
+	private HashSet<String> customPreferenceKeys;
 
 	private static String VALUE_CUSTOM_DOMAIN = "custom_domain\n";
 	private static String EXTRA_ANOTHER_DOMAIN_MODE = "another_domain_mode";
 
-	private boolean mAnotherDomainMode = false;
+	private boolean anotherDomainMode = false;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -95,7 +95,7 @@ public class ChanFragment extends BasePreferenceFragment {
 			}
 			chanName = chanNames.iterator().next();
 		}
-		mChanName = chanName;
+		this.chanName = chanName;
 		ChanConfiguration configuration = ChanConfiguration.get(chanName);
 		ChanLocator locator = ChanLocator.get(chanName);
 		getActivity().setTitle(configuration.getTitle());
@@ -103,7 +103,7 @@ public class ChanFragment extends BasePreferenceFragment {
 		ChanConfiguration.Deleting deleting = board.allowDeleting ? configuration.safe().obtainDeleting(null) : null;
 
 		if (!configuration.getOption(ChanConfiguration.OPTION_SINGLE_BOARD_MODE)) {
-			mDefaultBoardPreference = makeEditText(null, Preferences.KEY_DEFAULT_BOARD_NAME.bind(chanName), null,
+			defaultBoardPreference = makeEditText(null, Preferences.KEY_DEFAULT_BOARD_NAME.bind(chanName), null,
 					R.string.preference_default_board_name, 0, null, InputType.TYPE_CLASS_TEXT, false);
 		}
 		if (board.allowCatalog) {
@@ -112,7 +112,7 @@ public class ChanFragment extends BasePreferenceFragment {
 		}
 		if (deleting != null && deleting.password) {
 			Preferences.getPassword(chanName); // Ensure password existence
-			mPasswordPreference = makeEditText(null, Preferences.KEY_PASSWORD.bind(chanName), null,
+			passwordPreference = makeEditText(null, Preferences.KEY_PASSWORD.bind(chanName), null,
 					R.string.preference_password_for_removal, R.string.preference_password_for_removal_summary,
 					getString(R.string.text_password), InputType.TYPE_CLASS_TEXT |
 					InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD, false);
@@ -127,7 +127,7 @@ public class ChanFragment extends BasePreferenceFragment {
 		if (configuration.getOption(ChanConfiguration.OPTION_ALLOW_CAPTCHA_PASS)) {
 			ChanConfiguration.Authorization authorization = configuration.safe().obtainCaptchaPass();
 			if (authorization != null && authorization.fieldsCount > 0) {
-				mCaptchaPassPreference = makeMultipleEditText(null, Preferences.KEY_CAPTCHA_PASS.bind(chanName),
+				captchaPassPreference = makeMultipleEditText(null, Preferences.KEY_CAPTCHA_PASS.bind(chanName),
 						null, R.string.preference_captcha_pass, R.string.preference_captcha_pass_summary,
 						authorization.fieldsCount, authorization.hints, InputType.TYPE_CLASS_TEXT
 						| InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD, null);
@@ -136,7 +136,7 @@ public class ChanFragment extends BasePreferenceFragment {
 		if (configuration.getOption(ChanConfiguration.OPTION_ALLOW_USER_AUTHORIZATION)) {
 			ChanConfiguration.Authorization authorization = configuration.safe().obtainUserAuthorization();
 			if (authorization != null && authorization.fieldsCount > 0) {
-				mUserAuthorizationPreference = makeMultipleEditText(null, Preferences.KEY_USER_AUTHORIZATION
+				userAuthorizationPreference = makeMultipleEditText(null, Preferences.KEY_USER_AUTHORIZATION
 						.bind(chanName), null, R.string.preference_user_authorization, 0, authorization.fieldsCount,
 						authorization.hints, InputType.TYPE_CLASS_TEXT
 						| InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD, null);
@@ -149,9 +149,9 @@ public class ChanFragment extends BasePreferenceFragment {
 				boolean defaultValue = preferenceHolder.getValue();
 				ChanConfiguration.CustomPreference customPreference = configuration.safe().obtainCustomPreference(key);
 				if (customPreference != null && customPreference.title != null) {
-					if (mCustomPreferenceKeys == null) {
-						mCustomPreferenceKeys = new HashSet<>();
-						mCustomPreferenceKeys.add(key);
+					if (customPreferenceKeys == null) {
+						customPreferenceKeys = new HashSet<>();
+						customPreferenceKeys.add(key);
 					}
 					CheckBoxPreference preference = makeCheckBox(null, false, key, defaultValue,
 							customPreference.title, customPreference.summary);
@@ -159,19 +159,19 @@ public class ChanFragment extends BasePreferenceFragment {
 				}
 			}
 		}
-		mCookiePreference = makeButton(null, R.string.preference_delete_cookies, 0, false);
+		cookiePreference = makeButton(null, R.string.preference_delete_cookies, 0, false);
 		Intent intent = new Intent(getActivity(), PreferencesActivity.class);
 		intent.putExtra(PreferencesActivity.EXTRA_SHOW_FRAGMENT, CookiesFragment.class.getName());
 		intent.putExtra(PreferencesActivity.EXTRA_NO_HEADERS, true);
 		intent.putExtra(C.EXTRA_CHAN_NAME, chanName);
-		mCookiePreference.setIntent(intent);
+		cookiePreference.setIntent(intent);
 
 		PreferenceCategory connectionCategory = makeCategory(R.string.preference_category_connection);
 		ArrayList<String> domains = locator.getChanHosts(true);
-		mAnotherDomainMode = !domains.contains(locator.getPreferredHost()) || domains.size() == 1 ||
+		anotherDomainMode = !domains.contains(locator.getPreferredHost()) || domains.size() == 1 ||
 				savedInstanceState != null && savedInstanceState.getBoolean(EXTRA_ANOTHER_DOMAIN_MODE);
-		if (mAnotherDomainMode) {
-			mDomainPreference2 = makeEditText(connectionCategory, Preferences.KEY_DOMAIN.bind(chanName), "",
+		if (anotherDomainMode) {
+			domainPreference2 = makeEditText(connectionCategory, Preferences.KEY_DOMAIN.bind(chanName), "",
 					R.string.preference_domain, 0, domains.get(0), InputType.TYPE_CLASS_TEXT |
 					InputType.TYPE_TEXT_VARIATION_URI, true);
 		} else {
@@ -183,21 +183,21 @@ public class ChanFragment extends BasePreferenceFragment {
 			values[0] = "";
 			System.arraycopy(domainsArray, 1, values, 1, domainsArray.length - 1);
 			values[values.length - 1] = VALUE_CUSTOM_DOMAIN;
-			mDomainPreference1 = makeList(connectionCategory, Preferences.KEY_DOMAIN.bind(chanName), values,
+			domainPreference1 = makeList(connectionCategory, Preferences.KEY_DOMAIN.bind(chanName), values,
 					values[0], R.string.preference_domain, entries);
 		}
 		if (locator.isHttpsConfigurable()) {
-			mUseHttpsPreference = makeCheckBox(connectionCategory, true, Preferences.KEY_USE_HTTPS.bind(chanName),
+			useHttpsPreference = makeCheckBox(connectionCategory, true, Preferences.KEY_USE_HTTPS.bind(chanName),
 					Preferences.DEFAULT_USE_HTTPS, R.string.preference_use_https,
 					R.string.preference_use_https_summary);
 		}
 		if (!configuration.getOption(ChanConfiguration.OPTION_HIDDEN_DISALLOW_PROXY)) {
-			mProxyPreference = makeMultipleEditText(connectionCategory, Preferences.KEY_PROXY.bind(chanName), null,
+			proxyPreference = makeMultipleEditText(connectionCategory, Preferences.KEY_PROXY.bind(chanName), null,
 					R.string.preference_proxy, 0, 3, new String[] {getString(R.string.text_address),
 					getString(R.string.text_port), null}, new int[] {InputType.TYPE_CLASS_TEXT |
 					InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD, InputType.TYPE_CLASS_NUMBER |
 					InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD, 0}, "%s:%s");
-			mProxyPreference.replaceWithDropdown(2, Preferences.ENTRIES_PROXY_2, Preferences.VALUES_PROXY_2);
+			proxyPreference.replaceWithDropdown(2, Preferences.ENTRIES_PROXY_2, Preferences.VALUES_PROXY_2);
 		}
 		if (configuration.getOption(ChanConfiguration.OPTION_READ_THREAD_PARTIALLY)) {
 			makeCheckBox(connectionCategory, true, Preferences.KEY_PARTIAL_THREAD_LOADING.bind(chanName),
@@ -206,10 +206,10 @@ public class ChanFragment extends BasePreferenceFragment {
 		}
 
 		PreferenceCategory additionalCategory = makeCategory(R.string.preference_category_additional);
-		mUninstallExtensionPreference = makeButton(additionalCategory, R.string.preference_uninstall_extension,
+		uninstallExtensionPreference = makeButton(additionalCategory, R.string.preference_uninstall_extension,
 				0, false);
 
-		if (mDefaultBoardPreference != null) {
+		if (defaultBoardPreference != null) {
 			updateDefaultBoardSummary();
 		}
 	}
@@ -217,14 +217,14 @@ public class ChanFragment extends BasePreferenceFragment {
 	@Override
 	public void onResume() {
 		super.onResume();
-		if (mCookiePreference != null) {
-			ChanConfiguration configuration = ChanConfiguration.get(mChanName);
+		if (cookiePreference != null) {
+			ChanConfiguration configuration = ChanConfiguration.get(chanName);
 			if (!configuration.hasCookiesWithDisplayName()) {
-				PreferenceGroup preferenceGroup = getParentGroup(mCookiePreference);
+				PreferenceGroup preferenceGroup = getParentGroup(cookiePreference);
 				if (preferenceGroup != null) {
-					preferenceGroup.removePreference(mCookiePreference);
+					preferenceGroup.removePreference(cookiePreference);
 				}
-				mCookiePreference = null;
+				cookiePreference = null;
 			}
 		}
 	}
@@ -232,26 +232,26 @@ public class ChanFragment extends BasePreferenceFragment {
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		outState.putBoolean(EXTRA_ANOTHER_DOMAIN_MODE, mAnotherDomainMode);
+		outState.putBoolean(EXTRA_ANOTHER_DOMAIN_MODE, anotherDomainMode);
 	}
 
 	@Override
 	public boolean onPreferenceChange(Preference preference, Object newValue) {
-		if (preference == mCaptchaPassPreference) {
+		if (preference == captchaPassPreference) {
 			String[] values = (String[]) newValue;
 			if (Preferences.checkHasMultipleValues(values)) {
-				new AuthorizationFragment(mChanName, AUTHORIZATION_TYPE_CAPTCHA_PASS, values).show(this);
+				new AuthorizationFragment(chanName, AUTHORIZATION_TYPE_CAPTCHA_PASS, values).show(this);
 			}
 			return true;
-		} else if (preference == mUserAuthorizationPreference) {
+		} else if (preference == userAuthorizationPreference) {
 			String[] values = (String[]) newValue;
 			if (Preferences.checkHasMultipleValues(values)) {
-				new AuthorizationFragment(mChanName, AUTHORIZATION_TYPE_USER, values).show(this);
+				new AuthorizationFragment(chanName, AUTHORIZATION_TYPE_USER, values).show(this);
 			}
 			return true;
-		} else if (preference == mDomainPreference1 || preference == mDomainPreference2
-				|| preference == mUseHttpsPreference) {
-			if (preference == mDomainPreference1 && VALUE_CUSTOM_DOMAIN.equals(newValue)) {
+		} else if (preference == domainPreference1 || preference == domainPreference2
+				|| preference == useHttpsPreference) {
+			if (preference == domainPreference1 && VALUE_CUSTOM_DOMAIN.equals(newValue)) {
 				PreferenceGroup preferenceGroup = getParentGroup(preference);
 				if (preferenceGroup != null) {
 					int index = -1;
@@ -262,31 +262,31 @@ public class ChanFragment extends BasePreferenceFragment {
 						}
 					}
 					if (index >= 0) {
-						mDomainPreference2 = makeEditText(preferenceGroup, Preferences.KEY_DOMAIN.bind(mChanName), "",
-								R.string.preference_domain, 0, mDomainPreference1.getEntries()[0].toString(),
+						domainPreference2 = makeEditText(preferenceGroup, Preferences.KEY_DOMAIN.bind(chanName), "",
+								R.string.preference_domain, 0, domainPreference1.getEntries()[0].toString(),
 								InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI, true);
 						preferenceGroup.removePreference(preference);
-						preferenceGroup.addPreference(mDomainPreference2);
-						mDomainPreference2.setOrder(0);
-						mDomainPreference1 = null;
-						expandDialog(mDomainPreference2);
-						mAnotherDomainMode = true;
+						preferenceGroup.addPreference(domainPreference2);
+						domainPreference2.setOrder(0);
+						domainPreference1 = null;
+						expandDialog(domainPreference2);
+						anotherDomainMode = true;
 					}
 				}
 				return false;
 			}
 			boolean result = true;
-			if (preference == mDomainPreference2 && newValue.toString().equals(mDomainPreference2
+			if (preference == domainPreference2 && newValue.toString().equals(domainPreference2
 					.getEditText().getHint())) {
-				mDomainPreference2.setText("");
+				domainPreference2.setText("");
 				result = false;
 			}
-			ChanConfiguration configuration = ChanConfiguration.get(mChanName);
+			ChanConfiguration configuration = ChanConfiguration.get(chanName);
 			configuration.storeCookie(CloudFlarePasser.COOKIE_CLOUDFLARE, null, null);
 			configuration.commit();
 			return result;
-		} else if (mCustomPreferenceKeys != null && mCustomPreferenceKeys.contains(preference.getKey())) {
-			ChanConfiguration configuration = ChanConfiguration.get(mChanName);
+		} else if (customPreferenceKeys != null && customPreferenceKeys.contains(preference.getKey())) {
+			ChanConfiguration configuration = ChanConfiguration.get(chanName);
 			configuration.set(null, preference.getKey(), (Boolean) newValue);
 			configuration.commit();
 			return true;
@@ -296,10 +296,10 @@ public class ChanFragment extends BasePreferenceFragment {
 
 	@Override
 	public boolean onPreferenceClick(Preference preference) {
-		if (preference == mUninstallExtensionPreference) {
+		if (preference == uninstallExtensionPreference) {
 			String packageName = null;
 			for (ChanManager.ExtensionItem chanItem : ChanManager.getInstance().getChanItems()) {
-				if (mChanName.equals(chanItem.extensionName)) {
+				if (chanName.equals(chanItem.extensionName)) {
 					packageName = chanItem.packageInfo.packageName;
 					break;
 				}
@@ -315,18 +315,18 @@ public class ChanFragment extends BasePreferenceFragment {
 	@Override
 	public void onPreferenceAfterChange(Preference preference) {
 		super.onPreferenceAfterChange(preference);
-		if (preference == mDefaultBoardPreference) {
+		if (preference == defaultBoardPreference) {
 			updateDefaultBoardSummary();
-		} else if (preference == mProxyPreference) {
-			boolean success = HttpClient.getInstance().updateProxy(mChanName);
+		} else if (preference == proxyPreference) {
+			boolean success = HttpClient.getInstance().updateProxy(chanName);
 			if (!success) {
 				ToastUtils.show(getActivity(), R.string.message_enter_valid_data);
 				expandDialog(preference);
 			}
-		} else if (preference == mPasswordPreference) {
-			String value = mPasswordPreference.getText();
+		} else if (preference == passwordPreference) {
+			String value = passwordPreference.getText();
 			if (StringUtils.isEmpty(value)) {
-				mPasswordPreference.setText(Preferences.getPassword(mChanName));
+				passwordPreference.setText(Preferences.getPassword(chanName));
 				ToastUtils.show(getActivity(), R.string.message_new_password);
 			}
 		}
@@ -341,13 +341,13 @@ public class ChanFragment extends BasePreferenceFragment {
 	}
 
 	private void updateDefaultBoardSummary() {
-		EditTextPreference preference = mDefaultBoardPreference;
+		EditTextPreference preference = defaultBoardPreference;
 		String text = preference.getText();
 		if (!StringUtils.isEmpty(text)) {
 			String boardName = StringUtils.validateBoardName(text);
 			if (boardName != null) {
-				text = StringUtils.formatBoardTitle(mChanName, boardName,
-						ChanConfiguration.get(mChanName).getBoardTitle(boardName));
+				text = StringUtils.formatBoardTitle(chanName, boardName,
+						ChanConfiguration.get(chanName).getBoardTitle(boardName));
 			} else {
 				text = null;
 			}
@@ -432,11 +432,11 @@ public class ChanFragment extends BasePreferenceFragment {
 					Preference preference = null;
 					switch (getArguments().getInt(EXTRA_AUTHORIZATION_TYPE)) {
 						case AUTHORIZATION_TYPE_CAPTCHA_PASS: {
-							preference = chanFragment.mCaptchaPassPreference;
+							preference = chanFragment.captchaPassPreference;
 							break;
 						}
 						case AUTHORIZATION_TYPE_USER: {
-							preference = chanFragment.mUserAuthorizationPreference;
+							preference = chanFragment.userAuthorizationPreference;
 							break;
 						}
 					}
@@ -452,27 +452,27 @@ public class ChanFragment extends BasePreferenceFragment {
 	}
 
 	private static class CheckAuthorizationTask extends AsyncManager.SimpleTask<Void, Void, Void> {
-		private final HttpHolder mHolder = new HttpHolder();
+		private final HttpHolder holder = new HttpHolder();
 
-		private final String mChanName;
-		private final int mAuthorizationType;
-		private final String[] mAuthorizationData;
+		private final String chanName;
+		private final int authorizationType;
+		private final String[] authorizationData;
 
-		private boolean mValid;
-		private ErrorItem mErrorItem;
+		private boolean valid;
+		private ErrorItem errorItem;
 
 		public CheckAuthorizationTask(String chanName, int authorizationType, String[] authorizationData) {
-			mChanName = chanName;
-			mAuthorizationType = authorizationType;
-			mAuthorizationData = authorizationData;
+			this.chanName = chanName;
+			this.authorizationType = authorizationType;
+			this.authorizationData = authorizationData;
 		}
 
 		@Override
 		public Void doInBackground(Void... params) {
 			try {
-				ChanPerformer performer = ChanPerformer.get(mChanName);
+				ChanPerformer performer = ChanPerformer.get(chanName);
 				int type = -1;
-				switch (mAuthorizationType) {
+				switch (authorizationType) {
 					case AUTHORIZATION_TYPE_CAPTCHA_PASS: {
 						type = ChanPerformer.CheckAuthorizationData.TYPE_CAPTCHA_PASS;
 						break;
@@ -483,26 +483,26 @@ public class ChanFragment extends BasePreferenceFragment {
 					}
 				}
 				ChanPerformer.CheckAuthorizationResult result = performer.safe().onCheckAuthorization
-						(new ChanPerformer.CheckAuthorizationData(type, mAuthorizationData, mHolder));
-				mValid = result != null && result.success;
+						(new ChanPerformer.CheckAuthorizationData(type, authorizationData, holder));
+				valid = result != null && result.success;
 			} catch (ExtensionException | HttpException | InvalidResponseException e) {
-				mErrorItem = e.getErrorItemAndHandle();
+				errorItem = e.getErrorItemAndHandle();
 			} finally {
-				mHolder.cleanup();
-				ChanConfiguration.get(mChanName).commit();
+				holder.cleanup();
+				ChanConfiguration.get(chanName).commit();
 			}
 			return null;
 		}
 
 		@Override
 		protected void onStoreResult(AsyncManager.Holder holder, Void result) {
-			holder.storeResult(mValid, mErrorItem);
+			holder.storeResult(valid, errorItem);
 		}
 
 		@Override
 		public void cancel() {
 			cancel(true);
-			mHolder.interrupt();
+			holder.interrupt();
 		}
 	}
 }

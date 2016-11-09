@@ -40,8 +40,8 @@ import com.mishiranu.dashchan.widget.PullableListView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 
 public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTask.Callback {
-	private ReadSearchTask mReadTask;
-	private boolean mShowScaleOnSuccess;
+	private ReadSearchTask readTask;
+	private boolean showScaleOnSuccess;
 
 	@Override
 	protected void onCreate() {
@@ -63,12 +63,12 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 				}
 				showScaleAnimation();
 			} else {
-				mShowScaleOnSuccess = true;
+				showScaleOnSuccess = true;
 				refreshSearch(false, false);
 			}
 		} else {
 			extra.groupMode = false;
-			mShowScaleOnSuccess = true;
+			showScaleOnSuccess = true;
 			refreshSearch(false, false);
 		}
 		pageHolder.setInitialSearchData(false);
@@ -76,9 +76,9 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 
 	@Override
 	protected void onDestroy() {
-		if (mReadTask != null) {
-			mReadTask.cancel();
-			mReadTask = null;
+		if (readTask != null) {
+			readTask.cancel();
+			readTask = null;
 		}
 		ImageLoader.getInstance().clearTasks(getPageHolder().chanName);
 	}
@@ -164,8 +164,8 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 
 	private void refreshSearch(boolean showPull, boolean nextPage) {
 		PageHolder pageHolder = getPageHolder();
-		if (mReadTask != null) {
-			mReadTask.cancel();
+		if (readTask != null) {
+			readTask.cancel();
 		}
 		int pageNumber = 0;
 		if (nextPage) {
@@ -174,9 +174,9 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 				pageNumber = extra.pageNumber + 1;
 			}
 		}
-		mReadTask = new ReadSearchTask(this, pageHolder.chanName, pageHolder.boardName, pageHolder.searchQuery,
+		readTask = new ReadSearchTask(this, pageHolder.chanName, pageHolder.boardName, pageHolder.searchQuery,
 				pageNumber);
-		mReadTask.executeOnExecutor(ReadSearchTask.THREAD_POOL_EXECUTOR);
+		readTask.executeOnExecutor(ReadSearchTask.THREAD_POOL_EXECUTOR);
 		if (showPull) {
 			getListView().getWrapper().startBusyState(PullableWrapper.Side.TOP);
 			switchView(ViewType.LIST, null);
@@ -188,12 +188,12 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 
 	@Override
 	public void onReadSearchSuccess(ArrayList<PostItem> postItems, int pageNumber) {
-		mReadTask = null;
+		readTask = null;
 		PullableListView listView = getListView();
 		listView.getWrapper().cancelBusyState();
 		SearchAdapter adapter = getAdapter();
-		boolean showScale = mShowScaleOnSuccess;
-		mShowScaleOnSuccess = false;
+		boolean showScale = showScaleOnSuccess;
+		showScaleOnSuccess = false;
 		SearchExtra extra = getExtra();
 		if (pageNumber == 0 && (postItems == null || postItems.isEmpty())) {
 			switchView(ViewType.ERROR, R.string.message_not_found);
@@ -260,7 +260,7 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 
 	@Override
 	public void onReadSearchFail(ErrorItem errorItem) {
-		mReadTask = null;
+		readTask = null;
 		getListView().getWrapper().cancelBusyState();
 		if (getAdapter().isEmpty()) {
 			switchView(ViewType.ERROR, errorItem.toString());

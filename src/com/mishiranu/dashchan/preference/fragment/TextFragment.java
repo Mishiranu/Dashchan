@@ -47,7 +47,7 @@ public class TextFragment extends Fragment implements View.OnClickListener {
 	public static final int TYPE_LICENSES = 0;
 	public static final int TYPE_CHANGELOG = 1;
 
-	private CommentTextView mTextView;
+	private CommentTextView textView;
 
 	public TextFragment() {}
 
@@ -82,17 +82,17 @@ public class TextFragment extends Fragment implements View.OnClickListener {
 		CharSequence text = HtmlParser.spanify(content, new Markup(), null, null);
 		new ColorScheme(getActivity()).apply(text);
 		float density = ResourceUtils.obtainDensity(this);
-		mTextView = new CommentTextView(getActivity(), null, android.R.attr.textAppearanceLarge);
+		textView = new CommentTextView(getActivity(), null, android.R.attr.textAppearanceLarge);
 		int padding = (int) (16f * density);
-		mTextView.setPadding(padding, padding, padding, padding);
-		mTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-		mTextView.setText(text);
+		textView.setPadding(padding, padding, padding, padding);
+		textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+		textView.setText(text);
 		ScrollView scrollView = new ScrollView(getActivity());
 		scrollView.setId(android.R.id.list);
 		FrameLayout frameLayout = new FrameLayout(getActivity());
 		frameLayout.setOnClickListener(this);
 		scrollView.addView(frameLayout, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-		frameLayout.addView(mTextView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+		frameLayout.addView(textView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
 		return scrollView;
 	}
 
@@ -114,16 +114,16 @@ public class TextFragment extends Fragment implements View.OnClickListener {
 		}
 	}
 
-	private long mLastClickTime;
+	private long lastClickTime;
 
 	@Override
 	public void onClick(View v) {
 		long time = System.currentTimeMillis();
-		if (time - mLastClickTime < ViewConfiguration.getDoubleTapTimeout()) {
-			mLastClickTime = 0L;
-			mTextView.startSelection();
+		if (time - lastClickTime < ViewConfiguration.getDoubleTapTimeout()) {
+			lastClickTime = 0L;
+			textView.startSelection();
 		} else {
-			mLastClickTime = time;
+			lastClickTime = time;
 		}
 	}
 

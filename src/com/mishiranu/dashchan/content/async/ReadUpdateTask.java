@@ -41,22 +41,23 @@ import chan.http.HttpRequest;
 import chan.util.CommonUtils;
 
 import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.util.Log;
 
 public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object> {
-	private final Context mContext;
-	private final Callback mCallback;
+	private final Context context;
+	private final Callback callback;
 
 	public static class UpdateDataMap implements Serializable {
 		private static final long serialVersionUID = 1L;
 
-		private final HashMap<String, ArrayList<ReadUpdateTask.UpdateItem>> mMap = new HashMap<>();
+		private final HashMap<String, ArrayList<ReadUpdateTask.UpdateItem>> map = new HashMap<>();
 
 		public ArrayList<ReadUpdateTask.UpdateItem> get(String extensionName) {
-			return mMap.get(extensionName);
+			return map.get(extensionName);
 		}
 
 		public Iterable<String> extensionNames() {
-			return mMap.keySet();
+			return map.keySet();
 		}
 	}
 
@@ -102,8 +103,8 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object> {
 	}
 
 	public ReadUpdateTask(Context context, Callback callback) {
-		mContext = context.getApplicationContext();
-		mCallback = callback;
+		this.context = context.getApplicationContext();
+		this.callback = callback;
 	}
 
 	public static File getDownloadDirectory(Context context) {
@@ -134,7 +135,7 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object> {
 	@Override
 	protected Object doInBackground(HttpHolder holder, Void... params) {
 		long timeThreshold = System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000; // One week left
-		File directory = getDownloadDirectory(mContext);
+		File directory = getDownloadDirectory(context);
 		if (directory == null) {
 			return null;
 		}
@@ -167,7 +168,7 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object> {
 		String appVersionName;
 		int appVersionCode;
 		try {
-			PackageInfo packageInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
+			PackageInfo packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
 			appVersionName = packageInfo.versionName;
 			appVersionCode = packageInfo.versionCode;
 		} catch (Exception e) {
@@ -177,13 +178,13 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object> {
 		ArrayList<UpdateItem> updateItems = new ArrayList<>();
 		updateItems.add(new UpdateItem(null, appVersionName, appVersionCode, ChanManager.MIN_VERSION,
 				ChanManager.MAX_VERSION, -1, null));
-		updateDataMap.mMap.put(ChanManager.EXTENSION_NAME_CLIENT, updateItems);
+		updateDataMap.map.put(ChanManager.EXTENSION_NAME_CLIENT, updateItems);
 		for (ChanManager.ExtensionItem extensionItem : extensionItems) {
 			updateItems = new ArrayList<>();
 			updateItems.add(new UpdateItem(null, extensionItem.packageInfo.versionName,
 					extensionItem.packageInfo.versionCode, extensionItem.version, -1, null,
 					extensionItem.isLibExtension));
-			updateDataMap.mMap.put(extensionItem.extensionName, updateItems);
+			updateDataMap.map.put(extensionItem.extensionName, updateItems);
 		}
 		Thread thread = Thread.currentThread();
 		if (thread.isInterrupted()) {
@@ -246,7 +247,7 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object> {
 					break;
 				}
 			} catch (HttpException | JSONException e) {
-				// Ignore
+				Log.persistent().stack(e);
 			}
 			if (thread.isInterrupted()) {
 				return null;
@@ -257,6 +258,6 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object> {
 
 	@Override
 	protected void onPostExecute(Object result) {
-		mCallback.onReadUpdateComplete((UpdateDataMap) result);
+		callback.onReadUpdateComplete((UpdateDataMap) result);
 	}
 }

@@ -22,12 +22,12 @@ import chan.http.MultipartEntity;
 
 public class TimedProgressHandler implements HttpHolder.InputListener, HttpRequest.OutputListener,
 		MultipartEntity.OpenableOutputListener {
-	private final long[] mLastProgressUpdate = new long[3];
+	private final long[] lastProgressUpdate = new long[3];
 
 	private boolean checkNeedToUpdate(int index, long progress, long progressMax) {
 		long time = System.currentTimeMillis();
-		if (time - mLastProgressUpdate[index] >= 200 || progress == 0 || progress == progressMax) {
-			mLastProgressUpdate[index] = time;
+		if (time - lastProgressUpdate[index] >= 200 || progress == 0 || progress == progressMax) {
+			lastProgressUpdate[index] = time;
 			return true;
 		}
 		return false;

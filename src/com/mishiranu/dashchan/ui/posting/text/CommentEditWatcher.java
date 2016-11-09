@@ -19,30 +19,30 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ErrorEditTextSetter;
 
 public class CommentEditWatcher implements TextWatcher {
-	private final ChanConfiguration.Posting mPostingConfiguration;
-	private final EditText mCommentView;
-	private final TextView mRemainingCharacters;
+	private final ChanConfiguration.Posting postingConfiguration;
+	private final EditText commentView;
+	private final TextView remainingCharacters;
 
-	private final Runnable mLayoutCallback;
-	private final Runnable mStoreDraftCallback;
+	private final Runnable layoutCallback;
+	private final Runnable storeDraftCallback;
 
 	public CommentEditWatcher(ChanConfiguration.Posting posting, EditText commentView, TextView remainingCharacters,
 			Runnable layoutCallback, Runnable storeDraftCallback) {
-		mPostingConfiguration = posting;
-		mCommentView = commentView;
-		mRemainingCharacters = remainingCharacters;
-		mLayoutCallback = layoutCallback;
-		mStoreDraftCallback = storeDraftCallback;
+		this.postingConfiguration = posting;
+		this.commentView = commentView;
+		this.remainingCharacters = remainingCharacters;
+		this.layoutCallback = layoutCallback;
+		this.storeDraftCallback = storeDraftCallback;
 	}
 
-	private boolean mShow = false;
-	private boolean mError = false;
+	private boolean show = false;
+	private boolean error = false;
 
-	private ErrorEditTextSetter mErrorSetter;
+	private ErrorEditTextSetter errorSetter;
 
-	private CharsetEncoder mEncoder;
-	private boolean mEncoderReady = false;
-	private ByteBuffer mByteBuffer = null;
+	private CharsetEncoder encoder;
+	private boolean encoderReady = false;
+	private ByteBuffer byteBuffer = null;
 
 	@Override
 	public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -52,59 +52,59 @@ public class CommentEditWatcher implements TextWatcher {
 		int length = 0;
 		int maxCommentLength = 0;
 		boolean show = false;
-		if (mPostingConfiguration != null) {
-			maxCommentLength = mPostingConfiguration.maxCommentLength;
+		if (postingConfiguration != null) {
+			maxCommentLength = postingConfiguration.maxCommentLength;
 			int threshold = Math.min(maxCommentLength / 2, 1000);
 			length = s.length();
-			if (!mEncoderReady) {
-				mEncoderReady = true;
-				String encoding = mPostingConfiguration.maxCommentLengthEncoding;
+			if (!encoderReady) {
+				encoderReady = true;
+				String encoding = postingConfiguration.maxCommentLengthEncoding;
 				if (encoding != null) {
 					try {
-						mEncoder = Charset.forName(encoding).newEncoder();
+						encoder = Charset.forName(encoding).newEncoder();
 					} catch (Exception e) {
-						// Ignore
+						// Ignore encoding exceptions
 					}
 				}
 			}
-			if (mEncoder != null) {
-				int capacity = (int) (Math.max(100, length) * mEncoder.maxBytesPerChar());
-				if (mByteBuffer == null || mByteBuffer.capacity() < capacity) {
-					mByteBuffer = ByteBuffer.allocate(4 * capacity);
+			if (encoder != null) {
+				int capacity = (int) (Math.max(100, length) * encoder.maxBytesPerChar());
+				if (byteBuffer == null || byteBuffer.capacity() < capacity) {
+					byteBuffer = ByteBuffer.allocate(4 * capacity);
 				} else {
-					mByteBuffer.rewind();
+					byteBuffer.rewind();
 				}
-				mEncoder.reset();
-				mEncoder.encode(CharBuffer.wrap(s), mByteBuffer, true);
-				length = mByteBuffer.position();
+				encoder.reset();
+				encoder.encode(CharBuffer.wrap(s), byteBuffer, true);
+				length = byteBuffer.position();
 			}
 			show = threshold > 0 && length >= threshold;
 		}
 		boolean error = show && length > maxCommentLength;
-		if (mShow != show) {
-			mRemainingCharacters.setVisibility(show ? View.VISIBLE : View.GONE);
-			mLayoutCallback.run();
-			mShow = show;
+		if (this.show != show) {
+			remainingCharacters.setVisibility(show ? View.VISIBLE : View.GONE);
+			layoutCallback.run();
+			this.show = show;
 		}
-		if (mError != error || mRemainingCharacters.getText().length() == 0) {
-			int color = ResourceUtils.getColor(mCommentView.getContext(), error ? R.attr.colorTextError
+		if (this.error != error || remainingCharacters.getText().length() == 0) {
+			int color = ResourceUtils.getColor(commentView.getContext(), error ? R.attr.colorTextError
 					: android.R.attr.textColorSecondary);
-			mRemainingCharacters.setTextColor(color);
+			remainingCharacters.setTextColor(color);
 			if (C.API_LOLLIPOP) {
-				if (mErrorSetter == null) {
-					mErrorSetter = new ErrorEditTextSetter(mCommentView);
+				if (errorSetter == null) {
+					errorSetter = new ErrorEditTextSetter(commentView);
 				}
-				mErrorSetter.setError(error);
+				errorSetter.setError(error);
 			}
-			mError = error;
+			this.error = error;
 		}
 		if (show) {
-			mRemainingCharacters.setText(length + " / " + maxCommentLength);
+			remainingCharacters.setText(length + " / " + maxCommentLength);
 		}
 		if (before == 0 && count == 1) {
 			char c = s.charAt(start);
 			if (c == '\n' || c == '.') {
-				mStoreDraftCallback.run();
+				storeDraftCallback.run();
 			}
 		}
 	}

@@ -64,9 +64,9 @@ import com.mishiranu.dashchan.widget.PullableWrapper;
 
 public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesStorage.Observer, UiManager.Observer,
 		ReadThreadsTask.Callback, PullableListView.OnBeforeLayoutListener {
-	private ReadThreadsTask mReadTask;
+	private ReadThreadsTask readTask;
 
-	private Drawable mOldListSelector;
+	private Drawable oldListSelector;
 
 	@Override
 	protected void onCreate() {
@@ -79,13 +79,13 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		ThreadsAdapter adapter = new ThreadsAdapter(activity, pageHolder.chanName, pageHolder.boardName, uiManager);
 		initAdapter(adapter, adapter);
 		listView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
-		mOldListSelector = listView.getSelector();
+		oldListSelector = listView.getSelector();
 		listView.setSelector(android.R.color.transparent);
 		uiManager.observable().register(this);
 		ThreadsExtra extra = getExtra();
 		adapter.applyAttributesBeforeFill(extra.headerExpanded, extra.catalogSortIndex,
 				Preferences.isThreadsGridMode());
-		mGridLayoutControl.apply();
+		gridLayoutControl.apply();
 		ChanConfiguration.Board board = getChanConfiguration().safe().obtainBoard(pageHolder.boardName);
 		if (pageHolder.initialFromCache && !extra.cachedPostItems.isEmpty()) {
 			getAdapter().setItems(extra.cachedPostItems, extra.startPageNumber, extra.boardSpeed);
@@ -112,14 +112,14 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 	@Override
 	protected void onDestroy() {
 		getUiManager().observable().unregister(this);
-		if (mReadTask != null) {
-			mReadTask.cancel();
-			mReadTask = null;
+		if (readTask != null) {
+			readTask.cancel();
+			readTask = null;
 		}
 		ImageLoader.getInstance().clearTasks(getPageHolder().chanName);
 		FavoritesStorage.getInstance().getObservable().unregister(this);
 		PullableListView listView = getListView();
-		listView.setSelector(mOldListSelector);
+		listView.setSelector(oldListSelector);
 		listView.removeOnBeforeLayoutListener(this);
 	}
 
@@ -159,7 +159,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		}
 	}
 
-	private boolean mAllowSearch = false;
+	private boolean allowSearch = false;
 
 	private static final int OPTIONS_MENU_REFRESH = 0;
 	private static final int OPTIONS_MENU_CATALOG = 1;
@@ -202,7 +202,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		boolean catalog = board.allowCatalog;
 		boolean catalogSearch = catalog && board.allowCatalogSearch;
 		boolean canSearch = search || catalogSearch;
-		mAllowSearch = canSearch;
+		allowSearch = canSearch;
 		boolean isCatalogOpen = extra.startPageNumber == PAGE_NUMBER_CATALOG;
 		menu.findItem(OPTIONS_MENU_SEARCH).setTitle(canSearch ? R.string.action_search : R.string.action_filter);
 		menu.findItem(OPTIONS_MENU_CATALOG).setVisible(catalog && !isCatalogOpen);
@@ -342,7 +342,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 			}
 			case APPEARANCE_MENU_THREADS_GRID: {
 				boolean gridMode = Preferences.isThreadsGridMode();
-				mGridLayoutControl.applyGridMode(gridMode);
+				gridLayoutControl.applyGridMode(gridMode);
 				break;
 			}
 		}
@@ -351,15 +351,15 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 	@Override
 	public void onBeforeLayout(View v, int left, int top, int right, int bottom) {
 		int width = right - left;
-		mGridLayoutControl.onListLayout(width);
+		gridLayoutControl.onListLayout(width);
 	}
 
-	private final GridLayoutControl mGridLayoutControl = new GridLayoutControl();
+	private final GridLayoutControl gridLayoutControl = new GridLayoutControl();
 
 	private class GridLayoutControl implements Runnable {
-		private int mCurrentWidth;
-		private ListPosition mListPosition;
-		private String mPositionInfo;
+		private int currentWidth;
+		private ListPosition listPosition;
+		private String positionInfo;
 
 		public void applyGridMode(boolean gridMode) {
 			ListView listView = getListView();
@@ -376,8 +376,8 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		public void apply() {
 			ListView listView = getListView();
 			listView.removeCallbacks(this);
-			mListPosition = null;
-			mPositionInfo = null;
+			listPosition = null;
+			positionInfo = null;
 			if (listView.getWidth() > 0) {
 				run();
 			} else {
@@ -386,13 +386,13 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		}
 
 		public void onListLayout(int width) {
-			if (mCurrentWidth != width) {
-				mCurrentWidth = width;
+			if (currentWidth != width) {
+				currentWidth = width;
 				ListView listView = getListView();
 				listView.removeCallbacks(this);
 				boolean gridMode = getAdapter().isGridMode();
-				mListPosition = gridMode ? ListPosition.obtain(listView) : null;
-				mPositionInfo = gridMode ? getAdapter().getPositionInfo(mListPosition.position) : null;
+				listPosition = gridMode ? ListPosition.obtain(listView) : null;
+				positionInfo = gridMode ? getAdapter().getPositionInfo(listPosition.position) : null;
 				listView.post(this);
 			}
 		}
@@ -402,21 +402,21 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 			ListView listView = getListView();
 			listView.removeCallbacks(this);
 			getAdapter().updateConfiguration(listView.getWidth());
-			if (mPositionInfo != null) {
-				int position = getAdapter().getPositionFromInfo(mPositionInfo);
-				if (position != -1 && position != mListPosition.position) {
+			if (positionInfo != null) {
+				int position = getAdapter().getPositionFromInfo(positionInfo);
+				if (position != -1 && position != listPosition.position) {
 					// Fix list position due to rows count changing
-					new ListPosition(position, mListPosition.y).apply(listView);
+					new ListPosition(position, listPosition.y).apply(listView);
 				}
 			} else {
-				mCurrentWidth = listView.getWidth();
+				currentWidth = listView.getWidth();
 			}
 		}
 	}
 
 	@Override
 	public boolean onSearchSubmit(String query) {
-		if (mAllowSearch) {
+		if (allowSearch) {
 			PageHolder pageHolder = getPageHolder();
 			getUiManager().navigator().navigateSearch(pageHolder.chanName, pageHolder.boardName, query);
 			return true;
@@ -468,9 +468,9 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 	}
 
 	private void refreshThreads(RefreshPage refreshPage, boolean showPull) {
-		if (mReadTask != null) {
-			mReadTask.cancel();
-			mReadTask = null;
+		if (readTask != null) {
+			readTask.cancel();
+			readTask = null;
 		}
 		int pageNumber;
 		boolean append = false;
@@ -505,8 +505,8 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 	}
 
 	private boolean loadThreadsPage(int pageNumber, boolean append, boolean showPull) {
-		if (mReadTask != null) {
-			mReadTask.cancel();
+		if (readTask != null) {
+			readTask.cancel();
 		}
 		PageHolder pageHolder = getPageHolder();
 		if (pageNumber < PAGE_NUMBER_CATALOG || pageNumber >= Math.max(getChanConfiguration()
@@ -518,9 +518,9 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 			ThreadsExtra extra = getExtra();
 			HttpValidator validator = !append && extra.cachedPostItems.size() == 1
 					&& extra.startPageNumber == pageNumber ? extra.validator : null;
-			mReadTask = new ReadThreadsTask(this, pageHolder.chanName, pageHolder.boardName, pageNumber,
+			readTask = new ReadThreadsTask(this, pageHolder.chanName, pageHolder.boardName, pageNumber,
 					validator, append);
-			mReadTask.executeOnExecutor(ReadThreadsTask.THREAD_POOL_EXECUTOR);
+			readTask.executeOnExecutor(ReadThreadsTask.THREAD_POOL_EXECUTOR);
 			if (showPull) {
 				getListView().getWrapper().startBusyState(PullableWrapper.Side.TOP);
 				switchView(ViewType.LIST, null);
@@ -535,7 +535,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 	@Override
 	public void onReadThreadsSuccess(ArrayList<PostItem> postItems, int pageNumber,
 			int boardSpeed, boolean append, boolean checkModified, HttpValidator validator) {
-		mReadTask = null;
+		readTask = null;
 		getListView().getWrapper().cancelBusyState();
 		switchView(ViewType.LIST, null);
 		ThreadsExtra extra = getExtra();
@@ -605,7 +605,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 
 	@Override
 	public void onReadThreadsRedirect(RedirectException.Target target) {
-		mReadTask = null;
+		readTask = null;
 		getListView().getWrapper().cancelBusyState();
 		if (!StringUtils.equals(target.chanName, getPageHolder().chanName)) {
 			if (getAdapter().isRealEmpty()) {
@@ -623,7 +623,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 
 	@Override
 	public void onReadThreadsFail(ErrorItem errorItem, int pageNumber) {
-		mReadTask = null;
+		readTask = null;
 		getListView().getWrapper().cancelBusyState();
 		String message = errorItem.type == ErrorItem.TYPE_BOARD_NOT_EXISTS && pageNumber >= 1
 				? getString(R.string.message_page_not_exist_format, pageNumber) : errorItem.toString();

@@ -21,14 +21,14 @@ import android.text.style.TypefaceSpan;
 
 @SuppressLint("ParcelCreator")
 public class MonospaceSpan extends TypefaceSpan {
-	private final boolean mAsciiArt;
+	private final boolean asciiArt;
 
 	public MonospaceSpan(boolean asciiArt) {
 		super("monospace");
-		mAsciiArt = asciiArt;
+		this.asciiArt = asciiArt;
 	}
 
 	public boolean isAsciiArt() {
-		return mAsciiArt;
+		return asciiArt;
 	}
 }

@@ -44,10 +44,10 @@ import com.mishiranu.dashchan.preference.SeekBarPreference;
 
 public abstract class BasePreferenceFragment extends PreferenceFragment implements Preference.OnPreferenceClickListener,
 		Preference.OnPreferenceChangeListener, SharedPreferences.OnSharedPreferenceChangeListener {
-	private ArrayList<EditTextPreference> mSummaryListenersEditText;
-	private HashMap<MultipleEditTextPreference, String> mSummaryListenersMultipleEditText;
+	private ArrayList<EditTextPreference> summaryListenersEditText;
+	private HashMap<MultipleEditTextPreference, String> summaryListenersMultipleEditText;
 
-	private ArrayList<Dependency> mDependencies;
+	private ArrayList<Dependency> dependencies;
 
 	private static abstract class Dependency {
 		public final String key, dependencyKey;
@@ -77,11 +77,11 @@ public abstract class BasePreferenceFragment extends PreferenceFragment implemen
 	}
 
 	private static class StringDependency extends Dependency {
-		private final HashSet<String> mValues = new HashSet<>();
+		private final HashSet<String> values = new HashSet<>();
 
 		public StringDependency(String key, String dependencyKey, boolean positive, String... values) {
 			super(key, dependencyKey, positive);
-			Collections.addAll(mValues, values);
+			Collections.addAll(this.values, values);
 		}
 
 		@Override
@@ -94,7 +94,7 @@ public abstract class BasePreferenceFragment extends PreferenceFragment implemen
 			} else {
 				return false;
 			}
-			return mValues.contains(value) == positive;
+			return values.contains(value) == positive;
 		}
 	}
 
@@ -182,10 +182,10 @@ public abstract class BasePreferenceFragment extends PreferenceFragment implemen
 		editText.setInputType(inputType);
 		addPreference(parent, preference);
 		if (repeatValueInSummary) {
-			if (mSummaryListenersEditText == null) {
-				mSummaryListenersEditText = new ArrayList<>();
+			if (summaryListenersEditText == null) {
+				summaryListenersEditText = new ArrayList<>();
 			}
-			mSummaryListenersEditText.add(preference);
+			summaryListenersEditText.add(preference);
 			updateEditTextSummary(preference);
 		}
 		return preference;
@@ -221,10 +221,10 @@ public abstract class BasePreferenceFragment extends PreferenceFragment implemen
 		preference.setInputTypes(inputTypes);
 		addPreference(parent, preference);
 		if (repeatValueInSummaryPattern != null) {
-			if (mSummaryListenersMultipleEditText == null) {
-				mSummaryListenersMultipleEditText = new HashMap<>();
+			if (summaryListenersMultipleEditText == null) {
+				summaryListenersMultipleEditText = new HashMap<>();
 			}
-			mSummaryListenersMultipleEditText.put(preference, repeatValueInSummaryPattern);
+			summaryListenersMultipleEditText.put(preference, repeatValueInSummaryPattern);
 			updateMultipleEditTextSummary(preference, repeatValueInSummaryPattern);
 		}
 		return preference;
@@ -271,20 +271,20 @@ public abstract class BasePreferenceFragment extends PreferenceFragment implemen
 	}
 
 	public void addDependency(String key, String dependencyKey, boolean positive) {
-		if (mDependencies == null) {
-			mDependencies = new ArrayList<>();
+		if (dependencies == null) {
+			dependencies = new ArrayList<>();
 		}
 		Dependency dependency = new BooleanDependency(key, dependencyKey, positive);
-		mDependencies.add(dependency);
+		dependencies.add(dependency);
 		updateDependency(dependency);
 	}
 
 	public void addDependency(String key, String dependencyKey, boolean positive, String... values) {
-		if (mDependencies == null) {
-			mDependencies = new ArrayList<>();
+		if (dependencies == null) {
+			dependencies = new ArrayList<>();
 		}
 		Dependency dependency = new StringDependency(key, dependencyKey, positive, values);
-		mDependencies.add(dependency);
+		dependencies.add(dependency);
 		updateDependency(dependency);
 	}
 
@@ -351,23 +351,23 @@ public abstract class BasePreferenceFragment extends PreferenceFragment implemen
 	}
 
 	public void onPreferenceAfterChange(Preference preference) {
-		if (mSummaryListenersEditText != null) {
-			if (preference instanceof EditTextPreference && mSummaryListenersEditText.contains(preference)) {
+		if (summaryListenersEditText != null) {
+			if (preference instanceof EditTextPreference && summaryListenersEditText.contains(preference)) {
 				updateEditTextSummary((EditTextPreference) preference);
 			}
 		}
-		if (mSummaryListenersMultipleEditText != null) {
-			if (preference instanceof MultipleEditTextPreference && mSummaryListenersMultipleEditText
+		if (summaryListenersMultipleEditText != null) {
+			if (preference instanceof MultipleEditTextPreference && summaryListenersMultipleEditText
 					.containsKey(preference)) {
 				updateMultipleEditTextSummary((MultipleEditTextPreference) preference,
-						mSummaryListenersMultipleEditText.get(preference));
+						summaryListenersMultipleEditText.get(preference));
 			}
 		}
 		if (preference instanceof ListPreference) {
 			updateListSummary((ListPreference) preference);
 		}
-		if (mDependencies != null) {
-			for (Dependency dependency : mDependencies) {
+		if (dependencies != null) {
+			for (Dependency dependency : dependencies) {
 				if (preference.getKey().equals(dependency.dependencyKey)) {
 					updateDependency(dependency, preference);
 				}

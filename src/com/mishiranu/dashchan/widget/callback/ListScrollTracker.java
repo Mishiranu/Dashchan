@@ -20,32 +20,32 @@ import android.view.View;
 import android.widget.AbsListView;
 
 public class ListScrollTracker implements AbsListView.OnScrollListener, Runnable {
-	private final OnScrollListener mListener;
+	private final OnScrollListener listener;
 
 	public ListScrollTracker(OnScrollListener listener) {
-		mListener = listener;
+		this.listener = listener;
 	}
 
-	private boolean mScrollingDown = false;
-	private int mLastTrackingItem = -1;
-	private int mLastTrackingTop;
-	private int mLastFirstItem = -1;
-	private int mLastFirstTop;
+	private boolean scrollingDown = false;
+	private int lastTrackingItem = -1;
+	private int lastTrackingTop;
+	private int lastFirstItem = -1;
+	private int lastFirstTop;
 
-	private boolean mPrevFirst, mPrevLast;
+	private boolean prevFirst, prevLast;
 
 	private void notifyScroll(AbsListView view, int scrollY, int firstVisibleItem,
 			int visibleItemCount, int totalItemCount) {
 		boolean first = firstVisibleItem == 0;
 		boolean last = firstVisibleItem + visibleItemCount == totalItemCount;
-		boolean changedFirstLast = first != mPrevFirst || last != mPrevLast;
-		mPrevFirst = first;
-		mPrevLast = last;
+		boolean changedFirstLast = first != prevFirst || last != prevLast;
+		prevFirst = first;
+		prevLast = last;
 		if (scrollY != 0) {
-			mScrollingDown = scrollY > 0;
+			scrollingDown = scrollY > 0;
 		}
 		if (scrollY != 0 || changedFirstLast) {
-			mListener.onScroll(view, scrollY, totalItemCount, first, last);
+			listener.onScroll(view, scrollY, totalItemCount, first, last);
 		}
 	}
 
@@ -53,7 +53,7 @@ public class ListScrollTracker implements AbsListView.OnScrollListener, Runnable
 		if (visibleItemCount > 2) {
 			return visibleItemCount / 2;
 		} else if (visibleItemCount == 2) {
-			return mScrollingDown ? 1 : 0;
+			return scrollingDown ? 1 : 0;
 		} else {
 			return 0;
 		}
@@ -71,25 +71,25 @@ public class ListScrollTracker implements AbsListView.OnScrollListener, Runnable
 			int trackingTop = tracking.getTop();
 			int firstVisibleTop = view.getChildAt(0).getTop();
 			// Detect child height-change animation
-			boolean standsStill = mLastFirstItem == firstVisibleItem && mLastFirstTop == firstVisibleTop;
-			mLastFirstItem = firstVisibleItem;
-			mLastFirstTop = firstVisibleTop;
-			if (mLastTrackingItem == -1) {
-				mLastTrackingItem = trackingItem;
+			boolean standsStill = lastFirstItem == firstVisibleItem && lastFirstTop == firstVisibleTop;
+			lastFirstItem = firstVisibleItem;
+			lastFirstTop = firstVisibleTop;
+			if (lastTrackingItem == -1) {
+				lastTrackingItem = trackingItem;
 				notifyScroll(view, 0, firstVisibleItem, visibleItemCount, totalItemCount);
 			} else {
 				int scrollY = 0;
-				if (mLastTrackingItem != trackingItem) {
-					int lastTrackingIndex = mLastTrackingItem - firstVisibleItem;
+				if (lastTrackingItem != trackingItem) {
+					int lastTrackingIndex = lastTrackingItem - firstVisibleItem;
 					// Check last tracking view is not recycled
 					if (lastTrackingIndex >= 0 && lastTrackingIndex < visibleItemCount) {
 						View lastTracking = view.getChildAt(lastTrackingIndex);
 						int lastTop = lastTracking.getTop();
-						scrollY = mLastTrackingTop - lastTop;
+						scrollY = lastTrackingTop - lastTop;
 					}
-					mLastTrackingItem = trackingItem;
+					lastTrackingItem = trackingItem;
 				} else {
-					scrollY = mLastTrackingTop - trackingTop;
+					scrollY = lastTrackingTop - trackingTop;
 				}
 				// 100% false scroll: it can be just a child's height animation, for example
 				if (standsStill) {
@@ -97,7 +97,7 @@ public class ListScrollTracker implements AbsListView.OnScrollListener, Runnable
 				}
 				notifyScroll(view, scrollY, firstVisibleItem, visibleItemCount, totalItemCount);
 			}
-			mLastTrackingTop = trackingTop;
+			lastTrackingTop = trackingTop;
 		}
 	}
 
@@ -112,7 +112,7 @@ public class ListScrollTracker implements AbsListView.OnScrollListener, Runnable
 
 	@Override
 	public void run() {
-		mLastTrackingItem = -1;
+		lastTrackingItem = -1;
 	}
 
 	public interface OnScrollListener {

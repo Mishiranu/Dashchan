@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Locale;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -67,62 +68,62 @@ import com.mishiranu.dashchan.util.StringBlockBuilder;
 import com.mishiranu.dashchan.util.ViewUtils;
 
 public class VideoUnit implements AudioManager.OnAudioFocusChangeListener {
-	private final PagerInstance mInstance;
-	private final LinearLayout mControlsView;
-	private final AudioManager mAudioManager;
+	private final PagerInstance instance;
+	private final LinearLayout controlsView;
+	private final AudioManager audioManager;
 
-	private int mLayoutConfiguration = -1;
-	private LinearLayout mConfigurationView;
-	private TextView mTimeTextView;
-	private TextView mTotalTimeTextView;
-	private SeekBar mSeekBar;
-	private ImageButton mPlayPauseButton;
+	private int layoutConfiguration = -1;
+	private LinearLayout configurationView;
+	private TextView timeTextView;
+	private TextView totalTimeTextView;
+	private SeekBar seekBar;
+	private ImageButton playPauseButton;
 
-	private VideoPlayer mPlayer;
-	private BackgroundDrawable mBackgroundDrawable;
-	private boolean mInitialized;
-	private boolean mWasPlaying;
-	private boolean mPausedByTransientLossOfFocus;
-	private boolean mFinishedPlayback;
-	private boolean mTrackingNow;
-	private boolean mHideSurfaceOnInit;
+	private VideoPlayer player;
+	private BackgroundDrawable backgroundDrawable;
+	private boolean initialized;
+	private boolean wasPlaying;
+	private boolean pausedByTransientLossOfFocus;
+	private boolean finishedPlayback;
+	private boolean trackingNow;
+	private boolean hideSurfaceOnInit;
 
-	private ReadVideoTask mReadVideoTask;
+	private ReadVideoTask readVideoTask;
 
 	public VideoUnit(PagerInstance instance) {
-		mInstance = instance;
-		mControlsView = new LinearLayout(mInstance.galleryInstance.context);
-		mControlsView.setOrientation(LinearLayout.VERTICAL);
-		mControlsView.setVisibility(View.GONE);
-		mAudioManager = (AudioManager) mInstance.galleryInstance.context.getSystemService(Activity.AUDIO_SERVICE);
+		this.instance = instance;
+		controlsView = new LinearLayout(instance.galleryInstance.context);
+		controlsView.setOrientation(LinearLayout.VERTICAL);
+		controlsView.setVisibility(View.GONE);
+		audioManager = (AudioManager) instance.galleryInstance.context.getSystemService(Activity.AUDIO_SERVICE);
 	}
 
 	public void addViews(FrameLayout frameLayout) {
-		frameLayout.addView(mControlsView, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
+		frameLayout.addView(controlsView, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
 				FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM));
 	}
 
 	public void onResume() {
-		if (mPlayer != null && mInitialized) {
-			setPlaying(mWasPlaying, true);
+		if (player != null && initialized) {
+			setPlaying(wasPlaying, true);
 			updatePlayState();
 		} else {
-			mWasPlaying = true;
+			wasPlaying = true;
 		}
 	}
 
 	public void onPause() {
-		if (mPlayer != null && mInitialized) {
-			mWasPlaying = mPlayer.isPlaying();
+		if (player != null && initialized) {
+			wasPlaying = player.isPlaying();
 			setPlaying(false, true);
 		} else {
-			mWasPlaying = false;
+			wasPlaying = false;
 		}
 	}
 
 	public void onConfigurationChanged(Configuration newConfig) {
 		if (newConfig.orientation != Configuration.ORIENTATION_UNDEFINED) {
-			if (mLayoutConfiguration != -1) {
+			if (layoutConfiguration != -1) {
 				recreateVideoControls();
 			}
 		}
@@ -130,40 +131,40 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener {
 
 	public void onApplyWindowPaddings(Rect rect) {
 		if (C.API_LOLLIPOP) {
-			mControlsView.setPadding(rect.left, 0, rect.right, rect.bottom);
+			controlsView.setPadding(rect.left, 0, rect.right, rect.bottom);
 		}
 	}
 
 	public boolean isInitialized() {
-		return mInitialized;
+		return initialized;
 	}
 
 	public boolean isCreated() {
-		return mPlayer != null;
+		return player != null;
 	}
 
 	public void interrupt() {
-		if (mReadVideoTask != null) {
-			mReadVideoTask.cancel();
-			mReadVideoTask = null;
+		if (readVideoTask != null) {
+			readVideoTask.cancel();
+			readVideoTask = null;
 		}
-		if (mInitialized) {
-			mAudioManager.abandonAudioFocus(this);
-			mInitialized = false;
+		if (initialized) {
+			audioManager.abandonAudioFocus(this);
+			initialized = false;
 		}
 		invalidateControlsVisibility();
-		if (mPlayer != null) {
-			mPlayer.free();
-			mPlayer = null;
-			mInstance.currentHolder.progressBar.setVisible(false, false);
+		if (player != null) {
+			player.free();
+			player = null;
+			instance.currentHolder.progressBar.setVisible(false, false);
 		}
-		if (mBackgroundDrawable != null) {
-			mBackgroundDrawable.recycle();
-			mBackgroundDrawable = null;
+		if (backgroundDrawable != null) {
+			backgroundDrawable.recycle();
+			backgroundDrawable = null;
 		}
-		interruptHolder(mInstance.leftHolder);
-		interruptHolder(mInstance.currentHolder);
-		interruptHolder(mInstance.rightHolder);
+		interruptHolder(instance.leftHolder);
+		interruptHolder(instance.currentHolder);
+		interruptHolder(instance.rightHolder);
 	}
 
 	private void interruptHolder(PagerInstance.ViewHolder holder) {
@@ -173,34 +174,34 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener {
 	}
 
 	public void forcePause() {
-		if (mInitialized) {
-			mWasPlaying = false;
+		if (initialized) {
+			wasPlaying = false;
 			setPlaying(false, true);
 		}
 	}
 
 	public void applyVideo(Uri uri, File file, boolean reload) {
-		mWasPlaying = true;
-		mFinishedPlayback = false;
-		mHideSurfaceOnInit = false;
+		wasPlaying = true;
+		finishedPlayback = false;
+		hideSurfaceOnInit = false;
 		final VideoPlayer workPlayer = new VideoPlayer(Preferences.isVideoSeekAnyFrame());
-		workPlayer.setListener(mPlayerListener);
-		mPlayer = workPlayer;
+		workPlayer.setListener(playerListener);
+		player = workPlayer;
 		boolean loadedFromFile = false;
 		if (!reload && file.exists()) {
 			try {
-				mPlayer.init(file);
+				player.init(file);
 				initializePlayer();
-				mSeekBar.setSecondaryProgress(mSeekBar.getMax());
+				seekBar.setSecondaryProgress(seekBar.getMax());
 				loadedFromFile = true;
-				mInstance.currentHolder.fullLoaded = true;
-				mInstance.galleryInstance.callback.invalidateOptionsMenu();
+				instance.currentHolder.fullLoaded = true;
+				instance.galleryInstance.callback.invalidateOptionsMenu();
 			} catch (IOException e) {
-				// Ignore
+				// Ignore exception
 			}
 		}
 		if (!loadedFromFile) {
-			PagerInstance.ViewHolder holder = mInstance.currentHolder;
+			PagerInstance.ViewHolder holder = instance.currentHolder;
 			holder.progressBar.setIndeterminate(true);
 			holder.progressBar.setVisible(true, false);
 			final CachingInputStream inputStream = new CachingInputStream();
@@ -208,7 +209,7 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener {
 				@Override
 				protected Boolean doInBackground(Void... params) {
 					try {
-						VideoPlayer player = mPlayer;
+						VideoPlayer player = VideoUnit.this.player;
 						if (player != null) {
 							player.init(inputStream);
 						}
@@ -220,40 +221,40 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener {
 
 				@Override
 				protected void onPostExecute(Boolean result) {
-					if (mPlayer != workPlayer) {
+					if (player != workPlayer) {
 						return;
 					}
-					PagerInstance.ViewHolder holder = mInstance.currentHolder;
+					PagerInstance.ViewHolder holder = instance.currentHolder;
 					holder.progressBar.setVisible(false, false);
 					if (result) {
 						initializePlayer();
-						mInstance.galleryInstance.callback.invalidateOptionsMenu();
-						if (mReadVideoTask == null) {
-							mSeekBar.setSecondaryProgress(mSeekBar.getMax());
+						instance.galleryInstance.callback.invalidateOptionsMenu();
+						if (readVideoTask == null) {
+							seekBar.setSecondaryProgress(seekBar.getMax());
 						}
 					} else {
-						if (mReadVideoTask != null) {
-							if (!mReadVideoTask.isError()) {
-								mReadVideoTask.cancel();
-								mReadVideoTask = null;
+						if (readVideoTask != null) {
+							if (!readVideoTask.isError()) {
+								readVideoTask.cancel();
+								readVideoTask = null;
 							} else {
 								return;
 							}
 						}
-						mInstance.callback.showError(holder, mInstance.galleryInstance.context
+						instance.callback.showError(holder, instance.galleryInstance.context
 								.getString(R.string.message_playback_error));
 					}
 				}
 			}.executeOnExecutor(ConcurrentUtils.SEPARATE_EXECUTOR);
-			mReadVideoTask = new ReadVideoTask(mInstance.galleryInstance.chanName, uri, inputStream,
+			readVideoTask = new ReadVideoTask(instance.galleryInstance.chanName, uri, inputStream,
 					new ReadVideoCallback(workPlayer, holder));
-			mReadVideoTask.executeOnExecutor(ReadVideoTask.THREAD_POOL_EXECUTOR);
+			readVideoTask.executeOnExecutor(ReadVideoTask.THREAD_POOL_EXECUTOR);
 		}
 	}
 
 	@Override
 	public void onAudioFocusChange(int focusChange) {
-		if (!mInitialized) {
+		if (!initialized) {
 			return;
 		}
 		switch (focusChange) {
@@ -263,16 +264,16 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener {
 				break;
 			}
 			case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT: {
-				boolean playing = mPlayer.isPlaying();
+				boolean playing = player.isPlaying();
 				setPlaying(false, false);
 				if (playing) {
-					mPausedByTransientLossOfFocus = true;
+					pausedByTransientLossOfFocus = true;
 				}
 				updatePlayState();
 				break;
 			}
 			case AudioManager.AUDIOFOCUS_GAIN: {
-				if (mPausedByTransientLossOfFocus) {
+				if (pausedByTransientLossOfFocus) {
 					setPlaying(true, false);
 				}
 				updatePlayState();
@@ -282,115 +283,116 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener {
 	}
 
 	private boolean setPlaying(boolean playing, boolean resetFocus) {
-		if (mPlayer.isPlaying() != playing) {
-			if (resetFocus && mPlayer.isAudioPresent()) {
+		if (player.isPlaying() != playing) {
+			if (resetFocus && player.isAudioPresent()) {
 				if (playing) {
-					if (mAudioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
+					if (audioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
 							!= AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
 						return false;
 					}
 				} else {
-					mAudioManager.abandonAudioFocus(this);
+					audioManager.abandonAudioFocus(this);
 				}
 			}
-			mPlayer.setPlaying(playing);
-			mPausedByTransientLossOfFocus = false;
+			player.setPlaying(playing);
+			pausedByTransientLossOfFocus = false;
 		}
 		return true;
 	}
 
 	private void initializePlayer() {
-		PagerInstance.ViewHolder holder = mInstance.currentHolder;
+		PagerInstance.ViewHolder holder = instance.currentHolder;
 		holder.progressBar.setVisible(false, false);
-		Point dimensions = mPlayer.getDimensions();
-		mBackgroundDrawable = new BackgroundDrawable();
-		mBackgroundDrawable.width = dimensions.x;
-		mBackgroundDrawable.height = dimensions.y;
+		Point dimensions = player.getDimensions();
+		backgroundDrawable = new BackgroundDrawable();
+		backgroundDrawable.width = dimensions.x;
+		backgroundDrawable.height = dimensions.y;
 		holder.recyclePhotoView();
-		holder.photoView.setImage(mBackgroundDrawable, false, true, false);
-		View videoView = mPlayer.getVideoView(mInstance.galleryInstance.context);
+		holder.photoView.setImage(backgroundDrawable, false, true, false);
+		View videoView = player.getVideoView(instance.galleryInstance.context);
 		holder.surfaceParent.addView(videoView, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
 				FrameLayout.LayoutParams.MATCH_PARENT, Gravity.CENTER));
 		recreateVideoControls();
-		mPlayPauseButton.setEnabled(true);
-		mSeekBar.setEnabled(true);
-		mInitialized = true;
-		mPausedByTransientLossOfFocus = false;
-		if (mHideSurfaceOnInit) {
+		playPauseButton.setEnabled(true);
+		seekBar.setEnabled(true);
+		initialized = true;
+		pausedByTransientLossOfFocus = false;
+		if (hideSurfaceOnInit) {
 			showHideVideoView(false);
 		}
 		invalidateControlsVisibility();
-		setPlaying(mWasPlaying, true);
+		setPlaying(wasPlaying, true);
 		updatePlayState();
 	}
 
+	@SuppressLint("RtlHardcoded")
 	private void recreateVideoControls() {
-		Context context = mInstance.galleryInstance.context;
+		Context context = instance.galleryInstance.context;
 		float density = ResourceUtils.obtainDensity(context);
 		int targetLayoutCounfiguration = ResourceUtils.isTabletOrLandscape(context.getResources()
 				.getConfiguration()) ? 1 : 0;
-		if (targetLayoutCounfiguration != mLayoutConfiguration) {
-			boolean firstTimeLayout = mLayoutConfiguration < 0;
-			mLayoutConfiguration = targetLayoutCounfiguration;
+		if (targetLayoutCounfiguration != layoutConfiguration) {
+			boolean firstTimeLayout = layoutConfiguration < 0;
+			layoutConfiguration = targetLayoutCounfiguration;
 			boolean longLayout = targetLayoutCounfiguration == 1;
 
-			mControlsView.removeAllViews();
-			if (mSeekBar != null) {
-				mSeekBar.removeCallbacks(mProgressRunnable);
+			controlsView.removeAllViews();
+			if (seekBar != null) {
+				seekBar.removeCallbacks(progressRunnable);
 			}
-			mTrackingNow = false;
+			trackingNow = false;
 
-			mConfigurationView = new LinearLayout(context);
-			mConfigurationView.setOrientation(LinearLayout.HORIZONTAL);
-			mConfigurationView.setGravity(Gravity.RIGHT);
-			mConfigurationView.setPadding((int) (8f * density), 0, (int) (8f * density), 0);
-			mControlsView.addView(mConfigurationView, LinearLayout.LayoutParams.MATCH_PARENT,
+			configurationView = new LinearLayout(context);
+			configurationView.setOrientation(LinearLayout.HORIZONTAL);
+			configurationView.setGravity(Gravity.RIGHT);
+			configurationView.setPadding((int) (8f * density), 0, (int) (8f * density), 0);
+			controlsView.addView(configurationView, LinearLayout.LayoutParams.MATCH_PARENT,
 					LinearLayout.LayoutParams.WRAP_CONTENT);
 
 			LinearLayout controls = new LinearLayout(context);
 			controls.setOrientation(longLayout ? LinearLayout.HORIZONTAL : LinearLayout.VERTICAL);
-			controls.setBackgroundColor(mInstance.galleryInstance.actionBarColor);
+			controls.setBackgroundColor(instance.galleryInstance.actionBarColor);
 			controls.setPadding((int) (8f * density), longLayout ? 0 : (int) (8f * density), (int) (8f * density), 0);
 			controls.setClickable(true);
-			mControlsView.addView(controls, LinearLayout.LayoutParams.MATCH_PARENT,
+			controlsView.addView(controls, LinearLayout.LayoutParams.MATCH_PARENT,
 					LinearLayout.LayoutParams.WRAP_CONTENT);
 
-			CharSequence oldTimeText = mTimeTextView != null ? mTimeTextView.getText() : null;
-			mTimeTextView = new TextView(context, null, android.R.attr.textAppearanceListItem);
-			mTimeTextView.setTextSize(14f);
-			mTimeTextView.setGravity(Gravity.CENTER_HORIZONTAL);
+			CharSequence oldTimeText = timeTextView != null ? timeTextView.getText() : null;
+			timeTextView = new TextView(context, null, android.R.attr.textAppearanceListItem);
+			timeTextView.setTextSize(14f);
+			timeTextView.setGravity(Gravity.CENTER_HORIZONTAL);
 			if (C.API_LOLLIPOP) {
-				mTimeTextView.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
+				timeTextView.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
 			}
 			if (oldTimeText != null) {
-				mTimeTextView.setText(oldTimeText);
+				timeTextView.setText(oldTimeText);
 			}
 
-			mTotalTimeTextView = new TextView(context, null, android.R.attr.textAppearanceListItem);
-			mTotalTimeTextView.setTextSize(14f);
-			mTotalTimeTextView.setGravity(Gravity.CENTER_HORIZONTAL);
+			totalTimeTextView = new TextView(context, null, android.R.attr.textAppearanceListItem);
+			totalTimeTextView.setTextSize(14f);
+			totalTimeTextView.setGravity(Gravity.CENTER_HORIZONTAL);
 			if (C.API_LOLLIPOP) {
-				mTotalTimeTextView.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
+				totalTimeTextView.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
 			}
 
-			int oldSecondaryProgress = mSeekBar != null ? mSeekBar.getSecondaryProgress() : -1;
-			mSeekBar = new SeekBar(context);
-			mSeekBar.setOnSeekBarChangeListener(mSeekBarListener);
+			int oldSecondaryProgress = seekBar != null ? seekBar.getSecondaryProgress() : -1;
+			seekBar = new SeekBar(context);
+			seekBar.setOnSeekBarChangeListener(seekBarListener);
 			if (oldSecondaryProgress >= 0) {
-				mSeekBar.setSecondaryProgress(oldSecondaryProgress);
+				seekBar.setSecondaryProgress(oldSecondaryProgress);
 			}
 
-			mPlayPauseButton = new ImageButton(context, null, android.R.attr.borderlessButtonStyle);
-			mPlayPauseButton.setScaleType(ImageButton.ScaleType.CENTER);
-			mPlayPauseButton.setOnClickListener(mPlayPauseClickListener);
+			playPauseButton = new ImageButton(context, null, android.R.attr.borderlessButtonStyle);
+			playPauseButton.setScaleType(ImageButton.ScaleType.CENTER);
+			playPauseButton.setOnClickListener(playPauseClickListener);
 
 			if (longLayout) {
 				controls.setGravity(Gravity.CENTER_VERTICAL);
-				controls.addView(mTimeTextView, (int) (48f * density), LinearLayout.LayoutParams.WRAP_CONTENT);
-				controls.addView(mSeekBar, new LinearLayout.LayoutParams(0,
+				controls.addView(timeTextView, (int) (48f * density), LinearLayout.LayoutParams.WRAP_CONTENT);
+				controls.addView(seekBar, new LinearLayout.LayoutParams(0,
 						LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-				controls.addView(mPlayPauseButton, (int) (80f * density), LinearLayout.LayoutParams.WRAP_CONTENT);
-				controls.addView(mTotalTimeTextView, (int) (48f * density),
+				controls.addView(playPauseButton, (int) (80f * density), LinearLayout.LayoutParams.WRAP_CONTENT);
+				controls.addView(totalTimeTextView, (int) (48f * density),
 						LinearLayout.LayoutParams.WRAP_CONTENT);
 			} else {
 				LinearLayout controls1 = new LinearLayout(context);
@@ -404,24 +406,24 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener {
 						LinearLayout.LayoutParams.WRAP_CONTENT);
 				controls.addView(controls2, LinearLayout.LayoutParams.MATCH_PARENT,
 						LinearLayout.LayoutParams.WRAP_CONTENT);
-				controls1.addView(mSeekBar, LinearLayout.LayoutParams.MATCH_PARENT,
+				controls1.addView(seekBar, LinearLayout.LayoutParams.MATCH_PARENT,
 						LinearLayout.LayoutParams.WRAP_CONTENT);
-				controls2.addView(mTimeTextView, new LinearLayout.LayoutParams(0,
+				controls2.addView(timeTextView, new LinearLayout.LayoutParams(0,
 						LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-				controls2.addView(mPlayPauseButton, (int) (80f * density), LinearLayout.LayoutParams.WRAP_CONTENT);
-				controls2.addView(mTotalTimeTextView, new LinearLayout.LayoutParams(0,
+				controls2.addView(playPauseButton, (int) (80f * density), LinearLayout.LayoutParams.WRAP_CONTENT);
+				controls2.addView(totalTimeTextView, new LinearLayout.LayoutParams(0,
 						LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
 			}
 			if (firstTimeLayout) {
-				AnimationUtils.measureDynamicHeight(mControlsView);
-				mControlsView.setTranslationY(mControlsView.getMeasuredHeight());
-				mControlsView.setAlpha(0f);
+				AnimationUtils.measureDynamicHeight(controlsView);
+				controlsView.setTranslationY(controlsView.getMeasuredHeight());
+				controlsView.setAlpha(0f);
 			}
 		}
-		if (mPlayer != null) {
-			mConfigurationView.removeAllViews();
+		if (player != null) {
+			configurationView.removeAllViews();
 			ActionIconSet set = null;
-			if (!mPlayer.isAudioPresent()) {
+			if (!player.isAudioPresent()) {
 				if (set == null) {
 					set = new ActionIconSet(context);
 				}
@@ -431,13 +433,13 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener {
 				if (C.API_LOLLIPOP) {
 					imageView.setImageAlpha(0x99);
 				}
-				mConfigurationView.addView(imageView, (int) (48f * density), (int) (48f * density));
+				configurationView.addView(imageView, (int) (48f * density), (int) (48f * density));
 			}
-			mTotalTimeTextView.setText(formatVideoTime(mPlayer.getDuration()));
-			mSeekBar.setMax((int) mPlayer.getDuration());
+			totalTimeTextView.setText(formatVideoTime(player.getDuration()));
+			seekBar.setMax((int) player.getDuration());
 		}
-		mSeekBar.removeCallbacks(mProgressRunnable);
-		mSeekBar.post(mProgressRunnable);
+		seekBar.removeCallbacks(progressRunnable);
+		seekBar.post(progressRunnable);
 		updatePlayState();
 	}
 
@@ -448,16 +450,16 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener {
 		return String.format(Locale.US, "%02d:%02d", m, s);
 	}
 
-	private final View.OnClickListener mPlayPauseClickListener = new View.OnClickListener() {
+	private final View.OnClickListener playPauseClickListener = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
-			if (mInitialized) {
-				if (mFinishedPlayback) {
-					mFinishedPlayback = false;
-					mPlayer.setPosition(0);
+			if (initialized) {
+				if (finishedPlayback) {
+					finishedPlayback = false;
+					player.setPosition(0);
 					setPlaying(true, true);
 				} else {
-					boolean playing = !mPlayer.isPlaying();
+					boolean playing = !player.isPlaying();
 					setPlaying(playing, true);
 				}
 				updatePlayState();
@@ -465,70 +467,70 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener {
 		}
 	};
 
-	private final Runnable mProgressRunnable = new Runnable() {
+	private final Runnable progressRunnable = new Runnable() {
 		@Override
 		public void run() {
-			if (mInitialized) {
+			if (initialized) {
 				int position;
-				if (mTrackingNow) {
-					position = mSeekBar.getProgress();
+				if (trackingNow) {
+					position = seekBar.getProgress();
 				} else {
-					position = (int) mPlayer.getPosition();
-					mSeekBar.setProgress(position);
+					position = (int) player.getPosition();
+					seekBar.setProgress(position);
 				}
-				mTimeTextView.setText(formatVideoTime(position));
+				timeTextView.setText(formatVideoTime(position));
 			}
-			mSeekBar.postDelayed(this, 200);
+			seekBar.postDelayed(this, 200);
 		}
 	};
 
-	private final SeekBar.OnSeekBarChangeListener mSeekBarListener = new SeekBar.OnSeekBarChangeListener() {
-		private int mNextSeekPosition;
+	private final SeekBar.OnSeekBarChangeListener seekBarListener = new SeekBar.OnSeekBarChangeListener() {
+		private int nextSeekPosition;
 
 		@Override
 		public void onStopTrackingTouch(SeekBar seekBar) {
-			mTrackingNow = false;
-			seekBar.removeCallbacks(mProgressRunnable);
-			if (mNextSeekPosition != -1) {
-				seekBar.setProgress(mNextSeekPosition);
-				mPlayer.setPosition(mNextSeekPosition);
-				seekBar.postDelayed(mProgressRunnable, 250);
-				if (mFinishedPlayback) {
-					mFinishedPlayback = false;
+			trackingNow = false;
+			seekBar.removeCallbacks(progressRunnable);
+			if (nextSeekPosition != -1) {
+				seekBar.setProgress(nextSeekPosition);
+				player.setPosition(nextSeekPosition);
+				seekBar.postDelayed(progressRunnable, 250);
+				if (finishedPlayback) {
+					finishedPlayback = false;
 					updatePlayState();
 				}
 			} else {
-				mProgressRunnable.run();
+				progressRunnable.run();
 			}
 		}
 
 		@Override
 		public void onStartTrackingTouch(SeekBar seekBar) {
-			mTrackingNow = true;
-			seekBar.removeCallbacks(mProgressRunnable);
-			mNextSeekPosition = -1;
+			trackingNow = true;
+			seekBar.removeCallbacks(progressRunnable);
+			nextSeekPosition = -1;
 		}
 
 		@Override
 		public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 			if (fromUser) {
-				mNextSeekPosition = progress;
+				nextSeekPosition = progress;
 			}
 		}
 	};
 
 	private void updatePlayState() {
-		if (mPlayer != null) {
-			boolean playing = mPlayer.isPlaying();
-			mPlayPauseButton.setImageResource(ResourceUtils.getResourceId(mInstance.galleryInstance.context,
-					mFinishedPlayback ? R.attr.buttonRefresh : playing ? R.attr.buttonPause : R.attr.buttonPlay, 0));
-			mInstance.galleryInstance.callback.setScreenOnFixed(!mFinishedPlayback && playing);
+		if (player != null) {
+			boolean playing = player.isPlaying();
+			playPauseButton.setImageResource(ResourceUtils.getResourceId(instance.galleryInstance.context,
+					finishedPlayback ? R.attr.buttonRefresh : playing ? R.attr.buttonPause : R.attr.buttonPlay, 0));
+			instance.galleryInstance.callback.setScreenOnFixed(!finishedPlayback && playing);
 		}
 	}
 
 	public void viewTechnicalInfo() {
-		if (mInitialized) {
-			HashMap<String, String> technicalInfo = mPlayer.getTechnicalInfo();
+		if (initialized) {
+			HashMap<String, String> technicalInfo = player.getTechnicalInfo();
 			StringBlockBuilder builder = new StringBlockBuilder();
 			String videoFormat = technicalInfo.get("video_format");
 			String width = technicalInfo.get("width");
@@ -581,7 +583,7 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener {
 			}
 			String message = builder.toString();
 			if (message.length() > 0) {
-				AlertDialog dialog = new AlertDialog.Builder(mInstance.galleryInstance.context)
+				AlertDialog dialog = new AlertDialog.Builder(instance.galleryInstance.context)
 						.setTitle(R.string.action_technical_info).setMessage(message)
 						.setPositiveButton(android.R.string.ok, null).create();
 				dialog.setOnShowListener(ViewUtils.ALERT_DIALOG_MESSAGE_SELECTABLE);
@@ -590,37 +592,37 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener {
 		}
 	}
 
-	private boolean mControlsVisible = false;
+	private boolean controlsVisible = false;
 
 	public void invalidateControlsVisibility() {
-		boolean visible = mInitialized && mInstance.galleryInstance.callback.isSystemUiVisible();
-		if (mLayoutConfiguration >= 0 && mControlsVisible != visible) {
-			mControlsView.animate().cancel();
+		boolean visible = initialized && instance.galleryInstance.callback.isSystemUiVisible();
+		if (layoutConfiguration >= 0 && controlsVisible != visible) {
+			controlsView.animate().cancel();
 			if (visible) {
-				mControlsView.setVisibility(View.VISIBLE);
-				mControlsView.animate().alpha(1f).translationY(0f).setDuration(250).setListener(null)
+				controlsView.setVisibility(View.VISIBLE);
+				controlsView.animate().alpha(1f).translationY(0f).setDuration(250).setListener(null)
 						.setInterpolator(AnimationUtils.DECELERATE_INTERPOLATOR).start();
 			} else {
-				mControlsView.animate().alpha(0f).translationY(mControlsView.getHeight() -
-						mConfigurationView.getHeight()).setDuration(350)
-						.setListener(new AnimationUtils.VisibilityListener(mControlsView, View.GONE))
+				controlsView.animate().alpha(0f).translationY(controlsView.getHeight() -
+						configurationView.getHeight()).setDuration(350)
+						.setListener(new AnimationUtils.VisibilityListener(controlsView, View.GONE))
 						.setInterpolator(AnimationUtils.ACCELERATE_DECELERATE_INTERPOLATOR).start();
 			}
-			mControlsVisible = visible;
+			controlsVisible = visible;
 		}
 	}
 
-	private final VideoPlayer.Listener mPlayerListener = new VideoPlayer.Listener() {
+	private final VideoPlayer.Listener playerListener = new VideoPlayer.Listener() {
 		@Override
 		public void onComplete(VideoPlayer player) {
 			switch (Preferences.getVideoCompletionMode()) {
 				case Preferences.VIDEO_COMPLETION_MODE_NOTHING: {
-					mFinishedPlayback = true;
+					finishedPlayback = true;
 					updatePlayState();
 					break;
 				}
 				case Preferences.VIDEO_COMPLETION_MODE_LOOP: {
-					mPlayer.setPosition(0L);
+					player.setPosition(0L);
 					break;
 				}
 			}
@@ -628,8 +630,8 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener {
 
 		@Override
 		public void onBusyStateChange(VideoPlayer player, boolean busy) {
-			if (mInitialized) {
-				PagerInstance.ViewHolder holder = mInstance.currentHolder;
+			if (initialized) {
+				PagerInstance.ViewHolder holder = instance.currentHolder;
 				if (busy) {
 					holder.progressBar.setIndeterminate(true);
 				}
@@ -639,95 +641,95 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener {
 
 		@Override
 		public void onDimensionChange(VideoPlayer player) {
-			if (mBackgroundDrawable != null) {
-				mBackgroundDrawable.recycle();
+			if (backgroundDrawable != null) {
+				backgroundDrawable.recycle();
 				Point dimensions = player.getDimensions();
-				mBackgroundDrawable.width = dimensions.x;
-				mBackgroundDrawable.height = dimensions.y;
-				mInstance.currentHolder.photoView.resetScale();
+				backgroundDrawable.width = dimensions.x;
+				backgroundDrawable.height = dimensions.y;
+				instance.currentHolder.photoView.resetScale();
 			}
 		}
 	};
 
 	public void showHideVideoView(boolean show) {
-		if (mInitialized) {
-			View videoView = mPlayer.getVideoView(mInstance.galleryInstance.context);
+		if (initialized) {
+			View videoView = player.getVideoView(instance.galleryInstance.context);
 			if (show) {
-				mBackgroundDrawable.recycle();
+				backgroundDrawable.recycle();
 				videoView.setVisibility(View.VISIBLE);
 			} else {
-				mBackgroundDrawable.setFrame(mPlayer.getCurrentFrame());
+				backgroundDrawable.setFrame(player.getCurrentFrame());
 				videoView.setVisibility(View.GONE);
 			}
 		}
 	}
 
 	public void handleSwipingContent(boolean swiping, boolean hideSurface) {
-		if (mInitialized) {
-			mPlayPauseButton.setEnabled(!swiping);
-			mSeekBar.setEnabled(!swiping);
+		if (initialized) {
+			playPauseButton.setEnabled(!swiping);
+			seekBar.setEnabled(!swiping);
 			if (swiping) {
-				mWasPlaying = mPlayer.isPlaying();
+				wasPlaying = player.isPlaying();
 				setPlaying(false, true);
 				if (hideSurface) {
 					showHideVideoView(false);
 				}
 			} else {
-				setPlaying(mWasPlaying, true);
+				setPlaying(wasPlaying, true);
 				if (hideSurface) {
 					showHideVideoView(true);
 				}
 				updatePlayState();
 			}
-		} else if (mPlayer != null) {
-			mWasPlaying = !swiping;
-			mHideSurfaceOnInit = hideSurface && swiping;
+		} else if (player != null) {
+			wasPlaying = !swiping;
+			hideSurfaceOnInit = hideSurface && swiping;
 		}
 	}
 
 	private class ReadVideoCallback implements ReadVideoTask.Callback {
-		private final VideoPlayer mWorkPlayer;
-		private final PagerInstance.ViewHolder mHolder;
+		private final VideoPlayer workPlayer;
+		private final PagerInstance.ViewHolder holder;
 
 		public ReadVideoCallback(VideoPlayer player, PagerInstance.ViewHolder holder) {
-			mWorkPlayer = player;
-			mHolder = holder;
+			this.workPlayer = player;
+			this.holder = holder;
 		}
 
 		@Override
 		public void onReadVideoProgressUpdate(long progress, long progressMax) {
-			if (mInitialized && mWorkPlayer == mPlayer) {
-				int max = mSeekBar.getMax();
+			if (initialized && workPlayer == player) {
+				int max = seekBar.getMax();
 				if (max > 0 && progressMax > 0) {
 					int newProgress = (int) (max * progress / progressMax);
-					mSeekBar.setSecondaryProgress(newProgress);
+					seekBar.setSecondaryProgress(newProgress);
 				}
 			}
 		}
 
 		@Override
 		public void onReadVideoSuccess(final CachingInputStream inputStream) {
-			if (mWorkPlayer != mPlayer) {
+			if (workPlayer != player) {
 				return;
 			}
-			mReadVideoTask = null;
-			if (mInitialized) {
-				mSeekBar.setSecondaryProgress(mSeekBar.getMax());
+			readVideoTask = null;
+			if (initialized) {
+				seekBar.setSecondaryProgress(seekBar.getMax());
 			}
 			new AsyncTask<Void, Void, Boolean>() {
-				private File mFile;
+				private File file;
 
 				@Override
 				protected Boolean doInBackground(Void... params) {
-					mFile = CacheManager.getInstance().getMediaFile(mHolder.galleryItem
-							.getFileUri(mInstance.galleryInstance.locator), false);
-					if (mFile == null) {
+					file = CacheManager.getInstance().getMediaFile(holder.galleryItem
+							.getFileUri(instance.galleryInstance.locator), false);
+					if (file == null) {
 						return false;
 					}
 					boolean success;
 					FileOutputStream output = null;
 					try {
-						output = new FileOutputStream(mFile);
+						output = new FileOutputStream(file);
 						inputStream.writeTo(output);
 						success = true;
 					} catch (IOException e) {
@@ -736,23 +738,23 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener {
 					} finally {
 						IOUtils.close(output);
 					}
-					CacheManager.getInstance().handleDownloadedFile(mFile, success);
+					CacheManager.getInstance().handleDownloadedFile(file, success);
 					return success;
 				}
 
 				@Override
 				protected void onPostExecute(Boolean result) {
-					if (result && mWorkPlayer == mPlayer) {
-						mHolder.fullLoaded = true;
-						mInstance.galleryInstance.callback.invalidateOptionsMenu();
+					if (result && workPlayer == player) {
+						holder.fullLoaded = true;
+						instance.galleryInstance.callback.invalidateOptionsMenu();
 						try {
-							mPlayer.replaceStream(mFile);
+							player.replaceStream(file);
 						} catch (IOException e) {
-							// Ignore
+							// Ignore exception
 						}
-						if (mHolder.galleryItem.size <= 0) {
-							mHolder.galleryItem.size = (int) mFile.length();
-							mInstance.galleryInstance.callback.updateTitle();
+						if (holder.galleryItem.size <= 0) {
+							holder.galleryItem.size = (int) file.length();
+							instance.galleryInstance.callback.updateTitle();
 						}
 					}
 				}
@@ -761,10 +763,10 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener {
 
 		@Override
 		public void onReadVideoFail(ErrorItem errorItem) {
-			mReadVideoTask = null;
-			mHolder.progressBar.setVisible(false, false);
-			mInstance.callback.showError(mHolder, errorItem.toString());
-			mInstance.galleryInstance.callback.invalidateOptionsMenu();
+			readVideoTask = null;
+			holder.progressBar.setVisible(false, false);
+			instance.callback.showError(holder, errorItem.toString());
+			instance.galleryInstance.callback.invalidateOptionsMenu();
 		}
 	}
 
@@ -772,41 +774,41 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener {
 		public int width;
 		public int height;
 
-		private Bitmap mFrame;
-		private boolean mDraw = false;
+		private Bitmap frame;
+		private boolean draw = false;
 
 		public void setFrame(Bitmap frame) {
 			recycleInternal();
-			mFrame = frame;
-			mDraw = true;
+			this.frame = frame;
+			draw = true;
 			invalidateSelf();
 		}
 
 		public void recycle() {
 			recycleInternal();
-			if (mDraw) {
-				mDraw = false;
+			if (draw) {
+				draw = false;
 				invalidateSelf();
 			}
 		}
 
 		private void recycleInternal() {
-			if (mFrame != null) {
-				mFrame.recycle();
-				mFrame = null;
+			if (frame != null) {
+				frame.recycle();
+				frame = null;
 			}
 		}
 
-		private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG);
+		private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG);
 
 		@Override
 		public void draw(Canvas canvas) {
-			if (mDraw) {
+			if (draw) {
 				Rect bounds = getBounds();
-				mPaint.setColor(Color.BLACK);
-				canvas.drawRect(bounds, mPaint);
-				if (mFrame != null) {
-					canvas.drawBitmap(mFrame, null, bounds, mPaint);
+				paint.setColor(Color.BLACK);
+				canvas.drawRect(bounds, paint);
+				if (frame != null) {
+					canvas.drawBitmap(frame, null, bounds, paint);
 				}
 			}
 		}

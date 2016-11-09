@@ -32,8 +32,8 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.util.ResourceUtils;
 
 public class PaddedListView extends ListView implements EdgeEffectHandler.Shift {
-	private EdgeEffectHandler mEdgeEffectHandler;
-	private EdgeEffectHandler.Shift mShift;
+	private EdgeEffectHandler edgeEffectHandler;
+	private EdgeEffectHandler.Shift shift;
 
 	public PaddedListView(Context context) {
 		super(context);
@@ -58,29 +58,29 @@ public class PaddedListView extends ListView implements EdgeEffectHandler.Shift 
 	}
 
 	public void setEdgeEffectShift(EdgeEffectHandler.Shift shift) {
-		mShift = shift;
+		this.shift = shift;
 	}
 
 	public EdgeEffectHandler getEdgeEffectHandler() {
-		return mEdgeEffectHandler;
+		return edgeEffectHandler;
 	}
 
 	@Override
 	public void setOverScrollMode(int mode) {
 		super.setOverScrollMode(mode);
 		if (mode == View.OVER_SCROLL_NEVER) {
-			mEdgeEffectHandler = null;
+			edgeEffectHandler = null;
 		} else {
 			EdgeEffectHandler edgeEffectHandler = EdgeEffectHandler.bind(this, this);
 			if (edgeEffectHandler != null) {
-				mEdgeEffectHandler = edgeEffectHandler;
+				this.edgeEffectHandler = edgeEffectHandler;
 			}
 		}
 	}
 
 	@Override
 	public int getEdgeEffectShift(boolean top) {
-		return mShift != null ? mShift.getEdgeEffectShift(top) : obtainEdgeEffectShift(top);
+		return shift != null ? shift.getEdgeEffectShift(top) : obtainEdgeEffectShift(top);
 	}
 
 	public final int obtainEdgeEffectShift(boolean top) {
@@ -93,32 +93,32 @@ public class PaddedListView extends ListView implements EdgeEffectHandler.Shift 
 			field.setAccessible(true);
 			return field.get(this);
 		} catch (Exception e) {
-			// Ignore
+			// Reflective operation, ignore exception
 		}
 		return null;
 	}
 
-	private boolean mFastScrollModified = false;
+	private boolean fastScrollModified = false;
 
 	@Override
 	public void setFastScrollEnabled(boolean enabled) {
 		super.setFastScrollEnabled(enabled);
-		if (enabled && !mFastScrollModified) {
+		if (enabled && !fastScrollModified) {
 			Object fastScroll = getFastScroll();
 			if (fastScroll != null) {
-				mFastScrollModified = true;
+				fastScrollModified = true;
 				try {
 					Field field = fastScroll.getClass().getDeclaredField("mMinimumTouchTarget");
 					field.setAccessible(true);
 					field.setInt(fastScroll, field.getInt(fastScroll) / 3);
 				} catch (Exception e) {
-					// Ignore
+					// Reflective operation, ignore exception
 				}
 			}
 		}
 	}
 
-	private boolean mFastScrollIntercept = false;
+	private boolean fastScrollIntercept = false;
 
 	@Override
 	public boolean onInterceptTouchEvent(MotionEvent ev) {
@@ -138,15 +138,15 @@ public class PaddedListView extends ListView implements EdgeEffectHandler.Shift 
 						intercept = (boolean) method.invoke(fastScroll, ev.getX());
 						calculateManually = false;
 					} catch (Exception e) {
-						// Ignore
+						// Reflective operation, ignore exception
 					}
 				}
 				if (calculateManually) {
 					intercept = getWidth() - ev.getX() < (int) (30f * ResourceUtils.obtainDensity(this));
 				}
 			}
-			mFastScrollIntercept = intercept;
+			fastScrollIntercept = intercept;
 		}
-		return mFastScrollIntercept;
+		return fastScrollIntercept;
 	}
 }

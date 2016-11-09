@@ -159,7 +159,7 @@ public class ViewUtils {
 					field.setAccessible(true);
 					field.setInt(overlay, actionHeight);
 				} catch (Exception e) {
-					// Ignore
+					// Reflective operation, ignore exception
 				}
 				toolbarView.getLayoutParams().height = actionHeight;
 				toolbarView.setMinimumHeight(actionHeight);
@@ -181,7 +181,7 @@ public class ViewUtils {
 						subtitleTextView = (TextView) field.get(toolbar);
 					}
 				} catch (Exception e) {
-					// Ignore
+					// Reflective operation, ignore exception
 				}
 				if (subtitleTextView != null) {
 					Configuration configuration = activity.getResources().getConfiguration();
@@ -212,11 +212,11 @@ public class ViewUtils {
 		if (C.API_LOLLIPOP) {
 			view.setClipToOutline(true);
 			view.setOutlineProvider(new ViewOutlineProvider() {
-				private final Rect mRect = new Rect();
+				private final Rect rect = new Rect();
 
 				@Override
 				public void getOutline(View view, Outline outline) {
-					Rect rect = mRect;
+					Rect rect = this.rect;
 					if (withPaddings) {
 						rect.set(view.getPaddingLeft(), view.getPaddingTop(), view.getWidth() - view.getPaddingRight(),
 								view.getHeight() - view.getPaddingBottom());

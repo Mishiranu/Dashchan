@@ -70,8 +70,8 @@ public class LocaleManager {
 
 	private LocaleManager() {}
 
-	private ArrayList<Locale> mSystemLocales;
-	private ArrayList<Locale> mPreviousLocales;
+	private ArrayList<Locale> systemLocales;
+	private ArrayList<Locale> previousLocales;
 
 	@SuppressWarnings("deprecation")
 	@TargetApi(Build.VERSION_CODES.N)
@@ -81,28 +81,28 @@ public class LocaleManager {
 		}
 		Resources resources = context.getApplicationContext().getResources();
 		Configuration configuration = resources.getConfiguration();
-		if (mSystemLocales == null) {
-			mSystemLocales = list(configuration);
+		if (systemLocales == null) {
+			systemLocales = list(configuration);
 		}
 		if (configChanged) {
 			ArrayList<Locale> locales = list(configuration);
-			if (mPreviousLocales != null) {
-				if (locales.equals(mPreviousLocales)) {
+			if (previousLocales != null) {
+				if (locales.equals(previousLocales)) {
 					return;
 				}
-				mSystemLocales = locales;
+				systemLocales = locales;
 			}
 		}
 		Locale locale = VALUES_LOCALE_OBJECTS.get(Preferences.getLocale());
 		boolean applySystem = false;
 		if (locale == null) {
-			locale = mSystemLocales.isEmpty() ? Locale.getDefault() : mSystemLocales.get(0);
+			locale = systemLocales.isEmpty() ? Locale.getDefault() : systemLocales.get(0);
 			applySystem = true;
 		}
 		if (C.API_NOUGAT) {
 			if (applySystem) {
-				configuration.setLocales(new LocaleList(CommonUtils.toArray(mSystemLocales, Locale.class)));
-				mPreviousLocales = mSystemLocales;
+				configuration.setLocales(new LocaleList(CommonUtils.toArray(systemLocales, Locale.class)));
+				previousLocales = systemLocales;
 			} else {
 				ArrayList<Locale> locales = new ArrayList<>();
 				if (!locale.equals(Locale.US)) {
@@ -110,11 +110,11 @@ public class LocaleManager {
 				}
 				locales.add(Locale.US);
 				configuration.setLocales(new LocaleList(CommonUtils.toArray(locales, Locale.class)));
-				mPreviousLocales = locales;
+				previousLocales = locales;
 			}
 		} else {
 			configuration.locale = locale;
-			mPreviousLocales = list(configuration);
+			previousLocales = list(configuration);
 		}
 		resources.updateConfiguration(configuration, resources.getDisplayMetrics());
 		ChanManager.getInstance().updateConfiguration(configuration, resources.getDisplayMetrics());

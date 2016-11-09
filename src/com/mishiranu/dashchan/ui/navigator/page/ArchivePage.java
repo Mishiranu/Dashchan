@@ -39,8 +39,8 @@ import com.mishiranu.dashchan.widget.PullableListView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 
 public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadSummariesTask.Callback {
-	private ReadThreadSummariesTask mReadTask;
-	private boolean mShowScaleOnSuccess;
+	private ReadThreadSummariesTask readTask;
+	private boolean showScaleOnSuccess;
 
 	@Override
 	protected void onCreate() {
@@ -60,16 +60,16 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 				pageHolder.position.apply(getListView());
 			}
 		} else {
-			mShowScaleOnSuccess = true;
+			showScaleOnSuccess = true;
 			refreshThreads(false, false);
 		}
 	}
 
 	@Override
 	protected void onDestroy() {
-		if (mReadTask != null) {
-			mReadTask.cancel();
-			mReadTask = null;
+		if (readTask != null) {
+			readTask.cancel();
+			readTask = null;
 		}
 	}
 
@@ -156,8 +156,8 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 	}
 
 	private void refreshThreads(boolean showPull, boolean nextPage) {
-		if (mReadTask != null) {
-			mReadTask.cancel();
+		if (readTask != null) {
+			readTask.cancel();
 		}
 		PageHolder pageHolder = getPageHolder();
 		int pageNumber = 0;
@@ -167,9 +167,9 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 				pageNumber = extra.pageNumber + 1;
 			}
 		}
-		mReadTask = new ReadThreadSummariesTask(pageHolder.chanName, pageHolder.boardName, pageNumber,
+		readTask = new ReadThreadSummariesTask(pageHolder.chanName, pageHolder.boardName, pageNumber,
 				ChanPerformer.ReadThreadSummariesData.TYPE_ARCHIVED_THREADS, this);
-		mReadTask.executeOnExecutor(ReadThreadSummariesTask.THREAD_POOL_EXECUTOR);
+		readTask.executeOnExecutor(ReadThreadSummariesTask.THREAD_POOL_EXECUTOR);
 		if (showPull) {
 			getListView().getWrapper().startBusyState(PullableWrapper.Side.TOP);
 			switchView(ViewType.LIST, null);
@@ -181,11 +181,11 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 
 	@Override
 	public void onReadThreadSummariesSuccess(ThreadSummary[] threadSummaries, int pageNumber) {
-		mReadTask = null;
+		readTask = null;
 		PullableListView listView = getListView();
 		listView.getWrapper().cancelBusyState();
-		boolean showScale = mShowScaleOnSuccess;
-		mShowScaleOnSuccess = false;
+		boolean showScale = showScaleOnSuccess;
+		showScaleOnSuccess = false;
 		if (pageNumber == 0 && threadSummaries == null) {
 			if (getAdapter().isEmpty()) {
 				switchView(ViewType.ERROR, R.string.message_empty_response);
@@ -224,7 +224,7 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 
 	@Override
 	public void onReadThreadSummariesFail(ErrorItem errorItem) {
-		mReadTask = null;
+		readTask = null;
 		getListView().getWrapper().cancelBusyState();
 		if (getAdapter().isEmpty()) {
 			switchView(ViewType.ERROR, errorItem.toString());

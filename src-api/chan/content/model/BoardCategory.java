@@ -24,23 +24,23 @@ import chan.util.CommonUtils;
 
 @Public
 public final class BoardCategory implements Iterable<Board> {
-	private final String mTitle;
-	private final Board[] mBoards;
+	private final String title;
+	private final Board[] boards;
 
 	@Public
 	public String getTitle() {
-		return mTitle;
+		return title;
 	}
 
 	@Public
 	public Board[] getBoards() {
-		return mBoards;
+		return boards;
 	}
 
 	@Public
 	public BoardCategory(String title, Board[] boards) {
-		mTitle = title;
-		mBoards = CommonUtils.removeNullItems(boards, Board.class);
+		this.title = title;
+		this.boards = CommonUtils.removeNullItems(boards, Board.class);
 	}
 
 	@Public
@@ -55,16 +55,16 @@ public final class BoardCategory implements Iterable<Board> {
 	}
 
 	private class BoardIterator implements Iterator<Board> {
-		private int mIndex = 0;
+		private int index = 0;
 
 		@Override
 		public boolean hasNext() {
-			return mIndex < mBoards.length;
+			return index < boards.length;
 		}
 
 		@Override
 		public Board next() {
-			return mBoards[mIndex++];
+			return boards[index++];
 		}
 
 		@Override

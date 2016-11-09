@@ -54,14 +54,14 @@ public class Preferences {
 	public static final String[] SPECIAL_EXTENSION_NAMES = {SPECIAL_CHAN_NAME_GENERAL, SPECIAL_CHAN_NAME_CLOUDFLARE};
 
 	public static class ChanKey {
-		private final String mKey;
+		private final String key;
 
 		private ChanKey(String key) {
-			mKey = key;
+			this.key = key;
 		}
 
 		public String bind(String chanName) {
-			return String.format(mKey, chanName);
+			return String.format(key, chanName);
 		}
 	}
 
@@ -276,7 +276,7 @@ public class Preferences {
 				}
 				return chanNames;
 			} catch (JSONException e) {
-				// Ignore
+				// Invalid or unspecified data, ignore exception
 			}
 		}
 		return null;

@@ -236,7 +236,7 @@ public class NavigationUtils {
 		}
 	}
 
-	private static WeakReference<ArrayList<GalleryItem>> sGalleryItems;
+	private static WeakReference<ArrayList<GalleryItem>> galleryItems;
 
 	public static void openGallery(Context context, View imageView, String chanName, int imageIndex,
 			GalleryItem.GallerySet gallerySet, boolean allowExpandedScreen, boolean galleryMode) {
@@ -248,7 +248,7 @@ public class NavigationUtils {
 		}
 		gallerySet.cleanup();
 		ArrayList<GalleryItem> galleryItems = gallerySet.getItems();
-		sGalleryItems = new WeakReference<>(galleryItems);
+		NavigationUtils.galleryItems = new WeakReference<>(galleryItems);
 		Intent intent = new Intent(context, GalleryActivity.class);
 		intent.putExtra(C.EXTRA_CHAN_NAME, chanName);
 		intent.putExtra(C.EXTRA_THREAD_TITLE, gallerySet.getThreadTitle());
@@ -270,7 +270,8 @@ public class NavigationUtils {
 
 	@SuppressWarnings("unchecked")
 	public static ArrayList<GalleryItem> obtainImagesProvider(Context context) {
-		ArrayList<GalleryItem> galleryItems = sGalleryItems != null ? sGalleryItems.get() : null;
+		ArrayList<GalleryItem> galleryItems = NavigationUtils.galleryItems != null
+				? NavigationUtils.galleryItems.get() : null;
 		if (galleryItems == null) {
 			synchronized (NavigationUtils.class) {
 				FileInputStream input = null;
@@ -278,7 +279,7 @@ public class NavigationUtils {
 					input = new FileInputStream(getSerializedImagesFile(context));
 					galleryItems = (ArrayList<GalleryItem>) new ObjectInputStream(input).readObject();
 				} catch (Exception e) {
-					// Ignore
+					// Ignore exception
 				} finally {
 					IOUtils.close(input);
 				}
@@ -292,12 +293,12 @@ public class NavigationUtils {
 	}
 
 	private static class SerializeGalleryItems implements Runnable {
-		private final ArrayList<GalleryItem> mGalleryItems;
-		private final File mFile;
+		private final ArrayList<GalleryItem> galleryItems;
+		private final File file;
 
 		public SerializeGalleryItems(ArrayList<GalleryItem> galleryItems, File file) {
-			mGalleryItems = galleryItems;
-			mFile = file;
+			this.galleryItems = galleryItems;
+			this.file = file;
 		}
 
 		@Override
@@ -305,10 +306,10 @@ public class NavigationUtils {
 			synchronized (NavigationUtils.class) {
 				FileOutputStream output = null;
 				try {
-					output = new FileOutputStream(mFile);
-					new ObjectOutputStream(output).writeObject(mGalleryItems);
+					output = new FileOutputStream(file);
+					new ObjectOutputStream(output).writeObject(galleryItems);
 				} catch (Exception e) {
-					// Ignore
+					// Ignore exception
 				} finally {
 					IOUtils.close(output);
 				}

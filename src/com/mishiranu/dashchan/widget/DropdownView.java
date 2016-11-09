@@ -31,7 +31,7 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.util.ResourceUtils;
 
 public class DropdownView extends FrameLayout {
-	private final Spinner mSpinner;
+	private final Spinner spinner;
 
 	public DropdownView(Context context) {
 		this(context, null);
@@ -39,11 +39,11 @@ public class DropdownView extends FrameLayout {
 
 	public DropdownView(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		mSpinner = new Spinner(context);
-		mSpinner.setId(android.R.id.edit);
-		mSpinner.setPadding(0, 0, 0, 0);
-		addView(mSpinner, LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-		LayoutParams layoutParams = (LayoutParams) mSpinner.getLayoutParams();
+		spinner = new Spinner(context);
+		spinner.setId(android.R.id.edit);
+		spinner.setPadding(0, 0, 0, 0);
+		addView(spinner, LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+		LayoutParams layoutParams = (LayoutParams) spinner.getLayoutParams();
 		if (C.API_LOLLIPOP) {
 			layoutParams.gravity = Gravity.CENTER_VERTICAL;
 			setBackgroundResource(ResourceUtils.getResourceId(context, android.R.attr.editTextBackground, 0));
@@ -68,14 +68,14 @@ public class DropdownView extends FrameLayout {
 		};
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		adapter.addAll(collection);
-		mSpinner.setAdapter(adapter);
+		spinner.setAdapter(adapter);
 	}
 
 	public void setSelection(int position) {
-		mSpinner.setSelection(position);
+		spinner.setSelection(position);
 	}
 
 	public int getSelectedItemPosition() {
-		return mSpinner.getSelectedItemPosition();
+		return spinner.getSelectedItemPosition();
 	}
 }

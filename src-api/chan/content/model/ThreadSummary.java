@@ -20,42 +20,42 @@ import chan.annotation.Public;
 
 @Public
 public final class ThreadSummary {
-	private final String mBoardName;
-	private final String mThreadNumber;
-	private final String mDescription;
+	private final String boardName;
+	private final String threadNumber;
+	private final String description;
 
-	private int mPostsCount = -1;
+	private int postsCount = -1;
 
 	@Public
 	public ThreadSummary(String boardName, String threadNumber, String description) {
-		mBoardName = boardName;
-		mThreadNumber = threadNumber;
-		mDescription = description;
+		this.boardName = boardName;
+		this.threadNumber = threadNumber;
+		this.description = description;
 	}
 
 	@Public
 	public String getBoardName() {
-		return mBoardName;
+		return boardName;
 	}
 
 	@Public
 	public String getThreadNumber() {
-		return mThreadNumber;
+		return threadNumber;
 	}
 
 	@Public
 	public String getDescription() {
-		return mDescription;
+		return description;
 	}
 
 	@Public
 	public int getPostsCount() {
-		return mPostsCount;
+		return postsCount;
 	}
 
 	@Public
 	public ThreadSummary setPostsCount(int postsCount) {
-		mPostsCount = postsCount;
+		this.postsCount = postsCount;
 		return this;
 	}
 }

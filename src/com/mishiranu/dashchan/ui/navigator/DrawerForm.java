@@ -89,32 +89,32 @@ import com.mishiranu.dashchan.widget.SortableListView;
 public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, SortableListView.OnFinishedListener,
 		AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener, DrawerLayout.DrawerListener,
 		EditText.OnEditorActionListener, View.OnClickListener, View.OnTouchListener, WatcherService.Client.Callback {
-	private final Context mContext;
-	private final Context mUnstyledContext;
-	private final Callback mCallback;
+	private final Context context;
+	private final Context unstyledContext;
+	private final Callback callback;
 
-	private final InputMethodManager mInputMethodManager;
+	private final InputMethodManager inputMethodManager;
 
-	private final EditText mSearchEdit;
-	private final View mHeaderView;
-	private final TextView mChanNameView;
-	private final ImageView mChanSelectorIcon;
+	private final EditText searchEdit;
+	private final View headerView;
+	private final TextView chanNameView;
+	private final ImageView chanSelectorIcon;
 
-	private final HashMap<String, Drawable> mChanIcons = new HashMap<>();
-	private final HashSet<String> mWatcherSupportSet = new HashSet<>();
+	private final HashMap<String, Drawable> chanIcons = new HashMap<>();
+	private final HashSet<String> watcherSupportSet = new HashSet<>();
 
-	private final ArrayList<ListItem> mChans = new ArrayList<>();
-	private final ArrayList<ListItem> mPages = new ArrayList<>();
-	private final ArrayList<ListItem> mFavorites = new ArrayList<>();
-	private final ArrayList<ArrayList<ListItem>> mCategories = new ArrayList<>();
-	private final ArrayList<ListItem> mMenu = new ArrayList<>();
+	private final ArrayList<ListItem> chans = new ArrayList<>();
+	private final ArrayList<ListItem> pages = new ArrayList<>();
+	private final ArrayList<ListItem> favorites = new ArrayList<>();
+	private final ArrayList<ArrayList<ListItem>> categories = new ArrayList<>();
+	private final ArrayList<ListItem> menu = new ArrayList<>();
 
-	private final WatcherService.Client mWatcherServiceClient;
-	private SortableListView mListView;
+	private final WatcherService.Client watcherServiceClient;
+	private SortableListView listView;
 
-	private boolean mMergeChans = false;
-	private boolean mChanSelectMode = false;
-	private String mChanName;
+	private boolean mergeChans = false;
+	private boolean chanSelectMode = false;
+	private String chanName;
 
 	public static final int RESULT_REMOVE_ERROR_MESSAGE = 0x00000001;
 	public static final int RESULT_SUCCESS = 0x00000002;
@@ -138,10 +138,10 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 
 	public DrawerForm(Context context, Context unstyledContext, Callback callback,
 			WatcherService.Client watcherServiceClient) {
-		mContext = context;
-		mUnstyledContext = unstyledContext;
-		mCallback = callback;
-		mWatcherServiceClient = watcherServiceClient;
+		this.context = context;
+		this.unstyledContext = unstyledContext;
+		this.callback = callback;
+		this.watcherServiceClient = watcherServiceClient;
 		float density = ResourceUtils.obtainDensity(context);
 		LinearLayout linearLayout = new LinearLayout(context);
 		linearLayout.setOrientation(LinearLayout.VERTICAL);
@@ -150,22 +150,22 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		LinearLayout editTextContainer = new LinearLayout(context);
 		editTextContainer.setGravity(Gravity.CENTER_VERTICAL);
 		linearLayout.addView(editTextContainer);
-		mSearchEdit = new SafePasteEditText(context);
-		mSearchEdit.setOnKeyListener((v, keyCode, event) -> {
+		searchEdit = new SafePasteEditText(context);
+		searchEdit.setOnKeyListener((v, keyCode, event) -> {
 			if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
 				v.clearFocus();
 			}
 			return false;
 		});
-		mSearchEdit.setHint(context.getString(R.string.text_code_number_address));
-		mSearchEdit.setOnEditorActionListener(this);
-		mSearchEdit.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
-		mSearchEdit.setImeOptions(EditorInfo.IME_ACTION_GO | EditorInfo.IME_FLAG_NO_EXTRACT_UI);
+		searchEdit.setHint(context.getString(R.string.text_code_number_address));
+		searchEdit.setOnEditorActionListener(this);
+		searchEdit.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
+		searchEdit.setImeOptions(EditorInfo.IME_ACTION_GO | EditorInfo.IME_FLAG_NO_EXTRACT_UI);
 		ImageView searchIcon = new ImageView(context, null, android.R.attr.buttonBarButtonStyle);
 		searchIcon.setImageResource(ResourceUtils.getResourceId(context, R.attr.buttonForward, 0));
 		searchIcon.setScaleType(ImageView.ScaleType.CENTER);
 		searchIcon.setOnClickListener(this);
-		editTextContainer.addView(mSearchEdit, new LinearLayout.LayoutParams(0,
+		editTextContainer.addView(searchEdit, new LinearLayout.LayoutParams(0,
 				LinearLayout.LayoutParams.WRAP_CONTENT, 1));
 		editTextContainer.addView(searchIcon, (int) (40f * density), (int) (40f * density));
 		if (C.API_LOLLIPOP) {
@@ -180,7 +180,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		selectorContainer.setGravity(Gravity.CENTER_VERTICAL);
 		selectorContainer.setOnClickListener(v -> {
 			hideKeyboard();
-			setChanSelectModeInternal(!mChanSelectMode);
+			setChanSelectModeInternal(!chanSelectMode);
 		});
 		linearLayout.addView(selectorContainer);
 		selectorContainer.setMinimumHeight((int) (40f * density));
@@ -190,34 +190,34 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		} else {
 			selectorContainer.setPadding((int) (8f * density), 0, (int) (12f * density), 0);
 		}
-		mChanNameView = new TextView(context, null, android.R.attr.textAppearanceListItem);
-		mChanNameView.setTextSize(TypedValue.COMPLEX_UNIT_SP, C.API_LOLLIPOP ? 14f : 16f);
+		chanNameView = new TextView(context, null, android.R.attr.textAppearanceListItem);
+		chanNameView.setTextSize(TypedValue.COMPLEX_UNIT_SP, C.API_LOLLIPOP ? 14f : 16f);
 		if (C.API_LOLLIPOP) {
-			mChanNameView.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
+			chanNameView.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
 		} else {
-			mChanNameView.setFilters(new InputFilter[] {new InputFilter.AllCaps()});
+			chanNameView.setFilters(new InputFilter[] {new InputFilter.AllCaps()});
 		}
-		selectorContainer.addView(mChanNameView, new LinearLayout.LayoutParams(0,
+		selectorContainer.addView(chanNameView, new LinearLayout.LayoutParams(0,
 				LinearLayout.LayoutParams.WRAP_CONTENT, 1));
-		mChanSelectorIcon = new ImageView(context);
-		mChanSelectorIcon.setImageResource(ResourceUtils.getResourceId(context, R.attr.buttonDropDownDrawer, 0));
-		selectorContainer.addView(mChanSelectorIcon, (int) (24f * density), (int) (24f * density));
-		((LinearLayout.LayoutParams) mChanSelectorIcon.getLayoutParams()).gravity = Gravity.CENTER_VERTICAL
+		chanSelectorIcon = new ImageView(context);
+		chanSelectorIcon.setImageResource(ResourceUtils.getResourceId(context, R.attr.buttonDropDownDrawer, 0));
+		selectorContainer.addView(chanSelectorIcon, (int) (24f * density), (int) (24f * density));
+		((LinearLayout.LayoutParams) chanSelectorIcon.getLayoutParams()).gravity = Gravity.CENTER_VERTICAL
 				| Gravity.END;
-		mHeaderView = linearLayout;
-		mInputMethodManager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
-		mChans.add(new ListItem(ListItem.ITEM_DIVIDER, 0, 0, null));
-		int color = ResourceUtils.getColor(mContext, R.attr.drawerIconColor);
+		headerView = linearLayout;
+		inputMethodManager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+		chans.add(new ListItem(ListItem.ITEM_DIVIDER, 0, 0, null));
+		int color = ResourceUtils.getColor(context, R.attr.drawerIconColor);
 		ChanManager manager = ChanManager.getInstance();
 		Collection<String> availableChans = manager.getAvailableChanNames();
 		for (String chanName : availableChans) {
 			ChanConfiguration configuration = ChanConfiguration.get(chanName);
 			if (configuration.getOption(ChanConfiguration.OPTION_READ_POSTS_COUNT)) {
-				mWatcherSupportSet.add(chanName);
+				watcherSupportSet.add(chanName);
 			}
 			Drawable drawable = manager.getIcon(chanName, color);
-			mChanIcons.put(chanName, drawable);
-			mChans.add(new ListItem(ListItem.ITEM_CHAN, chanName, null, null, configuration.getTitle(), 0, drawable));
+			chanIcons.put(chanName, drawable);
+			chans.add(new ListItem(ListItem.ITEM_CHAN, chanName, null, null, configuration.getTitle(), 0, drawable));
 		}
 		if (availableChans.size() == 1) {
 			selectorContainer.setVisibility(View.GONE);
@@ -225,7 +225,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 	}
 
 	public void bind(SortableListView listView) {
-		mListView = listView;
+		this.listView = listView;
 		listView.setClipToPadding(false);
 		listView.setEdgeEffectShift(this);
 		listView.setScrollBarStyle(SortableListView.SCROLLBARS_OUTSIDE_OVERLAY);
@@ -235,7 +235,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		listView.setOnScrollListener(new ListViewScrollFixListener());
 		listView.setOnSortingFinishedListener(this);
 		listView.setOnTouchListener(this);
-		float density = ResourceUtils.obtainDensity(mContext);
+		float density = ResourceUtils.obtainDensity(context);
 		if (C.API_LOLLIPOP) {
 			listView.setDivider(null);
 		} else {
@@ -244,33 +244,33 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 	}
 
 	public void updateConfiguration(String chanName) {
-		if (!StringUtils.equals(chanName, mChanName)) {
-			mChanName = chanName;
+		if (!StringUtils.equals(chanName, this.chanName)) {
+			this.chanName = chanName;
 			ChanConfiguration configuration = ChanConfiguration.get(chanName);
-			mChanNameView.setText(configuration.getTitle());
-			mMenu.clear();
-			Context context = mContext;
-			mMenu.add(new ListItem(ListItem.ITEM_DIVIDER, 0, 0, null));
+			chanNameView.setText(configuration.getTitle());
+			menu.clear();
+			Context context = this.context;
+			menu.add(new ListItem(ListItem.ITEM_DIVIDER, 0, 0, null));
 			TypedArray typedArray = context.obtainStyledAttributes(new int[] {R.attr.drawerMenuBoards,
 					R.attr.drawerMenuUserBoards, R.attr.drawerMenuHistory, R.attr.drawerMenuPreferences});
 			boolean addDivider = false;
 			boolean hasUserBoards = configuration.getOption(ChanConfiguration.OPTION_READ_USER_BOARDS);
 			if (!configuration.getOption(ChanConfiguration.OPTION_SINGLE_BOARD_MODE)) {
-				mMenu.add(new ListItem(ListItem.ITEM_MENU, MENU_ITEM_ALL_BOARDS, typedArray.getResourceId(0, 0),
+				menu.add(new ListItem(ListItem.ITEM_MENU, MENU_ITEM_ALL_BOARDS, typedArray.getResourceId(0, 0),
 						context.getString(hasUserBoards ? R.string.action_general_boards : R.string.action_boards)));
 				addDivider = true;
 			}
 			if (hasUserBoards) {
-				mMenu.add(new ListItem(ListItem.ITEM_MENU, MENU_ITEM_USER_BOARDS, typedArray.getResourceId(1, 0),
+				menu.add(new ListItem(ListItem.ITEM_MENU, MENU_ITEM_USER_BOARDS, typedArray.getResourceId(1, 0),
 						context.getString(R.string.action_user_boards)));
 				addDivider = true;
 			}
 			if (addDivider) {
-				mMenu.add(new ListItem(ListItem.ITEM_DIVIDER, 0, 0, null));
+				menu.add(new ListItem(ListItem.ITEM_DIVIDER, 0, 0, null));
 			}
-			mMenu.add(new ListItem(ListItem.ITEM_MENU, MENU_ITEM_HISTORY, typedArray.getResourceId(2, 0),
+			menu.add(new ListItem(ListItem.ITEM_MENU, MENU_ITEM_HISTORY, typedArray.getResourceId(2, 0),
 					context.getString(R.string.action_history)));
-			mMenu.add(new ListItem(ListItem.ITEM_MENU, MENU_ITEM_PREFERENCES, typedArray.getResourceId(3, 0),
+			menu.add(new ListItem(ListItem.ITEM_MENU, MENU_ITEM_PREFERENCES, typedArray.getResourceId(3, 0),
 					context.getString(R.string.action_preferences)));
 			typedArray.recycle();
 			invalidateItems(false, true);
@@ -278,37 +278,37 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 	}
 
 	public View getHeaderView() {
-		return mHeaderView;
+		return headerView;
 	}
 
 	private void setChanSelectModeInternal(boolean enabled) {
-		if (mChanSelectMode != enabled) {
-			mChanSelectMode = enabled;
-			mChanSelectorIcon.setRotation(enabled ? 180f : 0f);
+		if (chanSelectMode != enabled) {
+			chanSelectMode = enabled;
+			chanSelectorIcon.setRotation(enabled ? 180f : 0f);
 			notifyDataSetChanged();
-			mListView.setSelection(0);
+			listView.setSelection(0);
 		}
 	}
 
 	public void setChanSelectMode(boolean enabled) {
-		if (mChans.size() > 1) {
+		if (chans.size() > 1) {
 			setChanSelectModeInternal(enabled);
 		}
 	}
 
 	@Override
 	public void onSortingFinished(SortableListView listView, int oldPosition, int newPosition) {
-		if (mChanSelectMode) {
-			mChans.add(newPosition - 1, mChans.remove(oldPosition - 1));
+		if (chanSelectMode) {
+			chans.add(newPosition - 1, chans.remove(oldPosition - 1));
 			ArrayList<String> chanNames = new ArrayList<>();
-			for (ListItem listItem : mChans) {
+			for (ListItem listItem : chans) {
 				if (listItem.type == ListItem.ITEM_CHAN) {
 					chanNames.add(listItem.chanName);
 				}
 			}
 			ChanManager.getInstance().setChansOrder(chanNames);
 			// Regroup favorite threads
-			if (mMergeChans) {
+			if (mergeChans) {
 				invalidateItems(false, true);
 			}
 		} else {
@@ -325,31 +325,31 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		}
 	}
 
-	private boolean mMultipleFingersCountingTime = false;
-	private long mMultipleFingersTime;
-	private long mMultipleFingersStartTime;
+	private boolean multipleFingersCountingTime = false;
+	private long multipleFingersTime;
+	private long multipleFingersStartTime;
 
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
 		switch (event.getActionMasked()) {
 			case MotionEvent.ACTION_DOWN: {
-				mMultipleFingersCountingTime = false;
-				mMultipleFingersStartTime = 0L;
-				mMultipleFingersTime = 0L;
+				multipleFingersCountingTime = false;
+				multipleFingersStartTime = 0L;
+				multipleFingersTime = 0L;
 				break;
 			}
 			case MotionEvent.ACTION_POINTER_DOWN: {
-				if (!mMultipleFingersCountingTime) {
-					mMultipleFingersCountingTime = true;
-					mMultipleFingersStartTime = System.currentTimeMillis();
+				if (!multipleFingersCountingTime) {
+					multipleFingersCountingTime = true;
+					multipleFingersStartTime = System.currentTimeMillis();
 				}
 				break;
 			}
 			case MotionEvent.ACTION_POINTER_UP: {
 				if (event.getPointerCount() <= 2) {
-					if (mMultipleFingersCountingTime) {
-						mMultipleFingersCountingTime = false;
-						mMultipleFingersTime += System.currentTimeMillis() - mMultipleFingersStartTime;
+					if (multipleFingersCountingTime) {
+						multipleFingersCountingTime = false;
+						multipleFingersTime += System.currentTimeMillis() - multipleFingersStartTime;
 					}
 				}
 				break;
@@ -360,8 +360,8 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 
 	public void performResume() {
 		boolean mergeChans = Preferences.isMergeChans();
-		if (mMergeChans != mergeChans) {
-			mMergeChans = mergeChans;
+		if (this.mergeChans != mergeChans) {
+			this.mergeChans = mergeChans;
 			invalidateItems(true, true);
 		}
 	}
@@ -373,28 +373,28 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 
 	@Override
 	public void notifyDataSetChanged() {
-		boolean focused = mSearchEdit.isFocused();
+		boolean focused = searchEdit.isFocused();
 		if (focused) {
-			focused = mInputMethodManager != null && mInputMethodManager.isActive(mSearchEdit);
+			focused = inputMethodManager != null && inputMethodManager.isActive(searchEdit);
 		}
 		super.notifyDataSetChanged();
 		if (focused) {
-			mSearchEdit.removeCallbacks(mRestoreSearchFocusRunnable);
-			mSearchEdit.post(mRestoreSearchFocusRunnable);
+			searchEdit.removeCallbacks(restoreSearchFocusRunnable);
+			searchEdit.post(restoreSearchFocusRunnable);
 		}
 	}
 
-	private final Runnable mRestoreSearchFocusRunnable = new Runnable() {
+	private final Runnable restoreSearchFocusRunnable = new Runnable() {
 		@Override
 		public void run() {
-			mSearchEdit.requestFocus();
+			searchEdit.requestFocus();
 		}
 	};
 
 	@Override
 	public int getEdgeEffectShift(boolean top) {
-		int shift = mListView.obtainEdgeEffectShift(top);
-		return top ? shift + mHeaderView.getPaddingTop() : shift;
+		int shift = listView.obtainEdgeEffectShift(top);
+		return top ? shift + headerView.getPaddingTop() : shift;
 	}
 
 	@Override
@@ -406,22 +406,22 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 				case ListItem.ITEM_FAVORITE: {
 					boolean fromCache = listItem.type == ListItem.ITEM_PAGE;
 					if (!listItem.isThreadItem()) {
-						mCallback.onSelectBoard(listItem.chanName, listItem.boardName, fromCache);
+						callback.onSelectBoard(listItem.chanName, listItem.boardName, fromCache);
 					} else {
-						mCallback.onSelectThread(listItem.chanName, listItem.boardName, listItem.threadNumber, null,
+						callback.onSelectThread(listItem.chanName, listItem.boardName, listItem.threadNumber, null,
 								listItem.title, fromCache);
 					}
 					break;
 				}
 				case ListItem.ITEM_MENU: {
-					mCallback.onSelectDrawerMenuItem(listItem.data);
+					callback.onSelectDrawerMenuItem(listItem.data);
 					break;
 				}
 				case ListItem.ITEM_CHAN: {
-					mCallback.onSelectChan(listItem.chanName);
+					callback.onSelectChan(listItem.chanName);
 					setChanSelectModeInternal(false);
 					if (C.API_LOLLIPOP) {
-						mListView.getSelector().jumpToCurrentState();
+						listView.getSelector().jumpToCurrentState();
 					}
 					break;
 				}
@@ -437,15 +437,15 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 
 	@Override
 	public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-		if (mChanSelectMode) {
-			return mListView.startSorting(2, mChans.size(), position);
+		if (chanSelectMode) {
+			return listView.startSorting(2, chans.size(), position);
 		}
 		final ListItem listItem = getItem(position);
 		if (listItem != null) {
 			if (listItem.type == ListItem.ITEM_FAVORITE && listItem.threadNumber != null &&
 					FavoritesStorage.getInstance().canSortManually()) {
-				long time = mMultipleFingersTime + (mMultipleFingersCountingTime
-						? System.currentTimeMillis() - mMultipleFingersStartTime : 0L);
+				long time = multipleFingersTime + (multipleFingersCountingTime
+						? System.currentTimeMillis() - multipleFingersStartTime : 0L);
 				if (time >= ViewConfiguration.getLongPressTimeout() / 10) {
 					int start = position;
 					int end = position;
@@ -471,14 +471,14 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 							break;
 						}
 					}
-					mListView.startSorting(start, end, position);
+					listView.startSorting(start, end, position);
 					return true;
 				}
 			}
 			switch (listItem.type) {
 				case ListItem.ITEM_PAGE:
 				case ListItem.ITEM_FAVORITE: {
-					DialogMenu dialogMenu = new DialogMenu(mContext, new DialogMenu.Callback() {
+					DialogMenu dialogMenu = new DialogMenu(context, new DialogMenu.Callback() {
 						@Override
 						public void onItemClick(Context context, int id, Map<String, Object> extra) {
 							switch (id) {
@@ -491,7 +491,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 									if (uri != null) {
 										switch (id) {
 											case MENU_COPY_LINK: {
-												StringUtils.copyToClipboard(mContext, uri.toString());
+												StringUtils.copyToClipboard(context, uri.toString());
 												break;
 											}
 											case MENU_SHARE_LINK: {
@@ -521,19 +521,20 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 									break;
 								}
 								case MENU_RENAME: {
-									final EditText editText = new SafePasteEditText(mContext);
+									final EditText editText = new SafePasteEditText(context);
 									editText.setSingleLine(true);
 									editText.setText(listItem.title);
 									editText.setSelection(editText.length());
-									LinearLayout linearLayout = new LinearLayout(mContext);
+									LinearLayout linearLayout = new LinearLayout(context);
 									linearLayout.setOrientation(LinearLayout.HORIZONTAL);
 									linearLayout.addView(editText, LinearLayout.LayoutParams.MATCH_PARENT,
 											LinearLayout.LayoutParams.WRAP_CONTENT);
-									int padding = mContext.getResources().getDimensionPixelSize(R.dimen
+									int padding = context.getResources().getDimensionPixelSize(R.dimen
 											.dialog_padding_view);
 									linearLayout.setPadding(padding, padding, padding, padding);
-									AlertDialog dialog = new AlertDialog.Builder(mContext).setView(linearLayout)
-											.setTitle(R.string.action_rename).setNegativeButton(android.R.string.cancel, null)
+									AlertDialog dialog = new AlertDialog.Builder(context)
+											.setView(linearLayout).setTitle(R.string.action_rename)
+											.setNegativeButton(android.R.string.cancel, null)
 											.setPositiveButton(android.R.string.ok, (d, which) -> {
 										String newTitle = editText.getText().toString();
 										FavoritesStorage.getInstance().modifyTitle(listItem.chanName,
@@ -585,14 +586,14 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 	public void onDrawerStateChanged(int newState) {}
 
 	private void clearTextAndHideKeyboard() {
-		mSearchEdit.setText(null);
+		searchEdit.setText(null);
 		hideKeyboard();
 	}
 
 	private void hideKeyboard() {
-		mSearchEdit.clearFocus();
-		if (mInputMethodManager != null) {
-			mInputMethodManager.hideSoftInputFromWindow(mSearchEdit.getWindowToken(), 0);
+		searchEdit.clearFocus();
+		if (inputMethodManager != null) {
+			inputMethodManager.hideSoftInputFromWindow(searchEdit.getWindowToken(), 0);
 		}
 	}
 
@@ -602,15 +603,15 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 
 	@Override
 	public void onClick(View v) {
-		String text = mSearchEdit.getText().toString().trim();
+		String text = searchEdit.getText().toString().trim();
 		int number = -1;
 		try {
 			number = Integer.parseInt(text);
 		} catch (NumberFormatException e) {
-			// Ignore
+			// Not a number, ignore exception
 		}
 		if (number >= 0) {
-			int result = mCallback.onEnterNumber(number);
+			int result = callback.onEnterNumber(number);
 			if (FlagUtils.get(result, RESULT_SUCCESS)) {
 				clearTextAndHideKeyboard();
 				return;
@@ -640,10 +641,10 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 				if (boardName != null || threadNumber != null) {
 					boolean success;
 					if (threadNumber == null) {
-						mCallback.onSelectBoard(mChanName, boardName, false);
+						callback.onSelectBoard(chanName, boardName, false);
 						success = true;
 					} else {
-						success = mCallback.onSelectThread(mChanName, boardName, threadNumber, null, null, false);
+						success = callback.onSelectThread(chanName, boardName, threadNumber, null, null, false);
 					}
 					if (success) {
 						clearTextAndHideKeyboard();
@@ -672,16 +673,16 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 				}
 				if (success) {
 					if (threadNumber == null) {
-						mCallback.onSelectBoard(chanName, boardName, false);
+						callback.onSelectBoard(chanName, boardName, false);
 					} else {
-						mCallback.onSelectThread(chanName, boardName, threadNumber, postNumber, null, false);
+						callback.onSelectThread(chanName, boardName, threadNumber, postNumber, null, false);
 					}
 					clearTextAndHideKeyboard();
 					return;
 				}
 			}
 		}
-		ToastUtils.show(mContext, R.string.message_enter_valid_data);
+		ToastUtils.show(context, R.string.message_enter_valid_data);
 	}
 
 	@Override
@@ -693,29 +694,29 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 	private void updateList(boolean pages, boolean favorites) {
 		int mode = Preferences.getPagesListMode();
 		if (pages) {
-			mPages.clear();
+			this.pages.clear();
 			if (mode != Preferences.PAGES_LIST_MODE_HIDE_PAGES) {
 				updateListPages();
 			}
 		}
 		if (favorites) {
-			mFavorites.clear();
+			this.favorites.clear();
 			updateListFavorites();
 		}
-		mCategories.clear();
+		categories.clear();
 		switch (mode) {
 			case Preferences.PAGES_LIST_MODE_PAGES_FIRST: {
-				mCategories.add(mPages);
-				mCategories.add(mFavorites);
+				categories.add(this.pages);
+				categories.add(this.favorites);
 				break;
 			}
 			case Preferences.PAGES_LIST_MODE_FAVORITES_FIRST: {
-				mCategories.add(mFavorites);
-				mCategories.add(mPages);
+				categories.add(this.favorites);
+				categories.add(this.pages);
 				break;
 			}
 			case Preferences.PAGES_LIST_MODE_HIDE_PAGES: {
-				mCategories.add(mFavorites);
+				categories.add(this.favorites);
 				break;
 			}
 		}
@@ -723,14 +724,14 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 	}
 
 	private void updateListPages() {
-		boolean mergeChans = mMergeChans;
-		ArrayList<PageHolder> allPages = mCallback.getDrawerPageHolders();
+		boolean mergeChans = this.mergeChans;
+		ArrayList<PageHolder> allPages = callback.getDrawerPageHolders();
 		ArrayList<PageHolder> pages = new ArrayList<>();
 		for (PageHolder pageHolder : allPages) {
 			boolean isThreads = pageHolder.content == PageHolder.Content.THREADS;
 			boolean isPosts = pageHolder.content == PageHolder.Content.POSTS;
 			if (isThreads || isPosts) {
-				if (mergeChans || pageHolder.chanName.equals(mChanName)) {
+				if (mergeChans || pageHolder.chanName.equals(chanName)) {
 					if (pageHolder.threadNumber != null || !ChanConfiguration.get(pageHolder.chanName)
 							.getOption(ChanConfiguration.OPTION_SINGLE_BOARD_MODE)) {
 						pages.add(pageHolder);
@@ -740,16 +741,16 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		}
 		if (pages.size() > 0) {
 			Collections.sort(pages, DATE_COMPARATOR);
-			mPages.add(new ListItem(ListItem.ITEM_HEADER, null, null, null,
-					mContext.getString(R.string.text_open_pages), HEADER_ACTION_CLOSE_ALL,
-					ResourceUtils.getResourceId(mContext, R.attr.buttonCancel, 0)));
+			this.pages.add(new ListItem(ListItem.ITEM_HEADER, null, null, null,
+					context.getString(R.string.text_open_pages), HEADER_ACTION_CLOSE_ALL,
+					ResourceUtils.getResourceId(context, R.attr.buttonCancel, 0)));
 			for (PageHolder pageHolder : pages) {
-				Drawable drawable = mChanIcons.get(pageHolder.chanName);
+				Drawable drawable = chanIcons.get(pageHolder.chanName);
 				if (pageHolder.threadNumber != null) {
-					mPages.add(new ListItem(ListItem.ITEM_PAGE, pageHolder.chanName, pageHolder.boardName,
+					this.pages.add(new ListItem(ListItem.ITEM_PAGE, pageHolder.chanName, pageHolder.boardName,
 							pageHolder.threadNumber, pageHolder.threadTitle, 0, drawable));
 				} else {
-					mPages.add(new ListItem(ListItem.ITEM_PAGE, pageHolder.chanName, pageHolder.boardName,
+					this.pages.add(new ListItem(ListItem.ITEM_PAGE, pageHolder.chanName, pageHolder.boardName,
 							null, ChanConfiguration.get(pageHolder.chanName).getBoardTitle(pageHolder.boardName),
 							0, drawable));
 				}
@@ -761,12 +762,12 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			(lhs, rhs) -> (int) (rhs.creationTime - lhs.creationTime);
 
 	private void updateListFavorites() {
-		boolean mergeChans = mMergeChans;
+		boolean mergeChans = this.mergeChans;
 		FavoritesStorage favoritesStorage = FavoritesStorage.getInstance();
 		ArrayList<FavoritesStorage.FavoriteItem> favoriteBoards = favoritesStorage.getBoards(mergeChans
-				? null : mChanName);
+				? null : chanName);
 		ArrayList<FavoritesStorage.FavoriteItem> favoriteThreads = favoritesStorage.getThreads(mergeChans
-				? null : mChanName);
+				? null : chanName);
 		boolean addHeader = true;
 		Collection<String> chanNames = ChanManager.getInstance().getAvailableChanNames();
 		for (int i = 0; i < favoriteThreads.size(); i++) {
@@ -774,29 +775,29 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			if (!chanNames.contains(favoriteItem.chanName)) {
 				continue;
 			}
-			if (mergeChans || favoriteItem.chanName.equals(mChanName)) {
+			if (mergeChans || favoriteItem.chanName.equals(chanName)) {
 				if (addHeader) {
-					if (mWatcherSupportSet.contains(favoriteItem.chanName)
-							|| mergeChans && !mWatcherSupportSet.isEmpty()) {
-						mFavorites.add(new ListItem(ListItem.ITEM_HEADER, null, null, null,
-								mContext.getString(R.string.text_favorite_threads), HEADER_ACTION_REFRESH_WATCHER,
-								ResourceUtils.getResourceId(mContext, R.attr.buttonRefresh, 0)));
+					if (watcherSupportSet.contains(favoriteItem.chanName)
+							|| mergeChans && !watcherSupportSet.isEmpty()) {
+						favorites.add(new ListItem(ListItem.ITEM_HEADER, null, null, null,
+								context.getString(R.string.text_favorite_threads), HEADER_ACTION_REFRESH_WATCHER,
+								ResourceUtils.getResourceId(context, R.attr.buttonRefresh, 0)));
 					} else {
-						mFavorites.add(new ListItem(ListItem.ITEM_HEADER, null, null, null,
-								mContext.getString(R.string.text_favorite_threads)));
+						favorites.add(new ListItem(ListItem.ITEM_HEADER, null, null, null,
+								context.getString(R.string.text_favorite_threads)));
 					}
 					addHeader = false;
 				}
 				ListItem listItem = new ListItem(ListItem.ITEM_FAVORITE, favoriteItem.chanName, favoriteItem.boardName,
-						favoriteItem.threadNumber, favoriteItem.title, 0, mChanIcons.get(favoriteItem.chanName));
-				if (mWatcherSupportSet.contains(favoriteItem.chanName)) {
-					WatcherService.TemporalCountData temporalCountData = mWatcherServiceClient
+						favoriteItem.threadNumber, favoriteItem.title, 0, chanIcons.get(favoriteItem.chanName));
+				if (watcherSupportSet.contains(favoriteItem.chanName)) {
+					WatcherService.TemporalCountData temporalCountData = watcherServiceClient
 							.countNewPosts(favoriteItem);
 					listItem.watcherPostsCountDifference = temporalCountData.postsCountDifference;
 					listItem.watcherHasNewPosts = temporalCountData.hasNewPosts;
 					listItem.watcherIsError = temporalCountData.isError;
 				}
-				mFavorites.add(listItem);
+				favorites.add(listItem);
 			}
 		}
 		addHeader = true;
@@ -805,15 +806,15 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			if (!chanNames.contains(favoriteItem.chanName)) {
 				continue;
 			}
-			if (mergeChans || favoriteItem.chanName.equals(mChanName)) {
+			if (mergeChans || favoriteItem.chanName.equals(chanName)) {
 				if (addHeader) {
-					mFavorites.add(new ListItem(ListItem.ITEM_HEADER, null, null, null,
-							mContext.getString(R.string.text_favorite_boards)));
+					favorites.add(new ListItem(ListItem.ITEM_HEADER, null, null, null,
+							context.getString(R.string.text_favorite_boards)));
 					addHeader = false;
 				}
-				mFavorites.add(new ListItem(ListItem.ITEM_FAVORITE, favoriteItem.chanName, favoriteItem.boardName, null,
+				favorites.add(new ListItem(ListItem.ITEM_FAVORITE, favoriteItem.chanName, favoriteItem.boardName, null,
 						ChanConfiguration.get(favoriteItem.chanName).getBoardTitle(favoriteItem.boardName), 0,
-						mChanIcons.get(favoriteItem.chanName)));
+						chanIcons.get(favoriteItem.chanName)));
 			}
 		}
 	}
@@ -883,18 +884,18 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		}
 	}
 
-	private final View.OnClickListener mCloseButtonListener = new View.OnClickListener() {
+	private final View.OnClickListener closeButtonListener = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
 			ListItem listItem = getItem(v);
 			if (listItem != null && listItem.type == ListItem.ITEM_PAGE) {
-				boolean result = mCallback.onClosePage(listItem.chanName, listItem.boardName, listItem.threadNumber);
+				boolean result = callback.onClosePage(listItem.chanName, listItem.boardName, listItem.threadNumber);
 				if (result) {
 					// size == 2 means only one item in list + header
-					if (mPages.size() == 2) {
-						mPages.clear();
+					if (pages.size() == 2) {
+						pages.clear();
 					} else {
-						mPages.remove(listItem);
+						pages.remove(listItem);
 					}
 					notifyDataSetChanged();
 				}
@@ -905,18 +906,18 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 	private static final int HEADER_ACTION_CLOSE_ALL = 0;
 	private static final int HEADER_ACTION_REFRESH_WATCHER = 1;
 
-	private final View.OnClickListener mHeaderButtonListener = new View.OnClickListener() {
+	private final View.OnClickListener headerButtonListener = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
 			ListItem listItem = getItem(v);
 			if (listItem != null && listItem.type == ListItem.ITEM_HEADER) {
 				switch (listItem.data) {
 					case HEADER_ACTION_CLOSE_ALL: {
-						mCallback.onCloseAllPages();
+						callback.onCloseAllPages();
 						break;
 					}
 					case HEADER_ACTION_REFRESH_WATCHER: {
-						mWatcherServiceClient.update();
+						watcherServiceClient.update();
 						break;
 					}
 				}
@@ -948,18 +949,18 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 					return listItem.resourceId != 0 || listItem.resource != null ? TYPE_HEADER_BUTTON : TYPE_HEADER;
 				}
 				case ListItem.ITEM_PAGE: {
-					return mMergeChans && C.API_LOLLIPOP ? TYPE_VIEW_CLOSEABLE_ICON : TYPE_VIEW_CLOSEABLE;
+					return mergeChans && C.API_LOLLIPOP ? TYPE_VIEW_CLOSEABLE_ICON : TYPE_VIEW_CLOSEABLE;
 				}
 				case ListItem.ITEM_FAVORITE: {
 					if (listItem.threadNumber != null) {
-						boolean watcherSupported = mWatcherSupportSet.contains(listItem.chanName);
-						if (mMergeChans && C.API_LOLLIPOP) {
+						boolean watcherSupported = watcherSupportSet.contains(listItem.chanName);
+						if (mergeChans && C.API_LOLLIPOP) {
 							return watcherSupported ? TYPE_VIEW_WATCHER_ICON : TYPE_VIEW_ICON;
 						} else {
 							return watcherSupported ? TYPE_VIEW_WATCHER : TYPE_VIEW;
 						}
 					} else {
-						return mMergeChans && C.API_LOLLIPOP ? TYPE_VIEW_ICON : TYPE_VIEW;
+						return mergeChans && C.API_LOLLIPOP ? TYPE_VIEW_ICON : TYPE_VIEW;
 					}
 				}
 				case ListItem.ITEM_MENU: {
@@ -979,13 +980,13 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 	@Override
 	public int getCount() {
 		int count = 1;
-		if (mChanSelectMode) {
-			count += mChans.size();
+		if (chanSelectMode) {
+			count += chans.size();
 		} else {
-			for (int i = 0; i < mCategories.size(); i++) {
-				count += mCategories.get(i).size();
+			for (int i = 0; i < categories.size(); i++) {
+				count += categories.get(i).size();
 			}
-			count += mMenu.size();
+			count += menu.size();
 		}
 		return count;
 	}
@@ -994,13 +995,13 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 	public ListItem getItem(int position) {
 		position--;
 		if (position >= 0) {
-			if (mChanSelectMode) {
-				if (position < mChans.size()) {
-					return mChans.get(position);
+			if (chanSelectMode) {
+				if (position < chans.size()) {
+					return chans.get(position);
 				}
 			} else {
-				for (int i = 0; i < mCategories.size(); i++) {
-					ArrayList<ListItem> listItems = mCategories.get(i);
+				for (int i = 0; i < categories.size(); i++) {
+					ArrayList<ListItem> listItems = categories.get(i);
 					if (position < listItems.size()) {
 						return listItems.get(position);
 					}
@@ -1009,8 +1010,8 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 						return null;
 					}
 				}
-				if (position < mMenu.size()) {
-					return mMenu.get(position);
+				if (position < menu.size()) {
+					return menu.get(position);
 				}
 			}
 		}
@@ -1039,26 +1040,26 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 	}
 
 	private View makeSimpleDivider() {
-		float density = ResourceUtils.obtainDensity(mContext);
+		float density = ResourceUtils.obtainDensity(context);
 		if (C.API_LOLLIPOP) {
-			FrameLayout frameLayout = new FrameLayout(mContext);
-			View view = new View(mContext);
-			view.setBackgroundResource(ResourceUtils.getResourceId(mContext, android.R.attr.listDivider, 0));
+			FrameLayout frameLayout = new FrameLayout(context);
+			View view = new View(context);
+			view.setBackgroundResource(ResourceUtils.getResourceId(context, android.R.attr.listDivider, 0));
 			frameLayout.addView(view, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
 			frameLayout.setPadding(0, (int) (8f * density), 0, (int) (8f * density));
 			return frameLayout;
 		} else {
-			View view = new View(mContext);
+			View view = new View(context);
 			int[] attrs = {android.R.attr.listSeparatorTextViewStyle};
-			TypedArray typedArray = mContext.obtainStyledAttributes(attrs);
+			TypedArray typedArray = context.obtainStyledAttributes(attrs);
 			int style = typedArray.getResourceId(0, 0);
 			typedArray.recycle();
 			if (style != 0) {
-				typedArray = mContext.obtainStyledAttributes(style, new int[] {android.R.attr.background});
+				typedArray = context.obtainStyledAttributes(style, new int[] {android.R.attr.background});
 				Drawable drawable = typedArray.getDrawable(0);
 				typedArray.recycle();
 				if (drawable != null) {
-					view.setBackgroundColor(GraphicsUtils.getDrawableColor(mContext, drawable, Gravity.BOTTOM));
+					view.setBackgroundColor(GraphicsUtils.getDrawableColor(context, drawable, Gravity.BOTTOM));
 				}
 			}
 			view.setMinimumHeight((int) (2f * density));
@@ -1067,7 +1068,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 	}
 
 	private TextView makeCommonTextView(boolean header) {
-		TextView textView = new TextView(mContext, null, C.API_LOLLIPOP ? android.R.attr.textAppearanceListItem
+		TextView textView = new TextView(context, null, C.API_LOLLIPOP ? android.R.attr.textAppearanceListItem
 				: android.R.attr.textAppearance);
 		textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, C.API_LOLLIPOP ? 14f : 16f);
 		textView.setGravity(Gravity.CENTER_VERTICAL);
@@ -1088,12 +1089,12 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 
 	private View makeView(boolean icon, boolean watcher, boolean closeable, float density) {
 		int size = (int) (48f * density);
-		LinearLayout linearLayout = new LinearLayout(mContext);
+		LinearLayout linearLayout = new LinearLayout(context);
 		linearLayout.setOrientation(LinearLayout.HORIZONTAL);
 		linearLayout.setGravity(Gravity.CENTER_VERTICAL);
 		ImageView iconView = null;
 		if (icon) {
-			iconView = new ImageView(mContext);
+			iconView = new ImageView(context);
 			iconView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
 			linearLayout.addView(iconView, (int) (24f * density), size);
 		}
@@ -1101,18 +1102,18 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		linearLayout.addView(textView, new LinearLayout.LayoutParams(0, size, 1));
 		WatcherView watcherView = null;
 		if (watcher) {
-			watcherView = new WatcherView(mContext);
+			watcherView = new WatcherView(context);
 			linearLayout.addView(watcherView, size, size);
 		}
 		ImageView closeView = null;
 		if (!watcher && closeable) {
-			closeView = new ImageView(mContext);
+			closeView = new ImageView(context);
 			closeView.setScaleType(ImageView.ScaleType.CENTER);
-			closeView.setImageResource(ResourceUtils.getResourceId(mContext, R.attr.buttonCancel, 0));
-			closeView.setBackgroundResource(ResourceUtils.getResourceId(mContext,
+			closeView.setImageResource(ResourceUtils.getResourceId(context, R.attr.buttonCancel, 0));
+			closeView.setBackgroundResource(ResourceUtils.getResourceId(context,
 					android.R.attr.borderlessButtonStyle, android.R.attr.background, 0));
 			linearLayout.addView(closeView, size, size);
-			closeView.setOnClickListener(mCloseButtonListener);
+			closeView.setOnClickListener(closeButtonListener);
 		}
 		ViewHolder holder = new ViewHolder();
 		holder.icon = iconView;
@@ -1154,7 +1155,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 
 	private View makeHeader(ViewGroup parent, boolean button, float density) {
 		if (C.API_LOLLIPOP) {
-			LinearLayout linearLayout = new LinearLayout(mContext);
+			LinearLayout linearLayout = new LinearLayout(context);
 			linearLayout.setOrientation(LinearLayout.VERTICAL);
 			View divider = makeSimpleDivider();
 			int paddingTop = divider.getPaddingBottom();
@@ -1162,7 +1163,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 					divider.getPaddingRight(), 0);
 			linearLayout.addView(divider, LinearLayout.LayoutParams.MATCH_PARENT,
 					LinearLayout.LayoutParams.WRAP_CONTENT);
-			LinearLayout linearLayout2 = new LinearLayout(mContext);
+			LinearLayout linearLayout2 = new LinearLayout(context);
 			linearLayout2.setOrientation(LinearLayout.HORIZONTAL);
 			linearLayout.addView(linearLayout2, LinearLayout.LayoutParams.MATCH_PARENT,
 					LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -1175,11 +1176,11 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			ViewHolder holder = new ViewHolder();
 			holder.text = textView;
 			if (button) {
-				ImageView imageView = new ImageView(mContext);
+				ImageView imageView = new ImageView(context);
 				imageView.setScaleType(ImageView.ScaleType.CENTER);
-				imageView.setBackgroundResource(ResourceUtils.getResourceId(mContext,
+				imageView.setBackgroundResource(ResourceUtils.getResourceId(context,
 						android.R.attr.borderlessButtonStyle, android.R.attr.background, 0));
-				imageView.setOnClickListener(mHeaderButtonListener);
+				imageView.setOnClickListener(headerButtonListener);
 				imageView.setImageAlpha(0x5e);
 				int size = (int) (48f * density);
 				layoutParams = new LinearLayout.LayoutParams(size, size);
@@ -1191,7 +1192,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			linearLayout.setTag(holder);
 			return linearLayout;
 		} else {
-			View view = LayoutInflater.from(mContext).inflate(ResourceUtils.getResourceId(mContext,
+			View view = LayoutInflater.from(context).inflate(ResourceUtils.getResourceId(context,
 					android.R.attr.preferenceCategoryStyle, android.R.attr.layout,
 					android.R.layout.preference_category), parent, false);
 			ViewHolder holder = new ViewHolder();
@@ -1203,19 +1204,19 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 				if (size == 0) {
 					size = (int) (32f * density);
 				}
-				FrameLayout frameLayout = new FrameLayout(mContext);
+				FrameLayout frameLayout = new FrameLayout(context);
 				frameLayout.addView(view);
 				view = frameLayout;
-				ImageView imageView = new ImageView(mContext);
+				ImageView imageView = new ImageView(context);
 				imageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
 				int padding = (int) (4f * density);
 				imageView.setPadding(padding, padding, padding, padding);
 				frameLayout.addView(imageView, new FrameLayout.LayoutParams
 						((int) (48f * density), size, Gravity.END));
-				View buttonView = new View(mContext);
-				buttonView.setBackgroundResource(ResourceUtils.getResourceId(mContext,
+				View buttonView = new View(context);
+				buttonView.setBackgroundResource(ResourceUtils.getResourceId(context,
 						android.R.attr.selectableItemBackground, 0));
-				buttonView.setOnClickListener(mHeaderButtonListener);
+				buttonView.setOnClickListener(headerButtonListener);
 				frameLayout.addView(buttonView, FrameLayout.LayoutParams.MATCH_PARENT,
 						FrameLayout.LayoutParams.MATCH_PARENT);
 				holder.extra = buttonView;
@@ -1232,13 +1233,13 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		if (listItem == null) {
 			switch (position) {
 				case 0: {
-					return mHeaderView;
+					return headerView;
 				}
 			}
 			throw new NullPointerException();
 		}
 		if (convertView == null) {
-			float density = ResourceUtils.obtainDensity(mContext);
+			float density = ResourceUtils.obtainDensity(context);
 			int viewType = getItemViewType(position);
 			switch (viewType) {
 				case TYPE_VIEW:
@@ -1285,8 +1286,8 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 				}
 				holder.text.setText(text);
 				if (listItem.type == ListItem.ITEM_FAVORITE && listItem.isThreadItem() &&
-						mWatcherSupportSet.contains(listItem.chanName)) {
-					WatcherService.WatcherItem watcherItem = mWatcherServiceClient.getItem(listItem.chanName,
+						watcherSupportSet.contains(listItem.chanName)) {
+					WatcherService.WatcherItem watcherItem = watcherServiceClient.getItem(listItem.chanName,
 							listItem.boardName, listItem.threadNumber);
 					updateWatcherItem(holder, watcherItem != null ? watcherItem.getLastState()
 							: WatcherService.State.DISABLED);
@@ -1335,7 +1336,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		}
 	}
 
-	private WatcherDrawableColorSet mWatcherDrawableColorSet;
+	private WatcherDrawableColorSet watcherDrawableColorSet;
 
 	private class WatcherDrawableColorSet {
 		public final int enabledColor;
@@ -1350,62 +1351,62 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 	}
 
 	private class WatcherView extends FrameLayout implements View.OnClickListener {
-		private final ProgressBar mProgressBar;
+		private final ProgressBar progressBar;
 
-		private String mText = "";
-		private boolean mHasNew = false;
-		private int mColor;
+		private String text = "";
+		private boolean hasNew = false;
+		private int color;
 
 		@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 		public WatcherView(Context context) {
 			super(context);
 			setBackgroundResource(ResourceUtils.getResourceId(context, android.R.attr.selectableItemBackground, 0));
-			mProgressBar = new ProgressBar(context, null, android.R.attr.progressBarStyleSmall);
+			progressBar = new ProgressBar(context, null, android.R.attr.progressBarStyleSmall);
 			if (C.API_LOLLIPOP) {
-				mProgressBar.getIndeterminateDrawable().setTint(Color.WHITE);
+				progressBar.getIndeterminateDrawable().setTint(Color.WHITE);
 			}
-			addView(mProgressBar, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT,
+			addView(progressBar, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT,
 					FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
 			setOnClickListener(this);
 			setWatcherState(WatcherService.State.DISABLED);
 			setPostsCountDifference(0, false, false);
 		}
 
-		private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.LINEAR_TEXT_FLAG);
-		private final RectF mRectF = new RectF();
-		private final Rect mRect = new Rect();
+		private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.LINEAR_TEXT_FLAG);
+		private final RectF rectF = new RectF();
+		private final Rect rect = new Rect();
 
 		@Override
 		public void draw(Canvas canvas) {
-			float density = ResourceUtils.obtainDensity(mContext);
+			float density = ResourceUtils.obtainDensity(context);
 			if (C.API_LOLLIPOP) {
 				int paddingHorizontal = (int) (8f * density);
 				int paddingVertical = (int) (12f * density);
-				mRectF.set(paddingHorizontal, paddingVertical, getWidth() - paddingHorizontal,
+				rectF.set(paddingHorizontal, paddingVertical, getWidth() - paddingHorizontal,
 						getHeight() - paddingVertical);
 			} else {
 				int padding = (int) (8f * density);
-				mRectF.set(padding, padding, getWidth() - padding, getHeight() - padding);
+				rectF.set(padding, padding, getWidth() - padding, getHeight() - padding);
 			}
 			int cornerRadius = C.API_LOLLIPOP ? (int) density : (int) (4f * density);
-			mPaint.setColor(mColor);
-			canvas.drawRoundRect(mRectF, cornerRadius, cornerRadius, mPaint);
+			paint.setColor(color);
+			canvas.drawRoundRect(rectF, cornerRadius, cornerRadius, paint);
 			canvas.save();
-			canvas.clipRect(mRectF);
+			canvas.clipRect(rectF);
 			super.draw(canvas);
-			if (mProgressBar.getVisibility() != View.VISIBLE) {
+			if (progressBar.getVisibility() != View.VISIBLE) {
 				float fontSize = C.API_LOLLIPOP ? 12f : 16f;
-				mPaint.setColor(Color.WHITE);
-				if (!mHasNew) {
-					mPaint.setAlpha(0x99);
+				paint.setColor(Color.WHITE);
+				if (!hasNew) {
+					paint.setAlpha(0x99);
 				}
-				mPaint.setTextSize(fontSize * getResources().getDisplayMetrics().scaledDensity);
-				mPaint.setTextAlign(Paint.Align.CENTER);
-				mPaint.getTextBounds(mText, 0, mText.length(), mRect);
-				canvas.drawText(mText, getWidth() / 2f, (getHeight() + mRect.height()) / 2f, mPaint);
-			} else if (mHasNew) {
-				mPaint.setColor(Color.WHITE);
-				canvas.drawCircle(getWidth() / 2f, getHeight() / 2f, (int) (4f * density), mPaint);
+				paint.setTextSize(fontSize * getResources().getDisplayMetrics().scaledDensity);
+				paint.setTextAlign(Paint.Align.CENTER);
+				paint.getTextBounds(text, 0, text.length(), rect);
+				canvas.drawText(text, getWidth() / 2f, (getHeight() + rect.height()) / 2f, paint);
+			} else if (hasNew) {
+				paint.setColor(Color.WHITE);
+				canvas.drawCircle(getWidth() / 2f, getHeight() / 2f, (int) (4f * density), paint);
 			}
 			canvas.restore();
 		}
@@ -1424,42 +1425,42 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 					text += "?";
 				}
 			}
-			mText = text;
-			mHasNew = hasNew;
+			this.text = text;
+			this.hasNew = hasNew;
 			invalidate();
 		}
 
 		public void setWatcherState(WatcherService.State state) {
-			if (mWatcherDrawableColorSet == null) {
-				int enabledColor = ResourceUtils.getColor(mUnstyledContext, R.attr.colorAccentSupport);
+			if (watcherDrawableColorSet == null) {
+				int enabledColor = ResourceUtils.getColor(unstyledContext, R.attr.colorAccentSupport);
 				int disabledColor = 0xff666666;
 				int unavailableColor = GraphicsUtils.mixColors(disabledColor, enabledColor & 0x7fffffff);
-				mWatcherDrawableColorSet = new WatcherDrawableColorSet(enabledColor, unavailableColor, disabledColor);
+				watcherDrawableColorSet = new WatcherDrawableColorSet(enabledColor, unavailableColor, disabledColor);
 			}
 			switch (state) {
 				case DISABLED:
 				case ENABLED:
 				case UNAVAILABLE: {
-					mProgressBar.setVisibility(View.GONE);
+					progressBar.setVisibility(View.GONE);
 					break;
 				}
 				case BUSY: {
-					mProgressBar.setVisibility(View.VISIBLE);
+					progressBar.setVisibility(View.VISIBLE);
 					break;
 				}
 			}
 			switch (state) {
 				case DISABLED: {
-					mColor = mWatcherDrawableColorSet.disabledColor;
+					color = watcherDrawableColorSet.disabledColor;
 					break;
 				}
 				case ENABLED:
 				case BUSY: {
-					mColor = mWatcherDrawableColorSet.enabledColor;
+					color = watcherDrawableColorSet.enabledColor;
 					break;
 				}
 				case UNAVAILABLE: {
-					mColor = mWatcherDrawableColorSet.unavailableColor;
+					color = watcherDrawableColorSet.unavailableColor;
 					break;
 				}
 			}
@@ -1475,10 +1476,10 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 
 	@Override
 	public void onWatcherUpdate(WatcherService.WatcherItem watcherItem, WatcherService.State state) {
-		if ((mMergeChans || watcherItem.chanName.equals(mChanName))
-				&& mWatcherSupportSet.contains(watcherItem.chanName)) {
+		if ((mergeChans || watcherItem.chanName.equals(chanName))
+				&& watcherSupportSet.contains(watcherItem.chanName)) {
 			ListItem targetItem = null;
-			for (ListItem listItem : mFavorites) {
+			for (ListItem listItem : favorites) {
 				if (listItem.compare(watcherItem.chanName, watcherItem.boardName, watcherItem.threadNumber)) {
 					targetItem = listItem;
 					break;
@@ -1488,9 +1489,9 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 				targetItem.watcherPostsCountDifference = watcherItem.getPostsCountDifference();
 				targetItem.watcherHasNewPosts = watcherItem.hasNewPosts();
 				targetItem.watcherIsError = watcherItem.isError();
-				if (!mListView.isSorting()) {
-					for (int i = 0, count = mListView.getChildCount(); i < count; i++) {
-						View view = mListView.getChildAt(i);
+				if (!listView.isSorting()) {
+					for (int i = 0, count = listView.getChildCount(); i < count; i++) {
+						View view = listView.getChildAt(i);
 						ViewHolder holder = (ViewHolder) view.getTag();
 						if (holder != null && targetItem == holder.listItem) {
 							updateWatcherItem(holder, state);
@@ -1509,7 +1510,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		@Override
 		public void onScrollStateChanged(AbsListView view, int scrollState) {
 			if (scrollState == SCROLL_STATE_TOUCH_SCROLL) {
-				View focusView = mListView.getFocusedChild();
+				View focusView = listView.getFocusedChild();
 				if (focusView != null) {
 					focusView.clearFocus();
 					hideKeyboard();

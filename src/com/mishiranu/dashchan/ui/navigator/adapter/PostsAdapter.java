@@ -58,28 +58,28 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 	private static final int ITEM_VIEW_TYPE_POST = 0;
 	private static final int ITEM_VIEW_TYPE_HIDDEN_POST = 1;
 
-	private final BaseAdapterNotifier mNotifier = new BaseAdapterNotifier(this);
+	private final BaseAdapterNotifier notifier = new BaseAdapterNotifier(this);
 
-	private final ArrayList<PostItem> mPostItems = new ArrayList<>();
-	private final HashMap<String, PostItem> mPostItemsMap = new HashMap<>();
-	private final HashSet<PostItem> mSelected = new HashSet<>();
+	private final ArrayList<PostItem> postItems = new ArrayList<>();
+	private final HashMap<String, PostItem> postItemsMap = new HashMap<>();
+	private final HashSet<PostItem> selected = new HashSet<>();
 
-	private final UiManager mUiManager;
-	private final UiManager.DemandSet mDemandSet = new UiManager.DemandSet();
-	private final UiManager.ConfigurationSet mConfigurationSet;
-	private final CommentTextView.ListSelectionKeeper mListSelectionKeeper;
+	private final UiManager uiManager;
+	private final UiManager.DemandSet demandSet = new UiManager.DemandSet();
+	private final UiManager.ConfigurationSet configurationSet;
+	private final CommentTextView.ListSelectionKeeper listSelectionKeeper;
 
-	private final View mBumpLimitDivider;
-	private final int mBumpLimit;
+	private final View bumpLimitDivider;
+	private final int bumpLimit;
 
-	private boolean mSelection = false;
+	private boolean selection = false;
 
 	public PostsAdapter(Context context, String chanName, String boardName, UiManager uiManager,
 			Replyable replyable, HidePerformer hidePerformer, HashSet<String> userPostNumbers, ListView listView) {
-		mUiManager = uiManager;
-		mConfigurationSet = new UiManager.ConfigurationSet(replyable, this, hidePerformer,
+		this.uiManager = uiManager;
+		configurationSet = new UiManager.ConfigurationSet(replyable, this, hidePerformer,
 				new GalleryItem.GallerySet(true), this, userPostNumbers, true, false, true, true, null);
-		mListSelectionKeeper = new CommentTextView.ListSelectionKeeper(listView);
+		listSelectionKeeper = new CommentTextView.ListSelectionKeeper(listView);
 		float density = ResourceUtils.obtainDensity(context);
 		FrameLayout frameLayout = new FrameLayout(context);
 		frameLayout.setPadding((int) (12f * density), 0, (int) (12f * density), 0);
@@ -87,19 +87,19 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 		view.setMinimumHeight((int) (2f * density));
 		view.setBackgroundColor(ResourceUtils.getColor(context, R.attr.colorTextError));
 		frameLayout.addView(view, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
-		mBumpLimitDivider = frameLayout;
-		mBumpLimit = ChanConfiguration.get(chanName).getBumpLimitWithMode(boardName);
+		bumpLimitDivider = frameLayout;
+		bumpLimit = ChanConfiguration.get(chanName).getBumpLimitWithMode(boardName);
 	}
 
 	@Override
 	public void notifyDataSetChanged() {
-		mListSelectionKeeper.onBeforeNotifyDataSetChanged();
+		listSelectionKeeper.onBeforeNotifyDataSetChanged();
 		super.notifyDataSetChanged();
-		mListSelectionKeeper.onAfterNotifyDataSetChanged();
+		listSelectionKeeper.onAfterNotifyDataSetChanged();
 	}
 
 	public void postNotifyDataSetChanged() {
-		mNotifier.postNotifyDataSetChanged();
+		notifier.postNotifyDataSetChanged();
 	}
 
 	@Override
@@ -109,12 +109,12 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 
 	@Override
 	public int getCount() {
-		return mPostItems.size();
+		return postItems.size();
 	}
 
 	@Override
 	public PostItem getItem(int position) {
-		return mPostItems.get(position);
+		return postItems.get(position);
 	}
 
 	@Override
@@ -135,7 +135,7 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 	@Override
 	public int getItemViewType(int position) {
 		PostItem postItem = getItem(position);
-		return postItem != null ? postItem.isHidden(mConfigurationSet.hidePerformer)
+		return postItem != null ? postItem.isHidden(configurationSet.hidePerformer)
 				? ITEM_VIEW_TYPE_HIDDEN_POST : ITEM_VIEW_TYPE_POST : IGNORE_ITEM_VIEW_TYPE;
 	}
 
@@ -143,22 +143,22 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 	public View getView(int position, View convertView, ViewGroup parent) {
 		PostItem postItem = getItem(position);
 		if (postItem == null) {
-			return mBumpLimitDivider;
+			return bumpLimitDivider;
 		}
-		if (postItem.isHidden(mConfigurationSet.hidePerformer)) {
-			convertView = mUiManager.view().getPostHiddenView(postItem, convertView, parent);
+		if (postItem.isHidden(configurationSet.hidePerformer)) {
+			convertView = uiManager.view().getPostHiddenView(postItem, convertView, parent);
 		} else {
-			UiManager.DemandSet demandSet = mDemandSet;
-			demandSet.selectionMode = mSelection ? mSelected.contains(postItem) ? UiManager.SELECTION_SELECTED
+			UiManager.DemandSet demandSet = this.demandSet;
+			demandSet.selectionMode = selection ? selected.contains(postItem) ? UiManager.SELECTION_SELECTED
 					: UiManager.SELECTION_NOT_SELECTED : UiManager.SELECTION_DISABLED;
 			demandSet.lastInList = position == getCount() - 1;
-			convertView = mUiManager.view().getPostView(postItem, convertView, parent, demandSet, mConfigurationSet);
+			convertView = uiManager.view().getPostView(postItem, convertView, parent, demandSet, configurationSet);
 		}
 		return convertView;
 	}
 
 	public int indexOf(PostItem postItem) {
-		return mPostItems.indexOf(postItem);
+		return postItems.indexOf(postItem);
 	}
 
 	public int findPositionByOrdinalIndex(int ordinalIndex) {
@@ -183,7 +183,7 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 
 	@Override
 	public PostItem findPostItem(String postNumber) {
-		return mPostItemsMap.get(postNumber);
+		return postItemsMap.get(postNumber);
 	}
 
 	@Override
@@ -205,8 +205,8 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 	}
 
 	public String getLastPostNumber() {
-		for (int i = mPostItems.size() - 1; i >= 0; i--) {
-			PostItem postItem = mPostItems.get(i);
+		for (int i = postItems.size() - 1; i >= 0; i--) {
+			PostItem postItem = postItems.get(i);
 			if (postItem != null && !postItem.isDeleted()) {
 				return postItem.getPostNumber();
 			}
@@ -215,7 +215,7 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 	}
 
 	public UiManager.ConfigurationSet getConfigurationSet() {
-		return mConfigurationSet;
+		return configurationSet;
 	}
 
 	@Override
@@ -233,21 +233,21 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 				ToastUtils.show(view.getContext(), R.string.message_post_not_found);
 				return;
 			}
-			mUiManager.dialog().displaySingle(getItem(position), mConfigurationSet);
+			uiManager.dialog().displaySingle(getItem(position), configurationSet);
 		} else {
-			mUiManager.interaction().handleLinkClick(chanName, uri, confirmed);
+			uiManager.interaction().handleLinkClick(chanName, uri, confirmed);
 		}
 	}
 
 	@Override
 	public void onLinkLongClick(CommentTextView view, String chanName, Uri uri) {
-		mUiManager.interaction().handleLinkLongClick(uri);
+		uiManager.interaction().handleLinkLongClick(uri);
 	}
 
 	public void setItems(ArrayList<ReadPostsTask.Patch> patches, boolean maySkipHandlingReferences) {
-		mPostItems.clear();
-		mPostItemsMap.clear();
-		mConfigurationSet.gallerySet.clear();
+		postItems.clear();
+		postItemsMap.clear();
+		configurationSet.gallerySet.clear();
 		insertItemsInternal(patches, maySkipHandlingReferences);
 	}
 
@@ -257,7 +257,7 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 
 	private void insertItemsInternal(ArrayList<ReadPostsTask.Patch> patches, boolean maySkipHandlingReferences) {
 		cancelPreloading();
-		mPostItems.remove(null);
+		postItems.remove(null);
 		boolean invalidateImages = false;
 		boolean invalidateReferences = false;
 		int startAppendIndex = -1;
@@ -266,9 +266,9 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 			PostItem postItem = patch.postItem;
 			int index = patch.index;
 			if (!patch.replaceAtIndex) {
-				boolean append = index == mPostItems.size();
-				mPostItems.add(index, postItem);
-				mPostItemsMap.put(postItem.getPostNumber(), postItem);
+				boolean append = index == postItems.size();
+				postItems.add(index, postItem);
+				postItemsMap.put(postItem.getPostNumber(), postItem);
 				if (append) {
 					if (startAppendIndex == -1) {
 						startAppendIndex = index;
@@ -282,9 +282,9 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 					invalidateReferences = true;
 				}
 			} else {
-				PostItem existingPostItem = mPostItems.get(index);
-				mPostItems.set(index, postItem);
-				mPostItemsMap.put(postItem.getPostNumber(), postItem);
+				PostItem existingPostItem = postItems.get(index);
+				postItems.set(index, postItem);
+				postItemsMap.put(postItem.getPostNumber(), postItem);
 				postItem.setExpanded(existingPostItem.isExpanded());
 				invalidateImages = true;
 				if (!invalidateReferences && !StringUtils.equals(postItem.getRawComment(),
@@ -304,33 +304,33 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 
 		int imagesStartHandlingIndex = startAppendIndex;
 		if (invalidateImages) {
-			mConfigurationSet.gallerySet.clear();
+			configurationSet.gallerySet.clear();
 			imagesStartHandlingIndex = 0;
 		}
 		if (imagesStartHandlingIndex >= 0) {
-			for (int i = imagesStartHandlingIndex; i < mPostItems.size(); i++) {
-				PostItem postItem = mPostItems.get(i);
+			for (int i = imagesStartHandlingIndex; i < postItems.size(); i++) {
+				PostItem postItem = postItems.get(i);
 				if (i == 0) {
-					mConfigurationSet.gallerySet.setThreadTitle(postItem.getSubjectOrComment());
+					configurationSet.gallerySet.setThreadTitle(postItem.getSubjectOrComment());
 				}
-				mConfigurationSet.gallerySet.add(postItem.getAttachmentItems());
+				configurationSet.gallerySet.add(postItem.getAttachmentItems());
 			}
 		}
 
 		int referencesStartHandleIndex = startAppendIndex;
 		if (invalidateReferences) {
-			for (PostItem postItem : mPostItems) {
+			for (PostItem postItem : postItems) {
 				postItem.clearReferencesFrom();
 			}
 			referencesStartHandleIndex = 0;
 		}
 		if (referencesStartHandleIndex >= 0 && !maySkipHandlingReferences) {
-			for (int i = referencesStartHandleIndex; i < mPostItems.size(); i++) {
-				PostItem postItem = mPostItems.get(i);
+			for (int i = referencesStartHandleIndex; i < postItems.size(); i++) {
+				PostItem postItem = postItems.get(i);
 				HashSet<String> referencesTo = postItem.getReferencesTo();
 				if (referencesTo != null) {
 					for (String postNumber : referencesTo) {
-						PostItem foundPostItem = mPostItemsMap.get(postNumber);
+						PostItem foundPostItem = postItemsMap.get(postNumber);
 						if (foundPostItem != null) {
 							foundPostItem.addReferenceFrom(postItem.getPostNumber());
 						}
@@ -341,18 +341,18 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 
 		int ordinalIndex = 0;
 		boolean appendBumpLimitDelimiter = false;
-		for (int i = 0; i < mPostItems.size(); i++) {
+		for (int i = 0; i < postItems.size(); i++) {
 			if (appendBumpLimitDelimiter) {
 				appendBumpLimitDelimiter = false;
-				mPostItems.add(i, null);
+				postItems.add(i, null);
 				i++;
 			}
-			PostItem postItem = mPostItems.get(i);
+			PostItem postItem = postItems.get(i);
 			if (postItem.isDeleted()) {
 				postItem.setOrdinalIndex(PostItem.ORDINAL_INDEX_DELETED);
 			} else {
 				postItem.setOrdinalIndex(ordinalIndex++);
-				if (ordinalIndex == mBumpLimit && mPostItems.get(0).getBumpLimitReachedState(ordinalIndex)
+				if (ordinalIndex == bumpLimit && postItems.get(0).getBumpLimitReachedState(ordinalIndex)
 						== PostItem.BUMP_LIMIT_REACHED) {
 					appendBumpLimitDelimiter = true;
 				}
@@ -365,21 +365,21 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 
 	public ArrayList<PostItem> clearDeletedPosts() {
 		ArrayList<PostItem> deletedPostItems = null;
-		for (int i = mPostItems.size() - 1; i >= 0; i--) {
-			PostItem postItem = mPostItems.get(i);
+		for (int i = postItems.size() - 1; i >= 0; i--) {
+			PostItem postItem = postItems.get(i);
 			if (postItem != null) {
 				if (postItem.isDeleted()) {
 					HashSet<String> referencesTo = postItem.getReferencesTo();
 					if (referencesTo != null) {
 						for (String postNumber : referencesTo) {
-							PostItem foundPostItem = mPostItemsMap.get(postNumber);
+							PostItem foundPostItem = postItemsMap.get(postNumber);
 							if (foundPostItem != null) {
 								foundPostItem.removeReferenceFrom(postItem.getPostNumber());
 							}
 						}
 					}
-					mPostItems.remove(i);
-					mPostItemsMap.remove(postItem.getPostNumber());
+					postItems.remove(i);
+					postItemsMap.remove(postItem.getPostNumber());
 					if (deletedPostItems == null) {
 						deletedPostItems = new ArrayList<>();
 					}
@@ -388,14 +388,14 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 			}
 		}
 		if (deletedPostItems != null) {
-			mConfigurationSet.gallerySet.clear();
+			configurationSet.gallerySet.clear();
 			boolean originalPost = true;
 			for (PostItem postItem : this) {
 				if (originalPost) {
-					mConfigurationSet.gallerySet.setThreadTitle(postItem.getSubjectOrComment());
+					configurationSet.gallerySet.setThreadTitle(postItem.getSubjectOrComment());
 					originalPost = false;
 				}
-				mConfigurationSet.gallerySet.add(postItem.getAttachmentItems());
+				configurationSet.gallerySet.add(postItem.getAttachmentItems());
 			}
 			notifyDataSetChanged();
 		}
@@ -403,7 +403,7 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 	}
 
 	public boolean hasDeletedPosts() {
-		for (PostItem postItem : mPostItems) {
+		for (PostItem postItem : postItems) {
 			if (postItem != null && postItem.isDeleted()) {
 				return true;
 			}
@@ -412,9 +412,9 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 	}
 
 	public void setSelectionModeEnabled(boolean enabled) {
-		mSelection = enabled;
+		selection = enabled;
 		if (!enabled) {
-			mSelected.clear();
+			selected.clear();
 		}
 		notifyDataSetChanged();
 	}
@@ -422,10 +422,10 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 	public void toggleItemSelected(ListView listView, int position) {
 		PostItem postItem = getItem(position);
 		if (postItem != null && !postItem.isHiddenUnchecked()) {
-			if (mSelected.contains(postItem)) {
-				mSelected.remove(postItem);
+			if (selected.contains(postItem)) {
+				selected.remove(postItem);
 			} else {
-				mSelected.add(postItem);
+				selected.add(postItem);
 			}
 			int index = position - listView.getFirstVisiblePosition();
 			getView(position, listView.getChildAt(index), listView);
@@ -433,22 +433,22 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 	}
 
 	public ArrayList<PostItem> getSelectedItems() {
-		ArrayList<PostItem> selected = new ArrayList<>(mSelected);
+		ArrayList<PostItem> selected = new ArrayList<>(this.selected);
 		Collections.sort(selected);
 		return selected;
 	}
 
 	public int getSelectedCount() {
-		return mSelected.size();
+		return selected.size();
 	}
 
 	public void cancelPreloading() {
-		mPreloadHandler.removeMessages(0);
+		preloadHandler.removeMessages(0);
 	}
 
 	public void preloadPosts(int from) {
 		ArrayList<PostItem> preloadPostItems = new ArrayList<>();
-		ArrayList<PostItem> postItems = mPostItems;
+		ArrayList<PostItem> postItems = this.postItems;
 		int size = postItems.size();
 		from = Math.max(0, Math.min(size, from));
 		preloadPostItems.ensureCapacity(size);
@@ -466,7 +466,7 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 			}
 		}
 		cancelPreloading();
-		mPreloadHandler.obtainMessage(0, 0, 0, preloadPostItems).sendToTarget();
+		preloadHandler.obtainMessage(0, 0, 0, preloadPostItems).sendToTarget();
 	}
 
 	public void preloadPosts(Collection<PostItem> postItems, PreloadFinishCallback callback) {
@@ -476,24 +476,24 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 		}
 	}
 
-	private final Handler mPreloadHandler = new Handler(Looper.getMainLooper(), new PreloadCallback(null));
+	private final Handler preloadHandler = new Handler(Looper.getMainLooper(), new PreloadCallback(null));
 
 	public interface PreloadFinishCallback {
 		public void onFinish();
 	}
 
 	private class PreloadCallback implements Handler.Callback {
-		private final PreloadFinishCallback mCallback;
+		private final PreloadFinishCallback callback;
 
 		public PreloadCallback(PreloadFinishCallback callback) {
-			mCallback = callback;
+			this.callback = callback;
 		}
 
 		@Override
 		public boolean handleMessage(Message msg) {
 			// Take only 8ms per frame for preloading in main thread
 			final int ms = 8;
-			HidePerformer hidePerformer = mConfigurationSet.hidePerformer;
+			HidePerformer hidePerformer = configurationSet.hidePerformer;
 			@SuppressWarnings("unchecked") ArrayList<PostItem> preloadList = (ArrayList<PostItem>) msg.obj;
 			long time = System.currentTimeMillis();
 			int i = msg.arg1;
@@ -504,8 +504,8 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 			}
 			if (i < preloadList.size()) {
 				msg.getTarget().obtainMessage(0, i, 0, preloadList).sendToTarget();
-			} else if (mCallback != null) {
-				mCallback.onFinish();
+			} else if (callback != null) {
+				callback.onFinish();
 			}
 			return true;
 		}
@@ -524,7 +524,7 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 
 	@Override
 	public void setListViewBusy(boolean isBusy, AbsListView listView) {
-		mUiManager.view().handleListViewBusyStateChange(isBusy, listView, mDemandSet);
+		uiManager.view().handleListViewBusyStateChange(isBusy, listView, demandSet);
 	}
 
 	public Iterable<PostItem> iterate(final boolean ascending, final int from) {
@@ -532,26 +532,26 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 	}
 
 	private class PostsIterator implements Iterator<PostItem> {
-		private final boolean mAscending;
-		private int mPosition;
+		private final boolean ascending;
+		private int position;
 
 		private PostsIterator(boolean ascending, int from) {
-			mAscending = ascending;
-			mPosition = from;
+			this.ascending = ascending;
+			position = from;
 		}
 
 		@Override
 		public boolean hasNext() {
 			int count = getCount();
-			return mAscending ? mPosition < count : mPosition >= 0;
+			return ascending ? position < count : position >= 0;
 		}
 
 		private PostItem nextInternal() {
-			PostItem postItem = getItem(mPosition);
-			if (mAscending) {
-				mPosition++;
+			PostItem postItem = getItem(position);
+			if (ascending) {
+				position++;
 			} else {
-				mPosition--;
+				position--;
 			}
 			return postItem;
 		}

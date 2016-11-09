@@ -48,15 +48,15 @@ public class MarkupButtonProvider {
 	public final int widthDp;
 	public final int priority;
 
-	public final String mText;
-	private final Object mSpan;
+	public final String text;
+	private final Object span;
 
 	private MarkupButtonProvider(int tag, int widthDp, int priority, String text, Object span) {
 		this.tag = tag;
 		this.widthDp = widthDp;
 		this.priority = priority;
-		mText = text;
-		mSpan = span;
+		this.text = text;
+		this.span = span;
 	}
 
 	public Button createButton(Context context, int defStyleAttr) {
@@ -70,17 +70,17 @@ public class MarkupButtonProvider {
 	}
 
 	public Object getSpan(Context context) {
-		return mSpan;
+		return span;
 	}
 
 	public void applyTextAndStyle(Button button) {
 		Object span = getSpan(button.getContext());
 		if (span != null) {
-			SpannableString spannable = new SpannableString(mText);
+			SpannableString spannable = new SpannableString(text);
 			spannable.setSpan(span, 0, spannable.length(), SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
 			button.setText(spannable);
 		} else {
-			button.setText(mText);
+			button.setText(text);
 		}
 	}
 
@@ -116,26 +116,26 @@ public class MarkupButtonProvider {
 		return new Pair<>(supportedTags, displayedTags);
 	}
 
-	public static Iterable<MarkupButtonProvider> iterable(int displayedTags) {
+	public static Iterable<MarkupButtonProvider> iterable(int forDisplayedTags) {
 		return () -> new Iterator<MarkupButtonProvider>() {
-			private int mDisplayedTags = displayedTags;
-			private MarkupButtonProvider mNext;
-			private int mLast = -1;
+			private int displayedTags = forDisplayedTags;
+			private MarkupButtonProvider next;
+			private int last = -1;
 
 			@Override
 			public boolean hasNext() {
-				if (mNext == null) {
-					for (int i = mLast + 1; i < PROVIDERS.size(); i++) {
+				if (next == null) {
+					for (int i = last + 1; i < PROVIDERS.size(); i++) {
 						MarkupButtonProvider provider = PROVIDERS.get(i);
-						if (FlagUtils.get(mDisplayedTags, provider.tag)) {
-							mDisplayedTags = FlagUtils.set(mDisplayedTags, provider.tag, false);
-							mLast = i;
-							mNext = provider;
+						if (FlagUtils.get(displayedTags, provider.tag)) {
+							displayedTags = FlagUtils.set(displayedTags, provider.tag, false);
+							last = i;
+							next = provider;
 							break;
 						}
 					}
 				}
-				return mNext != null;
+				return next != null;
 			}
 
 			@Override
@@ -143,8 +143,8 @@ public class MarkupButtonProvider {
 				if (!hasNext()) {
 					throw new NoSuchElementException();
 				}
-				MarkupButtonProvider provider = mNext;
-				mNext = null;
+				MarkupButtonProvider provider = next;
+				next = null;
 				return provider;
 			}
 

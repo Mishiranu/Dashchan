@@ -31,10 +31,10 @@ import com.mishiranu.dashchan.content.storage.DatabaseHelper;
 import com.mishiranu.dashchan.util.Log;
 
 public class MainApplication extends Application {
-	private static MainApplication sInstance;
+	private static MainApplication instance;
 
 	public MainApplication() {
-		sInstance = this;
+		instance = this;
 	}
 
 	@Override
@@ -57,7 +57,7 @@ public class MainApplication extends Application {
 	}
 
 	public static MainApplication getInstance() {
-		return sInstance;
+		return instance;
 	}
 
 	@TargetApi(Build.VERSION_CODES.KITKAT)

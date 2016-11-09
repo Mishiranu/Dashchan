@@ -63,9 +63,9 @@ public final class ApiException extends Exception {
 
 	@Public public static final int FLAG_KEEP_CAPTCHA = 0x00000001;
 
-	private final int mErrorType;
-	private final int mFlags;
-	private final Object mExtra;
+	private final int errorType;
+	private final int flags;
+	private final Object extra;
 
 	@Public
 	public ApiException(int errorType) {
@@ -84,9 +84,9 @@ public final class ApiException extends Exception {
 
 	@Public
 	public ApiException(int errorType, int flags, Object extra) {
-		mErrorType = errorType;
-		mFlags = flags;
-		mExtra = extra;
+		this.errorType = errorType;
+		this.flags = flags;
+		this.extra = extra;
 	}
 
 	@Public
@@ -97,30 +97,30 @@ public final class ApiException extends Exception {
 	@Public
 	public ApiException(String detailMessage, int flags) {
 		super(detailMessage);
-		mErrorType = 0;
-		mFlags = flags;
-		mExtra = null;
+		this.errorType = 0;
+		this.flags = flags;
+		this.extra = null;
 	}
 
 	public int getErrorType() {
-		return mErrorType;
+		return errorType;
 	}
 
 	public boolean checkFlag(int flag) {
-		return FlagUtils.get(mFlags, flag);
+		return FlagUtils.get(flags, flag);
 	}
 
 	public Serializable getExtra() {
-		switch (mErrorType) {
+		switch (errorType) {
 			case ApiException.SEND_ERROR_BANNED: {
-				if (mExtra instanceof BanExtra) {
-					return (BanExtra) mExtra;
+				if (extra instanceof BanExtra) {
+					return (BanExtra) extra;
 				}
 				break;
 			}
 			case ApiException.SEND_ERROR_SPAM_LIST: {
-				if (mExtra instanceof WordsExtra) {
-					return (WordsExtra) mExtra;
+				if (extra instanceof WordsExtra) {
+					return (WordsExtra) extra;
 				}
 				break;
 			}
@@ -252,7 +252,7 @@ public final class ApiException extends Exception {
 		if (!StringUtils.isEmpty(message)) {
 			return new ErrorItem(0, message);
 		}
-		return new ErrorItem(ErrorItem.TYPE_API, mErrorType);
+		return new ErrorItem(ErrorItem.TYPE_API, errorType);
 	}
 
 	@Public
