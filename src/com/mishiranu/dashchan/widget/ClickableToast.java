@@ -155,6 +155,20 @@ public class ClickableToast {
 		}
 	}
 
+	private Rect getViewTotalPadding(View parent, View view) {
+		Rect rect = new Rect(0, 0, 0, 0);
+		while (view != parent) {
+			rect.left += view.getLeft();
+			rect.top += view.getTop();
+			int right = view.getRight();
+			int bottom = view.getBottom();
+			view = (View) view.getParent();
+			rect.right += view.getWidth() - right;
+			rect.bottom += view.getHeight() - bottom;
+		}
+		return rect;
+	}
+
 	private ClickableToast(Holder holder) {
 		this.holder = holder;
 		Context context = holder.context;
@@ -165,11 +179,45 @@ public class ClickableToast {
 		View toast2 = inflater.inflate(LAYOUT_ID, null);
 		TextView message1 = (TextView) toast1.findViewById(android.R.id.message);
 		TextView message2 = (TextView) toast2.findViewById(android.R.id.message);
+		View backgroundSource = null;
+		Drawable backgroundDrawable = toast1.getBackground();
+		if (backgroundDrawable == null) {
+			backgroundDrawable = message1.getBackground();
+			if (backgroundDrawable == null) {
+				View messageParent = (View) message1.getParent();
+				if (messageParent != null) {
+					backgroundDrawable = messageParent.getBackground();
+					backgroundSource = messageParent;
+				}
+			} else {
+				backgroundSource = message1;
+			}
+		} else {
+			backgroundSource = toast1;
+		}
+
+		StringBuilder builder = new StringBuilder();
+		for (int i = 0; i < 100; i++) builder.append('W'); // Make long text
+		message1.setText(builder); // Avoid minimum widths
+		int measureSize = (int) (context.getResources().getConfiguration().screenWidthDp * density + 0.5f);
+		toast1.measure(View.MeasureSpec.makeMeasureSpec(measureSize, View.MeasureSpec.AT_MOST),
+				View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+		toast1.layout(0, 0, toast1.getMeasuredWidth(), toast1.getMeasuredHeight());
+		Rect backgroundSourceTotalPadding = getViewTotalPadding(toast1, backgroundSource);
+		Rect messageTotalPadding = getViewTotalPadding(toast1, message1);
+		messageTotalPadding.left -= backgroundSourceTotalPadding.left;
+		messageTotalPadding.top -= backgroundSourceTotalPadding.top;
+		messageTotalPadding.right -= backgroundSourceTotalPadding.right;
+		messageTotalPadding.bottom -= backgroundSourceTotalPadding.bottom;
+		int horizontalPadding = Math.max(messageTotalPadding.left, messageTotalPadding.right) +
+				Math.max(message1.getPaddingLeft(), message1.getPaddingRight());
+		int verticalPadding = Math.max(messageTotalPadding.top, messageTotalPadding.bottom) +
+				Math.max(message1.getPaddingTop(), message1.getPaddingBottom());
+
 		ViewUtils.removeFromParent(message1);
 		ViewUtils.removeFromParent(message2);
 		LinearLayout linearLayout = new LinearLayout(context);
 		linearLayout.setOrientation(LinearLayout.HORIZONTAL);
-		linearLayout.setTag(this);
 		linearLayout.setDividerDrawable(new ToastDividerDrawable(0xccffffff, (int) (density + 0.5f)));
 		linearLayout.setShowDividers(LinearLayout.SHOW_DIVIDER_MIDDLE);
 		linearLayout.setDividerPadding((int) (4f * density));
@@ -177,16 +225,9 @@ public class ClickableToast {
 		linearLayout.addView(message1, LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 		linearLayout.addView(message2, LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 		((LinearLayout.LayoutParams) message1.getLayoutParams()).weight = 1f;
-		Drawable background = toast1.getBackground();
-		if (background == null) {
-			background = message1.getBackground();
-			linearLayout.setPadding(message1.getPaddingLeft(), message1.getPaddingTop(),
-					message1.getPaddingRight(), message1.getPaddingBottom());
-		} else {
-			linearLayout.setPadding(toast1.getPaddingLeft(), toast1.getPaddingTop(),
-					toast1.getPaddingRight(), toast1.getPaddingBottom());
-		}
-		partialClickDrawable = new PartialClickDrawable(background);
+		linearLayout.setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding);
+
+		partialClickDrawable = new PartialClickDrawable(backgroundDrawable);
 		message1.setBackground(null);
 		message2.setBackground(null);
 		linearLayout.setBackground(partialClickDrawable);
@@ -200,6 +241,7 @@ public class ClickableToast {
 		container = linearLayout;
 		message = message1;
 		button = message2;
+
 		windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
 		WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
 		layoutParams.format = PixelFormat.TRANSLUCENT;
