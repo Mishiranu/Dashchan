@@ -153,7 +153,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 				} else {
 					errorTasks.add(taskData);
 				}
-				notificationsQueue.add(new NotificationData(successTasks.get(successTasks.size() - 1)));
+				notificationsQueue.add(new NotificationData(getLastSuccessTaskData()));
 				refreshNotification(true);
 			} else if (firstStart) {
 				// Start caused by clicking on notification when application was closed
@@ -471,7 +471,6 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 
 	private void refreshNotification(boolean allowHeadsUp) {
 		boolean hasTask = readFileTask != null;
-		TaskData lastSuccessTaskData = successTasks.size() > 0 ? successTasks.get(successTasks.size() - 1) : null;
 		boolean hasExternal = false;
 		for (TaskData taskData : successTasks) {
 			if (!taskData.local) {
@@ -486,13 +485,17 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 			}
 		}
 		notificationsQueue.add(new NotificationData(allowHeadsUp, hasTask, queuedTasks.size(), successTasks.size(),
-				errorTasks, hasExternal, lastSuccessTaskData, hasTask ? readFileTask.getFileName() : null,
+				errorTasks, hasExternal, getLastSuccessTaskData(), hasTask ? readFileTask.getFileName() : null,
 				progress, progressMax));
 		if (hasTask) {
 			wakeLock.acquire();
 		} else {
 			wakeLock.acquire(15000);
 		}
+	}
+
+	private TaskData getLastSuccessTaskData() {
+		return successTasks.size() > 0 ? successTasks.get(successTasks.size() - 1) : null;
 	}
 
 	@Override

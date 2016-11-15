@@ -67,6 +67,7 @@ import com.mishiranu.dashchan.content.async.SendLocalArchiveTask;
 import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.IOUtils;
+import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 
@@ -762,7 +763,7 @@ public class DownloadManager {
 				IOUtils.copyStream(input, output);
 				success = true;
 			} catch (IOException e) {
-				// Ignore exception
+				Log.persistent().stack(e);
 			} finally {
 				IOUtils.close(input);
 				IOUtils.close(output);
