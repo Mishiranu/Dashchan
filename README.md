@@ -31,6 +31,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | exach           | exach.com            | [DashchanExach.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanExach.apk)                     |
 | fiftyfive       | 55chan.org           | [DashchanFiftyfive.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanFiftyfive.apk)             |
 | fourchan        | 4chan.org            | [DashchanFourchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanFourchan.apk)               |
+| freeportseven   | freeport7.org        | [DashchanFreeportSeven.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanFreeportSeven.apk)     |
 | haruhichan      | haruhichan.ovh       | [DashchanHaruhichan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanHaruhichan.apk)           |
 | horochan        | horochan.ru          | [DashchanHorochan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanHorochan.apk)               |
 | infinite        | 8ch.net              | [DashchanInfinite.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanInfinite.apk)               |
@@ -75,6 +76,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | desustorage     | desustorage.org      | [DashchanDesustorage.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanDesustorage.apk)         |
 | fourplebs       | 4plebs.org           | [DashchanFourplebs.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanFourplebs.apk)             |
 | local           | ( local archive )    | [DashchanLocal.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanLocal.apk)                     |
+| randomarchive   | randomarchive.com    | [DashchanRandomArchive.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanRandomArchive.apk)     |
 
 ## Installation Guide
 
