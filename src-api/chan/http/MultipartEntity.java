@@ -271,7 +271,7 @@ public class MultipartEntity implements RequestEntity {
 
 		public FileHolderOpenable(FileHolder fileHolder) {
 			this.fileHolder = fileHolder;
-			fileName = obtainFileName(fileHolder, false);
+			fileName = fileHolder.getName();
 			mimeType = obtainMimeType(fileName);
 		}
 
@@ -294,19 +294,6 @@ public class MultipartEntity implements RequestEntity {
 		public long getSize() {
 			return fileHolder.getSize();
 		}
-	}
-
-	static String obtainFileName(FileHolder fileHolder, boolean removeFileName) {
-		String fileName = fileHolder.getName();
-		if (removeFileName) {
-			String extension = null;
-			int index = fileName.lastIndexOf('.');
-			if (index >= 0) {
-				extension = fileName.substring(index);
-			}
-			fileName = System.currentTimeMillis() + (extension != null ? extension : "");
-		}
-		return fileName;
 	}
 
 	static String obtainMimeType(String fileName) {

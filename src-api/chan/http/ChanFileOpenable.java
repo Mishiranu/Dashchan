@@ -22,6 +22,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Random;
 
+import chan.util.StringUtils;
+
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.IOUtils;
@@ -41,7 +43,45 @@ public class ChanFileOpenable implements MultipartEntity.Openable {
 	public ChanFileOpenable(FileHolder fileHolder, boolean uniqueHash, boolean removeMetadata, boolean removeFileName,
 			GraphicsUtils.Reencoding reencoding) {
 		this.fileHolder = fileHolder;
-		String fileName = MultipartEntity.obtainFileName(fileHolder, removeFileName);
+		String fileName = fileHolder.getName();
+		if (removeFileName) {
+			String extension = StringUtils.getFileExtension(fileName);
+			long time = System.currentTimeMillis();
+			if (extension != null && extension.matches("[a-z0-9]{1,10}")) {
+				fileName = time + "." + extension;
+			} else {
+				switch (fileHolder.getImageType()) {
+					case IMAGE_JPEG: {
+						fileName = time + ".jpeg";
+						break;
+					}
+					case IMAGE_PNG: {
+						fileName = time + ".png";
+						break;
+					}
+					case IMAGE_GIF: {
+						fileName = time + ".gif";
+						break;
+					}
+					case IMAGE_WEBP: {
+						fileName = time + ".webp";
+						break;
+					}
+					case IMAGE_BMP: {
+						fileName = time + ".bmp";
+						break;
+					}
+					case IMAGE_SVG: {
+						fileName = time + ".svg";
+						break;
+					}
+					default: {
+						fileName = Long.toString(time);
+						break;
+					}
+				}
+			}
+		}
 		randomBytes = uniqueHash ? 6 : 0;
 		GraphicsUtils.TransformationData transformationData = GraphicsUtils.transformImageForPosting(fileHolder,
 				fileName, removeMetadata, reencoding);
