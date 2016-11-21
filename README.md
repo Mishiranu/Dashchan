@@ -12,7 +12,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 ### Forums
 
 | Chan Name       | Host                 | Extension Package Link                                                                                                                |
-| :-------------: | :------------------: | :------------------------------------------------------------------------------------------------------------------------------------ |
+| :-------------: | :------------------: | :-----------------------------------------------------------------------------------------------------------------------------------: |
 | allchan         | allchan.su           | [DashchanAllchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanAllchan.apk)                 |
 | alphachan       | alphachan.org        | [DashchanAlphachan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanAlphachan.apk)             |
 | alterchan       | alterchan.in         | [DashchanAlterchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanAlterchan.apk)             |
@@ -32,6 +32,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | fiftyfive       | 55chan.org           | [DashchanFiftyfive.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanFiftyfive.apk)             |
 | fourchan        | 4chan.org            | [DashchanFourchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanFourchan.apk)               |
 | freeportseven   | freeport7.org        | [DashchanFreeportSeven.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanFreeportSeven.apk)     |
+| gurochan        | gurochan.ch          | [DashchanGurochan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanGurochan.apk)               |
 | haruhichan      | haruhichan.ovh       | [DashchanHaruhichan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanHaruhichan.apk)           |
 | horochan        | horochan.ru          | [DashchanHorochan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanHorochan.apk)               |
 | infinite        | 8ch.net              | [DashchanInfinite.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanInfinite.apk)               |
@@ -69,7 +70,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 ### Archives
 
 | Chan Name       | Host                 | Extension Package Link                                                                                                                |
-| :-------------: | :------------------: | :------------------------------------------------------------------------------------------------------------------------------------ |
+| :-------------: | :------------------: | :-----------------------------------------------------------------------------------------------------------------------------------: |
 | archiveliom     | loveisover.me        | [DashchanArchiveLiom.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanArchiveLiom.apk)         |
 | archiverbt      | rbt.asia             | [DashchanArchiveRbt.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanArchiveRbt.apk)           |
 | arhivach        | arhivach.org         | [DashchanArhivach.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanArhivach.apk)               |
