@@ -32,6 +32,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | fiftyfive       | 55chan.org           | [DashchanFiftyfive.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanFiftyfive.apk)             |
 | fourchan        | 4chan.org            | [DashchanFourchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanFourchan.apk)               |
 | freeportseven   | freeport7.org        | [DashchanFreeportSeven.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanFreeportSeven.apk)     |
+| gurochan        | gurochan.ch          | [DashchanGurochan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanGurochan.apk)               |
 | haruhichan      | haruhichan.ovh       | [DashchanHaruhichan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanHaruhichan.apk)           |
 | horochan        | horochan.ru          | [DashchanHorochan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanHorochan.apk)               |
 | infinite        | 8ch.net              | [DashchanInfinite.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanInfinite.apk)               |
