@@ -988,6 +988,11 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		boolean invertColors = blackAndWhite && !GraphicsUtils.isLight(ResourceUtils.getColor(this,
 				android.R.attr.windowBackground));
 		captchaForm.showCaptcha(captchaState, input, image, large, invertColors);
+		if (scrollView.getScrollY() + scrollView.getHeight() >= scrollView.getChildAt(0).getHeight()) {
+			scrollView.post(() -> {
+				scrollView.setScrollY(Math.max(scrollView.getChildAt(0).getHeight() - scrollView.getHeight(), 0));
+			});
+		}
 		updateSendButtonState();
 	}
 

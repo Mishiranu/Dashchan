@@ -142,8 +142,7 @@ public class AttachmentOptionsDialog extends PostingDialog implements AdapterVie
 		imageView.setBackground(new TransparentTileDrawable(activity, true));
 		imageView.setImageDrawable(holder.imageView.getDrawable());
 		imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-		linearLayout.addView(imageView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-				0, 1));
+		linearLayout.addView(imageView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1));
 		listView = new ListView(activity);
 		linearLayout.addView(listView, LinearLayout.LayoutParams.MATCH_PARENT,
 				LinearLayout.LayoutParams.WRAP_CONTENT);
