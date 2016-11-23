@@ -21,6 +21,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | brchan          | brchan.org           | [DashchanBrchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanBrchan.apk)                   |
 | britfags        | britfa.gs            | [DashchanBritfags.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanBritfags.apk)               |
 | cablesix        | cable6.net           | [DashchanCableSix.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanCableSix.apk)               |
+| chaosach        | chaos.cyberpunk.us   | [DashchanChaosach.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanChaosach.apk)               |
 | chiochan        | 410chan.org          | [DashchanChiochan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanChiochan.apk)               |
 | chuckdfwk       | chuck.dfwk.ru        | [DashchanChuckDfwk.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanChuckDfwk.apk)             |
 | cirno           | iichan.hk            | [DashchanCirno.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanCirno.apk)                     |
@@ -33,6 +34,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | fourchan        | 4chan.org            | [DashchanFourchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanFourchan.apk)               |
 | freeportseven   | freeport7.org        | [DashchanFreeportSeven.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanFreeportSeven.apk)     |
 | gurochan        | gurochan.ch          | [DashchanGurochan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanGurochan.apk)               |
+| haibane         | haibane.ru           | [DashchanHaibane.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanHaibane.apk)                 |
 | haruhichan      | haruhichan.ovh       | [DashchanHaruhichan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanHaruhichan.apk)           |
 | horochan        | horochan.ru          | [DashchanHorochan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanHorochan.apk)               |
 | infinite        | 8ch.net              | [DashchanInfinite.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanInfinite.apk)               |
@@ -123,6 +125,12 @@ You can generate keys for these APIs and add them to `private.properties` file:
 api.key.google=%GOOGLE_API_KEY%
 api.key.soundcloud=%SOUNDCLOUD_API_KEY%
 ```
+
+### Building extenions
+
+The source code of extensions is available in the [Dashchan Extensions](https://github.com/Mishiranu/Dashchan-Extensions) repository.
+
+The source code of video player extension is available in the [Dashchan Webm](https://github.com/Mishiranu/Dashchan-Webm) repository.
 
 ## License
 
