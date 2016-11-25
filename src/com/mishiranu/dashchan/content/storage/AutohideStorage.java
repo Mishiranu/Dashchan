@@ -198,7 +198,7 @@ public class AutohideStorage extends StorageManager.Storage {
 			this.optionSubject = optionSubject;
 			this.optionComment = optionComment;
 			this.optionName = optionName;
-			this.value = value;
+			this.value = StringUtils.emptyIfNull(value);
 		}
 
 		public String find(String data) {

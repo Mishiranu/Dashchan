@@ -132,6 +132,7 @@ public class DialogUnit implements DialogStack.Callback {
 
 		@Override
 		public void onPostItemMessage(PostItem postItem, int message) {
+			dialogProvider.onPostItemMessage(postItem, message);
 			switch (message) {
 				case UiManager.MESSAGE_INVALIDATE_VIEW: {
 					boolean notify = adapter.postItems.contains(postItem);
@@ -230,7 +231,7 @@ public class DialogUnit implements DialogStack.Callback {
 		public boolean onStateChanged(int state);
 	}
 
-	private abstract class DialogProvider implements Iterable<PostItem> {
+	private abstract class DialogProvider implements UiManager.Observer, Iterable<PostItem> {
 		public final UiManager.ConfigurationSet configurationSet;
 
 		public DialogProvider(UiManager.ConfigurationSet configurationSet) {
@@ -272,6 +273,9 @@ public class DialogUnit implements DialogStack.Callback {
 				changeCallback.run();
 			}
 		}
+
+		@Override
+		public void onPostItemMessage(PostItem postItem, int message) {}
 	}
 
 	private class SingleDialogProvider extends DialogProvider {
@@ -538,6 +542,21 @@ public class DialogUnit implements DialogStack.Callback {
 						context.getString(R.string.action_open_thread), () -> uiManager.navigator()
 						.navigatePosts(chanName, boardName, threadNumber, postNumber, null, false), false);
 			});
+		}
+
+		@Override
+		public void onPostItemMessage(PostItem postItem, int message) {
+			if (this.postItem == postItem) {
+				switch (message) {
+					case UiManager.MESSAGE_PERFORM_SWITCH_HIDE: {
+						if (postItem.isHiddenUnchecked()) {
+							postItem.setHidden(false);
+							uiManager.sendPostItemMessage(postItem, UiManager.MESSAGE_INVALIDATE_VIEW);
+						}
+						break;
+					}
+				}
+			}
 		}
 	}
 
