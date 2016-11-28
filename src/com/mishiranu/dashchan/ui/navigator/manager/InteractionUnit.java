@@ -215,7 +215,7 @@ public class InteractionUnit {
 				int startImageIndex = uiManager.view().findImageIndex(gallerySet.getItems(), holder.postItem);
 				if (mayShowDialog) {
 					uiManager.dialog().openAttachmentOrDialog(uiManager.getContext(), v,
-							attachmentItems, startImageIndex, gallerySet, holder.postItem);
+							attachmentItems, startImageIndex, gallerySet);
 				} else {
 					int index = this.index;
 					int imageIndex = startImageIndex;
@@ -262,7 +262,6 @@ public class InteractionUnit {
 	}
 
 	private static class ThumbnailLongClickDialog implements DialogMenu.Callback {
-		private final UiManager uiManager;
 		private final AttachmentItem attachmentItem;
 		private final AttachmentView attachmentView;
 		private final String threadTitle;
@@ -275,7 +274,6 @@ public class InteractionUnit {
 
 		public ThumbnailLongClickDialog(UiManager uiManager, AttachmentItem attachmentItem,
 				AttachmentView attachmentView, boolean hasViewHolder, String threadTitle) {
-			this.uiManager = uiManager;
 			this.attachmentItem = attachmentItem;
 			this.attachmentView = attachmentView;
 			this.threadTitle = threadTitle;
@@ -316,7 +314,8 @@ public class InteractionUnit {
 					break;
 				}
 				case MENU_SHOW_THUMBNAIL: {
-					uiManager.sendPostItemMessage(attachmentView, UiManager.MESSAGE_PERFORM_DISPLAY_THUMBNAILS);
+					attachmentItem.setForceLoadThumbnail();
+					attachmentItem.startLoad(attachmentView, false, true);
 					break;
 				}
 				case MENU_COPY_LINK: {

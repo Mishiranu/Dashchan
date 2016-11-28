@@ -29,6 +29,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Handler;
@@ -89,7 +90,7 @@ import com.mishiranu.dashchan.widget.PullableListView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 
 public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorage.Observer, UiManager.Observer,
-		DeserializePostsTask.Callback, ReadPostsTask.Callback, ActionMode.Callback {
+		ImageLoader.Observer, DeserializePostsTask.Callback, ReadPostsTask.Callback, ActionMode.Callback {
 	private DeserializePostsTask deserializeTask;
 	private ReadPostsTask readTask;
 
@@ -146,6 +147,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		PostsAdapter adapter = new PostsAdapter(activity, pageHolder.chanName, pageHolder.boardName, uiManager,
 				replyable, hidePerformer, extra.userPostNumbers, listView);
 		initAdapter(adapter, adapter);
+		ImageLoader.getInstance().observable().register(this);
 		listView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
 		uiManager.observable().register(this);
 		hidePerformer.setPostsProvider(adapter);
@@ -235,6 +237,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 			readTask.cancel();
 			readTask = null;
 		}
+		ImageLoader.getInstance().observable().unregister(this);
 		ImageLoader.getInstance().clearTasks(getPageHolder().chanName);
 		FavoritesStorage.getInstance().getObservable().unregister(this);
 		setCustomSearchView(null);
@@ -1398,11 +1401,12 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				adapter.preloadPosts(getListView().getFirstVisiblePosition());
 				break;
 			}
-			case UiManager.MESSAGE_PERFORM_DISPLAY_THUMBNAILS: {
-				getUiManager().view().displayThumbnails(getListView(), index, postItem.getAttachmentItems(), true);
-				break;
-			}
 		}
+	}
+
+	@Override
+	public void onImageLoadComplete(String key, Bitmap bitmap) {
+		getUiManager().view().displayLoadedThumbnailsForPosts(getListView(), key, bitmap);
 	}
 
 	private void serializePosts() {

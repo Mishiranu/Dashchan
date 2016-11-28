@@ -51,7 +51,7 @@ import com.mishiranu.dashchan.widget.CircularProgressBar;
 import com.mishiranu.dashchan.widget.PhotoView;
 import com.mishiranu.dashchan.widget.PhotoViewPager;
 
-public class PagerUnit implements PagerInstance.Callback {
+public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 	private final GalleryInstance galleryInstance;
 	private final PagerInstance pagerInstance;
 
@@ -78,6 +78,7 @@ public class PagerUnit implements PagerInstance.Callback {
 		viewPagerParent.addView(viewPager, FrameLayout.LayoutParams.MATCH_PARENT,
 				FrameLayout.LayoutParams.MATCH_PARENT);
 		viewPager.setCount(instance.galleryItems.size());
+		ImageLoader.getInstance().observable().register(this);
 	}
 
 	public View getView() {
@@ -253,6 +254,7 @@ public class PagerUnit implements PagerInstance.Callback {
 	}
 
 	public void onFinish() {
+		ImageLoader.getInstance().observable().unregister(this);
 		interrupt(true);
 		viewPager.postDelayed(() -> {
 			pagerAdapter.recycleAll();
@@ -279,7 +281,7 @@ public class PagerUnit implements PagerInstance.Callback {
 		boolean thumbnailReady = holder.photoViewThumbnail;
 		if (!thumbnailReady) {
 			holder.recyclePhotoView();
-			thumbnailReady = presetThumbnail(holder, galleryItem, reload, false);
+			thumbnailReady = presetThumbnail(holder, galleryItem, reload);
 		}
 		boolean isImage = galleryItem.isImage(galleryInstance.locator);
 		boolean isVideo = galleryItem.isVideo(galleryInstance.locator);
@@ -309,11 +311,7 @@ public class PagerUnit implements PagerInstance.Callback {
 		}
 	}
 
-	private boolean presetThumbnail(PagerInstance.ViewHolder holder, GalleryItem galleryItem,
-			boolean keepScale, boolean unbind) {
-		if (unbind) {
-			ImageLoader.getInstance().unbind(holder.photoView);
-		}
+	private boolean presetThumbnail(PagerInstance.ViewHolder holder, GalleryItem galleryItem, boolean keepScale) {
 		Uri uri = galleryItem.getThumbnailUri(galleryInstance.locator);
 		if (uri != null && galleryItem.width > 0 && galleryItem.height > 0) {
 			CacheManager cacheManager = CacheManager.getInstance();
@@ -336,6 +334,20 @@ public class PagerUnit implements PagerInstance.Callback {
 			}
 		}
 		return false;
+	}
+
+	@Override
+	public void onImageLoadComplete(String key, Bitmap bitmap) {
+		PagerInstance.ViewHolder[] holders = {pagerInstance.leftHolder,
+				pagerInstance.currentHolder, pagerInstance.rightHolder};
+		for (PagerInstance.ViewHolder holder : holders) {
+			if (holder != null && holder.galleryItem != null) {
+				if (!holder.photoView.hasImage() && key.equals(CacheManager.getInstance()
+						.getCachedFileKey(holder.galleryItem.getThumbnailUri(galleryInstance.locator)))) {
+					presetThumbnail(holder, holder.galleryItem, false);
+				}
+			}
+		}
 	}
 
 	@Override
@@ -483,14 +495,14 @@ public class PagerUnit implements PagerInstance.Callback {
 			if (!hasValidImage) {
 				holder.fullLoaded = false;
 				holder.galleryItem = galleryItem;
-				boolean success = presetThumbnail(holder, galleryItem, false, true);
+				boolean success = presetThumbnail(holder, galleryItem, false);
 				if (!success) {
 					holder.recyclePhotoView();
 					if (galleryInstance.callback.isGalleryWindow() || Preferences.isLoadThumbnails()) {
 						Uri thumbnailUri = galleryItem.getThumbnailUri(galleryInstance.locator);
 						if (thumbnailUri != null) {
-							ImageLoader.getInstance().loadImage(thumbnailUri, galleryInstance.chanName, null,
-									new LoadThumbnailCallback(holder.photoView, holder, galleryItem), false);
+							ImageLoader.getInstance().loadImage(thumbnailUri, galleryInstance.chanName,
+									null, null, false);
 						}
 					}
 				}
@@ -555,26 +567,5 @@ public class PagerUnit implements PagerInstance.Callback {
 				holder.fullLoaded = false;
 			}
 		}
-	}
-
-	private class LoadThumbnailCallback extends ImageLoader.Callback<PhotoView> {
-		private final PagerInstance.ViewHolder holder;
-		private final GalleryItem galleryItem;
-
-		public LoadThumbnailCallback(PhotoView view, PagerInstance.ViewHolder holder, GalleryItem galleryItem) {
-			super(view);
-			this.holder = holder;
-			this.galleryItem = galleryItem;
-		}
-
-		@Override
-		public void onSuccess(Bitmap bitmap) {
-			if (!holder.photoView.hasImage() && holder.galleryItem == galleryItem) {
-				presetThumbnail(holder, galleryItem, false, true);
-			}
-		}
-
-		@Override
-		public void onError() {}
 	}
 }

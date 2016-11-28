@@ -19,6 +19,7 @@ package com.mishiranu.dashchan.ui.navigator.manager;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -33,6 +34,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.text.InputType;
@@ -110,7 +112,7 @@ public class DialogUnit implements DialogStack.Callback {
 		this.expandedScreen = expandedScreen;
 	}
 
-	private class DialogHolder implements UiManager.Observer {
+	private class DialogHolder implements UiManager.Observer, ImageLoader.Observer {
 		public final DialogPostsAdapter adapter;
 		public final DialogProvider dialogProvider;
 
@@ -157,12 +159,12 @@ public class DialogUnit implements DialogStack.Callback {
 					uiManager.view().invalidateCommentView(listView, adapter.postItems.indexOf(postItem));
 					break;
 				}
-				case UiManager.MESSAGE_PERFORM_DISPLAY_THUMBNAILS: {
-					uiManager.view().displayThumbnails(listView, adapter.postItems.indexOf(postItem),
-							postItem.getAttachmentItems(), true);
-					break;
-				}
 			}
+		}
+
+		@Override
+		public void onImageLoadComplete(String key, Bitmap bitmap) {
+			uiManager.view().displayLoadedThumbnailsForPosts(listView, key, bitmap);
 		}
 
 		public void requestUpdate() {
@@ -618,6 +620,7 @@ public class DialogUnit implements DialogStack.Callback {
 		listView.setDivider(ResourceUtils.getDrawable(context, R.attr.postsDivider, 0));
 		final DialogHolder holder = new DialogHolder(adapter, dialogProvider, content, listView);
 		uiManager.observable().register(holder);
+		ImageLoader.getInstance().observable().register(holder);
 		listView.setTag(holder);
 		content.setTag(holder);
 		dialogStack.push(content);
@@ -650,6 +653,7 @@ public class DialogUnit implements DialogStack.Callback {
 		if (holder != null) {
 			uiManager.view().notifyUnbindListView(holder.listView);
 			uiManager.observable().unregister(holder);
+			ImageLoader.getInstance().observable().unregister(holder);
 			holder.cancel();
 		}
 	}
@@ -789,12 +793,20 @@ public class DialogUnit implements DialogStack.Callback {
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private void showAttachmentsGrid(final Context context, final List<AttachmentItem> attachmentItems,
-			final int startImageIndex, final GalleryItem.GallerySet gallerySet, PostItem postItem) {
+			final int startImageIndex, final GalleryItem.GallerySet gallerySet) {
 		Context styledContext = new ContextThemeWrapper(context, R.style.Theme_Gallery);
+		ArrayList<AttachmentView> attachmentViews = new ArrayList<>();
+		ImageLoader.Observer observer = (key, bitmap) -> {
+			for (AttachmentView view : attachmentViews) {
+				view.handleLoadedImage(key, bitmap, false);
+			}
+		};
+		ImageLoader.getInstance().observable().register(observer);
 		final Dialog dialog = new Dialog(styledContext);
 		dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		dialog.setOnCancelListener(attachmentDialogCancelListener);
 		dialog.setOnKeyListener(attachmentDialogKeyListener);
+		dialog.setOnDismissListener(dialogInterface -> ImageLoader.getInstance().observable().unregister(observer));
 		View.OnClickListener closeListener = v -> dialog.cancel();
 		LayoutInflater inflater = LayoutInflater.from(styledContext);
 		FrameLayout rootView = new FrameLayout(styledContext);
@@ -842,7 +854,24 @@ public class DialogUnit implements DialogStack.Callback {
 					linearLayout.setPadding(0, 0, 0, padding);
 				}
 			}
-			View view = makeDialogItemView(inflater, attachmentItems.get(i), i, density, clickListener, gallerySet);
+			AttachmentItem attachmentItem = attachmentItems.get(i);
+			@SuppressLint("InflateParams")
+			View view = inflater.inflate(R.layout.list_item_attachment, null);
+			ViewUtils.makeRoundedCorners(view, (int) (2f * density + 0.5f), true);
+			final AttachmentView attachmentView = (AttachmentView) view.findViewById(R.id.thumbnail);
+			TextView textView = (TextView) view.findViewById(R.id.attachment_info);
+			textView.setBackgroundColor(0xcc222222);
+			attachmentItem.configureAndLoad(attachmentView, false, false, true);
+			attachmentViews.add(attachmentView);
+			textView.setText(attachmentItem.getDescription(AttachmentItem.FormatMode.TWO_LINES));
+			View clickView = view.findViewById(R.id.click_view);
+			clickView.setOnClickListener(clickListener);
+			clickView.setOnLongClickListener(v -> {
+				uiManager.interaction().showThumbnailLongClickDialog(attachmentItem, attachmentView,
+						false, gallerySet.getThreadTitle());
+				return true;
+			});
+			clickView.setTag(i);
 			int totalSize = size;
 			if (column == 0) {
 				view.setPadding(padding, 0, padding, 0);
@@ -870,36 +899,12 @@ public class DialogUnit implements DialogStack.Callback {
 		dialog.show();
 		notifySwitchBackground();
 		attachmentDialog = dialog;
-		if (postItem != null) {
-			uiManager.sendPostItemMessage(postItem, UiManager.MESSAGE_PERFORM_DISPLAY_THUMBNAILS);
-		}
-	}
-
-	@SuppressLint("InflateParams")
-	private View makeDialogItemView(LayoutInflater inflater, final AttachmentItem attachmentItem, int index,
-			float density, View.OnClickListener clickListener, final GalleryItem.GallerySet gallerySet) {
-		View view = inflater.inflate(R.layout.list_item_attachment, null);
-		ViewUtils.makeRoundedCorners(view, (int) (2f * density + 0.5f), true);
-		final AttachmentView attachmentView = (AttachmentView) view.findViewById(R.id.thumbnail);
-		TextView textView = (TextView) view.findViewById(R.id.attachment_info);
-		textView.setBackgroundColor(0xcc222222);
-		attachmentItem.displayThumbnail(attachmentView, false, false, true);
-		textView.setText(attachmentItem.getDescription(AttachmentItem.FormatMode.TWO_LINES));
-		View clickView = view.findViewById(R.id.click_view);
-		clickView.setOnClickListener(clickListener);
-		clickView.setOnLongClickListener(v -> {
-			uiManager.interaction().showThumbnailLongClickDialog(attachmentItem, attachmentView,
-					false, gallerySet.getThreadTitle());
-			return true;
-		});
-		clickView.setTag(index);
-		return view;
 	}
 
 	public void openAttachmentOrDialog(Context context, View imageView, List<AttachmentItem> attachmentItems,
-			int imageIndex, GalleryItem.GallerySet gallerySet, PostItem postItem) {
+			int imageIndex, GalleryItem.GallerySet gallerySet) {
 		if (attachmentItems.size() > 1) {
-			showAttachmentsGrid(context, attachmentItems, imageIndex, gallerySet, postItem);
+			showAttachmentsGrid(context, attachmentItems, imageIndex, gallerySet);
 		} else {
 			openAttachment(context, imageView, attachmentItems, 0, imageIndex, gallerySet);
 		}
@@ -949,6 +954,14 @@ public class DialogUnit implements DialogStack.Callback {
 		if (C.API_LOLLIPOP) {
 			container.setPadding(0, (int) (12f * density), 0, 0);
 		}
+		HashMap<String, ImageView> taggedImageViews = new HashMap<>();
+		ImageLoader.Observer observer = (key, bitmap) -> {
+			ImageView taggediImageView = taggedImageViews.get(key);
+			if (taggediImageView != null) {
+				taggediImageView.setImageBitmap(bitmap);
+			}
+		};
+		ImageLoader.getInstance().observable().register(observer);
 		for (IconData icon : icons) {
 			LinearLayout linearLayout = new LinearLayout(context);
 			container.addView(linearLayout, LinearLayout.LayoutParams.MATCH_PARENT,
@@ -960,7 +973,11 @@ public class DialogUnit implements DialogStack.Callback {
 			ImageView imageView = new ImageView(context);
 			linearLayout.addView(imageView, (int) (20f * density), (int) (20f * density));
 			if (icon.uri != null) {
-				imageLoader.loadImage(icon.uri, chanName, null, false, imageView);
+				Bitmap bitmap = imageLoader.loadImage(icon.uri, chanName, null,
+						key -> taggedImageViews.put(key, imageView), false);
+				if (bitmap != null) {
+					imageView.setImageBitmap(bitmap);
+				}
 			} else {
 				imageView.setImageResource(ResourceUtils.getResourceId(context, icon.attrId, 0));
 			}
@@ -983,7 +1000,8 @@ public class DialogUnit implements DialogStack.Callback {
 			alertDialog.setNeutralButton(R.string.action_copy_email,
 					(dialog, which) -> StringUtils.copyToClipboard(uiManager.getContext(), emailToCopy));
 		}
-		alertDialog.setView(container).show();
+		alertDialog.setView(container).show().setOnDismissListener(dialogInterface ->
+				ImageLoader.getInstance().observable().unregister(observer));
 		notifySwitchBackground();
 	}
 

@@ -84,7 +84,6 @@ public class UiManager {
 	public static final int MESSAGE_PERFORM_HIDE_REPLIES = 5;
 	public static final int MESSAGE_PERFORM_HIDE_NAME = 6;
 	public static final int MESSAGE_PERFORM_HIDE_SIMILAR = 7;
-	public static final int MESSAGE_PERFORM_DISPLAY_THUMBNAILS = 8;
 
 	public interface Observer {
 		public void onPostItemMessage(PostItem postItem, int message);

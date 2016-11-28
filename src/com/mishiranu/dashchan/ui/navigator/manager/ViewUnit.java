@@ -28,6 +28,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.text.Layout;
 import android.text.Spannable;
@@ -228,18 +229,17 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		holder.comment.setVisibility(holder.comment.getText().length() > 0 ? View.VISIBLE : View.GONE);
 		holder.description.setText(postItem.formatThreadCardDescription(context, false));
 
-		holder.thumbnail.resetTransition();
 		List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
 		if (attachmentItems != null) {
 			AttachmentItem attachmentItem = attachmentItems.get(0);
 			boolean needShowSeveralIcon = attachmentItems.size() > 1;
-			attachmentItem.displayThumbnail(holder.thumbnail, needShowSeveralIcon, isBusy, false);
+			attachmentItem.configureAndLoad(holder.thumbnail, needShowSeveralIcon, isBusy, false);
 			holder.thumbnailClickListener.update(0, true);
 			holder.thumbnailLongClickListener.update(attachmentItem);
 			holder.thumbnail.setSfwMode(Preferences.isSfwMode());
 			holder.thumbnail.setVisibility(View.VISIBLE);
 		} else {
-			ImageLoader.getInstance().unbind(holder.thumbnail);
+			holder.thumbnail.resetImage(null);
 			holder.thumbnail.setVisibility(View.GONE);
 		}
 		holder.thumbnail.setOnClickListener(holder.thumbnailClickListener);
@@ -306,17 +306,16 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		holder.comment.setVisibility(StringUtils.isEmpty(comment) ? View.GONE : View.VISIBLE);
 		holder.description.setText(postItem.formatThreadCardDescription(context, true));
 
-		holder.thumbnail.resetTransition();
 		if (attachmentItems != null && !hidden) {
 			AttachmentItem attachmentItem = attachmentItems.get(0);
 			boolean needShowSeveralIcon = attachmentItems.size() > 1;
-			attachmentItem.displayThumbnail(holder.thumbnail, needShowSeveralIcon, isBusy, false);
+			attachmentItem.configureAndLoad(holder.thumbnail, needShowSeveralIcon, isBusy, false);
 			holder.thumbnailClickListener.update(0, true);
 			holder.thumbnailLongClickListener.update(attachmentItem);
 			holder.thumbnail.setSfwMode(Preferences.isSfwMode());
 			holder.thumbnail.setVisibility(View.VISIBLE);
 		} else {
-			ImageLoader.getInstance().unbind(holder.thumbnail);
+			holder.thumbnail.resetImage(null);
 			holder.thumbnail.setVisibility(View.GONE);
 		}
 		holder.thumbnail.setOnClickListener(holder.thumbnailClickListener);
@@ -624,12 +623,11 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			UiManager.DemandSet demandSet) {
 		Context context = uiManager.getContext();
 		PostItem postItem = holder.postItem;
-		holder.thumbnail.resetTransition();
 		List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
 		if (attachmentItems != null) {
 			int size = attachmentItems.size();
 			if (size >= 2 && Preferences.isAllAttachments()) {
-				ImageLoader.getInstance().unbind(holder.thumbnail);
+				holder.thumbnail.resetImage(null);
 				holder.thumbnail.setVisibility(View.GONE);
 				holder.attachmentInfo.setVisibility(View.GONE);
 				ArrayList<AttachmentHolder> attachmentHolders = holder.attachmentHolders;
@@ -672,7 +670,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 				for (int i = 0; i < size; i++) {
 					AttachmentHolder attachmentHolder = attachmentHolders.get(i);
 					AttachmentItem attachmentItem = attachmentItems.get(i);
-					attachmentItem.displayThumbnail(attachmentHolder.thumbnail, false, demandSet.isBusy, false);
+					attachmentItem.configureAndLoad(attachmentHolder.thumbnail, false, demandSet.isBusy, false);
 					attachmentHolder.thumbnailClickListener.update(i, false);
 					attachmentHolder.thumbnailLongClickListener.update(attachmentItem);
 					attachmentHolder.thumbnail.setSfwMode(sfwMode);
@@ -682,14 +680,14 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 				}
 				for (int i = size; i < holders; i++) {
 					AttachmentHolder attachmentHolder = attachmentHolders.get(i);
-					ImageLoader.getInstance().unbind(attachmentHolder.thumbnail);
+					attachmentHolder.thumbnail.resetImage(null);
 					attachmentHolder.container.setVisibility(View.GONE);
 				}
 				holder.attachments.setVisibility(View.VISIBLE);
 				holder.attachmentViewCount = size;
 			} else {
 				AttachmentItem attachmentItem = attachmentItems.get(0);
-				attachmentItem.displayThumbnail(holder.thumbnail, size > 1, demandSet.isBusy, false);
+				attachmentItem.configureAndLoad(holder.thumbnail, size > 1, demandSet.isBusy, false);
 				holder.thumbnailClickListener.update(0, true);
 				holder.thumbnailLongClickListener.update(attachmentItem);
 				holder.thumbnail.setSfwMode(Preferences.isSfwMode());
@@ -701,7 +699,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 				holder.attachmentViewCount = 1;
 			}
 		} else {
-			ImageLoader.getInstance().unbind(holder.thumbnail);
+			holder.thumbnail.resetImage(null);
 			holder.thumbnail.setVisibility(View.GONE);
 			holder.attachmentInfo.setVisibility(View.GONE);
 			holder.attachments.setVisibility(View.GONE);
@@ -741,9 +739,13 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 					Uri uri = icons.get(i).first;
 					if (uri != null) {
 						uri = uri.isRelative() ? locator.convert(uri) : uri;
-						ImageLoader.getInstance().loadImage(uri, chanName, null, false, imageView);
+						Bitmap bitmap = ImageLoader.getInstance().loadImage(uri, chanName, null,
+								key -> imageView.setTag(key), false);
+						if (bitmap != null) {
+							imageView.setImageBitmap(bitmap);
+						}
 					} else {
-						ImageLoader.getInstance().unbind(imageView);
+						imageView.setTag(null);
 						imageView.setImageDrawable(null);
 					}
 				} else {
@@ -752,6 +754,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			}
 		} else if (holder.badgeImages != null) {
 			for (ImageView imageView : holder.badgeImages) {
+				imageView.setTag(null);
 				imageView.setVisibility(View.GONE);
 			}
 		}
@@ -877,7 +880,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 				if (holder != null) {
 					PostItem postItem = holder.postItem;
 					if (postItem != null) {
-						displayThumbnails(holder, postItem.getAttachmentItems(), false);
+						displayThumbnails(holder, postItem.getAttachmentItems());
 					}
 				}
 			}
@@ -885,7 +888,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		demandSet.isBusy = isBusy;
 	}
 
-	private void displayThumbnails(UiManager.Holder holder, List<AttachmentItem> attachmentItems, boolean force) {
+	private void displayThumbnails(UiManager.Holder holder, List<AttachmentItem> attachmentItems) {
 		if (attachmentItems != null) {
 			int size = attachmentItems.size();
 			int count = Math.min(size, holder.getAttachmentViewCount());
@@ -893,28 +896,46 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			for (int i = 0; i < count; i++) {
 				AttachmentItem attachmentItem = attachmentItems.get(i);
 				if (!attachmentItem.isThumbnailReady()) {
-					if (force) {
-						attachmentItem.setForceLoadThumbnail();
-					}
-					attachmentItem.displayThumbnail(holder.getAttachmentView(i), needShowSeveralIcon, false, false);
+					attachmentItem.configureAndLoad(holder.getAttachmentView(i), needShowSeveralIcon, false, false);
 				}
 			}
 		}
 	}
 
-	public void displayThumbnails(View view, List<AttachmentItem> attachmentItems, boolean force) {
+	public void displayThumbnails(View view, List<AttachmentItem> attachmentItems) {
 		Object tag = view.getTag();
 		if (tag instanceof UiManager.Holder) {
-			displayThumbnails((UiManager.Holder) tag, attachmentItems, force);
+			displayThumbnails((UiManager.Holder) tag, attachmentItems);
 		}
 	}
 
-	public void displayThumbnails(ListView listView, int position, List<AttachmentItem> attachmentItems,
-			boolean force) {
-		if (position != ListView.INVALID_POSITION) {
-			View view = listView.getChildAt(position - listView.getFirstVisiblePosition());
-			if (view != null) {
-				displayThumbnails(view, attachmentItems, force);
+	public void displayLoadedThumbnailsForView(View view, String key, Bitmap bitmap) {
+		Object tag = view.getTag();
+		if (view.getTag() instanceof UiManager.Holder) {
+			UiManager.Holder holder = (UiManager.Holder) tag;
+			for (int i = 0; i < holder.getAttachmentViewCount(); i++) {
+				holder.getAttachmentView(i).handleLoadedImage(key, bitmap, false);
+			}
+		}
+	}
+
+	public void displayLoadedThumbnailsForPosts(ListView listView, String key, Bitmap bitmap) {
+		for (int i = 0; i < listView.getChildCount(); i++) {
+			View view = listView.getChildAt(i);
+			Object tag = view.getTag();
+			if (tag instanceof PostViewHolder) {
+				PostViewHolder holder = (PostViewHolder) tag;
+				for (int j = 0; j < holder.getAttachmentViewCount(); j++) {
+					holder.getAttachmentView(j).handleLoadedImage(key, bitmap, false);
+				}
+				ArrayList<ImageView> badgeImages = holder.badgeImages;
+				if (badgeImages != null) {
+					for (ImageView imageView : badgeImages) {
+						if (imageView.getVisibility() == View.VISIBLE && key.equals(imageView.getTag())) {
+							imageView.setImageBitmap(bitmap);
+						}
+					}
+				}
 			}
 		}
 	}

@@ -215,6 +215,9 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 	@Override
 	protected void onFinish() {
 		super.onFinish();
+		if (listUnit != null) {
+			listUnit.onFinish();
+		}
 		if (pagerUnit != null) {
 			pagerUnit.onFinish();
 		}
