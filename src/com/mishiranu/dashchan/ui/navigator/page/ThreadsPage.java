@@ -23,6 +23,7 @@ import java.util.HashSet;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Parcel;
@@ -62,8 +63,8 @@ import com.mishiranu.dashchan.widget.ListScroller;
 import com.mishiranu.dashchan.widget.PullableListView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 
-public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesStorage.Observer, UiManager.Observer,
-		ReadThreadsTask.Callback, PullableListView.OnBeforeLayoutListener {
+public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesStorage.Observer,
+		ImageLoader.Observer, ReadThreadsTask.Callback, PullableListView.OnBeforeLayoutListener {
 	private ReadThreadsTask readTask;
 
 	private Drawable oldListSelector;
@@ -78,10 +79,10 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		listView.addOnBeforeLayoutListener(this);
 		ThreadsAdapter adapter = new ThreadsAdapter(activity, pageHolder.chanName, pageHolder.boardName, uiManager);
 		initAdapter(adapter, adapter);
+		ImageLoader.getInstance().observable().register(this);
 		listView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
 		oldListSelector = listView.getSelector();
 		listView.setSelector(android.R.color.transparent);
-		uiManager.observable().register(this);
 		ThreadsExtra extra = getExtra();
 		adapter.applyAttributesBeforeFill(extra.headerExpanded, extra.catalogSortIndex,
 				Preferences.isThreadsGridMode());
@@ -111,11 +112,11 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 
 	@Override
 	protected void onDestroy() {
-		getUiManager().observable().unregister(this);
 		if (readTask != null) {
 			readTask.cancel();
 			readTask = null;
 		}
+		ImageLoader.getInstance().observable().unregister(this);
 		ImageLoader.getInstance().clearTasks(getPageHolder().chanName);
 		FavoritesStorage.getInstance().getObservable().unregister(this);
 		PullableListView listView = getListView();
@@ -635,41 +636,24 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 	}
 
 	@Override
-	public void onPostItemMessage(PostItem postItem, int message) {
-		switch (message) {
-			case UiManager.MESSAGE_PERFORM_DISPLAY_THUMBNAILS: {
-				UiManager uiManager = getUiManager();
-				ThreadsAdapter adapter = getAdapter();
-				ListView listView = getListView();
-				View thumbnailedView = null;
-				OUTER: for (int i = 0; i < listView.getChildCount(); i++) {
-					View view = listView.getChildAt(i);
-					if (adapter.isGridMode()) {
-						if (view instanceof ViewGroup) {
-							ViewGroup viewGroup = (ViewGroup) view;
-							for (int j = 0; j < viewGroup.getChildCount(); j++) {
-								View child = viewGroup.getChildAt(j);
-								if (child.getVisibility() == View.VISIBLE) {
-									PostItem childPostItem = uiManager.getPostItemFromHolder(child);
-									if (childPostItem == postItem) {
-										thumbnailedView = child;
-										break OUTER;
-									}
-								}
-							}
-						}
-					} else {
-						PostItem childPostItem = uiManager.getPostItemFromHolder(view);
-						if (childPostItem == postItem) {
-							thumbnailedView = view;
-							break;
+	public void onImageLoadComplete(String key, Bitmap bitmap) {
+		UiManager uiManager = getUiManager();
+		ThreadsAdapter adapter = getAdapter();
+		ListView listView = getListView();
+		for (int i = 0; i < listView.getChildCount(); i++) {
+			View view = listView.getChildAt(i);
+			if (adapter.isGridMode()) {
+				if (view instanceof ViewGroup) {
+					ViewGroup viewGroup = (ViewGroup) view;
+					for (int j = 0; j < viewGroup.getChildCount(); j++) {
+						View child = viewGroup.getChildAt(j);
+						if (child.getVisibility() == View.VISIBLE) {
+							uiManager.view().displayLoadedThumbnailsForView(child, key, bitmap);
 						}
 					}
 				}
-				if (thumbnailedView != null) {
-					uiManager.view().displayThumbnails(thumbnailedView, postItem.getAttachmentItems(), true);
-				}
-				break;
+			} else {
+				uiManager.view().displayLoadedThumbnailsForView(view, key, bitmap);
 			}
 		}
 	}

@@ -796,7 +796,7 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 				Object item = getItem(position);
 				if (item instanceof PostItem) {
 					PostItem postItem = (PostItem) item;
-					uiManager.view().displayThumbnails(view, postItem.getAttachmentItems(), false);
+					uiManager.view().displayThumbnails(view, postItem.getAttachmentItems());
 				} else if (item instanceof PostItem[]) {
 					PostItem[] postItems = (PostItem[]) item;
 					ViewGroup viewGroup = (ViewGroup) view;
@@ -804,7 +804,7 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 						PostItem postItem = postItems[j];
 						if (postItem != null && !postItem.isHiddenUnchecked()) {
 							View child = viewGroup.getChildAt(j);
-							uiManager.view().displayThumbnails(child, postItem.getAttachmentItems(), false);
+							uiManager.view().displayThumbnails(child, postItem.getAttachmentItems());
 						}
 					}
 				}

@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Locale;
 
+import android.graphics.Bitmap;
 import android.net.Uri;
 
 import chan.content.ChanLocator;
@@ -30,7 +31,6 @@ import chan.content.model.Post;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.C;
-import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.ImageLoader;
 import com.mishiranu.dashchan.content.net.EmbeddedManager;
@@ -507,46 +507,48 @@ public abstract class AttachmentItem {
 		forceLoadThumbnail = true;
 	}
 
-	public void displayThumbnail(AttachmentView view, boolean needShowSeveralIcon, boolean isBusy, boolean force) {
+	public void configureAndLoad(AttachmentView view, boolean needShowSeveralIcon, boolean isBusy, boolean force) {
 		view.setCropEnabled(Preferences.isCutThumbnails());
-		view.setImage(null);
 		int type = getType();
-		int additionalOverlayAttrId;
-		boolean mayReplaceOverlay = true;
 		String key = getThumbnailKey();
+		AttachmentView.Overlay overlay = AttachmentView.Overlay.NONE;
 		if (needShowSeveralIcon) {
-			additionalOverlayAttrId = R.attr.attachmentSeveral;
-			mayReplaceOverlay = false;
+			overlay = AttachmentView.Overlay.SEVERAL;
 		} else {
 			switch (type) {
 				case TYPE_IMAGE: {
-					additionalOverlayAttrId = 0;
 					if (StringUtils.isEmpty(key)) {
-						additionalOverlayAttrId = R.attr.attachmentWarning;
+						overlay = AttachmentView.Overlay.WARNING;
 					}
 					break;
 				}
 				case TYPE_VIDEO: {
-					additionalOverlayAttrId = R.attr.attachmentVideo;
+					overlay = AttachmentView.Overlay.VIDEO;
 					break;
 				}
 				case TYPE_AUDIO: {
-					additionalOverlayAttrId = R.attr.attachmentAudio;
+					overlay = AttachmentView.Overlay.AUDIO;
 					break;
 				}
 				case TYPE_FILE: {
-					additionalOverlayAttrId = R.attr.attachmentFile;
+					overlay = AttachmentView.Overlay.FILE;
 					break;
 				}
 				default: {
-					additionalOverlayAttrId = R.attr.attachmentWarning;
+					overlay = AttachmentView.Overlay.WARNING;
 					break;
 				}
 			}
 		}
-		view.setAdditionalOverlay(additionalOverlayAttrId, true);
-		ImageLoader imageLoader = ImageLoader.getInstance();
-		imageLoader.unbind(view);
+		view.resetImage(key, overlay);
+		startLoad(view, key, isBusy, force);
+	}
+
+	public void startLoad(AttachmentView view, boolean isBusy, boolean force) {
+		startLoad(view, getThumbnailKey(), isBusy, force);
+	}
+
+	private void startLoad(AttachmentView view, String key, boolean isBusy, boolean force) {
 		if (key != null) {
 			Uri uri = getThumbnailUri();
 			boolean loadThumbnails = Preferences.isLoadThumbnails();
@@ -554,9 +556,10 @@ public abstract class AttachmentItem {
 			// Load image if cached in RAM or list isn't scrolling (for better performance)
 			if (!isBusy || isCachedMemory) {
 				boolean fromCacheOnly = isCachedMemory || !(loadThumbnails || force || forceLoadThumbnail);
-				int errorAttrId = mayReplaceOverlay && !fromCacheOnly ? R.attr.attachmentWarning : 0;
-				imageLoader.loadImage(uri, getChanName(), key, fromCacheOnly, view, additionalOverlayAttrId,
-						errorAttrId);
+				Bitmap bitmap = ImageLoader.getInstance().loadImage(uri, getChanName(), key, null, fromCacheOnly);
+				if (bitmap != null) {
+					view.handleLoadedImage(key, bitmap, true);
+				}
 			}
 		}
 	}

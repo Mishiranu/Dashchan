@@ -18,9 +18,7 @@ package com.mishiranu.dashchan.content;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -32,8 +30,6 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Process;
 import android.util.Base64;
-import android.view.View;
-import android.widget.ImageView;
 
 import chan.content.ChanConfiguration;
 import chan.content.ChanManager;
@@ -44,12 +40,11 @@ import chan.http.HttpHolder;
 import chan.http.HttpRequest;
 import chan.util.StringUtils;
 
-import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.async.HttpHolderTask;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.IOUtils;
-import com.mishiranu.dashchan.widget.AttachmentView;
+import com.mishiranu.dashchan.util.WeakObservable;
 
 public class ImageLoader {
 	private static final ImageLoader INSTANCE = new ImageLoader();
@@ -61,6 +56,7 @@ public class ImageLoader {
 	private ImageLoader() {}
 
 	private final CacheManager cacheManager = CacheManager.getInstance();
+	private final WeakObservable<Observer> observable = new WeakObservable<>();
 
 	private final HashMap<String, LoaderTask> loaderTasks = new HashMap<>();
 	private final HashMap<String, Long> notFoundMap = new HashMap<>();
@@ -76,6 +72,14 @@ public class ImageLoader {
 		}
 	}
 
+	public interface Observer {
+		public void onImageLoadComplete(String key, Bitmap bitmap);
+	}
+
+	public WeakObservable<Observer> observable() {
+		return observable;
+	}
+
 	public void clearTasks(String chanName) {
 		Iterator<HashMap.Entry<String, LoaderTask>> iterator = loaderTasks.entrySet().iterator();
 		while (iterator.hasNext()) {
@@ -87,91 +91,20 @@ public class ImageLoader {
 		}
 	}
 
-	public static abstract class Callback<V extends View> {
-		private final WeakReference<V> view;
-
-		private String key;
-		private final int viewHashCode;
-
-		public Callback(V view) {
-			this.view = new WeakReference<>(view);
-			viewHashCode = view.hashCode();
-		}
-
-		Callback<V> setKey(String key) {
-			this.key = key;
-			view.get().setTag(R.id.thumbnail, key);
-			return this;
-		}
-
-		public final V getView() {
-			return view.get();
-		}
-
-		public final void onResult(Bitmap bitmap) {
-			if (checkKeys()) {
-				if (bitmap != null) {
-					onSuccess(bitmap);
-				} else {
-					onError();
-				}
-			}
-		}
-
-		public void onPrepare() {}
-
-		public abstract void onSuccess(Bitmap bitmap);
-		public abstract void onError();
-
-		public final boolean checkKeys() {
-			V view = getView();
-			return view != null && key.equals(view.getTag(R.id.thumbnail));
-		}
-
-		@Override
-		public final boolean equals(Object o) {
-			if (o == this) {
-				return true;
-			}
-			if (o instanceof Callback) {
-				Callback<?> co = (Callback<?>) o;
-				if (!key.equals(co.key)) {
-					return false;
-				}
-				View v1 = view.get();
-				View v2 = co.view.get();
-				return v1 == v2;
-			}
-			return false;
-		}
-
-		@Override
-		public final int hashCode() {
-			int prime = 31;
-			int result = 1;
-			result = prime * result + key.hashCode();
-			result = prime * result + viewHashCode;
-			return result;
-		}
-	}
-
 	private class LoaderTask extends HttpHolderTask<Void, Void, Bitmap> {
 		private final Uri uri;
 		private final String chanName;
 		private final String key;
 
-		public final ArrayList<Callback<?>> callbacks;
 		public boolean fromCacheOnly;
 		public boolean fromCacheOnlyChecked;
 
 		private boolean notFound;
 
-		public LoaderTask(Uri uri, String chanName, String key, ArrayList<Callback<?>> callbacks,
-				boolean fromCacheOnly) {
+		public LoaderTask(Uri uri, String chanName, String key, boolean fromCacheOnly) {
 			this.uri = uri;
 			this.chanName = chanName;
 			this.key = key;
-			this.callbacks = callbacks;
 			this.fromCacheOnly = fromCacheOnly;
 		}
 
@@ -288,107 +221,25 @@ public class ImageLoader {
 			if (notFound) {
 				notFoundMap.put(key, System.currentTimeMillis());
 			}
-			for (Callback<?> callback : callbacks) {
-				callback.onResult(result);
+			for (Observer observer : observable) {
+				observer.onImageLoadComplete(key, result);
 			}
 		}
 	}
 
-	private class AttachmentCallback extends Callback<AttachmentView> {
-		private final int successAttrId;
-		private final int errorAttrId;
-
-		public AttachmentCallback(AttachmentView view, int successAttrId, int errorAttrId) {
-			super(view);
-			this.successAttrId = successAttrId;
-			this.errorAttrId = errorAttrId;
-		}
-
-		@Override
-		public void onPrepare() {
-			AttachmentView view = getView();
-			view.setImage(null);
-			view.enqueueTransition();
-		}
-
-		@Override
-		public void onSuccess(Bitmap bitmap) {
-			AttachmentView view = getView();
-			view.setAdditionalOverlay(successAttrId, false);
-			view.setImage(bitmap);
-		}
-
-		@Override
-		public void onError() {
-			if (errorAttrId != 0) {
-				getView().setAdditionalOverlay(errorAttrId, true);
-			}
-		}
+	public interface KeySetter {
+		public void setKey(String key);
 	}
 
-	private class SimpleCallback extends Callback<ImageView> {
-		public SimpleCallback(ImageView view) {
-			super(view);
-		}
-
-		@Override
-		public void onPrepare() {
-			getView().setImageDrawable(null);
-		}
-
-		@Override
-		public void onSuccess(Bitmap bitmap) {
-			getView().setImageBitmap(bitmap);
-		}
-
-		@Override
-		public void onError() {}
-	}
-
-	public void unbind(View view) {
-		view.setTag(R.id.thumbnail, null);
-	}
-
-	private void loadImage(Uri uri, String chanName, String key, ArrayList<Callback<?>> callbacks,
-			Callback<?> newCallback, boolean fromCacheOnly) {
-		Bitmap bitmap = cacheManager.loadThumbnailMemory(key);
-		if (bitmap != null) {
-			for (Callback<?> callback : callbacks) {
-				callback.onSuccess(bitmap);
-			}
-			return;
-		}
-		// Check "not found" images once per 5 minutes
-		Long value = notFoundMap.get(key);
-		if (value != null && System.currentTimeMillis() - value < 5 * 60 * 1000) {
-			for (Callback<?> callback : callbacks) {
-				callback.onError();
-			}
-			return;
-		}
-		if (newCallback != null) {
-			newCallback.onPrepare();
-		}
-		LoaderTask loaderTask = new LoaderTask(uri, chanName, key, callbacks, fromCacheOnly);
-		loaderTasks.put(key, loaderTask);
-		loaderTask.executeOnExecutor(EXECUTORS.get(chanName));
-	}
-
-	public <V extends View> void loadImage(Uri uri, String chanName, String key, Callback<V> callback,
-			boolean fromCacheOnly) {
+	public Bitmap loadImage(Uri uri, String chanName, String key, KeySetter keySetter, boolean fromCacheOnly) {
 		if (key == null) {
 			key = cacheManager.getCachedFileKey(uri);
+			if (keySetter != null) {
+				keySetter.setKey(key);
+			}
 		}
-		callback.setKey(key);
 		LoaderTask loaderTask = loaderTasks.get(key);
 		if (loaderTask != null) {
-			int index = loaderTask.callbacks.indexOf(callback);
-			if (index >= 0) {
-				if (loaderTask.callbacks.get(index).checkKeys()) {
-					return;
-				}
-				loaderTask.callbacks.remove(index);
-			}
 			boolean restart = loaderTask.fromCacheOnly && !fromCacheOnly;
 			if (restart) {
 				synchronized (loaderTask) {
@@ -401,27 +252,22 @@ public class ImageLoader {
 			if (restart) {
 				loaderTasks.remove(key);
 				loaderTask.cancel();
-				ArrayList<Callback<?>> callbacks = loaderTask.callbacks;
-				callbacks.add(callback);
-				loadImage(uri, chanName, key, callbacks, callback, false);
 			} else {
-				callback.onPrepare();
-				loaderTask.callbacks.add(callback);
+				return null;
 			}
-		} else {
-			ArrayList<Callback<?>> callbacks = new ArrayList<>(1);
-			callbacks.add(callback);
-			loadImage(uri, chanName, key, callbacks, callback, fromCacheOnly);
 		}
-	}
-
-	public void loadImage(Uri uri, String chanName, String key, boolean fromCacheOnly, AttachmentView attachmentView,
-			int successAttrId, int errorAttrId) {
-		loadImage(uri, chanName, key, new AttachmentCallback(attachmentView, successAttrId, errorAttrId),
-				fromCacheOnly);
-	}
-
-	public void loadImage(Uri uri, String chanName, String key, boolean fromCacheOnly, ImageView imageView) {
-		loadImage(uri, chanName, key, new SimpleCallback(imageView), fromCacheOnly);
+		Bitmap bitmap = cacheManager.loadThumbnailMemory(key);
+		if (bitmap != null) {
+			return bitmap;
+		}
+		// Check "not found" images once per 5 minutes
+		Long value = notFoundMap.get(key);
+		if (value != null && System.currentTimeMillis() - value < 5 * 60 * 1000) {
+			return null;
+		}
+		loaderTask = new LoaderTask(uri, chanName, key, fromCacheOnly);
+		loaderTasks.put(key, loaderTask);
+		loaderTask.executeOnExecutor(EXECUTORS.get(chanName));
+		return null;
 	}
 }

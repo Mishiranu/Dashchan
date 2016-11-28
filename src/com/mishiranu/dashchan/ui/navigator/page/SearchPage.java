@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 
+import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -39,7 +40,7 @@ import com.mishiranu.dashchan.widget.ListScroller;
 import com.mishiranu.dashchan.widget.PullableListView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 
-public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTask.Callback {
+public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTask.Callback, ImageLoader.Observer {
 	private ReadSearchTask readTask;
 	private boolean showScaleOnSuccess;
 
@@ -51,6 +52,7 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 		listView.setDivider(ResourceUtils.getDrawable(getActivity(), R.attr.postsDivider, 0));
 		SearchAdapter adapter = new SearchAdapter(uiManager);
 		initAdapter(adapter, adapter);
+		ImageLoader.getInstance().observable().register(this);
 		uiManager.view().setHighlightText(Collections.singleton(pageHolder.searchQuery));
 		listView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
 		SearchExtra extra = getExtra();
@@ -80,6 +82,7 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 			readTask.cancel();
 			readTask = null;
 		}
+		ImageLoader.getInstance().observable().unregister(this);
 		ImageLoader.getInstance().clearTasks(getPageHolder().chanName);
 	}
 
@@ -267,6 +270,11 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 		} else {
 			ClickableToast.show(getActivity(), errorItem.toString());
 		}
+	}
+
+	@Override
+	public void onImageLoadComplete(String key, Bitmap bitmap) {
+		getUiManager().view().displayLoadedThumbnailsForPosts(getListView(), key, bitmap);
 	}
 
 	public static class SearchExtra implements PageHolder.ParcelableExtra {

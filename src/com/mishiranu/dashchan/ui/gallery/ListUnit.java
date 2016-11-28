@@ -23,6 +23,7 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -64,7 +65,7 @@ import com.mishiranu.dashchan.widget.EdgeEffectHandler;
 import com.mishiranu.dashchan.widget.callback.BusyScrollListener;
 
 public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener,
-		ActionMode.Callback {
+		ActionMode.Callback, ImageLoader.Observer {
 	private static final int GRID_SPACING_DP = 4;
 
 	private final GalleryInstance instance;
@@ -91,6 +92,11 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 		gridView.setOnItemClickListener(this);
 		gridView.setOnItemLongClickListener(this);
 		updateGridMetrics(instance.context.getResources().getConfiguration());
+		ImageLoader.getInstance().observable().register(this);
+	}
+
+	public void onFinish() {
+		ImageLoader.getInstance().observable().unregister(this);
 	}
 
 	public AbsListView getListView() {
@@ -406,26 +412,14 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 			holder.attachmentInfo.setText(StringUtils.getFileExtension(galleryItem.getFileUri(instance.locator)
 					.toString()).toUpperCase(Locale.getDefault()) + (galleryItem.size > 0 ? " " +
 					AttachmentItem.formatSize(galleryItem.size) : ""));
-			ImageLoader imageLoader = ImageLoader.getInstance();
-			imageLoader.unbind(holder.thumbnail);
 			Uri thumbnailUri = galleryItem.getThumbnailUri(instance.locator);
 			if (thumbnailUri != null) {
 				CacheManager cacheManager = CacheManager.getInstance();
-				if (busy) {
-					holder.thumbnail.setAdditionalOverlay(0, false);
-					String key = cacheManager.getCachedFileKey(thumbnailUri);
-					if (cacheManager.isThumbnailCachedMemory(key)) {
-						imageLoader.loadImage(thumbnailUri, instance.chanName, key, true, holder.thumbnail, 0,
-								R.attr.attachmentWarning);
-					} else {
-						holder.thumbnail.setImage(null);
-					}
-				} else {
-					displayThumbnail(holder, cacheManager, galleryItem);
-				}
+				String key = cacheManager.getCachedFileKey(thumbnailUri);
+				holder.thumbnail.resetImage(key, AttachmentView.Overlay.NONE);
+				loadImage(holder.thumbnail, thumbnailUri, key);
 			} else {
-				holder.thumbnail.setImage(null);
-				holder.thumbnail.setAdditionalOverlay(R.attr.attachmentWarning, false);
+				holder.thumbnail.resetImage(null, AttachmentView.Overlay.WARNING);
 			}
 			boolean checked = gridView.isItemChecked(position);
 			if (C.API_LOLLIPOP) {
@@ -446,23 +440,30 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 					View view = listView.getChildAt(i);
 					int position = listView.getPositionForView(view);
 					GalleryItem galleryItem = getItem(position);
-					if (galleryItem.getThumbnailUri(instance.locator) != null) {
-						displayThumbnail((GridViewHolder) view.getTag(), cacheManager, galleryItem);
+					Uri thumbnailUri = galleryItem.getThumbnailUri(instance.locator);
+					if (thumbnailUri != null) {
+						GridViewHolder holder = (GridViewHolder) view.getTag();
+						String key = cacheManager.getCachedFileKey(thumbnailUri);
+						holder.thumbnail.resetImage(key, AttachmentView.Overlay.NONE);
+						loadImage(holder.thumbnail, thumbnailUri, key);
 					}
 				}
 			}
 		}
 
-		public void displayThumbnail(GridViewHolder holder, CacheManager cacheManager, GalleryItem galleryItem) {
-			ImageLoader imageLoader = ImageLoader.getInstance();
-			imageLoader.unbind(holder.thumbnail);
-			holder.thumbnail.setAdditionalOverlay(0, true);
-			Uri thumbnailUri = galleryItem.getThumbnailUri(instance.locator);
-			if (thumbnailUri != null) {
-				String key = cacheManager.getCachedFileKey(thumbnailUri);
-				imageLoader.loadImage(thumbnailUri, instance.chanName, key, false, holder.thumbnail, 0,
-						R.attr.attachmentWarning);
+		private void loadImage(AttachmentView view, Uri thumbnailUri, String key) {
+			Bitmap bitmap = ImageLoader.getInstance().loadImage(thumbnailUri, instance.chanName, key, null, false);
+			if (bitmap != null) {
+				view.handleLoadedImage(key, bitmap, true);
 			}
+		}
+	}
+
+	@Override
+	public void onImageLoadComplete(String key, Bitmap bitmap) {
+		for (int i = 0; i < gridView.getChildCount(); i++) {
+			GridViewHolder holder = (GridViewHolder) gridView.getChildAt(i).getTag();
+			holder.thumbnail.handleLoadedImage(key, bitmap, false);
 		}
 	}
 

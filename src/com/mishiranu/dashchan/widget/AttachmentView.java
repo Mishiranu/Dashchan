@@ -31,6 +31,8 @@ import android.view.MotionEvent;
 import android.view.ViewConfiguration;
 import android.view.animation.Interpolator;
 
+import chan.util.StringUtils;
+
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.graphics.RoundedCornersDrawable;
@@ -42,10 +44,11 @@ public class AttachmentView extends ClickableView {
 	private final Rect source = new Rect();
 	private final RectF destination = new RectF();
 	private final Paint bitmapPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
+
 	private TransparentTileDrawable tileDrawable;
+	private Drawable errorOverlayDrawable;
 
 	private int backgroundColor;
-	private Drawable additionalOverlay;
 	private boolean cropEnabled = false;
 	private boolean fitSquare = false;
 	private boolean sfwMode = false;
@@ -86,12 +89,73 @@ public class AttachmentView extends ClickableView {
 		this.sfwMode = sfwMode;
 	}
 
-	public void setAdditionalOverlay(int attrId, boolean invalidate) {
-		Drawable drawable = attrId != 0 ? ResourceUtils.getDrawable(getContext(), attrId, 0) : null;
-		if (additionalOverlay != drawable) {
-			additionalOverlay = drawable;
+	public enum Overlay {NONE, SEVERAL, AUDIO, VIDEO, FILE, WARNING}
+
+	private String key;
+	private Bitmap bitmap;
+	private boolean error;
+	private Overlay overlay;
+	private Drawable overlayDrawable;
+	private boolean keepOverlayOnError;
+
+	public void resetImage(String key) {
+		resetImage(key, Overlay.NONE);
+	}
+
+	public void resetImage(String key, Overlay overlay) {
+		boolean invalidate = false;
+		if (!StringUtils.equals(this.key, key)) {
+			this.key = key;
+			if (bitmap != null || error) {
+				bitmap = null;
+				error = false;
+				invalidate = true;
+			}
+		}
+		if (overlay != this.overlay) {
+			int overlayAttrId = 0;
+			boolean keepOverlayOnError = false;
+			switch (overlay) {
+				case SEVERAL: {
+					overlayAttrId = R.attr.attachmentSeveral;
+					keepOverlayOnError = true;
+					break;
+				}
+				case AUDIO: {
+					overlayAttrId = R.attr.attachmentAudio;
+					keepOverlayOnError = true;
+					break;
+				}
+				case VIDEO: {
+					overlayAttrId = R.attr.attachmentVideo;
+					break;
+				}
+				case FILE: {
+					overlayAttrId = R.attr.attachmentFile;
+					keepOverlayOnError = true;
+					break;
+				}
+				case WARNING: {
+					overlayAttrId = R.attr.attachmentWarning;
+					keepOverlayOnError = true;
+					break;
+				}
+			}
+			this.overlay = overlay;
+			overlayDrawable = overlayAttrId != 0 ? ResourceUtils.getDrawable(getContext(), overlayAttrId, 0) : null;
+			this.keepOverlayOnError = keepOverlayOnError;
+			invalidate = true;
 		}
 		if (invalidate) {
+			invalidate();
+		}
+	}
+
+	public void handleLoadedImage(String key, Bitmap bitmap, boolean instantly) {
+		if (this.bitmap == null && StringUtils.equals(this.key, key)) {
+			this.bitmap = bitmap;
+			error = bitmap == null;
+			imageApplyTime = instantly ? 0L : System.currentTimeMillis();
 			invalidate();
 		}
 	}
@@ -155,21 +219,7 @@ public class AttachmentView extends ClickableView {
 		}
 	}
 
-	private boolean enqueuedTranslation = false;
 	private long imageApplyTime = 0L;
-
-	public void resetTransition() {
-		setNextTransitionEnabled(false);
-	}
-
-	public void enqueueTransition() {
-		setNextTransitionEnabled(true);
-	}
-
-	private void setNextTransitionEnabled(boolean enabled) {
-		imageApplyTime = 0L;
-		enqueuedTranslation = enabled;
-	}
 
 	@Override
 	public void draw(Canvas canvas) {
@@ -232,14 +282,21 @@ public class AttachmentView extends ClickableView {
 		if (sfwMode) {
 			canvas.drawColor(backgroundColor & 0x00ffffff | 0xe0000000);
 		}
-		if (additionalOverlay != null) {
+		Drawable overlayDrawable = this.overlayDrawable;
+		if (error && !keepOverlayOnError) {
+			if (errorOverlayDrawable == null) {
+				errorOverlayDrawable = ResourceUtils.getDrawable(getContext(), R.attr.attachmentWarning, 0);
+			}
+			overlayDrawable = errorOverlayDrawable;
+		}
+		if (overlayDrawable != null) {
 			if (hasImage && !sfwMode) {
 				canvas.drawColor((int) (0x66 * alpha) << 24);
 			}
-			int dw = additionalOverlay.getIntrinsicWidth(), dh = additionalOverlay.getIntrinsicHeight();
+			int dw = overlayDrawable.getIntrinsicWidth(), dh = overlayDrawable.getIntrinsicHeight();
 			int left = (vw - dw) / 2, top = (vh - dh) / 2, right = left + dw, bottom = top + dh;
-			additionalOverlay.setBounds(left, top, right, bottom);
-			additionalOverlay.draw(canvas);
+			overlayDrawable.setBounds(left, top, right, bottom);
+			overlayDrawable.draw(canvas);
 		}
 		if (drawTouching) {
 			super.draw(canvas);
@@ -250,16 +307,5 @@ public class AttachmentView extends ClickableView {
 		if (invalidate) {
 			invalidate();
 		}
-	}
-
-	private Bitmap bitmap;
-
-	public void setImage(Bitmap bitmap) {
-		this.bitmap = bitmap;
-		if (enqueuedTranslation) {
-			enqueuedTranslation = false;
-			imageApplyTime = System.currentTimeMillis();
-		}
-		invalidate();
 	}
 }
