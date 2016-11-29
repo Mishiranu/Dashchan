@@ -712,8 +712,13 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 	}
 
 	public String getDateTime(PostDateFormatter formatter) {
-		dateTimeHolder = formatter.format(getTimestamp(), dateTimeHolder);
-		return dateTimeHolder.text;
+		long time = getTimestamp();
+		if (time > 0L) {
+			dateTimeHolder = formatter.format(getTimestamp(), dateTimeHolder);
+			return dateTimeHolder.text;
+		} else {
+			return null;
+		}
 	}
 
 	public boolean isExpanded() {
