@@ -124,13 +124,13 @@ public class GalleryItem implements Serializable {
 	}
 
 	public static class GallerySet {
-		private final boolean allowGoToPost;
+		private final boolean navigatePostSupported;
 		private final ArrayList<GalleryItem> galleryItems = new ArrayList<>();
 
 		private String threadTitle;
 
-		public GallerySet(boolean allowGoToPost) {
-			this.allowGoToPost = allowGoToPost;
+		public GallerySet(boolean navigatePostSupported) {
+			this.navigatePostSupported = navigatePostSupported;
 		}
 
 		public void setThreadTitle(String threadTitle) {
@@ -171,8 +171,8 @@ public class GalleryItem implements Serializable {
 			return galleryItems.size() > 0 ? galleryItems : null;
 		}
 
-		public boolean isAllowGoToPost() {
-			return allowGoToPost;
+		public boolean isNavigatePostSupported() {
+			return navigatePostSupported;
 		}
 	}
 }

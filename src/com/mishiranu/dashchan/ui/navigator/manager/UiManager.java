@@ -170,7 +170,7 @@ public class UiManager {
 	}
 
 	public interface ThumbnailClickListener extends View.OnClickListener {
-		public void update(int index, boolean mayShowDialog);
+		public void update(int index, boolean mayShowDialog, boolean allowNavigatePost);
 	}
 
 	public interface ThumbnailLongClickListener extends View.OnLongClickListener {

@@ -80,7 +80,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 	private GalleryBackgroundDrawable backgroundDrawable;
 
 	private boolean galleryWindow, galleryMode;
-	private boolean allowGoToPost;
+	private boolean allowNavigatePost;
 	private boolean overrideUpButton = false;
 	private final boolean scrollThread = Preferences.isScrollThreadGallery();
 
@@ -154,7 +154,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		instance.chanName = chanName;
 		instance.locator = locator;
 		instance.galleryItems = galleryItems;
-		allowGoToPost = getIntent().getBooleanExtra(C.EXTRA_ALLOW_GO_TO_POST, false);
+		allowNavigatePost = getIntent().getBooleanExtra(C.EXTRA_ALLOW_NAVIGATE_POST, false);
 		actionBar = findViewById(getResources().getIdentifier("action_bar", "id", "android"));
 		rootView = new WindowControlFrameLayout(this);
 		rootView.setOnApplyWindowPaddingsListener(this);
@@ -300,7 +300,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 				menu.findItem(OPTIONS_MENU_TECHNICAL_INFO).setVisible(capabilities.viewTechnicalInfo);
 				menu.findItem(OPTIONS_MENU_SEARCH_IMAGE).setVisible(capabilities.searchImage);
 				menu.findItem(OPTIONS_MENU_COPY_LINK).setVisible(true);
-				menu.findItem(OPTIONS_MENU_NAVIGATE_POST).setVisible(allowGoToPost && !scrollThread
+				menu.findItem(OPTIONS_MENU_NAVIGATE_POST).setVisible(allowNavigatePost && !scrollThread
 						&& capabilities.navigatePost);
 				menu.findItem(OPTIONS_MENU_SHARE_LINK).setVisible(true);
 				menu.findItem(OPTIONS_MENU_SHARE_FILE).setVisible(capabilities.shareFile);
@@ -547,8 +547,8 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 
 	@Override
 	public void navigatePost(GalleryItem galleryItem, boolean force) {
-		if (allowGoToPost && (scrollThread || force)) {
-			Intent intent = new Intent(C.ACTION_GALLERY_GO_TO_POST).putExtra(C.EXTRA_CHAN_NAME, instance.chanName)
+		if (allowNavigatePost && (scrollThread || force)) {
+			Intent intent = new Intent(C.ACTION_GALLERY_NAVIGATE_POST).putExtra(C.EXTRA_CHAN_NAME, instance.chanName)
 					.putExtra(C.EXTRA_BOARD_NAME, galleryItem.boardName).putExtra(C.EXTRA_THREAD_NUMBER,
 					galleryItem.threadNumber).putExtra(C.EXTRA_POST_NUMBER, galleryItem.postNumber);
 			LocalBroadcastManager.getInstance(GalleryActivity.this).sendBroadcast(intent);
