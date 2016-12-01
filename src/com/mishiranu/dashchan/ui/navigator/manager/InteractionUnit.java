@@ -193,17 +193,20 @@ public class InteractionUnit {
 
 	private static class ThumbnailClickListenerImpl implements UiManager.ThumbnailClickListener {
 		private final UiManager uiManager;
+
 		private int index;
 		private boolean mayShowDialog;
+		private boolean allowNavigatePost;
 
 		public ThumbnailClickListenerImpl(UiManager uiManager) {
 			this.uiManager = uiManager;
 		}
 
 		@Override
-		public void update(int index, boolean mayShowDialog) {
+		public void update(int index, boolean mayShowDialog, boolean allowNavigatePost) {
 			this.index = index;
 			this.mayShowDialog = mayShowDialog;
+			this.allowNavigatePost = allowNavigatePost;
 		}
 
 		@Override
@@ -215,7 +218,7 @@ public class InteractionUnit {
 				int startImageIndex = uiManager.view().findImageIndex(gallerySet.getItems(), holder.postItem);
 				if (mayShowDialog) {
 					uiManager.dialog().openAttachmentOrDialog(uiManager.getContext(), v,
-							attachmentItems, startImageIndex, gallerySet);
+							attachmentItems, startImageIndex, allowNavigatePost, gallerySet);
 				} else {
 					int index = this.index;
 					int imageIndex = startImageIndex;
@@ -224,8 +227,8 @@ public class InteractionUnit {
 							imageIndex++;
 						}
 					}
-					uiManager.dialog().openAttachment(uiManager.getContext(), v, attachmentItems,
-							index, imageIndex, gallerySet);
+					uiManager.dialog().openAttachment(uiManager.getContext(), v, attachmentItems, index,
+							imageIndex, allowNavigatePost, gallerySet);
 				}
 			}
 		}

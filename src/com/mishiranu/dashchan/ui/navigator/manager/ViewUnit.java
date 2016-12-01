@@ -234,7 +234,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			AttachmentItem attachmentItem = attachmentItems.get(0);
 			boolean needShowSeveralIcon = attachmentItems.size() > 1;
 			attachmentItem.configureAndLoad(holder.thumbnail, needShowSeveralIcon, isBusy, false);
-			holder.thumbnailClickListener.update(0, true);
+			holder.thumbnailClickListener.update(0, true, false);
 			holder.thumbnailLongClickListener.update(attachmentItem);
 			holder.thumbnail.setSfwMode(Preferences.isSfwMode());
 			holder.thumbnail.setVisibility(View.VISIBLE);
@@ -310,7 +310,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			AttachmentItem attachmentItem = attachmentItems.get(0);
 			boolean needShowSeveralIcon = attachmentItems.size() > 1;
 			attachmentItem.configureAndLoad(holder.thumbnail, needShowSeveralIcon, isBusy, false);
-			holder.thumbnailClickListener.update(0, true);
+			holder.thumbnailClickListener.update(0, true, false);
 			holder.thumbnailLongClickListener.update(attachmentItem);
 			holder.thumbnail.setSfwMode(Preferences.isSfwMode());
 			holder.thumbnail.setVisibility(View.VISIBLE);
@@ -671,7 +671,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 					AttachmentHolder attachmentHolder = attachmentHolders.get(i);
 					AttachmentItem attachmentItem = attachmentItems.get(i);
 					attachmentItem.configureAndLoad(attachmentHolder.thumbnail, false, demandSet.isBusy, false);
-					attachmentHolder.thumbnailClickListener.update(i, false);
+					attachmentHolder.thumbnailClickListener.update(i, false, !configurationSet.isDialog);
 					attachmentHolder.thumbnailLongClickListener.update(attachmentItem);
 					attachmentHolder.thumbnail.setSfwMode(sfwMode);
 					attachmentHolder.attachmentInfo.setText(attachmentItem.getDescription(AttachmentItem.FormatMode
@@ -688,7 +688,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			} else {
 				AttachmentItem attachmentItem = attachmentItems.get(0);
 				attachmentItem.configureAndLoad(holder.thumbnail, size > 1, demandSet.isBusy, false);
-				holder.thumbnailClickListener.update(0, true);
+				holder.thumbnailClickListener.update(0, true, !configurationSet.isDialog);
 				holder.thumbnailLongClickListener.update(attachmentItem);
 				holder.thumbnail.setSfwMode(Preferences.isSfwMode());
 				holder.thumbnail.setVisibility(View.VISIBLE);

@@ -239,7 +239,8 @@ public class NavigationUtils {
 	private static WeakReference<ArrayList<GalleryItem>> galleryItems;
 
 	public static void openGallery(Context context, View imageView, String chanName, int imageIndex,
-			GalleryItem.GallerySet gallerySet, boolean allowExpandedScreen, boolean galleryMode) {
+			GalleryItem.GallerySet gallerySet, boolean allowExpandedScreen, boolean allowNavigatePost,
+			boolean galleryMode) {
 		int[] viewPosition = null;
 		if (imageView != null) {
 			int[] location = new int[2];
@@ -255,7 +256,7 @@ public class NavigationUtils {
 		intent.putExtra(C.EXTRA_OBTAIN_ITEMS, true);
 		intent.putExtra(C.EXTRA_IMAGE_INDEX, imageIndex);
 		intent.putExtra(C.EXTRA_ALLOW_EXPANDED_SCREEN, allowExpandedScreen);
-		intent.putExtra(C.EXTRA_ALLOW_GO_TO_POST, gallerySet.isAllowGoToPost());
+		intent.putExtra(C.EXTRA_ALLOW_NAVIGATE_POST, allowNavigatePost && gallerySet.isNavigatePostSupported());
 		intent.putExtra(C.EXTRA_GALLERY_MODE, galleryMode);
 		intent.putExtra(C.EXTRA_VIEW_POSITION, viewPosition);
 		context.startActivity(intent);

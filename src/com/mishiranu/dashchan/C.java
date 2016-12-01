@@ -70,7 +70,7 @@ public class C {
 	public static final int HIDDEN_TRUE = 2;
 
 	public static final String ACTION_POST_SENT = "com.mishiranu.dashchan.action.POST_SENT";
-	public static final String ACTION_GALLERY_GO_TO_POST = "com.mishiranu.dashchan.action.GALLERY_GO_TO_POST";
+	public static final String ACTION_GALLERY_NAVIGATE_POST = "com.mishiranu.dashchan.action.GALLERY_NAVIGATE_POST";
 
 	public static final int REQUEST_CODE_ATTACH = 1;
 	public static final int REQUEST_CODE_UNINSTALL = 2;
@@ -83,7 +83,7 @@ public class C {
 	public static final int NOTIFICATION_ID_AUDIO_PLAYER = 2;
 
 	public static final String EXTRA_ALLOW_EXPANDED_SCREEN = "com.mishiranu.dashchan.extra.ALLOW_EXPANDED_SCREEN";
-	public static final String EXTRA_ALLOW_GO_TO_POST = "com.mishiranu.dashchan.extra.ALLOW_GO_TO_POST";
+	public static final String EXTRA_ALLOW_NAVIGATE_POST = "com.mishiranu.dashchan.extra.ALLOW_NAVIGATE_POST";
 	public static final String EXTRA_ANIMATED_TRANSITION = "com.mishiranu.dashchan.extra.ANIMATED_TRANSITION";
 	public static final String EXTRA_BOARD_NAME = "com.mishiranu.dashchan.extra.BOARD_NAME";
 	public static final String EXTRA_CHAN_NAME = "com.mishiranu.dashchan.extra.CHAN_NAME";

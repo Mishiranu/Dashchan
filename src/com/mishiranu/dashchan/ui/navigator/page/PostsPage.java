@@ -199,7 +199,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		scrollToPostNumber = pageHolder.initialPostNumber;
 		FavoritesStorage.getInstance().getObservable().register(this);
 		LocalBroadcastManager.getInstance(activity).registerReceiver(galleryPagerReceiver,
-				new IntentFilter(C.ACTION_GALLERY_GO_TO_POST));
+				new IntentFilter(C.ACTION_GALLERY_NAVIGATE_POST));
 		boolean hasNewPostDatas = handleNewPostDatas();
 		extra.forceRefresh = hasNewPostDatas || !pageHolder.initialFromCache;
 		if (extra.cachedPosts != null && extra.cachedPostItems.size() > 0) {
@@ -380,7 +380,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 					}
 				}
 				NavigationUtils.openGallery(getActivity(), null, pageHolder.chanName, imageIndex,
-						adapter.getConfigurationSet().gallerySet, true, true);
+						adapter.getConfigurationSet().gallerySet, true, true, true);
 				return true;
 			}
 			case OPTIONS_MENU_SELECT: {
