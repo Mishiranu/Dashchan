@@ -19,7 +19,7 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ErrorEditTextSetter;
 
 public class CommentEditWatcher implements TextWatcher {
-	private final ChanConfiguration.Posting postingConfiguration;
+	private ChanConfiguration.Posting postingConfiguration;
 	private final EditText commentView;
 	private final TextView remainingCharacters;
 
@@ -33,6 +33,10 @@ public class CommentEditWatcher implements TextWatcher {
 		this.remainingCharacters = remainingCharacters;
 		this.layoutCallback = layoutCallback;
 		this.storeDraftCallback = storeDraftCallback;
+	}
+
+	public void updateConfiguration(ChanConfiguration.Posting posting) {
+		this.postingConfiguration = posting;
 	}
 
 	private boolean show = false;

@@ -69,6 +69,7 @@ public class AttachmentOptionsDialog extends PostingDialog implements AdapterVie
 	private final SparseIntArray optionIndexes = new SparseIntArray();
 
 	private ListView listView;
+	private AttachmentHolder holder;
 
 	public AttachmentOptionsDialog() {}
 
@@ -106,7 +107,11 @@ public class AttachmentOptionsDialog extends PostingDialog implements AdapterVie
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		Activity activity = getActivity();
-		AttachmentHolder holder = getAttachmentHolder(EXTRA_ATTACHMENT_INDEX);
+		holder = getAttachmentHolder(EXTRA_ATTACHMENT_INDEX);
+		if (holder == null) {
+			dismiss();
+			return new Dialog(activity);
+		}
 		ChanConfiguration.Posting postingConfiguration = getPostingConfiguration();
 		int index = 0;
 		optionItems.clear();
@@ -175,7 +180,6 @@ public class AttachmentOptionsDialog extends PostingDialog implements AdapterVie
 
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		AttachmentHolder holder = getAttachmentHolder(EXTRA_ATTACHMENT_INDEX);
 		int type = optionItems.get(position).type;
 		boolean checked = listView.isItemChecked(position);
 		switch (type) {
@@ -212,7 +216,6 @@ public class AttachmentOptionsDialog extends PostingDialog implements AdapterVie
 	public void setReencoding(GraphicsUtils.Reencoding reencoding) {
 		int reencodeIndex = optionIndexes.get(OPTION_TYPE_REENCODE_IMAGE, -1);
 		if (reencodeIndex >= 0) {
-			AttachmentHolder holder = getAttachmentHolder(EXTRA_ATTACHMENT_INDEX);
 			holder.reencoding = reencoding;
 			listView.setItemChecked(reencodeIndex, reencoding != null);
 			updateItemsEnabled((ItemsAdapter) listView.getAdapter(), holder);

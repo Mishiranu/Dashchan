@@ -114,8 +114,11 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	private String chanName;
 	private String boardName;
 	private String threadNumber;
-	private ChanConfiguration.Posting postingConfiguration;
 	private CommentEditor commentEditor;
+
+	private ChanConfiguration.Posting postingConfiguration;
+	private List<Pair<String, String>> userIconItems;
+	private List<Pair<String, String>> attachmentRatingItems;
 
 	private String captchaType;
 	private ChanPerformer.CaptchaState captchaState;
@@ -127,8 +130,6 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	private boolean captchaLarge;
 	private boolean captchaBlackAndWhite;
 	private long captchaLoadTime;
-	private List<Pair<String, String>> userIconItems;
-	private List<Pair<String, String>> attachmentRatingItems;
 
 	private boolean storeDraftOnFinish = true;
 
@@ -137,14 +138,17 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	private CheckBox sageCheckBox;
 	private CheckBox spoilerCheckBox;
 	private CheckBox originalPosterCheckBox;
+	private View checkBoxParent;
 	private LinearLayout attachmentContainer;
 	private EditText nameView;
 	private EditText emailView;
 	private EditText passwordView;
 	private EditText subjectView;
 	private DropdownView iconView;
+	private View personalDataBlock;
 	private ViewGroup textFormatView;
 
+	private CommentEditWatcher commentEditWatcher;
 	private final CaptchaForm captchaForm = new CaptchaForm(this);
 	private Button sendButton;
 	private int attachmentColumnCount;
@@ -210,12 +214,6 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		ChanMarkup markup = ChanMarkup.get(chanName);
 		commentEditor = markup.safe().obtainCommentEditor(boardName);
 		Configuration configuration = getResources().getConfiguration();
-		boolean needPassword = false;
-		ChanConfiguration.Board board = chanConfiguration.safe().obtainBoard(boardName);
-		if (board.allowDeleting) {
-			ChanConfiguration.Deleting deleting = chanConfiguration.safe().obtainDeleting(boardName);
-			needPassword = deleting != null && deleting.password;
-		}
 		boolean hugeCaptcha = Preferences.isHugeCaptcha();
 		boolean longLayout = configuration.screenWidthDp >= 480;
 
@@ -231,34 +229,26 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		sageCheckBox = (CheckBox) findViewById(R.id.sage_checkbox);
 		spoilerCheckBox = (CheckBox) findViewById(R.id.spoiler_checkbox);
 		originalPosterCheckBox = (CheckBox) findViewById(R.id.original_poster_checkbox);
+		checkBoxParent = findViewById(R.id.checkbox_parent);
 		nameView = (EditText) findViewById(R.id.name);
 		emailView = (EditText) findViewById(R.id.email);
 		passwordView = (EditText) findViewById(R.id.password);
 		subjectView = (EditText) findViewById(R.id.subject);
 		iconView = (DropdownView) findViewById(R.id.icon);
+		personalDataBlock = findViewById(R.id.personal_data_block);
 		attachmentContainer = (LinearLayout) findViewById(R.id.attachment_container);
 		commentView.setOnFocusChangeListener(this);
 		TextView tripcodeWarning = (TextView) findViewById(R.id.personal_tripcode_warning);
 		TextView remainingCharacters = (TextView) findViewById(R.id.remaining_characters);
 		nameView.addTextChangedListener(new NameEditWatcher(posting.allowName && !posting.allowTripcode,
 				nameView, tripcodeWarning, () -> scrollView.postResizeComment()));
-		commentView.addTextChangedListener(new CommentEditWatcher(postingConfiguration,
+		commentEditWatcher = new CommentEditWatcher(postingConfiguration,
 				commentView, remainingCharacters, () -> scrollView.postResizeComment(),
-				() -> DraftsStorage.getInstance().store(obtainPostDraft())));
+				() -> DraftsStorage.getInstance().store(obtainPostDraft()));
+		commentView.addTextChangedListener(commentEditWatcher);
 		commentView.addTextChangedListener(new QuoteEditWatcher(this));
 		textFormatView = (ViewGroup) findViewById(R.id.text_format_view);
-		userIconItems = posting.userIcons.size() > 0 ? posting.userIcons : null;
-		attachmentRatingItems = posting.attachmentRatings.size() > 0 ? posting.attachmentRatings : null;
-		if (userIconItems != null) {
-			ArrayList<String> items = new ArrayList<>();
-			items.add(getString(R.string.text_no_icon));
-			for (Pair<String, String> iconItem : userIconItems) {
-				items.add(iconItem.second);
-			}
-			iconView.setItems(items);
-		} else {
-			iconView.setVisibility(View.GONE);
-		}
+		updatePostingConfiguration(true, false, false);
 		new MarkupButtonsBuilder();
 
 		boolean longFooter = longLayout && !hugeCaptcha;
@@ -272,25 +262,6 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		sendButton = (Button) footerContainer.findViewById(R.id.send_button);
 		sendButton.setOnClickListener(this);
 		attachmentColumnCount = configuration.screenWidthDp >= 960 ? 4 : configuration.screenWidthDp >= 480 ? 2 : 1;
-
-		nameView.setVisibility(posting.allowName ? View.VISIBLE : View.GONE);
-		emailView.setVisibility(posting.allowEmail ? View.VISIBLE : View.GONE);
-		passwordView.setVisibility(needPassword ? View.VISIBLE : View.GONE);
-		subjectView.setVisibility(posting.allowSubject ? View.VISIBLE : View.GONE);
-		sageCheckBox.setVisibility(posting.optionSage ? View.VISIBLE : View.GONE);
-		spoilerCheckBox.setVisibility(posting.optionSpoiler ? View.VISIBLE : View.GONE);
-		originalPosterCheckBox.setVisibility(posting.optionOriginalPoster ? View.VISIBLE : View.GONE);
-		if (!posting.optionSage && !posting.optionSpoiler && !posting.optionOriginalPoster) {
-			findViewById(R.id.checkbox_parent).setVisibility(View.GONE);
-		}
-		boolean hidePersonalDataBlock = Preferences.isHidePersonalData();
-		if (!hidePersonalDataBlock) {
-			hidePersonalDataBlock = !posting.allowName && !posting.allowEmail &&
-					!needPassword && userIconItems == null;
-		}
-		if (hidePersonalDataBlock) {
-			findViewById(R.id.personal_data_block).setVisibility(View.GONE);
-		}
 
 		StringBuilder builder = new StringBuilder();
 		int commentCarriage = 0;
@@ -319,22 +290,12 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 							attachmentDraft.optionSpoiler, attachmentDraft.reencoding);
 				}
 			}
-			if (!Preferences.isHidePersonalData()) {
-				if (posting.allowName) {
-					nameView.setText(postDraft.name);
-				}
-				emailView.setText(postDraft.email);
-				passwordView.setText(postDraft.password);
-			}
-			if (posting.allowSubject) {
-				subjectView.setText(postDraft.subject);
-			}
-			if (posting.optionSage) {
-				sageCheckBox.setChecked(postDraft.optionSage);
-			}
-			if (posting.optionSpoiler) {
-				sageCheckBox.setChecked(postDraft.optionSpoiler);
-			}
+			nameView.setText(postDraft.name);
+			emailView.setText(postDraft.email);
+			passwordView.setText(postDraft.password);
+			subjectView.setText(postDraft.subject);
+			sageCheckBox.setChecked(postDraft.optionSage);
+			spoilerCheckBox.setChecked(postDraft.optionSpoiler);
 			originalPosterCheckBox.setChecked(postDraft.optionOriginalPoster);
 			if (userIconItems != null) {
 				int index = 0;
@@ -621,10 +582,102 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		}
 	}
 
+	private void updatePostingConfiguration(boolean views, boolean attachmentOptions, boolean attachmentCount) {
+		ChanConfiguration.Posting posting = postingConfiguration;
+		if (views) {
+			userIconItems = posting.userIcons.size() > 0 ? posting.userIcons : null;
+			if (userIconItems != null) {
+				ArrayList<String> items = new ArrayList<>();
+				items.add(getString(R.string.text_no_icon));
+				for (Pair<String, String> iconItem : userIconItems) {
+					items.add(iconItem.second);
+				}
+				iconView.setItems(items);
+				iconView.setVisibility(View.VISIBLE);
+			} else {
+				iconView.setVisibility(View.GONE);
+			}
+			boolean needPassword = false;
+			ChanConfiguration chanConfiguration = ChanConfiguration.get(chanName);
+			ChanConfiguration.Board board = chanConfiguration.safe().obtainBoard(boardName);
+			if (board.allowDeleting) {
+				ChanConfiguration.Deleting deleting = chanConfiguration.safe().obtainDeleting(boardName);
+				needPassword = deleting != null && deleting.password;
+			}
+			nameView.setVisibility(posting.allowName ? View.VISIBLE : View.GONE);
+			emailView.setVisibility(posting.allowEmail ? View.VISIBLE : View.GONE);
+			passwordView.setVisibility(needPassword ? View.VISIBLE : View.GONE);
+			subjectView.setVisibility(posting.allowSubject ? View.VISIBLE : View.GONE);
+			sageCheckBox.setVisibility(posting.optionSage ? View.VISIBLE : View.GONE);
+			spoilerCheckBox.setVisibility(posting.optionSpoiler ? View.VISIBLE : View.GONE);
+			originalPosterCheckBox.setVisibility(posting.optionOriginalPoster ? View.VISIBLE : View.GONE);
+			checkBoxParent.setVisibility(posting.optionSage || posting.optionSpoiler || posting.optionOriginalPoster
+					? View.VISIBLE : View.GONE);
+			boolean showPersonalDataBlock = !Preferences.isHidePersonalData();
+			if (showPersonalDataBlock) {
+				showPersonalDataBlock = posting.allowName || posting.allowEmail || needPassword || userIconItems != null;
+			}
+			personalDataBlock.setVisibility(showPersonalDataBlock ? View.VISIBLE : View.GONE);
+			commentEditWatcher.updateConfiguration(postingConfiguration);
+		}
+		if (attachmentOptions || attachmentCount) {
+			if (attachmentOptions) {
+				attachmentRatingItems = posting.attachmentRatings.size() > 0 ? posting.attachmentRatings : null;
+			}
+			if (attachmentCount) {
+				for (int i = attachments.size() - 1; i >= posting.attachmentCount; i--) {
+					attachments.remove(i);
+				}
+			}
+			invalidateAttachments(attachmentCount);
+			if (attachmentCount) {
+				invalidateOptionsMenu();
+			}
+		}
+	}
+
+	private boolean compareListOfPairs(List<Pair<String, String>> first, List<Pair<String, String>> second) {
+		if (first.size() != second.size()) {
+			return false;
+		}
+		for (int i = 0; i < first.size(); i++) {
+			if (!StringUtils.equals(first.get(i).first, first.get(i).second)
+					|| !StringUtils.equals(first.get(i).second, first.get(i).second)) {
+				return false;
+			}
+		}
+		return false;
+	}
+
+	private void updatePostingConfigurationIfNeeded() {
+		ChanConfiguration.Posting oldPosting = postingConfiguration;
+		ChanConfiguration.Posting newPosting = ChanConfiguration.get(chanName).safe()
+				.obtainPosting(boardName, threadNumber == null);
+		if (newPosting == null) {
+			return;
+		}
+		boolean views = oldPosting.allowName != newPosting.allowName || oldPosting.allowEmail != newPosting.allowEmail
+				|| oldPosting.allowTripcode != newPosting.allowTripcode
+				|| oldPosting.allowSubject != newPosting.allowSubject || oldPosting.optionSage != newPosting.optionSage
+				|| oldPosting.optionSpoiler != newPosting.optionSpoiler
+				|| oldPosting.optionOriginalPoster != newPosting.optionOriginalPoster
+				|| oldPosting.maxCommentLength != newPosting.maxCommentLength
+				|| !StringUtils.equals(oldPosting.maxCommentLengthEncoding, newPosting.maxCommentLengthEncoding)
+				|| !compareListOfPairs(oldPosting.userIcons, newPosting.userIcons);
+		boolean attachmentOptions = oldPosting.attachmentSpoiler != newPosting.attachmentSpoiler
+				|| !compareListOfPairs(oldPosting.attachmentRatings, newPosting.attachmentRatings);
+		boolean attachmentCount = oldPosting.attachmentCount != newPosting.attachmentCount;
+		if (views || attachmentOptions || attachmentCount) {
+			postingConfiguration = newPosting;
+			updatePostingConfiguration(views, attachmentOptions, attachmentCount);
+			scrollView.postResizeComment();
+		}
+	}
+
 	private String getUserIcon() {
 		if (userIconItems != null) {
 			int position = iconView.getSelectedItemPosition() - 1;
-			if (position >= 0) {
+			if (position >= 0 && position < userIconItems.size()) {
 				return userIconItems.get(position).first;
 			}
 		}
@@ -738,27 +791,54 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 				captchaState != ChanPerformer.CaptchaState.NEED_LOAD);
 	}
 
+	private String getTextIfVisible(EditText editText) {
+		return editText.getVisibility() == View.VISIBLE ? StringUtils.nullIfEmpty(editText.getText().toString()) : null;
+	}
+
+	private boolean isCheckedIfVisible(CheckBox checkBox) {
+		return checkBox.getVisibility() == View.VISIBLE && checkBox.isChecked();
+	}
+
 	private void executeSendPost() {
 		if (postingServiceBinder == null) {
 			return;
 		}
-		String subject = StringUtils.nullIfEmpty(subjectView.getText().toString());
-		String comment = StringUtils.nullIfEmpty(commentView.getText().toString());
-		String name = StringUtils.nullIfEmpty(nameView.getText().toString());
-		String email = StringUtils.nullIfEmpty(emailView.getText().toString());
-		String password = StringUtils.nullIfEmpty(passwordView.getText().toString());
+		String subject = getTextIfVisible(subjectView);
+		String comment = getTextIfVisible(commentView);
+		String name = getTextIfVisible(nameView);
+		String email = getTextIfVisible(emailView);
+		String password = getTextIfVisible(passwordView);
 		if (password == null) {
 			password = Preferences.getPassword(chanName);
 		}
-		boolean optionSage = sageCheckBox.isChecked();
-		boolean optionSpoiler = spoilerCheckBox.isChecked();
-		boolean optionOriginalPoster = originalPosterCheckBox.isChecked();
-		String userIcon = getUserIcon();
+		boolean optionSage = isCheckedIfVisible(sageCheckBox);
+		boolean optionSpoiler = isCheckedIfVisible(spoilerCheckBox);
+		boolean optionOriginalPoster = isCheckedIfVisible(originalPosterCheckBox);
+		String userIcon = iconView.getVisibility() == View.VISIBLE ? getUserIcon() : null;
 		ArrayList<ChanPerformer.SendPostData.Attachment> array = new ArrayList<>();
 		for (int i = 0; i < attachments.size(); i++) {
 			AttachmentHolder data = attachments.get(i);
-			array.add(new ChanPerformer.SendPostData.Attachment(data.fileHolder, data.rating, data.optionUniqueHash,
-					data.optionRemoveMetadata, data.optionRemoveFileName, data.optionSpoiler, data.reencoding));
+			String rating = data.rating;
+			if (rating != null && attachmentRatingItems != null) {
+				boolean found = false;
+				for (Pair<String, String> pair : attachmentRatingItems) {
+					if (rating.equals(pair.first)) {
+						found = true;
+						break;
+					}
+				}
+				if (!found) {
+					rating = null;
+				}
+			} else {
+				rating = null;
+			}
+			if (attachmentRatingItems != null && rating == null) {
+				rating = attachmentRatingItems.get(0).first;
+			}
+			array.add(new ChanPerformer.SendPostData.Attachment(data.fileHolder, rating, data.optionUniqueHash,
+					data.optionRemoveMetadata, data.optionRemoveFileName,
+					postingConfiguration.attachmentSpoiler && data.optionSpoiler, data.reencoding));
 		}
 		ChanPerformer.SendPostData.Attachment[] attachments = null;
 		if (array.size() > 0) {
@@ -875,6 +955,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		if (errorItem.httpResponseCode == 0 && !keepCaptcha) {
 			refreshCaptcha(false, !captchaError, true);
 		}
+		updatePostingConfigurationIfNeeded();
 	}
 
 	@Override
@@ -954,12 +1035,14 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			Bitmap image, boolean large, boolean blackAndWhite) {
 		captchaLoadTime = System.currentTimeMillis();
 		showCaptcha(captchaState, captchaData, captchaType, input, validity, image, large, blackAndWhite);
+		updatePostingConfigurationIfNeeded();
 	}
 
 	@Override
 	public void onReadCaptchaError(ErrorItem errorItem) {
 		ClickableToast.show(this, errorItem.toString());
 		captchaForm.showError();
+		updatePostingConfigurationIfNeeded();
 	}
 
 	private void showCaptcha(ChanPerformer.CaptchaState captchaState, ChanPerformer.CaptchaData captchaData,
@@ -1018,20 +1101,21 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 							}
 						}
 					}
-					int count = Math.min(uris.size(), postingConfiguration.attachmentCount - attachments.size());
-					int error = uris.size() - count;
+					int oldCount = attachments.size();
 					for (Uri uri : uris) {
+						if (attachments.size() >= postingConfiguration.attachmentCount) {
+							break;
+						}
 						FileHolder fileHolder = FileHolder.obtain(this, uri);
 						grantUriPermission(getPackageName(), uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
 						if (fileHolder != null) {
 							addAttachment(fileHolder);
-						} else {
-							error++;
 						}
 					}
-					if (error > 0) {
+					int errorCount = uris.size() - (attachments.size() - oldCount);
+					if (errorCount > 0) {
 						ClickableToast.show(this, getResources().getQuantityString(R.plurals
-								.message_file_attach_error_format, error, error));
+								.message_file_attach_error_format, errorCount, errorCount));
 					}
 					break;
 				}
@@ -1041,7 +1125,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 
 	@Override
 	public AttachmentHolder getAttachmentHolder(int index) {
-		return attachments.get(index);
+		return index >= 0 && index < attachments.size() ? attachments.get(index) : null;
 	}
 
 	@Override
@@ -1081,20 +1165,29 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			AttachmentHolder holder = (AttachmentHolder) v.getTag();
 			if (attachments.remove(holder)) {
 				if (attachmentColumnCount == 1) {
-					attachmentContainer.removeView(holder.self);
+					attachmentContainer.removeView(holder.view);
 				} else {
-					attachmentContainer.removeAllViews();
-					for (int i = 0; i < attachments.size(); i++) {
-						View attachmentView = attachments.get(i).self;
-						ViewUtils.removeFromParent(attachmentView);
-						addAttachmentViewToContainer(attachmentView, i);
-					}
+					invalidateAttachments(true);
 				}
 				invalidateOptionsMenu();
 				scrollView.postResizeComment();
 			}
 		}
 	};
+
+	private void invalidateAttachments(boolean clearContainer) {
+		if (clearContainer) {
+			attachmentContainer.removeAllViews();
+		}
+		for (int i = 0; i < attachments.size(); i++) {
+			AttachmentHolder holder = attachments.get(i);
+			if (clearContainer) {
+				ViewUtils.removeFromParent(holder.view);
+				addAttachmentViewToContainer(holder.view, i);
+			}
+			updateAttachmentConfiguration(holder);
+		}
+	}
 
 	private void addAttachmentViewToContainer(View attachmentView, int position) {
 		LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) attachmentView.getLayoutParams();
@@ -1133,39 +1226,31 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		}
 	}
 
-	private AttachmentHolder addNewAttachment(boolean enableWarning) {
-		FrameLayout layout = (FrameLayout) getLayoutInflater().inflate(R.layout.activity_posting_attachment,
+	private AttachmentHolder addNewAttachment() {
+		FrameLayout view = (FrameLayout) getLayoutInflater().inflate(R.layout.activity_posting_attachment,
 				attachmentContainer, false);
 		if (C.API_LOLLIPOP) {
 			float density = ResourceUtils.obtainDensity(this);
-			layout.setForeground(new RoundedCornersDrawable((int) (2f * density), ResourceUtils.getColor(this,
+			view.setForeground(new RoundedCornersDrawable((int) (2f * density), ResourceUtils.getColor(this,
 					android.R.attr.windowBackground)));
 		}
-		addAttachmentViewToContainer(layout, attachments.size());
+		addAttachmentViewToContainer(view, attachments.size());
 		AttachmentHolder holder = new AttachmentHolder();
-		holder.self = layout;
-		holder.fileName = (TextView) layout.findViewById(R.id.attachment_name);
-		holder.fileSize = (TextView) layout.findViewById(R.id.attachment_size);
-		holder.options = layout.findViewById(R.id.attachment_options);
-		holder.imageView = (ImageView) layout.findViewById(R.id.attachment_preview);
+		holder.view = view;
+		holder.fileName = (TextView) view.findViewById(R.id.attachment_name);
+		holder.fileSize = (TextView) view.findViewById(R.id.attachment_size);
+		holder.options = view.findViewById(R.id.attachment_options);
+		holder.imageView = (ImageView) view.findViewById(R.id.attachment_preview);
 		holder.imageView.setBackground(new TransparentTileDrawable(this, true));
-		View warning = layout.findViewById(R.id.attachment_warning);
-		if (!enableWarning) {
-			warning.setVisibility(View.GONE);
-		} else {
-			warning.setOnClickListener(attachmentWarningListener);
-			warning.setTag(holder);
-		}
-		View rating = layout.findViewById(R.id.attachment_rating);
-		if (attachmentRatingItems == null) {
-			rating.setVisibility(View.GONE);
-		} else {
-			rating.setOnClickListener(attachmentRatingListener);
-			rating.setTag(holder);
-		}
-		View remove = layout.findViewById(R.id.attachment_remove);
-		remove.setOnClickListener(attachmentRemoveListener);
-		remove.setTag(holder);
+		holder.warningButton = view.findViewById(R.id.attachment_warning);
+		holder.warningButton.setOnClickListener(attachmentWarningListener);
+		holder.warningButton.setTag(holder);
+		holder.ratingButton = view.findViewById(R.id.attachment_rating);
+		holder.ratingButton.setOnClickListener(attachmentRatingListener);
+		holder.ratingButton.setTag(holder);
+		holder.removeButton = view.findViewById(R.id.attachment_remove);
+		holder.removeButton.setOnClickListener(attachmentRemoveListener);
+		holder.removeButton.setTag(holder);
 		holder.options.setOnClickListener(attachmentOptionsListener);
 		holder.options.setTag(holder);
 		attachments.add(holder);
@@ -1182,17 +1267,15 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			boolean optionRemoveMetadata, boolean optionRemoveFileName, boolean optionSpoiler,
 			GraphicsUtils.Reencoding reencoding) {
 		JpegData jpegData = fileHolder.getJpegData();
-		AttachmentHolder holder = addNewAttachment(jpegData != null && jpegData.hasExif);
+		AttachmentHolder holder = addNewAttachment();
 		holder.fileHolder = fileHolder;
+		holder.rating = rating;
 		holder.optionUniqueHash = optionUniqueHash;
 		holder.optionRemoveMetadata = optionRemoveMetadata;
 		holder.optionRemoveFileName = optionRemoveFileName;
 		holder.optionSpoiler = optionSpoiler;
 		holder.reencoding = reencoding;
 		holder.fileName.setText(fileHolder.getName());
-		if (attachmentRatingItems != null) {
-			holder.rating = rating != null ? rating : attachmentRatingItems.get(0).first;
-		}
 		String fileSize = String.format(Locale.US, "%.2f", fileHolder.getSize() / 1024f) + " KB";
 		Bitmap bitmap = null;
 		ChanLocator locator = ChanLocator.getDefault();
@@ -1228,9 +1311,24 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		if (bitmap != null) {
 			holder.imageView.setVisibility(View.VISIBLE);
 			holder.imageView.setImageBitmap(bitmap);
-			holder.self.getLayoutParams().height = (int) (128f * ResourceUtils.obtainDensity(this));
+			holder.view.getLayoutParams().height = (int) (128f * ResourceUtils.obtainDensity(this));
 		}
 		holder.fileSize.setText(fileSize);
+		if (jpegData == null || !jpegData.hasExif) {
+			holder.warningButton.setVisibility(View.GONE);
+		}
+		updateAttachmentConfiguration(holder);
+	}
+
+	private void updateAttachmentConfiguration(AttachmentHolder holder) {
+		if (attachmentRatingItems != null) {
+			if (holder.rating == null) {
+				holder.rating = attachmentRatingItems.get(0).first;
+			}
+			holder.ratingButton.setVisibility(View.VISIBLE);
+		} else {
+			holder.ratingButton.setVisibility(View.GONE);
+		}
 	}
 
 	private void formatQuote() {
