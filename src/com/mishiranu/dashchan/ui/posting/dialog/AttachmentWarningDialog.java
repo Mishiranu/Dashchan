@@ -16,6 +16,7 @@
 
 package com.mishiranu.dashchan.ui.posting.dialog;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.os.Bundle;
@@ -39,7 +40,12 @@ public class AttachmentWarningDialog extends PostingDialog {
 
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
+		Activity activity = getActivity();
 		AttachmentHolder holder = getAttachmentHolder(EXTRA_ATTACHMENT_INDEX);
+		if (holder == null) {
+			dismiss();
+			return new Dialog(activity);
+		}
 		JpegData jpegData = holder.fileHolder.getJpegData();
 		boolean hasExif = jpegData != null && jpegData.hasExif;
 		int rotation = holder.fileHolder.getRotation();
@@ -63,7 +69,7 @@ public class AttachmentWarningDialog extends PostingDialog {
 			}
 			builder.append(getString(R.string.message_image_warning_geolocation));
 		}
-		return new AlertDialog.Builder(getActivity()).setTitle(R.string.text_warning)
+		return new AlertDialog.Builder(activity).setTitle(R.string.text_warning)
 				.setMessage(getString(R.string.message_image_warning, builder.toString()))
 				.setPositiveButton(android.R.string.ok, null).create();
 	}

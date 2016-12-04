@@ -18,6 +18,7 @@ package com.mishiranu.dashchan.ui.posting.dialog;
 
 import java.util.List;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -40,27 +41,36 @@ public class AttachmentRatingDialog extends PostingDialog implements DialogInter
 		setArguments(args);
 	}
 
+	private AttachmentHolder holder;
+	private String[] ratings;
+
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
-		AttachmentHolder holder = getAttachmentHolder(EXTRA_ATTACHMENT_INDEX);
+		Activity activity = getActivity();
 		List<Pair<String, String>> attachmentRatingItems = getAttachmentRatingItems();
+		holder = getAttachmentHolder(EXTRA_ATTACHMENT_INDEX);
+		if (holder == null || attachmentRatingItems == null) {
+			dismiss();
+			return new Dialog(activity);
+		}
 		String[] items = new String[attachmentRatingItems.size()];
+		ratings = new String[attachmentRatingItems.size()];
 		int checkedItem = 0;
 		for (int i = 0; i < items.length; i++) {
 			Pair<String, String> ratingItem = attachmentRatingItems.get(i);
 			items[i] = ratingItem.second;
+			ratings[i] = ratingItem.first;
 			if (ratingItem.first.equals(holder.rating)) {
 				checkedItem = i;
 			}
 		}
-		return new AlertDialog.Builder(getActivity()).setTitle(R.string.text_rating).setSingleChoiceItems(items,
+		return new AlertDialog.Builder(activity).setTitle(R.string.text_rating).setSingleChoiceItems(items,
 				checkedItem, this).setNegativeButton(android.R.string.cancel, null).create();
 	}
 
 	@Override
 	public void onClick(DialogInterface dialog, int which) {
 		dismiss();
-		AttachmentHolder holder = getAttachmentHolder(EXTRA_ATTACHMENT_INDEX);
-		holder.rating = getAttachmentRatingItems().get(which).first;
+		holder.rating = ratings[which];
 	}
 }
