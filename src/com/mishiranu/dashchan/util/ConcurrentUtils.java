@@ -57,13 +57,10 @@ public class ConcurrentUtils {
 
 		@Override
 		public Thread newThread(Runnable r) {
-			Thread thread = new Thread(r) {
-				@Override
-				public void run() {
-					Process.setThreadPriority(threadPriority);
-					super.run();
-				}
-			};
+			Thread thread = new Thread(() -> {
+				Process.setThreadPriority(threadPriority);
+				r.run();
+			});
 			if (componentName != null) {
 				thread.setName(componentName + (componentPart != null ? " #" + componentPart : ""));
 			}
