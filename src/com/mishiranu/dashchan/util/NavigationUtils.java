@@ -362,6 +362,10 @@ public class NavigationUtils {
 						uri = locator.buildQueryWithSchemeHost(false, "iqdb.org", null, "url", imageUriString);
 						break;
 					}
+					case 5: {
+						uri = locator.buildQueryWithHost("whatanime.ga", "/", "url", imageUriString);
+						break;
+					}
 					default: {
 						return;
 					}
@@ -374,6 +378,7 @@ public class NavigationUtils {
 		.addItem(2, "TinEye")
 		.addItem(3, "SauceNAO")
 		.addItem(4, "iqdb")
+		.addItem(5, "whatanime")
 		.show();
 	}
 
