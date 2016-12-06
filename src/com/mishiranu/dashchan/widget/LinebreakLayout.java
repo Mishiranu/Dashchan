@@ -76,24 +76,24 @@ public class LinebreakLayout extends ViewGroup {
 		int childWidthMeasureSpec = layoutParams.width >= 0
 				? MeasureSpec.makeMeasureSpec(layoutParams.width, MeasureSpec.EXACTLY)
 				: widthUnspecified ? MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED)
-				: MeasureSpec.makeMeasureSpec(Math.max(maxWidth - lineWidth, 0), linebreak
-				? MeasureSpec.EXACTLY : MeasureSpec.AT_MOST);
+				: MeasureSpec.makeMeasureSpec(Math.max(maxWidth - (lineWidth > 0 ? lineWidth + horizontalSpacing : 0),
+				0), linebreak ? MeasureSpec.EXACTLY : MeasureSpec.AT_MOST);
 		int childHeightMeasureSpec = matchLineHeight == 0 ? getChildMeasureSpec(heightMeasureSpec, vertialPaddings,
 				layoutParams.height) : MeasureSpec.makeMeasureSpec(matchLineHeight, MeasureSpec.EXACTLY);
 		child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
+		int childWidth = child.getMeasuredWidth();
 		if (lineWidth > 0) {
-			lineWidth += horizontalSpacing;
+			childWidth += horizontalSpacing;
 		}
-		return child.getMeasuredWidth();
+		return childWidth;
 	}
 
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-		int maxWidth = MeasureSpec.getSize(widthMeasureSpec);
 		boolean widthUnspecified = MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.UNSPECIFIED;
 		int vertialPaddings = getPaddingTop() + getPaddingBottom();
 		int horizontalPaddings = getPaddingLeft() + getPaddingRight();
-		maxWidth -= horizontalPaddings;
+		int maxWidth = MeasureSpec.getSize(widthMeasureSpec) - horizontalPaddings;
 		int minWidth = 0;
 		int minHeight = 0;
 		int lineWidth = 0;
@@ -123,6 +123,7 @@ public class LinebreakLayout extends ViewGroup {
 					lineWidth += measureChild(child, layoutParams, widthUnspecified, linebreak, maxWidth, lineWidth,
 							heightMeasureSpec, vertialPaddings, lineHeight, horizontalSpacing);
 				}
+				postMeasurements.clear();
 				minWidth = Math.max(minWidth, lineWidth);
 				minHeight += lineHeight;
 				lineWidth = 0;
