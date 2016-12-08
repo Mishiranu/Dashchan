@@ -61,6 +61,7 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 	private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
 
 	private int[] initialScalingData;
+	private ValueAnimator initialScalingAnimator;
 	private Rect initialScaleClipRect;
 
 	private float minimumScale, maximumScale, doubleTapScale, initialScale;
@@ -181,6 +182,12 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 
 	public void clearInitialScaleAnimationData() {
 		initialScalingData = null;
+		if (initialScalingAnimator != null) {
+			initialScalingAnimator.cancel();
+			initialScalingAnimator = null;
+			initialScaleClipRect = null;
+			setScale(initialScale);
+		}
 	}
 
 	private void handleInitialScale() {
@@ -196,10 +203,11 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 			float centerX = x + viewWidth / 2f;
 			float centerY = y + viewHeight / 2f;
 			boolean cropEnabled = initialScalingData[4] != 0;
-			ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
-			animator.addUpdateListener(new InitialScaleListener(centerX, centerY, viewWidth, viewHeight, cropEnabled));
-			animator.setDuration(INITIAL_SCALE_TRANSITION_TIME);
-			animator.start();
+			initialScalingAnimator = ValueAnimator.ofFloat(0f, 1f);
+			initialScalingAnimator.addUpdateListener(new InitialScaleListener(centerX, centerY,
+					viewWidth, viewHeight, cropEnabled));
+			initialScalingAnimator.setDuration(INITIAL_SCALE_TRANSITION_TIME);
+			initialScalingAnimator.start();
 		}
 	}
 
@@ -884,6 +892,7 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 				}
 				invalidate();
 			} else {
+				initialScalingAnimator = null;
 				initialScaleClipRect = null;
 				setScale(initialScale);
 			}
