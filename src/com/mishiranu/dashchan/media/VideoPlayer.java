@@ -355,7 +355,7 @@ public class VideoPlayer {
 					int errorCode = getErrorCode(pointer);
 					if (errorCode != 0) {
 						free();
-						throw new IOException("Can't initialize player: CODE=" + errorCode);
+						throw new InitializationException(errorCode);
 					}
 					initialized = true;
 					seekerThread.start();
@@ -383,6 +383,12 @@ public class VideoPlayer {
 			} else {
 				inputHolder.close();
 			}
+		}
+	}
+
+	public static class InitializationException extends IOException {
+		private InitializationException(int errorCode) {
+			super("Can't initialize player: CODE=" + errorCode);
 		}
 	}
 

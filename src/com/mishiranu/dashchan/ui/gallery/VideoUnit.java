@@ -63,6 +63,7 @@ import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.IOUtils;
+import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.StringBlockBuilder;
 import com.mishiranu.dashchan.util.ViewUtils;
@@ -184,23 +185,26 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener {
 		wasPlaying = true;
 		finishedPlayback = false;
 		hideSurfaceOnInit = false;
-		final VideoPlayer workPlayer = new VideoPlayer(Preferences.isVideoSeekAnyFrame());
-		workPlayer.setListener(playerListener);
-		player = workPlayer;
+		VideoPlayer player = new VideoPlayer(Preferences.isVideoSeekAnyFrame());
+		player.setListener(playerListener);
 		boolean loadedFromFile = false;
 		if (!reload && file.exists()) {
 			try {
 				player.init(file);
-				initializePlayer();
-				seekBar.setSecondaryProgress(seekBar.getMax());
 				loadedFromFile = true;
-				instance.currentHolder.fullLoaded = true;
-				instance.galleryInstance.callback.invalidateOptionsMenu();
 			} catch (IOException e) {
-				// Ignore exception
+				// Player was consumed, create a new one and try to download a new video file
+				player = new VideoPlayer(Preferences.isVideoSeekAnyFrame());
 			}
 		}
-		if (!loadedFromFile) {
+		this.player = player;
+		if (loadedFromFile) {
+			initializePlayer();
+			seekBar.setSecondaryProgress(seekBar.getMax());
+			instance.currentHolder.fullLoaded = true;
+			instance.galleryInstance.callback.invalidateOptionsMenu();
+		} else {
+			VideoPlayer finalPlayer = player;
 			PagerInstance.ViewHolder holder = instance.currentHolder;
 			holder.progressBar.setIndeterminate(true);
 			holder.progressBar.setVisible(true, false);
@@ -209,11 +213,11 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener {
 				@Override
 				protected Boolean doInBackground(Void... params) {
 					try {
-						VideoPlayer player = VideoUnit.this.player;
-						if (player != null) {
-							player.init(inputStream);
-						}
+						finalPlayer.init(inputStream);
 						return true;
+					} catch (VideoPlayer.InitializationException e) {
+						Log.persistent().stack(e);
+						return false;
 					} catch (IOException e) {
 						return false;
 					}
@@ -221,7 +225,7 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener {
 
 				@Override
 				protected void onPostExecute(Boolean result) {
-					if (player != workPlayer) {
+					if (VideoUnit.this.player != finalPlayer) {
 						return;
 					}
 					PagerInstance.ViewHolder holder = instance.currentHolder;
@@ -247,7 +251,7 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener {
 				}
 			}.executeOnExecutor(ConcurrentUtils.SEPARATE_EXECUTOR);
 			readVideoTask = new ReadVideoTask(instance.galleryInstance.chanName, uri, inputStream,
-					new ReadVideoCallback(workPlayer, holder));
+					new ReadVideoCallback(player, holder));
 			readVideoTask.executeOnExecutor(ReadVideoTask.THREAD_POOL_EXECUTOR);
 		}
 	}
