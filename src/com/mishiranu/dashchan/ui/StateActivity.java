@@ -22,6 +22,8 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.os.Bundle;
 
+import com.mishiranu.dashchan.content.LocaleManager;
+
 @SuppressLint("Registered")
 public class StateActivity extends Activity {
 	public static class InstanceFragment extends Fragment {
@@ -34,6 +36,7 @@ public class StateActivity extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		LocaleManager.getInstance().apply(this);
 		super.onCreate(savedInstanceState);
 		String tag = "instance";
 		FragmentManager fragmentManager = getFragmentManager();
