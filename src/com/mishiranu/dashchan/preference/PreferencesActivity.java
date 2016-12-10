@@ -28,6 +28,7 @@ import android.view.MenuItem;
 import chan.content.ChanManager;
 
 import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.content.LocaleManager;
 import com.mishiranu.dashchan.content.async.ReadUpdateTask;
 import com.mishiranu.dashchan.preference.fragment.AboutFragment;
 import com.mishiranu.dashchan.preference.fragment.AutohideFragment;
@@ -46,6 +47,7 @@ import com.mishiranu.dashchan.util.ViewUtils;
 public class PreferencesActivity extends PreferenceActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		LocaleManager.getInstance().apply(this);
 		ResourceUtils.applyPreferredTheme(this);
 		super.onCreate(savedInstanceState);
 		boolean root = getIntent().getExtras() == null;

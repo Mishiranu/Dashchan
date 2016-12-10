@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Locale;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -118,6 +119,21 @@ public class LocaleManager {
 		}
 		resources.updateConfiguration(configuration, resources.getDisplayMetrics());
 		ChanManager.getInstance().updateConfiguration(configuration, resources.getDisplayMetrics());
+	}
+
+	@SuppressWarnings("deprecation")
+	@TargetApi(Build.VERSION_CODES.N)
+	public void apply(Activity activity) {
+		if (previousLocales != null && !previousLocales.isEmpty()) {
+			Resources resources = activity.getResources();
+			Configuration configuration = resources.getConfiguration();
+			if (C.API_NOUGAT) {
+				configuration.setLocales(new LocaleList(CommonUtils.toArray(previousLocales, Locale.class)));
+			} else {
+				configuration.locale = previousLocales.get(0);
+			}
+			resources.updateConfiguration(configuration, resources.getDisplayMetrics());
+		}
 	}
 
 	@SuppressWarnings("deprecation")

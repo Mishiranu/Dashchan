@@ -19,7 +19,6 @@ package com.mishiranu.dashchan.ui;
 import java.util.Collection;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -45,7 +44,7 @@ import com.mishiranu.dashchan.util.NavigationUtils;
 /*
  * MainActivity can't be both singleTask and launcher activity, so I use this launcher activity.
  */
-public class LauncherActivity extends Activity {
+public class LauncherActivity extends StateActivity {
 	private static final int STATE_START = 0;
 	private static final int STATE_PERMISSION_REQUEST = 1;
 
