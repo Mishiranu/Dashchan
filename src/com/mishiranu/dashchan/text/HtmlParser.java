@@ -108,6 +108,7 @@ public class HtmlParser implements ContentHandler {
 		if (markup == null) {
 			markup = IDLE_MARKUP;
 		}
+		source = source.replace("&#10;", "\n");
 		this.source = source;
 		this.markup = markup;
 		this.parsingMode = parsingMode;
