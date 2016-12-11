@@ -739,10 +739,12 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 					Uri uri = icons.get(i).first;
 					if (uri != null) {
 						uri = uri.isRelative() ? locator.convert(uri) : uri;
-						Bitmap bitmap = ImageLoader.getInstance().loadImage(uri, chanName, null,
+						ImageLoader.BitmapResult result = ImageLoader.getInstance().loadImage(uri, chanName, null,
 								key -> imageView.setTag(key), false);
-						if (bitmap != null) {
-							imageView.setImageBitmap(bitmap);
+						if (result != null && result.bitmap != null) {
+							imageView.setImageBitmap(result.bitmap);
+						} else {
+							imageView.setImageDrawable(null);
 						}
 					} else {
 						imageView.setTag(null);

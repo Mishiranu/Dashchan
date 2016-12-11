@@ -556,9 +556,10 @@ public abstract class AttachmentItem {
 			// Load image if cached in RAM or list isn't scrolling (for better performance)
 			if (!isBusy || isCachedMemory) {
 				boolean fromCacheOnly = isCachedMemory || !(loadThumbnails || force || forceLoadThumbnail);
-				Bitmap bitmap = ImageLoader.getInstance().loadImage(uri, getChanName(), key, null, fromCacheOnly);
-				if (bitmap != null) {
-					view.handleLoadedImage(key, bitmap, true);
+				ImageLoader.BitmapResult result = ImageLoader.getInstance().loadImage(uri, getChanName(),
+						key, null, fromCacheOnly);
+				if (result != null) {
+					view.handleLoadedImage(key, result.bitmap, true);
 				}
 			}
 		}
