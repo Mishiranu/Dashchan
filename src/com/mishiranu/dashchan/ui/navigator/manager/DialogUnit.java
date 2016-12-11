@@ -974,10 +974,10 @@ public class DialogUnit implements DialogStack.Callback {
 			ImageView imageView = new ImageView(context);
 			linearLayout.addView(imageView, (int) (20f * density), (int) (20f * density));
 			if (icon.uri != null) {
-				Bitmap bitmap = imageLoader.loadImage(icon.uri, chanName, null,
+				ImageLoader.BitmapResult result = imageLoader.loadImage(icon.uri, chanName, null,
 						key -> taggedImageViews.put(key, imageView), false);
-				if (bitmap != null) {
-					imageView.setImageBitmap(bitmap);
+				if (result != null && result.bitmap != null) {
+					imageView.setImageBitmap(result.bitmap);
 				}
 			} else {
 				imageView.setImageResource(ResourceUtils.getResourceId(context, icon.attrId, 0));

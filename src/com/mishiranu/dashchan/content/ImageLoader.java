@@ -231,7 +231,15 @@ public class ImageLoader {
 		public void setKey(String key);
 	}
 
-	public Bitmap loadImage(Uri uri, String chanName, String key, KeySetter keySetter, boolean fromCacheOnly) {
+	public static class BitmapResult {
+		public final Bitmap bitmap;
+
+		public BitmapResult(Bitmap bitmap) {
+			this.bitmap = bitmap;
+		}
+	}
+
+	public BitmapResult loadImage(Uri uri, String chanName, String key, KeySetter keySetter, boolean fromCacheOnly) {
 		if (key == null) {
 			key = cacheManager.getCachedFileKey(uri);
 			if (keySetter != null) {
@@ -258,12 +266,12 @@ public class ImageLoader {
 		}
 		Bitmap bitmap = cacheManager.loadThumbnailMemory(key);
 		if (bitmap != null) {
-			return bitmap;
+			return new BitmapResult(bitmap);
 		}
 		// Check "not found" images once per 5 minutes
 		Long value = notFoundMap.get(key);
 		if (value != null && System.currentTimeMillis() - value < 5 * 60 * 1000) {
-			return null;
+			return new BitmapResult(null);
 		}
 		loaderTask = new LoaderTask(uri, chanName, key, fromCacheOnly);
 		loaderTasks.put(key, loaderTask);

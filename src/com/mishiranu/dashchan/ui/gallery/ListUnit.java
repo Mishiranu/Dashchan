@@ -452,9 +452,10 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 		}
 
 		private void loadImage(AttachmentView view, Uri thumbnailUri, String key) {
-			Bitmap bitmap = ImageLoader.getInstance().loadImage(thumbnailUri, instance.chanName, key, null, false);
-			if (bitmap != null) {
-				view.handleLoadedImage(key, bitmap, true);
+			ImageLoader.BitmapResult result = ImageLoader.getInstance().loadImage(thumbnailUri, instance.chanName,
+					key, null, false);
+			if (result != null) {
+				view.handleLoadedImage(key, result.bitmap, true);
 			}
 		}
 	}
