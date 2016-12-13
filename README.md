@@ -18,6 +18,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | alterchan       | alterchan.in         | [DashchanAlterchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanAlterchan.apk)             |
 | anonfm          | anon.fm              | [DashchanAnonfm.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanAnonfm.apk)                   |
 | apachan         | apachan.net          | [DashchanApachan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanApachan.apk)                 |
+| bonzibuddy      | 76chan.org           | [DashchanBonziBuddy.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanBonziBuddy.apk)           |
 | brchan          | brchan.org           | [DashchanBrchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanBrchan.apk)                   |
 | britfags        | britfa.gs            | [DashchanBritfags.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanBritfags.apk)               |
 | cablesix        | cable6.net           | [DashchanCableSix.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanCableSix.apk)               |
@@ -47,7 +48,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | nowere          | nowere.net           | [DashchanNowere.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNowere.apk)                   |
 | nulldvachin     | 02ch.in              | [DashchanNulldvachin.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNulldvachin.apk)         |
 | nulldvachnet    | 02ch.net             | [DashchanNulldvachnet.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNulldvachnet.apk)       |
-| nulleu          | 0chan.eu             | [DashchanNulleu.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNulleu.apk)                   |
+| nulleu          | 0chan.ru.net         | [DashchanNulleu.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNulleu.apk)                   |
 | nullnyan        | 0nyan.ml             | [DashchanNullnyan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNullnyan.apk)               |
 | nulltirech      | 0-chan.ru            | [DashchanNulltirech.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNulltirech.apk)           |
 | onechanca       | 1chan.ca             | [DashchanOnechanca.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanOnechanca.apk)             |
@@ -76,7 +77,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | archiveliom     | loveisover.me        | [DashchanArchiveLiom.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanArchiveLiom.apk)         |
 | archiverbt      | rbt.asia             | [DashchanArchiveRbt.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanArchiveRbt.apk)           |
 | arhivach        | arhivach.org         | [DashchanArhivach.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanArhivach.apk)               |
-| desustorage     | desustorage.org      | [DashchanDesustorage.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanDesustorage.apk)         |
+| desustorage     | desuarchive.org      | [DashchanDesustorage.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanDesustorage.apk)         |
 | fourplebs       | 4plebs.org           | [DashchanFourplebs.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanFourplebs.apk)             |
 | local           | ( local archive )    | [DashchanLocal.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanLocal.apk)                     |
 | randomarchive   | randomarchive.com    | [DashchanRandomArchive.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanRandomArchive.apk)     |
