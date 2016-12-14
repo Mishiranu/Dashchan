@@ -163,8 +163,8 @@ public class DialogUnit implements DialogStack.Callback {
 		}
 
 		@Override
-		public void onImageLoadComplete(String key, Bitmap bitmap) {
-			uiManager.view().displayLoadedThumbnailsForPosts(listView, key, bitmap);
+		public void onImageLoadComplete(String key, Bitmap bitmap, boolean error) {
+			uiManager.view().displayLoadedThumbnailsForPosts(listView, key, bitmap, error);
 		}
 
 		public void requestUpdate() {
@@ -796,9 +796,9 @@ public class DialogUnit implements DialogStack.Callback {
 			boolean allowNavigatePost, GalleryItem.GallerySet gallerySet) {
 		Context styledContext = new ContextThemeWrapper(context, R.style.Theme_Gallery);
 		ArrayList<AttachmentView> attachmentViews = new ArrayList<>();
-		ImageLoader.Observer observer = (key, bitmap) -> {
+		ImageLoader.Observer observer = (key, bitmap, error) -> {
 			for (AttachmentView view : attachmentViews) {
-				view.handleLoadedImage(key, bitmap, false);
+				view.handleLoadedImage(key, bitmap, error, false);
 			}
 		};
 		ImageLoader.getInstance().observable().register(observer);
@@ -956,10 +956,10 @@ public class DialogUnit implements DialogStack.Callback {
 			container.setPadding(0, (int) (12f * density), 0, 0);
 		}
 		HashMap<String, ImageView> taggedImageViews = new HashMap<>();
-		ImageLoader.Observer observer = (key, bitmap) -> {
-			ImageView taggediImageView = taggedImageViews.get(key);
-			if (taggediImageView != null) {
-				taggediImageView.setImageBitmap(bitmap);
+		ImageLoader.Observer observer = (key, bitmap, error) -> {
+			ImageView taggedImageView = taggedImageViews.get(key);
+			if (taggedImageView != null) {
+				taggedImageView.setImageBitmap(bitmap);
 			}
 		};
 		ImageLoader.getInstance().observable().register(observer);

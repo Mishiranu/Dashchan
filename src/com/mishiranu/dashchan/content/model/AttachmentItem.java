@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Locale;
 
-import android.graphics.Bitmap;
 import android.net.Uri;
 
 import chan.content.ChanLocator;
@@ -559,7 +558,7 @@ public abstract class AttachmentItem {
 				ImageLoader.BitmapResult result = ImageLoader.getInstance().loadImage(uri, getChanName(),
 						key, null, fromCacheOnly);
 				if (result != null) {
-					view.handleLoadedImage(key, result.bitmap, true);
+					view.handleLoadedImage(key, result.bitmap, result.error, true);
 				}
 			}
 		}

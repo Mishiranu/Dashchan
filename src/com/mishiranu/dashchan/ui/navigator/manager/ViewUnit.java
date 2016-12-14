@@ -911,24 +911,24 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		}
 	}
 
-	public void displayLoadedThumbnailsForView(View view, String key, Bitmap bitmap) {
+	public void displayLoadedThumbnailsForView(View view, String key, Bitmap bitmap, boolean error) {
 		Object tag = view.getTag();
 		if (view.getTag() instanceof UiManager.Holder) {
 			UiManager.Holder holder = (UiManager.Holder) tag;
 			for (int i = 0; i < holder.getAttachmentViewCount(); i++) {
-				holder.getAttachmentView(i).handleLoadedImage(key, bitmap, false);
+				holder.getAttachmentView(i).handleLoadedImage(key, bitmap, error, false);
 			}
 		}
 	}
 
-	public void displayLoadedThumbnailsForPosts(ListView listView, String key, Bitmap bitmap) {
+	public void displayLoadedThumbnailsForPosts(ListView listView, String key, Bitmap bitmap, boolean error) {
 		for (int i = 0; i < listView.getChildCount(); i++) {
 			View view = listView.getChildAt(i);
 			Object tag = view.getTag();
 			if (tag instanceof PostViewHolder) {
 				PostViewHolder holder = (PostViewHolder) tag;
 				for (int j = 0; j < holder.getAttachmentViewCount(); j++) {
-					holder.getAttachmentView(j).handleLoadedImage(key, bitmap, false);
+					holder.getAttachmentView(j).handleLoadedImage(key, bitmap, error, false);
 				}
 				ArrayList<ImageView> badgeImages = holder.badgeImages;
 				if (badgeImages != null) {

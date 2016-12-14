@@ -73,7 +73,7 @@ public class ImageLoader {
 	}
 
 	public interface Observer {
-		public void onImageLoadComplete(String key, Bitmap bitmap);
+		public void onImageLoadComplete(String key, Bitmap bitmap, boolean error);
 	}
 
 	public WeakObservable<Observer> observable() {
@@ -222,7 +222,7 @@ public class ImageLoader {
 				notFoundMap.put(key, System.currentTimeMillis());
 			}
 			for (Observer observer : observable) {
-				observer.onImageLoadComplete(key, result);
+				observer.onImageLoadComplete(key, result, !fromCacheOnly);
 			}
 		}
 	}
@@ -233,9 +233,11 @@ public class ImageLoader {
 
 	public static class BitmapResult {
 		public final Bitmap bitmap;
+		public final boolean error;
 
-		public BitmapResult(Bitmap bitmap) {
+		public BitmapResult(Bitmap bitmap, boolean error) {
 			this.bitmap = bitmap;
+			this.error = error;
 		}
 	}
 
@@ -266,12 +268,12 @@ public class ImageLoader {
 		}
 		Bitmap bitmap = cacheManager.loadThumbnailMemory(key);
 		if (bitmap != null) {
-			return new BitmapResult(bitmap);
+			return new BitmapResult(bitmap, !fromCacheOnly);
 		}
 		// Check "not found" images once per 5 minutes
 		Long value = notFoundMap.get(key);
 		if (value != null && System.currentTimeMillis() - value < 5 * 60 * 1000) {
-			return new BitmapResult(null);
+			return new BitmapResult(null, !fromCacheOnly);
 		}
 		loaderTask = new LoaderTask(uri, chanName, key, fromCacheOnly);
 		loaderTasks.put(key, loaderTask);

@@ -337,7 +337,7 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 	}
 
 	@Override
-	public void onImageLoadComplete(String key, Bitmap bitmap) {
+	public void onImageLoadComplete(String key, Bitmap bitmap, boolean error) {
 		PagerInstance.ViewHolder[] holders = {pagerInstance.leftHolder,
 				pagerInstance.currentHolder, pagerInstance.rightHolder};
 		for (PagerInstance.ViewHolder holder : holders) {

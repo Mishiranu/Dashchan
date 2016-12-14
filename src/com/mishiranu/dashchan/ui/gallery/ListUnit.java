@@ -455,16 +455,16 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 			ImageLoader.BitmapResult result = ImageLoader.getInstance().loadImage(thumbnailUri, instance.chanName,
 					key, null, false);
 			if (result != null) {
-				view.handleLoadedImage(key, result.bitmap, true);
+				view.handleLoadedImage(key, result.bitmap, result.error, true);
 			}
 		}
 	}
 
 	@Override
-	public void onImageLoadComplete(String key, Bitmap bitmap) {
+	public void onImageLoadComplete(String key, Bitmap bitmap, boolean error) {
 		for (int i = 0; i < gridView.getChildCount(); i++) {
 			GridViewHolder holder = (GridViewHolder) gridView.getChildAt(i).getTag();
-			holder.thumbnail.handleLoadedImage(key, bitmap, false);
+			holder.thumbnail.handleLoadedImage(key, bitmap, error, false);
 		}
 	}
 

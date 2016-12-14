@@ -273,8 +273,8 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 	}
 
 	@Override
-	public void onImageLoadComplete(String key, Bitmap bitmap) {
-		getUiManager().view().displayLoadedThumbnailsForPosts(getListView(), key, bitmap);
+	public void onImageLoadComplete(String key, Bitmap bitmap, boolean error) {
+		getUiManager().view().displayLoadedThumbnailsForPosts(getListView(), key, bitmap, error);
 	}
 
 	public static class SearchExtra implements PageHolder.ParcelableExtra {
