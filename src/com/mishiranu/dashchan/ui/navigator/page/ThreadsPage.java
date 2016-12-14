@@ -636,7 +636,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 	}
 
 	@Override
-	public void onImageLoadComplete(String key, Bitmap bitmap) {
+	public void onImageLoadComplete(String key, Bitmap bitmap, boolean error) {
 		UiManager uiManager = getUiManager();
 		ThreadsAdapter adapter = getAdapter();
 		ListView listView = getListView();
@@ -648,12 +648,12 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 					for (int j = 0; j < viewGroup.getChildCount(); j++) {
 						View child = viewGroup.getChildAt(j);
 						if (child.getVisibility() == View.VISIBLE) {
-							uiManager.view().displayLoadedThumbnailsForView(child, key, bitmap);
+							uiManager.view().displayLoadedThumbnailsForView(child, key, bitmap, error);
 						}
 					}
 				}
 			} else {
-				uiManager.view().displayLoadedThumbnailsForView(view, key, bitmap);
+				uiManager.view().displayLoadedThumbnailsForView(view, key, bitmap, error);
 			}
 		}
 	}

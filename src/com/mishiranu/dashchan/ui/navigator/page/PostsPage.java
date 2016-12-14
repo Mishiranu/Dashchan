@@ -1405,8 +1405,8 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 	}
 
 	@Override
-	public void onImageLoadComplete(String key, Bitmap bitmap) {
-		getUiManager().view().displayLoadedThumbnailsForPosts(getListView(), key, bitmap);
+	public void onImageLoadComplete(String key, Bitmap bitmap, boolean error) {
+		getUiManager().view().displayLoadedThumbnailsForPosts(getListView(), key, bitmap, error);
 	}
 
 	private void serializePosts() {

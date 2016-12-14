@@ -151,10 +151,10 @@ public class AttachmentView extends ClickableView {
 		}
 	}
 
-	public void handleLoadedImage(String key, Bitmap bitmap, boolean instantly) {
+	public void handleLoadedImage(String key, Bitmap bitmap, boolean error, boolean instantly) {
 		if (this.bitmap == null && StringUtils.equals(this.key, key)) {
 			this.bitmap = bitmap;
-			error = bitmap == null;
+			this.error = bitmap == null && error;
 			imageApplyTime = instantly ? 0L : System.currentTimeMillis();
 			invalidate();
 		}
