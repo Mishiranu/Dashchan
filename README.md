@@ -64,6 +64,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | synch           | syn-ch.com           | [DashchanSynch.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanSynch.apk)                     |
 | taima           | 420chan.org          | [DashchanTaima.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanTaima.apk)                     |
 | tiretirech      | 2--ch.ru             | [DashchanTiretirech.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanTiretirech.apk)           |
+| touhouchan      | touhouchan.org       | [DashchanTouhouchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanTouhouchan.apk)           |
 | tumbach         | tumba.ch             | [DashchanTumbach.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanTumbach.apk)                 |
 | twowatch        | 2watch.su            | [DashchanTwowatch.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanTwowatch.apk)               |
 | uboachan        | uboachan.net         | [DashchanUboachan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanUboachan.apk)               |
