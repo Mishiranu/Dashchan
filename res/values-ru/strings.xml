@@ -77,6 +77,7 @@
 	<string name="text_no_icon">Нет иконки</string>
 	<string name="text_in_thread_format_format">В треде %s</string>
 	<string name="text_keep_all">Сохранить все</string>
+	<string name="text_keep_current_version">Без обновления</string>
 	<string name="text_links_attachments_format">Вложений-ссылок: %s</string>
 	<string name="text_local_archive">Локальный архив</string>
 	<string name="text_main_application">Основное приложение</string>
@@ -174,7 +175,6 @@
 	<string name="text_user_warned">Предупреждение</string>
 	<string name="text_warning">Предупреждение</string>
 	<string name="text_with_name_format">С именем %s</string>
-	<string name="text_without_updating">Без обновления</string>
 	<string name="text_yesterday">Вчера</string>
 
 	<!-- Actions -->
@@ -455,7 +455,7 @@
 	<string name="preference_delete_cookies">Удалить куки</string>
 	<string name="preference_display_hidden_threads">Выводить скрытые треды</string>
 	<string name="preference_display_icons">Показывать иконки сообщений</string>
-	<string name="preference_display_icons_summary">Иконки доступны на некоторых разделах</string>
+	<string name="preference_display_icons_summary">Иконки доступны в некоторых разделах</string>
 	<string name="preference_domain">Доменное имя</string>
 	<string name="preference_domain_another">Другой</string>
 	<string name="preference_download_detail_name">Подробное имя файла</string>
