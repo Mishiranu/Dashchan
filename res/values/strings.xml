@@ -72,6 +72,7 @@
 	<string name="text_no_icon">No icon</string>
 	<string name="text_in_thread_format_format">In thread %s</string>
 	<string name="text_keep_all">Keep all</string>
+	<string name="text_keep_current_version">Keep current version</string>
 	<string name="text_links_attachments_format">Links-attachments: %s</string>
 	<string name="text_local_archive">Local archive</string>
 	<string name="text_main_application">Main application</string>
@@ -159,7 +160,6 @@
 	<string name="text_user_warned">User warned</string>
 	<string name="text_warning">Warning</string>
 	<string name="text_with_name_format">With name %s</string>
-	<string name="text_without_updating">Without updating</string>
 	<string name="text_yesterday">Yesterday</string>
 
 	<!-- Actions -->
@@ -429,14 +429,14 @@
 		<item>All threads</item>
 	</string-array>
 	<string name="preference_close_on_back">Closing pages</string>
-	<string name="preference_close_on_back_summary">Close pages by clicking a \"Back\" button</string>
-	<string name="preference_cut_thumbnails">Cut thumbnails</string>
-	<string name="preference_cut_thumbnails_summary">Make thumbnails fill square</string>
+	<string name="preference_close_on_back_summary">Close pages by clicking the \"Back\" button</string>
+	<string name="preference_cut_thumbnails">Crop thumbnails</string>
+	<string name="preference_cut_thumbnails_summary">Thumbnails will fit square</string>
 	<string name="preference_default_board_name">Default starting board</string>
 	<string name="preference_delete_cookies">Delete cookies</string>
 	<string name="preference_display_hidden_threads">Display hidden threads</string>
 	<string name="preference_display_icons">Display post icons</string>
-	<string name="preference_display_icons_summary">Icons are available in some subject boards</string>
+	<string name="preference_display_icons_summary">Icons are available on some boards</string>
 	<string name="preference_domain">Domain name</string>
 	<string name="preference_domain_another">Another</string>
 	<string name="preference_download_detail_name">Detailed file name</string>
@@ -505,8 +505,7 @@
 		predetermined value</string>
 	<string name="preference_proxy">Proxy</string>
 	<string name="preference_recaptcha_javascript">Use JavaScript for reCAPTCHA</string>
-	<string name="preference_recaptcha_javascript_summary">Simplifies captcha
-		Google reCAPTCHA service provides</string>
+	<string name="preference_recaptcha_javascript_summary">Simplifies Google reCAPTCHA</string>
 	<string name="preference_scroll_thread_gallery">Scroll thread when scrolling gallery</string>
 	<string name="preference_statistics">Statistics</string>
 	<string name="preference_subdirectory_pattern">Subdirectory pattern</string>
@@ -527,8 +526,9 @@
 	<string name="preference_use_gms_provider_summary">Requires restart</string>
 	<string name="preference_use_https">Secure connection</string>
 	<string name="preference_use_https_summary">Use HTTPS protocol</string>
-	<string name="preference_use_https_warning">The following option is special for different services such as
-		captchas and app updating. You can configure HTTPS for forums in their own categories.</string>
+	<string name="preference_use_https_warning">The following option is unique to some internal services
+		such as captchas and client updating. HTTPS for forums themselves can be managed
+		in respective boards\' settings page.</string>
 	<string name="preference_use_video_player">Use built-in video player</string>
 	<string name="preference_use_video_player_summary">Play WebM video attachments</string>
 	<string name="preference_use_video_player_warning">You must install decoding libraries to enable
@@ -546,14 +546,14 @@
 	<string name="preference_video_play_after_scroll">Play after scroll</string>
 	<string name="preference_video_play_after_scroll_summary">Hide play button before playing video</string>
 	<string name="preference_video_seek_any_frame">Seek any frame</string>
-	<string name="preference_video_seek_any_frame_summary">Higher accuracy at lower performance</string>
+	<string name="preference_video_seek_any_frame_summary">Increaces accuracy but lowers performance</string>
 	<string name="preference_watcher_auto_disable">Auto disable</string>
 	<string name="preference_watcher_auto_disable_summary">Disable watcher for deleted threads</string>
 	<string name="preference_watcher_refresh_interval">Refresh interval</string>
 	<string name="preference_watcher_refresh_interval_summary_format">Check every %1$d sec.</string>
 	<string name="preference_watcher_refresh_periodically">Refresh periodically</string>
 	<string name="preference_watcher_watch_initially">Watch initially</string>
-	<string name="preference_watcher_watch_initially_summary">Enable watcher immediately when thread added
+	<string name="preference_watcher_watch_initially_summary">Enable watcher immediately when thread is added
 		to favorites</string>
 	<string name="preference_watcher_wifi_only">Wi-Fi only</string>
 

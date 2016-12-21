@@ -96,7 +96,7 @@ public class UpdateFragment extends BaseListFragment {
 				}
 				this.target = target.toString();
 			} else {
-				target = context != null ? context.getString(R.string.text_without_updating) : null;
+				target = context != null ? context.getString(R.string.text_keep_current_version) : null;
 			}
 		}
 	}
@@ -269,7 +269,7 @@ public class UpdateFragment extends BaseListFragment {
 		ListItem listItem = adapter.getItem(position);
 		ArrayList<ReadUpdateTask.UpdateItem> updateItems = updateDataMap.get(listItem.extensionName);
 		ArrayList<String> targets = new ArrayList<>();
-		targets.add(getString(R.string.text_without_updating));
+		targets.add(getString(R.string.text_keep_current_version));
 		for (int i = 1; i < updateItems.size(); i++) {
 			targets.add(updateItems.get(i).title);
 		}
