@@ -478,6 +478,9 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 			GalleryItem galleryItem = galleryItems.get(index);
 			holder.playButton.setVisibility(View.GONE);
 			holder.errorView.setVisibility(View.GONE);
+			if (!active) {
+				holder.progressBar.setVisible(false, true);
+			}
 			boolean hasValidImage = holder.galleryItem == galleryItem && holder.fullLoaded &&
 					!galleryItem.isVideo(galleryInstance.locator);
 			if (hasValidImage) {
