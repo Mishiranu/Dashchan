@@ -124,7 +124,7 @@ public class ImageUnit {
 		if (readFileTask != null) {
 			readFileTask.cancel();
 		}
-		readBitmapCallback = new ReadBitmapCallback(holder);
+		readBitmapCallback = new ReadBitmapCallback(holder.galleryItem);
 		readFileTask = new ReadFileTask(instance.galleryInstance.context, instance.galleryInstance.chanName,
 				uri, cachedFile, true, readBitmapCallback);
 		readFileTask.executeOnExecutor(ReadFileTask.THREAD_POOL_EXECUTOR);
@@ -139,12 +139,10 @@ public class ImageUnit {
 	}
 
 	private class ReadBitmapCallback implements ReadFileTask.Callback, ReadFileTask.CancelCallback {
-		private final PagerInstance.ViewHolder holder;
 		private final GalleryItem galleryItem;
 
-		public ReadBitmapCallback(PagerInstance.ViewHolder holder) {
-			this.holder = holder;
-			galleryItem = holder.galleryItem;
+		public ReadBitmapCallback(GalleryItem galleryItem) {
+			this.galleryItem = galleryItem;
 		}
 
 		private boolean isCurrentHolder() {
@@ -167,8 +165,8 @@ public class ImageUnit {
 		@Override
 		public void onStartDownloading(Uri uri, File file) {
 			if (isCurrentHolder()) {
-				holder.progressBar.setVisible(true, false);
-				holder.progressBar.setIndeterminate(true);
+				instance.currentHolder.progressBar.setVisible(true, false);
+				instance.currentHolder.progressBar.setIndeterminate(true);
 			}
 		}
 
@@ -177,10 +175,10 @@ public class ImageUnit {
 
 		public void attachDownloading() {
 			if (isCurrentHolder()) {
-				holder.progressBar.setVisible(true, false);
-				holder.progressBar.setIndeterminate(pendingProgressMax <= 0);
+				instance.currentHolder.progressBar.setVisible(true, false);
+				instance.currentHolder.progressBar.setIndeterminate(pendingProgressMax <= 0);
 				if (pendingProgressMax > 0) {
-					holder.progressBar.setProgress(pendingProgress, pendingProgressMax, true);
+					instance.currentHolder.progressBar.setProgress(pendingProgress, pendingProgressMax, true);
 				}
 			}
 		}
@@ -190,27 +188,27 @@ public class ImageUnit {
 			readFileTask = null;
 			readBitmapCallback = null;
 			if (isCurrentHolder()) {
-				holder.progressBar.setVisible(false, false);
+				instance.currentHolder.progressBar.setVisible(false, false);
 				if (success) {
 					applyImageFromFile(file);
 				} else {
-					instance.callback.showError(holder, errorItem.toString());
+					instance.callback.showError(instance.currentHolder, errorItem.toString());
 				}
 			}
 		}
 
 		@Override
 		public void onCancelDownloading(Uri uri, File file) {
-			if (isHolder(holder)) {
-				holder.progressBar.setVisible(false, true);
+			if (isCurrentHolder()) {
+				instance.currentHolder.progressBar.setVisible(false, true);
 			}
 		}
 
 		@Override
 		public void onUpdateProgress(long progress, long progressMax) {
 			if (isCurrentHolder()) {
-				holder.progressBar.setIndeterminate(false);
-				holder.progressBar.setProgress((int) progress, (int) progressMax, progress == 0);
+				instance.currentHolder.progressBar.setIndeterminate(false);
+				instance.currentHolder.progressBar.setProgress((int) progress, (int) progressMax, progress == 0);
 			} else {
 				pendingProgress = (int) progress;
 				pendingProgressMax = (int) progressMax;
