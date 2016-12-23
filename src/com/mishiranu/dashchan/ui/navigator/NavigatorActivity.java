@@ -573,7 +573,9 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 			page.resume();
 		}
 		clickableToastHolder.onResume();
-		showRestartDialogIfNeeded();
+		if (!isRecreateCalled()) {
+			showRestartDialogIfNeeded();
+		}
 		ChanManager.getInstance().getInstallationObservable().register(installationCallback);
 		ForegroundManager.register(this);
 	}

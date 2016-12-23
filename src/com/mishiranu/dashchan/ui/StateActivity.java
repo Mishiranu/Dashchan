@@ -48,8 +48,15 @@ public class StateActivity extends Activity {
 		}
 	}
 
+	private boolean isRecreateCalled = false;
+
 	public void postRecreate() {
+		isRecreateCalled = true;
 		getWindow().getDecorView().post(() -> recreate());
+	}
+
+	public boolean isRecreateCalled() {
+		return isRecreateCalled;
 	}
 
 	private boolean onFinishCalled = false;
