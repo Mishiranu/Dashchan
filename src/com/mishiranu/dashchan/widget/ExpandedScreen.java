@@ -89,15 +89,18 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	public ExpandedScreen(Activity activity, boolean enabled) {
 		this.activity = activity;
-		statusBar = new StatusBarController();
+		statusBar = new StatusBarController(activity);
 		navigationBar = new NavigationBarController();
 		Resources resources = activity.getResources();
 		Window window = activity.getWindow();
-		boolean fullScreenLayoutEnabled = false;
+		boolean fullScreenLayoutEnabled;
 		if (C.API_LOLLIPOP) {
 			fullScreenLayoutEnabled = true;
 		} else if (C.API_KITKAT) {
-			fullScreenLayoutEnabled = getSystemBoolResource(resources, "config_enableTranslucentDecor", false);
+			int resId = resources.getIdentifier("config_enableTranslucentDecor", "bool", "android");
+			fullScreenLayoutEnabled = resId != 0 && resources.getBoolean(resId);
+		} else {
+			fullScreenLayoutEnabled = false;
 		}
 		expandingEnabled = enabled;
 		this.fullScreenLayoutEnabled = fullScreenLayoutEnabled;
@@ -141,40 +144,33 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 		}
 	}
 
-	private class StatusBarController {
-		private final int height;
+	private static class StatusBarController {
 		private final int initialActionBarHeight;
-		private boolean shown = false; // Will be changed if enabled and transparent mode
+		private int height = 0;
 
-		public StatusBarController() {
-			Resources resources = activity.getResources();
-			height = getSystemDimenResource(resources, "status_bar_height", 0);
+		public StatusBarController(Activity activity) {
 			// Height may be not changed when screen rotated in insets rect on 4.4 (tested on emulator)
-			initialActionBarHeight = obtainActionBarHeight();
+			initialActionBarHeight = obtainActionBarHeight(activity);
 		}
 
 		public int getHeight() {
 			return height;
 		}
 
-		public boolean isShown() {
-			return shown;
-		}
-
 		public boolean onSystemWindowInsetsChanged(Rect insets) {
-			boolean oldStatusShown = shown;
-			boolean statusShown = insets.top != 0 && insets.top != initialActionBarHeight;
-			if (!statusShown && insets.top != height) {
-				statusShown = insets.top != obtainActionBarHeight();
+			int oldHeight = height;
+			int height = insets.top;
+			if (height > initialActionBarHeight) {
+				height -= initialActionBarHeight; // Fix for KitKat, assuming AB height always > status bar height
 			}
-			shown = statusShown;
-			return statusShown != oldStatusShown;
+			this.height = height;
+			return oldHeight != height;
 		}
 	}
 
-	private class NavigationBarController {
-		private int right;
-		private int bottom;
+	private static class NavigationBarController {
+		private int right = 0;
+		private int bottom = 0;
 
 		public int getRight() {
 			return right;
@@ -182,10 +178,6 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 
 		public int getBottom() {
 			return bottom;
-		}
-
-		public boolean isShown() {
-			return right > 0 || bottom > 0;
 		}
 
 		public boolean onSystemWindowInsetsChanged(Rect insets) {
@@ -198,16 +190,6 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 			}
 			return false;
 		}
-	}
-
-	public int getSystemDimenResource(Resources resources, String name, int fallbackValue) {
-		int resId = resources.getIdentifier(name, "dimen", "android");
-		return resId != 0 ? resources.getDimensionPixelSize(resId) : fallbackValue;
-	}
-
-	public boolean getSystemBoolResource(Resources resources, String name, boolean fallbackValue) {
-		int resId = resources.getIdentifier(name, "bool", "android");
-		return resId != 0 ? resources.getBoolean(resId) : fallbackValue;
 	}
 
 	// The same value is hardcoded in ActionBarImpl.
@@ -242,10 +224,11 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 
 		@Override
 		public void draw(Canvas canvas) {
-			if (statusBar.isShown() && alpha != 0x00 && alpha != 0xff) {
+			int statusBarHeight = statusBar.getHeight();
+			if (statusBarHeight > 0 && alpha != 0x00 && alpha != 0xff) {
 				// Black while action bar animated
 				paint.setColor(Color.BLACK);
-				canvas.drawRect(0f, 0f, getBounds().width(), statusBar.getHeight(), paint);
+				canvas.drawRect(0f, 0f, getBounds().width(), statusBarHeight, paint);
 			}
 		}
 	}
@@ -271,7 +254,7 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 				if (statusBarHeight > 0) {
 					paint.setColor(LOLLIPOP_DIM_COLOR);
 					canvas.drawRect(0f, 0f, width, statusBarHeight, paint);
-					if (statusBar.isShown()) {
+					if (alpha > 0) {
 						paint.setColor(statusBarColor);
 						paint.setAlpha(alpha);
 						canvas.drawRect(0f, 0f, width, statusBarHeight, paint);
@@ -290,7 +273,7 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 			if (navigationBarBottom > 0) {
 				paint.setColor(LOLLIPOP_DIM_COLOR);
 				canvas.drawRect(0f, height - navigationBarBottom, width, height, paint);
-				if (navigationBar.isShown()) {
+				if (alpha > 0) {
 					paint.setColor(navigationBarColor);
 					paint.setAlpha(alpha);
 					canvas.drawRect(0f, height - navigationBarBottom, width, height, paint);
@@ -316,7 +299,7 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 			if (statusBarHeight > 0) {
 				paint.setColor(LOLLIPOP_DIM_COLOR);
 				canvas.drawRect(0f, 0f, width, statusBarHeight, paint);
-				if (statusBar.isShown()) {
+				if (alpha > 0) {
 					paint.setColor(statusBarColor);
 					paint.setAlpha(alpha);
 					canvas.drawRect(0f, 0f, width, statusBarHeight, paint);
@@ -333,9 +316,10 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 			if (drawerOverToolbarEnabled && toolbarView != null) {
 				int width = getBounds().width();
 				StatusBarController statusBar = ExpandedScreen.this.statusBar;
-				if (statusBar.isShown()) {
+				int statusBarHeight = statusBar.getHeight();
+				if (statusBarHeight > 0) {
 					paint.setColor(LOLLIPOP_DIM_COLOR);
-					canvas.drawRect(0f, 0f, width, statusBar.getHeight(), paint);
+					canvas.drawRect(0f, 0f, width, statusBarHeight, paint);
 				}
 			}
 		}
@@ -608,7 +592,7 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 
 	private static final int[] ATTRS_ACTION_BAR_SIZE = {android.R.attr.actionBarSize};
 
-	private int obtainActionBarHeight() {
+	private static int obtainActionBarHeight(Activity activity) {
 		TypedArray typedArray = activity.obtainStyledAttributes(ATTRS_ACTION_BAR_SIZE);
 		int actionHeight = typedArray.getDimensionPixelSize(0, 0);
 		typedArray.recycle();
@@ -617,8 +601,8 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 
 	public void updatePaddings() {
 		if (listView != null && (expandingEnabled || fullScreenLayoutEnabled)) {
-			int actionBarHeight = obtainActionBarHeight();
-			int statusBarHeight = statusBar.isShown() ? statusBar.getHeight() : 0;
+			int actionBarHeight = obtainActionBarHeight(activity);
+			int statusBarHeight = statusBar.getHeight();
 			int bottomNavigationBarHeight = navigationBar.getBottom();
 			int rightNavigationBarHeight = navigationBar.getRight();
 			((View) listView.getParent()).setPadding(0, 0, rightNavigationBarHeight, 0);
