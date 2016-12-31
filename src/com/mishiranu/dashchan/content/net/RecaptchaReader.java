@@ -549,12 +549,8 @@ public class RecaptchaReader implements Handler.Callback {
 				LoadingHolder loadingHolder = (LoadingHolder) msg.obj;
 				LoadingHolder oldLoadingHolder = client.getLoadingHolder();
 				// I can refresh (simulate click or call js method, without reload) if script worked correctly last time
-				boolean canRefresh = loadingHolder.equals(oldLoadingHolder) && oldLoadingHolder.hasValidResult();
-				if (canRefresh && oldLoadingHolder.recaptcha2 && oldLoadingHolder.response != null
-						&& oldLoadingHolder.challenge == null) {
-					// I can't simulate click to new reCAPTCHA if previous result was without captcha (green checkbox)
-					canRefresh = false;
-				}
+				boolean canRefresh = loadingHolder.equals(oldLoadingHolder) && oldLoadingHolder.hasValidResult()
+						&& !oldLoadingHolder.recaptcha2;
 				if (canRefresh) {
 					if (loadingHolder.preload == PRELOAD_STATE_ENABLED &&
 							oldLoadingHolder.preload != PRELOAD_STATE_NONE) {
@@ -566,8 +562,6 @@ public class RecaptchaReader implements Handler.Callback {
 						client.setLoadingHolder(loadingHolder);
 						break;
 					}
-				}
-				if (canRefresh) {
 					// If this is preload request, I mustn't refresh
 					if (loadingHolder.preload != PRELOAD_STATE_ENABLED) {
 						long time = oldLoadingHolder.getTimeFromLastUpdate();
