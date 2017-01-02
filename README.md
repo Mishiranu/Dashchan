@@ -22,6 +22,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | brchan          | brchan.org           | [DashchanBrchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanBrchan.apk)                   |
 | britfags        | britfa.gs            | [DashchanBritfags.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanBritfags.apk)               |
 | cablesix        | cable6.net           | [DashchanCableSix.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanCableSix.apk)               |
+| candydollchan   | candydollchan.org    | [DashchanCandydollchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanCandydollchan.apk)     |
 | chaosach        | chaos.cyberpunk.us   | [DashchanChaosach.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanChaosach.apk)               |
 | chiochan        | 410chan.org          | [DashchanChiochan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanChiochan.apk)               |
 | chuckdfwk       | chuck.dfwk.ru        | [DashchanChuckDfwk.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanChuckDfwk.apk)             |
@@ -82,6 +83,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | fourplebs       | 4plebs.org           | [DashchanFourplebs.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanFourplebs.apk)             |
 | local           | ( local archive )    | [DashchanLocal.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanLocal.apk)                     |
 | randomarchive   | randomarchive.com    | [DashchanRandomArchive.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanRandomArchive.apk)     |
+| yakujimoe       | ii.yakuji.moe        | [DashchanYakujiMoe.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanYakujiMoe.apk)             |
 
 ## Installation Guide
 
