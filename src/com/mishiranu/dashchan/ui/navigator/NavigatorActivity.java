@@ -471,6 +471,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		if (!wideMode && !drawerLayout.isDrawerOpen(Gravity.START)) {
 			drawerListView.setSelection(0);
 		}
+		setSearchMode(false);
 		invalidateOptionsMenu();
 		invalidateHomeUpState();
 		notifyTitleChanged();
@@ -480,7 +481,6 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	private void cleanupPage() {
 		if (page != null) {
 			PostingService.clearNewThreadData();
-			setSearchMode(false);
 			page.cleanup();
 			page = null;
 		}
