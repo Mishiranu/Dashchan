@@ -88,21 +88,25 @@ public class PageHolder implements Parcelable {
 				|| content == Content.HISTORY;
 	}
 
+	public boolean isMultiChanAllowed() {
+		return content == Content.HISTORY;
+	}
+
 	public boolean is(String chanName, String boardName, String threadNumber, Content content) {
 		if (this.content != content) {
 			return false;
 		}
-		if (!StringUtils.equals(this.chanName, chanName)) {
+		if (!StringUtils.equals(this.chanName, chanName) && !(isMultiChanAllowed() && Preferences.isMergeChans())) {
 			return false;
 		}
-		boolean compareContentTypeOnly1 = false;
-		boolean compareContentTypeOnly2 = false;
+		boolean compareContentTypeOnlyThis = false;
+		boolean compareContentTypeOnlyCompared = false;
 		switch (this.content) {
 			case SEARCH:
 			case ALL_BOARDS:
 			case USER_BOARDS:
 			case HISTORY: {
-				compareContentTypeOnly1 = true;
+				compareContentTypeOnlyThis = true;
 				break;
 			}
 			default: {
@@ -114,17 +118,17 @@ public class PageHolder implements Parcelable {
 			case ALL_BOARDS:
 			case USER_BOARDS:
 			case HISTORY: {
-				compareContentTypeOnly2 = true;
+				compareContentTypeOnlyCompared = true;
 				break;
 			}
 			default: {
 				break;
 			}
 		}
-		if (compareContentTypeOnly1 && compareContentTypeOnly2) {
+		if (compareContentTypeOnlyThis && compareContentTypeOnlyCompared) {
 			return this.content == content;
 		}
-		if (compareContentTypeOnly1 || compareContentTypeOnly2) {
+		if (compareContentTypeOnlyThis || compareContentTypeOnlyCompared) {
 			return false;
 		}
 		return StringUtils.equals(this.boardName, boardName) && StringUtils.equals(this.threadNumber, threadNumber);

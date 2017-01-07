@@ -28,6 +28,7 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.content.storage.HistoryDatabase;
+import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.ui.navigator.adapter.HistoryAdapter;
 import com.mishiranu.dashchan.widget.PullableListView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
@@ -37,16 +38,43 @@ public class HistoryPage extends ListPage<HistoryAdapter> {
 	protected void onCreate() {
 		PullableListView listView = getListView();
 		PageHolder pageHolder = getPageHolder();
-		HistoryAdapter adapter = new HistoryAdapter(pageHolder.chanName);
+		HistoryAdapter adapter = new HistoryAdapter();
 		initAdapter(adapter, null);
 		listView.getWrapper().setPullSides(PullableWrapper.Side.NONE);
-		if (adapter.isEmpty()) {
-			switchView(ViewType.ERROR, R.string.message_empty_history);
-		} else {
+		if (updateConfiguration(true)) {
 			showScaleAnimation();
 			if (pageHolder.position != null) {
 				pageHolder.position.apply(getListView());
 			}
+		}
+	}
+
+	@Override
+	protected void onResume() {
+		updateConfiguration(false);
+	}
+
+	private boolean updateConfiguration(boolean create) {
+		PageHolder pageHolder = getPageHolder();
+		HistioryExtra extra = getExtra();
+		HistoryAdapter adapter = getAdapter();
+		String chanName = pageHolder.chanName;
+		boolean mergeChans = Preferences.isMergeChans();
+		boolean update = !mergeChans && !chanName.equals(extra.chanName) || mergeChans != extra.mergeChans;
+		if (create || update) {
+			adapter.updateConfiguraion(mergeChans ? null : chanName);
+		}
+		if (update) {
+			extra.chanName = chanName;
+			extra.mergeChans = mergeChans;
+			pageHolder.position = null;
+		}
+		if (adapter.isEmpty()) {
+			switchView(ViewType.ERROR, R.string.message_empty_history);
+			return false;
+		} else {
+			switchView(ViewType.LIST, null);
+			return true;
 		}
 	}
 
@@ -81,7 +109,8 @@ public class HistoryPage extends ListPage<HistoryAdapter> {
 				new AlertDialog.Builder(getActivity()).setMessage(R.string.message_clear_history_confirm)
 						.setNegativeButton(android.R.string.cancel, null)
 						.setPositiveButton(android.R.string.ok, (dialog, which1) -> {
-					HistoryDatabase.getInstance().clearAllHistory(getPageHolder().chanName);
+					HistioryExtra extra = getExtra();
+					HistoryDatabase.getInstance().clearAllHistory(extra.mergeChans ? null : extra.chanName);
 					getAdapter().clear();
 					switchView(ViewType.ERROR, R.string.message_empty_history);
 				}).show();
@@ -141,5 +170,18 @@ public class HistoryPage extends ListPage<HistoryAdapter> {
 	@Override
 	public void onSearchQueryChange(String query) {
 		getAdapter().applyFilter(query);
+	}
+
+	public static class HistioryExtra implements PageHolder.Extra {
+		private String chanName;
+		private boolean mergeChans = false;
+	}
+
+	private HistioryExtra getExtra() {
+		PageHolder pageHolder = getPageHolder();
+		if (!(pageHolder.extra instanceof HistioryExtra)) {
+			pageHolder.extra = new HistioryExtra();
+		}
+		return (HistioryExtra) pageHolder.extra;
 	}
 }

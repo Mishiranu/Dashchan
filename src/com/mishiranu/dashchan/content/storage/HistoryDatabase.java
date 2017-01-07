@@ -94,10 +94,11 @@ public class HistoryDatabase implements BaseColumns {
 
 	public ArrayList<HistoryItem> getAllHistory(String chanName) {
 		synchronized (this) {
-			clearOldHistory(chanName);
+			int maxCount = chanName != null ? HISTORY_SIZE : 5 * HISTORY_SIZE;
 			ArrayList<HistoryItem> historyItems = new ArrayList<>();
-			Cursor cursor = database.query(DatabaseHelper.TABLE_HISTORY, ALL_COLUMNS, buildWhere(chanName), null, null,
-					null, COLUMN_CREATED + " desc", Integer.toString(HISTORY_SIZE));
+			Cursor cursor = database.query(DatabaseHelper.TABLE_HISTORY, ALL_COLUMNS,
+					chanName != null ? buildWhere(chanName) : null, null, null,
+					null, COLUMN_CREATED + " desc", Integer.toString(maxCount));
 			cursor.moveToFirst();
 			while (!cursor.isAfterLast()) {
 				HistoryItem historyItem = new HistoryItem();
@@ -148,7 +149,7 @@ public class HistoryDatabase implements BaseColumns {
 
 	public void clearAllHistory(String chanName) {
 		synchronized (this) {
-			database.delete(DatabaseHelper.TABLE_HISTORY, buildWhere(chanName), null);
+			database.delete(DatabaseHelper.TABLE_HISTORY, chanName != null ? buildWhere(chanName) : null, null);
 		}
 	}
 

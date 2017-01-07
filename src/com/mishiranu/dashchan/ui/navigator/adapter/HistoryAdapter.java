@@ -35,7 +35,7 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ViewFactory;
 
 public class HistoryAdapter extends BaseAdapter {
-	private final String chanName;
+	private String chanName;
 
 	private final ArrayList<Object> items = new ArrayList<>();
 	private final ArrayList<Object> filteredItems = new ArrayList<>();
@@ -52,8 +52,9 @@ public class HistoryAdapter extends BaseAdapter {
 	private static final int HEADER_WEEK = 3;
 	private static final int HEADER_OLD = 4;
 
-	public HistoryAdapter(String chanName) {
+	public void updateConfiguraion(String chanName) {
 		this.chanName = chanName;
+		items.clear();
 		ArrayList<HistoryDatabase.HistoryItem> historyItems = HistoryDatabase.getInstance().getAllHistory(chanName);
 		Calendar calendar = Calendar.getInstance();
 		calendar.set(Calendar.HOUR_OF_DAY, 0);
@@ -101,6 +102,11 @@ public class HistoryAdapter extends BaseAdapter {
 				items.add(MainApplication.getInstance().getString(resId));
 			}
 			items.add(historyItem);
+		}
+		if (filterMode) {
+			applyFilter(filterText);
+		} else {
+			notifyDataSetChanged();
 		}
 	}
 
@@ -216,9 +222,14 @@ public class HistoryAdapter extends BaseAdapter {
 		}
 		if (historyItem != null) {
 			holder.text1.setText(historyItem.title);
-			String title = ChanConfiguration.get(chanName).getBoardTitle(historyItem.boardName);
-			holder.text2.setText(StringUtils.isEmpty(historyItem.boardName) ? title
-					: StringUtils.formatBoardTitle(chanName, historyItem.boardName, title));
+			ChanConfiguration configuration = ChanConfiguration.get(historyItem.chanName);
+			String title = configuration.getBoardTitle(historyItem.boardName);
+			title = StringUtils.isEmpty(historyItem.boardName) ? title
+					: StringUtils.formatBoardTitle(historyItem.chanName, historyItem.boardName, title);
+			if (chanName == null) {
+				title = configuration.getTitle() + " — " + title;
+			}
+			holder.text2.setText(title);
 		} else {
 			((TextView) convertView).setText((String) item);
 		}
