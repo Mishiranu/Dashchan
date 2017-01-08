@@ -649,7 +649,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 			if (setSearchMode(false)) {
 				return;
 			}
-			PageHolder previousPageHolder = pageManager.getTargetPreviousPage();
+			PageHolder previousPageHolder = pageManager.getTargetPreviousPage(true);
 			if (previousPageHolder != null) {
 				pageManager.removeCurrentPageFromStack();
 				handleData(previousPageHolder, true);
@@ -1127,7 +1127,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		if (page != null) {
 			PageHolder pageHolder = pageManager.getCurrentPage();
 			if (pageHolder != null && isPageThreadsPosts(pageHolder, chanName, boardName, threadNumber)) {
-				PageHolder previousPageHolder = pageManager.getTargetPreviousPage();
+				PageHolder previousPageHolder = pageManager.getTargetPreviousPage(false);
 				pageManager.removeCurrentPage();
 				if (previousPageHolder != null) {
 					handleData(previousPageHolder, true);
