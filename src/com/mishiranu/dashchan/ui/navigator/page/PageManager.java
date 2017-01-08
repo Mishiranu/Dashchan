@@ -207,16 +207,21 @@ public class PageManager {
 		return getStackSize(pageHolder.chanName);
 	}
 
-	public PageHolder getTargetPreviousPage() {
+	public PageHolder getTargetPreviousPage(boolean allowForeignChan) {
 		boolean mergeChans = Preferences.isMergeChans();
 		int current = pageHolders.indexOf(pageHolder);
+		PageHolder foreignChanPageHolder = null;
 		for (int i = current - 1; i >= 0; i--) {
 			PageHolder pageHolder = pageHolders.get(i);
-			if (pageHolder.inStack && (mergeChans || pageHolder.chanName.equals(this.pageHolder.chanName))) {
-				return pageHolder;
+			if (pageHolder.inStack) {
+				if (mergeChans || pageHolder.chanName.equals(this.pageHolder.chanName)) {
+					return pageHolder;
+				} else if (allowForeignChan && foreignChanPageHolder == null) {
+					foreignChanPageHolder = pageHolder;
+				}
 			}
 		}
-		return null;
+		return foreignChanPageHolder;
 	}
 
 	public PageHolder getLastPage(String chanName) {
