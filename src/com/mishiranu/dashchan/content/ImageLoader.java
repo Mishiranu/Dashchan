@@ -44,6 +44,7 @@ import com.mishiranu.dashchan.content.async.HttpHolderTask;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.IOUtils;
+import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.WeakObservable;
 
 public class ImageLoader {
@@ -210,7 +211,7 @@ public class ImageLoader {
 					notFound = true;
 				}
 			} catch (Exception | OutOfMemoryError e) {
-				// Ignore exception
+				Log.persistent().stack(e);
 			}
 			return bitmap;
 		}
