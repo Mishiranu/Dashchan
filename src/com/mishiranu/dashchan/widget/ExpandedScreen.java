@@ -599,15 +599,38 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 		return actionHeight;
 	}
 
+	private static final int KEEP = Integer.MAX_VALUE;
+
+	private static void setNewPadding(View view, int left, int top, int right, int bottom) {
+		int oldLeft = view.getPaddingLeft();
+		int oldTop = view.getPaddingTop();
+		int oldRight = view.getPaddingRight();
+		int oldBottom = view.getPaddingBottom();
+		if (left == KEEP) {
+			left = oldLeft;
+		}
+		if (top == KEEP) {
+			top = oldTop;
+		}
+		if (right == KEEP) {
+			right = oldRight;
+		}
+		if (bottom == KEEP) {
+			bottom = oldBottom;
+		}
+		if (oldLeft != left || oldTop != top || oldRight != right || oldBottom != bottom) {
+			view.setPadding(left, top, right, bottom);
+		}
+	}
+
 	public void updatePaddings() {
 		if (listView != null && (expandingEnabled || fullScreenLayoutEnabled)) {
 			int actionBarHeight = obtainActionBarHeight(activity);
 			int statusBarHeight = statusBar.getHeight();
 			int bottomNavigationBarHeight = navigationBar.getBottom();
 			int rightNavigationBarHeight = navigationBar.getRight();
-			((View) listView.getParent()).setPadding(0, 0, rightNavigationBarHeight, 0);
-			listView.setPadding(listView.getPaddingLeft(), statusBarHeight + actionBarHeight,
-					listView.getPaddingRight(), bottomNavigationBarHeight);
+			setNewPadding((View) listView.getParent(), 0, 0, rightNavigationBarHeight, 0);
+			setNewPadding(listView, KEEP, statusBarHeight + actionBarHeight, KEEP, bottomNavigationBarHeight);
 			if (actionModeView != null) {
 				((ViewGroup.MarginLayoutParams) actionModeView.getLayoutParams()).rightMargin =
 						rightNavigationBarHeight;
@@ -622,13 +645,10 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 				int paddingTop = C.API_LOLLIPOP && drawerOverToolbarEnabled && toolbarView != null
 						? statusBarHeight : statusBarHeight + actionBarHeight;
 				if (drawerHeader != null) {
-					drawerHeader.setPadding(drawerHeader.getPaddingLeft(), paddingTop,
-							drawerHeader.getPaddingRight(), drawerHeader.getPaddingBottom());
-					drawerListView.setPadding(drawerListView.getPaddingLeft(), 0,
-							drawerListView.getPaddingRight(), bottomNavigationBarHeight);
+					setNewPadding(drawerHeader, KEEP, paddingTop, KEEP, KEEP);
+					setNewPadding(drawerListView, KEEP, 0, KEEP, bottomNavigationBarHeight);
 				} else {
-					drawerListView.setPadding(drawerListView.getPaddingLeft(), paddingTop,
-							drawerListView.getPaddingRight(), bottomNavigationBarHeight);
+					setNewPadding(drawerListView, KEEP, paddingTop, KEEP, bottomNavigationBarHeight);
 				}
 			}
 			if (contentForeground != null) {
