@@ -107,6 +107,11 @@
 		android:paddingBottom="2dp" />
 
 	<View
+		android:id="@+id/text_selection_padding"
+		android:layout_width="match_parent"
+		android:layout_height="0dp" />
+
+	<View
 		android:id="@+id/text_bar_padding"
 		android:layout_width="match_parent"
 		android:layout_height="0dp" />
