@@ -390,6 +390,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			holder.comment = (CommentTextView) convertView.findViewById(R.id.comment);
 			holder.attachmentInfo = (TextView) convertView.findViewById(R.id.attachment_info);
 			holder.thumbnail = (AttachmentView) convertView.findViewById(R.id.thumbnail);
+			holder.textSelectionPadding = convertView.findViewById(R.id.text_selection_padding);
 			holder.textBarPadding = convertView.findViewById(R.id.text_bar_padding);
 			holder.bottomBar = convertView.findViewById(R.id.bottom_bar);
 			holder.bottomBarReplies = (TextView) convertView.findViewById(R.id.bottom_bar_replies);
@@ -499,11 +500,11 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		}
 		holder.comment.setSpoilersEnabled(!Preferences.isShowSpoilers());
 		holder.comment.setSubjectAndComment(makeHighlightedText(subject), makeHighlightedText(comment));
-		holder.comment.setAppendAdditionalPadding(demandSet.lastInList);
 		holder.comment.setReplyable(configurationSet.replyable, postNumber);
 		holder.comment.setLinkListener(configurationSet.linkListener != null ? configurationSet.linkListener
 				: defaultLinkListener, chanName, boardName, threadNumber);
 		holder.comment.setVisibility(subject.length() > 0 || comment.length() > 0 ? View.VISIBLE : View.GONE);
+		holder.comment.bindSelectionPaddingView(demandSet.lastInList ? holder.textSelectionPadding : null);
 
 		handlePostViewIcons(holder);
 		handlePostViewAttachments(holder, configurationSet, demandSet);
@@ -981,7 +982,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 				final ListView listView = (ListView) view.getParent();
 				final int position = listView.getPositionForView(view);
 				holder.comment.startSelection();
-				int padding = holder.comment.getAdditionalPadding();
+				int padding = holder.comment.getSelectionPadding();
 				if (padding > 0) {
 					final int listHeight = listView.getHeight() - listView.getPaddingTop() -
 							listView.getPaddingBottom();
@@ -1213,6 +1214,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		public CommentTextView comment;
 		public long lastCommentClick;
 		public TextView attachmentInfo;
+		public View textSelectionPadding;
 		public View textBarPadding;
 		public View bottomBar;
 		public TextView bottomBarReplies;

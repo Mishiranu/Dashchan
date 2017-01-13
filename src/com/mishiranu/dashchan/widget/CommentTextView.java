@@ -16,9 +16,6 @@
 
 package com.mishiranu.dashchan.widget;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,8 +25,10 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.net.Uri;
 import android.os.Build;
+import android.os.SystemClock;
 import android.text.Layout;
 import android.text.Selection;
+import android.text.SpanWatcher;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -56,7 +55,7 @@ import com.mishiranu.dashchan.text.style.LinkSpan;
 import com.mishiranu.dashchan.text.style.OverlineSpan;
 import com.mishiranu.dashchan.text.style.SpoilerSpan;
 import com.mishiranu.dashchan.ui.posting.Replyable;
-import com.mishiranu.dashchan.util.Log;
+import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 
@@ -67,17 +66,20 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 public class CommentTextView extends TextView {
 	private final int[][] deltaAttempts;
 	private final int touchSlop;
-	private final int additionalPadding;
+	private final int selectionPadding;
 
+	private boolean selectionMode;
 	private ClickableSpan spanToClick;
 	private float startX, startY;
 	private float lastX, lastY;
 	private long lastXYSet;
-	private long lastStartSelectionCalled;
 	private int currentMax = Integer.MAX_VALUE, reservedMax;
 	private boolean maxModeLines;
-	private boolean appendAdditionalPadding;
+	private View selectionPaddingView;
 	private boolean useAdditionalPadding;
+
+	private ActionMode currentActionMode;
+	private Menu currentActionModeMenu;
 
 	private CommentListener commentListener;
 	private LinkListener linkListener;
@@ -138,8 +140,9 @@ public class CommentTextView extends TextView {
 			add += BASE_POINTS.length;
 		}
 		touchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
-		additionalPadding = (int) (64f * density);
+		selectionPadding = (int) (64f * density);
 		super.setCustomSelectionActionModeCallback(new CustomSelectionCallback());
+		super.setTextIsSelectable(true);
 	}
 
 	public interface ClickableSpan {
@@ -202,54 +205,125 @@ public class CommentTextView extends TextView {
 		}
 	}
 
+	@Override
+	protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+		super.onLayout(changed, left, top, right, bottom);
+		// Cause mEditor.prepareCursorControllers() call to enabled selection controllers
+		// mSelectionControllerEnabled can be set to false before view laid out
+		setCursorVisible(false);
+		setCursorVisible(true);
+	}
+
 	public void setSpoilersEnabled(boolean enabled) {
 		// Must invalidate text after changing this field
 		spoilersEnabled = enabled;
 	}
 
-	private final Runnable syncRunnable = () -> commentListener.onRequestSiblingsInvalidate(CommentTextView.this);
+	private void setSelectionMode(boolean selectionMode) {
+		if (this.selectionMode != selectionMode) {
+			this.selectionMode = selectionMode;
+			updateSelectablePaddings();
+			updateUseAdditionalPadding();
+			if (!selectionMode && isFocused()) {
+				View rootView = ListViewUtils.getRootViewInList(this);
+				if (rootView != null) {
+					View listView = (View) rootView.getParent();
+					listView.requestFocus(); // Move focus from this view to list
+				}
+			}
+		}
+	}
+
+	private Runnable resetSelectionRunnable = () -> {
+		if (selectionMode && currentActionMode == null) {
+			CharSequence text = getText();
+			if (text instanceof Spannable) {
+				Selection.removeSelection((Spannable) text);
+			}
+			setSelectionMode(false);
+		}
+	};
 
 	private static final Pattern LIST_PATTERN = Pattern.compile("^(?:(?:\\d+[\\.\\)]|[\u2022-]) |>(?!>) ?)");
 
-	private void selectNecessaryText(int start, int end) {
+	private void sendFakeMotionEvent(int action, int x, int y) {
+		MotionEvent motionEvent = MotionEvent.obtain(0, SystemClock.uptimeMillis(),action, x, y, 0);
+		onTouchEvent(motionEvent);
+		motionEvent.recycle();
+	}
+
+	private void startSelection(int x, int y, int start, int end) {
 		CharSequence text = getText();
 		if (!(text instanceof Spannable)) {
 			return;
 		}
 		Spannable spannable = (Spannable) text;
 		int length = spannable.length();
-		if (lastStartSelectionCalled - lastXYSet <= getPreferredDoubleTapTimeout() &&
+		Layout layout = getLayout();
+		if (x != Integer.MAX_VALUE && y != Integer.MAX_VALUE &&
 				(start < 0 || end < 0 || start > length || end > length || start >= end)) {
 			start = 0;
 			end = spannable.length();
-			int offset = getOffsetForPosition(lastX, lastY);
-			if (offset >= 0 && offset < length) {
-				for (int i = offset; i >= 0; i--) {
-					if (spannable.charAt(i) == '\n') {
-						start = i + 1;
-						break;
+			int lx = x - getTotalPaddingLeft();
+			int ly = y - getTotalPaddingTop();
+			if (lx >= 0 && ly >= 0 && lx < getWidth() - getTotalPaddingRight() &&
+					ly < getHeight() - getTotalPaddingBottom()) {
+				int offset = layout.getOffsetForHorizontal(layout.getLineForVertical(ly), lx);
+				if (offset >= 0 && offset < length) {
+					for (int i = offset; i >= 0; i--) {
+						if (spannable.charAt(i) == '\n') {
+							start = i + 1;
+							break;
+						}
 					}
-				}
-				for (int i = offset; i < length; i++) {
-					if (spannable.charAt(i) == '\n') {
-						end = i;
-						break;
+					for (int i = offset; i < length; i++) {
+						if (spannable.charAt(i) == '\n') {
+							end = i;
+							break;
+						}
 					}
-				}
-				if (end > start) {
-					String part = spannable.subSequence(start, end).toString();
-					Matcher matcher = LIST_PATTERN.matcher(part);
-					if (matcher.find()) {
-						start += matcher.group().length();
+					if (end > start) {
+						String part = spannable.subSequence(start, end).toString();
+						Matcher matcher = LIST_PATTERN.matcher(part);
+						if (matcher.find()) {
+							start += matcher.group().length();
+						}
 					}
 				}
 			}
 		}
-		if (end <= start) {
+		if (end <= start || start < 0) {
 			start = 0;
 			end = spannable.length();
 		}
+		x = getTotalPaddingLeft();
+		y = getTotalPaddingRight();
+		setSelectionMode(true);
+		sendFakeMotionEvent(MotionEvent.ACTION_DOWN, x, y);
+		sendFakeMotionEvent(MotionEvent.ACTION_UP, x, y);
+		sendFakeMotionEvent(MotionEvent.ACTION_DOWN, x, y);
+		sendFakeMotionEvent(MotionEvent.ACTION_UP, x, y);
 		Selection.setSelection(spannable, start, end);
+		removeCallbacks(resetSelectionRunnable);
+		postDelayed(resetSelectionRunnable, 500);
+	}
+
+	public void startSelection() {
+		int x = Integer.MAX_VALUE;
+		int y = Integer.MAX_VALUE;
+		if (System.currentTimeMillis() - lastXYSet <= getPreferredDoubleTapTimeout()) {
+			x = (int) lastX;
+			y = (int) lastY;
+		}
+		startSelection(x, y, -1, -1);
+	}
+
+	public void startSelection(int start, int end) {
+		startSelection(Integer.MAX_VALUE, Integer.MAX_VALUE, start, end);
+	}
+
+	public boolean isSelectionEnabled() {
+		return selectionMode;
 	}
 
 	public void setReplyable(Replyable replyable, String postNumber) {
@@ -290,10 +364,7 @@ public class CommentTextView extends TextView {
 		return null;
 	}
 
-	private ActionMode currentActionMode;
-	private Menu currentActionModeMenu;
-
-	private class CustomSelectionCallback implements ActionMode.Callback, Runnable {
+	private class CustomSelectionCallback implements ActionMode.Callback {
 		private void addCopyMenuItemIfNotNull(Menu menu, MenuItem menuItem, int flags) {
 			if (menuItem != null) {
 				menu.add(0, menuItem.getItemId(), 0, menuItem.getTitle()).setIcon(menuItem.getIcon())
@@ -306,6 +377,7 @@ public class CommentTextView extends TextView {
 		public boolean onCreateActionMode(ActionMode mode, Menu menu) {
 			currentActionMode = mode;
 			currentActionModeMenu = menu;
+			setSelectionMode(true);
 			int pasteResId = ResourceUtils.getSystemSelectionIcon(getContext(), "actionModePasteDrawable",
 					"ic_menu_paste_holo_dark");
 			SparseArray<MenuItem> validItems = new SparseArray<>();
@@ -348,8 +420,8 @@ public class CommentTextView extends TextView {
 			if (currentActionMode == mode) {
 				currentActionMode = null;
 				currentActionModeMenu = null;
+				setSelectionMode(false);
 			}
-			post(this);
 		}
 
 		@Override
@@ -388,11 +460,6 @@ public class CommentTextView extends TextView {
 			}
 			return true;
 		}
-
-		@Override
-		public void run() {
-			setTextIsSelectable(false);
-		}
 	}
 
 	@Override
@@ -421,37 +488,29 @@ public class CommentTextView extends TextView {
 		super.setMaxHeight(maxHeight);
 	}
 
-	@Override
-	public void setPadding(int left, int top, int right, int bottom) {
-		if (useAdditionalPadding) {
-			bottom += additionalPadding;
+	public void bindSelectionPaddingView(View selectionPaddingView) {
+		if (this.selectionPaddingView != null) {
+			this.selectionPaddingView.getLayoutParams().height = 0;
 		}
-		super.setPadding(left, top, right, bottom);
-	}
-
-	public void setAppendAdditionalPadding(boolean appendAdditionalPadding) {
-		this.appendAdditionalPadding = appendAdditionalPadding;
+		this.selectionPaddingView = selectionPaddingView;
 		updateUseAdditionalPadding();
 	}
 
-	public int getAdditionalPadding() {
-		return appendAdditionalPadding ? additionalPadding : 0;
+	public int getSelectionPadding() {
+		return selectionPaddingView != null ? selectionPadding : 0;
 	}
 
 	private void updateUseAdditionalPadding() {
-		boolean needUseAdditionalPadding = appendAdditionalPadding && isTextSelectable();
-		if (needUseAdditionalPadding != useAdditionalPadding) {
-			int bottom = getPaddingBottom();
-			bottom = needUseAdditionalPadding ? bottom + additionalPadding : bottom - additionalPadding;
-			// Set false to normal calculate padding (see setPadding method overriding)
-			useAdditionalPadding = false;
-			setPadding(getPaddingLeft(), getPaddingTop(), getPaddingRight(), bottom);
-			useAdditionalPadding = needUseAdditionalPadding;
+		boolean useAdditionalPadding = selectionPaddingView != null && selectionMode;
+		if (this.useAdditionalPadding != useAdditionalPadding) {
+			selectionPaddingView.getLayoutParams().height = useAdditionalPadding ? selectionPadding : 0;
+			selectionPaddingView.requestLayout();
+			this.useAdditionalPadding = useAdditionalPadding;
 		}
 	}
 
-	private void updateSelectablePaddings(boolean selectable) {
-		if (selectable) {
+	private void updateSelectablePaddings() {
+		if (selectionMode) {
 			reservedMax = currentMax;
 			super.setMaxHeight(Integer.MAX_VALUE);
 		} else if (reservedMax > 0) {
@@ -466,130 +525,22 @@ public class CommentTextView extends TextView {
 
 	@Override
 	public void setTextIsSelectable(boolean selectable) {
-		if (selectable == isTextSelectable()) {
-			return;
-		}
-		updateSelectablePaddings(selectable);
-		try {
-			super.setTextIsSelectable(selectable);
-		} catch (ArrayIndexOutOfBoundsException e) {
-			// Fix spannable issue on Nougat
-			super.setTextIsSelectable(!selectable);
-			updateSelectablePaddings(!selectable);
-			return;
-		}
-		updateUseAdditionalPadding();
+		// Unsupported operation
 	}
-
-	private int setTextDepth = 0;
 
 	@Override
-	public void setText(CharSequence text, BufferType type) {
-		// Some devices may call setText recursively; fix it
-		if (setTextDepth > 0) {
-			String className = getClass().getName();
-			StackTraceElement[] elements = Thread.currentThread().getStackTrace();
-			for (int i = 0; i < elements.length; i++) {
-				StackTraceElement element = elements[i];
-				if (className.equals(element.getClassName()) && "setText".equals(element.getMethodName())) {
-					if (i + 1 < elements.length) {
-						element = elements[i + 1];
-						if (TextView.class.getName().equals(element.getClassName()) &&
-									"getIterableTextForAccessibility".equals(element.getMethodName())) {
-							// This will cause StackOverflowError
-							return;
-						}
-					}
-					break;
-				}
-			}
-		}
-		setTextDepth++;
-		try {
-			super.setText(text, type);
-		} finally {
-			setTextDepth--;
-		}
+	public void scrollTo(int x, int y) {
+		// Ignore scrolling
 	}
 
-	private interface EditorCallable {
-		public boolean call(Object editor, Class<?> editorClass) throws Exception;
+	@Override
+	public void scrollBy(int x, int y) {
+		// Ignore scrolling
 	}
 
-	private final EditorCallable editorPerformLongClick = (editor, editorClass) -> {
-		Method method = editorClass.getDeclaredMethod("performLongClick", boolean.class);
-		method.setAccessible(true);
-		return (boolean) method.invoke(editor, false);
-	};
-
-	private final EditorCallable editorStartSelectionActionMode = (editor, editorClass) -> {
-		Method method = editorClass.getDeclaredMethod("startSelectionActionMode");
-		method.setAccessible(true);
-		return (boolean) method.invoke(editor);
-	};
-
-	private boolean callEditor(EditorCallable editorCallable) {
-		try {
-			Object editor;
-			Class<?> editorClass;
-			if (EDITOR_FIELD != null) {
-				editor = EDITOR_FIELD.get(CommentTextView.this);
-				editorClass = EDITOR_FIELD.getType();
-			} else {
-				editor = CommentTextView.this;
-				editorClass = TextView.class;
-			}
-			return editorCallable.call(editor, editorClass);
-		} catch (InvocationTargetException e) {
-			Log.persistent().write(e.getCause());
-			return false;
-		} catch (Exception e) {
-			Log.persistent().write(e);
-			return false;
-		}
-	}
-
-	public void startSelection() {
-		startSelection(-1, -1);
-	}
-
-	public void startSelection(int start, int end) {
-		lastStartSelectionCalled = System.currentTimeMillis();
-		setTextIsSelectable(true);
-		if (ENABLE_HTC_TEXT_SELECTION_METHOD != null) {
-			try {
-				ENABLE_HTC_TEXT_SELECTION_METHOD.invoke(this, false, 0);
-			} catch (Exception e) {
-				// Ignore exception
-			}
-		}
-		selectNecessaryText(start, end);
-		if (C.API_NOUGAT) {
-			post(() -> {
-				if (callEditor(editorPerformLongClick)) {
-					post(() -> {
-						if (!callEditor(editorStartSelectionActionMode)) {
-							setTextIsSelectable(false);
-						}
-					});
-				} else {
-					setTextIsSelectable(false);
-				}
-			});
-		} else {
-			if (!callEditor(editorStartSelectionActionMode)) {
-				post(() -> {
-					selectNecessaryText(start, end);
-					if (!callEditor(editorStartSelectionActionMode)) {
-						setTextIsSelectable(false);
-					}
-				});
-			}
-		}
-	}
-
-	public boolean isSelectionEnabled() {
-		return isTextSelectable();
+	@Override
+	public boolean hasFocusable() {
+		return super.hasFocusable() && selectionMode;
 	}
 
 	public long getPreferredDoubleTapTimeout() {
@@ -609,8 +560,8 @@ public class CommentTextView extends TextView {
 		if (spanToClick instanceof LinkSpan) {
 			Uri uri = createUri(((LinkSpan) spanToClick).getUriString());
 			spanToClick.setClicked(false);
+			invalidateSpanToClick();
 			spanToClick = null;
-			invalidate();
 			if (uri != null) {
 				getLinkListener().onLinkLongClick(CommentTextView.this, chanName, uri);
 			}
@@ -619,11 +570,11 @@ public class CommentTextView extends TextView {
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-		if (isTextSelectable()) {
-			return super.onTouchEvent(event);
-		}
 		if (!isEnabled()) {
 			return false;
+		}
+		if (selectionMode) {
+			return super.onTouchEvent(event);
 		}
 		int action = event.getAction();
 		float x = event.getX();
@@ -671,13 +622,13 @@ public class CommentTextView extends TextView {
 						} else if (spanToClick instanceof SpoilerSpan) {
 							SpoilerSpan spoilerSpan = ((SpoilerSpan) spanToClick);
 							spoilerSpan.setVisible(!spoilerSpan.isVisible());
-							post(syncRunnable);
+							post(() -> commentListener.onRequestSiblingsInvalidate(CommentTextView.this));
 						}
 					}
 				}
 				spanToClick.setClicked(false);
+				invalidateSpanToClick();
 				spanToClick = null;
-				invalidate();
 			}
 			return true;
 		}
@@ -687,8 +638,8 @@ public class CommentTextView extends TextView {
 				Spanned spanned = (Spanned) getText();
 				if (spanToClick != null) {
 					spanToClick.setClicked(false);
+					invalidateSpanToClick();
 					spanToClick = null;
-					invalidate();
 				}
 				// 1st priority: show spoiler
 				ArrayList<SpanHolder<SpoilerSpan>> spoilerSpans = null;
@@ -697,7 +648,7 @@ public class CommentTextView extends TextView {
 					for (SpanHolder<SpoilerSpan> spanHolder : spoilerSpans) {
 						if (!spanHolder.span.isVisible()) {
 							setSpanToClick(spanHolder);
-							invalidate();
+							invalidateSpanToClick();
 							return true;
 						}
 					}
@@ -707,7 +658,7 @@ public class CommentTextView extends TextView {
 				if (linkSpans.size() > 0) {
 					SpanHolder<LinkSpan> spanHolder = linkSpans.get(0);
 					setSpanToClick(spanHolder);
-					invalidate();
+					invalidateSpanToClick();
 					postDelayed(linkLongClickRunnable, ViewConfiguration.getLongPressTimeout());
 					return true;
 				}
@@ -716,7 +667,7 @@ public class CommentTextView extends TextView {
 					for (SpanHolder<SpoilerSpan> spanHolder : spoilerSpans) {
 						if (spanHolder.span.isVisible()) {
 							setSpanToClick(spanHolder);
-							invalidate();
+							invalidateSpanToClick();
 							return true;
 						}
 					}
@@ -776,34 +727,34 @@ public class CommentTextView extends TextView {
 		return spans;
 	}
 
+	private void invalidateSpanToClick() {
+		if (spanToClick == null) {
+			return;
+		}
+		CharSequence text = getText();
+		if (text instanceof Spanned) {
+			Spannable spannable = (Spannable) text;
+			int start = spannable.getSpanStart(spanToClick);
+			int end = spannable.getSpanEnd(spanToClick);
+			if (start >= 0 && end >= start) {
+				SpanWatcher[] watchers = spannable.getSpans(0, spannable.length(), SpanWatcher.class);
+				if (watchers != null && watchers.length >= 1) {
+					for (SpanWatcher watcher : watchers) {
+						if (watcher.getClass().getName().equals("android.widget.TextView$ChangeWatcher")) {
+							// Notify span changed to redraw it
+							watcher.onSpanChanged(spannable, spanToClick, start, end, start, end);
+						}
+					}
+				}
+			}
+		}
+		invalidate();
+	}
+
 	@Override
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
 		OverlineSpan.draw(this, canvas);
-	}
-
-	private static final Field EDITOR_FIELD;
-	private static final Method ENABLE_HTC_TEXT_SELECTION_METHOD;
-
-	static {
-		Field editorField;
-		try {
-			editorField = TextView.class.getDeclaredField("mEditor");
-			editorField.setAccessible(true);
-		} catch (Exception e) {
-			editorField = null;
-		}
-		EDITOR_FIELD = editorField;
-		Method enableHtcTextSelectionMethod = null;
-		if (!C.API_LOLLIPOP) {
-			try {
-				enableHtcTextSelectionMethod = TextView.class.getDeclaredMethod("enableHtcTextSelection",
-						boolean.class, int.class);
-			} catch (Exception e) {
-				enableHtcTextSelectionMethod = null;
-			}
-		}
-		ENABLE_HTC_TEXT_SELECTION_METHOD = enableHtcTextSelectionMethod;
 	}
 
 	public static class ListSelectionKeeper implements Runnable {
