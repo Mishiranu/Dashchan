@@ -65,12 +65,13 @@ public final class GroupParser {
 	}
 
 	private GroupParser(String source, Callback callback) {
-		this.source = source;
+		this.source = StringUtils.emptyIfNull(source);
 		this.callback = callback;
 	}
 
 	private void convert() throws ParseException {
 		String source = this.source;
+		String lowerCaseSource = null;
 		int length = source.length();
 		int index = source.indexOf('<');
 		if (index > 0) {
@@ -145,7 +146,10 @@ public final class GroupParser {
 				}
 				tagName = tagName.toLowerCase(Locale.US);
 				if (!close && ("script".equals(tagName) || "style".equals(tagName))) {
-					index = source.indexOf("</" + tagName, index + 1);
+					if (lowerCaseSource == null) {
+						lowerCaseSource = source.toLowerCase(Locale.US);
+					}
+					index = lowerCaseSource.indexOf("</" + tagName, index + 1);
 					if (index == -1) {
 						throw new ParseException("Can't find " + tagName + " closing after " + start);
 					}
