@@ -86,7 +86,7 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 		if (threadNumber != null) {
 			PageHolder pageHolder = getPageHolder();
 			getUiManager().navigator().navigatePosts(pageHolder.chanName, pageHolder.boardName, threadNumber,
-					null, null, false);
+					null, null, 0);
 		}
 	}
 

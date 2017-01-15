@@ -542,7 +542,7 @@ public class DialogUnit implements DialogStack.Callback {
 				Context context = uiManager.getContext();
 				ClickableToast.show(context, errorItem.toString(),
 						context.getString(R.string.action_open_thread), () -> uiManager.navigator()
-						.navigatePosts(chanName, boardName, threadNumber, postNumber, null, false), false);
+						.navigatePosts(chanName, boardName, threadNumber, postNumber, null, 0), false);
 			});
 		}
 
@@ -1291,7 +1291,7 @@ public class DialogUnit implements DialogStack.Callback {
 						ClickableToast.show(context, context.getString(R.string.message_completed),
 								context.getString(R.string.action_open_thread),
 								() -> uiManager.navigator().navigatePosts(state.archiveChanName, archiveBoardName,
-								archiveThreadNumber, null, state.archiveThreadTitle, false), false);
+								archiveThreadNumber, null, state.archiveThreadTitle, 0), false);
 					} else {
 						ToastUtils.show(context, R.string.message_completed);
 					}

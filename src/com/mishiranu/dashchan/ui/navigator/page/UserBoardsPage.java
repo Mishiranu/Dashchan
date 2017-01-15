@@ -73,7 +73,7 @@ public class UserBoardsPage extends ListPage<UserBoardsAdapter> implements ReadU
 	public void onItemClick(View view, int position, long id) {
 		String boardName = getAdapter().getItem(position).boardName;
 		if (boardName != null) {
-			getUiManager().navigator().navigateBoardsOrThreads(getPageHolder().chanName, boardName, false, false);
+			getUiManager().navigator().navigateBoardsOrThreads(getPageHolder().chanName, boardName, 0);
 		}
 	}
 

@@ -88,7 +88,7 @@ public class HistoryPage extends ListPage<HistoryAdapter> {
 		HistoryDatabase.HistoryItem historyItem = getAdapter().getHistoryItem(position);
 		if (historyItem != null) {
 			getUiManager().navigator().navigatePosts(historyItem.chanName, historyItem.boardName,
-					historyItem.threadNumber, null, null, false);
+					historyItem.threadNumber, null, null, 0);
 		}
 	}
 

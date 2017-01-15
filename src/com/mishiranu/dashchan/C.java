@@ -84,17 +84,14 @@ public class C {
 
 	public static final String EXTRA_ALLOW_EXPANDED_SCREEN = "com.mishiranu.dashchan.extra.ALLOW_EXPANDED_SCREEN";
 	public static final String EXTRA_ALLOW_NAVIGATE_POST = "com.mishiranu.dashchan.extra.ALLOW_NAVIGATE_POST";
-	public static final String EXTRA_ANIMATED_TRANSITION = "com.mishiranu.dashchan.extra.ANIMATED_TRANSITION";
 	public static final String EXTRA_BOARD_NAME = "com.mishiranu.dashchan.extra.BOARD_NAME";
 	public static final String EXTRA_CHAN_NAME = "com.mishiranu.dashchan.extra.CHAN_NAME";
 	public static final String EXTRA_EXTERNAL_BROWSER = "com.mishiranu.dashchan.extra.EXTERNAL_BROWSER";
 	public static final String EXTRA_FAIL_RESULT = "com.mishiranu.dashchan.extra.FAIL_RESULT";
-	public static final String EXTRA_FROM_CACHE = "com.mishiranu.dashchan.extra.FROM_CACHE";
 	public static final String EXTRA_FROM_CLIENT = "com.mishiranu.dashchan.extra.FROM_CLIENT";
 	public static final String EXTRA_GALLERY_MODE = "com.mishiranu.dashchan.extra.GALLERY_MODE";
 	public static final String EXTRA_IMAGE_INDEX = "com.mishiranu.dashchan.extra.IMAGE_INDEX";
-	public static final String EXTRA_LAUNCHER = "com.mishiranu.dashchan.extra.LAUNCHER";
-	public static final String EXTRA_NAVIGATE_TOP = "com.mishiranu.dashchan.extra.NAVIGATE_TOP";
+	public static final String EXTRA_NAVIGATION_FLAGS = "com.mishiranu.dashchan.extra.NAVIGATION_FLAGS";
 	public static final String EXTRA_OBTAIN_ITEMS = "com.mishiranu.dashchan.extra.EXTRA_OBTAIN_ITEMS";
 	public static final String EXTRA_POST_NUMBER = "com.mishiranu.dashchan.extra.POST_NUMBER";
 	public static final String EXTRA_REPLY_DATA = "com.mishiranu.dashchan.extra.REPLY_DATA";

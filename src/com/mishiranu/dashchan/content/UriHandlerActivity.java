@@ -54,13 +54,13 @@ public class UriHandlerActivity extends Activity {
 				if (boardUri) {
 					if (!fromClient) {
 						startActivity(NavigationUtils.obtainThreadsIntent(this, chanName, boardName,
-								false, false, false, false));
+								NavigationUtils.FLAG_NOT_ANIMATED));
 					}
 					success = true;
 				} else if (threadUri) {
 					if (!fromClient) {
 						startActivity(NavigationUtils.obtainPostsIntent(this, chanName, boardName, threadNumber,
-								postNumber, null, false, false));
+								postNumber, null, NavigationUtils.FLAG_NOT_ANIMATED));
 					}
 					success = true;
 				} else if (locator.isImageUri(uri)) {

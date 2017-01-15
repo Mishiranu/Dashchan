@@ -414,7 +414,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				if (threadNumber != null) {
 					String threadTitle = getAdapter().getItem(0).getSubjectOrComment();
 					getUiManager().navigator().navigatePosts(chanName, boardName, threadNumber, null,
-							threadTitle, false);
+							threadTitle, 0);
 				}
 				return true;
 			}

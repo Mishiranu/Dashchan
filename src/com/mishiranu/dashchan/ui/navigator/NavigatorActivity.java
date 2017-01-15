@@ -238,9 +238,9 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		}
 		PageHolder savedCurrentPage = pageManager.restore(savedInstanceState);
 		if (savedCurrentPage != null) {
-			handleData(savedCurrentPage, false);
+			navigatePageHolder(savedCurrentPage, false);
 		} else {
-			handleIntent(getIntent(), false);
+			navigateIntent(getIntent(), false);
 		}
 		if (savedInstanceState == null) {
 			startUpdateTask();
@@ -258,10 +258,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 
 	@Override
 	protected void onNewIntent(Intent intent) {
-		if (intent.getBooleanExtra(C.EXTRA_LAUNCHER, false)) {
-			return;
-		}
-		handleIntent(intent, intent.getBooleanExtra(C.EXTRA_ANIMATED_TRANSITION, false));
+		navigateIntent(intent, true);
 	}
 
 	@Override
@@ -276,40 +273,41 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	}
 
 	@Override
-	public void navigateBoardsOrThreads(String chanName, String boardName, boolean navigateTop, boolean fromCache) {
-		handleIntentData(chanName, boardName, null, null, null, null, navigateTop, fromCache, true);
+	public void navigateBoardsOrThreads(String chanName, String boardName, int flags) {
+		flags = flags & (NavigationUtils.FLAG_NAVIGATE_TOP | NavigationUtils.FLAG_FROM_CACHE);
+		navigateIntentData(chanName, boardName, null, null, null, null, flags);
 	}
 
 	@Override
 	public void navigatePosts(String chanName, String boardName, String threadNumber, String postNumber,
-			String threadTitle, boolean fromCache) {
-		handleIntentData(chanName, boardName, threadNumber, postNumber, threadTitle, null,
-				false, fromCache, true);
+			String threadTitle, int flags) {
+		flags = flags & NavigationUtils.FLAG_FROM_CACHE;
+		navigateIntentData(chanName, boardName, threadNumber, postNumber, threadTitle, null, flags);
 	}
 
 	@Override
-	public void navigateSearch(String chanName, String boardName, String searchQuery) {
-		handleIntentData(chanName, boardName, null, null, null, searchQuery, false, false, true);
+	public void navigateSearch(String chanName, String boardName, String searchQuery, int flags) {
+		navigateIntentData(chanName, boardName, null, null, null, searchQuery, 0);
 	}
 
 	@Override
-	public void navigateArchive(String chanName, String boardName) {
+	public void navigateArchive(String chanName, String boardName, int flags) {
 		performNavigation(PageHolder.Content.ARCHIVE, chanName, boardName, null, null, null, null, false, true);
 	}
 
 	@Override
-	public void navigateTarget(String chanName, ChanLocator.NavigationData data, boolean fromCache) {
+	public void navigateTarget(String chanName, ChanLocator.NavigationData data, int flags) {
 		switch (data.target) {
 			case ChanLocator.NavigationData.TARGET_THREADS: {
-				navigateBoardsOrThreads(chanName, data.boardName, false, fromCache);
+				navigateBoardsOrThreads(chanName, data.boardName, flags);
 				break;
 			}
 			case ChanLocator.NavigationData.TARGET_POSTS: {
-				navigatePosts(chanName, data.boardName, data.threadNumber, data.postNumber, null, fromCache);
+				navigatePosts(chanName, data.boardName, data.threadNumber, data.postNumber, null, flags);
 				break;
 			}
 			case ChanLocator.NavigationData.TARGET_SEARCH: {
-				navigateSearch(chanName, data.boardName, data.searchQuery);
+				navigateSearch(chanName, data.boardName, data.searchQuery, flags);
 				break;
 			}
 			default: {
@@ -328,24 +326,30 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		startActivity(intent);
 	}
 
-	private void handleIntent(Intent intent, boolean animated) {
+	private void navigateIntent(Intent intent, boolean replaceIntent) {
 		String chanName = intent.getStringExtra(C.EXTRA_CHAN_NAME);
 		String boardName = intent.getStringExtra(C.EXTRA_BOARD_NAME);
 		String threadNumber = intent.getStringExtra(C.EXTRA_THREAD_NUMBER);
-		boolean navigateTop = intent.getBooleanExtra(C.EXTRA_NAVIGATE_TOP, false);
 		String postNumber = intent.getStringExtra(C.EXTRA_POST_NUMBER);
 		String threadTitle = intent.getStringExtra(C.EXTRA_THREAD_TITLE);
 		String searchQuery = intent.getStringExtra(C.EXTRA_SEARCH_QUERY);
-		boolean fromCache = intent.getBooleanExtra(C.EXTRA_FROM_CACHE, false);
-		handleIntentData(chanName, boardName, threadNumber, postNumber, threadTitle, searchQuery, navigateTop,
-				fromCache, animated);
+		int flags = intent.getIntExtra(C.EXTRA_NAVIGATION_FLAGS, 0);
+		if (!replaceIntent) {
+			flags = FlagUtils.set(flags, NavigationUtils.FLAG_NOT_ANIMATED, true);
+		} else if (FlagUtils.get(flags, NavigationUtils.FLAG_LAUNCHER)) {
+			return;
+		}
+		navigateIntentData(chanName, boardName, threadNumber, postNumber, threadTitle, searchQuery, flags);
 	}
 
-	private void handleIntentData(String chanName, String boardName, String threadNumber, String postNumber,
-			String threadTitle, String searchQuery, boolean navigateTop, boolean fromCache, boolean animated) {
+	private void navigateIntentData(String chanName, String boardName, String threadNumber, String postNumber,
+			String threadTitle, String searchQuery, int flags) {
 		PageHolder pageHolder = pageManager.getCurrentPage();
 		String oldChanName = pageHolder != null ? pageHolder.chanName : null;
 		if (chanName == null) return; // Void intent
+		boolean navigateTop = FlagUtils.get(flags, NavigationUtils.FLAG_NAVIGATE_TOP);
+		boolean fromCache = FlagUtils.get(flags, NavigationUtils.FLAG_FROM_CACHE);
+		boolean animated = !FlagUtils.get(flags, NavigationUtils.FLAG_NOT_ANIMATED);
 		if (navigateTop) {
 			pageManager.clearStack();
 		}
@@ -372,7 +376,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	private final Handler handler = new Handler();
 	private boolean allowScaleAnimation = false;
 
-	private void handleData(PageHolder pageHolder, boolean animated) {
+	private void navigatePageHolder(PageHolder pageHolder, boolean animated) {
 		performNavigation(pageHolder.content, pageHolder.chanName, pageHolder.boardName, pageHolder.threadNumber, null,
 				pageHolder.threadTitle, pageHolder.searchQuery, true, animated);
 	}
@@ -652,7 +656,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 			PageHolder previousPageHolder = pageManager.getTargetPreviousPage(true);
 			if (previousPageHolder != null) {
 				pageManager.removeCurrentPageFromStack();
-				handleData(previousPageHolder, true);
+				navigatePageHolder(previousPageHolder, true);
 			} else {
 				if (System.currentTimeMillis() - backPressed > 2000) {
 					ClickableToast.show(this, R.string.message_press_again_to_exit);
@@ -864,7 +868,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 							newBoardName = Preferences.getDefaultBoardName(newChanName);
 						}
 					}
-					navigateBoardsOrThreads(newChanName, newBoardName, true, false);
+					navigateBoardsOrThreads(newChanName, newBoardName, NavigationUtils.FLAG_NAVIGATE_TOP);
 					return true;
 				}
 				case ListPage.APPEARANCE_MENU_CHANGE_THEME:
@@ -1043,9 +1047,9 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 					// Find chan page and open it. Open root page if nothing was found.
 					PageHolder pageHolder = pageManager.getLastPage(chanName);
 					if (pageHolder != null) {
-						handleData(pageHolder, true);
+						navigatePageHolder(pageHolder, true);
 					} else {
-						navigateBoardsOrThreads(chanName, Preferences.getDefaultBoardName(chanName), false, false);
+						navigateBoardsOrThreads(chanName, Preferences.getDefaultBoardName(chanName), 0);
 					}
 				} else {
 					// Open root page. If page is already opened, load it from cache.
@@ -1057,7 +1061,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 							break;
 						}
 					}
-					navigateBoardsOrThreads(chanName, boardName, false, fromCache);
+					navigateBoardsOrThreads(chanName, boardName, fromCache ? NavigationUtils.FLAG_FROM_CACHE : 0);
 				}
 				drawerForm.updateConfiguration(chanName);
 				drawerForm.invalidateItems(true, false);
@@ -1076,7 +1080,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 				boardName = pageManager.getSingleBoardName(chanName);
 			}
 			if (!pageHolder.is(chanName, boardName, null, PageHolder.Content.THREADS)) {
-				navigateBoardsOrThreads(chanName, boardName, false, fromCache);
+				navigateBoardsOrThreads(chanName, boardName, fromCache ? NavigationUtils.FLAG_FROM_CACHE : 0);
 			}
 		}
 		if (!wideMode) {
@@ -1105,7 +1109,8 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 				boardName = pageHolder.boardName;
 			}
 			if (!pageHolder.is(chanName, boardName, threadNumber, PageHolder.Content.POSTS)) {
-				navigatePosts(chanName, boardName, threadNumber, postNumber, threadTitle, fromCache);
+				navigatePosts(chanName, boardName, threadNumber, postNumber, threadTitle,
+						fromCache ? NavigationUtils.FLAG_FROM_CACHE : 0);
 			}
 		}
 		if (!wideMode) {
@@ -1130,7 +1135,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 				PageHolder previousPageHolder = pageManager.getTargetPreviousPage(false);
 				pageManager.removeCurrentPage();
 				if (previousPageHolder != null) {
-					handleData(previousPageHolder, true);
+					navigatePageHolder(previousPageHolder, true);
 				} else {
 					if (pageManager.isSingleBoardMode(chanName)) {
 						performNavigation(PageHolder.Content.THREADS, chanName,
@@ -1181,7 +1186,8 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 				cleanupPage();
 			}
 			drawerForm.invalidateItems(true, false);
-			navigateBoardsOrThreads(chanName, boardName, false, targetPageHolder != null);
+			boolean fromCache = targetPageHolder != null;
+			navigateBoardsOrThreads(chanName, boardName, fromCache ? NavigationUtils.FLAG_FROM_CACHE : 0);
 		}
 	}
 
@@ -1407,9 +1413,9 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 				drawerForm.invalidateItems(true, false);
 			}
 			if (threadNumber == null) {
-				navigateBoardsOrThreads(chanName, boardName, false, false);
+				navigateBoardsOrThreads(chanName, boardName, 0);
 			} else {
-				navigatePosts(chanName, boardName, threadNumber, postNumber, null, false);
+				navigatePosts(chanName, boardName, threadNumber, postNumber, null, 0);
 			}
 		}
 	}
