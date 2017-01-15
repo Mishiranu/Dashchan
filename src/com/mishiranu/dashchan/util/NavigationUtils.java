@@ -66,44 +66,50 @@ import com.mishiranu.dashchan.ui.gallery.GalleryActivity;
 import com.mishiranu.dashchan.ui.navigator.NavigatorActivity;
 
 public class NavigationUtils {
-	private static Intent obtainMainIntent(Context context, boolean animated, boolean fromCache) {
+	public static final int FLAG_NOT_ANIMATED = 0x00000001;
+	public static final int FLAG_FROM_CACHE = 0x00000002;
+	public static final int FLAG_NAVIGATE_TOP = 0x00000004;
+	public static final int FLAG_LAUNCHER = 0x00000008;
+
+	private static Intent obtainMainIntent(Context context, int flags, int allowFlags) {
 		return new Intent().setComponent(new ComponentName(context, NavigatorActivity.class))
 				.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP)
-				.putExtra(C.EXTRA_ANIMATED_TRANSITION, animated).putExtra(C.EXTRA_FROM_CACHE, fromCache);
+				.putExtra(C.EXTRA_NAVIGATION_FLAGS, flags & allowFlags);
 	}
 
-	public static Intent obtainThreadsIntent(Context context, String chanName, String boardName, boolean navigateTop,
-			boolean animated, boolean fromCache, boolean launcher) {
-		return obtainMainIntent(context, animated, fromCache).putExtra(C.EXTRA_CHAN_NAME, chanName)
-				.putExtra(C.EXTRA_BOARD_NAME, boardName).putExtra(C.EXTRA_NAVIGATE_TOP, navigateTop)
-				.putExtra(C.EXTRA_LAUNCHER, launcher);
+	public static Intent obtainThreadsIntent(Context context, String chanName, String boardName, int flags) {
+		int allowFlags = FLAG_NOT_ANIMATED | FLAG_FROM_CACHE | FLAG_NAVIGATE_TOP | FLAG_LAUNCHER;
+		return obtainMainIntent(context, flags, allowFlags).putExtra(C.EXTRA_CHAN_NAME, chanName)
+				.putExtra(C.EXTRA_BOARD_NAME, boardName);
 	}
 
 	public static Intent obtainPostsIntent(Context context, String chanName, String boardName, String threadNumber,
-			String postNumber, String threadTitle, boolean animated, boolean fromCache) {
-		return obtainMainIntent(context, animated, fromCache).putExtra(C.EXTRA_CHAN_NAME, chanName)
+			String postNumber, String threadTitle, int flags) {
+		int allowFlags = FLAG_NOT_ANIMATED | FLAG_FROM_CACHE;
+		return obtainMainIntent(context, flags, allowFlags).putExtra(C.EXTRA_CHAN_NAME, chanName)
 				.putExtra(C.EXTRA_BOARD_NAME, boardName).putExtra(C.EXTRA_THREAD_NUMBER, threadNumber)
 				.putExtra(C.EXTRA_POST_NUMBER, postNumber).putExtra(C.EXTRA_THREAD_TITLE, threadTitle);
 	}
 
 	public static Intent obtainSearchIntent(Context context, String chanName, String boardName, String searchQuery,
-			boolean animated) {
-		return obtainMainIntent(context, animated, false).putExtra(C.EXTRA_CHAN_NAME, chanName)
+			int flags) {
+		int allowFlags = FLAG_NOT_ANIMATED;
+		return obtainMainIntent(context, flags, allowFlags).putExtra(C.EXTRA_CHAN_NAME, chanName)
 				.putExtra(C.EXTRA_BOARD_NAME, boardName).putExtra(C.EXTRA_SEARCH_QUERY, searchQuery);
 	}
 
 	public static Intent obtainTargetIntent(Context context, String chanName, ChanLocator.NavigationData data,
-			boolean animated, boolean fromCache) {
+			int flags) {
 		switch (data.target) {
 			case ChanLocator.NavigationData.TARGET_THREADS: {
-				return obtainThreadsIntent(context, chanName, data.boardName, false, animated, fromCache, false);
+				return obtainThreadsIntent(context, chanName, data.boardName, flags);
 			}
 			case ChanLocator.NavigationData.TARGET_POSTS: {
-				return obtainPostsIntent(context, chanName, data.boardName, data.threadNumber, data.postNumber, null,
-						animated, fromCache);
+				return obtainPostsIntent(context, chanName, data.boardName, data.threadNumber, data.postNumber,
+						null, flags);
 			}
 			case ChanLocator.NavigationData.TARGET_SEARCH: {
-				return obtainSearchIntent(context, chanName, data.boardName, data.searchQuery, animated);
+				return obtainSearchIntent(context, chanName, data.boardName, data.searchQuery, flags);
 			}
 			default: {
 				throw new IllegalStateException();
@@ -122,8 +128,7 @@ public class NavigationUtils {
 			}
 			if (threadNumber != null) {
 				activity.finish();
-				activity.startActivity(obtainPostsIntent(activity, chanName, boardName, threadNumber,
-						null, null, true, false));
+				activity.startActivity(obtainPostsIntent(activity, chanName, boardName, threadNumber, null, null, 0));
 				success = true;
 			}
 		}

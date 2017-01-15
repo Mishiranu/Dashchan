@@ -140,7 +140,7 @@ public class LauncherActivity extends StateActivity {
 			startActivity(new Intent(this, PreferencesActivity.class));
 		} else {
 			startActivity(NavigationUtils.obtainThreadsIntent(this, chanName, Preferences.getDefaultBoardName(chanName),
-					false, false, false, true));
+					NavigationUtils.FLAG_LAUNCHER));
 		}
 		finish();
 	}

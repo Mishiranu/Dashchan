@@ -97,7 +97,7 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 		if (postItem != null) {
 			PageHolder pageHolder = getPageHolder();
 			getUiManager().navigator().navigatePosts(pageHolder.chanName, pageHolder.boardName,
-					postItem.getThreadNumber(), postItem.getPostNumber(), null, false);
+					postItem.getThreadNumber(), postItem.getPostNumber(), null, 0);
 		}
 	}
 
@@ -156,7 +156,7 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 	@Override
 	public boolean onSearchSubmit(String query) {
 		PageHolder pageHolder = getPageHolder();
-		getUiManager().navigator().navigateSearch(pageHolder.chanName, pageHolder.boardName, query);
+		getUiManager().navigator().navigateSearch(pageHolder.chanName, pageHolder.boardName, query, 0);
 		return true;
 	}
 

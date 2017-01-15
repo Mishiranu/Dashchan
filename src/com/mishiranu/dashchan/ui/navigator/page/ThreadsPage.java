@@ -131,7 +131,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 				pageHolder.boardName);
 		if (newPostData != null) {
 			getUiManager().navigator().navigatePosts(newPostData.chanName, newPostData.boardName,
-					newPostData.threadNumber, newPostData.postNumber, null, false);
+					newPostData.threadNumber, newPostData.postNumber, null, 0);
 		}
 	}
 
@@ -155,7 +155,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 				adapter.notifyDataSetChanged();
 			} else {
 				getUiManager().navigator().navigatePosts(pageHolder.chanName, pageHolder.boardName,
-						postItem.getThreadNumber(), null, postItem.getSubjectOrComment(), false);
+						postItem.getThreadNumber(), null, postItem.getSubjectOrComment(), 0);
 			}
 		}
 	}
@@ -239,7 +239,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 				return true;
 			}
 			case OPTIONS_MENU_ARCHIVE: {
-				getUiManager().navigator().navigateArchive(pageHolder.chanName, pageHolder.boardName);
+				getUiManager().navigator().navigateArchive(pageHolder.chanName, pageHolder.boardName, 0);
 				return true;
 			}
 			case OPTIONS_MENU_NEW_THREAD: {
@@ -419,7 +419,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 	public boolean onSearchSubmit(String query) {
 		if (allowSearch) {
 			PageHolder pageHolder = getPageHolder();
-			getUiManager().navigator().navigateSearch(pageHolder.chanName, pageHolder.boardName, query);
+			getUiManager().navigator().navigateSearch(pageHolder.chanName, pageHolder.boardName, query, 0);
 			return true;
 		}
 		return false;

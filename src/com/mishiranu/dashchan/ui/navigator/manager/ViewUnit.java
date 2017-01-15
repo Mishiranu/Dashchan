@@ -1021,7 +1021,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			PostItem postItem = holder.postItem;
 			String postNumber = postItem.getParentPostNumber() == null ? null : postItem.getPostNumber();
 			uiManager.navigator().navigatePosts(postItem.getChanName(), postItem.getBoardName(),
-					postItem.getThreadNumber(), postNumber, null, false);
+					postItem.getThreadNumber(), postNumber, null, 0);
 		}
 	};
 
