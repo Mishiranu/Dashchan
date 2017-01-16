@@ -216,7 +216,7 @@ public class PageManager {
 			if (pageHolder.inStack) {
 				if (mergeChans || pageHolder.chanName.equals(this.pageHolder.chanName)) {
 					return pageHolder;
-				} else if (allowForeignChan && foreignChanPageHolder == null) {
+				} else if (allowForeignChan && this.pageHolder.returnable && foreignChanPageHolder == null) {
 					foreignChanPageHolder = pageHolder;
 				}
 			}

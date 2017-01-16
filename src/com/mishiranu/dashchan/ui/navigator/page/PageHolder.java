@@ -31,6 +31,7 @@ public class PageHolder implements Parcelable {
 	public final Content content;
 	public final String chanName, boardName, threadNumber, searchQuery;
 	public String threadTitle;
+	public boolean returnable;
 	public final long creationTime;
 	public ListPosition position;
 	public Extra extra;

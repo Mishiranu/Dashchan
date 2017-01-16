@@ -207,7 +207,7 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 							.setPositiveButton(android.R.string.ok, (dialog, which) -> {
 						finish();
 						startActivity(NavigationUtils.obtainTargetIntent(WebBrowserActivity.this,
-								chanName, navigationData, 0));
+								chanName, navigationData, NavigationUtils.FLAG_RETURNABLE));
 					}).show();
 					return true;
 				}
