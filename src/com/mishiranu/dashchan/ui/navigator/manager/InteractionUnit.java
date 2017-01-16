@@ -83,7 +83,7 @@ public class InteractionUnit {
 			}
 			if (handled && navigationData != null) {
 				if (confirmed) {
-					uiManager.navigator().navigateTarget(uriChanName, navigationData, 0);
+					uiManager.navigator().navigateTarget(uriChanName, navigationData, NavigationUtils.FLAG_RETURNABLE);
 				} else {
 					int messageId = 0;
 					if (sameChan) {
@@ -108,7 +108,7 @@ public class InteractionUnit {
 					new AlertDialog.Builder(uiManager.getContext()).setMessage(messageId)
 							.setNegativeButton(android.R.string.cancel, null)
 							.setPositiveButton(android.R.string.ok, (dialog, which) -> uiManager.navigator()
-							.navigateTarget(uriChanName, navigationDataFinal, 0)).show();
+							.navigateTarget(uriChanName, navigationDataFinal, NavigationUtils.FLAG_RETURNABLE)).show();
 					uiManager.dialog().notifySwitchBackground();
 				}
 			}
@@ -169,7 +169,7 @@ public class InteractionUnit {
 				}
 				case LINK_MENU_OPEN_THREAD: {
 					uiManager.navigator().navigatePosts(finalChanName, finalBoardName, finalThreadNumber,
-							null, null, 0);
+							null, null, NavigationUtils.FLAG_RETURNABLE);
 					break;
 				}
 			}

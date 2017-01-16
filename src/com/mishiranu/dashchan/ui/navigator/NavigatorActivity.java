@@ -236,9 +236,9 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		if (savedInstanceState == null) {
 			savedInstanceState = pageManager.readFromStorage();
 		}
-		PageHolder savedCurrentPage = pageManager.restore(savedInstanceState);
-		if (savedCurrentPage != null) {
-			navigatePageHolder(savedCurrentPage, false);
+		PageHolder savedCurrentPageHolder = pageManager.restore(savedInstanceState);
+		if (savedCurrentPageHolder != null) {
+			navigatePageHolder(savedCurrentPageHolder, false);
 		} else {
 			navigateIntent(getIntent(), false);
 		}
@@ -274,25 +274,30 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 
 	@Override
 	public void navigateBoardsOrThreads(String chanName, String boardName, int flags) {
-		flags = flags & (NavigationUtils.FLAG_NAVIGATE_TOP | NavigationUtils.FLAG_FROM_CACHE);
+		flags = flags & (NavigationUtils.FLAG_NAVIGATE_TOP | NavigationUtils.FLAG_FROM_CACHE
+				| NavigationUtils.FLAG_RETURNABLE);
 		navigateIntentData(chanName, boardName, null, null, null, null, flags);
 	}
 
 	@Override
 	public void navigatePosts(String chanName, String boardName, String threadNumber, String postNumber,
 			String threadTitle, int flags) {
-		flags = flags & NavigationUtils.FLAG_FROM_CACHE;
+		flags = flags & (NavigationUtils.FLAG_FROM_CACHE | NavigationUtils.FLAG_RETURNABLE);
 		navigateIntentData(chanName, boardName, threadNumber, postNumber, threadTitle, null, flags);
 	}
 
 	@Override
 	public void navigateSearch(String chanName, String boardName, String searchQuery, int flags) {
-		navigateIntentData(chanName, boardName, null, null, null, searchQuery, 0);
+		flags = flags & NavigationUtils.FLAG_RETURNABLE;
+		navigateIntentData(chanName, boardName, null, null, null, searchQuery, flags);
 	}
 
 	@Override
 	public void navigateArchive(String chanName, String boardName, int flags) {
-		performNavigation(PageHolder.Content.ARCHIVE, chanName, boardName, null, null, null, null, false, true);
+		flags = flags & NavigationUtils.FLAG_RETURNABLE;
+		boolean returnable = FlagUtils.get(flags, NavigationUtils.FLAG_RETURNABLE);
+		performNavigation(PageHolder.Content.ARCHIVE, chanName, boardName, null, null, null, null, false, true,
+				returnable);
 	}
 
 	@Override
@@ -350,6 +355,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		boolean navigateTop = FlagUtils.get(flags, NavigationUtils.FLAG_NAVIGATE_TOP);
 		boolean fromCache = FlagUtils.get(flags, NavigationUtils.FLAG_FROM_CACHE);
 		boolean animated = !FlagUtils.get(flags, NavigationUtils.FLAG_NOT_ANIMATED);
+		boolean returnable = FlagUtils.get(flags, NavigationUtils.FLAG_RETURNABLE);
 		if (navigateTop) {
 			pageManager.clearStack();
 		}
@@ -365,10 +371,10 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 			PageHolder.Content content = searchQuery != null ? PageHolder.Content.SEARCH
 					: threadNumber == null ? PageHolder.Content.THREADS : PageHolder.Content.POSTS;
 			performNavigation(content, chanName, boardName, threadNumber, postNumber, threadTitle,
-					searchQuery, fromCache, animated);
+					searchQuery, fromCache, animated, returnable);
 		} else if (pageManager.getStackSize(chanName) == 0 || !chanName.equals(oldChanName)) {
 			performNavigation(PageHolder.Content.ALL_BOARDS, chanName, null, null, null, null, null,
-					false, animated);
+					false, animated, returnable);
 		}
 	}
 
@@ -378,15 +384,16 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 
 	private void navigatePageHolder(PageHolder pageHolder, boolean animated) {
 		performNavigation(pageHolder.content, pageHolder.chanName, pageHolder.boardName, pageHolder.threadNumber, null,
-				pageHolder.threadTitle, pageHolder.searchQuery, true, animated);
+				pageHolder.threadTitle, pageHolder.searchQuery, true, animated, pageHolder.returnable);
 	}
 
 	private void performNavigation(final PageHolder.Content content, final String chanName, final String boardName,
 			final String threadNumber, final String postNumber, final String threadTitle, final String searchQuery,
-			final boolean fromCache, boolean animated) {
+			final boolean fromCache, boolean animated, final boolean returnable) {
 		PageHolder pageHolder = pageManager.getCurrentPage();
 		if (pageHolder != null && pageHolder.is(chanName, boardName, threadNumber, content) && searchQuery == null) {
 			// Page could be deleted from stack during clearStack (when home button pressed, for example)
+			pageHolder.returnable &= returnable;
 			pageManager.moveCurrentPageTop();
 			page.updatePageConfiguration(postNumber, threadTitle);
 			drawerForm.invalidateItems(true, false);
@@ -409,7 +416,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 				}
 				listView.setAlpha(1f);
 				handleDataAfterAnimation(content, chanName, boardName, threadNumber, postNumber, threadTitle,
-						searchQuery, fromCache, true);
+						searchQuery, fromCache, true, returnable);
 			};
 			handler.postDelayed(queuedHandler, 300);
 			ObjectAnimator alphaAnimator = ObjectAnimator.ofFloat(listView, View.ALPHA, 1f, 0f);
@@ -419,7 +426,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 			startListAnimator(alphaAnimator);
 		} else {
 			handleDataAfterAnimation(content, chanName, boardName, threadNumber, postNumber, threadTitle,
-					searchQuery, fromCache, false);
+					searchQuery, fromCache, false, returnable);
 		}
 	}
 
@@ -434,7 +441,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 
 	private void handleDataAfterAnimation(PageHolder.Content content, String chanName, String boardName,
 			String threadNumber, String postNumber, String threadTitle, String searchQuery,
-			boolean fromCache, boolean animated) {
+			boolean fromCache, boolean animated, boolean returnable) {
 		clearListAnimator();
 		allowScaleAnimation = animated;
 		setActionBarLocked(LOCKER_HANDLE, false);
@@ -470,6 +477,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		if (pageHolder == null) {
 			throw new RuntimeException();
 		}
+		pageHolder.returnable = returnable;
 		uiManager.view().resetPages();
 		page.init(this, this, pageHolder, listView, uiManager, actionIconSet);
 		if (!wideMode && !drawerLayout.isDrawerOpen(Gravity.START)) {
@@ -1139,10 +1147,10 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 				} else {
 					if (pageManager.isSingleBoardMode(chanName)) {
 						performNavigation(PageHolder.Content.THREADS, chanName,
-								pageManager.getSingleBoardName(chanName), null, null, null, null, true, true);
+								pageManager.getSingleBoardName(chanName), null, null, null, null, true, true, false);
 					} else {
 						performNavigation(PageHolder.Content.ALL_BOARDS, chanName, null, null, null, null, null,
-								true, true);
+								true, true, false);
 					}
 				}
 				return true;
@@ -1241,7 +1249,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 						}
 					}
 					performNavigation(content, pageHolder.chanName, pageHolder.boardName, null, null, null, null,
-							false, true);
+							false, true, false);
 				}
 			}
 		}
