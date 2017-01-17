@@ -68,9 +68,8 @@ import com.mishiranu.dashchan.ui.navigator.NavigatorActivity;
 public class NavigationUtils {
 	public static final int FLAG_NOT_ANIMATED = 0x00000001;
 	public static final int FLAG_FROM_CACHE = 0x00000002;
-	public static final int FLAG_NAVIGATE_TOP = 0x00000004;
+	public static final int FLAG_RETURNABLE = 0x0000004;
 	public static final int FLAG_LAUNCHER = 0x00000008;
-	public static final int FLAG_RETURNABLE = 0x00000010;
 
 	private static Intent obtainMainIntent(Context context, int flags, int allowFlags) {
 		return new Intent().setComponent(new ComponentName(context, NavigatorActivity.class))
@@ -79,8 +78,7 @@ public class NavigationUtils {
 	}
 
 	public static Intent obtainThreadsIntent(Context context, String chanName, String boardName, int flags) {
-		int allowFlags = FLAG_NOT_ANIMATED | FLAG_FROM_CACHE | FLAG_NAVIGATE_TOP | FLAG_LAUNCHER
-				| FLAG_RETURNABLE;
+		int allowFlags = FLAG_NOT_ANIMATED | FLAG_FROM_CACHE | FLAG_RETURNABLE | FLAG_LAUNCHER;
 		return obtainMainIntent(context, flags, allowFlags).putExtra(C.EXTRA_CHAN_NAME, chanName)
 				.putExtra(C.EXTRA_BOARD_NAME, boardName);
 	}
