@@ -274,8 +274,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 
 	@Override
 	public void navigateBoardsOrThreads(String chanName, String boardName, int flags) {
-		flags = flags & (NavigationUtils.FLAG_NAVIGATE_TOP | NavigationUtils.FLAG_FROM_CACHE
-				| NavigationUtils.FLAG_RETURNABLE);
+		flags = flags & (NavigationUtils.FLAG_FROM_CACHE | NavigationUtils.FLAG_RETURNABLE);
 		navigateIntentData(chanName, boardName, null, null, null, null, flags);
 	}
 
@@ -352,22 +351,15 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		PageHolder pageHolder = pageManager.getCurrentPage();
 		String oldChanName = pageHolder != null ? pageHolder.chanName : null;
 		if (chanName == null) return; // Void intent
-		boolean navigateTop = FlagUtils.get(flags, NavigationUtils.FLAG_NAVIGATE_TOP);
 		boolean fromCache = FlagUtils.get(flags, NavigationUtils.FLAG_FROM_CACHE);
 		boolean animated = !FlagUtils.get(flags, NavigationUtils.FLAG_NOT_ANIMATED);
 		boolean returnable = FlagUtils.get(flags, NavigationUtils.FLAG_RETURNABLE);
-		if (navigateTop) {
-			pageManager.clearStack();
-		}
 		boolean forceBoardPage = false;
 		if (pageManager.isSingleBoardMode(chanName)) {
 			boardName = pageManager.getSingleBoardName(chanName);
 			forceBoardPage = true;
 		}
 		if (boardName != null || threadNumber != null || forceBoardPage) {
-			if (navigateTop && threadNumber == null && searchQuery == null) {
-				fromCache |= pageManager.get(chanName, boardName, threadNumber, PageHolder.Content.THREADS) != null;
-			}
 			PageHolder.Content content = searchQuery != null ? PageHolder.Content.SEARCH
 					: threadNumber == null ? PageHolder.Content.THREADS : PageHolder.Content.POSTS;
 			performNavigation(content, chanName, boardName, threadNumber, postNumber, threadTitle,
@@ -876,7 +868,11 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 							newBoardName = Preferences.getDefaultBoardName(newChanName);
 						}
 					}
-					navigateBoardsOrThreads(newChanName, newBoardName, NavigationUtils.FLAG_NAVIGATE_TOP);
+					pageManager.clearStack();
+					boolean fromCache = pageManager.get(newChanName, newBoardName, null,
+							PageHolder.Content.THREADS) != null;
+					navigateIntentData(newChanName, newBoardName, null, null, null, null,
+							fromCache ? NavigationUtils.FLAG_FROM_CACHE : 0);
 					return true;
 				}
 				case ListPage.APPEARANCE_MENU_CHANGE_THEME:
