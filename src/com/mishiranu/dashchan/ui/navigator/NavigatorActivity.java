@@ -592,13 +592,8 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 			page.pause();
 		}
 		clickableToastHolder.onPause();
-		ForegroundManager.unregister(this);
-	}
-
-	@Override
-	protected void onStop() {
-		super.onStop();
 		ChanManager.getInstance().getInstallationObservable().unregister(installationCallback);
+		ForegroundManager.unregister(this);
 	}
 
 	@Override
