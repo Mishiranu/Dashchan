@@ -51,6 +51,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | nulldvachnet    | 02ch.net             | [DashchanNulldvachnet.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNulldvachnet.apk)       |
 | nulleu          | 0chan.ru.net         | [DashchanNulleu.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNulleu.apk)                   |
 | nullnyan        | 0nyan.ml             | [DashchanNullnyan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNullnyan.apk)               |
+| nullone         | 0chan.one            | [DashchanNullone.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNullone.apk)                 |
 | nulltirech      | 0-chan.ru            | [DashchanNulltirech.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNulltirech.apk)           |
 | onechanca       | 1chan.ca             | [DashchanOnechanca.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanOnechanca.apk)             |
 | owlchan         | owlchan.ru           | [DashchanOwlchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanOwlchan.apk)                 |
