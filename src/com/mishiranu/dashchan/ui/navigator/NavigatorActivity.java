@@ -69,6 +69,7 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.async.ReadUpdateTask;
+import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.service.PostingService;
 import com.mishiranu.dashchan.content.service.WatcherService;
 import com.mishiranu.dashchan.content.storage.DraftsStorage;
@@ -1275,7 +1276,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	@Override
-	public void onReadUpdateComplete(ReadUpdateTask.UpdateDataMap updateDataMap) {
+	public void onReadUpdateComplete(ReadUpdateTask.UpdateDataMap updateDataMap, ErrorItem errorItem) {
 		readUpdateTask = null;
 		if (updateDataMap == null) {
 			return;

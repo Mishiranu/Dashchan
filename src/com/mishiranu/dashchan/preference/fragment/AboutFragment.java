@@ -214,8 +214,8 @@ public class AboutFragment extends BasePreferenceFragment {
 
 		private static class ReadUpdateHolder extends AsyncManager.Holder implements ReadUpdateTask.Callback {
 			@Override
-			public void onReadUpdateComplete(ReadUpdateTask.UpdateDataMap updateDataMap) {
-				storeResult(updateDataMap);
+			public void onReadUpdateComplete(ReadUpdateTask.UpdateDataMap updateDataMap, ErrorItem errorItem) {
+				storeResult(updateDataMap, errorItem);
 			}
 		}
 
@@ -258,7 +258,12 @@ public class AboutFragment extends BasePreferenceFragment {
 				}
 				case TASK_READ_UPDATE: {
 					ReadUpdateTask.UpdateDataMap updateDataMap = holder.nextArgument();
-					startActivity(UpdateFragment.createUpdateIntent(getActivity(), updateDataMap));
+					ErrorItem errorItem = holder.nextArgument();
+					if (updateDataMap != null) {
+						startActivity(UpdateFragment.createUpdateIntent(getActivity(), updateDataMap));
+					} else {
+						ToastUtils.show(getActivity(), errorItem);
+					}
 					break;
 				}
 			}
