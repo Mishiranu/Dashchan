@@ -41,11 +41,15 @@ import chan.http.HttpRequest;
 import chan.util.CommonUtils;
 
 import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.util.Log;
 
-public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object> {
+public class ReadUpdateTask extends HttpHolderTask<Void, Long, Void> {
 	private final Context context;
 	private final Callback callback;
+
+	private UpdateDataMap updateDataMap;
+	private ErrorItem errorItem;
 
 	public static class UpdateDataMap implements Serializable {
 		private static final long serialVersionUID = 1L;
@@ -99,7 +103,7 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object> {
 	}
 
 	public interface Callback {
-		public void onReadUpdateComplete(UpdateDataMap updateDataMap);
+		public void onReadUpdateComplete(UpdateDataMap updateDataMap, ErrorItem errorItem);
 	}
 
 	public ReadUpdateTask(Context context, Callback callback) {
@@ -133,10 +137,11 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object> {
 	}
 
 	@Override
-	protected Object doInBackground(HttpHolder holder, Void... params) {
+	protected Void doInBackground(HttpHolder holder, Void... params) {
 		long timeThreshold = System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000; // One week left
 		File directory = getDownloadDirectory(context);
 		if (directory == null) {
+			errorItem = new ErrorItem(ErrorItem.TYPE_NO_ACCESS_TO_MEMORY);
 			return null;
 		}
 		File[] files = directory.listFiles();
@@ -186,8 +191,7 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object> {
 					extensionItem.isLibExtension));
 			updateDataMap.map.put(extensionItem.extensionName, updateItems);
 		}
-		Thread thread = Thread.currentThread();
-		if (thread.isInterrupted()) {
+		if (isCancelled()) {
 			return null;
 		}
 		for (LinkedHashMap.Entry<Uri, ArrayList<String>> target : targets.entrySet()) {
@@ -249,15 +253,20 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Object> {
 			} catch (HttpException | JSONException e) {
 				Log.persistent().stack(e);
 			}
-			if (thread.isInterrupted()) {
+			if (isCancelled()) {
 				return null;
 			}
 		}
-		return updateDataMap;
+		if (updateDataMap.map.size() > 0) {
+			this.updateDataMap = updateDataMap;
+		} else {
+			this.errorItem = new ErrorItem(ErrorItem.TYPE_EMPTY_RESPONSE);
+		}
+		return null;
 	}
 
 	@Override
-	protected void onPostExecute(Object result) {
-		callback.onReadUpdateComplete((UpdateDataMap) result);
+	protected void onPostExecute(Void result) {
+		callback.onReadUpdateComplete(updateDataMap, errorItem);
 	}
 }
