@@ -259,7 +259,7 @@
 	<string name="message_banned">You are banned</string>
 	<string name="message_board_not_exist">The board doesn\'t exist</string>
 	<string name="message_cache_unavailable">Cache is unavailable</string>
-	<string name="message_can_skip_captcha">You don\'t need to enter a captcha</string>
+	<string name="message_can_skip_captcha">You don\'t need to enter captcha</string>
 	<string name="message_captcha_expired">Captcha expired</string>
 	<string name="message_captcha_not_valid">Captcha is not valid</string>
 	<string name="message_captcha_pass_allowed">Captcha pass is allowed</string>
