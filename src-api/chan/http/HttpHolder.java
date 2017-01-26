@@ -44,9 +44,8 @@ public final class HttpHolder {
 	@Public
 	public HttpHolder() {}
 
-	void initRequest(HttpRequest request, Proxy proxy, String chanName, boolean verifyCertificate, int delay,
-			int maxAttempts) {
-		requestedUri = request.uri;
+	void initRequest(Uri uri, Proxy proxy, String chanName, boolean verifyCertificate, int delay, int maxAttempts) {
+		requestedUri = uri;
 		this.proxy = proxy;
 		this.chanName = chanName;
 		this.verifyCertificate = verifyCertificate;
@@ -66,6 +65,7 @@ public final class HttpHolder {
 	private volatile Thread requestThread;
 	private volatile HttpURLConnection connection;
 	private volatile HttpURLConnection deadConnection;
+	private volatile Callback callback;
 	private volatile boolean disconnectRequested = false;
 	private volatile boolean interrupted = false;
 
@@ -76,6 +76,10 @@ public final class HttpHolder {
 
 	public interface InputListener {
 		public void onInputProgressChange(long progress, long progressMax);
+	}
+
+	public interface Callback {
+		public void onDisconnectRequested();
 	}
 
 	public void interrupt() {
@@ -100,11 +104,12 @@ public final class HttpHolder {
 		response = null;
 	}
 
-	void setConnection(HttpURLConnection connection, InputListener inputListener, OutputStream outputStream)
-			throws HttpClient.DisconnectedIOException {
+	void setConnection(HttpURLConnection connection, Callback callback, boolean notifyClient,
+			InputListener inputListener, OutputStream outputStream) throws HttpClient.DisconnectedIOException {
 		disconnectRequested = false;
 		requestThread = Thread.currentThread();
 		this.connection = connection;
+		this.callback = callback;
 		this.inputListener = inputListener;
 		this.outputStream = outputStream;
 		redirectedUri = null;
@@ -112,11 +117,23 @@ public final class HttpHolder {
 		response = null;
 		if (interrupted) {
 			this.connection = null;
+			this.callback = null;
 			this.inputListener = null;
 			this.outputStream = null;
 			throw new HttpClient.DisconnectedIOException();
 		}
-		HttpClient.getInstance().onConnect(chanName, connection, delay);
+		if (notifyClient) {
+			HttpClient.getInstance().onConnect(chanName, connection, delay);
+		}
+	}
+
+	void setConnection(HttpURLConnection connection, InputListener inputListener, OutputStream outputStream)
+			throws HttpClient.DisconnectedIOException {
+		setConnection(connection, null, true, inputListener, outputStream);
+	}
+
+	void setCallback(Callback callback) throws HttpClient.DisconnectedIOException {
+		setConnection(null, callback, false, null, null);
 	}
 
 	HttpURLConnection getConnection() throws HttpClient.DisconnectedIOException {
@@ -146,12 +163,17 @@ public final class HttpHolder {
 	void disconnectAndClear() {
 		HttpURLConnection connection = this.connection;
 		this.connection = null;
+		Callback callback = this.callback;
+		this.callback = null;
 		inputListener = null;
 		outputStream = null;
 		if (connection != null) {
 			connection.disconnect();
 			deadConnection = connection;
 			HttpClient.getInstance().onDisconnect(connection);
+		}
+		if (callback != null) {
+			callback.onDisconnectRequested();
 		}
 	}
 
