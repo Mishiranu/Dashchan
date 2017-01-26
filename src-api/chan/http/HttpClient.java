@@ -92,7 +92,7 @@ public class HttpClient {
 	private static final SSLSocketFactory DEFAULT_SSL_SOCKET_FACTORY = HttpsURLConnection.getDefaultSSLSocketFactory();
 	private static final SSLSocketFactory UNSAFE_SSL_SOCKET_FACTORY;
 
-	private static final int HTTP_TEMPORARY_REDIRECT = 307;
+	static final int HTTP_TEMPORARY_REDIRECT = 307;
 
 	static {
 		int poolSize = (ChanManager.getInstance().getAllChanNames().size() + 1) * 2;
@@ -245,11 +245,19 @@ public class HttpClient {
 		private static final long serialVersionUID = 1L;
 	}
 
+	HostnameVerifier getHostnameVerifier(boolean verifyCertificate) {
+		return verifyCertificate ? DEFAULT_HOSTNAME_VERIFIER : UNSAFE_HOSTNAME_VERIFIER;
+	}
+
+	SSLSocketFactory getSSLSocketFactory(boolean verifyCertificate) {
+		return verifyCertificate ? DEFAULT_SSL_SOCKET_FACTORY : UNSAFE_SSL_SOCKET_FACTORY;
+	}
+
 	void execute(HttpRequest request) throws HttpException {
 		String chanName = ChanManager.getInstance().getChanNameByHost(request.uri.getAuthority());
 		ChanLocator locator = ChanLocator.get(chanName);
 		boolean verifyCertificate = locator.isUseHttps() && Preferences.isVerifyCertificate();
-		request.holder.initRequest(request, proxies.get(chanName), chanName, verifyCertificate, request.delay,
+		request.holder.initRequest(request.uri, proxies.get(chanName), chanName, verifyCertificate, request.delay,
 				MAX_ATTEMPS_COUNT);
 		executeInternal(request);
 	}
@@ -286,7 +294,7 @@ public class HttpClient {
 		encodeUriBufferPart(uriStringBuilder, chars, chars.length, start, ascii);
 	}
 
-	private URL encodeUri(Uri uri) throws MalformedURLException {
+	URL encodeUri(Uri uri) throws MalformedURLException {
 		StringBuilder uriStringBuilder = new StringBuilder();
 		uriStringBuilder.append(uri.getScheme()).append("://");
 		String host = IDN.toASCII(uri.getHost());
@@ -321,10 +329,8 @@ public class HttpClient {
 					? url.openConnection(holder.proxy) : url.openConnection());
 			if (connection instanceof HttpsURLConnection) {
 				HttpsURLConnection secureConnection = (HttpsURLConnection) connection;
-				secureConnection.setHostnameVerifier(holder.verifyCertificate
-						? DEFAULT_HOSTNAME_VERIFIER : UNSAFE_HOSTNAME_VERIFIER);
-				secureConnection.setSSLSocketFactory(holder.verifyCertificate
-						? DEFAULT_SSL_SOCKET_FACTORY : UNSAFE_SSL_SOCKET_FACTORY);
+				secureConnection.setHostnameVerifier(getHostnameVerifier(holder.verifyCertificate));
+				secureConnection.setSSLSocketFactory(getSSLSocketFactory(holder.verifyCertificate));
 			}
 			try {
 				holder.setConnection(connection, request.inputListener, request.outputStream);
@@ -346,12 +352,7 @@ public class HttpClient {
 					connection.setRequestProperty(header.first, header.second);
 				}
 			}
-			CookieBuilder cookieBuilder = request.cookieBuilder;
-			String cloudFlareCookie = CloudFlarePasser.getCookie(chanName);
-			if (cloudFlareCookie != null) {
-				cookieBuilder = new CookieBuilder(cookieBuilder).append(CloudFlarePasser.COOKIE_CLOUDFLARE,
-						cloudFlareCookie);
-			}
+			CookieBuilder cookieBuilder = obtainModifiedCookieBuilder(request.cookieBuilder, chanName);
 			if (cookieBuilder != null) {
 				connection.setRequestProperty("Cookie", cookieBuilder.build());
 			}
@@ -430,34 +431,8 @@ public class HttpClient {
 				case HttpURLConnection.HTTP_MOVED_TEMP:
 				case HttpURLConnection.HTTP_SEE_OTHER:
 				case HTTP_TEMPORARY_REDIRECT: {
-					// Scheme changed, so I must handle redirect myself
 					boolean oldHttps = connection instanceof HttpsURLConnection;
-					String redirectedUriString = connection.getHeaderField("Location");
-					Uri redirectedUri;
-					if (!StringUtils.isEmpty(redirectedUriString)) {
-						redirectedUri = Uri.parse(redirectedUriString);
-						if (redirectedUri.isRelative()) {
-							Uri.Builder builder = redirectedUri.buildUpon().scheme(requestedUri.getScheme())
-									.authority(requestedUri.getAuthority());
-							String redirectedPath = StringUtils.emptyIfNull(redirectedUri.getPath());
-							if (!redirectedPath.isEmpty() && !redirectedPath.startsWith("/")) {
-								String path = StringUtils.emptyIfNull(requestedUri.getPath());
-								if (!path.endsWith("/")) {
-									int index = path.lastIndexOf('/');
-									if (index >= 0) {
-										path = path.substring(0, index + 1);
-									} else {
-										path = "/";
-									}
-								}
-								path += redirectedPath;
-								builder.path(path);
-							}
-							redirectedUri = builder.build();
-						}
-					} else {
-						redirectedUri = requestedUri;
-					}
+					Uri redirectedUri = obtainRedirectedUri(requestedUri, connection.getHeaderField("Location"));
 					holder.redirectedUri = redirectedUri;
 					HttpRequest.RedirectHandler.Action action;
 					Uri overriddenRedirectedUri;
@@ -607,6 +582,44 @@ public class HttpClient {
 		}
 	}
 
+	CookieBuilder obtainModifiedCookieBuilder(CookieBuilder cookieBuilder, String chanName) {
+		String cloudFlareCookie = CloudFlarePasser.getCookie(chanName);
+		if (cloudFlareCookie != null) {
+			cookieBuilder = new CookieBuilder(cookieBuilder).append(CloudFlarePasser.COOKIE_CLOUDFLARE,
+					cloudFlareCookie);
+		}
+		return cookieBuilder;
+	}
+
+	Uri obtainRedirectedUri(Uri requestedUri, String locationHeader) {
+		Uri redirectedUri;
+		if (!StringUtils.isEmpty(locationHeader)) {
+			redirectedUri = Uri.parse(locationHeader);
+			if (redirectedUri.isRelative()) {
+				Uri.Builder builder = redirectedUri.buildUpon().scheme(requestedUri.getScheme())
+						.authority(requestedUri.getAuthority());
+				String redirectedPath = StringUtils.emptyIfNull(redirectedUri.getPath());
+				if (!redirectedPath.isEmpty() && !redirectedPath.startsWith("/")) {
+					String path = StringUtils.emptyIfNull(requestedUri.getPath());
+					if (!path.endsWith("/")) {
+						int index = path.lastIndexOf('/');
+						if (index >= 0) {
+							path = path.substring(0, index + 1);
+						} else {
+							path = "/";
+						}
+					}
+					path += redirectedPath;
+					builder.path(path);
+				}
+				redirectedUri = builder.build();
+			}
+		} else {
+			redirectedUri = requestedUri;
+		}
+		return redirectedUri;
+	}
+
 	void checkResponseCode(HttpHolder holder) throws HttpException {
 		int responseCode = holder.getResponseCode();
 		boolean success = responseCode >= HttpURLConnection.HTTP_OK && responseCode <= HttpURLConnection.HTTP_SEE_OTHER
@@ -622,7 +635,7 @@ public class HttpClient {
 		}
 	}
 
-	private void checkExceptionAndThrow(IOException exception) throws HttpException {
+	void checkExceptionAndThrow(IOException exception) throws HttpException {
 		Log.persistent().stack(exception);
 		int errorType = getErrorTypeForException(exception);
 		if (errorType != 0) {
