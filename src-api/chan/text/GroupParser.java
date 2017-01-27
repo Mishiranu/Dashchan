@@ -85,10 +85,15 @@ public final class GroupParser {
 				// Skip comment
 				if (source.startsWith("<!--", index)) {
 					index = source.indexOf("-->", index);
+					if (index >= 0) {
+						index += 3;
+					}
 				} else {
 					index = source.indexOf(">", index);
+					if (index >= 0) {
+						index += 1;
+					}
 				}
-				index = source.indexOf('<', index);
 			} else {
 				int start = index;
 				int end = -1;
@@ -170,8 +175,12 @@ public final class GroupParser {
 						continue;
 					}
 				}
+				index = end;
+			}
+			if (index >= 0) {
+				int end = index;
 				index = source.indexOf('<', end);
-				start = end + 1;
+				int start = end + 1;
 				end = index >= 0 ? index : length;
 				if (start < end) {
 					onText(start, end);
