@@ -72,6 +72,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | uboachan        | uboachan.net         | [DashchanUboachan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanUboachan.apk)               |
 | valkyria        | u18chan.com          | [DashchanValkyria.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanValkyria.apk)               |
 | wizardchan      | wizchan.org          | [DashchanWizardchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanWizardchan.apk)           |
+| xyntach         | xynta.ch             | [DashchanXyntach.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanXyntach.apk)                 |
 
 ### Archives
 
