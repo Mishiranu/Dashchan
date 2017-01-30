@@ -58,11 +58,13 @@ import com.mishiranu.dashchan.graphics.SelectorBorderDrawable;
 import com.mishiranu.dashchan.graphics.SelectorCheckDrawable;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.DialogMenu;
+import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.AttachmentView;
 import com.mishiranu.dashchan.widget.EdgeEffectHandler;
 import com.mishiranu.dashchan.widget.callback.BusyScrollListener;
+import com.mishiranu.dashchan.widget.callback.ScrollListenerComposite;
 
 public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener,
 		ActionMode.Callback, ImageLoader.Observer {
@@ -76,6 +78,10 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 	private int gridRowCount;
 	private ActionMode selectionMode;
 
+	private long scrollStateChanged;
+	private long restoredScrollPositionChanged;
+	private int restoredScrollPosition;
+
 	public ListUnit(GalleryInstance instance) {
 		this.instance = instance;
 		float density = ResourceUtils.obtainDensity(instance.context);
@@ -88,7 +94,18 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 		gridView.setId(android.R.id.list);
 		gridAdapter = new GridAdapter(instance.galleryItems);
 		gridView.setAdapter(gridAdapter);
-		gridView.setOnScrollListener(new BusyScrollListener(gridAdapter));
+		ScrollListenerComposite scrollListenerComposite = new ScrollListenerComposite();
+		scrollListenerComposite.add(new BusyScrollListener(gridAdapter));
+		scrollListenerComposite.add(new AbsListView.OnScrollListener() {
+			@Override
+			public void onScrollStateChanged(AbsListView view, int scrollState) {
+				scrollStateChanged = System.currentTimeMillis();
+			}
+
+			@Override
+			public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {}
+		});
+		gridView.setOnScrollListener(scrollListenerComposite);
 		gridView.setOnItemClickListener(this);
 		gridView.setOnItemLongClickListener(this);
 		updateGridMetrics(instance.context.getResources().getConfiguration());
@@ -307,36 +324,43 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 	}
 
 	private void updateGridMetrics(Configuration configuration) {
-		if (gridView != null) {
-			if (!C.API_LOLLIPOP) {
-				// Update top padding on old devices, on new devices paddings will be updated in onApplyWindowPaddings
-				TypedArray typedArray = instance.context.obtainStyledAttributes
-						(new int[] {android.R.attr.actionBarSize});
-				int height = typedArray.getDimensionPixelSize(0, 0);
-				typedArray.recycle();
-				float density = ResourceUtils.obtainDensity(instance.context);
-				int spacing = (int) (GRID_SPACING_DP * density);
-				gridView.setPadding(spacing, spacing + height, spacing, spacing);
-				gridView.applyEdgeEffectShift(height, 0);
-			}
-			// Items count in row must fit to this inequality: (widthDp - (i + 1) * GRID_SPACING_DP) / i >= SIZE
-			// Where SIZE - size of item in grid, i - items count in row, unknown quantity
-			// The solution is: i <= (widthDp + GRID_SPACING_DP) / (SIZE + GRID_SPACING_DP)
-			int widthDp = configuration.screenWidthDp;
-			int size = ResourceUtils.isTablet(configuration) ? 160 : 100;
-			gridRowCount = (widthDp - GRID_SPACING_DP) / (size + GRID_SPACING_DP);
-			gridView.setNumColumns(gridRowCount);
-			gridView.post(() -> {
-				float density = ResourceUtils.obtainDensity(instance.context);
-				int spaceForRows = gridView.getWidth() - gridView.getPaddingLeft() - gridView.getPaddingRight()
-						- (int) ((gridRowCount - 1) * GRID_SPACING_DP * density);
-				int unusedSpace = (spaceForRows - spaceForRows / gridRowCount * gridRowCount) / 2;
-				if (unusedSpace > 0) {
-					gridView.setPadding(gridView.getPaddingLeft() + unusedSpace, gridView.getPaddingTop(),
-							gridView.getPaddingRight() + unusedSpace, gridView.getPaddingBottom());
-				}
-			});
+		int position;
+		if (restoredScrollPositionChanged >= scrollStateChanged) {
+			position = restoredScrollPosition;
+		} else {
+			position = gridView.getFirstVisiblePosition();
+			restoredScrollPosition = position;
+			restoredScrollPositionChanged = System.currentTimeMillis();
 		}
+		if (!C.API_LOLLIPOP) {
+			// Update top padding on old devices, on new devices paddings will be updated in onApplyWindowPaddings
+			TypedArray typedArray = instance.context.obtainStyledAttributes
+					(new int[] {android.R.attr.actionBarSize});
+			int height = typedArray.getDimensionPixelSize(0, 0);
+			typedArray.recycle();
+			float density = ResourceUtils.obtainDensity(instance.context);
+			int spacing = (int) (GRID_SPACING_DP * density);
+			gridView.setPadding(spacing, spacing + height, spacing, spacing);
+			gridView.applyEdgeEffectShift(height, 0);
+		}
+		// Items count in row must fit to this inequality: (widthDp - (i + 1) * GRID_SPACING_DP) / i >= SIZE
+		// Where SIZE - size of item in grid, i - items count in row, unknown quantity
+		// The solution is: i <= (widthDp + GRID_SPACING_DP) / (SIZE + GRID_SPACING_DP)
+		int widthDp = configuration.screenWidthDp;
+		int size = ResourceUtils.isTablet(configuration) ? 160 : 100;
+		gridRowCount = (widthDp - GRID_SPACING_DP) / (size + GRID_SPACING_DP);
+		gridView.setNumColumns(gridRowCount);
+		gridView.post(() -> {
+			float density = ResourceUtils.obtainDensity(instance.context);
+			int spaceForRows = gridView.getWidth() - gridView.getPaddingLeft() - gridView.getPaddingRight()
+					- (int) ((gridRowCount - 1) * GRID_SPACING_DP * density);
+			int unusedSpace = (spaceForRows - spaceForRows / gridRowCount * gridRowCount) / 2;
+			if (unusedSpace > 0) {
+				gridView.setPadding(gridView.getPaddingLeft() + unusedSpace, gridView.getPaddingTop(),
+						gridView.getPaddingRight() + unusedSpace, gridView.getPaddingBottom());
+			}
+			gridView.post(() -> gridView.setSelection(position));
+		});
 	}
 
 	private static class GridViewHolder {
