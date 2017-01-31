@@ -48,6 +48,7 @@ import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.content.storage.StatisticsStorage;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.ui.posting.PostingActivity;
+import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
@@ -492,7 +493,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 
 		private String getNotificationTag() {
 			if (notificationTag == null) {
-				notificationTag = C.NOTIFICATION_TAG_POSTING + "/" + StringUtils.calculateSha256(chanName +
+				notificationTag = C.NOTIFICATION_TAG_POSTING + "/" + IOUtils.calculateSha256(chanName +
 						"/" + boardName + "/" + threadNumber + "/" + postNumber + "/" + comment + "/" + newThread);
 			}
 			return notificationTag;

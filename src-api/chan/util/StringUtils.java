@@ -16,8 +16,6 @@
 
 package chan.util;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -409,31 +407,5 @@ public class StringUtils {
 			}
 		}
 		return builder.toString();
-	}
-
-	private static final MessageDigest DIGEST_SHA_256;
-
-	static {
-		try {
-			DIGEST_SHA_256 = MessageDigest.getInstance("SHA-256");
-		} catch (NoSuchAlgorithmException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	public static String calculateSha256(String string) {
-		byte[] bytes;
-		synchronized (DIGEST_SHA_256) {
-			DIGEST_SHA_256.reset();
-			bytes = DIGEST_SHA_256.digest(emptyIfNull(string).getBytes());
-		}
-		StringBuilder hashBuilder = new StringBuilder(bytes.length * 2);
-		for (byte b : bytes) {
-			if ((b & 0xf0) == 0) {
-				hashBuilder.append(0);
-			}
-			hashBuilder.append(Integer.toString(b & 0xf, 16));
-		}
-		return hashBuilder.toString();
 	}
 }

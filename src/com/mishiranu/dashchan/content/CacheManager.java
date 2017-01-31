@@ -561,7 +561,7 @@ public class CacheManager implements Runnable {
 					return hash;
 				}
 			}
-			String hash = StringUtils.calculateSha256(data);
+			String hash = IOUtils.calculateSha256(data);
 			synchronized (cachedFileKeys) {
 				cachedFileKeys.put(data, hash);
 			}
