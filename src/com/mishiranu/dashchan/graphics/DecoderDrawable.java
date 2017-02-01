@@ -52,8 +52,7 @@ public class DecoderDrawable extends Drawable {
 	private final BitmapRegionDecoder decoder;
 
 	private final LinkedHashMap<Integer, DecodeTask> tasks = new LinkedHashMap<>();
-	private final LruCache<Integer, Bitmap> fragments = new LruCache<>((key, value) -> value.recycle(),
-			MIN_MAX_ENTRIES);
+	private final LruCache<Integer, Bitmap> fragments = new LruCache<>(MIN_MAX_ENTRIES, (k, v) -> v.recycle());
 
 	private final int rotation;
 	private final int width;
