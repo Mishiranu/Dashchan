@@ -1653,6 +1653,21 @@ jintArray getCurrentFrame(JNIEnv * env, jlong pointer) {
 	return result;
 }
 
+static jstring newUtfStringSafe(JNIEnv * env, char * string) {
+    // Fixes "input is not valid Modified UTF-8" error
+    if (string) {
+        int length = strlen(string);
+        jbyteArray array = (*env)->NewByteArray(env, length);
+        (*env)->SetByteArrayRegion(env, array, 0, length, string);
+        jclass class = (*env)->FindClass(env, "java/lang/String");
+        jmethodID constructor = (*env)->GetMethodID(env, class, "<init>", "([B)V");
+        jstring result = (*env)->NewObject(env, class, constructor, array);
+        (*env)->DeleteLocalRef(env, array);
+        return result;
+    }
+    return 0;
+}
+
 jobjectArray getTechnicalInfo(JNIEnv * env, jlong pointer) {
 	char buffer[24];
 	Player * player = pointerCast(pointer);
@@ -1727,8 +1742,8 @@ jobjectArray getTechnicalInfo(JNIEnv * env, jlong pointer) {
 	}
 	AVDictionaryEntry * entry = NULL;
 	while ((entry = av_dict_get(player->formatContext->metadata, "", entry, AV_DICT_IGNORE_SUFFIX)) != NULL) {
-		(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env, entry->key));
-		(*env)->SetObjectArrayElement(env, result, index++, (*env)->NewStringUTF(env, entry->value));
+		(*env)->SetObjectArrayElement(env, result, index++, newUtfStringSafe(env, entry->key));
+		(*env)->SetObjectArrayElement(env, result, index++, newUtfStringSafe(env, entry->value));
 	}
 	return result;
 }
