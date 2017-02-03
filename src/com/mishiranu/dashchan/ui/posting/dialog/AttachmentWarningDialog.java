@@ -22,6 +22,8 @@ import android.app.Dialog;
 import android.os.Bundle;
 
 import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.content.model.FileHolder;
+import com.mishiranu.dashchan.content.storage.DraftsStorage;
 import com.mishiranu.dashchan.media.JpegData;
 import com.mishiranu.dashchan.ui.posting.AttachmentHolder;
 
@@ -42,13 +44,15 @@ public class AttachmentWarningDialog extends PostingDialog {
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		Activity activity = getActivity();
 		AttachmentHolder holder = getAttachmentHolder(EXTRA_ATTACHMENT_INDEX);
-		if (holder == null) {
+		FileHolder fileHolder = holder != null ? DraftsStorage.getInstance()
+				.getAttachmentDraftFileHolder(holder.hash) : null;
+		if (holder == null || fileHolder == null) {
 			dismiss();
 			return new Dialog(activity);
 		}
-		JpegData jpegData = holder.fileHolder.getJpegData();
+		JpegData jpegData = fileHolder.getJpegData();
 		boolean hasExif = jpegData != null && jpegData.hasExif;
-		int rotation = holder.fileHolder.getRotation();
+		int rotation = fileHolder.getRotation();
 		String geolocation = jpegData != null ? jpegData.getGeolocation(false) : null;
 		StringBuilder builder = new StringBuilder();
 		if (hasExif) {

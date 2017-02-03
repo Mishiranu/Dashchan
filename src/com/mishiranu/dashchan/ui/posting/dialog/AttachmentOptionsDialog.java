@@ -37,6 +37,8 @@ import chan.content.ChanConfiguration;
 
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.content.model.FileHolder;
+import com.mishiranu.dashchan.content.storage.DraftsStorage;
 import com.mishiranu.dashchan.graphics.TransparentTileDrawable;
 import com.mishiranu.dashchan.ui.posting.AttachmentHolder;
 import com.mishiranu.dashchan.util.GraphicsUtils;
@@ -108,7 +110,9 @@ public class AttachmentOptionsDialog extends PostingDialog implements AdapterVie
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		Activity activity = getActivity();
 		holder = getAttachmentHolder(EXTRA_ATTACHMENT_INDEX);
-		if (holder == null) {
+		FileHolder fileHolder = holder != null ? DraftsStorage.getInstance()
+				.getAttachmentDraftFileHolder(holder.hash) : null;
+		if (holder == null || fileHolder == null) {
 			dismiss();
 			return new Dialog(activity);
 		}
@@ -119,12 +123,12 @@ public class AttachmentOptionsDialog extends PostingDialog implements AdapterVie
 		optionItems.add(new OptionItem(getString(R.string.text_unique_hash), OPTION_TYPE_UNIQUE_HASH,
 				holder.optionUniqueHash));
 		optionIndexes.append(OPTION_TYPE_UNIQUE_HASH, index++);
-		if (GraphicsUtils.canRemoveMetadata(holder.fileHolder)) {
+		if (GraphicsUtils.canRemoveMetadata(fileHolder)) {
 			optionItems.add(new OptionItem(getString(R.string.text_remove_metadata), OPTION_TYPE_REMOVE_METADATA,
 					holder.optionRemoveMetadata));
 			optionIndexes.append(OPTION_TYPE_REMOVE_METADATA, index++);
 		}
-		if (holder.fileHolder.isImage()) {
+		if (fileHolder.isImage()) {
 			optionItems.add(new OptionItem(getString(R.string.text_reencode_image), OPTION_TYPE_REENCODE_IMAGE,
 					holder.reencoding != null));
 			optionIndexes.append(OPTION_TYPE_REENCODE_IMAGE, index++);

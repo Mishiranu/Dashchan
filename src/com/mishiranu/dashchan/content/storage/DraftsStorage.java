@@ -16,14 +16,19 @@
 
 package com.mishiranu.dashchan.content.storage;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -35,6 +40,7 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.util.GraphicsUtils;
+import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.LruCache;
 
 public class DraftsStorage extends StorageManager.Storage {
@@ -46,7 +52,7 @@ public class DraftsStorage extends StorageManager.Storage {
 		return INSTANCE;
 	}
 
-	private final LruCache<String, PostDraft> postDrafts = new LruCache<>(5);
+	private final LruCache<String, PostDraft> postDrafts = new LruCache<>(5, (k, v) -> handleRemovePostDraft(v));
 
 	private String captchaChanName;
 	private CaptchaDraft captchaDraft;
@@ -66,6 +72,18 @@ public class DraftsStorage extends StorageManager.Storage {
 					}
 				} catch (JSONException e) {
 					// Invalid data, ignore exception
+				}
+			}
+		}
+		File directory = getAttachmentDraftsDirectory();
+		if (directory != null) {
+			File[] files = directory.listFiles();
+			if (files != null && files.length > 0) {
+				HashSet<String> hashes = collectAttachmentDraftHashes();
+				for (File file : files) {
+					if (!hashes.contains(file.getName())) {
+						file.delete();
+					}
 				}
 			}
 		}
@@ -166,6 +184,86 @@ public class DraftsStorage extends StorageManager.Storage {
 	public void removeCaptchaDraft() {
 		captchaDraft = null;
 		captchaChanName = null;
+	}
+
+	private static File getAttachmentDraftsDirectory() {
+		File directory = MainApplication.getInstance().getExternalCacheDir();
+		if (directory != null) {
+			directory = new File(directory, "attachments");
+			if (directory.isDirectory() || directory.mkdirs()) {
+				return directory;
+			}
+		}
+		return null;
+	}
+
+	private static File getAttachmentDraftFile(String hash) {
+		File directory = getAttachmentDraftsDirectory();
+		return directory != null ? new File(directory, hash) : null;
+	}
+
+	public FileHolder getAttachmentDraftFileHolder(String hash) {
+		File file = getAttachmentDraftFile(hash);
+		return file != null && file.isFile() ? FileHolder.obtain(file) : null;
+	}
+
+	public String store(FileHolder fileHolder) {
+		String hash;
+		InputStream inputStream = null;
+		try {
+			inputStream = fileHolder.openInputStream();
+			hash = IOUtils.calculateSha256(inputStream);
+		} catch (IOException e) {
+			return null;
+		} finally {
+			IOUtils.close(inputStream);
+		}
+		File file = getAttachmentDraftFile(hash);
+		if (file == null) {
+			return null;
+		}
+		if (file.isFile()) {
+			return hash;
+		}
+		OutputStream outputStream = null;
+		try {
+			inputStream = fileHolder.openInputStream();
+			outputStream = new FileOutputStream(file);
+			IOUtils.copyStream(inputStream, outputStream);
+			return hash;
+		} catch (IOException e) {
+			file.delete();
+			return null;
+		} finally {
+			IOUtils.close(inputStream);
+			IOUtils.close(outputStream);
+		}
+	}
+
+	private HashSet<String> collectAttachmentDraftHashes() {
+		HashSet<String> hashes = new HashSet<>();
+		for (PostDraft postDraft : postDrafts.values()) {
+			if (postDraft.attachmentDrafts != null) {
+				for (AttachmentDraft attachmentDraft : postDraft.attachmentDrafts) {
+					hashes.add(attachmentDraft.hash);
+				}
+			}
+		}
+		return hashes;
+	}
+
+	private void handleRemovePostDraft(PostDraft postDraft) {
+		if (postDraft.attachmentDrafts != null) {
+			HashSet<String> hashes = collectAttachmentDraftHashes();
+			for (AttachmentDraft attachmentDraft : postDraft.attachmentDrafts) {
+				if (!hashes.contains(attachmentDraft.hash)) {
+					File file = getAttachmentDraftFile(attachmentDraft.hash);
+					if (file != null) {
+						file.delete();
+					}
+				}
+			}
+		}
 	}
 
 	public static class PostDraft {
@@ -382,7 +480,8 @@ public class DraftsStorage extends StorageManager.Storage {
 	}
 
 	public static class AttachmentDraft {
-		private static final String KEY_FILE_URI = "fileUri";
+		private static final String KEY_HASH = "hash";
+		private static final String KEY_NAME = "name";
 		private static final String KEY_RATING = "rating";
 		private static final String KEY_OPTION_UNIQUE_HASH = "optionUniqueHash";
 		private static final String KEY_OPTION_REMOVE_METADATA = "optionRemoveMetadata";
@@ -394,7 +493,8 @@ public class DraftsStorage extends StorageManager.Storage {
 		private static final String KEY_REENCODING_QUALITY = "quality";
 		private static final String KEY_REENCODING_REDUCE = "reduce";
 
-		public final FileHolder fileHolder;
+		public final String hash;
+		public final String name;
 		public final String rating;
 		public final boolean optionUniqueHash;
 		public final boolean optionRemoveMetadata;
@@ -402,10 +502,11 @@ public class DraftsStorage extends StorageManager.Storage {
 		public final boolean optionSpoiler;
 		public final GraphicsUtils.Reencoding reencoding;
 
-		public AttachmentDraft(FileHolder fileHolder, String rating, boolean optionUniqueHash,
+		public AttachmentDraft(String hash, String name, String rating, boolean optionUniqueHash,
 				boolean optionRemoveMetadata, boolean optionRemoveFileName, boolean optionSpoiler,
 				GraphicsUtils.Reencoding reencoding) {
-			this.fileHolder = fileHolder;
+			this.hash = hash;
+			this.name = name;
 			this.rating = rating;
 			this.optionUniqueHash = optionUniqueHash;
 			this.optionRemoveMetadata = optionRemoveMetadata;
@@ -416,7 +517,8 @@ public class DraftsStorage extends StorageManager.Storage {
 
 		public JSONObject toJsonObject() throws JSONException {
 			JSONObject jsonObject = new JSONObject();
-			putJson(jsonObject, KEY_FILE_URI, fileHolder.toUri().toString());
+			putJson(jsonObject, KEY_HASH, hash);
+			putJson(jsonObject, KEY_NAME, name);
 			putJson(jsonObject, KEY_RATING, rating);
 			putJson(jsonObject, KEY_OPTION_UNIQUE_HASH, optionUniqueHash);
 			putJson(jsonObject, KEY_OPTION_REMOVE_METADATA, optionRemoveMetadata);
@@ -433,16 +535,8 @@ public class DraftsStorage extends StorageManager.Storage {
 		}
 
 		public static AttachmentDraft fromJsonObject(JSONObject jsonObject) {
-			String uriString = jsonObject.optString(KEY_FILE_URI, null);
-			if (uriString == null) {
-				return null;
-			}
-			Uri uri = Uri.parse(uriString);
-			if (uri == null) {
-				return null;
-			}
-			FileHolder fileHolder = FileHolder.obtain(MainApplication.getInstance(), uri);
-			if (fileHolder == null) {
+			String hash = jsonObject.optString(KEY_HASH, null);
+			if (StringUtils.isEmpty(hash)) {
 				return null;
 			}
 			JSONObject reencodingObject = jsonObject.optJSONObject(KEY_REENCODING);
@@ -452,8 +546,9 @@ public class DraftsStorage extends StorageManager.Storage {
 						reencodingObject.optInt(KEY_REENCODING_QUALITY),
 						reencodingObject.optInt(KEY_REENCODING_REDUCE));
 			}
-			return new AttachmentDraft(fileHolder, jsonObject.optString(KEY_RATING, null),
-					jsonObject.optBoolean(KEY_OPTION_UNIQUE_HASH), jsonObject.optBoolean(KEY_OPTION_REMOVE_METADATA),
+			return new AttachmentDraft(hash, jsonObject.optString(KEY_NAME, null),
+					jsonObject.optString(KEY_RATING, null), jsonObject.optBoolean(KEY_OPTION_UNIQUE_HASH),
+					jsonObject.optBoolean(KEY_OPTION_REMOVE_METADATA),
 					jsonObject.optBoolean(KEY_OPTION_REMOVE_FILE_NAME), jsonObject.optBoolean(KEY_OPTION_SPOILER),
 					reencoding);
 		}

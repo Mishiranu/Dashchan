@@ -40,10 +40,12 @@ public class ChanFileOpenable implements MultipartEntity.Openable {
 	private final byte[] decodedBytes;
 	private final long realSize;
 
-	public ChanFileOpenable(FileHolder fileHolder, boolean uniqueHash, boolean removeMetadata, boolean removeFileName,
-			GraphicsUtils.Reencoding reencoding) {
+	public ChanFileOpenable(FileHolder fileHolder, String fileName, boolean uniqueHash, boolean removeMetadata,
+			boolean removeFileName, GraphicsUtils.Reencoding reencoding) {
 		this.fileHolder = fileHolder;
-		String fileName = fileHolder.getName();
+		if (fileName == null) {
+			fileName = fileHolder.getName();
+		}
 		if (removeFileName) {
 			String extension = StringUtils.getFileExtension(fileName);
 			long time = System.currentTimeMillis();

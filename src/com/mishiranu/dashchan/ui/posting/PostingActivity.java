@@ -285,9 +285,10 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			DraftsStorage.AttachmentDraft[] attachmentDrafts = postDraft.attachmentDrafts;
 			if (attachmentDrafts != null) {
 				for (DraftsStorage.AttachmentDraft attachmentDraft : attachmentDrafts) {
-					addAttachment(attachmentDraft.fileHolder, attachmentDraft.rating, attachmentDraft.optionUniqueHash,
-							attachmentDraft.optionRemoveMetadata, attachmentDraft.optionRemoveFileName,
-							attachmentDraft.optionSpoiler, attachmentDraft.reencoding);
+					addAttachment(attachmentDraft.hash, attachmentDraft.name, attachmentDraft.rating,
+							attachmentDraft.optionUniqueHash, attachmentDraft.optionRemoveMetadata,
+							attachmentDraft.optionRemoveFileName, attachmentDraft.optionSpoiler,
+							attachmentDraft.reencoding);
 				}
 			}
 			nameView.setText(postDraft.name);
@@ -476,7 +477,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			attachmentDrafts = new DraftsStorage.AttachmentDraft[attachments.size()];
 			for (int i = 0; i < attachmentDrafts.length; i++) {
 				AttachmentHolder holder = attachments.get(i);
-				attachmentDrafts[i] = new DraftsStorage.AttachmentDraft(holder.fileHolder, holder.rating,
+				attachmentDrafts[i] = new DraftsStorage.AttachmentDraft(holder.hash, holder.name, holder.rating,
 						holder.optionUniqueHash, holder.optionRemoveMetadata, holder.optionRemoveFileName,
 						holder.optionSpoiler, holder.reencoding);
 			}
@@ -816,6 +817,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		boolean optionOriginalPoster = isCheckedIfVisible(originalPosterCheckBox);
 		String userIcon = iconView.getVisibility() == View.VISIBLE ? getUserIcon() : null;
 		ArrayList<ChanPerformer.SendPostData.Attachment> array = new ArrayList<>();
+		DraftsStorage draftsStorage = DraftsStorage.getInstance();
 		for (int i = 0; i < attachments.size(); i++) {
 			AttachmentHolder data = attachments.get(i);
 			String rating = data.rating;
@@ -836,9 +838,12 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			if (attachmentRatingItems != null && rating == null) {
 				rating = attachmentRatingItems.get(0).first;
 			}
-			array.add(new ChanPerformer.SendPostData.Attachment(data.fileHolder, rating, data.optionUniqueHash,
-					data.optionRemoveMetadata, data.optionRemoveFileName,
-					postingConfiguration.attachmentSpoiler && data.optionSpoiler, data.reencoding));
+			FileHolder fileHolder = draftsStorage.getAttachmentDraftFileHolder(data.hash);
+			if (fileHolder != null) {
+				array.add(new ChanPerformer.SendPostData.Attachment(fileHolder, data.name, rating,
+						data.optionUniqueHash, data.optionRemoveMetadata, data.optionRemoveFileName,
+						postingConfiguration.attachmentSpoiler && data.optionSpoiler, data.reencoding));
+			}
 		}
 		ChanPerformer.SendPostData.Attachment[] attachments = null;
 		if (array.size() > 0) {
@@ -1109,10 +1114,17 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 						FileHolder fileHolder = FileHolder.obtain(this, uri);
 						grantUriPermission(getPackageName(), uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
 						if (fileHolder != null) {
-							addAttachment(fileHolder);
+							String hash = DraftsStorage.getInstance().store(fileHolder);
+							if (hash != null) {
+								addAttachment(hash, fileHolder.getName());
+							}
 						}
 					}
-					int errorCount = uris.size() - (attachments.size() - oldCount);
+					int newCount = attachments.size() - oldCount;
+					if (newCount > 0) {
+						DraftsStorage.getInstance().store(obtainPostDraft());
+					}
+					int errorCount = uris.size() - newCount;
 					if (errorCount > 0) {
 						ClickableToast.show(this, getResources().getQuantityString(R.plurals
 								.message_file_attach_error_format, errorCount, errorCount));
@@ -1171,6 +1183,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 				}
 				invalidateOptionsMenu();
 				scrollView.postResizeComment();
+				DraftsStorage.getInstance().store(obtainPostDraft());
 			}
 		}
 	};
@@ -1259,52 +1272,57 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		return holder;
 	}
 
-	private void addAttachment(FileHolder fileHolder) {
-		addAttachment(fileHolder, null, false, false, false, false, null);
+	private void addAttachment(String hash, String name) {
+		addAttachment(hash, name, null, false, false, false, false, null);
 	}
 
-	private void addAttachment(FileHolder fileHolder, String rating, boolean optionUniqueHash,
+	private void addAttachment(String hash, String name, String rating, boolean optionUniqueHash,
 			boolean optionRemoveMetadata, boolean optionRemoveFileName, boolean optionSpoiler,
 			GraphicsUtils.Reencoding reencoding) {
-		JpegData jpegData = fileHolder.getJpegData();
+		FileHolder fileHolder = DraftsStorage.getInstance().getAttachmentDraftFileHolder(hash);
+		JpegData jpegData = fileHolder != null ? fileHolder.getJpegData() : null;
 		AttachmentHolder holder = addNewAttachment();
-		holder.fileHolder = fileHolder;
+		holder.hash = hash;
+		holder.name = name;
 		holder.rating = rating;
 		holder.optionUniqueHash = optionUniqueHash;
 		holder.optionRemoveMetadata = optionRemoveMetadata;
 		holder.optionRemoveFileName = optionRemoveFileName;
 		holder.optionSpoiler = optionSpoiler;
 		holder.reencoding = reencoding;
-		holder.fileName.setText(fileHolder.getName());
-		String fileSize = String.format(Locale.US, "%.2f", fileHolder.getSize() / 1024f) + " KB";
+		holder.fileName.setText(name);
+		int size = fileHolder != null ? fileHolder.getSize() : 0;
+		String fileSize = String.format(Locale.US, "%.2f", size / 1024f) + " KB";
 		Bitmap bitmap = null;
 		ChanLocator locator = ChanLocator.getDefault();
 		DisplayMetrics metrics = getResources().getDisplayMetrics();
 		int targetImageSize = Math.max(metrics.widthPixels, metrics.heightPixels);
-		if (fileHolder.isImage()) {
-			try {
-				bitmap = fileHolder.readImageBitmap(targetImageSize, false, false);
-			} catch (OutOfMemoryError e) {
-				// Ignore exception
-			}
-			fileSize += " " + fileHolder.getImageWidth() + "x" + fileHolder.getImageHeight();
-		}
-		if (bitmap == null) {
-			if (locator.isVideoExtension(fileHolder.getName())) {
-				MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-				FileHolder.Descriptor descriptor = null;
+		if (fileHolder != null) {
+			if (fileHolder.isImage()) {
 				try {
-					descriptor = fileHolder.openDescriptor();
-					retriever.setDataSource(descriptor.getFileDescriptor());
-					Bitmap fullBitmap = retriever.getFrameAtTime(-1);
-					if (fullBitmap != null) {
-						bitmap = GraphicsUtils.reduceBitmapSize(fullBitmap, targetImageSize, true);
-					}
-				} catch (Exception | OutOfMemoryError e) {
+					bitmap = fileHolder.readImageBitmap(targetImageSize, false, false);
+				} catch (OutOfMemoryError e) {
 					// Ignore exception
-				} finally {
-					retriever.release();
-					IOUtils.close(descriptor);
+				}
+				fileSize += " " + fileHolder.getImageWidth() + "x" + fileHolder.getImageHeight();
+			}
+			if (bitmap == null) {
+				if (locator.isVideoExtension(fileHolder.getName())) {
+					MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+					FileHolder.Descriptor descriptor = null;
+					try {
+						descriptor = fileHolder.openDescriptor();
+						retriever.setDataSource(descriptor.getFileDescriptor());
+						Bitmap fullBitmap = retriever.getFrameAtTime(-1);
+						if (fullBitmap != null) {
+							bitmap = GraphicsUtils.reduceBitmapSize(fullBitmap, targetImageSize, true);
+						}
+					} catch (Exception | OutOfMemoryError e) {
+						// Ignore exception
+					} finally {
+						retriever.release();
+						IOUtils.close(descriptor);
+					}
 				}
 			}
 		}

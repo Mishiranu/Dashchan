@@ -17,11 +17,9 @@
 package com.mishiranu.dashchan.ui.posting;
 
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 
 public class AttachmentHolder {
@@ -34,7 +32,8 @@ public class AttachmentHolder {
 	public View ratingButton;
 	public View removeButton;
 
-	public FileHolder fileHolder;
+	public String hash;
+	public String name;
 	public String rating;
 	public boolean optionUniqueHash = false;
 	public boolean optionRemoveMetadata = false;

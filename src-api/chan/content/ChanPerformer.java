@@ -741,6 +741,7 @@ public class ChanPerformer implements ChanManager.Linked {
 		@Public
 		public static class Attachment {
 			public final FileHolder fileHolder;
+			public final String fileName;
 			@Public public final String rating;
 
 			public final boolean optionUniqueHash;
@@ -753,10 +754,11 @@ public class ChanPerformer implements ChanManager.Linked {
 
 			private ChanFileOpenable openable;
 
-			public Attachment(FileHolder fileHolder, String rating, boolean optionUniqueHash,
+			public Attachment(FileHolder fileHolder, String fileName, String rating, boolean optionUniqueHash,
 					boolean optionRemoveMetadata, boolean optionRemoveFileName, boolean optionSpoiler,
 					GraphicsUtils.Reencoding reencoding) {
 				this.fileHolder = fileHolder;
+				this.fileName = fileName;
 				this.rating = rating;
 				this.optionUniqueHash = optionUniqueHash;
 				this.optionRemoveMetadata = optionRemoveMetadata;
@@ -767,7 +769,7 @@ public class ChanPerformer implements ChanManager.Linked {
 
 			private void ensureOpenable() {
 				if (openable == null) {
-					openable = new ChanFileOpenable(fileHolder, optionUniqueHash, optionRemoveMetadata,
+					openable = new ChanFileOpenable(fileHolder, fileName, optionUniqueHash, optionRemoveMetadata,
 							optionRemoveFileName, reencoding);
 				}
 			}
