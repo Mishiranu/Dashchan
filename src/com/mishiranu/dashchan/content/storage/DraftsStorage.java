@@ -34,7 +34,6 @@ import android.os.Parcelable;
 
 import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
-import chan.util.CommonUtils;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.content.MainApplication;
@@ -293,7 +292,7 @@ public class DraftsStorage extends StorageManager.Storage {
 		public final String subject;
 		public final String comment;
 		public final int commentCarriage;
-		public final AttachmentDraft[] attachmentDrafts;
+		public final ArrayList<AttachmentDraft> attachmentDrafts;
 		public final boolean optionSage;
 		public final boolean optionSpoiler;
 		public final boolean optionOriginalPoster;
@@ -301,7 +300,7 @@ public class DraftsStorage extends StorageManager.Storage {
 
 		public PostDraft(String chanName, String boardName, String threadNumber,
 				String name, String email, String password, String subject, String comment, int commentCarriage,
-				AttachmentDraft[] attachmentDrafts, boolean optionSage, boolean optionSpoiler,
+				ArrayList<AttachmentDraft> attachmentDrafts, boolean optionSage, boolean optionSpoiler,
 				boolean optionOriginalPoster, String userIcon) {
 			this.chanName = chanName;
 			this.boardName = boardName;
@@ -329,7 +328,7 @@ public class DraftsStorage extends StorageManager.Storage {
 		public boolean isEmpty() {
 			return StringUtils.isEmpty(name) && StringUtils.isEmpty(email) && StringUtils.isEmpty(password) &&
 					StringUtils.isEmpty(subject) && StringUtils.isEmpty(comment) &&
-					(attachmentDrafts == null || attachmentDrafts.length == 0) &&
+					(attachmentDrafts == null || attachmentDrafts.isEmpty()) &&
 					!optionSage && !optionSpoiler && !optionOriginalPoster && StringUtils.isEmpty(userIcon);
 		}
 
@@ -344,7 +343,7 @@ public class DraftsStorage extends StorageManager.Storage {
 			putJson(jsonObject, KEY_SUBJECT, subject);
 			putJson(jsonObject, KEY_COMMENT, comment);
 			putJson(jsonObject, KEY_COMMENT_CARRIAGE, commentCarriage);
-			if (attachmentDrafts != null && attachmentDrafts.length > 0) {
+			if (attachmentDrafts != null && !attachmentDrafts.isEmpty()) {
 				JSONArray jsonArray = new JSONArray();
 				for (AttachmentDraft attachmentDraft : attachmentDrafts) {
 					jsonArray.put(attachmentDraft.toJsonObject());
@@ -368,20 +367,21 @@ public class DraftsStorage extends StorageManager.Storage {
 			String subject = jsonObject.optString(KEY_SUBJECT, null);
 			String comment = jsonObject.optString(KEY_COMMENT, null);
 			int commentCarriage = jsonObject.optInt(KEY_COMMENT_CARRIAGE);
-			AttachmentDraft[] attachmentDrafts = null;
+			ArrayList<AttachmentDraft> attachmentDrafts = null;
 			JSONArray jsonArray = jsonObject.optJSONArray(KEY_ATTACHMENT_DRAFTS);
 			if (jsonArray != null && jsonArray.length() > 0) {
-				ArrayList<AttachmentDraft> attachmentDraftList = new ArrayList<>();
 				for (int i = 0; i < jsonArray.length(); i++) {
 					JSONObject draftObject = jsonArray.optJSONObject(i);
 					if (draftObject != null) {
 						AttachmentDraft attachmentDraft = AttachmentDraft.fromJsonObject(draftObject);
 						if (attachmentDraft != null) {
-							attachmentDraftList.add(attachmentDraft);
+							if (attachmentDrafts == null) {
+								attachmentDrafts = new ArrayList<>();
+							}
+							attachmentDrafts.add(attachmentDraft);
 						}
 					}
 				}
-				attachmentDrafts = CommonUtils.toArray(attachmentDraftList, AttachmentDraft.class);
 			}
 			boolean optionSage = jsonObject.optBoolean(KEY_OPTION_SAGE);
 			boolean optionSpoiler = jsonObject.optBoolean(KEY_OPTION_SPOILER);

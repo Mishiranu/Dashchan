@@ -282,8 +282,8 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 				builder.append(postDraft.comment);
 				commentCarriage = postDraft.commentCarriage;
 			}
-			DraftsStorage.AttachmentDraft[] attachmentDrafts = postDraft.attachmentDrafts;
-			if (attachmentDrafts != null) {
+			ArrayList<DraftsStorage.AttachmentDraft> attachmentDrafts = postDraft.attachmentDrafts;
+			if (attachmentDrafts != null && !attachmentDrafts.isEmpty()) {
 				for (DraftsStorage.AttachmentDraft attachmentDraft : attachmentDrafts) {
 					addAttachment(attachmentDraft.hash, attachmentDraft.name, attachmentDraft.rating,
 							attachmentDraft.optionUniqueHash, attachmentDraft.optionRemoveMetadata,
@@ -472,14 +472,13 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	}
 
 	private DraftsStorage.PostDraft obtainPostDraft() {
-		DraftsStorage.AttachmentDraft[] attachmentDrafts = null;
+		ArrayList<DraftsStorage.AttachmentDraft> attachmentDrafts = null;
 		if (attachments.size() > 0) {
-			attachmentDrafts = new DraftsStorage.AttachmentDraft[attachments.size()];
-			for (int i = 0; i < attachmentDrafts.length; i++) {
-				AttachmentHolder holder = attachments.get(i);
-				attachmentDrafts[i] = new DraftsStorage.AttachmentDraft(holder.hash, holder.name, holder.rating,
+			attachmentDrafts = new ArrayList<>(attachments.size());
+			for (AttachmentHolder holder : attachments) {
+				attachmentDrafts.add(new DraftsStorage.AttachmentDraft(holder.hash, holder.name, holder.rating,
 						holder.optionUniqueHash, holder.optionRemoveMetadata, holder.optionRemoveFileName,
-						holder.optionSpoiler, holder.reencoding);
+						holder.optionSpoiler, holder.reencoding));
 			}
 		}
 		String subject = subjectView.getText().toString();
