@@ -519,6 +519,16 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		super.onResume();
 		clickableToastHolder.onResume();
 		ForegroundManager.register(this);
+		DraftsStorage draftsStorage = DraftsStorage.getInstance();
+		ArrayList<DraftsStorage.AttachmentDraft> futureAttachmentDrafts = draftsStorage.getFutureAttachmentDrafts();
+		if (!futureAttachmentDrafts.isEmpty()) {
+			ArrayList<Pair<String, String>> attachmentsToAdd = new ArrayList<>(futureAttachmentDrafts.size());
+			for (DraftsStorage.AttachmentDraft attachmentDraft : futureAttachmentDrafts) {
+				attachmentsToAdd.add(new Pair<>(attachmentDraft.hash, attachmentDraft.name));
+			}
+			handleAttachmentsToAdd(attachmentsToAdd, futureAttachmentDrafts.size());
+			DraftsStorage.getInstance().consumeFutureAttachmentDrafts();
+		}
 	}
 
 	@Override
@@ -1105,32 +1115,38 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 							}
 						}
 					}
-					int oldCount = attachments.size();
+					ArrayList<Pair<String, String>> attachmentsToAdd = new ArrayList<>();
 					for (Uri uri : uris) {
-						if (attachments.size() >= postingConfiguration.attachmentCount) {
-							break;
-						}
 						FileHolder fileHolder = FileHolder.obtain(this, uri);
-						grantUriPermission(getPackageName(), uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
 						if (fileHolder != null) {
 							String hash = DraftsStorage.getInstance().store(fileHolder);
 							if (hash != null) {
-								addAttachment(hash, fileHolder.getName());
+								attachmentsToAdd.add(new Pair<>(hash, fileHolder.getName()));
 							}
 						}
 					}
-					int newCount = attachments.size() - oldCount;
-					if (newCount > 0) {
-						DraftsStorage.getInstance().store(obtainPostDraft());
-					}
-					int errorCount = uris.size() - newCount;
-					if (errorCount > 0) {
-						ClickableToast.show(this, getResources().getQuantityString(R.plurals
-								.message_file_attach_error_format, errorCount, errorCount));
-					}
+					handleAttachmentsToAdd(attachmentsToAdd, uris.size());
 					break;
 				}
 			}
+		}
+	}
+
+	private void handleAttachmentsToAdd(ArrayList<Pair<String, String>> attachmentsToAdd, int addedCount) {
+		int oldCount = attachments.size();
+		for (Pair<String, String> attachmentToAdd : attachmentsToAdd) {
+			if (attachments.size() < postingConfiguration.attachmentCount) {
+				addAttachment(attachmentToAdd.first, attachmentToAdd.second);
+			}
+		}
+		int newCount = attachments.size() - oldCount;
+		if (newCount > 0) {
+			DraftsStorage.getInstance().store(obtainPostDraft());
+		}
+		int errorCount = addedCount - newCount;
+		if (errorCount > 0) {
+			ClickableToast.show(this, getResources().getQuantityString(R.plurals
+					.message_file_attach_error_format, errorCount, errorCount));
 		}
 	}
 

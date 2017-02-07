@@ -286,6 +286,7 @@
 	<string name="message_download_name_format">File %s</string>
 	<string name="message_download_not_loaded">Not loaded</string>
 	<string name="message_download_manager_error">Download Manager is not available</string>
+	<string name="message_draft_saved">Draft saved</string>
 	<string name="message_edited_posts">Some posts have been edited</string>
 	<string name="message_empty_file">You need to attach a file</string>
 	<string name="message_empty_gallery">Gallery is empty</string>

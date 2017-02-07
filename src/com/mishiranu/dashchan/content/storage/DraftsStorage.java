@@ -44,6 +44,7 @@ import com.mishiranu.dashchan.util.LruCache;
 
 public class DraftsStorage extends StorageManager.Storage {
 	private static final String KEY_POST_DRAFTS = "postDrafts";
+	private static final String KEY_FUTURE_ATTACHMENT_DRAFTS = "futureAttachmentDrafts";
 
 	private static final DraftsStorage INSTANCE = new DraftsStorage();
 
@@ -55,6 +56,7 @@ public class DraftsStorage extends StorageManager.Storage {
 
 	private String captchaChanName;
 	private CaptchaDraft captchaDraft;
+	private final ArrayList<AttachmentDraft> futureAttachmentDrafts = new ArrayList<>();
 
 	private DraftsStorage() {
 		super("drafts", 2000, 10000);
@@ -67,6 +69,20 @@ public class DraftsStorage extends StorageManager.Storage {
 						PostDraft postDraft = PostDraft.fromJsonObject(postsArray.getJSONObject(i));
 						if (postDraft != null) {
 							postDrafts.put(makeKey(postDraft), postDraft);
+						}
+					}
+				} catch (JSONException e) {
+					// Invalid data, ignore exception
+				}
+			}
+			JSONArray futureAttachmentsArray = jsonObject.optJSONArray(KEY_FUTURE_ATTACHMENT_DRAFTS);
+			if (futureAttachmentsArray != null && futureAttachmentsArray.length() > 0) {
+				try {
+					for (int i = 0; i < futureAttachmentsArray.length(); i++) {
+						AttachmentDraft attachmentDraft = AttachmentDraft.fromJsonObject(futureAttachmentsArray
+								.getJSONObject(i));
+						if (attachmentDraft != null) {
+							futureAttachmentDrafts.add(attachmentDraft);
 						}
 					}
 				} catch (JSONException e) {
@@ -104,6 +120,13 @@ public class DraftsStorage extends StorageManager.Storage {
 				jsonArray.put(postDraft.toJsonObject());
 			}
 			jsonObject.put(KEY_POST_DRAFTS, jsonArray);
+		}
+		if (futureAttachmentDrafts.size() > 0) {
+			JSONArray jsonArray = new JSONArray();
+			for (AttachmentDraft attachmentDraft : futureAttachmentDrafts) {
+				jsonArray.put(attachmentDraft.toJsonObject());
+			}
+			jsonObject.put(KEY_FUTURE_ATTACHMENT_DRAFTS, jsonArray);
 		}
 		return jsonObject;
 	}
@@ -229,6 +252,7 @@ public class DraftsStorage extends StorageManager.Storage {
 			inputStream = fileHolder.openInputStream();
 			outputStream = new FileOutputStream(file);
 			IOUtils.copyStream(inputStream, outputStream);
+			serialize();
 			return hash;
 		} catch (IOException e) {
 			file.delete();
@@ -248,18 +272,51 @@ public class DraftsStorage extends StorageManager.Storage {
 				}
 			}
 		}
+		for (AttachmentDraft attachmentDraft : futureAttachmentDrafts) {
+			hashes.add(attachmentDraft.hash);
+		}
 		return hashes;
+	}
+
+	public boolean storeFuture(FileHolder fileHolder) {
+		String hash = store(fileHolder);
+		if (hash != null) {
+			AttachmentDraft attachmentDraft = new AttachmentDraft(hash, fileHolder.getName(),
+					null, false, false, false, false, null);
+			futureAttachmentDrafts.add(attachmentDraft);
+			serialize();
+			return true;
+		}
+		return false;
+	}
+
+	public ArrayList<AttachmentDraft> getFutureAttachmentDrafts() {
+		return futureAttachmentDrafts;
+	}
+
+	public void consumeFutureAttachmentDrafts() {
+		if (!futureAttachmentDrafts.isEmpty()) {
+			ArrayList<AttachmentDraft> attachmentDrafts = new ArrayList<>(futureAttachmentDrafts.size());
+			attachmentDrafts.addAll(futureAttachmentDrafts);
+			futureAttachmentDrafts.clear();
+			handleRemoveAttachmentDrafts(attachmentDrafts);
+			serialize();
+		}
 	}
 
 	private void handleRemovePostDraft(PostDraft postDraft) {
 		if (postDraft.attachmentDrafts != null) {
-			HashSet<String> hashes = collectAttachmentDraftHashes();
-			for (AttachmentDraft attachmentDraft : postDraft.attachmentDrafts) {
-				if (!hashes.contains(attachmentDraft.hash)) {
-					File file = getAttachmentDraftFile(attachmentDraft.hash);
-					if (file != null) {
-						file.delete();
-					}
+			handleRemoveAttachmentDrafts(postDraft.attachmentDrafts);
+		}
+	}
+
+	private void handleRemoveAttachmentDrafts(ArrayList<AttachmentDraft> attachmentDrafts) {
+		HashSet<String> hashes = collectAttachmentDraftHashes();
+		for (AttachmentDraft attachmentDraft : attachmentDrafts) {
+			if (!hashes.contains(attachmentDraft.hash)) {
+				File file = getAttachmentDraftFile(attachmentDraft.hash);
+				if (file != null) {
+					file.delete();
 				}
 			}
 		}

@@ -301,6 +301,7 @@
 	<string name="message_download_name_format">Файл %s</string>
 	<string name="message_download_not_loaded">Не загружено</string>
 	<string name="message_download_manager_error">Диспетчер загрузки недоступен</string>
+	<string name="message_draft_saved">Черновик сохранён</string>
 	<string name="message_edited_posts">Есть изменённые сообщения</string>
 	<string name="message_empty_file">Необходимо прикрепить файл</string>
 	<string name="message_empty_gallery">Галерея пуста</string>
