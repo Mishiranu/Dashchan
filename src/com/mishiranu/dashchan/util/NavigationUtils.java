@@ -386,7 +386,7 @@ public class NavigationUtils {
 		.show();
 	}
 
-	public static void share(Context context, String subject, String text, Uri uri) {
+	public static void shareText(Context context, String subject, String text, Uri uri) {
 		Intent intent = new Intent(Intent.ACTION_SEND);
 		intent.setType("text/plain");
 		intent.putExtra(Intent.EXTRA_SUBJECT, subject);
@@ -417,8 +417,8 @@ public class NavigationUtils {
 		context.startActivity(intent);
 	}
 
-	public static void share(Context context, Uri uri) {
-		share(context, uri.toString(), uri.toString(), uri);
+	public static void shareLink(Context context, String subject, Uri uri) {
+		shareText(context, subject, uri.toString(), uri);
 	}
 
 	public static void shareFile(Context context, File file, String fileName) {

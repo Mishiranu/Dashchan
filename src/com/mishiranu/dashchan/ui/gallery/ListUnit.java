@@ -220,7 +220,7 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 					break;
 				}
 				case MENU_SHARE_LINK: {
-					NavigationUtils.share(instance.context, galleryItem.getFileUri(instance.locator));
+					NavigationUtils.shareLink(instance.context, null, galleryItem.getFileUri(instance.locator));
 					break;
 				}
 			}

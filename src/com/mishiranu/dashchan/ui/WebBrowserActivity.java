@@ -130,7 +130,7 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 				break;
 			}
 			case OPTIONS_MENU_SHARE_LINK: {
-				NavigationUtils.share(this, Uri.parse(webView.getUrl()));
+				NavigationUtils.shareLink(this, null, Uri.parse(webView.getUrl()));
 				break;
 			}
 		}

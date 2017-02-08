@@ -354,7 +354,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 			}
 			case OPTIONS_MENU_SHARE_LINK: {
 				pagerUnit.forcePauseVideo();
-				NavigationUtils.share(this, galleryItem.getFileUri(instance.locator));
+				NavigationUtils.shareLink(this, null, galleryItem.getFileUri(instance.locator));
 				break;
 			}
 			case OPTIONS_MENU_SHARE_FILE: {

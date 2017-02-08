@@ -318,7 +318,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 					if (StringUtils.isEmptyOrWhitespace(subject)) {
 						subject = uri.toString();
 					}
-					NavigationUtils.share(context, subject, null, uri);
+					NavigationUtils.shareLink(context, subject, uri);
 					return true;
 				}
 				case CONTEXT_MENU_HIDE: {

@@ -154,7 +154,7 @@ public class InteractionUnit {
 					break;
 				}
 				case LINK_MENU_SHARE: {
-					NavigationUtils.share(uiManager.getContext(), uri);
+					NavigationUtils.shareLink(uiManager.getContext(), null, uri);
 					break;
 				}
 				case LINK_MENU_BROWSER: {
@@ -326,7 +326,7 @@ public class InteractionUnit {
 					break;
 				}
 				case MENU_SHARE_LINK: {
-					NavigationUtils.share(context, fileUri);
+					NavigationUtils.shareLink(context, null, fileUri);
 					break;
 				}
 			}
@@ -438,7 +438,7 @@ public class InteractionUnit {
 										if (StringUtils.isEmptyOrWhitespace(subject)) {
 											subject = uri.toString();
 										}
-										NavigationUtils.share(context, subject, null, uri);
+										NavigationUtils.shareLink(context, subject, uri);
 										break;
 									}
 									case MENU_SHARE_TEXT: {
@@ -446,7 +446,7 @@ public class InteractionUnit {
 										if (StringUtils.isEmptyOrWhitespace(subject)) {
 											subject = uri.toString();
 										}
-										NavigationUtils.share(context, subject,
+										NavigationUtils.shareText(context, subject,
 												getCopyReadyComment(postItem.getComment()), uri);
 										break;
 									}

@@ -493,7 +493,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 												if (StringUtils.isEmptyOrWhitespace(subject)) {
 													subject = uri.toString();
 												}
-												NavigationUtils.share(context, subject, null, uri);
+												NavigationUtils.shareLink(context, subject, uri);
 												break;
 											}
 										}
