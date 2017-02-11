@@ -16,10 +16,9 @@
 
 package com.mishiranu.dashchan.content.async;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -271,14 +270,14 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 		}
 		String postHtml = htmlBuilder.build();
 		String fileName = chanName + "-" + boardName + "-" + threadNumber + ".html";
-		BufferedWriter writer = null;
+		OutputStream outputStream = null;
 		try {
-			writer = new BufferedWriter(new FileWriter(new File(directory, fileName)));
-			writer.write(postHtml);
+			outputStream = IOUtils.openOutputStream(MainApplication.getInstance(), new File(directory, fileName));
+			outputStream.write(postHtml.getBytes());
 		} catch (IOException e) {
 			return null;
 		} finally {
-			IOUtils.close(writer);
+			IOUtils.close(outputStream);
 		}
 		return result;
 	}
