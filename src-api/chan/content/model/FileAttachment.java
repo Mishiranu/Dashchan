@@ -97,7 +97,7 @@ public final class FileAttachment implements Attachment {
 
 	@Public
 	public FileAttachment setOriginalName(String originalName) {
-		mOriginalName = originalName;
+		mOriginalName = StringUtils.nullIfEmpty(originalName);
 		return this;
 	}
 

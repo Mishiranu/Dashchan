@@ -161,7 +161,7 @@ public final class Post implements Serializable, Comparable<Post> {
 
 	@Public
 	public Post setSubject(String subject) {
-		mSubject = subject;
+		mSubject = StringUtils.nullIfEmpty(subject);
 		return this;
 	}
 
@@ -172,7 +172,7 @@ public final class Post implements Serializable, Comparable<Post> {
 
 	@Public
 	public Post setComment(String comment) {
-		mComment = comment;
+		mComment = StringUtils.nullIfEmpty(comment);
 		return this;
 	}
 
@@ -181,7 +181,7 @@ public final class Post implements Serializable, Comparable<Post> {
 	}
 
 	public Post setEditedComment(String editedComment) {
-		mEditedComment = editedComment;
+		mEditedComment = StringUtils.nullIfEmpty(editedComment);
 		return this;
 	}
 
@@ -197,7 +197,7 @@ public final class Post implements Serializable, Comparable<Post> {
 
 	@Public
 	public Post setCommentMarkup(String commentMarkup) {
-		mCommentMarkup = commentMarkup;
+		mCommentMarkup = StringUtils.nullIfEmpty(commentMarkup);
 		return this;
 	}
 
@@ -208,7 +208,7 @@ public final class Post implements Serializable, Comparable<Post> {
 
 	@Public
 	public Post setName(String name) {
-		mName = name;
+		mName = StringUtils.nullIfEmpty(name);
 		return this;
 	}
 
@@ -219,7 +219,7 @@ public final class Post implements Serializable, Comparable<Post> {
 
 	@Public
 	public Post setIdentifier(String identifier) {
-		mIdentifier = identifier;
+		mIdentifier = StringUtils.nullIfEmpty(identifier);
 		return this;
 	}
 
@@ -230,7 +230,7 @@ public final class Post implements Serializable, Comparable<Post> {
 
 	@Public
 	public Post setTripcode(String tripcode) {
-		mTripcode = tripcode;
+		mTripcode = StringUtils.nullIfEmpty(tripcode);
 		return this;
 	}
 
@@ -241,7 +241,7 @@ public final class Post implements Serializable, Comparable<Post> {
 
 	@Public
 	public Post setCapcode(String capcode) {
-		mCapcode = capcode;
+		mCapcode = StringUtils.nullIfEmpty(capcode);
 		return this;
 	}
 
@@ -252,7 +252,7 @@ public final class Post implements Serializable, Comparable<Post> {
 
 	@Public
 	public Post setEmail(String email) {
-		mEmail = email;
+		mEmail = StringUtils.nullIfEmpty(email);
 		return this;
 	}
 

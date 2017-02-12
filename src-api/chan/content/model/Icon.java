@@ -34,7 +34,7 @@ public final class Icon implements Serializable {
 	@Public
 	public Icon(ChanLocator locator, Uri uri, String title) {
 		mUriString = uri != null ? locator.makeRelative(uri).toString() : null;
-		mTitle = title;
+		mTitle = StringUtils.nullIfEmpty(title);
 	}
 
 	public Uri getRelativeUri() {
