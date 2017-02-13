@@ -248,7 +248,8 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 			if (responseCode == HttpURLConnection.HTTP_NOT_MODIFIED) {
 				return true;
 			}
-			if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
+			if (responseCode == HttpURLConnection.HTTP_NOT_FOUND ||
+					responseCode == HttpURLConnection.HTTP_GONE) {
 				if (ChanConfiguration.get(chanName).getOption(ChanConfiguration.OPTION_READ_SINGLE_POST)) {
 					try {
 						ChanPerformer.ReadSinglePostResult result = performer.safe().onReadSinglePost

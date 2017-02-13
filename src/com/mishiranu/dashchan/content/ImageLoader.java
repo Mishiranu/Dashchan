@@ -207,7 +207,9 @@ public class ImageLoader {
 					}
 				}
 			} catch (HttpException e) {
-				if (e.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND) {
+				int responseCode = e.getResponseCode();
+				if (responseCode == HttpURLConnection.HTTP_NOT_FOUND ||
+						responseCode == HttpURLConnection.HTTP_GONE) {
 					notFound = true;
 				}
 			} catch (Exception | OutOfMemoryError e) {

@@ -483,7 +483,8 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 				int responseCode = e.getResponseCode();
 				if (responseCode == HttpURLConnection.HTTP_NOT_MODIFIED) {
 					result.notModified = true;
-				} else if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
+				} else if (responseCode == HttpURLConnection.HTTP_NOT_FOUND ||
+						responseCode == HttpURLConnection.HTTP_GONE) {
 					result.newPostsCount = NEW_POSTS_COUNT_DELETED;
 					result.validator = null;
 				} else {

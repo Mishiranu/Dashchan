@@ -123,10 +123,12 @@ public class ReadThreadsTask extends HttpHolderTask<Void, Void, Boolean> {
 			this.resultValidator = validator;
 			return true;
 		} catch (HttpException e) {
-			if (e.getResponseCode() == HttpURLConnection.HTTP_NOT_MODIFIED) {
+			int responseCode = e.getResponseCode();
+			if (responseCode == HttpURLConnection.HTTP_NOT_MODIFIED) {
 				return true;
 			}
-			if (e.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND) {
+			if (responseCode == HttpURLConnection.HTTP_NOT_FOUND ||
+					responseCode == HttpURLConnection.HTTP_GONE) {
 				errorItem = new ErrorItem(ErrorItem.TYPE_BOARD_NOT_EXISTS);
 			} else {
 				errorItem = e.getErrorItemAndHandle();
