@@ -691,7 +691,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		searchLastPosition = 0;
 		boolean positionDefined = false;
 		Locale locale = Locale.getDefault();
-		SearchHelper helper = new SearchHelper();
+		SearchHelper helper = new SearchHelper(Preferences.isAdvancedSearch());
 		helper.setFlags("m", "r", "a", "d", "e", "op");
 		HashSet<String> queries = helper.handleQueries(locale, query);
 		HashSet<String> fileNames = new HashSet<>();

@@ -145,6 +145,13 @@ public class Preferences {
 		return PREFERENCES.getBoolean(KEY_ACTIVE_SCROLLBAR, DEFAULT_ACTIVE_SCROLLBAR);
 	}
 
+	public static final String KEY_ADVANCED_SEARCH = "advanced_search";
+	public static final boolean DEFAULT_ADVANCED_SEARCH = false;
+
+	public static boolean isAdvancedSearch() {
+		return PREFERENCES.getBoolean(KEY_ADVANCED_SEARCH, DEFAULT_ADVANCED_SEARCH);
+	}
+
 	public static final String KEY_ALL_ATTACHMENTS = "all_attachments";
 	public static final boolean DEFAULT_ALL_ATTACHMENTS = false;
 

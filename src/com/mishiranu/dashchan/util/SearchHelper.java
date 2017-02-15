@@ -29,9 +29,14 @@ public class SearchHelper {
 
 	private static final Pattern PATTERN_LONG_QUERY_PART = Pattern.compile("(?:^| )(-)?\"(.*?)\"(?= |$)");
 
+	private final boolean advancedMode;
 	private final HashMap<String, Integer> flags = new HashMap<>();
 	private final HashSet<String> resultInclude = new HashSet<>();
 	private final HashSet<String> resultExclude = new HashSet<>();
+
+	public SearchHelper(boolean advancedMode) {
+		this.advancedMode = advancedMode;
+	}
 
 	public void setFlags(String... flags) {
 		this.flags.clear();
@@ -48,51 +53,56 @@ public class SearchHelper {
 		HashSet<String> exclude = resultExclude;
 		include.clear();
 		exclude.clear();
-		Matcher matcher = PATTERN_LONG_QUERY_PART.matcher(query);
-		while (matcher.find()) {
-			int start = matcher.start(), end = matcher.end();
-			int remove = end - start;
-			if (queryBuilder == null) {
-				queryBuilder = new StringBuilder(query);
+		if (advancedMode) {
+			Matcher matcher = PATTERN_LONG_QUERY_PART.matcher(query);
+			while (matcher.find()) {
+				int start = matcher.start(), end = matcher.end();
+				int remove = end - start;
+				if (queryBuilder == null) {
+					queryBuilder = new StringBuilder(query);
+				}
+				queryBuilder.delete(start - shift, end - shift);
+				shift += remove;
+				String excludePart = matcher.group(1);
+				String queryPart = matcher.group(2);
+				if (queryPart.length() > 0) {
+					String lowQueryPart = queryPart.toLowerCase(locale);
+					if ("-".equals(excludePart)) {
+						exclude.add(lowQueryPart);
+					} else {
+						include.add(lowQueryPart);
+						queries.add(queryPart);
+					}
+				}
 			}
-			queryBuilder.delete(start - shift, end - shift);
-			shift += remove;
-			String excludePart = matcher.group(1);
-			String queryPart = matcher.group(2);
-			if (queryPart.length() > 0) {
+			if (queryBuilder != null) {
+				query = queryBuilder.toString();
+			}
+			String[] splitted = query.split(" +");
+			OUTER: for (String queryPart : splitted) {
 				String lowQueryPart = queryPart.toLowerCase(locale);
-				if ("-".equals(excludePart)) {
-					exclude.add(lowQueryPart);
-				} else {
+				for (String flag : flags.keySet()) {
+					if ((":" + flag).equals(lowQueryPart)) {
+						flags.put(flag, SEARCH_INCLUDE);
+						continue OUTER;
+					} else if ((":-" + flag).equals(lowQueryPart)) {
+						flags.put(flag, SEARCH_EXCLUDE);
+						continue OUTER;
+					}
+				}
+				if (lowQueryPart.startsWith("-")) {
+					lowQueryPart = lowQueryPart.substring(1);
+					if (lowQueryPart.length() > 0) {
+						exclude.add(lowQueryPart);
+					}
+				} else if (lowQueryPart.length() > 0) {
 					include.add(lowQueryPart);
 					queries.add(queryPart);
 				}
 			}
-		}
-		if (queryBuilder != null) {
-			query = queryBuilder.toString();
-		}
-		String[] splitted = query.split(" +");
-		OUTER: for (String queryPart : splitted) {
-			String lowQueryPart = queryPart.toLowerCase(locale);
-			for (String flag : flags.keySet()) {
-				if ((":" + flag).equals(lowQueryPart)) {
-					flags.put(flag, SEARCH_INCLUDE);
-					continue OUTER;
-				} else if ((":-" + flag).equals(lowQueryPart)) {
-					flags.put(flag, SEARCH_EXCLUDE);
-					continue OUTER;
-				}
-			}
-			if (lowQueryPart.startsWith("-")) {
-				lowQueryPart = lowQueryPart.substring(1);
-				if (lowQueryPart.length() > 0) {
-					exclude.add(lowQueryPart);
-				}
-			} else if (lowQueryPart.length() > 0) {
-				include.add(lowQueryPart);
-				queries.add(queryPart);
-			}
+		} else {
+			queries.add(query);
+			include.add(query.toLowerCase(locale));
 		}
 		return queries;
 	}
@@ -108,6 +118,9 @@ public class SearchHelper {
 	}
 
 	private boolean checkFlags(HashMap<String, Boolean> flagsState) {
+		if (!advancedMode) {
+			return true;
+		}
 		OUTER: for (HashMap.Entry<String, Boolean> flagState : flagsState.entrySet()) {
 			String flag = flagState.getKey();
 			boolean fulfilled = flagState.getValue();

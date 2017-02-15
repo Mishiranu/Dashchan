@@ -418,6 +418,14 @@
 	</string-array>
 
 	<string name="preference_active_scrollbar">Активная полоса прокрутки</string>
+	<string name="preference_advanced_search">Расширенный поиск</string>
+	<string name="preference_advanced_search_summary">Искать по словам и фразам в кавычках</string>
+	<string name="preference_advanced_search_message">Расширенный поиск позволяет искать по словам или фразам,
+		заключённым в кавычки.\n\nВы можете использовать символ \"-\" перед словом или фразой, чтобы исключить её.\n
+		\nВы также можете использовать флаги поиска для фильтрации результатов:\n
+		\n<b>:m</b> — ваши сообщения\n<b>:r</b> — ответы на ваши сообщения\n<b>:a</b> — сообщения с вложениями
+		\n<b>:d</b> — удалённые сообщения\n<b>:e</b> — изменённые сообщения\n<b>:op</b> — сообщения создателя треда\n
+		\nФлаги также можно исключить используя символы \":-\".</string>
 	<string name="preference_all_attachments">Все вложения</string>
 	<string name="preference_all_attachments_summary">Показывать миниатюры всех вложений</string>
 	<string name="preference_auto_refresh_mode">Режим автообновления</string>

@@ -23,6 +23,8 @@ import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.text.SpannableStringBuilder;
+import android.text.style.TypefaceSpan;
 
 import com.mishiranu.dashchan.R;
 
@@ -32,6 +34,7 @@ public class MessageDialog extends DialogFragment implements DialogInterface.OnC
 	public static final int TYPE_LOADING = 0;
 	public static final int TYPE_UPDATE_REMINDER = 1;
 	public static final int TYPE_UNINSTALL_REMINDER = 2;
+	public static final int TYPE_ADVANCED_SEARCH = 3;
 
 	private static final String EXTRA_TYPE = "type";
 
@@ -75,6 +78,20 @@ public class MessageDialog extends DialogFragment implements DialogInterface.OnC
 			}
 			case TYPE_UNINSTALL_REMINDER: {
 				return new AlertDialog.Builder(getActivity()).setMessage(R.string.message_uninstall_reminder)
+						.setPositiveButton(android.R.string.ok, this).create();
+			}
+			case TYPE_ADVANCED_SEARCH: {
+				SpannableStringBuilder builder = new SpannableStringBuilder
+						(getText(R.string.preference_advanced_search_message));
+				Object[] spans = builder.getSpans(0, builder.length(), Object.class);
+				for (Object span : spans) {
+					int start = builder.getSpanStart(span);
+					int end = builder.getSpanEnd(span);
+					int flags = builder.getSpanFlags(span);
+					builder.removeSpan(span);
+					builder.setSpan(new TypefaceSpan("sans-serif-medium"), start, end, flags);
+				}
+				return new AlertDialog.Builder(getActivity()).setMessage(builder)
 						.setPositiveButton(android.R.string.ok, this).create();
 			}
 		}

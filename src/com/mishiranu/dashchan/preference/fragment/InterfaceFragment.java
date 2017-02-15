@@ -17,6 +17,8 @@
 package com.mishiranu.dashchan.preference.fragment;
 
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
+import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.text.InputType;
 
@@ -24,6 +26,8 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.preference.Preferences;
 
 public class InterfaceFragment extends BasePreferenceFragment {
+	private CheckBoxPreference advancedSearchPreference;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -62,6 +66,9 @@ public class InterfaceFragment extends BasePreferenceFragment {
 		makeList(postsCategory, Preferences.KEY_HIGHLIGHT_UNREAD, Preferences.VALUES_HIGHLIGHT_UNREAD,
 				Preferences.DEFAULT_HIGHLIGHT_UNREAD, R.string.preference_highlight_unread,
 				R.array.preference_highlight_unread_choices);
+		advancedSearchPreference = makeCheckBox(postsCategory, true, Preferences.KEY_ADVANCED_SEARCH,
+				Preferences.DEFAULT_ADVANCED_SEARCH, R.string.preference_advanced_search,
+				R.string.preference_advanced_search_summary);
 		makeCheckBox(postsCategory, true, Preferences.KEY_DISPLAY_ICONS, Preferences.DEFAULT_DISPLAY_ICONS,
 				R.string.preference_display_icons, R.string.preference_display_icons_summary);
 
@@ -70,5 +77,13 @@ public class InterfaceFragment extends BasePreferenceFragment {
 				Preferences.DEFAULT_HIDE_PERSONAL_DATA, R.string.preference_hide_personal_data, 0);
 		makeCheckBox(submissionCategory, true, Preferences.KEY_HUGE_CAPTCHA, Preferences.DEFAULT_HUGE_CAPTCHA,
 				R.string.preference_huge_captcha, 0);
+	}
+
+	@Override
+	public void onPreferenceAfterChange(Preference preference) {
+		super.onPreferenceAfterChange(preference);
+		if (preference == advancedSearchPreference && advancedSearchPreference.isChecked()) {
+			MessageDialog.create(MessageDialog.TYPE_ADVANCED_SEARCH, this, false);
+		}
 	}
 }
