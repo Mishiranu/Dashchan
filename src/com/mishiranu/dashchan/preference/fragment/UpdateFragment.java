@@ -359,7 +359,7 @@ public class UpdateFragment extends BaseListFragment {
 					}
 				}
 				if (started) {
-					MessageDialog.create(MessageDialog.TYPE_UPDATE_REMINDER, this, false);
+					MessageDialog.create(this, getString(R.string.message_update_reminder), true);
 					UpdaterActivity.initUpdater(clientId, ids);
 				} else if (downloadManagerError) {
 					ToastUtils.show(getActivity(), R.string.message_download_manager_error);

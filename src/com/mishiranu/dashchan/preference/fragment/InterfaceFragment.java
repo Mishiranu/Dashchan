@@ -21,6 +21,8 @@ import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.text.InputType;
+import android.text.SpannableStringBuilder;
+import android.text.style.TypefaceSpan;
 
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.preference.Preferences;
@@ -83,7 +85,17 @@ public class InterfaceFragment extends BasePreferenceFragment {
 	public void onPreferenceAfterChange(Preference preference) {
 		super.onPreferenceAfterChange(preference);
 		if (preference == advancedSearchPreference && advancedSearchPreference.isChecked()) {
-			MessageDialog.create(MessageDialog.TYPE_ADVANCED_SEARCH, this, false);
+			SpannableStringBuilder builder = new SpannableStringBuilder
+					(getText(R.string.preference_advanced_search_message));
+			Object[] spans = builder.getSpans(0, builder.length(), Object.class);
+			for (Object span : spans) {
+				int start = builder.getSpanStart(span);
+				int end = builder.getSpanEnd(span);
+				int flags = builder.getSpanFlags(span);
+				builder.removeSpan(span);
+				builder.setSpan(new TypefaceSpan("sans-serif-medium"), start, end, flags);
+			}
+			MessageDialog.create(this, builder, false);
 		}
 	}
 }

@@ -335,7 +335,7 @@ public class ChanFragment extends BasePreferenceFragment {
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == C.REQUEST_CODE_UNINSTALL && resultCode == Activity.RESULT_OK) {
-			MessageDialog.create(MessageDialog.TYPE_UNINSTALL_REMINDER, this, false);
+			MessageDialog.create(this, getString(R.string.message_uninstall_reminder), true);
 		}
 		super.onActivityResult(requestCode, resultCode, data);
 	}
