@@ -21,6 +21,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | bonzibuddy      | 76chan.org           | [DashchanBonziBuddy.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanBonziBuddy.apk)           |
 | brchan          | brchan.org           | [DashchanBrchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanBrchan.apk)                   |
 | britfags        | britfa.gs            | [DashchanBritfags.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanBritfags.apk)               |
+| bunbunmaru      | bunbunmaru.com       | [DashchanBunbunmaru.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanBunbunmaru.apk)           |
 | cablesix        | cable6.net           | [DashchanCableSix.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanCableSix.apk)               |
 | candydollchan   | candydollchan.org    | [DashchanCandydollchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanCandydollchan.apk)     |
 | chaosach        | chaos.cyberpunk.us   | [DashchanChaosach.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanChaosach.apk)               |
