@@ -59,7 +59,6 @@
 				android:hint="@string/text_board"
 				android:gravity="center"
 				android:imeOptions="flagNoExtractUi|flagNoFullscreen"
-				android:maxLength="10"
 				android:singleLine="true" />
 
 			<com.mishiranu.dashchan.widget.SafePasteEditText
@@ -70,7 +69,6 @@
 				android:hint="@string/text_thread"
 				android:gravity="center"
 				android:imeOptions="flagNoExtractUi|flagNoFullscreen"
-				android:maxLength="10"
 				android:inputType="number"
 				android:singleLine="true" />
 
