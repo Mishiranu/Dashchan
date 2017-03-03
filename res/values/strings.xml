@@ -343,7 +343,7 @@
 	<string name="message_press_again_to_exit">Press again to exit</string>
 	<string name="message_processing_data">Processing data&#8230;</string>
 	<string name="message_read_timeout">Read timeout expired</string>
-	<string name="message_report_sent">The report has sent successfully</string>
+	<string name="message_report_sent">The report has been sent successfully</string>
 	<string name="message_report_too_often_error">You can\'t report too often</string>
 	<string name="message_request_sent">The request has been sent successfully</string>
 	<string name="message_save_completed">Save completed</string>
