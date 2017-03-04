@@ -55,7 +55,6 @@ public abstract class FileHolder implements Serializable {
 	public abstract int getSize();
 	public abstract InputStream openInputStream() throws IOException;
 	public abstract Descriptor openDescriptor() throws IOException;
-	public abstract Uri toUri();
 
 	public interface Descriptor extends Closeable {
 		public FileDescriptor getFileDescriptor() throws IOException;
@@ -343,11 +342,6 @@ public abstract class FileHolder implements Serializable {
 		}
 
 		@Override
-		public Uri toUri() {
-			return Uri.fromFile(file);
-		}
-
-		@Override
 		public boolean equals(Object o) {
 			if (o == this) {
 				return true;
@@ -446,8 +440,7 @@ public abstract class FileHolder implements Serializable {
 			}
 		}
 
-		@Override
-		public Uri toUri() {
+		private Uri toUri() {
 			return Uri.parse(uriString);
 		}
 
