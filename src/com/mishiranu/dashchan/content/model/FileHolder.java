@@ -428,6 +428,9 @@ public abstract class FileHolder implements Serializable {
 				return context.getContentResolver().openInputStream(toUri());
 			} catch (SecurityException e) {
 				throw new IOException(e);
+			} catch (Exception e) {
+				Log.persistent().stack(e);
+				throw new IOException(e);
 			}
 		}
 
@@ -436,6 +439,9 @@ public abstract class FileHolder implements Serializable {
 			try {
 				return new ContentFileHolderDescriptor(context.getContentResolver().openFileDescriptor(toUri(), "r"));
 			} catch (SecurityException e) {
+				throw new IOException(e);
+			} catch (Exception e) {
+				Log.persistent().stack(e);
 				throw new IOException(e);
 			}
 		}
@@ -526,6 +532,9 @@ public abstract class FileHolder implements Serializable {
 					}
 				}
 			} catch (SecurityException e) {
+				return null;
+			} catch (Exception e) {
+				Log.persistent().stack(e);
 				return null;
 			} finally {
 				if (cursor != null) {
