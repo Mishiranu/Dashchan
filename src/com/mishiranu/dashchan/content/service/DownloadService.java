@@ -83,6 +83,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 
 	private Thread notificationsWorker;
 	private final LinkedBlockingQueue<NotificationData> notificationsQueue = new LinkedBlockingQueue<>();
+	private boolean isForegroundWorker;
 
 	private static Intent obtainIntent(Context context, String action) {
 		return new Intent(context, DownloadService.class).setAction(action);
@@ -462,9 +463,17 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 		}
 		Notification notification = builder.build();
 		if (notificationData.hasTask) {
-			startForeground(C.NOTIFICATION_ID_DOWNLOAD, notification);
+			if (!isForegroundWorker) {
+				isForegroundWorker = true;
+				startForeground(C.NOTIFICATION_ID_DOWNLOAD, notification);
+			} else {
+				notificationManager.notify(C.NOTIFICATION_ID_DOWNLOAD, notification);
+			}
 		} else {
-			stopForeground(true);
+			if (isForegroundWorker) {
+				isForegroundWorker = false;
+				stopForeground(true);
+			}
 			notificationManager.notify(C.NOTIFICATION_ID_DOWNLOAD, notification);
 		}
 	}
