@@ -266,7 +266,7 @@ public final class HttpRequest {
 	}
 
 	private HttpRequest addHeader(Pair<String, String> header) {
-		if (header != null) {
+		if (header != null && header.first != null && header.second != null) {
 			if (headers == null) {
 				headers = new ArrayList<>();
 			}
@@ -288,7 +288,7 @@ public final class HttpRequest {
 
 	@Public
 	public HttpRequest addCookie(String name, String value) {
-		if (value != null) {
+		if (name != null && value != null) {
 			if (cookieBuilder == null) {
 				cookieBuilder = new CookieBuilder();
 			}
