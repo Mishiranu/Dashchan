@@ -9,6 +9,13 @@ import chan.annotation.Extendable;
 import chan.annotation.Public;
 import chan.util.StringUtils;
 
+// TODO CHAN
+// Make internal builder methods private and remove dynamic safety check after updating
+// alphachan alterchan arhivach bonzibuddy brchan britfags bunbunmaru candydollchan chaosach chiochan cirno desustorage
+// exach fourplebs freeportseven gurochan haibane infinite kropyvach lainchan nowere nulldvachnet nulleu nullnyan
+// nullone nulltirech onechanca ozuchan ponyach randomarchive sevenchan taima tiretirech uboachan valkyria
+// xyntach yakujimoe
+// Added: 07.03.17 22:33
 @Public
 public final class TemplateParser<H> {
 	private final HashMap<String, ArrayList<AttributeMatcher<H>>> openMatchers = new HashMap<>();
@@ -21,8 +28,11 @@ public final class TemplateParser<H> {
 	private ContentCallback<H> contentCallback;
 	private CloseCallback<H> closeCallback;
 
-	@Public
 	public TemplateParser() {}
+
+	public static <H> InitialBuilder<H> builder() {
+		return new TemplateParser<H>().contentBuilder;
+	}
 
 	private static class AttributeMatcher<H> {
 		public enum Method {EQUALS, STARTS, CONTAINS, ENDS}
@@ -113,27 +123,22 @@ public final class TemplateParser<H> {
 		}
 	}
 
-	@Public
 	public TemplateParser<H> name(String tagName) {
 		return tag(tagName, null, null, null);
 	}
 
-	@Public
 	public TemplateParser<H> equals(String tagName, String attribute, String value) {
 		return tag(tagName, attribute, value, AttributeMatcher.Method.EQUALS);
 	}
 
-	@Public
 	public TemplateParser<H> starts(String tagName, String attribute, String value) {
 		return tag(tagName, attribute, value, AttributeMatcher.Method.STARTS);
 	}
 
-	@Public
 	public TemplateParser<H> contains(String tagName, String attribute, String value) {
 		return tag(tagName, attribute, value, AttributeMatcher.Method.CONTAINS);
 	}
 
-	@Public
 	public TemplateParser<H> ends(String tagName, String attribute, String value) {
 		return tag(tagName, attribute, value, AttributeMatcher.Method.ENDS);
 	}
@@ -148,7 +153,6 @@ public final class TemplateParser<H> {
 		return this;
 	}
 
-	@Public
 	public TemplateParser<H> open(OpenCallback<H> openCallback) {
 		checkReady();
 		checkHasMatchers();
@@ -156,7 +160,6 @@ public final class TemplateParser<H> {
 		return this;
 	}
 
-	@Public
 	public TemplateParser<H> content(ContentCallback<H> contentCallback) {
 		checkReady();
 		checkHasMatchers();
@@ -164,7 +167,6 @@ public final class TemplateParser<H> {
 		return this;
 	}
 
-	@Public
 	public TemplateParser<H> close(CloseCallback<H> closeCallback) {
 		checkReady();
 		checkHasMatchers();
@@ -178,7 +180,6 @@ public final class TemplateParser<H> {
 		}
 	}
 
-	@Public
 	public TemplateParser<H> text(TextCallback<H> textCallback) {
 		checkReady();
 		copyCallbacks();
@@ -189,7 +190,6 @@ public final class TemplateParser<H> {
 		return this;
 	}
 
-	@Public
 	public TemplateParser<H> prepare() {
 		checkReady();
 		copyCallbacks();
@@ -350,4 +350,208 @@ public final class TemplateParser<H> {
 			}
 		}
 	}
+
+	@Public
+	public interface SimpleRuleBuilder<H> {
+		@Public
+		public SimpleBuilder<H> name(String tagName);
+	}
+
+	@Public
+	public interface ComplexSimpleRuleBuilder<H> {
+		@Public
+		public ComplexBuilder<H> name(String tagName);
+	}
+
+	@Public
+	public interface ComplexRuleBuilder<H> {
+		@Public
+		public ComplexBuilder<H> equals(String tagName, String attribute, String value);
+
+		@Public
+		public ComplexBuilder<H> starts(String tagName, String attribute, String value);
+
+		@Public
+		public ComplexBuilder<H> contains(String tagName, String attribute, String value);
+
+		@Public
+		public ComplexBuilder<H> ends(String tagName, String attribute, String value);
+	}
+
+	@Public
+	public interface OpenBuilder<H> {
+		@Public
+		public ContentBuilder<H> open(OpenCallback<H> openCallback);
+
+		@Public
+		public InitialBuilder<H> content(ContentCallback<H> contentCallback);
+	}
+
+	@Public
+	public interface InitialBuilder<H> extends SimpleRuleBuilder<H>, ComplexRuleBuilder<H> {
+		@Public
+		public InitialBuilder<H> text(TextCallback<H> textCallback);
+
+		@Public
+		public TemplateParser<H> prepare();
+	}
+
+	@Public
+	public interface SimpleBuilder<H> extends SimpleRuleBuilder<H>, ComplexRuleBuilder<H>, OpenBuilder<H> {
+		@Public
+		public InitialBuilder<H> close(CloseCallback<H> closeCallback);
+	}
+
+	@Public
+	public interface ComplexBuilder<H> extends ComplexSimpleRuleBuilder<H>, ComplexRuleBuilder<H>, OpenBuilder<H> {}
+
+	@Public
+	public interface ContentBuilder<H> extends InitialBuilder<H> {
+		@Public
+		public InitialBuilder<H> content(ContentCallback<H> contentCallback);
+	}
+
+	private ContentBuilder<H> contentBuilder = new ContentBuilder<H>() {
+		@Override
+		public SimpleBuilder<H> name(String tagName) {
+			TemplateParser.this.name(tagName);
+			return simpleBuilder;
+		}
+
+		@Override
+		public ComplexBuilder<H> equals(String tagName, String attribute, String value) {
+			TemplateParser.this.equals(tagName, attribute, value);
+			return complexBuilder;
+		}
+
+		@Override
+		public ComplexBuilder<H> starts(String tagName, String attribute, String value) {
+			TemplateParser.this.starts(tagName, attribute, value);
+			return complexBuilder;
+		}
+
+		@Override
+		public ComplexBuilder<H> contains(String tagName, String attribute, String value) {
+			TemplateParser.this.contains(tagName, attribute, value);
+			return complexBuilder;
+		}
+
+		@Override
+		public ComplexBuilder<H> ends(String tagName, String attribute, String value) {
+			TemplateParser.this.ends(tagName, attribute, value);
+			return complexBuilder;
+		}
+
+		@Override
+		public InitialBuilder<H> text(TextCallback<H> textCallback) {
+			TemplateParser.this.text(textCallback);
+			return contentBuilder;
+		}
+
+		@Override
+		public InitialBuilder<H> content(ContentCallback<H> contentCallback) {
+			TemplateParser.this.content(contentCallback);
+			return contentBuilder;
+		}
+
+		@Override
+		public TemplateParser<H> prepare() {
+			TemplateParser.this.prepare();
+			return TemplateParser.this;
+		}
+	};
+
+	private SimpleBuilder<H> simpleBuilder = new SimpleBuilder<H>() {
+		@Override
+		public SimpleBuilder<H> name(String tagName) {
+			TemplateParser.this.name(tagName);
+			return simpleBuilder;
+		}
+
+		@Override
+		public ComplexBuilder<H> equals(String tagName, String attribute, String value) {
+			TemplateParser.this.equals(tagName, attribute, value);
+			return complexBuilder;
+		}
+
+		@Override
+		public ComplexBuilder<H> starts(String tagName, String attribute, String value) {
+			TemplateParser.this.starts(tagName, attribute, value);
+			return complexBuilder;
+		}
+
+		@Override
+		public ComplexBuilder<H> contains(String tagName, String attribute, String value) {
+			TemplateParser.this.contains(tagName, attribute, value);
+			return complexBuilder;
+		}
+
+		@Override
+		public ComplexBuilder<H> ends(String tagName, String attribute, String value) {
+			TemplateParser.this.ends(tagName, attribute, value);
+			return complexBuilder;
+		}
+
+		@Override
+		public ContentBuilder<H> open(OpenCallback<H> openCallback) {
+			TemplateParser.this.open(openCallback);
+			return contentBuilder;
+		}
+
+		@Override
+		public InitialBuilder<H> content(ContentCallback<H> contentCallback) {
+			TemplateParser.this.content(contentCallback);
+			return contentBuilder;
+		}
+
+		@Override
+		public InitialBuilder<H> close(CloseCallback<H> closeCallback) {
+			TemplateParser.this.close(closeCallback);
+			return contentBuilder;
+		}
+	};
+
+	private ComplexBuilder<H> complexBuilder = new ComplexBuilder<H>() {
+		@Override
+		public ComplexBuilder<H> name(String tagName) {
+			TemplateParser.this.name(tagName);
+			return complexBuilder;
+		}
+
+		@Override
+		public ComplexBuilder<H> equals(String tagName, String attribute, String value) {
+			TemplateParser.this.equals(tagName, attribute, value);
+			return complexBuilder;
+		}
+
+		@Override
+		public ComplexBuilder<H> starts(String tagName, String attribute, String value) {
+			TemplateParser.this.starts(tagName, attribute, value);
+			return complexBuilder;
+		}
+
+		@Override
+		public ComplexBuilder<H> contains(String tagName, String attribute, String value) {
+			TemplateParser.this.contains(tagName, attribute, value);
+			return complexBuilder;
+		}
+
+		@Override
+		public ComplexBuilder<H> ends(String tagName, String attribute, String value) {
+			TemplateParser.this.ends(tagName, attribute, value);
+			return complexBuilder;
+		}
+
+		@Override
+		public ContentBuilder<H> open(OpenCallback<H> openCallback) {
+			TemplateParser.this.open(openCallback);
+			return contentBuilder;
+		}
+
+		@Override
+		public InitialBuilder<H> content(ContentCallback<H> contentCallback) {
+			TemplateParser.this.content(contentCallback);
+			return contentBuilder;
+		}
+	};
 }
