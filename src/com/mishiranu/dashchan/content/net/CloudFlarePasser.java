@@ -279,7 +279,8 @@ public class CloudFlarePasser implements Handler.Callback {
 	private final HashMap<String, CheckHolder> captchaHolders = new HashMap<>();
 	private final HashMap<String, Long> captchaLastCancel = new HashMap<>();
 
-	private Result handleCaptcha(String chanName, Uri specialUri, String recaptchaApiKey) throws HttpException {
+	private Result handleCaptcha(String chanName, Uri requestedUri,
+			Uri specialUri, String recaptchaApiKey) throws HttpException {
 		CheckHolder checkHolder = null;
 		synchronized (captchaLastCancel) {
 			Long lastCancelTime = captchaLastCancel.get(chanName);
@@ -314,8 +315,9 @@ public class CloudFlarePasser implements Handler.Callback {
 			boolean retry = false;
 			while (true) {
 				ChanPerformer.CaptchaData captchaData = ForegroundManager.getInstance().requireUserCaptcha
-						(new CloudFlareCaptchaReader(recaptchaApiKey), ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2,
-						null, null, null, null, R.string.message_cloudflate_block, retry);
+						(new CloudFlareCaptchaReader(recaptchaApiKey, requestedUri.toString()),
+						ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2, null, null, null, null,
+						R.string.message_cloudflate_block, retry);
 				if (captchaData == null) {
 					synchronized (captchaLastCancel) {
 						captchaLastCancel.put(chanName, System.currentTimeMillis());
@@ -332,7 +334,9 @@ public class CloudFlarePasser implements Handler.Callback {
 							.setPostMethod(new UrlEncodedEntity("g-recaptcha-response", recaptchaResponse))
 							.setSuccessOnly(false).setCheckCloudFlare(false).read();
 				} else {
-					Uri uri = locator.buildQuery("cdn-cgi/l/chk_captcha", "g-recaptcha-response", recaptchaResponse);
+					Uri uri = locator.buildQuery("cdn-cgi/l/chk_captcha", "g-recaptcha-response", recaptchaResponse)
+							.buildUpon().scheme(requestedUri.getScheme())
+							.authority(requestedUri.getAuthority()).build();
 					new HttpRequest(uri, holder).setRedirectHandler(HttpRequest.RedirectHandler.NONE)
 							.setSuccessOnly(false).setCheckCloudFlare(false).read();
 				}
@@ -362,9 +366,11 @@ public class CloudFlarePasser implements Handler.Callback {
 
 	private static class CloudFlareCaptchaReader implements ReadCaptchaTask.CaptchaReader {
 		private final String recaptchaApiKey;
+		private final String referer;
 
-		public CloudFlareCaptchaReader(String recaptchaApiKey) {
+		public CloudFlareCaptchaReader(String recaptchaApiKey, String referer) {
 			this.recaptchaApiKey = recaptchaApiKey;
+			this.referer = referer;
 		}
 
 		@Override
@@ -372,6 +378,7 @@ public class CloudFlarePasser implements Handler.Callback {
 				throws HttpException, InvalidResponseException {
 			ChanPerformer.CaptchaData captchaData = new ChanPerformer.CaptchaData();
 			captchaData.put(ChanPerformer.CaptchaData.API_KEY, recaptchaApiKey);
+			captchaData.put(ChanPerformer.CaptchaData.REFERER, referer);
 			return new ChanPerformer.ReadCaptchaResult(ChanPerformer.CaptchaState.CAPTCHA, captchaData);
 		}
 	}
@@ -381,7 +388,8 @@ public class CloudFlarePasser implements Handler.Callback {
 		if ((responseCode == HttpURLConnection.HTTP_FORBIDDEN || responseCode == HttpURLConnection.HTTP_UNAVAILABLE)
 				&& holder.getHeaderFields().containsKey("CF-RAY")) {
 			String responseText = holder.read().getString();
-			switch (responseCode) {case HttpURLConnection.HTTP_FORBIDDEN: {
+			switch (responseCode) {
+				case HttpURLConnection.HTTP_FORBIDDEN: {
 					Matcher matcher = PATTERN_FORBIDDEN.matcher(responseText);
 					if (matcher.find()) {
 						Uri specialUri = null;
@@ -393,7 +401,7 @@ public class CloudFlarePasser implements Handler.Callback {
 						matcher = PATTERN_CAPTCHA.matcher(responseText);
 						if (matcher.find()) {
 							String captchaApiKey = matcher.group(1);
-							return INSTANCE.handleCaptcha(chanName, specialUri, captchaApiKey);
+							return INSTANCE.handleCaptcha(chanName, uri, specialUri, captchaApiKey);
 						}
 					}
 					break;

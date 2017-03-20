@@ -697,6 +697,7 @@ public class ChanPerformer implements ChanManager.Linked {
 		@Public public static final String CHALLENGE = "challenge";
 		@Public public static final String INPUT = "input";
 		@Public public static final String API_KEY = "api_key";
+		@Public public static final String REFERER = "referer";
 
 		private final HashMap<String, String> data = new HashMap<>();
 

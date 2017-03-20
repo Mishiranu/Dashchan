@@ -343,14 +343,20 @@ public class HttpClient {
 			connection.setUseCaches(false);
 			connection.setConnectTimeout(request.connectTimeout);
 			connection.setReadTimeout(request.readTimeout);
-			connection.setRequestProperty("User-Agent", AdvancedPreferences.getUserAgent(chanName));
 			connection.setInstanceFollowRedirects(false);
 			connection.setRequestProperty("Connection", request.keepAlive ? "keep-alive" : "close");
 			connection.setRequestProperty("Accept-Encoding", "gzip");
+			boolean userAgentAdded = false;
 			if (request.headers != null) {
 				for (Pair<String, String> header : request.headers) {
 					connection.setRequestProperty(header.first, header.second);
+					if ("User-Agent".equalsIgnoreCase(header.first)) {
+						userAgentAdded = true;
+					}
 				}
+			}
+			if (!userAgentAdded) {
+				connection.setRequestProperty("User-Agent", AdvancedPreferences.getUserAgent(chanName));
 			}
 			CookieBuilder cookieBuilder = obtainModifiedCookieBuilder(request.cookieBuilder, chanName);
 			if (cookieBuilder != null) {

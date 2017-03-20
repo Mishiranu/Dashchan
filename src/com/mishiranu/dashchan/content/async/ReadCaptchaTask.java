@@ -137,13 +137,16 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 		}
 		if (recaptcha2 || recaptcha1) {
 			String apiKey = captchaData.get(ChanPerformer.CaptchaData.API_KEY);
+			String referer = captchaData.get(ChanPerformer.CaptchaData.REFERER);
 			try {
 				RecaptchaReader recaptchaReader = RecaptchaReader.getInstance();
 				String challenge;
 				if (recaptcha2) {
-					challenge = recaptchaReader.getChallenge2(holder, apiKey, Preferences.isRecaptchaJavascript());
+					challenge = recaptchaReader.getChallenge2(holder, apiKey, referer,
+							Preferences.isRecaptchaJavascript());
 				} else {
-					challenge = recaptchaReader.getChallenge1(holder, apiKey, Preferences.isRecaptchaJavascript());
+					challenge = recaptchaReader.getChallenge1(holder, apiKey,
+							Preferences.isRecaptchaJavascript());
 				}
 				captchaData.put(ChanPerformer.CaptchaData.CHALLENGE, challenge);
 				if (thread.isInterrupted()) {
