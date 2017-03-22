@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,16 +52,18 @@ public class LinkSpan extends CharacterStyle implements UpdateAppearance, Commen
 
 	@Override
 	public void updateDrawState(TextPaint paint) {
-		if (hidden) {
-			paint.setColor(foregroundColor & 0x00ffffff | Color.argb(Color.alpha(foregroundColor) / 2, 0, 0, 0));
-			paint.setStrikeThruText(true);
-		} else {
-			paint.setColor(foregroundColor);
-		}
-		paint.setUnderlineText(true);
-		if (clicked) {
-			paint.bgColor = Color.alpha(paint.bgColor) == 0x00 ? clickedColor
-					: GraphicsUtils.mixColors(paint.bgColor, clickedColor);
+		if (paint.getColor() != Color.TRANSPARENT) {
+			if (hidden) {
+				paint.setColor(foregroundColor & 0x00ffffff | Color.argb(Color.alpha(foregroundColor) / 2, 0, 0, 0));
+				paint.setStrikeThruText(true);
+			} else {
+				paint.setColor(foregroundColor);
+			}
+			paint.setUnderlineText(true);
+			if (clicked) {
+				paint.bgColor = Color.alpha(paint.bgColor) == 0x00 ? clickedColor
+						: GraphicsUtils.mixColors(paint.bgColor, clickedColor);
+			}
 		}
 	}
 

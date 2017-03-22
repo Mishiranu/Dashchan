@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package com.mishiranu.dashchan.text.style;
 
+import android.graphics.Color;
 import android.text.TextPaint;
 import android.text.style.CharacterStyle;
 import android.text.style.UpdateAppearance;
@@ -44,6 +45,8 @@ public class GainedColorSpan extends CharacterStyle implements UpdateAppearance,
 
 	@Override
 	public void updateDrawState(TextPaint paint) {
-		paint.setColor(GraphicsUtils.modifyColorGain(foregroundColor, colorGainFactor));
+		if (paint.getColor() != Color.TRANSPARENT) {
+			paint.setColor(GraphicsUtils.modifyColorGain(foregroundColor, colorGainFactor));
+		}
 	}
 }

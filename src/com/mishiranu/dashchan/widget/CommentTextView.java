@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -732,7 +732,7 @@ public class CommentTextView extends TextView {
 			return;
 		}
 		CharSequence text = getText();
-		if (text instanceof Spanned) {
+		if (text instanceof Spannable) {
 			Spannable spannable = (Spannable) text;
 			int start = spannable.getSpanStart(spanToClick);
 			int end = spannable.getSpanEnd(spanToClick);
