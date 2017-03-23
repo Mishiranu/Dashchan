@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -349,6 +349,9 @@ public class HttpClient {
 			boolean userAgentAdded = false;
 			if (request.headers != null) {
 				for (Pair<String, String> header : request.headers) {
+					if ("Connection".equals(header.first) || "Accept-Encoding".equals(header.first)) {
+						continue;
+					}
 					connection.setRequestProperty(header.first, header.second);
 					if ("User-Agent".equalsIgnoreCase(header.first)) {
 						userAgentAdded = true;
