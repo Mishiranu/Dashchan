@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!--
-	Copyright 2014-2016 Fukurou Mishiranu
+	Copyright 2014-2017 Fukurou Mishiranu
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -63,6 +63,7 @@
 	<attr name="buttonDropDown" format="reference" />
 	<attr name="buttonDropDownDrawer" format="reference" />
 	<attr name="buttonForward" format="reference" />
+	<attr name="buttonMore" format="reference" />
 	<attr name="buttonPause" format="reference" />
 	<attr name="buttonPlay" format="reference" />
 	<attr name="buttonRating" format="reference" />

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -475,7 +475,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				return true;
 			}
 			case THREAD_OPTIONS_MENU_CLEAR_DELETED: {
-				new AlertDialog.Builder(getActivity()).setMessage(R.string.message_clear_deleted_warning)
+				new AlertDialog.Builder(getActivity()).setMessage(R.string.message_clear_deleted_posts_warning)
 						.setPositiveButton(android.R.string.ok, (dialog, which) -> {
 					PostsExtra extra = getExtra();
 					Posts cachedPosts = extra.cachedPosts;

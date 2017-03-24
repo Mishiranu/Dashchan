@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -61,6 +62,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -774,8 +776,8 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 					if (watcherSupportSet.contains(favoriteItem.chanName)
 							|| mergeChans && !watcherSupportSet.isEmpty()) {
 						favorites.add(new ListItem(ListItem.ITEM_HEADER, null, null, null,
-								context.getString(R.string.text_favorite_threads), HEADER_ACTION_REFRESH_WATCHER,
-								ResourceUtils.getResourceId(context, R.attr.buttonRefresh, 0)));
+								context.getString(R.string.text_favorite_threads), HEADER_ACTION_FAVORITES_MENU,
+								ResourceUtils.getResourceId(context, R.attr.buttonMore, 0)));
 					} else {
 						favorites.add(new ListItem(ListItem.ITEM_HEADER, null, null, null,
 								context.getString(R.string.text_favorite_threads)));
@@ -810,6 +812,18 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 						ChanConfiguration.get(favoriteItem.chanName).getBoardTitle(favoriteItem.boardName), 0,
 						chanIcons.get(favoriteItem.chanName)));
 			}
+		}
+	}
+
+	private String formatBoardThreadTitle(boolean threadItem, String boardName, String threadNumber, String title) {
+		if (threadItem) {
+			if (!StringUtils.isEmptyOrWhitespace(title)) {
+				return title;
+			} else {
+				return StringUtils.formatThreadTitle(chanName, boardName, threadNumber);
+			}
+		} else {
+			return StringUtils.formatBoardTitle(chanName, boardName, title);
 		}
 	}
 
@@ -898,9 +912,13 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 	};
 
 	private static final int HEADER_ACTION_CLOSE_ALL = 0;
-	private static final int HEADER_ACTION_REFRESH_WATCHER = 1;
+	private static final int HEADER_ACTION_FAVORITES_MENU = 1;
+
+	private static final int FAVORITES_MENU_REFRESH = 1;
+	private static final int FAVORITES_MENU_CLEAR_DELETED = 2;
 
 	private final View.OnClickListener headerButtonListener = new View.OnClickListener() {
+		@SuppressLint("NewApi")
 		@Override
 		public void onClick(View v) {
 			ListItem listItem = getItem(v);
@@ -910,8 +928,59 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 						callback.onCloseAllPages();
 						break;
 					}
-					case HEADER_ACTION_REFRESH_WATCHER: {
-						watcherServiceClient.update();
+					case HEADER_ACTION_FAVORITES_MENU: {
+						boolean hasEnabled = false;
+						ArrayList<FavoritesStorage.FavoriteItem> deleteFavoriteItems = new ArrayList<>();
+						FavoritesStorage favoritesStorage = FavoritesStorage.getInstance();
+						for (ListItem itListItem : favorites) {
+							if (itListItem.isThreadItem()) {
+								FavoritesStorage.FavoriteItem favoriteItem = favoritesStorage.getFavorite
+										(itListItem.chanName, itListItem.boardName, itListItem.threadNumber);
+								if (favoriteItem != null) {
+									hasEnabled |= favoriteItem.watcherEnabled;
+									WatcherService.TemporalCountData temporalCountData =
+											watcherServiceClient.countNewPosts(favoriteItem);
+									if (temporalCountData.postsCountDifference ==
+											WatcherService.POSTS_COUNT_DIFFERENCE_DELETED) {
+										deleteFavoriteItems.add(favoriteItem);
+									}
+								}
+							}
+						}
+						PopupMenu popupMenu = C.API_KITKAT ? new PopupMenu(v.getContext(), v, Gravity.END)
+								: new PopupMenu(context, v);
+						popupMenu.getMenu().add(0, FAVORITES_MENU_REFRESH, 0, R.string.action_refresh)
+								.setEnabled(hasEnabled);
+						popupMenu.getMenu().add(0, FAVORITES_MENU_CLEAR_DELETED, 0, R.string.action_clear_deleted)
+								.setEnabled(!deleteFavoriteItems.isEmpty());
+						popupMenu.setOnMenuItemClickListener(item -> {
+							switch (item.getItemId()) {
+								case FAVORITES_MENU_REFRESH: {
+									watcherServiceClient.update();
+									return true;
+								}
+								case FAVORITES_MENU_CLEAR_DELETED: {
+									StringBuilder builder = new StringBuilder(context
+											.getString(R.string.message_clear_deleted_threads_warning));
+									builder.append("\n");
+									for (FavoritesStorage.FavoriteItem favoriteItem : deleteFavoriteItems) {
+										builder.append("\n\u2022 ").append(formatBoardThreadTitle(true,
+												favoriteItem.boardName, favoriteItem.threadNumber, favoriteItem.title));
+									}
+									new AlertDialog.Builder(context).setMessage(builder)
+											.setNegativeButton(android.R.string.cancel, null)
+											.setPositiveButton(android.R.string.ok, (dialog, which) -> {
+										for (FavoritesStorage.FavoriteItem favoriteItem : deleteFavoriteItems) {
+											favoritesStorage.remove(favoriteItem.chanName,
+													favoriteItem.boardName, favoriteItem.threadNumber);
+										}
+									}).show();
+									return true;
+								}
+							}
+							return false;
+						});
+						popupMenu.show();
 						break;
 					}
 				}
@@ -1267,18 +1336,8 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		switch (listItem.type) {
 			case ListItem.ITEM_PAGE:
 			case ListItem.ITEM_FAVORITE: {
-				String text;
-				if (listItem.isThreadItem()) {
-					if (!StringUtils.isEmptyOrWhitespace(listItem.title)) {
-						text = listItem.title;
-					} else {
-						text = StringUtils.formatThreadTitle(listItem.chanName, listItem.boardName,
-								listItem.threadNumber);
-					}
-				} else {
-					text = StringUtils.formatBoardTitle(listItem.chanName, listItem.boardName, listItem.title);
-				}
-				holder.text.setText(text);
+				holder.text.setText(formatBoardThreadTitle(listItem.isThreadItem(),
+						listItem.boardName, listItem.threadNumber, listItem.title));
 				if (listItem.type == ListItem.ITEM_FAVORITE && listItem.isThreadItem() &&
 						watcherSupportSet.contains(listItem.chanName)) {
 					WatcherService.WatcherItem watcherItem = watcherServiceClient.getItem(listItem.chanName,

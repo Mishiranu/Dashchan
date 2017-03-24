@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!--
-	Copyright 2014-2016 Fukurou Mishiranu
+	Copyright 2014-2017 Fukurou Mishiranu
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@
 		<item name="buttonDropDown">@drawable/ic_action_expand_light</item>
 		<item name="buttonDropDownDrawer">@drawable/ic_action_expand_dark</item>
 		<item name="buttonForward">@drawable/ic_action_forward_light</item>
+		<item name="buttonMore">@drawable/ic_action_expand_light</item>
 		<item name="buttonPause">@drawable/ic_action_pause_light</item>
 		<item name="buttonPlay">@drawable/ic_action_play_light</item>
 		<item name="buttonRating">@drawable/ic_action_warning_light</item>
@@ -95,6 +96,7 @@
 		<item name="buttonDropDown">@drawable/ic_action_expand_dark</item>
 		<item name="buttonDropDownDrawer">@drawable/ic_action_expand_dark</item>
 		<item name="buttonForward">@drawable/ic_action_forward_dark</item>
+		<item name="buttonMore">@drawable/ic_action_expand_dark</item>
 		<item name="buttonPause">@drawable/ic_action_pause_dark</item>
 		<item name="buttonPlay">@drawable/ic_action_play_dark</item>
 		<item name="buttonRating">@drawable/ic_action_warning_dark</item>

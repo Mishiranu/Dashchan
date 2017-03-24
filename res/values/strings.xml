@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!--
-	Copyright 2014-2016 Fukurou Mishiranu
+	Copyright 2014-2017 Fukurou Mishiranu
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -263,7 +263,8 @@
 	<string name="message_captcha_expired">Captcha expired</string>
 	<string name="message_captcha_not_valid">Captcha is not valid</string>
 	<string name="message_captcha_pass_allowed">Captcha pass is allowed</string>
-	<string name="message_clear_deleted_warning">Deleted posts will be permanently deleted.</string>
+	<string name="message_clear_deleted_posts_warning">Deleted posts will be permanently deleted.</string>
+	<string name="message_clear_deleted_threads_warning">The following threads will be deleted:</string>
 	<string name="message_clear_history_confirm">Clear history?</string>
 	<string name="message_cloudflate_block">It seems that CloudFlare has blocked your IP. Enter the captcha to pass
 		the verification.</string>
