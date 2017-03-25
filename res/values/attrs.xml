@@ -61,7 +61,6 @@
 
 	<attr name="buttonCancel" format="reference" />
 	<attr name="buttonDropDown" format="reference" />
-	<attr name="buttonDropDownDrawer" format="reference" />
 	<attr name="buttonForward" format="reference" />
 	<attr name="buttonMore" format="reference" />
 	<attr name="buttonPause" format="reference" />

@@ -69,7 +69,6 @@
 
 		<item name="buttonCancel">@drawable/ic_close_black</item>
 		<item name="buttonDropDown">@drawable/ic_arrow_drop_down_black</item>
-		<item name="buttonDropDownDrawer">?attr/buttonDropDown</item>
 		<item name="buttonForward">@drawable/ic_arrow_forward_black</item>
 		<item name="buttonMore">@drawable/ic_custom_diamond_dot_black</item>
 		<item name="buttonPause">@drawable/ic_pause_black</item>
@@ -131,7 +130,6 @@
 
 		<item name="buttonCancel">@drawable/ic_close_white</item>
 		<item name="buttonDropDown">@drawable/ic_arrow_drop_down_white</item>
-		<item name="buttonDropDownDrawer">?attr/buttonDropDown</item>
 		<item name="buttonForward">@drawable/ic_arrow_forward_white</item>
 		<item name="buttonMore">@drawable/ic_custom_diamond_dot_white</item>
 		<item name="buttonPause">@drawable/ic_pause_white</item>

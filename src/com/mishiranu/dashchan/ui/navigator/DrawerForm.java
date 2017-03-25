@@ -202,7 +202,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		selectorContainer.addView(chanNameView, new LinearLayout.LayoutParams(0,
 				LinearLayout.LayoutParams.WRAP_CONTENT, 1));
 		chanSelectorIcon = new ImageView(context);
-		chanSelectorIcon.setImageResource(ResourceUtils.getResourceId(context, R.attr.buttonDropDownDrawer, 0));
+		chanSelectorIcon.setImageResource(ResourceUtils.getResourceId(context, R.attr.buttonDropDown, 0));
 		selectorContainer.addView(chanSelectorIcon, (int) (24f * density), (int) (24f * density));
 		((LinearLayout.LayoutParams) chanSelectorIcon.getLayoutParams()).gravity = Gravity.CENTER_VERTICAL
 				| Gravity.END;
