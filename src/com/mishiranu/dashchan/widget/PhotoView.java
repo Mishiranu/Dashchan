@@ -148,6 +148,15 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 			unscheduleDrawable(drawable);
 			drawable = null;
 			invalidate();
+			post(() -> {
+				// Check drawable wasn't set immediately after recycle call
+				if (drawable == null) {
+					// Disallow scale keeping
+					previousDimensions.set(0, 0);
+					cancelRestoreVerticalSwipe(false);
+					notifyVerticalSwipe(0f);
+				}
+			});
 		}
 	}
 
@@ -602,11 +611,7 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 	}
 
 	private void initBaseMatrix(boolean keepScale) {
-		if (animatedRestoreSwipeRunnable != null) {
-			removeCallbacks(animatedRestoreSwipeRunnable);
-			animatedRestoreSwipeRunnable = null;
-			notifyVerticalSwipe(0f);
-		}
+		cancelRestoreVerticalSwipe(true);
 		Point dimensions = getDimensions();
 		if (dimensions == null) {
 			return;
@@ -663,6 +668,25 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 				listener.onVerticalSwipe(this, value);
 			}
 		}
+	}
+
+	private void cancelRestoreVerticalSwipe(boolean notify) {
+		if (animatedRestoreSwipeRunnable != null) {
+			removeCallbacks(animatedRestoreSwipeRunnable);
+			animatedRestoreSwipeRunnable = null;
+			if (notify) {
+				notifyVerticalSwipe(0f);
+			}
+		}
+	}
+
+	private void startRestoreVerticalSwipe(RectF rect, boolean close, float velocity) {
+		cancelRestoreVerticalSwipe(false);
+		if (rect == null) {
+			rect = checkMatrixBounds();
+		}
+		animatedRestoreSwipeRunnable = new AnimatedRestoreSwipeRunnable(rect, close, velocity);
+		post(animatedRestoreSwipeRunnable);
 	}
 
 	private class AnimatedScaleRunnable implements Runnable {
@@ -1042,12 +1066,7 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 							if (listener != null && close) {
 								close = listener.onClose(this);
 							}
-							if (animatedRestoreSwipeRunnable != null) {
-								removeCallbacks(animatedRestoreSwipeRunnable);
-								animatedRestoreSwipeRunnable = null;
-							}
-							animatedRestoreSwipeRunnable = new AnimatedRestoreSwipeRunnable(rect, close, velocity);
-							post(animatedRestoreSwipeRunnable);
+							startRestoreVerticalSwipe(rect, close, velocity);
 						}
 					} else if (velocityTracker != null) {
 						lastTouchX = getActiveX(event);
