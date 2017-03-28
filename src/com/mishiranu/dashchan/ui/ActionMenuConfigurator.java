@@ -21,17 +21,21 @@ import java.lang.reflect.Method;
 
 import android.content.Context;
 import android.content.res.Configuration;
-import android.util.SparseBooleanArray;
+import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.mishiranu.dashchan.content.MainApplication;
+import com.mishiranu.dashchan.util.FlagUtils;
+import com.mishiranu.dashchan.util.Log;
 
 public class ActionMenuConfigurator {
 	private static final Field SHOW_AS_ACTION_FIELD;
 	private static final Object ACTION_BAR_POLICY;
 	private static final Method GET_MAX_ACTION_BUTTONS_METHOD;
 	private static final Method SHOWS_OVERFLOW_MENU_BUTTON_METHOD;
+
+	private enum ShowAsAction {NEVER, ALWAYS, IF_ROOM}
 
 	static {
 		Field showAsActionField;
@@ -48,6 +52,7 @@ public class ActionMenuConfigurator {
 			getMaxActionButtonsMethod = actionBarPolicyClass.getMethod("getMaxActionButtons");
 			showsOverflowMenuButtonMethod = actionBarPolicyClass.getMethod("showsOverflowMenuButton");
 		} catch (Exception e) {
+			Log.persistent().write(e);
 			showAsActionField = null;
 			actionBarPolicy = null;
 			getMaxActionButtonsMethod = null;
@@ -59,8 +64,7 @@ public class ActionMenuConfigurator {
 		SHOWS_OVERFLOW_MENU_BUTTON_METHOD = showsOverflowMenuButtonMethod;
 	}
 
-	// True for SHOW_AS_ACTION_ALWAYS, false for SHOW_AS_ACTION_IF_ROOM
-	private final SparseBooleanArray display = new SparseBooleanArray();
+	private final SparseArray<ShowAsAction> showAsAction = new SparseArray<>();
 	private Menu lastMenu;
 
 	public void onConfigurationChanged(Configuration newConfig) {
@@ -70,21 +74,16 @@ public class ActionMenuConfigurator {
 	}
 
 	public void onAfterCreateOptionsMenu(Menu menu) {
-		display.clear();
+		showAsAction.clear();
 		lastMenu = menu;
 		for (int i = 0; i < menu.size(); i++) {
 			MenuItem menuItem = menu.getItem(i);
 			int id = menuItem.getItemId();
 			int showAsAction = getShowAsAction(menuItem);
-			switch (showAsAction) {
-				case MenuItem.SHOW_AS_ACTION_ALWAYS: {
-					display.put(id, true);
-					break;
-				}
-				case MenuItem.SHOW_AS_ACTION_IF_ROOM: {
-					display.put(id, false);
-					break;
-				}
+			if (FlagUtils.get(showAsAction, MenuItem.SHOW_AS_ACTION_ALWAYS)) {
+				this.showAsAction.put(id, ShowAsAction.ALWAYS);
+			} else if (FlagUtils.get(showAsAction, MenuItem.SHOW_AS_ACTION_IF_ROOM)) {
+				this.showAsAction.put(id, ShowAsAction.IF_ROOM);
 			}
 		}
 	}
@@ -99,21 +98,26 @@ public class ActionMenuConfigurator {
 			return;
 		}
 		int used = 0;
+		// Count displayed icons with flag SHOW_AS_ACTION_ALWAYS
 		for (int i = 0; i < menu.size(); i++) {
 			MenuItem menuItem = menu.getItem(i);
 			if (menuItem.isVisible()) {
-				if (display.get(menuItem.getItemId())) {
+				ShowAsAction showAsAction = this.showAsAction.get(menuItem.getItemId(), ShowAsAction.NEVER);
+				if (showAsAction == ShowAsAction.ALWAYS) {
 					used++;
-				} else if (mayOverflow && display.indexOfKey(menuItem.getItemId()) < 0) {
+				} else if (mayOverflow && showAsAction == ShowAsAction.NEVER) {
+					// Overflow icon will take a place as well
 					mayOverflow = false;
 					used++;
 				}
 			}
 		}
+		// Display SHOW_AS_ACTION_IF_ROOM icons if there is a place left for them
 		for (int i = 0; i < menu.size(); i++) {
 			MenuItem menuItem = menu.getItem(i);
 			if (menuItem.isVisible()) {
-				if (display.get(menuItem.getItemId())) {
+				ShowAsAction showAsAction = this.showAsAction.get(menuItem.getItemId(), ShowAsAction.NEVER);
+				if (showAsAction == ShowAsAction.IF_ROOM) {
 					if (used < maxCount) {
 						used++;
 						menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
