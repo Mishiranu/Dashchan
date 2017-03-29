@@ -394,6 +394,11 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 			}
 		}
 
+		@Override
+		public void onLongClick(PhotoView photoView, float x, float y) {
+			// TODO Show popup menu on long click
+		}
+
 		private boolean swiping = false;
 
 		@Override

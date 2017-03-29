@@ -180,8 +180,15 @@ public class PhotoViewPager extends ViewGroup {
 	private float startY;
 	private float lastX;
 	private int startScrollX;
+	private boolean longTapConfirmed;
 
 	private VelocityTracker velocityTracker;
+
+	private Runnable longTapRunnable = () -> {
+		longTapConfirmed = true;
+		PhotoView photoView = photoViews.get(currentIndex % 3);
+		photoView.dispatchSimpleClick(true, startX, startY);
+	};
 
 	@Override
 	public boolean onInterceptTouchEvent(MotionEvent ev) {
@@ -201,8 +208,10 @@ public class PhotoViewPager extends ViewGroup {
 				startX = lastX = event.getX();
 				startY = event.getY();
 				startScrollX = getScrollX();
+				longTapConfirmed = false;
 				velocityTracker = VelocityTracker.obtain();
 				velocityTracker.addMovement(event);
+				postDelayed(longTapRunnable, ViewConfiguration.getDoubleTapTimeout());
 				return true;
 			}
 			case MotionEvent.ACTION_MOVE: {
@@ -227,6 +236,7 @@ public class PhotoViewPager extends ViewGroup {
 						// Too short movement, skip it
 						return true;
 					}
+					removeCallbacks(longTapRunnable);
 					allowMove = true;
 				}
 				boolean sendToPhotoView = count == 1 || photoView.isScaling();
@@ -310,12 +320,13 @@ public class PhotoViewPager extends ViewGroup {
 					velocityTracker.computeCurrentVelocity(1000, maximumVelocity);
                     velocity = (int) velocityTracker.getXVelocity(0);
 					index = determineTargetIndex(velocity, deltaX);
-					if (!allowMove) {
-						photoView.dispatchSimpleClick(event.getX(), event.getY());
+					if (!allowMove && !longTapConfirmed) {
+						photoView.dispatchSimpleClick(false, event.getX(), event.getY());
 					}
 				}
 				velocityTracker.recycle();
 				velocityTracker = null;
+				removeCallbacks(longTapRunnable);
 				smoothScrollTo(index, velocity);
 				currentIndex = index;
 				edgeEffect.onRelease();

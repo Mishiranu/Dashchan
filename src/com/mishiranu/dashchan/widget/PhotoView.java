@@ -43,8 +43,7 @@ import android.widget.Scroller;
 import com.mishiranu.dashchan.graphics.TransparentTileDrawable;
 import com.mishiranu.dashchan.util.AnimationUtils;
 
-public class PhotoView extends View implements GestureDetector.OnDoubleTapListener,
-		ScaleGestureDetector.OnScaleGestureListener {
+public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestureListener {
 	private enum ScrollEdge {NONE, START, END, BOTH}
 	private enum TouchMode {UNDEFINED, COMMON, CLOSING_START, CLOSING_END, CLOSING_BOTH}
 
@@ -113,8 +112,22 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 		ViewConfiguration configuration = ViewConfiguration.get(context);
 		minimumVelocity = configuration.getScaledMinimumFlingVelocity();
 		touchSlop = configuration.getScaledTouchSlop();
-		gestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener());
-		gestureDetector.setOnDoubleTapListener(this);
+		gestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
+			@Override
+			public boolean onDoubleTapEvent(MotionEvent e) {
+				return PhotoView.this.onDoubleTapEvent(e);
+			}
+
+			@Override
+			public boolean onSingleTapConfirmed(MotionEvent e) {
+				return PhotoView.this.onSingleTapConfirmed(e);
+			}
+
+			@Override
+			public void onLongPress(MotionEvent e) {
+				PhotoView.this.onLongPress(e);
+			}
+		});
 		scaleGestureDetector = new ScaleGestureDetector(getContext(), this);
 		tile = new TransparentTileDrawable(context, true);
 		initBaseMatrix(false);
@@ -134,6 +147,7 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 
 	public interface Listener {
 		public void onClick(PhotoView photoView, boolean image, float x, float y);
+		public void onLongClick(PhotoView photoView, float x, float y);
 		public void onVerticalSwipe(PhotoView photoView, float value);
 		public boolean onClose(PhotoView photoView);
 	}
@@ -360,13 +374,7 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 				Math.pow(matrixValues[Matrix.MSKEW_Y], 2));
 	}
 
-	@Override
-	public boolean onDoubleTap(MotionEvent e) {
-		return false;
-	}
-
-	@Override
-	public boolean onDoubleTapEvent(MotionEvent e) {
+	private boolean onDoubleTapEvent(MotionEvent e) {
 		if (e.getAction() == MotionEvent.ACTION_UP && !scaleGestureDetector.isInProgress()) {
 			float scale = getScale();
 			float x = e.getX();
@@ -377,8 +385,7 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 		return false;
 	}
 
-	@Override
-	public boolean onSingleTapConfirmed(MotionEvent e) {
+	private boolean onSingleTapConfirmed(MotionEvent e) {
 		if (listener != null) {
 			float x = e.getX(), y = e.getY();
 			RectF rect = checkMatrixBounds();
@@ -389,6 +396,12 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 			listener.onClick(this, false, x, y);
 		}
 		return false;
+	}
+
+	private void onLongPress(MotionEvent e) {
+		if (listener != null) {
+			listener.onLongClick(this, e.getX(), e.getY());
+		}
 	}
 
 	private void onScale(float scaleFactor, float focusX, float focusY) {
@@ -417,9 +430,13 @@ public class PhotoView extends View implements GestureDetector.OnDoubleTapListen
 		return false;
 	}
 
-	public void dispatchSimpleClick(float x, float y) {
+	public void dispatchSimpleClick(boolean longClick, float x, float y) {
 		if (listener != null && !hasImage()) {
-			listener.onClick(this, true, x, y);
+			if (longClick) {
+				listener.onLongClick(this, x, y);
+			} else {
+				listener.onClick(this, true, x, y);
+			}
 		}
 	}
 
