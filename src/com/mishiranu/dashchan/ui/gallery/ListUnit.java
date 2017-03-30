@@ -108,7 +108,7 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 		gridView.setOnScrollListener(scrollListenerComposite);
 		gridView.setOnItemClickListener(this);
 		gridView.setOnItemLongClickListener(this);
-		updateGridMetrics(instance.context.getResources().getConfiguration());
+		updateGridMetrics(true, instance.context.getResources().getConfiguration());
 		ImageLoader.getInstance().observable().register(this);
 	}
 
@@ -128,6 +128,8 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 			}
 		}
 		gridView.setSelection(position);
+		restoredScrollPosition = position;
+		restoredScrollPositionChanged = System.currentTimeMillis();
 	}
 
 	public boolean areItemsSelectable() {
@@ -243,7 +245,7 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 
 	public void onConfigurationChanged(Configuration newConfig) {
 		if (newConfig.orientation != Configuration.ORIENTATION_UNDEFINED) {
-			updateGridMetrics(newConfig);
+			updateGridMetrics(false, newConfig);
 		}
 	}
 
@@ -323,8 +325,9 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 		updateAllGalleryItemsChecked();
 	}
 
-	private void updateGridMetrics(Configuration configuration) {
+	private void updateGridMetrics(boolean init, Configuration configuration) {
 		int position;
+		// Don't allow list to move randomly after multiple screen rotations
 		if (restoredScrollPositionChanged >= scrollStateChanged) {
 			position = restoredScrollPosition;
 		} else {
@@ -350,17 +353,29 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 		int size = ResourceUtils.isTablet(configuration) ? 160 : 100;
 		gridRowCount = (widthDp - GRID_SPACING_DP) / (size + GRID_SPACING_DP);
 		gridView.setNumColumns(gridRowCount);
-		gridView.post(() -> {
-			float density = ResourceUtils.obtainDensity(instance.context);
-			int spaceForRows = gridView.getWidth() - gridView.getPaddingLeft() - gridView.getPaddingRight()
-					- (int) ((gridRowCount - 1) * GRID_SPACING_DP * density);
-			int unusedSpace = (spaceForRows - spaceForRows / gridRowCount * gridRowCount) / 2;
-			if (unusedSpace > 0) {
-				gridView.setPadding(gridView.getPaddingLeft() + unusedSpace, gridView.getPaddingTop(),
-						gridView.getPaddingRight() + unusedSpace, gridView.getPaddingBottom());
-			}
-			gridView.post(() -> gridView.setSelection(position));
-		});
+		if (!init) {
+			gridView.post(() -> {
+				float density = ResourceUtils.obtainDensity(instance.context);
+				int spaceForRows = gridView.getWidth() - gridView.getPaddingLeft() - gridView.getPaddingRight()
+						- (int) ((gridRowCount - 1) * GRID_SPACING_DP * density);
+				int unusedSpace = (spaceForRows - spaceForRows / gridRowCount * gridRowCount) / 2;
+				if (unusedSpace > 0) {
+					gridView.setPadding(gridView.getPaddingLeft() + unusedSpace, gridView.getPaddingTop(),
+							gridView.getPaddingRight() + unusedSpace, gridView.getPaddingBottom());
+				}
+				gridView.post(new Runnable() {
+					@Override
+					public void run() {
+						int firstVisiblePosition = gridView.getFirstVisiblePosition();
+						int count = gridView.getChildCount();
+						if (firstVisiblePosition > position || firstVisiblePosition + count <= position) {
+							gridView.setSelection(position);
+							gridView.post(this);
+						}
+					}
+				});
+			});
+		}
 	}
 
 	private static class GridViewHolder {
