@@ -308,6 +308,8 @@ public class ImageUnit {
 				}
 			} catch (OutOfMemoryError e) {
 				errorMessageId = R.string.message_image_out_of_memory;
+			} catch (InterruptedException e) {
+				errorMessageId = R.string.message_unknown_error;
 			} catch (Exception e) {
 				Log.persistent().stack(e);
 				errorMessageId = R.string.message_image_corrupted;

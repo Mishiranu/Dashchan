@@ -314,16 +314,11 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 		}
 	}
 
-	public int getMaximumImageSizeAsync() {
+	public int getMaximumImageSizeAsync() throws InterruptedException {
 		if (maximumImageSize == 0) {
 			synchronized (maximumImageSizeLock) {
-				try {
-					while (maximumImageSize == 0) {
-						maximumImageSizeLock.wait();
-					}
-				} catch (InterruptedException e) {
-					Thread.currentThread().interrupt();
-					return 0;
+				while (maximumImageSize == 0) {
+					maximumImageSizeLock.wait();
 				}
 			}
 		}
