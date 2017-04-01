@@ -16,7 +16,6 @@
 
 package com.mishiranu.dashchan.ui.gallery;
 
-import java.io.File;
 import java.util.ArrayList;
 
 import android.annotation.TargetApi;
@@ -47,20 +46,17 @@ import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.DownloadManager;
 import com.mishiranu.dashchan.content.model.AttachmentItem;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.graphics.GalleryBackgroundDrawable;
 import com.mishiranu.dashchan.preference.Preferences;
-import com.mishiranu.dashchan.ui.ActionMenuConfigurator;
 import com.mishiranu.dashchan.ui.ForegroundManager;
 import com.mishiranu.dashchan.ui.StateActivity;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.FlagUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
-import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.WindowControlFrameLayout;
 
@@ -86,8 +82,6 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 
 	private static final int ACTION_BAR_COLOR = 0xaa202020;
 	private static final int BACKGROUND_COLOR = 0xf0101010;
-
-	private final ActionMenuConfigurator actionMenuConfigurator = new ActionMenuConfigurator();
 
 	private PagerUnit pagerUnit;
 	private ListUnit listUnit;
@@ -255,33 +249,18 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 	}
 
 	private static final int OPTIONS_MENU_SAVE = 0;
-	private static final int OPTIONS_MENU_GALLERY = 1;
-	private static final int OPTIONS_MENU_REFRESH = 2;
-	private static final int OPTIONS_MENU_TECHNICAL_INFO = 3;
-	private static final int OPTIONS_MENU_SEARCH_IMAGE = 4;
-	private static final int OPTIONS_MENU_COPY_LINK = 5;
-	private static final int OPTIONS_MENU_NAVIGATE_POST = 6;
-	private static final int OPTIONS_MENU_SHARE_LINK = 7;
-	private static final int OPTIONS_MENU_SHARE_FILE = 8;
-	private static final int OPTIONS_MENU_SELECT = 9;
+	private static final int OPTIONS_MENU_REFRESH = 1;
+	private static final int OPTIONS_MENU_SELECT = 2;
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		ActionIconSet set = new ActionIconSet(this);
 		menu.add(0, OPTIONS_MENU_SAVE, 0, R.string.action_save).setIcon(set.getId(R.attr.actionSave))
-				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-		menu.add(0, OPTIONS_MENU_GALLERY, 0, R.string.action_gallery);
+				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 		menu.add(0, OPTIONS_MENU_REFRESH, 0, R.string.action_refresh).setIcon(set.getId(R.attr.actionRefresh))
-				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-		menu.add(0, OPTIONS_MENU_TECHNICAL_INFO, 0, R.string.action_technical_info);
-		menu.add(0, OPTIONS_MENU_SEARCH_IMAGE, 0, R.string.action_search_image);
-		menu.add(0, OPTIONS_MENU_COPY_LINK, 0, R.string.action_copy_link);
-		menu.add(0, OPTIONS_MENU_NAVIGATE_POST, 0, R.string.action_go_to_post);
-		menu.add(0, OPTIONS_MENU_SHARE_LINK, 0, R.string.action_share_link);
-		menu.add(0, OPTIONS_MENU_SHARE_FILE, 0, R.string.action_share_file);
+				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 		menu.add(0, OPTIONS_MENU_SELECT, 0, R.string.action_select).setIcon(set.getId(R.attr.actionSelect))
-				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-		actionMenuConfigurator.onAfterCreateOptionsMenu(menu);
+				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 		return true;
 	}
 
@@ -295,20 +274,12 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 					? pagerUnit.obtainOptionsMenuCapabilities() : null;
 			if (capabilities != null && capabilities.available) {
 				menu.findItem(OPTIONS_MENU_SAVE).setVisible(capabilities.save);
-				menu.findItem(OPTIONS_MENU_GALLERY).setVisible(!galleryWindow && instance.galleryItems.size() > 1);
 				menu.findItem(OPTIONS_MENU_REFRESH).setVisible(capabilities.refresh);
-				menu.findItem(OPTIONS_MENU_TECHNICAL_INFO).setVisible(capabilities.viewTechnicalInfo);
-				menu.findItem(OPTIONS_MENU_SEARCH_IMAGE).setVisible(capabilities.searchImage);
-				menu.findItem(OPTIONS_MENU_COPY_LINK).setVisible(true);
-				menu.findItem(OPTIONS_MENU_NAVIGATE_POST).setVisible(allowNavigatePost && !scrollThread
-						&& capabilities.navigatePost);
-				menu.findItem(OPTIONS_MENU_SHARE_LINK).setVisible(true);
-				menu.findItem(OPTIONS_MENU_SHARE_FILE).setVisible(capabilities.shareFile);
 			}
+			pagerUnit.invalidatePopupMenu();
 		} else {
 			menu.findItem(OPTIONS_MENU_SELECT).setVisible(listUnit.areItemsSelectable());
 		}
-		actionMenuConfigurator.onAfterPrepareOptionsMenu(menu);
 		return true;
 	}
 
@@ -324,48 +295,8 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 				downloadGalleryItem(galleryItem);
 				break;
 			}
-			case OPTIONS_MENU_GALLERY: {
-				galleryWindow = true;
-				switchMode(true, true);
-				invalidateListPosition();
-				break;
-			}
 			case OPTIONS_MENU_REFRESH: {
 				pagerUnit.refreshCurrent();
-				break;
-			}
-			case OPTIONS_MENU_TECHNICAL_INFO: {
-				pagerUnit.viewTechnicalInfo();
-				break;
-			}
-			case OPTIONS_MENU_SEARCH_IMAGE: {
-				pagerUnit.forcePauseVideo();
-				NavigationUtils.searchImage(this, instance.chanName,
-						galleryItem.getDisplayImageUri(instance.locator));
-				break;
-			}
-			case OPTIONS_MENU_COPY_LINK: {
-				StringUtils.copyToClipboard(this, galleryItem.getFileUri(instance.locator).toString());
-				break;
-			}
-			case OPTIONS_MENU_NAVIGATE_POST: {
-				navigatePost(galleryItem, true);
-				break;
-			}
-			case OPTIONS_MENU_SHARE_LINK: {
-				pagerUnit.forcePauseVideo();
-				NavigationUtils.shareLink(this, null, galleryItem.getFileUri(instance.locator));
-				break;
-			}
-			case OPTIONS_MENU_SHARE_FILE: {
-				pagerUnit.forcePauseVideo();
-				Uri uri = galleryItem.getFileUri(instance.locator);
-				File file = CacheManager.getInstance().getMediaFile(uri, false);
-				if (file == null) {
-					ToastUtils.show(this, R.string.message_cache_unavailable);
-				} else {
-					NavigationUtils.shareFile(this, file, galleryItem.getFileName(instance.locator));
-				}
 				break;
 			}
 			case OPTIONS_MENU_SELECT: {
@@ -429,7 +360,6 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		if (pagerUnit != null) {
 			pagerUnit.onConfigurationChanged(newConfig);
 		}
-		actionMenuConfigurator.onConfigurationChanged(newConfig);
 		invalidateSystemUiVisibility();
 	}
 
@@ -533,7 +463,10 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 	}
 
 	@Override
-	public void navigateGalleryOrFinish() {
+	public void navigateGalleryOrFinish(boolean enableGalleryMode) {
+		if (enableGalleryMode && !galleryWindow) {
+			galleryWindow = true;
+		}
 		if (!returnToGallery()) {
 			finish();
 		}
@@ -556,6 +489,12 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 				finish();
 			}
 		}
+	}
+
+	@Override
+	public boolean isAllowNavigatePost(boolean fromPager) {
+		// Don't allow navigate to post from pager if thread is scrolling automatically with pager
+		return allowNavigatePost && (!scrollThread || !fromPager);
 	}
 
 	@Override

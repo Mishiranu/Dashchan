@@ -45,8 +45,10 @@ import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.graphics.SimpleBitmapDrawable;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.AnimationUtils;
+import com.mishiranu.dashchan.util.DialogMenu;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
+import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.widget.CircularProgressBar;
 import com.mishiranu.dashchan.widget.PhotoView;
 import com.mishiranu.dashchan.widget.PhotoViewPager;
@@ -235,22 +237,9 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 		return pagerInstance.currentHolder != null ? pagerInstance.currentHolder.galleryItem : null;
 	}
 
-	public void viewTechnicalInfo() {
-		GalleryItem galleryItem = pagerInstance.currentHolder.galleryItem;
-		if (galleryItem.isImage(galleryInstance.locator)) {
-			imageUnit.viewTechnicalInfo();
-		} else if (galleryItem.isVideo(galleryInstance.locator)) {
-			videoUnit.viewTechnicalInfo();
-		}
-	}
-
 	private void interrupt(boolean force) {
 		imageUnit.interrupt(force);
 		videoUnit.interrupt();
-	}
-
-	public void forcePauseVideo() {
-		videoUnit.forcePause();
 	}
 
 	public void onFinish() {
@@ -389,14 +378,14 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 				if (image) {
 					galleryInstance.callback.toggleSystemUIVisibility(GalleryInstance.FLAG_LOCKED_USER);
 				} else {
-					galleryInstance.callback.navigateGalleryOrFinish();
+					galleryInstance.callback.navigateGalleryOrFinish(false);
 				}
 			}
 		}
 
 		@Override
 		public void onLongClick(PhotoView photoView, float x, float y) {
-			// TODO Show popup menu on long click
+			displayPopupMenu();
 		}
 
 		private boolean swiping = false;
@@ -412,8 +401,8 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 		}
 
 		@Override
-		public boolean onClose(PhotoView photoView) {
-			galleryInstance.callback.navigateGalleryOrFinish();
+		public boolean onClose(PhotoView photoView, boolean down) {
+			galleryInstance.callback.navigateGalleryOrFinish(down);
 			return true;
 		}
 	};
@@ -574,6 +563,99 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 				holder.recyclePhotoView();
 				holder.fullLoaded = false;
 			}
+		}
+	}
+
+	private static final int POPUP_MENU_TECHNICAL_INFO = 0;
+	private static final int POPUP_MENU_SEARCH_IMAGE = 1;
+	private static final int POPUP_MENU_NAVIGATE_POST = 2;
+	private static final int POPUP_MENU_COPY_LINK = 3;
+	private static final int POPUP_MENU_SHARE_LINK = 4;
+	private static final int POPUP_MENU_SHARE_FILE = 5;
+
+	private DialogMenu currentPopupDialogMenu;
+
+	private void displayPopupMenu() {
+		DialogMenu dialogMenu = new DialogMenu(galleryInstance.context, (context, id, extra) -> {
+			GalleryItem galleryItem = pagerInstance.currentHolder.galleryItem;
+			switch (id) {
+				case POPUP_MENU_TECHNICAL_INFO: {
+					if (galleryItem.isImage(galleryInstance.locator)) {
+						imageUnit.viewTechnicalInfo();
+					} else if (galleryItem.isVideo(galleryInstance.locator)) {
+						videoUnit.viewTechnicalInfo();
+					}
+					break;
+				}
+				case POPUP_MENU_SEARCH_IMAGE: {
+					videoUnit.forcePause();
+					NavigationUtils.searchImage(galleryInstance.context, galleryInstance.chanName,
+							galleryItem.getDisplayImageUri(galleryInstance.locator));
+					break;
+				}
+				case POPUP_MENU_NAVIGATE_POST: {
+					galleryInstance.callback.navigatePost(galleryItem, true);
+					break;
+				}
+				case POPUP_MENU_COPY_LINK: {
+					StringUtils.copyToClipboard(galleryInstance.context,
+							galleryItem.getFileUri(galleryInstance.locator).toString());
+					break;
+				}
+				case POPUP_MENU_SHARE_LINK: {
+					videoUnit.forcePause();
+					NavigationUtils.shareLink(galleryInstance.context, null,
+							galleryItem.getFileUri(galleryInstance.locator));
+					break;
+				}
+				case POPUP_MENU_SHARE_FILE: {
+					videoUnit.forcePause();
+					Uri uri = galleryItem.getFileUri(galleryInstance.locator);
+					File file = CacheManager.getInstance().getMediaFile(uri, false);
+					if (file == null) {
+						ToastUtils.show(galleryInstance.context, R.string.message_cache_unavailable);
+					} else {
+						NavigationUtils.shareFile(galleryInstance.context, file,
+								galleryItem.getFileName(galleryInstance.locator));
+					}
+					break;
+				}
+			}
+		});
+
+		GalleryItem galleryItem = pagerInstance.currentHolder.galleryItem;
+		OptionsMenuCapabilities capabilities = obtainOptionsMenuCapabilities();
+		if (capabilities != null) {
+			dialogMenu.setTitle(galleryItem.originalName != null ? galleryItem.originalName
+					: galleryItem.getFileName(galleryInstance.locator), true);
+			if (capabilities.viewTechnicalInfo) {
+				dialogMenu.addItem(POPUP_MENU_TECHNICAL_INFO, R.string.action_technical_info);
+			}
+			if (capabilities.searchImage) {
+				dialogMenu.addItem(POPUP_MENU_SEARCH_IMAGE, R.string.action_search_image);
+			}
+			if (galleryInstance.callback.isAllowNavigatePost(true) && capabilities.navigatePost) {
+				dialogMenu.addItem(POPUP_MENU_NAVIGATE_POST, R.string.action_go_to_post);
+			}
+			dialogMenu.addItem(POPUP_MENU_COPY_LINK, R.string.action_copy_link);
+			dialogMenu.addItem(POPUP_MENU_SHARE_LINK, R.string.action_share_link);
+			if (capabilities.shareFile) {
+				dialogMenu.addItem(POPUP_MENU_SHARE_FILE, R.string.action_share_file);
+			}
+			dialogMenu.setOnDismissListener(dialog -> {
+				if (dialogMenu == currentPopupDialogMenu) {
+					currentPopupDialogMenu = null;
+				}
+			});
+			dialogMenu.show();
+			currentPopupDialogMenu = dialogMenu;
+		}
+	}
+
+	public void invalidatePopupMenu() {
+		if (currentPopupDialogMenu != null) {
+			currentPopupDialogMenu.dismiss();
+			displayPopupMenu();
 		}
 	}
 }

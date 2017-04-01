@@ -50,9 +50,11 @@ public class GalleryInstance {
 		public void modifyVerticalSwipeState(float value);
 		public void updateTitle();
 
-		public void navigateGalleryOrFinish();
+		public void navigateGalleryOrFinish(boolean enableGalleryMode);
 		public void navigatePageFromList(int position);
 		public void navigatePost(GalleryItem galleryItem, boolean force);
+
+		public boolean isAllowNavigatePost(boolean fromPager);
 
 		public void invalidateOptionsMenu();
 		public void setScreenOnFixed(boolean fixed);

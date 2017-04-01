@@ -58,7 +58,6 @@ import com.mishiranu.dashchan.graphics.SelectorBorderDrawable;
 import com.mishiranu.dashchan.graphics.SelectorCheckDrawable;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.DialogMenu;
-import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.AttachmentView;
@@ -228,6 +227,7 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 			}
 
 		});
+
 		dialogMenu.setTitle(galleryItem.originalName != null ? galleryItem.originalName
 				: galleryItem.getFileName(instance.locator), true);
 		dialogMenu.addItem(MENU_DOWNLOAD_FILE, R.string.action_download_file);
@@ -235,7 +235,7 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 			dialogMenu.addItem(MENU_SEARCH_IMAGE, R.string.action_search_image);
 		}
 		dialogMenu.addItem(MENU_COPY_LINK, R.string.action_copy_link);
-		if (galleryItem.postNumber != null) {
+		if (instance.callback.isAllowNavigatePost(false) && galleryItem.postNumber != null) {
 			dialogMenu.addItem(MENU_GO_TO_POST, R.string.action_go_to_post);
 		}
 		dialogMenu.addItem(MENU_SHARE_LINK, R.string.action_share_link);

@@ -34,12 +34,15 @@ import android.widget.TextView;
 
 public class DialogMenu implements DialogInterface.OnClickListener {
 	private final Context context;
-	private final AlertDialog.Builder dialog;
+	private final AlertDialog.Builder builder;
 
 	private final Callback callback;
 
 	private final ArrayList<ListItem> listItems = new ArrayList<>();
 	private boolean longTitle;
+
+	private AlertDialog dialog;
+	private DialogInterface.OnDismissListener onDismissListener;
 
 	private static class ListItem {
 		public final int id;
@@ -60,13 +63,13 @@ public class DialogMenu implements DialogInterface.OnClickListener {
 
 	public DialogMenu(Context context, Callback callback) {
 		this.context = context;
-		this.dialog = new AlertDialog.Builder(context);
+		this.builder = new AlertDialog.Builder(context);
 		this.callback = callback;
 	}
 
 	public DialogMenu setTitle(String title, boolean longTitle) {
 		checkConsumed();
-		dialog.setTitle(title);
+		builder.setTitle(title);
 		this.longTitle = longTitle;
 		return this;
 	}
@@ -104,13 +107,28 @@ public class DialogMenu implements DialogInterface.OnClickListener {
 	public void show() {
 		checkConsumed();
 		if (listItems.size() > 0) {
-			AlertDialog dialog = this.dialog.setAdapter(new DialogAdapter(), this).create();
+			dialog = builder.setAdapter(new DialogAdapter(), this).create();
 			if (longTitle) {
 				dialog.setOnShowListener(ViewUtils.ALERT_DIALOG_LONGER_TITLE);
+			}
+			if (onDismissListener != null) {
+				dialog.setOnDismissListener(onDismissListener);
 			}
 			dialog.show();
 		}
 		consumed = true;
+	}
+
+	public void dismiss() {
+		if (dialog != null) {
+			dialog.dismiss();
+			dialog = null;
+		}
+	}
+
+	public void setOnDismissListener(DialogInterface.OnDismissListener listener) {
+		checkConsumed();
+		onDismissListener = listener;
 	}
 
 	private void checkConsumed() {

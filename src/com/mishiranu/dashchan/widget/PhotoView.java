@@ -149,7 +149,7 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 		public void onClick(PhotoView photoView, boolean image, float x, float y);
 		public void onLongClick(PhotoView photoView, float x, float y);
 		public void onVerticalSwipe(PhotoView photoView, float value);
-		public boolean onClose(PhotoView photoView);
+		public boolean onClose(PhotoView photoView, boolean down);
 	}
 
 	public void setListener(Listener listener) {
@@ -1076,7 +1076,7 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 							}
 							boolean close = Math.abs(shift) >= threshold;
 							if (listener != null && close) {
-								close = listener.onClose(this);
+								close = listener.onClose(this, shift >= 0);
 							}
 							startRestoreVerticalSwipe(rect, close, velocity);
 						}
