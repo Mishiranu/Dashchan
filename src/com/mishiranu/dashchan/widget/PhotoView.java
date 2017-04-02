@@ -125,7 +125,9 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 
 			@Override
 			public void onLongPress(MotionEvent e) {
-				PhotoView.this.onLongPress(e);
+				if (!isDragging) {
+					PhotoView.this.onLongPress(e);
+				}
 			}
 		});
 		scaleGestureDetector = new ScaleGestureDetector(getContext(), this);
