@@ -203,6 +203,13 @@ public class RecaptchaReader implements Handler.Callback {
 							if (loadingHolder.expired) {
 								throw new HttpException(ErrorItem.TYPE_CAPTCHA_EXPIRED, false, false);
 							}
+							if (loadingHolder.replace != null && !willReplace) {
+								challenge = loadingHolder.replace;
+								loadingHolder.challenge = challenge;
+								loadingHolder.replace = null;
+								reset = true;
+								continue;
+							}
 							if (!challenge.equals(loadingHolder.challenge)) {
 								challenge = loadingHolder.challenge;
 								reset = true;
