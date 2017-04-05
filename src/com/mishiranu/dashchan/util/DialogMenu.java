@@ -32,7 +32,7 @@ import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-public class DialogMenu implements DialogInterface.OnClickListener {
+public class DialogMenu {
 	private final Context context;
 	private final AlertDialog.Builder builder;
 
@@ -43,6 +43,8 @@ public class DialogMenu implements DialogInterface.OnClickListener {
 
 	private AlertDialog dialog;
 	private DialogInterface.OnDismissListener onDismissListener;
+
+	private boolean dismissCalled = false;
 
 	private static class ListItem {
 		public final int id;
@@ -107,12 +109,22 @@ public class DialogMenu implements DialogInterface.OnClickListener {
 	public void show() {
 		checkConsumed();
 		if (listItems.size() > 0) {
-			dialog = builder.setAdapter(new DialogAdapter(), this).create();
+			dialog = builder.setAdapter(new DialogAdapter(), (d, which) -> {
+				if (!dismissCalled && onDismissListener != null) {
+					dismissCalled = true;
+					onDismissListener.onDismiss(d);
+				}
+				callback.onItemClick(context, listItems.get(which).id, extra);
+			}).create();
 			if (longTitle) {
 				dialog.setOnShowListener(ViewUtils.ALERT_DIALOG_LONGER_TITLE);
 			}
 			if (onDismissListener != null) {
-				dialog.setOnDismissListener(onDismissListener);
+				dialog.setOnDismissListener(d -> {
+					if (!dismissCalled) {
+						onDismissListener.onDismiss(d);
+					}
+				});
 			}
 			dialog.show();
 		}
@@ -135,11 +147,6 @@ public class DialogMenu implements DialogInterface.OnClickListener {
 		if (consumed) {
 			throw new RuntimeException("DialogMenu is already consumed.");
 		}
-	}
-
-	@Override
-	public void onClick(DialogInterface dialog, int which) {
-		callback.onItemClick(context, listItems.get(which).id, extra);
 	}
 
 	public interface Callback {
