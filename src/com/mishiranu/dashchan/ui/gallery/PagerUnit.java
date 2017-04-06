@@ -566,12 +566,14 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 		}
 	}
 
-	private static final int POPUP_MENU_TECHNICAL_INFO = 0;
-	private static final int POPUP_MENU_SEARCH_IMAGE = 1;
-	private static final int POPUP_MENU_NAVIGATE_POST = 2;
-	private static final int POPUP_MENU_COPY_LINK = 3;
-	private static final int POPUP_MENU_SHARE_LINK = 4;
-	private static final int POPUP_MENU_SHARE_FILE = 5;
+	private static final int POPUP_MENU_SAVE = 0;
+	private static final int POPUP_MENU_REFRESH = 1;
+	private static final int POPUP_MENU_TECHNICAL_INFO = 2;
+	private static final int POPUP_MENU_SEARCH_IMAGE = 3;
+	private static final int POPUP_MENU_NAVIGATE_POST = 4;
+	private static final int POPUP_MENU_COPY_LINK = 5;
+	private static final int POPUP_MENU_SHARE_LINK = 6;
+	private static final int POPUP_MENU_SHARE_FILE = 7;
 
 	private DialogMenu currentPopupDialogMenu;
 
@@ -579,6 +581,14 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 		DialogMenu dialogMenu = new DialogMenu(galleryInstance.context, (context, id, extra) -> {
 			GalleryItem galleryItem = pagerInstance.currentHolder.galleryItem;
 			switch (id) {
+				case POPUP_MENU_SAVE: {
+					galleryInstance.callback.downloadGalleryItem(galleryItem);
+					break;
+				}
+				case POPUP_MENU_REFRESH: {
+					refreshCurrent();
+					break;
+				}
 				case POPUP_MENU_TECHNICAL_INFO: {
 					if (galleryItem.isImage(galleryInstance.locator)) {
 						imageUnit.viewTechnicalInfo();
@@ -625,9 +635,17 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 
 		GalleryItem galleryItem = pagerInstance.currentHolder.galleryItem;
 		OptionsMenuCapabilities capabilities = obtainOptionsMenuCapabilities();
-		if (capabilities != null) {
+		if (capabilities != null && capabilities.available) {
 			dialogMenu.setTitle(galleryItem.originalName != null ? galleryItem.originalName
 					: galleryItem.getFileName(galleryInstance.locator), true);
+			if (!galleryInstance.callback.isSystemUiVisible()) {
+				if (capabilities.save) {
+					dialogMenu.addItem(POPUP_MENU_SAVE, R.string.action_save);
+				}
+				if (capabilities.refresh) {
+					dialogMenu.addItem(POPUP_MENU_REFRESH, R.string.action_refresh);
+				}
+			}
 			if (capabilities.viewTechnicalInfo) {
 				dialogMenu.addItem(POPUP_MENU_TECHNICAL_INFO, R.string.action_technical_info);
 			}

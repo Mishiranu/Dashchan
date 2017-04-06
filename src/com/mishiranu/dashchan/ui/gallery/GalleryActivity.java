@@ -276,7 +276,9 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 				menu.findItem(OPTIONS_MENU_SAVE).setVisible(capabilities.save);
 				menu.findItem(OPTIONS_MENU_REFRESH).setVisible(capabilities.refresh);
 			}
-			pagerUnit.invalidatePopupMenu();
+			if (pagerUnit != null) {
+				pagerUnit.invalidatePopupMenu();
+			}
 		} else {
 			menu.findItem(OPTIONS_MENU_SELECT).setVisible(listUnit.areItemsSelectable());
 		}
@@ -524,6 +526,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 	private void invalidateSystemUiVisibility() {
 		ActionBar actionBar = getActionBar();
 		boolean visible = isSystemUiVisible();
+		boolean changed = visible != actionBar.isShowing();
 		if (visible) {
 			actionBar.show();
 		} else {
@@ -538,6 +541,9 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		}
 		if (pagerUnit != null) {
 			pagerUnit.invalidateControlsVisibility();
+			if (changed) {
+				pagerUnit.invalidatePopupMenu();
+			}
 		}
 	}
 
