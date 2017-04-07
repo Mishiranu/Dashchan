@@ -68,13 +68,15 @@ public class InteractionUnit {
 				String boardName = locator.safe(false).getBoardName(uri);
 				String threadNumber = locator.safe(false).getThreadNumber(uri);
 				String postNumber = locator.safe(false).getPostNumber(uri);
-				if (sameChan && configuration.getOption(ChanConfiguration.OPTION_READ_SINGLE_POST)) {
-					uiManager.dialog().displayReplyAsync(uriChanName, boardName, threadNumber, postNumber);
-				} else {
-					navigationData = new ChanLocator.NavigationData(ChanLocator.NavigationData.TARGET_POSTS,
-							boardName, threadNumber, postNumber, null);
+				if (threadNumber != null) {
+					if (sameChan && configuration.getOption(ChanConfiguration.OPTION_READ_SINGLE_POST)) {
+						uiManager.dialog().displayReplyAsync(uriChanName, boardName, threadNumber, postNumber);
+					} else {
+						navigationData = new ChanLocator.NavigationData(ChanLocator.NavigationData.TARGET_POSTS,
+								boardName, threadNumber, postNumber, null);
+					}
+					handled = true;
 				}
-				handled = true;
 			} else if (sameChan) {
 				navigationData = locator.safe(false).handleUriClickSpecial(uri);
 				if (navigationData != null) {
