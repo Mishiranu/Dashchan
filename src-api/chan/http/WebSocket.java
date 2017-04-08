@@ -52,11 +52,9 @@ import chan.content.ChanManager;
 import chan.content.ExtensionException;
 
 import com.mishiranu.dashchan.content.model.ErrorItem;
-import com.mishiranu.dashchan.content.net.CloudFlarePasser;
 import com.mishiranu.dashchan.preference.AdvancedPreferences;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.IOUtils;
-import com.mishiranu.dashchan.util.Log;
 
 @Public
 public final class WebSocket {
@@ -216,7 +214,7 @@ public final class WebSocket {
 	private static final Pattern RESPONSE_CODE_PATTERN = Pattern.compile("HTTP/1.[10] (\\d+) (.*)");
 
 	@Public
-	public WebSocket open(EventHandler handler) throws HttpException {
+	public Connection open(EventHandler handler) throws HttpException {
 		boolean success = false;
 		try {
 			if (socket != null) {
@@ -241,7 +239,6 @@ public final class WebSocket {
 					ArrayList<Frame> frames = new ArrayList<>();
 					while (true) {
 						Frame frame = Frame.read(inputStream);
-						Log.write("got frame", frame.opcode, frame.fin, new String(frame.data));
 						if (frame.fin) {
 							if (frames.size() > 0) {
 								ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -340,7 +337,7 @@ public final class WebSocket {
 				closeSocket();
 			}
 		}
-		return this;
+		return new Connection();
 	}
 
 	private static class SocketResult {
@@ -621,68 +618,94 @@ public final class WebSocket {
 	}
 
 	@Public
-	public WebSocket sendText(String text) throws HttpException {
-		checkException();
-		try {
-			writeQueue.add(new Frame(1, true, text != null ? text.getBytes("UTF-8") : new byte[0]));
-		} catch (UnsupportedEncodingException e) {
+	public class Connection {
+		@Public
+		public Connection sendText(String text) throws HttpException {
 			checkException();
-			throw new RuntimeException(e);
+			try {
+				writeQueue.add(new Frame(1, true, text != null ? text.getBytes("UTF-8") : new byte[0]));
+			} catch (UnsupportedEncodingException e) {
+				checkException();
+				throw new RuntimeException(e);
+			}
+			return this;
 		}
-		return this;
+
+		@Public
+		public Connection sendBinary(byte[] data) throws HttpException {
+			checkException();
+			writeQueue.add(new Frame(2, true, data));
+			return this;
+		}
+
+		@Public
+		public Connection await(Object... results) throws HttpException {
+			if (results == null || results.length == 0) {
+				return this;
+			}
+			synchronized (WebSocket.this.results) {
+				try {
+					OUTER: while (!cancelResults) {
+						for (Object result : results) {
+							if (WebSocket.this.results.remove(result)) {
+								break OUTER;
+							}
+						}
+						WebSocket.this.results.wait();
+					}
+				} catch (InterruptedException e) {
+					throw new HttpException(0, false, false, e);
+				}
+			}
+			try {
+				checkException();
+			}
+			catch (HttpException e) {
+				if (!connectionCloseException) {
+					throw e;
+				}
+			}
+			return this;
+		}
+
+		@Public
+		public Connection store(String key, Object data) {
+			WebSocket.this.store(key, data);
+			return this;
+		}
+
+		@Public
+		public <T> T get(String key) {
+			return WebSocket.this.get(key);
+		}
+
+		@Public
+		public Result close() throws HttpException {
+			checkException();
+			closeSocket();
+			return new Result();
+		}
 	}
 
 	@Public
-	public WebSocket sendBinary(byte[] data) throws HttpException {
+	public class Result {
+		@Public
+		public <T> T get(String key) {
+			return WebSocket.this.get(key);
+		}
+	}
+
+	private WebSocket close() throws HttpException {
 		checkException();
-		writeQueue.add(new Frame(2, true, data));
+		closeSocket();
 		return this;
 	}
 
 	private void complete(Object result) {
 		synchronized (results) {
-			Log.write("add", result);
 			results.add(result);
 			results.notifyAll();
 		}
-	}
-
-	@Public
-	public WebSocket await(Object... results) throws HttpException {
-		if (results == null || results.length == 0) {
-			return this;
-		}
-		synchronized (this.results) {
-			try {
-				Log.write("await", results[0], results.length);
-				OUTER: while (!cancelResults) {
-					for (Object result : results) {
-						if (this.results.remove(result)) {
-							break OUTER;
-						}
-					}
-					this.results.wait();
-				}
-			} catch (InterruptedException e) {
-				throw new HttpException(0, false, false, e);
-			}
-		}
-		try {
-			checkException();
-		}
-		catch (HttpException e) {
-			if (!connectionCloseException) {
-				throw e;
-			}
-		}
-		return this;
-	}
-
-	@Public
-	public WebSocket close() throws HttpException {
-		checkException();
-		closeSocket();
-		return this;
 	}
 
 	private static final class WebSocketException extends IOException {}
@@ -776,8 +799,7 @@ public final class WebSocket {
 
 	private final HashMap<String, Object> storedData = new HashMap<>();
 
-	@Public
-	public WebSocket store(String key, Object data) {
+	private WebSocket store(String key, Object data) {
 		synchronized (storedData) {
 			storedData.put(key, data);
 		}
@@ -785,8 +807,7 @@ public final class WebSocket {
 	}
 
 	@SuppressWarnings("unchecked")
-	@Public
-	public <T> T get(String key) {
+	private <T> T get(String key) {
 		synchronized (storedData) {
 			return (T) storedData.get(key);
 		}
