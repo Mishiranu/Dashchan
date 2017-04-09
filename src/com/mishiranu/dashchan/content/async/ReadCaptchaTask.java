@@ -128,10 +128,6 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 			return null;
 		}
 		if (mayShowLoadButton && recaptcha2) {
-			String apiKey = captchaData.get(ChanPerformer.CaptchaData.API_KEY);
-			if (Preferences.isRecaptchaJavascript()) {
-				RecaptchaReader.getInstance().preloadNewWidget(apiKey);
-			}
 			captchaState = ChanPerformer.CaptchaState.NEED_LOAD;
 			return true;
 		}
@@ -142,8 +138,7 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 				RecaptchaReader recaptchaReader = RecaptchaReader.getInstance();
 				String challenge;
 				if (recaptcha2) {
-					challenge = recaptchaReader.getChallenge2(holder, apiKey, referer,
-							Preferences.isRecaptchaJavascript());
+					challenge = recaptchaReader.getChallenge2(holder, apiKey, referer);
 				} else {
 					challenge = recaptchaReader.getChallenge1(holder, apiKey,
 							Preferences.isRecaptchaJavascript());

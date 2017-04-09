@@ -80,7 +80,6 @@ import com.mishiranu.dashchan.content.async.ReadCaptchaTask;
 import com.mishiranu.dashchan.content.async.SendPostTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.FileHolder;
-import com.mishiranu.dashchan.content.net.RecaptchaReader;
 import com.mishiranu.dashchan.content.service.PostingService;
 import com.mishiranu.dashchan.content.storage.DraftsStorage;
 import com.mishiranu.dashchan.graphics.ActionIconSet;
@@ -195,22 +194,6 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		DraftsStorage draftsStorage = DraftsStorage.getInstance();
 		postingConfiguration = posting;
 		captchaType = chanConfiguration.getCaptchaType();
-		if (Preferences.isRecaptchaJavascript() && (ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2.equals(captchaType) ||
-				ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_1.equals(captchaType))) {
-			boolean noCaptchaPass = true;
-			String[] captchaPass = Preferences.getCaptchaPass(chanName);
-			if (captchaPass != null) {
-				for (String value : captchaPass) {
-					if (value != null) {
-						noCaptchaPass = false;
-						break;
-					}
-				}
-			}
-			if (noCaptchaPass) {
-				RecaptchaReader.getInstance().preloadWebView();
-			}
-		}
 		ChanMarkup markup = ChanMarkup.get(chanName);
 		commentEditor = markup.safe().obtainCommentEditor(boardName);
 		Configuration configuration = getResources().getConfiguration();
