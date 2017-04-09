@@ -552,7 +552,7 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener {
 				builder.appendLine("Video: " + videoFormat);
 			}
 			if (width != null && height != null) {
-				builder.appendLine("Resolution: " + width + 'x' + height);
+				builder.appendLine("Resolution: " + width + '×' + height);
 			}
 			if (frameRate != null) {
 				builder.appendLine("Frame rate: " + frameRate);

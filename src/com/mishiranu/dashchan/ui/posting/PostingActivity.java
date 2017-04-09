@@ -1302,7 +1302,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 				} catch (OutOfMemoryError e) {
 					// Ignore exception
 				}
-				fileSize += " " + fileHolder.getImageWidth() + "x" + fileHolder.getImageHeight();
+				fileSize += " " + fileHolder.getImageWidth() + '×' + fileHolder.getImageHeight();
 			}
 			if (bitmap == null) {
 				if (locator.isVideoExtension(fileHolder.getName())) {

@@ -419,7 +419,7 @@ public class WakabaLikeHtmlBuilder {
 			} else {
 				divider = true;
 			}
-			builder.append(fileItem.width).append('x').append(fileItem.height);
+			builder.append(fileItem.width).append('×').append(fileItem.height);
 		}
 		if (fileItem.originalName != null) {
 			if (divider) {

@@ -183,7 +183,7 @@ public abstract class AttachmentItem {
 						if (builder.length() > 0) {
 							builder.append(' ');
 						}
-						builder.append(width).append('x').append(height);
+						builder.append(width).append('×').append(height);
 					}
 					if (size > 0) {
 						if (builder.length() > 0) {
@@ -203,7 +203,7 @@ public abstract class AttachmentItem {
 						builder.append(formatSize(size));
 					}
 					if (width > 0 && height > 0) {
-						builder.append('\n').append(width).append('x').append(height);
+						builder.append('\n').append(width).append('×').append(height);
 					}
 					break;
 				}
