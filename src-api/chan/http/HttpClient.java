@@ -345,21 +345,27 @@ public class HttpClient {
 			connection.setReadTimeout(request.readTimeout);
 			connection.setInstanceFollowRedirects(false);
 			connection.setRequestProperty("Connection", request.keepAlive ? "keep-alive" : "close");
-			connection.setRequestProperty("Accept-Encoding", "gzip");
-			boolean userAgentAdded = false;
+			boolean userAgentSet = false;
+			boolean acceptEncodingSet = false;
 			if (request.headers != null) {
 				for (Pair<String, String> header : request.headers) {
-					if ("Connection".equals(header.first) || "Accept-Encoding".equals(header.first)) {
+					if ("Connection".equalsIgnoreCase(header.first)) {
 						continue;
 					}
 					connection.setRequestProperty(header.first, header.second);
 					if ("User-Agent".equalsIgnoreCase(header.first)) {
-						userAgentAdded = true;
+						userAgentSet = true;
+					}
+					if ("Accept-Encoding".equalsIgnoreCase(header.first)) {
+						acceptEncodingSet = true;
 					}
 				}
 			}
-			if (!userAgentAdded) {
+			if (!userAgentSet) {
 				connection.setRequestProperty("User-Agent", AdvancedPreferences.getUserAgent(chanName));
+			}
+			if (!acceptEncodingSet) {
+				connection.setRequestProperty("Accept-Encoding", "gzip");
 			}
 			CookieBuilder cookieBuilder = obtainModifiedCookieBuilder(request.cookieBuilder, chanName);
 			if (cookieBuilder != null) {
