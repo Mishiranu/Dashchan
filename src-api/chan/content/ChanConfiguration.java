@@ -67,6 +67,58 @@ public class ChanConfiguration implements ChanManager.Linked {
 			resources = holder.resources;
 			preferences = MainApplication.getInstance().getSharedPreferences("chan." + chanName,
 					Context.MODE_PRIVATE);
+
+			// TODO Remove after a while
+			// Added: 12.04.17 05:18
+			// Update cookies data format
+			JSONObject cookiesObject;
+			try {
+				String data = get(null, KEY_COOKIES, null);
+				cookiesObject = new JSONObject(data);
+			} catch (Exception e) {
+				cookiesObject = null;
+			}
+			if (cookiesObject != null && cookiesObject.length() > 0) {
+				SharedPreferences.Editor editor = null;
+				boolean changed = false;
+				for (String key : preferences.getAll().keySet()) {
+					if (key.startsWith("cookie_")) {
+						String cookie = key.substring(7);
+						String value = preferences.getString(key, null);
+						if (editor == null) {
+							editor = preferences.edit();
+						}
+						editor.remove(key);
+						String displayName = cookiesObject.optString(cookie, null);
+						JSONObject cookieObject = new JSONObject();
+						try {
+							cookieObject.put(KEY_COOKIE_VALUE, value);
+							if (!StringUtils.isEmptyOrWhitespace(displayName)) {
+								cookieObject.put(KEY_COOKIE_DISPLAY_NAME, displayName);
+							}
+							cookiesObject.put(cookie, cookieObject);
+						} catch (JSONException e) {
+							cookiesObject.remove(cookie);
+						}
+						changed = true;
+					}
+				}
+				for (Iterator<String> keys = cookiesObject.keys(); keys.hasNext();) {
+					String cookie = keys.next();
+					JSONObject jsonObject = cookiesObject.optJSONObject(cookie);
+					if (jsonObject == null) {
+						cookiesObject.remove(cookie);
+						changed = true;
+					}
+				}
+				if (editor != null) {
+					editor.commit();
+				}
+				if (changed) {
+					set(null, KEY_COOKIES, cookiesObject.toString());
+					commit();
+				}
+			}
 		} else {
 			chanName = null;
 			resources = null;
@@ -110,8 +162,9 @@ public class ChanConfiguration implements ChanManager.Linked {
 	@Public public static final String CAPTCHA_TYPE_RECAPTCHA_2 = "recaptcha_2";
 	@Public public static final String CAPTCHA_TYPE_MAILRU = "mailru";
 
-	private static final String KEY_COOKIE = "cookie";
 	private static final String KEY_COOKIES = "cookies";
+	private static final String KEY_COOKIE_VALUE = "value";
+	private static final String KEY_COOKIE_DISPLAY_NAME = "displayName";
 
 	public static <T extends ChanConfiguration> T get(String chanName) {
 		return ChanManager.getInstance().getConfiguration(chanName, true);
@@ -745,12 +798,31 @@ public class ChanConfiguration implements ChanManager.Linked {
 		return resources;
 	}
 
+	private JSONObject cookies;
+
+	private JSONObject obtainCookiesLocked() {
+		if (cookies == null) {
+			try {
+				cookies = new JSONObject(get(null, KEY_COOKIES, null));
+			} catch (Exception e) {
+				cookies = new JSONObject();
+			}
+		}
+		return cookies;
+	}
+
 	@Public
 	public final String getCookie(String cookie) {
 		if (cookie == null) {
 			return null;
 		}
-		return get(null, KEY_COOKIE + "_" + cookie, null);
+		synchronized (cookieLock) {
+			JSONObject jsonObject = obtainCookiesLocked().optJSONObject(cookie);
+			if (jsonObject != null) {
+				return jsonObject.optString(KEY_COOKIE_VALUE, null);
+			}
+			return null;
+		}
 	}
 
 	private final Object cookieLock = new Object();
@@ -761,54 +833,62 @@ public class ChanConfiguration implements ChanManager.Linked {
 			throw new NullPointerException("cookie must not be null");
 		}
 		synchronized (cookieLock) {
-			set(null, KEY_COOKIE + "_" + cookie, value);
-			JSONObject jsonObject;
-			try {
-				String data = get(null, KEY_COOKIES, null);
-				jsonObject = new JSONObject(data);
-			} catch (Exception e) {
-				jsonObject = new JSONObject();
-			}
-			boolean updateDisplayName = false;
-			if (value != null && displayName != null) {
-				try {
-					jsonObject.put(cookie, displayName);
-					updateDisplayName = true;
-				} catch (JSONException e) {
-					throw new RuntimeException(e);
+			JSONObject cookiesObject = obtainCookiesLocked();
+			JSONObject jsonObject = cookiesObject.optJSONObject(cookie);
+			if (!(jsonObject == null && value == null)) {
+				if (value != null) {
+					if (jsonObject == null) {
+						jsonObject = new JSONObject();
+					}
+					try {
+						jsonObject.put(KEY_COOKIE_VALUE, value);
+						if (!StringUtils.isEmptyOrWhitespace(displayName)) {
+							jsonObject.put(KEY_COOKIE_DISPLAY_NAME, displayName);
+						}
+						cookiesObject.put(cookie, jsonObject);
+					} catch (JSONException e) {
+						throw new RuntimeException(e);
+					}
+				} else {
+					cookiesObject.remove(cookie);
 				}
-			} else if (jsonObject.remove(cookie) != null) {
-				updateDisplayName = true;
-			}
-			if (updateDisplayName) {
-				set(null, KEY_COOKIES, jsonObject.length() > 0 ? jsonObject.toString() : null);
+				set(null, KEY_COOKIES, cookiesObject.toString());
 			}
 		}
 	}
 
-	public final boolean hasCookiesWithDisplayName() {
-		try {
-			String data = get(null, KEY_COOKIES, null);
-			JSONObject jsonObject = new JSONObject(data);
-			return jsonObject.length() > 0;
-		} catch (Exception e) {
-			// Invalid or unspecified data, ignore exception
+	public final boolean hasCookies() {
+		synchronized (cookieLock) {
+			return obtainCookiesLocked().length() > 0;
 		}
-		return false;
 	}
 
-	public final HashMap<String, String> getCookiesWithDisplayName() {
-		HashMap<String, String> result = new HashMap<>();
-		try {
-			String data = get(null, KEY_COOKIES, null);
-			JSONObject jsonObject = new JSONObject(data);
-			Iterator<String> keys = jsonObject.keys();
-			while (keys.hasNext()) {
-				String key = keys.next();
-				result.put(key, jsonObject.getString(key));
+	public static class CookieData {
+		public final String cookie;
+		public final String value;
+		public final String displayName;
+
+		public CookieData(String cookie, String value, String displayName) {
+			this.cookie = cookie;
+			this.value = value;
+			this.displayName = displayName;
+		}
+	}
+
+	public final ArrayList<CookieData> getCookies() {
+		ArrayList<CookieData> result = new ArrayList<>();
+		synchronized (cookieLock) {
+			JSONObject cookiesObject = obtainCookiesLocked();
+			for (Iterator<String> iterator = cookiesObject.keys(); iterator.hasNext();) {
+				String cookie = iterator.next();
+				JSONObject jsonObject = cookiesObject.optJSONObject(cookie);
+				String value = jsonObject != null ? jsonObject.optString(KEY_COOKIE_VALUE, "") : "";
+				String displayName = jsonObject != null ? jsonObject.optString(KEY_COOKIE_DISPLAY_NAME, null) : null;
+				if (StringUtils.isEmptyOrWhitespace(displayName)) {
+					displayName = cookie;
+				}
+				result.add(new CookieData(cookie, value, displayName));
 			}
-		} catch (JSONException e) {
-			// Invalid or unspecified data, ignore exception
 		}
 		return result;
 	}
