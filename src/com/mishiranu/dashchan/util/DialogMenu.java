@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.view.Gravity;
@@ -106,7 +107,7 @@ public class DialogMenu {
 		return this;
 	}
 
-	public void show() {
+	public Dialog create() {
 		checkConsumed();
 		if (listItems.size() > 0) {
 			dialog = builder.setAdapter(new DialogAdapter(), (d, which) -> {
@@ -126,9 +127,17 @@ public class DialogMenu {
 					}
 				});
 			}
-			dialog.show();
+			return dialog;
 		}
 		consumed = true;
+		return null;
+	}
+
+	public void show() {
+		Dialog dialog = create();
+		if (dialog != null) {
+			dialog.show();
+		}
 	}
 
 	public void dismiss() {

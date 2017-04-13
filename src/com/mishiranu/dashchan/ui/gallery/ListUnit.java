@@ -225,7 +225,6 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 					break;
 				}
 			}
-
 		});
 
 		dialogMenu.setTitle(galleryItem.originalName != null ? galleryItem.originalName
