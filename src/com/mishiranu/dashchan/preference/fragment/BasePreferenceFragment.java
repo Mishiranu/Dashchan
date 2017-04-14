@@ -111,7 +111,7 @@ public abstract class BasePreferenceFragment extends PreferenceFragment implemen
 		getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
 	}
 
-	private void addPreference(PreferenceGroup parent, Preference preference) {
+	public void addPreference(PreferenceGroup parent, Preference preference) {
 		if (parent != null) {
 			parent.addPreference(preference);
 		} else {

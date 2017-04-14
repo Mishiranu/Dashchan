@@ -186,6 +186,7 @@
 	<string name="action_archive_view">Архив</string>
 	<string name="action_attach">Прикрепить</string>
 	<string name="action_auto_refresh">Автообновление</string>
+	<string name="action_block">Блокировать</string>
 	<string name="action_boards">Разделы</string>
 	<string name="action_browser">Браузер</string>
 	<string name="action_catalog">Каталог</string>
@@ -462,7 +463,6 @@
 	<string name="preference_cut_thumbnails">Обрезать миниатюры</string>
 	<string name="preference_cut_thumbnails_summary">Миниатюры будут заполнять квадрат</string>
 	<string name="preference_default_board_name">Раздел по умолчанию</string>
-	<string name="preference_delete_cookies">Удалить куки</string>
 	<string name="preference_display_hidden_threads">Выводить скрытые треды</string>
 	<string name="preference_display_icons">Показывать иконки сообщений</string>
 	<string name="preference_display_icons_summary">Иконки доступны в некоторых разделах</string>
@@ -512,6 +512,7 @@
 	<string name="preference_load_nearest_image">Загружать ближайшее изображение</string>
 	<string name="preference_load_thumbnails">Загружать миниатюры</string>
 	<string name="preference_locale">Язык</string>
+	<string name="preference_manage_cookies">Управление куки</string>
 	<string name="preference_merge_chans">Объединить страницы</string>
 	<string name="preference_merge_chans_summary">Отображать страницы для всех форумов</string>
 	<string name="preference_notify_download_complete">Уведомлять о завершении загрузки</string>

@@ -397,7 +397,6 @@
 	<string name="preference_cut_thumbnails">Cortar miniaturas</string>
 	<string name="preference_cut_thumbnails_summary">Faça miniaturas preencher o quadrado</string>
 	<string name="preference_default_board_name">Board inicial</string>
-	<string name="preference_delete_cookies">Deletar cookies</string>
 	<string name="preference_display_hidden_threads">Exibir fios escondidos</string>
 	<string name="preference_display_icons">Exibirs ícones em algumas boards</string>
 	<string name="preference_display_icons_summary">Ícones estão habilitados em algumas boards</string>

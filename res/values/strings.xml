@@ -171,6 +171,7 @@
 	<string name="action_archive_view">Archive</string>
 	<string name="action_attach">Attach</string>
 	<string name="action_auto_refresh">Auto refreshing</string>
+	<string name="action_block">Block</string>
 	<string name="action_boards">Boards</string>
 	<string name="action_browser">Browser</string>
 	<string name="action_catalog">Catalog</string>
@@ -443,7 +444,6 @@
 	<string name="preference_cut_thumbnails">Crop thumbnails</string>
 	<string name="preference_cut_thumbnails_summary">Thumbnails will fit square</string>
 	<string name="preference_default_board_name">Default starting board</string>
-	<string name="preference_delete_cookies">Delete cookies</string>
 	<string name="preference_display_hidden_threads">Display hidden threads</string>
 	<string name="preference_display_icons">Display post icons</string>
 	<string name="preference_display_icons_summary">Icons are available on some boards</string>
@@ -493,6 +493,7 @@
 	<string name="preference_load_nearest_image">Load nearest image</string>
 	<string name="preference_load_thumbnails">Load thumbnails</string>
 	<string name="preference_locale">Language</string>
+	<string name="preference_manage_cookies">Manage cookies</string>
 	<string name="preference_merge_chans">Merge pages</string>
 	<string name="preference_merge_chans_summary">Display pages for all forums</string>
 	<string name="preference_notify_download_complete">Notify when download is completed</string>

@@ -159,7 +159,7 @@ public class ChanFragment extends BasePreferenceFragment {
 				}
 			}
 		}
-		cookiePreference = makeButton(null, R.string.preference_delete_cookies, 0, false);
+		cookiePreference = makeButton(null, R.string.preference_manage_cookies, 0, false);
 		Intent intent = new Intent(getActivity(), PreferencesActivity.class);
 		intent.putExtra(PreferencesActivity.EXTRA_SHOW_FRAGMENT, CookiesFragment.class.getName());
 		intent.putExtra(PreferencesActivity.EXTRA_NO_HEADERS, true);
@@ -219,7 +219,7 @@ public class ChanFragment extends BasePreferenceFragment {
 		super.onResume();
 		if (cookiePreference != null) {
 			ChanConfiguration configuration = ChanConfiguration.get(chanName);
-			if (!configuration.hasCookiesWithDisplayName()) {
+			if (!configuration.hasCookies()) {
 				PreferenceGroup preferenceGroup = getParentGroup(cookiePreference);
 				if (preferenceGroup != null) {
 					preferenceGroup.removePreference(cookiePreference);

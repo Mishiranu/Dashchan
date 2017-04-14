@@ -165,6 +165,7 @@ public class ChanConfiguration implements ChanManager.Linked {
 	private static final String KEY_COOKIES = "cookies";
 	private static final String KEY_COOKIE_VALUE = "value";
 	private static final String KEY_COOKIE_DISPLAY_NAME = "displayName";
+	private static final String KEY_COOKIE_BLOCKED = "blocked";
 
 	public static <T extends ChanConfiguration> T get(String chanName) {
 		return ChanManager.getInstance().getConfiguration(chanName, true);
@@ -818,7 +819,7 @@ public class ChanConfiguration implements ChanManager.Linked {
 		}
 		synchronized (cookieLock) {
 			JSONObject jsonObject = obtainCookiesLocked().optJSONObject(cookie);
-			if (jsonObject != null) {
+			if (jsonObject != null && !jsonObject.optBoolean(KEY_COOKIE_BLOCKED, false)) {
 				return jsonObject.optString(KEY_COOKIE_VALUE, null);
 			}
 			return null;
@@ -836,12 +837,19 @@ public class ChanConfiguration implements ChanManager.Linked {
 			JSONObject cookiesObject = obtainCookiesLocked();
 			JSONObject jsonObject = cookiesObject.optJSONObject(cookie);
 			if (!(jsonObject == null && value == null)) {
-				if (value != null) {
-					if (jsonObject == null) {
-						jsonObject = new JSONObject();
-					}
+				if (jsonObject == null) {
+					jsonObject = new JSONObject();
+				}
+				boolean blocked = jsonObject.optBoolean(KEY_COOKIE_BLOCKED, false);
+				if (value != null || blocked) {
 					try {
-						jsonObject.put(KEY_COOKIE_VALUE, value);
+						if (!blocked) {
+							if (value != null) {
+								jsonObject.put(KEY_COOKIE_VALUE, value);
+							} else {
+								jsonObject.remove(KEY_COOKIE_VALUE);
+							}
+						}
 						if (!StringUtils.isEmptyOrWhitespace(displayName)) {
 							jsonObject.put(KEY_COOKIE_DISPLAY_NAME, displayName);
 						}
@@ -857,6 +865,34 @@ public class ChanConfiguration implements ChanManager.Linked {
 		}
 	}
 
+	public final boolean setCookieBlocked(String cookie, boolean blocked) {
+		synchronized (cookieLock) {
+			JSONObject cookiesObject = obtainCookiesLocked();
+			JSONObject jsonObject = cookiesObject.optJSONObject(cookie);
+			if (jsonObject == null) {
+				jsonObject = new JSONObject();
+			}
+			try {
+				boolean removed = false;
+				if (blocked) {
+					jsonObject.put(KEY_COOKIE_BLOCKED, true);
+				} else {
+					jsonObject.remove(KEY_COOKIE_BLOCKED);
+					if (jsonObject.optString(KEY_COOKIE_VALUE, null) != null) {
+						cookiesObject.put(cookie, jsonObject);
+					} else {
+						cookiesObject.remove(cookie);
+						removed = true;
+					}
+				}
+				set(null, KEY_COOKIES, cookiesObject.toString());
+				return removed;
+			} catch (JSONException e) {
+				throw new RuntimeException(e);
+			}
+		}
+	}
+
 	public final boolean hasCookies() {
 		synchronized (cookieLock) {
 			return obtainCookiesLocked().length() > 0;
@@ -867,11 +903,13 @@ public class ChanConfiguration implements ChanManager.Linked {
 		public final String cookie;
 		public final String value;
 		public final String displayName;
+		public final boolean blocked;
 
-		public CookieData(String cookie, String value, String displayName) {
+		public CookieData(String cookie, String value, String displayName, boolean blocked) {
 			this.cookie = cookie;
 			this.value = value;
 			this.displayName = displayName;
+			this.blocked = blocked;
 		}
 	}
 
@@ -884,10 +922,11 @@ public class ChanConfiguration implements ChanManager.Linked {
 				JSONObject jsonObject = cookiesObject.optJSONObject(cookie);
 				String value = jsonObject != null ? jsonObject.optString(KEY_COOKIE_VALUE, "") : "";
 				String displayName = jsonObject != null ? jsonObject.optString(KEY_COOKIE_DISPLAY_NAME, null) : null;
+				boolean blocked = jsonObject != null ? jsonObject.optBoolean(KEY_COOKIE_BLOCKED, false) : false;
 				if (StringUtils.isEmptyOrWhitespace(displayName)) {
 					displayName = cookie;
 				}
-				result.add(new CookieData(cookie, value, displayName));
+				result.add(new CookieData(cookie, value, displayName, blocked));
 			}
 		}
 		return result;
