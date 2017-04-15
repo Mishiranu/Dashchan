@@ -23,6 +23,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
 
+import com.mishiranu.dashchan.preference.Preferences;
+
 import chan.util.StringUtils;
 
 public class HistoryDatabase implements BaseColumns {
@@ -52,20 +54,22 @@ public class HistoryDatabase implements BaseColumns {
 
 	public void addHistory(final String chanName, final String boardName, final String threadNumber,
 			final String threadTitle) {
-		DatabaseHelper.getInstance().getExecutor().execute(() -> {
-			synchronized (HistoryDatabase.this) {
-				clearOldHistory(chanName);
-				database.delete(DatabaseHelper.TABLE_HISTORY, buildWhere(chanName, boardName, threadNumber), null);
-				long currentTime = System.currentTimeMillis();
-				ContentValues values = new ContentValues();
-				values.put(COLUMN_CHAN_NAME, chanName);
-				values.put(COLUMN_BOARD_NAME, boardName);
-				values.put(COLUMN_THREAD_NUMBER, threadNumber);
-				values.put(COLUMN_TITLE, threadTitle);
-				values.put(COLUMN_CREATED, currentTime);
-				database.insert(DatabaseHelper.TABLE_HISTORY, null, values);
-			}
-		});
+		if (Preferences.isRememberHistory()) {
+			DatabaseHelper.getInstance().getExecutor().execute(() -> {
+				synchronized (HistoryDatabase.this) {
+					clearOldHistory(chanName);
+					database.delete(DatabaseHelper.TABLE_HISTORY, buildWhere(chanName, boardName, threadNumber), null);
+					long currentTime = System.currentTimeMillis();
+					ContentValues values = new ContentValues();
+					values.put(COLUMN_CHAN_NAME, chanName);
+					values.put(COLUMN_BOARD_NAME, boardName);
+					values.put(COLUMN_THREAD_NUMBER, threadNumber);
+					values.put(COLUMN_TITLE, threadTitle);
+					values.put(COLUMN_CREATED, currentTime);
+					database.insert(DatabaseHelper.TABLE_HISTORY, null, values);
+				}
+			});
+		}
 	}
 
 	public void refreshTitles(final String chanName, final String boardName, final String threadNumber,

@@ -43,6 +43,8 @@ public class GeneralFragment extends BasePreferenceFragment {
 		PreferenceCategory navigationCategory = makeCategory(R.string.preference_category_navigation);
 		makeCheckBox(navigationCategory, true, Preferences.KEY_CLOSE_ON_BACK, Preferences.DEFAULT_CLOSE_ON_BACK,
 				R.string.preference_close_on_back, R.string.preference_close_on_back_summary);
+		makeCheckBox(navigationCategory, true, Preferences.KEY_REMEMBER_HISTORY, Preferences.DEFAULT_REMEMBER_HISTORY,
+				R.string.preference_remember_history, 0);
 		if (chanNames.size() > 1) {
 			makeCheckBox(navigationCategory, true, Preferences.KEY_MERGE_CHANS, Preferences.DEFAULT_MERGE_CHANS,
 					R.string.preference_merge_chans, R.string.preference_merge_chans_summary);

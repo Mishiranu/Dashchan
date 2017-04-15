@@ -806,6 +806,13 @@ public class Preferences {
 		return PREFERENCES.getBoolean(KEY_RECAPTCHA_JAVASCRIPT, DEFAULT_RECAPTCHA_JAVASCRIPT);
 	}
 
+	public static final String KEY_REMEMBER_HISTORY = "remember_history";
+	public static final boolean DEFAULT_REMEMBER_HISTORY = true;
+
+	public static boolean isRememberHistory() {
+		return PREFERENCES.getBoolean(KEY_REMEMBER_HISTORY, DEFAULT_REMEMBER_HISTORY);
+	}
+
 	public static final String KEY_SCROLL_THREAD_GALLERY = "scroll_thread_gallery";
 	public static final boolean DEFAULT_SCROLL_THREAD_GALLERY = false;
 

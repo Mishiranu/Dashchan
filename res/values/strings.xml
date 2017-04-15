@@ -515,6 +515,7 @@
 	<string name="preference_post_max_lines_summary">Cut long posts if the number of lines exceeds a
 		predetermined value</string>
 	<string name="preference_proxy">Proxy</string>
+	<string name="preference_remember_history">Remember history</string>
 	<string name="preference_recaptcha_javascript">Use JavaScript for reCAPTCHA</string>
 	<string name="preference_recaptcha_javascript_summary">Simplifies Google reCAPTCHA</string>
 	<string name="preference_scroll_thread_gallery">Scroll thread when scrolling gallery</string>

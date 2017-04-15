@@ -115,6 +115,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 	private SortableListView listView;
 
 	private boolean mergeChans = false;
+	private boolean showHistory = false;
 	private boolean chanSelectMode = false;
 	private String chanName;
 
@@ -245,8 +246,8 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		}
 	}
 
-	public void updateConfiguration(String chanName) {
-		if (!StringUtils.equals(chanName, this.chanName)) {
+	private void updateConfiguration(String chanName, boolean force) {
+		if (chanName != null && (!StringUtils.equals(chanName, this.chanName) || force)) {
 			this.chanName = chanName;
 			ChanConfiguration configuration = ChanConfiguration.get(chanName);
 			chanNameView.setText(configuration.getTitle());
@@ -270,13 +271,19 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			if (addDivider) {
 				menu.add(new ListItem(ListItem.ITEM_DIVIDER, 0, 0, null));
 			}
-			menu.add(new ListItem(ListItem.ITEM_MENU, MENU_ITEM_HISTORY, typedArray.getResourceId(2, 0),
-					context.getString(R.string.action_history)));
+			if (Preferences.isRememberHistory()) {
+				menu.add(new ListItem(ListItem.ITEM_MENU, MENU_ITEM_HISTORY, typedArray.getResourceId(2, 0),
+						context.getString(R.string.action_history)));
+			}
 			menu.add(new ListItem(ListItem.ITEM_MENU, MENU_ITEM_PREFERENCES, typedArray.getResourceId(3, 0),
 					context.getString(R.string.action_preferences)));
 			typedArray.recycle();
-			invalidateItems(false, true);
+			invalidateItems(force, true);
 		}
+	}
+
+	public void updateConfiguration(String chanName) {
+		updateConfiguration(chanName, false);
 	}
 
 	public View getHeaderView() {
@@ -356,9 +363,11 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 
 	public void performResume() {
 		boolean mergeChans = Preferences.isMergeChans();
-		if (this.mergeChans != mergeChans) {
+		boolean showHistory = Preferences.isRememberHistory();
+		if (this.mergeChans != mergeChans || this.showHistory != showHistory) {
 			this.mergeChans = mergeChans;
-			invalidateItems(true, true);
+			this.showHistory = showHistory;
+			updateConfiguration(chanName, true);
 		}
 	}
 

@@ -534,6 +534,7 @@
 	<string name="preference_post_max_lines_summary">Сообщения будут обрезаны, если число строк превышает
 		заданное значение</string>
 	<string name="preference_proxy">Прокси</string>
+	<string name="preference_remember_history">Запоминать историю</string>
 	<string name="preference_recaptcha_javascript">Использ. JavaScript для reCAPTCHA</string>
 	<string name="preference_recaptcha_javascript_summary">Упрощение капчи, предоставляемой сервисом
 		Google reCAPTCHA</string>
