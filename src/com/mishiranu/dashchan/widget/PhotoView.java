@@ -93,6 +93,7 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 
 	private VelocityTracker velocityTracker;
 	private boolean isDragging;
+	private boolean isParentDragging;
 
 	private static final Method METHOD_IN_DOUBLE_TAP_MODE;
 
@@ -125,7 +126,7 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 
 			@Override
 			public void onLongPress(MotionEvent e) {
-				if (!isDragging) {
+				if (!isDragging && !isParentDragging) {
 					PhotoView.this.onLongPress(e);
 				}
 			}
@@ -442,6 +443,7 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 			//dbg.Log.d("dispatch", event.getAction(), event.getX(), event.getY());
 			switch (event.getActionMasked()) {
 				case MotionEvent.ACTION_DOWN: {
+					isParentDragging = false;
 					touchMode = TouchMode.UNDEFINED;
 					cancelFling();
 					break;
@@ -476,6 +478,7 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 
 	public void dispatchIdleMoveTouchEvent(MotionEvent event) {
 		lastTouchY = getActiveY(event);
+		isParentDragging = true;
 	}
 
 	public boolean isClosingTouchMode() {
