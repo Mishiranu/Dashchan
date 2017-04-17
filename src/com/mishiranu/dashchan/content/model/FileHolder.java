@@ -419,7 +419,11 @@ public abstract class FileHolder implements Serializable {
 		@Override
 		public InputStream openInputStream() throws IOException {
 			try {
-				return context.getContentResolver().openInputStream(toUri());
+				InputStream inputStream = context.getContentResolver().openInputStream(toUri());
+				if (inputStream == null) {
+					throw new IOException("InputStream is empty");
+				}
+				return inputStream;
 			} catch (SecurityException e) {
 				throw new IOException(e);
 			} catch (Exception e) {
