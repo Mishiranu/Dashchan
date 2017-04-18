@@ -16,6 +16,7 @@
 
 package com.mishiranu.dashchan.preference;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -113,8 +114,13 @@ public class PreferencesActivity extends PreferenceActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 			case android.R.id.home: {
+				for (OnActivityEventListener listener : onActivityEventListeners) {
+					if (listener.onHomePressed()) {
+						return true;
+					}
+				}
 				finish();
-				break;
+				return true;
 			}
 		}
 		return super.onOptionsItemSelected(item);
@@ -130,6 +136,31 @@ public class PreferencesActivity extends PreferenceActivity {
 	protected void onPause() {
 		super.onPause();
 		ForegroundManager.unregister(this);
+	}
+
+	public interface OnActivityEventListener {
+		public boolean onBackPressed();
+		public boolean onHomePressed();
+	}
+
+	private final ArrayList<OnActivityEventListener> onActivityEventListeners = new ArrayList<>();
+
+	public void addOnActivityEventListener(OnActivityEventListener listener) {
+		onActivityEventListeners.add(listener);
+	}
+
+	public void removeOnActivityEventListener(OnActivityEventListener listener) {
+		onActivityEventListeners.remove(listener);
+	}
+
+	@Override
+	public void onBackPressed() {
+		for (OnActivityEventListener listener : onActivityEventListeners) {
+			if (listener.onBackPressed()) {
+				return;
+			}
+		}
+		super.onBackPressed();
 	}
 
 	public static int checkNewVersions(ReadUpdateTask.UpdateDataMap updateDataMap) {

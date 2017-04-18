@@ -20,14 +20,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
@@ -35,6 +38,7 @@ import android.text.Layout;
 import android.text.TextWatcher;
 import android.text.style.BackgroundColorSpan;
 import android.view.ContextMenu;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -43,7 +47,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ScrollView;
@@ -57,131 +61,135 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.storage.AutohideStorage;
 import com.mishiranu.dashchan.graphics.ActionIconSet;
+import com.mishiranu.dashchan.preference.PreferencesActivity;
 import com.mishiranu.dashchan.util.ResourceUtils;
+import com.mishiranu.dashchan.widget.CustomSearchView;
 import com.mishiranu.dashchan.widget.ErrorEditTextSetter;
 import com.mishiranu.dashchan.widget.ViewFactory;
 
-public class AutohideFragment extends BaseListFragment {
-	private ArrayAdapter<AutohideStorage.AutohideItem> adapter;
+public class AutohideFragment extends BaseListFragment implements PreferencesActivity.OnActivityEventListener {
+	private static final String EXTRA_SEARCH_INPUT = "searchInput";
+
+	private Adapter adapter = new Adapter();
+	private final ArrayList<AutohideStorage.AutohideItem> items = new ArrayList<>();
+
+	private CustomSearchView searchView;
+
+	private String searchInput;
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		setHasOptionsMenu(true);
 		setEmptyText(R.string.message_no_rules);
-		adapter = new ArrayAdapter<AutohideStorage.AutohideItem>(getActivity(), 0) {
-			@SuppressWarnings("UnusedAssignment")
-			@Override
-			public View getView(int position, View convertView, ViewGroup parent) {
-				if (convertView == null) {
-					convertView = ViewFactory.makeTwoLinesListItem(parent, true);
-				}
-				ViewFactory.TwoLinesViewHolder holder = (ViewFactory.TwoLinesViewHolder) convertView.getTag();
-				AutohideStorage.AutohideItem autohideItem = getItem(position);
-				holder.text1.setText(StringUtils.isEmpty(autohideItem.value)
-						? getString(R.string.text_all_posts) : autohideItem.value);
-				StringBuilder builder = new StringBuilder();
-				boolean and = false;
-				if (!StringUtils.isEmpty(autohideItem.boardName) || autohideItem.optionOriginalPost
-						|| autohideItem.optionSage) {
-					if (!StringUtils.isEmpty(autohideItem.boardName)) {
-						if (and) {
-							builder.append(" & ");
-						}
-						builder.append('[').append(autohideItem.boardName).append(']');
-						if (!StringUtils.isEmpty(autohideItem.threadNumber)) {
-							builder.append(" & ").append(autohideItem.threadNumber);
-						}
-						and = true;
-					}
-					if (autohideItem.optionOriginalPost) {
-						if (and) {
-							builder.append(" & ");
-						}
-						builder.append("op");
-						and = true;
-					}
-					if (autohideItem.optionSage) {
-						if (and) {
-							builder.append(" & ");
-						}
-						builder.append("sage");
-						and = true;
-					}
-				}
-				int orCount = 0;
-				if (autohideItem.optionSubject) {
-					orCount++;
-				}
-				if (autohideItem.optionComment) {
-					orCount++;
-				}
-				if (autohideItem.optionName) {
-					orCount++;
-				}
-				if (orCount > 0) {
-					if (and) {
-						builder.append(" & ");
-						if (orCount > 1) {
-							builder.append('(');
-						}
-					}
-					boolean or = false;
-					if (autohideItem.optionSubject) {
-						builder.append("subject");
-						or = true;
-					}
-					if (autohideItem.optionComment) {
-						if (or) {
-							builder.append(" | ");
-						}
-						builder.append("comment");
-						or = true;
-					}
-					if (autohideItem.optionName) {
-						if (or) {
-							builder.append(" | ");
-						}
-						builder.append("name");
-						or = true;
-					}
-					if (and && orCount > 1) {
-						builder.append(')');
-					}
-				} else {
-					if (and) {
-						builder.append(" & ");
-					}
-					builder.append("false");
-				}
-				holder.text2.setText(builder);
-				return convertView;
-			}
-		};
-		adapter.addAll(AutohideStorage.getInstance().getItems());
+		items.addAll(AutohideStorage.getInstance().getItems());
 		setListAdapter(adapter);
+
+		searchView = new CustomSearchView(C.API_LOLLIPOP ? new ContextThemeWrapper(getActivity(),
+				R.style.Theme_Special_White) : getActivity().getActionBar().getThemedContext());
+		searchView.setQueryHint(getString(R.string.action_filter));
+		searchView.setOnQueryTextListener(new CustomSearchView.OnQueryTextListener() {
+			@Override
+			public boolean onQueryTextSubmit(String query) {
+				return true;
+			}
+
+			@Override
+			public boolean onQueryTextChange(String newText) {
+				if (searchInput != null) {
+					searchInput = StringUtils.emptyIfNull(newText);
+					adapter.notifyDataSetChanged();
+				}
+				return true;
+			}
+		});
+		searchInput = savedInstanceState != null ? savedInstanceState.getString(EXTRA_SEARCH_INPUT) : null;
+		if (searchInput != null) {
+			searchView.setQuery(searchInput, false);
+		}
 	}
 
 	@Override
-	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		editRule(adapter.getItem(position), position);
+	public void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putString(EXTRA_SEARCH_INPUT, searchInput);
+	}
+
+	@Override
+	public void onAttach(Context context) {
+		super.onAttach(context);
+		Activity activity = getActivity();
+		if (activity instanceof PreferencesActivity) {
+			((PreferencesActivity) activity).addOnActivityEventListener(this);
+		}
+	}
+
+	@Override
+	public void onDetach() {
+		super.onDetach();
+		Activity activity = getActivity();
+		if (activity instanceof PreferencesActivity) {
+			((PreferencesActivity) activity).removeOnActivityEventListener(this);
+		}
+	}
+
+	@Override
+	public boolean onBackPressed() {
+		return cancelSearch();
+	}
+
+	@Override
+	public boolean onHomePressed() {
+		return cancelSearch();
+	}
+
+	private boolean cancelSearch() {
+		if (searchInput != null) {
+			searchInput = null;
+			searchView.setQuery("", false);
+			getActivity().invalidateOptionsMenu();
+			setEmptyText(R.string.message_no_rules);
+			adapter.notifyDataSetChanged();
+			return true;
+		}
+		return false;
 	}
 
 	private static final int OPTIONS_MENU_NEW_RULE = 0;
+	private static final int OPTIONS_MENU_SEARCH = 1;
+	private static final int OPTIONS_MENU_SEARCH_VIEW = 2;
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		ActionIconSet set = new ActionIconSet(getActivity());
-		menu.add(0, OPTIONS_MENU_NEW_RULE, 0, R.string.action_new_rule).setIcon(set.getId(R.attr.actionAddRule))
-				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+		if (searchInput != null) {
+			menu.add(0, OPTIONS_MENU_SEARCH_VIEW, 0, "").setActionView(searchView)
+					.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+		} else {
+			ActionIconSet set = new ActionIconSet(getActivity());
+			menu.add(0, OPTIONS_MENU_NEW_RULE, 0, R.string.action_new_rule).setIcon(set.getId(R.attr.actionAddRule))
+					.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+			menu.add(0, OPTIONS_MENU_SEARCH, 0, R.string.action_filter);
+		}
 		super.onCreateOptionsMenu(menu, inflater);
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
+			case android.R.id.home: {
+				if (cancelSearch()) {
+					return true;
+				}
+				break;
+			}
 			case OPTIONS_MENU_NEW_RULE: {
 				editRule(null, -1);
+				break;
+			}
+			case OPTIONS_MENU_SEARCH: {
+				searchInput = "";
+				setEmptyText("");
+				getActivity().invalidateOptionsMenu();
 				break;
 			}
 		}
@@ -201,12 +209,19 @@ public class AutohideFragment extends BaseListFragment {
 		AdapterView.AdapterContextMenuInfo menuInfo = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
 		switch (item.getItemId()) {
 			case CONTEXT_MENU_REMOVE_RULE: {
-				AutohideStorage.getInstance().delete(menuInfo.position);
-				adapter.remove(adapter.getItem(menuInfo.position));
+				int itemIndex = items.indexOf(adapter.getItem(menuInfo.position));
+				AutohideStorage.getInstance().delete(itemIndex);
+				items.remove(itemIndex);
+				adapter.notifyDataSetChanged();
 				break;
 			}
 		}
 		return super.onContextItemSelected(item);
+	}
+
+	@Override
+	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+		editRule(adapter.getItem(position), position);
 	}
 
 	private void editRule(AutohideStorage.AutohideItem autohideItem, int index) {
@@ -219,11 +234,140 @@ public class AutohideFragment extends BaseListFragment {
 		if (index == -1) {
 			// Also will set id to item
 			AutohideStorage.getInstance().add(autohideItem);
-			adapter.add(autohideItem);
+			items.add(autohideItem);
+			adapter.notifyDataSetChanged();
 		} else if (index >= 0) {
-			AutohideStorage.getInstance().update(index, autohideItem);
-			adapter.remove(adapter.getItem(index));
-			adapter.insert(autohideItem, index);
+			int itemIndex = items.indexOf(adapter.getItem(index));
+			AutohideStorage.getInstance().update(itemIndex, autohideItem);
+			items.set(itemIndex, autohideItem);
+			adapter.notifyDataSetChanged();
+		}
+	}
+
+	private class Adapter extends BaseAdapter {
+		private final ArrayList<AutohideStorage.AutohideItem> filteredItems = new ArrayList<>();
+
+		@Override
+		public AutohideStorage.AutohideItem getItem(int position) {
+			return !StringUtils.isEmpty(searchInput) ? filteredItems.get(position) : items.get(position);
+		}
+
+		@Override
+		public long getItemId(int position) {
+			return 0;
+		}
+
+		@Override
+		public int getCount() {
+			return !StringUtils.isEmpty(searchInput) ? filteredItems.size() : items.size();
+		}
+
+		@Override
+		public void notifyDataSetChanged() {
+			invalidateFilter();
+			super.notifyDataSetChanged();
+		}
+
+		private void invalidateFilter() {
+			filteredItems.clear();
+			if (!StringUtils.isEmpty(searchInput)) {
+				Locale locale = Locale.getDefault();
+				for (AutohideStorage.AutohideItem item : items) {
+					if (!StringUtils.isEmpty(item.value) &&
+							item.value.toLowerCase(locale).contains(searchInput.toLowerCase(locale)) ||
+							item.find(searchInput) != null) {
+						filteredItems.add(item);
+					}
+				}
+			}
+		}
+
+		@SuppressWarnings("UnusedAssignment")
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			if (convertView == null) {
+				convertView = ViewFactory.makeTwoLinesListItem(parent, true);
+			}
+			ViewFactory.TwoLinesViewHolder holder = (ViewFactory.TwoLinesViewHolder) convertView.getTag();
+			AutohideStorage.AutohideItem autohideItem = getItem(position);
+			holder.text1.setText(StringUtils.isEmpty(autohideItem.value)
+					? getString(R.string.text_all_posts) : autohideItem.value);
+			StringBuilder builder = new StringBuilder();
+			boolean and = false;
+			if (!StringUtils.isEmpty(autohideItem.boardName) || autohideItem.optionOriginalPost
+					|| autohideItem.optionSage) {
+				if (!StringUtils.isEmpty(autohideItem.boardName)) {
+					if (and) {
+						builder.append(" & ");
+					}
+					builder.append('[').append(autohideItem.boardName).append(']');
+					if (!StringUtils.isEmpty(autohideItem.threadNumber)) {
+						builder.append(" & ").append(autohideItem.threadNumber);
+					}
+					and = true;
+				}
+				if (autohideItem.optionOriginalPost) {
+					if (and) {
+						builder.append(" & ");
+					}
+					builder.append("op");
+					and = true;
+				}
+				if (autohideItem.optionSage) {
+					if (and) {
+						builder.append(" & ");
+					}
+					builder.append("sage");
+					and = true;
+				}
+			}
+			int orCount = 0;
+			if (autohideItem.optionSubject) {
+				orCount++;
+			}
+			if (autohideItem.optionComment) {
+				orCount++;
+			}
+			if (autohideItem.optionName) {
+				orCount++;
+			}
+			if (orCount > 0) {
+				if (and) {
+					builder.append(" & ");
+					if (orCount > 1) {
+						builder.append('(');
+					}
+				}
+				boolean or = false;
+				if (autohideItem.optionSubject) {
+					builder.append("subject");
+					or = true;
+				}
+				if (autohideItem.optionComment) {
+					if (or) {
+						builder.append(" | ");
+					}
+					builder.append("comment");
+					or = true;
+				}
+				if (autohideItem.optionName) {
+					if (or) {
+						builder.append(" | ");
+					}
+					builder.append("name");
+					or = true;
+				}
+				if (and && orCount > 1) {
+					builder.append(')');
+				}
+			} else {
+				if (and) {
+					builder.append(" & ");
+				}
+				builder.append("false");
+			}
+			holder.text2.setText(builder);
+			return convertView;
 		}
 	}
 
