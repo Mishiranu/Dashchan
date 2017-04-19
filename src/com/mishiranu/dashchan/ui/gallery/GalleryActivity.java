@@ -435,8 +435,8 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 	}
 
 	@Override
-	public void modifyVerticalSwipeState(float value) {
-		if (!galleryWindow) {
+	public void modifyVerticalSwipeState(boolean ignoreIfGallery, float value) {
+		if (!ignoreIfGallery && !galleryWindow) {
 			backgroundDrawable.setAlpha((int) (0xff * (1f - value)));
 		}
 	}

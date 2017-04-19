@@ -151,7 +151,7 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 	public interface Listener {
 		public void onClick(PhotoView photoView, boolean image, float x, float y);
 		public void onLongClick(PhotoView photoView, float x, float y);
-		public void onVerticalSwipe(PhotoView photoView, float value);
+		public void onVerticalSwipe(PhotoView photoView, boolean down, float value);
 		public boolean onClose(PhotoView photoView, boolean down);
 	}
 
@@ -171,7 +171,7 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 					// Disallow scale keeping
 					previousDimensions.set(0, 0);
 					cancelRestoreVerticalSwipe(false);
-					notifyVerticalSwipe(0f);
+					notifyVerticalSwipe(0f, false);
 				}
 			});
 		}
@@ -581,13 +581,13 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 			scrollEdgeY = ScrollEdge.END;
 		} else {
 			if (isClosingTouchMode()) {
-				notifyVerticalSwipe(0f);
+				notifyVerticalSwipe(0f, false);
 				touchMode = TouchMode.COMMON; // Reset touch mode
 			}
 			scrollEdgeY = ScrollEdge.NONE;
 		}
 		if (isClosingTouchMode()) {
-			notifyVerticalSwipe(deltaY);
+			notifyVerticalSwipe(-deltaY, false);
 			deltaY = 0f;
 		}
 		int viewWidth = getWidth();
@@ -672,17 +672,17 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 		invalidate();
 	}
 
-	private float lastVerticalSwipeValue = 0f;
+	private float lastVerticalSwipeDeltaY = 0f;
 
-	private void notifyVerticalSwipe(float deltaY) {
-		float value = Math.min(Math.abs(deltaY / getHeight()), 1f);
-		if (value < 0.001f && value > -0.001f) {
-			value = 0f;
-		}
-		if (lastVerticalSwipeValue != value) {
-			lastVerticalSwipeValue = value;
+	private void notifyVerticalSwipe(float deltaY, boolean restore) {
+		if (lastVerticalSwipeDeltaY != deltaY) {
+			float value = Math.min(Math.abs(deltaY / getHeight()) * 4f, 1f);
+			if (value < 0.001f && value > -0.001f) {
+				value = 0f;
+			}
+			lastVerticalSwipeDeltaY = deltaY;
 			if (listener != null) {
-				listener.onVerticalSwipe(this, value);
+				listener.onVerticalSwipe(this, deltaY >= 0 != restore, value);
 			}
 		}
 	}
@@ -692,7 +692,7 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 			removeCallbacks(animatedRestoreSwipeRunnable);
 			animatedRestoreSwipeRunnable = null;
 			if (notify) {
-				notifyVerticalSwipe(0f);
+				notifyVerticalSwipe(0f, false);
 			}
 		}
 	}
@@ -804,12 +804,12 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 				invalidate();
 				postOnAnimation(this);
 				if (!finish) {
-					notifyVerticalSwipe(this.deltaY - deltaY);
+					notifyVerticalSwipe(this.deltaY - deltaY, true);
 				}
 			} else {
 				checkMatrixBoundsAndInvalidate();
 				if (!finish) {
-					notifyVerticalSwipe(0f);
+					notifyVerticalSwipe(0f, true);
 				}
 			}
 		}

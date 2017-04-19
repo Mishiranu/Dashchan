@@ -47,7 +47,7 @@ public class GalleryInstance {
 		public void downloadGalleryItem(GalleryItem galleryItem);
 		public void downloadGalleryItems(ArrayList<GalleryItem> galleryItems);
 
-		public void modifyVerticalSwipeState(float value);
+		public void modifyVerticalSwipeState(boolean ignoreIfGallery, float value);
 		public void updateTitle();
 
 		public void navigateGalleryOrFinish(boolean enableGalleryMode);

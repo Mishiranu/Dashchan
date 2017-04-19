@@ -391,13 +391,13 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 		private boolean swiping = false;
 
 		@Override
-		public void onVerticalSwipe(PhotoView photoView, float value) {
+		public void onVerticalSwipe(PhotoView photoView, boolean down, float value) {
 			boolean swiping = value != 0f;
 			if (this.swiping != swiping) {
 				this.swiping = swiping;
 				videoUnit.handleSwipingContent(swiping, true);
 			}
-			galleryInstance.callback.modifyVerticalSwipeState(value);
+			galleryInstance.callback.modifyVerticalSwipeState(down, value);
 		}
 
 		@Override
