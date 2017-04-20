@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Point;
 import android.net.Uri;
 import android.os.Build;
 import android.os.SystemClock;
@@ -70,7 +71,7 @@ public class CommentTextView extends TextView {
 
 	private boolean selectionMode;
 	private ClickableSpan spanToClick;
-	private float startX, startY;
+	private float spanStartX, spanStartY;
 	private float lastX, lastY;
 	private long lastXYSet;
 	private int currentMax = Integer.MAX_VALUE, reservedMax;
@@ -556,17 +557,62 @@ public class CommentTextView extends TextView {
 		}
 	}
 
+	private final Point layoutPosition = new Point();
+
+	private Point fillLayoutPosition(float x, float y) {
+		int ix = (int) x;
+		int iy = (int) y;
+		ix -= getTotalPaddingLeft();
+		iy -= getTotalPaddingTop();
+		ix += getScrollX();
+		iy += getScrollY();
+		layoutPosition.set(ix, iy);
+		return layoutPosition;
+	}
+
+	private boolean checkAcceptSpan(float x, float y, Point layoutPosition) {
+		boolean insideTouchSlop = Math.abs(x - spanStartX) <= touchSlop && Math.abs(y - spanStartY) <= touchSlop;
+		if (insideTouchSlop) {
+			return true;
+		}
+		if (layoutPosition == null) {
+			layoutPosition = fillLayoutPosition(x, y);
+		}
+		Layout layout = getLayout();
+		if (layout != null && getText() instanceof Spanned) {
+			Spanned spanned = (Spanned) getText();
+			ArrayList<Object> spans = findSpansToClick(layout, spanned, Object.class, layoutPosition);
+			for (Object span : spans) {
+				if (span == spanToClick) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	private final Runnable linkLongClickRunnable = () -> {
 		if (spanToClick instanceof LinkSpan) {
 			Uri uri = createUri(((LinkSpan) spanToClick).getUriString());
-			spanToClick.setClicked(false);
-			invalidateSpanToClick();
-			spanToClick = null;
+			setSpanToClick(null, lastX, lastY);
 			if (uri != null) {
 				getLinkListener().onLinkLongClick(CommentTextView.this, chanName, uri);
 			}
 		}
 	};
+
+	private void handleSpanClick() {
+		if (spanToClick instanceof LinkSpan) {
+			Uri uri = createUri(((LinkSpan) spanToClick).getUriString());
+			if (uri != null) {
+				getLinkListener().onLinkClick(this, chanName, uri, false);
+			}
+		} else if (spanToClick instanceof SpoilerSpan) {
+			SpoilerSpan spoilerSpan = ((SpoilerSpan) spanToClick);
+			spoilerSpan.setVisible(!spoilerSpan.isVisible());
+			post(() -> commentListener.onRequestSiblingsInvalidate(CommentTextView.this));
+		}
+	}
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
@@ -579,56 +625,23 @@ public class CommentTextView extends TextView {
 		int action = event.getAction();
 		float x = event.getX();
 		float y = event.getY();
-		int ix = (int) x;
-		int iy = (int) y;
-		ix -= getTotalPaddingLeft();
-		iy -= getTotalPaddingTop();
-		ix += getScrollX();
-		iy += getScrollY();
+		Point layoutPosition = fillLayoutPosition(x, y);
 		lastX = x;
 		lastY = y;
 		lastXYSet = System.currentTimeMillis();
 		if (action != MotionEvent.ACTION_DOWN && spanToClick != null) {
-			boolean insideTouchSlop = Math.abs(x - startX) <= touchSlop && Math.abs(y - startY) <= touchSlop;
 			if (action == MotionEvent.ACTION_MOVE) {
-				if (!insideTouchSlop) {
+				if (!checkAcceptSpan(x, y, layoutPosition)) {
 					removeCallbacks(linkLongClickRunnable);
+					setSpanToClick(null, x, y);
 				}
-			} else if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
+			}
+			if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
 				removeCallbacks(linkLongClickRunnable);
 				if (action == MotionEvent.ACTION_UP) {
-					boolean accept = insideTouchSlop;
-					if (!accept) {
-						// Check is finger still under initial span
-						Layout layout = getLayout();
-						if (layout != null && getText() instanceof Spanned) {
-							Spanned spanned = (Spanned) getText();
-							ArrayList<SpanHolder<Object>> spans = findSpansToClick(layout, spanned,
-									Object.class, ix, iy);
-							for (SpanHolder<Object> holder : spans) {
-								if (holder.span == spanToClick) {
-									accept = true;
-									break;
-								}
-							}
-						}
-					}
-					if (accept) {
-						if (spanToClick instanceof LinkSpan) {
-							Uri uri = createUri(((LinkSpan) spanToClick).getUriString());
-							if (uri != null) {
-								getLinkListener().onLinkClick(this, chanName, uri, false);
-							}
-						} else if (spanToClick instanceof SpoilerSpan) {
-							SpoilerSpan spoilerSpan = ((SpoilerSpan) spanToClick);
-							spoilerSpan.setVisible(!spoilerSpan.isVisible());
-							post(() -> commentListener.onRequestSiblingsInvalidate(CommentTextView.this));
-						}
-					}
+					handleSpanClick();
 				}
-				spanToClick.setClicked(false);
-				invalidateSpanToClick();
-				spanToClick = null;
+				setSpanToClick(null, x, y);
 			}
 			return true;
 		}
@@ -637,36 +650,31 @@ public class CommentTextView extends TextView {
 			if (layout != null) {
 				Spanned spanned = (Spanned) getText();
 				if (spanToClick != null) {
-					spanToClick.setClicked(false);
-					invalidateSpanToClick();
-					spanToClick = null;
+					setSpanToClick(null, x, y);
 				}
 				// 1st priority: show spoiler
-				ArrayList<SpanHolder<SpoilerSpan>> spoilerSpans = null;
+				ArrayList<SpoilerSpan> spoilerSpans = null;
 				if (spoilersEnabled) {
-					spoilerSpans = findSpansToClick(layout, spanned, SpoilerSpan.class, ix, iy);
-					for (SpanHolder<SpoilerSpan> spanHolder : spoilerSpans) {
-						if (!spanHolder.span.isVisible()) {
-							setSpanToClick(spanHolder);
-							invalidateSpanToClick();
+					spoilerSpans = findSpansToClick(layout, spanned, SpoilerSpan.class, layoutPosition);
+					for (SpoilerSpan span : spoilerSpans) {
+						if (!span.isVisible()) {
+							setSpanToClick(span, x, y);
 							return true;
 						}
 					}
 				}
 				// 2nd priority: open link
-				ArrayList<SpanHolder<LinkSpan>> linkSpans = findSpansToClick(layout, spanned, LinkSpan.class, ix, iy);
-				if (linkSpans.size() > 0) {
-					SpanHolder<LinkSpan> spanHolder = linkSpans.get(0);
-					setSpanToClick(spanHolder);
-					invalidateSpanToClick();
+				ArrayList<LinkSpan> linkSpans = findSpansToClick(layout, spanned, LinkSpan.class, layoutPosition);
+				if (!linkSpans.isEmpty()) {
+					setSpanToClick(linkSpans.get(0), x, y);
 					postDelayed(linkLongClickRunnable, ViewConfiguration.getLongPressTimeout());
 					return true;
 				}
 				// 3rd priority: hide spoiler
 				if (spoilersEnabled) {
-					for (SpanHolder<SpoilerSpan> spanHolder : spoilerSpans) {
-						if (spanHolder.span.isVisible()) {
-							setSpanToClick(spanHolder);
+					for (SpoilerSpan span : spoilerSpans) {
+						if (span.isVisible()) {
+							setSpanToClick(span, x, y);
 							invalidateSpanToClick();
 							return true;
 						}
@@ -677,34 +685,30 @@ public class CommentTextView extends TextView {
 		return false;
 	}
 
-	private <T extends ClickableSpan> void setSpanToClick(SpanHolder<T> spanHolder) {
-		spanToClick = spanHolder.span;
-		spanToClick.setClicked(true);
-		startX = spanHolder.startX;
-		startY = spanHolder.startY;
-	}
-
-	private static class SpanHolder<T> {
-		public final T span;
-		public final int startX, startY;
-
-		public SpanHolder(T span, int startX, int startY) {
-			this.span = span;
-			this.startX = startX;
-			this.startY = startY;
+	private void setSpanToClick(ClickableSpan span, float x, float y) {
+		if (spanToClick != null) {
+			spanToClick.setClicked(false);
+			invalidateSpanToClick();
 		}
+		spanToClick = span;
+		if (spanToClick != null) {
+			spanToClick.setClicked(true);
+			invalidateSpanToClick();
+		}
+		spanStartX = x;
+		spanStartY = y;
 	}
 
-	private <T> ArrayList<SpanHolder<T>> findSpansToClick(Layout layout, Spanned spanned, Class<T> type, int x, int y) {
-		ArrayList<SpanHolder<T>> result = new ArrayList<>();
+	private <T> ArrayList<T> findSpansToClick(Layout layout, Spanned spanned, Class<T> type, Point layoutPosition) {
+		ArrayList<T> result = new ArrayList<>();
 		// Find spans around touch point for better click treatment
 		for (int[] deltaAttempt : deltaAttempts) {
-			int startX = x + deltaAttempt[0], startY = y + deltaAttempt[1];
+			int startX = layoutPosition.x + deltaAttempt[0], startY = layoutPosition.y + deltaAttempt[1];
 			T[] spans = findSpansToClickSingle(layout, spanned, type, startX, startY);
 			if (spans != null) {
 				for (T span : spans) {
 					if (span != null) {
-						result.add(new SpanHolder<>(span, startX, startY));
+						result.add(span);
 					}
 				}
 			}
