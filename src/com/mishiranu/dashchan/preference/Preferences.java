@@ -820,6 +820,16 @@ public class Preferences {
 		return PREFERENCES.getBoolean(KEY_SCROLL_THREAD_GALLERY, DEFAULT_SCROLL_THREAD_GALLERY);
 	}
 
+	public static final String KEY_SHOWCASE_GALLERY = "showcase_gallery";
+
+	public static void consumeShowcaseGallery() {
+		PREFERENCES.edit().putBoolean(KEY_SHOWCASE_GALLERY, false).commit();
+	}
+
+	public static boolean isShowcaseGalleryEnabled() {
+		return PREFERENCES.getBoolean(KEY_SHOWCASE_GALLERY, true);
+	}
+
 	public static final String KEY_SFW_MODE = "sfw_mode";
 	public static final boolean DEFAULT_SFW_MODE = false;
 

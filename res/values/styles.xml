@@ -396,4 +396,11 @@
 
 	</style>
 
+	<style name="Animation.Showcase" parent="@android:style/Animation">
+
+		<item name="android:windowEnterAnimation">@anim/fast_fade_in</item>
+		<item name="android:windowExitAnimation">@anim/fast_fade_out</item>
+
+	</style>
+
 </resources>

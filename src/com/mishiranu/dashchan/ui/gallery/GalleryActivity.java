@@ -20,9 +20,11 @@ import java.util.ArrayList;
 
 import android.annotation.TargetApi;
 import android.app.ActionBar;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -31,13 +33,16 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import chan.content.ChanLocator;
@@ -56,7 +61,9 @@ import com.mishiranu.dashchan.ui.ForegroundManager;
 import com.mishiranu.dashchan.ui.StateActivity;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.FlagUtils;
+import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
+import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.WindowControlFrameLayout;
 
@@ -185,6 +192,9 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 				switchMode(galleryWindow, false);
 			}
 			pagerUnit.onViewsCreated(imageViewPosition);
+			if (!galleryMode) {
+				displayShowcase();
+			}
 		}
 	}
 
@@ -243,9 +253,14 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 
 	@Override
 	public void onBackPressed() {
-		if (!returnToGallery()) {
-			super.onBackPressed();
+		if (showcaseDestroyRunnable != null) {
+			showcaseDestroyRunnable.run();
+			return;
 		}
+		if (returnToGallery()) {
+			return;
+		}
+		super.onBackPressed();
 	}
 
 	private static final int OPTIONS_MENU_SAVE = 0;
@@ -386,6 +401,9 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 			new CornerAnimator(alpha, alpha);
 		}
 		invalidateOptionsMenu();
+		if (!galleryMode) {
+			displayShowcase();
+		}
 	}
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -578,5 +596,72 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		if (pagerUnit != null) {
 			pagerUnit.onApplyWindowPaddings(rect);
 		}
+	}
+
+	private Runnable showcaseDestroyRunnable;
+
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
+	private void displayShowcase() {
+		if (showcaseDestroyRunnable != null || !Preferences.isShowcaseGalleryEnabled()) {
+			return;
+		}
+
+		float density = ResourceUtils.obtainDensity(this);
+		FrameLayout frameLayout = new FrameLayout(this);
+		frameLayout.setBackgroundColor(0xf0222222);
+		LinearLayout linearLayout = new LinearLayout(this);
+		linearLayout.setOrientation(LinearLayout.VERTICAL);
+		frameLayout.addView(linearLayout, new FrameLayout.LayoutParams((int) (304f * density),
+				FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
+
+		Button button = new Button(this, null, android.R.attr.borderlessButtonStyle);
+		button.setText(R.string.action_got_it);
+		button.setMinimumWidth(0);
+		button.setMinWidth(0);
+
+		int paddingLeft = button.getPaddingLeft();
+		int paddingRight = button.getPaddingRight();
+		int paddingTop = button.getPaddingTop();
+		int paddingBottom = Math.max(0, (int) (24f * density) - paddingTop);
+
+		int[] messages = {R.string.message_showcase_context_menu, R.string.message_showcase_gallery};
+
+		for (int resId : messages) {
+			String[] message = getString(resId).split("\n");
+			TextView textView1 = new TextView(this, null, android.R.attr.textAppearanceLarge);
+			textView1.setText(message.length > 0 ? message[0] : null);
+			textView1.setTypeface(GraphicsUtils.TYPEFACE_LIGHT);
+			textView1.setPadding(paddingLeft, paddingTop, paddingRight, (int) (4f * density));
+			TextView textView2 = new TextView(this, null, android.R.attr.textAppearanceSmall);
+			textView2.setText(message.length > 1 ? message[1] : null);
+			textView2.setPadding(paddingLeft, 0, paddingRight, paddingBottom);
+			linearLayout.addView(textView1, LinearLayout.LayoutParams.MATCH_PARENT,
+					LinearLayout.LayoutParams.WRAP_CONTENT);
+			linearLayout.addView(textView2, LinearLayout.LayoutParams.MATCH_PARENT,
+					LinearLayout.LayoutParams.WRAP_CONTENT);
+		}
+
+		linearLayout.addView(button, LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+
+		WindowManager windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+		WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
+		layoutParams.format = PixelFormat.TRANSLUCENT;
+		layoutParams.width = WindowManager.LayoutParams.MATCH_PARENT;
+		layoutParams.height = WindowManager.LayoutParams.MATCH_PARENT;
+		layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+				WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
+		layoutParams.windowAnimations = R.style.Animation_Showcase;
+		if (C.API_LOLLIPOP) {
+			layoutParams.flags |= WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS;
+		}
+		windowManager.addView(frameLayout, layoutParams);
+
+		showcaseDestroyRunnable = () -> {
+			showcaseDestroyRunnable = null;
+			Preferences.consumeShowcaseGallery();
+			windowManager.removeView(frameLayout);
+		};
+
+		button.setOnClickListener(v -> showcaseDestroyRunnable.run());
 	}
 }

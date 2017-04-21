@@ -40,6 +40,7 @@ import com.mishiranu.dashchan.content.model.FileHolder;
 
 public class GraphicsUtils {
 	public static final Typeface TYPEFACE_MEDIUM = newTypeface("sans-serif-medium");
+	public static final Typeface TYPEFACE_LIGHT = newTypeface("sans-serif-light");
 
 	private static final Random RANDOM = new Random(System.currentTimeMillis());
 

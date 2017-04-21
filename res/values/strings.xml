@@ -197,6 +197,7 @@
 	<string name="action_gallery">Gallery</string>
 	<string name="action_general_boards">General boards</string>
 	<string name="action_go_to_post">Go to post</string>
+	<string name="action_got_it">Got it</string>
 	<string name="action_group">Group</string>
 	<string name="action_hidden_posts">Hidden posts</string>
 	<string name="action_hide">Hide</string>
@@ -352,6 +353,8 @@
 	<string name="message_search_completed">Search completed</string>
 	<string name="message_sending">Sending&#8230;</string>
 	<string name="message_sending_index_format">Sending %1$d of %2$d&#8230;</string>
+	<string name="message_showcase_context_menu">Context menu\nUse long tap to display context menu.</string>
+	<string name="message_showcase_gallery">Gallery\nSwipe image down to open the images gallery.</string>
 	<string name="message_spam_list">Post rejected</string>
 	<string name="message_ssl_error">SSL/HTTPS error</string>
 	<string name="message_subject_too_short">Subject is too short</string>

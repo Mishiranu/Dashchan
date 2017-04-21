@@ -212,6 +212,7 @@
 	<string name="action_gallery">Галерея</string>
 	<string name="action_general_boards">Основные разделы</string>
 	<string name="action_go_to_post">Перейти к сообщению</string>
+	<string name="action_got_it">Ясно</string>
 	<string name="action_group">Группировать</string>
 	<string name="action_hidden_posts">Скрытые сообщения</string>
 	<string name="action_hide">Скрыть</string>
@@ -369,6 +370,10 @@
 	<string name="message_search_completed">Поиск завершён</string>
 	<string name="message_sending">Отправка&#8230;</string>
 	<string name="message_sending_index_format">Отправка %1$d из %2$d&#8230;</string>
+	<string name="message_showcase_context_menu">Контекстное меню\nИспользуйте долгое нажатие
+		для отображения контекстного меню.</string>
+	<string name="message_showcase_gallery">Галерея\nСмахните изображение вниз
+		для доступа к галерее изображений.</string>
 	<string name="message_spam_list">Сообщение отклонено</string>
 	<string name="message_ssl_error">Ошибка SSL/HTTPS</string>
 	<string name="message_subject_too_short">Тема слишком короткая</string>
