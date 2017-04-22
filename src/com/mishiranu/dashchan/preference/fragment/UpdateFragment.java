@@ -66,23 +66,26 @@ public class UpdateFragment extends BaseListFragment {
 	private static final class ListItem {
 		public final String extensionName;
 		public final String title;
+		public final boolean enabled;
 
 		public String target;
 		public int targetIndex;
 		public String warning;
 
-		public ListItem(String extensionName) {
+		public ListItem(String extensionName, boolean enabled) {
 			String title = ChanConfiguration.get(extensionName).getTitle();
 			if (title == null) {
 				title = extensionName;
 			}
 			this.extensionName = extensionName;
 			this.title = title;
+			this.enabled = enabled;
 		}
 
-		public ListItem(String extensionName, String title) {
+		public ListItem(String extensionName, String title, boolean enabled) {
 			this.extensionName = extensionName;
 			this.title = title;
+			this.enabled = enabled;
 		}
 
 		public void setTarget(Context context, ArrayList<ReadUpdateTask.UpdateItem> updateItems, int targetIndex) {
@@ -143,6 +146,7 @@ public class UpdateFragment extends BaseListFragment {
 					checkBoxViewGetter.setSummary(listItem.target);
 				}
 				checkBoxViewGetter.setChecked(listItem.targetIndex > 0);
+				checkBoxViewGetter.setEnabled(listItem.enabled);
 				return checkBoxViewGetter.getView(convertView, parent);
 			}
 		};
@@ -174,9 +178,9 @@ public class UpdateFragment extends BaseListFragment {
 			String extensionName, Bundle savedInstanceState, int minVersion, int maxVersion,
 			String warningUnsupported) {
 		ArrayList<ReadUpdateTask.UpdateItem> updateItems = updateDataMap.get(extensionName);
-		ListItem listItem = new ListItem(extensionName);
-		int targetIndex = savedInstanceState != null ? savedInstanceState.getInt(EXTRA_TARGET_PREFIX
-				+ extensionName, -1) : -1;
+		ListItem listItem = new ListItem(extensionName, updateItems.size() >= 2);
+		int targetIndex = savedInstanceState != null ? savedInstanceState
+				.getInt(EXTRA_TARGET_PREFIX + extensionName, -1) : -1;
 		if (targetIndex == -1) {
 			ReadUpdateTask.UpdateItem installedExtensionData = updateItems.get(0);
 			if (checkVersionValid(installedExtensionData, minVersion, maxVersion)) {
@@ -213,8 +217,8 @@ public class UpdateFragment extends BaseListFragment {
 		String warningUnsupported = context != null ? context.getString(R.string.text_unsupported_version) : null;
 		HashSet<String> handledExtensionNames = new HashSet<>();
 		ArrayList<ReadUpdateTask.UpdateItem> updateItems = updateDataMap.get(ChanManager.EXTENSION_NAME_CLIENT);
-		ListItem listItem = new ListItem(ChanManager.EXTENSION_NAME_CLIENT, context != null
-				? context.getString(R.string.const_app_name) : null);
+		ListItem listItem = new ListItem(ChanManager.EXTENSION_NAME_CLIENT,
+				context != null ? context.getString(R.string.const_app_name) : null, updateItems.size() >= 2);
 		int targetIndex = savedInstanceState != null ? savedInstanceState.getInt(EXTRA_TARGET_PREFIX
 				+ listItem.extensionName, -1) : -1;
 		if (targetIndex == -1) {

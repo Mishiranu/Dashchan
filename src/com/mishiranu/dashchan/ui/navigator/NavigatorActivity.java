@@ -1265,11 +1265,11 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	};
 
 	private void startUpdateTask() {
-		if (!Preferences.isCheckUpdatesOnStart()) {
+		if (!Preferences.isCheckUpdatesOnStart() || System.currentTimeMillis()
+				- Preferences.getLastUpdateCheck() < 12 * 60 * 60 * 1000) {
+			// Check for updates ones per 12 hours
 			return;
 		}
-		long lastUpdateCheck = Preferences.getLastUpdateCheck();
-		if (System.currentTimeMillis() - lastUpdateCheck < 12 * 60 * 60 * 1000) return; // 12 hours
 		readUpdateTask = new ReadUpdateTask(this, this);
 		readUpdateTask.executeOnExecutor(ReadUpdateTask.THREAD_POOL_EXECUTOR);
 	}

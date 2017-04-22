@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import android.annotation.SuppressLint;
@@ -37,7 +38,6 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.FeatureInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.Signature;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
@@ -53,6 +53,7 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.media.VideoPlayer;
 import com.mishiranu.dashchan.preference.Preferences;
+import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.WeakObservable;
 
@@ -87,6 +88,8 @@ public class ChanManager {
 	private final LinkedHashMap<String, ExtensionItem> extensionItems;
 	private final LinkedHashMap<String, ExtensionItem> chanItems;
 	private final LinkedHashMap<String, ExtensionItem> libItems;
+
+	private final Set<String> applicationFingerprints;
 
 	private static final Pattern VALID_EXTENSION_NAME = Pattern.compile("[a-z][a-z0-9]{3,14}");
 
@@ -124,6 +127,7 @@ public class ChanManager {
 		public final String extensionName;
 		public final PackageInfo packageInfo;
 		public final ApplicationInfo applicationInfo;
+		public final Set<String> fingerprints;
 		public final int version;
 		public final boolean supported;
 		public final int iconResId;
@@ -141,7 +145,7 @@ public class ChanManager {
 		public int trustState = TRUST_STATE_UNTRUSTED;
 
 		public ExtensionItem(String chanName, PackageInfo packageInfo, ApplicationInfo applicationInfo,
-				int version, boolean supported, int iconResId, Uri updateUri,
+				Set<String> fingerprints, int version, boolean supported, int iconResId, Uri updateUri,
 				String classConfiguration, String classPerformer, String classLocator, String classMarkup) {
 			isChanExtension = true;
 			isLibExtension = false;
@@ -149,6 +153,7 @@ public class ChanManager {
 			extensionName = chanName;
 			this.packageInfo = packageInfo;
 			this.applicationInfo = applicationInfo;
+			this.fingerprints = fingerprints;
 			this.version = version;
 			this.supported = supported;
 			this.iconResId = iconResId;
@@ -160,13 +165,15 @@ public class ChanManager {
 			this.classMarkup = classMarkup;
 		}
 
-		public ExtensionItem(String libName, PackageInfo packageInfo, ApplicationInfo applicationInfo, Uri updateUri) {
+		public ExtensionItem(String libName, PackageInfo packageInfo, ApplicationInfo applicationInfo,
+				Set<String> fingerprints, Uri updateUri) {
 			isChanExtension = false;
 			isLibExtension = true;
 
 			extensionName = libName;
 			this.packageInfo = packageInfo;
 			this.applicationInfo = applicationInfo;
+			this.fingerprints = fingerprints;
 			version = 0;
 			supported = true;
 			iconResId = 0;
@@ -210,16 +217,11 @@ public class ChanManager {
 		ArrayList<ExtensionItem> chanItems = new ArrayList<>();
 		ArrayList<ExtensionItem> libItems = new ArrayList<>();
 		HashSet<String> usedExtensionNames = new HashSet<>();
-		Signature[] signaturesArray;
 		try {
-			signaturesArray = packageManager.getPackageInfo(MainApplication.getInstance().getPackageName(),
-					PackageManager.GET_SIGNATURES).signatures;
+			applicationFingerprints = extractFingerprints(packageManager
+					.getPackageInfo(MainApplication.getInstance().getPackageName(), PackageManager.GET_SIGNATURES));
 		} catch (PackageManager.NameNotFoundException e) {
 			throw new RuntimeException(e);
-		}
-		HashSet<Signature> applicationSignatures = new HashSet<>();
-		if (signaturesArray != null) {
-			Collections.addAll(applicationSignatures, signaturesArray);
 		}
 		for (PackageInfo packageInfo : packages) {
 			FeatureInfo[] features = packageInfo.reqFeatures;
@@ -247,6 +249,7 @@ public class ChanManager {
 							Log.persistent().write("Extension names conflict: " + extensionName + " already exists");
 							break;
 						}
+						Set<String> fingerprints = extractFingerprints(packageInfo);
 						ExtensionItem extensionItem;
 						if (chanExtension) {
 							int invalidVersion = Integer.MIN_VALUE;
@@ -273,31 +276,22 @@ public class ChanManager {
 							classMarkup = extendClassName(classMarkup, packageInfo.packageName);
 							boolean supported = version >= MIN_VERSION && version <= MAX_VERSION;
 							extensionItem = new ExtensionItem(extensionName, packageInfo, applicationInfo,
-									version, supported, iconResId, updateUri,
+									fingerprints, version, supported, iconResId, updateUri,
 									classConfiguration, classPerformer, classLocator, classMarkup);
 							chanItems.add(extensionItem);
 						} else if (libExtension) {
 							String source = data.getString(META_LIB_EXTENSION_SOURCE);
 							Uri updateUri = source != null ? Uri.parse(source) : null;
-							extensionItem = new ExtensionItem(extensionName, packageInfo, applicationInfo, updateUri);
+							extensionItem = new ExtensionItem(extensionName, packageInfo, applicationInfo,
+									fingerprints, updateUri);
 							libItems.add(extensionItem);
 						} else {
 							throw new RuntimeException();
 						}
 						extensionItems.add(extensionItem);
 						usedExtensionNames.add(extensionName);
-						boolean trusted = Preferences.isExtensionTrusted(packageInfo.packageName);
-						if (!trusted) {
-							signaturesArray = packageInfo.signatures;
-							if (signaturesArray != null && signaturesArray.length == applicationSignatures.size()) {
-								HashSet<Signature> extensionSignatures = new HashSet<>();
-								Collections.addAll(extensionSignatures, signaturesArray);
-								if (extensionSignatures.equals(applicationSignatures)) {
-									extensionItem.trustState = ExtensionItem.TRUST_STATE_TRUSTED;
-								}
-							}
-						}
-						if (trusted) {
+						if (Preferences.isExtensionTrusted(packageInfo.packageName)
+								|| fingerprints.equals(applicationFingerprints)) {
 							extensionItem.trustState = ExtensionItem.TRUST_STATE_TRUSTED;
 						}
 						break;
@@ -372,9 +366,7 @@ public class ChanManager {
 					availableChanNames.add(chanName);
 				}
 			}
-			for (String chanName : oldAvailableChanNames) {
-				availableChanNames.add(chanName);
-			}
+			availableChanNames.addAll(oldAvailableChanNames);
 		}
 	}
 
@@ -663,6 +655,23 @@ public class ChanManager {
 			}
 		}
 		return false;
+	}
+
+	public static Set<String> extractFingerprints(PackageInfo packageInfo) {
+		HashSet<String> fingerprints = new HashSet<>();
+		android.content.pm.Signature[] signaturesArray = packageInfo.signatures;
+		if (signaturesArray != null) {
+			for (android.content.pm.Signature signature : signaturesArray) {
+				if (signature != null) {
+					fingerprints.add(IOUtils.calculateSha256(signature.toByteArray()));
+				}
+			}
+		}
+		return Collections.unmodifiableSet(fingerprints);
+	}
+
+	public Set<String> getApplicationFingerprints() {
+		return applicationFingerprints;
 	}
 
 	String getLinkedChanName(Object object) {

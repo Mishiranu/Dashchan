@@ -21,8 +21,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.Locale;
+import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,6 +42,7 @@ import chan.http.HttpException;
 import chan.http.HttpHolder;
 import chan.http.HttpRequest;
 import chan.util.CommonUtils;
+import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.content.model.ErrorItem;
@@ -154,21 +158,27 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Void> {
 		}
 		ChanLocator locator = ChanLocator.getDefault();
 		LinkedHashMap<Uri, ArrayList<String>> targets = new LinkedHashMap<>();
-		Uri appUri = locator.setScheme(Uri.parse(C.UPDATE_SOURCE_URI_STRING));
-		ArrayList<String> extensionNames = new ArrayList<>();
-		extensionNames.add(ChanManager.EXTENSION_NAME_CLIENT);
-		targets.put(appUri, extensionNames);
+		{
+			Uri appUri = locator.setScheme(Uri.parse(C.UPDATE_SOURCE_URI_STRING));
+			ArrayList<String> extensionNames = new ArrayList<>();
+			extensionNames.add(ChanManager.EXTENSION_NAME_CLIENT);
+			targets.put(appUri, extensionNames);
+		}
+		HashMap<String, Set<String>> fingerprintsMap = new HashMap<>();
+		fingerprintsMap.put(ChanManager.EXTENSION_NAME_CLIENT,
+				ChanManager.getInstance().getApplicationFingerprints());
 		Collection<ChanManager.ExtensionItem> extensionItems = ChanManager.getInstance().getExtensionItems();
 		for (ChanManager.ExtensionItem extensionItem : extensionItems) {
 			if (extensionItem.updateUri != null) {
 				Uri uri = locator.setScheme(extensionItem.updateUri);
-				extensionNames = targets.get(uri);
-				if (extensionNames == null) {
-					extensionNames = new ArrayList<>();
-					targets.put(uri, extensionNames);
+				ArrayList<String> workExtensionNames = targets.get(uri);
+				if (workExtensionNames == null) {
+					workExtensionNames = new ArrayList<>();
+					targets.put(uri, workExtensionNames);
 				}
-				extensionNames.add(extensionItem.extensionName);
+				workExtensionNames.add(extensionItem.extensionName);
 			}
+			fingerprintsMap.put(extensionItem.extensionName, extensionItem.fingerprints);
 		}
 		String appVersionName;
 		int appVersionCode;
@@ -217,6 +227,28 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Void> {
 									JSONObject chanObject = jsonArray.getJSONObject(i);
 									int minSdk = chanObject.optInt("minSdk");
 									if (minSdk > Build.VERSION.SDK_INT) {
+										continue;
+									}
+									ArrayList<String> rawFingerprints = new ArrayList<>();
+									JSONArray fingerprintsArray = chanObject.optJSONArray("fingerprints");
+									if (fingerprintsArray != null) {
+										for (int j = 0; j < fingerprintsArray.length(); j++) {
+											rawFingerprints.add(fingerprintsArray.optString(j));
+										}
+									} else {
+										rawFingerprints.add(CommonUtils.optJsonString(chanObject, "fingerprint"));
+									}
+									HashSet<String> fingerprints = new HashSet<>();
+									for (String rawFingerprint : rawFingerprints) {
+										if (!StringUtils.isEmpty(rawFingerprint)) {
+											rawFingerprint = rawFingerprint.replaceAll("[^a-fA-F0-9]", "")
+													.toLowerCase(Locale.US);
+											if (!StringUtils.isEmpty(rawFingerprint)) {
+												fingerprints.add(rawFingerprint);
+											}
+										}
+									}
+									if (!fingerprints.equals(fingerprintsMap.get(extensionName))) {
 										continue;
 									}
 									String title = CommonUtils.getJsonString(chanObject, "title");

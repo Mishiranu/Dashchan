@@ -247,7 +247,7 @@ public class IOUtils {
 			if ((b & 0xf0) == 0) {
 				hashBuilder.append(0);
 			}
-			hashBuilder.append(Integer.toString(b & 0xf, 16));
+			hashBuilder.append(Integer.toString(b & 0xff, 16));
 		}
 		return hashBuilder.toString();
 	}
@@ -255,6 +255,14 @@ public class IOUtils {
 	public static String calculateSha256(String string) {
 		try {
 			return calculateSha256(new ByteArrayInputStream(StringUtils.emptyIfNull(string).getBytes()));
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public static String calculateSha256(byte[] bytes) {
+		try {
+			return calculateSha256(new ByteArrayInputStream(bytes != null ? bytes : new byte[0]));
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
