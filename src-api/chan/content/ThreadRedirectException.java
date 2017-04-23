@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2016-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import chan.annotation.Public;
 
 // TODO CHAN
 // Remove this class aafter updating
-// apachan archiveliom archiverbt desustorage dvach exach fourplebs krautchan meguca onechanca ronery
+// apachan archiveliom desustorage exach fourplebs krautchan meguca ronery
 // Added: 13.10.16 14:55
 @Public
 public final class ThreadRedirectException extends Exception {

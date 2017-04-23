@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -228,7 +228,7 @@ public class ChanPerformer implements ChanManager.Linked {
 
 		// TODO CHAN
 		// Remove this constructor after updating
-		// apachan archiverbt endchan nulldvachin
+		// apachan endchan
 		// Added: 24.08.16 03:39
 		@Public
 		public ReadThreadsResult(Threads threads) {

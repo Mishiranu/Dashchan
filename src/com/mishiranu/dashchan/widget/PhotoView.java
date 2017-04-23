@@ -15,7 +15,7 @@
  *
  * ********************************************************************************
  *
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  */
 
 package com.mishiranu.dashchan.widget;

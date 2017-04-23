@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!--
-	Copyright 2014-2016 Fukurou Mishiranu
+	Copyright 2014-2017 Fukurou Mishiranu
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -29,12 +29,19 @@
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 	<uses-permission android:name="android.permission.WAKE_LOCK" />
 
-	<application android:name=".content.MainApplication" tools:ignore="GoogleAppIndexingWarning"
-		android:label="@string/const_app_name" android:icon="@drawable/ic_launcher" android:logo="@drawable/ic_logo"
-		android:theme="@style/Theme.Special.Stub" android:largeHeap="true"
-		android:allowBackup="true" android:fullBackupContent="true">
+	<application
+		android:name=".content.MainApplication"
+		android:label="@string/const_app_name"
+		android:icon="@drawable/ic_launcher"
+		android:logo="@drawable/ic_logo"
+		android:theme="@style/Theme.Special.Stub"
+		android:largeHeap="true"
+		android:allowBackup="true"
+		android:fullBackupContent="true"
+		tools:ignore="GoogleAppIndexingWarning">
 
-		<activity android:name=".ui.LauncherActivity">
+		<activity
+			android:name=".ui.LauncherActivity">
 
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
@@ -44,23 +51,36 @@
 
 		</activity>
 
-		<activity android:name=".ui.navigator.NavigatorActivity" android:launchMode="singleTask"
+		<activity
+			android:name=".ui.navigator.NavigatorActivity"
+			android:launchMode="singleTask"
 			android:configChanges="orientation|screenSize" />
 
-		<activity android:name=".ui.gallery.GalleryActivity" android:configChanges="orientation|screenSize"
+		<activity
+			android:name=".ui.gallery.GalleryActivity"
+			android:configChanges="orientation|screenSize"
 			android:theme="@style/Theme.Gallery" />
 
-		<activity android:name=".ui.posting.PostingActivity" android:windowSoftInputMode="stateHidden" />
+		<activity
+			android:name=".ui.posting.PostingActivity"
+			android:windowSoftInputMode="stateHidden" />
 
-		<activity android:name=".ui.WebBrowserActivity" android:configChanges="orientation|screenSize" />
+		<activity
+			android:name=".ui.WebBrowserActivity"
+			android:configChanges="orientation|screenSize" />
 
-		<activity android:name=".preference.PreferencesActivity" />
+		<activity
+			android:name=".preference.PreferencesActivity" />
 
-		<activity android:name=".preference.UpdaterActivity" android:excludeFromRecents="true"
+		<activity
+			android:name=".preference.UpdaterActivity"
+			android:excludeFromRecents="true"
 			android:theme="@android:style/Theme.Panel" />
 
-		<activity android:name=".content.UriHandlerActivity" android:theme="@android:style/Theme.NoDisplay"
-				  android:launchMode="singleTask">
+		<activity
+			android:name=".content.UriHandlerActivity"
+			android:theme="@android:style/Theme.NoDisplay"
+			android:launchMode="singleTask">
 
 			<intent-filter>
 				<action android:name="chan.intent.action.HANDLE_URI" />
@@ -71,8 +91,11 @@
 
 		</activity>
 
-		<activity android:name=".content.PostingShareActivity" android:taskAffinity=".postingshare"
-			android:launchMode="singleInstance" android:excludeFromRecents="true"
+		<activity
+			android:name=".content.PostingShareActivity"
+			android:taskAffinity=".postingshare"
+			android:launchMode="singleInstance"
+			android:excludeFromRecents="true"
 			android:theme="@android:style/Theme.Translucent.NoTitleBar">
 
 			<intent-filter>
@@ -89,17 +112,25 @@
 
 		</activity>
 
-		<activity android:name=".content.service.AudioPlayerActivity" android:configChanges="orientation|screenSize"
-			android:taskAffinity=".audioplayer" android:launchMode="singleInstance" android:excludeFromRecents="true"
+		<activity
+			android:name=".content.service.AudioPlayerActivity"
+			android:configChanges="orientation|screenSize"
+			android:taskAffinity=".audioplayer"
+			android:launchMode="singleInstance"
+			android:excludeFromRecents="true"
 			android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
-		<service android:name=".content.service.PostingService" />
+		<service
+			android:name=".content.service.PostingService" />
 
-		<service android:name=".content.service.DownloadService" />
+		<service
+			android:name=".content.service.DownloadService" />
 
-		<service android:name=".content.service.WatcherService" />
+		<service
+			android:name=".content.service.WatcherService" />
 
-		<service android:name=".content.service.AudioPlayerService" />
+		<service
+			android:name=".content.service.AudioPlayerService" />
 
 		<meta-data android:name="com.sec.android.support.multiwindow" android:value="true" />
 		<meta-data android:name="com.sec.android.multiwindow.DEFAULT_SIZE_W" android:value="632dp" />

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,6 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 	private final Context context;
 	private final Context styledContext;
 	private final ExpandedScreen expandedScreen;
-	//private final Dialog dialog;
 	private final FrameLayout rootView;
 	private final float dimAmount;
 
