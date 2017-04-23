@@ -5,11 +5,8 @@ buildscript {
 
 	dependencies {
 		classpath 'com.android.tools.build:gradle:2.2.2'
-		classpath 'me.tatarka:gradle-retrolambda:3.2.5'
-		classpath 'me.tatarka.retrolambda.projectlombok:lombok.ast:0.2.3.a2'
+		classpath 'me.tatarka:gradle-retrolambda:3.6.0'
 	}
-
-	configurations.classpath.exclude group: 'com.android.tools.external.lombok'
 }
 
 allprojects {
@@ -25,7 +22,7 @@ dependencies {
 	provided 'org.ccil.cowan.tagsoup:tagsoup:1.2.1'
 }
 
-def Properties privateProperties = new Properties()
+def privateProperties = new Properties()
 
 if (new File('private.properties').exists()) {
 	privateProperties.load(new FileInputStream(file('private.properties')))
@@ -33,7 +30,7 @@ if (new File('private.properties').exists()) {
 
 android {
 	compileSdkVersion 25
-	buildToolsVersion '25'
+	buildToolsVersion '25.0.2'
 
 	sourceSets.main {
 		manifest.srcFile 'AndroidManifest.xml'
@@ -48,7 +45,7 @@ android {
 	}
 
 	if (new File('keystore.properties').exists()) {
-		def Properties keystoreProperties = new Properties()
+		def keystoreProperties = new Properties()
 		keystoreProperties.load(new FileInputStream(file('keystore.properties')))
 
 		signingConfigs {
