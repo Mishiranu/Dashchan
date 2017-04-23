@@ -30,6 +30,8 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 
+import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.content.FileProvider;
 import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.ui.StateActivity;
 
@@ -68,8 +70,11 @@ public class UpdaterActivity extends StateActivity {
 	private void performInstallation() {
 		if (uriStrings != null && uriStrings.size() > index) {
 			Uri uri = Uri.parse(uriStrings.get(index));
-			startActivityForResult(new Intent(Intent.ACTION_INSTALL_PACKAGE).setData(uri)
-					.putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true).putExtra(Intent.EXTRA_RETURN_RESULT, true), 0);
+			uri = FileProvider.convertUpdatesUri(this, uri);
+			startActivityForResult(new Intent(Intent.ACTION_INSTALL_PACKAGE)
+					.setDataAndType(uri, "application/vnd.android.package-archive")
+					.putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true)
+					.putExtra(Intent.EXTRA_RETURN_RESULT, true), 0);
 		} else {
 			finish();
 		}

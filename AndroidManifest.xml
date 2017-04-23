@@ -132,6 +132,13 @@
 		<service
 			android:name=".content.service.AudioPlayerService" />
 
+		<provider
+			android:name=".content.FileProvider"
+			android:authorities="com.mishiranu.providers.dashchan"
+			android:exported="true"
+			android:grantUriPermissions="true"
+			tools:ignore="ExportedContentProvider" />
+
 		<meta-data android:name="com.sec.android.support.multiwindow" android:value="true" />
 		<meta-data android:name="com.sec.android.multiwindow.DEFAULT_SIZE_W" android:value="632dp" />
 		<meta-data android:name="com.sec.android.multiwindow.DEFAULT_SIZE_H" android:value="598dp" />

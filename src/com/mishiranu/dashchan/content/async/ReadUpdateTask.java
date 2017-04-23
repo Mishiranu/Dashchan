@@ -45,6 +45,7 @@ import chan.util.CommonUtils;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.content.FileProvider;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.util.Log;
 
@@ -115,15 +116,6 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Void> {
 		this.callback = callback;
 	}
 
-	public static File getDownloadDirectory(Context context) {
-		String dirType = "updates";
-		File directory = context.getExternalFilesDir(dirType);
-		if (directory != null) {
-			directory.mkdirs();
-		}
-		return directory;
-	}
-
 	private static Uri normalizeUri(Uri uri, Uri base) {
 		boolean noScheme = uri.getScheme() == null;
 		boolean noHost = uri.getHost() == null;
@@ -143,7 +135,7 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Void> {
 	@Override
 	protected Void doInBackground(HttpHolder holder, Void... params) {
 		long timeThreshold = System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000; // One week left
-		File directory = getDownloadDirectory(context);
+		File directory = FileProvider.getUpdatesDirectory(context);
 		if (directory == null) {
 			errorItem = new ErrorItem(ErrorItem.TYPE_NO_ACCESS_TO_MEMORY);
 			return null;

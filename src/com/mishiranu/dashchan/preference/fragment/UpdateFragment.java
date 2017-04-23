@@ -46,6 +46,7 @@ import chan.util.CommonUtils;
 import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.content.FileProvider;
 import com.mishiranu.dashchan.content.async.ReadUpdateTask;
 import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.preference.Preferences;
@@ -317,7 +318,7 @@ public class UpdateFragment extends BaseListFragment {
 			case OPTIONS_MENU_DOWNLOAD: {
 				DownloadManager downloadManager = (DownloadManager) getActivity()
 						.getSystemService(Context.DOWNLOAD_SERVICE);
-				File directory = ReadUpdateTask.getDownloadDirectory(getActivity());
+				File directory = FileProvider.getUpdatesDirectory(getActivity());
 				boolean started = false;
 				boolean downloadManagerError = false;
 				long clientId = -1;
