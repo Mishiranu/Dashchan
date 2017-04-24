@@ -103,13 +103,23 @@ public class ChanConfiguration implements ChanManager.Linked {
 						changed = true;
 					}
 				}
+				ArrayList<String> removeCookies = null;
 				for (Iterator<String> keys = cookiesObject.keys(); keys.hasNext();) {
 					String cookie = keys.next();
 					JSONObject jsonObject = cookiesObject.optJSONObject(cookie);
 					if (jsonObject == null) {
-						cookiesObject.remove(cookie);
-						changed = true;
+						// Remove old-formatted cookie
+						if (removeCookies == null) {
+							removeCookies = new ArrayList<>();
+						}
+						removeCookies.add(cookie);
 					}
+				}
+				if (removeCookies != null) {
+					for (String cookie : removeCookies) {
+						cookiesObject.remove(cookie);
+					}
+					changed = true;
 				}
 				if (editor != null) {
 					editor.commit();
