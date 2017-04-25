@@ -142,6 +142,7 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 			pagerInstance.leftHolder = null;
 			pagerInstance.currentHolder = null;
 			pagerInstance.rightHolder = null;
+			viewPager.setActive(false);
 			if (duration > 0) {
 				viewPager.setAlpha(1f);
 				viewPager.setScaleX(1f);
@@ -152,6 +153,7 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 				viewPager.setVisibility(View.GONE);
 			}
 		} else {
+			viewPager.setActive(true);
 			viewPager.setVisibility(View.VISIBLE);
 			if (duration > 0) {
 				viewPager.setAlpha(0f);
@@ -356,30 +358,28 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 	private final PhotoView.Listener photoViewListener = new PhotoView.Listener() {
 		@Override
 		public void onClick(PhotoView photoView, boolean image, float x, float y) {
-			if (!galleryInstance.callback.isGalleryMode()) {
-				GalleryItem galleryItem = pagerInstance.currentHolder.galleryItem;
-				View playButton = pagerInstance.currentHolder.playButton;
-				if (playButton.getVisibility() == View.VISIBLE && galleryItem.isVideo(galleryInstance.locator)
-						&& !videoUnit.isCreated()) {
-					int centerX = playButton.getLeft() + playButton.getWidth() / 2;
-					int centerY = playButton.getTop() + playButton.getHeight() / 2;
-					int size = Math.min(playButton.getWidth(), playButton.getHeight());
-					float distance = (float) Math.sqrt((centerX - x) * (centerX - x) + (centerY - y) * (centerY - y));
-					if (distance <= size / 3f * 2f) {
-						if (!galleryItem.isOpenableVideo(galleryInstance.locator)) {
-							NavigationUtils.handleUri(galleryInstance.context, galleryInstance.chanName, galleryItem
-									.getFileUri(galleryInstance.locator), NavigationUtils.BrowserType.EXTERNAL);
-						} else {
-							loadImageVideo(false, false, 0);
-						}
-						return;
+			GalleryItem galleryItem = pagerInstance.currentHolder.galleryItem;
+			View playButton = pagerInstance.currentHolder.playButton;
+			if (playButton.getVisibility() == View.VISIBLE && galleryItem.isVideo(galleryInstance.locator)
+					&& !videoUnit.isCreated()) {
+				int centerX = playButton.getLeft() + playButton.getWidth() / 2;
+				int centerY = playButton.getTop() + playButton.getHeight() / 2;
+				int size = Math.min(playButton.getWidth(), playButton.getHeight());
+				float distance = (float) Math.sqrt((centerX - x) * (centerX - x) + (centerY - y) * (centerY - y));
+				if (distance <= size / 3f * 2f) {
+					if (!galleryItem.isOpenableVideo(galleryInstance.locator)) {
+						NavigationUtils.handleUri(galleryInstance.context, galleryInstance.chanName, galleryItem
+								.getFileUri(galleryInstance.locator), NavigationUtils.BrowserType.EXTERNAL);
+					} else {
+						loadImageVideo(false, false, 0);
 					}
+					return;
 				}
-				if (image) {
-					galleryInstance.callback.toggleSystemUIVisibility(GalleryInstance.FLAG_LOCKED_USER);
-				} else {
-					galleryInstance.callback.navigateGalleryOrFinish(false);
-				}
+			}
+			if (image) {
+				galleryInstance.callback.toggleSystemUIVisibility(GalleryInstance.FLAG_LOCKED_USER);
+			} else {
+				galleryInstance.callback.navigateGalleryOrFinish(false);
 			}
 		}
 

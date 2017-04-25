@@ -47,6 +47,7 @@ public class PhotoViewPager extends ViewGroup {
 	private final Adapter adapter;
 	private final ArrayList<PhotoView> photoViews = new ArrayList<>(3);
 
+	private boolean active = true;
 	private int innerPadding;
 
 	public PhotoViewPager(Context context, Adapter adapter) {
@@ -110,6 +111,10 @@ public class PhotoViewPager extends ViewGroup {
 			getChildAt((i + 3) % 3).layout(left, 0, left + width, height);
 			left += width + innerPadding;
 		}
+	}
+
+	public void setActive(boolean active) {
+		this.active = active;
 	}
 
 	public void setInnerPadding(int padding) {
@@ -197,6 +202,9 @@ public class PhotoViewPager extends ViewGroup {
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
+		if (!active) {
+			return false;
+		}
 		PhotoView photoView = photoViews.get(currentIndex % 3);
 		int action = event.getActionMasked();
 		switch (action) {
