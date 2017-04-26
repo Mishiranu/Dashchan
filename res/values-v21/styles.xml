@@ -422,6 +422,12 @@
 
 	</style>
 
+	<style name="Widget.OverlapPopupMenu" parent="@android:style/Widget.Material.PopupMenu">
+
+		<item name="android:overlapAnchor">true</item>
+
+	</style>
+
 	<style name="Theme.Special.Notification" parent="@android:style/Theme.Material.Light">
 
 		<item name="notificationCancel">@drawable/ic_close_grey</item>

@@ -956,7 +956,9 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 								}
 							}
 						}
-						PopupMenu popupMenu = C.API_KITKAT ? new PopupMenu(v.getContext(), v, Gravity.END)
+						PopupMenu popupMenu = C.API_LOLLIPOP_MR1
+								? new PopupMenu(v.getContext(), v, Gravity.END, 0, R.style.Widget_OverlapPopupMenu)
+								: C.API_KITKAT ? new PopupMenu(v.getContext(), v, Gravity.END)
 								: new PopupMenu(context, v);
 						popupMenu.getMenu().add(0, FAVORITES_MENU_REFRESH, 0, R.string.action_refresh)
 								.setEnabled(hasEnabled);
