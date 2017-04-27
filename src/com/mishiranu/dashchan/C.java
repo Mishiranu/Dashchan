@@ -19,6 +19,8 @@ package com.mishiranu.dashchan;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import android.os.Build;
 
@@ -34,25 +36,36 @@ public class C {
 	public static final String BUILD_VERSION = BuildConfig.VERSION_NAME;
 	public static final long BUILD_TIMESTAMP = BuildConfig.BUILD_TIMESTAMP;
 
-	public static final HashSet<String> IMAGE_EXTENSIONS = new HashSet<>();
-	public static final HashSet<String> AUDIO_EXTENSIONS = new HashSet<>();
-	public static final HashSet<String> VIDEO_EXTENSIONS = new HashSet<>();
+	public static final Set<String> IMAGE_EXTENSIONS;
+	public static final Set<String> AUDIO_EXTENSIONS;
+	public static final Set<String> VIDEO_EXTENSIONS;
 
-	public static final HashMap<String, String> EXTENSION_TRANSFORMATION = new HashMap<>();
+	public static final Map<String, String> EXTENSION_TRANSFORMATION;
 
 	public static final boolean WEB_VIEW_BITMAP_DECODER_SUPPORTED;
 
-	static {
-		Collections.addAll(IMAGE_EXTENSIONS, "jpg", "jpe", "jpeg", "png", "apng", "gif", "webp", "bmp");
-		Collections.addAll(AUDIO_EXTENSIONS, "mp3", "ogg", "flac", "wav");
-		Collections.addAll(VIDEO_EXTENSIONS, "webm", "mp4");
-		WEB_VIEW_BITMAP_DECODER_SUPPORTED = API_KITKAT;
-		if (WEB_VIEW_BITMAP_DECODER_SUPPORTED) {
-			IMAGE_EXTENSIONS.add("svg");
+	@SafeVarargs
+	private static <T> Set<T> immutableSet(T... items) {
+		HashSet<T> hashSet = new HashSet<>();
+		for (T item : items) {
+			if (item != null) {
+				hashSet.add(item);
+			}
 		}
-		EXTENSION_TRANSFORMATION.put("jpg", "jpeg");
-		EXTENSION_TRANSFORMATION.put("jpe", "jpeg");
-		EXTENSION_TRANSFORMATION.put("apng", "png");
+		return Collections.unmodifiableSet(hashSet);
+	}
+
+	static {
+		WEB_VIEW_BITMAP_DECODER_SUPPORTED = API_KITKAT;
+		IMAGE_EXTENSIONS = immutableSet("jpg", "jpe", "jpeg", "png", "apng", "gif", "webp", "bmp",
+				WEB_VIEW_BITMAP_DECODER_SUPPORTED ? "svg" : null);
+		AUDIO_EXTENSIONS = immutableSet("mp3", "ogg", "flac", "wav");
+		VIDEO_EXTENSIONS = immutableSet("webm", "mp4");
+		HashMap<String, String> extensionTransformation = new HashMap<>();
+		extensionTransformation.put("jpg", "jpeg");
+		extensionTransformation.put("jpe", "jpeg");
+		extensionTransformation.put("apng", "png");
+		EXTENSION_TRANSFORMATION = Collections.unmodifiableMap(extensionTransformation);
 	}
 
 	public static final String UPDATE_SOURCE_URI_STRING = "//raw.githubusercontent.com/Mishiranu/Dashchan/master/"
