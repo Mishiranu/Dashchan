@@ -233,7 +233,7 @@ Doclava
       <ul>
           <li class="api apilevel-"><a href="../../../reference/chan/content/ApiException.html">ApiException</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></li>
-          <li class="api apilevel-"><a href="../../../reference/chan/content/ThreadRedirectException.html">ThreadRedirectException</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/RedirectException.html">RedirectException</a></li>
       </ul>
     </li>
               
@@ -379,15 +379,15 @@ Summary:
 
 <h2>Class Overview</h2>
 <p itemprop="articleBody"><p>Provides URI handling and building.</p>
- 
+
  <p>In the first you must declare chan hosts. You can do this using <code><a href="../../../reference/chan/content/ChanLocator.html#addChanHost(java.lang.String)">addChanHost(String)</a></code> method.
  If you add more than one host, user can choice one of them in preferences.</p>
- 
+
  <p>If you want to add special host that user might not choice, use <code><a href="../../../reference/chan/content/ChanLocator.html#addSpecialChanHost(java.lang.String)">addSpecialChanHost(String)</a></code>.
  This method is used for special hosts like JSON API or host for static data, for example.</p>
- 
+
  <p>There is the list of methods you <strong>must</strong> override:</p>
- 
+
  <ul>
  <li><code><a href="../../../reference/chan/content/ChanLocator.html#isBoardUri(android.net.Uri)">isBoardUri(Uri)</a></code></li>
  <li><code><a href="../../../reference/chan/content/ChanLocator.html#isThreadUri(android.net.Uri)">isThreadUri(Uri)</a></code></li>
@@ -399,9 +399,9 @@ Summary:
  <li><code><a href="../../../reference/chan/content/ChanLocator.html#createThreadUri(java.lang.String, java.lang.String)">createThreadUri(String, String)</a></code></li>
  <li><code><a href="../../../reference/chan/content/ChanLocator.html#createPostUri(java.lang.String, java.lang.String, java.lang.String)">createPostUri(String, String, String)</a></code></li>
  </ul>
- 
+
  <p>URI building with preferred configuration provided by the following methods:</p>
- 
+
  <ul>
  <li><code><a href="../../../reference/chan/content/ChanLocator.html#buildPath(java.lang.String...)">buildPath(String)</a></code></li>
  <li><code><a href="../../../reference/chan/content/ChanLocator.html#buildPathWithHost(java.lang.String, java.lang.String...)">buildPathWithHost(String, String)</a></code></li>
@@ -1387,7 +1387,7 @@ From class
   <p><p>Declares host as chan host. This host might be default host in <code><a href="../../../reference/chan/content/ChanLocator.html#buildPath(java.lang.String...)">buildPath(String)</a></code> and
  <code><a href="../../../reference/chan/content/ChanLocator.html#buildQuery(java.lang.String, java.lang.String...)">buildQuery(String, String)</a></code> methods. If you declare multiple hosts, user can choice one of them
  in preferences. The first declared host will be chosen by default.</p>
- 
+
  <p>For example, a chan has 3 addresses: <code>addr1.com</code>, <code>addr2.com</code>, <code>addr3.com</code>. If user choose
  <code>addr2.com</code> in preferences, URIs with the rest addresses will be converted to <code>addr2.com</code>.</p>
 </p>

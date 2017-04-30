@@ -233,7 +233,7 @@ Doclava
       <ul>
           <li class="api apilevel-"><a href="../../../reference/chan/content/ApiException.html">ApiException</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></li>
-          <li class="api apilevel-"><a href="../../../reference/chan/content/ThreadRedirectException.html">ThreadRedirectException</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/RedirectException.html">RedirectException</a></li>
       </ul>
     </li>
               
@@ -380,7 +380,7 @@ Summary:
 <h2>Class Overview</h2>
 <p itemprop="articleBody"><p>Captcha data map. You can fill this map in <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadCaptcha(chan.content.ChanPerformer.ReadCaptchaData)">onReadCaptcha(ReadCaptchaData)</a></code> and then
  read from this map while sending post for example.</p>
- 
+
  <p>User's input is available by <code><a href="../../../reference/chan/content/ChanPerformer.CaptchaData.html#INPUT">INPUT</a></code> key.</p>
 </p>
 
@@ -440,7 +440,7 @@ Summary:
           final
           String</nobr></td>
           <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.CaptchaData.html#API_KEY">API_KEY</a></td>
-          <td class="jd-descrcol" width="100%"><p>Captcha api key.</td>
+          <td class="jd-descrcol" width="100%"><p>Captcha API key.</td>
       </tr>
       
     
@@ -464,6 +464,17 @@ Summary:
           String</nobr></td>
           <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.CaptchaData.html#INPUT">INPUT</a></td>
           <td class="jd-descrcol" width="100%"><p>User's input.</td>
+      </tr>
+      
+    
+      <tr class=" api apilevel-" >
+          <td class="jd-typecol"><nobr>
+          public
+          static
+          final
+          String</nobr></td>
+          <td class="jd-linkcol"><a href="../../../reference/chan/content/ChanPerformer.CaptchaData.html#REFERER">REFERER</a></td>
+          <td class="jd-descrcol" width="100%"><p>Referer header for captcha requests.</td>
       </tr>
       
     
@@ -814,7 +825,7 @@ From class
       </div>
     <div class="jd-details-descr">
       
-  <p><p>Captcha api key. May be used for default captcha handler.</p>
+  <p><p>Captcha API key. May be used for default captcha handler.</p>
 </p>
 
     
@@ -874,6 +885,35 @@ From class
     <div class="jd-details-descr">
       
   <p><p>User's input.</p>
+</p>
+
+    
+    </div>
+</div>
+
+
+
+<A NAME="REFERER"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+        static 
+        final 
+        String
+      </span>
+        REFERER
+    </h4>
+      <div class="api-level">
+        
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <p><p>Referer header for captcha requests. May be useful with reCAPTCHA 2.</p>
 </p>
 
     

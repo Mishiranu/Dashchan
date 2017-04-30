@@ -169,8 +169,16 @@ Doclava
       <ul>
           <li class="api apilevel-"><a href="../../../reference/chan/text/GroupParser.Callback.html">GroupParser.Callback</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.CloseCallback.html">TemplateParser.CloseCallback</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.ComplexBuilder.html">TemplateParser.ComplexBuilder</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.ComplexRuleBuilder.html">TemplateParser.ComplexRuleBuilder</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.ComplexSimpleRuleBuilder.html">TemplateParser.ComplexSimpleRuleBuilder</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.ContentBuilder.html">TemplateParser.ContentBuilder</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.ContentCallback.html">TemplateParser.ContentCallback</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.InitialBuilder.html">TemplateParser.InitialBuilder</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.OpenBuilder.html">TemplateParser.OpenBuilder</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.OpenCallback.html">TemplateParser.OpenCallback</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.SimpleBuilder.html">TemplateParser.SimpleBuilder</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.SimpleRuleBuilder.html">TemplateParser.SimpleRuleBuilder</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.TextCallback.html">TemplateParser.TextCallback</a></li>
       </ul>
     </li>
@@ -254,9 +262,6 @@ Summary:
 
 
 
-  &#124; <a href="#pubctors">Ctors</a>
-  
-
 
 
   &#124; <a href="#pubmethods">Methods</a>
@@ -339,26 +344,26 @@ Summary:
  parser before using this one.</p>
 
  <p>You can define parsing rules using the following methods:</p>
- 
+
  <ul>
- <li><code><a href="../../../reference/chan/text/TemplateParser.html#name(java.lang.String)">name(String)</a></code></li>
- <li><code><a href="../../../reference/chan/text/TemplateParser.html#equals(java.lang.String, java.lang.String, java.lang.String)">equals(String, String, String)</a></code></li>
- <li><code><a href="../../../reference/chan/text/TemplateParser.html#starts(java.lang.String, java.lang.String, java.lang.String)">starts(String, String, String)</a></code></li>
- <li><code><a href="../../../reference/chan/text/TemplateParser.html#contains(java.lang.String, java.lang.String, java.lang.String)">contains(String, String, String)</a></code></li>
- <li><code><a href="../../../reference/chan/text/TemplateParser.html#ends(java.lang.String, java.lang.String, java.lang.String)">ends(String, String, String)</a></code></li>
+ <li><code><a href="../../../reference/chan/text/TemplateParser.SimpleRuleBuilder.html#name(java.lang.String)">name(String)</a></code></li>
+ <li><code><a href="../../../reference/chan/text/TemplateParser.ComplexRuleBuilder.html#equals(java.lang.String, java.lang.String, java.lang.String)">equals(String, String, String)</a></code></li>
+ <li><code><a href="../../../reference/chan/text/TemplateParser.ComplexRuleBuilder.html#starts(java.lang.String, java.lang.String, java.lang.String)">starts(String, String, String)</a></code></li>
+ <li><code><a href="../../../reference/chan/text/TemplateParser.ComplexRuleBuilder.html#contains(java.lang.String, java.lang.String, java.lang.String)">contains(String, String, String)</a></code></li>
+ <li><code><a href="../../../reference/chan/text/TemplateParser.ComplexRuleBuilder.html#ends(java.lang.String, java.lang.String, java.lang.String)">ends(String, String, String)</a></code></li>
  </ul>
- 
+
  <p>And define reaction rules:</p>
- 
+
  <ul>
- <li><code><a href="../../../reference/chan/text/TemplateParser.html#open(chan.text.TemplateParser.OpenCallback<H>)">open(OpenCallback)</a></code></li>
- <li><code><a href="../../../reference/chan/text/TemplateParser.html#content(chan.text.TemplateParser.ContentCallback<H>)">content(ContentCallback)</a></code></li>
- <li><code><a href="../../../reference/chan/text/TemplateParser.html#close(chan.text.TemplateParser.CloseCallback<H>)">close(CloseCallback)</a></code></li>
- <li><code><a href="../../../reference/chan/text/TemplateParser.html#text(chan.text.TemplateParser.TextCallback<H>)">text(TextCallback)</a></code></li>
+ <li><code><a href="../../../reference/chan/text/TemplateParser.OpenBuilder.html#open(chan.text.TemplateParser.OpenCallback<H>)">open(OpenCallback)</a></code></li>
+ <li><code><a href="../../../reference/chan/text/TemplateParser.ContentBuilder.html#content(chan.text.TemplateParser.ContentCallback<H>)">content(ContentCallback)</a></code></li>
+ <li><code><a href="../../../reference/chan/text/TemplateParser.SimpleBuilder.html#close(chan.text.TemplateParser.CloseCallback<H>)">close(CloseCallback)</a></code></li>
+ <li><code><a href="../../../reference/chan/text/TemplateParser.InitialBuilder.html#text(chan.text.TemplateParser.TextCallback<H>)">text(TextCallback)</a></code></li>
  </ul>
- 
- <p>After defining parsing rules you should call <code><a href="../../../reference/chan/text/TemplateParser.html#prepare()">prepare()</a></code> method. Then you can use your parsing
- calling <code><a href="../../../reference/chan/text/TemplateParser.html#parse(java.lang.String, H)">parse(String, Object)</a></code> method.</p>
+
+ <p>After defining parsing rules you should call <code><a href="../../../reference/chan/text/TemplateParser.InitialBuilder.html#prepare()">prepare()</a></code> method.
+ Then you can use your parsing calling <code><a href="../../../reference/chan/text/TemplateParser.html#parse(java.lang.String, H)">parse(String, Object)</a></code> method.</p>
 </p>
 
 
@@ -426,6 +431,54 @@ Summary:
          
         
         interface</nobr></td>
+      <td class="jd-linkcol"><a href="../../../reference/chan/text/TemplateParser.ComplexBuilder.html">TemplateParser.ComplexBuilder</a>&lt;H&gt;</td>
+      <td class="jd-descrcol" width="100%"><p>Parser builder.&nbsp;</td>
+    </tr>
+    
+    
+    <tr class=" api apilevel-" >
+      <td class="jd-typecol"><nobr>
+        
+         
+         
+        
+        interface</nobr></td>
+      <td class="jd-linkcol"><a href="../../../reference/chan/text/TemplateParser.ComplexRuleBuilder.html">TemplateParser.ComplexRuleBuilder</a>&lt;H&gt;</td>
+      <td class="jd-descrcol" width="100%"><p>Parser builder.&nbsp;</td>
+    </tr>
+    
+    
+    <tr class="alt-color api apilevel-" >
+      <td class="jd-typecol"><nobr>
+        
+         
+         
+        
+        interface</nobr></td>
+      <td class="jd-linkcol"><a href="../../../reference/chan/text/TemplateParser.ComplexSimpleRuleBuilder.html">TemplateParser.ComplexSimpleRuleBuilder</a>&lt;H&gt;</td>
+      <td class="jd-descrcol" width="100%"><p>Parser builder.&nbsp;</td>
+    </tr>
+    
+    
+    <tr class=" api apilevel-" >
+      <td class="jd-typecol"><nobr>
+        
+         
+         
+        
+        interface</nobr></td>
+      <td class="jd-linkcol"><a href="../../../reference/chan/text/TemplateParser.ContentBuilder.html">TemplateParser.ContentBuilder</a>&lt;H&gt;</td>
+      <td class="jd-descrcol" width="100%"><p>Parser builder.&nbsp;</td>
+    </tr>
+    
+    
+    <tr class="alt-color api apilevel-" >
+      <td class="jd-typecol"><nobr>
+        
+         
+         
+        
+        interface</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/text/TemplateParser.ContentCallback.html">TemplateParser.ContentCallback</a>&lt;H&gt;</td>
       <td class="jd-descrcol" width="100%"><p>Tag full content callback.&nbsp;</td>
     </tr>
@@ -437,9 +490,33 @@ Summary:
          
          
         
+        interface</nobr></td>
+      <td class="jd-linkcol"><a href="../../../reference/chan/text/TemplateParser.InitialBuilder.html">TemplateParser.InitialBuilder</a>&lt;H&gt;</td>
+      <td class="jd-descrcol" width="100%"><p>Parser builder.&nbsp;</td>
+    </tr>
+    
+    
+    <tr class="alt-color api apilevel-" >
+      <td class="jd-typecol"><nobr>
+        
+         
+         
+        
         class</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/text/TemplateParser.Instance.html">TemplateParser.Instance</a></td>
       <td class="jd-descrcol" width="100%"><p>Parsing process holder.&nbsp;</td>
+    </tr>
+    
+    
+    <tr class=" api apilevel-" >
+      <td class="jd-typecol"><nobr>
+        
+         
+         
+        
+        interface</nobr></td>
+      <td class="jd-linkcol"><a href="../../../reference/chan/text/TemplateParser.OpenBuilder.html">TemplateParser.OpenBuilder</a>&lt;H&gt;</td>
+      <td class="jd-descrcol" width="100%"><p>Parser builder.&nbsp;</td>
     </tr>
     
     
@@ -452,6 +529,30 @@ Summary:
         interface</nobr></td>
       <td class="jd-linkcol"><a href="../../../reference/chan/text/TemplateParser.OpenCallback.html">TemplateParser.OpenCallback</a>&lt;H&gt;</td>
       <td class="jd-descrcol" width="100%"><p>Tag open callback.&nbsp;</td>
+    </tr>
+    
+    
+    <tr class=" api apilevel-" >
+      <td class="jd-typecol"><nobr>
+        
+         
+         
+        
+        interface</nobr></td>
+      <td class="jd-linkcol"><a href="../../../reference/chan/text/TemplateParser.SimpleBuilder.html">TemplateParser.SimpleBuilder</a>&lt;H&gt;</td>
+      <td class="jd-descrcol" width="100%"><p>Parser builder.&nbsp;</td>
+    </tr>
+    
+    
+    <tr class="alt-color api apilevel-" >
+      <td class="jd-typecol"><nobr>
+        
+         
+         
+        
+        interface</nobr></td>
+      <td class="jd-linkcol"><a href="../../../reference/chan/text/TemplateParser.SimpleRuleBuilder.html">TemplateParser.SimpleRuleBuilder</a>&lt;H&gt;</td>
+      <td class="jd-descrcol" width="100%"><p>Parser builder.&nbsp;</td>
     </tr>
     
     
@@ -490,31 +591,6 @@ Summary:
 
 
 
-<!-- ======== CONSTRUCTOR SUMMARY ======== -->
-<table id="pubctors" class="jd-sumtable"><tr><th colspan="12">Public Constructors</th></tr>
-
-
-
-	 
-    <tr class="alt-color api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            
-            
-            
-            </nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/text/TemplateParser.html#TemplateParser()">TemplateParser</a></span>()</nobr>
-        
-  </td></tr>
-
-
-
-</table>
-
-
 
 
 
@@ -529,126 +605,15 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
+            static
             
-            
-            
-            <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</nobr>
+            &lt;H&gt;
+            <a href="../../../reference/chan/text/TemplateParser.InitialBuilder.html">InitialBuilder</a>&lt;H&gt;</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/text/TemplateParser.html#close(chan.text.TemplateParser.CloseCallback<H>)">close</a></span>(<a href="../../../reference/chan/text/TemplateParser.CloseCallback.html">CloseCallback</a>&lt;H&gt; closeCallback)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/text/TemplateParser.html#builder()">builder</a></span>()</nobr>
         
-        <div class="jd-descrdiv"><p>Defines a reaction callback when tag closed.</div>
-  
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            
-            
-            
-            <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/text/TemplateParser.html#contains(java.lang.String, java.lang.String, java.lang.String)">contains</a></span>(String tagName, String attribute, String value)</nobr>
-        
-        <div class="jd-descrdiv"><p>Indicates the parser to react on <code>tagName</code> tags which has an <code>attribute</code>
- contains <code>value</code>.</div>
-  
-  </td></tr>
-
-
-	 
-    <tr class="alt-color api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            
-            
-            
-            <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/text/TemplateParser.html#content(chan.text.TemplateParser.ContentCallback<H>)">content</a></span>(<a href="../../../reference/chan/text/TemplateParser.ContentCallback.html">ContentCallback</a>&lt;H&gt; contentCallback)</nobr>
-        
-        <div class="jd-descrdiv"><p>Defines a reaction callback when full tag content parsed.</div>
-  
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            
-            
-            
-            <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/text/TemplateParser.html#ends(java.lang.String, java.lang.String, java.lang.String)">ends</a></span>(String tagName, String attribute, String value)</nobr>
-        
-        <div class="jd-descrdiv"><p>Indicates the parser to react on <code>tagName</code> tags which has an <code>attribute</code>
- ends with <code>value</code>.</div>
-  
-  </td></tr>
-
-
-	 
-    <tr class="alt-color api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            
-            
-            
-            <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/text/TemplateParser.html#equals(java.lang.String, java.lang.String, java.lang.String)">equals</a></span>(String tagName, String attribute, String value)</nobr>
-        
-        <div class="jd-descrdiv"><p>Indicates the parser to react on <code>tagName</code> tags which has an <code>attribute</code>
- equals <code>value</code>.</div>
-  
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            
-            
-            
-            <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/text/TemplateParser.html#name(java.lang.String)">name</a></span>(String tagName)</nobr>
-        
-        <div class="jd-descrdiv"><p>Indicates the parser to react on <code>tagName</code> tags.</div>
-  
-  </td></tr>
-
-
-	 
-    <tr class="alt-color api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            
-            
-            
-            <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/text/TemplateParser.html#open(chan.text.TemplateParser.OpenCallback<H>)">open</a></span>(<a href="../../../reference/chan/text/TemplateParser.OpenCallback.html">OpenCallback</a>&lt;H&gt; openCallback)</nobr>
-        
-        <div class="jd-descrdiv"><p>Defines a reaction callback when tag opened.</div>
+        <div class="jd-descrdiv"><p>Creates a new parser builder.</div>
   
   </td></tr>
 
@@ -667,61 +632,6 @@ Summary:
         <span class="sympad"><a href="../../../reference/chan/text/TemplateParser.html#parse(java.lang.String, H)">parse</a></span>(String source, H holder)</nobr>
         
         <div class="jd-descrdiv"><p>Starts a new parsing process.</div>
-  
-  </td></tr>
-
-
-	 
-    <tr class="alt-color api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            
-            
-            
-            <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/text/TemplateParser.html#prepare()">prepare</a></span>()</nobr>
-        
-        <div class="jd-descrdiv"><p>Normalizes a parser content and allows you to use your parser.</div>
-  
-  </td></tr>
-
-
-	 
-    <tr class=" api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            
-            
-            
-            <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/text/TemplateParser.html#starts(java.lang.String, java.lang.String, java.lang.String)">starts</a></span>(String tagName, String attribute, String value)</nobr>
-        
-        <div class="jd-descrdiv"><p>Indicates the parser to react on <code>tagName</code> tags which has an <code>attribute</code>
- starts with <code>value</code>.</div>
-  
-  </td></tr>
-
-
-	 
-    <tr class="alt-color api apilevel-" >
-        <td class="jd-typecol"><nobr>
-            
-            
-            
-            
-            
-            <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</nobr>
-        </td>
-        <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/text/TemplateParser.html#text(chan.text.TemplateParser.TextCallback<H>)">text</a></span>(<a href="../../../reference/chan/text/TemplateParser.TextCallback.html">TextCallback</a>&lt;H&gt; textCallback)</nobr>
-        
-        <div class="jd-descrdiv"><p>Defines a reaction callback on text between tags.</div>
   
   </td></tr>
 
@@ -971,42 +881,6 @@ From class
 <!-- Public ctors -->
 
 
-<!-- ========= CONSTRUCTOR DETAIL ======== -->
-<h2>Public Constructors</h2>
-
-
-
-<A NAME="TemplateParser()"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public
-        
-        
-        
-        
-        
-      </span>
-      <span class="sympad">TemplateParser</span>
-      <span class="normal">()</span>
-    </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
-    <div class="jd-details-descr">
-      
-  <p></p>
-
-    </div>
-</div>
-
-
-
-
 
 <!-- ========= CONSTRUCTOR DETAIL ======== -->
 <!-- Protected ctors -->
@@ -1020,7 +894,7 @@ From class
 
 
 
-<A NAME="close(chan.text.TemplateParser.CloseCallback<H>)"></A>
+<A NAME="builder()"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -1028,12 +902,12 @@ From class
         public
         
         
+        static
         
-        
-        <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;
+        <a href="../../../reference/chan/text/TemplateParser.InitialBuilder.html">InitialBuilder</a>&lt;H&gt;
       </span>
-      <span class="sympad">close</span>
-      <span class="normal">(<a href="../../../reference/chan/text/TemplateParser.CloseCallback.html">CloseCallback</a>&lt;H&gt; closeCallback)</span>
+      <span class="sympad">builder</span>
+      <span class="normal">()</span>
     </h4>
       <div class="api-level">
         <div></div>
@@ -1043,354 +917,15 @@ From class
       </div>
     <div class="jd-details-descr">
       
-  <p><p>Defines a reaction callback when tag closed. Parser can react only on <code><a href="../../../reference/chan/text/TemplateParser.html#name(java.lang.String)">name(String)</a></code> rule.</p></p>
-    <table class="responsive">
-    <tr><th colspan=2>Parameters</th></tr>
-      <tr>
-        <td><code>closeCallback</code></td>
-        <td width="100%">
-          <code>CloseCallback</code>:
-          Tag close callback.</td>
-      </tr>
-    </table>
+  <p><p>Creates a new parser builder.</p></p>
     <table class="responsive">
       <tr><th colspan=2>Returns</th></tr>
       <tr>
-        <td><code><a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</code></td>
-        <td width="100%">This parser.</td>
-      </tr>
-    </table>
-  <div>
-      <p><b>See also:</b></p>
-      <ul class="nolist"><li><code><a href="../../../reference/chan/text/GroupParser.Callback.html#onEndElement(chan.text.GroupParser, java.lang.String)">onEndElement(GroupParser, String)</a></code></li>
-      </ul>
-  </div>
-
-    </div>
-</div>
-
-
-<A NAME="contains(java.lang.String, java.lang.String, java.lang.String)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public
-        
-        
-        
-        
-        <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;
-      </span>
-      <span class="sympad">contains</span>
-      <span class="normal">(String tagName, String attribute, String value)</span>
-    </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
-    <div class="jd-details-descr">
-      
-  <p><p>Indicates the parser to react on <code>tagName</code> tags which has an <code>attribute</code>
- contains <code>value</code>.</p></p>
-    <table class="responsive">
-    <tr><th colspan=2>Parameters</th></tr>
-      <tr>
-        <td><code>tagName</code></td>
-        <td width="100%">
-          <code>String</code>:
-          Tag name.</td>
-      </tr>
-      <tr>
-        <td><code>attribute</code></td>
-        <td width="100%">
-          <code>String</code>:
-          Attribute name.</td>
-      </tr>
-      <tr>
-        <td><code>value</code></td>
-        <td width="100%">
-          <code>String</code>:
-          Attribute value.</td>
-      </tr>
-    </table>
-    <table class="responsive">
-      <tr><th colspan=2>Returns</th></tr>
-      <tr>
-        <td><code><a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</code></td>
-        <td width="100%">This parser.
+        <td><code><a href="../../../reference/chan/text/TemplateParser.InitialBuilder.html">InitialBuilder</a>&lt;H&gt;</code></td>
+        <td width="100%">Template parser builder.
 </td>
       </tr>
     </table>
-
-    </div>
-</div>
-
-
-<A NAME="content(chan.text.TemplateParser.ContentCallback<H>)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public
-        
-        
-        
-        
-        <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;
-      </span>
-      <span class="sympad">content</span>
-      <span class="normal">(<a href="../../../reference/chan/text/TemplateParser.ContentCallback.html">ContentCallback</a>&lt;H&gt; contentCallback)</span>
-    </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
-    <div class="jd-details-descr">
-      
-  <p><p>Defines a reaction callback when full tag content parsed. This callback may be not called if open callback
- returned a <code>false</code> value.</p></p>
-    <table class="responsive">
-    <tr><th colspan=2>Parameters</th></tr>
-      <tr>
-        <td><code>contentCallback</code></td>
-        <td width="100%">
-          <code>ContentCallback</code>:
-          Tag content callback.</td>
-      </tr>
-    </table>
-    <table class="responsive">
-      <tr><th colspan=2>Returns</th></tr>
-      <tr>
-        <td><code><a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</code></td>
-        <td width="100%">This parser.</td>
-      </tr>
-    </table>
-  <div>
-      <p><b>See also:</b></p>
-      <ul class="nolist"><li><code><a href="../../../reference/chan/text/GroupParser.Callback.html#onGroupComplete(chan.text.GroupParser, java.lang.String)">onGroupComplete(GroupParser, String)</a></code></li>
-      </ul>
-  </div>
-
-    </div>
-</div>
-
-
-<A NAME="ends(java.lang.String, java.lang.String, java.lang.String)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public
-        
-        
-        
-        
-        <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;
-      </span>
-      <span class="sympad">ends</span>
-      <span class="normal">(String tagName, String attribute, String value)</span>
-    </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
-    <div class="jd-details-descr">
-      
-  <p><p>Indicates the parser to react on <code>tagName</code> tags which has an <code>attribute</code>
- ends with <code>value</code>.</p></p>
-    <table class="responsive">
-    <tr><th colspan=2>Parameters</th></tr>
-      <tr>
-        <td><code>tagName</code></td>
-        <td width="100%">
-          <code>String</code>:
-          Tag name.</td>
-      </tr>
-      <tr>
-        <td><code>attribute</code></td>
-        <td width="100%">
-          <code>String</code>:
-          Attribute name.</td>
-      </tr>
-      <tr>
-        <td><code>value</code></td>
-        <td width="100%">
-          <code>String</code>:
-          Attribute value.</td>
-      </tr>
-    </table>
-    <table class="responsive">
-      <tr><th colspan=2>Returns</th></tr>
-      <tr>
-        <td><code><a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</code></td>
-        <td width="100%">This parser.
-</td>
-      </tr>
-    </table>
-
-    </div>
-</div>
-
-
-<A NAME="equals(java.lang.String, java.lang.String, java.lang.String)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public
-        
-        
-        
-        
-        <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;
-      </span>
-      <span class="sympad">equals</span>
-      <span class="normal">(String tagName, String attribute, String value)</span>
-    </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
-    <div class="jd-details-descr">
-      
-  <p><p>Indicates the parser to react on <code>tagName</code> tags which has an <code>attribute</code>
- equals <code>value</code>.</p></p>
-    <table class="responsive">
-    <tr><th colspan=2>Parameters</th></tr>
-      <tr>
-        <td><code>tagName</code></td>
-        <td width="100%">
-          <code>String</code>:
-          Tag name.</td>
-      </tr>
-      <tr>
-        <td><code>attribute</code></td>
-        <td width="100%">
-          <code>String</code>:
-          Attribute name.</td>
-      </tr>
-      <tr>
-        <td><code>value</code></td>
-        <td width="100%">
-          <code>String</code>:
-          Attribute value.</td>
-      </tr>
-    </table>
-    <table class="responsive">
-      <tr><th colspan=2>Returns</th></tr>
-      <tr>
-        <td><code><a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</code></td>
-        <td width="100%">This parser.
-</td>
-      </tr>
-    </table>
-
-    </div>
-</div>
-
-
-<A NAME="name(java.lang.String)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public
-        
-        
-        
-        
-        <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;
-      </span>
-      <span class="sympad">name</span>
-      <span class="normal">(String tagName)</span>
-    </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
-    <div class="jd-details-descr">
-      
-  <p><p>Indicates the parser to react on <code>tagName</code> tags.</p></p>
-    <table class="responsive">
-    <tr><th colspan=2>Parameters</th></tr>
-      <tr>
-        <td><code>tagName</code></td>
-        <td width="100%">
-          <code>String</code>:
-          Tag name.</td>
-      </tr>
-    </table>
-    <table class="responsive">
-      <tr><th colspan=2>Returns</th></tr>
-      <tr>
-        <td><code><a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</code></td>
-        <td width="100%">This parser.
-</td>
-      </tr>
-    </table>
-
-    </div>
-</div>
-
-
-<A NAME="open(chan.text.TemplateParser.OpenCallback<H>)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public
-        
-        
-        
-        
-        <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;
-      </span>
-      <span class="sympad">open</span>
-      <span class="normal">(<a href="../../../reference/chan/text/TemplateParser.OpenCallback.html">OpenCallback</a>&lt;H&gt; openCallback)</span>
-    </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
-    <div class="jd-details-descr">
-      
-  <p><p>Defines a reaction callback when tag opened. This callback determines if parser should parse the full
- tag content and call content callback or not depending on the return value. If you don't specify this callback,
- parser will parser full content anyway.</p></p>
-    <table class="responsive">
-    <tr><th colspan=2>Parameters</th></tr>
-      <tr>
-        <td><code>openCallback</code></td>
-        <td width="100%">
-          <code>OpenCallback</code>:
-          Tag open callback.</td>
-      </tr>
-    </table>
-    <table class="responsive">
-      <tr><th colspan=2>Returns</th></tr>
-      <tr>
-        <td><code><a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</code></td>
-        <td width="100%">This parser.</td>
-      </tr>
-    </table>
-  <div>
-      <p><b>See also:</b></p>
-      <ul class="nolist"><li><code><a href="../../../reference/chan/text/GroupParser.Callback.html#onStartElement(chan.text.GroupParser, java.lang.String, java.lang.String)">onStartElement(GroupParser, String, String)</a></code></li>
-      </ul>
-  </div>
 
     </div>
 </div>
@@ -1444,153 +979,6 @@ From class
         </tr>
       </table>
   
-
-    </div>
-</div>
-
-
-<A NAME="prepare()"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public
-        
-        
-        
-        
-        <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;
-      </span>
-      <span class="sympad">prepare</span>
-      <span class="normal">()</span>
-    </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
-    <div class="jd-details-descr">
-      
-  <p><p>Normalizes a parser content and allows you to use your parser. After calling this methods you can't
- define any new rules or callbacks.</p></p>
-    <table class="responsive">
-      <tr><th colspan=2>Returns</th></tr>
-      <tr>
-        <td><code><a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</code></td>
-        <td width="100%">This parser.
-</td>
-      </tr>
-    </table>
-
-    </div>
-</div>
-
-
-<A NAME="starts(java.lang.String, java.lang.String, java.lang.String)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public
-        
-        
-        
-        
-        <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;
-      </span>
-      <span class="sympad">starts</span>
-      <span class="normal">(String tagName, String attribute, String value)</span>
-    </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
-    <div class="jd-details-descr">
-      
-  <p><p>Indicates the parser to react on <code>tagName</code> tags which has an <code>attribute</code>
- starts with <code>value</code>.</p></p>
-    <table class="responsive">
-    <tr><th colspan=2>Parameters</th></tr>
-      <tr>
-        <td><code>tagName</code></td>
-        <td width="100%">
-          <code>String</code>:
-          Tag name.</td>
-      </tr>
-      <tr>
-        <td><code>attribute</code></td>
-        <td width="100%">
-          <code>String</code>:
-          Attribute name.</td>
-      </tr>
-      <tr>
-        <td><code>value</code></td>
-        <td width="100%">
-          <code>String</code>:
-          Attribute value.</td>
-      </tr>
-    </table>
-    <table class="responsive">
-      <tr><th colspan=2>Returns</th></tr>
-      <tr>
-        <td><code><a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</code></td>
-        <td width="100%">This parser.
-</td>
-      </tr>
-    </table>
-
-    </div>
-</div>
-
-
-<A NAME="text(chan.text.TemplateParser.TextCallback<H>)"></A>
-
-<div class="jd-details api apilevel-"> 
-    <h4 class="jd-details-title">
-      <span class="normal">
-        public
-        
-        
-        
-        
-        <a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;
-      </span>
-      <span class="sympad">text</span>
-      <span class="normal">(<a href="../../../reference/chan/text/TemplateParser.TextCallback.html">TextCallback</a>&lt;H&gt; textCallback)</span>
-    </h4>
-      <div class="api-level">
-        <div></div>
-        
-  
-
-      </div>
-    <div class="jd-details-descr">
-      
-  <p><p>Defines a reaction callback on text between tags. This callback doesn't depend on any rules.</p></p>
-    <table class="responsive">
-    <tr><th colspan=2>Parameters</th></tr>
-      <tr>
-        <td><code>textCallback</code></td>
-        <td width="100%">
-          <code>TextCallback</code>:
-          Text between tags callback.</td>
-      </tr>
-    </table>
-    <table class="responsive">
-      <tr><th colspan=2>Returns</th></tr>
-      <tr>
-        <td><code><a href="../../../reference/chan/text/TemplateParser.html">TemplateParser</a>&lt;H&gt;</code></td>
-        <td width="100%">This parser.</td>
-      </tr>
-    </table>
-  <div>
-      <p><b>See also:</b></p>
-      <ul class="nolist"><li><code><a href="../../../reference/chan/text/GroupParser.Callback.html#onText(chan.text.GroupParser, java.lang.String, int, int)">onText(GroupParser, String, int, int)</a></code></li>
-      </ul>
-  </div>
 
     </div>
 </div>

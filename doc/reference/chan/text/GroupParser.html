@@ -169,8 +169,16 @@ Doclava
       <ul>
           <li class="api apilevel-"><a href="../../../reference/chan/text/GroupParser.Callback.html">GroupParser.Callback</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.CloseCallback.html">TemplateParser.CloseCallback</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.ComplexBuilder.html">TemplateParser.ComplexBuilder</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.ComplexRuleBuilder.html">TemplateParser.ComplexRuleBuilder</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.ComplexSimpleRuleBuilder.html">TemplateParser.ComplexSimpleRuleBuilder</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.ContentBuilder.html">TemplateParser.ContentBuilder</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.ContentCallback.html">TemplateParser.ContentCallback</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.InitialBuilder.html">TemplateParser.InitialBuilder</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.OpenBuilder.html">TemplateParser.OpenBuilder</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.OpenCallback.html">TemplateParser.OpenCallback</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.SimpleBuilder.html">TemplateParser.SimpleBuilder</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.SimpleRuleBuilder.html">TemplateParser.SimpleRuleBuilder</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/text/TemplateParser.TextCallback.html">TemplateParser.TextCallback</a></li>
       </ul>
     </li>
@@ -333,11 +341,11 @@ Summary:
 
 <h2>Class Overview</h2>
 <p itemprop="articleBody"><p>HTML text parser. Can work in two modes: linear and group.</p>
- 
+
  <p>In linear mode, parser will call <code><a href="../../../reference/chan/text/GroupParser.Callback.html#onStartElement(chan.text.GroupParser, java.lang.String, java.lang.String)">onStartElement(GroupParser, String, String)</a></code> every
  time parser reaches new tag. This method has boolean result, and when this method returns true - parser switches
  to group mode.</p>
- 
+
  <p>In group mode parser will handle all text inside started tag. Then it call
  <code><a href="../../../reference/chan/text/GroupParser.Callback.html#onGroupComplete(chan.text.GroupParser, java.lang.String)">onGroupComplete(GroupParser, String)</a></code> with all text inside tag.</p>
 </p>

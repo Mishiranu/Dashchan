@@ -233,7 +233,7 @@ Doclava
       <ul>
           <li class="api apilevel-"><a href="../../../reference/chan/content/ApiException.html">ApiException</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></li>
-          <li class="api apilevel-"><a href="../../../reference/chan/content/ThreadRedirectException.html">ThreadRedirectException</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/RedirectException.html">RedirectException</a></li>
       </ul>
     </li>
               
@@ -382,17 +382,17 @@ Summary:
 
 <h2>Class Overview</h2>
 <p itemprop="articleBody"><p>Provides performing connectivity with chan.</p>
- 
+
  <p>By default you must implement the following methods:</p>
- 
+
  <ul>
  <li><code><a href="../../../reference/chan/content/ChanPerformer.html#onReadThreads(chan.content.ChanPerformer.ReadThreadsData)">onReadThreads(ReadThreadsData)</a></code></li>
  <li><code><a href="../../../reference/chan/content/ChanPerformer.html#onReadPosts(chan.content.ChanPerformer.ReadPostsData)">onReadPosts(ReadPostsData)</a></code></li>
  <li><code><a href="../../../reference/chan/content/ChanPerformer.html#onReadBoards(chan.content.ChanPerformer.ReadBoardsData)">onReadBoards(ReadBoardsData)</a></code></li>
  </ul>
- 
+
  <p>Depending one the <code><a href="../../../reference/chan/content/ChanConfiguration.Board.html">ChanConfiguration.Board</a></code> configuration you must implement the following methods:</p>
- 
+
  <table summary="">
  <tr><th>Option</th><th>Method</th></tr>
  <tr><td><code><a href="../../../reference/chan/content/ChanConfiguration.Board.html#allowSearch">allowSearch</a></code></td>
@@ -410,9 +410,9 @@ Summary:
  <tr><td><code><a href="../../../reference/chan/content/ChanConfiguration.Board.html#allowReporting">allowReporting</a></code></td>
  <td><code><a href="../../../reference/chan/content/ChanPerformer.html#onSendReportPosts(chan.content.ChanPerformer.SendReportPostsData)">onSendReportPosts(SendReportPostsData)</a></code></td></tr>
  </table>
- 
+
  <p>If you configure some options, you also must implement the following methods:</p>
- 
+
  <table summary="">
  <tr><th>Option</th><th>Method</th></tr>
  <tr><td><code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_READ_SINGLE_POST">OPTION_READ_SINGLE_POST</a></code></td>
@@ -1655,9 +1655,9 @@ From class
     <div class="jd-details-descr">
       
   <p><p>Calls when application requests chan to check authorization data.</p>
- 
+
  <p>This method <strong>must</strong> be overridden in the following cases:</p>
- 
+
  <ul>
  <li><code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_ALLOW_CAPTCHA_PASS">OPTION_ALLOW_CAPTCHA_PASS</a></code> enabled</li>
  <li><code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_ALLOW_USER_AUTHORIZATION">OPTION_ALLOW_USER_AUTHORIZATION</a></code> enabled</li>
@@ -1720,7 +1720,7 @@ From class
     <div class="jd-details-descr">
       
   <p><p>Calls when application requests chan to download boards list.</p>
- 
+
  <p>This method <strong>must</strong> be overridden if option
  <code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_SINGLE_BOARD_MODE">OPTION_SINGLE_BOARD_MODE</a></code> is <strong>not</strong> enabled.</p></p>
     <table class="responsive">
@@ -1781,21 +1781,21 @@ From class
     <div class="jd-details-descr">
       
   <p><p>Calls when application requests chan to read captcha.</p>
- 
+
  <p>This method <strong>must</strong> be overridden if option <code><a href="../../../reference/chan/content/ChanConfiguration.Board.html#allowPosting">allowPosting</a></code> is
  enabled for this board.</p>
- 
+
  <p>This method must return <code><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html">ChanPerformer.ReadCaptchaResult</a></code> with captcha data.</p>
- 
+
  <p>If your chan uses custom captcha, you must specify a resulting image using
  <code><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaResult.html#setImage(android.graphics.Bitmap)">setImage(Bitmap)</a></code>.</p>
- 
+
  <p>In the case of Yandex Captcha, resulting <code>captchaData</code> must contain challenge string by
  <code><a href="../../../reference/chan/content/ChanPerformer.CaptchaData.html#CHALLENGE">CHALLENGE</a></code>. key</p>
- 
+
  <p>In the case of Google reCAPTCHA and Mail.Ru Nocaptcha, resulting <code>captchaData</code> must contain API key by
  <code><a href="../../../reference/chan/content/ChanPerformer.CaptchaData.html#API_KEY">API_KEY</a></code>. key</p>
- 
+
  <p>If your captcha has short lifetime, you can check <code><a href="../../../reference/chan/content/ChanPerformer.ReadCaptchaData.html#mayShowLoadButton">mayShowLoadButton</a></code>.
  If this argument equals <code>true</code>, the result may hold <code><a href="../../../reference/chan/content/ChanPerformer.CaptchaState.html#NEED_LOAD">NEED_LOAD</a></code>. This will
  show "Click to load captcha" button for user.</p></p>
@@ -1915,9 +1915,9 @@ From class
     <div class="jd-details-descr">
       
   <p><p>Calls when application requests chan to download posts list.</p>
- 
+
  <p>This method <strong>must</strong> be overridden.</p>
- 
+
  <p>Option <code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_READ_THREAD_PARTIALLY">OPTION_READ_THREAD_PARTIALLY</a></code> allows you to download threads partially.
  You can check <code><a href="../../../reference/chan/content/ChanPerformer.ReadPostsData.html#partialThreadLoading">partialThreadLoading</a></code> flag and download only posts after
  <code><a href="../../../reference/chan/content/ChanPerformer.ReadPostsData.html#lastPostNumber">lastPostNumber</a></code>.</p></p>
@@ -1944,12 +1944,12 @@ From class
           <td width="100%">if HTTP or another error with message occurred.</td>
         </tr>
         <tr>
-          <td><code><a href="../../../reference/chan/content/ThreadRedirectException.html">ThreadRedirectException</a></code></td>
-          <td width="100%">if server returned data that can be considered as redirect to another thread.</td>
+          <td><code><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></code></td>
+          <td width="100%">if server returned an invalid data.</td>
         </tr>
         <tr>
-          <td><code><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></code></td>
-          <td width="100%">if server returned an invalid data.
+          <td><code><a href="../../../reference/chan/content/RedirectException.html">RedirectException</a></code></td>
+          <td width="100%">if server returned data that can be considered as redirect.
 </td>
         </tr>
       </table>
@@ -1983,10 +1983,10 @@ From class
     <div class="jd-details-descr">
       
   <p><p>Calls when application requests chan to download posts count.</p>
- 
+
  <p>This method is not the same as <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadPosts(chan.content.ChanPerformer.ReadPostsData)">onReadPosts(ReadPostsData)</a></code>. This method must download
  and parse data quickly as possible.</p>
- 
+
  <p>This method <strong>must</strong> be overridden if option
  <code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_READ_POSTS_COUNT">OPTION_READ_POSTS_COUNT</a></code> is enabled.</p></p>
     <table class="responsive">
@@ -2047,7 +2047,7 @@ From class
     <div class="jd-details-descr">
       
   <p><p>Calls when application requests chan to download search posts list.</p>
- 
+
  <p>This method <strong>must</strong> be overridden if option <code><a href="../../../reference/chan/content/ChanConfiguration.Board.html#allowSearch">allowSearch</a></code> is
  enabled for this board.</p></p>
     <table class="responsive">
@@ -2108,7 +2108,7 @@ From class
     <div class="jd-details-descr">
       
   <p><p>Calls when application requests chan to download single post.</p>
- 
+
  <p>This method <strong>must</strong> be overridden if chan supports
  <code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_READ_SINGLE_POST">OPTION_READ_SINGLE_POST</a></code>.</p></p>
     <table class="responsive">
@@ -2170,9 +2170,9 @@ From class
       
   <p><p>Calls when application requests chan to download thread summaries.
  You can check <code><a href="../../../reference/chan/content/ChanPerformer.ReadThreadSummariesData.html#type">type</a></code> field and return necessary data.</p>
- 
+
  <p>This method <strong>must</strong> be overridden in the following cases:</p>
- 
+
  <ul>
  <li><code><a href="../../../reference/chan/content/ChanConfiguration.Board.html#allowArchive">allowArchive</a></code> enabled</li>
  </ul></p>
@@ -2234,9 +2234,9 @@ From class
     <div class="jd-details-descr">
       
   <p><p>Calls when application requests chan to download threads list.</p>
- 
+
  <p>This method <strong>must</strong> be overridden.</p>
- 
+
  <p>Option <code><a href="../../../reference/chan/content/ChanConfiguration.Board.html#allowCatalog">allowCatalog</a></code> allows client to download catalog of threads.
  Use <code><a href="../../../reference/chan/content/ChanPerformer.ReadThreadsData.html#isCatalog()">isCatalog()</a></code> to determine whether it necessary to do.</p></p>
     <table class="responsive">
@@ -2263,7 +2263,11 @@ From class
         </tr>
         <tr>
           <td><code><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></code></td>
-          <td width="100%">if server returned an invalid data.
+          <td width="100%">if server returned an invalid data.</td>
+        </tr>
+        <tr>
+          <td><code><a href="../../../reference/chan/content/RedirectException.html">RedirectException</a></code></td>
+          <td width="100%">if server returned data that can be considered as redirect.
 </td>
         </tr>
       </table>
@@ -2297,7 +2301,7 @@ From class
     <div class="jd-details-descr">
       
   <p><p>Calls when application requests chan to download user boards list.</p>
- 
+
  <p>This method <strong>must</strong> be overridden if option
  <code><a href="../../../reference/chan/content/ChanConfiguration.html#OPTION_READ_USER_BOARDS">OPTION_READ_USER_BOARDS</a></code> is enabled.</p></p>
     <table class="responsive">
@@ -2358,9 +2362,9 @@ From class
     <div class="jd-details-descr">
       
   <p><p>Calls when application requests chan to add thread to archive.</p>
- 
+
  <p>This method <strong>must</strong> be overridden if chan implements archivation.</p>
- 
+
  <p>You can throw <code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code> with <code>ARCHIVE_*</code> error types.</p></p>
     <table class="responsive">
     <tr><th colspan=2>Parameters</th></tr>
@@ -2425,14 +2429,14 @@ From class
     <div class="jd-details-descr">
       
   <p><p>Calls when application requests chan to delete posts.</p>
- 
+
  <p>This method <strong>must</strong> be overridden if option <code><a href="../../../reference/chan/content/ChanConfiguration.Board.html#allowDeleting">allowDeleting</a></code> is
  enabled for this board.</p>
- 
+
  <p><code><a href="../../../reference/chan/content/ChanPerformer.SendDeletePostsData.html#postNumbers">postNumbers</a></code> contains several post numbers. You must perform deleting all of these
  posts. <strong>You must throw <code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code> only in case if nothing was deleted</strong>. In other cases
  you must return and throw nothing.</p>
- 
+
  <p>You can throw <code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code> with <code>DELETE_*</code> error types.</p></p>
     <table class="responsive">
     <tr><th colspan=2>Parameters</th></tr>
@@ -2496,7 +2500,7 @@ From class
     <div class="jd-details-descr">
       
   <p><p>Calls when application requests chan to send post.</p>
- 
+
  <p>You can throw <code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code> with <code>SEND_*</code> error types.</p></p>
     <table class="responsive">
     <tr><th colspan=2>Parameters</th></tr>
@@ -2560,10 +2564,10 @@ From class
     <div class="jd-details-descr">
       
   <p><p>Calls when application requests chan to send report.</p>
- 
+
  <p>This method <strong>must</strong> be overridden if option <code><a href="../../../reference/chan/content/ChanConfiguration.Board.html#allowReporting">allowReporting</a></code> is
  enabled for this board.</p>
- 
+
  <p>You can throw <code><a href="../../../reference/chan/content/ApiException.html">ApiException</a></code> with <code>REPORT_*</code> error types.</p></p>
     <table class="responsive">
     <tr><th colspan=2>Parameters</th></tr>

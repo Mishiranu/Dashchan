@@ -330,34 +330,34 @@ Summary:
 
 <h2>Class Overview</h2>
 <p itemprop="articleBody"><p>Model containing posts data.</p>
- 
+
  <p>This class holds array of posts. Use default constructors to store an array.</p>
- 
+
  <h3>Case 1: read posts response</h3>
- 
+
  <p>This model contains all posts or only new ones if request is partial.</p>
- 
+
  <p>In this case this model may contain unique posters count and original thread URI if your char is archive.
  You can use the following methods to store this data:</p>
- 
+
  <ul>
  <li><code><a href="../../../../reference/chan/content/model/Posts.html#setArchivedThreadUri(android.net.Uri)">setArchivedThreadUri(Uri)</a></code></li>
  <li><code><a href="../../../../reference/chan/content/model/Posts.html#setUniquePosters(int)">setUniquePosters(int)</a></code></li>
  </ul>
- 
+
  <h3>Case 2: part of read threads response</h3>
- 
+
  <p>The first post model is original post. The rest post models are last replies to original one.</p>
- 
+
  <p>In this case this model may contain number of posts, files or posts with files. You can use the following
  method to store this data:</p>
- 
+
  <ul>
  <li><code><a href="../../../../reference/chan/content/model/Posts.html#addPostsCount(int)">addPostsCount(int)</a></code></li>
  <li><code><a href="../../../../reference/chan/content/model/Posts.html#addFilesCount(int)">addFilesCount(int)</a></code></li>
  <li><code><a href="../../../../reference/chan/content/model/Posts.html#addPostsWithFilesCount(int)">addPostsWithFilesCount(int)</a></code></li>
  </ul>
- 
+
  <p>Some chans provides files count in thread. Another chans provides count of posts with files in thread.
  So, if your chan supports multiple files per post, you can use <code><a href="../../../../reference/chan/content/model/Posts.html#addFilesCount(int)">addFilesCount(int)</a></code> in first case
  and <code><a href="../../../../reference/chan/content/model/Posts.html#addPostsWithFilesCount(int)">addPostsWithFilesCount(int)</a></code> in the second case. If your chan supports only one

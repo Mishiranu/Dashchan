@@ -349,9 +349,9 @@ Summary:
 
 <h2>Class Overview</h2>
 <p itemprop="articleBody"><p>Model containing post data.</p>
- 
+
  <p>You can describe thread number and post number with the following methods:</p>
- 
+
  <ul>
  <li><code><a href="../../../../reference/chan/content/model/Post.html#setThreadNumber(java.lang.String)">setThreadNumber(String)</a></code></li>
  <li><code><a href="../../../../reference/chan/content/model/Post.html#setParentPostNumber(java.lang.String)">setParentPostNumber(String)</a></code></li>
@@ -775,6 +775,24 @@ Summary:
             boolean</nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../../reference/chan/content/model/Post.html#isBumpLimitReached()">isBumpLimitReached</a></span>()</nobr>
+        
+        <div class="jd-descrdiv"><p>Returns whether bump limit reached.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            boolean</nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
         <span class="sympad"><a href="../../../../reference/chan/content/model/Post.html#isClosed()">isClosed</a></span>()</nobr>
         
         <div class="jd-descrdiv"><p>Returns whether thread is closed.</div>
@@ -783,7 +801,7 @@ Summary:
 
 
 	 
-    <tr class=" api apilevel-" >
+    <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -801,7 +819,7 @@ Summary:
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -819,7 +837,7 @@ Summary:
 
 
 	 
-    <tr class=" api apilevel-" >
+    <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -837,7 +855,7 @@ Summary:
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -855,7 +873,7 @@ Summary:
 
 
 	 
-    <tr class=" api apilevel-" >
+    <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -873,7 +891,7 @@ Summary:
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -891,7 +909,7 @@ Summary:
 
 
 	 
-    <tr class=" api apilevel-" >
+    <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -909,7 +927,7 @@ Summary:
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -927,7 +945,7 @@ Summary:
 
 
 	 
-    <tr class=" api apilevel-" >
+    <tr class="alt-color api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -945,7 +963,7 @@ Summary:
 
 
 	 
-    <tr class="alt-color api apilevel-" >
+    <tr class=" api apilevel-" >
         <td class="jd-typecol"><nobr>
             
             
@@ -958,6 +976,24 @@ Summary:
         <span class="sympad"><a href="../../../../reference/chan/content/model/Post.html#setAttachments(java.util.Collection<? extends chan.content.model.Attachment>)">setAttachments</a></span>(Collection&lt;?&nbsp;extends&nbsp;<a href="../../../../reference/chan/content/model/Attachment.html">Attachment</a>&gt; attachments)</nobr>
         
         <div class="jd-descrdiv"><p>Stores attachments in this model.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            
+            
+            
+            <a href="../../../../reference/chan/content/model/Post.html">Post</a></nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../../reference/chan/content/model/Post.html#setBumpLimitReached(boolean)">setBumpLimitReached</a></span>(boolean bumpLimitReached)</nobr>
+        
+        <div class="jd-descrdiv"><p>Stores whether thread reached a bump limit.</div>
   
   </td></tr>
 
@@ -1922,7 +1958,7 @@ From interface
     <div class="jd-details-descr">
       
   <p><p>Returns post original comment markup.</p>
- 
+
  <p>This method calls when application want to get original comment markup. By default <code><a href="../../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a></code> provides
  unmark operation, but you can override this method and provide more correct operation if it possible.</p>
 </p>
@@ -2391,6 +2427,43 @@ From interface
 </div>
 
 
+<A NAME="isBumpLimitReached()"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public
+        
+        
+        
+        
+        boolean
+      </span>
+      <span class="sympad">isBumpLimitReached</span>
+      <span class="normal">()</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <p><p>Returns whether bump limit reached.</p>
+</p>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code>boolean</code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
+
+    </div>
+</div>
+
+
 <A NAME="isClosed()"></A>
 
 <div class="jd-details api apilevel-"> 
@@ -2825,6 +2898,52 @@ From interface
 </div>
 
 
+<A NAME="setBumpLimitReached(boolean)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public
+        
+        
+        
+        
+        <a href="../../../../reference/chan/content/model/Post.html">Post</a>
+      </span>
+      <span class="sympad">setBumpLimitReached</span>
+      <span class="normal">(boolean bumpLimitReached)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <p><p>Stores whether thread reached a bump limit. In this case user will see an icon.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>bumpLimitReached</code></td>
+        <td width="100%">
+          <code>boolean</code>:
+          True if bump limit reached, false otherwise.</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../../reference/chan/content/model/Post.html">Post</a></code></td>
+        <td width="100%">This model.
+</td>
+      </tr>
+    </table>
+
+    </div>
+</div>
+
+
 <A NAME="setCapcode(java.lang.String)"></A>
 
 <div class="jd-details api apilevel-"> 
@@ -2987,7 +3106,7 @@ From interface
     <div class="jd-details-descr">
       
   <p><p>Stores post original comment markup in this model.</p>
- 
+
  <p>By default <code><a href="../../../../reference/chan/content/ChanMarkup.html">ChanMarkup</a></code> provides unmark operation. Some chans stores original markup along with
  parsed comment, so you can simplify and precisify unmark operation with this method.</p></p>
     <table class="responsive">

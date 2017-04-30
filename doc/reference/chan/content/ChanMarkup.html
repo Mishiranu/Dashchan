@@ -233,7 +233,7 @@ Doclava
       <ul>
           <li class="api apilevel-"><a href="../../../reference/chan/content/ApiException.html">ApiException</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></li>
-          <li class="api apilevel-"><a href="../../../reference/chan/content/ThreadRedirectException.html">ThreadRedirectException</a></li>
+          <li class="api apilevel-"><a href="../../../reference/chan/content/RedirectException.html">RedirectException</a></li>
       </ul>
     </li>
               
@@ -379,11 +379,11 @@ Summary:
 
 <h2>Class Overview</h2>
 <p itemprop="articleBody"><p>Provides HTML posts handling and post editing.</p>
- 
+
  <p>If your chan supports posting, you must implement <code><a href="../../../reference/chan/content/ChanMarkup.html#obtainCommentEditor(java.lang.String)">obtainCommentEditor(String)</a></code>.</p>
- 
+
  <p>You can configure post markup handling using these methods:<p>
- 
+
  <ul>
  <li><code><a href="../../../reference/chan/content/ChanMarkup.html#addTag(java.lang.String, int)">addTag(String, int)</a></code></li>
  <li><code><a href="../../../reference/chan/content/ChanMarkup.html#addTag(java.lang.String, java.lang.String, int)">addTag(String, String, int)</a></code></li>
@@ -2356,10 +2356,10 @@ From class
     <div class="jd-details-descr">
       
   <p><p>This method calls every time HTML parser reaches links to other posts like <code>&gt;&gt;12345678</code>.</p>
- 
+
  <p>You can leave this method not overridden, but overriding can make this method much faster and more correct
  in some cases.</p>
- 
+
  <p>You must return a <code>Pair</code> of strings where the first string is thread number and the second string is
  post number. You can return both values as null: null thread number means this thread, null post number means
  original post.</p></p>

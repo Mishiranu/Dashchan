@@ -66,7 +66,7 @@
 <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
 <title>
 
-  ThreadRedirectException - Dashchan API Reference |
+  RedirectException - Dashchan API Reference |
 
 Doclava
 
@@ -233,7 +233,7 @@ Doclava
       <ul>
           <li class="api apilevel-"><a href="../../../reference/chan/content/ApiException.html">ApiException</a></li>
           <li class="api apilevel-"><a href="../../../reference/chan/content/InvalidResponseException.html">InvalidResponseException</a></li>
-          <li class="selected api apilevel-"><a href="../../../reference/chan/content/ThreadRedirectException.html">ThreadRedirectException</a></li>
+          <li class="selected api apilevel-"><a href="../../../reference/chan/content/RedirectException.html">RedirectException</a></li>
       </ul>
     </li>
               
@@ -311,10 +311,10 @@ Summary:
 
 
 
-  <a href="#pubctors">Ctors</a>
+
+
+  <a href="#pubmethods">Methods</a>
   
-
-
 
 
 
@@ -340,7 +340,7 @@ Summary:
     final 
     
     class
-<h1 itemprop="name">ThreadRedirectException</h1>
+<h1 itemprop="name">RedirectException</h1>
 
 
 
@@ -403,7 +403,7 @@ Summary:
         
             <td class="jd-inheritance-space">&nbsp;&nbsp;&nbsp;&#x21b3;</td>
          	
-        <td colspan="1" class="jd-inheritance-class-cell">chan.content.ThreadRedirectException</td>
+        <td colspan="1" class="jd-inheritance-class-cell">chan.content.RedirectException</td>
     </tr>
     
 
@@ -419,9 +419,10 @@ Summary:
 
 
 <h2>Class Overview</h2>
-<p itemprop="articleBody"><p>Thrown to inform client about thread redirection. This exceptions is thrown by
- <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadPosts(chan.content.ChanPerformer.ReadPostsData)">onReadPosts(chan.content.ChanPerformer.ReadPostsData)</a></code> when server returned data for
- another thread or another data that might be considered as redirect to another thread.</p>
+<p itemprop="articleBody"><p>Thrown to inform client about redirection. These exceptions is thrown by
+ <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadThreads(chan.content.ChanPerformer.ReadThreadsData)">onReadThreads(chan.content.ChanPerformer.ReadThreadsData)</a></code> or
+ <code><a href="../../../reference/chan/content/ChanPerformer.html#onReadPosts(chan.content.ChanPerformer.ReadPostsData)">onReadPosts(chan.content.ChanPerformer.ReadPostsData)</a></code> when
+ data returned from server might be considered as redirect.</p>
 </p>
 
 
@@ -473,8 +474,12 @@ Summary:
 
 
 
-<!-- ======== CONSTRUCTOR SUMMARY ======== -->
-<table id="pubctors" class="jd-sumtable"><tr><th colspan="12">Public Constructors</th></tr>
+
+
+
+
+<!-- ========== METHOD SUMMARY =========== -->
+<table id="pubmethods" class="jd-sumtable"><tr><th colspan="12">Public Methods</th></tr>
 
 
 
@@ -483,15 +488,15 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
+            static
             
             
-            
-            </nobr>
+            <a href="../../../reference/chan/content/RedirectException.html">RedirectException</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ThreadRedirectException.html#ThreadRedirectException(java.lang.String, java.lang.String, java.lang.String)">ThreadRedirectException</a></span>(String boardName, String threadNumber, String postNumber)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/RedirectException.html#toBoard(java.lang.String)">toBoard</a></span>(String boardName)</nobr>
         
-        <div class="jd-descrdiv"><p>Constructor for <code><a href="../../../reference/chan/content/ThreadRedirectException.html">ThreadRedirectException</a></code>.</div>
+        <div class="jd-descrdiv"><p>Creates a new instance of <code><a href="../../../reference/chan/content/RedirectException.html">RedirectException</a></code> that causes client to follow the board.</div>
   
   </td></tr>
 
@@ -501,25 +506,39 @@ Summary:
         <td class="jd-typecol"><nobr>
             
             
+            static
             
             
-            
-            </nobr>
+            <a href="../../../reference/chan/content/RedirectException.html">RedirectException</a></nobr>
         </td>
         <td class="jd-linkcol" width="100%"><nobr>
-        <span class="sympad"><a href="../../../reference/chan/content/ThreadRedirectException.html#ThreadRedirectException(java.lang.String, java.lang.String)">ThreadRedirectException</a></span>(String threadNumber, String postNumber)</nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/RedirectException.html#toThread(java.lang.String, java.lang.String, java.lang.String)">toThread</a></span>(String boardName, String threadNumber, String postNumber)</nobr>
         
-        <div class="jd-descrdiv"><p>Constructor for <code><a href="../../../reference/chan/content/ThreadRedirectException.html">ThreadRedirectException</a></code>.</div>
+        <div class="jd-descrdiv"><p>Creates a new instance of <code><a href="../../../reference/chan/content/RedirectException.html">RedirectException</a></code> that causes client to follow the thread.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol"><nobr>
+            
+            
+            static
+            
+            
+            <a href="../../../reference/chan/content/RedirectException.html">RedirectException</a></nobr>
+        </td>
+        <td class="jd-linkcol" width="100%"><nobr>
+        <span class="sympad"><a href="../../../reference/chan/content/RedirectException.html#toUri(android.net.Uri)">toUri</a></span>(Uri uri)</nobr>
+        
+        <div class="jd-descrdiv"><p>Creates a new instance of <code><a href="../../../reference/chan/content/RedirectException.html">RedirectException</a></code> that causes client to follow the URI.</div>
   
   </td></tr>
 
 
 
 </table>
-
-
-
-
 
 
 
@@ -1001,12 +1020,20 @@ From class
 <!-- Public ctors -->
 
 
+
 <!-- ========= CONSTRUCTOR DETAIL ======== -->
-<h2>Public Constructors</h2>
+<!-- Protected ctors -->
 
 
 
-<A NAME="ThreadRedirectException(java.lang.String, java.lang.String, java.lang.String)"></A>
+<!-- ========= METHOD DETAIL ======== -->
+<!-- Public methdos -->
+
+<h2>Public Methods</h2>
+
+
+
+<A NAME="toBoard(java.lang.String)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -1014,11 +1041,57 @@ From class
         public
         
         
+        static
         
-        
-        
+        <a href="../../../reference/chan/content/RedirectException.html">RedirectException</a>
       </span>
-      <span class="sympad">ThreadRedirectException</span>
+      <span class="sympad">toBoard</span>
+      <span class="normal">(String boardName)</span>
+    </h4>
+      <div class="api-level">
+        <div></div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <p><p>Creates a new instance of <code><a href="../../../reference/chan/content/RedirectException.html">RedirectException</a></code> that causes client to follow the board.</p></p>
+    <table class="responsive">
+    <tr><th colspan=2>Parameters</th></tr>
+      <tr>
+        <td><code>boardName</code></td>
+        <td width="100%">
+          <code>String</code>:
+          Redirected board name.
+</td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/RedirectException.html">RedirectException</a></code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
+
+    </div>
+</div>
+
+
+<A NAME="toThread(java.lang.String, java.lang.String, java.lang.String)"></A>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public
+        
+        
+        static
+        
+        <a href="../../../reference/chan/content/RedirectException.html">RedirectException</a>
+      </span>
+      <span class="sympad">toThread</span>
       <span class="normal">(String boardName, String threadNumber, String postNumber)</span>
     </h4>
       <div class="api-level">
@@ -1029,7 +1102,7 @@ From class
       </div>
     <div class="jd-details-descr">
       
-  <p><p>Constructor for <code><a href="../../../reference/chan/content/ThreadRedirectException.html">ThreadRedirectException</a></code>.</p></p>
+  <p><p>Creates a new instance of <code><a href="../../../reference/chan/content/RedirectException.html">RedirectException</a></code> that causes client to follow the thread.</p></p>
     <table class="responsive">
     <tr><th colspan=2>Parameters</th></tr>
       <tr>
@@ -1052,12 +1125,19 @@ From class
 </td>
       </tr>
     </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/RedirectException.html">RedirectException</a></code></td>
+        <td width="100%"><!-- no returns description in source --></td>
+      </tr>
+    </table>
 
     </div>
 </div>
 
 
-<A NAME="ThreadRedirectException(java.lang.String, java.lang.String)"></A>
+<A NAME="toUri(android.net.Uri)"></A>
 
 <div class="jd-details api apilevel-"> 
     <h4 class="jd-details-title">
@@ -1065,12 +1145,12 @@ From class
         public
         
         
+        static
         
-        
-        
+        <a href="../../../reference/chan/content/RedirectException.html">RedirectException</a>
       </span>
-      <span class="sympad">ThreadRedirectException</span>
-      <span class="normal">(String threadNumber, String postNumber)</span>
+      <span class="sympad">toUri</span>
+      <span class="normal">(Uri uri)</span>
     </h4>
       <div class="api-level">
         <div></div>
@@ -1080,21 +1160,22 @@ From class
       </div>
     <div class="jd-details-descr">
       
-  <p><p>Constructor for <code><a href="../../../reference/chan/content/ThreadRedirectException.html">ThreadRedirectException</a></code>. This exception will cause keeping old board name.</p></p>
+  <p><p>Creates a new instance of <code><a href="../../../reference/chan/content/RedirectException.html">RedirectException</a></code> that causes client to follow the URI.</p></p>
     <table class="responsive">
     <tr><th colspan=2>Parameters</th></tr>
       <tr>
-        <td><code>threadNumber</code></td>
+        <td><code>uri</code></td>
         <td width="100%">
-          <code>String</code>:
-          Redirected thread number.</td>
-      </tr>
-      <tr>
-        <td><code>postNumber</code></td>
-        <td width="100%">
-          <code>String</code>:
-          Redirected post number.
+          <code>Uri</code>:
+          Redirected URI.
 </td>
+      </tr>
+    </table>
+    <table class="responsive">
+      <tr><th colspan=2>Returns</th></tr>
+      <tr>
+        <td><code><a href="../../../reference/chan/content/RedirectException.html">RedirectException</a></code></td>
+        <td width="100%"><!-- no returns description in source --></td>
       </tr>
     </table>
 
@@ -1102,16 +1183,6 @@ From class
 </div>
 
 
-
-
-
-<!-- ========= CONSTRUCTOR DETAIL ======== -->
-<!-- Protected ctors -->
-
-
-
-<!-- ========= METHOD DETAIL ======== -->
-<!-- Public methdos -->
 
 
 
