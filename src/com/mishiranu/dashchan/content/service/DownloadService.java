@@ -51,6 +51,7 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.DownloadManager;
+import com.mishiranu.dashchan.content.FileProvider;
 import com.mishiranu.dashchan.content.async.ReadFileTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.FileHolder;
@@ -150,6 +151,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 				errorTasks.remove(taskData);
 				successTasks.remove(taskData);
 				if (success) {
+					scanFile(file);
 					successTasks.add(taskData);
 				} else {
 					errorTasks.add(taskData);
@@ -166,10 +168,11 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 					TaskData taskData = successTasks.get(successTasks.size() - 1);
 					String extension = StringUtils.getFileExtension(taskData.to.getPath());
 					String type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
-					Uri uri = taskData.to.equals(scannedMediaFile) ? scannedMediaUri : Uri.fromFile(taskData.to);
+					Uri uri = taskData.to.equals(scannedMediaFile) ? scannedMediaUri
+							: FileProvider.convertDownloadsFile(taskData.to, type);
 					try {
-						context.startActivity(new Intent(Intent.ACTION_VIEW).setDataAndType(uri,
-								type).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+						context.startActivity(new Intent(Intent.ACTION_VIEW)
+								.setDataAndType(uri, type).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
 					} catch (ActivityNotFoundException e) {
 						ToastUtils.show(this, R.string.message_unknown_address);
 					}
@@ -520,7 +523,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 	@Override
 	public void onFinishDownloading(boolean success, Uri uri, File file, ErrorItem errorItem) {
 		if (success) {
-			MediaScannerConnection.scanFile(context, new String[] {file.getAbsolutePath()}, null, this);
+			scanFile(file);
 		}
 		boolean local = readFileTask.isDownloadingFromCache();
 		readFileTask = null;
@@ -565,6 +568,11 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 	@Override
 	public void onFinishDownloadingInThread() {
 		DownloadManager.getInstance().notifyFinishDownloadingInThread();
+	}
+
+	private void scanFile(File file) {
+		String[] fileArray = {file.getAbsolutePath()};
+		MediaScannerConnection.scanFile(context, fileArray, null, this);
 	}
 
 	@Override

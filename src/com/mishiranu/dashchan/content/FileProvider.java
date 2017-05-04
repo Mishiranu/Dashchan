@@ -31,20 +31,24 @@ import android.os.ParcelFileDescriptor;
 import android.provider.OpenableColumns;
 
 import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.preference.Preferences;
 
 import chan.util.StringUtils;
 
 public class FileProvider extends ContentProvider {
 	private static final String AUTHORITY = "com.mishiranu.providers.dashchan";
 	private static final String PATH_UPDATES = "updates";
+	private static final String PATH_DOWNLOADS = "downloads";
 
 	private static final int URI_UPDATES = 1;
+	private static final int URI_DOWNLOADS = 2;
 
 	private static final UriMatcher URI_MATCHER;
 
 	static {
 		URI_MATCHER = new UriMatcher(UriMatcher.NO_MATCH);
 		URI_MATCHER.addURI(AUTHORITY, PATH_UPDATES + "/*", URI_UPDATES);
+		URI_MATCHER.addURI(AUTHORITY, PATH_DOWNLOADS + "/*", URI_DOWNLOADS);
 	}
 
 	@Override
@@ -84,11 +88,40 @@ public class FileProvider extends ContentProvider {
 		return uri;
 	}
 
+	private static File lastDownloadsFile;
+	private static Uri lastDownloadsUri;
+	private static String lastDownloadsFileType;
+
+	public static Uri convertDownloadsFile(File file, String type) {
+		if (C.API_NOUGAT) {
+			String filePath = file.getAbsolutePath();
+			String directoryPath = Preferences.getDownloadDirectory().getAbsolutePath();
+			if (filePath.startsWith(directoryPath)) {
+				filePath = filePath.substring(directoryPath.length());
+				if (filePath.startsWith("/")) {
+					filePath = filePath.substring(1);
+				}
+				// Allow only one URI for current notification
+				lastDownloadsFile = file;
+				lastDownloadsFileType = type;
+				lastDownloadsUri = new Uri.Builder().scheme("content").authority(AUTHORITY)
+						.appendPath(PATH_DOWNLOADS).appendEncodedPath(filePath).build();
+				return lastDownloadsUri;
+			}
+		}
+		return Uri.fromFile(file);
+	}
+
 	@Override
 	public String getType(Uri uri) {
 		switch (URI_MATCHER.match(uri)) {
 			case URI_UPDATES: {
 				return "application/vnd.android.package-archive";
+			}
+			case URI_DOWNLOADS: {
+				if (lastDownloadsFileType != null) {
+					return lastDownloadsFileType;
+				}
 			}
 			default: {
 				throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -108,6 +141,11 @@ public class FileProvider extends ContentProvider {
 					return ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
 				}
 			}
+			case URI_DOWNLOADS: {
+				if (uri.equals(lastDownloadsUri)) {
+					return ParcelFileDescriptor.open(lastDownloadsFile, ParcelFileDescriptor.MODE_READ_ONLY);
+				}
+			}
 			default: {
 				throw new FileNotFoundException();
 			}
@@ -118,8 +156,10 @@ public class FileProvider extends ContentProvider {
 
 	@Override
 	public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+		int matchResult = URI_MATCHER.match(uri);
 		switch (URI_MATCHER.match(uri)) {
-			case URI_UPDATES: {
+			case URI_UPDATES:
+			case URI_DOWNLOADS: {
 				if (projection == null) {
 					projection = PROJECTION;
 				}
@@ -132,7 +172,17 @@ public class FileProvider extends ContentProvider {
 					throw new SQLiteException("No such column: " + column);
 				}
 				MatrixCursor cursor = new MatrixCursor(projection);
-				File file = getUpdatesFile(getContext(), uri.getLastPathSegment());
+				File file = null;
+				switch (matchResult) {
+					case URI_UPDATES: {
+						file = getUpdatesFile(getContext(), uri.getLastPathSegment());
+						break;
+					}
+					case URI_DOWNLOADS: {
+						file = lastDownloadsFile;
+						break;
+					}
+				}
 				if (file != null) {
 					Object[] values = new Object[projection.length];
 					for (int i = 0; i < projection.length; i++) {

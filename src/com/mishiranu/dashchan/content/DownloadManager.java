@@ -33,7 +33,6 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.text.Editable;
@@ -767,9 +766,6 @@ public class DownloadManager {
 			} finally {
 				IOUtils.close(input);
 				IOUtils.close(output);
-			}
-			if (success) {
-				MediaScannerConnection.scanFile(context, new String[] {file.getAbsolutePath()}, null, null);
 			}
 			DownloadService.showFake(context, file, success);
 		}
