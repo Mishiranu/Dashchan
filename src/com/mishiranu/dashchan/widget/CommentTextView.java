@@ -67,7 +67,6 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 public class CommentTextView extends TextView {
 	private final int[][] deltaAttempts;
 	private final int touchSlop;
-	private final int selectionPadding;
 
 	private boolean selectionMode;
 	private ClickableSpan spanToClick;
@@ -141,7 +140,6 @@ public class CommentTextView extends TextView {
 			add += BASE_POINTS.length;
 		}
 		touchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
-		selectionPadding = (int) (64f * density);
 		super.setCustomSelectionActionModeCallback(new CustomSelectionCallback());
 		super.setTextIsSelectable(true);
 	}
@@ -248,7 +246,7 @@ public class CommentTextView extends TextView {
 	private static final Pattern LIST_PATTERN = Pattern.compile("^(?:(?:\\d+[\\.\\)]|[\u2022-]) |>(?!>) ?)");
 
 	private void sendFakeMotionEvent(int action, int x, int y) {
-		MotionEvent motionEvent = MotionEvent.obtain(0, SystemClock.uptimeMillis(),action, x, y, 0);
+		MotionEvent motionEvent = MotionEvent.obtain(0, SystemClock.uptimeMillis(), action, x, y, 0);
 		onTouchEvent(motionEvent);
 		motionEvent.recycle();
 	}
@@ -300,13 +298,26 @@ public class CommentTextView extends TextView {
 		x = getTotalPaddingLeft();
 		y = getTotalPaddingRight();
 		setSelectionMode(true);
-		sendFakeMotionEvent(MotionEvent.ACTION_DOWN, x, y);
-		sendFakeMotionEvent(MotionEvent.ACTION_UP, x, y);
-		sendFakeMotionEvent(MotionEvent.ACTION_DOWN, x, y);
-		sendFakeMotionEvent(MotionEvent.ACTION_UP, x, y);
-		Selection.setSelection(spannable, start, end);
-		removeCallbacks(resetSelectionRunnable);
-		postDelayed(resetSelectionRunnable, 500);
+		int finalX = x;
+		int finalY = y;
+		int finalStart = start;
+		int finalEnd = end;
+		post(() -> {
+			removeCallbacks(resetSelectionRunnable);
+			CharSequence newText = getText();
+			if (!(newText instanceof Spannable)) {
+				resetSelectionRunnable.run();
+				return;
+			}
+			Spannable newSpannable = (Spannable) text;
+			sendFakeMotionEvent(MotionEvent.ACTION_DOWN, finalX, finalY);
+			sendFakeMotionEvent(MotionEvent.ACTION_UP, finalX, finalY);
+			sendFakeMotionEvent(MotionEvent.ACTION_DOWN, finalX, finalY);
+			sendFakeMotionEvent(MotionEvent.ACTION_UP, finalX, finalY);
+			int max = newSpannable.length();
+			Selection.setSelection(newSpannable, Math.min(finalStart, max), Math.min(finalEnd, max));
+			postDelayed(resetSelectionRunnable, 500);
+		});
 	}
 
 	public void startSelection() {
@@ -491,21 +502,20 @@ public class CommentTextView extends TextView {
 
 	public void bindSelectionPaddingView(View selectionPaddingView) {
 		if (this.selectionPaddingView != null) {
-			this.selectionPaddingView.getLayoutParams().height = 0;
+			this.selectionPaddingView.setVisibility(View.GONE);
 		}
 		this.selectionPaddingView = selectionPaddingView;
 		updateUseAdditionalPadding();
 	}
 
 	public int getSelectionPadding() {
-		return selectionPaddingView != null ? selectionPadding : 0;
+		return selectionPaddingView != null ? Math.max(selectionPaddingView.getLayoutParams().height, 0) : 0;
 	}
 
 	private void updateUseAdditionalPadding() {
 		boolean useAdditionalPadding = selectionPaddingView != null && selectionMode;
 		if (this.useAdditionalPadding != useAdditionalPadding) {
-			selectionPaddingView.getLayoutParams().height = useAdditionalPadding ? selectionPadding : 0;
-			selectionPaddingView.requestLayout();
+			selectionPaddingView.setVisibility(useAdditionalPadding ? View.VISIBLE : View.GONE);
 			this.useAdditionalPadding = useAdditionalPadding;
 		}
 	}

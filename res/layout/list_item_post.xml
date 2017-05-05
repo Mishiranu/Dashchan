@@ -109,7 +109,8 @@
 	<View
 		android:id="@+id/text_selection_padding"
 		android:layout_width="match_parent"
-		android:layout_height="0dp" />
+		android:layout_height="64dp"
+		android:visibility="gone" />
 
 	<View
 		android:id="@+id/text_bar_padding"
