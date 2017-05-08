@@ -49,6 +49,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | makabapaid      | 2channel.hk          | [DashchanMakabaPaid.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanMakabaPaid.apk)           |
 | meguca          | meguca.org           | [DashchanMeguca.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanMeguca.apk)                   |
 | nowere          | nowere.net           | [DashchanNowere.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNowere.apk)                   |
+| nullchan        | 0chan.hk             | [DashchanNullchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNullchan.apk)               |
 | nulldvachin     | 02ch.in              | [DashchanNulldvachin.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNulldvachin.apk)         |
 | nulldvachnet    | 02ch.net             | [DashchanNulldvachnet.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNulldvachnet.apk)       |
 | nulleu          | 0chan.ru.net         | [DashchanNulleu.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNulleu.apk)                   |
