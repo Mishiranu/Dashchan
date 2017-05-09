@@ -756,7 +756,7 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 					if (threadData == null) {
 						hidden = getHiddenStateFromModel();
 					} else {
-						hidden = HiddenThreadsDatabase.getInstance().check(getChanName(), boardName, getPostNumber());
+						hidden = HiddenThreadsDatabase.getInstance().check(getChanName(), boardName, getThreadNumber());
 					}
 					if (hidden == C.HIDDEN_UNKNOWN) {
 						hideReason = hidePerformer.checkHidden(this);
