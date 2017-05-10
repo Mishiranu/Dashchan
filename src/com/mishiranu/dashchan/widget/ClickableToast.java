@@ -296,7 +296,8 @@ public class ClickableToast {
 			return true;
 		} catch (WindowManager.BadTokenException e) {
 			String errorMessage = e.getMessage();
-			if (errorMessage != null && errorMessage.contains("permission denied")) {
+			if (errorMessage != null && (errorMessage.contains("permission denied") ||
+					errorMessage.contains("has already been added"))) {
 				return false;
 			}
 			throw e;
