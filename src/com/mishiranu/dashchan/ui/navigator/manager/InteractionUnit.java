@@ -17,7 +17,6 @@
 package com.mishiranu.dashchan.ui.navigator.manager;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.Map;
 
 import android.app.AlertDialog;
@@ -484,12 +483,9 @@ public class InteractionUnit {
 							break;
 						}
 						case MENU_HIDE: {
-							LinkedHashSet<String> referencesFrom = postItem.getReferencesFrom();
 							DialogMenu dialogMenu = new DialogMenu(context, this);
 							dialogMenu.addItem(MENU_HIDE_POST, R.string.action_hide_post);
-							if (referencesFrom != null && referencesFrom.size() > 0) {
-								dialogMenu.addItem(MENU_HIDE_REPLIES, R.string.action_hide_replies);
-							}
+							dialogMenu.addItem(MENU_HIDE_REPLIES, R.string.action_hide_replies);
 							dialogMenu.addItem(MENU_HIDE_NAME, R.string.action_hide_name);
 							dialogMenu.addItem(MENU_HIDE_SIMILAR, R.string.action_hide_similar);
 							dialogMenu.show();
