@@ -273,7 +273,7 @@ public final class WebSocket {
 									break;
 								}
 								default: {
-									throw new IOException("Unkown opcode: " + frame.opcode);
+									throw new IOException("Unknown opcode: " + frame.opcode);
 								}
 							}
 						} else {
@@ -466,7 +466,7 @@ public final class WebSocket {
 			while (true) {
 				int b = inputStream.read();
 				if (b == -1) {
-					throw new IOException("test");
+					throw new HttpException(ErrorItem.TYPE_CONNECTION_RESET, false, true);
 				}
 				byteArrayOutputStream.write(b);
 				switch (b) {
