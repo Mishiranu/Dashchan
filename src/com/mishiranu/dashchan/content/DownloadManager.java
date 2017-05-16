@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
-import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.BaseAdapter;
@@ -67,6 +66,7 @@ import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
+import com.mishiranu.dashchan.util.MimeTypes;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 
@@ -675,7 +675,7 @@ public class DownloadManager {
 				dialog.setOnShowListener(d -> {
 					dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v -> {
 						String extension = StringUtils.getFileExtension(singleFile.getPath());
-						String type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+						String type = MimeTypes.forExtension(extension, "image/jpeg");
 						try {
 							context.startActivity(new Intent(Intent.ACTION_VIEW).setDataAndType
 									(Uri.fromFile(singleFile), type).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));

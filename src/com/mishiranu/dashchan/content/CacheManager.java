@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Pair;
-import android.webkit.MimeTypeMap;
 
 import chan.content.ChanConfiguration;
 import chan.content.ChanManager;
@@ -60,6 +59,7 @@ import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.LruCache;
+import com.mishiranu.dashchan.util.MimeTypes;
 
 public class CacheManager implements Runnable {
 	private static final int MAX_THUMBNAILS_PART = 30;
@@ -995,7 +995,7 @@ public class CacheManager implements Runnable {
 			return null;
 		}
 		String extension = StringUtils.getFileExtension(fileName);
-		String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+		String mimeType = MimeTypes.forExtension(extension);
 		if (mimeType == null) {
 			mimeType = "image/jpeg";
 			extension = "jpg";

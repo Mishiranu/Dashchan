@@ -38,7 +38,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.DocumentsContract;
-import android.webkit.MimeTypeMap;
 
 import chan.util.StringUtils;
 
@@ -197,11 +196,8 @@ public class IOUtils {
 							}
 						}
 						if (childUri == null) {
-							String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(StringUtils
-									.getFileExtension(displayName));
-							if (mimeType == null) {
-								mimeType = "application/octet-stream";
-							}
+							String mimeType = MimeTypes.forExtension(StringUtils.getFileExtension(displayName),
+									"application/octet-stream");
 							uri = DocumentsContract.createDocument(contentResolver, uri, mimeType, displayName);
 							if (uri == null) {
 								throw new FileNotFoundException();

@@ -39,7 +39,6 @@ import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
-import android.webkit.MimeTypeMap;
 
 import chan.util.StringUtils;
 
@@ -47,6 +46,7 @@ import com.mishiranu.dashchan.media.JpegData;
 import com.mishiranu.dashchan.media.WebViewBitmapDecoder;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
+import com.mishiranu.dashchan.util.MimeTypes;
 
 public abstract class FileHolder implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -518,8 +518,10 @@ public abstract class FileHolder implements Serializable {
 							if (mimeTypeIndex >= 0) {
 								String mimeType = cursor.getString(mimeTypeIndex);
 								if (mimeType != null) {
-									String extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType);
-									name = ++fileNameStart + "." + extension;
+									String extension = MimeTypes.toExtension(mimeType);
+									if (!StringUtils.isEmpty(extension)) {
+										name = ++fileNameStart + "." + extension;
+									}
 								}
 							}
 						}

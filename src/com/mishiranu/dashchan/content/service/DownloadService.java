@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,6 @@ import android.text.style.StyleSpan;
 import android.text.style.TypefaceSpan;
 import android.util.DisplayMetrics;
 import android.view.ContextThemeWrapper;
-import android.webkit.MimeTypeMap;
 
 import chan.util.StringUtils;
 
@@ -56,6 +55,7 @@ import com.mishiranu.dashchan.content.async.ReadFileTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.preference.Preferences;
+import com.mishiranu.dashchan.util.MimeTypes;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
@@ -167,7 +167,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 				if (successTasks.size() > 0) {
 					TaskData taskData = successTasks.get(successTasks.size() - 1);
 					String extension = StringUtils.getFileExtension(taskData.to.getPath());
-					String type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+					String type = MimeTypes.forExtension(extension, "image/jpeg");
 					Uri uri = taskData.to.equals(scannedMediaFile) ? scannedMediaUri
 							: FileProvider.convertDownloadsFile(taskData.to, type);
 					try {

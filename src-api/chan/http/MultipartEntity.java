@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,12 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Random;
 
-import android.webkit.MimeTypeMap;
-
 import chan.annotation.Extendable;
 import chan.annotation.Public;
+import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.content.model.FileHolder;
+import com.mishiranu.dashchan.util.MimeTypes;
 
 @Extendable
 public class MultipartEntity implements RequestEntity {
@@ -297,12 +297,7 @@ public class MultipartEntity implements RequestEntity {
 	}
 
 	static String obtainMimeType(String fileName) {
-		String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap
-				.getFileExtensionFromUrl(fileName));
-		if (mimeType == null) {
-			mimeType = "application/octet-stream";
-		}
-		return mimeType;
+		return MimeTypes.forExtension(StringUtils.getFileExtension(fileName), "application/octet-stream");
 	}
 
 	public interface OpenableOutputListener {
