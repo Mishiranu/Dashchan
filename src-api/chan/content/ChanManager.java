@@ -680,10 +680,8 @@ public class ChanManager {
 
 	private boolean newExtensionsInstalled = false;
 
-	public boolean checkNewExtensionsInstalled() {
-		boolean result = newExtensionsInstalled;
-		newExtensionsInstalled = false;
-		return result;
+	public boolean hasNewExtensionsInstalled() {
+		return newExtensionsInstalled;
 	}
 
 	private final WeakObservable<Runnable> installationObservable = new WeakObservable<>();

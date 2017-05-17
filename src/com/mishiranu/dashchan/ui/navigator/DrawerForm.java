@@ -99,6 +99,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 
 	private final EditText searchEdit;
 	private final View headerView;
+	private final View restartView;
 	private final TextView chanNameView;
 	private final ImageView chanSelectorIcon;
 
@@ -137,6 +138,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		public int onEnterNumber(int number);
 		public void onSelectDrawerMenuItem(int item);
 		public ArrayList<PageHolder> getDrawerPageHolders();
+		public void restartApplication();
 	}
 
 	public DrawerForm(Context context, Context unstyledContext, Callback callback,
@@ -145,14 +147,19 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		this.unstyledContext = unstyledContext;
 		this.callback = callback;
 		this.watcherServiceClient = watcherServiceClient;
+
 		float density = ResourceUtils.obtainDensity(context);
+
 		LinearLayout linearLayout = new LinearLayout(context);
 		linearLayout.setOrientation(LinearLayout.VERTICAL);
 		linearLayout.setLayoutParams(new SortableListView.LayoutParams(SortableListView.LayoutParams.MATCH_PARENT,
 				SortableListView.LayoutParams.WRAP_CONTENT));
+		headerView = linearLayout;
+
 		LinearLayout editTextContainer = new LinearLayout(context);
 		editTextContainer.setGravity(Gravity.CENTER_VERTICAL);
 		linearLayout.addView(editTextContainer);
+
 		searchEdit = new SafePasteEditText(context);
 		searchEdit.setOnKeyListener((v, keyCode, event) -> {
 			if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
@@ -164,6 +171,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		searchEdit.setOnEditorActionListener(this);
 		searchEdit.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
 		searchEdit.setImeOptions(EditorInfo.IME_ACTION_GO | EditorInfo.IME_FLAG_NO_EXTRACT_UI);
+
 		ImageView searchIcon = new ImageView(context, null, android.R.attr.buttonBarButtonStyle);
 		searchIcon.setImageResource(ResourceUtils.getResourceId(context, R.attr.buttonForward, 0));
 		searchIcon.setScaleType(ImageView.ScaleType.CENTER);
@@ -176,6 +184,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		} else {
 			editTextContainer.setPadding(0, (int) (2f * density), (int) (4f * density), (int) (2f * density));
 		}
+
 		LinearLayout selectorContainer = new LinearLayout(context);
 		selectorContainer.setBackgroundResource(ResourceUtils.getResourceId(context,
 				android.R.attr.selectableItemBackground, 0));
@@ -193,6 +202,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		} else {
 			selectorContainer.setPadding((int) (8f * density), 0, (int) (12f * density), 0);
 		}
+
 		chanNameView = new TextView(context, null, android.R.attr.textAppearanceListItem);
 		chanNameView.setTextSize(TypedValue.COMPLEX_UNIT_SP, C.API_LOLLIPOP ? 14f : 16f);
 		if (C.API_LOLLIPOP) {
@@ -202,12 +212,43 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		}
 		selectorContainer.addView(chanNameView, new LinearLayout.LayoutParams(0,
 				LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+
 		chanSelectorIcon = new ImageView(context);
 		chanSelectorIcon.setImageResource(ResourceUtils.getResourceId(context, R.attr.buttonDropDown, 0));
 		selectorContainer.addView(chanSelectorIcon, (int) (24f * density), (int) (24f * density));
 		((LinearLayout.LayoutParams) chanSelectorIcon.getLayoutParams()).gravity = Gravity.CENTER_VERTICAL
 				| Gravity.END;
-		headerView = linearLayout;
+
+		LinearLayout restartLayout = new LinearLayout(context);
+		restartLayout.setOrientation(LinearLayout.VERTICAL);
+		linearLayout.addView(restartLayout, LinearLayout.LayoutParams.MATCH_PARENT,
+				LinearLayout.LayoutParams.WRAP_CONTENT);
+		restartLayout.addView(makeSimpleDivider(), LinearLayout.LayoutParams.MATCH_PARENT,
+				LinearLayout.LayoutParams.WRAP_CONTENT);
+		restartView = restartLayout;
+
+		TextView restartTextView = new TextView(context, null, android.R.attr.textAppearanceSmall);
+		restartTextView.setText(R.string.message_packages_installed);
+		restartTextView.setTextColor(ResourceUtils.getColor(context, android.R.attr.textColorPrimary));
+		if (C.API_LOLLIPOP) {
+			restartTextView.setPadding((int) (16f * density), (int) (8f * density),
+					(int) (16f * density), (int) (8f * density));
+		} else {
+			restartTextView.setPadding((int) (8f * density), (int) (8f * density),
+					(int) (8f * density), (int) (8f * density));
+		}
+		restartLayout.addView(restartTextView, LinearLayout.LayoutParams.MATCH_PARENT,
+				LinearLayout.LayoutParams.WRAP_CONTENT);
+
+		View restartButton = makeView(false, false, false, density);
+		restartButton.setBackground(ResourceUtils.getDrawable(context,
+				android.R.attr.listChoiceBackgroundIndicator, 0));
+		ViewHolder restartButtonViewHolder = (ViewHolder) restartButton.getTag();
+		restartButtonViewHolder.text.setText(R.string.action_restart);
+		restartButton.setOnClickListener(v -> callback.restartApplication());
+		restartLayout.addView(restartButton, LinearLayout.LayoutParams.MATCH_PARENT,
+				LinearLayout.LayoutParams.WRAP_CONTENT);
+
 		inputMethodManager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
 		chans.add(new ListItem(ListItem.ITEM_DIVIDER, 0, 0, null));
 		int color = ResourceUtils.getColor(context, R.attr.drawerIconColor);
@@ -296,7 +337,13 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			chanSelectorIcon.setRotation(enabled ? 180f : 0f);
 			notifyDataSetChanged();
 			listView.setSelection(0);
+			updateRestartViewVisibility();
 		}
+	}
+
+	public void updateRestartViewVisibility() {
+		restartView.setVisibility(!chanSelectMode && ChanManager.getInstance().hasNewExtensionsInstalled()
+				? View.VISIBLE : View.GONE);
 	}
 
 	@Override
@@ -369,6 +416,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			this.showHistory = showHistory;
 			updateConfiguration(chanName, true);
 		}
+		updateRestartViewVisibility();
 	}
 
 	public void invalidateItems(boolean pages, boolean favorites) {

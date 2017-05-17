@@ -578,9 +578,6 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 			page.resume();
 		}
 		clickableToastHolder.onResume();
-		if (!isRecreateCalled()) {
-			showRestartDialogIfNeeded();
-		}
 		ChanManager.getInstance().getInstallationObservable().register(installationCallback);
 		ForegroundManager.register(this);
 	}
@@ -661,26 +658,6 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 					super.onBackPressed();
 				}
 			}
-		}
-	}
-
-	private final Runnable installationCallback = () -> showRestartDialogIfNeeded();
-	private boolean mayShowRestartDialog = true;
-
-	private void showRestartDialogIfNeeded() {
-		if (ChanManager.getInstance().checkNewExtensionsInstalled() && mayShowRestartDialog) {
-			mayShowRestartDialog = false;
-			AlertDialog dialog = new AlertDialog.Builder(this).setMessage(R.string.message_packages_installed)
-					.setPositiveButton(R.string.action_restart, (d, which) -> {
-				Bundle outState = new Bundle();
-				writePagesState(outState);
-				pageManager.writeToStorage(outState);
-				NavigationUtils.restartApplication(this);
-			}).setNegativeButton(android.R.string.cancel, null).create();
-			dialog.setOnDismissListener(d -> mayShowRestartDialog = true);
-			dialog.setCanceledOnTouchOutside(false);
-			dialog.show();
-			uiManager.dialog().notifySwitchBackground();
 		}
 	}
 
@@ -1253,6 +1230,16 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	@Override
 	public ArrayList<PageHolder> getDrawerPageHolders() {
 		return pageManager.getPages();
+	}
+
+	private final Runnable installationCallback = () -> drawerForm.updateRestartViewVisibility();
+
+	@Override
+	public void restartApplication() {
+		Bundle outState = new Bundle();
+		writePagesState(outState);
+		pageManager.writeToStorage(outState);
+		NavigationUtils.restartApplication(this);
 	}
 
 	private final BroadcastReceiver newPostReceiver = AndroidUtils.createReceiver((r, c, i) -> {
