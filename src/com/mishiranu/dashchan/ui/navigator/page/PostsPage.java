@@ -27,7 +27,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
@@ -78,6 +77,7 @@ import com.mishiranu.dashchan.ui.navigator.manager.HidePerformer;
 import com.mishiranu.dashchan.ui.navigator.manager.ThreadshotPerformer;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.ui.posting.Replyable;
+import com.mishiranu.dashchan.util.AndroidUtils;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
@@ -112,23 +112,20 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 
 	private final ArrayList<String> lastEditedPostNumbers = new ArrayList<>();
 
-	private final BroadcastReceiver galleryPagerReceiver = new BroadcastReceiver() {
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			String chanName = intent.getStringExtra(C.EXTRA_CHAN_NAME);
-			String boardName = intent.getStringExtra(C.EXTRA_BOARD_NAME);
-			String threadNumber = intent.getStringExtra(C.EXTRA_THREAD_NUMBER);
-			PageHolder pageHolder = getPageHolder();
-			if (pageHolder.chanName.equals(chanName) && StringUtils.equals(pageHolder.boardName, boardName)
-					&& pageHolder.threadNumber.equals(threadNumber)) {
-				String postNumber = intent.getStringExtra(C.EXTRA_POST_NUMBER);
-				int position = getAdapter().findPositionByPostNumber(postNumber);
-				if (position >= 0) {
-					ListScroller.scrollTo(getListView(), position);
-				}
+	private final BroadcastReceiver galleryPagerReceiver = AndroidUtils.createReceiver((receiver, context, intent) -> {
+		String chanName = intent.getStringExtra(C.EXTRA_CHAN_NAME);
+		String boardName = intent.getStringExtra(C.EXTRA_BOARD_NAME);
+		String threadNumber = intent.getStringExtra(C.EXTRA_THREAD_NUMBER);
+		PageHolder pageHolder = getPageHolder();
+		if (pageHolder.chanName.equals(chanName) && StringUtils.equals(pageHolder.boardName, boardName)
+				&& pageHolder.threadNumber.equals(threadNumber)) {
+			String postNumber = intent.getStringExtra(C.EXTRA_POST_NUMBER);
+			int position = getAdapter().findPositionByPostNumber(postNumber);
+			if (position >= 0) {
+				ListScroller.scrollTo(getListView(), position);
 			}
 		}
-	};
+	});
 
 	@Override
 	protected void onCreate() {

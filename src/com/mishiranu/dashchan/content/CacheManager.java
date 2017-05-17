@@ -37,8 +37,6 @@ import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
@@ -55,6 +53,7 @@ import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.preference.Preferences;
+import com.mishiranu.dashchan.util.AndroidUtils;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
@@ -81,15 +80,10 @@ public class CacheManager implements Runnable {
 	private CacheManager() {
 		handleGalleryShareFiles();
 		syncCache();
-		BroadcastReceiver mediaMountedReceiver = new BroadcastReceiver() {
-			@Override
-			public void onReceive(Context context, Intent intent) {
-				syncCache();
-			}
-		};
 		IntentFilter intentFilter = new IntentFilter(Intent.ACTION_MEDIA_MOUNTED);
 		intentFilter.addDataScheme("file");
-		MainApplication.getInstance().registerReceiver(mediaMountedReceiver, intentFilter);
+		MainApplication.getInstance()
+				.registerReceiver(AndroidUtils.createReceiver((r, c, i) -> syncCache()), intentFilter);
 		new Thread(this, "CacheManagerWorker").start();
 	}
 

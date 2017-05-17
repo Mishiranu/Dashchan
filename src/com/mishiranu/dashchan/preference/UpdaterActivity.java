@@ -30,10 +30,10 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 
-import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.content.FileProvider;
 import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.ui.StateActivity;
+import com.mishiranu.dashchan.util.AndroidUtils;
 
 public class UpdaterActivity extends StateActivity {
 	private static final String EXTRA_URI_STRINGS = "uriStrings";
@@ -97,75 +97,71 @@ public class UpdaterActivity extends StateActivity {
 	private static BroadcastReceiver updatesReceiver;
 
 	public static void initUpdater(long clientId, Collection<Long> ids) {
-		Context context = MainApplication.getInstance();
+		Context registerContext = MainApplication.getInstance();
 		if (updatesReceiver != null) {
-			context.unregisterReceiver(updatesReceiver);
+			registerContext.unregisterReceiver(updatesReceiver);
 		}
 		HashSet<Long> newIds = new HashSet<>(ids);
 		if (clientId >= 0) {
 			newIds.add(clientId);
 		}
-		updatesReceiver = new BroadcastReceiver() {
-			private final HashMap<String, Long> downloadIds = new HashMap<>();
-			private final ArrayList<String> uriStrings = new ArrayList<>();
-			private String clientUriString = null;
-
-			@Override
-			public void onReceive(Context context, Intent intent) {
-				if (this != updatesReceiver) {
-					return;
-				}
-				long id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
-				if (id >= 0 && newIds.remove(id)) {
-					boolean success = false;
-					DownloadManager downloadManager = (DownloadManager) context.getSystemService(DOWNLOAD_SERVICE);
-					Cursor cursor = downloadManager.query(new DownloadManager.Query().setFilterById(id));
-					if (cursor != null) {
-						try {
-							if (cursor.moveToFirst()) {
-								int status = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS));
-								if (status == DownloadManager.STATUS_SUCCESSFUL) {
-									String uriString = cursor.getString(cursor.getColumnIndexOrThrow
-											(DownloadManager.COLUMN_LOCAL_URI));
-									if (uriString != null) {
-										if (id == clientId) {
-											clientUriString = uriString;
-										} else {
-											uriStrings.add(uriString);
-										}
-										downloadIds.put(uriString, id);
-										success = true;
+		HashMap<String, Long> downloadIds = new HashMap<>();
+		ArrayList<String> uriStrings = new ArrayList<>();
+		String[] clientUriString = {null};
+		updatesReceiver = AndroidUtils.createReceiver((receiver, context, intent) -> {
+			if (receiver != updatesReceiver) {
+				return;
+			}
+			long id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
+			if (id >= 0 && newIds.remove(id)) {
+				boolean success = false;
+				DownloadManager downloadManager = (DownloadManager) context.getSystemService(DOWNLOAD_SERVICE);
+				Cursor cursor = downloadManager.query(new DownloadManager.Query().setFilterById(id));
+				if (cursor != null) {
+					try {
+						if (cursor.moveToFirst()) {
+							int status = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS));
+							if (status == DownloadManager.STATUS_SUCCESSFUL) {
+								String uriString = cursor.getString(cursor.getColumnIndexOrThrow
+										(DownloadManager.COLUMN_LOCAL_URI));
+								if (uriString != null) {
+									if (id == clientId) {
+										clientUriString[0] = uriString;
+									} else {
+										uriStrings.add(uriString);
 									}
+									downloadIds.put(uriString, id);
+									success = true;
 								}
 							}
-						} catch (IllegalArgumentException e) {
-							// Thrown by getColumnIndexOrThrow
-						} finally {
-							cursor.close();
 						}
-					}
-					boolean unregister = false;
-					if (success) {
-						if (newIds.isEmpty()) {
-							if (clientUriString != null) {
-								uriStrings.add(clientUriString);
-							}
-							context.startActivity(new Intent(context, UpdaterActivity.class)
-									.putStringArrayListExtra(EXTRA_URI_STRINGS, uriStrings)
-									.putExtra(EXTRA_DOWNLOAD_IDS, downloadIds)
-									.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-							unregister = true;
-						}
-					} else {
-						unregister = true;
-					}
-					if (unregister) {
-						MainApplication.getInstance().unregisterReceiver(updatesReceiver);
-						updatesReceiver = null;
+					} catch (IllegalArgumentException e) {
+						// Thrown by getColumnIndexOrThrow
+					} finally {
+						cursor.close();
 					}
 				}
+				boolean unregister = false;
+				if (success) {
+					if (newIds.isEmpty()) {
+						if (clientUriString[0] != null) {
+							uriStrings.add(clientUriString[0]);
+						}
+						context.startActivity(new Intent(context, UpdaterActivity.class)
+								.putStringArrayListExtra(EXTRA_URI_STRINGS, uriStrings)
+								.putExtra(EXTRA_DOWNLOAD_IDS, downloadIds)
+								.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+						unregister = true;
+					}
+				} else {
+					unregister = true;
+				}
+				if (unregister) {
+					MainApplication.getInstance().unregisterReceiver(updatesReceiver);
+					updatesReceiver = null;
+				}
 			}
-		};
-		context.registerReceiver(updatesReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+		});
+		registerContext.registerReceiver(updatesReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
 	}
 }

@@ -30,8 +30,6 @@ import java.util.regex.Pattern;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
@@ -53,6 +51,7 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.media.VideoPlayer;
 import com.mishiranu.dashchan.preference.Preferences;
+import com.mishiranu.dashchan.util.AndroidUtils;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.WeakObservable;
@@ -320,39 +319,36 @@ public class ChanManager {
 
 		IntentFilter filter = new IntentFilter(Intent.ACTION_PACKAGE_ADDED);
 		filter.addDataScheme("package");
-		MainApplication.getInstance().registerReceiver(new BroadcastReceiver() {
-			@Override
-			public void onReceive(Context context, Intent intent) {
-				Uri uri = intent.getData();
-				if (uri == null) {
-					return;
-				}
-				String packageName = uri.getSchemeSpecificPart();
-				if (packageName == null) {
-					return;
-				}
-				PackageInfo packageInfo;
-				try {
-					packageInfo = context.getPackageManager().getPackageInfo(packageName,
-							PackageManager.GET_CONFIGURATIONS);
-				} catch (PackageManager.NameNotFoundException e) {
-					return;
-				}
-				FeatureInfo[] features = packageInfo.reqFeatures;
-				if (features != null) {
-					for (FeatureInfo featureInfo : features) {
-						if (FEATURE_CHAN_EXTENSION.equals(featureInfo.name) ||
-								FEATURE_LIB_EXTENSION.equals(featureInfo.name)) {
-							newExtensionsInstalled = true;
-							for (Runnable runnable : installationObservable) {
-								runnable.run();
-							}
-							break;
+		MainApplication.getInstance().registerReceiver(AndroidUtils.createReceiver((receiver, context, intent) -> {
+			Uri uri = intent.getData();
+			if (uri == null) {
+				return;
+			}
+			String packageName = uri.getSchemeSpecificPart();
+			if (packageName == null) {
+				return;
+			}
+			PackageInfo packageInfo;
+			try {
+				packageInfo = context.getPackageManager().getPackageInfo(packageName,
+						PackageManager.GET_CONFIGURATIONS);
+			} catch (PackageManager.NameNotFoundException e) {
+				return;
+			}
+			FeatureInfo[] features = packageInfo.reqFeatures;
+			if (features != null) {
+				for (FeatureInfo featureInfo : features) {
+					if (FEATURE_CHAN_EXTENSION.equals(featureInfo.name) ||
+							FEATURE_LIB_EXTENSION.equals(featureInfo.name)) {
+						newExtensionsInstalled = true;
+						for (Runnable runnable : installationObservable) {
+							runnable.run();
 						}
+						break;
 					}
 				}
 			}
-		}, filter);
+		}), filter);
 		updateArchiveMap();
 	}
 

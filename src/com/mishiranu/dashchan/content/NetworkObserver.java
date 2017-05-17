@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2015-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
 
 package com.mishiranu.dashchan.content;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.telephony.TelephonyManager;
+
+import com.mishiranu.dashchan.util.AndroidUtils;
 
 public class NetworkObserver {
 	private static final NetworkObserver INSTANCE = new NetworkObserver();
@@ -45,13 +45,8 @@ public class NetworkObserver {
 		Context context = MainApplication.getInstance();
 		connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 		onActiveNetworkChange();
-		BroadcastReceiver connectivityReceiver = new BroadcastReceiver() {
-			@Override
-			public void onReceive(Context context, Intent intent) {
-				onActiveNetworkChange();
-			}
-		};
-		context.registerReceiver(connectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+		context.registerReceiver(AndroidUtils.createReceiver((r, c, i) -> onActiveNetworkChange()),
+				new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 	}
 
 	public boolean isWifiConnected() {

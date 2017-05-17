@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.ui.StateActivity;
+import com.mishiranu.dashchan.util.AndroidUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 
 public class AudioPlayerActivity extends StateActivity implements Runnable, SeekBar.OnSeekBarChangeListener,
@@ -95,18 +96,15 @@ public class AudioPlayerActivity extends StateActivity implements Runnable, Seek
 		bindService(new Intent(this, AudioPlayerService.class), this, 0);
 	}
 
-	private final BroadcastReceiver audioPlayerReceiver = new BroadcastReceiver() {
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			String action = intent.getAction();
-			if (AudioPlayerService.ACTION_TOGGLE.equals(action)) {
-				setPlayState(audioPlayerBinder.isPlaying());
-			} else if (AudioPlayerService.ACTION_CANCEL.equals(action)) {
-				seekBar.removeCallbacks(AudioPlayerActivity.this);
-				finish();
-			}
+	private final BroadcastReceiver audioPlayerReceiver = AndroidUtils.createReceiver((receiver, context, intent) -> {
+		String action = intent.getAction();
+		if (AudioPlayerService.ACTION_TOGGLE.equals(action)) {
+			setPlayState(audioPlayerBinder.isPlaying());
+		} else if (AudioPlayerService.ACTION_CANCEL.equals(action)) {
+			seekBar.removeCallbacks(AudioPlayerActivity.this);
+			finish();
 		}
-	};
+	});
 
 	@Override
 	public void onServiceConnected(ComponentName name, IBinder service) {
