@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -130,7 +130,10 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 				break;
 			}
 			case OPTIONS_MENU_SHARE_LINK: {
-				NavigationUtils.shareLink(this, null, Uri.parse(webView.getUrl()));
+				String uriString = webView.getUrl();
+				if (!StringUtils.isEmpty(uriString)) {
+					NavigationUtils.shareLink(this, null, Uri.parse(uriString));
+				}
 				break;
 			}
 		}

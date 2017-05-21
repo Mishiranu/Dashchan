@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -318,8 +318,10 @@ public class StringUtils {
 	}
 
 	public static void copyToClipboard(Context context, String string) {
-		ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
-		clipboard.setPrimaryClip(ClipData.newPlainText(null, string));
+		if (!StringUtils.isEmpty(string)) {
+			ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+			clipboard.setPrimaryClip(ClipData.newPlainText(null, string));
+		}
 	}
 
 	private static final Pattern PATTERN_BOARD_NAME = Pattern.compile("/?([\\w_-]+)/?");
