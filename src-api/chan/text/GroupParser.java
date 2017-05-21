@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2015-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,8 +77,10 @@ public final class GroupParser {
 		if (index > 0) {
 			onText(0, index);
 		}
+
 		char[] tagNameEndCharacters = {' ', '\r', '\n', '\t'};
 		char[] tagStartEnd = {'<', '>'};
+
 		while (index != -1) {
 			char next = source.charAt(index + 1);
 			if (next == '!') {
@@ -100,6 +102,7 @@ public final class GroupParser {
 				boolean endsWithGt = true;
 				boolean inApostrophes = false;
 				boolean inQuotes = false;
+
 				// Find tag end including cases when <> are a part of attribute
 				// E.g. <span onlick="test.innerHTML='<p>test</p>'">
 				for (int i = start + 1, to = Math.min(index + 500, length); i < to; i++) {
@@ -118,6 +121,7 @@ public final class GroupParser {
 						break;
 					}
 				}
+
 				if (end == -1) {
 					end = StringUtils.nearestIndexOf(source, start + 1, tagStartEnd);
 					if (end == -1) {
@@ -127,12 +131,14 @@ public final class GroupParser {
 					}
 					endsWithGt = source.charAt(end) == '>';
 				}
+
 				if (end - start <= 1) {
 					// Empty tag, handle as text characters
 					onText(start, start + 1);
 					index = source.indexOf('<', start + 1);
 					continue;
 				}
+
 				boolean close = next == '/';
 				String fullTag = source.substring(start + (close ? 2 : 1), end + (endsWithGt ? 0 : 1));
 				String tagName = fullTag;
@@ -150,6 +156,7 @@ public final class GroupParser {
 					}
 				}
 				tagName = tagName.toLowerCase(Locale.US);
+
 				if (!close && ("script".equals(tagName) || "style".equals(tagName))) {
 					if (lowerCaseSource == null) {
 						lowerCaseSource = source.toLowerCase(Locale.US);
@@ -177,6 +184,7 @@ public final class GroupParser {
 				}
 				index = end;
 			}
+
 			if (index >= 0) {
 				int end = index;
 				index = source.indexOf('<', end);
@@ -252,8 +260,14 @@ public final class GroupParser {
 
 	@Public
 	public String getAttr(String attrs, String attr) {
-		if (attrs != null) {
-			int index = attrs.indexOf(attr + "=");
+		if (attrs != null && !StringUtils.isEmpty(attr)) {
+			// Fast match \b${attr}=
+			String eattr = attr + "=";
+			int index = -1;
+			do {
+				index = attrs.indexOf(eattr, index + 1);
+			} while (index > 0 && !(attrs.charAt(index - 1) <= ' '));
+
 			if (index >= 0) {
 				index += attr.length() + 1;
 				char c = attrs.charAt(index);
