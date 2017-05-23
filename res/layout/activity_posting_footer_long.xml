@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!--
-	Copyright 2014-2016 Fukurou Mishiranu
+	Copyright 2014-2017 Fukurou Mishiranu
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@
 		android:id="@+id/captcha_block_parent"
 		android:layout_width="0dp"
 		android:layout_height="wrap_content"
-		android:layout_weight="5"
+		android:layout_weight="1"
 		android:background="?android:attr/selectableItemBackground">
 
 		<FrameLayout
@@ -79,9 +79,10 @@
 
 	<Button
 		android:id="@+id/send_button"
-		android:layout_width="0dp"
+		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:layout_weight="2"
+		android:paddingLeft="32dp"
+		android:paddingRight="32dp"
 		style="?android:attr/borderlessButtonStyle"
 		android:text="@string/action_send" />
 
