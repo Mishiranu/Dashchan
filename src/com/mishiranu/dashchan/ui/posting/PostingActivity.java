@@ -580,13 +580,20 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		if (views) {
 			userIconItems = posting.userIcons.size() > 0 ? posting.userIcons : null;
 			if (userIconItems != null) {
+				String lastUserIcon = getUserIcon();
+				int lastUserIconIndex = -1;
 				ArrayList<String> items = new ArrayList<>();
 				items.add(getString(R.string.text_no_icon));
-				for (Pair<String, String> iconItem : userIconItems) {
+				for (int i = 0; i < userIconItems.size(); i++) {
+					Pair<String, String> iconItem = userIconItems.get(i);
 					items.add(iconItem.second);
+					if (StringUtils.equals(lastUserIcon, iconItem.first)) {
+						lastUserIconIndex = i;
+					}
 				}
 				iconView.setItems(items);
 				iconView.setVisibility(View.VISIBLE);
+				iconView.setSelection(lastUserIconIndex + 1);
 			} else {
 				iconView.setVisibility(View.GONE);
 			}
