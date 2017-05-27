@@ -93,7 +93,7 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 		gridView.setId(android.R.id.list);
 		gridAdapter = new GridAdapter(instance.galleryItems);
 		gridView.setAdapter(gridAdapter);
-		ScrollListenerComposite scrollListenerComposite = new ScrollListenerComposite();
+		ScrollListenerComposite scrollListenerComposite = ScrollListenerComposite.obtain(gridView);
 		scrollListenerComposite.add(new BusyScrollListener(gridAdapter));
 		scrollListenerComposite.add(new AbsListView.OnScrollListener() {
 			@Override
@@ -104,7 +104,6 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 			@Override
 			public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {}
 		});
-		gridView.setOnScrollListener(scrollListenerComposite);
 		gridView.setOnItemClickListener(this);
 		gridView.setOnItemLongClickListener(this);
 		updateGridMetrics(true, instance.context.getResources().getConfiguration());

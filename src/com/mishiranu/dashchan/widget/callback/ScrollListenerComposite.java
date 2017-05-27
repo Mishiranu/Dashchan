@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,12 @@ import java.util.ArrayList;
 
 import android.widget.AbsListView;
 
+import com.mishiranu.dashchan.R;
+
 public class ScrollListenerComposite implements AbsListView.OnScrollListener {
 	private final ArrayList<AbsListView.OnScrollListener> listeners = new ArrayList<>();
+
+	private ScrollListenerComposite() {}
 
 	@Override
 	public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
@@ -39,5 +43,15 @@ public class ScrollListenerComposite implements AbsListView.OnScrollListener {
 
 	public void add(AbsListView.OnScrollListener listener) {
 		listeners.add(listener);
+	}
+
+	public static ScrollListenerComposite obtain(AbsListView listView) {
+		ScrollListenerComposite listener = (ScrollListenerComposite) listView.getTag(R.id.scroll_view);
+		if (listener == null) {
+			listener = new ScrollListenerComposite();
+			listView.setTag(R.id.scroll_view, listener);
+			listView.setOnScrollListener(listener);
+		}
+		return listener;
 	}
 }

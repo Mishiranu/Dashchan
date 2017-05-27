@@ -222,8 +222,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		listView.getWrapper().setOnPullListener(this);
 		listView.getWrapper().setPullStateListener(this);
 		listView.setClipToPadding(false);
-		ScrollListenerComposite scrollListenerComposite = new ScrollListenerComposite();
-		listView.setOnScrollListener(scrollListenerComposite);
+		ScrollListenerComposite scrollListenerComposite = ScrollListenerComposite.obtain(listView);
 		scrollListenerComposite.add(new BusyScrollListener(this));
 		updateWideConfiguration(true);
 		expandedScreen.setDrawerOverToolbarEnabled(!wideMode);
