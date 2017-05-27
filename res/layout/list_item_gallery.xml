@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!--
-	Copyright 2014-2016 Fukurou Mishiranu
+	Copyright 2014-2017 Fukurou Mishiranu
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -21,12 +21,12 @@
 	android:layout_height="match_parent">
 
 	<FrameLayout
-		android:id="@+id/surfaceParent"
+		android:id="@+id/surface_parent"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent" />
 
 	<com.mishiranu.dashchan.widget.PhotoView
-		android:id="@+id/photoView"
+		android:id="@+id/photo_view"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent" />
 

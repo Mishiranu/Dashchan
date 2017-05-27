@@ -451,8 +451,8 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 			View view = LayoutInflater.from(galleryInstance.context).inflate(R.layout.list_item_gallery,
 					parent, false);
 			PagerInstance.ViewHolder holder = new PagerInstance.ViewHolder();
-			holder.photoView = (PhotoView) view.findViewById(R.id.photoView);
-			holder.surfaceParent = (FrameLayout) view.findViewById(R.id.surfaceParent);
+			holder.photoView = (PhotoView) view.findViewById(R.id.photo_view);
+			holder.surfaceParent = (FrameLayout) view.findViewById(R.id.surface_parent);
 			holder.errorView = view.findViewById(R.id.error);
 			holder.errorText = (TextView) view.findViewById(R.id.error_text);
 			holder.progressBar = (CircularProgressBar) view.findViewById(android.R.id.progress);
