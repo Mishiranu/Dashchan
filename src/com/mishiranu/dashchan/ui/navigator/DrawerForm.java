@@ -87,6 +87,7 @@ import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.widget.EdgeEffectHandler;
 import com.mishiranu.dashchan.widget.SafePasteEditText;
 import com.mishiranu.dashchan.widget.SortableListView;
+import com.mishiranu.dashchan.widget.callback.ScrollListenerComposite;
 
 public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, SortableListView.OnFinishedListener,
 		AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener, DrawerLayout.DrawerListener,
@@ -276,7 +277,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		listView.setAdapter(this);
 		listView.setOnItemClickListener(this);
 		listView.setOnItemLongClickListener(this);
-		listView.setOnScrollListener(new ListViewScrollFixListener());
+		ScrollListenerComposite.obtain(listView).add(new ListViewScrollFixListener());
 		listView.setOnSortingFinishedListener(this);
 		listView.setOnTouchListener(this);
 		float density = ResourceUtils.obtainDensity(context);

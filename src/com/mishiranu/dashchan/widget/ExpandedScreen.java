@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -531,15 +531,10 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 		}
 	}
 
-	public void setContentListView(AbsListView listView, ScrollListenerComposite composite) {
+	public void setContentListView(AbsListView listView) {
 		this.listView = listView;
 		if (expandingEnabled) {
-			ListScrollTracker scrollTracker = new ListScrollTracker(this);
-			if (composite != null) {
-				composite.add(new ListScrollTracker(this));
-			} else {
-				listView.setOnScrollListener(scrollTracker);
-			}
+			ScrollListenerComposite.obtain(listView).add(new ListScrollTracker(this));
 		}
 	}
 

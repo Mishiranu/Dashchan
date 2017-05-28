@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,6 +99,7 @@ import com.mishiranu.dashchan.widget.ExpandedScreen;
 import com.mishiranu.dashchan.widget.ListPosition;
 import com.mishiranu.dashchan.widget.SafePasteEditText;
 import com.mishiranu.dashchan.widget.callback.BusyScrollListener;
+import com.mishiranu.dashchan.widget.callback.ScrollListenerComposite;
 
 public class DialogUnit implements DialogStack.Callback {
 	private final UiManager uiManager;
@@ -614,7 +615,7 @@ public class DialogUnit implements DialogStack.Callback {
 		DialogPostsAdapter adapter = new DialogPostsAdapter(dialogProvider, listView);
 		listView.setOnItemClickListener(adapter);
 		listView.setOnItemLongClickListener(adapter);
-		listView.setOnScrollListener(new BusyScrollListener(adapter));
+		ScrollListenerComposite.obtain(listView).add(new BusyScrollListener(adapter));
 		listView.setAdapter(adapter);
 		listView.setId(android.R.id.list);
 		listView.setDivider(ResourceUtils.getDrawable(context, R.attr.postsDivider, 0));
