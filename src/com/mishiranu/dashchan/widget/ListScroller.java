@@ -30,19 +30,23 @@ import com.mishiranu.dashchan.widget.callback.ScrollListenerComposite;
 import java.lang.reflect.Method;
 
 public class ListScroller implements AbsListView.OnScrollListener {
-	private static final float SCROLL_DURATION_PER_DP = 0.25f;
+	private static final float MIN_SCROLL_DURATION_PER_DP = 0.1f;
+	private static final float MAX_SCROLL_DURATION_PER_DP = 0.5f;
 
 	private final ListView listView;
 	private final int additionalScroll;
-	private float scrollDurationPerPixel;
+	private float minScrollDurationPerPixel;
+	private float maxScrollDurationPerPixel;
 
 	private int toPosition = AbsListView.INVALID_POSITION;
+	private int deltaPosition;
 
 	private ListScroller(ListView listView) {
 		this.listView = listView;
 		float density = ResourceUtils.obtainDensity(listView);
 		additionalScroll = (int) (16f * density);
-		scrollDurationPerPixel = SCROLL_DURATION_PER_DP / density;
+		minScrollDurationPerPixel = MIN_SCROLL_DURATION_PER_DP / density;
+		maxScrollDurationPerPixel = MAX_SCROLL_DURATION_PER_DP / density;
 		ScrollListenerComposite.obtain(listView).add(this);
 	}
 
@@ -80,12 +84,19 @@ public class ListScroller implements AbsListView.OnScrollListener {
 		float scale = AnimationUtils.getAnimatorDurationScale();
 		if (scale > 0f) {
 			int first = listView.getFirstVisiblePosition();
+			if (toPosition == AbsListView.INVALID_POSITION) {
+				deltaPosition = 0;
+			}
 			toPosition = position;
 			int jumpThreshold = getJumpThreshold(listView.getContext());
 			if (toPosition > first + jumpThreshold) {
 				listView.setSelection(toPosition - jumpThreshold);
+				deltaPosition += jumpThreshold;
 			} else if (toPosition < first - jumpThreshold) {
 				listView.setSelection(toPosition + jumpThreshold);
+				deltaPosition += jumpThreshold;
+			} else {
+				deltaPosition += Math.abs(toPosition - first);
 			}
 			handleScroll();
 		} else {
@@ -157,6 +168,10 @@ public class ListScroller implements AbsListView.OnScrollListener {
 	}
 
 	private void listSmoothScrollBy(int distance) {
+		float threshold = getJumpThreshold(listView.getContext());
+		float minItems = threshold / 5f;
+		float scrollDurationPerPixel = AnimationUtils.lerp(maxScrollDurationPerPixel, minScrollDurationPerPixel,
+				Math.min(Math.max((deltaPosition - minItems) / (threshold - minItems), 0f), 1f));
 		int duration = (int) (Math.abs(distance) * scrollDurationPerPixel);
 		if (METHOD_SMOOTH_SCROLL_BY_LINEAR != null) {
 			try {
