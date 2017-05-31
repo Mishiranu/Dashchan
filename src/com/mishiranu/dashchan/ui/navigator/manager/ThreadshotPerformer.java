@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2015-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
 
 	private final UiManager.DemandSet demandSet = new UiManager.DemandSet();
 	private final UiManager.ConfigurationSet configurationSet = new UiManager.ConfigurationSet(null, null, null,
-			null, null, null, false, false, false, false, null);
+			null, null, null, false, false, false, false, false, null);
 
 	public ThreadshotPerformer(ListView listView, UiManager uiManager, String chanName, String boardName,
 			String threadNumber, String threadTitle, List<PostItem> postItems) {

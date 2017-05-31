@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -104,7 +104,8 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 	@Override
 	public boolean onItemLongClick(View view, int position, long id) {
 		PostItem postItem = getAdapter().getPostItem(position);
-		return postItem != null && getUiManager().interaction().handlePostContextMenu(postItem, null, false, false);
+		return postItem != null && getUiManager().interaction()
+				.handlePostContextMenu(postItem, null, false, false, false);
 	}
 
 	private static final int OPTIONS_MENU_REFRESH = 0;

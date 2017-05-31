@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public class SearchAdapter extends BaseAdapter implements BusyScrollListener.Cal
 	public SearchAdapter(UiManager uiManager) {
 		this.uiManager = uiManager;
 		configurationSet = new UiManager.ConfigurationSet(null, null, new HidePerformer(),
-				new GalleryItem.GallerySet(false), null, null, true, false, false, false, null);
+				new GalleryItem.GallerySet(false), null, null, true, false, false, false, false, null);
 	}
 
 	@Override

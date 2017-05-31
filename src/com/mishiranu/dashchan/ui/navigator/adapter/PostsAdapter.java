@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,7 +78,7 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 			Replyable replyable, HidePerformer hidePerformer, HashSet<String> userPostNumbers, ListView listView) {
 		this.uiManager = uiManager;
 		configurationSet = new UiManager.ConfigurationSet(replyable, this, hidePerformer,
-				new GalleryItem.GallerySet(true), this, userPostNumbers, true, false, true, true, null);
+				new GalleryItem.GallerySet(true), this, userPostNumbers, true, false, true, true, true, null);
 		listSelectionKeeper = new CommentTextView.ListSelectionKeeper(listView);
 		float density = ResourceUtils.obtainDensity(context);
 		FrameLayout frameLayout = new FrameLayout(context);

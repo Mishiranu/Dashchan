@@ -368,17 +368,18 @@ public class InteractionUnit {
 	private static final int MENU_SHARE = 6;
 	private static final int MENU_SHARE_LINK = 7;
 	private static final int MENU_SHARE_TEXT = 8;
-	private static final int MENU_ADD_REMOVE_MY_MARK = 9;
-	private static final int MENU_REPORT = 10;
-	private static final int MENU_DELETE = 11;
-	private static final int MENU_HIDE = 12;
-	private static final int MENU_HIDE_POST = 13;
-	private static final int MENU_HIDE_REPLIES = 14;
-	private static final int MENU_HIDE_NAME = 15;
-	private static final int MENU_HIDE_SIMILAR = 16;
+	private static final int MENU_REPORT = 9;
+	private static final int MENU_DELETE = 10;
+	private static final int MENU_ADD_REMOVE_MY_MARK = 11;
+	private static final int MENU_GO_TO_POST = 12;
+	private static final int MENU_HIDE = 13;
+	private static final int MENU_HIDE_POST = 14;
+	private static final int MENU_HIDE_REPLIES = 15;
+	private static final int MENU_HIDE_NAME = 16;
+	private static final int MENU_HIDE_SIMILAR = 17;
 
-	public boolean handlePostContextMenu(final PostItem postItem, final Replyable replyable, boolean allowMyMarkEdit,
-			boolean allowHiding) {
+	public boolean handlePostContextMenu(final PostItem postItem, Replyable replyable, boolean allowMyMarkEdit,
+			boolean allowHiding, boolean allowGoToPost) {
 		if (postItem != null) {
 			Context context = uiManager.getContext();
 			String chanName = postItem.getChanName();
@@ -464,10 +465,6 @@ public class InteractionUnit {
 							dialogMenu.show();
 							break;
 						}
-						case MENU_ADD_REMOVE_MY_MARK: {
-							uiManager.sendPostItemMessage(postItem, UiManager.MESSAGE_PERFORM_SWITCH_USER_MARK);
-							break;
-						}
 						case MENU_REPORT: {
 							ArrayList<String> postNumbers = new ArrayList<>(1);
 							postNumbers.add(postItem.getPostNumber());
@@ -480,6 +477,14 @@ public class InteractionUnit {
 							postNumbers.add(postItem.getPostNumber());
 							uiManager.dialog().performSendDeletePosts(postItem.getChanName(), postItem.getBoardName(),
 									postItem.getThreadNumber(), postNumbers);
+							break;
+						}
+						case MENU_ADD_REMOVE_MY_MARK: {
+							uiManager.sendPostItemMessage(postItem, UiManager.MESSAGE_PERFORM_SWITCH_USER_MARK);
+							break;
+						}
+						case MENU_GO_TO_POST: {
+							uiManager.sendPostItemMessage(postItem, UiManager.MESSAGE_PERFORM_GO_TO_POST);
 							break;
 						}
 						case MENU_HIDE: {
@@ -536,6 +541,9 @@ public class InteractionUnit {
 			}
 			if (allowMyMarkEdit) {
 				dialogMenu.addCheckableItem(MENU_ADD_REMOVE_MY_MARK, R.string.text_my_post, postItem.isUserPost());
+			}
+			if (allowGoToPost) {
+				dialogMenu.addItem(MENU_GO_TO_POST, R.string.action_go_to_post);
 			}
 			if (allowHiding && !postItem.isHiddenUnchecked()) {
 				dialogMenu.addItem(MENU_HIDE, R.string.action_hide_expand);

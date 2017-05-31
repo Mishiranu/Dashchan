@@ -279,7 +279,8 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		}
 		PostsAdapter adapter = getAdapter();
 		PostItem postItem = adapter.getItem(position);
-		return postItem != null && getUiManager().interaction().handlePostContextMenu(postItem, replyable, true, true);
+		return postItem != null && getUiManager().interaction()
+				.handlePostContextMenu(postItem, replyable, true, true, false);
 	}
 
 	private static final int OPTIONS_MENU_ADD_POST = 0;
@@ -1396,6 +1397,12 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 					serializePosts();
 				}
 				adapter.preloadPosts(getListView().getFirstVisiblePosition());
+				break;
+			}
+			case UiManager.MESSAGE_PERFORM_GO_TO_POST: {
+				// Undelayed closeDialogs will cause ConcurrentModificationException
+				getListView().post(() -> getUiManager().dialog().closeDialogs());
+				ListScroller.scrollTo(getListView(), index);
 				break;
 			}
 		}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,6 +84,7 @@ public class UiManager {
 	public static final int MESSAGE_PERFORM_HIDE_REPLIES = 5;
 	public static final int MESSAGE_PERFORM_HIDE_NAME = 6;
 	public static final int MESSAGE_PERFORM_HIDE_SIMILAR = 7;
+	public static final int MESSAGE_PERFORM_GO_TO_POST = 8;
 
 	public interface Observer {
 		public void onPostItemMessage(PostItem postItem, int message);
@@ -143,12 +144,13 @@ public class UiManager {
 		public final boolean isDialog;
 		public final boolean allowMyMarkEdit;
 		public final boolean allowHiding;
+		public final boolean allowGoToPost;
 		public final String repliesToPost;
 
 		public ConfigurationSet(Replyable replyable, PostsProvider postsProvider, HidePerformer hidePerformer,
 				GalleryItem.GallerySet gallerySet, CommentTextView.LinkListener linkListener,
 				HashSet<String> userPostNumbers, boolean mayCollapse, boolean isDialog, boolean allowMyMarkEdit,
-				boolean allowHiding, String repliesToPost) {
+				boolean allowHiding, boolean allowGoToPost, String repliesToPost) {
 			this.replyable = replyable;
 			this.postsProvider = postsProvider;
 			this.hidePerformer = hidePerformer;
@@ -160,12 +162,13 @@ public class UiManager {
 			this.isDialog = isDialog;
 			this.allowMyMarkEdit = allowMyMarkEdit;
 			this.allowHiding = allowHiding;
+			this.allowGoToPost = allowGoToPost;
 			this.repliesToPost = repliesToPost;
 		}
 
 		public ConfigurationSet copyEdit(boolean mayCollapse, boolean isDialog, String repliesToPost) {
 			return new ConfigurationSet(replyable, postsProvider, hidePerformer, gallerySet, linkListener,
-					userPostNumbers, mayCollapse, isDialog, allowMyMarkEdit, allowHiding, repliesToPost);
+					userPostNumbers, mayCollapse, isDialog, allowMyMarkEdit, allowHiding, allowGoToPost, repliesToPost);
 		}
 	}
 

@@ -336,7 +336,7 @@ public class DialogUnit implements DialogStack.Callback {
 
 		public ThreadDialogProvider(PostItem postItem, ThreadDialogProviderIntermediate intermediate) {
 			super(new UiManager.ConfigurationSet(createThreadReplyable(postItem), intermediate, new HidePerformer(),
-					new GalleryItem.GallerySet(false), intermediate, null, false, true, false, false, null));
+					new GalleryItem.GallerySet(false), intermediate, null, false, true, false, false, false, null));
 			intermediate.provider = this;
 			if (!postItem.isThreadItem()) {
 				throw new RuntimeException("Not thread item");
@@ -486,7 +486,7 @@ public class DialogUnit implements DialogStack.Callback {
 
 		public AsyncDialogProvider(String chanName, String boardName, String threadNumber, String postNumber) {
 			super(new UiManager.ConfigurationSet(null, null, new HidePerformer(),
-					new GalleryItem.GallerySet(false), null, null, false, true, false, false, null));
+					new GalleryItem.GallerySet(false), null, null, false, true, false, false, false, null));
 			this.chanName = chanName;
 			this.boardName = boardName;
 			this.threadNumber = threadNumber;
@@ -769,7 +769,8 @@ public class DialogUnit implements DialogStack.Callback {
 		public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 			UiManager.ConfigurationSet configurationSet = dialogProvider.configurationSet;
 			return uiManager.interaction().handlePostContextMenu(getItem(position),
-					configurationSet.replyable, configurationSet.allowMyMarkEdit, configurationSet.allowHiding);
+					configurationSet.replyable, configurationSet.allowMyMarkEdit,
+					configurationSet.allowHiding, configurationSet.allowGoToPost);
 		}
 	}
 
