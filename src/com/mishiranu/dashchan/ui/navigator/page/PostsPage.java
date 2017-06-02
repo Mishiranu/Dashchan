@@ -690,15 +690,17 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		boolean positionDefined = false;
 		Locale locale = Locale.getDefault();
 		SearchHelper helper = new SearchHelper(Preferences.isAdvancedSearch());
-		helper.setFlags("m", "r", "a", "d", "e", "op");
+		helper.setFlags("m", "r", "a", "d", "e", "n", "op");
 		HashSet<String> queries = helper.handleQueries(locale, query);
 		HashSet<String> fileNames = new HashSet<>();
 		PostsExtra extra = getExtra();
+		int newPostPosition = adapter.findPositionByPostNumber(extra.newPostNumber);
 		OUTER: for (int i = 0; i < adapter.getCount(); i++) {
 			PostItem postItem = adapter.getItem(i);
 			if (postItem != null && !postItem.isHidden(hidePerformer)) {
 				String postNumber = postItem.getPostNumber();
 				String comment = postItem.getComment().toString().toLowerCase(locale);
+				int postPosition = getAdapter().findPositionByPostNumber(postNumber);
 				boolean userPost = postItem.isUserPost();
 				boolean reply = false;
 				HashSet<String> referencesTo = postItem.getReferencesTo();
@@ -713,9 +715,10 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				boolean hasAttachments = postItem.hasAttachments();
 				boolean deleted = postItem.isDeleted();
 				boolean edited = lastEditedPostNumbers.contains(postNumber);
+				boolean newPost = newPostPosition >= 0 && postPosition >= newPostPosition;
 				boolean originalPoster = postItem.isOriginalPoster();
 				if (!helper.checkFlags("m", userPost, "r", reply, "a", hasAttachments, "d", deleted, "e", edited,
-						"op", originalPoster)) {
+						"n", newPost, "op", originalPoster)) {
 					continue;
 				}
 				for (String lowQuery : helper.getExcluded()) {
@@ -1261,9 +1264,14 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 					message.append(getString(R.string.message_edited_posts));
 				}
 				if (result.newCount > 0) {
+					extra.newPostNumber = adapter.getItem(newPostPosition).getPostNumber();
 					ClickableToast.show(getActivity(), message, getString(R.string.action_show), () -> {
 						if (!isDestroyed()) {
-							ListScroller.scrollTo(getListView(), newPostPosition);
+							String newPostNumber = getExtra().newPostNumber;
+							int newPostIndex = getAdapter().findPositionByPostNumber(newPostNumber);
+							if (newPostIndex >= 0) {
+								ListScroller.scrollTo(getListView(), newPostIndex);
+							}
 						}
 					}, true);
 				} else {
@@ -1428,6 +1436,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		public final HashSet<String> expandedPosts = new HashSet<>();
 		public boolean isAddedToHistory = false;
 		public boolean forceRefresh = false;
+		public String newPostNumber;
 
 		@Override
 		public void writeToParcel(Parcel dest) {
@@ -1435,6 +1444,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 			dest.writeStringArray(CommonUtils.toArray(expandedPosts, String.class));
 			dest.writeInt(isAddedToHistory ? 1 : 0);
 			dest.writeInt(forceRefresh ? 1 : 0);
+			dest.writeString(newPostNumber);
 		}
 
 		@Override
@@ -1451,6 +1461,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 			}
 			isAddedToHistory = source.readInt() != 0;
 			forceRefresh = source.readInt() != 0;
+			newPostNumber = source.readString();
 		}
 	}
 

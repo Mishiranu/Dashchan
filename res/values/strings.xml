@@ -411,8 +411,8 @@
 		\nYou can use \"-\" characted before words or phrases to exclude them.\n
 		\nYou can also use search flags to filter search results:\n
 		\n<b>:m</b> — your posts\n<b>:r</b> — replies to your posts\n<b>:a</b> — posts with attachments
-		\n<b>:d</b> — deleted posts\n<b>:e</b> — edited posts\n<b>:op</b> — posts by original poster\n
-		\nFlags can be excluded using \":-\" characters.</string>
+		\n<b>:d</b> — deleted posts\n<b>:e</b> — edited posts\n<b>:n</b> — new posts
+		\n<b>:op</b> — posts by original poster\n\nFlags can be excluded using \":-\" characters.</string>
 	<string name="preference_all_attachments">All attachments</string>
 	<string name="preference_all_attachments_summary">Display thumbnails for all attachments</string>
 	<string name="preference_auto_refresh_mode">Auto refreshing mode</string>
