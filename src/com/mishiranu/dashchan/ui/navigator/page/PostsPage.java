@@ -1263,8 +1263,14 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				} else {
 					message.append(getString(R.string.message_edited_posts));
 				}
+				PostItem newPostItem = null;
 				if (result.newCount > 0) {
-					extra.newPostNumber = adapter.getItem(newPostPosition).getPostNumber();
+					for (int i = newPostPosition; i < adapter.getCount() && newPostItem == null; i++) {
+						newPostItem = adapter.getItem(i);
+					}
+				}
+				if (newPostItem != null) {
+					extra.newPostNumber = newPostItem.getPostNumber();
 					ClickableToast.show(getActivity(), message, getString(R.string.action_show), () -> {
 						if (!isDestroyed()) {
 							String newPostNumber = getExtra().newPostNumber;
