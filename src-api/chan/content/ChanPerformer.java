@@ -27,6 +27,7 @@ import java.util.List;
 
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.util.Pair;
 
 import chan.annotation.Extendable;
 import chan.annotation.Public;
@@ -803,6 +804,15 @@ public class ChanPerformer implements ChanManager.Linked {
 			public long getSize() {
 				ensureOpenable();
 				return openable.getSize();
+			}
+
+			@Public
+			public Pair<Integer, Integer> getImageSize() {
+				if (fileHolder.isImage()) {
+					return new Pair<>(fileHolder.getImageWidth(), fileHolder.getImageHeight());
+				} else {
+					return null;
+				}
 			}
 
 			@Override
