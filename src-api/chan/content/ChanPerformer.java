@@ -801,6 +801,16 @@ public class ChanPerformer implements ChanManager.Linked {
 			}
 
 			@Public
+			public InputStream openInputSteamForSending() throws IOException {
+				InputStream inputStream = openInputSteam();
+				if (listener != null) {
+					return new InputStreamForSending(inputStream, getSize());
+				} else {
+					return inputStream;
+				}
+			}
+
+			@Public
 			public long getSize() {
 				ensureOpenable();
 				return openable.getSize();
@@ -812,6 +822,51 @@ public class ChanPerformer implements ChanManager.Linked {
 					return new Pair<>(fileHolder.getImageWidth(), fileHolder.getImageHeight());
 				} else {
 					return null;
+				}
+			}
+
+			private class InputStreamForSending extends InputStream {
+				private final InputStream inputStream;
+				private final long progressMax;
+
+				public InputStreamForSending(InputStream inputStream, long progressMax) {
+					this.inputStream = inputStream;
+					this.progressMax = progressMax;
+				}
+
+				private long progress = 0;
+
+				private void notify(int count) {
+					progress += count;
+					listener.onOutputProgressChange(openable, progress, progressMax);
+				}
+
+				@Override
+				public int read() throws IOException {
+					int result = inputStream.read();
+					if (result != -1) {
+						notify(1);
+					}
+					return result;
+				}
+
+				@Override
+				public int read(byte[] buffer) throws IOException {
+					return read(buffer, 0, buffer.length);
+				}
+
+				@Override
+				public int read(byte[] buffer, int byteOffset, int byteCount) throws IOException {
+					int result = inputStream.read(buffer, byteOffset, byteCount);
+					if (result > 0) {
+						notify(result);
+					}
+					return result;
+				}
+
+				@Override
+				public void close() throws IOException {
+					inputStream.close();
 				}
 			}
 
