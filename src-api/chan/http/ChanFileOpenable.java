@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,8 @@ public class ChanFileOpenable implements MultipartEntity.Openable {
 	private final FileHolder fileHolder;
 	private final String fileName;
 	private final String mimeType;
+	private final int imageWidth;
+	private final int imageHeight;
 
 	private final int randomBytes;
 	private final ArrayList<GraphicsUtils.SkipRange> skipRanges;
@@ -93,9 +95,13 @@ public class ChanFileOpenable implements MultipartEntity.Openable {
 			if (transformationData.newFileName != null) {
 				fileName = transformationData.newFileName;
 			}
+			imageWidth = transformationData.newWidth > 0 ? transformationData.newWidth : fileHolder.getImageWidth();
+			imageHeight = transformationData.newHeight > 0 ? transformationData.newHeight : fileHolder.getImageHeight();
 		} else {
 			skipRanges = null;
 			decodedBytes = null;
+			imageWidth = fileHolder.getImageWidth();
+			imageHeight = fileHolder.getImageHeight();
 		}
 		this.fileName = fileName;
 		mimeType = MultipartEntity.obtainMimeType(fileName);
@@ -110,6 +116,14 @@ public class ChanFileOpenable implements MultipartEntity.Openable {
 	@Override
 	public String getMimeType() {
 		return mimeType;
+	}
+
+	public int getImageWidth() {
+		return imageWidth;
+	}
+
+	public int getImageHeight() {
+		return imageHeight;
 	}
 
 	@Override

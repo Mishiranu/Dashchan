@@ -194,11 +194,16 @@ public class GraphicsUtils {
 		public final ArrayList<SkipRange> skipRanges;
 		public final byte[] decodedBytes;
 		public final String newFileName;
+		public final int newWidth;
+		public final int newHeight;
 
-		private TransformationData(ArrayList<SkipRange> skipRanges, byte[] decodedBytes, String newFileName) {
+		private TransformationData(ArrayList<SkipRange> skipRanges, byte[] decodedBytes, String newFileName,
+				int newWidth, int newHeight) {
 			this.skipRanges = skipRanges;
 			this.decodedBytes = decodedBytes;
 			this.newFileName = newFileName;
+			this.newWidth = newWidth;
+			this.newHeight = newHeight;
 		}
 	}
 
@@ -208,6 +213,8 @@ public class GraphicsUtils {
 		byte[] decodedBytes = null;
 		String newFileName = null;
 		InputStream input = null;
+		int newWidth = -1;
+		int newHeight = -1;
 		try {
 			if (reencoding != null && fileHolder.isImage()) {
 				Bitmap bitmap;
@@ -226,6 +233,8 @@ public class GraphicsUtils {
 								bitmap.recycle();
 								bitmap = scaledBitmap;
 							}
+							newWidth = bitmap.getWidth();
+							newHeight = bitmap.getHeight();
 						}
 						boolean png = Reencoding.FORMAT_PNG.equals(reencoding.format);
 						ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -310,7 +319,7 @@ public class GraphicsUtils {
 			IOUtils.close(input);
 		}
 		return skipRanges != null || decodedBytes != null || newFileName != null
-				? new TransformationData(skipRanges, decodedBytes, newFileName) : null;
+				? new TransformationData(skipRanges, decodedBytes, newFileName, newWidth, newHeight) : null;
 	}
 
 	public static boolean isUselessPngChunk(String name) {

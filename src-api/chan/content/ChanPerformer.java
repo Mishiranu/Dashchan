@@ -818,8 +818,11 @@ public class ChanPerformer implements ChanManager.Linked {
 
 			@Public
 			public Pair<Integer, Integer> getImageSize() {
-				if (fileHolder.isImage()) {
-					return new Pair<>(fileHolder.getImageWidth(), fileHolder.getImageHeight());
+				ensureOpenable();
+				int width = openable.getImageWidth();
+				int height = openable.getImageHeight();
+				if (width > 0 && height > 0) {
+					return new Pair<>(width, height);
 				} else {
 					return null;
 				}
