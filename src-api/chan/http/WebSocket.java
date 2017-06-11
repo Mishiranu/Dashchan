@@ -30,14 +30,17 @@ import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import chan.util.StringUtils;
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocket;
 
@@ -72,18 +75,18 @@ public final class WebSocket {
 	private OutputStream outputStream;
 	private volatile boolean closed = false;
 
-	private final LinkedBlockingQueue<Frame> readQueue = new LinkedBlockingQueue<>();
-	private final LinkedBlockingQueue<Frame> writeQueue = new LinkedBlockingQueue<>();
+	private final LinkedBlockingQueue<ReadFrame> readQueue = new LinkedBlockingQueue<>();
+	private final LinkedBlockingQueue<WriteFrame> writeQueue = new LinkedBlockingQueue<>();
 
 	private final HashSet<Object> results = new HashSet<>();
 	private volatile boolean cancelResults = false;
 
 	@Public
 	public static class Event {
-		private final Frame frame;
+		private final ReadFrame frame;
 		private final WebSocket webSocket;
 
-		private Event(Frame frame, WebSocket webSocket) {
+		private Event(ReadFrame frame, WebSocket webSocket) {
 			this.frame = frame;
 			this.webSocket = webSocket;
 		}
@@ -234,21 +237,23 @@ public final class WebSocket {
 			if (closed) {
 				throw new HttpClient.DisconnectedIOException();
 			}
+
 			new Thread(() -> {
 				try {
-					ArrayList<Frame> frames = new ArrayList<>();
+					ArrayList<ReadFrame> frames = new ArrayList<>();
 					while (true) {
-						Frame frame = Frame.read(inputStream);
+						ReadFrame frame = ReadFrame.read(inputStream);
 						if (frame.fin) {
 							if (frames.size() > 0) {
 								ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-								for (Frame dataFrame : frames) {
+								for (ReadFrame dataFrame : frames) {
 									byteArrayOutputStream.write(dataFrame.data);
 								}
 								byteArrayOutputStream.write(frame.data);
-								frame = new Frame(frames.get(0).opcode, true, byteArrayOutputStream.toByteArray());
+								frame = new ReadFrame(frames.get(0).opcode, true, byteArrayOutputStream.toByteArray());
 								frames.clear();
 							}
+
 							switch (frame.opcode) {
 								case 1:
 								case 2: {
@@ -269,7 +274,7 @@ public final class WebSocket {
 									return;
 								}
 								case 9: {
-									writeQueue.add(new Frame(10, true, frame.data));
+									writeQueue.add(new WriteFrame(10, true, frame.data));
 									break;
 								}
 								default: {
@@ -285,11 +290,12 @@ public final class WebSocket {
 					closeSocket();
 				}
 			}).start();
+
 			new Thread(() -> {
 				try {
 					while (true) {
-						Frame frame = readQueue.take();
-						if (frame == END_FRAME) {
+						ReadFrame frame = readQueue.take();
+						if (frame == END_READ_FRAME) {
 							break;
 						}
 						handler.onEvent(new Event(frame, this));
@@ -305,14 +311,16 @@ public final class WebSocket {
 					results.notifyAll();
 				}
 			}).start();
+
 			new Thread(() -> {
 				try {
+					byte[] buffer = new byte[8192];
 					while (true) {
-						Frame frame = writeQueue.take();
-						if (frame == END_FRAME) {
+						WriteFrame frame = writeQueue.take();
+						if (frame == END_WRITE_FRAME) {
 							return;
 						}
-						frame.write(outputStream);
+						frame.write(outputStream, buffer);
 					}
 				} catch (IOException e) {
 					handleException(e, true, !(e instanceof WebSocketException));
@@ -321,6 +329,7 @@ public final class WebSocket {
 					// Ignore exception
 				}
 			}).start();
+
 			holder.setCallback(() -> {
 				try {
 					close();
@@ -328,6 +337,7 @@ public final class WebSocket {
 					// Ignore exception
 				}
 			});
+
 			success = true;
 		} catch (IOException e) {
 			handleException(e, false, true);
@@ -373,6 +383,7 @@ public final class WebSocket {
 			} else {
 				throw new HttpException(ErrorItem.TYPE_UNSUPPORTED_SCHEME, false, false);
 			}
+
 			socket = SocketFactory.getDefault().createSocket();
 			socket.setSoTimeout(Math.max(readTimeout, 60000));
 			socket.connect(new InetSocketAddress(url.getHost(), port), connectTimeout);
@@ -386,11 +397,13 @@ public final class WebSocket {
 					throw new HttpException(ErrorItem.TYPE_INVALID_CERTIFICATE, false, false);
 				}
 			}
+
 			byte[] webSocketKey = new byte[16];
 			for (int i = 0; i < webSocketKey.length; i++) {
 				webSocketKey[i] = (byte) RANDOM.nextInt(256);
 			}
 			String webSocketKeyEncoded = Base64.encodeToString(webSocketKey, Base64.NO_WRAP);
+
 			InputStream inputStream = new BufferedInputStream(socket.getInputStream());
 			OutputStream outputStream = new BufferedOutputStream(socket.getOutputStream());
 			StringBuilder requestBuilder = new StringBuilder();
@@ -461,6 +474,7 @@ public final class WebSocket {
 			requestBuilder.append("\r\n");
 			outputStream.write(requestBuilder.toString().getBytes("ISO-8859-1"));
 			outputStream.flush();
+
 			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 			int endCount = 0;
 			while (true) {
@@ -491,6 +505,7 @@ public final class WebSocket {
 					break;
 				}
 			}
+
 			String[] responseHeaders = new String(byteArrayOutputStream.toByteArray(), "ISO-8859-1").split("\r\n");
 			Matcher matcher = RESPONSE_CODE_PATTERN.matcher(responseHeaders[0]);
 			if (matcher.matches()) {
@@ -527,6 +542,7 @@ public final class WebSocket {
 			} else {
 				throw new HttpException(ErrorItem.TYPE_INVALID_RESPONSE, false, false);
 			}
+
 			String checkKeyEncoded;
 			try {
 				MessageDigest digest = MessageDigest.getInstance("SHA-1");
@@ -549,6 +565,7 @@ public final class WebSocket {
 			if (!verified) {
 				throw new HttpException(0, "Not verified");
 			}
+
 			try {
 				return new SocketResult(socket, inputStream, outputStream);
 			} finally {
@@ -574,8 +591,8 @@ public final class WebSocket {
 		closed = true;
 		this.socket = null;
 		if (socket != null) {
-			writeQueue.add(END_FRAME);
-			readQueue.add(END_FRAME);
+			writeQueue.add(END_WRITE_FRAME);
+			readQueue.add(END_READ_FRAME);
 			IOUtils.close(inputStream);
 			IOUtils.close(outputStream);
 			closeSocket(socket);
@@ -618,12 +635,77 @@ public final class WebSocket {
 	}
 
 	@Public
+	public static class ComplexBinaryBuilder {
+		private final Connection connection;
+		private final ArrayList<InputStream> writeData = new ArrayList<>();
+		private int length;
+
+		private ComplexBinaryBuilder(Connection connection) {
+			this.connection = connection;
+		}
+
+		@Public
+		public ComplexBinaryBuilder bytes(byte... bytes) {
+			if (bytes != null && bytes.length > 0) {
+				writeData.add(new SimpleByteArrayInputStream(bytes));
+				length += bytes.length;
+			}
+			return this;
+		}
+
+		@Public
+		public ComplexBinaryBuilder bytes(int... bytes) {
+			if (bytes != null && bytes.length > 0) {
+				byte[] next = new byte[bytes.length];
+				for (int i = 0; i < bytes.length; i++) {
+					next[i] = (byte) bytes[i];
+				}
+				return bytes(next);
+			}
+			return this;
+		}
+
+		@Public
+		public ComplexBinaryBuilder string(String string) {
+			if (!StringUtils.isEmpty(string)) {
+				bytes(string.getBytes());
+			}
+			return this;
+		}
+
+		@Public
+		public ComplexBinaryBuilder stream(InputStream inputStream, int count) {
+			if (inputStream != null && count > 0) {
+				writeData.add(new LimitedInputStream(inputStream, count));
+				length += count;
+			}
+			return this;
+		}
+
+		@Public
+		public ComplexBinaryBuilder wrap(Wrapper wrapper) {
+			return wrapper.apply(this);
+		}
+
+		@Public
+		public Connection send() throws HttpException {
+			return connection.sendBuiltComplexBinary(this);
+		}
+
+		@Extendable
+		public interface Wrapper {
+			@Extendable
+			public ComplexBinaryBuilder apply(ComplexBinaryBuilder builder);
+		}
+	}
+
+	@Public
 	public class Connection {
 		@Public
 		public Connection sendText(String text) throws HttpException {
 			checkException();
 			try {
-				writeQueue.add(new Frame(1, true, text != null ? text.getBytes("UTF-8") : new byte[0]));
+				writeQueue.add(new WriteFrame(1, true, text != null ? text.getBytes("UTF-8") : new byte[0]));
 			} catch (UnsupportedEncodingException e) {
 				checkException();
 				throw new RuntimeException(e);
@@ -634,7 +716,19 @@ public final class WebSocket {
 		@Public
 		public Connection sendBinary(byte[] data) throws HttpException {
 			checkException();
-			writeQueue.add(new Frame(2, true, data));
+			writeQueue.add(new WriteFrame(2, true, data));
+			return this;
+		}
+
+		@Public
+		public ComplexBinaryBuilder sendComplexBinary() throws HttpException {
+			checkException();
+			return new ComplexBinaryBuilder(this);
+		}
+
+		private Connection sendBuiltComplexBinary(ComplexBinaryBuilder builder) throws HttpException {
+			checkException();
+			writeQueue.add(new WriteFrame(2, true, builder.writeData, builder.length));
 			return this;
 		}
 
@@ -716,20 +810,21 @@ public final class WebSocket {
 		}
 	}
 
-	private static final Frame END_FRAME = new Frame(0, true, null);
+	private static final ReadFrame END_READ_FRAME = new ReadFrame(0, true, null);
+	private static final WriteFrame END_WRITE_FRAME = new WriteFrame(0, true, null);
 
-	private static class Frame {
+	private static class ReadFrame {
 		public final int opcode;
 		public final boolean fin;
 		public final byte[] data;
 
-		public Frame(int opcode, boolean fin, byte[] data) {
+		public ReadFrame(int opcode, boolean fin, byte[] data) {
 			this.opcode = opcode;
 			this.fin = fin;
 			this.data = data;
 		}
 
-		public static Frame read(InputStream inputStream) throws IOException {
+		public static ReadFrame read(InputStream inputStream) throws IOException {
 			int opcodeData = inputStream.read();
 			checkReadByte(opcodeData);
 			int length = inputStream.read();
@@ -737,6 +832,7 @@ public final class WebSocket {
 			boolean fin = (opcodeData & 0x80) == 0x80;
 			int opcode = opcodeData & 0x0f;
 			boolean masked = (length & 0x80) == 0x80;
+
 			length = length & 0x7f;
 			if (length >= 126) {
 				byte[] data = new byte[length == 126 ? 2 : 8];
@@ -750,6 +846,7 @@ public final class WebSocket {
 				}
 				length = IOUtils.bytesToInt(false, 0, data.length, data);
 			}
+
 			byte[] mask = null;
 			if (masked) {
 				mask = new byte[4];
@@ -757,43 +854,165 @@ public final class WebSocket {
 					checkReadByte(-1);
 				}
 			}
+
 			if (length < 0) {
 				checkReadByte(-1);
 			}
+
 			byte[] data = new byte[length];
 			if (!IOUtils.readExactlyCheck(inputStream, data, 0, data.length)) {
 				checkReadByte(-1);
 			}
+
 			if (mask != null) {
 				for (int i = 0; i < data.length; i++) {
 					data[i] ^= mask[i % mask.length];
 				}
 			}
-			return new Frame(opcode, fin, data);
+
+			return new ReadFrame(opcode, fin, data);
+		}
+	}
+
+	private static class WriteFrame {
+		public final int opcode;
+		public final boolean fin;
+		public final List<InputStream> inputStreams;
+		public final int length;
+
+		public WriteFrame(int opcode, boolean fin, byte[] data) {
+			this(opcode, fin, data != null ? Collections.singletonList(new SimpleByteArrayInputStream(data))
+					: Collections.emptyList(), data != null ? data.length : 0);
 		}
 
-		public void write(OutputStream outputStream) throws IOException {
+		public WriteFrame(int opcode, boolean fin, List<InputStream> inputStream, int length) {
+			this.opcode = opcode;
+			this.fin = fin;
+			this.inputStreams = inputStream;
+			this.length = length;
+		}
+
+		public void write(OutputStream outputStream, byte[] buffer) throws IOException {
 			outputStream.write(0x80 | opcode);
-			if (data.length >= 126) {
-				if (data.length >= 0x10000) {
+
+			if (length >= 126) {
+				if (length >= 0x10000) {
 					outputStream.write(127 | 0x80);
-					outputStream.write(IOUtils.intToBytes(data.length, false, 0, 8, null));
+					outputStream.write(IOUtils.intToBytes(length, false, 0, 8, null));
 				} else {
 					outputStream.write(126 | 0x80);
-					outputStream.write(IOUtils.intToBytes(data.length, false, 0, 2, null));
+					outputStream.write(IOUtils.intToBytes(length, false, 0, 2, null));
 				}
 			} else {
-				outputStream.write(data.length | 0x80);
+				outputStream.write(length | 0x80);
 			}
+
 			byte[] mask = new byte[4];
 			for (int i = 0; i < mask.length; i++) {
 				mask[i] = (byte) RANDOM.nextInt(256);
 			}
 			outputStream.write(mask);
-			for (int i = 0; i < data.length; i++) {
-				outputStream.write(data[i] ^ mask[i % mask.length]);
+
+			int streamIndex = 0;
+			int index = 0;
+			while (index < length && streamIndex < inputStreams.size()) {
+				InputStream inputStream = inputStreams.get(streamIndex);
+				int count = inputStream.read(buffer);
+				if (count < 0) {
+					streamIndex++;
+					continue;
+				}
+				for (int i = 0; i < count; i++) {
+					buffer[i] ^= mask[(index + i) % mask.length];
+				}
+				outputStream.write(buffer, 0, count);
+				index += count;
 			}
+
 			outputStream.flush();
+		}
+	}
+
+	private static class SimpleByteArrayInputStream extends InputStream {
+		private final byte[] array;
+
+		private int position = 0;
+
+		public SimpleByteArrayInputStream(byte[] array) {
+			this.array = array;
+		}
+
+		@Override
+		public int read() throws IOException {
+			return position < array.length ? array[position++] & 0xff : -1;
+		}
+
+		@Override
+		public int read(byte[] buffer) throws IOException {
+			return read(buffer, 0, buffer.length);
+		}
+
+		@Override
+		public int read(byte[] buffer, int byteOffset, int byteCount) throws IOException {
+			int left = array.length - position;
+			if (left > 0) {
+				byteCount = Math.min(byteCount, left);
+				System.arraycopy(array, position, buffer, byteOffset, byteCount);
+				position += byteCount;
+				return byteCount;
+			} else {
+				return -1;
+			}
+		}
+	}
+
+	private static class LimitedInputStream extends InputStream {
+		private final InputStream inputStream;
+		private final int count;
+
+		private int position;
+
+		private LimitedInputStream(InputStream inputStream, int count) {
+			this.inputStream = inputStream;
+			this.count = count;
+		}
+
+		@Override
+		public int read() throws IOException {
+			if (position < count) {
+				int result = inputStream.read();
+				if (result >= 0) {
+					position++;
+				}
+				return result;
+			} else {
+				return -1;
+			}
+		}
+
+		@Override
+		public int read(byte[] buffer) throws IOException {
+			return read(buffer, 0, buffer.length);
+		}
+
+		@Override
+		public int read(byte[] buffer, int byteOffset, int byteCount) throws IOException {
+			int left = count - position;
+			if (left > 0) {
+				byteCount = Math.min(byteCount, left);
+				byteCount = inputStream.read(buffer, byteOffset, byteCount);
+				if (byteCount > 0) {
+					position += byteCount;
+				}
+				return byteCount;
+			} else {
+				return -1;
+			}
+		}
+
+		@Override
+		public void close() throws IOException {
+			inputStream.close();
 		}
 	}
 
