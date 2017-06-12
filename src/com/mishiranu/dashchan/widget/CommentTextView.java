@@ -36,7 +36,6 @@ import android.text.Spanned;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.TypefaceSpan;
 import android.util.AttributeSet;
-import android.util.SparseArray;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -377,13 +376,6 @@ public class CommentTextView extends TextView {
 	}
 
 	private class CustomSelectionCallback implements ActionMode.Callback {
-		private void addCopyMenuItemIfNotNull(Menu menu, MenuItem menuItem, int flags) {
-			if (menuItem != null) {
-				menu.add(0, menuItem.getItemId(), 0, menuItem.getTitle()).setIcon(menuItem.getIcon())
-						.setShowAsAction(flags);
-			}
-		}
-
 		@TargetApi(Build.VERSION_CODES.M)
 		@Override
 		public boolean onCreateActionMode(ActionMode mode, Menu menu) {
@@ -392,24 +384,17 @@ public class CommentTextView extends TextView {
 			setSelectionMode(true);
 			int pasteResId = ResourceUtils.getSystemSelectionIcon(getContext(), "actionModePasteDrawable",
 					"ic_menu_paste_holo_dark");
-			SparseArray<MenuItem> validItems = new SparseArray<>();
-			validItems.put(android.R.id.selectAll, menu.findItem(android.R.id.selectAll));
-			validItems.put(android.R.id.copy, menu.findItem(android.R.id.copy));
-			menu.clear();
 			ActionIconSet set = new ActionIconSet(getContext());
 			int flags = MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT;
 			if (C.API_MARSHMALLOW && mode.getType() == ActionMode.TYPE_FLOATING) {
+				int order = 1; // Only "cut" menu item uses this order which doesn't present in non-editable TextView
 				if (replyable != null) {
-					menu.add(0, android.R.id.button1, 0, R.string.action_quote).setIcon(pasteResId)
-							.setShowAsAction(flags);
+					menu.add(0, android.R.id.button1, order, R.string.action_quote)
+							.setIcon(pasteResId).setShowAsAction(flags);
 				}
-				menu.add(0, android.R.id.button2, 0, R.string.action_browser).setIcon(set.getId(R.attr.actionForward))
-						.setShowAsAction(flags);
-				addCopyMenuItemIfNotNull(menu, validItems.get(android.R.id.copy), flags);
-				addCopyMenuItemIfNotNull(menu, validItems.get(android.R.id.selectAll), flags);
+				menu.add(0, android.R.id.button2, order, R.string.action_browser)
+						.setIcon(set.getId(R.attr.actionForward)).setShowAsAction(flags);
 			} else {
-				addCopyMenuItemIfNotNull(menu, validItems.get(android.R.id.selectAll), flags);
-				addCopyMenuItemIfNotNull(menu, validItems.get(android.R.id.copy), flags);
 				if (replyable != null) {
 					menu.add(0, android.R.id.button1, 0, R.string.action_quote).setIcon(pasteResId)
 							.setShowAsAction(flags);
@@ -443,14 +428,10 @@ public class CommentTextView extends TextView {
 				int selStart = getSelectionStart(), selEnd = getSelectionEnd();
 				int min = Math.max(0, Math.min(selStart, selEnd)), max = Math.max(0, Math.max(selStart, selEnd));
 				switch (item.getItemId()) {
-					case android.R.id.selectAll: {
-						Selection.setSelection(text, 0, text.length());
-						break;
-					}
 					case android.R.id.copy: {
 						StringUtils.copyToClipboard(getContext(), getPartialCommentString(text, min, max));
 						mode.finish();
-						break;
+						return true;
 					}
 					case android.R.id.button1: {
 						if (replyable != null) {
@@ -458,7 +439,7 @@ public class CommentTextView extends TextView {
 									getPartialCommentString(text, min, max)));
 						}
 						mode.finish();
-						break;
+						return true;
 					}
 					case android.R.id.button2: {
 						Uri uri = extractSelectedUri();
@@ -466,11 +447,11 @@ public class CommentTextView extends TextView {
 							getLinkListener().onLinkClick(CommentTextView.this, null, uri, true);
 						}
 						mode.finish();
-						break;
+						return true;
 					}
 				}
 			}
-			return true;
+			return false;
 		}
 	}
 
