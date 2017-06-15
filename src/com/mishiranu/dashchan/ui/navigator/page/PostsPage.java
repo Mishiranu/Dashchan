@@ -1089,7 +1089,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 			}
 		}
 		CountDownLatch latch = new CountDownLatch(1);
-		getAdapter().preloadPosts(postItems, () -> latch.countDown());
+		getAdapter().preloadPosts(postItems, latch::countDown);
 		while (true) {
 			try {
 				latch.await();
@@ -1171,9 +1171,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		boolean wasEmpty = adapter.isEmpty();
 		final int newPostPosition = adapter.getCount();
 		if (removedUserPostPendings != null) {
-			for (ReadPostsTask.UserPostPending userPostPending : removedUserPostPendings) {
-				extra.userPostPendings.remove(userPostPending);
-			}
+			extra.userPostPendings.removeAll(removedUserPostPendings);
 		}
 		if (fullThread) {
 			// Thread was opened for the first time
