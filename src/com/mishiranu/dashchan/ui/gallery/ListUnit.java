@@ -446,8 +446,8 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 			convertView.getLayoutParams().width = size;
 			convertView.getLayoutParams().height = size;
 			GalleryItem galleryItem = getItem(position);
-			holder.attachmentInfo.setText(StringUtils.getFileExtension(galleryItem
-					.getFileUri(instance.locator).getPath()).toUpperCase(Locale.getDefault()) +
+			holder.attachmentInfo.setText(StringUtils
+					.getFileExtension(galleryItem.getFileName(instance.locator)).toUpperCase(Locale.getDefault()) +
 					(galleryItem.size > 0 ? " " + AttachmentItem.formatSize(galleryItem.size) : ""));
 			Uri thumbnailUri = galleryItem.getThumbnailUri(instance.locator);
 			if (thumbnailUri != null) {
