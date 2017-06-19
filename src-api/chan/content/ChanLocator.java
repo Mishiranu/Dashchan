@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -171,7 +171,8 @@ public class ChanLocator implements ChanManager.Linked {
 		if (StringUtils.isEmpty(host)) {
 			return false;
 		}
-		return hosts.containsKey(host) || host.equals(Preferences.getDomainUnhandled(getChanName()));
+		return hosts.containsKey(host) || host.equals(Preferences.getDomainUnhandled(getChanName()))
+				|| getHostTransition(getPreferredHost(), host) != null;
 	}
 
 	@Public
@@ -181,7 +182,7 @@ public class ChanLocator implements ChanManager.Linked {
 				return true;
 			}
 			String host = uri.getHost();
-			return host != null ? isChanHost(host) : false;
+			return host != null && isChanHost(host);
 		}
 		return false;
 	}
@@ -201,12 +202,34 @@ public class ChanLocator implements ChanManager.Linked {
 		if (uri != null) {
 			String preferredScheme = getPreferredScheme();
 			String host = uri.getHost();
-			boolean mayConvert = uri.isRelative() || isWebScheme(uri) && isConvertableChanHost(host);
-			if (mayConvert || !preferredScheme.equals(uri.getScheme()) && isChanHost(host)) {
-				Uri.Builder builder = uri.buildUpon().scheme(preferredScheme);
-				if (mayConvert) {
-					builder.authority(getPreferredHost());
+			String preferredHost = getPreferredHost();
+			boolean relative = uri.isRelative();
+			boolean webScheme = isWebScheme(uri);
+			Uri.Builder builder = null;
+			if (relative || webScheme && isConvertableChanHost(host)) {
+				if (!StringUtils.equals(host, preferredHost)) {
+					if (builder == null) {
+						builder = uri.buildUpon().scheme(preferredScheme);
+					}
+					builder.authority(preferredHost);
 				}
+			} else if (webScheme) {
+				String hostTransition = getHostTransition(preferredHost, host);
+				if (hostTransition != null) {
+					if (builder == null) {
+						builder = uri.buildUpon().scheme(preferredScheme);
+					}
+					builder.authority(hostTransition);
+				}
+			}
+			if (StringUtils.isEmpty(uri.getScheme()) ||
+					webScheme && !preferredScheme.equals(uri.getScheme()) && isChanHost(host)) {
+				if (builder == null) {
+					builder = uri.buildUpon().scheme(preferredScheme);
+				}
+				builder.scheme(preferredScheme);
+			}
+			if (builder != null) {
 				return builder.build();
 			}
 		}
@@ -221,6 +244,11 @@ public class ChanLocator implements ChanManager.Linked {
 			}
 		}
 		return uri;
+	}
+
+	@Extendable
+	protected String getHostTransition(String chanHost, String requiredHost) {
+		return null;
 	}
 
 	@Extendable
