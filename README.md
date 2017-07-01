@@ -46,6 +46,7 @@ Video player libraries: [DashchanWebm.apk](https://github.com/Mishiranu/Dashchan
 | kropyvach       | kropyva.ch           | [DashchanKropyvach.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanKropyvach.apk)             |
 | kurisach        | kurisa.ch            | [DashchanKurisach.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanKurisach.apk)               |
 | lainchan        | lainchan.org         | [DashchanLainchan.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanLainchan.apk)               |
+| lolifox         | lolifox.org          | [DashchanLolifox.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanLolifox.apk)                 |
 | makabapaid      | 2channel.hk          | [DashchanMakabaPaid.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanMakabaPaid.apk)           |
 | meguca          | meguca.org           | [DashchanMeguca.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanMeguca.apk)                   |
 | nowere          | nowere.net           | [DashchanNowere.apk](https://github.com/Mishiranu/Dashchan-Extensions/raw/master/update/package/DashchanNowere.apk)                   |
