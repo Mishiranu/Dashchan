@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2016-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import android.graphics.Point;
 import android.graphics.SurfaceTexture;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Message;
 import android.os.Process;
 import android.view.Surface;
 import android.view.TextureView;
@@ -54,54 +53,51 @@ public class VideoPlayer {
 	private static final int MESSAGE_END_BUFFERING = 6;
 	private static final int MESSAGE_RETRY_SET_POSITION = 7;
 
-	private static final Handler HANDLER = new Handler(Looper.getMainLooper(), new Handler.Callback() {
-		@Override
-		public boolean handleMessage(Message msg) {
-			switch (msg.what) {
-				case MESSAGE_PLAYBACK_COMPLETE: {
-					VideoPlayer player = (VideoPlayer) msg.obj;
-					if (player.listener != null && !player.consumed) {
-						player.listener.onComplete(player);
-					}
-					return true;
+	private static final Handler HANDLER = new Handler(Looper.getMainLooper(), msg -> {
+		switch (msg.what) {
+			case MESSAGE_PLAYBACK_COMPLETE: {
+				VideoPlayer player = (VideoPlayer) msg.obj;
+				if (player.listener != null && !player.consumed) {
+					player.listener.onComplete(player);
 				}
-				case MESSAGE_SIZE_CHANGED: {
-					VideoPlayer player = (VideoPlayer) msg.obj;
-					player.onDimensionChange();
-					return true;
-				}
-				case MESSAGE_START_SEEKING:
-				case MESSAGE_END_SEEKING: {
-					boolean seeking = msg.what == MESSAGE_START_SEEKING;
-					VideoPlayer player = (VideoPlayer) msg.obj;
-					if (player.lastSeeking != seeking) {
-						player.lastSeeking = seeking;
-						player.onSeekingBufferingStateChange(true, false);
-					}
-					return true;
-				}
-				case MESSAGE_START_BUFFERING:
-				case MESSAGE_END_BUFFERING: {
-					boolean buffering = msg.what == MESSAGE_START_BUFFERING;
-					VideoPlayer player = (VideoPlayer) msg.obj;
-					if (player.lastBuffering != buffering) {
-						player.lastBuffering = buffering;
-						player.onSeekingBufferingStateChange(false, true);
-					}
-					return true;
-				}
-				case MESSAGE_RETRY_SET_POSITION: {
-					Object[] data = (Object[]) msg.obj;
-					VideoPlayer player = (VideoPlayer) data[0];
-					long position = (long) data[1];
-					// Sometimes player hangs during setPosition (ffmpeg seek too far away from real position)
-					// I can do nothing better than repeat seeking
-					player.setPosition(position);
-					return true;
-				}
+				return true;
 			}
-			return false;
+			case MESSAGE_SIZE_CHANGED: {
+				VideoPlayer player = (VideoPlayer) msg.obj;
+				player.onDimensionChange();
+				return true;
+			}
+			case MESSAGE_START_SEEKING:
+			case MESSAGE_END_SEEKING: {
+				boolean seeking = msg.what == MESSAGE_START_SEEKING;
+				VideoPlayer player = (VideoPlayer) msg.obj;
+				if (player.lastSeeking != seeking) {
+					player.lastSeeking = seeking;
+					player.onSeekingBufferingStateChange(true, false);
+				}
+				return true;
+			}
+			case MESSAGE_START_BUFFERING:
+			case MESSAGE_END_BUFFERING: {
+				boolean buffering = msg.what == MESSAGE_START_BUFFERING;
+				VideoPlayer player = (VideoPlayer) msg.obj;
+				if (player.lastBuffering != buffering) {
+					player.lastBuffering = buffering;
+					player.onSeekingBufferingStateChange(false, true);
+				}
+				return true;
+			}
+			case MESSAGE_RETRY_SET_POSITION: {
+				Object[] data = (Object[]) msg.obj;
+				VideoPlayer player = (VideoPlayer) data[0];
+				long position = (long) data[1];
+				// Sometimes player hangs during setPosition (ffmpeg seek too far away from real position)
+				// I can do nothing better than repeat seeking
+				player.setPosition(position);
+				return true;
+			}
 		}
+		return false;
 	});
 
 	private static final HashMap<String, Method> METHODS = new HashMap<>();
@@ -737,8 +733,11 @@ public class VideoPlayer {
 					return player.inputHolder.getSize();
 				}
 				try {
-					return player.inputHolder.seek((int) position, whence == 2 ? CachingInputStream.Whence.END
-							: whence == 1 ? CachingInputStream.Whence.RELATIVE : CachingInputStream.Whence.START);
+					int seekPosition = position > Integer.MAX_VALUE ? Integer.MAX_VALUE
+							: position < Integer.MIN_VALUE ? Integer.MIN_VALUE : (int) position;
+					CachingInputStream.Whence seekWhence = whence == 2 ? CachingInputStream.Whence.END : whence == 1
+							? CachingInputStream.Whence.RELATIVE : CachingInputStream.Whence.START;
+					return player.inputHolder.seek(seekPosition, seekWhence);
 				} catch (IOException e) {
 					return -1;
 				}
