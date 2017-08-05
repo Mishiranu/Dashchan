@@ -16,6 +16,8 @@
 
 #include "util.h"
 
+#include <stdlib.h>
+
 void queueInit(Queue * queue) {
 	memset(queue, 0, sizeof(Queue));
 }

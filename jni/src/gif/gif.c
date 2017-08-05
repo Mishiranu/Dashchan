@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,9 @@
 #include <gif_lib.h>
 
 #include <jni.h>
+#include <stdlib.h>
 #include <unistd.h>
+#include <sys/time.h>
 
 #include <android/bitmap.h>
 
