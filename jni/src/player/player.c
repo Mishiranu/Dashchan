@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2016-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,7 +87,7 @@ struct Player {
 	int seekAnyFrame;
 
 	jobject nativeBridge;
-	SparceArray bridges;
+	SparseArray bridges;
 
 	AVIOContext * ioContext;
 	AVFormatContext * formatContext;
@@ -191,7 +191,7 @@ struct ScaleHolder {
 
 static Bridge * obtainBridge(Player * player, JNIEnv * env) {
 	int index = pthread_self();
-	Bridge * bridge = sparceArrayGet(&player->bridges, index);
+	Bridge * bridge = sparseArrayGet(&player->bridges, index);
 	if (bridge == NULL) {
 		bridge = malloc(sizeof(Bridge));
 		jclass class = (*env)->GetObjectClass(env, player->nativeBridge);
@@ -200,7 +200,7 @@ static Bridge * obtainBridge(Player * player, JNIEnv * env) {
 		bridge->methodOnRead = (*env)->GetMethodID(env, class, "onRead", "(I)I");
 		bridge->methodOnSeek = (*env)->GetMethodID(env, class, "onSeek", "(JI)J");
 		bridge->methodOnMessage = (*env)->GetMethodID(env, class, "onMessage", "(I)V");
-		sparceArrayAdd(&player->bridges, index, bridge);
+		sparseArrayAdd(&player->bridges, index, bridge);
 	}
 	return bridge;
 }
@@ -770,8 +770,8 @@ static void * performDecodeVideo(void * data) {
 	int lastWidth = stream->codec->width;
 	int lastHeight = stream->codec->height;
 	extendScaleHolder(&scaleHolder, player->videoBufferQueue->bufferSize, lastWidth, lastHeight, bytesPerPixel, isYUV);
-	SparceArray scaleContexts;
-	sparceArrayInit(&scaleContexts, 1);
+	SparseArray scaleContexts;
+	sparseArrayInit(&scaleContexts, 1);
 	PacketHolder * packetHolder = NULL;
 	AVPacket lastPacket;
 	int lastPacketValid = 0;
@@ -875,11 +875,11 @@ static void * performDecodeVideo(void * data) {
 							frame->width, frame->height);
 				} else {
 					int scaleContextIndex = (frame->width) << 16 | frame->height;
-					struct SwsContext * scaleContext = sparceArrayGet(&scaleContexts, scaleContextIndex);
+					struct SwsContext * scaleContext = sparseArrayGet(&scaleContexts, scaleContextIndex);
 					if (scaleContext == NULL) {
 						scaleContext = sws_getContext(frame->width, frame->height, frame->format,
 								frame->width, frame->height, player->videoFormat, SWS_FAST_BILINEAR, NULL, NULL, NULL);
-						sparceArrayAdd(&scaleContexts, scaleContextIndex, scaleContext);
+						sparseArrayAdd(&scaleContexts, scaleContextIndex, scaleContext);
 					}
 					sws_scale(scaleContext, (uint8_t const * const *) frame->data, frame->linesize,
 							0, frame->height, scaleHolder.scaleData, scaleHolder.scaleLinesize);
@@ -951,7 +951,7 @@ static void * performDecodeVideo(void * data) {
 	if (lastPacketValid) {
 		av_packet_unref(&lastPacket);
 	}
-	sparceArrayDestroyEach(&scaleContexts, sws_freeContext(data));
+	sparseArrayDestroyEach(&scaleContexts, sws_freeContext(data));
 	av_free(scaleHolder.scaleBuffer);
 	av_frame_free(&frame);
 	return NULL;
@@ -1122,7 +1122,7 @@ static int bufferReadData(void * opaque, uint8_t * buf, int buf_size) {
 	if (player->interrupt) {
 		return -1;
 	}
-	Bridge * bridge = sparceArrayGet(&player->bridges, (int) pthread_self());
+	Bridge * bridge = sparseArrayGet(&player->bridges, (int) pthread_self());
 	if (bridge == NULL) {
 		return -1;
 	}
@@ -1141,7 +1141,7 @@ static int64_t bufferSeekData(void * opaque, int64_t offset, int whence) {
 	if (player->interrupt) {
 		return -1;
 	}
-	Bridge * bridge = sparceArrayGet(&player->bridges, (int) pthread_self());
+	Bridge * bridge = sparseArrayGet(&player->bridges, (int) pthread_self());
 	if (bridge == NULL) {
 		return -1;
 	}
@@ -1157,7 +1157,7 @@ static Player * createPlayer() {
 	player->videoUseLibyuv = -1;
 	player->videoLastBufferWidth = -1;
 	player->videoLastBufferHeight = -1;
-	sparceArrayInit(&player->bridges, 4);
+	sparseArrayInit(&player->bridges, 4);
 	pthread_mutex_init(&player->decodePacketsReadMutex, NULL);
 	pthread_cond_init(&player->decodePacketsFlowCond, NULL);
 	pthread_mutex_init(&player->decodePacketsFlowMutex, NULL);
@@ -1194,7 +1194,7 @@ jlong init(JNIEnv * env, jobject nativeBridge, jboolean seekAnyFrame) {
 			&bufferReadData, NULL, &bufferSeekData);
 	if (ioContext == NULL) {
 		av_free(contextBuffer);
-		player->errorCode = ERROR_LOAD_FORMAT;
+		player->errorCode = ERROR_LOAD_IO;
 		return jlongCast(player);
 	}
 	player->ioContext = ioContext;
@@ -1425,7 +1425,7 @@ void destroy(JNIEnv * env, jlong pointer) {
 		free(player->audioBuffer);
 	}
 	updatePlayerSurface(env, player, NULL, 0);
-	sparceArrayDestroyEach(&player->bridges, free(data));
+	sparseArrayDestroyEach(&player->bridges, free(data));
 	(*env)->DeleteGlobalRef(env, player->nativeBridge);
 	free(player);
 }

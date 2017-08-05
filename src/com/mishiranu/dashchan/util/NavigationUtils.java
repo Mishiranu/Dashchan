@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -332,7 +332,8 @@ public class NavigationUtils {
 	}
 
 	public static boolean isOpenableVideoExtension(String extension) {
-		return Preferences.isUseVideoPlayer() && VideoPlayer.isLoaded() && "webm".equals(extension);
+		return Preferences.isUseVideoPlayer() && VideoPlayer.isLoaded() &
+				C.OPENABLE_VIDEO_EXTENSIONS.contains(extension);
 	}
 
 	public static void searchImage(Context context, final String chanName, Uri uri) {

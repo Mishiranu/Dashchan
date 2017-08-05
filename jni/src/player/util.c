@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2016-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -191,45 +191,45 @@ int bufferQueueCount(BufferQueue * bufferQueue) {
 	return bufferQueue->busyQueue.count;
 }
 
-void sparceArrayInit(SparceArray * sparceArray, int initialCapacity) {
-	sparceArray->items = malloc(sizeof(SparceArrayItem) * initialCapacity);
-	sparceArray->capacity = initialCapacity;
-	sparceArray->count = 0;
+void sparseArrayInit(SparseArray * sparseArray, int initialCapacity) {
+	sparseArray->items = malloc(sizeof(SparseArrayItem) * initialCapacity);
+	sparseArray->capacity = initialCapacity;
+	sparseArray->count = 0;
 }
 
-void sparceArrayDestroy(SparceArray * sparceArray, void callback(void * data)) {
+void sparseArrayDestroy(SparseArray * sparseArray, void callback(void * data)) {
 	if (callback != NULL) {
-		for (int i = 0; i < sparceArray->count; i++) {
-			SparceArrayItem sparceArrayItem = sparceArray->items[i];
-			if (sparceArrayItem.data != NULL) {
-				callback(sparceArrayItem.data);
+		for (int i = 0; i < sparseArray->count; i++) {
+			SparseArrayItem sparseArrayItem = sparseArray->items[i];
+			if (sparseArrayItem.data != NULL) {
+				callback(sparseArrayItem.data);
 			}
 		}
 	}
-	free(sparceArray->items);
-	sparceArray->count = 0;
+	free(sparseArray->items);
+	sparseArray->count = 0;
 }
 
-void sparceArrayAdd(SparceArray * sparceArray, int index, void * data) {
-	if (sparceArray->count == sparceArray->capacity) {
-		int newCapacity = sparceArray->capacity * 2;
-		SparceArrayItem * items = malloc(sizeof(SparceArrayItem) * newCapacity);
-		memcpy(items, sparceArray->items, sizeof(SparceArrayItem) * sparceArray->capacity);
-		free(sparceArray->items);
-		sparceArray->capacity = newCapacity;
-		sparceArray->items = items;
+void sparseArrayAdd(SparseArray * sparseArray, int index, void * data) {
+	if (sparseArray->count == sparseArray->capacity) {
+		int newCapacity = sparseArray->capacity * 2;
+		SparseArrayItem * items = malloc(sizeof(SparseArrayItem) * newCapacity);
+		memcpy(items, sparseArray->items, sizeof(SparseArrayItem) * sparseArray->capacity);
+		free(sparseArray->items);
+		sparseArray->capacity = newCapacity;
+		sparseArray->items = items;
 	}
-	sparceArray->items[sparceArray->count].data = data;
-	sparceArray->items[sparceArray->count].index = index;
-	sparceArray->count++;
+	sparseArray->items[sparseArray->count].data = data;
+	sparseArray->items[sparseArray->count].index = index;
+	sparseArray->count++;
 }
 
-void * sparceArrayGet(SparceArray * sparceArray, int index) {
+void * sparseArrayGet(SparseArray * sparseArray, int index) {
 	void * data = NULL;
-	for (int i = 0; i < sparceArray->count; i++) {
-		SparceArrayItem sparceArrayItem = sparceArray->items[i];
-		if (sparceArrayItem.index == index) {
-			data = sparceArrayItem.data;
+	for (int i = 0; i < sparseArray->count; i++) {
+		SparseArrayItem sparseArrayItem = sparseArray->items[i];
+		if (sparseArrayItem.index == index) {
+			data = sparseArrayItem.data;
 			break;
 		}
 	}

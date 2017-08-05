@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,8 @@ public class C {
 	public static final Set<String> AUDIO_EXTENSIONS;
 	public static final Set<String> VIDEO_EXTENSIONS;
 
+	public static final Set<String> OPENABLE_VIDEO_EXTENSIONS;
+
 	public static final Map<String, String> EXTENSION_TRANSFORMATION;
 
 	public static final boolean WEB_VIEW_BITMAP_DECODER_SUPPORTED;
@@ -61,6 +63,7 @@ public class C {
 				WEB_VIEW_BITMAP_DECODER_SUPPORTED ? "svg" : null);
 		AUDIO_EXTENSIONS = immutableSet("mp3", "ogg", "flac", "wav");
 		VIDEO_EXTENSIONS = immutableSet("webm", "mp4");
+		OPENABLE_VIDEO_EXTENSIONS = immutableSet("webm", "mp4");
 		HashMap<String, String> extensionTransformation = new HashMap<>();
 		extensionTransformation.put("jpg", "jpeg");
 		extensionTransformation.put("jpe", "jpeg");

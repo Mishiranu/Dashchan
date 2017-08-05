@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2016-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,26 +86,26 @@ BufferItem * bufferQueueSeize(BufferQueue * bufferQueue);
 void bufferQueueRelease(BufferQueue * bufferQueue, BufferItem * bufferItem);
 int bufferQueueCount(BufferQueue * bufferQueue);
 
-typedef struct SparceArrayItem SparceArrayItem;
-typedef struct SparceArray SparceArray;
+typedef struct SparseArrayItem SparseArrayItem;
+typedef struct SparseArray SparseArray;
 
-struct SparceArrayItem {
+struct SparseArrayItem {
 	int index;
 	void * data;
 };
 
-struct SparceArray {
-	SparceArrayItem * items;
+struct SparseArray {
+	SparseArrayItem * items;
 	int capacity;
 	int count;
 };
 
-void sparceArrayInit(SparceArray * sparceArray, int initialCapacity);
-void sparceArrayDestroy(SparceArray * sparceArray, void callback(void * data));
-void sparceArrayAdd(SparceArray * sparceArray, int index, void * data);
-void * sparceArrayGet(SparceArray * sparceArray, int index);
+void sparseArrayInit(SparseArray * sparseArray, int initialCapacity);
+void sparseArrayDestroy(SparseArray * sparseArray, void callback(void * data));
+void sparseArrayAdd(SparseArray * sparseArray, int index, void * data);
+void * sparseArrayGet(SparseArray * sparseArray, int index);
 
-#define sparceArrayDestroyEach(a, b) {void callback(void * data) {b;} sparceArrayDestroy(a, callback);}
+#define sparseArrayDestroyEach(a, b) {void callback(void * data) {b;} sparseArrayDestroy(a, callback);}
 
 int64_t getTime();
 int64_t getTimeUs();
