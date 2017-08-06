@@ -78,6 +78,9 @@ public class MultipartEntity implements RequestEntity {
 	}
 
 	public final void add(String name, Openable openable, OpenableOutputListener listener) {
+		if (name == null) {
+			throw new NullPointerException("Name is null");
+		}
 		parts.add(new OpenablePart(name, openable, listener));
 	}
 
