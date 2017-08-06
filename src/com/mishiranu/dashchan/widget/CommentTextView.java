@@ -232,12 +232,15 @@ public class CommentTextView extends TextView {
 		}
 	}
 
+	private Runnable restoreSelectionRunnable;
+
 	private Runnable resetSelectionRunnable = () -> {
 		if (selectionMode && currentActionMode == null) {
 			CharSequence text = getText();
 			if (text instanceof Spannable) {
 				Selection.removeSelection((Spannable) text);
 			}
+			restoreSelectionRunnable = null;
 			setSelectionMode(false);
 		}
 	};
@@ -314,7 +317,9 @@ public class CommentTextView extends TextView {
 			sendFakeMotionEvent(MotionEvent.ACTION_DOWN, finalX, finalY);
 			sendFakeMotionEvent(MotionEvent.ACTION_UP, finalX, finalY);
 			int max = newSpannable.length();
-			Selection.setSelection(newSpannable, Math.min(finalStart, max), Math.min(finalEnd, max));
+			restoreSelectionRunnable = () ->
+					Selection.setSelection(newSpannable, Math.min(finalStart, max), Math.min(finalEnd, max));
+			restoreSelectionRunnable.run();
 			postDelayed(resetSelectionRunnable, 500);
 		});
 	}
@@ -402,6 +407,8 @@ public class CommentTextView extends TextView {
 				menu.add(0, android.R.id.button2, 0, R.string.action_browser).setIcon(set.getId(R.attr.actionForward))
 						.setShowAsAction(flags);
 			}
+			// Stop selection fixation after creating action mode
+			restoreSelectionRunnable = null;
 			return true;
 		}
 
@@ -458,6 +465,10 @@ public class CommentTextView extends TextView {
 	@Override
 	protected void onSelectionChanged(int selStart, int selEnd) {
 		super.onSelectionChanged(selStart, selEnd);
+		if (selectionMode && restoreSelectionRunnable != null) {
+			// Fixate selection while during selection mode initialization
+			restoreSelectionRunnable.run();
+		}
 		if (currentActionMode != null) {
 			// This works better than simple "invalidate" call
 			// because "invalidate" can cause action mode resizing bug in Android 5
