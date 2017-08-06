@@ -531,6 +531,11 @@ public class CommentTextView extends TextView {
 	}
 
 	@Override
+	public boolean hasExplicitFocusable() {
+		return super.hasExplicitFocusable() && selectionMode;
+	}
+
+	@Override
 	public boolean hasFocusable() {
 		return super.hasFocusable() && selectionMode;
 	}
