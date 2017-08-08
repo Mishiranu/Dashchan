@@ -112,22 +112,33 @@ public class ListScroller implements AbsListView.OnScrollListener {
 		}
 
 		int listHeight = listView.getHeight();
-		int first = listView.getFirstVisiblePosition();
-		int last = first + childCount - 1;
+		int firstViewIndex = listView.getFirstVisiblePosition();
+		int lastViewIndex = firstViewIndex + childCount - 1;
+		int visiblePaddingTop = listView.getPaddingTop();
 
-		if (toPosition > first) {
-			View view = listView.getChildAt(childCount - 1);
+		View firstVisibleView = null;
+		int firstVisibleViewIndex = 0;
+		for (int i = 0; i < childCount; i++) {
+			firstVisibleView = listView.getChildAt(i);
+			if (firstVisibleView.getBottom() >= visiblePaddingTop) {
+				firstVisibleViewIndex = firstViewIndex + i;
+				break;
+			}
+		}
+
+		if (toPosition > firstVisibleViewIndex) {
+			View lastView = listView.getChildAt(childCount - 1);
 			// More attention to scrolling near the end, because additional bottom padding bug may appear
-			boolean closeToEnd = last >= listView.getCount() - childCount;
-			int distance = view.getHeight() + view.getTop() - listHeight + listView.getPaddingBottom();
-			boolean hasScroll = last + 1 < listView.getCount();
+			boolean closeToEnd = lastViewIndex >= listView.getCount() - childCount;
+			int distance = lastView.getHeight() + lastView.getTop() - listHeight + listView.getPaddingBottom();
+			boolean hasScroll = lastViewIndex + 1 < listView.getCount();
 			if (hasScroll) {
 				distance += additionalScroll;
 			}
-			if (last >= toPosition) {
-				int index = toPosition - first;
-				view = listView.getChildAt(index);
-				int topDistance = view.getTop() - listView.getPaddingTop();
+			if (lastViewIndex >= toPosition) {
+				int index = toPosition - firstViewIndex;
+				View positionView = listView.getChildAt(index);
+				int topDistance = positionView.getTop() - visiblePaddingTop;
 				if (topDistance < distance || !closeToEnd) {
 					distance = topDistance;
 				}
@@ -137,18 +148,22 @@ public class ListScroller implements AbsListView.OnScrollListener {
 			} else {
 				toPosition = AbsListView.INVALID_POSITION;
 			}
+		} else if (toPosition < firstVisibleViewIndex) {
+			View firstView = listView.getChildAt(0);
+			int distance;
+			if (toPosition < firstViewIndex) {
+				// Scroll additionally so first view will be a bit overscrolled and become second
+				distance = firstView.getTop() - visiblePaddingTop - additionalScroll;
+			} else {
+				distance = firstView.getTop() - visiblePaddingTop;
+			}
+			listSmoothScrollBy(distance);
 		} else {
-			View view = listView.getChildAt(0);
-			if (first == toPosition) {
-				int distance = view.getTop() - listView.getPaddingTop();
-				if (distance < 0) {
-					listSmoothScrollBy(distance);
-				} else {
-					toPosition = AbsListView.INVALID_POSITION;
-				}
-			} else if (first > toPosition) {
-				int distance = view.getTop() - listView.getPaddingTop() - additionalScroll;
+			int distance = firstVisibleView.getTop() - visiblePaddingTop;
+			if (distance < 0) {
 				listSmoothScrollBy(distance);
+			} else {
+				toPosition = AbsListView.INVALID_POSITION;
 			}
 		}
 	}
