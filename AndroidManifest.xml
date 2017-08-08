@@ -20,7 +20,7 @@
 	xmlns:tools="http://schemas.android.com/tools"
 	package="com.mishiranu.dashchan"
 	android:versionCode="1033"
-	android:versionName="2.10.2">
+	android:versionName="2.10.3">
 
 	<uses-sdk android:minSdkVersion="16" android:targetSdkVersion="25" />
 
