@@ -312,13 +312,15 @@ public class CommentTextView extends TextView {
 				return;
 			}
 			Spannable newSpannable = (Spannable) text;
-			sendFakeMotionEvent(MotionEvent.ACTION_DOWN, finalX, finalY);
-			sendFakeMotionEvent(MotionEvent.ACTION_UP, finalX, finalY);
-			sendFakeMotionEvent(MotionEvent.ACTION_DOWN, finalX, finalY);
-			sendFakeMotionEvent(MotionEvent.ACTION_UP, finalX, finalY);
 			int max = newSpannable.length();
-			restoreSelectionRunnable = () ->
+			Runnable restoreSelectionRunnable = () ->
 					Selection.setSelection(newSpannable, Math.min(finalStart, max), Math.min(finalEnd, max));
+			// restoreSelectionRunnable can be nullified during sending motion event
+			this.restoreSelectionRunnable = restoreSelectionRunnable;
+			sendFakeMotionEvent(MotionEvent.ACTION_DOWN, finalX, finalY);
+			sendFakeMotionEvent(MotionEvent.ACTION_UP, finalX, finalY);
+			sendFakeMotionEvent(MotionEvent.ACTION_DOWN, finalX, finalY);
+			sendFakeMotionEvent(MotionEvent.ACTION_UP, finalX, finalY);
 			restoreSelectionRunnable.run();
 			postDelayed(resetSelectionRunnable, 500);
 		});
