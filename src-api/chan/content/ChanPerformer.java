@@ -229,7 +229,7 @@ public class ChanPerformer implements ChanManager.Linked {
 
 		// TODO CHAN
 		// Remove this constructor after updating
-		// apachan endchan
+		// apachan
 		// Added: 24.08.16 03:39
 		@Public
 		public ReadThreadsResult(Threads threads) {

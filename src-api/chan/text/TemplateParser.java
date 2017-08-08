@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016-2017 Fukurou Mishiranu
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package chan.text;
 
 import java.util.ArrayList;
@@ -10,11 +26,10 @@ import chan.annotation.Public;
 import chan.util.StringUtils;
 
 // TODO CHAN
-// Make internal builder methods private and remove dynamic safety check after updating
-// alphachan alterchan arhivach bonzibuddy brchan britfags bunbunmaru candydollchan chaosach chiochan cirno desustorage
-// exach fourplebs freeportseven gurochan haibane infinite kropyvach lainchan nowere nulldvachnet nulleu nullnyan
-// nullone nulltirech onechanca ozuchan ponyach randomarchive sevenchan taima tiretirech uboachan valkyria
-// xyntach yakujimoe
+// Make internal builder methods private and remove dynamic safety check after updating alphachan alterchan arhivach
+// bonzibuddy britfags bunbunmaru candydollchan chaosach chiochan desustorage exach fourplebs freeportseven gurochan
+// haibane infinite kropyvach nowere nulldvachnet nulleu nullnyan nulltirech onechanca ozuchan ponyach randomarchive
+// sevenchan tiretirech uboachan valkyria xyntach
 // Added: 07.03.17 22:33
 @Public
 public final class TemplateParser<H> {
