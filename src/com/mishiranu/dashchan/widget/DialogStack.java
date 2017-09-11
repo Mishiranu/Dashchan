@@ -34,6 +34,7 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
@@ -72,8 +73,23 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 	@Override
 	public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			return keyBackHandler.onBackKey(event, !visibileViews.isEmpty());
+		}
+		return false;
+	}
+
+	private final KeyBackHandler keyBackHandler = C.API_MARSHMALLOW ? new MarshmallowKeyBackHandler()
+			: new RegularKeyBackHandler();
+
+	private interface KeyBackHandler {
+		public boolean onBackKey(KeyEvent event, boolean allowPop);
+	}
+
+	private class RegularKeyBackHandler implements KeyBackHandler {
+		@Override
+		public boolean onBackKey(KeyEvent event, boolean allowPop) {
 			if (event.getAction() == KeyEvent.ACTION_UP) {
-				if (!event.isLongPress() && !visibileViews.isEmpty()) {
+				if (!event.isLongPress() && allowPop) {
 					popInternal();
 				}
 				return true;
@@ -83,8 +99,34 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 				}
 				return true;
 			}
+			return false;
 		}
-		return false;
+	}
+
+	// https://issuetracker.google.com/37106088
+	private class MarshmallowKeyBackHandler implements KeyBackHandler {
+		private boolean posted = false;
+		private final Runnable longPressRunnable = () -> {
+			posted = false;
+			clear();
+		};
+
+		@Override
+		public boolean onBackKey(KeyEvent event, boolean allowPop) {
+			if (event.getAction() == KeyEvent.ACTION_DOWN) {
+				if (!posted) {
+					rootView.postDelayed(longPressRunnable, ViewConfiguration.getLongPressTimeout());
+					posted = true;
+				}
+			} else if (event.getAction() == KeyEvent.ACTION_UP) {
+				rootView.removeCallbacks(longPressRunnable);
+				posted = false;
+				if (allowPop) {
+					popInternal();
+				}
+			}
+			return false;
+		}
 	}
 
 	@Override
