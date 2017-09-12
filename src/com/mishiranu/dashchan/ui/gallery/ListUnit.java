@@ -216,7 +216,7 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 					break;
 				}
 				case MENU_GO_TO_POST: {
-					instance.callback.navigatePost(galleryItem, true);
+					instance.callback.navigatePost(galleryItem, true, true);
 					break;
 				}
 				case MENU_SHARE_LINK: {
@@ -233,7 +233,7 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 			dialogMenu.addItem(MENU_SEARCH_IMAGE, R.string.action_search_image);
 		}
 		dialogMenu.addItem(MENU_COPY_LINK, R.string.action_copy_link);
-		if (instance.callback.isAllowNavigatePost(false) && galleryItem.postNumber != null) {
+		if (instance.callback.isAllowNavigatePostManually(false) && galleryItem.postNumber != null) {
 			dialogMenu.addItem(MENU_GO_TO_POST, R.string.action_go_to_post);
 		}
 		dialogMenu.addItem(MENU_SHARE_LINK, R.string.action_share_link);

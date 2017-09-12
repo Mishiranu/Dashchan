@@ -795,7 +795,7 @@ public class DialogUnit implements DialogStack.Callback {
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private void showAttachmentsGrid(Context context, List<AttachmentItem> attachmentItems, int startImageIndex,
-			boolean allowNavigatePost, GalleryItem.GallerySet gallerySet) {
+			NavigationUtils.NavigatePostMode navigatePostMode, GalleryItem.GallerySet gallerySet) {
 		Context styledContext = new ContextThemeWrapper(context, R.style.Theme_Gallery);
 		ArrayList<AttachmentView> attachmentViews = new ArrayList<>();
 		ImageLoader.Observer observer = (key, bitmap, error) -> {
@@ -830,7 +830,7 @@ public class DialogUnit implements DialogStack.Callback {
 					imageIndex++;
 				}
 			}
-			openAttachment(context, v, attachmentItems, index, imageIndex, allowNavigatePost, gallerySet);
+			openAttachment(context, v, attachmentItems, index, imageIndex, navigatePostMode, gallerySet);
 		};
 		Configuration configuration = context.getResources().getConfiguration();
 		boolean tablet = ResourceUtils.isTablet(configuration);
@@ -904,16 +904,16 @@ public class DialogUnit implements DialogStack.Callback {
 	}
 
 	public void openAttachmentOrDialog(Context context, View imageView, List<AttachmentItem> attachmentItems,
-			int imageIndex, boolean allowNavigatePost, GalleryItem.GallerySet gallerySet) {
+			int imageIndex, NavigationUtils.NavigatePostMode navigatePostMode, GalleryItem.GallerySet gallerySet) {
 		if (attachmentItems.size() > 1) {
-			showAttachmentsGrid(context, attachmentItems, imageIndex, allowNavigatePost, gallerySet);
+			showAttachmentsGrid(context, attachmentItems, imageIndex, navigatePostMode, gallerySet);
 		} else {
-			openAttachment(context, imageView, attachmentItems, 0, imageIndex, allowNavigatePost, gallerySet);
+			openAttachment(context, imageView, attachmentItems, 0, imageIndex, navigatePostMode, gallerySet);
 		}
 	}
 
 	public void openAttachment(Context context, View imageView, List<AttachmentItem> attachmentItems, int index,
-			int imageIndex, boolean allowNavigatePost, GalleryItem.GallerySet gallerySet) {
+			int imageIndex, NavigationUtils.NavigatePostMode navigatePostMode, GalleryItem.GallerySet gallerySet) {
 		AttachmentItem attachmentItem = attachmentItems.get(index);
 		boolean canDownload = attachmentItem.canDownloadToStorage();
 		String chanName = attachmentItem.getChanName();
@@ -924,7 +924,7 @@ public class DialogUnit implements DialogStack.Callback {
 		} else if (canDownload && (type == AttachmentItem.TYPE_IMAGE || type == AttachmentItem.TYPE_VIDEO &&
 				NavigationUtils.isOpenableVideoExtension(attachmentItem.getExtension()))) {
 			NavigationUtils.openGallery(context, imageView, chanName, imageIndex, gallerySet,
-					true, allowNavigatePost, false);
+					true, navigatePostMode, false);
 		} else {
 			NavigationUtils.handleUri(context, chanName, uri, NavigationUtils.BrowserType.EXTERNAL);
 		}

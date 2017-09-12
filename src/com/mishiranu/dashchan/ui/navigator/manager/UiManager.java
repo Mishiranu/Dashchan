@@ -29,6 +29,7 @@ import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.graphics.ColorScheme;
 import com.mishiranu.dashchan.ui.posting.Replyable;
 import com.mishiranu.dashchan.util.ListViewUtils;
+import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.WeakObservable;
 import com.mishiranu.dashchan.widget.AttachmentView;
 import com.mishiranu.dashchan.widget.CommentTextView;
@@ -173,7 +174,7 @@ public class UiManager {
 	}
 
 	public interface ThumbnailClickListener extends View.OnClickListener {
-		public void update(int index, boolean mayShowDialog, boolean allowNavigatePost);
+		public void update(int index, boolean mayShowDialog, NavigationUtils.NavigatePostMode navigatePostMode);
 	}
 
 	public interface ThumbnailLongClickListener extends View.OnLongClickListener {

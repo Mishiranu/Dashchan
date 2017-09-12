@@ -83,7 +83,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 	private GalleryBackgroundDrawable backgroundDrawable;
 
 	private boolean galleryWindow, galleryMode;
-	private boolean allowNavigatePost;
+	private NavigationUtils.NavigatePostMode navigatePostMode;
 	private boolean overrideUpButton = false;
 	private final boolean scrollThread = Preferences.isScrollThreadGallery();
 
@@ -155,7 +155,12 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		instance.chanName = chanName;
 		instance.locator = locator;
 		instance.galleryItems = galleryItems;
-		allowNavigatePost = getIntent().getBooleanExtra(C.EXTRA_ALLOW_NAVIGATE_POST, false);
+		String navigatePostModeString = getIntent().getStringExtra(C.EXTRA_NAVIGATE_POST_MODE);
+		if (navigatePostModeString != null) {
+			navigatePostMode = NavigationUtils.NavigatePostMode.valueOf(navigatePostModeString);
+		} else {
+			navigatePostMode = NavigationUtils.NavigatePostMode.DISABLED;
+		}
 		actionBar = findViewById(getResources().getIdentifier("action_bar", "id", "android"));
 		rootView = new WindowControlFrameLayout(this);
 		rootView.setOnApplyWindowPaddingsListener(this);
@@ -498,9 +503,14 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		pagerUnit.navigatePageFromList(position, GALLERY_TRANSITION_DURATION);
 	}
 
+	private boolean checkAllowNavigatePost(boolean manually) {
+		return navigatePostMode == NavigationUtils.NavigatePostMode.ENABLED ||
+				navigatePostMode == NavigationUtils.NavigatePostMode.MANUALLY && manually;
+	}
+
 	@Override
-	public void navigatePost(GalleryItem galleryItem, boolean force) {
-		if (allowNavigatePost && (scrollThread || force)) {
+	public void navigatePost(GalleryItem galleryItem, boolean manually, boolean force) {
+		if (checkAllowNavigatePost(manually) && (scrollThread || force)) {
 			Intent intent = new Intent(C.ACTION_GALLERY_NAVIGATE_POST).putExtra(C.EXTRA_CHAN_NAME, instance.chanName)
 					.putExtra(C.EXTRA_BOARD_NAME, galleryItem.boardName).putExtra(C.EXTRA_THREAD_NUMBER,
 					galleryItem.threadNumber).putExtra(C.EXTRA_POST_NUMBER, galleryItem.postNumber);
@@ -512,9 +522,9 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 	}
 
 	@Override
-	public boolean isAllowNavigatePost(boolean fromPager) {
+	public boolean isAllowNavigatePostManually(boolean fromPager) {
 		// Don't allow navigate to post from pager if thread is scrolling automatically with pager
-		return allowNavigatePost && (!scrollThread || !fromPager);
+		return checkAllowNavigatePost(true) && (!(scrollThread && checkAllowNavigatePost(false)) || !fromPager);
 	}
 
 	@Override

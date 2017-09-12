@@ -122,6 +122,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 			String postNumber = intent.getStringExtra(C.EXTRA_POST_NUMBER);
 			int position = getAdapter().findPositionByPostNumber(postNumber);
 			if (position >= 0) {
+				getUiManager().dialog().closeDialogs();
 				ListScroller.scrollTo(getListView(), position);
 			}
 		}
@@ -378,7 +379,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 					}
 				}
 				NavigationUtils.openGallery(getActivity(), null, pageHolder.chanName, imageIndex,
-						adapter.getConfigurationSet().gallerySet, true, true, true);
+						adapter.getConfigurationSet().gallerySet, true, NavigationUtils.NavigatePostMode.ENABLED, true);
 				return true;
 			}
 			case OPTIONS_MENU_SELECT: {

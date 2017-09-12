@@ -240,10 +240,12 @@ public class NavigationUtils {
 		}
 	}
 
+	public enum NavigatePostMode {DISABLED, MANUALLY, ENABLED}
+
 	private static WeakReference<ArrayList<GalleryItem>> galleryItems;
 
 	public static void openGallery(Context context, View imageView, String chanName, int imageIndex,
-			GalleryItem.GallerySet gallerySet, boolean allowExpandedScreen, boolean allowNavigatePost,
+			GalleryItem.GallerySet gallerySet, boolean allowExpandedScreen, NavigatePostMode navigatePostMode,
 			boolean galleryMode) {
 		int[] viewPosition = null;
 		if (imageView != null) {
@@ -260,7 +262,8 @@ public class NavigationUtils {
 		intent.putExtra(C.EXTRA_OBTAIN_ITEMS, true);
 		intent.putExtra(C.EXTRA_IMAGE_INDEX, imageIndex);
 		intent.putExtra(C.EXTRA_ALLOW_EXPANDED_SCREEN, allowExpandedScreen);
-		intent.putExtra(C.EXTRA_ALLOW_NAVIGATE_POST, allowNavigatePost && gallerySet.isNavigatePostSupported());
+		intent.putExtra(C.EXTRA_NAVIGATE_POST_MODE, (gallerySet.isNavigatePostSupported()
+				? navigatePostMode : NavigatePostMode.DISABLED).name());
 		intent.putExtra(C.EXTRA_GALLERY_MODE, galleryMode);
 		intent.putExtra(C.EXTRA_VIEW_POSITION, viewPosition);
 		context.startActivity(intent);

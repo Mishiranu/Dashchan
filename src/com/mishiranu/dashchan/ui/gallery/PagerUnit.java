@@ -548,7 +548,7 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 			}
 			galleryInstance.callback.updateTitle();
 			if (galleryItem.postNumber != null && resumed && !galleryInstance.callback.isGalleryMode()) {
-				galleryInstance.callback.navigatePost(galleryItem, false);
+				galleryInstance.callback.navigatePost(galleryItem, false, false);
 			}
 		}
 
@@ -604,7 +604,7 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 					break;
 				}
 				case POPUP_MENU_NAVIGATE_POST: {
-					galleryInstance.callback.navigatePost(galleryItem, true);
+					galleryInstance.callback.navigatePost(galleryItem, true, true);
 					break;
 				}
 				case POPUP_MENU_COPY_LINK: {
@@ -652,7 +652,7 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 			if (capabilities.searchImage) {
 				dialogMenu.addItem(POPUP_MENU_SEARCH_IMAGE, R.string.action_search_image);
 			}
-			if (galleryInstance.callback.isAllowNavigatePost(true) && capabilities.navigatePost) {
+			if (galleryInstance.callback.isAllowNavigatePostManually(true) && capabilities.navigatePost) {
 				dialogMenu.addItem(POPUP_MENU_NAVIGATE_POST, R.string.action_go_to_post);
 			}
 			dialogMenu.addItem(POPUP_MENU_COPY_LINK, R.string.action_copy_link);

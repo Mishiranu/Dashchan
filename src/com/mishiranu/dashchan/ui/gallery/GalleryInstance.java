@@ -52,9 +52,9 @@ public class GalleryInstance {
 
 		public void navigateGalleryOrFinish(boolean enableGalleryMode);
 		public void navigatePageFromList(int position);
-		public void navigatePost(GalleryItem galleryItem, boolean force);
+		public void navigatePost(GalleryItem galleryItem, boolean manually, boolean force);
 
-		public boolean isAllowNavigatePost(boolean fromPager);
+		public boolean isAllowNavigatePostManually(boolean fromPager);
 
 		public void invalidateOptionsMenu();
 		public void setScreenOnFixed(boolean fixed);

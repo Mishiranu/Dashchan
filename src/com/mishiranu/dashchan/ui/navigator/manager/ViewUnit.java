@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,6 +62,7 @@ import com.mishiranu.dashchan.text.style.LinkSuffixSpan;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.ListViewUtils;
+import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.PostDateFormatter;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
@@ -234,7 +235,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			AttachmentItem attachmentItem = attachmentItems.get(0);
 			boolean needShowSeveralIcon = attachmentItems.size() > 1;
 			attachmentItem.configureAndLoad(holder.thumbnail, needShowSeveralIcon, isBusy, false);
-			holder.thumbnailClickListener.update(0, true, false);
+			holder.thumbnailClickListener.update(0, true, NavigationUtils.NavigatePostMode.DISABLED);
 			holder.thumbnailLongClickListener.update(attachmentItem);
 			holder.thumbnail.setSfwMode(Preferences.isSfwMode());
 			holder.thumbnail.setVisibility(View.VISIBLE);
@@ -310,7 +311,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			AttachmentItem attachmentItem = attachmentItems.get(0);
 			boolean needShowSeveralIcon = attachmentItems.size() > 1;
 			attachmentItem.configureAndLoad(holder.thumbnail, needShowSeveralIcon, isBusy, false);
-			holder.thumbnailClickListener.update(0, true, false);
+			holder.thumbnailClickListener.update(0, true, NavigationUtils.NavigatePostMode.DISABLED);
 			holder.thumbnailLongClickListener.update(attachmentItem);
 			holder.thumbnail.setSfwMode(Preferences.isSfwMode());
 			holder.thumbnail.setVisibility(View.VISIBLE);
@@ -672,7 +673,8 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 					AttachmentHolder attachmentHolder = attachmentHolders.get(i);
 					AttachmentItem attachmentItem = attachmentItems.get(i);
 					attachmentItem.configureAndLoad(attachmentHolder.thumbnail, false, demandSet.isBusy, false);
-					attachmentHolder.thumbnailClickListener.update(i, false, !configurationSet.isDialog);
+					attachmentHolder.thumbnailClickListener.update(i, false, configurationSet.isDialog
+							? NavigationUtils.NavigatePostMode.MANUALLY : NavigationUtils.NavigatePostMode.ENABLED);
 					attachmentHolder.thumbnailLongClickListener.update(attachmentItem);
 					attachmentHolder.thumbnail.setSfwMode(sfwMode);
 					attachmentHolder.attachmentInfo.setText(attachmentItem.getDescription(AttachmentItem.FormatMode
@@ -689,7 +691,8 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			} else {
 				AttachmentItem attachmentItem = attachmentItems.get(0);
 				attachmentItem.configureAndLoad(holder.thumbnail, size > 1, demandSet.isBusy, false);
-				holder.thumbnailClickListener.update(0, true, !configurationSet.isDialog);
+				holder.thumbnailClickListener.update(0, true, configurationSet.isDialog
+						? NavigationUtils.NavigatePostMode.MANUALLY : NavigationUtils.NavigatePostMode.ENABLED);
 				holder.thumbnailLongClickListener.update(attachmentItem);
 				holder.thumbnail.setSfwMode(Preferences.isSfwMode());
 				holder.thumbnail.setVisibility(View.VISIBLE);
