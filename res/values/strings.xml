@@ -367,6 +367,7 @@
 	<string name="message_unknown_address">Unknown address</string>
 	<string name="message_unknown_error">An unknown error occurred</string>
 	<string name="message_unsafe_redirect">Unsafe redirection</string>
+	<string name="message_unsupported_recaptcha">This reCAPTCHA is not supported</string>
 	<string name="message_unsupported_scheme">Scheme not supported</string>
 	<string name="message_update_reminder">You can track downloading progress in notification bar.\n\nYou can install
 		applications when download finishes.\n\nDon\'t forget to restart client after installing extensions!</string>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ public class ErrorItem implements Serializable {
 	public static final int TYPE_NO_ACCESS_TO_MEMORY = 17;
 	public static final int TYPE_INSUFFICIENT_SPACE = 18;
 	public static final int TYPE_EXTENSION = 19;
+	public static final int TYPE_UNSUPPORTED_RECAPTCHA = 20;
 
 	public final int type;
 	public final int specialType;
@@ -157,6 +158,10 @@ public class ErrorItem implements Serializable {
 			}
 			case TYPE_EXTENSION: {
 				resId = R.string.message_extension_error;
+				break;
+			}
+			case TYPE_UNSUPPORTED_RECAPTCHA: {
+				resId = R.string.message_unsupported_recaptcha;
 				break;
 			}
 		}

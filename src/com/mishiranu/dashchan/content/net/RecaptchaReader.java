@@ -146,7 +146,11 @@ public class RecaptchaReader implements Handler.Callback {
 				}
 				return challenge;
 			} else {
-				return null;
+				if (responseText.contains("Please enable JavaScript to get a reCAPTCHA challenge")) {
+					throw new HttpException(ErrorItem.TYPE_UNSUPPORTED_RECAPTCHA, false, false);
+				} else {
+					throw new HttpException(ErrorItem.TYPE_INVALID_RESPONSE, false, false);
+				}
 			}
 		}
 	}

@@ -114,7 +114,7 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 		}
 		captchaState = result.captchaState;
 		captchaData = result.captchaData;
-		loadedCaptchaType = result.captchaType != null ? result.captchaType : null;
+		loadedCaptchaType = result.captchaType;
 		input = result.input;
 		validity = result.validity;
 		String captchaType = loadedCaptchaType != null ? loadedCaptchaType : this.captchaType;

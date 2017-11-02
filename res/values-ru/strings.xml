@@ -386,6 +386,7 @@
 	<string name="message_unknown_address">Неизвестный адрес</string>
 	<string name="message_unknown_error">Произошла неизвестная ошибка</string>
 	<string name="message_unsafe_redirect">Небезопасное перенаправление</string>
+	<string name="message_unsupported_recaptcha">Данная reCAPTCHA не поддерживается</string>
 	<string name="message_unsupported_scheme">Схема не поддерживается</string>
 	<string name="message_update_reminder">Прогресс загрузки можно отследить в панели уведомлений.\n\nВы можете
 		установить приложения после окончания загрузки.\n\nНе забудьте перезапустить клиент после
