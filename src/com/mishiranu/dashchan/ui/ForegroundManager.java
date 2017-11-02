@@ -530,7 +530,8 @@ public class ForegroundManager implements Handler.Callback {
 		protected Boolean doInBackground(Void... params) {
 			if (ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2.equals(captchaType)) {
 				try {
-					input = RecaptchaReader.getInstance().getResponseField2(holder, apiKey, challenge, input);
+					input = RecaptchaReader.getInstance().getResponseField2(holder, apiKey,
+							challenge, input, Preferences.isRecaptchaJavascript());
 					return true;
 				} catch (HttpException e) {
 					errorItem = e.getErrorItemAndHandle();

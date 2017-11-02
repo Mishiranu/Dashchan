@@ -35,6 +35,7 @@ import chan.text.CommentEditor;
 
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.net.RecaptchaReader;
+import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.text.HtmlParser;
 import com.mishiranu.dashchan.text.SimilarTextEstimator;
 
@@ -143,7 +144,7 @@ public class SendPostTask extends HttpHolderTask<Void, Long, Boolean> {
 					String challenge = data.captchaData.get(ChanPerformer.CaptchaData.CHALLENGE);
 					String input = data.captchaData.get(ChanPerformer.CaptchaData.INPUT);
 					recaptchaResponse = RecaptchaReader.getInstance().getResponseField2(holder, apiKey,
-							challenge, input);
+							challenge, input, Preferences.isRecaptchaJavascript());
 					if (recaptchaResponse == null) {
 						throw new ApiException(ApiException.SEND_ERROR_CAPTCHA);
 					}
