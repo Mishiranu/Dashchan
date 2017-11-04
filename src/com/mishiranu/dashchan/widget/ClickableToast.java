@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,9 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -98,8 +100,9 @@ public class ClickableToast {
 	private final TextView message;
 	private final TextView button;
 
+	private ViewGroup currentContainer;
 	private Runnable onClickListener;
-	private boolean showing, canClickable, realClickable, clickableOnlyWhenRoot;
+	private boolean showing, clickable, realClickable, clickableOnlyWhenRoot;
 
 	private static final HashMap<Context, ClickableToast> TOASTS = new HashMap<>();
 
@@ -243,24 +246,6 @@ public class ClickableToast {
 		button = message2;
 
 		windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-		WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
-		layoutParams.format = PixelFormat.TRANSLUCENT;
-		layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
-		layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
-		layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
-				WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
-		layoutParams.setTitle(context.getPackageName() + "/" + getClass().getName()); // For hierarchy view
-		layoutParams.windowAnimations = android.R.style.Animation_Toast;
-		layoutParams.gravity = Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
-		layoutParams.y = Y_OFFSET;
-		try {
-			Field field = WindowManager.LayoutParams.class.getField("privateFlags");
-			// PRIVATE_FLAG_NO_MOVE_ANIMATION == 0x00000040
-			field.set(layoutParams, field.getInt(layoutParams) | 0x00000040);
-		} catch (Exception e) {
-			// Reflective operation, ignore exception
-		}
-		container.setLayoutParams(layoutParams);
 	}
 
 	private void showInternal(CharSequence message, String button, Runnable listener, boolean clickableOnlyWhenRoot) {
@@ -271,18 +256,17 @@ public class ClickableToast {
 		onClickListener = listener;
 		partialClickDrawable.clicked = false;
 		partialClickDrawable.invalidateSelf();
-		canClickable = !StringUtils.isEmpty(button);
+		clickable = !StringUtils.isEmpty(button);
 		this.clickableOnlyWhenRoot = clickableOnlyWhenRoot;
-		WindowManager.LayoutParams layoutParams = updateLayoutAndRealClickableInternal();
+		updateLayoutAndRealClickableInternal();
 		boolean added = false;
 		if (C.API_LOLLIPOP) {
 			// TYPE_TOAST works well only on Lollipop and higher, but can throw BadTokenException on some devices
-			layoutParams.type = WindowManager.LayoutParams.TYPE_TOAST;
-			added = addContainerToWindowManager();
+			// noinspection deprecation
+			added = addContainerToWindowManager(WindowManager.LayoutParams.TYPE_TOAST);
 		}
 		if (!added) {
-			layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION;
-			added = addContainerToWindowManager();
+			added = addContainerToWindowManager(WindowManager.LayoutParams.TYPE_APPLICATION);
 		}
 		if (added) {
 			showing = true;
@@ -290,35 +274,73 @@ public class ClickableToast {
 		}
 	}
 
-	private boolean addContainerToWindowManager() {
+	private boolean addContainerToWindowManager(int type) {
+		boolean success = false;
 		try {
-			windowManager.addView(container, container.getLayoutParams());
-			return true;
+			currentContainer = new FrameLayout(container.getContext());
+			currentContainer.addView(container, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT,
+					FrameLayout.LayoutParams.WRAP_CONTENT));
+			windowManager.addView(currentContainer, createLayoutParams(type));
+			success = true;
 		} catch (WindowManager.BadTokenException e) {
+			removeCurrentContainer();
 			String errorMessage = e.getMessage();
-			if (errorMessage != null && (errorMessage.contains("permission denied") ||
+			if (errorMessage == null || !(errorMessage.contains("permission denied") ||
 					errorMessage.contains("has already been added"))) {
-				return false;
+				throw e;
 			}
-			throw e;
+		} finally {
+			if (!success) {
+				removeCurrentContainer();
+			}
 		}
+		return success;
 	}
 
-	private WindowManager.LayoutParams updateLayoutAndRealClickableInternal() {
-		realClickable = canClickable && (holder.hasFocus || !clickableOnlyWhenRoot) && holder.resumed;
-		button.setVisibility(realClickable ? View.VISIBLE : View.GONE);
-		message.setPadding(0, 0, realClickable ? button.getPaddingLeft() : 0, 0);
-		WindowManager.LayoutParams layoutParams = (WindowManager.LayoutParams) container.getLayoutParams();
+	private WindowManager.LayoutParams updateLayoutParams(WindowManager.LayoutParams layoutParams) {
 		layoutParams.flags = FlagUtils.set(layoutParams.flags, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
 				!realClickable);
 		return layoutParams;
 	}
 
+	private WindowManager.LayoutParams createLayoutParams(int type) {
+		WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
+		layoutParams.type = type;
+		layoutParams.format = PixelFormat.TRANSLUCENT;
+		layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
+		layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
+		layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+				WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
+		// For hierarchy viewer (layout inspector)
+		layoutParams.setTitle(container.getContext().getPackageName() + "/" + getClass().getName());
+		layoutParams.windowAnimations = android.R.style.Animation_Toast;
+		layoutParams.gravity = Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
+		layoutParams.y = Y_OFFSET;
+		try {
+			Field field = WindowManager.LayoutParams.class.getField("privateFlags");
+			// PRIVATE_FLAG_NO_MOVE_ANIMATION == 0x00000040
+			field.set(layoutParams, field.getInt(layoutParams) | 0x00000040);
+		} catch (Exception e) {
+			// Reflective operation, ignore exception
+		}
+		return updateLayoutParams(layoutParams);
+	}
+
+	private void updateLayoutAndRealClickableInternal() {
+		realClickable = clickable && (holder.hasFocus || !clickableOnlyWhenRoot) && holder.resumed;
+		button.setVisibility(realClickable ? View.VISIBLE : View.GONE);
+		message.setPadding(0, 0, realClickable ? button.getPaddingLeft() : 0, 0);
+	}
+
 	private void updateLayoutAndRealClickable() {
-		if (!canClickable) {
+		if (!clickable) {
 			return;
 		}
-		windowManager.updateViewLayout(container, updateLayoutAndRealClickableInternal());
+		updateLayoutAndRealClickableInternal();
+		if (currentContainer != null) {
+			windowManager.updateViewLayout(currentContainer,
+					updateLayoutParams((WindowManager.LayoutParams) currentContainer.getLayoutParams()));
+		}
 	}
 
 	private void cancelInternal() {
@@ -327,12 +349,22 @@ public class ClickableToast {
 		}
 		container.removeCallbacks(cancelRunnable);
 		showing = false;
-		canClickable = false;
+		clickable = false;
 		realClickable = false;
-		windowManager.removeView(container);
+		removeCurrentContainer();
 	}
 
-	private final Runnable cancelRunnable = () -> cancelInternal();
+	private void removeCurrentContainer() {
+		if (currentContainer != null) {
+			if (currentContainer.getParent() != null) {
+				windowManager.removeView(currentContainer);
+			}
+			currentContainer.removeView(container);
+			currentContainer = null;
+		}
+	}
+
+	private final Runnable cancelRunnable = this::cancelInternal;
 
 	private void postCancelInternal() {
 		container.post(cancelRunnable);
