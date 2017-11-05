@@ -55,6 +55,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.Window;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -799,6 +800,10 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 					commentEditor.formatSelectedText(commentView, what);
 					break;
 				}
+			}
+			InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+			if (inputMethodManager != null) {
+				inputMethodManager.showSoftInput(commentView, 0);
 			}
 		}
 	};
