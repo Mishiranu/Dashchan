@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!--
-	Copyright 2014-2016 Fukurou Mishiranu
+	Copyright 2014-2017 Fukurou Mishiranu
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -99,6 +99,7 @@
 	<color name="color_selection_normie">#665181b8</color>
 
 	<color name="background_window_neutron">#ff2c2c2c</color>
+	<color name="background_spoiler_neutron">#33aaaaaa</color>
 	<color name="color_post_primary_neutron">@color/color_primary_neutron</color>
 	<color name="color_post_secondary_neutron">@color/color_text_link_neutron</color>
 	<color name="color_post_grayed_neutron">@color/color_post_primary_neutron</color>

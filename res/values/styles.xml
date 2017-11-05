@@ -251,6 +251,7 @@
 	<style name="Theme.General.Extended.Main.Neutron" parent="@style/Theme.General.Main.Dark">
 
 		<item name="android:windowBackground">@color/background_window_neutron</item>
+		<item name="backgroundSpoiler">@color/background_spoiler_neutron</item>
 
 		<item name="colorPrimarySupport">@color/color_primary_neutron</item>
 		<item name="colorAccentSupport">@color/color_accent_neutron</item>
