@@ -128,10 +128,6 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 			return null;
 		}
 		if (mayShowLoadButton && recaptcha2) {
-			String apiKey = captchaData.get(ChanPerformer.CaptchaData.API_KEY);
-			if (Preferences.isRecaptchaJavascript()) {
-				RecaptchaReader.getInstance().preloadNewWidget(apiKey);
-			}
 			captchaState = ChanPerformer.CaptchaState.NEED_LOAD;
 			return true;
 		}
