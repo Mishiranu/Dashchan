@@ -860,8 +860,8 @@ public class DialogUnit implements DialogStack.Callback {
 			@SuppressLint("InflateParams")
 			View view = inflater.inflate(R.layout.list_item_attachment, null);
 			ViewUtils.makeRoundedCorners(view, (int) (2f * density + 0.5f), true);
-			final AttachmentView attachmentView = (AttachmentView) view.findViewById(R.id.thumbnail);
-			TextView textView = (TextView) view.findViewById(R.id.attachment_info);
+			AttachmentView attachmentView = view.findViewById(R.id.thumbnail);
+			TextView textView = view.findViewById(R.id.attachment_info);
 			textView.setBackgroundColor(0xcc222222);
 			attachmentItem.configureAndLoad(attachmentView, false, false, true);
 			attachmentViews.add(attachmentView);

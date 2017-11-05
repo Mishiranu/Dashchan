@@ -180,8 +180,8 @@ public class ClickableToast {
 		LayoutInflater inflater = LayoutInflater.from(context);
 		View toast1 = inflater.inflate(LAYOUT_ID, null);
 		View toast2 = inflater.inflate(LAYOUT_ID, null);
-		TextView message1 = (TextView) toast1.findViewById(android.R.id.message);
-		TextView message2 = (TextView) toast2.findViewById(android.R.id.message);
+		TextView message1 = toast1.findViewById(android.R.id.message);
+		TextView message2 = toast2.findViewById(android.R.id.message);
 		View backgroundSource = null;
 		Drawable backgroundDrawable = toast1.getBackground();
 		if (backgroundDrawable == null) {

@@ -419,10 +419,10 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 				holder = new GridViewHolder();
 				convertView = LayoutInflater.from(instance.context).inflate(R.layout.list_item_attachment,
 						parent, false);
-				holder.thumbnail = (AttachmentView) convertView.findViewById(R.id.thumbnail);
+				holder.thumbnail = convertView.findViewById(R.id.thumbnail);
 				holder.thumbnail.setBackgroundColor(0xff333333);
 				holder.thumbnail.setCropEnabled(true);
-				holder.attachmentInfo = (TextView) convertView.findViewById(R.id.attachment_info);
+				holder.attachmentInfo = convertView.findViewById(R.id.attachment_info);
 				holder.attachmentInfo.setBackgroundColor(0xaa111111);
 				holder.attachmentInfo.setGravity(Gravity.CENTER);
 				holder.attachmentInfo.setSingleLine(true);

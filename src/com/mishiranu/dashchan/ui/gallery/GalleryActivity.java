@@ -172,7 +172,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		setContentView(rootView);
 		if (galleryItems == null || galleryItems.size() == 0) {
 			View errorView = getLayoutInflater().inflate(R.layout.widget_error, rootView, false);
-			TextView textView = (TextView) errorView.findViewById(R.id.error_text);
+			TextView textView = errorView.findViewById(R.id.error_text);
 			textView.setText(R.string.message_empty_gallery);
 			rootView.addView(errorView);
 		} else {

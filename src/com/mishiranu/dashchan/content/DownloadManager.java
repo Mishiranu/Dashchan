@@ -402,13 +402,13 @@ public class DownloadManager {
 			inputMethodManager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
 			final File directory = Preferences.getDownloadDirectory();
 			View view = LayoutInflater.from(context).inflate(R.layout.dialog_download_choice, null);
-			RadioGroup radioGroup = (RadioGroup) view.findViewById(R.id.download_choice);
+			RadioGroup radioGroup = view.findViewById(R.id.download_choice);
 			radioGroup.check(R.id.download_common);
 			radioGroup.setOnCheckedChangeListener(this);
 			((RadioButton) view.findViewById(R.id.download_common)).setText(context
 					.getString(R.string.text_download_to_format, directory.getName()));
-			detailNameCheckBox = (CheckBox) view.findViewById(R.id.download_detail_name);
-			originalNameCheckBox = (CheckBox) view.findViewById(R.id.download_original_name);
+			detailNameCheckBox = view.findViewById(R.id.download_detail_name);
+			originalNameCheckBox = view.findViewById(R.id.download_original_name);
 			if (chanName == null && boardName == null && threadNumber == null) {
 				allowDetailedFileName = false;
 			}
@@ -422,7 +422,7 @@ public class DownloadManager {
 			} else {
 				originalNameCheckBox.setVisibility(View.GONE);
 			}
-			AutoCompleteTextView editText = (AutoCompleteTextView) view.findViewById(android.R.id.text1);
+			AutoCompleteTextView editText = view.findViewById(android.R.id.text1);
 			if (!allowDetailedFileName && !allowOriginalName) {
 				((ViewGroup.MarginLayoutParams) editText.getLayoutParams()).topMargin = 0;
 			}

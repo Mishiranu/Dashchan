@@ -346,7 +346,7 @@ public class ForegroundManager implements Handler.Callback {
 			Activity activity = getActivity();
 			Bundle args = getArguments();
 			View container = LayoutInflater.from(activity).inflate(R.layout.dialog_captcha, null);
-			TextView comment = (TextView) container.findViewById(R.id.comment);
+			TextView comment = container.findViewById(R.id.comment);
 			int descriptionResId = args.getInt(EXTRA_DESCRIPTION_RES_ID);
 			if (descriptionResId != 0) {
 				comment.setText(descriptionResId);
@@ -355,7 +355,7 @@ public class ForegroundManager implements Handler.Callback {
 			}
 			ChanConfiguration.Captcha captcha = ChanConfiguration.get(args.getString(EXTRA_CHAN_NAME))
 					.safe().obtainCaptcha(args.getString(EXTRA_CAPTCHA_TYPE));
-			EditText captchaInputView = (EditText) container.findViewById(R.id.captcha_input);
+			EditText captchaInputView = container.findViewById(R.id.captcha_input);
 			captchaForm.setupViews(container, null, captchaInputView, true, captcha);
 			AlertDialog alertDialog = new AlertDialog.Builder(activity).setTitle(R.string.text_confirmation)
 					.setView(container).setPositiveButton(android.R.string.ok, (dialog, which) -> onConfirmCaptcha())

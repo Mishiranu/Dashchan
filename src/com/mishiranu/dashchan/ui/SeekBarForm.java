@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,11 +64,11 @@ public class SeekBarForm implements SeekBar.OnSeekBarChangeListener, CompoundBut
 		View view = inflater.inflate(R.layout.dialog_seek_bar_preference, null);
 		((TextView) view.findViewById(R.id.min_value)).setText(Integer.toString((int) (minValue * multipler)));
 		((TextView) view.findViewById(R.id.max_value)).setText(Integer.toString((int) (maxValue * multipler)));
-		seekBar = (SeekBar) view.findViewById(R.id.seek_bar);
+		seekBar = view.findViewById(R.id.seek_bar);
 		seekBar.setMax((maxValue - minValue) / step);
 		seekBar.setProgress((currentValue - minValue) / step);
 		seekBar.setOnSeekBarChangeListener(this);
-		Switch switchView = (Switch) view.findViewById(R.id.switch_view);
+		Switch switchView = view.findViewById(R.id.switch_view);
 		if (!showSwitch) {
 			switchView.setVisibility(View.GONE);
 		} else {
@@ -78,7 +78,7 @@ public class SeekBarForm implements SeekBar.OnSeekBarChangeListener, CompoundBut
 				((ViewGroup.MarginLayoutParams) switchView.getLayoutParams()).rightMargin = 0;
 			}
 		}
-		valueText = (TextView) view.findViewById(R.id.current_value);
+		valueText = view.findViewById(R.id.current_value);
 		updateCurrentValueText();
 		return view;
 	}

@@ -84,8 +84,8 @@ public class CookiesFragment extends BasePreferenceFragment {
 		@Override
 		public View getView(View convertView, ViewGroup parent) {
 			convertView = super.getView(convertView, parent);
-			TextView titleTextView = (TextView) convertView.findViewById(android.R.id.title);
-			TextView summaryTextView = (TextView) convertView.findViewById(android.R.id.summary);
+			TextView titleTextView = convertView.findViewById(android.R.id.title);
+			TextView summaryTextView = convertView.findViewById(android.R.id.summary);
 			if (titleTextView != null && summaryTextView != null) {
 				titleTextView.setEnabled(!viewGrayed);
 				summaryTextView.setEnabled(!viewGrayed);

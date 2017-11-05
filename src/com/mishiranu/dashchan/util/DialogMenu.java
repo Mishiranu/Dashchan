@@ -221,7 +221,7 @@ public class DialogMenu {
 					viewHolder.checkBox = checkBox;
 					view = linearLayout;
 				}
-				viewHolder.textView = (TextView) view.findViewById(android.R.id.text1);
+				viewHolder.textView = view.findViewById(android.R.id.text1);
 				view.setTag(viewHolder);
 				convertView = view;
 			} else {

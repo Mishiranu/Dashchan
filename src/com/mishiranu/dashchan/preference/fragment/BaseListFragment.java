@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,9 +40,9 @@ public abstract class BaseListFragment extends Fragment implements AdapterView.O
 	@Override
 	public final View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.activity_common, container, false);
-		ListView listView = (ListView) view.findViewById(android.R.id.list);
+		ListView listView = view.findViewById(android.R.id.list);
 		emptyView = view.findViewById(R.id.error);
-		emptyText = (TextView) view.findViewById(R.id.error_text);
+		emptyText = view.findViewById(R.id.error_text);
 		emptyView.setVisibility(View.GONE);
 		listView.setOnItemClickListener(this);
 		registerForContextMenu(listView);

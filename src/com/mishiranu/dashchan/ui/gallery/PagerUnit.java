@@ -33,7 +33,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.TextView;
 
 import chan.util.StringUtils;
 
@@ -49,7 +48,6 @@ import com.mishiranu.dashchan.util.DialogMenu;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
-import com.mishiranu.dashchan.widget.CircularProgressBar;
 import com.mishiranu.dashchan.widget.PhotoView;
 import com.mishiranu.dashchan.widget.PhotoViewPager;
 
@@ -451,11 +449,11 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 			View view = LayoutInflater.from(galleryInstance.context).inflate(R.layout.list_item_gallery,
 					parent, false);
 			PagerInstance.ViewHolder holder = new PagerInstance.ViewHolder();
-			holder.photoView = (PhotoView) view.findViewById(R.id.photo_view);
-			holder.surfaceParent = (FrameLayout) view.findViewById(R.id.surface_parent);
+			holder.photoView = view.findViewById(R.id.photo_view);
+			holder.surfaceParent = view.findViewById(R.id.surface_parent);
 			holder.errorView = view.findViewById(R.id.error);
-			holder.errorText = (TextView) view.findViewById(R.id.error_text);
-			holder.progressBar = (CircularProgressBar) view.findViewById(android.R.id.progress);
+			holder.errorText = view.findViewById(R.id.error_text);
+			holder.progressBar = view.findViewById(android.R.id.progress);
 			holder.playButton = view.findViewById(R.id.play);
 			holder.playButton.setBackground(new ShapeDrawable(new PlayShape()));
 			holder.photoView.setListener(photoViewListener);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ import com.mishiranu.dashchan.preference.Preferences;
 public class ViewUtils {
 	public static final DialogInterface.OnShowListener ALERT_DIALOG_MESSAGE_SELECTABLE = dialog -> {
 		if (dialog instanceof AlertDialog) {
-			TextView textView = (TextView) ((AlertDialog) dialog).findViewById(android.R.id.message);
+			TextView textView = ((AlertDialog) dialog).findViewById(android.R.id.message);
 			if (textView != null) {
 				textView.setTextIsSelectable(true);
 			}

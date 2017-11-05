@@ -60,7 +60,6 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -221,26 +220,26 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		setContentView(R.layout.activity_posting);
 		ClickableToast.register(clickableToastHolder);
 		if (C.API_LOLLIPOP) {
-			Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+			Toolbar toolbar = findViewById(R.id.toolbar);
 			setActionBar(toolbar);
 		}
 		getActionBar().setDisplayHomeAsUpEnabled(true);
-		scrollView = (ResizingScrollView) findViewById(R.id.scroll_view);
-		commentView = (EditText) findViewById(R.id.comment);
-		sageCheckBox = (CheckBox) findViewById(R.id.sage_checkbox);
-		spoilerCheckBox = (CheckBox) findViewById(R.id.spoiler_checkbox);
-		originalPosterCheckBox = (CheckBox) findViewById(R.id.original_poster_checkbox);
+		scrollView = findViewById(R.id.scroll_view);
+		commentView = findViewById(R.id.comment);
+		sageCheckBox = findViewById(R.id.sage_checkbox);
+		spoilerCheckBox = findViewById(R.id.spoiler_checkbox);
+		originalPosterCheckBox = findViewById(R.id.original_poster_checkbox);
 		checkBoxParent = findViewById(R.id.checkbox_parent);
-		nameView = (EditText) findViewById(R.id.name);
-		emailView = (EditText) findViewById(R.id.email);
-		passwordView = (EditText) findViewById(R.id.password);
-		subjectView = (EditText) findViewById(R.id.subject);
-		iconView = (DropdownView) findViewById(R.id.icon);
+		nameView = findViewById(R.id.name);
+		emailView = findViewById(R.id.email);
+		passwordView = findViewById(R.id.password);
+		subjectView = findViewById(R.id.subject);
+		iconView = findViewById(R.id.icon);
 		personalDataBlock = findViewById(R.id.personal_data_block);
-		attachmentContainer = (LinearLayout) findViewById(R.id.attachment_container);
+		attachmentContainer = findViewById(R.id.attachment_container);
 		commentView.setOnFocusChangeListener(this);
-		TextView tripcodeWarning = (TextView) findViewById(R.id.personal_tripcode_warning);
-		TextView remainingCharacters = (TextView) findViewById(R.id.remaining_characters);
+		TextView tripcodeWarning = findViewById(R.id.personal_tripcode_warning);
+		TextView remainingCharacters = findViewById(R.id.remaining_characters);
 		nameView.addTextChangedListener(new NameEditWatcher(posting.allowName && !posting.allowTripcode,
 				nameView, tripcodeWarning, () -> scrollView.postResizeComment()));
 		commentEditWatcher = new CommentEditWatcher(postingConfiguration,
@@ -248,19 +247,19 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 				() -> DraftsStorage.getInstance().store(obtainPostDraft()));
 		commentView.addTextChangedListener(commentEditWatcher);
 		commentView.addTextChangedListener(new QuoteEditWatcher(this));
-		textFormatView = (ViewGroup) findViewById(R.id.text_format_view);
+		textFormatView = findViewById(R.id.text_format_view);
 		updatePostingConfiguration(true, false, false);
 		new MarkupButtonsBuilder();
 
 		boolean longFooter = longLayout && !hugeCaptcha;
 		int resId = longFooter ? R.layout.activity_posting_footer_long : R.layout.activity_posting_footer_common;
-		FrameLayout footerContainer = (FrameLayout) findViewById(R.id.footer_container);
+		FrameLayout footerContainer = findViewById(R.id.footer_container);
 		getLayoutInflater().inflate(resId, footerContainer);
 		View captchaInputParentView = footerContainer.findViewById(R.id.captcha_input_parent);
-		EditText captchaInputView = (EditText) footerContainer.findViewById(R.id.captcha_input);
+		EditText captchaInputView = footerContainer.findViewById(R.id.captcha_input);
 		ChanConfiguration.Captcha captcha = chanConfiguration.safe().obtainCaptcha(captchaType);
 		captchaForm.setupViews(footerContainer, captchaInputParentView, captchaInputView, !longFooter, captcha);
-		sendButton = (Button) footerContainer.findViewById(R.id.send_button);
+		sendButton = footerContainer.findViewById(R.id.send_button);
 		sendButton.setOnClickListener(this);
 		attachmentColumnCount = configuration.screenWidthDp >= 960 ? 4 : configuration.screenWidthDp >= 480 ? 2 : 1;
 
@@ -1277,10 +1276,10 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		addAttachmentViewToContainer(view, attachments.size());
 		AttachmentHolder holder = new AttachmentHolder();
 		holder.view = view;
-		holder.fileName = (TextView) view.findViewById(R.id.attachment_name);
-		holder.fileSize = (TextView) view.findViewById(R.id.attachment_size);
+		holder.fileName = view.findViewById(R.id.attachment_name);
+		holder.fileSize = view.findViewById(R.id.attachment_size);
 		holder.options = view.findViewById(R.id.attachment_options);
-		holder.imageView = (ImageView) view.findViewById(R.id.attachment_preview);
+		holder.imageView = view.findViewById(R.id.attachment_preview);
 		holder.imageView.setBackground(new TransparentTileDrawable(this, true));
 		holder.warningButton = view.findViewById(R.id.attachment_warning);
 		holder.warningButton.setOnClickListener(attachmentWarningListener);

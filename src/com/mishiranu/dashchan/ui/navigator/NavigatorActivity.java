@@ -164,11 +164,11 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		actionIconSet = new ActionIconSet(this);
 		progressView = findViewById(R.id.progress);
 		errorView = findViewById(R.id.error);
-		errorText = (TextView) findViewById(R.id.error_text);
-		listView = (PullableListView) findViewById(android.R.id.list);
+		errorText = findViewById(R.id.error_text);
+		listView = findViewById(android.R.id.list);
 		registerForContextMenu(listView);
-		drawerCommon = (ViewGroup) findViewById(R.id.drawer_common);
-		drawerWide = (ViewGroup) findViewById(R.id.drawer_wide);
+		drawerCommon = findViewById(R.id.drawer_common);
+		drawerWide = findViewById(R.id.drawer_wide);
 		TypedArray typedArray = obtainStyledAttributes(new int[] {R.attr.styleDrawerSpecial});
 		int drawerResId = typedArray.getResourceId(0, 0);
 		typedArray.recycle();
@@ -185,13 +185,13 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		drawerParent.addView(drawerListView);
 		drawerCommon.addView(drawerParent);
 		uiManager = new UiManager(this, this, expandedScreen);
-		drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+		drawerLayout = findViewById(R.id.drawer_layout);
 		if (C.API_LOLLIPOP) {
 			FrameLayout foreground = new FrameLayout(this);
 			drawerLayout.addView(foreground, drawerLayout.indexOfChild(drawerCommon), new DrawerLayout.LayoutParams
 					(DrawerLayout.LayoutParams.MATCH_PARENT, DrawerLayout.LayoutParams.MATCH_PARENT));
 			getLayoutInflater().inflate(R.layout.widget_toolbar, foreground);
-			Toolbar toolbar = (Toolbar) foreground.findViewById(R.id.toolbar);
+			Toolbar toolbar = foreground.findViewById(R.id.toolbar);
 			setActionBar(toolbar);
 			toolbarView = toolbar;
 			expandedScreen.setToolbar(toolbar, foreground);

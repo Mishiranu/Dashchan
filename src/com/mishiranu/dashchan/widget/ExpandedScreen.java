@@ -565,7 +565,7 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 
 	public void finishInitialization() {
 		if (fullScreenLayoutEnabled) {
-			FrameLayout content = (FrameLayout) activity.findViewById(android.R.id.content);
+			FrameLayout content = activity.findViewById(android.R.id.content);
 			WindowControlFrameLayout frameLayout = new WindowControlFrameLayout(activity);
 			content.addView(frameLayout, FrameLayout.LayoutParams.MATCH_PARENT,
 					FrameLayout.LayoutParams.MATCH_PARENT);

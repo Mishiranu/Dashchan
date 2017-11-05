@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,10 +72,10 @@ public class CaptchaForm implements View.OnClickListener, View.OnLongClickListen
 		this.applyHeight = applyHeight;
 		blockParentView = container.findViewById(R.id.captcha_block_parent);
 		blockView = container.findViewById(R.id.captcha_block);
-		imageView = (ImageView) container.findViewById(R.id.captcha_image);
+		imageView = container.findViewById(R.id.captcha_image);
 		loadingView = container.findViewById(R.id.captcha_loading);
 		skipBlockView = container.findViewById(R.id.captcha_skip_block);
-		skipTextView = (TextView) container.findViewById(R.id.captcha_skip_text);
+		skipTextView = container.findViewById(R.id.captcha_skip_text);
 		this.inputParentView = inputParentView;
 		this.inputView = inputView;
 		loadButton = container.findViewById(R.id.captcha_load_button);

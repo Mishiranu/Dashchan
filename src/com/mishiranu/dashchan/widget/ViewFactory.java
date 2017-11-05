@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,13 +68,13 @@ public class ViewFactory {
 				android.R.attr.layout, android.R.layout.simple_list_item_2), parent, false);
 		TwoLinesViewHolder holder = new TwoLinesViewHolder();
 		if (view.findViewById(android.R.id.icon) != null) {
-			holder.text1 = (TextView) view.findViewById(android.R.id.title);
-			holder.text2 = (TextView) view.findViewById(android.R.id.summary);
+			holder.text1 = view.findViewById(android.R.id.title);
+			holder.text2 = view.findViewById(android.R.id.summary);
 			view.removeViewAt(view.getChildCount() - 1);
 			view.removeViewAt(0);
 		} else {
-			holder.text1 = (TextView) view.findViewById(android.R.id.text1);
-			holder.text2 = (TextView) view.findViewById(android.R.id.text2);
+			holder.text1 = view.findViewById(android.R.id.text1);
+			holder.text2 = view.findViewById(android.R.id.text2);
 		}
 		holder.text1.setSingleLine(true);
 		if (singleLine) {

@@ -1319,7 +1319,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 					android.R.attr.preferenceCategoryStyle, android.R.attr.layout,
 					android.R.layout.preference_category), parent, false);
 			ViewHolder holder = new ViewHolder();
-			holder.text = (TextView) view.findViewById(android.R.id.title);
+			holder.text = view.findViewById(android.R.id.title);
 			if (button) {
 				int measureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
 				view.measure(measureSpec, measureSpec);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2017 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -120,7 +120,7 @@ public class MultipleEditTextPreference extends DialogPreference {
 	}
 
 	protected void onAddEditTextToDialogView(View dialogView, View view) {
-		ViewGroup container = (ViewGroup) dialogView.findViewById(containerId);
+		ViewGroup container = dialogView.findViewById(containerId);
 		if (container != null) {
 			container.addView(view, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 		}

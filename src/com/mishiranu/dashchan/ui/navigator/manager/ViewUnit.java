@@ -99,7 +99,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		// Define header height, image width and max comment field height
 		View view = LayoutInflater.from(context).inflate(R.layout.list_item_post, null);
 		View head = view.findViewById(R.id.head);
-		TextView comment = (TextView) view.findViewById(R.id.comment);
+		TextView comment = view.findViewById(R.id.comment);
 		View bottomBar = view.findViewById(R.id.bottom_bar);
 		ViewUtils.applyScaleSize(head.findViewById(R.id.subject), head.findViewById(R.id.number),
 				head.findViewById(R.id.name), head.findViewById(R.id.index), head.findViewById(R.id.date),
@@ -165,17 +165,17 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		if (convertView == null) {
 			LayoutInflater inflater = LayoutInflater.from(context);
 			convertView = inflater.inflate(R.layout.list_item_card, parent, false);
-			CardView cardView = (CardView) convertView.findViewById(R.id.card_view);
+			CardView cardView = convertView.findViewById(R.id.card_view);
 			inflater.inflate(R.layout.list_item_thread, cardView);
 			holder = new ThreadViewHolder();
 			holder.cardView = cardView;
-			holder.subject = (TextView) cardView.findViewById(R.id.subject);
-			holder.comment = (TextView) cardView.findViewById(R.id.comment);
-			holder.description = (TextView) cardView.findViewById(R.id.thread_description);
-			holder.stateSage = (ImageView) cardView.findViewById(R.id.state_sage);
-			holder.stateSticky = (ImageView) cardView.findViewById(R.id.state_sticky);
-			holder.stateClosed = (ImageView) cardView.findViewById(R.id.state_closed);
-			holder.thumbnail = (AttachmentView) cardView.findViewById(R.id.thumbnail);
+			holder.subject = cardView.findViewById(R.id.subject);
+			holder.comment = cardView.findViewById(R.id.comment);
+			holder.description = cardView.findViewById(R.id.thread_description);
+			holder.stateSage = cardView.findViewById(R.id.state_sage);
+			holder.stateSticky = cardView.findViewById(R.id.state_sticky);
+			holder.stateClosed = cardView.findViewById(R.id.state_closed);
+			holder.thumbnail = cardView.findViewById(R.id.thumbnail);
 			holder.showOpClickView = cardView.findViewById(R.id.click_view);
 			holder.showOpClickView.setOnClickListener(threadShowOpClickListener);
 			convertView.setTag(holder);
@@ -259,14 +259,14 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		if (convertView == null) {
 			LayoutInflater inflater = LayoutInflater.from(context);
 			convertView = inflater.inflate(R.layout.list_item_card, parent, false);
-			CardView cardView = (CardView) convertView.findViewById(R.id.card_view);
+			CardView cardView = convertView.findViewById(R.id.card_view);
 			inflater.inflate(R.layout.list_item_thread_grid, cardView);
 			holder = new ThreadViewHolder();
 			holder.cardView = cardView;
-			holder.subject = (TextView) cardView.findViewById(R.id.subject);
-			holder.comment = (TextView) cardView.findViewById(R.id.comment);
-			holder.description = (TextView) cardView.findViewById(R.id.thread_description);
-			holder.thumbnail = (AttachmentView) cardView.findViewById(R.id.thumbnail);
+			holder.subject = cardView.findViewById(R.id.subject);
+			holder.comment = cardView.findViewById(R.id.comment);
+			holder.description = cardView.findViewById(R.id.thread_description);
+			holder.thumbnail = cardView.findViewById(R.id.thumbnail);
 			holder.threadContent = cardView.findViewById(R.id.thread_content);
 			holder.showOpClickView = cardView.findViewById(R.id.click_view);
 			holder.showOpClickView.setOnClickListener(threadShowOpClickListener);
@@ -334,10 +334,10 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		if (convertView == null) {
 			LayoutInflater inflater = LayoutInflater.from(parent.getContext());
 			convertView = inflater.inflate(R.layout.list_item_card, parent, false);
-			ViewGroup cardView = (ViewGroup) convertView.findViewById(R.id.card_view);
+			ViewGroup cardView = convertView.findViewById(R.id.card_view);
 			inflater.inflate(R.layout.list_item_hidden, cardView);
 			holder = new HiddenViewHolder();
-			holder.comment = (TextView) convertView.findViewById(R.id.comment);
+			holder.comment = convertView.findViewById(R.id.comment);
 			convertView.setTag(holder);
 			convertView.findViewById(R.id.head).setAlpha(ALPHA_HIDDEN_POST);
 			convertView.findViewById(R.id.index).setVisibility(View.GONE);
@@ -371,11 +371,11 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 			layout.setOnTemporaryDetatchListener(this);
 			convertView = layout;
 			holder = new PostViewHolder();
-			holder.head = (LinebreakLayout) convertView.findViewById(R.id.head);
-			holder.number = (TextView) convertView.findViewById(R.id.number);
-			holder.name = (TextView) convertView.findViewById(R.id.name);
-			holder.index = (TextView) convertView.findViewById(R.id.index);
-			holder.date = (TextView) convertView.findViewById(R.id.date);
+			holder.head = convertView.findViewById(R.id.head);
+			holder.number = convertView.findViewById(R.id.number);
+			holder.name = convertView.findViewById(R.id.name);
+			holder.index = convertView.findViewById(R.id.index);
+			holder.date = convertView.findViewById(R.id.date);
 			int anchorIndex = holder.head.indexOfChild(holder.number) + 1;
 			float density = ResourceUtils.obtainDensity(context);
 			int size = (int) (12f * density);
@@ -387,16 +387,16 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 				holder.stateImages[i] = imageView;
 			}
 			typedArray.recycle();
-			holder.attachments = (ViewGroup) convertView.findViewById(R.id.attachments);
-			holder.comment = (CommentTextView) convertView.findViewById(R.id.comment);
-			holder.attachmentInfo = (TextView) convertView.findViewById(R.id.attachment_info);
-			holder.thumbnail = (AttachmentView) convertView.findViewById(R.id.thumbnail);
+			holder.attachments = convertView.findViewById(R.id.attachments);
+			holder.comment = convertView.findViewById(R.id.comment);
+			holder.attachmentInfo = convertView.findViewById(R.id.attachment_info);
+			holder.thumbnail = convertView.findViewById(R.id.thumbnail);
 			holder.textSelectionPadding = convertView.findViewById(R.id.text_selection_padding);
 			holder.textBarPadding = convertView.findViewById(R.id.text_bar_padding);
 			holder.bottomBar = convertView.findViewById(R.id.bottom_bar);
-			holder.bottomBarReplies = (TextView) convertView.findViewById(R.id.bottom_bar_replies);
-			holder.bottomBarExpand = (TextView) convertView.findViewById(R.id.bottom_bar_expand);
-			holder.bottomBarOpenThread = (TextView) convertView.findViewById(R.id.bottom_bar_open_thread);
+			holder.bottomBarReplies = convertView.findViewById(R.id.bottom_bar_replies);
+			holder.bottomBarExpand = convertView.findViewById(R.id.bottom_bar_expand);
+			holder.bottomBarOpenThread = convertView.findViewById(R.id.bottom_bar_open_thread);
 			convertView.setTag(holder);
 
 			holder.head.setOnTouchListener(headContentTouchListener);
@@ -592,9 +592,9 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		if (convertView == null) {
 			convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_hidden, parent, false);
 			holder = new HiddenViewHolder();
-			holder.index = (TextView) convertView.findViewById(R.id.index);
-			holder.number = (TextView) convertView.findViewById(R.id.number);
-			holder.comment = (TextView) convertView.findViewById(R.id.comment);
+			holder.index = convertView.findViewById(R.id.index);
+			holder.number = convertView.findViewById(R.id.number);
+			holder.comment = convertView.findViewById(R.id.comment);
 			convertView.setTag(holder);
 			convertView.findViewById(R.id.head).setAlpha(ALPHA_HIDDEN_POST);
 			ViewUtils.applyScaleSize(holder.index, holder.number, holder.comment);
@@ -646,8 +646,8 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 						View view = LayoutInflater.from(context).inflate(R.layout.list_item_post_attachment, null);
 						AttachmentHolder attachmentHolder = new AttachmentHolder();
 						attachmentHolder.container = view;
-						attachmentHolder.thumbnail = (AttachmentView) view.findViewById(R.id.thumbnail);
-						attachmentHolder.attachmentInfo = (TextView) view.findViewById(R.id.attachment_info);
+						attachmentHolder.thumbnail = view.findViewById(R.id.thumbnail);
+						attachmentHolder.attachmentInfo = view.findViewById(R.id.attachment_info);
 						attachmentHolder.thumbnail.setDrawTouching(true);
 						attachmentHolder.thumbnail.applyRoundedCorners(postBackgroundColor);
 						attachmentHolder.thumbnail.setOnClickListener(attachmentHolder.thumbnailClickListener);
