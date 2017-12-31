@@ -91,9 +91,9 @@ public class RecaptchaReader implements Handler.Callback {
 	private static final String BASE_URI_STRING = "https://www.google.com/";
 
 	private static final Pattern RECAPTCHA_CHALLENGE_PATTERN = Pattern.compile("[\"'](.{100,}?)[\"']");
-	private static final Pattern RECAPTCHA_FALLBACK_PATTERN = Pattern.compile("(?:(?:<label for=\"response\" " +
-			"class=\"fbc-imageselect-message-text\">|<div class=\"fbc-imageselect-message-error\">)(.*?)" +
-			"(?:</label>|</div>).*?)?value=\"(.{20,}?)\"");
+	private static final Pattern RECAPTCHA_FALLBACK_PATTERN = Pattern.compile("(?:(?:<div " +
+			"class=\"(?:rc-imageselect-desc(?:-no-canonical)?|fbc-imageselect-message-error)\">)(.*?)" +
+			"</div>.*?)?value=\"(.{20,}?)\"");
 	private static final Pattern RECAPTCHA_RESULT_PATTERN = Pattern.compile("<textarea.*?>(.*?)</textarea>");
 
 	private static final byte[] STUB_IMAGE;
