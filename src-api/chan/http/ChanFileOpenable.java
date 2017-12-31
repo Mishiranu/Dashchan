@@ -184,7 +184,7 @@ public class ChanFileOpenable implements MultipartEntity.Openable {
 				int result = readAndSkip(buffer, byteOffset + totalRead, byteCount - totalRead);
 				if (result < 0) {
 					if (randomBytesLeft > 0) {
-						int randomBytesCount = Math.min(byteCount - result, randomBytesLeft);
+						int randomBytesCount = Math.min(byteCount - totalRead, randomBytesLeft);
 						for (int i = 0; i < randomBytesCount; i++) {
 							buffer[byteOffset + totalRead + i] = (byte) (RANDOM.nextInt(0x49) + 0x30);
 						}
