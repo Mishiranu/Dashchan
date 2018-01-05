@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 Fukurou Mishiranu
+ * Copyright 2014-2018 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -677,8 +677,9 @@ public class DownloadManager {
 						String extension = StringUtils.getFileExtension(singleFile.getPath());
 						String type = MimeTypes.forExtension(extension, "image/jpeg");
 						try {
-							context.startActivity(new Intent(Intent.ACTION_VIEW).setDataAndType
-									(Uri.fromFile(singleFile), type).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+							context.startActivity(new Intent(Intent.ACTION_VIEW)
+									.setDataAndType(FileProvider.convertDownloadsFile(singleFile, type), type)
+									.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
 						} catch (ActivityNotFoundException e) {
 							ToastUtils.show(context, R.string.message_unknown_address);
 						}
