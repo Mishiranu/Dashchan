@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Fukurou Mishiranu
+ * Copyright 2018 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.io.FileNotFoundException;
 import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.MatrixCursor;
@@ -110,6 +111,10 @@ public class FileProvider extends ContentProvider {
 			}
 		}
 		return Uri.fromFile(file);
+	}
+
+	public static int getIntentFlags() {
+		return C.API_NOUGAT ? Intent.FLAG_GRANT_READ_URI_PERMISSION : 0;
 	}
 
 	@Override

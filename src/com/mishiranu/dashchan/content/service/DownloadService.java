@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 Fukurou Mishiranu
+ * Copyright 2014-2018 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -168,11 +168,20 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 					TaskData taskData = successTasks.get(successTasks.size() - 1);
 					String extension = StringUtils.getFileExtension(taskData.to.getPath());
 					String type = MimeTypes.forExtension(extension, "image/jpeg");
-					Uri uri = taskData.to.equals(scannedMediaFile) ? scannedMediaUri
-							: FileProvider.convertDownloadsFile(taskData.to, type);
+
+					Uri uri;
+					int intentFlags;
+					if (taskData.to.equals(scannedMediaFile)) {
+						uri = scannedMediaUri;
+						intentFlags = 0;
+					} else {
+						uri = FileProvider.convertDownloadsFile(taskData.to, type);
+						intentFlags = FileProvider.getIntentFlags();
+					}
+
 					try {
-						context.startActivity(new Intent(Intent.ACTION_VIEW)
-								.setDataAndType(uri, type).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+						context.startActivity(new Intent(Intent.ACTION_VIEW).setDataAndType(uri, type)
+								.setFlags(intentFlags | Intent.FLAG_ACTIVITY_NEW_TASK));
 					} catch (ActivityNotFoundException e) {
 						ToastUtils.show(this, R.string.message_unknown_address);
 					}

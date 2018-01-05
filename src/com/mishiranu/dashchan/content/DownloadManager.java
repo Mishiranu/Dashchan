@@ -677,9 +677,10 @@ public class DownloadManager {
 						String extension = StringUtils.getFileExtension(singleFile.getPath());
 						String type = MimeTypes.forExtension(extension, "image/jpeg");
 						try {
-							context.startActivity(new Intent(Intent.ACTION_VIEW)
-									.setDataAndType(FileProvider.convertDownloadsFile(singleFile, type), type)
-									.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+							Uri uri = FileProvider.convertDownloadsFile(singleFile, type);
+							int intentFlags = FileProvider.getIntentFlags();
+							context.startActivity(new Intent(Intent.ACTION_VIEW).setDataAndType(uri, type)
+									.setFlags(intentFlags | Intent.FLAG_ACTIVITY_NEW_TASK));
 						} catch (ActivityNotFoundException e) {
 							ToastUtils.show(context, R.string.message_unknown_address);
 						}

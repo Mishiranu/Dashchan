@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 Fukurou Mishiranu
+ * Copyright 2016-2018 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,8 +71,10 @@ public class UpdaterActivity extends StateActivity {
 		if (uriStrings != null && uriStrings.size() > index) {
 			Uri uri = Uri.parse(uriStrings.get(index));
 			uri = FileProvider.convertUpdatesUri(this, uri);
+			int intentFlags = FileProvider.getIntentFlags();
 			startActivityForResult(new Intent(Intent.ACTION_INSTALL_PACKAGE)
 					.setDataAndType(uri, "application/vnd.android.package-archive")
+					.setFlags(intentFlags)
 					.putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true)
 					.putExtra(Intent.EXTRA_RETURN_RESULT, true), 0);
 		} else {
