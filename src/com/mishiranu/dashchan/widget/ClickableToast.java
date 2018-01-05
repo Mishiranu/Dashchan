@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 Fukurou Mishiranu
+ * Copyright 2014-2018 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,10 @@
 package com.mishiranu.dashchan.widget;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -260,8 +263,7 @@ public class ClickableToast {
 		this.clickableOnlyWhenRoot = clickableOnlyWhenRoot;
 		updateLayoutAndRealClickableInternal();
 		boolean added = false;
-		if (C.API_LOLLIPOP) {
-			// TYPE_TOAST works well only on Lollipop and higher, but can throw BadTokenException on some devices
+		if (isToastWindowSupported()) {
 			// noinspection deprecation
 			added = addContainerToWindowManager(WindowManager.LayoutParams.TYPE_TOAST);
 		}
@@ -506,5 +508,31 @@ public class ClickableToast {
 		public int getIntrinsicWidth() {
 			return width;
 		}
+	}
+
+	private static boolean IS_MIUI_V9;
+
+	static {
+		boolean isMiuiV9 = false;
+
+		try {
+			Method getProperty = Class.forName("android.os.SystemProperties")
+					.getMethod("get", String.class, String.class);
+
+			String miuiVersion = StringUtils.emptyIfNull((String) getProperty
+					.invoke(null, "ro.miui.ui.version.name", ""));
+			Matcher matcher = Pattern.compile("V(\\d+)").matcher(miuiVersion);
+			isMiuiV9 = matcher.matches() && Integer.parseInt(matcher.group(1)) >= 9;
+		} catch (Exception e) {
+			// Ignore exception
+		}
+
+		IS_MIUI_V9 = isMiuiV9;
+	}
+
+	private static boolean isToastWindowSupported() {
+		// TYPE_TOAST works well only on Lollipop and higher, but can throw BadTokenException on some devices
+		// TYPE_TOAST doesn't work on MIUI 9
+		return C.API_LOLLIPOP && !IS_MIUI_V9;
 	}
 }
