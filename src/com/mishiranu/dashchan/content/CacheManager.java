@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 Fukurou Mishiranu
+ * Copyright 2014-2018 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -983,7 +983,7 @@ public class CacheManager implements Runnable {
 		}
 	}
 
-	public Pair<File, String> prepareFileForShare(File file, String fileName) {
+	public Pair<Uri, String> prepareFileForShare(File file, String fileName) {
 		File tempDirectory = getExternalTempDirectory();
 		if (tempDirectory == null) {
 			return null;
@@ -998,6 +998,7 @@ public class CacheManager implements Runnable {
 		fileName = GALLERY_SHARE_FILE_NAME_START + System.currentTimeMillis() + "." + extension;
 		File shareFile = new File(tempDirectory, fileName);
 		IOUtils.copyInternalFile(file, shareFile);
-		return new Pair<>(shareFile, mimeType);
+		Uri uri = FileProvider.convertShareFile(tempDirectory, shareFile, mimeType);
+		return new Pair<>(uri, mimeType);
 	}
 }

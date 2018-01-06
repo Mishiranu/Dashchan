@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Fukurou Mishiranu
+ * Copyright 2017-2018 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,9 +40,11 @@ public class FileProvider extends ContentProvider {
 	private static final String AUTHORITY = "com.mishiranu.providers.dashchan";
 	private static final String PATH_UPDATES = "updates";
 	private static final String PATH_DOWNLOADS = "downloads";
+	private static final String PATH_SHARE = "share";
 
 	private static final int URI_UPDATES = 1;
 	private static final int URI_DOWNLOADS = 2;
+	private static final int URI_SHARE = 3;
 
 	private static final UriMatcher URI_MATCHER;
 
@@ -50,6 +52,7 @@ public class FileProvider extends ContentProvider {
 		URI_MATCHER = new UriMatcher(UriMatcher.NO_MATCH);
 		URI_MATCHER.addURI(AUTHORITY, PATH_UPDATES + "/*", URI_UPDATES);
 		URI_MATCHER.addURI(AUTHORITY, PATH_DOWNLOADS + "/*", URI_DOWNLOADS);
+		URI_MATCHER.addURI(AUTHORITY, PATH_SHARE + "/*", URI_SHARE);
 	}
 
 	@Override
@@ -89,26 +92,52 @@ public class FileProvider extends ContentProvider {
 		return uri;
 	}
 
-	private static File lastDownloadsFile;
-	private static Uri lastDownloadsUri;
-	private static String lastDownloadsFileType;
+	private static class InternalFile {
+		public final File file;
+		public final String type;
+		public final Uri uri;
 
-	public static Uri convertDownloadsFile(File file, String type) {
+		public InternalFile(File file, String type, Uri uri) {
+			this.file = file;
+			this.uri = uri;
+			this.type = type;
+		}
+	}
+
+	private static InternalFile downloadsFile;
+	private static InternalFile shareFile;
+
+	private static InternalFile convertFile(File directory, File file, String type, String providerPath) {
 		if (C.API_NOUGAT) {
 			String filePath = file.getAbsolutePath();
-			String directoryPath = Preferences.getDownloadDirectory().getAbsolutePath();
+			String directoryPath = directory.getAbsolutePath();
 			if (filePath.startsWith(directoryPath)) {
 				filePath = filePath.substring(directoryPath.length());
 				if (filePath.startsWith("/")) {
 					filePath = filePath.substring(1);
 				}
-				// Allow only one URI for current notification
-				lastDownloadsFile = file;
-				lastDownloadsFileType = type;
-				lastDownloadsUri = new Uri.Builder().scheme("content").authority(AUTHORITY)
-						.appendPath(PATH_DOWNLOADS).appendEncodedPath(filePath).build();
-				return lastDownloadsUri;
+				Uri uri = new Uri.Builder().scheme("content").authority(AUTHORITY)
+						.appendPath(providerPath).appendEncodedPath(filePath).build();
+				return new InternalFile(file, type, uri);
 			}
+		}
+		return null;
+	}
+
+	public static Uri convertDownloadsFile(File file, String type) {
+		InternalFile internalFile = convertFile(Preferences.getDownloadDirectory(), file, type, PATH_DOWNLOADS);
+		if (internalFile != null) {
+			downloadsFile = internalFile;
+			return internalFile.uri;
+		}
+		return Uri.fromFile(file);
+	}
+
+	public static Uri convertShareFile(File directory, File file, String type) {
+		InternalFile internalFile = convertFile(directory, file, type, PATH_SHARE);
+		if (internalFile != null) {
+			shareFile = internalFile;
+			return internalFile.uri;
 		}
 		return Uri.fromFile(file);
 	}
@@ -124,8 +153,13 @@ public class FileProvider extends ContentProvider {
 				return "application/vnd.android.package-archive";
 			}
 			case URI_DOWNLOADS: {
-				if (lastDownloadsFileType != null) {
-					return lastDownloadsFileType;
+				if (downloadsFile != null) {
+					return downloadsFile.type;
+				}
+			}
+			case URI_SHARE: {
+				if (shareFile != null) {
+					return shareFile.type;
 				}
 			}
 			default: {
@@ -147,8 +181,13 @@ public class FileProvider extends ContentProvider {
 				}
 			}
 			case URI_DOWNLOADS: {
-				if (uri.equals(lastDownloadsUri)) {
-					return ParcelFileDescriptor.open(lastDownloadsFile, ParcelFileDescriptor.MODE_READ_ONLY);
+				if (downloadsFile != null && uri.equals(downloadsFile.uri)) {
+					return ParcelFileDescriptor.open(downloadsFile.file, ParcelFileDescriptor.MODE_READ_ONLY);
+				}
+			}
+			case URI_SHARE: {
+				if (shareFile != null && uri.equals(shareFile.uri)) {
+					return ParcelFileDescriptor.open(shareFile.file, ParcelFileDescriptor.MODE_READ_ONLY);
 				}
 			}
 			default: {
@@ -164,7 +203,8 @@ public class FileProvider extends ContentProvider {
 		int matchResult = URI_MATCHER.match(uri);
 		switch (URI_MATCHER.match(uri)) {
 			case URI_UPDATES:
-			case URI_DOWNLOADS: {
+			case URI_DOWNLOADS:
+			case URI_SHARE: {
 				if (projection == null) {
 					projection = PROJECTION;
 				}
@@ -184,7 +224,11 @@ public class FileProvider extends ContentProvider {
 						break;
 					}
 					case URI_DOWNLOADS: {
-						file = lastDownloadsFile;
+						file = downloadsFile != null ? downloadsFile.file : null;
+						break;
+					}
+					case URI_SHARE: {
+						file = shareFile != null ? shareFile.file : null;
 						break;
 					}
 				}

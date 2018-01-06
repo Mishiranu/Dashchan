@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 Fukurou Mishiranu
+ * Copyright 2014-2018 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,6 +53,7 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
+import com.mishiranu.dashchan.content.FileProvider;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.net.CloudFlarePasser;
 import com.mishiranu.dashchan.content.service.AudioPlayerService;
@@ -426,15 +427,14 @@ public class NavigationUtils {
 	}
 
 	public static void shareFile(Context context, File file, String fileName) {
-		Pair<File, String> data = CacheManager.getInstance().prepareFileForShare(file, fileName);
+		Pair<Uri, String> data = CacheManager.getInstance().prepareFileForShare(file, fileName);
 		if (data == null) {
 			ToastUtils.show(context, R.string.message_cache_unavailable);
 			return;
 		}
-		Intent intent = new Intent(Intent.ACTION_SEND);
-		intent.setType(data.second);
-		intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(data.first));
-		context.startActivity(Intent.createChooser(intent, null));
+		int intentFlags = FileProvider.getIntentFlags();
+		context.startActivity(Intent.createChooser(new Intent(Intent.ACTION_SEND)
+				.setType(data.second).setFlags(intentFlags).putExtra(Intent.EXTRA_STREAM, data.first), null));
 	}
 
 	public static void restartApplication(Context context) {
