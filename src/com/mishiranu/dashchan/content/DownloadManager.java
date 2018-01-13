@@ -21,9 +21,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Semaphore;
 
@@ -61,7 +62,6 @@ import chan.util.StringUtils;
 
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.content.async.SendLocalArchiveTask;
 import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.IOUtils;
@@ -82,9 +82,6 @@ public class DownloadManager {
 	private final HashSet<String> queuedFiles = new HashSet<>();
 	private final Semaphore queuePause = new Semaphore(1);
 
-	private ArrayList<DialogDirectory> lastDialogDirectotyItems;
-	private File lastRootDirectory;
-
 	public String getFileGlobalQueueSetName(File file) {
 		return file.getAbsolutePath().toLowerCase(Locale.getDefault());
 	}
@@ -95,22 +92,6 @@ public class DownloadManager {
 
 	public void notifyFileRemovedFromDownloadQueue(File file) {
 		queuedFiles.remove(getFileGlobalQueueSetName(file));
-		if (file.exists() && lastDialogDirectotyItems != null && lastRootDirectory != null) {
-			DialogDirectory dialogDirectory = DialogDirectory.create(file.getParentFile(), lastRootDirectory);
-			if (dialogDirectory != null) {
-				dialogDirectory.lastModified = file.lastModified();
-				while (dialogDirectory != null) {
-					int index = lastDialogDirectotyItems.indexOf(dialogDirectory);
-					if (index == -1) {
-						lastDialogDirectotyItems.add(dialogDirectory);
-					} else {
-						lastDialogDirectotyItems.set(index, dialogDirectory);
-					}
-					dialogDirectory = dialogDirectory.getParent();
-				}
-				Collections.sort(lastDialogDirectotyItems);
-			}
-		}
 	}
 
 	public void notifyServiceDestroy() {
@@ -155,65 +136,30 @@ public class DownloadManager {
 	}
 
 	private static class DialogDirectory implements Comparable<DialogDirectory> {
-		public final ArrayList<String> segments = new ArrayList<>();
+		public final List<String> segments;
 		public long lastModified;
 
-		public static DialogDirectory create(File directory, File root) {
-			DialogDirectory dialogDirectory = new DialogDirectory();
-			dialogDirectory.lastModified = directory.lastModified();
-			while (directory != null && !directory.equals(root)) {
-				dialogDirectory.segments.add(0, directory.getName());
-				directory = directory.getParentFile();
+		public DialogDirectory(File root, File directory) {
+			String rootPath = root.getAbsolutePath();
+			String directoryPath = directory.getAbsolutePath();
+			String relativePath = directoryPath.substring(rootPath.length());
+			if (relativePath.startsWith("/")) {
+				relativePath = relativePath.substring(1);
 			}
-			return directory != null ? dialogDirectory : null;
+			segments = Arrays.asList(relativePath.split("/"));
+			this.lastModified = directory.lastModified();
 		}
 
-		private DialogDirectory() {}
-
-		public DialogDirectory(String path) {
-			Collections.addAll(segments, path.split("/", -1));
-		}
-
-		public int getDepth() {
-			return segments.size();
-		}
-
-		private String getSegment(int index, Locale locale) {
-			return segments.get(index).toLowerCase(locale);
-		}
-
-		public DialogDirectory getParent() {
-			if (segments.size() > 1) {
-				DialogDirectory dialogDirectory = new DialogDirectory();
-				dialogDirectory.lastModified = lastModified;
-				dialogDirectory.segments.addAll(segments);
-				dialogDirectory.segments.remove(dialogDirectory.segments.size() - 1);
-				return dialogDirectory;
-			}
-			return null;
-		}
-
-		public boolean filter(DialogDirectory constraintDirectory, boolean anyDepth) {
+		public boolean filter(String name) {
 			Locale locale = Locale.getDefault();
-			if (!anyDepth) {
-				int depth = getDepth();
-				if (constraintDirectory.getDepth() != depth) {
-					return false;
-				}
-				for (int i = 0; i < depth - 1; i++) {
-					if (!constraintDirectory.getSegment(i, locale).equals(getSegment(i, locale))) {
-						return false;
-					}
-				}
-			}
-			String lastSegment = getSegment(getDepth() - 1, locale);
-			String constraintLastSegment = constraintDirectory.getSegment(constraintDirectory.getDepth() - 1, locale);
-			if (lastSegment.startsWith(constraintLastSegment)) {
+			name = name.toLowerCase(locale);
+			String lastSegment = segments.get(segments.size() - 1).toLowerCase(locale);
+			if (lastSegment.startsWith(name)) {
 				return true;
 			}
 			String[] splitted = lastSegment.split("[\\W_]+");
 			for (String part : splitted) {
-				if (part.startsWith(constraintLastSegment)) {
+				if (part.startsWith(name)) {
 					return true;
 				}
 			}
@@ -248,58 +194,30 @@ public class DownloadManager {
 		}
 
 		@Override
-		public boolean equals(Object o) {
-			if (o == this) {
-				return true;
-			}
-			if (o instanceof DialogDirectory) {
-				DialogDirectory co = (DialogDirectory) o;
-				if (co.getDepth() != getDepth()) {
-					return false;
-				}
-				Locale locale = Locale.getDefault();
-				for (int i = 0; i < getDepth(); i++) {
-					if (!getSegment(i, locale).equals(co.getSegment(i, locale))) {
-						return false;
-					}
-				}
-				return true;
-			}
-			return false;
-		}
-
-		@Override
-		public int hashCode() {
-			int prime = 31;
-			int result = 1;
-			Locale locale = Locale.getDefault();
-			for (int i = 0; i < getDepth(); i++) {
-				result = prime * result + getSegment(i, locale).hashCode();
-			}
-			return result;
-		}
-
-		@Override
 		public int compareTo(DialogDirectory another) {
 			return ((Long) another.lastModified).compareTo(lastModified);
 		}
 	}
 
 	private static class DialogAdapter extends BaseAdapter implements Filterable {
-		private final ArrayList<DialogDirectory> dialogDirectoryItems = new ArrayList<>();
-		private ArrayList<DialogDirectory> filteredDialogDirectoryItems;
-		private final Object lock = new Object();
+		private final File root;
+		private final Runnable refresh;
+
+		private List<DialogDirectory> items = Collections.emptyList();
+
+		public DialogAdapter(File root, Runnable refresh) {
+			this.root = root;
+			this.refresh = refresh;
+		}
 
 		@Override
 		public int getCount() {
-			return (filteredDialogDirectoryItems != null ? filteredDialogDirectoryItems
-					: dialogDirectoryItems).size();
+			return items.size();
 		}
 
 		@Override
 		public DialogDirectory getItem(int position) {
-			return (filteredDialogDirectoryItems != null ? filteredDialogDirectoryItems
-					: dialogDirectoryItems).get(position);
+			return items.get(position);
 		}
 
 		@Override
@@ -319,39 +237,90 @@ public class DownloadManager {
 			return convertView;
 		}
 
-		private final Filter filter = new Filter() {
-			@Override
-			protected void publishResults(CharSequence constraint, FilterResults results) {
-				@SuppressWarnings("unchecked")
-				ArrayList<DialogDirectory> values = (ArrayList<DialogDirectory>) results.values;
-				if (results.count == dialogDirectoryItems.size()) {
-					values = null;
-				}
-				filteredDialogDirectoryItems = values;
-				notifyDataSetChanged();
-			}
+		private final Object lastDirectoryLock = new Object();
+		private boolean lastDirectoryCancel = false;
+		private String lastDirectoryPath;
+		private List<DialogDirectory> lastDirectoryItems;
+		private AsyncTask<Void, Void, List<DialogDirectory>> lastDirectoryTask;
 
+		private final Filter filter = new Filter() {
 			@Override
 			protected FilterResults performFiltering(CharSequence constraint) {
 				String constraintString = constraint.toString();
-				boolean anyDepth = false;
-				if (constraintString.startsWith("/")) {
-					anyDepth = true;
-					constraintString = constraintString.substring(1);
-				}
-				DialogDirectory constraintDirectory = new DialogDirectory(constraintString);
-				FilterResults results = new FilterResults();
-				ArrayList<DialogDirectory> values = new ArrayList<>();
-				synchronized (lock) {
-					for (DialogDirectory dialogDirectory : dialogDirectoryItems) {
-						if (dialogDirectory.filter(constraintDirectory, anyDepth)) {
-							values.add(dialogDirectory);
+				int separatorIndex = constraintString.lastIndexOf('/');
+				String directoryPath = separatorIndex >= 0 ? constraintString.substring(0, separatorIndex) : "";
+				File directory = StringUtils.isEmpty(directoryPath) ? root : new File(root, directoryPath);
+
+				List<DialogDirectory> items;
+				synchronized (lastDirectoryLock) {
+					if (lastDirectoryPath == null || !StringUtils.equals(lastDirectoryPath, directoryPath)) {
+						lastDirectoryPath = directoryPath;
+						lastDirectoryItems = Collections.emptyList();
+
+						if (lastDirectoryTask != null) {
+							lastDirectoryTask.cancel(true);
+							lastDirectoryTask = null;
+						}
+
+						if (!lastDirectoryCancel) {
+							lastDirectoryTask = new AsyncTask<Void, Void, List<DialogDirectory>>() {
+								@Override
+								protected List<DialogDirectory> doInBackground(Void... params) {
+									ArrayList<DialogDirectory> items = new ArrayList<>();
+									File[] files = directory.listFiles();
+									if (files != null) {
+										for (File file : files) {
+											if (isCancelled()) {
+												break;
+											}
+											if (file.isDirectory()) {
+												items.add(new DialogDirectory(root, file));
+											}
+										}
+									}
+									if (!isCancelled()) {
+										Collections.sort(items);
+									}
+									return items;
+								}
+
+								@Override
+								protected void onPostExecute(List<DialogDirectory> items) {
+									synchronized (lastDirectoryLock) {
+										lastDirectoryItems = items;
+										lastDirectoryTask = null;
+										notifyDataSetChanged();
+										refresh.run();
+									}
+								}
+							};
+							lastDirectoryTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 						}
 					}
+
+					items = lastDirectoryItems;
 				}
-				results.values = values;
-				results.count = values.size();
+
+				String name = constraintString.substring(separatorIndex + 1);
+				ArrayList<DialogDirectory> result = new ArrayList<>();
+				for (DialogDirectory item : items) {
+					if (item.filter(name)) {
+						result.add(item);
+					}
+				}
+
+				FilterResults results = new FilterResults();
+				results.values = result;
+				results.count = result.size();
 				return results;
+			}
+
+			@Override
+			protected void publishResults(CharSequence constraint, FilterResults results) {
+				@SuppressWarnings("unchecked")
+				ArrayList<DialogDirectory> items = (ArrayList<DialogDirectory>) results.values;
+				DialogAdapter.this.items = items;
+				notifyDataSetChanged();
 			}
 		};
 
@@ -360,16 +329,14 @@ public class DownloadManager {
 			return filter;
 		}
 
-		public void setItems(Collection<DialogDirectory> directories) {
-			synchronized (lock) {
-				dialogDirectoryItems.clear();
-				dialogDirectoryItems.addAll(directories);
-				notifyDataSetChanged();
+		public void shutdown() {
+			synchronized (lastDirectoryLock) {
+				lastDirectoryCancel = true;
+				if (lastDirectoryTask != null) {
+					lastDirectoryTask.cancel(true);
+					lastDirectoryTask = null;
+				}
 			}
-		}
-
-		public ArrayList<DialogDirectory> getItems() {
-			return dialogDirectoryItems;
 		}
 	}
 
@@ -382,7 +349,7 @@ public class DownloadManager {
 		private final String threadNumber;
 
 		private final AlertDialog dialog;
-		private final DialogAdapter adapter = new DialogAdapter();
+		private final DialogAdapter adapter;
 		private final CheckBox detailNameCheckBox;
 		private final CheckBox originalNameCheckBox;
 		private final AutoCompleteTextView editText;
@@ -394,19 +361,21 @@ public class DownloadManager {
 		public DownloadDialog(Context context, DialogCallback callback, String chanName,
 				String boardName, String threadNumber, String threadTitle,
 				boolean allowDetailedFileName, boolean allowOriginalName) {
+			File root = Preferences.getDownloadDirectory();
 			this.context = context;
 			this.callback = callback;
 			this.chanName = chanName;
 			this.boardName = boardName;
 			this.threadNumber = threadNumber;
 			inputMethodManager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
-			final File directory = Preferences.getDownloadDirectory();
+
 			View view = LayoutInflater.from(context).inflate(R.layout.dialog_download_choice, null);
 			RadioGroup radioGroup = view.findViewById(R.id.download_choice);
 			radioGroup.check(R.id.download_common);
 			radioGroup.setOnCheckedChangeListener(this);
 			((RadioButton) view.findViewById(R.id.download_common)).setText(context
-					.getString(R.string.text_download_to_format, directory.getName()));
+					.getString(R.string.text_download_to_format, root.getName()));
+
 			detailNameCheckBox = view.findViewById(R.id.download_detail_name);
 			originalNameCheckBox = view.findViewById(R.id.download_original_name);
 			if (chanName == null && boardName == null && threadNumber == null) {
@@ -422,10 +391,12 @@ public class DownloadManager {
 			} else {
 				originalNameCheckBox.setVisibility(View.GONE);
 			}
+
 			AutoCompleteTextView editText = view.findViewById(android.R.id.text1);
 			if (!allowDetailedFileName && !allowOriginalName) {
 				((ViewGroup.MarginLayoutParams) editText.getLayoutParams()).topMargin = 0;
 			}
+
 			if (threadNumber != null) {
 				String chanTitle = ChanConfiguration.get(chanName).getTitle();
 				if (threadTitle != null) {
@@ -440,79 +411,27 @@ public class DownloadManager {
 				}
 				editText.setHint(text);
 			}
+
 			editText.setEnabled(false);
 			editText.setOnEditorActionListener(this);
 			editText.setOnItemClickListener(this);
 			this.editText = editText;
-			dropDownRunnable = () -> DownloadDialog.this.editText.showDropDown();
+			dropDownRunnable = this.editText::showDropDown;
+
+			adapter = new DialogAdapter(root, () -> {
+				if (DownloadDialog.this.editText.isEnabled()) {
+					refreshDropDownContents();
+				}
+			});
 			editText.setAdapter(adapter);
+
 			dialog = new AlertDialog.Builder(context).setTitle(R.string.text_download_title).setView(view)
 					.setNegativeButton(android.R.string.cancel, null)
 					.setPositiveButton(android.R.string.ok, this).create();
+			dialog.setOnDismissListener(d -> adapter.shutdown());
 			dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN
 					| WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 			dialog.show();
-			if (directory.equals(lastRootDirectory)) {
-				adapter.setItems(lastDialogDirectotyItems);
-			}
-			new AsyncTask<Void, Void, ArrayList<DialogDirectory>>() {
-				private long findDirectories(ArrayList<DialogDirectory> dialogDirectories, File parent,
-						File root, Collection<File> exclude) {
-					long resultLastModified = 0L;
-					File[] files = parent.listFiles();
-					if (files != null) {
-						for (File file : files) {
-							if ((exclude == null || !exclude.contains(file))) {
-								long lastModified;
-								if (file.isDirectory()) {
-									DialogDirectory dialogDirectory = DialogDirectory.create(file, root);
-									dialogDirectories.add(dialogDirectory);
-									lastModified = findDirectories(dialogDirectories, file, root, exclude);
-									lastModified = Math.max(dialogDirectory.lastModified, lastModified);
-									dialogDirectory.lastModified = lastModified;
-								} else {
-									lastModified = file.lastModified();
-								}
-								if (lastModified > resultLastModified) {
-									resultLastModified = lastModified;
-								}
-							}
-						}
-					}
-					return resultLastModified;
-				}
-
-				@Override
-				protected ArrayList<DialogDirectory> doInBackground(Void... params) {
-					ArrayList<DialogDirectory> directories = new ArrayList<>();
-					ArrayList<File> exclude = new ArrayList<>();
-					exclude.add(SendLocalArchiveTask.getLocalDownloadDirectory(false));
-					findDirectories(directories, directory, directory, exclude);
-					Collections.sort(directories);
-					return directories;
-				}
-
-				@Override
-				protected void onPostExecute(ArrayList<DialogDirectory> result) {
-					lastDialogDirectotyItems = result;
-					lastRootDirectory = directory;
-					ArrayList<DialogDirectory> dialogDirectories = adapter.getItems();
-					int size = result.size();
-					if (size > 0 && dialogDirectories.size() == size) {
-						HashSet<DialogDirectory> set = new HashSet<>(dialogDirectories);
-						for (DialogDirectory dialogDirectory : result) {
-							set.remove(dialogDirectory);
-						}
-						if (set.isEmpty()) {
-							return; // Updating is not necessary
-						}
-					}
-					adapter.setItems(result);
-					if (DownloadDialog.this.editText.isEnabled()) {
-						refreshDropDownContents();
-					}
-				}
-			}.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 		}
 
 		@Override
