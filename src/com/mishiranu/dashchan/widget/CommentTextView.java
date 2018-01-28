@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 Fukurou Mishiranu
+ * Copyright 2014-2018 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -221,7 +221,7 @@ public class CommentTextView extends TextView {
 		if (this.selectionMode != selectionMode) {
 			this.selectionMode = selectionMode;
 			updateSelectablePaddings();
-			updateUseAdditionalPadding();
+			updateUseAdditionalPadding(false);
 			if (!selectionMode && isFocused()) {
 				View rootView = ListViewUtils.getRootViewInList(this);
 				if (rootView != null) {
@@ -498,18 +498,21 @@ public class CommentTextView extends TextView {
 		if (this.selectionPaddingView != null) {
 			this.selectionPaddingView.setVisibility(View.GONE);
 		}
+		boolean force = this.selectionPaddingView != selectionPaddingView;
 		this.selectionPaddingView = selectionPaddingView;
-		updateUseAdditionalPadding();
+		updateUseAdditionalPadding(force);
 	}
 
 	public int getSelectionPadding() {
 		return selectionPaddingView != null ? Math.max(selectionPaddingView.getLayoutParams().height, 0) : 0;
 	}
 
-	private void updateUseAdditionalPadding() {
+	private void updateUseAdditionalPadding(boolean force) {
 		boolean useAdditionalPadding = selectionPaddingView != null && selectionMode;
-		if (this.useAdditionalPadding != useAdditionalPadding) {
-			selectionPaddingView.setVisibility(useAdditionalPadding ? View.VISIBLE : View.GONE);
+		if (this.useAdditionalPadding != useAdditionalPadding || force) {
+			if (selectionPaddingView != null) {
+				selectionPaddingView.setVisibility(useAdditionalPadding ? View.VISIBLE : View.GONE);
+			}
 			this.useAdditionalPadding = useAdditionalPadding;
 		}
 	}
