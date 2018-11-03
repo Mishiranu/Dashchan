@@ -1,25 +1,25 @@
 buildscript {
 	repositories {
 		jcenter()
+		google()
 	}
 
 	dependencies {
-		classpath 'com.android.tools.build:gradle:2.3.1'
-		classpath 'me.tatarka:gradle-retrolambda:3.6.1'
+		classpath 'com.android.tools.build:gradle:3.1.4'
 	}
 }
 
 allprojects {
 	repositories {
 		jcenter()
+		google()
 	}
 }
 
 apply plugin: 'com.android.application'
-apply plugin: 'me.tatarka.retrolambda'
 
 dependencies {
-	provided 'org.ccil.cowan.tagsoup:tagsoup:1.2.1'
+	compileOnly 'org.ccil.cowan.tagsoup:tagsoup:1.2.1'
 }
 
 def privateProperties = new Properties()
@@ -30,7 +30,7 @@ if (file('private.properties').exists()) {
 
 android {
 	compileSdkVersion 26
-	buildToolsVersion '25.0.3'
+	buildToolsVersion '28.0.3'
 
 	sourceSets.main {
 		manifest.srcFile 'AndroidManifest.xml'
