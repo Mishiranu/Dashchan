@@ -1,36 +1,34 @@
 buildscript {
 	repositories {
-		jcenter()
 		google()
+		jcenter()
 	}
 
 	dependencies {
-		classpath 'com.android.tools.build:gradle:3.1.4'
+		classpath 'com.android.tools.build:gradle:3.6.4'
 	}
 }
 
 allprojects {
 	repositories {
-		jcenter()
 		google()
+		jcenter()
 	}
 }
 
 apply plugin: 'com.android.application'
 
-dependencies {
-	compileOnly 'org.ccil.cowan.tagsoup:tagsoup:1.2.1'
-}
-
-def privateProperties = new Properties()
-
-if (file('private.properties').exists()) {
-	privateProperties.load(new FileInputStream(file('private.properties')))
-}
-
 android {
-	compileSdkVersion 26
-	buildToolsVersion '28.0.3'
+	compileSdkVersion 29
+	buildToolsVersion '29.0.3'
+	ndkVersion '21.3.6528147'
+
+	defaultConfig {
+		minSdkVersion 16
+		// noinspection ExpiredTargetSdkVersion
+		targetSdkVersion 25
+		ndk.abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86'
+	}
 
 	sourceSets.main {
 		manifest.srcFile 'AndroidManifest.xml'
@@ -42,6 +40,12 @@ android {
 		assets.srcDirs = ['assets']
 		jni.srcDirs = []
 		jniLibs.srcDir 'libs'
+	}
+
+	externalNativeBuild {
+		ndkBuild {
+			path 'jni/Android.mk'
+		}
 	}
 
 	if (file('keystore.properties').exists()) {
@@ -62,11 +66,12 @@ android {
 	}
 
 	defaultConfig {
-		def apiKeyGoogle = privateProperties['api.key.google']
-		def apiKeySoundCloud = privateProperties['api.key.soundcloud']
-
-		if (apiKeyGoogle == null) apiKeyGoogle = ''
-		if (apiKeySoundCloud == null) apiKeySoundCloud = ''
+		def privateProperties = new Properties()
+		if (file('private.properties').exists()) {
+			privateProperties.load(new FileInputStream(file('private.properties')))
+		}
+		def apiKeyGoogle = privateProperties['api.key.google'] ?: ''
+		def apiKeySoundCloud = privateProperties['api.key.soundcloud'] ?: ''
 
 		buildConfigField 'String', 'API_KEY_GOOGLE', '"' + apiKeyGoogle + '"'
 		buildConfigField 'String', 'API_KEY_SOUNDCLOUD', '"' + apiKeySoundCloud + '"'
@@ -75,13 +80,27 @@ android {
 	}
 
 	buildTypes {
+		debug {
+			minifyEnabled false
+		}
 		release {
 			minifyEnabled false
 		}
+		all {
+			crunchPngs false
+		}
+	}
+
+	packagingOptions {
+		exclude '/lib/*/libavcodec.so'
+		exclude '/lib/*/libavformat.so'
+		exclude '/lib/*/libavutil.so'
+		exclude '/lib/*/libswresample.so'
+		exclude '/lib/*/libswscale.so'
+		exclude '/lib/*/libyuv.so'
 	}
 
 	lintOptions {
-		abortOnError false
 		disable 'MissingTranslation', 'ValidFragment', 'ResourceType'
 	}
 
@@ -91,27 +110,6 @@ android {
 	}
 }
 
-def getNdkBuildCommand() {
-	def ndkDir = System.env.ANDROID_NDK_HOME
-	if (ndkDir == null && file('local.properties').exists()) {
-		Properties localProperties = new Properties()
-		localProperties.load(new FileInputStream(file('local.properties')))
-		ndkDir = localProperties.getProperty('ndk.dir')
-	}
-	def windows = org.gradle.internal.os.OperatingSystem.current().isWindows()
-	return (ndkDir != null ? ndkDir + File.separator : '') + 'ndk-build' + (windows ? '.cmd' : '')
+dependencies {
+	compileOnly 'org.ccil.cowan.tagsoup:tagsoup:1.2.1'
 }
-
-task ndkBuildCompile(type: Exec) {
-	commandLine getNdkBuildCommand(), '-C', file('.').absolutePath
-}
-
-task ndkBuildClean(type: Exec) {
-	commandLine getNdkBuildCommand(), 'clean', file('.').absolutePath
-}
-
-tasks.withType(JavaCompile) { compileTask ->
-	compileTask.dependsOn ndkBuildCompile
-}
-
-clean.dependsOn ndkBuildClean

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!--
-	Copyright 2014-2018 Fukurou Mishiranu
+	Copyright 2014-2018, 2020 Fukurou Mishiranu
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -21,8 +21,6 @@
 	package="com.mishiranu.dashchan"
 	android:versionCode="1033"
 	android:versionName="2.10.4">
-
-	<uses-sdk android:minSdkVersion="16" android:targetSdkVersion="25" />
 
 	<uses-permission android:name="android.permission.INTERNET" />
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />

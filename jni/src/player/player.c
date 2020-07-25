@@ -1,19 +1,3 @@
-/*
- * Copyright 2016-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libswresample/swresample.h>
@@ -951,7 +935,7 @@ static void * performDecodeVideo(void * data) {
 	if (lastPacketValid) {
 		av_packet_unref(&lastPacket);
 	}
-	sparseArrayDestroyEach(&scaleContexts, sws_freeContext(data));
+	sparseArrayDestroy(&scaleContexts, (void *) sws_freeContext);
 	av_free(scaleHolder.scaleBuffer);
 	av_frame_free(&frame);
 	return NULL;
@@ -1130,7 +1114,7 @@ static int bufferReadData(void * opaque, uint8_t * buf, int buf_size) {
 	if (count > 0) {
 		jbyteArray buffer = (*bridge->env)->CallObjectMethod(bridge->env, player->nativeBridge,
 				bridge->methodGetBuffer);
-		(*bridge->env)->GetByteArrayRegion(bridge->env, buffer, 0, count, buf);
+		(*bridge->env)->GetByteArrayRegion(bridge->env, buffer, 0, count, (void *) buf);
 		(*bridge->env)->DeleteLocalRef(bridge->env, buffer);
 	}
 	return count;
@@ -1425,7 +1409,7 @@ void destroy(JNIEnv * env, jlong pointer) {
 		free(player->audioBuffer);
 	}
 	updatePlayerSurface(env, player, NULL, 0);
-	sparseArrayDestroyEach(&player->bridges, free(data));
+	sparseArrayDestroy(&player->bridges, free);
 	(*env)->DeleteGlobalRef(env, player->nativeBridge);
 	free(player);
 }
@@ -1658,7 +1642,7 @@ static jstring newUtfStringSafe(JNIEnv * env, char * string) {
     if (string) {
         int length = strlen(string);
         jbyteArray array = (*env)->NewByteArray(env, length);
-        (*env)->SetByteArrayRegion(env, array, 0, length, string);
+        (*env)->SetByteArrayRegion(env, array, 0, length, (void *) string);
         jclass class = (*env)->FindClass(env, "java/lang/String");
         jmethodID constructor = (*env)->GetMethodID(env, class, "<init>", "([B)V");
         jstring result = (*env)->NewObject(env, class, constructor, array);

@@ -1,4 +1,4 @@
-# Copyright 2016 Fukurou Mishiranu
+# Copyright 2016, 2020 Fukurou Mishiranu
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,4 +18,4 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := yuv
 LOCAL_SRC_FILES := shared/$(TARGET_ARCH_ABI)/libyuv.so
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/include
-include $(EXTERNAL_SHARED_LIBRARY)
+include $(PREBUILT_SHARED_LIBRARY)
