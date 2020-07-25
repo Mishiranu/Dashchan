@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2016, 2020 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package com.mishiranu.dashchan.content.service;
 
-import java.io.File;
 import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -30,8 +29,8 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.PowerManager;
-import android.support.v4.content.LocalBroadcastManager;
 import android.view.ContextThemeWrapper;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
@@ -41,6 +40,7 @@ import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
+import java.io.File;
 
 public class AudioPlayerService extends Service implements AudioManager.OnAudioFocusChangeListener,
 		MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener, ReadFileTask.Callback {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 Fukurou Mishiranu
+ * Copyright 2014-2017, 2020 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,6 @@
 
 package com.mishiranu.dashchan.ui.navigator.page;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Locale;
-import java.util.concurrent.CountDownLatch;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
@@ -33,7 +26,6 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Parcel;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Pair;
 import android.view.ActionMode;
 import android.view.ContextThemeWrapper;
@@ -46,7 +38,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
@@ -54,7 +46,6 @@ import chan.content.RedirectException;
 import chan.content.model.Posts;
 import chan.util.CommonUtils;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
@@ -88,6 +79,12 @@ import com.mishiranu.dashchan.widget.ListPosition;
 import com.mishiranu.dashchan.widget.ListScroller;
 import com.mishiranu.dashchan.widget.PullableListView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.concurrent.CountDownLatch;
 
 public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorage.Observer, UiManager.Observer,
 		ImageLoader.Observer, DeserializePostsTask.Callback, ReadPostsTask.Callback, ActionMode.Callback {

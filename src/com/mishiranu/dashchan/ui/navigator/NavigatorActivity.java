@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 Fukurou Mishiranu
+ * Copyright 2014-2017, 2020 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,6 @@
  */
 
 package com.mishiranu.dashchan.ui.navigator;
-
-import java.util.ArrayList;
-import java.util.Arrays;
 
 import android.animation.Animator;
 import android.animation.AnimatorSet;
@@ -36,8 +33,6 @@ import android.content.res.TypedArray;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.widget.DrawerLayout;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.ActionMode;
@@ -58,12 +53,12 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toolbar;
-
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
@@ -103,6 +98,8 @@ import com.mishiranu.dashchan.widget.PullableWrapper;
 import com.mishiranu.dashchan.widget.SortableListView;
 import com.mishiranu.dashchan.widget.callback.BusyScrollListener;
 import com.mishiranu.dashchan.widget.callback.ScrollListenerComposite;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class NavigatorActivity extends StateActivity implements BusyScrollListener.Callback, DrawerForm.Callback,
 		AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener, PullableWrapper.PullCallback,

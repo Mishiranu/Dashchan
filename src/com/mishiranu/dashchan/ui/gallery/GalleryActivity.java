@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 Fukurou Mishiranu
+ * Copyright 2014-2017, 2020 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 
 package com.mishiranu.dashchan.ui.gallery;
 
-import java.util.ArrayList;
-
 import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.content.Context;
@@ -32,7 +30,6 @@ import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.content.LocalBroadcastManager;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -44,11 +41,10 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.DownloadManager;
@@ -66,6 +62,7 @@ import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.WindowControlFrameLayout;
+import java.util.ArrayList;
 
 public class GalleryActivity extends StateActivity implements GalleryInstance.Callback,
 		WindowControlFrameLayout.OnApplyWindowPaddingsListener {

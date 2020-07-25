@@ -6,12 +6,13 @@
 !/build.gradle
 !/COPYING
 !/gradle
+!/gradle.properties
 !/gradlew
 !/gradlew.bat
 !/jni
+!/proguard-rules.pro
 !/README.md
 !/res
 !/src
 !/src-api
-!/src-external
 !/update

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 Fukurou Mishiranu
+ * Copyright 2014-2017, 2020 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,6 @@
 
 package com.mishiranu.dashchan.ui.navigator;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
@@ -39,7 +29,6 @@ import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
-import android.support.v4.widget.DrawerLayout;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.TextUtils;
@@ -65,12 +54,11 @@ import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-
+import androidx.drawerlayout.widget.DrawerLayout;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.service.WatcherService;
@@ -88,6 +76,15 @@ import com.mishiranu.dashchan.widget.EdgeEffectHandler;
 import com.mishiranu.dashchan.widget.SafePasteEditText;
 import com.mishiranu.dashchan.widget.SortableListView;
 import com.mishiranu.dashchan.widget.callback.ScrollListenerComposite;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, SortableListView.OnFinishedListener,
 		AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener, DrawerLayout.DrawerListener,

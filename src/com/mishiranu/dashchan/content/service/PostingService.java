@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 Fukurou Mishiranu
+ * Copyright 2014-2016, 2020 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,6 @@
 
 package com.mishiranu.dashchan.content.service;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.concurrent.LinkedBlockingQueue;
-
 import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -30,15 +25,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.PowerManager;
-import android.support.v4.content.LocalBroadcastManager;
 import android.view.ContextThemeWrapper;
-
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import chan.content.ChanConfiguration;
 import chan.content.ChanMarkup;
 import chan.content.ChanPerformer;
 import chan.text.CommentEditor;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.async.SendPostTask;
@@ -52,6 +45,10 @@ import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class PostingService extends Service implements Runnable, SendPostTask.Callback {
 	private static final String ACTION_CANCEL_POSTING = "com.mishiranu.dashchan.action.CANCEL_POSTING";
@@ -112,7 +109,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 		super.onCreate();
 		notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
-		wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "PostingWakeLock");
+		wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, getPackageName() + ":PostingWakeLock");
 		wakeLock.setReferenceCounted(false);
 		notificationsWorker = new Thread(this, "PostingServiceNotificationThread");
 		notificationsWorker.start();

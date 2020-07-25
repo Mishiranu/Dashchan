@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2014 The Android Open Source Project
+ * Copyright 2014-2016, 2020 Fukurou Mishiranu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,15 +13,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * ********************************************************************************
- *
- * Copyright 2014-2016 Fukurou Mishiranu
  */
 
 package com.mishiranu.dashchan.util;
-
-import java.lang.reflect.Field;
 
 import android.animation.ValueAnimator;
 import android.annotation.TargetApi;
@@ -36,15 +31,16 @@ import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v4.widget.ViewDragHelper;
-import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-
+import androidx.annotation.NonNull;
+import androidx.core.view.GravityCompat;
+import androidx.customview.widget.ViewDragHelper;
+import androidx.drawerlayout.widget.DrawerLayout;
 import com.mishiranu.dashchan.C;
+import java.lang.reflect.Field;
 
 public class DrawerToggle implements DrawerLayout.DrawerListener {
 	private final Activity activity;
@@ -101,7 +97,7 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 				actionBar.setDisplayHomeAsUpEnabled(true);
 				if (C.API_LOLLIPOP) {
 					activity.getActionBar().setHomeAsUpIndicator(arrowDrawable);
-					boolean open = drawerLayout.isDrawerOpen(Gravity.START) && arrowDrawable.position == 1f;
+					boolean open = drawerLayout.isDrawerOpen(GravityCompat.START) && arrowDrawable.position == 1f;
 					if (!open) {
 						ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
 						animator.setDuration(DRAWER_CLOSE_DURATION);
@@ -119,10 +115,10 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 	public void syncState() {
 		if (mode != MODE_DISABLED) {
 			if (C.API_LOLLIPOP) {
-				arrowDrawable.setPosition(mode == MODE_UP || drawerLayout.isDrawerOpen(Gravity.START) ? 1f : 0f);
+				arrowDrawable.setPosition(mode == MODE_UP || drawerLayout.isDrawerOpen(GravityCompat.START) ? 1f : 0f);
 				activity.getActionBar().setHomeAsUpIndicator(arrowDrawable);
 			} else {
-				slideDrawable.setPosition(drawerLayout.isDrawerOpen(Gravity.START) ? 1f : 0f);
+				slideDrawable.setPosition(drawerLayout.isDrawerOpen(GravityCompat.START) ? 1f : 0f);
 				setActionBarUpIndicatorObsolete(mode == MODE_DRAWER ? slideDrawable : homeAsUpIndicator);
 			}
 		}
@@ -137,19 +133,19 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if (item != null && item.getItemId() == android.R.id.home) {
-			if (drawerLayout.getDrawerLockMode(Gravity.START) != DrawerLayout.LOCK_MODE_UNLOCKED) {
+			if (drawerLayout.getDrawerLockMode(GravityCompat.START) != DrawerLayout.LOCK_MODE_UNLOCKED) {
 				return false;
 			}
 			if (mode == MODE_DRAWER) {
-				if (drawerLayout.isDrawerVisible(Gravity.START)) {
-					drawerLayout.closeDrawer(Gravity.START);
+				if (drawerLayout.isDrawerVisible(GravityCompat.START)) {
+					drawerLayout.closeDrawer(GravityCompat.START);
 				} else {
-					drawerLayout.openDrawer(Gravity.START);
+					drawerLayout.openDrawer(GravityCompat.START);
 				}
 				return true;
 			} else if (mode == MODE_UP) {
-				if (drawerLayout.isDrawerVisible(Gravity.START)) {
-					drawerLayout.closeDrawer(Gravity.START);
+				if (drawerLayout.isDrawerVisible(GravityCompat.START)) {
+					drawerLayout.closeDrawer(GravityCompat.START);
 					return true;
 				}
 			}
@@ -158,7 +154,7 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 	}
 
 	@Override
-	public void onDrawerSlide(View drawerView, float slideOffset) {
+	public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
 		if (C.API_LOLLIPOP) {
 			if (mode == MODE_DRAWER) {
 				arrowDrawable.setPosition(slideOffset);
@@ -175,7 +171,7 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 	}
 
 	@Override
-	public void onDrawerOpened(View drawerView) {
+	public void onDrawerOpened(@NonNull View drawerView) {
 		if (C.API_LOLLIPOP) {
 			if (mode == MODE_DRAWER) {
 				arrowDrawable.setPosition(1f);
@@ -186,7 +182,7 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 	}
 
 	@Override
-	public void onDrawerClosed(View drawerView) {
+	public void onDrawerClosed(@NonNull View drawerView) {
 		if (C.API_LOLLIPOP) {
 			if (mode == MODE_DRAWER) {
 				arrowDrawable.setPosition(0f);
@@ -388,7 +384,6 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 
 	private ImageView upIndicatorView;
 
-	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 	private void setActionBarUpIndicatorObsolete(Drawable upDrawable) {
 		if (C.API_JELLY_BEAN_MR2) {
 			activity.getActionBar().setHomeAsUpIndicator(upDrawable);
@@ -416,9 +411,8 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 		}
 	}
 
-	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
 	private boolean isLayoutRtl() {
-		return C.API_JELLY_BEAN_MR1 ? activity.getWindow().getDecorView().getLayoutDirection()
-				== View.LAYOUT_DIRECTION_RTL : false;
+		return C.API_JELLY_BEAN_MR1 && activity.getWindow()
+				.getDecorView().getLayoutDirection() == View.LAYOUT_DIRECTION_RTL;
 	}
 }
