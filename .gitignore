@@ -4,11 +4,11 @@
 !/AndroidManifest.xml
 !/assets
 !/build.gradle
+!/COPYING
 !/gradle
 !/gradlew
 !/gradlew.bat
 !/jni
-!/LICENSE
 !/README.md
 !/res
 !/src

@@ -144,4 +144,4 @@ The source code of video player extension is available in the [Dashchan Webm](ht
 
 ## License
 
-Dashchan is licensed under the [Apache License, version 2.0](LICENSE).
+Dashchan is available under the [GNU General Public License, version 3 or later](COPYING).
