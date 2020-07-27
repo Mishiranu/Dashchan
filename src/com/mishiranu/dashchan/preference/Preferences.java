@@ -1,21 +1,19 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.preference;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.net.Uri;
+import android.os.Environment;
+import android.preference.PreferenceManager;
+import chan.content.ChanConfiguration;
+import chan.content.ChanManager;
+import chan.util.StringUtils;
+import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.content.LocaleManager;
+import com.mishiranu.dashchan.content.MainApplication;
+import com.mishiranu.dashchan.content.NetworkObserver;
+import com.mishiranu.dashchan.content.storage.StatisticsStorage;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,26 +21,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-
 import org.json.JSONArray;
 import org.json.JSONException;
-
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.net.Uri;
-import android.os.Environment;
-import android.preference.PreferenceManager;
-
-import chan.content.ChanConfiguration;
-import chan.content.ChanManager;
-import chan.util.StringUtils;
-
-import com.mishiranu.dashchan.C;
-import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.content.LocaleManager;
-import com.mishiranu.dashchan.content.MainApplication;
-import com.mishiranu.dashchan.content.NetworkObserver;
-import com.mishiranu.dashchan.content.storage.StatisticsStorage;
 
 public class Preferences {
 	private static final SharedPreferences PREFERENCES = PreferenceManager
@@ -1014,7 +994,7 @@ public class Preferences {
 	}
 
 	public static final String KEY_VERIFY_CERTIFICATE = "verify_certificate";
-	public static final boolean DEFAULT_VERIFY_CERTIFICATE = false;
+	public static final boolean DEFAULT_VERIFY_CERTIFICATE = true;
 
 	public static boolean isVerifyCertificate() {
 		return PREFERENCES.getBoolean(KEY_VERIFY_CERTIFICATE, DEFAULT_VERIFY_CERTIFICATE);

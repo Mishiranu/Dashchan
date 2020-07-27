@@ -1,21 +1,23 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package chan.http;
 
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
+import android.content.Context;
+import android.net.Uri;
+import android.os.Build;
+import android.util.Pair;
+import chan.content.ChanLocator;
+import chan.content.ChanManager;
+import chan.util.CommonUtils;
+import chan.util.StringUtils;
+import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.content.MainApplication;
+import com.mishiranu.dashchan.content.model.ErrorItem;
+import com.mishiranu.dashchan.content.net.CloudFlarePasser;
+import com.mishiranu.dashchan.preference.AdvancedPreferences;
+import com.mishiranu.dashchan.preference.Preferences;
+import com.mishiranu.dashchan.util.IOUtils;
+import com.mishiranu.dashchan.util.Log;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -43,6 +45,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -50,7 +53,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.GZIPInputStream;
-
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -60,36 +62,12 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.X509TrustManager;
 
-import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
-import android.content.Context;
-import android.net.Uri;
-import android.os.Build;
-import android.util.Pair;
-
-import chan.content.ChanLocator;
-import chan.content.ChanManager;
-import chan.util.CommonUtils;
-import chan.util.StringUtils;
-
-import com.mishiranu.dashchan.C;
-import com.mishiranu.dashchan.content.MainApplication;
-import com.mishiranu.dashchan.content.model.ErrorItem;
-import com.mishiranu.dashchan.content.net.CloudFlarePasser;
-import com.mishiranu.dashchan.preference.AdvancedPreferences;
-import com.mishiranu.dashchan.preference.Preferences;
-import com.mishiranu.dashchan.util.IOUtils;
-import com.mishiranu.dashchan.util.Log;
-
 public class HttpClient {
 	private static final int MAX_ATTEMPS_COUNT = 10;
 
 	private static final HashMap<String, String> SHORT_RESPONSE_MESSAGES = new HashMap<>();
 
-	private static final HostnameVerifier DEFAULT_HOSTNAME_VERIFIER = HttpsURLConnection.getDefaultHostnameVerifier();
 	private static final HostnameVerifier UNSAFE_HOSTNAME_VERIFIER = (hostname, session) -> true;
-
-	private static final SSLSocketFactory DEFAULT_SSL_SOCKET_FACTORY = HttpsURLConnection.getDefaultSSLSocketFactory();
 	private static final SSLSocketFactory UNSAFE_SSL_SOCKET_FACTORY;
 
 	static final int HTTP_TEMPORARY_REDIRECT = 307;
@@ -111,6 +89,11 @@ public class HttpClient {
 		SHORT_RESPONSE_MESSAGES.put("Internal Server Error", "Internal Error");
 		SHORT_RESPONSE_MESSAGES.put("Service Temporarily Unavailable", "Service Unavailable");
 
+		if (!C.API_LOLLIPOP_MR1) {
+			HttpsURLConnection.setDefaultSSLSocketFactory(new SSLSocketFactoryWrapper
+					(HttpsURLConnection.getDefaultSSLSocketFactory(), TLSv12SSLSocket::new));
+		}
+
 		@SuppressLint("TrustAllX509TrustManager")
 		X509TrustManager trustManager = new X509TrustManager() {
 			@Override
@@ -130,7 +113,7 @@ public class HttpClient {
 			sslContext.init(null, new X509TrustManager[] {trustManager}, null);
 			sslSocketFactory = sslContext.getSocketFactory();
 		} catch (Exception e) {
-			sslSocketFactory = DEFAULT_SSL_SOCKET_FACTORY;
+			sslSocketFactory = HttpsURLConnection.getDefaultSSLSocketFactory();
 		}
 		UNSAFE_SSL_SOCKET_FACTORY = sslSocketFactory;
 
@@ -246,11 +229,11 @@ public class HttpClient {
 	}
 
 	HostnameVerifier getHostnameVerifier(boolean verifyCertificate) {
-		return verifyCertificate ? DEFAULT_HOSTNAME_VERIFIER : UNSAFE_HOSTNAME_VERIFIER;
+		return verifyCertificate ? HttpsURLConnection.getDefaultHostnameVerifier() : UNSAFE_HOSTNAME_VERIFIER;
 	}
 
 	SSLSocketFactory getSSLSocketFactory(boolean verifyCertificate) {
-		return verifyCertificate ? DEFAULT_SSL_SOCKET_FACTORY : UNSAFE_SSL_SOCKET_FACTORY;
+		return verifyCertificate ? HttpsURLConnection.getDefaultSSLSocketFactory() : UNSAFE_SSL_SOCKET_FACTORY;
 	}
 
 	void execute(HttpRequest request) throws HttpException {
@@ -517,8 +500,8 @@ public class HttpClient {
 					synchronized (this) {
 						if (!useNoSSLv3SSLSocketFactory) {
 							// Fix https://code.google.com/p/android/issues/detail?id=78187
-							HttpsURLConnection.setDefaultSSLSocketFactory(new NoSSLv3SSLSocketFactory
-									(HttpsURLConnection.getDefaultSSLSocketFactory()));
+							HttpsURLConnection.setDefaultSSLSocketFactory(new SSLSocketFactoryWrapper
+									(HttpsURLConnection.getDefaultSSLSocketFactory(), NoSSLv3SSLSocket::new));
 							useNoSSLv3SSLSocketFactory = true;
 						}
 					}
@@ -918,62 +901,108 @@ public class HttpClient {
 		}
 	}
 
-	private static class NoSSLv3SSLSocketFactory extends SSLSocketFactory {
-		private final SSLSocketFactory wrapped;
+	private static class SSLSocketFactoryWrapper extends SSLSocketFactory {
+		public interface Wrapper {
+			SSLSocket wrap(SSLSocket socket);
+		}
 
-		public NoSSLv3SSLSocketFactory(SSLSocketFactory sslSocketFactory) {
-			wrapped = sslSocketFactory;
+		private final SSLSocketFactory factory;
+		private final Wrapper wrapper;
+
+		public SSLSocketFactoryWrapper(SSLSocketFactory factory, Wrapper wrapper) {
+			this.factory = factory;
+			this.wrapper = wrapper;
 		}
 
 		private Socket wrap(Socket socket) {
 			if (socket instanceof SSLSocket) {
-				socket = new NoSSLv3SSLSocket((SSLSocket) socket);
+				socket = wrapper.wrap((SSLSocket) socket);
 			}
 			return socket;
 		}
 
 		@Override
 		public String[] getDefaultCipherSuites() {
-			return wrapped.getDefaultCipherSuites();
+			return factory.getDefaultCipherSuites();
 		}
 
 		@Override
 		public String[] getSupportedCipherSuites() {
-			return wrapped.getSupportedCipherSuites();
+			return factory.getSupportedCipherSuites();
 		}
 
 		@Override
 		public Socket createSocket(Socket s, String host, int port, boolean autoClose) throws IOException {
-			return wrap(wrapped.createSocket(s, host, port, autoClose));
+			return wrap(factory.createSocket(s, host, port, autoClose));
 		}
 
 		@Override
 		public Socket createSocket(String host, int port) throws IOException {
-			return wrap(wrapped.createSocket(host, port));
+			return wrap(factory.createSocket(host, port));
 		}
 
 		@Override
 		public Socket createSocket(InetAddress address, int port) throws IOException {
-			return wrap(wrapped.createSocket(address, port));
+			return wrap(factory.createSocket(address, port));
 		}
 
 		@Override
 		public Socket createSocket(String host, int port, InetAddress localAddress, int localPort) throws IOException {
-			return wrap(wrapped.createSocket(host, port, localAddress, localPort));
+			return wrap(factory.createSocket(host, port, localAddress, localPort));
 		}
 
 		@Override
 		public Socket createSocket(InetAddress address, int port, InetAddress localAddress, int localPort)
 				throws IOException {
-			return wrap(wrapped.createSocket(address, port, localAddress, localPort));
+			return wrap(factory.createSocket(address, port, localAddress, localPort));
+		}
+	}
+
+	private static class TLSv12SSLSocket extends SSLSocketWrapper {
+		private static final List<String> PROTOCOLS;
+
+		static {
+			ArrayList<String> protocols = new ArrayList<>();
+			for (String protocol : Arrays.asList("TLSv1.1", "TLSv1.2")) {
+				boolean supported;
+				try {
+					SSLContext.getInstance(protocol);
+					supported = true;
+				} catch (Exception e) {
+					supported = false;
+				}
+				if (supported) {
+					protocols.add(protocol);
+				}
+			}
+			PROTOCOLS = Collections.unmodifiableList(protocols);
+		}
+
+		public TLSv12SSLSocket(SSLSocket socket) {
+			super(socket);
+			String[] protocolsArray = getEnabledProtocols();
+			List<String> protocols = protocolsArray != null ? Arrays.asList(protocolsArray) : Collections.emptyList();
+			if (!protocols.containsAll(PROTOCOLS)) {
+				ArrayList<String> enabledProtocols = new ArrayList<>(protocols);
+				for (String protocol : PROTOCOLS) {
+					if (!enabledProtocols.contains(protocol)) {
+						enabledProtocols.add(protocol);
+					}
+				}
+				setEnabledProtocols(CommonUtils.toArray(enabledProtocols, String.class));
+			}
 		}
 	}
 
 	private static class NoSSLv3SSLSocket extends SSLSocketWrapper {
 		public NoSSLv3SSLSocket(SSLSocket socket) {
 			super(socket);
+			SSLSocket realSocket = socket;
+			while (realSocket instanceof SSLSocketWrapper) {
+				realSocket = ((SSLSocketWrapper) realSocket).wrapped;
+			}
 			try {
-				socket.getClass().getMethod("setUseSessionTickets", boolean.class).invoke(socket, true);
+				realSocket.getClass().getMethod("setUseSessionTickets", boolean.class).invoke(realSocket, true);
 			} catch (Exception e) {
 				// Reflective operation, ignore exception
 			}
