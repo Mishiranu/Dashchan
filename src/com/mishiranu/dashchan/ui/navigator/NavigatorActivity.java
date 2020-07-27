@@ -1,19 +1,3 @@
-/*
- * Copyright 2014-2017, 2020 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui.navigator;
 
 import android.animation.Animator;
@@ -53,6 +37,7 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toolbar;
+import androidx.annotation.NonNull;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import chan.content.ChanConfiguration;
@@ -93,6 +78,7 @@ import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.CustomSearchView;
 import com.mishiranu.dashchan.widget.ExpandedScreen;
 import com.mishiranu.dashchan.widget.ListPosition;
+import com.mishiranu.dashchan.widget.MenuExpandListener;
 import com.mishiranu.dashchan.widget.PullableListView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 import com.mishiranu.dashchan.widget.SortableListView;
@@ -121,6 +107,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 
 	private ExpandedScreen expandedScreen;
 	private View toolbarView;
+	private CustomSearchView searchView;
 
 	private ViewGroup drawerCommon, drawerWide;
 
@@ -193,8 +180,10 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 			toolbarView = toolbar;
 			expandedScreen.setToolbar(toolbar, foreground);
 		} else {
-			getActionBar().setIcon(R.drawable.ic_logo); // Show white logo on search
+			// Show white logo on search
+			getActionBar().setIcon(R.drawable.ic_logo);
 		}
+
 		drawerToggle = new DrawerToggle(this, drawerLayout);
 		if (C.API_LOLLIPOP) {
 			drawerCommon.setElevation(6f * density);
@@ -208,6 +197,16 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 			drawerLayout.addDrawerListener(new ExpandedScreenDrawerLocker());
 		}
 		ViewUtils.applyToolbarStyle(this, toolbarView);
+
+		searchView = new CustomSearchView(C.API_LOLLIPOP ? new ContextThemeWrapper(this,
+				R.style.Theme_Special_White) : getActionBar().getThemedContext());
+		searchView.setOnSubmitListener(query -> page != null && page.onSearchSubmit(query));
+		searchView.setOnChangeListener(query -> {
+			if (page != null) {
+				page.onSearchQueryChange(query);
+			}
+		});
+
 		if (Preferences.isActiveScrollbar()) {
 			listView.setFastScrollEnabled(true);
 			if (!C.API_LOLLIPOP) {
@@ -227,6 +226,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		expandedScreen.addAdditionalView(progressView, true);
 		expandedScreen.addAdditionalView(errorView, true);
 		expandedScreen.finishInitialization();
+
 		LocalBroadcastManager.getInstance(this).registerReceiver(newPostReceiver,
 				new IntentFilter(C.ACTION_POST_SENT));
 		if (savedInstanceState == null) {
@@ -238,6 +238,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		} else {
 			navigateIntent(getIntent(), false);
 		}
+
 		if (savedInstanceState == null) {
 			startUpdateTask();
 			int drawerInitialPosition = Preferences.getDrawerInitialPosition();
@@ -258,7 +259,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	}
 
 	@Override
-	protected void onSaveInstanceState(Bundle outState) {
+	protected void onSaveInstanceState(@NonNull Bundle outState) {
 		super.onSaveInstanceState(outState);
 		writePagesState(outState);
 	}
@@ -436,7 +437,8 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		watcherServiceClient.updateConfiguration(chanName);
 		drawerForm.updateConfiguration(chanName);
 		page = pageManager.newPage(content);
-		sendPrepareMenuToPage = false; // Will be changed in onCreateOptionsMenu
+		// Will be changed in onCreateOptionsMenu
+		sendPrepareMenuToPage = false;
 		PageHolder pageHolder = null;
 		switch (content) {
 			case THREADS: {
@@ -617,13 +619,13 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	}
 
 	@Override
-	public void onConfigurationChanged(Configuration newConfig) {
+	public void onConfigurationChanged(@NonNull Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
 		ViewUtils.applyToolbarStyle(this, toolbarView);
 		drawerToggle.onConfigurationChanged();
 		updateWideConfiguration(false);
 		expandedScreen.onConfigurationChanged(newConfig);
-		updateOptionsMenu(false);
+		updateOptionsMenu();
 	}
 
 	@Override
@@ -691,55 +693,41 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 
 	private boolean searchMode = false;
 
-	private boolean setSearchMode(boolean search) {
+	private boolean setSearchMode(MenuItem menuItem, boolean search, boolean toggle) {
 		if (searchMode != search) {
 			searchMode = search;
 			if (search) {
-				if (currentMenu != null) {
-					MenuItem menuItem = currentMenu.findItem(ListPage.OPTIONS_MENU_SEARCH);
-					if (menuItem != null) {
-						getSearchView(true).setQueryHint(menuItem.getTitle());
-					}
-				}
+				searchView.setHint(menuItem.getTitle());
 			}
 			if (page != null) {
 				if (search) {
-					page.onSearchQueryChange(getSearchView(true).getQuery().toString());
+					page.onSearchQueryChange(searchView.getQuery());
 				} else {
 					page.onSearchQueryChange("");
 					page.onSearchCancel();
 				}
 			}
 			setActionBarLocked(LOCKER_SEARCH, search);
-			invalidateOptionsMenu();
+			updateOptionsMenu();
 			invalidateHomeUpState();
+			if (toggle) {
+				if (search) {
+					menuItem.expandActionView();
+				} else {
+					menuItem.collapseActionView();
+				}
+			}
 			return true;
 		}
 		return false;
 	}
 
-	private CustomSearchView searchView;
-
-	public CustomSearchView getSearchView(boolean createIfNull) {
-		if (searchView == null && createIfNull) {
-			searchView = new CustomSearchView(C.API_LOLLIPOP ? new ContextThemeWrapper(this,
-					R.style.Theme_Special_White) : getActionBar().getThemedContext());
-			searchView.setOnQueryTextListener(new CustomSearchView.OnQueryTextListener() {
-				@Override
-				public boolean onQueryTextSubmit(String query) {
-					return page != null && page.onSearchSubmit(query);
-				}
-
-				@Override
-				public boolean onQueryTextChange(String newText) {
-					if (page != null) {
-						page.onSearchQueryChange(newText);
-					}
-					return true;
-				}
-			});
+	private boolean setSearchMode(boolean search) {
+		if (currentMenu != null) {
+			MenuItem menuItem = currentMenu.findItem(ListPage.OPTIONS_MENU_SEARCH);
+			return setSearchMode(menuItem, search, true);
 		}
-		return searchView;
+		return false;
 	}
 
 	private Menu currentMenu;
@@ -747,41 +735,47 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		if (searchMode) {
-			currentMenu = null;
-			menu.add(0, ListPage.OPTIONS_MENU_SEARCH_VIEW, 0, "").setActionView(getSearchView(true))
-					.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-		} else {
-			currentMenu = menu;
-			if (page != null) {
-				page.onCreateOptionsMenu(menu);
-				sendPrepareMenuToPage = true;
-			}
-			MenuItem appearanceOptionsItem = menu.findItem(ListPage.OPTIONS_MENU_APPEARANCE);
-			if (appearanceOptionsItem != null) {
-				Menu appearanceOptionsMenu = appearanceOptionsItem.getSubMenu();
-				appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_CHANGE_THEME, 0,
-						R.string.action_change_theme);
-				appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_EXPANDED_SCREEN, 0,
-						R.string.action_expanded_screen).setCheckable(true);
-				appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_SPOILERS, 0,
-						R.string.action_spoilers).setCheckable(true);
-				appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_MY_POSTS, 0,
-						R.string.action_my_posts).setCheckable(true);
-				appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_DRAWER, 0,
-						R.string.action_lock_drawer).setCheckable(true);
-				appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_THREADS_GRID, 0,
-						R.string.action_threads_grid).setCheckable(true);
-				appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_SFW_MODE, 0,
-						R.string.action_sfw_mode).setCheckable(true);
-			}
-			actionMenuConfigurator.onAfterCreateOptionsMenu(menu);
+		currentMenu = menu;
+		if (page != null) {
+			page.onCreateOptionsMenu(menu);
+			sendPrepareMenuToPage = true;
+		}
+		MenuItem appearanceOptionsItem = menu.findItem(ListPage.OPTIONS_MENU_APPEARANCE);
+		if (appearanceOptionsItem != null) {
+			Menu appearanceOptionsMenu = appearanceOptionsItem.getSubMenu();
+			appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_CHANGE_THEME, 0,
+					R.string.action_change_theme);
+			appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_EXPANDED_SCREEN, 0,
+					R.string.action_expanded_screen).setCheckable(true);
+			appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_SPOILERS, 0,
+					R.string.action_spoilers).setCheckable(true);
+			appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_MY_POSTS, 0,
+					R.string.action_my_posts).setCheckable(true);
+			appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_DRAWER, 0,
+					R.string.action_lock_drawer).setCheckable(true);
+			appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_THREADS_GRID, 0,
+					R.string.action_threads_grid).setCheckable(true);
+			appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_SFW_MODE, 0,
+					R.string.action_sfw_mode).setCheckable(true);
+		}
+		actionMenuConfigurator.onAfterCreateOptionsMenu(menu);
+		MenuItem searchMenuItem = menu.findItem(ListPage.OPTIONS_MENU_SEARCH);
+		if (searchMenuItem != null) {
+			searchMenuItem.setActionView(searchView);
+			searchMenuItem.setOnActionExpandListener(new MenuExpandListener((menuItem, expand) -> {
+				setSearchMode(menuItem, expand, false);
+				return true;
+			}));
 		}
 		return true;
 	}
 
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
+		for (int i = 0; i < menu.size(); i++) {
+			MenuItem menuItem = menu.getItem(i);
+			menuItem.setVisible(!searchMode || menuItem.getItemId() == ListPage.OPTIONS_MENU_SEARCH);
+		}
 		if (searchMode) {
 			return true;
 		}
@@ -807,14 +801,13 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
+	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 		if (drawerToggle.onOptionsItemSelected(item)) {
 			return true;
 		}
 		if (page != null) {
 			if (item.getItemId() == ListPage.OPTIONS_MENU_SEARCH) {
-				setSearchMode(true);
-				return true;
+				return false;
 			}
 			if (page.onOptionsItemSelected(item)) {
 				return true;
@@ -904,7 +897,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	}
 
 	@Override
-	public boolean onContextItemSelected(MenuItem item) {
+	public boolean onContextItemSelected(@NonNull MenuItem item) {
 		if (page != null) {
 			AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
 			return page.onContextItemSelected(item, info.position, info.targetView);
@@ -1268,6 +1261,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		Notification.Builder builder = new Notification.Builder(this);
 		builder.setSmallIcon(R.drawable.ic_new_releases_white_24dp);
 		String text = getString(R.string.text_updates_available_format, count);
+		// TODO Handle deprecation
 		if (C.API_LOLLIPOP) {
 			builder.setColor(ResourceUtils.getColor(this, android.R.attr.colorAccent));
 			builder.setPriority(Notification.PRIORITY_HIGH);
@@ -1310,20 +1304,13 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	}
 
 	@Override
-	public void updateOptionsMenu(boolean recreate) {
-		if (recreate || currentMenu == null) {
-			invalidateOptionsMenu();
-		} else {
-			onPrepareOptionsMenu(currentMenu);
-		}
+	public void updateOptionsMenu() {
+		onPrepareOptionsMenu(currentMenu);
 	}
 
 	@Override
 	public void setCustomSearchView(View view) {
-		CustomSearchView searchView = getSearchView(view != null);
-		if (searchView != null) {
-			searchView.setCustomView(view);
-		}
+		searchView.setCustomView(view);
 	}
 
 	@Override
@@ -1409,15 +1396,15 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 
 	private class ExpandedScreenDrawerLocker implements DrawerLayout.DrawerListener {
 		@Override
-		public void onDrawerSlide(View drawerView, float slideOffset) {}
+		public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {}
 
 		@Override
-		public void onDrawerOpened(View drawerView) {
+		public void onDrawerOpened(@NonNull View drawerView) {
 			setActionBarLocked(LOCKER_DRAWER, true);
 		}
 
 		@Override
-		public void onDrawerClosed(View drawerView) {
+		public void onDrawerClosed(@NonNull View drawerView) {
 			setActionBarLocked(LOCKER_DRAWER, false);
 		}
 

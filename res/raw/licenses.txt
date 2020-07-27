@@ -1,0 +1,33 @@
+<h3>2ch Browser</h3>
+<pre>Copyright 2012 vortexwolf
+Licensed under the MIT License</pre>
+<a href="https://github.com/vortexwolf/2ch-Browser">https://github.com/vortexwolf/2ch-Browser</a>
+
+<h3>AndroidX</h3>
+<pre>Copyright 2012-2020 The Android Open Source Project
+Licensed under the Apache License, Version 2.0</pre>
+<a href="https://android.googlesource.com/platform/frameworks/support/+/androidx-master-dev">https://android.googlesource.com/platform/frameworks/support/+/androidx-master-dev</a>
+
+<h3>PhotoView</h3>
+<pre>Copyright 2011, 2012 Chris Banes.
+Licensed under the Apache License, Version 2.0</pre>
+<a href="https://github.com/chrisbanes/PhotoView">https://github.com/chrisbanes/PhotoView</a>
+
+<h3>FFmpeg</h3>
+<pre>Copyright 2000-2016 The FFmpeg developers
+Licensed under the GNU Lesser General Public License version 2.1 or later</pre>
+<a href="https://ffmpeg.org">https://ffmpeg.org</a>
+
+<h3>LibYuv</h3>
+<pre>Copyright 2011 The LibYuv Project Authors
+Licensed under the BSD 3-Clause License</pre>
+<a href="https://chromium.googlesource.com/libyuv/libyuv">https://chromium.googlesource.com/libyuv/libyuv</a>
+
+<h3>GIFLIB</h3>
+<pre>Copyright 1997 Eric S. Raymond
+Licensed under the MIT License</pre>
+<a href="http://giflib.sourceforge.net">http://giflib.sourceforge.net</a>
+
+<h3>Material Design Icons</h3>
+<pre>Licensed under the CC-BY 4.0</pre>
+<a href="https://github.com/google/material-design-icons">https://github.com/google/material-design-icons</a>

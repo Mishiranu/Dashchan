@@ -1,39 +1,16 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.preference.fragment;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Locale;
-
 import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.DialogFragment;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.Preference;
 import android.text.format.DateFormat;
-
+import android.view.View;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.DialogFragment;
 import chan.content.ChanLocator;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
@@ -41,7 +18,6 @@ import chan.http.HttpRequest;
 import chan.text.GroupParser;
 import chan.text.ParseException;
 import chan.util.CommonUtils;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.BackupManager;
@@ -49,74 +25,74 @@ import com.mishiranu.dashchan.content.LocaleManager;
 import com.mishiranu.dashchan.content.async.AsyncManager;
 import com.mishiranu.dashchan.content.async.ReadUpdateTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
+import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.preference.PreferencesActivity;
+import com.mishiranu.dashchan.preference.core.PreferenceFragment;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.ToastUtils;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Locale;
 
-public class AboutFragment extends BasePreferenceFragment {
-	private Preference backupDataPreference;
-	private Preference changelogPreference;
-	private Preference checkForUpdatesPreference;
-
+public class AboutFragment extends PreferenceFragment {
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-
-		Preference statisticsPreference = makeButton(null, R.string.preference_statistics, 0, false);
-		backupDataPreference = makeButton(null, R.string.preference_backup_data,
-				R.string.preference_backup_data_summary, false);
-		changelogPreference = makeButton(null, R.string.preference_changelog, 0, false);
-		checkForUpdatesPreference = makeButton(null, R.string.preference_check_for_updates, 0, false);
-		Preference licensePreference = makeButton(null, R.string.preference_licenses,
-				R.string.preference_licenses_summary, false);
-		makeButton(null, getString(R.string.preference_version), C.BUILD_VERSION +
-				" (" + DateFormat.getDateFormat(getActivity()).format(C.BUILD_TIMESTAMP) + ")", true);
-
-		Intent intent = new Intent(getActivity(), PreferencesActivity.class);
-		intent.putExtra(PreferencesActivity.EXTRA_SHOW_FRAGMENT, StatisticsFragment.class.getName());
-		intent.putExtra(PreferencesActivity.EXTRA_NO_HEADERS, true);
-		statisticsPreference.setIntent(intent);
-
-		intent = new Intent(getActivity(), PreferencesActivity.class);
-		intent.putExtra(PreferencesActivity.EXTRA_SHOW_FRAGMENT, TextFragment.class.getName());
-		intent.putExtra(PreferencesActivity.EXTRA_SHOW_FRAGMENT_ARGUMENTS,
-				TextFragment.createArguments(TextFragment.TYPE_LICENSES, null));
-		intent.putExtra(PreferencesActivity.EXTRA_NO_HEADERS, true);
-		licensePreference.setIntent(intent);
+	protected SharedPreferences getPreferences() {
+		return Preferences.PREFERENCES;
 	}
 
 	@Override
-	public boolean onPreferenceClick(Preference preference) {
-		if (preference == backupDataPreference) {
-			new BackupDialog().show(getFragmentManager(), BackupDialog.class.getName());
-			return true;
-		} else if (preference == changelogPreference) {
-			new ReadDialog(ReadDialog.TYPE_CHANGELOG).show(getFragmentManager(), ReadDialog.class.getName());
-			return true;
-		} else if (preference == checkForUpdatesPreference) {
-			new ReadDialog(ReadDialog.TYPE_UPDATE).show(getFragmentManager(), ReadDialog.class.getName());
-			return true;
-		}
-		return super.onPreferenceClick(preference);
+	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+
+		addButton(R.string.preference_statistics, 0)
+				.setOnClickListener(p -> ((PreferencesActivity) requireActivity())
+						.navigateFragment(new StatisticsFragment()));
+		addButton(R.string.preference_backup_data, R.string.preference_backup_data_summary)
+				.setOnClickListener(p -> new BackupDialog()
+						.show(getParentFragmentManager(), BackupDialog.class.getName()));
+		addButton(R.string.preference_changelog, 0)
+				.setOnClickListener(p -> new ReadDialog(ReadDialog.TYPE_CHANGELOG)
+						.show(getParentFragmentManager(), ReadDialog.class.getName()));
+		addButton(R.string.preference_check_for_updates, 0)
+				.setOnClickListener(p -> new ReadDialog(ReadDialog.TYPE_UPDATE)
+						.show(getParentFragmentManager(), ReadDialog.class.getName()));
+		addButton(R.string.preference_licenses, R.string.preference_licenses_summary)
+				.setOnClickListener(p -> ((PreferencesActivity) requireActivity())
+						.navigateFragment(new TextFragment(TextFragment.TYPE_LICENSES, null)));
+		addButton(getString(R.string.preference_version), C.BUILD_VERSION +
+				" (" + DateFormat.getDateFormat(requireContext()).format(C.BUILD_TIMESTAMP) + ")");
+	}
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+
+		requireActivity().setTitle(R.string.preference_header_about);
+		requireActivity().getActionBar().setSubtitle(null);
 	}
 
 	public static class BackupDialog extends DialogFragment implements DialogInterface.OnClickListener {
+		@NonNull
 		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState) {
+		public AlertDialog onCreateDialog(Bundle savedInstanceState) {
 			String[] items = getResources().getStringArray(R.array.preference_backup_data_choices);
-			return new AlertDialog.Builder(getActivity()).setItems(items, this).create();
+			return new AlertDialog.Builder(requireContext()).setItems(items, this)
+					.setNegativeButton(android.R.string.cancel, null)
+					.create();
 		}
 
 		@Override
 		public void onClick(DialogInterface dialog, int which) {
 			if (which == 0) {
-				BackupManager.makeBackup(getActivity());
+				BackupManager.makeBackup(requireContext());
 			} else if (which == 1) {
-				LinkedHashMap<File, String> filesMap = BackupManager.getAvailableBackups(getActivity());
+				LinkedHashMap<File, String> filesMap = BackupManager.getAvailableBackups(requireContext());
 				if (filesMap != null && filesMap.size() > 0) {
-					new RestoreFragment(filesMap).show(getFragmentManager(), RestoreFragment.class.getName());
+					new RestoreFragment(filesMap).show(getParentFragmentManager(), RestoreFragment.class.getName());
 				} else {
-					ToastUtils.show(getActivity(), R.string.message_no_backups);
+					ToastUtils.show(requireContext(), R.string.message_no_backups);
 				}
 			}
 		}
@@ -141,19 +117,23 @@ public class AboutFragment extends BasePreferenceFragment {
 			setArguments(args);
 		}
 
+		@NonNull
 		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState) {
-			ArrayList<String> names = getArguments().getStringArrayList(EXTRA_NAMES);
+		public AlertDialog onCreateDialog(Bundle savedInstanceState) {
+			ArrayList<String> names = requireArguments().getStringArrayList(EXTRA_NAMES);
 			String[] items = CommonUtils.toArray(names, String.class);
-			return new AlertDialog.Builder(getActivity()).setSingleChoiceItems(items, 0, null).setNegativeButton
-					(android.R.string.cancel, null).setPositiveButton(android.R.string.ok, this).create();
+			return new AlertDialog.Builder(requireContext())
+					.setSingleChoiceItems(items, 0, null)
+					.setNegativeButton(android.R.string.cancel, null)
+					.setPositiveButton(android.R.string.ok, this)
+					.create();
 		}
 
 		@Override
 		public void onClick(DialogInterface dialog, int which) {
 			int index = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
-			File file = new File(getArguments().getStringArrayList(EXTRA_FILES).get(index));
-			BackupManager.loadBackup(getActivity(), file);
+			File file = new File(requireArguments().getStringArrayList(EXTRA_FILES).get(index));
+			BackupManager.loadBackup(requireContext(), file);
 		}
 	}
 
@@ -174,9 +154,11 @@ public class AboutFragment extends BasePreferenceFragment {
 			setArguments(args);
 		}
 
+		@NonNull
 		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState) {
-			ProgressDialog dialog = new ProgressDialog(getActivity());
+		public ProgressDialog onCreateDialog(Bundle savedInstanceState) {
+			// TODO Handle deprecation
+			ProgressDialog dialog = new ProgressDialog(requireContext());
 			dialog.setMessage(getString(R.string.message_loading));
 			dialog.setCanceledOnTouchOutside(false);
 			return dialog;
@@ -185,7 +167,7 @@ public class AboutFragment extends BasePreferenceFragment {
 		@Override
 		public void onActivityCreated(Bundle savedInstanceState) {
 			super.onActivityCreated(savedInstanceState);
-			switch (getArguments().getInt(EXTRA_TYPE)) {
+			switch (requireArguments().getInt(EXTRA_TYPE)) {
 				case TYPE_CHANGELOG: {
 					AsyncManager.get(this).startTask(TASK_READ_CHANGELOG, this, null, false);
 					break;
@@ -198,9 +180,9 @@ public class AboutFragment extends BasePreferenceFragment {
 		}
 
 		@Override
-		public void onCancel(DialogInterface dialog) {
+		public void onCancel(@NonNull DialogInterface dialog) {
 			super.onCancel(dialog);
-			switch (getArguments().getInt(EXTRA_TYPE)) {
+			switch (requireArguments().getInt(EXTRA_TYPE)) {
 				case TYPE_CHANGELOG: {
 					AsyncManager.get(this).cancelTask(TASK_READ_CHANGELOG, this);
 					break;
@@ -223,13 +205,13 @@ public class AboutFragment extends BasePreferenceFragment {
 		public AsyncManager.Holder onCreateAndExecuteTask(String name, HashMap<String, Object> extra) {
 			switch (name) {
 				case TASK_READ_CHANGELOG: {
-					ReadChangelogTask task = new ReadChangelogTask(getActivity());
+					ReadChangelogTask task = new ReadChangelogTask(requireContext());
 					task.executeOnExecutor(ReadChangelogTask.THREAD_POOL_EXECUTOR);
 					return task.getHolder();
 				}
 				case TASK_READ_UPDATE: {
 					ReadUpdateHolder holder = new ReadUpdateHolder();
-					ReadUpdateTask task = new ReadUpdateTask(getActivity(), holder);
+					ReadUpdateTask task = new ReadUpdateTask(requireContext(), holder);
 					task.executeOnExecutor(ReadChangelogTask.THREAD_POOL_EXECUTOR);
 					return holder.attach(task);
 				}
@@ -245,14 +227,10 @@ public class AboutFragment extends BasePreferenceFragment {
 					String content = holder.nextArgument();
 					ErrorItem errorItem = holder.nextArgument();
 					if (errorItem == null) {
-						Intent intent = new Intent(getActivity(), PreferencesActivity.class);
-						intent.putExtra(PreferencesActivity.EXTRA_SHOW_FRAGMENT, TextFragment.class.getName());
-						intent.putExtra(PreferencesActivity.EXTRA_SHOW_FRAGMENT_ARGUMENTS,
-								TextFragment.createArguments(TextFragment.TYPE_CHANGELOG, content));
-						intent.putExtra(PreferencesActivity.EXTRA_NO_HEADERS, true);
-						startActivity(intent);
+						((PreferencesActivity) requireActivity())
+								.navigateFragment(new TextFragment(TextFragment.TYPE_CHANGELOG, content));
 					} else {
-						ToastUtils.show(getActivity(), errorItem);
+						ToastUtils.show(requireContext(), errorItem);
 					}
 					break;
 				}
@@ -260,9 +238,10 @@ public class AboutFragment extends BasePreferenceFragment {
 					ReadUpdateTask.UpdateDataMap updateDataMap = holder.nextArgument();
 					ErrorItem errorItem = holder.nextArgument();
 					if (updateDataMap != null) {
-						startActivity(UpdateFragment.createUpdateIntent(getActivity(), updateDataMap));
+						((PreferencesActivity) requireActivity())
+								.navigateFragment(new UpdateFragment(updateDataMap));
 					} else {
-						ToastUtils.show(getActivity(), errorItem);
+						ToastUtils.show(requireContext(), errorItem);
 					}
 					break;
 				}
@@ -362,7 +341,7 @@ public class AboutFragment extends BasePreferenceFragment {
 		public void onEndElement(GroupParser parser, String tagName) {}
 
 		@Override
-		public void onText(GroupParser parser, String source, int start, int end) throws ParseException {}
+		public void onText(GroupParser parser, String source, int start, int end) {}
 
 		@Override
 		public void onGroupComplete(GroupParser parser, String text) throws ParseException {

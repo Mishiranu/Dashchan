@@ -1,27 +1,6 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.util;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.view.Gravity;
@@ -32,6 +11,9 @@ import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DialogMenu {
 	private final Context context;
@@ -107,7 +89,7 @@ public class DialogMenu {
 		return this;
 	}
 
-	public Dialog create() {
+	public AlertDialog create() {
 		checkConsumed();
 		if (listItems.size() > 0) {
 			dialog = builder.setAdapter(new DialogAdapter(), (d, which) -> {
@@ -134,7 +116,7 @@ public class DialogMenu {
 	}
 
 	public void show() {
-		Dialog dialog = create();
+		AlertDialog dialog = create();
 		if (dialog != null) {
 			dialog.show();
 		}

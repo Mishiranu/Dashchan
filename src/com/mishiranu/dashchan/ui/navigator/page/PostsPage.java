@@ -1,19 +1,3 @@
-/*
- * Copyright 2014-2017, 2020 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui.navigator.page;
 
 import android.app.Activity;
@@ -303,7 +287,8 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 	public void onCreateOptionsMenu(Menu menu) {
 		menu.add(0, OPTIONS_MENU_ADD_POST, 0, R.string.action_add_post).setIcon(obtainIcon(R.attr.actionAddPost))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-		menu.add(0, OPTIONS_MENU_SEARCH, 0, R.string.action_search);
+		menu.add(0, OPTIONS_MENU_SEARCH, 0, R.string.action_search)
+				.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
 		menu.add(0, OPTIONS_MENU_GALLERY, 0, R.string.action_gallery);
 		menu.add(0, OPTIONS_MENU_SELECT, 0, R.string.action_select);
 		menu.add(0, OPTIONS_MENU_REFRESH, 0, R.string.action_refresh).setIcon(obtainIcon(R.attr.actionRefresh))
@@ -391,14 +376,14 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 			case OPTIONS_MENU_ADD_TO_FAVORITES_ICON: {
 				FavoritesStorage.getInstance().add(pageHolder.chanName, pageHolder.boardName,
 						pageHolder.threadNumber, pageHolder.threadTitle, adapter.getExistingPostsCount());
-				updateOptionsMenu(false);
+				updateOptionsMenu();
 				return true;
 			}
 			case OPTIONS_MENU_REMOVE_FROM_FAVORITES_TEXT:
 			case OPTIONS_MENU_REMOVE_FROM_FAVORITES_ICON: {
 				FavoritesStorage.getInstance().remove(pageHolder.chanName, pageHolder.boardName,
 						pageHolder.threadNumber);
-				updateOptionsMenu(false);
+				updateOptionsMenu();
 				return true;
 			}
 			case OPTIONS_MENU_OPEN_ORIGINAL_THREAD: {
@@ -484,7 +469,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 						}
 						notifyAllAdaptersChanged();
 					}
-					updateOptionsMenu(false);
+					updateOptionsMenu();
 					serializePosts();
 				}).setNegativeButton(android.R.string.cancel, null).show();
 				return true;
@@ -548,7 +533,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 			case FavoritesStorage.ACTION_REMOVE: {
 				PageHolder pageHolder = getPageHolder();
 				if (favoriteItem.equals(pageHolder.chanName, pageHolder.boardName, pageHolder.threadNumber)) {
-					updateOptionsMenu(false);
+					updateOptionsMenu();
 				}
 				break;
 			}
@@ -779,7 +764,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		searching = true;
 		if (found) {
 			setCustomSearchView(searchController);
-			updateOptionsMenu(true);
+			updateOptionsMenu();
 			searchLastPosition--;
 			findForward();
 			return true;
@@ -796,7 +781,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		if (searching) {
 			searching = false;
 			setCustomSearchView(null);
-			updateOptionsMenu(true);
+			updateOptionsMenu();
 			getUiManager().view().setHighlightText(null);
 			getAdapter().notifyDataSetChanged();
 		}
@@ -976,7 +961,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 			}
 			if ((this.originalThreadData == null) != (originalThreadData == null)) {
 				this.originalThreadData = originalThreadData;
-				updateOptionsMenu(false);
+				updateOptionsMenu();
 			}
 		}
 		if (!fromCache) {
@@ -1151,7 +1136,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		} else {
 			refreshPosts(false, false);
 		}
-		updateOptionsMenu(false);
+		updateOptionsMenu();
 	}
 
 	@Override
@@ -1301,7 +1286,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		}
 		scrollToSpecifiedPost(wasEmpty);
 		scrollToPostNumber = null;
-		updateOptionsMenu(false);
+		updateOptionsMenu();
 	}
 
 	@Override

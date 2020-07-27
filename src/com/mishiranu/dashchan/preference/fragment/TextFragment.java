@@ -1,26 +1,6 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.preference.fragment;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
-import android.app.Fragment;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -29,9 +9,9 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ScrollView;
-
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
 import chan.content.ChanMarkup;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.graphics.ColorScheme;
@@ -39,6 +19,9 @@ import com.mishiranu.dashchan.text.HtmlParser;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.CommentTextView;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class TextFragment extends Fragment implements View.OnClickListener {
 	private static final String EXTRA_TYPE = "type";
@@ -51,23 +34,23 @@ public class TextFragment extends Fragment implements View.OnClickListener {
 
 	public TextFragment() {}
 
-	public static Bundle createArguments(int type, String content) {
+	public TextFragment(int type, String content) {
 		Bundle args = new Bundle();
 		args.putInt(EXTRA_TYPE, type);
 		args.putString(EXTRA_CONTENT, content);
-		return args;
+		setArguments(args);
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		Bundle args = getArguments();
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		Bundle args = requireArguments();
 		int type = args.getInt(EXTRA_TYPE);
 		String content = args.getString(EXTRA_CONTENT);
 		switch (type) {
 			case TYPE_LICENSES: {
 				InputStream input = null;
 				try {
-					input = getActivity().getAssets().open("licenses.txt");
+					input = getResources().openRawResource(R.raw.licenses);
 					ByteArrayOutputStream output = new ByteArrayOutputStream();
 					IOUtils.copyStream(input, output);
 					content = new String(output.toByteArray()).replaceAll("\r?\n", "<br/>");
@@ -80,16 +63,22 @@ public class TextFragment extends Fragment implements View.OnClickListener {
 			}
 		}
 		CharSequence text = HtmlParser.spanify(content, new Markup(), null, null);
-		new ColorScheme(getActivity()).apply(text);
+		new ColorScheme(requireContext()).apply(text);
 		float density = ResourceUtils.obtainDensity(this);
-		textView = new CommentTextView(getActivity(), null, android.R.attr.textAppearanceLarge);
+		textView = new CommentTextView(requireActivity(), null, android.R.attr.textAppearanceLarge);
 		int padding = (int) (16f * density);
 		textView.setPadding(padding, padding, padding, padding);
 		textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
 		textView.setText(text);
-		ScrollView scrollView = new ScrollView(getActivity());
+		ScrollView scrollView = new ScrollView(requireActivity()) {
+			@Override
+			public boolean requestChildRectangleOnScreen(View child, Rect rectangle, boolean immediate) {
+				// Don't scroll on select
+				return true;
+			}
+		};
 		scrollView.setId(android.R.id.list);
-		FrameLayout frameLayout = new FrameLayout(getActivity());
+		FrameLayout frameLayout = new FrameLayout(requireActivity());
 		frameLayout.setOnClickListener(this);
 		scrollView.addView(frameLayout, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
 		frameLayout.addView(textView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -102,16 +91,17 @@ public class TextFragment extends Fragment implements View.OnClickListener {
 		if (!C.API_MARSHMALLOW) {
 			((View) getView().getParent()).setPadding(0, 0, 0, 0);
 		}
-		switch (getArguments().getInt(EXTRA_TYPE)) {
+		switch (requireArguments().getInt(EXTRA_TYPE)) {
 			case TYPE_LICENSES: {
-				getActivity().setTitle(R.string.preference_licenses);
+				requireActivity().setTitle(R.string.preference_licenses);
 				break;
 			}
 			case TYPE_CHANGELOG: {
-				getActivity().setTitle(R.string.preference_changelog);
+				requireActivity().setTitle(R.string.preference_changelog);
 				break;
 			}
 		}
+		requireActivity().getActionBar().setSubtitle(null);
 	}
 
 	private long lastClickTime;

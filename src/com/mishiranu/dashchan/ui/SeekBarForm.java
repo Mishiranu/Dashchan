@@ -1,19 +1,3 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui;
 
 import android.annotation.SuppressLint;
@@ -25,7 +9,6 @@ import android.widget.CompoundButton;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 
@@ -34,7 +17,7 @@ public class SeekBarForm implements SeekBar.OnSeekBarChangeListener, CompoundBut
 	private int minValue = 0;
 	private int maxValue = 100;
 	private int step = 10;
-	private float multipler = 1f;
+	private float multiplier = 1f;
 	private String valueFormat;
 
 	private int currentValue;
@@ -47,11 +30,11 @@ public class SeekBarForm implements SeekBar.OnSeekBarChangeListener, CompoundBut
 		this.showSwitch = showSwitch;
 	}
 
-	public void setConfiguration(int minValue, int maxValue, int step, float multipler) {
+	public void setConfiguration(int minValue, int maxValue, int step, float multiplier) {
 		this.maxValue = maxValue;
 		this.minValue = minValue;
 		this.step = step;
-		this.multipler = multipler;
+		this.multiplier = multiplier;
 	}
 
 	public void setValueFormat(String valueFormat) {
@@ -62,8 +45,8 @@ public class SeekBarForm implements SeekBar.OnSeekBarChangeListener, CompoundBut
 	public View inflate(Context context) {
 		LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		View view = inflater.inflate(R.layout.dialog_seek_bar_preference, null);
-		((TextView) view.findViewById(R.id.min_value)).setText(Integer.toString((int) (minValue * multipler)));
-		((TextView) view.findViewById(R.id.max_value)).setText(Integer.toString((int) (maxValue * multipler)));
+		((TextView) view.findViewById(R.id.min_value)).setText(Integer.toString((int) (minValue * multiplier)));
+		((TextView) view.findViewById(R.id.max_value)).setText(Integer.toString((int) (maxValue * multiplier)));
 		seekBar = view.findViewById(R.id.seek_bar);
 		seekBar.setMax((maxValue - minValue) / step);
 		seekBar.setProgress((currentValue - minValue) / step);
@@ -95,8 +78,8 @@ public class SeekBarForm implements SeekBar.OnSeekBarChangeListener, CompoundBut
 		return currentValue;
 	}
 
-	public float getMultipler() {
-		return multipler;
+	public float getMultiplier() {
+		return multiplier;
 	}
 
 	public boolean getSwitchValue() {
@@ -104,10 +87,9 @@ public class SeekBarForm implements SeekBar.OnSeekBarChangeListener, CompoundBut
 	}
 
 	public void updateCurrentValueText() {
-		int currentValue = (int) (multipler * this.currentValue);
-		String currentValueText = valueFormat != null ? String.format(valueFormat, currentValue)
-				: Integer.toString(currentValue);
-		valueText.setText(currentValueText);
+		int value = (int) (multiplier * currentValue);
+		String text = valueFormat != null ? String.format(valueFormat, value) : Integer.toString(value);
+		valueText.setText(text);
 	}
 
 	@Override

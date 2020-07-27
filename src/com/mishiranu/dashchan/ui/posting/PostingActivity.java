@@ -1,31 +1,4 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui.posting;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.annotation.TargetApi;
 import android.app.ProgressDialog;
@@ -64,7 +37,7 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toolbar;
-
+import androidx.annotation.NonNull;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import chan.content.ChanMarkup;
@@ -72,7 +45,6 @@ import chan.content.ChanPerformer;
 import chan.text.CommentEditor;
 import chan.util.CommonUtils;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.async.AsyncManager;
@@ -107,6 +79,15 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.DropdownView;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class PostingActivity extends StateActivity implements View.OnClickListener, View.OnFocusChangeListener,
 		ServiceConnection, PostingService.Callback, CaptchaForm.Callback, AsyncManager.Callback,
@@ -504,7 +485,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	}
 
 	@Override
-	protected void onSaveInstanceState(Bundle outState) {
+	protected void onSaveInstanceState(@NonNull Bundle outState) {
 		super.onSaveInstanceState(outState);
 		try {
 			outState.putString(EXTRA_SAVED_POST_DRAFT, obtainPostDraft().toJsonObject().toString());
@@ -642,8 +623,8 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 				attachmentRatingItems = posting.attachmentRatings.size() > 0 ? posting.attachmentRatings : null;
 			}
 			if (attachmentCount) {
-				for (int i = attachments.size() - 1; i >= posting.attachmentCount; i--) {
-					attachments.remove(i);
+				if (attachments.size() > posting.attachmentCount) {
+					attachments.subList(posting.attachmentCount, attachments.size()).clear();
 				}
 			}
 			invalidateAttachments(attachmentCount);
@@ -906,6 +887,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 
 	@Override
 	public void onSendPostStart(boolean progressMode) {
+		// TODO Handle deprecation
 		progressDialog = new ProgressDialog(this);
 		progressDialog.setCancelable(true);
 		progressDialog.setCanceledOnTouchOutside(false);
@@ -923,6 +905,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	@Override
 	public void onSendPostChangeProgressState(boolean progressMode, SendPostTask.ProgressState progressState,
 			int attachmentIndex, int attachmentsCount) {
+		// TODO Handle deprecation
 		if (progressDialog != null) {
 			switch (progressState) {
 				case CONNECTING: {
@@ -952,6 +935,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 
 	@Override
 	public void onSendPostChangeProgressValue(int progress, int progressMax) {
+		// TODO Handle deprecation
 		if (progressDialog != null) {
 			progressDialog.setMax(progressMax);
 			progressDialog.setProgress(progress);
@@ -972,7 +956,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 			ClickableToast.show(this, errorItem.toString(), getString(R.string.action_details), () -> {
 				SendPostFailDetailsDialog dialog = new SendPostFailDetailsDialog(extra);
 				dialog.bindCallback(PostingActivity.this);
-				dialog.show(getFragmentManager(), SendPostFailDetailsDialog.TAG);
+				dialog.show(getSupportFragmentManager(), SendPostFailDetailsDialog.TAG);
 			}, false);
 		} else {
 			ClickableToast.show(this, errorItem.toString());
@@ -1097,9 +1081,8 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 				android.R.attr.windowBackground));
 		captchaForm.showCaptcha(captchaState, input, image, large, invertColors);
 		if (scrollView.getScrollY() + scrollView.getHeight() >= scrollView.getChildAt(0).getHeight()) {
-			scrollView.post(() -> {
-				scrollView.setScrollY(Math.max(scrollView.getChildAt(0).getHeight() - scrollView.getHeight(), 0));
-			});
+			scrollView.post(() -> scrollView.setScrollY(Math.max(scrollView.getChildAt(0).getHeight()
+					- scrollView.getHeight(), 0)));
 		}
 		updateSendButtonState();
 	}
@@ -1180,21 +1163,21 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		AttachmentHolder holder = (AttachmentHolder) v.getTag();
 		int attachmentIndex = attachments.indexOf(holder);
 		AttachmentOptionsDialog dialog = new AttachmentOptionsDialog(attachmentIndex);
-		dialog.bindCallback(this).show(getFragmentManager(), AttachmentOptionsDialog.TAG);
+		dialog.bindCallback(this).show(getSupportFragmentManager(), AttachmentOptionsDialog.TAG);
 	};
 
 	private final View.OnClickListener attachmentWarningListener = v -> {
 		AttachmentHolder holder = (AttachmentHolder) v.getTag();
 		int attachmentIndex = attachments.indexOf(holder);
 		AttachmentWarningDialog dialog = new AttachmentWarningDialog(attachmentIndex);
-		dialog.bindCallback(this).show(getFragmentManager(), AttachmentWarningDialog.TAG);
+		dialog.bindCallback(this).show(getSupportFragmentManager(), AttachmentWarningDialog.TAG);
 	};
 
 	private final View.OnClickListener attachmentRatingListener = v -> {
 		AttachmentHolder holder = (AttachmentHolder) v.getTag();
 		int attachmentIndex = attachments.indexOf(holder);
 		AttachmentRatingDialog dialog = new AttachmentRatingDialog(attachmentIndex);
-		dialog.bindCallback(this).show(getFragmentManager(), AttachmentRatingDialog.TAG);
+		dialog.bindCallback(this).show(getSupportFragmentManager(), AttachmentRatingDialog.TAG);
 	};
 
 	private final View.OnClickListener attachmentRemoveListener = new View.OnClickListener() {

@@ -1,75 +1,77 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.preference.fragment;
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.view.View;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.DialogFragment;
+import chan.content.ChanConfiguration;
+import chan.util.StringUtils;
+import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.preference.Preferences;
+import com.mishiranu.dashchan.preference.core.Preference;
+import com.mishiranu.dashchan.preference.core.PreferenceFragment;
+import com.mishiranu.dashchan.util.DialogMenu;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import android.app.Dialog;
-import android.app.DialogFragment;
-import android.content.Context;
-import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.PreferenceGroup;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
+public class CookiesFragment extends PreferenceFragment {
+	private static final String EXTRA_CHAN_NAME = "chanName";
 
-import chan.content.ChanConfiguration;
-import chan.util.StringUtils;
-
-import com.mishiranu.dashchan.C;
-import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.util.DialogMenu;
-
-public class CookiesFragment extends BasePreferenceFragment {
 	private ChanConfiguration configuration;
-	private HashMap<String, ChanConfiguration.CookieData> cookies = new HashMap<>();
+	private final HashMap<String, ChanConfiguration.CookieData> cookies = new HashMap<>();
+
+	public CookiesFragment() {}
+
+	public CookiesFragment(String chanName) {
+		Bundle args = new Bundle();
+		args.putCharSequence(EXTRA_CHAN_NAME, chanName);
+		setArguments(args);
+	}
+
+	private String getChanName() {
+		return requireArguments().getString(EXTRA_CHAN_NAME);
+	}
 
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		String chanName = getActivity().getIntent().getStringExtra(C.EXTRA_CHAN_NAME);
-		if (chanName == null) {
-			throw new IllegalStateException();
-		}
-		getActivity().setTitle(R.string.preference_manage_cookies);
+	protected SharedPreferences getPreferences() {
+		return Preferences.PREFERENCES;
+	}
+
+	@Override
+	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+		String chanName = getChanName();
 
 		configuration = ChanConfiguration.get(chanName);
 		ArrayList<ChanConfiguration.CookieData> cookies = configuration.getCookies();
 		Collections.sort(cookies, (l, r) -> StringUtils.compare(l.cookie, r.cookie, true));
 		for (ChanConfiguration.CookieData cookieData : cookies) {
 			this.cookies.put(cookieData.cookie, cookieData);
-			CookiePreference preference = new CookiePreference(getActivity());
-			preference.setPersistent(false);
-			preference.setKey(cookieData.cookie);
-			preference.setTitle(cookieData.displayName);
-			preference.setSummary(cookieData.value);
+			CookiePreference preference = new CookiePreference(requireContext(),
+					cookieData.cookie, cookieData.displayName);
+			preference.setValue(cookieData.value);
 			preference.setViewGrayed(cookieData.blocked);
-			preference.setOnPreferenceClickListener(this);
-			addPreference(null, preference);
+			preference.setOnClickListener(onClick);
+			addPreference(preference, false);
 		}
 	}
 
-	private static class CookiePreference extends Preference {
-		public CookiePreference(Context context) {
-			super(context);
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+
+		requireActivity().setTitle(R.string.preference_manage_cookies);
+		requireActivity().getActionBar().setSubtitle(null);
+	}
+
+	private static class CookiePreference extends Preference.Runtime<String> {
+		public CookiePreference(Context context, String key, CharSequence title) {
+			super(context, key, null, title, Preference::getValue);
 		}
 
 		private boolean viewGrayed = false;
@@ -77,56 +79,42 @@ public class CookiesFragment extends BasePreferenceFragment {
 		public void setViewGrayed(boolean viewGrayed) {
 			if (this.viewGrayed != viewGrayed) {
 				this.viewGrayed = viewGrayed;
-				notifyChanged();
+				// Invalidate view
+				setValue(getValue());
 			}
 		}
 
 		@Override
-		public View getView(View convertView, ViewGroup parent) {
-			convertView = super.getView(convertView, parent);
-			TextView titleTextView = convertView.findViewById(android.R.id.title);
-			TextView summaryTextView = convertView.findViewById(android.R.id.summary);
-			if (titleTextView != null && summaryTextView != null) {
-				titleTextView.setEnabled(!viewGrayed);
-				summaryTextView.setEnabled(!viewGrayed);
-			}
-			return convertView;
+		public void bindViewHolder(ViewHolder viewHolder) {
+			super.bindViewHolder(viewHolder);
+			viewHolder.title.setEnabled(!viewGrayed);
+			viewHolder.summary.setEnabled(!viewGrayed);
 		}
 	}
 
-	@Override
-	public boolean onPreferenceChange(Preference preference, Object newValue) {
-		return false;
-	}
-
-	@Override
-	public boolean onPreferenceClick(Preference preference) {
-		String cookie = preference.getKey();
+	private final Preference.OnClickListener<String> onClick = preference -> {
+		String cookie = preference.key;
 		ChanConfiguration.CookieData cookieData = cookies.get(cookie);
 		if (cookieData != null) {
 			ActionDialog dialog = new ActionDialog(cookie, cookieData.blocked);
 			dialog.setTargetFragment(this, 0);
-			dialog.show(getFragmentManager(), ActionDialog.TAG);
+			dialog.show(getParentFragmentManager(), ActionDialog.TAG);
 		}
-		return true;
-	}
+	};
 
-	private boolean removeCookie(String cookie, boolean preferenceOnly) {
+	private void removeCookie(String cookie, boolean preferenceOnly) {
 		if (!preferenceOnly) {
 			configuration.storeCookie(cookie, null, null);
 			configuration.commit();
 		}
 		CookiePreference preference = (CookiePreference) findPreference(cookie);
 		if (preference != null) {
-			PreferenceGroup preferenceGroup = getParentGroup(preference);
-			preferenceGroup.removePreference(preference);
+			int size = removePreference(preference);
 			cookies.remove(cookie);
-			if (preferenceGroup.getPreferenceCount() == 0) {
-				getActivity().finish();
-				return true;
+			if (size == 0) {
+				requireActivity().onBackPressed();
 			}
 		}
-		return false;
 	}
 
 	private void setBlocked(String cookie, boolean blocked) {
@@ -165,11 +153,12 @@ public class CookiesFragment extends BasePreferenceFragment {
 		private static final int MENU_BLOCKED = 0;
 		private static final int MENU_REMOVE = 1;
 
+		@NonNull
 		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState) {
-			Bundle args = getArguments();
+		public AlertDialog onCreateDialog(Bundle savedInstanceState) {
+			Bundle args = requireArguments();
 			boolean blocked = args.getBoolean(EXTRA_BLOCKED);
-			DialogMenu dialogMenu = new DialogMenu(getActivity(), this);
+			DialogMenu dialogMenu = new DialogMenu(requireContext(), this);
 			dialogMenu.addCheckableItem(MENU_BLOCKED, R.string.action_block, blocked);
 			if (!blocked) {
 				dialogMenu.addItem(MENU_REMOVE, R.string.action_delete);
@@ -179,7 +168,7 @@ public class CookiesFragment extends BasePreferenceFragment {
 
 		@Override
 		public void onItemClick(Context context, int id, Map<String, Object> extra) {
-			Bundle args = getArguments();
+			Bundle args = requireArguments();
 			switch (id) {
 				case MENU_BLOCKED: {
 					((CookiesFragment) getTargetFragment()).setBlocked(args.getString(EXTRA_COOKIE),

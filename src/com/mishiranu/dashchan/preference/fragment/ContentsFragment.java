@@ -1,129 +1,119 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.preference.fragment;
-
-import java.io.File;
-import java.util.HashMap;
-import java.util.Locale;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.DialogFragment;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.UriPermission;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.storage.StorageManager;
-import android.preference.Preference;
-import android.preference.PreferenceCategory;
 import android.provider.DocumentsContract;
 import android.text.InputType;
 import android.text.SpannableStringBuilder;
 import android.text.style.TypefaceSpan;
+import android.view.View;
 import android.widget.ListView;
-
+import androidx.annotation.NonNull;
+import androidx.fragment.app.DialogFragment;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.async.AsyncManager;
 import com.mishiranu.dashchan.media.VideoPlayer;
-import com.mishiranu.dashchan.preference.ExtendedEditTextPreference;
 import com.mishiranu.dashchan.preference.Preferences;
+import com.mishiranu.dashchan.preference.core.EditPreference;
+import com.mishiranu.dashchan.preference.core.Preference;
+import com.mishiranu.dashchan.preference.core.PreferenceFragment;
 import com.mishiranu.dashchan.util.ToastUtils;
+import java.io.File;
+import java.util.HashMap;
+import java.util.Locale;
 
-public class ContentsFragment extends BasePreferenceFragment implements DialogInterface.OnClickListener {
-	private ExtendedEditTextPreference downloadPathPreference;
-	private Preference clearCachePreference;
+public class ContentsFragment extends PreferenceFragment {
+	private EditPreference downloadPathPreference;
+	private Preference<?> clearCachePreference;
 
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	protected SharedPreferences getPreferences() {
+		return Preferences.PREFERENCES;
+	}
 
-		makeList(null, Preferences.KEY_LOAD_THUMBNAILS, Preferences.GENERIC_VALUES_NETWORK,
+	@Override
+	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+
+		addList(Preferences.KEY_LOAD_THUMBNAILS, Preferences.GENERIC_VALUES_NETWORK,
 				Preferences.DEFAULT_LOAD_THUMBNAILS, R.string.preference_load_thumbnails,
 				R.array.preference_generic_network_choices);
-		makeCheckBox(null, true, Preferences.KEY_DOWNLOAD_YOUTUBE_TITLES, Preferences.DEFAULT_DOWNLOAD_YOUTUBE_TITLES,
+		addCheck(true, Preferences.KEY_DOWNLOAD_YOUTUBE_TITLES, Preferences.DEFAULT_DOWNLOAD_YOUTUBE_TITLES,
 				R.string.preference_download_youtube_titles, R.string.preference_download_youtube_titles_summary);
 
-		PreferenceCategory autoRefreshingCategory = makeCategory(R.string.preference_category_auto_refreshing);
-		makeList(autoRefreshingCategory, Preferences.KEY_AUTO_REFRESH_MODE, Preferences.VALUES_AUTO_REFRESH_MODE,
+		addHeader(R.string.preference_category_auto_refreshing);
+		addList(Preferences.KEY_AUTO_REFRESH_MODE, Preferences.VALUES_AUTO_REFRESH_MODE,
 				Preferences.DEFAULT_AUTO_REFRESH_MODE, R.string.preference_auto_refresh_mode,
 				R.array.preference_auto_refresh_choices);
-		makeSeekBar(autoRefreshingCategory, Preferences.KEY_AUTO_REFRESH_INTERVAL,
+		addSeek(Preferences.KEY_AUTO_REFRESH_INTERVAL,
 				Preferences.DEFAULT_AUTO_REFRESH_INTERVAL, R.string.preference_auto_refresh_interval,
 				R.string.preference_auto_refresh_interval_summary_format, Preferences.MIN_AUTO_REFRESH_INTERVAL,
 				Preferences.MAX_AUTO_REFRESH_INTERVAL, Preferences.STEP_AUTO_REFRESH_INTERVAL, 1f);
 
-		PreferenceCategory downloadingCategory = makeCategory(R.string.preference_category_downloading);
-		makeCheckBox(downloadingCategory, true, Preferences.KEY_DOWNLOAD_DETAIL_NAME,
+		addHeader(R.string.preference_category_downloading);
+		addCheck(true, Preferences.KEY_DOWNLOAD_DETAIL_NAME,
 				Preferences.DEFAULT_DOWNLOAD_DETAIL_NAME, R.string.preference_download_detail_name,
 				R.string.preference_download_detail_name_summary);
-		makeCheckBox(downloadingCategory, true, Preferences.KEY_DOWNLOAD_ORIGINAL_NAME,
+		addCheck(true, Preferences.KEY_DOWNLOAD_ORIGINAL_NAME,
 				Preferences.DEFAULT_DOWNLOAD_ORIGINAL_NAME, R.string.preference_download_original_name,
 				R.string.preference_download_original_name_summary);
-		downloadPathPreference = makeEditText(downloadingCategory, Preferences.KEY_DOWNLOAD_PATH, null,
-				R.string.preference_download_path, 0, C.DEFAULT_DOWNLOAD_PATH, InputType.TYPE_CLASS_TEXT
-				| InputType.TYPE_TEXT_VARIATION_URI, true);
+		downloadPathPreference = addEdit(Preferences.KEY_DOWNLOAD_PATH, null,
+				R.string.preference_download_path, C.DEFAULT_DOWNLOAD_PATH, InputType.TYPE_CLASS_TEXT
+				| InputType.TYPE_TEXT_VARIATION_URI);
 		if (C.API_LOLLIPOP) {
-			downloadPathPreference.setNeutralButton(getString(R.string.action_choose), this, false);
+			downloadPathPreference.setNeutralButton(getString(R.string.action_choose),
+					() -> startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+							.putExtra("android.content.extra.SHOW_ADVANCED", true), C.REQUEST_CODE_OPEN_PATH));
 		}
-		makeList(downloadingCategory, Preferences.KEY_DOWNLOAD_SUBDIR, Preferences.VALUES_DOWNLOAD_SUBDIR,
+		addList(Preferences.KEY_DOWNLOAD_SUBDIR, Preferences.VALUES_DOWNLOAD_SUBDIR,
 				Preferences.DEFAULT_DOWNLOAD_SUBDIR, R.string.preference_download_subdir,
 				R.array.preference_download_subdir_choices);
-		makeEditText(downloadingCategory, Preferences.KEY_SUBDIR_PATTERN, Preferences.DEFAULT_SUBDIR_PATTERN,
-				R.string.preference_subdirectory_pattern, 0, Preferences.DEFAULT_SUBDIR_PATTERN,
-				InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI, true)
-				.setDescription(makeSubdirDescrption());
+		addEdit(Preferences.KEY_SUBDIR_PATTERN, Preferences.DEFAULT_SUBDIR_PATTERN,
+				R.string.preference_subdirectory_pattern, Preferences.DEFAULT_SUBDIR_PATTERN,
+				InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI)
+				.setDescription(makeSubdirDescription());
 		if (C.API_LOLLIPOP) {
-			makeCheckBox(downloadingCategory, true, Preferences.KEY_NOTIFY_DOWNLOAD_COMPLETE,
+			addCheck(true, Preferences.KEY_NOTIFY_DOWNLOAD_COMPLETE,
 					Preferences.DEFAULT_NOTIFY_DOWNLOAD_COMPLETE, R.string.preference_notify_download_complete,
 					R.string.preference_notify_download_complete_summary);
 		}
 
-		PreferenceCategory imagesCategory = makeCategory(R.string.preference_category_images);
-		makeList(imagesCategory, Preferences.KEY_LOAD_NEAREST_IMAGE, Preferences.GENERIC_VALUES_NETWORK,
+		addHeader(R.string.preference_category_images);
+		addList(Preferences.KEY_LOAD_NEAREST_IMAGE, Preferences.GENERIC_VALUES_NETWORK,
 				Preferences.DEFAULT_LOAD_NEAREST_IMAGE, R.string.preference_load_nearest_image,
 				R.array.preference_generic_network_choices);
 
-		PreferenceCategory videoPlayerCategory = makeCategory(R.string.preference_category_video_player);
-		boolean playerAvailable = VideoPlayer.loadLibraries(getActivity());
+		addHeader(R.string.preference_category_video_player);
+		boolean playerAvailable = VideoPlayer.loadLibraries(requireContext());
 		if (!playerAvailable) {
-			makeButton(videoPlayerCategory, 0, R.string.preference_use_video_player_warning, true).setSelectable(false);
+			addButton(0, R.string.preference_use_video_player_warning).setSelectable(false);
 		}
-		makeCheckBox(videoPlayerCategory, true, Preferences.KEY_USE_VIDEO_PLAYER, Preferences.DEFAULT_USE_VIDEO_PLAYER,
+		addCheck(true, Preferences.KEY_USE_VIDEO_PLAYER, Preferences.DEFAULT_USE_VIDEO_PLAYER,
 				R.string.preference_use_video_player, R.string.preference_use_video_player_summary)
 				.setEnabled(playerAvailable);
-		makeList(videoPlayerCategory, Preferences.KEY_VIDEO_COMPLETION, Preferences.VALUES_VIDEO_COMPLETION,
+		addList(Preferences.KEY_VIDEO_COMPLETION, Preferences.VALUES_VIDEO_COMPLETION,
 				Preferences.DEFAULT_VIDEO_COMPLETION, R.string.preference_video_completion,
 				R.array.preference_video_completion_choices).setEnabled(playerAvailable);
-		makeCheckBox(videoPlayerCategory, true, Preferences.KEY_VIDEO_PLAY_AFTER_SCROLL,
+		addCheck(true, Preferences.KEY_VIDEO_PLAY_AFTER_SCROLL,
 				Preferences.DEFAULT_VIDEO_PLAY_AFTER_SCROLL, R.string.preference_video_play_after_scroll,
 				R.string.preference_video_play_after_scroll_summary).setEnabled(playerAvailable);
-		makeCheckBox(videoPlayerCategory, true, Preferences.KEY_VIDEO_SEEK_ANY_FRAME,
+		addCheck(true, Preferences.KEY_VIDEO_SEEK_ANY_FRAME,
 				Preferences.DEFAULT_VIDEO_SEEK_ANY_FRAME, R.string.preference_video_seek_any_frame,
 				R.string.preference_video_seek_any_frame_summary).setEnabled(playerAvailable);
 		if (playerAvailable) {
@@ -132,10 +122,18 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 			addDependency(Preferences.KEY_VIDEO_SEEK_ANY_FRAME, Preferences.KEY_USE_VIDEO_PLAYER, true);
 		}
 
-		PreferenceCategory additionalCategory = makeCategory(R.string.preference_category_additional);
-		makeSeekBar(additionalCategory, Preferences.KEY_CACHE_SIZE, Preferences.DEFAULT_CACHE_SIZE,
+		addHeader(R.string.preference_category_additional);
+		addSeek(Preferences.KEY_CACHE_SIZE, Preferences.DEFAULT_CACHE_SIZE,
 				getString(R.string.preference_cache_size), "%d MB", 50, 400, 10, Preferences.MULTIPLIER_CACHE_SIZE);
-		clearCachePreference = makeButton(additionalCategory, R.string.preference_clear_cache, 0, false);
+		clearCachePreference = addButton(getString(R.string.preference_clear_cache), p -> {
+			long cacheSize = CacheManager.getInstance().getCacheSize();
+			return String.format(Locale.US, "%.2f", cacheSize / 1024. / 1024.) + " MB";
+		});
+		clearCachePreference.setOnClickListener(p -> {
+			ClearCacheFragment fragment = new ClearCacheFragment();
+			fragment.setTargetFragment(this, 0);
+			fragment.show(getParentFragmentManager(), ClearCacheFragment.class.getName());
+		});
 
 		addDependency(Preferences.KEY_AUTO_REFRESH_INTERVAL, Preferences.KEY_AUTO_REFRESH_MODE, true,
 				Preferences.VALUE_AUTO_REFRESH_MODE_ENABLED);
@@ -144,7 +142,23 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 		updateCacheSize();
 	}
 
-	private CharSequence makeSubdirDescrption() {
+	@Override
+	public void onDestroyView() {
+		super.onDestroyView();
+
+		downloadPathPreference = null;
+		clearCachePreference = null;
+	}
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+
+		requireActivity().setTitle(R.string.preference_header_contents);
+		requireActivity().getActionBar().setSubtitle(null);
+	}
+
+	private CharSequence makeSubdirDescription() {
 		String[] formats = {"\\c", "\\d", "\\b", "\\t", "\\e", "<\u2026>"};
 		String[] descriptions = getResources().getStringArray(R.array.preference_subdirectory_pattern_descriptions);
 		SpannableStringBuilder builder = new SpannableStringBuilder();
@@ -159,28 +173,10 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 		return builder;
 	}
 
-	@Override
-	public boolean onPreferenceClick(Preference preference) {
-		if (preference == clearCachePreference) {
-			ClearCacheFragment fragment = new ClearCacheFragment();
-			fragment.setTargetFragment(this, 0);
-			fragment.show(getFragmentManager(), ClearCacheFragment.class.getName());
-		}
-		return super.onPreferenceClick(preference);
-	}
-
 	private void updateCacheSize() {
 		long cacheSize = CacheManager.getInstance().getCacheSize();
-		String summary = String.format(Locale.US, "%.2f", cacheSize / 1024. / 1024.) + " MB";
-		clearCachePreference.setSummary(summary);
 		clearCachePreference.setEnabled(cacheSize > 0L);
-	}
-
-	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
-	@Override
-	public void onClick(DialogInterface dialog, int which) {
-		startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-				.putExtra("android.content.extra.SHOW_ADVANCED", true), C.REQUEST_CODE_OPEN_PATH);
+		clearCachePreference.invalidate();
 	}
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -190,7 +186,7 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 		if (requestCode == C.REQUEST_CODE_OPEN_PATH && resultCode == Activity.RESULT_OK) {
 			boolean success = false;
 			Uri uri = data.getData();
-			ContentResolver contentResolver = getActivity().getContentResolver();
+			ContentResolver contentResolver = requireContext().getContentResolver();
 			for (UriPermission uriPermission : contentResolver.getPersistedUriPermissions()) {
 				if (!uri.equals(uriPermission.getUri())) {
 					contentResolver.releasePersistableUriPermission(uriPermission.getUri(),
@@ -202,6 +198,7 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 					| Intent.FLAG_GRANT_WRITE_URI_PERMISSION));
 			String id = DocumentsContract.getTreeDocumentId(uri);
 			if (id != null) {
+				// TODO Handle deprecation
 				String[] splitted = id.split(":", -1);
 				if (splitted.length == 2) {
 					String volumeName = splitted[0];
@@ -210,7 +207,7 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 					if ("primary".equals(volumeName)) {
 						storageDirectory = Environment.getExternalStorageDirectory();
 					} else {
-						StorageManager storageManager = (StorageManager) getActivity()
+						StorageManager storageManager = (StorageManager) requireContext()
 								.getSystemService(Context.STORAGE_SERVICE);
 						try {
 							Object[] list = (Object[]) StorageManager.class.getMethod("getVolumeList")
@@ -238,13 +235,16 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 						if (!path.endsWith("/")) {
 							path += "/";
 						}
-						downloadPathPreference.getEditText().setText(path);
+						AlertDialog dialog = getDialog(downloadPathPreference);
+						if (dialog != null) {
+							downloadPathPreference.setInput(dialog, path);
+						}
 						success = true;
 					}
 				}
 			}
 			if (!success) {
-				ToastUtils.show(getActivity(), R.string.message_unknown_error);
+				ToastUtils.show(requireContext(), R.string.message_unknown_error);
 			}
 		}
 	}
@@ -255,14 +255,15 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 
 		private boolean[] checkedItems;
 
+		@NonNull
 		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState) {
+		public AlertDialog onCreateDialog(Bundle savedInstanceState) {
 			checkedItems = savedInstanceState != null ? savedInstanceState.getBooleanArray(EXTRA_CHECKED_ITEMS) : null;
 			if (checkedItems == null) {
 				checkedItems = new boolean[] {true, true, true, false};
 			}
 			String[] items = getResources().getStringArray(R.array.preference_clear_cache_choices);
-			AlertDialog dialog = new AlertDialog.Builder(getActivity())
+			AlertDialog dialog = new AlertDialog.Builder(requireContext())
 					.setTitle(getString(R.string.preference_clear_cache))
 					.setMultiChoiceItems(items, checkedItems, this)
 					.setNegativeButton(android.R.string.cancel, null).setPositiveButton(android.R.string.ok, this)
@@ -272,7 +273,7 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 		}
 
 		@Override
-		public void onSaveInstanceState(Bundle outState) {
+		public void onSaveInstanceState(@NonNull Bundle outState) {
 			super.onSaveInstanceState(outState);
 			outState.putBooleanArray(EXTRA_CHECKED_ITEMS, checkedItems);
 		}
@@ -306,7 +307,7 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 			ClearingDialog clearingDialog = new ClearingDialog(checkedItems[0], checkedItems[1],
 					checkedItems[2], checkedItems[3]);
 			clearingDialog.setTargetFragment(getTargetFragment(), 0);
-			clearingDialog.show(getTargetFragment().getFragmentManager(), ClearingDialog.class.getName());
+			clearingDialog.show(getTargetFragment().getParentFragmentManager(), ClearingDialog.class.getName());
 		}
 	}
 
@@ -329,9 +330,11 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 			setArguments(args);
 		}
 
+		@NonNull
 		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState) {
-			ProgressDialog dialog = new ProgressDialog(getActivity());
+		public ProgressDialog onCreateDialog(Bundle savedInstanceState) {
+			// TODO Handle deprecation
+			ProgressDialog dialog = new ProgressDialog(requireContext());
 			dialog.setMessage(getString(R.string.message_clearing));
 			dialog.setCanceledOnTouchOutside(false);
 			return dialog;
@@ -348,7 +351,7 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 		}
 
 		@Override
-		public void onCancel(DialogInterface dialog) {
+		public void onCancel(@NonNull DialogInterface dialog) {
 			super.onCancel(dialog);
 			AsyncManager.get(this).cancelTask(TASK_CLEAR_CACHE, this);
 			sendUpdateCacheSize();
@@ -356,7 +359,7 @@ public class ContentsFragment extends BasePreferenceFragment implements DialogIn
 
 		@Override
 		public AsyncManager.Holder onCreateAndExecuteTask(String name, HashMap<String, Object> extra) {
-			Bundle args = getArguments();
+			Bundle args = requireArguments();
 			ClearCacheTask task = new ClearCacheTask(args.getBoolean(EXTRA_THUMBNAILS), args.getBoolean(EXTRA_MEDIA),
 					args.getBoolean(EXTRA_OLD_PAGES), args.getBoolean(EXTRA_ALL_PAGES));
 			task.executeOnExecutor(ClearCacheTask.THREAD_POOL_EXECUTOR);

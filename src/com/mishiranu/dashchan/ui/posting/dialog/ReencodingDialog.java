@@ -1,22 +1,4 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui.posting.dialog;
-
-import java.util.Locale;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -29,10 +11,11 @@ import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.ScrollView;
-
+import androidx.annotation.NonNull;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.ui.SeekBarForm;
 import com.mishiranu.dashchan.util.GraphicsUtils;
+import java.util.Locale;
 
 public class ReencodingDialog extends PostingDialog implements DialogInterface.OnClickListener,
 		RadioGroup.OnCheckedChangeListener {
@@ -51,6 +34,7 @@ public class ReencodingDialog extends PostingDialog implements DialogInterface.O
 			GraphicsUtils.Reencoding.FORMAT_PNG};
 	private static final int[] IDS = {android.R.id.icon1, android.R.id.icon2};
 
+	@NonNull
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		Context context = getActivity();
@@ -104,7 +88,7 @@ public class ReencodingDialog extends PostingDialog implements DialogInterface.O
 	}
 
 	@Override
-	public void onSaveInstanceState(Bundle outState) {
+	public void onSaveInstanceState(@NonNull Bundle outState) {
 		super.onSaveInstanceState(outState);
 		outState.putInt(EXTRA_QUALITY, qualityForm.getCurrentValue());
 		outState.putInt(EXTRA_REDUCE, reduceForm.getCurrentValue());
@@ -112,7 +96,7 @@ public class ReencodingDialog extends PostingDialog implements DialogInterface.O
 
 	@Override
 	public void onClick(DialogInterface dialog, int which) {
-		AttachmentOptionsDialog attachmentOptionsDialog = (AttachmentOptionsDialog) getFragmentManager()
+		AttachmentOptionsDialog attachmentOptionsDialog = (AttachmentOptionsDialog) getParentFragmentManager()
 				.findFragmentByTag(AttachmentOptionsDialog.TAG);
 		if (attachmentOptionsDialog != null) {
 			String format = null;

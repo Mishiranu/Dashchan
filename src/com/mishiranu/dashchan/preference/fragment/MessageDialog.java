@@ -1,27 +1,11 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.preference.fragment;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.DialogFragment;
-import android.app.Fragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
 
 public class MessageDialog extends DialogFragment implements DialogInterface.OnClickListener {
 	private static final String TAG = MessageDialog.class.getName();
@@ -38,25 +22,28 @@ public class MessageDialog extends DialogFragment implements DialogInterface.OnC
 		args.putCharSequence(EXTRA_MESSAGE, message);
 		args.putBoolean(EXTRA_FINISH_ACTIVITY, finishActivity);
 		dialog.setArguments(args);
-		dialog.show(fragment.getFragmentManager(), TAG);
+		dialog.show(fragment.getChildFragmentManager(), TAG);
 	}
 
 	public static void dismissIfOpen(Fragment fragment) {
-		MessageDialog dialog = (MessageDialog) fragment.getFragmentManager().findFragmentByTag(MessageDialog.TAG);
+		MessageDialog dialog = (MessageDialog) fragment.getChildFragmentManager()
+				.findFragmentByTag(MessageDialog.TAG);
 		if (dialog != null) {
 			dialog.dismissAllowingStateLoss();
 		}
 	}
 
+	@NonNull
 	@Override
-	public Dialog onCreateDialog(Bundle savedInstanceState) {
-		return new AlertDialog.Builder(getActivity()).setMessage(getArguments().getCharSequence(EXTRA_MESSAGE))
+	public AlertDialog onCreateDialog(Bundle savedInstanceState) {
+		return new AlertDialog.Builder(requireContext())
+				.setMessage(requireArguments().getCharSequence(EXTRA_MESSAGE))
 				.setPositiveButton(android.R.string.ok, this).create();
 	}
 
 	private void checkFinish() {
-		if (getArguments().getBoolean(EXTRA_FINISH_ACTIVITY)) {
-			getActivity().finish();
+		if (requireArguments().getBoolean(EXTRA_FINISH_ACTIVITY)) {
+			requireActivity().onBackPressed();
 		}
 	}
 
@@ -66,7 +53,7 @@ public class MessageDialog extends DialogFragment implements DialogInterface.OnC
 	}
 
 	@Override
-	public void onCancel(DialogInterface dialog) {
+	public void onCancel(@NonNull DialogInterface dialog) {
 		checkFinish();
 	}
 }

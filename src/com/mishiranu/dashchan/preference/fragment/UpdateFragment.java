@@ -1,35 +1,12 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.preference.fragment;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashSet;
-
 import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.DialogFragment;
 import android.app.DownloadManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.view.Menu;
@@ -39,26 +16,29 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-
+import androidx.annotation.NonNull;
+import androidx.fragment.app.DialogFragment;
 import chan.content.ChanConfiguration;
 import chan.content.ChanManager;
 import chan.util.CommonUtils;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.FileProvider;
 import com.mishiranu.dashchan.content.async.ReadUpdateTask;
 import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.preference.Preferences;
-import com.mishiranu.dashchan.preference.PreferencesActivity;
 import com.mishiranu.dashchan.preference.UpdaterActivity;
+import com.mishiranu.dashchan.preference.core.CheckPreference;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashSet;
 
 public class UpdateFragment extends BaseListFragment {
 	private static final String VERSION_TITLE_RELEASE = "Release";
 
-	private static final String EXTRA_UPDATE_DATA_MAP = "update_data_map";
+	private static final String EXTRA_UPDATE_DATA_MAP = "updateDataMap";
 	private static final String EXTRA_TARGET_PREFIX = "target_";
 
 	private ArrayAdapter<ListItem> adapter;
@@ -105,10 +85,12 @@ public class UpdateFragment extends BaseListFragment {
 		}
 	}
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		updateTitle();
+	public UpdateFragment() {}
+
+	public UpdateFragment(ReadUpdateTask.UpdateDataMap updateDataMap) {
+		Bundle args = new Bundle();
+		args.putSerializable(EXTRA_UPDATE_DATA_MAP, updateDataMap);
+		setArguments(args);
 	}
 
 	private void updateTitle() {
@@ -121,44 +103,58 @@ public class UpdateFragment extends BaseListFragment {
 				}
 			}
 		}
-		getActivity().setTitle(getString(R.string.text_updates_format, count));
-		getActivity().invalidateOptionsMenu();
+		requireActivity().setTitle(getString(R.string.text_updates_format, count));
+		requireActivity().invalidateOptionsMenu();
 	}
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		setHasOptionsMenu(true);
-		adapter = new ArrayAdapter<ListItem>(getActivity(), 0) {
-			private final CheckBoxPreference checkBoxViewGetter = new CheckBoxPreference(getContext());
 
+		setHasOptionsMenu(true);
+		updateTitle();
+		requireActivity().getActionBar().setSubtitle(null);
+
+		adapter = new ArrayAdapter<ListItem>(requireContext(), 0) {
+			private final CheckPreference checkBoxViewGetter = new CheckPreference(requireContext(),
+					"", false, "title", "summary");
+
+			@NonNull
 			@Override
-			public View getView(int position, View convertView, ViewGroup parent) {
+			public View getView(int position, View convertView, @NonNull ViewGroup parent) {
 				ListItem listItem = getItem(position);
-				checkBoxViewGetter.setTitle(listItem.title);
+				if (convertView == null) {
+					CheckPreference.CheckViewHolder viewHolder = checkBoxViewGetter.createViewHolder(parent);
+					convertView = viewHolder.view;
+					convertView.setTag(viewHolder);
+				}
+				CheckPreference.CheckViewHolder viewHolder = (CheckPreference.CheckViewHolder) convertView.getTag();
+				checkBoxViewGetter.setValue(listItem.targetIndex > 0);
+				checkBoxViewGetter.setEnabled(listItem.enabled);
+				checkBoxViewGetter.bindViewHolder(viewHolder);
+				viewHolder.title.setText(listItem.title);
 				if (listItem.warning != null) {
 					SpannableString spannable = new SpannableString(listItem.target + "\n" + listItem.warning);
 					int length = spannable.length();
 					spannable.setSpan(new ForegroundColorSpan(ResourceUtils.getColor(getContext(),
 							R.attr.colorTextError)), length - listItem.warning.length(), length,
 							SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
-					checkBoxViewGetter.setSummary(spannable);
+					viewHolder.summary.setText(spannable);
 				} else {
-					checkBoxViewGetter.setSummary(listItem.target);
+					viewHolder.summary.setText(listItem.target);
 				}
-				checkBoxViewGetter.setChecked(listItem.targetIndex > 0);
-				checkBoxViewGetter.setEnabled(listItem.enabled);
-				return checkBoxViewGetter.getView(convertView, parent);
+				return convertView;
 			}
 		};
 		setListAdapter(adapter);
-		updateDataMap = (ReadUpdateTask.UpdateDataMap) getArguments().getSerializable(EXTRA_UPDATE_DATA_MAP);
+		updateDataMap = (ReadUpdateTask.UpdateDataMap) requireArguments().getSerializable(EXTRA_UPDATE_DATA_MAP);
 		buildData(savedInstanceState);
 	}
 
 	@Override
-	public void onSaveInstanceState(Bundle outState) {
+	public void onSaveInstanceState(@NonNull Bundle outState) {
 		super.onSaveInstanceState(outState);
+
 		for (int i = 0; i < adapter.getCount(); i++) {
 			ListItem listItem = adapter.getItem(i);
 			outState.putInt(EXTRA_TARGET_PREFIX + listItem.extensionName, listItem.targetIndex);
@@ -265,7 +261,7 @@ public class UpdateFragment extends BaseListFragment {
 
 	private void buildData(Bundle savedInstanceState) {
 		adapter.clear();
-		adapter.addAll(buildData(getActivity(), updateDataMap, savedInstanceState));
+		adapter.addAll(buildData(requireContext(), updateDataMap, savedInstanceState));
 		updateTitle();
 	}
 
@@ -278,17 +274,16 @@ public class UpdateFragment extends BaseListFragment {
 		for (int i = 1; i < updateItems.size(); i++) {
 			targets.add(updateItems.get(i).title);
 		}
-		TargetDialog dialog = new TargetDialog(listItem.extensionName, targets, listItem.targetIndex);
-		dialog.setTargetFragment(this, 0);
-		dialog.show(getFragmentManager(), TargetDialog.TAG);
+		TargetDialog dialog = new TargetDialog(listItem.extensionName, listItem.title, targets, listItem.targetIndex);
+		dialog.show(getChildFragmentManager(), TargetDialog.TAG);
 	}
 
 	private static final int OPTIONS_MENU_DOWNLOAD = 0;
 	private static final int OPTIONS_CHECK_ON_START = 1;
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		ActionIconSet set = new ActionIconSet(getActivity());
+	public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+		ActionIconSet set = new ActionIconSet(requireContext());
 		long length = 0;
 		if (updateDataMap != null) {
 			for (int i = 0; i < adapter.getCount(); i++) {
@@ -316,9 +311,9 @@ public class UpdateFragment extends BaseListFragment {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 			case OPTIONS_MENU_DOWNLOAD: {
-				DownloadManager downloadManager = (DownloadManager) getActivity()
+				DownloadManager downloadManager = (DownloadManager) requireContext()
 						.getSystemService(Context.DOWNLOAD_SERVICE);
-				File directory = FileProvider.getUpdatesDirectory(getActivity());
+				File directory = FileProvider.getUpdatesDirectory(requireContext());
 				boolean started = false;
 				boolean downloadManagerError = false;
 				long clientId = -1;
@@ -367,9 +362,9 @@ public class UpdateFragment extends BaseListFragment {
 					MessageDialog.create(this, getString(R.string.message_update_reminder), true);
 					UpdaterActivity.initUpdater(clientId, ids);
 				} else if (downloadManagerError) {
-					ToastUtils.show(getActivity(), R.string.message_download_manager_error);
+					ToastUtils.show(requireContext(), R.string.message_download_manager_error);
 				} else {
-					ToastUtils.show(getActivity(), R.string.message_no_available_updates);
+					ToastUtils.show(requireContext(), R.string.message_no_available_updates);
 				}
 				return true;
 			}
@@ -417,7 +412,7 @@ public class UpdateFragment extends BaseListFragment {
 			if (extensionName.equals(listItem.extensionName)) {
 				ArrayList<ReadUpdateTask.UpdateItem> updateItems = updateDataMap.get(extensionName);
 				if (listItem.targetIndex != targetIndex) {
-					listItem.setTarget(getActivity(), updateItems, targetIndex);
+					listItem.setTarget(requireContext(), updateItems, targetIndex);
 					onTargetChanged(listItem);
 					adapter.notifyDataSetChanged();
 					updateTitle();
@@ -431,32 +426,37 @@ public class UpdateFragment extends BaseListFragment {
 		private static final String TAG = TargetDialog.class.getName();
 
 		private static final String EXTRA_EXTENSION_NAME = "extensionName";
+		private static final String EXTRA_TITLE = "title";
 		private static final String EXTRA_TARGETS = "targets";
 		private static final String EXTRA_INDEX = "index";
 
 		public TargetDialog() {}
 
-		public TargetDialog(String extensionName, ArrayList<String> targets, int index) {
+		public TargetDialog(String extensionName, String title, ArrayList<String> targets, int index) {
 			Bundle args = new Bundle();
 			args.putString(EXTRA_EXTENSION_NAME, extensionName);
+			args.putString(EXTRA_TITLE, title);
 			args.putStringArrayList(EXTRA_TARGETS, targets);
 			args.putInt(EXTRA_INDEX, index);
 			setArguments(args);
 		}
 
+		@NonNull
 		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState) {
-			int index = getArguments().getInt(EXTRA_INDEX);
-			ArrayList<String> targets = getArguments().getStringArrayList(EXTRA_TARGETS);
-			return new AlertDialog.Builder(getActivity()).setSingleChoiceItems(CommonUtils.toArray(targets,
-					String.class), index, this).setNegativeButton(android.R.string.cancel, null).create();
+		public AlertDialog onCreateDialog(Bundle savedInstanceState) {
+			int index = requireArguments().getInt(EXTRA_INDEX);
+			ArrayList<String> targets = requireArguments().getStringArrayList(EXTRA_TARGETS);
+			return new AlertDialog.Builder(requireContext())
+					.setTitle(requireArguments().getString(EXTRA_TITLE))
+					.setSingleChoiceItems(CommonUtils.toArray(targets, String.class), index, this)
+					.setNegativeButton(android.R.string.cancel, null).create();
 		}
 
 		@Override
 		public void onClick(DialogInterface dialog, int which) {
 			dismiss();
-			((UpdateFragment) getTargetFragment()).onTargetSelected(getArguments()
-					.getString(EXTRA_EXTENSION_NAME), which);
+			((UpdateFragment) getParentFragment())
+					.onTargetSelected(requireArguments().getString(EXTRA_EXTENSION_NAME), which);
 		}
 	}
 
@@ -471,13 +471,11 @@ public class UpdateFragment extends BaseListFragment {
 		return count;
 	}
 
-	public static Intent createUpdateIntent(Context context, ReadUpdateTask.UpdateDataMap updateDataMap) {
-		Bundle args = new Bundle();
-		args.putSerializable(EXTRA_UPDATE_DATA_MAP, updateDataMap);
-		Intent intent = new Intent(context, PreferencesActivity.class);
-		intent.putExtra(PreferencesActivity.EXTRA_SHOW_FRAGMENT, UpdateFragment.class.getName());
-		intent.putExtra(PreferencesActivity.EXTRA_SHOW_FRAGMENT_ARGUMENTS, args);
-		intent.putExtra(PreferencesActivity.EXTRA_NO_HEADERS, true);
-		return intent;
+	public static void modifyUpdateIntent(Intent intent, ReadUpdateTask.UpdateDataMap updateDataMap) {
+		intent.putExtra(EXTRA_UPDATE_DATA_MAP, updateDataMap);
+	}
+
+	public static ReadUpdateTask.UpdateDataMap extractUpdateDataMap(Intent intent) {
+		return (ReadUpdateTask.UpdateDataMap) intent.getSerializableExtra(EXTRA_UPDATE_DATA_MAP);
 	}
 }

@@ -1,21 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<!--
-	Copyright 2014-2017 Fukurou Mishiranu
-
-	Licensed under the Apache License, Version 2.0 (the "License");
-	you may not use this file except in compliance with the License.
-	You may obtain a copy of the License at
-
-	http://www.apache.org/licenses/LICENSE-2.0
-
-	Unless required by applicable law or agreed to in writing, software
-	distributed under the License is distributed on an "AS IS" BASIS,
-	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	See the License for the specific language governing permissions and
-	limitations under the License.
--->
-
 <resources>
 
 	<!-- Text -->
@@ -428,8 +411,6 @@
 	<string name="preference_huge_captcha">Captcha enorme</string>
 	<string name="preference_internal_browser">Navegador interno</string>
 	<string name="preference_internal_browser_sumamry">Abra link no navegador interno</string>
-	<string name="preference_licenses">Licença Open Source</string>
-	<string name="preference_licenses_summary">Detalhes da licença Open Source</string>
 	<string name="preference_load_catalog">Carregar catálogo</string>
 	<string name="preference_load_catalog_summary">Catálogo sempre carregará ao abrir lista de fios</string>
 	<string name="preference_load_thumbnails">Carregar miniaturas</string>

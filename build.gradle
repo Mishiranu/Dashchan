@@ -99,6 +99,7 @@ android {
 		exclude '/lib/*/libswresample.so'
 		exclude '/lib/*/libswscale.so'
 		exclude '/lib/*/libyuv.so'
+		exclude '/META-INF/*.version'
 	}
 
 	lintOptions {
@@ -113,6 +114,8 @@ android {
 
 dependencies {
 	compileOnly 'org.ccil.cowan.tagsoup:tagsoup:1.2.1'
+	implementation 'androidx.fragment:fragment:1.2.5'
+	implementation 'androidx.recyclerview:recyclerview:1.1.0'
 	implementation 'androidx.drawerlayout:drawerlayout:1.1.0'
 	implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.0.0'
 }

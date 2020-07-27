@@ -1,22 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<!--
-	Copyright 2014-2017 Fukurou Mishiranu
-
-	Licensed under the Apache License, Version 2.0 (the "License");
-	you may not use this file except in compliance with the License.
-	You may obtain a copy of the License at
-
-	http://www.apache.org/licenses/LICENSE-2.0
-
-	Unless required by applicable law or agreed to in writing, software
-	distributed under the License is distributed on an "AS IS" BASIS,
-	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	See the License for the specific language governing permissions and
-	limitations under the License.
--->
-
-<resources xmlns:tools="http://schemas.android.com/tools"
+<resources
+	xmlns:tools="http://schemas.android.com/tools"
 	tools:ignore="UnusedQuantity">
 
 	<!-- Text -->
@@ -511,8 +495,9 @@
 	<string name="preference_huge_captcha">Большая капча</string>
 	<string name="preference_internal_browser">Встроенный браузер</string>
 	<string name="preference_internal_browser_sumamry">Открывать внешние ссылки во встроенном браузере</string>
-	<string name="preference_licenses">Лицензии открытого ПО</string>
-	<string name="preference_licenses_summary">Сведения о лицензиях на ПО с открытым исходным кодом</string>
+	<string name="preference_licenses">Лицензии FOSS</string>
+	<string name="preference_licenses_summary">Сведения о лицензиях на свободное ПО и
+		ПО с открытым исходным кодом</string>
 	<string name="preference_load_catalog">Загружать каталог</string>
 	<string name="preference_load_catalog_summary">При открытии списка тредов будет загружен каталог</string>
 	<string name="preference_load_nearest_image">Загружать ближайшее изображение</string>

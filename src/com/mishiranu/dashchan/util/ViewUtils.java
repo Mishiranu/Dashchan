@@ -1,22 +1,4 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.util;
-
-import java.lang.reflect.Field;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -29,6 +11,7 @@ import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.graphics.Outline;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
 import android.os.Build;
 import android.util.TypedValue;
@@ -38,10 +21,10 @@ import android.view.ViewOutlineProvider;
 import android.view.ViewParent;
 import android.widget.TextView;
 import android.widget.Toolbar;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.preference.Preferences;
+import java.lang.reflect.Field;
 
 public class ViewUtils {
 	public static final DialogInterface.OnShowListener ALERT_DIALOG_MESSAGE_SELECTABLE = dialog -> {
@@ -142,7 +125,7 @@ public class ViewUtils {
 					toolbarView = activity.findViewById(id);
 				}
 			}
-			if (toolbarView != null && toolbarView instanceof Toolbar) {
+			if (toolbarView instanceof Toolbar) {
 				Context context = toolbarView.getContext();
 				int[] attrs = {android.R.attr.actionBarStyle, android.R.attr.actionBarSize};
 				TypedArray typedArray = context.obtainStyledAttributes(attrs);
@@ -253,5 +236,15 @@ public class ViewUtils {
 		} else {
 			builder.addAction(icon, title, intent);
 		}
+	}
+
+	public static <V extends View> void setBackgroundPreservePadding(V view, Drawable drawable) {
+		// Setting background drawable may reset padding
+		int left = view.getPaddingLeft();
+		int top = view.getPaddingTop();
+		int right = view.getPaddingRight();
+		int bottom = view.getPaddingBottom();
+		view.setBackground(drawable);
+		view.setPadding(left, top, right, bottom);
 	}
 }

@@ -1,36 +1,7 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.preference.fragment;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.DialogFragment;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
@@ -52,11 +23,11 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
-
+import androidx.annotation.NonNull;
+import androidx.fragment.app.DialogFragment;
 import chan.content.ChanConfiguration;
 import chan.content.ChanManager;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.storage.AutohideStorage;
@@ -65,91 +36,59 @@ import com.mishiranu.dashchan.preference.PreferencesActivity;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.CustomSearchView;
 import com.mishiranu.dashchan.widget.ErrorEditTextSetter;
+import com.mishiranu.dashchan.widget.MenuExpandListener;
 import com.mishiranu.dashchan.widget.ViewFactory;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
-public class AutohideFragment extends BaseListFragment implements PreferencesActivity.OnActivityEventListener {
-	private static final String EXTRA_SEARCH_INPUT = "searchInput";
-
-	private Adapter adapter = new Adapter();
+public class AutohideFragment extends BaseListFragment implements PreferencesActivity.ActivityHandler {
+	private final Adapter adapter = new Adapter();
 	private final ArrayList<AutohideStorage.AutohideItem> items = new ArrayList<>();
 
 	private CustomSearchView searchView;
+	private MenuItem searchMenuItem;
+	private boolean searchExpanded = false;
 
-	private String searchInput;
+	@Override
+	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+
+		searchView = new CustomSearchView(C.API_LOLLIPOP ? new ContextThemeWrapper(requireContext(),
+				R.style.Theme_Special_White) : requireActivity().getActionBar().getThemedContext());
+		searchView.setHint(getString(R.string.action_filter));
+		searchView.setOnChangeListener(adapter::setSearchQuery);
+	}
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
+
 		setHasOptionsMenu(true);
+		requireActivity().setTitle(R.string.preference_header_autohide);
+		requireActivity().getActionBar().setSubtitle(null);
 		setEmptyText(R.string.message_no_rules);
 		items.addAll(AutohideStorage.getInstance().getItems());
 		setListAdapter(adapter);
-
-		searchView = new CustomSearchView(C.API_LOLLIPOP ? new ContextThemeWrapper(getActivity(),
-				R.style.Theme_Special_White) : getActivity().getActionBar().getThemedContext());
-		searchView.setQueryHint(getString(R.string.action_filter));
-		searchView.setOnQueryTextListener(new CustomSearchView.OnQueryTextListener() {
-			@Override
-			public boolean onQueryTextSubmit(String query) {
-				return true;
-			}
-
-			@Override
-			public boolean onQueryTextChange(String newText) {
-				if (searchInput != null) {
-					searchInput = StringUtils.emptyIfNull(newText);
-					adapter.notifyDataSetChanged();
-				}
-				return true;
-			}
-		});
-		searchInput = savedInstanceState != null ? savedInstanceState.getString(EXTRA_SEARCH_INPUT) : null;
-		if (searchInput != null) {
-			searchView.setQuery(searchInput, false);
-		}
 	}
 
 	@Override
-	public void onSaveInstanceState(Bundle outState) {
-		super.onSaveInstanceState(outState);
-		outState.putString(EXTRA_SEARCH_INPUT, searchInput);
-	}
+	public void onDestroyView() {
+		super.onDestroyView();
 
-	@Override
-	public void onAttach(Context context) {
-		super.onAttach(context);
-		Activity activity = getActivity();
-		if (activity instanceof PreferencesActivity) {
-			((PreferencesActivity) activity).addOnActivityEventListener(this);
-		}
-	}
-
-	@Override
-	public void onDetach() {
-		super.onDetach();
-		Activity activity = getActivity();
-		if (activity instanceof PreferencesActivity) {
-			((PreferencesActivity) activity).removeOnActivityEventListener(this);
-		}
+		searchView = null;
+		searchMenuItem = null;
 	}
 
 	@Override
 	public boolean onBackPressed() {
-		return cancelSearch();
-	}
-
-	@Override
-	public boolean onHomePressed() {
-		return cancelSearch();
-	}
-
-	private boolean cancelSearch() {
-		if (searchInput != null) {
-			searchInput = null;
-			searchView.setQuery("", false);
-			getActivity().invalidateOptionsMenu();
-			setEmptyText(R.string.message_no_rules);
-			adapter.notifyDataSetChanged();
+		if (searchMenuItem != null && searchMenuItem.isActionViewExpanded()) {
+			searchMenuItem.collapseActionView();
 			return true;
 		}
 		return false;
@@ -157,39 +96,35 @@ public class AutohideFragment extends BaseListFragment implements PreferencesAct
 
 	private static final int OPTIONS_MENU_NEW_RULE = 0;
 	private static final int OPTIONS_MENU_SEARCH = 1;
-	private static final int OPTIONS_MENU_SEARCH_VIEW = 2;
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		if (searchInput != null) {
-			menu.add(0, OPTIONS_MENU_SEARCH_VIEW, 0, "").setActionView(searchView)
-					.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-		} else {
-			ActionIconSet set = new ActionIconSet(getActivity());
-			menu.add(0, OPTIONS_MENU_NEW_RULE, 0, R.string.action_new_rule).setIcon(set.getId(R.attr.actionAddRule))
-					.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-			menu.add(0, OPTIONS_MENU_SEARCH, 0, R.string.action_filter);
-		}
+	public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+		ActionIconSet set = new ActionIconSet(requireContext());
+		menu.add(0, OPTIONS_MENU_NEW_RULE, 0, R.string.action_new_rule).setIcon(set.getId(R.attr.actionAddRule))
+				.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+		searchMenuItem = menu.add(0, OPTIONS_MENU_SEARCH, 0, R.string.action_filter).setActionView(searchView)
+				.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW)
+				.setOnActionExpandListener(new MenuExpandListener((menuItem, expand) -> {
+					adapter.setSearchQuery("");
+					searchExpanded = expand;
+					onPrepareOptionsMenu(menu);
+					setEmptyText(expand ? "" : getString(R.string.message_no_rules));
+					return true;
+				}));
 		super.onCreateOptionsMenu(menu, inflater);
+	}
+
+	@Override
+	public void onPrepareOptionsMenu(@NonNull Menu menu) {
+		menu.findItem(OPTIONS_MENU_NEW_RULE).setVisible(!searchExpanded);
+		super.onPrepareOptionsMenu(menu);
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-			case android.R.id.home: {
-				if (cancelSearch()) {
-					return true;
-				}
-				break;
-			}
 			case OPTIONS_MENU_NEW_RULE: {
 				editRule(null, -1);
-				break;
-			}
-			case OPTIONS_MENU_SEARCH: {
-				searchInput = "";
-				setEmptyText("");
-				getActivity().invalidateOptionsMenu();
 				break;
 			}
 		}
@@ -199,7 +134,7 @@ public class AutohideFragment extends BaseListFragment implements PreferencesAct
 	private static final int CONTEXT_MENU_REMOVE_RULE = 0;
 
 	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+	public void onCreateContextMenu(@NonNull ContextMenu menu, @NonNull View v, ContextMenu.ContextMenuInfo menuInfo) {
 		super.onCreateContextMenu(menu, v, menuInfo);
 		menu.add(Menu.NONE, CONTEXT_MENU_REMOVE_RULE, 0, R.string.action_remove_rule);
 	}
@@ -227,7 +162,7 @@ public class AutohideFragment extends BaseListFragment implements PreferencesAct
 	private void editRule(AutohideStorage.AutohideItem autohideItem, int index) {
 		AutohideDialog dialog = new AutohideDialog(autohideItem, index);
 		dialog.setTargetFragment(this, 0);
-		dialog.show(getFragmentManager(), AutohideDialog.class.getName());
+		dialog.show(getParentFragmentManager(), AutohideDialog.class.getName());
 	}
 
 	private void onEditComplete(AutohideStorage.AutohideItem autohideItem, int index) {
@@ -246,10 +181,27 @@ public class AutohideFragment extends BaseListFragment implements PreferencesAct
 
 	private class Adapter extends BaseAdapter {
 		private final ArrayList<AutohideStorage.AutohideItem> filteredItems = new ArrayList<>();
+		private String searchQuery = "";
+
+		public void setSearchQuery(String searchQuery) {
+			filteredItems.clear();
+			this.searchQuery = searchQuery;
+			if (!StringUtils.isEmpty(searchQuery)) {
+				Locale locale = Locale.getDefault();
+				for (AutohideStorage.AutohideItem item : items) {
+					if (!StringUtils.isEmpty(item.value) &&
+							item.value.toLowerCase(locale).contains(searchQuery.toLowerCase(locale)) ||
+							item.find(searchQuery) != null) {
+						filteredItems.add(item);
+					}
+				}
+			}
+			notifyDataSetChanged();
+		}
 
 		@Override
 		public AutohideStorage.AutohideItem getItem(int position) {
-			return !StringUtils.isEmpty(searchInput) ? filteredItems.get(position) : items.get(position);
+			return !StringUtils.isEmpty(searchQuery) ? filteredItems.get(position) : items.get(position);
 		}
 
 		@Override
@@ -259,27 +211,7 @@ public class AutohideFragment extends BaseListFragment implements PreferencesAct
 
 		@Override
 		public int getCount() {
-			return !StringUtils.isEmpty(searchInput) ? filteredItems.size() : items.size();
-		}
-
-		@Override
-		public void notifyDataSetChanged() {
-			invalidateFilter();
-			super.notifyDataSetChanged();
-		}
-
-		private void invalidateFilter() {
-			filteredItems.clear();
-			if (!StringUtils.isEmpty(searchInput)) {
-				Locale locale = Locale.getDefault();
-				for (AutohideStorage.AutohideItem item : items) {
-					if (!StringUtils.isEmpty(item.value) &&
-							item.value.toLowerCase(locale).contains(searchInput.toLowerCase(locale)) ||
-							item.find(searchInput) != null) {
-						filteredItems.add(item);
-					}
-				}
-			}
+			return !StringUtils.isEmpty(searchQuery) ? filteredItems.size() : items.size();
 		}
 
 		@SuppressWarnings("UnusedAssignment")
@@ -405,7 +337,8 @@ public class AutohideFragment extends BaseListFragment implements PreferencesAct
 		@Override
 		public void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
-			ScrollView view = (ScrollView) LayoutInflater.from(getActivity()).inflate(R.layout.dialog_autohide, null);
+			ScrollView view = (ScrollView) LayoutInflater.from(requireContext())
+					.inflate(R.layout.dialog_autohide, null);
 			scrollView = view;
 			chanNameSelector = view.findViewById(R.id.chan_name);
 			boardNameEdit = view.findViewById(R.id.board_name);
@@ -431,7 +364,7 @@ public class AutohideFragment extends BaseListFragment implements PreferencesAct
 				autohideItem = savedInstanceState.getParcelable(EXTRA_ITEM);
 			}
 			if (autohideItem == null) {
-				autohideItem = getArguments().getParcelable(EXTRA_ITEM);
+				autohideItem = requireArguments().getParcelable(EXTRA_ITEM);
 			}
 			if (autohideItem != null) {
 				if (autohideItem.chanNames != null) {
@@ -461,15 +394,18 @@ public class AutohideFragment extends BaseListFragment implements PreferencesAct
 		}
 
 		@Override
-		public void onSaveInstanceState(Bundle outState) {
+		public void onSaveInstanceState(@NonNull Bundle outState) {
 			super.onSaveInstanceState(outState);
 			outState.putParcelable(EXTRA_ITEM, readDialogView());
 		}
 
+		@NonNull
 		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState) {
-			AlertDialog dialog = new AlertDialog.Builder(getActivity()).setView(scrollView).setPositiveButton
-					(R.string.action_save, this).setNegativeButton(android.R.string.cancel, null).create();
+		public AlertDialog onCreateDialog(Bundle savedInstanceState) {
+			AlertDialog dialog = new AlertDialog.Builder(requireContext())
+					.setView(scrollView).setPositiveButton(R.string.action_save, this)
+					.setNegativeButton(android.R.string.cancel, null)
+					.create();
 			dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 			return dialog;
 		}
@@ -478,7 +414,7 @@ public class AutohideFragment extends BaseListFragment implements PreferencesAct
 		public void onClick(View v) {
 			MultipleChanDialog dialog = new MultipleChanDialog(new ArrayList<>(selectedChanNames));
 			dialog.setTargetFragment(this, 0);
-			dialog.show(getFragmentManager(), MultipleChanDialog.class.getName());
+			dialog.show(getParentFragmentManager(), MultipleChanDialog.class.getName());
 		}
 
 		private void updateSelectedText() {
@@ -514,7 +450,7 @@ public class AutohideFragment extends BaseListFragment implements PreferencesAct
 		@Override
 		public void onClick(DialogInterface dialog, int which) {
 			((AutohideFragment) getTargetFragment()).onEditComplete(readDialogView(),
-					getArguments().getInt(EXTRA_INDEX));
+					requireArguments().getInt(EXTRA_INDEX));
 		}
 
 		private void onChansSelected(ArrayList<String> selected) {
@@ -531,7 +467,8 @@ public class AutohideFragment extends BaseListFragment implements PreferencesAct
 			Editable value = valueEdit.getEditableText();
 			if (error) {
 				if (errorSpan == null) {
-					errorSpan = new BackgroundColorSpan(ResourceUtils.getColor(getActivity(), R.attr.colorTextError));
+					errorSpan = new BackgroundColorSpan(ResourceUtils.getColor(requireContext(),
+							R.attr.colorTextError));
 				} else {
 					value.removeSpan(errorSpan);
 				}
@@ -653,8 +590,9 @@ public class AutohideFragment extends BaseListFragment implements PreferencesAct
 		private List<String> chanNames;
 		private boolean[] checkedItems;
 
+		@NonNull
 		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState) {
+		public AlertDialog onCreateDialog(Bundle savedInstanceState) {
 			Collection<String> chanNames = ChanManager.getInstance().getAvailableChanNames();
 			this.chanNames = new ArrayList<>(chanNames);
 			String[] items = new String[this.chanNames.size()];
@@ -665,20 +603,22 @@ public class AutohideFragment extends BaseListFragment implements PreferencesAct
 					.getBooleanArray(EXTRA_CHECKED) : null;
 			// size != length means some chans were added or deleted while configuration was changing (very rare case)
 			if (checkedItems == null || this.chanNames.size() != checkedItems.length) {
-				ArrayList<String> selected = getArguments().getStringArrayList(EXTRA_SELECTED);
+				ArrayList<String> selected = requireArguments().getStringArrayList(EXTRA_SELECTED);
 				checkedItems = new boolean[items.length];
 				for (int i = 0; i < this.chanNames.size(); i++) {
 					checkedItems[i] = selected.contains(this.chanNames.get(i));
 				}
 			}
 			this.checkedItems = checkedItems;
-			return new AlertDialog.Builder(getActivity()).setMultiChoiceItems(items, checkedItems, this)
+			return new AlertDialog.Builder(requireContext())
+					.setMultiChoiceItems(items, checkedItems, this)
 					.setNegativeButton(android.R.string.cancel, null)
-					.setPositiveButton(android.R.string.ok, this).create();
+					.setPositiveButton(android.R.string.ok, this)
+					.create();
 		}
 
 		@Override
-		public void onSaveInstanceState(Bundle outState) {
+		public void onSaveInstanceState(@NonNull Bundle outState) {
 			super.onSaveInstanceState(outState);
 			outState.putBooleanArray(EXTRA_CHECKED, checkedItems);
 		}

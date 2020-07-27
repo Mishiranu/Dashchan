@@ -1,24 +1,4 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui.navigator.page;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -33,14 +13,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
-
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import chan.content.ChanPerformer;
 import chan.content.RedirectException;
 import chan.http.HttpValidator;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.ImageLoader;
 import com.mishiranu.dashchan.content.async.ReadThreadsTask;
@@ -62,6 +40,9 @@ import com.mishiranu.dashchan.widget.ListPosition;
 import com.mishiranu.dashchan.widget.ListScroller;
 import com.mishiranu.dashchan.widget.PullableListView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 
 public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesStorage.Observer,
 		ImageLoader.Observer, ReadThreadsTask.Callback, PullableListView.OnBeforeLayoutListener {
@@ -272,7 +253,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 			case FavoritesStorage.ACTION_REMOVE: {
 				PageHolder pageHolder = getPageHolder();
 				if (favoriteItem.equals(pageHolder.chanName, pageHolder.boardName, null)) {
-					updateOptionsMenu(false);
+					updateOptionsMenu();
 				}
 				break;
 			}

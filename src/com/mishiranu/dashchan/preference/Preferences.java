@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Environment;
-import android.preference.PreferenceManager;
 import chan.content.ChanConfiguration;
 import chan.content.ChanManager;
 import chan.util.StringUtils;
@@ -25,8 +24,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 public class Preferences {
-	private static final SharedPreferences PREFERENCES = PreferenceManager
-			.getDefaultSharedPreferences(MainApplication.getInstance());
+	public static final SharedPreferences PREFERENCES = MainApplication.getInstance().getSharedPreferences
+			(MainApplication.getInstance().getPackageName() + "_preferences", Context.MODE_PRIVATE);
 
 	private static final String SPECIAL_CHAN_NAME_GENERAL = "general";
 	private static final String SPECIAL_CHAN_NAME_CLOUDFLARE = "cloudflare";
@@ -115,7 +114,7 @@ public class Preferences {
 				return false;
 			}
 		}
-		return defaultValue != null ? isNetworkAvailable(defaultValue, null) : false;
+		return defaultValue != null && isNetworkAvailable(defaultValue, null);
 	}
 
 	public static final String KEY_ACTIVE_SCROLLBAR = "active_scrollbar";
@@ -460,6 +459,7 @@ public class Preferences {
 			}
 		}
 		if (!absolute) {
+			// TODO Handle deprecation
 			dir = new File(Environment.getExternalStorageDirectory(), path);
 		}
 		dir.mkdirs();
@@ -474,6 +474,7 @@ public class Preferences {
 		VALUE_DOWNLOAD_SUBDIR_MULTIPLE, VALUE_DOWNLOAD_SUBDIR_ENABLED};
 	public static final String DEFAULT_DOWNLOAD_SUBDIR = VALUE_DOWNLOAD_SUBDIR_DISABLED;
 
+	@SuppressWarnings("RedundantIfStatement")
 	public static boolean isDownloadSubdir(boolean multiple) {
 		String value = PREFERENCES.getString(KEY_DOWNLOAD_SUBDIR, DEFAULT_DOWNLOAD_SUBDIR);
 		if (VALUE_DOWNLOAD_SUBDIR_DISABLED.equals(value)) {

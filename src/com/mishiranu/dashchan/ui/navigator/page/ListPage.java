@@ -1,19 +1,3 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui.navigator.page;
 
 import android.app.Activity;
@@ -24,10 +8,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.BaseAdapter;
-
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
-
 import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.util.ResourceUtils;
@@ -40,7 +22,6 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 		BusyScrollListener.Callback {
 	public static final int OPTIONS_MENU_APPEARANCE = -1;
 	public static final int OPTIONS_MENU_SEARCH = -2;
-	public static final int OPTIONS_MENU_SEARCH_VIEW = -3;
 
 	public static final int APPEARANCE_MENU_CHANGE_THEME = 100;
 	public static final int APPEARANCE_MENU_EXPANDED_SCREEN = 101;
@@ -162,9 +143,9 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 		callback.notifyTitleChanged();
 	}
 
-	protected final void updateOptionsMenu(boolean recreate) {
+	protected final void updateOptionsMenu() {
 		if (state == State.RESUMED || state == State.PAUSED) {
-			callback.updateOptionsMenu(recreate);
+			callback.updateOptionsMenu();
 		}
 	}
 
@@ -288,7 +269,7 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 
 	public interface Callback {
 		public void notifyTitleChanged();
-		public void updateOptionsMenu(boolean recreate);
+		public void updateOptionsMenu();
 		public void setCustomSearchView(View view);
 		public void switchView(ViewType viewType, String message);
 		public void showScaleAnimation();
