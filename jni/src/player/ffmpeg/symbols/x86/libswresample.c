@@ -1,0 +1,24 @@
+/* generated from libswresample.so */
+int LIBSWRESAMPLE_2;
+int swr_ffversion;
+void swr_alloc() {};
+void swr_alloc_set_opts() {};
+void swr_close() {};
+void swr_config_frame() {};
+void swr_convert() {};
+void swr_convert_frame() {};
+void swr_drop_output() {};
+void swresample_configuration() {};
+void swresample_license() {};
+void swresample_version() {};
+void swr_free() {};
+void swr_get_class() {};
+void swr_get_delay() {};
+void swr_get_out_samples() {};
+void swr_init() {};
+void swr_inject_silence() {};
+void swr_is_initialized() {};
+void swr_next_pts() {};
+void swr_set_channel_mapping() {};
+void swr_set_compensation() {};
+void swr_set_matrix() {};
