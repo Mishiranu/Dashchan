@@ -489,13 +489,6 @@ public class Preferences {
 		return false;
 	}
 
-	public static final String KEY_DOWNLOAD_YOUTUBE_TITLES = "download_youtube_titles";
-	public static final boolean DEFAULT_DOWNLOAD_YOUTUBE_TITLES = false;
-
-	public static boolean isDownloadYouTubeTitles() {
-		return PREFERENCES.getBoolean(KEY_DOWNLOAD_YOUTUBE_TITLES, DEFAULT_DOWNLOAD_YOUTUBE_TITLES);
-	}
-
 	public static final String KEY_DRAWER_INITIAL_POSITION = "drawer_initial_position";
 	public static final String VALUE_DRAWER_INITIAL_POSITION_CLOSED = "closed";
 	public static final String VALUE_DRAWER_INITIAL_POSITION_FAVORITES = "favorites";

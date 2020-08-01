@@ -1,23 +1,4 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.content.async;
-
-import java.net.HttpURLConnection;
-import java.util.Collections;
 
 import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
@@ -27,10 +8,9 @@ import chan.content.model.Post;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
 import chan.util.CommonUtils;
-
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PostItem;
-import com.mishiranu.dashchan.content.net.YouTubeTitlesReader;
+import java.net.HttpURLConnection;
 
 public class ReadSinglePostTask extends HttpHolderTask<Void, Void, PostItem> {
 	private final Callback callback;
@@ -60,7 +40,6 @@ public class ReadSinglePostTask extends HttpHolderTask<Void, Void, PostItem> {
 			ChanPerformer.ReadSinglePostResult result = performer.safe().onReadSinglePost(new ChanPerformer
 					.ReadSinglePostData(boardName, postNumber, holder));
 			Post post = result != null ? result.post : null;
-			YouTubeTitlesReader.getInstance().readAndApplyIfNecessary(Collections.singletonList(post), holder);
 			startTime = 0L;
 			return new PostItem(post, chanName, boardName);
 		} catch (HttpException e) {

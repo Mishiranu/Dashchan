@@ -66,14 +66,6 @@ android {
 	}
 
 	defaultConfig {
-		def privateProperties = new Properties()
-		if (file('private.properties').exists()) {
-			privateProperties.load(new FileInputStream(file('private.properties')))
-		}
-		def apiKeyGoogle = privateProperties['api.key.google'] ?: ''
-
-		buildConfigField 'String', 'API_KEY_GOOGLE', '"' + apiKeyGoogle + '"'
-
 		buildConfigField 'long', 'BUILD_TIMESTAMP', System.currentTimeMillis() + 'L'
 	}
 

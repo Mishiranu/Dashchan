@@ -448,8 +448,6 @@
 		<item>With multiple downloading</item>
 		<item>Always</item>
 	</string-array>
-	<string name="preference_download_youtube_titles">YouTube video titles</string>
-	<string name="preference_download_youtube_titles_summary">Download and display titles instead of links</string>
 	<string name="preference_drawer_initial_position">Initial position</string>
 	<string-array name="preference_drawer_initial_position_choices">
 		<item>Closed</item>

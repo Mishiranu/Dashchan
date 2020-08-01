@@ -470,8 +470,6 @@
 		<item>При множественной загрузке</item>
 		<item>Всегда</item>
 	</string-array>
-	<string name="preference_download_youtube_titles">Заголовки YouTube видео</string>
-	<string name="preference_download_youtube_titles_summary">Загружать и отображать заголовки вместо ссылок</string>
 	<string name="preference_drawer_initial_position">Начальное положение</string>
 	<string-array name="preference_drawer_initial_position_choices">
 		<item>Закрыта</item>

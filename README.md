@@ -125,16 +125,6 @@ key.alias=%KEY_ALIAS%
 key.password=%KEY_PASSWORD%
 ```
 
-### API Keys
-
-Dashchan uses Google API.
-
-You can generate keys for these APIs and add them to `private.properties` file:
-
-```properties
-api.key.google=%GOOGLE_API_KEY%
-```
-
 ### Building extenions
 
 The source code of extensions is available in the [Dashchan Extensions](https://github.com/Mishiranu/Dashchan-Extensions) repository.

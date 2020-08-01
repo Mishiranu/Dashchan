@@ -1,24 +1,4 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.content.async;
-
-import java.net.HttpURLConnection;
-import java.util.ArrayList;
-import java.util.Collections;
 
 import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
@@ -31,11 +11,11 @@ import chan.http.HttpException;
 import chan.http.HttpHolder;
 import chan.http.HttpValidator;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PostItem;
-import com.mishiranu.dashchan.content.net.YouTubeTitlesReader;
 import com.mishiranu.dashchan.util.Log;
+import java.net.HttpURLConnection;
+import java.util.ArrayList;
 
 public class ReadThreadsTask extends HttpHolderTask<Void, Void, Boolean> {
 	private final Callback callback;
@@ -97,14 +77,6 @@ public class ReadThreadsTask extends HttpHolderTask<Void, Void, Boolean> {
 			int boardSpeed = result != null ? result.boardSpeed : 0;
 			HttpValidator validator = result != null ? result.validator : null;
 			if (threadsArray != null && threadsArray.length > 0) {
-				ArrayList<Post> posts = new ArrayList<>();
-				for (Posts thread : threadsArray) {
-					Post[] postsArray = thread.getPosts();
-					if (postsArray != null) {
-						Collections.addAll(posts, postsArray);
-					}
-				}
-				YouTubeTitlesReader.getInstance().readAndApplyIfNecessary(posts, holder);
 				for (Posts thread : threadsArray) {
 					Post[] postsArray = thread.getPosts();
 					if (postsArray != null && postsArray.length > 0) {

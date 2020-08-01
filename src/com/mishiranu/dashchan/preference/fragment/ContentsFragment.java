@@ -54,8 +54,6 @@ public class ContentsFragment extends PreferenceFragment {
 		addList(Preferences.KEY_LOAD_THUMBNAILS, Preferences.GENERIC_VALUES_NETWORK,
 				Preferences.DEFAULT_LOAD_THUMBNAILS, R.string.preference_load_thumbnails,
 				R.array.preference_generic_network_choices);
-		addCheck(true, Preferences.KEY_DOWNLOAD_YOUTUBE_TITLES, Preferences.DEFAULT_DOWNLOAD_YOUTUBE_TITLES,
-				R.string.preference_download_youtube_titles, R.string.preference_download_youtube_titles_summary);
 
 		addHeader(R.string.preference_category_auto_refreshing);
 		addList(Preferences.KEY_AUTO_REFRESH_MODE, Preferences.VALUES_AUTO_REFRESH_MODE,

@@ -397,8 +397,6 @@
 		<item>Com mais de um</item>
 		<item>Sempre</item>
 	</string-array>
-	<string name="preference_download_youtube_titles">Títulos do YouTube</string>
-	<string name="preference_download_youtube_titles_summary">Mostre o título do YouTube ao invés de links</string>
 	<string name="preference_favorite_on_reply">Adcione o fio ao responder</string>
 	<string name="preference_favorites_order">Ordem de favoritos</string>
 	<string name="preference_hide_personal_data">Esconder bloco de dados pessoais</string>
