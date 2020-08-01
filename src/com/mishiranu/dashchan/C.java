@@ -59,9 +59,6 @@ public class C {
 
 	public static final String DEFAULT_DOWNLOAD_PATH = "/Download/Dashchan/";
 
-	public static final String USER_AGENT = "Mozilla/5.0 (Linux; Android 7.0; wv) " +
-			"AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/52.0.2743.116 Mobile Safari/537.36";
-
 	public static final int HIDDEN_UNKNOWN = 0;
 	public static final int HIDDEN_FALSE = 1;
 	public static final int HIDDEN_TRUE = 2;

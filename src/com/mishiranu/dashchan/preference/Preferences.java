@@ -837,6 +837,16 @@ public class Preferences {
 		PREFERENCES.edit().putBoolean(KEY_SHOW_SPOILERS, showSpoilers).commit();
 	}
 
+	public static final String KEY_USER_AGENT_REFERENCE = "user_agent_reference";
+
+	public static String getUserAgentReference() {
+		return PREFERENCES.getString(KEY_USER_AGENT_REFERENCE, null);
+	}
+
+	public static void setUserAgentReference(String userAgentReference) {
+		PREFERENCES.edit().putString(KEY_USER_AGENT_REFERENCE, userAgentReference).commit();
+	}
+
 	public static final String KEY_TEXT_SCALE = "text_scale";
 	public static final int DEFAULT_TEXT_SCALE = 100;
 
