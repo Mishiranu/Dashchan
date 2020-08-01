@@ -1,36 +1,17 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package chan.content;
 
+import android.net.Uri;
+import chan.annotation.Extendable;
+import chan.annotation.Public;
+import chan.util.CommonUtils;
+import chan.util.StringUtils;
+import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.preference.Preferences;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import android.net.Uri;
-
-import chan.annotation.Extendable;
-import chan.annotation.Public;
-import chan.util.CommonUtils;
-import chan.util.StringUtils;
-
-import com.mishiranu.dashchan.C;
-import com.mishiranu.dashchan.preference.Preferences;
 
 @Extendable
 public class ChanLocator implements ChanManager.Linked {
@@ -464,8 +445,6 @@ public class ChanLocator implements ChanManager.Linked {
 	private static final Pattern VOCAROO_URI = Pattern.compile("(?:https?://)(?:www\\.)?vocaroo\\.com" +
 			"/(?:player\\.swf\\?playMediaID=|i/|media_command\\.php\\?media=)([\\w\\-]{12})");
 
-	private static final Pattern SOUNDCLOUD_URI = Pattern.compile("(?:https?://)soundcloud\\.com/([\\w/_-]*)");
-
 	private boolean isMayContainEmbeddedCode(String text, String what) {
 		return !StringUtils.isEmpty(text) && text.contains(what);
 	}
@@ -509,50 +488,6 @@ public class ChanLocator implements ChanManager.Linked {
 			return null;
 		}
 		return getUniqueGroupValues(text, VOCAROO_URI, 1);
-	}
-
-	public final String getSoundCloudEmbeddedCode(String text) {
-		if (!isMayContainEmbeddedCode(text, "soundcloud")) {
-			return null;
-		}
-		String value = getGroupValue(text, SOUNDCLOUD_URI, 1);
-		if (value != null && value.contains("/")) {
-			return value;
-		}
-		return null;
-	}
-
-	public final String[] getSoundCloudEmbeddedCodes(String text) {
-		if (!isMayContainEmbeddedCode(text, "soundcloud")) {
-			return null;
-		}
-		String[] embeddedCodes = getUniqueGroupValues(text, SOUNDCLOUD_URI, 1);
-		if (embeddedCodes != null) {
-			int deleteCount = 0;
-			for (int i = 0; i < embeddedCodes.length; i++) {
-				if (!embeddedCodes[i].contains("/")) {
-					embeddedCodes[i] = null;
-					deleteCount++;
-				}
-			}
-			if (deleteCount > 0) {
-				int newLength = embeddedCodes.length - deleteCount;
-				if (newLength == 0) {
-					return null;
-				}
-				String[] newEmbeddedCodes = new String[newLength];
-				for (int i = 0, j = 0; i < embeddedCodes.length; i++) {
-					String embeddedCode = embeddedCodes[i];
-					if (embeddedCode != null) {
-						newEmbeddedCodes[j++] = embeddedCode;
-					}
-				}
-				return newEmbeddedCodes;
-			} else {
-				return embeddedCodes;
-			}
-		}
-		return null;
 	}
 
 	@Public

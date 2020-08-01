@@ -1,32 +1,7 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.content.async;
-
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 import android.content.Context;
 import android.net.Uri;
-
 import chan.content.ChanManager;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
@@ -35,11 +10,16 @@ import chan.http.HttpClient;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
 import chan.http.HttpRequest;
-
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.model.ErrorItem;
-import com.mishiranu.dashchan.content.net.EmbeddedManager;
 import com.mishiranu.dashchan.util.IOUtils;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public class ReadFileTask extends HttpHolderTask<String, Long, Boolean> {
 	public interface Callback {
@@ -120,7 +100,6 @@ public class ReadFileTask extends HttpHolderTask<String, Long, Boolean> {
 				}
 			} else {
 				Uri uri = fromUri;
-				uri = EmbeddedManager.getInstance().doReadRealUri(uri, holder);
 				final int connectTimeout = 15000, readTimeout = 15000;
 				byte[] response;
 				String chanName = this.chanName;

@@ -1,40 +1,21 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.content.model;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Locale;
-
 import android.net.Uri;
-
 import chan.content.ChanLocator;
 import chan.content.model.Attachment;
 import chan.content.model.EmbeddedAttachment;
 import chan.content.model.FileAttachment;
 import chan.content.model.Post;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.ImageLoader;
 import com.mishiranu.dashchan.content.net.EmbeddedManager;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.widget.AttachmentView;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Locale;
 
 public abstract class AttachmentItem {
 	private final Binder binder;
@@ -357,7 +338,6 @@ public abstract class AttachmentItem {
 		addCommentAttachmentItems(attachmentItems, postItem, locator, comment, URI_TYPE_YOUTUBE);
 		addCommentAttachmentItems(attachmentItems, postItem, locator, comment, URI_TYPE_VIMEO);
 		addCommentAttachmentItems(attachmentItems, postItem, locator, comment, URI_TYPE_VOCAROO);
-		addCommentAttachmentItems(attachmentItems, postItem, locator, comment, URI_TYPE_SOUNDCLOUD);
 		if (attachmentItems.size() > 0) {
 			attachmentItems.trimToSize();
 			return attachmentItems;
@@ -435,7 +415,6 @@ public abstract class AttachmentItem {
 	private static final int URI_TYPE_YOUTUBE = 0;
 	private static final int URI_TYPE_VIMEO = 1;
 	private static final int URI_TYPE_VOCAROO = 2;
-	private static final int URI_TYPE_SOUNDCLOUD = 3;
 
 	private static EmbeddedAttachmentItem obtainCommentAttachmentItem(Binder binder, ChanLocator locator,
 			String embeddedCode, int uriType) {
@@ -454,11 +433,6 @@ public abstract class AttachmentItem {
 			case URI_TYPE_VOCAROO: {
 				attachmentItem = obtainEmbeddedAttachmentItem(binder, locator,
 						EmbeddedManager.getInstance().obtainVocarooAttachment(locator, embeddedCode));
-				break;
-			}
-			case URI_TYPE_SOUNDCLOUD: {
-				attachmentItem = obtainEmbeddedAttachmentItem(binder, locator,
-						EmbeddedManager.getInstance().obtainSoundCloudAttachment(locator, embeddedCode));
 				break;
 			}
 			default: {
@@ -483,10 +457,6 @@ public abstract class AttachmentItem {
 			}
 			case URI_TYPE_VOCAROO: {
 				embeddedCodes = getAllCodes(locator.getVocarooEmbeddedCodes(comment));
-				break;
-			}
-			case URI_TYPE_SOUNDCLOUD: {
-				embeddedCodes = getAllCodes(locator.getSoundCloudEmbeddedCodes(comment));
 				break;
 			}
 			default: {

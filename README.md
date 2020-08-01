@@ -127,13 +127,12 @@ key.password=%KEY_PASSWORD%
 
 ### API Keys
 
-Dashchan uses Google API and SoundCloud API.
+Dashchan uses Google API.
 
 You can generate keys for these APIs and add them to `private.properties` file:
 
 ```properties
 api.key.google=%GOOGLE_API_KEY%
-api.key.soundcloud=%SOUNDCLOUD_API_KEY%
 ```
 
 ### Building extenions

@@ -71,10 +71,8 @@ android {
 			privateProperties.load(new FileInputStream(file('private.properties')))
 		}
 		def apiKeyGoogle = privateProperties['api.key.google'] ?: ''
-		def apiKeySoundCloud = privateProperties['api.key.soundcloud'] ?: ''
 
 		buildConfigField 'String', 'API_KEY_GOOGLE', '"' + apiKeyGoogle + '"'
-		buildConfigField 'String', 'API_KEY_SOUNDCLOUD', '"' + apiKeySoundCloud + '"'
 
 		buildConfigField 'long', 'BUILD_TIMESTAMP', System.currentTimeMillis() + 'L'
 	}
