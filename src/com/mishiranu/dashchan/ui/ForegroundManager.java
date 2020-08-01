@@ -2,7 +2,6 @@ package com.mishiranu.dashchan.ui;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
@@ -34,7 +33,6 @@ import chan.content.ChanConfiguration;
 import chan.content.ChanManager;
 import chan.content.ChanPerformer;
 import chan.http.HttpException;
-import chan.http.HttpHolder;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.MainApplication;
@@ -65,8 +63,8 @@ public class ForegroundManager implements Handler.Callback {
 	}
 
 	private static final int MESSAGE_REQUIRE_USER_CAPTCHA = 1;
-	private static final int MESSAGE_REQUIRE_ASYNC_CHECK = 2;
-	private static final int MESSAGE_REQUIRE_USER_CHOICE = 3;
+	private static final int MESSAGE_REQUIRE_USER_CHOICE = 2;
+	private static final int MESSAGE_REQUIRE_USER_RECAPTCHA_V2 = 3;
 	private static final int MESSAGE_SHOW_CAPTCHA_INVALID = 4;
 
 	private final Handler handler = new Handler(Looper.getMainLooper(), this);
@@ -86,14 +84,17 @@ public class ForegroundManager implements Handler.Callback {
 		}
 	}
 
-	private static abstract class PendingDataDialogFragment extends DialogFragment {
-		private static final String EXTRA_PENDING_DATA_INDEX = "pendingDataIndex";
+	private static final String EXTRA_PENDING_DATA_INDEX = "pendingDataIndex";
 
-		protected final void fillArguments(Bundle args, int pendingDataIndex) {
+	private interface PendingDataDialogFragment {
+		Bundle requireArguments();
+		void dismiss();
+
+		default void fillArguments(Bundle args, int pendingDataIndex) {
 			args.putInt(EXTRA_PENDING_DATA_INDEX, pendingDataIndex);
 		}
 
-		protected <T extends PendingData> T getPendingData(boolean dismissIfNull) {
+		default <T extends PendingData> T getPendingData(boolean dismissIfNull) {
 			T result = getInstance().getPendingData(requireArguments().getInt(EXTRA_PENDING_DATA_INDEX));
 			if (dismissIfNull && result == null) {
 				dismiss();
@@ -102,8 +103,8 @@ public class ForegroundManager implements Handler.Callback {
 		}
 	}
 
-	public static class CaptchaDialogFragment extends PendingDataDialogFragment implements CaptchaForm.Callback,
-			AsyncManager.Callback, ReadCaptchaTask.Callback {
+	public static class CaptchaDialogFragment extends DialogFragment implements PendingDataDialogFragment,
+			CaptchaForm.Callback, AsyncManager.Callback, ReadCaptchaTask.Callback {
 		private static final String EXTRA_CHAN_NAME = "chanName";
 		private static final String EXTRA_CAPTCHA_TYPE = "captchaType";
 		private static final String EXTRA_REQUIREMENT = "requirement";
@@ -388,159 +389,6 @@ public class ForegroundManager implements Handler.Callback {
 		}
 	}
 
-	public static class CaptchaCheckDialogFragment extends PendingDataDialogFragment implements AsyncManager.Callback {
-		private static final String EXTRA_CAPTCHA_TYPE = "captchaType";
-		private static final String EXTRA_TASK_NAME = "taskName";
-
-		public CaptchaCheckDialogFragment() {}
-
-		public CaptchaCheckDialogFragment(int pendingDataIndex, String captchaType) {
-			Bundle args = new Bundle();
-			fillArguments(args, pendingDataIndex);
-			args.putString(EXTRA_CAPTCHA_TYPE, captchaType);
-			args.putString(EXTRA_TASK_NAME, "check_captcha_" + System.currentTimeMillis());
-			setArguments(args);
-		}
-
-		public void show(FragmentActivity activity) {
-			show(activity.getSupportFragmentManager(), getClass().getName());
-		}
-
-		@Override
-		public void onActivityCreated(Bundle savedInstanceState) {
-			super.onActivityCreated(savedInstanceState);
-			CaptchaPendingData pendingData = getPendingData(true);
-			if (pendingData == null) {
-				return;
-			}
-			Bundle args = requireArguments();
-			AsyncManager.get(this).startTask(args.getString(EXTRA_TASK_NAME), this, null, false);
-		}
-
-		@Override
-		public AsyncManager.Holder onCreateAndExecuteTask(String name, HashMap<String, Object> extra) {
-			CaptchaPendingData pendingData = getPendingData(false);
-			if (pendingData == null) {
-				return null;
-			}
-			String apiKey = pendingData.captchaData.get(ChanPerformer.CaptchaData.API_KEY);
-			String challenge = pendingData.captchaData.get(ChanPerformer.CaptchaData.CHALLENGE);
-			String input = pendingData.captchaData.get(ChanPerformer.CaptchaData.INPUT);
-			CheckCaptchaTask task = new CheckCaptchaTask(requireArguments().getString(EXTRA_CAPTCHA_TYPE),
-					apiKey, challenge, input);
-			task.executeOnExecutor(CheckCaptchaTask.THREAD_POOL_EXECUTOR);
-			return task.getHolder();
-		}
-
-		@Override
-		public void onFinishTaskExecution(String name, AsyncManager.Holder holder) {
-			CaptchaPendingData pendingData = getPendingData(true);
-			if (pendingData == null) {
-				return;
-			}
-			String apiKey = holder.nextArgument();
-			String challenge = holder.nextArgument();
-			String input = holder.nextArgument();
-			ErrorItem errorItem = holder.nextArgument();
-			if (errorItem == null) {
-				pendingData.captchaData.put(ChanPerformer.CaptchaData.API_KEY, apiKey);
-				pendingData.captchaData.put(ChanPerformer.CaptchaData.CHALLENGE, challenge);
-				pendingData.captchaData.put(ChanPerformer.CaptchaData.INPUT, input);
-			} else {
-				pendingData.captchaData = null;
-				ToastUtils.show(requireContext(), errorItem);
-			}
-			finishDialog(pendingData, false);
-			dismiss();
-		}
-
-		@Override
-		public void onRequestTaskCancel(String name, Object task) {
-			((CheckCaptchaTask) task).cancel();
-		}
-
-		private void finishDialog(CaptchaPendingData pendingData, boolean cancel) {
-			AsyncManager.get(this).cancelTask(requireArguments().getString(EXTRA_TASK_NAME), this);
-			if (pendingData != null) {
-				if (cancel) {
-					pendingData.captchaData = null;
-				}
-				synchronized (pendingData) {
-					pendingData.ready = true;
-					pendingData.notifyAll();
-				}
-			}
-		}
-
-		@NonNull
-		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState) {
-			// TODO Handle deprecation
-			ProgressDialog dialog = new ProgressDialog(requireContext());
-			dialog.setMessage(getString(R.string.message_sending));
-			dialog.setCanceledOnTouchOutside(false);
-			return dialog;
-		}
-
-		@Override
-		public void onCancel(@NonNull DialogInterface dialog) {
-			super.onCancel(dialog);
-			CaptchaPendingData pendingData = getPendingData(false);
-			if (pendingData != null) {
-				pendingData.captchaData = null;
-			}
-			finishDialog(pendingData, true);
-		}
-	}
-
-	private static class CheckCaptchaTask extends AsyncManager.SimpleTask<Void, Void, Boolean> {
-		private final HttpHolder holder = new HttpHolder();
-
-		private final String captchaType;
-		private final String apiKey;
-		private final String challenge;
-		private String input;
-
-		private ErrorItem errorItem;
-
-		public CheckCaptchaTask(String captchaType, String apiKey, String challenge, String input) {
-			this.captchaType = captchaType;
-			this.apiKey = apiKey;
-			this.challenge = challenge;
-			this.input = input;
-		}
-
-		@Override
-		protected Boolean doInBackground(Void... params) {
-			if (ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2.equals(captchaType)) {
-				try {
-					input = RecaptchaReader.getInstance().getResponseField2(holder, apiKey,
-							challenge, input, Preferences.isRecaptchaJavascript());
-					return true;
-				} catch (HttpException e) {
-					errorItem = e.getErrorItemAndHandle();
-					return false;
-				} finally {
-					holder.cleanup();
-				}
-			} else {
-				errorItem = new ErrorItem(ErrorItem.TYPE_UNKNOWN);
-				return false;
-			}
-		}
-
-		@Override
-		protected void onStoreResult(AsyncManager.Holder holder, Boolean result) {
-			holder.storeResult(apiKey, challenge, input, errorItem);
-		}
-
-		@Override
-		public void cancel() {
-			cancel(true);
-			holder.interrupt();
-		}
-	}
-
 	private static ImageView appendDescriptionImageView(ViewGroup viewGroup, Bitmap descriptionImage) {
 		ImageView imageView = new ImageView(viewGroup.getContext()) {
 			@Override
@@ -601,7 +449,7 @@ public class ForegroundManager implements Handler.Callback {
 		}
 	}
 
-	public static class ItemChoiceDialogFragment extends PendingDataDialogFragment implements
+	public static class ItemChoiceDialogFragment extends DialogFragment implements PendingDataDialogFragment,
 			DialogInterface.OnClickListener, AdapterView.OnItemClickListener {
 		private static final String EXTRA_SELECTED = "selected";
 		private static final String EXTRA_ITEMS = "items";
@@ -734,8 +582,8 @@ public class ForegroundManager implements Handler.Callback {
 		}
 	}
 
-	public static class ImageChoiceDialogFragment extends PendingDataDialogFragment implements View.OnClickListener,
-			DialogInterface.OnClickListener {
+	public static class ImageChoiceDialogFragment extends DialogFragment implements PendingDataDialogFragment,
+			View.OnClickListener, DialogInterface.OnClickListener {
 		private static final String EXTRA_COLUMNS = "columns";
 		private static final String EXTRA_SELECTED = "selected";
 		private static final String EXTRA_IMAGES = "images";
@@ -929,12 +777,39 @@ public class ForegroundManager implements Handler.Callback {
 		}
 	}
 
+	public static class RecaptchaV2DialogFragment extends RecaptchaReader.V2Dialog
+			implements PendingDataDialogFragment {
+		public RecaptchaV2DialogFragment() {}
+
+		public RecaptchaV2DialogFragment(int pendingDataIndex, String referer, String apiKey, boolean invisible) {
+			super(referer, apiKey, invisible);
+			fillArguments(getArguments(), pendingDataIndex);
+		}
+
+		public void show(FragmentActivity activity) {
+			show(activity.getSupportFragmentManager(), getClass().getName());
+		}
+
+		@Override
+		public void publishResponse(String response, HttpException exception) {
+			RecaptchaV2PendingData pendingData = getPendingData(false);
+			if (pendingData != null) {
+				synchronized (pendingData) {
+					pendingData.response = response;
+					pendingData.exception = exception;
+					pendingData.ready = true;
+					pendingData.notifyAll();
+				}
+			}
+		}
+	}
+
 	@Override
 	public boolean handleMessage(Message msg) {
 		switch (msg.what) {
 			case MESSAGE_REQUIRE_USER_CAPTCHA:
-			case MESSAGE_REQUIRE_ASYNC_CHECK:
-			case MESSAGE_REQUIRE_USER_CHOICE: {
+			case MESSAGE_REQUIRE_USER_CHOICE:
+			case MESSAGE_REQUIRE_USER_RECAPTCHA_V2: {
 				HandlerData handlerData = (HandlerData) msg.obj;
 				FragmentActivity activity = getActivity();
 				if (activity == null) {
@@ -956,12 +831,6 @@ public class ForegroundManager implements Handler.Callback {
 									captchaHandlerData.descriptionResId).show(activity);
 							break;
 						}
-						case MESSAGE_REQUIRE_ASYNC_CHECK: {
-							CaptchaHandlerData captchaHandlerData = (CaptchaHandlerData) handlerData;
-							new CaptchaCheckDialogFragment(captchaHandlerData.pendingDataIndex,
-									captchaHandlerData.captchaType).show(activity);
-							break;
-						}
 						case MESSAGE_REQUIRE_USER_CHOICE: {
 							ChoiceHandlerData choiceHandlerData = (ChoiceHandlerData) handlerData;
 							if (choiceHandlerData.images != null) {
@@ -971,10 +840,15 @@ public class ForegroundManager implements Handler.Callback {
 										choiceHandlerData.multiple).show(activity);
 							} else {
 								new ItemChoiceDialogFragment(handlerData.pendingDataIndex, choiceHandlerData.selected,
-										choiceHandlerData.items,choiceHandlerData.descriptionText,
+										choiceHandlerData.items, choiceHandlerData.descriptionText,
 										choiceHandlerData.descriptionImage, choiceHandlerData.multiple).show(activity);
 							}
 							break;
+						}
+						case MESSAGE_REQUIRE_USER_RECAPTCHA_V2: {
+							RecaptchaV2HandlerData recaptchaV2HandlerData = (RecaptchaV2HandlerData) handlerData;
+							new RecaptchaV2DialogFragment(handlerData.pendingDataIndex, recaptchaV2HandlerData.referer,
+									recaptchaV2HandlerData.apiKey, recaptchaV2HandlerData.invisible).show(activity);
 						}
 					}
 				}
@@ -1038,8 +912,35 @@ public class ForegroundManager implements Handler.Callback {
 		}
 	}
 
+	private static class RecaptchaV2HandlerData extends HandlerData {
+		public final String referer;
+		public final String apiKey;
+		public final boolean invisible;
+
+		private RecaptchaV2HandlerData(int pendingDataIndex, String referer, String apiKey, boolean invisible) {
+			super(pendingDataIndex);
+			this.referer = referer;
+			this.apiKey = apiKey;
+			this.invisible = invisible;
+		}
+	}
+
 	private static abstract class PendingData {
 		public boolean ready = false;
+
+		public boolean await() {
+			synchronized (this) {
+				while (!ready) {
+					try {
+						wait();
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+						return false;
+					}
+				}
+			}
+			return true;
+		}
 	}
 
 	private static class CaptchaPendingData extends PendingData {
@@ -1057,6 +958,26 @@ public class ForegroundManager implements Handler.Callback {
 		public boolean[] result;
 	}
 
+	private static class RecaptchaV2PendingData extends PendingData {
+		public String response;
+		public HttpException exception;
+	}
+
+	private int putPendingData(PendingData pendingData) {
+		int index;
+		synchronized (pendingDataArray) {
+			index = pendingDataStartIndex++;
+			pendingDataArray.put(index, pendingData);
+		}
+		return index;
+	}
+
+	private void removePendingData(int index) {
+		synchronized (pendingDataArray) {
+			pendingDataArray.remove(index);
+		}
+	}
+
 	public ChanPerformer.CaptchaData requireUserCaptcha(ChanManager.Linked linked, String requirement,
 			String boardName, String threadNumber, boolean retry) {
 		ChanConfiguration configuration = ChanConfiguration.get(linked);
@@ -1068,13 +989,8 @@ public class ForegroundManager implements Handler.Callback {
 	public ChanPerformer.CaptchaData requireUserCaptcha(ReadCaptchaTask.CaptchaReader captchaReader,
 			String captchaType, String requirement, String chanName, String boardName, String threadNumber,
 			int descriptionResId, boolean retry) {
-		CaptchaPendingData pendingData;
-		int pendingDataIndex;
-		synchronized (pendingDataArray) {
-			pendingData = new CaptchaPendingData(captchaReader);
-			pendingDataIndex = pendingDataStartIndex++;
-			pendingDataArray.put(pendingDataIndex, pendingData);
-		}
+		CaptchaPendingData pendingData = new CaptchaPendingData(captchaReader);
+		int pendingDataIndex = putPendingData(pendingData);
 		try {
 			CaptchaHandlerData handlerData = new CaptchaHandlerData(pendingDataIndex, chanName, captchaType,
 					requirement, boardName, threadNumber, descriptionResId);
@@ -1082,51 +998,23 @@ public class ForegroundManager implements Handler.Callback {
 			if (retry) {
 				handler.sendEmptyMessage(MESSAGE_SHOW_CAPTCHA_INVALID);
 			}
-			synchronized (pendingData) {
-				while (!pendingData.ready) {
-					try {
-						pendingData.wait();
-					} catch (InterruptedException e) {
-						Thread.currentThread().interrupt();
-						return null;
-					}
-				}
+			if (!pendingData.await()) {
+				return null;
 			}
 			ChanPerformer.CaptchaData captchaData = pendingData.captchaData;
 			if (captchaData != null) {
 				String workCaptchaType = pendingData.loadedCaptchaType != null
 						? pendingData.loadedCaptchaType : captchaType;
 				String apiKey = captchaData.get(ChanPerformer.CaptchaData.API_KEY);
-				if (apiKey != null && ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2.equals(workCaptchaType)) {
-					String recaptchaResponse = captchaData.get(ReadCaptchaTask.RECAPTCHA_SKIP_RESPONSE);
-					if (recaptchaResponse == null) {
-						pendingData.ready = false;
-						handler.obtainMessage(MESSAGE_REQUIRE_ASYNC_CHECK, handlerData).sendToTarget();
-						synchronized (pendingData) {
-							while (!pendingData.ready) {
-								try {
-									pendingData.wait();
-								} catch (InterruptedException e) {
-									Thread.currentThread().interrupt();
-									return null;
-								}
-							}
-						}
-						if (pendingData.captchaData == null) {
-							// Error or canceled, try again
-							return requireUserCaptcha(captchaReader, captchaType, requirement,
-									chanName, boardName, threadNumber, descriptionResId, false);
-						}
-					} else {
-						captchaData.put(ChanPerformer.CaptchaData.INPUT, recaptchaResponse);
-					}
+				if (apiKey != null && (ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2.equals(workCaptchaType) ||
+						ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_INVISIBLE.equals(workCaptchaType))) {
+					captchaData.put(ChanPerformer.CaptchaData.INPUT,
+							captchaData.get(ReadCaptchaTask.RECAPTCHA_SKIP_RESPONSE));
 				}
 			}
 			return captchaData;
 		} finally {
-			synchronized (pendingDataArray) {
-				pendingDataArray.remove(pendingDataIndex);
-			}
+			removePendingData(pendingDataIndex);
 		}
 	}
 
@@ -1179,32 +1067,34 @@ public class ForegroundManager implements Handler.Callback {
 		if (!imageChoice && items == null) {
 			throw new NullPointerException("Items array is null");
 		}
-		ChoicePendingData pendingData;
-		int pendingDataIndex;
-		synchronized (pendingDataArray) {
-			pendingData = new ChoicePendingData();
-			pendingDataIndex = pendingDataStartIndex++;
-			pendingDataArray.put(pendingDataIndex, pendingData);
-		}
+		ChoicePendingData pendingData = new ChoicePendingData();
+		int pendingDataIndex = putPendingData(pendingData);
 		try {
 			ChoiceHandlerData handlerData = new ChoiceHandlerData(pendingDataIndex, columns, selected, images, items,
 					descriptionText, descriptionImage, multiple);
 			handler.obtainMessage(MESSAGE_REQUIRE_USER_CHOICE, handlerData).sendToTarget();
-			synchronized (pendingData) {
-				while (!pendingData.ready) {
-					try {
-						pendingData.wait();
-					} catch (InterruptedException e) {
-						Thread.currentThread().interrupt();
-						return null;
-					}
-				}
-			}
-			return pendingData.result;
+			return pendingData.await() ? pendingData.result : null;
 		} finally {
-			synchronized (pendingDataArray) {
-				pendingDataArray.remove(pendingDataIndex);
+			removePendingData(pendingDataIndex);
+		}
+	}
+
+	public String requireUserRecaptchaV2(String referer, String apiKey, boolean invisible) throws HttpException {
+		RecaptchaV2PendingData pendingData = new RecaptchaV2PendingData();
+		int pendingDataIndex = putPendingData(pendingData);
+		try {
+			RecaptchaV2HandlerData handlerData = new RecaptchaV2HandlerData(pendingDataIndex,
+					referer, apiKey, invisible);
+			handler.obtainMessage(MESSAGE_REQUIRE_USER_RECAPTCHA_V2, handlerData).sendToTarget();
+			if (!pendingData.await()) {
+				return null;
 			}
+			if (pendingData.exception != null) {
+				throw pendingData.exception;
+			}
+			return pendingData.response;
+		} finally {
+			removePendingData(pendingDataIndex);
 		}
 	}
 

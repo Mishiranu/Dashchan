@@ -2,7 +2,6 @@
 !/.gitattributes
 !/.gitignore
 !/AndroidManifest.xml
-!/assets
 !/build.gradle
 !/COPYING
 !/gradle

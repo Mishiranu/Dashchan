@@ -1,31 +1,12 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.content.async;
 
 import android.graphics.Bitmap;
-import android.util.Pair;
-
 import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
-
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.net.CaptchaServiceReader;
 import com.mishiranu.dashchan.content.net.RecaptchaReader;
@@ -119,7 +100,7 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 		validity = result.validity;
 		String captchaType = loadedCaptchaType != null ? loadedCaptchaType : this.captchaType;
 		boolean recaptcha2 = ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2.equals(captchaType);
-		boolean recaptcha1 = ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_1.equals(captchaType);
+		boolean recaptcha2Invisible = ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_INVISIBLE.equals(captchaType);
 		boolean mailru = ChanConfiguration.CAPTCHA_TYPE_MAILRU.equals(captchaType);
 		if (captchaState != ChanPerformer.CaptchaState.CAPTCHA) {
 			return true;
@@ -127,38 +108,18 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 		if (thread.isInterrupted()) {
 			return null;
 		}
-		if (mayShowLoadButton && recaptcha2) {
-			captchaState = ChanPerformer.CaptchaState.NEED_LOAD;
-			return true;
-		}
-		if (recaptcha2 || recaptcha1) {
+		if (recaptcha2 || recaptcha2Invisible) {
+			if (mayShowLoadButton) {
+				captchaState = ChanPerformer.CaptchaState.NEED_LOAD;
+				return true;
+			}
 			String apiKey = captchaData.get(ChanPerformer.CaptchaData.API_KEY);
 			String referer = captchaData.get(ChanPerformer.CaptchaData.REFERER);
 			try {
 				RecaptchaReader recaptchaReader = RecaptchaReader.getInstance();
-				String challenge;
-				if (recaptcha2) {
-					challenge = recaptchaReader.getChallenge2(holder, apiKey, referer,
-							Preferences.isRecaptchaJavascript());
-				} else {
-					challenge = recaptchaReader.getChallenge1(holder, apiKey,
-							Preferences.isRecaptchaJavascript());
-				}
-				captchaData.put(ChanPerformer.CaptchaData.CHALLENGE, challenge);
-				if (thread.isInterrupted()) {
-					return null;
-				}
-				Pair<Bitmap, Boolean> pair;
-				if (recaptcha2) {
-					pair = recaptchaReader.getImage2(holder, apiKey, challenge, null, true);
-				} else {
-					pair = recaptchaReader.getImage1(holder, challenge, true);
-				}
-				image = pair.first;
-				blackAndWhite = pair.second;
-				return true;
-			} catch (RecaptchaReader.SkipException e) {
-				captchaData.put(RECAPTCHA_SKIP_RESPONSE, e.getResponse());
+				String response = recaptchaReader.getResponse2(holder, apiKey, recaptcha2Invisible, referer,
+						Preferences.isRecaptchaJavascript());
+				captchaData.put(RECAPTCHA_SKIP_RESPONSE, response);
 				captchaState = ChanPerformer.CaptchaState.SKIP;
 				return true;
 			} catch (RecaptchaReader.CancelException e) {

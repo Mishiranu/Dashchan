@@ -1,34 +1,9 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package chan.content;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
 
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.util.Pair;
-
+import androidx.annotation.NonNull;
 import chan.annotation.Extendable;
 import chan.annotation.Public;
 import chan.content.model.Board;
@@ -46,15 +21,22 @@ import chan.http.HttpValidator;
 import chan.http.MultipartEntity;
 import chan.util.CommonUtils;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.ui.ForegroundManager;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
 @Extendable
 public class ChanPerformer implements ChanManager.Linked {
-	private String chanName;
+	private final String chanName;
 
 	public static final ChanManager.Initializer INITIALIZER = new ChanManager.Initializer();
 
@@ -85,87 +67,102 @@ public class ChanPerformer implements ChanManager.Linked {
 		return manager.getPerformer(manager.getLinkedChanName(object), false);
 	}
 
+	@SuppressWarnings("RedundantThrows")
 	@Extendable
 	protected ReadThreadsResult onReadThreads(ReadThreadsData data) throws HttpException, InvalidResponseException,
 			RedirectException {
 		throw new UnsupportedOperationException();
 	}
 
+	@SuppressWarnings("RedundantThrows")
 	@Extendable
 	protected ReadPostsResult onReadPosts(ReadPostsData data) throws HttpException, InvalidResponseException,
 			RedirectException, ThreadRedirectException {
 		throw new UnsupportedOperationException();
 	}
 
+	@SuppressWarnings("RedundantThrows")
 	@Extendable
 	protected ReadSinglePostResult onReadSinglePost(ReadSinglePostData data) throws HttpException,
 			InvalidResponseException {
 		throw new UnsupportedOperationException();
 	}
 
+	@SuppressWarnings("RedundantThrows")
 	@Extendable
 	protected ReadSearchPostsResult onReadSearchPosts(ReadSearchPostsData data) throws HttpException,
 			InvalidResponseException {
 		throw new UnsupportedOperationException();
 	}
 
+	@SuppressWarnings("RedundantThrows")
 	@Extendable
 	protected ReadBoardsResult onReadBoards(ReadBoardsData data) throws HttpException, InvalidResponseException {
 		throw new UnsupportedOperationException();
 	}
 
+	@SuppressWarnings("RedundantThrows")
 	@Extendable
 	protected ReadUserBoardsResult onReadUserBoards(ReadUserBoardsData data) throws HttpException,
 			InvalidResponseException {
 		throw new UnsupportedOperationException();
 	}
 
+	@SuppressWarnings("RedundantThrows")
 	@Extendable
 	protected ReadThreadSummariesResult onReadThreadSummaries(ReadThreadSummariesData data) throws HttpException,
 			InvalidResponseException {
 		throw new UnsupportedOperationException();
 	}
 
+	@SuppressWarnings("RedundantThrows")
 	@Extendable
 	protected ReadPostsCountResult onReadPostsCount(ReadPostsCountData data) throws HttpException,
 			InvalidResponseException {
 		throw new UnsupportedOperationException();
 	}
 
+	@SuppressWarnings("RedundantThrows")
 	@Extendable
 	protected ReadContentResult onReadContent(ReadContentData data) throws HttpException, InvalidResponseException {
 		return new ReadContentResult(new HttpRequest(data.uri, data.holder, data).read());
 	}
 
+	@SuppressWarnings("RedundantThrows")
 	@Extendable
 	protected CheckAuthorizationResult onCheckAuthorization(CheckAuthorizationData data) throws HttpException,
 			InvalidResponseException {
 		throw new UnsupportedOperationException();
 	}
 
+	@SuppressWarnings("RedundantThrows")
 	@Extendable
 	protected ReadCaptchaResult onReadCaptcha(ReadCaptchaData data) throws HttpException, InvalidResponseException {
 		return new ReadCaptchaResult(CaptchaState.SKIP, null);
 	}
 
+	@SuppressWarnings("RedundantThrows")
 	@Extendable
 	protected SendPostResult onSendPost(SendPostData data) throws HttpException, ApiException,
 			InvalidResponseException {
 		throw new UnsupportedOperationException();
 	}
 
+	@SuppressWarnings("RedundantThrows")
 	@Extendable
 	protected SendDeletePostsResult onSendDeletePosts(SendDeletePostsData data) throws HttpException, ApiException,
 			InvalidResponseException {
 		throw new UnsupportedOperationException();
 	}
 
+	@SuppressWarnings("RedundantThrows")
 	@Extendable
 	protected SendReportPostsResult onSendReportPosts(SendReportPostsData data) throws HttpException, ApiException,
 			InvalidResponseException {
 		throw new UnsupportedOperationException();
 	}
 
+	@SuppressWarnings("RedundantThrows")
 	@Extendable
 	protected SendAddToArchiveResult onSendAddToArchive(SendAddToArchiveData data) throws HttpException, ApiException,
 			InvalidResponseException {
@@ -854,12 +851,12 @@ public class ChanPerformer implements ChanManager.Linked {
 				}
 
 				@Override
-				public int read(byte[] buffer) throws IOException {
+				public int read(@NonNull byte[] buffer) throws IOException {
 					return read(buffer, 0, buffer.length);
 				}
 
 				@Override
-				public int read(byte[] buffer, int byteOffset, int byteCount) throws IOException {
+				public int read(@NonNull byte[] buffer, int byteOffset, int byteCount) throws IOException {
 					int result = inputStream.read(buffer, byteOffset, byteCount);
 					if (result > 0) {
 						notify(result);

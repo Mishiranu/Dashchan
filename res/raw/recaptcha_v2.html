@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<style>
+
+div {
+	left: 0 !important;
+	top: 0 !important;
+	right: 0 !important;
+	bottom: 0 !important;
+	margin: 0 !important;
+}
+
+body {
+	margin: 0;
+	position: fixed;
+	top: 0;
+}
+
+.grecaptcha-badge {
+	visibility: hidden;
+}
+
+</style>
+
+<script type="text/javascript">
+
+function onLoad() {
+	var invisible = __REPLACE_INVISIBLE__
+	var recaptchaObject = {
+		sitekey: '__REPLACE_API_KEY__',
+		size: invisible ? 'invisible' : 'normal',
+		callback: function (response) {
+			jsi.onResponse(response || '')
+		}
+	}
+	recaptchaObject['error-callback'] = function () {
+		jsi.onError()
+	}
+	grecaptcha.render('recaptcha', recaptchaObject)
+	if (invisible) {
+		grecaptcha.execute()
+	}
+}
+
+function isElementVisible(element) {
+	if (element) {
+		var style = getComputedStyle(element)
+		return style && style.visibility != 'hidden' && style.display != 'none' &&
+			isElementVisible(element.parentElement)
+	} else {
+		return true
+	}
+}
+
+function getWindowSize() {
+	var frames = document.getElementsByTagName('iframe')
+	var width = 0
+	var height = 0
+	for (var i = 0; frames && i < frames.length; i++) {
+		var frame = frames[i]
+		if (isElementVisible(frame)) {
+			var frameWidth = frame.offsetWidth
+			var frameHeight = frame.offsetHeight
+			if (frameWidth > 300) {
+				frameWidth = 300
+			}
+			if (frameHeight > height) {
+				width = frameWidth
+				height = frameHeight
+			}
+		}
+	}
+	return { width: width, height: height }
+}
+
+(function () {
+	var lastWidth = 0
+	var lastHeight = 0
+	var MutationObserver = window.MutationObserver || window.WebKitMutationObserver
+	new MutationObserver(function (mutations, observer) {
+		var size = getWindowSize()
+		if (size.width != lastWidth || size.height != lastHeight) {
+			lastWidth = size.width
+			lastHeight = size.height
+			jsi.onSizeChanged(size.width, size.height)
+		}
+	}).observe(document, { subtree: true, childList: true, attributes: true })
+})()
+
+</script>
+
+</head>
+<body>
+
+<script src="https://www.google.com/recaptcha/api.js?onload=onLoad&render=explicit&hl=en" async defer></script>
+<div id="recaptcha"></div>
+
+</body>
+</html>

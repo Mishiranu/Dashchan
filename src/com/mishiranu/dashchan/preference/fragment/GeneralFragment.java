@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 import androidx.annotation.NonNull;
 import chan.content.ChanManager;
+import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.LocaleManager;
 import com.mishiranu.dashchan.preference.Preferences;
@@ -41,10 +42,12 @@ public class GeneralFragment extends PreferenceFragment {
 		addCheck(true, Preferences.KEY_INTERNAL_BROWSER, Preferences.DEFAULT_INTERNAL_BROWSER,
 				R.string.preference_internal_browser, R.string.preference_internal_browser_sumamry);
 
-		addHeader(R.string.preference_category_services);
-		addCheck(true, Preferences.KEY_RECAPTCHA_JAVASCRIPT,
-				Preferences.DEFAULT_RECAPTCHA_JAVASCRIPT, R.string.preference_recaptcha_javascript,
-				R.string.preference_recaptcha_javascript_summary);
+		if (C.API_KITKAT) {
+			addHeader(R.string.preference_category_services);
+			addCheck(true, Preferences.KEY_RECAPTCHA_JAVASCRIPT,
+					Preferences.DEFAULT_RECAPTCHA_JAVASCRIPT, R.string.preference_recaptcha_javascript,
+					R.string.preference_recaptcha_javascript_summary);
+		}
 
 		addHeader(R.string.preference_category_connection);
 		addButton(0, R.string.preference_use_https_warning).setSelectable(false);

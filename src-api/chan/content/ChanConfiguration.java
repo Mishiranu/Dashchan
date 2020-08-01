@@ -1,21 +1,16 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package chan.content;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.res.Resources;
+import android.util.Pair;
+import chan.annotation.Extendable;
+import chan.annotation.Public;
+import chan.content.model.BoardCategory;
+import chan.util.StringUtils;
+import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.content.MainApplication;
+import com.mishiranu.dashchan.preference.Preferences;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,24 +21,9 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.res.Resources;
-import android.util.Pair;
-
-import chan.annotation.Extendable;
-import chan.annotation.Public;
-import chan.content.model.BoardCategory;
-import chan.util.StringUtils;
-
-import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.content.MainApplication;
-import com.mishiranu.dashchan.preference.Preferences;
 
 @Extendable
 public class ChanConfiguration implements ChanManager.Linked {
@@ -67,68 +47,6 @@ public class ChanConfiguration implements ChanManager.Linked {
 			resources = holder.resources;
 			preferences = MainApplication.getInstance().getSharedPreferences("chan." + chanName,
 					Context.MODE_PRIVATE);
-
-			// TODO Remove after a while
-			// Added: 12.04.17 05:18
-			// Update cookies data format
-			JSONObject cookiesObject;
-			try {
-				String data = get(null, KEY_COOKIES, null);
-				cookiesObject = new JSONObject(data);
-			} catch (Exception e) {
-				cookiesObject = null;
-			}
-			if (cookiesObject != null && cookiesObject.length() > 0) {
-				SharedPreferences.Editor editor = null;
-				boolean changed = false;
-				for (String key : preferences.getAll().keySet()) {
-					if (key.startsWith("cookie_")) {
-						String cookie = key.substring(7);
-						String value = preferences.getString(key, null);
-						if (editor == null) {
-							editor = preferences.edit();
-						}
-						editor.remove(key);
-						String displayName = cookiesObject.optString(cookie, null);
-						JSONObject cookieObject = new JSONObject();
-						try {
-							cookieObject.put(KEY_COOKIE_VALUE, value);
-							if (!StringUtils.isEmptyOrWhitespace(displayName)) {
-								cookieObject.put(KEY_COOKIE_DISPLAY_NAME, displayName);
-							}
-							cookiesObject.put(cookie, cookieObject);
-						} catch (JSONException e) {
-							cookiesObject.remove(cookie);
-						}
-						changed = true;
-					}
-				}
-				ArrayList<String> removeCookies = null;
-				for (Iterator<String> keys = cookiesObject.keys(); keys.hasNext();) {
-					String cookie = keys.next();
-					JSONObject jsonObject = cookiesObject.optJSONObject(cookie);
-					if (jsonObject == null) {
-						// Remove old-formatted cookie
-						if (removeCookies == null) {
-							removeCookies = new ArrayList<>();
-						}
-						removeCookies.add(cookie);
-					}
-				}
-				if (removeCookies != null) {
-					for (String cookie : removeCookies) {
-						cookiesObject.remove(cookie);
-					}
-					changed = true;
-				}
-				if (editor != null) {
-					editor.commit();
-				}
-				if (changed) {
-					set(null, KEY_COOKIES, cookiesObject.toString());
-					commit();
-				}
-			}
 		} else {
 			chanName = null;
 			resources = null;
@@ -168,8 +86,13 @@ public class ChanConfiguration implements ChanManager.Linked {
 	public static final int PAGES_COUNT_INVALID = Integer.MAX_VALUE;
 	public static final int BUMP_LIMIT_INVALID = Integer.MAX_VALUE;
 
+	// TODO CHAN
+	// Remove this field after updating
+	// allchan arhivach cablesix dvach fourchan meguca ronery sevenchan tumbach
+	// Added: 28.07.20 22:23
 	@Public public static final String CAPTCHA_TYPE_RECAPTCHA_1 = "recaptcha_1";
 	@Public public static final String CAPTCHA_TYPE_RECAPTCHA_2 = "recaptcha_2";
+	@Public public static final String CAPTCHA_TYPE_RECAPTCHA_2_INVISIBLE = "recaptcha_2_invisible";
 	@Public public static final String CAPTCHA_TYPE_MAILRU = "mailru";
 
 	private static final String KEY_COOKIES = "cookies";
@@ -671,11 +594,7 @@ public class ChanConfiguration implements ChanManager.Linked {
 				return pagesCount;
 			}
 		}
-		int pagesCount = get(boardName, KEY_PAGES_COUNT, PAGES_COUNT_INVALID);
-		if (pagesCount != PAGES_COUNT_INVALID) {
-			return pagesCount;
-		}
-		return PAGES_COUNT_INVALID;
+		return get(boardName, KEY_PAGES_COUNT, PAGES_COUNT_INVALID);
 	}
 
 	private LinkedHashSet<String> supportedCaptchaTypes;
@@ -685,6 +604,10 @@ public class ChanConfiguration implements ChanManager.Linked {
 		checkInit();
 		if (captchaType == null) {
 			throw new NullPointerException();
+		}
+		if (CAPTCHA_TYPE_RECAPTCHA_1.equals(captchaType)) {
+			// Unsupported captcha type
+			return;
 		}
 		if (supportedCaptchaTypes == null) {
 			supportedCaptchaTypes = new LinkedHashSet<>();
@@ -721,15 +644,18 @@ public class ChanConfiguration implements ChanManager.Linked {
 
 	private Captcha obtainCaptchaConfigurationSafe(String captchaType) {
 		if (CAPTCHA_TYPE_RECAPTCHA_1.equals(captchaType)) {
-			Captcha captcha = new Captcha();
-			captcha.title = "reCAPTCHA";
-			captcha.input = Captcha.Input.LATIN;
-			captcha.validity = Captcha.Validity.LONG_LIFETIME;
-			return captcha;
+			// Unsupported captcha type
+			return null;
 		} else if (CAPTCHA_TYPE_RECAPTCHA_2.equals(captchaType)) {
 			Captcha captcha = new Captcha();
 			captcha.title = "reCAPTCHA 2";
 			captcha.input = Captcha.Input.LATIN;
+			captcha.validity = Captcha.Validity.SHORT_LIFETIME;
+			return captcha;
+		} else if (CAPTCHA_TYPE_RECAPTCHA_2_INVISIBLE.equals(captchaType)) {
+			Captcha captcha = new Captcha();
+			captcha.title = "reCAPTCHA 2 Invisible";
+			captcha.input = Captcha.Input.ALL;
 			captcha.validity = Captcha.Validity.SHORT_LIFETIME;
 			return captcha;
 		} else if (CAPTCHA_TYPE_MAILRU.equals(captchaType)) {
@@ -932,7 +858,7 @@ public class ChanConfiguration implements ChanManager.Linked {
 				JSONObject jsonObject = cookiesObject.optJSONObject(cookie);
 				String value = jsonObject != null ? jsonObject.optString(KEY_COOKIE_VALUE, "") : "";
 				String displayName = jsonObject != null ? jsonObject.optString(KEY_COOKIE_DISPLAY_NAME, null) : null;
-				boolean blocked = jsonObject != null ? jsonObject.optBoolean(KEY_COOKIE_BLOCKED, false) : false;
+				boolean blocked = jsonObject != null && jsonObject.optBoolean(KEY_COOKIE_BLOCKED, false);
 				if (StringUtils.isEmptyOrWhitespace(displayName)) {
 					displayName = cookie;
 				}
