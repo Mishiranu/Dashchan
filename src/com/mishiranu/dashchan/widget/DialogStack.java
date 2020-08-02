@@ -1,25 +1,6 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.widget;
 
-import java.lang.ref.WeakReference;
-import java.util.Iterator;
-import java.util.LinkedList;
-
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Dialog;
 import android.content.Context;
@@ -27,6 +8,9 @@ import android.content.DialogInterface;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.InsetDrawable;
 import android.os.Build;
 import android.view.ActionMode;
 import android.view.ContextThemeWrapper;
@@ -39,11 +23,15 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
-
+import androidx.annotation.NonNull;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
+import java.lang.ref.WeakReference;
+import java.util.Iterator;
+import java.util.LinkedList;
 
 public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchListener, Iterable<View> {
 	private final Context context;
@@ -129,6 +117,7 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 		}
 	}
 
+	@SuppressLint("ClickableViewAccessibility")
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
 		// Sometimes I get touch event even if dialog was closed
@@ -335,20 +324,36 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 
 		@Override
 		public boolean onInterceptTouchEvent(MotionEvent ev) {
-			return active ? super.onInterceptTouchEvent(ev) : true;
+			return !active || super.onInterceptTouchEvent(ev);
 		}
 
+		@SuppressLint("ClickableViewAccessibility")
 		@Override
 		public boolean onTouchEvent(MotionEvent event) {
-			return active ? true : super.onTouchEvent(event);
+			return active || super.onTouchEvent(event);
 		}
 
 		@Override
 		public void draw(Canvas canvas) {
 			super.draw(canvas);
+
 			if (!active && !background) {
-				canvas.drawRect(getPaddingLeft(), getPaddingTop(), getWidth() - getPaddingRight(),
-						getHeight() - getPaddingBottom(), paint);
+				Drawable background = getBackground();
+				while (background instanceof InsetDrawable) {
+					background = ((InsetDrawable) background).getDrawable();
+				}
+				float radius = 0f;
+				if (background instanceof GradientDrawable) {
+					GradientDrawable roundRectDrawable = (GradientDrawable) background;
+					radius = GraphicsUtils.getCornerRadius(roundRectDrawable);
+				}
+				if (radius > 0f) {
+					canvas.drawRoundRect(getPaddingLeft(), getPaddingTop(), getWidth() - getPaddingRight(),
+							getHeight() - getPaddingBottom(), radius, radius, paint);
+				} else {
+					canvas.drawRect(getPaddingLeft(), getPaddingTop(), getWidth() - getPaddingRight(),
+							getHeight() - getPaddingBottom(), paint);
+				}
 			}
 		}
 	}
@@ -359,6 +364,7 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 		public void onRestore(View view);
 	}
 
+	@NonNull
 	@Override
 	public Iterator<View> iterator() {
 		return new ViewIterator();

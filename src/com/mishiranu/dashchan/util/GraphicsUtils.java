@@ -1,27 +1,4 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.util;
-
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Random;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -33,10 +10,18 @@ import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.util.Pair;
 import android.view.Gravity;
-
+import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.content.model.FileHolder;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Random;
 
 public class GraphicsUtils {
 	public static final Typeface TYPEFACE_MEDIUM = newTypeface("sans-serif-medium");
@@ -136,6 +121,47 @@ public class GraphicsUtils {
 		}
 	}
 
+	private static final Field FIELD_GRADIENT_STATE;
+	private static final Field FIELD_GRADIENT_STATE_RADIUS;
+
+	static {
+		Field gradientStateField = null;
+		Field gradientStateRadiusField = null;
+		if (!C.API_NOUGAT) {
+			Field field;
+			try {
+				field = GradientDrawable.class.getDeclaredField("mGradientState");
+				field.setAccessible(true);
+				gradientStateField = field;
+				field = field.getType().getDeclaredField("mRadius");
+				field.setAccessible(true);
+				gradientStateRadiusField = field;
+			} catch (Exception e) {
+				e.printStackTrace();
+				gradientStateField = null;
+				gradientStateRadiusField = null;
+			}
+		}
+		FIELD_GRADIENT_STATE = gradientStateField;
+		FIELD_GRADIENT_STATE_RADIUS = gradientStateRadiusField;
+	}
+
+	public static float getCornerRadius(GradientDrawable drawable) {
+		if (C.API_NOUGAT) {
+			return drawable.getCornerRadius();
+		} else if (FIELD_GRADIENT_STATE != null && FIELD_GRADIENT_STATE_RADIUS != null) {
+			try {
+				Object state = FIELD_GRADIENT_STATE.get(drawable);
+				return FIELD_GRADIENT_STATE_RADIUS.getFloat(state);
+			} catch (Exception e) {
+				e.printStackTrace();
+				return 0f;
+			}
+		} else {
+			return 0f;
+		}
+	}
+
 	public static Bitmap reduceThumbnailSize(Resources resources, Bitmap bitmap) {
 		int newSize = (int) (72f * ResourceUtils.obtainDensity(resources));
 		return reduceBitmapSize(bitmap, newSize, true);
@@ -166,8 +192,8 @@ public class GraphicsUtils {
 
 		public Reencoding(String format, int quality, int reduce) {
 			this.format = FORMAT_JPEG.equals(format) || FORMAT_PNG.equals(format) ? format : FORMAT_JPEG;
-			this.quality = quality > 100 ? 100 : quality < 1 ? 1 : quality;
-			this.reduce = reduce > 8 ? 8 : reduce < 1 ? 1 : reduce;
+			this.quality = Math.max(1, Math.min(quality, 100));
+			this.reduce = Math.max(1, Math.min(reduce, 8));
 		}
 
 		public static boolean allowQuality(String format) {
