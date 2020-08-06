@@ -1,21 +1,19 @@
-/*
- * Copyright 2016-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package chan.http;
 
+import android.net.Uri;
+import android.util.Base64;
+import android.util.Pair;
+import androidx.annotation.NonNull;
+import chan.annotation.Extendable;
+import chan.annotation.Public;
+import chan.content.ChanLocator;
+import chan.content.ChanManager;
+import chan.content.ExtensionException;
+import chan.util.StringUtils;
+import com.mishiranu.dashchan.content.model.ErrorItem;
+import com.mishiranu.dashchan.preference.AdvancedPreferences;
+import com.mishiranu.dashchan.preference.Preferences;
+import com.mishiranu.dashchan.util.IOUtils;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -39,25 +37,8 @@ import java.util.Random;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import chan.util.StringUtils;
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocket;
-
-import android.net.Uri;
-import android.util.Base64;
-import android.util.Pair;
-
-import chan.annotation.Extendable;
-import chan.annotation.Public;
-import chan.content.ChanLocator;
-import chan.content.ChanManager;
-import chan.content.ExtensionException;
-
-import com.mishiranu.dashchan.content.model.ErrorItem;
-import com.mishiranu.dashchan.preference.AdvancedPreferences;
-import com.mishiranu.dashchan.preference.Preferences;
-import com.mishiranu.dashchan.util.IOUtils;
 
 @Public
 public final class WebSocket {
@@ -381,7 +362,7 @@ public final class WebSocket {
 					port = 80;
 				}
 			} else {
-				throw new HttpException(ErrorItem.TYPE_UNSUPPORTED_SCHEME, false, false);
+				throw new HttpException(ErrorItem.Type.UNSUPPORTED_SCHEME, false, false);
 			}
 
 			socket = SocketFactory.getDefault().createSocket();
@@ -394,7 +375,7 @@ public final class WebSocket {
 				sslSocket.startHandshake();
 				if (!HttpClient.getInstance().getHostnameVerifier(verifyCertificate)
 						.verify(uri.getHost(), sslSocket.getSession())) {
-					throw new HttpException(ErrorItem.TYPE_INVALID_CERTIFICATE, false, false);
+					throw new HttpException(ErrorItem.Type.INVALID_CERTIFICATE, false, false);
 				}
 			}
 
@@ -480,7 +461,7 @@ public final class WebSocket {
 			while (true) {
 				int b = inputStream.read();
 				if (b == -1) {
-					throw new HttpException(ErrorItem.TYPE_CONNECTION_RESET, false, true);
+					throw new HttpException(ErrorItem.Type.CONNECTION_RESET, false, true);
 				}
 				byteArrayOutputStream.write(b);
 				switch (b) {
@@ -526,7 +507,7 @@ public final class WebSocket {
 									boolean newSecure = "https".equals(scheme) || "wss".equals(scheme);
 									if (holder.verifyCertificate && secure && !newSecure) {
 										// Redirect from https/wss to http/ws is unsafe
-										throw new HttpException(ErrorItem.TYPE_UNSAFE_REDIRECT, true, false);
+										throw new HttpException(ErrorItem.Type.UNSAFE_REDIRECT, true, false);
 									}
 									return openSocket(redirectedUri, chanName, verifyCertificate, attempts - 1);
 								}
@@ -540,7 +521,7 @@ public final class WebSocket {
 					throw new HttpException(responseCode, responseText);
 				}
 			} else {
-				throw new HttpException(ErrorItem.TYPE_INVALID_RESPONSE, false, false);
+				throw new HttpException(ErrorItem.Type.INVALID_RESPONSE, false, false);
 			}
 
 			String checkKeyEncoded;
@@ -619,12 +600,12 @@ public final class WebSocket {
 					// Check and log only if exception occured when socket was open
 					HttpClient.getInstance().checkExceptionAndThrow(exception);
 				}
-				throw new HttpException(ErrorItem.TYPE_DOWNLOAD, false, true, exception);
+				throw new HttpException(ErrorItem.Type.DOWNLOAD, false, true, exception);
 			}
 			try {
 				holder.checkDisconnected();
 			} catch (HttpClient.DisconnectedIOException e) {
-				throw new HttpException(0, false, false, e);
+				throw new HttpException(null, false, false, e);
 			}
 			handled = false;
 		} finally {
@@ -748,7 +729,7 @@ public final class WebSocket {
 						WebSocket.this.results.wait();
 					}
 				} catch (InterruptedException e) {
-					throw new HttpException(0, false, false, e);
+					throw new HttpException(null, false, false, e);
 				}
 			}
 			try {
@@ -948,12 +929,12 @@ public final class WebSocket {
 		}
 
 		@Override
-		public int read(byte[] buffer) throws IOException {
+		public int read(@NonNull byte[] buffer) throws IOException {
 			return read(buffer, 0, buffer.length);
 		}
 
 		@Override
-		public int read(byte[] buffer, int byteOffset, int byteCount) throws IOException {
+		public int read(@NonNull byte[] buffer, int byteOffset, int byteCount) throws IOException {
 			int left = array.length - position;
 			if (left > 0) {
 				byteCount = Math.min(byteCount, left);
@@ -991,12 +972,12 @@ public final class WebSocket {
 		}
 
 		@Override
-		public int read(byte[] buffer) throws IOException {
+		public int read(@NonNull byte[] buffer) throws IOException {
 			return read(buffer, 0, buffer.length);
 		}
 
 		@Override
-		public int read(byte[] buffer, int byteOffset, int byteCount) throws IOException {
+		public int read(@NonNull byte[] buffer, int byteOffset, int byteCount) throws IOException {
 			int left = count - position;
 			if (left > 0) {
 				byteCount = Math.min(byteCount, left);

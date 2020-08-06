@@ -135,10 +135,10 @@ public class RecaptchaReader {
 						if (C.API_KITKAT) {
 							return getResponse2(holder, apiKey, invisible, referer, true);
 						} else {
-							throw new HttpException(ErrorItem.TYPE_UNSUPPORTED_RECAPTCHA, false, false);
+							throw new HttpException(ErrorItem.Type.UNSUPPORTED_RECAPTCHA, false, false);
 						}
 					} else {
-						throw new HttpException(ErrorItem.TYPE_INVALID_RESPONSE, false, false);
+						throw new HttpException(ErrorItem.Type.INVALID_RESPONSE, false, false);
 					}
 				}
 			}
@@ -271,7 +271,7 @@ public class RecaptchaReader {
 				postEvent(() -> {
 					if (webView != null) {
 						HttpException exception = !StringUtils.isEmpty(response) ? null :
-								new HttpException(ErrorItem.TYPE_INVALID_RESPONSE, false, false);
+								new HttpException(ErrorItem.Type.INVALID_RESPONSE, false, false);
 						if (dialogCallback != null) {
 							if (exception != null) {
 								dialogCallback.onError(exception);
@@ -292,7 +292,7 @@ public class RecaptchaReader {
 			public void onError() {
 				postEvent(() -> {
 					if (webView != null) {
-						HttpException exception = new HttpException(ErrorItem.TYPE_UNKNOWN, false, false);
+						HttpException exception = new HttpException(ErrorItem.Type.UNKNOWN, false, false);
 						if (dialogCallback != null) {
 							dialogCallback.onError(exception);
 						} else {
@@ -363,7 +363,7 @@ public class RecaptchaReader {
 					if ("google.com".equals(uri.getHost()) || "www.google.com".equals(uri.getHost())) {
 						postEvent(() -> {
 							if (webView != null) {
-								HttpException exception = new HttpException(ErrorItem.TYPE_DOWNLOAD, false, false);
+								HttpException exception = new HttpException(ErrorItem.Type.DOWNLOAD, false, false);
 								if (dialogCallback != null) {
 									dialogCallback.onError(exception);
 								} else {

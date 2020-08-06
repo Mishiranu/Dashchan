@@ -1,21 +1,20 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.content.async;
 
+import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.net.Uri;
+import android.os.Build;
+import chan.content.ChanLocator;
+import chan.content.ChanManager;
+import chan.http.HttpException;
+import chan.http.HttpHolder;
+import chan.http.HttpRequest;
+import chan.util.CommonUtils;
+import chan.util.StringUtils;
+import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.content.FileProvider;
+import com.mishiranu.dashchan.content.model.ErrorItem;
+import com.mishiranu.dashchan.util.Log;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -26,28 +25,9 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Set;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import android.content.Context;
-import android.content.pm.PackageInfo;
-import android.net.Uri;
-import android.os.Build;
-
-import chan.content.ChanLocator;
-import chan.content.ChanManager;
-import chan.http.HttpException;
-import chan.http.HttpHolder;
-import chan.http.HttpRequest;
-import chan.util.CommonUtils;
-import chan.util.StringUtils;
-
-import com.mishiranu.dashchan.C;
-import com.mishiranu.dashchan.content.FileProvider;
-import com.mishiranu.dashchan.content.model.ErrorItem;
-import com.mishiranu.dashchan.util.Log;
 
 public class ReadUpdateTask extends HttpHolderTask<Void, Long, Void> {
 	private final Context context;
@@ -137,7 +117,7 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Void> {
 		long timeThreshold = System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000; // One week left
 		File directory = FileProvider.getUpdatesDirectory(context);
 		if (directory == null) {
-			errorItem = new ErrorItem(ErrorItem.TYPE_NO_ACCESS_TO_MEMORY);
+			errorItem = new ErrorItem(ErrorItem.Type.NO_ACCESS_TO_MEMORY);
 			return null;
 		}
 		File[] files = directory.listFiles();
@@ -284,7 +264,7 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Void> {
 		if (updateDataMap.map.size() > 0) {
 			this.updateDataMap = updateDataMap;
 		} else {
-			this.errorItem = new ErrorItem(ErrorItem.TYPE_EMPTY_RESPONSE);
+			this.errorItem = new ErrorItem(ErrorItem.Type.EMPTY_RESPONSE);
 		}
 		return null;
 	}

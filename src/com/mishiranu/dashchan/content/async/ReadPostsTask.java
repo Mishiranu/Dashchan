@@ -94,7 +94,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 				if (!chanName.equals(target.chanName) || target.threadNumber == null) {
 					Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES,
 							"Only local thread redirects available there");
-					errorItem = new ErrorItem(ErrorItem.TYPE_INVALID_DATA_FORMAT);
+					errorItem = new ErrorItem(ErrorItem.Type.INVALID_DATA_FORMAT);
 					return false;
 				} else if (StringUtils.equals(boardName, target.boardName) &&
 						threadNumber.equals(target.threadNumber)) {
@@ -130,13 +130,13 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 				if (firstPostNumber == null) {
 					Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES, "The getPostNumber() method of",
 							"original post returned null.");
-					errorItem = new ErrorItem(ErrorItem.TYPE_INVALID_DATA_FORMAT);
+					errorItem = new ErrorItem(ErrorItem.Type.INVALID_DATA_FORMAT);
 					return false;
 				}
 				if (firstPost.getParentPostNumberOrNull() != null) {
 					Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES, "The getParentPostNumber() method of",
 							"original post must return null, \"0\" or post number.");
-					errorItem = new ErrorItem(ErrorItem.TYPE_INVALID_DATA_FORMAT);
+					errorItem = new ErrorItem(ErrorItem.Type.INVALID_DATA_FORMAT);
 					return false;
 				}
 				boolean resultWithOriginalPost = posts[0].getPostNumber().equals(firstPostNumber);
@@ -146,20 +146,20 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 					if (postNumber == null) {
 						Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES, "The getPostNumber() method of", i,
 								"post returned null.");
-						errorItem = new ErrorItem(ErrorItem.TYPE_INVALID_DATA_FORMAT);
+						errorItem = new ErrorItem(ErrorItem.Type.INVALID_DATA_FORMAT);
 						return false;
 					}
 					if (!threadNumber.equals(post.getThreadNumberOrOriginalPostNumber())) {
 						Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES, "The number of requested thread and",
 								"number of thread in post", postNumber, "are not equal.");
-						errorItem = new ErrorItem(ErrorItem.TYPE_INVALID_DATA_FORMAT);
+						errorItem = new ErrorItem(ErrorItem.Type.INVALID_DATA_FORMAT);
 						return false;
 					}
 					if (!resultWithOriginalPost || i > 0) {
 						if (!firstPostNumber.equals(post.getParentPostNumberOrNull())) {
 							Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES, "The getParentPostNumber()",
 									"method of post", postNumber, "is not equal to original post's number.");
-							errorItem = new ErrorItem(ErrorItem.TYPE_INVALID_DATA_FORMAT);
+							errorItem = new ErrorItem(ErrorItem.Type.INVALID_DATA_FORMAT);
 							return false;
 						}
 					}
@@ -241,7 +241,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 						// Ignore exception
 					}
 				}
-				errorItem = new ErrorItem(ErrorItem.TYPE_THREAD_NOT_EXISTS);
+				errorItem = new ErrorItem(ErrorItem.Type.THREAD_NOT_EXISTS);
 			} else {
 				errorItem = e.getErrorItemAndHandle();
 			}

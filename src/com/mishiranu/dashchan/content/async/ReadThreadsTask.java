@@ -63,7 +63,7 @@ public class ReadThreadsTask extends HttpHolderTask<Void, Void, Boolean> {
 				}
 				if (target.threadNumber != null) {
 					Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES, "Only board redirects available there");
-					errorItem = new ErrorItem(ErrorItem.TYPE_INVALID_DATA_FORMAT);
+					errorItem = new ErrorItem(ErrorItem.Type.INVALID_DATA_FORMAT);
 					return false;
 				} else if (chanName.equals(target.chanName) && StringUtils.equals(boardName, target.boardName)) {
 					throw HttpException.createNotFoundException();
@@ -101,7 +101,7 @@ public class ReadThreadsTask extends HttpHolderTask<Void, Void, Boolean> {
 			}
 			if (responseCode == HttpURLConnection.HTTP_NOT_FOUND ||
 					responseCode == HttpURLConnection.HTTP_GONE) {
-				errorItem = new ErrorItem(ErrorItem.TYPE_BOARD_NOT_EXISTS);
+				errorItem = new ErrorItem(ErrorItem.Type.BOARD_NOT_EXISTS);
 			} else {
 				errorItem = e.getErrorItemAndHandle();
 			}

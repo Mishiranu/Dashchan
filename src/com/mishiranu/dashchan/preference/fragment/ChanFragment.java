@@ -29,7 +29,7 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.async.AsyncManager;
 import com.mishiranu.dashchan.content.model.ErrorItem;
-import com.mishiranu.dashchan.content.net.CloudFlarePasser;
+import com.mishiranu.dashchan.content.net.RelayBlockResolver;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.preference.PreferencesActivity;
 import com.mishiranu.dashchan.preference.core.CheckPreference;
@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class ChanFragment extends PreferenceFragment {
 	private static final String EXTRA_CHAN_NAME = "chanName";
@@ -289,9 +290,14 @@ public class ChanFragment extends PreferenceFragment {
 	}
 
 	private void clearSpecialCookies() {
-		ChanConfiguration configuration = ChanConfiguration.get(getChanName());
-		configuration.storeCookie(CloudFlarePasser.COOKIE_CLOUDFLARE, null, null);
-		configuration.commit();
+		Map<String, String> cookies = RelayBlockResolver.getInstance().getCookies(getChanName());
+		if (!cookies.isEmpty()) {
+			ChanConfiguration configuration = ChanConfiguration.get(getChanName());
+			for (String cookie : cookies.keySet()) {
+				configuration.storeCookie(cookie, null, null);
+			}
+			configuration.commit();
+		}
 		removeCookiePreferenceIfNotNeeded();
 	}
 

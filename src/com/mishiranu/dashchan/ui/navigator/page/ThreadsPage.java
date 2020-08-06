@@ -607,7 +607,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 	public void onReadThreadsFail(ErrorItem errorItem, int pageNumber) {
 		readTask = null;
 		getListView().getWrapper().cancelBusyState();
-		String message = errorItem.type == ErrorItem.TYPE_BOARD_NOT_EXISTS && pageNumber >= 1
+		String message = errorItem.type == ErrorItem.Type.BOARD_NOT_EXISTS && pageNumber >= 1
 				? getString(R.string.message_page_not_exist_format, pageNumber) : errorItem.toString();
 		if (getAdapter().isRealEmpty()) {
 			switchView(ViewType.ERROR, message);

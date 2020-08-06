@@ -38,6 +38,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toolbar;
 import androidx.annotation.NonNull;
+import chan.content.ApiException;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import chan.content.ChanMarkup;
@@ -78,7 +79,6 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.DropdownView;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -423,7 +423,7 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 		}
 
 		PostingService.FailResult failResult = savedInstanceState != null ? null
-				: (PostingService.FailResult) getIntent().getSerializableExtra(C.EXTRA_FAIL_RESULT);
+				: getIntent().getParcelableExtra(C.EXTRA_FAIL_RESULT);
 		if (failResult != null) {
 			onSendPostFail(failResult.errorItem, failResult.extra, failResult.captchaError, failResult.keepCaptcha);
 		}
@@ -933,7 +933,8 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	}
 
 	@Override
-	public void onSendPostFail(ErrorItem errorItem, Serializable extra, boolean captchaError, boolean keepCaptcha) {
+	public void onSendPostFail(ErrorItem errorItem, ApiException.Extra extra,
+			boolean captchaError, boolean keepCaptcha) {
 		dismissSendPost();
 		if (extra != null) {
 			ClickableToast.show(this, errorItem.toString(), getString(R.string.action_details), () -> {

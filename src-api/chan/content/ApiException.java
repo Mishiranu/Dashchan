@@ -1,35 +1,17 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package chan.content;
 
-import java.io.Serializable;
-import java.util.LinkedHashSet;
-
+import android.os.Parcel;
+import android.os.Parcelable;
 import chan.annotation.Public;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.util.FlagUtils;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 
 @Public
 public final class ApiException extends Exception {
-	private static final long serialVersionUID = 1L;
-
 	@Public public static final int SEND_ERROR_NO_BOARD = 100;
 	@Public public static final int SEND_ERROR_NO_THREAD = 101;
 	@Public public static final int SEND_ERROR_NO_ACCESS = 102;
@@ -110,7 +92,7 @@ public final class ApiException extends Exception {
 		return FlagUtils.get(flags, flag);
 	}
 
-	public Serializable getExtra() {
+	public Extra getExtra() {
 		switch (errorType) {
 			case ApiException.SEND_ERROR_BANNED: {
 				if (extra instanceof BanExtra) {
@@ -128,6 +110,7 @@ public final class ApiException extends Exception {
 		return null;
 	}
 
+	@SuppressWarnings("DuplicateBranchesInSwitch")
 	public static int getResId(int errorType) {
 		int resId = 0;
 		switch (errorType) {
@@ -252,13 +235,13 @@ public final class ApiException extends Exception {
 		if (!StringUtils.isEmpty(message)) {
 			return new ErrorItem(0, message);
 		}
-		return new ErrorItem(ErrorItem.TYPE_API, errorType);
+		return new ErrorItem(ErrorItem.Type.API, errorType);
 	}
 
-	@Public
-	public static final class BanExtra implements Serializable {
-		private static final long serialVersionUID = 1L;
+	public interface Extra extends Parcelable {}
 
+	@Public
+	public static final class BanExtra implements Extra {
 		public String id;
 		public String message;
 		public long startDate;
@@ -290,12 +273,39 @@ public final class ApiException extends Exception {
 			this.expireDate = expireDate;
 			return this;
 		}
+
+		@Override
+		public int describeContents() {
+			return 0;
+		}
+
+		@Override
+		public void writeToParcel(Parcel dest, int flags) {
+			dest.writeString(id);
+			dest.writeString(message);
+			dest.writeLong(startDate);
+			dest.writeLong(expireDate);
+		}
+
+		public static final Creator<BanExtra> CREATOR = new Creator<BanExtra>() {
+			@Override
+			public BanExtra createFromParcel(Parcel in) {
+				String id = in.readString();
+				String message = in.readString();
+				long startDate = in.readLong();
+				long expireDate = in.readLong();
+				return new BanExtra().setId(id).setMessage(message).setStartDate(startDate).setExpireDate(expireDate);
+			}
+
+			@Override
+			public BanExtra[] newArray(int size) {
+				return new BanExtra[size];
+			}
+		};
 	}
 
 	@Public
-	public static final class WordsExtra implements Serializable {
-		private static final long serialVersionUID = 1L;
-
+	public static final class WordsExtra implements Extra {
 		public final LinkedHashSet<String> words = new LinkedHashSet<>();
 
 		@Public
@@ -306,5 +316,32 @@ public final class ApiException extends Exception {
 			words.add(word);
 			return this;
 		}
+
+		@Override
+		public int describeContents() {
+			return 0;
+		}
+
+		@Override
+		public void writeToParcel(Parcel dest, int flags) {
+			dest.writeStringList(new ArrayList<>(words));
+		}
+
+		public static final Creator<WordsExtra> CREATOR = new Creator<WordsExtra>() {
+			@Override
+			public WordsExtra createFromParcel(Parcel in) {
+				ArrayList<String> words = in.createStringArrayList();
+				WordsExtra wordsExtra = new WordsExtra();
+				for (String word : words) {
+					wordsExtra.addWord(word);
+				}
+				return wordsExtra;
+			}
+
+			@Override
+			public WordsExtra[] newArray(int size) {
+				return new WordsExtra[size];
+			}
+		};
 	}
 }

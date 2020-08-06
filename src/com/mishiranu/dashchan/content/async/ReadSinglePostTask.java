@@ -46,7 +46,7 @@ public class ReadSinglePostTask extends HttpHolderTask<Void, Void, PostItem> {
 			errorItem = e.getErrorItemAndHandle();
 			if (errorItem.httpResponseCode == HttpURLConnection.HTTP_NOT_FOUND ||
 					errorItem.httpResponseCode == HttpURLConnection.HTTP_GONE) {
-				errorItem = new ErrorItem(ErrorItem.TYPE_POST_NOT_FOUND);
+				errorItem = new ErrorItem(ErrorItem.Type.POST_NOT_FOUND);
 			}
 		} catch (ExtensionException | InvalidResponseException e) {
 			errorItem = e.getErrorItemAndHandle();

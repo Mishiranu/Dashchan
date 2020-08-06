@@ -1,19 +1,3 @@
-/*
- * Copyright 2014-2016, 2020 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.content.service;
 
 import android.annotation.TargetApi;
@@ -24,9 +8,12 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.os.PowerManager;
 import android.view.ContextThemeWrapper;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import chan.content.ApiException;
 import chan.content.ChanConfiguration;
 import chan.content.ChanMarkup;
 import chan.content.ChanPerformer;
@@ -45,7 +32,6 @@ import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -225,7 +211,8 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 		public void onSendPostChangeProgressValue(int progress, int progressMax);
 
 		public void onSendPostSuccess();
-		public void onSendPostFail(ErrorItem errorItem, Serializable extra, boolean captchaError, boolean keepCaptcha);
+		public void onSendPostFail(ErrorItem errorItem, ApiException.Extra extra,
+				boolean captchaError, boolean keepCaptcha);
 		public void onSendPostCancel();
 	}
 
@@ -435,7 +422,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 
 	@Override
 	public void onSendPostFail(String key, ChanPerformer.SendPostData data, String chanName, ErrorItem errorItem,
-			Serializable extra, boolean captchaError, boolean keepCaptcha) {
+			ApiException.Extra extra, boolean captchaError, boolean keepCaptcha) {
 		if (removeTask(key)) {
 			ArrayList<Callback> callbacks = this.callbacks.get(key);
 			boolean hasCallback = callbacks != null && !callbacks.isEmpty();
@@ -452,20 +439,47 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 		}
 	}
 
-	public static class FailResult implements Serializable {
-		private static final long serialVersionUID = 1L;
-
+	public static class FailResult implements Parcelable {
 		public final ErrorItem errorItem;
-		public final Serializable extra;
+		public final ApiException.Extra extra;
 		public final boolean captchaError;
 		public final boolean keepCaptcha;
 
-		public FailResult(ErrorItem errorItem, Serializable extra, boolean captchaError, boolean keepCaptcha) {
+		public FailResult(ErrorItem errorItem, ApiException.Extra extra, boolean captchaError, boolean keepCaptcha) {
 			this.errorItem = errorItem;
 			this.extra = extra;
 			this.captchaError = captchaError;
 			this.keepCaptcha = keepCaptcha;
 		}
+
+		@Override
+		public int describeContents() {
+			return 0;
+		}
+
+		@Override
+		public void writeToParcel(Parcel dest, int flags) {
+			errorItem.writeToParcel(dest, flags);
+			dest.writeParcelable(extra, flags);
+			dest.writeByte((byte) (captchaError ? 1 : 0));
+			dest.writeByte((byte) (keepCaptcha ? 1 : 0));
+		}
+
+		public static final Creator<FailResult> CREATOR = new Creator<FailResult>() {
+			@Override
+			public FailResult createFromParcel(Parcel in) {
+				ErrorItem errorItem = ErrorItem.CREATOR.createFromParcel(in);
+				ApiException.Extra extra = in.readParcelable(FailResult.class.getClassLoader());
+				boolean captchaError = in.readByte() != 0;
+				boolean keepCaptcha = in.readByte() != 0;
+				return new FailResult(errorItem, extra, captchaError, keepCaptcha);
+			}
+
+			@Override
+			public FailResult[] newArray(int size) {
+				return new FailResult[size];
+			}
+		};
 	}
 
 	public static class NewPostData {

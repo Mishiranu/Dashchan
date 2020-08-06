@@ -1,31 +1,4 @@
-/*
- * Copyright 2014-2018 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.util;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 
 import android.app.Activity;
 import android.app.AlarmManager;
@@ -43,19 +16,17 @@ import android.os.SystemClock;
 import android.provider.Browser;
 import android.util.Pair;
 import android.view.View;
-
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
 import chan.http.CookieBuilder;
 import chan.util.CommonUtils;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.FileProvider;
 import com.mishiranu.dashchan.content.model.GalleryItem;
-import com.mishiranu.dashchan.content.net.CloudFlarePasser;
+import com.mishiranu.dashchan.content.net.RelayBlockResolver;
 import com.mishiranu.dashchan.content.service.AudioPlayerService;
 import com.mishiranu.dashchan.media.VideoPlayer;
 import com.mishiranu.dashchan.preference.AdvancedPreferences;
@@ -64,6 +35,16 @@ import com.mishiranu.dashchan.ui.LauncherActivity;
 import com.mishiranu.dashchan.ui.WebBrowserActivity;
 import com.mishiranu.dashchan.ui.gallery.GalleryActivity;
 import com.mishiranu.dashchan.ui.navigator.NavigatorActivity;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 public class NavigationUtils {
 	public static final int FLAG_NOT_ANIMATED = 0x00000001;
@@ -189,13 +170,16 @@ public class NavigationUtils {
 			intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
 			intent.putExtra(C.EXTRA_FROM_CLIENT, true);
 			if (chanName != null && ChanLocator.get(chanName).safe(false).isAttachmentUri(uri)) {
-				String cloudFlareCookie = CloudFlarePasser.getCookie(chanName);
-				if (cloudFlareCookie != null) {
+				Map<String, String> cookies = RelayBlockResolver.getInstance().getCookies(chanName);
+				if (!cookies.isEmpty()) {
 					// For MX Player, see https://sites.google.com/site/mxvpen/api
 					String userAgent = AdvancedPreferences.getUserAgent(chanName);
-					String cookie = new CookieBuilder().append(CloudFlarePasser.COOKIE_CLOUDFLARE,
-							cloudFlareCookie).build();
-					intent.putExtra("headers", new String[] {"User-Agent", userAgent, "Cookie", cookie});
+					CookieBuilder cookieBuilder = new CookieBuilder();
+					for (Map.Entry<String, String> cookie : cookies.entrySet()) {
+						cookieBuilder.append(cookie.getKey(), cookie.getValue());
+					}
+					intent.putExtra("headers", new String[] {"User-Agent", userAgent,
+							"Cookie", cookieBuilder.build()});
 				}
 			}
 			if (!isWeb) {

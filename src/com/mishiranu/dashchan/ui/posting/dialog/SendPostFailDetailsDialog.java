@@ -10,7 +10,6 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.util.PostDateFormatter;
 import com.mishiranu.dashchan.util.StringBlockBuilder;
 import com.mishiranu.dashchan.util.ViewUtils;
-import java.io.Serializable;
 
 public class SendPostFailDetailsDialog extends PostingDialog {
 	public static final String TAG = SendPostFailDetailsDialog.class.getName();
@@ -19,9 +18,9 @@ public class SendPostFailDetailsDialog extends PostingDialog {
 
 	public SendPostFailDetailsDialog() {}
 
-	public SendPostFailDetailsDialog(Serializable extra) {
+	public SendPostFailDetailsDialog(ApiException.Extra extra) {
 		Bundle args = new Bundle();
-		args.putSerializable(EXTRA_EXTRA, extra);
+		args.putParcelable(EXTRA_EXTRA, extra);
 		setArguments(args);
 	}
 
@@ -29,7 +28,7 @@ public class SendPostFailDetailsDialog extends PostingDialog {
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		String message = null;
-		Object extra = requireArguments().getSerializable(EXTRA_EXTRA);
+		ApiException.Extra extra = requireArguments().getParcelable(EXTRA_EXTRA);
 		if (extra instanceof ApiException.BanExtra) {
 			StringBlockBuilder builder = new StringBlockBuilder();
 			PostDateFormatter formatter = new PostDateFormatter(requireContext());

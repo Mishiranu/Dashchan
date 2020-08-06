@@ -161,12 +161,15 @@ public class ForegroundManager implements Handler.Callback {
 			}
 			boolean needLoad = true;
 			if (pendingData.captchaData != null && savedInstanceState != null) {
-				ChanPerformer.CaptchaState captchaState = (ChanPerformer.CaptchaState) savedInstanceState
-						.getSerializable(EXTRA_CAPTCHA_STATE);
+				String captchaStateString = savedInstanceState.getString(EXTRA_CAPTCHA_STATE);
+				ChanPerformer.CaptchaState captchaState = captchaStateString != null
+						? ChanPerformer.CaptchaState.valueOf(captchaStateString) : null;
 				Bitmap image = savedInstanceState.getParcelable(EXTRA_IMAGE);
 				if (captchaState != null) {
-					showCaptcha(captchaState, pendingData.loadedCaptchaType, (ChanConfiguration.Captcha.Input)
-							savedInstanceState.getSerializable(EXTRA_LOADED_INPUT), image,
+					String loadedInputString = savedInstanceState.getString(EXTRA_LOADED_INPUT);
+					ChanConfiguration.Captcha.Input loadedInput = loadedInputString != null
+							? ChanConfiguration.Captcha.Input.valueOf(loadedInputString) : null;
+					showCaptcha(captchaState, pendingData.loadedCaptchaType, loadedInput, image,
 							savedInstanceState.getBoolean(EXTRA_LARGE),
 							savedInstanceState.getBoolean(EXTRA_BLACK_AND_WHITE));
 					needLoad = false;
@@ -180,8 +183,8 @@ public class ForegroundManager implements Handler.Callback {
 		@Override
 		public void onSaveInstanceState(@NonNull Bundle outState) {
 			super.onSaveInstanceState(outState);
-			outState.putSerializable(EXTRA_CAPTCHA_STATE, captchaState);
-			outState.putSerializable(EXTRA_LOADED_INPUT, loadedInput);
+			outState.putString(EXTRA_CAPTCHA_STATE, captchaState != null ? captchaState.name() : null);
+			outState.putString(EXTRA_LOADED_INPUT, loadedInput != null ? loadedInput.name() : null);
 			outState.putParcelable(EXTRA_IMAGE, image);
 			outState.putBoolean(EXTRA_LARGE, large);
 			outState.putBoolean(EXTRA_BLACK_AND_WHITE, blackAndWhite);

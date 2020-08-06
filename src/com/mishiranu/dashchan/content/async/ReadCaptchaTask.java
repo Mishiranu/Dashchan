@@ -154,7 +154,7 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 			large = result.large;
 			return true;
 		}
-		errorItem = new ErrorItem(ErrorItem.TYPE_UNKNOWN);
+		errorItem = new ErrorItem(ErrorItem.Type.UNKNOWN);
 		return false;
 	}
 

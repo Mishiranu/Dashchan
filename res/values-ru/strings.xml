@@ -347,6 +347,7 @@
 	<string name="message_press_again_to_exit">Нажмите ещё раз, чтобы выйти</string>
 	<string name="message_processing_data">Обработка данных&#8230;</string>
 	<string name="message_read_timeout">Время ожидания приёма истекло</string>
+	<string name="message_relay_block">Не удалось обойти DDoS-защиту</string>
 	<string name="message_report_sent">Жалоба успешно отправлена</string>
 	<string name="message_report_too_often_error">Нельзя жаловаться так часто</string>
 	<string name="message_request_sent">Запрос успешно отправлен</string>

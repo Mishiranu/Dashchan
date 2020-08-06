@@ -16,7 +16,6 @@ import chan.text.CommentEditor;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.text.HtmlParser;
 import com.mishiranu.dashchan.text.SimilarTextEstimator;
-import java.io.Serializable;
 import java.util.ArrayList;
 
 public class SendPostTask extends HttpHolderTask<Void, Long, Boolean> {
@@ -29,7 +28,7 @@ public class SendPostTask extends HttpHolderTask<Void, Long, Boolean> {
 
 	private ChanPerformer.SendPostResult result;
 	private ErrorItem errorItem;
-	private Serializable extra;
+	private ApiException.Extra extra;
 	private boolean captchaError = false;
 	private boolean keepCaptcha = false;
 
@@ -68,7 +67,7 @@ public class SendPostTask extends HttpHolderTask<Void, Long, Boolean> {
 		public void onSendPostSuccess(String key, ChanPerformer.SendPostData data,
 				String chanName, String threadNumber, String postNumber);
 		public void onSendPostFail(String key, ChanPerformer.SendPostData data, String chanName, ErrorItem errorItem,
-				Serializable extra, boolean captchaError, boolean keepCaptcha);
+				ApiException.Extra extra, boolean captchaError, boolean keepCaptcha);
 	}
 
 	public SendPostTask(String key, String chanName, Callback callback, ChanPerformer.SendPostData data) {

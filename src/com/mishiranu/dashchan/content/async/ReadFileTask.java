@@ -132,16 +132,16 @@ public class ReadFileTask extends HttpHolderTask<String, Long, Boolean> {
 			errorItem = e.getErrorItemAndHandle();
 			return false;
 		} catch (FileNotFoundException e) {
-			errorItem = new ErrorItem(ErrorItem.TYPE_NO_ACCESS_TO_MEMORY);
+			errorItem = new ErrorItem(ErrorItem.Type.NO_ACCESS_TO_MEMORY);
 			return false;
 		} catch (IOException e) {
 			String message = e.getMessage();
 			if (message != null && message.contains("ENOSPC")) {
 				toFile.delete();
 				CacheManager.getInstance().handleDownloadedFile(toFile, false);
-				errorItem = new ErrorItem(ErrorItem.TYPE_INSUFFICIENT_SPACE);
+				errorItem = new ErrorItem(ErrorItem.Type.INSUFFICIENT_SPACE);
 			} else {
-				errorItem = new ErrorItem(ErrorItem.TYPE_UNKNOWN);
+				errorItem = new ErrorItem(ErrorItem.Type.UNKNOWN);
 			}
 			return false;
 		} finally {

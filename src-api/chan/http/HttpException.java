@@ -1,40 +1,21 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package chan.http;
-
-import java.net.HttpURLConnection;
 
 import chan.annotation.Public;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.content.model.ErrorItem;
+import java.net.HttpURLConnection;
 
 @Public
 public final class HttpException extends Exception implements ErrorItem.Holder {
-	private static final long serialVersionUID = 1L;
-
 	private final int responseCode;
 	private final String responseText;
-	private final int errorItemType;
+	private final ErrorItem.Type errorItemType;
 
 	private final boolean httpException;
 	private final boolean socketException;
 
-	public HttpException(int errorItemType, boolean httpException, boolean socketException) {
+	public HttpException(ErrorItem.Type errorItemType,
+			boolean httpException, boolean socketException) {
 		this.responseCode = 0;
 		this.errorItemType = errorItemType;
 		this.responseText = null;
@@ -42,7 +23,8 @@ public final class HttpException extends Exception implements ErrorItem.Holder {
 		this.socketException = socketException;
 	}
 
-	public HttpException(int errorItemType, boolean httpException, boolean socketException, Throwable throwable) {
+	public HttpException(ErrorItem.Type errorItemType,
+			boolean httpException, boolean socketException, Throwable throwable) {
 		super(throwable);
 		this.responseCode = 0;
 		this.errorItemType = errorItemType;
@@ -54,7 +36,7 @@ public final class HttpException extends Exception implements ErrorItem.Holder {
 	@Public
 	public HttpException(int responseCode, String responseText) {
 		this.responseCode = responseCode;
-		this.errorItemType = 0;
+		this.errorItemType = null;
 		this.responseText = responseText;
 		this.httpException = true;
 		this.socketException = false;

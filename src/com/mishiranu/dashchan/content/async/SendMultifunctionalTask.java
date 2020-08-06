@@ -1,28 +1,7 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.content.async;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 import android.net.Uri;
 import android.util.Pair;
-
 import chan.content.ApiException;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
@@ -31,8 +10,10 @@ import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
-
 import com.mishiranu.dashchan.content.model.ErrorItem;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class SendMultifunctionalTask extends HttpHolderTask<Void, Void, Boolean> {
 	private final State state;
@@ -110,7 +91,7 @@ public class SendMultifunctionalTask extends HttpHolderTask<Void, Void, Boolean>
 					Uri uri = ChanLocator.get(state.chanName).safe(false).createThreadUri(state.boardName,
 							state.threadNumber);
 					if (uri == null) {
-						errorItem = new ErrorItem(ErrorItem.TYPE_UNKNOWN);
+						errorItem = new ErrorItem(ErrorItem.Type.UNKNOWN);
 						return false;
 					}
 					ChanPerformer.SendAddToArchiveResult result = ChanPerformer.get(state.archiveChanName).safe()

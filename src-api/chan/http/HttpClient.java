@@ -13,7 +13,7 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.model.ErrorItem;
-import com.mishiranu.dashchan.content.net.CloudFlarePasser;
+import com.mishiranu.dashchan.content.net.RelayBlockResolver;
 import com.mishiranu.dashchan.preference.AdvancedPreferences;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.IOUtils;
@@ -224,9 +224,7 @@ public class HttpClient {
 		return true;
 	}
 
-	static final class DisconnectedIOException extends IOException {
-		private static final long serialVersionUID = 1L;
-	}
+	static final class DisconnectedIOException extends IOException {}
 
 	HostnameVerifier getHostnameVerifier(boolean verifyCertificate) {
 		return verifyCertificate ? HttpsURLConnection.getDefaultHostnameVerifier() : UNSAFE_HOSTNAME_VERIFIER;
@@ -305,7 +303,7 @@ public class HttpClient {
 		try {
 			Uri requestedUri = request.holder.requestedUri;
 			if (!ChanLocator.getDefault().isWebScheme(requestedUri)) {
-				throw new HttpException(ErrorItem.TYPE_UNSUPPORTED_SCHEME, false, false);
+				throw new HttpException(ErrorItem.Type.UNSUPPORTED_SCHEME, false, false);
 			}
 			URL url = encodeUri(requestedUri);
 			HttpURLConnection connection = (HttpURLConnection) (holder.proxy != null
@@ -409,16 +407,17 @@ public class HttpClient {
 			}
 			int responseCode = connection.getResponseCode();
 
-			if (chanName != null && request.checkCloudFlare) {
-				CloudFlarePasser.Result result = CloudFlarePasser.checkResponse(chanName, requestedUri, holder);
-				if (result.success) {
+			if (chanName != null && request.checkRelayBlock) {
+				RelayBlockResolver.Result result = RelayBlockResolver.getInstance()
+						.checkResponse(chanName, requestedUri, holder);
+				if (result.blocked) {
 					// TODO Handle possible connection replacement
-					if (holder.nextAttempt()) {
+					if (result.resolved && holder.nextAttempt()) {
 						executeInternal(request);
 						return;
 					} else {
 						holder.disconnectAndClear();
-						throw new HttpException(responseCode, holder.getResponseMessage());
+						throw new HttpException(ErrorItem.Type.RELAY_BLOCK, true, false);
 					}
 				}
 			}
@@ -454,7 +453,7 @@ public class HttpClient {
 						boolean newHttps = "https".equals(redirectedUri.getScheme());
 						if (holder.verifyCertificate && oldHttps && !newHttps) {
 							// Redirect from https to http is unsafe
-							throw new HttpException(ErrorItem.TYPE_UNSAFE_REDIRECT, true, false);
+							throw new HttpException(ErrorItem.Type.UNSAFE_REDIRECT, true, false);
 						}
 						if (action == HttpRequest.RedirectHandler.Action.GET) {
 							holder.forceGet = true;
@@ -484,7 +483,7 @@ public class HttpClient {
 			holder.checkDisconnectedAndSetHasUnreadBody(true);
 		} catch (DisconnectedIOException e) {
 			holder.disconnectAndClear();
-			throw new HttpException(0, false, false, e);
+			throw new HttpException(null, false, false, e);
 		} catch (IOException e) {
 			if (isConnectionReset(e)) {
 				// Sometimes server closes the socket, but client is still trying to use it
@@ -513,7 +512,7 @@ public class HttpClient {
 			}
 			holder.disconnectAndClear();
 			checkExceptionAndThrow(e);
-			throw new HttpException(ErrorItem.TYPE_DOWNLOAD, false, true, e);
+			throw new HttpException(ErrorItem.Type.DOWNLOAD, false, true, e);
 		}
 	}
 
@@ -571,20 +570,22 @@ public class HttpClient {
 				return null;
 			}
 		} catch (DisconnectedIOException e) {
-			throw new HttpException(0, false, false, e);
+			throw new HttpException(null, false, false, e);
 		} catch (IOException e) {
 			checkExceptionAndThrow(e);
-			throw new HttpException(ErrorItem.TYPE_DOWNLOAD, false, true, e);
+			throw new HttpException(ErrorItem.Type.DOWNLOAD, false, true, e);
 		} finally {
 			holder.disconnectAndClear();
 		}
 	}
 
 	CookieBuilder obtainModifiedCookieBuilder(CookieBuilder cookieBuilder, String chanName) {
-		String cloudFlareCookie = CloudFlarePasser.getCookie(chanName);
-		if (cloudFlareCookie != null) {
-			cookieBuilder = new CookieBuilder(cookieBuilder).append(CloudFlarePasser.COOKIE_CLOUDFLARE,
-					cloudFlareCookie);
+		Map<String, String> cookies = RelayBlockResolver.getInstance().getCookies(chanName);
+		if (!cookies.isEmpty()) {
+			cookieBuilder = new CookieBuilder(cookieBuilder);
+			for (Map.Entry<String, String> cookie : cookies.entrySet()) {
+				cookieBuilder.append(cookie.getKey(), cookie.getValue());
+			}
 		}
 		return cookieBuilder;
 	}
@@ -635,45 +636,45 @@ public class HttpClient {
 
 	void checkExceptionAndThrow(IOException exception) throws HttpException {
 		Log.persistent().stack(exception);
-		int errorType = getErrorTypeForException(exception);
-		if (errorType != 0) {
+		ErrorItem.Type errorType = getErrorTypeForException(exception);
+		if (errorType != null) {
 			throw new HttpException(errorType, false, true, exception);
 		}
 	}
 
-	private int getErrorTypeForException(IOException exception) {
+	private ErrorItem.Type getErrorTypeForException(IOException exception) {
 		if (isConnectionReset(exception)) {
-			return ErrorItem.TYPE_CONNECTION_RESET;
+			return ErrorItem.Type.CONNECTION_RESET;
 		}
 		String message = exception.getMessage();
 		if (message != null) {
 			if (message.contains("failed to connect to") && message.contains("ETIMEDOUT")) {
-				return ErrorItem.TYPE_CONNECT_TIMEOUT;
+				return ErrorItem.Type.CONNECT_TIMEOUT;
 			}
 			if (message.contains("SSL handshake timed out")) {
 				// SocketTimeoutException
 				// Throws when connection was established but SSL handshake was timed out
-				return ErrorItem.TYPE_CONNECT_TIMEOUT;
+				return ErrorItem.Type.CONNECT_TIMEOUT;
 			}
 			if (message.matches("Hostname .+ (was )?not verified")) {
 				// IOException
 				// Throws when hostname not matches certificate
-				return ErrorItem.TYPE_INVALID_CERTIFICATE;
+				return ErrorItem.Type.INVALID_CERTIFICATE;
 			}
 			if (message.contains("Could not validate certificate") ||
 					message.contains("Trust anchor for certification path not found")) {
 				// SSLHandshakeException
 				// Throws when certificate expired or not yet valid
-				return ErrorItem.TYPE_INVALID_CERTIFICATE;
+				return ErrorItem.Type.INVALID_CERTIFICATE;
 			}
 		}
 		if (exception instanceof SSLException) {
-			return ErrorItem.TYPE_SSL;
+			return ErrorItem.Type.SSL;
 		}
 		if (exception instanceof SocketTimeoutException) {
-			return ErrorItem.TYPE_READ_TIMEOUT;
+			return ErrorItem.Type.READ_TIMEOUT;
 		}
-		return 0;
+		return null;
 	}
 
 	private boolean isConnectionReset(IOException exception) {

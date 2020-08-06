@@ -292,7 +292,7 @@ public class AboutFragment extends PreferenceFragment {
 					result = ChangelogGroupCallback.parse(result);
 				}
 				if (result == null) {
-					errorItem = new ErrorItem(ErrorItem.TYPE_UNKNOWN);
+					errorItem = new ErrorItem(ErrorItem.Type.UNKNOWN);
 					return false;
 				} else {
 					this.result = result;

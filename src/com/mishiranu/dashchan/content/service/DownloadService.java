@@ -1,26 +1,4 @@
-/*
- * Copyright 2014-2018 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.content.service;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import android.annotation.TargetApi;
 import android.app.Notification;
@@ -44,9 +22,7 @@ import android.text.style.StyleSpan;
 import android.text.style.TypefaceSpan;
 import android.util.DisplayMetrics;
 import android.view.ContextThemeWrapper;
-
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.DownloadManager;
@@ -59,6 +35,11 @@ import com.mishiranu.dashchan.util.MimeTypes;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class DownloadService extends Service implements ReadFileTask.Callback, ReadFileTask.AsyncFinishCallback,
 		Runnable, MediaScannerConnection.MediaScannerConnectionClient {
@@ -673,7 +654,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 	private static void downloadDirectInternal(Context context, File directory, ArrayList<DownloadItem> downloadItems) {
 		Intent intent = obtainIntent(context, ACTION_START);
 		intent.putExtra(EXTRA_DIRECTORY, directory.getAbsolutePath());
-		intent.putExtra(EXTRA_DOWNLOAD_ITEMS, downloadItems);
+		intent.putParcelableArrayListExtra(EXTRA_DOWNLOAD_ITEMS, downloadItems);
 		context.startService(intent);
 	}
 
