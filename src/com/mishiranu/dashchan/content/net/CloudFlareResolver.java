@@ -1,7 +1,6 @@
 package com.mishiranu.dashchan.content.net;
 
 import android.net.Uri;
-import android.webkit.WebView;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import chan.content.ChanPerformer;
@@ -39,41 +38,45 @@ public class CloudFlareResolver {
 
 	private CloudFlareResolver() {}
 
-	private class Client extends RelayBlockResolver.Client {
-		private boolean wasChecked = false;
+	private class Client implements RelayBlockResolver.Client {
+		private String finishUriString;
 
 		@Override
-		public boolean onPageFinished(WebView webView, String uriString) {
-			if ("Just a moment...".equals(webView.getTitle())) {
-				wasChecked = true;
-			} else {
-				String cookie = null;
-				boolean success = false;
-				if (wasChecked) {
-					cookie = StringUtils.nullIfEmpty(extractCookie(uriString, COOKIE_CLOUDFLARE));
-					if (cookie != null) {
-						success = true;
-					}
-				}
-				storeCookie(getChanName(), cookie, uriString);
-				notifyReady(success);
+		public String getCookieName() {
+			return COOKIE_CLOUDFLARE;
+		}
+
+		@Override
+		public void storeCookie(String chanName, String cookie) {
+			CloudFlareResolver.this.storeCookie(chanName, cookie, finishUriString);
+		}
+
+		@Override
+		public boolean onPageFinished(String uriString, String title) {
+			if (!"Just a moment...".equals(title)) {
+				finishUriString = uriString;
 				return true;
 			}
 			return false;
 		}
 
 		@Override
-		public boolean isUriAllowed(Uri uri) {
+		public boolean onLoad(Uri uri) {
 			return ALLOWED_LINKS.matcher(uri.getPath()).matches();
 		}
 	}
 
-	private final HashMap<String, RelayBlockResolver.CheckHolder> captchaHolders = new HashMap<>();
+	private static class CheckHolder {
+		public boolean ready = false;
+		public boolean success = false;
+	}
+
+	private final HashMap<String, CheckHolder> captchaHolders = new HashMap<>();
 	private final HashMap<String, Long> captchaLastCancel = new HashMap<>();
 
 	private RelayBlockResolver.Result handleCaptcha(String chanName, Uri requestedUri,
 			Uri specialUri, String recaptchaApiKey) throws HttpException {
-		RelayBlockResolver.CheckHolder checkHolder = null;
+		CheckHolder checkHolder = null;
 		synchronized (captchaLastCancel) {
 			Long lastCancelTime = captchaLastCancel.get(chanName);
 			if (lastCancelTime != null && System.currentTimeMillis() - lastCancelTime < 5000) {
@@ -85,7 +88,7 @@ public class CloudFlareResolver {
 			synchronized (captchaHolders) {
 				checkHolder = captchaHolders.get(chanName);
 				if (checkHolder == null) {
-					checkHolder = new RelayBlockResolver.CheckHolder(chanName, null);
+					checkHolder = new CheckHolder();
 					captchaHolders.put(chanName, checkHolder);
 					handle = true;
 				} else {
@@ -93,11 +96,15 @@ public class CloudFlareResolver {
 				}
 			}
 			if (!handle) {
-				try {
-					checkHolder.waitReady(true);
-				} catch (InterruptedException e) {
-					Thread.currentThread().interrupt();
-					return new RelayBlockResolver.Result(true, false, null);
+				synchronized (checkHolder) {
+					while (!checkHolder.ready) {
+						try {
+							checkHolder.wait();
+						} catch (InterruptedException e) {
+							Thread.currentThread().interrupt();
+							return new RelayBlockResolver.Result(true, false, null);
+						}
+					}
 				}
 				return new RelayBlockResolver.Result(true, checkHolder.success, null);
 			}

@@ -1,7 +1,6 @@
 package com.mishiranu.dashchan.content.net;
 
 import android.net.Uri;
-import android.webkit.WebView;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import chan.http.HttpException;
@@ -23,27 +22,37 @@ public class StormWallResolver {
 
 	private StormWallResolver() {}
 
-	private class Client extends RelayBlockResolver.Client {
+	private class Client implements RelayBlockResolver.Client {
 		private volatile boolean wasChecked = false;
 		private volatile boolean wasReloaded = false;
 
+		private String finishUriString;
+
 		@Override
-		public boolean onPageFinished(WebView webView, String uriString) {
+		public String getCookieName() {
+			return COOKIE_STORMWALL;
+		}
+
+		@Override
+		public void storeCookie(String chanName, String cookie) {
+			StormWallResolver.this.storeCookie(chanName, cookie, finishUriString);
+		}
+
+		@Override
+		public boolean onPageFinished(String uriString, String title) {
 			if (wasChecked) {
 				wasChecked = false;
 				wasReloaded = true;
 			} else if (wasReloaded) {
+				finishUriString = uriString;
 				wasReloaded = false;
-				String cookie = StringUtils.nullIfEmpty(extractCookie(uriString, COOKIE_STORMWALL));
-				storeCookie(getChanName(), cookie, uriString);
-				notifyReady(true);
 				return true;
 			}
 			return false;
 		}
 
 		@Override
-		public boolean isUriAllowed(Uri uri) {
+		public boolean onLoad(Uri uri) {
 			if ("static.stormwall.pro".equals(uri.getHost())) {
 				wasChecked = true;
 				return true;

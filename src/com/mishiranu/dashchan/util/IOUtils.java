@@ -215,6 +215,18 @@ public class IOUtils {
 		return new FileOutputStream(file);
 	}
 
+	public static void deleteRecursive(File file) {
+		if (file.isDirectory()) {
+			File[] files = file.listFiles();
+			if (files != null) {
+				for (File innerFile : files) {
+					deleteRecursive(innerFile);
+				}
+			}
+		}
+		file.delete();
+	}
+
 	private static final MessageDigest DIGEST_SHA_256;
 	private static final byte[] DIGEST_BUFFER = new byte[8192];
 

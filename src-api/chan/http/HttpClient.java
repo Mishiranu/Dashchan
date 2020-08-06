@@ -224,6 +224,10 @@ public class HttpClient {
 		return true;
 	}
 
+	public Proxy getProxy(String chanName) {
+		return proxies.get(chanName);
+	}
+
 	static final class DisconnectedIOException extends IOException {}
 
 	HostnameVerifier getHostnameVerifier(boolean verifyCertificate) {

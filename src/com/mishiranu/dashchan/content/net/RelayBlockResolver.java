@@ -1,35 +1,33 @@
 package com.mishiranu.dashchan.content.net;
 
-import android.annotation.SuppressLint;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.net.Uri;
-import android.os.Handler;
-import android.os.Looper;
-import android.view.View;
-import android.view.ViewGroup;
-import android.webkit.CookieManager;
-import android.webkit.WebResourceResponse;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
+import android.os.IBinder;
+import android.os.RemoteException;
+import android.os.SystemClock;
 import chan.content.ChanLocator;
+import chan.http.HttpClient;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.content.MainApplication;
+import com.mishiranu.dashchan.content.service.webview.IRequestCallback;
+import com.mishiranu.dashchan.content.service.webview.IWebViewService;
+import com.mishiranu.dashchan.content.service.webview.WebViewService;
 import com.mishiranu.dashchan.preference.AdvancedPreferences;
-import com.mishiranu.dashchan.util.WebViewUtils;
-import java.util.ArrayList;
+import com.mishiranu.dashchan.preference.Preferences;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.Map;
 
 public class RelayBlockResolver {
 	private static final RelayBlockResolver INSTANCE = new RelayBlockResolver();
 	private static final int WEB_VIEW_TIMEOUT = 20000;
-
-	private static final int MESSAGE_HANDLE_WEB_VIEW = 1;
-	private static final int MESSAGE_HANDLE_NEXT_WEB_VIEW = 2;
 
 	public static RelayBlockResolver getInstance() {
 		return INSTANCE;
@@ -37,65 +35,16 @@ public class RelayBlockResolver {
 
 	private RelayBlockResolver() {}
 
-	public static abstract class Client {
-		private final ArrayList<CheckHolder> checkHolders = new ArrayList<>();
-		private boolean started = false;
+	public interface Client {
+		String getCookieName();
+		void storeCookie(String chanName, String cookie);
 
-		public final void add(CheckHolder checkHolder) {
-			checkHolders.add(checkHolder);
-			if (started) {
-				synchronized (checkHolder) {
-					checkHolder.started = true;
-					checkHolder.notifyAll();
-				}
-			}
-		}
-
-		public String getChanName() {
-			return checkHolders.get(0).chanName;
-		}
-
-		public void notifyStarted() {
-			started = true;
-			for (CheckHolder checkHolder : checkHolders) {
-				synchronized (checkHolder) {
-					checkHolder.started = true;
-					checkHolder.notifyAll();
-				}
-			}
-		}
-
-		public void notifyReady(boolean success) {
-			for (CheckHolder checkHolder : checkHolders) {
-				synchronized (checkHolder) {
-					checkHolder.success = success;
-					checkHolder.ready = true;
-					checkHolder.notifyAll();
-				}
-			}
-		}
-
-		public boolean onPageFinished(WebView webView, String uriString) {
+		default boolean onPageFinished(String uriString, String title) {
 			return false;
 		}
 
-		public boolean isUriAllowed(Uri uri) {
+		default boolean onLoad(Uri uri) {
 			return true;
-		}
-
-		public String extractCookie(String uriString, String name) {
-			String data = CookieManager.getInstance().getCookie(uriString);
-			if (data != null) {
-				String[] splitted = data.split(";\\s*");
-				if (splitted != null) {
-					for (int i = 0; i < splitted.length; i++) {
-						if (!StringUtils.isEmptyOrWhitespace(splitted[i]) && splitted[i].startsWith(name + "=")) {
-							return splitted[i].substring(name.length() + 1);
-						}
-					}
-				}
-			}
-			return null;
 		}
 	}
 
@@ -103,39 +52,14 @@ public class RelayBlockResolver {
 		Client newClient();
 	}
 
-	public static class CheckHolder {
-		public final String chanName;
-		public final ClientFactory clientFactory;
+	private static class CheckHolder {
+		public final Client client;
 
-		public volatile boolean started;
-		public volatile boolean ready;
-		public volatile boolean success;
+		public boolean ready = false;
+		public boolean success = false;
 
-		public CheckHolder(String chanName, ClientFactory clientFactory) {
-			this.chanName = chanName;
-			this.clientFactory = clientFactory;
-		}
-
-		public void waitReady(boolean infinite) throws InterruptedException {
-			synchronized (this) {
-				if (infinite) {
-					while (!ready) {
-						wait();
-					}
-				} else {
-					while (!started) {
-						wait();
-					}
-					long t = System.currentTimeMillis();
-					while (!ready) {
-						long dt = WEB_VIEW_TIMEOUT + t - System.currentTimeMillis();
-						if (dt <= 0) {
-							return;
-						}
-						wait(dt);
-					}
-				}
-			}
+		private CheckHolder(Client client) {
+			this.client = client;
 		}
 	}
 
@@ -151,112 +75,121 @@ public class RelayBlockResolver {
 		}
 	}
 
-	private class ResolverClient extends WebViewClient {
-		@Override
-		public void onPageFinished(WebView view, String url) {
-			super.onPageFinished(view, url);
-
-			if (currentClient != null && currentClient.onPageFinished(view, url)) {
-				view.stopLoading();
-				handleNextWebView();
-			}
-		}
-
-		@SuppressWarnings("deprecation")
-		@Override
-		public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
-			Uri uri = Uri.parse(url);
-			if (currentClient != null && currentClient.isUriAllowed(uri)) {
-				return super.shouldInterceptRequest(view, url);
-			} else {
-				return new WebResourceResponse("text/html", "UTF-8", null);
-			}
-		}
-	}
-
-	private WebView webView;
-	private Client currentClient;
-
-	@SuppressLint("SetJavaScriptEnabled")
-	private void initWebView() {
-		if (webView == null) {
-			webView = new WebView(MainApplication.getInstance());
-			webView.getSettings().setJavaScriptEnabled(true);
-			webView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
-			webView.getSettings().setAppCacheEnabled(false);
-			webView.setWebViewClient(new ResolverClient());
-			webView.setLayoutParams(new ViewGroup.LayoutParams(480, 270));
-			int measureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
-			webView.measure(measureSpec, measureSpec);
-			webView.layout(0, 0, webView.getLayoutParams().width, webView.getLayoutParams().height);
-			webView.setInitialScale(25);
-		}
-	}
-
-	private final LinkedHashMap<String, Client> clients = new LinkedHashMap<>();
-
-	private final Handler handler = new Handler(Looper.getMainLooper(), message -> {
-		switch (message.what) {
-			case MESSAGE_HANDLE_WEB_VIEW: {
-				initWebView();
-				CheckHolder checkHolder = (CheckHolder) message.obj;
-				Client client = clients.get(checkHolder.chanName);
-				if (client == null) {
-					client = checkHolder.clientFactory.newClient();
-					clients.put(checkHolder.chanName, client);
-				}
-				client.add(checkHolder);
-				if (!message.getTarget().hasMessages(MESSAGE_HANDLE_NEXT_WEB_VIEW)) {
-					handleWebView(client);
-				}
-				return true;
-			}
-			case MESSAGE_HANDLE_NEXT_WEB_VIEW: {
-				handleNextWebView();
-				return true;
-			}
-		}
-		return false;
-	});
-
-	private void handleNextWebView() {
-		handler.removeMessages(MESSAGE_HANDLE_NEXT_WEB_VIEW);
-		Iterator<LinkedHashMap.Entry<String, Client>> iterator = clients.entrySet().iterator();
-		Client client = null;
-		if (iterator.hasNext()) {
-			iterator.next();
-			iterator.remove();
-			if (iterator.hasNext()) {
-				client = iterator.next().getValue();
-			}
-		}
-		handleWebView(client);
-	}
-
-	private void handleWebView(Client client) {
-		webView.stopLoading();
-		WebViewUtils.clearAll(webView);
-		currentClient = client;
-		if (client != null) {
-			client.notifyStarted();
-			String chanName = client.getChanName();
-			ChanLocator locator = ChanLocator.get(chanName);
-			webView.getSettings().setUserAgentString(AdvancedPreferences.getUserAgent(chanName));
-			webView.loadUrl(locator.buildPath().toString());
-			handler.sendEmptyMessageDelayed(MESSAGE_HANDLE_NEXT_WEB_VIEW, WEB_VIEW_TIMEOUT);
-		}
-	}
+	private final HashMap<String, CheckHolder> checkHolders = new HashMap<>();
 
 	public boolean runWebView(String chanName, ClientFactory clientFactory) {
-		CheckHolder checkHolder = new CheckHolder(chanName, clientFactory);
-		handler.obtainMessage(MESSAGE_HANDLE_WEB_VIEW, checkHolder).sendToTarget();
-		try {
-			checkHolder.waitReady(false);
-			return checkHolder.success;
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-			return false;
+		CheckHolder checkHolder;
+		boolean handle = false;
+		synchronized (checkHolders) {
+			checkHolder = checkHolders.get(chanName);
+			if (checkHolder == null) {
+				checkHolder = new CheckHolder(clientFactory.newClient());
+				checkHolders.put(chanName, checkHolder);
+				handle = true;
+			}
 		}
+
+		if (handle) {
+			Context context = MainApplication.getInstance();
+			class Status {
+				boolean established;
+				IWebViewService service;
+			}
+			Status status = new Status();
+			ServiceConnection connection = new ServiceConnection() {
+				@Override
+				public void onServiceConnected(ComponentName componentName, IBinder binder) {
+					synchronized (status) {
+						status.established = true;
+						status.service = IWebViewService.Stub.asInterface(binder);
+						status.notifyAll();
+					}
+				}
+
+				@Override
+				public void onServiceDisconnected(ComponentName componentName) {
+					synchronized (status) {
+						status.established = true;
+						status.service = null;
+						status.notifyAll();
+					}
+				}
+			};
+
+			try {
+				context.bindService(new Intent(context, WebViewService.class), connection, Context.BIND_AUTO_CREATE);
+				IWebViewService service;
+				synchronized (status) {
+					long startTime = SystemClock.elapsedRealtime();
+					long waitTime = 10000;
+					while (!status.established) {
+						long time = waitTime - (SystemClock.elapsedRealtime() - startTime);
+						if (time <= 0) {
+							break;
+						}
+						try {
+							status.wait(time);
+						} catch (InterruptedException e) {
+							Thread.currentThread().interrupt();
+						}
+					}
+					service = status.service;
+				}
+				if (service != null) {
+					String cookie = null;
+					try {
+						CheckHolder checkHolderFinal = checkHolder;
+						IRequestCallback requestCallback = new IRequestCallback.Stub() {
+							@Override
+							public boolean onPageFinished(String uriString, String title) {
+								return checkHolderFinal.client.onPageFinished(uriString, title);
+							}
+
+							@Override
+							public boolean onLoad(String uriString) {
+								return checkHolderFinal.client.onLoad(Uri.parse(uriString));
+							}
+						};
+						ChanLocator locator = ChanLocator.get(chanName);
+						Proxy proxy = HttpClient.getInstance().getProxy(chanName);
+						InetSocketAddress httpProxyAddress = proxy != null && proxy.type() == Proxy.Type.HTTP
+								? (InetSocketAddress) proxy.address() : null;
+						cookie = service.loadWithCookieResult(checkHolder.client.getCookieName(),
+								locator.buildPath().toString(), AdvancedPreferences.getUserAgent(chanName),
+								httpProxyAddress != null ? httpProxyAddress.getHostName() : null,
+								httpProxyAddress != null ? httpProxyAddress.getPort() : 0,
+								locator.isUseHttps() && Preferences.isVerifyCertificate(), WEB_VIEW_TIMEOUT,
+								requestCallback);
+					} catch (RemoteException e) {
+						e.printStackTrace();
+					}
+					checkHolder.client.storeCookie(chanName, cookie);
+					checkHolder.success = !StringUtils.isEmpty(cookie);
+				}
+			} finally {
+				context.unbindService(connection);
+			}
+
+			synchronized (checkHolder) {
+				checkHolder.ready = true;
+				checkHolder.notifyAll();
+			}
+			synchronized (checkHolders) {
+				checkHolders.remove(chanName);
+			}
+		} else {
+			synchronized (checkHolder) {
+				while (!checkHolder.ready) {
+					try {
+						checkHolder.wait();
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+						break;
+					}
+				}
+			}
+		}
+		return checkHolder.success;
 	}
 
 	public Result checkResponse(String chanName, Uri uri, HttpHolder holder) throws HttpException {
