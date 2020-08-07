@@ -1,7 +1,6 @@
 package com.mishiranu.dashchan.ui.posting;
 
 import android.annotation.TargetApi;
-import android.app.ProgressDialog;
 import android.content.ClipData;
 import android.content.ComponentName;
 import android.content.Context;
@@ -79,6 +78,7 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.DropdownView;
+import com.mishiranu.dashchan.widget.ProgressDialog;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -870,14 +870,8 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 
 	@Override
 	public void onSendPostStart(boolean progressMode) {
-		// TODO Handle deprecation
-		progressDialog = new ProgressDialog(this);
+		progressDialog = new ProgressDialog(this, progressMode ? "%1$d / %2$d KB" : null);
 		progressDialog.setCancelable(true);
-		progressDialog.setCanceledOnTouchOutside(false);
-		if (progressMode) {
-			progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-			progressDialog.setProgressNumberFormat("%1$d / %2$d KB");
-		}
 		progressDialog.setOnCancelListener(sendPostCancelListener);
 		progressDialog.setButton(ProgressDialog.BUTTON_POSITIVE, getString(R.string.action_minimize),
 				sendPostMinimizeListener);
@@ -888,7 +882,6 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 	@Override
 	public void onSendPostChangeProgressState(boolean progressMode, SendPostTask.ProgressState progressState,
 			int attachmentIndex, int attachmentsCount) {
-		// TODO Handle deprecation
 		if (progressDialog != null) {
 			switch (progressState) {
 				case CONNECTING: {
@@ -918,10 +911,9 @@ public class PostingActivity extends StateActivity implements View.OnClickListen
 
 	@Override
 	public void onSendPostChangeProgressValue(int progress, int progressMax) {
-		// TODO Handle deprecation
 		if (progressDialog != null) {
 			progressDialog.setMax(progressMax);
-			progressDialog.setProgress(progress);
+			progressDialog.setValue(progress);
 		}
 	}
 

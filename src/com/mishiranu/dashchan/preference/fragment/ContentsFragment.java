@@ -3,7 +3,6 @@ package com.mishiranu.dashchan.preference.fragment;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -34,6 +33,7 @@ import com.mishiranu.dashchan.preference.core.EditPreference;
 import com.mishiranu.dashchan.preference.core.Preference;
 import com.mishiranu.dashchan.preference.core.PreferenceFragment;
 import com.mishiranu.dashchan.util.ToastUtils;
+import com.mishiranu.dashchan.widget.ProgressDialog;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Locale;
@@ -331,10 +331,8 @@ public class ContentsFragment extends PreferenceFragment {
 		@NonNull
 		@Override
 		public ProgressDialog onCreateDialog(Bundle savedInstanceState) {
-			// TODO Handle deprecation
-			ProgressDialog dialog = new ProgressDialog(requireContext());
+			ProgressDialog dialog = new ProgressDialog(requireContext(), null);
 			dialog.setMessage(getString(R.string.message_clearing));
-			dialog.setCanceledOnTouchOutside(false);
 			return dialog;
 		}
 

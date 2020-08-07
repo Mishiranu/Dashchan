@@ -2,7 +2,6 @@ package com.mishiranu.dashchan.preference.fragment;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -37,6 +36,7 @@ import com.mishiranu.dashchan.preference.core.MultipleEditTextPreference;
 import com.mishiranu.dashchan.preference.core.Preference;
 import com.mishiranu.dashchan.preference.core.PreferenceFragment;
 import com.mishiranu.dashchan.util.ToastUtils;
+import com.mishiranu.dashchan.widget.ProgressDialog;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -351,9 +351,7 @@ public class ChanFragment extends PreferenceFragment {
 		@NonNull
 		@Override
 		public ProgressDialog onCreateDialog(Bundle savedInstanceState) {
-			// TODO Handle deprecation
-			ProgressDialog dialog = new ProgressDialog(requireContext());
-			dialog.setCanceledOnTouchOutside(false);
+			ProgressDialog dialog = new ProgressDialog(requireContext(), null);
 			dialog.setMessage(getString(R.string.message_loading));
 			return dialog;
 		}

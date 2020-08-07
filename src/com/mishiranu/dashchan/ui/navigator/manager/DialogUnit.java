@@ -1,36 +1,10 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui.navigator.manager;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
 
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
@@ -62,13 +36,11 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.ScrollView;
 import android.widget.TextView;
-
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
 import chan.content.model.Posts;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.ImageLoader;
@@ -97,9 +69,18 @@ import com.mishiranu.dashchan.widget.CommentTextView;
 import com.mishiranu.dashchan.widget.DialogStack;
 import com.mishiranu.dashchan.widget.ExpandedScreen;
 import com.mishiranu.dashchan.widget.ListPosition;
+import com.mishiranu.dashchan.widget.ProgressDialog;
 import com.mishiranu.dashchan.widget.SafePasteEditText;
 import com.mishiranu.dashchan.widget.callback.BusyScrollListener;
 import com.mishiranu.dashchan.widget.callback.ScrollListenerComposite;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
 
 public class DialogUnit implements DialogStack.Callback {
 	private final UiManager uiManager;
@@ -1248,12 +1229,12 @@ public class DialogUnit implements DialogStack.Callback {
 
 		public PerformSendCallback(int localArchiveMax) {
 			Context context = uiManager.getContext();
-			dialog = new ProgressDialog(context);
 			if (localArchiveMax >= 0) {
+				dialog = new ProgressDialog(context, "%d / %d");
 				dialog.setMessage(context.getString(R.string.message_processing_data));
-				dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 				dialog.setMax(localArchiveMax);
 			} else {
+				dialog = new ProgressDialog(context, null);
 				dialog.setMessage(context.getString(R.string.message_sending));
 			}
 			dialog.setCanceledOnTouchOutside(false);
@@ -1312,7 +1293,7 @@ public class DialogUnit implements DialogStack.Callback {
 
 		@Override
 		public void onLocalArchivationProgressUpdate(int handledPostsCount) {
-			dialog.setProgress(handledPostsCount);
+			dialog.setValue(handledPostsCount);
 		}
 
 		@Override

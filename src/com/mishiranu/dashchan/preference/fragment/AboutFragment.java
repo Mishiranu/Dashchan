@@ -1,7 +1,6 @@
 package com.mishiranu.dashchan.preference.fragment;
 
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -30,6 +29,7 @@ import com.mishiranu.dashchan.preference.PreferencesActivity;
 import com.mishiranu.dashchan.preference.core.PreferenceFragment;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.ToastUtils;
+import com.mishiranu.dashchan.widget.ProgressDialog;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -157,10 +157,8 @@ public class AboutFragment extends PreferenceFragment {
 		@NonNull
 		@Override
 		public ProgressDialog onCreateDialog(Bundle savedInstanceState) {
-			// TODO Handle deprecation
-			ProgressDialog dialog = new ProgressDialog(requireContext());
+			ProgressDialog dialog = new ProgressDialog(requireContext(), null);
 			dialog.setMessage(getString(R.string.message_loading));
-			dialog.setCanceledOnTouchOutside(false);
 			return dialog;
 		}
 
