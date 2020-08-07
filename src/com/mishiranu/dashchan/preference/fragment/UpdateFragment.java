@@ -12,12 +12,10 @@ import android.text.style.ForegroundColorSpan;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
+import androidx.recyclerview.widget.RecyclerView;
 import chan.content.ChanConfiguration;
 import chan.content.ChanManager;
 import chan.util.CommonUtils;
@@ -31,6 +29,7 @@ import com.mishiranu.dashchan.preference.UpdaterActivity;
 import com.mishiranu.dashchan.preference.core.CheckPreference;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
+import com.mishiranu.dashchan.util.ViewUtils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -41,7 +40,7 @@ public class UpdateFragment extends BaseListFragment {
 	private static final String EXTRA_UPDATE_DATA_MAP = "updateDataMap";
 	private static final String EXTRA_TARGET_PREFIX = "target_";
 
-	private ArrayAdapter<ListItem> adapter;
+	private final ArrayList<ListItem> listItems = new ArrayList<>();
 	private ReadUpdateTask.UpdateDataMap updateDataMap;
 
 	private static final class ListItem {
@@ -96,8 +95,7 @@ public class UpdateFragment extends BaseListFragment {
 	private void updateTitle() {
 		int count = 0;
 		if (updateDataMap != null) {
-			for (int i = 0; i < adapter.getCount(); i++) {
-				ListItem listItem = adapter.getItem(i);
+			for (ListItem listItem : listItems) {
 				if (listItem.targetIndex > 0) {
 					count++;
 				}
@@ -115,20 +113,31 @@ public class UpdateFragment extends BaseListFragment {
 		updateTitle();
 		requireActivity().getActionBar().setSubtitle(null);
 
-		adapter = new ArrayAdapter<ListItem>(requireContext(), 0) {
+		getRecyclerView().setAdapter(new RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 			private final CheckPreference checkBoxViewGetter = new CheckPreference(requireContext(),
 					"", false, "title", "summary");
 
+			@Override
+			public int getItemCount() {
+				return listItems.size();
+			}
+
 			@NonNull
 			@Override
-			public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-				ListItem listItem = getItem(position);
-				if (convertView == null) {
-					CheckPreference.CheckViewHolder viewHolder = checkBoxViewGetter.createViewHolder(parent);
-					convertView = viewHolder.view;
-					convertView.setTag(viewHolder);
-				}
-				CheckPreference.CheckViewHolder viewHolder = (CheckPreference.CheckViewHolder) convertView.getTag();
+			public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+				CheckPreference.CheckViewHolder viewHolder = checkBoxViewGetter.createViewHolder(parent);
+				viewHolder.view.setTag(viewHolder);
+				return new RecyclerView.ViewHolder(viewHolder.view) {{
+					ViewUtils.setBackgroundPreservePadding(itemView, ResourceUtils
+							.getDrawable(itemView.getContext(), android.R.attr.selectableItemBackground, 0));
+					itemView.setOnClickListener(v -> onItemClick(getAdapterPosition()));
+				}};
+			}
+
+			@Override
+			public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+				ListItem listItem = listItems.get(position);
+				CheckPreference.CheckViewHolder viewHolder = (CheckPreference.CheckViewHolder) holder.itemView.getTag();
 				checkBoxViewGetter.setValue(listItem.targetIndex > 0);
 				checkBoxViewGetter.setEnabled(listItem.enabled);
 				checkBoxViewGetter.bindViewHolder(viewHolder);
@@ -143,10 +152,8 @@ public class UpdateFragment extends BaseListFragment {
 				} else {
 					viewHolder.summary.setText(listItem.target);
 				}
-				return convertView;
 			}
-		};
-		setListAdapter(adapter);
+		});
 		updateDataMap = (ReadUpdateTask.UpdateDataMap) requireArguments().getSerializable(EXTRA_UPDATE_DATA_MAP);
 		buildData(savedInstanceState);
 	}
@@ -155,8 +162,7 @@ public class UpdateFragment extends BaseListFragment {
 	public void onSaveInstanceState(@NonNull Bundle outState) {
 		super.onSaveInstanceState(outState);
 
-		for (int i = 0; i < adapter.getCount(); i++) {
-			ListItem listItem = adapter.getItem(i);
+		for (ListItem listItem : listItems) {
 			outState.putInt(EXTRA_TARGET_PREFIX + listItem.extensionName, listItem.targetIndex);
 		}
 	}
@@ -260,14 +266,14 @@ public class UpdateFragment extends BaseListFragment {
 	}
 
 	private void buildData(Bundle savedInstanceState) {
-		adapter.clear();
-		adapter.addAll(buildData(requireContext(), updateDataMap, savedInstanceState));
+		listItems.clear();
+		listItems.addAll(buildData(requireContext(), updateDataMap, savedInstanceState));
+		getRecyclerView().getAdapter().notifyDataSetChanged();
 		updateTitle();
 	}
 
-	@Override
-	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		ListItem listItem = adapter.getItem(position);
+	private void onItemClick(int position) {
+		ListItem listItem = listItems.get(position);
 		ArrayList<ReadUpdateTask.UpdateItem> updateItems = updateDataMap.get(listItem.extensionName);
 		ArrayList<String> targets = new ArrayList<>();
 		targets.add(getString(R.string.text_keep_current_version));
@@ -286,8 +292,7 @@ public class UpdateFragment extends BaseListFragment {
 		ActionIconSet set = new ActionIconSet(requireContext());
 		long length = 0;
 		if (updateDataMap != null) {
-			for (int i = 0; i < adapter.getCount(); i++) {
-				ListItem listItem = adapter.getItem(i);
+			for (ListItem listItem : listItems) {
 				if (listItem.targetIndex > 0) {
 					length += updateDataMap.get(listItem.extensionName).get(listItem.targetIndex).length;
 				}
@@ -318,8 +323,8 @@ public class UpdateFragment extends BaseListFragment {
 				boolean downloadManagerError = false;
 				long clientId = -1;
 				ArrayList<Long> ids = new ArrayList<>();
-				for (int i = 0; i < adapter.getCount(); i++) {
-					ListItem listItem = adapter.getItem(i);
+				for (int i = 0; i < listItems.size(); i++) {
+					ListItem listItem = listItems.get(i);
 					ReadUpdateTask.UpdateItem updateItem = updateDataMap.get(listItem.extensionName)
 							.get(listItem.targetIndex);
 					if (updateItem.source != null) {
@@ -394,27 +399,27 @@ public class UpdateFragment extends BaseListFragment {
 					.get(listItem.targetIndex);
 			int minVersion = targetAppUpdateItem.minVersion;
 			int maxVersion = targetAppUpdateItem.version;
-			for (int i = 1; i < adapter.getCount(); i++) {
-				handleListItemValidity(adapter.getItem(i), minVersion, maxVersion, warningUnsupported);
+			for (ListItem invalidateListItem : listItems) {
+				handleListItemValidity(invalidateListItem, minVersion, maxVersion, warningUnsupported);
 			}
 		} else {
-			ListItem appItem = adapter.getItem(0);
-			ReadUpdateTask.UpdateItem targetUpdateItem = updateDataMap.get(appItem.extensionName)
-					.get(appItem.targetIndex);
+			ListItem applicationListItem = listItems.get(0);
+			ReadUpdateTask.UpdateItem targetUpdateItem = updateDataMap.get(applicationListItem.extensionName)
+					.get(applicationListItem.targetIndex);
 			handleListItemValidity(listItem, targetUpdateItem.minVersion, targetUpdateItem.version, warningUnsupported);
 		}
 		// Called method must invoke notifyDataSetChanged later
 	}
 
 	private void onTargetSelected(String extensionName, int targetIndex) {
-		for (int i = 0; i < adapter.getCount(); i++) {
-			ListItem listItem = adapter.getItem(i);
+		for (int i = 0; i < listItems.size(); i++) {
+			ListItem listItem = listItems.get(i);
 			if (extensionName.equals(listItem.extensionName)) {
 				ArrayList<ReadUpdateTask.UpdateItem> updateItems = updateDataMap.get(extensionName);
 				if (listItem.targetIndex != targetIndex) {
 					listItem.setTarget(requireContext(), updateItems, targetIndex);
 					onTargetChanged(listItem);
-					adapter.notifyDataSetChanged();
+					getRecyclerView().getAdapter().notifyDataSetChanged();
 					updateTitle();
 				}
 				break;

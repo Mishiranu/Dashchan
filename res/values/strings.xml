@@ -211,7 +211,6 @@
 	<string name="action_restart">Restart</string>
 	<string name="action_remove_from_favorites">Remove from favorites</string>
 	<string name="action_remove_from_history">Remove from history</string>
-	<string name="action_remove_rule">Remove rule</string>
 	<string name="action_rename">Rename</string>
 	<string name="action_reply">Reply</string>
 	<string name="action_report">Report</string>

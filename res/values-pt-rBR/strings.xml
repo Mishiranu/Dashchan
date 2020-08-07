@@ -192,7 +192,6 @@
 	<string name="action_restart">Reiniciar</string>
 	<string name="action_remove_from_favorites">Remover dos favoritos</string>
 	<string name="action_remove_from_history">Remover do histórico</string>
-	<string name="action_remove_rule">Remover regra</string>
 	<string name="action_rename">Renomear</string>
 	<string name="action_reply">Responder</string>
 	<string name="action_report">Reportar</string>

@@ -227,7 +227,6 @@
 	<string name="action_restart">Перезапуск</string>
 	<string name="action_remove_from_favorites">Удалить из избранного</string>
 	<string name="action_remove_from_history">Удалить из истории</string>
-	<string name="action_remove_rule">Удалить правило</string>
 	<string name="action_rename">Переименовать</string>
 	<string name="action_reply">Ответить</string>
 	<string name="action_report">Пожаловаться</string>

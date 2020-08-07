@@ -8,10 +8,9 @@ import android.text.style.TypefaceSpan;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import chan.content.ChanConfiguration;
 import chan.content.ChanManager;
 import chan.util.StringUtils;
@@ -88,21 +87,28 @@ public class StatisticsFragment extends BaseListFragment {
 			}
 		}
 
-		setListAdapter(new BaseAdapter() {
+		getRecyclerView().setAdapter(new RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 			@Override
-			public View getView(int position, View convertView, ViewGroup parent) {
-				if (convertView == null) {
-					convertView = ViewFactory.makeTwoLinesListItem(parent, false);
-				}
-				ViewFactory.TwoLinesViewHolder holder = (ViewFactory.TwoLinesViewHolder) convertView.getTag();
-				ListItem listItem = getItem(position);
-				holder.text1.setText(listItem.title);
+			public int getItemCount() {
+				return listItems.size();
+			}
+
+			@NonNull
+			@Override
+			public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+				return new RecyclerView.ViewHolder(ViewFactory.makeTwoLinesListItem(parent, false)) {};
+			}
+
+			@Override
+			public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+				ViewFactory.TwoLinesViewHolder viewHolder = (ViewFactory.TwoLinesViewHolder) holder.itemView.getTag();
+				ListItem listItem = listItems.get(position);
+				viewHolder.text1.setText(listItem.title);
 				SpannableStringBuilder spannable = new SpannableStringBuilder();
 				appendSpannedLine(spannable, R.string.text_threads_viewed, listItem.views);
 				appendSpannedLine(spannable, R.string.text_posts_sent, listItem.posts);
 				appendSpannedLine(spannable, R.string.text_threads_created, listItem.threads);
-				holder.text2.setText(spannable);
-				return convertView;
+				viewHolder.text2.setText(spannable);
 			}
 
 			private void appendSpannedLine(SpannableStringBuilder spannable, int resId, int value) {
@@ -117,31 +123,6 @@ public class StatisticsFragment extends BaseListFragment {
 
 			private Object getBoldSpan() {
 				return C.API_LOLLIPOP ? new TypefaceSpan("sans-serif-medium") : new StyleSpan(Typeface.BOLD);
-			}
-
-			@Override
-			public long getItemId(int position) {
-				return 0;
-			}
-
-			@Override
-			public ListItem getItem(int position) {
-				return listItems.get(position);
-			}
-
-			@Override
-			public int getCount() {
-				return listItems.size();
-			}
-
-			@Override
-			public boolean areAllItemsEnabled() {
-				return false;
-			}
-
-			@Override
-			public boolean isEnabled(int position) {
-				return false;
 			}
 		});
 	}

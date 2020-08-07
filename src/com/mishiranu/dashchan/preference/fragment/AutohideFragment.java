@@ -8,7 +8,6 @@ import android.text.Editable;
 import android.text.Layout;
 import android.text.TextWatcher;
 import android.text.style.BackgroundColorSpan;
-import android.view.ContextMenu;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -17,14 +16,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.AdapterView;
-import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
+import androidx.recyclerview.widget.RecyclerView;
 import chan.content.ChanConfiguration;
 import chan.content.ChanManager;
 import chan.util.StringUtils;
@@ -34,6 +32,7 @@ import com.mishiranu.dashchan.content.storage.AutohideStorage;
 import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.preference.PreferencesActivity;
 import com.mishiranu.dashchan.util.ResourceUtils;
+import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.CustomSearchView;
 import com.mishiranu.dashchan.widget.ErrorEditTextSetter;
 import com.mishiranu.dashchan.widget.MenuExpandListener;
@@ -48,7 +47,6 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 public class AutohideFragment extends BaseListFragment implements PreferencesActivity.ActivityHandler {
-	private final Adapter adapter = new Adapter();
 	private final ArrayList<AutohideStorage.AutohideItem> items = new ArrayList<>();
 
 	private CustomSearchView searchView;
@@ -62,7 +60,7 @@ public class AutohideFragment extends BaseListFragment implements PreferencesAct
 		searchView = new CustomSearchView(C.API_LOLLIPOP ? new ContextThemeWrapper(requireContext(),
 				R.style.Theme_Special_White) : requireActivity().getActionBar().getThemedContext());
 		searchView.setHint(getString(R.string.action_filter));
-		searchView.setOnChangeListener(adapter::setSearchQuery);
+		searchView.setOnChangeListener(query -> ((Adapter) getRecyclerView().getAdapter()).setSearchQuery(query));
 	}
 
 	@Override
@@ -72,9 +70,11 @@ public class AutohideFragment extends BaseListFragment implements PreferencesAct
 		setHasOptionsMenu(true);
 		requireActivity().setTitle(R.string.preference_header_autohide);
 		requireActivity().getActionBar().setSubtitle(null);
-		setEmptyText(R.string.message_no_rules);
 		items.addAll(AutohideStorage.getInstance().getItems());
-		setListAdapter(adapter);
+		if (items.isEmpty()) {
+			setEmptyText(getString(R.string.message_no_rules));
+		}
+		getRecyclerView().setAdapter(new Adapter());
 	}
 
 	@Override
@@ -105,10 +105,9 @@ public class AutohideFragment extends BaseListFragment implements PreferencesAct
 		searchMenuItem = menu.add(0, OPTIONS_MENU_SEARCH, 0, R.string.action_filter).setActionView(searchView)
 				.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW)
 				.setOnActionExpandListener(new MenuExpandListener((menuItem, expand) -> {
-					adapter.setSearchQuery("");
+					((Adapter) getRecyclerView().getAdapter()).setSearchQuery("");
 					searchExpanded = expand;
 					onPrepareOptionsMenu(menu);
-					setEmptyText(expand ? "" : getString(R.string.message_no_rules));
 					return true;
 				}));
 		super.onCreateOptionsMenu(menu, inflater);
@@ -131,55 +130,34 @@ public class AutohideFragment extends BaseListFragment implements PreferencesAct
 		return super.onOptionsItemSelected(item);
 	}
 
-	private static final int CONTEXT_MENU_REMOVE_RULE = 0;
-
-	@Override
-	public void onCreateContextMenu(@NonNull ContextMenu menu, @NonNull View v, ContextMenu.ContextMenuInfo menuInfo) {
-		super.onCreateContextMenu(menu, v, menuInfo);
-		menu.add(Menu.NONE, CONTEXT_MENU_REMOVE_RULE, 0, R.string.action_remove_rule);
-	}
-
-	@Override
-	public boolean onContextItemSelected(MenuItem item) {
-		AdapterView.AdapterContextMenuInfo menuInfo = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-		switch (item.getItemId()) {
-			case CONTEXT_MENU_REMOVE_RULE: {
-				int itemIndex = items.indexOf(adapter.getItem(menuInfo.position));
-				AutohideStorage.getInstance().delete(itemIndex);
-				items.remove(itemIndex);
-				adapter.notifyDataSetChanged();
-				break;
-			}
-		}
-		return super.onContextItemSelected(item);
-	}
-
-	@Override
-	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		editRule(adapter.getItem(position), position);
-	}
-
 	private void editRule(AutohideStorage.AutohideItem autohideItem, int index) {
 		AutohideDialog dialog = new AutohideDialog(autohideItem, index);
-		dialog.setTargetFragment(this, 0);
-		dialog.show(getParentFragmentManager(), AutohideDialog.class.getName());
+		dialog.show(getChildFragmentManager(), AutohideDialog.class.getName());
 	}
 
 	private void onEditComplete(AutohideStorage.AutohideItem autohideItem, int index) {
+		Adapter adapter = (Adapter) getRecyclerView().getAdapter();
 		if (index == -1) {
-			// Also will set id to item
 			AutohideStorage.getInstance().add(autohideItem);
 			items.add(autohideItem);
-			adapter.notifyDataSetChanged();
+			setEmptyText(null);
 		} else if (index >= 0) {
-			int itemIndex = items.indexOf(adapter.getItem(index));
-			AutohideStorage.getInstance().update(itemIndex, autohideItem);
-			items.set(itemIndex, autohideItem);
-			adapter.notifyDataSetChanged();
+			AutohideStorage.getInstance().update(index, autohideItem);
+			items.set(index, autohideItem);
+		}
+		adapter.invalidate();
+	}
+
+	private void onDelete(int index) {
+		AutohideStorage.getInstance().delete(index);
+		items.remove(index);
+		((Adapter) getRecyclerView().getAdapter()).invalidate();
+		if (items.isEmpty()) {
+			setEmptyText(getString(R.string.message_no_rules));
 		}
 	}
 
-	private class Adapter extends BaseAdapter {
+	private class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 		private final ArrayList<AutohideStorage.AutohideItem> filteredItems = new ArrayList<>();
 		private String searchQuery = "";
 
@@ -199,30 +177,37 @@ public class AutohideFragment extends BaseListFragment implements PreferencesAct
 			notifyDataSetChanged();
 		}
 
-		@Override
+		public void invalidate() {
+			setSearchQuery(searchQuery);
+		}
+
 		public AutohideStorage.AutohideItem getItem(int position) {
 			return !StringUtils.isEmpty(searchQuery) ? filteredItems.get(position) : items.get(position);
 		}
 
 		@Override
-		public long getItemId(int position) {
-			return 0;
-		}
-
-		@Override
-		public int getCount() {
+		public int getItemCount() {
 			return !StringUtils.isEmpty(searchQuery) ? filteredItems.size() : items.size();
 		}
 
-		@SuppressWarnings("UnusedAssignment")
+		@NonNull
 		@Override
-		public View getView(int position, View convertView, ViewGroup parent) {
-			if (convertView == null) {
-				convertView = ViewFactory.makeTwoLinesListItem(parent, true);
-			}
-			ViewFactory.TwoLinesViewHolder holder = (ViewFactory.TwoLinesViewHolder) convertView.getTag();
+		public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+			return new RecyclerView.ViewHolder(ViewFactory.makeTwoLinesListItem(parent, true)) {{
+				ViewUtils.setBackgroundPreservePadding(itemView, ResourceUtils
+						.getDrawable(itemView.getContext(), android.R.attr.selectableItemBackground, 0));
+				itemView.setOnClickListener(v -> {
+					AutohideStorage.AutohideItem item = getItem(getAdapterPosition());
+					editRule(item, items.indexOf(item));
+				});
+			}};
+		}
+
+		@Override
+		public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+			ViewFactory.TwoLinesViewHolder viewHolder = (ViewFactory.TwoLinesViewHolder) holder.itemView.getTag();
 			AutohideStorage.AutohideItem autohideItem = getItem(position);
-			holder.text1.setText(StringUtils.isEmpty(autohideItem.value)
+			viewHolder.text1.setText(StringUtils.isEmpty(autohideItem.value)
 					? getString(R.string.text_all_posts) : autohideItem.value);
 			StringBuilder builder = new StringBuilder();
 			boolean and = false;
@@ -287,7 +272,6 @@ public class AutohideFragment extends BaseListFragment implements PreferencesAct
 						builder.append(" | ");
 					}
 					builder.append("name");
-					or = true;
 				}
 				if (and && orCount > 1) {
 					builder.append(')');
@@ -298,13 +282,11 @@ public class AutohideFragment extends BaseListFragment implements PreferencesAct
 				}
 				builder.append("false");
 			}
-			holder.text2.setText(builder);
-			return convertView;
+			viewHolder.text2.setText(builder);
 		}
 	}
 
-	public static class AutohideDialog extends DialogFragment implements View.OnClickListener,
-			DialogInterface.OnClickListener {
+	public static class AutohideDialog extends DialogFragment implements View.OnClickListener {
 		private static final String EXTRA_ITEM = "item";
 		private static final String EXTRA_INDEX = "index";
 
@@ -402,10 +384,17 @@ public class AutohideFragment extends BaseListFragment implements PreferencesAct
 		@NonNull
 		@Override
 		public AlertDialog onCreateDialog(Bundle savedInstanceState) {
-			AlertDialog dialog = new AlertDialog.Builder(requireContext())
-					.setView(scrollView).setPositiveButton(R.string.action_save, this)
+			int index = requireArguments().getInt(EXTRA_INDEX);
+			AlertDialog.Builder builder = new AlertDialog.Builder(requireContext())
+					.setView(scrollView)
 					.setNegativeButton(android.R.string.cancel, null)
-					.create();
+					.setPositiveButton(R.string.action_save, (d, which) -> ((AutohideFragment) getParentFragment())
+							.onEditComplete(readDialogView(), index));
+			if (index >= 0) {
+				builder.setNeutralButton(R.string.action_delete,
+						(d, which) -> ((AutohideFragment) getParentFragment()).onDelete(index));
+			}
+			AlertDialog dialog = builder.create();
 			dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 			return dialog;
 		}
@@ -413,8 +402,7 @@ public class AutohideFragment extends BaseListFragment implements PreferencesAct
 		@Override
 		public void onClick(View v) {
 			MultipleChanDialog dialog = new MultipleChanDialog(new ArrayList<>(selectedChanNames));
-			dialog.setTargetFragment(this, 0);
-			dialog.show(getParentFragmentManager(), MultipleChanDialog.class.getName());
+			dialog.show(getChildFragmentManager(), MultipleChanDialog.class.getName());
 		}
 
 		private void updateSelectedText() {
@@ -445,12 +433,6 @@ public class AutohideFragment extends BaseListFragment implements PreferencesAct
 			return new AutohideStorage.AutohideItem(selectedChanNames.size() > 0 ? selectedChanNames : null,
 					boardName, threadNumber, optionOriginalPost, optionSage,
 					optionSubject, optionComment, optionName, value);
-		}
-
-		@Override
-		public void onClick(DialogInterface dialog, int which) {
-			((AutohideFragment) getTargetFragment()).onEditComplete(readDialogView(),
-					requireArguments().getInt(EXTRA_INDEX));
 		}
 
 		private void onChansSelected(ArrayList<String> selected) {
@@ -574,8 +556,8 @@ public class AutohideFragment extends BaseListFragment implements PreferencesAct
 		};
 	}
 
-	public static class MultipleChanDialog extends DialogFragment implements DialogInterface.OnMultiChoiceClickListener,
-			DialogInterface.OnClickListener {
+	public static class MultipleChanDialog extends DialogFragment
+			implements DialogInterface.OnMultiChoiceClickListener {
 		private static final String EXTRA_SELECTED = "selected";
 		private static final String EXTRA_CHECKED = "checked";
 
@@ -613,7 +595,15 @@ public class AutohideFragment extends BaseListFragment implements PreferencesAct
 			return new AlertDialog.Builder(requireContext())
 					.setMultiChoiceItems(items, checkedItems, this)
 					.setNegativeButton(android.R.string.cancel, null)
-					.setPositiveButton(android.R.string.ok, this)
+					.setPositiveButton(android.R.string.ok, (d, which) -> {
+						ArrayList<String> selected = new ArrayList<>();
+						for (int i = 0; i < this.chanNames.size(); i++) {
+							if (this.checkedItems[i]) {
+								selected.add(this.chanNames.get(i));
+							}
+						}
+						((AutohideDialog) getParentFragment()).onChansSelected(selected);
+					})
 					.create();
 		}
 
@@ -626,17 +616,6 @@ public class AutohideFragment extends BaseListFragment implements PreferencesAct
 		@Override
 		public void onClick(DialogInterface dialog, int which, boolean isChecked) {
 			checkedItems[which] = isChecked;
-		}
-
-		@Override
-		public void onClick(DialogInterface dialog, int which) {
-			ArrayList<String> selected = new ArrayList<>();
-			for (int i = 0; i < chanNames.size(); i++) {
-				if (checkedItems[i]) {
-					selected.add(chanNames.get(i));
-				}
-			}
-			((AutohideDialog) getTargetFragment()).onChansSelected(selected);
 		}
 	}
 }
