@@ -1,8 +1,5 @@
 package com.mishiranu.dashchan.ui.navigator;
 
-import android.animation.Animator;
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.Notification;
@@ -16,11 +13,12 @@ import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
+import android.os.Parcel;
+import android.os.SystemClock;
 import android.text.TextUtils;
+import android.util.Pair;
 import android.util.TypedValue;
 import android.view.ActionMode;
-import android.view.ContextMenu;
 import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.Menu;
@@ -29,9 +27,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.AbsListView;
-import android.widget.AdapterView;
-import android.widget.BaseAdapter;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -39,6 +35,8 @@ import android.widget.TextView;
 import android.widget.Toolbar;
 import androidx.annotation.NonNull;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
@@ -57,44 +55,59 @@ import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.graphics.ThemeChoiceDrawable;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.preference.PreferencesActivity;
-import com.mishiranu.dashchan.ui.ActionMenuConfigurator;
+import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.ForegroundManager;
 import com.mishiranu.dashchan.ui.StateActivity;
+import com.mishiranu.dashchan.ui.navigator.entity.Page;
+import com.mishiranu.dashchan.ui.navigator.entity.PageItem;
+import com.mishiranu.dashchan.ui.navigator.entity.SavedPageItem;
+import com.mishiranu.dashchan.ui.navigator.entity.StackItem;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.ui.navigator.page.ListPage;
-import com.mishiranu.dashchan.ui.navigator.page.PageHolder;
-import com.mishiranu.dashchan.ui.navigator.page.PageManager;
 import com.mishiranu.dashchan.ui.posting.PostingActivity;
 import com.mishiranu.dashchan.ui.posting.Replyable;
 import com.mishiranu.dashchan.util.AndroidUtils;
+import com.mishiranu.dashchan.util.ConcatIterable;
 import com.mishiranu.dashchan.util.DrawerToggle;
 import com.mishiranu.dashchan.util.FlagUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
-import com.mishiranu.dashchan.util.ListViewUtils;
+import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
-import com.mishiranu.dashchan.widget.CustomSearchView;
 import com.mishiranu.dashchan.widget.ExpandedScreen;
-import com.mishiranu.dashchan.widget.ListPosition;
-import com.mishiranu.dashchan.widget.MenuExpandListener;
-import com.mishiranu.dashchan.widget.PullableListView;
-import com.mishiranu.dashchan.widget.PullableWrapper;
 import com.mishiranu.dashchan.widget.SortableListView;
-import com.mishiranu.dashchan.widget.callback.BusyScrollListener;
-import com.mishiranu.dashchan.widget.callback.ScrollListenerComposite;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.UUID;
 
-public class NavigatorActivity extends StateActivity implements BusyScrollListener.Callback, DrawerForm.Callback,
-		AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener, PullableWrapper.PullCallback,
-		ListPage.Callback, PullableWrapper.PullStateListener, SortableListView.OnStateChangedListener,
-		FavoritesStorage.Observer, WatcherService.Client.Callback, UiManager.LocalNavigator, ReadUpdateTask.Callback {
+public class NavigatorActivity extends StateActivity implements DrawerForm.Callback,
+		SortableListView.OnStateChangedListener, FavoritesStorage.Observer, WatcherService.Client.Callback,
+		UiManager.LocalNavigator, PageFragment.Callback, ReadUpdateTask.Callback {
+	private static final String EXTRA_STACK_PAGE_ITEMS = "stackPageItems";
+	private static final String EXTRA_PRESERVED_PAGE_ITEMS = "preservedPageItems";
+	private static final String EXTRA_CURRENT_FRAGMENT = "currentFragment";
+	private static final String EXTRA_CURRENT_PAGE_ITEM = "currentPageItem";
+
+	private static final PageFragment REFERENCE_FRAGMENT = new PageFragment();
+
+	private final ArrayList<SavedPageItem> stackPageItems = new ArrayList<>();
+	private final ArrayList<SavedPageItem> preservedPageItems = new ArrayList<>();
+	private PageItem currentPageItem;
+
 	private UiManager uiManager;
-	private PageManager pageManager;
-	private ListPage<?> page;
-
+	private RetainFragment retainFragment;
 	private Preferences.Holder currentPreferences;
 	private ActionIconSet actionIconSet;
 	private final WatcherService.Client watcherServiceClient = new WatcherService.Client(this);
@@ -107,24 +120,15 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 
 	private ExpandedScreen expandedScreen;
 	private View toolbarView;
-	private CustomSearchView searchView;
 
 	private ViewGroup drawerCommon, drawerWide;
-
-	private PullableListView listView;
-	private View progressView;
-	private View errorView;
-	private TextView errorText;
 	private boolean wideMode;
 
 	private ReadUpdateTask readUpdateTask;
+	private Intent navigateIntentOnResume;
 
-	private static final String LOCKER_HANDLE = "handle";
 	private static final String LOCKER_DRAWER = "drawer";
-	private static final String LOCKER_SEARCH = "search";
-	private static final String LOCKER_PULL = "pull";
 
-	private final ActionMenuConfigurator actionMenuConfigurator = new ActionMenuConfigurator();
 	private final ClickableToast.Holder clickableToastHolder = new ClickableToast.Holder(this);
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -144,13 +148,7 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		ClickableToast.register(clickableToastHolder);
 		FavoritesStorage.getInstance().getObservable().register(this);
 		watcherServiceClient.bind(this);
-		pageManager = new PageManager();
 		actionIconSet = new ActionIconSet(this);
-		progressView = findViewById(R.id.progress);
-		errorView = findViewById(R.id.error);
-		errorText = findViewById(R.id.error_text);
-		listView = findViewById(android.R.id.list);
-		registerForContextMenu(listView);
 		drawerCommon = findViewById(R.id.drawer_common);
 		drawerWide = findViewById(R.id.drawer_wide);
 		TypedArray typedArray = obtainStyledAttributes(new int[] {R.attr.styleDrawerSpecial});
@@ -198,49 +196,25 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		}
 		ViewUtils.applyToolbarStyle(this, toolbarView);
 
-		searchView = new CustomSearchView(C.API_LOLLIPOP ? new ContextThemeWrapper(this,
-				R.style.Theme_Special_White) : getActionBar().getThemedContext());
-		searchView.setOnSubmitListener(query -> page != null && page.onSearchSubmit(query));
-		searchView.setOnChangeListener(query -> {
-			if (page != null) {
-				page.onSearchQueryChange(query);
-			}
-		});
-
-		if (Preferences.isActiveScrollbar()) {
-			listView.setFastScrollEnabled(true);
-			if (!C.API_LOLLIPOP) {
-				ListViewUtils.colorizeListThumb4(listView);
-			}
-		}
-		listView.setOnItemClickListener(this);
-		listView.setOnItemLongClickListener(this);
-		listView.getWrapper().setOnPullListener(this);
-		listView.getWrapper().setPullStateListener(this);
-		listView.setClipToPadding(false);
-		ScrollListenerComposite.obtain(listView).add(new BusyScrollListener(this));
 		updateWideConfiguration(true);
 		expandedScreen.setDrawerOverToolbarEnabled(!wideMode);
-		expandedScreen.setContentListView(listView);
 		expandedScreen.setDrawerListView(drawerParent, drawerListView, drawerForm.getHeaderView());
-		expandedScreen.addAdditionalView(progressView, true);
-		expandedScreen.addAdditionalView(errorView, true);
 		expandedScreen.finishInitialization();
+		ViewGroup contentFragment = findViewById(R.id.content_fragment);
+		contentFragment.setOnHierarchyChangeListener(new ViewGroup.OnHierarchyChangeListener() {
+			@Override
+			public void onChildViewAdded(View parent, View child) {
+				expandedScreen.addContentView(child);
+			}
 
+			@Override
+			public void onChildViewRemoved(View parent, View child) {
+				expandedScreen.removeContentView(child);
+			}
+		});
 		LocalBroadcastManager.getInstance(this).registerReceiver(newPostReceiver,
 				new IntentFilter(C.ACTION_POST_SENT));
 		if (savedInstanceState == null) {
-			savedInstanceState = pageManager.readFromStorage();
-		}
-		PageHolder savedCurrentPageHolder = pageManager.restore(savedInstanceState);
-		if (savedCurrentPageHolder != null) {
-			navigatePageHolder(savedCurrentPageHolder, false);
-		} else {
-			navigateIntent(getIntent(), false);
-		}
-
-		if (savedInstanceState == null) {
-			startUpdateTask();
 			int drawerInitialPosition = Preferences.getDrawerInitialPosition();
 			if (drawerInitialPosition != Preferences.DRAWER_INITIAL_POSITION_CLOSED) {
 				if (!wideMode) {
@@ -249,6 +223,95 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 				if (drawerInitialPosition == Preferences.DRAWER_INITIAL_POSITION_FORUMS) {
 					drawerForm.setChanSelectMode(true);
 				}
+			}
+		}
+
+		FragmentManager fragmentManager = getSupportFragmentManager();
+		retainFragment = (RetainFragment) fragmentManager.findFragmentByTag(RetainFragment.class.getName());
+		if (retainFragment == null) {
+			retainFragment = new RetainFragment();
+			fragmentManager.beginTransaction()
+					.add(retainFragment, RetainFragment.class.getName())
+					.commit();
+		}
+
+		Fragment currentFragmentFromSaved = null;
+		if (savedInstanceState == null) {
+			File file = getSavedPagesFile();
+			if (file != null && file.exists()) {
+				Parcel parcel = Parcel.obtain();
+				FileInputStream input = null;
+				ByteArrayOutputStream output = new ByteArrayOutputStream();
+				try {
+					input = new FileInputStream(file);
+					IOUtils.copyStream(input, output);
+					byte[] data = output.toByteArray();
+					parcel.unmarshall(data, 0, data.length);
+					parcel.setDataPosition(0);
+					Bundle bundle = new Bundle();
+					bundle.setClassLoader(getClass().getClassLoader());
+					bundle.readFromParcel(parcel);
+					savedInstanceState = bundle;
+				} catch (IOException e) {
+					// Ignore exception
+				} finally {
+					IOUtils.close(input);
+					parcel.recycle();
+					file.delete();
+				}
+			}
+			if (savedInstanceState != null) {
+				currentFragmentFromSaved = savedInstanceState
+						.<StackItem>getParcelable(EXTRA_CURRENT_FRAGMENT).create(null);
+				if (currentFragmentFromSaved == null) {
+					savedInstanceState = null;
+				}
+			}
+		}
+
+		if (savedInstanceState != null) {
+			stackPageItems.addAll(savedInstanceState.getParcelableArrayList(EXTRA_STACK_PAGE_ITEMS));
+			preservedPageItems.addAll(savedInstanceState.getParcelableArrayList(EXTRA_PRESERVED_PAGE_ITEMS));
+			currentPageItem = savedInstanceState.getParcelable(EXTRA_CURRENT_PAGE_ITEM);
+		}
+		Collection<String> chanNames = ChanManager.getInstance().getAvailableChanNames();
+		Iterator<SavedPageItem> iterator = new ConcatIterable<>(preservedPageItems, stackPageItems).iterator();
+		while (iterator.hasNext()) {
+			if (!chanNames.contains(getSavedPage(iterator.next()).chanName)) {
+				iterator.remove();
+			}
+		}
+		if (currentFragmentFromSaved != null) {
+			if (currentFragmentFromSaved instanceof PageFragment &&
+					!chanNames.contains(((PageFragment) currentFragmentFromSaved).getPage().chanName)) {
+				currentFragmentFromSaved = null;
+				currentPageItem = null;
+			}
+			if (currentFragmentFromSaved == null && !stackPageItems.isEmpty()) {
+				Pair<PageFragment, PageItem> pair = stackPageItems.remove(stackPageItems.size() - 1).create();
+				currentFragmentFromSaved = pair.first;
+				currentPageItem = pair.second;
+			}
+			if (currentFragmentFromSaved != null) {
+				fragmentManager.beginTransaction()
+						.replace(R.id.content_fragment, currentFragmentFromSaved)
+						.commit();
+				updatePostFragmentConfiguration();
+			} else {
+				navigateIntent(getIntent(), false);
+			}
+		} else {
+			Fragment currentFragment = getCurrentFragment();
+			if (currentFragment instanceof PageFragment &&
+					!chanNames.contains(((PageFragment) currentFragment).getPage().chanName)) {
+				currentFragment = null;
+				currentPageItem = null;
+			}
+			if (currentFragment == null) {
+				navigateIntent(getIntent(), false);
+				startUpdateTask();
+			} else {
+				updatePostFragmentConfiguration();
 			}
 		}
 	}
@@ -265,8 +328,23 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	}
 
 	private void writePagesState(Bundle outState) {
-		requestStoreExtraAndPosition();
-		pageManager.save(outState);
+		outState.putParcelableArrayList(EXTRA_STACK_PAGE_ITEMS, stackPageItems);
+		outState.putParcelableArrayList(EXTRA_PRESERVED_PAGE_ITEMS, preservedPageItems);
+		outState.putParcelable(EXTRA_CURRENT_PAGE_ITEM, currentPageItem);
+	}
+
+	private File getSavedPagesFile() {
+		return CacheManager.getInstance().getInternalCacheFile("saved-pages");
+	}
+
+	private Fragment getCurrentFragment() {
+		FragmentManager fragmentManager = getSupportFragmentManager();
+		try {
+			fragmentManager.executePendingTransactions();
+		} catch (IllegalStateException e) {
+			// Ignore exception
+		}
+		return fragmentManager.findFragmentById(R.id.content_fragment);
 	}
 
 	@Override
@@ -290,10 +368,8 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 
 	@Override
 	public void navigateArchive(String chanName, String boardName, int flags) {
-		flags = flags & NavigationUtils.FLAG_RETURNABLE;
 		boolean returnable = FlagUtils.get(flags, NavigationUtils.FLAG_RETURNABLE);
-		performNavigation(PageHolder.Content.ARCHIVE, chanName, boardName, null, null, null, null, false, true,
-				returnable);
+		navigatePage(Page.Content.ARCHIVE, chanName, boardName, null, null, null, null, false, returnable, false);
 	}
 
 	@Override
@@ -328,6 +404,14 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	}
 
 	private void navigateIntent(Intent intent, boolean replaceIntent) {
+		if (replaceIntent) {
+			navigateIntentOnResume = intent;
+		} else {
+			navigateIntentUnchecked(intent, false);
+		}
+	}
+
+	private void navigateIntentUnchecked(Intent intent, boolean replaceIntent) {
 		String chanName = intent.getStringExtra(C.EXTRA_CHAN_NAME);
 		String boardName = intent.getStringExtra(C.EXTRA_BOARD_NAME);
 		String threadNumber = intent.getStringExtra(C.EXTRA_THREAD_NUMBER);
@@ -335,168 +419,334 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		String threadTitle = intent.getStringExtra(C.EXTRA_THREAD_TITLE);
 		String searchQuery = intent.getStringExtra(C.EXTRA_SEARCH_QUERY);
 		int flags = intent.getIntExtra(C.EXTRA_NAVIGATION_FLAGS, 0);
-		if (!replaceIntent) {
-			flags = FlagUtils.set(flags, NavigationUtils.FLAG_NOT_ANIMATED, true);
-		} else if (FlagUtils.get(flags, NavigationUtils.FLAG_LAUNCHER)) {
+		if (replaceIntent && FlagUtils.get(flags, NavigationUtils.FLAG_LAUNCHER)) {
 			return;
 		}
 		navigateIntentData(chanName, boardName, threadNumber, postNumber, threadTitle, searchQuery, flags);
 	}
 
+	private static boolean isSingleBoardMode(String chanName) {
+		return ChanConfiguration.get(chanName).getOption(ChanConfiguration.OPTION_SINGLE_BOARD_MODE);
+	}
+
+	private static String getSingleBoardName(String chanName) {
+		return ChanConfiguration.get(chanName).getSingleBoardName();
+	}
+
+	private Page getSavedPage(SavedPageItem savedPageItem) {
+		REFERENCE_FRAGMENT.setArguments(savedPageItem.stackItem.arguments);
+		return REFERENCE_FRAGMENT.getPage();
+	}
+
+	private int getPagesStackSize(String chanName) {
+		boolean mergeChans = Preferences.isMergeChans();
+		int size = 0;
+		Fragment currentFragment = getCurrentFragment();
+		if (currentFragment instanceof PageFragment && currentPageItem != null &&
+				(mergeChans || (((PageFragment) currentFragment).getPage().chanName.equals(chanName)))) {
+			size++;
+		}
+		for (SavedPageItem savedPageItem : stackPageItems) {
+			if (mergeChans || getSavedPage(savedPageItem).chanName.equals(chanName)) {
+				size++;
+			}
+		}
+		return size;
+	}
+
+	private SavedPageItem prepareTargetPreviousPage(boolean allowForeignChan) {
+		Fragment currentFragment = getCurrentFragment();
+		String chanName = ((PageFragment) currentFragment).getPage().chanName;
+		boolean mergeChans = Preferences.isMergeChans();
+		for (int i = stackPageItems.size() - 1; i >= 0; i--) {
+			SavedPageItem savedPageItem = stackPageItems.get(i);
+			if (mergeChans || getSavedPage(savedPageItem).chanName.equals(chanName)) {
+				stackPageItems.remove(i);
+				return savedPageItem;
+			}
+		}
+		if (allowForeignChan && currentPageItem.returnable && !stackPageItems.isEmpty()) {
+			return stackPageItems.remove(stackPageItems.size() - 1);
+		}
+		return null;
+	}
+
+	private void clearStackAndCurrent() {
+		Fragment currentFragment = getCurrentFragment();
+		boolean mergeChans = Preferences.isMergeChans();
+		boolean closeOnBack = Preferences.isCloseOnBack();
+		String chanName = ((PageFragment) currentFragment).getPage().chanName;
+		Iterator<SavedPageItem> iterator = stackPageItems.iterator();
+		while (iterator.hasNext()) {
+			SavedPageItem savedPageItem = iterator.next();
+			Page page = getSavedPage(savedPageItem);
+			if (mergeChans || page.chanName.equals(chanName)) {
+				iterator.remove();
+				if (!(page.canDestroyIfNotInStack() || closeOnBack && page.isThreadsOrPosts())) {
+					preservedPageItems.add(savedPageItem);
+				}
+			}
+		}
+		Page page = ((PageFragment) currentFragment).getPage();
+		if (mergeChans || page.chanName.equals(chanName)) {
+			if (!(page.canDestroyIfNotInStack() || closeOnBack && page.isThreadsOrPosts())) {
+				preservedPageItems.add(currentPageItem.toSaved(getSupportFragmentManager(),
+						(PageFragment) currentFragment));
+			}
+			currentPageItem = null;
+		}
+	}
+
 	private void navigateIntentData(String chanName, String boardName, String threadNumber, String postNumber,
 			String threadTitle, String searchQuery, int flags) {
-		PageHolder pageHolder = pageManager.getCurrentPage();
-		String oldChanName = pageHolder != null ? pageHolder.chanName : null;
-		if (chanName == null) return; // Void intent
+		if (chanName == null) {
+			return;
+		}
 		boolean fromCache = FlagUtils.get(flags, NavigationUtils.FLAG_FROM_CACHE);
-		boolean animated = !FlagUtils.get(flags, NavigationUtils.FLAG_NOT_ANIMATED);
 		boolean returnable = FlagUtils.get(flags, NavigationUtils.FLAG_RETURNABLE);
 		boolean forceBoardPage = false;
-		if (pageManager.isSingleBoardMode(chanName)) {
-			boardName = pageManager.getSingleBoardName(chanName);
+		if (isSingleBoardMode(chanName)) {
+			boardName = getSingleBoardName(chanName);
 			forceBoardPage = true;
 		}
 		if (boardName != null || threadNumber != null || forceBoardPage) {
-			PageHolder.Content content = searchQuery != null ? PageHolder.Content.SEARCH
-					: threadNumber == null ? PageHolder.Content.THREADS : PageHolder.Content.POSTS;
-			performNavigation(content, chanName, boardName, threadNumber, postNumber, threadTitle,
-					searchQuery, fromCache, animated, returnable);
-		} else if (pageManager.getStackSize(chanName) == 0 || !chanName.equals(oldChanName)) {
-			performNavigation(PageHolder.Content.ALL_BOARDS, chanName, null, null, null, null, null,
-					false, animated, returnable);
-		}
-	}
-
-	private Runnable queuedHandler;
-	private final Handler handler = new Handler();
-	private boolean allowScaleAnimation = false;
-
-	private void navigatePageHolder(PageHolder pageHolder, boolean animated) {
-		performNavigation(pageHolder.content, pageHolder.chanName, pageHolder.boardName, pageHolder.threadNumber, null,
-				pageHolder.threadTitle, pageHolder.searchQuery, true, animated, pageHolder.returnable);
-	}
-
-	private void performNavigation(final PageHolder.Content content, final String chanName, final String boardName,
-			final String threadNumber, final String postNumber, final String threadTitle, final String searchQuery,
-			final boolean fromCache, boolean animated, final boolean returnable) {
-		PageHolder pageHolder = pageManager.getCurrentPage();
-		if (pageHolder != null && pageHolder.is(chanName, boardName, threadNumber, content) && searchQuery == null) {
-			// Page could be deleted from stack during clearStack (when home button pressed, for example)
-			pageHolder.returnable &= returnable;
-			pageManager.moveCurrentPageTop();
-			page.updatePageConfiguration(postNumber, threadTitle);
-			drawerForm.invalidateItems(true, false);
-			invalidateHomeUpState();
-			return;
-		}
-		switchView(ListPage.ViewType.LIST, null);
-		listView.getWrapper().cancelBusyState();
-		listView.getWrapper().setPullSides(PullableWrapper.Side.NONE);
-		ClickableToast.cancel(this);
-		requestStoreExtraAndPosition();
-		cleanupPage();
-		handler.removeCallbacks(queuedHandler);
-		setActionBarLocked(LOCKER_HANDLE, true);
-		if (animated) {
-			queuedHandler = () -> {
-				queuedHandler = null;
-				if (listView.getAnimation() != null) {
-					listView.getAnimation().cancel();
-				}
-				listView.setAlpha(1f);
-				handleDataAfterAnimation(content, chanName, boardName, threadNumber, postNumber, threadTitle,
-						searchQuery, fromCache, true, returnable);
-			};
-			handler.postDelayed(queuedHandler, 300);
-			ObjectAnimator alphaAnimator = ObjectAnimator.ofFloat(listView, View.ALPHA, 1f, 0f);
-			alphaAnimator.setupStartValues();
-			alphaAnimator.setStartDelay(150);
-			alphaAnimator.setDuration(150);
-			startListAnimator(alphaAnimator);
+			Page.Content content = searchQuery != null ? Page.Content.SEARCH
+					: threadNumber == null ? Page.Content.THREADS : Page.Content.POSTS;
+			navigatePage(content, chanName, boardName, threadNumber, postNumber, threadTitle,
+					searchQuery, fromCache, returnable, false);
 		} else {
-			handleDataAfterAnimation(content, chanName, boardName, threadNumber, postNumber, threadTitle,
-					searchQuery, fromCache, false, returnable);
-		}
-	}
-
-	private void requestStoreExtraAndPosition() {
-		if (page != null) {
-			if (listView.getChildCount() > 0){
-				pageManager.getCurrentPage().position = ListPosition.obtain(listView);
+			String currentChanName = null;
+			Fragment currentFragment = getCurrentFragment();
+			if (currentFragment instanceof PageFragment) {
+				currentChanName = ((PageFragment) currentFragment).getPage().chanName;
 			}
-			page.onRequestStoreExtra();
+			if (getPagesStackSize(chanName) == 0 || !chanName.equals(currentChanName)) {
+				navigatePage(Page.Content.BOARDS, chanName, null, null, null, null, null, false, returnable, false);
+			}
 		}
 	}
 
-	private void handleDataAfterAnimation(PageHolder.Content content, String chanName, String boardName,
+	private Pair<PageFragment, PageItem> prepareAddPage(Page.Content content,
+			String chanName, String boardName, String threadNumber, String searchQuery,
+			ListPage.InitRequest initRequest) {
+		SavedPageItem targetSavedPageItem = null;
+		Iterator<SavedPageItem> iterator = new ConcatIterable<>(preservedPageItems, stackPageItems).iterator();
+		while (iterator.hasNext()) {
+			SavedPageItem savedPageItem = iterator.next();
+			if (getSavedPage(savedPageItem).is(content, chanName, boardName, threadNumber)) {
+				targetSavedPageItem = savedPageItem;
+				iterator.remove();
+				break;
+			}
+		}
+
+		Page page = new Page(content, chanName, boardName, threadNumber, searchQuery);
+		Pair<PageFragment, PageItem> pair;
+		if (targetSavedPageItem != null) {
+			Page savedPage = getSavedPage(targetSavedPageItem);
+			if (savedPage.equals(page)) {
+				pair = targetSavedPageItem.create();
+			} else {
+				pair = targetSavedPageItem.createWithNewPage(page);
+			}
+		} else {
+			PageFragment pageFragment = new PageFragment(page, UUID.randomUUID().toString());
+			PageItem pageItem = new PageItem();
+			pair = new Pair<>(pageFragment, pageItem);
+		}
+		if (initRequest != null) {
+			pair.first.setInitRequest(initRequest);
+		}
+
+		boolean mergeChans = Preferences.isMergeChans();
+		int depth = 0;
+		// Remove deep search, boards, etc pages if they are deep in stack
+		for (int i = stackPageItems.size() - 1; i >= 0; i--) {
+			SavedPageItem savedPageItem = stackPageItems.get(i);
+			Page savedPage = getSavedPage(savedPageItem);
+			if (mergeChans || savedPage.chanName.equals(chanName)) {
+				if (depth++ >= 2 && savedPage.canRemoveFromStackIfDeep()) {
+					stackPageItems.remove(i);
+					if (!savedPage.canDestroyIfNotInStack()) {
+						preservedPageItems.add(savedPageItem);
+					}
+				}
+			}
+		}
+		return pair;
+	}
+
+	private void navigatePage(Page.Content content, String chanName, String boardName,
 			String threadNumber, String postNumber, String threadTitle, String searchQuery,
-			boolean fromCache, boolean animated, boolean returnable) {
-		clearListAnimator();
-		allowScaleAnimation = animated;
-		setActionBarLocked(LOCKER_HANDLE, false);
-		watcherServiceClient.updateConfiguration(chanName);
-		drawerForm.updateConfiguration(chanName);
-		page = pageManager.newPage(content);
-		// Will be changed in onCreateOptionsMenu
-		sendPrepareMenuToPage = false;
-		PageHolder pageHolder = null;
+			boolean fromCache, boolean returnable, boolean resetScroll) {
+		Fragment currentFragment = getCurrentFragment();
+		Page currentPage = currentFragment instanceof PageFragment
+				? ((PageFragment) currentFragment).getPage() : null;
+		if (currentPage != null && currentPage.is(content, chanName, boardName, threadNumber) && searchQuery == null) {
+			if (currentPageItem == null && (content == Page.Content.BOARDS || content == Page.Content.THREADS)) {
+				// Was removed from stack during clearStackAndCurrent
+				Iterator<SavedPageItem> iterator = new ConcatIterable<>(preservedPageItems, stackPageItems).iterator();
+				while (iterator.hasNext()) {
+					if (getSavedPage(iterator.next()).is(content, chanName, boardName, null)) {
+						iterator.remove();
+						break;
+					}
+				}
+				currentPageItem = new PageItem();
+				currentPageItem.createdRealtime = SystemClock.elapsedRealtime();
+			}
+			if (currentPageItem != null) {
+				currentPageItem.returnable &= returnable;
+				((PageFragment) currentFragment).updatePageConfiguration(postNumber);
+				invalidateHomeUpState();
+				return;
+			}
+		}
+		Pair<PageFragment, PageItem> pair;
 		switch (content) {
 			case THREADS: {
-				pageHolder = pageManager.add(content, chanName, boardName, null, null, null)
-						.setInitialThreadsData(fromCache);
+				pair = prepareAddPage(content, chanName, boardName, null, null,
+						new ListPage.InitRequest(!fromCache, null, null));
 				break;
 			}
 			case POSTS: {
-				pageHolder = pageManager.add(content, chanName, boardName, threadNumber, threadTitle, null)
-						.setInitialPostsData(fromCache, postNumber);
+				pair = prepareAddPage(content, chanName, boardName, threadNumber, null,
+						new ListPage.InitRequest(!fromCache, postNumber, threadTitle));
 				break;
 			}
 			case SEARCH: {
-				pageHolder = pageManager.add(content, chanName, boardName, null, null, searchQuery)
-						.setInitialSearchData(fromCache);
+				pair = prepareAddPage(content, chanName, boardName, null, searchQuery,
+						new ListPage.InitRequest(!fromCache, null, null));
 				break;
 			}
 			case ARCHIVE:
-			case ALL_BOARDS:
+			case BOARDS:
 			case USER_BOARDS:
 			case HISTORY: {
-				pageHolder = pageManager.add(content, chanName, boardName, null, null, null);
+				pair = prepareAddPage(content, chanName, boardName, null, null, null);
 				break;
 			}
+			default: {
+				throw new RuntimeException();
+			}
 		}
-		if (pageHolder == null) {
-			throw new RuntimeException();
+		pair.second.returnable = returnable;
+		if (resetScroll) {
+			pair.first.requestResetScroll();
 		}
-		pageHolder.returnable = returnable;
+		navigateFragment(pair.first, pair.second);
+	}
+
+	private void navigateSavedPage(SavedPageItem savedPageItem) {
+		Pair<PageFragment, PageItem> pair = savedPageItem.create();
+		navigateFragment(pair.first, pair.second);
+	}
+
+	private void navigateFragment(Fragment fragment, PageItem pageItem) {
+		FragmentManager fragmentManager = getSupportFragmentManager();
+		Fragment currentFragment = getCurrentFragment();
+		if (currentFragment instanceof PageFragment) {
+			// TODO Clear non-page fragments
+			// currentPageItem == null means page was deleted
+			if (currentPageItem != null) {
+				stackPageItems.add(currentPageItem.toSaved(fragmentManager,
+						(PageFragment) currentFragment));
+			}
+			if (fragment instanceof PageFragment) {
+				PostingService.clearNewThreadData();
+			}
+		} else if (currentFragment != null) {
+			// TODO Handle non-page fragments
+		}
+
+		if (currentFragment instanceof ActivityHandler) {
+			((ActivityHandler) currentFragment).onTerminate();
+		}
+		ClickableToast.cancel(this);
+		InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+		if (inputMethodManager != null) {
+			View view = getCurrentFocus();
+			inputMethodManager.hideSoftInputFromWindow((view != null
+					? view : getWindow().getDecorView()).getWindowToken(), 0);
+		}
 		uiManager.view().resetPages();
-		page.init(this, this, pageHolder, listView, uiManager, actionIconSet);
+		if (pageItem != null) {
+			pageItem.createdRealtime = SystemClock.elapsedRealtime();
+		}
+		currentPageItem = pageItem;
+		fragmentManager.beginTransaction()
+				.setCustomAnimations(R.animator.fragment_in, R.animator.fragment_out)
+				.replace(R.id.content_fragment, fragment)
+				.commit();
+		updatePostFragmentConfiguration();
+
+		if (currentFragment instanceof PageFragment || fragment instanceof PageFragment) {
+			HashSet<String> retainIds = new HashSet<>(1 + stackPageItems.size() + preservedPageItems.size());
+			if (fragment instanceof PageFragment) {
+				retainIds.add(((PageFragment) fragment).getRetainId());
+			}
+			for (SavedPageItem savedPageItem : new ConcatIterable<>(preservedPageItems, stackPageItems)) {
+				REFERENCE_FRAGMENT.setArguments(savedPageItem.stackItem.arguments);
+				String retainId = REFERENCE_FRAGMENT.getRetainId();
+				retainIds.add(retainId);
+			}
+			retainFragment.extras.keySet().retainAll(retainIds);
+		}
+	}
+
+	private void updatePostFragmentConfiguration() {
+		Fragment currentFragment = getCurrentFragment();
+		String chanName;
+		if (currentFragment instanceof PageFragment) {
+			chanName = ((PageFragment) currentFragment).getPage().chanName;
+		} else if (!stackPageItems.isEmpty()) {
+			chanName = getSavedPage(stackPageItems.get(stackPageItems.size() - 1)).chanName;
+		} else {
+			chanName = ChanManager.getInstance().getDefaultChanName();
+		}
+		watcherServiceClient.updateConfiguration(chanName);
+		drawerForm.updateConfiguration(chanName);
+		invalidateHomeUpState();
 		if (!wideMode && !drawerLayout.isDrawerOpen(Gravity.START)) {
 			drawerListView.setSelection(0);
 		}
-		setSearchMode(false);
-		invalidateOptionsMenu();
-		invalidateHomeUpState();
-		notifyTitleChanged();
-		allowScaleAnimation = true;
 	}
 
-	private void cleanupPage() {
-		if (page != null) {
-			PostingService.clearNewThreadData();
-			page.cleanup();
-			page = null;
+	@Override
+	public UiManager getUiManager() {
+		return uiManager;
+	}
+
+	@Override
+	public ActionIconSet getActionIconSet() {
+		return actionIconSet;
+	}
+
+	@Override
+	public Object getRetainExtra(String retainId) {
+		return retainFragment.extras.get(retainId);
+	}
+
+	@Override
+	public void storeRetainExtra(String retainId, Object extra) {
+		if (extra != null) {
+			retainFragment.extras.put(retainId, extra);
+		} else {
+			retainFragment.extras.remove(retainId);
 		}
 	}
 
-	private void invalidateHomeUpState() {
-		if (searchMode) {
+	@Override
+	public void invalidateHomeUpState() {
+		Fragment currentFragment = getCurrentFragment();
+		if (currentFragment instanceof ActivityHandler && ((ActivityHandler) currentFragment).isSearchMode()) {
 			drawerToggle.setDrawerIndicatorMode(DrawerToggle.MODE_UP);
-		} else if (page != null) {
+		} else if (currentFragment instanceof PageFragment) {
 			boolean displayUp = false;
-			PageHolder pageHolder = pageManager.getCurrentPage();
-			switch (pageHolder.content) {
+			Page page = ((PageFragment) currentFragment).getPage();
+			switch (page.content) {
 				case THREADS: {
-					displayUp = pageManager.getStackSize() > 1;
+					displayUp = getPagesStackSize(page.chanName) > 1;
 					break;
 				}
 				case POSTS:
@@ -505,16 +755,17 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 					displayUp = true;
 					break;
 				}
-				case ALL_BOARDS:
+				case BOARDS:
 				case USER_BOARDS:
 				case HISTORY: {
-					displayUp = pageHolder.boardName != null || pageManager.getStackSize() > 1;
+					displayUp = page.boardName != null || getPagesStackSize(page.chanName) > 1;
 					break;
 				}
 			}
 			drawerToggle.setDrawerIndicatorMode(displayUp ? DrawerToggle.MODE_UP : wideMode
 					? DrawerToggle.MODE_DISABLED : DrawerToggle.MODE_DRAWER);
 		} else {
+			// TODO Handle non-page fragments
 			drawerToggle.setDrawerIndicatorMode(DrawerToggle.MODE_DISABLED);
 		}
 	}
@@ -543,22 +794,19 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	}
 
 	@Override
-	public void setListViewBusy(boolean isBusy, AbsListView listView) {
-		if (page != null) {
-			page.setListViewBusy(isBusy, listView);
-		}
-	}
-
-	@Override
 	protected void onStart() {
 		super.onStart();
+
 		Preferences.Holder newPreferences = Preferences.getCurrent();
 		if (currentPreferences.isNeedRestartActivity(newPreferences)) {
 			// Recreate after onResume
 			postRecreate();
 			return;
 		} else if (currentPreferences.isNeedRefreshList(newPreferences)) {
-			((BaseAdapter) listView.getAdapter()).notifyDataSetChanged();
+			Fragment currentFragment = getCurrentFragment();
+			if (currentFragment instanceof PageFragment) {
+				((PageFragment) currentFragment).notifyAdapterChanged();
+			}
 		}
 		drawerForm.invalidateItems(true, true);
 		currentPreferences = newPreferences;
@@ -568,32 +816,43 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	@Override
 	protected void onResume() {
 		super.onResume();
+
 		expandedScreen.onResume();
 		drawerForm.performResume();
 		watcherServiceClient.start();
-		if (page != null) {
-			page.resume();
-		}
 		clickableToastHolder.onResume();
 		ChanManager.getInstance().getInstallationObservable().register(installationCallback);
 		ForegroundManager.register(this);
+
+		Intent navigateIntentOnResume = this.navigateIntentOnResume;
+		this.navigateIntentOnResume = null;
+		if (navigateIntentOnResume != null) {
+			navigateIntentUnchecked(navigateIntentOnResume, true);
+		}
 	}
 
 	@Override
 	protected void onPause() {
 		super.onPause();
+
 		watcherServiceClient.stop();
-		if (page != null) {
-			page.pause();
-		}
 		clickableToastHolder.onPause();
 		ChanManager.getInstance().getInstallationObservable().unregister(installationCallback);
 		ForegroundManager.unregister(this);
 	}
 
 	@Override
+	protected void onStop() {
+		super.onStop();
+
+		// Intent is valid only for onNewIntent -> onResume behavior
+		navigateIntentOnResume = null;
+	}
+
+	@Override
 	protected void onFinish() {
 		super.onFinish();
+
 		if (readUpdateTask != null) {
 			readUpdateTask.cancel();
 			readUpdateTask = null;
@@ -603,7 +862,6 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		ClickableToast.unregister(clickableToastHolder);
 		FavoritesStorage.getInstance().getObservable().unregister(this);
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(newPostReceiver);
-		cleanupPage();
 		for (String chanName : ChanManager.getInstance().getAvailableChanNames()) {
 			ChanConfiguration.get(chanName).commit();
 		}
@@ -621,16 +879,22 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	@Override
 	public void onConfigurationChanged(@NonNull Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
+
 		ViewUtils.applyToolbarStyle(this, toolbarView);
 		drawerToggle.onConfigurationChanged();
 		updateWideConfiguration(false);
 		expandedScreen.onConfigurationChanged(newConfig);
-		updateOptionsMenu();
+		Fragment currentFragment = getCurrentFragment();
+		if (currentFragment instanceof PageFragment) {
+			((PageFragment) currentFragment).updateOptionsMenu();
+		}
 	}
 
 	@Override
 	public boolean onSearchRequested() {
-		return setSearchMode(true) || searchMode;
+		Fragment currentFragment = getCurrentFragment();
+		return currentFragment instanceof ActivityHandler &&
+				((ActivityHandler) currentFragment).onSearchRequested();
 	}
 
 	private long backPressed = 0;
@@ -639,15 +903,31 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	public void onBackPressed() {
 		if (!wideMode && drawerLayout.isDrawerOpen(Gravity.START)) {
 			drawerLayout.closeDrawers();
-		} else if (page != null) {
-			if (setSearchMode(false)) {
+		} else {
+			Fragment currentFragment = getCurrentFragment();
+			if (currentFragment instanceof ActivityHandler &&
+					((ActivityHandler) currentFragment).onBackPressed()) {
 				return;
 			}
-			PageHolder previousPageHolder = pageManager.getTargetPreviousPage(true);
-			if (previousPageHolder != null) {
-				pageManager.removeCurrentPageFromStack();
-				navigatePageHolder(previousPageHolder, true);
+			boolean handled = false;
+			if (currentFragment instanceof PageFragment) {
+				SavedPageItem savedPageItem = prepareTargetPreviousPage(true);
+				if (savedPageItem != null) {
+					if (currentFragment instanceof PageFragment) {
+						Page page = ((PageFragment) currentFragment).getPage();
+						if (!(page.isThreadsOrPosts() && Preferences.isCloseOnBack())) {
+							preservedPageItems.add(currentPageItem.toSaved(getSupportFragmentManager(),
+									(PageFragment) currentFragment));
+						}
+						currentPageItem = null;
+					}
+					navigateSavedPage(savedPageItem);
+					handled = true;
+				}
 			} else {
+				// TODO Check non-page fragments in stack
+			}
+			if (!handled) {
 				if (System.currentTimeMillis() - backPressed > 2000) {
 					ClickableToast.show(this, R.string.message_press_again_to_exit);
 					backPressed = System.currentTimeMillis();
@@ -656,21 +936,6 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 				}
 			}
 		}
-	}
-
-	@Override
-	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		if (page != null) {
-			page.onItemClick(view, position, id);
-		}
-	}
-
-	@Override
-	public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-		if (page != null) {
-			return page.onItemLongClick(view, position, id);
-		}
-		return false;
 	}
 
 	@Override
@@ -691,113 +956,43 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		clickableToastHolder.onWindowFocusChanged(hasFocus);
 	}
 
-	private boolean searchMode = false;
-
-	private boolean setSearchMode(MenuItem menuItem, boolean search, boolean toggle) {
-		if (searchMode != search) {
-			searchMode = search;
-			if (search) {
-				searchView.setHint(menuItem.getTitle());
-			}
-			if (page != null) {
-				if (search) {
-					page.onSearchQueryChange(searchView.getQuery());
-				} else {
-					page.onSearchQueryChange("");
-					page.onSearchCancel();
-				}
-			}
-			setActionBarLocked(LOCKER_SEARCH, search);
-			updateOptionsMenu();
-			invalidateHomeUpState();
-			if (toggle) {
-				if (search) {
-					menuItem.expandActionView();
-				} else {
-					menuItem.collapseActionView();
-				}
-			}
-			return true;
-		}
-		return false;
-	}
-
-	private boolean setSearchMode(boolean search) {
-		if (currentMenu != null) {
-			MenuItem menuItem = currentMenu.findItem(ListPage.OPTIONS_MENU_SEARCH);
-			return setSearchMode(menuItem, search, true);
-		}
-		return false;
-	}
-
-	private Menu currentMenu;
-	private boolean sendPrepareMenuToPage = false;
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		currentMenu = menu;
-		if (page != null) {
-			page.onCreateOptionsMenu(menu);
-			sendPrepareMenuToPage = true;
-		}
-		MenuItem appearanceOptionsItem = menu.findItem(ListPage.OPTIONS_MENU_APPEARANCE);
-		if (appearanceOptionsItem != null) {
-			Menu appearanceOptionsMenu = appearanceOptionsItem.getSubMenu();
-			appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_CHANGE_THEME, 0,
-					R.string.action_change_theme);
-			appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_EXPANDED_SCREEN, 0,
-					R.string.action_expanded_screen).setCheckable(true);
-			appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_SPOILERS, 0,
-					R.string.action_spoilers).setCheckable(true);
-			appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_MY_POSTS, 0,
-					R.string.action_my_posts).setCheckable(true);
-			appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_DRAWER, 0,
-					R.string.action_lock_drawer).setCheckable(true);
-			appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_THREADS_GRID, 0,
-					R.string.action_threads_grid).setCheckable(true);
-			appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_SFW_MODE, 0,
-					R.string.action_sfw_mode).setCheckable(true);
-		}
-		actionMenuConfigurator.onAfterCreateOptionsMenu(menu);
-		MenuItem searchMenuItem = menu.findItem(ListPage.OPTIONS_MENU_SEARCH);
-		if (searchMenuItem != null) {
-			searchMenuItem.setActionView(searchView);
-			searchMenuItem.setOnActionExpandListener(new MenuExpandListener((menuItem, expand) -> {
-				setSearchMode(menuItem, expand, false);
-				return true;
-			}));
-		}
-		return true;
-	}
-
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
-		for (int i = 0; i < menu.size(); i++) {
-			MenuItem menuItem = menu.getItem(i);
-			menuItem.setVisible(!searchMode || menuItem.getItemId() == ListPage.OPTIONS_MENU_SEARCH);
-		}
-		if (searchMode) {
-			return true;
-		}
-		if (page != null && sendPrepareMenuToPage) {
-			page.onPrepareOptionsMenu(menu);
-		}
+		boolean result = super.onPrepareOptionsMenu(menu);
 		MenuItem appearanceOptionsItem = menu.findItem(ListPage.OPTIONS_MENU_APPEARANCE);
 		if (appearanceOptionsItem != null) {
 			Menu appearanceOptionsMenu = appearanceOptionsItem.getSubMenu();
+			if (appearanceOptionsMenu.size() == 0) {
+				appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_CHANGE_THEME, 0,
+						R.string.action_change_theme);
+				appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_EXPANDED_SCREEN, 0,
+						R.string.action_expanded_screen).setCheckable(true);
+				appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_SPOILERS, 0,
+						R.string.action_spoilers).setCheckable(true);
+				appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_MY_POSTS, 0,
+						R.string.action_my_posts).setCheckable(true);
+				appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_DRAWER, 0,
+						R.string.action_lock_drawer).setCheckable(true);
+				appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_THREADS_GRID, 0,
+						R.string.action_threads_grid).setCheckable(true);
+				appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_SFW_MODE, 0,
+						R.string.action_sfw_mode).setCheckable(true);
+			}
 			appearanceOptionsMenu.findItem(ListPage.APPEARANCE_MENU_EXPANDED_SCREEN)
 					.setChecked(Preferences.isExpandedScreen());
-			appearanceOptionsMenu.findItem(ListPage.APPEARANCE_MENU_SPOILERS).setChecked(Preferences.isShowSpoilers());
-			appearanceOptionsMenu.findItem(ListPage.APPEARANCE_MENU_MY_POSTS).setChecked(Preferences.isShowMyPosts());
-			boolean lockable = ViewUtils.isDrawerLockable(getResources().getConfiguration());
-			boolean locked = Preferences.isDrawerLocked();
-			appearanceOptionsMenu.findItem(ListPage.APPEARANCE_MENU_DRAWER).setVisible(lockable).setChecked(locked);
+			appearanceOptionsMenu.findItem(ListPage.APPEARANCE_MENU_SPOILERS)
+					.setChecked(Preferences.isShowSpoilers());
+			appearanceOptionsMenu.findItem(ListPage.APPEARANCE_MENU_MY_POSTS)
+					.setChecked(Preferences.isShowMyPosts());
+			appearanceOptionsMenu.findItem(ListPage.APPEARANCE_MENU_DRAWER)
+					.setVisible(ViewUtils.isDrawerLockable(getResources().getConfiguration()))
+					.setChecked(Preferences.isDrawerLocked());
 			appearanceOptionsMenu.findItem(ListPage.APPEARANCE_MENU_THREADS_GRID)
 					.setChecked(Preferences.isThreadsGridMode());
-			appearanceOptionsMenu.findItem(ListPage.APPEARANCE_MENU_SFW_MODE).setChecked(Preferences.isSfwMode());
+			appearanceOptionsMenu.findItem(ListPage.APPEARANCE_MENU_SFW_MODE)
+					.setChecked(Preferences.isSfwMode());
 		}
-		actionMenuConfigurator.onAfterPrepareOptionsMenu(menu);
-		return true;
+		return result;
 	}
 
 	@Override
@@ -805,104 +1000,89 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		if (drawerToggle.onOptionsItemSelected(item)) {
 			return true;
 		}
-		if (page != null) {
-			if (item.getItemId() == ListPage.OPTIONS_MENU_SEARCH) {
-				return false;
-			}
-			if (page.onOptionsItemSelected(item)) {
-				return true;
-			}
-			switch (item.getItemId()) {
-				case android.R.id.home: {
-					if (setSearchMode(false)) {
-						return true;
-					}
-					drawerLayout.closeDrawers();
-					PageHolder pageHolder = pageManager.getCurrentPage();
-					String newChanName = pageHolder.chanName;
-					String newBoardName = pageHolder.boardName;
-					if (pageHolder.content == PageHolder.Content.THREADS) {
+		Fragment currentFragment = getCurrentFragment();
+		switch (item.getItemId()) {
+			case android.R.id.home: {
+				if (currentFragment instanceof ActivityHandler &&
+						((ActivityHandler) currentFragment).onBackPressed()) {
+					return true;
+				}
+				drawerLayout.closeDrawers();
+				if (currentFragment instanceof PageFragment) {
+					Page page = ((PageFragment) currentFragment).getPage();
+					String newChanName = page.chanName;
+					String newBoardName = page.boardName;
+					if (page.content == Page.Content.THREADS) {
 						// Up button must navigate to main page in threads list
-						newBoardName = Preferences.getDefaultBoardName(pageHolder.chanName);
-						if (Preferences.isMergeChans() && StringUtils.equals(pageHolder.boardName, newBoardName)) {
+						newBoardName = Preferences.getDefaultBoardName(page.chanName);
+						if (Preferences.isMergeChans() && StringUtils.equals(page.boardName, newBoardName)) {
 							newChanName = ChanManager.getInstance().getDefaultChanName();
 							newBoardName = Preferences.getDefaultBoardName(newChanName);
 						}
 					}
-					pageManager.clearStack();
-					boolean fromCache = pageManager.get(newChanName, newBoardName, null,
-							PageHolder.Content.THREADS) != null;
+					clearStackAndCurrent();
+					boolean fromCache = false;
+					for (SavedPageItem savedPageItem : new ConcatIterable<>(preservedPageItems, stackPageItems)) {
+						if (getSavedPage(savedPageItem).is(Page.Content.THREADS, newChanName, newBoardName, null)) {
+							fromCache = true;
+							break;
+						}
+					}
 					navigateIntentData(newChanName, newBoardName, null, null, null, null,
 							fromCache ? NavigationUtils.FLAG_FROM_CACHE : 0);
-					return true;
+				} else {
+					// TODO Check non-page fragments
 				}
-				case ListPage.APPEARANCE_MENU_CHANGE_THEME:
-				case ListPage.APPEARANCE_MENU_EXPANDED_SCREEN:
-				case ListPage.APPEARANCE_MENU_SPOILERS:
-				case ListPage.APPEARANCE_MENU_MY_POSTS:
-				case ListPage.APPEARANCE_MENU_DRAWER:
-				case ListPage.APPEARANCE_MENU_THREADS_GRID:
-				case ListPage.APPEARANCE_MENU_SFW_MODE: {
-					try {
-						switch (item.getItemId()) {
-							case ListPage.APPEARANCE_MENU_CHANGE_THEME: {
-								showThemeDialog();
-								return true;
-							}
-							case ListPage.APPEARANCE_MENU_EXPANDED_SCREEN: {
-								Preferences.setExpandedScreen(!item.isChecked());
-								recreate();
-								return true;
-							}
-							case ListPage.APPEARANCE_MENU_SPOILERS: {
-								Preferences.setShowSpoilers(!item.isChecked());
-								return true;
-							}
-							case ListPage.APPEARANCE_MENU_MY_POSTS: {
-								Preferences.setShowMyPosts(!item.isChecked());
-								return true;
-							}
-							case ListPage.APPEARANCE_MENU_DRAWER: {
-								Preferences.setDrawerLocked(!item.isChecked());
-								updateWideConfiguration(false);
-								return true;
-							}
-							case ListPage.APPEARANCE_MENU_THREADS_GRID: {
-								Preferences.setThreadsGridMode(!item.isChecked());
-								return true;
-							}
-							case ListPage.APPEARANCE_MENU_SFW_MODE: {
-								Preferences.setSfwMode(!item.isChecked());
-								return true;
-							}
+				return true;
+			}
+			case ListPage.APPEARANCE_MENU_CHANGE_THEME:
+			case ListPage.APPEARANCE_MENU_EXPANDED_SCREEN:
+			case ListPage.APPEARANCE_MENU_SPOILERS:
+			case ListPage.APPEARANCE_MENU_MY_POSTS:
+			case ListPage.APPEARANCE_MENU_DRAWER:
+			case ListPage.APPEARANCE_MENU_THREADS_GRID:
+			case ListPage.APPEARANCE_MENU_SFW_MODE: {
+				try {
+					switch (item.getItemId()) {
+						case ListPage.APPEARANCE_MENU_CHANGE_THEME: {
+							showThemeDialog();
+							return true;
 						}
-					} finally {
-						if (page != null) {
-							page.onAppearanceOptionChanged(item.getItemId());
+						case ListPage.APPEARANCE_MENU_EXPANDED_SCREEN: {
+							Preferences.setExpandedScreen(!item.isChecked());
+							recreate();
+							return true;
 						}
+						case ListPage.APPEARANCE_MENU_SPOILERS: {
+							Preferences.setShowSpoilers(!item.isChecked());
+							return true;
+						}
+						case ListPage.APPEARANCE_MENU_MY_POSTS: {
+							Preferences.setShowMyPosts(!item.isChecked());
+							return true;
+						}
+						case ListPage.APPEARANCE_MENU_DRAWER: {
+							Preferences.setDrawerLocked(!item.isChecked());
+							updateWideConfiguration(false);
+							return true;
+						}
+						case ListPage.APPEARANCE_MENU_THREADS_GRID: {
+							Preferences.setThreadsGridMode(!item.isChecked());
+							return true;
+						}
+						case ListPage.APPEARANCE_MENU_SFW_MODE: {
+							Preferences.setSfwMode(!item.isChecked());
+							return true;
+						}
+					}
+				} finally {
+					if (currentFragment instanceof PageFragment) {
+						((PageFragment) currentFragment).onAppearanceOptionChanged(item.getItemId());
 					}
 				}
 			}
 		}
 		return super.onOptionsItemSelected(item);
-	}
-
-	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-		super.onCreateContextMenu(menu, v, menuInfo);
-		if (page != null) {
-			AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
-			page.onCreateContextMenu(menu, v, info.position, info.targetView);
-		}
-	}
-
-	@Override
-	public boolean onContextItemSelected(@NonNull MenuItem item) {
-		if (page != null) {
-			AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-			return page.onContextItemSelected(item, info.position, info.targetView);
-		}
-		return false;
 	}
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -985,18 +1165,6 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	}
 
 	@Override
-	public void onListPulled(PullableWrapper wrapper, PullableWrapper.Side side) {
-		if (page != null) {
-			page.onListPulled(wrapper, side);
-		}
-	}
-
-	@Override
-	public void onPullStateChanged(PullableWrapper wrapper, boolean busy) {
-		setActionBarLocked(LOCKER_PULL, busy);
-	}
-
-	@Override
 	public void onSortingStateChanged(SortableListView listView, boolean sorting) {
 		if (!wideMode) {
 			drawerLayout.setDrawerLockMode(sorting ? DrawerLayout.LOCK_MODE_LOCKED_OPEN
@@ -1006,31 +1174,44 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 
 	@Override
 	public void onSelectChan(String chanName) {
-		if (page != null) {
-			if (!pageManager.getCurrentPage().chanName.equals(chanName)) {
-				if (!Preferences.isMergeChans()) {
-					// Find chan page and open it. Open root page if nothing was found.
-					PageHolder pageHolder = pageManager.getLastPage(chanName);
-					if (pageHolder != null) {
-						navigatePageHolder(pageHolder, true);
-					} else {
-						navigateBoardsOrThreads(chanName, Preferences.getDefaultBoardName(chanName), 0);
+		Fragment currentFragment = getCurrentFragment();
+		Page page = currentFragment instanceof PageFragment ? ((PageFragment) currentFragment).getPage() : null;
+		if (page == null || !page.chanName.equals(chanName)) {
+			if (!Preferences.isMergeChans()) {
+				// Find chan page and open it. Open root page if nothing was found.
+				SavedPageItem lastSavedPageItem = null;
+				for (int i = stackPageItems.size() - 1; i >= 0; i--) {
+					SavedPageItem savedPageItem = stackPageItems.get(i);
+					if (getSavedPage(savedPageItem).chanName.equals(chanName)) {
+						stackPageItems.remove(savedPageItem);
+						lastSavedPageItem = savedPageItem;
+						break;
 					}
-				} else {
-					// Open root page. If page is already opened, load it from cache.
-					boolean fromCache = false;
-					String boardName = Preferences.getDefaultBoardName(chanName);
-					for (PageHolder pageHolder : pageManager.getPages()) {
-						if (pageHolder.is(chanName, boardName, null, PageHolder.Content.THREADS)) {
-							fromCache = true;
-							break;
-						}
-					}
-					navigateBoardsOrThreads(chanName, boardName, fromCache ? NavigationUtils.FLAG_FROM_CACHE : 0);
 				}
-				drawerForm.updateConfiguration(chanName);
-				drawerForm.invalidateItems(true, false);
+				if (lastSavedPageItem != null) {
+					if (page != null) {
+						stackPageItems.add(currentPageItem.toSaved(getSupportFragmentManager(),
+								(PageFragment) currentFragment));
+						currentPageItem = null;
+					}
+					navigateSavedPage(lastSavedPageItem);
+				} else {
+					navigateBoardsOrThreads(chanName, Preferences.getDefaultBoardName(chanName), 0);
+				}
+			} else {
+				// Open root page. If page is already opened, load it from cache.
+				boolean fromCache = false;
+				String boardName = Preferences.getDefaultBoardName(chanName);
+				for (SavedPageItem savedPageItem : new ConcatIterable<>(preservedPageItems, stackPageItems)) {
+					if (getSavedPage(savedPageItem).is(Page.Content.THREADS, chanName, boardName, null)) {
+						fromCache = true;
+						break;
+					}
+				}
+				navigateBoardsOrThreads(chanName, boardName, fromCache ? NavigationUtils.FLAG_FROM_CACHE : 0);
 			}
+			drawerForm.updateConfiguration(chanName);
+			drawerForm.invalidateItems(true, false);
 		}
 		if (!wideMode) {
 			drawerLayout.closeDrawers();
@@ -1039,14 +1220,13 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 
 	@Override
 	public void onSelectBoard(String chanName, String boardName, boolean fromCache) {
-		if (page != null) {
-			PageHolder pageHolder = pageManager.getCurrentPage();
-			if (pageManager.isSingleBoardMode(chanName)) {
-				boardName = pageManager.getSingleBoardName(chanName);
-			}
-			if (!pageHolder.is(chanName, boardName, null, PageHolder.Content.THREADS)) {
-				navigateBoardsOrThreads(chanName, boardName, fromCache ? NavigationUtils.FLAG_FROM_CACHE : 0);
-			}
+		Fragment currentFragment = getCurrentFragment();
+		Page page = currentFragment instanceof PageFragment ? ((PageFragment) currentFragment).getPage() : null;
+		if (isSingleBoardMode(chanName)) {
+			boardName = getSingleBoardName(chanName);
+		}
+		if (page == null || !page.is(Page.Content.THREADS, chanName, boardName, null)) {
+			navigateBoardsOrThreads(chanName, boardName, fromCache ? NavigationUtils.FLAG_FROM_CACHE : 0);
 		}
 		if (!wideMode) {
 			drawerLayout.closeDrawers();
@@ -1056,13 +1236,16 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	@Override
 	public boolean onSelectThread(String chanName, String boardName, String threadNumber, String postNumber,
 			String threadTitle, boolean fromCache) {
-		if (page != null) {
-			PageHolder pageHolder = pageManager.getCurrentPage();
-			if (pageManager.isSingleBoardMode(chanName)) {
-				boardName = pageManager.getSingleBoardName(chanName);
-			} else if (boardName == null) {
-				switch (pageHolder.content) {
-					case ALL_BOARDS:
+		Fragment currentFragment = getCurrentFragment();
+		Page page = currentFragment instanceof PageFragment ? ((PageFragment) currentFragment).getPage() : null;
+		if (isSingleBoardMode(chanName)) {
+			boardName = getSingleBoardName(chanName);
+		} else if (boardName == null) {
+			if (page == null) {
+				return false;
+			} else {
+				switch (page.content) {
+					case BOARDS:
 					case USER_BOARDS:
 					case HISTORY: {
 						return false;
@@ -1071,12 +1254,12 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 						break;
 					}
 				}
-				boardName = pageHolder.boardName;
+				boardName = page.boardName;
 			}
-			if (!pageHolder.is(chanName, boardName, threadNumber, PageHolder.Content.POSTS)) {
-				navigatePosts(chanName, boardName, threadNumber, postNumber, threadTitle,
-						fromCache ? NavigationUtils.FLAG_FROM_CACHE : 0);
-			}
+		}
+		if (page == null || !page.is(Page.Content.POSTS, chanName, boardName, threadNumber)) {
+			navigatePosts(chanName, boardName, threadNumber, postNumber, threadTitle,
+					fromCache ? NavigationUtils.FLAG_FROM_CACHE : 0);
 		}
 		if (!wideMode) {
 			drawerLayout.closeDrawers();
@@ -1084,83 +1267,115 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		return true;
 	}
 
-	private boolean isPageThreadsPosts(PageHolder pageHolder, String chanName, String boardName, String threadNumber) {
-		if (threadNumber != null) {
-			return pageHolder.is(chanName, boardName, threadNumber, PageHolder.Content.POSTS);
+	@Override
+	public void onClosePage(String chanName, String boardName, String threadNumber) {
+		Fragment currentFragment = getCurrentFragment();
+		Page page = currentFragment instanceof PageFragment ? ((PageFragment) currentFragment).getPage() : null;
+		if (page != null && page.isThreadsOrPosts(chanName, boardName, threadNumber)) {
+			SavedPageItem savedPageItem = prepareTargetPreviousPage(false);
+			currentPageItem = null;
+			if (savedPageItem != null) {
+				navigateSavedPage(savedPageItem);
+			} else {
+				if (isSingleBoardMode(chanName)) {
+					navigatePage(Page.Content.THREADS, chanName,
+							getSingleBoardName(chanName), null, null, null, null, true, false, false);
+				} else {
+					navigatePage(Page.Content.BOARDS, chanName,
+							null, null, null, null, null, true, false, false);
+				}
+			}
 		} else {
-			return pageHolder.is(chanName, boardName, null, PageHolder.Content.THREADS);
+			Iterator<SavedPageItem> iterator = stackPageItems.iterator();
+			while (iterator.hasNext()) {
+				if (getSavedPage(iterator.next()).isThreadsOrPosts(chanName, boardName, threadNumber)) {
+					iterator.remove();
+					break;
+				}
+			}
+			iterator = preservedPageItems.iterator();
+			while (iterator.hasNext()) {
+				if (getSavedPage(iterator.next()).isThreadsOrPosts(chanName, boardName, threadNumber)) {
+					iterator.remove();
+					break;
+				}
+			}
+			drawerForm.invalidateItems(true, false);
+			invalidateHomeUpState();
 		}
 	}
 
-	@Override
-	public boolean onClosePage(String chanName, String boardName, String threadNumber) {
-		if (page != null) {
-			PageHolder pageHolder = pageManager.getCurrentPage();
-			if (pageHolder != null && isPageThreadsPosts(pageHolder, chanName, boardName, threadNumber)) {
-				PageHolder previousPageHolder = pageManager.getTargetPreviousPage(false);
-				pageManager.removeCurrentPage();
-				if (previousPageHolder != null) {
-					navigatePageHolder(previousPageHolder, true);
-				} else {
-					if (pageManager.isSingleBoardMode(chanName)) {
-						performNavigation(PageHolder.Content.THREADS, chanName,
-								pageManager.getSingleBoardName(chanName), null, null, null, null, true, true, false);
-					} else {
-						performNavigation(PageHolder.Content.ALL_BOARDS, chanName, null, null, null, null, null,
-								true, true, false);
-					}
-				}
-				return true;
-			} else {
-				ArrayList<PageHolder> pageHolders = pageManager.getPages();
-				for (int i = 0; i < pageHolders.size(); i++) {
-					if (isPageThreadsPosts(pageHolders.get(i), chanName, boardName, threadNumber)) {
-						pageHolders.remove(i);
-						break;
-					}
-				}
-				drawerForm.invalidateItems(true, false);
-				// Replace arrow with bars, if current threads page becomes root
-				if (pageHolder.content == PageHolder.Content.THREADS && pageManager.getStackSize() <= 1) {
-					if (pageManager.isSingleBoardMode() || pageHolder.boardName
-							.equals(Preferences.getDefaultBoardName(pageHolder.chanName))) {
-						invalidateHomeUpState();
-					}
-				}
-			}
+	private boolean isCloseAllTarget(Page page, String chanName, String boardName,
+			boolean singleBoardMode, String singleBoardName) {
+		if (!singleBoardMode && boardName == null) {
+			return page.is(Page.Content.BOARDS, chanName, null, null);
+		} else if (singleBoardMode) {
+			return page.is(Page.Content.THREADS, chanName, singleBoardName, null);
+		} else {
+			return page.is(Page.Content.THREADS, chanName, boardName, null);
 		}
-		return false;
 	}
 
 	@Override
 	public void onCloseAllPages() {
-		if (page != null) {
-			String chanName = pageManager.getCurrentPage().chanName;
-			String boardName = Preferences.getDefaultBoardName(chanName);
-			PageHolder targetPageHolder;
-			if (!pageManager.isSingleBoardMode() && boardName == null) {
-				targetPageHolder = pageManager.get(chanName, null, null, PageHolder.Content.ALL_BOARDS);
-			} else if (pageManager.isSingleBoardMode()) {
-				targetPageHolder = pageManager.get(chanName, pageManager.getSingleBoardName(chanName),
-						null, PageHolder.Content.THREADS);
-			} else {
-				targetPageHolder = pageManager.get(chanName, boardName, null, PageHolder.Content.THREADS);
-			}
-			pageManager.closeAllExcept(targetPageHolder);
-			if (pageManager.getCurrentPage() == null) {
-				cleanupPage();
-			}
-			drawerForm.invalidateItems(true, false);
-			boolean fromCache = targetPageHolder != null;
-			navigateBoardsOrThreads(chanName, boardName, fromCache ? NavigationUtils.FLAG_FROM_CACHE : 0);
+		Fragment currentFragment = getCurrentFragment();
+		Page page = currentFragment instanceof PageFragment ? ((PageFragment) currentFragment).getPage() : null;
+		String chanName = page != null ? page.chanName : null;
+		if (chanName == null && !stackPageItems.isEmpty()) {
+			chanName = getSavedPage(stackPageItems.get(stackPageItems.size() - 1)).chanName;
 		}
+		if (chanName != null) {
+			String boardName = Preferences.getDefaultBoardName(chanName);
+			boolean singleBoardMode = isSingleBoardMode(chanName);
+			String singleBoardName = getSingleBoardName(chanName);
+			boolean cached = page != null && isCloseAllTarget(page,
+					chanName, boardName, singleBoardMode, singleBoardName);
+			boolean mergeChans = Preferences.isMergeChans();
+			ArrayList<SavedPageItem> addPreserved = new ArrayList<>();
+			Iterator<SavedPageItem> iterator = new ConcatIterable<>(preservedPageItems, stackPageItems).iterator();
+			while (iterator.hasNext()) {
+				SavedPageItem savedPageItem = iterator.next();
+				Page savedPage = getSavedPage(savedPageItem);
+				if (mergeChans || savedPage.chanName.equals(chanName)) {
+					cached |= isCloseAllTarget(savedPage, chanName, boardName, singleBoardMode, singleBoardName);
+					iterator.remove();
+					if (!(savedPage.isThreadsOrPosts() || savedPage.canDestroyIfNotInStack())) {
+						addPreserved.add(savedPageItem);
+					}
+				}
+			}
+			preservedPageItems.addAll(addPreserved);
+			if (page != null) {
+				if (!(page.isThreadsOrPosts() || page.canDestroyIfNotInStack())) {
+					preservedPageItems.add(currentPageItem.toSaved(getSupportFragmentManager(),
+							(PageFragment) currentFragment));
+				}
+				currentPageItem = null;
+				navigateBoardsOrThreads(chanName, boardName, cached ? NavigationUtils.FLAG_FROM_CACHE : 0);
+			}
+		} else {
+			ArrayList<SavedPageItem> addPreserved = new ArrayList<>();
+			Iterator<SavedPageItem> iterator = new ConcatIterable<>(preservedPageItems, stackPageItems).iterator();
+			while (iterator.hasNext()) {
+				SavedPageItem savedPageItem = iterator.next();
+				Page savedPage = getSavedPage(savedPageItem);
+				iterator.remove();
+				if (!(savedPage.isThreadsOrPosts() || savedPage.canDestroyIfNotInStack())) {
+					addPreserved.add(savedPageItem);
+				}
+			}
+			preservedPageItems.addAll(addPreserved);
+		}
+		drawerForm.invalidateItems(true, false);
+		invalidateHomeUpState();
 	}
 
 	@Override
 	public int onEnterNumber(int number) {
 		int result = 0;
-		if (page != null) {
-			result = page.onDrawerNumberEntered(number);
+		Fragment currentFragment = getCurrentFragment();
+		if (currentFragment instanceof PageFragment) {
+			result = ((PageFragment) currentFragment).onDrawerNumberEntered(number);
 		}
 		if (!wideMode && FlagUtils.get(result, DrawerForm.RESULT_SUCCESS)) {
 			drawerLayout.closeDrawers();
@@ -1172,41 +1387,44 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 
 	@Override
 	public void onSelectDrawerMenuItem(int item) {
-		PageHolder.Content content = null;
+		Page.Content content = null;
 		switch (item) {
-			case DrawerForm.MENU_ITEM_ALL_BOARDS: {
-				content = PageHolder.Content.ALL_BOARDS;
+			case DrawerForm.MENU_ITEM_BOARDS: {
+				content = Page.Content.BOARDS;
 				break;
 			}
 			case DrawerForm.MENU_ITEM_USER_BOARDS: {
-				content = PageHolder.Content.USER_BOARDS;
+				content = Page.Content.USER_BOARDS;
 				break;
 			}
 			case DrawerForm.MENU_ITEM_HISTORY: {
-				content = PageHolder.Content.HISTORY;
+				content = Page.Content.HISTORY;
 				break;
 			}
 			case DrawerForm.MENU_ITEM_PREFERENCES: {
 				if (wideMode) {
 					preferencesRunnable.run();
 				} else {
-					listView.postDelayed(preferencesRunnable, 200);
+					drawerListView.postDelayed(preferencesRunnable, 200);
 				}
 				break;
 			}
 		}
 		if (content != null) {
-			if (page != null) {
-				PageHolder pageHolder = pageManager.getCurrentPage();
-				if (pageHolder.content != content) {
-					for (PageHolder itPageHolder : pageManager.getPages()) {
-						// Reset list position
-						if (itPageHolder.content == content) {
-							itPageHolder.position = null;
-						}
-					}
-					performNavigation(content, pageHolder.chanName, pageHolder.boardName, null, null, null, null,
-							false, true, false);
+			Fragment currentFragment = getCurrentFragment();
+			Page page = currentFragment instanceof PageFragment ? ((PageFragment) currentFragment).getPage() : null;
+			if (page == null || page.content != content) {
+				if (page == null && !stackPageItems.isEmpty()) {
+					page = getSavedPage(stackPageItems.get(stackPageItems.size() - 1));
+				}
+				String chanName = page != null ? page.chanName : null;
+				String boardName = page != null ? page.boardName : null;
+				if (chanName == null) {
+					chanName = ChanManager.getInstance().getDefaultChanName();
+					boardName = Preferences.getDefaultBoardName(boardName);
+				}
+				if (chanName != null) {
+					navigatePage(content, chanName, boardName, null, null, null, null, false, false, true);
 				}
 			}
 		}
@@ -1216,8 +1434,25 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	}
 
 	@Override
-	public ArrayList<PageHolder> getDrawerPageHolders() {
-		return pageManager.getPages();
+	public Collection<DrawerForm.Page> obtainDrawerPages() {
+		ArrayList<DrawerForm.Page> drawerPages = new ArrayList<>(1 +
+				stackPageItems.size() + preservedPageItems.size());
+		for (SavedPageItem savedPageItem : new ConcatIterable<>(preservedPageItems, stackPageItems)) {
+			Page page = getSavedPage(savedPageItem);
+			if (page.isThreadsOrPosts()) {
+				drawerPages.add(new DrawerForm.Page(page.chanName, page.boardName, page.threadNumber,
+						savedPageItem.threadTitle, savedPageItem.createdRealtime));
+			}
+		}
+		Fragment currentFragment = getCurrentFragment();
+		if (currentFragment instanceof PageFragment) {
+			Page page = ((PageFragment) currentFragment).getPage();
+			if (page.isThreadsOrPosts()) {
+				drawerPages.add(new DrawerForm.Page(page.chanName, page.boardName, page.threadNumber,
+						currentPageItem.threadTitle, currentPageItem.createdRealtime));
+			}
+		}
+		return drawerPages;
 	}
 
 	private final Runnable installationCallback = () -> drawerForm.updateRestartViewVisibility();
@@ -1226,13 +1461,34 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	public void restartApplication() {
 		Bundle outState = new Bundle();
 		writePagesState(outState);
-		pageManager.writeToStorage(outState);
-		NavigationUtils.restartApplication(this);
+		outState.putParcelable(EXTRA_CURRENT_FRAGMENT,
+				new StackItem(getSupportFragmentManager(), getCurrentFragment()));
+		File file = getSavedPagesFile();
+		if (file != null) {
+			Parcel parcel = Parcel.obtain();
+			FileOutputStream output = null;
+			try {
+				outState.writeToParcel(parcel, 0);
+				byte[] data = parcel.marshall();
+				output = new FileOutputStream(file);
+				IOUtils.copyStream(new ByteArrayInputStream(data), output);
+			} catch (IOException e) {
+				file.delete();
+			} finally {
+				IOUtils.close(output);
+				parcel.recycle();
+			}
+		}
+		if (file != null && file.exists()) {
+			NavigationUtils.restartApplication(this);
+		}
 	}
 
 	private final BroadcastReceiver newPostReceiver = AndroidUtils.createReceiver((r, c, i) -> {
-		if (page != null) {
-			page.handleNewPostDatasNow();
+		Fragment currentFragment = getCurrentFragment();
+		if (currentFragment instanceof PageFragment) {
+			// TODO Replace receiver with service binding
+			((PageFragment) currentFragment).handleNewPostDataListNow();
 		}
 	});
 
@@ -1296,88 +1552,27 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 	}
 
 	@Override
-	public void notifyTitleChanged() {
+	public void setPageTitle(String title) {
+		setTitle(title);
+		if (((PageFragment) getCurrentFragment()).getPage().content == Page.Content.POSTS) {
+			currentPageItem.threadTitle = title;
+		}
 		drawerForm.invalidateItems(true, false);
-		if (page != null) {
-			setTitle(page.obtainTitle());
-		}
 	}
 
 	@Override
-	public void updateOptionsMenu() {
-		onPrepareOptionsMenu(currentMenu);
-	}
-
-	@Override
-	public void setCustomSearchView(View view) {
-		searchView.setCustomView(view);
-	}
-
-	@Override
-	public void switchView(ListPage.ViewType viewType, String message) {
-		progressView.setVisibility(viewType == ListPage.ViewType.PROGRESS ? View.VISIBLE : View.GONE);
-		errorView.setVisibility(viewType == ListPage.ViewType.ERROR ? View.VISIBLE : View.GONE);
-		if (viewType == ListPage.ViewType.ERROR) {
-			errorText.setText(message != null ? message : getString(R.string.message_unknown_error));
-		}
-	}
-
-	private final Runnable showScaleRunnable = () -> showScaleAnimation(false);
-
-	@Override
-	public void showScaleAnimation() {
-		showScaleAnimation(true);
-	}
-
-	private void showScaleAnimation(boolean post) {
-		clearListAnimator();
-		if (allowScaleAnimation) {
-			if (post) {
-				listView.setVisibility(View.INVISIBLE);
-				handler.post(showScaleRunnable);
-			} else {
-				final float fromScale = 0.925f;
-				ObjectAnimator alphaAnimator = ObjectAnimator.ofFloat(listView, View.ALPHA, 0f, 1f);
-				ObjectAnimator scaleXAnimator = ObjectAnimator.ofFloat(listView, View.SCALE_X, fromScale, 1f);
-				ObjectAnimator scaleYAnimator = ObjectAnimator.ofFloat(listView, View.SCALE_Y, fromScale, 1f);
-				AnimatorSet animatorSet = new AnimatorSet();
-				animatorSet.playTogether(alphaAnimator, scaleXAnimator, scaleYAnimator);
-				animatorSet.setDuration(100);
-				startListAnimator(animatorSet);
-			}
-		}
-	}
-
-	private Animator currentListAnimator;
-
-	private void clearListAnimator() {
-		if (currentListAnimator != null) {
-			currentListAnimator.cancel();
-			currentListAnimator = null;
-		}
-		listView.setVisibility(View.VISIBLE);
-	}
-
-	private void startListAnimator(Animator animator) {
-		clearListAnimator();
-		currentListAnimator = animator;
-		animator.start();
-	}
-
-	@Override
-	public void handleRedirect(String chanName, String boardName, String threadNumber, String postNumber) {
-		PageHolder pageHolder = pageManager.getCurrentPage();
-		if (pageHolder.isThreadsOrPosts()) {
-			pageManager.removeCurrentPage();
-			if (pageHolder.content == PageHolder.Content.POSTS) {
-				FavoritesStorage.getInstance().move(pageHolder.chanName,
-						pageHolder.boardName, pageHolder.threadNumber, boardName, threadNumber);
-				CacheManager.getInstance().movePostsPage(pageHolder.chanName,
-						pageHolder.boardName, pageHolder.threadNumber, boardName, threadNumber);
-				DraftsStorage.getInstance().movePostDraft(pageHolder.chanName,
-						pageHolder.boardName, pageHolder.threadNumber, boardName, threadNumber);
+	public void handleRedirect(Page page, String chanName, String boardName, String threadNumber, String postNumber) {
+		if (page.isThreadsOrPosts()) {
+			if (page.content == Page.Content.POSTS) {
+				FavoritesStorage.getInstance().move(page.chanName,
+						page.boardName, page.threadNumber, boardName, threadNumber);
+				CacheManager.getInstance().movePostsPage(page.chanName,
+						page.boardName, page.threadNumber, boardName, threadNumber);
+				DraftsStorage.getInstance().movePostDraft(page.chanName,
+						page.boardName, page.threadNumber, boardName, threadNumber);
 				drawerForm.invalidateItems(true, false);
 			}
+			currentPageItem = null;
 			if (threadNumber == null) {
 				navigateBoardsOrThreads(chanName, boardName, 0);
 			} else {
@@ -1386,7 +1581,8 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 		}
 	}
 
-	private void setActionBarLocked(String locker, boolean locked) {
+	@Override
+	public void setActionBarLocked(String locker, boolean locked) {
 		if (locked) {
 			expandedScreen.addLocker(locker);
 		} else {
@@ -1410,5 +1606,15 @@ public class NavigatorActivity extends StateActivity implements BusyScrollListen
 
 		@Override
 		public void onDrawerStateChanged(int newState) {}
+	}
+
+	public static class RetainFragment extends Fragment {
+		private final HashMap<String, Object> extras = new HashMap<>();
+
+		@Override
+		public void onCreate(Bundle savedInstanceState) {
+			super.onCreate(savedInstanceState);
+			setRetainInstance(true);
+		}
 	}
 }

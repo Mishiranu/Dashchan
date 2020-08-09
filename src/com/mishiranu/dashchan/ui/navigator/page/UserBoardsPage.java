@@ -1,56 +1,40 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui.navigator.page;
 
 import android.net.Uri;
-import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-
 import chan.content.model.Board;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.async.ReadUserBoardsTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.ui.navigator.adapter.UserBoardsAdapter;
+import com.mishiranu.dashchan.util.DialogMenu;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.PullableListView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 
 public class UserBoardsPage extends ListPage<UserBoardsAdapter> implements ReadUserBoardsTask.Callback {
+	private static class RetainExtra {
+		public static final ExtraFactory<RetainExtra> FACTORY = RetainExtra::new;
+
+		public Board[] boards;
+	}
+
 	private ReadUserBoardsTask readTask;
 
 	@Override
 	protected void onCreate() {
 		PullableListView listView = getListView();
-		PageHolder pageHolder = getPageHolder();
-		UserBoardsAdapter adapter = new UserBoardsAdapter(pageHolder.chanName);
+		UserBoardsAdapter adapter = new UserBoardsAdapter(getPage().chanName);
 		initAdapter(adapter, null);
 		listView.getWrapper().setPullSides(PullableWrapper.Side.TOP);
-		UserBoardsExtra extra = getExtra();
-		if (getExtra().boards != null) {
-			showScaleAnimation();
-			adapter.setItems(extra.boards);
-			if (pageHolder.position != null) {
-				pageHolder.position.apply(getListView());
-			}
+		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
+		if (retainExtra.boards != null) {
+			adapter.setItems(retainExtra.boards);
+			restoreListPosition(null);
 		} else {
 			refreshBoards(false);
 		}
@@ -70,11 +54,43 @@ public class UserBoardsPage extends ListPage<UserBoardsAdapter> implements ReadU
 	}
 
 	@Override
-	public void onItemClick(View view, int position, long id) {
+	public void onItemClick(View view, int position) {
 		String boardName = getAdapter().getItem(position).boardName;
 		if (boardName != null) {
-			getUiManager().navigator().navigateBoardsOrThreads(getPageHolder().chanName, boardName, 0);
+			getUiManager().navigator().navigateBoardsOrThreads(getPage().chanName, boardName, 0);
 		}
+	}
+
+	private static final int CONTEXT_MENU_COPY_LINK = 0;
+	private static final int CONTEXT_MENU_ADD_FAVORITES = 1;
+
+	@Override
+	public boolean onItemLongClick(View view, int position) {
+		String boardName = getAdapter().getItem(position).boardName;
+		if (boardName != null) {
+			DialogMenu dialogMenu = new DialogMenu(getContext(), (context, id, extra) -> {
+				switch (id) {
+					case CONTEXT_MENU_COPY_LINK: {
+						Uri uri = getChanLocator().safe(true).createBoardUri(boardName, 0);
+						if (uri != null) {
+							StringUtils.copyToClipboard(getContext(), uri.toString());
+						}
+						break;
+					}
+					case CONTEXT_MENU_ADD_FAVORITES: {
+						FavoritesStorage.getInstance().add(getPage().chanName, boardName);
+						break;
+					}
+				}
+			});
+			dialogMenu.addItem(CONTEXT_MENU_COPY_LINK, R.string.action_copy_link);
+			if (!FavoritesStorage.getInstance().hasFavorite(getPage().chanName, boardName, null)) {
+				dialogMenu.addItem(CONTEXT_MENU_ADD_FAVORITES, R.string.action_add_to_favorites);
+			}
+			dialogMenu.show();
+			return true;
+		}
+		return false;
 	}
 
 	private static final int OPTIONS_MENU_REFRESH = 0;
@@ -99,41 +115,6 @@ public class UserBoardsPage extends ListPage<UserBoardsAdapter> implements ReadU
 		return false;
 	}
 
-	private static final int CONTEXT_MENU_COPY_LINK = 0;
-	private static final int CONTEXT_MENU_ADD_FAVORITES = 1;
-
-	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v, int position, View targetView) {
-		String boardName = getAdapter().getItem(position).boardName;
-		if (boardName != null) {
-			menu.add(0, CONTEXT_MENU_COPY_LINK, 0, R.string.action_copy_link);
-			if (!FavoritesStorage.getInstance().hasFavorite(getPageHolder().chanName, boardName, null)) {
-				menu.add(0, CONTEXT_MENU_ADD_FAVORITES, 0, R.string.action_add_to_favorites);
-			}
-		}
-	}
-
-	@Override
-	public boolean onContextItemSelected(MenuItem item, int position, View targetView) {
-		String boardName = getAdapter().getItem(position).boardName;
-		if (boardName != null) {
-			switch (item.getItemId()) {
-				case CONTEXT_MENU_COPY_LINK: {
-					Uri uri = getChanLocator().safe(true).createBoardUri(boardName, 0);
-					if (uri != null) {
-						StringUtils.copyToClipboard(getActivity(), uri.toString());
-					}
-					return true;
-				}
-				case CONTEXT_MENU_ADD_FAVORITES: {
-					FavoritesStorage.getInstance().add(getPageHolder().chanName, boardName);
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
 	@Override
 	public void onSearchQueryChange(String query) {
 		getAdapter().applyFilter(query);
@@ -148,7 +129,7 @@ public class UserBoardsPage extends ListPage<UserBoardsAdapter> implements ReadU
 		if (readTask != null) {
 			readTask.cancel();
 		}
-		readTask = new ReadUserBoardsTask(getPageHolder().chanName, this);
+		readTask = new ReadUserBoardsTask(getPage().chanName, this);
 		readTask.executeOnExecutor(ReadUserBoardsTask.THREAD_POOL_EXECUTOR);
 		if (showPull) {
 			getListView().getWrapper().startBusyState(PullableWrapper.Side.TOP);
@@ -164,7 +145,7 @@ public class UserBoardsPage extends ListPage<UserBoardsAdapter> implements ReadU
 		readTask = null;
 		getListView().getWrapper().cancelBusyState();
 		switchView(ViewType.LIST, null);
-		getExtra().boards = boards;
+		getRetainExtra(RetainExtra.FACTORY).boards = boards;
 		getAdapter().setItems(boards);
 		getListView().setSelection(0);
 	}
@@ -176,19 +157,7 @@ public class UserBoardsPage extends ListPage<UserBoardsAdapter> implements ReadU
 		if (getAdapter().isEmpty()) {
 			switchView(ViewType.ERROR, errorItem.toString());
 		} else {
-			ClickableToast.show(getActivity(), errorItem.toString());
+			ClickableToast.show(getContext(), errorItem.toString());
 		}
-	}
-
-	public static class UserBoardsExtra implements PageHolder.Extra {
-		public Board[] boards;
-	}
-
-	private UserBoardsExtra getExtra() {
-		PageHolder pageHolder = getPageHolder();
-		if (!(pageHolder.extra instanceof UserBoardsExtra)) {
-			pageHolder.extra = new UserBoardsExtra();
-		}
-		return (UserBoardsExtra) pageHolder.extra;
 	}
 }

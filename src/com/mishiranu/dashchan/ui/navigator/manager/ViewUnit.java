@@ -1,27 +1,4 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui.navigator.manager;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
 
 import android.animation.Animator;
 import android.annotation.SuppressLint;
@@ -46,10 +23,8 @@ import android.widget.AbsListView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-
 import chan.content.ChanLocator;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.ImageLoader;
 import com.mishiranu.dashchan.content.model.AttachmentItem;
@@ -71,8 +46,14 @@ import com.mishiranu.dashchan.widget.CardView;
 import com.mishiranu.dashchan.widget.CommentTextView;
 import com.mishiranu.dashchan.widget.LinebreakLayout;
 import com.mishiranu.dashchan.widget.SingleLayerLinearLayout;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
 
-public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListener {
+public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListener {
 	private final UiManager uiManager;
 	private final PostDateFormatter postDateFormatter;
 
@@ -368,7 +349,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 		if (convertView == null) {
 			SingleLayerLinearLayout layout = (SingleLayerLinearLayout) LayoutInflater.from(context)
 					.inflate(R.layout.list_item_post, parent, false);
-			layout.setOnTemporaryDetatchListener(this);
+			layout.setOnTemporaryDetachListener(this);
 			convertView = layout;
 			holder = new PostViewHolder();
 			holder.head = convertView.findViewById(R.id.head);
@@ -871,7 +852,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetatchListe
 	}
 
 	@Override
-	public void onTemporaryDetatch(SingleLayerLinearLayout view, boolean start) {
+	public void onTemporaryDetach(SingleLayerLinearLayout view, boolean start) {
 		if (start) {
 			notifyUnbindView(view);
 		}

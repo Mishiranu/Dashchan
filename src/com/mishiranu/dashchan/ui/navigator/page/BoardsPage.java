@@ -1,36 +1,13 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui.navigator.page;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.net.Uri;
-import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-
 import chan.content.ChanConfiguration;
 import chan.content.model.Board;
 import chan.content.model.BoardCategory;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.async.ReadBoardsTask;
@@ -38,9 +15,13 @@ import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.ui.navigator.adapter.BoardsAdapter;
+import com.mishiranu.dashchan.util.DialogMenu;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.PullableListView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTask.Callback {
 	private ReadBoardsTask readTask;
@@ -48,19 +29,15 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 	@Override
 	protected void onCreate() {
 		PullableListView listView = getListView();
-		PageHolder pageHolder = getPageHolder();
 		if (C.API_LOLLIPOP) {
 			listView.setDivider(null);
 		}
-		BoardsAdapter adapter = new BoardsAdapter(pageHolder.chanName);
+		BoardsAdapter adapter = new BoardsAdapter(getPage().chanName);
 		initAdapter(adapter, null);
 		adapter.update();
 		listView.getWrapper().setPullSides(PullableWrapper.Side.TOP);
 		if (!adapter.isEmpty()) {
-			showScaleAnimation();
-			if (pageHolder.position != null) {
-				pageHolder.position.apply(getListView());
-			}
+			restoreListPosition(null);
 		} else {
 			refreshBoards(false);
 		}
@@ -81,11 +58,43 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 	}
 
 	@Override
-	public void onItemClick(View view, int position, long id) {
+	public void onItemClick(View view, int position) {
 		String boardName = getAdapter().getItem(position).boardName;
 		if (boardName != null) {
-			getUiManager().navigator().navigateBoardsOrThreads(getPageHolder().chanName, boardName, 0);
+			getUiManager().navigator().navigateBoardsOrThreads(getPage().chanName, boardName, 0);
 		}
+	}
+
+	private static final int CONTEXT_MENU_COPY_LINK = 0;
+	private static final int CONTEXT_MENU_ADD_FAVORITES = 1;
+
+	@Override
+	public boolean onItemLongClick(View view, int position) {
+		String boardName = getAdapter().getItem(position).boardName;
+		if (boardName != null) {
+			DialogMenu dialogMenu = new DialogMenu(getContext(), (context, id, extra) -> {
+				switch (id) {
+					case CONTEXT_MENU_COPY_LINK: {
+						Uri uri = getChanLocator().safe(true).createBoardUri(boardName, 0);
+						if (uri != null) {
+							StringUtils.copyToClipboard(getContext(), uri.toString());
+						}
+						break;
+					}
+					case CONTEXT_MENU_ADD_FAVORITES: {
+						FavoritesStorage.getInstance().add(getPage().chanName, boardName);
+						break;
+					}
+				}
+			});
+			dialogMenu.addItem(CONTEXT_MENU_COPY_LINK, R.string.action_copy_link);
+			if (!FavoritesStorage.getInstance().hasFavorite(getPage().chanName, boardName, null)) {
+				dialogMenu.addItem(CONTEXT_MENU_ADD_FAVORITES, R.string.action_add_to_favorites);
+			}
+			dialogMenu.show();
+			return true;
+		}
+		return false;
 	}
 
 	private static final int OPTIONS_MENU_REFRESH = 0;
@@ -93,15 +102,14 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu) {
-		PageHolder pageHolder = getPageHolder();
 		menu.add(0, OPTIONS_MENU_SEARCH, 0, R.string.action_filter)
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
 		menu.add(0, OPTIONS_MENU_REFRESH, 0, R.string.action_refresh).setIcon(obtainIcon(R.attr.actionRefresh))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 		menu.addSubMenu(0, OPTIONS_MENU_APPEARANCE, 0, R.string.action_appearance);
 		menu.add(0, OPTIONS_MENU_MAKE_HOME_PAGE, 0, R.string.action_make_home_page);
-		menu.findItem(OPTIONS_MENU_MAKE_HOME_PAGE).setVisible(Preferences.getDefaultBoardName(pageHolder.chanName)
-				!= null);
+		menu.findItem(OPTIONS_MENU_MAKE_HOME_PAGE).setVisible(Preferences
+				.getDefaultBoardName(getPage().chanName) != null);
 	}
 
 	@Override
@@ -112,45 +120,9 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 				return true;
 			}
 			case OPTIONS_MENU_MAKE_HOME_PAGE: {
-				Preferences.setDefaultBoardName(getPageHolder().chanName, null);
+				Preferences.setDefaultBoardName(getPage().chanName, null);
 				item.setVisible(false);
 				return true;
-			}
-		}
-		return false;
-	}
-
-	private static final int CONTEXT_MENU_COPY_LINK = 0;
-	private static final int CONTEXT_MENU_ADD_FAVORITES = 1;
-
-	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v, int position, View targetView) {
-		PageHolder pageHolder = getPageHolder();
-		String boardName = getAdapter().getItem(position).boardName;
-		if (boardName != null) {
-			menu.add(0, CONTEXT_MENU_COPY_LINK, 0, R.string.action_copy_link);
-			if (!FavoritesStorage.getInstance().hasFavorite(pageHolder.chanName, boardName, null)) {
-				menu.add(0, CONTEXT_MENU_ADD_FAVORITES, 0, R.string.action_add_to_favorites);
-			}
-		}
-	}
-
-	@Override
-	public boolean onContextItemSelected(MenuItem item, int position, View targetView) {
-		String boardName = getAdapter().getItem(position).boardName;
-		if (boardName != null) {
-			switch (item.getItemId()) {
-				case CONTEXT_MENU_COPY_LINK: {
-					Uri uri = getChanLocator().safe(true).createBoardUri(boardName, 0);
-					if (uri != null) {
-						StringUtils.copyToClipboard(getActivity(), uri.toString());
-					}
-					return true;
-				}
-				case CONTEXT_MENU_ADD_FAVORITES: {
-					FavoritesStorage.getInstance().add(getPageHolder().chanName, boardName);
-					return true;
-				}
 			}
 		}
 		return false;
@@ -170,7 +142,7 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 		if (readTask != null) {
 			readTask.cancel();
 		}
-		readTask = new ReadBoardsTask(getPageHolder().chanName, this);
+		readTask = new ReadBoardsTask(getPage().chanName, this);
 		readTask.executeOnExecutor(ReadBoardsTask.THREAD_POOL_EXECUTOR);
 		if (showPull) {
 			getListView().getWrapper().startBusyState(PullableWrapper.Side.TOP);
@@ -223,7 +195,7 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 		if (getAdapter().isEmpty()) {
 			switchView(ViewType.ERROR, errorItem.toString());
 		} else {
-			ClickableToast.show(getActivity(), errorItem.toString());
+			ClickableToast.show(getContext(), errorItem.toString());
 		}
 	}
 }

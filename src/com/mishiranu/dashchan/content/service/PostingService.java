@@ -382,12 +382,12 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 				NewPostData newPostData = new NewPostData(chanName, data.boardName, targetThreadNumber, postNumber,
 						comment, data.threadNumber == null);
 				String arrayKey = makeKey(chanName, data.boardName, targetThreadNumber);
-				ArrayList<NewPostData> newPostDatas = NEW_POST_DATAS.get(arrayKey);
-				if (newPostDatas == null) {
-					newPostDatas = new ArrayList<>(1);
-					NEW_POST_DATAS.put(arrayKey, newPostDatas);
+				ArrayList<NewPostData> newPostDataList = NEW_POST_DATA_LIST.get(arrayKey);
+				if (newPostDataList == null) {
+					newPostDataList = new ArrayList<>(1);
+					NEW_POST_DATA_LIST.put(arrayKey, newPostDataList);
 				}
-				newPostDatas.add(newPostData);
+				newPostDataList.add(newPostData);
 				if (newPostData.newThread) {
 					PostingService.newThreadData = newPostData;
 					PostingService.newThreadDataKey = makeKey(chanName, data.boardName, null);
@@ -511,19 +511,19 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 		}
 	}
 
-	private static final HashMap<String, ArrayList<NewPostData>> NEW_POST_DATAS = new HashMap<>();
+	private static final HashMap<String, ArrayList<NewPostData>> NEW_POST_DATA_LIST = new HashMap<>();
 
-	public static ArrayList<NewPostData> getNewPostDatas(Context context, String chanName, String boardName,
+	public static ArrayList<NewPostData> getNewPostDataList(Context context, String chanName, String boardName,
 			String threadNumber) {
-		ArrayList<NewPostData> newPostDatas = NEW_POST_DATAS.remove(makeKey(chanName, boardName, threadNumber));
-		if (newPostDatas != null) {
+		ArrayList<NewPostData> newPostDataList = NEW_POST_DATA_LIST.remove(makeKey(chanName, boardName, threadNumber));
+		if (newPostDataList != null) {
 			NotificationManager notificationManager = (NotificationManager) context
 					.getSystemService(NOTIFICATION_SERVICE);
-			for (NewPostData newPostData : newPostDatas) {
+			for (NewPostData newPostData : newPostDataList) {
 				notificationManager.cancel(newPostData.getNotificationTag(), 0);
 			}
 		}
-		return newPostDatas;
+		return newPostDataList;
 	}
 
 	private static NewPostData newThreadData;

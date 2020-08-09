@@ -47,10 +47,9 @@ import java.util.List;
 import java.util.Map;
 
 public class NavigationUtils {
-	public static final int FLAG_NOT_ANIMATED = 0x00000001;
-	public static final int FLAG_FROM_CACHE = 0x00000002;
-	public static final int FLAG_RETURNABLE = 0x0000004;
-	public static final int FLAG_LAUNCHER = 0x00000008;
+	public static final int FLAG_FROM_CACHE = 0x00000001;
+	public static final int FLAG_RETURNABLE = 0x00000002;
+	public static final int FLAG_LAUNCHER = 0x00000004;
 
 	private static Intent obtainMainIntent(Context context, int flags, int allowFlags) {
 		return new Intent().setComponent(new ComponentName(context, NavigatorActivity.class))
@@ -59,14 +58,14 @@ public class NavigationUtils {
 	}
 
 	public static Intent obtainThreadsIntent(Context context, String chanName, String boardName, int flags) {
-		int allowFlags = FLAG_NOT_ANIMATED | FLAG_FROM_CACHE | FLAG_RETURNABLE | FLAG_LAUNCHER;
+		int allowFlags = FLAG_FROM_CACHE | FLAG_RETURNABLE | FLAG_LAUNCHER;
 		return obtainMainIntent(context, flags, allowFlags).putExtra(C.EXTRA_CHAN_NAME, chanName)
 				.putExtra(C.EXTRA_BOARD_NAME, boardName);
 	}
 
 	public static Intent obtainPostsIntent(Context context, String chanName, String boardName, String threadNumber,
 			String postNumber, String threadTitle, int flags) {
-		int allowFlags = FLAG_NOT_ANIMATED | FLAG_FROM_CACHE | FLAG_RETURNABLE;
+		int allowFlags = FLAG_FROM_CACHE | FLAG_RETURNABLE;
 		return obtainMainIntent(context, flags, allowFlags).putExtra(C.EXTRA_CHAN_NAME, chanName)
 				.putExtra(C.EXTRA_BOARD_NAME, boardName).putExtra(C.EXTRA_THREAD_NUMBER, threadNumber)
 				.putExtra(C.EXTRA_POST_NUMBER, postNumber).putExtra(C.EXTRA_THREAD_TITLE, threadTitle);
@@ -74,7 +73,7 @@ public class NavigationUtils {
 
 	public static Intent obtainSearchIntent(Context context, String chanName, String boardName, String searchQuery,
 			int flags) {
-		int allowFlags = FLAG_NOT_ANIMATED | FLAG_RETURNABLE;
+		int allowFlags = FLAG_RETURNABLE;
 		return obtainMainIntent(context, flags, allowFlags).putExtra(C.EXTRA_CHAN_NAME, chanName)
 				.putExtra(C.EXTRA_BOARD_NAME, boardName).putExtra(C.EXTRA_SEARCH_QUERY, searchQuery);
 	}

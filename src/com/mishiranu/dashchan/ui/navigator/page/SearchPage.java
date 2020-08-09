@@ -1,37 +1,18 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui.navigator.page;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 
 import android.graphics.Bitmap;
 import android.os.Parcel;
+import android.os.Parcelable;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.ImageLoader;
 import com.mishiranu.dashchan.content.async.ReadSearchTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.ui.navigator.adapter.SearchAdapter;
+import com.mishiranu.dashchan.ui.navigator.entity.Page;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
@@ -39,41 +20,80 @@ import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.ListScroller;
 import com.mishiranu.dashchan.widget.PullableListView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 
 public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTask.Callback, ImageLoader.Observer {
+	private static class RetainExtra {
+		public static final ExtraFactory<RetainExtra> FACTORY = RetainExtra::new;
+
+		public final ArrayList<PostItem> postItems = new ArrayList<>();
+		public int pageNumber;
+	}
+
+	private static class ParcelableExtra implements Parcelable {
+		public static final ExtraFactory<ParcelableExtra> FACTORY = ParcelableExtra::new;
+
+		public boolean groupMode = false;
+
+		@Override
+		public int describeContents() {
+			return 0;
+		}
+
+		@Override
+		public void writeToParcel(Parcel dest, int flags) {
+			dest.writeByte((byte) (groupMode ? 1 : 0));
+		}
+
+		public static final Creator<ParcelableExtra> CREATOR = new Creator<ParcelableExtra>() {
+			@Override
+			public ParcelableExtra createFromParcel(Parcel in) {
+				ParcelableExtra parcelableExtra = new ParcelableExtra();
+				parcelableExtra.groupMode = in.readByte() != 0;
+				return parcelableExtra;
+			}
+
+			@Override
+			public ParcelableExtra[] newArray(int size) {
+				return new ParcelableExtra[size];
+			}
+		};
+	}
+
 	private ReadSearchTask readTask;
 	private boolean showScaleOnSuccess;
 
 	@Override
 	protected void onCreate() {
 		PullableListView listView = getListView();
-		PageHolder pageHolder = getPageHolder();
 		UiManager uiManager = getUiManager();
-		listView.setDivider(ResourceUtils.getDrawable(getActivity(), R.attr.postsDivider, 0));
+		listView.setDivider(ResourceUtils.getDrawable(getContext(), R.attr.postsDivider, 0));
 		SearchAdapter adapter = new SearchAdapter(uiManager);
 		initAdapter(adapter, adapter);
 		ImageLoader.getInstance().observable().register(this);
-		uiManager.view().setHighlightText(Collections.singleton(pageHolder.searchQuery));
+		uiManager.view().setHighlightText(Collections.singleton(getPage().searchQuery));
 		listView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
-		SearchExtra extra = getExtra();
-		if (pageHolder.initialFromCache) {
-			adapter.setGroupMode(extra.groupMode);
-			if (!extra.postItems.isEmpty()) {
-				adapter.setItems(extra.postItems);
-				if (pageHolder.position != null) {
-					pageHolder.position.apply(listView);
-				}
-				showScaleAnimation();
+		InitRequest initRequest = getInitRequest();
+		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
+		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
+		if (initRequest.shouldLoad) {
+			retainExtra.postItems.clear();
+			retainExtra.pageNumber = 0;
+			parcelableExtra.groupMode = false;
+			showScaleOnSuccess = true;
+			refreshSearch(false, false);
+		} else {
+			adapter.setGroupMode(parcelableExtra.groupMode);
+			if (!retainExtra.postItems.isEmpty()) {
+				adapter.setItems(retainExtra.postItems);
+				restoreListPosition(null);
 			} else {
 				showScaleOnSuccess = true;
 				refreshSearch(false, false);
 			}
-		} else {
-			extra.groupMode = false;
-			showScaleOnSuccess = true;
-			refreshSearch(false, false);
 		}
-		pageHolder.setInitialSearchData(false);
 	}
 
 	@Override
@@ -83,26 +103,26 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 			readTask = null;
 		}
 		ImageLoader.getInstance().observable().unregister(this);
-		ImageLoader.getInstance().clearTasks(getPageHolder().chanName);
+		ImageLoader.getInstance().clearTasks(getPage().chanName);
 	}
 
 	@Override
 	public String obtainTitle() {
-		return getPageHolder().searchQuery;
+		return getPage().searchQuery;
 	}
 
 	@Override
-	public void onItemClick(View view, int position, long id) {
+	public void onItemClick(View view, int position) {
 		PostItem postItem = getAdapter().getPostItem(position);
 		if (postItem != null) {
-			PageHolder pageHolder = getPageHolder();
-			getUiManager().navigator().navigatePosts(pageHolder.chanName, pageHolder.boardName,
+			Page page = getPage();
+			getUiManager().navigator().navigatePosts(page.chanName, page.boardName,
 					postItem.getThreadNumber(), postItem.getPostNumber(), null, 0);
 		}
 	}
 
 	@Override
-	public boolean onItemLongClick(View view, int position, long id) {
+	public boolean onItemLongClick(View view, int position) {
 		PostItem postItem = getAdapter().getPostItem(position);
 		return postItem != null && getUiManager().interaction()
 				.handlePostContextMenu(postItem, null, false, false, false);
@@ -136,7 +156,7 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 				SearchAdapter adapter = getAdapter();
 				boolean groupMode = !adapter.isGroupMode();
 				adapter.setGroupMode(groupMode);
-				getExtra().groupMode = groupMode;
+				getParcelableExtra(ParcelableExtra.FACTORY).groupMode = groupMode;
 				return true;
 			}
 		}
@@ -156,8 +176,8 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 
 	@Override
 	public boolean onSearchSubmit(String query) {
-		PageHolder pageHolder = getPageHolder();
-		getUiManager().navigator().navigateSearch(pageHolder.chanName, pageHolder.boardName, query, 0);
+		Page page = getPage();
+		getUiManager().navigator().navigateSearch(page.chanName, page.boardName, query, 0);
 		return true;
 	}
 
@@ -167,19 +187,18 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 	}
 
 	private void refreshSearch(boolean showPull, boolean nextPage) {
-		PageHolder pageHolder = getPageHolder();
+		Page page = getPage();
 		if (readTask != null) {
 			readTask.cancel();
 		}
 		int pageNumber = 0;
 		if (nextPage) {
-			SearchExtra extra = getExtra();
-			if (!extra.postItems.isEmpty()) {
-				pageNumber = extra.pageNumber + 1;
+			RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
+			if (!retainExtra.postItems.isEmpty()) {
+				pageNumber = retainExtra.pageNumber + 1;
 			}
 		}
-		readTask = new ReadSearchTask(this, pageHolder.chanName, pageHolder.boardName, pageHolder.searchQuery,
-				pageNumber);
+		readTask = new ReadSearchTask(this, page.chanName, page.boardName, page.searchQuery, pageNumber);
 		readTask.executeOnExecutor(ReadSearchTask.THREAD_POOL_EXECUTOR);
 		if (showPull) {
 			getListView().getWrapper().startBusyState(PullableWrapper.Side.TOP);
@@ -198,18 +217,18 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 		SearchAdapter adapter = getAdapter();
 		boolean showScale = showScaleOnSuccess;
 		showScaleOnSuccess = false;
-		SearchExtra extra = getExtra();
+		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
 		if (pageNumber == 0 && (postItems == null || postItems.isEmpty())) {
 			switchView(ViewType.ERROR, R.string.message_not_found);
 			adapter.setItems(null);
-			extra.postItems.clear();
+			retainExtra.postItems.clear();
 		} else {
 			switchView(ViewType.LIST, null);
 			if (pageNumber == 0) {
 				adapter.setItems(postItems);
-				extra.postItems.clear();
-				extra.postItems.addAll(postItems);
-				extra.pageNumber = 0;
+				retainExtra.postItems.clear();
+				retainExtra.postItems.addAll(postItems);
+				retainExtra.pageNumber = 0;
 				ListViewUtils.cancelListFling(listView);
 				listView.setSelection(0);
 				if (showScale) {
@@ -217,23 +236,23 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 				}
 			} else {
 				HashSet<String> existingPostNumbers = new HashSet<>();
-				for (PostItem postItem : extra.postItems) {
+				for (PostItem postItem : retainExtra.postItems) {
 					existingPostNumbers.add(postItem.getPostNumber());
 				}
 				if (postItems != null) {
 					for (PostItem postItem : postItems) {
 						if (!existingPostNumbers.contains(postItem.getPostNumber())) {
-							extra.postItems.add(postItem);
+							retainExtra.postItems.add(postItem);
 						}
 					}
 				}
-				if (extra.postItems.size() > existingPostNumbers.size()) {
+				if (retainExtra.postItems.size() > existingPostNumbers.size()) {
 					int count = listView.getCount();
 					boolean fromGroupMode = adapter.isGroupMode();
 					adapter.setItems(null);
 					adapter.setGroupMode(false);
-					adapter.setItems(extra.postItems);
-					extra.pageNumber = pageNumber;
+					adapter.setItems(retainExtra.postItems);
+					retainExtra.pageNumber = pageNumber;
 					if (listView.getLastVisiblePosition() + 1 == count) {
 						View view = listView.getChildAt(listView.getChildCount() - 1);
 						if (listView.getHeight() - listView.getPaddingBottom() - view.getBottom() >= 0) {
@@ -256,7 +275,7 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 						}
 					}
 				} else {
-					ClickableToast.show(getActivity(), R.string.message_search_completed);
+					ClickableToast.show(getContext(), R.string.message_search_completed);
 				}
 			}
 		}
@@ -269,36 +288,12 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 		if (getAdapter().isEmpty()) {
 			switchView(ViewType.ERROR, errorItem.toString());
 		} else {
-			ClickableToast.show(getActivity(), errorItem.toString());
+			ClickableToast.show(getContext(), errorItem.toString());
 		}
 	}
 
 	@Override
 	public void onImageLoadComplete(String key, Bitmap bitmap, boolean error) {
 		getUiManager().view().displayLoadedThumbnailsForPosts(getListView(), key, bitmap, error);
-	}
-
-	public static class SearchExtra implements PageHolder.ParcelableExtra {
-		public final ArrayList<PostItem> postItems = new ArrayList<>();
-		public int pageNumber;
-		public boolean groupMode = false;
-
-		@Override
-		public void writeToParcel(Parcel dest) {
-			dest.writeInt(groupMode ? 1 : 0);
-		}
-
-		@Override
-		public void readFromParcel(Parcel source) {
-			groupMode = source.readInt() != 0;
-		}
-	}
-
-	private SearchExtra getExtra() {
-		PageHolder pageHolder = getPageHolder();
-		if (!(pageHolder.extra instanceof SearchExtra)) {
-			pageHolder.extra = new SearchExtra();
-		}
-		return (SearchExtra) pageHolder.extra;
 	}
 }

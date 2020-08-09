@@ -1,38 +1,19 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui.navigator.adapter;
-
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Locale;
 
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
-
 import chan.content.ChanConfiguration;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.storage.HistoryDatabase;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ViewFactory;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Locale;
 
 public class HistoryAdapter extends BaseAdapter {
 	private String chanName;
@@ -52,7 +33,7 @@ public class HistoryAdapter extends BaseAdapter {
 	private static final int HEADER_WEEK = 3;
 	private static final int HEADER_OLD = 4;
 
-	public void updateConfiguraion(String chanName) {
+	public void updateConfiguration(String chanName) {
 		this.chanName = chanName;
 		items.clear();
 		ArrayList<HistoryDatabase.HistoryItem> historyItems = HistoryDatabase.getInstance().getAllHistory(chanName);

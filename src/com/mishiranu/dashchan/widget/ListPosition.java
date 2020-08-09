@@ -1,40 +1,26 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.widget;
 
 import android.graphics.Rect;
 import android.os.Parcel;
+import android.os.Parcelable;
 import android.view.View;
 import android.widget.ListView;
 
-public class ListPosition {
+public final class ListPosition implements Parcelable {
+	public final int position;
+	public final int y;
+
 	public ListPosition(int position, int y) {
 		this.position = position;
 		this.y = y;
 	}
 
-	public final int position;
-	public final int y;
-
 	public static ListPosition obtain(ListView listView) {
 		int position = listView.getFirstVisiblePosition();
 		int y = 0;
 		Rect rect = new Rect();
-		int paddingTop = listView.getPaddingTop(), paddingLeft = listView.getPaddingLeft();
+		int paddingTop = listView.getPaddingTop();
+		int paddingLeft = listView.getPaddingLeft();
 		for (int i = 0, count = listView.getChildCount(); i < count; i++) {
 			View view = listView.getChildAt(i);
 			view.getHitRect(rect);
@@ -49,25 +35,38 @@ public class ListPosition {
 
 	public void apply(final ListView listView) {
 		if (listView.getHeight() == 0) {
-			listView.post(() -> listView.setSelectionFromTop(position, y));
+			// Dirty hack. Will be hopefully removed after RecyclerView migration.
+			listView.post(() -> {
+				listView.setSelectionFromTop(position, y);
+				listView.post(() -> listView.setSelectionFromTop(position, y));
+			});
 		} else {
 			listView.setSelectionFromTop(position, y);
 		}
 	}
 
-	public static void writeToParcel(Parcel dest, ListPosition position) {
-		if (position != null) {
-			dest.writeInt(position.position);
-			dest.writeInt(position.y);
-		} else {
-			dest.writeInt(-1);
-			dest.writeInt(0);
-		}
+	@Override
+	public int describeContents() {
+		return 0;
 	}
 
-	public static ListPosition readFromParcel(Parcel source) {
-		int position = source.readInt();
-		int y = source.readInt();
-		return position >= 0 ? new ListPosition(position, y) : null;
+	@Override
+	public void writeToParcel(Parcel dest, int flags) {
+		dest.writeInt(position);
+		dest.writeInt(y);
 	}
+
+	public static final Creator<ListPosition> CREATOR = new Creator<ListPosition>() {
+		@Override
+		public ListPosition createFromParcel(Parcel in) {
+			int position = in.readInt();
+			int y = in.readInt();
+			return new ListPosition(position, y);
+		}
+
+		@Override
+		public ListPosition[] newArray(int size) {
+			return new ListPosition[size];
+		}
+	};
 }

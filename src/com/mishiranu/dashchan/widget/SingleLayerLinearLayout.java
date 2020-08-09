@@ -1,19 +1,3 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.widget;
 
 import android.content.Context;
@@ -40,29 +24,29 @@ public class SingleLayerLinearLayout extends LinearLayout {
 		return false;
 	}
 
-	public interface OnTemporaryDetatchListener {
-		public void onTemporaryDetatch(SingleLayerLinearLayout view, boolean start);
+	public interface OnTemporaryDetachListener {
+		public void onTemporaryDetach(SingleLayerLinearLayout view, boolean start);
 	}
 
-	private OnTemporaryDetatchListener onTemporaryDetatchListener;
+	private OnTemporaryDetachListener onTemporaryDetachListener;
 
-	public void setOnTemporaryDetatchListener(OnTemporaryDetatchListener listener) {
-		onTemporaryDetatchListener = listener;
+	public void setOnTemporaryDetachListener(OnTemporaryDetachListener listener) {
+		onTemporaryDetachListener = listener;
 	}
 
 	@Override
 	public void onStartTemporaryDetach() {
 		super.onStartTemporaryDetach();
-		if (onTemporaryDetatchListener != null) {
-			onTemporaryDetatchListener.onTemporaryDetatch(this, true);
+		if (onTemporaryDetachListener != null) {
+			onTemporaryDetachListener.onTemporaryDetach(this, true);
 		}
 	}
 
 	@Override
 	public void onFinishTemporaryDetach() {
 		super.onFinishTemporaryDetach();
-		if (onTemporaryDetatchListener != null) {
-			onTemporaryDetatchListener.onTemporaryDetatch(this, false);
+		if (onTemporaryDetachListener != null) {
+			onTemporaryDetachListener.onTemporaryDetach(this, false);
 		}
 	}
 }

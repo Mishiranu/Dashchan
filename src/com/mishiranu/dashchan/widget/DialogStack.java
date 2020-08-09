@@ -61,7 +61,7 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 	@Override
 	public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			return keyBackHandler.onBackKey(event, !visibileViews.isEmpty());
+			return keyBackHandler.onBackKey(event, !visibleViews.isEmpty());
 		}
 		return false;
 	}
@@ -121,7 +121,7 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
 		// Sometimes I get touch event even if dialog was closed
-		if (event.getAction() == MotionEvent.ACTION_DOWN && visibileViews.size() > 0) {
+		if (event.getAction() == MotionEvent.ACTION_DOWN && visibleViews.size() > 0) {
 			popInternal();
 		}
 		return false;
@@ -136,7 +136,7 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 		decorView.getChildAt(0).setFitsSystemWindows(false);
 		// Fix resizing dialogs when status bar in gallery becomes hidden with expanded screen enabled
 		if (expandedScreen.isFullScreenLayoutEnabled()) {
-			expandedScreen.addAdditionalView(rootView, false);
+			expandedScreen.addAdditionalView(rootView);
 			decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
 					View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
 			dialog.setOnDismissListener(d -> expandedScreen.removeAdditionalView(rootView));
@@ -149,12 +149,12 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 	private static final int VISIBLE_COUNT = 10;
 
 	private final LinkedList<DialogView> hiddenViews = new LinkedList<>();
-	private final LinkedList<DialogView> visibileViews = new LinkedList<>();
+	private final LinkedList<DialogView> visibleViews = new LinkedList<>();
 	private Dialog dialog;
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	public void push(View view) {
-		if (visibileViews.isEmpty()) {
+		if (visibleViews.isEmpty()) {
 			Dialog dialog = new Dialog(C.API_LOLLIPOP ? context
 					: new ContextThemeWrapper(context, R.style.Theme_Main_Hadron)) {
 				@Override
@@ -203,9 +203,9 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 			dialog.show();
 			this.dialog = dialog;
 		} else {
-			visibileViews.getLast().setActive(false);
-			if (visibileViews.size() == VISIBLE_COUNT) {
-				DialogView first = visibileViews.removeFirst();
+			visibleViews.getLast().setActive(false);
+			if (visibleViews.size() == VISIBLE_COUNT) {
+				DialogView first = visibleViews.removeFirst();
 				if (callback != null) {
 					callback.onHide(first.getContentView());
 				}
@@ -221,7 +221,7 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 			}
 		}
 		DialogView dialogView = createDialog(view);
-		visibileViews.add(dialogView);
+		visibleViews.add(dialogView);
 		switchBackground(false);
 	}
 
@@ -231,7 +231,7 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 	}
 
 	public void clear() {
-		while (!visibileViews.isEmpty()) {
+		while (!visibleViews.isEmpty()) {
 			popInternal();
 		}
 	}
@@ -239,7 +239,7 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 	public void switchBackground(boolean background) {
 		if (this.background != background) {
 			this.background = background;
-			for (DialogView dialogParentView : visibileViews) {
+			for (DialogView dialogParentView : visibleViews) {
 				dialogParentView.postInvalidate();
 			}
 		}
@@ -247,22 +247,22 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 
 	private DialogView popInternal() {
 		if (hiddenViews.size() > 0) {
-			int index = rootView.indexOfChild(visibileViews.getFirst());
+			int index = rootView.indexOfChild(visibleViews.getFirst());
 			DialogView last = hiddenViews.removeLast();
-			visibileViews.addFirst(last);
+			visibleViews.addFirst(last);
 			rootView.addView(last, index);
 			if (callback != null) {
 				callback.onRestore(last.getContentView());
 			}
 		}
-		DialogView dialogView = visibileViews.removeLast();
+		DialogView dialogView = visibleViews.removeLast();
 		rootView.removeView(dialogView);
-		if (visibileViews.isEmpty()) {
+		if (visibleViews.isEmpty()) {
 			dialog.dismiss();
 			dialog = null;
 			ViewUtils.removeFromParent(rootView);
 		} else {
-			visibileViews.getLast().setActive(true);
+			visibleViews.getLast().setActive(true);
 		}
 		if (callback != null) {
 			callback.onPop(dialogView.getContentView());
@@ -372,16 +372,16 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 
 	private class ViewIterator implements Iterator<View> {
 		private final Iterator<DialogView> hiddenIterator = hiddenViews.iterator();
-		private final Iterator<DialogView> visibileIterator = visibileViews.iterator();
+		private final Iterator<DialogView> visibleIterator = visibleViews.iterator();
 
 		@Override
 		public boolean hasNext() {
-			return hiddenIterator.hasNext() || visibileIterator.hasNext();
+			return hiddenIterator.hasNext() || visibleIterator.hasNext();
 		}
 
 		@Override
 		public View next() {
-			return (hiddenIterator.hasNext() ? hiddenIterator.next() : visibileIterator.next()).getContentView();
+			return (hiddenIterator.hasNext() ? hiddenIterator.next() : visibleIterator.next()).getContentView();
 		}
 
 		@Override

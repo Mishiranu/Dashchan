@@ -30,7 +30,7 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.storage.AutohideStorage;
 import com.mishiranu.dashchan.graphics.ActionIconSet;
-import com.mishiranu.dashchan.preference.PreferencesActivity;
+import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.CustomSearchView;
@@ -46,7 +46,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-public class AutohideFragment extends BaseListFragment implements PreferencesActivity.ActivityHandler {
+public class AutohideFragment extends BaseListFragment implements ActivityHandler {
 	private final ArrayList<AutohideStorage.AutohideItem> items = new ArrayList<>();
 
 	private CustomSearchView searchView;

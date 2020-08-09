@@ -17,6 +17,7 @@ import com.mishiranu.dashchan.content.LocaleManager;
 import com.mishiranu.dashchan.content.async.ReadUpdateTask;
 import com.mishiranu.dashchan.preference.fragment.CategoriesFragment;
 import com.mishiranu.dashchan.preference.fragment.UpdateFragment;
+import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.ForegroundManager;
 import com.mishiranu.dashchan.ui.StateActivity;
 import com.mishiranu.dashchan.util.ResourceUtils;
@@ -26,10 +27,6 @@ import java.util.ArrayList;
 
 public class PreferencesActivity extends StateActivity {
 	private static final String EXTRA_FRAGMENTS = "fragments";
-
-	public interface ActivityHandler {
-		boolean onBackPressed();
-	}
 
 	private static class FragmentState implements Parcelable {
 		public final String className;

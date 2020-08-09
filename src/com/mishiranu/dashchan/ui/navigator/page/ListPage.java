@@ -1,8 +1,10 @@
 package com.mishiranu.dashchan.ui.navigator.page;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.res.Resources;
-import android.view.ContextMenu;
+import android.os.Parcelable;
+import android.util.Pair;
+import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -11,9 +13,9 @@ import android.widget.BaseAdapter;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import com.mishiranu.dashchan.graphics.ActionIconSet;
+import com.mishiranu.dashchan.ui.navigator.entity.Page;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
-import com.mishiranu.dashchan.util.ResourceUtils;
-import com.mishiranu.dashchan.widget.ListScroller;
+import com.mishiranu.dashchan.widget.ListPosition;
 import com.mishiranu.dashchan.widget.PullableListView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 import com.mishiranu.dashchan.widget.callback.BusyScrollListener;
@@ -31,64 +33,87 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 	public static final int APPEARANCE_MENU_THREADS_GRID = 105;
 	public static final int APPEARANCE_MENU_SFW_MODE = 106;
 
-	private enum State {INIT, LOCKED, RESUMED, PAUSED, CONSUMED}
+	private enum State {INIT, LOCKED, RESUMED, PAUSED, DESTROYED}
 
 	public enum ViewType {LIST, PROGRESS, ERROR}
 
-	private Activity activity;
+	public interface ExtraFactory<T> {
+		T newExtra();
+	}
+
+	public static final class InitRequest {
+		private static final InitRequest EMPTY_REQUEST = new InitRequest(false, null, null);
+
+		public final boolean shouldLoad;
+		public final String postNumber;
+		public final String threadTitle;
+
+		public InitRequest(boolean shouldLoad, String postNumber, String threadTitle) {
+			this.shouldLoad = shouldLoad;
+			this.postNumber = postNumber;
+			this.threadTitle = threadTitle;
+		}
+	}
+
 	private Callback callback;
-	private PageHolder pageHolder;
+	private Page page;
 	private PullableListView listView;
+	private ListPosition listPosition;
 	private UiManager uiManager;
 	private ActionIconSet actionIconSet;
+	private Object retainExtra;
+	private Parcelable parcelableExtra;
+	private InitRequest initRequest;
 
 	private Adapter adapter;
 	private BusyScrollListener.Callback busyScrollListenerCallback;
 	private State state = State.INIT;
 
-	public final void init(Activity activity, Callback callback, PageHolder pageHolder, PullableListView listView,
-			UiManager uiManager, ActionIconSet actionIconSet) {
+	public final void init(Callback callback, Page page, PullableListView listView,
+			ListPosition listPosition, UiManager uiManager, ActionIconSet actionIconSet,
+			Object retainExtra, Parcelable parcelableExtra, InitRequest initRequest) {
 		if (state == State.INIT) {
 			state = State.LOCKED;
-			this.activity = activity;
 			this.callback = callback;
-			this.pageHolder = pageHolder;
+			this.page = page;
 			this.listView = listView;
+			this.listPosition = listPosition;
 			this.uiManager = uiManager;
 			this.actionIconSet = actionIconSet;
-			listView.setDivider(ResourceUtils.getDrawable(activity, android.R.attr.listDivider, 0));
-			ListScroller.cancel(listView);
+			this.retainExtra = retainExtra;
+			this.parcelableExtra = parcelableExtra;
+			this.initRequest = initRequest;
 			onCreate();
 			if (this.adapter == null) {
 				throw new IllegalStateException("Adapter wasn't initialized");
 			}
-			state = State.RESUMED;
-			performResume();
+			this.initRequest = null;
+			state = State.PAUSED;
 		}
 	}
 
-	protected final Activity getActivity() {
-		return activity;
+	protected final Context getContext() {
+		return listView.getContext();
 	}
 
 	protected final Resources getResources() {
-		return activity.getResources();
+		return getContext().getResources();
 	}
 
 	protected final String getString(int resId) {
-		return activity.getString(resId);
+		return getContext().getString(resId);
 	}
 
 	protected final String getString(int resId, Object... formatArgs) {
-		return activity.getString(resId, formatArgs);
+		return getContext().getString(resId, formatArgs);
 	}
 
 	protected final String getQuantityString(int resId, int quantity, Object... formatArgs) {
 		return getResources().getQuantityString(resId, quantity, formatArgs);
 	}
 
-	protected final PageHolder getPageHolder() {
-		return pageHolder;
+	protected final Page getPage() {
+		return page;
 	}
 
 	protected final UiManager getUiManager() {
@@ -100,15 +125,34 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 	}
 
 	protected final ChanLocator getChanLocator() {
-		return ChanLocator.get(pageHolder.chanName);
+		return ChanLocator.get(page.chanName);
 	}
 
 	protected final ChanConfiguration getChanConfiguration() {
-		return ChanConfiguration.get(pageHolder.chanName);
+		return ChanConfiguration.get(page.chanName);
 	}
 
 	protected final PullableListView getListView() {
 		return listView;
+	}
+
+	protected interface RestorePositionCallback {
+		void restore(ListPosition listPosition);
+	}
+
+	protected final void restoreListPosition(RestorePositionCallback callback) {
+		if (listPosition != null) {
+			if (callback != null) {
+				callback.restore(listPosition);
+			} else {
+				listPosition.apply(listView);
+			}
+			listPosition = null;
+		}
+	}
+
+	protected final InitRequest getInitRequest() {
+		return initRequest != null ? initRequest : InitRequest.EMPTY_REQUEST;
 	}
 
 	protected final void notifyAllAdaptersChanged() {
@@ -128,15 +172,10 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 		if (state == State.LOCKED) {
 			this.adapter = adapter;
 			busyScrollListenerCallback = callback;
-			uiManager.view().notifyUnbindListView(listView);
 			listView.setAdapter(adapter);
 		} else {
 			throw new IllegalStateException("Adapter can be initialized only in onCreate method");
 		}
-	}
-
-	protected final void setCustomSearchView(View view) {
-		callback.setCustomSearchView(view);
 	}
 
 	protected final void notifyTitleChanged() {
@@ -147,6 +186,14 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 		if (state == State.RESUMED || state == State.PAUSED) {
 			callback.updateOptionsMenu();
 		}
+	}
+
+	protected final void setCustomSearchView(View view) {
+		callback.setCustomSearchView(view);
+	}
+
+	protected final ActionMode startActionMode(ActionMode.Callback callback) {
+		return this.callback.startActionMode(callback);
 	}
 
 	protected final void switchView(ViewType viewType, String message) {
@@ -165,6 +212,22 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 		callback.handleRedirect(chanName, boardName, threadNumber, postNumber);
 	}
 
+	@SuppressWarnings("unchecked")
+	protected final <T> T getRetainExtra(ExtraFactory<T> factory) {
+		if (retainExtra == null && factory != null) {
+			retainExtra = factory.newExtra();
+		}
+		return (T) retainExtra;
+	}
+
+	@SuppressWarnings("unchecked")
+	protected final <T extends Parcelable> T getParcelableExtra(ExtraFactory<T> factory) {
+		if (parcelableExtra == null && factory != null) {
+			parcelableExtra = factory.newExtra();
+		}
+		return (T) parcelableExtra;
+	}
+
 	protected void onCreate() {}
 
 	protected void onResume() {}
@@ -173,15 +236,17 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 
 	protected void onDestroy() {}
 
-	protected void onHandleNewPostDatas() {}
+	protected void onHandleNewPostDataList() {}
+
+	protected void onRequestStoreExtra() {}
 
 	public String obtainTitle() {
 		return null;
 	}
 
-	public void onItemClick(View view, int position, long id) {}
+	public void onItemClick(View view, int position) {}
 
-	public boolean onItemLongClick(View view, int position, long id) {
+	public boolean onItemLongClick(View view, int position) {
 		return false;
 	}
 
@@ -190,12 +255,6 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 	public void onPrepareOptionsMenu(Menu menu) {}
 
 	public boolean onOptionsItemSelected(MenuItem item) {
-		return false;
-	}
-
-	public void onCreateContextMenu(ContextMenu menu, View v, int position, View targetView) {}
-
-	public boolean onContextItemSelected(MenuItem item, int position, View targetView) {
 		return false;
 	}
 
@@ -223,17 +282,19 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 		return 0;
 	}
 
-	public void onRequestStoreExtra() {}
+	public void updatePageConfiguration(String postNumber) {}
 
-	public void updatePageConfiguration(String postNumber, String threadTitle) {}
+	public final boolean isRunning() {
+		return state == State.RESUMED || state == State.PAUSED;
+	}
 
 	public final boolean isDestroyed() {
-		return state == State.CONSUMED;
+		return state == State.DESTROYED;
 	}
 
 	private void performResume() {
 		onResume();
-		onHandleNewPostDatas();
+		onHandleNewPostDataList();
 	}
 
 	public final void resume() {
@@ -256,23 +317,33 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 			if (state == State.RESUMED) {
 				onPause();
 			}
-			state = State.CONSUMED;
+			state = State.DESTROYED;
 			onDestroy();
 		}
 	}
 
-	public final void handleNewPostDatasNow() {
+	public final void handleNewPostDataListNow() {
 		if (state == State.RESUMED) {
-			onHandleNewPostDatas();
+			onHandleNewPostDataList();
 		}
 	}
 
+	public final ListPosition getListPosition() {
+		return listPosition != null ? listPosition : ListPosition.obtain(listView);
+	}
+
+	public final Pair<Object, Parcelable> getExtraToStore() {
+		onRequestStoreExtra();
+		return new Pair<>(retainExtra, parcelableExtra);
+	}
+
 	public interface Callback {
-		public void notifyTitleChanged();
-		public void updateOptionsMenu();
-		public void setCustomSearchView(View view);
-		public void switchView(ViewType viewType, String message);
-		public void showScaleAnimation();
-		public void handleRedirect(String chanName, String boardName, String threadNumber, String postNumber);
+		void notifyTitleChanged();
+		void updateOptionsMenu();
+		void setCustomSearchView(View view);
+		ActionMode startActionMode(ActionMode.Callback callback);
+		void switchView(ViewType viewType, String message);
+		void showScaleAnimation();
+		void handleRedirect(String chanName, String boardName, String threadNumber, String postNumber);
 	}
 }
