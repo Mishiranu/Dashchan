@@ -5,6 +5,7 @@ import android.animation.ValueAnimator;
 import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.app.Activity;
+import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -33,7 +34,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 
 public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 		WindowControlFrameLayout.OnApplyWindowPaddingsListener {
@@ -41,25 +41,26 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 
 	private final boolean expandingEnabled;
 	private final boolean fullScreenLayoutEnabled;
+	private final int initialActionBarHeight;
 
 	private final Handler handler = new Handler();
 	private final Activity activity;
-	private View toolbarView;
+	private final Rect insets = new Rect();
+
+	private final View rootView;
+	private final View toolbarView;
+	private final View drawerInterlayer;
+	private final View drawerContent;
+	private final View drawerHeader;
+
 	private View actionModeView;
 	private View statusGuardView;
 
 	private boolean drawerOverToolbarEnabled;
-	private FrameLayout drawerParent;
-	private AbsListView drawerListView;
-	private View drawerHeader;
 	private final LinkedHashMap<View, AbsListView> contentViews = new LinkedHashMap<>();
-	private final LinkedHashSet<View> additionalViews = new LinkedHashSet<>();
 
 	private ValueAnimator foregroundAnimator;
 	private boolean foregroundAnimatorShow;
-
-	private final StatusBarController statusBar;
-	private final NavigationBarController navigationBar;
 
 	private static final int STATE_SHOW = 0x00000001;
 	private static final int STATE_ACTION_MODE = 0x00000002;
@@ -72,27 +73,43 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 	private final int lastItemLimit;
 	private int minItemsCount;
 
-	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
-	public ExpandedScreen(Activity activity, boolean enabled) {
-		this.activity = activity;
-		statusBar = new StatusBarController(activity);
-		navigationBar = new NavigationBarController();
-		Resources resources = activity.getResources();
-		Window window = activity.getWindow();
-		boolean fullScreenLayoutEnabled;
-		if (C.API_LOLLIPOP) {
-			fullScreenLayoutEnabled = true;
-		} else if (C.API_KITKAT) {
-			int resId = resources.getIdentifier("config_enableTranslucentDecor", "bool", "android");
-			fullScreenLayoutEnabled = resId != 0 && resources.getBoolean(resId);
-		} else {
-			fullScreenLayoutEnabled = false;
+	public static class Init {
+		private final boolean expandingEnabled;
+		private final boolean fullScreenLayoutEnabled;
+		private final int initialActionBarHeight;
+		private final Activity activity;
+
+		public Init(Activity activity, boolean enabled) {
+			expandingEnabled = enabled;
+			if (C.API_LOLLIPOP) {
+				fullScreenLayoutEnabled = true;
+			} else if (C.API_KITKAT) {
+				Resources resources = activity.getResources();
+				int resId = resources.getIdentifier("config_enableTranslucentDecor", "bool", "android");
+				fullScreenLayoutEnabled = resId != 0 && resources.getBoolean(resId);
+			} else {
+				fullScreenLayoutEnabled = false;
+			}
+			Window window = activity.getWindow();
+			if (fullScreenLayoutEnabled) {
+				window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+						View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+			} else if (enabled) {
+				window.requestFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
+			}
+			initialActionBarHeight = obtainActionBarHeight(activity);
+			this.activity = activity;
 		}
-		expandingEnabled = enabled;
-		this.fullScreenLayoutEnabled = fullScreenLayoutEnabled;
-		float density = ResourceUtils.obtainDensity(resources);
-		slopShiftSize = (int) (6f * density);
-		lastItemLimit = (int) (72f * density);
+	}
+
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
+	public ExpandedScreen(Init init, View rootView, View toolbarView, FrameLayout drawerInterlayer,
+			FrameLayout drawerParent, View drawerContent, View drawerHeader) {
+		expandingEnabled = init.expandingEnabled;
+		fullScreenLayoutEnabled = init.fullScreenLayoutEnabled;
+		initialActionBarHeight = init.initialActionBarHeight;
+		activity = init.activity;
+		Window window = activity.getWindow();
 		if (fullScreenLayoutEnabled) {
 			if (C.API_LOLLIPOP) {
 				int statusBarColor = window.getStatusBarColor() | Color.BLACK;
@@ -102,79 +119,58 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 				contentForeground = new LollipopContentForeground(statusBarColor, navigationBarColor);
 				statusBarContentForeground = new LollipopStatusBarForeground(statusBarColor);
 				statusBarDrawerForeground = new LollipopDrawerForeground();
-			} else {
+			} else if (C.API_KITKAT) {
 				contentForeground = new KitKatContentForeground();
 				statusBarContentForeground = null;
 				statusBarDrawerForeground = null;
+			} else {
+				contentForeground = null;
+				statusBarContentForeground = null;
+				statusBarDrawerForeground = null;
 			}
-			window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
-					View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
 		} else {
 			contentForeground = null;
 			statusBarContentForeground = null;
 			statusBarDrawerForeground = null;
-			if (enabled) {
-				window.requestFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
+		}
+
+		Resources resources = activity.getResources();
+		float density = ResourceUtils.obtainDensity(resources);
+		slopShiftSize = (int) (6f * density);
+		lastItemLimit = (int) (72f * density);
+		readConfiguration(resources.getConfiguration());
+		this.rootView = rootView;
+		this.toolbarView = toolbarView;
+		this.drawerInterlayer = drawerInterlayer;
+		if (drawerInterlayer != null) {
+			drawerInterlayer.setForeground(statusBarContentForeground);
+		}
+		this.drawerContent = drawerContent;
+		this.drawerHeader = drawerHeader;
+		if (fullScreenLayoutEnabled) {
+			FrameLayout content = activity.findViewById(android.R.id.content);
+			WindowControlFrameLayout frameLayout = new WindowControlFrameLayout(activity);
+			content.addView(frameLayout, FrameLayout.LayoutParams.MATCH_PARENT,
+					FrameLayout.LayoutParams.MATCH_PARENT);
+			frameLayout.setOnApplyWindowPaddingsListener(this);
+			frameLayout.setBackground(contentForeground);
+			if (statusBarDrawerForeground != null && drawerParent != null) {
+				drawerParent.setForeground(statusBarDrawerForeground);
 			}
 		}
-		readConfiguration(resources.getConfiguration());
+		updatePaddings();
 	}
 
 	@Override
 	public void onApplyWindowPaddings(WindowControlFrameLayout view, Rect rect) {
-		boolean needUpdate = false;
-		needUpdate |= navigationBar.onSystemWindowInsetsChanged(rect);
-		needUpdate |= statusBar.onSystemWindowInsetsChanged(rect);
-		if (needUpdate) {
+		Rect newInsets = new Rect(rect);
+		if (newInsets.top > initialActionBarHeight) {
+			// Fix for KitKat, assuming AB height always > status bar height
+			newInsets.top -= initialActionBarHeight;
+		}
+		if (!insets.equals(newInsets)) {
+			insets.set(newInsets);
 			onConfigurationChanged(null);
-		}
-	}
-
-	private static class StatusBarController {
-		private final int initialActionBarHeight;
-		private int height = 0;
-
-		public StatusBarController(Activity activity) {
-			// Height may be not changed when screen rotated in insets rect on 4.4 (tested on emulator)
-			initialActionBarHeight = obtainActionBarHeight(activity);
-		}
-
-		public int getHeight() {
-			return height;
-		}
-
-		public boolean onSystemWindowInsetsChanged(Rect insets) {
-			int oldHeight = height;
-			int height = insets.top;
-			if (height > initialActionBarHeight) {
-				height -= initialActionBarHeight; // Fix for KitKat, assuming AB height always > status bar height
-			}
-			this.height = height;
-			return oldHeight != height;
-		}
-	}
-
-	private static class NavigationBarController {
-		private int right = 0;
-		private int bottom = 0;
-
-		public int getRight() {
-			return right;
-		}
-
-		public int getBottom() {
-			return bottom;
-		}
-
-		public boolean onSystemWindowInsetsChanged(Rect insets) {
-			int right = insets.right;
-			int bottom = insets.bottom;
-			if (this.right != right || this.bottom != bottom) {
-				this.right = right;
-				this.bottom = bottom;
-				return true;
-			}
-			return false;
 		}
 	}
 
@@ -210,7 +206,7 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 
 		@Override
 		public void draw(@NonNull Canvas canvas) {
-			int statusBarHeight = statusBar.getHeight();
+			int statusBarHeight = insets.top;
 			if (statusBarHeight > 0 && alpha != 0x00 && alpha != 0xff) {
 				// Black while action bar animated
 				paint.setColor(Color.BLACK);
@@ -235,8 +231,7 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 			int height = getBounds().height();
 			Paint paint = this.paint;
 			if (toolbarView == null) {
-				StatusBarController statusBar = ExpandedScreen.this.statusBar;
-				int statusBarHeight = statusBar.getHeight();
+				int statusBarHeight = insets.top;
 				if (statusBarHeight > 0) {
 					paint.setColor(LOLLIPOP_DIM_COLOR);
 					canvas.drawRect(0f, 0f, width, statusBarHeight, paint);
@@ -247,12 +242,14 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 					}
 				}
 			}
-			NavigationBarController navigationBar = ExpandedScreen.this.navigationBar;
-			// Add instead of sub, because metrics doesn't contain navbar size
-			int navigationBarRight = navigationBar.getRight();
-			int navigationBarBottom = navigationBar.getBottom();
+			int navigationBarLeft = insets.left;
+			int navigationBarRight = insets.right;
+			int navigationBarBottom = insets.bottom;
+			if (navigationBarLeft > 0) {
+				paint.setColor(navigationBarColor);
+				canvas.drawRect(0, 0, navigationBarLeft, height, paint);
+			}
 			if (navigationBarRight > 0) {
-				// In landscape mode NavigationBar is always visible
 				paint.setColor(navigationBarColor);
 				canvas.drawRect(width - navigationBarRight, 0, width, height, paint);
 			}
@@ -280,8 +277,7 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 		public void draw(@NonNull Canvas canvas) {
 			int width = getBounds().width();
 			Paint paint = this.paint;
-			StatusBarController statusBar = ExpandedScreen.this.statusBar;
-			int statusBarHeight = statusBar.getHeight();
+			int statusBarHeight = insets.top;
 			if (statusBarHeight > 0) {
 				paint.setColor(LOLLIPOP_DIM_COLOR);
 				canvas.drawRect(0f, 0f, width, statusBarHeight, paint);
@@ -301,8 +297,7 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 		public void draw(@NonNull Canvas canvas) {
 			if (drawerOverToolbarEnabled && toolbarView != null) {
 				int width = getBounds().width();
-				StatusBarController statusBar = ExpandedScreen.this.statusBar;
-				int statusBarHeight = statusBar.getHeight();
+				int statusBarHeight = insets.top;
 				if (statusBarHeight > 0) {
 					paint.setColor(LOLLIPOP_DIM_COLOR);
 					canvas.drawRect(0f, 0f, width, statusBarHeight, paint);
@@ -492,10 +487,6 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 		}
 	}
 
-	public boolean isFullScreenLayoutEnabled() {
-		return fullScreenLayoutEnabled;
-	}
-
 	public void onResume() {
 		onConfigurationChanged(activity.getResources().getConfiguration());
 	}
@@ -538,41 +529,6 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 		}
 	}
 
-	public void setDrawerListView(FrameLayout drawerParent, AbsListView drawerListView, View drawerHeader) {
-		this.drawerParent = drawerParent;
-		this.drawerListView = drawerListView;
-		this.drawerHeader = drawerHeader;
-	}
-
-	public void addAdditionalView(View additionalView) {
-		additionalViews.add(additionalView);
-	}
-
-	public void removeAdditionalView(View additionalView) {
-		additionalViews.remove(additionalView);
-	}
-
-	public void setToolbar(View toolbar, FrameLayout toolbarDrawerInterlayerLayout) {
-		toolbarView = toolbar;
-		toolbarDrawerInterlayerLayout.setForeground(statusBarContentForeground);
-		addAdditionalView(toolbarDrawerInterlayerLayout);
-	}
-
-	public void finishInitialization() {
-		if (fullScreenLayoutEnabled) {
-			FrameLayout content = activity.findViewById(android.R.id.content);
-			WindowControlFrameLayout frameLayout = new WindowControlFrameLayout(activity);
-			content.addView(frameLayout, FrameLayout.LayoutParams.MATCH_PARENT,
-					FrameLayout.LayoutParams.MATCH_PARENT);
-			frameLayout.setOnApplyWindowPaddingsListener(this);
-			frameLayout.setBackground(contentForeground);
-			if (statusBarDrawerForeground != null && drawerParent != null) {
-				drawerParent.setForeground(statusBarDrawerForeground);
-			}
-		}
-		updatePaddings();
-	}
-
 	public void setDrawerOverToolbarEnabled(boolean drawerOverToolbarEnabled) {
 		this.drawerOverToolbarEnabled = drawerOverToolbarEnabled;
 		updatePaddings();
@@ -580,8 +536,8 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 
 	private static final int[] ATTRS_ACTION_BAR_SIZE = {android.R.attr.actionBarSize};
 
-	private static int obtainActionBarHeight(Activity activity) {
-		TypedArray typedArray = activity.obtainStyledAttributes(ATTRS_ACTION_BAR_SIZE);
+	private static int obtainActionBarHeight(Context context) {
+		TypedArray typedArray = context.obtainStyledAttributes(ATTRS_ACTION_BAR_SIZE);
 		int actionHeight = typedArray.getDimensionPixelSize(0, 0);
 		typedArray.recycle();
 		return actionHeight;
@@ -611,17 +567,46 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 		}
 	}
 
+	private static void setNewMargin(View view, int left, int top, int right, int bottom) {
+		ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+		boolean changed = false;
+		if (left != KEEP && layoutParams.leftMargin != left) {
+			layoutParams.leftMargin = left;
+			changed = true;
+		}
+		if (top != KEEP && layoutParams.topMargin != top) {
+			layoutParams.topMargin = top;
+			changed = true;
+		}
+		if (right != KEEP && layoutParams.rightMargin != right) {
+			layoutParams.rightMargin = right;
+			changed = true;
+		}
+		if (bottom != KEEP && layoutParams.bottomMargin != bottom) {
+			layoutParams.bottomMargin = bottom;
+			changed = true;
+		}
+		if (changed) {
+			view.requestLayout();
+		}
+	}
+
 	public void updatePaddings() {
 		if (expandingEnabled || fullScreenLayoutEnabled) {
 			int actionBarHeight = obtainActionBarHeight(activity);
-			int statusBarHeight = statusBar.getHeight();
-			int bottomNavigationBarHeight = navigationBar.getBottom();
-			// TODO Handle left padding
-			int rightNavigationBarHeight = navigationBar.getRight();
+			int statusBarHeight = insets.top;
+			int leftNavigationBarHeight = insets.left;
+			int rightNavigationBarHeight = insets.right;
+			int bottomNavigationBarHeight = insets.bottom;
+			if (rootView != null) {
+				setNewMargin(rootView, leftNavigationBarHeight, KEEP, rightNavigationBarHeight, KEEP);
+			}
+			if (drawerInterlayer != null) {
+				setNewPadding(drawerInterlayer, KEEP, statusBarHeight, KEEP, bottomNavigationBarHeight);
+			}
 			for (LinkedHashMap.Entry<View, AbsListView> entry : contentViews.entrySet()) {
 				View view = entry.getKey();
 				AbsListView listView = entry.getValue();
-				setNewPadding(view, 0, 0, rightNavigationBarHeight, 0);
 				if (listView != null) {
 					setNewPadding(listView, KEEP, statusBarHeight + actionBarHeight, KEEP, bottomNavigationBarHeight);
 				}
@@ -631,27 +616,25 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 					for (int i = 0; i < childCount; i++) {
 						View child = layout.getChildAt(i);
 						if (child != listView) {
-							child.setPadding(0, statusBarHeight + actionBarHeight,
-									rightNavigationBarHeight, bottomNavigationBarHeight);
+							setNewPadding(child, KEEP, statusBarHeight + actionBarHeight,
+									KEEP, bottomNavigationBarHeight);
 						}
 					}
+				} else {
+					setNewMargin(view, KEEP, statusBarHeight + actionBarHeight, KEEP, bottomNavigationBarHeight);
 				}
 			}
 			if (actionModeView != null) {
-				((ViewGroup.MarginLayoutParams) actionModeView.getLayoutParams()).rightMargin =
-						rightNavigationBarHeight;
+				setNewMargin(actionModeView, leftNavigationBarHeight, KEEP, rightNavigationBarHeight, KEEP);
 			}
-			for (View additional : additionalViews) {
-				additional.setPadding(0, statusBarHeight, rightNavigationBarHeight, bottomNavigationBarHeight);
-			}
-			if (drawerListView != null) {
+			if (drawerContent != null) {
 				int paddingTop = C.API_LOLLIPOP && drawerOverToolbarEnabled && toolbarView != null
 						? statusBarHeight : statusBarHeight + actionBarHeight;
 				if (drawerHeader != null) {
 					setNewPadding(drawerHeader, KEEP, paddingTop, KEEP, KEEP);
-					setNewPadding(drawerListView, KEEP, 0, KEEP, bottomNavigationBarHeight);
+					setNewPadding(drawerContent, KEEP, 0, KEEP, bottomNavigationBarHeight);
 				} else {
-					setNewPadding(drawerListView, KEEP, paddingTop, KEEP, bottomNavigationBarHeight);
+					setNewPadding(drawerContent, KEEP, paddingTop, KEEP, bottomNavigationBarHeight);
 				}
 			}
 			if (contentForeground != null) {

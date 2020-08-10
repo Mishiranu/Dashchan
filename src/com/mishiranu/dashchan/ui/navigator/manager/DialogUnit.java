@@ -67,7 +67,6 @@ import com.mishiranu.dashchan.widget.BaseAdapterNotifier;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.CommentTextView;
 import com.mishiranu.dashchan.widget.DialogStack;
-import com.mishiranu.dashchan.widget.ExpandedScreen;
 import com.mishiranu.dashchan.widget.ListPosition;
 import com.mishiranu.dashchan.widget.ProgressDialog;
 import com.mishiranu.dashchan.widget.SafePasteEditText;
@@ -85,13 +84,11 @@ import java.util.List;
 public class DialogUnit implements DialogStack.Callback {
 	private final UiManager uiManager;
 	private final DialogStack dialogStack;
-	private final ExpandedScreen expandedScreen;
 
-	DialogUnit(UiManager uiManager, ExpandedScreen expandedScreen) {
+	DialogUnit(UiManager uiManager) {
 		this.uiManager = uiManager;
-		dialogStack = new DialogStack(uiManager.getContext(), expandedScreen);
+		dialogStack = new DialogStack(uiManager.getContext());
 		dialogStack.setCallback(this);
-		this.expandedScreen = expandedScreen;
 	}
 
 	private class DialogHolder implements UiManager.Observer, ImageLoader.Observer {
@@ -794,6 +791,7 @@ public class DialogUnit implements DialogStack.Callback {
 		LayoutInflater inflater = LayoutInflater.from(styledContext);
 		FrameLayout rootView = new FrameLayout(styledContext);
 		rootView.setOnClickListener(closeListener);
+		rootView.setFitsSystemWindows(true);
 		ScrollView scrollView = new ScrollView(styledContext);
 		scrollView.setVerticalScrollBarEnabled(false);
 		rootView.addView(scrollView, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT,
@@ -870,15 +868,15 @@ public class DialogUnit implements DialogStack.Callback {
 		WindowManager.LayoutParams layoutParams = window.getAttributes();
 		layoutParams.width = WindowManager.LayoutParams.MATCH_PARENT;
 		layoutParams.height = WindowManager.LayoutParams.MATCH_PARENT;
-		layoutParams.flags = WindowManager.LayoutParams.FLAG_DIM_BEHIND | WindowManager.LayoutParams
-				.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR;
+		layoutParams.flags |= WindowManager.LayoutParams.FLAG_DIM_BEHIND;
 		if (C.API_LOLLIPOP) {
 			layoutParams.flags |= WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS;
 		}
 		View decorView = window.getDecorView();
 		decorView.setBackground(null);
 		decorView.setPadding(0, 0, 0, 0);
-		DialogStack.bindDialogToExpandedScreen(dialog, rootView, expandedScreen);
+		decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+				View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
 		dialog.show();
 		notifySwitchBackground();
 		attachmentDialog = dialog;

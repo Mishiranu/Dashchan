@@ -140,7 +140,7 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 			requestWindowFeature(Window.FEATURE_ACTION_MODE_OVERLAY);
 		}
 		ResourceUtils.applyPreferredTheme(this);
-		expandedScreen = new ExpandedScreen(this, Preferences.isExpandedScreen());
+		ExpandedScreen.Init expandedScreenInit = new ExpandedScreen.Init(this, Preferences.isExpandedScreen());
 		super.onCreate(savedInstanceState);
 		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
 		float density = ResourceUtils.obtainDensity(this);
@@ -166,17 +166,13 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 		drawerParent = new FrameLayout(this);
 		drawerParent.addView(drawerListView);
 		drawerCommon.addView(drawerParent);
-		uiManager = new UiManager(this, this, expandedScreen);
 		drawerLayout = findViewById(R.id.drawer_layout);
+		FrameLayout drawerInterlayer = findViewById(R.id.drawer_interlayer);
 		if (C.API_LOLLIPOP) {
-			FrameLayout foreground = new FrameLayout(this);
-			drawerLayout.addView(foreground, drawerLayout.indexOfChild(drawerCommon), new DrawerLayout.LayoutParams
-					(DrawerLayout.LayoutParams.MATCH_PARENT, DrawerLayout.LayoutParams.MATCH_PARENT));
-			getLayoutInflater().inflate(R.layout.widget_toolbar, foreground);
-			Toolbar toolbar = foreground.findViewById(R.id.toolbar);
+			getLayoutInflater().inflate(R.layout.widget_toolbar, drawerInterlayer);
+			Toolbar toolbar = drawerInterlayer.findViewById(R.id.toolbar);
 			setActionBar(toolbar);
 			toolbarView = toolbar;
-			expandedScreen.setToolbar(toolbar, foreground);
 		} else {
 			// Show white logo on search
 			getActionBar().setIcon(R.drawable.ic_logo);
@@ -197,9 +193,10 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 		ViewUtils.applyToolbarStyle(this, toolbarView);
 
 		updateWideConfiguration(true);
+		expandedScreen = new ExpandedScreen(expandedScreenInit, drawerLayout, toolbarView, drawerInterlayer,
+				drawerParent, drawerListView, drawerForm.getHeaderView());
 		expandedScreen.setDrawerOverToolbarEnabled(!wideMode);
-		expandedScreen.setDrawerListView(drawerParent, drawerListView, drawerForm.getHeaderView());
-		expandedScreen.finishInitialization();
+		uiManager = new UiManager(this, this);
 		ViewGroup contentFragment = findViewById(R.id.content_fragment);
 		contentFragment.setOnHierarchyChangeListener(new ViewGroup.OnHierarchyChangeListener() {
 			@Override

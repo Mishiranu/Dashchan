@@ -62,8 +62,9 @@ public class ViewUtils {
 	}
 
 	public static boolean isDrawerLockable(Configuration configuration) {
-		return configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-				&& ResourceUtils.isTablet(configuration);
+		// Should always result "true" for tablets in landscape mode (+ in portrait mode on large screens).
+		// Sometimes it will result "true" for screens with low DPI configuration, which is intentional.
+		return configuration.screenWidthDp >= 720;
 	}
 
 	public static void applyScaleSize(View... views) {

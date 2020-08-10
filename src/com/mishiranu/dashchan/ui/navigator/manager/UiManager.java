@@ -1,28 +1,8 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui.navigator.manager;
-
-import java.util.HashSet;
 
 import android.content.Context;
 import android.view.View;
-
 import chan.content.ChanLocator;
-
 import com.mishiranu.dashchan.content.model.AttachmentItem;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.model.PostItem;
@@ -33,7 +13,7 @@ import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.WeakObservable;
 import com.mishiranu.dashchan.widget.AttachmentView;
 import com.mishiranu.dashchan.widget.CommentTextView;
-import com.mishiranu.dashchan.widget.ExpandedScreen;
+import java.util.HashSet;
 
 public class UiManager {
 	private final Context context;
@@ -45,10 +25,10 @@ public class UiManager {
 	private final LocalNavigator localNavigator;
 	private final ColorScheme colorScheme;
 
-	public UiManager(Context context, LocalNavigator localNavigator, ExpandedScreen expandedScreen) {
+	public UiManager(Context context, LocalNavigator localNavigator) {
 		this.context = context;
 		viewUnit = new ViewUnit(this);
-		dialogUnit = new DialogUnit(this, expandedScreen);
+		dialogUnit = new DialogUnit(this);
 		interactionUnit = new InteractionUnit(this);
 		colorScheme = new ColorScheme(context);
 		this.localNavigator = localNavigator;

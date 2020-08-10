@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.InsetDrawable;
@@ -19,7 +20,6 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
-import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
@@ -36,7 +36,6 @@ import java.util.LinkedList;
 public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchListener, Iterable<View> {
 	private final Context context;
 	private final Context styledContext;
-	private final ExpandedScreen expandedScreen;
 	private final FrameLayout rootView;
 	private final float dimAmount;
 
@@ -46,13 +45,13 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 	private WeakReference<ActionMode> currentActionMode;
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
-	public DialogStack(Context context, ExpandedScreen expandedScreen) {
+	public DialogStack(Context context) {
 		this.context = context;
 		styledContext = new ContextThemeWrapper(context, ResourceUtils.getResourceId(context,
 				android.R.attr.dialogTheme, 0));
-		this.expandedScreen = expandedScreen;
 		rootView = new FrameLayout(context);
 		rootView.setOnTouchListener(this);
+		rootView.setFitsSystemWindows(true);
 		TypedArray typedArray = styledContext.obtainStyledAttributes(new int[] {android.R.attr.backgroundDimAmount});
 		dimAmount = typedArray.getFloat(0, 0.6f);
 		typedArray.recycle();
@@ -131,21 +130,6 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 		this.callback = callback;
 	}
 
-	public static void bindDialogToExpandedScreen(Dialog dialog, View rootView, ExpandedScreen expandedScreen) {
-		ViewGroup decorView = (ViewGroup) dialog.getWindow().getDecorView();
-		decorView.getChildAt(0).setFitsSystemWindows(false);
-		// Fix resizing dialogs when status bar in gallery becomes hidden with expanded screen enabled
-		if (expandedScreen.isFullScreenLayoutEnabled()) {
-			expandedScreen.addAdditionalView(rootView);
-			decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-					View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
-			dialog.setOnDismissListener(d -> expandedScreen.removeAdditionalView(rootView));
-			expandedScreen.updatePaddings();
-		} else {
-			rootView.setFitsSystemWindows(true);
-		}
-	}
-
 	private static final int VISIBLE_COUNT = 10;
 
 	private final LinkedList<DialogView> hiddenViews = new LinkedList<>();
@@ -156,7 +140,7 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 	public void push(View view) {
 		if (visibleViews.isEmpty()) {
 			Dialog dialog = new Dialog(C.API_LOLLIPOP ? context
-					: new ContextThemeWrapper(context, R.style.Theme_Main_Hadron)) {
+					: new ContextThemeWrapper(context, R.style.Theme_Gallery)) {
 				@Override
 				public void onWindowFocusChanged(boolean hasFocus) {
 					super.onWindowFocusChanged(hasFocus);
@@ -189,8 +173,9 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 			WindowManager.LayoutParams layoutParams = window.getAttributes();
 			layoutParams.width = WindowManager.LayoutParams.MATCH_PARENT;
 			layoutParams.height = WindowManager.LayoutParams.MATCH_PARENT;
-			layoutParams.flags = WindowManager.LayoutParams.FLAG_DIM_BEHIND | WindowManager.LayoutParams
-					.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR;
+			// Activity theme might be opaque
+			layoutParams.format = PixelFormat.TRANSLUCENT;
+			layoutParams.flags |= WindowManager.LayoutParams.FLAG_DIM_BEHIND;
 			layoutParams.dimAmount = dimAmount;
 			if (C.API_LOLLIPOP) {
 				layoutParams.flags |= WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS;
@@ -199,7 +184,8 @@ public class DialogStack implements DialogInterface.OnKeyListener, View.OnTouchL
 			View decorView = window.getDecorView();
 			decorView.setBackground(null);
 			decorView.setPadding(0, 0, 0, 0);
-			bindDialogToExpandedScreen(dialog, rootView, expandedScreen);
+			decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+					View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
 			dialog.show();
 			this.dialog = dialog;
 		} else {
