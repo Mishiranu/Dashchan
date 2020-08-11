@@ -1,22 +1,4 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui;
-
-import java.util.Collection;
 
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
@@ -31,15 +13,14 @@ import android.provider.Settings;
 import android.text.SpannableStringBuilder;
 import android.text.style.RelativeSizeSpan;
 import android.view.ContextThemeWrapper;
-
+import androidx.annotation.NonNull;
 import chan.content.ChanManager;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.preference.Preferences;
-import com.mishiranu.dashchan.preference.PreferencesActivity;
-import com.mishiranu.dashchan.util.NavigationUtils;
+import com.mishiranu.dashchan.ui.navigator.NavigatorActivity;
+import java.util.Collection;
 
 /*
  * MainActivity can't be both singleTask and launcher activity, so I use this launcher activity.
@@ -72,7 +53,7 @@ public class LauncherActivity extends StateActivity {
 	}
 
 	@Override
-	protected void onSaveInstanceState(Bundle outState) {
+	protected void onSaveInstanceState(@NonNull Bundle outState) {
 		super.onSaveInstanceState(outState);
 		outState.putInt(EXTRA_STATE, state);
 	}
@@ -135,18 +116,13 @@ public class LauncherActivity extends StateActivity {
 	}
 
 	private void navigateMainActivity() {
-		String chanName = ChanManager.getInstance().getDefaultChanName();
-		if (chanName == null) {
-			startActivity(new Intent(this, PreferencesActivity.class));
-		} else {
-			startActivity(NavigationUtils.obtainThreadsIntent(this, chanName, Preferences.getDefaultBoardName(chanName),
-					NavigationUtils.FLAG_LAUNCHER));
-		}
+		int flags = Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY & getIntent().getFlags();
+		startActivity(new Intent(this, NavigatorActivity.class).setFlags(flags));
 		finish();
 	}
 
 	@Override
-	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, int[] grantResults) {
 		if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 			navigateMainActivity();
 		} else {

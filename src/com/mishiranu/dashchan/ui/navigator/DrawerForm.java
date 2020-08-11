@@ -99,6 +99,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 
 	private boolean mergeChans = false;
 	private boolean showHistory = false;
+	private int pagesListMode = -1;
 	private boolean chanSelectMode = false;
 	private String chanName;
 
@@ -255,6 +256,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 				LinearLayout.LayoutParams.WRAP_CONTENT);
 
 		inputMethodManager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+		updatePreferencesInternal(true);
 		chans.add(new ListItem(ListItem.ITEM_DIVIDER, 0, 0, null));
 		int color = ResourceUtils.getColor(context, R.attr.drawerIconColor);
 		ChanManager manager = ChanManager.getInstance();
@@ -268,7 +270,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			chanIcons.put(chanName, drawable);
 			chans.add(new ListItem(ListItem.ITEM_CHAN, chanName, null, null, configuration.getTitle(), 0, drawable));
 		}
-		if (availableChans.size() == 1) {
+		if (availableChans.size() <= 1) {
 			selectorContainer.setVisibility(View.GONE);
 		}
 	}
@@ -293,7 +295,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 	}
 
 	private void updateConfiguration(String chanName, boolean force) {
-		if (chanName != null && (!StringUtils.equals(chanName, this.chanName) || force)) {
+		if (!StringUtils.equals(chanName, this.chanName) || force || menu.isEmpty()) {
 			this.chanName = chanName;
 			ChanConfiguration configuration = ChanConfiguration.get(chanName);
 			chanNameView.setText(configuration.getTitle());
@@ -304,12 +306,12 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 					R.attr.drawerMenuUserBoards, R.attr.drawerMenuHistory, R.attr.drawerMenuPreferences});
 			boolean addDivider = false;
 			boolean hasUserBoards = configuration.getOption(ChanConfiguration.OPTION_READ_USER_BOARDS);
-			if (!configuration.getOption(ChanConfiguration.OPTION_SINGLE_BOARD_MODE)) {
+			if (chanName != null && !configuration.getOption(ChanConfiguration.OPTION_SINGLE_BOARD_MODE)) {
 				menu.add(new ListItem(ListItem.ITEM_MENU, MENU_ITEM_BOARDS, typedArray.getResourceId(0, 0),
 						context.getString(hasUserBoards ? R.string.action_general_boards : R.string.action_boards)));
 				addDivider = true;
 			}
-			if (hasUserBoards) {
+			if (chanName != null && hasUserBoards) {
 				menu.add(new ListItem(ListItem.ITEM_MENU, MENU_ITEM_USER_BOARDS, typedArray.getResourceId(1, 0),
 						context.getString(R.string.action_user_boards)));
 				addDivider = true;
@@ -317,7 +319,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			if (addDivider) {
 				menu.add(new ListItem(ListItem.ITEM_DIVIDER, 0, 0, null));
 			}
-			if (Preferences.isRememberHistory()) {
+			if (chanName != null && Preferences.isRememberHistory()) {
 				menu.add(new ListItem(ListItem.ITEM_MENU, MENU_ITEM_HISTORY, typedArray.getResourceId(2, 0),
 						context.getString(R.string.action_history)));
 			}
@@ -418,15 +420,23 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		return false;
 	}
 
-	public void performResume() {
+	public void updatePreferences() {
+		updatePreferencesInternal(false);
+	}
+
+	private void updatePreferencesInternal(boolean initial) {
 		boolean mergeChans = Preferences.isMergeChans();
 		boolean showHistory = Preferences.isRememberHistory();
-		if (this.mergeChans != mergeChans || this.showHistory != showHistory) {
+		int pagesListMode = Preferences.getPagesListMode();
+		if (this.mergeChans != mergeChans || this.showHistory != showHistory ||
+				this.pagesListMode != pagesListMode) {
 			this.mergeChans = mergeChans;
 			this.showHistory = showHistory;
-			updateConfiguration(chanName, true);
+			this.pagesListMode = pagesListMode;
+			if (!initial) {
+				updateConfiguration(chanName, true);
+			}
 		}
-		updateRestartViewVisibility();
 	}
 
 	public void invalidateItems(boolean pages, boolean favorites) {
@@ -757,10 +767,9 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 	}
 
 	private void updateList(boolean pages, boolean favorites) {
-		int mode = Preferences.getPagesListMode();
 		if (pages) {
 			this.pages.clear();
-			if (mode != Preferences.PAGES_LIST_MODE_HIDE_PAGES) {
+			if (pagesListMode != Preferences.PAGES_LIST_MODE_HIDE_PAGES) {
 				updateListPages();
 			}
 		}
@@ -769,7 +778,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			updateListFavorites();
 		}
 		categories.clear();
-		switch (mode) {
+		switch (pagesListMode) {
 			case Preferences.PAGES_LIST_MODE_PAGES_FIRST: {
 				categories.add(this.pages);
 				categories.add(this.favorites);

@@ -15,6 +15,7 @@ public class C {
 	public static final boolean API_LOLLIPOP_MR1 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1;
 	public static final boolean API_MARSHMALLOW = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
 	public static final boolean API_NOUGAT = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
+	public static final boolean API_PIE = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P;
 
 	public static final String BUILD_VERSION = BuildConfig.VERSION_NAME;
 	public static final long BUILD_TIMESTAMP = BuildConfig.BUILD_TIMESTAMP;
@@ -93,4 +94,5 @@ public class C {
 	public static final String EXTRA_THREAD_NUMBER = "com.mishiranu.dashchan.extra.THREAD_NUMBER";
 	public static final String EXTRA_THREAD_TITLE = "com.mishiranu.dashchan.extra.THREAD_TITLE";
 	public static final String EXTRA_VIEW_POSITION = "com.mishiranu.dashchan.extra.VIEW_POSITION";
+	public static final String EXTRA_UPDATE_DATA_MAP = "com.mishiranu.dashchan.extra.UPDATE_DATA_MAP";
 }

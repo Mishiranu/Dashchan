@@ -1,30 +1,4 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.content.service;
-
-import java.net.HttpURLConnection;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.FutureTask;
 
 import android.app.Service;
 import android.content.ComponentName;
@@ -35,7 +9,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Process;
-
 import chan.content.ChanConfiguration;
 import chan.content.ChanManager;
 import chan.content.ChanPerformer;
@@ -45,11 +18,19 @@ import chan.http.HttpException;
 import chan.http.HttpHolder;
 import chan.http.HttpValidator;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.content.NetworkObserver;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
+import java.net.HttpURLConnection;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.FutureTask;
 
 public class WatcherService extends Service implements FavoritesStorage.Observer, Handler.Callback {
 	private static final HashMap<String, ExecutorService> EXECUTORS = new HashMap<>();
@@ -197,7 +178,7 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 
 		public void setActiveChanName(Client client, String chanName) {
 			if (!destroyed) {
-				boolean success = !chanName.equals(clients.put(client, chanName));
+				boolean success = !StringUtils.equals(chanName, clients.put(client, chanName));
 				if (success) {
 					onUpdateConfiguration();
 				}
@@ -225,6 +206,12 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 		public void update() {
 			if (!destroyed) {
 				WatcherService.this.update();
+			}
+		}
+
+		public void updatePreferences() {
+			if (!destroyed) {
+				WatcherService.this.updatePreferences(true);
 			}
 		}
 
@@ -311,9 +298,7 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 		handler.removeMessages(MESSAGE_STOP);
 		if (!started) {
 			started = true;
-			interval = Preferences.getWatcherRefreshInterval() * 1000;
-			refreshPeriodically = Preferences.isWatcherRefreshPeriodically();
-			mergeChans = Preferences.isMergeChans();
+			updatePreferences(false);
 			if (refreshPeriodically) {
 				updateAllSinceNow();
 			} else {
@@ -342,6 +327,21 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 	private void update() {
 		if (started) {
 			updateAll();
+		}
+	}
+
+	private void updatePreferences(boolean restart) {
+		int interval = Preferences.getWatcherRefreshInterval() * 1000;
+		boolean refreshPeriodically = Preferences.isWatcherRefreshPeriodically();
+		boolean mergeChans = Preferences.isMergeChans();
+		boolean changed = this.interval != interval ||
+				this.refreshPeriodically != refreshPeriodically || this.mergeChans != mergeChans;
+		this.interval = interval;
+		this.refreshPeriodically = refreshPeriodically;
+		this.mergeChans = mergeChans;
+		if (restart && changed && !clients.isEmpty()) {
+			stop(true);
+			start();
 		}
 	}
 
@@ -457,7 +457,7 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 		}
 	}
 
-	private class WatcherRunnable implements Callable<Result> {
+	private static class WatcherRunnable implements Callable<Result> {
 		private final HttpHolder holder = new HttpHolder();
 		private final Result result;
 
@@ -632,6 +632,12 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 		public void update() {
 			if (binder != null) {
 				binder.update();
+			}
+		}
+
+		public void updatePreferences() {
+			if (binder != null) {
+				binder.updatePreferences();
 			}
 		}
 

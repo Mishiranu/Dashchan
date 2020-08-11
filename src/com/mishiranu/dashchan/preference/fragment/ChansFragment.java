@@ -8,9 +8,9 @@ import chan.content.ChanConfiguration;
 import chan.content.ChanManager;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.preference.Preferences;
-import com.mishiranu.dashchan.preference.PreferencesActivity;
 import com.mishiranu.dashchan.preference.core.Preference;
 import com.mishiranu.dashchan.preference.core.PreferenceFragment;
+import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.util.ResourceUtils;
 
 public class ChansFragment extends PreferenceFragment {
@@ -28,8 +28,8 @@ public class ChansFragment extends PreferenceFragment {
 		for (String chanName : manager.getAvailableChanNames()) {
 			Preference<?> preference = addCategory(ChanConfiguration.get(chanName).getTitle(),
 					manager.getIcon(chanName, color));
-			preference.setOnClickListener(p -> ((PreferencesActivity) requireActivity())
-					.navigateFragment(new ChanFragment(chanName)));
+			preference.setOnClickListener(p -> ((FragmentHandler) requireActivity())
+					.pushFragment(new ChanFragment(chanName)));
 		}
 	}
 

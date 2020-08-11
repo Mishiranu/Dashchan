@@ -51,9 +51,6 @@
 			android:configChanges="orientation|screenSize" />
 
 		<activity
-			android:name=".preference.PreferencesActivity" />
-
-		<activity
 			android:name=".preference.UpdaterActivity"
 			android:excludeFromRecents="true"
 			android:theme="@android:style/Theme.Panel" />

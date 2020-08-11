@@ -31,15 +31,6 @@ public class StateActivity extends FragmentActivity {
 		}
 	}
 
-	private boolean isRecreateCalled = false;
-
-	public void postRecreate() {
-		if (!isRecreateCalled) {
-			isRecreateCalled = true;
-			getWindow().getDecorView().post(this::recreate);
-		}
-	}
-
 	private boolean onFinishCalled = false;
 
 	@Override

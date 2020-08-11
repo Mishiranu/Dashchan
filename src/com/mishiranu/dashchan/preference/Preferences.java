@@ -1074,46 +1074,4 @@ public class Preferences {
 	public static boolean isWatcherWifiOnly() {
 		return PREFERENCES.getBoolean(KEY_WATCHER_WIFI_ONLY, DEFAULT_WATCHER_WIFI_ONLY);
 	}
-
-	public static Holder getCurrent() {
-		return new Holder();
-	}
-
-	public static class Holder {
-		private final boolean activeScrollbar;
-		private final boolean allAttachments;
-		private final boolean cutThumbnails;
-		private final boolean displayIcons;
-		private final int highlightUnreadMode;
-		private final String loadThumbnailsMode;
-		private final String locale;
-		private final int postMaxLines;
-		private final int textScale;
-		private final int thumbnailsScale;
-
-		public Holder() {
-			activeScrollbar = isActiveScrollbar();
-			allAttachments = isAllAttachments();
-			cutThumbnails = isCutThumbnails();
-			displayIcons = isDisplayIcons();
-			highlightUnreadMode = getHighlightUnreadMode();
-			loadThumbnailsMode = getLoadThumbnailsMode();
-			locale = getLocale();
-			postMaxLines = getPostMaxLines();
-			textScale = getTextScale();
-			thumbnailsScale = getThumbnailsScale();
-		}
-
-		public boolean isNeedRefreshList(Holder another) {
-			return allAttachments != another.allAttachments || cutThumbnails != another.cutThumbnails ||
-					displayIcons != another.displayIcons || highlightUnreadMode != another.highlightUnreadMode ||
-					!StringUtils.equals(loadThumbnailsMode, another.loadThumbnailsMode);
-		}
-
-		public boolean isNeedRestartActivity(Holder another) {
-			return activeScrollbar != another.activeScrollbar || !StringUtils.equals(locale, another.locale) ||
-					postMaxLines != another.postMaxLines || textScale != another.textScale ||
-					thumbnailsScale != another.thumbnailsScale;
-		}
-	}
 }

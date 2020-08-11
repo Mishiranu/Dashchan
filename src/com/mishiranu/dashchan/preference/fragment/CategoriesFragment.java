@@ -7,8 +7,8 @@ import androidx.annotation.NonNull;
 import chan.content.ChanManager;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.preference.Preferences;
-import com.mishiranu.dashchan.preference.PreferencesActivity;
 import com.mishiranu.dashchan.preference.core.PreferenceFragment;
+import com.mishiranu.dashchan.ui.FragmentHandler;
 import java.util.Collection;
 
 public class CategoriesFragment extends PreferenceFragment {
@@ -23,32 +23,32 @@ public class CategoriesFragment extends PreferenceFragment {
 
 		Collection<String> chanNames = ChanManager.getInstance().getAvailableChanNames();
 		addCategory(R.string.preference_header_general)
-				.setOnClickListener(p -> ((PreferencesActivity) requireActivity())
-						.navigateFragment(new GeneralFragment()));
+				.setOnClickListener(p -> ((FragmentHandler) requireActivity())
+						.pushFragment(new GeneralFragment()));
 		if (chanNames.size() == 1) {
 			addCategory(R.string.preference_header_forum)
-					.setOnClickListener(p -> ((PreferencesActivity) requireActivity())
-							.navigateFragment(new ChanFragment(chanNames.iterator().next())));
+					.setOnClickListener(p -> ((FragmentHandler) requireActivity())
+							.pushFragment(new ChanFragment(chanNames.iterator().next())));
 		} else if (chanNames.size() > 1) {
 			addCategory(R.string.preference_header_forums)
-					.setOnClickListener(p -> ((PreferencesActivity) requireActivity())
-							.navigateFragment(new ChansFragment()));
+					.setOnClickListener(p -> ((FragmentHandler) requireActivity())
+							.pushFragment(new ChansFragment()));
 		}
 		addCategory(R.string.preference_header_interface)
-				.setOnClickListener(p -> ((PreferencesActivity) requireActivity())
-						.navigateFragment(new InterfaceFragment()));
+				.setOnClickListener(p -> ((FragmentHandler) requireActivity())
+						.pushFragment(new InterfaceFragment()));
 		addCategory(R.string.preference_header_contents)
-				.setOnClickListener(p -> ((PreferencesActivity) requireActivity())
-						.navigateFragment(new ContentsFragment()));
+				.setOnClickListener(p -> ((FragmentHandler) requireActivity())
+						.pushFragment(new ContentsFragment()));
 		addCategory(R.string.preference_header_favorites)
-				.setOnClickListener(p -> ((PreferencesActivity) requireActivity())
-						.navigateFragment(new FavoritesFragment()));
+				.setOnClickListener(p -> ((FragmentHandler) requireActivity())
+						.pushFragment(new FavoritesFragment()));
 		addCategory(R.string.preference_header_autohide)
-				.setOnClickListener(p -> ((PreferencesActivity) requireActivity())
-						.navigateFragment(new AutohideFragment()));
+				.setOnClickListener(p -> ((FragmentHandler) requireActivity())
+						.pushFragment(new AutohideFragment()));
 		addCategory(R.string.preference_header_about)
-				.setOnClickListener(p -> ((PreferencesActivity) requireActivity())
-						.navigateFragment(new AboutFragment()));
+				.setOnClickListener(p -> ((FragmentHandler) requireActivity())
+						.pushFragment(new AboutFragment()));
 	}
 
 	@Override

@@ -8,6 +8,7 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -55,9 +56,11 @@ import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.graphics.ThemeChoiceDrawable;
 import com.mishiranu.dashchan.preference.Preferences;
-import com.mishiranu.dashchan.preference.PreferencesActivity;
+import com.mishiranu.dashchan.preference.fragment.CategoriesFragment;
+import com.mishiranu.dashchan.preference.fragment.UpdateFragment;
 import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.ForegroundManager;
+import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.StateActivity;
 import com.mishiranu.dashchan.ui.navigator.entity.Page;
 import com.mishiranu.dashchan.ui.navigator.entity.PageItem;
@@ -76,6 +79,7 @@ import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
+import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.ExpandedScreen;
@@ -96,7 +100,8 @@ import java.util.UUID;
 
 public class NavigatorActivity extends StateActivity implements DrawerForm.Callback,
 		SortableListView.OnStateChangedListener, FavoritesStorage.Observer, WatcherService.Client.Callback,
-		UiManager.LocalNavigator, PageFragment.Callback, ReadUpdateTask.Callback {
+		UiManager.LocalNavigator, FragmentHandler, PageFragment.Callback, ReadUpdateTask.Callback {
+	private static final String EXTRA_FRAGMENTS = "fragments";
 	private static final String EXTRA_STACK_PAGE_ITEMS = "stackPageItems";
 	private static final String EXTRA_PRESERVED_PAGE_ITEMS = "preservedPageItems";
 	private static final String EXTRA_CURRENT_FRAGMENT = "currentFragment";
@@ -106,13 +111,13 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 
 	private static final PageFragment REFERENCE_FRAGMENT = new PageFragment();
 
+	private final ArrayList<StackItem> fragments = new ArrayList<>();
 	private final ArrayList<SavedPageItem> stackPageItems = new ArrayList<>();
 	private final ArrayList<SavedPageItem> preservedPageItems = new ArrayList<>();
 	private PageItem currentPageItem;
 
 	private UiManager uiManager;
 	private RetainFragment retainFragment;
-	private Preferences.Holder currentPreferences;
 	private ActionIconSet actionIconSet;
 	private ConfigurationLock configurationLock;
 	private final WatcherService.Client watcherServiceClient = new WatcherService.Client(this);
@@ -133,13 +138,13 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 	private Intent navigateIntentOnResume;
 
 	private static final String LOCKER_DRAWER = "drawer";
+	private static final String LOCKER_NON_PAGE = "nonPage";
 
 	private final ClickableToast.Holder clickableToastHolder = new ClickableToast.Holder(this);
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		currentPreferences = Preferences.getCurrent();
 		if (C.API_LOLLIPOP) {
 			requestWindowFeature(Window.FEATURE_NO_TITLE);
 			requestWindowFeature(Window.FEATURE_ACTION_MODE_OVERLAY);
@@ -152,6 +157,7 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 		setContentView(R.layout.activity_main);
 		ClickableToast.register(clickableToastHolder);
 		FavoritesStorage.getInstance().getObservable().register(this);
+		Preferences.PREFERENCES.registerOnSharedPreferenceChangeListener(preferencesListener);
 		watcherServiceClient.bind(this);
 		actionIconSet = new ActionIconSet(this);
 		configurationLock = new ConfigurationLock(this);
@@ -281,6 +287,7 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 		}
 
 		if (savedInstanceState != null) {
+			fragments.addAll(savedInstanceState.getParcelableArrayList(EXTRA_FRAGMENTS));
 			stackPageItems.addAll(savedInstanceState.getParcelableArrayList(EXTRA_STACK_PAGE_ITEMS));
 			preservedPageItems.addAll(savedInstanceState.getParcelableArrayList(EXTRA_PRESERVED_PAGE_ITEMS));
 			currentPageItem = savedInstanceState.getParcelable(EXTRA_CURRENT_PAGE_ITEM);
@@ -308,8 +315,6 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 						.replace(R.id.content_fragment, currentFragmentFromSaved)
 						.commit();
 				updatePostFragmentConfiguration();
-			} else {
-				navigateIntent(getIntent(), false);
 			}
 		} else {
 			Fragment currentFragment = getCurrentFragment();
@@ -319,10 +324,23 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 				currentPageItem = null;
 			}
 			if (currentFragment == null) {
-				navigateIntent(getIntent(), false);
 				startUpdateTask();
 			} else {
 				updatePostFragmentConfiguration();
+			}
+		}
+
+		if (!FlagUtils.get(getIntent().getFlags(), Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) &&
+				savedInstanceState == null) {
+			navigateIntent(getIntent(), false);
+		}
+		if (getCurrentFragment() == null) {
+			String chanName = ChanManager.getInstance().getDefaultChanName();
+			if (chanName != null) {
+				navigateIntentData(chanName, Preferences.getDefaultBoardName(chanName), null, null, null, null, 0);
+			} else {
+				navigateFragment(new CategoriesFragment(), null);
+				ToastUtils.show(this, R.string.message_no_extensions);
 			}
 		}
 	}
@@ -342,6 +360,7 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 	}
 
 	private void writePagesState(Bundle outState) {
+		outState.putParcelableArrayList(EXTRA_FRAGMENTS, fragments);
 		outState.putParcelableArrayList(EXTRA_STACK_PAGE_ITEMS, stackPageItems);
 		outState.putParcelableArrayList(EXTRA_PRESERVED_PAGE_ITEMS, preservedPageItems);
 		outState.putParcelable(EXTRA_CURRENT_PAGE_ITEM, currentPageItem);
@@ -417,26 +436,29 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 		startActivity(intent);
 	}
 
-	private void navigateIntent(Intent intent, boolean replaceIntent) {
-		if (replaceIntent) {
+	private void navigateIntent(Intent intent, boolean newIntent) {
+		if (newIntent) {
 			navigateIntentOnResume = intent;
 		} else {
-			navigateIntentUnchecked(intent, false);
+			navigateIntentUnchecked(intent);
 		}
 	}
 
-	private void navigateIntentUnchecked(Intent intent, boolean replaceIntent) {
-		String chanName = intent.getStringExtra(C.EXTRA_CHAN_NAME);
-		String boardName = intent.getStringExtra(C.EXTRA_BOARD_NAME);
-		String threadNumber = intent.getStringExtra(C.EXTRA_THREAD_NUMBER);
-		String postNumber = intent.getStringExtra(C.EXTRA_POST_NUMBER);
-		String threadTitle = intent.getStringExtra(C.EXTRA_THREAD_TITLE);
-		String searchQuery = intent.getStringExtra(C.EXTRA_SEARCH_QUERY);
-		int flags = intent.getIntExtra(C.EXTRA_NAVIGATION_FLAGS, 0);
-		if (replaceIntent && FlagUtils.get(flags, NavigationUtils.FLAG_LAUNCHER)) {
-			return;
+	private void navigateIntentUnchecked(Intent intent) {
+		ReadUpdateTask.UpdateDataMap updateDataMap = intent.getParcelableExtra(C.EXTRA_UPDATE_DATA_MAP);
+		if (updateDataMap != null) {
+			fragments.clear();
+			navigateFragment(new UpdateFragment(updateDataMap), null);
+		} else {
+			String chanName = intent.getStringExtra(C.EXTRA_CHAN_NAME);
+			String boardName = intent.getStringExtra(C.EXTRA_BOARD_NAME);
+			String threadNumber = intent.getStringExtra(C.EXTRA_THREAD_NUMBER);
+			String postNumber = intent.getStringExtra(C.EXTRA_POST_NUMBER);
+			String threadTitle = intent.getStringExtra(C.EXTRA_THREAD_TITLE);
+			String searchQuery = intent.getStringExtra(C.EXTRA_SEARCH_QUERY);
+			int flags = intent.getIntExtra(C.EXTRA_NAVIGATION_FLAGS, 0);
+			navigateIntentData(chanName, boardName, threadNumber, postNumber, threadTitle, searchQuery, flags);
 		}
-		navigateIntentData(chanName, boardName, threadNumber, postNumber, threadTitle, searchQuery, flags);
 	}
 
 	private static boolean isSingleBoardMode(String chanName) {
@@ -656,11 +678,20 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 		navigateFragment(pair.first, pair.second);
 	}
 
+	@Override
+	public void pushFragment(Fragment fragment) {
+		Fragment currentFragment = getCurrentFragment();
+		if (!(currentFragment instanceof PageFragment)) {
+			StackItem stackItem = new StackItem(getSupportFragmentManager(), currentFragment, null);
+			fragments.add(stackItem);
+		}
+		navigateFragment(fragment, null);
+	}
+
 	private void navigateFragment(Fragment fragment, PageItem pageItem) {
 		FragmentManager fragmentManager = getSupportFragmentManager();
 		Fragment currentFragment = getCurrentFragment();
 		if (currentFragment instanceof PageFragment) {
-			// TODO Clear non-page fragments
 			// currentPageItem == null means page was deleted
 			if (currentPageItem != null) {
 				stackPageItems.add(currentPageItem.toSaved(fragmentManager,
@@ -669,8 +700,8 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 			if (fragment instanceof PageFragment) {
 				PostingService.clearNewThreadData();
 			}
-		} else if (currentFragment != null) {
-			// TODO Handle non-page fragments
+		} else if (fragment instanceof PageFragment) {
+			fragments.clear();
 		}
 
 		if (currentFragment instanceof ActivityHandler) {
@@ -717,6 +748,11 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 		} else {
 			chanName = ChanManager.getInstance().getDefaultChanName();
 		}
+		if (currentFragment instanceof PageFragment) {
+			expandedScreen.removeLocker(LOCKER_NON_PAGE);
+		} else {
+			expandedScreen.addLocker(LOCKER_NON_PAGE);
+		}
 		watcherServiceClient.updateConfiguration(chanName);
 		drawerForm.updateConfiguration(chanName);
 		invalidateHomeUpState();
@@ -754,32 +790,37 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 		Fragment currentFragment = getCurrentFragment();
 		if (currentFragment instanceof ActivityHandler && ((ActivityHandler) currentFragment).isSearchMode()) {
 			drawerToggle.setDrawerIndicatorMode(DrawerToggle.MODE_UP);
-		} else if (currentFragment instanceof PageFragment) {
-			boolean displayUp = false;
-			Page page = ((PageFragment) currentFragment).getPage();
-			switch (page.content) {
-				case THREADS: {
-					displayUp = getPagesStackSize(page.chanName) > 1;
-					break;
+		} else {
+			boolean displayUp;
+			if (currentFragment instanceof PageFragment) {
+				Page page = ((PageFragment) currentFragment).getPage();
+				switch (page.content) {
+					case THREADS: {
+						displayUp = getPagesStackSize(page.chanName) > 1;
+						break;
+					}
+					case POSTS:
+					case SEARCH:
+					case ARCHIVE: {
+						displayUp = true;
+						break;
+					}
+					case BOARDS:
+					case USER_BOARDS:
+					case HISTORY: {
+						displayUp = page.boardName != null || getPagesStackSize(page.chanName) > 1;
+						break;
+					}
+					default: {
+						displayUp = false;
+						break;
+					}
 				}
-				case POSTS:
-				case SEARCH:
-				case ARCHIVE: {
-					displayUp = true;
-					break;
-				}
-				case BOARDS:
-				case USER_BOARDS:
-				case HISTORY: {
-					displayUp = page.boardName != null || getPagesStackSize(page.chanName) > 1;
-					break;
-				}
+			} else {
+				displayUp = !stackPageItems.isEmpty() || !fragments.isEmpty();
 			}
 			drawerToggle.setDrawerIndicatorMode(displayUp ? DrawerToggle.MODE_UP : wideMode
 					? DrawerToggle.MODE_DISABLED : DrawerToggle.MODE_DRAWER);
-		} else {
-			// TODO Handle non-page fragments
-			drawerToggle.setDrawerIndicatorMode(DrawerToggle.MODE_DISABLED);
 		}
 	}
 
@@ -807,39 +848,21 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 	}
 
 	@Override
-	protected void onStart() {
-		super.onStart();
-
-		Preferences.Holder newPreferences = Preferences.getCurrent();
-		if (currentPreferences.isNeedRestartActivity(newPreferences)) {
-			// Recreate after onResume
-			postRecreate();
-			return;
-		} else if (currentPreferences.isNeedRefreshList(newPreferences)) {
-			Fragment currentFragment = getCurrentFragment();
-			if (currentFragment instanceof PageFragment) {
-				((PageFragment) currentFragment).notifyAdapterChanged();
-			}
-		}
-		drawerForm.invalidateItems(true, true);
-		currentPreferences = newPreferences;
-		updateWideConfiguration(false);
-	}
-
-	@Override
 	protected void onResume() {
 		super.onResume();
 
-		drawerForm.performResume();
 		watcherServiceClient.start();
 		clickableToastHolder.onResume();
+		drawerForm.updateRestartViewVisibility();
+		drawerForm.invalidateItems(true, true);
+		updateWideConfiguration(false);
 		ChanManager.getInstance().getInstallationObservable().register(installationCallback);
 		ForegroundManager.register(this);
 
 		Intent navigateIntentOnResume = this.navigateIntentOnResume;
 		this.navigateIntentOnResume = null;
 		if (navigateIntentOnResume != null) {
-			navigateIntentUnchecked(navigateIntentOnResume, true);
+			navigateIntentUnchecked(navigateIntentOnResume);
 		}
 	}
 
@@ -873,6 +896,7 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 		watcherServiceClient.unbind(this);
 		ClickableToast.unregister(clickableToastHolder);
 		FavoritesStorage.getInstance().getObservable().unregister(this);
+		Preferences.PREFERENCES.unregisterOnSharedPreferenceChangeListener(preferencesListener);
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(newPostReceiver);
 		for (String chanName : ChanManager.getInstance().getAvailableChanNames()) {
 			ChanConfiguration.get(chanName).commit();
@@ -922,8 +946,13 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 					navigateSavedPage(savedPageItem);
 					handled = true;
 				}
-			} else {
-				// TODO Check non-page fragments in stack
+			} else if (!fragments.isEmpty()) {
+				Fragment fragment = fragments.remove(fragments.size() - 1).create(null);
+				navigateFragment(fragment, null);
+				handled = true;
+			} else if (!stackPageItems.isEmpty()) {
+				navigateSavedPage(stackPageItems.remove(stackPageItems.size() - 1));
+				handled = true;
 			}
 			if (!handled) {
 				if (System.currentTimeMillis() - backPressed > 2000) {
@@ -1029,7 +1058,7 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 					navigateIntentData(newChanName, newBoardName, null, null, null, null,
 							fromCache ? NavigationUtils.FLAG_FROM_CACHE : 0);
 				} else {
-					// TODO Check non-page fragments
+					onBackPressed();
 				}
 				return true;
 			}
@@ -1162,6 +1191,11 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 		configurationLock.lockConfiguration(dialog);
 		dialog.show();
 	}
+
+	private final SharedPreferences.OnSharedPreferenceChangeListener preferencesListener = (p, key) -> {
+		drawerForm.updatePreferences();
+		watcherServiceClient.updatePreferences();
+	};
 
 	@Override
 	public void onSortingStateChanged(SortableListView listView, boolean sorting) {
@@ -1382,8 +1416,6 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 		return result;
 	}
 
-	private final Runnable preferencesRunnable = () -> startActivity(new Intent(this, PreferencesActivity.class));
-
 	@Override
 	public void onSelectDrawerMenuItem(int item) {
 		Page.Content content = null;
@@ -1401,10 +1433,9 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 				break;
 			}
 			case DrawerForm.MENU_ITEM_PREFERENCES: {
-				if (wideMode) {
-					preferencesRunnable.run();
-				} else {
-					drawerListView.postDelayed(preferencesRunnable, 200);
+				if (!(getCurrentFragment() instanceof CategoriesFragment)) {
+					fragments.clear();
+					navigateFragment(new CategoriesFragment(), null);
 				}
 				break;
 			}
@@ -1509,7 +1540,7 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 			return;
 		}
 		Preferences.setLastUpdateCheck(System.currentTimeMillis());
-		int count = PreferencesActivity.checkNewVersions(updateDataMap);
+		int count = UpdateFragment.checkNewVersions(updateDataMap);
 		if (count <= 0) {
 			return;
 		}
@@ -1526,8 +1557,11 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 		}
 		builder.setContentTitle(getString(R.string.text_app_name_update, getString(R.string.const_app_name)));
 		builder.setContentText(text);
-		builder.setContentIntent(PendingIntent.getActivity(this, 0, PreferencesActivity.createUpdateIntent
-				(this, updateDataMap).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), PendingIntent.FLAG_UPDATE_CURRENT));
+		// Set action to ensure unique pending intent
+		Intent intent = new Intent(this, NavigatorActivity.class)
+				.setAction("updates").putExtra(C.EXTRA_UPDATE_DATA_MAP, updateDataMap)
+				.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		builder.setContentIntent(PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT));
 		builder.setAutoCancel(true);
 		NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		notificationManager.notify(C.NOTIFICATION_TAG_UPDATE, 0, builder.build());
@@ -1553,6 +1587,7 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 	@Override
 	public void setPageTitle(String title) {
 		setTitle(title);
+		getActionBar().setSubtitle(null);
 		if (((PageFragment) getCurrentFragment()).getPage().content == Page.Content.POSTS) {
 			currentPageItem.threadTitle = title;
 		}

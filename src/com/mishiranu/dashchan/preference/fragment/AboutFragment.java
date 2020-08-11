@@ -25,8 +25,8 @@ import com.mishiranu.dashchan.content.async.AsyncManager;
 import com.mishiranu.dashchan.content.async.ReadUpdateTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.preference.Preferences;
-import com.mishiranu.dashchan.preference.PreferencesActivity;
 import com.mishiranu.dashchan.preference.core.PreferenceFragment;
+import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.widget.ProgressDialog;
@@ -47,8 +47,8 @@ public class AboutFragment extends PreferenceFragment {
 		super.onViewCreated(view, savedInstanceState);
 
 		addButton(R.string.preference_statistics, 0)
-				.setOnClickListener(p -> ((PreferencesActivity) requireActivity())
-						.navigateFragment(new StatisticsFragment()));
+				.setOnClickListener(p -> ((FragmentHandler) requireActivity())
+						.pushFragment(new StatisticsFragment()));
 		addButton(R.string.preference_backup_data, R.string.preference_backup_data_summary)
 				.setOnClickListener(p -> new BackupDialog()
 						.show(getParentFragmentManager(), BackupDialog.class.getName()));
@@ -59,8 +59,8 @@ public class AboutFragment extends PreferenceFragment {
 				.setOnClickListener(p -> new ReadDialog(ReadDialog.TYPE_UPDATE)
 						.show(getParentFragmentManager(), ReadDialog.class.getName()));
 		addButton(R.string.preference_licenses, R.string.preference_licenses_summary)
-				.setOnClickListener(p -> ((PreferencesActivity) requireActivity())
-						.navigateFragment(new TextFragment(TextFragment.TYPE_LICENSES, null)));
+				.setOnClickListener(p -> ((FragmentHandler) requireActivity())
+						.pushFragment(new TextFragment(TextFragment.TYPE_LICENSES, null)));
 		addButton(getString(R.string.preference_version), C.BUILD_VERSION +
 				" (" + DateFormat.getDateFormat(requireContext()).format(C.BUILD_TIMESTAMP) + ")");
 	}
@@ -225,8 +225,8 @@ public class AboutFragment extends PreferenceFragment {
 					String content = holder.nextArgument();
 					ErrorItem errorItem = holder.nextArgument();
 					if (errorItem == null) {
-						((PreferencesActivity) requireActivity())
-								.navigateFragment(new TextFragment(TextFragment.TYPE_CHANGELOG, content));
+						((FragmentHandler) requireActivity())
+								.pushFragment(new TextFragment(TextFragment.TYPE_CHANGELOG, content));
 					} else {
 						ToastUtils.show(requireContext(), errorItem);
 					}
@@ -236,8 +236,8 @@ public class AboutFragment extends PreferenceFragment {
 					ReadUpdateTask.UpdateDataMap updateDataMap = holder.nextArgument();
 					ErrorItem errorItem = holder.nextArgument();
 					if (updateDataMap != null) {
-						((PreferencesActivity) requireActivity())
-								.navigateFragment(new UpdateFragment(updateDataMap));
+						((FragmentHandler) requireActivity())
+								.pushFragment(new UpdateFragment(updateDataMap));
 					} else {
 						ToastUtils.show(requireContext(), errorItem);
 					}

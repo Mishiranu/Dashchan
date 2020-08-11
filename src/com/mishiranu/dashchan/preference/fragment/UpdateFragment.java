@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.app.DownloadManager;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.SpannableString;
@@ -33,6 +32,7 @@ import com.mishiranu.dashchan.util.ViewUtils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 public class UpdateFragment extends BaseListFragment {
 	private static final String VERSION_TITLE_RELEASE = "Release";
@@ -68,7 +68,7 @@ public class UpdateFragment extends BaseListFragment {
 			this.enabled = enabled;
 		}
 
-		public void setTarget(Context context, ArrayList<ReadUpdateTask.UpdateItem> updateItems, int targetIndex) {
+		public void setTarget(Context context, List<ReadUpdateTask.UpdateItem> updateItems, int targetIndex) {
 			ReadUpdateTask.UpdateItem updateItem = updateItems.get(targetIndex);
 			this.targetIndex = targetIndex;
 			if (targetIndex > 0) {
@@ -88,7 +88,7 @@ public class UpdateFragment extends BaseListFragment {
 
 	public UpdateFragment(ReadUpdateTask.UpdateDataMap updateDataMap) {
 		Bundle args = new Bundle();
-		args.putSerializable(EXTRA_UPDATE_DATA_MAP, updateDataMap);
+		args.putParcelable(EXTRA_UPDATE_DATA_MAP, updateDataMap);
 		setArguments(args);
 	}
 
@@ -154,7 +154,7 @@ public class UpdateFragment extends BaseListFragment {
 				}
 			}
 		});
-		updateDataMap = (ReadUpdateTask.UpdateDataMap) requireArguments().getSerializable(EXTRA_UPDATE_DATA_MAP);
+		updateDataMap = requireArguments().getParcelable(EXTRA_UPDATE_DATA_MAP);
 		buildData(savedInstanceState);
 	}
 
@@ -180,7 +180,7 @@ public class UpdateFragment extends BaseListFragment {
 	private static ListItem handleAddListItem(Context context, ReadUpdateTask.UpdateDataMap updateDataMap,
 			String extensionName, Bundle savedInstanceState, int minVersion, int maxVersion,
 			String warningUnsupported) {
-		ArrayList<ReadUpdateTask.UpdateItem> updateItems = updateDataMap.get(extensionName);
+		List<ReadUpdateTask.UpdateItem> updateItems = updateDataMap.get(extensionName);
 		ListItem listItem = new ListItem(extensionName, updateItems.size() >= 2);
 		int targetIndex = savedInstanceState != null ? savedInstanceState
 				.getInt(EXTRA_TARGET_PREFIX + extensionName, -1) : -1;
@@ -219,7 +219,7 @@ public class UpdateFragment extends BaseListFragment {
 		ArrayList<ListItem> listItems = new ArrayList<>();
 		String warningUnsupported = context != null ? context.getString(R.string.text_unsupported_version) : null;
 		HashSet<String> handledExtensionNames = new HashSet<>();
-		ArrayList<ReadUpdateTask.UpdateItem> updateItems = updateDataMap.get(ChanManager.EXTENSION_NAME_CLIENT);
+		List<ReadUpdateTask.UpdateItem> updateItems = updateDataMap.get(ChanManager.EXTENSION_NAME_CLIENT);
 		ListItem listItem = new ListItem(ChanManager.EXTENSION_NAME_CLIENT,
 				context != null ? context.getString(R.string.const_app_name) : null, updateItems.size() >= 2);
 		int targetIndex = savedInstanceState != null ? savedInstanceState.getInt(EXTRA_TARGET_PREFIX
@@ -274,7 +274,7 @@ public class UpdateFragment extends BaseListFragment {
 
 	private void onItemClick(int position) {
 		ListItem listItem = listItems.get(position);
-		ArrayList<ReadUpdateTask.UpdateItem> updateItems = updateDataMap.get(listItem.extensionName);
+		List<ReadUpdateTask.UpdateItem> updateItems = updateDataMap.get(listItem.extensionName);
 		ArrayList<String> targets = new ArrayList<>();
 		targets.add(getString(R.string.text_keep_current_version));
 		for (int i = 1; i < updateItems.size(); i++) {
@@ -415,7 +415,7 @@ public class UpdateFragment extends BaseListFragment {
 		for (int i = 0; i < listItems.size(); i++) {
 			ListItem listItem = listItems.get(i);
 			if (extensionName.equals(listItem.extensionName)) {
-				ArrayList<ReadUpdateTask.UpdateItem> updateItems = updateDataMap.get(extensionName);
+				List<ReadUpdateTask.UpdateItem> updateItems = updateDataMap.get(extensionName);
 				if (listItem.targetIndex != targetIndex) {
 					listItem.setTarget(requireContext(), updateItems, targetIndex);
 					onTargetChanged(listItem);
@@ -474,13 +474,5 @@ public class UpdateFragment extends BaseListFragment {
 			}
 		}
 		return count;
-	}
-
-	public static void modifyUpdateIntent(Intent intent, ReadUpdateTask.UpdateDataMap updateDataMap) {
-		intent.putExtra(EXTRA_UPDATE_DATA_MAP, updateDataMap);
-	}
-
-	public static ReadUpdateTask.UpdateDataMap extractUpdateDataMap(Intent intent) {
-		return (ReadUpdateTask.UpdateDataMap) intent.getSerializableExtra(EXTRA_UPDATE_DATA_MAP);
 	}
 }

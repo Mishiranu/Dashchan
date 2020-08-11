@@ -30,11 +30,11 @@ import com.mishiranu.dashchan.content.async.AsyncManager;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.net.RelayBlockResolver;
 import com.mishiranu.dashchan.preference.Preferences;
-import com.mishiranu.dashchan.preference.PreferencesActivity;
 import com.mishiranu.dashchan.preference.core.CheckPreference;
 import com.mishiranu.dashchan.preference.core.MultipleEditTextPreference;
 import com.mishiranu.dashchan.preference.core.Preference;
 import com.mishiranu.dashchan.preference.core.PreferenceFragment;
+import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.widget.ProgressDialog;
 import java.util.ArrayList;
@@ -171,8 +171,8 @@ public class ChanFragment extends PreferenceFragment {
 			}
 		}
 		cookiePreference = addButton(R.string.preference_manage_cookies, 0);
-		cookiePreference.setOnClickListener(p -> ((PreferencesActivity) requireActivity())
-				.navigateFragment(new CookiesFragment(chanName)));
+		cookiePreference.setOnClickListener(p -> ((FragmentHandler) requireActivity())
+				.pushFragment(new CookiesFragment(chanName)));
 
 		addHeader(R.string.preference_category_connection);
 		ArrayList<String> domains = locator.getChanHosts(true);

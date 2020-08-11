@@ -49,7 +49,8 @@ public class InterfaceFragment extends PreferenceFragment {
 		addHeader(R.string.preference_category_posts);
 		addEdit(Preferences.KEY_POST_MAX_LINES, Preferences.DEFAULT_POST_MAX_LINES,
 				R.string.preference_post_max_lines, R.string.preference_post_max_lines_summary, null,
-				InputType.TYPE_CLASS_NUMBER);
+				InputType.TYPE_CLASS_NUMBER)
+				.setOnAfterChangeListener(p -> requireActivity().recreate());
 		addCheck(true, Preferences.KEY_ALL_ATTACHMENTS, Preferences.DEFAULT_ALL_ATTACHMENTS,
 				R.string.preference_all_attachments, R.string.preference_all_attachments_summary);
 		addList(Preferences.KEY_HIGHLIGHT_UNREAD, Preferences.VALUES_HIGHLIGHT_UNREAD,

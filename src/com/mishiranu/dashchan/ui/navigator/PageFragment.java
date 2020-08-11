@@ -15,7 +15,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.BaseAdapter;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -284,15 +283,17 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 	}
 
 	public void updatePageConfiguration(String postNumber) {
-		listPage.updatePageConfiguration(postNumber);
+		if (listPage != null) {
+			listPage.updatePageConfiguration(postNumber);
+		} else {
+			ListPage.InitRequest last = this.initRequest;
+			initRequest = new ListPage.InitRequest(last != null && last.shouldLoad,
+					postNumber, last != null ? last.threadTitle : null);
+		}
 	}
 
 	public void handleNewPostDataListNow() {
 		listPage.handleNewPostDataListNow();
-	}
-
-	public void notifyAdapterChanged() {
-		((BaseAdapter) listView.getAdapter()).notifyDataSetChanged();
 	}
 
 	@Override
