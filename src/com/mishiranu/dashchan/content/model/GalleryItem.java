@@ -1,32 +1,14 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.content.model;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
 
 import android.content.Context;
 import android.net.Uri;
-
 import chan.content.ChanLocator;
-
 import com.mishiranu.dashchan.content.DownloadManager;
+import com.mishiranu.dashchan.util.ConfigurationLock;
 import com.mishiranu.dashchan.util.NavigationUtils;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class GalleryItem implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -109,8 +91,10 @@ public class GalleryItem implements Serializable {
 		return locator.createAttachmentFileName(fileUri);
 	}
 
-	public void downloadStorage(Context context, ChanLocator locator, String threadTitle) {
-		DownloadManager.getInstance().downloadStorage(context, getFileUri(locator), getFileName(locator), originalName,
+	public void downloadStorage(Context context, ConfigurationLock configurationLock,
+			ChanLocator locator, String threadTitle) {
+		DownloadManager.getInstance().downloadStorage(context, configurationLock,
+				getFileUri(locator), getFileName(locator), originalName,
 				locator.getChanName(), boardName, threadNumber, threadTitle);
 	}
 

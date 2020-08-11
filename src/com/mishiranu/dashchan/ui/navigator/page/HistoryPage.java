@@ -80,7 +80,7 @@ public class HistoryPage extends ListPage<HistoryAdapter> {
 	public boolean onItemLongClick(View view, int position) {
 		HistoryDatabase.HistoryItem historyItem = getAdapter().getHistoryItem(position);
 		if (historyItem != null) {
-			DialogMenu dialogMenu = new DialogMenu(getContext(), (context, id, extra) -> {
+			DialogMenu dialogMenu = new DialogMenu(getContext(), id -> {
 				switch (id) {
 					case CONTEXT_MENU_COPY_LINK: {
 						Uri uri = getChanLocator().safe(true).createThreadUri(historyItem.boardName,
@@ -110,7 +110,7 @@ public class HistoryPage extends ListPage<HistoryAdapter> {
 				dialogMenu.addItem(CONTEXT_MENU_ADD_FAVORITES, R.string.action_add_to_favorites);
 			}
 			dialogMenu.addItem(CONTEXT_MENU_REMOVE_FROM_HISTORY, R.string.action_remove_from_history);
-			dialogMenu.show();
+			dialogMenu.show(getUiManager().getConfigurationLock());
 			return true;
 		}
 		return false;
@@ -130,13 +130,15 @@ public class HistoryPage extends ListPage<HistoryAdapter> {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 			case OPTIONS_MENU_CLEAR_HISTORY: {
-				new AlertDialog.Builder(getContext()).setMessage(R.string.message_clear_history_confirm)
+				AlertDialog dialog = new AlertDialog.Builder(getContext())
+						.setMessage(R.string.message_clear_history_confirm)
 						.setNegativeButton(android.R.string.cancel, null)
-						.setPositiveButton(android.R.string.ok, (dialog, which1) -> {
-					HistoryDatabase.getInstance().clearAllHistory(mergeChans ? null : chanName);
-					getAdapter().clear();
-					switchView(ViewType.ERROR, R.string.message_empty_history);
-				}).show();
+						.setPositiveButton(android.R.string.ok, (d, which1) -> {
+							HistoryDatabase.getInstance().clearAllHistory(mergeChans ? null : chanName);
+							getAdapter().clear();
+							switchView(ViewType.ERROR, R.string.message_empty_history);
+						}).show();
+				getUiManager().getConfigurationLock().lockConfiguration(dialog);
 				return true;
 			}
 		}

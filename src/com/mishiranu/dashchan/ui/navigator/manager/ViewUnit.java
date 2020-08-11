@@ -64,8 +64,6 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 	private final int commentAdditionalHeight;
 	private final int commentAdditionalLines;
 
-	private Collection<String> highlightText;
-
 	private static final float ALPHA_HIDDEN_POST = 0.2f;
 	private static final float ALPHA_DELETED_POST = 0.5f;
 
@@ -103,24 +101,17 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		multipleAttachmentInfoWidth = (int) (attachmentInfoWidthDp * density + 0.5f);
 	}
 
-	public void resetPages() {
-		highlightText = null;
-		uiManager.dialog().closeDialogs();
-	}
-
-	public void setHighlightText(Collection<String> highlightText) {
-		this.highlightText = highlightText;
-	}
-
 	private final CommentTextView.LinkListener defaultLinkListener = new CommentTextView.LinkListener() {
 		@Override
 		public void onLinkClick(CommentTextView view, String chanName, Uri uri, boolean confirmed) {
-			uiManager.interaction().handleLinkClick(chanName, uri, confirmed);
+			UiManager.Holder holder = ListViewUtils.getViewHolder(view, UiManager.Holder.class);
+			uiManager.interaction().handleLinkClick(holder.configurationSet, chanName, uri, confirmed);
 		}
 
 		@Override
 		public void onLinkLongClick(CommentTextView view, String chanName, Uri uri) {
-			uiManager.interaction().handleLinkLongClick(uri);
+			UiManager.Holder holder = ListViewUtils.getViewHolder(view, UiManager.Holder.class);
+			uiManager.interaction().handleLinkLongClick(holder.configurationSet, uri);
 		}
 	};
 
@@ -136,7 +127,8 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		}
 	};
 
-	public View getThreadView(PostItem postItem, View convertView, ViewGroup parent, boolean isBusy) {
+	public View getThreadView(PostItem postItem, View convertView, ViewGroup parent, boolean isBusy,
+			UiManager.ConfigurationSet configurationSet) {
 		Context context = uiManager.getContext();
 		ColorScheme colorScheme = uiManager.getColorScheme();
 		ThreadViewHolder holder;
@@ -190,6 +182,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		}
 
 		holder.postItem = postItem;
+		holder.configurationSet = configurationSet;
 
 		holder.showOpClickView.setEnabled(true);
 		holder.stateSage.setVisibility(postItem.getBumpLimitReachedState(0) == PostItem.BUMP_LIMIT_REACHED
@@ -230,7 +223,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 	}
 
 	public View getThreadViewForGrid(PostItem postItem, View convertView, ViewGroup parent,
-			HidePerformer hidePerformer, int contentHeight, boolean isBusy) {
+			int contentHeight, boolean isBusy, UiManager.ConfigurationSet configurationSet) {
 		Context context = uiManager.getContext();
 		ColorScheme colorScheme = uiManager.getColorScheme();
 		ThreadViewHolder holder;
@@ -262,11 +255,12 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		}
 
 		holder.postItem = postItem;
+		holder.configurationSet = configurationSet;
 
 		holder.showOpClickView.setEnabled(true);
 		List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
 
-		boolean hidden = postItem.isHidden(hidePerformer);
+		boolean hidden = postItem.isHidden(configurationSet.hidePerformer);
 		((View) holder.threadContent.getParent()).setAlpha(hidden ? ALPHA_HIDDEN_POST : 1f);
 		String subject = postItem.getSubject();
 		if (!StringUtils.isEmptyOrWhitespace(subject) && !hidden) {
@@ -307,7 +301,8 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		return convertView;
 	}
 
-	public View getThreadHiddenView(PostItem postItem, View convertView, ViewGroup parent) {
+	public View getThreadHiddenView(PostItem postItem, View convertView, ViewGroup parent,
+			UiManager.ConfigurationSet configurationSet) {
 		HiddenViewHolder holder;
 		if (convertView != null && !(convertView.getTag() instanceof HiddenViewHolder)) {
 			convertView = null;
@@ -330,6 +325,8 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		}
 
 		holder.postItem = postItem;
+		holder.configurationSet = configurationSet;
+
 		String description = postItem.getHideReason();
 		if (description == null) {
 			description = postItem.getSubjectOrComment();
@@ -393,7 +390,6 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 				ViewUtils.applyScaleSize(holder.number, holder.name, holder.index, holder.date, holder.comment,
 						holder.attachmentInfo, holder.bottomBarReplies, holder.bottomBarExpand,
 						holder.bottomBarOpenThread);
-				// noinspection ConfusingArgumentToVarargsMethod
 				ViewUtils.applyScaleSize(holder.stateImages);
 				holder.head.setHorizontalSpacing(holder.head.getHorizontalSpacing() * textScale / 100);
 			}
@@ -449,7 +445,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 
 		CharSequence name = postItem.getFullName();
 		colorScheme.apply(postItem.getFullNameSpans());
-		holder.name.setText(makeHighlightedText(name));
+		holder.name.setText(makeHighlightedText(demandSet.highlightText, name));
 		holder.date.setText(postItem.getDateTime(postDateFormatter));
 
 		String subject = postItem.getSubject();
@@ -481,7 +477,8 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 			}
 		}
 		holder.comment.setSpoilersEnabled(!Preferences.isShowSpoilers());
-		holder.comment.setSubjectAndComment(makeHighlightedText(subject), makeHighlightedText(comment));
+		holder.comment.setSubjectAndComment(makeHighlightedText(demandSet.highlightText, subject),
+				makeHighlightedText(demandSet.highlightText, comment));
 		holder.comment.setReplyable(configurationSet.replyable, postNumber);
 		holder.comment.setLinkListener(configurationSet.linkListener != null ? configurationSet.linkListener
 				: defaultLinkListener, chanName, boardName, threadNumber);
@@ -497,7 +494,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		boolean showIndex = postItem.getOrdinalIndex() != PostItem.ORDINAL_INDEX_NONE;
 		holder.index.setVisibility(showIndex ? View.VISIBLE : View.GONE);
 
-		if (demandSet.selectionMode == UiManager.SELECTION_THREADSHOT) {
+		if (demandSet.selection == UiManager.Selection.THREADSHOT) {
 			holder.bottomBarReplies.setVisibility(View.GONE);
 			holder.bottomBarExpand.setVisibility(View.GONE);
 			holder.bottomBarOpenThread.setVisibility(View.GONE);
@@ -524,7 +521,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 			invalidateBottomBar(holder);
 		}
 
-		boolean viewsEnabled = demandSet.selectionMode == UiManager.SELECTION_DISABLED;
+		boolean viewsEnabled = demandSet.selection == UiManager.Selection.DISABLED;
 		holder.thumbnail.setEnabled(viewsEnabled);
 		holder.comment.setEnabled(viewsEnabled);
 		holder.head.setEnabled(viewsEnabled);
@@ -557,7 +554,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 					break;
 				}
 			}
-		} else if (demandSet.selectionMode == UiManager.SELECTION_SELECTED) {
+		} else if (demandSet.selection == UiManager.Selection.SELECTED) {
 			convertView.setBackgroundColor(colorScheme.highlightBackgroundColor);
 		} else {
 			convertView.setBackground(null);
@@ -725,7 +722,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 					if (uri != null) {
 						uri = uri.isRelative() ? locator.convert(uri) : uri;
 						ImageLoader.BitmapResult result = ImageLoader.getInstance().loadImage(uri, chanName, null,
-								key -> imageView.setTag(key), false);
+								imageView::setTag, false);
 						if (result != null && result.bitmap != null) {
 							imageView.setImageBitmap(result.bitmap);
 						} else {
@@ -817,8 +814,8 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		holder.comment.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
 	}
 
-	private CharSequence makeHighlightedText(CharSequence text) {
-		if (highlightText != null && text != null) {
+	private CharSequence makeHighlightedText(Collection<String> highlightText, CharSequence text) {
+		if (!highlightText.isEmpty() && text != null) {
 			Locale locale = Locale.getDefault();
 			SpannableString spannable = new SpannableString(text);
 			String searchable = text.toString().toLowerCase(locale);
@@ -994,7 +991,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		public void onClick(View v) {
 			PostViewHolder holder = ListViewUtils.getViewHolder(v, PostViewHolder.class);
 			PostItem postItem = holder.postItem;
-			uiManager.dialog().displayReplies(postItem, holder.configurationSet);
+			uiManager.dialog().displayReplies(holder.configurationSet, postItem);
 		}
 	};
 
@@ -1013,7 +1010,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		@Override
 		public void onClick(View v) {
 			ThreadViewHolder holder = ListViewUtils.getViewHolder(v, ThreadViewHolder.class);
-			uiManager.dialog().displayThread(holder.postItem);
+			uiManager.dialog().displayThread(holder.configurationSet, holder.postItem);
 		}
 	};
 
@@ -1025,6 +1022,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		private int type;
 		private float startX, startY;
 
+		@SuppressLint("ClickableViewAccessibility")
 		@Override
 		public boolean onTouch(View v, MotionEvent event) {
 			switch (event.getAction()) {
@@ -1103,8 +1101,8 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 									break;
 								}
 							}
-							uiManager.dialog().showPostDescriptionDialog(icons,
-									holder.postItem.getChanName(), emailToCopy);
+							uiManager.dialog().showPostDescriptionDialog(holder.configurationSet.stackInstance,
+									icons, holder.postItem.getChanName(), emailToCopy);
 						}
 						return true;
 					}
@@ -1181,7 +1179,6 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 	}
 
 	private class PostViewHolder extends UiManager.Holder implements CommentTextView.ListSelectionKeeper.Holder {
-		public UiManager.ConfigurationSet configurationSet;
 		public Animator newPostAnimator;
 
 		public AttachmentView thumbnail;

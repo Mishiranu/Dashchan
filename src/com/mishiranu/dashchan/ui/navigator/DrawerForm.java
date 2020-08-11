@@ -49,6 +49,7 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.service.WatcherService;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.preference.Preferences;
+import com.mishiranu.dashchan.util.ConfigurationLock;
 import com.mishiranu.dashchan.util.DialogMenu;
 import com.mishiranu.dashchan.util.FlagUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
@@ -74,6 +75,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 	private final Context context;
 	private final Context unstyledContext;
 	private final Callback callback;
+	private final ConfigurationLock configurationLock;
 
 	private final InputMethodManager inputMethodManager;
 
@@ -144,10 +146,11 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 	}
 
 	public DrawerForm(Context context, Context unstyledContext, Callback callback,
-			WatcherService.Client watcherServiceClient) {
+			ConfigurationLock configurationLock, WatcherService.Client watcherServiceClient) {
 		this.context = context;
 		this.unstyledContext = unstyledContext;
 		this.callback = callback;
+		this.configurationLock = configurationLock;
 		this.watcherServiceClient = watcherServiceClient;
 
 		float density = ResourceUtils.obtainDensity(context);
@@ -341,6 +344,10 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			listView.setSelection(0);
 			updateRestartViewVisibility();
 		}
+	}
+
+	public boolean isChanSelectMode() {
+		return chanSelectMode;
 	}
 
 	public void updateRestartViewVisibility() {
@@ -538,7 +545,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 			switch (listItem.type) {
 				case ListItem.ITEM_PAGE:
 				case ListItem.ITEM_FAVORITE: {
-					DialogMenu dialogMenu = new DialogMenu(context, (context, id, extra) -> {
+					DialogMenu dialogMenu = new DialogMenu(context, id -> {
 						switch (id) {
 							case MENU_COPY_LINK:
 							case MENU_SHARE_LINK: {
@@ -600,6 +607,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 								}).create();
 								dialog.getWindow().setSoftInputMode(WindowManager
 										.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+								configurationLock.lockConfiguration(dialog);
 								dialog.show();
 								break;
 							}
@@ -619,7 +627,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 							dialogMenu.addItem(MENU_RENAME, R.string.action_rename);
 						}
 					}
-					dialogMenu.show();
+					dialogMenu.show(configurationLock);
 					return true;
 				}
 			}
@@ -1013,14 +1021,17 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 										builder.append("\n\u2022 ").append(formatBoardThreadTitle(true,
 												favoriteItem.boardName, favoriteItem.threadNumber, favoriteItem.title));
 									}
-									new AlertDialog.Builder(context).setMessage(builder)
+									AlertDialog dialog = new AlertDialog.Builder(context)
+											.setMessage(builder)
 											.setNegativeButton(android.R.string.cancel, null)
-											.setPositiveButton(android.R.string.ok, (dialog, which) -> {
-										for (FavoritesStorage.FavoriteItem favoriteItem : deleteFavoriteItems) {
-											favoritesStorage.remove(favoriteItem.chanName,
-													favoriteItem.boardName, favoriteItem.threadNumber);
-										}
-									}).show();
+											.setPositiveButton(android.R.string.ok, (d, which) -> {
+												for (FavoritesStorage.FavoriteItem favoriteItem : deleteFavoriteItems) {
+													favoritesStorage.remove(favoriteItem.chanName,
+															favoriteItem.boardName, favoriteItem.threadNumber);
+												}
+											})
+											.show();
+									configurationLock.lockConfiguration(dialog);
 									return true;
 								}
 							}

@@ -6,7 +6,6 @@ import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -31,7 +30,6 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.callback.ListScrollTracker;
 import com.mishiranu.dashchan.widget.callback.ScrollListenerComposite;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 
@@ -71,7 +69,7 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 
 	private final int slopShiftSize;
 	private final int lastItemLimit;
-	private int minItemsCount;
+	private final int minItemsCount;
 
 	public static class Init {
 		private final boolean expandingEnabled;
@@ -138,7 +136,7 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 		float density = ResourceUtils.obtainDensity(resources);
 		slopShiftSize = (int) (6f * density);
 		lastItemLimit = (int) (72f * density);
-		readConfiguration(resources.getConfiguration());
+		minItemsCount = resources.getConfiguration().screenHeightDp / 48;
 		this.rootView = rootView;
 		this.toolbarView = toolbarView;
 		this.drawerInterlayer = drawerInterlayer;
@@ -170,7 +168,7 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 		}
 		if (!insets.equals(newInsets)) {
 			insets.set(newInsets);
-			onConfigurationChanged(null);
+			updatePaddings();
 		}
 	}
 
@@ -487,26 +485,6 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 		}
 	}
 
-	public void onResume() {
-		onConfigurationChanged(activity.getResources().getConfiguration());
-	}
-
-	public void onConfigurationChanged(Configuration configuration) {
-		if (configuration != null) {
-			readConfiguration(configuration);
-		}
-		updatePaddings();
-		handler.removeCallbacks(scrollerUpdater);
-		handler.post(scrollerUpdater);
-	}
-
-	private void readConfiguration(Configuration configuration) {
-		if (configuration.screenHeightDp != Configuration.SCREEN_HEIGHT_DP_UNDEFINED) {
-			// Let's think that 48 dp - min list item height
-			minItemsCount = configuration.screenHeightDp / 48;
-		}
-	}
-
 	private final ListScrollTracker listScrollTracker = new ListScrollTracker(this);
 
 	public void addContentView(View view) {
@@ -709,37 +687,4 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 	}
 
 	private final Runnable statusGuardHideRunnable = () -> statusGuardView.setVisibility(View.GONE);
-
-	private static final Field FAST_SCROLL_FIELD;
-	private static final Method UPDATE_LAYOUT_METHOD;
-
-	static {
-		Field fastScrollField;
-		Method updateLayoutMethod;
-		try {
-			fastScrollField = AbsListView.class.getDeclaredField(C.API_LOLLIPOP ? "mFastScroll" : "mFastScroller");
-			fastScrollField.setAccessible(true);
-			updateLayoutMethod = fastScrollField.getType().getDeclaredMethod("updateLayout");
-		} catch (Exception e) {
-			fastScrollField = null;
-			updateLayoutMethod = null;
-		}
-		FAST_SCROLL_FIELD = fastScrollField;
-		UPDATE_LAYOUT_METHOD = updateLayoutMethod;
-	}
-
-	private final Runnable scrollerUpdater = () -> {
-		if (UPDATE_LAYOUT_METHOD != null) {
-			for (LinkedHashMap.Entry<View, AbsListView> entry : contentViews.entrySet()) {
-				AbsListView listView = entry.getValue();
-				if (listView != null) {
-					try {
-						UPDATE_LAYOUT_METHOD.invoke(FAST_SCROLL_FIELD.get(listView));
-					} catch (Exception e) {
-						// Ignore
-					}
-				}
-			}
-		}
-	};
 }

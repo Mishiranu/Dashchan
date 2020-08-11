@@ -157,7 +157,7 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 
 	protected final void notifyAllAdaptersChanged() {
 		adapter.notifyDataSetChanged();
-		uiManager.dialog().notifyDataSetChangedToAll();
+		onNotifyAllAdaptersChanged();
 	}
 
 	protected final int obtainIcon(int attr) {
@@ -236,9 +236,11 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 
 	protected void onDestroy() {}
 
+	protected void onNotifyAllAdaptersChanged() {}
+
 	protected void onHandleNewPostDataList() {}
 
-	protected void onRequestStoreExtra() {}
+	protected void onRequestStoreExtra(boolean saveToStack) {}
 
 	public String obtainTitle() {
 		return null;
@@ -332,8 +334,8 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 		return listPosition != null ? listPosition : ListPosition.obtain(listView);
 	}
 
-	public final Pair<Object, Parcelable> getExtraToStore() {
-		onRequestStoreExtra();
+	public final Pair<Object, Parcelable> getExtraToStore(boolean saveToStack) {
+		onRequestStoreExtra(saveToStack);
 		return new Pair<>(retainExtra, parcelableExtra);
 	}
 

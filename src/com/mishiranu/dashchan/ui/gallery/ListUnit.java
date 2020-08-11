@@ -1,23 +1,4 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui.gallery;
-
-import java.util.ArrayList;
-import java.util.Locale;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -44,9 +25,7 @@ import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.TextView;
-
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
@@ -64,6 +43,8 @@ import com.mishiranu.dashchan.widget.AttachmentView;
 import com.mishiranu.dashchan.widget.EdgeEffectHandler;
 import com.mishiranu.dashchan.widget.callback.BusyScrollListener;
 import com.mishiranu.dashchan.widget.callback.ScrollListenerComposite;
+import java.util.ArrayList;
+import java.util.Locale;
 
 public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener,
 		ActionMode.Callback, ImageLoader.Observer {
@@ -199,15 +180,15 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 			return false;
 		}
 		GalleryItem galleryItem = gridAdapter.getItem(position);
-		DialogMenu dialogMenu = new DialogMenu(instance.context, (context, id, extra) -> {
+		DialogMenu dialogMenu = new DialogMenu(instance.context, id -> {
 			switch (id) {
 				case MENU_DOWNLOAD_FILE: {
 					instance.callback.downloadGalleryItem(galleryItem);
 					break;
 				}
 				case MENU_SEARCH_IMAGE: {
-					NavigationUtils.searchImage(instance.context, instance.chanName, galleryItem
-							.getDisplayImageUri(instance.locator));
+					NavigationUtils.searchImage(instance.context, instance.callback.getConfigurationLock(),
+							instance.chanName, galleryItem.getDisplayImageUri(instance.locator));
 					break;
 				}
 				case MENU_COPY_LINK: {
@@ -237,7 +218,7 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 			dialogMenu.addItem(MENU_GO_TO_POST, R.string.action_go_to_post);
 		}
 		dialogMenu.addItem(MENU_SHARE_LINK, R.string.action_share_link);
-		dialogMenu.show();
+		dialogMenu.show(instance.callback.getConfigurationLock());
 		return true;
 	}
 
@@ -387,7 +368,6 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 		private final ArrayList<GalleryItem> galleryItems;
 
 		private boolean enabled = false;
-		private boolean busy = false;
 
 		public GridAdapter(ArrayList<GalleryItem> galleryItems) {
 			this.galleryItems = galleryItems;
@@ -469,8 +449,7 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 
 		@Override
 		public void setListViewBusy(boolean isBusy, AbsListView listView) {
-			busy = isBusy;
-			if (!busy) {
+			if (!isBusy) {
 				CacheManager cacheManager = CacheManager.getInstance();
 				int count = listView.getChildCount();
 				for (int i = 0; i < count; i++) {

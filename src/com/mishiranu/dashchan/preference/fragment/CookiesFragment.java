@@ -17,7 +17,6 @@ import com.mishiranu.dashchan.util.DialogMenu;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Map;
 
 public class CookiesFragment extends PreferenceFragment {
 	private static final String EXTRA_CHAN_NAME = "chanName";
@@ -135,7 +134,7 @@ public class CookiesFragment extends PreferenceFragment {
 		}
 	}
 
-	public static class ActionDialog extends DialogFragment implements DialogMenu.Callback {
+	public static class ActionDialog extends DialogFragment implements DialogMenu.SimpleCallback {
 		private static final String TAG = UpdateFragment.TargetDialog.class.getName();
 
 		private static final String EXTRA_COOKIE = "cookie";
@@ -167,7 +166,7 @@ public class CookiesFragment extends PreferenceFragment {
 		}
 
 		@Override
-		public void onItemClick(Context context, int id, Map<String, Object> extra) {
+		public void onItemClick(int id) {
 			Bundle args = requireArguments();
 			switch (id) {
 				case MENU_BLOCKED: {

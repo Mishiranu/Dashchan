@@ -1,32 +1,4 @@
-/*
- * Copyright 2014-2018 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.content;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.concurrent.Semaphore;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -55,20 +27,30 @@ import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
-
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.preference.Preferences;
+import com.mishiranu.dashchan.util.ConfigurationLock;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.MimeTypes;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.Semaphore;
 
 public class DownloadManager {
 	private static final DownloadManager INSTANCE = new DownloadManager();
@@ -340,7 +322,7 @@ public class DownloadManager {
 		}
 	}
 
-	private class DownloadDialog implements DialogInterface.OnClickListener, RadioGroup.OnCheckedChangeListener,
+	private static class DownloadDialog implements DialogInterface.OnClickListener, RadioGroup.OnCheckedChangeListener,
 			AutoCompleteTextView.OnEditorActionListener, AdapterView.OnItemClickListener {
 		private final Context context;
 		private final DialogCallback callback;
@@ -358,8 +340,8 @@ public class DownloadManager {
 		private final Runnable dropDownRunnable;
 
 		@SuppressLint("InflateParams")
-		public DownloadDialog(Context context, DialogCallback callback, String chanName,
-				String boardName, String threadNumber, String threadTitle,
+		public DownloadDialog(Context context, ConfigurationLock configurationLock, DialogCallback callback,
+				String chanName, String boardName, String threadNumber, String threadTitle,
 				boolean allowDetailedFileName, boolean allowOriginalName) {
 			File root = Preferences.getDownloadDirectory();
 			this.context = context;
@@ -425,12 +407,18 @@ public class DownloadManager {
 			});
 			editText.setAdapter(adapter);
 
-			dialog = new AlertDialog.Builder(context).setTitle(R.string.text_download_title).setView(view)
+			dialog = new AlertDialog.Builder(context)
+					.setTitle(R.string.text_download_title)
+					.setView(view)
 					.setNegativeButton(android.R.string.cancel, null)
 					.setPositiveButton(android.R.string.ok, this).create();
-			dialog.setOnDismissListener(d -> adapter.shutdown());
 			dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN
 					| WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+			if (configurationLock != null) {
+				configurationLock.lockConfiguration(dialog, d -> adapter.shutdown());
+			} else {
+				dialog.setOnDismissListener(d -> adapter.shutdown());
+			}
 			dialog.show();
 		}
 
@@ -498,7 +486,7 @@ public class DownloadManager {
 		public void onConfirmReplacement(Context context, ArrayList<DownloadService.DownloadItem> downloadItems);
 	}
 
-	private void confirmReplacement(final Context context, final File directory,
+	private void confirmReplacement(final Context context, ConfigurationLock configurationLock, final File directory,
 			final ArrayList<DownloadService.DownloadItem> downloadItems, final ReplaceCallback callback) {
 		ArrayList<DownloadService.DownloadItem> availableItems = new ArrayList<>();
 		int queued = 0, exists = 0;
@@ -591,24 +579,26 @@ public class DownloadManager {
 				builder.setNeutralButton(R.string.action_view, null);
 				dialog = builder.create();
 				final File singleFile = lastExistedFile;
-				dialog.setOnShowListener(d -> {
-					dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v -> {
-						String extension = StringUtils.getFileExtension(singleFile.getPath());
-						String type = MimeTypes.forExtension(extension, "image/jpeg");
-						try {
-							Uri uri = FileProvider.convertDownloadsFile(singleFile, type);
-							int intentFlags = FileProvider.getIntentFlags();
-							context.startActivity(new Intent(Intent.ACTION_VIEW).setDataAndType(uri, type)
-									.setFlags(intentFlags | Intent.FLAG_ACTIVITY_NEW_TASK));
-						} catch (ActivityNotFoundException e) {
-							ToastUtils.show(context, R.string.message_unknown_address);
-						}
-					});
-				});
+				dialog.setOnShowListener(d -> dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v -> {
+					String extension = StringUtils.getFileExtension(singleFile.getPath());
+					String type = MimeTypes.forExtension(extension, "image/jpeg");
+					try {
+						Uri uri = FileProvider.convertDownloadsFile(singleFile, type);
+						int intentFlags = FileProvider.getIntentFlags();
+						context.startActivity(new Intent(Intent.ACTION_VIEW).setDataAndType(uri, type)
+								.setFlags(intentFlags | Intent.FLAG_ACTIVITY_NEW_TASK));
+					} catch (ActivityNotFoundException e) {
+						ToastUtils.show(context, R.string.message_unknown_address);
+					}
+				}));
 			} else {
 				dialog = builder.create();
 			}
-			dialog.setOnDismissListener(d -> releaseQueuePauseLock());
+			if (configurationLock != null) {
+				configurationLock.lockConfiguration(dialog, d -> releaseQueuePauseLock());
+			} else {
+				dialog.setOnDismissListener(d -> releaseQueuePauseLock());
+			}
 			dialog.show();
 		} else {
 			callback.onConfirmReplacement(context, downloadItems);
@@ -621,10 +611,12 @@ public class DownloadManager {
 	}
 
 	private class StorageDialogCallback implements DialogCallback, ReplaceCallback {
+		private final ConfigurationLock configurationLock;
 		private final ArrayList<RequestItem> requestItems;
 		private File directory;
 
-		public StorageDialogCallback(ArrayList<RequestItem> requestItems) {
+		public StorageDialogCallback(ConfigurationLock configurationLock, ArrayList<RequestItem> requestItems) {
+			this.configurationLock = configurationLock;
 			this.requestItems = requestItems;
 		}
 
@@ -638,7 +630,7 @@ public class DownloadManager {
 						getDesiredFileName(requestItem.uri, requestItem.fileName, originalName
 						? requestItem.originalName : null, detailName, chanName, boardName, threadNumber)));
 			}
-			confirmReplacement(context, directory, downloadItems, this);
+			confirmReplacement(context, configurationLock, directory, downloadItems, this);
 		}
 
 		@Override
@@ -648,11 +640,13 @@ public class DownloadManager {
 	}
 
 	private class StreamDialogCallback implements DialogCallback, ReplaceCallback {
+		private final ConfigurationLock configurationLock;
 		private final InputStream input;
 		private final String fileName;
 		private File directory;
 
-		public StreamDialogCallback(InputStream input, String fileName) {
+		public StreamDialogCallback(ConfigurationLock configurationLock, InputStream input, String fileName) {
+			this.configurationLock = configurationLock;
 			this.input = input;
 			this.fileName = fileName;
 		}
@@ -667,7 +661,7 @@ public class DownloadManager {
 			directory = getDownloadDirectory(path);
 			ArrayList<DownloadService.DownloadItem> downloadItems = new ArrayList<>(1);
 			downloadItems.add(new DownloadService.DownloadItem(chanName, null, fileName));
-			confirmReplacement(context, directory, downloadItems, this);
+			confirmReplacement(context, configurationLock, directory, downloadItems, this);
 		}
 
 		@Override
@@ -736,22 +730,25 @@ public class DownloadManager {
 		return fileName;
 	}
 
-	public void downloadStorage(Context context, Uri uri, String fileName, String originalName,
+	public void downloadStorage(Context context, ConfigurationLock configurationLock,
+			Uri uri, String fileName, String originalName,
 			String chanName, String boardName, String threadNumber, String threadTitle) {
-		downloadStorage(context, new RequestItem(uri, fileName, originalName),
+		downloadStorage(context, configurationLock, new RequestItem(uri, fileName, originalName),
 				chanName, boardName, threadNumber, threadTitle);
 	}
 
-	public void downloadStorage(Context context, RequestItem requestItem, String chanName,
-			String boardName, String threadNumber, String threadTitle) {
+	public void downloadStorage(Context context, ConfigurationLock configurationLock,
+			RequestItem requestItem, String chanName, String boardName, String threadNumber, String threadTitle) {
 		ArrayList<RequestItem> requestItems = new ArrayList<>(1);
 		requestItems.add(requestItem);
-		downloadStorage(context, requestItems, chanName, boardName, threadNumber, threadTitle, false);
+		downloadStorage(context, configurationLock, requestItems,
+				chanName, boardName, threadNumber, threadTitle, false);
 	}
 
-	public void downloadStorage(Context context, ArrayList<RequestItem> requestItems, String chanName,
-			String boardName, String threadNumber, String threadTitle, boolean multiple) {
-		StorageDialogCallback callback = new StorageDialogCallback(requestItems);
+	public void downloadStorage(Context context, ConfigurationLock configurationLock,
+			ArrayList<RequestItem> requestItems, String chanName, String boardName, String threadNumber,
+			String threadTitle, boolean multiple) {
+		StorageDialogCallback callback = new StorageDialogCallback(configurationLock, requestItems);
 		if (Preferences.isDownloadSubdir(multiple)) {
 			boolean modifyingAllowed = false;
 			boolean hasOriginalNames = false;
@@ -763,7 +760,7 @@ public class DownloadManager {
 					hasOriginalNames = true;
 				}
 			}
-			new DownloadDialog(context, callback, chanName, boardName, threadNumber, threadTitle,
+			new DownloadDialog(context, configurationLock, callback, chanName, boardName, threadNumber, threadTitle,
 					modifyingAllowed, modifyingAllowed && hasOriginalNames);
 		} else {
 			callback.onDirectoryChosen(context, null, Preferences.isDownloadDetailName(),
@@ -771,11 +768,13 @@ public class DownloadManager {
 		}
 	}
 
-	public void saveStreamStorage(Context context, InputStream input, String chanName,
-			String boardName, String threadNumber, String threadTitle, String fileName, boolean forceNoDialog) {
-		StreamDialogCallback callback = new StreamDialogCallback(input, fileName);
+	public void saveStreamStorage(Context context, ConfigurationLock configurationLock,
+			InputStream input, String chanName, String boardName, String threadNumber,
+			String threadTitle, String fileName, boolean forceNoDialog) {
+		StreamDialogCallback callback = new StreamDialogCallback(configurationLock, input, fileName);
 		if (Preferences.isDownloadSubdir(false) && !forceNoDialog) {
-			new DownloadDialog(context, callback, chanName, boardName, threadNumber, threadTitle, true, false);
+			new DownloadDialog(context, configurationLock, callback, chanName, boardName, threadNumber,
+					threadTitle, true, false);
 		} else {
 			callback.onDirectoryChosen(context, null, Preferences.isDownloadDetailName(), false,
 					chanName, boardName, threadNumber);

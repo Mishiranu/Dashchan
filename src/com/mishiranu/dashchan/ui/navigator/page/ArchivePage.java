@@ -82,7 +82,7 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 	public boolean onItemLongClick(View view, int position) {
 		Page page = getPage();
 		String threadNumber = getAdapter().getItem(position).getThreadNumber();
-		DialogMenu dialogMenu = new DialogMenu(getContext(), (context, id, extra) -> {
+		DialogMenu dialogMenu = new DialogMenu(getContext(), id -> {
 			switch (id) {
 				case CONTEXT_MENU_COPY_LINK: {
 					Uri uri = getChanLocator().safe(true).createThreadUri(page.boardName, threadNumber);
@@ -101,7 +101,7 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 		if (!FavoritesStorage.getInstance().hasFavorite(page.chanName, page.boardName, threadNumber)) {
 			dialogMenu.addItem(CONTEXT_MENU_ADD_FAVORITES, R.string.action_add_to_favorites);
 		}
-		dialogMenu.show();
+		dialogMenu.show(getUiManager().getConfigurationLock());
 		return true;
 	}
 

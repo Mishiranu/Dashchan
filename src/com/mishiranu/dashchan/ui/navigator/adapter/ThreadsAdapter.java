@@ -1,26 +1,4 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui.navigator.adapter;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Locale;
 
 import android.animation.Animator;
 import android.animation.AnimatorSet;
@@ -39,13 +17,12 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.TextView;
-
 import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.ui.navigator.manager.HidePerformer;
@@ -56,6 +33,11 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableView;
 import com.mishiranu.dashchan.widget.callback.BusyScrollListener;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Locale;
 
 public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Callback, View.OnClickListener,
 		CompoundButton.OnCheckedChangeListener {
@@ -73,7 +55,7 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 	private final String chanName;
 	private final String boardName;
 	private final UiManager uiManager;
-	private final HidePerformer hidePerformer;
+	private final UiManager.ConfigurationSet configurationSet;
 
 	private final View headerView;
 	private final View headerAdditional;
@@ -96,7 +78,9 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 		this.chanName = chanName;
 		this.boardName = boardName;
 		this.uiManager = uiManager;
-		hidePerformer = new HidePerformer();
+		configurationSet = new UiManager.ConfigurationSet(null, null, new HidePerformer(),
+				new GalleryItem.GallerySet(false), uiManager.dialog().createStackInstance(), null, null,
+				false, true, false, false, false, null);
 		float density = ResourceUtils.obtainDensity(context);
 		FrameLayout frameLayout = new FrameLayout(context);
 		frameLayout.setPadding((int) (10f * density), (int) (6f * density), (int) (10f * density), 0);
@@ -250,9 +234,10 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 	@Override
 	public int getItemViewType(int position) {
 		Object item = getItemInternal(position);
-		return item instanceof PostItem ? ((PostItem) item).isHidden(hidePerformer) ? ITEM_VIEW_TYPE_THREAD_HIDDEN
-				: ITEM_VIEW_TYPE_THREAD : item instanceof PostItem[] ? ITEM_VIEW_TYPE_THREAD_GRID
-				: item instanceof DividerItem ? ITEM_VIEW_TYPE_PAGE_DIVIDER : IGNORE_ITEM_VIEW_TYPE;
+		return item instanceof PostItem ? ((PostItem) item).isHidden(configurationSet.hidePerformer)
+				? ITEM_VIEW_TYPE_THREAD_HIDDEN : ITEM_VIEW_TYPE_THREAD : item instanceof PostItem[]
+				? ITEM_VIEW_TYPE_THREAD_GRID : item instanceof DividerItem
+				? ITEM_VIEW_TYPE_PAGE_DIVIDER : IGNORE_ITEM_VIEW_TYPE;
 	}
 
 	@Override
@@ -313,10 +298,10 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 		}
 		if (item instanceof PostItem) {
 			PostItem postItem = (PostItem) item;
-			if (!postItem.isHidden(hidePerformer)) {
-				convertView = uiManager.view().getThreadView(postItem, convertView, parent, busy);
+			if (!postItem.isHidden(configurationSet.hidePerformer)) {
+				convertView = uiManager.view().getThreadView(postItem, convertView, parent, busy, configurationSet);
 			} else {
-				convertView = uiManager.view().getThreadHiddenView(postItem, convertView, parent);
+				convertView = uiManager.view().getThreadHiddenView(postItem, convertView, parent, configurationSet);
 			}
 			ViewUtils.applyCardHolderPadding(convertView, position == 0, position == getCount() - 1, false);
 		} else if (item instanceof PostItem[]) {
@@ -352,7 +337,7 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 					}
 					boolean add = convertViewChild == null;
 					convertViewChild = uiManager.view().getThreadViewForGrid(postItem, convertViewChild, parent,
-							hidePerformer, gridItemContentHeight, busy);
+							gridItemContentHeight, busy, configurationSet);
 					if (add) {
 						linearLayout.addView(convertViewChild, i, new LinearLayout.LayoutParams(0,
 								LinearLayout.LayoutParams.WRAP_CONTENT, 1));
@@ -385,6 +370,10 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 					: (int) (8f * density), (int) (20f * density), (int) (4f * density));
 		}
 		return convertView;
+	}
+
+	public UiManager.ConfigurationSet getConfigurationSet() {
+		return configurationSet;
 	}
 
 	private Animator lastAnimator;
@@ -490,7 +479,7 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 		}
 		if (postItems != null) {
 			for (PostItem postItem : postItems) {
-				if (Preferences.isDisplayHiddenThreads() || !postItem.isHidden(hidePerformer)) {
+				if (Preferences.isDisplayHiddenThreads() || !postItem.isHidden(configurationSet.hidePerformer)) {
 					items.add(postItem);
 				}
 			}

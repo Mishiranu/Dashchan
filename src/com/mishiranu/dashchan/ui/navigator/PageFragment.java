@@ -23,7 +23,6 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.preference.Preferences;
-import com.mishiranu.dashchan.ui.ActionMenuConfigurator;
 import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.navigator.entity.Page;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
@@ -78,8 +77,6 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 		return (Callback) requireActivity();
 	}
 
-	private final ActionMenuConfigurator actionMenuConfigurator = new ActionMenuConfigurator();
-
 	private ListPage<?> listPage;
 	private View progressView;
 	private View errorView;
@@ -100,6 +97,7 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 	private Menu currentMenu;
 	private boolean fillMenuOnResume;
 	private boolean searchMode = false;
+	private boolean saveToStack = false;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -202,13 +200,17 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 		listPage.pause();
 	}
 
+	public void setSaveToStack(boolean saveToStack) {
+		this.saveToStack = saveToStack;
+	}
+
 	@Override
 	public void onSaveInstanceState(@NonNull Bundle outState) {
 		super.onSaveInstanceState(outState);
 
 		if (listPage != null) {
 			listPosition = listPage.getListPosition();
-			Pair<Object, Parcelable> extraPair = listPage.getExtraToStore();
+			Pair<Object, Parcelable> extraPair = listPage.getExtraToStore(saveToStack);
 			getCallback().storeRetainExtra(getRetainId(), extraPair.first);
 			parcelableExtra = extraPair.second;
 		}
@@ -302,7 +304,6 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 		currentMenu = menu;
 		if (listPage != null && listPage.isRunning()) {
 			listPage.onCreateOptionsMenu(menu);
-			actionMenuConfigurator.onAfterCreateOptionsMenu(menu);
 			MenuItem searchMenuItem = menu.findItem(ListPage.OPTIONS_MENU_SEARCH);
 			if (searchMenuItem != null) {
 				searchMenuItem.setActionView(getSearchView(true));
@@ -328,7 +329,6 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 				return;
 			}
 			listPage.onPrepareOptionsMenu(menu);
-			actionMenuConfigurator.onAfterPrepareOptionsMenu(menu);
 		}
 	}
 

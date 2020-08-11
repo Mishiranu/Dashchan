@@ -8,11 +8,14 @@ import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.graphics.ColorScheme;
 import com.mishiranu.dashchan.ui.posting.Replyable;
+import com.mishiranu.dashchan.util.ConfigurationLock;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.WeakObservable;
 import com.mishiranu.dashchan.widget.AttachmentView;
 import com.mishiranu.dashchan.widget.CommentTextView;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 
 public class UiManager {
@@ -24,14 +27,16 @@ public class UiManager {
 
 	private final LocalNavigator localNavigator;
 	private final ColorScheme colorScheme;
+	private final ConfigurationLock configurationLock;
 
-	public UiManager(Context context, LocalNavigator localNavigator) {
+	public UiManager(Context context, LocalNavigator localNavigator, ConfigurationLock configurationLock) {
 		this.context = context;
 		viewUnit = new ViewUnit(this);
 		dialogUnit = new DialogUnit(this);
 		interactionUnit = new InteractionUnit(this);
-		colorScheme = new ColorScheme(context);
 		this.localNavigator = localNavigator;
+		colorScheme = new ColorScheme(context);
+		this.configurationLock = configurationLock;
 	}
 
 	Context getContext() {
@@ -40,6 +45,10 @@ public class UiManager {
 
 	public ColorScheme getColorScheme() {
 		return colorScheme;
+	}
+
+	public ConfigurationLock getConfigurationLock() {
+		return configurationLock;
 	}
 
 	public ViewUnit view() {
@@ -101,16 +110,14 @@ public class UiManager {
 				Replyable.ReplyData... data);
 	}
 
-	public static final int SELECTION_DISABLED = 0;
-	public static final int SELECTION_NOT_SELECTED = 1;
-	public static final int SELECTION_SELECTED = 2;
-	public static final int SELECTION_THREADSHOT = 3;
+	public enum Selection {DISABLED, NOT_SELECTED, SELECTED, THREADSHOT}
 
 	public static class DemandSet {
 		public boolean isBusy = false;
 		public boolean lastInList = false;
-		public int selectionMode = SELECTION_DISABLED;
+		public Selection selection = Selection.DISABLED;
 		public boolean showOpenThreadButton = false;
+		public Collection<String> highlightText = Collections.emptyList();
 	}
 
 	public static class ConfigurationSet {
@@ -118,6 +125,7 @@ public class UiManager {
 		public final PostsProvider postsProvider;
 		public final HidePerformer hidePerformer;
 		public final GalleryItem.GallerySet gallerySet;
+		public final DialogUnit.StackInstance stackInstance;
 		public final CommentTextView.LinkListener linkListener;
 		public final HashSet<String> userPostNumbers;
 
@@ -129,13 +137,15 @@ public class UiManager {
 		public final String repliesToPost;
 
 		public ConfigurationSet(Replyable replyable, PostsProvider postsProvider, HidePerformer hidePerformer,
-				GalleryItem.GallerySet gallerySet, CommentTextView.LinkListener linkListener,
-				HashSet<String> userPostNumbers, boolean mayCollapse, boolean isDialog, boolean allowMyMarkEdit,
+				GalleryItem.GallerySet gallerySet, DialogUnit.StackInstance stackInstance,
+				CommentTextView.LinkListener linkListener, HashSet<String> userPostNumbers,
+				boolean mayCollapse, boolean isDialog, boolean allowMyMarkEdit,
 				boolean allowHiding, boolean allowGoToPost, String repliesToPost) {
 			this.replyable = replyable;
 			this.postsProvider = postsProvider;
 			this.hidePerformer = hidePerformer;
 			this.gallerySet = gallerySet;
+			this.stackInstance = stackInstance;
 			this.linkListener = linkListener;
 			this.userPostNumbers = userPostNumbers;
 
@@ -147,9 +157,10 @@ public class UiManager {
 			this.repliesToPost = repliesToPost;
 		}
 
-		public ConfigurationSet copyEdit(boolean mayCollapse, boolean isDialog, String repliesToPost) {
-			return new ConfigurationSet(replyable, postsProvider, hidePerformer, gallerySet, linkListener,
-					userPostNumbers, mayCollapse, isDialog, allowMyMarkEdit, allowHiding, allowGoToPost, repliesToPost);
+		public ConfigurationSet copy(boolean mayCollapse, boolean isDialog, String repliesToPost) {
+			return new ConfigurationSet(replyable, postsProvider, hidePerformer,
+					gallerySet, stackInstance, linkListener, userPostNumbers, mayCollapse, isDialog,
+					allowMyMarkEdit, allowHiding, allowGoToPost, repliesToPost);
 		}
 	}
 
@@ -163,6 +174,7 @@ public class UiManager {
 
 	static abstract class Holder {
 		public PostItem postItem;
+		public ConfigurationSet configurationSet;
 
 		public abstract GalleryItem.GallerySet getGallerySet();
 

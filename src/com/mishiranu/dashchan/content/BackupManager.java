@@ -1,21 +1,18 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.content;
 
+import android.content.Context;
+import android.text.format.DateFormat;
+import android.util.Pair;
+import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.content.storage.AutohideStorage;
+import com.mishiranu.dashchan.content.storage.DatabaseHelper;
+import com.mishiranu.dashchan.content.storage.FavoritesStorage;
+import com.mishiranu.dashchan.content.storage.StatisticsStorage;
+import com.mishiranu.dashchan.preference.Preferences;
+import com.mishiranu.dashchan.util.IOUtils;
+import com.mishiranu.dashchan.util.Log;
+import com.mishiranu.dashchan.util.NavigationUtils;
+import com.mishiranu.dashchan.util.ToastUtils;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -31,21 +28,6 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
-
-import android.content.Context;
-import android.text.format.DateFormat;
-import android.util.Pair;
-
-import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.content.storage.AutohideStorage;
-import com.mishiranu.dashchan.content.storage.DatabaseHelper;
-import com.mishiranu.dashchan.content.storage.FavoritesStorage;
-import com.mishiranu.dashchan.content.storage.StatisticsStorage;
-import com.mishiranu.dashchan.preference.Preferences;
-import com.mishiranu.dashchan.util.IOUtils;
-import com.mishiranu.dashchan.util.Log;
-import com.mishiranu.dashchan.util.NavigationUtils;
-import com.mishiranu.dashchan.util.ToastUtils;
 
 public class BackupManager {
 	private static final Pattern NAME_PATTERN = Pattern.compile("backup-(\\d+)\\.zip");
@@ -112,7 +94,7 @@ public class BackupManager {
 		if (success) {
 			IOUtils.close(zip);
 			ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
-			DownloadManager.getInstance().saveStreamStorage(context, input, null, null, null, null,
+			DownloadManager.getInstance().saveStreamStorage(context, null, input, null, null, null, null,
 					"backup-" + System.currentTimeMillis() + ".zip", true);
 		} else {
 			ToastUtils.show(context, R.string.message_no_access);

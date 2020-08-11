@@ -34,6 +34,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toolbar;
 import androidx.annotation.NonNull;
+import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -68,6 +69,7 @@ import com.mishiranu.dashchan.ui.posting.PostingActivity;
 import com.mishiranu.dashchan.ui.posting.Replyable;
 import com.mishiranu.dashchan.util.AndroidUtils;
 import com.mishiranu.dashchan.util.ConcatIterable;
+import com.mishiranu.dashchan.util.ConfigurationLock;
 import com.mishiranu.dashchan.util.DrawerToggle;
 import com.mishiranu.dashchan.util.FlagUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
@@ -99,6 +101,8 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 	private static final String EXTRA_PRESERVED_PAGE_ITEMS = "preservedPageItems";
 	private static final String EXTRA_CURRENT_FRAGMENT = "currentFragment";
 	private static final String EXTRA_CURRENT_PAGE_ITEM = "currentPageItem";
+	private static final String EXTRA_DRAWER_EXPANDED = "drawerExpanded";
+	private static final String EXTRA_DRAWER_CHAN_SELECT_MODE = "drawerChanSelectMode";
 
 	private static final PageFragment REFERENCE_FRAGMENT = new PageFragment();
 
@@ -110,6 +114,7 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 	private RetainFragment retainFragment;
 	private Preferences.Holder currentPreferences;
 	private ActionIconSet actionIconSet;
+	private ConfigurationLock configurationLock;
 	private final WatcherService.Client watcherServiceClient = new WatcherService.Client(this);
 
 	private SortableListView drawerListView;
@@ -149,6 +154,7 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 		FavoritesStorage.getInstance().getObservable().register(this);
 		watcherServiceClient.bind(this);
 		actionIconSet = new ActionIconSet(this);
+		configurationLock = new ConfigurationLock(this);
 		drawerCommon = findViewById(R.id.drawer_common);
 		drawerWide = findViewById(R.id.drawer_wide);
 		TypedArray typedArray = obtainStyledAttributes(new int[] {R.attr.styleDrawerSpecial});
@@ -161,12 +167,13 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 		drawerListView = new SortableListView(styledContext, this);
 		drawerListView.setId(android.R.id.tabcontent);
 		drawerListView.setOnSortingStateChangedListener(this);
-		drawerForm = new DrawerForm(styledContext, this, this, watcherServiceClient);
+		drawerForm = new DrawerForm(styledContext, this, this, configurationLock, watcherServiceClient);
 		drawerForm.bind(drawerListView);
 		drawerParent = new FrameLayout(this);
 		drawerParent.addView(drawerListView);
 		drawerCommon.addView(drawerParent);
 		drawerLayout = findViewById(R.id.drawer_layout);
+		drawerLayout.setSaveEnabled(false);
 		FrameLayout drawerInterlayer = findViewById(R.id.drawer_interlayer);
 		if (C.API_LOLLIPOP) {
 			getLayoutInflater().inflate(R.layout.widget_toolbar, drawerInterlayer);
@@ -183,7 +190,7 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 			drawerCommon.setElevation(6f * density);
 			drawerWide.setElevation(4f * density);
 		} else {
-			drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, Gravity.START);
+			drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
 		}
 		drawerLayout.addDrawerListener(drawerToggle);
 		drawerLayout.addDrawerListener(drawerForm);
@@ -196,7 +203,7 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 		expandedScreen = new ExpandedScreen(expandedScreenInit, drawerLayout, toolbarView, drawerInterlayer,
 				drawerParent, drawerListView, drawerForm.getHeaderView());
 		expandedScreen.setDrawerOverToolbarEnabled(!wideMode);
-		uiManager = new UiManager(this, this);
+		uiManager = new UiManager(this, this, configurationLock);
 		ViewGroup contentFragment = findViewById(R.id.content_fragment);
 		contentFragment.setOnHierarchyChangeListener(new ViewGroup.OnHierarchyChangeListener() {
 			@Override
@@ -211,16 +218,23 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 		});
 		LocalBroadcastManager.getInstance(this).registerReceiver(newPostReceiver,
 				new IntentFilter(C.ACTION_POST_SENT));
+		boolean allowSelectChan = ChanManager.getInstance().getAvailableChanNames().size() >= 2;
 		if (savedInstanceState == null) {
 			int drawerInitialPosition = Preferences.getDrawerInitialPosition();
 			if (drawerInitialPosition != Preferences.DRAWER_INITIAL_POSITION_CLOSED) {
 				if (!wideMode) {
-					drawerLayout.post(() -> drawerLayout.openDrawer(Gravity.START));
+					drawerLayout.post(() -> drawerLayout.openDrawer(GravityCompat.START));
 				}
 				if (drawerInitialPosition == Preferences.DRAWER_INITIAL_POSITION_FORUMS) {
-					drawerForm.setChanSelectMode(true);
+					drawerForm.setChanSelectMode(allowSelectChan);
 				}
 			}
+		} else {
+			if (!wideMode && savedInstanceState.getBoolean(EXTRA_DRAWER_EXPANDED)) {
+				drawerLayout.openDrawer(GravityCompat.START);
+			}
+			drawerForm.setChanSelectMode(allowSelectChan &&
+					savedInstanceState.getBoolean(EXTRA_DRAWER_CHAN_SELECT_MODE));
 		}
 
 		FragmentManager fragmentManager = getSupportFragmentManager();
@@ -321,7 +335,10 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 	@Override
 	protected void onSaveInstanceState(@NonNull Bundle outState) {
 		super.onSaveInstanceState(outState);
+
 		writePagesState(outState);
+		outState.putBoolean(EXTRA_DRAWER_EXPANDED, drawerLayout.isDrawerOpen(GravityCompat.START));
+		outState.putBoolean(EXTRA_DRAWER_CHAN_SELECT_MODE, drawerForm.isChanSelectMode());
 	}
 
 	private void writePagesState(Bundle outState) {
@@ -666,7 +683,6 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 			inputMethodManager.hideSoftInputFromWindow((view != null
 					? view : getWindow().getDecorView()).getWindowToken(), 0);
 		}
-		uiManager.view().resetPages();
 		if (pageItem != null) {
 			pageItem.createdRealtime = SystemClock.elapsedRealtime();
 		}
@@ -704,7 +720,7 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 		watcherServiceClient.updateConfiguration(chanName);
 		drawerForm.updateConfiguration(chanName);
 		invalidateHomeUpState();
-		if (!wideMode && !drawerLayout.isDrawerOpen(Gravity.START)) {
+		if (!wideMode && !drawerLayout.isDrawerOpen(GravityCompat.START)) {
 			drawerListView.setSelection(0);
 		}
 	}
@@ -814,7 +830,6 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 	protected void onResume() {
 		super.onResume();
 
-		expandedScreen.onResume();
 		drawerForm.performResume();
 		watcherServiceClient.start();
 		clickableToastHolder.onResume();
@@ -874,20 +889,6 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 	}
 
 	@Override
-	public void onConfigurationChanged(@NonNull Configuration newConfig) {
-		super.onConfigurationChanged(newConfig);
-
-		ViewUtils.applyToolbarStyle(this, toolbarView);
-		drawerToggle.onConfigurationChanged();
-		updateWideConfiguration(false);
-		expandedScreen.onConfigurationChanged(newConfig);
-		Fragment currentFragment = getCurrentFragment();
-		if (currentFragment instanceof PageFragment) {
-			((PageFragment) currentFragment).updateOptionsMenu();
-		}
-	}
-
-	@Override
 	public boolean onSearchRequested() {
 		Fragment currentFragment = getCurrentFragment();
 		return currentFragment instanceof ActivityHandler &&
@@ -898,7 +899,7 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 
 	@Override
 	public void onBackPressed() {
-		if (!wideMode && drawerLayout.isDrawerOpen(Gravity.START)) {
+		if (!wideMode && drawerLayout.isDrawerOpen(GravityCompat.START)) {
 			drawerLayout.closeDrawers();
 		} else {
 			Fragment currentFragment = getCurrentFragment();
@@ -1158,6 +1159,7 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 						LinearLayout.LayoutParams.MATCH_PARENT, 1f));
 			}
 		}
+		configurationLock.lockConfiguration(dialog);
 		dialog.show();
 	}
 
@@ -1459,7 +1461,7 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 		Bundle outState = new Bundle();
 		writePagesState(outState);
 		outState.putParcelable(EXTRA_CURRENT_FRAGMENT,
-				new StackItem(getSupportFragmentManager(), getCurrentFragment()));
+				new StackItem(getSupportFragmentManager(), getCurrentFragment(), null));
 		File file = getSavedPagesFile();
 		if (file != null) {
 			Parcel parcel = Parcel.obtain();

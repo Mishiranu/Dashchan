@@ -1,28 +1,10 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui.gallery;
 
-import java.util.ArrayList;
-
 import android.content.Context;
-
 import chan.content.ChanLocator;
-
 import com.mishiranu.dashchan.content.model.GalleryItem;
+import com.mishiranu.dashchan.util.ConfigurationLock;
+import java.util.ArrayList;
 
 public class GalleryInstance {
 	public static final int FLAG_LOCKED_USER = 0x00000001;
@@ -44,26 +26,28 @@ public class GalleryInstance {
 	}
 
 	public interface Callback {
-		public void downloadGalleryItem(GalleryItem galleryItem);
-		public void downloadGalleryItems(ArrayList<GalleryItem> galleryItems);
+		ConfigurationLock getConfigurationLock();
 
-		public void modifyVerticalSwipeState(boolean ignoreIfGallery, float value);
-		public void updateTitle();
+		void downloadGalleryItem(GalleryItem galleryItem);
+		void downloadGalleryItems(ArrayList<GalleryItem> galleryItems);
 
-		public void navigateGalleryOrFinish(boolean enableGalleryMode);
-		public void navigatePageFromList(int position);
-		public void navigatePost(GalleryItem galleryItem, boolean manually, boolean force);
+		void modifyVerticalSwipeState(boolean ignoreIfGallery, float value);
+		void updateTitle();
 
-		public boolean isAllowNavigatePostManually(boolean fromPager);
+		void navigateGalleryOrFinish(boolean enableGalleryMode);
+		void navigatePageFromList(int position);
+		void navigatePost(GalleryItem galleryItem, boolean manually, boolean force);
 
-		public void invalidateOptionsMenu();
-		public void setScreenOnFixed(boolean fixed);
+		boolean isAllowNavigatePostManually(boolean fromPager);
 
-		public boolean isGalleryWindow();
-		public boolean isGalleryMode();
+		void invalidateOptionsMenu();
+		void setScreenOnFixed(boolean fixed);
 
-		public boolean isSystemUiVisible();
-		public void modifySystemUiVisibility(int flag, boolean value);
-		public void toggleSystemUIVisibility(int flag);
+		boolean isGalleryWindow();
+		boolean isGalleryMode();
+
+		boolean isSystemUiVisible();
+		void modifySystemUiVisibility(int flag, boolean value);
+		void toggleSystemUIVisibility(int flag);
 	}
 }

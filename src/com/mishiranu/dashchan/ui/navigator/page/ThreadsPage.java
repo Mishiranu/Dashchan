@@ -30,6 +30,7 @@ import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.ui.navigator.DrawerForm;
 import com.mishiranu.dashchan.ui.navigator.adapter.ThreadsAdapter;
 import com.mishiranu.dashchan.ui.navigator.entity.Page;
+import com.mishiranu.dashchan.ui.navigator.manager.DialogUnit;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.util.DialogMenu;
 import com.mishiranu.dashchan.util.ListViewUtils;
@@ -54,6 +55,8 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		public int startPageNumber;
 		public int boardSpeed;
 		public HttpValidator validator;
+
+		public DialogUnit.StackInstance.State dialogsState;
 	}
 
 	private static class ParcelableExtra implements Parcelable {
@@ -128,6 +131,10 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 				gridLayoutControl.restorePosition = listPosition;
 				gridLayoutControl.restoreListPosition(listPosition);
 			});
+			if (retainExtra.dialogsState != null) {
+				uiManager.dialog().restoreState(adapter.getConfigurationSet(), retainExtra.dialogsState);
+				retainExtra.dialogsState = null;
+			}
 		}
 		FavoritesStorage.getInstance().getObservable().register(this);
 	}
@@ -138,12 +145,18 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 			readTask.cancel();
 			readTask = null;
 		}
+		getUiManager().dialog().closeDialogs(getAdapter().getConfigurationSet().stackInstance);
 		ImageLoader.getInstance().observable().unregister(this);
 		ImageLoader.getInstance().clearTasks(getPage().chanName);
 		FavoritesStorage.getInstance().getObservable().unregister(this);
 		PullableListView listView = getListView();
 		listView.setSelector(oldListSelector);
 		listView.removeOnBeforeLayoutListener(this);
+	}
+
+	@Override
+	protected void onNotifyAllAdaptersChanged() {
+		getUiManager().dialog().notifyDataSetChangedToAll(getAdapter().getConfigurationSet().stackInstance);
 	}
 
 	@Override
@@ -158,8 +171,10 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 	}
 
 	@Override
-	protected void onRequestStoreExtra() {
+	protected void onRequestStoreExtra(boolean saveToStack) {
 		ThreadsAdapter adapter = getAdapter();
+		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
+		retainExtra.dialogsState = adapter.getConfigurationSet().stackInstance.collectState();
 		ListPosition listPosition = ListPosition.obtain(getListView());
 		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
 		parcelableExtra.headerExpanded = adapter.isHeaderExpanded();
@@ -200,7 +215,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 	public boolean onItemLongClick(View view, int position) {
 		PostItem postItem = getUiManager().getPostItemFromHolder(view);
 		if (postItem != null) {
-			DialogMenu dialogMenu = new DialogMenu(getContext(), (context, id, extra) -> {
+			DialogMenu dialogMenu = new DialogMenu(getContext(), id -> {
 				Page page = getPage();
 				ThreadsAdapter adapter = getAdapter();
 				switch (id) {
@@ -236,7 +251,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 			if (!postItem.isHiddenUnchecked()) {
 				dialogMenu.addItem(CONTEXT_MENU_HIDE, R.string.action_hide);
 			}
-			dialogMenu.show();
+			dialogMenu.show(getUiManager().getConfigurationLock());
 			return true;
 		}
 		return false;
@@ -645,9 +660,13 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 			}
 			String message = getString(R.string.message_open_chan_confirm_confirm,
 					ChanConfiguration.get(target.chanName).getTitle());
-			new AlertDialog.Builder(getContext()).setMessage(message)
-					.setNegativeButton(android.R.string.cancel, null).setPositiveButton(android.R.string.ok,
-					(dialog, which) -> handleRedirect(target.chanName, target.boardName, null, null)).show();
+			AlertDialog dialog = new AlertDialog.Builder(getContext())
+					.setMessage(message)
+					.setNegativeButton(android.R.string.cancel, null)
+					.setPositiveButton(android.R.string.ok,
+							(d, which) -> handleRedirect(target.chanName, target.boardName, null, null))
+					.show();
+			getUiManager().getConfigurationLock().lockConfiguration(dialog);
 		} else {
 			handleRedirect(target.chanName, target.boardName, null, null);
 		}

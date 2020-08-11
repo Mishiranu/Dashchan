@@ -12,8 +12,6 @@ import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public class DialogMenu {
 	private final Context context;
@@ -26,6 +24,7 @@ public class DialogMenu {
 
 	private AlertDialog dialog;
 	private DialogInterface.OnDismissListener onDismissListener;
+	private ConfigurationLock.Callback.Binding configurationLockBinding;
 
 	private boolean dismissCalled = false;
 
@@ -43,8 +42,11 @@ public class DialogMenu {
 		}
 	}
 
-	private HashMap<String, Object> extra;
 	private boolean consumed = false;
+
+	public DialogMenu(Context context, SimpleCallback callback) {
+		this(context, (callbackContext, id) -> callback.onItemClick(id));
+	}
 
 	public DialogMenu(Context context, Callback callback) {
 		this.context = context;
@@ -81,14 +83,6 @@ public class DialogMenu {
 		return addCheckableItem(id, context.getString(titleRes), checked);
 	}
 
-	public DialogMenu putExtra(String key, Object value) {
-		if (extra == null) {
-			extra = new HashMap<>();
-		}
-		extra.put(key, value);
-		return this;
-	}
-
 	public AlertDialog create() {
 		checkConsumed();
 		if (listItems.size() > 0) {
@@ -97,28 +91,32 @@ public class DialogMenu {
 					dismissCalled = true;
 					onDismissListener.onDismiss(d);
 				}
-				callback.onItemClick(context, listItems.get(which).id, extra);
+				callback.onItemClick(context, listItems.get(which).id);
 			}).create();
 			if (longTitle) {
 				dialog.setOnShowListener(ViewUtils.ALERT_DIALOG_LONGER_TITLE);
 			}
-			if (onDismissListener != null) {
-				dialog.setOnDismissListener(d -> {
-					if (!dismissCalled) {
-						onDismissListener.onDismiss(d);
-					}
-				});
-			}
+			dialog.setOnDismissListener(d -> {
+				if (!dismissCalled && onDismissListener != null) {
+					onDismissListener.onDismiss(d);
+				}
+				if (configurationLockBinding != null) {
+					configurationLockBinding.unlock();
+				}
+			});
 			return dialog;
 		}
 		consumed = true;
 		return null;
 	}
 
-	public void show() {
+	public void show(ConfigurationLock configurationLock) {
 		AlertDialog dialog = create();
 		if (dialog != null) {
 			dialog.show();
+		}
+		if (configurationLock != null) {
+			configurationLock.lockConfiguration(binding -> configurationLockBinding = binding);
 		}
 	}
 
@@ -140,8 +138,12 @@ public class DialogMenu {
 		}
 	}
 
+	public interface SimpleCallback {
+		void onItemClick(int id);
+	}
+
 	public interface Callback {
-		public void onItemClick(Context context, int id, Map<String, Object> extra);
+		void onItemClick(Context context, int id);
 	}
 
 	private class DialogAdapter extends BaseAdapter {

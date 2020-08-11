@@ -1,26 +1,4 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui.gallery;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Locale;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -47,9 +25,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
-
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
@@ -67,6 +43,11 @@ import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.StringBlockBuilder;
 import com.mishiranu.dashchan.util.ViewUtils;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Locale;
 
 public class VideoUnit implements AudioManager.OnAudioFocusChangeListener {
 	private final PagerInstance instance;
@@ -589,8 +570,10 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener {
 			if (message.length() > 0) {
 				AlertDialog dialog = new AlertDialog.Builder(instance.galleryInstance.context)
 						.setTitle(R.string.action_technical_info).setMessage(message)
-						.setPositiveButton(android.R.string.ok, null).create();
+						.setPositiveButton(android.R.string.ok, null)
+						.create();
 				dialog.setOnShowListener(ViewUtils.ALERT_DIALOG_MESSAGE_SELECTABLE);
+				instance.galleryInstance.callback.getConfigurationLock().lockConfiguration(dialog);
 				dialog.show();
 			}
 		}

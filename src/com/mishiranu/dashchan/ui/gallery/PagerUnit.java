@@ -1,23 +1,4 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui.gallery;
-
-import java.io.File;
-import java.util.ArrayList;
 
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -33,9 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.ImageLoader;
@@ -50,6 +29,8 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.widget.PhotoView;
 import com.mishiranu.dashchan.widget.PhotoViewPager;
+import java.io.File;
+import java.util.ArrayList;
 
 public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 	private final GalleryInstance galleryInstance;
@@ -87,7 +68,7 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 
 	public void addAndInitViews(FrameLayout frameLayout, int initialPosition) {
 		videoUnit.addViews(frameLayout);
-		viewPager.setCurrentIndex(initialPosition >= 0 ? initialPosition : 0);
+		viewPager.setCurrentIndex(Math.max(initialPosition, 0));
 	}
 
 	public void onViewsCreated(int[] imageViewPosition) {
@@ -576,7 +557,7 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 	private DialogMenu currentPopupDialogMenu;
 
 	private void displayPopupMenu() {
-		DialogMenu dialogMenu = new DialogMenu(galleryInstance.context, (context, id, extra) -> {
+		DialogMenu dialogMenu = new DialogMenu(galleryInstance.context, id -> {
 			GalleryItem galleryItem = pagerInstance.currentHolder.galleryItem;
 			switch (id) {
 				case POPUP_MENU_SAVE: {
@@ -597,7 +578,8 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 				}
 				case POPUP_MENU_SEARCH_IMAGE: {
 					videoUnit.forcePause();
-					NavigationUtils.searchImage(galleryInstance.context, galleryInstance.chanName,
+					NavigationUtils.searchImage(galleryInstance.context,
+							galleryInstance.callback.getConfigurationLock(), galleryInstance.chanName,
 							galleryItem.getDisplayImageUri(galleryInstance.locator));
 					break;
 				}
@@ -663,7 +645,7 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 					currentPopupDialogMenu = null;
 				}
 			});
-			dialogMenu.show();
+			dialogMenu.show(galleryInstance.callback.getConfigurationLock());
 			currentPopupDialogMenu = dialogMenu;
 		}
 	}

@@ -1,28 +1,4 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui.navigator.adapter;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
 
 import android.content.Context;
 import android.net.Uri;
@@ -35,11 +11,10 @@ import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 import android.widget.ListView;
-
+import androidx.annotation.NonNull;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.async.ReadPostsTask;
 import com.mishiranu.dashchan.content.model.GalleryItem;
@@ -52,6 +27,13 @@ import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.widget.BaseAdapterNotifier;
 import com.mishiranu.dashchan.widget.CommentTextView;
 import com.mishiranu.dashchan.widget.callback.BusyScrollListener;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 
 public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkListener, BusyScrollListener.Callback,
 		UiManager.PostsProvider {
@@ -62,7 +44,7 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 
 	private final ArrayList<PostItem> postItems = new ArrayList<>();
 	private final HashMap<String, PostItem> postItemsMap = new HashMap<>();
-	private final HashSet<PostItem> selected = new HashSet<>();
+	private final HashSet<String> selected = new HashSet<>();
 
 	private final UiManager uiManager;
 	private final UiManager.DemandSet demandSet = new UiManager.DemandSet();
@@ -78,7 +60,8 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 			Replyable replyable, HidePerformer hidePerformer, HashSet<String> userPostNumbers, ListView listView) {
 		this.uiManager = uiManager;
 		configurationSet = new UiManager.ConfigurationSet(replyable, this, hidePerformer,
-				new GalleryItem.GallerySet(true), this, userPostNumbers, true, false, true, true, true, null);
+				new GalleryItem.GallerySet(true), uiManager.dialog().createStackInstance(), this, userPostNumbers,
+				true, false, true, true, true, null);
 		listSelectionKeeper = new CommentTextView.ListSelectionKeeper(listView);
 		float density = ResourceUtils.obtainDensity(context);
 		FrameLayout frameLayout = new FrameLayout(context);
@@ -149,8 +132,8 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 			convertView = uiManager.view().getPostHiddenView(postItem, convertView, parent);
 		} else {
 			UiManager.DemandSet demandSet = this.demandSet;
-			demandSet.selectionMode = selection ? selected.contains(postItem) ? UiManager.SELECTION_SELECTED
-					: UiManager.SELECTION_NOT_SELECTED : UiManager.SELECTION_DISABLED;
+			demandSet.selection = selection ? selected.contains(postItem.getPostNumber())
+					? UiManager.Selection.SELECTED : UiManager.Selection.NOT_SELECTED : UiManager.Selection.DISABLED;
 			demandSet.lastInList = position == getCount() - 1;
 			convertView = uiManager.view().getPostView(postItem, convertView, parent, demandSet, configurationSet);
 		}
@@ -186,6 +169,7 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 		return postItemsMap.get(postNumber);
 	}
 
+	@NonNull
 	@Override
 	public Iterator<PostItem> iterator() {
 		return new PostsIterator(true, 0);
@@ -233,15 +217,15 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 				ToastUtils.show(view.getContext(), R.string.message_post_not_found);
 				return;
 			}
-			uiManager.dialog().displaySingle(getItem(position), configurationSet);
+			uiManager.dialog().displaySingle(configurationSet, getItem(position));
 		} else {
-			uiManager.interaction().handleLinkClick(chanName, uri, confirmed);
+			uiManager.interaction().handleLinkClick(configurationSet, chanName, uri, confirmed);
 		}
 	}
 
 	@Override
 	public void onLinkLongClick(CommentTextView view, String chanName, Uri uri) {
-		uiManager.interaction().handleLinkLongClick(uri);
+		uiManager.interaction().handleLinkLongClick(configurationSet, uri);
 	}
 
 	public void setItems(ArrayList<ReadPostsTask.Patch> patches, boolean maySkipHandlingReferences) {
@@ -419,21 +403,34 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 		notifyDataSetChanged();
 	}
 
+	public void toggleItemSelected(PostItem postItem) {
+		String postNumber = postItem.getPostNumber();
+		if (selected.contains(postNumber)) {
+			selected.remove(postNumber);
+		} else {
+			selected.add(postNumber);
+		}
+	}
+
 	public void toggleItemSelected(ListView listView, int position) {
 		PostItem postItem = getItem(position);
 		if (postItem != null && !postItem.isHiddenUnchecked()) {
-			if (selected.contains(postItem)) {
-				selected.remove(postItem);
-			} else {
-				selected.add(postItem);
-			}
+			toggleItemSelected(postItem);
 			int index = position - listView.getFirstVisiblePosition();
-			getView(position, listView.getChildAt(index), listView);
+			if (index >= 0 && index < listView.getChildCount()) {
+				getView(position, listView.getChildAt(index), listView);
+			}
 		}
 	}
 
 	public ArrayList<PostItem> getSelectedItems() {
-		ArrayList<PostItem> selected = new ArrayList<>(this.selected);
+		ArrayList<PostItem> selected = new ArrayList<>(this.selected.size());
+		for (String postNumber : this.selected) {
+			PostItem postItem = postItemsMap.get(postNumber);
+			if (postNumber != null) {
+				selected.add(postItem);
+			}
+		}
 		Collections.sort(selected);
 		return selected;
 	}
@@ -525,6 +522,11 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 	@Override
 	public void setListViewBusy(boolean isBusy, AbsListView listView) {
 		uiManager.view().handleListViewBusyStateChange(isBusy, listView, demandSet);
+	}
+
+	public void setHighlightText(Collection<String> highlightText) {
+		demandSet.highlightText = highlightText;
+		notifyDataSetChanged();
 	}
 
 	public Iterable<PostItem> iterate(final boolean ascending, final int from) {

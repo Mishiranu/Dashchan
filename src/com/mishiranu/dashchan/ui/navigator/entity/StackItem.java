@@ -11,6 +11,10 @@ public class StackItem implements Parcelable {
 		Fragment replace(Fragment fragment);
 	}
 
+	interface SaveFragment {
+		Fragment.SavedState save(FragmentManager fragmentManager, Fragment fragment);
+	}
+
 	public final String className;
 	public final Bundle arguments;
 	public final Fragment.SavedState savedState;
@@ -21,9 +25,9 @@ public class StackItem implements Parcelable {
 		this.savedState = savedState;
 	}
 
-	public StackItem(FragmentManager fragmentManager, Fragment fragment) {
-		this(fragment.getClass().getName(), fragment.getArguments(),
-				fragmentManager.saveFragmentInstanceState(fragment));
+	public StackItem(FragmentManager fragmentManager, Fragment fragment, SaveFragment saveFragment) {
+		this(fragment.getClass().getName(), fragment.getArguments(), saveFragment != null
+				? saveFragment.save(fragmentManager, fragment) : fragmentManager.saveFragmentInstanceState(fragment));
 	}
 
 	public Fragment create(ReplaceFragment replaceFragment) {

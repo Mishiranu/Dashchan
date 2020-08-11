@@ -1,24 +1,4 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui.gallery;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.concurrent.Executor;
 
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -28,7 +8,6 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Pair;
-
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.async.ReadFileTask;
@@ -46,6 +25,9 @@ import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.StringBlockBuilder;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.PhotoView;
+import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.Executor;
 
 public class ImageUnit {
 	private final PagerInstance instance;
@@ -244,6 +226,7 @@ public class ImageUnit {
 		}
 		AlertDialog dialog = dialogBuilder.create();
 		dialog.setOnShowListener(ViewUtils.ALERT_DIALOG_MESSAGE_SELECTABLE);
+		instance.galleryInstance.callback.getConfigurationLock().lockConfiguration(dialog);
 		dialog.show();
 	}
 

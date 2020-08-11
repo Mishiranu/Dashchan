@@ -35,8 +35,7 @@
 
 		<activity
 			android:name=".ui.navigator.NavigatorActivity"
-			android:launchMode="singleTask"
-			android:configChanges="orientation|screenSize" />
+			android:launchMode="singleTask" />
 
 		<activity
 			android:name=".ui.gallery.GalleryActivity"

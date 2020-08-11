@@ -1,19 +1,3 @@
-/*
- * Copyright 2014-2017, 2020 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui.gallery;
 
 import android.annotation.TargetApi;
@@ -41,6 +25,7 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import androidx.annotation.NonNull;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
@@ -56,6 +41,7 @@ import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.ui.ForegroundManager;
 import com.mishiranu.dashchan.ui.StateActivity;
 import com.mishiranu.dashchan.util.AnimationUtils;
+import com.mishiranu.dashchan.util.ConfigurationLock;
 import com.mishiranu.dashchan.util.FlagUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
@@ -73,6 +59,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 
 	private String threadTitle;
 	private final GalleryInstance instance = new GalleryInstance(this, this);
+	private ConfigurationLock configurationLock;
 
 	private View actionBar;
 	private WindowControlFrameLayout rootView;
@@ -115,6 +102,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 		setVolumeControlStream(AudioManager.STREAM_MUSIC);
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 		ViewUtils.applyToolbarStyle(this, null);
+		configurationLock = new ConfigurationLock(this);
 		expandedScreen = getIntent().getBooleanExtra(C.EXTRA_ALLOW_EXPANDED_SCREEN, false);
 		instance.actionBarColor = ACTION_BAR_COLOR;
 		boolean obtainImages = getIntent().getBooleanExtra(C.EXTRA_OBTAIN_ITEMS, false);
@@ -327,8 +315,13 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 	}
 
 	@Override
+	public ConfigurationLock getConfigurationLock() {
+		return configurationLock;
+	}
+
+	@Override
 	public void downloadGalleryItem(GalleryItem galleryItem) {
-		galleryItem.downloadStorage(this, instance.locator, threadTitle);
+		galleryItem.downloadStorage(this, configurationLock, instance.locator, threadTitle);
 	}
 
 	@Override
@@ -352,13 +345,13 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 					galleryItem.getFileName(instance.locator), galleryItem.originalName));
 		}
 		if (requestItems.size() > 0) {
-			DownloadManager.getInstance().downloadStorage(this, requestItems, instance.chanName,
+			DownloadManager.getInstance().downloadStorage(this, configurationLock, requestItems, instance.chanName,
 					boardName, threadNumber, threadTitle, true);
 		}
 	}
 
 	@Override
-	protected void onSaveInstanceState(Bundle outState) {
+	protected void onSaveInstanceState(@NonNull Bundle outState) {
 		super.onSaveInstanceState(outState);
 		if (pagerUnit != null) {
 			outState.putInt(EXTRA_POSITION, pagerUnit.getCurrentIndex());
@@ -370,7 +363,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 	}
 
 	@Override
-	public void onConfigurationChanged(Configuration newConfig) {
+	public void onConfigurationChanged(@NonNull Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
 		ViewUtils.applyToolbarStyle(this, null);
 		if (listUnit != null) {
@@ -573,7 +566,7 @@ public class GalleryActivity extends StateActivity implements GalleryInstance.Ca
 	}
 
 	private void postInvalidateSystemUIVisibility() {
-		rootView.post(() -> invalidateSystemUiVisibility());
+		rootView.post(this::invalidateSystemUiVisibility);
 	}
 
 	@Override

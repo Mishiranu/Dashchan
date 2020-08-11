@@ -72,7 +72,7 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 	public boolean onItemLongClick(View view, int position) {
 		String boardName = getAdapter().getItem(position).boardName;
 		if (boardName != null) {
-			DialogMenu dialogMenu = new DialogMenu(getContext(), (context, id, extra) -> {
+			DialogMenu dialogMenu = new DialogMenu(getContext(), id -> {
 				switch (id) {
 					case CONTEXT_MENU_COPY_LINK: {
 						Uri uri = getChanLocator().safe(true).createBoardUri(boardName, 0);
@@ -91,7 +91,7 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 			if (!FavoritesStorage.getInstance().hasFavorite(getPage().chanName, boardName, null)) {
 				dialogMenu.addItem(CONTEXT_MENU_ADD_FAVORITES, R.string.action_add_to_favorites);
 			}
-			dialogMenu.show();
+			dialogMenu.show(getUiManager().getConfigurationLock());
 			return true;
 		}
 		return false;

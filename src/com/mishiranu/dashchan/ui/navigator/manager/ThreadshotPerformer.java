@@ -32,7 +32,7 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
 
 	private final UiManager.DemandSet demandSet = new UiManager.DemandSet();
 	private final UiManager.ConfigurationSet configurationSet = new UiManager.ConfigurationSet(null, null, null,
-			null, null, null, false, false, false, false, false, null);
+			null, null, null, null, false, false, false, false, false, null);
 
 	public ThreadshotPerformer(ListView listView, UiManager uiManager, String chanName, String boardName,
 			String threadNumber, String threadTitle, List<PostItem> postItems) {
@@ -46,10 +46,11 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
 		dialog = new ProgressDialog(listView.getContext(), null);
 		dialog.setMessage(listView.getContext().getString(R.string.message_processing_data));
 		dialog.setOnCancelListener(this);
+		uiManager.getConfigurationLock().lockConfiguration(dialog);
 		dialog.show();
 		// isBusy == true, because I must prevent view handling in main thread
 		demandSet.isBusy = true;
-		demandSet.selectionMode = UiManager.SELECTION_THREADSHOT;
+		demandSet.selection = UiManager.Selection.THREADSHOT;
 		asyncTask.executeOnExecutor(ConcurrentUtils.SEPARATE_EXECUTOR);
 	}
 
@@ -116,8 +117,9 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
 		protected void onPostExecute(InputStream result) {
 			dialog.dismiss();
 			if (result != null) {
-				DownloadManager.getInstance().saveStreamStorage(listView.getContext(), result, chanName, boardName,
-						threadNumber, threadTitle, "threadshot-" + System.currentTimeMillis() + ".png", false);
+				DownloadManager.getInstance().saveStreamStorage(listView.getContext(), uiManager.getConfigurationLock(),
+						result, chanName, boardName, threadNumber, threadTitle,
+						"threadshot-" + System.currentTimeMillis() + ".png", false);
 			} else {
 				ToastUtils.show(listView.getContext(), R.string.message_unknown_error);
 			}

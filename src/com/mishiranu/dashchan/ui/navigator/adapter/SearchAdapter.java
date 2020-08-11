@@ -1,30 +1,10 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui.navigator.adapter;
-
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.MainApplication;
@@ -35,6 +15,9 @@ import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ViewFactory;
 import com.mishiranu.dashchan.widget.callback.BusyScrollListener;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 
 public class SearchAdapter extends BaseAdapter implements BusyScrollListener.Callback {
 	private static final int TYPE_VIEW = 0;
@@ -49,10 +32,12 @@ public class SearchAdapter extends BaseAdapter implements BusyScrollListener.Cal
 
 	private boolean groupMode = false;
 
-	public SearchAdapter(UiManager uiManager) {
+	public SearchAdapter(UiManager uiManager, String searchQuery) {
 		this.uiManager = uiManager;
 		configurationSet = new UiManager.ConfigurationSet(null, null, new HidePerformer(),
-				new GalleryItem.GallerySet(false), null, null, true, false, false, false, false, null);
+				new GalleryItem.GallerySet(false), uiManager.dialog().createStackInstance(), null, null,
+				true, false, false, false, false, null);
+		demandSet.highlightText = Collections.singleton(searchQuery);
 	}
 
 	@Override
@@ -117,6 +102,10 @@ public class SearchAdapter extends BaseAdapter implements BusyScrollListener.Cal
 	@Override
 	public long getItemId(int position) {
 		return 0;
+	}
+
+	public UiManager.ConfigurationSet getConfigurationSet() {
+		return configurationSet;
 	}
 
 	@Override

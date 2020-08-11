@@ -323,47 +323,44 @@ public class NavigationUtils {
 				C.OPENABLE_VIDEO_EXTENSIONS.contains(extension);
 	}
 
-	public static void searchImage(Context context, final String chanName, Uri uri) {
-		ChanLocator locator = ChanLocator.get(chanName);
-		final String imageUriString = locator.convert(uri).toString();
-		new DialogMenu(context, new DialogMenu.Callback() {
-			@Override
-			public void onItemClick(Context context, int id, Map<String, Object> extra) {
-				ChanLocator locator = ChanLocator.getDefault();
-				Uri uri;
-				switch (id) {
-					case 0: {
-						uri = locator.buildQueryWithHost("www.google.com", "searchbyimage",
-								"image_url", imageUriString);
-						break;
-					}
-					case 1: {
-						uri = locator.buildQueryWithHost("yandex.ru", "images/search", "rpt", "imageview",
-								"img_url", imageUriString);
-						break;
-					}
-					case 2: {
-						uri = locator.buildQueryWithHost("www.tineye.com", "search", "url", imageUriString);
-						break;
-					}
-					case 3: {
-						uri = locator.buildQueryWithHost("saucenao.com", "search.php", "url", imageUriString);
-						break;
-					}
-					case 4: {
-						uri = locator.buildQueryWithSchemeHost(false, "iqdb.org", null, "url", imageUriString);
-						break;
-					}
-					case 5: {
-						uri = locator.buildQueryWithHost("whatanime.ga", "/", "url", imageUriString);
-						break;
-					}
-					default: {
-						return;
-					}
+	public static void searchImage(Context context, ConfigurationLock configurationLock,
+			final String chanName, Uri uri) {
+		final String imageUriString = ChanLocator.get(chanName).convert(uri).toString();
+		new DialogMenu(context, id -> {
+			ChanLocator locator = ChanLocator.getDefault();
+			Uri searchUri;
+			switch (id) {
+				case 0: {
+					searchUri = locator.buildQueryWithHost("www.google.com", "searchbyimage",
+							"image_url", imageUriString);
+					break;
 				}
-				handleUri(context, null, uri, BrowserType.EXTERNAL);
+				case 1: {
+					searchUri = locator.buildQueryWithHost("yandex.ru", "images/search", "rpt", "imageview",
+							"img_url", imageUriString);
+					break;
+				}
+				case 2: {
+					searchUri = locator.buildQueryWithHost("www.tineye.com", "search", "url", imageUriString);
+					break;
+				}
+				case 3: {
+					searchUri = locator.buildQueryWithHost("saucenao.com", "search.php", "url", imageUriString);
+					break;
+				}
+				case 4: {
+					searchUri = locator.buildQueryWithSchemeHost(false, "iqdb.org", null, "url", imageUriString);
+					break;
+				}
+				case 5: {
+					searchUri = locator.buildQueryWithHost("whatanime.ga", "/", "url", imageUriString);
+					break;
+				}
+				default: {
+					return;
+				}
 			}
+			handleUri(context, null, searchUri, BrowserType.EXTERNAL);
 		})
 		.addItem(0, "Google")
 		.addItem(1, "Yandex")
@@ -371,7 +368,7 @@ public class NavigationUtils {
 		.addItem(3, "SauceNAO")
 		.addItem(4, "iqdb")
 		.addItem(5, "whatanime")
-		.show();
+		.show(configurationLock);
 	}
 
 	public static void shareText(Context context, String subject, String text, Uri uri) {

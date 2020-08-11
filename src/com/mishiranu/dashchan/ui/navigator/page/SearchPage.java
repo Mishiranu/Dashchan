@@ -13,6 +13,7 @@ import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.ui.navigator.adapter.SearchAdapter;
 import com.mishiranu.dashchan.ui.navigator.entity.Page;
+import com.mishiranu.dashchan.ui.navigator.manager.DialogUnit;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
@@ -21,7 +22,6 @@ import com.mishiranu.dashchan.widget.ListScroller;
 import com.mishiranu.dashchan.widget.PullableListView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 
 public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTask.Callback, ImageLoader.Observer {
@@ -30,6 +30,8 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 
 		public final ArrayList<PostItem> postItems = new ArrayList<>();
 		public int pageNumber;
+
+		public DialogUnit.StackInstance.State dialogsState;
 	}
 
 	private static class ParcelableExtra implements Parcelable {
@@ -70,10 +72,9 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 		PullableListView listView = getListView();
 		UiManager uiManager = getUiManager();
 		listView.setDivider(ResourceUtils.getDrawable(getContext(), R.attr.postsDivider, 0));
-		SearchAdapter adapter = new SearchAdapter(uiManager);
+		SearchAdapter adapter = new SearchAdapter(uiManager, getPage().searchQuery);
 		initAdapter(adapter, adapter);
 		ImageLoader.getInstance().observable().register(this);
-		uiManager.view().setHighlightText(Collections.singleton(getPage().searchQuery));
 		listView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
 		InitRequest initRequest = getInitRequest();
 		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
@@ -89,6 +90,10 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 			if (!retainExtra.postItems.isEmpty()) {
 				adapter.setItems(retainExtra.postItems);
 				restoreListPosition(null);
+				if (retainExtra.dialogsState != null) {
+					uiManager.dialog().restoreState(adapter.getConfigurationSet(), retainExtra.dialogsState);
+					retainExtra.dialogsState = null;
+				}
 			} else {
 				showScaleOnSuccess = true;
 				refreshSearch(false, false);
@@ -104,6 +109,18 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 		}
 		ImageLoader.getInstance().observable().unregister(this);
 		ImageLoader.getInstance().clearTasks(getPage().chanName);
+	}
+
+	@Override
+	protected void onNotifyAllAdaptersChanged() {
+		getUiManager().dialog().notifyDataSetChangedToAll(getAdapter().getConfigurationSet().stackInstance);
+	}
+
+	@Override
+	protected void onRequestStoreExtra(boolean saveToStack) {
+		SearchAdapter adapter = getAdapter();
+		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
+		retainExtra.dialogsState = adapter.getConfigurationSet().stackInstance.collectState();
 	}
 
 	@Override
@@ -124,8 +141,8 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 	@Override
 	public boolean onItemLongClick(View view, int position) {
 		PostItem postItem = getAdapter().getPostItem(position);
-		return postItem != null && getUiManager().interaction()
-				.handlePostContextMenu(postItem, null, false, false, false);
+		return postItem != null && getUiManager().interaction().handlePostContextMenu(postItem,
+				getAdapter().getConfigurationSet().stackInstance, null, false, false, false);
 	}
 
 	private static final int OPTIONS_MENU_REFRESH = 0;

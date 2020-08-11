@@ -1,23 +1,4 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui.navigator.manager;
-
-import java.util.ArrayList;
-import java.util.Map;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -25,12 +6,10 @@ import android.net.Uri;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.view.View;
-
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.DownloadManager;
 import com.mishiranu.dashchan.content.model.AttachmentItem;
@@ -39,10 +18,12 @@ import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.text.style.LinkSuffixSpan;
 import com.mishiranu.dashchan.ui.posting.Replyable;
+import com.mishiranu.dashchan.util.ConfigurationLock;
 import com.mishiranu.dashchan.util.DialogMenu;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.widget.AttachmentView;
+import java.util.ArrayList;
 
 public class InteractionUnit {
 	private final UiManager uiManager;
@@ -51,7 +32,8 @@ public class InteractionUnit {
 		this.uiManager = uiManager;
 	}
 
-	public void handleLinkClick(String chanName, Uri uri, boolean confirmed) {
+	public void handleLinkClick(UiManager.ConfigurationSet configurationSet,
+			String chanName, Uri uri, boolean confirmed) {
 		boolean handled = false;
 		final String uriChanName = ChanManager.getInstance().getChanNameByHost(uri.getHost());
 		if (uriChanName != null) {
@@ -69,7 +51,8 @@ public class InteractionUnit {
 				String postNumber = locator.safe(false).getPostNumber(uri);
 				if (threadNumber != null) {
 					if (sameChan && configuration.getOption(ChanConfiguration.OPTION_READ_SINGLE_POST)) {
-						uiManager.dialog().displayReplyAsync(uriChanName, boardName, threadNumber, postNumber);
+						uiManager.dialog().displayReplyAsync(configurationSet,
+								uriChanName, boardName, threadNumber, postNumber);
 					} else {
 						navigationData = new ChanLocator.NavigationData(ChanLocator.NavigationData.TARGET_POSTS,
 								boardName, threadNumber, postNumber, null);
@@ -106,11 +89,14 @@ public class InteractionUnit {
 						messageId = R.string.message_open_link_confirm;
 					}
 					final ChanLocator.NavigationData navigationDataFinal = navigationData;
-					new AlertDialog.Builder(uiManager.getContext()).setMessage(messageId)
+					AlertDialog dialog = new AlertDialog.Builder(uiManager.getContext())
+							.setMessage(messageId)
 							.setNegativeButton(android.R.string.cancel, null)
-							.setPositiveButton(android.R.string.ok, (dialog, which) -> uiManager.navigator()
-							.navigateTarget(uriChanName, navigationDataFinal, NavigationUtils.FLAG_RETURNABLE)).show();
-					uiManager.dialog().notifySwitchBackground();
+							.setPositiveButton(android.R.string.ok, (d, which) -> uiManager.navigator()
+									.navigateTarget(uriChanName, navigationDataFinal, NavigationUtils.FLAG_RETURNABLE))
+							.show();
+					uiManager.getConfigurationLock().lockConfiguration(dialog);
+					uiManager.dialog().notifySwitchBackground(configurationSet.stackInstance);
 				}
 			}
 		}
@@ -125,7 +111,7 @@ public class InteractionUnit {
 	private static final int LINK_MENU_DOWNLOAD_FILE = 3;
 	private static final int LINK_MENU_OPEN_THREAD = 4;
 
-	public void handleLinkLongClick(final Uri uri) {
+	public void handleLinkLongClick(UiManager.ConfigurationSet configurationSet, final Uri uri) {
 		String uriChanName = ChanManager.getInstance().getChanNameByHost(uri.getHost());
 		String fileName = null;
 		String boardName = null;
@@ -148,7 +134,7 @@ public class InteractionUnit {
 		final String finalFileName = fileName;
 		final String finalBoardName = boardName;
 		final String finalThreadNumber = threadNumber;
-		DialogMenu dialogMenu = new DialogMenu(uiManager.getContext(), (context, id, extra) -> {
+		DialogMenu dialogMenu = new DialogMenu(uiManager.getContext(), (context, id) -> {
 			switch (id) {
 				case LINK_MENU_COPY: {
 					StringUtils.copyToClipboard(context, uri.toString());
@@ -164,8 +150,8 @@ public class InteractionUnit {
 					break;
 				}
 				case LINK_MENU_DOWNLOAD_FILE: {
-					DownloadManager.getInstance().downloadStorage(context, uri, finalFileName, null, finalChanName,
-							finalBoardName, finalThreadNumber, null);
+					DownloadManager.getInstance().downloadStorage(context, uiManager.getConfigurationLock(),
+							uri, finalFileName, null, finalChanName, finalBoardName, finalThreadNumber, null);
 					break;
 				}
 				case LINK_MENU_OPEN_THREAD: {
@@ -188,8 +174,8 @@ public class InteractionUnit {
 		if (threadNumber != null) {
 			dialogMenu.addItem(LINK_MENU_OPEN_THREAD, R.string.action_open_thread);
 		}
-		dialogMenu.show();
-		uiManager.dialog().notifySwitchBackground();
+		dialogMenu.show(uiManager.getConfigurationLock());
+		uiManager.dialog().notifySwitchBackground(configurationSet.stackInstance);
 	}
 
 	private static class ThumbnailClickListenerImpl implements UiManager.ThumbnailClickListener {
@@ -218,7 +204,7 @@ public class InteractionUnit {
 				GalleryItem.GallerySet gallerySet = holder.getGallerySet();
 				int startImageIndex = uiManager.view().findImageIndex(gallerySet.getItems(), holder.postItem);
 				if (mayShowDialog) {
-					uiManager.dialog().openAttachmentOrDialog(uiManager.getContext(), v,
+					uiManager.dialog().openAttachmentOrDialog(holder.configurationSet.stackInstance, v,
 							attachmentItems, startImageIndex, navigatePostMode, gallerySet);
 				} else {
 					int index = this.index;
@@ -228,8 +214,8 @@ public class InteractionUnit {
 							imageIndex++;
 						}
 					}
-					uiManager.dialog().openAttachment(uiManager.getContext(), v, attachmentItems, index,
-							imageIndex, navigatePostMode, gallerySet);
+					uiManager.dialog().openAttachment(v, attachmentItems, index, imageIndex,
+							navigatePostMode, gallerySet);
 				}
 			}
 		}
@@ -251,8 +237,8 @@ public class InteractionUnit {
 		@Override
 		public boolean onLongClick(View v) {
 			UiManager.Holder holder = ListViewUtils.getViewHolder(v, UiManager.Holder.class);
-			new ThumbnailLongClickDialog(uiManager, attachmentItem, (AttachmentView) v, true,
-					holder.getGallerySet().getThreadTitle());
+			new ThumbnailLongClickDialog(uiManager, holder.configurationSet.stackInstance,
+					attachmentItem, (AttachmentView) v, true, holder.getGallerySet().getThreadTitle());
 			return true;
 		}
 	}
@@ -269,6 +255,7 @@ public class InteractionUnit {
 		private final AttachmentItem attachmentItem;
 		private final AttachmentView attachmentView;
 		private final String threadTitle;
+		private final ConfigurationLock configurationLock;
 
 		private static final int MENU_DOWNLOAD_FILE = 0;
 		private static final int MENU_SEARCH_IMAGE = 1;
@@ -276,11 +263,13 @@ public class InteractionUnit {
 		private static final int MENU_COPY_LINK = 3;
 		private static final int MENU_SHARE_LINK = 4;
 
-		public ThumbnailLongClickDialog(UiManager uiManager, AttachmentItem attachmentItem,
-				AttachmentView attachmentView, boolean hasViewHolder, String threadTitle) {
+		public ThumbnailLongClickDialog(UiManager uiManager, DialogUnit.StackInstance stackInstance,
+				AttachmentItem attachmentItem, AttachmentView attachmentView,
+				boolean hasViewHolder, String threadTitle) {
 			this.attachmentItem = attachmentItem;
 			this.attachmentView = attachmentView;
 			this.threadTitle = threadTitle;
+			configurationLock = uiManager.getConfigurationLock();
 			Context context = attachmentView.getContext();
 			DialogMenu dialogMenu = new DialogMenu(context, this);
 			dialogMenu.setTitle(attachmentItem.getDialogTitle(), true);
@@ -296,25 +285,27 @@ public class InteractionUnit {
 			}
 			dialogMenu.addItem(MENU_COPY_LINK, R.string.action_copy_link);
 			dialogMenu.addItem(MENU_SHARE_LINK, R.string.action_share_link);
-			dialogMenu.show();
-			uiManager.dialog().notifySwitchBackground();
+			dialogMenu.show(uiManager.getConfigurationLock());
+			uiManager.dialog().notifySwitchBackground(stackInstance);
 		}
 
 		@Override
-		public void onItemClick(Context context, int id, Map<String, Object> extra) {
+		public void onItemClick(Context context, int id) {
 			Uri fileUri = attachmentItem.getFileUri();
 			Uri thumbnailUri = attachmentItem.getThumbnailUri();
 			int type = attachmentItem.getType();
 			switch (id) {
 				case MENU_DOWNLOAD_FILE: {
-					DownloadManager.getInstance().downloadStorage(context, fileUri, attachmentItem.getFileName(),
-							attachmentItem.getOriginalName(), attachmentItem.getChanName(),
-							attachmentItem.getBoardName(), attachmentItem.getThreadNumber(), threadTitle);
+					DownloadManager.getInstance().downloadStorage(context, configurationLock, fileUri,
+							attachmentItem.getFileName(), attachmentItem.getOriginalName(),
+							attachmentItem.getChanName(), attachmentItem.getBoardName(),
+							attachmentItem.getThreadNumber(), threadTitle);
 					break;
 				}
 				case MENU_SEARCH_IMAGE: {
-					NavigationUtils.searchImage(context, ChanManager.getInstance().getChanNameByHost
-							(fileUri.getAuthority()), type == AttachmentItem.TYPE_IMAGE ? fileUri : thumbnailUri);
+					NavigationUtils.searchImage(context, configurationLock,
+							ChanManager.getInstance().getChanNameByHost(fileUri.getAuthority()),
+							type == AttachmentItem.TYPE_IMAGE ? fileUri : thumbnailUri);
 					break;
 				}
 				case MENU_SHOW_THUMBNAIL: {
@@ -334,9 +325,10 @@ public class InteractionUnit {
 		}
 	}
 
-	public void showThumbnailLongClickDialog(AttachmentItem attachmentItem, AttachmentView attachmentView,
-			boolean hasViewHolder, String threadTitle) {
-		new ThumbnailLongClickDialog(uiManager, attachmentItem, attachmentView, hasViewHolder, threadTitle);
+	public void showThumbnailLongClickDialog(DialogUnit.StackInstance stackInstance, AttachmentItem attachmentItem,
+			AttachmentView attachmentView, boolean hasViewHolder, String threadTitle) {
+		new ThumbnailLongClickDialog(uiManager, stackInstance,
+				attachmentItem, attachmentView, hasViewHolder, threadTitle);
 	}
 
 	public boolean handlePostClick(View view, PostItem postItem, Iterable<PostItem> localPostItems) {
@@ -378,8 +370,8 @@ public class InteractionUnit {
 	private static final int MENU_HIDE_NAME = 16;
 	private static final int MENU_HIDE_SIMILAR = 17;
 
-	public boolean handlePostContextMenu(final PostItem postItem, Replyable replyable, boolean allowMyMarkEdit,
-			boolean allowHiding, boolean allowGoToPost) {
+	public boolean handlePostContextMenu(final PostItem postItem, DialogUnit.StackInstance stackInstance,
+			Replyable replyable, boolean allowMyMarkEdit, boolean allowHiding, boolean allowGoToPost) {
 		if (postItem != null) {
 			Context context = uiManager.getContext();
 			String chanName = postItem.getChanName();
@@ -388,9 +380,9 @@ public class InteractionUnit {
 			boolean postEmpty = StringUtils.isEmpty(postItem.getComment().toString());
 			final boolean copyText = !postEmpty;
 			final boolean shareText = !postEmpty;
-			DialogMenu dialogMenu = new DialogMenu(context, new DialogMenu.Callback() {
+			DialogMenu dialogMenu = new DialogMenu(context, new DialogMenu.SimpleCallback() {
 				@Override
-				public void onItemClick(Context context, int id, Map<String, Object> extra) {
+				public void onItemClick(int id) {
 					switch (id) {
 						case MENU_REPLY: {
 							replyable.onRequestReply(new Replyable.ReplyData(postItem.getPostNumber(), null));
@@ -408,7 +400,7 @@ public class InteractionUnit {
 								dialogMenu.addItem(MENU_COPY_MARKUP, R.string.action_copy_markup);
 							}
 							dialogMenu.addItem(MENU_COPY_LINK, R.string.action_copy_link);
-							dialogMenu.show();
+							dialogMenu.show(uiManager.getConfigurationLock());
 							break;
 						}
 						case MENU_COPY_TEXT: {
@@ -462,7 +454,7 @@ public class InteractionUnit {
 								dialogMenu.addItem(MENU_SHARE_TEXT, R.string.action_share_text);
 							}
 							dialogMenu.addItem(MENU_SHARE_LINK, R.string.action_share_link);
-							dialogMenu.show();
+							dialogMenu.show(uiManager.getConfigurationLock());
 							break;
 						}
 						case MENU_REPORT: {
@@ -493,7 +485,7 @@ public class InteractionUnit {
 							dialogMenu.addItem(MENU_HIDE_REPLIES, R.string.action_hide_replies);
 							dialogMenu.addItem(MENU_HIDE_NAME, R.string.action_hide_name);
 							dialogMenu.addItem(MENU_HIDE_SIMILAR, R.string.action_hide_similar);
-							dialogMenu.show();
+							dialogMenu.show(uiManager.getConfigurationLock());
 							break;
 						}
 						case MENU_HIDE_POST: {
@@ -548,8 +540,8 @@ public class InteractionUnit {
 			if (allowHiding && !postItem.isHiddenUnchecked()) {
 				dialogMenu.addItem(MENU_HIDE, R.string.action_hide_expand);
 			}
-			dialogMenu.show();
-			uiManager.dialog().notifySwitchBackground();
+			dialogMenu.show(uiManager.getConfigurationLock());
+			uiManager.dialog().notifySwitchBackground(stackInstance);
 			return true;
 		}
 		return false;

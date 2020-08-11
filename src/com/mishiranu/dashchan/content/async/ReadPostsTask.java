@@ -69,6 +69,10 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 		this.userPostPendings = userPostPendings.size() > 0 ? userPostPendings : null;
 	}
 
+	public boolean isForceLoadFullThread() {
+		return forceLoadFullThread;
+	}
+
 	@Override
 	protected Boolean doInBackground(HttpHolder holder, Void... params) {
 		String lastPostNumber = forceLoadFullThread ? null : this.lastPostNumber;

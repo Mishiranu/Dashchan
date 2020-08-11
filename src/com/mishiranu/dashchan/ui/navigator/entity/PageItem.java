@@ -10,12 +10,19 @@ public class PageItem implements Parcelable {
 	public String threadTitle;
 	public boolean returnable;
 
-	public SavedPageItem toSaved(StackItem stackItem) {
-		return new SavedPageItem(stackItem, createdRealtime, threadTitle, returnable);
-	}
+	private static final StackItem.SaveFragment SAVE = (fragmentManager, fragment) -> {
+		PageFragment pageFragment = (PageFragment) fragment;
+		try {
+			pageFragment.setSaveToStack(true);
+			return fragmentManager.saveFragmentInstanceState(fragment);
+		} finally {
+			pageFragment.setSaveToStack(false);
+		}
+	};
 
 	public SavedPageItem toSaved(FragmentManager fragmentManager, PageFragment fragment) {
-		return toSaved(new StackItem(fragmentManager, fragment));
+		return new SavedPageItem(new StackItem(fragmentManager, fragment, SAVE),
+				createdRealtime, threadTitle, returnable);
 	}
 
 	@Override
