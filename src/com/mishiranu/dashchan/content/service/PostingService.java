@@ -405,7 +405,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 				builder.setContentText(buildNotificationText(chanName, data.boardName, targetThreadNumber, postNumber));
 				String tag = newPostData.getNotificationTag();
 				Intent intent = NavigationUtils.obtainPostsIntent(this, chanName, data.boardName, targetThreadNumber,
-						postNumber, null, 0);
+						postNumber, 0);
 				builder.setContentIntent(PendingIntent.getActivity(this, tag.hashCode(), intent,
 						PendingIntent.FLAG_UPDATE_CURRENT));
 				notificationManager.notify(tag, 0, builder.build());

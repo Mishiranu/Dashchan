@@ -15,6 +15,7 @@ public class C {
 	public static final boolean API_LOLLIPOP_MR1 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1;
 	public static final boolean API_MARSHMALLOW = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
 	public static final boolean API_NOUGAT = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
+	public static final boolean API_OREO = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
 	public static final boolean API_PIE = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P;
 
 	public static final String BUILD_VERSION = BuildConfig.VERSION_NAME;
@@ -64,8 +65,8 @@ public class C {
 	public static final int HIDDEN_FALSE = 1;
 	public static final int HIDDEN_TRUE = 2;
 
+	public static final String ACTION_GALLERY = "com.mishiranu.dashchan.action.GALLERY";
 	public static final String ACTION_POST_SENT = "com.mishiranu.dashchan.action.POST_SENT";
-	public static final String ACTION_GALLERY_NAVIGATE_POST = "com.mishiranu.dashchan.action.GALLERY_NAVIGATE_POST";
 
 	public static final int REQUEST_CODE_ATTACH = 1;
 	public static final int REQUEST_CODE_UNINSTALL = 2;
@@ -77,22 +78,15 @@ public class C {
 	public static final int NOTIFICATION_ID_DOWNLOAD = 1;
 	public static final int NOTIFICATION_ID_AUDIO_PLAYER = 2;
 
-	public static final String EXTRA_ALLOW_EXPANDED_SCREEN = "com.mishiranu.dashchan.extra.ALLOW_EXPANDED_SCREEN";
 	public static final String EXTRA_BOARD_NAME = "com.mishiranu.dashchan.extra.BOARD_NAME";
 	public static final String EXTRA_CHAN_NAME = "com.mishiranu.dashchan.extra.CHAN_NAME";
 	public static final String EXTRA_EXTERNAL_BROWSER = "com.mishiranu.dashchan.extra.EXTERNAL_BROWSER";
 	public static final String EXTRA_FAIL_RESULT = "com.mishiranu.dashchan.extra.FAIL_RESULT";
 	public static final String EXTRA_FROM_CLIENT = "com.mishiranu.dashchan.extra.FROM_CLIENT";
-	public static final String EXTRA_GALLERY_MODE = "com.mishiranu.dashchan.extra.GALLERY_MODE";
-	public static final String EXTRA_IMAGE_INDEX = "com.mishiranu.dashchan.extra.IMAGE_INDEX";
-	public static final String EXTRA_NAVIGATE_POST_MODE = "com.mishiranu.dashchan.extra.NAVIGATE_POST_MODE";
 	public static final String EXTRA_NAVIGATION_FLAGS = "com.mishiranu.dashchan.extra.NAVIGATION_FLAGS";
-	public static final String EXTRA_OBTAIN_ITEMS = "com.mishiranu.dashchan.extra.EXTRA_OBTAIN_ITEMS";
 	public static final String EXTRA_POST_NUMBER = "com.mishiranu.dashchan.extra.POST_NUMBER";
 	public static final String EXTRA_REPLY_DATA = "com.mishiranu.dashchan.extra.REPLY_DATA";
 	public static final String EXTRA_SEARCH_QUERY = "com.mishiranu.dashchan.extra.SEARCH_QUERY";
 	public static final String EXTRA_THREAD_NUMBER = "com.mishiranu.dashchan.extra.THREAD_NUMBER";
-	public static final String EXTRA_THREAD_TITLE = "com.mishiranu.dashchan.extra.THREAD_TITLE";
-	public static final String EXTRA_VIEW_POSITION = "com.mishiranu.dashchan.extra.VIEW_POSITION";
 	public static final String EXTRA_UPDATE_DATA_MAP = "com.mishiranu.dashchan.extra.UPDATE_DATA_MAP";
 }

@@ -56,6 +56,7 @@ import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.service.AudioPlayerService;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.preference.Preferences;
+import com.mishiranu.dashchan.ui.gallery.GalleryOverlay;
 import com.mishiranu.dashchan.ui.posting.Replyable;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
@@ -90,11 +91,11 @@ public class DialogUnit {
 		private static class AttachmentDialog {
 			public final List<AttachmentItem> attachmentItems;
 			public final int startImageIndex;
-			public final NavigationUtils.NavigatePostMode navigatePostMode;
+			public final GalleryOverlay.NavigatePostMode navigatePostMode;
 			public final GalleryItem.GallerySet gallerySet;
 
 			private AttachmentDialog(List<AttachmentItem> attachmentItems, int startImageIndex,
-					NavigationUtils.NavigatePostMode navigatePostMode, GalleryItem.GallerySet gallerySet) {
+					GalleryOverlay.NavigatePostMode navigatePostMode, GalleryItem.GallerySet gallerySet) {
 				this.attachmentItems = attachmentItems;
 				this.startImageIndex = startImageIndex;
 				this.navigatePostMode = navigatePostMode;
@@ -926,7 +927,7 @@ public class DialogUnit {
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private void showAttachmentsGrid(StackInstance stackInstance, List<AttachmentItem> attachmentItems,
-			int startImageIndex, NavigationUtils.NavigatePostMode navigatePostMode, GalleryItem.GallerySet gallerySet) {
+			int startImageIndex, GalleryOverlay.NavigatePostMode navigatePostMode, GalleryItem.GallerySet gallerySet) {
 		if (stackInstance.attachmentDialog != null) {
 			stackInstance.attachmentDialog.second.dismiss();
 			stackInstance.attachmentDialog = null;
@@ -1054,7 +1055,7 @@ public class DialogUnit {
 
 	public void openAttachmentOrDialog(StackInstance stackInstance, View imageView,
 			List<AttachmentItem> attachmentItems, int imageIndex,
-			NavigationUtils.NavigatePostMode navigatePostMode, GalleryItem.GallerySet gallerySet) {
+			GalleryOverlay.NavigatePostMode navigatePostMode, GalleryItem.GallerySet gallerySet) {
 		if (attachmentItems.size() > 1) {
 			showAttachmentsGrid(stackInstance, attachmentItems, imageIndex, navigatePostMode, gallerySet);
 		} else {
@@ -1063,7 +1064,7 @@ public class DialogUnit {
 	}
 
 	public void openAttachment(View imageView, List<AttachmentItem> attachmentItems, int index,
-			int imageIndex, NavigationUtils.NavigatePostMode navigatePostMode, GalleryItem.GallerySet gallerySet) {
+			int imageIndex, GalleryOverlay.NavigatePostMode navigatePostMode, GalleryItem.GallerySet gallerySet) {
 		Context context = uiManager.getContext();
 		AttachmentItem attachmentItem = attachmentItems.get(index);
 		boolean canDownload = attachmentItem.canDownloadToStorage();
@@ -1074,8 +1075,8 @@ public class DialogUnit {
 			AudioPlayerService.start(context, chanName, uri, attachmentItem.getFileName());
 		} else if (canDownload && (type == AttachmentItem.TYPE_IMAGE || type == AttachmentItem.TYPE_VIDEO &&
 				NavigationUtils.isOpenableVideoExtension(attachmentItem.getExtension()))) {
-			NavigationUtils.openGallery(context, imageView, chanName, imageIndex, gallerySet,
-					true, navigatePostMode, false);
+			uiManager.navigator().navigateGallery(chanName, gallerySet, imageIndex,
+					imageView, navigatePostMode, false);
 		} else {
 			NavigationUtils.handleUri(context, chanName, uri, NavigationUtils.BrowserType.EXTERNAL);
 		}

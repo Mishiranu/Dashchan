@@ -1,28 +1,10 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.content;
 
 import android.app.Activity;
 import android.net.Uri;
 import android.os.Bundle;
-
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.service.AudioPlayerService;
@@ -60,12 +42,12 @@ public class UriHandlerActivity extends Activity {
 				} else if (threadUri) {
 					if (!fromClient) {
 						startActivity(NavigationUtils.obtainPostsIntent(this, chanName, boardName, threadNumber,
-								postNumber, null, NavigationUtils.FLAG_RETURNABLE));
+								postNumber, NavigationUtils.FLAG_RETURNABLE));
 					}
 					success = true;
 				} else if (locator.isImageUri(uri)) {
 					if (!fromClient) {
-						NavigationUtils.openImageVideo(this, locator.convert(uri), false);
+						NavigationUtils.openImageVideo(this, locator.convert(uri));
 					}
 					success = true;
 				} else if (locator.isAudioUri(uri)) {
@@ -77,7 +59,7 @@ public class UriHandlerActivity extends Activity {
 					String fileName = locator.createAttachmentFileName(uri);
 					if (NavigationUtils.isOpenableVideoPath(fileName)) {
 						if (!fromClient) {
-							NavigationUtils.openImageVideo(this, locator.convert(uri), false);
+							NavigationUtils.openImageVideo(this, locator.convert(uri));
 						}
 						success = true;
 					} else if (!fromClient) {

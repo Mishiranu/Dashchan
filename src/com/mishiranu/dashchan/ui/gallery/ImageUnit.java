@@ -209,7 +209,8 @@ public class ImageUnit {
 			builder.appendLine(pair.first + ": " + pair.second);
 		}
 		String message = builder.toString();
-		AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(instance.galleryInstance.context)
+		AlertDialog.Builder dialogBuilder = new AlertDialog
+				.Builder(instance.galleryInstance.callback.getWindow().getContext())
 				.setTitle(R.string.action_technical_info).setMessage(message)
 				.setPositiveButton(android.R.string.ok, null);
 		String geolocation = instance.currentHolder.jpegData.getGeolocation(false);

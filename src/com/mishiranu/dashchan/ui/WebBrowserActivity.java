@@ -1,19 +1,3 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui;
 
 import android.annotation.SuppressLint;
@@ -40,11 +24,10 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
-
+import androidx.annotation.NonNull;
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.preference.Preferences;
@@ -66,7 +49,7 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 		super.onCreate(savedInstanceState);
 		setTitle(R.string.action_browser);
 		getActionBar().setDisplayHomeAsUpEnabled(true);
-		ViewUtils.applyToolbarStyle(this, null);
+		ViewUtils.applyToolbarStyle(getWindow(), null);
 		WebView webView = new WebView(this);
 		this.webView = webView;
 		WebSettings settings = webView.getSettings();
@@ -150,7 +133,7 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 				ChanLocator locator = ChanLocator.getDefault();
 				if (locator.isWebScheme(uri) && locator.isImageExtension(uri.getPath())) {
 					menu.add(R.string.action_view).setOnMenuItemClickListener(item -> {
-						NavigationUtils.openImageVideo(WebBrowserActivity.this, uri, false);
+						NavigationUtils.openImageVideo(WebBrowserActivity.this, uri);
 						return true;
 					});
 				}
@@ -160,9 +143,9 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 	}
 
 	@Override
-	public void onConfigurationChanged(Configuration newConfig) {
+	public void onConfigurationChanged(@NonNull Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
-		ViewUtils.applyToolbarStyle(this, null);
+		ViewUtils.applyToolbarStyle(getWindow(), null);
 	}
 
 	@Override

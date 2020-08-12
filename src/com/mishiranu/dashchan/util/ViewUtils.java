@@ -1,7 +1,6 @@
 package com.mishiranu.dashchan.util;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -19,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewOutlineProvider;
 import android.view.ViewParent;
+import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toolbar;
 import com.mishiranu.dashchan.C;
@@ -118,12 +118,13 @@ public class ViewUtils {
 	}
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
-	public static void applyToolbarStyle(Activity activity, View toolbarView) {
+	public static void applyToolbarStyle(Window window, View toolbarView) {
 		if (C.API_LOLLIPOP) {
+			View decorView = window.getDecorView();
 			if (toolbarView == null) {
-				int id = activity.getResources().getIdentifier("action_bar", "id", "android");
+				int id = decorView.getResources().getIdentifier("action_bar", "id", "android");
 				if (id != 0) {
-					toolbarView = activity.findViewById(id);
+					toolbarView = decorView.findViewById(id);
 				}
 			}
 			if (toolbarView instanceof Toolbar) {
@@ -168,7 +169,7 @@ public class ViewUtils {
 					// Reflective operation, ignore exception
 				}
 				if (subtitleTextView != null) {
-					Configuration configuration = activity.getResources().getConfiguration();
+					Configuration configuration = decorView.getResources().getConfiguration();
 					boolean handle = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
 							&& !ResourceUtils.isTablet(configuration);
 					subtitleTextView.setIncludeFontPadding(!handle);

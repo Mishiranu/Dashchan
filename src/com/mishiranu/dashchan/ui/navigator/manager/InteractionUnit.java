@@ -17,6 +17,7 @@ import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.text.style.LinkSuffixSpan;
+import com.mishiranu.dashchan.ui.gallery.GalleryOverlay;
 import com.mishiranu.dashchan.ui.posting.Replyable;
 import com.mishiranu.dashchan.util.ConfigurationLock;
 import com.mishiranu.dashchan.util.DialogMenu;
@@ -101,7 +102,7 @@ public class InteractionUnit {
 			}
 		}
 		if (!handled) {
-			NavigationUtils.handleUriInternal(uiManager.getContext(), chanName, uri, true);
+			NavigationUtils.handleUriInternal(uiManager.getContext(), chanName, uri);
 		}
 	}
 
@@ -183,14 +184,14 @@ public class InteractionUnit {
 
 		private int index;
 		private boolean mayShowDialog;
-		private NavigationUtils.NavigatePostMode navigatePostMode;
+		private GalleryOverlay.NavigatePostMode navigatePostMode;
 
 		public ThumbnailClickListenerImpl(UiManager uiManager) {
 			this.uiManager = uiManager;
 		}
 
 		@Override
-		public void update(int index, boolean mayShowDialog, NavigationUtils.NavigatePostMode navigatePostMode) {
+		public void update(int index, boolean mayShowDialog, GalleryOverlay.NavigatePostMode navigatePostMode) {
 			this.index = index;
 			this.mayShowDialog = mayShowDialog;
 			this.navigatePostMode = navigatePostMode;

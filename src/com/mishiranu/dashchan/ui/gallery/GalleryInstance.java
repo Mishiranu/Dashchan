@@ -1,10 +1,11 @@
 package com.mishiranu.dashchan.ui.gallery;
 
 import android.content.Context;
+import android.view.Window;
 import chan.content.ChanLocator;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.util.ConfigurationLock;
-import java.util.ArrayList;
+import java.util.List;
 
 public class GalleryInstance {
 	public static final int FLAG_LOCKED_USER = 0x00000001;
@@ -13,23 +14,28 @@ public class GalleryInstance {
 
 	public final Context context;
 	public final Callback callback;
+	public final int actionBarColor;
 
-	public String chanName;
-	public ChanLocator locator;
-	public ArrayList<GalleryItem> galleryItems;
+	public final String chanName;
+	public final ChanLocator locator;
+	public final List<GalleryItem> galleryItems;
 
-	public int actionBarColor;
-
-	public GalleryInstance(Context context, Callback callback) {
+	public GalleryInstance(Context context, Callback callback, int actionBarColor,
+			String chanName, ChanLocator locator, List<GalleryItem> galleryItems) {
 		this.context = context;
 		this.callback = callback;
+		this.actionBarColor = actionBarColor;
+		this.chanName = chanName;
+		this.locator = locator;
+		this.galleryItems = galleryItems;
 	}
 
 	public interface Callback {
+		Window getWindow();
 		ConfigurationLock getConfigurationLock();
 
 		void downloadGalleryItem(GalleryItem galleryItem);
-		void downloadGalleryItems(ArrayList<GalleryItem> galleryItems);
+		void downloadGalleryItems(List<GalleryItem> galleryItems);
 
 		void modifyVerticalSwipeState(boolean ignoreIfGallery, float value);
 		void updateTitle();

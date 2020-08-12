@@ -38,11 +38,6 @@
 			android:launchMode="singleTask" />
 
 		<activity
-			android:name=".ui.gallery.GalleryActivity"
-			android:configChanges="orientation|screenSize"
-			android:theme="@style/Theme.Gallery" />
-
-		<activity
 			android:name=".ui.posting.PostingActivity"
 			android:windowSoftInputMode="stateHidden" />
 

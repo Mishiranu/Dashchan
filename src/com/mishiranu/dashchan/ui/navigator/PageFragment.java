@@ -296,6 +296,10 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 		listPage.handleNewPostDataListNow();
 	}
 
+	public void scrollToPost(String postNumber) {
+		listPage.handleScrollToPost(postNumber);
+	}
+
 	@Override
 	public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
 		onCreateOptionsMenu(menu);

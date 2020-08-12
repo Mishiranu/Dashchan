@@ -15,7 +15,6 @@ import android.net.Uri;
 import android.os.SystemClock;
 import android.provider.Browser;
 import android.util.Pair;
-import android.view.View;
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
 import chan.http.CookieBuilder;
@@ -25,7 +24,6 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.FileProvider;
-import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.net.RelayBlockResolver;
 import com.mishiranu.dashchan.content.service.AudioPlayerService;
 import com.mishiranu.dashchan.media.VideoPlayer;
@@ -33,14 +31,8 @@ import com.mishiranu.dashchan.preference.AdvancedPreferences;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.ui.LauncherActivity;
 import com.mishiranu.dashchan.ui.WebBrowserActivity;
-import com.mishiranu.dashchan.ui.gallery.GalleryActivity;
 import com.mishiranu.dashchan.ui.navigator.NavigatorActivity;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -63,11 +55,11 @@ public class NavigationUtils {
 	}
 
 	public static Intent obtainPostsIntent(Context context, String chanName, String boardName, String threadNumber,
-			String postNumber, String threadTitle, int flags) {
+			String postNumber, int flags) {
 		int allowFlags = FLAG_FROM_CACHE | FLAG_RETURNABLE;
 		return obtainMainIntent(context, flags, allowFlags).putExtra(C.EXTRA_CHAN_NAME, chanName)
 				.putExtra(C.EXTRA_BOARD_NAME, boardName).putExtra(C.EXTRA_THREAD_NUMBER, threadNumber)
-				.putExtra(C.EXTRA_POST_NUMBER, postNumber).putExtra(C.EXTRA_THREAD_TITLE, threadTitle);
+				.putExtra(C.EXTRA_POST_NUMBER, postNumber);
 	}
 
 	public static Intent obtainSearchIntent(Context context, String chanName, String boardName, String searchQuery,
@@ -84,8 +76,7 @@ public class NavigationUtils {
 				return obtainThreadsIntent(context, chanName, data.boardName, flags);
 			}
 			case ChanLocator.NavigationData.TARGET_POSTS: {
-				return obtainPostsIntent(context, chanName, data.boardName, data.threadNumber, data.postNumber,
-						null, flags);
+				return obtainPostsIntent(context, chanName, data.boardName, data.threadNumber, data.postNumber, flags);
 			}
 			case ChanLocator.NavigationData.TARGET_SEARCH: {
 				return obtainSearchIntent(context, chanName, data.boardName, data.searchQuery, flags);
@@ -93,26 +84,6 @@ public class NavigationUtils {
 			default: {
 				throw new IllegalStateException();
 			}
-		}
-	}
-
-	public static void handleGalleryUpButtonClick(Activity activity, boolean overrideUpButton,
-			String chanName, GalleryItem galleryItem) {
-		boolean success = false;
-		if (overrideUpButton) {
-			String boardName = null, threadNumber = null;
-			if (galleryItem != null) {
-				boardName = galleryItem.boardName;
-				threadNumber = galleryItem.threadNumber;
-			}
-			if (threadNumber != null) {
-				activity.finish();
-				activity.startActivity(obtainPostsIntent(activity, chanName, boardName, threadNumber, null, null, 0));
-				success = true;
-			}
-		}
-		if (!success) {
-			activity.finish();
 		}
 	}
 
@@ -193,7 +164,7 @@ public class NavigationUtils {
 		}
 	}
 
-	public static void handleUriInternal(Context context, String chanName, Uri uri, boolean allowExpandedScreen) {
+	public static void handleUriInternal(Context context, String chanName, Uri uri) {
 		String uriChanName = ChanManager.getInstance().getChanNameByHost(uri.getAuthority());
 		if (uriChanName != null) {
 			chanName = uriChanName;
@@ -204,7 +175,7 @@ public class NavigationUtils {
 			Uri internalUri = locator.convert(uri);
 			String fileName = locator.createAttachmentFileName(internalUri);
 			if (locator.isImageUri(internalUri) || locator.isVideoUri(internalUri) && isOpenableVideoPath(fileName)) {
-				openImageVideo(context, internalUri, allowExpandedScreen);
+				openImageVideo(context, internalUri);
 				handled = true;
 			} else if (locator.isAudioUri(internalUri)) {
 				AudioPlayerService.start(context, chanName, internalUri, fileName);
@@ -214,7 +185,7 @@ public class NavigationUtils {
 		if (!handled && locator.isWebScheme(uri)) {
 			String path = uri.getPath();
 			if (locator.isImageExtension(path) || locator.isVideoExtension(path) && isOpenableVideoPath(path)) {
-				openImageVideo(context, uri, allowExpandedScreen);
+				openImageVideo(context, uri);
 				handled = true;
 			}
 		}
@@ -223,94 +194,8 @@ public class NavigationUtils {
 		}
 	}
 
-	public enum NavigatePostMode {DISABLED, MANUALLY, ENABLED}
-
-	private static WeakReference<ArrayList<GalleryItem>> galleryItems;
-
-	public static void openGallery(Context context, View imageView, String chanName, int imageIndex,
-			GalleryItem.GallerySet gallerySet, boolean allowExpandedScreen, NavigatePostMode navigatePostMode,
-			boolean galleryMode) {
-		int[] viewPosition = null;
-		if (imageView != null) {
-			int[] location = new int[2];
-			imageView.getLocationOnScreen(location);
-			viewPosition = new int[] {location[0], location[1], imageView.getWidth(), imageView.getHeight()};
-		}
-		gallerySet.cleanup();
-		ArrayList<GalleryItem> galleryItems = gallerySet.getItems();
-		NavigationUtils.galleryItems = new WeakReference<>(galleryItems);
-		Intent intent = new Intent(context, GalleryActivity.class);
-		intent.putExtra(C.EXTRA_CHAN_NAME, chanName);
-		intent.putExtra(C.EXTRA_THREAD_TITLE, gallerySet.getThreadTitle());
-		intent.putExtra(C.EXTRA_OBTAIN_ITEMS, true);
-		intent.putExtra(C.EXTRA_IMAGE_INDEX, imageIndex);
-		intent.putExtra(C.EXTRA_ALLOW_EXPANDED_SCREEN, allowExpandedScreen);
-		intent.putExtra(C.EXTRA_NAVIGATE_POST_MODE, (gallerySet.isNavigatePostSupported()
-				? navigatePostMode : NavigatePostMode.DISABLED).name());
-		intent.putExtra(C.EXTRA_GALLERY_MODE, galleryMode);
-		intent.putExtra(C.EXTRA_VIEW_POSITION, viewPosition);
-		context.startActivity(intent);
-		synchronized (NavigationUtils.class) {
-			File file = getSerializedImagesFile(context);
-			file.delete();
-			// Serialize images to load them if process was killed
-			// I can't pass images in parcel because it can cause TransactionTooLargeException
-			new Thread(new SerializeGalleryItems(galleryItems, file)).start();
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	public static ArrayList<GalleryItem> obtainImagesProvider(Context context) {
-		ArrayList<GalleryItem> galleryItems = NavigationUtils.galleryItems != null
-				? NavigationUtils.galleryItems.get() : null;
-		if (galleryItems == null) {
-			synchronized (NavigationUtils.class) {
-				FileInputStream input = null;
-				try {
-					input = new FileInputStream(getSerializedImagesFile(context));
-					galleryItems = (ArrayList<GalleryItem>) new ObjectInputStream(input).readObject();
-				} catch (Exception e) {
-					// Ignore exception
-				} finally {
-					IOUtils.close(input);
-				}
-			}
-		}
-		return galleryItems;
-	}
-
-	private static File getSerializedImagesFile(Context context) {
-		return new File(context.getCacheDir(), "images");
-	}
-
-	private static class SerializeGalleryItems implements Runnable {
-		private final ArrayList<GalleryItem> galleryItems;
-		private final File file;
-
-		public SerializeGalleryItems(ArrayList<GalleryItem> galleryItems, File file) {
-			this.galleryItems = galleryItems;
-			this.file = file;
-		}
-
-		@Override
-		public void run() {
-			synchronized (NavigationUtils.class) {
-				FileOutputStream output = null;
-				try {
-					output = new FileOutputStream(file);
-					new ObjectOutputStream(output).writeObject(galleryItems);
-				} catch (Exception e) {
-					// Ignore exception
-				} finally {
-					IOUtils.close(output);
-				}
-			}
-		}
-	}
-
-	public static void openImageVideo(Context context, Uri uri, boolean allowExpandedScreen) {
-		context.startActivity(new Intent(context, GalleryActivity.class).setData(uri)
-				.putExtra(C.EXTRA_ALLOW_EXPANDED_SCREEN, allowExpandedScreen));
+	public static void openImageVideo(Context context, Uri uri) {
+		context.startActivity(new Intent(context, NavigatorActivity.class).setAction(C.ACTION_GALLERY).setData(uri));
 	}
 
 	public static boolean isOpenableVideoPath(String path) {

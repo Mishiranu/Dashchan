@@ -1,7 +1,6 @@
 package com.mishiranu.dashchan.ui.gallery;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -14,7 +13,6 @@ import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.media.AudioManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.view.Gravity;
@@ -25,6 +23,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import androidx.annotation.NonNull;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
@@ -36,6 +35,7 @@ import com.mishiranu.dashchan.media.CachingInputStream;
 import com.mishiranu.dashchan.media.VideoPlayer;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.AnimationUtils;
+import com.mishiranu.dashchan.util.AudioFocus;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.IOUtils;
@@ -49,10 +49,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Locale;
 
-public class VideoUnit implements AudioManager.OnAudioFocusChangeListener {
+public class VideoUnit {
 	private final PagerInstance instance;
 	private final LinearLayout controlsView;
-	private final AudioManager audioManager;
+	private final AudioFocus audioFocus;
 
 	private int layoutConfiguration = -1;
 	private LinearLayout configurationView;
@@ -77,7 +77,31 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener {
 		controlsView = new LinearLayout(instance.galleryInstance.context);
 		controlsView.setOrientation(LinearLayout.VERTICAL);
 		controlsView.setVisibility(View.GONE);
-		audioManager = (AudioManager) instance.galleryInstance.context.getSystemService(Activity.AUDIO_SERVICE);
+		audioFocus = new AudioFocus(instance.galleryInstance.context, change -> {
+			switch (change) {
+				case LOSS: {
+					setPlaying(false, false);
+					updatePlayState();
+					break;
+				}
+				case LOSS_TRANSIENT: {
+					boolean playing = player.isPlaying();
+					setPlaying(false, false);
+					if (playing) {
+						pausedByTransientLossOfFocus = true;
+					}
+					updatePlayState();
+					break;
+				}
+				case GAIN: {
+					if (pausedByTransientLossOfFocus) {
+						setPlaying(true, false);
+					}
+					updatePlayState();
+					break;
+				}
+			}
+		});
 	}
 
 	public void addViews(FrameLayout frameLayout) {
@@ -131,7 +155,7 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener {
 			readVideoTask = null;
 		}
 		if (initialized) {
-			audioManager.abandonAudioFocus(this);
+			audioFocus.release();
 			initialized = false;
 		}
 		invalidateControlsVisibility();
@@ -237,46 +261,15 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener {
 		}
 	}
 
-	@Override
-	public void onAudioFocusChange(int focusChange) {
-		if (!initialized) {
-			return;
-		}
-		switch (focusChange) {
-			case AudioManager.AUDIOFOCUS_LOSS: {
-				setPlaying(false, false);
-				updatePlayState();
-				break;
-			}
-			case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT: {
-				boolean playing = player.isPlaying();
-				setPlaying(false, false);
-				if (playing) {
-					pausedByTransientLossOfFocus = true;
-				}
-				updatePlayState();
-				break;
-			}
-			case AudioManager.AUDIOFOCUS_GAIN: {
-				if (pausedByTransientLossOfFocus) {
-					setPlaying(true, false);
-				}
-				updatePlayState();
-				break;
-			}
-		}
-	}
-
 	private boolean setPlaying(boolean playing, boolean resetFocus) {
 		if (player.isPlaying() != playing) {
 			if (resetFocus && player.isAudioPresent()) {
 				if (playing) {
-					if (audioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
-							!= AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+					if (!audioFocus.acquire()) {
 						return false;
 					}
 				} else {
-					audioManager.abandonAudioFocus(this);
+					audioFocus.release();
 				}
 			}
 			player.setPlaying(playing);
@@ -568,7 +561,8 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener {
 			}
 			String message = builder.toString();
 			if (message.length() > 0) {
-				AlertDialog dialog = new AlertDialog.Builder(instance.galleryInstance.context)
+				AlertDialog dialog = new AlertDialog
+						.Builder(instance.galleryInstance.callback.getWindow().getContext())
 						.setTitle(R.string.action_technical_info).setMessage(message)
 						.setPositiveButton(android.R.string.ok, null)
 						.create();
@@ -789,7 +783,7 @@ public class VideoUnit implements AudioManager.OnAudioFocusChangeListener {
 		private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG);
 
 		@Override
-		public void draw(Canvas canvas) {
+		public void draw(@NonNull Canvas canvas) {
 			if (draw) {
 				Rect bounds = getBounds();
 				paint.setColor(Color.BLACK);

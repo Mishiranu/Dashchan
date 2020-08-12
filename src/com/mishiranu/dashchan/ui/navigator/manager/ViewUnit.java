@@ -34,10 +34,10 @@ import com.mishiranu.dashchan.graphics.ColorScheme;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.text.style.LinkSpan;
 import com.mishiranu.dashchan.text.style.LinkSuffixSpan;
+import com.mishiranu.dashchan.ui.gallery.GalleryOverlay;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.ListViewUtils;
-import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.PostDateFormatter;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
@@ -209,7 +209,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 			AttachmentItem attachmentItem = attachmentItems.get(0);
 			boolean needShowSeveralIcon = attachmentItems.size() > 1;
 			attachmentItem.configureAndLoad(holder.thumbnail, needShowSeveralIcon, isBusy, false);
-			holder.thumbnailClickListener.update(0, true, NavigationUtils.NavigatePostMode.DISABLED);
+			holder.thumbnailClickListener.update(0, true, GalleryOverlay.NavigatePostMode.DISABLED);
 			holder.thumbnailLongClickListener.update(attachmentItem);
 			holder.thumbnail.setSfwMode(Preferences.isSfwMode());
 			holder.thumbnail.setVisibility(View.VISIBLE);
@@ -286,7 +286,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 			AttachmentItem attachmentItem = attachmentItems.get(0);
 			boolean needShowSeveralIcon = attachmentItems.size() > 1;
 			attachmentItem.configureAndLoad(holder.thumbnail, needShowSeveralIcon, isBusy, false);
-			holder.thumbnailClickListener.update(0, true, NavigationUtils.NavigatePostMode.DISABLED);
+			holder.thumbnailClickListener.update(0, true, GalleryOverlay.NavigatePostMode.DISABLED);
 			holder.thumbnailLongClickListener.update(attachmentItem);
 			holder.thumbnail.setSfwMode(Preferences.isSfwMode());
 			holder.thumbnail.setVisibility(View.VISIBLE);
@@ -652,7 +652,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 					AttachmentItem attachmentItem = attachmentItems.get(i);
 					attachmentItem.configureAndLoad(attachmentHolder.thumbnail, false, demandSet.isBusy, false);
 					attachmentHolder.thumbnailClickListener.update(i, false, configurationSet.isDialog
-							? NavigationUtils.NavigatePostMode.MANUALLY : NavigationUtils.NavigatePostMode.ENABLED);
+							? GalleryOverlay.NavigatePostMode.MANUALLY : GalleryOverlay.NavigatePostMode.ENABLED);
 					attachmentHolder.thumbnailLongClickListener.update(attachmentItem);
 					attachmentHolder.thumbnail.setSfwMode(sfwMode);
 					attachmentHolder.attachmentInfo.setText(attachmentItem.getDescription(AttachmentItem.FormatMode
@@ -670,7 +670,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 				AttachmentItem attachmentItem = attachmentItems.get(0);
 				attachmentItem.configureAndLoad(holder.thumbnail, size > 1, demandSet.isBusy, false);
 				holder.thumbnailClickListener.update(0, true, configurationSet.isDialog
-						? NavigationUtils.NavigatePostMode.MANUALLY : NavigationUtils.NavigatePostMode.ENABLED);
+						? GalleryOverlay.NavigatePostMode.MANUALLY : GalleryOverlay.NavigatePostMode.ENABLED);
 				holder.thumbnailLongClickListener.update(attachmentItem);
 				holder.thumbnail.setSfwMode(Preferences.isSfwMode());
 				holder.thumbnail.setVisibility(View.VISIBLE);

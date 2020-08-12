@@ -49,6 +49,7 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.async.ReadUpdateTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
+import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.service.PostingService;
 import com.mishiranu.dashchan.content.service.WatcherService;
 import com.mishiranu.dashchan.content.storage.DraftsStorage;
@@ -62,6 +63,7 @@ import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.ForegroundManager;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.StateActivity;
+import com.mishiranu.dashchan.ui.gallery.GalleryOverlay;
 import com.mishiranu.dashchan.ui.navigator.entity.Page;
 import com.mishiranu.dashchan.ui.navigator.entity.PageItem;
 import com.mishiranu.dashchan.ui.navigator.entity.SavedPageItem;
@@ -203,7 +205,7 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 		if (toolbarView == null) {
 			drawerLayout.addDrawerListener(new ExpandedScreenDrawerLocker());
 		}
-		ViewUtils.applyToolbarStyle(this, toolbarView);
+		ViewUtils.applyToolbarStyle(getWindow(), toolbarView);
 
 		updateWideConfiguration(true);
 		expandedScreen = new ExpandedScreen(expandedScreenInit, drawerLayout, toolbarView, drawerInterlayer,
@@ -436,6 +438,38 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 		startActivity(intent);
 	}
 
+	@Override
+	public void navigateGallery(String chanName, GalleryItem.GallerySet gallerySet, int imageIndex,
+			View view, GalleryOverlay.NavigatePostMode navigatePostMode, boolean galleryMode) {
+		ArrayList<GalleryItem> galleryItems = gallerySet.getItems();
+		navigatePostMode = gallerySet.isNavigatePostSupported() ? navigatePostMode
+				: GalleryOverlay.NavigatePostMode.DISABLED;
+		navigateGallery(new GalleryOverlay(chanName, galleryItems, imageIndex, gallerySet.getThreadTitle(),
+				view, navigatePostMode, galleryMode));
+	}
+
+	private void navigateGallery(GalleryOverlay galleryOverlay) {
+		FragmentManager fragmentManager = getSupportFragmentManager();
+		String tag = GalleryOverlay.class.getName();
+		GalleryOverlay currentGalleryOverlay = (GalleryOverlay) fragmentManager.findFragmentByTag(tag);
+		if (currentGalleryOverlay != null) {
+			currentGalleryOverlay.dismiss();
+		}
+		galleryOverlay.show(fragmentManager, tag);
+	}
+
+	@Override
+	public void scrollToPost(String chanName, String boardName, String threadNumber, String postNumber) {
+		Fragment fragment = getCurrentFragment();
+		if (fragment instanceof PageFragment) {
+			Page page = ((PageFragment) fragment).getPage();
+			if (page.content == Page.Content.POSTS && page.chanName.equals(chanName) &&
+					StringUtils.equals(page.boardName, boardName) && page.threadNumber.equals(threadNumber)) {
+				((PageFragment) fragment).scrollToPost(postNumber);
+			}
+		}
+	}
+
 	private void navigateIntent(Intent intent, boolean newIntent) {
 		if (newIntent) {
 			navigateIntentOnResume = intent;
@@ -449,15 +483,16 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 		if (updateDataMap != null) {
 			fragments.clear();
 			navigateFragment(new UpdateFragment(updateDataMap), null);
+		} else if (C.ACTION_GALLERY.equals(intent.getAction())) {
+			new GalleryOverlay(intent.getData()).show(getSupportFragmentManager(), UUID.randomUUID().toString());
 		} else {
 			String chanName = intent.getStringExtra(C.EXTRA_CHAN_NAME);
 			String boardName = intent.getStringExtra(C.EXTRA_BOARD_NAME);
 			String threadNumber = intent.getStringExtra(C.EXTRA_THREAD_NUMBER);
 			String postNumber = intent.getStringExtra(C.EXTRA_POST_NUMBER);
-			String threadTitle = intent.getStringExtra(C.EXTRA_THREAD_TITLE);
 			String searchQuery = intent.getStringExtra(C.EXTRA_SEARCH_QUERY);
 			int flags = intent.getIntExtra(C.EXTRA_NAVIGATION_FLAGS, 0);
-			navigateIntentData(chanName, boardName, threadNumber, postNumber, threadTitle, searchQuery, flags);
+			navigateIntentData(chanName, boardName, threadNumber, postNumber, null, searchQuery, flags);
 		}
 	}
 
@@ -759,6 +794,11 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 		if (!wideMode && !drawerLayout.isDrawerOpen(GravityCompat.START)) {
 			drawerListView.setSelection(0);
 		}
+	}
+
+	@Override
+	public ConfigurationLock getConfigurationLock() {
+		return configurationLock;
 	}
 
 	@Override

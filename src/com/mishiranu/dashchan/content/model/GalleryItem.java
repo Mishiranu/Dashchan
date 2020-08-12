@@ -98,15 +98,6 @@ public class GalleryItem implements Serializable {
 				locator.getChanName(), boardName, threadNumber, threadTitle);
 	}
 
-	public void cleanup() {
-		if (fileUriString != null) {
-			fileUri = null;
-		}
-		if (thumbnailUriString != null) {
-			thumbnailUri = null;
-		}
-	}
-
 	public static class GallerySet {
 		private final boolean navigatePostSupported;
 		private final ArrayList<GalleryItem> galleryItems = new ArrayList<>();
@@ -138,12 +129,6 @@ public class GalleryItem implements Serializable {
 		public void add(GalleryItem galleryItem) {
 			if (galleryItem != null) {
 				galleryItems.add(galleryItem);
-			}
-		}
-
-		public void cleanup() {
-			for (GalleryItem galleryItem : galleryItems) {
-				galleryItem.cleanup();
 			}
 		}
 

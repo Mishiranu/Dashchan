@@ -240,6 +240,8 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 
 	protected void onHandleNewPostDataList() {}
 
+	protected void onScrollToPost(String postNumber) {}
+
 	protected void onRequestStoreExtra(boolean saveToStack) {}
 
 	public String obtainTitle() {
@@ -327,6 +329,12 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 	public final void handleNewPostDataListNow() {
 		if (state == State.RESUMED) {
 			onHandleNewPostDataList();
+		}
+	}
+
+	public final void handleScrollToPost(String postNumber) {
+		if (state == State.RESUMED) {
+			onScrollToPost(postNumber);
 		}
 	}
 

@@ -12,6 +12,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
+import android.util.SparseIntArray;
 import android.view.ActionMode;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -44,6 +45,7 @@ import com.mishiranu.dashchan.widget.EdgeEffectHandler;
 import com.mishiranu.dashchan.widget.callback.BusyScrollListener;
 import com.mishiranu.dashchan.widget.callback.ScrollListenerComposite;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener,
@@ -99,6 +101,23 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 		return gridView;
 	}
 
+	public int[] getSelectedPositions() {
+		if (selectionMode != null) {
+			SparseIntArray array = new SparseIntArray();
+			for (int i = 0; i < gridView.getCount(); i++) {
+				if (gridView.isItemChecked(i)) {
+					array.put(i, i);
+				}
+			}
+			int[] result = new int[array.size()];
+			for (int i = 0; i < array.size(); i++) {
+				result[i] = array.keyAt(i);
+			}
+			return result;
+		}
+		return null;
+	}
+
 	public void setListSelection(int position, boolean checkVisibility) {
 		if (checkVisibility) {
 			int delta = position - gridView.getFirstVisiblePosition();
@@ -115,8 +134,19 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 		return gridAdapter.getCount() > 0;
 	}
 
-	public void startSelectionMode() {
+	public void startSelectionMode(int[] selected) {
 		selectionMode = gridView.startActionMode(this);
+		if (selectionMode != null && selected != null) {
+			int count = 0;
+			for (int position : selected) {
+				if (position >= 0 && position < gridAdapter.getCount()) {
+					gridView.setItemChecked(position, true);
+					count++;
+				}
+			}
+			updateAllGalleryItemsChecked();
+			selectionMode.setTitle(instance.context.getString(R.string.text_selected_format, count));
+		}
 	}
 
 	public boolean onApplyWindowPaddings(Rect rect) {
@@ -180,19 +210,21 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 			return false;
 		}
 		GalleryItem galleryItem = gridAdapter.getItem(position);
-		DialogMenu dialogMenu = new DialogMenu(instance.context, id -> {
+		DialogMenu dialogMenu = new DialogMenu(instance.callback.getWindow().getContext(), id -> {
 			switch (id) {
 				case MENU_DOWNLOAD_FILE: {
 					instance.callback.downloadGalleryItem(galleryItem);
 					break;
 				}
 				case MENU_SEARCH_IMAGE: {
-					NavigationUtils.searchImage(instance.context, instance.callback.getConfigurationLock(),
-							instance.chanName, galleryItem.getDisplayImageUri(instance.locator));
+					NavigationUtils.searchImage(instance.callback.getWindow().getContext(),
+							instance.callback.getConfigurationLock(), instance.chanName,
+							galleryItem.getDisplayImageUri(instance.locator));
 					break;
 				}
 				case MENU_COPY_LINK: {
-					StringUtils.copyToClipboard(instance.context, galleryItem.getFileUri(instance.locator)
+					StringUtils.copyToClipboard(instance.callback.getWindow().getContext(),
+							galleryItem.getFileUri(instance.locator)
 							.toString());
 					break;
 				}
@@ -201,7 +233,8 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 					break;
 				}
 				case MENU_SHARE_LINK: {
-					NavigationUtils.shareLink(instance.context, null, galleryItem.getFileUri(instance.locator));
+					NavigationUtils.shareLink(instance.callback.getWindow().getContext(),
+							null, galleryItem.getFileUri(instance.locator));
 					break;
 				}
 			}
@@ -365,11 +398,11 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 	}
 
 	private class GridAdapter extends BaseAdapter implements BusyScrollListener.Callback {
-		private final ArrayList<GalleryItem> galleryItems;
+		private final List<GalleryItem> galleryItems;
 
 		private boolean enabled = false;
 
-		public GridAdapter(ArrayList<GalleryItem> galleryItems) {
+		public GridAdapter(List<GalleryItem> galleryItems) {
 			this.galleryItems = galleryItems;
 		}
 

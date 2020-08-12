@@ -30,7 +30,7 @@ import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.widget.PhotoView;
 import com.mishiranu.dashchan.widget.PhotoViewPager;
 import java.io.File;
-import java.util.ArrayList;
+import java.util.List;
 
 public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 	private final GalleryInstance galleryInstance;
@@ -115,13 +115,26 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 
 	private static final float PAGER_SCALE = 0.9f;
 
+	private boolean galleryMode = false;
+	private boolean hasFocus = true;
+
+	private void updateActive() {
+		viewPager.setActive(!galleryMode && hasFocus);
+	}
+
+	public void setHasFocus(boolean hasFocus) {
+		this.hasFocus = hasFocus;
+		updateActive();
+	}
+
 	public void switchMode(boolean galleryMode, int duration) {
+		this.galleryMode = galleryMode;
+		updateActive();
 		if (galleryMode) {
 			interrupt(true);
 			pagerInstance.leftHolder = null;
 			pagerInstance.currentHolder = null;
 			pagerInstance.rightHolder = null;
-			viewPager.setActive(false);
 			if (duration > 0) {
 				viewPager.setAlpha(1f);
 				viewPager.setScaleX(1f);
@@ -132,7 +145,6 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 				viewPager.setVisibility(View.GONE);
 			}
 		} else {
-			viewPager.setActive(true);
 			viewPager.setVisibility(View.VISIBLE);
 			if (duration > 0) {
 				viewPager.setAlpha(0f);
@@ -347,8 +359,9 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 				float distance = (float) Math.sqrt((centerX - x) * (centerX - x) + (centerY - y) * (centerY - y));
 				if (distance <= size / 3f * 2f) {
 					if (!galleryItem.isOpenableVideo(galleryInstance.locator)) {
-						NavigationUtils.handleUri(galleryInstance.context, galleryInstance.chanName, galleryItem
-								.getFileUri(galleryInstance.locator), NavigationUtils.BrowserType.EXTERNAL);
+						NavigationUtils.handleUri(galleryInstance.callback.getWindow().getContext(),
+								galleryInstance.chanName, galleryItem.getFileUri(galleryInstance.locator),
+								NavigationUtils.BrowserType.EXTERNAL);
 					} else {
 						loadImageVideo(false, false, 0);
 					}
@@ -413,11 +426,11 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 	}
 
 	private class PagerAdapter implements PhotoViewPager.Adapter {
-		private final ArrayList<GalleryItem> galleryItems;
+		private final List<GalleryItem> galleryItems;
 
 		private int waitBeforeVideo = 0;
 
-		public PagerAdapter(ArrayList<GalleryItem> galleryItems) {
+		public PagerAdapter(List<GalleryItem> galleryItems) {
 			this.galleryItems = galleryItems;
 		}
 
@@ -557,7 +570,7 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 	private DialogMenu currentPopupDialogMenu;
 
 	private void displayPopupMenu() {
-		DialogMenu dialogMenu = new DialogMenu(galleryInstance.context, id -> {
+		DialogMenu dialogMenu = new DialogMenu(galleryInstance.callback.getWindow().getContext(), id -> {
 			GalleryItem galleryItem = pagerInstance.currentHolder.galleryItem;
 			switch (id) {
 				case POPUP_MENU_SAVE: {
@@ -578,7 +591,7 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 				}
 				case POPUP_MENU_SEARCH_IMAGE: {
 					videoUnit.forcePause();
-					NavigationUtils.searchImage(galleryInstance.context,
+					NavigationUtils.searchImage(galleryInstance.callback.getWindow().getContext(),
 							galleryInstance.callback.getConfigurationLock(), galleryInstance.chanName,
 							galleryItem.getDisplayImageUri(galleryInstance.locator));
 					break;
@@ -594,7 +607,7 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 				}
 				case POPUP_MENU_SHARE_LINK: {
 					videoUnit.forcePause();
-					NavigationUtils.shareLink(galleryInstance.context, null,
+					NavigationUtils.shareLink(galleryInstance.callback.getWindow().getContext(), null,
 							galleryItem.getFileUri(galleryInstance.locator));
 					break;
 				}
@@ -603,9 +616,10 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 					Uri uri = galleryItem.getFileUri(galleryInstance.locator);
 					File file = CacheManager.getInstance().getMediaFile(uri, false);
 					if (file == null) {
-						ToastUtils.show(galleryInstance.context, R.string.message_cache_unavailable);
+						ToastUtils.show(galleryInstance.callback.getWindow().getContext(),
+								R.string.message_cache_unavailable);
 					} else {
-						NavigationUtils.shareFile(galleryInstance.context, file,
+						NavigationUtils.shareFile(galleryInstance.callback.getWindow().getContext(), file,
 								galleryItem.getFileName(galleryInstance.locator));
 					}
 					break;

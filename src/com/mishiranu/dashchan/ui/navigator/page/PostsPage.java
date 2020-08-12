@@ -1,9 +1,7 @@
 package com.mishiranu.dashchan.ui.navigator.page;
 
 import android.app.AlertDialog;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.net.Uri;
@@ -22,7 +20,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
@@ -46,6 +43,7 @@ import com.mishiranu.dashchan.content.storage.HistoryDatabase;
 import com.mishiranu.dashchan.content.storage.StatisticsStorage;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.ui.SeekBarForm;
+import com.mishiranu.dashchan.ui.gallery.GalleryOverlay;
 import com.mishiranu.dashchan.ui.navigator.DrawerForm;
 import com.mishiranu.dashchan.ui.navigator.adapter.PostsAdapter;
 import com.mishiranu.dashchan.ui.navigator.entity.Page;
@@ -54,9 +52,7 @@ import com.mishiranu.dashchan.ui.navigator.manager.HidePerformer;
 import com.mishiranu.dashchan.ui.navigator.manager.ThreadshotPerformer;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.ui.posting.Replyable;
-import com.mishiranu.dashchan.util.AndroidUtils;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
-import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.SearchHelper;
 import com.mishiranu.dashchan.util.ToastUtils;
@@ -178,22 +174,6 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 
 	private final ArrayList<String> lastEditedPostNumbers = new ArrayList<>();
 
-	private final BroadcastReceiver galleryPagerReceiver = AndroidUtils.createReceiver((receiver, context, intent) -> {
-		String chanName = intent.getStringExtra(C.EXTRA_CHAN_NAME);
-		String boardName = intent.getStringExtra(C.EXTRA_BOARD_NAME);
-		String threadNumber = intent.getStringExtra(C.EXTRA_THREAD_NUMBER);
-		Page page = getPage();
-		if (page.chanName.equals(chanName) && StringUtils.equals(page.boardName, boardName)
-				&& page.threadNumber.equals(threadNumber)) {
-			String postNumber = intent.getStringExtra(C.EXTRA_POST_NUMBER);
-			int position = getAdapter().findPositionByPostNumber(postNumber);
-			if (position >= 0) {
-				getUiManager().dialog().closeDialogs(getAdapter().getConfigurationSet().stackInstance);
-				ListScroller.scrollTo(getListView(), position);
-			}
-		}
-	});
-
 	@Override
 	protected void onCreate() {
 		Context context = getContext();
@@ -271,8 +251,6 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 			parcelableExtra.scrollToPostNumber = initRequest.postNumber;
 		}
 		FavoritesStorage.getInstance().getObservable().register(this);
-		LocalBroadcastManager.getInstance(context).registerReceiver(galleryPagerReceiver,
-				new IntentFilter(C.ACTION_GALLERY_NAVIGATE_POST));
 		parcelableExtra.hasNewPostDataList |= handleNewPostDataList();
 		QueuedRefresh queuedRefresh = initRequest.shouldLoad ? QueuedRefresh.REFRESH : QueuedRefresh.NONE;
 		parcelableExtra.queuedRefresh = QueuedRefresh.max(parcelableExtra.queuedRefresh, queuedRefresh);
@@ -310,7 +288,6 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		}
 		getAdapter().cleanup();
 		getUiManager().dialog().closeDialogs(getAdapter().getConfigurationSet().stackInstance);
-		LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(galleryPagerReceiver);
 		getUiManager().observable().unregister(this);
 		if (deserializeTask != null) {
 			deserializeTask.cancel();
@@ -337,6 +314,15 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		parcelableExtra.hasNewPostDataList |= handleNewPostDataList();
 		if (parcelableExtra.hasNewPostDataList) {
 			refreshPosts(true, false);
+		}
+	}
+
+	@Override
+	protected void onScrollToPost(String postNumber) {
+		int position = getAdapter().findPositionByPostNumber(postNumber);
+		if (position >= 0) {
+			getUiManager().dialog().closeDialogs(getAdapter().getConfigurationSet().stackInstance);
+			ListScroller.scrollTo(getListView(), position);
 		}
 	}
 
@@ -484,9 +470,10 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				int imageIndex = -1;
 				ListView listView = getListView();
 				View child = listView.getChildAt(0);
+				GalleryItem.GallerySet gallerySet = getAdapter().getConfigurationSet().gallerySet;
 				if (child != null) {
 					UiManager uiManager = getUiManager();
-					ArrayList<GalleryItem> galleryItems = getAdapter().getConfigurationSet().gallerySet.getItems();
+					ArrayList<GalleryItem> galleryItems = gallerySet.getItems();
 					int position = listView.getPositionForView(child);
 					OUTER: for (int v = 0; v <= 1; v++) {
 						for (PostItem postItem : adapter.iterate(v == 0, position)) {
@@ -497,8 +484,8 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 						}
 					}
 				}
-				NavigationUtils.openGallery(getContext(), null, page.chanName, imageIndex,
-						adapter.getConfigurationSet().gallerySet, true, NavigationUtils.NavigatePostMode.ENABLED, true);
+				getUiManager().navigator().navigateGallery(page.chanName, gallerySet, imageIndex,
+						null, GalleryOverlay.NavigatePostMode.ENABLED, true);
 				return true;
 			}
 			case OPTIONS_MENU_SELECT: {
