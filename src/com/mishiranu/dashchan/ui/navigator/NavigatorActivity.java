@@ -60,6 +60,7 @@ import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.preference.fragment.CategoriesFragment;
 import com.mishiranu.dashchan.preference.fragment.UpdateFragment;
 import com.mishiranu.dashchan.ui.ActivityHandler;
+import com.mishiranu.dashchan.ui.BrowserFragment;
 import com.mishiranu.dashchan.ui.ForegroundManager;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.StateActivity;
@@ -485,6 +486,13 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 			navigateFragment(new UpdateFragment(updateDataMap), null);
 		} else if (C.ACTION_GALLERY.equals(intent.getAction())) {
 			new GalleryOverlay(intent.getData()).show(getSupportFragmentManager(), UUID.randomUUID().toString());
+		} else if (C.ACTION_BROWSER.equals(intent.getAction())) {
+			BrowserFragment browserFragment = new BrowserFragment(intent.getData());
+			if (getCurrentFragment() instanceof BrowserFragment) {
+				navigateFragment(browserFragment, null);
+			} else {
+				pushFragment(browserFragment);
+			}
 		} else {
 			String chanName = intent.getStringExtra(C.EXTRA_CHAN_NAME);
 			String boardName = intent.getStringExtra(C.EXTRA_BOARD_NAME);
@@ -963,11 +971,15 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 
 	@Override
 	public void onBackPressed() {
+		onBackPressed(false);
+	}
+
+	private void onBackPressed(boolean homeHandled) {
 		if (!wideMode && drawerLayout.isDrawerOpen(GravityCompat.START)) {
 			drawerLayout.closeDrawers();
 		} else {
 			Fragment currentFragment = getCurrentFragment();
-			if (currentFragment instanceof ActivityHandler &&
+			if (!homeHandled && currentFragment instanceof ActivityHandler &&
 					((ActivityHandler) currentFragment).onBackPressed()) {
 				return;
 			}
@@ -1071,7 +1083,7 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 		switch (item.getItemId()) {
 			case android.R.id.home: {
 				if (currentFragment instanceof ActivityHandler &&
-						((ActivityHandler) currentFragment).onBackPressed()) {
+						((ActivityHandler) currentFragment).onHomePressed()) {
 					return true;
 				}
 				drawerLayout.closeDrawers();
@@ -1098,7 +1110,7 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 					navigateIntentData(newChanName, newBoardName, null, null, null, null,
 							fromCache ? NavigationUtils.FLAG_FROM_CACHE : 0);
 				} else {
-					onBackPressed();
+					onBackPressed(true);
 				}
 				return true;
 			}

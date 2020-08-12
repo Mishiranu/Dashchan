@@ -42,10 +42,6 @@
 			android:windowSoftInputMode="stateHidden" />
 
 		<activity
-			android:name=".ui.WebBrowserActivity"
-			android:configChanges="orientation|screenSize" />
-
-		<activity
 			android:name=".preference.UpdaterActivity"
 			android:excludeFromRecents="true"
 			android:theme="@android:style/Theme.Panel" />

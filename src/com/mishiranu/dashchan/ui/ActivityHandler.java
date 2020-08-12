@@ -9,6 +9,10 @@ public interface ActivityHandler {
 		return false;
 	}
 
+	default boolean onHomePressed() {
+		return onBackPressed();
+	}
+
 	default boolean onBackPressed() {
 		return false;
 	}

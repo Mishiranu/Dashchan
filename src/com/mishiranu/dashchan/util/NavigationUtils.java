@@ -1,12 +1,10 @@
 package com.mishiranu.dashchan.util;
 
-import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -30,7 +28,6 @@ import com.mishiranu.dashchan.media.VideoPlayer;
 import com.mishiranu.dashchan.preference.AdvancedPreferences;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.ui.LauncherActivity;
-import com.mishiranu.dashchan.ui.WebBrowserActivity;
 import com.mishiranu.dashchan.ui.navigator.NavigatorActivity;
 import java.io.File;
 import java.util.ArrayList;
@@ -87,16 +84,6 @@ public class NavigationUtils {
 		}
 	}
 
-	public static Activity getActivity(Context context) {
-		while (!(context instanceof Activity) && context instanceof ContextWrapper) {
-			context = ((ContextWrapper) context).getBaseContext();
-		}
-		if (context instanceof Activity) {
-			return (Activity) context;
-		}
-		return null;
-	}
-
 	public enum BrowserType {AUTO, INTERNAL, EXTERNAL}
 
 	public static void handleUri(Context context, String chanName, Uri uri, BrowserType browserType) {
@@ -129,10 +116,7 @@ public class NavigationUtils {
 			internalBrowser = names.size() == 0;
 		}
 		if (internalBrowser) {
-			intent = new Intent(context, WebBrowserActivity.class).setData(uri);
-			if (getActivity(context) == null) {
-				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			}
+			intent = new Intent(context, NavigatorActivity.class).setAction(C.ACTION_BROWSER).setData(uri);
 		} else {
 			intent = new Intent(Intent.ACTION_VIEW, uri);
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

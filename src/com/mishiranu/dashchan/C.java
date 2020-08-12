@@ -66,6 +66,7 @@ public class C {
 	public static final int HIDDEN_TRUE = 2;
 
 	public static final String ACTION_GALLERY = "com.mishiranu.dashchan.action.GALLERY";
+	public static final String ACTION_BROWSER = "com.mishiranu.dashchan.action.BROWSER";
 	public static final String ACTION_POST_SENT = "com.mishiranu.dashchan.action.POST_SENT";
 
 	public static final int REQUEST_CODE_ATTACH = 1;

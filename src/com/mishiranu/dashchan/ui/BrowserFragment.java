@@ -5,15 +5,15 @@ import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Bundle;
-import android.view.ContextMenu;
+import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,6 +25,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
 import chan.util.StringUtils;
@@ -35,23 +36,41 @@ import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
-import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.util.WebViewUtils;
 
-public class WebBrowserActivity extends StateActivity implements DownloadListener {
+public class BrowserFragment extends Fragment implements ActivityHandler, DownloadListener {
+	private static final String EXTRA_URI = "uri";
+
+	public BrowserFragment() {
+	}
+
+	public BrowserFragment(Uri uri) {
+		Bundle args = new Bundle();
+		args.putParcelable(EXTRA_URI, uri);
+		setArguments(args);
+	}
+
 	private WebView webView;
 	private ProgressView progressView;
 
+	@Override
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		webView = new WebView(requireContext());
+		progressView = new ProgressView(requireContext());
+		float density = ResourceUtils.obtainDensity(this);
+		FrameLayout frameLayout = new FrameLayout(requireContext());
+		frameLayout.addView(webView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
+		frameLayout.addView(progressView, FrameLayout.LayoutParams.MATCH_PARENT, (int) (3f * density + 0.5f));
+		frameLayout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+				ViewGroup.LayoutParams.MATCH_PARENT));
+		return frameLayout;
+	}
+
 	@SuppressLint("SetJavaScriptEnabled")
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		ResourceUtils.applyPreferredTheme(this);
-		super.onCreate(savedInstanceState);
-		setTitle(R.string.action_browser);
-		getActionBar().setDisplayHomeAsUpEnabled(true);
-		ViewUtils.applyToolbarStyle(getWindow(), null);
-		WebView webView = new WebView(this);
-		this.webView = webView;
+	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+
 		WebSettings settings = webView.getSettings();
 		settings.setBuiltInZoomControls(true);
 		settings.setDisplayZoomControls(false);
@@ -61,26 +80,70 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 		settings.setDomStorageEnabled(true);
 		webView.setWebViewClient(new CustomWebViewClient());
 		webView.setWebChromeClient(new CustomWebChromeClient());
-		progressView = new ProgressView(this);
-		float density = ResourceUtils.obtainDensity(this);
-		FrameLayout frameLayout = new FrameLayout(this);
-		frameLayout.addView(webView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
-		frameLayout.addView(progressView, FrameLayout.LayoutParams.MATCH_PARENT, (int) (3f * density + 0.5f));
-		setContentView(frameLayout, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-				ViewGroup.LayoutParams.MATCH_PARENT));
 		webView.setDownloadListener(this);
-		WebViewUtils.clearAll(webView);
-		webView.loadUrl(getIntent().getData().toString());
-		registerForContextMenu(webView);
+		webView.setOnLongClickListener(v -> {
+			WebView.HitTestResult hitTestResult = webView.getHitTestResult();
+			switch (hitTestResult.getType()) {
+				case WebView.HitTestResult.IMAGE_TYPE:
+				case WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE: {
+					final Uri uri = Uri.parse(hitTestResult.getExtra());
+					ChanLocator locator = ChanLocator.getDefault();
+					if (locator.isWebScheme(uri) && locator.isImageExtension(uri.getPath())) {
+						NavigationUtils.openImageVideo(requireContext(), uri);
+					}
+					return true;
+				}
+			}
+			return false;
+		});
+
+		if (savedInstanceState != null) {
+			webView.restoreState(savedInstanceState);
+		}
 	}
 
 	@Override
-	protected void onFinish() {
-		super.onFinish();
+	public void onDestroyView() {
+		super.onDestroyView();
+
 		webView.stopLoading();
-		ViewUtils.removeFromParent(webView);
-		WebViewUtils.clearAll(webView);
 		webView.destroy();
+		webView = null;
+		progressView = null;
+	}
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+
+		setHasOptionsMenu(true);
+		requireActivity().setTitle(R.string.action_browser);
+		requireActivity().getActionBar().setSubtitle(null);
+		if (savedInstanceState == null) {
+			WebViewUtils.clearAll(webView);
+			webView.loadUrl(requireArguments().<Uri>getParcelable(EXTRA_URI).toString());
+		}
+	}
+
+	@Override
+	public void onPause() {
+		super.onPause();
+		webView.onPause();
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		webView.onResume();
+	}
+
+	@Override
+	public void onSaveInstanceState(@NonNull Bundle outState) {
+		super.onSaveInstanceState(outState);
+
+		if (webView != null) {
+			webView.saveState(outState);
+		}
 	}
 
 	private static final int OPTIONS_MENU_RELOAD = 0;
@@ -88,34 +151,29 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 	private static final int OPTIONS_MENU_SHARE_LINK = 2;
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		ActionIconSet set = new ActionIconSet(this);
+	public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+		ActionIconSet set = new ActionIconSet(requireContext());
 		menu.add(0, OPTIONS_MENU_RELOAD, 0, R.string.action_reload).setIcon(set.getId(R.attr.actionRefresh))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 		menu.add(0, OPTIONS_MENU_COPY_LINK, 0, R.string.action_copy_link);
 		menu.add(0, OPTIONS_MENU_SHARE_LINK, 0, R.string.action_share_link);
-		return super.onCreateOptionsMenu(menu);
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-			case android.R.id.home: {
-				finish();
-				break;
-			}
 			case OPTIONS_MENU_RELOAD: {
 				webView.reload();
 				break;
 			}
 			case OPTIONS_MENU_COPY_LINK: {
-				StringUtils.copyToClipboard(this, webView.getUrl());
+				StringUtils.copyToClipboard(requireContext(), webView.getUrl());
 				break;
 			}
 			case OPTIONS_MENU_SHARE_LINK: {
 				String uriString = webView.getUrl();
 				if (!StringUtils.isEmpty(uriString)) {
-					NavigationUtils.shareLink(this, null, Uri.parse(uriString));
+					NavigationUtils.shareLink(requireContext(), null, Uri.parse(uriString));
 				}
 				break;
 			}
@@ -124,37 +182,17 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 	}
 
 	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-		WebView.HitTestResult hitTestResult = webView.getHitTestResult();
-		switch (hitTestResult.getType()) {
-			case WebView.HitTestResult.IMAGE_TYPE:
-			case WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE: {
-				final Uri uri = Uri.parse(hitTestResult.getExtra());
-				ChanLocator locator = ChanLocator.getDefault();
-				if (locator.isWebScheme(uri) && locator.isImageExtension(uri.getPath())) {
-					menu.add(R.string.action_view).setOnMenuItemClickListener(item -> {
-						NavigationUtils.openImageVideo(WebBrowserActivity.this, uri);
-						return true;
-					});
-				}
-				break;
-			}
-		}
+	public boolean onHomePressed() {
+		return false;
 	}
 
 	@Override
-	public void onConfigurationChanged(@NonNull Configuration newConfig) {
-		super.onConfigurationChanged(newConfig);
-		ViewUtils.applyToolbarStyle(getWindow(), null);
-	}
-
-	@Override
-	public void onBackPressed() {
+	public boolean onBackPressed() {
 		if (webView.canGoBack()) {
 			webView.goBack();
-		} else {
-			super.onBackPressed();
+			return true;
 		}
+		return false;
 	}
 
 	@Override
@@ -164,7 +202,7 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 			startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse(url))
 					.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
 		} catch (ActivityNotFoundException e) {
-			ToastUtils.show(this, R.string.message_unknown_address);
+			ToastUtils.show(requireContext(), R.string.message_unknown_address);
 		}
 	}
 
@@ -188,13 +226,14 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 					navigationData = locator.safe(true).handleUriClickSpecial(uri);
 				}
 				if (navigationData != null) {
-					new AlertDialog.Builder(WebBrowserActivity.this).setMessage(R.string.message_open_link_confirm)
+					AlertDialog alertDialog = new AlertDialog.Builder(requireContext())
+							.setMessage(R.string.message_open_link_confirm)
 							.setNegativeButton(android.R.string.cancel, null)
-							.setPositiveButton(android.R.string.ok, (dialog, which) -> {
-						finish();
-						startActivity(NavigationUtils.obtainTargetIntent(WebBrowserActivity.this,
-								chanName, navigationData, NavigationUtils.FLAG_RETURNABLE));
-					}).show();
+							.setPositiveButton(android.R.string.ok, (dialog, which) -> startActivity(NavigationUtils
+									.obtainTargetIntent(requireContext(), chanName, navigationData,
+											NavigationUtils.FLAG_RETURNABLE)))
+							.show();
+					((FragmentHandler) requireActivity()).getConfigurationLock().lockConfiguration(alertDialog);
 					return true;
 				}
 			}
@@ -206,16 +245,16 @@ public class WebBrowserActivity extends StateActivity implements DownloadListene
 		public void onPageFinished(WebView view, String url) {
 			String title = view.getTitle();
 			if (StringUtils.isEmptyOrWhitespace(title)) {
-				setTitle(R.string.action_browser);
+				requireActivity().setTitle(R.string.action_browser);
 			} else {
-				setTitle(view.getTitle());
+				requireActivity().setTitle(view.getTitle());
 			}
 		}
 
 		@Override
 		public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
 			if (Preferences.isVerifyCertificate()) {
-				ToastUtils.show(WebBrowserActivity.this, R.string.message_invalid_certificate);
+				ToastUtils.show(requireContext(), R.string.message_invalid_certificate);
 				super.onReceivedSslError(view, handler, error);
 			} else {
 				handler.proceed();
