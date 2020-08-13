@@ -51,7 +51,6 @@
 		<item quantity="one">%d file already exists.</item>
 		<item quantity="other">%d files already exist.</item>
 	</plurals>
-	<string name="text_general">General</string>
 	<string name="text_no_icon">No icon</string>
 	<string name="text_in_thread_format_format">In thread %s</string>
 	<string name="text_keep_all">Keep all</string>
@@ -125,6 +124,9 @@
 	<string name="text_sort_by_replies">Sort by replies</string>
 	<string name="text_sorting">Sorting</string>
 	<string name="text_spoiler">Spoiler</string>
+	<string name="text_statistics_posts">Posts</string>
+	<string name="text_statistics_threads">Threads</string>
+	<string name="text_statistics_views">Views</string>
 	<string name="text_sticky_thread">Sticky thread</string>
 	<string name="text_subject">Subject</string>
 	<string name="text_test_string">Test string</string>
@@ -132,8 +134,8 @@
 	<string name="text_thread">Thread</string>
 	<string name="text_thread_files_format">%d with files</string>
 	<string name="text_threads_created">Threads created</string>
-	<string name="text_threads_viewed">Threads viewed</string>
 	<string name="text_today">Today</string>
+	<string name="text_total">Total</string>
 	<string name="text_unique_hash">Unique hash</string>
 	<string name="text_unique_posters_format">Unique posters: %s</string>
 	<string name="text_unsupported_version">Unsupported version</string>

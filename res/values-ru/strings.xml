@@ -57,7 +57,6 @@
 		<item quantity="many">%d файлов уже существуют.</item>
 		<item quantity="other">%d файлов уже существуют.</item>
 	</plurals>
-	<string name="text_general">Общая</string>
 	<string name="text_no_icon">Нет иконки</string>
 	<string name="text_in_thread_format_format">В треде %s</string>
 	<string name="text_keep_all">Сохранить все</string>
@@ -102,7 +101,6 @@
 		<item quantity="other">%d сообщений в час</item>
 	</plurals>
 	<string name="text_post_sent">Сообщение отправлено</string>
-	<string name="text_posts_sent">Отправлено сообщений</string>
 	<string name="text_posts_with_files_format">Сообщений с файлами: %s</string>
 	<string name="text_quality_format">Качество: %d%%</string>
 	<string name="text_rating">Рейтинг</string>
@@ -141,15 +139,17 @@
 	<string name="text_sort_by_replies">Сортировать по ответам</string>
 	<string name="text_sorting">Сортировка</string>
 	<string name="text_spoiler">Спойлер</string>
+	<string name="text_statistics_posts">Сообщений</string>
+	<string name="text_statistics_threads">Тредов</string>
+	<string name="text_statistics_views">Просмотров</string>
 	<string name="text_sticky_thread">Тред прикреплён</string>
 	<string name="text_subject">Тема</string>
 	<string name="text_test_string">Тестовая строка</string>
 	<string name="text_this_week">Эта неделя</string>
 	<string name="text_thread">Тред</string>
 	<string name="text_thread_files_format">%d с файлами</string>
-	<string name="text_threads_created">Создано тредов</string>
-	<string name="text_threads_viewed">Просмотрено тредов</string>
 	<string name="text_today">Сегодня</string>
+	<string name="text_total">Всего</string>
 	<string name="text_unique_hash">Уникальный хеш</string>
 	<string name="text_unique_posters_format">Уникальных отправителей: %s</string>
 	<string name="text_unsupported_version">Неподдерживаемая версия</string>

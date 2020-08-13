@@ -48,7 +48,6 @@
 		<item quantity="one">%d arquivo já existe.</item>
 		<item quantity="other">%d arquivos já existem.</item>
 	</plurals>
-	<string name="text_general">Geral</string>
 	<string name="text_no_icon">Sem ícone</string>
 	<string name="text_in_thread_format_format">No fio %s</string>
 	<string name="text_keep_all">Guardar tudo</string>
@@ -82,7 +81,6 @@
 		<item quantity="one">%d post por hora</item>
 		<item quantity="other">%d posts por hora</item>
 	</plurals>
-	<string name="text_posts_sent">Posts enviados</string>
 	<string name="text_posts_with_files_format">Posts com arquivos: %s</string>
 	<string name="text_rating">Classificação</string>
 	<string name="text_read_only">Somente leitura</string>
@@ -116,8 +114,6 @@
 	<string name="text_this_week">Essa semana</string>
 	<string name="text_thread">Fio</string>
 	<string name="text_thread_files_format">%d com imagens</string>
-	<string name="text_threads_created">Fios criados</string>
-	<string name="text_threads_viewed">Fios visualizados</string>
 	<string name="text_today">Hoje</string>
 	<string name="text_unique_hash">Hash único</string>
 	<string name="text_unique_posters_format">Postadores únicos: %s</string>

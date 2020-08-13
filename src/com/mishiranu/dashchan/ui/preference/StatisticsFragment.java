@@ -1,15 +1,17 @@
 package com.mishiranu.dashchan.ui.preference;
 
-import android.graphics.Typeface;
 import android.os.Bundle;
-import android.text.SpannableStringBuilder;
-import android.text.style.StyleSpan;
-import android.text.style.TypefaceSpan;
+import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.core.widget.TextViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import chan.content.ChanConfiguration;
 import chan.content.ChanManager;
@@ -20,27 +22,12 @@ import com.mishiranu.dashchan.content.storage.StatisticsStorage;
 import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.util.PostDateFormatter;
-import com.mishiranu.dashchan.widget.ViewFactory;
+import com.mishiranu.dashchan.util.ResourceUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class StatisticsFragment extends BaseListFragment {
-	private static class ListItem {
-		public final String title;
-		public final int views;
-		public final int posts;
-		public final int threads;
-
-		public ListItem(String title, int views, int posts, int threads) {
-			this.title = title;
-			this.views = views;
-			this.posts = posts;
-			this.threads = threads;
-		}
-	}
-
-	private final ArrayList<ListItem> listItems = new ArrayList<>();
-
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
@@ -50,6 +37,10 @@ public class StatisticsFragment extends BaseListFragment {
 		long startTime = StatisticsStorage.getInstance().getStartTime();
 		requireActivity().getActionBar().setSubtitle(startTime > 0 ? getString(R.string.text_since_format,
 				new PostDateFormatter(requireContext()).format(startTime)) : null);
+
+		ArrayList<Adapter.ListItem> listItems = new ArrayList<>();
+		listItems.add(new Adapter.ListItem(null, getString(R.string.text_statistics_views),
+				getString(R.string.text_statistics_posts), getString(R.string.text_statistics_threads)));
 
 		HashMap<String, StatisticsStorage.StatisticsItem> statisticsItems = StatisticsStorage.getInstance().getItems();
 		int totalThreadsViewed = 0;
@@ -68,8 +59,8 @@ public class StatisticsFragment extends BaseListFragment {
 				totalThreadsCreated += statisticsItem.threadsCreated;
 			}
 		}
-		listItems.add(new ListItem(getString(R.string.text_general), totalThreadsViewed, totalPostsSent,
-				totalThreadsCreated));
+		listItems.add(new Adapter.ListItem(getString(R.string.text_total), Integer.toString(totalThreadsViewed),
+				Integer.toString(totalPostsSent), Integer.toString(totalThreadsCreated)));
 
 		for (String chanName : ChanManager.getInstance().getAvailableChanNames()) {
 			StatisticsStorage.StatisticsItem statisticsItem = statisticsItems.get(chanName);
@@ -83,49 +74,13 @@ public class StatisticsFragment extends BaseListFragment {
 					if (StringUtils.isEmpty(title)) {
 						title = chanName;
 					}
-					listItems.add(new ListItem(title, threadsViewed, postsSent, threadsCreated));
+					listItems.add(new Adapter.ListItem(title, Integer.toString(threadsViewed),
+							Integer.toString(postsSent), Integer.toString(threadsCreated)));
 				}
 			}
 		}
 
-		getRecyclerView().setAdapter(new RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-			@Override
-			public int getItemCount() {
-				return listItems.size();
-			}
-
-			@NonNull
-			@Override
-			public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-				return new RecyclerView.ViewHolder(ViewFactory.makeTwoLinesListItem(parent, false)) {};
-			}
-
-			@Override
-			public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-				ViewFactory.TwoLinesViewHolder viewHolder = (ViewFactory.TwoLinesViewHolder) holder.itemView.getTag();
-				ListItem listItem = listItems.get(position);
-				viewHolder.text1.setText(listItem.title);
-				SpannableStringBuilder spannable = new SpannableStringBuilder();
-				appendSpannedLine(spannable, R.string.text_threads_viewed, listItem.views);
-				appendSpannedLine(spannable, R.string.text_posts_sent, listItem.posts);
-				appendSpannedLine(spannable, R.string.text_threads_created, listItem.threads);
-				viewHolder.text2.setText(spannable);
-			}
-
-			private void appendSpannedLine(SpannableStringBuilder spannable, int resId, int value) {
-				if (value >= 0) {
-					if (spannable.length() > 0) {
-						spannable.append('\n');
-					}
-					spannable.append(getString(resId)).append(": ");
-					StringUtils.appendSpan(spannable, Integer.toString(value), getBoldSpan());
-				}
-			}
-
-			private Object getBoldSpan() {
-				return C.API_LOLLIPOP ? new TypefaceSpan("sans-serif-medium") : new StyleSpan(Typeface.BOLD);
-			}
-		});
+		getRecyclerView().setAdapter(new Adapter(listItems));
 	}
 
 	private static final int OPTIONS_MENU_CLEAR = 0;
@@ -148,5 +103,89 @@ public class StatisticsFragment extends BaseListFragment {
 			}
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	private static class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
+		public static class ListItem {
+			public final String text1;
+			public final String text2;
+			public final String text3;
+			public final String text4;
+
+			public ListItem(String text1, String text2, String text3, String text4) {
+				this.text1 = text1;
+				this.text2 = text2;
+				this.text3 = text3;
+				this.text4 = text4;
+			}
+		}
+
+		private static class ViewHolder extends RecyclerView.ViewHolder {
+			public final TextView text1;
+			public final TextView text2;
+			public final TextView text3;
+			public final TextView text4;
+
+			public ViewHolder(@NonNull View itemView, TextView text1, TextView text2, TextView text3, TextView text4) {
+				super(itemView);
+				this.text1 = text1;
+				this.text2 = text2;
+				this.text3 = text3;
+				this.text4 = text4;
+			}
+		}
+
+		private final List<ListItem> listItems;
+
+		public Adapter(List<ListItem> listItems) {
+			this.listItems = listItems;
+		}
+
+		@Override
+		public int getItemCount() {
+			return listItems.size();
+		}
+
+		private TextView addTextView(LinearLayout parent, boolean end, float weight, int padding) {
+			TextView textView = new TextView(parent.getContext());
+			TextViewCompat.setTextAppearance(textView, ResourceUtils.getResourceId(textView.getContext(),
+					C.API_LOLLIPOP ? android.R.attr.textAppearanceListItem : android.R.attr.textAppearanceMedium,
+					android.R.style.TextAppearance_Medium));
+			textView.setSingleLine(true);
+			textView.setEllipsize(TextUtils.TruncateAt.END);
+			textView.setGravity(Gravity.CENTER_VERTICAL | (end ? Gravity.END : Gravity.START));
+			LinearLayout.LayoutParams layoutParams = new LinearLayout
+					.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, weight);
+			layoutParams.leftMargin = padding;
+			parent.addView(textView, layoutParams);
+			return textView;
+		}
+
+		@NonNull
+		@Override
+		public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+			LinearLayout linearLayout = new LinearLayout(parent.getContext());
+			linearLayout.setOrientation(LinearLayout.HORIZONTAL);
+			float density = ResourceUtils.obtainDensity(linearLayout);
+			int outerPadding = (int) ((C.API_LOLLIPOP ? 16f : 6f) * density);
+			int innerPadding = (int) ((C.API_LOLLIPOP ? 8f : 6f) * density);
+			linearLayout.setPadding(outerPadding - innerPadding, 0, outerPadding, 0);
+			TextView text1 = addTextView(linearLayout, false, 3f, innerPadding);
+			TextView text2 = addTextView(linearLayout, true, 2f, innerPadding);
+			TextView text3 = addTextView(linearLayout, true, 2f, innerPadding);
+			TextView text4 = addTextView(linearLayout, true, 2f, innerPadding);
+			linearLayout.setLayoutParams(new RecyclerView.LayoutParams
+					(RecyclerView.LayoutParams.MATCH_PARENT, (int) (48f * density)));
+			return new ViewHolder(linearLayout, text1, text2, text3, text4);
+		}
+
+		@Override
+		public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+			ListItem listItem = listItems.get(position);
+			holder.text1.setText(listItem.text1);
+			holder.text2.setText(listItem.text2);
+			holder.text3.setText(listItem.text3);
+			holder.text4.setText(listItem.text4);
+		}
 	}
 }
