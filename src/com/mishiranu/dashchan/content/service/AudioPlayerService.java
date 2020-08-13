@@ -1,19 +1,3 @@
-/*
- * Copyright 2014-2016, 2020 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.content.service;
 
 import android.annotation.TargetApi;
@@ -24,34 +8,36 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.TypedArray;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.PowerManager;
 import android.view.ContextThemeWrapper;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.async.ReadFileTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.preference.Preferences;
+import com.mishiranu.dashchan.ui.navigator.NavigatorActivity;
+import com.mishiranu.dashchan.util.AudioFocus;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
+import com.mishiranu.dashchan.util.WeakObservable;
 import java.io.File;
 
-public class AudioPlayerService extends Service implements AudioManager.OnAudioFocusChangeListener,
-		MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener, ReadFileTask.Callback {
-	private static final String ACTION_START = "com.mishiranu.dashchan.action.START";
-	public static final String ACTION_CANCEL = "com.mishiranu.dashchan.action.CANCEL";
-	public static final String ACTION_TOGGLE = "com.mishiranu.dashchan.action.TOGGLE";
+public class AudioPlayerService extends Service implements MediaPlayer.OnCompletionListener,
+		MediaPlayer.OnErrorListener, ReadFileTask.Callback {
+	private static final String ACTION_START = "start";
+	private static final String ACTION_CANCEL = "cancel";
+	private static final String ACTION_TOGGLE = "toggle";
 
-	private static final String EXTRA_CHAN_NAME = "com.mishiranu.dashchan.extra.CHAN_NAME";
-	private static final String EXTRA_FILE_NAME = "com.mishiranu.dashchan.extra.FILE_NAME";
+	private static final String EXTRA_CHAN_NAME = "chanName";
+	private static final String EXTRA_FILE_NAME = "fileName";
 
-	private AudioManager audioManager;
+	private final WeakObservable<Callback> callbacks = new WeakObservable<>();
+	private AudioFocus audioFocus;
 	private NotificationManager notificationManager;
 	private int notificationColor;
 	private PowerManager.WakeLock wakeLock;
@@ -75,7 +61,29 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+
+		audioFocus = new AudioFocus(this, change -> {
+			switch (change) {
+				case LOSS: {
+					pause(true);
+					break;
+				}
+				case LOSS_TRANSIENT: {
+					boolean playing = mediaPlayer.isPlaying();
+					pause(false);
+					if (playing) {
+						pausedByTransientLossOfFocus = true;
+					}
+					break;
+				}
+				case GAIN: {
+					if (pausedByTransientLossOfFocus) {
+						play(false);
+					}
+					break;
+				}
+			}
+		});
 		notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		int notificationColor = 0;
 		if (C.API_LOLLIPOP) {
@@ -84,9 +92,21 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 		}
 		this.notificationColor = notificationColor;
 		PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
-		wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "AudioPlayerWakeLock");
+		wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, getPackageName() + ":AudioPlayerWakeLock");
 		wakeLock.setReferenceCounted(false);
 		context = new ContextThemeWrapper(this, R.style.Theme_Special_Notification);
+	}
+
+	private void notifyToggle() {
+		for (Callback callback : callbacks) {
+			callback.onTogglePlayback();
+		}
+	}
+
+	private void notifyCancel() {
+		for (Callback callback : callbacks) {
+			callback.onCancel();
+		}
 	}
 
 	@Override
@@ -99,7 +119,7 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 				if (!cacheManager.isCacheAvailable()) {
 					ToastUtils.show(this, R.string.message_cache_unavailable);
 					stopSelf();
-					sendToActivity(ACTION_CANCEL);
+					notifyCancel();
 				} else {
 					Uri uri = intent.getData();
 					chanName = intent.getStringExtra(EXTRA_CHAN_NAME);
@@ -109,7 +129,7 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 						ToastUtils.show(this, R.string.message_cache_unavailable);
 						cleanup();
 						stopSelf();
-						sendToActivity(ACTION_CANCEL);
+						notifyCancel();
 					} else {
 						wakeLock.acquire();
 						if (cachedFile.exists()) {
@@ -123,7 +143,7 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 			} else if (ACTION_CANCEL.equals(action)) {
 				cleanup();
 				stopSelf();
-				sendToActivity(ACTION_CANCEL);
+				notifyCancel();
 			} else if (ACTION_TOGGLE.equals(action)) {
 				togglePlayback();
 			}
@@ -137,16 +157,12 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 		super.onDestroy();
 	}
 
-	private void sendToActivity(String action) {
-		LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(action));
-	}
-
 	private void cleanup() {
 		if (readFileTask != null) {
 			readFileTask.cancel();
 			readFileTask = null;
 		}
-		audioManager.abandonAudioFocus(this);
+		audioFocus.release();
 		if (mediaPlayer != null) {
 			mediaPlayer.stop();
 			mediaPlayer.release();
@@ -154,7 +170,7 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 		}
 		wakeLock.release();
 		stopForeground(true);
-		sendToActivity(ACTION_CANCEL);
+		notifyCancel();
 	}
 
 	private void togglePlayback() {
@@ -166,16 +182,29 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 		}
 		if (success) {
 			refreshPlaybackNotification(true);
-			sendToActivity(ACTION_TOGGLE);
+			notifyToggle();
 		} else {
 			ToastUtils.show(context, R.string.message_playback_error);
 			cleanup();
 			stopSelf();
-			sendToActivity(ACTION_CANCEL);
+			notifyCancel();
 		}
 	}
 
+	public interface Callback {
+		void onTogglePlayback();
+		void onCancel();
+	}
+
 	public class Binder extends android.os.Binder {
+		public void registerCallback(Callback callback) {
+			callbacks.register(callback);
+		}
+
+		public void unregisterCallback(Callback callback) {
+			callbacks.unregister(callback);
+		}
+
 		public void togglePlayback() {
 			if (mediaPlayer != null) {
 				AudioPlayerService.this.togglePlayback();
@@ -187,8 +216,12 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 			stopSelf();
 		}
 
+		public boolean isRunning() {
+			return mediaPlayer != null;
+		}
+
 		public boolean isPlaying() {
-			return mediaPlayer != null ? mediaPlayer.isPlaying() : false;
+			return mediaPlayer != null && mediaPlayer.isPlaying();
 		}
 
 		public String getFileName() {
@@ -216,30 +249,6 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 	}
 
 	@Override
-	public void onAudioFocusChange(int focusChange) {
-		switch (focusChange) {
-			case AudioManager.AUDIOFOCUS_LOSS: {
-				pause(true);
-				break;
-			}
-			case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT: {
-				boolean playing = mediaPlayer.isPlaying();
-				pause(false);
-				if (playing) {
-					pausedByTransientLossOfFocus = true;
-				}
-				break;
-			}
-			case AudioManager.AUDIOFOCUS_GAIN: {
-				if (pausedByTransientLossOfFocus) {
-					play(false);
-				}
-				break;
-			}
-		}
-	}
-
-	@Override
 	public void onCompletion(MediaPlayer mp) {
 		pause(true);
 		mediaPlayer.stop();
@@ -255,13 +264,13 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 		}
 		cleanup();
 		stopSelf();
-		sendToActivity(ACTION_CANCEL);
+		notifyCancel();
 		return true;
 	}
 
 	private boolean pause(boolean resetFocus) {
 		if (resetFocus) {
-			audioManager.abandonAudioFocus(this);
+			audioFocus.release();
 		}
 		mediaPlayer.pause();
 		wakeLock.acquire(15000);
@@ -269,8 +278,7 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 	}
 
 	private boolean play(boolean resetFocus) {
-		if (resetFocus && audioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
-				!= AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+		if (resetFocus && !audioFocus.acquire()) {
 			return false;
 		}
 		mediaPlayer.start();
@@ -294,7 +302,7 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 			ToastUtils.show(context, R.string.message_playback_error);
 			cleanup();
 			stopSelf();
-			sendToActivity(ACTION_CANCEL);
+			notifyCancel();
 			return;
 		}
 		play(true);
@@ -314,7 +322,8 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 			builder = new Notification.Builder(this);
 			builder.setSmallIcon(R.drawable.ic_audiotrack_white_24dp);
 			PendingIntent contentIntent = PendingIntent.getActivity(context, 0,
-					new Intent(this, AudioPlayerActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+					new Intent(this, NavigatorActivity.class).setAction(C.ACTION_PLAYER),
+					PendingIntent.FLAG_UPDATE_CURRENT);
 			builder.setContentIntent(contentIntent);
 			TypedArray typedArray = context.obtainStyledAttributes(ICON_ATTRS);
 			PendingIntent toggleIntent = PendingIntent.getService(context, 0,
@@ -413,7 +422,7 @@ public class AudioPlayerService extends Service implements AudioManager.OnAudioF
 	}
 
 	public static void start(Context context, String chanName, Uri uri, String fileName) {
-		context.startService(obtainIntent(context, ACTION_START).setData(uri).putExtra(EXTRA_CHAN_NAME, chanName)
-				.putExtra(EXTRA_FILE_NAME, fileName));
+		context.startService(obtainIntent(context, ACTION_START).setData(uri)
+				.putExtra(EXTRA_CHAN_NAME, chanName).putExtra(EXTRA_FILE_NAME, fileName));
 	}
 }

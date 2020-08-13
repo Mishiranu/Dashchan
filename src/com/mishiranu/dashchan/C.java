@@ -67,6 +67,7 @@ public class C {
 
 	public static final String ACTION_POSTING = "com.mishiranu.dashchan.action.POSTING";
 	public static final String ACTION_GALLERY = "com.mishiranu.dashchan.action.GALLERY";
+	public static final String ACTION_PLAYER = "com.mishiranu.dashchan.action.PLAYER";
 	public static final String ACTION_BROWSER = "com.mishiranu.dashchan.action.BROWSER";
 
 	public static final int REQUEST_CODE_ATTACH = 1;

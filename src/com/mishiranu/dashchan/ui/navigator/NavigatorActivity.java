@@ -61,6 +61,7 @@ import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.preference.fragment.CategoriesFragment;
 import com.mishiranu.dashchan.preference.fragment.UpdateFragment;
 import com.mishiranu.dashchan.ui.ActivityHandler;
+import com.mishiranu.dashchan.ui.AudioPlayerDialog;
 import com.mishiranu.dashchan.ui.BrowserFragment;
 import com.mishiranu.dashchan.ui.ForegroundManager;
 import com.mishiranu.dashchan.ui.FragmentHandler;
@@ -525,6 +526,12 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 			}
 		} else if (C.ACTION_GALLERY.equals(intent.getAction())) {
 			new GalleryOverlay(intent.getData()).show(getSupportFragmentManager(), UUID.randomUUID().toString());
+		} else if (C.ACTION_PLAYER.equals(intent.getAction())) {
+			FragmentManager fragmentManager = getSupportFragmentManager();
+			String tag = AudioPlayerDialog.class.getName();
+			if (fragmentManager.findFragmentByTag(tag) == null) {
+				new AudioPlayerDialog().show(fragmentManager, tag);
+			}
 		} else if (C.ACTION_BROWSER.equals(intent.getAction())) {
 			BrowserFragment browserFragment = new BrowserFragment(intent.getData());
 			if (getCurrentFragment() instanceof BrowserFragment) {
