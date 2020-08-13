@@ -661,7 +661,7 @@ public class Preferences {
 
 	public static boolean isMergeChans() {
 		return PREFERENCES.getBoolean(KEY_MERGE_CHANS, DEFAULT_MERGE_CHANS) &&
-				ChanManager.getInstance().getAvailableChanNames().size() > 1;
+				ChanManager.getInstance().hasMultipleAvailableChans();
 	}
 
 	public static final String KEY_NOTIFY_DOWNLOAD_COMPLETE = "notify_download_complete";
@@ -935,20 +935,19 @@ public class Preferences {
 
 	public static final String KEY_TRUSTED_EXSTENSIONS = "trusted_extensions";
 
-	public static boolean isExtensionTrusted(String packageName) {
-		Set<String> packageNames = PREFERENCES.getStringSet(KEY_TRUSTED_EXSTENSIONS, null);
-		return packageNames != null && packageNames.contains(packageName);
+	public static boolean isExtensionTrusted(String packageName, String fingerprint) {
+		String packageNameFingerprint = packageName + ":" + fingerprint;
+		Set<String> packageNameFingerprints = PREFERENCES.getStringSet(KEY_TRUSTED_EXSTENSIONS, null);
+		return packageNameFingerprints != null && packageNameFingerprints.contains(packageNameFingerprint);
 	}
 
-	public static void setExtensionTrusted(String packageName) {
-		Set<String> packageNames = PREFERENCES.getStringSet(KEY_TRUSTED_EXSTENSIONS, null);
-		if (packageNames != null) {
-			packageNames = new HashSet<>(packageNames);
-		} else {
-			packageNames = new HashSet<>();
-		}
-		packageNames.add(packageName);
-		PREFERENCES.edit().putStringSet(KEY_TRUSTED_EXSTENSIONS, packageNames).commit();
+	public static void setExtensionTrusted(String packageName, String fingerprint) {
+		String packageNameFingerprint = packageName + ":" + fingerprint;
+		Set<String> packageNameFingerprints = PREFERENCES.getStringSet(KEY_TRUSTED_EXSTENSIONS, null);
+		packageNameFingerprints = packageNameFingerprints != null
+				? new HashSet<>(packageNameFingerprints) : new HashSet<>();
+		packageNameFingerprints.add(packageNameFingerprint);
+		PREFERENCES.edit().putStringSet(KEY_TRUSTED_EXSTENSIONS, packageNameFingerprints).commit();
 	}
 
 	public static final String KEY_USE_GMS_PROVIDER = "use_gms_provider";

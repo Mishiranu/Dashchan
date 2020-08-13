@@ -82,6 +82,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 
 	private final DrawerListView listView;
 	private final EditText searchEdit;
+	private final View selectorContainer;
 	private final View headerView;
 	private final View restartView;
 	private final TextView chanNameView;
@@ -247,6 +248,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		}
 
 		LinearLayout selectorContainer = new LinearLayout(context);
+		this.selectorContainer = selectorContainer;
 		selectorContainer.setBackgroundResource(ResourceUtils.getResourceId(context,
 				android.R.attr.selectableItemBackground, 0));
 		selectorContainer.setOrientation(LinearLayout.HORIZONTAL);
@@ -312,22 +314,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 
 		inputMethodManager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
 		updatePreferencesInternal(true);
-		chans.add(new ListItem(ListItem.ITEM_DIVIDER, 0, 0, null));
-		int color = ResourceUtils.getColor(context, R.attr.drawerIconColor);
-		ChanManager manager = ChanManager.getInstance();
-		Collection<String> availableChans = manager.getAvailableChanNames();
-		for (String chanName : availableChans) {
-			ChanConfiguration configuration = ChanConfiguration.get(chanName);
-			if (configuration.getOption(ChanConfiguration.OPTION_READ_POSTS_COUNT)) {
-				watcherSupportSet.add(chanName);
-			}
-			Drawable drawable = manager.getIcon(chanName, color);
-			chanIcons.put(chanName, drawable);
-			chans.add(new ListItem(ListItem.ITEM_CHAN, chanName, null, null, configuration.getTitle(), 0, drawable));
-		}
-		if (availableChans.size() <= 1) {
-			selectorContainer.setVisibility(View.GONE);
-		}
+		updateChans();
 	}
 
 	private void updateConfiguration(String chanName, boolean force) {
@@ -379,6 +366,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 	}
 
 	public void setChanSelectMode(boolean enabled) {
+		// Strictly > 2 because first item is always divider
 		if (chans.size() > 2 && chanSelectMode != enabled) {
 			chanSelectMode = enabled;
 			chanSelectorIcon.setRotation(enabled ? 180f : 0f);
@@ -395,6 +383,34 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 	public void updateRestartViewVisibility() {
 		restartView.setVisibility(!chanSelectMode && ChanManager.getInstance().hasNewExtensionsInstalled()
 				? View.VISIBLE : View.GONE);
+	}
+
+	public void updateChans() {
+		int color = ResourceUtils.getColor(context, R.attr.drawerIconColor);
+		ChanManager manager = ChanManager.getInstance();
+		Iterable<String> availableChans = manager.getAvailableChanNames();
+		int availableChansCount = 0;
+		chans.clear();
+		watcherSupportSet.clear();
+		chans.add(new ListItem(ListItem.ITEM_DIVIDER, 0, 0, null));
+		for (String chanName : availableChans) {
+			availableChansCount++;
+			ChanConfiguration configuration = ChanConfiguration.get(chanName);
+			if (configuration.getOption(ChanConfiguration.OPTION_READ_POSTS_COUNT)) {
+				watcherSupportSet.add(chanName);
+			}
+			Drawable drawable = chanIcons.get(chanName);
+			if (drawable == null) {
+				drawable = manager.getIcon(chanName, color);
+				chanIcons.put(chanName, drawable);
+			}
+			chans.add(new ListItem(ListItem.ITEM_CHAN, chanName, null, null, configuration.getTitle(), 0, drawable));
+		}
+		selectorContainer.setVisibility(availableChansCount >= 2 ? View.VISIBLE : View.GONE);
+		if (chanSelectMode && availableChansCount <= 1) {
+			setChanSelectMode(false);
+		}
+		notifyDataSetChanged();
 	}
 
 	@Override
@@ -875,10 +891,9 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		ArrayList<FavoritesStorage.FavoriteItem> favoriteThreads = favoritesStorage.getThreads(mergeChans
 				? null : chanName);
 		boolean addHeader = true;
-		Collection<String> chanNames = ChanManager.getInstance().getAvailableChanNames();
 		for (int i = 0; i < favoriteThreads.size(); i++) {
 			FavoritesStorage.FavoriteItem favoriteItem = favoriteThreads.get(i);
-			if (!chanNames.contains(favoriteItem.chanName)) {
+			if (!ChanManager.getInstance().isAvailableChanName(favoriteItem.chanName)) {
 				continue;
 			}
 			if (mergeChans || favoriteItem.chanName.equals(chanName)) {
@@ -909,7 +924,7 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		addHeader = true;
 		for (int i = 0; i < favoriteBoards.size(); i++) {
 			FavoritesStorage.FavoriteItem favoriteItem = favoriteBoards.get(i);
-			if (!chanNames.contains(favoriteItem.chanName)) {
+			if (!ChanManager.getInstance().isAvailableChanName(favoriteItem.chanName)) {
 				continue;
 			}
 			if (mergeChans || favoriteItem.chanName.equals(chanName)) {

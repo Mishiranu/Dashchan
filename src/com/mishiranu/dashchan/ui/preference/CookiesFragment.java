@@ -8,6 +8,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import chan.content.ChanConfiguration;
+import chan.content.ChanManager;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
@@ -67,6 +68,9 @@ public class CookiesFragment extends PreferenceFragment {
 
 		requireActivity().setTitle(R.string.preference_manage_cookies);
 		requireActivity().getActionBar().setSubtitle(null);
+		if (!ChanManager.getInstance().isExistingChanName(getChanName())) {
+			((FragmentHandler) requireActivity()).removeFragment();
+		}
 	}
 
 	private static class CookiePreference extends Preference.Runtime<String> {

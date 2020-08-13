@@ -1,28 +1,4 @@
-/*
- * Copyright 2016-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.media;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.concurrent.Semaphore;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -36,13 +12,22 @@ import android.os.Process;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
-
-import dalvik.system.PathClassLoader;
-
 import chan.content.ChanManager;
-
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
+import dalvik.system.PathClassLoader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Semaphore;
 
 public class VideoPlayer {
 	private static final int MESSAGE_PLAYBACK_COMPLETE = 1;
@@ -100,9 +85,8 @@ public class VideoPlayer {
 		return false;
 	});
 
-	private static final HashMap<String, Method> METHODS = new HashMap<>();
 	private static boolean loaded = false;
-	private static Class<?> holderClass;
+	private static HolderInterface holder;
 
 	public static boolean loadLibraries(Context context) {
 		synchronized (VideoPlayer.class) {
@@ -112,7 +96,7 @@ public class VideoPlayer {
 			ChanManager.ExtensionItem extensionItem = ChanManager.getInstance()
 					.getLibExtension(ChanManager.EXTENSION_NAME_LIB_WEBM);
 			if (extensionItem != null) {
-				String dir = extensionItem.applicationInfo.nativeLibraryDir;
+				String dir = extensionItem.getNativeLibraryDir();
 				if (dir != null) {
 					// System.loadLibrary uses a path from ClassLoader, so I must create one
 					// containing all paths to native libraries (client + webm libraries package).
@@ -122,7 +106,12 @@ public class VideoPlayer {
 							.nativeLibraryDir + File.pathSeparatorChar + dir, Context.class.getClassLoader());
 					try {
 						// Initialize class (invoke static block)
-						holderClass = Class.forName(Holder.class.getName(), true, classLoader);
+						Class<?> holderClass = Class.forName(Holder.class.getName(), true, classLoader);
+						Field instanceField = holderClass.getDeclaredField("INSTANCE");
+						instanceField.setAccessible(true);
+						InvocationHandler handler = (InvocationHandler) instanceField.get(null);
+						holder = (HolderInterface) Proxy.newProxyInstance(VideoPlayer.class.getClassLoader(),
+								new Class[] { HolderInterface.class }, handler);
 						loaded = true;
 						return true;
 					} catch (Exception | LinkageError e) {
@@ -138,72 +127,6 @@ public class VideoPlayer {
 		synchronized (VideoPlayer.class) {
 			return loaded;
 		}
-	}
-
-	private static Object invoke(String methodName, Object... args) {
-		Method method;
-		synchronized (METHODS) {
-			method = METHODS.get(methodName);
-			if (method == null) {
-				Method[] methods = holderClass.getMethods();
-				for (int i = 0; i < methods.length; i++) {
-					if (methodName.equals(methods[i].getName())) {
-						method = methods[i];
-						METHODS.put(methodName, method);
-						break;
-					}
-				}
-			}
-		}
-		try {
-			return method.invoke(null, args);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	private static long init(Object nativeBridge, boolean seekAnyFrame) {
-		return (long) invoke("init", nativeBridge, seekAnyFrame);
-	}
-
-	private static void destroy(long pointer) {
-		invoke("destroy", pointer);
-	}
-
-	private static int getErrorCode(long pointer) {
-		return (int) invoke("getErrorCode", pointer);
-	}
-
-	private static void getSummary(long pointer, int[] output) {
-		invoke("getSummary", pointer, output);
-	}
-
-	private static long getDuration(long pointer) {
-		return (long) invoke("getDuration", pointer);
-	}
-
-	private static long getPosition(long pointer) {
-		return (long) invoke("getPosition", pointer);
-	}
-
-	private static void setPosition(long pointer, long position) {
-		invoke("setPosition", pointer, position);
-	}
-
-	private static void setSurface(long pointer, Surface surface) {
-		invoke("setSurface", pointer, surface);
-	}
-
-	private static void setPlaying(long pointer, boolean playing) {
-		invoke("setPlaying", pointer, playing);
-	}
-
-	private static int[] getCurrentFrame(long pointer) {
-		return (int[]) invoke("getCurrentFrame", pointer);
-	}
-
-	private static String[] getTechnicalInfo(long pointer) {
-		return (String[]) invoke("getTechnicalInfo", pointer);
 	}
 
 	private final Object inputLock = new Object();
@@ -347,8 +270,8 @@ public class VideoPlayer {
 				Process.setThreadPriority(Process.THREAD_PRIORITY_DISPLAY);
 				try {
 					this.inputHolder = inputHolder;
-					pointer = init(new NativeBridge(this), seekAnyFrame);
-					int errorCode = getErrorCode(pointer);
+					pointer = holder.init(new NativeBridge(this), seekAnyFrame);
+					int errorCode = holder.getErrorCode(pointer);
 					if (errorCode != 0) {
 						free();
 						throw new InitializationException(errorCode);
@@ -396,7 +319,7 @@ public class VideoPlayer {
 		if (consumed) {
 			return false;
 		}
-		getSummary(pointer, summaryOutput);
+		holder.getSummary(pointer, summaryOutput);
 		return true;
 	}
 
@@ -418,7 +341,7 @@ public class VideoPlayer {
 		if (consumed) {
 			return -1L;
 		}
-		return getDuration(pointer);
+		return holder.getDuration(pointer);
 	}
 
 	public long getPosition() {
@@ -426,7 +349,7 @@ public class VideoPlayer {
 			return -1L;
 		}
 		long seekToPosition = this.seekToPosition;
-		return seekToPosition >= 0L ? seekToPosition : getPosition(pointer);
+		return seekToPosition >= 0L ? seekToPosition : holder.getPosition(pointer);
 	}
 
 	private volatile boolean cancelNativeRequests = false;
@@ -462,7 +385,7 @@ public class VideoPlayer {
 							VideoPlayer.this), 200);
 					HANDLER.sendMessageDelayed(HANDLER.obtainMessage(MESSAGE_RETRY_SET_POSITION,
 							new Object[] {VideoPlayer.this, seekToPosition}), 1000);
-					setPosition(pointer, seekToPosition);
+					holder.setPosition(pointer, seekToPosition);
 					HANDLER.removeMessages(MESSAGE_RETRY_SET_POSITION);
 					HANDLER.removeMessages(MESSAGE_START_BUFFERING);
 					HANDLER.sendMessageDelayed(HANDLER.obtainMessage(MESSAGE_END_BUFFERING,
@@ -584,7 +507,7 @@ public class VideoPlayer {
 				if (playing) {
 					setPlaying(false);
 				}
-				setSurface(pointer, surface);
+				holder.setSurface(pointer, surface);
 				if (playing) {
 					setPlaying(true);
 				}
@@ -599,12 +522,12 @@ public class VideoPlayer {
 				cancelSetPosition();
 				this.playing = playing;
 				if (playing) {
-					setPlaying(pointer, true);
+					holder.setPlaying(pointer, true);
 					if (seekToPosition >= 0L) {
 						setPosition(seekToPosition);
 					}
 				} else {
-					setPlaying(pointer, false);
+					holder.setPlaying(pointer, false);
 					this.seekToPosition = seekToPosition; // Will be reset in cancelSetPosition
 				}
 			}
@@ -619,7 +542,7 @@ public class VideoPlayer {
 
 	public Bitmap getCurrentFrame() {
 		synchronized (this) {
-			int[] frame = consumed ? null : getCurrentFrame(pointer);
+			int[] frame = consumed ? null : holder.getCurrentFrame(pointer);
 			if (frame != null) {
 				Point dimensions = getDimensions();
 				try {
@@ -636,7 +559,7 @@ public class VideoPlayer {
 		synchronized (this) {
 			HashMap<String, String> result = new HashMap<>();
 			if (!consumed && initialized) {
-				String[] array = getTechnicalInfo(pointer);
+				String[] array = holder.getTechnicalInfo(pointer);
 				if (array != null) {
 					for (int i = 0; i < array.length; i += 2) {
 						String key = array[i];
@@ -662,7 +585,7 @@ public class VideoPlayer {
 				synchronized (seekerThread) {
 					seekerThread.notifyAll();
 				}
-				destroy(pointer);
+				holder.destroy(pointer);
 			}
 		}
 	}
@@ -779,23 +702,62 @@ public class VideoPlayer {
 		}
 	}
 
-	@SuppressWarnings("unused")
-	private static class Holder {
-		public static native long init(Object nativeBridge, boolean seekAnyFrame);
-		public static native void destroy(long pointer);
+	private interface HolderInterface {
+		long init(Object nativeBridge, boolean seekAnyFrame);
+		void destroy(long pointer);
 
-		public static native int getErrorCode(long pointer);
-		public static native void getSummary(long pointer, int[] output);
+		int getErrorCode(long pointer);
+		void getSummary(long pointer, int[] output);
 
-		public static native long getDuration(long pointer);
-		public static native long getPosition(long pointer);
-		public static native void setPosition(long pointer, long position);
+		long getDuration(long pointer);
+		long getPosition(long pointer);
+		void setPosition(long pointer, long position);
 
-		public static native void setSurface(long pointer, Surface surface);
-		public static native void setPlaying(long pointer, boolean playing);
+		void setSurface(long pointer, Surface surface);
+		void setPlaying(long pointer, boolean playing);
 
-		public static native int[] getCurrentFrame(long pointer);
-		public static native String[] getTechnicalInfo(long pointer);
+		int[] getCurrentFrame(long pointer);
+		String[] getTechnicalInfo(long pointer);
+	}
+
+	private static class Holder implements HolderInterface, InvocationHandler {
+		// Extracted via reflection
+		@SuppressWarnings("unused")
+		private static final Holder INSTANCE = new Holder();
+
+		private final Map<String, Method> methods;
+
+		private Holder() {
+			HashMap<String, Method> methods = new HashMap<>();
+			// Collect all native methods declared in interface for faster access
+			for (Method method : HolderInterface.class.getMethods()) {
+				// Assume there are no overloaded methods
+				methods.put(method.getName(), method);
+			}
+			this.methods = Collections.unmodifiableMap(methods);
+		}
+
+		@Override
+		public Object invoke(Object proxy, Method method, Object[] args) throws Exception {
+			// Class loader bridge
+			return methods.get(method.getName()).invoke(this, args);
+		}
+
+		@Override public native long init(Object nativeBridge, boolean seekAnyFrame);
+		@Override public native void destroy(long pointer);
+
+		@Override public native int getErrorCode(long pointer);
+		@Override public native void getSummary(long pointer, int[] output);
+
+		@Override public native long getDuration(long pointer);
+		@Override public native long getPosition(long pointer);
+		@Override public native void setPosition(long pointer, long position);
+
+		@Override public native void setSurface(long pointer, Surface surface);
+		@Override public native void setPlaying(long pointer, boolean playing);
+
+		@Override public native int[] getCurrentFrame(long pointer);
+		@Override public native String[] getTechnicalInfo(long pointer);
 
 		static {
 			System.loadLibrary("avutil");

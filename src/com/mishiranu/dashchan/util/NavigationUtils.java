@@ -252,7 +252,7 @@ public class NavigationUtils {
 				HashSet<String> filterPackageNames = new HashSet<>();
 				filterPackageNames.add(context.getPackageName());
 				for (ChanManager.ExtensionItem extensionItem : ChanManager.getInstance().getExtensionItems()) {
-					filterPackageNames.add(extensionItem.packageInfo.packageName);
+					filterPackageNames.add(extensionItem.packageName);
 				}
 				ArrayList<Intent> browserIntents = new ArrayList<>();
 				for (ResolveInfo resolveInfo : activities) {

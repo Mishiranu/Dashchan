@@ -158,6 +158,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		ClickableToast.register(clickableToastHolder);
 		FavoritesStorage.getInstance().getObservable().register(this);
 		Preferences.PREFERENCES.registerOnSharedPreferenceChangeListener(preferencesListener);
+		ChanManager.getInstance().observable.register(chanManagerCallback);
 		watcherServiceClient.bind(this);
 		actionIconSet = new ActionIconSet(this);
 		configurationLock = new ConfigurationLock(this);
@@ -229,7 +230,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			}
 		});
 		bindService(new Intent(this, PostingService.class), postingConnection, BIND_AUTO_CREATE);
-		boolean allowSelectChan = ChanManager.getInstance().getAvailableChanNames().size() >= 2;
+		boolean allowSelectChan = ChanManager.getInstance().hasMultipleAvailableChans();
 		if (savedInstanceState == null) {
 			int drawerInitialPosition = Preferences.getDrawerInitialPosition();
 			if (drawerInitialPosition != Preferences.DRAWER_INITIAL_POSITION_CLOSED) {
@@ -297,16 +298,15 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			preservedPageItems.addAll(savedInstanceState.getParcelableArrayList(EXTRA_PRESERVED_PAGE_ITEMS));
 			currentPageItem = savedInstanceState.getParcelable(EXTRA_CURRENT_PAGE_ITEM);
 		}
-		Collection<String> chanNames = ChanManager.getInstance().getAvailableChanNames();
 		Iterator<SavedPageItem> iterator = new ConcatIterable<>(preservedPageItems, stackPageItems).iterator();
 		while (iterator.hasNext()) {
-			if (!chanNames.contains(getSavedPage(iterator.next()).chanName)) {
+			if (!ChanManager.getInstance().isAvailableChanName(getSavedPage(iterator.next()).chanName)) {
 				iterator.remove();
 			}
 		}
 		if (currentFragmentFromSaved != null) {
-			if (currentFragmentFromSaved instanceof PageFragment &&
-					!chanNames.contains(((PageFragment) currentFragmentFromSaved).getPage().chanName)) {
+			if (currentFragmentFromSaved instanceof PageFragment && !ChanManager.getInstance()
+					.isAvailableChanName(((PageFragment) currentFragmentFromSaved).getPage().chanName)) {
 				currentFragmentFromSaved = null;
 				currentPageItem = null;
 			}
@@ -323,8 +323,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			}
 		} else {
 			Fragment currentFragment = getCurrentFragment();
-			if (currentFragment instanceof PageFragment &&
-					!chanNames.contains(((PageFragment) currentFragment).getPage().chanName)) {
+			if (currentFragment instanceof PageFragment && !ChanManager.getInstance()
+					.isAvailableChanName(((PageFragment) currentFragment).getPage().chanName)) {
 				currentFragment = null;
 				currentPageItem = null;
 			}
@@ -348,6 +348,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 				ToastUtils.show(this, R.string.message_no_extensions);
 			}
 		}
+
+		ExtensionsTrustLoop.handleUntrustedExtensions(this, configurationLock);
 	}
 
 	@Override
@@ -944,7 +946,6 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		drawerForm.updateRestartViewVisibility();
 		drawerForm.invalidateItems(true, true);
 		updateWideConfiguration(false);
-		ChanManager.getInstance().getInstallationObservable().register(installationCallback);
 		ForegroundManager.register(this);
 
 		Intent navigateIntentOnResume = this.navigateIntentOnResume;
@@ -960,7 +961,6 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 
 		watcherServiceClient.stop();
 		clickableToastHolder.onPause();
-		ChanManager.getInstance().getInstallationObservable().unregister(installationCallback);
 		ForegroundManager.unregister(this);
 	}
 
@@ -990,6 +990,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		ClickableToast.unregister(clickableToastHolder);
 		FavoritesStorage.getInstance().getObservable().unregister(this);
 		Preferences.PREFERENCES.unregisterOnSharedPreferenceChangeListener(preferencesListener);
+		ChanManager.getInstance().observable.unregister(chanManagerCallback);
 		for (String chanName : ChanManager.getInstance().getAvailableChanNames()) {
 			ChanConfiguration.get(chanName).commit();
 		}
@@ -1586,7 +1587,18 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		return drawerPages;
 	}
 
-	private final Runnable installationCallback = () -> drawerForm.updateRestartViewVisibility();
+	private final ChanManager.Callback chanManagerCallback = new ChanManager.Callback() {
+		@Override
+		public void onExtensionInstalled() {
+			drawerForm.updateRestartViewVisibility();
+		}
+
+		@Override
+		public void onExtensionsChanged() {
+			drawerForm.updateChans();
+			updatePostFragmentConfiguration();
+		}
+	};
 
 	@Override
 	public void restartApplication() {

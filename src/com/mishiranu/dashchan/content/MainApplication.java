@@ -26,8 +26,12 @@ public class MainApplication extends Application {
 		instance = this;
 	}
 
-	public boolean checkProcess(String suffix) {
+	private boolean checkProcess(String suffix) {
 		return StringUtils.equals(suffix, processSuffix);
+	}
+
+	public boolean isMainProcess() {
+		return checkProcess(null);
 	}
 
 	private String processSuffix;
@@ -52,7 +56,7 @@ public class MainApplication extends Application {
 			}
 		}
 
-		if (checkProcess(null)) {
+		if (isMainProcess()) {
 			Log.init(this);
 			// Init
 			ChanManager.getInstance();

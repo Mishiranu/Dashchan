@@ -1,28 +1,4 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.content;
-
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -30,7 +6,6 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Process;
 import android.util.Base64;
-
 import chan.content.ChanConfiguration;
 import chan.content.ChanManager;
 import chan.content.ChanPerformer;
@@ -39,14 +14,21 @@ import chan.http.HttpException;
 import chan.http.HttpHolder;
 import chan.http.HttpRequest;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.content.async.HttpHolderTask;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.WeakObservable;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.ThreadPoolExecutor;
 
+// TODO Rework in Picasso-like style
 public class ImageLoader {
 	private static final ImageLoader INSTANCE = new ImageLoader();
 
@@ -62,15 +44,16 @@ public class ImageLoader {
 	private final HashMap<String, LoaderTask> loaderTasks = new HashMap<>();
 	private final HashMap<String, Long> notFoundMap = new HashMap<>();
 
-	private static final HashMap<String, ThreadPoolExecutor> EXECUTORS = new HashMap<>();
+	private final HashMap<String, ThreadPoolExecutor> executors = new HashMap<>();
 
-	static {
-		EXECUTORS.put(null, ConcurrentUtils.newThreadPool(3, 3, 0, "ImageLoader", "client",
-				Process.THREAD_PRIORITY_DEFAULT));
-		for (String chanName : ChanManager.getInstance().getAllChanNames()) {
-			EXECUTORS.put(chanName, ConcurrentUtils.newThreadPool(3, 3, 0, "ImageLoader", chanName,
-					Process.THREAD_PRIORITY_DEFAULT));
+	private ThreadPoolExecutor getExecutor(String chanName) {
+		ThreadPoolExecutor executor = executors.get(chanName);
+		if (executor == null) {
+			executor = ConcurrentUtils.newThreadPool(3, 3, 0, "ImageLoader", chanName,
+					Process.THREAD_PRIORITY_DEFAULT);
+			executors.put(chanName, executor);
 		}
+		return executor;
 	}
 
 	public interface Observer {
@@ -135,13 +118,7 @@ public class ImageLoader {
 						}
 						Resources resources = ChanConfiguration.get(chanName).getResources();
 						if (resources != null) {
-							String packageName = null;
-							for (ChanManager.ExtensionItem chanItem : ChanManager.getInstance().getChanItems()) {
-								if (chanName.equals(chanItem.extensionName)) {
-									packageName = chanItem.packageInfo.packageName;
-									break;
-								}
-							}
+							String packageName = ChanManager.getInstance().getExtensionPackageName(chanName);
 							List<String> pathSegments = uri.getPathSegments();
 							if (pathSegments != null && pathSegments.size() == 3) {
 								String entity = pathSegments.get(0);
@@ -280,7 +257,7 @@ public class ImageLoader {
 		}
 		loaderTask = new LoaderTask(uri, chanName, key, fromCacheOnly);
 		loaderTasks.put(key, loaderTask);
-		loaderTask.executeOnExecutor(EXECUTORS.get(chanName));
+		loaderTask.executeOnExecutor(getExecutor(chanName));
 		return null;
 	}
 }

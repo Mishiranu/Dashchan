@@ -1,21 +1,18 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.content.storage;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Parcel;
+import android.os.Parcelable;
+import chan.content.ChanConfiguration;
+import chan.content.ChanPerformer;
+import chan.util.StringUtils;
+import com.mishiranu.dashchan.content.MainApplication;
+import com.mishiranu.dashchan.content.model.FileHolder;
+import com.mishiranu.dashchan.util.GraphicsUtils;
+import com.mishiranu.dashchan.util.IOUtils;
+import com.mishiranu.dashchan.util.LruCache;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -23,24 +20,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import android.graphics.Bitmap;
-import android.os.Parcel;
-import android.os.Parcelable;
-
-import chan.content.ChanConfiguration;
-import chan.content.ChanPerformer;
-import chan.util.StringUtils;
-
-import com.mishiranu.dashchan.content.MainApplication;
-import com.mishiranu.dashchan.content.model.FileHolder;
-import com.mishiranu.dashchan.util.GraphicsUtils;
-import com.mishiranu.dashchan.util.IOUtils;
-import com.mishiranu.dashchan.util.LruCache;
 
 public class DraftsStorage extends StorageManager.Storage {
 	private static final String KEY_POST_DRAFTS = "postDrafts";
@@ -499,7 +481,14 @@ public class DraftsStorage extends StorageManager.Storage {
 			dest.writeSerializable(loadedInput);
 			dest.writeSerializable(loadedValidity);
 			dest.writeString(text);
-			dest.writeParcelable(image, 0);
+			byte[] imageBytes = null;
+			if (image != null && !image.isRecycled()) {
+				// Avoid direct writing Bitmaps to Parcel to allow Parcel.marshall
+				ByteArrayOutputStream output = new ByteArrayOutputStream();
+				image.compress(Bitmap.CompressFormat.PNG, 100, output);
+				imageBytes = output.size() > 1000000 ? null : output.toByteArray();
+			}
+			dest.writeByteArray(imageBytes);
 			dest.writeInt(large ? 1 : 0);
 			dest.writeInt(blackAndWhite ? 1 : 0);
 			dest.writeLong(loadTime);
@@ -519,7 +508,9 @@ public class DraftsStorage extends StorageManager.Storage {
 				ChanConfiguration.Captcha.Validity loadedValidity = (ChanConfiguration.Captcha.Validity)
 						source.readSerializable();
 				String text = source.readString();
-				Bitmap image = source.readParcelable(Bitmap.class.getClassLoader());
+				byte[] imageBytes = source.createByteArray();
+				Bitmap image = imageBytes != null ? BitmapFactory
+						.decodeByteArray(imageBytes, 0, imageBytes.length) : null;
 				boolean large = source.readInt() != 0;
 				boolean blackAndWhite = source.readInt() != 0;
 				long loadTime = source.readLong();

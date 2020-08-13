@@ -3,23 +3,15 @@ package com.mishiranu.dashchan.ui;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
-import android.text.SpannableStringBuilder;
-import android.text.style.RelativeSizeSpan;
 import android.view.ContextThemeWrapper;
 import androidx.annotation.NonNull;
-import chan.content.ChanManager;
-import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
-import java.util.Collection;
 
 /*
  * MainActivity can't be both singleTask and launcher activity, so I use this launcher activity.
@@ -71,47 +63,7 @@ public class LauncherActivity extends StateActivity {
 				return;
 			}
 		}
-		navigateExtensionsTrust();
-	}
-
-	private void navigateExtensionsTrust() {
-		navigateExtensionsTrust(ChanManager.getInstance().getUntrustedExtensionItems());
-	}
-
-	private void navigateExtensionsTrust(final Collection<ChanManager.ExtensionItem> extensionItems) {
-		if (!extensionItems.isEmpty()) {
-			final ChanManager.ExtensionItem extensionItem = extensionItems.iterator().next();
-			DialogInterface.OnClickListener onClickListener = (dialog, which) -> {
-				switch (which) {
-					case AlertDialog.BUTTON_POSITIVE:
-					case AlertDialog.BUTTON_NEGATIVE: {
-						ChanManager.getInstance().changeUntrustedExtensionState(extensionItem.extensionName,
-								which == AlertDialog.BUTTON_POSITIVE);
-						extensionItems.remove(extensionItem);
-						break;
-					}
-					case AlertDialog.BUTTON_NEUTRAL: {
-						startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-								.setData(Uri.parse("package:" + extensionItem.packageInfo.packageName)));
-						break;
-					}
-				}
-				navigateExtensionsTrust(extensionItems);
-
-			};
-			Context context = new ContextThemeWrapper(this, Preferences.getThemeResource());
-			String packageName = extensionItem.packageInfo.packageName;
-			SpannableStringBuilder message = new SpannableStringBuilder();
-			message.append(getString(R.string.message_extension_trust_request));
-			message.append("\n\n");
-			StringUtils.appendSpan(message, packageName, new RelativeSizeSpan(0.8f));
-			new AlertDialog.Builder(context).setTitle(extensionItem.extensionName).setMessage(message)
-					.setPositiveButton(android.R.string.ok, onClickListener)
-					.setNegativeButton(android.R.string.cancel, onClickListener)
-					.setNeutralButton(R.string.action_details, onClickListener).setCancelable(false).show();
-		} else {
-			navigateMainActivity();
-		}
+		navigateMainActivity();
 	}
 
 	private void navigateMainActivity() {

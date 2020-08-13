@@ -179,7 +179,9 @@ public class ChanFragment extends PreferenceFragment {
 		anotherDomainMode = !domains.contains(locator.getPreferredHost()) || domains.size() == 1 ||
 				savedInstanceState != null && savedInstanceState.getBoolean(EXTRA_ANOTHER_DOMAIN_MODE);
 		if (anotherDomainMode) {
-			addAnotherDomainPreference(domains.get(0));
+			if (!domains.isEmpty()) {
+				addAnotherDomainPreference(domains.get(0));
+			}
 		} else {
 			String[] domainsArray = CommonUtils.toArray(domains, String.class);
 			String[] entries = new String[domainsArray.length + 1];
@@ -217,7 +219,7 @@ public class ChanFragment extends PreferenceFragment {
 					InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD, 0});
 			proxyPreference.setValues(2, Preferences.ENTRIES_PROXY_2, Preferences.VALUES_PROXY_2);
 			proxyPreference.setOnAfterChangeListener(p -> {
-				boolean success = HttpClient.getInstance().updateProxy(getChanName());
+				boolean success = HttpClient.getInstance().checkProxyValid(p.getValue());
 				if (!success) {
 					ToastUtils.show(requireContext(), R.string.message_enter_valid_data);
 					proxyPreference.performClick();
@@ -232,13 +234,7 @@ public class ChanFragment extends PreferenceFragment {
 
 		addHeader(R.string.preference_category_additional);
 		addButton(R.string.preference_uninstall_extension, 0).setOnClickListener(p -> {
-			String packageName = null;
-			for (ChanManager.ExtensionItem chanItem : ChanManager.getInstance().getChanItems()) {
-				if (getChanName().equals(chanItem.extensionName)) {
-					packageName = chanItem.packageInfo.packageName;
-					break;
-				}
-			}
+			String packageName = ChanManager.getInstance().getExtensionPackageName(getChanName());
 			@SuppressWarnings("deprecation")
 			Intent intent = new Intent(Intent.ACTION_UNINSTALL_PACKAGE)
 					.setData(Uri.parse("package:" + packageName))
@@ -263,6 +259,9 @@ public class ChanFragment extends PreferenceFragment {
 		ChanConfiguration configuration = ChanConfiguration.get(getChanName());
 		requireActivity().setTitle(configuration.getTitle());
 		requireActivity().getActionBar().setSubtitle(null);
+		if (!ChanManager.getInstance().isExistingChanName(getChanName())) {
+			((FragmentHandler) requireActivity()).removeFragment();
+		}
 	}
 
 	@Override

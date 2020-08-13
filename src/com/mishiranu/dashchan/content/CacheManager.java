@@ -30,7 +30,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -58,13 +57,15 @@ public class CacheManager implements Runnable {
 	}
 
 	private CacheManager() {
-		handleGalleryShareFiles();
-		syncCache();
-		IntentFilter intentFilter = new IntentFilter(Intent.ACTION_MEDIA_MOUNTED);
-		intentFilter.addDataScheme("file");
-		MainApplication.getInstance()
-				.registerReceiver(AndroidUtils.createReceiver((r, c, i) -> syncCache()), intentFilter);
-		new Thread(this, "CacheManagerWorker").start();
+		if (MainApplication.getInstance().isMainProcess()) {
+			handleGalleryShareFiles();
+			syncCache();
+			IntentFilter intentFilter = new IntentFilter(Intent.ACTION_MEDIA_MOUNTED);
+			intentFilter.addDataScheme("file");
+			MainApplication.getInstance()
+					.registerReceiver(AndroidUtils.createReceiver((r, c, i) -> syncCache()), intentFilter);
+			new Thread(this, "CacheManagerWorker").start();
+		}
 	}
 
 	private final LinkedBlockingQueue<CacheItem> cacheItemsToDelete = new LinkedBlockingQueue<>();
@@ -278,10 +279,9 @@ public class CacheManager implements Runnable {
 		private final ArrayList<String> favoriteFiles = new ArrayList<>();
 
 		public PagesCacheDeleteCondition() {
-			Collection<String> chanNames = ChanManager.getInstance().getAllChanNames();
 			for (FavoritesStorage.FavoriteItem favoriteItem : ConcurrentUtils
 					.mainGet(() -> FavoritesStorage.getInstance().getThreads(null))) {
-				if (chanNames.contains(favoriteItem.chanName)) {
+				if (ChanManager.getInstance().isExistingChanName(favoriteItem.chanName)) {
 					favoriteFiles.add(getPostsFileName(favoriteItem.chanName, favoriteItem.boardName,
 							favoriteItem.threadNumber).toLowerCase(Locale.US));
 				}

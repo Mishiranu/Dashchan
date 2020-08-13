@@ -9,7 +9,7 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
-import java.util.Collection;
+import java.util.Iterator;
 
 public class CategoriesFragment extends PreferenceFragment {
 	@Override
@@ -21,18 +21,21 @@ public class CategoriesFragment extends PreferenceFragment {
 	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		Collection<String> chanNames = ChanManager.getInstance().getAvailableChanNames();
+		Iterator<String> chanNames = ChanManager.getInstance().getAvailableChanNames().iterator();
+		boolean hasChan = chanNames.hasNext();
+		String singleChanName = hasChan ? chanNames.next() : null;
+		boolean hasMultipleChans = hasChan && chanNames.hasNext();
 		addCategory(R.string.preference_header_general)
 				.setOnClickListener(p -> ((FragmentHandler) requireActivity())
 						.pushFragment(new GeneralFragment()));
-		if (chanNames.size() == 1) {
-			addCategory(R.string.preference_header_forum)
-					.setOnClickListener(p -> ((FragmentHandler) requireActivity())
-							.pushFragment(new ChanFragment(chanNames.iterator().next())));
-		} else if (chanNames.size() > 1) {
+		if (hasMultipleChans) {
 			addCategory(R.string.preference_header_forums)
 					.setOnClickListener(p -> ((FragmentHandler) requireActivity())
 							.pushFragment(new ChansFragment()));
+		} else if (hasChan) {
+			addCategory(R.string.preference_header_forum)
+					.setOnClickListener(p -> ((FragmentHandler) requireActivity())
+							.pushFragment(new ChanFragment(singleChanName)));
 		}
 		addCategory(R.string.preference_header_interface)
 				.setOnClickListener(p -> ((FragmentHandler) requireActivity())

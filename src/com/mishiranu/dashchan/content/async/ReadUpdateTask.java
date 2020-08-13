@@ -19,7 +19,6 @@ import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.util.Log;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -27,7 +26,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -207,10 +205,10 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Void> {
 			extensionNames.add(ChanManager.EXTENSION_NAME_CLIENT);
 			targets.put(appUri, extensionNames);
 		}
-		HashMap<String, Set<String>> fingerprintsMap = new HashMap<>();
+		HashMap<String, ChanManager.Fingerprints> fingerprintsMap = new HashMap<>();
 		fingerprintsMap.put(ChanManager.EXTENSION_NAME_CLIENT,
 				ChanManager.getInstance().getApplicationFingerprints());
-		Collection<ChanManager.ExtensionItem> extensionItems = ChanManager.getInstance().getExtensionItems();
+		Iterable<ChanManager.ExtensionItem> extensionItems = ChanManager.getInstance().getExtensionItems();
 		for (ChanManager.ExtensionItem extensionItem : extensionItems) {
 			if (extensionItem.updateUri != null) {
 				Uri uri = locator.setScheme(extensionItem.updateUri);
@@ -239,12 +237,10 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Void> {
 				ChanManager.MIN_VERSION, ChanManager.MAX_VERSION, -1, null));
 		updateDataMap.put(ChanManager.EXTENSION_NAME_CLIENT, updateItems);
 		for (ChanManager.ExtensionItem extensionItem : extensionItems) {
-			// noinspection deprecation
-			long extensionVersionCode = C.API_PIE ? extensionItem.packageInfo.getLongVersionCode()
-					: extensionItem.packageInfo.versionCode;
 			updateItems = new ArrayList<>();
-			updateItems.add(new UpdateItem(null, extensionItem.packageInfo.versionName,
-					extensionVersionCode, extensionItem.version, -1, null, extensionItem.isLibExtension));
+			updateItems.add(new UpdateItem(null, extensionItem.versionName,
+					extensionItem.versionCode, extensionItem.version, -1, null,
+					extensionItem.type == ChanManager.ExtensionItem.Type.LIBRARY));
 			updateDataMap.put(extensionItem.extensionName, updateItems);
 		}
 		if (isCancelled()) {
@@ -284,16 +280,18 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Void> {
 									} else {
 										rawFingerprints.add(CommonUtils.optJsonString(chanObject, "fingerprint"));
 									}
-									HashSet<String> fingerprints = new HashSet<>();
+									HashSet<String> fingerprintsSet = new HashSet<>();
 									for (String rawFingerprint : rawFingerprints) {
 										if (!StringUtils.isEmpty(rawFingerprint)) {
 											rawFingerprint = rawFingerprint.replaceAll("[^a-fA-F0-9]", "")
 													.toLowerCase(Locale.US);
 											if (!StringUtils.isEmpty(rawFingerprint)) {
-												fingerprints.add(rawFingerprint);
+												fingerprintsSet.add(rawFingerprint);
 											}
 										}
 									}
+									ChanManager.Fingerprints fingerprints = new ChanManager
+											.Fingerprints(fingerprintsSet);
 									if (!fingerprints.equals(fingerprintsMap.get(extensionName))) {
 										continue;
 									}

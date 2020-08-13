@@ -39,5 +39,8 @@ public class ChansFragment extends PreferenceFragment {
 
 		requireActivity().setTitle(R.string.preference_header_forums);
 		requireActivity().getActionBar().setSubtitle(null);
+		if (!ChanManager.getInstance().getAvailableChanNames().iterator().hasNext()) {
+			((FragmentHandler) requireActivity()).removeFragment();
+		}
 	}
 }

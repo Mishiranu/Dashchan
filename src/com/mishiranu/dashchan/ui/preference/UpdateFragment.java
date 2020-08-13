@@ -248,11 +248,13 @@ public class UpdateFragment extends BaseListFragment {
 			listItems.add(listItem);
 			handledExtensionNames.add(chanName);
 		}
-		for (ChanManager.ExtensionItem libItem : manager.getLibItems()) {
-			listItem = handleAddListItem(context, updateDataMap, libItem.extensionName, savedInstanceState,
-					minVersion, maxVersion, warningUnsupported);
-			listItems.add(listItem);
-			handledExtensionNames.add(libItem.extensionName);
+		for (ChanManager.ExtensionItem extensionItem : manager.getExtensionItems()) {
+			if (extensionItem.type == ChanManager.ExtensionItem.Type.LIBRARY) {
+				listItem = handleAddListItem(context, updateDataMap, extensionItem.extensionName, savedInstanceState,
+						minVersion, maxVersion, warningUnsupported);
+				listItems.add(listItem);
+				handledExtensionNames.add(extensionItem.extensionName);
+			}
 		}
 		for (String extensionName : updateDataMap.extensionNames()) {
 			if (!handledExtensionNames.contains(extensionName)) {

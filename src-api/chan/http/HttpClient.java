@@ -75,12 +75,14 @@ public class HttpClient {
 	static final int HTTP_TEMPORARY_REDIRECT = 307;
 
 	static {
-		int poolSize = (ChanManager.getInstance().getAllChanNames().size() + 1) * 2;
+		int poolSize = 20;
 		System.setProperty("http.maxConnections", Integer.toString(poolSize));
 		try {
 			// http.maxConnections may do nothing because ConnectionPool inits earlier. Android bug?
-			Object connectionPool = Class.forName("com.android.okhttp.ConnectionPool").getMethod("getDefault")
-					.invoke(null);
+			// TODO Will require workaround for target API >= 28
+			@SuppressLint("PrivateApi")
+			Object connectionPool = Class.forName("com.android.okhttp.ConnectionPool")
+					.getMethod("getDefault").invoke(null);
 			Field maxIdleConnectionsField = connectionPool.getClass().getDeclaredField("maxIdleConnections");
 			maxIdleConnectionsField.setAccessible(true);
 			maxIdleConnectionsField.setInt(connectionPool, poolSize);
@@ -176,59 +178,82 @@ public class HttpClient {
 		return INSTANCE;
 	}
 
-	private final HashMap<String, Proxy> proxies = new HashMap<>();
-	private boolean useNoSSLv3SSLSocketFactory = false;
+	private HttpClient() {}
 
-	private HttpClient() {
-		for (String chanName : ChanManager.getInstance().getAllChanNames()) {
-			Proxy proxy;
-			try {
-				proxy = initProxy(chanName, false);
-			} catch (Exception e) {
-				// Impossible with throwIfNotValid == false
-				throw new RuntimeException(e);
-			}
-			if (proxy != null) {
-				proxies.put(chanName, proxy);
-			}
+	public static class ProxyData {
+		public final boolean socks;
+		public final String host;
+		public final int port;
+
+		private ProxyData(boolean socks, String host, int port) {
+			this.socks = socks;
+			this.host = host;
+			this.port = port;
 		}
-	}
 
-	private Proxy initProxy(String chanName, boolean throwIfNotValid) {
-		Proxy proxy = null;
-		String[] proxyData = Preferences.getProxy(chanName);
-		if (proxyData != null && proxyData[0] != null && proxyData[1] != null) {
-			boolean socks = Preferences.VALUE_PROXY_2_SOCKS.equals(proxyData[2]);
-			try {
-				proxy = new Proxy(socks ? Proxy.Type.SOCKS : Proxy.Type.HTTP, InetSocketAddress
-						.createUnresolved(proxyData[0], Integer.parseInt(proxyData[1])));
-			} catch (RuntimeException e) {
-				if (throwIfNotValid) {
-					throw e;
+		private Proxy proxy;
+
+		public Proxy getProxy() {
+			if (proxy == null) {
+				try {
+					proxy = new Proxy(socks ? Proxy.Type.SOCKS : Proxy.Type.HTTP,
+							InetSocketAddress.createUnresolved(host, port));
+				} catch (Exception e) {
+					Log.persistent().stack(e);
 				}
 			}
+			return proxy;
 		}
-		return proxy;
-	}
 
-	public boolean updateProxy(String chanName) {
-		Proxy proxy;
-		try {
-			proxy = initProxy(chanName, true);
-		} catch (Exception e) {
+		@Override
+		public boolean equals(Object o) {
+			if (o == this) {
+				return true;
+			}
+			if (o instanceof ProxyData) {
+				ProxyData proxyData = (ProxyData) o;
+				return socks == proxyData.socks &&
+						StringUtils.equals(host, proxyData.host) &&
+						port == proxyData.port;
+			}
 			return false;
 		}
-		if (proxy != null) {
-			proxies.put(chanName, proxy);
-		} else {
-			proxies.remove(chanName);
+
+		@Override
+		public int hashCode() {
+			int result = (socks ? 1 : 0);
+			result = 31 * result + (host != null ? host.hashCode() : 0);
+			result = 31 * result + port;
+			return result;
 		}
-		return true;
 	}
 
-	public Proxy getProxy(String chanName) {
-		return proxies.get(chanName);
+	public boolean checkProxyValid(String[] array) {
+		ProxyData proxyData = getProxyData(array);
+		return proxyData == null || proxyData.getProxy() != null;
 	}
+
+	public ProxyData getProxyData(String chanName) {
+		return getProxyData(Preferences.getProxy(chanName));
+	}
+
+	private ProxyData getProxyData(String[] array) {
+		if (array != null && array.length >= 2 && array[0] != null && array[1] != null) {
+			String host = array[0];
+			int port;
+			try {
+				port = Integer.parseInt(array[1]);
+			} catch (Exception e) {
+				return null;
+			}
+			boolean socks = array.length >= 3 && Preferences.VALUE_PROXY_2_SOCKS.equals(array[2]);
+			return new ProxyData(socks, host, port);
+		}
+		return null;
+	}
+
+	private final HashMap<String, ProxyData> proxies = new HashMap<>();
+	private boolean useNoSSLv3SSLSocketFactory = false;
 
 	static final class DisconnectedIOException extends IOException {}
 
@@ -240,12 +265,23 @@ public class HttpClient {
 		return verifyCertificate ? HttpsURLConnection.getDefaultSSLSocketFactory() : UNSAFE_SSL_SOCKET_FACTORY;
 	}
 
+	@SuppressWarnings("EqualsReplaceableByObjectsCall")
 	void execute(HttpRequest request) throws HttpException {
 		String chanName = ChanManager.getInstance().getChanNameByHost(request.uri.getAuthority());
 		ChanLocator locator = ChanLocator.get(chanName);
 		boolean verifyCertificate = locator.isUseHttps() && Preferences.isVerifyCertificate();
-		request.holder.initRequest(request.uri, proxies.get(chanName), chanName, verifyCertificate, request.delay,
-				MAX_ATTEMPS_COUNT);
+		ProxyData proxyData = getProxyData(chanName);
+		synchronized (proxies) {
+			ProxyData lastProxyData = proxies.get(chanName);
+			if (proxyData == lastProxyData || proxyData != null && proxyData.equals(lastProxyData)) {
+				// With initialized proxy object
+				proxyData = lastProxyData;
+			} else {
+				proxies.put(chanName, proxyData);
+			}
+		}
+		request.holder.initRequest(request.uri, proxyData != null ? proxyData.getProxy() : null,
+				chanName, verifyCertificate, request.delay, MAX_ATTEMPS_COUNT);
 		executeInternal(request);
 	}
 

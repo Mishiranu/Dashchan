@@ -35,14 +35,14 @@ import java.util.concurrent.FutureTask;
 public class WatcherService extends Service implements FavoritesStorage.Observer, Handler.Callback {
 	private static final HashMap<String, ExecutorService> EXECUTORS = new HashMap<>();
 
-	static {
-		for (String chanName : ChanManager.getInstance().getAllChanNames()) {
-			ChanConfiguration configuration = ChanConfiguration.get(chanName);
-			if (configuration.getOption(ChanConfiguration.OPTION_READ_POSTS_COUNT)) {
-				EXECUTORS.put(chanName, ConcurrentUtils.newSingleThreadPool(60000, "ThreadsWatcher", chanName,
-						Process.THREAD_PRIORITY_BACKGROUND));
-			}
+	private static ExecutorService getExecutor(String chanName) {
+		ExecutorService executor = EXECUTORS.get(chanName);
+		if (executor == null) {
+			executor = ConcurrentUtils.newSingleThreadPool(60000, "ThreadsWatcher", chanName,
+					Process.THREAD_PRIORITY_BACKGROUND);
+			EXECUTORS.put(chanName, executor);
 		}
+		return executor;
 	}
 
 	private static final int MESSAGE_STOP = 0;
@@ -137,7 +137,7 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 		ArrayList<FavoritesStorage.FavoriteItem> favoriteItems = FavoritesStorage.getInstance().getThreads(null);
 		boolean available = isAvailable();
 		for (FavoritesStorage.FavoriteItem favoriteItem : favoriteItems) {
-			if (favoriteItem.watcherEnabled && EXECUTORS.containsKey(favoriteItem.chanName)) {
+			if (favoriteItem.watcherEnabled && isWatcherAllowed(favoriteItem.chanName)) {
 				WatcherItem watcherItem = new WatcherItem(favoriteItem);
 				watcherItem.lastState = available ? State.ENABLED : State.UNAVAILABLE;
 				watcherItem.lastWasAvailable = available;
@@ -250,7 +250,7 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 				if (favoriteItem.threadNumber == null) {
 					throw new IllegalArgumentException();
 				}
-				if (EXECUTORS.containsKey(favoriteItem.chanName)) {
+				if (isWatcherAllowed(favoriteItem.chanName)) {
 					WatcherItem watcherItem = new WatcherItem(favoriteItem);
 					watching.put(watcherItem.key, watcherItem);
 					if (isActiveChanName(favoriteItem.chanName)) {
@@ -369,8 +369,13 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 		return null;
 	}
 
+	private boolean isWatcherAllowed(String chanName) {
+		return ChanConfiguration.get(chanName).getOption(ChanConfiguration.OPTION_READ_POSTS_COUNT);
+	}
+
 	private boolean isActiveChanName(String chanName) {
-		return mergeChans || clients.containsValue(chanName);
+		return ChanManager.getInstance().isAvailableChanName(chanName) &&
+				(mergeChans || clients.containsValue(chanName));
 	}
 
 	private long lastAvailableCheck;
@@ -416,7 +421,7 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 			if (available) {
 				WatcherTask task = new WatcherTask(watcherItem);
 				tasks.put(watcherItem.key, task);
-				EXECUTORS.get(watcherItem.chanName).execute(task);
+				getExecutor(watcherItem.chanName).execute(task);
 				watcherItem.lastWasAvailable = true;
 				notifyUpdate(watcherItem, State.BUSY);
 			} else {

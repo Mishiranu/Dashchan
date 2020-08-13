@@ -19,8 +19,6 @@ import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.service.webview.IRequestCallback;
 import com.mishiranu.dashchan.content.service.webview.IWebViewService;
 import com.mishiranu.dashchan.content.service.webview.WebViewService;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -151,13 +149,11 @@ public class RelayBlockResolver {
 							}
 						};
 						ChanLocator locator = ChanLocator.get(chanName);
-						Proxy proxy = HttpClient.getInstance().getProxy(chanName);
-						InetSocketAddress httpProxyAddress = proxy != null && proxy.type() == Proxy.Type.HTTP
-								? (InetSocketAddress) proxy.address() : null;
+						HttpClient.ProxyData proxyData = HttpClient.getInstance().getProxyData(chanName);
+						boolean httpProxy = proxyData != null && !proxyData.socks;
 						cookie = service.loadWithCookieResult(checkHolder.client.getCookieName(),
 								locator.buildPath().toString(), AdvancedPreferences.getUserAgent(chanName),
-								httpProxyAddress != null ? httpProxyAddress.getHostName() : null,
-								httpProxyAddress != null ? httpProxyAddress.getPort() : 0,
+								httpProxy ? proxyData.host : null, httpProxy ? proxyData.port : 0,
 								locator.isUseHttps() && Preferences.isVerifyCertificate(), WEB_VIEW_TIMEOUT,
 								requestCallback);
 					} catch (RemoteException e) {

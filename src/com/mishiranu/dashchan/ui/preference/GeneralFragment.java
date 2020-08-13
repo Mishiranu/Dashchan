@@ -10,7 +10,6 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.LocaleManager;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
-import java.util.Collection;
 
 public class GeneralFragment extends PreferenceFragment {
 	@Override
@@ -21,7 +20,6 @@ public class GeneralFragment extends PreferenceFragment {
 	@Override
 	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		Collection<String> chanNames = ChanManager.getInstance().getAvailableChanNames();
 
 		addList(Preferences.KEY_LOCALE, LocaleManager.VALUES_LOCALE,
 				LocaleManager.DEFAULT_LOCALE, R.string.preference_locale, LocaleManager.ENTRIES_LOCALE)
@@ -35,7 +33,7 @@ public class GeneralFragment extends PreferenceFragment {
 				R.string.preference_close_on_back, R.string.preference_close_on_back_summary);
 		addCheck(true, Preferences.KEY_REMEMBER_HISTORY, Preferences.DEFAULT_REMEMBER_HISTORY,
 				R.string.preference_remember_history, 0);
-		if (chanNames.size() > 1) {
+		if (ChanManager.getInstance().hasMultipleAvailableChans()) {
 			addCheck(true, Preferences.KEY_MERGE_CHANS, Preferences.DEFAULT_MERGE_CHANS,
 					R.string.preference_merge_chans, R.string.preference_merge_chans_summary);
 		}

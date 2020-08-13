@@ -1199,12 +1199,11 @@ public class DialogUnit {
 		Context context = uiManager.getContext();
 		final boolean canArchiveLocal = !ChanConfiguration.get(chanName)
 				.getOption(ChanConfiguration.OPTION_HIDDEN_DISALLOW_ARCHIVATION);
-		final ArrayList<String> archiveChanNames = ChanManager.getInstance().getArhiveMap().get(chanName);
+		final List<String> archiveChanNames = ChanManager.getInstance().getArchiveChanNames(chanName);
 		final SendMultifunctionalTask.State state = new SendMultifunctionalTask.State(SendMultifunctionalTask
 				.Operation.ARCHIVE, chanName, boardName, threadNumber, null, null, false);
 		state.archiveThreadTitle = threadTitle;
-		if (archiveChanNames != null && (canArchiveLocal && archiveChanNames.size() > 0 ||
-				archiveChanNames.size() > 1)) {
+		if (canArchiveLocal && archiveChanNames.size() > 0 || archiveChanNames.size() > 1) {
 			String[] items = new String[archiveChanNames.size() + (canArchiveLocal ? 1 : 0)];
 			if (canArchiveLocal) {
 				items[0] = context.getString(R.string.text_local_archive);
