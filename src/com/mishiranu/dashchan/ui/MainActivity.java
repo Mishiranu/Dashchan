@@ -10,9 +10,11 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -52,6 +54,7 @@ import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.ReadUpdateTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.GalleryItem;
+import com.mishiranu.dashchan.content.service.AudioPlayerService;
 import com.mishiranu.dashchan.content.service.PostingService;
 import com.mishiranu.dashchan.content.service.WatcherService;
 import com.mishiranu.dashchan.content.storage.DraftsStorage;
@@ -136,6 +139,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 
 	private ReadUpdateTask readUpdateTask;
 	private Intent navigateIntentOnResume;
+	private AlertDialog requestPermissionsDialog;
 
 	private static final String LOCKER_DRAWER = "drawer";
 	private static final String LOCKER_NON_PAGE = "nonPage";
@@ -349,7 +353,19 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			}
 		}
 
-		ExtensionsTrustLoop.handleUntrustedExtensions(this, configurationLock);
+		// Should not be necessary anymore to require it on start, requires rework
+		if (C.API_MARSHMALLOW && checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+				!= PackageManager.PERMISSION_GRANTED) {
+			requestPermissionsDialog = new AlertDialog.Builder(this)
+					.setMessage(R.string.message_memory_access_permission)
+					.setCancelable(false)
+					.setPositiveButton(android.R.string.ok, (dialog, which) -> requestPermissions(new String[]
+							{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0))
+					.setOnDismissListener(d -> requestPermissionsDialog = null)
+					.show();
+		} else {
+			ExtensionsTrustLoop.handleUntrustedExtensions(this, configurationLock);
+		}
 	}
 
 	@Override
@@ -375,6 +391,22 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 
 	private File getSavedPagesFile() {
 		return CacheManager.getInstance().getInternalCacheFile("saved-pages");
+	}
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode,
+			@NonNull String[] permissions, @NonNull int[] grantResults) {
+		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+		if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+			if (requestPermissionsDialog != null) {
+				requestPermissionsDialog.dismiss();
+				requestPermissionsDialog = null;
+			}
+			ExtensionsTrustLoop.handleUntrustedExtensions(this, configurationLock);
+		} else {
+			finish();
+		}
 	}
 
 	private Fragment getCurrentFragment() {
@@ -465,6 +497,10 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 				view, navigatePostMode, galleryMode));
 	}
 
+	private void navigateGalleryUri(Uri uri) {
+		navigateGallery(new GalleryOverlay(uri));
+	}
+
 	private void navigateGallery(GalleryOverlay galleryOverlay) {
 		FragmentManager fragmentManager = getSupportFragmentManager();
 		String tag = GalleryOverlay.class.getName();
@@ -521,7 +557,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 				((PostingFragment) currentFragment).handleFailResult(failResult);
 			}
 		} else if (C.ACTION_GALLERY.equals(intent.getAction())) {
-			new GalleryOverlay(intent.getData()).show(getSupportFragmentManager(), UUID.randomUUID().toString());
+			navigateGalleryUri(intent.getData());
 		} else if (C.ACTION_PLAYER.equals(intent.getAction())) {
 			FragmentManager fragmentManager = getSupportFragmentManager();
 			String tag = AudioPlayerDialog.class.getName();
@@ -536,14 +572,62 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 				pushFragment(browserFragment);
 			}
 		} else {
-			String chanName = intent.getStringExtra(C.EXTRA_CHAN_NAME);
-			String boardName = intent.getStringExtra(C.EXTRA_BOARD_NAME);
-			String threadNumber = intent.getStringExtra(C.EXTRA_THREAD_NUMBER);
-			String postNumber = intent.getStringExtra(C.EXTRA_POST_NUMBER);
-			String searchQuery = intent.getStringExtra(C.EXTRA_SEARCH_QUERY);
-			int flags = intent.getIntExtra(C.EXTRA_NAVIGATION_FLAGS, 0);
-			navigateIntentData(chanName, boardName, threadNumber, postNumber, null, searchQuery, flags);
+			Uri uri = intent.getData();
+			if (uri != null) {
+				if (!intent.getBooleanExtra(C.EXTRA_FROM_CLIENT, false)) {
+					navigateIntentUri(uri);
+				}
+			} else {
+				String chanName = intent.getStringExtra(C.EXTRA_CHAN_NAME);
+				String boardName = intent.getStringExtra(C.EXTRA_BOARD_NAME);
+				String threadNumber = intent.getStringExtra(C.EXTRA_THREAD_NUMBER);
+				String postNumber = intent.getStringExtra(C.EXTRA_POST_NUMBER);
+				String searchQuery = intent.getStringExtra(C.EXTRA_SEARCH_QUERY);
+				int flags = intent.getIntExtra(C.EXTRA_NAVIGATION_FLAGS, 0);
+				navigateIntentData(chanName, boardName, threadNumber, postNumber, null, searchQuery, flags);
+			}
 		}
+	}
+
+	private void navigateIntentUri(Uri uri) {
+		String chanName = ChanManager.getInstance().getChanNameByHost(uri.getAuthority());
+		if (chanName != null) {
+			ChanLocator locator = ChanLocator.get(chanName);
+			boolean boardUri = locator.safe(false).isBoardUri(uri);
+			boolean threadUri = locator.safe(false).isThreadUri(uri);
+			String boardName = boardUri || threadUri ? locator.safe(false).getBoardName(uri) : null;
+			String threadNumber = threadUri ? locator.safe(false).getThreadNumber(uri) : null;
+			String postNumber = threadUri ? locator.safe(false).getPostNumber(uri) : null;
+			if (boardUri) {
+				navigateIntentData(chanName, boardName, null, null, null, null,
+						NavigationUtils.FLAG_RETURNABLE);
+				return;
+			} else if (threadUri) {
+				navigateIntentData(chanName, boardName, threadNumber, postNumber, null, null,
+						NavigationUtils.FLAG_RETURNABLE);
+				return;
+			} else if (locator.isImageUri(uri)) {
+				navigateGalleryUri(uri);
+				return;
+			} else if (locator.isAudioUri(uri)) {
+				AudioPlayerService.start(this, chanName, uri, locator.createAttachmentFileName(uri));
+				return;
+			} else if (locator.isVideoUri(uri)) {
+				String fileName = locator.createAttachmentFileName(uri);
+				if (NavigationUtils.isOpenableVideoPath(fileName)) {
+					navigateGalleryUri(locator.convert(uri));
+				} else {
+					NavigationUtils.handleUri(this, chanName, locator.convert(uri),
+							NavigationUtils.BrowserType.EXTERNAL);
+				}
+				return;
+			} else if (Preferences.isUseInternalBrowser()) {
+				NavigationUtils.handleUri(this, chanName, locator.convert(uri),
+						NavigationUtils.BrowserType.INTERNAL);
+				return;
+			}
+		}
+		ToastUtils.show(this, R.string.message_unknown_address);
 	}
 
 	private static boolean isSingleBoardMode(String chanName) {

@@ -27,7 +27,6 @@ import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.net.RelayBlockResolver;
 import com.mishiranu.dashchan.content.service.AudioPlayerService;
 import com.mishiranu.dashchan.media.VideoPlayer;
-import com.mishiranu.dashchan.ui.LauncherActivity;
 import com.mishiranu.dashchan.ui.MainActivity;
 import java.io.File;
 import java.util.ArrayList;
@@ -292,7 +291,7 @@ public class NavigationUtils {
 			Thread.currentThread().interrupt();
 			return;
 		}
-		Intent intent = new Intent(context, LauncherActivity.class).setAction(Intent.ACTION_MAIN)
+		Intent intent = new Intent(context, MainActivity.class).setAction(Intent.ACTION_MAIN)
 				.addCategory(Intent.CATEGORY_LAUNCHER);
 		PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 		AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
