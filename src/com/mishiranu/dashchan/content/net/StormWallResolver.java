@@ -6,7 +6,7 @@ import chan.content.ChanLocator;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
 import chan.util.StringUtils;
-import com.mishiranu.dashchan.preference.Preferences;
+import com.mishiranu.dashchan.content.Preferences;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

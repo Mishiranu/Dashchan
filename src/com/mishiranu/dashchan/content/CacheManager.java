@@ -1,21 +1,24 @@
-/*
- * Copyright 2014-2018 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.content;
 
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Environment;
+import android.util.Pair;
+import chan.content.ChanConfiguration;
+import chan.content.ChanManager;
+import chan.content.model.Posts;
+import chan.util.StringUtils;
+import com.mishiranu.dashchan.content.storage.FavoritesStorage;
+import com.mishiranu.dashchan.util.AndroidUtils;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
+import com.mishiranu.dashchan.util.IOUtils;
+import com.mishiranu.dashchan.util.Log;
+import com.mishiranu.dashchan.util.LruCache;
+import com.mishiranu.dashchan.util.MimeTypes;
 import java.io.BufferedOutputStream;
 import java.io.Closeable;
 import java.io.File;
@@ -36,29 +39,6 @@ import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Environment;
-import android.util.Pair;
-
-import chan.content.ChanConfiguration;
-import chan.content.ChanManager;
-import chan.content.model.Posts;
-import chan.util.StringUtils;
-
-import com.mishiranu.dashchan.content.storage.FavoritesStorage;
-import com.mishiranu.dashchan.preference.Preferences;
-import com.mishiranu.dashchan.util.AndroidUtils;
-import com.mishiranu.dashchan.util.ConcurrentUtils;
-import com.mishiranu.dashchan.util.IOUtils;
-import com.mishiranu.dashchan.util.Log;
-import com.mishiranu.dashchan.util.LruCache;
-import com.mishiranu.dashchan.util.MimeTypes;
 
 public class CacheManager implements Runnable {
 	private static final int MAX_THUMBNAILS_PART = 30;
@@ -119,7 +99,7 @@ public class CacheManager implements Runnable {
 
 	private volatile CountDownLatch cacheBuildingLatch;
 
-	private class CacheItem {
+	private static class CacheItem {
 		public static final int TYPE_THUMBNAILS = 0;
 		public static final int TYPE_MEDIA = 1;
 		public static final int TYPE_PAGES = 2;

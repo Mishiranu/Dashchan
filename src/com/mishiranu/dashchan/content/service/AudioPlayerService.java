@@ -16,10 +16,10 @@ import android.view.ContextThemeWrapper;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
+import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.ReadFileTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
-import com.mishiranu.dashchan.preference.Preferences;
-import com.mishiranu.dashchan.ui.navigator.NavigatorActivity;
+import com.mishiranu.dashchan.ui.MainActivity;
 import com.mishiranu.dashchan.util.AudioFocus;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
@@ -322,7 +322,7 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnComplet
 			builder = new Notification.Builder(this);
 			builder.setSmallIcon(R.drawable.ic_audiotrack_white_24dp);
 			PendingIntent contentIntent = PendingIntent.getActivity(context, 0,
-					new Intent(this, NavigatorActivity.class).setAction(C.ACTION_PLAYER),
+					new Intent(this, MainActivity.class).setAction(C.ACTION_PLAYER),
 					PendingIntent.FLAG_UPDATE_CURRENT);
 			builder.setContentIntent(contentIntent);
 			TypedArray typedArray = context.obtainStyledAttributes(ICON_ATTRS);

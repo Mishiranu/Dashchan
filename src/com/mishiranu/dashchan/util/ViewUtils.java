@@ -22,7 +22,7 @@ import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toolbar;
 import com.mishiranu.dashchan.C;
-import com.mishiranu.dashchan.preference.Preferences;
+import com.mishiranu.dashchan.content.Preferences;
 import java.lang.reflect.Field;
 
 public class ViewUtils {

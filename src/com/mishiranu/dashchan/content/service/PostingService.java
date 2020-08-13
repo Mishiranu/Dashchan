@@ -20,13 +20,13 @@ import chan.text.CommentEditor;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.SendPostTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.storage.DraftsStorage;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.content.storage.StatisticsStorage;
-import com.mishiranu.dashchan.preference.Preferences;
-import com.mishiranu.dashchan.ui.navigator.NavigatorActivity;
+import com.mishiranu.dashchan.ui.MainActivity;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
@@ -433,7 +433,7 @@ public class PostingService extends Service implements Runnable, SendPostTask.Ca
 					callback.onStop(false);
 				}
 			}
-			startActivity(new Intent(this, NavigatorActivity.class).setAction(C.ACTION_POSTING)
+			startActivity(new Intent(this, MainActivity.class).setAction(C.ACTION_POSTING)
 					.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK).putExtra(C.EXTRA_CHAN_NAME, chanName)
 					.putExtra(C.EXTRA_BOARD_NAME, data.boardName).putExtra(C.EXTRA_THREAD_NUMBER, data.threadNumber)
 					.putExtra(C.EXTRA_FAIL_RESULT, new FailResult(errorItem, extra, captchaError, keepCaptcha)));

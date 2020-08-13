@@ -6,16 +6,17 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Build;
 import android.util.Pair;
+import androidx.annotation.NonNull;
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
 import chan.util.CommonUtils;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.content.AdvancedPreferences;
 import com.mishiranu.dashchan.content.MainApplication;
+import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.net.RelayBlockResolver;
-import com.mishiranu.dashchan.preference.AdvancedPreferences;
-import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
 import java.io.BufferedInputStream;
@@ -52,6 +53,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.GZIPInputStream;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -192,7 +194,7 @@ public class HttpClient {
 		}
 	}
 
-	private Proxy initProxy(String chanName, boolean throwIfNotValid) throws Exception {
+	private Proxy initProxy(String chanName, boolean throwIfNotValid) {
 		Proxy proxy = null;
 		String[] proxyData = Preferences.getProxy(chanName);
 		if (proxyData != null && proxyData[0] != null && proxyData[1] != null) {
@@ -200,7 +202,7 @@ public class HttpClient {
 			try {
 				proxy = new Proxy(socks ? Proxy.Type.SOCKS : Proxy.Type.HTTP, InetSocketAddress
 						.createUnresolved(proxyData[0], Integer.parseInt(proxyData[1])));
-			} catch (Exception e) {
+			} catch (RuntimeException e) {
 				if (throwIfNotValid) {
 					throw e;
 				}
@@ -247,6 +249,7 @@ public class HttpClient {
 		executeInternal(request);
 	}
 
+	@SuppressWarnings("CharsetObjectCanBeUsed")
 	private void encodeUriBufferPart(StringBuilder uriStringBuilder, char[] chars, int i, int start, boolean ascii) {
 		if (!ascii) {
 			try {
@@ -703,7 +706,7 @@ public class HttpClient {
 		private final HttpHolder.InputListener listener;
 		private final long contentLength;
 
-		private volatile long progress;
+		private final AtomicLong progress = new AtomicLong();
 
 		public ClientInputStream(InputStream input, HttpHolder holder,
 				HttpHolder.InputListener listener, long contentLength) {
@@ -725,12 +728,12 @@ public class HttpClient {
 		}
 
 		@Override
-		public int read(byte[] b) throws IOException {
+		public int read(@NonNull byte[] b) throws IOException {
 			return read(b, 0, b.length);
 		}
 
 		@Override
-		public int read(byte[] b, int off, int len) throws IOException {
+		public int read(@NonNull byte[] b, int off, int len) throws IOException {
 			holder.checkDisconnected(this);
 			int value = input.read(b, off, len);
 			updateProgress(value);
@@ -747,7 +750,7 @@ public class HttpClient {
 
 		private void updateProgress(long value) {
 			if (listener != null && value > 0) {
-				progress += value;
+				long progress = this.progress.addAndGet(value);
 				listener.onInputProgressChange(progress, contentLength);
 			}
 		}
@@ -786,7 +789,7 @@ public class HttpClient {
 		private final HttpRequest.OutputListener listener;
 		private final long contentLength;
 
-		private volatile long progress;
+		private final AtomicLong progress = new AtomicLong();
 
 		public ClientOutputStream(OutputStream output, HttpHolder holder, HttpRequest.OutputListener listener,
 				long contentLength) {
@@ -807,14 +810,14 @@ public class HttpClient {
 		}
 
 		@Override
-		public void write(byte[] buffer) throws IOException {
+		public void write(@NonNull byte[] buffer) throws IOException {
 			holder.checkDisconnected(this);
 			output.write(buffer);
 			updateProgress(buffer.length);
 		}
 
 		@Override
-		public void write(byte[] buffer, int offset, int length) throws IOException {
+		public void write(@NonNull byte[] buffer, int offset, int length) throws IOException {
 			holder.checkDisconnected(this);
 			output.write(buffer, offset, length);
 			updateProgress(length);
@@ -822,7 +825,7 @@ public class HttpClient {
 
 		private void updateProgress(long value) {
 			if (listener != null && value > 0) {
-				progress += value;
+				long progress = this.progress.addAndGet(value);
 				listener.onOutputProgressChange(progress, contentLength);
 			}
 		}

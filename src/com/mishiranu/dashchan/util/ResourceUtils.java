@@ -14,7 +14,7 @@ import android.view.Gravity;
 import android.view.View;
 import androidx.fragment.app.Fragment;
 import com.mishiranu.dashchan.C;
-import com.mishiranu.dashchan.preference.Preferences;
+import com.mishiranu.dashchan.content.Preferences;
 
 public class ResourceUtils {
 	public static final int STATUS_NAVIGATION_BACKGROUND = 0x33000000;

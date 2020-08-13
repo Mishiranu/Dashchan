@@ -6,7 +6,7 @@ import chan.annotation.Public;
 import chan.util.CommonUtils;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
-import com.mishiranu.dashchan.preference.Preferences;
+import com.mishiranu.dashchan.content.Preferences;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;

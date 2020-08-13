@@ -27,10 +27,10 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.DownloadManager;
 import com.mishiranu.dashchan.content.FileProvider;
+import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.ReadFileTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.FileHolder;
-import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.MimeTypes;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
@@ -314,9 +314,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback, R
 		TaskData taskData = new TaskData(chanName, from, to);
 		boolean success = successTasks.contains(taskData);
 		if (!success && !queuedTasks.contains(taskData)) {
-			if (errorTasks.contains(taskData)) {
-				errorTasks.remove(taskData);
-			}
+			errorTasks.remove(taskData);
 			queuedTasks.add(taskData);
 			DownloadManager.getInstance().notifyFileAddedToDownloadQueue(taskData.to);
 			boolean started = start(chanName, from, to);

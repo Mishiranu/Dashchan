@@ -8,7 +8,6 @@ import com.mishiranu.dashchan.content.storage.AutohideStorage;
 import com.mishiranu.dashchan.content.storage.DatabaseHelper;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.content.storage.StatisticsStorage;
-import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.NavigationUtils;

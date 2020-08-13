@@ -34,11 +34,11 @@
 		</activity>
 
 		<activity
-			android:name=".ui.navigator.NavigatorActivity"
+			android:name=".ui.MainActivity"
 			android:launchMode="singleTask" />
 
 		<activity
-			android:name=".preference.UpdaterActivity"
+			android:name=".content.UpdaterActivity"
 			android:excludeFromRecents="true"
 			android:theme="@android:style/Theme.Panel" />
 

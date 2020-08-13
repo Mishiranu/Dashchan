@@ -13,7 +13,7 @@ import android.widget.BaseAdapter;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import com.mishiranu.dashchan.graphics.ActionIconSet;
-import com.mishiranu.dashchan.ui.navigator.entity.Page;
+import com.mishiranu.dashchan.ui.navigator.Page;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.widget.ListPosition;
 import com.mishiranu.dashchan.widget.PullableListView;

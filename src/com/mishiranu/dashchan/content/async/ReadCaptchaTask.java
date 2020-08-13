@@ -7,10 +7,10 @@ import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
+import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.net.CaptchaServiceReader;
 import com.mishiranu.dashchan.content.net.RecaptchaReader;
-import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 
 public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {

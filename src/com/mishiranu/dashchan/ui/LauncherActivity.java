@@ -18,8 +18,7 @@ import chan.content.ChanManager;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.preference.Preferences;
-import com.mishiranu.dashchan.ui.navigator.NavigatorActivity;
+import com.mishiranu.dashchan.content.Preferences;
 import java.util.Collection;
 
 /*
@@ -117,7 +116,7 @@ public class LauncherActivity extends StateActivity {
 
 	private void navigateMainActivity() {
 		int flags = Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY & getIntent().getFlags();
-		startActivity(new Intent(this, NavigatorActivity.class).setFlags(flags));
+		startActivity(new Intent(this, MainActivity.class).setFlags(flags));
 		finish();
 	}
 

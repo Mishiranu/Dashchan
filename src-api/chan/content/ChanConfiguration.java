@@ -10,7 +10,7 @@ import chan.content.model.BoardCategory;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.MainApplication;
-import com.mishiranu.dashchan.preference.Preferences;
+import com.mishiranu.dashchan.content.Preferences;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;

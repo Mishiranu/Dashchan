@@ -15,9 +15,9 @@ import chan.http.HttpHolder;
 import chan.http.HttpValidator;
 import chan.util.CommonUtils;
 import chan.util.StringUtils;
+import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PostItem;
-import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.text.HtmlParser;
 import com.mishiranu.dashchan.text.SimilarTextEstimator;
 import com.mishiranu.dashchan.util.Log;
@@ -368,6 +368,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 					j++;
 				} else {
 					// Post numbers are equal
+					// noinspection IfStatementWithIdenticalBranches
 					if (!oldPost.contentEquals(newPost) || oldPost.isDeleted()) {
 						hasEdited = true;
 						patches.add(new Patch(newPost, oldPost, resultSize, true, false));
@@ -485,13 +486,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 
 		@Override
 		public boolean equals(Object o) {
-			if (o == this) {
-				return true;
-			}
-			if (o instanceof NewThreadUserPostPending) {
-				return true;
-			}
-			return false;
+			return o instanceof NewThreadUserPostPending;
 		}
 
 		@Override
