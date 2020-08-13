@@ -128,7 +128,7 @@ public class ForegroundManager implements Handler.Callback {
 		private boolean large;
 		private boolean blackAndWhite;
 
-		private final CaptchaForm captchaForm = new CaptchaForm(this);
+		private CaptchaForm captchaForm;
 
 		private Button positiveButton;
 
@@ -340,7 +340,7 @@ public class ForegroundManager implements Handler.Callback {
 			ChanConfiguration.Captcha captcha = ChanConfiguration.get(args.getString(EXTRA_CHAN_NAME))
 					.safe().obtainCaptcha(args.getString(EXTRA_CAPTCHA_TYPE));
 			EditText captchaInputView = container.findViewById(R.id.captcha_input);
-			captchaForm.setupViews(container, null, captchaInputView, true, captcha);
+			captchaForm = new CaptchaForm(this, container, null, captchaInputView, true, captcha);
 			AlertDialog alertDialog = new AlertDialog.Builder(requireContext())
 					.setTitle(R.string.text_confirmation).setView(container)
 					.setPositiveButton(android.R.string.ok, (dialog, which) -> onConfirmCaptcha())
@@ -355,7 +355,13 @@ public class ForegroundManager implements Handler.Callback {
 		}
 
 		@Override
-		public void onRefreshCapctha(boolean forceRefresh) {
+		public void onDestroyView() {
+			super.onDestroyView();
+			captchaForm = null;
+		}
+
+		@Override
+		public void onRefreshCaptcha(boolean forceRefresh) {
 			CaptchaPendingData pendingData = getPendingData(true);
 			if (pendingData == null) {
 				return;

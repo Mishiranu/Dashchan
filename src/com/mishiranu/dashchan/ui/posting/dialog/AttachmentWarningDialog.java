@@ -1,33 +1,19 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui.posting.dialog;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.os.Bundle;
-
+import androidx.annotation.NonNull;
+import androidx.fragment.app.DialogFragment;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.content.storage.DraftsStorage;
 import com.mishiranu.dashchan.media.JpegData;
 import com.mishiranu.dashchan.ui.posting.AttachmentHolder;
+import com.mishiranu.dashchan.ui.posting.PostingDialogCallback;
 
-public class AttachmentWarningDialog extends PostingDialog {
+public class AttachmentWarningDialog extends DialogFragment {
 	public static final String TAG = AttachmentWarningDialog.class.getName();
 
 	private static final String EXTRA_ATTACHMENT_INDEX = "attachmentIndex";
@@ -40,10 +26,12 @@ public class AttachmentWarningDialog extends PostingDialog {
 		setArguments(args);
 	}
 
+	@NonNull
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		Activity activity = getActivity();
-		AttachmentHolder holder = getAttachmentHolder(EXTRA_ATTACHMENT_INDEX);
+		AttachmentHolder holder = ((PostingDialogCallback) getParentFragment())
+				.getAttachmentHolder(requireArguments().getInt(EXTRA_ATTACHMENT_INDEX));
 		FileHolder fileHolder = holder != null ? DraftsStorage.getInstance()
 				.getAttachmentDraftFileHolder(holder.hash) : null;
 		if (holder == null || fileHolder == null) {

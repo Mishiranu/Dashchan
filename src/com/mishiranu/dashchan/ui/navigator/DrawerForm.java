@@ -77,8 +77,10 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 	private final Callback callback;
 	private final ConfigurationLock configurationLock;
 
+	private final WatcherService.Client watcherServiceClient;
 	private final InputMethodManager inputMethodManager;
 
+	private final DrawerListView listView;
 	private final EditText searchEdit;
 	private final View headerView;
 	private final View restartView;
@@ -93,9 +95,6 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 	private final ArrayList<ListItem> favorites = new ArrayList<>();
 	private final ArrayList<ArrayList<ListItem>> categories = new ArrayList<>();
 	private final ArrayList<ListItem> menu = new ArrayList<>();
-
-	private final WatcherService.Client watcherServiceClient;
-	private SortableListView listView;
 
 	private boolean mergeChans = false;
 	private boolean showHistory = false;
@@ -146,6 +145,41 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		public void restartApplication();
 	}
 
+	private static class DrawerListView extends SortableListView {
+		public DrawerListView(Context context, Context unstyledContext) {
+			super(context, unstyledContext);
+		}
+
+		// Fixes the bug when keyboard is hidden immediately after clicking to the EditText
+		// when "adjustResize" input mode is used.
+		// hasFocus() returns different values during onLayout(), which prevents ListView
+		// from restoring the focus to the previous state. In addition, the focus may be
+		// restored to header/footer views only, to views with transient state, or when
+		// stable IDs are enabled in the adapter.
+		// This workaround fixes hasFocus() value during onLayout() processing, and header
+		// view (which contains EditText) should also override its hasTransientState()
+		// method which should return "true" during onLayout().
+		public boolean enableSoftImeFix = false;
+
+		@Override
+		public boolean hasFocus() {
+			return super.hasFocus() || enableSoftImeFix;
+		}
+
+		@Override
+		protected void onLayout(boolean changed, int l, int t, int r, int b) {
+			boolean hasFocus = super.hasFocus();
+			if (hasFocus) {
+				boolean lastEnableSoftImeFix = enableSoftImeFix;
+				enableSoftImeFix = true;
+				super.onLayout(changed, l, t, r, b);
+				enableSoftImeFix = lastEnableSoftImeFix;
+			} else {
+				super.onLayout(changed, l, t, r, b);
+			}
+		}
+	}
+
 	public DrawerForm(Context context, Context unstyledContext, Callback callback,
 			ConfigurationLock configurationLock, WatcherService.Client watcherServiceClient) {
 		this.context = context;
@@ -156,7 +190,28 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 
 		float density = ResourceUtils.obtainDensity(context);
 
-		LinearLayout linearLayout = new LinearLayout(context);
+		listView = new DrawerListView(context, unstyledContext);
+		listView.setClipToPadding(false);
+		listView.setEdgeEffectShift(this);
+		listView.setScrollBarStyle(SortableListView.SCROLLBARS_OUTSIDE_OVERLAY);
+		listView.setAdapter(this);
+		listView.setOnItemClickListener(this);
+		listView.setOnItemLongClickListener(this);
+		ScrollListenerComposite.obtain(listView).add(new ListViewScrollFixListener());
+		listView.setOnSortingFinishedListener(this);
+		listView.setOnTouchListener(this);
+		if (C.API_LOLLIPOP) {
+			listView.setDivider(null);
+		} else {
+			listView.setPadding((int) (12f * density), 0, (int) (12f * density), 0);
+		}
+
+		LinearLayout linearLayout = new LinearLayout(context) {
+			@Override
+			public boolean hasTransientState() {
+				return super.hasTransientState() || listView.enableSoftImeFix;
+			}
+		};
 		linearLayout.setOrientation(LinearLayout.VERTICAL);
 		linearLayout.setLayoutParams(new SortableListView.LayoutParams(SortableListView.LayoutParams.MATCH_PARENT,
 				SortableListView.LayoutParams.WRAP_CONTENT));
@@ -275,25 +330,6 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 		}
 	}
 
-	public void bind(SortableListView listView) {
-		this.listView = listView;
-		listView.setClipToPadding(false);
-		listView.setEdgeEffectShift(this);
-		listView.setScrollBarStyle(SortableListView.SCROLLBARS_OUTSIDE_OVERLAY);
-		listView.setAdapter(this);
-		listView.setOnItemClickListener(this);
-		listView.setOnItemLongClickListener(this);
-		ScrollListenerComposite.obtain(listView).add(new ListViewScrollFixListener());
-		listView.setOnSortingFinishedListener(this);
-		listView.setOnTouchListener(this);
-		float density = ResourceUtils.obtainDensity(context);
-		if (C.API_LOLLIPOP) {
-			listView.setDivider(null);
-		} else {
-			listView.setPadding((int) (12f * density), 0, (int) (12f * density), 0);
-		}
-	}
-
 	private void updateConfiguration(String chanName, boolean force) {
 		if (!StringUtils.equals(chanName, this.chanName) || force || menu.isEmpty()) {
 			this.chanName = chanName;
@@ -332,6 +368,10 @@ public class DrawerForm extends BaseAdapter implements EdgeEffectHandler.Shift, 
 
 	public void updateConfiguration(String chanName) {
 		updateConfiguration(chanName, false);
+	}
+
+	public SortableListView getListView() {
+		return listView;
 	}
 
 	public View getHeaderView() {

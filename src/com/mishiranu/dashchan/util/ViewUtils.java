@@ -22,7 +22,6 @@ import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toolbar;
 import com.mishiranu.dashchan.C;
-import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.preference.Preferences;
 import java.lang.reflect.Field;
 
@@ -121,39 +120,8 @@ public class ViewUtils {
 	public static void applyToolbarStyle(Window window, View toolbarView) {
 		if (C.API_LOLLIPOP) {
 			View decorView = window.getDecorView();
-			if (toolbarView == null) {
-				int id = decorView.getResources().getIdentifier("action_bar", "id", "android");
-				if (id != 0) {
-					toolbarView = decorView.findViewById(id);
-				}
-			}
 			if (toolbarView instanceof Toolbar) {
-				Context context = toolbarView.getContext();
-				int[] attrs = {android.R.attr.actionBarStyle, android.R.attr.actionBarSize};
-				TypedArray typedArray = context.obtainStyledAttributes(attrs);
-				int actionStyle = typedArray.getResourceId(0, 0);
-				int actionHeight = typedArray.getDimensionPixelSize(1, 0);
-				typedArray.recycle();
-				try {
-					View container = (View) toolbarView.getParent();
-					Field field = container.getClass().getDeclaredField("mHeight");
-					field.setAccessible(true);
-					field.setInt(container, actionHeight);
-					View overlay = (View) container.getParent();
-					field = overlay.getClass().getDeclaredField("mActionBarHeight");
-					field.setAccessible(true);
-					field.setInt(overlay, actionHeight);
-				} catch (Exception e) {
-					// Reflective operation, ignore exception
-				}
-				toolbarView.getLayoutParams().height = actionHeight;
-				toolbarView.setMinimumHeight(actionHeight);
-				int[] toolbarAttrs = {android.R.attr.titleTextStyle, android.R.attr.subtitleTextStyle};
-				typedArray = context.obtainStyledAttributes(actionStyle, toolbarAttrs);
 				Toolbar toolbar = (Toolbar) toolbarView;
-				toolbar.setTitleTextAppearance(context, typedArray.getResourceId(0, 0));
-				toolbar.setSubtitleTextAppearance(context, typedArray.getResourceId(1, 0));
-				typedArray.recycle();
 				TextView subtitleTextView = null;
 				try {
 					Field field = toolbar.getClass().getDeclaredField("mSubtitleTextView");
@@ -172,20 +140,10 @@ public class ViewUtils {
 					Configuration configuration = decorView.getResources().getConfiguration();
 					boolean handle = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
 							&& !ResourceUtils.isTablet(configuration);
-					subtitleTextView.setIncludeFontPadding(!handle);
-					Object tag = subtitleTextView.getTag(R.id.value);
-					if (tag == null) {
-						tag = subtitleTextView.getPaddingLeft() == 0 && subtitleTextView.getPaddingTop() == 0 &&
-								subtitleTextView.getPaddingRight() == 0 && subtitleTextView.getPaddingBottom() == 0;
-						subtitleTextView.setTag(R.id.value, tag);
-					}
-					if (tag instanceof Boolean && (boolean) tag) {
-						float density = ResourceUtils.obtainDensity(toolbar);
-						subtitleTextView.setPadding(0, 0, 0, handle ? (int) (2f * density + 0.5f) : 0);
-					}
 					if (handle) {
-						// Override text size from text appearance set before
-						subtitleTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
+						float density = ResourceUtils.obtainDensity(toolbar);
+						subtitleTextView.setIncludeFontPadding(false);
+						subtitleTextView.setPadding(0, 0, 0, (int) (2f * density + 0.5f));
 					}
 				}
 			}

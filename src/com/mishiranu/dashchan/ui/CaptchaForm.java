@@ -1,19 +1,3 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui;
 
 import android.content.Context;
@@ -28,10 +12,8 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.preference.Preferences;
@@ -43,32 +25,28 @@ public class CaptchaForm implements View.OnClickListener, View.OnLongClickListen
 	public enum CaptchaViewType {LOADING, IMAGE, SKIP, ERROR}
 
 	private final Callback callback;
-
-	private boolean applyHeight;
-	private View blockParentView;
-	private View blockView;
-	private View skipBlockView;
-	private TextView skipTextView;
-	private View loadingView;
-	private ImageView imageView;
-	private View inputParentView;
-	private EditText inputView;
-	private View loadButton;
-	private View refreshButton;
+	private final boolean applyHeight;
+	private final View blockParentView;
+	private final View blockView;
+	private final View skipBlockView;
+	private final TextView skipTextView;
+	private final View loadingView;
+	private final ImageView imageView;
+	private final View inputParentView;
+	private final EditText inputView;
+	private final View loadButton;
+	private final View refreshButton;
 
 	private ChanConfiguration.Captcha.Input captchaInput;
 
 	public interface Callback {
-		public void onRefreshCapctha(boolean forceRefresh);
+		public void onRefreshCaptcha(boolean forceRefresh);
 		public void onConfirmCaptcha();
 	}
 
-	public CaptchaForm(Callback callback) {
+	public CaptchaForm(Callback callback, View container, View inputParentView, EditText inputView,
+			boolean applyHeight, ChanConfiguration.Captcha captcha) {
 		this.callback = callback;
-	}
-
-	public void setupViews(View container, View inputParentView, EditText inputView, boolean applyHeight,
-			ChanConfiguration.Captcha captcha) {
 		this.applyHeight = applyHeight;
 		blockParentView = container.findViewById(R.id.captcha_block_parent);
 		blockView = container.findViewById(R.id.captcha_block);
@@ -135,9 +113,9 @@ public class CaptchaForm implements View.OnClickListener, View.OnLongClickListen
 	@Override
 	public void onClick(View v) {
 		if (v == loadButton) {
-			callback.onRefreshCapctha(true);
+			callback.onRefreshCaptcha(true);
 		} else if (v == blockParentView || v == refreshButton) {
-			callback.onRefreshCapctha(false);
+			callback.onRefreshCaptcha(false);
 		} else if (inputParentView != null && v == inputParentView) {
 			inputView.requestFocus();
 			InputMethodManager inputMethodManager = (InputMethodManager) v.getContext()
@@ -151,7 +129,7 @@ public class CaptchaForm implements View.OnClickListener, View.OnLongClickListen
 	@Override
 	public boolean onLongClick(View v) {
 		if (v == blockParentView || v == refreshButton) {
-			callback.onRefreshCapctha(true);
+			callback.onRefreshCaptcha(true);
 			return true;
 		}
 		return false;

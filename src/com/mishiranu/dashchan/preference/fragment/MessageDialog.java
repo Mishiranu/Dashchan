@@ -6,6 +6,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
+import com.mishiranu.dashchan.ui.FragmentHandler;
 
 public class MessageDialog extends DialogFragment implements DialogInterface.OnClickListener {
 	private static final String TAG = MessageDialog.class.getName();
@@ -43,7 +44,7 @@ public class MessageDialog extends DialogFragment implements DialogInterface.OnC
 
 	private void checkFinish() {
 		if (requireArguments().getBoolean(EXTRA_FINISH_ACTIVITY)) {
-			requireActivity().onBackPressed();
+			((FragmentHandler) requireActivity()).removeFragment();
 		}
 	}
 

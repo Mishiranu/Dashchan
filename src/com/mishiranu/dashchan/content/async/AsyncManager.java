@@ -1,13 +1,12 @@
 package com.mishiranu.dashchan.content.async;
 
-import android.annotation.TargetApi;
-import android.os.Build;
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import chan.util.StringUtils;
-import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.R;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -72,32 +71,25 @@ public final class AsyncManager {
 		}
 	}
 
-	private static AsyncManager get(FragmentManager fragmentManager) {
+	public static AsyncManager get(FragmentActivity activity) {
 		String tag = AsyncManager.class.getName();
+		FragmentManager fragmentManager = activity.getSupportFragmentManager();
 		TaskFragment fragment = (TaskFragment) fragmentManager.findFragmentByTag(tag);
+		if (fragment == null) {
+			WeakReference<?> reference = (WeakReference<?>)
+					activity.getWindow().getDecorView().getTag(R.id.tag_async_manager);
+			fragment = reference != null ? (TaskFragment) reference.get() : null;
+		}
 		if (fragment == null) {
 			fragment = new TaskFragment();
 			fragmentManager.beginTransaction().add(fragment, tag).commit();
+			activity.getWindow().getDecorView().setTag(R.id.tag_async_manager, new WeakReference<>(fragment));
 		}
 		return fragment.manager;
 	}
 
-	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
 	public static AsyncManager get(Fragment fragment) {
-		if (C.API_JELLY_BEAN_MR1) {
-			while (true) {
-				Fragment parent = fragment.getParentFragment();
-				if (parent == null) {
-					break;
-				}
-				fragment = parent;
-			}
-		}
-		return get(fragment.getParentFragmentManager());
-	}
-
-	public static AsyncManager get(FragmentActivity activity) {
-		return get(activity.getSupportFragmentManager());
+		return get(fragment.requireActivity());
 	}
 
 	private final TaskFragment fragment;

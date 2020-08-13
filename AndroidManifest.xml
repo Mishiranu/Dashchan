@@ -38,10 +38,6 @@
 			android:launchMode="singleTask" />
 
 		<activity
-			android:name=".ui.posting.PostingActivity"
-			android:windowSoftInputMode="stateHidden" />
-
-		<activity
 			android:name=".preference.UpdaterActivity"
 			android:excludeFromRecents="true"
 			android:theme="@android:style/Theme.Panel" />

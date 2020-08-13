@@ -18,6 +18,7 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.storage.StatisticsStorage;
 import com.mishiranu.dashchan.graphics.ActionIconSet;
+import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.util.PostDateFormatter;
 import com.mishiranu.dashchan.widget.ViewFactory;
 import java.util.ArrayList;
@@ -142,7 +143,7 @@ public class StatisticsFragment extends BaseListFragment {
 		switch (item.getItemId()) {
 			case OPTIONS_MENU_CLEAR: {
 				StatisticsStorage.getInstance().clear();
-				requireActivity().onBackPressed();
+				((FragmentHandler) requireActivity()).removeFragment();
 				break;
 			}
 		}

@@ -13,6 +13,7 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.preference.Preferences;
 import com.mishiranu.dashchan.preference.core.Preference;
 import com.mishiranu.dashchan.preference.core.PreferenceFragment;
+import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.util.DialogMenu;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -111,7 +112,7 @@ public class CookiesFragment extends PreferenceFragment {
 			int size = removePreference(preference);
 			cookies.remove(cookie);
 			if (size == 0) {
-				requireActivity().onBackPressed();
+				((FragmentHandler) requireActivity()).removeFragment();
 			}
 		}
 	}

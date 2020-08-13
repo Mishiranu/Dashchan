@@ -12,12 +12,13 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.ScrollView;
 import androidx.annotation.NonNull;
+import androidx.fragment.app.DialogFragment;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.ui.SeekBarForm;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import java.util.Locale;
 
-public class ReencodingDialog extends PostingDialog implements DialogInterface.OnClickListener,
+public class ReencodingDialog extends DialogFragment implements DialogInterface.OnClickListener,
 		RadioGroup.OnCheckedChangeListener {
 	public static final String TAG = ReencodingDialog.class.getName();
 
@@ -41,7 +42,7 @@ public class ReencodingDialog extends PostingDialog implements DialogInterface.O
 		qualityForm = new SeekBarForm(false);
 		qualityForm.setConfiguration(1, 100, 1, 1);
 		qualityForm.setValueFormat(getString(R.string.text_quality_format));
-		qualityForm.setCurrentValue(savedInstanceState != null ? savedInstanceState.getInt(EXTRA_QUALITY) : 100);
+		qualityForm.setCurrentValue(savedInstanceState != null ? savedInstanceState.getInt(EXTRA_QUALITY) : 90);
 		reduceForm = new SeekBarForm(false);
 		reduceForm.setConfiguration(1, 8, 1, 1);
 		reduceForm.setValueFormat(getString(R.string.text_reduce_format));
@@ -96,20 +97,16 @@ public class ReencodingDialog extends PostingDialog implements DialogInterface.O
 
 	@Override
 	public void onClick(DialogInterface dialog, int which) {
-		AttachmentOptionsDialog attachmentOptionsDialog = (AttachmentOptionsDialog) getParentFragmentManager()
-				.findFragmentByTag(AttachmentOptionsDialog.TAG);
-		if (attachmentOptionsDialog != null) {
-			String format = null;
-			int id = radioGroup.getCheckedRadioButtonId();
-			for (int i = 0; i < IDS.length; i++) {
-				if (IDS[i] == id) {
-					format = FORMATS[i];
-					break;
-				}
+		String format = null;
+		int id = radioGroup.getCheckedRadioButtonId();
+		for (int i = 0; i < IDS.length; i++) {
+			if (IDS[i] == id) {
+				format = FORMATS[i];
+				break;
 			}
-			attachmentOptionsDialog.setReencoding(new GraphicsUtils.Reencoding(format,
-					qualityForm.getCurrentValue(), reduceForm.getCurrentValue()));
 		}
+		((AttachmentOptionsDialog) getParentFragment()).setReencoding(new GraphicsUtils
+				.Reencoding(format, qualityForm.getCurrentValue(), reduceForm.getCurrentValue()));
 	}
 
 	@Override

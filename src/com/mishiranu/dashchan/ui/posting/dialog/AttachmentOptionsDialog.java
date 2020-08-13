@@ -15,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import androidx.annotation.NonNull;
+import androidx.fragment.app.DialogFragment;
 import chan.content.ChanConfiguration;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
@@ -22,11 +23,12 @@ import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.content.storage.DraftsStorage;
 import com.mishiranu.dashchan.graphics.TransparentTileDrawable;
 import com.mishiranu.dashchan.ui.posting.AttachmentHolder;
+import com.mishiranu.dashchan.ui.posting.PostingDialogCallback;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import java.util.ArrayList;
 
-public class AttachmentOptionsDialog extends PostingDialog implements AdapterView.OnItemClickListener {
+public class AttachmentOptionsDialog extends DialogFragment implements AdapterView.OnItemClickListener {
 	public static final String TAG = AttachmentOptionsDialog.class.getName();
 
 	private static final String EXTRA_ATTACHMENT_INDEX = "attachmentIndex";
@@ -53,7 +55,6 @@ public class AttachmentOptionsDialog extends PostingDialog implements AdapterVie
 	private final SparseIntArray optionIndexes = new SparseIntArray();
 
 	private ListView listView;
-	private AttachmentHolder holder;
 
 	public AttachmentOptionsDialog() {}
 
@@ -88,18 +89,24 @@ public class AttachmentOptionsDialog extends PostingDialog implements AdapterVie
 		}
 	}
 
+	private AttachmentHolder getAttachmentHolder() {
+		return ((PostingDialogCallback) getParentFragment())
+				.getAttachmentHolder(requireArguments().getInt(EXTRA_ATTACHMENT_INDEX));
+	}
+
 	@NonNull
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		Activity activity = getActivity();
-		holder = getAttachmentHolder(EXTRA_ATTACHMENT_INDEX);
+		AttachmentHolder holder = getAttachmentHolder();
 		FileHolder fileHolder = holder != null ? DraftsStorage.getInstance()
 				.getAttachmentDraftFileHolder(holder.hash) : null;
 		if (holder == null || fileHolder == null) {
 			dismiss();
 			return new Dialog(activity);
 		}
-		ChanConfiguration.Posting postingConfiguration = getPostingConfiguration();
+		ChanConfiguration.Posting postingConfiguration = ((PostingDialogCallback) getParentFragment())
+				.getPostingConfiguration();
 		int index = 0;
 		optionItems.clear();
 		optionIndexes.clear();
@@ -168,6 +175,7 @@ public class AttachmentOptionsDialog extends PostingDialog implements AdapterVie
 
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+		AttachmentHolder holder = getAttachmentHolder();
 		int type = optionItems.get(position).type;
 		boolean checked = listView.isItemChecked(position);
 		switch (type) {
@@ -182,8 +190,7 @@ public class AttachmentOptionsDialog extends PostingDialog implements AdapterVie
 			case OPTION_TYPE_REENCODE_IMAGE: {
 				if (checked) {
 					listView.setItemChecked(position, false);
-					ReencodingDialog dialog = new ReencodingDialog();
-					dialog.bindCallback(this).show(getParentFragmentManager(), ReencodingDialog.TAG);
+					new ReencodingDialog().show(getChildFragmentManager(), ReencodingDialog.TAG);
 				} else {
 					holder.reencoding = null;
 				}
@@ -202,6 +209,7 @@ public class AttachmentOptionsDialog extends PostingDialog implements AdapterVie
 	}
 
 	public void setReencoding(GraphicsUtils.Reencoding reencoding) {
+		AttachmentHolder holder = getAttachmentHolder();
 		int reencodeIndex = optionIndexes.get(OPTION_TYPE_REENCODE_IMAGE, -1);
 		if (reencodeIndex >= 0) {
 			holder.reencoding = reencoding;

@@ -65,9 +65,9 @@ public class C {
 	public static final int HIDDEN_FALSE = 1;
 	public static final int HIDDEN_TRUE = 2;
 
+	public static final String ACTION_POSTING = "com.mishiranu.dashchan.action.POSTING";
 	public static final String ACTION_GALLERY = "com.mishiranu.dashchan.action.GALLERY";
 	public static final String ACTION_BROWSER = "com.mishiranu.dashchan.action.BROWSER";
-	public static final String ACTION_POST_SENT = "com.mishiranu.dashchan.action.POST_SENT";
 
 	public static final int REQUEST_CODE_ATTACH = 1;
 	public static final int REQUEST_CODE_UNINSTALL = 2;
@@ -86,7 +86,6 @@ public class C {
 	public static final String EXTRA_FROM_CLIENT = "com.mishiranu.dashchan.extra.FROM_CLIENT";
 	public static final String EXTRA_NAVIGATION_FLAGS = "com.mishiranu.dashchan.extra.NAVIGATION_FLAGS";
 	public static final String EXTRA_POST_NUMBER = "com.mishiranu.dashchan.extra.POST_NUMBER";
-	public static final String EXTRA_REPLY_DATA = "com.mishiranu.dashchan.extra.REPLY_DATA";
 	public static final String EXTRA_SEARCH_QUERY = "com.mishiranu.dashchan.extra.SEARCH_QUERY";
 	public static final String EXTRA_THREAD_NUMBER = "com.mishiranu.dashchan.extra.THREAD_NUMBER";
 	public static final String EXTRA_UPDATE_DATA_MAP = "com.mishiranu.dashchan.extra.UPDATE_DATA_MAP";

@@ -1,24 +1,4 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui.posting.text;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -31,9 +11,7 @@ import android.text.style.StyleSpan;
 import android.text.style.UnderlineSpan;
 import android.util.Pair;
 import android.widget.Button;
-
 import chan.content.ChanMarkup;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.text.style.HeadingSpan;
@@ -42,7 +20,11 @@ import com.mishiranu.dashchan.text.style.OverlineSpan;
 import com.mishiranu.dashchan.text.style.ScriptSpan;
 import com.mishiranu.dashchan.util.FlagUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
+@SuppressWarnings("InstantiationOfUtilityClass")
 public class MarkupButtonProvider {
 	public final int tag;
 	public final int widthDp;
@@ -96,7 +78,8 @@ public class MarkupButtonProvider {
 			for (int j = 0; j < PROVIDERS.size(); j++) {
 				MarkupButtonProvider provider = PROVIDERS.get(j);
 				if (provider.priority == i) {
-					if (markup.safe().isTagSupported(boardName, provider.tag) || provider.tag == ChanMarkup.TAG_QUOTE) {
+					if (markup != null && markup.safe().isTagSupported(boardName, provider.tag) ||
+							provider.tag == ChanMarkup.TAG_QUOTE) {
 						int width = (int) (provider.widthDp * density);
 						if (futureWidth > 0) {
 							width += buttonMarginLeft;

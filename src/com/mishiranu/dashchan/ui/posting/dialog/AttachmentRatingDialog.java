@@ -1,22 +1,4 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui.posting.dialog;
-
-import java.util.List;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -24,11 +6,14 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Pair;
-
+import androidx.annotation.NonNull;
+import androidx.fragment.app.DialogFragment;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.ui.posting.AttachmentHolder;
+import com.mishiranu.dashchan.ui.posting.PostingDialogCallback;
+import java.util.List;
 
-public class AttachmentRatingDialog extends PostingDialog implements DialogInterface.OnClickListener {
+public class AttachmentRatingDialog extends DialogFragment implements DialogInterface.OnClickListener {
 	public static final String TAG = AttachmentRatingDialog.class.getName();
 
 	private static final String EXTRA_ATTACHMENT_INDEX = "attachmentIndex";
@@ -41,14 +26,20 @@ public class AttachmentRatingDialog extends PostingDialog implements DialogInter
 		setArguments(args);
 	}
 
-	private AttachmentHolder holder;
 	private String[] ratings;
 
+	private AttachmentHolder getAttachmentHolder() {
+		return ((PostingDialogCallback) getParentFragment())
+				.getAttachmentHolder(requireArguments().getInt(EXTRA_ATTACHMENT_INDEX));
+	}
+
+	@NonNull
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		Activity activity = getActivity();
-		List<Pair<String, String>> attachmentRatingItems = getAttachmentRatingItems();
-		holder = getAttachmentHolder(EXTRA_ATTACHMENT_INDEX);
+		AttachmentHolder holder = getAttachmentHolder();
+		List<Pair<String, String>> attachmentRatingItems = ((PostingDialogCallback) getParentFragment())
+				.getAttachmentRatingItems();
 		if (holder == null || attachmentRatingItems == null) {
 			dismiss();
 			return new Dialog(activity);
@@ -70,7 +61,8 @@ public class AttachmentRatingDialog extends PostingDialog implements DialogInter
 
 	@Override
 	public void onClick(DialogInterface dialog, int which) {
-		dismiss();
+		AttachmentHolder holder = getAttachmentHolder();
 		holder.rating = ratings[which];
+		dismiss();
 	}
 }

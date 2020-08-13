@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
+import androidx.fragment.app.DialogFragment;
 import chan.content.ApiException;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
@@ -11,7 +12,7 @@ import com.mishiranu.dashchan.util.PostDateFormatter;
 import com.mishiranu.dashchan.util.StringBlockBuilder;
 import com.mishiranu.dashchan.util.ViewUtils;
 
-public class SendPostFailDetailsDialog extends PostingDialog {
+public class SendPostFailDetailsDialog extends DialogFragment {
 	public static final String TAG = SendPostFailDetailsDialog.class.getName();
 
 	private static final String EXTRA_EXTRA = "extra";

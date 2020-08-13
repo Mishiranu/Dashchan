@@ -1,19 +1,21 @@
 package com.mishiranu.dashchan.ui.navigator;
 
+import android.animation.LayoutTransition;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.Parcel;
 import android.os.SystemClock;
 import android.text.TextUtils;
@@ -39,7 +41,6 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
@@ -71,9 +72,8 @@ import com.mishiranu.dashchan.ui.navigator.entity.SavedPageItem;
 import com.mishiranu.dashchan.ui.navigator.entity.StackItem;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.ui.navigator.page.ListPage;
-import com.mishiranu.dashchan.ui.posting.PostingActivity;
+import com.mishiranu.dashchan.ui.posting.PostingFragment;
 import com.mishiranu.dashchan.ui.posting.Replyable;
-import com.mishiranu.dashchan.util.AndroidUtils;
 import com.mishiranu.dashchan.util.ConcatIterable;
 import com.mishiranu.dashchan.util.ConfigurationLock;
 import com.mishiranu.dashchan.util.DrawerToggle;
@@ -96,6 +96,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -132,7 +133,8 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 	private DrawerToggle drawerToggle;
 
 	private ExpandedScreen expandedScreen;
-	private View toolbarView;
+	private ViewGroup toolbarView;
+	private FrameLayout toolbarExtra;
 
 	private ViewGroup drawerCommon, drawerWide;
 	private boolean wideMode;
@@ -155,7 +157,7 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 		ResourceUtils.applyPreferredTheme(this);
 		ExpandedScreen.Init expandedScreenInit = new ExpandedScreen.Init(this, Preferences.isExpandedScreen());
 		super.onCreate(savedInstanceState);
-		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 		float density = ResourceUtils.obtainDensity(this);
 		setContentView(R.layout.activity_main);
 		ClickableToast.register(clickableToastHolder);
@@ -173,11 +175,10 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 		int drawerBackground = ResourceUtils.getColor(styledContext, R.attr.backgroundDrawer);
 		drawerCommon.setBackgroundColor(drawerBackground);
 		drawerWide.setBackgroundColor(drawerBackground);
-		drawerListView = new SortableListView(styledContext, this);
+		drawerForm = new DrawerForm(styledContext, this, this, configurationLock, watcherServiceClient);
+		drawerListView = drawerForm.getListView();
 		drawerListView.setId(android.R.id.tabcontent);
 		drawerListView.setOnSortingStateChangedListener(this);
-		drawerForm = new DrawerForm(styledContext, this, this, configurationLock, watcherServiceClient);
-		drawerForm.bind(drawerListView);
 		drawerParent = new FrameLayout(this);
 		drawerParent.addView(drawerListView);
 		drawerCommon.addView(drawerParent);
@@ -186,17 +187,24 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 		FrameLayout drawerInterlayer = findViewById(R.id.drawer_interlayer);
 		if (C.API_LOLLIPOP) {
 			getLayoutInflater().inflate(R.layout.widget_toolbar, drawerInterlayer);
-			Toolbar toolbar = drawerInterlayer.findViewById(R.id.toolbar);
+			Toolbar toolbar = findViewById(R.id.toolbar);
 			setActionBar(toolbar);
 			toolbarView = toolbar;
+			toolbarExtra = findViewById(R.id.toolbar_extra);
+			LayoutTransition layoutTransition = new LayoutTransition();
+			layoutTransition.setStartDelay(LayoutTransition.APPEARING, 0);
+			layoutTransition.setStartDelay(LayoutTransition.CHANGE_DISAPPEARING, 0);
+			layoutTransition.setDuration(100);
+			toolbarExtra.setLayoutTransition(layoutTransition);
 		} else {
 			// Show white logo on search
 			getActionBar().setIcon(R.drawable.ic_logo);
 		}
+		View toolbarLayout = findViewById(R.id.toolbar_layout);
 
 		drawerToggle = new DrawerToggle(this, drawerLayout);
 		if (C.API_LOLLIPOP) {
-			drawerCommon.setElevation(6f * density);
+			drawerCommon.setElevation(4f * density);
 			drawerWide.setElevation(4f * density);
 		} else {
 			drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
@@ -209,7 +217,7 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 		ViewUtils.applyToolbarStyle(getWindow(), toolbarView);
 
 		updateWideConfiguration(true);
-		expandedScreen = new ExpandedScreen(expandedScreenInit, drawerLayout, toolbarView, drawerInterlayer,
+		expandedScreen = new ExpandedScreen(expandedScreenInit, drawerLayout, toolbarLayout, drawerInterlayer,
 				drawerParent, drawerListView, drawerForm.getHeaderView());
 		expandedScreen.setDrawerOverToolbarEnabled(!wideMode);
 		uiManager = new UiManager(this, this, configurationLock);
@@ -225,8 +233,7 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 				expandedScreen.removeContentView(child);
 			}
 		});
-		LocalBroadcastManager.getInstance(this).registerReceiver(newPostReceiver,
-				new IntentFilter(C.ACTION_POST_SENT));
+		bindService(new Intent(this, PostingService.class), postingConnection, BIND_AUTO_CREATE);
 		boolean allowSelectChan = ChanManager.getInstance().getAvailableChanNames().size() >= 2;
 		if (savedInstanceState == null) {
 			int drawerInitialPosition = Preferences.getDrawerInitialPosition();
@@ -384,6 +391,22 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 	}
 
 	@Override
+	public ViewGroup getToolbarView() {
+		if (toolbarView == null) {
+			throw new IllegalStateException();
+		}
+		return toolbarView;
+	}
+
+	@Override
+	public FrameLayout getToolbarExtra() {
+		if (toolbarExtra == null) {
+			throw new IllegalStateException();
+		}
+		return toolbarExtra;
+	}
+
+	@Override
 	public void navigateBoardsOrThreads(String chanName, String boardName, int flags) {
 		flags = flags & (NavigationUtils.FLAG_FROM_CACHE | NavigationUtils.FLAG_RETURNABLE);
 		navigateIntentData(chanName, boardName, null, null, null, null, flags);
@@ -431,12 +454,8 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 
 	@Override
 	public void navigatePosting(String chanName, String boardName, String threadNumber, Replyable.ReplyData... data) {
-		Intent intent = new Intent(getApplicationContext(), PostingActivity.class);
-		intent.putExtra(C.EXTRA_CHAN_NAME, chanName);
-		intent.putExtra(C.EXTRA_BOARD_NAME, boardName);
-		intent.putExtra(C.EXTRA_THREAD_NUMBER, threadNumber);
-		intent.putExtra(C.EXTRA_REPLY_DATA, data);
-		startActivity(intent);
+		fragments.clear();
+		navigateFragment(new PostingFragment(chanName, boardName, threadNumber, Arrays.asList(data)), null);
 	}
 
 	@Override
@@ -484,6 +503,26 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 		if (updateDataMap != null) {
 			fragments.clear();
 			navigateFragment(new UpdateFragment(updateDataMap), null);
+		} else if (C.ACTION_POSTING.equals(intent.getAction())) {
+			String chanName = intent.getStringExtra(C.EXTRA_CHAN_NAME);
+			String boardName = intent.getStringExtra(C.EXTRA_BOARD_NAME);
+			String threadNumber = intent.getStringExtra(C.EXTRA_THREAD_NUMBER);
+			PostingService.FailResult failResult = intent.getParcelableExtra(C.EXTRA_FAIL_RESULT);
+			Fragment currentFragment = getCurrentFragment();
+			boolean replace = true;
+			if (currentFragment instanceof PostingFragment &&
+					((PostingFragment) currentFragment).check(chanName, boardName, threadNumber)) {
+				replace = false;
+			}
+			if (replace) {
+				fragments.clear();
+				navigateFragment(new PostingFragment(chanName, boardName, threadNumber,
+						Collections.emptyList()), null);
+				currentFragment = getCurrentFragment();
+			}
+			if (failResult != null) {
+				((PostingFragment) currentFragment).handleFailResult(failResult);
+			}
 		} else if (C.ACTION_GALLERY.equals(intent.getAction())) {
 			new GalleryOverlay(intent.getData()).show(getSupportFragmentManager(), UUID.randomUUID().toString());
 		} else if (C.ACTION_BROWSER.equals(intent.getAction())) {
@@ -940,12 +979,16 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 			readUpdateTask.cancel();
 			readUpdateTask = null;
 		}
+		if (postingBinder != null) {
+			postingBinder.unregister(postingGlobalCallback);
+			postingBinder = null;
+		}
+		unbindService(postingConnection);
 		uiManager.onFinish();
 		watcherServiceClient.unbind(this);
 		ClickableToast.unregister(clickableToastHolder);
 		FavoritesStorage.getInstance().getObservable().unregister(this);
 		Preferences.PREFERENCES.unregisterOnSharedPreferenceChangeListener(preferencesListener);
-		LocalBroadcastManager.getInstance(this).unregisterReceiver(newPostReceiver);
 		for (String chanName : ChanManager.getInstance().getAvailableChanNames()) {
 			ChanConfiguration.get(chanName).commit();
 		}
@@ -967,14 +1010,19 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 				((ActivityHandler) currentFragment).onSearchRequested();
 	}
 
+	@Override
+	public void removeFragment() {
+		onBackPressed(true, false);
+	}
+
 	private long backPressed = 0;
 
 	@Override
 	public void onBackPressed() {
-		onBackPressed(false);
+		onBackPressed(false, true);
 	}
 
-	private void onBackPressed(boolean homeHandled) {
+	private void onBackPressed(boolean homeHandled, boolean allowTimeout) {
 		if (!wideMode && drawerLayout.isDrawerOpen(GravityCompat.START)) {
 			drawerLayout.closeDrawers();
 		} else {
@@ -1007,7 +1055,7 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 				handled = true;
 			}
 			if (!handled) {
-				if (System.currentTimeMillis() - backPressed > 2000) {
+				if (allowTimeout && System.currentTimeMillis() - backPressed > 2000) {
 					ClickableToast.show(this, R.string.message_press_again_to_exit);
 					backPressed = System.currentTimeMillis();
 				} else {
@@ -1110,7 +1158,7 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 					navigateIntentData(newChanName, newBoardName, null, null, null, null,
 							fromCache ? NavigationUtils.FLAG_FROM_CACHE : 0);
 				} else {
-					onBackPressed(true);
+					onBackPressed(true, true);
 				}
 				return true;
 			}
@@ -1214,7 +1262,7 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 					typedArray.getColor(2, 0)));
 			typedArray.recycle();
 			if (C.API_LOLLIPOP) {
-				view.setElevation(6f * density);
+				view.setElevation(4f * density);
 			}
 			layout.addView(view, circleSize, circleSize);
 			TextView textView = new TextView(this, null, android.R.attr.textAppearanceListItem);
@@ -1566,13 +1614,29 @@ public class NavigatorActivity extends StateActivity implements DrawerForm.Callb
 		}
 	}
 
-	private final BroadcastReceiver newPostReceiver = AndroidUtils.createReceiver((r, c, i) -> {
+	private final PostingService.GlobalCallback postingGlobalCallback = () -> {
 		Fragment currentFragment = getCurrentFragment();
 		if (currentFragment instanceof PageFragment) {
-			// TODO Replace receiver with service binding
 			((PageFragment) currentFragment).handleNewPostDataListNow();
 		}
-	});
+	};
+
+	private PostingService.Binder postingBinder;
+	private final ServiceConnection postingConnection = new ServiceConnection() {
+		@Override
+		public void onServiceConnected(ComponentName componentName, IBinder binder) {
+			postingBinder = (PostingService.Binder) binder;
+			postingBinder.register(postingGlobalCallback);
+		}
+
+		@Override
+		public void onServiceDisconnected(ComponentName componentName) {
+			if (postingBinder != null) {
+				postingBinder.unregister(postingGlobalCallback);
+				postingBinder = null;
+			}
+		}
+	};
 
 	private void startUpdateTask() {
 		if (!Preferences.isCheckUpdatesOnStart() || System.currentTimeMillis()
