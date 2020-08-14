@@ -80,6 +80,8 @@ public class C {
 	public static final int NOTIFICATION_ID_DOWNLOAD = 1;
 	public static final int NOTIFICATION_ID_AUDIO_PLAYER = 2;
 
+	public static final String NOTIFICATION_CHANNEL_AUDIO_PLAYER = "audioPlayer";
+
 	public static final String EXTRA_BOARD_NAME = "com.mishiranu.dashchan.extra.BOARD_NAME";
 	public static final String EXTRA_CHAN_NAME = "com.mishiranu.dashchan.extra.CHAN_NAME";
 	public static final String EXTRA_FAIL_RESULT = "com.mishiranu.dashchan.extra.FAIL_RESULT";

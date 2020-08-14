@@ -21,6 +21,7 @@ import android.view.ViewParent;
 import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toolbar;
+import androidx.core.app.NotificationCompat;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.content.Preferences;
 import java.lang.reflect.Field;
@@ -180,14 +181,19 @@ public class ViewUtils {
 		}
 	}
 
+	public static void addNotificationAction(NotificationCompat.Builder builder, Context context,
+			TypedArray typedArray, int resourceIndex, int titleRes, PendingIntent intent) {
+		builder.addAction(typedArray.getResourceId(resourceIndex, 0), context.getString(titleRes), intent);
+	}
+
+	@Deprecated
 	public static void addNotificationAction(Notification.Builder builder, Context context, TypedArray typedArray,
 			int resourceIndex, int titleRes, PendingIntent intent) {
 		addNotificationAction(builder, context, typedArray.getResourceId(resourceIndex, 0),
 				context.getString(titleRes), intent);
 	}
 
-	@TargetApi(Build.VERSION_CODES.M)
-	@SuppressWarnings("deprecation")
+	@Deprecated
 	public static void addNotificationAction(Notification.Builder builder, Context context, int icon,
 			CharSequence title, PendingIntent intent) {
 		if (C.API_MARSHMALLOW) {

@@ -7,6 +7,7 @@
 	<string name="text_app_name_update">%s update</string>
 	<string name="text_all_forums">All forums</string>
 	<string name="text_all_posts">All posts</string>
+	<string name="text_audio_player">Audio player</string>
 	<string name="text_autohide_comment">Find in comments</string>
 	<string name="text_autohide_name">Find in names</string>
 	<string name="text_autohide_original_post">Only original posts</string>

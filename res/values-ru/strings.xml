@@ -9,6 +9,7 @@
 	<string name="text_app_name_update">Обновление %s</string>
 	<string name="text_all_forums">Все форумы</string>
 	<string name="text_all_posts">Все сообщения</string>
+	<string name="text_audio_player">Аудиоплеер</string>
 	<string name="text_autohide_comment">Искать в комментариях</string>
 	<string name="text_autohide_name">Искать в именах</string>
 	<string name="text_autohide_original_post">Только исходные сообщения</string>
