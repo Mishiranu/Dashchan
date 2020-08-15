@@ -82,7 +82,7 @@ public class IOUtils {
 	}
 
 	public static void copyStream(InputStream from, OutputStream to) throws IOException {
-		byte data[] = new byte[8192];
+		byte[] data = new byte[8192];
 		int count;
 		while ((count = from.read(data)) != -1) {
 			to.write(data, 0, count);

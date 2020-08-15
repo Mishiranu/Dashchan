@@ -25,6 +25,7 @@
 	<string name="text_closed_thread">Thread closed</string>
 	<string name="text_code_number_address">Code, number, address</string>
 	<string name="text_comment">Comment</string>
+	<string name="text_completed_downloads">Completed downloads</string>
 	<string name="text_configuration">Configuration</string>
 	<string name="text_confirmation">Confirmation</string>
 	<string name="text_cyclical_thread">Cyclical thread</string>
@@ -38,10 +39,10 @@
 	<string name="text_disabled_sage">Sage is disabled</string>
 	<string name="text_disabled_subjects">Subjects are disabled</string>
 	<string name="text_disabled_tripcodes">Tripcodes are disabled</string>
-	<string name="text_dont_replace">Don\'t replace</string>
 	<string name="text_download_title">Select where to save</string>
 	<string name="text_download_to_format">Save to \"%s\"</string>
 	<string name="text_download_to_subdirectory">Save to subdirectory</string>
+	<string name="text_downloads">Downloads</string>
 	<string name="text_enabled_flags">Flags are enabled</string>
 	<string name="text_enabled_icons">Icons are enabled</string>
 	<string name="text_extension_name_format">Extension %s</string>
@@ -54,7 +55,6 @@
 	</plurals>
 	<string name="text_no_icon">No icon</string>
 	<string name="text_in_thread_format_format">In thread %s</string>
-	<string name="text_keep_all">Keep all</string>
 	<string name="text_keep_current_version">Keep current version</string>
 	<string name="text_links_attachments_format">Links-attachments: %s</string>
 	<string name="text_local_archive">Local archive</string>
@@ -102,7 +102,6 @@
 	<string name="text_remove_file_name">Remove file name</string>
 	<string name="text_remove_metadata">Remove metadata</string>
 	<string name="text_remove_rules">Remove rules</string>
-	<string name="text_replace">Replace</string>
 	<plurals name="text_replies_count_format">
 		<item quantity="one">%d reply</item>
 		<item quantity="other">%d replies</item>
@@ -140,6 +139,7 @@
 	<string name="text_unique_hash">Unique hash</string>
 	<string name="text_unique_posters_format">Unique posters: %s</string>
 	<string name="text_unsupported_version">Unsupported version</string>
+	<string name="text_updates">Updates</string>
 	<string name="text_updates_format">Updates: %d</string>
 	<string name="text_updates_available_format">Updates available: %d</string>
 	<string name="text_user_banned">User banned</string>
@@ -193,6 +193,7 @@
 	<string name="action_hide_replies">Replies tree</string>
 	<string name="action_hide_similar">Similar posts</string>
 	<string name="action_history">History</string>
+	<string name="action_keep_all">Keep all</string>
 	<string name="action_load_captcha">Click to load captcha</string>
 	<string name="action_lock_drawer">Lock drawer</string>
 	<string name="action_make_home_page">Make home page</string>
@@ -211,12 +212,13 @@
 	<string name="action_quote">Quote</string>
 	<string name="action_refresh">Refresh</string>
 	<string name="action_reload">Reload</string>
-	<string name="action_restart">Restart</string>
 	<string name="action_remove_from_favorites">Remove from favorites</string>
 	<string name="action_remove_from_history">Remove from history</string>
 	<string name="action_rename">Rename</string>
+	<string name="action_replace">Replace</string>
 	<string name="action_reply">Reply</string>
 	<string name="action_report">Report</string>
+	<string name="action_restart">Restart</string>
 	<string name="action_retry">Retry</string>
 	<string name="action_save">Save</string>
 	<string name="action_search">Search</string>
@@ -232,6 +234,7 @@
 	<string name="action_show">Show</string>
 	<string name="action_show_on_map">Show on map</string>
 	<string name="action_show_thumbnail">Show thumbnail</string>
+	<string name="action_skip">Skip</string>
 	<string name="action_spoilers">Spoilers</string>
 	<string name="action_stop">Stop</string>
 	<string name="action_summary">Summary</string>
@@ -267,6 +270,7 @@
 	<string name="message_delete_too_old_error">You can\'t delete too old posts</string>
 	<string name="message_delete_too_often_error">You can\'t delete posts too often</string>
 	<string name="message_download_completed">Download completed</string>
+	<string name="message_download_confirmation">Confirmation is required</string>
 	<string name="message_download_count_format">Downloading %1$d of %2$d</string>
 	<string name="message_download_audio">Downloading audio</string>
 	<string name="message_download_error">Unable to download data</string>
@@ -274,6 +278,7 @@
 	<string name="message_download_name_format">File %s</string>
 	<string name="message_download_not_loaded">Not loaded</string>
 	<string name="message_download_manager_error">Download Manager is not available</string>
+	<string name="message_download_pending">Pending downloading</string>
 	<string name="message_draft_saved">Draft saved</string>
 	<string name="message_edited_posts">Some posts have been edited</string>
 	<string name="message_empty_file">You need to attach a file</string>
@@ -308,8 +313,6 @@
 	<string name="message_invalid_response">Invalid server response</string>
 	<string name="message_insufficient_space">Insufficient device space</string>
 	<string name="message_loading">Loading&#8230;</string>
-	<string name="message_memory_access_permission">A memory access permission is required for caching and
-		viewing content.</string>
 	<string name="message_new_password">A new password was generated</string>
 	<string name="message_no_access">No access</string>
 	<string name="message_no_access_to_memory">No access to memory</string>

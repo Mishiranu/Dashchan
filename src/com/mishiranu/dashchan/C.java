@@ -73,14 +73,18 @@ public class C {
 	public static final int REQUEST_CODE_ATTACH = 1;
 	public static final int REQUEST_CODE_UNINSTALL = 2;
 	public static final int REQUEST_CODE_OPEN_PATH = 3;
+	public static final int REQUEST_CODE_STORAGE_PERMISSION = 4;
 
-	public static final String NOTIFICATION_TAG_UPDATE = "update";
 	public static final String NOTIFICATION_TAG_POSTING = "posting";
 
-	public static final int NOTIFICATION_ID_DOWNLOAD = 1;
+	public static final int NOTIFICATION_ID_DOWNLOADING = 1;
 	public static final int NOTIFICATION_ID_AUDIO_PLAYER = 2;
+	public static final int NOTIFICATION_ID_UPDATES = 3;
 
+	public static final String NOTIFICATION_CHANNEL_DOWNLOADING = "downloading";
+	public static final String NOTIFICATION_CHANNEL_DOWNLOADING_COMPLETE = "downloadingComplete";
 	public static final String NOTIFICATION_CHANNEL_AUDIO_PLAYER = "audioPlayer";
+	public static final String NOTIFICATION_CHANNEL_UPDATES = "updates";
 
 	public static final String EXTRA_BOARD_NAME = "com.mishiranu.dashchan.extra.BOARD_NAME";
 	public static final String EXTRA_CHAN_NAME = "com.mishiranu.dashchan.extra.CHAN_NAME";

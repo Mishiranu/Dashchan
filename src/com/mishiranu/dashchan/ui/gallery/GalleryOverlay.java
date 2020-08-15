@@ -32,11 +32,11 @@ import chan.content.ChanManager;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.content.DownloadManager;
 import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.model.AttachmentItem;
 import com.mishiranu.dashchan.content.model.GalleryItem;
+import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.graphics.GalleryBackgroundDrawable;
 import com.mishiranu.dashchan.ui.ActivityHandler;
@@ -418,15 +418,17 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 
 	@Override
 	public void downloadGalleryItem(GalleryItem galleryItem) {
-		galleryItem.downloadStorage(getWindow().getContext(), getConfigurationLock(),
-				instance.locator, getThreadTitle());
+		DownloadService.Binder binder = ((FragmentHandler) requireActivity()).getDownloadBinder();
+		if (binder != null) {
+			galleryItem.downloadStorage(binder, instance.locator, getThreadTitle());
+		}
 	}
 
 	@Override
 	public void downloadGalleryItems(List<GalleryItem> galleryItems) {
 		String boardName = null;
 		String threadNumber = null;
-		ArrayList<DownloadManager.RequestItem> requestItems = new ArrayList<>();
+		ArrayList<DownloadService.RequestItem> requestItems = new ArrayList<>();
 		for (GalleryItem galleryItem : galleryItems) {
 			if (requestItems.size() == 0) {
 				boardName = galleryItem.boardName;
@@ -439,13 +441,15 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 					threadNumber = null;
 				}
 			}
-			requestItems.add(new DownloadManager.RequestItem(galleryItem.getFileUri(instance.locator),
+			requestItems.add(new DownloadService.RequestItem(galleryItem.getFileUri(instance.locator),
 					galleryItem.getFileName(instance.locator), galleryItem.originalName));
 		}
 		if (requestItems.size() > 0) {
-			DownloadManager.getInstance().downloadStorage(instance.callback.getWindow().getContext(),
-					getConfigurationLock(), requestItems, instance.chanName, boardName, threadNumber,
-					getThreadTitle(), true);
+			DownloadService.Binder binder = ((FragmentHandler) requireActivity()).getDownloadBinder();
+			if (binder != null) {
+				binder.downloadStorage(requestItems, true, instance.chanName,
+						boardName, threadNumber, getThreadTitle());
+			}
 		}
 	}
 

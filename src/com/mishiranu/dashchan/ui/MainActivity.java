@@ -3,7 +3,7 @@ package com.mishiranu.dashchan.ui;
 import android.animation.LayoutTransition;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
-import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ComponentName;
@@ -39,6 +39,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toolbar;
 import androidx.annotation.NonNull;
+import androidx.core.app.NotificationCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
@@ -55,6 +56,7 @@ import com.mishiranu.dashchan.content.async.ReadUpdateTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.service.AudioPlayerService;
+import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.content.service.PostingService;
 import com.mishiranu.dashchan.content.service.WatcherService;
 import com.mishiranu.dashchan.content.storage.DraftsStorage;
@@ -123,6 +125,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	private ActionIconSet actionIconSet;
 	private ConfigurationLock configurationLock;
 	private final WatcherService.Client watcherServiceClient = new WatcherService.Client(this);
+	private DownloadDialog downloadDialog;
 
 	private SortableListView drawerListView;
 	private DrawerForm drawerForm;
@@ -139,7 +142,6 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 
 	private ReadUpdateTask readUpdateTask;
 	private Intent navigateIntentOnResume;
-	private AlertDialog requestPermissionsDialog;
 
 	private static final String LOCKER_DRAWER = "drawer";
 	private static final String LOCKER_NON_PAGE = "nonPage";
@@ -216,11 +218,29 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		}
 		ViewUtils.applyToolbarStyle(getWindow(), toolbarView);
 
+		downloadDialog = new DownloadDialog(this, configurationLock, new DownloadDialog.Callback() {
+			@Override
+			public void resolve(DownloadService.ChoiceRequest choiceRequest,
+					DownloadService.DirectRequest directRequest) {
+				if (downloadBinder != null) {
+					downloadBinder.resolve(choiceRequest, directRequest);
+				}
+			}
+
+			@Override
+			public void resolve(DownloadService.ReplaceRequest replaceRequest,
+					DownloadService.ReplaceRequest.Action action) {
+				if (downloadBinder != null) {
+					downloadBinder.resolve(replaceRequest, action);
+				}
+			}
+		});
+
 		updateWideConfiguration(true);
 		expandedScreen = new ExpandedScreen(expandedScreenInit, drawerLayout, toolbarLayout, drawerInterlayer,
 				drawerParent, drawerListView, drawerForm.getHeaderView());
 		expandedScreen.setDrawerOverToolbarEnabled(!wideMode);
-		uiManager = new UiManager(this, this, configurationLock);
+		uiManager = new UiManager(this, this, () -> downloadBinder, configurationLock);
 		ViewGroup contentFragment = findViewById(R.id.content_fragment);
 		contentFragment.setOnHierarchyChangeListener(new ViewGroup.OnHierarchyChangeListener() {
 			@Override
@@ -234,6 +254,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			}
 		});
 		bindService(new Intent(this, PostingService.class), postingConnection, BIND_AUTO_CREATE);
+		bindService(new Intent(this, DownloadService.class), downloadConnection, BIND_AUTO_CREATE);
 		boolean allowSelectChan = ChanManager.getInstance().hasMultipleAvailableChans();
 		if (savedInstanceState == null) {
 			int drawerInitialPosition = Preferences.getDrawerInitialPosition();
@@ -353,19 +374,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			}
 		}
 
-		// Should not be necessary anymore to require it on start, requires rework
-		if (C.API_MARSHMALLOW && checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-				!= PackageManager.PERMISSION_GRANTED) {
-			requestPermissionsDialog = new AlertDialog.Builder(this)
-					.setMessage(R.string.message_memory_access_permission)
-					.setCancelable(false)
-					.setPositiveButton(android.R.string.ok, (dialog, which) -> requestPermissions(new String[]
-							{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0))
-					.setOnDismissListener(d -> requestPermissionsDialog = null)
-					.show();
-		} else {
-			ExtensionsTrustLoop.handleUntrustedExtensions(this, configurationLock);
-		}
+		ExtensionsTrustLoop.handleUntrustedExtensions(this, configurationLock);
 	}
 
 	@Override
@@ -398,14 +407,12 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			@NonNull String[] permissions, @NonNull int[] grantResults) {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-		if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-			if (requestPermissionsDialog != null) {
-				requestPermissionsDialog.dismiss();
-				requestPermissionsDialog = null;
+		if (requestCode == C.REQUEST_CODE_STORAGE_PERMISSION && grantResults.length > 0 && downloadBinder != null) {
+			boolean granted = true;
+			for (int grantResult : grantResults) {
+				granted &= grantResult == PackageManager.PERMISSION_GRANTED;
 			}
-			ExtensionsTrustLoop.handleUntrustedExtensions(this, configurationLock);
-		} else {
-			finish();
+			downloadBinder.onPermissionResult(granted);
 		}
 	}
 
@@ -931,6 +938,11 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	}
 
 	@Override
+	public DownloadService.Binder getDownloadBinder() {
+		return downloadBinder;
+	}
+
+	@Override
 	public ConfigurationLock getConfigurationLock() {
 		return configurationLock;
 	}
@@ -1037,6 +1049,10 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		if (navigateIntentOnResume != null) {
 			navigateIntentUnchecked(navigateIntentOnResume);
 		}
+
+		if (downloadBinder != null) {
+			downloadBinder.notifyReadyToHandleRequests();
+		}
 	}
 
 	@Override
@@ -1068,7 +1084,12 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			postingBinder.unregister(postingGlobalCallback);
 			postingBinder = null;
 		}
+		if (downloadBinder != null) {
+			downloadBinder.unregister(downloadCallback);
+			downloadBinder = null;
+		}
 		unbindService(postingConnection);
+		unbindService(downloadConnection);
 		uiManager.onFinish();
 		watcherServiceClient.unbind(this);
 		ClickableToast.unregister(clickableToastHolder);
@@ -1079,7 +1100,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			ChanConfiguration.get(chanName).commit();
 		}
 		NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-		notificationManager.cancel(C.NOTIFICATION_TAG_UPDATE, 0);
+		notificationManager.cancel(C.NOTIFICATION_ID_UPDATES);
 		FavoritesStorage.getInstance().await(true);
 	}
 
@@ -1735,6 +1756,48 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		}
 	};
 
+	private void updateHandleDownloadRequests() {
+		downloadDialog.handleRequests(downloadBinder != null ? downloadBinder.getChoiceRequest() : null,
+				downloadBinder != null ? downloadBinder.getReplaceRequest() : null);
+	}
+
+	private final DownloadService.Callback downloadCallback = new DownloadService.Callback() {
+		@Override
+		public void requestHandleRequest() {
+			updateHandleDownloadRequests();
+		}
+
+		@Override
+		public void requestPermission() {
+			if (C.API_MARSHMALLOW && checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+					!= PackageManager.PERMISSION_GRANTED) {
+				requestPermissions(new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE},
+						C.REQUEST_CODE_STORAGE_PERMISSION);
+			} else {
+				downloadBinder.onPermissionResult(true);
+			}
+		}
+	};
+
+	private DownloadService.Binder downloadBinder;
+	private final ServiceConnection downloadConnection = new ServiceConnection() {
+		@Override
+		public void onServiceConnected(ComponentName componentName, IBinder binder) {
+			downloadBinder = (DownloadService.Binder) binder;
+			downloadBinder.register(downloadCallback);
+			downloadBinder.notifyReadyToHandleRequests();
+		}
+
+		@Override
+		public void onServiceDisconnected(ComponentName componentName) {
+			if (downloadBinder != null) {
+				downloadBinder.unregister(downloadCallback);
+				downloadBinder = null;
+			}
+			updateHandleDownloadRequests();
+		}
+	};
+
 	private void startUpdateTask() {
 		if (!Preferences.isCheckUpdatesOnStart() || System.currentTimeMillis()
 				- Preferences.getLastUpdateCheck() < 12 * 60 * 60 * 1000) {
@@ -1757,13 +1820,21 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		if (count <= 0) {
 			return;
 		}
-		Notification.Builder builder = new Notification.Builder(this);
+		NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+		if (C.API_OREO) {
+			NotificationChannel channelUpdates =
+					new NotificationChannel(C.NOTIFICATION_CHANNEL_UPDATES,
+							getString(R.string.text_updates), NotificationManager.IMPORTANCE_HIGH);
+			channelUpdates.setSound(null, null);
+			channelUpdates.setVibrationPattern(new long[0]);
+			notificationManager.createNotificationChannel(channelUpdates);
+		}
+		NotificationCompat.Builder builder = new NotificationCompat.Builder(this, C.NOTIFICATION_CHANNEL_UPDATES);
 		builder.setSmallIcon(R.drawable.ic_new_releases_white_24dp);
 		String text = getString(R.string.text_updates_available_format, count);
-		// TODO Handle deprecation
 		if (C.API_LOLLIPOP) {
 			builder.setColor(ResourceUtils.getColor(this, android.R.attr.colorAccent));
-			builder.setPriority(Notification.PRIORITY_HIGH);
+			builder.setPriority(NotificationCompat.PRIORITY_HIGH);
 			builder.setVibrate(new long[0]);
 		} else {
 			builder.setTicker(text);
@@ -1776,8 +1847,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 				.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		builder.setContentIntent(PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT));
 		builder.setAutoCancel(true);
-		NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-		notificationManager.notify(C.NOTIFICATION_TAG_UPDATE, 0, builder.build());
+		notificationManager.notify(C.NOTIFICATION_ID_UPDATES, builder.build());
 	}
 
 	@Override

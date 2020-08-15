@@ -443,6 +443,8 @@ public class Preferences {
 		return !StringUtils.isEmptyOrWhitespace(path) ? path : C.DEFAULT_DOWNLOAD_PATH;
 	}
 
+	private static File externalStorageDirectory;
+
 	public static File getDownloadDirectory() {
 		String path = getDownloadPath();
 		File dir = new File(path);
@@ -456,8 +458,14 @@ public class Preferences {
 			}
 		}
 		if (!absolute) {
-			// TODO Handle deprecation
-			dir = new File(Environment.getExternalStorageDirectory(), path);
+			File file = externalStorageDirectory;
+			if (file == null) {
+				// TODO Handle deprecation
+				// Cache for faster calls
+				file = Environment.getExternalStorageDirectory();
+				externalStorageDirectory = file;
+			}
+			dir = new File(file, path);
 		}
 		dir.mkdirs();
 		return dir;

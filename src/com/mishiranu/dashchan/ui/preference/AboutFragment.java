@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.format.DateFormat;
@@ -25,6 +26,7 @@ import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.AsyncManager;
 import com.mishiranu.dashchan.content.async.ReadUpdateTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
+import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
 import com.mishiranu.dashchan.util.Log;
@@ -51,13 +53,13 @@ public class AboutFragment extends PreferenceFragment {
 						.pushFragment(new StatisticsFragment()));
 		addButton(R.string.preference_backup_data, R.string.preference_backup_data_summary)
 				.setOnClickListener(p -> new BackupDialog()
-						.show(getParentFragmentManager(), BackupDialog.class.getName()));
+						.show(getChildFragmentManager(), BackupDialog.class.getName()));
 		addButton(R.string.preference_changelog, 0)
 				.setOnClickListener(p -> new ReadDialog(ReadDialog.TYPE_CHANGELOG)
-						.show(getParentFragmentManager(), ReadDialog.class.getName()));
+						.show(getChildFragmentManager(), ReadDialog.class.getName()));
 		addButton(R.string.preference_check_for_updates, 0)
 				.setOnClickListener(p -> new ReadDialog(ReadDialog.TYPE_UPDATE)
-						.show(getParentFragmentManager(), ReadDialog.class.getName()));
+						.show(getChildFragmentManager(), ReadDialog.class.getName()));
 		addButton(R.string.preference_licenses, R.string.preference_licenses_summary)
 				.setOnClickListener(p -> ((FragmentHandler) requireActivity())
 						.pushFragment(new TextFragment(TextFragment.TYPE_LICENSES, null)));
@@ -73,6 +75,40 @@ public class AboutFragment extends PreferenceFragment {
 		requireActivity().getActionBar().setSubtitle(null);
 	}
 
+	@Override
+	public void onRequestPermissionsResult(int requestCode,
+			@NonNull String[] permissions, @NonNull int[] grantResults) {
+		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+		if (requestCode == C.REQUEST_CODE_STORAGE_PERMISSION && grantResults.length > 0) {
+			boolean granted = true;
+			for (int grantResult : grantResults) {
+				granted &= grantResult == PackageManager.PERMISSION_GRANTED;
+			}
+			if (granted) {
+				restoreBackup();
+			} else {
+				ToastUtils.show(requireContext(), R.string.message_no_access_to_memory);
+			}
+		}
+	}
+
+	private void restoreBackup() {
+		if (C.API_MARSHMALLOW && requireContext()
+				.checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+				!= PackageManager.PERMISSION_GRANTED) {
+			requestPermissions(new String[] {android.Manifest.permission.WRITE_EXTERNAL_STORAGE},
+					C.REQUEST_CODE_STORAGE_PERMISSION);
+		} else {
+			LinkedHashMap<File, String> filesMap = BackupManager.getAvailableBackups(requireContext());
+			if (filesMap != null && filesMap.size() > 0) {
+				new RestoreFragment(filesMap).show(getChildFragmentManager(), RestoreFragment.class.getName());
+			} else {
+				ToastUtils.show(requireContext(), R.string.message_no_backups);
+			}
+		}
+	}
+
 	public static class BackupDialog extends DialogFragment implements DialogInterface.OnClickListener {
 		@NonNull
 		@Override
@@ -86,14 +122,12 @@ public class AboutFragment extends PreferenceFragment {
 		@Override
 		public void onClick(DialogInterface dialog, int which) {
 			if (which == 0) {
-				BackupManager.makeBackup(requireContext());
-			} else if (which == 1) {
-				LinkedHashMap<File, String> filesMap = BackupManager.getAvailableBackups(requireContext());
-				if (filesMap != null && filesMap.size() > 0) {
-					new RestoreFragment(filesMap).show(getParentFragmentManager(), RestoreFragment.class.getName());
-				} else {
-					ToastUtils.show(requireContext(), R.string.message_no_backups);
+				DownloadService.Binder binder = ((FragmentHandler) requireActivity()).getDownloadBinder();
+				if (binder != null) {
+					BackupManager.makeBackup(binder, requireContext());
 				}
+			} else if (which == 1) {
+				((AboutFragment) getParentFragment()).restoreBackup();
 			}
 		}
 	}

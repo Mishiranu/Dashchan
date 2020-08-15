@@ -55,6 +55,7 @@ import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.service.AudioPlayerService;
+import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.ui.gallery.GalleryOverlay;
 import com.mishiranu.dashchan.ui.posting.Replyable;
@@ -1466,17 +1467,22 @@ public class DialogUnit {
 		}
 
 		@Override
+		public DownloadService.Binder getDownloadBinder() {
+			DownloadService.Binder[] result = {null};
+			uiManager.download(binder -> result[0] = binder);
+			return result[0];
+		}
+
+		@Override
 		public void onLocalArchivationProgressUpdate(int handledPostsCount) {
 			dialog.setValue(handledPostsCount);
 		}
 
 		@Override
-		public void onLocalArchivationComplete(boolean success, boolean showSuccess) {
+		public void onLocalArchivationComplete(boolean success) {
 			completeTask();
 			if (!success) {
 				ToastUtils.show(uiManager.getContext(), R.string.message_unknown_error);
-			} else if (showSuccess) {
-				ToastUtils.show(uiManager.getContext(), R.string.message_completed);
 			}
 		}
 	}

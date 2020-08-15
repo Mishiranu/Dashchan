@@ -4,6 +4,7 @@ import android.content.Context;
 import android.text.format.DateFormat;
 import android.util.Pair;
 import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.content.storage.AutohideStorage;
 import com.mishiranu.dashchan.content.storage.DatabaseHelper;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
@@ -12,8 +13,6 @@ import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -22,6 +21,7 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -65,36 +65,44 @@ public class BackupManager {
 		return files;
 	}
 
-	public static void makeBackup(Context context) {
-		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		ZipOutputStream zip = new ZipOutputStream(output);
-		LinkedHashMap<String, Pair<File, Boolean>> files = obtainBackupFiles();
+	public static void makeBackup(DownloadService.Binder binder, Context context) {
+		File backupFile = new File(context.getCacheDir(), "backup-" + UUID.randomUUID());
 		boolean success = true;
-		for (Pair<File, Boolean> pair : files.values()) {
-			if (pair.first.exists()) {
-				FileInputStream input = null;
-				try {
-					zip.putNextEntry(new ZipEntry(pair.first.getName()));
-					input = new FileInputStream(pair.first);
-					IOUtils.copyStream(input, zip);
-					zip.closeEntry();
-				} catch (IOException e) {
-					Log.persistent().write(e);
+		try (ZipOutputStream zip = new ZipOutputStream(new FileOutputStream(backupFile))) {
+			LinkedHashMap<String, Pair<File, Boolean>> files = obtainBackupFiles();
+			for (Pair<File, Boolean> pair : files.values()) {
+				if (pair.first.exists()) {
+					try (FileInputStream input = new FileInputStream(pair.first)) {
+						zip.putNextEntry(new ZipEntry(pair.first.getName()));
+						IOUtils.copyStream(input, zip);
+						zip.closeEntry();
+					}
+				} else if (pair.second) {
 					success = false;
 					break;
-				} finally {
-					IOUtils.close(input);
 				}
-			} else if (pair.second) {
-				success = false;
-				break;
+			}
+		} catch (IOException e) {
+			Log.persistent().write(e);
+			success = false;
+		} finally {
+			if (!success) {
+				backupFile.delete();
 			}
 		}
+		FileInputStream input = null;
 		if (success) {
-			IOUtils.close(zip);
-			ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
-			DownloadManager.getInstance().saveStreamStorage(context, null, input, null, null, null, null,
-					"backup-" + System.currentTimeMillis() + ".zip", true);
+			try {
+				input = new FileInputStream(backupFile);
+			} catch (IOException e) {
+				Log.persistent().write(e);
+			}
+		}
+		// FileInputStream holds a file descriptor
+		backupFile.delete();
+		if (success) {
+			binder.saveStreamStorage(input, null, null, null, null,
+					"backup-" + System.currentTimeMillis() + ".zip", false);
 		} else {
 			ToastUtils.show(context, R.string.message_no_access);
 		}

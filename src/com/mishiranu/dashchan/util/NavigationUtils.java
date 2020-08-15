@@ -291,11 +291,17 @@ public class NavigationUtils {
 			Thread.currentThread().interrupt();
 			return;
 		}
-		Intent intent = new Intent(context, MainActivity.class).setAction(Intent.ACTION_MAIN)
-				.addCategory(Intent.CATEGORY_LAUNCHER);
+		Intent intent = new Intent(context, MainActivity.class)
+				.setAction(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+				.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 		AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-		alarmManager.set(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() + 500, pendingIntent);
+		long when = SystemClock.elapsedRealtime() + 1000;
+		if (C.API_KITKAT) {
+			alarmManager.setExact(AlarmManager.ELAPSED_REALTIME, when, pendingIntent);
+		} else {
+			alarmManager.set(AlarmManager.ELAPSED_REALTIME, when, pendingIntent);
+		}
 		System.exit(0);
 	}
 }

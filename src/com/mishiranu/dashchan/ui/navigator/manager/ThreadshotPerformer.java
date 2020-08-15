@@ -1,5 +1,6 @@
 package com.mishiranu.dashchan.ui.navigator.manager;
 
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -10,7 +11,6 @@ import android.view.View;
 import android.widget.ListView;
 import chan.util.CommonUtils;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.content.DownloadManager;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
@@ -64,6 +64,7 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
 			Looper.prepare();
 			long time = System.currentTimeMillis();
 			View convertView = null;
+			@SuppressLint("WrongThread")
 			Drawable divider = listView.getDivider();
 			int dividerHeight = divider != null ? divider.getMinimumHeight() : 0;
 			int height = 0;
@@ -117,9 +118,9 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
 		protected void onPostExecute(InputStream result) {
 			dialog.dismiss();
 			if (result != null) {
-				DownloadManager.getInstance().saveStreamStorage(listView.getContext(), uiManager.getConfigurationLock(),
-						result, chanName, boardName, threadNumber, threadTitle,
-						"threadshot-" + System.currentTimeMillis() + ".png", false);
+				uiManager.download(binder -> binder.saveStreamStorage(result,
+						chanName, boardName, threadNumber, threadTitle,
+						"threadshot-" + System.currentTimeMillis() + ".png", true));
 			} else {
 				ToastUtils.show(listView.getContext(), R.string.message_unknown_error);
 			}

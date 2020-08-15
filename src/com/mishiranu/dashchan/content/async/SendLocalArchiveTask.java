@@ -15,8 +15,6 @@ import chan.content.model.Icon;
 import chan.content.model.Post;
 import chan.content.model.Posts;
 import chan.util.StringUtils;
-import com.mishiranu.dashchan.content.MainApplication;
-import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.text.HtmlParser;
 import com.mishiranu.dashchan.text.WakabaLikeHtmlBuilder;
@@ -28,14 +26,18 @@ import com.mishiranu.dashchan.text.style.OverlineSpan;
 import com.mishiranu.dashchan.text.style.QuoteSpan;
 import com.mishiranu.dashchan.text.style.ScriptSpan;
 import com.mishiranu.dashchan.text.style.SpoilerSpan;
-import com.mishiranu.dashchan.util.IOUtils;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object> implements ChanMarkup.MarkupExtra {
+	private static final String DIRECTORY_ARCHIVE = "Archive";
+	private static final String DIRECTORY_FILES = "src";
+	private static final String DIRECTORY_THUMBNAILS = "thumb";
+
 	private final String chanName;
 	private final String boardName;
 	private final String threadNumber;
@@ -45,8 +47,9 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 	private final Callback callback;
 
 	public interface Callback {
+		public DownloadService.Binder getDownloadBinder();
 		public void onLocalArchivationProgressUpdate(int handledPostsCount);
-		public void onLocalArchivationComplete(boolean success, boolean showSuccess);
+		public void onLocalArchivationComplete(boolean success);
 	}
 
 	public SendLocalArchiveTask(String chanName, String boardName, String threadNumber,
@@ -94,16 +97,7 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 		ChanConfiguration configuration = ChanConfiguration.get(chanName);
 		ChanLocator locator = ChanLocator.get(configuration);
 		ChanMarkup markup = ChanMarkup.get(configuration);
-		File directory = getLocalDownloadDirectory(true);
-		String archiveDirectoryName = chanName + '-' + boardName + '-' + threadNumber;
-		File filesDirectory = saveFiles ? new File(directory, archiveDirectoryName + "/src") : null;
-		File thumbnailsDirectory = saveThumbnails ? new File(directory, archiveDirectoryName + "/thumb") : null;
-		if (filesDirectory != null) {
-			filesDirectory.mkdirs();
-		}
-		if (thumbnailsDirectory != null) {
-			thumbnailsDirectory.mkdirs();
-		}
+		String archiveName = chanName + '-' + boardName + '-' + threadNumber;
 		int totalFilesCount = 0;
 		ArrayList<String> existFilesLc = new ArrayList<>();
 		ArrayList<String> existThumbnailsLc = new ArrayList<>();
@@ -114,7 +108,8 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 		WakabaLikeHtmlBuilder htmlBuilder = new WakabaLikeHtmlBuilder(posts[0].getSubject(), chanName, boardName,
 				configuration .getBoardTitle(boardName), configuration.getTitle(),
 				locator.safe(false).createThreadUri(boardName, threadNumber), posts.length, totalFilesCount);
-		Result result = new Result(thumbnailsDirectory, filesDirectory);
+		ArrayList<DownloadService.DownloadItem> filesToDownload = new ArrayList<>();
+		ArrayList<DownloadService.DownloadItem> thumbnailsToDownload = new ArrayList<>();
 		for (Post post : posts) {
 			String number = post.getPostNumber();
 			String name = StringUtils.emptyIfNull(post.getName()).trim();
@@ -218,28 +213,24 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 					if (fileUri != null) {
 						String fileName = locator.createAttachmentFileName(fileUri);
 						fileName = chooseFileName(existFilesLc, fileName);
-						String filePath = archiveDirectoryName + "/src/" + fileName;
+						String filePath = archiveName + "/" + DIRECTORY_FILES + "/" + fileName;
 						String thumbnailName = null;
 						String thumbnailPath = null;
 						if (thumbnailUri != null) {
 							thumbnailName = locator.createAttachmentFileName(thumbnailUri);
 							thumbnailName = chooseFileName(existThumbnailsLc, thumbnailName);
-							thumbnailPath = archiveDirectoryName + "/thumb/" + thumbnailName;
+							thumbnailPath = archiveName + "/" + DIRECTORY_THUMBNAILS + "/" + thumbnailName;
 						}
 						String originalName = fileAttachment.getNormalizedOriginalName(fileName);
 						htmlBuilder.addFile(filePath, thumbnailPath, originalName, fileAttachment.getSize(),
 								fileAttachment.getWidth(), fileAttachment.getHeight());
 						if (saveFiles) {
-							if (!new File(filesDirectory, fileName).exists()) {
-								result.filesToDownload.add(new DownloadService.DownloadItem(chanName,
-										fileUri, fileName));
-							}
+							filesToDownload.add(new DownloadService.DownloadItem(chanName,
+									fileUri, fileName));
 						}
 						if (saveThumbnails && thumbnailUri != null) {
-							if (!new File(thumbnailsDirectory, thumbnailName).exists()) {
-								result.thumbnailsToDownload.add(new DownloadService.DownloadItem(chanName,
-										thumbnailUri, thumbnailName));
-							}
+							thumbnailsToDownload.add(new DownloadService.DownloadItem(chanName,
+									thumbnailUri, thumbnailName));
 						}
 					}
 				}
@@ -249,18 +240,8 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 			}
 			notifyIncrement();
 		}
-		String postHtml = htmlBuilder.build();
-		String fileName = chanName + "-" + boardName + "-" + threadNumber + ".html";
-		OutputStream outputStream = null;
-		try {
-			outputStream = IOUtils.openOutputStream(MainApplication.getInstance(), new File(directory, fileName));
-			outputStream.write(postHtml.getBytes());
-		} catch (IOException e) {
-			return null;
-		} finally {
-			IOUtils.close(outputStream);
-		}
-		return result;
+		String html = htmlBuilder.build();
+		return new Result(html, archiveName, filesToDownload, thumbnailsToDownload);
 	}
 
 	@Override
@@ -268,17 +249,23 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 		callback.onLocalArchivationProgressUpdate(values[0]);
 	}
 
+	@SuppressWarnings("CharsetObjectCanBeUsed")
 	@Override
 	protected void onPostExecute(Object resultObject) {
 		Result result = (Result) resultObject;
-		boolean showSuccess = false;
 		if (result != null) {
-			boolean willDownload = false;
-			willDownload |= performDownload(result.thumbnailsDirectory, result.thumbnailsToDownload);
-			willDownload |= performDownload(result.filesDirectory, result.filesToDownload);
-			showSuccess = !willDownload;
+			byte[] htmlBytes;
+			try {
+				htmlBytes = result.html.getBytes("UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				throw new RuntimeException(e);
+			}
+			performDownload(".nomedia", new ByteArrayInputStream(new byte[0]));
+			performDownload(result.archiveName + ".html", new ByteArrayInputStream(htmlBytes));
+			performDownload(result.archiveName + "/" + DIRECTORY_THUMBNAILS, result.thumbnailsToDownload);
+			performDownload(result.archiveName + "/" + DIRECTORY_FILES, result.filesToDownload);
 		}
-		callback.onLocalArchivationComplete(result != null, showSuccess);
+		callback.onLocalArchivationComplete(result != null);
 	}
 
 	@Override
@@ -298,24 +285,35 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 		}
 	}
 
-	private boolean performDownload(File directory, ArrayList<DownloadService.DownloadItem> downloadItems) {
-		if (directory != null && downloadItems.size() > 0) {
-			DownloadService.downloadDirect(MainApplication.getInstance(), directory, downloadItems);
-			return true;
+	private void performDownload(String name, InputStream input) {
+		DownloadService.Binder binder = callback.getDownloadBinder();
+		if (binder != null) {
+			binder.downloadDirect(DownloadService.Target.DOWNLOADS,
+					DIRECTORY_ARCHIVE, name, input);
 		}
-		return false;
+	}
+
+	private void performDownload(String path, List<DownloadService.DownloadItem> downloadItems) {
+		DownloadService.Binder binder = callback.getDownloadBinder();
+		if (path != null && downloadItems.size() > 0 && binder != null) {
+			binder.downloadDirect(DownloadService.Target.DOWNLOADS,
+					DIRECTORY_ARCHIVE + "/" + path, false, downloadItems);
+		}
 	}
 
 	private static class Result {
-		public final File filesDirectory;
-		public final File thumbnailsDirectory;
+		public final String html;
+		public final String archiveName;
+		public final List<DownloadService.DownloadItem> filesToDownload;
+		public final List<DownloadService.DownloadItem> thumbnailsToDownload;
 
-		public final ArrayList<DownloadService.DownloadItem> filesToDownload = new ArrayList<>();
-		public final ArrayList<DownloadService.DownloadItem> thumbnailsToDownload = new ArrayList<>();
-
-		public Result(File thumbnailsDirectory, File filesDirectory) {
-			this.thumbnailsDirectory = thumbnailsDirectory;
-			this.filesDirectory = filesDirectory;
+		private Result(String html, String archiveName,
+				List<DownloadService.DownloadItem> filesToDownload,
+				List<DownloadService.DownloadItem> thumbnailsToDownload) {
+			this.html = html;
+			this.archiveName = archiveName;
+			this.filesToDownload = filesToDownload;
+			this.thumbnailsToDownload = thumbnailsToDownload;
 		}
 	}
 
@@ -444,22 +442,6 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 			result[0] = ChanMarkup.TAG_HEADING;
 		}
 		return result;
-	}
-
-	public static File getLocalDownloadDirectory(boolean prepare) {
-		File directory = new File(Preferences.getDownloadDirectory(), "Archive");
-		if (prepare) {
-			directory.mkdirs();
-			File nomedia = new File(directory, ".nomedia");
-			if (!nomedia.exists()) {
-				try {
-					nomedia.createNewFile();
-				} catch (IOException e) {
-					// Ignore exception
-				}
-			}
-		}
-		return directory;
 	}
 
 	private String chooseFileName(ArrayList<String> fileNamesLc, String fileName) {

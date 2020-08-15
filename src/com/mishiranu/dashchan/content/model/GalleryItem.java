@@ -1,10 +1,8 @@
 package com.mishiranu.dashchan.content.model;
 
-import android.content.Context;
 import android.net.Uri;
 import chan.content.ChanLocator;
-import com.mishiranu.dashchan.content.DownloadManager;
-import com.mishiranu.dashchan.util.ConfigurationLock;
+import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -91,10 +89,8 @@ public class GalleryItem implements Serializable {
 		return locator.createAttachmentFileName(fileUri);
 	}
 
-	public void downloadStorage(Context context, ConfigurationLock configurationLock,
-			ChanLocator locator, String threadTitle) {
-		DownloadManager.getInstance().downloadStorage(context, configurationLock,
-				getFileUri(locator), getFileName(locator), originalName,
+	public void downloadStorage(DownloadService.Binder binder, ChanLocator locator, String threadTitle) {
+		binder.downloadStorage(getFileUri(locator), getFileName(locator), originalName,
 				locator.getChanName(), boardName, threadNumber, threadTitle);
 	}
 

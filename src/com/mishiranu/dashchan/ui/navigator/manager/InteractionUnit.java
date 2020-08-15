@@ -11,7 +11,6 @@ import chan.content.ChanLocator;
 import chan.content.ChanManager;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.content.DownloadManager;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.model.AttachmentItem;
 import com.mishiranu.dashchan.content.model.GalleryItem;
@@ -19,7 +18,6 @@ import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.text.style.LinkSuffixSpan;
 import com.mishiranu.dashchan.ui.gallery.GalleryOverlay;
 import com.mishiranu.dashchan.ui.posting.Replyable;
-import com.mishiranu.dashchan.util.ConfigurationLock;
 import com.mishiranu.dashchan.util.DialogMenu;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
@@ -151,8 +149,8 @@ public class InteractionUnit {
 					break;
 				}
 				case LINK_MENU_DOWNLOAD_FILE: {
-					DownloadManager.getInstance().downloadStorage(context, uiManager.getConfigurationLock(),
-							uri, finalFileName, null, finalChanName, finalBoardName, finalThreadNumber, null);
+					uiManager.download(binder -> binder.downloadStorage(uri, finalFileName, null,
+							finalChanName, finalBoardName, finalThreadNumber, null));
 					break;
 				}
 				case LINK_MENU_OPEN_THREAD: {
@@ -256,7 +254,7 @@ public class InteractionUnit {
 		private final AttachmentItem attachmentItem;
 		private final AttachmentView attachmentView;
 		private final String threadTitle;
-		private final ConfigurationLock configurationLock;
+		private final UiManager uiManager;
 
 		private static final int MENU_DOWNLOAD_FILE = 0;
 		private static final int MENU_SEARCH_IMAGE = 1;
@@ -270,7 +268,7 @@ public class InteractionUnit {
 			this.attachmentItem = attachmentItem;
 			this.attachmentView = attachmentView;
 			this.threadTitle = threadTitle;
-			configurationLock = uiManager.getConfigurationLock();
+			this.uiManager = uiManager;
 			Context context = attachmentView.getContext();
 			DialogMenu dialogMenu = new DialogMenu(context, this);
 			dialogMenu.setTitle(attachmentItem.getDialogTitle(), true);
@@ -297,14 +295,14 @@ public class InteractionUnit {
 			int type = attachmentItem.getType();
 			switch (id) {
 				case MENU_DOWNLOAD_FILE: {
-					DownloadManager.getInstance().downloadStorage(context, configurationLock, fileUri,
+					uiManager.download(binder -> binder.downloadStorage(fileUri,
 							attachmentItem.getFileName(), attachmentItem.getOriginalName(),
 							attachmentItem.getChanName(), attachmentItem.getBoardName(),
-							attachmentItem.getThreadNumber(), threadTitle);
+							attachmentItem.getThreadNumber(), threadTitle));
 					break;
 				}
 				case MENU_SEARCH_IMAGE: {
-					NavigationUtils.searchImage(context, configurationLock,
+					NavigationUtils.searchImage(context, uiManager.getConfigurationLock(),
 							ChanManager.getInstance().getChanNameByHost(fileUri.getAuthority()),
 							type == AttachmentItem.TYPE_IMAGE ? fileUri : thumbnailUri);
 					break;

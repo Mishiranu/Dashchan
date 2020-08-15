@@ -33,10 +33,6 @@ public class ReadFileTask extends HttpHolderTask<String, Long, Boolean> {
 		public void onCancelDownloading(Uri uri, File file);
 	}
 
-	public interface AsyncFinishCallback {
-		public void onFinishDownloadingInThread();
-	}
-
 	private final Context context;
 	private final Callback callback;
 
@@ -144,10 +140,6 @@ public class ReadFileTask extends HttpHolderTask<String, Long, Boolean> {
 				errorItem = new ErrorItem(ErrorItem.Type.UNKNOWN);
 			}
 			return false;
-		} finally {
-			if (callback instanceof AsyncFinishCallback) {
-				((AsyncFinishCallback) callback).onFinishDownloadingInThread();
-			}
 		}
 	}
 

@@ -6,6 +6,7 @@ import chan.content.ChanLocator;
 import com.mishiranu.dashchan.content.model.AttachmentItem;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.model.PostItem;
+import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.graphics.ColorScheme;
 import com.mishiranu.dashchan.ui.gallery.GalleryOverlay;
 import com.mishiranu.dashchan.ui.posting.Replyable;
@@ -26,15 +27,18 @@ public class UiManager {
 	private final WeakObservable<Observer> observable = new WeakObservable<>();
 
 	private final LocalNavigator localNavigator;
+	private final DownloadProvider downloadProvider;
 	private final ColorScheme colorScheme;
 	private final ConfigurationLock configurationLock;
 
-	public UiManager(Context context, LocalNavigator localNavigator, ConfigurationLock configurationLock) {
+	public UiManager(Context context, LocalNavigator localNavigator,
+			DownloadProvider downloadProvider, ConfigurationLock configurationLock) {
 		this.context = context;
 		viewUnit = new ViewUnit(this);
 		dialogUnit = new DialogUnit(this);
 		interactionUnit = new InteractionUnit(this);
 		this.localNavigator = localNavigator;
+		this.downloadProvider = downloadProvider;
 		colorScheme = new ColorScheme(context);
 		this.configurationLock = configurationLock;
 	}
@@ -67,6 +71,13 @@ public class UiManager {
 		return localNavigator;
 	}
 
+	public void download(DownloadCallback callback) {
+		DownloadService.Binder binder = downloadProvider.getBinder();
+		if (binder != null) {
+			callback.callback(binder);
+		}
+	}
+
 	public static final int MESSAGE_INVALIDATE_VIEW = 1;
 	public static final int MESSAGE_INVALIDATE_COMMENT_VIEW = 2;
 	public static final int MESSAGE_PERFORM_SWITCH_USER_MARK = 3;
@@ -96,19 +107,27 @@ public class UiManager {
 	}
 
 	public interface PostsProvider extends Iterable<PostItem> {
-		public PostItem findPostItem(String postNumber);
+		PostItem findPostItem(String postNumber);
+	}
+
+	public interface DownloadProvider {
+		DownloadService.Binder getBinder();
+	}
+
+	public interface DownloadCallback {
+		void callback(DownloadService.Binder binder);
 	}
 
 	public interface LocalNavigator {
-		public void navigateBoardsOrThreads(String chanName, String boardName, int flags);
-		public void navigatePosts(String chanName, String boardName, String threadNumber, String postNumber,
+		void navigateBoardsOrThreads(String chanName, String boardName, int flags);
+		void navigatePosts(String chanName, String boardName, String threadNumber, String postNumber,
 				String threadTitle, int flags);
-		public void navigateSearch(String chanName, String boardName, String searchQuery, int flags);
-		public void navigateArchive(String chanName, String boardName, int flags);
-		public void navigateTarget(String chanName, ChanLocator.NavigationData data, int flags);
-		public void navigatePosting(String chanName, String boardName, String threadNumber,
+		void navigateSearch(String chanName, String boardName, String searchQuery, int flags);
+		void navigateArchive(String chanName, String boardName, int flags);
+		void navigateTarget(String chanName, ChanLocator.NavigationData data, int flags);
+		void navigatePosting(String chanName, String boardName, String threadNumber,
 				Replyable.ReplyData... data);
-		public void navigateGallery(String chanName, GalleryItem.GallerySet gallerySet, int imageIndex,
+		void navigateGallery(String chanName, GalleryItem.GallerySet gallerySet, int imageIndex,
 				View view, GalleryOverlay.NavigatePostMode navigatePostMode, boolean galleryMode);
 	}
 

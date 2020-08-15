@@ -3,6 +3,7 @@ package com.mishiranu.dashchan.ui;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import androidx.fragment.app.Fragment;
+import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.util.ConfigurationLock;
 
 public interface FragmentHandler {
@@ -16,6 +17,7 @@ public interface FragmentHandler {
 
 	void pushFragment(Fragment fragment);
 	void removeFragment();
+	DownloadService.Binder getDownloadBinder();
 	ConfigurationLock getConfigurationLock();
 
 	default void scrollToPost(String chanName, String boardName, String threadNumber, String postNumber) {}

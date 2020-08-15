@@ -27,6 +27,7 @@
 	<string name="text_closed_thread">Тред закрыт</string>
 	<string name="text_code_number_address">Код, номер, адрес</string>
 	<string name="text_comment">Комментарий</string>
+	<string name="text_completed_downloads">Завершённые загрузки</string>
 	<string name="text_configuration">Конфигурация</string>
 	<string name="text_confirmation">Подтверждение</string>
 	<string name="text_cyclical_thread">Цикличный тред</string>
@@ -42,10 +43,10 @@
 	<string name="text_disabled_sage">Sage отключено</string>
 	<string name="text_disabled_subjects">Темы отключены</string>
 	<string name="text_disabled_tripcodes">Трипкоды отключены</string>
-	<string name="text_dont_replace">Не заменять</string>
 	<string name="text_download_title">Выберите путь сохранения</string>
 	<string name="text_download_to_format">Сохранить в \"%s\"</string>
 	<string name="text_download_to_subdirectory">Сохранить в подкаталоге</string>
+	<string name="text_downloads">Загрузки</string>
 	<string name="text_enabled_flags">Флаги включены</string>
 	<string name="text_enabled_icons">Иконки включены</string>
 	<string name="text_extension_name_format">Расширение %s</string>
@@ -60,7 +61,6 @@
 	</plurals>
 	<string name="text_no_icon">Нет иконки</string>
 	<string name="text_in_thread_format_format">В треде %s</string>
-	<string name="text_keep_all">Сохранить все</string>
 	<string name="text_keep_current_version">Без обновления</string>
 	<string name="text_links_attachments_format">Вложений-ссылок: %s</string>
 	<string name="text_local_archive">Локальный архив</string>
@@ -113,7 +113,6 @@
 	<string name="text_remove_file_name">Удалить имя файла</string>
 	<string name="text_remove_metadata">Стереть метаданные</string>
 	<string name="text_remove_rules">Удалить правила</string>
-	<string name="text_replace">Заменить</string>
 	<plurals name="text_replies_count_format">
 		<item quantity="one">%d ответ</item>
 		<item quantity="few">%d ответа</item>
@@ -154,6 +153,7 @@
 	<string name="text_unique_hash">Уникальный хеш</string>
 	<string name="text_unique_posters_format">Уникальных отправителей: %s</string>
 	<string name="text_unsupported_version">Неподдерживаемая версия</string>
+	<string name="text_updates">Обновления</string>
 	<string name="text_updates_format">Обновлений: %d</string>
 	<string name="text_updates_available_format">Доступно обновлений: %d</string>
 	<string name="text_user_banned">Бан</string>
@@ -207,6 +207,7 @@
 	<string name="action_hide_replies">Дерево ответов</string>
 	<string name="action_hide_similar">Похожие сообщения</string>
 	<string name="action_history">История</string>
+	<string name="action_keep_all">Сохранить все</string>
 	<string name="action_load_captcha">Нажмите, чтобы загрузить капчу</string>
 	<string name="action_lock_drawer">Фиксир. панель</string>
 	<string name="action_make_home_page">Сделать домашней</string>
@@ -225,12 +226,13 @@
 	<string name="action_quote">Цитировать</string>
 	<string name="action_refresh">Обновить</string>
 	<string name="action_reload">Перезагрузить</string>
-	<string name="action_restart">Перезапуск</string>
 	<string name="action_remove_from_favorites">Удалить из избранного</string>
 	<string name="action_remove_from_history">Удалить из истории</string>
 	<string name="action_rename">Переименовать</string>
+	<string name="action_replace">Заменить</string>
 	<string name="action_reply">Ответить</string>
 	<string name="action_report">Пожаловаться</string>
+	<string name="action_restart">Перезапуск</string>
 	<string name="action_retry">Повторить</string>
 	<string name="action_save">Сохранить</string>
 	<string name="action_search">Поиск</string>
@@ -246,6 +248,7 @@
 	<string name="action_show">Показать</string>
 	<string name="action_show_on_map">Показать на карте</string>
 	<string name="action_show_thumbnail">Показать миниатюру</string>
+	<string name="action_skip">Пропустить</string>
 	<string name="action_spoilers">Спойлеры</string>
 	<string name="action_stop">Стоп</string>
 	<string name="action_summary">Информация</string>
@@ -281,6 +284,7 @@
 	<string name="message_delete_too_old_error">Нельзя удалять старые сообщения</string>
 	<string name="message_delete_too_often_error">Нельзя удалять сообщения так часто</string>
 	<string name="message_download_completed">Загрузка завершена</string>
+	<string name="message_download_confirmation">Необходимо подтверждение</string>
 	<string name="message_download_count_format">Загрузка %1$d из %2$d</string>
 	<string name="message_download_audio">Загрузка аудио</string>
 	<string name="message_download_error">Ошибка при загрузке данных</string>
@@ -288,6 +292,7 @@
 	<string name="message_download_name_format">Файл %s</string>
 	<string name="message_download_not_loaded">Не загружено</string>
 	<string name="message_download_manager_error">Диспетчер загрузки недоступен</string>
+	<string name="message_download_pending">Ожидание загрузки</string>
 	<string name="message_draft_saved">Черновик сохранён</string>
 	<string name="message_edited_posts">Есть изменённые сообщения</string>
 	<string name="message_empty_file">Необходимо прикрепить файл</string>
@@ -324,8 +329,6 @@
 	<string name="message_invalid_response">Некорректный ответ сервера</string>
 	<string name="message_insufficient_space">Недостаточно места на утройстве</string>
 	<string name="message_loading">Загрузка&#8230;</string>
-	<string name="message_memory_access_permission">Для кэширования и просмотра содержимого требуется доступ
-		к памяти устройства.</string>
 	<string name="message_new_password">Сгенерирован новый пароль</string>
 	<string name="message_no_access">Нет доступа</string>
 	<string name="message_no_access_to_memory">Нет доступа к памяти</string>

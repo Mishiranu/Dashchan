@@ -1,30 +1,12 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.text;
 
+import android.net.Uri;
+import android.util.Pair;
+import chan.util.StringUtils;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.TimeZone;
-
-import android.net.Uri;
-import android.util.Pair;
-
-import chan.util.StringUtils;
 
 public class WakabaLikeHtmlBuilder {
 	private static final ArrayList<Pair<String, String>> STYLES = new ArrayList<>();
@@ -183,7 +165,7 @@ public class WakabaLikeHtmlBuilder {
 		int maxLength = 25;
 		if (displayName.length() > maxLength) {
 			displayName = displayName.substring(0, maxLength - 3) + "…" + displayName
-					.substring(displayName.length() - 3, displayName.length());
+					.substring(displayName.length() - 3);
 		}
 		if (extension != null) {
 			displayName += extension;

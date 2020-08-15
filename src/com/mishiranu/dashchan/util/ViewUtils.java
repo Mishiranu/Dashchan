@@ -187,13 +187,6 @@ public class ViewUtils {
 	}
 
 	@Deprecated
-	public static void addNotificationAction(Notification.Builder builder, Context context, TypedArray typedArray,
-			int resourceIndex, int titleRes, PendingIntent intent) {
-		addNotificationAction(builder, context, typedArray.getResourceId(resourceIndex, 0),
-				context.getString(titleRes), intent);
-	}
-
-	@Deprecated
 	public static void addNotificationAction(Notification.Builder builder, Context context, int icon,
 			CharSequence title, PendingIntent intent) {
 		if (C.API_MARSHMALLOW) {

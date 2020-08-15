@@ -35,7 +35,6 @@
 	<string name="text_disabled_sage">Sage está desabilitado</string>
 	<string name="text_disabled_subjects">Assuntos estão desabilitados</string>
 	<string name="text_disabled_tripcodes">Tripcodes estão desabilitados</string>
-	<string name="text_dont_replace">Não substituir</string>
 	<string name="text_download_title">Salvar aonde?</string>
 	<string name="text_download_to_format">Salvar em \"%s\"</string>
 	<string name="text_download_to_subdirectory">Salve no diretório</string>
@@ -50,7 +49,6 @@
 	</plurals>
 	<string name="text_no_icon">Sem ícone</string>
 	<string name="text_in_thread_format_format">No fio %s</string>
-	<string name="text_keep_all">Guardar tudo</string>
 	<string name="text_links_attachments_format">Anexo do link: %s</string>
 	<string name="text_local_archive">Arquivo local</string>
 	<string name="text_main_application">Aplicação principal</string>
@@ -89,7 +87,6 @@
 	<string name="text_remove_file_name">Remover filename</string>
 	<string name="text_remove_metadata">Remover metadata</string>
 	<string name="text_remove_rules">Remover regras</string>
-	<string name="text_replace">Substituir</string>
 	<plurals name="text_replies_count_format">
 		<item quantity="one">%d resposta</item>
 		<item quantity="other">%d respostas</item>
@@ -168,6 +165,7 @@
 	<string name="action_hide_replies">Árvore de respostas</string>
 	<string name="action_hide_similar">Posts similares</string>
 	<string name="action_history">Histórico</string>
+	<string name="action_keep_all">Guardar tudo</string>
 	<string name="action_load_captcha">Toque para carregar o captcha</string>
 	<string name="action_lock_drawer">Trancar drawer</string>
 	<string name="action_make_home_page">Fazer como página inicial</string>
@@ -185,12 +183,13 @@
 	<string name="action_quote">Quotar</string>
 	<string name="action_refresh">Atualizar</string>
 	<string name="action_reload">Recarregar</string>
-	<string name="action_restart">Reiniciar</string>
 	<string name="action_remove_from_favorites">Remover dos favoritos</string>
 	<string name="action_remove_from_history">Remover do histórico</string>
 	<string name="action_rename">Renomear</string>
+	<string name="action_replace">Substituir</string>
 	<string name="action_reply">Responder</string>
 	<string name="action_report">Reportar</string>
+	<string name="action_restart">Reiniciar</string>
 	<string name="action_retry">Tentar novamente</string>
 	<string name="action_save">Salvar</string>
 	<string name="action_search">Procurar</string>
