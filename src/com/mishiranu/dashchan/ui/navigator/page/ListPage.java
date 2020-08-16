@@ -8,7 +8,6 @@ import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
@@ -18,10 +17,8 @@ import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.widget.ListPosition;
 import com.mishiranu.dashchan.widget.PullableListView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
-import com.mishiranu.dashchan.widget.callback.BusyScrollListener;
 
-public abstract class ListPage<Adapter extends BaseAdapter> implements PullableWrapper.PullCallback,
-		BusyScrollListener.Callback {
+public abstract class ListPage implements PullableWrapper.PullCallback {
 	public static final int OPTIONS_MENU_APPEARANCE = -1;
 	public static final int OPTIONS_MENU_SEARCH = -2;
 
@@ -65,8 +62,6 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 	private Parcelable parcelableExtra;
 	private InitRequest initRequest;
 
-	private Adapter adapter;
-	private BusyScrollListener.Callback busyScrollListenerCallback;
 	private State state = State.INIT;
 
 	public final void init(Callback callback, Page page, PullableListView listView,
@@ -84,9 +79,6 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 			this.parcelableExtra = parcelableExtra;
 			this.initRequest = initRequest;
 			onCreate();
-			if (this.adapter == null) {
-				throw new IllegalStateException("Adapter wasn't initialized");
-			}
 			this.initRequest = null;
 			state = State.PAUSED;
 		}
@@ -118,10 +110,6 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 
 	protected final UiManager getUiManager() {
 		return uiManager;
-	}
-
-	protected final Adapter getAdapter() {
-		return adapter;
 	}
 
 	protected final ChanLocator getChanLocator() {
@@ -156,7 +144,7 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 	}
 
 	protected final void notifyAllAdaptersChanged() {
-		adapter.notifyDataSetChanged();
+		((BaseAdapter) listView.getAdapter()).notifyDataSetChanged();
 		onNotifyAllAdaptersChanged();
 	}
 
@@ -165,16 +153,6 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 			return actionIconSet.getId(attr);
 		} else {
 			return 0;
-		}
-	}
-
-	protected final void initAdapter(Adapter adapter, BusyScrollListener.Callback callback) {
-		if (state == State.LOCKED) {
-			this.adapter = adapter;
-			busyScrollListenerCallback = callback;
-			listView.setAdapter(adapter);
-		} else {
-			throw new IllegalStateException("Adapter can be initialized only in onCreate method");
 		}
 	}
 
@@ -275,13 +253,6 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 	@Override
 	public void onListPulled(PullableWrapper wrapper, PullableWrapper.Side side) {}
 
-	@Override
-	public void setListViewBusy(boolean isBusy, AbsListView listView) {
-		if (busyScrollListenerCallback != null) {
-			busyScrollListenerCallback.setListViewBusy(isBusy, listView);
-		}
-	}
-
 	public int onDrawerNumberEntered(int number) {
 		return 0;
 	}
@@ -304,7 +275,6 @@ public abstract class ListPage<Adapter extends BaseAdapter> implements PullableW
 	public final void resume() {
 		if (state == State.PAUSED) {
 			state = State.RESUMED;
-			setListViewBusy(false, listView); // Refresh list view contents
 			performResume();
 		}
 	}

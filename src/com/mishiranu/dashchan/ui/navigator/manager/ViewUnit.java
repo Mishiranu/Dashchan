@@ -5,7 +5,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.text.Layout;
 import android.text.Spannable;
@@ -19,7 +18,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -127,7 +125,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		}
 	};
 
-	public View getThreadView(PostItem postItem, View convertView, ViewGroup parent, boolean isBusy,
+	public View getThreadView(PostItem postItem, View convertView, ViewGroup parent,
 			UiManager.ConfigurationSet configurationSet) {
 		Context context = uiManager.getContext();
 		ColorScheme colorScheme = uiManager.getColorScheme();
@@ -208,12 +206,13 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		if (attachmentItems != null) {
 			AttachmentItem attachmentItem = attachmentItems.get(0);
 			boolean needShowSeveralIcon = attachmentItems.size() > 1;
-			attachmentItem.configureAndLoad(holder.thumbnail, needShowSeveralIcon, isBusy, false);
+			attachmentItem.configureAndLoad(holder.thumbnail, needShowSeveralIcon, false);
 			holder.thumbnailClickListener.update(0, true, GalleryOverlay.NavigatePostMode.DISABLED);
 			holder.thumbnailLongClickListener.update(attachmentItem);
 			holder.thumbnail.setSfwMode(Preferences.isSfwMode());
 			holder.thumbnail.setVisibility(View.VISIBLE);
 		} else {
+			ImageLoader.getInstance().cancel(holder.thumbnail);
 			holder.thumbnail.resetImage(null);
 			holder.thumbnail.setVisibility(View.GONE);
 		}
@@ -223,7 +222,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 	}
 
 	public View getThreadViewForGrid(PostItem postItem, View convertView, ViewGroup parent,
-			int contentHeight, boolean isBusy, UiManager.ConfigurationSet configurationSet) {
+			int contentHeight, UiManager.ConfigurationSet configurationSet) {
 		Context context = uiManager.getContext();
 		ColorScheme colorScheme = uiManager.getColorScheme();
 		ThreadViewHolder holder;
@@ -285,12 +284,13 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		if (attachmentItems != null && !hidden) {
 			AttachmentItem attachmentItem = attachmentItems.get(0);
 			boolean needShowSeveralIcon = attachmentItems.size() > 1;
-			attachmentItem.configureAndLoad(holder.thumbnail, needShowSeveralIcon, isBusy, false);
+			attachmentItem.configureAndLoad(holder.thumbnail, needShowSeveralIcon, false);
 			holder.thumbnailClickListener.update(0, true, GalleryOverlay.NavigatePostMode.DISABLED);
 			holder.thumbnailLongClickListener.update(attachmentItem);
 			holder.thumbnail.setSfwMode(Preferences.isSfwMode());
 			holder.thumbnail.setVisibility(View.VISIBLE);
 		} else {
+			ImageLoader.getInstance().cancel(holder.thumbnail);
 			holder.thumbnail.resetImage(null);
 			holder.thumbnail.setVisibility(View.GONE);
 		}
@@ -486,7 +486,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		holder.comment.bindSelectionPaddingView(demandSet.lastInList ? holder.textSelectionPadding : null);
 
 		handlePostViewIcons(holder);
-		handlePostViewAttachments(holder, configurationSet, demandSet);
+		handlePostViewAttachments(holder, configurationSet);
 		holder.index.setText(postItem.getOrdinalIndexString());
 		boolean showName = holder.thumbnail.getVisibility() == View.VISIBLE ||
 				!postItem.isUseDefaultName() && !StringUtils.isEmpty(name);
@@ -599,12 +599,11 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 	}
 
 	@SuppressLint("InflateParams")
-	private void handlePostViewAttachments(PostViewHolder holder, UiManager.ConfigurationSet configurationSet,
-			UiManager.DemandSet demandSet) {
+	private void handlePostViewAttachments(PostViewHolder holder, UiManager.ConfigurationSet configurationSet) {
 		Context context = uiManager.getContext();
 		PostItem postItem = holder.postItem;
 		List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
-		if (attachmentItems != null) {
+		if (attachmentItems != null && !attachmentItems.isEmpty()) {
 			int size = attachmentItems.size();
 			if (size >= 2 && Preferences.isAllAttachments()) {
 				holder.thumbnail.resetImage(null);
@@ -650,7 +649,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 				for (int i = 0; i < size; i++) {
 					AttachmentHolder attachmentHolder = attachmentHolders.get(i);
 					AttachmentItem attachmentItem = attachmentItems.get(i);
-					attachmentItem.configureAndLoad(attachmentHolder.thumbnail, false, demandSet.isBusy, false);
+					attachmentItem.configureAndLoad(attachmentHolder.thumbnail, false, false);
 					attachmentHolder.thumbnailClickListener.update(i, false, configurationSet.isDialog
 							? GalleryOverlay.NavigatePostMode.MANUALLY : GalleryOverlay.NavigatePostMode.ENABLED);
 					attachmentHolder.thumbnailLongClickListener.update(attachmentItem);
@@ -661,6 +660,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 				}
 				for (int i = size; i < holders; i++) {
 					AttachmentHolder attachmentHolder = attachmentHolders.get(i);
+					ImageLoader.getInstance().cancel(attachmentHolder.thumbnail);
 					attachmentHolder.thumbnail.resetImage(null);
 					attachmentHolder.container.setVisibility(View.GONE);
 				}
@@ -668,7 +668,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 				holder.attachmentViewCount = size;
 			} else {
 				AttachmentItem attachmentItem = attachmentItems.get(0);
-				attachmentItem.configureAndLoad(holder.thumbnail, size > 1, demandSet.isBusy, false);
+				attachmentItem.configureAndLoad(holder.thumbnail, size > 1, false);
 				holder.thumbnailClickListener.update(0, true, configurationSet.isDialog
 						? GalleryOverlay.NavigatePostMode.MANUALLY : GalleryOverlay.NavigatePostMode.ENABLED);
 				holder.thumbnailLongClickListener.update(attachmentItem);
@@ -681,6 +681,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 				holder.attachmentViewCount = 1;
 			}
 		} else {
+			ImageLoader.getInstance().cancel(holder.thumbnail);
 			holder.thumbnail.resetImage(null);
 			holder.thumbnail.setVisibility(View.GONE);
 			holder.attachmentInfo.setVisibility(View.GONE);
@@ -721,18 +722,14 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 					Uri uri = icons.get(i).first;
 					if (uri != null) {
 						uri = uri.isRelative() ? locator.convert(uri) : uri;
-						ImageLoader.BitmapResult result = ImageLoader.getInstance().loadImage(uri, chanName, null,
-								imageView::setTag, false);
-						if (result != null && result.bitmap != null) {
-							imageView.setImageBitmap(result.bitmap);
-						} else {
-							imageView.setImageDrawable(null);
-						}
+						ImageLoader.getInstance().loadImage(chanName, uri, false, imageView);
 					} else {
+						ImageLoader.getInstance().cancel(imageView);
 						imageView.setTag(null);
 						imageView.setImageDrawable(null);
 					}
 				} else {
+					ImageLoader.getInstance().cancel(imageView);
 					imageView.setVisibility(View.GONE);
 				}
 			}
@@ -852,75 +849,6 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 	public void onTemporaryDetach(SingleLayerLinearLayout view, boolean start) {
 		if (start) {
 			notifyUnbindView(view);
-		}
-	}
-
-	public void handleListViewBusyStateChange(boolean isBusy, AbsListView listView, UiManager.DemandSet demandSet) {
-		if (!isBusy) {
-			int count = listView.getChildCount();
-			for (int i = 0; i < count; i++) {
-				View view = listView.getChildAt(i);
-				UiManager.Holder holder = (UiManager.Holder) view.getTag();
-				if (holder != null) {
-					PostItem postItem = holder.postItem;
-					if (postItem != null) {
-						displayThumbnails(holder, postItem.getAttachmentItems());
-					}
-				}
-			}
-		}
-		demandSet.isBusy = isBusy;
-	}
-
-	private void displayThumbnails(UiManager.Holder holder, List<AttachmentItem> attachmentItems) {
-		if (attachmentItems != null) {
-			int size = attachmentItems.size();
-			int count = Math.min(size, holder.getAttachmentViewCount());
-			boolean needShowSeveralIcon = size > 1 && count == 1;
-			for (int i = 0; i < count; i++) {
-				AttachmentItem attachmentItem = attachmentItems.get(i);
-				if (!attachmentItem.isThumbnailReady()) {
-					attachmentItem.configureAndLoad(holder.getAttachmentView(i), needShowSeveralIcon, false, false);
-				}
-			}
-		}
-	}
-
-	public void displayThumbnails(View view, List<AttachmentItem> attachmentItems) {
-		Object tag = view.getTag();
-		if (tag instanceof UiManager.Holder) {
-			displayThumbnails((UiManager.Holder) tag, attachmentItems);
-		}
-	}
-
-	public void displayLoadedThumbnailsForView(View view, String key, Bitmap bitmap, boolean error) {
-		Object tag = view.getTag();
-		if (view.getTag() instanceof UiManager.Holder) {
-			UiManager.Holder holder = (UiManager.Holder) tag;
-			for (int i = 0; i < holder.getAttachmentViewCount(); i++) {
-				holder.getAttachmentView(i).handleLoadedImage(key, bitmap, error, false);
-			}
-		}
-	}
-
-	public void displayLoadedThumbnailsForPosts(ListView listView, String key, Bitmap bitmap, boolean error) {
-		for (int i = 0; i < listView.getChildCount(); i++) {
-			View view = listView.getChildAt(i);
-			Object tag = view.getTag();
-			if (tag instanceof PostViewHolder) {
-				PostViewHolder holder = (PostViewHolder) tag;
-				for (int j = 0; j < holder.getAttachmentViewCount(); j++) {
-					holder.getAttachmentView(j).handleLoadedImage(key, bitmap, error, false);
-				}
-				ArrayList<ImageView> badgeImages = holder.badgeImages;
-				if (badgeImages != null) {
-					for (ImageView imageView : badgeImages) {
-						if (imageView.getVisibility() == View.VISIBLE && key.equals(imageView.getTag())) {
-							imageView.setImageBitmap(bitmap);
-						}
-					}
-				}
-			}
 		}
 	}
 
@@ -1166,16 +1094,6 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		public GalleryItem.GallerySet getGallerySet() {
 			return postItem.getThreadGallerySet();
 		}
-
-		@Override
-		public int getAttachmentViewCount() {
-			return 1;
-		}
-
-		@Override
-		public AttachmentView getAttachmentView(int index) {
-			return thumbnail;
-		}
 	}
 
 	private class PostViewHolder extends UiManager.Holder implements CommentTextView.ListSelectionKeeper.Holder {
@@ -1215,16 +1133,6 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		}
 
 		@Override
-		public int getAttachmentViewCount() {
-			return attachmentViewCount;
-		}
-
-		@Override
-		public AttachmentView getAttachmentView(int index) {
-			return attachmentViewCount > 1 ? attachmentHolders.get(index).thumbnail : thumbnail;
-		}
-
-		@Override
 		public CommentTextView getCommentTextView() {
 			return comment;
 		}
@@ -1238,16 +1146,6 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		@Override
 		public GalleryItem.GallerySet getGallerySet() {
 			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public int getAttachmentViewCount() {
-			return 0;
-		}
-
-		@Override
-		public AttachmentView getAttachmentView(int index) {
-			return null;
 		}
 	}
 }

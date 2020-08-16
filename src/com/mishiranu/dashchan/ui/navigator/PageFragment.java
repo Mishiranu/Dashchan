@@ -30,8 +30,6 @@ import com.mishiranu.dashchan.widget.CustomSearchView;
 import com.mishiranu.dashchan.widget.ListPosition;
 import com.mishiranu.dashchan.widget.MenuExpandListener;
 import com.mishiranu.dashchan.widget.PullableListView;
-import com.mishiranu.dashchan.widget.callback.BusyScrollListener;
-import com.mishiranu.dashchan.widget.callback.ScrollListenerComposite;
 import java.util.UUID;
 
 public final class PageFragment extends Fragment implements ActivityHandler, ListPage.Callback,
@@ -75,7 +73,7 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 		return (Callback) requireActivity();
 	}
 
-	private ListPage<?> listPage;
+	private ListPage listPage;
 	private View progressView;
 	private View errorView;
 	private TextView errorText;
@@ -136,11 +134,6 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 		listView.getWrapper().setOnPullListener(listPage);
 		listView.getWrapper().setPullStateListener((wrapper, busy) -> getCallback()
 				.setActionBarLocked(actionBarLockerPull, busy));
-		ScrollListenerComposite.obtain(listView).add(new BusyScrollListener((isBusy, listView) -> {
-			if (listPage != null) {
-				listPage.setListViewBusy(isBusy, listView);
-			}
-		}));
 	}
 
 	@Override

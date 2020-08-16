@@ -9,7 +9,6 @@ import android.util.Pair;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import android.widget.CompoundButton;
 import android.widget.FrameLayout;
@@ -32,14 +31,13 @@ import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableView;
-import com.mishiranu.dashchan.widget.callback.BusyScrollListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Locale;
 
-public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Callback, View.OnClickListener,
+public class ThreadsAdapter extends BaseAdapter implements View.OnClickListener,
 		CompoundButton.OnCheckedChangeListener {
 	private static final int ITEM_VIEW_TYPE_THREAD = 0;
 	private static final int ITEM_VIEW_TYPE_THREAD_HIDDEN = 1;
@@ -66,7 +64,6 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 
 	private boolean mayShowHeader = false;
 	private boolean headerExpanded = false;
-	private boolean busy = false;
 
 	private String filterText;
 	private boolean gridMode = false;
@@ -299,7 +296,7 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 		if (item instanceof PostItem) {
 			PostItem postItem = (PostItem) item;
 			if (!postItem.isHidden(configurationSet.hidePerformer)) {
-				convertView = uiManager.view().getThreadView(postItem, convertView, parent, busy, configurationSet);
+				convertView = uiManager.view().getThreadView(postItem, convertView, parent, configurationSet);
 			} else {
 				convertView = uiManager.view().getThreadHiddenView(postItem, convertView, parent, configurationSet);
 			}
@@ -337,7 +334,7 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 					}
 					boolean add = convertViewChild == null;
 					convertViewChild = uiManager.view().getThreadViewForGrid(postItem, convertViewChild, parent,
-							gridItemContentHeight, busy, configurationSet);
+							gridItemContentHeight, configurationSet);
 					if (add) {
 						linearLayout.addView(convertViewChild, i, new LinearLayout.LayoutParams(0,
 								LinearLayout.LayoutParams.WRAP_CONTENT, 1));
@@ -773,33 +770,6 @@ public class ThreadsAdapter extends BaseAdapter implements BusyScrollListener.Ca
 			}
 		}
 		return -1;
-	}
-
-	@Override
-	public void setListViewBusy(boolean isBusy, AbsListView listView) {
-		if (!isBusy) {
-			int count = listView.getChildCount();
-			for (int i = 0; i < count; i++) {
-				View view = listView.getChildAt(i);
-				int position = listView.getPositionForView(view);
-				Object item = getItem(position);
-				if (item instanceof PostItem) {
-					PostItem postItem = (PostItem) item;
-					uiManager.view().displayThumbnails(view, postItem.getAttachmentItems());
-				} else if (item instanceof PostItem[]) {
-					PostItem[] postItems = (PostItem[]) item;
-					ViewGroup viewGroup = (ViewGroup) view;
-					for (int j = 0; j < postItems.length; j++) {
-						PostItem postItem = postItems[j];
-						if (postItem != null && !postItem.isHiddenUnchecked()) {
-							View child = viewGroup.getChildAt(j);
-							uiManager.view().displayThumbnails(child, postItem.getAttachmentItems());
-						}
-					}
-				}
-			}
-		}
-		busy = isBusy;
 	}
 
 	private static class DividerItem {

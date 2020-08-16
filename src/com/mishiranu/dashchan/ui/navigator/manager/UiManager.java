@@ -13,7 +13,6 @@ import com.mishiranu.dashchan.ui.posting.Replyable;
 import com.mishiranu.dashchan.util.ConfigurationLock;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.WeakObservable;
-import com.mishiranu.dashchan.widget.AttachmentView;
 import com.mishiranu.dashchan.widget.CommentTextView;
 import java.util.Collection;
 import java.util.Collections;
@@ -134,7 +133,6 @@ public class UiManager {
 	public enum Selection {DISABLED, NOT_SELECTED, SELECTED, THREADSHOT}
 
 	public static class DemandSet {
-		public boolean isBusy = false;
 		public boolean lastInList = false;
 		public Selection selection = Selection.DISABLED;
 		public boolean showOpenThreadButton = false;
@@ -198,9 +196,6 @@ public class UiManager {
 		public ConfigurationSet configurationSet;
 
 		public abstract GalleryItem.GallerySet getGallerySet();
-
-		public abstract int getAttachmentViewCount();
-		public abstract AttachmentView getAttachmentView(int index);
 	}
 
 	public PostItem getPostItemFromHolder(View view) {

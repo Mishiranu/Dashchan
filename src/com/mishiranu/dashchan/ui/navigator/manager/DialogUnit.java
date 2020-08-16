@@ -8,7 +8,6 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.text.InputType;
@@ -22,7 +21,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
@@ -73,13 +71,10 @@ import com.mishiranu.dashchan.widget.DialogStack;
 import com.mishiranu.dashchan.widget.ListPosition;
 import com.mishiranu.dashchan.widget.ProgressDialog;
 import com.mishiranu.dashchan.widget.SafePasteEditText;
-import com.mishiranu.dashchan.widget.callback.BusyScrollListener;
-import com.mishiranu.dashchan.widget.callback.ScrollListenerComposite;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -159,13 +154,11 @@ public class DialogUnit {
 			DialogPostsAdapter adapter = new DialogPostsAdapter(provider, listView);
 			listView.setOnItemClickListener(adapter);
 			listView.setOnItemLongClickListener(adapter);
-			ScrollListenerComposite.obtain(listView).add(new BusyScrollListener(adapter));
 			listView.setAdapter(adapter);
 			listView.setId(android.R.id.list);
 			listView.setDivider(ResourceUtils.getDrawable(context, R.attr.postsDivider, 0));
 			final DialogHolder holder = new DialogHolder(adapter, provider, content, listView);
 			uiManager.observable().register(holder);
-			ImageLoader.getInstance().observable().register(holder);
 			listView.setTag(holder);
 			content.setTag(holder);
 			if (factory.listPosition != null) {
@@ -202,7 +195,6 @@ public class DialogUnit {
 			DialogHolder holder = (DialogHolder) view.getTag();
 			uiManager.view().notifyUnbindListView(holder.listView);
 			uiManager.observable().unregister(holder);
-			ImageLoader.getInstance().observable().unregister(holder);
 			holder.cancel();
 		}
 
@@ -212,7 +204,7 @@ public class DialogUnit {
 		}
 	}
 
-	private class DialogHolder implements UiManager.Observer, ImageLoader.Observer {
+	private class DialogHolder implements UiManager.Observer {
 		public final DialogPostsAdapter adapter;
 		public final DialogProvider dialogProvider;
 
@@ -259,11 +251,6 @@ public class DialogUnit {
 					break;
 				}
 			}
-		}
-
-		@Override
-		public void onImageLoadComplete(String key, Bitmap bitmap, boolean error) {
-			uiManager.view().displayLoadedThumbnailsForPosts(listView, key, bitmap, error);
 		}
 
 		public void requestUpdate() {
@@ -827,8 +814,8 @@ public class DialogUnit {
 		}
 	}
 
-	private class DialogPostsAdapter extends BaseAdapter implements BusyScrollListener.Callback,
-			AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
+	private class DialogPostsAdapter extends BaseAdapter implements AdapterView.OnItemClickListener,
+			AdapterView.OnItemLongClickListener {
 		private static final int ITEM_VIEW_TYPE_POST = 0;
 		private static final int ITEM_VIEW_TYPE_HIDDEN_POST = 1;
 
@@ -908,11 +895,6 @@ public class DialogUnit {
 		}
 
 		@Override
-		public void setListViewBusy(boolean isBusy, AbsListView listView) {
-			uiManager.view().handleListViewBusyStateChange(isBusy, listView, demandSet);
-		}
-
-		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 			uiManager.interaction().handlePostClick(view, getItem(position), postItems);
 		}
@@ -935,13 +917,6 @@ public class DialogUnit {
 		}
 		Context context = uiManager.getContext();
 		Context styledContext = new ContextThemeWrapper(context, R.style.Theme_Gallery);
-		ArrayList<AttachmentView> attachmentViews = new ArrayList<>();
-		ImageLoader.Observer observer = (key, bitmap, error) -> {
-			for (AttachmentView view : attachmentViews) {
-				view.handleLoadedImage(key, bitmap, error, false);
-			}
-		};
-		ImageLoader.getInstance().observable().register(observer);
 		final Dialog dialog = new Dialog(styledContext);
 		Pair<StackInstance.AttachmentDialog, Dialog> attachmentDialog = new Pair<>(new StackInstance
 				.AttachmentDialog(attachmentItems, startImageIndex, navigatePostMode, gallerySet), dialog);
@@ -955,7 +930,6 @@ public class DialogUnit {
 			return false;
 		});
 		dialog.setOnDismissListener(dialogInterface -> {
-			ImageLoader.getInstance().observable().unregister(observer);
 			if (stackInstance.attachmentDialog == attachmentDialog) {
 				stackInstance.attachmentDialog = null;
 			}
@@ -1015,8 +989,7 @@ public class DialogUnit {
 			AttachmentView attachmentView = view.findViewById(R.id.thumbnail);
 			TextView textView = view.findViewById(R.id.attachment_info);
 			textView.setBackgroundColor(0xcc222222);
-			attachmentItem.configureAndLoad(attachmentView, false, false, true);
-			attachmentViews.add(attachmentView);
+			attachmentItem.configureAndLoad(attachmentView, false, true);
 			textView.setText(attachmentItem.getDescription(AttachmentItem.FormatMode.TWO_LINES));
 			View clickView = view.findViewById(R.id.click_view);
 			clickView.setOnClickListener(clickListener);
@@ -1111,14 +1084,6 @@ public class DialogUnit {
 		if (C.API_LOLLIPOP) {
 			container.setPadding(0, (int) (12f * density), 0, 0);
 		}
-		HashMap<String, ImageView> taggedImageViews = new HashMap<>();
-		ImageLoader.Observer observer = (key, bitmap, error) -> {
-			ImageView taggedImageView = taggedImageViews.get(key);
-			if (taggedImageView != null) {
-				taggedImageView.setImageBitmap(bitmap);
-			}
-		};
-		ImageLoader.getInstance().observable().register(observer);
 		for (IconData icon : icons) {
 			LinearLayout linearLayout = new LinearLayout(context);
 			container.addView(linearLayout, LinearLayout.LayoutParams.MATCH_PARENT,
@@ -1130,11 +1095,7 @@ public class DialogUnit {
 			ImageView imageView = new ImageView(context);
 			linearLayout.addView(imageView, (int) (20f * density), (int) (20f * density));
 			if (icon.uri != null) {
-				ImageLoader.BitmapResult result = imageLoader.loadImage(icon.uri, chanName, null,
-						key -> taggedImageViews.put(key, imageView), false);
-				if (result != null && result.bitmap != null) {
-					imageView.setImageBitmap(result.bitmap);
-				}
+				imageLoader.loadImage(chanName, icon.uri, false, imageView);
 			} else {
 				imageView.setImageResource(ResourceUtils.getResourceId(context, icon.attrId, 0));
 			}
@@ -1158,8 +1119,7 @@ public class DialogUnit {
 					(dialog, which) -> StringUtils.copyToClipboard(uiManager.getContext(), emailToCopy));
 		}
 		AlertDialog dialog = alertDialog.setView(container).show();
-		uiManager.getConfigurationLock().lockConfiguration(dialog,
-				d -> ImageLoader.getInstance().observable().unregister(observer));
+		uiManager.getConfigurationLock().lockConfiguration(dialog);
 		notifySwitchBackground(stackInstance);
 	}
 

@@ -2,7 +2,6 @@ package com.mishiranu.dashchan.ui.navigator.adapter;
 
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 import com.mishiranu.dashchan.C;
@@ -14,12 +13,11 @@ import com.mishiranu.dashchan.ui.navigator.manager.HidePerformer;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ViewFactory;
-import com.mishiranu.dashchan.widget.callback.BusyScrollListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 
-public class SearchAdapter extends BaseAdapter implements BusyScrollListener.Callback {
+public class SearchAdapter extends BaseAdapter {
 	private static final int TYPE_VIEW = 0;
 	private static final int TYPE_HEADER = 1;
 
@@ -106,11 +104,6 @@ public class SearchAdapter extends BaseAdapter implements BusyScrollListener.Cal
 
 	public UiManager.ConfigurationSet getConfigurationSet() {
 		return configurationSet;
-	}
-
-	@Override
-	public void setListViewBusy(boolean isBusy, AbsListView listView) {
-		uiManager.view().handleListViewBusyStateChange(isBusy, listView, demandSet);
 	}
 
 	public void setItems(ArrayList<PostItem> postItems) {

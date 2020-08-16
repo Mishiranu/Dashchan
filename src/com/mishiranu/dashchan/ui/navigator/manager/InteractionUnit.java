@@ -279,7 +279,7 @@ public class InteractionUnit {
 					dialogMenu.addItem(MENU_SEARCH_IMAGE, R.string.action_search_image);
 				}
 			}
-			if (hasViewHolder && attachmentItem.canLoadThumbnailManually()) {
+			if (hasViewHolder && attachmentItem.canLoadThumbnailManually(attachmentView)) {
 				dialogMenu.addItem(MENU_SHOW_THUMBNAIL, R.string.action_show_thumbnail);
 			}
 			dialogMenu.addItem(MENU_COPY_LINK, R.string.action_copy_link);
@@ -308,8 +308,7 @@ public class InteractionUnit {
 					break;
 				}
 				case MENU_SHOW_THUMBNAIL: {
-					attachmentItem.setForceLoadThumbnail();
-					attachmentItem.startLoad(attachmentView, false, true);
+					attachmentItem.startLoad(attachmentView, true);
 					break;
 				}
 				case MENU_COPY_LINK: {

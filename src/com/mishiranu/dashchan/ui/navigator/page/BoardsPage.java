@@ -23,8 +23,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTask.Callback {
+public class BoardsPage extends ListPage implements ReadBoardsTask.Callback {
 	private ReadBoardsTask readTask;
+
+	private BoardsAdapter getAdapter() {
+		return (BoardsAdapter) getListView().getAdapter();
+	}
 
 	@Override
 	protected void onCreate() {
@@ -33,9 +37,9 @@ public class BoardsPage extends ListPage<BoardsAdapter> implements ReadBoardsTas
 			listView.setDivider(null);
 		}
 		BoardsAdapter adapter = new BoardsAdapter(getPage().chanName);
-		initAdapter(adapter, null);
-		adapter.update();
+		listView.setAdapter(adapter);
 		listView.getWrapper().setPullSides(PullableWrapper.Side.TOP);
+		adapter.update();
 		if (!adapter.isEmpty()) {
 			restoreListPosition(null);
 		} else {

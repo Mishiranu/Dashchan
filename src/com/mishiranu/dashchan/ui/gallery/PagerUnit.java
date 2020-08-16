@@ -19,7 +19,6 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.ImageLoader;
 import com.mishiranu.dashchan.content.Preferences;
-import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.graphics.SimpleBitmapDrawable;
 import com.mishiranu.dashchan.util.AnimationUtils;
@@ -30,9 +29,10 @@ import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.widget.PhotoView;
 import com.mishiranu.dashchan.widget.PhotoViewPager;
 import java.io.File;
+import java.lang.ref.WeakReference;
 import java.util.List;
 
-public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
+public class PagerUnit implements PagerInstance.Callback {
 	private final GalleryInstance galleryInstance;
 	private final PagerInstance pagerInstance;
 
@@ -59,7 +59,6 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 		viewPagerParent.addView(viewPager, FrameLayout.LayoutParams.MATCH_PARENT,
 				FrameLayout.LayoutParams.MATCH_PARENT);
 		viewPager.setCount(instance.galleryItems.size());
-		ImageLoader.getInstance().observable().register(this);
 	}
 
 	public View getView() {
@@ -236,7 +235,13 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 	}
 
 	public void onFinish() {
-		ImageLoader.getInstance().observable().unregister(this);
+		PagerInstance.ViewHolder[] holders = {pagerInstance.leftHolder,
+				pagerInstance.currentHolder, pagerInstance.rightHolder};
+		for (PagerInstance.ViewHolder holder : holders) {
+			if (holder != null && holder.thumbnailTarget != null) {
+				ImageLoader.getInstance().cancel(holder.thumbnailTarget);
+			}
+		}
 		interrupt(true);
 		viewPager.postDelayed(() -> {
 			pagerAdapter.recycleAll();
@@ -263,7 +268,7 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 		boolean thumbnailReady = holder.photoViewThumbnail;
 		if (!thumbnailReady) {
 			holder.recyclePhotoView();
-			thumbnailReady = presetThumbnail(holder, galleryItem, reload);
+			thumbnailReady = presetThumbnail(holder, reload);
 		}
 		boolean isImage = galleryItem.isImage(galleryInstance.locator);
 		boolean isVideo = galleryItem.isVideo(galleryInstance.locator);
@@ -293,43 +298,61 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 		}
 	}
 
-	private boolean presetThumbnail(PagerInstance.ViewHolder holder, GalleryItem galleryItem, boolean keepScale) {
-		Uri uri = galleryItem.getThumbnailUri(galleryInstance.locator);
-		if (uri != null && galleryItem.width > 0 && galleryItem.height > 0) {
-			CacheManager cacheManager = CacheManager.getInstance();
-			File file = cacheManager.getThumbnailFile(cacheManager.getCachedFileKey(uri));
-			if (file != null && file.exists()) {
-				Bitmap bitmap = FileHolder.obtain(file).readImageBitmap();
-				if (bitmap != null) {
+	private static class PageTarget extends ImageLoader.Target {
+		public final WeakReference<GalleryInstance> galleryInstance;
+		public final WeakReference<PagerInstance.ViewHolder> holder;
+
+		public boolean awaitImmediate;
+		public boolean keepScale;
+
+		public PageTarget(GalleryInstance galleryInstance, PagerInstance.ViewHolder holder) {
+			this.galleryInstance = new WeakReference<>(galleryInstance);
+			this.holder = new WeakReference<>(holder);
+		}
+
+		@Override
+		public void onResult(String key, Bitmap bitmap, boolean error, boolean instantly) {
+			GalleryInstance galleryInstance = this.galleryInstance.get();
+			PagerInstance.ViewHolder holder = this.holder.get();
+			if (galleryInstance != null && holder != null && bitmap != null) {
+				boolean setImage = awaitImmediate || holder.galleryItem != null && !holder.photoView.hasImage() &&
+						key.equals(CacheManager.getInstance().getCachedFileKey(holder.galleryItem
+								.getThumbnailUri(galleryInstance.locator)));
+				if (setImage) {
 					holder.recyclePhotoView();
-					holder.simpleBitmapDrawable = new SimpleBitmapDrawable(bitmap, galleryItem.width,
-							galleryItem.height);
-					boolean fitScreen = false;
-					if (galleryItem.isVideo(galleryInstance.locator)) {
-						fitScreen = true;
-						keepScale = false;
-					}
+					holder.simpleBitmapDrawable = new SimpleBitmapDrawable(bitmap,
+							holder.galleryItem.width, holder.galleryItem.height, false);
+					boolean fitScreen = holder.galleryItem.isVideo(galleryInstance.locator);
+					boolean keepScale = this.keepScale && !fitScreen;
 					holder.photoView.setImage(holder.simpleBitmapDrawable, bitmap.hasAlpha(), fitScreen, keepScale);
 					holder.photoViewThumbnail = true;
-					return true;
 				}
+			}
+		}
+	}
+
+	private boolean presetThumbnail(PagerInstance.ViewHolder holder, boolean keepScale) {
+		PageTarget target = (PageTarget) holder.thumbnailTarget;
+		if (target == null) {
+			target = new PageTarget(galleryInstance, holder);
+			holder.thumbnailTarget = target;
+		}
+		if (holder.galleryItem == null) {
+			return false;
+		}
+		Uri uri = holder.galleryItem.getThumbnailUri(galleryInstance.locator);
+		if (uri != null && holder.galleryItem.width > 0 && holder.galleryItem.height > 0) {
+			target.awaitImmediate = true;
+			target.keepScale = keepScale;
+			try {
+				boolean allowLoad = galleryInstance.callback.isGalleryWindow() || Preferences.isLoadThumbnails();
+				return ImageLoader.getInstance().loadImage(galleryInstance.chanName, uri, null, !allowLoad, target);
+			} finally {
+				target.awaitImmediate = false;
+				target.keepScale = false;
 			}
 		}
 		return false;
-	}
-
-	@Override
-	public void onImageLoadComplete(String key, Bitmap bitmap, boolean error) {
-		PagerInstance.ViewHolder[] holders = {pagerInstance.leftHolder,
-				pagerInstance.currentHolder, pagerInstance.rightHolder};
-		for (PagerInstance.ViewHolder holder : holders) {
-			if (holder != null && holder.galleryItem != null) {
-				if (!holder.photoView.hasImage() && key.equals(CacheManager.getInstance()
-						.getCachedFileKey(holder.galleryItem.getThumbnailUri(galleryInstance.locator)))) {
-					presetThumbnail(holder, holder.galleryItem, false);
-				}
-			}
-		}
 	}
 
 	@Override
@@ -484,16 +507,9 @@ public class PagerUnit implements PagerInstance.Callback, ImageLoader.Observer {
 			if (!hasValidImage) {
 				holder.fullLoaded = false;
 				holder.galleryItem = galleryItem;
-				boolean success = presetThumbnail(holder, galleryItem, false);
+				boolean success = presetThumbnail(holder, false);
 				if (!success) {
 					holder.recyclePhotoView();
-					if (galleryInstance.callback.isGalleryWindow() || Preferences.isLoadThumbnails()) {
-						Uri thumbnailUri = galleryItem.getThumbnailUri(galleryInstance.locator);
-						if (thumbnailUri != null) {
-							ImageLoader.getInstance().loadImage(thumbnailUri, galleryInstance.chanName,
-									null, null, false);
-						}
-					}
 				}
 			}
 		}

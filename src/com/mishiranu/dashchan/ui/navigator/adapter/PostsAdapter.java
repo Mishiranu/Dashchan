@@ -7,7 +7,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 import android.widget.ListView;
@@ -26,7 +25,6 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.widget.BaseAdapterNotifier;
 import com.mishiranu.dashchan.widget.CommentTextView;
-import com.mishiranu.dashchan.widget.callback.BusyScrollListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -35,8 +33,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 
-public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkListener, BusyScrollListener.Callback,
-		UiManager.PostsProvider {
+public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkListener, UiManager.PostsProvider {
 	private static final int ITEM_VIEW_TYPE_POST = 0;
 	private static final int ITEM_VIEW_TYPE_HIDDEN_POST = 1;
 
@@ -517,11 +514,6 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 
 	public void cleanup() {
 		cancelPreloading();
-	}
-
-	@Override
-	public void setListViewBusy(boolean isBusy, AbsListView listView) {
-		uiManager.view().handleListViewBusyStateChange(isBusy, listView, demandSet);
 	}
 
 	public void setHighlightText(Collection<String> highlightText) {

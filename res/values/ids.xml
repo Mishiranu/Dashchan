@@ -2,5 +2,6 @@
 <resources>
 
 	<item type="id" name="tag_async_manager" />
+	<item type="id" name="tag_image_loader" />
 
 </resources>

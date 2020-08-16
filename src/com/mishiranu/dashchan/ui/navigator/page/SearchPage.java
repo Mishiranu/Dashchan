@@ -1,13 +1,11 @@
 package com.mishiranu.dashchan.ui.navigator.page;
 
-import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.content.ImageLoader;
 import com.mishiranu.dashchan.content.async.ReadSearchTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PostItem;
@@ -24,7 +22,7 @@ import com.mishiranu.dashchan.widget.PullableWrapper;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTask.Callback, ImageLoader.Observer {
+public class SearchPage extends ListPage implements ReadSearchTask.Callback {
 	private static class RetainExtra {
 		public static final ExtraFactory<RetainExtra> FACTORY = RetainExtra::new;
 
@@ -67,14 +65,17 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 	private ReadSearchTask readTask;
 	private boolean showScaleOnSuccess;
 
+	private SearchAdapter getAdapter() {
+		return (SearchAdapter) getListView().getAdapter();
+	}
+
 	@Override
 	protected void onCreate() {
 		PullableListView listView = getListView();
 		UiManager uiManager = getUiManager();
 		listView.setDivider(ResourceUtils.getDrawable(getContext(), R.attr.postsDivider, 0));
 		SearchAdapter adapter = new SearchAdapter(uiManager, getPage().searchQuery);
-		initAdapter(adapter, adapter);
-		ImageLoader.getInstance().observable().register(this);
+		listView.setAdapter(adapter);
 		listView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
 		InitRequest initRequest = getInitRequest();
 		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
@@ -107,8 +108,6 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 			readTask.cancel();
 			readTask = null;
 		}
-		ImageLoader.getInstance().observable().unregister(this);
-		ImageLoader.getInstance().clearTasks(getPage().chanName);
 	}
 
 	@Override
@@ -307,10 +306,5 @@ public class SearchPage extends ListPage<SearchAdapter> implements ReadSearchTas
 		} else {
 			ClickableToast.show(getContext(), errorItem.toString());
 		}
-	}
-
-	@Override
-	public void onImageLoadComplete(String key, Bitmap bitmap, boolean error) {
-		getUiManager().view().displayLoadedThumbnailsForPosts(getListView(), key, bitmap, error);
 	}
 }

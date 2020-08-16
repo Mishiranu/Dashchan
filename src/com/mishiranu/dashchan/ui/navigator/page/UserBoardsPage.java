@@ -16,7 +16,7 @@ import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.PullableListView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 
-public class UserBoardsPage extends ListPage<UserBoardsAdapter> implements ReadUserBoardsTask.Callback {
+public class UserBoardsPage extends ListPage implements ReadUserBoardsTask.Callback {
 	private static class RetainExtra {
 		public static final ExtraFactory<RetainExtra> FACTORY = RetainExtra::new;
 
@@ -25,11 +25,15 @@ public class UserBoardsPage extends ListPage<UserBoardsAdapter> implements ReadU
 
 	private ReadUserBoardsTask readTask;
 
+	private UserBoardsAdapter getAdapter() {
+		return (UserBoardsAdapter) getListView().getAdapter();
+	}
+
 	@Override
 	protected void onCreate() {
 		PullableListView listView = getListView();
 		UserBoardsAdapter adapter = new UserBoardsAdapter(getPage().chanName);
-		initAdapter(adapter, null);
+		listView.setAdapter(adapter);
 		listView.getWrapper().setPullSides(PullableWrapper.Side.TOP);
 		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
 		if (retainExtra.boards != null) {

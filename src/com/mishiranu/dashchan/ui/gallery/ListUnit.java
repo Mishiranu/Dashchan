@@ -4,7 +4,6 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -12,6 +11,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
+import android.os.SystemClock;
 import android.util.SparseIntArray;
 import android.view.ActionMode;
 import android.view.Gravity;
@@ -42,14 +42,13 @@ import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.AttachmentView;
 import com.mishiranu.dashchan.widget.EdgeEffectHandler;
-import com.mishiranu.dashchan.widget.callback.BusyScrollListener;
 import com.mishiranu.dashchan.widget.callback.ScrollListenerComposite;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener,
-		ActionMode.Callback, ImageLoader.Observer {
+		ActionMode.Callback {
 	private static final int GRID_SPACING_DP = 4;
 
 	private final GalleryInstance instance;
@@ -76,12 +75,10 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 		gridView.setId(android.R.id.list);
 		gridAdapter = new GridAdapter(instance.galleryItems);
 		gridView.setAdapter(gridAdapter);
-		ScrollListenerComposite scrollListenerComposite = ScrollListenerComposite.obtain(gridView);
-		scrollListenerComposite.add(new BusyScrollListener(gridAdapter));
-		scrollListenerComposite.add(new AbsListView.OnScrollListener() {
+		ScrollListenerComposite.obtain(gridView).add(new AbsListView.OnScrollListener() {
 			@Override
 			public void onScrollStateChanged(AbsListView view, int scrollState) {
-				scrollStateChanged = System.currentTimeMillis();
+				scrollStateChanged = SystemClock.elapsedRealtime();
 			}
 
 			@Override
@@ -90,11 +87,6 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 		gridView.setOnItemClickListener(this);
 		gridView.setOnItemLongClickListener(this);
 		updateGridMetrics(true, instance.context.getResources().getConfiguration());
-		ImageLoader.getInstance().observable().register(this);
-	}
-
-	public void onFinish() {
-		ImageLoader.getInstance().observable().unregister(this);
 	}
 
 	public AbsListView getListView() {
@@ -127,7 +119,7 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 		}
 		gridView.setSelection(position);
 		restoredScrollPosition = position;
-		restoredScrollPositionChanged = System.currentTimeMillis();
+		restoredScrollPositionChanged = SystemClock.elapsedRealtime();
 	}
 
 	public boolean areItemsSelectable() {
@@ -345,7 +337,7 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 		} else {
 			position = gridView.getFirstVisiblePosition();
 			restoredScrollPosition = position;
-			restoredScrollPositionChanged = System.currentTimeMillis();
+			restoredScrollPositionChanged = SystemClock.elapsedRealtime();
 		}
 		if (!C.API_LOLLIPOP) {
 			// Update top padding on old devices, on new devices paddings will be updated in onApplyWindowPaddings
@@ -397,7 +389,7 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 		public SelectorCheckDrawable selectorCheckDrawable;
 	}
 
-	private class GridAdapter extends BaseAdapter implements BusyScrollListener.Callback {
+	private class GridAdapter extends BaseAdapter {
 		private final List<GalleryItem> galleryItems;
 
 		private boolean enabled = false;
@@ -467,9 +459,10 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 				CacheManager cacheManager = CacheManager.getInstance();
 				String key = cacheManager.getCachedFileKey(thumbnailUri);
 				holder.thumbnail.resetImage(key, AttachmentView.Overlay.NONE);
-				loadImage(holder.thumbnail, thumbnailUri, key);
+				ImageLoader.getInstance().loadImage(instance.chanName, thumbnailUri, key, false, holder.thumbnail);
 			} else {
 				holder.thumbnail.resetImage(null, AttachmentView.Overlay.WARNING);
+				ImageLoader.getInstance().cancel(holder.thumbnail);
 			}
 			boolean checked = gridView.isItemChecked(position);
 			if (C.API_LOLLIPOP) {
@@ -478,42 +471,6 @@ public class ListUnit implements AdapterView.OnItemClickListener, AdapterView.On
 				holder.selectorBorderDrawable.setSelected(checked);
 			}
 			return convertView;
-		}
-
-		@Override
-		public void setListViewBusy(boolean isBusy, AbsListView listView) {
-			if (!isBusy) {
-				CacheManager cacheManager = CacheManager.getInstance();
-				int count = listView.getChildCount();
-				for (int i = 0; i < count; i++) {
-					View view = listView.getChildAt(i);
-					int position = listView.getPositionForView(view);
-					GalleryItem galleryItem = getItem(position);
-					Uri thumbnailUri = galleryItem.getThumbnailUri(instance.locator);
-					if (thumbnailUri != null) {
-						GridViewHolder holder = (GridViewHolder) view.getTag();
-						String key = cacheManager.getCachedFileKey(thumbnailUri);
-						holder.thumbnail.resetImage(key, AttachmentView.Overlay.NONE);
-						loadImage(holder.thumbnail, thumbnailUri, key);
-					}
-				}
-			}
-		}
-
-		private void loadImage(AttachmentView view, Uri thumbnailUri, String key) {
-			ImageLoader.BitmapResult result = ImageLoader.getInstance().loadImage(thumbnailUri, instance.chanName,
-					key, null, false);
-			if (result != null) {
-				view.handleLoadedImage(key, result.bitmap, result.error, true);
-			}
-		}
-	}
-
-	@Override
-	public void onImageLoadComplete(String key, Bitmap bitmap, boolean error) {
-		for (int i = 0; i < gridView.getChildCount(); i++) {
-			GridViewHolder holder = (GridViewHolder) gridView.getChildAt(i).getTag();
-			holder.thumbnail.handleLoadedImage(key, bitmap, error, false);
 		}
 	}
 

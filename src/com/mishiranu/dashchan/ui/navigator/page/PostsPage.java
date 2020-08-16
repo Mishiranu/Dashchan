@@ -2,7 +2,6 @@ package com.mishiranu.dashchan.ui.navigator.page;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Handler;
@@ -30,7 +29,6 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
-import com.mishiranu.dashchan.content.ImageLoader;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.DeserializePostsTask;
 import com.mishiranu.dashchan.content.async.ReadPostsTask;
@@ -70,8 +68,8 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
-public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorage.Observer, UiManager.Observer,
-		ImageLoader.Observer, DeserializePostsTask.Callback, ReadPostsTask.Callback, ActionMode.Callback {
+public class PostsPage extends ListPage implements FavoritesStorage.Observer, UiManager.Observer,
+		DeserializePostsTask.Callback, ReadPostsTask.Callback, ActionMode.Callback {
 	private enum QueuedRefresh {
 		NONE, REFRESH, RELOAD;
 
@@ -175,6 +173,10 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 
 	private final ArrayList<String> lastEditedPostNumbers = new ArrayList<>();
 
+	private PostsAdapter getAdapter() {
+		return (PostsAdapter) getListView().getAdapter();
+	}
+
 	@Override
 	protected void onCreate() {
 		Context context = getContext();
@@ -194,8 +196,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 		}
 		PostsAdapter adapter = new PostsAdapter(context, page.chanName, page.boardName, uiManager,
 				replyable, hidePerformer, retainExtra.userPostNumbers, listView);
-		initAdapter(adapter, adapter);
-		ImageLoader.getInstance().observable().register(this);
+		listView.setAdapter(adapter);
 		listView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
 		uiManager.observable().register(this);
 		hidePerformer.setPostsProvider(adapter);
@@ -298,8 +299,6 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 			readTask.cancel();
 			readTask = null;
 		}
-		ImageLoader.getInstance().observable().unregister(this);
-		ImageLoader.getInstance().clearTasks(getPage().chanName);
 		FavoritesStorage.getInstance().getObservable().unregister(this);
 		setCustomSearchView(null);
 	}
@@ -1557,11 +1556,6 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 				break;
 			}
 		}
-	}
-
-	@Override
-	public void onImageLoadComplete(String key, Bitmap bitmap, boolean error) {
-		getUiManager().view().displayLoadedThumbnailsForPosts(getListView(), key, bitmap, error);
 	}
 
 	private void serializePosts() {

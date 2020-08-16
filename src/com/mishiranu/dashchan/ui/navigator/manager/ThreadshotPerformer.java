@@ -48,8 +48,6 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
 		dialog.setOnCancelListener(this);
 		uiManager.getConfigurationLock().lockConfiguration(dialog);
 		dialog.show();
-		// isBusy == true, because I must prevent view handling in main thread
-		demandSet.isBusy = true;
 		demandSet.selection = UiManager.Selection.THREADSHOT;
 		asyncTask.executeOnExecutor(ConcurrentUtils.SEPARATE_EXECUTOR);
 	}

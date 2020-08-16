@@ -470,13 +470,7 @@ public abstract class AttachmentItem {
 		}
 	}
 
-	private boolean forceLoadThumbnail = false;
-
-	public void setForceLoadThumbnail() {
-		forceLoadThumbnail = true;
-	}
-
-	public void configureAndLoad(AttachmentView view, boolean needShowSeveralIcon, boolean isBusy, boolean force) {
+	public void configureAndLoad(AttachmentView view, boolean needShowSeveralIcon, boolean force) {
 		view.setCropEnabled(Preferences.isCutThumbnails());
 		int type = getType();
 		String key = getThumbnailKey();
@@ -510,36 +504,26 @@ public abstract class AttachmentItem {
 			}
 		}
 		view.resetImage(key, overlay);
-		startLoad(view, key, isBusy, force);
+		startLoad(view, key, force);
 	}
 
-	public void startLoad(AttachmentView view, boolean isBusy, boolean force) {
-		startLoad(view, getThumbnailKey(), isBusy, force);
+	public void startLoad(AttachmentView view, boolean force) {
+		startLoad(view, getThumbnailKey(), force);
 	}
 
-	private void startLoad(AttachmentView view, String key, boolean isBusy, boolean force) {
+	private void startLoad(AttachmentView view, String key, boolean force) {
 		if (key != null) {
 			Uri uri = getThumbnailUri();
 			boolean loadThumbnails = Preferences.isLoadThumbnails();
-			boolean isCachedMemory = CacheManager.getInstance().isThumbnailCachedMemory(key);
-			// Load image if cached in RAM or list isn't scrolling (for better performance)
-			if (!isBusy || isCachedMemory) {
-				boolean fromCacheOnly = isCachedMemory || !(loadThumbnails || force || forceLoadThumbnail);
-				ImageLoader.BitmapResult result = ImageLoader.getInstance().loadImage(uri, getChanName(),
-						key, null, fromCacheOnly);
-				if (result != null) {
-					view.handleLoadedImage(key, result.bitmap, result.error, true);
-				}
-			}
+			boolean allowDownload = loadThumbnails || force;
+			ImageLoader.getInstance().loadImage(getChanName(), uri, key, !allowDownload, view);
+		} else {
+			ImageLoader.getInstance().cancel(view);
 		}
 	}
 
-	public boolean isThumbnailReady() {
-		String thumbnailKey = getThumbnailKey();
-		return thumbnailKey == null || CacheManager.getInstance().isThumbnailCachedMemory(thumbnailKey);
-	}
-
-	public boolean canLoadThumbnailManually() {
-		return !isThumbnailReady() && !forceLoadThumbnail && !Preferences.isLoadThumbnails();
+	public boolean canLoadThumbnailManually(AttachmentView attachmentView) {
+		return getThumbnailKey() != null && !attachmentView.hasImage() &&
+				!ImageLoader.getInstance().hasRunningTask(attachmentView);
 	}
 }

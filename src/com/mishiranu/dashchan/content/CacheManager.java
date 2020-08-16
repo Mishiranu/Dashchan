@@ -569,30 +569,6 @@ public class CacheManager implements Runnable {
 		}
 	}
 
-	private final LruCache<String, Bitmap> bitmapCache = new LruCache<>(MainApplication.getInstance().isLowRam()
-			? 50 : 200);
-
-	public boolean isThumbnailCachedMemory(String thumbnailKey) {
-		synchronized (bitmapCache) {
-			return bitmapCache.get(thumbnailKey) != null;
-		}
-	}
-
-	public Bitmap loadThumbnailMemory(String thumbnailKey) {
-		synchronized (bitmapCache) {
-			return bitmapCache.get(thumbnailKey);
-		}
-	}
-
-	public void storeThumbnailMemory(String thumbnailKey, Bitmap data) {
-		synchronized (bitmapCache) {
-			if (isThumbnailCachedMemory(thumbnailKey)) {
-				return;
-			}
-			bitmapCache.put(thumbnailKey, data);
-		}
-	}
-
 	public File getThumbnailFile(String thumbnailKey) {
 		File directory = getThumbnailsDirectory();
 		if (directory == null) {

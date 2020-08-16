@@ -311,9 +311,6 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 	public void onDestroy() {
 		super.onDestroy();
 
-		if (listUnit != null) {
-			listUnit.onFinish();
-		}
 		if (pagerUnit != null) {
 			pagerUnit.onFinish();
 		}

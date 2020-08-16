@@ -21,7 +21,7 @@ import com.mishiranu.dashchan.widget.ListScroller;
 import com.mishiranu.dashchan.widget.PullableListView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 
-public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadSummariesTask.Callback {
+public class ArchivePage extends ListPage implements ReadThreadSummariesTask.Callback {
 	private static class RetainExtra {
 		public static final ExtraFactory<RetainExtra> FACTORY = RetainExtra::new;
 
@@ -32,6 +32,10 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 	private ReadThreadSummariesTask readTask;
 	private boolean showScaleOnSuccess;
 
+	private ArchiveAdapter getAdapter() {
+		return (ArchiveAdapter) getListView().getAdapter();
+	}
+
 	@Override
 	protected void onCreate() {
 		PullableListView listView = getListView();
@@ -39,7 +43,7 @@ public class ArchivePage extends ListPage<ArchiveAdapter> implements ReadThreadS
 			listView.setDivider(null);
 		}
 		ArchiveAdapter adapter = new ArchiveAdapter();
-		initAdapter(adapter, null);
+		listView.setAdapter(adapter);
 		listView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
 		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
 		if (retainExtra.threadSummaries != null) {

@@ -3,6 +3,7 @@ package com.mishiranu.dashchan.ui.gallery;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import com.mishiranu.dashchan.content.ImageLoader;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.graphics.DecoderDrawable;
 import com.mishiranu.dashchan.graphics.SimpleBitmapDrawable;
@@ -43,6 +44,7 @@ public class PagerInstance {
 		public GifDecoder gifDecoder;
 		public JpegData jpegData;
 		public boolean photoViewThumbnail;
+		public ImageLoader.Target thumbnailTarget;
 
 		public boolean fullLoaded;
 		public Object decodeBitmapTask;

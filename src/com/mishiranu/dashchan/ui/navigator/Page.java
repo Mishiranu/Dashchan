@@ -24,7 +24,7 @@ public final class Page implements Parcelable {
 		HISTORY(HistoryPage::new);
 
 		private interface PageFactory {
-			ListPage<?> newPage();
+			ListPage newPage();
 		}
 
 		private final PageFactory pageFactory;
@@ -33,7 +33,7 @@ public final class Page implements Parcelable {
 			this.pageFactory = pageFactory;
 		}
 
-		public ListPage<?> newPage() {
+		public ListPage newPage() {
 			return pageFactory.newPage();
 		}
 	}

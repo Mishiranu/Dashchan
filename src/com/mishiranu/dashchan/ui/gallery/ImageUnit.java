@@ -317,7 +317,7 @@ public class ImageUnit {
 					holder.decoderDrawable = decoderDrawable;
 					setPhotoViewImage(holder, decoderDrawable, decoderDrawable.hasAlpha());
 				} else {
-					holder.simpleBitmapDrawable = new SimpleBitmapDrawable(bitmap);
+					holder.simpleBitmapDrawable = new SimpleBitmapDrawable(bitmap, true);
 					setPhotoViewImage(holder, holder.simpleBitmapDrawable, bitmap.hasAlpha());
 				}
 				holder.fullLoaded = true;

@@ -2,15 +2,12 @@ package com.mishiranu.dashchan.ui.navigator.page;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ListView;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
@@ -19,7 +16,6 @@ import chan.content.RedirectException;
 import chan.http.HttpValidator;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.content.ImageLoader;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.ReadThreadsTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
@@ -46,8 +42,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 
-public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesStorage.Observer,
-		ImageLoader.Observer, ReadThreadsTask.Callback, PullableListView.OnBeforeLayoutListener {
+public class ThreadsPage extends ListPage implements FavoritesStorage.Observer,
+		ReadThreadsTask.Callback, PullableListView.OnBeforeLayoutListener {
 	private static class RetainExtra {
 		public static final ExtraFactory<RetainExtra> FACTORY = RetainExtra::new;
 
@@ -97,7 +93,9 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 
 	private ReadThreadsTask readTask;
 
-	private Drawable oldListSelector;
+	private ThreadsAdapter getAdapter() {
+		return (ThreadsAdapter) getListView().getAdapter();
+	}
 
 	@Override
 	protected void onCreate() {
@@ -108,10 +106,8 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 		listView.setDivider(null);
 		listView.addOnBeforeLayoutListener(this);
 		ThreadsAdapter adapter = new ThreadsAdapter(context, page.chanName, page.boardName, uiManager);
-		initAdapter(adapter, adapter);
-		ImageLoader.getInstance().observable().register(this);
+		listView.setAdapter(adapter);
 		listView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
-		oldListSelector = listView.getSelector();
 		listView.setSelector(android.R.color.transparent);
 		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
 		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
@@ -126,7 +122,7 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 					? PAGE_NUMBER_CATALOG : 0;
 			refreshThreads(RefreshPage.CURRENT, false);
 		} else  {
-			getAdapter().setItems(retainExtra.cachedPostItems, retainExtra.startPageNumber, retainExtra.boardSpeed);
+			adapter.setItems(retainExtra.cachedPostItems, retainExtra.startPageNumber, retainExtra.boardSpeed);
 			restoreListPosition(listPosition -> {
 				gridLayoutControl.restorePosition = listPosition;
 				gridLayoutControl.restoreListPosition(listPosition);
@@ -146,11 +142,8 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 			readTask = null;
 		}
 		getUiManager().dialog().closeDialogs(getAdapter().getConfigurationSet().stackInstance);
-		ImageLoader.getInstance().observable().unregister(this);
-		ImageLoader.getInstance().clearTasks(getPage().chanName);
 		FavoritesStorage.getInstance().getObservable().unregister(this);
 		PullableListView listView = getListView();
-		listView.setSelector(oldListSelector);
 		listView.removeOnBeforeLayoutListener(this);
 	}
 
@@ -682,29 +675,6 @@ public class ThreadsPage extends ListPage<ThreadsAdapter> implements FavoritesSt
 			switchView(ViewType.ERROR, message);
 		} else {
 			ClickableToast.show(getContext(), message);
-		}
-	}
-
-	@Override
-	public void onImageLoadComplete(String key, Bitmap bitmap, boolean error) {
-		UiManager uiManager = getUiManager();
-		ThreadsAdapter adapter = getAdapter();
-		ListView listView = getListView();
-		for (int i = 0; i < listView.getChildCount(); i++) {
-			View view = listView.getChildAt(i);
-			if (adapter.isGridMode()) {
-				if (view instanceof ViewGroup) {
-					ViewGroup viewGroup = (ViewGroup) view;
-					for (int j = 0; j < viewGroup.getChildCount(); j++) {
-						View child = viewGroup.getChildAt(j);
-						if (child.getVisibility() == View.VISIBLE) {
-							uiManager.view().displayLoadedThumbnailsForView(child, key, bitmap, error);
-						}
-					}
-				}
-			} else {
-				uiManager.view().displayLoadedThumbnailsForView(view, key, bitmap, error);
-			}
 		}
 	}
 }

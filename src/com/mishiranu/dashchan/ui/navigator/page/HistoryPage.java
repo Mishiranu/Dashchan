@@ -16,15 +16,18 @@ import com.mishiranu.dashchan.util.DialogMenu;
 import com.mishiranu.dashchan.widget.PullableListView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 
-public class HistoryPage extends ListPage<HistoryAdapter> {
+public class HistoryPage extends ListPage {
 	private String chanName;
 	private boolean mergeChans;
+
+	private HistoryAdapter getAdapter() {
+		return (HistoryAdapter) getListView().getAdapter();
+	}
 
 	@Override
 	protected void onCreate() {
 		PullableListView listView = getListView();
-		HistoryAdapter adapter = new HistoryAdapter();
-		initAdapter(adapter, null);
+		listView.setAdapter(new HistoryAdapter());
 		listView.getWrapper().setPullSides(PullableWrapper.Side.NONE);
 		if (updateConfiguration(true)) {
 			restoreListPosition(null);
