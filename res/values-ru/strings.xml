@@ -102,6 +102,7 @@
 		<item quantity="other">%d сообщений в час</item>
 	</plurals>
 	<string name="text_post_sent">Сообщение отправлено</string>
+	<string name="text_posting">Отправка сообщений</string>
 	<string name="text_posts_with_files_format">Сообщений с файлами: %s</string>
 	<string name="text_quality_format">Качество: %d%%</string>
 	<string name="text_rating">Рейтинг</string>
@@ -125,6 +126,7 @@
 	<string name="text_save_files">Сохранить файлы</string>
 	<string name="text_save_thumbnails">Сохранить миниатюры</string>
 	<string name="text_selected_format">Выделено: %d</string>
+	<string name="text_sent_posts">Отправленные сообщения</string>
 	<plurals name="text_several_files_count_format">
 		<item quantity="one">%d файл</item>
 		<item quantity="few">%d файла</item>

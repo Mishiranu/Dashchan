@@ -71,6 +71,9 @@
 		<service
 			android:name=".content.service.PostingService" />
 
+		<receiver
+			android:name=".content.service.PostingService$Receiver" />
+
 		<service
 			android:name=".content.service.DownloadService" />
 

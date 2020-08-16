@@ -18,10 +18,10 @@ import com.mishiranu.dashchan.text.HtmlParser;
 import com.mishiranu.dashchan.text.SimilarTextEstimator;
 import java.util.ArrayList;
 
-public class SendPostTask extends HttpHolderTask<Void, Long, Boolean> {
-	private final String key;
+public class SendPostTask<Key> extends HttpHolderTask<Void, Long, Boolean> {
+	private final Key key;
 	private final String chanName;
-	private final Callback callback;
+	private final Callback<Key> callback;
 	private final ChanPerformer.SendPostData data;
 
 	private final boolean progressMode;
@@ -60,17 +60,17 @@ public class SendPostTask extends HttpHolderTask<Void, Long, Boolean> {
 		}
 	};
 
-	public interface Callback {
-		public void onSendPostChangeProgressState(String key, ProgressState progressState,
+	public interface Callback<Key> {
+		public void onSendPostChangeProgressState(Key key, ProgressState progressState,
 				int attachmentIndex, int attachmentsCount);
-		public void onSendPostChangeProgressValue(String key, int progress, int progressMax);
-		public void onSendPostSuccess(String key, ChanPerformer.SendPostData data,
+		public void onSendPostChangeProgressValue(Key key, int progress, int progressMax);
+		public void onSendPostSuccess(Key key, ChanPerformer.SendPostData data,
 				String chanName, String threadNumber, String postNumber);
-		public void onSendPostFail(String key, ChanPerformer.SendPostData data, String chanName, ErrorItem errorItem,
+		public void onSendPostFail(Key key, ChanPerformer.SendPostData data, String chanName, ErrorItem errorItem,
 				ApiException.Extra extra, boolean captchaError, boolean keepCaptcha);
 	}
 
-	public SendPostTask(String key, String chanName, Callback callback, ChanPerformer.SendPostData data) {
+	public SendPostTask(Key key, String chanName, Callback<Key> callback, ChanPerformer.SendPostData data) {
 		this.key = key;
 		this.chanName = chanName;
 		this.callback = callback;

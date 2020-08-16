@@ -65,6 +65,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -971,7 +972,7 @@ public class PostsPage extends ListPage<PostsAdapter> implements FavoritesStorag
 
 	private boolean handleNewPostDataList() {
 		Page page = getPage();
-		ArrayList<PostingService.NewPostData> newPostDataList = PostingService.getNewPostDataList(getContext(),
+		List<PostingService.NewPostData> newPostDataList = PostingService.getNewPostDataList(getContext(),
 				page.chanName, page.boardName, page.threadNumber);
 		if (newPostDataList != null) {
 			boolean hasNewPostDataList = false;

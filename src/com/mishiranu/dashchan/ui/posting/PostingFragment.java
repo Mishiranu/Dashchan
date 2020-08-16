@@ -894,9 +894,10 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 				subject, comment, name, email, password, attachments, optionSage, optionSpoiler, optionOriginalPoster,
 				userIcon, captchaType, captchaData, 15000, 45000);
 		DraftsStorage.getInstance().store(obtainPostDraft());
-		postingBinder.executeSendPost(getChanName(), data);
-		sendButtonEnabled = false;
-		updateSendButtonState();
+		if (postingBinder.executeSendPost(getChanName(), data)) {
+			sendButtonEnabled = false;
+			updateSendButtonState();
+		}
 	}
 
 	private ProgressDialog progressDialog;

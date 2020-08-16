@@ -90,6 +90,7 @@
 		<item quantity="other">%d posts per hour</item>
 	</plurals>
 	<string name="text_post_sent">Post sent</string>
+	<string name="text_posting">Posting</string>
 	<string name="text_posts_sent">Posts sent</string>
 	<string name="text_posts_with_files_format">Posts with files: %s</string>
 	<string name="text_quality_format">Quality: %d%%</string>
@@ -112,6 +113,7 @@
 	<string name="text_save_files">Save files</string>
 	<string name="text_save_thumbnails">Save thumbnails</string>
 	<string name="text_selected_format">Selected: %d</string>
+	<string name="text_sent_posts">Sent posts</string>
 	<plurals name="text_several_files_count_format">
 		<item quantity="one">%d file</item>
 		<item quantity="other">%d files</item>
