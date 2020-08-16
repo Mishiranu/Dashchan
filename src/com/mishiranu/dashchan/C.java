@@ -15,6 +15,7 @@ public class C {
 	public static final boolean API_LOLLIPOP_MR1 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1;
 	public static final boolean API_MARSHMALLOW = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
 	public static final boolean API_NOUGAT = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
+	public static final boolean API_NOUGAT_MR1 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1;
 	public static final boolean API_OREO = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
 	public static final boolean API_PIE = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P;
 

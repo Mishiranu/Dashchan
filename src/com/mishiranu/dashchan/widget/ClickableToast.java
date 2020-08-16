@@ -1,28 +1,6 @@
-/*
- * Copyright 2014-2018 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.widget;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import android.annotation.TargetApi;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.res.Resources;
@@ -33,7 +11,7 @@ import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -44,14 +22,16 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
+import androidx.annotation.NonNull;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.util.FlagUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.HashMap;
 
 public class ClickableToast {
 	private static final int Y_OFFSET;
@@ -224,7 +204,8 @@ public class ClickableToast {
 		ViewUtils.removeFromParent(message2);
 		LinearLayout linearLayout = new LinearLayout(context);
 		linearLayout.setOrientation(LinearLayout.HORIZONTAL);
-		linearLayout.setDividerDrawable(new ToastDividerDrawable(0xccffffff, (int) (density + 0.5f)));
+		linearLayout.setDividerDrawable(new ToastDividerDrawable(message1.getTextColors().getDefaultColor(),
+				(int) (density + 0.5f)));
 		linearLayout.setShowDividers(LinearLayout.SHOW_DIVIDER_MIDDLE);
 		linearLayout.setDividerPadding((int) (4f * density));
 		linearLayout.setTag(this);
@@ -263,11 +244,25 @@ public class ClickableToast {
 		this.clickableOnlyWhenRoot = clickableOnlyWhenRoot;
 		updateLayoutAndRealClickableInternal();
 		boolean added = false;
-		if (isToastWindowSupported()) {
+		if (C.API_OREO) {
+			// TYPE_APPLICATION_OVERLAY requires SYSTEM_ALERT_WINDOW permission
+			if (Settings.canDrawOverlays(container.getContext())) {
+				added = addContainerToWindowManager(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY);
+			}
+		} else if (C.API_NOUGAT_MR1) {
+			// TYPE_TOAST is prohibited on 7.1 when target API is > 7.1 (excuse me, wtf?)
+			// TYPE_PHONE requires SYSTEM_ALERT_WINDOW permission
+			if (Settings.canDrawOverlays(container.getContext())) {
+				// noinspection deprecation
+				added = addContainerToWindowManager(WindowManager.LayoutParams.TYPE_PHONE);
+			}
+		} else if (C.API_LOLLIPOP && !IS_MIUI) {
+			// TYPE_TOAST works well only on Android 5.0-7.1, but doesn't work on MIUI
 			// noinspection deprecation
 			added = addContainerToWindowManager(WindowManager.LayoutParams.TYPE_TOAST);
 		}
 		if (!added) {
+			// TYPE_APPLICATION can't even properly overlay dialogs, used as fallback option
 			added = addContainerToWindowManager(WindowManager.LayoutParams.TYPE_APPLICATION);
 		}
 		if (added) {
@@ -387,6 +382,7 @@ public class ClickableToast {
 			return getCallback() instanceof View ? ((View) getCallback()) : null;
 		}
 
+		@SuppressLint("ClickableViewAccessibility")
 		@Override
 		public boolean onTouch(View v, MotionEvent event) {
 			if (!realClickable) {
@@ -429,14 +425,14 @@ public class ClickableToast {
 			drawable.setBounds(left, top, right, bottom);
 		}
 
-		@TargetApi(Build.VERSION_CODES.LOLLIPOP)
+		@NonNull
 		@Override
 		public Rect getDirtyBounds() {
 			return drawable.getDirtyBounds();
 		}
 
 		@Override
-		public void draw(Canvas canvas) {
+		public void draw(@NonNull Canvas canvas) {
 			drawable.draw(canvas);
 			if (clicked) {
 				drawable.setColorFilter(colorFilter);
@@ -450,6 +446,7 @@ public class ClickableToast {
 			}
 		}
 
+		@SuppressWarnings("deprecation")
 		@Override
 		public int getOpacity() {
 			return drawable.getOpacity();
@@ -474,17 +471,17 @@ public class ClickableToast {
 		}
 
 		@Override
-		public void invalidateDrawable(Drawable who) {
+		public void invalidateDrawable(@NonNull Drawable who) {
 			invalidateSelf();
 		}
 
 		@Override
-		public void scheduleDrawable(Drawable who, Runnable what, long when) {
+		public void scheduleDrawable(@NonNull Drawable who, @NonNull Runnable what, long when) {
 			scheduleSelf(what, when);
 		}
 
 		@Override
-		public void unscheduleDrawable(Drawable who, Runnable what) {
+		public void unscheduleDrawable(@NonNull Drawable who, @NonNull Runnable what) {
 			unscheduleSelf(what);
 		}
 	}
@@ -510,29 +507,17 @@ public class ClickableToast {
 		}
 	}
 
-	private static boolean IS_MIUI_V9;
+	private static final boolean IS_MIUI;
 
 	static {
-		boolean isMiuiV9 = false;
-
+		boolean isMiui = false;
 		try {
 			Method getProperty = Class.forName("android.os.SystemProperties")
 					.getMethod("get", String.class, String.class);
-
-			String miuiVersion = StringUtils.emptyIfNull((String) getProperty
-					.invoke(null, "ro.miui.ui.version.name", ""));
-			Matcher matcher = Pattern.compile("V(\\d+)").matcher(miuiVersion);
-			isMiuiV9 = matcher.matches() && Integer.parseInt(matcher.group(1)) >= 9;
+			isMiui = !StringUtils.isEmpty((String) getProperty.invoke(null, "ro.miui.ui.version.name", ""));
 		} catch (Exception e) {
 			// Ignore exception
 		}
-
-		IS_MIUI_V9 = isMiuiV9;
-	}
-
-	private static boolean isToastWindowSupported() {
-		// TYPE_TOAST works well only on Lollipop and higher, but can throw BadTokenException on some devices
-		// TYPE_TOAST doesn't work on MIUI 9
-		return C.API_LOLLIPOP && !IS_MIUI_V9;
+		IS_MIUI = isMiui;
 	}
 }
