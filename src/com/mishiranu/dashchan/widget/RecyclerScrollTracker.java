@@ -1,28 +1,14 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-package com.mishiranu.dashchan.widget.callback;
+package com.mishiranu.dashchan.widget;
 
 import android.view.View;
-import android.widget.AbsListView;
+import android.view.ViewGroup;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
-public class ListScrollTracker implements AbsListView.OnScrollListener, Runnable {
+public class RecyclerScrollTracker extends RecyclerView.OnScrollListener implements Runnable {
 	private final OnScrollListener listener;
 
-	public ListScrollTracker(OnScrollListener listener) {
+	public RecyclerScrollTracker(OnScrollListener listener) {
 		this.listener = listener;
 	}
 
@@ -34,7 +20,7 @@ public class ListScrollTracker implements AbsListView.OnScrollListener, Runnable
 
 	private boolean prevFirst, prevLast;
 
-	private void notifyScroll(AbsListView view, int scrollY, int firstVisibleItem,
+	private void notifyScroll(ViewGroup view, int scrollY, int firstVisibleItem,
 			int visibleItemCount, int totalItemCount) {
 		boolean first = firstVisibleItem == 0;
 		boolean last = firstVisibleItem + visibleItemCount == totalItemCount;
@@ -60,7 +46,15 @@ public class ListScrollTracker implements AbsListView.OnScrollListener, Runnable
 	}
 
 	@Override
-	public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+	public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+		RecyclerView.Adapter<?> adapter = recyclerView.getAdapter();
+		View first = recyclerView.getChildCount() > 0 ? recyclerView.getChildAt(0) : null;
+		int firstVisibleItem = first != null ? recyclerView.getChildViewHolder(first).getAdapterPosition() : 0;
+		int totalItemCount = adapter != null ? adapter.getItemCount() : 0;
+		onScrollInternal(recyclerView, firstVisibleItem, recyclerView.getChildCount(), totalItemCount);
+	}
+
+	private void onScrollInternal(ViewGroup view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
 		if (visibleItemCount > 0) {
 			int trackingIndex = calculateTrackingViewIndex(visibleItemCount);
 			int trackingItem = firstVisibleItem + trackingIndex;
@@ -102,8 +96,12 @@ public class ListScrollTracker implements AbsListView.OnScrollListener, Runnable
 	}
 
 	@Override
-	public void onScrollStateChanged(AbsListView view, int scrollState) {
-		if (scrollState == SCROLL_STATE_IDLE) {
+	public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+		onScrollStateChangedInternal(recyclerView, newState == RecyclerView.SCROLL_STATE_IDLE);
+	}
+
+	private void onScrollStateChangedInternal(ViewGroup view, boolean idle) {
+		if (idle) {
 			view.postDelayed(this, 500);
 		} else {
 			view.removeCallbacks(this);
@@ -116,6 +114,6 @@ public class ListScrollTracker implements AbsListView.OnScrollListener, Runnable
 	}
 
 	public interface OnScrollListener {
-		public void onScroll(AbsListView view, int scrollY, int totalItemCount, boolean first, boolean last);
+		public void onScroll(ViewGroup view, int scrollY, int totalItemCount, boolean first, boolean last);
 	}
 }

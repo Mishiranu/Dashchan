@@ -103,20 +103,6 @@ public class ViewUtils {
 		}
 	}
 
-	public static void applyMultipleCardHolderPadding(View view) {
-		float density = ResourceUtils.obtainDensity(view);
-		int leftRight = (int) (5.5f * density);
-		view.setPadding(leftRight, 0, leftRight, 0);
-	}
-
-	public static void applyCardHolderPadding(View view, boolean isFirst, boolean isLast, boolean multipleLeftRight) {
-		float density = ResourceUtils.obtainDensity(view);
-		int leftRight = multipleLeftRight ? (int) (2.5f * density + 0.5f) : (int) (8f * density);
-		int top = isFirst ? (int) (8f * density) : (int) (4f * density);
-		int bottom = isLast ? (int) (7f * density) : 0;
-		view.setPadding(leftRight, top, leftRight, bottom);
-	}
-
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	public static void applyToolbarStyle(Window window, View toolbarView) {
 		if (C.API_LOLLIPOP) {
@@ -197,7 +183,12 @@ public class ViewUtils {
 		}
 	}
 
-	public static <V extends View> void setBackgroundPreservePadding(V view, Drawable drawable) {
+	public static void setSelectableItemBackground(View view) {
+		setBackgroundPreservePadding(view, ResourceUtils
+				.getDrawable(view.getContext(), android.R.attr.selectableItemBackground, 0));
+	}
+
+	public static void setBackgroundPreservePadding(View view, Drawable drawable) {
 		// Setting background drawable may reset padding
 		int left = view.getPaddingLeft();
 		int top = view.getPaddingTop();
@@ -205,5 +196,43 @@ public class ViewUtils {
 		int bottom = view.getPaddingBottom();
 		view.setBackground(drawable);
 		view.setPadding(left, top, right, bottom);
+	}
+
+	public static void setNewPadding(View view, Integer left, Integer top, Integer right, Integer bottom) {
+		int oldLeft = view.getPaddingLeft();
+		int oldTop = view.getPaddingTop();
+		int oldRight = view.getPaddingRight();
+		int oldBottom = view.getPaddingBottom();
+		int newLeft = left != null ? left : oldLeft;
+		int newTop = top != null ? top : oldTop;
+		int newRight = right != null ? right : oldRight;
+		int newBottom = bottom != null ? bottom : oldBottom;
+		if (oldLeft != newLeft || oldTop != newTop || oldRight != newRight || oldBottom != newBottom) {
+			view.setPadding(newLeft, newTop, newRight, newBottom);
+		}
+	}
+
+	public static void setNewMargin(View view, Integer left, Integer top, Integer right, Integer bottom) {
+		ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+		boolean changed = false;
+		if (left != null && layoutParams.leftMargin != left) {
+			layoutParams.leftMargin = left;
+			changed = true;
+		}
+		if (top != null && layoutParams.topMargin != top) {
+			layoutParams.topMargin = top;
+			changed = true;
+		}
+		if (right != null && layoutParams.rightMargin != right) {
+			layoutParams.rightMargin = right;
+			changed = true;
+		}
+		if (bottom != null && layoutParams.bottomMargin != bottom) {
+			layoutParams.bottomMargin = bottom;
+			changed = true;
+		}
+		if (changed) {
+			view.requestLayout();
+		}
 	}
 }

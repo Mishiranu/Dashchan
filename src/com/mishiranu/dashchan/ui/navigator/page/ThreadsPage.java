@@ -2,13 +2,16 @@ package com.mishiranu.dashchan.ui.navigator.page;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ListView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import chan.content.ChanPerformer;
@@ -34,16 +37,14 @@ import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
-import com.mishiranu.dashchan.widget.ListPosition;
-import com.mishiranu.dashchan.widget.ListScroller;
-import com.mishiranu.dashchan.widget.PullableListView;
+import com.mishiranu.dashchan.widget.PullableRecyclerView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 
-public class ThreadsPage extends ListPage implements FavoritesStorage.Observer,
-		ReadThreadsTask.Callback, PullableListView.OnBeforeLayoutListener {
+public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
+		FavoritesStorage.Observer, ReadThreadsTask.Callback {
 	private static class RetainExtra {
 		public static final ExtraFactory<RetainExtra> FACTORY = RetainExtra::new;
 
@@ -60,7 +61,6 @@ public class ThreadsPage extends ListPage implements FavoritesStorage.Observer,
 
 		public boolean headerExpanded = false;
 		public int catalogSortIndex = -1;
-		public String positionInfo;
 
 		@Override
 		public int describeContents() {
@@ -71,7 +71,6 @@ public class ThreadsPage extends ListPage implements FavoritesStorage.Observer,
 		public void writeToParcel(Parcel dest, int flags) {
 			dest.writeByte((byte) (headerExpanded ? 1 : 0));
 			dest.writeInt(catalogSortIndex);
-			dest.writeString(positionInfo);
 		}
 
 		public static final Creator<ParcelableExtra> CREATOR = new Creator<ParcelableExtra>() {
@@ -80,7 +79,6 @@ public class ThreadsPage extends ListPage implements FavoritesStorage.Observer,
 				ParcelableExtra parcelableExtra = new ParcelableExtra();
 				parcelableExtra.headerExpanded = in.readByte() != 0;
 				parcelableExtra.catalogSortIndex = in.readInt();
-				parcelableExtra.positionInfo = in.readString();
 				return parcelableExtra;
 			}
 
@@ -94,26 +92,38 @@ public class ThreadsPage extends ListPage implements FavoritesStorage.Observer,
 	private ReadThreadsTask readTask;
 
 	private ThreadsAdapter getAdapter() {
-		return (ThreadsAdapter) getListView().getAdapter();
+		return (ThreadsAdapter) getRecyclerView().getAdapter();
 	}
 
 	@Override
 	protected void onCreate() {
 		Context context = getContext();
-		PullableListView listView = getListView();
+		PullableRecyclerView recyclerView = getRecyclerView();
+		GridLayoutManager gridLayoutManager = new GridLayoutManager(recyclerView.getContext(), 1);
+		recyclerView.setLayoutManager(gridLayoutManager);
 		Page page = getPage();
-		UiManager uiManager = getUiManager();
-		listView.setDivider(null);
-		listView.addOnBeforeLayoutListener(this);
-		ThreadsAdapter adapter = new ThreadsAdapter(context, page.chanName, page.boardName, uiManager);
-		listView.setAdapter(adapter);
-		listView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
-		listView.setSelector(android.R.color.transparent);
 		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
 		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
-		adapter.applyAttributesBeforeFill(parcelableExtra.headerExpanded, parcelableExtra.catalogSortIndex,
-				Preferences.isThreadsGridMode());
-		gridLayoutControl.apply();
+		UiManager uiManager = getUiManager();
+		ThreadsAdapter adapter = new ThreadsAdapter(context, this, page.chanName, page.boardName, uiManager,
+				parcelableExtra.headerExpanded, parcelableExtra.catalogSortIndex);
+		recyclerView.setAdapter(adapter);
+		gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+			@Override
+			public int getSpanSize(int position) {
+				return adapter.getSpanSize(position);
+			}
+		});
+		recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
+			@Override
+			public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent,
+					@NonNull RecyclerView.State state) {
+				int column = ((GridLayoutManager.LayoutParams) view.getLayoutParams()).getSpanIndex();
+				adapter.applyItemPadding(view, parent.getChildAdapterPosition(view), column, outRect);
+			}
+		});
+		recyclerView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
+		gridLayoutManager.setSpanCount(adapter.setGridMode(Preferences.isThreadsGridMode()));
 		ChanConfiguration.Board board = getChanConfiguration().safe().obtainBoard(page.boardName);
 		InitRequest initRequest = getInitRequest();
 		if (initRequest.shouldLoad || retainExtra.cachedPostItems.isEmpty()) {
@@ -123,10 +133,7 @@ public class ThreadsPage extends ListPage implements FavoritesStorage.Observer,
 			refreshThreads(RefreshPage.CURRENT, false);
 		} else  {
 			adapter.setItems(retainExtra.cachedPostItems, retainExtra.startPageNumber, retainExtra.boardSpeed);
-			restoreListPosition(listPosition -> {
-				gridLayoutControl.restorePosition = listPosition;
-				gridLayoutControl.restoreListPosition(listPosition);
-			});
+			restoreListPosition();
 			if (retainExtra.dialogsState != null) {
 				uiManager.dialog().restoreState(adapter.getConfigurationSet(), retainExtra.dialogsState);
 				retainExtra.dialogsState = null;
@@ -143,8 +150,6 @@ public class ThreadsPage extends ListPage implements FavoritesStorage.Observer,
 		}
 		getUiManager().dialog().closeDialogs(getAdapter().getConfigurationSet().stackInstance);
 		FavoritesStorage.getInstance().getObservable().unregister(this);
-		PullableListView listView = getListView();
-		listView.removeOnBeforeLayoutListener(this);
 	}
 
 	@Override
@@ -168,11 +173,9 @@ public class ThreadsPage extends ListPage implements FavoritesStorage.Observer,
 		ThreadsAdapter adapter = getAdapter();
 		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
 		retainExtra.dialogsState = adapter.getConfigurationSet().stackInstance.collectState();
-		ListPosition listPosition = ListPosition.obtain(getListView());
 		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
 		parcelableExtra.headerExpanded = adapter.isHeaderExpanded();
 		parcelableExtra.catalogSortIndex = adapter.getCatalogSortIndex();
-		parcelableExtra.positionInfo = listPosition != null ? adapter.getPositionInfo(listPosition.position) : null;
 	}
 
 	@Override
@@ -183,16 +186,14 @@ public class ThreadsPage extends ListPage implements FavoritesStorage.Observer,
 	}
 
 	@Override
-	public void onItemClick(View view, int position) {
-		ThreadsAdapter adapter = getAdapter();
-		PostItem postItem = getUiManager().getPostItemFromHolder(view);
+	public void onItemClick(PostItem postItem) {
 		if (postItem != null) {
 			Page page = getPage();
 			if (postItem.isHiddenUnchecked()) {
 				HiddenThreadsDatabase.getInstance().set(page.chanName, page.boardName,
 						postItem.getThreadNumber(), false);
 				postItem.invalidateHidden();
-				adapter.notifyDataSetChanged();
+				getAdapter().notifyDataSetChanged();
 			} else {
 				getUiManager().navigator().navigatePosts(page.chanName, page.boardName,
 						postItem.getThreadNumber(), null, postItem.getSubjectOrComment(), 0);
@@ -205,8 +206,7 @@ public class ThreadsPage extends ListPage implements FavoritesStorage.Observer,
 	private static final int CONTEXT_MENU_HIDE = 2;
 
 	@Override
-	public boolean onItemLongClick(View view, int position) {
-		PostItem postItem = getUiManager().getPostItemFromHolder(view);
+	public boolean onItemLongClick(PostItem postItem) {
 		if (postItem != null) {
 			DialogMenu dialogMenu = new DialogMenu(getContext(), id -> {
 				Page page = getPage();
@@ -377,90 +377,10 @@ public class ThreadsPage extends ListPage implements FavoritesStorage.Observer,
 				break;
 			}
 			case APPEARANCE_MENU_THREADS_GRID: {
-				boolean gridMode = Preferences.isThreadsGridMode();
-				gridLayoutControl.applyGridMode(gridMode);
+				GridLayoutManager gridLayoutManager = (GridLayoutManager) getRecyclerView().getLayoutManager();
+				gridLayoutManager.setSpanCount(getAdapter().setGridMode(Preferences.isThreadsGridMode()));
 				break;
 			}
-		}
-	}
-
-	@Override
-	public void onBeforeLayout(View v, int left, int top, int right, int bottom) {
-		int width = right - left;
-		gridLayoutControl.onListLayout(width);
-	}
-
-	private final GridLayoutControl gridLayoutControl = new GridLayoutControl();
-
-	private class GridLayoutControl implements Runnable {
-		private int currentWidth;
-		private ListPosition listPosition;
-		private String positionInfo;
-		private ListPosition restorePosition = null;
-
-		public void applyGridMode(boolean gridMode) {
-			ListView listView = getListView();
-			ListPosition listPosition = ListPosition.obtain(listView);
-			String positionInfo = getAdapter().getPositionInfo(listPosition.position);
-			getAdapter().setGridMode(gridMode);
-			Preferences.setThreadsGridMode(gridMode);
-			int position = getAdapter().getPositionFromInfo(positionInfo);
-			if (position != -1) {
-				new ListPosition(position, listPosition.y).apply(listView);
-			}
-		}
-
-		public void apply() {
-			ListView listView = getListView();
-			listView.removeCallbacks(this);
-			listPosition = null;
-			positionInfo = null;
-			if (listView.getWidth() > 0) {
-				run();
-			} else {
-				listView.post(this);
-			}
-		}
-
-		public void onListLayout(int width) {
-			if (currentWidth != width) {
-				currentWidth = width;
-				ListView listView = getListView();
-				listView.removeCallbacks(this);
-				boolean gridMode = getAdapter().isGridMode();
-				listPosition = gridMode ? ListPosition.obtain(listView) : null;
-				positionInfo = gridMode ? getAdapter().getPositionInfo(listPosition.position) : null;
-				listView.post(this);
-			}
-		}
-
-		@Override
-		public void run() {
-			ListView listView = getListView();
-			listView.removeCallbacks(this);
-			getAdapter().updateConfiguration(listView.getWidth());
-			if (positionInfo != null) {
-				int position = getAdapter().getPositionFromInfo(positionInfo);
-				if (position != -1 && position != listPosition.position) {
-					// Fix list position due to rows count changing
-					new ListPosition(position, listPosition.y).apply(listView);
-				}
-			} else {
-				currentWidth = listView.getWidth();
-			}
-
-			// Dirty hack. Will be hopefully removed after RecyclerView migration.
-			ListPosition restorePosition = this.restorePosition;
-			this.restorePosition = null;
-			if (restorePosition != null) {
-				restoreListPosition(restorePosition);
-			}
-		}
-
-		private void restoreListPosition(ListPosition listPosition) {
-			ListView listView = getListView();
-			// TODO Fix position if grid mode was changed
-			listPosition.apply(listView);
 		}
 	}
 
@@ -552,7 +472,7 @@ public class ThreadsPage extends ListPage implements FavoritesStorage.Observer,
 		Page page = getPage();
 		if (pageNumber < PAGE_NUMBER_CATALOG || pageNumber >= Math.max(getChanConfiguration()
 				.getPagesCount(page.boardName), 1)) {
-			getListView().getWrapper().cancelBusyState();
+			getRecyclerView().getWrapper().cancelBusyState();
 			ToastUtils.show(getContext(), getString(R.string.message_page_not_exist_format, pageNumber));
 			return false;
 		} else {
@@ -562,10 +482,10 @@ public class ThreadsPage extends ListPage implements FavoritesStorage.Observer,
 			readTask = new ReadThreadsTask(this, page.chanName, page.boardName, pageNumber, validator, append);
 			readTask.executeOnExecutor(ReadThreadsTask.THREAD_POOL_EXECUTOR);
 			if (showPull) {
-				getListView().getWrapper().startBusyState(PullableWrapper.Side.TOP);
+				getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.TOP);
 				switchView(ViewType.LIST, null);
 			} else {
-				getListView().getWrapper().startBusyState(PullableWrapper.Side.BOTH);
+				getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTH);
 				switchView(ViewType.PROGRESS, null);
 			}
 			return true;
@@ -576,7 +496,8 @@ public class ThreadsPage extends ListPage implements FavoritesStorage.Observer,
 	public void onReadThreadsSuccess(ArrayList<PostItem> postItems, int pageNumber,
 			int boardSpeed, boolean append, boolean checkModified, HttpValidator validator) {
 		readTask = null;
-		getListView().getWrapper().cancelBusyState();
+		PullableRecyclerView recyclerView = getRecyclerView();
+		recyclerView.getWrapper().cancelBusyState();
 		switchView(ViewType.LIST, null);
 		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
 		if (postItems != null && postItems.isEmpty()) {
@@ -600,24 +521,26 @@ public class ThreadsPage extends ListPage implements FavoritesStorage.Observer,
 		}
 		ThreadsAdapter adapter = getAdapter();
 		if (postItems != null && !postItems.isEmpty()) {
-			int oldCount = adapter.getCount();
+			int oldCount = adapter.getItemCount();
+			boolean needScroll = false;
+			int childCount = recyclerView.getChildCount();
+			if (childCount > 0) {
+				View child = recyclerView.getChildAt(childCount - 1);
+				int position = recyclerView.getChildViewHolder(child).getAdapterPosition();
+				needScroll = position + 1 == oldCount &&
+						recyclerView.getHeight() - recyclerView.getPaddingBottom() - child.getBottom() >= 0;
+			}
 			if (append) {
 				adapter.appendItems(postItems, pageNumber, retainExtra.boardSpeed);
 			} else {
 				adapter.setItems(Collections.singleton(postItems), pageNumber, boardSpeed);
 			}
 			notifyTitleChanged();
-			ListView listView = getListView();
 			if (!append) {
-				ListViewUtils.cancelListFling(listView);
-				listView.setSelection(0);
-			} else if (listView.getChildCount() > 0) {
-				if (listView.getLastVisiblePosition() + 1 == oldCount) {
-					View view = listView.getChildAt(listView.getChildCount() - 1);
-					if (listView.getHeight() - listView.getPaddingBottom() - view.getBottom() >= 0) {
-						ListScroller.scrollTo(getListView(), oldCount);
-					}
-				}
+				ListViewUtils.cancelListFling(recyclerView);
+				recyclerView.scrollToPosition(0);
+			} else if (needScroll) {
+				ListViewUtils.smoothScrollToPosition(recyclerView, oldCount);
 			}
 			retainExtra.validator = validator;
 			if (!append) {
@@ -631,11 +554,8 @@ public class ThreadsPage extends ListPage implements FavoritesStorage.Observer,
 			}
 		} else if (checkModified && postItems == null) {
 			adapter.notifyNotModified();
-			getListView().post(() -> {
-				ListView listView = getListView();
-				ListViewUtils.cancelListFling(listView);
-				listView.setSelection(0);
-			});
+			ListViewUtils.cancelListFling(recyclerView);
+			recyclerView.scrollToPosition(0);
 		} else if (adapter.isRealEmpty()) {
 			switchView(ViewType.ERROR, R.string.message_empty_response);
 		} else {
@@ -646,7 +566,7 @@ public class ThreadsPage extends ListPage implements FavoritesStorage.Observer,
 	@Override
 	public void onReadThreadsRedirect(RedirectException.Target target) {
 		readTask = null;
-		getListView().getWrapper().cancelBusyState();
+		getRecyclerView().getWrapper().cancelBusyState();
 		if (!StringUtils.equals(target.chanName, getPage().chanName)) {
 			if (getAdapter().isRealEmpty()) {
 				switchView(ViewType.ERROR, R.string.message_empty_response);
@@ -668,7 +588,7 @@ public class ThreadsPage extends ListPage implements FavoritesStorage.Observer,
 	@Override
 	public void onReadThreadsFail(ErrorItem errorItem, int pageNumber) {
 		readTask = null;
-		getListView().getWrapper().cancelBusyState();
+		getRecyclerView().getWrapper().cancelBusyState();
 		String message = errorItem.type == ErrorItem.Type.BOARD_NOT_EXISTS && pageNumber >= 1
 				? getString(R.string.message_page_not_exist_format, pageNumber) : errorItem.toString();
 		if (getAdapter().isRealEmpty()) {

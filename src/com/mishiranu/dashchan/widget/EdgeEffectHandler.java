@@ -1,54 +1,29 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.widget;
 
-import java.lang.reflect.Field;
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.os.Build;
-import android.widget.AbsListView;
 import android.widget.EdgeEffect;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import com.mishiranu.dashchan.C;
 
 public class EdgeEffectHandler {
+	public enum Side {TOP, BOTTOM}
+
 	public interface Shift {
-		public int getEdgeEffectShift(boolean top);
-	}
-
-	private int shiftTop = 0;
-	private int shiftBottom = 0;
-
-	private class InternalShift implements Shift {
-		@Override
-		public int getEdgeEffectShift(boolean top) {
-			return top ? shiftTop : shiftBottom;
-		}
+		public int getEdgeEffectShift(Side side);
 	}
 
 	private static class ControlledEdgeEffect extends EdgeEffect {
 		private final Shift shift;
-		private final boolean top;
+		private final Side side;
 
-		public ControlledEdgeEffect(Context context, Shift shift, boolean top) {
+		public ControlledEdgeEffect(Context context, Shift shift, Side side) {
 			super(context);
+
 			this.shift = shift;
-			this.top = top;
+			this.side = side;
 		}
 
 		private boolean pullable = true;
@@ -64,11 +39,17 @@ public class EdgeEffectHandler {
 			}
 		}
 
-		@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 		@Override
 		public void onPull(float deltaDistance, float displacement) {
 			if (pullable) {
 				super.onPull(deltaDistance, displacement);
+			}
+		}
+
+		@Override
+		public void onAbsorb(int velocity) {
+			if (pullable) {
+				super.onAbsorb(velocity);
 			}
 		}
 
@@ -80,19 +61,17 @@ public class EdgeEffectHandler {
 			this.width = width;
 		}
 
-		@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 		@Override
 		public int getMaxHeight() {
-			return super.getMaxHeight() + shift.getEdgeEffectShift(top);
+			return super.getMaxHeight() + shift.getEdgeEffectShift(side);
 		}
 
 		private final Paint shiftPaint = new Paint();
 
-		@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 		@Override
 		public boolean draw(Canvas canvas) {
 			if (pullable) {
-				int shift = this.shift.getEdgeEffectShift(top);
+				int shift = this.shift.getEdgeEffectShift(side);
 				boolean needShift = shift != 0;
 				if (needShift) {
 					if (C.API_LOLLIPOP) {
@@ -120,13 +99,12 @@ public class EdgeEffectHandler {
 
 	private EdgeEffectHandler(Context context, Shift shift) {
 		if (shift == null) {
-			shift = new InternalShift();
+			shift = side -> 0;
 		}
-		topEdgeEffect = new ControlledEdgeEffect(context, shift, true);
-		bottomEdgeEffect = new ControlledEdgeEffect(context, shift, false);
+		topEdgeEffect = new ControlledEdgeEffect(context, shift, Side.TOP);
+		bottomEdgeEffect = new ControlledEdgeEffect(context, shift, Side.BOTTOM);
 	}
 
-	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	public void setColor(int color) {
 		if (C.API_LOLLIPOP) {
 			topEdgeEffect.setColor(color);
@@ -134,53 +112,49 @@ public class EdgeEffectHandler {
 		}
 	}
 
-	public void setShift(boolean top, int shift) {
-		if (top) {
-			shiftTop = shift;
-		} else {
-			shiftBottom = shift;
-		}
-	}
-
-	public void setPullable(boolean top, boolean pullable) {
-		(top ? topEdgeEffect : bottomEdgeEffect).setPullable(pullable);
-	}
-
-	public void finish(boolean top) {
-		(top ? topEdgeEffect : bottomEdgeEffect).finish();
-	}
-
-	private static final Field EDGE_GLOW_TOP_FIELD, EDGE_GLOW_BOTTOM_FIELD;
-
-	static {
-		Field edgeGlowTopField, edgeGlowBottomField;
-		try {
-			edgeGlowTopField = AbsListView.class.getDeclaredField("mEdgeGlowTop");
-			edgeGlowTopField.setAccessible(true);
-			edgeGlowBottomField = AbsListView.class.getDeclaredField("mEdgeGlowBottom");
-			edgeGlowBottomField.setAccessible(true);
-		} catch (Exception e) {
-			edgeGlowTopField = null;
-			edgeGlowBottomField = null;
-		}
-		EDGE_GLOW_TOP_FIELD = edgeGlowTopField;
-		EDGE_GLOW_BOTTOM_FIELD = edgeGlowBottomField;
-	}
-
-	public static EdgeEffectHandler bind(AbsListView listView, Shift shift) {
-		if (EDGE_GLOW_TOP_FIELD != null && EDGE_GLOW_BOTTOM_FIELD != null) {
-			try {
-				Object edgeEffect = EDGE_GLOW_TOP_FIELD.get(listView);
-				if (edgeEffect != null && !(edgeEffect instanceof ControlledEdgeEffect)) {
-					EdgeEffectHandler handler = new EdgeEffectHandler(listView.getContext(), shift);
-					EDGE_GLOW_TOP_FIELD.set(listView, handler.topEdgeEffect);
-					EDGE_GLOW_BOTTOM_FIELD.set(listView, handler.bottomEdgeEffect);
-					return handler;
-				}
-			} catch (Exception e) {
-				// Ugnore
+	private ControlledEdgeEffect getEdgeEffect(Side side) {
+		switch (side) {
+			case TOP: {
+				return topEdgeEffect;
+			}
+			case BOTTOM: {
+				return bottomEdgeEffect;
+			}
+			default: {
+				throw new IllegalArgumentException();
 			}
 		}
-		return null;
+	}
+
+	public void setPullable(Side side, boolean pullable) {
+		getEdgeEffect(side).setPullable(pullable);
+	}
+
+	public void finish(Side side) {
+		getEdgeEffect(side).finish();
+	}
+
+	public static EdgeEffectHandler bind(RecyclerView recyclerView, Shift shift) {
+		EdgeEffectHandler handler = new EdgeEffectHandler(recyclerView.getContext(), shift);
+		recyclerView.setEdgeEffectFactory(new RecyclerView.EdgeEffectFactory() {
+			@NonNull
+			@Override
+			protected EdgeEffect createEdgeEffect(@NonNull RecyclerView view, int direction) {
+				switch (direction) {
+					case DIRECTION_TOP: {
+						return handler.topEdgeEffect;
+					}
+					case DIRECTION_BOTTOM: {
+						return handler.bottomEdgeEffect;
+					}
+					case DIRECTION_LEFT:
+					case DIRECTION_RIGHT:
+					default: {
+						return super.createEdgeEffect(view, direction);
+					}
+				}
+			}
+		});
+		return handler;
 	}
 }

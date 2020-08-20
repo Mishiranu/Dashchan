@@ -13,6 +13,7 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.util.ResourceUtils;
+import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
 
 public abstract class BaseListFragment extends Fragment {
@@ -30,7 +31,7 @@ public abstract class BaseListFragment extends Fragment {
 		recyclerView.setMotionEventSplittingEnabled(false);
 		recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
 		recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(),
-				(c, position) -> c.configure(true)));
+				(c, position) -> c.need(true)));
 		view.addView(recyclerView, 0, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
 				FrameLayout.LayoutParams.MATCH_PARENT));
 		inflater.inflate(R.layout.widget_error, view);
@@ -39,7 +40,7 @@ public abstract class BaseListFragment extends Fragment {
 		emptyView.setVisibility(View.GONE);
 		if (!C.API_LOLLIPOP) {
 			float density = ResourceUtils.obtainDensity(recyclerView);
-			recyclerView.setPadding((int) (16f * density), 0, (int) (16f * density), 0);
+			ViewUtils.setNewPadding(recyclerView, (int) (16f * density), null, (int) (16f * density), null);
 		}
 		return view;
 	}

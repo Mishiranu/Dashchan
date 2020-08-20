@@ -3,12 +3,15 @@ package com.mishiranu.dashchan.ui.preference.core;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -18,9 +21,11 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
+import com.mishiranu.dashchan.widget.SimpleViewHolder;
 import com.mishiranu.dashchan.widget.ViewFactory;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -100,11 +105,11 @@ public abstract class PreferenceFragment extends Fragment {
 			if (need && C.API_LOLLIPOP) {
 				need = !(current instanceof CategoryPreference) && !(next instanceof CategoryPreference);
 			}
-			c.configure(need);
+			return c.need(need);
 		}));
 		if (!C.API_LOLLIPOP) {
 			float density = ResourceUtils.obtainDensity(recyclerView);
-			recyclerView.setPadding((int) (16f * density), 0, (int) (16f * density), 0);
+			ViewUtils.setNewPadding(recyclerView, (int) (16f * density), null, (int) (16f * density), null);
 		}
 		recyclerView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
 				ViewGroup.LayoutParams.MATCH_PARENT));
@@ -121,8 +126,6 @@ public abstract class PreferenceFragment extends Fragment {
 		recyclerView = null;
 	}
 
-	private static final Object PAYLOAD = new Object();
-
 	private <T> void onChange(Preference<T> preference, boolean newValue) {
 		if (newValue) {
 			if (persistent.contains(preference)) {
@@ -133,7 +136,7 @@ public abstract class PreferenceFragment extends Fragment {
 		}
 		int index = preferences.indexOf(preference);
 		if (index >= 0) {
-			recyclerView.getAdapter().notifyItemChanged(index, PAYLOAD);
+			recyclerView.getAdapter().notifyItemChanged(index, SimpleViewHolder.EMPTY_PAYLOAD);
 		}
 	}
 
@@ -363,8 +366,7 @@ public abstract class PreferenceFragment extends Fragment {
 					preference.performClick();
 				});
 				if (itemView.getBackground() == null) {
-					ViewUtils.setBackgroundPreservePadding(itemView, ResourceUtils
-							.getDrawable(itemView.getContext(), android.R.attr.selectableItemBackground, 0));
+					ViewUtils.setSelectableItemBackground(itemView);
 				}
 			}
 		}
@@ -410,16 +412,12 @@ public abstract class PreferenceFragment extends Fragment {
 
 		@Override
 		public ViewHolder createViewHolder(ViewGroup parent) {
-			TextView header = ViewFactory.makeListTextHeader(parent, false);
-			float density = ResourceUtils.obtainDensity(parent);
-			if (C.API_LOLLIPOP) {
-				header.setPadding(header.getPaddingLeft(), (int) (8f * density) + header.getPaddingTop(),
-						header.getPaddingRight(), header.getPaddingBottom());
-			} else {
-				header.setPadding((int) (8f * density), header.getPaddingTop(),
-						(int) (8f * density), header.getPaddingBottom());
-			}
-			return new ViewHolder(header, header, null);
+			FrameLayout layout = new FrameLayout(parent.getContext());
+			TextView header = ViewFactory.makeListTextHeader(layout);
+			layout.addView(header);
+			layout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+					ViewGroup.LayoutParams.WRAP_CONTENT));
+			return new ViewHolder(layout, header, null);
 		}
 	}
 
@@ -457,6 +455,8 @@ public abstract class PreferenceFragment extends Fragment {
 			if (C.API_LOLLIPOP) {
 				float density = ResourceUtils.obtainDensity(parent);
 				ImageView icon = new ImageView(viewHolder.view.getContext());
+				icon.setImageTintList(ColorStateList.valueOf(ResourceUtils
+						.getColor(viewHolder.view.getContext(), R.attr.drawerIconColor)));
 				LinearLayout.LayoutParams layoutParams = new LinearLayout
 						.LayoutParams((int) (24f * density), (int) (24f * density));
 				layoutParams.setMarginEnd((int) (32f * density));

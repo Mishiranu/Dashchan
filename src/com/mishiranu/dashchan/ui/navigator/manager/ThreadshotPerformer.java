@@ -8,11 +8,13 @@ import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Looper;
 import android.view.View;
-import android.widget.ListView;
+import android.view.ViewGroup;
+import androidx.recyclerview.widget.RecyclerView;
 import chan.util.CommonUtils;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
+import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.widget.ProgressDialog;
 import java.io.ByteArrayInputStream;
@@ -21,64 +23,63 @@ import java.io.InputStream;
 import java.util.List;
 
 public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
-	private final ListView listView;
+	private final ViewGroup parent;
 	private final UiManager uiManager;
 	private final String chanName;
 	private final String boardName;
 	private final String threadNumber;
 	private final String threadTitle;
 	private final List<PostItem> postItems;
+	private final RecyclerView.ViewHolder holder;
+	private final Drawable divider;
+	private final int width;
 	private final ProgressDialog dialog;
 
-	private final UiManager.DemandSet demandSet = new UiManager.DemandSet();
-	private final UiManager.ConfigurationSet configurationSet = new UiManager.ConfigurationSet(null, null, null,
-			null, null, null, null, false, false, false, false, false, null);
-
-	public ThreadshotPerformer(ListView listView, UiManager uiManager, String chanName, String boardName,
+	public ThreadshotPerformer(ViewGroup parent, UiManager uiManager, String chanName, String boardName,
 			String threadNumber, String threadTitle, List<PostItem> postItems) {
-		this.listView = listView;
+		this.parent = parent;
 		this.uiManager = uiManager;
 		this.chanName = chanName;
 		this.boardName = boardName;
 		this.threadNumber = threadNumber;
 		this.threadTitle = threadTitle;
 		this.postItems = postItems;
-		dialog = new ProgressDialog(listView.getContext(), null);
-		dialog.setMessage(listView.getContext().getString(R.string.message_processing_data));
+		UiManager.ConfigurationSet configurationSet = new UiManager.ConfigurationSet(null, null, null,
+				null, null, null, null, false, false, false, false, false, null);
+		holder = uiManager.view().createPostView(parent, configurationSet);
+		divider = ResourceUtils.getDrawable(parent.getContext(), android.R.attr.listDivider, 0);
+		width = parent.getWidth();
+		dialog = new ProgressDialog(parent.getContext(), null);
+		dialog.setMessage(parent.getContext().getString(R.string.message_processing_data));
 		dialog.setOnCancelListener(this);
 		uiManager.getConfigurationLock().lockConfiguration(dialog);
 		dialog.show();
-		demandSet.selection = UiManager.Selection.THREADSHOT;
 		asyncTask.executeOnExecutor(ConcurrentUtils.SEPARATE_EXECUTOR);
 	}
 
-	private View getPostItem(PostItem postItem, View convertView) {
-		return uiManager.view().getPostView(postItem, convertView, listView, demandSet, configurationSet);
-	}
-
 	private final AsyncTask<Void, Void, InputStream> asyncTask = new AsyncTask<Void, Void, InputStream>() {
+		@SuppressLint("WrongThread")
 		@Override
 		protected InputStream doInBackground(Void... params) {
 			Looper.prepare();
 			long time = System.currentTimeMillis();
-			View convertView = null;
-			@SuppressLint("WrongThread")
-			Drawable divider = listView.getDivider();
-			int dividerHeight = divider != null ? divider.getMinimumHeight() : 0;
+			UiManager.DemandSet demandSet = new UiManager.DemandSet();
+			demandSet.selection = UiManager.Selection.THREADSHOT;
+			int dividerHeight = divider.getIntrinsicHeight();
+			int dividerPadding = (int) (12f * ResourceUtils.obtainDensity(uiManager.getContext()));
 			int height = 0;
 			boolean first = true;
-			int width = listView.getWidth();
 			int widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY);
 			int heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
 			for (PostItem postItem : postItems) {
-				convertView = getPostItem(postItem, convertView);
-				convertView.measure(widthMeasureSpec, heightMeasureSpec);
+				uiManager.view().bindPostView(holder, postItem, demandSet);
+				holder.itemView.measure(widthMeasureSpec, heightMeasureSpec);
 				if (!first) {
 					height += dividerHeight;
 				} else {
 					first = false;
 				}
-				height += convertView.getMeasuredHeight();
+				height += holder.itemView.getMeasuredHeight();
 			}
 			if (isCancelled()) {
 				return null;
@@ -92,13 +93,14 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
 					if (isCancelled()) {
 						return null;
 					}
-					convertView = getPostItem(postItem, convertView);
-					convertView.measure(widthMeasureSpec, heightMeasureSpec);
-					convertView.layout(0, 0, convertView.getMeasuredWidth(), convertView.getMeasuredHeight());
-					convertView.draw(canvas);
-					canvas.translate(0, convertView.getHeight());
+					uiManager.view().bindPostView(holder, postItem, demandSet);
+					holder.itemView.measure(widthMeasureSpec, heightMeasureSpec);
+					holder.itemView.layout(0, 0, holder.itemView.getMeasuredWidth(),
+							holder.itemView.getMeasuredHeight());
+					holder.itemView.draw(canvas);
+					canvas.translate(0, holder.itemView.getHeight());
 					if (divider != null && dividerHeight > 0) {
-						divider.setBounds(0, 0, width, dividerHeight);
+						divider.setBounds(dividerPadding, 0, width - dividerPadding, dividerHeight);
 						divider.draw(canvas);
 						canvas.translate(0, dividerHeight);
 					}
@@ -120,7 +122,7 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
 						chanName, boardName, threadNumber, threadTitle,
 						"threadshot-" + System.currentTimeMillis() + ".png", true));
 			} else {
-				ToastUtils.show(listView.getContext(), R.string.message_unknown_error);
+				ToastUtils.show(parent.getContext(), R.string.message_unknown_error);
 			}
 		}
 	};

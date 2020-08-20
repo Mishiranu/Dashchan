@@ -1,36 +1,23 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui.navigator.adapter;
-
-import java.util.ArrayList;
-import java.util.Locale;
 
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import chan.content.ChanConfiguration;
 import chan.content.model.Board;
 import chan.util.StringUtils;
-
-import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ViewFactory;
+import java.util.ArrayList;
+import java.util.Locale;
 
-public class UserBoardsAdapter extends BaseAdapter {
+public class UserBoardsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+	public interface Callback {
+		void onItemClick(String boardName);
+		boolean onItemLongClick(String boardName);
+	}
+
+	private final Callback callback;
 	private final String chanName;
 
 	private final ArrayList<ListItem> listItems = new ArrayList<>();
@@ -39,12 +26,12 @@ public class UserBoardsAdapter extends BaseAdapter {
 	private boolean filterMode = false;
 	private String filterText;
 
-	public UserBoardsAdapter(String chanName) {
+	public UserBoardsAdapter(Callback callback, String chanName) {
+		this.callback = callback;
 		this.chanName = chanName;
 	}
 
-	// Returns true, if adapter isn't empty.
-	public boolean applyFilter(String text) {
+	public void applyFilter(String text) {
 		filterText = text;
 		filterMode = !StringUtils.isEmpty(text);
 		filteredListItems.clear();
@@ -66,46 +53,19 @@ public class UserBoardsAdapter extends BaseAdapter {
 			}
 		}
 		notifyDataSetChanged();
-		return !filterMode || filteredListItems.size() > 0;
+	}
+
+	public boolean isRealEmpty() {
+		return listItems.size() == 0;
 	}
 
 	@Override
-	public View getView(int position, View convertView, ViewGroup parent) {
-		ListItem listItem = getItem(position);
-		ViewFactory.TwoLinesViewHolder holder;
-		if (convertView == null) {
-			convertView = ViewFactory.makeTwoLinesListItem(parent, true);
-			float density = ResourceUtils.obtainDensity(parent);
-			convertView.setPadding((int) (16f * density), convertView.getPaddingTop(),
-					(int) (16f * density), convertView.getPaddingBottom());
-			holder = (ViewFactory.TwoLinesViewHolder) convertView.getTag();
-			holder.text2.setSingleLine(false);
-		} else {
-			holder = (ViewFactory.TwoLinesViewHolder) convertView.getTag();
-		}
-		holder.text1.setText(listItem.title);
-		if (!StringUtils.isEmpty(listItem.description)) {
-			holder.text2.setVisibility(View.VISIBLE);
-			holder.text2.setText(listItem.description);
-		} else {
-			holder.text2.setVisibility(View.GONE);
-		}
-		return convertView;
-	}
-
-	@Override
-	public int getCount() {
+	public int getItemCount() {
 		return (filterMode ? filteredListItems : listItems).size();
 	}
 
-	@Override
-	public ListItem getItem(int position) {
+	private ListItem getItem(int position) {
 		return (filterMode ? filteredListItems : listItems).get(position);
-	}
-
-	@Override
-	public long getItemId(int position) {
-		return 0;
 	}
 
 	public void setItems(Board[] boards) {
@@ -123,6 +83,30 @@ public class UserBoardsAdapter extends BaseAdapter {
 		notifyDataSetChanged();
 		if (filterMode) {
 			applyFilter(filterText);
+		}
+	}
+
+	@NonNull
+	@Override
+	public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+		return new RecyclerView.ViewHolder(ViewFactory.makeTwoLinesListItem(parent)) {{
+			itemView.setOnClickListener(v -> callback
+					.onItemClick(getItem(getAdapterPosition()).boardName));
+			itemView.setOnLongClickListener(v -> callback
+					.onItemLongClick(getItem(getAdapterPosition()).boardName));
+		}};
+	}
+
+	@Override
+	public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+		ListItem listItem = getItem(position);
+		ViewFactory.TwoLinesViewHolder viewHolder = (ViewFactory.TwoLinesViewHolder) holder.itemView.getTag();
+		viewHolder.text1.setText(listItem.title);
+		if (!StringUtils.isEmpty(listItem.description)) {
+			viewHolder.text2.setVisibility(View.VISIBLE);
+			viewHolder.text2.setText(listItem.description);
+		} else {
+			viewHolder.text2.setVisibility(View.GONE);
 		}
 	}
 

@@ -1,27 +1,10 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.content.storage;
 
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
-
-import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.content.model.PostItem;
 
 public class HiddenThreadsDatabase implements BaseColumns {
 	static final String COLUMN_CHAN_NAME = "chan_name";
@@ -59,17 +42,17 @@ public class HiddenThreadsDatabase implements BaseColumns {
 		database.insert(DatabaseHelper.TABLE_HIDDEN_THREADS, null, values);
 	}
 
-	public int check(String chanName, String boardName, String threadNumber) {
+	public PostItem.HideState check(String chanName, String boardName, String threadNumber) {
 		Cursor cursor = database.query(DatabaseHelper.TABLE_HIDDEN_THREADS, STATE_COLUMNS,
 				buildWhere(chanName, boardName, threadNumber), null, null, null, null);
 		try {
 			if (cursor.moveToFirst()) {
 				boolean hidden = cursor.getInt(1) != 0;
-				return hidden ? C.HIDDEN_TRUE : C.HIDDEN_FALSE;
+				return hidden ? PostItem.HideState.HIDDEN : PostItem.HideState.SHOWN;
 			}
 		} finally {
 			cursor.close();
 		}
-		return C.HIDDEN_UNKNOWN;
+		return PostItem.HideState.UNDEFINED;
 	}
 }

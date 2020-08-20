@@ -1,28 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<!--
-	Copyright 2014-2016 Fukurou Mishiranu
-
-	Licensed under the Apache License, Version 2.0 (the "License");
-	you may not use this file except in compliance with the License.
-	You may obtain a copy of the License at
-
-	http://www.apache.org/licenses/LICENSE-2.0
-
-	Unless required by applicable law or agreed to in writing, software
-	distributed under the License is distributed on an "AS IS" BASIS,
-	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	See the License for the specific language governing permissions and
-	limitations under the License.
--->
-
-<com.mishiranu.dashchan.widget.SingleLayerLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.mishiranu.dashchan.widget.PostLinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
 	android:orientation="vertical"
 	android:baselineAligned="false">
 
-    <LinearLayout
+	<LinearLayout
 		android:id="@+id/thread_content"
 		android:layout_width="match_parent"
 		android:layout_height="0dp"
@@ -69,34 +54,29 @@
 
 	</LinearLayout>
 
-    <View
+	<View
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:layout_marginLeft="10dp"
 		android:layout_marginRight="10dp"
 		android:background="?android:attr/listDivider" />
 
-	<com.mishiranu.dashchan.widget.ClickableView
-		android:id="@+id/click_view"
+	<TextView
+		android:id="@+id/thread_description"
 		android:layout_width="match_parent"
-		android:layout_height="wrap_content">
+		android:layout_height="wrap_content"
+		android:paddingTop="8dp"
+		android:paddingBottom="8.99dp"
+		android:paddingLeft="10dp"
+		android:paddingRight="10dp"
+		android:gravity="end"
+		style="@style/Widget.HeaderText"
+		android:background="?android:attr/selectableItemBackground"
+		android:textSize="11sp"
+		android:fontFamily="sans-serif-medium"
+		android:textAllCaps="true"
+		android:singleLine="true"
+		android:ellipsize="end"
+		tools:ignore="SmallSp" />
 
-		<TextView
-			android:id="@+id/thread_description"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:paddingTop="8dp"
-			android:paddingBottom="8.99dp"
-			android:paddingLeft="10dp"
-			android:paddingRight="10dp"
-			android:gravity="right"
-			style="@style/Widget.HeaderText"
-			android:textSize="11sp"
-			android:fontFamily="sans-serif-medium"
-			android:textAllCaps="true"
-			android:singleLine="true"
-			android:ellipsize="end" />
-
-	</com.mishiranu.dashchan.widget.ClickableView>
-
-</com.mishiranu.dashchan.widget.SingleLayerLinearLayout>
+</com.mishiranu.dashchan.widget.PostLinearLayout>

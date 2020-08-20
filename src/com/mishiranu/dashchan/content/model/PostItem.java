@@ -16,7 +16,6 @@ import chan.content.model.Icon;
 import chan.content.model.Post;
 import chan.content.model.Posts;
 import chan.util.StringUtils;
-import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.storage.HiddenThreadsDatabase;
@@ -70,7 +69,9 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 		public GalleryItem.GallerySet gallerySet;
 	}
 
-	private int hidden = C.HIDDEN_UNKNOWN;
+	public enum HideState {UNDEFINED, HIDDEN, SHOWN}
+
+	private HideState hideState = HideState.UNDEFINED;
 	private String hideReason;
 	private boolean unread = false;
 
@@ -361,16 +362,14 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 		return post.isPosterBanned();
 	}
 
-	public static final int BUMP_LIMIT_NOT_REACHED = 0;
-	public static final int BUMP_LIMIT_REACHED = 1;
-	public static final int BUMP_LIMIT_NEED_COUNT = 2;
+	public enum BumpLimitState {NOT_REACHED, REACHED, NEED_COUNT}
 
-	public int getBumpLimitReachedState(int postsCount) {
+	public BumpLimitState getBumpLimitReachedState(int postsCount) {
 		if (getParentPostNumber() != null || isSticky() || isCyclical()) {
-			return BUMP_LIMIT_NOT_REACHED;
+			return BumpLimitState.NOT_REACHED;
 		}
 		if (post.isBumpLimitReached()) {
-			return BUMP_LIMIT_REACHED;
+			return BumpLimitState.REACHED;
 		}
 		if (threadData != null) {
 			postsCount = threadData.postsCount;
@@ -379,10 +378,10 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 			ChanConfiguration configuration = ChanConfiguration.get(getChanName());
 			int bumpLimit = configuration.getBumpLimitWithMode(getBoardName());
 			if (bumpLimit != ChanConfiguration.BUMP_LIMIT_INVALID) {
-				return postsCount >= bumpLimit ? BUMP_LIMIT_REACHED : BUMP_LIMIT_NOT_REACHED;
+				return postsCount >= bumpLimit ? BumpLimitState.REACHED : BumpLimitState.NOT_REACHED;
 			}
 		}
-		return threadData != null ? BUMP_LIMIT_NOT_REACHED : BUMP_LIMIT_NEED_COUNT;
+		return threadData != null ? BumpLimitState.NOT_REACHED : BumpLimitState.NEED_COUNT;
 	}
 
 	public boolean isDeleted() {
@@ -714,14 +713,14 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 		return threadData != null;
 	}
 
-	private int getHiddenStateFromModel() {
+	private HideState getHiddenStateFromModel() {
 		if (post.isHidden()) {
-			return C.HIDDEN_TRUE;
+			return HideState.HIDDEN;
 		}
 		if (post.isShown()) {
-			return C.HIDDEN_FALSE;
+			return HideState.SHOWN;
 		}
-		return C.HIDDEN_UNKNOWN;
+		return HideState.UNDEFINED;
 	}
 
 	public interface HidePerformer {
@@ -729,35 +728,36 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 	}
 
 	public boolean isHidden(HidePerformer hidePerformer) {
-		if (hidden == C.HIDDEN_UNKNOWN) {
+		if (hideState == HideState.UNDEFINED) {
 			synchronized (this) {
-				int hidden = this.hidden;
-				if (hidden == C.HIDDEN_UNKNOWN) {
+				HideState hideState = this.hideState;
+				if (hideState == HideState.UNDEFINED) {
 					String hideReason = null;
 					if (threadData == null) {
-						hidden = getHiddenStateFromModel();
+						hideState = getHiddenStateFromModel();
 					} else {
-						hidden = HiddenThreadsDatabase.getInstance().check(getChanName(), boardName, getThreadNumber());
+						hideState = HiddenThreadsDatabase.getInstance()
+								.check(getChanName(), boardName, getThreadNumber());
 					}
-					if (hidden == C.HIDDEN_UNKNOWN) {
+					if (hideState == HideState.UNDEFINED) {
 						hideReason = hidePerformer.checkHidden(this);
 						if (hideReason != null) {
-							hidden = C.HIDDEN_TRUE;
+							hideState = HideState.HIDDEN;
 						} else {
-							hidden = C.HIDDEN_FALSE;
+							hideState = HideState.SHOWN;
 						}
 					}
+					this.hideState = hideState;
 					this.hideReason = hideReason;
-					this.hidden = hidden;
 				}
 			}
 		}
-		return hidden == C.HIDDEN_TRUE;
+		return hideState == HideState.HIDDEN;
 	}
 
 	// Must be called only after isHidden.
 	public boolean isHiddenUnchecked() {
-		return hidden == C.HIDDEN_TRUE;
+		return hideState == HideState.HIDDEN;
 	}
 
 	public String getHideReason() {
@@ -765,7 +765,7 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 	}
 
 	public void setHidden(boolean hidden) {
-		this.hidden = hidden ? C.HIDDEN_TRUE : C.HIDDEN_FALSE;
+		this.hideState = hidden ? HideState.HIDDEN : HideState.SHOWN;
 		hideReason = null;
 		if (!isThreadItem()) {
 			post.setHidden(hidden);
@@ -773,7 +773,7 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 	}
 
 	public void invalidateHidden() {
-		hidden = C.HIDDEN_UNKNOWN;
+		hideState = HideState.UNDEFINED;
 		hideReason = null;
 	}
 

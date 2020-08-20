@@ -198,12 +198,12 @@ public class InteractionUnit {
 		@Override
 		public void onClick(View v) {
 			UiManager.Holder holder = ListViewUtils.getViewHolder(v, UiManager.Holder.class);
-			ArrayList<AttachmentItem> attachmentItems = holder.postItem.getAttachmentItems();
+			ArrayList<AttachmentItem> attachmentItems = holder.getPostItem().getAttachmentItems();
 			if (attachmentItems != null) {
 				GalleryItem.GallerySet gallerySet = holder.getGallerySet();
-				int startImageIndex = uiManager.view().findImageIndex(gallerySet.getItems(), holder.postItem);
+				int startImageIndex = uiManager.view().findImageIndex(gallerySet.getItems(), holder.getPostItem());
 				if (mayShowDialog) {
-					uiManager.dialog().openAttachmentOrDialog(holder.configurationSet.stackInstance, v,
+					uiManager.dialog().openAttachmentOrDialog(holder.getConfigurationSet().stackInstance, v,
 							attachmentItems, startImageIndex, navigatePostMode, gallerySet);
 				} else {
 					int index = this.index;
@@ -236,7 +236,7 @@ public class InteractionUnit {
 		@Override
 		public boolean onLongClick(View v) {
 			UiManager.Holder holder = ListViewUtils.getViewHolder(v, UiManager.Holder.class);
-			new ThumbnailLongClickDialog(uiManager, holder.configurationSet.stackInstance,
+			new ThumbnailLongClickDialog(uiManager, holder.getConfigurationSet().stackInstance,
 					attachmentItem, (AttachmentView) v, true, holder.getGallerySet().getThreadTitle());
 			return true;
 		}
@@ -331,14 +331,14 @@ public class InteractionUnit {
 
 	public boolean handlePostClick(View view, PostItem postItem, Iterable<PostItem> localPostItems) {
 		if (postItem.isHiddenUnchecked()) {
-			uiManager.sendPostItemMessage(postItem, UiManager.MESSAGE_PERFORM_SWITCH_HIDE);
+			uiManager.sendPostItemMessage(postItem, UiManager.Message.PERFORM_SWITCH_HIDE);
 			return true;
 		} else {
 			if (Preferences.getHighlightUnreadMode() == Preferences.HIGHLIGHT_UNREAD_MANUALLY) {
 				for (PostItem localPostItem : localPostItems) {
 					if (localPostItem.isUnread()) {
 						localPostItem.setUnread(false);
-						uiManager.sendPostItemMessage(localPostItem, UiManager.MESSAGE_INVALIDATE_VIEW);
+						uiManager.sendPostItemMessage(localPostItem, UiManager.Message.POST_INVALIDATE_ALL_VIEWS);
 					}
 					if (localPostItem == postItem) {
 						break;
@@ -470,11 +470,11 @@ public class InteractionUnit {
 							break;
 						}
 						case MENU_ADD_REMOVE_MY_MARK: {
-							uiManager.sendPostItemMessage(postItem, UiManager.MESSAGE_PERFORM_SWITCH_USER_MARK);
+							uiManager.sendPostItemMessage(postItem, UiManager.Message.PERFORM_SWITCH_USER_MARK);
 							break;
 						}
 						case MENU_GO_TO_POST: {
-							uiManager.sendPostItemMessage(postItem, UiManager.MESSAGE_PERFORM_GO_TO_POST);
+							uiManager.sendPostItemMessage(postItem, UiManager.Message.PERFORM_GO_TO_POST);
 							break;
 						}
 						case MENU_HIDE: {
@@ -487,19 +487,19 @@ public class InteractionUnit {
 							break;
 						}
 						case MENU_HIDE_POST: {
-							uiManager.sendPostItemMessage(postItem, UiManager.MESSAGE_PERFORM_SWITCH_HIDE);
+							uiManager.sendPostItemMessage(postItem, UiManager.Message.PERFORM_SWITCH_HIDE);
 							break;
 						}
 						case MENU_HIDE_REPLIES: {
-							uiManager.sendPostItemMessage(postItem, UiManager.MESSAGE_PERFORM_HIDE_REPLIES);
+							uiManager.sendPostItemMessage(postItem, UiManager.Message.PERFORM_HIDE_REPLIES);
 							break;
 						}
 						case MENU_HIDE_NAME: {
-							uiManager.sendPostItemMessage(postItem, UiManager.MESSAGE_PERFORM_HIDE_NAME);
+							uiManager.sendPostItemMessage(postItem, UiManager.Message.PERFORM_HIDE_NAME);
 							break;
 						}
 						case MENU_HIDE_SIMILAR: {
-							uiManager.sendPostItemMessage(postItem, UiManager.MESSAGE_PERFORM_HIDE_SIMILAR);
+							uiManager.sendPostItemMessage(postItem, UiManager.Message.PERFORM_HIDE_SIMILAR);
 							break;
 						}
 					}

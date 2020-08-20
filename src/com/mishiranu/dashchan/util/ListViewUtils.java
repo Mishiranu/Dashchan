@@ -1,84 +1,91 @@
 package com.mishiranu.dashchan.util;
 
+import android.content.Context;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.StateListDrawable;
 import android.os.SystemClock;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewParent;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.ImageView;
-import android.widget.ListView;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.LinearSmoothScroller;
+import androidx.recyclerview.widget.RecyclerView;
 import com.mishiranu.dashchan.R;
-import java.lang.reflect.Field;
 
 public class ListViewUtils {
 	public static View getRootViewInList(View view) {
 		while (view != null) {
-			ViewParent viewParent = view.getParent();
-			if (!(viewParent instanceof View)) {
-				return null;
-			}
-			View parent = (View) viewParent;
-			if (parent instanceof AdapterView<?>) {
+			ViewParent parent = view.getParent();
+			if (parent == null || parent instanceof AdapterView<?> || parent instanceof RecyclerView) {
 				break;
 			}
-			view = parent;
+			view = parent instanceof View ? (View) parent : null;
 		}
 		return view;
 	}
 
 	@SuppressWarnings("unchecked")
 	public static <T> T getViewHolder(View view, Class<T> clazz) {
-		while (view != null) {
-			Object tag = view.getTag();
-			if (tag != null && clazz.isAssignableFrom(tag.getClass())) {
-				return (T) tag;
-			}
-			ViewParent viewParent = view.getParent();
-			if (!(viewParent instanceof View)) {
-				return null;
-			}
-			view = (View) viewParent;
+		view = getRootViewInList(view);
+		View parent = (View) view.getParent();
+		Object holder;
+		if (parent instanceof RecyclerView) {
+			holder = ((RecyclerView) parent).getChildViewHolder(view);
+		} else {
+			holder = view.getTag();
 		}
-		return null;
+		return holder != null && clazz.isAssignableFrom(holder.getClass()) ? (T) holder : null;
 	}
 
-	public static void cancelListFling(ListView listView) {
+	public static void cancelListFling(ViewGroup viewGroup) {
 		MotionEvent motionEvent;
 		motionEvent = MotionEvent.obtain(0, SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN, 0, 0, 0);
-		listView.onTouchEvent(motionEvent);
+		viewGroup.onTouchEvent(motionEvent);
 		motionEvent.recycle();
 		motionEvent = MotionEvent.obtain(0, SystemClock.uptimeMillis(), MotionEvent.ACTION_CANCEL, 0, 0, 0);
-		listView.onTouchEvent(motionEvent);
+		viewGroup.onTouchEvent(motionEvent);
 		motionEvent.recycle();
 	}
 
-	public static void colorizeListThumb4(AbsListView listView) {
-		final int colorDefault = ResourceUtils.getColor(listView.getContext(), R.attr.colorAccentSupport);
-		final int colorPressed = GraphicsUtils.modifyColorGain(colorDefault, 4f / 3f);
-		if (colorDefault != 0) try {
-			Field fastScrollerField = AbsListView.class.getDeclaredField("mFastScroller");
-			fastScrollerField.setAccessible(true);
-			Object fastScroller = fastScrollerField.get(listView);
-			ImageView thumbImage;
-			Field thumbDrawableField;
-			Drawable drawable;
-			try {
-				Field thumbImageField = fastScroller.getClass().getDeclaredField("mThumbImage");
-				thumbImageField.setAccessible(true);
-				thumbImage = (ImageView) thumbImageField.get(fastScroller);
-				drawable = thumbImage.getDrawable();
-				thumbDrawableField = null;
-			} catch (Exception e) {
-				thumbDrawableField = fastScroller.getClass().getDeclaredField("mThumbDrawable");
-				thumbDrawableField.setAccessible(true);
-				drawable = (Drawable) thumbDrawableField.get(fastScroller);
-				thumbImage = null;
+	private static class TopLinearSmoothScroller extends LinearSmoothScroller {
+		public TopLinearSmoothScroller(Context context, int targetPosition) {
+			super(context);
+			setTargetPosition(targetPosition);
+		}
+
+		@Override
+		protected int getVerticalSnapPreference() {
+			return SNAP_TO_START;
+		}
+	}
+
+	public static int getScrollJumpThreshold(Context context) {
+		return context.getResources().getConfiguration().screenHeightDp / 40;
+	}
+
+	public static void smoothScrollToPosition(RecyclerView recyclerView, int position) {
+		LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+		int first = layoutManager.findFirstVisibleItemPosition();
+		if (first >= 0) {
+			int jumpThreshold = getScrollJumpThreshold(recyclerView.getContext());
+			if (position > first + jumpThreshold) {
+				layoutManager.scrollToPositionWithOffset(position - jumpThreshold, 0);
+			} else if (position < first - jumpThreshold) {
+				layoutManager.scrollToPositionWithOffset(position + jumpThreshold, 0);
 			}
-			final int[] pressedState = {android.R.attr.state_pressed}, defaultState = {};
+		}
+		layoutManager.startSmoothScroll(new TopLinearSmoothScroller(recyclerView.getContext(), position));
+	}
+
+	public static Drawable colorizeListThumbDrawable4(Context context, Drawable drawable) {
+		int colorDefault = ResourceUtils.getColor(context, R.attr.colorAccentSupport);
+		int colorPressed = GraphicsUtils.modifyColorGain(colorDefault, 4f / 3f);
+		if (colorDefault != 0 && colorPressed != 0) {
+			final int[] pressedState = {android.R.attr.state_pressed};
+			final int[] defaultState = {};
 			drawable.setState(pressedState);
 			final Drawable pressedDrawable = drawable.getCurrent();
 			drawable.setState(defaultState);
@@ -98,15 +105,9 @@ public class ListViewUtils {
 				};
 				stateListDrawable.addState(pressedState, pressedDrawable);
 				stateListDrawable.addState(defaultState, defaultDrawable);
-				drawable = stateListDrawable;
-				if (thumbImage != null) {
-					thumbImage.setImageDrawable(drawable);
-				} else {
-					thumbDrawableField.set(fastScroller, drawable);
-				}
+				return stateListDrawable;
 			}
-		} catch (Exception e) {
-			// Reflective operation, ignore exception
 		}
+		return drawable;
 	}
 }

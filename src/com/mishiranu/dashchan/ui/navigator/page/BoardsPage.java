@@ -3,7 +3,7 @@ package com.mishiranu.dashchan.ui.navigator.page;
 import android.net.Uri;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import chan.content.ChanConfiguration;
 import chan.content.model.Board;
 import chan.content.model.BoardCategory;
@@ -16,34 +16,41 @@ import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.ui.navigator.adapter.BoardsAdapter;
 import com.mishiranu.dashchan.util.DialogMenu;
+import com.mishiranu.dashchan.util.ResourceUtils;
+import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
-import com.mishiranu.dashchan.widget.PullableListView;
+import com.mishiranu.dashchan.widget.DividerItemDecoration;
+import com.mishiranu.dashchan.widget.PullableRecyclerView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class BoardsPage extends ListPage implements ReadBoardsTask.Callback {
+public class BoardsPage extends ListPage implements BoardsAdapter.Callback, ReadBoardsTask.Callback {
 	private ReadBoardsTask readTask;
 
 	private BoardsAdapter getAdapter() {
-		return (BoardsAdapter) getListView().getAdapter();
+		return (BoardsAdapter) getRecyclerView().getAdapter();
 	}
 
 	@Override
 	protected void onCreate() {
-		PullableListView listView = getListView();
-		if (C.API_LOLLIPOP) {
-			listView.setDivider(null);
+		PullableRecyclerView recyclerView = getRecyclerView();
+		recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
+		if (!C.API_LOLLIPOP) {
+			float density = ResourceUtils.obtainDensity(recyclerView);
+			ViewUtils.setNewPadding(recyclerView, (int) (16f * density), null, (int) (16f * density), null);
 		}
-		BoardsAdapter adapter = new BoardsAdapter(getPage().chanName);
-		listView.setAdapter(adapter);
-		listView.getWrapper().setPullSides(PullableWrapper.Side.TOP);
+		BoardsAdapter adapter = new BoardsAdapter(this, getPage().chanName);
+		recyclerView.setAdapter(adapter);
+		recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(),
+				adapter::configureDivider));
+		recyclerView.getWrapper().setPullSides(PullableWrapper.Side.TOP);
 		adapter.update();
-		if (!adapter.isEmpty()) {
-			restoreListPosition(null);
-		} else {
+		if (adapter.isRealEmpty()) {
 			refreshBoards(false);
+		} else {
+			restoreListPosition();
 		}
 	}
 
@@ -62,8 +69,7 @@ public class BoardsPage extends ListPage implements ReadBoardsTask.Callback {
 	}
 
 	@Override
-	public void onItemClick(View view, int position) {
-		String boardName = getAdapter().getItem(position).boardName;
+	public void onItemClick(String boardName) {
 		if (boardName != null) {
 			getUiManager().navigator().navigateBoardsOrThreads(getPage().chanName, boardName, 0);
 		}
@@ -73,8 +79,7 @@ public class BoardsPage extends ListPage implements ReadBoardsTask.Callback {
 	private static final int CONTEXT_MENU_ADD_FAVORITES = 1;
 
 	@Override
-	public boolean onItemLongClick(View view, int position) {
-		String boardName = getAdapter().getItem(position).boardName;
+	public boolean onItemLongClick(String boardName) {
 		if (boardName != null) {
 			DialogMenu dialogMenu = new DialogMenu(getContext(), id -> {
 				switch (id) {
@@ -120,7 +125,7 @@ public class BoardsPage extends ListPage implements ReadBoardsTask.Callback {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 			case OPTIONS_MENU_REFRESH: {
-				refreshBoards(!getAdapter().isEmpty());
+				refreshBoards(!getAdapter().isRealEmpty());
 				return true;
 			}
 			case OPTIONS_MENU_MAKE_HOME_PAGE: {
@@ -149,10 +154,10 @@ public class BoardsPage extends ListPage implements ReadBoardsTask.Callback {
 		readTask = new ReadBoardsTask(getPage().chanName, this);
 		readTask.executeOnExecutor(ReadBoardsTask.THREAD_POOL_EXECUTOR);
 		if (showPull) {
-			getListView().getWrapper().startBusyState(PullableWrapper.Side.TOP);
+			getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.TOP);
 			switchView(ViewType.LIST, null);
 		} else {
-			getListView().getWrapper().startBusyState(PullableWrapper.Side.BOTH);
+			getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTH);
 			switchView(ViewType.PROGRESS, null);
 		}
 	}
@@ -160,7 +165,7 @@ public class BoardsPage extends ListPage implements ReadBoardsTask.Callback {
 	@Override
 	public void onReadBoardsSuccess(BoardCategory[] boardCategories) {
 		readTask = null;
-		getListView().getWrapper().cancelBusyState();
+		getRecyclerView().getWrapper().cancelBusyState();
 		switchView(ViewType.LIST, null);
 		JSONArray jsonArray = null;
 		if (boardCategories != null && boardCategories.length > 0) {
@@ -189,14 +194,14 @@ public class BoardsPage extends ListPage implements ReadBoardsTask.Callback {
 		configuration.storeBoards(jsonArray);
 		configuration.commit();
 		getAdapter().update();
-		getListView().setSelection(0);
+		getRecyclerView().scrollToPosition(0);
 	}
 
 	@Override
 	public void onReadBoardsFail(ErrorItem errorItem) {
 		readTask = null;
-		getListView().getWrapper().cancelBusyState();
-		if (getAdapter().isEmpty()) {
+		getRecyclerView().getWrapper().cancelBusyState();
+		if (getAdapter().isRealEmpty()) {
 			switchView(ViewType.ERROR, errorItem.toString());
 		} else {
 			ClickableToast.show(getContext(), errorItem.toString());

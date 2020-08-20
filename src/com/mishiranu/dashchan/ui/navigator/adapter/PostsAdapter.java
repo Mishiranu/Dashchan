@@ -1,16 +1,17 @@
 package com.mishiranu.dashchan.ui.navigator.adapter;
 
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.FrameLayout;
-import android.widget.ListView;
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import chan.util.StringUtils;
@@ -23,8 +24,9 @@ import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.ui.posting.Replyable;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
-import com.mishiranu.dashchan.widget.BaseAdapterNotifier;
 import com.mishiranu.dashchan.widget.CommentTextView;
+import com.mishiranu.dashchan.widget.DividerItemDecoration;
+import com.mishiranu.dashchan.widget.SimpleViewHolder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,119 +34,133 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 
-public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkListener, UiManager.PostsProvider {
-	private static final int ITEM_VIEW_TYPE_POST = 0;
-	private static final int ITEM_VIEW_TYPE_HIDDEN_POST = 1;
+public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
+		implements CommentTextView.LinkListener, UiManager.PostsProvider {
+	public interface Callback {
+		void onItemClick(View view, PostItem postItem);
+		boolean onItemLongClick(PostItem postItem);
+	}
 
-	private final BaseAdapterNotifier notifier = new BaseAdapterNotifier(this);
+	private enum ViewType {POST, POST_HIDDEN}
+
+	private static final String PAYLOAD_INVALIDATE_COMMENT = "invalidateComment";
+
+	private final Callback callback;
+	private final UiManager uiManager;
+	private final UiManager.DemandSet demandSet = new UiManager.DemandSet();
+	private final UiManager.ConfigurationSet configurationSet;
+	private final CommentTextView.RecyclerKeeper recyclerKeeper;
+	private final int bumpLimit;
 
 	private final ArrayList<PostItem> postItems = new ArrayList<>();
 	private final HashMap<String, PostItem> postItemsMap = new HashMap<>();
 	private final HashSet<String> selected = new HashSet<>();
 
-	private final UiManager uiManager;
-	private final UiManager.DemandSet demandSet = new UiManager.DemandSet();
-	private final UiManager.ConfigurationSet configurationSet;
-	private final CommentTextView.ListSelectionKeeper listSelectionKeeper;
-
-	private final View bumpLimitDivider;
-	private final int bumpLimit;
-
+	private int bumpLimitOrdinalIndex = -1;
 	private boolean selection = false;
 
-	public PostsAdapter(Context context, String chanName, String boardName, UiManager uiManager,
-			Replyable replyable, HidePerformer hidePerformer, HashSet<String> userPostNumbers, ListView listView) {
+	public PostsAdapter(Callback callback, String chanName, String boardName, UiManager uiManager,
+			Replyable replyable, HidePerformer hidePerformer, HashSet<String> userPostNumbers,
+			RecyclerView recyclerView) {
+		this.callback = callback;
 		this.uiManager = uiManager;
 		configurationSet = new UiManager.ConfigurationSet(replyable, this, hidePerformer,
 				new GalleryItem.GallerySet(true), uiManager.dialog().createStackInstance(), this, userPostNumbers,
 				true, false, true, true, true, null);
-		listSelectionKeeper = new CommentTextView.ListSelectionKeeper(listView);
-		float density = ResourceUtils.obtainDensity(context);
-		FrameLayout frameLayout = new FrameLayout(context);
-		frameLayout.setPadding((int) (12f * density), 0, (int) (12f * density), 0);
-		View view = new View(context);
-		view.setMinimumHeight((int) (2f * density));
-		view.setBackgroundColor(ResourceUtils.getColor(context, R.attr.colorTextError));
-		frameLayout.addView(view, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
-		bumpLimitDivider = frameLayout;
+		recyclerKeeper = new CommentTextView.RecyclerKeeper(recyclerView);
+		super.registerAdapterDataObserver(recyclerKeeper);
 		bumpLimit = ChanConfiguration.get(chanName).getBumpLimitWithMode(boardName);
 	}
 
-	@Override
-	public void notifyDataSetChanged() {
-		listSelectionKeeper.onBeforeNotifyDataSetChanged();
-		super.notifyDataSetChanged();
-		listSelectionKeeper.onAfterNotifyDataSetChanged();
-	}
-
-	public void postNotifyDataSetChanged() {
-		notifier.postNotifyDataSetChanged();
+	public RecyclerView.ItemDecoration createPostItemDecoration(Context context, int dividerPadding) {
+		return new BumpLimitItemDecorator(context, dividerPadding);
 	}
 
 	@Override
-	public int getViewTypeCount() {
-		return 2;
+	public void registerAdapterDataObserver(@NonNull RecyclerView.AdapterDataObserver observer) {
+		super.registerAdapterDataObserver(observer);
+
+		// Move observer to the end
+		super.unregisterAdapterDataObserver(recyclerKeeper);
+		super.registerAdapterDataObserver(recyclerKeeper);
 	}
 
 	@Override
-	public int getCount() {
+	public int getItemCount() {
 		return postItems.size();
-	}
-
-	@Override
-	public PostItem getItem(int position) {
-		return postItems.get(position);
-	}
-
-	@Override
-	public long getItemId(int position) {
-		return 0;
-	}
-
-	@Override
-	public boolean isEnabled(int position) {
-		return getItem(position) != null;
-	}
-
-	@Override
-	public boolean areAllItemsEnabled() {
-		return false;
 	}
 
 	@Override
 	public int getItemViewType(int position) {
 		PostItem postItem = getItem(position);
-		return postItem != null ? postItem.isHidden(configurationSet.hidePerformer)
-				? ITEM_VIEW_TYPE_HIDDEN_POST : ITEM_VIEW_TYPE_POST : IGNORE_ITEM_VIEW_TYPE;
+		return (postItem.isHidden(configurationSet.hidePerformer) ? ViewType.POST_HIDDEN : ViewType.POST).ordinal();
+	}
+
+	private RecyclerView.ViewHolder configureView(RecyclerView.ViewHolder holder) {
+		holder.itemView.setOnClickListener(v -> callback.onItemClick(v, getItem(holder.getAdapterPosition())));
+		holder.itemView.setOnLongClickListener(v -> callback.onItemLongClick(getItem(holder.getAdapterPosition())));
+		return holder;
+	}
+
+	@NonNull
+	@Override
+	public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+		switch (ViewType.values()[viewType]) {
+			case POST: {
+				return configureView(uiManager.view().createPostView(parent, configurationSet));
+			}
+			case POST_HIDDEN: {
+				return configureView(uiManager.view().createPostHiddenView(parent, configurationSet));
+			}
+			default: {
+				throw new IllegalStateException();
+			}
+		}
 	}
 
 	@Override
-	public View getView(int position, View convertView, ViewGroup parent) {
-		PostItem postItem = getItem(position);
-		if (postItem == null) {
-			return bumpLimitDivider;
-		}
-		if (postItem.isHidden(configurationSet.hidePerformer)) {
-			convertView = uiManager.view().getPostHiddenView(postItem, convertView, parent);
-		} else {
-			UiManager.DemandSet demandSet = this.demandSet;
-			demandSet.selection = selection ? selected.contains(postItem.getPostNumber())
-					? UiManager.Selection.SELECTED : UiManager.Selection.NOT_SELECTED : UiManager.Selection.DISABLED;
-			demandSet.lastInList = position == getCount() - 1;
-			convertView = uiManager.view().getPostView(postItem, convertView, parent, demandSet, configurationSet);
-		}
-		return convertView;
+	public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+		onBindViewHolder(holder, position, Collections.emptyList());
 	}
 
-	public int indexOf(PostItem postItem) {
+	@Override
+	public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position,
+			@NonNull List<Object> payloads) {
+		PostItem postItem = getItem(position);
+		switch (ViewType.values()[holder.getItemViewType()]) {
+			case POST: {
+				UiManager.DemandSet demandSet = this.demandSet;
+				demandSet.selection = selection ? selected.contains(postItem.getPostNumber())
+						? UiManager.Selection.SELECTED : UiManager.Selection.NOT_SELECTED : UiManager.Selection.DISABLED;
+				demandSet.lastInList = position == getItemCount() - 1;
+				if (payloads.contains(PAYLOAD_INVALIDATE_COMMENT)) {
+					uiManager.view().bindPostViewInvalidateComment(holder);
+				} else {
+					uiManager.view().bindPostView(holder, postItem, demandSet);
+				}
+				break;
+			}
+			case POST_HIDDEN: {
+				uiManager.view().bindPostHiddenView(holder, postItem);
+				break;
+			}
+		}
+	}
+
+	public PostItem getItem(int position) {
+		return postItems.get(position);
+	}
+
+	public int positionOf(PostItem postItem) {
 		return postItems.indexOf(postItem);
 	}
 
 	public int findPositionByOrdinalIndex(int ordinalIndex) {
-		for (int i = 0; i < getCount(); i++) {
+		for (int i = 0; i < getItemCount(); i++) {
 			PostItem postItem = getItem(i);
-			if (postItem != null && postItem.getOrdinalIndex() == ordinalIndex) {
+			if (postItem.getOrdinalIndex() == ordinalIndex) {
 				return i;
 			}
 		}
@@ -152,9 +168,9 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 	}
 
 	public int findPositionByPostNumber(String postNumber) {
-		for (int i = 0; i < getCount(); i++) {
+		for (int i = 0; i < getItemCount(); i++) {
 			PostItem postItem = getItem(i);
-			if (postItem != null && postItem.getPostNumber().equals(postNumber)) {
+			if (postItem.getPostNumber().equals(postNumber)) {
 				return i;
 			}
 		}
@@ -173,22 +189,20 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 	}
 
 	public int getExistingPostsCount() {
-		for (int i = getCount() - 1; i >= 0; i--) {
+		for (int i = getItemCount() - 1; i >= 0; i--) {
 			PostItem postItem = getItem(i);
-			if (postItem != null) {
-				int ordinalIndex = postItem.getOrdinalIndex();
-				if (ordinalIndex >= 0) {
-					return ordinalIndex + 1;
-				}
+			int ordinalIndex = postItem.getOrdinalIndex();
+			if (ordinalIndex >= 0) {
+				return ordinalIndex + 1;
 			}
 		}
 		return 0;
 	}
 
 	public String getLastPostNumber() {
-		for (int i = postItems.size() - 1; i >= 0; i--) {
-			PostItem postItem = postItems.get(i);
-			if (postItem != null && !postItem.isDeleted()) {
+		for (int i = getItemCount() - 1; i >= 0; i--) {
+			PostItem postItem = getItem(i);
+			if (!postItem.isDeleted()) {
 				return postItem.getPostNumber();
 			}
 		}
@@ -238,7 +252,6 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 
 	private void insertItemsInternal(ArrayList<ReadPostsTask.Patch> patches, boolean maySkipHandlingReferences) {
 		cancelPreloading();
-		postItems.remove(null);
 		boolean invalidateImages = false;
 		boolean invalidateReferences = false;
 		int startAppendIndex = -1;
@@ -321,21 +334,16 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 		}
 
 		int ordinalIndex = 0;
-		boolean appendBumpLimitDelimiter = false;
+		bumpLimitOrdinalIndex = -1;
 		for (int i = 0; i < postItems.size(); i++) {
-			if (appendBumpLimitDelimiter) {
-				appendBumpLimitDelimiter = false;
-				postItems.add(i, null);
-				i++;
-			}
 			PostItem postItem = postItems.get(i);
 			if (postItem.isDeleted()) {
 				postItem.setOrdinalIndex(PostItem.ORDINAL_INDEX_DELETED);
 			} else {
 				postItem.setOrdinalIndex(ordinalIndex++);
 				if (ordinalIndex == bumpLimit && postItems.get(0).getBumpLimitReachedState(ordinalIndex)
-						== PostItem.BUMP_LIMIT_REACHED) {
-					appendBumpLimitDelimiter = true;
+						== PostItem.BumpLimitState.REACHED) {
+					bumpLimitOrdinalIndex = ordinalIndex;
 				}
 			}
 		}
@@ -344,28 +352,30 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 		preloadPosts(0);
 	}
 
+	public void invalidateComment(int position) {
+		notifyItemChanged(position, PAYLOAD_INVALIDATE_COMMENT);
+	}
+
 	public ArrayList<PostItem> clearDeletedPosts() {
 		ArrayList<PostItem> deletedPostItems = null;
 		for (int i = postItems.size() - 1; i >= 0; i--) {
 			PostItem postItem = postItems.get(i);
-			if (postItem != null) {
-				if (postItem.isDeleted()) {
-					HashSet<String> referencesTo = postItem.getReferencesTo();
-					if (referencesTo != null) {
-						for (String postNumber : referencesTo) {
-							PostItem foundPostItem = postItemsMap.get(postNumber);
-							if (foundPostItem != null) {
-								foundPostItem.removeReferenceFrom(postItem.getPostNumber());
-							}
+			if (postItem.isDeleted()) {
+				HashSet<String> referencesTo = postItem.getReferencesTo();
+				if (referencesTo != null) {
+					for (String postNumber : referencesTo) {
+						PostItem foundPostItem = postItemsMap.get(postNumber);
+						if (foundPostItem != null) {
+							foundPostItem.removeReferenceFrom(postItem.getPostNumber());
 						}
 					}
-					postItems.remove(i);
-					postItemsMap.remove(postItem.getPostNumber());
-					if (deletedPostItems == null) {
-						deletedPostItems = new ArrayList<>();
-					}
-					deletedPostItems.add(postItem);
 				}
+				postItems.remove(i);
+				postItemsMap.remove(postItem.getPostNumber());
+				if (deletedPostItems == null) {
+					deletedPostItems = new ArrayList<>();
+				}
+				deletedPostItems.add(postItem);
 			}
 		}
 		if (deletedPostItems != null) {
@@ -385,7 +395,7 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 
 	public boolean hasDeletedPosts() {
 		for (PostItem postItem : postItems) {
-			if (postItem != null && postItem.isDeleted()) {
+			if (postItem.isDeleted()) {
 				return true;
 			}
 		}
@@ -404,20 +414,11 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 		String postNumber = postItem.getPostNumber();
 		if (selected.contains(postNumber)) {
 			selected.remove(postNumber);
-		} else {
+		} else if (!postItem.isHiddenUnchecked()) {
 			selected.add(postNumber);
 		}
-	}
-
-	public void toggleItemSelected(ListView listView, int position) {
-		PostItem postItem = getItem(position);
-		if (postItem != null && !postItem.isHiddenUnchecked()) {
-			toggleItemSelected(postItem);
-			int index = position - listView.getFirstVisiblePosition();
-			if (index >= 0 && index < listView.getChildCount()) {
-				getView(position, listView.getChildAt(index), listView);
-			}
-		}
+		int position = positionOf(postItem);
+		notifyItemChanged(position, SimpleViewHolder.EMPTY_PAYLOAD);
 	}
 
 	public ArrayList<PostItem> getSelectedItems() {
@@ -447,18 +448,8 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 		from = Math.max(0, Math.min(size, from));
 		preloadPostItems.ensureCapacity(size);
 		// Ordered preloading
-		for (int i = from; i < size; i++) {
-			PostItem postItem = postItems.get(i);
-			if (postItem != null) {
-				preloadPostItems.add(postItem);
-			}
-		}
-		for (int i = 0; i < from; i++) {
-			PostItem postItem = postItems.get(i);
-			if (postItem != null) {
-				preloadPostItems.add(postItem);
-			}
-		}
+		preloadPostItems.addAll(postItems.subList(from, size));
+		preloadPostItems.addAll(postItems.subList(0, from));
 		cancelPreloading();
 		preloadHandler.obtainMessage(0, 0, 0, preloadPostItems).sendToTarget();
 	}
@@ -525,6 +516,55 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 		return () -> new PostsIterator(ascending, from);
 	}
 
+	public DividerItemDecoration.Configuration configureDivider
+			(DividerItemDecoration.Configuration configuration, int position) {
+		return configuration.need(!needBumpLimitDividerAbove(position + 1));
+	}
+
+	private boolean needBumpLimitDividerAbove(int position) {
+		PostItem postItem = position >= 0 && position < getItemCount() ? getItem(position) : null;
+		return postItem != null && postItem.getOrdinalIndex() == bumpLimitOrdinalIndex;
+	}
+
+	private class BumpLimitItemDecorator extends RecyclerView.ItemDecoration {
+		private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+		private final Rect rect = new Rect();
+		private final int height;
+		private final int padding;
+
+		public BumpLimitItemDecorator(Context context, int dividerPadding) {
+			paint.setColor(ResourceUtils.getColor(context, R.attr.colorTextError));
+			height = (int) (2f * ResourceUtils.obtainDensity(context));
+			padding = dividerPadding;
+		}
+
+		@Override
+		public void onDraw(@NonNull Canvas c, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+			int childCount = parent.getChildCount();
+			int left = parent.getPaddingLeft();
+			int right = parent.getWidth() - parent.getPaddingRight();
+			for (int i = 0; i < childCount; i++) {
+				View view = parent.getChildAt(i);
+				int position = parent.getChildAdapterPosition(view);
+				if (needBumpLimitDividerAbove(position)) {
+					parent.getDecoratedBoundsWithMargins(view, rect);
+					c.drawRect(left + padding, rect.top, right - padding, rect.top + height, paint);
+				}
+			}
+		}
+
+		@Override
+		public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent,
+				@NonNull RecyclerView.State state) {
+			int position = parent.getChildAdapterPosition(view);
+			if (needBumpLimitDividerAbove(position)) {
+				outRect.set(0, height, 0, 0);
+			} else {
+				outRect.set(0, 0, 0, 0);
+			}
+		}
+	}
+
 	private class PostsIterator implements Iterator<PostItem> {
 		private final boolean ascending;
 		private int position;
@@ -536,7 +576,7 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 
 		@Override
 		public boolean hasNext() {
-			int count = getCount();
+			int count = getItemCount();
 			return ascending ? position < count : position >= 0;
 		}
 
@@ -552,9 +592,7 @@ public class PostsAdapter extends BaseAdapter implements CommentTextView.LinkLis
 
 		@Override
 		public PostItem next() {
-			PostItem postItem = nextInternal();
-			if (postItem == null) postItem = nextInternal(); // Bump limit divider is a null item
-			return postItem;
+			return nextInternal();
 		}
 
 		@Override

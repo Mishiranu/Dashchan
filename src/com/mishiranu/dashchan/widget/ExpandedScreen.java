@@ -20,20 +20,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.AbsListView;
 import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.FlagUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
-import com.mishiranu.dashchan.widget.callback.ListScrollTracker;
-import com.mishiranu.dashchan.widget.callback.ScrollListenerComposite;
+import com.mishiranu.dashchan.util.ViewUtils;
 import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 
-public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
+public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener,
 		WindowControlFrameLayout.OnApplyWindowPaddingsListener {
 	private static final int LOLLIPOP_DIM_COLOR = 0x4d000000;
 
@@ -55,7 +54,7 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 	private View statusGuardView;
 
 	private boolean drawerOverToolbarEnabled;
-	private final LinkedHashMap<View, AbsListView> contentViews = new LinkedHashMap<>();
+	private final LinkedHashMap<View, RecyclerView> contentViews = new LinkedHashMap<>();
 
 	private ValueAnimator foregroundAnimator;
 	private boolean foregroundAnimatorShow;
@@ -485,25 +484,27 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 		}
 	}
 
-	private final ListScrollTracker listScrollTracker = new ListScrollTracker(this);
+	private final RecyclerScrollTracker recyclerScrollTracker = new RecyclerScrollTracker(this);
 
 	public void addContentView(View view) {
-		AbsListView listView = null;
+		RecyclerView recyclerView = null;
 		if (view instanceof ExpandedFrameLayout) {
-			listView = ((ExpandedFrameLayout) view).getListView();
+			recyclerView = ((ExpandedFrameLayout) view).getRecyclerView();
 		}
-		contentViews.put(view, listView);
-		if (listView != null && expandingEnabled) {
-			ScrollListenerComposite.obtain(listView).add(listScrollTracker);
+		contentViews.put(view, recyclerView);
+		if (expandingEnabled) {
+			if (recyclerView != null) {
+				recyclerView.addOnScrollListener(recyclerScrollTracker);
+			}
 		}
 		updatePaddings();
 		setShowActionBar(true, true);
 	}
 
 	public void removeContentView(View view) {
-		AbsListView listView = contentViews.remove(view);
-		if (listView != null && expandingEnabled) {
-			ScrollListenerComposite.obtain(listView).remove(listScrollTracker);
+		RecyclerView recyclerView = contentViews.remove(view);
+		if (recyclerView != null && expandingEnabled) {
+			recyclerView.removeOnScrollListener(recyclerScrollTracker);
 		}
 	}
 
@@ -521,54 +522,6 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 		return actionHeight;
 	}
 
-	private static final int KEEP = Integer.MAX_VALUE;
-
-	private static void setNewPadding(View view, int left, int top, int right, int bottom) {
-		int oldLeft = view.getPaddingLeft();
-		int oldTop = view.getPaddingTop();
-		int oldRight = view.getPaddingRight();
-		int oldBottom = view.getPaddingBottom();
-		if (left == KEEP) {
-			left = oldLeft;
-		}
-		if (top == KEEP) {
-			top = oldTop;
-		}
-		if (right == KEEP) {
-			right = oldRight;
-		}
-		if (bottom == KEEP) {
-			bottom = oldBottom;
-		}
-		if (oldLeft != left || oldTop != top || oldRight != right || oldBottom != bottom) {
-			view.setPadding(left, top, right, bottom);
-		}
-	}
-
-	private static void setNewMargin(View view, int left, int top, int right, int bottom) {
-		ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
-		boolean changed = false;
-		if (left != KEEP && layoutParams.leftMargin != left) {
-			layoutParams.leftMargin = left;
-			changed = true;
-		}
-		if (top != KEEP && layoutParams.topMargin != top) {
-			layoutParams.topMargin = top;
-			changed = true;
-		}
-		if (right != KEEP && layoutParams.rightMargin != right) {
-			layoutParams.rightMargin = right;
-			changed = true;
-		}
-		if (bottom != KEEP && layoutParams.bottomMargin != bottom) {
-			layoutParams.bottomMargin = bottom;
-			changed = true;
-		}
-		if (changed) {
-			view.requestLayout();
-		}
-	}
-
 	public void updatePaddings() {
 		if (expandingEnabled || fullScreenLayoutEnabled) {
 			int actionBarHeight = obtainActionBarHeight(activity);
@@ -577,42 +530,44 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 			int rightNavigationBarHeight = insets.right;
 			int bottomNavigationBarHeight = insets.bottom;
 			if (rootView != null) {
-				setNewMargin(rootView, leftNavigationBarHeight, KEEP, rightNavigationBarHeight, KEEP);
+				ViewUtils.setNewMargin(rootView, leftNavigationBarHeight, null, rightNavigationBarHeight, null);
 			}
 			if (drawerInterlayer != null) {
-				setNewPadding(drawerInterlayer, KEEP, statusBarHeight, KEEP, bottomNavigationBarHeight);
+				ViewUtils.setNewPadding(drawerInterlayer, null, statusBarHeight, null, bottomNavigationBarHeight);
 			}
-			for (LinkedHashMap.Entry<View, AbsListView> entry : contentViews.entrySet()) {
+			for (LinkedHashMap.Entry<View, RecyclerView> entry : contentViews.entrySet()) {
 				View view = entry.getKey();
-				AbsListView listView = entry.getValue();
-				if (listView != null) {
-					setNewPadding(listView, KEEP, statusBarHeight + actionBarHeight, KEEP, bottomNavigationBarHeight);
+				RecyclerView recyclerView = entry.getValue();
+				if (recyclerView != null) {
+					ViewUtils.setNewPadding(recyclerView, null, statusBarHeight + actionBarHeight,
+							null, bottomNavigationBarHeight);
 				}
 				if (view instanceof ExpandedFrameLayout) {
 					ExpandedFrameLayout layout = (ExpandedFrameLayout) view;
 					int childCount = layout.getChildCount();
 					for (int i = 0; i < childCount; i++) {
 						View child = layout.getChildAt(i);
-						if (child != listView) {
-							setNewPadding(child, KEEP, statusBarHeight + actionBarHeight,
-									KEEP, bottomNavigationBarHeight);
+						if (child != recyclerView) {
+							ViewUtils.setNewPadding(child, null, statusBarHeight + actionBarHeight,
+									null, bottomNavigationBarHeight);
 						}
 					}
 				} else {
-					setNewMargin(view, KEEP, statusBarHeight + actionBarHeight, KEEP, bottomNavigationBarHeight);
+					ViewUtils.setNewMargin(view, null, statusBarHeight + actionBarHeight,
+							null, bottomNavigationBarHeight);
 				}
 			}
 			if (actionModeView != null) {
-				setNewMargin(actionModeView, leftNavigationBarHeight, KEEP, rightNavigationBarHeight, KEEP);
+				ViewUtils.setNewMargin(actionModeView, leftNavigationBarHeight, null, rightNavigationBarHeight, null);
 			}
 			if (drawerContent != null) {
 				int paddingTop = C.API_LOLLIPOP && drawerOverToolbarEnabled && toolbarView != null
 						? statusBarHeight : statusBarHeight + actionBarHeight;
 				if (drawerHeader != null) {
-					setNewPadding(drawerHeader, KEEP, paddingTop, KEEP, KEEP);
-					setNewPadding(drawerContent, KEEP, 0, KEEP, bottomNavigationBarHeight);
+					ViewUtils.setNewPadding(drawerHeader, null, paddingTop, null, null);
+					ViewUtils.setNewPadding(drawerContent, null, 0, null, bottomNavigationBarHeight);
 				} else {
-					setNewPadding(drawerContent, KEEP, paddingTop, KEEP, bottomNavigationBarHeight);
+					ViewUtils.setNewPadding(drawerContent, null, paddingTop, null, bottomNavigationBarHeight);
 				}
 			}
 			if (contentForeground != null) {
@@ -630,7 +585,7 @@ public class ExpandedScreen implements ListScrollTracker.OnScrollListener,
 	private boolean scrollingDown;
 
 	@Override
-	public void onScroll(AbsListView view, int scrollY, int totalItemCount, boolean first, boolean last) {
+	public void onScroll(ViewGroup view, int scrollY, int totalItemCount, boolean first, boolean last) {
 		if (Math.abs(scrollY) > slopShiftSize) {
 			scrollingDown = scrollY > 0;
 		}

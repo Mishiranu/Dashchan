@@ -18,9 +18,11 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import chan.content.ChanLocator;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
@@ -43,7 +45,7 @@ import com.mishiranu.dashchan.widget.AttachmentView;
 import com.mishiranu.dashchan.widget.CardView;
 import com.mishiranu.dashchan.widget.CommentTextView;
 import com.mishiranu.dashchan.widget.LinebreakLayout;
-import com.mishiranu.dashchan.widget.SingleLayerLinearLayout;
+import com.mishiranu.dashchan.widget.PostLinearLayout;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -51,7 +53,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
-public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListener {
+public class ViewUnit {
 	private final UiManager uiManager;
 	private final PostDateFormatter postDateFormatter;
 
@@ -103,20 +105,20 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		@Override
 		public void onLinkClick(CommentTextView view, String chanName, Uri uri, boolean confirmed) {
 			UiManager.Holder holder = ListViewUtils.getViewHolder(view, UiManager.Holder.class);
-			uiManager.interaction().handleLinkClick(holder.configurationSet, chanName, uri, confirmed);
+			uiManager.interaction().handleLinkClick(holder.getConfigurationSet(), chanName, uri, confirmed);
 		}
 
 		@Override
 		public void onLinkLongClick(CommentTextView view, String chanName, Uri uri) {
 			UiManager.Holder holder = ListViewUtils.getViewHolder(view, UiManager.Holder.class);
-			uiManager.interaction().handleLinkLongClick(holder.configurationSet, uri);
+			uiManager.interaction().handleLinkLongClick(holder.getConfigurationSet(), uri);
 		}
 	};
 
 	private final CommentTextView.CommentListener commentListener = new CommentTextView.CommentListener() {
 		@Override
 		public void onRequestSiblingsInvalidate(CommentTextView view) {
-			uiManager.sendPostItemMessage(view, UiManager.MESSAGE_INVALIDATE_COMMENT_VIEW);
+			uiManager.sendPostItemMessage(view, UiManager.Message.INVALIDATE_COMMENT_VIEW);
 		}
 
 		@Override
@@ -125,65 +127,18 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		}
 	};
 
-	public View getThreadView(PostItem postItem, View convertView, ViewGroup parent,
-			UiManager.ConfigurationSet configurationSet) {
+	public RecyclerView.ViewHolder createThreadViewHolder(ViewGroup parent,
+			UiManager.ConfigurationSet configurationSet, boolean cell) {
+		return new ThreadViewHolder(parent, configurationSet, uiManager, cell);
+	}
+
+	public void bindThreadView(RecyclerView.ViewHolder viewHolder, PostItem postItem) {
 		Context context = uiManager.getContext();
 		ColorScheme colorScheme = uiManager.getColorScheme();
-		ThreadViewHolder holder;
-		if (convertView != null && !(convertView.getTag() instanceof ThreadViewHolder)) {
-			convertView = null;
-		}
-		if (convertView == null) {
-			LayoutInflater inflater = LayoutInflater.from(context);
-			convertView = inflater.inflate(R.layout.list_item_card, parent, false);
-			CardView cardView = convertView.findViewById(R.id.card_view);
-			inflater.inflate(R.layout.list_item_thread, cardView);
-			holder = new ThreadViewHolder();
-			holder.cardView = cardView;
-			holder.subject = cardView.findViewById(R.id.subject);
-			holder.comment = cardView.findViewById(R.id.comment);
-			holder.description = cardView.findViewById(R.id.thread_description);
-			holder.stateSage = cardView.findViewById(R.id.state_sage);
-			holder.stateSticky = cardView.findViewById(R.id.state_sticky);
-			holder.stateClosed = cardView.findViewById(R.id.state_closed);
-			holder.thumbnail = cardView.findViewById(R.id.thumbnail);
-			holder.showOpClickView = cardView.findViewById(R.id.click_view);
-			holder.showOpClickView.setOnClickListener(threadShowOpClickListener);
-			convertView.setTag(holder);
-
-			holder.thumbnail.setDrawTouching(true);
-			holder.thumbnail.applyRoundedCorners(cardView.getBackgroundColor());
-			ViewGroup.MarginLayoutParams thumbnailLayoutParams = (ViewGroup.MarginLayoutParams) holder
-					.thumbnail.getLayoutParams();
-			ViewUtils.applyScaleSize(holder.comment, holder.subject, holder.description,
-					holder.stateSage, holder.stateSticky, holder.stateClosed);
-			if (ResourceUtils.isTablet(context.getResources().getConfiguration())) {
-				float density = ResourceUtils.obtainDensity(context);
-				holder.description.setGravity(Gravity.START);
-				int thumbnailSize = (int) (72f * density);
-				thumbnailLayoutParams.width = thumbnailSize;
-				thumbnailLayoutParams.height = thumbnailSize;
-				int descriptionPaddingLeft = thumbnailSize + thumbnailLayoutParams.leftMargin +
-						thumbnailLayoutParams.rightMargin;
-				holder.description.setPadding(descriptionPaddingLeft, holder.description.getPaddingTop(),
-						holder.description.getPaddingRight(), holder.description.getPaddingBottom());
-				holder.comment.setMaxLines(8);
-			} else {
-				holder.description.setGravity(Gravity.END);
-				holder.comment.setMaxLines(6);
-			}
-			int thumbnailsScale = Preferences.getThumbnailsScale();
-			thumbnailLayoutParams.width = thumbnailLayoutParams.width * thumbnailsScale / 100;
-			thumbnailLayoutParams.height = thumbnailLayoutParams.height * thumbnailsScale / 100;
-		} else {
-			holder = (ThreadViewHolder) convertView.getTag();
-		}
-
+		ThreadViewHolder holder = (ThreadViewHolder) viewHolder;
 		holder.postItem = postItem;
-		holder.configurationSet = configurationSet;
 
-		holder.showOpClickView.setEnabled(true);
-		holder.stateSage.setVisibility(postItem.getBumpLimitReachedState(0) == PostItem.BUMP_LIMIT_REACHED
+		holder.stateSage.setVisibility(postItem.getBumpLimitReachedState(0) == PostItem.BumpLimitState.REACHED
 				? View.VISIBLE : View.GONE);
 		holder.stateSticky.setVisibility(postItem.isSticky() ? View.VISIBLE : View.GONE);
 		holder.stateClosed.setVisibility(postItem.isClosed() ? View.VISIBLE : View.GONE);
@@ -195,9 +150,14 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		} else {
 			holder.subject.setVisibility(View.GONE);
 		}
-		CharSequence comment = postItem.getThreadCommentShort(parent.getWidth(), holder.comment.getTextSize(), 8);
+		int parentWidth = (int) (ResourceUtils.obtainDensity(holder.itemView) *
+				holder.itemView.getResources().getConfiguration().screenWidthDp);
+		CharSequence comment = postItem.getThreadCommentShort(parentWidth, holder.comment.getTextSize(), 8);
 		colorScheme.apply(postItem.getThreadCommentShortSpans());
-		if (StringUtils.isEmpty(subject) && StringUtils.isEmpty(comment)) comment = " "; // Avoid 0 height
+		if (StringUtils.isEmpty(subject) && StringUtils.isEmpty(comment)) {
+			// Avoid 0 height
+			comment = " ";
+		}
 		holder.comment.setText(comment);
 		holder.comment.setVisibility(holder.comment.getText().length() > 0 ? View.VISIBLE : View.GONE);
 		holder.description.setText(postItem.formatThreadCardDescription(context, false));
@@ -218,48 +178,16 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		}
 		holder.thumbnail.setOnClickListener(holder.thumbnailClickListener);
 		holder.thumbnail.setOnLongClickListener(holder.thumbnailLongClickListener);
-		return convertView;
 	}
 
-	public View getThreadViewForGrid(PostItem postItem, View convertView, ViewGroup parent,
-			int contentHeight, UiManager.ConfigurationSet configurationSet) {
+	public void bindThreadCellView(RecyclerView.ViewHolder viewHolder, PostItem postItem, int contentHeight) {
 		Context context = uiManager.getContext();
 		ColorScheme colorScheme = uiManager.getColorScheme();
-		ThreadViewHolder holder;
-		if (convertView != null && !(convertView.getTag() instanceof ThreadViewHolder)) {
-			convertView = null;
-		}
-		if (convertView == null) {
-			LayoutInflater inflater = LayoutInflater.from(context);
-			convertView = inflater.inflate(R.layout.list_item_card, parent, false);
-			CardView cardView = convertView.findViewById(R.id.card_view);
-			inflater.inflate(R.layout.list_item_thread_grid, cardView);
-			holder = new ThreadViewHolder();
-			holder.cardView = cardView;
-			holder.subject = cardView.findViewById(R.id.subject);
-			holder.comment = cardView.findViewById(R.id.comment);
-			holder.description = cardView.findViewById(R.id.thread_description);
-			holder.thumbnail = cardView.findViewById(R.id.thumbnail);
-			holder.threadContent = cardView.findViewById(R.id.thread_content);
-			holder.showOpClickView = cardView.findViewById(R.id.click_view);
-			holder.showOpClickView.setOnClickListener(threadShowOpClickListener);
-			convertView.setTag(holder);
-
-			holder.thumbnail.setFitSquare(true);
-			holder.thumbnail.setDrawTouching(true);
-			holder.thumbnail.applyRoundedCorners(cardView.getBackgroundColor());
-			ViewUtils.applyScaleSize(holder.comment, holder.subject, holder.description);
-		} else {
-			holder = (ThreadViewHolder) convertView.getTag();
-		}
-
+		ThreadViewHolder holder = (ThreadViewHolder) viewHolder;
 		holder.postItem = postItem;
-		holder.configurationSet = configurationSet;
 
-		holder.showOpClickView.setEnabled(true);
 		List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
-
-		boolean hidden = postItem.isHidden(configurationSet.hidePerformer);
+		boolean hidden = postItem.isHidden(holder.configurationSet.hidePerformer);
 		((View) holder.threadContent.getParent()).setAlpha(hidden ? ALPHA_HIDDEN_POST : 1f);
 		String subject = postItem.getSubject();
 		if (!StringUtils.isEmptyOrWhitespace(subject) && !hidden) {
@@ -273,7 +201,9 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 			comment = postItem.getHideReason();
 		}
 		if (comment == null) {
-			comment = postItem.getThreadCommentShort(parent.getWidth() / 2,
+			int parentWidth = (int) (ResourceUtils.obtainDensity(holder.itemView) *
+					holder.itemView.getResources().getConfiguration().screenWidthDp);
+			comment = postItem.getThreadCommentShort(parentWidth / 2,
 					holder.comment.getTextSize(), attachmentItems != null ? 4 : 12);
 			colorScheme.apply(postItem.getThreadCommentShortSpans());
 		}
@@ -298,135 +228,51 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		holder.thumbnail.setOnLongClickListener(holder.thumbnailLongClickListener);
 
 		holder.threadContent.getLayoutParams().height = contentHeight;
-		return convertView;
 	}
 
-	public View getThreadHiddenView(PostItem postItem, View convertView, ViewGroup parent,
+	public RecyclerView.ViewHolder createThreadHiddenView(ViewGroup parent,
 			UiManager.ConfigurationSet configurationSet) {
-		HiddenViewHolder holder;
-		if (convertView != null && !(convertView.getTag() instanceof HiddenViewHolder)) {
-			convertView = null;
-		}
-		if (convertView == null) {
-			LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-			convertView = inflater.inflate(R.layout.list_item_card, parent, false);
-			ViewGroup cardView = convertView.findViewById(R.id.card_view);
-			inflater.inflate(R.layout.list_item_hidden, cardView);
-			holder = new HiddenViewHolder();
-			holder.comment = convertView.findViewById(R.id.comment);
-			convertView.setTag(holder);
-			convertView.findViewById(R.id.head).setAlpha(ALPHA_HIDDEN_POST);
-			convertView.findViewById(R.id.index).setVisibility(View.GONE);
-			convertView.findViewById(R.id.number).setVisibility(View.GONE);
-			ViewUtils.applyScaleSize(holder.comment);
-			ViewUtils.applyScaleMarginLR(holder.comment);
-		} else {
-			holder = (HiddenViewHolder) convertView.getTag();
-		}
+		return new HiddenViewHolder(parent, configurationSet, true);
+	}
 
+	public void bindThreadHiddenView(RecyclerView.ViewHolder viewHolder, PostItem postItem) {
+		HiddenViewHolder holder = (HiddenViewHolder) viewHolder;
 		holder.postItem = postItem;
-		holder.configurationSet = configurationSet;
-
 		String description = postItem.getHideReason();
 		if (description == null) {
 			description = postItem.getSubjectOrComment();
 		}
 		holder.comment.setText(description);
-		return convertView;
 	}
 
-	public View getPostView(PostItem postItem, View convertView, ViewGroup parent, UiManager.DemandSet demandSet,
+	public RecyclerView.ViewHolder createPostView(ViewGroup parent,
 			UiManager.ConfigurationSet configurationSet) {
-		Context context = uiManager.getContext();
+		return new PostViewHolder(parent, configurationSet, uiManager, thumbnailWidth);
+	}
+
+	public void bindPostView(RecyclerView.ViewHolder viewHolder, PostItem postItem, UiManager.DemandSet demandSet) {
 		ColorScheme colorScheme = uiManager.getColorScheme();
-		PostViewHolder holder;
-		if (convertView != null && !(convertView.getTag() instanceof PostViewHolder)) {
-			convertView = null;
-		}
-		if (convertView == null) {
-			SingleLayerLinearLayout layout = (SingleLayerLinearLayout) LayoutInflater.from(context)
-					.inflate(R.layout.list_item_post, parent, false);
-			layout.setOnTemporaryDetachListener(this);
-			convertView = layout;
-			holder = new PostViewHolder();
-			holder.head = convertView.findViewById(R.id.head);
-			holder.number = convertView.findViewById(R.id.number);
-			holder.name = convertView.findViewById(R.id.name);
-			holder.index = convertView.findViewById(R.id.index);
-			holder.date = convertView.findViewById(R.id.date);
-			int anchorIndex = holder.head.indexOfChild(holder.number) + 1;
-			float density = ResourceUtils.obtainDensity(context);
-			int size = (int) (12f * density);
-			TypedArray typedArray = context.obtainStyledAttributes(STATE_ATTRS);
-			for (int i = 0; i < holder.stateImages.length; i++) {
-				ImageView imageView = new ImageView(context);
-				imageView.setImageDrawable(typedArray.getDrawable(i));
-				holder.head.addView(imageView, anchorIndex + i, new ViewGroup.LayoutParams(size, size));
-				holder.stateImages[i] = imageView;
-			}
-			typedArray.recycle();
-			holder.attachments = convertView.findViewById(R.id.attachments);
-			holder.comment = convertView.findViewById(R.id.comment);
-			holder.attachmentInfo = convertView.findViewById(R.id.attachment_info);
-			holder.thumbnail = convertView.findViewById(R.id.thumbnail);
-			holder.textSelectionPadding = convertView.findViewById(R.id.text_selection_padding);
-			holder.textBarPadding = convertView.findViewById(R.id.text_bar_padding);
-			holder.bottomBar = convertView.findViewById(R.id.bottom_bar);
-			holder.bottomBarReplies = convertView.findViewById(R.id.bottom_bar_replies);
-			holder.bottomBarExpand = convertView.findViewById(R.id.bottom_bar_expand);
-			holder.bottomBarOpenThread = convertView.findViewById(R.id.bottom_bar_open_thread);
-			convertView.setTag(holder);
-
-			holder.head.setOnTouchListener(headContentTouchListener);
-			holder.comment.setCommentListener(commentListener);
-			holder.thumbnail.setOnClickListener(holder.thumbnailClickListener);
-			holder.thumbnail.setOnLongClickListener(holder.thumbnailLongClickListener);
-			holder.bottomBarReplies.setOnClickListener(repliesBlockClickListener);
-			holder.bottomBarOpenThread.setOnClickListener(threadLinkBlockClickListener);
-
-			holder.index.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
-			int textScale = Preferences.getTextScale();
-			if (textScale != 100) {
-				ViewUtils.applyScaleSize(holder.number, holder.name, holder.index, holder.date, holder.comment,
-						holder.attachmentInfo, holder.bottomBarReplies, holder.bottomBarExpand,
-						holder.bottomBarOpenThread);
-				ViewUtils.applyScaleSize(holder.stateImages);
-				holder.head.setHorizontalSpacing(holder.head.getHorizontalSpacing() * textScale / 100);
-			}
-
-			holder.thumbnail.setDrawTouching(true);
-			holder.thumbnail.applyRoundedCorners(getPostBackgroundColor(configurationSet));
-			ViewGroup.LayoutParams thumbnailLayoutParams = holder.thumbnail.getLayoutParams();
-			int thumbnailsScale = Preferences.getThumbnailsScale();
-			if (thumbnailsScale != 100) {
-				thumbnailLayoutParams.width = thumbnailWidth * thumbnailsScale / 100;
-				thumbnailLayoutParams.height = thumbnailLayoutParams.width;
-			} else {
-				thumbnailLayoutParams.width = thumbnailWidth;
-			}
-		} else {
-			holder = (PostViewHolder) convertView.getTag();
-		}
-
+		PostViewHolder holder = (PostViewHolder) viewHolder;
+		holder.notifyUnbind();
 		holder.postItem = postItem;
-		holder.configurationSet = configurationSet;
 
 		String chanName = postItem.getChanName();
 		String boardName = postItem.getBoardName();
 		String threadNumber = postItem.getThreadNumber();
 		String postNumber = postItem.getPostNumber();
 		boolean bumpLimitReached = false;
-		int bumpLimitReachedState = postItem.getBumpLimitReachedState(0);
-		if (bumpLimitReachedState == PostItem.BUMP_LIMIT_REACHED) {
+		PostItem.BumpLimitState bumpLimitReachedState = postItem.getBumpLimitReachedState(0);
+		if (bumpLimitReachedState == PostItem.BumpLimitState.REACHED) {
 			bumpLimitReached = true;
-		} else if (bumpLimitReachedState == PostItem.BUMP_LIMIT_NEED_COUNT && configurationSet.postsProvider != null) {
+		} else if (bumpLimitReachedState == PostItem.BumpLimitState.NEED_COUNT &&
+				holder.configurationSet.postsProvider != null) {
 			int postsCount = 0;
-			for (PostItem itPostItem : configurationSet.postsProvider) {
+			for (PostItem itPostItem : holder.configurationSet.postsProvider) {
 				if (!itPostItem.isDeleted()) {
 					postsCount++;
 				}
 			}
-			bumpLimitReached = postItem.getBumpLimitReachedState(postsCount) == PostItem.BUMP_LIMIT_REACHED;
+			bumpLimitReached = postItem.getBumpLimitReachedState(postsCount) == PostItem.BumpLimitState.REACHED;
 		}
 		holder.number.setText("#" + postNumber);
 		holder.states[0] = postItem.isUserPost() && Preferences.isShowMyPosts();
@@ -441,7 +287,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		for (int i = 0; i < holder.stateImages.length; i++) {
 			holder.stateImages[i].setVisibility(holder.states[i] ? View.VISIBLE : View.GONE);
 		}
-		convertView.setAlpha(postItem.isDeleted() ? ALPHA_DELETED_POST : 1f);
+		viewHolder.itemView.setAlpha(postItem.isDeleted() ? ALPHA_DELETED_POST : 1f);
 
 		CharSequence name = postItem.getFullName();
 		colorScheme.apply(postItem.getFullNameSpans());
@@ -449,15 +295,15 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		holder.date.setText(postItem.getDateTime(postDateFormatter));
 
 		String subject = postItem.getSubject();
-		CharSequence comment = !StringUtils.isEmpty(configurationSet.repliesToPost)
-				? postItem.getComment(configurationSet.repliesToPost) : postItem.getComment();
+		CharSequence comment = !StringUtils.isEmpty(holder.configurationSet.repliesToPost)
+				? postItem.getComment(holder.configurationSet.repliesToPost) : postItem.getComment();
 				colorScheme.apply(postItem.getCommentSpans());
 		LinkSuffixSpan[] linkSuffixSpans = postItem.getLinkSuffixSpansAfterComment();
-		if (linkSuffixSpans != null && configurationSet.userPostNumbers != null) {
+		if (linkSuffixSpans != null && holder.configurationSet.userPostNumbers != null) {
 			boolean showMyPosts = Preferences.isShowMyPosts();
 			for (LinkSuffixSpan span : linkSuffixSpans) {
-				span.setSuffix(LinkSuffixSpan.SUFFIX_USER_POST, showMyPosts && configurationSet.userPostNumbers
-						.contains(span.getPostNumber()));
+				span.setSuffix(LinkSuffixSpan.SUFFIX_USER_POST, showMyPosts &&
+						holder.configurationSet.userPostNumbers.contains(span.getPostNumber()));
 			}
 		}
 		LinkSpan[] linkSpans = postItem.getLinkSpansAfterComment();
@@ -470,7 +316,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 					if (referencesTo != null && referencesTo.contains(linkPostNumber)
 							&& holder.configurationSet.postsProvider != null) {
 						PostItem linkPostItem = holder.configurationSet.postsProvider.findPostItem(linkPostNumber);
-						hidden = linkPostItem != null && linkPostItem.isHidden(configurationSet.hidePerformer);
+						hidden = linkPostItem != null && linkPostItem.isHidden(holder.configurationSet.hidePerformer);
 					}
 					linkSpan.setHidden(hidden);
 				}
@@ -479,14 +325,14 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		holder.comment.setSpoilersEnabled(!Preferences.isShowSpoilers());
 		holder.comment.setSubjectAndComment(makeHighlightedText(demandSet.highlightText, subject),
 				makeHighlightedText(demandSet.highlightText, comment));
-		holder.comment.setReplyable(configurationSet.replyable, postNumber);
-		holder.comment.setLinkListener(configurationSet.linkListener != null ? configurationSet.linkListener
-				: defaultLinkListener, chanName, boardName, threadNumber);
+		holder.comment.setReplyable(holder.configurationSet.replyable, postNumber);
+		holder.comment.setLinkListener(holder.configurationSet.linkListener != null
+				? holder.configurationSet.linkListener : defaultLinkListener, chanName, boardName, threadNumber);
 		holder.comment.setVisibility(subject.length() > 0 || comment.length() > 0 ? View.VISIBLE : View.GONE);
 		holder.comment.bindSelectionPaddingView(demandSet.lastInList ? holder.textSelectionPadding : null);
 
 		handlePostViewIcons(holder);
-		handlePostViewAttachments(holder, configurationSet);
+		handlePostViewAttachments(holder);
 		holder.index.setText(postItem.getOrdinalIndexString());
 		boolean showName = holder.thumbnail.getVisibility() == View.VISIBLE ||
 				!postItem.isUseDefaultName() && !StringUtils.isEmpty(name);
@@ -501,7 +347,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		} else {
 			int replyCount = postItem.getPostReplyCount();
 			if (postItem.getPostReplyCount() > 0) {
-				holder.bottomBarReplies.setText(context.getResources().getQuantityString
+				holder.bottomBarReplies.setText(holder.itemView.getResources().getQuantityString
 						(R.plurals.text_replies_count_format, replyCount, replyCount));
 				holder.bottomBarReplies.setVisibility(View.VISIBLE);
 			} else {
@@ -510,12 +356,12 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 			holder.bottomBarExpand.setVisibility(View.GONE);
 			holder.bottomBarOpenThread.setVisibility(demandSet.showOpenThreadButton ? View.VISIBLE : View.GONE);
 		}
-		if (configurationSet.mayCollapse) {
+		if (holder.configurationSet.mayCollapse) {
 			// invalidateBottomBar will be called from these following methods
 			if (commentMaxLines == 0 || postItem.isExpanded()) {
-				removeMaxHeight(convertView);
+				removeMaxHeight(holder);
 			} else {
-				setMaxHeight(convertView, parent);
+				setMaxHeight(holder);
 			}
 		} else {
 			invalidateBottomBar(holder);
@@ -531,14 +377,10 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		holder.bottomBarExpand.setClickable(viewsEnabled);
 		holder.bottomBarOpenThread.setEnabled(viewsEnabled);
 		holder.bottomBarOpenThread.setClickable(viewsEnabled);
-		if (holder.newPostAnimator != null) {
-			holder.newPostAnimator.cancel();
-			holder.newPostAnimator = null;
-		}
 		if (viewsEnabled && postItem.isUnread()) {
 			switch (Preferences.getHighlightUnreadMode()) {
 				case Preferences.HIGHLIGHT_UNREAD_AUTOMATICALLY: {
-					Animator animator = AnimationUtils.ofNewPostWithStartDelay(convertView, postItem,
+					Animator animator = AnimationUtils.ofNewPostWithStartDelay(holder.layout, postItem,
 							colorScheme.highlightBackgroundColor);
 					animator.setDuration(500);
 					animator.start();
@@ -546,41 +388,33 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 					break;
 				}
 				case Preferences.HIGHLIGHT_UNREAD_MANUALLY: {
-					convertView.setBackgroundColor(colorScheme.highlightBackgroundColor);
+					holder.layout.setSecondaryBackgroundColor(colorScheme.highlightBackgroundColor);
 					break;
 				}
 				default: {
-					convertView.setBackground(null);
+					holder.layout.setSecondaryBackground(null);
 					break;
 				}
 			}
 		} else if (demandSet.selection == UiManager.Selection.SELECTED) {
-			convertView.setBackgroundColor(colorScheme.highlightBackgroundColor);
+			holder.layout.setSecondaryBackgroundColor(colorScheme.highlightBackgroundColor);
 		} else {
-			convertView.setBackground(null);
+			holder.layout.setSecondaryBackground(null);
 		}
-		return convertView;
 	}
 
-	public View getPostHiddenView(PostItem postItem, View convertView, ViewGroup parent) {
-		HiddenViewHolder holder;
-		if (convertView != null && !(convertView.getTag() instanceof HiddenViewHolder)) {
-			convertView = null;
-		}
-		if (convertView == null) {
-			convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_hidden, parent, false);
-			holder = new HiddenViewHolder();
-			holder.index = convertView.findViewById(R.id.index);
-			holder.number = convertView.findViewById(R.id.number);
-			holder.comment = convertView.findViewById(R.id.comment);
-			convertView.setTag(holder);
-			convertView.findViewById(R.id.head).setAlpha(ALPHA_HIDDEN_POST);
-			ViewUtils.applyScaleSize(holder.index, holder.number, holder.comment);
-			ViewUtils.applyScaleMarginLR(holder.index, holder.number, holder.comment);
-		} else {
-			holder = (HiddenViewHolder) convertView.getTag();
-		}
+	public void bindPostViewInvalidateComment(RecyclerView.ViewHolder viewHolder) {
+		PostViewHolder holder = (PostViewHolder) viewHolder;
+		holder.comment.invalidateAllSpans();
+	}
 
+	public RecyclerView.ViewHolder createPostHiddenView(ViewGroup parent,
+			UiManager.ConfigurationSet configurationSet) {
+		return new HiddenViewHolder(parent, configurationSet, false);
+	}
+
+	public void bindPostHiddenView(RecyclerView.ViewHolder viewHolder, PostItem postItem) {
+		HiddenViewHolder holder = (HiddenViewHolder) viewHolder;
 		holder.postItem = postItem;
 		holder.index.setText(postItem.getOrdinalIndexString());
 		holder.number.setText("#" + postItem.getPostNumber());
@@ -590,16 +424,15 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		}
 		holder.comment.setText(description);
 		postItem.setUnread(false);
-		return convertView;
 	}
 
-	private int getPostBackgroundColor(UiManager.ConfigurationSet configurationSet) {
+	private static int getPostBackgroundColor(UiManager uiManager, UiManager.ConfigurationSet configurationSet) {
 		ColorScheme colorScheme = uiManager.getColorScheme();
 		return configurationSet.isDialog ? colorScheme.dialogBackgroundColor : colorScheme.windowBackgroundColor;
 	}
 
 	@SuppressLint("InflateParams")
-	private void handlePostViewAttachments(PostViewHolder holder, UiManager.ConfigurationSet configurationSet) {
+	private void handlePostViewAttachments(PostViewHolder holder) {
 		Context context = uiManager.getContext();
 		PostItem postItem = holder.postItem;
 		List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
@@ -616,7 +449,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 				}
 				int holders = attachmentHolders.size();
 				if (holders < size) {
-					int postBackgroundColor = getPostBackgroundColor(configurationSet);
+					int postBackgroundColor = getPostBackgroundColor(uiManager, holder.configurationSet);
 					int thumbnailsScale = Preferences.getThumbnailsScale();
 					int textScale = Preferences.getTextScale();
 					for (int i = holders; i < size; i++) {
@@ -650,7 +483,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 					AttachmentHolder attachmentHolder = attachmentHolders.get(i);
 					AttachmentItem attachmentItem = attachmentItems.get(i);
 					attachmentItem.configureAndLoad(attachmentHolder.thumbnail, false, false);
-					attachmentHolder.thumbnailClickListener.update(i, false, configurationSet.isDialog
+					attachmentHolder.thumbnailClickListener.update(i, false, holder.configurationSet.isDialog
 							? GalleryOverlay.NavigatePostMode.MANUALLY : GalleryOverlay.NavigatePostMode.ENABLED);
 					attachmentHolder.thumbnailLongClickListener.update(attachmentItem);
 					attachmentHolder.thumbnail.setSfwMode(sfwMode);
@@ -669,7 +502,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 			} else {
 				AttachmentItem attachmentItem = attachmentItems.get(0);
 				attachmentItem.configureAndLoad(holder.thumbnail, size > 1, false);
-				holder.thumbnailClickListener.update(0, true, configurationSet.isDialog
+				holder.thumbnailClickListener.update(0, true, holder.configurationSet.isDialog
 						? GalleryOverlay.NavigatePostMode.MANUALLY : GalleryOverlay.NavigatePostMode.ENABLED);
 				holder.thumbnailLongClickListener.update(attachmentItem);
 				holder.thumbnail.setSfwMode(Preferences.isSfwMode());
@@ -756,11 +589,12 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		holder.textBarPadding.getLayoutParams().height = (int) ((needBar ? 0f : hasText ? 10f : 6f) * density);
 	}
 
-	private void setMaxHeight(final View view, View parent) {
-		final PostViewHolder holder = (PostViewHolder) view.getTag();
+	private void setMaxHeight(PostViewHolder holder) {
 		clearMaxHeightAnimation(holder);
 		holder.comment.setMaxHeight(Integer.MAX_VALUE);
-		int widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(parent.getWidth(), View.MeasureSpec.AT_MOST);
+		int width = (int) (ResourceUtils.obtainDensity(holder.itemView) *
+				holder.itemView.getResources().getConfiguration().screenWidthDp);
+		int widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.AT_MOST);
 		int heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
 		holder.comment.measure(widthMeasureSpec, heightMeasureSpec);
 		if (holder.comment.getLineCount() >= commentMaxLines + commentAdditionalLines) {
@@ -768,7 +602,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 			holder.bottomBarExpand.setVisibility(View.VISIBLE);
 			holder.bottomBarExpand.setOnClickListener(v -> {
 				holder.postItem.setExpanded(true);
-				removeMaxHeight(view);
+				removeMaxHeight(holder);
 				int fromHeight = holder.comment.getHeight();
 				AnimationUtils.measureDynamicHeight(holder.comment);
 				int toHeight = holder.comment.getMeasuredHeight();
@@ -798,8 +632,7 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		invalidateBottomBar(holder);
 	}
 
-	private void removeMaxHeight(View view) {
-		PostViewHolder holder = (PostViewHolder) view.getTag();
+	private void removeMaxHeight(PostViewHolder holder) {
 		clearMaxHeightAnimation(holder);
 		holder.comment.setMaxHeight(Integer.MAX_VALUE);
 		holder.bottomBarExpand.setVisibility(View.GONE);
@@ -829,26 +662,16 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		return text;
 	}
 
-	public void notifyUnbindListView(ListView listView) {
-		for (int i = 0; i < listView.getChildCount(); i++) {
-			notifyUnbindView(listView.getChildAt(i));
+	public void notifyUnbindListView(RecyclerView recyclerView) {
+		for (int i = 0; i < recyclerView.getChildCount(); i++) {
+			RecyclerView.ViewHolder holder = recyclerView.getChildViewHolder(recyclerView.getChildAt(i));
+			notifyUnbindView(holder);
 		}
 	}
 
-	public void notifyUnbindView(View view) {
-		PostViewHolder holder = ListViewUtils.getViewHolder(view, PostViewHolder.class);
-		if (holder != null) {
-			if (holder.newPostAnimator != null) {
-				holder.newPostAnimator.cancel();
-				holder.newPostAnimator = null;
-			}
-		}
-	}
-
-	@Override
-	public void onTemporaryDetach(SingleLayerLinearLayout view, boolean start) {
-		if (start) {
-			notifyUnbindView(view);
+	public void notifyUnbindView(RecyclerView.ViewHolder holder) {
+		if (holder instanceof PostViewHolder) {
+			((PostViewHolder) holder).notifyUnbind();
 		}
 	}
 
@@ -864,23 +687,10 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		return -1;
 	}
 
-	public void invalidateCommentView(ListView listView, int position) {
-		if (position != ListView.INVALID_POSITION) {
-			int first = listView.getFirstVisiblePosition();
-			int count = listView.getChildCount();
-			int index = position - first;
-			if (index >= 0 && index < count) {
-				View child = listView.getChildAt(index);
-				PostViewHolder holder = (PostViewHolder) child.getTag();
-				holder.comment.invalidate();
-			}
-		}
-	}
-
 	boolean handlePostForDoubleClick(final View view) {
 		final PostViewHolder holder = ListViewUtils.getViewHolder(view, PostViewHolder.class);
 		if (holder != null) {
-			if (holder.comment.getVisibility() != View.VISIBLE || holder.comment.isSelectionEnabled()) {
+			if (holder.comment.getVisibility() != View.VISIBLE || holder.comment.isSelectionMode()) {
 				return false;
 			}
 			long t = System.currentTimeMillis();
@@ -888,21 +698,22 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 			if (t - holder.lastCommentClick > timeout) {
 				holder.lastCommentClick = t;
 			} else {
-				final ListView listView = (ListView) view.getParent();
-				final int position = listView.getPositionForView(view);
+				final RecyclerView recyclerView = (RecyclerView) view.getParent();
+				final int position = recyclerView.getChildAdapterPosition(view);
 				holder.comment.startSelection();
 				int padding = holder.comment.getSelectionPadding();
 				if (padding > 0) {
-					final int listHeight = listView.getHeight() - listView.getPaddingTop() -
-							listView.getPaddingBottom();
-					listView.post(() -> {
+					final int listHeight = recyclerView.getHeight() - recyclerView.getPaddingTop() -
+							recyclerView.getPaddingBottom();
+					recyclerView.post(() -> {
 						int end = holder.comment.getSelectionEnd();
 						if (end >= 0) {
 							Layout layout = holder.comment.getLayout();
 							int line = layout.getLineForOffset(end);
 							int count = layout.getLineCount();
 							if (count - line <= 4) {
-								listView.setSelectionFromTop(position, listHeight - view.getHeight());
+								((LinearLayoutManager) recyclerView.getLayoutManager())
+										.scrollToPositionWithOffset(position, listHeight - view.getHeight());
 							}
 						}
 					});
@@ -934,11 +745,11 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		}
 	};
 
-	private final View.OnClickListener threadShowOpClickListener = new View.OnClickListener() {
+	private final View.OnClickListener threadShowOriginalPostClickListener = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
 			ThreadViewHolder holder = ListViewUtils.getViewHolder(v, ThreadViewHolder.class);
-			uiManager.dialog().displayThread(holder.configurationSet, holder.postItem);
+			uiManager.dialog().displayThread(holder.getConfigurationSet(), holder.getPostItem());
 		}
 	};
 
@@ -1072,22 +883,99 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		}
 	}
 
-	private class ThreadViewHolder extends UiManager.Holder {
-		public AttachmentView thumbnail;
+	private static CardView createCardLayout(ViewGroup parent) {
+		CardView cardView = new CardView(parent.getContext());
+		cardView.setBackgroundColor(ResourceUtils.getColor(cardView.getContext(), R.attr.backgroundCard));
+		FrameLayout content = new FrameLayout(cardView.getContext());
+		ViewUtils.setSelectableItemBackground(content);
+		cardView.addView(content, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+		cardView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT));
+		return cardView;
+	}
+
+	private static class ThreadViewHolder extends RecyclerView.ViewHolder implements UiManager.Holder {
+		public final AttachmentView thumbnail;
+		public final TextView subject;
+		public final TextView comment;
+		public final TextView description;
+		public final ImageView stateSage;
+		public final ImageView stateSticky;
+		public final ImageView stateClosed;
+		public final View threadContent;
+		public final View showOriginalPost;
+
+		public final UiManager.ConfigurationSet configurationSet;
 		public final UiManager.ThumbnailClickListener thumbnailClickListener;
 		public final UiManager.ThumbnailLongClickListener thumbnailLongClickListener;
 
-		public CardView cardView;
-		public TextView subject;
-		public TextView comment;
-		public TextView description;
-		public ImageView stateSage, stateSticky, stateClosed;
-		public View threadContent;
-		public View showOpClickView;
+		public PostItem postItem;
 
-		public ThreadViewHolder() {
+		public ThreadViewHolder(ViewGroup parent, UiManager.ConfigurationSet configurationSet,
+				UiManager uiManager, boolean cell) {
+			super(createCardLayout(parent));
+
+			CardView cardView = (CardView) itemView;
+			ViewGroup cardContent = (ViewGroup) cardView.getChildAt(0);
+			LayoutInflater inflater = LayoutInflater.from(itemView.getContext());
+			inflater.inflate(cell ? R.layout.list_item_thread_grid : R.layout.list_item_thread, cardContent);
+
+			thumbnail = itemView.findViewById(R.id.thumbnail);
+			subject = itemView.findViewById(R.id.subject);
+			comment = itemView.findViewById(R.id.comment);
+			description = itemView.findViewById(R.id.thread_description);
+			stateSage = itemView.findViewById(R.id.state_sage);
+			stateSticky = itemView.findViewById(R.id.state_sticky);
+			stateClosed = itemView.findViewById(R.id.state_closed);
+			threadContent = itemView.findViewById(R.id.thread_content);
+			showOriginalPost = itemView.findViewById(R.id.show_original_post);
+			(cell ? description : showOriginalPost).setOnClickListener(uiManager.view()
+					.threadShowOriginalPostClickListener);
+
+			this.configurationSet = configurationSet;
 			thumbnailClickListener = uiManager.interaction().createThumbnailClickListener();
 			thumbnailLongClickListener = uiManager.interaction().createThumbnailLongClickListener();
+
+			thumbnail.setDrawTouching(true);
+			if (cell) {
+				thumbnail.setFitSquare(true);
+				thumbnail.applyRoundedCorners(cardView.getBackgroundColor());
+				ViewUtils.applyScaleSize(comment, subject, description);
+			} else {
+				thumbnail.applyRoundedCorners(cardView.getBackgroundColor());
+				ViewGroup.MarginLayoutParams thumbnailLayoutParams =
+						(ViewGroup.MarginLayoutParams) thumbnail.getLayoutParams();
+				ViewUtils.applyScaleSize(comment, subject, description,
+						stateSage, stateSticky, stateClosed);
+				if (ResourceUtils.isTablet(itemView.getResources().getConfiguration())) {
+					float density = ResourceUtils.obtainDensity(itemView);
+					description.setGravity(Gravity.START);
+					int thumbnailSize = (int) (72f * density);
+					thumbnailLayoutParams.width = thumbnailSize;
+					thumbnailLayoutParams.height = thumbnailSize;
+					int descriptionPaddingLeft = thumbnailSize + thumbnailLayoutParams.leftMargin +
+							thumbnailLayoutParams.rightMargin;
+					description.setPadding(descriptionPaddingLeft, description.getPaddingTop(),
+							description.getPaddingRight(), description.getPaddingBottom());
+					comment.setMaxLines(8);
+				} else {
+					description.setGravity(Gravity.END);
+					comment.setMaxLines(6);
+				}
+				int thumbnailsScale = Preferences.getThumbnailsScale();
+				thumbnailLayoutParams.width = thumbnailLayoutParams.width * thumbnailsScale / 100;
+				thumbnailLayoutParams.height = thumbnailLayoutParams.height * thumbnailsScale / 100;
+			}
+		}
+
+		@Override
+		public PostItem getPostItem() {
+			return postItem;
+		}
+
+		@Override
+		public UiManager.ConfigurationSet getConfigurationSet() {
+			return configurationSet;
 		}
 
 		@Override
@@ -1096,35 +984,127 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		}
 	}
 
-	private class PostViewHolder extends UiManager.Holder implements CommentTextView.ListSelectionKeeper.Holder {
-		public Animator newPostAnimator;
+	private static class PostViewHolder extends RecyclerView.ViewHolder implements UiManager.Holder,
+			CommentTextView.RecyclerKeeper.Holder, PostLinearLayout.OnTemporaryDetachListener {
+		public final PostLinearLayout layout;
+		public final LinebreakLayout head;
+		public final TextView number;
+		public final TextView name;
+		public final TextView index;
+		public final TextView date;
+		public final ViewGroup attachments;
+		public final AttachmentView thumbnail;
+		public final TextView attachmentInfo;
+		public final CommentTextView comment;
+		public final View textSelectionPadding;
+		public final View textBarPadding;
+		public final View bottomBar;
+		public final TextView bottomBarReplies;
+		public final TextView bottomBarExpand;
+		public final TextView bottomBarOpenThread;
 
-		public AttachmentView thumbnail;
-		public final UiManager.ThumbnailClickListener thumbnailClickListener;
-		public final UiManager.ThumbnailLongClickListener thumbnailLongClickListener;
 		public ArrayList<AttachmentHolder> attachmentHolders;
 		public int attachmentViewCount = 1;
-
-		public LinebreakLayout head;
-		public TextView number, name, index, date;
-		public final ImageView[] stateImages = new ImageView[STATE_ATTRS.length];
 		public ArrayList<ImageView> badgeImages;
-		public ViewGroup attachments;
-		public CommentTextView comment;
-		public long lastCommentClick;
-		public TextView attachmentInfo;
-		public View textSelectionPadding;
-		public View textBarPadding;
-		public View bottomBar;
-		public TextView bottomBarReplies;
-		public TextView bottomBarExpand;
-		public TextView bottomBarOpenThread;
-
+		public final ImageView[] stateImages = new ImageView[STATE_ATTRS.length];
 		public final boolean[] states = new boolean[STATE_ATTRS.length];
 
-		public PostViewHolder() {
+		public final UiManager.ConfigurationSet configurationSet;
+		public final UiManager.ThumbnailClickListener thumbnailClickListener;
+		public final UiManager.ThumbnailLongClickListener thumbnailLongClickListener;
+
+		public PostItem postItem;
+		public Animator newPostAnimator;
+		public long lastCommentClick;
+
+		public PostViewHolder(ViewGroup parent, UiManager.ConfigurationSet configurationSet,
+				UiManager uiManager, int thumbnailWidth) {
+			super(LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_post, parent, false));
+
+			layout = (PostLinearLayout) itemView;
+			layout.setOnTemporaryDetachListener(this);
+			ViewUtils.setSelectableItemBackground(layout);
+			head = itemView.findViewById(R.id.head);
+			number = itemView.findViewById(R.id.number);
+			name = itemView.findViewById(R.id.name);
+			index = itemView.findViewById(R.id.index);
+			date = itemView.findViewById(R.id.date);
+			int anchorIndex = head.indexOfChild(number) + 1;
+			float density = ResourceUtils.obtainDensity(parent);
+			int size = (int) (12f * density);
+			TypedArray typedArray = parent.getContext().obtainStyledAttributes(STATE_ATTRS);
+			for (int i = 0; i < stateImages.length; i++) {
+				ImageView imageView = new ImageView(parent.getContext());
+				imageView.setImageDrawable(typedArray.getDrawable(i));
+				head.addView(imageView, anchorIndex + i, new ViewGroup.LayoutParams(size, size));
+				stateImages[i] = imageView;
+			}
+			typedArray.recycle();
+			attachments = itemView.findViewById(R.id.attachments);
+			thumbnail = itemView.findViewById(R.id.thumbnail);
+			attachmentInfo = itemView.findViewById(R.id.attachment_info);
+			comment = itemView.findViewById(R.id.comment);
+			textSelectionPadding = itemView.findViewById(R.id.text_selection_padding);
+			textBarPadding = itemView.findViewById(R.id.text_bar_padding);
+			bottomBar = itemView.findViewById(R.id.bottom_bar);
+			bottomBarReplies = itemView.findViewById(R.id.bottom_bar_replies);
+			bottomBarExpand = itemView.findViewById(R.id.bottom_bar_expand);
+			bottomBarOpenThread = itemView.findViewById(R.id.bottom_bar_open_thread);
+
+			this.configurationSet = configurationSet;
 			thumbnailClickListener = uiManager.interaction().createThumbnailClickListener();
 			thumbnailLongClickListener = uiManager.interaction().createThumbnailLongClickListener();
+
+			head.setOnTouchListener(uiManager.view().headContentTouchListener);
+			comment.setCommentListener(uiManager.view().commentListener);
+			thumbnail.setOnClickListener(thumbnailClickListener);
+			thumbnail.setOnLongClickListener(thumbnailLongClickListener);
+			bottomBarReplies.setOnClickListener(uiManager.view().repliesBlockClickListener);
+			bottomBarOpenThread.setOnClickListener(uiManager.view().threadLinkBlockClickListener);
+
+			index.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
+			int textScale = Preferences.getTextScale();
+			if (textScale != 100) {
+				ViewUtils.applyScaleSize(number, name, index, date, comment, attachmentInfo,
+						bottomBarReplies, bottomBarExpand, bottomBarOpenThread);
+				ViewUtils.applyScaleSize(stateImages);
+				head.setHorizontalSpacing(head.getHorizontalSpacing() * textScale / 100);
+			}
+
+			thumbnail.setDrawTouching(true);
+			thumbnail.applyRoundedCorners(getPostBackgroundColor(uiManager, configurationSet));
+			ViewGroup.LayoutParams thumbnailLayoutParams = thumbnail.getLayoutParams();
+			int thumbnailsScale = Preferences.getThumbnailsScale();
+			if (thumbnailsScale != 100) {
+				thumbnailLayoutParams.width = thumbnailWidth * thumbnailsScale / 100;
+				thumbnailLayoutParams.height = thumbnailLayoutParams.width;
+			} else {
+				thumbnailLayoutParams.width = thumbnailWidth;
+			}
+		}
+
+		public void notifyUnbind() {
+			if (newPostAnimator != null) {
+				newPostAnimator.cancel();
+				newPostAnimator = null;
+			}
+		}
+
+		@Override
+		public void onTemporaryDetach(PostLinearLayout view, boolean start) {
+			if (start) {
+				notifyUnbind();
+			}
+		}
+
+		@Override
+		public PostItem getPostItem() {
+			return postItem;
+		}
+
+		@Override
+		public UiManager.ConfigurationSet getConfigurationSet() {
+			return configurationSet;
 		}
 
 		@Override
@@ -1138,10 +1118,54 @@ public class ViewUnit implements SingleLayerLinearLayout.OnTemporaryDetachListen
 		}
 	}
 
-	private static class HiddenViewHolder extends UiManager.Holder {
-		public TextView index;
-		public TextView number;
-		public TextView comment;
+	private static class HiddenViewHolder extends RecyclerView.ViewHolder implements UiManager.Holder {
+		public final TextView index;
+		public final TextView number;
+		public final TextView comment;
+
+		public final UiManager.ConfigurationSet configurationSet;
+
+		public PostItem postItem;
+
+		private static View createBaseView(ViewGroup parent, boolean thread) {
+			if (thread) {
+				CardView cardView = createCardLayout(parent);
+				ViewGroup cardContent = (ViewGroup) cardView.getChildAt(0);
+				LayoutInflater.from(cardView.getContext()).inflate(R.layout.list_item_hidden, cardContent);
+				return cardView;
+			} else {
+				return LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_hidden, parent, false);
+			}
+		}
+
+		public HiddenViewHolder(ViewGroup parent, UiManager.ConfigurationSet configurationSet, boolean thread) {
+			super(createBaseView(parent, thread));
+
+			index = itemView.findViewById(R.id.index);
+			number = itemView.findViewById(R.id.number);
+			comment = itemView.findViewById(R.id.comment);
+			itemView.findViewById(R.id.head).setAlpha(ALPHA_HIDDEN_POST);
+			ViewUtils.applyScaleSize(index, number, comment);
+			ViewUtils.applyScaleMarginLR(index, number, comment);
+			if (thread) {
+				index.setVisibility(View.GONE);
+				number.setVisibility(View.GONE);
+			} else {
+				ViewUtils.setSelectableItemBackground(itemView);
+			}
+
+			this.configurationSet = configurationSet;
+		}
+
+		@Override
+		public PostItem getPostItem() {
+			return postItem;
+		}
+
+		@Override
+		public UiManager.ConfigurationSet getConfigurationSet() {
+			return configurationSet;
+		}
 
 		@Override
 		public GalleryItem.GallerySet getGallerySet() {

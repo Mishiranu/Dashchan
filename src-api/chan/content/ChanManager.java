@@ -21,6 +21,7 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.Preferences;
+import com.mishiranu.dashchan.graphics.ChanIconDrawable;
 import com.mishiranu.dashchan.media.VideoPlayer;
 import com.mishiranu.dashchan.util.AndroidUtils;
 import com.mishiranu.dashchan.util.IOUtils;
@@ -735,16 +736,14 @@ public class ChanManager {
 	}
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
-	public Drawable getIcon(String chanName, int tint) {
+	public ChanIconDrawable getIcon(String chanName) {
 		if (C.API_LOLLIPOP) {
 			Extension extension = extensions.get(chanName);
 			Drawable drawable = extension != null && extension.chanHolder != null ? extension.chanHolder.icon : null;
 			if (drawable == null) {
 				drawable = MainApplication.getInstance().getDrawable(R.drawable.ic_extension_white);
 			}
-			drawable = drawable.getConstantState().newDrawable().mutate();
-			drawable.setTint(tint);
-			return drawable;
+			return new ChanIconDrawable(drawable.getConstantState().newDrawable().mutate());
 		}
 		return null;
 	}

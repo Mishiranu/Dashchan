@@ -21,20 +21,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.AdapterView;
-import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
@@ -64,11 +61,12 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.AttachmentView;
-import com.mishiranu.dashchan.widget.BaseAdapterNotifier;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.CommentTextView;
 import com.mishiranu.dashchan.widget.DialogStack;
+import com.mishiranu.dashchan.widget.DividerItemDecoration;
 import com.mishiranu.dashchan.widget.ListPosition;
+import com.mishiranu.dashchan.widget.PostsLayoutManager;
 import com.mishiranu.dashchan.widget.ProgressDialog;
 import com.mishiranu.dashchan.widget.SafePasteEditText;
 import java.lang.ref.WeakReference;
@@ -148,21 +146,21 @@ public class DialogUnit {
 		@Override
 		public View createView(DialogStack<DialogFactory> dialogStack) {
 			Context context = uiManager.getContext();
-			FrameLayout content = new FrameLayout(context);
-			ListView listView = new ListView(context);
-			content.addView(listView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
-			DialogPostsAdapter adapter = new DialogPostsAdapter(provider, listView);
-			listView.setOnItemClickListener(adapter);
-			listView.setOnItemLongClickListener(adapter);
-			listView.setAdapter(adapter);
-			listView.setId(android.R.id.list);
-			listView.setDivider(ResourceUtils.getDrawable(context, R.attr.postsDivider, 0));
-			final DialogHolder holder = new DialogHolder(adapter, provider, content, listView);
+			View content = LayoutInflater.from(context).inflate(R.layout.dialog_posts, null);
+			RecyclerView recyclerView = content.findViewById(android.R.id.list);
+			View progress = content.findViewById(R.id.progress);
+			float density = ResourceUtils.obtainDensity(context);
+			int dividerPadding = (int) (12f * density);
+			recyclerView.setLayoutManager(new PostsLayoutManager(recyclerView.getContext()));
+			DialogPostsAdapter adapter = new DialogPostsAdapter(uiManager, provider, recyclerView);
+			recyclerView.setAdapter(adapter);
+			recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(),
+					(c, position) -> c.need(true).horizontal(dividerPadding, dividerPadding)));
+			final DialogHolder holder = new DialogHolder(adapter, provider, content, recyclerView, progress);
 			uiManager.observable().register(holder);
-			listView.setTag(holder);
 			content.setTag(holder);
 			if (factory.listPosition != null) {
-				factory.listPosition.apply(listView);
+				factory.listPosition.apply(recyclerView);
 				factory.listPosition = null;
 			}
 			provider.setStateListener((state) -> {
@@ -193,41 +191,43 @@ public class DialogUnit {
 		public void destroyView(View view) {
 			saveState(view);
 			DialogHolder holder = (DialogHolder) view.getTag();
-			uiManager.view().notifyUnbindListView(holder.listView);
+			uiManager.view().notifyUnbindListView(holder.recyclerView);
 			uiManager.observable().unregister(holder);
 			holder.cancel();
 		}
 
 		public void saveState(View view) {
 			DialogHolder holder = (DialogHolder) view.getTag();
-			factory.listPosition = ListPosition.obtain(holder.listView);
+			factory.listPosition = ListPosition.obtain(holder.recyclerView);
 		}
 	}
 
-	private class DialogHolder implements UiManager.Observer {
+	private static class DialogHolder implements UiManager.Observer {
 		public final DialogPostsAdapter adapter;
 		public final DialogProvider dialogProvider;
 
-		public final FrameLayout content;
-		public final ListView listView;
+		public final View content;
+		public final RecyclerView recyclerView;
+		public final View progress;
 
-		public DialogHolder(DialogPostsAdapter adapter, DialogProvider dialogProvider, FrameLayout content,
-				ListView listView) {
+		public DialogHolder(DialogPostsAdapter adapter, DialogProvider dialogProvider, View content,
+				RecyclerView recyclerView, View progress) {
 			this.adapter = adapter;
 			this.dialogProvider = dialogProvider;
 			this.content = content;
-			this.listView = listView;
+			this.recyclerView = recyclerView;
+			this.progress = progress;
 		}
-
-		public ProgressBar loadingView;
 
 		public boolean cancelled = false;
 
+		private Runnable postNotifyDataSetChanged;
+
 		@Override
-		public void onPostItemMessage(PostItem postItem, int message) {
+		public void onPostItemMessage(PostItem postItem, UiManager.Message message) {
 			dialogProvider.onPostItemMessage(postItem, message);
 			switch (message) {
-				case UiManager.MESSAGE_INVALIDATE_VIEW: {
+				case POST_INVALIDATE_ALL_VIEWS: {
 					boolean notify = adapter.postItems.contains(postItem);
 					if (!notify) {
 						// Must notify adapter to update links to shown/hidden posts
@@ -242,12 +242,19 @@ public class DialogUnit {
 						}
 					}
 					if (notify) {
-						adapter.postNotifyDataSetChanged();
+						if (postNotifyDataSetChanged == null) {
+							postNotifyDataSetChanged = adapter::notifyDataSetChanged;
+						}
+						recyclerView.removeCallbacks(postNotifyDataSetChanged);
+						recyclerView.post(postNotifyDataSetChanged);
 					}
 					break;
 				}
-				case UiManager.MESSAGE_INVALIDATE_COMMENT_VIEW: {
-					uiManager.view().invalidateCommentView(listView, adapter.postItems.indexOf(postItem));
+				case INVALIDATE_COMMENT_VIEW: {
+					int position = adapter.postItems.indexOf(postItem);
+					if (position >= 0) {
+						adapter.invalidateComment(position);
+					}
 					break;
 				}
 			}
@@ -281,31 +288,17 @@ public class DialogUnit {
 				return;
 			}
 			if (loading) {
-				if (loadingView == null) {
-					Context context = uiManager.getContext();
-					loadingView = new ProgressBar(context, null, android.R.attr.progressBarStyle);
-					float density = ResourceUtils.obtainDensity(context);
-					int margins = (int) (60 * density);
-					FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams
-							.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER);
-					layoutParams.setMargins(margins, margins, margins, margins);
-					content.addView(loadingView, layoutParams);
-				}
-				listView.setVisibility(View.GONE);
+				progress.setVisibility(View.VISIBLE);
+				recyclerView.setVisibility(View.GONE);
 			} else {
-				if (loadingView != null && loadingView.getVisibility() == View.VISIBLE) {
-					listView.setVisibility(View.VISIBLE);
-					ObjectAnimator alphaAnimator = ObjectAnimator.ofFloat(loadingView, View.ALPHA, 1f, 0f);
+				recyclerView.setVisibility(View.VISIBLE);
+				if (progress.getVisibility() == View.VISIBLE) {
+					ObjectAnimator alphaAnimator = ObjectAnimator.ofFloat(progress, View.ALPHA, 1f, 0f);
 					alphaAnimator.setDuration(200);
-					alphaAnimator.addListener(new AnimationUtils.VisibilityListener(loadingView, View.GONE));
+					alphaAnimator.addListener(new AnimationUtils.VisibilityListener(progress, View.GONE));
 					alphaAnimator.start();
-					listView.setAlpha(0f);
-					listView.animate().alpha(1f).setStartDelay(200).setDuration(200).start();
-				} else {
-					if (loadingView != null) {
-						loadingView.setVisibility(View.GONE);
-					}
-					listView.setVisibility(View.VISIBLE);
+					recyclerView.setAlpha(0f);
+					recyclerView.animate().alpha(1f).setStartDelay(200).setDuration(200).start();
 				}
 			}
 		}
@@ -367,7 +360,7 @@ public class DialogUnit {
 		}
 
 		@Override
-		public void onPostItemMessage(PostItem postItem, int message) {}
+		public void onPostItemMessage(PostItem postItem, UiManager.Message message) {}
 	}
 
 	private static class SingleDialogProvider extends DialogProvider {
@@ -729,13 +722,13 @@ public class DialogUnit {
 		}
 
 		@Override
-		public void onPostItemMessage(PostItem postItem, int message) {
+		public void onPostItemMessage(PostItem postItem, UiManager.Message message) {
 			if (factory.postItem == postItem) {
 				switch (message) {
-					case UiManager.MESSAGE_PERFORM_SWITCH_HIDE: {
+					case PERFORM_SWITCH_HIDE: {
 						if (postItem.isHiddenUnchecked()) {
 							postItem.setHidden(false);
-							uiManager.sendPostItemMessage(postItem, UiManager.MESSAGE_INVALIDATE_VIEW);
+							uiManager.sendPostItemMessage(postItem, UiManager.Message.POST_INVALIDATE_ALL_VIEWS);
 						}
 						break;
 					}
@@ -814,95 +807,128 @@ public class DialogUnit {
 		}
 	}
 
-	private class DialogPostsAdapter extends BaseAdapter implements AdapterView.OnItemClickListener,
-			AdapterView.OnItemLongClickListener {
-		private static final int ITEM_VIEW_TYPE_POST = 0;
-		private static final int ITEM_VIEW_TYPE_HIDDEN_POST = 1;
+	private static class DialogPostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+		private enum ViewType {POST, POST_HIDDEN}
 
-		private final BaseAdapterNotifier notifier = new BaseAdapterNotifier(this);
+		private static final String PAYLOAD_INVALIDATE_COMMENT = "invalidateComment";
+
+		private final UiManager uiManager;
+		private final DialogProvider dialogProvider;
+		private final UiManager.DemandSet demandSet = new UiManager.DemandSet();
+		private final RecyclerView.AdapterDataObserver updateObserver;
+		private final CommentTextView.RecyclerKeeper recyclerKeeper;
 
 		public final ArrayList<PostItem> postItems = new ArrayList<>();
 		public final HashSet<String> postNumbers = new HashSet<>();
 
-		private final DialogProvider dialogProvider;
-		private final UiManager.DemandSet demandSet = new UiManager.DemandSet();
-		private final CommentTextView.ListSelectionKeeper listSelectionKeeper;
-
-		public DialogPostsAdapter(DialogProvider dialogProvider, ListView listView) {
+		public DialogPostsAdapter(UiManager uiManager, DialogProvider dialogProvider, RecyclerView recyclerView) {
+			this.uiManager = uiManager;
 			this.dialogProvider = dialogProvider;
-			listSelectionKeeper = new CommentTextView.ListSelectionKeeper(listView);
-			updatePostItems();
-		}
-
-		private void updatePostItems() {
-			postItems.clear();
-			postNumbers.clear();
-			for (PostItem postItem : dialogProvider) {
-				postItems.add(postItem);
-				postNumbers.add(postItem.getPostNumber());
-			}
-		}
-
-		@Override
-		public void notifyDataSetChanged() {
-			updatePostItems();
-			listSelectionKeeper.onBeforeNotifyDataSetChanged();
-			super.notifyDataSetChanged();
-			listSelectionKeeper.onAfterNotifyDataSetChanged();
-		}
-
-		public void postNotifyDataSetChanged() {
-			notifier.postNotifyDataSetChanged();
+			updateObserver = new RecyclerView.AdapterDataObserver() {
+				@Override
+				public void onChanged() {
+					postItems.clear();
+					postNumbers.clear();
+					for (PostItem postItem : dialogProvider) {
+						postItems.add(postItem);
+						postNumbers.add(postItem.getPostNumber());
+					}
+				}
+			};
+			recyclerKeeper = new CommentTextView.RecyclerKeeper(recyclerView);
+			super.registerAdapterDataObserver(updateObserver);
+			super.registerAdapterDataObserver(recyclerKeeper);
+			updateObserver.onChanged();
 		}
 
 		@Override
-		public int getViewTypeCount() {
-			return 2;
+		public void registerAdapterDataObserver(@NonNull RecyclerView.AdapterDataObserver observer) {
+			super.registerAdapterDataObserver(observer);
+
+			// Move observer to the end
+			super.unregisterAdapterDataObserver(updateObserver);
+			super.registerAdapterDataObserver(updateObserver);
+			// Move observer to the end
+			super.unregisterAdapterDataObserver(recyclerKeeper);
+			super.registerAdapterDataObserver(recyclerKeeper);
 		}
 
 		@Override
-		public int getItemViewType(int position) {
-			return getItem(position).isHidden(dialogProvider.configurationSet.hidePerformer)
-					? ITEM_VIEW_TYPE_HIDDEN_POST : ITEM_VIEW_TYPE_POST;
-		}
-
-		@Override
-		public int getCount() {
+		public int getItemCount() {
 			return postItems.size();
 		}
 
 		@Override
-		public PostItem getItem(int position) {
+		public int getItemViewType(int position) {
+			return (getItem(position).isHidden(dialogProvider.configurationSet.hidePerformer)
+					? ViewType.POST_HIDDEN : ViewType.POST).ordinal();
+		}
+
+		private PostItem getItem(int position) {
 			return postItems.get(position);
 		}
 
-		@Override
-		public long getItemId(int position) {
-			return 0;
+		private RecyclerView.ViewHolder configureView(RecyclerView.ViewHolder holder) {
+			holder.itemView.setOnClickListener(v -> onItemClick(v, getItem(holder.getAdapterPosition())));
+			holder.itemView.setOnLongClickListener(v -> onItemLongClick(getItem(holder.getAdapterPosition())));
+			return holder;
 		}
 
+		@NonNull
 		@Override
-		public View getView(int position, View convertView, ViewGroup parent) {
-			PostItem postItem = getItem(position);
-			if (postItem.isHidden(dialogProvider.configurationSet.hidePerformer)) {
-				convertView = uiManager.view().getPostHiddenView(postItem, convertView, parent);
-			} else {
-				dialogProvider.onRequestUpdateDemandSet(demandSet, position);
-				convertView = uiManager.view().getPostView(postItem, convertView, parent, demandSet,
-						dialogProvider.configurationSet);
+		public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+			switch (ViewType.values()[viewType]) {
+				case POST: {
+					return configureView(uiManager.view().createPostView(parent,
+							dialogProvider.configurationSet));
+				}
+				case POST_HIDDEN: {
+					return configureView(uiManager.view().createPostHiddenView(parent,
+							dialogProvider.configurationSet));
+				}
+				default: {
+					throw new IllegalStateException();
+				}
 			}
-			return convertView;
 		}
 
 		@Override
-		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-			uiManager.interaction().handlePostClick(view, getItem(position), postItems);
+		public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+			onBindViewHolder(holder, position, Collections.emptyList());
 		}
 
 		@Override
-		public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+		public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position,
+				@NonNull List<Object> payloads) {
+			PostItem postItem = getItem(position);
+			switch (ViewType.values()[holder.getItemViewType()]) {
+				case POST: {
+					if (payloads.contains(PAYLOAD_INVALIDATE_COMMENT)) {
+						uiManager.view().bindPostViewInvalidateComment(holder);
+					} else {
+						dialogProvider.onRequestUpdateDemandSet(demandSet, position);
+						uiManager.view().bindPostView(holder, postItem, demandSet);
+					}
+					break;
+				}
+				case POST_HIDDEN: {
+					uiManager.view().bindPostHiddenView(holder, postItem);
+					break;
+				}
+			}
+		}
+
+		public void invalidateComment(int position) {
+			notifyItemChanged(position, PAYLOAD_INVALIDATE_COMMENT);
+		}
+
+		private void onItemClick(View view, PostItem postItem) {
+			uiManager.interaction().handlePostClick(view, postItem, postItems);
+		}
+
+		private boolean onItemLongClick(PostItem postItem) {
 			UiManager.ConfigurationSet configurationSet = dialogProvider.configurationSet;
-			return uiManager.interaction().handlePostContextMenu(getItem(position),
+			return uiManager.interaction().handlePostContextMenu(postItem,
 					configurationSet.stackInstance, configurationSet.replyable,
 					configurationSet.allowMyMarkEdit, configurationSet.allowHiding, configurationSet.allowGoToPost);
 		}
@@ -991,7 +1017,7 @@ public class DialogUnit {
 			textView.setBackgroundColor(0xcc222222);
 			attachmentItem.configureAndLoad(attachmentView, false, true);
 			textView.setText(attachmentItem.getDescription(AttachmentItem.FormatMode.TWO_LINES));
-			View clickView = view.findViewById(R.id.click_view);
+			View clickView = view.findViewById(R.id.attachment_click);
 			clickView.setOnClickListener(clickListener);
 			clickView.setOnLongClickListener(v -> {
 				uiManager.interaction().showThumbnailLongClickDialog(stackInstance,

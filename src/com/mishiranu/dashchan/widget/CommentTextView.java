@@ -1,25 +1,6 @@
-/*
- * Copyright 2014-2018 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.widget;
 
-import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -42,12 +23,10 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
-import android.widget.ListView;
 import android.widget.TextView;
-
+import androidx.recyclerview.widget.RecyclerView;
 import chan.content.ChanLocator;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.graphics.ActionIconSet;
@@ -58,6 +37,9 @@ import com.mishiranu.dashchan.ui.posting.Replyable;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
+import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /*
  * TextView with LinkSpan feedback ability without conflict with selection MovementMethod.
@@ -226,7 +208,10 @@ public class CommentTextView extends TextView {
 				View rootView = ListViewUtils.getRootViewInList(this);
 				if (rootView != null) {
 					View listView = (View) rootView.getParent();
-					listView.requestFocus(); // Move focus from this view to list
+					if (listView != null) {
+						// Move focus from this view to list
+						listView.requestFocus();
+					}
 				}
 			}
 		}
@@ -234,7 +219,7 @@ public class CommentTextView extends TextView {
 
 	private Runnable restoreSelectionRunnable;
 
-	private Runnable resetSelectionRunnable = () -> {
+	private final Runnable resetSelectionRunnable = () -> {
 		if (selectionMode && currentActionMode == null) {
 			CharSequence text = getText();
 			if (text instanceof Spannable) {
@@ -245,7 +230,7 @@ public class CommentTextView extends TextView {
 		}
 	};
 
-	private static final Pattern LIST_PATTERN = Pattern.compile("^(?:(?:\\d+[\\.\\)]|[\u2022-]) |>(?!>) ?)");
+	private static final Pattern LIST_PATTERN = Pattern.compile("^(?:(?:\\d+[.)]|[\u2022-]) |>(?!>) ?)");
 
 	private void sendFakeMotionEvent(int action, int x, int y) {
 		MotionEvent motionEvent = MotionEvent.obtain(0, SystemClock.uptimeMillis(), action, x, y, 0);
@@ -262,7 +247,7 @@ public class CommentTextView extends TextView {
 		int length = spannable.length();
 		Layout layout = getLayout();
 		if (x != Integer.MAX_VALUE && y != Integer.MAX_VALUE &&
-				(start < 0 || end < 0 || start > length || end > length || start >= end)) {
+				(start < 0 || end < 0 || end > length || start >= end)) {
 			start = 0;
 			end = spannable.length();
 			int lx = x - getTotalPaddingLeft();
@@ -340,7 +325,7 @@ public class CommentTextView extends TextView {
 		startSelection(Integer.MAX_VALUE, Integer.MAX_VALUE, start, end);
 	}
 
-	public boolean isSelectionEnabled() {
+	public boolean isSelectionMode() {
 		return selectionMode;
 	}
 
@@ -626,6 +611,7 @@ public class CommentTextView extends TextView {
 		}
 	}
 
+	@SuppressLint("ClickableViewAccessibility")
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		if (!isEnabled()) {
@@ -743,6 +729,18 @@ public class CommentTextView extends TextView {
 		return spans;
 	}
 
+	private static SpanWatcher getSpanWatcher(Spannable spannable) {
+		SpanWatcher[] watchers = spannable.getSpans(0, spannable.length(), SpanWatcher.class);
+		if (watchers != null && watchers.length > 0) {
+			for (SpanWatcher watcher : watchers) {
+				if (watcher.getClass().getName().equals("android.widget.TextView$ChangeWatcher")) {
+					return watcher;
+				}
+			}
+		}
+		return null;
+	}
+
 	private void invalidateSpanToClick() {
 		if (spanToClick == null) {
 			return;
@@ -753,14 +751,10 @@ public class CommentTextView extends TextView {
 			int start = spannable.getSpanStart(spanToClick);
 			int end = spannable.getSpanEnd(spanToClick);
 			if (start >= 0 && end >= start) {
-				SpanWatcher[] watchers = spannable.getSpans(0, spannable.length(), SpanWatcher.class);
-				if (watchers != null && watchers.length >= 1) {
-					for (SpanWatcher watcher : watchers) {
-						if (watcher.getClass().getName().equals("android.widget.TextView$ChangeWatcher")) {
-							// Notify span changed to redraw it
-							watcher.onSpanChanged(spannable, spanToClick, start, end, start, end);
-						}
-					}
+				SpanWatcher watcher = getSpanWatcher(spannable);
+				if (watcher != null) {
+					// Notify span changed to redraw it
+					watcher.onSpanChanged(spannable, spanToClick, start, end, start, end);
 				}
 			}
 		}
@@ -773,12 +767,28 @@ public class CommentTextView extends TextView {
 		OverlineSpan.draw(this, canvas);
 	}
 
-	public static class ListSelectionKeeper implements Runnable {
+	public void invalidateAllSpans() {
+		CharSequence text = getText();
+		if (text instanceof Spannable) {
+			Spannable spannable = (Spannable) text;
+			ClickableSpan[] spans = spannable.getSpans(0, spannable.length(), ClickableSpan.class);
+			if (spans != null && spans.length > 0) {
+				SpanWatcher watcher = getSpanWatcher(spannable);
+				for (ClickableSpan span : spans) {
+					int start = spannable.getSpanStart(span);
+					int end = spannable.getSpanEnd(span);
+					watcher.onSpanChanged(spannable, span, start, end, start, end);
+				}
+			}
+		}
+	}
+
+	public static class RecyclerKeeper extends RecyclerView.AdapterDataObserver implements Runnable {
 		public interface Holder {
 			public CommentTextView getCommentTextView();
 		}
 
-		private final ListView listView;
+		private final RecyclerView recyclerView;
 		private int postCount;
 
 		private String text;
@@ -786,46 +796,45 @@ public class CommentTextView extends TextView {
 		private int selectionEnd;
 		private int position;
 
-		public ListSelectionKeeper(ListView listView) {
-			this.listView = listView;
+		public RecyclerKeeper(RecyclerView recyclerView) {
+			this.recyclerView = recyclerView;
 		}
 
-		public void onBeforeNotifyDataSetChanged() {
-			listView.removeCallbacks(this);
-			int position = -1;
-			for (int i = 0, count = listView.getChildCount(); i < count; i++) {
-				View view = listView.getChildAt(i);
-				Object tag = view.getTag();
-				if (tag instanceof Holder) {
-					Holder holder = (Holder) tag;
+		@Override
+		public void onChanged() {
+			for (int i = 0, count = recyclerView.getChildCount(); i < count; i++) {
+				View view = recyclerView.getChildAt(i);
+				Holder holder = ListViewUtils.getViewHolder(view, Holder.class);
+				if (holder != null) {
 					CommentTextView textView = holder.getCommentTextView();
-					if (textView.isSelectionEnabled()) {
-						position = listView.getPositionForView(view);
-						text = textView.getText().toString();
-						selectionStart = textView.getSelectionStart();
-						selectionEnd = textView.getSelectionEnd();
+					if (textView.isSelectionMode()) {
+						int position = recyclerView.getChildAdapterPosition(view);
+						if (position >= 0) {
+							this.position = position;
+							text = textView.getText().toString();
+							selectionStart = textView.getSelectionStart();
+							selectionEnd = textView.getSelectionEnd();
+							postCount = 2;
+							recyclerView.removeCallbacks(this);
+							recyclerView.post(this);
+						}
 						break;
 					}
 				}
 			}
-			this.position = position;
-		}
-
-		public void onAfterNotifyDataSetChanged() {
-			postCount = 2;
-			listView.removeCallbacks(this);
-			listView.post(this);
 		}
 
 		public void run() {
 			if (postCount-- > 0) {
-				listView.post(this);
+				recyclerView.post(this);
 				return;
 			}
-			if (position >= 0) {
-				int index = position - listView.getFirstVisiblePosition();
-				if (index >= 0 && index < listView.getChildCount()) {
-					Holder holder = (Holder) listView.getChildAt(index).getTag();
+			int childCount = recyclerView.getChildCount();
+			if (position >= 0 && childCount > 0) {
+				int index = position - recyclerView.getChildAdapterPosition(recyclerView.getChildAt(0));
+				if (index >= 0 && index < childCount) {
+					View view = recyclerView.getChildAt(index);
+					Holder holder = ListViewUtils.getViewHolder(view, Holder.class);
 					if (holder != null) {
 						CommentTextView textView = holder.getCommentTextView();
 						String text = textView.getText().toString();

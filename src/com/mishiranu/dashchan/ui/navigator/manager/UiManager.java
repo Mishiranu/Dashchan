@@ -77,25 +77,27 @@ public class UiManager {
 		}
 	}
 
-	public static final int MESSAGE_INVALIDATE_VIEW = 1;
-	public static final int MESSAGE_INVALIDATE_COMMENT_VIEW = 2;
-	public static final int MESSAGE_PERFORM_SWITCH_USER_MARK = 3;
-	public static final int MESSAGE_PERFORM_SWITCH_HIDE = 4;
-	public static final int MESSAGE_PERFORM_HIDE_REPLIES = 5;
-	public static final int MESSAGE_PERFORM_HIDE_NAME = 6;
-	public static final int MESSAGE_PERFORM_HIDE_SIMILAR = 7;
-	public static final int MESSAGE_PERFORM_GO_TO_POST = 8;
+	public enum Message {
+		POST_INVALIDATE_ALL_VIEWS,
+		INVALIDATE_COMMENT_VIEW,
+		PERFORM_SWITCH_USER_MARK,
+		PERFORM_SWITCH_HIDE,
+		PERFORM_HIDE_REPLIES,
+		PERFORM_HIDE_NAME,
+		PERFORM_HIDE_SIMILAR,
+		PERFORM_GO_TO_POST
+	}
 
 	public interface Observer {
-		public void onPostItemMessage(PostItem postItem, int message);
+		public void onPostItemMessage(PostItem postItem, Message message);
 	}
 
-	public void sendPostItemMessage(View view, int message) {
+	public void sendPostItemMessage(View view, Message message) {
 		Holder holder = ListViewUtils.getViewHolder(view, Holder.class);
-		sendPostItemMessage(holder.postItem, message);
+		sendPostItemMessage(holder.getPostItem(), message);
 	}
 
-	public void sendPostItemMessage(PostItem postItem, int message) {
+	public void sendPostItemMessage(PostItem postItem, Message message) {
 		for (Observer observer : observable) {
 			observer.onPostItemMessage(postItem, message);
 		}
@@ -191,16 +193,10 @@ public class UiManager {
 		public void update(AttachmentItem attachmentItem);
 	}
 
-	static abstract class Holder {
-		public PostItem postItem;
-		public ConfigurationSet configurationSet;
-
-		public abstract GalleryItem.GallerySet getGallerySet();
-	}
-
-	public PostItem getPostItemFromHolder(View view) {
-		Holder holder = ListViewUtils.getViewHolder(view, Holder.class);
-		return holder != null ? holder.postItem : null;
+	public interface Holder {
+		PostItem getPostItem();
+		ConfigurationSet getConfigurationSet();
+		GalleryItem.GallerySet getGallerySet();
 	}
 
 	public void onFinish() {

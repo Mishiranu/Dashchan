@@ -4,6 +4,7 @@ import android.net.Uri;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import chan.content.ChanPerformer;
 import chan.content.model.ThreadSummary;
 import chan.util.StringUtils;
@@ -16,12 +17,15 @@ import com.mishiranu.dashchan.ui.navigator.Page;
 import com.mishiranu.dashchan.ui.navigator.adapter.ArchiveAdapter;
 import com.mishiranu.dashchan.util.DialogMenu;
 import com.mishiranu.dashchan.util.ListViewUtils;
+import com.mishiranu.dashchan.util.ResourceUtils;
+import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
-import com.mishiranu.dashchan.widget.ListScroller;
-import com.mishiranu.dashchan.widget.PullableListView;
+import com.mishiranu.dashchan.widget.DividerItemDecoration;
+import com.mishiranu.dashchan.widget.PullableRecyclerView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 
-public class ArchivePage extends ListPage implements ReadThreadSummariesTask.Callback {
+public class ArchivePage extends ListPage implements ArchiveAdapter.Callback,
+		ReadThreadSummariesTask.Callback {
 	private static class RetainExtra {
 		public static final ExtraFactory<RetainExtra> FACTORY = RetainExtra::new;
 
@@ -33,22 +37,26 @@ public class ArchivePage extends ListPage implements ReadThreadSummariesTask.Cal
 	private boolean showScaleOnSuccess;
 
 	private ArchiveAdapter getAdapter() {
-		return (ArchiveAdapter) getListView().getAdapter();
+		return (ArchiveAdapter) getRecyclerView().getAdapter();
 	}
 
 	@Override
 	protected void onCreate() {
-		PullableListView listView = getListView();
-		if (C.API_LOLLIPOP) {
-			listView.setDivider(null);
+		PullableRecyclerView recyclerView = getRecyclerView();
+		recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
+		if (!C.API_LOLLIPOP) {
+			float density = ResourceUtils.obtainDensity(recyclerView);
+			ViewUtils.setNewPadding(recyclerView, (int) (16f * density), null, (int) (16f * density), null);
 		}
-		ArchiveAdapter adapter = new ArchiveAdapter();
-		listView.setAdapter(adapter);
-		listView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
+		ArchiveAdapter adapter = new ArchiveAdapter(this);
+		recyclerView.setAdapter(adapter);
+		recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(),
+				adapter::configureDivider));
+		recyclerView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
 		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
 		if (retainExtra.threadSummaries != null) {
 			adapter.setItems(retainExtra.threadSummaries);
-			restoreListPosition(null);
+			restoreListPosition();
 		} else {
 			showScaleOnSuccess = true;
 			refreshThreads(false, false);
@@ -71,8 +79,7 @@ public class ArchivePage extends ListPage implements ReadThreadSummariesTask.Cal
 	}
 
 	@Override
-	public void onItemClick(View view, int position) {
-		String threadNumber = getAdapter().getItem(position).getThreadNumber();
+	public void onItemClick(String threadNumber) {
 		if (threadNumber != null) {
 			Page page = getPage();
 			getUiManager().navigator().navigatePosts(page.chanName, page.boardName, threadNumber, null, null, 0);
@@ -83,9 +90,8 @@ public class ArchivePage extends ListPage implements ReadThreadSummariesTask.Cal
 	private static final int CONTEXT_MENU_ADD_FAVORITES = 1;
 
 	@Override
-	public boolean onItemLongClick(View view, int position) {
+	public boolean onItemLongClick(String threadNumber) {
 		Page page = getPage();
-		String threadNumber = getAdapter().getItem(position).getThreadNumber();
 		DialogMenu dialogMenu = new DialogMenu(getContext(), id -> {
 			switch (id) {
 				case CONTEXT_MENU_COPY_LINK: {
@@ -124,7 +130,7 @@ public class ArchivePage extends ListPage implements ReadThreadSummariesTask.Cal
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 			case OPTIONS_MENU_REFRESH: {
-				refreshThreads(!getAdapter().isEmpty(), false);
+				refreshThreads(!getAdapter().isRealEmpty(), false);
 				return true;
 			}
 		}
@@ -157,10 +163,10 @@ public class ArchivePage extends ListPage implements ReadThreadSummariesTask.Cal
 				ChanPerformer.ReadThreadSummariesData.TYPE_ARCHIVED_THREADS, this);
 		readTask.executeOnExecutor(ReadThreadSummariesTask.THREAD_POOL_EXECUTOR);
 		if (showPull) {
-			getListView().getWrapper().startBusyState(PullableWrapper.Side.TOP);
+			getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.TOP);
 			switchView(ViewType.LIST, null);
 		} else {
-			getListView().getWrapper().startBusyState(PullableWrapper.Side.BOTH);
+			getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTH);
 			switchView(ViewType.PROGRESS, null);
 		}
 	}
@@ -168,12 +174,12 @@ public class ArchivePage extends ListPage implements ReadThreadSummariesTask.Cal
 	@Override
 	public void onReadThreadSummariesSuccess(ThreadSummary[] threadSummaries, int pageNumber) {
 		readTask = null;
-		PullableListView listView = getListView();
-		listView.getWrapper().cancelBusyState();
+		PullableRecyclerView recyclerView = getRecyclerView();
+		recyclerView.getWrapper().cancelBusyState();
 		boolean showScale = showScaleOnSuccess;
 		showScaleOnSuccess = false;
 		if (pageNumber == 0 && threadSummaries == null) {
-			if (getAdapter().isEmpty()) {
+			if (getAdapter().isRealEmpty()) {
 				switchView(ViewType.ERROR, R.string.message_empty_response);
 			} else {
 				ClickableToast.show(getContext(), R.string.message_empty_response);
@@ -185,8 +191,8 @@ public class ArchivePage extends ListPage implements ReadThreadSummariesTask.Cal
 				getAdapter().setItems(threadSummaries);
 				retainExtra.threadSummaries = threadSummaries;
 				retainExtra.pageNumber = 0;
-				ListViewUtils.cancelListFling(listView);
-				listView.setSelection(0);
+				ListViewUtils.cancelListFling(recyclerView);
+				recyclerView.scrollToPosition(0);
 				if (showScale) {
 					showScaleAnimation();
 				}
@@ -194,14 +200,19 @@ public class ArchivePage extends ListPage implements ReadThreadSummariesTask.Cal
 				threadSummaries = ReadThreadSummariesTask.concatenate(retainExtra.threadSummaries, threadSummaries);
 				int oldCount = retainExtra.threadSummaries.length;
 				if (threadSummaries.length > oldCount) {
+					boolean needScroll = false;
+					int childCount = recyclerView.getChildCount();
+					if (childCount > 0) {
+						View child = recyclerView.getChildAt(childCount - 1);
+						int position = recyclerView.getChildViewHolder(child).getAdapterPosition();
+						needScroll = position + 1 == oldCount &&
+								recyclerView.getHeight() - recyclerView.getPaddingBottom() - child.getBottom() >= 0;
+					}
 					getAdapter().setItems(threadSummaries);
 					retainExtra.threadSummaries = threadSummaries;
 					retainExtra.pageNumber = pageNumber;
-					if (listView.getLastVisiblePosition() + 1 == oldCount) {
-						View view = listView.getChildAt(listView.getChildCount() - 1);
-						if (listView.getHeight() - listView.getPaddingBottom() - view.getBottom() >= 0) {
-							ListScroller.scrollTo(getListView(), oldCount);
-						}
+					if (needScroll) {
+						ListViewUtils.smoothScrollToPosition(recyclerView, oldCount);
 					}
 				}
 			}
@@ -211,8 +222,8 @@ public class ArchivePage extends ListPage implements ReadThreadSummariesTask.Cal
 	@Override
 	public void onReadThreadSummariesFail(ErrorItem errorItem) {
 		readTask = null;
-		getListView().getWrapper().cancelBusyState();
-		if (getAdapter().isEmpty()) {
+		getRecyclerView().getWrapper().cancelBusyState();
+		if (getAdapter().isRealEmpty()) {
 			switchView(ViewType.ERROR, errorItem.toString());
 		} else {
 			ClickableToast.show(getContext(), errorItem.toString());

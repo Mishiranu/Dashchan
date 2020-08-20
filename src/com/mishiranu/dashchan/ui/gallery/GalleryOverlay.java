@@ -230,7 +230,7 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 			if (!instance.galleryItems.isEmpty()) {
 				listUnit = new ListUnit(instance);
 				pagerUnit = new PagerUnit(instance);
-				rootView.addView(listUnit.getListView(), FrameLayout.LayoutParams.MATCH_PARENT,
+				rootView.addView(listUnit.getRecyclerView(), FrameLayout.LayoutParams.MATCH_PARENT,
 						FrameLayout.LayoutParams.MATCH_PARENT);
 				rootView.addView(pagerUnit.getView(), FrameLayout.LayoutParams.MATCH_PARENT,
 						FrameLayout.LayoutParams.MATCH_PARENT);
@@ -255,7 +255,7 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 				int imagePosition = newImagePosition;
 				galleryWindow = imagePosition < 0 || requireArguments().getBoolean(EXTRA_INITIAL_GALLERY_MODE);
 				if (galleryWindow && imagePosition >= 0) {
-					listUnit.setListSelection(imagePosition, false);
+					listUnit.scrollListToPosition(imagePosition, false);
 				}
 				switchMode(galleryWindow, false);
 			}
@@ -317,7 +317,7 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 	}
 
 	private void invalidateListPosition() {
-		listUnit.setListSelection(pagerUnit.getCurrentIndex(), true);
+		listUnit.scrollListToPosition(pagerUnit.getCurrentIndex(), true);
 	}
 
 	private final Runnable returnToGalleryRunnable = () -> {

@@ -14,6 +14,7 @@ import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.view.ContextThemeWrapper;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.animation.Interpolator;
 import chan.util.StringUtils;
@@ -23,8 +24,9 @@ import com.mishiranu.dashchan.graphics.RoundedCornersDrawable;
 import com.mishiranu.dashchan.graphics.TransparentTileDrawable;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
+import com.mishiranu.dashchan.util.ViewUtils;
 
-public class AttachmentView extends ClickableView {
+public class AttachmentView extends View {
 	private final Rect source = new Rect();
 	private final RectF destination = new RectF();
 	private final Paint bitmapPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
@@ -47,7 +49,12 @@ public class AttachmentView extends ClickableView {
 
 	public AttachmentView(Context context, AttributeSet attrs) {
 		super(new ContextThemeWrapper(context, R.style.Theme_Gallery), attrs);
-		setDrawingCacheEnabled(false);
+
+		if (!C.API_PIE) {
+			// noinspection deprecation
+			setDrawingCacheEnabled(false);
+		}
+		ViewUtils.setSelectableItemBackground(this);
 		// Use old context to obtain background color.
 		backgroundColor = ResourceUtils.getColor(context, R.attr.backgroundAttachment);
 		if (C.API_LOLLIPOP) {

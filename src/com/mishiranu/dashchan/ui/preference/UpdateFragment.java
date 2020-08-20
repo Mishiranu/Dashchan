@@ -128,8 +128,7 @@ public class UpdateFragment extends BaseListFragment {
 				CheckPreference.CheckViewHolder viewHolder = checkBoxViewGetter.createViewHolder(parent);
 				viewHolder.view.setTag(viewHolder);
 				return new RecyclerView.ViewHolder(viewHolder.view) {{
-					ViewUtils.setBackgroundPreservePadding(itemView, ResourceUtils
-							.getDrawable(itemView.getContext(), android.R.attr.selectableItemBackground, 0));
+					ViewUtils.setSelectableItemBackground(itemView);
 					itemView.setOnClickListener(v -> onItemClick(getAdapterPosition()));
 				}};
 			}

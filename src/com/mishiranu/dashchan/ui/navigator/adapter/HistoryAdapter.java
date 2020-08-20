@@ -1,41 +1,69 @@
 package com.mishiranu.dashchan.ui.navigator.adapter;
 
-import android.view.View;
+import android.content.Context;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.TextView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import chan.content.ChanConfiguration;
 import chan.util.StringUtils;
+import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.storage.HistoryDatabase;
-import com.mishiranu.dashchan.util.ResourceUtils;
+import com.mishiranu.dashchan.widget.DividerItemDecoration;
+import com.mishiranu.dashchan.widget.SimpleViewHolder;
 import com.mishiranu.dashchan.widget.ViewFactory;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
 
-public class HistoryAdapter extends BaseAdapter {
+public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+	public interface Callback {
+		void onItemClick(HistoryDatabase.HistoryItem historyItem);
+		boolean onItemLongClick(HistoryDatabase.HistoryItem historyItem);
+	}
+
+	private enum ViewType {VIEW, HEADER}
+
+	private enum Header {
+		TODAY(R.string.text_today),
+		YESTERDAY(R.string.text_yesterday),
+		WEEK(R.string.text_this_week),
+		OLD(R.string.text_older_7_days);
+
+		public final int titleResId;
+
+		Header(int titleResId) {
+			this.titleResId = titleResId;
+		}
+	}
+
+	private static class ListItem {
+		public final HistoryDatabase.HistoryItem historyItem;
+		public final String headerTitle;
+
+		private ListItem(String headerTitle, HistoryDatabase.HistoryItem historyItem) {
+			this.headerTitle = headerTitle;
+			this.historyItem = historyItem;
+		}
+	}
+
+	private final Callback callback;
+
+	private final ArrayList<ListItem> listItems = new ArrayList<>();
+	private final ArrayList<ListItem> filteredListItems = new ArrayList<>();
+
 	private String chanName;
-
-	private final ArrayList<Object> items = new ArrayList<>();
-	private final ArrayList<Object> filteredItems = new ArrayList<>();
-
 	private boolean filterMode = false;
 	private String filterText;
 
-	private static final int TYPE_HEADER = 0;
-	private static final int TYPE_ITEM = 1;
+	public HistoryAdapter(Callback callback) {
+		this.callback = callback;
+	}
 
-	private static final int HEADER_NONE = 0;
-	private static final int HEADER_TODAY = 1;
-	private static final int HEADER_YESTERDAY = 2;
-	private static final int HEADER_WEEK = 3;
-	private static final int HEADER_OLD = 4;
-
-	public void updateConfiguration(String chanName) {
+	public void updateConfiguration(Context context, String chanName) {
 		this.chanName = chanName;
-		items.clear();
+		listItems.clear();
 		ArrayList<HistoryDatabase.HistoryItem> historyItems = HistoryDatabase.getInstance().getAllHistory(chanName);
 		Calendar calendar = Calendar.getInstance();
 		calendar.set(Calendar.HOUR_OF_DAY, 0);
@@ -45,44 +73,25 @@ public class HistoryAdapter extends BaseAdapter {
 		long thisDay = calendar.getTimeInMillis();
 		long yesterday = thisDay - 24 * 60 * 60 * 1000;
 		long thisWeek = thisDay - 7 * 24 * 60 * 60 * 1000;
-		int header = HEADER_NONE;
+		Header header = null;
 		for (HistoryDatabase.HistoryItem historyItem : historyItems) {
-			int targetHeader = HEADER_TODAY;
+			Header targetHeader = Header.TODAY;
 			if (historyItem.time < thisDay) {
 				if (historyItem.time < yesterday) {
 					if (historyItem.time < thisWeek) {
-						targetHeader = HEADER_OLD;
+						targetHeader = Header.OLD;
 					} else {
-						targetHeader = HEADER_WEEK;
+						targetHeader = Header.WEEK;
 					}
 				} else {
-					targetHeader = HEADER_YESTERDAY;
+					targetHeader = Header.YESTERDAY;
 				}
 			}
-			if (targetHeader > header) {
+			if (header == null || targetHeader.compareTo(header) > 0) {
 				header = targetHeader;
-				int resId = 0;
-				switch (header) {
-					case HEADER_TODAY: {
-						resId = R.string.text_today;
-						break;
-					}
-					case HEADER_YESTERDAY: {
-						resId = R.string.text_yesterday;
-						break;
-					}
-					case HEADER_WEEK: {
-						resId = R.string.text_this_week;
-						break;
-					}
-					case HEADER_OLD: {
-						resId = R.string.text_older_7_days;
-						break;
-					}
-				}
-				items.add(MainApplication.getInstance().getString(resId));
+				listItems.add(new ListItem(context.getString(header.titleResId), null));
 			}
-			items.add(historyItem);
+			listItems.add(new ListItem(null, historyItem));
 		}
 		if (filterMode) {
 			applyFilter(filterText);
@@ -95,30 +104,37 @@ public class HistoryAdapter extends BaseAdapter {
 	public boolean applyFilter(String text) {
 		filterText = text;
 		filterMode = !StringUtils.isEmpty(text);
-		filteredItems.clear();
+		filteredListItems.clear();
 		if (filterMode) {
 			text = text.toLowerCase(Locale.getDefault());
-			for (Object item : items) {
-				if (item instanceof HistoryDatabase.HistoryItem) {
-					HistoryDatabase.HistoryItem historyItem = (HistoryDatabase.HistoryItem) item;
-					if (historyItem.title != null && historyItem.title.toLowerCase(Locale.getDefault())
-							.contains(text)) {
-						filteredItems.add(historyItem);
+			for (ListItem listItem : listItems) {
+				if (listItem.historyItem != null) {
+					if (listItem.historyItem.title != null &&
+							listItem.historyItem.title.toLowerCase(Locale.getDefault()).contains(text)) {
+						filteredListItems.add(listItem);
 					}
 				}
 			}
 		}
 		notifyDataSetChanged();
-		return !filterMode || filteredItems.size() > 0;
+		return !filterMode || !filteredListItems.isEmpty();
 	}
 
 	public void remove(HistoryDatabase.HistoryItem historyItem) {
-		int index = items.indexOf(historyItem);
+		int index = -1;
+		for (int i = 0; i < listItems.size(); i++) {
+			ListItem listItem = listItems.get(i);
+			if (listItem.historyItem == historyItem) {
+				index = i;
+				break;
+			}
+		}
 		if (index >= 0) {
-			items.remove(index);
-			if (index > 0 && (index == items.size() || getItemViewType(index) == TYPE_HEADER) &&
-					getItemViewType(index - 1) == TYPE_HEADER) {
-				items.remove(index - 1);
+			listItems.remove(index);
+			if (index > 0 && (index == listItems.size() ||
+					getItemViewType(index) == ViewType.HEADER.ordinal()) &&
+					getItemViewType(index - 1) == ViewType.HEADER.ordinal()) {
+				listItems.remove(index - 1);
 			}
 			if (filterMode) {
 				applyFilter(filterText);
@@ -129,91 +145,93 @@ public class HistoryAdapter extends BaseAdapter {
 	}
 
 	public void clear() {
-		items.clear();
-		filteredItems.clear();
+		listItems.clear();
+		filteredListItems.clear();
 		notifyDataSetChanged();
 	}
 
-	@Override
-	public int getCount() {
-		return (filterMode ? filteredItems : items).size();
+	public boolean isRealEmpty() {
+		return listItems.size() == 0;
 	}
 
 	@Override
-	public long getItemId(int position) {
-		return 0;
-	}
-
-	@Override
-	public Object getItem(int position) {
-		return (filterMode ? filteredItems : items).get(position);
-	}
-
-	public HistoryDatabase.HistoryItem getHistoryItem(int position) {
-		Object item = getItem(position);
-		if (item instanceof HistoryDatabase.HistoryItem) {
-			return (HistoryDatabase.HistoryItem) item;
-		}
-		return null;
-	}
-
-	@Override
-	public boolean areAllItemsEnabled() {
-		return false;
-	}
-
-	@Override
-	public boolean isEnabled(int position) {
-		return getItem(position) instanceof HistoryDatabase.HistoryItem;
-	}
-
-	@Override
-	public int getViewTypeCount() {
-		return 2;
+	public int getItemCount() {
+		return (filterMode ? filteredListItems : listItems).size();
 	}
 
 	@Override
 	public int getItemViewType(int position) {
-		return getItem(position) instanceof HistoryDatabase.HistoryItem ? TYPE_ITEM : TYPE_HEADER;
+		ListItem listItem = getItem(position);
+		if (listItem.headerTitle != null) {
+			return ViewType.HEADER.ordinal();
+		} else if (listItem.historyItem != null) {
+			return ViewType.VIEW.ordinal();
+		} else {
+			throw new IllegalStateException();
+		}
+	}
+
+	private ListItem getItem(int position) {
+		return (filterMode ? filteredListItems : listItems).get(position);
+	}
+
+	@NonNull
+	@Override
+	public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+		switch (ViewType.values()[viewType]) {
+			case VIEW: {
+				return new RecyclerView.ViewHolder(ViewFactory.makeTwoLinesListItem(parent)) {{
+					((ViewFactory.TwoLinesViewHolder) itemView.getTag()).text2.setSingleLine(true);
+					itemView.setOnClickListener(v -> callback
+							.onItemClick(getItem(getAdapterPosition()).historyItem));
+					itemView.setOnLongClickListener(v -> callback
+							.onItemLongClick(getItem(getAdapterPosition()).historyItem));
+				}};
+			}
+			case HEADER: {
+				return new SimpleViewHolder(ViewFactory.makeListTextHeader(parent));
+			}
+			default: {
+				throw new IllegalStateException();
+			}
+		}
 	}
 
 	@Override
-	public View getView(int position, View convertView, ViewGroup parent) {
-		Object item = getItem(position);
-		HistoryDatabase.HistoryItem historyItem = item instanceof HistoryDatabase.HistoryItem
-				? (HistoryDatabase.HistoryItem) item : null;
-		ViewFactory.TwoLinesViewHolder holder;
-		if (convertView == null) {
-			if (historyItem != null) {
-				convertView = ViewFactory.makeTwoLinesListItem(parent, true);
-				float density = ResourceUtils.obtainDensity(parent);
-				convertView.setPadding((int) (16f * density), convertView.getPaddingTop(),
-						(int) (16f * density), convertView.getPaddingBottom());
-				holder = (ViewFactory.TwoLinesViewHolder) convertView.getTag();
-			} else {
-				convertView = ViewFactory.makeListTextHeader(parent, true);
-				holder = null;
+	public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+		ListItem listItem = getItem(position);
+		switch (ViewType.values()[holder.getItemViewType()]) {
+			case VIEW: {
+				ViewFactory.TwoLinesViewHolder viewHolder = (ViewFactory.TwoLinesViewHolder) holder.itemView.getTag();
+				viewHolder.text1.setText(StringUtils.isEmpty(listItem.historyItem.title)
+						? StringUtils.formatThreadTitle(listItem.historyItem.chanName, listItem.historyItem.boardName,
+						listItem.historyItem.threadNumber) : listItem.historyItem.title);
+				ChanConfiguration configuration = ChanConfiguration.get(listItem.historyItem.chanName);
+				String title = configuration.getBoardTitle(listItem.historyItem.boardName);
+				title = StringUtils.isEmpty(listItem.historyItem.boardName) ? title
+						: StringUtils.formatBoardTitle(listItem.historyItem.chanName,
+						listItem.historyItem.boardName, title);
+				if (chanName == null) {
+					title = configuration.getTitle() + " — " + title;
+				}
+				viewHolder.text2.setText(title);
+				break;
 			}
-		} else {
-			if (historyItem != null) {
-				holder = (ViewFactory.TwoLinesViewHolder) convertView.getTag();
-			} else {
-				holder = null;
+			case HEADER: {
+				((TextView) holder.itemView).setText(listItem.headerTitle);
+				break;
 			}
 		}
-		if (historyItem != null) {
-			holder.text1.setText(historyItem.title);
-			ChanConfiguration configuration = ChanConfiguration.get(historyItem.chanName);
-			String title = configuration.getBoardTitle(historyItem.boardName);
-			title = StringUtils.isEmpty(historyItem.boardName) ? title
-					: StringUtils.formatBoardTitle(historyItem.chanName, historyItem.boardName, title);
-			if (chanName == null) {
-				title = configuration.getTitle() + " — " + title;
-			}
-			holder.text2.setText(title);
+	}
+
+	public DividerItemDecoration.Configuration configureDivider
+			(DividerItemDecoration.Configuration configuration, int position) {
+		ListItem current = getItem(position);
+		ListItem next = position + 1 < getItemCount() ? getItem(position + 1) : null;
+		if (C.API_LOLLIPOP) {
+			return configuration.need(current.historyItem != null || next == null || next.headerTitle != null);
 		} else {
-			((TextView) convertView).setText((String) item);
+			return configuration.need(current.historyItem != null && (next == null || next.historyItem != null));
 		}
-		return convertView;
 	}
 }

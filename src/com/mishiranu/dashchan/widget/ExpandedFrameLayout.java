@@ -4,9 +4,9 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class ExpandedFrameLayout extends FrameLayout {
 	public ExpandedFrameLayout(@NonNull Context context) {
@@ -21,18 +21,18 @@ public class ExpandedFrameLayout extends FrameLayout {
 		super(context, attrs, defStyleAttr);
 	}
 
-	private AbsListView listView;
+	private RecyclerView recyclerView;
 
 	@Override
 	public void addView(View child, int index, ViewGroup.LayoutParams params) {
 		super.addView(child, index, params);
 
-		if (child instanceof AbsListView) {
-			listView = (AbsListView) child;
+		if (child instanceof RecyclerView) {
+			recyclerView = (RecyclerView) child;
 		}
 	}
 
-	public AbsListView getListView() {
-		return listView;
+	public RecyclerView getRecyclerView() {
+		return recyclerView;
 	}
 }

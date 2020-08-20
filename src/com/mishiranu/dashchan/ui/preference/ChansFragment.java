@@ -11,7 +11,6 @@ import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.Preference;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
-import com.mishiranu.dashchan.util.ResourceUtils;
 
 public class ChansFragment extends PreferenceFragment {
 	@Override
@@ -24,10 +23,9 @@ public class ChansFragment extends PreferenceFragment {
 		super.onViewCreated(view, savedInstanceState);
 
 		ChanManager manager = ChanManager.getInstance();
-		int color = ResourceUtils.getColor(view.getContext(), R.attr.drawerIconColor);
 		for (String chanName : manager.getAvailableChanNames()) {
 			Preference<?> preference = addCategory(ChanConfiguration.get(chanName).getTitle(),
-					manager.getIcon(chanName, color));
+					manager.getIcon(chanName));
 			preference.setOnClickListener(p -> ((FragmentHandler) requireActivity())
 					.pushFragment(new ChanFragment(chanName)));
 		}

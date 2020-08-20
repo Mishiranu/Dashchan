@@ -1,49 +1,43 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui.navigator.adapter;
 
+import android.view.ViewGroup;
+import android.widget.TextView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+import chan.content.ChanConfiguration;
+import chan.util.CommonUtils;
+import chan.util.StringUtils;
+import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.widget.DividerItemDecoration;
+import com.mishiranu.dashchan.widget.SimpleViewHolder;
+import com.mishiranu.dashchan.widget.ViewFactory;
 import java.util.ArrayList;
 import java.util.Locale;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.text.TextUtils;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.TextView;
+public class BoardsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+	public interface Callback {
+		void onItemClick(String boardName);
+		boolean onItemLongClick(String boardName);
+	}
 
-import chan.content.ChanConfiguration;
-import chan.util.CommonUtils;
-import chan.util.StringUtils;
+	private enum ViewType {VIEW, HEADER}
 
-import com.mishiranu.dashchan.util.ResourceUtils;
-import com.mishiranu.dashchan.widget.ViewFactory;
+	private static class ListItem {
+		public final String boardName, title;
 
-public class BoardsAdapter extends BaseAdapter {
+		public ListItem(String boardName, String title) {
+			this.boardName = boardName;
+			this.title = title;
+		}
+	}
+
 	public static final String KEY_TITLE = "title";
 	public static final String KEY_BOARDS = "boards";
 
-	private static final int TYPE_VIEW = 0;
-	private static final int TYPE_HEADER = 1;
-
+	private final Callback callback;
 	private final String chanName;
 
 	private final ArrayList<ListItem> listItems = new ArrayList<>();
@@ -52,7 +46,8 @@ public class BoardsAdapter extends BaseAdapter {
 	private boolean filterMode = false;
 	private String filterText;
 
-	public BoardsAdapter(String chanName) {
+	public BoardsAdapter(Callback callback, String chanName) {
+		this.callback = callback;
 		this.chanName = chanName;
 	}
 
@@ -114,67 +109,59 @@ public class BoardsAdapter extends BaseAdapter {
 		}
 	}
 
-	@Override
-	public int getViewTypeCount() {
-		return 2;
+	public boolean isRealEmpty() {
+		return listItems.size() == 0;
 	}
 
 	@Override
-	public int getItemViewType(int position) {
-		return getItem(position).boardName == null ? TYPE_HEADER : TYPE_VIEW;
-	}
-
-	@Override
-	public boolean isEnabled(int position) {
-		return getItem(position).boardName != null;
-	}
-
-	@Override
-	public boolean areAllItemsEnabled() {
-		return false;
-	}
-
-	@Override
-	public View getView(int position, View convertView, ViewGroup parent) {
-		ListItem listItem = getItem(position);
-		if (convertView == null) {
-			if (listItem.boardName != null) {
-				float density = ResourceUtils.obtainDensity(parent);
-				TextView textView = (TextView) LayoutInflater.from(parent.getContext())
-						.inflate(android.R.layout.simple_list_item_1, parent, false);
-				textView.setPadding((int) (16f * density), 0, (int) (16f * density), 0);
-				textView.setEllipsize(TextUtils.TruncateAt.END);
-				textView.setSingleLine(true);
-				convertView = textView;
-			} else {
-				convertView = ViewFactory.makeListTextHeader(parent, false);
-			}
-		}
-		((TextView) convertView).setText(listItem.title);
-		return convertView;
-	}
-
-	@Override
-	public int getCount() {
+	public int getItemCount() {
 		return (filterMode ? filteredListItems : listItems).size();
 	}
 
 	@Override
-	public ListItem getItem(int position) {
+	public int getItemViewType(int position) {
+		return (getItem(position).boardName == null ? ViewType.HEADER : ViewType.VIEW).ordinal();
+	}
+
+	private ListItem getItem(int position) {
 		return (filterMode ? filteredListItems : listItems).get(position);
 	}
 
+	@NonNull
 	@Override
-	public long getItemId(int position) {
-		return 0;
+	public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+		switch (ViewType.values()[viewType]) {
+			case VIEW: {
+				return new RecyclerView.ViewHolder(ViewFactory.makeSingleLineListItem(parent)) {{
+					itemView.setOnClickListener(v -> callback
+							.onItemClick(getItem(getAdapterPosition()).boardName));
+					itemView.setOnLongClickListener(v -> callback
+							.onItemLongClick(getItem(getAdapterPosition()).boardName));
+				}};
+			}
+			case HEADER: {
+				return new SimpleViewHolder(ViewFactory.makeListTextHeader(parent));
+			}
+			default: {
+				throw new IllegalStateException();
+			}
+		}
 	}
 
-	public static class ListItem {
-		public final String boardName, title;
+	@Override
+	public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+		ListItem listItem = getItem(position);
+		((TextView) holder.itemView).setText(listItem.title);
+	}
 
-		public ListItem(String boardName, String title) {
-			this.boardName = boardName;
-			this.title = title;
+	public DividerItemDecoration.Configuration configureDivider
+			(DividerItemDecoration.Configuration configuration, int position) {
+		ListItem current = getItem(position);
+		ListItem next = position + 1 < getItemCount() ? getItem(position + 1) : null;
+		if (C.API_LOLLIPOP) {
+			return configuration.need(next != null && next.boardName == null);
+		} else {
+			return configuration.need(current.boardName != null && (next == null || next.boardName != null));
 		}
 	}
 }

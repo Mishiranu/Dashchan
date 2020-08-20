@@ -4,8 +4,9 @@ import android.app.AlertDialog;
 import android.net.Uri;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import chan.util.StringUtils;
+import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
@@ -13,24 +14,35 @@ import com.mishiranu.dashchan.content.storage.HistoryDatabase;
 import com.mishiranu.dashchan.ui.navigator.Page;
 import com.mishiranu.dashchan.ui.navigator.adapter.HistoryAdapter;
 import com.mishiranu.dashchan.util.DialogMenu;
-import com.mishiranu.dashchan.widget.PullableListView;
+import com.mishiranu.dashchan.util.ResourceUtils;
+import com.mishiranu.dashchan.util.ViewUtils;
+import com.mishiranu.dashchan.widget.DividerItemDecoration;
+import com.mishiranu.dashchan.widget.PullableRecyclerView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 
-public class HistoryPage extends ListPage {
+public class HistoryPage extends ListPage implements HistoryAdapter.Callback {
 	private String chanName;
 	private boolean mergeChans;
 
 	private HistoryAdapter getAdapter() {
-		return (HistoryAdapter) getListView().getAdapter();
+		return (HistoryAdapter) getRecyclerView().getAdapter();
 	}
 
 	@Override
 	protected void onCreate() {
-		PullableListView listView = getListView();
-		listView.setAdapter(new HistoryAdapter());
-		listView.getWrapper().setPullSides(PullableWrapper.Side.NONE);
+		PullableRecyclerView recyclerView = getRecyclerView();
+		recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
+		if (!C.API_LOLLIPOP) {
+			float density = ResourceUtils.obtainDensity(recyclerView);
+			ViewUtils.setNewPadding(recyclerView, (int) (16f * density), null, (int) (16f * density), null);
+		}
+		HistoryAdapter adapter = new HistoryAdapter(this);
+		recyclerView.setAdapter(adapter);
+		recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(),
+				adapter::configureDivider));
+		recyclerView.getWrapper().setPullSides(PullableWrapper.Side.NONE);
 		if (updateConfiguration(true)) {
-			restoreListPosition(null);
+			restoreListPosition();
 		}
 	}
 
@@ -46,13 +58,13 @@ public class HistoryPage extends ListPage {
 		boolean mergeChans = Preferences.isMergeChans();
 		boolean update = !mergeChans && !chanName.equals(this.chanName) || mergeChans != this.mergeChans;
 		if (create || update) {
-			adapter.updateConfiguration(mergeChans ? null : chanName);
+			adapter.updateConfiguration(getContext(), mergeChans ? null : chanName);
 		}
 		if (update) {
 			this.chanName = chanName;
 			this.mergeChans = mergeChans;
 		}
-		if (adapter.isEmpty()) {
+		if (adapter.isRealEmpty()) {
 			switchView(ViewType.ERROR, R.string.message_empty_history);
 			return false;
 		} else {
@@ -67,8 +79,7 @@ public class HistoryPage extends ListPage {
 	}
 
 	@Override
-	public void onItemClick(View view, int position) {
-		HistoryDatabase.HistoryItem historyItem = getAdapter().getHistoryItem(position);
+	public void onItemClick(HistoryDatabase.HistoryItem historyItem) {
 		if (historyItem != null) {
 			getUiManager().navigator().navigatePosts(historyItem.chanName, historyItem.boardName,
 					historyItem.threadNumber, null, null, 0);
@@ -80,8 +91,7 @@ public class HistoryPage extends ListPage {
 	private static final int CONTEXT_MENU_REMOVE_FROM_HISTORY = 2;
 
 	@Override
-	public boolean onItemLongClick(View view, int position) {
-		HistoryDatabase.HistoryItem historyItem = getAdapter().getHistoryItem(position);
+	public boolean onItemLongClick(HistoryDatabase.HistoryItem historyItem) {
 		if (historyItem != null) {
 			DialogMenu dialogMenu = new DialogMenu(getContext(), id -> {
 				switch (id) {

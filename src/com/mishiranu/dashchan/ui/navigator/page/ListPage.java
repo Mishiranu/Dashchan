@@ -8,14 +8,13 @@ import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.BaseAdapter;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.ui.navigator.Page;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.widget.ListPosition;
-import com.mishiranu.dashchan.widget.PullableListView;
+import com.mishiranu.dashchan.widget.PullableRecyclerView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 
 public abstract class ListPage implements PullableWrapper.PullCallback {
@@ -54,7 +53,7 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 
 	private Callback callback;
 	private Page page;
-	private PullableListView listView;
+	private PullableRecyclerView recyclerView;
 	private ListPosition listPosition;
 	private UiManager uiManager;
 	private ActionIconSet actionIconSet;
@@ -64,14 +63,14 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 
 	private State state = State.INIT;
 
-	public final void init(Callback callback, Page page, PullableListView listView,
+	public final void init(Callback callback, Page page, PullableRecyclerView recyclerView,
 			ListPosition listPosition, UiManager uiManager, ActionIconSet actionIconSet,
 			Object retainExtra, Parcelable parcelableExtra, InitRequest initRequest) {
 		if (state == State.INIT) {
 			state = State.LOCKED;
 			this.callback = callback;
 			this.page = page;
-			this.listView = listView;
+			this.recyclerView = recyclerView;
 			this.listPosition = listPosition;
 			this.uiManager = uiManager;
 			this.actionIconSet = actionIconSet;
@@ -85,7 +84,7 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 	}
 
 	protected final Context getContext() {
-		return listView.getContext();
+		return recyclerView.getContext();
 	}
 
 	protected final Resources getResources() {
@@ -120,21 +119,13 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 		return ChanConfiguration.get(page.chanName);
 	}
 
-	protected final PullableListView getListView() {
-		return listView;
+	protected final PullableRecyclerView getRecyclerView() {
+		return recyclerView;
 	}
 
-	protected interface RestorePositionCallback {
-		void restore(ListPosition listPosition);
-	}
-
-	protected final void restoreListPosition(RestorePositionCallback callback) {
+	protected final void restoreListPosition() {
 		if (listPosition != null) {
-			if (callback != null) {
-				callback.restore(listPosition);
-			} else {
-				listPosition.apply(listView);
-			}
+			listPosition.apply(recyclerView);
 			listPosition = null;
 		}
 	}
@@ -144,7 +135,7 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 	}
 
 	protected final void notifyAllAdaptersChanged() {
-		((BaseAdapter) listView.getAdapter()).notifyDataSetChanged();
+		recyclerView.getAdapter().notifyDataSetChanged();
 		onNotifyAllAdaptersChanged();
 	}
 
@@ -226,12 +217,6 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 		return null;
 	}
 
-	public void onItemClick(View view, int position) {}
-
-	public boolean onItemLongClick(View view, int position) {
-		return false;
-	}
-
 	public void onCreateOptionsMenu(Menu menu) {}
 
 	public void onPrepareOptionsMenu(Menu menu) {}
@@ -309,7 +294,7 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 	}
 
 	public final ListPosition getListPosition() {
-		return listPosition != null ? listPosition : ListPosition.obtain(listView);
+		return listPosition != null ? listPosition : ListPosition.obtain(recyclerView);
 	}
 
 	public final Pair<Object, Parcelable> getExtraToStore(boolean saveToStack) {

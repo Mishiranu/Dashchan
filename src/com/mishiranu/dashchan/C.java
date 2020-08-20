@@ -62,10 +62,6 @@ public class C {
 
 	public static final String DEFAULT_DOWNLOAD_PATH = "/Download/Dashchan/";
 
-	public static final int HIDDEN_UNKNOWN = 0;
-	public static final int HIDDEN_FALSE = 1;
-	public static final int HIDDEN_TRUE = 2;
-
 	public static final String ACTION_POSTING = "com.mishiranu.dashchan.action.POSTING";
 	public static final String ACTION_GALLERY = "com.mishiranu.dashchan.action.GALLERY";
 	public static final String ACTION_PLAYER = "com.mishiranu.dashchan.action.PLAYER";

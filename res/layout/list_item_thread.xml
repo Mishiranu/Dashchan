@@ -1,28 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<!--
-	Copyright 2014-2016 Fukurou Mishiranu
-
-	Licensed under the Apache License, Version 2.0 (the "License");
-	you may not use this file except in compliance with the License.
-	You may obtain a copy of the License at
-
-	http://www.apache.org/licenses/LICENSE-2.0
-
-	Unless required by applicable law or agreed to in writing, software
-	distributed under the License is distributed on an "AS IS" BASIS,
-	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	See the License for the specific language governing permissions and
-	limitations under the License.
--->
-
-<com.mishiranu.dashchan.widget.SingleLayerLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.mishiranu.dashchan.widget.PostLinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
 	android:orientation="vertical"
 	android:baselineAligned="false">
 
-    <LinearLayout
+	<LinearLayout
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:orientation="horizontal"
@@ -34,6 +19,7 @@
 			android:layout_width="64dp"
 			android:layout_height="64dp"
 			android:layout_marginTop="10dp"
+			android:layout_marginEnd="10dp"
 			android:layout_marginRight="10dp"
 			android:layout_marginBottom="10dp" />
 
@@ -67,62 +53,64 @@
 
 	</LinearLayout>
 
-    <View
+	<View
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:layout_marginLeft="10dp"
 		android:layout_marginRight="10dp"
 		android:background="?android:attr/listDivider" />
 
-	<com.mishiranu.dashchan.widget.ClickableView
-		android:id="@+id/click_view"
+	<LinearLayout
+		android:id="@+id/show_original_post"
 		android:layout_width="match_parent"
-		android:layout_height="wrap_content">
+		android:layout_height="wrap_content"
+		android:orientation="horizontal"
+		android:gravity="center_vertical"
+		android:paddingLeft="10dp"
+		android:paddingRight="10dp"
+		android:background="?android:attr/selectableItemBackground">
 
-		<LinearLayout
-			android:layout_width="match_parent"
+		<TextView
+			android:id="@+id/thread_description"
+			android:layout_width="0dp"
 			android:layout_height="wrap_content"
-			android:orientation="horizontal"
-			android:gravity="center_vertical"
-			android:paddingLeft="10dp"
-			android:paddingRight="10dp">
+			android:layout_weight="1"
+			android:paddingTop="8dp"
+			android:paddingBottom="8.99dp"
+			style="@style/Widget.HeaderText"
+			android:textSize="11sp"
+			android:fontFamily="sans-serif-medium"
+			android:textAllCaps="true"
+			android:ellipsize="start"
+			tools:ignore="SmallSp" />
 
-			<TextView
-				android:id="@+id/thread_description"
-				android:layout_width="0dp"
-				android:layout_height="wrap_content"
-				android:layout_weight="1"
-				android:paddingTop="8dp"
-				android:paddingBottom="8.99dp"
-				style="@style/Widget.HeaderText"
-				android:textSize="11sp"
-				android:fontFamily="sans-serif-medium"
-				android:textAllCaps="true"
-				android:ellipsize="start" />
+		<ImageView
+			android:id="@+id/state_sage"
+			android:layout_width="12dp"
+			android:layout_height="12dp"
+			android:layout_marginStart="8dp"
+			android:layout_marginLeft="8dp"
+			android:src="?attr/postSage"
+			tools:ignore="ContentDescription" />
 
-			<ImageView
-				android:id="@+id/state_sage"
-				android:layout_width="12dp"
-				android:layout_height="12dp"
-				android:layout_marginLeft="8dp"
-				android:src="?attr/postSage" />
+		<ImageView
+			android:id="@+id/state_sticky"
+			android:layout_width="12dp"
+			android:layout_height="12dp"
+			android:layout_marginStart="8dp"
+			android:layout_marginLeft="8dp"
+			android:src="?attr/postSticky"
+			tools:ignore="ContentDescription" />
 
-			<ImageView
-				android:id="@+id/state_sticky"
-				android:layout_width="12dp"
-				android:layout_height="12dp"
-				android:layout_marginLeft="8dp"
-				android:src="?attr/postSticky" />
+		<ImageView
+			android:id="@+id/state_closed"
+			android:layout_width="12dp"
+			android:layout_height="12dp"
+			android:layout_marginStart="8dp"
+			android:layout_marginLeft="8dp"
+			android:src="?attr/postClosed"
+			tools:ignore="ContentDescription" />
 
-			<ImageView
-				android:id="@+id/state_closed"
-				android:layout_width="12dp"
-				android:layout_height="12dp"
-				android:layout_marginLeft="8dp"
-				android:src="?attr/postClosed" />
+	</LinearLayout>
 
-		</LinearLayout>
-
-	</com.mishiranu.dashchan.widget.ClickableView>
-
-</com.mishiranu.dashchan.widget.SingleLayerLinearLayout>
+</com.mishiranu.dashchan.widget.PostLinearLayout>

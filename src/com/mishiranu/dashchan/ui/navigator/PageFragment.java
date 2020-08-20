@@ -14,7 +14,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -25,15 +24,13 @@ import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.ui.navigator.page.ListPage;
-import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.widget.CustomSearchView;
 import com.mishiranu.dashchan.widget.ListPosition;
 import com.mishiranu.dashchan.widget.MenuExpandListener;
-import com.mishiranu.dashchan.widget.PullableListView;
+import com.mishiranu.dashchan.widget.PullableRecyclerView;
 import java.util.UUID;
 
-public final class PageFragment extends Fragment implements ActivityHandler, ListPage.Callback,
-		AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
+public final class PageFragment extends Fragment implements ActivityHandler, ListPage.Callback {
 	private static final String EXTRA_PAGE = "page";
 	private static final String EXTRA_RETAIN_ID = "retainId";
 
@@ -77,7 +74,7 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 	private View progressView;
 	private View errorView;
 	private TextView errorText;
-	private PullableListView listView;
+	private PullableRecyclerView recyclerView;
 	private CustomSearchView searchView;
 
 	private String actionBarLockerPull;
@@ -121,18 +118,11 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 		progressView = view.findViewById(R.id.progress);
 		errorView = view.findViewById(R.id.error);
 		errorText = view.findViewById(R.id.error_text);
-		listView = view.findViewById(android.R.id.list);
-		listView.setSaveEnabled(false);
-		if (Preferences.isActiveScrollbar()) {
-			listView.setFastScrollEnabled(true);
-			if (!C.API_LOLLIPOP) {
-				ListViewUtils.colorizeListThumb4(listView);
-			}
-		}
-		listView.setOnItemClickListener(this);
-		listView.setOnItemLongClickListener(this);
-		listView.getWrapper().setOnPullListener(listPage);
-		listView.getWrapper().setPullStateListener((wrapper, busy) -> getCallback()
+		recyclerView = view.findViewById(android.R.id.list);
+		recyclerView.setSaveEnabled(false);
+		recyclerView.setFastScrollerEnabled(Preferences.isActiveScrollbar());
+		recyclerView.getWrapper().setOnPullListener(listPage);
+		recyclerView.getWrapper().setPullStateListener((wrapper, busy) -> getCallback()
 				.setActionBarLocked(actionBarLockerPull, busy));
 	}
 
@@ -144,13 +134,13 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 		getCallback().setActionBarLocked(actionBarLockerSearch, false);
 
 		listPage.cleanup();
-		getCallback().getUiManager().view().notifyUnbindListView(listView);
+		getCallback().getUiManager().view().notifyUnbindListView(recyclerView);
 
 		listPage = null;
 		progressView = null;
 		errorView = null;
 		errorText = null;
-		listView = null;
+		recyclerView = null;
 		searchView = null;
 	}
 
@@ -159,7 +149,7 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 		super.onActivityCreated(savedInstanceState);
 
 		setHasOptionsMenu(true);
-		listPage.init(this, getPage(), listView,
+		listPage.init(this, getPage(), recyclerView,
 				listPosition, getCallback().getUiManager(), getCallback().getActionIconSet(),
 				getCallback().getRetainExtra(getRetainId()), parcelableExtra, initRequest);
 		initRequest = null;
@@ -384,7 +374,7 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 	@Override
 	public void showScaleAnimation() {
 		Animator animator = AnimatorInflater.loadAnimator(requireContext(), R.animator.fragment_in);
-		animator.setTarget(listView);
+		animator.setTarget(recyclerView);
 		animator.start();
 	}
 
@@ -396,15 +386,5 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 			// Fragment transactions allowed in resumed state only
 			doOnResume = () -> handleRedirect(chanName, boardName, threadNumber, postNumber);
 		}
-	}
-
-	@Override
-	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		listPage.onItemClick(view, position);
-	}
-
-	@Override
-	public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-		return listPage.onItemLongClick(view, position);
 	}
 }

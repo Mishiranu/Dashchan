@@ -133,8 +133,6 @@
 
 		<item name="colorGainFactor">0.75</item>
 
-		<item name="postsDivider">@drawable/posts_divider_light</item>
-
 	</style>
 
 	<style name="Theme.General.Main.Dark" parent="@style/Theme.Special.Main.Dark">
@@ -160,8 +158,6 @@
 		<item name="colorTextCapcode">@color/color_text_capcode_dark</item>
 
 		<item name="colorGainFactor">1.25</item>
-
-		<item name="postsDivider">@drawable/posts_divider_dark</item>
 
 	</style>
 

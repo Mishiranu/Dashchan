@@ -1,22 +1,4 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.widget;
-
-import java.lang.ref.WeakReference;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -31,13 +13,12 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.animation.Interpolator;
 import android.view.animation.PathInterpolator;
-import android.widget.AbsListView;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
+import java.lang.ref.WeakReference;
 
-public class PullableWrapper implements AbsListView.OnScrollListener {
+public class PullableWrapper {
 	private final Wrapped listView;
 	private final PullView topView, bottomView;
 
@@ -64,6 +45,10 @@ public class PullableWrapper implements AbsListView.OnScrollListener {
 	public void setColor(int color) {
 		topView.setColor(color);
 		bottomView.setColor(color);
+		EdgeEffectHandler edgeEffectHandler = listView.getEdgeEffectHandler();
+		if (edgeEffectHandler != null) {
+			edgeEffectHandler.setColor(color);
+		}
 	}
 
 	public interface PullCallback {
@@ -110,7 +95,8 @@ public class PullableWrapper implements AbsListView.OnScrollListener {
 		if (busySide != Side.NONE || side != pullSides && pullSides != Side.BOTH) {
 			if (side == Side.BOTH && (busySide == Side.TOP || busySide == Side.BOTTOM)) {
 				PullView pullView = getSidePullView(busySide);
-				pullView.setState(PullView.State.IDLE, listView.getEdgeEffectShift(side == Side.TOP));
+				pullView.setState(PullView.State.IDLE, listView.getEdgeEffectShift(side == Side.TOP
+						? EdgeEffectHandler.Side.TOP : EdgeEffectHandler.Side.BOTTOM));
 				busySide = Side.BOTH;
 			}
 			return false;
@@ -118,7 +104,8 @@ public class PullableWrapper implements AbsListView.OnScrollListener {
 		busySide = side;
 		PullView pullView = getSidePullView(side);
 		if (pullView != null) {
-			pullView.setState(PullView.State.LOADING, listView.getEdgeEffectShift(side == Side.TOP));
+			pullView.setState(PullView.State.LOADING, listView.getEdgeEffectShift(side == Side.TOP
+					? EdgeEffectHandler.Side.TOP : EdgeEffectHandler.Side.BOTTOM));
 		}
 		if (useCallback) {
 			pullCallback.onListPulled(this, side);
@@ -130,8 +117,8 @@ public class PullableWrapper implements AbsListView.OnScrollListener {
 	public void cancelBusyState() {
 		if (busySide != Side.NONE) {
 			busySide = Side.NONE;
-			topView.setState(PullView.State.IDLE, listView.getEdgeEffectShift(true));
-			bottomView.setState(PullView.State.IDLE, listView.getEdgeEffectShift(false));
+			topView.setState(PullView.State.IDLE, listView.getEdgeEffectShift(EdgeEffectHandler.Side.TOP));
+			bottomView.setState(PullView.State.IDLE, listView.getEdgeEffectShift(EdgeEffectHandler.Side.BOTTOM));
 			notifyPullStateChanged(false);
 			updateStartY = true;
 		}
@@ -160,9 +147,10 @@ public class PullableWrapper implements AbsListView.OnScrollListener {
 
 	private static final int BUSY_JUMP_TIME = 200;
 
-	public void onTouchEvent(MotionEvent ev) {
+	public boolean onTouchEvent(MotionEvent ev) {
+		boolean pull = false;
 		int action = ev.getAction();
-		if (action == MotionEvent.ACTION_DOWN || !scrolledToTop && !scrolledToBottom) {
+		if (action == MotionEvent.ACTION_DOWN || !listView.isScrolledToTop() && !listView.isScrolledToBottom()) {
 			startY = ev.getY();
 		} else if (updateStartY) {
 			int hsize = ev.getHistorySize();
@@ -170,43 +158,48 @@ public class PullableWrapper implements AbsListView.OnScrollListener {
 		}
 		updateStartY = action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL;
 		if (busySide == Side.NONE) {
-			if (action != MotionEvent.ACTION_DOWN) {
+			EdgeEffectHandler edgeEffectHandler = listView.getEdgeEffectHandler();
+			if (action == MotionEvent.ACTION_DOWN) {
+				if (edgeEffectHandler != null) {
+					edgeEffectHandler.setPullable(EdgeEffectHandler.Side.TOP, true);
+					edgeEffectHandler.setPullable(EdgeEffectHandler.Side.BOTTOM, true);
+				}
+			} else {
 				float dy = ev.getY() - startY;
 				boolean resetTop = true, resetBottom = true;
-				EdgeEffectHandler edgeEffectHandler = listView.getEdgeEffectHandler();
-				if (edgeEffectHandler != null) {
-					edgeEffectHandler.setPullable(true, true);
-					edgeEffectHandler.setPullable(false, true);
-				}
 				if (action == MotionEvent.ACTION_MOVE) {
 					// Call getIdlePullStrain to get previous transient value
-					if (dy > 0 && scrolledToTop && (pullSides == Side.BOTH || pullSides == Side.TOP)) {
+					if (dy > 0 && listView.isScrolledToTop() &&
+							(pullSides == Side.BOTH || pullSides == Side.TOP)) {
+						pull = true;
 						resetTop = false;
 						int pullStrain = topView.getAndResetIdlePullStrain();
 						if (pullStrain > 0) {
 							startY -= pullStrainToDelta(pullStrain);
 							dy = ev.getY() - startY;
 						}
-						int padding = listView.getEdgeEffectShift(true);
+						int padding = listView.getEdgeEffectShift(EdgeEffectHandler.Side.TOP);
 						topView.setState(PullView.State.PULL, padding);
 						topView.setPullStrain(deltaToPullStrain(dy), padding);
 						if (edgeEffectHandler != null) {
-							edgeEffectHandler.finish(true);
-							edgeEffectHandler.setPullable(true, false);
+							edgeEffectHandler.finish(EdgeEffectHandler.Side.TOP);
+							edgeEffectHandler.setPullable(EdgeEffectHandler.Side.TOP, false);
 						}
-					} else if (dy < 0 && scrolledToBottom && (pullSides == Side.BOTH || pullSides == Side.BOTTOM)) {
+					} else if (dy < 0 && listView.isScrolledToBottom() &&
+							(pullSides == Side.BOTH || pullSides == Side.BOTTOM)) {
+						pull = true;
 						resetBottom = false;
 						int pullStrain = bottomView.getAndResetIdlePullStrain();
 						if (pullStrain > 0) {
 							startY += pullStrainToDelta(pullStrain);
 							dy = ev.getY() - startY;
 						}
-						int padding = listView.getEdgeEffectShift(false);
+						int padding = listView.getEdgeEffectShift(EdgeEffectHandler.Side.BOTTOM);
 						bottomView.setState(PullView.State.PULL, padding);
 						bottomView.setPullStrain(-deltaToPullStrain(dy), padding);
 						if (edgeEffectHandler != null) {
-							edgeEffectHandler.finish(false);
-							edgeEffectHandler.setPullable(false, false);
+							edgeEffectHandler.finish(EdgeEffectHandler.Side.BOTTOM);
+							edgeEffectHandler.setPullable(EdgeEffectHandler.Side.BOTTOM, false);
 						}
 					}
 				}
@@ -232,37 +225,17 @@ public class PullableWrapper implements AbsListView.OnScrollListener {
 					}
 				}
 				if (resetTop) {
-					topView.setState(PullView.State.IDLE, listView.getEdgeEffectShift(true));
+					topView.setState(PullView.State.IDLE,
+							listView.getEdgeEffectShift(EdgeEffectHandler.Side.TOP));
 				}
 				if (resetBottom) {
-					bottomView.setState(PullView.State.IDLE, listView.getEdgeEffectShift(false));
+					bottomView.setState(PullView.State.IDLE,
+							listView.getEdgeEffectShift(EdgeEffectHandler.Side.BOTTOM));
 				}
 			}
 		}
+		return pull;
 	}
-
-	// States of list, can be defined only in scroll listener.
-	private boolean scrolledToTop = true, scrolledToBottom = true;
-
-	@Override
-	public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-		try {
-			scrolledToTop = totalItemCount == 0 || firstVisibleItem == 0 &&
-					view.getChildAt(0).getTop() >= listView.getEdgeEffectShift(true);
-		} catch (Exception e) {
-			scrolledToTop = false;
-		}
-		try {
-			scrolledToBottom = totalItemCount == 0 || firstVisibleItem + visibleItemCount == totalItemCount &&
-					view.getChildAt(visibleItemCount - 1).getBottom() <= view.getHeight() -
-					listView.getEdgeEffectShift(false);
-		} catch (Exception e) {
-			scrolledToBottom = false;
-		}
-	}
-
-	@Override
-	public void onScrollStateChanged(AbsListView view, int scrollState) {}
 
 	private int lastShiftValue = 0;
 	private int beforeShiftValue = 0;
@@ -290,8 +263,8 @@ public class PullableWrapper implements AbsListView.OnScrollListener {
 		}
 		int shift = beforeShiftValue;
 		float density = ResourceUtils.obtainDensity(listView.getResources());
-		topView.draw(canvas, listView.getEdgeEffectShift(true), density);
-		bottomView.draw(canvas, listView.getEdgeEffectShift(false), density);
+		topView.draw(canvas, listView.getEdgeEffectShift(EdgeEffectHandler.Side.TOP), density);
+		bottomView.draw(canvas, listView.getEdgeEffectShift(EdgeEffectHandler.Side.BOTTOM), density);
 		if (lastShiftValue != shift) {
 			lastShiftValue = shift;
 			listView.invalidate();
@@ -454,14 +427,14 @@ public class PullableWrapper implements AbsListView.OnScrollListener {
 			if (state == State.PULL) {
 				int size = (int) (width / 2f * Math.pow((float) pullStrain / MAX_STRAIN, 2f));
 				paint.setColor(primaryColor);
-				canvas.drawRect(width / 2 - size, offset, width / 2 + size, offset + height, paint);
+				canvas.drawRect(width / 2f - size, offset, width / 2f + size, offset + height, paint);
 			}
 
 			if (state == State.IDLE && previousState != State.LOADING) {
 				float value = getIdleTransientPullStrainValue(time);
 				int size = (int) (width / 2f * Math.pow(value, 4f));
 				paint.setColor(primaryColor);
-				canvas.drawRect(width / 2 - size, offset, width / 2 + size, offset + height, paint);
+				canvas.drawRect(width / 2f - size, offset, width / 2f + size, offset + height, paint);
 				if (value != 0) {
 					needInvalidate = true;
 				}
@@ -676,7 +649,7 @@ public class PullableWrapper implements AbsListView.OnScrollListener {
 
 		@Override
 		public int getPullStrain() {
-			return pullStrain > MAX_STRAIN ? MAX_STRAIN : pullStrain;
+			return Math.min(pullStrain, MAX_STRAIN);
 		}
 
 		@Override
@@ -835,12 +808,14 @@ public class PullableWrapper implements AbsListView.OnScrollListener {
 	}
 
 	public interface Wrapped extends EdgeEffectHandler.Shift {
-		public Context getContext();
-		public Resources getResources();
-		public EdgeEffectHandler getEdgeEffectHandler();
-		public void invalidate(int l, int t, int r, int b);
-		public void invalidate();
-		public int getWidth();
-		public int getHeight();
+		Context getContext();
+		Resources getResources();
+		EdgeEffectHandler getEdgeEffectHandler();
+		boolean isScrolledToTop();
+		boolean isScrolledToBottom();
+		void invalidate(int l, int t, int r, int b);
+		void invalidate();
+		int getWidth();
+		int getHeight();
 	}
 }

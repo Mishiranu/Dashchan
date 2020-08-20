@@ -5,17 +5,18 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
-import android.util.Pair;
+import android.graphics.Rect;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.TextView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
 import chan.util.StringUtils;
@@ -30,26 +31,57 @@ import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
-import com.mishiranu.dashchan.widget.ClickableView;
+import com.mishiranu.dashchan.widget.SimpleViewHolder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 
-public class ThreadsAdapter extends BaseAdapter implements View.OnClickListener,
-		CompoundButton.OnCheckedChangeListener {
-	private static final int ITEM_VIEW_TYPE_THREAD = 0;
-	private static final int ITEM_VIEW_TYPE_THREAD_HIDDEN = 1;
-	private static final int ITEM_VIEW_TYPE_THREAD_GRID = 2;
-	private static final int ITEM_VIEW_TYPE_PAGE_DIVIDER = 3;
+public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
+		implements View.OnClickListener, CompoundButton.OnCheckedChangeListener {
+	public interface Callback {
+		void onItemClick(PostItem postItem);
+		boolean onItemLongClick(PostItem postItem);
+	}
 
-	private final ArrayList<Object> items = new ArrayList<>();
-	private ArrayList<PostItem> catalogPostItems;
-	private ArrayList<PostItem> filteredPostItems;
-	private ArrayList<Object> gridItems;
+	private enum ViewType {THREAD, THREAD_CELL, THREAD_HIDDEN, HEADER, DIVIDER}
+
+	private static final int HEADER_PADDING_HORIZONTAL = 20;
+	private static final int CARD_MIN_WIDTH_DP = 120;
+	private static final int CARD_PADDING_OUT_DP = 8;
+	private static final int CARD_PADDING_IN_DP = 4;
+	private static final int CARD_PADDING_IN_EXTRA_DP = 1;
+
+	private static class ListItem {
+		public final String title;
+		public final Integer pageNumber;
+		public final PostItem postItem;
+
+		public ListItem(String title, Integer pageNumber, PostItem postItem) {
+			this.title = title;
+			this.pageNumber = pageNumber;
+			this.postItem = postItem;
+		}
+	}
+
+	private static class GridMode {
+		public final int columns;
+		public final int gridItemContentHeight;
+
+		private GridMode(int columns, int gridItemContentHeight) {
+			this.columns = columns;
+			this.gridItemContentHeight = gridItemContentHeight;
+		}
+	}
+
+	private final ArrayList<ListItem> listItems = new ArrayList<>();
+	private ArrayList<ListItem> filteredListItems;
+	private ArrayList<ListItem> catalogSortedListItems;
 
 	private final Context context;
+	private final Callback callback;
 	private final String chanName;
 	private final String boardName;
 	private final UiManager uiManager;
@@ -57,21 +89,19 @@ public class ThreadsAdapter extends BaseAdapter implements View.OnClickListener,
 
 	private final View headerView;
 	private final View headerAdditional;
-	private final ClickableView headerClickableView;
+	private final View headerClickableView;
 	private final ImageView headerExpandIcon;
 	private final TextView[] headerData = new TextView[6];
 	private final RadioButton[] sortingData = new RadioButton[3];
 
-	private boolean mayShowHeader = false;
-	private boolean headerExpanded = false;
-
 	private String filterText;
-	private boolean gridMode = false;
-	private int gridRowCount = 1;
-	private int gridItemContentHeight;
+	private GridMode gridMode;
+	private boolean headerExpanded;
 
-	public ThreadsAdapter(Context context, String chanName, String boardName, UiManager uiManager) {
+	public ThreadsAdapter(Context context, Callback callback, String chanName, String boardName, UiManager uiManager,
+			boolean headerExpanded, int catalogSortIndex) {
 		this.context = context;
+		this.callback = callback;
 		this.chanName = chanName;
 		this.boardName = boardName;
 		this.uiManager = uiManager;
@@ -80,17 +110,22 @@ public class ThreadsAdapter extends BaseAdapter implements View.OnClickListener,
 				false, true, false, false, false, null);
 		float density = ResourceUtils.obtainDensity(context);
 		FrameLayout frameLayout = new FrameLayout(context);
-		frameLayout.setPadding((int) (10f * density), (int) (6f * density), (int) (10f * density), 0);
-		headerClickableView = new ClickableView(context);
+		int additionalPaddingTop = 2;
+		frameLayout.setPadding((int) ((HEADER_PADDING_HORIZONTAL / 2) * density),
+				(int) ((additionalPaddingTop + CARD_PADDING_OUT_DP - CARD_PADDING_IN_DP) * density),
+				(int) ((HEADER_PADDING_HORIZONTAL / 2) * density), 0);
+		headerClickableView = new View(context);
 		headerClickableView.setOnClickListener(this);
+		ViewUtils.setSelectableItemBackground(headerClickableView);
 		frameLayout.addView(headerClickableView, FrameLayout.LayoutParams.MATCH_PARENT,
 				FrameLayout.LayoutParams.MATCH_PARENT);
 		LinearLayout linearLayout = new LinearLayout(context);
 		linearLayout.setOrientation(LinearLayout.VERTICAL);
 		frameLayout.addView(linearLayout, FrameLayout.LayoutParams.MATCH_PARENT,
 				FrameLayout.LayoutParams.WRAP_CONTENT);
-		linearLayout.setPadding((int) (10f * density), (int) (4f * density),
-				(int) (10f * density), (int) (4f * density));
+		linearLayout.setPadding((int) ((HEADER_PADDING_HORIZONTAL / 2) * density),
+				(int) (CARD_PADDING_IN_DP * density), (int) ((HEADER_PADDING_HORIZONTAL / 2) * density),
+				(int) (CARD_PADDING_IN_DP * density));
 		LinearLayout innerLayout = new LinearLayout(context);
 		innerLayout.setOrientation(LinearLayout.HORIZONTAL);
 		linearLayout.addView(innerLayout, LinearLayout.LayoutParams.MATCH_PARENT,
@@ -160,213 +195,76 @@ public class ThreadsAdapter extends BaseAdapter implements View.OnClickListener,
 		sortingData[2].setText(context.getString(R.string.text_sort_by_replies));
 		sortingData[0].setChecked(true);
 		headerView = frameLayout;
-	}
-
-	public void applyAttributesBeforeFill(boolean headerExpanded, int catalogSortIndex, boolean gridMode) {
 		this.headerExpanded = headerExpanded;
 		if (catalogSortIndex >= 0) {
 			sortingData[catalogSortIndex].setChecked(true);
 		}
-		catalogPostItems = null;
-		setGridMode(gridMode);
 	}
 
-	private void prepareGridItems() {
-		if (gridItems != null && gridItems.size() > 0) {
-			return;
-		}
-		if (gridItems == null) {
-			gridItems = new ArrayList<>();
-		}
-		int rowCount = gridRowCount;
-		int currentIndex = 0;
-		PostItem[] postItems = null;
-		ArrayList<?> items = filteredPostItems != null ? filteredPostItems : catalogPostItems != null
-				? catalogPostItems : this.items;
-		for (Object item : items) {
-			if (item instanceof PostItem) {
-				if (postItems == null) {
-					postItems = new PostItem[rowCount];
-					currentIndex = 0;
-				}
-				postItems[currentIndex++] = (PostItem) item;
-				if (currentIndex == postItems.length) {
-					gridItems.add(postItems);
-					postItems = null;
-				}
-			} else {
-				if (postItems != null) {
-					gridItems.add(postItems);
-					postItems = null;
-				}
-				gridItems.add(item);
+	private RecyclerView.ViewHolder configureCard(RecyclerView.ViewHolder viewHolder) {
+		View view = ((ViewGroup) viewHolder.itemView).getChildAt(0);
+		view.setOnClickListener(v -> callback
+				.onItemClick(getListItem(viewHolder.getAdapterPosition()).postItem));
+		view.setOnLongClickListener(v -> callback
+				.onItemLongClick(getListItem(viewHolder.getAdapterPosition()).postItem));
+		return viewHolder;
+	}
+
+	@NonNull
+	@Override
+	public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+		switch (ViewType.values()[viewType]) {
+			case THREAD: {
+				return configureCard(uiManager.view().createThreadViewHolder(parent, configurationSet, false));
 			}
-		}
-		if (postItems != null) {
-			gridItems.add(postItems);
-		}
-	}
-
-	private boolean isShowHeader() {
-		return mayShowHeader && filteredPostItems == null;
-	}
-
-	public boolean isRealEmpty() {
-		return items.size() == 0;
-	}
-
-	@Override
-	public void notifyDataSetChanged() {
-		if (gridItems != null) {
-			gridItems.clear();
-		}
-		super.notifyDataSetChanged();
-	}
-
-	@Override
-	public int getViewTypeCount() {
-		return 4;
-	}
-
-	@Override
-	public int getItemViewType(int position) {
-		Object item = getItemInternal(position);
-		return item instanceof PostItem ? ((PostItem) item).isHidden(configurationSet.hidePerformer)
-				? ITEM_VIEW_TYPE_THREAD_HIDDEN : ITEM_VIEW_TYPE_THREAD : item instanceof PostItem[]
-				? ITEM_VIEW_TYPE_THREAD_GRID : item instanceof DividerItem
-				? ITEM_VIEW_TYPE_PAGE_DIVIDER : IGNORE_ITEM_VIEW_TYPE;
-	}
-
-	@Override
-	public int getCount() {
-		int count = 0;
-		if (gridMode) {
-			prepareGridItems();
-			count += gridItems.size();
-		} else {
-			count += (filteredPostItems != null ? filteredPostItems : items).size();
-		}
-		count += isShowHeader() ? 1 : 0;
-		return count;
-	}
-
-	@Override
-	public Object getItem(int position) {
-		Object item = getItemInternal(position);
-		return item instanceof PostItem ? (PostItem) item : item instanceof PostItem[] ? (PostItem[]) item : null;
-	}
-
-	public Object getItemInternal(int position) {
-		if (isShowHeader()) {
-			if (position == 0) {
-				return null;
+			case THREAD_CELL: {
+				return configureCard(uiManager.view().createThreadViewHolder(parent, configurationSet, true));
 			}
-			position--;
-		}
-		if (gridMode) {
-			prepareGridItems();
-			return gridItems.get(position);
-		} else {
-			return (filteredPostItems != null ? filteredPostItems : catalogPostItems != null
-					? catalogPostItems : items).get(position);
-		}
-	}
-
-	@Override
-	public long getItemId(int position) {
-		return 0;
-	}
-
-	@Override
-	public boolean isEnabled(int position) {
-		return getItem(position) != null;
-	}
-
-	@Override
-	public boolean areAllItemsEnabled() {
-		return true;
-	}
-
-	@Override
-	public View getView(int position, View convertView, ViewGroup parent) {
-		Object item = getItemInternal(position);
-		if (item == null) {
-			return headerView;
-		}
-		if (item instanceof PostItem) {
-			PostItem postItem = (PostItem) item;
-			if (!postItem.isHidden(configurationSet.hidePerformer)) {
-				convertView = uiManager.view().getThreadView(postItem, convertView, parent, configurationSet);
-			} else {
-				convertView = uiManager.view().getThreadHiddenView(postItem, convertView, parent, configurationSet);
+			case THREAD_HIDDEN: {
+				return configureCard(uiManager.view().createThreadHiddenView(parent, configurationSet));
 			}
-			ViewUtils.applyCardHolderPadding(convertView, position == 0, position == getCount() - 1, false);
-		} else if (item instanceof PostItem[]) {
-			PostItem[] postItems = (PostItem[]) item;
-			LinearLayout linearLayout = (LinearLayout) convertView;
-			if (linearLayout == null) {
-				linearLayout = new LinearLayout(context);
-				linearLayout.setOrientation(LinearLayout.HORIZONTAL);
-				linearLayout.setMotionEventSplittingEnabled(false);
-				ViewUtils.applyMultipleCardHolderPadding(linearLayout);
-				// Free space view
-				linearLayout.addView(new View(context), 0, LinearLayout.LayoutParams.MATCH_PARENT);
-				convertView = linearLayout;
+			case HEADER: {
+				return new SimpleViewHolder(headerView);
 			}
-			while (linearLayout.getChildCount() - 1 > gridRowCount) {
-				linearLayout.removeViewAt(gridRowCount - 1);
-			}
-			int count = getCount();
-			int freeSpaceIndex = linearLayout.getChildCount() - 1;
-			View freeSpaceView = linearLayout.getChildAt(freeSpaceIndex);
-			freeSpaceView.setVisibility(View.GONE);
-			for (int i = 0; i < postItems.length; i++) {
-				PostItem postItem = postItems[i];
-				if (postItem != null) {
-					View convertViewChild = null;
-					if (i < freeSpaceIndex) {
-						View view = linearLayout.getChildAt(i);
-						if (view.getClass() == View.class) {
-							linearLayout.removeViewAt(i);
-						} else {
-							convertViewChild = view;
-						}
-					}
-					boolean add = convertViewChild == null;
-					convertViewChild = uiManager.view().getThreadViewForGrid(postItem, convertViewChild, parent,
-							gridItemContentHeight, configurationSet);
-					if (add) {
-						linearLayout.addView(convertViewChild, i, new LinearLayout.LayoutParams(0,
-								LinearLayout.LayoutParams.WRAP_CONTENT, 1));
-					} else {
-						convertViewChild.setVisibility(View.VISIBLE);
-					}
-					ViewUtils.applyCardHolderPadding(convertViewChild, position == 0, position == count - 1, true);
-				} else {
-					for (int j = i; j < freeSpaceIndex; j++) {
-						linearLayout.getChildAt(j).setVisibility(View.GONE);
-					}
-					freeSpaceView.setVisibility(View.VISIBLE);
-					((LinearLayout.LayoutParams) freeSpaceView.getLayoutParams()).weight = postItems.length - i;
-					break;
-				}
-			}
-		} else {
-			DividerItem dividerItem = (DividerItem) item;
-			float density = ResourceUtils.obtainDensity(context);
-			if (convertView == null) {
-				TextView textView = new TextView(context, null, android.R.attr.textAppearanceLarge);
+			case DIVIDER: {
+				float density = ResourceUtils.obtainDensity(parent);
+				TextView textView = new TextView(parent.getContext(), null, android.R.attr.textAppearanceLarge);
 				textView.setTextSize(18f);
 				if (C.API_LOLLIPOP) {
 					textView.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
 				}
-				convertView = textView;
+				textView.setPadding((int) (HEADER_PADDING_HORIZONTAL * density), 0,
+						(int) (HEADER_PADDING_HORIZONTAL * density), 0);
+				return new SimpleViewHolder(textView);
 			}
-			((TextView) convertView).setText(dividerItem.title);
-			convertView.setPadding((int) (20f * density), position == 0 ? (int) (10f * density)
-					: (int) (8f * density), (int) (20f * density), (int) (4f * density));
+			default: {
+				throw new IllegalStateException();
+			}
 		}
-		return convertView;
+	}
+
+	@Override
+	public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+		ListItem listItem = getListItem(position);
+		switch (ViewType.values()[holder.getItemViewType()]) {
+			case THREAD: {
+				uiManager.view().bindThreadView(holder, listItem.postItem);
+				break;
+			}
+			case THREAD_CELL: {
+				uiManager.view().bindThreadCellView(holder, listItem.postItem,
+						gridMode.gridItemContentHeight);
+				break;
+			}
+			case THREAD_HIDDEN: {
+				uiManager.view().bindThreadHiddenView(holder, listItem.postItem);
+				break;
+			}
+			case DIVIDER: {
+				((TextView) holder.itemView).setText(listItem.title);
+				break;
+			}
+		}
 	}
 
 	public UiManager.ConfigurationSet getConfigurationSet() {
@@ -425,7 +323,7 @@ public class ThreadsAdapter extends BaseAdapter implements View.OnClickListener,
 	}
 
 	public int getCatalogSortIndex() {
-		if (mayShowHeader && sortingData[0].getVisibility() == View.VISIBLE) {
+		if (sortingData[0].getVisibility() == View.VISIBLE) {
 			for (int i = 0; i < sortingData.length; i++) {
 				if (sortingData[i].isChecked()) {
 					return i;
@@ -435,34 +333,99 @@ public class ThreadsAdapter extends BaseAdapter implements View.OnClickListener,
 		return -1;
 	}
 
+	public boolean isRealEmpty() {
+		return listItems.size() == 0;
+	}
+
+	@Override
+	public int getItemViewType(int position) {
+		ListItem listItem = getListItem(position);
+		ViewType viewType;
+		if (listItem.pageNumber != null) {
+			viewType = listItem.pageNumber > 0 ? ViewType.DIVIDER : ViewType.HEADER;
+		} else if (listItem.postItem != null) {
+			viewType = gridMode != null ? ViewType.THREAD_CELL
+					: listItem.postItem.isHidden(configurationSet.hidePerformer)
+					? ViewType.THREAD_HIDDEN : ViewType.THREAD;
+		} else {
+			throw new IllegalStateException();
+		}
+		return viewType.ordinal();
+	}
+
+	private List<ListItem> getListItems() {
+		return filteredListItems != null ? filteredListItems : catalogSortedListItems != null
+				? catalogSortedListItems : listItems;
+	}
+
+	private ListItem getListItem(int position) {
+		return getListItems().get(position);
+	}
+
+	@Override
+	public int getItemCount() {
+		return getListItems().size();
+	}
+
+	public int getSpanSize(int position) {
+		ListItem listItem = getListItem(position);
+		return listItem.pageNumber != null && gridMode != null ? gridMode.columns : 1;
+	}
+
+	public void applyItemPadding(View view, int position, int column, Rect rect) {
+		ListItem listItem = getListItem(position);
+		float density = ResourceUtils.obtainDensity(view);
+		int paddingOut = (int) (CARD_PADDING_OUT_DP * density);
+		int paddingIn = (int) (CARD_PADDING_IN_DP * density);
+		if (listItem.postItem != null) {
+			int columns = gridMode != null ? gridMode.columns : 1;
+			int left;
+			int right;
+			if (columns >= 2) {
+				int paddingInExtra = (int) ((CARD_PADDING_IN_DP + CARD_PADDING_IN_EXTRA_DP) * density);
+				int total = 2 * paddingOut + (columns - 1) * paddingInExtra;
+				float average = (float) total / columns;
+				left = (int) AnimationUtils.lerp(paddingOut, average - paddingOut, (float) column / (columns - 1));
+				right = (int) average - left;
+			} else {
+				left = paddingOut;
+				right = paddingOut;
+			}
+			boolean firstRow = position - column == 0;
+			boolean lastRow = position + columns - column >= getItemCount();
+			rect.set(left, firstRow ? paddingOut : paddingIn, right, lastRow ? paddingOut : 0);
+		} else if (view == headerView) {
+			rect.set(0, 0, 0, 0);
+		} else {
+			rect.set(0, paddingOut, 0, position + 1 == getItemCount() ? paddingOut : paddingOut - paddingIn);
+		}
+	}
+
 	public void setItems(Collection<ArrayList<PostItem>> postItems, int pageNumber, int boardSpeed) {
-		catalogPostItems = null;
-		items.clear();
-		mayShowHeader = false;
+		listItems.clear();
+		filteredListItems = null;
+		catalogSortedListItems = null;
 		for (ArrayList<PostItem> pagePostItems : postItems) {
 			appendItemsInternal(pagePostItems, pageNumber, boardSpeed);
 			pageNumber++;
 		}
-		int index = getCatalogSortIndex();
-		if (index != -1) {
-			applySorting(index);
-		}
-		applyFilterIfNecessary();
+		applySorting(getCatalogSortIndex());
+		applyFilter(filterText);
 		notifyDataSetChanged();
 	}
 
 	public void appendItems(ArrayList<PostItem> postItems, int pageNumber, int boardSpeed) {
-		catalogPostItems = null;
+		filteredListItems = null;
+		catalogSortedListItems = null;
 		appendItemsInternal(postItems, pageNumber, boardSpeed);
-		applyFilterIfNecessary();
+		applyFilter(filterText);
 		notifyDataSetChanged();
 	}
 
 	public void notifyNotModified() {
-		for (Object item : items) {
-			if (item instanceof PostItem) {
-				PostItem postItem = (PostItem) item;
-				postItem.invalidateHidden();
+		for (ListItem listItem : listItems) {
+			if (listItem.postItem != null) {
+				listItem.postItem.invalidateHidden();
 			}
 		}
 		notifyDataSetChanged();
@@ -470,14 +433,17 @@ public class ThreadsAdapter extends BaseAdapter implements View.OnClickListener,
 
 	private void appendItemsInternal(ArrayList<PostItem> postItems, int pageNumber, int boardSpeed) {
 		if (pageNumber > 0) {
-			items.add(new DividerItem(context.getString(R.string.text_page_format, pageNumber), pageNumber));
-		} else {
+			listItems.add(new ListItem(context.getString(R.string.text_page_format, pageNumber), pageNumber, null));
+		} else if (pageNumber == 0 || pageNumber == ChanPerformer.ReadThreadsData.PAGE_NUMBER_CATALOG) {
+			listItems.add(new ListItem(null, pageNumber, null));
 			updateHeaderView(pageNumber == ChanPerformer.ReadThreadsData.PAGE_NUMBER_CATALOG, boardSpeed);
+		} else {
+			throw new IllegalStateException();
 		}
 		if (postItems != null) {
 			for (PostItem postItem : postItems) {
 				if (Preferences.isDisplayHiddenThreads() || !postItem.isHidden(configurationSet.hidePerformer)) {
-					items.add(postItem);
+					listItems.add(new ListItem(null, null, postItem));
 				}
 			}
 		}
@@ -491,7 +457,6 @@ public class ThreadsAdapter extends BaseAdapter implements View.OnClickListener,
 	}
 
 	private void updateHeaderView(boolean catalog, int boardSpeed) {
-		mayShowHeader = true;
 		ChanConfiguration configuration = ChanConfiguration.get(chanName);
 		String title = configuration.getBoardTitle(boardName);
 		if (StringUtils.isEmpty(title)) {
@@ -591,11 +556,13 @@ public class ThreadsAdapter extends BaseAdapter implements View.OnClickListener,
 		headerExpandIcon.setVisibility(mayExpand ? View.VISIBLE : View.GONE);
 	}
 
-	private static final Comparator<PostItem> SORT_BY_DATE_COMPARATOR =
-			(lhs, rhs) -> ((Long) rhs.getTimestamp()).compareTo(lhs.getTimestamp());
+	private static final Comparator<ListItem> SORT_BY_DATE_COMPARATOR =
+			(lhs, rhs) -> lhs.postItem == null ? rhs.postItem == null ? 0 : -1 : rhs.postItem == null ? 1
+					: Long.compare(rhs.postItem.getTimestamp(), lhs.postItem.getTimestamp());
 
-	private static final Comparator<PostItem> SORT_BY_REPLIES_COMPARATOR =
-			(lhs, rhs) -> rhs.getThreadPostsCount() - lhs.getThreadPostsCount();
+	private static final Comparator<ListItem> SORT_BY_REPLIES_COMPARATOR =
+			(lhs, rhs) -> lhs.postItem == null ? rhs.postItem == null ? 0 : -1 : rhs.postItem == null ? 1
+					: Integer.compare(rhs.postItem.getThreadPostsCount(), lhs.postItem.getThreadPostsCount());
 
 	@Override
 	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -610,175 +577,74 @@ public class ThreadsAdapter extends BaseAdapter implements View.OnClickListener,
 				}
 			}
 			applySorting(index);
-			if (!catalogPostItems.isEmpty()) {
-				notifyDataSetChanged();
-			}
+			notifyDataSetChanged();
 		}
 	}
 
 	private void applySorting(int index) {
-		if (catalogPostItems == null) {
-			catalogPostItems = new ArrayList<>(items.size());
+		if (index <= 0) {
+			catalogSortedListItems = null;
 		} else {
-			catalogPostItems.clear();
-		}
-		for (Object object : items) {
-			catalogPostItems.add((PostItem) object);
-		}
-		switch (index) {
-			case 1: {
-				Collections.sort(catalogPostItems, SORT_BY_DATE_COMPARATOR);
-				break;
+			if (catalogSortedListItems == null) {
+				catalogSortedListItems = new ArrayList<>(listItems);
+			} else {
+				catalogSortedListItems.clear();
+				catalogSortedListItems.addAll(listItems);
 			}
-			case 2: {
-				Collections.sort(catalogPostItems, SORT_BY_REPLIES_COMPARATOR);
-				break;
+			switch (index) {
+				case 1: {
+					Collections.sort(catalogSortedListItems, SORT_BY_DATE_COMPARATOR);
+					break;
+				}
+				case 2: {
+					Collections.sort(catalogSortedListItems, SORT_BY_REPLIES_COMPARATOR);
+					break;
+				}
 			}
 		}
 	}
 
-	private void applyFilterIfNecessary() {
-		if (filteredPostItems != null) {
-			applyFilter(filterText);
-		}
-	}
-
-	// Returns true, if adapter isn't empty.
-	public boolean applyFilter(String text) {
+	public void applyFilter(String text) {
 		filterText = text;
 		boolean filterMode = !StringUtils.isEmpty(text);
 		if (filterMode) {
-			if (filteredPostItems == null) {
-				filteredPostItems = new ArrayList<>();
+			if (filteredListItems == null) {
+				filteredListItems = new ArrayList<>();
 			} else {
-				filteredPostItems.clear();
+				filteredListItems.clear();
 			}
 			text = text.toLowerCase(Locale.getDefault());
-			for (Object item : items) {
-				if (item instanceof PostItem) {
-					PostItem postItem = (PostItem) item;
-					boolean add = false;
-					if (postItem.getSubject().toLowerCase(Locale.getDefault()).contains(text)) {
-						add = true;
-					} else if (postItem.getComment().toString().toLowerCase(Locale.getDefault()).contains(text)) {
-						add = true;
-					}
+			for (ListItem listItem : listItems) {
+				if (listItem.postItem != null) {
+					boolean add = listItem.postItem.getSubject().toLowerCase(Locale.getDefault()).contains(text) ||
+							listItem.postItem.getComment().toString().toLowerCase(Locale.getDefault()).contains(text);
 					if (add) {
-						filteredPostItems.add(postItem);
+						filteredListItems.add(listItem);
 					}
 				}
 			}
 		} else {
-			filteredPostItems = null;
+			filteredListItems = null;
 		}
 		notifyDataSetChanged();
-		return !filterMode || filteredPostItems.size() > 0;
 	}
 
-	public void updateConfiguration(int listViewWidth) {
-		Pair<Integer, Integer> configuration = obtainGridConfiguration(context, listViewWidth,
-				gridRowCount, gridItemContentHeight);
-		if (configuration != null) {
-			gridRowCount = configuration.first;
-			gridItemContentHeight = configuration.second;
-			if (gridMode && items.size() > 0) {
-				notifyDataSetChanged();
-			}
-		}
-	}
-
-	static Pair<Integer, Integer> obtainGridConfiguration(Context context, int listViewWidth, int currentRowCount,
-			int currentContentHeight) {
-		if (listViewWidth > 0) {
+	public int setGridMode(boolean gridMode) {
+		if (gridMode) {
 			float density = ResourceUtils.obtainDensity(context);
-			int size = (int) (120f * density); // Minimum card width
-			int padding = (int) (8f * density); // Card Padding
-			int rowCount = Math.max((listViewWidth - padding) / (size + padding), 1);
-			int width = (listViewWidth - padding * (rowCount + 1)) / rowCount;
-			int contentHeight = (int) (width * 1.5f);
-			if (rowCount != currentRowCount || contentHeight != currentContentHeight) {
-				return new Pair<>(rowCount, contentHeight);
-			}
-		}
-		return null;
-	}
-
-	public void setGridMode(boolean gridMode) {
-		if (this.gridMode != gridMode) {
-			this.gridMode = gridMode;
-			if (items.size() > 0) {
-				notifyDataSetChanged();
-			}
-		}
-	}
-
-	public boolean isGridMode() {
-		return gridMode;
-	}
-
-	private static String getPositionType(int type, Object item) {
-		switch (type) {
-			case ITEM_VIEW_TYPE_THREAD:
-			case ITEM_VIEW_TYPE_THREAD_HIDDEN: {
-				return "thread" + ((PostItem) item).getPostNumber();
-			}
-			case ITEM_VIEW_TYPE_THREAD_GRID: {
-				return "thread" + ((PostItem[]) item)[0].getPostNumber();
-			}
-			case ITEM_VIEW_TYPE_PAGE_DIVIDER: {
-				return "divider" + ((DividerItem) item).pageNumber;
-			}
-			case IGNORE_ITEM_VIEW_TYPE: {
-				return "header";
-			}
-		}
-		return null;
-	}
-
-	public String getPositionInfo(int position) {
-		int count = getCount();
-		if (position < 0 || position >= count) {
-			return null;
-		}
-		Object item = getItemInternal(position);
-		int type = getItemViewType(position);
-		return getPositionType(type, item);
-	}
-
-	public int getPositionFromInfo(String positionInfo) {
-		if (positionInfo != null) {
-			int count = getCount();
-			for (int i = 0; i < count; i++) {
-				Object item = getItemInternal(i);
-				int type = getItemViewType(i);
-				if (type == ITEM_VIEW_TYPE_THREAD_GRID) {
-					PostItem[] postItems = (PostItem[]) item;
-					for (PostItem postItem : postItems) {
-						if (postItem != null) {
-							String positionType = getPositionType(ITEM_VIEW_TYPE_THREAD, postItem);
-							if (positionInfo.equals(positionType)) {
-								return i;
-							}
-						}
-					}
-				} else {
-					String positionType = getPositionType(type, item);
-					if (positionInfo.equals(positionType)) {
-						return i;
-					}
-				}
-			}
-		}
-		return -1;
-	}
-
-	private static class DividerItem {
-		public final String title;
-		public final int pageNumber;
-
-		public DividerItem(String title, int pageNumber) {
-			this.title = title;
-			this.pageNumber = pageNumber;
+			int totalWidth = (int) (context.getResources().getConfiguration().screenWidthDp * density);
+			int minWidth = (int) (CARD_MIN_WIDTH_DP * density);
+			int paddingOut = (int) (CARD_PADDING_OUT_DP * density);
+			int paddingInExtra = (int) ((CARD_PADDING_IN_DP + CARD_PADDING_IN_EXTRA_DP) * density);
+			int columns = Math.min(Math.max(1, (totalWidth - 2 * paddingOut + paddingInExtra)
+					/ (minWidth + paddingInExtra)), 6);
+			int contentWidth = (totalWidth - 2 * paddingOut - (columns - 1) * paddingInExtra) / columns;
+			int contentHeight = (int) (contentWidth * 1.5f);
+			this.gridMode = new GridMode(columns, contentHeight);
+			return columns;
+		} else {
+			this.gridMode = null;
+			return 1;
 		}
 	}
 }

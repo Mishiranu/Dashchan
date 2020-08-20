@@ -44,6 +44,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.RecyclerView;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
@@ -86,7 +87,6 @@ import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.ExpandedScreen;
-import com.mishiranu.dashchan.widget.SortableListView;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -103,8 +103,8 @@ import java.util.Iterator;
 import java.util.UUID;
 
 public class MainActivity extends StateActivity implements DrawerForm.Callback,
-		SortableListView.OnStateChangedListener, FavoritesStorage.Observer, WatcherService.Client.Callback,
-		UiManager.LocalNavigator, FragmentHandler, PageFragment.Callback, ReadUpdateTask.Callback {
+		FavoritesStorage.Observer, WatcherService.Client.Callback, UiManager.LocalNavigator,
+		FragmentHandler, PageFragment.Callback, ReadUpdateTask.Callback {
 	private static final String EXTRA_FRAGMENTS = "fragments";
 	private static final String EXTRA_STACK_PAGE_ITEMS = "stackPageItems";
 	private static final String EXTRA_PRESERVED_PAGE_ITEMS = "preservedPageItems";
@@ -127,7 +127,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	private final WatcherService.Client watcherServiceClient = new WatcherService.Client(this);
 	private DownloadDialog downloadDialog;
 
-	private SortableListView drawerListView;
+	private RecyclerView drawerRecyclerView;
 	private DrawerForm drawerForm;
 	private FrameLayout drawerParent;
 	private DrawerLayout drawerLayout;
@@ -178,11 +178,10 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		drawerCommon.setBackgroundColor(drawerBackground);
 		drawerWide.setBackgroundColor(drawerBackground);
 		drawerForm = new DrawerForm(styledContext, this, this, configurationLock, watcherServiceClient);
-		drawerListView = drawerForm.getListView();
-		drawerListView.setId(android.R.id.tabcontent);
-		drawerListView.setOnSortingStateChangedListener(this);
+		drawerRecyclerView = drawerForm.getRecyclerView();
+		drawerRecyclerView.setId(android.R.id.tabcontent);
 		drawerParent = new FrameLayout(this);
-		drawerParent.addView(drawerListView);
+		drawerParent.addView(drawerRecyclerView);
 		drawerCommon.addView(drawerParent);
 		drawerLayout = findViewById(R.id.drawer_layout);
 		drawerLayout.setSaveEnabled(false);
@@ -238,7 +237,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 
 		updateWideConfiguration(true);
 		expandedScreen = new ExpandedScreen(expandedScreenInit, drawerLayout, toolbarLayout, drawerInterlayer,
-				drawerParent, drawerListView, drawerForm.getHeaderView());
+				drawerParent, drawerRecyclerView, drawerForm.getHeaderView());
 		expandedScreen.setDrawerOverToolbarEnabled(!wideMode);
 		uiManager = new UiManager(this, this, () -> downloadBinder, configurationLock);
 		ViewGroup contentFragment = findViewById(R.id.content_fragment);
@@ -933,7 +932,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		drawerForm.updateConfiguration(chanName);
 		invalidateHomeUpState();
 		if (!wideMode && !drawerLayout.isDrawerOpen(GravityCompat.START)) {
-			drawerListView.setSelection(0);
+			drawerRecyclerView.scrollToPosition(0);
 		}
 	}
 
@@ -1405,14 +1404,6 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	};
 
 	@Override
-	public void onSortingStateChanged(SortableListView listView, boolean sorting) {
-		if (!wideMode) {
-			drawerLayout.setDrawerLockMode(sorting ? DrawerLayout.LOCK_MODE_LOCKED_OPEN
-					: DrawerLayout.LOCK_MODE_UNLOCKED);
-		}
-	}
-
-	@Override
 	public void onSelectChan(String chanName) {
 		Fragment currentFragment = getCurrentFragment();
 		Page page = currentFragment instanceof PageFragment ? ((PageFragment) currentFragment).getPage() : null;
@@ -1667,6 +1658,14 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		}
 		if (!wideMode) {
 			drawerLayout.closeDrawers();
+		}
+	}
+
+	@Override
+	public void onDraggingStateChanged(boolean dragging) {
+		if (!wideMode) {
+			drawerLayout.setDrawerLockMode(dragging ? DrawerLayout.LOCK_MODE_LOCKED_OPEN
+					: DrawerLayout.LOCK_MODE_UNLOCKED);
 		}
 	}
 

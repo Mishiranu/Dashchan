@@ -32,7 +32,6 @@ import com.mishiranu.dashchan.content.storage.AutohideStorage;
 import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.util.ResourceUtils;
-import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.CustomSearchView;
 import com.mishiranu.dashchan.widget.ErrorEditTextSetter;
 import com.mishiranu.dashchan.widget.MenuExpandListener;
@@ -191,9 +190,8 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 		@NonNull
 		@Override
 		public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-			return new RecyclerView.ViewHolder(ViewFactory.makeTwoLinesListItem(parent, true)) {{
-				ViewUtils.setBackgroundPreservePadding(itemView, ResourceUtils
-						.getDrawable(itemView.getContext(), android.R.attr.selectableItemBackground, 0));
+			return new RecyclerView.ViewHolder(ViewFactory.makeTwoLinesListItem(parent)) {{
+				((ViewFactory.TwoLinesViewHolder) itemView.getTag()).text2.setSingleLine(true);
 				itemView.setOnClickListener(v -> {
 					AutohideStorage.AutohideItem item = getItem(getAdapterPosition());
 					editRule(item, items.indexOf(item));

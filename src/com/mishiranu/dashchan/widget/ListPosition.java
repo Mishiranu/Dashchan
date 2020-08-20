@@ -4,45 +4,39 @@ import android.graphics.Rect;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.view.View;
-import android.widget.ListView;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 public final class ListPosition implements Parcelable {
 	public final int position;
-	public final int y;
+	public final int offset;
 
-	public ListPosition(int position, int y) {
+	public ListPosition(int position, int offset) {
 		this.position = position;
-		this.y = y;
+		this.offset = offset;
 	}
 
-	public static ListPosition obtain(ListView listView) {
-		int position = listView.getFirstVisiblePosition();
-		int y = 0;
+	public static ListPosition obtain(RecyclerView recyclerView) {
+		int position = 0;
+		int offset = 0;
 		Rect rect = new Rect();
-		int paddingTop = listView.getPaddingTop();
-		int paddingLeft = listView.getPaddingLeft();
-		for (int i = 0, count = listView.getChildCount(); i < count; i++) {
-			View view = listView.getChildAt(i);
-			view.getHitRect(rect);
+		int paddingTop = recyclerView.getPaddingTop();
+		int paddingLeft = recyclerView.getPaddingLeft();
+		for (int i = 0, count = recyclerView.getChildCount(); i < count; i++) {
+			View view = recyclerView.getChildAt(i);
+			recyclerView.getDecoratedBoundsWithMargins(view, rect);
 			if (rect.contains(paddingLeft, paddingTop)) {
-				position += i;
-				y = rect.top - paddingTop;
+				position = recyclerView.getChildAdapterPosition(view);
+				offset = rect.top - paddingTop;
 				break;
 			}
 		}
-		return new ListPosition(position, y);
+		return new ListPosition(position, offset);
 	}
 
-	public void apply(final ListView listView) {
-		if (listView.getHeight() == 0) {
-			// Dirty hack. Will be hopefully removed after RecyclerView migration.
-			listView.post(() -> {
-				listView.setSelectionFromTop(position, y);
-				listView.post(() -> listView.setSelectionFromTop(position, y));
-			});
-		} else {
-			listView.setSelectionFromTop(position, y);
-		}
+	public void apply(RecyclerView recyclerView) {
+		LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+		layoutManager.scrollToPositionWithOffset(position, offset);
 	}
 
 	@Override
@@ -53,15 +47,15 @@ public final class ListPosition implements Parcelable {
 	@Override
 	public void writeToParcel(Parcel dest, int flags) {
 		dest.writeInt(position);
-		dest.writeInt(y);
+		dest.writeInt(offset);
 	}
 
 	public static final Creator<ListPosition> CREATOR = new Creator<ListPosition>() {
 		@Override
 		public ListPosition createFromParcel(Parcel in) {
 			int position = in.readInt();
-			int y = in.readInt();
-			return new ListPosition(position, y);
+			int offset = in.readInt();
+			return new ListPosition(position, offset);
 		}
 
 		@Override

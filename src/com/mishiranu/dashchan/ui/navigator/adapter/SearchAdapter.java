@@ -2,8 +2,9 @@ package com.mishiranu.dashchan.ui.navigator.adapter;
 
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.TextView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.MainApplication;
@@ -12,25 +13,44 @@ import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.ui.navigator.manager.HidePerformer;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.util.ResourceUtils;
+import com.mishiranu.dashchan.util.ViewUtils;
+import com.mishiranu.dashchan.widget.DividerItemDecoration;
+import com.mishiranu.dashchan.widget.SimpleViewHolder;
 import com.mishiranu.dashchan.widget.ViewFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 
-public class SearchAdapter extends BaseAdapter {
-	private static final int TYPE_VIEW = 0;
-	private static final int TYPE_HEADER = 1;
+public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+	public interface Callback {
+		void onItemClick(PostItem postItem);
+		boolean onItemLongClick(PostItem postItem);
+	}
 
+	private enum ViewType {VIEW, HEADER}
+
+	private static class ListItem {
+		public final PostItem postItem;
+		public final String title;
+
+		private ListItem(PostItem postItem, String title) {
+			this.postItem = postItem;
+			this.title = title;
+		}
+	}
+
+	private final Callback callback;
 	private final UiManager uiManager;
 	private final UiManager.DemandSet demandSet = new UiManager.DemandSet();
 	private final UiManager.ConfigurationSet configurationSet;
 
-	private final ArrayList<PostItem> postItems = new ArrayList<>();
-	private final ArrayList<Object> groupItems = new ArrayList<>();
+	private final ArrayList<ListItem> postItems = new ArrayList<>();
+	private final ArrayList<ListItem> groupItems = new ArrayList<>();
 
 	private boolean groupMode = false;
 
-	public SearchAdapter(UiManager uiManager, String searchQuery) {
+	public SearchAdapter(Callback callback, UiManager uiManager, String searchQuery) {
+		this.callback = callback;
 		this.uiManager = uiManager;
 		configurationSet = new UiManager.ConfigurationSet(null, null, new HidePerformer(),
 				new GalleryItem.GallerySet(false), uiManager.dialog().createStackInstance(), null, null,
@@ -39,67 +59,56 @@ public class SearchAdapter extends BaseAdapter {
 	}
 
 	@Override
-	public int getViewTypeCount() {
-		return 2;
-	}
-
-	@Override
-	public int getItemViewType(int position) {
-		Object item = getItem(position);
-		return item instanceof PostItem ? TYPE_VIEW : TYPE_HEADER;
-	}
-
-	@Override
-	public boolean isEnabled(int position) {
-		Object item = getItem(position);
-		return item instanceof PostItem;
-	}
-
-	@Override
-	public boolean areAllItemsEnabled() {
-		return false;
-	}
-
-	@Override
-	public View getView(int position, View convertView, ViewGroup parent) {
-		Object item = getItem(position);
-		if (item instanceof PostItem) {
-			return uiManager.view().getPostView((PostItem) item, convertView, parent, demandSet, configurationSet);
-		} else {
-			if (convertView == null) {
-				convertView = ViewFactory.makeListTextHeader(parent, false);
-				if (C.API_LOLLIPOP) {
-					float density = ResourceUtils.obtainDensity(parent);
-					convertView.setPadding((int) (12f * density), convertView.getPaddingTop() + (int) (12f * density),
-							(int) (12f * density), convertView.getPaddingBottom());
-				}
-			}
-			((TextView) convertView).setText((String) item);
-			return convertView;
-		}
-	}
-
-	@Override
-	public int getCount() {
+	public int getItemCount() {
 		return groupMode ? groupItems.size() : postItems.size();
 	}
 
 	@Override
-	public Object getItem(int position) {
+	public int getItemViewType(int position) {
+		ListItem listItem = getItem(position);
+		return (listItem.postItem != null ? ViewType.VIEW : ViewType.HEADER).ordinal();
+	}
+
+	private ListItem getItem(int position) {
 		return groupMode ? groupItems.get(position) : postItems.get(position);
 	}
 
-	public PostItem getPostItem(int position) {
-		Object item = getItem(position);
-		if (item instanceof PostItem) {
-			return (PostItem) item;
+	@NonNull
+	@Override
+	public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+		switch (ViewType.values()[viewType]) {
+			case VIEW: {
+				RecyclerView.ViewHolder holder = uiManager.view().createPostView(parent, configurationSet);
+				holder.itemView.setOnClickListener(v -> callback
+						.onItemClick(getItem(holder.getAdapterPosition()).postItem));
+				holder.itemView.setOnLongClickListener(v -> callback
+						.onItemLongClick(getItem(holder.getAdapterPosition()).postItem));
+				return holder;
+			}
+			case HEADER: {
+				View view = ViewFactory.makeListTextHeader(parent);
+				float density = ResourceUtils.obtainDensity(parent);
+				ViewUtils.setNewPadding(view, (int) (12f * density), null, (int) (12f * density), null);
+				return new SimpleViewHolder(view);
+			}
+			default: {
+				throw new IllegalStateException();
+			}
 		}
-		return null;
 	}
 
 	@Override
-	public long getItemId(int position) {
-		return 0;
+	public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+		switch (ViewType.values()[holder.getItemViewType()]) {
+			case VIEW: {
+				uiManager.view().bindPostView(holder, getItem(position).postItem, demandSet);
+				break;
+			}
+			case HEADER: {
+				((TextView) holder.itemView).setText(getItem(position).title);
+				break;
+			}
+		}
 	}
 
 	public UiManager.ConfigurationSet getConfigurationSet() {
@@ -109,7 +118,9 @@ public class SearchAdapter extends BaseAdapter {
 	public void setItems(ArrayList<PostItem> postItems) {
 		this.postItems.clear();
 		if (postItems != null) {
-			this.postItems.addAll(postItems);
+			for (PostItem postItem : postItems) {
+				this.postItems.add(new ListItem(postItem, null));
+			}
 		}
 		handleItems();
 	}
@@ -130,17 +141,17 @@ public class SearchAdapter extends BaseAdapter {
 		configurationSet.gallerySet.clear();
 		if (postItems.size() > 0) {
 			if (groupMode) {
-				LinkedHashMap<String, ArrayList<PostItem>> map = new LinkedHashMap<>();
-				for (PostItem postItem : postItems) {
-					String threadNumber = postItem.getThreadNumber();
-					ArrayList<PostItem> postItems = map.get(threadNumber);
+				LinkedHashMap<String, ArrayList<ListItem>> map = new LinkedHashMap<>();
+				for (ListItem listItem : postItems) {
+					String threadNumber = listItem.postItem.getThreadNumber();
+					ArrayList<ListItem> postItems = map.get(threadNumber);
 					if (postItems == null) {
 						postItems = new ArrayList<>();
 						map.put(threadNumber, postItems);
 					}
-					postItems.add(postItem);
+					postItems.add(listItem);
 				}
-				for (LinkedHashMap.Entry<String, ArrayList<PostItem>> entry : map.entrySet()) {
+				for (LinkedHashMap.Entry<String, ArrayList<ListItem>> entry : map.entrySet()) {
 					String threadNumber = entry.getKey();
 					boolean number;
 					try {
@@ -149,26 +160,38 @@ public class SearchAdapter extends BaseAdapter {
 					} catch (NumberFormatException e) {
 						number = false;
 					}
-					groupItems.add(MainApplication.getInstance().getString(R.string.text_in_thread_format_format,
-							number ? "#" + threadNumber : threadNumber));
+					groupItems.add(new ListItem(null, MainApplication.getInstance()
+							.getString(R.string.text_in_thread_format_format,
+									number ? "#" + threadNumber : threadNumber)));
 					int ordinalIndex = 0;
-					for (PostItem postItem : entry.getValue()) {
-						groupItems.add(postItem);
-						postItem.setOrdinalIndex(ordinalIndex++);
+					for (ListItem listItem : entry.getValue()) {
+						groupItems.add(listItem);
+						listItem.postItem.setOrdinalIndex(ordinalIndex++);
 					}
 				}
 			} else {
 				for (int i = 0; i < postItems.size(); i++) {
-					postItems.get(i).setOrdinalIndex(i);
+					postItems.get(i).postItem.setOrdinalIndex(i);
 				}
 			}
 		}
-		for (int i = 0, count = getCount(); i < count; i++) {
-			PostItem postItem = getPostItem(i);
-			if (postItem != null) {
-				configurationSet.gallerySet.add(postItem.getAttachmentItems());
+		for (int i = 0, count = getItemCount(); i < count; i++) {
+			ListItem listItem = getItem(i);
+			if (listItem.postItem != null) {
+				configurationSet.gallerySet.add(listItem.postItem.getAttachmentItems());
 			}
 		}
 		notifyDataSetChanged();
+	}
+
+	public DividerItemDecoration.Configuration configureDivider
+			(DividerItemDecoration.Configuration configuration, int position) {
+		ListItem current = getItem(position);
+		ListItem next = position + 1 < getItemCount() ? getItem(position + 1) : null;
+		if (C.API_LOLLIPOP) {
+			return configuration.need(current.postItem != null || next == null || next.postItem == null);
+		} else {
+			return configuration.need(current.postItem != null && (next == null || next.postItem != null));
+		}
 	}
 }

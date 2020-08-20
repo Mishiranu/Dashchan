@@ -47,7 +47,6 @@ import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
-import com.mishiranu.dashchan.widget.ClickableView;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -714,7 +713,8 @@ public class ForegroundManager implements Handler.Callback {
 						ViewUtils.makeRoundedCorners(imageView, cornersRadius, false);
 						frameLayout.addView(imageView, FrameLayout.LayoutParams.MATCH_PARENT,
 								FrameLayout.LayoutParams.WRAP_CONTENT);
-						ClickableView view = new ClickableView(frameLayout.getContext());
+						View view = new View(frameLayout.getContext());
+						ViewUtils.setSelectableItemBackground(view);
 						view.setTag(index);
 						view.setOnClickListener(this);
 						frameLayout.addView(view, FrameLayout.LayoutParams.MATCH_PARENT,

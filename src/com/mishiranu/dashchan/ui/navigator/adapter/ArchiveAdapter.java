@@ -1,43 +1,35 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui.navigator.adapter;
 
+import android.view.ViewGroup;
+import android.widget.TextView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+import chan.content.model.ThreadSummary;
+import chan.util.StringUtils;
+import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.widget.DividerItemDecoration;
+import com.mishiranu.dashchan.widget.ViewFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Locale;
 
-import android.text.TextUtils;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.TextView;
+public class ArchiveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+	public interface Callback {
+		void onItemClick(String threadNumber);
+		boolean onItemLongClick(String threadNumber);
+	}
 
-import chan.content.model.ThreadSummary;
-import chan.util.StringUtils;
+	private final Callback callback;
 
-import com.mishiranu.dashchan.util.ResourceUtils;
-
-public class ArchiveAdapter extends BaseAdapter {
 	private final ArrayList<ThreadSummary> archiveItems = new ArrayList<>();
 	private final ArrayList<ThreadSummary> filteredArchiveItems = new ArrayList<>();
 
 	private boolean filterMode = false;
 	private String filterText;
+
+	public ArchiveAdapter(Callback callback) {
+		this.callback = callback;
+	}
 
 	// Returns true, if adapter isn't empty.
 	public boolean applyFilter(String text) {
@@ -61,35 +53,17 @@ public class ArchiveAdapter extends BaseAdapter {
 		return !filterMode || filteredArchiveItems.size() > 0;
 	}
 
-	@Override
-	public View getView(int position, View convertView, ViewGroup parent) {
-		ThreadSummary threadSummary = getItem(position);
-		if (convertView == null) {
-			float density = ResourceUtils.obtainDensity(parent);
-			TextView textView = (TextView) LayoutInflater.from(parent.getContext())
-					.inflate(android.R.layout.simple_list_item_1, parent, false);
-			textView.setPadding((int) (16f * density), 0, (int) (16f * density), 0);
-			textView.setEllipsize(TextUtils.TruncateAt.END);
-			textView.setSingleLine(true);
-			convertView = textView;
-		}
-		((TextView) convertView).setText(threadSummary.getDescription());
-		return convertView;
+	public boolean isRealEmpty() {
+		return archiveItems.size() == 0;
 	}
 
 	@Override
-	public int getCount() {
+	public int getItemCount() {
 		return (filterMode ? filteredArchiveItems : archiveItems).size();
 	}
 
-	@Override
-	public ThreadSummary getItem(int position) {
+	private ThreadSummary getItem(int position) {
 		return (filterMode ? filteredArchiveItems : archiveItems).get(position);
-	}
-
-	@Override
-	public long getItemId(int position) {
-		return 0;
 	}
 
 	public void setItems(ThreadSummary[] threadSummaries) {
@@ -101,5 +75,27 @@ public class ArchiveAdapter extends BaseAdapter {
 		if (filterMode) {
 			applyFilter(filterText);
 		}
+	}
+
+	@NonNull
+	@Override
+	public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+		return new RecyclerView.ViewHolder(ViewFactory.makeSingleLineListItem(parent)) {{
+			itemView.setOnClickListener(v -> callback
+					.onItemClick(getItem(getAdapterPosition()).getThreadNumber()));
+			itemView.setOnLongClickListener(v -> callback
+					.onItemLongClick(getItem(getAdapterPosition()).getThreadNumber()));
+		}};
+	}
+
+	@Override
+	public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+		ThreadSummary threadSummary = getItem(position);
+		((TextView) holder.itemView).setText(threadSummary.getDescription());
+	}
+
+	public DividerItemDecoration.Configuration configureDivider(DividerItemDecoration.Configuration configuration,
+			@SuppressWarnings("unused") int position) {
+		return configuration.need(!C.API_LOLLIPOP);
 	}
 }
