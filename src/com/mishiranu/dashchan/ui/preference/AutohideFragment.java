@@ -97,7 +97,7 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 	@Override
 	public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
 		ActionIconSet set = new ActionIconSet(requireContext());
-		menu.add(0, OPTIONS_MENU_NEW_RULE, 0, R.string.action_new_rule).setIcon(set.getId(R.attr.actionAddRule))
+		menu.add(0, OPTIONS_MENU_NEW_RULE, 0, R.string.action_new_rule).setIcon(set.getId(R.attr.iconActionAddRule))
 				.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 		searchMenuItem = menu.add(0, OPTIONS_MENU_SEARCH, 0, R.string.action_filter).setActionView(searchView)
 				.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW)

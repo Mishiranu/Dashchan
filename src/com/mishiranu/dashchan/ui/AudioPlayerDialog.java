@@ -124,6 +124,10 @@ public class AudioPlayerDialog extends DialogFragment {
 		});
 		button = new ImageButton(context);
 		horizontal.addView(button, (int) (48f * density), (int) (48f * density));
+		if (C.API_LOLLIPOP) {
+			button.setImageTintList(ResourceUtils.getColorStateList(button.getContext(),
+					android.R.attr.textColorPrimary));
+		}
 		button.setBackgroundResource(ResourceUtils.getResourceId(context,
 				android.R.attr.listChoiceBackgroundIndicator, 0));
 		updatePlayState();
@@ -184,6 +188,6 @@ public class AudioPlayerDialog extends DialogFragment {
 	private void updatePlayState() {
 		boolean playing = audioPlayerBinder != null && audioPlayerBinder.isPlaying();
 		button.setImageResource(ResourceUtils.getResourceId(requireContext(),
-				playing ? R.attr.buttonPause : R.attr.buttonPlay, 0));
+				playing ? R.attr.iconButtonPause : R.attr.iconButtonPlay, 0));
 	}
 }

@@ -90,7 +90,7 @@
 			android:layout_height="12dp"
 			android:layout_marginStart="8dp"
 			android:layout_marginLeft="8dp"
-			android:src="?attr/postSage"
+			android:src="?attr/iconPostSage"
 			tools:ignore="ContentDescription" />
 
 		<ImageView
@@ -99,7 +99,7 @@
 			android:layout_height="12dp"
 			android:layout_marginStart="8dp"
 			android:layout_marginLeft="8dp"
-			android:src="?attr/postSticky"
+			android:src="?attr/iconPostSticky"
 			tools:ignore="ContentDescription" />
 
 		<ImageView
@@ -108,7 +108,7 @@
 			android:layout_height="12dp"
 			android:layout_marginStart="8dp"
 			android:layout_marginLeft="8dp"
-			android:src="?attr/postClosed"
+			android:src="?attr/iconPostClosed"
 			tools:ignore="ContentDescription" />
 
 	</LinearLayout>

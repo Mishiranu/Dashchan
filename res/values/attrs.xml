@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-	<attr name="backgroundTranslucent" format="color|reference" />
-
 	<attr name="styleDrawerSpecial" format="reference" />
 
 	<attr name="backgroundBlock" format="color|reference" />
@@ -25,60 +23,52 @@
 
 	<attr name="colorGainFactor" format="float" />
 
-	<attr name="actionAttach" format="reference" />
-	<attr name="actionAddPost" format="reference" />
-	<attr name="actionAddRule" format="reference" />
-	<attr name="actionAddToFavorites" format="reference" />
-	<attr name="actionBack" format="reference" />
-	<attr name="actionDelete" format="reference" />
-	<attr name="actionDownload" format="reference" />
-	<attr name="actionForward" format="reference" />
-	<attr name="actionMakeThreadshot" format="reference" />
-	<attr name="actionRefresh" format="reference" />
-	<attr name="actionReport" format="reference" />
-	<attr name="actionRemoveFromFavorites" format="reference" />
-	<attr name="actionSave" format="reference" />
-	<attr name="actionSearch" format="reference" />
-	<attr name="actionSelect" format="reference" />
-	<attr name="actionVolumeOff" format="reference" />
+	<attr name="iconActionAttach" format="reference" />
+	<attr name="iconActionAddPost" format="reference" />
+	<attr name="iconActionAddRule" format="reference" />
+	<attr name="iconActionAddToFavorites" format="reference" />
+	<attr name="iconActionBack" format="reference" />
+	<attr name="iconActionDelete" format="reference" />
+	<attr name="iconActionDownload" format="reference" />
+	<attr name="iconActionForward" format="reference" />
+	<attr name="iconActionMakeThreadshot" format="reference" />
+	<attr name="iconActionRefresh" format="reference" />
+	<attr name="iconActionReport" format="reference" />
+	<attr name="iconActionRemoveFromFavorites" format="reference" />
+	<attr name="iconActionSave" format="reference" />
+	<attr name="iconActionSearch" format="reference" />
+	<attr name="iconActionSelect" format="reference" />
+	<attr name="iconActionVolumeOff" format="reference" />
 
-	<attr name="buttonCancel" format="reference" />
-	<attr name="buttonDropDown" format="reference" />
-	<attr name="buttonForward" format="reference" />
-	<attr name="buttonMore" format="reference" />
-	<attr name="buttonPause" format="reference" />
-	<attr name="buttonPlay" format="reference" />
-	<attr name="buttonRating" format="reference" />
-	<attr name="buttonRefresh" format="reference" />
-	<attr name="buttonWarning" format="reference" />
+	<attr name="iconButtonCancel" format="reference" />
+	<attr name="iconButtonDropDown" format="reference" />
+	<attr name="iconButtonForward" format="reference" />
+	<attr name="iconButtonMore" format="reference" />
+	<attr name="iconButtonPause" format="reference" />
+	<attr name="iconButtonPlay" format="reference" />
+	<attr name="iconButtonRating" format="reference" />
+	<attr name="iconButtonRefresh" format="reference" />
+	<attr name="iconButtonWarning" format="reference" />
 
-	<attr name="iconWarning" format="reference" />
+	<attr name="iconPostBanned" format="reference" />
+	<attr name="iconPostClosed" format="reference" />
+	<attr name="iconPostCyclical" format="reference" />
+	<attr name="iconPostEmail" format="reference" />
+	<attr name="iconPostOriginalPoster" format="reference" />
+	<attr name="iconPostUserPost" format="reference" />
+	<attr name="iconPostSage" format="reference" />
+	<attr name="iconPostSticky" format="reference" />
+	<attr name="iconPostWarned" format="reference" />
 
-	<attr name="postBanned" format="reference" />
-	<attr name="postClosed" format="reference" />
-	<attr name="postCyclical" format="reference" />
-	<attr name="postEmail" format="reference" />
-	<attr name="postOriginalPoster" format="reference" />
-	<attr name="postUserPost" format="reference" />
-	<attr name="postSage" format="reference" />
-	<attr name="postSticky" format="reference" />
-	<attr name="postWarned" format="reference" />
+	<attr name="iconAttachmentAudio" format="reference" />
+	<attr name="iconAttachmentFile" format="reference" />
+	<attr name="iconAttachmentMultiple" format="reference" />
+	<attr name="iconAttachmentVideo" format="reference" />
+	<attr name="iconAttachmentWarning" format="reference" />
 
-	<attr name="attachmentAudio" format="reference" />
-	<attr name="attachmentFile" format="reference" />
-	<attr name="attachmentSeveral" format="reference" />
-	<attr name="attachmentVideo" format="reference" />
-	<attr name="attachmentWarning" format="reference" />
-
-	<attr name="drawerIconColor" format="color|reference" />
-	<attr name="drawerMenuBoards" format="reference" />
-	<attr name="drawerMenuUserBoards" format="reference" />
-	<attr name="drawerMenuHistory" format="reference" />
-	<attr name="drawerMenuPreferences" format="reference" />
-
-	<attr name="notificationCancel" format="reference" />
-	<attr name="notificationRefresh" format="reference" />
-	<attr name="notificationPlay" format="reference" />
-	<attr name="notificationPause" format="reference" />
+	<attr name="iconDrawerMenuBoards" format="reference" />
+	<attr name="iconDrawerMenuUserBoards" format="reference" />
+	<attr name="iconDrawerMenuHistory" format="reference" />
+	<attr name="iconDrawerMenuPreferences" format="reference" />
 
 </resources>

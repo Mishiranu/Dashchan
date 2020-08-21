@@ -3,6 +3,7 @@ package com.mishiranu.dashchan.util;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -60,6 +61,15 @@ public class ResourceUtils {
 		TypedArray typedArray = context.obtainStyledAttributes(new int[] {attr});
 		try {
 			return typedArray.getColor(0, 0);
+		} finally {
+			typedArray.recycle();
+		}
+	}
+
+	public static ColorStateList getColorStateList(Context context, int attr) {
+		TypedArray typedArray = context.obtainStyledAttributes(new int[] {attr});
+		try {
+			return typedArray.getColorStateList(0);
 		} finally {
 			typedArray.recycle();
 		}

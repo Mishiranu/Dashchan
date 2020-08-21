@@ -88,7 +88,7 @@ public class StatisticsFragment extends BaseListFragment {
 	@Override
 	public void onCreateOptionsMenu(Menu menu, @NonNull MenuInflater inflater) {
 		ActionIconSet set = new ActionIconSet(requireContext());
-		menu.add(0, OPTIONS_MENU_CLEAR, 0, R.string.action_clear).setIcon(set.getId(R.attr.actionDelete))
+		menu.add(0, OPTIONS_MENU_CLEAR, 0, R.string.action_clear).setIcon(set.getId(R.attr.iconActionDelete))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 		super.onCreateOptionsMenu(menu, inflater);
 	}

@@ -6,7 +6,6 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.TypedArray;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.PowerManager;
@@ -24,7 +23,6 @@ import com.mishiranu.dashchan.util.AndroidUtils;
 import com.mishiranu.dashchan.util.AudioFocus;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
-import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.util.WeakObservable;
 import java.io.File;
 
@@ -51,7 +49,6 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnComplet
 	private String fileName;
 	private File audioFile;
 
-	private Context context;
 	private boolean pausedByTransientLossOfFocus = false;
 
 	private static Intent obtainIntent(Context context, String action) {
@@ -100,7 +97,6 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnComplet
 		PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
 		wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, getPackageName() + ":AudioPlayerWakeLock");
 		wakeLock.setReferenceCounted(false);
-		context = new ContextThemeWrapper(this, R.style.Theme_Special_Notification);
 	}
 
 	private void notifyToggle() {
@@ -198,7 +194,7 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnComplet
 		if (success) {
 			notifyToggle();
 		} else {
-			ToastUtils.show(context, R.string.message_playback_error);
+			ToastUtils.show(this, R.string.message_playback_error);
 			cleanup(true, true);
 		}
 	}
@@ -269,7 +265,7 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnComplet
 
 	@Override
 	public boolean onError(MediaPlayer mp, int what, int extra) {
-		ToastUtils.show(context, R.string.message_playback_error);
+		ToastUtils.show(this, R.string.message_playback_error);
 		if (audioFile != null) {
 			audioFile.delete();
 		}
@@ -308,7 +304,7 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnComplet
 		} catch (Exception e) {
 			audioFile.delete();
 			CacheManager.getInstance().handleDownloadedFile(audioFile, false);
-			ToastUtils.show(context, R.string.message_playback_error);
+			ToastUtils.show(this, R.string.message_playback_error);
 			cleanup(true, true);
 			return;
 		}
@@ -319,29 +315,26 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnComplet
 	private int progress, progressMax;
 	private long lastUpdate;
 
-	private static final int[] ICON_ATTRS = {R.attr.notificationRefresh, R.attr.notificationCancel,
-		R.attr.notificationPlay, R.attr.notificationPause};
-
 	private NotificationCompat.Builder getPlaybackNotification(boolean recreate) {
 		NotificationCompat.Builder builder = this.builder;
 		if (builder == null || recreate) {
 			builder = new NotificationCompat.Builder(this, C.NOTIFICATION_CHANNEL_AUDIO_PLAYER);
 			builder.setSmallIcon(R.drawable.ic_audiotrack_white_24dp);
 			builder.setColor(notificationColor);
-			PendingIntent contentIntent = PendingIntent.getActivity(context, 0,
+			PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
 					new Intent(this, MainActivity.class).setAction(C.ACTION_PLAYER),
 					PendingIntent.FLAG_UPDATE_CURRENT);
 			builder.setContentIntent(contentIntent);
-			TypedArray typedArray = context.obtainStyledAttributes(ICON_ATTRS);
-			PendingIntent toggleIntent = AndroidUtils.getAnyServicePendingIntent(context, 0,
+			PendingIntent toggleIntent = AndroidUtils.getAnyServicePendingIntent(this, 0,
 					obtainIntent(this, ACTION_TOGGLE), PendingIntent.FLAG_UPDATE_CURRENT);
 			boolean playing = mediaPlayer != null && mediaPlayer.isPlaying();
-			ViewUtils.addNotificationAction(builder, context, typedArray, playing ? 3 : 2,
-					playing ? R.string.action_pause : R.string.action_play, toggleIntent);
-			PendingIntent cancelIntent = AndroidUtils.getAnyServicePendingIntent(context, 0,
+			builder.addAction(C.API_LOLLIPOP ? 0 : playing
+							? R.drawable.ic_action_pause_dark : R.drawable.ic_action_play_dark,
+					getString(playing ? R.string.action_pause : R.string.action_play), toggleIntent);
+			PendingIntent cancelIntent = AndroidUtils.getAnyServicePendingIntent(this, 0,
 					obtainIntent(this, ACTION_CANCEL), PendingIntent.FLAG_UPDATE_CURRENT);
-			ViewUtils.addNotificationAction(builder, context, typedArray, 1, R.string.action_stop, cancelIntent);
-			typedArray.recycle();
+			builder.addAction(C.API_LOLLIPOP ? 0 : R.drawable.ic_action_cancel_dark,
+					getString(R.string.action_stop), cancelIntent);
 			this.builder = builder;
 			builder.setContentTitle(getString(R.string.message_file_playback));
 			builder.setContentText(getString(R.string.message_download_name_format, fileName));
@@ -355,22 +348,20 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnComplet
 			builder = new NotificationCompat.Builder(this, C.NOTIFICATION_CHANNEL_AUDIO_PLAYER);
 			builder.setSmallIcon(error ? android.R.drawable.stat_sys_download_done
 					: android.R.drawable.stat_sys_download);
-			builder.setDeleteIntent(AndroidUtils.getAnyServicePendingIntent(context, 0,
+			builder.setDeleteIntent(AndroidUtils.getAnyServicePendingIntent(this, 0,
 					obtainIntent(this, ACTION_CANCEL), PendingIntent.FLAG_UPDATE_CURRENT));
-			TypedArray typedArray = context.obtainStyledAttributes(ICON_ATTRS);
 			if (error) {
-				PendingIntent retryIntent = AndroidUtils.getAnyServicePendingIntent(context, 0,
+				PendingIntent retryIntent = AndroidUtils.getAnyServicePendingIntent(this, 0,
 						obtainIntent(this, ACTION_START).setData(uri).putExtra(EXTRA_CHAN_NAME, chanName)
 								.putExtra(EXTRA_FILE_NAME, fileName), PendingIntent.FLAG_UPDATE_CURRENT);
-				ViewUtils.addNotificationAction(builder, context, typedArray, 0,
-						R.string.action_retry, retryIntent);
+				builder.addAction(C.API_LOLLIPOP ? 0 : R.drawable.ic_action_refresh_dark,
+						getString(R.string.action_retry), retryIntent);
 			} else {
-				PendingIntent cancelIntent = AndroidUtils.getAnyServicePendingIntent(context, 0,
+				PendingIntent cancelIntent = AndroidUtils.getAnyServicePendingIntent(this, 0,
 						obtainIntent(this, ACTION_CANCEL), PendingIntent.FLAG_UPDATE_CURRENT);
-				ViewUtils.addNotificationAction(builder, context, typedArray, 1,
-						android.R.string.cancel, cancelIntent);
+				builder.addAction(C.API_LOLLIPOP ? 0 : R.drawable.ic_action_cancel_dark,
+						getString(android.R.string.cancel), cancelIntent);
 			}
-			typedArray.recycle();
 			if (C.API_LOLLIPOP) {
 				builder.setColor(notificationColor);
 			}

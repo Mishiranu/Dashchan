@@ -292,7 +292,7 @@ public class ListUnit implements ActionMode.Callback {
 		menu.add(0, ACTION_MENU_SELECT_ALL, 0, R.string.action_select_all)
 				.setIcon(selectAllResId).setShowAsAction(flags);
 		menu.add(0, ACTION_MENU_DOWNLOAD_FILES, 0, R.string.action_download_files)
-				.setIcon(set.getId(R.attr.actionDownload)).setShowAsAction(flags);
+				.setIcon(set.getId(R.attr.iconActionDownload)).setShowAsAction(flags);
 		return true;
 	}
 

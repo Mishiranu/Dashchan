@@ -13,7 +13,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.content.res.TypedArray;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
@@ -45,7 +44,6 @@ import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.MimeTypes;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
-import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.util.WeakObservable;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -104,11 +102,6 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 
 	private static File getSavedDownloadRetryFile() {
 		return CacheManager.getInstance().getInternalCacheFile("saved-download-retry");
-	}
-
-	@Override
-	protected void attachBaseContext(Context base) {
-		super.attachBaseContext(new ContextThemeWrapper(base, R.style.Theme_Special_Notification));
 	}
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -754,8 +747,6 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 
 	private NotificationData.Type oldNotificationDataType;
 
-	private static final int[] ICON_ATTRS = {R.attr.notificationRefresh, R.attr.notificationCancel};
-
 	private void setBuilderImage(File file) {
 		if (file.exists()) {
 			FileHolder fileHolder = FileHolder.obtain(file);
@@ -777,25 +768,25 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 			if (notificationData.lastSuccessFile != null) {
 				setBuilderImage(notificationData.lastSuccessFile);
 			}
-			TypedArray typedArray = obtainStyledAttributes(ICON_ATTRS);
 			switch (notificationData.type) {
 				case PROGRESS:
 				case REQUEST: {
-					ViewUtils.addNotificationAction(builder, this, typedArray, 1, android.R.string.cancel,
-							PendingIntent.getBroadcast(this, 0, new Intent(this, Receiver.class)
-									.setAction(ACTION_CANCEL), PendingIntent.FLAG_UPDATE_CURRENT));
+					builder.addAction(C.API_LOLLIPOP ? 0 : R.drawable.ic_action_cancel_dark,
+							getString(android.R.string.cancel), PendingIntent.getBroadcast(this, 0,
+									new Intent(this, Receiver.class).setAction(ACTION_CANCEL),
+									PendingIntent.FLAG_UPDATE_CURRENT));
 					break;
 				}
 				case RESULT: {
 					if (notificationData.allowRetry) {
-						ViewUtils.addNotificationAction(builder, this, typedArray, 0, R.string.action_retry,
-								PendingIntent.getBroadcast(this, 0, new Intent(this, Receiver.class)
-										.setAction(ACTION_RETRY), PendingIntent.FLAG_UPDATE_CURRENT));
+						builder.addAction(C.API_LOLLIPOP ? 0 : R.drawable.ic_action_refresh_dark,
+								getString(R.string.action_retry), PendingIntent.getBroadcast(this, 0,
+										new Intent(this, Receiver.class).setAction(ACTION_RETRY),
+										PendingIntent.FLAG_UPDATE_CURRENT));
 					}
 					break;
 				}
 			}
-			typedArray.recycle();
 			if (notificationData.type == NotificationData.Type.REQUEST) {
 				builder.setContentIntent(PendingIntent.getActivity(this, 0,
 						new Intent(this, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT));

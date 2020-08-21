@@ -385,14 +385,14 @@ public class CommentTextView extends TextView {
 							.setIcon(pasteResId).setShowAsAction(flags);
 				}
 				menu.add(0, android.R.id.button2, order, R.string.action_browser)
-						.setIcon(set.getId(R.attr.actionForward)).setShowAsAction(flags);
+						.setIcon(set.getId(R.attr.iconActionForward)).setShowAsAction(flags);
 			} else {
 				if (replyable != null) {
-					menu.add(0, android.R.id.button1, 0, R.string.action_quote).setIcon(pasteResId)
-							.setShowAsAction(flags);
+					menu.add(0, android.R.id.button1, 0, R.string.action_quote)
+							.setIcon(pasteResId).setShowAsAction(flags);
 				}
-				menu.add(0, android.R.id.button2, 0, R.string.action_browser).setIcon(set.getId(R.attr.actionForward))
-						.setShowAsAction(flags);
+				menu.add(0, android.R.id.button2, 0, R.string.action_browser)
+						.setIcon(set.getId(R.attr.iconActionForward)).setShowAsAction(flags);
 			}
 			// Stop selection fixation after creating action mode
 			restoreSelectionRunnable = null;

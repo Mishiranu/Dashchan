@@ -2,16 +2,11 @@ package com.mishiranu.dashchan.util;
 
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
-import android.app.Notification;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
-import android.content.res.TypedArray;
 import android.graphics.Outline;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.Icon;
 import android.os.Build;
 import android.util.TypedValue;
 import android.view.View;
@@ -21,7 +16,6 @@ import android.view.ViewParent;
 import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toolbar;
-import androidx.core.app.NotificationCompat;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.content.Preferences;
 import java.lang.reflect.Field;
@@ -164,22 +158,6 @@ public class ViewUtils {
 			dialog.dismiss();
 		} catch (IllegalArgumentException e) {
 			// May be detached from window manager
-		}
-	}
-
-	public static void addNotificationAction(NotificationCompat.Builder builder, Context context,
-			TypedArray typedArray, int resourceIndex, int titleRes, PendingIntent intent) {
-		builder.addAction(typedArray.getResourceId(resourceIndex, 0), context.getString(titleRes), intent);
-	}
-
-	@Deprecated
-	public static void addNotificationAction(Notification.Builder builder, Context context, int icon,
-			CharSequence title, PendingIntent intent) {
-		if (C.API_MARSHMALLOW) {
-			builder.addAction(new Notification.Action.Builder(Icon.createWithResource(context, icon),
-					title, intent).build());
-		} else {
-			builder.addAction(icon, title, intent);
 		}
 	}
 

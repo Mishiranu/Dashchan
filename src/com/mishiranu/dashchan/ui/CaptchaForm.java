@@ -34,7 +34,7 @@ public class CaptchaForm implements View.OnClickListener, View.OnLongClickListen
 	private final ImageView imageView;
 	private final View inputParentView;
 	private final EditText inputView;
-	private final View loadButton;
+	private final ImageView loadButton;
 	private final View refreshButton;
 
 	private ChanConfiguration.Captcha.Input captchaInput;
@@ -59,6 +59,8 @@ public class CaptchaForm implements View.OnClickListener, View.OnLongClickListen
 		loadButton = container.findViewById(R.id.captcha_load_button);
 		refreshButton = container.findViewById(R.id.refresh_button);
 		if (C.API_LOLLIPOP) {
+			loadButton.setImageTintList(ResourceUtils.getColorStateList(loadButton.getContext(),
+					android.R.attr.textColorPrimary));
 			skipTextView.setAllCaps(true);
 			skipTextView.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
 			skipTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f);

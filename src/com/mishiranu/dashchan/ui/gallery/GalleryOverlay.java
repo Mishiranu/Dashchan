@@ -350,11 +350,11 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 	@Override
 	public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
 		ActionIconSet set = new ActionIconSet(getContext());
-		menu.add(0, OPTIONS_MENU_SAVE, 0, R.string.action_save).setIcon(set.getId(R.attr.actionSave))
+		menu.add(0, OPTIONS_MENU_SAVE, 0, R.string.action_save).setIcon(set.getId(R.attr.iconActionSave))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-		menu.add(0, OPTIONS_MENU_REFRESH, 0, R.string.action_refresh).setIcon(set.getId(R.attr.actionRefresh))
+		menu.add(0, OPTIONS_MENU_REFRESH, 0, R.string.action_refresh).setIcon(set.getId(R.attr.iconActionRefresh))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-		menu.add(0, OPTIONS_MENU_SELECT, 0, R.string.action_select).setIcon(set.getId(R.attr.actionSelect))
+		menu.add(0, OPTIONS_MENU_SELECT, 0, R.string.action_select).setIcon(set.getId(R.attr.iconActionSelect))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 	}
 

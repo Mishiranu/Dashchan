@@ -169,8 +169,6 @@ public class DownloadDialog {
 		radioGroup.setOnCheckedChangeListener((rg, checkedId) -> {
 			boolean enabled = checkedId == R.id.download_subdirectory;
 			editText.setEnabled(enabled);
-			editText.setCompoundDrawables(null, null, enabled
-					? ResourceUtils.getDrawable(context, R.attr.buttonCancel, 0) : null, null);
 			if (enabled) {
 				editText.dismissDropDown();
 				refreshDropDownContents(editText);

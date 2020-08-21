@@ -1124,6 +1124,10 @@ public class DialogUnit {
 				imageLoader.loadImage(chanName, icon.uri, false, imageView);
 			} else {
 				imageView.setImageResource(ResourceUtils.getResourceId(context, icon.attrId, 0));
+				if (C.API_LOLLIPOP) {
+					imageView.setImageTintList(ResourceUtils.getColorStateList(imageView.getContext(),
+							android.R.attr.textColorSecondary));
+				}
 			}
 			TextView textView = new TextView(context, null, android.R.attr.textAppearanceListItem);
 			linearLayout.addView(textView, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));

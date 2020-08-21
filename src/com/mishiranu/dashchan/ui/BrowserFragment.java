@@ -153,7 +153,7 @@ public class BrowserFragment extends Fragment implements ActivityHandler, Downlo
 	@Override
 	public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
 		ActionIconSet set = new ActionIconSet(requireContext());
-		menu.add(0, OPTIONS_MENU_RELOAD, 0, R.string.action_reload).setIcon(set.getId(R.attr.actionRefresh))
+		menu.add(0, OPTIONS_MENU_RELOAD, 0, R.string.action_reload).setIcon(set.getId(R.attr.iconActionRefresh))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 		menu.add(0, OPTIONS_MENU_COPY_LINK, 0, R.string.action_copy_link);
 		menu.add(0, OPTIONS_MENU_SHARE_LINK, 0, R.string.action_share_link);

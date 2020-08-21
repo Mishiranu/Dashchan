@@ -3,6 +3,7 @@ package com.mishiranu.dashchan.ui.navigator.manager;
 import android.animation.Animator;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.net.Uri;
@@ -25,6 +26,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import chan.content.ChanLocator;
 import chan.util.StringUtils;
+import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.ImageLoader;
 import com.mishiranu.dashchan.content.Preferences;
@@ -165,8 +167,8 @@ public class ViewUnit {
 		List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
 		if (attachmentItems != null) {
 			AttachmentItem attachmentItem = attachmentItems.get(0);
-			boolean needShowSeveralIcon = attachmentItems.size() > 1;
-			attachmentItem.configureAndLoad(holder.thumbnail, needShowSeveralIcon, false);
+			boolean needShowMultipleIcon = attachmentItems.size() > 1;
+			attachmentItem.configureAndLoad(holder.thumbnail, needShowMultipleIcon, false);
 			holder.thumbnailClickListener.update(0, true, GalleryOverlay.NavigatePostMode.DISABLED);
 			holder.thumbnailLongClickListener.update(attachmentItem);
 			holder.thumbnail.setSfwMode(Preferences.isSfwMode());
@@ -213,8 +215,8 @@ public class ViewUnit {
 
 		if (attachmentItems != null && !hidden) {
 			AttachmentItem attachmentItem = attachmentItems.get(0);
-			boolean needShowSeveralIcon = attachmentItems.size() > 1;
-			attachmentItem.configureAndLoad(holder.thumbnail, needShowSeveralIcon, false);
+			boolean needShowMultipleIcon = attachmentItems.size() > 1;
+			attachmentItem.configureAndLoad(holder.thumbnail, needShowMultipleIcon, false);
 			holder.thumbnailClickListener.update(0, true, GalleryOverlay.NavigatePostMode.DISABLED);
 			holder.thumbnailLongClickListener.update(attachmentItem);
 			holder.thumbnail.setSfwMode(Preferences.isSfwMode());
@@ -825,7 +827,7 @@ public class ViewUnit {
 										if (holder.states[i]) {
 											int attr = STATE_ATTRS[i];
 											String title;
-											if (attr == R.attr.postEmail) {
+											if (attr == R.attr.iconPostEmail) {
 												title = holder.postItem.getEmail();
 												if (title.startsWith("mailto:")) {
 													title = title.substring(7);
@@ -852,21 +854,21 @@ public class ViewUnit {
 		}
 	};
 
-	private static final int[] STATE_ATTRS = {R.attr.postUserPost, R.attr.postOriginalPoster,
-		R.attr.postSage, R.attr.postEmail, R.attr.postSticky, R.attr.postClosed,
-		R.attr.postCyclical, R.attr.postWarned, R.attr.postBanned};
+	private static final int[] STATE_ATTRS = {R.attr.iconPostUserPost, R.attr.iconPostOriginalPoster,
+			R.attr.iconPostSage, R.attr.iconPostEmail, R.attr.iconPostSticky, R.attr.iconPostClosed,
+			R.attr.iconPostCyclical, R.attr.iconPostWarned, R.attr.iconPostBanned};
 
 	private static final SparseIntArray STATE_TEXTS = new SparseIntArray();
 
 	static {
-		STATE_TEXTS.put(R.attr.postUserPost, R.string.text_my_post);
-		STATE_TEXTS.put(R.attr.postOriginalPoster, R.string.text_original_poster);
-		STATE_TEXTS.put(R.attr.postSage, R.string.text_sage_description);
-		STATE_TEXTS.put(R.attr.postSticky, R.string.text_sticky_thread);
-		STATE_TEXTS.put(R.attr.postClosed, R.string.text_closed_thread);
-		STATE_TEXTS.put(R.attr.postCyclical, R.string.text_cyclical_thread);
-		STATE_TEXTS.put(R.attr.postWarned, R.string.text_user_warned);
-		STATE_TEXTS.put(R.attr.postBanned, R.string.text_user_banned);
+		STATE_TEXTS.put(R.attr.iconPostUserPost, R.string.text_my_post);
+		STATE_TEXTS.put(R.attr.iconPostOriginalPoster, R.string.text_original_poster);
+		STATE_TEXTS.put(R.attr.iconPostSage, R.string.text_sage_description);
+		STATE_TEXTS.put(R.attr.iconPostSticky, R.string.text_sticky_thread);
+		STATE_TEXTS.put(R.attr.iconPostClosed, R.string.text_closed_thread);
+		STATE_TEXTS.put(R.attr.iconPostCyclical, R.string.text_cyclical_thread);
+		STATE_TEXTS.put(R.attr.iconPostWarned, R.string.text_user_warned);
+		STATE_TEXTS.put(R.attr.iconPostBanned, R.string.text_user_banned);
 	}
 
 	private class AttachmentHolder {
@@ -942,6 +944,13 @@ public class ViewUnit {
 				thumbnail.applyRoundedCorners(cardView.getBackgroundColor());
 				ViewUtils.applyScaleSize(comment, subject, description);
 			} else {
+				if (C.API_LOLLIPOP) {
+					ColorStateList colors = ResourceUtils.getColorStateList(itemView.getContext(),
+							R.attr.colorPostSecondary);
+					for (ImageView imageView : Arrays.asList(stateSage, stateSticky, stateClosed)) {
+						imageView.setImageTintList(colors);
+					}
+				}
 				thumbnail.applyRoundedCorners(cardView.getBackgroundColor());
 				ViewGroup.MarginLayoutParams thumbnailLayoutParams =
 						(ViewGroup.MarginLayoutParams) thumbnail.getLayoutParams();
@@ -1038,6 +1047,10 @@ public class ViewUnit {
 				imageView.setImageDrawable(typedArray.getDrawable(i));
 				head.addView(imageView, anchorIndex + i, new ViewGroup.LayoutParams(size, size));
 				stateImages[i] = imageView;
+				if (C.API_LOLLIPOP) {
+					imageView.setImageTintList(ResourceUtils.getColorStateList(imageView.getContext(),
+							R.attr.colorPostSecondary));
+				}
 			}
 			typedArray.recycle();
 			attachments = itemView.findViewById(R.id.attachments);

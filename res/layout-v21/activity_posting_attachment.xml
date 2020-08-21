@@ -1,22 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<!--
-	Copyright 2014-2016 Fukurou Mishiranu
-
-	Licensed under the Apache License, Version 2.0 (the "License");
-	you may not use this file except in compliance with the License.
-	You may obtain a copy of the License at
-
-	http://www.apache.org/licenses/LICENSE-2.0
-
-	Unless required by applicable law or agreed to in writing, software
-	distributed under the License is distributed on an "AS IS" BASIS,
-	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	See the License for the specific language governing permissions and
-	limitations under the License.
--->
-
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="48dp"
 	android:layout_marginTop="4dp"
@@ -27,7 +12,8 @@
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:scaleType="centerCrop"
-		android:visibility="gone" />
+		android:visibility="gone"
+		tools:ignore="ContentDescription" />
 
 	<View
 		android:layout_width="match_parent"
@@ -46,15 +32,16 @@
 		android:layout_height="48dp"
 		android:layout_gravity="bottom"
 		android:orientation="horizontal"
-		android:paddingLeft="8dp">
+		android:paddingStart="8dp"
+		android:paddingEnd="0dp">
 
 		<LinearLayout
 			android:layout_width="0dp"
 			android:layout_height="match_parent"
 			android:layout_weight="1"
 			android:orientation="vertical"
-			android:paddingLeft="4dp"
-			android:paddingRight="8dp"
+			android:paddingStart="4dp"
+			android:paddingEnd="8dp"
 			android:gravity="center_vertical">
 
 			<TextView
@@ -83,20 +70,26 @@
 			android:layout_width="48dp"
 			android:layout_height="match_parent"
 			android:layout_gravity="center_vertical"
-			android:layout_marginRight="-8dp"
+			android:layout_marginEnd="-8dp"
 			style="?android:attr/borderlessButtonStyle"
 			android:scaleType="center"
-			android:src="?attr/buttonWarning" />
+			android:src="?attr/iconButtonWarning"
+			android:tint="?android:attr/textColorPrimary"
+			android:tintMode="src_in"
+			tools:ignore="ContentDescription" />
 
 		<ImageButton
 			android:id="@+id/attachment_rating"
 			android:layout_width="48dp"
 			android:layout_height="match_parent"
 			android:layout_gravity="center_vertical"
-			android:layout_marginRight="-8dp"
+			android:layout_marginEnd="-8dp"
 			style="?android:attr/borderlessButtonStyle"
 			android:scaleType="center"
-			android:src="?attr/buttonRating" />
+			android:src="?attr/iconButtonRating"
+			android:tint="?android:attr/textColorPrimary"
+			android:tintMode="src_in"
+			tools:ignore="ContentDescription" />
 
 		<ImageButton
 			android:id="@+id/attachment_remove"
@@ -105,7 +98,10 @@
 			android:layout_gravity="center_vertical"
 			style="?android:attr/borderlessButtonStyle"
 			android:scaleType="center"
-			android:src="?attr/buttonCancel" />
+			android:src="?attr/iconButtonCancel"
+			android:tint="?android:attr/textColorPrimary"
+			android:tintMode="src_in"
+			tools:ignore="ContentDescription" />
 
 	</LinearLayout>
 

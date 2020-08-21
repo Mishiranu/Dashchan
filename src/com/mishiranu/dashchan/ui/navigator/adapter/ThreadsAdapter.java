@@ -145,7 +145,11 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 				LinearLayout.LayoutParams.WRAP_CONTENT);
 		headerData[1].setPadding(0, (int) (2f * density), 0, (int) (2f * density));
 		headerExpandIcon = new ImageView(context);
-		headerExpandIcon.setImageResource(ResourceUtils.getResourceId(context, R.attr.buttonDropDown, 0));
+		headerExpandIcon.setImageResource(ResourceUtils.getResourceId(context, R.attr.iconButtonDropDown, 0));
+		if (C.API_LOLLIPOP) {
+			headerExpandIcon.setImageTintList(ResourceUtils.getColorStateList(context,
+					android.R.attr.textColorPrimary));
+		}
 		innerLayout.addView(headerExpandIcon, (int) (24f * density), (int) (24f * density));
 		LinearLayout.LayoutParams iconLayoutParams = (LinearLayout.LayoutParams) headerExpandIcon.getLayoutParams();
 		iconLayoutParams.gravity = Gravity.BOTTOM;

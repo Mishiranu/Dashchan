@@ -216,8 +216,7 @@ public class PostingService extends Service implements SendPostTask.Callback<Pos
 					builder.setSmallIcon(android.R.drawable.stat_sys_upload);
 					PendingIntent cancelIntent = PendingIntent.getBroadcast(this, 0, new Intent(this, Receiver.class)
 							.setAction(ACTION_CANCEL), PendingIntent.FLAG_UPDATE_CURRENT);
-					Context themedContext = new ContextThemeWrapper(this, R.style.Theme_Special_Notification);
-					builder.addAction(ResourceUtils.getResourceId(themedContext, R.attr.notificationCancel, 0),
+					builder.addAction(C.API_LOLLIPOP ? 0 : R.drawable.ic_action_cancel_dark,
 							getString(android.R.string.cancel), cancelIntent);
 					builder.setColor(notificationColor);
 					AndroidUtils.startAnyService(this, new Intent(this, PostingService.class));

@@ -80,7 +80,7 @@ public class AttachmentView extends View {
 		this.sfwMode = sfwMode;
 	}
 
-	public enum Overlay {NONE, SEVERAL, AUDIO, VIDEO, FILE, WARNING}
+	public enum Overlay {NONE, MULTIPLE, AUDIO, VIDEO, FILE, WARNING}
 
 	private String key;
 	private Bitmap bitmap;
@@ -107,27 +107,27 @@ public class AttachmentView extends View {
 			int overlayAttrId = 0;
 			boolean keepOverlayOnError = false;
 			switch (overlay) {
-				case SEVERAL: {
-					overlayAttrId = R.attr.attachmentSeveral;
+				case MULTIPLE: {
+					overlayAttrId = R.attr.iconAttachmentMultiple;
 					keepOverlayOnError = true;
 					break;
 				}
 				case AUDIO: {
-					overlayAttrId = R.attr.attachmentAudio;
+					overlayAttrId = R.attr.iconAttachmentAudio;
 					keepOverlayOnError = true;
 					break;
 				}
 				case VIDEO: {
-					overlayAttrId = R.attr.attachmentVideo;
+					overlayAttrId = R.attr.iconAttachmentVideo;
 					break;
 				}
 				case FILE: {
-					overlayAttrId = R.attr.attachmentFile;
+					overlayAttrId = R.attr.iconAttachmentFile;
 					keepOverlayOnError = true;
 					break;
 				}
 				case WARNING: {
-					overlayAttrId = R.attr.attachmentWarning;
+					overlayAttrId = R.attr.iconAttachmentWarning;
 					keepOverlayOnError = true;
 					break;
 				}
@@ -281,7 +281,7 @@ public class AttachmentView extends View {
 		Drawable overlayDrawable = this.overlayDrawable;
 		if (error && !keepOverlayOnError) {
 			if (errorOverlayDrawable == null) {
-				errorOverlayDrawable = ResourceUtils.getDrawable(getContext(), R.attr.attachmentWarning, 0);
+				errorOverlayDrawable = ResourceUtils.getDrawable(getContext(), R.attr.iconAttachmentWarning, 0);
 			}
 			overlayDrawable = errorOverlayDrawable;
 		}

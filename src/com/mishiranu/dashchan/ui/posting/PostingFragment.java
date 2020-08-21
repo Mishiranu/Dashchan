@@ -724,7 +724,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 	@Override
 	public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
 		ActionIconSet set = new ActionIconSet(requireContext());
-		menu.add(0, OPTIONS_MENU_ATTACH, 0, R.string.action_attach).setIcon(set.getId(R.attr.actionAttach))
+		menu.add(0, OPTIONS_MENU_ATTACH, 0, R.string.action_attach).setIcon(set.getId(R.attr.iconActionAttach))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 	}
 

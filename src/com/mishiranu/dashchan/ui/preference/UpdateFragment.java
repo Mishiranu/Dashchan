@@ -303,7 +303,7 @@ public class UpdateFragment extends BaseListFragment {
 		if (length > 0) {
 			downloadTitle += ", " + length / 1024 + " KB";
 		}
-		menu.add(0, OPTIONS_MENU_DOWNLOAD, 0, downloadTitle).setIcon(set.getId(R.attr.actionDownload))
+		menu.add(0, OPTIONS_MENU_DOWNLOAD, 0, downloadTitle).setIcon(set.getId(R.attr.iconActionDownload))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 		menu.add(0, OPTIONS_CHECK_ON_START, 0, R.string.action_check_on_startup).setCheckable(true);
 	}

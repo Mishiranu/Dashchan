@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
-import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -21,7 +20,6 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.mishiranu.dashchan.C;
-import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
@@ -456,7 +454,7 @@ public abstract class PreferenceFragment extends Fragment {
 				float density = ResourceUtils.obtainDensity(parent);
 				ImageView icon = new ImageView(viewHolder.view.getContext());
 				icon.setImageTintList(ColorStateList.valueOf(ResourceUtils
-						.getColor(viewHolder.view.getContext(), R.attr.drawerIconColor)));
+						.getColor(viewHolder.view.getContext(), android.R.attr.textColorSecondary)));
 				LinearLayout.LayoutParams layoutParams = new LinearLayout
 						.LayoutParams((int) (24f * density), (int) (24f * density));
 				layoutParams.setMarginEnd((int) (32f * density));

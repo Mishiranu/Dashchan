@@ -470,13 +470,13 @@ public abstract class AttachmentItem {
 		}
 	}
 
-	public void configureAndLoad(AttachmentView view, boolean needShowSeveralIcon, boolean force) {
+	public void configureAndLoad(AttachmentView view, boolean needShowMultipleIcon, boolean force) {
 		view.setCropEnabled(Preferences.isCutThumbnails());
 		int type = getType();
 		String key = getThumbnailKey();
 		AttachmentView.Overlay overlay = AttachmentView.Overlay.NONE;
-		if (needShowSeveralIcon) {
-			overlay = AttachmentView.Overlay.SEVERAL;
+		if (needShowMultipleIcon) {
+			overlay = AttachmentView.Overlay.MULTIPLE;
 		} else {
 			switch (type) {
 				case TYPE_IMAGE: {

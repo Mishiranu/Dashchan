@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:android="http://schemas.android.com/apk/res/android">
+<resources
+	xmlns:android="http://schemas.android.com/apk/res/android">
 
 	<style name="Widget.Special.Main.Light.ActionBar" parent="@android:style/Widget.Material.Light.ActionBar.Solid">
 
@@ -33,56 +34,53 @@
 		<item name="android:colorEdgeEffect">?android:attr/colorAccent</item>
 		<item name="android:textColorHighlight">@color/color_selection_light</item>
 
-		<item name="actionAttach">@drawable/ic_attach_file_white_edited</item>
-		<item name="actionAddPost">@drawable/ic_edit_white</item>
-		<item name="actionAddRule">@drawable/ic_playlist_add_white</item>
-		<item name="actionAddToFavorites">@drawable/ic_star_outline_white</item>
-		<item name="actionBack">@drawable/ic_arrow_back_white</item>
-		<item name="actionDelete">@drawable/ic_delete_white</item>
-		<item name="actionDownload">@drawable/ic_file_download_white</item>
-		<item name="actionForward">@drawable/ic_arrow_forward_white</item>
-		<item name="actionMakeThreadshot">@drawable/ic_camera_alt_white</item>
-		<item name="actionRefresh">@drawable/ic_refresh_white</item>
-		<item name="actionReport">@drawable/ic_warning_white</item>
-		<item name="actionRemoveFromFavorites">@drawable/ic_star_white</item>
-		<item name="actionSave">@drawable/ic_save_white</item>
-		<item name="actionSearch">@drawable/ic_search_white</item>
-		<item name="actionSelect">@drawable/ic_custom_select_white</item>
-		<item name="actionVolumeOff">@drawable/ic_volume_off_white</item>
+		<item name="iconActionAttach">@drawable/ic_attach_file_edited</item>
+		<item name="iconActionAddPost">@drawable/ic_edit</item>
+		<item name="iconActionAddRule">@drawable/ic_playlist_add</item>
+		<item name="iconActionAddToFavorites">@drawable/ic_star_outline</item>
+		<item name="iconActionBack">@drawable/ic_arrow_back</item>
+		<item name="iconActionDelete">@drawable/ic_delete</item>
+		<item name="iconActionDownload">@drawable/ic_file_download</item>
+		<item name="iconActionForward">@drawable/ic_arrow_forward</item>
+		<item name="iconActionMakeThreadshot">@drawable/ic_camera_alt</item>
+		<item name="iconActionRefresh">@drawable/ic_refresh</item>
+		<item name="iconActionReport">@drawable/ic_warning</item>
+		<item name="iconActionRemoveFromFavorites">@drawable/ic_star</item>
+		<item name="iconActionSave">@drawable/ic_save</item>
+		<item name="iconActionSearch">@drawable/ic_search</item>
+		<item name="iconActionSelect">@drawable/ic_custom_select</item>
+		<item name="iconActionVolumeOff">@drawable/ic_volume_off</item>
 
-		<item name="buttonCancel">@drawable/ic_close_black</item>
-		<item name="buttonDropDown">@drawable/ic_arrow_drop_down_black</item>
-		<item name="buttonForward">@drawable/ic_arrow_forward_black</item>
-		<item name="buttonMore">@drawable/ic_custom_diamond_dot_black</item>
-		<item name="buttonPause">@drawable/ic_pause_black</item>
-		<item name="buttonPlay">@drawable/ic_play_arrow_black</item>
-		<item name="buttonRating">@drawable/ic_flag_black</item>
-		<item name="buttonRefresh">@drawable/ic_refresh_black</item>
-		<item name="buttonWarning">@drawable/ic_warning_black</item>
+		<item name="iconButtonCancel">@drawable/ic_close</item>
+		<item name="iconButtonDropDown">@drawable/ic_arrow_drop_down</item>
+		<item name="iconButtonForward">@drawable/ic_arrow_forward</item>
+		<item name="iconButtonMore">@drawable/ic_custom_diamond_dot</item>
+		<item name="iconButtonPause">@drawable/ic_pause</item>
+		<item name="iconButtonPlay">@drawable/ic_play_arrow</item>
+		<item name="iconButtonRating">@drawable/ic_flag</item>
+		<item name="iconButtonRefresh">@drawable/ic_refresh</item>
+		<item name="iconButtonWarning">@drawable/ic_warning</item>
 
-		<item name="iconWarning">@drawable/ic_warning_black_a8c</item>
+		<item name="iconPostBanned">@drawable/ic_error</item>
+		<item name="iconPostClosed">@drawable/ic_lock</item>
+		<item name="iconPostCyclical">@drawable/ic_refresh_c20</item>
+		<item name="iconPostEmail">@drawable/ic_email</item>
+		<item name="iconPostOriginalPoster">@drawable/ic_person_c20</item>
+		<item name="iconPostSage">@drawable/ic_send_edited</item>
+		<item name="iconPostSticky">@drawable/ic_custom_post_pin</item>
+		<item name="iconPostUserPost">@drawable/ic_star_c20</item>
+		<item name="iconPostWarned">@drawable/ic_warning</item>
 
-		<item name="postBanned">@drawable/ic_error_black_aa8</item>
-		<item name="postClosed">@drawable/ic_lock_black_aa8</item>
-		<item name="postCyclical">@drawable/ic_refresh_black_c20_aa8</item>
-		<item name="postEmail">@drawable/ic_email_black_aa8</item>
-		<item name="postOriginalPoster">@drawable/ic_person_black_c20_aa8</item>
-		<item name="postSage">@drawable/ic_send_black_edited_aa8</item>
-		<item name="postSticky">@drawable/ic_action_make_available_offline_black_edited_a88</item>
-		<item name="postUserPost">@drawable/ic_star_black_c20_aa8</item>
-		<item name="postWarned">@drawable/ic_warning_black_aa8</item>
+		<item name="iconAttachmentAudio">@drawable/ic_headset</item>
+		<item name="iconAttachmentFile">@drawable/ic_insert_drive_file</item>
+		<item name="iconAttachmentMultiple">@drawable/ic_fullscreen</item>
+		<item name="iconAttachmentVideo">@drawable/ic_play_circle_outline</item>
+		<item name="iconAttachmentWarning">@drawable/ic_warning</item>
 
-		<item name="attachmentAudio">@drawable/ic_headset_white</item>
-		<item name="attachmentFile">@drawable/ic_insert_drive_file_white</item>
-		<item name="attachmentSeveral">@drawable/ic_fullscreen_white</item>
-		<item name="attachmentVideo">@drawable/ic_play_circle_outline_white</item>
-		<item name="attachmentWarning">@drawable/ic_warning_white</item>
-
-		<item name="drawerIconColor">#8a000000</item>
-		<item name="drawerMenuBoards">@drawable/ic_local_offer</item>
-		<item name="drawerMenuUserBoards">@drawable/ic_group</item>
-		<item name="drawerMenuHistory">@drawable/ic_history</item>
-		<item name="drawerMenuPreferences">@drawable/ic_settings</item>
+		<item name="iconDrawerMenuBoards">@drawable/ic_local_offer</item>
+		<item name="iconDrawerMenuUserBoards">@drawable/ic_group</item>
+		<item name="iconDrawerMenuHistory">@drawable/ic_history</item>
+		<item name="iconDrawerMenuPreferences">@drawable/ic_settings</item>
 
 	</style>
 
@@ -94,56 +92,53 @@
 		<item name="android:colorEdgeEffect">?android:attr/colorAccent</item>
 		<item name="android:textColorHighlight">@color/color_selection_dark</item>
 
-		<item name="actionAttach">@drawable/ic_attach_file_white_edited</item>
-		<item name="actionAddPost">@drawable/ic_edit_white</item>
-		<item name="actionAddRule">@drawable/ic_playlist_add_white</item>
-		<item name="actionAddToFavorites">@drawable/ic_star_outline_white</item>
-		<item name="actionBack">@drawable/ic_arrow_back_white</item>
-		<item name="actionDelete">@drawable/ic_delete_white</item>
-		<item name="actionDownload">@drawable/ic_file_download_white</item>
-		<item name="actionForward">@drawable/ic_arrow_forward_white</item>
-		<item name="actionMakeThreadshot">@drawable/ic_camera_alt_white</item>
-		<item name="actionRefresh">@drawable/ic_refresh_white</item>
-		<item name="actionReport">@drawable/ic_warning_white</item>
-		<item name="actionRemoveFromFavorites">@drawable/ic_star_white</item>
-		<item name="actionSave">@drawable/ic_save_white</item>
-		<item name="actionSearch">@drawable/ic_search_white</item>
-		<item name="actionSelect">@drawable/ic_custom_select_white</item>
-		<item name="actionVolumeOff">@drawable/ic_volume_off_white</item>
+		<item name="iconActionAttach">@drawable/ic_attach_file_edited</item>
+		<item name="iconActionAddPost">@drawable/ic_edit</item>
+		<item name="iconActionAddRule">@drawable/ic_playlist_add</item>
+		<item name="iconActionAddToFavorites">@drawable/ic_star_outline</item>
+		<item name="iconActionBack">@drawable/ic_arrow_back</item>
+		<item name="iconActionDelete">@drawable/ic_delete</item>
+		<item name="iconActionDownload">@drawable/ic_file_download</item>
+		<item name="iconActionForward">@drawable/ic_arrow_forward</item>
+		<item name="iconActionMakeThreadshot">@drawable/ic_camera_alt</item>
+		<item name="iconActionRefresh">@drawable/ic_refresh</item>
+		<item name="iconActionReport">@drawable/ic_warning</item>
+		<item name="iconActionRemoveFromFavorites">@drawable/ic_star</item>
+		<item name="iconActionSave">@drawable/ic_save</item>
+		<item name="iconActionSearch">@drawable/ic_search</item>
+		<item name="iconActionSelect">@drawable/ic_custom_select</item>
+		<item name="iconActionVolumeOff">@drawable/ic_volume_off</item>
 
-		<item name="buttonCancel">@drawable/ic_close_white</item>
-		<item name="buttonDropDown">@drawable/ic_arrow_drop_down_white</item>
-		<item name="buttonForward">@drawable/ic_arrow_forward_white</item>
-		<item name="buttonMore">@drawable/ic_custom_diamond_dot_white</item>
-		<item name="buttonPause">@drawable/ic_pause_white</item>
-		<item name="buttonPlay">@drawable/ic_play_arrow_white</item>
-		<item name="buttonRating">@drawable/ic_flag_white</item>
-		<item name="buttonRefresh">@drawable/ic_refresh_white</item>
-		<item name="buttonWarning">@drawable/ic_warning_white</item>
+		<item name="iconButtonCancel">@drawable/ic_close</item>
+		<item name="iconButtonDropDown">@drawable/ic_arrow_drop_down</item>
+		<item name="iconButtonForward">@drawable/ic_arrow_forward</item>
+		<item name="iconButtonMore">@drawable/ic_custom_diamond_dot</item>
+		<item name="iconButtonPause">@drawable/ic_pause</item>
+		<item name="iconButtonPlay">@drawable/ic_play_arrow</item>
+		<item name="iconButtonRating">@drawable/ic_flag</item>
+		<item name="iconButtonRefresh">@drawable/ic_refresh</item>
+		<item name="iconButtonWarning">@drawable/ic_warning</item>
 
-		<item name="iconWarning">@drawable/ic_warning_white_ab5</item>
+		<item name="iconPostBanned">@drawable/ic_error</item>
+		<item name="iconPostClosed">@drawable/ic_lock</item>
+		<item name="iconPostCyclical">@drawable/ic_refresh_c20</item>
+		<item name="iconPostEmail">@drawable/ic_email</item>
+		<item name="iconPostOriginalPoster">@drawable/ic_person_c20</item>
+		<item name="iconPostSage">@drawable/ic_send_edited</item>
+		<item name="iconPostSticky">@drawable/ic_custom_post_pin</item>
+		<item name="iconPostUserPost">@drawable/ic_star_c20</item>
+		<item name="iconPostWarned">@drawable/ic_warning</item>
 
-		<item name="postBanned">@drawable/ic_error_white_a99</item>
-		<item name="postClosed">@drawable/ic_lock_white_a99</item>
-		<item name="postCyclical">@drawable/ic_refresh_white_c20_a99</item>
-		<item name="postEmail">@drawable/ic_email_white_a99</item>
-		<item name="postOriginalPoster">@drawable/ic_person_white_c20_a99</item>
-		<item name="postSage">@drawable/ic_send_white_edited_a99</item>
-		<item name="postSticky">@drawable/ic_action_make_available_offline_white_edited_a99</item>
-		<item name="postUserPost">@drawable/ic_star_white_c20_a99</item>
-		<item name="postWarned">@drawable/ic_warning_white_a99</item>
+		<item name="iconAttachmentAudio">@drawable/ic_headset</item>
+		<item name="iconAttachmentFile">@drawable/ic_insert_drive_file</item>
+		<item name="iconAttachmentMultiple">@drawable/ic_fullscreen</item>
+		<item name="iconAttachmentVideo">@drawable/ic_play_circle_outline</item>
+		<item name="iconAttachmentWarning">@drawable/ic_warning</item>
 
-		<item name="attachmentAudio">@drawable/ic_headset_white</item>
-		<item name="attachmentFile">@drawable/ic_insert_drive_file_white</item>
-		<item name="attachmentSeveral">@drawable/ic_fullscreen_white</item>
-		<item name="attachmentVideo">@drawable/ic_play_circle_outline_white</item>
-		<item name="attachmentWarning">@drawable/ic_warning_white</item>
-
-		<item name="drawerIconColor">#a8ffffff</item>
-		<item name="drawerMenuBoards">@drawable/ic_local_offer</item>
-		<item name="drawerMenuUserBoards">@drawable/ic_group</item>
-		<item name="drawerMenuHistory">@drawable/ic_history</item>
-		<item name="drawerMenuPreferences">@drawable/ic_settings</item>
+		<item name="iconDrawerMenuBoards">@drawable/ic_local_offer</item>
+		<item name="iconDrawerMenuUserBoards">@drawable/ic_group</item>
+		<item name="iconDrawerMenuHistory">@drawable/ic_history</item>
+		<item name="iconDrawerMenuPreferences">@drawable/ic_settings</item>
 
 	</style>
 
@@ -408,15 +403,6 @@
 	<style name="Widget.OverlapPopupMenu" parent="@android:style/Widget.Material.PopupMenu">
 
 		<item name="android:overlapAnchor">true</item>
-
-	</style>
-
-	<style name="Theme.Special.Notification" parent="@android:style/Theme.Material.Light">
-
-		<item name="notificationCancel">@drawable/ic_close_grey</item>
-		<item name="notificationRefresh">@drawable/ic_refresh_grey</item>
-		<item name="notificationPlay">@drawable/ic_play_arrow_grey</item>
-		<item name="notificationPause">@drawable/ic_pause_grey</item>
 
 	</style>
 

@@ -406,7 +406,7 @@ public class VideoUnit {
 					set = new ActionIconSet(context);
 				}
 				ImageView imageView = new ImageView(context);
-				imageView.setImageResource(set.getId(R.attr.actionVolumeOff));
+				imageView.setImageResource(set.getId(R.attr.iconActionVolumeOff));
 				imageView.setScaleType(ImageView.ScaleType.CENTER);
 				if (C.API_LOLLIPOP) {
 					imageView.setImageAlpha(0x99);
@@ -500,8 +500,9 @@ public class VideoUnit {
 	private void updatePlayState() {
 		if (player != null) {
 			boolean playing = player.isPlaying();
-			playPauseButton.setImageResource(ResourceUtils.getResourceId(instance.galleryInstance.context,
-					finishedPlayback ? R.attr.buttonRefresh : playing ? R.attr.buttonPause : R.attr.buttonPlay, 0));
+			playPauseButton.setImageResource(ResourceUtils
+					.getResourceId(instance.galleryInstance.context, finishedPlayback ? R.attr.iconButtonRefresh
+							: playing ? R.attr.iconButtonPause : R.attr.iconButtonPlay, 0));
 			instance.galleryInstance.callback.setScreenOnFixed(!finishedPlayback && playing);
 		}
 	}

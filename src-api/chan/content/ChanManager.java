@@ -741,7 +741,7 @@ public class ChanManager {
 			Extension extension = extensions.get(chanName);
 			Drawable drawable = extension != null && extension.chanHolder != null ? extension.chanHolder.icon : null;
 			if (drawable == null) {
-				drawable = MainApplication.getInstance().getDrawable(R.drawable.ic_extension_white);
+				drawable = MainApplication.getInstance().getDrawable(R.drawable.ic_extension);
 			}
 			return new ChanIconDrawable(drawable.getConstantState().newDrawable().mutate());
 		}

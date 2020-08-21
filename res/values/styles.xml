@@ -1,111 +1,108 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:android="http://schemas.android.com/apk/res/android">
+<resources
+	xmlns:android="http://schemas.android.com/apk/res/android">
 
 	<style name="Theme.Special.Main.Light" parent="@android:style/Theme.Holo.Light.DarkActionBar">
 
-		<item name="actionAttach">@drawable/ic_action_new_attachment_dark</item>
-		<item name="actionAddPost">@drawable/ic_action_chat_dark</item>
-		<item name="actionAddRule">@drawable/ic_action_new_event_dark</item>
-		<item name="actionAddToFavorites">@drawable/ic_action_not_important_dark</item>
-		<item name="actionBack">@drawable/ic_action_back_dark</item>
-		<item name="actionDelete">@drawable/ic_action_discard_dark</item>
-		<item name="actionDownload">@drawable/ic_action_download_dark</item>
-		<item name="actionForward">@drawable/ic_action_forward_dark</item>
-		<item name="actionMakeThreadshot">@drawable/ic_action_camera_dark</item>
-		<item name="actionRefresh">@drawable/ic_action_refresh_dark</item>
-		<item name="actionReport">@drawable/ic_action_warning_dark</item>
-		<item name="actionRemoveFromFavorites">@drawable/ic_action_important_dark</item>
-		<item name="actionSave">@drawable/ic_action_save_dark</item>
-		<item name="actionSearch">@drawable/ic_action_search_dark</item>
-		<item name="actionSelect">@drawable/ic_action_view_as_grid</item>
-		<item name="actionVolumeOff">@drawable/ic_action_volume_muted</item>
+		<item name="iconActionAttach">@drawable/ic_action_new_attachment_dark</item>
+		<item name="iconActionAddPost">@drawable/ic_action_chat_dark</item>
+		<item name="iconActionAddRule">@drawable/ic_action_new_event_dark</item>
+		<item name="iconActionAddToFavorites">@drawable/ic_action_not_important_dark</item>
+		<item name="iconActionBack">@drawable/ic_action_back_dark</item>
+		<item name="iconActionDelete">@drawable/ic_action_discard_dark</item>
+		<item name="iconActionDownload">@drawable/ic_action_download_dark</item>
+		<item name="iconActionForward">@drawable/ic_action_forward_dark</item>
+		<item name="iconActionMakeThreadshot">@drawable/ic_action_camera_dark</item>
+		<item name="iconActionRefresh">@drawable/ic_action_refresh_dark</item>
+		<item name="iconActionReport">@drawable/ic_action_warning_dark</item>
+		<item name="iconActionRemoveFromFavorites">@drawable/ic_action_important_dark</item>
+		<item name="iconActionSave">@drawable/ic_action_save_dark</item>
+		<item name="iconActionSearch">@drawable/ic_action_search_dark</item>
+		<item name="iconActionSelect">@drawable/ic_action_view_as_grid</item>
+		<item name="iconActionVolumeOff">@drawable/ic_action_volume_muted</item>
 
-		<item name="buttonCancel">@drawable/ic_action_cancel_light</item>
-		<item name="buttonDropDown">@drawable/ic_action_expand_light</item>
-		<item name="buttonForward">@drawable/ic_action_forward_light</item>
-		<item name="buttonMore">@drawable/ic_action_expand_light</item>
-		<item name="buttonPause">@drawable/ic_action_pause_light</item>
-		<item name="buttonPlay">@drawable/ic_action_play_light</item>
-		<item name="buttonRating">@drawable/ic_action_warning_light</item>
-		<item name="buttonRefresh">@drawable/ic_action_refresh_light</item>
-		<item name="buttonWarning">@drawable/ic_action_warning_light</item>
+		<item name="iconButtonCancel">@drawable/ic_action_cancel_light</item>
+		<item name="iconButtonDropDown">@drawable/ic_action_expand_light</item>
+		<item name="iconButtonForward">@drawable/ic_action_forward_light</item>
+		<item name="iconButtonMore">@drawable/ic_action_expand_light</item>
+		<item name="iconButtonPause">@drawable/ic_action_pause_light</item>
+		<item name="iconButtonPlay">@drawable/ic_action_play_light</item>
+		<item name="iconButtonRating">@drawable/ic_action_warning_light</item>
+		<item name="iconButtonRefresh">@drawable/ic_action_refresh_light</item>
+		<item name="iconButtonWarning">@drawable/ic_action_warning_light</item>
 
-		<item name="iconWarning">@drawable/ic_action_warning_light</item>
+		<item name="iconPostBanned">@drawable/ic_action_error_light_edited</item>
+		<item name="iconPostClosed">@drawable/ic_action_secure_light_edited</item>
+		<item name="iconPostCyclical">@drawable/ic_action_refresh_light_edited</item>
+		<item name="iconPostEmail">@drawable/ic_action_email_light_edited</item>
+		<item name="iconPostOriginalPoster">@drawable/ic_action_person_light_edited</item>
+		<item name="iconPostSage">@drawable/ic_action_send_now_light_edited</item>
+		<item name="iconPostSticky">@drawable/ic_action_make_available_offline_light_edited</item>
+		<item name="iconPostUserPost">@drawable/ic_action_important_light_edited</item>
+		<item name="iconPostWarned">@drawable/ic_action_warning_light_edited</item>
 
-		<item name="postBanned">@drawable/ic_action_error_light_edited</item>
-		<item name="postClosed">@drawable/ic_action_secure_light_edited</item>
-		<item name="postCyclical">@drawable/ic_action_refresh_light_edited</item>
-		<item name="postEmail">@drawable/ic_action_email_light_edited</item>
-		<item name="postOriginalPoster">@drawable/ic_action_person_light_edited</item>
-		<item name="postSage">@drawable/ic_action_send_now_light_edited</item>
-		<item name="postSticky">@drawable/ic_action_make_available_offline_light_edited</item>
-		<item name="postUserPost">@drawable/ic_action_important_light_edited</item>
-		<item name="postWarned">@drawable/ic_action_warning_light_edited</item>
+		<item name="iconAttachmentAudio">@drawable/ic_action_audio_dark</item>
+		<item name="iconAttachmentFile">@drawable/ic_action_attachment_dark</item>
+		<item name="iconAttachmentMultiple">@drawable/ic_action_full_screen_dark</item>
+		<item name="iconAttachmentVideo">@drawable/ic_action_play_over_video_dark</item>
+		<item name="iconAttachmentWarning">@drawable/ic_action_warning_dark</item>
 
-		<item name="attachmentAudio">@drawable/ic_action_audio_dark</item>
-		<item name="attachmentFile">@drawable/ic_action_attachment_dark</item>
-		<item name="attachmentSeveral">@drawable/ic_action_full_screen_dark</item>
-		<item name="attachmentVideo">@drawable/ic_action_play_over_video_dark</item>
-		<item name="attachmentWarning">@drawable/ic_action_warning_dark</item>
-
-		<item name="drawerMenuBoards">@drawable/ic_action_labels_dark</item>
-		<item name="drawerMenuUserBoards">@drawable/ic_action_group_dark</item>
-		<item name="drawerMenuHistory">@drawable/ic_action_history_dark</item>
-		<item name="drawerMenuPreferences">@drawable/ic_action_settings_dark</item>
+		<item name="iconDrawerMenuBoards">@drawable/ic_action_labels_dark</item>
+		<item name="iconDrawerMenuUserBoards">@drawable/ic_action_group_dark</item>
+		<item name="iconDrawerMenuHistory">@drawable/ic_action_history_dark</item>
+		<item name="iconDrawerMenuPreferences">@drawable/ic_action_settings_dark</item>
 
 	</style>
 
 	<style name="Theme.Special.Main.Dark" parent="@android:style/Theme.Holo">
 
-		<item name="actionAttach">@drawable/ic_action_new_attachment_dark</item>
-		<item name="actionAddPost">@drawable/ic_action_chat_dark</item>
-		<item name="actionAddRule">@drawable/ic_action_new_event_dark</item>
-		<item name="actionAddToFavorites">@drawable/ic_action_not_important_dark</item>
-		<item name="actionBack">@drawable/ic_action_back_dark</item>
-		<item name="actionDelete">@drawable/ic_action_discard_dark</item>
-		<item name="actionDownload">@drawable/ic_action_download_dark</item>
-		<item name="actionForward">@drawable/ic_action_forward_dark</item>
-		<item name="actionMakeThreadshot">@drawable/ic_action_camera_dark</item>
-		<item name="actionRefresh">@drawable/ic_action_refresh_dark</item>
-		<item name="actionReport">@drawable/ic_action_warning_dark</item>
-		<item name="actionRemoveFromFavorites">@drawable/ic_action_important_dark</item>
-		<item name="actionSave">@drawable/ic_action_save_dark</item>
-		<item name="actionSearch">@drawable/ic_action_search_dark</item>
-		<item name="actionSelect">@drawable/ic_action_view_as_grid</item>
-		<item name="actionVolumeOff">@drawable/ic_action_volume_muted</item>
+		<item name="iconActionAttach">@drawable/ic_action_new_attachment_dark</item>
+		<item name="iconActionAddPost">@drawable/ic_action_chat_dark</item>
+		<item name="iconActionAddRule">@drawable/ic_action_new_event_dark</item>
+		<item name="iconActionAddToFavorites">@drawable/ic_action_not_important_dark</item>
+		<item name="iconActionBack">@drawable/ic_action_back_dark</item>
+		<item name="iconActionDelete">@drawable/ic_action_discard_dark</item>
+		<item name="iconActionDownload">@drawable/ic_action_download_dark</item>
+		<item name="iconActionForward">@drawable/ic_action_forward_dark</item>
+		<item name="iconActionMakeThreadshot">@drawable/ic_action_camera_dark</item>
+		<item name="iconActionRefresh">@drawable/ic_action_refresh_dark</item>
+		<item name="iconActionReport">@drawable/ic_action_warning_dark</item>
+		<item name="iconActionRemoveFromFavorites">@drawable/ic_action_important_dark</item>
+		<item name="iconActionSave">@drawable/ic_action_save_dark</item>
+		<item name="iconActionSearch">@drawable/ic_action_search_dark</item>
+		<item name="iconActionSelect">@drawable/ic_action_view_as_grid</item>
+		<item name="iconActionVolumeOff">@drawable/ic_action_volume_muted</item>
 
-		<item name="buttonCancel">@drawable/ic_action_cancel_dark</item>
-		<item name="buttonDropDown">@drawable/ic_action_expand_dark</item>
-		<item name="buttonForward">@drawable/ic_action_forward_dark</item>
-		<item name="buttonMore">@drawable/ic_action_expand_dark</item>
-		<item name="buttonPause">@drawable/ic_action_pause_dark</item>
-		<item name="buttonPlay">@drawable/ic_action_play_dark</item>
-		<item name="buttonRating">@drawable/ic_action_warning_dark</item>
-		<item name="buttonRefresh">@drawable/ic_action_refresh_dark</item>
-		<item name="buttonWarning">@drawable/ic_action_warning_dark</item>
+		<item name="iconButtonCancel">@drawable/ic_action_cancel_dark</item>
+		<item name="iconButtonDropDown">@drawable/ic_action_expand_dark</item>
+		<item name="iconButtonForward">@drawable/ic_action_forward_dark</item>
+		<item name="iconButtonMore">@drawable/ic_action_expand_dark</item>
+		<item name="iconButtonPause">@drawable/ic_action_pause_dark</item>
+		<item name="iconButtonPlay">@drawable/ic_action_play_dark</item>
+		<item name="iconButtonRating">@drawable/ic_action_warning_dark</item>
+		<item name="iconButtonRefresh">@drawable/ic_action_refresh_dark</item>
+		<item name="iconButtonWarning">@drawable/ic_action_warning_dark</item>
 
-		<item name="iconWarning">@drawable/ic_action_warning_dark</item>
+		<item name="iconPostBanned">@drawable/ic_action_error_dark_edited</item>
+		<item name="iconPostClosed">@drawable/ic_action_secure_dark_edited</item>
+		<item name="iconPostCyclical">@drawable/ic_action_refresh_dark_edited</item>
+		<item name="iconPostEmail">@drawable/ic_action_email_dark_edited</item>
+		<item name="iconPostOriginalPoster">@drawable/ic_action_person_dark_edited</item>
+		<item name="iconPostSage">@drawable/ic_action_send_now_dark_edited</item>
+		<item name="iconPostSticky">@drawable/ic_action_make_available_offline_dark_edited</item>
+		<item name="iconPostUserPost">@drawable/ic_action_important_dark_edited</item>
+		<item name="iconPostWarned">@drawable/ic_action_warning_dark_edited</item>
 
-		<item name="postBanned">@drawable/ic_action_error_dark_edited</item>
-		<item name="postClosed">@drawable/ic_action_secure_dark_edited</item>
-		<item name="postCyclical">@drawable/ic_action_refresh_dark_edited</item>
-		<item name="postEmail">@drawable/ic_action_email_dark_edited</item>
-		<item name="postOriginalPoster">@drawable/ic_action_person_dark_edited</item>
-		<item name="postSage">@drawable/ic_action_send_now_dark_edited</item>
-		<item name="postSticky">@drawable/ic_action_make_available_offline_dark_edited</item>
-		<item name="postUserPost">@drawable/ic_action_important_dark_edited</item>
-		<item name="postWarned">@drawable/ic_action_warning_dark_edited</item>
+		<item name="iconAttachmentAudio">@drawable/ic_action_audio_dark</item>
+		<item name="iconAttachmentFile">@drawable/ic_action_attachment_dark</item>
+		<item name="iconAttachmentMultiple">@drawable/ic_action_full_screen_dark</item>
+		<item name="iconAttachmentVideo">@drawable/ic_action_play_over_video_dark</item>
+		<item name="iconAttachmentWarning">@drawable/ic_action_warning_dark</item>
 
-		<item name="attachmentAudio">@drawable/ic_action_audio_dark</item>
-		<item name="attachmentFile">@drawable/ic_action_attachment_dark</item>
-		<item name="attachmentSeveral">@drawable/ic_action_full_screen_dark</item>
-		<item name="attachmentVideo">@drawable/ic_action_play_over_video_dark</item>
-		<item name="attachmentWarning">@drawable/ic_action_warning_dark</item>
-
-		<item name="drawerMenuBoards">@drawable/ic_action_labels_dark</item>
-		<item name="drawerMenuUserBoards">@drawable/ic_action_group_dark</item>
-		<item name="drawerMenuHistory">@drawable/ic_action_history_dark</item>
-		<item name="drawerMenuPreferences">@drawable/ic_action_settings_dark</item>
+		<item name="iconDrawerMenuBoards">@drawable/ic_action_labels_dark</item>
+		<item name="iconDrawerMenuUserBoards">@drawable/ic_action_group_dark</item>
+		<item name="iconDrawerMenuHistory">@drawable/ic_action_history_dark</item>
+		<item name="iconDrawerMenuPreferences">@drawable/ic_action_settings_dark</item>
 
 	</style>
 
@@ -342,15 +339,6 @@
 	<style name="Widget.Gallery.ActionBar" parent="@android:style/Widget.Holo.ActionBar">
 
 		<item name="android:background">@android:color/transparent</item>
-
-	</style>
-
-	<style name="Theme.Special.Notification" parent="@android:style/Theme.Holo">
-
-		<item name="notificationCancel">@drawable/ic_action_cancel_dark</item>
-		<item name="notificationRefresh">@drawable/ic_action_refresh_dark</item>
-		<item name="notificationPlay">@drawable/ic_action_play_dark</item>
-		<item name="notificationPause">@drawable/ic_action_pause_dark</item>
 
 	</style>
 

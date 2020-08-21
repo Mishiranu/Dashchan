@@ -152,7 +152,7 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback, Read
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu) {
-		menu.add(0, OPTIONS_MENU_SEARCH, 0, R.string.action_search).setIcon(obtainIcon(R.attr.actionSearch))
+		menu.add(0, OPTIONS_MENU_SEARCH, 0, R.string.action_search).setIcon(obtainIcon(R.attr.iconActionSearch))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
 		menu.add(0, OPTIONS_MENU_REFRESH, 0, R.string.action_refresh);
 		menu.add(0, OPTIONS_MENU_GROUP, 0, R.string.action_group).setCheckable(true);

@@ -209,7 +209,7 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 		});
 		recyclerView.setItemAnimator(null);
 		sortableHelper = new SortableHelper<>(recyclerView, this);
-		drawerIconColor = C.API_LOLLIPOP ? ResourceUtils.getColor(context, R.attr.drawerIconColor) : 0;
+		drawerIconColor = C.API_LOLLIPOP ? ResourceUtils.getColor(context, android.R.attr.textColorSecondary) : 0;
 
 		float density = ResourceUtils.obtainDensity(context);
 		if (!C.API_LOLLIPOP) {
@@ -241,7 +241,11 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 		searchEdit.setImeOptions(EditorInfo.IME_ACTION_GO | EditorInfo.IME_FLAG_NO_EXTRACT_UI);
 
 		ImageView searchIcon = new ImageView(context, null, android.R.attr.buttonBarButtonStyle);
-		searchIcon.setImageResource(ResourceUtils.getResourceId(context, R.attr.buttonForward, 0));
+		searchIcon.setImageResource(ResourceUtils.getResourceId(context, R.attr.iconButtonForward, 0));
+		if (C.API_LOLLIPOP) {
+			searchIcon.setImageTintList(ResourceUtils.getColorStateList(searchIcon.getContext(),
+					android.R.attr.textColorPrimary));
+		}
 		searchIcon.setScaleType(ImageView.ScaleType.CENTER);
 		searchIcon.setOnClickListener(v -> onSearchClick());
 		editTextContainer.addView(searchEdit, new LinearLayout.LayoutParams(0,
@@ -283,7 +287,11 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 				LinearLayout.LayoutParams.WRAP_CONTENT, 1));
 
 		chanSelectorIcon = new ImageView(context);
-		chanSelectorIcon.setImageResource(ResourceUtils.getResourceId(context, R.attr.buttonDropDown, 0));
+		chanSelectorIcon.setImageResource(ResourceUtils.getResourceId(context, R.attr.iconButtonDropDown, 0));
+		if (C.API_LOLLIPOP) {
+			chanSelectorIcon.setImageTintList(ResourceUtils.getColorStateList(context,
+					android.R.attr.textColorPrimary));
+		}
 		selectorContainer.addView(chanSelectorIcon, (int) (24f * density), (int) (24f * density));
 		((LinearLayout.LayoutParams) chanSelectorIcon.getLayoutParams()).gravity = Gravity.CENTER_VERTICAL
 				| Gravity.END;
@@ -323,8 +331,8 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 			chanNameView.setText(configuration.getTitle());
 			menu.clear();
 			Context context = this.context;
-			TypedArray typedArray = context.obtainStyledAttributes(new int[] {R.attr.drawerMenuBoards,
-					R.attr.drawerMenuUserBoards, R.attr.drawerMenuHistory, R.attr.drawerMenuPreferences});
+			TypedArray typedArray = context.obtainStyledAttributes(new int[] {R.attr.iconDrawerMenuBoards,
+					R.attr.iconDrawerMenuUserBoards, R.attr.iconDrawerMenuHistory, R.attr.iconDrawerMenuPreferences});
 			boolean hasUserBoards = configuration.getOption(ChanConfiguration.OPTION_READ_USER_BOARDS);
 			if (chanName != null && !configuration.getOption(ChanConfiguration.OPTION_SINGLE_BOARD_MODE)) {
 				menu.add(new ListItem(ListItem.Type.MENU, MENU_ITEM_BOARDS, typedArray.getResourceId(0, 0),
@@ -727,7 +735,7 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 		if (pages.size() > 0) {
 			Collections.sort(pages);
 			this.pages.add(new ListItem(ListItem.Type.SECTION, SECTION_ACTION_CLOSE_ALL,
-					ResourceUtils.getResourceId(context, R.attr.buttonCancel, 0),
+					ResourceUtils.getResourceId(context, R.attr.iconButtonCancel, 0),
 					context.getString(R.string.text_open_pages)));
 			for (Page page : pages) {
 				if (page.threadNumber != null) {
@@ -759,7 +767,7 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 					if (watcherSupportSet.contains(favoriteItem.chanName)
 							|| mergeChans && !watcherSupportSet.isEmpty()) {
 						favorites.add(new ListItem(ListItem.Type.SECTION, SECTION_ACTION_FAVORITES_MENU,
-								ResourceUtils.getResourceId(context, R.attr.buttonMore, 0),
+								ResourceUtils.getResourceId(context, R.attr.iconButtonMore, 0),
 								context.getString(R.string.text_favorite_threads)));
 					} else {
 						favorites.add(new ListItem(ListItem.Type.SECTION, null, null, null,
@@ -1168,7 +1176,11 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 		if (!viewType.watcher && viewType.closeable) {
 			ImageView closeView = new ImageView(context);
 			closeView.setScaleType(ImageView.ScaleType.CENTER);
-			closeView.setImageResource(ResourceUtils.getResourceId(context, R.attr.buttonCancel, 0));
+			closeView.setImageResource(ResourceUtils.getResourceId(context, R.attr.iconButtonCancel, 0));
+			if (C.API_LOLLIPOP) {
+				closeView.setImageTintList(ResourceUtils.getColorStateList(closeView.getContext(),
+						android.R.attr.textColorPrimary));
+			}
 			closeView.setBackgroundResource(ResourceUtils.getResourceId(context,
 					android.R.attr.borderlessButtonStyle, android.R.attr.background, 0));
 			linearLayout.addView(closeView, size, size);
@@ -1231,7 +1243,7 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 				imageView.setBackgroundResource(ResourceUtils.getResourceId(context,
 						android.R.attr.borderlessButtonStyle, android.R.attr.background, 0));
 				imageView.setOnClickListener(sectionButtonListener);
-				imageView.setImageAlpha(0x5e);
+				imageView.setImageTintList(textView.getTextColors());
 				int size = (int) (48f * density);
 				layoutParams = new LinearLayout.LayoutParams(size, size);
 				layoutParams.rightMargin = (int) (4f * density);
