@@ -51,6 +51,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.UUID;
 
 public class ForegroundManager implements Handler.Callback {
 	private static final ForegroundManager INSTANCE = new ForegroundManager();
@@ -142,7 +143,7 @@ public class ForegroundManager implements Handler.Callback {
 			args.putString(EXTRA_REQUIREMENT, requirement);
 			args.putString(EXTRA_BOARD_NAME, boardName);
 			args.putString(EXTRA_THREAD_NUMBER, threadNumber);
-			args.putString(EXTRA_TASK_NAME, "read_captcha_" + System.currentTimeMillis());
+			args.putString(EXTRA_TASK_NAME, "read_captcha_" + UUID.randomUUID().toString());
 			args.putInt(EXTRA_DESCRIPTION_RES_ID, descriptionResId);
 			setArguments(args);
 		}

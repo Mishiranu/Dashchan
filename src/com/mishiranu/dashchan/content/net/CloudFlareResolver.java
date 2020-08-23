@@ -1,6 +1,7 @@
 package com.mishiranu.dashchan.content.net;
 
 import android.net.Uri;
+import android.os.SystemClock;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import chan.content.ChanPerformer;
@@ -79,7 +80,7 @@ public class CloudFlareResolver {
 		CheckHolder checkHolder = null;
 		synchronized (captchaLastCancel) {
 			Long lastCancelTime = captchaLastCancel.get(chanName);
-			if (lastCancelTime != null && System.currentTimeMillis() - lastCancelTime < 5000) {
+			if (lastCancelTime != null && SystemClock.elapsedRealtime() - lastCancelTime < 5000) {
 				return new RelayBlockResolver.Result(true, false, null);
 			}
 		}
@@ -119,7 +120,7 @@ public class CloudFlareResolver {
 						R.string.message_cloudflate_block, retry);
 				if (captchaData == null) {
 					synchronized (captchaLastCancel) {
-						captchaLastCancel.put(chanName, System.currentTimeMillis());
+						captchaLastCancel.put(chanName, SystemClock.elapsedRealtime());
 					}
 					return new RelayBlockResolver.Result(true, false, null);
 				}

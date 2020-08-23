@@ -7,6 +7,7 @@ import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.net.Uri;
+import android.os.SystemClock;
 import android.text.Layout;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -697,7 +698,7 @@ public class ViewUnit {
 			if (holder.comment.getVisibility() != View.VISIBLE || holder.comment.isSelectionMode()) {
 				return false;
 			}
-			long t = System.currentTimeMillis();
+			long t = SystemClock.elapsedRealtime();
 			long timeout = holder.comment.getPreferredDoubleTapTimeout();
 			if (t - holder.lastCommentClick > timeout) {
 				holder.lastCommentClick = t;

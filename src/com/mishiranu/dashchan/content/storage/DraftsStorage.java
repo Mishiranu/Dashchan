@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.os.SystemClock;
 import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
 import chan.util.StringUtils;
@@ -178,7 +179,7 @@ public class DraftsStorage extends StorageManager.Storage {
 	}
 
 	public CaptchaDraft getCaptchaDraft(String chanName) {
-		if (captchaDraft != null && captchaChanName.equals(chanName) && System.currentTimeMillis() -
+		if (captchaDraft != null && captchaChanName.equals(chanName) && SystemClock.elapsedRealtime() -
 				captchaDraft.loadTime <= 5 * 60 * 1000) {
 			return captchaDraft;
 		}

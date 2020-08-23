@@ -1,28 +1,7 @@
-/*
- * Copyright 2011, 2012 Chris Banes.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * ********************************************************************************
- *
- * Copyright 2014-2017 Fukurou Mishiranu
- */
-
 package com.mishiranu.dashchan.widget;
 
-import java.lang.reflect.Method;
-
 import android.animation.ValueAnimator;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
@@ -31,6 +10,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -39,9 +19,10 @@ import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.Scroller;
-
+import androidx.annotation.NonNull;
 import com.mishiranu.dashchan.graphics.TransparentTileDrawable;
 import com.mishiranu.dashchan.util.AnimationUtils;
+import java.lang.reflect.Method;
 
 public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestureListener {
 	private enum ScrollEdge {NONE, START, END, BOTH}
@@ -258,7 +239,7 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 			float value = Math.min(Math.abs(getClosingTouchModeShift(rect)) * 2f / getHeight(), 1f);
 			workAlpha = (int) (workAlpha * (1f - value));
 			float scale = (1f - AnimationUtils.ACCELERATE_INTERPOLATOR.getInterpolation(value)) * 0.4f + 0.6f;
-			displayMatrix.postScale(scale, scale, getWidth() / 2, getHeight() / 2);
+			displayMatrix.postScale(scale, scale, getWidth() / 2f, getHeight() / 2f);
 			rect = initDisplayRect();
 		}
 		boolean restoreAlpha = false;
@@ -295,7 +276,7 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 	}
 
 	@Override
-	public void invalidateDrawable(Drawable drawable) {
+	public void invalidateDrawable(@NonNull Drawable drawable) {
 		// Override this method instead of verifyDrawable because I use own matrix to concatenate canvas
 		if (drawable == this.drawable) {
 			invalidate();
@@ -423,6 +404,7 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 		}
 	}
 
+	@SuppressLint("ClickableViewAccessibility")
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		return false;
@@ -515,7 +497,7 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 	}
 
 	public void setScale(float scale, boolean animate) {
-		setScale(scale, (getRight()) / 2, (getBottom()) / 2, animate);
+		setScale(scale, getRight() / 2f, getBottom() / 2f, animate);
 	}
 
 	public void setScale(float scale, float focalX, float focalY, boolean animate) {
@@ -717,7 +699,7 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 		public AnimatedScaleRunnable(float scale, float focalX, float focalY) {
 			this.focalX = focalX;
 			this.focalY = focalY;
-			startTime = System.currentTimeMillis();
+			startTime = SystemClock.elapsedRealtime();
 			startTransformMatrix = new Matrix(transformMatrix);
 			scaleStart = getScale();
 			scaleEnd = scale;
@@ -725,7 +707,7 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 
 		@Override
 		public void run() {
-			float t = (float) (System.currentTimeMillis() - startTime) / ZOOM_DURATION;
+			float t = (float) (SystemClock.elapsedRealtime() - startTime) / ZOOM_DURATION;
 			boolean post = true;
 			if (t >= 1f) {
 				t = 1f;
@@ -772,7 +754,7 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 					deltaY = viewHeight - rect.top;
 				}
 			}
-			startTime = System.currentTimeMillis();
+			startTime = SystemClock.elapsedRealtime();
 			this.deltaY = deltaY;
 			this.finish = finish;
 			if (finish) {
@@ -787,7 +769,7 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 
 		@Override
 		public void run() {
-			float t = (float) (System.currentTimeMillis() - startTime) / duration;
+			float t = (float) (SystemClock.elapsedRealtime() - startTime) / duration;
 			boolean post = true;
 			if (t >= 1f) {
 				t = 1f;

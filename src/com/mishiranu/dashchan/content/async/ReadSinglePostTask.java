@@ -1,5 +1,6 @@
 package com.mishiranu.dashchan.content.async;
 
+import android.os.SystemClock;
 import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
@@ -34,7 +35,7 @@ public class ReadSinglePostTask extends HttpHolderTask<Void, Void, PostItem> {
 
 	@Override
 	protected PostItem doInBackground(HttpHolder holder, Void... params) {
-		long startTime = System.currentTimeMillis();
+		long startTime = SystemClock.elapsedRealtime();
 		try {
 			ChanPerformer performer = ChanPerformer.get(chanName);
 			ChanPerformer.ReadSinglePostResult result = performer.safe().onReadSinglePost(new ChanPerformer
@@ -52,7 +53,7 @@ public class ReadSinglePostTask extends HttpHolderTask<Void, Void, PostItem> {
 			errorItem = e.getErrorItemAndHandle();
 		} finally {
 			ChanConfiguration.get(chanName).commit();
-			CommonUtils.sleepMaxTime(startTime, 500);
+			CommonUtils.sleepMaxRealtime(startTime, 500);
 		}
 		return null;
 	}

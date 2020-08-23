@@ -1,34 +1,17 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.util;
-
-import java.io.File;
-import java.io.PrintStream;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Locale;
 
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Environment;
-
+import android.os.SystemClock;
 import chan.util.CommonUtils;
+import java.io.File;
+import java.io.PrintStream;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Locale;
 
 @SuppressWarnings({"deprecation", "unused"})
 public enum Log {
@@ -90,6 +73,7 @@ public enum Log {
 							builder.append(' ');
 						}
 						Long markTime = MARK_TIME.get();
+						// noinspection IntegerDivisionInFloatingPointContext
 						builder.append((System.nanoTime() - (markTime != null ? markTime : 0L)) / 1000 / 1000f);
 						if (flag == ELAPSED_MARK_UPDATE) {
 							mark();
@@ -177,6 +161,7 @@ public enum Log {
 				android.util.Log.d(TAG, part);
 			}
 		}
+		PrintStream logOutput = Log.logOutput;
 		if (logOutput != null) {
 			synchronized (logOutput) {
 				logOutput.append(TIME_FORMAT.format(System.currentTimeMillis())).append(": ").append(message);
@@ -189,6 +174,7 @@ public enum Log {
 	public static void stack(Throwable t) {
 		if (t != null) {
 			t.printStackTrace();
+			PrintStream logOutput = Log.logOutput;
 			if (logOutput != null) {
 				synchronized (logOutput) {
 					logOutput.println(STACK_TRACE_DIVIDER);
@@ -203,7 +189,7 @@ public enum Log {
 
 	@Deprecated
 	public static void sleep(long interval) {
-		CommonUtils.sleepMaxTime(System.currentTimeMillis(), interval);
+		CommonUtils.sleepMaxRealtime(SystemClock.elapsedRealtime(), interval);
 	}
 
 	public static void init(Context context) {

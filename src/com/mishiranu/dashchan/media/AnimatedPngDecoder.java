@@ -1,26 +1,4 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.media;
-
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.zip.CRC32;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -34,10 +12,16 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
-
+import android.os.SystemClock;
+import androidx.annotation.NonNull;
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.IOUtils;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.zip.CRC32;
 
 public class AnimatedPngDecoder implements Runnable {
 	private static final Handler HANDLER = new Handler(Looper.getMainLooper());
@@ -109,93 +93,100 @@ public class AnimatedPngDecoder implements Runnable {
 					}
 					continue;
 				}
-				if ("acTL".equals(name)) {
-					if (length != 12) {
-						throw new IOException();
-					}
-					if (!IOUtils.readExactlyCheck(input, buffer, 0, 12)) {
-						throw new IOException();
-					}
-					int totalFramesCount = IOUtils.bytesToInt(false, 0, 4, buffer);
-					if (totalFramesCount <= 0) {
-						throw new IOException();
-					}
-					frames = new Frame[totalFramesCount];
-					continue;
-				} else if ("fcTL".equals(name)) {
-					if (frames == null) {
-						throw new IOException();
-					}
-					if (framesCount == frames.length) {
-						throw new IOException();
-					}
-					if (length != 30) {
-						throw new IOException();
-					}
-					if (!IOUtils.readExactlyCheck(input, buffer, 0, 30)) {
-						throw new IOException();
-					}
-					if (currentFrame == null) {
-						head = output.toByteArray();
-					} else {
-						currentFrame.bytes = output.toByteArray();
-					}
-					output.reset();
-					int width = IOUtils.bytesToInt(false, 4, 4, buffer);
-					int height = IOUtils.bytesToInt(false, 8, 4, buffer);
-					int x = IOUtils.bytesToInt(false, 12, 4, buffer);
-					int y = IOUtils.bytesToInt(false, 16, 4, buffer);
-					int delayNumerator = IOUtils.bytesToInt(false, 20, 2, buffer);
-					int delayDenominator = IOUtils.bytesToInt(false, 22, 2, buffer);
-					if (delayDenominator <= 0) {
-						delayDenominator = 100;
-					}
-					int delay = delayNumerator * 1000 / delayDenominator;
-					if (delay <= 10) {
-						delay = 100; // Like in Firefox
-					}
-					int dispose = buffer[24];
-					int blend = buffer[25];
-					boolean restoreBackground = dispose == 1;
-					boolean restorePrevious = dispose == 2;
-					boolean blendOver = blend == 1;
-					currentFrame = new Frame(width, height, x, y, totalTime,
-							restoreBackground, restorePrevious, blendOver);
-					totalTime += delay;
-					frames[framesCount++] = currentFrame;
-					continue;
-				} else if ("fdAT".equals(name)) {
-					if (frames == null) {
-						throw new IOException();
-					}
-					IOUtils.intToBytes(length - 8, false, 0, 4, buffer);
-					output.write(buffer, 0, 4);
-					byte[] nameBytes = "IDAT".getBytes("ISO-8859-1");
-					output.write(nameBytes);
-					crc32.update(nameBytes);
-					if (!IOUtils.skipExactlyCheck(input, 4)) {
-						throw new IOException();
-					}
-					length -= 8;
-					while (length > 0) {
-						int count = input.read(buffer, 0, Math.min(buffer.length, length));
-						if (count == -1) {
+				switch (name) {
+					case "acTL": {
+						if (length != 12) {
 							throw new IOException();
 						}
-						output.write(buffer, 0, count);
-						crc32.update(buffer, 0, count);
-						length -= count;
+						if (!IOUtils.readExactlyCheck(input, buffer, 0, 12)) {
+							throw new IOException();
+						}
+						int totalFramesCount = IOUtils.bytesToInt(false, 0, 4, buffer);
+						if (totalFramesCount <= 0) {
+							throw new IOException();
+						}
+						frames = new Frame[totalFramesCount];
+						continue;
 					}
-					if (!IOUtils.skipExactlyCheck(input, 4)) {
-						throw new IOException();
+					case "fcTL": {
+						if (frames == null) {
+							throw new IOException();
+						}
+						if (framesCount == frames.length) {
+							throw new IOException();
+						}
+						if (length != 30) {
+							throw new IOException();
+						}
+						if (!IOUtils.readExactlyCheck(input, buffer, 0, 30)) {
+							throw new IOException();
+						}
+						if (currentFrame == null) {
+							head = output.toByteArray();
+						} else {
+							currentFrame.bytes = output.toByteArray();
+						}
+						output.reset();
+						int width = IOUtils.bytesToInt(false, 4, 4, buffer);
+						int height = IOUtils.bytesToInt(false, 8, 4, buffer);
+						int x = IOUtils.bytesToInt(false, 12, 4, buffer);
+						int y = IOUtils.bytesToInt(false, 16, 4, buffer);
+						int delayNumerator = IOUtils.bytesToInt(false, 20, 2, buffer);
+						int delayDenominator = IOUtils.bytesToInt(false, 22, 2, buffer);
+						if (delayDenominator <= 0) {
+							delayDenominator = 100;
+						}
+						int delay = delayNumerator * 1000 / delayDenominator;
+						if (delay <= 10) {
+							delay = 100; // Like in Firefox
+						}
+						int dispose = buffer[24];
+						int blend = buffer[25];
+						boolean restoreBackground = dispose == 1;
+						boolean restorePrevious = dispose == 2;
+						boolean blendOver = blend == 1;
+						currentFrame = new Frame(width, height, x, y, totalTime,
+								restoreBackground, restorePrevious, blendOver);
+						totalTime += delay;
+						frames[framesCount++] = currentFrame;
+						continue;
 					}
-					IOUtils.intToBytes((int) crc32.getValue(), false, 0, 4, buffer);
-					output.write(buffer, 0, 4);
-					crc32.reset();
-					continue;
-				} else if ("IDAT".equals(name)) {
-					if (frames == null) {
-						throw new IOException();
+					case "fdAT": {
+						if (frames == null) {
+							throw new IOException();
+						}
+						IOUtils.intToBytes(length - 8, false, 0, 4, buffer);
+						output.write(buffer, 0, 4);
+						@SuppressWarnings("CharsetObjectCanBeUsed")
+						byte[] nameBytes = "IDAT".getBytes("ISO-8859-1");
+						output.write(nameBytes);
+						crc32.update(nameBytes);
+						if (!IOUtils.skipExactlyCheck(input, 4)) {
+							throw new IOException();
+						}
+						length -= 8;
+						while (length > 0) {
+							int count = input.read(buffer, 0, Math.min(buffer.length, length));
+							if (count == -1) {
+								throw new IOException();
+							}
+							output.write(buffer, 0, count);
+							crc32.update(buffer, 0, count);
+							length -= count;
+						}
+						if (!IOUtils.skipExactlyCheck(input, 4)) {
+							throw new IOException();
+						}
+						IOUtils.intToBytes((int) crc32.getValue(), false, 0, 4, buffer);
+						output.write(buffer, 0, 4);
+						crc32.reset();
+						continue;
+					}
+					case "IDAT": {
+						if (frames == null) {
+							throw new IOException();
+						}
+						break;
 					}
 				}
 				output.write(buffer, 0, 8);
@@ -248,7 +239,7 @@ public class AnimatedPngDecoder implements Runnable {
 		}
 		this.frames = frames;
 		duration = totalTime;
-		startTime = System.currentTimeMillis();
+		startTime = SystemClock.elapsedRealtime();
 	}
 
 	private static void recycleFrames(Frame[] frames) {
@@ -296,12 +287,12 @@ public class AnimatedPngDecoder implements Runnable {
 		}
 
 		@Override
-		public int read(byte[] buffer) {
+		public int read(@NonNull byte[] buffer) {
 			return read(buffer, 0, buffer.length);
 		}
 
 		@Override
-		public int read(byte[] buffer, int byteOffset, int byteCount) {
+		public int read(@NonNull byte[] buffer, int byteOffset, int byteCount) {
 			int position = this.position;
 			if (position < head.length) {
 				return copy(buffer, byteOffset, byteCount, head, position);
@@ -389,7 +380,7 @@ public class AnimatedPngDecoder implements Runnable {
 	private int draw() {
 		int position = 0;
 		if (duration > 0) {
-			long time = System.currentTimeMillis();
+			long time = SystemClock.elapsedRealtime();
 			if (startTime == 0) {
 				startTime = time;
 			}
@@ -458,7 +449,7 @@ public class AnimatedPngDecoder implements Runnable {
 				}
 
 				@Override
-				public void draw(Canvas canvas) {
+				public void draw(@NonNull Canvas canvas) {
 					Rect bounds = getBounds();
 					canvas.save();
 					canvas.scale((float) bounds.width() / getIntrinsicWidth(),

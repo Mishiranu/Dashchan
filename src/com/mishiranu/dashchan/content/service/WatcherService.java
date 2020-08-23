@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Process;
+import android.os.SystemClock;
 import chan.content.ChanConfiguration;
 import chan.content.ChanManager;
 import chan.content.ChanPerformer;
@@ -382,7 +383,7 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 	private boolean lastAvailableValue;
 
 	private boolean isAvailable() {
-		long time = System.currentTimeMillis();
+		long time = SystemClock.elapsedRealtime();
 		if (time - lastAvailableCheck >= 1000) {
 			lastAvailableCheck = time;
 			lastAvailableValue = !refreshPeriodically || !Preferences.isWatcherWifiOnly()
@@ -402,7 +403,7 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 
 	private void updateAllSinceNow() {
 		handler.removeMessages(MESSAGE_UPDATE);
-		long time = System.currentTimeMillis();
+		long time = SystemClock.elapsedRealtime();
 		boolean available = isAvailable();
 		for (WatcherItem watcherItem : watching.values()) {
 			if (isActiveChanName(watcherItem.chanName)) {
@@ -543,7 +544,7 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 				Result result = (Result) msg.obj;
 				WatcherItem watcherItem = result.watcherItem;
 				tasks.remove(watcherItem.key);
-				long time = System.currentTimeMillis();
+				long time = SystemClock.elapsedRealtime();
 				boolean available = isAvailable();
 				watcherItem.lastUpdateTime = time;
 				watcherItem.lastWasAvailable = available;

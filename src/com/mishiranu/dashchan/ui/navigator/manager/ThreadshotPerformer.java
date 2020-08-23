@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.recyclerview.widget.RecyclerView;
@@ -65,7 +66,7 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
 		@Override
 		protected InputStream doInBackground(Void... params) {
 			Looper.prepare();
-			long time = System.currentTimeMillis();
+			long time = SystemClock.elapsedRealtime();
 			UiManager.DemandSet demandSet = new UiManager.DemandSet();
 			demandSet.selection = UiManager.Selection.THREADSHOT;
 			int dividerHeight = divider.getIntrinsicHeight();
@@ -113,7 +114,7 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
 				bitmap.recycle();
 				input = new ByteArrayInputStream(output.toByteArray());
 			}
-			CommonUtils.sleepMaxTime(time, 500);
+			CommonUtils.sleepMaxRealtime(time, 500);
 			return input;
 		}
 

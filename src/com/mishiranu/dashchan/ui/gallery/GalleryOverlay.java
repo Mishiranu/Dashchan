@@ -10,6 +10,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Pair;
 import android.view.ContextThemeWrapper;
 import android.view.Gravity;
@@ -496,7 +497,7 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 	}
 
 	private class CornerAnimator implements Runnable {
-		private final long startTime = System.currentTimeMillis();
+		private final long startTime = SystemClock.elapsedRealtime();
 
 		private final int fromActionBarAlpha;
 		private final int toActionBarAlpha;
@@ -524,7 +525,7 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 
 		@Override
 		public void run() {
-			float t = Math.min((float) (System.currentTimeMillis() - startTime) / INTERVAL, 1f);
+			float t = Math.min((float) (SystemClock.elapsedRealtime() - startTime) / INTERVAL, 1f);
 			int actionBarColorAlpha = (int) AnimationUtils.lerp(fromActionBarAlpha, toActionBarAlpha, t);
 			GalleryDialog dialog = getDialog();
 			if (dialog != null) {

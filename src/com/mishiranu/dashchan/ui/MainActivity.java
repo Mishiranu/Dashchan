@@ -1180,9 +1180,9 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 				handled = true;
 			}
 			if (!handled) {
-				if (allowTimeout && System.currentTimeMillis() - backPressed > 2000) {
+				if (allowTimeout && SystemClock.elapsedRealtime() - backPressed > 2000) {
 					ClickableToast.show(this, R.string.message_press_again_to_exit);
-					backPressed = System.currentTimeMillis();
+					backPressed = SystemClock.elapsedRealtime();
 				} else {
 					super.onBackPressed();
 				}

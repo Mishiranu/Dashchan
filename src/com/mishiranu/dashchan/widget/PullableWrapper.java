@@ -8,6 +8,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
 import android.os.Build;
+import android.os.SystemClock;
 import android.view.MotionEvent;
 import android.view.animation.Interpolator;
 import android.view.animation.PathInterpolator;
@@ -201,12 +202,12 @@ public class PullableWrapper {
 				}
 				if (action == MotionEvent.ACTION_UP) {
 					if (topPullStrain >= PullView.MAX_STRAIN) {
-						topJumpStartTime = System.currentTimeMillis();
+						topJumpStartTime = SystemClock.elapsedRealtime();
 						boolean success = startBusyState(Side.TOP, true);
 						resetTop &= !success;
 					}
 					if (bottomPullStrain >= PullView.MAX_STRAIN) {
-						bottomJumpStartTime = System.currentTimeMillis();
+						bottomJumpStartTime = SystemClock.elapsedRealtime();
 						boolean success = startBusyState(Side.BOTTOM, true);
 						resetBottom &= !success;
 					}
@@ -326,7 +327,7 @@ public class PullableWrapper {
 				State prePreviousState = previousState;
 				previousState = this.state;
 				this.state = state;
-				long time = System.currentTimeMillis();
+				long time = SystemClock.elapsedRealtime();
 				switch (this.state) {
 					case IDLE: {
 						timeIdleStart = time;
@@ -379,7 +380,7 @@ public class PullableWrapper {
 				return 0;
 			}
 			try {
-				return (int) (MAX_STRAIN * getIdleTransientPullStrainValue(System.currentTimeMillis()));
+				return (int) (MAX_STRAIN * getIdleTransientPullStrainValue(SystemClock.elapsedRealtime()));
 			} finally {
 				startIdlePullStrain = 0;
 			}
@@ -401,7 +402,7 @@ public class PullableWrapper {
 				return;
 			}
 			Paint paint = this.paint;
-			long time = System.currentTimeMillis();
+			long time = SystemClock.elapsedRealtime();
 			int width = wrapped.getWidth();
 			int height = this.height;
 			int offset = top ? padding : wrapped.getHeight() - height - padding;
@@ -482,7 +483,7 @@ public class PullableWrapper {
 
 		@Override
 		public long calculateJumpStartTime() {
-			return System.currentTimeMillis() - BUSY_JUMP_TIME * (MAX_STRAIN - pullStrain) / MAX_STRAIN;
+			return SystemClock.elapsedRealtime() - BUSY_JUMP_TIME * (MAX_STRAIN - pullStrain) / MAX_STRAIN;
 		}
 
 		@Override
@@ -496,7 +497,7 @@ public class PullableWrapper {
 				case IDLE:
 				case LOADING: {
 					if (jumpStartTime > 0) {
-						value = (int) (MAX_STRAIN * (System.currentTimeMillis() - jumpStartTime) / BUSY_JUMP_TIME);
+						value = (int) (MAX_STRAIN * (SystemClock.elapsedRealtime() - jumpStartTime) / BUSY_JUMP_TIME);
 						value = value < MAX_STRAIN ? MAX_STRAIN - value : 0;
 					}
 					break;
@@ -591,7 +592,7 @@ public class PullableWrapper {
 				State prePreviousState = previousState;
 				previousState = this.state;
 				this.state = state;
-				long time = System.currentTimeMillis();
+				long time = SystemClock.elapsedRealtime();
 				switch (this.state) {
 					case IDLE: {
 						timeStateStart = time;
@@ -645,7 +646,8 @@ public class PullableWrapper {
 				return 0;
 			}
 			try {
-				return (int) (MAX_STRAIN * getIdleTransientPullStrainValue(IDLE_FOLD_TIME, System.currentTimeMillis()));
+				return (int) (MAX_STRAIN * getIdleTransientPullStrainValue(IDLE_FOLD_TIME,
+						SystemClock.elapsedRealtime()));
 			} finally {
 				startFoldingPullStrain = 0;
 			}
@@ -668,7 +670,7 @@ public class PullableWrapper {
 			}
 			Paint circlePaint = this.circlePaint;
 			Paint ringPaint = this.ringPaint;
-			long time = System.currentTimeMillis();
+			long time = SystemClock.elapsedRealtime();
 			int width = wrapped.getWidth();
 			int height = wrapped.getHeight();
 			State state = this.state;

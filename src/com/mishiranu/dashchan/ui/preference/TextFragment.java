@@ -2,6 +2,7 @@ package com.mishiranu.dashchan.ui.preference;
 
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -96,7 +97,7 @@ public class TextFragment extends Fragment implements View.OnClickListener {
 
 	@Override
 	public void onClick(View v) {
-		long time = System.currentTimeMillis();
+		long time = SystemClock.elapsedRealtime();
 		if (time - lastClickTime < ViewConfiguration.getDoubleTapTimeout()) {
 			lastClickTime = 0L;
 			textView.startSelection();

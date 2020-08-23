@@ -1,21 +1,6 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.content.async;
 
+import android.os.SystemClock;
 import chan.http.HttpHolder;
 import chan.http.HttpRequest;
 import chan.http.MultipartEntity;
@@ -25,7 +10,7 @@ public class TimedProgressHandler implements HttpHolder.InputListener, HttpReque
 	private final long[] lastProgressUpdate = new long[3];
 
 	private boolean checkNeedToUpdate(int index, long progress, long progressMax) {
-		long time = System.currentTimeMillis();
+		long time = SystemClock.elapsedRealtime();
 		if (time - lastProgressUpdate[index] >= 200 || progress == 0 || progress == progressMax) {
 			lastProgressUpdate[index] = time;
 			return true;

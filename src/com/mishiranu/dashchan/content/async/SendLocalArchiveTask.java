@@ -2,6 +2,7 @@ package com.mishiranu.dashchan.content.async;
 
 import android.graphics.Typeface;
 import android.net.Uri;
+import android.os.SystemClock;
 import android.text.SpannableStringBuilder;
 import android.text.style.StrikethroughSpan;
 import android.text.style.StyleSpan;
@@ -278,7 +279,7 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 
 	public void notifyIncrement() {
 		progress++;
-		long t = System.currentTimeMillis();
+		long t = SystemClock.elapsedRealtime();
 		if (t - lastNotifyIncrement >= 100) {
 			lastNotifyIncrement = t;
 			publishProgress(progress);

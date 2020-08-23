@@ -13,6 +13,7 @@ import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.text.Editable;
 import android.util.DisplayMetrics;
 import android.util.Pair;
@@ -1067,7 +1068,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 	public void onReadCaptchaSuccess(ChanPerformer.CaptchaState captchaState, ChanPerformer.CaptchaData captchaData,
 			String captchaType, ChanConfiguration.Captcha.Input input, ChanConfiguration.Captcha.Validity validity,
 			Bitmap image, boolean large, boolean blackAndWhite) {
-		captchaLoadTime = System.currentTimeMillis();
+		captchaLoadTime = SystemClock.elapsedRealtime();
 		showCaptcha(captchaState, captchaData, captchaType, input, validity, image, large, blackAndWhite);
 		updatePostingConfigurationIfNeeded();
 	}

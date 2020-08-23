@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.os.SystemClock;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
@@ -480,9 +481,9 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 			final int ms = 8;
 			HidePerformer hidePerformer = configurationSet.hidePerformer;
 			@SuppressWarnings("unchecked") ArrayList<PostItem> preloadList = (ArrayList<PostItem>) msg.obj;
-			long time = System.currentTimeMillis();
+			long time = SystemClock.elapsedRealtime();
 			int i = msg.arg1;
-			while (i < preloadList.size() && System.currentTimeMillis() - time < ms) {
+			while (i < preloadList.size() && SystemClock.elapsedRealtime() - time < ms) {
 				PostItem postItem = preloadList.get(i++);
 				postItem.getComment();
 				postItem.isHidden(hidePerformer);

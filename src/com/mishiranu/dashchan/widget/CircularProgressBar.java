@@ -1,19 +1,3 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.widget;
 
 import android.annotation.TargetApi;
@@ -26,11 +10,11 @@ import android.graphics.Path;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.animation.Interpolator;
 import android.view.animation.PathInterpolator;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
@@ -54,7 +38,7 @@ public class CircularProgressBar extends View {
 	private final Interpolator lollipopStartInterpolator;
 	private final Interpolator lollipopEndInterpolator;
 
-	private final long startTime = System.currentTimeMillis();
+	private final long startTime = SystemClock.elapsedRealtime();
 
 	private int transientState = TRANSIENT_NONE;
 	private final float[] circularData = C.API_LOLLIPOP ? new float[2] : null;
@@ -120,7 +104,7 @@ public class CircularProgressBar extends View {
 
 	private final Runnable setVisibleRunnable = () -> {
 		visible = queuedVisible;
-		timeVisibilitySet = System.currentTimeMillis();
+		timeVisibilitySet = SystemClock.elapsedRealtime();
 		invalidate();
 	};
 
@@ -128,7 +112,7 @@ public class CircularProgressBar extends View {
 		removeCallbacks(setVisibleRunnable);
 		if (this.visible != visible) {
 			queuedVisible = visible;
-			long delta = System.currentTimeMillis() - timeVisibilitySet;
+			long delta = SystemClock.elapsedRealtime() - timeVisibilitySet;
 			if (delta < 10) {
 				this.visible = visible;
 				timeVisibilitySet = 0L;
@@ -174,7 +158,7 @@ public class CircularProgressBar extends View {
 	private boolean calculateLollipopTransient(float arcStart, float arcLength,
 			float desiredStart, float desiredLength, long interval) {
 		boolean finished = false;
-		long timeDelta = System.currentTimeMillis() - timeTransientStart;
+		long timeDelta = SystemClock.elapsedRealtime() - timeTransientStart;
 		if (timeDelta >= interval) {
 			timeDelta = interval;
 			finished = true;
@@ -213,7 +197,7 @@ public class CircularProgressBar extends View {
 
 	public void setIndeterminate(boolean indeterminate) {
 		if (this.indeterminate != indeterminate) {
-			long time = System.currentTimeMillis();
+			long time = SystemClock.elapsedRealtime();
 			if (C.API_LOLLIPOP) {
 				boolean visible = this.visible && time - timeVisibilitySet > 50;
 				if (indeterminate) {
@@ -250,7 +234,7 @@ public class CircularProgressBar extends View {
 	}
 
 	private float calculateTransientProgress() {
-		long time = System.currentTimeMillis() - timeProgressChange;
+		long time = SystemClock.elapsedRealtime() - timeProgressChange;
 		float end = progress;
 		if (time > PROGRESS_TRANSIENT_TIME) {
 			return end;
@@ -262,7 +246,7 @@ public class CircularProgressBar extends View {
 	public void setProgress(int progress, int max, boolean ignoreTransient) {
 		float value = (float) progress / max;
 		transientProgress = ignoreTransient ? value : calculateTransientProgress();
-		timeProgressChange = System.currentTimeMillis();
+		timeProgressChange = SystemClock.elapsedRealtime();
 		if (value < 0f) {
 			value = 0f;
 		} else if (value > 1f) {
@@ -290,7 +274,7 @@ public class CircularProgressBar extends View {
 	@Override
 	protected void onDraw(Canvas canvas) {
 		int width = getWidth(), height = getHeight();
-		long time = System.currentTimeMillis();
+		long time = SystemClock.elapsedRealtime();
 		int size = Math.min(width, height);
 		boolean invalidate = false;
 

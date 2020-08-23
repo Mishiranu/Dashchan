@@ -318,7 +318,7 @@ public class CommentTextView extends TextView {
 	public void startSelection() {
 		int x = Integer.MAX_VALUE;
 		int y = Integer.MAX_VALUE;
-		if (System.currentTimeMillis() - lastXYSet <= getPreferredDoubleTapTimeout()) {
+		if (SystemClock.elapsedRealtime() - lastXYSet <= getPreferredDoubleTapTimeout()) {
 			x = (int) lastX;
 			y = (int) lastY;
 		}
@@ -630,7 +630,7 @@ public class CommentTextView extends TextView {
 		Point layoutPosition = fillLayoutPosition(x, y);
 		lastX = x;
 		lastY = y;
-		lastXYSet = System.currentTimeMillis();
+		lastXYSet = SystemClock.elapsedRealtime();
 		if (action != MotionEvent.ACTION_DOWN && spanToClick != null) {
 			if (action == MotionEvent.ACTION_MOVE) {
 				if (!checkAcceptSpan(x, y, layoutPosition)) {

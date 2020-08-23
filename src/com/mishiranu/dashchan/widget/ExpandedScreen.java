@@ -16,6 +16,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -458,7 +459,7 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener,
 			boolean show = enqueuedShowState;
 			setState(STATE_SHOW, show);
 			applyShowActionBar(show);
-			lastShowStateChanged = System.currentTimeMillis();
+			lastShowStateChanged = SystemClock.elapsedRealtime();
 			updatePaddings();
 		}
 	};
@@ -492,7 +493,7 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener,
 		if (enqueuedShowState != show) {
 			enqueuedShowState = show;
 			handler.removeCallbacks(showStateRunnable);
-			long t = System.currentTimeMillis() - lastShowStateChanged;
+			long t = SystemClock.elapsedRealtime() - lastShowStateChanged;
 			if (show != isActionBarShowing()) {
 				if (!delayed) {
 					showStateRunnable.run();

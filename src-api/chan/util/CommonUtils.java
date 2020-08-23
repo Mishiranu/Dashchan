@@ -1,39 +1,20 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package chan.util;
-
-import java.lang.reflect.Array;
-import java.util.Collection;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-
+import android.os.SystemClock;
 import chan.annotation.Public;
-
 import com.mishiranu.dashchan.util.Log;
+import java.lang.reflect.Array;
+import java.util.Collection;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 @Public
 public class CommonUtils {
 	@Public
-	public static boolean sleepMaxTime(long startTime, long interval) {
-		long time = interval - (System.currentTimeMillis() - startTime);
+	public static boolean sleepMaxRealtime(long startRealtime, long interval) {
+		long time = interval - (SystemClock.elapsedRealtime() - startRealtime);
 		if (time <= 0) {
 			return false;
 		}
@@ -44,6 +25,15 @@ public class CommonUtils {
 			Thread.currentThread().interrupt();
 			return true;
 		}
+	}
+
+	// TODO CHAN
+	// Remove method after updating
+	// endchan
+	// Added: 24.08.20 00:02
+	@Public
+	public static boolean sleepMaxTime(long startTime, long interval) {
+		return sleepMaxRealtime(SystemClock.elapsedRealtime() - System.currentTimeMillis() + startTime, interval);
 	}
 
 	@Public

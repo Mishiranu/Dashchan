@@ -11,6 +11,7 @@ import android.graphics.Paint;
 import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -287,13 +288,13 @@ public class BrowserFragment extends Fragment implements ActivityHandler, Downlo
 
 		public void setProgress(int progress) {
 			transientProgress = calculateTransient();
-			progressSetTime = System.currentTimeMillis();
+			progressSetTime = SystemClock.elapsedRealtime();
 			this.progress = progress;
 			invalidate();
 		}
 
 		private float getTime() {
-			return Math.min((float) (System.currentTimeMillis() - progressSetTime) / TRANSIENT_TIME, 1f);
+			return Math.min((float) (SystemClock.elapsedRealtime() - progressSetTime) / TRANSIENT_TIME, 1f);
 		}
 
 		private float calculateTransient() {

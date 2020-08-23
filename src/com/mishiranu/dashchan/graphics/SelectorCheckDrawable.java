@@ -1,19 +1,3 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.graphics;
 
 import android.annotation.TargetApi;
@@ -27,7 +11,7 @@ import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-
+import android.os.SystemClock;
 import com.mishiranu.dashchan.util.AnimationUtils;
 
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -50,7 +34,7 @@ public class SelectorCheckDrawable extends Drawable {
 
 	@Override
 	public void draw(Canvas canvas) {
-		long dt = System.currentTimeMillis() - start;
+		long dt = SystemClock.elapsedRealtime() - start;
 		float value = start == 0L ? 1f : dt < 0 ? 0f : Math.min((float) dt / DURATION, 1f);
 		value = AnimationUtils.DECELERATE_INTERPOLATOR.getInterpolation(value);
 		Rect bounds = getBounds();
@@ -61,10 +45,10 @@ public class SelectorCheckDrawable extends Drawable {
 		int width = bounds.width();
 		int height = bounds.height();
 		if (width > height) {
-			canvas.translate((width - height) / 2, 0);
+			canvas.translate((width - height) / 2f, 0);
 			size = height;
 		} else if (height > width) {
-			canvas.translate(0, (height - width) / 2);
+			canvas.translate(0, (height - width) / 2f);
 			size = width;
 		} else {
 			size = width;
@@ -125,7 +109,7 @@ public class SelectorCheckDrawable extends Drawable {
 	public void setSelected(boolean selected, boolean animate) {
 		if (this.selected != selected) {
 			if (animate) {
-				start = System.currentTimeMillis();
+				start = SystemClock.elapsedRealtime();
 			} else {
 				start = 0L;
 			}
