@@ -3,13 +3,11 @@ package com.mishiranu.dashchan.widget;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.Resources;
-import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
 import android.os.Build;
-import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.animation.Interpolator;
 import android.view.animation.PathInterpolator;
@@ -32,23 +30,12 @@ public class PullableWrapper {
 		topView = C.API_LOLLIPOP ? new LollipopView(listView, true) : new JellyBeanView(listView, true);
 		bottomView = C.API_LOLLIPOP ? new LollipopView(listView, false) : new JellyBeanView(listView, false);
 		pullDeltaGain = ResourceUtils.isTablet(context.getResources().getConfiguration()) ? 6f : 4f;
-	}
-
-	public void handleAttrs(AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-		TypedArray typedArray = listView.getContext().obtainStyledAttributes(attrs,
-				new int[] {android.R.attr.color}, defStyleAttr, defStyleRes);
-		int color = typedArray.getColor(0, 0);
-		typedArray.recycle();
-		setColor(color);
+		setColor(ThemeEngine.getTheme(listView.getContext()).accent);
 	}
 
 	public void setColor(int color) {
 		topView.setColor(color);
 		bottomView.setColor(color);
-		EdgeEffectHandler edgeEffectHandler = listView.getEdgeEffectHandler();
-		if (edgeEffectHandler != null) {
-			edgeEffectHandler.setColor(color);
-		}
 	}
 
 	public interface PullCallback {

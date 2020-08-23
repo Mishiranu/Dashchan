@@ -1,6 +1,7 @@
 package com.mishiranu.dashchan.widget;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -50,10 +51,19 @@ public class PaddedRecyclerView extends RecyclerView implements EdgeEffectHandle
 	}
 
 	/* init */ {
+		ThemeEngine.Theme theme = ThemeEngine.getTheme(getContext());
+		edgeEffectHandler.setColor(theme.accent);
+
 		float density = ResourceUtils.obtainDensity(this);
 		Drawable thumbDrawable = ResourceUtils.getDrawable(getContext(), android.R.attr.fastScrollThumbDrawable, 0);
 		this.thumbDrawable = C.API_LOLLIPOP ? thumbDrawable : ListViewUtils
 				.colorizeListThumbDrawable4(getContext(), thumbDrawable);
+		if (C.API_LOLLIPOP) {
+			int[][] states = {{android.R.attr.state_enabled, android.R.attr.state_pressed},
+					{android.R.attr.state_enabled}};
+			int[] colors = {theme.accent, theme.controlNormal21};
+			thumbDrawable.setTintList(new ColorStateList(states, colors));
+		}
 		trackDrawable = ResourceUtils.getDrawable(getContext(), android.R.attr.fastScrollTrackDrawable, 0);
 		minTrackSize = (int) (16f * density);
 

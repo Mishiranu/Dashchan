@@ -10,20 +10,18 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.PowerManager;
 import android.os.SystemClock;
-import android.view.ContextThemeWrapper;
 import androidx.core.app.NotificationCompat;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
-import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.ReadFileTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.ui.MainActivity;
 import com.mishiranu.dashchan.util.AndroidUtils;
 import com.mishiranu.dashchan.util.AudioFocus;
-import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.WeakObservable;
+import com.mishiranu.dashchan.widget.ThemeEngine;
 import java.io.File;
 
 public class AudioPlayerService extends Service implements MediaPlayer.OnCompletionListener,
@@ -84,8 +82,8 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnComplet
 		notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		int notificationColor = 0;
 		if (C.API_LOLLIPOP) {
-			Context themedContext = new ContextThemeWrapper(this, Preferences.getThemeResource());
-			notificationColor = ResourceUtils.getColor(themedContext, android.R.attr.colorAccent);
+			ThemeEngine.Theme theme = ThemeEngine.attachAndApply(this);
+			notificationColor = theme.accent;
 		}
 		this.notificationColor = notificationColor;
 		if (C.API_OREO) {

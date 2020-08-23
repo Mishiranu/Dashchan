@@ -3,6 +3,7 @@ package com.mishiranu.dashchan.widget;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -272,6 +273,9 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 			setBackground(typedArray.getDrawable(0));
 			shadowSize = C.API_LOLLIPOP ? typedArray.getDimension(1, 0f) : 0f;
 			typedArray.recycle();
+			if (C.API_LOLLIPOP) {
+				setBackgroundTintList(ColorStateList.valueOf(ThemeEngine.getTheme(context).card));
+			}
 			paint.setColor((int) (dimAmount * 0xff) << 24);
 			setActive(true);
 		}

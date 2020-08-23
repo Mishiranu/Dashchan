@@ -25,7 +25,6 @@ import android.os.PowerManager;
 import android.os.SystemClock;
 import android.util.DisplayMetrics;
 import android.util.Pair;
-import android.view.ContextThemeWrapper;
 import androidx.core.app.NotificationCompat;
 import chan.content.ChanLocator;
 import chan.util.StringUtils;
@@ -42,9 +41,9 @@ import com.mishiranu.dashchan.util.AndroidUtils;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.MimeTypes;
-import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.WeakObservable;
+import com.mishiranu.dashchan.widget.ThemeEngine;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -114,8 +113,8 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 		notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		int notificationColor = 0;
 		if (C.API_LOLLIPOP) {
-			Context themedContext = new ContextThemeWrapper(this, Preferences.getThemeResource());
-			notificationColor = ResourceUtils.getColor(themedContext, android.R.attr.colorAccent);
+			ThemeEngine.Theme theme = ThemeEngine.attachAndApply(this);
+			notificationColor = theme.accent;
 		}
 		this.notificationColor = notificationColor;
 		if (C.API_OREO) {

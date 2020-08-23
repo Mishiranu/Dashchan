@@ -7,11 +7,11 @@ import android.text.style.ForegroundColorSpan;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ErrorEditTextSetter;
+import com.mishiranu.dashchan.widget.ThemeEngine;
 
 public class NameEditWatcher implements TextWatcher {
 	private final boolean watchTripcodeWarning;
@@ -61,8 +61,9 @@ public class NameEditWatcher implements TextWatcher {
 		}
 		if (index >= 0) {
 			if (tripcodeSpan == null) {
-				tripcodeSpan = new ForegroundColorSpan(ResourceUtils.getColor(nameView.getContext(),
-						watchTripcodeWarning ? R.attr.colorTextError : R.attr.colorTextTripcode));
+				tripcodeSpan = new ForegroundColorSpan(watchTripcodeWarning
+						? ResourceUtils.getColor(nameView.getContext(), R.attr.colorTextError)
+						: ThemeEngine.getTheme(nameView.getContext()).tripcode);
 			}
 			s.setSpan(tripcodeSpan, index, s.length(), SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
 		}

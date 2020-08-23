@@ -37,6 +37,7 @@ import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.WebViewUtils;
+import com.mishiranu.dashchan.widget.ThemeEngine;
 
 public class BrowserFragment extends Fragment implements ActivityHandler, DownloadListener {
 	private static final String EXTRA_URI = "uri";
@@ -280,7 +281,7 @@ public class BrowserFragment extends Fragment implements ActivityHandler, Downlo
 
 		public ProgressView(Context context) {
 			super(context);
-			int color = ResourceUtils.getColor(context, R.attr.colorAccentSupport);
+			int color = ThemeEngine.getTheme(context).accent;
 			paint.setColor(Color.BLACK | color);
 		}
 

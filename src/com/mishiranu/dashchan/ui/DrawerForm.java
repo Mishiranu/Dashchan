@@ -11,7 +11,7 @@ import android.os.SystemClock;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.TextUtils;
-import android.util.TypedValue;
+import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -56,6 +56,7 @@ import com.mishiranu.dashchan.widget.EdgeEffectHandler;
 import com.mishiranu.dashchan.widget.PaddedRecyclerView;
 import com.mishiranu.dashchan.widget.SafePasteEditText;
 import com.mishiranu.dashchan.widget.SortableHelper;
+import com.mishiranu.dashchan.widget.ThemeEngine;
 import com.mishiranu.dashchan.widget.WatcherView;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -149,14 +150,14 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 		public void restartApplication();
 	}
 
-	public DrawerForm(Context context, Context unstyledContext, Callback callback,
-			ConfigurationLock configurationLock, WatcherService.Client watcherServiceClient) {
+	public DrawerForm(Context context, Callback callback, ConfigurationLock configurationLock,
+			WatcherService.Client watcherServiceClient) {
 		this.context = context;
 		this.callback = callback;
 		this.configurationLock = configurationLock;
 		this.watcherServiceClient = watcherServiceClient;
 
-		int enabledColor = ResourceUtils.getColor(unstyledContext, R.attr.colorAccentSupport);
+		int enabledColor = ThemeEngine.getTheme(context).accent;
 		int disabledColor = 0xff666666;
 		int unavailableColor = GraphicsUtils.mixColors(disabledColor, enabledColor & 0x7fffffff);
 		watcherViewColorSet = new WatcherView.ColorSet(enabledColor, unavailableColor, disabledColor);
@@ -277,7 +278,7 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 		}
 
 		chanNameView = new TextView(context, null, android.R.attr.textAppearanceListItem);
-		chanNameView.setTextSize(TypedValue.COMPLEX_UNIT_SP, C.API_LOLLIPOP ? 14f : 16f);
+		ViewUtils.setTextSizeScaled(chanNameView, C.API_LOLLIPOP ? 14 : 16);
 		if (C.API_LOLLIPOP) {
 			chanNameView.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
 		} else {
@@ -929,10 +930,17 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 								}
 							}
 						}
-						PopupMenu popupMenu = C.API_LOLLIPOP_MR1
-								? new PopupMenu(v.getContext(), v, Gravity.END, 0, R.style.Widget_OverlapPopupMenu)
-								: C.API_KITKAT ? new PopupMenu(v.getContext(), v, Gravity.END)
-								: new PopupMenu(context, v);
+						PopupMenu popupMenu;
+						if (C.API_LOLLIPOP_MR1) {
+							int resId = ResourceUtils.getResourceId(context, android.R.attr.popupTheme, 0);
+							Context context = v.getContext();
+							Context popupContext = resId != 0 ? new ContextThemeWrapper(context, resId) : context;
+							popupMenu = new PopupMenu(popupContext, v, Gravity.END, 0, R.style.Widget_OverlapPopupMenu);
+						} else if (C.API_KITKAT) {
+							popupMenu = new PopupMenu(v.getContext(), v, Gravity.END);
+						} else {
+							popupMenu = new PopupMenu(context, v);
+						}
 						popupMenu.getMenu().add(0, FAVORITES_MENU_REFRESH, 0, R.string.action_refresh)
 								.setEnabled(hasEnabled);
 						popupMenu.getMenu().add(0, FAVORITES_MENU_CLEAR_DELETED, 0, R.string.action_clear_deleted)
@@ -1134,7 +1142,7 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 	private TextView makeCommonTextView(boolean section) {
 		TextView textView = new TextView(context, null, C.API_LOLLIPOP ? android.R.attr.textAppearanceListItem
 				: android.R.attr.textAppearance);
-		textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, C.API_LOLLIPOP ? 14f : 16f);
+		ViewUtils.setTextSizeScaled(textView, C.API_LOLLIPOP ? 14 : 16);
 		textView.setGravity(Gravity.CENTER_VERTICAL);
 		textView.setEllipsize(TextUtils.TruncateAt.END);
 		textView.setSingleLine(true);

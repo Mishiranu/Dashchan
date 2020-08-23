@@ -1,24 +1,9 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.text.style;
 
 import android.annotation.SuppressLint;
 import android.text.TextPaint;
 import android.text.style.TypefaceSpan;
+import androidx.annotation.NonNull;
 
 // TypefaceSpan("sans-serif-light") + RelativeSizeSpan(SCALE)
 @SuppressLint("ParcelCreator")
@@ -30,18 +15,18 @@ public class HeadingSpan extends TypefaceSpan {
 	}
 
 	@Override
-	public void updateDrawState(TextPaint paint) {
+	public void updateDrawState(@NonNull TextPaint paint) {
 		super.updateDrawState(paint);
 		applyScale(paint);
 	}
 
 	@Override
-	public void updateMeasureState(TextPaint paint) {
+	public void updateMeasureState(@NonNull TextPaint paint) {
 		super.updateMeasureState(paint);
 		applyScale(paint);
 	}
 
 	private void applyScale(TextPaint paint) {
-		paint.setTextSize(paint.getTextSize() * SCALE);
+		paint.setTextSize((int) (paint.getTextSize() * SCALE + 0.5f));
 	}
 }

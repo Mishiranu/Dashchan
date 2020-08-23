@@ -7,13 +7,16 @@
 	android:orientation="vertical"
 	android:theme="?android:attr/actionBarTheme"
 	style="?android:attr/actionBarStyle"
+	android:tag="theme.background=primary"
 	android:elevation="4dp">
 
 	<Toolbar
 		android:id="@+id/toolbar"
 		android:layout_width="match_parent"
 		android:layout_height="?android:attr/actionBarSize"
-		style="?android:attr/actionBarStyle" />
+		style="?android:attr/actionBarStyle"
+		android:popupTheme="?android:attr/popupTheme"
+		android:tag="theme.background=primary" />
 
 	<FrameLayout
 		android:id="@+id/toolbar_extra"

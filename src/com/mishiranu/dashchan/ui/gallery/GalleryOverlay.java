@@ -47,6 +47,7 @@ import com.mishiranu.dashchan.util.FlagUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
+import com.mishiranu.dashchan.widget.ThemeEngine;
 import com.mishiranu.dashchan.widget.WindowControlFrameLayout;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -167,7 +168,8 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 				? R.style.Animation_Gallery_Full : R.style.Animation_Gallery_Partial;
 
 		if (rootView == null) {
-			Context context = new ContextThemeWrapper(MainApplication.getInstance(), R.style.Theme_Gallery);
+			Context context = ThemeEngine.attach(new ContextThemeWrapper
+					(MainApplication.getInstance(), R.style.Theme_Gallery));
 			rootView = new WindowControlFrameLayout(context) {
 				@Override
 				protected void onAttachedToWindow() {

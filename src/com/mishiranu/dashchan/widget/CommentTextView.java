@@ -125,6 +125,10 @@ public class CommentTextView extends TextView {
 		super.setTextIsSelectable(true);
 	}
 
+	/* init */ {
+		ThemeEngine.applyStyle(this);
+	}
+
 	public interface ClickableSpan {
 		public void setClicked(boolean clicked);
 	}

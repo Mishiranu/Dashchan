@@ -5,6 +5,8 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.graphics.Outline;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -14,6 +16,8 @@ import android.view.ViewGroup;
 import android.view.ViewOutlineProvider;
 import android.view.ViewParent;
 import android.view.Window;
+import android.widget.EdgeEffect;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toolbar;
 import com.mishiranu.dashchan.C;
@@ -61,13 +65,19 @@ public class ViewUtils {
 		return configuration.screenWidthDp >= 720;
 	}
 
+	public static void setTextSizeScaled(TextView textView, int sizeSp) {
+		// Avoid fractional sizes (the same logic is used for sizes specified in XML)
+		int sizePx = (int) (sizeSp * textView.getResources().getDisplayMetrics().scaledDensity + 0.5f);
+		textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, sizePx);
+	}
+
 	public static void applyScaleSize(View... views) {
 		float scale = Preferences.getTextScale() / 100f;
 		for (View view : views) {
 			if (view != null) {
 				if (view instanceof TextView) {
 					TextView textView = (TextView) view;
-					float size = textView.getTextSize() * scale;
+					int size = (int) (textView.getTextSize() * scale + 0.5f);
 					textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, size);
 				}
 				ViewGroup.LayoutParams params = view.getLayoutParams();
@@ -150,6 +160,90 @@ public class ViewUtils {
 					outline.setRoundRect(rect, radius);
 				}
 			});
+		}
+	}
+
+	private static final Field FIELD_SCROLL_BAR_EDGE_GLOW_TOP;
+	private static final Field FIELD_SCROLL_BAR_EDGE_GLOW_BOTTOM;
+
+	static {
+		Field scrollBarEdgeGlowTopField = null;
+		Field scrollBarEdgeGlowBottomField = null;
+		if (!C.API_Q) {
+			try {
+				scrollBarEdgeGlowTopField = ScrollView.class.getDeclaredField("mEdgeGlowTop");
+				scrollBarEdgeGlowTopField.setAccessible(true);
+				scrollBarEdgeGlowBottomField = ScrollView.class.getDeclaredField("mEdgeGlowBottom");
+				scrollBarEdgeGlowBottomField.setAccessible(true);
+			} catch (Exception e) {
+				scrollBarEdgeGlowTopField = null;
+				scrollBarEdgeGlowBottomField = null;
+			}
+		}
+		FIELD_SCROLL_BAR_EDGE_GLOW_TOP = scrollBarEdgeGlowTopField;
+		FIELD_SCROLL_BAR_EDGE_GLOW_BOTTOM = scrollBarEdgeGlowBottomField;
+	}
+
+	public static void setEdgeEffectColor(ScrollView scrollView, int color) {
+		if (C.API_Q) {
+			scrollView.setEdgeEffectColor(color);
+		} else {
+			EdgeEffect topEdgeEffect = null;
+			EdgeEffect bottomEdgeEffect = null;
+			if (FIELD_SCROLL_BAR_EDGE_GLOW_TOP != null && FIELD_SCROLL_BAR_EDGE_GLOW_BOTTOM != null) {
+				try {
+					topEdgeEffect = (EdgeEffect) FIELD_SCROLL_BAR_EDGE_GLOW_TOP.get(scrollView);
+					bottomEdgeEffect = (EdgeEffect) FIELD_SCROLL_BAR_EDGE_GLOW_BOTTOM.get(scrollView);
+				} catch (Exception e) {
+					// Ignore
+				}
+			}
+			if (topEdgeEffect != null && bottomEdgeEffect != null) {
+				setEdgeEffectColor(topEdgeEffect, color);
+				setEdgeEffectColor(bottomEdgeEffect, color);
+			}
+		}
+	}
+
+	private static final Field FIELD_EDGE_EFFECT_EDGE;
+	private static final Field FIELD_EDGE_EFFECT_GLOW;
+
+	static {
+		Field edgeEffectEdgeField = null;
+		Field edgeEffectGlowField = null;
+		if (!C.API_LOLLIPOP) {
+			try {
+				edgeEffectEdgeField = EdgeEffect.class.getDeclaredField("mEdge");
+				edgeEffectEdgeField.setAccessible(true);
+				edgeEffectGlowField = EdgeEffect.class.getDeclaredField("mGlow");
+				edgeEffectGlowField.setAccessible(true);
+			} catch (Exception e) {
+				edgeEffectEdgeField = null;
+				edgeEffectGlowField = null;
+			}
+		}
+		FIELD_EDGE_EFFECT_EDGE = edgeEffectEdgeField;
+		FIELD_EDGE_EFFECT_GLOW = edgeEffectGlowField;
+	}
+
+	public static void setEdgeEffectColor(EdgeEffect edgeEffect, int color) {
+		if (C.API_LOLLIPOP) {
+			edgeEffect.setColor(color);
+		} else {
+			Drawable edge = null;
+			Drawable glow = null;
+			if (FIELD_EDGE_EFFECT_EDGE != null && FIELD_EDGE_EFFECT_GLOW != null) {
+				try {
+					edge = (Drawable) FIELD_EDGE_EFFECT_EDGE.get(edgeEffect);
+					glow = (Drawable) FIELD_EDGE_EFFECT_GLOW.get(edgeEffect);
+				} catch (Exception e) {
+					// Ignore
+				}
+			}
+			if (edge != null && glow != null) {
+				edge.mutate().setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+				glow.mutate().setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+			}
 		}
 	}
 

@@ -48,6 +48,7 @@ import com.mishiranu.dashchan.widget.CardView;
 import com.mishiranu.dashchan.widget.CommentTextView;
 import com.mishiranu.dashchan.widget.LinebreakLayout;
 import com.mishiranu.dashchan.widget.PostLinearLayout;
+import com.mishiranu.dashchan.widget.ThemeEngine;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -136,7 +137,7 @@ public class ViewUnit {
 
 	public void bindThreadView(RecyclerView.ViewHolder viewHolder, PostItem postItem) {
 		Context context = uiManager.getContext();
-		ColorScheme colorScheme = uiManager.getColorScheme();
+		ColorScheme colorScheme = ThemeEngine.getColorScheme(context);
 		ThreadViewHolder holder = (ThreadViewHolder) viewHolder;
 		holder.postItem = postItem;
 
@@ -184,7 +185,7 @@ public class ViewUnit {
 
 	public void bindThreadCellView(RecyclerView.ViewHolder viewHolder, PostItem postItem, int contentHeight) {
 		Context context = uiManager.getContext();
-		ColorScheme colorScheme = uiManager.getColorScheme();
+		ColorScheme colorScheme = ThemeEngine.getColorScheme(context);
 		ThreadViewHolder holder = (ThreadViewHolder) viewHolder;
 		holder.postItem = postItem;
 
@@ -253,7 +254,7 @@ public class ViewUnit {
 	}
 
 	public void bindPostView(RecyclerView.ViewHolder viewHolder, PostItem postItem, UiManager.DemandSet demandSet) {
-		ColorScheme colorScheme = uiManager.getColorScheme();
+		ColorScheme colorScheme = ThemeEngine.getColorScheme(uiManager.getContext());
 		PostViewHolder holder = (PostViewHolder) viewHolder;
 		holder.notifyUnbind();
 		holder.postItem = postItem;
@@ -429,7 +430,7 @@ public class ViewUnit {
 	}
 
 	private static int getPostBackgroundColor(UiManager uiManager, UiManager.ConfigurationSet configurationSet) {
-		ColorScheme colorScheme = uiManager.getColorScheme();
+		ColorScheme colorScheme = ThemeEngine.getColorScheme(uiManager.getContext());
 		return configurationSet.isDialog ? colorScheme.dialogBackgroundColor : colorScheme.windowBackgroundColor;
 	}
 
@@ -651,11 +652,12 @@ public class ViewUnit {
 			Locale locale = Locale.getDefault();
 			SpannableString spannable = new SpannableString(text);
 			String searchable = text.toString().toLowerCase(locale);
+			ColorScheme colorScheme = ThemeEngine.getColorScheme(uiManager.getContext());
 			for (String highlight : highlightText) {
 				highlight = highlight.toLowerCase(locale);
 				int textIndex = -1;
 				while ((textIndex = searchable.indexOf(highlight, textIndex + 1)) >= 0) {
-					spannable.setSpan(new BackgroundColorSpan(uiManager.getColorScheme().highlightTextColor),
+					spannable.setSpan(new BackgroundColorSpan(colorScheme.highlightTextColor),
 							textIndex, textIndex + highlight.length(), SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
 				}
 				text = spannable;
@@ -886,8 +888,9 @@ public class ViewUnit {
 	}
 
 	private static CardView createCardLayout(ViewGroup parent) {
+		ThemeEngine.Theme theme = ThemeEngine.getTheme(parent.getContext());
 		CardView cardView = new CardView(parent.getContext());
-		cardView.setBackgroundColor(ResourceUtils.getColor(cardView.getContext(), R.attr.backgroundCard));
+		cardView.setBackgroundColor(theme.card);
 		FrameLayout content = new FrameLayout(cardView.getContext());
 		ViewUtils.setSelectableItemBackground(content);
 		cardView.addView(content, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -945,8 +948,8 @@ public class ViewUnit {
 				ViewUtils.applyScaleSize(comment, subject, description);
 			} else {
 				if (C.API_LOLLIPOP) {
-					ColorStateList colors = ResourceUtils.getColorStateList(itemView.getContext(),
-							R.attr.colorPostSecondary);
+					ColorStateList colors = ColorStateList.valueOf(ThemeEngine
+							.getTheme(itemView.getContext()).meta);
 					for (ImageView imageView : Arrays.asList(stateSage, stateSticky, stateClosed)) {
 						imageView.setImageTintList(colors);
 					}
@@ -1048,8 +1051,8 @@ public class ViewUnit {
 				head.addView(imageView, anchorIndex + i, new ViewGroup.LayoutParams(size, size));
 				stateImages[i] = imageView;
 				if (C.API_LOLLIPOP) {
-					imageView.setImageTintList(ResourceUtils.getColorStateList(imageView.getContext(),
-							R.attr.colorPostSecondary));
+					imageView.setImageTintList(ColorStateList.valueOf(ThemeEngine
+							.getTheme(imageView.getContext()).meta));
 				}
 			}
 			typedArray.recycle();

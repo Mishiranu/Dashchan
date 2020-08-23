@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.text.InputFilter;
 import android.text.InputType;
-import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +18,7 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
+import com.mishiranu.dashchan.util.ViewUtils;
 
 public class CaptchaForm implements View.OnClickListener, View.OnLongClickListener,
 		TextView.OnEditorActionListener {
@@ -63,7 +63,7 @@ public class CaptchaForm implements View.OnClickListener, View.OnLongClickListen
 					android.R.attr.textColorPrimary));
 			skipTextView.setAllCaps(true);
 			skipTextView.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
-			skipTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f);
+			ViewUtils.setTextSizeScaled(skipTextView, 12);
 		}
 		updateCaptchaHeight(false);
 		captchaInput = captcha.input;

@@ -7,13 +7,14 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.content.res.TypedArray;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -63,7 +64,6 @@ import com.mishiranu.dashchan.content.service.WatcherService;
 import com.mishiranu.dashchan.content.storage.DraftsStorage;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.graphics.ActionIconSet;
-import com.mishiranu.dashchan.graphics.ThemeChoiceDrawable;
 import com.mishiranu.dashchan.ui.gallery.GalleryOverlay;
 import com.mishiranu.dashchan.ui.navigator.Page;
 import com.mishiranu.dashchan.ui.navigator.PageFragment;
@@ -87,6 +87,7 @@ import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.ExpandedScreen;
+import com.mishiranu.dashchan.widget.ThemeEngine;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -100,6 +101,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 
 public class MainActivity extends StateActivity implements DrawerForm.Callback,
@@ -148,6 +150,11 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 
 	private final ClickableToast.Holder clickableToastHolder = new ClickableToast.Holder(this);
 
+	@Override
+	protected void attachBaseContext(Context newBase) {
+		super.attachBaseContext(ThemeEngine.attach(newBase));
+	}
+
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -155,8 +162,10 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			requestWindowFeature(Window.FEATURE_NO_TITLE);
 			requestWindowFeature(Window.FEATURE_ACTION_MODE_OVERLAY);
 		}
-		ResourceUtils.applyPreferredTheme(this);
-		ExpandedScreen.Init expandedScreenInit = new ExpandedScreen.Init(this, Preferences.isExpandedScreen());
+		ExpandedScreen.PreThemeInit expandedScreenPreThemeInit = new ExpandedScreen
+				.PreThemeInit(this, Preferences.isExpandedScreen());
+		ThemeEngine.applyTheme(this);
+		ExpandedScreen.Init expandedScreenInit = expandedScreenPreThemeInit.initAfterTheme();
 		super.onCreate(savedInstanceState);
 		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 		float density = ResourceUtils.obtainDensity(this);
@@ -170,14 +179,24 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		configurationLock = new ConfigurationLock(this);
 		drawerCommon = findViewById(R.id.drawer_common);
 		drawerWide = findViewById(R.id.drawer_wide);
-		TypedArray typedArray = obtainStyledAttributes(new int[] {R.attr.styleDrawerSpecial});
-		int drawerResId = typedArray.getResourceId(0, 0);
-		typedArray.recycle();
-		ContextThemeWrapper styledContext = drawerResId != 0 ? new ContextThemeWrapper(this, drawerResId) : this;
-		int drawerBackground = ResourceUtils.getColor(styledContext, R.attr.backgroundDrawer);
+		ThemeEngine.Theme theme = ThemeEngine.getTheme(this);
+		Context drawerContext;
+		int drawerBackground;
+		if (C.API_LOLLIPOP) {
+			drawerContext = this;
+			drawerBackground = theme.card;
+		} else {
+			boolean black = theme.isBlack4();
+			drawerContext = new ContextThemeWrapper(this, R.style.Theme_Main_Dark);
+			drawerBackground = black ? 0xff000000 : 0xff202020;
+			if (black) {
+				getActionBar().setLogo(android.R.color.transparent);
+				getActionBar().setBackgroundDrawable(new ColorDrawable(0xff000000));
+			}
+		}
 		drawerCommon.setBackgroundColor(drawerBackground);
 		drawerWide.setBackgroundColor(drawerBackground);
-		drawerForm = new DrawerForm(styledContext, this, this, configurationLock, watcherServiceClient);
+		drawerForm = new DrawerForm(drawerContext, this, configurationLock, watcherServiceClient);
 		drawerRecyclerView = drawerForm.getRecyclerView();
 		drawerRecyclerView.setId(android.R.id.tabcontent);
 		drawerParent = new FrameLayout(this);
@@ -1320,7 +1339,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private void showThemeDialog() {
-		final int checkedItem = Arrays.asList(Preferences.VALUES_THEME).indexOf(Preferences.getTheme());
+		ThemeEngine.Theme theme = ThemeEngine.getTheme(this);
+		List<ThemeEngine.Theme> themes = ThemeEngine.getThemes();
 		Resources resources = getResources();
 		float density = ResourceUtils.obtainDensity(resources);
 		ScrollView scrollView = new ScrollView(this);
@@ -1332,9 +1352,9 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		final AlertDialog dialog = new AlertDialog.Builder(this).setTitle(R.string.action_change_theme)
 				.setView(scrollView).setNegativeButton(android.R.string.cancel, null).create();
 		View.OnClickListener listener = v -> {
-			int index = (int) v.getTag();
-			if (index != checkedItem) {
-				Preferences.setTheme(Preferences.VALUES_THEME[index]);
+			ThemeEngine.Theme newTheme = themes.get((int) v.getTag());
+			if (newTheme != theme) {
+				Preferences.setTheme(newTheme.name);
 				recreate();
 			}
 			dialog.dismiss();
@@ -1342,7 +1362,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		int circleSize = (int) (56f * density);
 		int itemPadding = (int) (12f * density);
 		LinearLayout inner = null;
-		for (int i = 0; i < Preferences.ENTRIES_THEME.length; i++) {
+		for (int i = 0; i < themes.size(); i++) {
+			ThemeEngine.Theme workTheme = themes.get(i);
 			if (i % 3 == 0) {
 				inner = new LinearLayout(this);
 				inner.setOrientation(LinearLayout.HORIZONTAL);
@@ -1357,16 +1378,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			layout.setTag(i);
 			inner.addView(layout, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
 			View view = new View(this);
-			int colorBackgroundAttr = Preferences.VALUES_THEME_COLORS[i][0];
-			int colorPrimaryAttr = Preferences.VALUES_THEME_COLORS[i][1];
-			int colorAccentAttr = Preferences.VALUES_THEME_COLORS[i][2];
-			Resources.Theme theme = getResources().newTheme();
-			theme.applyStyle(Preferences.VALUES_THEME_IDS[i], true);
-			TypedArray typedArray = theme.obtainStyledAttributes(new int[] {colorBackgroundAttr,
-					colorPrimaryAttr, colorAccentAttr});
-			view.setBackground(new ThemeChoiceDrawable(typedArray.getColor(0, 0), typedArray.getColor(1, 0),
-					typedArray.getColor(2, 0)));
-			typedArray.recycle();
+			view.setBackground(workTheme.createThemeChoiceDrawable());
 			if (C.API_LOLLIPOP) {
 				view.setElevation(4f * density);
 			}
@@ -1374,7 +1386,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			TextView textView = new TextView(this, null, android.R.attr.textAppearanceListItem);
 			textView.setSingleLine(true);
 			textView.setEllipsize(TextUtils.TruncateAt.END);
-			textView.setText(Preferences.ENTRIES_THEME[i]);
+			textView.setText(workTheme.displayName);
 			if (C.API_LOLLIPOP) {
 				textView.setAllCaps(true);
 				textView.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
@@ -1385,8 +1397,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			textView.setGravity(Gravity.CENTER_HORIZONTAL);
 			textView.setPadding(0, (int) (8f * density), 0, 0);
 			layout.addView(textView, LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-			if (i + 1 == Preferences.ENTRIES_THEME.length && Preferences.ENTRIES_THEME.length % 3 != 0) {
-				if (Preferences.ENTRIES_THEME.length % 3 == 1) {
+			if (i + 1 == themes.size() && themes.size() % 3 != 0) {
+				if (themes.size() % 3 == 1) {
 					inner.addView(new View(this), 0, new LinearLayout.LayoutParams(0,
 							LinearLayout.LayoutParams.MATCH_PARENT, 1f));
 				}
@@ -1832,7 +1844,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		builder.setSmallIcon(R.drawable.ic_new_releases_white_24dp);
 		String text = getString(R.string.text_updates_available_format, count);
 		if (C.API_LOLLIPOP) {
-			builder.setColor(ResourceUtils.getColor(this, android.R.attr.colorAccent));
+			builder.setColor(ThemeEngine.getTheme(this).accent);
 			builder.setPriority(NotificationCompat.PRIORITY_HIGH);
 			builder.setVibrate(new long[0]);
 		} else {

@@ -23,6 +23,7 @@ public class ViewFactory {
 			textView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
 					ViewGroup.LayoutParams.WRAP_CONTENT));
 			textView.setGravity(Gravity.CENTER_VERTICAL);
+			textView.setTextColor(ThemeEngine.getTheme(textView.getContext()).accent);
 			textView.setPadding((int) (16f * density), (int) (16f * density), (int) (16f * density),
 					(int) (8f * density));
 		} else {

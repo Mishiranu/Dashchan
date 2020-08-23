@@ -15,6 +15,7 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
+import com.mishiranu.dashchan.widget.PaddedRecyclerView;
 
 public abstract class BaseListFragment extends Fragment {
 	private RecyclerView recyclerView;
@@ -26,7 +27,7 @@ public abstract class BaseListFragment extends Fragment {
 		FrameLayout view = new FrameLayout(container.getContext());
 		view.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
 				ViewGroup.LayoutParams.MATCH_PARENT));
-		recyclerView = new RecyclerView(view.getContext());
+		recyclerView = new PaddedRecyclerView(view.getContext());
 		recyclerView.setId(android.R.id.list);
 		recyclerView.setMotionEventSplittingEnabled(false);
 		recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));

@@ -12,7 +12,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.text.InputType;
 import android.util.Pair;
-import android.util.TypedValue;
 import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -69,6 +68,7 @@ import com.mishiranu.dashchan.widget.ListPosition;
 import com.mishiranu.dashchan.widget.PostsLayoutManager;
 import com.mishiranu.dashchan.widget.ProgressDialog;
 import com.mishiranu.dashchan.widget.SafePasteEditText;
+import com.mishiranu.dashchan.widget.ThemeEngine;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1135,11 +1135,11 @@ public class DialogUnit {
 			textView.setText(icon.title);
 			if (C.API_LOLLIPOP) {
 				textView.setPadding((int) (26f * density), 0, 0, 0); // 26f = 24f + 2f
-				textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
+				ViewUtils.setTextSizeScaled(textView, 14);
 				textView.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
 			} else {
 				textView.setPadding((int) (10f * density), 0, 0, 0); // 20f = 8f + 2f
-				textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f);
+				ViewUtils.setTextSizeScaled(textView, 16);
 				textView.setAllCaps(true);
 			}
 		}
@@ -1248,6 +1248,7 @@ public class DialogUnit {
 			int check = 0;
 			for (Pair<String, String> pair : state.types) {
 				RadioButton button = new RadioButton(context);
+				ThemeEngine.applyStyle(button);
 				button.setText(pair.second);
 				button.setId(radioGroup.getChildCount());
 				if (StringUtils.equals(pair.first, defaultType)) {
@@ -1281,6 +1282,7 @@ public class DialogUnit {
 			checkBoxGroup.setOrientation(RadioGroup.VERTICAL);
 			for (Pair<String, String> option : state.options) {
 				CheckBox checkBox = new CheckBox(context);
+				ThemeEngine.applyStyle(checkBox);
 				checkBox.setText(option.second);
 				checkBox.setTag(option.first);
 				if (defaultOptions != null && defaultOptions.contains(option.first)) {

@@ -22,6 +22,7 @@ public class ProgressDialog extends AlertDialog {
 	@SuppressLint("RtlHardcoded")
 	public ProgressDialog(Context context, String progressFormat) {
 		super(context);
+		context = getContext();
 		setCanceledOnTouchOutside(false);
 
 		this.progressFormat = progressFormat;
@@ -45,6 +46,7 @@ public class ProgressDialog extends AlertDialog {
 			layout.setOrientation(LinearLayout.HORIZONTAL);
 			layout.setGravity(Gravity.CENTER_VERTICAL);
 			progressBar = new ProgressBar(context, null, android.R.attr.progressBarStyle);
+			ThemeEngine.applyStyle(progressBar);
 			layout.addView(progressBar, LinearLayout.LayoutParams.WRAP_CONTENT,
 					LinearLayout.LayoutParams.WRAP_CONTENT);
 			message = new TextView(context);
@@ -60,6 +62,7 @@ public class ProgressDialog extends AlertDialog {
 		} else {
 			layout.setOrientation(LinearLayout.VERTICAL);
 			progressBar = new ProgressBar(context, null, android.R.attr.progressBarStyleHorizontal);
+			ThemeEngine.applyStyle(progressBar);
 			layout.addView(progressBar, LinearLayout.LayoutParams.MATCH_PARENT,
 					LinearLayout.LayoutParams.WRAP_CONTENT);
 			message = null;

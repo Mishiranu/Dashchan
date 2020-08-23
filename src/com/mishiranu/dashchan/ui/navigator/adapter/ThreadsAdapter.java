@@ -32,6 +32,7 @@ import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.SimpleViewHolder;
+import com.mishiranu.dashchan.widget.ThemeEngine;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -134,7 +135,7 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 		topLayout.setOrientation(LinearLayout.VERTICAL);
 		innerLayout.addView(topLayout, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
 		headerData[0] = new TextView(context, null, android.R.attr.textAppearanceLarge);
-		headerData[0].setTextSize(18f);
+		ViewUtils.setTextSizeScaled(headerData[0], 18);
 		if (C.API_LOLLIPOP) {
 			headerData[0].setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
 		}
@@ -161,7 +162,7 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 				LinearLayout.LayoutParams.WRAP_CONTENT);
 		for (int i = 2; i < 6; i += 2) {
 			headerData[i] = new TextView(context, null, android.R.attr.textAppearanceLarge);
-			headerData[i].setTextSize(16f);
+			ViewUtils.setTextSizeScaled(headerData[i], 16);
 			if (C.API_LOLLIPOP) {
 				headerData[i].setTypeface(headerData[0].getTypeface());
 			}
@@ -182,6 +183,7 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 				LinearLayout.LayoutParams.WRAP_CONTENT);
 		for (int i = 0; i < sortingData.length; i++) {
 			sortingData[i] = new RadioButton(context);
+			ThemeEngine.applyStyle(sortingData[i]);
 			sortingData[i].setOnCheckedChangeListener(this);
 			radioButtonsContainer.addView(sortingData[i], LinearLayout.LayoutParams.WRAP_CONTENT,
 					LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -233,7 +235,7 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 			case DIVIDER: {
 				float density = ResourceUtils.obtainDensity(parent);
 				TextView textView = new TextView(parent.getContext(), null, android.R.attr.textAppearanceLarge);
-				textView.setTextSize(18f);
+				ViewUtils.setTextSizeScaled(textView, 18);
 				if (C.API_LOLLIPOP) {
 					textView.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
 				}

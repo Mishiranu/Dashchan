@@ -1,0 +1,13 @@
+{
+	"base": "light",
+	"name": "Burichan",
+	"window": "#ffeef2ff",
+	"primary": "#ff7777bb",
+	"accent": "#ffaf0a0f",
+	"card": "#fff7f9ff",
+	"spoiler": "#809988ee",
+	"link": "#ff33335f",
+	"quote": "#ff779922",
+	"tripcode": "#ff228855",
+	"capcode": "#ff2266aa"
+}

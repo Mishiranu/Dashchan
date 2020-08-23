@@ -17,6 +17,7 @@ import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.widget.ProgressDialog;
+import com.mishiranu.dashchan.widget.ThemeEngine;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -33,6 +34,7 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
 	private final RecyclerView.ViewHolder holder;
 	private final Drawable divider;
 	private final int width;
+	private final int background;
 	private final ProgressDialog dialog;
 
 	public ThreadshotPerformer(ViewGroup parent, UiManager uiManager, String chanName, String boardName,
@@ -49,6 +51,7 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
 		holder = uiManager.view().createPostView(parent, configurationSet);
 		divider = ResourceUtils.getDrawable(parent.getContext(), android.R.attr.listDivider, 0);
 		width = parent.getWidth();
+		background = ThemeEngine.getColorScheme(parent.getContext()).windowBackgroundColor;
 		dialog = new ProgressDialog(parent.getContext(), null);
 		dialog.setMessage(parent.getContext().getString(R.string.message_processing_data));
 		dialog.setOnCancelListener(this);
@@ -88,7 +91,7 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
 			if (height > 0) {
 				Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
 				Canvas canvas = new Canvas(bitmap);
-				canvas.drawColor(uiManager.getColorScheme().windowBackgroundColor);
+				canvas.drawColor(background);
 				for (PostItem postItem : postItems) {
 					if (isCancelled()) {
 						return null;

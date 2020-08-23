@@ -1,0 +1,11 @@
+{
+	"base": "dark",
+	"name": "Tomorrow",
+	"window": "#ff282a2e",
+	"primary": "#ff32343a",
+	"accent": "#ff81a2be",
+	"card": "@primary",
+	"quote": "#ffb5bd68",
+	"tripcode": "#ff33cc88",
+	"capcode": "#ff66bbff"
+}

@@ -25,7 +25,6 @@ public class PullableRecyclerView extends PaddedRecyclerView implements Pullable
 
 	public PullableRecyclerView(@NonNull Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
-		wrapper.handleAttrs(attrs, defStyleAttr, 0);
 	}
 
 	/* init */ {

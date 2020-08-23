@@ -2,7 +2,6 @@ package com.mishiranu.dashchan.ui.preference;
 
 import android.graphics.Rect;
 import android.os.Bundle;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -14,14 +13,12 @@ import androidx.fragment.app.Fragment;
 import chan.content.ChanMarkup;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.graphics.ColorScheme;
 import com.mishiranu.dashchan.text.HtmlParser;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
+import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.CommentTextView;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import com.mishiranu.dashchan.widget.ThemeEngine;
 
 public class TextFragment extends Fragment implements View.OnClickListener {
 	private static final String EXTRA_TYPE = "type";
@@ -48,27 +45,17 @@ public class TextFragment extends Fragment implements View.OnClickListener {
 		String content = args.getString(EXTRA_CONTENT);
 		switch (type) {
 			case TYPE_LICENSES: {
-				InputStream input = null;
-				try {
-					input = getResources().openRawResource(R.raw.licenses);
-					ByteArrayOutputStream output = new ByteArrayOutputStream();
-					IOUtils.copyStream(input, output);
-					content = new String(output.toByteArray()).replaceAll("\r?\n", "<br/>");
-				} catch (IOException e) {
-					throw new RuntimeException(e);
-				} finally {
-					IOUtils.close(input);
-				}
+				content = IOUtils.readRawResourceString(getResources(), R.raw.licenses);
 				break;
 			}
 		}
 		CharSequence text = HtmlParser.spanify(content, new Markup(), null, null);
-		new ColorScheme(requireContext()).apply(text);
+		ThemeEngine.getColorScheme(requireContext()).apply(text);
 		float density = ResourceUtils.obtainDensity(this);
 		textView = new CommentTextView(requireActivity(), null, android.R.attr.textAppearanceLarge);
 		int padding = (int) (16f * density);
 		textView.setPadding(padding, padding, padding, padding);
-		textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+		ViewUtils.setTextSizeScaled(textView, 14);
 		textView.setText(text);
 		ScrollView scrollView = new ScrollView(requireActivity()) {
 			@Override
@@ -78,6 +65,7 @@ public class TextFragment extends Fragment implements View.OnClickListener {
 			}
 		};
 		scrollView.setId(android.R.id.list);
+		ThemeEngine.applyStyle(scrollView);
 		FrameLayout frameLayout = new FrameLayout(requireActivity());
 		frameLayout.setOnClickListener(this);
 		scrollView.addView(frameLayout, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);

@@ -13,13 +13,12 @@ import android.util.Pair;
 import android.widget.Button;
 import chan.content.ChanMarkup;
 import com.mishiranu.dashchan.C;
-import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.text.style.HeadingSpan;
 import com.mishiranu.dashchan.text.style.MonospaceSpan;
 import com.mishiranu.dashchan.text.style.OverlineSpan;
 import com.mishiranu.dashchan.text.style.ScriptSpan;
 import com.mishiranu.dashchan.util.FlagUtils;
-import com.mishiranu.dashchan.util.ResourceUtils;
+import com.mishiranu.dashchan.widget.ThemeEngine;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -154,14 +153,13 @@ public class MarkupButtonProvider {
 		PROVIDERS.add(new MarkupButtonProvider(ChanMarkup.TAG_SPOILER, 44, 5, "SP", null) {
 			@Override
 			public Object getSpan(Context context) {
-				return new BackgroundColorSpan(ResourceUtils.getColor(context, R.attr.backgroundSpoiler));
+				return new BackgroundColorSpan(ThemeEngine.getTheme(context).spoiler);
 			}
 		});
 		PROVIDERS.add(new MarkupButtonProvider(ChanMarkup.TAG_QUOTE, 40, 4, ">", null) {
 			@Override
 			public Object getSpan(Context context) {
-				return C.API_LOLLIPOP ? null : new ForegroundColorSpan(ResourceUtils.getColor(context,
-						R.attr.colorTextQuote));
+				return C.API_LOLLIPOP ? null : new ForegroundColorSpan(ThemeEngine.getTheme(context).quote);
 			}
 		});
 	}

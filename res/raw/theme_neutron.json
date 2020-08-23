@@ -1,0 +1,14 @@
+{
+	"base": "dark",
+	"name": "Neutron",
+	"window": "#ff2c2c2c",
+	"primary": "#ff6688cc",
+	"card": "#ff202020",
+	"post": "@primary",
+	"meta": "@link",
+	"spoiler": "#33aaaaaa",
+	"link": "#ffccbb88",
+	"quote": "#ff779922",
+	"tripcode": "#ff33cc88",
+	"capcode": "#ffffaa33"
+}

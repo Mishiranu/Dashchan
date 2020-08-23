@@ -13,8 +13,7 @@
 		android:splitMotionEvents="false"
 		android:clipToPadding="false"
 		android:scrollbars="vertical"
-		android:scrollbarStyle="outsideOverlay"
-		android:color="?attr/colorAccentSupport" />
+		android:scrollbarStyle="outsideOverlay" />
 
 	<FrameLayout
 		android:id="@+id/progress"

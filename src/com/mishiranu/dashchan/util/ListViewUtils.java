@@ -13,7 +13,7 @@ import android.widget.AdapterView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.LinearSmoothScroller;
 import androidx.recyclerview.widget.RecyclerView;
-import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.widget.ThemeEngine;
 
 public class ListViewUtils {
 	public static View getRootViewInList(View view) {
@@ -81,7 +81,7 @@ public class ListViewUtils {
 	}
 
 	public static Drawable colorizeListThumbDrawable4(Context context, Drawable drawable) {
-		int colorDefault = ResourceUtils.getColor(context, R.attr.colorAccentSupport);
+		int colorDefault = ThemeEngine.getTheme(context).accent;
 		int colorPressed = GraphicsUtils.modifyColorGain(colorDefault, 4f / 3f);
 		if (colorDefault != 0 && colorPressed != 0) {
 			final int[] pressedState = {android.R.attr.state_pressed};

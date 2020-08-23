@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.UriPermission;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -12,6 +13,7 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.content.Preferences;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
@@ -98,6 +100,20 @@ public class IOUtils {
 		} catch (IOException e) {
 			return false;
 		}
+	}
+
+	public static String readRawResourceString(Resources resources, int resId) {
+		InputStream input = null;
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		try {
+			input = resources.openRawResource(resId);
+			IOUtils.copyStream(input, output);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		} finally {
+			IOUtils.close(input);
+		}
+		return new String(output.toByteArray());
 	}
 
 	public static boolean copyInternalFile(File from, File to) {

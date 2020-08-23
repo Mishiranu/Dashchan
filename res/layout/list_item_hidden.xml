@@ -14,7 +14,8 @@
 		android:layout_height="wrap_content"
 		android:layout_marginEnd="4dp"
 		android:layout_marginRight="4dp"
-		android:textColor="?attr/colorPostPrimary"
+		android:textColor="?attr/colorTextPost"
+		android:tag="theme.textColor=post"
 		android:textSize="12sp"
 		android:textStyle="bold" />
 
@@ -24,7 +25,8 @@
 		android:layout_height="wrap_content"
 		android:layout_marginEnd="4dp"
 		android:layout_marginRight="4dp"
-		android:textColor="?attr/colorPostPrimary"
+		android:textColor="?attr/colorTextPost"
+		android:tag="theme.textColor=post"
 		android:textSize="12sp" />
 
 	<TextView
@@ -34,7 +36,8 @@
 		android:layout_weight="1"
 		android:ellipsize="end"
 		android:singleLine="true"
-		android:textColor="?attr/colorPostPrimary"
+		android:textColor="?attr/colorTextPost"
+		android:tag="theme.textColor=post"
 		android:textSize="12sp" />
 
 </com.mishiranu.dashchan.widget.PostLinearLayout>

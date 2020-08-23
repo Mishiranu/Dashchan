@@ -7,7 +7,6 @@ import com.mishiranu.dashchan.content.model.AttachmentItem;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.service.DownloadService;
-import com.mishiranu.dashchan.graphics.ColorScheme;
 import com.mishiranu.dashchan.ui.gallery.GalleryOverlay;
 import com.mishiranu.dashchan.ui.posting.Replyable;
 import com.mishiranu.dashchan.util.ConfigurationLock;
@@ -27,7 +26,6 @@ public class UiManager {
 
 	private final LocalNavigator localNavigator;
 	private final DownloadProvider downloadProvider;
-	private final ColorScheme colorScheme;
 	private final ConfigurationLock configurationLock;
 
 	public UiManager(Context context, LocalNavigator localNavigator,
@@ -38,16 +36,11 @@ public class UiManager {
 		interactionUnit = new InteractionUnit(this);
 		this.localNavigator = localNavigator;
 		this.downloadProvider = downloadProvider;
-		colorScheme = new ColorScheme(context);
 		this.configurationLock = configurationLock;
 	}
 
 	Context getContext() {
 		return context;
-	}
-
-	public ColorScheme getColorScheme() {
-		return colorScheme;
 	}
 
 	public ConfigurationLock getConfigurationLock() {

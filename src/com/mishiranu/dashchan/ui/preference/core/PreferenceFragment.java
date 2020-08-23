@@ -23,6 +23,7 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
+import com.mishiranu.dashchan.widget.PaddedRecyclerView;
 import com.mishiranu.dashchan.widget.SimpleViewHolder;
 import com.mishiranu.dashchan.widget.ViewFactory;
 import java.util.ArrayList;
@@ -90,7 +91,7 @@ public abstract class PreferenceFragment extends Fragment {
 
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		recyclerView = new RecyclerView(container.getContext());
+		recyclerView = new PaddedRecyclerView(container.getContext());
 		recyclerView.setId(android.R.id.list);
 		recyclerView.setMotionEventSplittingEnabled(false);
 		recyclerView.setLayoutManager(new LinearLayoutManager(container.getContext()));

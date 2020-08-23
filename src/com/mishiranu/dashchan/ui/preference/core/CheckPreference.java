@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import com.mishiranu.dashchan.widget.ThemeEngine;
 
 public class CheckPreference extends Preference<Boolean> {
 	public CheckPreference(Context context, String key, boolean defaultValue,
@@ -42,6 +43,7 @@ public class CheckPreference extends Preference<Boolean> {
 		ViewGroup widgetFrame = viewHolder.view.findViewById(android.R.id.widget_frame);
 		widgetFrame.setVisibility(View.VISIBLE);
 		CheckBox check = new CheckBox(widgetFrame.getContext());
+		ThemeEngine.applyStyle(check);
 		check.setClickable(false);
 		check.setFocusable(false);
 		widgetFrame.addView(check, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);

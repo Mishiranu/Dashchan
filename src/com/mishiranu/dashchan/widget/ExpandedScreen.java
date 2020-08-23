@@ -70,13 +70,13 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener,
 	private final int lastItemLimit;
 	private final int minItemsCount;
 
-	public static class Init {
+	public static class PreThemeInit {
 		private final boolean expandingEnabled;
 		private final boolean fullScreenLayoutEnabled;
 		private final int initialActionBarHeight;
 		private final Activity activity;
 
-		public Init(Activity activity, boolean enabled) {
+		public PreThemeInit(Activity activity, boolean enabled) {
 			expandingEnabled = enabled;
 			if (C.API_LOLLIPOP) {
 				fullScreenLayoutEnabled = true;
@@ -87,14 +87,35 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener,
 			} else {
 				fullScreenLayoutEnabled = false;
 			}
+			initialActionBarHeight = obtainActionBarHeight(activity);
+			this.activity = activity;
 			Window window = activity.getWindow();
-			if (fullScreenLayoutEnabled) {
-				window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
-						View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
-			} else if (enabled) {
+			if (!fullScreenLayoutEnabled && enabled) {
 				window.requestFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
 			}
-			initialActionBarHeight = obtainActionBarHeight(activity);
+		}
+
+		public Init initAfterTheme() {
+			if (fullScreenLayoutEnabled) {
+				Window window = activity.getWindow();
+				window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+						View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+			}
+			return new Init(expandingEnabled, fullScreenLayoutEnabled, initialActionBarHeight, activity);
+		}
+	}
+
+	public static class Init {
+		private final boolean expandingEnabled;
+		private final boolean fullScreenLayoutEnabled;
+		private final int initialActionBarHeight;
+		private final Activity activity;
+
+		private Init(boolean expandingEnabled, boolean fullScreenLayoutEnabled,
+				int initialActionBarHeight, Activity activity) {
+			this.expandingEnabled = expandingEnabled;
+			this.fullScreenLayoutEnabled = fullScreenLayoutEnabled;
+			this.initialActionBarHeight = initialActionBarHeight;
 			this.activity = activity;
 		}
 	}

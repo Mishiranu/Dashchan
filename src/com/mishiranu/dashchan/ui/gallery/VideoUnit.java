@@ -337,7 +337,7 @@ public class VideoUnit {
 
 			CharSequence oldTimeText = timeTextView != null ? timeTextView.getText() : null;
 			timeTextView = new TextView(context, null, android.R.attr.textAppearanceListItem);
-			timeTextView.setTextSize(14f);
+			ViewUtils.setTextSizeScaled(timeTextView, 14);
 			timeTextView.setGravity(Gravity.CENTER_HORIZONTAL);
 			if (C.API_LOLLIPOP) {
 				timeTextView.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
@@ -347,7 +347,7 @@ public class VideoUnit {
 			}
 
 			totalTimeTextView = new TextView(context, null, android.R.attr.textAppearanceListItem);
-			totalTimeTextView.setTextSize(14f);
+			ViewUtils.setTextSizeScaled(totalTimeTextView, 14);
 			totalTimeTextView.setGravity(Gravity.CENTER_HORIZONTAL);
 			if (C.API_LOLLIPOP) {
 				totalTimeTextView.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);

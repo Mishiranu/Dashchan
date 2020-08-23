@@ -7,6 +7,7 @@ import android.widget.EdgeEffect;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.util.ViewUtils;
 
 public class EdgeEffectHandler {
 	public enum Side {TOP, BOTTOM}
@@ -106,10 +107,8 @@ public class EdgeEffectHandler {
 	}
 
 	public void setColor(int color) {
-		if (C.API_LOLLIPOP) {
-			topEdgeEffect.setColor(color);
-			bottomEdgeEffect.setColor(color);
-		}
+		ViewUtils.setEdgeEffectColor(topEdgeEffect, color);
+		ViewUtils.setEdgeEffectColor(bottomEdgeEffect, color);
 	}
 
 	private ControlledEdgeEffect getEdgeEffect(Side side) {

@@ -56,6 +56,7 @@ import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.SearchHelper;
 import com.mishiranu.dashchan.util.ToastUtils;
+import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
 import com.mishiranu.dashchan.widget.ListPosition;
@@ -209,13 +210,13 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		uiManager.observable().register(this);
 		hidePerformer.setPostsProvider(adapter);
 
-		Context darkStyledContext = new ContextThemeWrapper(context, R.style.Theme_General_Main_Dark);
+		Context darkStyledContext = new ContextThemeWrapper(context, R.style.Theme_Main_Dark);
 		searchController = new LinearLayout(darkStyledContext);
 		searchController.setOrientation(LinearLayout.HORIZONTAL);
 		searchController.setGravity(Gravity.CENTER_VERTICAL);
 		int buttonPadding = (int) (10f * density);
 		searchTextResult = new Button(darkStyledContext, null, android.R.attr.borderlessButtonStyle);
-		searchTextResult.setTextSize(11f);
+		ViewUtils.setTextSizeScaled(searchTextResult, 11);
 		if (!C.API_LOLLIPOP) {
 			searchTextResult.setTypeface(null, Typeface.BOLD);
 		}

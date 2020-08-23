@@ -14,7 +14,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.PowerManager;
 import android.util.Pair;
-import android.view.ContextThemeWrapper;
 import androidx.core.app.NotificationCompat;
 import chan.content.ApiException;
 import chan.content.ChanConfiguration;
@@ -34,8 +33,8 @@ import com.mishiranu.dashchan.ui.MainActivity;
 import com.mishiranu.dashchan.util.AndroidUtils;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
-import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.WeakObservable;
+import com.mishiranu.dashchan.widget.ThemeEngine;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -144,8 +143,8 @@ public class PostingService extends Service implements SendPostTask.Callback<Pos
 		notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		int notificationColor = 0;
 		if (C.API_LOLLIPOP) {
-			Context themedContext = new ContextThemeWrapper(this, Preferences.getThemeResource());
-			notificationColor = ResourceUtils.getColor(themedContext, android.R.attr.colorAccent);
+			ThemeEngine.Theme theme = ThemeEngine.attachAndApply(this);
+			notificationColor = theme.accent;
 		}
 		this.notificationColor = notificationColor;
 		if (C.API_OREO) {

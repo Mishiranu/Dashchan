@@ -11,6 +11,7 @@ import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import com.mishiranu.dashchan.widget.ThemeEngine;
 import java.util.ArrayList;
 
 public class DialogMenu {
@@ -195,6 +196,7 @@ public class DialogMenu {
 					linearLayout.addView(view, new LinearLayout.LayoutParams(0,
 							LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
 					CheckBox checkBox = new CheckBox(parent.getContext());
+					ThemeEngine.applyStyle(checkBox);
 					checkBox.setClickable(false);
 					checkBox.setFocusable(false);
 					int paddingRight = view.getPaddingRight() - (int) (4f * ResourceUtils.obtainDensity(view));

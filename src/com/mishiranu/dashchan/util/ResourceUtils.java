@@ -1,7 +1,6 @@
 package com.mishiranu.dashchan.util;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
@@ -15,20 +14,8 @@ import android.view.Gravity;
 import android.view.View;
 import androidx.fragment.app.Fragment;
 import com.mishiranu.dashchan.C;
-import com.mishiranu.dashchan.content.Preferences;
 
 public class ResourceUtils {
-	public static final int STATUS_NAVIGATION_BACKGROUND = 0x33000000;
-
-	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
-	public static void applyPreferredTheme(Activity activity) {
-		activity.setTheme(Preferences.getThemeResource());
-		if (C.API_LOLLIPOP) {
-			int color = getColor(activity, android.R.attr.colorPrimary);
-			activity.getWindow().setStatusBarColor(GraphicsUtils.mixColors(color, STATUS_NAVIGATION_BACKGROUND));
-		}
-	}
-
 	public static float obtainDensity(View view) {
 		return obtainDensity(view.getResources());
 	}

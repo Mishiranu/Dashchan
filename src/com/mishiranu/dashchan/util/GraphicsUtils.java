@@ -13,6 +13,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.util.Pair;
 import android.view.Gravity;
+import androidx.core.graphics.ColorUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.content.model.FileHolder;
 import java.io.BufferedInputStream;
@@ -73,6 +74,10 @@ public class GraphicsUtils {
 		int g = (Color.green(foreground) * fa + Color.green(background) * ba * (0xff - fa) / 0xff) / a;
 		int b = (Color.blue(foreground) * fa + Color.blue(background) * ba * (0xff - fa) / 0xff) / a;
 		return Color.argb(Math.min(a, 0xff), Math.min(r, 0xff), Math.min(g, 0xff), Math.min(b, 0xff));
+	}
+
+	public static int applyAlpha(int color, float alpha) {
+		return ColorUtils.blendARGB(0x00ffffff & color, color, alpha);
 	}
 
 	@SuppressLint("RtlHardcoded")

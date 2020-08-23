@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-	<attr name="styleDrawerSpecial" format="reference" />
+	<attr name="isPopup" format="boolean" />
 
-	<attr name="backgroundBlock" format="color|reference" />
-	<attr name="backgroundDrawer" format="color|reference" />
-	<attr name="backgroundAttachment" format="color|reference" />
-	<attr name="backgroundSpoiler" format="color|reference" />
-	<attr name="backgroundCard" format="color|reference" />
+	<attr name="colorWindowBackground" format="color|reference" />
+	<attr name="colorBlockBackground" format="color|reference" />
+	<attr name="colorAttachmentBackground" format="color|reference" />
+	<attr name="colorSpoilerBackground" format="color|reference" />
+	<attr name="colorCardBackground" format="color|reference" />
 
-	<attr name="colorPostPrimary" format="color|reference" />
-	<attr name="colorPostSecondary" format="color|reference" />
-	<attr name="colorPostGrayed" format="color|reference" />
-
+	<attr name="colorTextThread" format="color|reference" />
+	<attr name="colorTextPost" format="color|reference" />
+	<attr name="colorTextMeta" format="color|reference" />
 	<attr name="colorTextQuote" format="color|reference" />
 	<attr name="colorTextTripcode" format="color|reference" />
 	<attr name="colorTextCapcode" format="color|reference" />

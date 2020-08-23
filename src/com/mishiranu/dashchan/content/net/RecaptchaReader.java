@@ -41,9 +41,7 @@ import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.ResourceUtils;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
+import com.mishiranu.dashchan.widget.ThemeEngine;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -347,7 +345,7 @@ public class RecaptchaReader {
 			public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
 				Uri uri = Uri.parse(url);
 				if ("favicon.ico".equals(uri.getLastPathSegment())) {
-					return new WebResourceResponse("text/plain", "ISO-8859-1", new ByteArrayInputStream(new byte[0]));
+					return new WebResourceResponse("text/plain", "ISO-8859-1", null);
 				} else {
 					return super.shouldInterceptRequest(view, url);
 				}
@@ -469,6 +467,7 @@ public class RecaptchaReader {
 			layout.addView(loading, FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
 			((FrameLayout.LayoutParams) layout.getLayoutParams()).gravity = Gravity.CENTER;
 			ProgressBar progressBar = new ProgressBar(loading.getContext());
+			ThemeEngine.applyStyle(progressBar);
 			loading.addView(progressBar, FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
 			((FrameLayout.LayoutParams) loading.getLayoutParams()).gravity = Gravity.CENTER;
 
@@ -486,17 +485,7 @@ public class RecaptchaReader {
 			layout.addView(webView, 0, new FrameLayout.LayoutParams(defaultWidth, defaultHeight));
 
 			if (load) {
-				InputStream input = null;
-				ByteArrayOutputStream output = new ByteArrayOutputStream();
-				try {
-					input = getResources().openRawResource(R.raw.recaptcha_v2);
-					IOUtils.copyStream(input, output);
-				} catch (Exception e) {
-					throw new RuntimeException(e);
-				} finally {
-					IOUtils.close(input);
-				}
-				String data = new String(output.toByteArray())
+				String data = IOUtils.readRawResourceString(getResources(), R.raw.recaptcha_v2)
 						.replace("__REPLACE_API_KEY__", requireArguments().getString(EXTRA_API_KEY))
 						.replace("__REPLACE_INVISIBLE__", requireArguments().getBoolean(EXTRA_INVISIBLE)
 								? "true" : "false");

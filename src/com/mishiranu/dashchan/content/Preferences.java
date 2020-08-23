@@ -8,7 +8,6 @@ import chan.content.ChanConfiguration;
 import chan.content.ChanManager;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
-import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.storage.StatisticsStorage;
 import java.io.File;
 import java.util.ArrayList;
@@ -860,63 +859,9 @@ public class Preferences {
 	}
 
 	public static final String KEY_THEME = "theme";
-	public static final String VALUE_THEME_PHOTON = "photon";
-	public static final String VALUE_THEME_HADRON = "hadron";
-	public static final String VALUE_THEME_BURICHAN = "burichan";
-	public static final String VALUE_THEME_TOMORROW = "tomorrow";
-	public static final String VALUE_THEME_NORMIE = "normie";
-	public static final String VALUE_THEME_NEUTRON = "neutron";
-	public static final String VALUE_THEME_AMOLED = "amoled";
-	public static final String[] ENTRIES_THEME = {
-		"Photon",
-		"Hadron",
-		"Burichan",
-		"Tomorrow",
-		"Normie",
-		"Neutron",
-		"Amoled"
-	};
-	public static final String[] VALUES_THEME = {
-		VALUE_THEME_PHOTON,
-		VALUE_THEME_HADRON,
-		VALUE_THEME_BURICHAN,
-		VALUE_THEME_TOMORROW,
-		VALUE_THEME_NORMIE,
-		VALUE_THEME_NEUTRON,
-		VALUE_THEME_AMOLED
-	};
-	public static final int[] VALUES_THEME_IDS = {
-		R.style.Theme_Main_Photon,
-		R.style.Theme_Main_Hadron,
-		R.style.Theme_Main_Burichan,
-		R.style.Theme_Main_Tomorrow,
-		R.style.Theme_Main_Normie,
-		R.style.Theme_Main_Neutron,
-		R.style.Theme_Main_Amoled
-	};
-	public static final String DEFAULT_THEME = VALUE_THEME_PHOTON;
-	public static final int[][] VALUES_THEME_COLORS = {
-		{android.R.attr.windowBackground, R.attr.colorPrimarySupport, R.attr.colorAccentSupport},
-		{android.R.attr.windowBackground, R.attr.colorPrimarySupport, R.attr.colorAccentSupport},
-		{android.R.attr.windowBackground, R.attr.colorPrimarySupport, R.attr.colorAccentSupport},
-		{android.R.attr.windowBackground, R.attr.colorPrimarySupport, R.attr.colorAccentSupport},
-		{android.R.attr.windowBackground, R.attr.colorPrimarySupport, R.attr.colorAccentSupport},
-		{android.R.attr.windowBackground, R.attr.colorPrimarySupport, R.attr.colorPostSecondary},
-		{android.R.attr.windowBackground, R.attr.colorAccentSupport, R.attr.colorAccentSupport}
-	};
 
 	public static String getTheme() {
-		return PREFERENCES.getString(KEY_THEME, DEFAULT_THEME);
-	}
-
-	public static int getThemeResource() {
-		String theme = getTheme();
-		for (int i = 0; i < VALUES_THEME.length; i++) {
-			if (VALUES_THEME[i].equals(theme)) {
-				return VALUES_THEME_IDS[i];
-			}
-		}
-		return VALUES_THEME_IDS[0];
+		return PREFERENCES.getString(KEY_THEME, null);
 	}
 
 	public static void setTheme(String value) {

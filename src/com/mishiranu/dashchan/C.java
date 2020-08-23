@@ -18,6 +18,7 @@ public class C {
 	public static final boolean API_NOUGAT_MR1 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1;
 	public static final boolean API_OREO = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
 	public static final boolean API_PIE = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P;
+	public static final boolean API_Q = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
 
 	public static final String BUILD_VERSION = BuildConfig.VERSION_NAME;
 	public static final long BUILD_TIMESTAMP = BuildConfig.BUILD_TIMESTAMP;

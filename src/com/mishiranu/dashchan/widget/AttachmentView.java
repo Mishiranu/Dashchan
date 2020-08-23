@@ -56,7 +56,7 @@ public class AttachmentView extends View {
 		}
 		ViewUtils.setSelectableItemBackground(this);
 		// Use old context to obtain background color.
-		backgroundColor = ResourceUtils.getColor(context, R.attr.backgroundAttachment);
+		backgroundColor = ResourceUtils.getColor(context, R.attr.colorAttachmentBackground);
 		if (C.API_LOLLIPOP) {
 			workColorMatrix = new float[] {1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0};
 			colorMatrix1 = new ColorMatrix(workColorMatrix);

@@ -16,7 +16,6 @@ import android.os.IBinder;
 import android.text.Editable;
 import android.util.DisplayMetrics;
 import android.util.Pair;
-import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -1105,7 +1104,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 		loadedCaptchaInput = input;
 		loadedCaptchaValidity = validity;
 		boolean invertColors = blackAndWhite && !GraphicsUtils
-				.isLight(ResourceUtils.getColor(requireContext(), android.R.attr.windowBackground));
+				.isLight(ResourceUtils.getColor(requireContext(), android.R.attr.colorBackground));
 		captchaForm.showCaptcha(captchaState, input, image, large, invertColors);
 		if (scrollView.getScrollY() + scrollView.getHeight() >= scrollView.getChildAt(0).getHeight()) {
 			scrollView.post(() -> {
@@ -1281,7 +1280,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 		if (C.API_LOLLIPOP) {
 			float density = ResourceUtils.obtainDensity(this);
 			view.setForeground(new RoundedCornersDrawable((int) (2f * density),
-					ResourceUtils.getColor(requireContext(), android.R.attr.windowBackground)));
+					ResourceUtils.getColor(requireContext(), android.R.attr.colorBackground)));
 		}
 		addAttachmentViewToContainer(view, attachments.size());
 		AttachmentHolder holder = new AttachmentHolder();
@@ -1490,7 +1489,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 			for (MarkupButtonProvider provider : MarkupButtonProvider.iterable(displayedTags)) {
 				Button button = provider.createButton(textFormatView.getContext(),
 						android.R.attr.borderlessButtonStyle);
-				button.setTextSize(TypedValue.COMPLEX_UNIT_DIP, C.API_LOLLIPOP ? 14 : 18);
+				ViewUtils.setTextSizeScaled(button, C.API_LOLLIPOP ? 14 : 18);
 				LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams
 						((int) (provider.widthDp * density), (int) (40f * density));
 				if (!firstMarkupButton) {

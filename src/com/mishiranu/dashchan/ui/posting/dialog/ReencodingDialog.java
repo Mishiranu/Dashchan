@@ -16,6 +16,7 @@ import androidx.fragment.app.DialogFragment;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.ui.SeekBarForm;
 import com.mishiranu.dashchan.util.GraphicsUtils;
+import com.mishiranu.dashchan.widget.ThemeEngine;
 import java.util.Locale;
 
 public class ReencodingDialog extends DialogFragment implements DialogInterface.OnClickListener,
@@ -61,6 +62,7 @@ public class ReencodingDialog extends DialogFragment implements DialogInterface.
 		radioGroup.setOnCheckedChangeListener(this);
 		for (int i = 0; i < OPTIONS.length; i++) {
 			RadioButton radioButton = new RadioButton(context);
+			ThemeEngine.applyStyle(radioButton);
 			radioButton.setText(OPTIONS[i]);
 			radioButton.setId(IDS[i]);
 			radioGroup.addView(radioButton);

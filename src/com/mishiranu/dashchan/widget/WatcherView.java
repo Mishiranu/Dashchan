@@ -3,6 +3,7 @@ package com.mishiranu.dashchan.widget;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -45,7 +46,7 @@ public class WatcherView extends FrameLayout {
 		setBackgroundResource(ResourceUtils.getResourceId(context, android.R.attr.selectableItemBackground, 0));
 		progressBar = new ProgressBar(context, null, android.R.attr.progressBarStyleSmall);
 		if (C.API_LOLLIPOP) {
-			progressBar.getIndeterminateDrawable().setTint(Color.WHITE);
+			progressBar.setIndeterminateTintList(ColorStateList.valueOf(Color.WHITE));
 		}
 		addView(progressBar, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT,
 				FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
@@ -78,12 +79,12 @@ public class WatcherView extends FrameLayout {
 		super.draw(canvas);
 
 		if (progressBar.getVisibility() != View.VISIBLE) {
-			float fontSize = C.API_LOLLIPOP ? 12f : 16f;
+			int fontSize = C.API_LOLLIPOP ? 12 : 16;
 			paint.setColor(Color.WHITE);
 			if (!hasNew) {
 				paint.setAlpha(0x99);
 			}
-			paint.setTextSize(fontSize * getResources().getDisplayMetrics().scaledDensity);
+			paint.setTextSize((int) (fontSize * getResources().getDisplayMetrics().scaledDensity + 0.5f));
 			paint.setTextAlign(Paint.Align.CENTER);
 			paint.getTextBounds(text, 0, text.length(), rect);
 			canvas.drawText(text, getWidth() / 2f, (getHeight() + rect.height()) / 2f, paint);

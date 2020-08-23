@@ -1,0 +1,13 @@
+{
+	"base": "dark",
+	"name": "Amoled",
+	"window": "#ff000000",
+	"primary": "#ff000000",
+	"accent": "#ffaaaaaa",
+	"card": "#ff101010",
+	"post": "#88ffffff",
+	"meta": "#66ffffff",
+	"quote": "#ff779922",
+	"tripcode": "#ff33cc88",
+	"capcode": "#ff66bbff"
+}

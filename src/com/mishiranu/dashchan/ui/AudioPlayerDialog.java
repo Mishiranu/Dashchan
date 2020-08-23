@@ -21,6 +21,7 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.service.AudioPlayerService;
 import com.mishiranu.dashchan.util.ResourceUtils;
+import com.mishiranu.dashchan.widget.ThemeEngine;
 
 public class AudioPlayerDialog extends DialogFragment {
 	private TextView textView;
@@ -102,6 +103,7 @@ public class AudioPlayerDialog extends DialogFragment {
 				LinearLayout.LayoutParams.WRAP_CONTENT);
 		tracking = false;
 		seekBar = new SeekBar(context);
+		ThemeEngine.applyStyle(seekBar);
 		horizontal.addView(seekBar, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
 		seekBar.setPadding((int) (8f * density), 0, (int) (16f * density), 0);
 		seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {

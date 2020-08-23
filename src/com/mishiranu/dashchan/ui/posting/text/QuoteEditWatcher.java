@@ -3,16 +3,16 @@ package com.mishiranu.dashchan.ui.posting.text;
 import android.content.Context;
 import android.text.Editable;
 import android.text.TextWatcher;
-
 import com.mishiranu.dashchan.graphics.ColorScheme;
 import com.mishiranu.dashchan.text.style.LinkSpan;
 import com.mishiranu.dashchan.text.style.QuoteSpan;
+import com.mishiranu.dashchan.widget.ThemeEngine;
 
 public class QuoteEditWatcher implements TextWatcher {
 	private final ColorScheme colorScheme;
 
 	public QuoteEditWatcher(Context context) {
-		colorScheme = new ColorScheme(context);
+		colorScheme = ThemeEngine.getColorScheme(context);
 	}
 
 	private boolean updateQuotes = false;
@@ -50,7 +50,7 @@ public class QuoteEditWatcher implements TextWatcher {
 			}
 			wordStart = i;
 		}
-		for (int i = wordEnd >= 0 ? wordEnd : 0; i < s.length(); i++) {
+		for (int i = Math.max(wordEnd, 0); i < s.length(); i++) {
 			char c = s.charAt(i);
 			if (c == ' ' || c == '\n') {
 				break;
