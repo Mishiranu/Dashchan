@@ -147,6 +147,21 @@ public class RelayBlockResolver {
 							public boolean onLoad(String uriString) {
 								return checkHolderFinal.client.onLoad(Uri.parse(uriString));
 							}
+
+							@Override
+							public String onRecaptchaV2(String apiKey, boolean invisible, String referer) {
+								HttpHolder holder = new HttpHolder();
+								try {
+									return RecaptchaReader.getInstance().getResponse2(holder, apiKey,
+											invisible, referer, Preferences.isRecaptchaJavascript());
+								} catch (RecaptchaReader.CancelException e) {
+									return null;
+								} catch (HttpException e) {
+									return null;
+								} finally {
+									holder.cleanup();
+								}
+							}
 						};
 						ChanLocator locator = ChanLocator.get(chanName);
 						HttpClient.ProxyData proxyData = HttpClient.getInstance().getProxyData(chanName);

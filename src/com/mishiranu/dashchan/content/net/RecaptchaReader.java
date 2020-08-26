@@ -217,7 +217,7 @@ public class RecaptchaReader {
 				webView.getSettings().setBuiltInZoomControls(false);
 				webView.setHorizontalScrollBarEnabled(false);
 				webView.setVerticalScrollBarEnabled(false);
-				webView.addJavascriptInterface(javaScriptInterface, "jsi");
+				webView.addJavascriptInterface(javascriptInterface, "jsi");
 				webView.setWebViewClient(client);
 				webView.setWebChromeClient(new WebChromeClient() {
 					@SuppressWarnings("deprecation")
@@ -263,7 +263,7 @@ public class RecaptchaReader {
 		}
 
 		@SuppressWarnings("unused")
-		private final Object javaScriptInterface = new Object() {
+		private final Object javascriptInterface = new Object() {
 			@JavascriptInterface
 			public void onResponse(String response) {
 				postEvent(() -> {
