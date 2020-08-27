@@ -451,10 +451,8 @@ public class HttpClient {
 			int responseCode = connection.getResponseCode();
 
 			if (chanName != null && request.checkRelayBlock) {
-				RelayBlockResolver.Result result = RelayBlockResolver.getInstance()
-						.checkResponse(chanName, requestedUri, holder);
+				RelayBlockResolver.Result result = RelayBlockResolver.getInstance().checkResponse(chanName, holder);
 				if (result.blocked) {
-					// TODO Handle possible connection replacement
 					if (result.resolved && holder.nextAttempt()) {
 						executeInternal(request);
 						return;

@@ -33,6 +33,7 @@ import chan.content.ChanConfiguration;
 import chan.content.ChanManager;
 import chan.content.ChanPerformer;
 import chan.http.HttpException;
+import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.MainApplication;
@@ -110,7 +111,7 @@ public class ForegroundManager implements Handler.Callback {
 		private static final String EXTRA_REQUIREMENT = "requirement";
 		private static final String EXTRA_BOARD_NAME = "boardName";
 		private static final String EXTRA_THREAD_NUMBER = "threadNumber";
-		private static final String EXTRA_DESCRIPTION_RES_ID = "descriptionResId";
+		private static final String EXTRA_DESCRIPTION = "description";
 		private static final String EXTRA_TASK_NAME = "taskName";
 
 		private static final String EXTRA_CAPTCHA_STATE = "captchaState";
@@ -135,7 +136,7 @@ public class ForegroundManager implements Handler.Callback {
 		public CaptchaDialogFragment() {}
 
 		public CaptchaDialogFragment(int pendingDataIndex, String chanName, String captchaType, String requirement,
-				String boardName, String threadNumber, int descriptionResId) {
+				String boardName, String threadNumber, String description) {
 			Bundle args = new Bundle();
 			fillArguments(args, pendingDataIndex);
 			args.putString(EXTRA_CHAN_NAME, chanName);
@@ -144,7 +145,7 @@ public class ForegroundManager implements Handler.Callback {
 			args.putString(EXTRA_BOARD_NAME, boardName);
 			args.putString(EXTRA_THREAD_NUMBER, threadNumber);
 			args.putString(EXTRA_TASK_NAME, "read_captcha_" + UUID.randomUUID().toString());
-			args.putInt(EXTRA_DESCRIPTION_RES_ID, descriptionResId);
+			args.putString(EXTRA_DESCRIPTION, description);
 			setArguments(args);
 		}
 
@@ -276,6 +277,9 @@ public class ForegroundManager implements Handler.Callback {
 			pendingData.captchaData = captchaData != null ? captchaData : new ChanPerformer.CaptchaData();
 			pendingData.loadedCaptchaType = captchaType;
 			showCaptcha(captchaState, captchaType, input, image, large, blackAndWhite);
+			if (isResumed() && captchaState == ChanPerformer.CaptchaState.SKIP) {
+				onConfirmCaptcha();
+			}
 		}
 
 		@Override
@@ -331,9 +335,9 @@ public class ForegroundManager implements Handler.Callback {
 			Bundle args = requireArguments();
 			View container = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_captcha, null);
 			TextView comment = container.findViewById(R.id.comment);
-			int descriptionResId = args.getInt(EXTRA_DESCRIPTION_RES_ID);
-			if (descriptionResId != 0) {
-				comment.setText(descriptionResId);
+			String description = args.getString(EXTRA_DESCRIPTION);
+			if (!StringUtils.isEmpty(description)) {
+				comment.setText(description);
 			} else {
 				comment.setVisibility(View.GONE);
 			}
@@ -791,8 +795,9 @@ public class ForegroundManager implements Handler.Callback {
 			implements PendingDataDialogFragment {
 		public RecaptchaV2DialogFragment() {}
 
-		public RecaptchaV2DialogFragment(int pendingDataIndex, String referer, String apiKey, boolean invisible) {
-			super(referer, apiKey, invisible);
+		public RecaptchaV2DialogFragment(int pendingDataIndex, String referer, String apiKey,
+				boolean invisible, boolean hcaptcha) {
+			super(referer, apiKey, invisible, hcaptcha);
 			fillArguments(getArguments(), pendingDataIndex);
 		}
 
@@ -838,7 +843,7 @@ public class ForegroundManager implements Handler.Callback {
 							new CaptchaDialogFragment(handlerData.pendingDataIndex, captchaHandlerData.chanName,
 									captchaHandlerData.captchaType, captchaHandlerData.requirement,
 									captchaHandlerData.boardName, captchaHandlerData.threadNumber,
-									captchaHandlerData.descriptionResId).show(activity);
+									captchaHandlerData.description).show(activity);
 							break;
 						}
 						case MESSAGE_REQUIRE_USER_CHOICE: {
@@ -858,7 +863,8 @@ public class ForegroundManager implements Handler.Callback {
 						case MESSAGE_REQUIRE_USER_RECAPTCHA_V2: {
 							RecaptchaV2HandlerData recaptchaV2HandlerData = (RecaptchaV2HandlerData) handlerData;
 							new RecaptchaV2DialogFragment(handlerData.pendingDataIndex, recaptchaV2HandlerData.referer,
-									recaptchaV2HandlerData.apiKey, recaptchaV2HandlerData.invisible).show(activity);
+									recaptchaV2HandlerData.apiKey, recaptchaV2HandlerData.invisible,
+									recaptchaV2HandlerData.hcaptcha).show(activity);
 						}
 					}
 				}
@@ -886,17 +892,17 @@ public class ForegroundManager implements Handler.Callback {
 		public final String requirement;
 		public final String boardName;
 		public final String threadNumber;
-		public final int descriptionResId;
+		public final String description;
 
 		public CaptchaHandlerData(int pendingDataIndex, String chanName, String captchaType, String requirement,
-				String boardName, String threadNumber, int descriptionResId) {
+				String boardName, String threadNumber, String description) {
 			super(pendingDataIndex);
 			this.chanName = chanName;
 			this.captchaType = captchaType;
 			this.requirement = requirement;
 			this.boardName = boardName;
 			this.threadNumber = threadNumber;
-			this.descriptionResId = descriptionResId;
+			this.description = description;
 		}
 	}
 
@@ -926,12 +932,15 @@ public class ForegroundManager implements Handler.Callback {
 		public final String referer;
 		public final String apiKey;
 		public final boolean invisible;
+		public final boolean hcaptcha;
 
-		private RecaptchaV2HandlerData(int pendingDataIndex, String referer, String apiKey, boolean invisible) {
+		private RecaptchaV2HandlerData(int pendingDataIndex, String referer, String apiKey,
+				boolean invisible, boolean hcaptcha) {
 			super(pendingDataIndex);
 			this.referer = referer;
 			this.apiKey = apiKey;
 			this.invisible = invisible;
+			this.hcaptcha = hcaptcha;
 		}
 	}
 
@@ -993,17 +1002,17 @@ public class ForegroundManager implements Handler.Callback {
 		ChanConfiguration configuration = ChanConfiguration.get(linked);
 		String captchaType = configuration.getCaptchaType();
 		String chanName = linked.getChanName();
-		return requireUserCaptcha(null, captchaType, requirement, chanName, boardName, threadNumber, 0, retry);
+		return requireUserCaptcha(null, captchaType, requirement, chanName, boardName, threadNumber, null, retry);
 	}
 
 	public ChanPerformer.CaptchaData requireUserCaptcha(ReadCaptchaTask.CaptchaReader captchaReader,
 			String captchaType, String requirement, String chanName, String boardName, String threadNumber,
-			int descriptionResId, boolean retry) {
+			String description, boolean retry) {
 		CaptchaPendingData pendingData = new CaptchaPendingData(captchaReader);
 		int pendingDataIndex = putPendingData(pendingData);
 		try {
 			CaptchaHandlerData handlerData = new CaptchaHandlerData(pendingDataIndex, chanName, captchaType,
-					requirement, boardName, threadNumber, descriptionResId);
+					requirement, boardName, threadNumber, description);
 			handler.obtainMessage(MESSAGE_REQUIRE_USER_CAPTCHA, handlerData).sendToTarget();
 			if (retry) {
 				handler.sendEmptyMessage(MESSAGE_SHOW_CAPTCHA_INVALID);
@@ -1017,7 +1026,8 @@ public class ForegroundManager implements Handler.Callback {
 						? pendingData.loadedCaptchaType : captchaType;
 				String apiKey = captchaData.get(ChanPerformer.CaptchaData.API_KEY);
 				if (apiKey != null && (ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2.equals(workCaptchaType) ||
-						ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_INVISIBLE.equals(workCaptchaType))) {
+						ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_INVISIBLE.equals(workCaptchaType) ||
+						ChanConfiguration.CAPTCHA_TYPE_HCAPTCHA.equals(workCaptchaType))) {
 					captchaData.put(ChanPerformer.CaptchaData.INPUT,
 							captchaData.get(ReadCaptchaTask.RECAPTCHA_SKIP_RESPONSE));
 				}
@@ -1089,12 +1099,13 @@ public class ForegroundManager implements Handler.Callback {
 		}
 	}
 
-	public String requireUserRecaptchaV2(String referer, String apiKey, boolean invisible) throws HttpException {
+	public String requireUserRecaptchaV2(String referer, String apiKey,
+			boolean invisible, boolean hcaptcha) throws HttpException {
 		RecaptchaV2PendingData pendingData = new RecaptchaV2PendingData();
 		int pendingDataIndex = putPendingData(pendingData);
 		try {
 			RecaptchaV2HandlerData handlerData = new RecaptchaV2HandlerData(pendingDataIndex,
-					referer, apiKey, invisible);
+					referer, apiKey, invisible, hcaptcha);
 			handler.obtainMessage(MESSAGE_REQUIRE_USER_RECAPTCHA_V2, handlerData).sendToTarget();
 			if (!pendingData.await()) {
 				return null;

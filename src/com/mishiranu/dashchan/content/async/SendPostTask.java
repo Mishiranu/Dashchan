@@ -117,7 +117,8 @@ public class SendPostTask<Key> extends HttpHolderTask<Void, Long, Boolean> {
 		try {
 			ChanPerformer.SendPostData data = this.data;
 			if (data.captchaData != null && (ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2.equals(data.captchaType) ||
-					ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_INVISIBLE.equals(data.captchaType))) {
+					ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_INVISIBLE.equals(data.captchaType) ||
+					ChanConfiguration.CAPTCHA_TYPE_HCAPTCHA.equals(data.captchaType))) {
 				data.captchaData.put(ChanPerformer.CaptchaData.INPUT,
 						data.captchaData.get(ReadCaptchaTask.RECAPTCHA_SKIP_RESPONSE));
 			}

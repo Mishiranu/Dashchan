@@ -93,6 +93,7 @@ public class ChanConfiguration implements ChanManager.Linked {
 	@Public public static final String CAPTCHA_TYPE_RECAPTCHA_1 = "recaptcha_1";
 	@Public public static final String CAPTCHA_TYPE_RECAPTCHA_2 = "recaptcha_2";
 	@Public public static final String CAPTCHA_TYPE_RECAPTCHA_2_INVISIBLE = "recaptcha_2_invisible";
+	@Public public static final String CAPTCHA_TYPE_HCAPTCHA = "hcaptcha";
 	@Public public static final String CAPTCHA_TYPE_MAILRU = "mailru";
 
 	private static final String KEY_COOKIES = "cookies";
@@ -655,6 +656,12 @@ public class ChanConfiguration implements ChanManager.Linked {
 		} else if (CAPTCHA_TYPE_RECAPTCHA_2_INVISIBLE.equals(captchaType)) {
 			Captcha captcha = new Captcha();
 			captcha.title = "reCAPTCHA 2 Invisible";
+			captcha.input = Captcha.Input.ALL;
+			captcha.validity = Captcha.Validity.SHORT_LIFETIME;
+			return captcha;
+		} else if (CAPTCHA_TYPE_HCAPTCHA.equals(captchaType)) {
+			Captcha captcha = new Captcha();
+			captcha.title = "hCaptcha";
 			captcha.input = Captcha.Input.ALL;
 			captcha.validity = Captcha.Validity.SHORT_LIFETIME;
 			return captcha;

@@ -21,7 +21,6 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.WebViewUtils;
@@ -30,27 +29,29 @@ import java.util.LinkedList;
 
 public class WebViewService extends Service {
 	private static class CookieRequest {
-		public final String name;
 		public final String uriString;
 		public final String userAgent;
 		public final Pair<String, Integer> httpProxy;
 		public final boolean verifyCertificate;
 		public final long timeout;
+		public final WebViewExtra extra;
 		public final IRequestCallback requestCallback;
 
 		public boolean ready;
-		public String cookie;
+		public boolean finished;
+
 		public String recaptchaV2ApiKey;
 		public String recaptchaV2Result;
+		public boolean recaptchaIsHcaptcha;
 
-		private CookieRequest(String name, String uriString, String userAgent, Pair<String, Integer> httpProxy,
-				boolean verifyCertificate, long timeout, IRequestCallback requestCallback) {
-			this.name = name;
+		private CookieRequest(String uriString, String userAgent, Pair<String, Integer> httpProxy,
+				boolean verifyCertificate, long timeout, WebViewExtra extra, IRequestCallback requestCallback) {
 			this.uriString = uriString;
 			this.userAgent = userAgent;
 			this.httpProxy = httpProxy;
 			this.verifyCertificate = verifyCertificate;
 			this.timeout = timeout;
+			this.extra = extra;
 			this.requestCallback = requestCallback;
 		}
 	}
@@ -66,6 +67,9 @@ public class WebViewService extends Service {
 	private static final int MESSAGE_HANDLE_CAPTCHA = 3;
 
 	private final Handler handler = new Handler(Looper.getMainLooper(), message -> {
+		if (webView == null) {
+			return false;
+		}
 		switch (message.what) {
 			case MESSAGE_HANDLE_NEXT: {
 				handleNextCookieRequest();
@@ -116,31 +120,28 @@ public class WebViewService extends Service {
 			CookieRequest cookieRequest = WebViewService.this.cookieRequest;
 			boolean finished = true;
 			if (cookieRequest != null) {
+				String cookie = CookieManager.getInstance().getCookie(url);
 				try {
-					finished = cookieRequest.requestCallback.onPageFinished(url, view.getTitle());
+					finished = cookieRequest.requestCallback.onPageFinished(url, cookie, view.getTitle());
+					cookieRequest.finished = finished;
 				} catch (RemoteException e) {
 					e.printStackTrace();
+				}
+				if (!finished) {
+					if (cookieRequest.extra != null) {
+						String injectJavascript = cookieRequest.extra.getInjectJavascript();
+						if (injectJavascript != null) {
+							String sanitized = injectJavascript
+									.replace("\\", "\\\\").replace("\n", "\\n").replace("\"", "\\\"");
+							view.loadUrl("javascript:eval(\"" + sanitized + "\")");
+						}
+					}
 				}
 			}
 			if (finished) {
 				view.stopLoading();
-				if (cookieRequest != null) {
-					cookieRequest.cookie = null;
-					String data = CookieManager.getInstance().getCookie(url);
-					if (data != null) {
-						String[] splitted = data.split(";\\s*");
-						if (splitted != null) {
-							for (int i = 0; i < splitted.length; i++) {
-								if (!StringUtils.isEmptyOrWhitespace(splitted[i]) &&
-										splitted[i].startsWith(cookieRequest.name + "=")) {
-									cookieRequest.cookie = splitted[i].substring(cookieRequest.name.length() + 1);
-								}
-							}
-						}
-					}
-					handler.removeMessages(MESSAGE_HANDLE_FINISH);
-					handler.sendEmptyMessage(MESSAGE_HANDLE_FINISH);
-				}
+				handler.removeMessages(MESSAGE_HANDLE_FINISH);
+				handler.sendEmptyMessage(MESSAGE_HANDLE_FINISH);
 			}
 		}
 
@@ -169,19 +170,28 @@ public class WebViewService extends Service {
 			handler.sendEmptyMessage(MESSAGE_HANDLE_FINISH);
 		}
 
+		private WebResourceResponse getCaptchaApi(String onLoad) {
+			String stub = IOUtils.readRawResourceString(getResources(), R.raw.web_captcha_api)
+					.replace("__REPLACE_ON_LOAD__", onLoad != null ? "'" + onLoad + "'" : "null");
+			return new WebResourceResponse("application/javascript", "UTF-8",
+					new ByteArrayInputStream(stub.getBytes()));
+		}
+
 		@SuppressWarnings("deprecation")
 		@Override
 		public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
 			boolean allowed = false;
 			CookieRequest cookieRequest = WebViewService.this.cookieRequest;
-			if (url.contains("recaptcha")) {
+			boolean recaptcha = url.contains("recaptcha");
+			boolean hcaptcha = url.contains("hcaptcha");
+			if (recaptcha || hcaptcha) {
 				Uri uri = Uri.parse(url);
 				String key = uri.getQueryParameter("render");
-				if (key != null) {
+				String onLoad = uri.getQueryParameter("onload");
+				if (key != null || onLoad != null) {
 					cookieRequest.recaptchaV2ApiKey = key;
-					String stub = IOUtils.readRawResourceString(getResources(), R.raw.captcha_api);
-					return new WebResourceResponse("application/javascript", "UTF-8",
-							new ByteArrayInputStream(stub.getBytes()));
+					cookieRequest.recaptchaIsHcaptcha = hcaptcha;
+					return getCaptchaApi(onLoad);
 				}
 			}
 			if (cookieRequest != null) {
@@ -202,24 +212,32 @@ public class WebViewService extends Service {
 	@SuppressWarnings("unused")
 	private final Object javascriptInterface = new Object() {
 		@JavascriptInterface
-		public void onRequestRecaptcha() {
+		public void onRequestRecaptcha(String apiKey) {
 			CookieRequest cookieRequest = WebViewService.this.cookieRequest;
-			if (cookieRequest != null && cookieRequest.recaptchaV2ApiKey != null) {
+			if (cookieRequest != null) {
+				if (apiKey != null) {
+					cookieRequest.recaptchaV2ApiKey = apiKey;
+				}
 				handler.removeMessages(MESSAGE_HANDLE_FINISH);
-				startRecaptchaThread(cookieRequest);
+				startCaptchaThread(cookieRequest);
 			}
 		}
 	};
 
-	private void startRecaptchaThread(CookieRequest cookieRequest) {
+	private void startCaptchaThread(CookieRequest cookieRequest) {
 		synchronized (this) {
 			if (captchaThread != null) {
 				captchaThread.interrupt();
 			}
 			captchaThread = new Thread(() -> {
 				try {
-					cookieRequest.recaptchaV2Result = cookieRequest.requestCallback
-							.onRecaptchaV2(cookieRequest.recaptchaV2ApiKey, true, cookieRequest.uriString);
+					if (cookieRequest.recaptchaIsHcaptcha) {
+						cookieRequest.recaptchaV2Result = cookieRequest.requestCallback
+								.onHcaptcha(cookieRequest.recaptchaV2ApiKey, cookieRequest.uriString);
+					} else {
+						cookieRequest.recaptchaV2Result = cookieRequest.requestCallback
+								.onRecaptchaV2(cookieRequest.recaptchaV2ApiKey, true, cookieRequest.uriString);
+					}
 				} catch (RemoteException e) {
 					// Ignore
 				}
@@ -254,13 +272,13 @@ public class WebViewService extends Service {
 	public IBinder onBind(Intent intent) {
 		return new IWebViewService.Stub() {
 			@Override
-			public String loadWithCookieResult(String name, String uriString, String userAgent,
+			public boolean loadWithCookieResult(String uriString, String userAgent,
 					String httpProxyHost, int httpProxyPort, boolean verifyCertificate, long timeout,
-					IRequestCallback requestCallback) throws RemoteException {
+					WebViewExtra extra, IRequestCallback requestCallback) throws RemoteException {
 				Pair<String, Integer> httpProxy = httpProxyHost != null
 						? new Pair<>(httpProxyHost, httpProxyPort) : null;
-				CookieRequest cookieRequest = new CookieRequest(name, uriString, userAgent, httpProxy,
-						verifyCertificate, timeout, requestCallback);
+				CookieRequest cookieRequest = new CookieRequest(uriString, userAgent, httpProxy,
+						verifyCertificate, timeout, extra, requestCallback);
 				synchronized (cookieRequest) {
 					synchronized (cookieRequests) {
 						cookieRequests.add(cookieRequest);
@@ -275,7 +293,7 @@ public class WebViewService extends Service {
 						}
 					}
 				}
-				return cookieRequest.cookie;
+				return cookieRequest.finished;
 			}
 		};
 	}

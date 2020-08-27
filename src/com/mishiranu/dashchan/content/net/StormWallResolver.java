@@ -26,25 +26,31 @@ public class StormWallResolver {
 		private volatile boolean wasChecked = false;
 		private volatile boolean wasReloaded = false;
 
-		private String finishUriString;
+		private volatile String finishUriString;
+		private volatile String cookie;
 
 		@Override
-		public String getCookieName() {
-			return COOKIE_STORMWALL;
+		public String getName() {
+			return "StormWall";
 		}
 
 		@Override
-		public void storeCookie(String chanName, String cookie) {
-			StormWallResolver.this.storeCookie(chanName, cookie, finishUriString);
+		public boolean handleResult(String chanName) {
+			if (cookie != null) {
+				storeCookie(chanName, cookie, finishUriString);
+				return true;
+			}
+			return false;
 		}
 
 		@Override
-		public boolean onPageFinished(String uriString, String title) {
+		public boolean onPageFinished(String uriString, Map<String, String> cookies, String title) {
 			if (wasChecked) {
 				wasChecked = false;
 				wasReloaded = true;
 			} else if (wasReloaded) {
 				finishUriString = uriString;
+				cookie = cookies.get(COOKIE_STORMWALL);
 				wasReloaded = false;
 				return true;
 			}
@@ -69,10 +75,10 @@ public class StormWallResolver {
 			String responseText = holder.read().getString();
 			if (responseText.contains("<script src=\"https://static.stormwall.pro")) {
 				boolean success = resolver.runWebView(chanName, Client::new);
-				return new RelayBlockResolver.Result(true, success, null);
+				return new RelayBlockResolver.Result(true, success);
 			}
 		}
-		return new RelayBlockResolver.Result(false, false, null);
+		return new RelayBlockResolver.Result(false, false);
 	}
 
 	private void storeCookie(String chanName, String cookie, String uriString) {

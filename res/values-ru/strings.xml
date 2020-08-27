@@ -272,8 +272,6 @@
 	<string name="message_clear_deleted_posts_warning">Удалённые сообщение будут удалены навсегда.</string>
 	<string name="message_clear_deleted_threads_warning">Будут удалены следующие треды:</string>
 	<string name="message_clear_history_confirm">Очистить историю?</string>
-	<string name="message_cloudflate_block">Похоже, что CloudFlare заблокировал ваш IP. Введите капчу,
-		чтобы пройти проверку.</string>
 	<string name="message_clearing">Очистка&#8230;</string>
 	<string name="message_comment_too_short">Комментарий слишком короткий</string>
 	<string name="message_confirm_archivation">Подтвердите архивирование.</string>
@@ -353,6 +351,8 @@
 	<string name="message_processing_data">Обработка данных&#8230;</string>
 	<string name="message_read_timeout">Время ожидания приёма истекло</string>
 	<string name="message_relay_block">Не удалось обойти DDoS-защиту</string>
+	<string name="message_relay_block_format">Ваш IP-адрес заблокирован %s. Введите капчу,
+		чтобы пройти проверку.</string>
 	<string name="message_report_sent">Жалоба успешно отправлена</string>
 	<string name="message_report_too_often_error">Нельзя жаловаться так часто</string>
 	<string name="message_request_sent">Запрос успешно отправлен</string>

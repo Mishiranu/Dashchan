@@ -26,6 +26,8 @@ body {
 
 <script type="text/javascript">
 
+var isHcaptcha = __REPLACE_HCAPTCHA__
+
 function onLoad() {
 	var invisible = __REPLACE_INVISIBLE__
 	var recaptchaObject = {
@@ -38,9 +40,13 @@ function onLoad() {
 	recaptchaObject['error-callback'] = function () {
 		jsi.onError()
 	}
-	grecaptcha.render('recaptcha', recaptchaObject)
-	if (invisible) {
-		grecaptcha.execute()
+	if (isHcaptcha) {
+		hcaptcha.render('recaptcha', recaptchaObject)
+	} else {
+		grecaptcha.render('recaptcha', recaptchaObject)
+		if (invisible) {
+			grecaptcha.execute()
+		}
 	}
 }
 
@@ -63,7 +69,7 @@ function getWindowSize() {
 		if (isElementVisible(frame)) {
 			var frameWidth = frame.offsetWidth
 			var frameHeight = frame.offsetHeight
-			if (frameWidth > 300) {
+			if (frameWidth > 300 && frameWidth <= 305) {
 				frameWidth = 300
 			}
 			if (frameHeight > height) {
@@ -75,26 +81,41 @@ function getWindowSize() {
 	return { width: width, height: height }
 }
 
-(function () {
+[(function () {
 	var lastWidth = 0
 	var lastHeight = 0
 	var MutationObserver = window.MutationObserver || window.WebKitMutationObserver
-	new MutationObserver(function (mutations, observer) {
+	var sizeChanged = function () {
 		var size = getWindowSize()
 		if (size.width != lastWidth || size.height != lastHeight) {
 			lastWidth = size.width
 			lastHeight = size.height
 			jsi.onSizeChanged(size.width, size.height)
 		}
-	}).observe(document, { subtree: true, childList: true, attributes: true })
-})()
+	}
+	if (MutationObserver) {
+		new MutationObserver(sizeChanged).observe(document, { subtree: true, childList: true, attributes: true })
+	} else {
+		// For Android <= 4.3
+		setInterval(sizeChanged, 100);
+	}
+})()]
+
+setTimeout(function () {
+	var element = document.createElement('script')
+	element.type = 'text/javascript'
+	element.src = (isHcaptcha ? 'https://hcaptcha.com/1/api.js' : 'https://www.google.com/recaptcha/api.js') +
+		'?onload=onLoad&render=explicit&hl=en'
+	element.setAttribute('async', '')
+	element.setAttribute('defer', '')
+	document.getElementsByTagName('body')[0].appendChild(element)
+}, 1)
 
 </script>
 
 </head>
 <body>
 
-<script src="https://www.google.com/recaptcha/api.js?onload=onLoad&render=explicit&hl=en" async defer></script>
 <div id="recaptcha"></div>
 
 </body>

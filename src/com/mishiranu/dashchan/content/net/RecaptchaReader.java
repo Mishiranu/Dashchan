@@ -69,7 +69,8 @@ public class RecaptchaReader {
 				referer = "https://www.google.com/";
 			}
 			synchronized (accessLock) {
-				String response = ForegroundManager.getInstance().requireUserRecaptchaV2(referer, apiKey, invisible);
+				String response = ForegroundManager.getInstance()
+						.requireUserRecaptchaV2(referer, apiKey, invisible, false);
 				if (response == null) {
 					throw new CancelException();
 				}
@@ -143,6 +144,19 @@ public class RecaptchaReader {
 		}
 	}
 
+	public String getResponseHcaptcha(String apiKey, String referer) throws CancelException, HttpException {
+		if (referer == null) {
+			referer = "https://www.hcaptcha.com/";
+		}
+		synchronized (accessLock) {
+			String response = ForegroundManager.getInstance().requireUserRecaptchaV2(referer, apiKey, false, true);
+			if (response == null) {
+				throw new CancelException();
+			}
+			return response;
+		}
+	}
+
 	private Pair<Bitmap, Boolean> getImage2(HttpHolder holder, String apiKey, String challenge, String id,
 			boolean transformBlackAndWhite) throws HttpException {
 		ChanLocator locator = ChanLocator.getDefault();
@@ -184,6 +198,7 @@ public class RecaptchaReader {
 		private WebView webView;
 
 		private float scale = 1f;
+		private float extraScale = 1f;
 		public int lastWidthUnscaled = 0;
 		public int lastHeightUnscaled = 0;
 
@@ -229,11 +244,15 @@ public class RecaptchaReader {
 				});
 			}
 			this.scale = scale;
-			webView.setInitialScale((int) (100 * scale));
+			webView.setInitialScale((int) (100 * getTotalScale()));
 			if (webView.getParent() != null) {
 				((ViewGroup) webView.getParent()).removeView(webView);
 			}
 			return webView;
+		}
+
+		public float getTotalScale() {
+			return scale * extraScale;
 		}
 
 		public void setDialogCallback(DialogCallback dialogCallback) {
@@ -313,12 +332,15 @@ public class RecaptchaReader {
 							}
 							lastWidthUnscaled = width;
 							lastHeightUnscaled = height;
-							int newWidth = (int) (scale * width);
-							int newHeight = (int) (scale * height);
+							// "setInitialScale" doesn't work well for Android <= 4.3
+							extraScale = C.API_KITKAT ? Math.min(1f, 300f / width) : 1f;
+							int newWidth = (int) (getTotalScale() * width);
+							int newHeight = (int) (getTotalScale() * height);
+							webView.setInitialScale((int) (100 * getTotalScale()));
 							ViewGroup.LayoutParams layoutParams = webView.getLayoutParams();
 							if (layoutParams.width != newWidth || layoutParams.height != newHeight) {
-								layoutParams.width = (int) (scale * width);
-								layoutParams.height = (int) (scale * height);
+								layoutParams.width = newWidth;
+								layoutParams.height = newHeight;
 								webView.requestLayout();
 							}
 						} else if ((lastWidthUnscaled > 0 && lastHeightUnscaled > 0) && !hasContent) {
@@ -379,16 +401,18 @@ public class RecaptchaReader {
 		private static final String EXTRA_REFERER = "referer";
 		private static final String EXTRA_API_KEY = "apiKey";
 		private static final String EXTRA_INVISIBLE = "invisible";
+		private static final String EXTRA_HCAPTCHA = "hcaptcha";
 
 		private static final String EXTRA_WEB_VIEW_ID = "webViewId";
 
 		public V2Dialog() {}
 
-		public V2Dialog(String referer, String apiKey, boolean invisible) {
+		public V2Dialog(String referer, String apiKey, boolean invisible, boolean hcaptcha) {
 			Bundle args = new Bundle();
 			args.putString(EXTRA_REFERER, referer);
 			args.putString(EXTRA_API_KEY, apiKey);
 			args.putBoolean(EXTRA_INVISIBLE, invisible);
+			args.putBoolean(EXTRA_HCAPTCHA, hcaptcha);
 			setArguments(args);
 		}
 
@@ -405,8 +429,8 @@ public class RecaptchaReader {
 				if (!requireArguments().getBoolean(EXTRA_INVISIBLE)) {
 					getDialog().getWindow().getDecorView().postDelayed(() -> {
 						if (webViewHolder != null) {
-							int x = (int) (webViewHolder.scale * (Math.random() * 100 + 10));
-							int y = (int) (webViewHolder.scale * (Math.random() * 30 + 20));
+							int x = (int) (webViewHolder.getTotalScale() * (Math.random() * 100 + 10));
+							int y = (int) (webViewHolder.getTotalScale() * (Math.random() * 30 + 20));
 							MotionEvent motionEvent;
 							motionEvent = MotionEvent.obtain(0, SystemClock.uptimeMillis(),
 									MotionEvent.ACTION_DOWN, x, y, 0);
@@ -476,16 +500,18 @@ public class RecaptchaReader {
 			int minHeightUnscaled = 250;
 			float scaleMultiplier = (float) getResources().getConfiguration().screenHeightDp / maxHeightUnscaled;
 			float scale = getResources().getDisplayMetrics().density * scaleMultiplier;
-			int defaultWidth = (int) ((webViewHolder.lastWidthUnscaled > 0
-					? webViewHolder.lastWidthUnscaled : widthUnscaled) * scale);
-			int defaultHeight = (int) ((webViewHolder.lastHeightUnscaled > 0
-					? webViewHolder.lastHeightUnscaled : minHeightUnscaled) * scale);
 			boolean load = webViewHolder.webView == null;
 			WebView webView = webViewHolder.obtainWebView(requireContext(), scale);
+			int defaultWidth = (int) ((webViewHolder.lastWidthUnscaled > 0
+					? webViewHolder.lastWidthUnscaled : widthUnscaled) * webViewHolder.getTotalScale());
+			int defaultHeight = (int) ((webViewHolder.lastHeightUnscaled > 0
+					? webViewHolder.lastHeightUnscaled : minHeightUnscaled) * webViewHolder.getTotalScale());
 			layout.addView(webView, 0, new FrameLayout.LayoutParams(defaultWidth, defaultHeight));
 
 			if (load) {
-				String data = IOUtils.readRawResourceString(getResources(), R.raw.recaptcha_v2)
+				String data = IOUtils.readRawResourceString(getResources(), R.raw.web_recaptcha_v2)
+						.replace("__REPLACE_HCAPTCHA__", requireArguments().getBoolean(EXTRA_HCAPTCHA)
+								? "true" : "false")
 						.replace("__REPLACE_API_KEY__", requireArguments().getString(EXTRA_API_KEY))
 						.replace("__REPLACE_INVISIBLE__", requireArguments().getBoolean(EXTRA_INVISIBLE)
 								? "true" : "false");

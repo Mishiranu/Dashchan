@@ -101,6 +101,7 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 		String captchaType = loadedCaptchaType != null ? loadedCaptchaType : this.captchaType;
 		boolean recaptcha2 = ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2.equals(captchaType);
 		boolean recaptcha2Invisible = ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_INVISIBLE.equals(captchaType);
+		boolean hcaptcha = ChanConfiguration.CAPTCHA_TYPE_HCAPTCHA.equals(captchaType);
 		boolean mailru = ChanConfiguration.CAPTCHA_TYPE_MAILRU.equals(captchaType);
 		if (captchaState != ChanPerformer.CaptchaState.CAPTCHA) {
 			return true;
@@ -108,7 +109,7 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 		if (thread.isInterrupted()) {
 			return null;
 		}
-		if (recaptcha2 || recaptcha2Invisible) {
+		if (recaptcha2 || recaptcha2Invisible || hcaptcha) {
 			if (mayShowLoadButton) {
 				captchaState = ChanPerformer.CaptchaState.NEED_LOAD;
 				return true;
@@ -117,8 +118,13 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 			String referer = captchaData.get(ChanPerformer.CaptchaData.REFERER);
 			try {
 				RecaptchaReader recaptchaReader = RecaptchaReader.getInstance();
-				String response = recaptchaReader.getResponse2(holder, apiKey, recaptcha2Invisible, referer,
-						Preferences.isRecaptchaJavascript());
+				String response;
+				if (hcaptcha) {
+					response = recaptchaReader.getResponseHcaptcha(apiKey, referer);
+				} else {
+					response = recaptchaReader.getResponse2(holder, apiKey, recaptcha2Invisible, referer,
+							Preferences.isRecaptchaJavascript());
+				}
 				captchaData.put(RECAPTCHA_SKIP_RESPONSE, response);
 				captchaState = ChanPerformer.CaptchaState.SKIP;
 				return true;

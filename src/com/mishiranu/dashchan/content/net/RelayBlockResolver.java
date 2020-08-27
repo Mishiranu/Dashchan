@@ -8,17 +8,22 @@ import android.net.Uri;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.SystemClock;
+import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
+import chan.content.ChanPerformer;
 import chan.http.HttpClient;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
-import chan.util.StringUtils;
+import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.AdvancedPreferences;
 import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.Preferences;
+import com.mishiranu.dashchan.content.async.ReadCaptchaTask;
 import com.mishiranu.dashchan.content.service.webview.IRequestCallback;
 import com.mishiranu.dashchan.content.service.webview.IWebViewService;
+import com.mishiranu.dashchan.content.service.webview.WebViewExtra;
 import com.mishiranu.dashchan.content.service.webview.WebViewService;
+import com.mishiranu.dashchan.ui.ForegroundManager;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,15 +39,19 @@ public class RelayBlockResolver {
 	private RelayBlockResolver() {}
 
 	public interface Client {
-		String getCookieName();
-		void storeCookie(String chanName, String cookie);
+		String getName();
+		boolean handleResult(String chanName);
 
-		default boolean onPageFinished(String uriString, String title) {
-			return false;
+		default boolean onPageFinished(String uriString, Map<String, String> cookies, String title) {
+			return true;
 		}
 
 		default boolean onLoad(Uri uri) {
 			return true;
+		}
+
+		default WebViewExtra getExtra() {
+			return null;
 		}
 	}
 
@@ -64,12 +73,28 @@ public class RelayBlockResolver {
 	public static class Result {
 		public final boolean blocked;
 		public final boolean resolved;
-		public final HttpHolder replaceHolder;
 
-		public Result(boolean blocked, boolean resolved, HttpHolder replaceHolder) {
+		public Result(boolean blocked, boolean resolved) {
 			this.blocked = blocked;
 			this.resolved = resolved;
-			this.replaceHolder = replaceHolder;
+		}
+	}
+
+	private static class RelayBlockCaptchaReader implements ReadCaptchaTask.CaptchaReader {
+		private final String apiKey;
+		private final String referer;
+
+		public RelayBlockCaptchaReader(String apiKey, String referer) {
+			this.apiKey = apiKey;
+			this.referer = referer;
+		}
+
+		@Override
+		public ChanPerformer.ReadCaptchaResult onReadCaptcha(ChanPerformer.ReadCaptchaData data) {
+			ChanPerformer.CaptchaData captchaData = new ChanPerformer.CaptchaData();
+			captchaData.put(ChanPerformer.CaptchaData.API_KEY, apiKey);
+			captchaData.put(ChanPerformer.CaptchaData.REFERER, referer);
+			return new ChanPerformer.ReadCaptchaResult(ChanPerformer.CaptchaState.CAPTCHA, captchaData);
 		}
 	}
 
@@ -134,13 +159,28 @@ public class RelayBlockResolver {
 					service = status.service;
 				}
 				if (service != null) {
-					String cookie = null;
+					boolean finished = false;
 					try {
 						CheckHolder checkHolderFinal = checkHolder;
 						IRequestCallback requestCallback = new IRequestCallback.Stub() {
 							@Override
-							public boolean onPageFinished(String uriString, String title) {
-								return checkHolderFinal.client.onPageFinished(uriString, title);
+							public boolean onPageFinished(String uriString, String cookie, String title) {
+								Map<String, String> cookies;
+								if (cookie != null && !cookie.isEmpty()) {
+									cookies = new HashMap<>();
+									String[] splitted = cookie.split(";\\s*");
+									for (String pair : splitted) {
+										int index = pair.indexOf('=');
+										if (index >= 0) {
+											String key = pair.substring(0, index);
+											String value = pair.substring(index + 1);
+											cookies.put(key, value);
+										}
+									}
+								} else {
+									cookies = Collections.emptyMap();
+								}
+								return checkHolderFinal.client.onPageFinished(uriString, cookies, title);
 							}
 
 							@Override
@@ -148,34 +188,43 @@ public class RelayBlockResolver {
 								return checkHolderFinal.client.onLoad(Uri.parse(uriString));
 							}
 
+							private boolean captchaRetry = false;
+
+							private String requireUserCaptcha(String captchaType, String apiKey, String referer) {
+								boolean retry = captchaRetry;
+								captchaRetry = true;
+								String description = MainApplication.getInstance().getString
+										(R.string.message_relay_block_format, checkHolderFinal.client.getName());
+								ChanPerformer.CaptchaData captchaData = ForegroundManager.getInstance()
+										.requireUserCaptcha(new RelayBlockCaptchaReader(apiKey, referer),
+												captchaType, null, null, null, null, description, retry);
+								return captchaData != null ? captchaData.get(ChanPerformer.CaptchaData.INPUT) : null;
+							}
+
 							@Override
 							public String onRecaptchaV2(String apiKey, boolean invisible, String referer) {
-								HttpHolder holder = new HttpHolder();
-								try {
-									return RecaptchaReader.getInstance().getResponse2(holder, apiKey,
-											invisible, referer, Preferences.isRecaptchaJavascript());
-								} catch (RecaptchaReader.CancelException e) {
-									return null;
-								} catch (HttpException e) {
-									return null;
-								} finally {
-									holder.cleanup();
-								}
+								String captchaType = invisible ? ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_INVISIBLE
+										: ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2;
+								return requireUserCaptcha(captchaType, apiKey, referer);
+							}
+
+							@Override
+							public String onHcaptcha(String apiKey, String referer) {
+								return requireUserCaptcha(ChanConfiguration.CAPTCHA_TYPE_HCAPTCHA, apiKey, referer);
 							}
 						};
 						ChanLocator locator = ChanLocator.get(chanName);
 						HttpClient.ProxyData proxyData = HttpClient.getInstance().getProxyData(chanName);
 						boolean httpProxy = proxyData != null && !proxyData.socks;
-						cookie = service.loadWithCookieResult(checkHolder.client.getCookieName(),
-								locator.buildPath().toString(), AdvancedPreferences.getUserAgent(chanName),
+						finished = service.loadWithCookieResult(locator.buildPath().toString(),
+								AdvancedPreferences.getUserAgent(chanName),
 								httpProxy ? proxyData.host : null, httpProxy ? proxyData.port : 0,
 								locator.isUseHttps() && Preferences.isVerifyCertificate(), WEB_VIEW_TIMEOUT,
-								requestCallback);
+								checkHolder.client.getExtra(), requestCallback);
 					} catch (RemoteException e) {
 						e.printStackTrace();
 					}
-					checkHolder.client.storeCookie(chanName, cookie);
-					checkHolder.success = !StringUtils.isEmpty(cookie);
+					checkHolder.success = finished && checkHolder.client.handleResult(chanName);
 				}
 			} finally {
 				context.unbindService(connection);
@@ -203,8 +252,8 @@ public class RelayBlockResolver {
 		return checkHolder.success;
 	}
 
-	public Result checkResponse(String chanName, Uri uri, HttpHolder holder) throws HttpException {
-		Result result = CloudFlareResolver.getInstance().checkResponse(this, chanName, uri, holder);
+	public Result checkResponse(String chanName, HttpHolder holder) throws HttpException {
+		Result result = CloudFlareResolver.getInstance().checkResponse(this, chanName, holder);
 		if (!result.blocked) {
 			result = StormWallResolver.getInstance().checkResponse(this, chanName, holder);
 		}

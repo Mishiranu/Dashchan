@@ -258,8 +258,6 @@
 	<string name="message_clear_deleted_posts_warning">Deleted posts will be permanently deleted.</string>
 	<string name="message_clear_deleted_threads_warning">The following threads will be deleted:</string>
 	<string name="message_clear_history_confirm">Clear history?</string>
-	<string name="message_cloudflate_block">It seems that CloudFlare has blocked your IP. Enter the captcha to pass
-		the verification.</string>
 	<string name="message_clearing">Clearing&#8230;</string>
 	<string name="message_comment_too_short">Comment is too short</string>
 	<string name="message_confirm_archivation">Confirm the archivation.</string>
@@ -337,6 +335,8 @@
 	<string name="message_processing_data">Processing data&#8230;</string>
 	<string name="message_read_timeout">Read timeout expired</string>
 	<string name="message_relay_block">DDoS-protection bypass failed</string>
+	<string name="message_relay_block_format">%s has blocked your IP address. Enter the captcha to pass
+		the verification.</string>
 	<string name="message_report_sent">The report has been sent successfully</string>
 	<string name="message_report_too_often_error">You can\'t report too often</string>
 	<string name="message_request_sent">The request has been sent successfully</string>
