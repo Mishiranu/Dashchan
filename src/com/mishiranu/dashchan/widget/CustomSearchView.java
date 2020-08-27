@@ -1,14 +1,17 @@
 package com.mishiranu.dashchan.widget;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.view.CollapsibleActionView;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.SearchView;
+import android.widget.Toolbar;
+import com.mishiranu.dashchan.C;
 
-public class CustomSearchView extends LinearLayout implements CollapsibleActionView {
+public class CustomSearchView extends FrameLayout implements CollapsibleActionView {
 	public interface OnSubmitListener {
 		boolean onSubmit(String query);
 	}
@@ -19,6 +22,7 @@ public class CustomSearchView extends LinearLayout implements CollapsibleActionV
 
 	private final SearchView searchView;
 	private final FrameLayout customViewLayout;
+	private final int contentInsetEnd;
 
 	private OnSubmitListener onSubmitListener;
 	private OnChangeListener onChangeListener;
@@ -28,12 +32,14 @@ public class CustomSearchView extends LinearLayout implements CollapsibleActionV
 
 		setFocusable(true);
 		setFocusableInTouchMode(true);
-		setOrientation(LinearLayout.HORIZONTAL);
+		LinearLayout layout = new LinearLayout(context);
+		layout.setOrientation(LinearLayout.HORIZONTAL);
+		addView(layout, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 		searchView = new SearchView(context);
 		searchView.setMaxWidth(Integer.MAX_VALUE);
-		addView(searchView, new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f));
+		layout.addView(searchView, new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f));
 		customViewLayout = new FrameLayout(context);
-		addView(customViewLayout, LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT);
+		layout.addView(customViewLayout, LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT);
 		searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 			@Override
 			public boolean onQueryTextSubmit(String query) {
@@ -52,6 +58,45 @@ public class CustomSearchView extends LinearLayout implements CollapsibleActionV
 				return true;
 			}
 		});
+
+		int contentInsetEnd = 0;
+		if (C.API_LOLLIPOP) {
+			TypedArray typedArray = context.obtainStyledAttributes(null,
+					new int[] {android.R.attr.contentInsetEnd}, android.R.attr.actionBarStyle, 0);
+			contentInsetEnd = typedArray.getDimensionPixelSize(0, 0);
+			typedArray.recycle();
+		}
+		this.contentInsetEnd = contentInsetEnd;
+	}
+
+	@Override
+	protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+		super.onLayout(changed, left, top, right, bottom);
+
+		// Ignore Toolbar's content inset at the end if there is only free space left
+		// There should be "home" button at the start, so this side is not handled at all
+		if (C.API_LOLLIPOP && contentInsetEnd > 0 && getParent() instanceof Toolbar) {
+			View layout = getChildAt(0);
+			FrameLayout.LayoutParams layoutParams = (LayoutParams) layout.getLayoutParams();
+			Toolbar toolbar = (Toolbar) getParent();
+			boolean relayout = false;
+			if (getLayoutDirection() == LAYOUT_DIRECTION_RTL) {
+				boolean apply = left == contentInsetEnd;
+				if (apply == (layoutParams.leftMargin == 0)) {
+					layoutParams.leftMargin = apply ? -contentInsetEnd : 0;
+					relayout = true;
+				}
+			} else {
+				boolean apply = toolbar.getMeasuredWidth() == right + contentInsetEnd;
+				if (apply == (layoutParams.rightMargin == 0)) {
+					layoutParams.rightMargin = apply ? -contentInsetEnd : 0;
+					relayout = true;
+				}
+			}
+			if (relayout) {
+				layout.requestLayout();
+			}
+		}
 	}
 
 	public void setHint(CharSequence hint) {

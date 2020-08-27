@@ -29,7 +29,6 @@ import chan.content.ChanLocator;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.text.style.LinkSpan;
 import com.mishiranu.dashchan.text.style.OverlineSpan;
 import com.mishiranu.dashchan.text.style.SpoilerSpan;
@@ -378,25 +377,25 @@ public class CommentTextView extends TextView {
 			currentActionMode = mode;
 			currentActionModeMenu = menu;
 			setSelectionMode(true);
-			int pasteResId = ResourceUtils.getSystemSelectionIcon(getContext(), "actionModePasteDrawable",
-					"ic_menu_paste_holo_dark");
-			ActionIconSet set = new ActionIconSet(getContext());
-			int flags = MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT;
 			if (C.API_MARSHMALLOW && mode.getType() == ActionMode.TYPE_FLOATING) {
 				int order = 1; // Only "cut" menu item uses this order which doesn't present in non-editable TextView
 				if (replyable != null) {
 					menu.add(0, android.R.id.button1, order, R.string.action_quote)
-							.setIcon(pasteResId).setShowAsAction(flags);
+							.setIcon(ResourceUtils.getDrawable(getContext(), R.attr.iconActionPaste, 0))
+							.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
 				}
 				menu.add(0, android.R.id.button2, order, R.string.action_browser)
-						.setIcon(set.getId(R.attr.iconActionForward)).setShowAsAction(flags);
+						.setIcon(ResourceUtils.getDrawable(getContext(), R.attr.iconActionForward, 0))
+						.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
 			} else {
 				if (replyable != null) {
 					menu.add(0, android.R.id.button1, 0, R.string.action_quote)
-							.setIcon(pasteResId).setShowAsAction(flags);
+							.setIcon(ResourceUtils.getDrawable(getContext(), R.attr.iconActionPaste, 0))
+							.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
 				}
 				menu.add(0, android.R.id.button2, 0, R.string.action_browser)
-						.setIcon(set.getId(R.attr.iconActionForward)).setShowAsAction(flags);
+						.setIcon(ResourceUtils.getDrawable(getContext(), R.attr.iconActionForward, 0))
+						.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
 			}
 			// Stop selection fixation after creating action mode
 			restoreSelectionRunnable = null;

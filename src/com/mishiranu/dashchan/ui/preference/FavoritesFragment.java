@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
+import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
 
 public class FavoritesFragment extends PreferenceFragment {
@@ -48,8 +49,6 @@ public class FavoritesFragment extends PreferenceFragment {
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-
-		requireActivity().setTitle(R.string.preference_header_favorites);
-		requireActivity().getActionBar().setSubtitle(null);
+		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.preference_header_favorites), null);
 	}
 }

@@ -24,7 +24,7 @@ import com.mishiranu.dashchan.content.FileProvider;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.UpdaterActivity;
 import com.mishiranu.dashchan.content.async.ReadUpdateTask;
-import com.mishiranu.dashchan.graphics.ActionIconSet;
+import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.CheckPreference;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
@@ -101,8 +101,7 @@ public class UpdateFragment extends BaseListFragment {
 				}
 			}
 		}
-		requireActivity().setTitle(getString(R.string.text_updates_format, count));
-		requireActivity().invalidateOptionsMenu();
+		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.text_updates_format, count), null);
 	}
 
 	@Override
@@ -111,7 +110,6 @@ public class UpdateFragment extends BaseListFragment {
 
 		setHasOptionsMenu(true);
 		updateTitle();
-		requireActivity().getActionBar().setSubtitle(null);
 
 		getRecyclerView().setAdapter(new RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 			private final CheckPreference checkBoxViewGetter = new CheckPreference(requireContext(),
@@ -290,7 +288,6 @@ public class UpdateFragment extends BaseListFragment {
 
 	@Override
 	public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-		ActionIconSet set = new ActionIconSet(requireContext());
 		long length = 0;
 		if (updateDataMap != null) {
 			for (ListItem listItem : listItems) {
@@ -303,7 +300,8 @@ public class UpdateFragment extends BaseListFragment {
 		if (length > 0) {
 			downloadTitle += ", " + length / 1024 + " KB";
 		}
-		menu.add(0, OPTIONS_MENU_DOWNLOAD, 0, downloadTitle).setIcon(set.getId(R.attr.iconActionDownload))
+		menu.add(0, OPTIONS_MENU_DOWNLOAD, 0, downloadTitle)
+				.setIcon(((FragmentHandler) requireActivity()).getActionBarIcon(R.attr.iconActionDownload))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 		menu.add(0, OPTIONS_CHECK_ON_START, 0, R.string.action_check_on_startup).setCheckable(true);
 	}
@@ -421,6 +419,7 @@ public class UpdateFragment extends BaseListFragment {
 					listItem.setTarget(requireContext(), updateItems, targetIndex);
 					onTargetChanged(listItem);
 					getRecyclerView().getAdapter().notifyDataSetChanged();
+					requireActivity().invalidateOptionsMenu();
 					updateTitle();
 				}
 				break;

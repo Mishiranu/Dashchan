@@ -113,7 +113,8 @@ public class BoardsPage extends ListPage implements BoardsAdapter.Callback, Read
 	public void onCreateOptionsMenu(Menu menu) {
 		menu.add(0, OPTIONS_MENU_SEARCH, 0, R.string.action_filter)
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
-		menu.add(0, OPTIONS_MENU_REFRESH, 0, R.string.action_refresh).setIcon(obtainIcon(R.attr.iconActionRefresh))
+		menu.add(0, OPTIONS_MENU_REFRESH, 0, R.string.action_refresh)
+				.setIcon(getActionBarIcon(R.attr.iconActionRefresh))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 		menu.addSubMenu(0, OPTIONS_MENU_APPEARANCE, 0, R.string.action_appearance);
 		menu.add(0, OPTIONS_MENU_MAKE_HOME_PAGE, 0, R.string.action_make_home_page);

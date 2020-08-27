@@ -15,11 +15,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewOutlineProvider;
 import android.view.ViewParent;
-import android.view.Window;
 import android.widget.EdgeEffect;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toolbar;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.content.Preferences;
 import java.lang.reflect.Field;
@@ -102,40 +100,6 @@ public class ViewUtils {
 					ViewGroup.MarginLayoutParams marginParams = (ViewGroup.MarginLayoutParams) params;
 					marginParams.leftMargin = (int) (marginParams.leftMargin * scale);
 					marginParams.rightMargin = (int) (marginParams.rightMargin * scale);
-				}
-			}
-		}
-	}
-
-	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
-	public static void applyToolbarStyle(Window window, View toolbarView) {
-		if (C.API_LOLLIPOP) {
-			View decorView = window.getDecorView();
-			if (toolbarView instanceof Toolbar) {
-				Toolbar toolbar = (Toolbar) toolbarView;
-				TextView subtitleTextView = null;
-				try {
-					Field field = toolbar.getClass().getDeclaredField("mSubtitleTextView");
-					field.setAccessible(true);
-					subtitleTextView = (TextView) field.get(toolbar);
-					if (subtitleTextView == null) {
-						// Create new TextView
-						toolbar.setSubtitle("stub");
-						toolbar.setSubtitle(null);
-						subtitleTextView = (TextView) field.get(toolbar);
-					}
-				} catch (Exception e) {
-					// Reflective operation, ignore exception
-				}
-				if (subtitleTextView != null) {
-					Configuration configuration = decorView.getResources().getConfiguration();
-					boolean handle = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
-							&& !ResourceUtils.isTablet(configuration);
-					if (handle) {
-						float density = ResourceUtils.obtainDensity(toolbar);
-						subtitleTextView.setIncludeFontPadding(false);
-						subtitleTextView.setPadding(0, 0, 0, (int) (2f * density + 0.5f));
-					}
 				}
 			}
 		}

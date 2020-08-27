@@ -8,14 +8,17 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Toolbar;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.ui.ActivityHandler;
-import com.mishiranu.dashchan.util.ViewUtils;
+import com.mishiranu.dashchan.widget.ViewFactory;
 
 public class GalleryDialog extends Dialog {
 	private final Fragment fragment;
+	private ViewFactory.ToolbarHolder toolbarHolder;
 	private View actionBar;
 
 	public GalleryDialog(Fragment fragment) {
@@ -23,10 +26,18 @@ public class GalleryDialog extends Dialog {
 		this.fragment = fragment;
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
 		setVolumeControlStream(AudioManager.STREAM_MUSIC);
-		ViewUtils.applyToolbarStyle(getWindow(), getActionBarView());
 	}
 
 	private boolean actionBarAnimationsFixed = false;
+
+	public void setTitleSubtitle(CharSequence title, CharSequence subtitle) {
+		if (C.API_LOLLIPOP) {
+			toolbarHolder.update(title, subtitle);
+		} else {
+			setTitle(title);
+			getActionBar().setSubtitle(subtitle);
+		}
+	}
 
 	@Override
 	public ActionBar getActionBar() {
@@ -37,6 +48,11 @@ public class GalleryDialog extends Dialog {
 			// which is called first time before action bar created
 			onStop();
 			onStart();
+		}
+		if (C.API_LOLLIPOP && toolbarHolder == null) {
+			Toolbar toolbar = (Toolbar) getActionBarView();
+			toolbarHolder = ViewFactory.addToolbarTitle(toolbar);
+			setTitle(null);
 		}
 		return actionBar;
 	}

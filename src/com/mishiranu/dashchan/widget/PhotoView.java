@@ -20,6 +20,7 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.Scroller;
 import androidx.annotation.NonNull;
+import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.graphics.TransparentTileDrawable;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import java.lang.reflect.Method;
@@ -77,16 +78,28 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 	private boolean isParentDragging;
 
 	private static final Method METHOD_IN_DOUBLE_TAP_MODE;
+	private static final Method METHOD_IN_ANCHORED_SCALE_MODE;
 
 	static {
-		Method inDoubleTapMode;
+		Method inDoubleTapModeMethod;
+		Method inAnchoredScaleModeMethod;
 		try {
-			inDoubleTapMode = ScaleGestureDetector.class.getDeclaredMethod("inDoubleTapMode");
-			inDoubleTapMode.setAccessible(true);
+			inDoubleTapModeMethod = ScaleGestureDetector.class.getDeclaredMethod("inDoubleTapMode");
+			inDoubleTapModeMethod.setAccessible(true);
 		} catch (Exception e) {
-			inDoubleTapMode = null;
+			inDoubleTapModeMethod = null;
 		}
-		METHOD_IN_DOUBLE_TAP_MODE = inDoubleTapMode;
+		try {
+			// TODO Handle reflection
+			@SuppressLint("SoonBlockedPrivateApi")
+			Method method = ScaleGestureDetector.class.getDeclaredMethod("inAnchoredScaleMode");
+			inAnchoredScaleModeMethod = method;
+			inAnchoredScaleModeMethod.setAccessible(true);
+		} catch (Exception e) {
+			inAnchoredScaleModeMethod = null;
+		}
+		METHOD_IN_DOUBLE_TAP_MODE = inDoubleTapModeMethod;
+		METHOD_IN_ANCHORED_SCALE_MODE = inAnchoredScaleModeMethod;
 	}
 
 	public PhotoView(Context context, AttributeSet attr) {
@@ -244,7 +257,12 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 		}
 		boolean restoreAlpha = false;
 		if (workAlpha != 0xff) {
-			canvas.saveLayerAlpha(0, 0, getWidth(), getHeight(), workAlpha, Canvas.ALL_SAVE_FLAG);
+			if (C.API_LOLLIPOP) {
+				canvas.saveLayerAlpha(0, 0, getWidth(), getHeight(), workAlpha);
+			} else {
+				// noinspection deprecation
+				canvas.saveLayerAlpha(0, 0, getWidth(), getHeight(), workAlpha, Canvas.ALL_SAVE_FLAG);
+			}
 			restoreAlpha = true;
 		}
 		if (drawable != null) {
@@ -443,10 +461,13 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 			}
 			gestureDetector.onTouchEvent(event);
 			scaleGestureDetector.onTouchEvent(event);
-			if (METHOD_IN_DOUBLE_TAP_MODE != null && event.getAction() == MotionEvent.ACTION_DOWN) {
+			if (event.getAction() == MotionEvent.ACTION_DOWN &&
+					(METHOD_IN_DOUBLE_TAP_MODE != null || METHOD_IN_ANCHORED_SCALE_MODE != null)) {
 				boolean doubleTapScaling = false;
 				try {
-					doubleTapScaling = (boolean) METHOD_IN_DOUBLE_TAP_MODE.invoke(scaleGestureDetector);
+					doubleTapScaling = (boolean) (METHOD_IN_DOUBLE_TAP_MODE != null
+							? METHOD_IN_DOUBLE_TAP_MODE : METHOD_IN_ANCHORED_SCALE_MODE)
+							.invoke(scaleGestureDetector);
 				} catch (Exception e) {
 					// Reflective operation, ignore exception
 				}
@@ -981,9 +1002,11 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 			case MotionEvent.ACTION_MOVE: {
 				float x = getActiveX(event);
 				float y = getActiveY(event);
-				float dx = x - lastTouchX, dy = y - lastTouchY;
+				float dx = x - lastTouchX;
+				float dy = y - lastTouchY;
+				float length = (float) Math.sqrt(dx * dx + dy * dy);
 				if (!isDragging) {
-					isDragging = Math.sqrt((dx * dx) + (dy * dy)) >= touchSlop;
+					isDragging = length >= touchSlop;
 				}
 				if (isDragging) {
 					if (touchMode == TouchMode.UNDEFINED) {
@@ -991,7 +1014,6 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 								scrollEdgeY == ScrollEdge.START && dy > 0 || scrollEdgeY == ScrollEdge.END && dy < 0;
 						boolean closing = false;
 						if (allowClosing) {
-							float length = (float) Math.sqrt(dx * dx + dy * dy);
 							float angle = (float) (Math.acos(Math.abs(dx / length)) * 180f / Math.PI);
 							closing = angle >= 60;
 						}

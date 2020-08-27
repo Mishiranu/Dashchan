@@ -32,7 +32,6 @@ import chan.content.ChanManager;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
-import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
@@ -119,8 +118,7 @@ public class BrowserFragment extends Fragment implements ActivityHandler, Downlo
 		super.onActivityCreated(savedInstanceState);
 
 		setHasOptionsMenu(true);
-		requireActivity().setTitle(R.string.action_browser);
-		requireActivity().getActionBar().setSubtitle(null);
+		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.action_browser), null);
 		if (savedInstanceState == null) {
 			WebViewUtils.clearAll(webView);
 			webView.loadUrl(requireArguments().<Uri>getParcelable(EXTRA_URI).toString());
@@ -154,8 +152,8 @@ public class BrowserFragment extends Fragment implements ActivityHandler, Downlo
 
 	@Override
 	public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-		ActionIconSet set = new ActionIconSet(requireContext());
-		menu.add(0, OPTIONS_MENU_RELOAD, 0, R.string.action_reload).setIcon(set.getId(R.attr.iconActionRefresh))
+		menu.add(0, OPTIONS_MENU_RELOAD, 0, R.string.action_reload)
+				.setIcon(((FragmentHandler) requireActivity()).getActionBarIcon(R.attr.iconActionRefresh))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 		menu.add(0, OPTIONS_MENU_COPY_LINK, 0, R.string.action_copy_link);
 		menu.add(0, OPTIONS_MENU_SHARE_LINK, 0, R.string.action_share_link);
@@ -246,11 +244,8 @@ public class BrowserFragment extends Fragment implements ActivityHandler, Downlo
 		@Override
 		public void onPageFinished(WebView view, String url) {
 			String title = view.getTitle();
-			if (StringUtils.isEmptyOrWhitespace(title)) {
-				requireActivity().setTitle(R.string.action_browser);
-			} else {
-				requireActivity().setTitle(view.getTitle());
-			}
+			((FragmentHandler) requireActivity()).setTitleSubtitle(StringUtils.isEmptyOrWhitespace(title)
+					? getString(R.string.action_browser) : title, null);
 		}
 
 		@Override

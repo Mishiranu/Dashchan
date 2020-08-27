@@ -20,8 +20,8 @@ import androidx.fragment.app.Fragment;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
-import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.ui.ActivityHandler;
+import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.ui.navigator.page.ListPage;
 import com.mishiranu.dashchan.widget.CustomSearchView;
@@ -39,7 +39,6 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 
 	public interface Callback {
 		UiManager getUiManager();
-		ActionIconSet getActionIconSet();
 		Object getRetainExtra(String retainId);
 		void storeRetainExtra(String retainId, Object extra);
 		ActionBar getActionBar();
@@ -149,8 +148,9 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 		super.onActivityCreated(savedInstanceState);
 
 		setHasOptionsMenu(true);
+		ListPage.IconProvider iconProvider = ((FragmentHandler) requireActivity())::getActionBarIcon;
 		listPage.init(this, getPage(), recyclerView,
-				listPosition, getCallback().getUiManager(), getCallback().getActionIconSet(),
+				listPosition, getCallback().getUiManager(), iconProvider,
 				getCallback().getRetainExtra(getRetainId()), parcelableExtra, initRequest);
 		initRequest = null;
 		notifyTitleChanged();

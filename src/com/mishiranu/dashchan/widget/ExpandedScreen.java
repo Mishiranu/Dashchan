@@ -638,7 +638,7 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener,
 			actionModeView = actionModeBarId != 0 ? activity.findViewById(actionModeBarId) : null;
 			updatePaddings();
 		}
-		if (!actionMode && fullScreenLayoutEnabled && C.API_MARSHMALLOW
+		if (!actionMode && fullScreenLayoutEnabled && C.API_MARSHMALLOW && !C.API_Q
 				&& activity.getWindow().hasFeature(Window.FEATURE_NO_TITLE)) {
 			// Fix marshmallow bug with hidden action bar and action mode overlay
 			if (statusGuardView == null) {

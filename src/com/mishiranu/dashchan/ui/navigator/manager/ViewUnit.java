@@ -1,11 +1,14 @@
 package com.mishiranu.dashchan.ui.navigator.manager;
 
 import android.animation.Animator;
+import android.animation.ArgbEvaluator;
+import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.SystemClock;
 import android.text.Layout;
@@ -384,11 +387,8 @@ public class ViewUnit {
 		if (viewsEnabled && postItem.isUnread()) {
 			switch (Preferences.getHighlightUnreadMode()) {
 				case Preferences.HIGHLIGHT_UNREAD_AUTOMATICALLY: {
-					Animator animator = AnimationUtils.ofNewPostWithStartDelay(holder.layout, postItem,
+					holder.newPostAnimation = new NewPostAnimation(holder.layout, postItem,
 							colorScheme.highlightBackgroundColor);
-					animator.setDuration(500);
-					animator.start();
-					holder.newPostAnimator = animator;
 					break;
 				}
 				case Preferences.HIGHLIGHT_UNREAD_MANUALLY: {
@@ -997,6 +997,49 @@ public class ViewUnit {
 		}
 	}
 
+	private static class NewPostAnimation implements Runnable, ValueAnimator.AnimatorUpdateListener {
+		private final PostLinearLayout layout;
+		private final PostItem postItem;
+		private final ColorDrawable drawable;
+
+		private ValueAnimator animator;
+		private boolean applied = false;
+
+		public NewPostAnimation(PostLinearLayout layout, PostItem postItem, int color) {
+			this.layout = layout;
+			this.postItem = postItem;
+			drawable = new ColorDrawable(color);
+			layout.setSecondaryBackground(drawable);
+			layout.postDelayed(this, 500);
+		}
+
+		@Override
+		public void run() {
+			int color = drawable.getColor();
+			animator = ValueAnimator.ofObject(new ArgbEvaluator(), color, color & 0x00ffffff);
+			animator.addUpdateListener(this);
+			animator.setDuration(500);
+			animator.start();
+		}
+
+		@Override
+		public void onAnimationUpdate(ValueAnimator animation) {
+			if (!applied) {
+				applied = true;
+				postItem.setUnread(false);
+			}
+			drawable.setColor((int) animation.getAnimatedValue());
+		}
+
+		public void cancel() {
+			layout.removeCallbacks(this);
+			if (animator != null) {
+				animator.cancel();
+				animator = null;
+			}
+		}
+	}
+
 	private static class PostViewHolder extends RecyclerView.ViewHolder implements UiManager.Holder,
 			CommentTextView.RecyclerKeeper.Holder, PostLinearLayout.OnTemporaryDetachListener {
 		public final PostLinearLayout layout;
@@ -1027,7 +1070,7 @@ public class ViewUnit {
 		public final UiManager.ThumbnailLongClickListener thumbnailLongClickListener;
 
 		public PostItem postItem;
-		public Animator newPostAnimator;
+		public NewPostAnimation newPostAnimation;
 		public long lastCommentClick;
 
 		public PostViewHolder(ViewGroup parent, UiManager.ConfigurationSet configurationSet,
@@ -1101,9 +1144,9 @@ public class ViewUnit {
 		}
 
 		public void notifyUnbind() {
-			if (newPostAnimator != null) {
-				newPostAnimator.cancel();
-				newPostAnimator = null;
+			if (newPostAnimation != null) {
+				newPostAnimation.cancel();
+				newPostAnimation = null;
 			}
 		}
 

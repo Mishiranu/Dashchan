@@ -95,12 +95,14 @@
 		<item name="iconActionDownload">@drawable/ic_file_download</item>
 		<item name="iconActionForward">@drawable/ic_arrow_forward</item>
 		<item name="iconActionMakeThreadshot">@drawable/ic_camera_alt</item>
+		<item name="iconActionPaste">@drawable/ic_paste</item>
 		<item name="iconActionRefresh">@drawable/ic_refresh</item>
 		<item name="iconActionReport">@drawable/ic_warning</item>
 		<item name="iconActionRemoveFromFavorites">@drawable/ic_star</item>
 		<item name="iconActionSave">@drawable/ic_save</item>
 		<item name="iconActionSearch">@drawable/ic_search</item>
 		<item name="iconActionSelect">@drawable/ic_custom_select</item>
+		<item name="iconActionSelectAll">@drawable/ic_select_all</item>
 		<item name="iconActionVolumeOff">@drawable/ic_volume_off</item>
 
 		<item name="iconButtonCancel">@drawable/ic_close</item>
@@ -162,12 +164,14 @@
 		<item name="iconActionDownload">@drawable/ic_file_download</item>
 		<item name="iconActionForward">@drawable/ic_arrow_forward</item>
 		<item name="iconActionMakeThreadshot">@drawable/ic_camera_alt</item>
+		<item name="iconActionPaste">@drawable/ic_paste</item>
 		<item name="iconActionRefresh">@drawable/ic_refresh</item>
 		<item name="iconActionReport">@drawable/ic_warning</item>
 		<item name="iconActionRemoveFromFavorites">@drawable/ic_star</item>
 		<item name="iconActionSave">@drawable/ic_save</item>
 		<item name="iconActionSearch">@drawable/ic_search</item>
 		<item name="iconActionSelect">@drawable/ic_custom_select</item>
+		<item name="iconActionSelectAll">@drawable/ic_select_all</item>
 		<item name="iconActionVolumeOff">@drawable/ic_volume_off</item>
 
 		<item name="iconButtonCancel">@drawable/ic_close</item>

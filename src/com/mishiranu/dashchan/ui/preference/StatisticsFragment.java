@@ -19,7 +19,6 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.storage.StatisticsStorage;
-import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.util.PostDateFormatter;
 import com.mishiranu.dashchan.util.ResourceUtils;
@@ -33,10 +32,10 @@ public class StatisticsFragment extends BaseListFragment {
 		super.onActivityCreated(savedInstanceState);
 
 		setHasOptionsMenu(true);
-		requireActivity().setTitle(R.string.preference_statistics);
 		long startTime = StatisticsStorage.getInstance().getStartTime();
-		requireActivity().getActionBar().setSubtitle(startTime > 0 ? getString(R.string.text_since_format,
-				new PostDateFormatter(requireContext()).format(startTime)) : null);
+		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.preference_statistics),
+				startTime > 0 ? getString(R.string.text_since_format,
+						new PostDateFormatter(requireContext()).format(startTime)) : null);
 
 		ArrayList<Adapter.ListItem> listItems = new ArrayList<>();
 		listItems.add(new Adapter.ListItem(null, getString(R.string.text_statistics_views),
@@ -87,8 +86,8 @@ public class StatisticsFragment extends BaseListFragment {
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu, @NonNull MenuInflater inflater) {
-		ActionIconSet set = new ActionIconSet(requireContext());
-		menu.add(0, OPTIONS_MENU_CLEAR, 0, R.string.action_clear).setIcon(set.getId(R.attr.iconActionDelete))
+		menu.add(0, OPTIONS_MENU_CLEAR, 0, R.string.action_clear)
+				.setIcon(((FragmentHandler) requireActivity()).getActionBarIcon(R.attr.iconActionDelete))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 		super.onCreateOptionsMenu(menu, inflater);
 	}

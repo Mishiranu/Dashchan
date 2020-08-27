@@ -1,13 +1,18 @@
 package com.mishiranu.dashchan.widget;
 
+import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.text.TextUtils;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toolbar;
 import androidx.core.widget.TextViewCompat;
+import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.util.ResourceUtils;
@@ -78,5 +83,52 @@ public class ViewFactory {
 		ViewUtils.setSelectableItemBackground(view);
 		view.setTag(holder);
 		return view;
+	}
+
+	public static class ToolbarHolder {
+		public final ViewGroup toolbar;
+		public final View layout;
+		private final TextView title;
+		private final TextView subtitle;
+
+		private ToolbarHolder(Toolbar toolbar, View layout, TextView title, TextView subtitle) {
+			this.toolbar = toolbar;
+			this.layout = layout;
+			this.title = title;
+			this.subtitle = subtitle;
+		}
+
+		public void update(CharSequence title, CharSequence subtitle) {
+			this.title.setText(title);
+			this.subtitle.setText(subtitle);
+			this.subtitle.setVisibility(StringUtils.isEmpty(subtitle) ? View.GONE : View.VISIBLE);
+		}
+
+		public Toolbar getToolbar() {
+			return (Toolbar) toolbar;
+		}
+	}
+
+	public static ToolbarHolder addToolbarTitle(Toolbar toolbar) {
+		LinearLayout layout = new LinearLayout(toolbar.getContext());
+		layout.setOrientation(LinearLayout.VERTICAL);
+		toolbar.addView(layout, Toolbar.LayoutParams.WRAP_CONTENT, Toolbar.LayoutParams.WRAP_CONTENT);
+		TextView title = new TextView(layout.getContext());
+		layout.addView(title, LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+		TextViewCompat.setTextAppearance(title, android.R.style.TextAppearance_Material_Widget_Toolbar_Title);
+		title.setSingleLine(true);
+		title.setEllipsize(TextUtils.TruncateAt.END);
+		TextView subtitle = new TextView(layout.getContext());
+		layout.addView(subtitle, LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+		TextViewCompat.setTextAppearance(subtitle, android.R.style.TextAppearance_Material_Widget_Toolbar_Subtitle);
+		subtitle.setSingleLine(true);
+		subtitle.setEllipsize(TextUtils.TruncateAt.END);
+		Configuration configuration = toolbar.getResources().getConfiguration();
+		if (configuration.orientation == Configuration.ORIENTATION_PORTRAIT && !ResourceUtils.isTablet(configuration)) {
+			float density = ResourceUtils.obtainDensity(toolbar);
+			ViewUtils.setNewMargin(subtitle, null, (int) (-2f * density), null, null);
+			subtitle.setTextSize(TypedValue.COMPLEX_UNIT_PX, (int) (subtitle.getTextSize() * 0.85f + 0.5f));
+		}
+		return new ToolbarHolder(toolbar, layout, title, subtitle);
 	}
 }

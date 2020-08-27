@@ -15,6 +15,7 @@ import chan.content.ChanMarkup;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.text.HtmlParser;
+import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
@@ -82,15 +83,14 @@ public class TextFragment extends Fragment implements View.OnClickListener {
 		}
 		switch (requireArguments().getInt(EXTRA_TYPE)) {
 			case TYPE_LICENSES: {
-				requireActivity().setTitle(R.string.preference_licenses);
+				((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.preference_licenses), null);
 				break;
 			}
 			case TYPE_CHANGELOG: {
-				requireActivity().setTitle(R.string.preference_changelog);
+				((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.preference_changelog), null);
 				break;
 			}
 		}
-		requireActivity().getActionBar().setSubtitle(null);
 	}
 
 	private long lastClickTime;

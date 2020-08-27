@@ -38,7 +38,6 @@ import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.model.AttachmentItem;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.service.DownloadService;
-import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.graphics.GalleryBackgroundDrawable;
 import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.FragmentHandler;
@@ -165,8 +164,13 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 			imageViewPosition = new int[] {location[0], location[1],
 					queuedFromView.getWidth(), queuedFromView.getHeight()};
 		}
-		getWindow().getAttributes().windowAnimations = imageViewPosition == null
+		WindowManager.LayoutParams attributes = getWindow().getAttributes();
+		attributes.windowAnimations = imageViewPosition == null
 				? R.style.Animation_Gallery_Full : R.style.Animation_Gallery_Partial;
+		if (C.API_PIE) {
+			attributes.layoutInDisplayCutoutMode = WindowManager.LayoutParams
+					.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+		}
 
 		if (rootView == null) {
 			Context context = ThemeEngine.attach(new ContextThemeWrapper
@@ -284,8 +288,7 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 			}
 		}
 		if (titleSubtitle != null) {
-			dialog.setTitle(titleSubtitle.first);
-			dialog.getActionBar().setSubtitle(titleSubtitle.second);
+			dialog.setTitleSubtitle(titleSubtitle.first, titleSubtitle.second);
 		}
 		setScreenOnFixed(screenOnFixed);
 		applyStatusNavigationTranslucency();
@@ -352,12 +355,14 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 
 	@Override
 	public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-		ActionIconSet set = new ActionIconSet(getContext());
-		menu.add(0, OPTIONS_MENU_SAVE, 0, R.string.action_save).setIcon(set.getId(R.attr.iconActionSave))
+		menu.add(0, OPTIONS_MENU_SAVE, 0, R.string.action_save)
+				.setIcon(ResourceUtils.getActionBarIcon(instance.context, R.attr.iconActionSave))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-		menu.add(0, OPTIONS_MENU_REFRESH, 0, R.string.action_refresh).setIcon(set.getId(R.attr.iconActionRefresh))
+		menu.add(0, OPTIONS_MENU_REFRESH, 0, R.string.action_refresh)
+				.setIcon(ResourceUtils.getActionBarIcon(instance.context, R.attr.iconActionRefresh))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-		menu.add(0, OPTIONS_MENU_SELECT, 0, R.string.action_select).setIcon(set.getId(R.attr.iconActionSelect))
+		menu.add(0, OPTIONS_MENU_SELECT, 0, R.string.action_select)
+				.setIcon(ResourceUtils.getActionBarIcon(instance.context, R.attr.iconActionSelect))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 	}
 
@@ -477,8 +482,7 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 		listUnit.switchMode(galleryMode, duration);
 		if (galleryMode) {
 			int count = instance.galleryItems.size();
-			getDialog().setTitle(R.string.action_gallery);
-			getDialog().getActionBar().setSubtitle(getResources()
+			getDialog().setTitleSubtitle(getString(R.string.action_gallery), getResources()
 					.getQuantityString(R.plurals.text_several_files_count_format, count, count));
 			titleSubtitle = null;
 		}
@@ -573,8 +577,7 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 		titleSubtitle = new Pair<>(fileName, builder);
 		GalleryDialog dialog = getDialog();
 		if (dialog != null) {
-			dialog.setTitle(fileName);
-			dialog.getActionBar().setSubtitle(builder);
+			dialog.setTitleSubtitle(fileName, builder);
 		}
 	}
 

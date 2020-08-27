@@ -2,6 +2,7 @@ package com.mishiranu.dashchan.ui.navigator.page;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.os.Parcelable;
 import android.util.Pair;
 import android.view.ActionMode;
@@ -10,7 +11,6 @@ import android.view.MenuItem;
 import android.view.View;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
-import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.ui.navigator.Page;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.widget.ListPosition;
@@ -32,6 +32,10 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 	private enum State {INIT, LOCKED, RESUMED, PAUSED, DESTROYED}
 
 	public enum ViewType {LIST, PROGRESS, ERROR}
+
+	public interface IconProvider {
+		Drawable get(int attr);
+	}
 
 	public interface ExtraFactory<T> {
 		T newExtra();
@@ -56,7 +60,7 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 	private PullableRecyclerView recyclerView;
 	private ListPosition listPosition;
 	private UiManager uiManager;
-	private ActionIconSet actionIconSet;
+	private IconProvider iconProvider;
 	private Object retainExtra;
 	private Parcelable parcelableExtra;
 	private InitRequest initRequest;
@@ -64,7 +68,7 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 	private State state = State.INIT;
 
 	public final void init(Callback callback, Page page, PullableRecyclerView recyclerView,
-			ListPosition listPosition, UiManager uiManager, ActionIconSet actionIconSet,
+			ListPosition listPosition, UiManager uiManager, IconProvider iconProvider,
 			Object retainExtra, Parcelable parcelableExtra, InitRequest initRequest) {
 		if (state == State.INIT) {
 			state = State.LOCKED;
@@ -73,7 +77,7 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 			this.recyclerView = recyclerView;
 			this.listPosition = listPosition;
 			this.uiManager = uiManager;
-			this.actionIconSet = actionIconSet;
+			this.iconProvider = iconProvider;
 			this.retainExtra = retainExtra;
 			this.parcelableExtra = parcelableExtra;
 			this.initRequest = initRequest;
@@ -139,12 +143,8 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 		onNotifyAllAdaptersChanged();
 	}
 
-	protected final int obtainIcon(int attr) {
-		if (actionIconSet != null) {
-			return actionIconSet.getId(attr);
-		} else {
-			return 0;
-		}
+	protected final Drawable getActionBarIcon(int attr) {
+		return iconProvider != null ? iconProvider.get(attr) : null;
 	}
 
 	protected final void notifyTitleChanged() {

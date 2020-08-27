@@ -52,7 +52,6 @@ import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.content.service.PostingService;
 import com.mishiranu.dashchan.content.storage.DraftsStorage;
-import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.graphics.RoundedCornersDrawable;
 import com.mishiranu.dashchan.graphics.TransparentTileDrawable;
 import com.mishiranu.dashchan.media.JpegData;
@@ -256,8 +255,11 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 			LinearLayout textFormatView = new LinearLayout(extra.getContext());
 			textFormatView.setOrientation(LinearLayout.HORIZONTAL);
 			this.textFormatView = textFormatView;
-			if (!landscape) {
-				float density = ResourceUtils.obtainDensity(textFormatView);
+			float density = ResourceUtils.obtainDensity(textFormatView);
+			if (landscape) {
+				boolean rtl = textFormatView.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL;
+				textFormatView.setPadding(rtl ? 0 : (int) (8f * density), 0, rtl ? (int) (8f * density) : 0, 0);
+			} else {
 				textFormatView.setPadding((int) (8f * density), 0, (int) (8f * density), (int) (4f * density));
 				addPaddingToRoot = true;
 			}
@@ -509,9 +511,8 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 		super.onActivityCreated(savedInstanceState);
 
 		setHasOptionsMenu(true);
-		requireActivity().setTitle(StringUtils.isEmpty(getThreadNumber())
-				? R.string.text_new_thread : R.string.text_new_post);
-		requireActivity().getActionBar().setSubtitle(null);
+		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(StringUtils.isEmpty(getThreadNumber())
+				? R.string.text_new_thread : R.string.text_new_post), null);
 		requireActivity().bindService(new Intent(requireContext(), PostingService.class),
 				postingConnection, Context.BIND_AUTO_CREATE);
 	}
@@ -723,8 +724,8 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 
 	@Override
 	public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-		ActionIconSet set = new ActionIconSet(requireContext());
-		menu.add(0, OPTIONS_MENU_ATTACH, 0, R.string.action_attach).setIcon(set.getId(R.attr.iconActionAttach))
+		menu.add(0, OPTIONS_MENU_ATTACH, 0, R.string.action_attach)
+				.setIcon(((FragmentHandler) requireActivity()).getActionBarIcon(R.attr.iconActionAttach))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 	}
 

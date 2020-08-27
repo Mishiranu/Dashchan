@@ -15,6 +15,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -63,7 +64,6 @@ import com.mishiranu.dashchan.content.service.PostingService;
 import com.mishiranu.dashchan.content.service.WatcherService;
 import com.mishiranu.dashchan.content.storage.DraftsStorage;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
-import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.ui.gallery.GalleryOverlay;
 import com.mishiranu.dashchan.ui.navigator.Page;
 import com.mishiranu.dashchan.ui.navigator.PageFragment;
@@ -88,6 +88,7 @@ import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.ExpandedScreen;
 import com.mishiranu.dashchan.widget.ThemeEngine;
+import com.mishiranu.dashchan.widget.ViewFactory;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -124,7 +125,6 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 
 	private UiManager uiManager;
 	private RetainFragment retainFragment;
-	private ActionIconSet actionIconSet;
 	private ConfigurationLock configurationLock;
 	private final WatcherService.Client watcherServiceClient = new WatcherService.Client(this);
 	private DownloadDialog downloadDialog;
@@ -136,7 +136,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	private DrawerToggle drawerToggle;
 
 	private ExpandedScreen expandedScreen;
-	private ViewGroup toolbarView;
+	private ViewFactory.ToolbarHolder toolbarHolder;
 	private FrameLayout toolbarExtra;
 
 	private ViewGroup drawerCommon, drawerWide;
@@ -175,7 +175,6 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		Preferences.PREFERENCES.registerOnSharedPreferenceChangeListener(preferencesListener);
 		ChanManager.getInstance().observable.register(chanManagerCallback);
 		watcherServiceClient.bind(this);
-		actionIconSet = new ActionIconSet(this);
 		configurationLock = new ConfigurationLock(this);
 		drawerCommon = findViewById(R.id.drawer_common);
 		drawerWide = findViewById(R.id.drawer_wide);
@@ -209,7 +208,10 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			getLayoutInflater().inflate(R.layout.widget_toolbar, drawerInterlayer);
 			Toolbar toolbar = findViewById(R.id.toolbar);
 			setActionBar(toolbar);
-			toolbarView = toolbar;
+			setTitle(null);
+			// Allow CustomSearchView to ignore content inset
+			toolbar.setClipChildren(false);
+			toolbarHolder = ViewFactory.addToolbarTitle(toolbar);
 			toolbarExtra = findViewById(R.id.toolbar_extra);
 			LayoutTransition layoutTransition = new LayoutTransition();
 			layoutTransition.setStartDelay(LayoutTransition.APPEARING, 0);
@@ -222,7 +224,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		}
 		View toolbarLayout = findViewById(R.id.toolbar_layout);
 
-		drawerToggle = new DrawerToggle(this, drawerLayout);
+		drawerToggle = new DrawerToggle(this, toolbarHolder != null
+				? toolbarHolder.toolbar.getContext() : null, drawerLayout);
 		if (C.API_LOLLIPOP) {
 			drawerCommon.setElevation(4f * density);
 			drawerWide.setElevation(4f * density);
@@ -231,10 +234,9 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		}
 		drawerLayout.addDrawerListener(drawerToggle);
 		drawerLayout.addDrawerListener(drawerForm);
-		if (toolbarView == null) {
+		if (toolbarHolder == null) {
 			drawerLayout.addDrawerListener(new ExpandedScreenDrawerLocker());
 		}
-		ViewUtils.applyToolbarStyle(getWindow(), toolbarView);
 
 		downloadDialog = new DownloadDialog(this, configurationLock, new DownloadDialog.Callback() {
 			@Override
@@ -445,11 +447,21 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	}
 
 	@Override
+	public void setTitleSubtitle(CharSequence title, CharSequence subtitle) {
+		if (C.API_LOLLIPOP) {
+			toolbarHolder.update(title, subtitle);
+		} else {
+			setTitle(title);
+			getActionBar().setSubtitle(subtitle);
+		}
+	}
+
+	@Override
 	public ViewGroup getToolbarView() {
-		if (toolbarView == null) {
+		if (toolbarHolder == null) {
 			throw new IllegalStateException();
 		}
-		return toolbarView;
+		return toolbarHolder.toolbar;
 	}
 
 	@Override
@@ -458,6 +470,11 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			throw new IllegalStateException();
 		}
 		return toolbarExtra;
+	}
+
+	@Override
+	public Drawable getActionBarIcon(int attr) {
+		return ResourceUtils.getActionBarIcon(toolbarHolder != null ? toolbarHolder.toolbar.getContext() : this, attr);
 	}
 
 	@Override
@@ -968,11 +985,6 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	@Override
 	public UiManager getUiManager() {
 		return uiManager;
-	}
-
-	@Override
-	public ActionIconSet getActionIconSet() {
-		return actionIconSet;
 	}
 
 	@Override
@@ -1880,8 +1892,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 
 	@Override
 	public void setPageTitle(String title) {
-		setTitle(title);
-		getActionBar().setSubtitle(null);
+		setTitleSubtitle(title, null);
 		if (((PageFragment) getCurrentFragment()).getPage().content == Page.Content.POSTS) {
 			currentPageItem.threadTitle = title;
 		}

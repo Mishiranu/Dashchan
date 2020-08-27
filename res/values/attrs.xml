@@ -31,12 +31,14 @@
 	<attr name="iconActionDownload" format="reference" />
 	<attr name="iconActionForward" format="reference" />
 	<attr name="iconActionMakeThreadshot" format="reference" />
+	<attr name="iconActionPaste" format="reference" />
 	<attr name="iconActionRefresh" format="reference" />
 	<attr name="iconActionReport" format="reference" />
 	<attr name="iconActionRemoveFromFavorites" format="reference" />
 	<attr name="iconActionSave" format="reference" />
 	<attr name="iconActionSearch" format="reference" />
 	<attr name="iconActionSelect" format="reference" />
+	<attr name="iconActionSelectAll" format="reference" />
 	<attr name="iconActionVolumeOff" format="reference" />
 
 	<attr name="iconButtonCancel" format="reference" />

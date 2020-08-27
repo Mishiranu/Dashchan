@@ -70,9 +70,7 @@ public class AboutFragment extends PreferenceFragment {
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-
-		requireActivity().setTitle(R.string.preference_header_about);
-		requireActivity().getActionBar().setSubtitle(null);
+		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.preference_header_about), null);
 	}
 
 	@Override

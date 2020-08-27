@@ -1,36 +1,18 @@
 package com.mishiranu.dashchan.util;
 
 import android.animation.Animator;
-import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
-import android.graphics.drawable.ColorDrawable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
-import com.mishiranu.dashchan.content.model.PostItem;
-import com.mishiranu.dashchan.widget.PostLinearLayout;
-import java.lang.reflect.Field;
 
 public class AnimationUtils {
 	public static final Interpolator ACCELERATE_DECELERATE_INTERPOLATOR = new AccelerateDecelerateInterpolator();
 	public static final Interpolator ACCELERATE_INTERPOLATOR = new AccelerateInterpolator();
 	public static final Interpolator DECELERATE_INTERPOLATOR = new DecelerateInterpolator();
-
-	private static final Field FIELD_START_DELAY;
-
-	static {
-		Field fieldStartDelay;
-		try {
-			fieldStartDelay = ValueAnimator.class.getDeclaredField("mStartDelay");
-			fieldStartDelay.setAccessible(true);
-		} catch (Exception e) {
-			fieldStartDelay = null;
-		}
-		FIELD_START_DELAY = fieldStartDelay;
-	}
 
 	public static void measureDynamicHeight(View view) {
 		int width = view.getWidth();
@@ -64,21 +46,6 @@ public class AnimationUtils {
 		HeightAnimatorListener listener = new HeightAnimatorListener(view, to);
 		animator.addListener(listener);
 		animator.addUpdateListener(listener);
-		return animator;
-	}
-
-	public static Animator ofNewPostWithStartDelay(PostLinearLayout layout, PostItem postItem, int color) {
-		ValueAnimator animator = ValueAnimator.ofObject(new ArgbEvaluator(), color, color & 0x00ffffff);
-		final long delay = 500;
-		animator.setStartDelay(delay);
-		if (FIELD_START_DELAY != null) {
-			try {
-				FIELD_START_DELAY.setLong(animator, delay);
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
-		}
-		animator.addUpdateListener(new NewPostAnimatorListener(layout, postItem, color));
 		return animator;
 	}
 
@@ -141,27 +108,6 @@ public class AnimationUtils {
 
 		@Override
 		public void onAnimationRepeat(Animator animation) {}
-	}
-
-	private static class NewPostAnimatorListener implements ValueAnimator.AnimatorUpdateListener {
-		private final ColorDrawable drawable;
-		private final PostItem postItem;
-		private boolean applied = false;
-
-		public NewPostAnimatorListener(PostLinearLayout layout, PostItem postItem, int color) {
-			drawable = new ColorDrawable(color);
-			layout.setSecondaryBackground(drawable);
-			this.postItem = postItem;
-		}
-
-		@Override
-		public void onAnimationUpdate(ValueAnimator animation) {
-			if (!applied) {
-				applied = true;
-				postItem.setUnread(false);
-			}
-			drawable.setColor((int) animation.getAnimatedValue());
-		}
 	}
 
 	public static float lerp(float a, float b, float t) {

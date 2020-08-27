@@ -35,8 +35,7 @@ public class ChansFragment extends PreferenceFragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		requireActivity().setTitle(R.string.preference_header_forums);
-		requireActivity().getActionBar().setSubtitle(null);
+		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.preference_header_forums), null);
 		if (!ChanManager.getInstance().getAvailableChanNames().iterator().hasNext()) {
 			((FragmentHandler) requireActivity()).removeFragment();
 		}

@@ -257,8 +257,7 @@ public class ChanFragment extends PreferenceFragment {
 		super.onActivityCreated(savedInstanceState);
 
 		ChanConfiguration configuration = ChanConfiguration.get(getChanName());
-		requireActivity().setTitle(configuration.getTitle());
-		requireActivity().getActionBar().setSubtitle(null);
+		((FragmentHandler) requireActivity()).setTitleSubtitle(configuration.getTitle(), null);
 		if (!ChanManager.getInstance().isExistingChanName(getChanName())) {
 			((FragmentHandler) requireActivity()).removeFragment();
 		}

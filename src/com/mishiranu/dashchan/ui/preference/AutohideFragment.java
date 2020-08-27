@@ -29,8 +29,8 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.storage.AutohideStorage;
-import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.ui.ActivityHandler;
+import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.CustomSearchView;
 import com.mishiranu.dashchan.widget.ErrorEditTextSetter;
@@ -65,8 +65,7 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 		super.onActivityCreated(savedInstanceState);
 
 		setHasOptionsMenu(true);
-		requireActivity().setTitle(R.string.preference_header_autohide);
-		requireActivity().getActionBar().setSubtitle(null);
+		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.preference_header_autohide), null);
 		items.addAll(AutohideStorage.getInstance().getItems());
 		if (items.isEmpty()) {
 			setEmptyText(getString(R.string.message_no_rules));
@@ -96,8 +95,8 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 
 	@Override
 	public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-		ActionIconSet set = new ActionIconSet(requireContext());
-		menu.add(0, OPTIONS_MENU_NEW_RULE, 0, R.string.action_new_rule).setIcon(set.getId(R.attr.iconActionAddRule))
+		menu.add(0, OPTIONS_MENU_NEW_RULE, 0, R.string.action_new_rule)
+				.setIcon(((FragmentHandler) requireActivity()).getActionBarIcon(R.attr.iconActionAddRule))
 				.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 		searchMenuItem = menu.add(0, OPTIONS_MENU_SEARCH, 0, R.string.action_filter).setActionView(searchView)
 				.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW)

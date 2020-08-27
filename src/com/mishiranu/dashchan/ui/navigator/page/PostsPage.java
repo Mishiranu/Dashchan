@@ -228,13 +228,13 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				LinearLayout.LayoutParams.WRAP_CONTENT);
 		ImageView backButtonView = new ImageView(darkStyledContext, null, android.R.attr.borderlessButtonStyle);
 		backButtonView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-		backButtonView.setImageResource(obtainIcon(R.attr.iconActionBack));
+		backButtonView.setImageDrawable(getActionBarIcon(R.attr.iconActionBack));
 		backButtonView.setPadding(buttonPadding, buttonPadding, buttonPadding, buttonPadding);
 		backButtonView.setOnClickListener(v -> findBack());
 		searchController.addView(backButtonView, (int) (48f * density), (int) (48f * density));
 		ImageView forwardButtonView = new ImageView(darkStyledContext, null, android.R.attr.borderlessButtonStyle);
 		forwardButtonView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-		forwardButtonView.setImageResource(obtainIcon(R.attr.iconActionForward));
+		forwardButtonView.setImageDrawable(getActionBarIcon(R.attr.iconActionForward));
 		forwardButtonView.setPadding(buttonPadding, buttonPadding, buttonPadding, buttonPadding);
 		forwardButtonView.setOnClickListener(v -> findForward());
 		searchController.addView(forwardButtonView, (int) (48f * density), (int) (48f * density));
@@ -411,23 +411,25 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu) {
-		menu.add(0, OPTIONS_MENU_ADD_POST, 0, R.string.action_add_post).setIcon(obtainIcon(R.attr.iconActionAddPost))
+		menu.add(0, OPTIONS_MENU_ADD_POST, 0, R.string.action_add_post)
+				.setIcon(getActionBarIcon(R.attr.iconActionAddPost))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 		menu.add(0, OPTIONS_MENU_SEARCH, 0, R.string.action_search)
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
 		menu.add(0, OPTIONS_MENU_GALLERY, 0, R.string.action_gallery);
 		menu.add(0, OPTIONS_MENU_SELECT, 0, R.string.action_select);
-		menu.add(0, OPTIONS_MENU_REFRESH, 0, R.string.action_refresh).setIcon(obtainIcon(R.attr.iconActionRefresh))
+		menu.add(0, OPTIONS_MENU_REFRESH, 0, R.string.action_refresh)
+				.setIcon(getActionBarIcon(R.attr.iconActionRefresh))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 		menu.addSubMenu(0, OPTIONS_MENU_APPEARANCE, 0, R.string.action_appearance);
 		SubMenu threadOptions = menu.addSubMenu(0, OPTIONS_MENU_THREAD_OPTIONS, 0, R.string.action_thread_options);
 		menu.add(0, OPTIONS_MENU_ADD_TO_FAVORITES_TEXT, 0, R.string.action_add_to_favorites);
 		menu.add(0, OPTIONS_MENU_REMOVE_FROM_FAVORITES_TEXT, 0, R.string.action_remove_from_favorites);
 		menu.add(0, OPTIONS_MENU_ADD_TO_FAVORITES_ICON, 0, R.string.action_add_to_favorites)
-				.setIcon(obtainIcon(R.attr.iconActionAddToFavorites))
+				.setIcon(getActionBarIcon(R.attr.iconActionAddToFavorites))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 		menu.add(0, OPTIONS_MENU_REMOVE_FROM_FAVORITES_ICON, 0, R.string.action_remove_from_favorites)
-				.setIcon(obtainIcon(R.attr.iconActionRemoveFromFavorites))
+				.setIcon(getActionBarIcon(R.attr.iconActionRemoveFromFavorites))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 		menu.add(0, OPTIONS_MENU_OPEN_ORIGINAL_THREAD, 0, R.string.action_open_the_original);
 		menu.add(0, OPTIONS_MENU_ARCHIVE, 0, R.string.action_archive_add);
@@ -711,27 +713,29 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		ChanConfiguration configuration = getChanConfiguration();
 		getAdapter().setSelectionModeEnabled(true);
 		mode.setTitle(getString(R.string.text_selected_format, getAdapter().getSelectedCount()));
-		int pasteResId = ResourceUtils.getSystemSelectionIcon(getContext(), "actionModePasteDrawable",
-				"ic_menu_paste_holo_dark");
-		int flags = MenuItem.SHOW_AS_ACTION_ALWAYS;
 		ChanConfiguration.Board board = configuration.safe().obtainBoard(page.boardName);
 		menu.add(0, ACTION_MENU_MAKE_THREADSHOT, 0, R.string.action_make_threadshot)
-				.setIcon(obtainIcon(R.attr.iconActionMakeThreadshot)).setShowAsAction(flags);
+				.setIcon(getActionBarIcon(R.attr.iconActionMakeThreadshot))
+				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 		if (replyable != null) {
-			menu.add(0, ACTION_MENU_REPLY, 0, R.string.action_reply).setIcon(pasteResId).setShowAsAction(flags);
+			menu.add(0, ACTION_MENU_REPLY, 0, R.string.action_reply)
+					.setIcon(getActionBarIcon(R.attr.iconActionPaste))
+					.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 		}
 		if (board.allowDeleting) {
 			ChanConfiguration.Deleting deleting = configuration.safe().obtainDeleting(page.boardName);
 			if (deleting != null && deleting.multiplePosts) {
 				menu.add(0, ACTION_MENU_DELETE_POSTS, 0, R.string.action_delete)
-						.setIcon(obtainIcon(R.attr.iconActionDelete)).setShowAsAction(flags);
+						.setIcon(getActionBarIcon(R.attr.iconActionDelete))
+						.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 			}
 		}
 		if (board.allowReporting) {
 			ChanConfiguration.Reporting reporting = configuration.safe().obtainReporting(page.boardName);
 			if (reporting != null && reporting.multiplePosts) {
 				menu.add(0, ACTION_MENU_SEND_REPORT, 0, R.string.action_report)
-						.setIcon(obtainIcon(R.attr.iconActionReport)).setShowAsAction(flags);
+						.setIcon(getActionBarIcon(R.attr.iconActionReport))
+						.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 			}
 		}
 		return true;

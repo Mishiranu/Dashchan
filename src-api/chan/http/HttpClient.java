@@ -75,19 +75,20 @@ public class HttpClient {
 	static final int HTTP_TEMPORARY_REDIRECT = 307;
 
 	static {
-		int poolSize = 20;
-		System.setProperty("http.maxConnections", Integer.toString(poolSize));
-		try {
-			// http.maxConnections may do nothing because ConnectionPool inits earlier. Android bug?
-			// TODO Will require workaround for target API >= 28
-			@SuppressLint("PrivateApi")
-			Object connectionPool = Class.forName("com.android.okhttp.ConnectionPool")
-					.getMethod("getDefault").invoke(null);
-			Field maxIdleConnectionsField = connectionPool.getClass().getDeclaredField("maxIdleConnections");
-			maxIdleConnectionsField.setAccessible(true);
-			maxIdleConnectionsField.setInt(connectionPool, poolSize);
-		} catch (Exception e) {
-			// Reflective operation, ignore exception
+		if (!C.API_PIE) {
+			int poolSize = 20;
+			System.setProperty("http.maxConnections", Integer.toString(poolSize));
+			try {
+				// http.maxConnections may do nothing because ConnectionPool inits earlier. Android bug?
+				@SuppressLint("PrivateApi")
+				Object connectionPool = Class.forName("com.android.okhttp.ConnectionPool")
+						.getMethod("getDefault").invoke(null);
+				Field maxIdleConnectionsField = connectionPool.getClass().getDeclaredField("maxIdleConnections");
+				maxIdleConnectionsField.setAccessible(true);
+				maxIdleConnectionsField.setInt(connectionPool, poolSize);
+			} catch (Exception e) {
+				// Reflective operation, ignore exception
+			}
 		}
 
 		SHORT_RESPONSE_MESSAGES.put("Internal Server Error", "Internal Error");

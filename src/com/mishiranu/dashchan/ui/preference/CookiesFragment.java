@@ -66,8 +66,7 @@ public class CookiesFragment extends PreferenceFragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		requireActivity().setTitle(R.string.preference_manage_cookies);
-		requireActivity().getActionBar().setSubtitle(null);
+		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.preference_manage_cookies), null);
 		if (!ChanManager.getInstance().isExistingChanName(getChanName())) {
 			((FragmentHandler) requireActivity()).removeFragment();
 		}

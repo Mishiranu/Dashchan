@@ -25,7 +25,6 @@ import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.ImageLoader;
 import com.mishiranu.dashchan.content.model.AttachmentItem;
 import com.mishiranu.dashchan.content.model.GalleryItem;
-import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.graphics.SelectorBorderDrawable;
 import com.mishiranu.dashchan.graphics.SelectorCheckDrawable;
 import com.mishiranu.dashchan.util.AnimationUtils;
@@ -285,14 +284,12 @@ public class ListUnit implements ActionMode.Callback {
 	public boolean onCreateActionMode(ActionMode mode, Menu menu) {
 		selected.clear();
 		mode.setTitle(instance.context.getString(R.string.text_selected_format, 0));
-		int selectAllResId = ResourceUtils.getSystemSelectionIcon(instance.context, "actionModeSelectAllDrawable",
-				"ic_menu_selectall_holo_dark");
-		int flags = MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT;
-		ActionIconSet set = new ActionIconSet(instance.context);
 		menu.add(0, ACTION_MENU_SELECT_ALL, 0, R.string.action_select_all)
-				.setIcon(selectAllResId).setShowAsAction(flags);
+				.setIcon(ResourceUtils.getActionBarIcon(instance.context, R.attr.iconActionSelectAll))
+				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 		menu.add(0, ACTION_MENU_DOWNLOAD_FILES, 0, R.string.action_download_files)
-				.setIcon(set.getId(R.attr.iconActionDownload)).setShowAsAction(flags);
+				.setIcon(ResourceUtils.getActionBarIcon(instance.context, R.attr.iconActionDownload))
+				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 		return true;
 	}
 

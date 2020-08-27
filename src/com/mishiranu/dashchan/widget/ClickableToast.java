@@ -26,6 +26,7 @@ import androidx.annotation.NonNull;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.util.FlagUtils;
+import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
@@ -318,7 +319,7 @@ public class ClickableToast {
 			// PRIVATE_FLAG_NO_MOVE_ANIMATION == 0x00000040
 			field.set(layoutParams, field.getInt(layoutParams) | 0x00000040);
 		} catch (Exception e) {
-			// Reflective operation, ignore exception
+			Log.persistent().stack(e);
 		}
 		return updateLayoutParams(layoutParams);
 	}

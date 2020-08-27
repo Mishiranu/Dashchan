@@ -93,7 +93,6 @@ public class ResourceUtils {
 		return notFound;
 	}
 
-	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	@SuppressWarnings("deprecation")
 	public static Drawable getDrawable(Context context, int resId) {
 		return C.API_LOLLIPOP ? context.getDrawable(resId) : context.getResources().getDrawable(resId);
@@ -102,6 +101,15 @@ public class ResourceUtils {
 	public static Drawable getDrawable(Context context, int attr, int notFound) {
 		int resId = getResourceId(context, attr, notFound);
 		return resId != 0 ? getDrawable(context, resId) : null;
+	}
+
+	public static Drawable getActionBarIcon(Context context, int attr) {
+		Drawable drawable = getDrawable(context, attr, 0);
+		if (C.API_LOLLIPOP) {
+			drawable.mutate();
+			drawable.setTint(getColor(context, android.R.attr.textColorPrimary));
+		}
+		return drawable;
 	}
 
 	public static final int[] PRESSED_STATE = {android.R.attr.state_window_focused, android.R.attr.state_enabled,
@@ -131,23 +139,6 @@ public class ResourceUtils {
 			drawable = ((InsetDrawable) drawable).getDrawable();
 		}
 		return drawable != null ? GraphicsUtils.getDrawableColor(context, drawable, Gravity.CENTER) : 0;
-	}
-
-	public static int getSystemSelectionIcon(Context context, String name, String fallback) {
-		try {
-			String styleableName = "SelectionModeDrawables";
-			int[] styleable = (int[]) Class.forName("com.android.internal.R$styleable")
-					.getField(styleableName).get(null);
-			TypedArray typedArray = context.obtainStyledAttributes(styleable);
-			try {
-				return typedArray.getResourceId(Class.forName("android.R$styleable")
-						.getField(styleableName + "_" + name).getInt(null), 0);
-			} finally {
-				typedArray.recycle();
-			}
-		} catch (Exception e) {
-			return context.getResources().getIdentifier(fallback, "drawable", "android");
-		}
 	}
 
 	public static final int DIALOG_LAYOUT_SIMPLE = 0;

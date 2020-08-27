@@ -57,8 +57,6 @@ public class CategoriesFragment extends PreferenceFragment {
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-
-		requireActivity().setTitle(R.string.action_preferences);
-		requireActivity().getActionBar().setSubtitle(null);
+		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.action_preferences), null);
 	}
 }

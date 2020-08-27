@@ -31,7 +31,6 @@ import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.ReadVideoTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
-import com.mishiranu.dashchan.graphics.ActionIconSet;
 import com.mishiranu.dashchan.media.CachingInputStream;
 import com.mishiranu.dashchan.media.VideoPlayer;
 import com.mishiranu.dashchan.util.AnimationUtils;
@@ -400,13 +399,9 @@ public class VideoUnit {
 		}
 		if (player != null) {
 			configurationView.removeAllViews();
-			ActionIconSet set = null;
 			if (!player.isAudioPresent()) {
-				if (set == null) {
-					set = new ActionIconSet(context);
-				}
 				ImageView imageView = new ImageView(context);
-				imageView.setImageResource(set.getId(R.attr.iconActionVolumeOff));
+				imageView.setImageDrawable(ResourceUtils.getDrawable(context, R.attr.iconActionVolumeOff, 0));
 				imageView.setScaleType(ImageView.ScaleType.CENTER);
 				if (C.API_LOLLIPOP) {
 					imageView.setImageAlpha(0x99);

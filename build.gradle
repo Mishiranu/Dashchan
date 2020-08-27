@@ -26,7 +26,7 @@ android {
 	defaultConfig {
 		minSdkVersion 16
 		// noinspection OldTargetApi
-		targetSdkVersion 27
+		targetSdkVersion 28
 		ndk.abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86'
 	}
 

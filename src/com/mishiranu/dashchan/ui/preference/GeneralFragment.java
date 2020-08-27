@@ -9,6 +9,7 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.LocaleManager;
 import com.mishiranu.dashchan.content.Preferences;
+import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
 
 public class GeneralFragment extends PreferenceFragment {
@@ -61,8 +62,6 @@ public class GeneralFragment extends PreferenceFragment {
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-
-		requireActivity().setTitle(R.string.preference_header_general);
-		requireActivity().getActionBar().setSubtitle(null);
+		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.preference_header_general), null);
 	}
 }

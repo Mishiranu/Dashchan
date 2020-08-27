@@ -39,16 +39,17 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 
 	private int mode = MODE_DISABLED;
 
-	public DrawerToggle(Activity activity, DrawerLayout drawerLayout) {
+	public DrawerToggle(Activity activity, Context toolbarContext, DrawerLayout drawerLayout) {
 		this.activity = activity;
 		this.drawerLayout = drawerLayout;
+		Context context = toolbarContext != null ? toolbarContext : activity;
 		if (C.API_LOLLIPOP) {
-			arrowDrawable = new ArrowDrawable(activity);
+			arrowDrawable = new ArrowDrawable(context);
 			slideDrawable = null;
 		} else {
 			arrowDrawable = null;
 			homeAsUpIndicator = getThemeUpIndicatorObsolete();
-			slideDrawable = new SlideDrawable(activity);
+			slideDrawable = new SlideDrawable(context);
 		}
 	}
 
@@ -80,7 +81,7 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 			} else {
 				actionBar.setDisplayHomeAsUpEnabled(true);
 				if (C.API_LOLLIPOP) {
-					activity.getActionBar().setHomeAsUpIndicator(arrowDrawable);
+					actionBar.setHomeAsUpIndicator(arrowDrawable);
 					boolean open = drawerLayout.isDrawerOpen(GravityCompat.START) && arrowDrawable.position == 1f;
 					if (!open) {
 						ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
@@ -190,7 +191,7 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 
 		public ArrowDrawable(Context context) {
 			paint.setAntiAlias(true);
-			paint.setColor(0xffffffff);
+			paint.setColor(ResourceUtils.getColor(context, android.R.attr.textColorPrimary));
 			float density = ResourceUtils.obtainDensity(context);
 			size = (int) (24f * density);
 			barSize = 16f * density;
