@@ -9,7 +9,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteException;
-import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.ConsoleMessage;
@@ -21,6 +20,7 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import chan.http.HttpClient;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.WebViewUtils;
@@ -31,7 +31,7 @@ public class WebViewService extends Service {
 	private static class CookieRequest {
 		public final String uriString;
 		public final String userAgent;
-		public final Pair<String, Integer> httpProxy;
+		public final HttpClient.ProxyData proxyData;
 		public final boolean verifyCertificate;
 		public final long timeout;
 		public final WebViewExtra extra;
@@ -44,11 +44,11 @@ public class WebViewService extends Service {
 		public String recaptchaV2Result;
 		public boolean recaptchaIsHcaptcha;
 
-		private CookieRequest(String uriString, String userAgent, Pair<String, Integer> httpProxy,
+		private CookieRequest(String uriString, String userAgent, HttpClient.ProxyData proxyData,
 				boolean verifyCertificate, long timeout, WebViewExtra extra, IRequestCallback requestCallback) {
 			this.uriString = uriString;
 			this.userAgent = userAgent;
-			this.httpProxy = httpProxy;
+			this.proxyData = proxyData;
 			this.verifyCertificate = verifyCertificate;
 			this.timeout = timeout;
 			this.extra = extra;
@@ -256,12 +256,16 @@ public class WebViewService extends Service {
 			}
 			webView.stopLoading();
 			WebViewUtils.clearAll(webView);
+			CookieRequest cookieRequest = this.cookieRequest;
 			if (cookieRequest != null) {
-				WebViewUtils.setHttpProxy(this, cookieRequest.httpProxy);
 				handler.removeMessages(MESSAGE_HANDLE_FINISH);
 				handler.sendEmptyMessageDelayed(MESSAGE_HANDLE_FINISH, cookieRequest.timeout);
 				webView.getSettings().setUserAgentString(cookieRequest.userAgent);
-				webView.loadUrl(cookieRequest.uriString);
+				WebViewUtils.setProxy(this, cookieRequest.proxyData, () -> {
+					if (this.cookieRequest == cookieRequest && webView != null) {
+						webView.loadUrl(cookieRequest.uriString);
+					}
+				});
 			} else {
 				webView.loadUrl("about:blank");
 			}
@@ -273,11 +277,11 @@ public class WebViewService extends Service {
 		return new IWebViewService.Stub() {
 			@Override
 			public boolean loadWithCookieResult(String uriString, String userAgent,
-					String httpProxyHost, int httpProxyPort, boolean verifyCertificate, long timeout,
+					boolean proxySocks, String proxyHost, int proxyPort, boolean verifyCertificate, long timeout,
 					WebViewExtra extra, IRequestCallback requestCallback) throws RemoteException {
-				Pair<String, Integer> httpProxy = httpProxyHost != null
-						? new Pair<>(httpProxyHost, httpProxyPort) : null;
-				CookieRequest cookieRequest = new CookieRequest(uriString, userAgent, httpProxy,
+				HttpClient.ProxyData proxyData = proxyHost != null
+						? new HttpClient.ProxyData(proxySocks, proxyHost, proxyPort) : null;
+				CookieRequest cookieRequest = new CookieRequest(uriString, userAgent, proxyData,
 						verifyCertificate, timeout, extra, requestCallback);
 				synchronized (cookieRequest) {
 					synchronized (cookieRequests) {

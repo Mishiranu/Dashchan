@@ -215,10 +215,9 @@ public class RelayBlockResolver {
 						};
 						ChanLocator locator = ChanLocator.get(chanName);
 						HttpClient.ProxyData proxyData = HttpClient.getInstance().getProxyData(chanName);
-						boolean httpProxy = proxyData != null && !proxyData.socks;
 						finished = service.loadWithCookieResult(locator.buildPath().toString(),
-								AdvancedPreferences.getUserAgent(chanName),
-								httpProxy ? proxyData.host : null, httpProxy ? proxyData.port : 0,
+								AdvancedPreferences.getUserAgent(chanName), proxyData != null && proxyData.socks,
+								proxyData != null ? proxyData.host : null, proxyData != null ? proxyData.port : 0,
 								locator.isUseHttps() && Preferences.isVerifyCertificate(), WEB_VIEW_TIMEOUT,
 								checkHolder.client.getExtra(), requestCallback);
 					} catch (RemoteException e) {

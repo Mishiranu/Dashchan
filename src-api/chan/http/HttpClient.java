@@ -185,7 +185,7 @@ public class HttpClient {
 		public final String host;
 		public final int port;
 
-		private ProxyData(boolean socks, String host, int port) {
+		public ProxyData(boolean socks, String host, int port) {
 			this.socks = socks;
 			this.host = host;
 			this.port = port;

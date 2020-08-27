@@ -13,12 +13,17 @@ import android.webkit.CookieManager;
 import android.webkit.WebStorage;
 import android.webkit.WebView;
 import android.webkit.WebViewDatabase;
+import androidx.webkit.ProxyConfig;
+import androidx.webkit.ProxyController;
+import androidx.webkit.WebViewFeature;
+import chan.http.HttpClient;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.content.MainApplication;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 public class WebViewUtils {
 	@SuppressWarnings("deprecation")
@@ -105,7 +110,28 @@ public class WebViewUtils {
 		return null;
 	}
 
-	public static void setHttpProxy(Context context, Pair<String, Integer> proxy) {
+	private static final Executor EXECUTOR = Runnable::run;
+
+	public static void setProxy(Context context, HttpClient.ProxyData proxyData, Runnable callback) {
+		if (WebViewFeature.isFeatureSupported(WebViewFeature.PROXY_OVERRIDE)) {
+			if (proxyData != null) {
+				String uriString = (proxyData.socks ? "socks" : "http") + "://"
+						+ proxyData.host + ":" + proxyData.port;
+				ProxyController.getInstance().setProxyOverride(new ProxyConfig.Builder()
+						.addProxyRule(uriString).build(), EXECUTOR, callback);
+			} else {
+				ProxyController.getInstance().clearProxyOverride(EXECUTOR, callback);
+			}
+		} else {
+			setHttpProxy(context, proxyData != null && !proxyData.socks
+					? new Pair<>(proxyData.host, proxyData.port) : null);
+			if (callback != null) {
+				callback.run();
+			}
+		}
+	}
+
+	private static void setHttpProxy(Context context, Pair<String, Integer> proxy) {
 		String hostProperty = proxy != null ? proxy.first : "";
 		String portProperty = proxy != null ? proxy.second.toString() : "";
 		System.setProperty("http.proxyHost", hostProperty);
