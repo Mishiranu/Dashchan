@@ -25,7 +25,7 @@ import com.mishiranu.dashchan.widget.ThemeEngine;
 import java.io.File;
 
 public class AudioPlayerService extends Service implements MediaPlayer.OnCompletionListener,
-		MediaPlayer.OnErrorListener, ReadFileTask.Callback {
+		MediaPlayer.OnErrorListener, ReadFileTask.FileCallback {
 	private static final String ACTION_START = "start";
 	private static final String ACTION_CANCEL = "cancel";
 	private static final String ACTION_TOGGLE = "toggle";
@@ -132,7 +132,7 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnComplet
 						if (cachedFile.exists()) {
 							initAndPlayAudio(cachedFile);
 						} else {
-							readFileTask = new ReadFileTask(this, chanName, uri, cachedFile, true, this);
+							readFileTask = ReadFileTask.createCachedMediaFile(this, this, chanName, uri, cachedFile);
 							readFileTask.executeOnExecutor(ReadFileTask.THREAD_POOL_EXECUTOR);
 						}
 					}
@@ -378,13 +378,7 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnComplet
 	}
 
 	@Override
-	public void onFileExists(Uri uri, File file) {
-		readFileTask = null;
-		initAndPlayAudio(file);
-	}
-
-	@Override
-	public void onStartDownloading(Uri uri, File file) {
+	public void onStartDownloading() {
 		lastUpdate = 0L;
 		startForeground(getDownloadingNotification(true, false, null));
 	}

@@ -9,7 +9,7 @@
 	<uses-permission android:name="android.permission.INTERNET" />
 	<uses-permission android:name="android.permission.WAKE_LOCK" />
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="22" />
 	<uses-permission-sdk-23 android:name="android.permission.FOREGROUND_SERVICE" />
 	<uses-permission-sdk-23 android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 	<uses-permission-sdk-23 android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
@@ -29,7 +29,8 @@
 
 		<activity
 			android:name=".ui.MainActivity"
-			android:launchMode="singleTask">
+			android:launchMode="singleTask"
+			android:configChanges="uiMode">
 
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
@@ -51,6 +52,7 @@
 			android:taskAffinity=".postingshare"
 			android:launchMode="singleInstance"
 			android:excludeFromRecents="true"
+			android:configChanges="uiMode"
 			android:theme="@android:style/Theme.Translucent.NoTitleBar">
 
 			<intent-filter>
@@ -70,6 +72,7 @@
 		<activity
 			android:name=".content.UpdaterActivity"
 			android:excludeFromRecents="true"
+			android:configChanges="uiMode"
 			android:theme="@android:style/Theme.Panel" />
 
 		<service

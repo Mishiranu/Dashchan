@@ -10,6 +10,7 @@ import chan.http.HttpClient;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
 import chan.http.HttpRequest;
+import chan.util.DataFile;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.util.IOUtils;
@@ -23,22 +24,29 @@ import java.io.OutputStream;
 
 public class ReadFileTask extends HttpHolderTask<String, Long, Boolean> {
 	public interface Callback {
-		public void onFileExists(Uri uri, File file);
-		public void onStartDownloading(Uri uri, File file);
-		public void onFinishDownloading(boolean success, Uri uri, File file, ErrorItem errorItem);
-		public void onUpdateProgress(long progress, long progressMax);
+		void onStartDownloading();
+		void onFinishDownloading(boolean success, Uri uri, DataFile file, ErrorItem errorItem);
+		default void onCancelDownloading() {}
+		void onUpdateProgress(long progress, long progressMax);
 	}
 
-	public interface CancelCallback {
-		public void onCancelDownloading(Uri uri, File file);
+	public interface FileCallback extends Callback {
+		void onFinishDownloading(boolean success, Uri uri, File file, ErrorItem errorItem);
+
+		@Override
+		default void onFinishDownloading(boolean success, Uri uri, DataFile file, ErrorItem errorItem) {
+			File realFile = file.getFileOrUri().first;
+			if (realFile == null) {
+				throw new IllegalStateException();
+			}
+			onFinishDownloading(success, uri, realFile, errorItem);
+		}
 	}
 
-	private final Context context;
 	private final Callback callback;
-
 	private final String chanName;
 	private final Uri fromUri;
-	private final File toFile;
+	private final DataFile toFile;
 	private final File cachedMediaFile;
 	private final boolean overwrite;
 
@@ -53,42 +61,51 @@ public class ReadFileTask extends HttpHolderTask<String, Long, Boolean> {
 		}
 	};
 
-	public ReadFileTask(Context context, String chanName, Uri from, File to, boolean overwrite, Callback callback) {
-		this.context = context.getApplicationContext();
-		this.chanName = chanName;
-		this.callback = callback;
-		this.fromUri = from;
-		this.toFile = to;
-		File cachedMediaFile = CacheManager.getInstance().getMediaFile(from, true);
-		if (cachedMediaFile == null || !cachedMediaFile.exists() || CacheManager.getInstance()
-				.cancelCachedMediaBusy(cachedMediaFile) || cachedMediaFile.equals(to)) {
+	public static ReadFileTask createCachedMediaFile(Context context, FileCallback callback, String chanName,
+			Uri fromUri, File cachedMediaFile) {
+		DataFile toFile = DataFile.obtain(context, DataFile.Target.CACHE, cachedMediaFile.getName());
+		return new ReadFileTask(callback, chanName, fromUri, toFile, null, true);
+	}
+
+	public static ReadFileTask createShared(Callback callback, String chanName,
+			Uri fromUri, DataFile toFile, boolean overwrite) {
+		File cachedMediaFile = CacheManager.getInstance().getMediaFile(fromUri, true);
+		if (cachedMediaFile == null || !cachedMediaFile.exists() ||
+				CacheManager.getInstance().cancelCachedMediaBusy(cachedMediaFile)) {
 			cachedMediaFile = null;
 		}
+		return new ReadFileTask(callback, chanName, fromUri, toFile, cachedMediaFile, overwrite);
+	}
+
+	private ReadFileTask(Callback callback, String chanName, Uri fromUri, DataFile toFile,
+			File cachedMediaFile, boolean overwrite) {
+		this.callback = callback;
+		this.chanName = chanName;
+		this.fromUri = fromUri;
+		this.toFile = toFile;
 		this.cachedMediaFile = cachedMediaFile;
 		this.overwrite = overwrite;
 	}
 
 	@Override
 	public void onPreExecute() {
-		if (!overwrite && toFile.exists()) {
-			cancel(false);
-			callback.onFileExists(fromUri, toFile);
-		} else {
-			callback.onStartDownloading(fromUri, toFile);
-		}
+		callback.onStartDownloading();
 	}
 
 	@Override
 	protected Boolean doInBackground(HttpHolder holder, String... params) {
 		try {
 			loadingStarted = true;
-			if (cachedMediaFile != null) {
+			// noinspection StatementWithEmptyBody
+			if (!overwrite && toFile.exists()) {
+				// Do nothing
+			} else if (cachedMediaFile != null) {
 				InputStream input = null;
 				OutputStream output = null;
 				try {
 					input = HttpClient.wrapWithProgressListener(new FileInputStream(cachedMediaFile),
 							progressHandler, cachedMediaFile.length());
-					output = IOUtils.openOutputStream(context, toFile);
+					output = toFile.openOutputStream();
 					IOUtils.copyStream(input, output);
 				} finally {
 					IOUtils.close(input);
@@ -115,12 +132,15 @@ public class ReadFileTask extends HttpHolderTask<String, Long, Boolean> {
 				OutputStream output = null;
 				boolean success = false;
 				try {
-					output = IOUtils.openOutputStream(context, toFile);
+					output = toFile.openOutputStream();
 					IOUtils.copyStream(input, output);
 					success = true;
 				} finally {
 					IOUtils.close(output);
-					CacheManager.getInstance().handleDownloadedFile(toFile, success);
+					File file = toFile.getFileOrUri().first;
+					if (file != null) {
+						CacheManager.getInstance().handleDownloadedFile(file, success);
+					}
 				}
 			}
 			return true;
@@ -134,7 +154,10 @@ public class ReadFileTask extends HttpHolderTask<String, Long, Boolean> {
 			String message = e.getMessage();
 			if (message != null && message.contains("ENOSPC")) {
 				toFile.delete();
-				CacheManager.getInstance().handleDownloadedFile(toFile, false);
+				File file = toFile.getFileOrUri().first;
+				if (file != null) {
+					CacheManager.getInstance().handleDownloadedFile(file, false);
+				}
 				errorItem = new ErrorItem(ErrorItem.Type.INSUFFICIENT_SPACE);
 			} else {
 				errorItem = new ErrorItem(ErrorItem.Type.UNKNOWN);
@@ -164,12 +187,14 @@ public class ReadFileTask extends HttpHolderTask<String, Long, Boolean> {
 	@Override
 	public void cancel() {
 		super.cancel();
+
 		if (loadingStarted) {
 			toFile.delete();
-			CacheManager.getInstance().handleDownloadedFile(toFile, false);
+			File file = toFile.getFileOrUri().first;
+			if (file != null) {
+				CacheManager.getInstance().handleDownloadedFile(file, false);
+			}
 		}
-		if (callback instanceof CancelCallback) {
-			((CancelCallback) callback).onCancelDownloading(fromUri, toFile);
-		}
+		callback.onCancelDownloading();
 	}
 }

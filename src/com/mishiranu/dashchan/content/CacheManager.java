@@ -415,7 +415,7 @@ public class CacheManager implements Runnable {
 		return getCacheDirectory("thumbnails");
 	}
 
-	private File getMediaDirectory() {
+	public File getMediaDirectory() {
 		return getCacheDirectory("media");
 	}
 

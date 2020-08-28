@@ -15,6 +15,7 @@ import chan.content.model.FileAttachment;
 import chan.content.model.Icon;
 import chan.content.model.Post;
 import chan.content.model.Posts;
+import chan.util.DataFile;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.text.HtmlParser;
@@ -289,7 +290,7 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 	private void performDownload(String name, InputStream input) {
 		DownloadService.Binder binder = callback.getDownloadBinder();
 		if (binder != null) {
-			binder.downloadDirect(DownloadService.Target.DOWNLOADS,
+			binder.downloadDirect(DataFile.Target.DOWNLOADS,
 					DIRECTORY_ARCHIVE, name, input);
 		}
 	}
@@ -297,7 +298,7 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 	private void performDownload(String path, List<DownloadService.DownloadItem> downloadItems) {
 		DownloadService.Binder binder = callback.getDownloadBinder();
 		if (path != null && downloadItems.size() > 0 && binder != null) {
-			binder.downloadDirect(DownloadService.Target.DOWNLOADS,
+			binder.downloadDirect(DataFile.Target.DOWNLOADS,
 					DIRECTORY_ARCHIVE + "/" + path, false, downloadItems);
 		}
 	}

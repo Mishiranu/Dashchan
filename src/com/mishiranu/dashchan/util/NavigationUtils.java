@@ -22,7 +22,6 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.AdvancedPreferences;
 import com.mishiranu.dashchan.content.CacheManager;
-import com.mishiranu.dashchan.content.FileProvider;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.net.RelayBlockResolver;
 import com.mishiranu.dashchan.content.service.AudioPlayerService;
@@ -279,9 +278,9 @@ public class NavigationUtils {
 			ToastUtils.show(context, R.string.message_cache_unavailable);
 			return;
 		}
-		int intentFlags = FileProvider.getIntentFlags();
 		context.startActivity(Intent.createChooser(new Intent(Intent.ACTION_SEND)
-				.setType(data.second).setFlags(intentFlags).putExtra(Intent.EXTRA_STREAM, data.first), null));
+				.setType(data.second).setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+				.putExtra(Intent.EXTRA_STREAM, data.first), null));
 	}
 
 	public static void restartApplication(Context context) {

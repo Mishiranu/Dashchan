@@ -1,10 +1,11 @@
 package com.mishiranu.dashchan.ui.preference;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.format.DateFormat;
@@ -18,6 +19,7 @@ import chan.http.HttpRequest;
 import chan.text.GroupParser;
 import chan.text.ParseException;
 import chan.util.CommonUtils;
+import chan.util.DataFile;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.BackupManager;
@@ -32,7 +34,6 @@ import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.widget.ProgressDialog;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -74,31 +75,23 @@ public class AboutFragment extends PreferenceFragment {
 	}
 
 	@Override
-	public void onRequestPermissionsResult(int requestCode,
-			@NonNull String[] permissions, @NonNull int[] grantResults) {
-		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
 
-		if (requestCode == C.REQUEST_CODE_STORAGE_PERMISSION && grantResults.length > 0) {
-			boolean granted = true;
-			for (int grantResult : grantResults) {
-				granted &= grantResult == PackageManager.PERMISSION_GRANTED;
-			}
-			if (granted) {
+		if (requestCode == C.REQUEST_CODE_OPEN_URI_TREE && resultCode == Activity.RESULT_OK) {
+			Preferences.setDownloadUriTree(requireContext(), data.getData(), data.getFlags());
+			if (Preferences.getDownloadUriTree(requireContext()) != null) {
 				restoreBackup();
-			} else {
-				ToastUtils.show(requireContext(), R.string.message_no_access_to_memory);
 			}
 		}
 	}
 
 	private void restoreBackup() {
-		if (C.API_MARSHMALLOW && requireContext()
-				.checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-				!= PackageManager.PERMISSION_GRANTED) {
-			requestPermissions(new String[] {android.Manifest.permission.WRITE_EXTERNAL_STORAGE},
-					C.REQUEST_CODE_STORAGE_PERMISSION);
+		if (C.USE_SAF && Preferences.getDownloadUriTree(requireContext()) == null) {
+			startActivityForResult(Preferences.getDownloadUriTreeIntent(),
+					C.REQUEST_CODE_OPEN_URI_TREE);
 		} else {
-			LinkedHashMap<File, String> filesMap = BackupManager.getAvailableBackups(requireContext());
+			LinkedHashMap<DataFile, String> filesMap = BackupManager.getAvailableBackups(requireContext());
 			if (filesMap != null && filesMap.size() > 0) {
 				new RestoreFragment(filesMap).show(getChildFragmentManager(), RestoreFragment.class.getName());
 			} else {
@@ -136,12 +129,12 @@ public class AboutFragment extends PreferenceFragment {
 
 		public RestoreFragment() {}
 
-		public RestoreFragment(LinkedHashMap<File, String> filesMap) {
+		public RestoreFragment(LinkedHashMap<DataFile, String> filesMap) {
 			Bundle args = new Bundle();
 			ArrayList<String> files = new ArrayList<>(filesMap.size());
 			ArrayList<String> names = new ArrayList<>(filesMap.size());
-			for (LinkedHashMap.Entry<File, String> pair : filesMap.entrySet()) {
-				files.add(pair.getKey().getAbsolutePath());
+			for (LinkedHashMap.Entry<DataFile, String> pair : filesMap.entrySet()) {
+				files.add(pair.getKey().getRelativePath());
 				names.add(pair.getValue());
 			}
 			args.putStringArrayList(EXTRA_FILES, files);
@@ -164,7 +157,8 @@ public class AboutFragment extends PreferenceFragment {
 		@Override
 		public void onClick(DialogInterface dialog, int which) {
 			int index = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
-			File file = new File(requireArguments().getStringArrayList(EXTRA_FILES).get(index));
+			String path = requireArguments().getStringArrayList(EXTRA_FILES).get(index);
+			DataFile file = DataFile.obtain(requireContext(), DataFile.Target.DOWNLOADS, path);
 			BackupManager.loadBackup(requireContext(), file);
 		}
 	}

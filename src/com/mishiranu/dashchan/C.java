@@ -20,6 +20,8 @@ public class C {
 	public static final boolean API_PIE = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P;
 	public static final boolean API_Q = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
 
+	public static final boolean USE_SAF = API_MARSHMALLOW;
+
 	public static final String BUILD_VERSION = BuildConfig.VERSION_NAME;
 	public static final long BUILD_TIMESTAMP = BuildConfig.BUILD_TIMESTAMP;
 
@@ -70,8 +72,7 @@ public class C {
 
 	public static final int REQUEST_CODE_ATTACH = 1;
 	public static final int REQUEST_CODE_UNINSTALL = 2;
-	public static final int REQUEST_CODE_OPEN_PATH = 3;
-	public static final int REQUEST_CODE_STORAGE_PERMISSION = 4;
+	public static final int REQUEST_CODE_OPEN_URI_TREE = 3;
 
 	public static final int NOTIFICATION_ID_POSTING = 1;
 	public static final int NOTIFICATION_ID_DOWNLOADING = 2;

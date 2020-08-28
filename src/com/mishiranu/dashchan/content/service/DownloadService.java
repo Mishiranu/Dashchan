@@ -1,6 +1,5 @@
 package com.mishiranu.dashchan.content.service;
 
-import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -12,13 +11,10 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
-import android.os.Build;
-import android.os.Handler;
+import android.os.AsyncTask;
 import android.os.IBinder;
-import android.os.Looper;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.PowerManager;
@@ -27,6 +23,7 @@ import android.util.DisplayMetrics;
 import android.util.Pair;
 import androidx.core.app.NotificationCompat;
 import chan.content.ChanLocator;
+import chan.util.DataFile;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
@@ -38,6 +35,7 @@ import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.ui.MainActivity;
 import com.mishiranu.dashchan.util.AndroidUtils;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.MimeTypes;
@@ -54,6 +52,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -66,13 +65,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class DownloadService extends Service implements ReadFileTask.Callback {
 	private static final Executor SINGLE_THREAD_EXECUTOR = Executors.newSingleThreadExecutor();
-	private static final Handler HANDLER = new Handler(Looper.getMainLooper());
 
 	private static final String ACTION_CANCEL = "cancel";
 	private static final String ACTION_RETRY = "retry";
 	private static final String ACTION_OPEN = "open";
 
-	private static final String EXTRA_FILE = "file";
+	private static final String EXTRA_FILE_TARGET = "fileTarget";
+	private static final String EXTRA_FILE_PATH = "filePath";
 
 	private NotificationManager notificationManager;
 	private int notificationColor;
@@ -83,9 +82,9 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 	private boolean isForegroundWorker;
 
 	private final WeakObservable<Callback> callbacks = new WeakObservable<>();
+	private final HashMap<String, DataFile> cachedDirectories = new HashMap<>();
 
-	private ChoiceRequest choiceRequest;
-	private ReplaceRequest replaceRequest;
+	private Request primaryRequest;
 	private final ArrayList<DirectRequest> directRequests = new ArrayList<>();
 
 	private final LinkedHashMap<String, TaskData> queuedTasks = new LinkedHashMap<>();
@@ -103,7 +102,6 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 		return CacheManager.getInstance().getInternalCacheFile("saved-download-retry");
 	}
 
-	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	@Override
 	public void onCreate() {
 		super.onCreate();
@@ -172,13 +170,9 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 	}
 
 	private void cleanupRequests() {
-		if (choiceRequest != null) {
-			choiceRequest.cleanup();
-			choiceRequest = null;
-		}
-		if (replaceRequest != null) {
-			replaceRequest.directRequest.cleanup();
-			replaceRequest = null;
+		if (primaryRequest != null) {
+			primaryRequest.cleanup();
+			primaryRequest = null;
 		}
 		for (DirectRequest directRequest : directRequests) {
 			directRequest.cleanup();
@@ -208,13 +202,33 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 		}
 	}
 
-	private static String getTargetPathKey(Target target, String path) {
+	private static String getTargetPathKey(DataFile.Target target, String path) {
 		return target + ":" + path.toLowerCase(Locale.getDefault());
 	}
 
+	private static String getTargetPathKey(DataFile.Target target, String path, String name) {
+		String fullPath = !StringUtils.isEmpty(path) ? path + "/" + name : name;
+		return getTargetPathKey(target, fullPath);
+	}
+
+	private DataFile getDataFile(TaskData taskData) {
+		String key = getTargetPathKey(taskData.target, StringUtils.emptyIfNull(taskData.path));
+		DataFile file = cachedDirectories.get(key);
+		if (file == null) {
+			file = DataFile.obtain(this, taskData.target, taskData.path);
+			if (file.exists()) {
+				cachedDirectories.put(key, file);
+			}
+		}
+		return file.getChild(taskData.name);
+	}
+
 	private boolean hasStoragePermission() {
-		return !C.API_MARSHMALLOW || checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-				== PackageManager.PERMISSION_GRANTED;
+		if (C.USE_SAF) {
+			return Preferences.getDownloadUriTree(this) != null;
+		} else {
+			return true;
+		}
 	}
 
 	private void startNextTask() {
@@ -226,7 +240,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 				OutputStream output = null;
 				boolean success = false;
 				try {
-					output = IOUtils.openOutputStream(this, taskData.getFile(true));
+					output = getDataFile(taskData).openOutputStream();
 					IOUtils.copyStream(taskData.input, output);
 					success = true;
 				} catch (IOException e) {
@@ -236,13 +250,15 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 					IOUtils.close(output);
 				}
 				onFinishDownloadingInternal(success, new TaskData(taskData.chanName, taskData.overwrite,
-						(InputStream) null, taskData.target, taskData.path));
+						(InputStream) null, taskData.target, taskData.path, taskData.name));
 			} else {
-				ReadFileTask readFileTask = new ReadFileTask(this, taskData.chanName,
-						taskData.uri, taskData.getFile(true), taskData.overwrite, this);
+				ReadFileTask readFileTask = ReadFileTask.createShared(this, taskData.chanName,
+						taskData.uri, getDataFile(taskData), taskData.overwrite);
 				activeTask = new Pair<>(taskData, readFileTask);
 				readFileTask.executeOnExecutor(SINGLE_THREAD_EXECUTOR);
 			}
+		} else {
+			cachedDirectories.clear();
 		}
 	}
 
@@ -262,21 +278,19 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 	}
 
 	private void handleRequests() {
-		boolean hasChoiceReplaceRequests = choiceRequest != null || replaceRequest != null;
-		boolean hasDirectRequests = !directRequests.isEmpty();
-		if (hasChoiceReplaceRequests || hasDirectRequests) {
+		if (primaryRequest != null || !directRequests.isEmpty()) {
 			if (!hasStoragePermission()) {
 				for (Callback callback : callbacks) {
 					callback.requestPermission();
 				}
 			} else {
-				if (choiceRequest != null && !choiceRequest.shouldHandle) {
-					DirectRequest directRequest = choiceRequest.complete(null, Preferences.isDownloadDetailName(),
-							Preferences.isDownloadOriginalName());
-					choiceRequest = null;
-					replaceRequest = createReplaceRequest(directRequest);
-					if (replaceRequest == null) {
-						directRequests.add(directRequest);
+				if (primaryRequest instanceof ChoiceRequest) {
+					ChoiceRequest choiceRequest = (ChoiceRequest) primaryRequest;
+					if (!choiceRequest.shouldHandle) {
+						DirectRequest directRequest = choiceRequest.complete(null, Preferences.isDownloadDetailName(),
+								Preferences.isDownloadOriginalName());
+						primaryRequest = null;
+						handlePrimaryDirectRequest(directRequest);
 					}
 				}
 				for (DirectRequest directRequest : directRequests) {
@@ -286,52 +300,191 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 						}
 						DownloadItem downloadItem = directRequest.downloadItems.get(0);
 						enqueue(new TaskData(downloadItem.chanName, directRequest.overwrite, directRequest.input,
-								directRequest.target, directRequest.getPath(downloadItem.name)));
+								directRequest.target, directRequest.path, downloadItem.name));
 					} else {
 						for (DownloadItem downloadItem : directRequest.downloadItems) {
 							enqueue(new TaskData(downloadItem.chanName, directRequest.overwrite, downloadItem.uri,
-									directRequest.target, directRequest.getPath(downloadItem.name)));
+									directRequest.target, directRequest.path, downloadItem.name));
 						}
 					}
 				}
 				directRequests.clear();
-				if (choiceRequest != null || replaceRequest != null) {
-					for (Callback callback : callbacks) {
-						callback.requestHandleRequest();
-					}
-				}
 				startNextTask();
 			}
+		}
+		for (Callback callback : callbacks) {
+			callback.requestHandleRequest();
 		}
 		refreshNotification(NotificationUpdate.SYNC);
 	}
 
-	private ReplaceRequest createReplaceRequest(DirectRequest directRequest) {
+	private static class PrepareTask<T> extends AsyncTask<Void, Void, T> {
+		public interface Task<T> {
+			void cleanup();
+			T run() throws InterruptedException;
+			void onResult(T result);
+		}
+
+		private final Task<T> task;
+
+		public PrepareTask(Task<T> task) {
+			this.task = task;
+		}
+
+		@Override
+		protected T doInBackground(Void... params) {
+			try {
+				return task.run();
+			} catch (InterruptedException e) {
+				return null;
+			}
+		}
+
+		@Override
+		protected void onPostExecute(T result) {
+			task.onResult(result);
+		}
+	}
+
+	private HashSet<String> collectActiveKeys() {
+		HashSet<String> activeKeys = new HashSet<>(queuedTasks.keySet());
+		if (activeTask != null) {
+			activeKeys.add(activeTask.first.getKey());
+		}
+		return activeKeys;
+	}
+
+	private ReplaceRequest createReplaceRequest(DirectRequest directRequest,
+			HashSet<String> activeKeys) throws InterruptedException {
 		int queued = 0;
 		int exists = 0;
-		File lastExistingFile = null;
+		DataFile lastExistingFile = null;
 		HashSet<String> keys = new HashSet<>();
 		ArrayList<DownloadItem> availableItems = new ArrayList<>();
+		DataFile parent = DataFile.obtain(this, directRequest.target, directRequest.path);
+		HashMap<String, DataFile> children = new HashMap<>();
+		List<DataFile> childrenList = parent.getChildren();
+		if (childrenList != null) {
+			for (DataFile file : childrenList) {
+				children.put(file.getName().toLowerCase(Locale.getDefault()), file);
+			}
+		}
 		for (DownloadService.DownloadItem downloadItem : directRequest.downloadItems) {
-			String path = directRequest.getPath(downloadItem.name);
-			String key = getTargetPathKey(directRequest.target, path);
-			File file = getTargetFile(directRequest.target, path, false);
-			if (keys.contains(key) || queuedTasks.containsKey(key) ||
-					activeTask != null && activeTask.first.getKey().equals(key)) {
+			String key = getTargetPathKey(directRequest.target, directRequest.path, downloadItem.name);
+			if (keys.contains(key) || activeKeys.contains(key)) {
 				queued++;
-			} else if (file.exists()) {
-				exists++;
-				lastExistingFile = file;
 			} else {
-				keys.add(key);
-				availableItems.add(downloadItem);
+				DataFile file = children.get(downloadItem.name.toLowerCase(Locale.getDefault()));
+				if (file != null) {
+					exists++;
+					lastExistingFile = file;
+				} else {
+					keys.add(key);
+					availableItems.add(downloadItem);
+				}
+			}
+			if (Thread.interrupted()) {
+				throw new InterruptedException();
 			}
 		}
 		return availableItems.size() == directRequest.downloadItems.size() ? null
 				: new ReplaceRequest(directRequest, availableItems, lastExistingFile, queued, exists);
 	}
 
-	public enum Target {DOWNLOADS}
+	private void handlePrimaryDirectRequest(DirectRequest directRequest) {
+		HashSet<String> activeKeys = collectActiveKeys();
+		PrepareTask<ReplaceRequest> task = new PrepareTask<>(new PrepareTask.Task<ReplaceRequest>() {
+			@Override
+			public void cleanup() {
+				directRequest.cleanup();
+			}
+
+			@Override
+			public ReplaceRequest run() throws InterruptedException {
+				return createReplaceRequest(directRequest, activeKeys);
+			}
+
+			@Override
+			public void onResult(ReplaceRequest result) {
+				primaryRequest = result;
+				if (result == null) {
+					directRequests.add(directRequest);
+				}
+				handleRequests();
+			}
+		});
+		task.executeOnExecutor(ConcurrentUtils.SEPARATE_EXECUTOR);
+		primaryRequest = new PrepareRequest(task);
+	}
+
+	private DirectRequest createDirectRequestKeepAll(ReplaceRequest replaceRequest,
+			HashSet<String> activeKeys) throws InterruptedException {
+		HashSet<String> keys = new HashSet<>();
+		DataFile.Target target = replaceRequest.directRequest.target;
+		String path = replaceRequest.directRequest.path;
+		List<DownloadItem> downloadItems = replaceRequest.directRequest.downloadItems;
+		ArrayList<DownloadItem> finalItems = new ArrayList<>(downloadItems.size());
+		DataFile parent = DataFile.obtain(this, target, path);
+		HashSet<String> children = new HashSet<>();
+		List<DataFile> childrenList = parent.getChildren();
+		if (childrenList != null) {
+			for (DataFile file : childrenList) {
+				children.add(file.getName().toLowerCase(Locale.getDefault()));
+			}
+		}
+		for (DownloadService.DownloadItem downloadItem : downloadItems) {
+			if (replaceRequest.availableItems.contains(downloadItem)) {
+				keys.add(getTargetPathKey(target, replaceRequest.directRequest.path, downloadItem.name));
+				finalItems.add(downloadItem);
+			} else {
+				String extension = StringUtils.getFileExtension(downloadItem.name);
+				String dotExtension = StringUtils.isEmpty(extension) ? "" : "." + extension;
+				String nameWithoutExtension = downloadItem.name.substring(0,
+						downloadItem.name.length() - dotExtension.length());
+				String name;
+				String key;
+				int i = 0;
+				do {
+					String append = (i > 0 ? "-" + i : "") + dotExtension;
+					name = nameWithoutExtension + append;
+					key = getTargetPathKey(target, path, nameWithoutExtension + append);
+					i++;
+				} while (children.contains(name.toLowerCase(Locale.getDefault())) ||
+						keys.contains(key) || activeKeys.contains(key));
+				keys.add(key);
+				finalItems.add(new DownloadService.DownloadItem(downloadItem.chanName, downloadItem.uri, name));
+			}
+			if (Thread.interrupted()) {
+				throw new InterruptedException();
+			}
+		}
+		return new DirectRequest(target, path, replaceRequest.directRequest.overwrite,
+				finalItems, replaceRequest.directRequest.input);
+	}
+
+	private void handlePrimaryReplaceKeepAllReplace(ReplaceRequest replaceRequest) {
+		HashSet<String> activeKeys = collectActiveKeys();
+		PrepareTask<DirectRequest> task = new PrepareTask<>(new PrepareTask.Task<DirectRequest>() {
+			@Override
+			public void cleanup() {
+				replaceRequest.cleanup();
+			}
+
+			@Override
+			public DirectRequest run() throws InterruptedException {
+				return createDirectRequestKeepAll(replaceRequest, activeKeys);
+			}
+
+			@Override
+			public void onResult(DirectRequest result) {
+				primaryRequest = null;
+				directRequests.add(result);
+				handleRequests();
+			}
+		});
+		task.executeOnExecutor(ConcurrentUtils.SEPARATE_EXECUTOR);
+		primaryRequest = new PrepareRequest(task);
+	}
 
 	public interface Callback {
 		void requestHandleRequest();
@@ -352,15 +505,11 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 		}
 
 		public void resolve(ChoiceRequest choiceRequest, DirectRequest directRequest) {
-			if (DownloadService.this.choiceRequest == choiceRequest) {
-				DownloadService.this.choiceRequest = null;
+			if (primaryRequest == choiceRequest) {
+				primaryRequest = null;
 				if (directRequest != null) {
-					replaceRequest = createReplaceRequest(directRequest);
-					if (replaceRequest == null) {
-						directRequests.add(directRequest);
-					}
+					handlePrimaryDirectRequest(directRequest);
 				} else {
-					DownloadService.this.replaceRequest = null;
 					choiceRequest.cleanup();
 				}
 				handleRequests();
@@ -368,8 +517,8 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 		}
 
 		public void resolve(ReplaceRequest replaceRequest, ReplaceRequest.Action action) {
-			if (DownloadService.this.replaceRequest == replaceRequest) {
-				DownloadService.this.replaceRequest = null;
+			if (primaryRequest == replaceRequest) {
+				primaryRequest = null;
 				if (action != null) {
 					switch (action) {
 						case REPLACE: {
@@ -377,39 +526,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 							break;
 						}
 						case KEEP_ALL: {
-							HashSet<String> keys = new HashSet<>();
-							Target target = replaceRequest.directRequest.target;
-							String path = replaceRequest.directRequest.path;
-							List<DownloadItem> downloadItems = replaceRequest.directRequest.downloadItems;
-							ArrayList<DownloadItem> finalItems = new ArrayList<>(downloadItems.size());
-							for (DownloadService.DownloadItem downloadItem : downloadItems) {
-								if (replaceRequest.availableItems.contains(downloadItem)) {
-									keys.add(getTargetPathKey(target,
-											replaceRequest.directRequest.getPath(downloadItem.name)));
-									finalItems.add(downloadItem);
-								} else {
-									String extension = StringUtils.getFileExtension(downloadItem.name);
-									String dotExtension = StringUtils.isEmpty(extension) ? "" : "." + extension;
-									String name = downloadItem.name.substring(0,
-											downloadItem.name.length() - dotExtension.length());
-									String startPath = StringUtils.isEmpty(path) ? name : path + "/" + name;
-									File file;
-									String key;
-									int i = 0;
-									do {
-										String testPath = startPath + (i > 0 ? "-" + i : "") + dotExtension;
-										file = getTargetFile(target, testPath, false);
-										key = getTargetPathKey(target, testPath);
-										i++;
-									} while (file.exists() || keys.contains(key) || queuedTasks.containsKey(key) ||
-											(activeTask != null && activeTask.first.getKey().equals(key)));
-									keys.add(key);
-									finalItems.add(new DownloadService.DownloadItem(downloadItem.chanName,
-											downloadItem.uri, file.getName()));
-								}
-							}
-							directRequests.add(new DirectRequest(target, path, replaceRequest.directRequest.overwrite,
-									finalItems, replaceRequest.directRequest.input));
+							handlePrimaryReplaceKeepAllReplace(replaceRequest);
 							break;
 						}
 						case SKIP: {
@@ -420,24 +537,28 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 							} else {
 								// Request with input should contain only 1 download item.
 								// Cleanup the request to ensure input stream is closed.
-								replaceRequest.directRequest.cleanup();
+								replaceRequest.cleanup();
 							}
 							break;
 						}
 					}
 				} else {
-					replaceRequest.directRequest.cleanup();
+					replaceRequest.cleanup();
 				}
 				handleRequests();
 			}
 		}
 
-		public ChoiceRequest getChoiceRequest() {
-			return hasStoragePermission() ? choiceRequest : null;
+		public void cancel(PrepareRequest prepareRequest) {
+			if (primaryRequest == prepareRequest) {
+				primaryRequest = null;
+				prepareRequest.cleanup();
+				handleRequests();
+			}
 		}
 
-		public ReplaceRequest getReplaceRequest() {
-			return hasStoragePermission() ? replaceRequest : null;
+		public Request getPrimaryRequest() {
+			return hasStoragePermission() ? primaryRequest : null;
 		}
 
 		public void onPermissionResult(boolean granted) {
@@ -488,12 +609,12 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 			}
 		}
 
-		private void open(File file) {
+		private void open(DataFile file) {
 			refreshNotification(NotificationUpdate.SYNC);
-			String extension = StringUtils.getFileExtension(file.getPath());
+			String extension = StringUtils.getFileExtension(file.getName());
 			String type = MimeTypes.forExtension(extension, "image/jpeg");
 			if (file.exists()) {
-				scanFile(file, new Pair<>(type, uri -> {
+				DownloadService.ScanCallback callback = uri -> {
 					try {
 						startActivity(new Intent(Intent.ACTION_VIEW)
 								.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION)
@@ -501,16 +622,23 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 					} catch (ActivityNotFoundException e) {
 						ToastUtils.show(DownloadService.this, R.string.message_unknown_address);
 					}
-				}));
+				};
+				Pair<File, Uri> fileOrUri = file.getFileOrUri();
+				if (fileOrUri.first != null) {
+					scanFileLegacy(fileOrUri.first, new Pair<>(type, callback));
+				} else if (fileOrUri.second != null) {
+					callback.onComplete(fileOrUri.second);
+				}
 			}
 		}
 
-		public void downloadDirect(Target target, String path, boolean overwrite, List<DownloadItem> downloadItems) {
+		public void downloadDirect(DataFile.Target target, String path, boolean overwrite,
+				List<DownloadItem> downloadItems) {
 			directRequests.add(new DirectRequest(target, path, overwrite, downloadItems, null));
 			handleRequests();
 		}
 
-		public void downloadDirect(Target target, String path, String name, InputStream input) {
+		public void downloadDirect(DataFile.Target target, String path, String name, InputStream input) {
 			directRequests.add(new DirectRequest(target, path, true,
 					Collections.singletonList(new DownloadItem(null, null, name)), input));
 			handleRequests();
@@ -542,14 +670,14 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 			}
 			boolean allowDetailName = modifyingAllowed;
 			boolean allowOriginalName = modifyingAllowed && hasOriginalNames;
-			choiceRequest = new UriRequest(Preferences.isDownloadSubdir(multiple), requestItems,
+			primaryRequest = new UriRequest(Preferences.isDownloadSubdir(multiple), requestItems,
 					allowDetailName, allowOriginalName, chanName, boardName, threadNumber, threadTitle);
 			handleRequests();
 		}
 
 		public void saveStreamStorage(InputStream input, String chanName, String boardName, String threadNumber,
 				String threadTitle, String fileName, boolean allowDialog) {
-			choiceRequest = new StreamRequest(Preferences.isDownloadSubdir(false) && allowDialog,
+			primaryRequest = new StreamRequest(Preferences.isDownloadSubdir(false) && allowDialog,
 					input, fileName, chanName, boardName, threadNumber, threadTitle);
 			handleRequests();
 		}
@@ -580,7 +708,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 		public final int errorTasks;
 		public final boolean allowRetry;
 		public final boolean hasNotFromCache;
-		public final File lastSuccessFile;
+		public final DataFile lastSuccessFile;
 		public final String activeName;
 		public final int progress;
 		public final int progressMax;
@@ -588,7 +716,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 		public final CountDownLatch syncLatch;
 
 		private NotificationData(Type type, boolean allowHeadsUp, int queuedTasks, int successTasks, int errorTasks,
-				boolean allowRetry, boolean hasNotFromCache, File lastSuccessFile, String activeName,
+				boolean allowRetry, boolean hasNotFromCache, DataFile lastSuccessFile, String activeName,
 				int progress, int progressMax, boolean updateImageOnly, CountDownLatch syncLatch) {
 			this.type = type;
 			this.allowHeadsUp = allowHeadsUp;
@@ -607,13 +735,13 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 
 		public static NotificationData updateData(Type type, boolean allowHeadsUp,
 				int queuedTasks, int successTasks, int errorTasks,
-				boolean allowRetry, boolean hasExternal, File lastSuccessFile,
+				boolean allowRetry, boolean hasExternal, DataFile lastSuccessFile,
 				String activeName, int progress, int progressMax) {
 			return new NotificationData(type, allowHeadsUp, queuedTasks, successTasks, errorTasks,
 					allowRetry, hasExternal, lastSuccessFile, activeName, progress, progressMax, false, null);
 		}
 
-		public static NotificationData updateImageOnly(File lastSuccessFile) {
+		public static NotificationData updateImageOnly(DataFile lastSuccessFile) {
 			return new NotificationData(null, false, 0, 0, 0, false, false, lastSuccessFile, null, 0, 0, true, null);
 		}
 
@@ -657,11 +785,12 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 		public final boolean overwrite;
 		public final InputStream input;
 		public final Uri uri;
-		public final Target target;
+		public final DataFile.Target target;
 		public final String path;
+		public final String name;
 
 		private TaskData(String chanName, boolean finishedFromCache, boolean overwrite,
-				InputStream input, Uri uri, Target target, String path) {
+				InputStream input, Uri uri, DataFile.Target target, String path, String name) {
 			this.chanName = chanName;
 			this.finishedFromCache = finishedFromCache;
 			this.overwrite = overwrite;
@@ -669,27 +798,26 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 			this.uri = uri;
 			this.target = target;
 			this.path = path;
+			this.name = name;
 		}
 
-		public TaskData(String chanName, boolean overwrite, InputStream input, Target target, String path) {
-			this(chanName, true, overwrite, input, null, target, path);
+		public TaskData(String chanName, boolean overwrite,
+				InputStream input, DataFile.Target target, String path, String name) {
+			this(chanName, true, overwrite, input, null, target, path, name);
 		}
 
-		public TaskData(String chanName, boolean overwrite, Uri from, Target target, String path) {
-			this(chanName, false, overwrite, null, from, target, path);
+		public TaskData(String chanName, boolean overwrite,
+				Uri from, DataFile.Target target, String path, String name) {
+			this(chanName, false, overwrite, null, from, target, path, name);
 		}
 
 		public TaskData newFinishedFromCache(boolean finishedFromCache) {
 			return this.finishedFromCache == finishedFromCache ? this
-					: new TaskData(chanName, finishedFromCache, overwrite, input, uri, target, path);
+					: new TaskData(chanName, finishedFromCache, overwrite, input, uri, target, path, name);
 		}
 
 		public String getKey() {
-			return getTargetPathKey(target, path);
-		}
-
-		public File getFile(boolean mkdirs) {
-			return getTargetFile(target, path, mkdirs);
+			return getTargetPathKey(target, path, name);
 		}
 
 		@Override
@@ -705,6 +833,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 			dest.writeParcelable(uri, flags);
 			dest.writeString(target.name());
 			dest.writeString(path);
+			dest.writeString(name);
 		}
 
 		public static final Creator<TaskData> CREATOR = new Creator<TaskData>() {
@@ -714,9 +843,10 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 				boolean finishedFromCache = in.readByte() != 0;
 				boolean overwrite = in.readByte() != 0;
 				Uri uri = in.readParcelable(getClass().getClassLoader());
-				Target target = Target.valueOf(in.readString());
+				DataFile.Target target = DataFile.Target.valueOf(in.readString());
 				String path = in.readString();
-				return new TaskData(chanName, finishedFromCache, overwrite, null, uri, target, path);
+				String name = in.readString();
+				return new TaskData(chanName, finishedFromCache, overwrite, null, uri, target, path, name);
 			}
 
 			@Override
@@ -746,12 +876,22 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 
 	private NotificationData.Type oldNotificationDataType;
 
-	private void setBuilderImage(File file) {
+	private void setBuilderImage(DataFile file) {
 		if (file.exists()) {
-			FileHolder fileHolder = FileHolder.obtain(file);
-			DisplayMetrics metrics = getResources().getDisplayMetrics();
-			int size = Math.max(metrics.widthPixels, metrics.heightPixels);
-			builder.setLargeIcon(fileHolder.readImageBitmap(size / 4, false, false));
+			FileHolder fileHolder;
+			Pair<File, Uri> fileOrUri = file.getFileOrUri();
+			if (fileOrUri.first != null) {
+				fileHolder = FileHolder.obtain(fileOrUri.first);
+			} else if (fileOrUri.second != null) {
+				fileHolder = FileHolder.obtain(this, fileOrUri.second);
+			} else {
+				fileHolder = null;
+			}
+			if (fileHolder != null) {
+				DisplayMetrics metrics = getResources().getDisplayMetrics();
+				int size = Math.max(metrics.widthPixels, metrics.heightPixels);
+				builder.setLargeIcon(fileHolder.readImageBitmap(size / 4, false, false));
+			}
 		}
 	}
 
@@ -791,8 +931,9 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 						new Intent(this, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT));
 			} else if (notificationData.lastSuccessFile != null) {
 				builder.setContentIntent(PendingIntent.getBroadcast(this, 0, new Intent(this, Receiver.class)
-						.setAction(ACTION_OPEN).putExtra(EXTRA_FILE, notificationData.lastSuccessFile.getPath()),
-						PendingIntent.FLAG_UPDATE_CURRENT));
+						.putExtra(EXTRA_FILE_TARGET, notificationData.lastSuccessFile.getTarget().name())
+						.putExtra(EXTRA_FILE_PATH, notificationData.lastSuccessFile.getRelativePath())
+						.setAction(ACTION_OPEN), PendingIntent.FLAG_UPDATE_CURRENT));
 			}
 		}
 		String contentTitle;
@@ -863,18 +1004,18 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 	private void refreshNotification(NotificationUpdate notificationUpdate) {
 		boolean hasTask = activeTask != null;
 		boolean hasResults = !queuedTasks.isEmpty() || !successTasks.isEmpty() || !errorTasks.isEmpty();
-		boolean hasRequests = choiceRequest != null || replaceRequest != null || !directRequests.isEmpty();
+		boolean hasRequests = primaryRequest != null || !directRequests.isEmpty();
 		boolean needForegroundOrNotification = hasTask || hasResults || hasRequests;
 		if (needForegroundOrNotification) {
 			boolean allowRetry = false;
 			boolean hasNotFromCache = false;
-			File lastSuccessFile = null;
+			TaskData lastSuccessFileTaskData = null;
 			if (hasTask || !hasRequests) {
 				for (TaskData taskData : successTasks.values()) {
 					if (!taskData.finishedFromCache) {
 						hasNotFromCache = true;
 					}
-					lastSuccessFile = taskData.getFile(false);
+					lastSuccessFileTaskData = taskData;
 				}
 				for (TaskData taskData : errorTasks.values()) {
 					if (!taskData.finishedFromCache) {
@@ -885,6 +1026,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 					}
 				}
 			}
+			DataFile lastSuccessFile = lastSuccessFileTaskData != null ? getDataFile(lastSuccessFileTaskData) : null;
 			NotificationData.Type type = hasTask ? NotificationData.Type.PROGRESS : hasRequests
 					? NotificationData.Type.REQUEST : NotificationData.Type.RESULT;
 			boolean allowHeadsUp = type == NotificationData.Type.RESULT &&
@@ -914,27 +1056,14 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 	}
 
 	@Override
-	public void onFileExists(Uri uri, File file) {
-		Pair<TaskData, ReadFileTask> activeTask = this.activeTask;
-		HANDLER.post(() -> {
-			if (activeTask == this.activeTask) {
-				progress = 0;
-				progressMax = 0;
-				refreshNotification(NotificationUpdate.NORMAL);
-				onFinishDownloading(true, uri, file, null);
-			}
-		});
-	}
-
-	@Override
-	public void onStartDownloading(Uri uri, File file) {
+	public void onStartDownloading() {
 		progress = 0;
 		progressMax = 0;
 		refreshNotification(NotificationUpdate.NORMAL);
 	}
 
 	@Override
-	public void onFinishDownloading(boolean success, Uri uri, File file, ErrorItem errorItem) {
+	public void onFinishDownloading(boolean success, Uri uri, DataFile file, ErrorItem errorItem) {
 		TaskData taskData = activeTask.first.newFinishedFromCache(activeTask.second.isDownloadingFromCache());
 		activeTask = null;
 		onFinishDownloadingInternal(success, taskData);
@@ -942,7 +1071,10 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 
 	private void onFinishDownloadingInternal(boolean success, TaskData taskData) {
 		if (success) {
-			scanFile(taskData.getFile(false), null);
+			File file = getDataFile(taskData).getFileOrUri().first;
+			if (file != null) {
+				scanFileLegacy(file, null);
+			}
 		}
 		if (success) {
 			successTasks.put(taskData.getKey(), taskData);
@@ -952,10 +1084,11 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 		if (!queuedTasks.isEmpty()) {
 			if (success) {
 				// Update image explicitly, because task type won't be changed
-				notificationsQueue.add(NotificationData.updateImageOnly(taskData.getFile(false)));
+				notificationsQueue.add(NotificationData.updateImageOnly(getDataFile(taskData)));
 			}
 			startNextTask();
 		} else {
+			cachedDirectories.clear();
 			refreshNotification(NotificationUpdate.HEADS_UP);
 		}
 	}
@@ -975,7 +1108,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 		void onComplete(Uri uri);
 	}
 
-	private void scanFile(File file, Pair<String, ScanCallback> callback) {
+	private void scanFileLegacy(File file, Pair<String, ScanCallback> callback) {
 		String[] fileArray = {file.getAbsolutePath()};
 		MediaScannerConnection.OnScanCompletedListener listener;
 		if (callback != null) {
@@ -988,11 +1121,11 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 					}
 				}
 			};
-			HANDLER.postDelayed(() -> {
+			ConcurrentUtils.HANDLER.postDelayed(() -> {
 				synchronized (handled) {
 					if (!handled[0]) {
 						handled[0] = true;
-						callback.second.onComplete(FileProvider.convertDownloadsFile(file, callback.first));
+						callback.second.onComplete(FileProvider.convertDownloadsLegacyFile(file, callback.first));
 					}
 				}
 			}, 1000);
@@ -1000,27 +1133,6 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 			listener = null;
 		}
 		MediaScannerConnection.scanFile(this, fileArray, null, listener);
-	}
-
-	private static File getTargetFile(Target target, String path, boolean mkdirs) {
-		File directory;
-		switch (target) {
-			case DOWNLOADS: {
-				directory = Preferences.getDownloadDirectory();
-				break;
-			}
-			default: {
-				throw new IllegalArgumentException();
-			}
-		}
-		File file = new File(directory, path);
-		if (mkdirs) {
-			File parent = file.getParentFile();
-			if (parent != null) {
-				parent.mkdirs();
-			}
-		}
-		return file;
 	}
 
 	private static String getFileNameWithChanBoardThreadData(String fileName,
@@ -1058,7 +1170,11 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 		return fileName;
 	}
 
-	public static abstract class ChoiceRequest {
+	public interface Request {
+		default void cleanup() {}
+	}
+
+	public static abstract class ChoiceRequest implements Request {
 		private final boolean shouldHandle;
 		public final String chanName;
 		public final String boardName;
@@ -1077,28 +1193,22 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 		public abstract boolean allowDetailName();
 		public abstract boolean allowOriginalName();
 		public abstract DirectRequest complete(String path, boolean detailName, boolean originalName);
-
-		protected void cleanup() {}
 	}
 
 	public static class DirectRequest {
-		public final Target target;
+		public final DataFile.Target target;
 		public final String path;
 		public final boolean overwrite;
 		public final InputStream input;
 		public final List<DownloadItem> downloadItems;
 
-		private DirectRequest(Target target, String path, boolean overwrite,
+		private DirectRequest(DataFile.Target target, String path, boolean overwrite,
 				List<DownloadItem> downloadItems, InputStream input) {
 			this.target = target;
 			this.path = path;
 			this.overwrite = overwrite;
 			this.downloadItems = downloadItems;
 			this.input = input;
-		}
-
-		private String getPath(String name) {
-			return StringUtils.isEmpty(path) ? name : path + "/" + name;
 		}
 
 		private void cleanup() {
@@ -1108,23 +1218,42 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 		}
 	}
 
-	public static class ReplaceRequest {
+	public static class ReplaceRequest implements Request {
 		public enum Action {REPLACE, KEEP_ALL, SKIP}
 
 		private final DirectRequest directRequest;
 		private final List<DownloadItem> availableItems;
 
-		public final File lastExistingFile;
+		public final DataFile lastExistingFile;
 		public final int queued;
 		public final int exists;
 
 		private ReplaceRequest(DirectRequest directRequest, List<DownloadItem> availableItems,
-				File lastExistingFile, int queued, int exists) {
+				DataFile lastExistingFile, int queued, int exists) {
 			this.directRequest = directRequest;
 			this.availableItems = availableItems;
 			this.lastExistingFile = lastExistingFile;
 			this.queued = queued;
 			this.exists = exists;
+		}
+
+		@Override
+		public void cleanup() {
+			directRequest.cleanup();
+		}
+	}
+
+	public static class PrepareRequest implements Request {
+		private final PrepareTask<?> task;
+
+		protected PrepareRequest(PrepareTask<?> task) {
+			this.task = task;
+		}
+
+		@Override
+		public void cleanup() {
+			task.task.cleanup();
+			task.cancel(true);
 		}
 	}
 
@@ -1160,7 +1289,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 						requestItem.fileName, originalName ? requestItem.originalName : null, detailName,
 						chanName, boardName, threadNumber)));
 			}
-			return new DirectRequest(Target.DOWNLOADS, path, true, downloadItems, null);
+			return new DirectRequest(DataFile.Target.DOWNLOADS, path, true, downloadItems, null);
 		}
 	}
 
@@ -1190,11 +1319,12 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 			String fileName = detailName ? getFileNameWithChanBoardThreadData(this.fileName,
 					chanName, boardName, threadNumber) : this.fileName;
 			DownloadItem downloadItem = new DownloadService.DownloadItem(chanName, null, fileName);
-			return new DirectRequest(Target.DOWNLOADS, path, true, Collections.singletonList(downloadItem), input);
+			return new DirectRequest(DataFile.Target.DOWNLOADS, path, true,
+					Collections.singletonList(downloadItem), input);
 		}
 
 		@Override
-		protected void cleanup() {
+		public void cleanup() {
 			if (input != null) {
 				IOUtils.close(input);
 			}
@@ -1284,7 +1414,10 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 			boolean open = ACTION_OPEN.equals(action);
 			Context bindContext = context.getApplicationContext();
 			if (cancel || retry || open) {
-				File file = open ? new File(intent.getStringExtra(EXTRA_FILE)) : null;
+				String targetString = intent.getStringExtra(EXTRA_FILE_TARGET);
+				String path = intent.getStringExtra(EXTRA_FILE_PATH);
+				DataFile file = targetString != null && path != null
+						? DataFile.obtain(context, DataFile.Target.valueOf(targetString), path) : null;
 				// Broadcast receivers can't bind to services
 				ServiceConnection[] connection = {null};
 				connection[0] = new ServiceConnection() {

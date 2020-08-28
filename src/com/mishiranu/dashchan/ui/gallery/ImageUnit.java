@@ -107,8 +107,8 @@ public class ImageUnit {
 			readFileTask.cancel();
 		}
 		readBitmapCallback = new ReadBitmapCallback(holder.galleryItem);
-		readFileTask = new ReadFileTask(instance.galleryInstance.context, instance.galleryInstance.chanName,
-				uri, cachedFile, true, readBitmapCallback);
+		readFileTask = ReadFileTask.createCachedMediaFile(instance.galleryInstance.context, readBitmapCallback,
+				instance.galleryInstance.chanName, uri, cachedFile);
 		readFileTask.executeOnExecutor(ReadFileTask.THREAD_POOL_EXECUTOR);
 	}
 
@@ -120,7 +120,7 @@ public class ImageUnit {
 		return false;
 	}
 
-	private class ReadBitmapCallback implements ReadFileTask.Callback, ReadFileTask.CancelCallback {
+	private class ReadBitmapCallback implements ReadFileTask.FileCallback {
 		private final GalleryItem galleryItem;
 
 		public ReadBitmapCallback(GalleryItem galleryItem) {
@@ -136,16 +136,7 @@ public class ImageUnit {
 		}
 
 		@Override
-		public void onFileExists(Uri uri, File file) {
-			readFileTask = null;
-			readBitmapCallback = null;
-			if (isCurrentHolder()) {
-				applyImageFromFile(file);
-			}
-		}
-
-		@Override
-		public void onStartDownloading(Uri uri, File file) {
+		public void onStartDownloading() {
 			if (isCurrentHolder()) {
 				instance.currentHolder.progressBar.setVisible(true, false);
 				instance.currentHolder.progressBar.setIndeterminate(true);
@@ -180,7 +171,7 @@ public class ImageUnit {
 		}
 
 		@Override
-		public void onCancelDownloading(Uri uri, File file) {
+		public void onCancelDownloading() {
 			if (isCurrentHolder()) {
 				instance.currentHolder.progressBar.setVisible(false, true);
 			}

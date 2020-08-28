@@ -466,6 +466,7 @@
 	<string name="preference_domain_another">Другой</string>
 	<string name="preference_download_detail_name">Подробное имя файла</string>
 	<string name="preference_download_detail_name_summary">Загружать файлы с номером треда в названии</string>
+	<string name="preference_download_directory">Директория загрузки</string>
 	<string name="preference_download_original_name">Исходное имя файла</string>
 	<string name="preference_download_original_name_summary">Загружать файлы с исходным названием, если
 		это возможно</string>

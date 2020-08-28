@@ -52,10 +52,10 @@ public class UpdaterActivity extends StateActivity {
 		if (uriStrings != null && uriStrings.size() > index) {
 			Uri uri = Uri.parse(uriStrings.get(index));
 			uri = FileProvider.convertUpdatesUri(this, uri);
-			int intentFlags = FileProvider.getIntentFlags();
+			// noinspection deprecation
 			startActivityForResult(new Intent(Intent.ACTION_INSTALL_PACKAGE)
 					.setDataAndType(uri, "application/vnd.android.package-archive")
-					.setFlags(intentFlags)
+					.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
 					.putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true)
 					.putExtra(Intent.EXTRA_RETURN_RESULT, true), 0);
 		} else {

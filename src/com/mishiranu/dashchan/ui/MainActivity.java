@@ -11,7 +11,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.drawable.ColorDrawable;
@@ -115,6 +114,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	private static final String EXTRA_CURRENT_PAGE_ITEM = "currentPageItem";
 	private static final String EXTRA_DRAWER_EXPANDED = "drawerExpanded";
 	private static final String EXTRA_DRAWER_CHAN_SELECT_MODE = "drawerChanSelectMode";
+	private static final String EXTRA_IN_STORAGE_REQUEST = "inStorageRequest";
 
 	private static final PageFragment REFERENCE_FRAGMENT = new PageFragment();
 
@@ -139,11 +139,13 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	private ViewFactory.ToolbarHolder toolbarHolder;
 	private FrameLayout toolbarExtra;
 
-	private ViewGroup drawerCommon, drawerWide;
+	private ViewGroup drawerCommon;
+	private ViewGroup drawerWide;
 	private boolean wideMode;
 
 	private ReadUpdateTask readUpdateTask;
 	private Intent navigateIntentOnResume;
+	private boolean inStorageRequest;
 
 	private static final String LOCKER_DRAWER = "drawer";
 	private static final String LOCKER_NON_PAGE = "nonPage";
@@ -252,6 +254,13 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 					DownloadService.ReplaceRequest.Action action) {
 				if (downloadBinder != null) {
 					downloadBinder.resolve(replaceRequest, action);
+				}
+			}
+
+			@Override
+			public void cancel(DownloadService.PrepareRequest prepareRequest) {
+				if (downloadBinder != null) {
+					downloadBinder.cancel(prepareRequest);
 				}
 			}
 		});
@@ -409,6 +418,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		writePagesState(outState);
 		outState.putBoolean(EXTRA_DRAWER_EXPANDED, drawerLayout.isDrawerOpen(GravityCompat.START));
 		outState.putBoolean(EXTRA_DRAWER_CHAN_SELECT_MODE, drawerForm.isChanSelectMode());
+		outState.putBoolean(EXTRA_IN_STORAGE_REQUEST, inStorageRequest);
 	}
 
 	private void writePagesState(Bundle outState) {
@@ -423,16 +433,18 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	}
 
 	@Override
-	public void onRequestPermissionsResult(int requestCode,
-			@NonNull String[] permissions, @NonNull int[] grantResults) {
-		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
 
-		if (requestCode == C.REQUEST_CODE_STORAGE_PERMISSION && grantResults.length > 0 && downloadBinder != null) {
-			boolean granted = true;
-			for (int grantResult : grantResults) {
-				granted &= grantResult == PackageManager.PERMISSION_GRANTED;
+		if (requestCode == C.REQUEST_CODE_OPEN_URI_TREE) {
+			inStorageRequest = false;
+			if (resultCode == RESULT_OK && data != null) {
+				Preferences.setDownloadUriTree(this, data.getData(), data.getFlags());
 			}
-			downloadBinder.onPermissionResult(granted);
+			if (downloadBinder != null) {
+				Uri uri = Preferences.getDownloadUriTree(this);
+				downloadBinder.onPermissionResult(uri != null);
+			}
 		}
 	}
 
@@ -1780,8 +1792,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	};
 
 	private void updateHandleDownloadRequests() {
-		downloadDialog.handleRequests(downloadBinder != null ? downloadBinder.getChoiceRequest() : null,
-				downloadBinder != null ? downloadBinder.getReplaceRequest() : null);
+		DownloadService.Binder binder = downloadBinder;
+		downloadDialog.handleRequest(binder != null ? binder.getPrimaryRequest() : null);
 	}
 
 	private final DownloadService.Callback downloadCallback = new DownloadService.Callback() {
@@ -1792,10 +1804,15 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 
 		@Override
 		public void requestPermission() {
-			if (C.API_MARSHMALLOW && checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-					!= PackageManager.PERMISSION_GRANTED) {
-				requestPermissions(new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE},
-						C.REQUEST_CODE_STORAGE_PERMISSION);
+			if (C.USE_SAF) {
+				if (!inStorageRequest) {
+					if (Preferences.getDownloadUriTree(MainActivity.this) != null) {
+						downloadBinder.onPermissionResult(true);
+					} else {
+						inStorageRequest = true;
+						startActivityForResult(Preferences.getDownloadUriTreeIntent(), C.REQUEST_CODE_OPEN_URI_TREE);
+					}
+				}
 			} else {
 				downloadBinder.onPermissionResult(true);
 			}

@@ -3,7 +3,6 @@ package com.mishiranu.dashchan.content;
 import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.MatrixCursor;
@@ -105,8 +104,8 @@ public class FileProvider extends ContentProvider {
 		return null;
 	}
 
-	public static Uri convertDownloadsFile(File file, String type) {
-		InternalFile internalFile = convertFile(Preferences.getDownloadDirectory(), file, type, PATH_DOWNLOADS);
+	public static Uri convertDownloadsLegacyFile(File file, String type) {
+		InternalFile internalFile = convertFile(Preferences.getDownloadDirectoryLegacy(), file, type, PATH_DOWNLOADS);
 		if (internalFile != null) {
 			downloadsFile = internalFile;
 			return internalFile.uri;
@@ -121,10 +120,6 @@ public class FileProvider extends ContentProvider {
 			return internalFile.uri;
 		}
 		return Uri.fromFile(file);
-	}
-
-	public static int getIntentFlags() {
-		return C.API_NOUGAT ? Intent.FLAG_GRANT_READ_URI_PERMISSION : 0;
 	}
 
 	@Override

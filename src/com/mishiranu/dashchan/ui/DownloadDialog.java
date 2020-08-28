@@ -3,6 +3,7 @@ package com.mishiranu.dashchan.ui;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -26,6 +27,7 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import chan.content.ChanConfiguration;
+import chan.util.DataFile;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
@@ -36,10 +38,11 @@ import com.mishiranu.dashchan.util.ConfigurationLock;
 import com.mishiranu.dashchan.util.MimeTypes;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
+import com.mishiranu.dashchan.widget.ProgressDialog;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -47,14 +50,41 @@ public class DownloadDialog {
 	public interface Callback {
 		void resolve(DownloadService.ChoiceRequest choiceRequest, DownloadService.DirectRequest directRequest);
 		void resolve(DownloadService.ReplaceRequest replaceRequest, DownloadService.ReplaceRequest.Action action);
+		void cancel(DownloadService.PrepareRequest prepareRequest);
 	}
 
 	private final Context context;
 	private final ConfigurationLock configurationLock;
 	private final Callback callback;
 
-	private Pair<AlertDialog, DownloadService.ChoiceRequest> choiceDialog;
-	private Pair<AlertDialog, DownloadService.ReplaceRequest> replaceDialog;
+	private static class DialogHolder<Request> {
+		private Request request;
+		private AlertDialog dialog;
+
+		public void dismissIfNotEqual(Request request) {
+			if (dialog != null && (request == null || this.request != request)) {
+				this.request = null;
+				dialog.dismiss();
+				dialog = null;
+			}
+		}
+
+		public void onDismiss(DialogInterface dialog) {
+			if (this.dialog == dialog) {
+				request = null;
+				this.dialog = null;
+			}
+		}
+
+		public void install(Request request, AlertDialog dialog) {
+			this.request = request;
+			this.dialog = dialog;
+		}
+	}
+
+	private final DialogHolder<DownloadService.ChoiceRequest> choiceDialog = new DialogHolder<>();
+	private final DialogHolder<DownloadService.ReplaceRequest> replaceDialog = new DialogHolder<>();
+	private final DialogHolder<DownloadService.PrepareRequest> prepareDialog = new DialogHolder<>();
 
 	public DownloadDialog(Context context, ConfigurationLock configurationLock, Callback callback) {
 		this.context = new ContextThemeWrapper(context, R.style.Theme_Gallery);
@@ -62,55 +92,43 @@ public class DownloadDialog {
 		this.callback = callback;
 	}
 
-	public void handleRequests(DownloadService.ChoiceRequest choiceRequest,
-			DownloadService.ReplaceRequest replaceRequest) {
-		if (choiceRequest != null) {
-			if (replaceDialog != null) {
-				replaceDialog.first.dismiss();
-				replaceDialog = null;
+	public void handleRequest(DownloadService.Request request) {
+		if (request instanceof DownloadService.ChoiceRequest) {
+			DownloadService.ChoiceRequest choiceRequest = (DownloadService.ChoiceRequest) request;
+			choiceDialog.dismissIfNotEqual(choiceRequest);
+			replaceDialog.dismissIfNotEqual(null);
+			prepareDialog.dismissIfNotEqual(null);
+			if (choiceDialog.dialog == null) {
+				choiceDialog.install(choiceRequest, createChoice(choiceRequest, choiceDialog::onDismiss));
 			}
-			if (choiceDialog != null && choiceDialog.second != choiceRequest) {
-				choiceDialog.first.dismiss();
-				choiceDialog = null;
+		} else if (request instanceof DownloadService.ReplaceRequest) {
+			DownloadService.ReplaceRequest replaceRequest = (DownloadService.ReplaceRequest) request;
+			choiceDialog.dismissIfNotEqual(null);
+			replaceDialog.dismissIfNotEqual(replaceRequest);
+			prepareDialog.dismissIfNotEqual(null);
+			if (replaceDialog.dialog == null) {
+				replaceDialog.install(replaceRequest, createReplace(replaceRequest, choiceDialog::onDismiss));
 			}
-			if (choiceDialog == null) {
-				choiceDialog = new Pair<>(createChoice(choiceRequest, dialog -> {
-					if (choiceDialog != null && dialog == choiceDialog.first) {
-						choiceDialog = null;
-					}
-				}), choiceRequest);
+		} else if (request instanceof DownloadService.PrepareRequest) {
+			DownloadService.PrepareRequest prepareRequest = (DownloadService.PrepareRequest) request;
+			choiceDialog.dismissIfNotEqual(null);
+			replaceDialog.dismissIfNotEqual(null);
+			prepareDialog.dismissIfNotEqual(prepareRequest);
+			if (prepareDialog.dialog == null) {
+				prepareDialog.install(prepareRequest, createPrepare(prepareRequest, choiceDialog::onDismiss));
 			}
-		} else if (replaceRequest != null) {
-			if (choiceDialog != null) {
-				choiceDialog.first.dismiss();
-				choiceDialog = null;
-			}
-			if (replaceDialog != null && replaceDialog.second != replaceRequest) {
-				replaceDialog.first.dismiss();
-				replaceDialog = null;
-			}
-			if (replaceDialog == null) {
-				replaceDialog = new Pair<>(createReplace(replaceRequest, dialog -> {
-					if (replaceDialog != null && dialog == replaceDialog.first) {
-						replaceDialog = null;
-					}
-				}), replaceRequest);
-			}
+		} else if (request == null) {
+			choiceDialog.dismissIfNotEqual(null);
+			replaceDialog.dismissIfNotEqual(null);
+			prepareDialog.dismissIfNotEqual(null);
 		} else {
-			if (choiceDialog != null) {
-				choiceDialog.first.dismiss();
-				choiceDialog = null;
-			}
-			if (replaceDialog != null) {
-				replaceDialog.first.dismiss();
-				replaceDialog = null;
-			}
+			throw new IllegalArgumentException("Request is not supported");
 		}
 	}
 
 	private AlertDialog createChoice(DownloadService.ChoiceRequest choiceRequest,
 			AlertDialog.OnDismissListener onDismissListener) {
-		File root = Preferences.getDownloadDirectory();
+		DataFile root = DataFile.obtain(context, DataFile.Target.DOWNLOADS, null);
 		InputMethodManager inputMethodManager = (InputMethodManager) context
 				.getSystemService(Context.INPUT_METHOD_SERVICE);
 		View view = LayoutInflater.from(context)
@@ -159,6 +177,9 @@ public class DownloadDialog {
 
 		editText.setEnabled(false);
 		editText.setOnItemClickListener((parent, v, position, id) -> v.post(() -> {
+			Adapter adapter = (Adapter) editText.getAdapter();
+			adapter.items = Collections.emptyList();
+			adapter.notifyDataSetChanged();
 			refreshDropDownContents(editText);
 			editText.showDropDown();
 		}));
@@ -229,8 +250,15 @@ public class DownloadDialog {
 
 	private void handleChoiceResolve(DownloadService.ChoiceRequest choiceRequest,
 			AutoCompleteTextView editText, CheckBox detailNameCheckBox, CheckBox originalNameCheckBox) {
-		String path = editText.isEnabled() ? StringUtils.nullIfEmpty(StringUtils
-				.escapeFile(editText.getText().toString(), true).trim()) : null;
+		String pathCandidate = editText.isEnabled() ? StringUtils
+				.escapeFile(editText.getText().toString(), true).trim() : "";
+		ArrayList<String> segments = new ArrayList<>();
+		for (String segment : pathCandidate.split("/")) {
+			if (DataFile.isValidSegment(segment)) {
+				segments.add(segment);
+			}
+		}
+		String path = StringUtils.nullIfEmpty(Adapter.buildPath(segments, 0));
 		DownloadService.DirectRequest directRequest = choiceRequest.complete(path,
 				detailNameCheckBox.isChecked(), originalNameCheckBox.isChecked());
 		callback.resolve(choiceRequest, directRequest);
@@ -287,17 +315,26 @@ public class DownloadDialog {
 		if (replaceRequest.exists == 1) {
 			builder.setNeutralButton(R.string.action_view, null);
 			dialog = builder.create();
-			final File singleFile = replaceRequest.lastExistingFile;
+			final DataFile singleFile = replaceRequest.lastExistingFile;
 			dialog.setOnShowListener(d -> dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v -> {
-				String extension = StringUtils.getFileExtension(singleFile.getPath());
+				String extension = StringUtils.getFileExtension(singleFile.getName());
 				String type = MimeTypes.forExtension(extension, "image/jpeg");
-				try {
-					Uri uri = FileProvider.convertDownloadsFile(singleFile, type);
-					int intentFlags = FileProvider.getIntentFlags();
-					context.startActivity(new Intent(Intent.ACTION_VIEW)
-							.setDataAndType(uri, type).setFlags(intentFlags | Intent.FLAG_ACTIVITY_NEW_TASK));
-				} catch (ActivityNotFoundException e) {
-					ToastUtils.show(context, R.string.message_unknown_address);
+				Pair<File, Uri> fileOrUri = singleFile.getFileOrUri();
+				Uri uri;
+				if (fileOrUri.first != null) {
+					uri = FileProvider.convertDownloadsLegacyFile(fileOrUri.first, type);
+				} else if (fileOrUri.second != null) {
+					uri = fileOrUri.second;
+				} else {
+					uri = null;
+				}
+				if (uri != null) {
+					try {
+						context.startActivity(new Intent(Intent.ACTION_VIEW).setDataAndType(uri, type)
+								.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION));
+					} catch (ActivityNotFoundException e) {
+						ToastUtils.show(context, R.string.message_unknown_address);
+					}
 				}
 			}));
 		} else {
@@ -308,13 +345,25 @@ public class DownloadDialog {
 		return dialog;
 	}
 
+	private ProgressDialog createPrepare(DownloadService.PrepareRequest prepareRequest,
+			ProgressDialog.OnDismissListener onDismissListener) {
+		ProgressDialog dialog = new ProgressDialog(context, null);
+		dialog.setMessage(context.getString(R.string.message_processing_data));
+		dialog.setButton(ProgressDialog.BUTTON_NEGATIVE, context.getString(android.R.string.cancel),
+				(d, w) -> callback.cancel(prepareRequest));
+		dialog.setOnCancelListener(d -> callback.cancel(prepareRequest));
+		dialog.setOnDismissListener(onDismissListener);
+		dialog.show();
+		return dialog;
+	}
+
 	private static class Adapter extends BaseAdapter implements Filterable {
-		private final File root;
+		private final DataFile root;
 		private final Runnable refresh;
 
 		private List<DialogDirectory> items = Collections.emptyList();
 
-		public Adapter(File root, Runnable refresh) {
+		public Adapter(DataFile root, Runnable refresh) {
 			this.root = root;
 			this.refresh = refresh;
 		}
@@ -349,19 +398,37 @@ public class DownloadDialog {
 		private final Object lastDirectoryLock = new Object();
 		private boolean lastDirectoryCancel = false;
 		private String lastDirectoryPath;
+		private final HashMap<String, DataFile> cachedDirectories = new HashMap<>();
 		private List<DialogDirectory> lastDirectoryItems;
-		private AsyncTask<Void, Void, List<DialogDirectory>> lastDirectoryTask;
+		private AsyncTask<Void, ?, ?> lastDirectoryTask;
+
+		public static String buildPath(List<String> segments, int parent) {
+			StringBuilder directoryPathBuilder = new StringBuilder();
+			for (int i = 0; i < segments.size() - parent; i++) {
+				if (directoryPathBuilder.length() > 0) {
+					directoryPathBuilder.append('/');
+				}
+				directoryPathBuilder.append(segments.get(i));
+			}
+			return directoryPathBuilder.toString();
+		}
 
 		private final Filter filter = new Filter() {
 			@Override
 			protected FilterResults performFiltering(CharSequence constraint) {
 				String constraintString = constraint.toString();
 				int separatorIndex = constraintString.lastIndexOf('/');
-				String directoryPath = separatorIndex >= 0 ? constraintString.substring(0, separatorIndex) : "";
-				File directory = StringUtils.isEmpty(directoryPath) ? root : new File(root, directoryPath);
+				String enterDirectoryPath = separatorIndex >= 0 ? constraintString.substring(0, separatorIndex) : "";
+				List<String> segments = new ArrayList<>();
+				for (String segment : enterDirectoryPath.split("/")) {
+					if (DataFile.isValidSegment(segment)) {
+						segments.add(segment);
+					}
+				}
 
 				List<DialogDirectory> items;
 				synchronized (lastDirectoryLock) {
+					String directoryPath = buildPath(segments, 0);
 					if (lastDirectoryPath == null || !StringUtils.equals(lastDirectoryPath, directoryPath)) {
 						lastDirectoryPath = directoryPath;
 						lastDirectoryItems = Collections.emptyList();
@@ -372,31 +439,55 @@ public class DownloadDialog {
 						}
 
 						if (!lastDirectoryCancel) {
-							lastDirectoryTask = new AsyncTask<Void, Void, List<DialogDirectory>>() {
+							Pair<DataFile, String> cachedDirectory = null;
+							// Optimize deep traversal
+							for (int i = 0; i < segments.size(); i++) {
+								String path = buildPath(segments, i);
+								DataFile directory = cachedDirectories.get(path);
+								if (directory != null) {
+									cachedDirectory = new Pair<>(directory, i == 0 ? ""
+											: directoryPath.substring(path.length() + 1));
+								}
+							}
+							Pair<DataFile, String> cachedDirectoryFinal = cachedDirectory;
+							lastDirectoryTask = new AsyncTask<Void, Void,
+									Pair<List<DataFile>, List<DialogDirectory>>>() {
 								@Override
-								protected List<DialogDirectory> doInBackground(Void... params) {
+								protected Pair<List<DataFile>, List<DialogDirectory>> doInBackground(Void... params) {
+									DataFile directory = cachedDirectoryFinal != null
+											? cachedDirectoryFinal.first.getChild(cachedDirectoryFinal.second) :
+											StringUtils.isEmpty(directoryPath) ? root : root.getChild(directoryPath);
+									ArrayList<DataFile> cachedFiles = new ArrayList<>();
 									ArrayList<DialogDirectory> items = new ArrayList<>();
-									File[] files = directory.listFiles();
+									List<DataFile> files = directory.getChildren();
 									if (files != null) {
-										for (File file : files) {
+										for (DataFile file : files) {
 											if (isCancelled()) {
 												break;
 											}
 											if (file.isDirectory()) {
-												items.add(new DialogDirectory(root, file));
+												List<String> childSegments = new ArrayList<>(segments);
+												childSegments.add(file.getName());
+												items.add(new DialogDirectory(childSegments, file.getLastModified()));
+												cachedFiles.add(file);
 											}
 										}
 									}
 									if (!isCancelled()) {
 										Collections.sort(items);
 									}
-									return items;
+									return new Pair<>(cachedFiles, items);
 								}
 
 								@Override
-								protected void onPostExecute(List<DialogDirectory> items) {
+								protected void onPostExecute(Pair<List<DataFile>, List<DialogDirectory>> items) {
 									synchronized (lastDirectoryLock) {
-										lastDirectoryItems = items;
+										if (items.first != null) {
+											for (DataFile file : items.first) {
+												cachedDirectories.put(file.getRelativePath(), file);
+											}
+										}
+										lastDirectoryItems = items.second;
 										lastDirectoryTask = null;
 										notifyDataSetChanged();
 										refresh.run();
@@ -451,17 +542,11 @@ public class DownloadDialog {
 
 	private static class DialogDirectory implements Comparable<DialogDirectory> {
 		public final List<String> segments;
-		public long lastModified;
+		public final long lastModified;
 
-		public DialogDirectory(File root, File directory) {
-			String rootPath = root.getAbsolutePath();
-			String directoryPath = directory.getAbsolutePath();
-			String relativePath = directoryPath.substring(rootPath.length());
-			if (relativePath.startsWith("/")) {
-				relativePath = relativePath.substring(1);
-			}
-			segments = Arrays.asList(relativePath.split("/"));
-			this.lastModified = directory.lastModified();
+		public DialogDirectory(List<String> segments, long lastModified) {
+			this.segments = segments;
+			this.lastModified = lastModified;
 		}
 
 		public boolean filter(String name) {
@@ -509,7 +594,7 @@ public class DownloadDialog {
 
 		@Override
 		public int compareTo(DialogDirectory another) {
-			return ((Long) another.lastModified).compareTo(lastModified);
+			return Long.compare(another.lastModified, lastModified);
 		}
 	}
 }

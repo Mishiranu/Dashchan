@@ -3,18 +3,11 @@ package com.mishiranu.dashchan.ui.preference;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.ContentResolver;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.UriPermission;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.storage.StorageManager;
-import android.provider.DocumentsContract;
 import android.text.InputType;
 import android.text.SpannableStringBuilder;
 import android.text.style.TypefaceSpan;
@@ -22,6 +15,7 @@ import android.view.View;
 import android.widget.ListView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
+import chan.util.DataFile;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
@@ -30,17 +24,14 @@ import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.AsyncManager;
 import com.mishiranu.dashchan.media.VideoPlayer;
 import com.mishiranu.dashchan.ui.FragmentHandler;
-import com.mishiranu.dashchan.ui.preference.core.EditPreference;
 import com.mishiranu.dashchan.ui.preference.core.Preference;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
-import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.widget.ProgressDialog;
-import java.io.File;
 import java.util.HashMap;
 import java.util.Locale;
 
 public class ContentsFragment extends PreferenceFragment {
-	private EditPreference downloadPathPreference;
+	private Preference<?> downloadUriTreePreference;
 	private Preference<?> clearCachePreference;
 
 	@Override
@@ -72,13 +63,15 @@ public class ContentsFragment extends PreferenceFragment {
 		addCheck(true, Preferences.KEY_DOWNLOAD_ORIGINAL_NAME,
 				Preferences.DEFAULT_DOWNLOAD_ORIGINAL_NAME, R.string.preference_download_original_name,
 				R.string.preference_download_original_name_summary);
-		downloadPathPreference = addEdit(Preferences.KEY_DOWNLOAD_PATH, null,
-				R.string.preference_download_path, C.DEFAULT_DOWNLOAD_PATH, InputType.TYPE_CLASS_TEXT
-				| InputType.TYPE_TEXT_VARIATION_URI);
-		if (C.API_LOLLIPOP) {
-			downloadPathPreference.setNeutralButton(getString(R.string.action_choose),
-					() -> startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-							.putExtra("android.content.extra.SHOW_ADVANCED", true), C.REQUEST_CODE_OPEN_PATH));
+		if (C.USE_SAF) {
+			downloadUriTreePreference = addButton(getString(R.string.preference_download_directory),
+					p -> DataFile.obtain(requireContext(), DataFile.Target.DOWNLOADS, null).getName());
+			downloadUriTreePreference.setOnClickListener(p -> startActivityForResult(Preferences
+					.getDownloadUriTreeIntent(), C.REQUEST_CODE_OPEN_URI_TREE));
+		} else {
+			addEdit(Preferences.KEY_DOWNLOAD_PATH, null,
+					R.string.preference_download_path, C.DEFAULT_DOWNLOAD_PATH, InputType.TYPE_CLASS_TEXT
+							| InputType.TYPE_TEXT_VARIATION_URI);
 		}
 		addList(Preferences.KEY_DOWNLOAD_SUBDIR, Preferences.VALUES_DOWNLOAD_SUBDIR,
 				Preferences.DEFAULT_DOWNLOAD_SUBDIR, R.string.preference_download_subdir,
@@ -145,7 +138,7 @@ public class ContentsFragment extends PreferenceFragment {
 	public void onDestroyView() {
 		super.onDestroyView();
 
-		downloadPathPreference = null;
+		downloadUriTreePreference = null;
 		clearCachePreference = null;
 	}
 
@@ -180,69 +173,10 @@ public class ContentsFragment extends PreferenceFragment {
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		if (requestCode == C.REQUEST_CODE_OPEN_PATH && resultCode == Activity.RESULT_OK) {
-			boolean success = false;
-			Uri uri = data.getData();
-			ContentResolver contentResolver = requireContext().getContentResolver();
-			for (UriPermission uriPermission : contentResolver.getPersistedUriPermissions()) {
-				if (!uri.equals(uriPermission.getUri())) {
-					contentResolver.releasePersistableUriPermission(uriPermission.getUri(),
-							(uriPermission.isReadPermission() ? Intent.FLAG_GRANT_READ_URI_PERMISSION : 0) |
-							(uriPermission.isWritePermission() ? Intent.FLAG_GRANT_WRITE_URI_PERMISSION : 0));
-				}
-			}
-			contentResolver.takePersistableUriPermission(uri, data.getFlags() & (Intent.FLAG_GRANT_READ_URI_PERMISSION
-					| Intent.FLAG_GRANT_WRITE_URI_PERMISSION));
-			String id = DocumentsContract.getTreeDocumentId(uri);
-			if (id != null) {
-				// TODO Handle deprecation
-				String[] splitted = id.split(":", -1);
-				if (splitted.length == 2) {
-					String volumeName = splitted[0];
-					String path = splitted[1];
-					File storageDirectory = null;
-					if ("primary".equals(volumeName)) {
-						storageDirectory = Environment.getExternalStorageDirectory();
-					} else {
-						StorageManager storageManager = (StorageManager) requireContext()
-								.getSystemService(Context.STORAGE_SERVICE);
-						try {
-							Object[] list = (Object[]) StorageManager.class.getMethod("getVolumeList")
-									.invoke(storageManager);
-							if (list != null) {
-								for (Object volume : list) {
-									Class<?> volumeClass = volume.getClass();
-									String uuid = (String) volumeClass.getMethod("getUuid").invoke(volume);
-									if (volumeName.equals(uuid)) {
-										storageDirectory = (File) volumeClass.getMethod("getPathFile").invoke(volume);
-										break;
-									}
-								}
-							}
-						} catch (Exception e) {
-							// Reflective operation, ignore exception
-						}
-					}
-					if (storageDirectory != null) {
-						if (storageDirectory.equals(Environment.getExternalStorageDirectory())) {
-							path = "/" + path;
-						} else {
-							path = new File(storageDirectory, path).getAbsolutePath();
-						}
-						if (!path.endsWith("/")) {
-							path += "/";
-						}
-						AlertDialog dialog = getDialog(downloadPathPreference);
-						if (dialog != null) {
-							downloadPathPreference.setInput(dialog, path);
-						}
-						success = true;
-					}
-				}
-			}
-			if (!success) {
-				ToastUtils.show(requireContext(), R.string.message_unknown_error);
-			}
+
+		if (requestCode == C.REQUEST_CODE_OPEN_URI_TREE && resultCode == Activity.RESULT_OK) {
+			Preferences.setDownloadUriTree(requireContext(), data.getData(), data.getFlags());
+			downloadUriTreePreference.invalidate();
 		}
 	}
 

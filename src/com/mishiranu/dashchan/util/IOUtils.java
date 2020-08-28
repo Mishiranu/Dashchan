@@ -1,23 +1,12 @@
 package com.mishiranu.dashchan.util;
 
-import android.annotation.TargetApi;
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.UriPermission;
 import android.content.res.Resources;
-import android.database.Cursor;
-import android.net.Uri;
-import android.os.Build;
-import android.provider.DocumentsContract;
 import chan.util.StringUtils;
-import com.mishiranu.dashchan.C;
-import com.mishiranu.dashchan.content.Preferences;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,7 +14,6 @@ import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Comparator;
-import java.util.List;
 
 public class IOUtils {
 	public static int bytesToInt(boolean littleEndian, int start, int count, byte... bytes) {
@@ -134,83 +122,6 @@ public class IOUtils {
 
 	public static final Comparator<File> SORT_BY_DATE =
 			(lhs, rhs) -> ((Long) lhs.lastModified()).compareTo(rhs.lastModified());
-
-	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
-	private static Uri findChildDocument(ContentResolver contentResolver, Uri uri, String displayName) {
-		String[] projection = {DocumentsContract.Document.COLUMN_DOCUMENT_ID,
-				DocumentsContract.Document.COLUMN_DISPLAY_NAME};
-		Uri childUri = DocumentsContract.buildChildDocumentsUriUsingTree(uri,
-				DocumentsContract.getDocumentId(uri));
-		Cursor cursor = contentResolver.query(childUri, projection, null, null, null);
-		try {
-			while (cursor.moveToNext()) {
-				if (displayName.equals(cursor.getString(1))) {
-					return DocumentsContract.buildDocumentUriUsingTree(uri, cursor.getString(0));
-				}
-			}
-		} finally {
-			cursor.close();
-		}
-		return null;
-	}
-
-	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
-	public static OutputStream openOutputStream(Context context, File file) throws IOException {
-		if (C.API_LOLLIPOP) {
-			File downloadDirectory = Preferences.getDownloadDirectory();
-			String path = file.getAbsolutePath();
-			String directoryPath = downloadDirectory.getAbsolutePath();
-			if (path.startsWith(directoryPath) && !downloadDirectory.canWrite()) {
-				ContentResolver contentResolver = context.getContentResolver();
-				List<UriPermission> uriPermissions = contentResolver.getPersistedUriPermissions();
-				if (uriPermissions.size() > 0) {
-					try {
-						Uri treeUri = uriPermissions.get(0).getUri();
-						Uri uri = DocumentsContract.buildDocumentUriUsingTree(treeUri,
-								DocumentsContract.getTreeDocumentId(treeUri));
-						String[] segments = path.substring(directoryPath.length() + 1).split("/");
-						if (segments.length == 0) {
-							throw new FileNotFoundException();
-						}
-						for (int i = 0; i < segments.length - 1; i++) {
-							String displayName = segments[i];
-							Uri childUri = findChildDocument(contentResolver, uri, displayName);
-							if (childUri == null) {
-								uri = DocumentsContract.createDocument(contentResolver, uri,
-										DocumentsContract.Document.MIME_TYPE_DIR, displayName);
-								if (uri == null) {
-									throw new FileNotFoundException();
-								}
-							} else {
-								uri = childUri;
-							}
-						}
-						String displayName = segments[segments.length - 1];
-						Uri childUri = findChildDocument(contentResolver, uri, displayName);
-						if (childUri != null) {
-							if (DocumentsContract.deleteDocument(contentResolver, childUri)) {
-								childUri = null;
-							}
-						}
-						if (childUri == null) {
-							String mimeType = MimeTypes.forExtension(StringUtils.getFileExtension(displayName),
-									"application/octet-stream");
-							uri = DocumentsContract.createDocument(contentResolver, uri, mimeType, displayName);
-							if (uri == null) {
-								throw new FileNotFoundException();
-							}
-						} else {
-							uri = childUri;
-						}
-						return contentResolver.openOutputStream(uri);
-					} catch (RuntimeException e) {
-						throw new IOException(e);
-					}
-				}
-			}
-		}
-		return new FileOutputStream(file);
-	}
 
 	public static void deleteRecursive(File file) {
 		if (file.isDirectory()) {

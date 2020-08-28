@@ -1,14 +1,23 @@
 package com.mishiranu.dashchan.content;
 
+import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.UriPermission;
+import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
+import android.provider.DocumentsContract;
+import androidx.annotation.RequiresApi;
 import chan.content.ChanConfiguration;
 import chan.content.ChanManager;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.storage.StatisticsStorage;
+import com.mishiranu.dashchan.util.ToastUtils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -437,15 +446,16 @@ public class Preferences {
 
 	public static final String KEY_DOWNLOAD_PATH = "download_path";
 
-	private static String getDownloadPath() {
+	private static String getDownloadPathLegacy() {
 		String path = PREFERENCES.getString(KEY_DOWNLOAD_PATH, null);
 		return !StringUtils.isEmptyOrWhitespace(path) ? path : C.DEFAULT_DOWNLOAD_PATH;
 	}
 
 	private static File externalStorageDirectory;
 
-	public static File getDownloadDirectory() {
-		String path = getDownloadPath();
+	@SuppressWarnings("deprecation")
+	public static File getDownloadDirectoryLegacy() {
+		String path = getDownloadPathLegacy();
 		File dir = new File(path);
 		boolean absolute = false;
 		Uri uri = Uri.fromFile(dir);
@@ -459,7 +469,6 @@ public class Preferences {
 		if (!absolute) {
 			File file = externalStorageDirectory;
 			if (file == null) {
-				// TODO Handle deprecation
 				// Cache for faster calls
 				file = Environment.getExternalStorageDirectory();
 				externalStorageDirectory = file;
@@ -468,6 +477,57 @@ public class Preferences {
 		}
 		dir.mkdirs();
 		return dir;
+	}
+
+	@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+	public static Intent getDownloadUriTreeIntent() {
+		return new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+				.putExtra("android.content.extra.SHOW_ADVANCED", true);
+	}
+
+	@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+	public static Uri getDownloadUriTree(Context context) {
+		ContentResolver contentResolver = context.getContentResolver();
+		List<UriPermission> uriPermissions = contentResolver.getPersistedUriPermissions();
+		if (uriPermissions == null) {
+			return null;
+		}
+		for (UriPermission uriPermission : uriPermissions) {
+			if (uriPermission.isReadPermission() && uriPermission.isWritePermission()) {
+				Uri treeUri = uriPermission.getUri();
+				Uri uri = DocumentsContract.buildDocumentUriUsingTree(treeUri,
+						DocumentsContract.getTreeDocumentId(treeUri));
+				Cursor cursor = contentResolver.query(uri, null, null, null, null);
+				if (cursor == null) {
+					return null;
+				}
+				try {
+					return cursor.moveToFirst() ? treeUri : null;
+				} finally {
+					cursor.close();
+				}
+			}
+		}
+		return null;
+	}
+
+	@RequiresApi(Build.VERSION_CODES.KITKAT)
+	public static void setDownloadUriTree(Context context, Uri uri, int uriFlags) {
+		ContentResolver contentResolver = context.getContentResolver();
+		for (UriPermission uriPermission : contentResolver.getPersistedUriPermissions()) {
+			if (uri == null || !uri.equals(uriPermission.getUri())) {
+				int flags = (uriPermission.isReadPermission() ? Intent.FLAG_GRANT_READ_URI_PERMISSION : 0) |
+						(uriPermission.isWritePermission() ? Intent.FLAG_GRANT_WRITE_URI_PERMISSION : 0);
+				contentResolver.releasePersistableUriPermission(uriPermission.getUri(), flags);
+			}
+		}
+		if (uri == null || "com.android.providers.downloads.documents".equals(uri.getAuthority())) {
+			// Downloads provider fails when ".nomedia" files present
+			ToastUtils.show(context, R.string.message_no_access_to_memory);
+		} else {
+			contentResolver.takePersistableUriPermission(uri, uriFlags &
+					(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION));
+		}
 	}
 
 	public static final String KEY_DOWNLOAD_SUBDIR = "download_subdir";

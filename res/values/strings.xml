@@ -446,6 +446,7 @@
 	<string name="preference_domain_another">Another</string>
 	<string name="preference_download_detail_name">Detailed file name</string>
 	<string name="preference_download_detail_name_summary">Download files with thread number in names</string>
+	<string name="preference_download_directory">Download directory</string>
 	<string name="preference_download_original_name">Original file name</string>
 	<string name="preference_download_original_name_summary">Download files with original file names
 		if it possible</string>

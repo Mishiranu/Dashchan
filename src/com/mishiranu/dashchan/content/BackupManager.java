@@ -3,6 +3,7 @@ package com.mishiranu.dashchan.content;
 import android.content.Context;
 import android.text.format.DateFormat;
 import android.util.Pair;
+import chan.util.DataFile;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.content.storage.AutohideStorage;
@@ -18,9 +19,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,23 +33,30 @@ import java.util.zip.ZipOutputStream;
 
 public class BackupManager {
 	private static final Pattern NAME_PATTERN = Pattern.compile("backup-(\\d+)\\.zip");
-	private static final Comparator<File> COMPARATOR = (lhs, rhs) -> rhs.getName().compareTo(lhs.getName());
+	private static final Comparator<Pair<DataFile, String>> COMPARATOR =
+			(lhs, rhs) -> rhs.second.compareTo(lhs.second);
 
-	public static LinkedHashMap<File, String> getAvailableBackups(Context context) {
-		LinkedHashMap<File, String> backups = new LinkedHashMap<>();
-		File[] files = Preferences.getDownloadDirectory().listFiles();
+	public static LinkedHashMap<DataFile, String> getAvailableBackups(Context context) {
+		DataFile root = DataFile.obtain(context, DataFile.Target.DOWNLOADS, null);
+		List<DataFile> files = root.getChildren();
+		List<Pair<DataFile, String>> backupFiles = new ArrayList<>();
 		if (files != null) {
-			Arrays.sort(files, COMPARATOR);
 			java.text.DateFormat timeFormat = DateFormat.getTimeFormat(context);
 			java.text.DateFormat dateFormat = DateFormat.getDateFormat(context);
-			for (File file : files) {
-				Matcher matcher = NAME_PATTERN.matcher(file.getName());
+			for (DataFile file : files) {
+				String name = file.getName();
+				Matcher matcher = NAME_PATTERN.matcher(name);
 				if (matcher.matches()) {
 					long date = Long.parseLong(matcher.group(1));
 					String dateString = dateFormat.format(date) + " " + timeFormat.format(date);
-					backups.put(file, dateString);
+					backupFiles.add(new Pair<>(file, dateString));
 				}
 			}
+		}
+		Collections.sort(backupFiles, COMPARATOR);
+		LinkedHashMap<DataFile, String> backups = new LinkedHashMap<>();
+		for (Pair<DataFile, String> pair : backupFiles) {
+			backups.put(pair.first, pair.second);
 		}
 		return backups;
 	}
@@ -108,12 +118,12 @@ public class BackupManager {
 		}
 	}
 
-	public static void loadBackup(Context context, File file) {
+	public static void loadBackup(Context context, DataFile file) {
 		LinkedHashMap<String, Pair<File, Boolean>> files = obtainBackupFiles();
 		ZipInputStream zip = null;
 		boolean success = true;
 		try {
-			zip = new ZipInputStream(new FileInputStream(file));
+			zip = new ZipInputStream(file.openInputStream());
 			ZipEntry entry;
 			while ((entry = zip.getNextEntry()) != null) {
 				String name = entry.getName();
