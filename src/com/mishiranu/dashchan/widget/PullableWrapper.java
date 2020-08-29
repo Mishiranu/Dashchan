@@ -3,6 +3,8 @@ package com.mishiranu.dashchan.widget;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -19,7 +21,8 @@ import java.lang.ref.WeakReference;
 
 public class PullableWrapper {
 	private final Wrapped listView;
-	private final PullView topView, bottomView;
+	private final PullView topView;
+	private final PullView bottomView;
 
 	private final float pullDeltaGain;
 
@@ -250,9 +253,8 @@ public class PullableWrapper {
 			canvas.restore();
 		}
 		int shift = beforeShiftValue;
-		float density = ResourceUtils.obtainDensity(listView.getResources());
-		topView.draw(canvas, listView.getEdgeEffectShift(EdgeEffectHandler.Side.TOP), density);
-		bottomView.draw(canvas, listView.getEdgeEffectShift(EdgeEffectHandler.Side.BOTTOM), density);
+		topView.draw(canvas, listView.getEdgeEffectShift(EdgeEffectHandler.Side.TOP));
+		bottomView.draw(canvas, listView.getEdgeEffectShift(EdgeEffectHandler.Side.BOTTOM));
 		if (lastShiftValue != shift) {
 			lastShiftValue = shift;
 			listView.invalidate();
@@ -269,7 +271,7 @@ public class PullableWrapper {
 		public void setPullStrain(int pullStrain, int padding);
 		public int getPullStrain();
 		public int getAndResetIdlePullStrain();
-		public void draw(Canvas canvas, int padding, float density);
+		public void draw(Canvas canvas, int padding);
 		public long calculateJumpStartTime();
 		public int calculateJumpValue(long jumpStartTime);
 	}
@@ -396,7 +398,7 @@ public class PullableWrapper {
 		}
 
 		@Override
-		public void draw(Canvas canvas, int padding, float density) {
+		public void draw(Canvas canvas, int padding) {
 			Wrapped wrapped = this.wrapped.get();
 			if (wrapped == null) {
 				return;
@@ -515,15 +517,25 @@ public class PullableWrapper {
 
 		private static final int CIRCLE_RADIUS = 20;
 		private static final int DEFAULT_CIRCLE_TARGET = 64;
+		private static final int SHADOW_SIZE = 4;
+		private static final int SHADOW_SHIFT = 2;
 		private static final float CENTER_RADIUS = 8.75f;
 		private static final float STROKE_WIDTH = 2.5f;
 
 		private final WeakReference<Wrapped> wrapped;
+		private final boolean top;
+		private final int radius;
+		private final int commonShift;
+		private final int shadowSize;
+		private final int shadowShift;
+		private final float ringRadius;
+		private final float strokeWidth;
+
 		private final Paint circlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		private final Paint ringPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		private final Path path = new Path();
 		private final RectF rectF = new RectF();
-		private final boolean top;
+		private final Bitmap shadow;
 
 		private final Interpolator startInterpolator;
 		private final Interpolator endInterpolator;
@@ -541,6 +553,13 @@ public class PullableWrapper {
 		public LollipopView(Wrapped wrapped, boolean top) {
 			this.wrapped = new WeakReference<>(wrapped);
 			this.top = top;
+			float density = ResourceUtils.obtainDensity(wrapped.getContext());
+			radius = (int) (CIRCLE_RADIUS * density);
+			commonShift = (int) (DEFAULT_CIRCLE_TARGET * density);
+			shadowSize = (int) (SHADOW_SIZE * density);
+			shadowShift = (int) (SHADOW_SHIFT * density);
+			ringRadius = CENTER_RADIUS * density;
+			strokeWidth = STROKE_WIDTH * density;
 			Path startPath = new Path();
 			startPath.lineTo(0.5f, 0f);
 			startPath.cubicTo(0.7f, 0f, 0.6f, 1f, 1f, 1f);
@@ -552,6 +571,14 @@ public class PullableWrapper {
 			ringPaint.setStyle(Paint.Style.STROKE);
 			ringPaint.setStrokeCap(Paint.Cap.SQUARE);
 			ringPaint.setStrokeJoin(Paint.Join.MITER);
+			int bitmapSize = 2 * radius + shadowSize + shadowShift;
+			shadow = Bitmap.createBitmap(bitmapSize, bitmapSize, Bitmap.Config.ARGB_8888);
+			Canvas canvas = new Canvas(shadow);
+			Paint shadowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+			shadowPaint.setColor(0x7f000000);
+			shadowPaint.setMaskFilter(new BlurMaskFilter(shadowSize, BlurMaskFilter.Blur.NORMAL));
+			canvas.drawCircle(bitmapSize / 2f, bitmapSize / 2f,
+					C.API_Q ? radius - shadowSize : radius - shadowSize / 2f, shadowPaint);
 		}
 
 		@Override
@@ -562,20 +589,20 @@ public class PullableWrapper {
 		private void invalidate(int padding) {
 			Wrapped wrapped = this.wrapped.get();
 			if (wrapped != null) {
-				float density = ResourceUtils.obtainDensity(wrapped.getContext());
-				float commonShift = DEFAULT_CIRCLE_TARGET * density;
-				float radius = CIRCLE_RADIUS * density;
-				invalidate(wrapped, wrapped.getWidth(), radius, commonShift, padding);
+				invalidate(wrapped, wrapped.getWidth(), padding);
 			}
 		}
 
 		@SuppressWarnings("UnnecessaryLocalVariable")
-		private void invalidate(Wrapped wrapped, int width, float radius, float commonShift, int padding) {
+		private void invalidate(Wrapped wrapped, int width, int padding) {
 			int hw = width / 2;
-			int l = hw - (int) radius - 1;
-			int r = hw + (int) radius + 1;
-			int t = padding - (int) (2f * radius) - 1;
-			int b = padding + (int) (2f * commonShift) + 1;
+			int radius = this.radius;
+			int shadowSize = this.shadowSize;
+			int shadowShift = this.shadowShift;
+			int l = hw - radius - shadowSize - 1;
+			int r = hw + radius + shadowSize + 1;
+			int t = padding - 2 * radius - shadowSize + shadowShift - 1;
+			int b = padding + 2 * commonShift + shadowSize + shadowShift + 1;
 			if (!top) {
 				int height = wrapped.getHeight();
 				int nt = height - t;
@@ -595,8 +622,14 @@ public class PullableWrapper {
 				long time = SystemClock.elapsedRealtime();
 				switch (this.state) {
 					case IDLE: {
+						if (previousState == State.LOADING) {
+							int pullStrain = (int) (MAX_STRAIN *
+									getIdleTransientPullStrainValue(IDLE_FOLD_TIME, time));
+							startFoldingPullStrain = Math.max(MAX_STRAIN, pullStrain);
+						} else {
+							startFoldingPullStrain = pullStrain;
+						}
 						timeStateStart = time;
-						startFoldingPullStrain = previousState == State.LOADING ? MAX_STRAIN : pullStrain;
 						pullStrain = 0;
 						break;
 					}
@@ -663,7 +696,7 @@ public class PullableWrapper {
 		}
 
 		@Override
-		public void draw(Canvas canvas, int padding, float density) {
+		public void draw(Canvas canvas, int padding) {
 			Wrapped wrapped = this.wrapped.get();
 			if (wrapped == null) {
 				return;
@@ -676,8 +709,6 @@ public class PullableWrapper {
 			State state = this.state;
 			State previousState = this.previousState;
 			boolean needInvalidate = false;
-			float commonShift = DEFAULT_CIRCLE_TARGET * density;
-			float radius = CIRCLE_RADIUS * density;
 
 			float value = 0f;
 			float scale = 1f;
@@ -691,8 +722,8 @@ public class PullableWrapper {
 				if (previousState == State.LOADING) {
 					value = getIdleTransientPullStrainValue(LOADING_FOLD_TIME, time);
 					if (value > 0f) {
-						scale = value;
-						value = 1f;
+						scale = Math.min(1f, value);
+						value = Math.max(1f, value);
 						spin = true;
 						needInvalidate = true;
 					}
@@ -729,8 +760,9 @@ public class PullableWrapper {
 					canvas.scale(scale, scale, centerX, centerY);
 					needRestore = true;
 				}
-				float ringRadius = CENTER_RADIUS * density;
-				ringPaint.setStrokeWidth(STROKE_WIDTH * density);
+				ringPaint.setStrokeWidth(strokeWidth);
+				canvas.drawBitmap(shadow, centerX - shadow.getWidth() / 2f,
+						centerY - shadow.getHeight() / 2f + shadowShift, circlePaint);
 				canvas.drawCircle(centerX, centerY, radius, circlePaint);
 
 				float arcStart;
@@ -766,7 +798,7 @@ public class PullableWrapper {
 			}
 
 			if (needInvalidate) {
-				invalidate(wrapped, width, radius, commonShift, padding);
+				invalidate(wrapped, width, padding);
 			}
 		}
 
