@@ -18,8 +18,8 @@
 	<application
 		android:name=".content.MainApplication"
 		android:label="@string/const_app_name"
-		android:icon="@drawable/ic_launcher"
-		android:logo="@drawable/ic_logo"
+		android:icon="@mipmap/ic_launcher"
+		android:logo="@mipmap/ic_logo"
 		android:theme="@style/Theme.Launcher"
 		android:largeHeap="true"
 		android:allowBackup="true"

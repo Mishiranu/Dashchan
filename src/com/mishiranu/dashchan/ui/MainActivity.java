@@ -222,7 +222,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			toolbarExtra.setLayoutTransition(layoutTransition);
 		} else {
 			// Show white logo on search
-			getActionBar().setIcon(R.drawable.ic_logo);
+			getActionBar().setIcon(R.mipmap.ic_logo);
 		}
 		View toolbarLayout = findViewById(R.id.toolbar_layout);
 

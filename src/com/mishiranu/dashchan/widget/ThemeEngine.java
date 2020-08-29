@@ -389,7 +389,7 @@ public class ThemeEngine {
 				activity.getWindow().setStatusBarColor(statusBarColor);
 				// noinspection deprecation
 				activity.setTaskDescription(C.API_PIE
-						? new ActivityManager.TaskDescription(null, R.drawable.ic_launcher, toolbarColor)
+						? new ActivityManager.TaskDescription(null, R.mipmap.ic_launcher, toolbarColor)
 						: new ActivityManager.TaskDescription(null, null, toolbarColor));
 			}
 		}
