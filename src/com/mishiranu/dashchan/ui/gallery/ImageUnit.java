@@ -197,7 +197,11 @@ public class ImageUnit {
 	public void viewTechnicalInfo() {
 		StringBlockBuilder builder = new StringBlockBuilder();
 		for (Pair<String, String> pair : instance.currentHolder.jpegData.getUserMetadata()) {
-			builder.appendLine(pair.first + ": " + pair.second);
+			if (pair != null) {
+				builder.appendLine(pair.first + ": " + pair.second);
+			} else {
+				builder.appendEmptyLine();
+			}
 		}
 		String message = builder.toString();
 		AlertDialog.Builder dialogBuilder = new AlertDialog

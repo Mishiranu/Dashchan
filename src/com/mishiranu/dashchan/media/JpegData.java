@@ -1,21 +1,9 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.media;
 
+import android.util.Pair;
+import chan.util.StringUtils;
+import com.mishiranu.dashchan.content.model.FileHolder;
+import com.mishiranu.dashchan.util.IOUtils;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,28 +13,42 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 
-import android.util.Pair;
-
-import chan.util.StringUtils;
-
-import com.mishiranu.dashchan.content.model.FileHolder;
-import com.mishiranu.dashchan.util.IOUtils;
-
 public class JpegData {
+	private static final int EXIF_TAG_DESCRIPTION = 0x010e;
+	private static final int EXIF_TAG_MAKE = 0x010f;
+	private static final int EXIF_TAG_MODEL = 0x0110;
+	private static final int EXIF_TAG_ORIENTATION = 0x0112;
+	private static final int EXIF_TAG_SOFTWARE = 0x0131;
+	private static final int EXIF_TAG_DATE_TIME = 0x0132;
+	private static final int EXIF_TAG_EXPOSURE_TIME = 0x829a;
+	private static final int EXIF_TAG_F_NUMBER = 0x829d;
+	private static final int EXIF_TAG_EXIF_IFD = 0x8769;
+	private static final int EXIF_TAG_GPS_IFD = 0x8825;
+	private static final int EXIF_TAG_ISO_SPEED = 0x8827;
+	private static final int EXIF_TAG_SHUTTER_SPEED = 0x9201;
+	private static final int EXIF_TAG_APERTURE = 0x9202;
+	private static final int EXIF_TAG_BRIGHTNESS = 0x9203;
+	private static final int EXIF_TAG_FOCAL_LENGTH = 0x920a;
+
+	private static final String KEY_EXIF_OFFSET = "exifOffset";
+	private static final String KEY_GPS_OFFSET = "gpsOffset";
+
 	private static final String KEY_DESCRIPTION = "description";
 	private static final String KEY_MAKE = "make";
 	private static final String KEY_MODEL = "model";
 	private static final String KEY_ORIENTATION = "orientation";
 	private static final String KEY_SOFTWARE = "software";
 	private static final String KEY_DATE_TIME = "dateTime";
+	private static final String KEY_FOCAL_LENGTH = "focalLength";
+	private static final String KEY_SHUTTER_SPEED = "shutterSpeed";
+	private static final String KEY_APERTURE = "aperture";
+	private static final String KEY_ISO_SPEED = "isoSpeed";
+	private static final String KEY_BRIGHTNESS = "brightness";
 
 	private static final String KEY_LATITUDE = "latitude";
 	private static final String KEY_LATITUDE_REF = "latitudeRef";
 	private static final String KEY_LONGITUDE = "longitude";
 	private static final String KEY_LONGITUDE_REF = "longitudeRef";
-
-	private static final String KEY_EXIF_OFFSET = "exifOffset";
-	private static final String KEY_GPS_OFFSET = "gpsOffset";
 
 	public final boolean hasExif;
 	public final boolean forbidRegionDecoder;
@@ -60,29 +62,48 @@ public class JpegData {
 
 	private List<Pair<String, String>> userMetadata = null;
 
-	private void addUserMetadata(String key, String title) {
+	private boolean addUserMetadata(String key, String title) {
 		String value = exif.get(key);
 		if (!StringUtils.isEmpty(value)) {
 			userMetadata.add(new Pair<>(title, value));
+			return true;
 		}
+		return false;
 	}
 
+	@SuppressWarnings("UnusedAssignment")
 	public List<Pair<String, String>> getUserMetadata() {
 		if (userMetadata == null) {
 			if (exif != null) {
 				userMetadata = new ArrayList<>();
-				addUserMetadata(KEY_DESCRIPTION, "Description");
-				addUserMetadata(KEY_MAKE, "Manufacturer");
-				addUserMetadata(KEY_MODEL, "Model");
-				addUserMetadata(KEY_SOFTWARE, "Software");
-				addUserMetadata(KEY_DATE_TIME, "Date");
+				boolean addDivider = false;
+				addDivider |= addUserMetadata(KEY_DESCRIPTION, "Description");
+				addDivider |= addUserMetadata(KEY_MAKE, "Manufacturer");
+				addDivider |= addUserMetadata(KEY_MODEL, "Model");
+				addDivider |= addUserMetadata(KEY_SOFTWARE, "Software");
+				addDivider |= addUserMetadata(KEY_DATE_TIME, "Date");
 				int rotation = getRotation();
 				if (rotation != 0) {
 					userMetadata.add(new Pair<>("Rotation", rotation + "°"));
+					addDivider = true;
+				}
+				if (addDivider) {
+					userMetadata.add(null);
+					addDivider = false;
+				}
+				addDivider |= addUserMetadata(KEY_FOCAL_LENGTH, "Focal length");
+				addDivider |= addUserMetadata(KEY_SHUTTER_SPEED, "Shutter speed");
+				addDivider |= addUserMetadata(KEY_APERTURE, "Aperture");
+				addDivider |= addUserMetadata(KEY_ISO_SPEED, "ISO speed");
+				addDivider |= addUserMetadata(KEY_BRIGHTNESS, "Brightness");
+				if (addDivider) {
+					userMetadata.add(null);
+					addDivider = false;
 				}
 				String geolocation = getGeolocation(true);
 				if (geolocation != null) {
-					userMetadata.add(new Pair<>("Geolocation", geolocation));
+					userMetadata.add(new Pair<>("Location", geolocation));
+					addDivider = true;
 				}
 				userMetadata = Collections.unmodifiableList(userMetadata);
 			} else {
@@ -178,7 +199,7 @@ public class JpegData {
 			count = Math.max(Math.min(count, 3), 1);
 			for (int i = 0; i < count; i++) {
 				double itValue = convertIfdRational(exifBytes, offset + 8 * i, format, littleEndian);
-				if (itValue == Double.NaN) {
+				if (Double.isNaN(itValue)) {
 					break;
 				}
 				value += itValue / denominators[i];
@@ -188,10 +209,18 @@ public class JpegData {
 		return null;
 	}
 
-	private static final int IFD_GENERAL = 0;
-	private static final int IFD_GPS = 1;
+	private static String formatDoubleSimple(double value) {
+		String valueString = String.format(Locale.US, "%.1f", value);
+		if (valueString.endsWith(".0")) {
+			return valueString.substring(0, valueString.length() - 2);
+		} else {
+			return valueString;
+		}
+	}
 
-	private static boolean extractIfd(LinkedHashMap<String, String> exif, int ifd, byte[] exifBytes, int offset,
+	private enum Ifd {GENERAL, GPS}
+
+	private static boolean extractIfd(LinkedHashMap<String, String> exif, Ifd ifd, byte[] exifBytes, int offset,
 			boolean littleEndian) {
 		if (offset >= 0 && exifBytes.length >= offset + 2) {
 			int entries = IOUtils.bytesToInt(littleEndian, offset, 2, exifBytes);
@@ -201,42 +230,89 @@ public class JpegData {
 					int format = IOUtils.bytesToInt(littleEndian, position + 2, 2, exifBytes);
 					int count = IOUtils.bytesToInt(littleEndian, position + 4, 4, exifBytes);
 					int value = IOUtils.bytesToInt(littleEndian, position + 8, 4, exifBytes);
-					if (ifd == IFD_GENERAL) {
+					int valueShort = IOUtils.bytesToInt(littleEndian, position + 8, 2, exifBytes);
+					if (ifd == Ifd.GENERAL) {
 						switch (type) {
-							case 0x010e: {
+							case EXIF_TAG_DESCRIPTION: {
 								exif.put(KEY_DESCRIPTION, extractIfdString(exifBytes, value, format));
 								break;
 							}
-							case 0x010f: {
+							case EXIF_TAG_MAKE: {
 								exif.put(KEY_MAKE, extractIfdString(exifBytes, value, format));
 								break;
 							}
-							case 0x0110: {
+							case EXIF_TAG_MODEL: {
 								exif.put(KEY_MODEL, extractIfdString(exifBytes, value, format));
 								break;
 							}
-							case 0x0112: {
-								exif.put(KEY_ORIENTATION, Integer.toString(value));
+							case EXIF_TAG_ORIENTATION: {
+								exif.put(KEY_ORIENTATION, Integer.toString(valueShort));
 								break;
 							}
-							case 0x0131: {
+							case EXIF_TAG_SOFTWARE: {
 								exif.put(KEY_SOFTWARE, extractIfdString(exifBytes, value, format));
 								break;
 							}
-							case 0x0132: {
+							case EXIF_TAG_DATE_TIME: {
 								exif.put(KEY_DATE_TIME, extractIfdString(exifBytes, value, format));
 								break;
 							}
-							case 0x8769: {
+							case EXIF_TAG_EXPOSURE_TIME:
+							case EXIF_TAG_SHUTTER_SPEED: {
+								if (!exif.containsValue(KEY_SHUTTER_SPEED)) {
+									double valueDouble = convertIfdRational(exifBytes, value, format, littleEndian);
+									if (type == EXIF_TAG_SHUTTER_SPEED) {
+										valueDouble = Math.pow(2, -valueDouble);
+									}
+									if (valueDouble > 0) {
+										String exposureTime;
+										if (valueDouble <= 0.5) {
+											exposureTime = "1/" + (int) (1 / valueDouble + 0.5);
+										} else {
+											exposureTime = formatDoubleSimple(valueDouble);
+										}
+										exif.put(KEY_SHUTTER_SPEED, exposureTime + " sec.");
+									}
+								}
+								break;
+							}
+							case EXIF_TAG_F_NUMBER:
+							case EXIF_TAG_APERTURE: {
+								if (!exif.containsKey(KEY_APERTURE)) {
+									double valueDouble = convertIfdRational(exifBytes, value, format, littleEndian);
+									if (type == EXIF_TAG_APERTURE) {
+										valueDouble = Math.pow(2, valueDouble / 2);
+									}
+									if (valueDouble > 0) {
+										exif.put(KEY_APERTURE, "f/" + formatDoubleSimple(valueDouble));
+									}
+								}
+								break;
+							}
+							case EXIF_TAG_EXIF_IFD: {
 								exif.put(KEY_EXIF_OFFSET, Integer.toString(value));
 								break;
 							}
-							case 0x8825: {
+							case EXIF_TAG_GPS_IFD: {
 								exif.put(KEY_GPS_OFFSET, Integer.toString(value));
 								break;
 							}
+							case EXIF_TAG_ISO_SPEED: {
+								exif.put(KEY_ISO_SPEED, Integer.toString(valueShort));
+								break;
+							}
+							case EXIF_TAG_BRIGHTNESS: {
+								double valueDouble = convertIfdRational(exifBytes, value, format, littleEndian);
+								exif.put(KEY_BRIGHTNESS, formatDoubleSimple(valueDouble) + " EV");
+								break;
+							}
+							case EXIF_TAG_FOCAL_LENGTH: {
+								double valueDouble = convertIfdRational(exifBytes, value, format, littleEndian);
+								exif.put(KEY_FOCAL_LENGTH, formatDoubleSimple(valueDouble) + " mm");
+								break;
+							}
 						}
-					} else if (ifd == IFD_GPS) {
+					} else if (ifd == Ifd.GPS) {
 						switch (type) {
 							case 0x0001: {
 								exif.put(KEY_LATITUDE_REF, Character.toString((char) value));
@@ -266,7 +342,7 @@ public class JpegData {
 		return false;
 	}
 
-	private static boolean extractIfd(LinkedHashMap<String, String> exif, int ifd, byte[] exifBytes,
+	private static boolean extractIfd(LinkedHashMap<String, String> exif, Ifd ifd, byte[] exifBytes,
 			String offsetStringKey, boolean littleEndian) {
 		String offsetString = exif.get(offsetStringKey);
 		if (offsetString != null) {
@@ -349,9 +425,9 @@ public class JpegData {
 				if (valid) {
 					exif = new LinkedHashMap<>();
 					int ifdOffset = IOUtils.bytesToInt(littleEndian, 4, 4, exifBytes);
-					extractIfd(exif, IFD_GENERAL, exifBytes, ifdOffset, littleEndian);
-					extractIfd(exif, IFD_GENERAL, exifBytes, KEY_EXIF_OFFSET, littleEndian);
-					extractIfd(exif, IFD_GPS, exifBytes, KEY_GPS_OFFSET, littleEndian);
+					extractIfd(exif, Ifd.GENERAL, exifBytes, ifdOffset, littleEndian);
+					extractIfd(exif, Ifd.GENERAL, exifBytes, KEY_EXIF_OFFSET, littleEndian);
+					extractIfd(exif, Ifd.GPS, exifBytes, KEY_GPS_OFFSET, littleEndian);
 				}
 			}
 			return new JpegData(exifBytes != null, forbidRegionDecoder, exif);
