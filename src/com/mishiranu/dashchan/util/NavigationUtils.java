@@ -59,6 +59,7 @@ public class NavigationUtils {
 
 	public static Intent obtainSearchIntent(Context context, String chanName, String boardName, String searchQuery,
 			int flags) {
+		@SuppressWarnings("UnnecessaryLocalVariable")
 		int allowFlags = FLAG_RETURNABLE;
 		return obtainMainIntent(context, flags, allowFlags).putExtra(C.EXTRA_CHAN_NAME, chanName)
 				.putExtra(C.EXTRA_BOARD_NAME, boardName).putExtra(C.EXTRA_SEARCH_QUERY, searchQuery);
@@ -215,11 +216,11 @@ public class NavigationUtils {
 					break;
 				}
 				case 4: {
-					searchUri = locator.buildQueryWithSchemeHost(false, "iqdb.org", null, "url", imageUriString);
+					searchUri = locator.buildQueryWithHost("iqdb.org", "/", "url", imageUriString);
 					break;
 				}
 				case 5: {
-					searchUri = locator.buildQueryWithHost("whatanime.ga", "/", "url", imageUriString);
+					searchUri = locator.buildQueryWithHost("trace.moe", "/", "url", imageUriString);
 					break;
 				}
 				default: {
@@ -232,8 +233,8 @@ public class NavigationUtils {
 		.addItem(1, "Yandex")
 		.addItem(2, "TinEye")
 		.addItem(3, "SauceNAO")
-		.addItem(4, "iqdb")
-		.addItem(5, "whatanime")
+		.addItem(4, "iqdb.org")
+		.addItem(5, "trace.moe")
 		.show(configurationLock);
 	}
 
