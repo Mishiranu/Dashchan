@@ -45,6 +45,7 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 		this.context = context;
 		styledContext = new ContextThemeWrapper(context, ResourceUtils.getResourceId(context,
 				android.R.attr.dialogTheme, 0));
+		ThemeEngine.addOnDialogCreatedListener(context, () -> switchBackground(true));
 		rootView = new FrameLayout(context);
 		rootView.setOnClickListener(v -> {
 			if (!visibleViews.isEmpty()) {

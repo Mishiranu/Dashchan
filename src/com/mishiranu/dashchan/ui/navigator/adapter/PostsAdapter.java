@@ -237,7 +237,7 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
 	@Override
 	public void onLinkLongClick(CommentTextView view, String chanName, Uri uri) {
-		uiManager.interaction().handleLinkLongClick(configurationSet, uri);
+		uiManager.interaction().handleLinkLongClick(uri);
 	}
 
 	public void setItems(ArrayList<ReadPostsTask.Patch> patches, boolean maySkipHandlingReferences) {

@@ -387,8 +387,8 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		if (selectionMode != null) {
 			return false;
 		}
-		return postItem != null && getUiManager().interaction().handlePostContextMenu(postItem,
-				getAdapter().getConfigurationSet().stackInstance, replyable, true, true, false);
+		return postItem != null && getUiManager().interaction()
+				.handlePostContextMenu(postItem, replyable, true, true, false);
 	}
 
 	private static final int OPTIONS_MENU_ADD_POST = 0;

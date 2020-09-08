@@ -95,7 +95,6 @@ public class InteractionUnit {
 									.navigateTarget(uriChanName, navigationDataFinal, NavigationUtils.FLAG_RETURNABLE))
 							.show();
 					uiManager.getConfigurationLock().lockConfiguration(dialog);
-					uiManager.dialog().notifySwitchBackground(configurationSet.stackInstance);
 				}
 			}
 		}
@@ -110,7 +109,7 @@ public class InteractionUnit {
 	private static final int LINK_MENU_DOWNLOAD_FILE = 3;
 	private static final int LINK_MENU_OPEN_THREAD = 4;
 
-	public void handleLinkLongClick(UiManager.ConfigurationSet configurationSet, final Uri uri) {
+	public void handleLinkLongClick(final Uri uri) {
 		String uriChanName = ChanManager.getInstance().getChanNameByHost(uri.getHost());
 		String fileName = null;
 		String boardName = null;
@@ -174,7 +173,6 @@ public class InteractionUnit {
 			dialogMenu.addItem(LINK_MENU_OPEN_THREAD, R.string.action_open_thread);
 		}
 		dialogMenu.show(uiManager.getConfigurationLock());
-		uiManager.dialog().notifySwitchBackground(configurationSet.stackInstance);
 	}
 
 	private static class ThumbnailClickListenerImpl implements UiManager.ThumbnailClickListener {
@@ -236,8 +234,8 @@ public class InteractionUnit {
 		@Override
 		public boolean onLongClick(View v) {
 			UiManager.Holder holder = ListViewUtils.getViewHolder(v, UiManager.Holder.class);
-			new ThumbnailLongClickDialog(uiManager, holder.getConfigurationSet().stackInstance,
-					attachmentItem, (AttachmentView) v, true, holder.getGallerySet().getThreadTitle());
+			new ThumbnailLongClickDialog(uiManager, attachmentItem, (AttachmentView) v, true,
+					holder.getGallerySet().getThreadTitle());
 			return true;
 		}
 	}
@@ -262,9 +260,8 @@ public class InteractionUnit {
 		private static final int MENU_COPY_LINK = 3;
 		private static final int MENU_SHARE_LINK = 4;
 
-		public ThumbnailLongClickDialog(UiManager uiManager, DialogUnit.StackInstance stackInstance,
-				AttachmentItem attachmentItem, AttachmentView attachmentView,
-				boolean hasViewHolder, String threadTitle) {
+		public ThumbnailLongClickDialog(UiManager uiManager, AttachmentItem attachmentItem,
+				AttachmentView attachmentView, boolean hasViewHolder, String threadTitle) {
 			this.attachmentItem = attachmentItem;
 			this.attachmentView = attachmentView;
 			this.threadTitle = threadTitle;
@@ -285,7 +282,6 @@ public class InteractionUnit {
 			dialogMenu.addItem(MENU_COPY_LINK, R.string.action_copy_link);
 			dialogMenu.addItem(MENU_SHARE_LINK, R.string.action_share_link);
 			dialogMenu.show(uiManager.getConfigurationLock());
-			uiManager.dialog().notifySwitchBackground(stackInstance);
 		}
 
 		@Override
@@ -323,10 +319,9 @@ public class InteractionUnit {
 		}
 	}
 
-	public void showThumbnailLongClickDialog(DialogUnit.StackInstance stackInstance, AttachmentItem attachmentItem,
+	public void showThumbnailLongClickDialog(AttachmentItem attachmentItem,
 			AttachmentView attachmentView, boolean hasViewHolder, String threadTitle) {
-		new ThumbnailLongClickDialog(uiManager, stackInstance,
-				attachmentItem, attachmentView, hasViewHolder, threadTitle);
+		new ThumbnailLongClickDialog(uiManager, attachmentItem, attachmentView, hasViewHolder, threadTitle);
 	}
 
 	public boolean handlePostClick(View view, PostItem postItem, Iterable<PostItem> localPostItems) {
@@ -368,8 +363,8 @@ public class InteractionUnit {
 	private static final int MENU_HIDE_NAME = 16;
 	private static final int MENU_HIDE_SIMILAR = 17;
 
-	public boolean handlePostContextMenu(final PostItem postItem, DialogUnit.StackInstance stackInstance,
-			Replyable replyable, boolean allowMyMarkEdit, boolean allowHiding, boolean allowGoToPost) {
+	public boolean handlePostContextMenu(final PostItem postItem, Replyable replyable,
+			boolean allowMyMarkEdit, boolean allowHiding, boolean allowGoToPost) {
 		if (postItem != null) {
 			Context context = uiManager.getContext();
 			String chanName = postItem.getChanName();
@@ -539,7 +534,6 @@ public class InteractionUnit {
 				dialogMenu.addItem(MENU_HIDE, R.string.action_hide_expand);
 			}
 			dialogMenu.show(uiManager.getConfigurationLock());
-			uiManager.dialog().notifySwitchBackground(stackInstance);
 			return true;
 		}
 		return false;

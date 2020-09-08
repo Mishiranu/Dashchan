@@ -143,6 +143,8 @@ public class ThemeEngine {
 		private ColorScheme colorScheme;
 		private ThemeLayoutInflater layoutInflater;
 
+		private final HashSet<Runnable> dialogCreatedListeners = new HashSet<>();
+
 		public ThemeContext(Context base) {
 			super(base);
 		}
@@ -157,6 +159,12 @@ public class ThemeEngine {
 				return layoutInflater;
 			}
 			return super.getSystemService(name);
+		}
+
+		public void dispatchDialogCreated() {
+			for (Runnable runnable : dialogCreatedListeners) {
+				runnable.run();
+			}
 		}
 
 		private ColorStateList checkBoxColors;
@@ -221,7 +229,6 @@ public class ThemeEngine {
 		default void onViewDetachedFromWindow(View v) {}
 	}
 
-	@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 	private static class DialogAttachListener implements AttachListener {
 		public boolean processed = false;
 
@@ -236,8 +243,13 @@ public class ThemeEngine {
 				processed = true;
 				View decorView = getDecorView(view);
 				if ("DecorView".equals(decorView.getClass().getSimpleName())) {
-					ThemeContext themeContext = requireThemeContext(decorView.getContext());
-					decorView.setBackgroundTintList(ColorStateList.valueOf(themeContext.theme.card));
+					ThemeContext themeContext = obtainThemeContext(decorView.getContext());
+					if (themeContext != null) {
+						if (C.API_LOLLIPOP && shouldApplyStyle(decorView.getContext())) {
+							decorView.setBackgroundTintList(ColorStateList.valueOf(themeContext.theme.card));
+						}
+						themeContext.dispatchDialogCreated();
+					}
 				}
 			}
 		}
@@ -257,21 +269,23 @@ public class ThemeEngine {
 			if (tag == null || !((boolean) tag)) {
 				// Mark as handled
 				decorView.setTag(R.id.tag_theme_engine, true);
-				String decorViewName = decorView.getClass().getSimpleName();
-				if ("PopupDecorView".equals(decorViewName) || "PopupViewContainer".equals(decorViewName)) {
-					View backgroundView = decorView;
-					if (backgroundView.getBackground() == null) {
-						ViewGroup viewGroup = (ViewGroup) decorView;
-						if (viewGroup.getChildCount() > 0) {
-							View child = viewGroup.getChildAt(0);
-							if (child.getBackground() != null) {
-								// More modern Android versions wrap background with decor view
-								backgroundView = child;
+				if (shouldApplyStyle(decorView.getContext())) {
+					String decorViewName = decorView.getClass().getSimpleName();
+					if ("PopupDecorView".equals(decorViewName) || "PopupViewContainer".equals(decorViewName)) {
+						View backgroundView = decorView;
+						if (backgroundView.getBackground() == null) {
+							ViewGroup viewGroup = (ViewGroup) decorView;
+							if (viewGroup.getChildCount() > 0) {
+								View child = viewGroup.getChildAt(0);
+								if (child.getBackground() != null) {
+									// More modern Android versions wrap background with decor view
+									backgroundView = child;
+								}
 							}
 						}
+						ThemeContext themeContext = requireThemeContext(decorView.getContext());
+						backgroundView.setBackgroundTintList(ColorStateList.valueOf(themeContext.theme.card));
 					}
-					ThemeContext themeContext = requireThemeContext(decorView.getContext());
-					backgroundView.setBackgroundTintList(ColorStateList.valueOf(themeContext.theme.card));
 				}
 			}
 		}
@@ -293,8 +307,8 @@ public class ThemeEngine {
 				boolean direct, boolean dialog, boolean popup) {
 			super(original, newContext);
 			this.direct = direct;
-			attachListener = C.API_LOLLIPOP ? dialog ? new DialogAttachListener()
-					: popup ? POPUP_ATTACH_LISTENER : null : null;
+			attachListener = dialog ? new DialogAttachListener()
+					: C.API_LOLLIPOP && popup ? POPUP_ATTACH_LISTENER : null;
 		}
 
 		private static final int[] CLONE_ATTRS = new int[] {android.R.attr.windowIsFloating, R.attr.isPopup};
@@ -321,10 +335,7 @@ public class ThemeEngine {
 			}
 			applyStyle(view);
 			if (attachListener != null && !attachListener.isProcessed()) {
-				ThemeContext themeContext = obtainThemeContext(view.getContext());
-				if (themeContext != null && shouldApplyStyle(view.getContext())) {
-					view.addOnAttachStateChangeListener(attachListener);
-				}
+				view.addOnAttachStateChangeListener(attachListener);
 			}
 			return view;
 		}
@@ -539,6 +550,10 @@ public class ThemeEngine {
 			}
 		}
 		return false;
+	}
+
+	public static void addOnDialogCreatedListener(Context context, Runnable runnable) {
+		requireThemeContext(context).dialogCreatedListeners.add(runnable);
 	}
 
 	private static final int[] THEME_RESOURCES = {R.raw.theme_photon, R.raw.theme_hardon, R.raw.theme_burichan,

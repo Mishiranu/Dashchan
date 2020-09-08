@@ -143,8 +143,8 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback, Read
 
 	@Override
 	public boolean onItemLongClick(PostItem postItem) {
-		return postItem != null && getUiManager().interaction().handlePostContextMenu(postItem,
-				getAdapter().getConfigurationSet().stackInstance, null, false, false, false);
+		return postItem != null && getUiManager().interaction()
+				.handlePostContextMenu(postItem, null, false, false, false);
 	}
 
 	private static final int OPTIONS_MENU_REFRESH = 0;

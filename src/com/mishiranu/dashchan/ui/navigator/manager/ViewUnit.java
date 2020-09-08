@@ -117,8 +117,7 @@ public class ViewUnit {
 
 		@Override
 		public void onLinkLongClick(CommentTextView view, String chanName, Uri uri) {
-			UiManager.Holder holder = ListViewUtils.getViewHolder(view, UiManager.Holder.class);
-			uiManager.interaction().handleLinkLongClick(holder.getConfigurationSet(), uri);
+			uiManager.interaction().handleLinkLongClick(uri);
 		}
 	};
 
@@ -845,8 +844,8 @@ public class ViewUnit {
 									break;
 								}
 							}
-							uiManager.dialog().showPostDescriptionDialog(holder.configurationSet.stackInstance,
-									icons, holder.postItem.getChanName(), emailToCopy);
+							uiManager.dialog().showPostDescriptionDialog(icons,
+									holder.postItem.getChanName(), emailToCopy);
 						}
 						return true;
 					}

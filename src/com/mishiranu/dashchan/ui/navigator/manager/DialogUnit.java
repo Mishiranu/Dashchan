@@ -526,7 +526,7 @@ public class DialogUnit {
 
 		@Override
 		public void onLinkLongClick(CommentTextView view, String chanName, Uri uri) {
-			uiManager.interaction().handleLinkLongClick(configurationSet, uri);
+			uiManager.interaction().handleLinkLongClick(uri);
 		}
 	}
 
@@ -759,11 +759,6 @@ public class DialogUnit {
 		stackInstance.dialogStack.clear();
 	}
 
-	// Call this method after creating any windows within activity (such as Dialogs)!
-	public void notifySwitchBackground(StackInstance stackInstance) {
-		stackInstance.dialogStack.switchBackground(true);
-	}
-
 	public void displaySingle(UiManager.ConfigurationSet configurationSet, PostItem postItem) {
 		display(configurationSet, new SingleDialogProvider.Factory(postItem));
 	}
@@ -928,8 +923,7 @@ public class DialogUnit {
 
 		private boolean onItemLongClick(PostItem postItem) {
 			UiManager.ConfigurationSet configurationSet = dialogProvider.configurationSet;
-			return uiManager.interaction().handlePostContextMenu(postItem,
-					configurationSet.stackInstance, configurationSet.replyable,
+			return uiManager.interaction().handlePostContextMenu(postItem, configurationSet.replyable,
 					configurationSet.allowMyMarkEdit, configurationSet.allowHiding, configurationSet.allowGoToPost);
 		}
 	}
@@ -1020,8 +1014,8 @@ public class DialogUnit {
 			View clickView = view.findViewById(R.id.attachment_click);
 			clickView.setOnClickListener(clickListener);
 			clickView.setOnLongClickListener(v -> {
-				uiManager.interaction().showThumbnailLongClickDialog(stackInstance,
-						attachmentItem, attachmentView, false, gallerySet.getThreadTitle());
+				uiManager.interaction().showThumbnailLongClickDialog(attachmentItem,
+						attachmentView, false, gallerySet.getThreadTitle());
 				return true;
 			});
 			clickView.setTag(i);
@@ -1050,7 +1044,6 @@ public class DialogUnit {
 		decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
 				View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
 		dialog.show();
-		notifySwitchBackground(stackInstance);
 	}
 
 	public void openAttachmentOrDialog(StackInstance stackInstance, View imageView,
@@ -1100,8 +1093,7 @@ public class DialogUnit {
 		}
 	}
 
-	public void showPostDescriptionDialog(StackInstance stackInstance,
-			Collection<IconData> icons, String chanName, final String emailToCopy) {
+	public void showPostDescriptionDialog(Collection<IconData> icons, String chanName, final String emailToCopy) {
 		Context context = uiManager.getContext();
 		float density = ResourceUtils.obtainDensity(context);
 		ImageLoader imageLoader = ImageLoader.getInstance();
@@ -1150,7 +1142,6 @@ public class DialogUnit {
 		}
 		AlertDialog dialog = alertDialog.setView(container).show();
 		uiManager.getConfigurationLock().lockConfiguration(dialog);
-		notifySwitchBackground(stackInstance);
 	}
 
 	public void performSendDeletePosts(String chanName, String boardName, String threadNumber,
