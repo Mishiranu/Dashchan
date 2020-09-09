@@ -24,19 +24,24 @@ public class ArchiveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 	private final ArrayList<ThreadSummary> archiveItems = new ArrayList<>();
 	private final ArrayList<ThreadSummary> filteredArchiveItems = new ArrayList<>();
 
-	private boolean filterMode = false;
 	private String filterText;
 
 	public ArchiveAdapter(Callback callback) {
 		this.callback = callback;
 	}
 
-	// Returns true, if adapter isn't empty.
-	public boolean applyFilter(String text) {
-		filterText = text;
-		filterMode = !StringUtils.isEmpty(text);
+	public void applyFilter(String text) {
+		if (!StringUtils.emptyIfNull(filterText).equals(StringUtils.emptyIfNull(text))) {
+			filterText = StringUtils.nullIfEmpty(text);
+			applyCurrentFilter();
+			notifyDataSetChanged();
+		}
+	}
+
+	private void applyCurrentFilter() {
+		String text = filterText;
 		filteredArchiveItems.clear();
-		if (filterMode) {
+		if (!StringUtils.isEmpty(text)) {
 			text = text.toLowerCase(Locale.getDefault());
 			for (ThreadSummary threadSummary : archiveItems) {
 				boolean add = false;
@@ -49,8 +54,6 @@ public class ArchiveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 				}
 			}
 		}
-		notifyDataSetChanged();
-		return !filterMode || filteredArchiveItems.size() > 0;
 	}
 
 	public boolean isRealEmpty() {
@@ -59,11 +62,11 @@ public class ArchiveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
 	@Override
 	public int getItemCount() {
-		return (filterMode ? filteredArchiveItems : archiveItems).size();
+		return (filterText != null ? filteredArchiveItems : archiveItems).size();
 	}
 
 	private ThreadSummary getItem(int position) {
-		return (filterMode ? filteredArchiveItems : archiveItems).get(position);
+		return (filterText != null ? filteredArchiveItems : archiveItems).get(position);
 	}
 
 	public void setItems(ThreadSummary[] threadSummaries) {
@@ -71,10 +74,8 @@ public class ArchiveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 		if (threadSummaries != null) {
 			Collections.addAll(archiveItems, threadSummaries);
 		}
+		applyCurrentFilter();
 		notifyDataSetChanged();
-		if (filterMode) {
-			applyFilter(filterText);
-		}
 	}
 
 	@NonNull

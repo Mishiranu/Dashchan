@@ -416,7 +416,7 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 			pageNumber++;
 		}
 		applySorting(getCatalogSortIndex());
-		applyFilter(filterText);
+		applyCurrentFilter();
 		notifyDataSetChanged();
 	}
 
@@ -424,7 +424,7 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 		filteredListItems = null;
 		catalogSortedListItems = null;
 		appendItemsInternal(postItems, pageNumber, boardSpeed);
-		applyFilter(filterText);
+		applyCurrentFilter();
 		notifyDataSetChanged();
 	}
 
@@ -611,9 +611,16 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 	}
 
 	public void applyFilter(String text) {
-		filterText = text;
-		boolean filterMode = !StringUtils.isEmpty(text);
-		if (filterMode) {
+		if (!StringUtils.emptyIfNull(filterText).equals(StringUtils.emptyIfNull(text))) {
+			filterText = text;
+			applyCurrentFilter();
+			notifyDataSetChanged();
+		}
+	}
+
+	private void applyCurrentFilter() {
+		String text = filterText;
+		if (!StringUtils.isEmpty(text)) {
 			if (filteredListItems == null) {
 				filteredListItems = new ArrayList<>();
 			} else {
@@ -632,7 +639,6 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 		} else {
 			filteredListItems = null;
 		}
-		notifyDataSetChanged();
 	}
 
 	public int setGridMode(boolean gridMode) {

@@ -124,6 +124,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		});
 		recyclerView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
 		gridLayoutManager.setSpanCount(adapter.setGridMode(Preferences.isThreadsGridMode()));
+		adapter.applyFilter(getInitSearch().currentQuery);
 		ChanConfiguration.Board board = getChanConfiguration().safe().obtainBoard(page.boardName);
 		InitRequest initRequest = getInitRequest();
 		if (initRequest.shouldLoad || retainExtra.cachedPostItems.isEmpty()) {
@@ -362,13 +363,16 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 	}
 
 	@Override
-	public boolean onSearchSubmit(String query) {
+	public SearchSubmitResult onSearchSubmit(String query) {
 		if (allowSearch) {
-			Page page = getPage();
-			getUiManager().navigator().navigateSearch(page.chanName, page.boardName, query, 0);
-			return true;
+			// Collapse search view
+			getRecyclerView().post(() -> {
+				Page page = getPage();
+				getUiManager().navigator().navigateSearch(page.chanName, page.boardName, query, 0);
+			});
+			return SearchSubmitResult.COLLAPSE;
 		}
-		return false;
+		return SearchSubmitResult.DISCARD;
 	}
 
 	@Override

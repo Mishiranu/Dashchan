@@ -36,6 +36,9 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 
 	private static final String EXTRA_LIST_POSITION = "listPosition";
 	private static final String EXTRA_PARCELABLE_EXTRA = "parcelableExtra";
+	private static final String EXTRA_SEARCH_CURRENT_QUERY = "searchCurrentQuery";
+	private static final String EXTRA_SEARCH_SUBMIT_QUERY = "searchSubmitQuery";
+	private static final String EXTRA_SEARCH_FOCUSED = "searchFocused";
 
 	public interface Callback {
 		UiManager getUiManager();
@@ -81,6 +84,9 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 
 	private ListPosition listPosition;
 	private Parcelable parcelableExtra;
+	private String searchCurrentQuery;
+	private String searchSubmitQuery;
+	private boolean searchFocused;
 
 	private ListPage.InitRequest initRequest;
 	private boolean resetScroll = false;
@@ -97,7 +103,13 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 
 		listPosition = savedInstanceState != null && !resetScroll
 				? savedInstanceState.getParcelable(EXTRA_LIST_POSITION) : null;
-		parcelableExtra = savedInstanceState != null ? savedInstanceState.getParcelable(EXTRA_PARCELABLE_EXTRA) : null;
+		parcelableExtra = savedInstanceState != null ? savedInstanceState
+				.getParcelable(EXTRA_PARCELABLE_EXTRA) : null;
+		searchCurrentQuery = savedInstanceState != null ? savedInstanceState
+				.getString(EXTRA_SEARCH_CURRENT_QUERY) : null;
+		searchSubmitQuery = savedInstanceState != null ? savedInstanceState
+				.getString(EXTRA_SEARCH_SUBMIT_QUERY) : null;
+		searchFocused = savedInstanceState != null && savedInstanceState.getBoolean(EXTRA_SEARCH_FOCUSED);
 		resetScroll = false;
 	}
 
@@ -151,7 +163,8 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 		ListPage.IconProvider iconProvider = ((FragmentHandler) requireActivity())::getActionBarIcon;
 		listPage.init(this, getPage(), recyclerView,
 				listPosition, getCallback().getUiManager(), iconProvider,
-				getCallback().getRetainExtra(getRetainId()), parcelableExtra, initRequest);
+				getCallback().getRetainExtra(getRetainId()), parcelableExtra, initRequest,
+				new ListPage.InitSearch(searchCurrentQuery, searchSubmitQuery));
 		initRequest = null;
 		notifyTitleChanged();
 	}
@@ -194,9 +207,16 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 			Pair<Object, Parcelable> extraPair = listPage.getExtraToStore(saveToStack);
 			getCallback().storeRetainExtra(getRetainId(), extraPair.first);
 			parcelableExtra = extraPair.second;
+			CustomSearchView searchView = getSearchView(false);
+			if (searchView != null) {
+				searchFocused = searchView.isSearchFocused();
+			}
 		}
 		outState.putParcelable(EXTRA_LIST_POSITION, listPosition);
 		outState.putParcelable(EXTRA_PARCELABLE_EXTRA, parcelableExtra);
+		outState.putString(EXTRA_SEARCH_CURRENT_QUERY, searchCurrentQuery);
+		outState.putString(EXTRA_SEARCH_SUBMIT_QUERY, searchSubmitQuery);
+		outState.putBoolean(EXTRA_SEARCH_FOCUSED, searchFocused);
 	}
 
 	@Override
@@ -215,8 +235,32 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 		if (searchView == null && required) {
 			searchView = new CustomSearchView(C.API_LOLLIPOP ? new ContextThemeWrapper(requireContext(),
 					R.style.Theme_Special_White) : getCallback().getActionBar().getThemedContext());
-			searchView.setOnSubmitListener(query -> listPage.onSearchSubmit(query));
-			searchView.setOnChangeListener(query -> listPage.onSearchQueryChange(query));
+			searchView.setOnSubmitListener(query -> {
+				switch (listPage.onSearchSubmit(query)) {
+					case COLLAPSE: {
+						searchSubmitQuery = null;
+						setSearchMode(false);
+						return true;
+					}
+					case ACCEPT: {
+						searchSubmitQuery = query;
+						return true;
+					}
+					case DISCARD: {
+						searchSubmitQuery = null;
+						return false;
+					}
+					default: {
+						throw new IllegalStateException();
+					}
+				}
+			});
+			searchView.setOnChangeListener(query -> {
+				listPage.onSearchQueryChange(query);
+				if (searchCurrentQuery != null) {
+					searchCurrentQuery = query;
+				}
+			});
 		}
 		return searchView;
 	}
@@ -300,11 +344,26 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 			listPage.onCreateOptionsMenu(menu);
 			MenuItem searchMenuItem = menu.findItem(R.id.menu_search);
 			if (searchMenuItem != null) {
-				searchMenuItem.setActionView(getSearchView(true));
+				CustomSearchView searchView = getSearchView(true);
+				searchMenuItem.setActionView(searchView);
 				searchMenuItem.setOnActionExpandListener(new MenuExpandListener((menuItem, expand) -> {
+					if (expand) {
+						searchView.setFocusOnExpand(searchFocused);
+						if (searchCurrentQuery != null) {
+							searchView.setQuery(searchCurrentQuery);
+						} else {
+							searchCurrentQuery = "";
+						}
+					} else {
+						searchCurrentQuery = null;
+						searchSubmitQuery = null;
+					}
 					setSearchMode(menuItem, expand, false);
 					return true;
 				}));
+				if (searchCurrentQuery != null) {
+					searchMenuItem.expandActionView();
+				}
 			}
 		} else {
 			fillMenuOnResume = true;
@@ -329,6 +388,7 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 	@Override
 	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 		if (item.getItemId() == R.id.menu_search) {
+			searchFocused = true;
 			return false;
 		}
 		if (listPage.onOptionsItemSelected(item)) {

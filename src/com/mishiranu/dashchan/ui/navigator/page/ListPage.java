@@ -44,6 +44,20 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 		}
 	}
 
+	public static final class InitSearch {
+		private static final InitSearch EMPTY_SEARCH = new InitSearch(null, null);
+
+		public final String currentQuery;
+		public final String submitQuery;
+
+		public InitSearch(String currentQuery, String submitQuery) {
+			this.currentQuery = currentQuery;
+			this.submitQuery = submitQuery;
+		}
+	}
+
+	public enum SearchSubmitResult {COLLAPSE, ACCEPT, DISCARD}
+
 	private Callback callback;
 	private Page page;
 	private PullableRecyclerView recyclerView;
@@ -53,12 +67,13 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 	private Object retainExtra;
 	private Parcelable parcelableExtra;
 	private InitRequest initRequest;
+	private InitSearch initSearch;
 
 	private State state = State.INIT;
 
 	public final void init(Callback callback, Page page, PullableRecyclerView recyclerView,
 			ListPosition listPosition, UiManager uiManager, IconProvider iconProvider,
-			Object retainExtra, Parcelable parcelableExtra, InitRequest initRequest) {
+			Object retainExtra, Parcelable parcelableExtra, InitRequest initRequest, InitSearch initSearch) {
 		if (state == State.INIT) {
 			state = State.LOCKED;
 			this.callback = callback;
@@ -70,8 +85,10 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 			this.retainExtra = retainExtra;
 			this.parcelableExtra = parcelableExtra;
 			this.initRequest = initRequest;
+			this.initSearch = initSearch;
 			onCreate();
 			this.initRequest = null;
+			this.initSearch = null;
 			state = State.PAUSED;
 		}
 	}
@@ -125,6 +142,10 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 
 	protected final InitRequest getInitRequest() {
 		return initRequest != null ? initRequest : InitRequest.EMPTY_REQUEST;
+	}
+
+	protected final InitSearch getInitSearch() {
+		return initSearch != null ? initSearch : InitSearch.EMPTY_SEARCH;
 	}
 
 	protected final void notifyAllAdaptersChanged() {
@@ -218,8 +239,8 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 
 	public void onSearchQueryChange(String query) {}
 
-	public boolean onSearchSubmit(String query) {
-		return false;
+	public SearchSubmitResult onSearchSubmit(String query) {
+		return SearchSubmitResult.DISCARD;
 	}
 
 	public void onSearchCancel() {}

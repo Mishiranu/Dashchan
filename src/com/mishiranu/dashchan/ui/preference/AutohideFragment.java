@@ -44,11 +44,24 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 public class AutohideFragment extends BaseListFragment implements ActivityHandler {
+	private static final String EXTRA_SEARCH_QUERY = "searchQuery";
+	private static final String EXTRA_SEARCH_FOCUSED = "searchFocused";
+
 	private final ArrayList<AutohideStorage.AutohideItem> items = new ArrayList<>();
 
 	private CustomSearchView searchView;
 	private MenuItem searchMenuItem;
-	private boolean searchExpanded = false;
+
+	private String searchQuery;
+	private boolean searchFocused;
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+
+		searchQuery = savedInstanceState != null ? savedInstanceState.getString(EXTRA_SEARCH_QUERY) : null;
+		searchFocused = savedInstanceState != null && savedInstanceState.getBoolean(EXTRA_SEARCH_FOCUSED);
+	}
 
 	@Override
 	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
@@ -57,7 +70,12 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 		searchView = new CustomSearchView(C.API_LOLLIPOP ? new ContextThemeWrapper(requireContext(),
 				R.style.Theme_Special_White) : requireActivity().getActionBar().getThemedContext());
 		searchView.setHint(getString(R.string.action_filter));
-		searchView.setOnChangeListener(query -> ((Adapter) getRecyclerView().getAdapter()).setSearchQuery(query));
+		searchView.setOnChangeListener(query -> {
+			((Adapter) getRecyclerView().getAdapter()).setSearchQuery(query);
+			if (searchQuery != null) {
+				searchQuery = query;
+			}
+		});
 	}
 
 	@Override
@@ -79,6 +97,17 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 
 		searchView = null;
 		searchMenuItem = null;
+	}
+
+	@Override
+	public void onSaveInstanceState(@NonNull Bundle outState) {
+		super.onSaveInstanceState(outState);
+
+		if (searchView != null) {
+			searchFocused = searchView.isSearchFocused();
+		}
+		outState.putString(EXTRA_SEARCH_QUERY, searchQuery);
+		outState.putBoolean(EXTRA_SEARCH_FOCUSED, searchFocused);
 	}
 
 	@Override
@@ -106,16 +135,28 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 		searchMenuItem = menu.add(0, R.id.menu_search, 0, R.string.action_filter).setActionView(searchView)
 				.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW)
 				.setOnActionExpandListener(new MenuExpandListener((menuItem, expand) -> {
-					((Adapter) getRecyclerView().getAdapter()).setSearchQuery("");
-					searchExpanded = expand;
+					if (expand) {
+						searchView.setFocusOnExpand(searchFocused);
+						if (searchQuery != null) {
+							searchView.setQuery(searchQuery);
+						} else {
+							searchQuery = "";
+						}
+					} else {
+						searchQuery = null;
+					}
+					((Adapter) getRecyclerView().getAdapter()).setSearchQuery(searchQuery);
 					onPrepareOptionsMenu(menu);
 					return true;
 				}));
+		if (searchQuery != null) {
+			searchMenuItem.expandActionView();
+		}
 	}
 
 	@Override
 	public void onPrepareOptionsMenu(@NonNull Menu menu) {
-		menu.findItem(R.id.menu_new_rule).setVisible(!searchExpanded);
+		menu.findItem(R.id.menu_new_rule).setVisible(searchQuery == null);
 	}
 
 	@Override
@@ -123,7 +164,11 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 		switch (item.getItemId()) {
 			case R.id.menu_new_rule: {
 				editRule(null, -1);
-				break;
+				return true;
+			}
+			case R.id.menu_search: {
+				searchFocused = true;
+				return false;
 			}
 		}
 		return super.onOptionsItemSelected(item);
@@ -158,7 +203,7 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 
 	private class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 		private final ArrayList<AutohideStorage.AutohideItem> filteredItems = new ArrayList<>();
-		private String searchQuery = "";
+		private String searchQuery;
 
 		public void setSearchQuery(String searchQuery) {
 			filteredItems.clear();

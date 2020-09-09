@@ -47,6 +47,7 @@ public class UserBoardsPage extends ListPage implements UserBoardsAdapter.Callba
 		recyclerView.getWrapper().setPullSides(PullableWrapper.Side.TOP);
 		recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(),
 				(c, position) -> c.need(true)));
+		adapter.applyFilter(getInitSearch().currentQuery);
 		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
 		if (retainExtra.boards != null) {
 			adapter.setItems(retainExtra.boards);

@@ -28,6 +28,9 @@ public class CustomSearchView extends FrameLayout implements CollapsibleActionVi
 	private OnSubmitListener onSubmitListener;
 	private OnChangeListener onChangeListener;
 
+	private boolean focusOnExpand = true;
+	private boolean suppressChange = false;
+
 	public CustomSearchView(Context context) {
 		super(context);
 
@@ -54,7 +57,7 @@ public class CustomSearchView extends FrameLayout implements CollapsibleActionVi
 
 			@Override
 			public boolean onQueryTextChange(String newText) {
-				if (onChangeListener != null) {
+				if (onChangeListener != null && !suppressChange) {
 					onChangeListener.onChange(newText);
 				}
 				return true;
@@ -140,9 +143,31 @@ public class CustomSearchView extends FrameLayout implements CollapsibleActionVi
 		}
 	}
 
+	public boolean isSearchFocused() {
+		return searchView.hasFocus();
+	}
+
+	public void setFocusOnExpand(boolean focusOnExpand) {
+		this.focusOnExpand = focusOnExpand;
+	}
+
 	@Override
 	public void onActionViewExpanded() {
-		searchView.onActionViewExpanded();
+		String query = getQuery();
+		if (!query.isEmpty()) {
+			// Don't clear text view and don't fire "changed" action with empty text
+			boolean suppressChange = this.suppressChange;
+			this.suppressChange = true;
+			searchView.onActionViewExpanded();
+			this.suppressChange = suppressChange;
+			setQuery(query);
+		} else {
+			searchView.onActionViewExpanded();
+		}
+		if (!focusOnExpand) {
+			searchView.clearFocus();
+			requestFocus();
+		}
 	}
 
 	@Override

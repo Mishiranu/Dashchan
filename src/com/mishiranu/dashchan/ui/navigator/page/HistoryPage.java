@@ -41,6 +41,7 @@ public class HistoryPage extends ListPage implements HistoryAdapter.Callback {
 		recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(),
 				adapter::configureDivider));
 		recyclerView.getWrapper().setPullSides(PullableWrapper.Side.NONE);
+		adapter.applyFilter(getInitSearch().currentQuery);
 		if (updateConfiguration(true)) {
 			restoreListPosition();
 		}

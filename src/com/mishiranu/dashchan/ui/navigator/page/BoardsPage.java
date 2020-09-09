@@ -47,6 +47,7 @@ public class BoardsPage extends ListPage implements BoardsAdapter.Callback, Read
 				adapter::configureDivider));
 		recyclerView.getWrapper().setPullSides(PullableWrapper.Side.TOP);
 		adapter.update();
+		adapter.applyFilter(getInitSearch().currentQuery);
 		if (adapter.isRealEmpty()) {
 			refreshBoards(false);
 		} else {

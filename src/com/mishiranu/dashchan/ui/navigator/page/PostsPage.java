@@ -89,6 +89,10 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		public final ArrayList<PostItem> cachedPostItems = new ArrayList<>();
 		public final HashSet<String> userPostNumbers = new HashSet<>();
 
+		public final ArrayList<Integer> searchFoundPosts = new ArrayList<>();
+		public boolean searching = false;
+		public int searchLastPosition;
+
 		public DialogUnit.StackInstance.State dialogsState;
 	}
 
@@ -168,9 +172,6 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 
 	private LinearLayout searchController;
 	private Button searchTextResult;
-	private final ArrayList<Integer> searchFoundPosts = new ArrayList<>();
-	private boolean searching = false;
-	private int searchLastPosition;
 
 	private int autoRefreshInterval = 30;
 	private boolean autoRefreshEnabled = false;
@@ -265,6 +266,14 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		QueuedRefresh queuedRefresh = initRequest.shouldLoad ? QueuedRefresh.REFRESH : QueuedRefresh.NONE;
 		parcelableExtra.queuedRefresh = QueuedRefresh.max(parcelableExtra.queuedRefresh, queuedRefresh);
 		if (retainExtra.cachedPosts != null && retainExtra.cachedPostItems.size() > 0) {
+			String searchSubmitQuery = getInitSearch().submitQuery;
+			if (searchSubmitQuery == null) {
+				retainExtra.searching = false;
+			}
+			if (retainExtra.searching && !retainExtra.searchFoundPosts.isEmpty()) {
+				setCustomSearchView(searchController);
+				updateSearchTitle();
+			}
 			onDeserializePostsCompleteInternal(true, retainExtra.cachedPosts,
 					new ArrayList<>(retainExtra.cachedPostItems), true);
 			if (retainExtra.dialogsState != null) {
@@ -272,6 +281,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				retainExtra.dialogsState = null;
 			}
 		} else {
+			retainExtra.searching = false;
 			deserializeTask = new DeserializePostsTask(this, page.chanName, page.boardName,
 					page.threadNumber, retainExtra.cachedPosts);
 			deserializeTask.executeOnExecutor(DeserializePostsTask.THREAD_POOL_EXECUTOR);
@@ -791,22 +801,22 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 	}
 
 	@Override
-	public boolean onSearchSubmit(String query) {
+	public SearchSubmitResult onSearchSubmit(String query) {
 		PostsAdapter adapter = getAdapter();
 		if (adapter.getItemCount() == 0) {
-			return false;
+			return SearchSubmitResult.COLLAPSE;
 		}
-		searchFoundPosts.clear();
+		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
+		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
+		retainExtra.searchFoundPosts.clear();
 		int listPosition = ListPosition.obtain(getRecyclerView()).position;
-		searchLastPosition = 0;
+		retainExtra.searchLastPosition = 0;
 		boolean positionDefined = false;
 		Locale locale = Locale.getDefault();
 		SearchHelper helper = new SearchHelper(Preferences.isAdvancedSearch());
 		helper.setFlags("m", "r", "a", "d", "e", "n", "op");
 		HashSet<String> queries = helper.handleQueries(locale, query);
 		HashSet<String> fileNames = new HashSet<>();
-		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
-		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
 		int newPostPosition = adapter.findPositionByPostNumber(parcelableExtra.newPostNumber);
 		OUTER: for (int i = 0; i < adapter.getItemCount(); i++) {
 			PostItem postItem = adapter.getItem(i);
@@ -881,34 +891,35 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				}
 				if (found) {
 					if (!positionDefined && i > listPosition) {
-						searchLastPosition = searchFoundPosts.size();
+						retainExtra.searchLastPosition = retainExtra.searchFoundPosts.size();
 						positionDefined = true;
 					}
-					searchFoundPosts.add(i);
+					retainExtra.searchFoundPosts.add(i);
 				}
 			}
 		}
-		boolean found = searchFoundPosts.size() > 0;
+		boolean found = !retainExtra.searchFoundPosts.isEmpty();
 		getAdapter().setHighlightText(found ? queries : Collections.emptyList());
-		searching = true;
+		retainExtra.searching = true;
 		if (found) {
 			setCustomSearchView(searchController);
-			updateOptionsMenu();
-			searchLastPosition--;
+			retainExtra.searchLastPosition--;
 			findForward();
-			return true;
+			return SearchSubmitResult.ACCEPT;
 		} else {
+			setCustomSearchView(null);
 			ToastUtils.show(getContext(), R.string.message_not_found);
-			searchLastPosition = -1;
+			retainExtra.searchLastPosition = -1;
 			updateSearchTitle();
-			return false;
+			return SearchSubmitResult.DISCARD;
 		}
 	}
 
 	@Override
 	public void onSearchCancel() {
-		if (searching) {
-			searching = false;
+		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
+		if (retainExtra.searching) {
+			retainExtra.searching = false;
 			setCustomSearchView(null);
 			updateOptionsMenu();
 			getAdapter().setHighlightText(Collections.emptyList());
@@ -916,10 +927,11 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 	}
 
 	private void showSearchDialog() {
-		if (!searchFoundPosts.isEmpty()) {
+		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
+		if (!retainExtra.searchFoundPosts.isEmpty()) {
 			PostsAdapter adapter = getAdapter();
 			HashSet<String> postNumbers = new HashSet<>();
-			for (Integer position : searchFoundPosts) {
+			for (Integer position : retainExtra.searchFoundPosts) {
 				PostItem postItem = adapter.getItem(position);
 				postNumbers.add(postItem.getPostNumber());
 			}
@@ -928,31 +940,36 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 	}
 
 	private void findBack() {
-		int count = searchFoundPosts.size();
+		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
+		int count = retainExtra.searchFoundPosts.size();
 		if (count > 0) {
-			searchLastPosition--;
-			if (searchLastPosition < 0) {
-				searchLastPosition += count;
+			retainExtra.searchLastPosition--;
+			if (retainExtra.searchLastPosition < 0) {
+				retainExtra.searchLastPosition += count;
 			}
-			ListViewUtils.smoothScrollToPosition(getRecyclerView(), searchFoundPosts.get(searchLastPosition));
+			ListViewUtils.smoothScrollToPosition(getRecyclerView(),
+					retainExtra.searchFoundPosts.get(retainExtra.searchLastPosition));
 			updateSearchTitle();
 		}
 	}
 
 	private void findForward() {
-		int count = searchFoundPosts.size();
+		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
+		int count = retainExtra.searchFoundPosts.size();
 		if (count > 0) {
-			searchLastPosition++;
-			if (searchLastPosition >= count) {
-				searchLastPosition -= count;
+			retainExtra.searchLastPosition++;
+			if (retainExtra.searchLastPosition >= count) {
+				retainExtra.searchLastPosition -= count;
 			}
-			ListViewUtils.smoothScrollToPosition(getRecyclerView(), searchFoundPosts.get(searchLastPosition));
+			ListViewUtils.smoothScrollToPosition(getRecyclerView(),
+					retainExtra.searchFoundPosts.get(retainExtra.searchLastPosition));
 			updateSearchTitle();
 		}
 	}
 
 	private void updateSearchTitle() {
-		searchTextResult.setText((searchLastPosition + 1) + "/" + searchFoundPosts.size());
+		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
+		searchTextResult.setText((retainExtra.searchLastPosition + 1) + "/" + retainExtra.searchFoundPosts.size());
 	}
 
 	private boolean handleNewPostDataList() {

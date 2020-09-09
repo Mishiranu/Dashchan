@@ -192,10 +192,13 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback, Read
 	}
 
 	@Override
-	public boolean onSearchSubmit(String query) {
-		Page page = getPage();
-		getUiManager().navigator().navigateSearch(page.chanName, page.boardName, query, 0);
-		return true;
+	public SearchSubmitResult onSearchSubmit(String query) {
+		// Collapse search view
+		getRecyclerView().post(() -> {
+			Page page = getPage();
+			getUiManager().navigator().navigateSearch(page.chanName, page.boardName, query, 0);
+		});
+		return SearchSubmitResult.COLLAPSE;
 	}
 
 	@Override

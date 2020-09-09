@@ -54,7 +54,6 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 	private final ArrayList<ListItem> filteredListItems = new ArrayList<>();
 
 	private String chanName;
-	private boolean filterMode = false;
 	private String filterText;
 
 	public HistoryAdapter(Callback callback) {
@@ -93,19 +92,22 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 			}
 			listItems.add(new ListItem(null, historyItem));
 		}
-		if (filterMode) {
-			applyFilter(filterText);
-		} else {
+		applyCurrentFilter();
+		notifyDataSetChanged();
+	}
+
+	public void applyFilter(String text) {
+		if (!StringUtils.emptyIfNull(filterText).equals(StringUtils.emptyIfNull(text))) {
+			filterText = StringUtils.nullIfEmpty(text);
+			applyCurrentFilter();
 			notifyDataSetChanged();
 		}
 	}
 
-	// Returns true, if adapter isn't empty.
-	public boolean applyFilter(String text) {
-		filterText = text;
-		filterMode = !StringUtils.isEmpty(text);
+	private void applyCurrentFilter() {
+		String text = filterText;
 		filteredListItems.clear();
-		if (filterMode) {
+		if (!StringUtils.isEmpty(text)) {
 			text = text.toLowerCase(Locale.getDefault());
 			for (ListItem listItem : listItems) {
 				if (listItem.historyItem != null) {
@@ -116,8 +118,6 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 				}
 			}
 		}
-		notifyDataSetChanged();
-		return !filterMode || !filteredListItems.isEmpty();
 	}
 
 	public void remove(HistoryDatabase.HistoryItem historyItem) {
@@ -136,11 +136,8 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 					getItemViewType(index - 1) == ViewType.HEADER.ordinal()) {
 				listItems.remove(index - 1);
 			}
-			if (filterMode) {
-				applyFilter(filterText);
-			} else {
-				notifyDataSetChanged();
-			}
+			applyCurrentFilter();
+			notifyDataSetChanged();
 		}
 	}
 
@@ -156,7 +153,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
 	@Override
 	public int getItemCount() {
-		return (filterMode ? filteredListItems : listItems).size();
+		return (filterText != null ? filteredListItems : listItems).size();
 	}
 
 	@Override
@@ -172,7 +169,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 	}
 
 	private ListItem getItem(int position) {
-		return (filterMode ? filteredListItems : listItems).get(position);
+		return (filterText != null ? filteredListItems : listItems).get(position);
 	}
 
 	@NonNull

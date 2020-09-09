@@ -43,7 +43,6 @@ public class BoardsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 	private final ArrayList<ListItem> listItems = new ArrayList<>();
 	private final ArrayList<ListItem> filteredListItems = new ArrayList<>();
 
-	private boolean filterMode = false;
 	private String filterText;
 
 	public BoardsAdapter(Callback callback, String chanName) {
@@ -51,12 +50,18 @@ public class BoardsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 		this.chanName = chanName;
 	}
 
-	// Returns true, if adapter isn't empty.
-	public boolean applyFilter(String text) {
-		filterText = text;
-		filterMode = !StringUtils.isEmpty(text);
+	public void applyFilter(String text) {
+		if (!StringUtils.emptyIfNull(filterText).equals(StringUtils.emptyIfNull(text))) {
+			filterText = StringUtils.nullIfEmpty(text);
+			applyCurrentFilter();
+			notifyDataSetChanged();
+		}
+	}
+
+	private void applyCurrentFilter() {
+		String text = filterText;
 		filteredListItems.clear();
-		if (filterMode) {
+		if (!StringUtils.isEmpty(text)) {
 			text = text.toLowerCase(Locale.getDefault());
 			for (ListItem listItem : listItems) {
 				if (listItem.boardName != null) {
@@ -73,8 +78,6 @@ public class BoardsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 				}
 			}
 		}
-		notifyDataSetChanged();
-		return !filterMode || filteredListItems.size() > 0;
 	}
 
 	public void update() {
@@ -103,10 +106,8 @@ public class BoardsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 				// Invalid data, ignore exception
 			}
 		}
+		applyCurrentFilter();
 		notifyDataSetChanged();
-		if (filterMode) {
-			applyFilter(filterText);
-		}
 	}
 
 	public boolean isRealEmpty() {
@@ -115,7 +116,7 @@ public class BoardsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
 	@Override
 	public int getItemCount() {
-		return (filterMode ? filteredListItems : listItems).size();
+		return (filterText != null ? filteredListItems : listItems).size();
 	}
 
 	@Override
@@ -124,7 +125,7 @@ public class BoardsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 	}
 
 	private ListItem getItem(int position) {
-		return (filterMode ? filteredListItems : listItems).get(position);
+		return (filterText != null ? filteredListItems : listItems).get(position);
 	}
 
 	@NonNull

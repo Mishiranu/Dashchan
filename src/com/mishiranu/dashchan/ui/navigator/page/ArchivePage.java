@@ -53,6 +53,7 @@ public class ArchivePage extends ListPage implements ArchiveAdapter.Callback,
 		recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(),
 				adapter::configureDivider));
 		recyclerView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
+		adapter.applyFilter(getInitSearch().currentQuery);
 		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
 		if (retainExtra.threadSummaries != null) {
 			adapter.setItems(retainExtra.threadSummaries);

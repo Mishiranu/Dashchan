@@ -23,7 +23,6 @@ public class UserBoardsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 	private final ArrayList<ListItem> listItems = new ArrayList<>();
 	private final ArrayList<ListItem> filteredListItems = new ArrayList<>();
 
-	private boolean filterMode = false;
 	private String filterText;
 
 	public UserBoardsAdapter(Callback callback, String chanName) {
@@ -32,10 +31,17 @@ public class UserBoardsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 	}
 
 	public void applyFilter(String text) {
-		filterText = text;
-		filterMode = !StringUtils.isEmpty(text);
+		if (!StringUtils.emptyIfNull(filterText).equals(StringUtils.emptyIfNull(text))) {
+			filterText = StringUtils.nullIfEmpty(text);
+			applyCurrentFilter();
+			notifyDataSetChanged();
+		}
+	}
+
+	private void applyCurrentFilter() {
+		String text = filterText;
 		filteredListItems.clear();
-		if (filterMode) {
+		if (!StringUtils.isEmpty(text)) {
 			text = text.toLowerCase(Locale.getDefault());
 			for (ListItem listItem : listItems) {
 				boolean add = false;
@@ -52,7 +58,6 @@ public class UserBoardsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 				}
 			}
 		}
-		notifyDataSetChanged();
 	}
 
 	public boolean isRealEmpty() {
@@ -61,11 +66,11 @@ public class UserBoardsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
 	@Override
 	public int getItemCount() {
-		return (filterMode ? filteredListItems : listItems).size();
+		return (filterText != null ? filteredListItems : listItems).size();
 	}
 
 	private ListItem getItem(int position) {
-		return (filterMode ? filteredListItems : listItems).get(position);
+		return (filterText != null ? filteredListItems : listItems).get(position);
 	}
 
 	public void setItems(Board[] boards) {
@@ -80,10 +85,8 @@ public class UserBoardsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 						description));
 			}
 		}
+		applyCurrentFilter();
 		notifyDataSetChanged();
-		if (filterMode) {
-			applyFilter(filterText);
-		}
 	}
 
 	@NonNull
