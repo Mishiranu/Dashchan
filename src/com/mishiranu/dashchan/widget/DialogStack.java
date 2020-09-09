@@ -14,14 +14,13 @@ import android.graphics.drawable.InsetDrawable;
 import android.util.Pair;
 import android.view.ActionMode;
 import android.view.ContextThemeWrapper;
-import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
@@ -32,11 +31,14 @@ import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 
 public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterable<Pair<T, View>> {
+	private static final int VISIBLE_COUNT = 10;
+
 	private final Context context;
 	private final Context styledContext;
-	private final FrameLayout rootView;
+	private final SimpleLayout rootView;
 	private final float dimAmount;
 
 	private WeakReference<ActionMode> currentActionMode;
@@ -46,7 +48,7 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 		styledContext = new ContextThemeWrapper(context, ResourceUtils.getResourceId(context,
 				android.R.attr.dialogTheme, 0));
 		ThemeEngine.addOnDialogCreatedListener(context, () -> switchBackground(true));
-		rootView = new FrameLayout(context);
+		rootView = new SimpleLayout(context);
 		rootView.setOnClickListener(v -> {
 			if (!visibleViews.isEmpty()) {
 				popInternal();
@@ -56,6 +58,23 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 		TypedArray typedArray = styledContext.obtainStyledAttributes(new int[] {android.R.attr.backgroundDimAmount});
 		dimAmount = typedArray.getFloat(0, 0.6f);
 		typedArray.recycle();
+
+		if (C.API_LOLLIPOP) {
+			// Apply elevation to visible children only so their shadows didn't overlap each other too much
+			rootView.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
+				int maxHeight = 0;
+				ListIterator<Pair<T, DialogView>> iterator = visibleViews.listIterator(visibleViews.size());
+				while (iterator.hasPrevious()) {
+					Pair<T, DialogView> pair = iterator.previous();
+					int height = pair.second.getHeight();
+					boolean taller = height > maxHeight;
+					if (taller) {
+						maxHeight = height;
+					}
+					pair.second.setElevated(taller);
+				}
+			});
+		}
 	}
 
 	private final KeyBackHandler keyBackHandler = C.API_MARSHMALLOW ? new MarshmallowKeyBackHandler()
@@ -108,8 +127,6 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 			return false;
 		}
 	}
-
-	private static final int VISIBLE_COUNT = 10;
 
 	private final LinkedList<T> hiddenViews = new LinkedList<>();
 	private final LinkedList<Pair<T, DialogView>> visibleViews = new LinkedList<>();
@@ -183,9 +200,9 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 			visibleViews.getLast().second.setActive(false);
 			if (visibleViews.size() == VISIBLE_COUNT) {
 				Pair<T, DialogView> first = visibleViews.removeFirst();
-				first.first.destroyView(first.second.getChildAt(0));
+				first.first.destroyView(first.second.getContent());
 				hiddenViews.add(first.first);
-				rootView.removeView(first.second);
+				rootView.removeView(first.second.getContainer());
 			}
 		}
 		DialogView dialogView = addDialogView(viewFactory, rootView.getChildCount());
@@ -200,9 +217,9 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 			int hiddenTo = viewFactories.size() - VISIBLE_COUNT;
 			if (hiddenTo > 0) {
 				for (Pair<T, DialogView> pair : visibleViews) {
-					pair.first.destroyView(pair.second.getChildAt(0));
+					pair.first.destroyView(pair.second.getContent());
 					hiddenViews.add(pair.first);
-					rootView.removeView(pair.second);
+					rootView.removeView(pair.second.getContainer());
 				}
 				hiddenViews.addAll(viewFactories.subList(0, hiddenTo));
 			}
@@ -230,14 +247,14 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 
 	private T popInternal() {
 		if (hiddenViews.size() > 0) {
-			int index = rootView.indexOfChild(visibleViews.getFirst().second);
+			int index = rootView.indexOfChild(visibleViews.getFirst().second.getContainer());
 			T last = hiddenViews.removeLast();
 			DialogView dialogView = addDialogView(last, index);
 			dialogView.setActive(false);
 			visibleViews.addFirst(new Pair<>(last, dialogView));
 		}
 		Pair<T, DialogView> last = visibleViews.removeLast();
-		rootView.removeView(last.second);
+		rootView.removeView(last.second.getContainer());
 		if (visibleViews.isEmpty()) {
 			dialog.dismiss();
 			dialog = null;
@@ -246,28 +263,76 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 		} else {
 			visibleViews.getLast().second.setActive(true);
 		}
-		last.first.destroyView(last.second.getChildAt(0));
+		last.first.destroyView(last.second.getContent());
 		return last.first;
 	}
 
 	private DialogView addDialogView(T viewFactory, int index) {
-		DialogView dialogView = new DialogView(context, styledContext, dimAmount);
-		dialogView.addView(viewFactory.createView(this), FrameLayout.LayoutParams.MATCH_PARENT,
-				FrameLayout.LayoutParams.WRAP_CONTENT);
-		rootView.addView(dialogView, index, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
-				FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER_VERTICAL));
+		DialogView dialogView = new DialogView(context, styledContext, dimAmount, viewFactory.createView(this));
+		rootView.addView(dialogView.getContainer(), index, new SimpleLayout
+				.LayoutParams(SimpleLayout.LayoutParams.MATCH_PARENT, SimpleLayout.LayoutParams.MATCH_PARENT));
 		return dialogView;
 	}
 
-	private static class DialogView extends FrameLayout {
+	private static class SimpleLayout extends ViewGroup {
+		public SimpleLayout(Context context) {
+			super(context);
+		}
+
+		@Override
+		protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+			int horizontal = getPaddingLeft() + getPaddingRight();
+			int vertical = getPaddingTop() + getPaddingBottom();
+			int childCount = getChildCount();
+			int width = MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.EXACTLY
+					? Math.max(0, MeasureSpec.getSize(widthMeasureSpec) - horizontal) : 0;
+			int height = MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.EXACTLY
+					? Math.max(0, MeasureSpec.getSize(heightMeasureSpec) - vertical) : 0;
+			for (int i = 0; i < childCount; i++) {
+				View child = getChildAt(i);
+				LayoutParams layoutParams = child.getLayoutParams();
+				child.measure(getChildMeasureSpec(widthMeasureSpec, horizontal, layoutParams.width),
+						getChildMeasureSpec(heightMeasureSpec, vertical, layoutParams.height));
+				width = Math.max(width, child.getMeasuredWidth());
+				height = Math.max(height, child.getMeasuredHeight());
+			}
+			setMeasuredDimension(width + horizontal, height + vertical);
+		}
+
+		@Override
+		protected void onLayout(boolean changed, int l, int t, int r, int b) {
+			int left = getPaddingLeft();
+			int top = getPaddingTop();
+			int width = r - l - getPaddingRight() - left;
+			int height = b - t - getPaddingBottom() - top;
+			int childCount = getChildCount();
+			for (int i = 0; i < childCount; i++) {
+				View child = getChildAt(i);
+				int childWidth = child.getMeasuredWidth();
+				int childHeight = child.getMeasuredHeight();
+				int shiftX = (width - childWidth) / 2;
+				int shiftY = (height - childHeight) / 2;
+				child.layout(left + shiftX, top + shiftY, left + shiftX + childWidth, top + shiftY + childHeight);
+			}
+		}
+	}
+
+	private static class DialogView extends SimpleLayout {
 		private final Paint paint = new Paint();
 		private final float shadowSize;
 
 		private boolean active = false;
 		private boolean background = false;
+		private boolean elevated = false;
 
-		public DialogView(Context context, Context styledContext, float dimAmount) {
+		public DialogView(Context context, Context styledContext, float dimAmount, View content) {
 			super(context);
+
+			SimpleLayout container = new SimpleLayout(context);
+			container.addView(this, SimpleLayout.LayoutParams.MATCH_PARENT,
+					SimpleLayout.LayoutParams.WRAP_CONTENT);
+			addView(content, SimpleLayout.LayoutParams.MATCH_PARENT,
+					SimpleLayout.LayoutParams.WRAP_CONTENT);
 
 			int[] attrs = {android.R.attr.windowBackground, android.R.attr.windowElevation};
 			TypedArray typedArray = styledContext.obtainStyledAttributes(attrs);
@@ -281,12 +346,17 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 			setActive(true);
 		}
 
+		public View getContainer() {
+			return (View) getParent();
+		}
+
+		public View getContent() {
+			return getChildAt(0);
+		}
+
 		public void setActive(boolean active) {
 			if (this.active != active) {
 				this.active = active;
-				if (C.API_LOLLIPOP && shadowSize > 0f) {
-					setElevation(active ? shadowSize : 0f);
-				}
 				invalidate();
 			}
 		}
@@ -295,6 +365,13 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 			if (this.background != background) {
 				this.background = background;
 				invalidate();
+			}
+		}
+
+		public void setElevated(boolean elevated) {
+			if (this.elevated != elevated) {
+				this.elevated = elevated;
+				setElevation(elevated ? shadowSize : 0f);
 			}
 		}
 
@@ -351,7 +428,7 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 				@Override
 				public View next() {
 					Pair<T, DialogView> pair = iterator.next();
-					return pair.second.getChildAt(0);
+					return pair.second.getContent();
 				}
 			};
 		};
@@ -374,7 +451,7 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 					return new Pair<>(hidden.next(), null);
 				} else if (visible.hasNext()) {
 					Pair<T, DialogView> pair = visible.next();
-					return new Pair<>(pair.first, pair.second.getChildAt(0));
+					return new Pair<>(pair.first, pair.second.getContent());
 				} else {
 					return null;
 				}
