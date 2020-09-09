@@ -103,12 +103,6 @@ public class InteractionUnit {
 		}
 	}
 
-	private static final int LINK_MENU_COPY = 0;
-	private static final int LINK_MENU_SHARE = 1;
-	private static final int LINK_MENU_BROWSER = 2;
-	private static final int LINK_MENU_DOWNLOAD_FILE = 3;
-	private static final int LINK_MENU_OPEN_THREAD = 4;
-
 	public void handleLinkLongClick(final Uri uri) {
 		String uriChanName = ChanManager.getInstance().getChanNameByHost(uri.getHost());
 		String fileName = null;
@@ -132,45 +126,25 @@ public class InteractionUnit {
 		final String finalFileName = fileName;
 		final String finalBoardName = boardName;
 		final String finalThreadNumber = threadNumber;
-		DialogMenu dialogMenu = new DialogMenu(uiManager.getContext(), (context, id) -> {
-			switch (id) {
-				case LINK_MENU_COPY: {
-					StringUtils.copyToClipboard(context, uri.toString());
-					break;
-				}
-				case LINK_MENU_SHARE: {
-					NavigationUtils.shareLink(uiManager.getContext(), null, uri);
-					break;
-				}
-				case LINK_MENU_BROWSER: {
-					NavigationUtils.handleUri(uiManager.getContext(), finalChanName, uri,
-							NavigationUtils.BrowserType.INTERNAL);
-					break;
-				}
-				case LINK_MENU_DOWNLOAD_FILE: {
-					uiManager.download(binder -> binder.downloadStorage(uri, finalFileName, null,
-							finalChanName, finalBoardName, finalThreadNumber, null));
-					break;
-				}
-				case LINK_MENU_OPEN_THREAD: {
-					uiManager.navigator().navigatePosts(finalChanName, finalBoardName, finalThreadNumber,
-							null, null, NavigationUtils.FLAG_RETURNABLE);
-					break;
-				}
-			}
-		});
-		dialogMenu.addItem(LINK_MENU_COPY, R.string.action_copy_link);
-		dialogMenu.addItem(LINK_MENU_SHARE, R.string.action_share_link);
+		Context context = uiManager.getContext();
+		DialogMenu dialogMenu = new DialogMenu(context);
+		dialogMenu.add(R.string.action_copy_link, () -> StringUtils.copyToClipboard(context, uri.toString()));
+		dialogMenu.add(R.string.action_share_link, () -> NavigationUtils.shareLink(context, null, uri));
 		if (Preferences.isUseInternalBrowser() && (locator == null || !locator.safe(false).isBoardUri(uri)
 				&& !locator.safe(false).isThreadUri(uri) && !locator.safe(false).isAttachmentUri(uri)
 				&& locator.safe(false).handleUriClickSpecial(uri) == null)) {
-			dialogMenu.addItem(LINK_MENU_BROWSER, R.string.action_browser);
+			dialogMenu.add(R.string.action_browser, () -> NavigationUtils.handleUri(context, finalChanName, uri,
+					NavigationUtils.BrowserType.INTERNAL));
 		}
 		if (isAttachment) {
-			dialogMenu.addItem(LINK_MENU_DOWNLOAD_FILE, R.string.action_download_file);
+			dialogMenu.add(R.string.action_download_file, () -> uiManager
+					.download(binder -> binder.downloadStorage(uri, finalFileName, null,
+							finalChanName, finalBoardName, finalThreadNumber, null)));
 		}
 		if (threadNumber != null) {
-			dialogMenu.addItem(LINK_MENU_OPEN_THREAD, R.string.action_open_thread);
+			dialogMenu.add(R.string.action_open_thread, () -> uiManager.navigator()
+					.navigatePosts(finalChanName, finalBoardName, finalThreadNumber,
+							null, null, NavigationUtils.FLAG_RETURNABLE));
 		}
 		dialogMenu.show(uiManager.getConfigurationLock());
 	}
@@ -234,7 +208,7 @@ public class InteractionUnit {
 		@Override
 		public boolean onLongClick(View v) {
 			UiManager.Holder holder = ListViewUtils.getViewHolder(v, UiManager.Holder.class);
-			new ThumbnailLongClickDialog(uiManager, attachmentItem, (AttachmentView) v, true,
+			showThumbnailLongClickDialog(uiManager, attachmentItem, (AttachmentView) v, true,
 					holder.getGallerySet().getThreadTitle());
 			return true;
 		}
@@ -248,80 +222,41 @@ public class InteractionUnit {
 		return new ThumbnailLongClickListenerImpl(uiManager);
 	}
 
-	private static class ThumbnailLongClickDialog implements DialogMenu.Callback {
-		private final AttachmentItem attachmentItem;
-		private final AttachmentView attachmentView;
-		private final String threadTitle;
-		private final UiManager uiManager;
-
-		private static final int MENU_DOWNLOAD_FILE = 0;
-		private static final int MENU_SEARCH_IMAGE = 1;
-		private static final int MENU_SHOW_THUMBNAIL = 2;
-		private static final int MENU_COPY_LINK = 3;
-		private static final int MENU_SHARE_LINK = 4;
-
-		public ThumbnailLongClickDialog(UiManager uiManager, AttachmentItem attachmentItem,
-				AttachmentView attachmentView, boolean hasViewHolder, String threadTitle) {
-			this.attachmentItem = attachmentItem;
-			this.attachmentView = attachmentView;
-			this.threadTitle = threadTitle;
-			this.uiManager = uiManager;
-			Context context = attachmentView.getContext();
-			DialogMenu dialogMenu = new DialogMenu(context, this);
-			dialogMenu.setTitle(attachmentItem.getDialogTitle(), true);
-			if (attachmentItem.canDownloadToStorage()) {
-				dialogMenu.addItem(MENU_DOWNLOAD_FILE, R.string.action_download_file);
-				if (attachmentItem.getType() == AttachmentItem.TYPE_IMAGE ||
-						attachmentItem.getThumbnailKey() != null) {
-					dialogMenu.addItem(MENU_SEARCH_IMAGE, R.string.action_search_image);
-				}
-			}
-			if (hasViewHolder && attachmentItem.canLoadThumbnailManually(attachmentView)) {
-				dialogMenu.addItem(MENU_SHOW_THUMBNAIL, R.string.action_show_thumbnail);
-			}
-			dialogMenu.addItem(MENU_COPY_LINK, R.string.action_copy_link);
-			dialogMenu.addItem(MENU_SHARE_LINK, R.string.action_share_link);
-			dialogMenu.show(uiManager.getConfigurationLock());
-		}
-
-		@Override
-		public void onItemClick(Context context, int id) {
-			Uri fileUri = attachmentItem.getFileUri();
-			Uri thumbnailUri = attachmentItem.getThumbnailUri();
-			int type = attachmentItem.getType();
-			switch (id) {
-				case MENU_DOWNLOAD_FILE: {
-					uiManager.download(binder -> binder.downloadStorage(fileUri,
+	private static void showThumbnailLongClickDialog(UiManager uiManager, AttachmentItem attachmentItem,
+			AttachmentView attachmentView, boolean hasViewHolder, String threadTitle) {
+		Context context = attachmentView.getContext();
+		DialogMenu dialogMenu = new DialogMenu(context);
+		dialogMenu.setTitle(attachmentItem.getDialogTitle(), true);
+		if (attachmentItem.canDownloadToStorage()) {
+			dialogMenu.add(R.string.action_download_file, () -> uiManager
+					.download(binder -> binder.downloadStorage(attachmentItem.getFileUri(),
 							attachmentItem.getFileName(), attachmentItem.getOriginalName(),
 							attachmentItem.getChanName(), attachmentItem.getBoardName(),
-							attachmentItem.getThreadNumber(), threadTitle));
-					break;
-				}
-				case MENU_SEARCH_IMAGE: {
+							attachmentItem.getThreadNumber(), threadTitle)));
+			if (attachmentItem.getType() == AttachmentItem.TYPE_IMAGE ||
+					attachmentItem.getThumbnailKey() != null) {
+				dialogMenu.add(R.string.action_search_image, () -> {
+					Uri fileUri = attachmentItem.getFileUri();
 					NavigationUtils.searchImage(context, uiManager.getConfigurationLock(),
 							ChanManager.getInstance().getChanNameByHost(fileUri.getAuthority()),
-							type == AttachmentItem.TYPE_IMAGE ? fileUri : thumbnailUri);
-					break;
-				}
-				case MENU_SHOW_THUMBNAIL: {
-					attachmentItem.startLoad(attachmentView, true);
-					break;
-				}
-				case MENU_COPY_LINK: {
-					StringUtils.copyToClipboard(context, fileUri.toString());
-					break;
-				}
-				case MENU_SHARE_LINK: {
-					NavigationUtils.shareLink(context, null, fileUri);
-					break;
-				}
+							attachmentItem.getType() == AttachmentItem.TYPE_IMAGE
+									? fileUri : attachmentItem.getThumbnailUri());
+				});
 			}
 		}
+		if (hasViewHolder && attachmentItem.canLoadThumbnailManually(attachmentView)) {
+			dialogMenu.add(R.string.action_show_thumbnail, () -> attachmentItem.startLoad(attachmentView, true));
+		}
+		dialogMenu.add(R.string.action_copy_link, () -> StringUtils.copyToClipboard(context,
+				attachmentItem.getFileUri().toString()));
+		dialogMenu.add(R.string.action_share_link, () -> NavigationUtils.shareLink(context, null,
+				attachmentItem.getFileUri()));
+		dialogMenu.show(uiManager.getConfigurationLock());
 	}
 
 	public void showThumbnailLongClickDialog(AttachmentItem attachmentItem,
 			AttachmentView attachmentView, boolean hasViewHolder, String threadTitle) {
-		new ThumbnailLongClickDialog(uiManager, attachmentItem, attachmentView, hasViewHolder, threadTitle);
+		showThumbnailLongClickDialog(uiManager, attachmentItem, attachmentView, hasViewHolder, threadTitle);
 	}
 
 	public boolean handlePostClick(View view, PostItem postItem, Iterable<PostItem> localPostItems) {
@@ -344,25 +279,6 @@ public class InteractionUnit {
 		}
 	}
 
-	private static final int MENU_REPLY = 0;
-	private static final int MENU_QUOTE = 1;
-	private static final int MENU_COPY = 2;
-	private static final int MENU_COPY_TEXT = 3;
-	private static final int MENU_COPY_MARKUP = 4;
-	private static final int MENU_COPY_LINK = 5;
-	private static final int MENU_SHARE = 6;
-	private static final int MENU_SHARE_LINK = 7;
-	private static final int MENU_SHARE_TEXT = 8;
-	private static final int MENU_REPORT = 9;
-	private static final int MENU_DELETE = 10;
-	private static final int MENU_ADD_REMOVE_MY_MARK = 11;
-	private static final int MENU_GO_TO_POST = 12;
-	private static final int MENU_HIDE = 13;
-	private static final int MENU_HIDE_POST = 14;
-	private static final int MENU_HIDE_REPLIES = 15;
-	private static final int MENU_HIDE_NAME = 16;
-	private static final int MENU_HIDE_SIMILAR = 17;
-
 	public boolean handlePostContextMenu(final PostItem postItem, Replyable replyable,
 			boolean allowMyMarkEdit, boolean allowHiding, boolean allowGoToPost) {
 		if (postItem != null) {
@@ -373,170 +289,141 @@ public class InteractionUnit {
 			boolean postEmpty = StringUtils.isEmpty(postItem.getComment().toString());
 			final boolean copyText = !postEmpty;
 			final boolean shareText = !postEmpty;
-			DialogMenu dialogMenu = new DialogMenu(context, new DialogMenu.SimpleCallback() {
-				@Override
-				public void onItemClick(int id) {
-					switch (id) {
-						case MENU_REPLY: {
-							replyable.onRequestReply(new Replyable.ReplyData(postItem.getPostNumber(), null));
-							break;
-						}
-						case MENU_QUOTE: {
-							replyable.onRequestReply(new Replyable.ReplyData(postItem.getPostNumber(),
-									getCopyReadyComment(postItem.getComment())));
-							break;
-						}
-						case MENU_COPY: {
-							DialogMenu dialogMenu = new DialogMenu(context, this);
-							if (copyText) {
-								dialogMenu.addItem(MENU_COPY_TEXT, R.string.action_copy_text);
-								dialogMenu.addItem(MENU_COPY_MARKUP, R.string.action_copy_markup);
-							}
-							dialogMenu.addItem(MENU_COPY_LINK, R.string.action_copy_link);
-							dialogMenu.show(uiManager.getConfigurationLock());
-							break;
-						}
-						case MENU_COPY_TEXT: {
-							StringUtils.copyToClipboard(context, getCopyReadyComment(postItem.getComment()));
-							break;
-						}
-						case MENU_COPY_MARKUP: {
-							StringUtils.copyToClipboard(context, postItem.getCommentMarkup());
-							break;
-						}
-						case MENU_COPY_LINK:
-						case MENU_SHARE_LINK:
-						case MENU_SHARE_TEXT: {
-							ChanLocator locator = ChanLocator.get(postItem.getChanName());
-							String boardName = postItem.getBoardName();
-							String threadNumber = postItem.getThreadNumber();
-							String postNumber = postItem.getPostNumber();
-							Uri uri = postItem.getParentPostNumber() == null
-									? locator.safe(true).createThreadUri(boardName, threadNumber)
-									: locator.safe(true).createPostUri(boardName, threadNumber, postNumber);
-							if (uri != null) {
-								switch (id) {
-									case MENU_COPY_LINK: {
-										StringUtils.copyToClipboard(context, uri.toString());
-										break;
-									}
-									case MENU_SHARE_LINK: {
-										String subject = postItem.getSubjectOrComment();
-										if (StringUtils.isEmptyOrWhitespace(subject)) {
-											subject = uri.toString();
-										}
-										NavigationUtils.shareLink(context, subject, uri);
-										break;
-									}
-									case MENU_SHARE_TEXT: {
-										String subject = postItem.getSubjectOrComment();
-										if (StringUtils.isEmptyOrWhitespace(subject)) {
-											subject = uri.toString();
-										}
-										NavigationUtils.shareText(context, subject,
-												getCopyReadyComment(postItem.getComment()), uri);
-										break;
-									}
-								}
-							}
-							break;
-						}
-						case MENU_SHARE: {
-							DialogMenu dialogMenu = new DialogMenu(context, this);
-							if (shareText) {
-								dialogMenu.addItem(MENU_SHARE_TEXT, R.string.action_share_text);
-							}
-							dialogMenu.addItem(MENU_SHARE_LINK, R.string.action_share_link);
-							dialogMenu.show(uiManager.getConfigurationLock());
-							break;
-						}
-						case MENU_REPORT: {
-							ArrayList<String> postNumbers = new ArrayList<>(1);
-							postNumbers.add(postItem.getPostNumber());
-							uiManager.dialog().performSendReportPosts(postItem.getChanName(), postItem.getBoardName(),
-									postItem.getThreadNumber(), postNumbers);
-							break;
-						}
-						case MENU_DELETE: {
-							ArrayList<String> postNumbers = new ArrayList<>(1);
-							postNumbers.add(postItem.getPostNumber());
-							uiManager.dialog().performSendDeletePosts(postItem.getChanName(), postItem.getBoardName(),
-									postItem.getThreadNumber(), postNumbers);
-							break;
-						}
-						case MENU_ADD_REMOVE_MY_MARK: {
-							uiManager.sendPostItemMessage(postItem, UiManager.Message.PERFORM_SWITCH_USER_MARK);
-							break;
-						}
-						case MENU_GO_TO_POST: {
-							uiManager.sendPostItemMessage(postItem, UiManager.Message.PERFORM_GO_TO_POST);
-							break;
-						}
-						case MENU_HIDE: {
-							DialogMenu dialogMenu = new DialogMenu(context, this);
-							dialogMenu.addItem(MENU_HIDE_POST, R.string.action_hide_post);
-							dialogMenu.addItem(MENU_HIDE_REPLIES, R.string.action_hide_replies);
-							dialogMenu.addItem(MENU_HIDE_NAME, R.string.action_hide_name);
-							dialogMenu.addItem(MENU_HIDE_SIMILAR, R.string.action_hide_similar);
-							dialogMenu.show(uiManager.getConfigurationLock());
-							break;
-						}
-						case MENU_HIDE_POST: {
-							uiManager.sendPostItemMessage(postItem, UiManager.Message.PERFORM_SWITCH_HIDE);
-							break;
-						}
-						case MENU_HIDE_REPLIES: {
-							uiManager.sendPostItemMessage(postItem, UiManager.Message.PERFORM_HIDE_REPLIES);
-							break;
-						}
-						case MENU_HIDE_NAME: {
-							uiManager.sendPostItemMessage(postItem, UiManager.Message.PERFORM_HIDE_NAME);
-							break;
-						}
-						case MENU_HIDE_SIMILAR: {
-							uiManager.sendPostItemMessage(postItem, UiManager.Message.PERFORM_HIDE_SIMILAR);
-							break;
-						}
-					}
-				}
-			});
+			DialogMenu dialogMenu = new DialogMenu(context);
 			if (replyable != null) {
-				dialogMenu.addItem(MENU_REPLY, R.string.action_reply);
+				dialogMenu.add(R.string.action_reply, () -> replyable
+						.onRequestReply(new Replyable.ReplyData(postItem.getPostNumber(), null)));
 				if (!postEmpty) {
-					dialogMenu.addItem(MENU_QUOTE, R.string.action_quote);
+					dialogMenu.add(R.string.action_quote, () -> replyable
+							.onRequestReply(new Replyable.ReplyData(postItem.getPostNumber(),
+									getCopyReadyComment(postItem.getComment()))));
 				}
 			}
 			if (copyText) {
-				dialogMenu.addItem(MENU_COPY, R.string.action_copy_expand);
+				dialogMenu.add(R.string.action_copy_expand, () -> {
+					DialogMenu innerDialogMenu = new DialogMenu(context);
+					innerDialogMenu.add(R.string.action_copy_text,
+							() -> handlePostContextMenuCopy(postItem, PostCopyShareAction.COPY_TEXT));
+					innerDialogMenu.add(R.string.action_copy_markup,
+							() -> handlePostContextMenuCopy(postItem, PostCopyShareAction.COPY_MARKUP));
+					innerDialogMenu.add(R.string.action_copy_link,
+							() -> handlePostContextMenuCopy(postItem, PostCopyShareAction.COPY_LINK));
+					innerDialogMenu.show(uiManager.getConfigurationLock());
+				});
 			} else {
-				dialogMenu.addItem(MENU_COPY_LINK, R.string.action_copy_link);
+				dialogMenu.add(R.string.action_copy_link,
+						() -> handlePostContextMenuCopy(postItem, PostCopyShareAction.COPY_LINK));
 			}
 			if (shareText) {
-				dialogMenu.addItem(MENU_SHARE, R.string.action_share_expand);
+				dialogMenu.add(R.string.action_share_expand, () -> {
+					DialogMenu innerDialogMenu = new DialogMenu(context);
+					innerDialogMenu.add(R.string.action_share_text,
+							() -> handlePostContextMenuCopy(postItem, PostCopyShareAction.SHARE_TEXT));
+					innerDialogMenu.add(R.string.action_share_link,
+							() -> handlePostContextMenuCopy(postItem, PostCopyShareAction.SHARE_LINK));
+					innerDialogMenu.show(uiManager.getConfigurationLock());
+				});
 			} else {
-				dialogMenu.addItem(MENU_SHARE_LINK, R.string.action_share_link);
+				dialogMenu.add(R.string.action_share_link,
+						() -> handlePostContextMenuCopy(postItem, PostCopyShareAction.SHARE_LINK));
 			}
 			if (!postItem.isDeleted()) {
 				if (board.allowReporting) {
-					dialogMenu.addItem(MENU_REPORT, R.string.action_report);
+					dialogMenu.add(R.string.action_report, () -> {
+						ArrayList<String> postNumbers = new ArrayList<>(1);
+						postNumbers.add(postItem.getPostNumber());
+						uiManager.dialog().performSendReportPosts(postItem.getChanName(), postItem.getBoardName(),
+								postItem.getThreadNumber(), postNumbers);
+					});
 				}
 				if (board.allowDeleting) {
-					dialogMenu.addItem(MENU_DELETE, R.string.action_delete);
+					dialogMenu.add(R.string.action_delete, () -> {
+						ArrayList<String> postNumbers = new ArrayList<>(1);
+						postNumbers.add(postItem.getPostNumber());
+						uiManager.dialog().performSendDeletePosts(postItem.getChanName(), postItem.getBoardName(),
+								postItem.getThreadNumber(), postNumbers);
+					});
 				}
 			}
 			if (allowMyMarkEdit) {
-				dialogMenu.addCheckableItem(MENU_ADD_REMOVE_MY_MARK, R.string.text_my_post, postItem.isUserPost());
+				dialogMenu.add(R.string.text_my_post, postItem.isUserPost(), () -> uiManager
+						.sendPostItemMessage(postItem, UiManager.Message.PERFORM_SWITCH_USER_MARK));
 			}
 			if (allowGoToPost) {
-				dialogMenu.addItem(MENU_GO_TO_POST, R.string.action_go_to_post);
+				dialogMenu.add(R.string.action_go_to_post, () -> uiManager
+						.sendPostItemMessage(postItem, UiManager.Message.PERFORM_GO_TO_POST));
 			}
 			if (allowHiding && !postItem.isHiddenUnchecked()) {
-				dialogMenu.addItem(MENU_HIDE, R.string.action_hide_expand);
+				dialogMenu.add(R.string.action_hide_expand, () -> {
+					DialogMenu innerDialogMenu = new DialogMenu(context);
+					innerDialogMenu.add(R.string.action_hide_post, () -> uiManager
+							.sendPostItemMessage(postItem, UiManager.Message.PERFORM_SWITCH_HIDE));
+					innerDialogMenu.add(R.string.action_hide_replies, () -> uiManager
+							.sendPostItemMessage(postItem, UiManager.Message.PERFORM_HIDE_REPLIES));
+					innerDialogMenu.add(R.string.action_hide_name, () -> uiManager
+							.sendPostItemMessage(postItem, UiManager.Message.PERFORM_HIDE_NAME));
+					innerDialogMenu.add(R.string.action_hide_similar, () -> uiManager
+							.sendPostItemMessage(postItem, UiManager.Message.PERFORM_HIDE_SIMILAR));
+					innerDialogMenu.show(uiManager.getConfigurationLock());
+				});
 			}
 			dialogMenu.show(uiManager.getConfigurationLock());
 			return true;
 		}
 		return false;
+	}
+
+	private enum PostCopyShareAction {COPY_TEXT, COPY_MARKUP, COPY_LINK, SHARE_LINK, SHARE_TEXT}
+
+	private void handlePostContextMenuCopy(PostItem postItem, PostCopyShareAction action) {
+		Context context = uiManager.getContext();
+		switch (action) {
+			case COPY_TEXT: {
+				StringUtils.copyToClipboard(context, getCopyReadyComment(postItem.getComment()));
+				break;
+			}
+			case COPY_MARKUP: {
+				StringUtils.copyToClipboard(context, postItem.getCommentMarkup());
+				break;
+			}
+			case COPY_LINK:
+			case SHARE_LINK:
+			case SHARE_TEXT: {
+				ChanLocator locator = ChanLocator.get(postItem.getChanName());
+				String boardName = postItem.getBoardName();
+				String threadNumber = postItem.getThreadNumber();
+				String postNumber = postItem.getPostNumber();
+				Uri uri = postItem.getParentPostNumber() == null
+						? locator.safe(true).createThreadUri(boardName, threadNumber)
+						: locator.safe(true).createPostUri(boardName, threadNumber, postNumber);
+				if (uri != null) {
+					switch (action) {
+						case COPY_LINK: {
+							StringUtils.copyToClipboard(context, uri.toString());
+							break;
+						}
+						case SHARE_LINK: {
+							String subject = postItem.getSubjectOrComment();
+							if (StringUtils.isEmptyOrWhitespace(subject)) {
+								subject = uri.toString();
+							}
+							NavigationUtils.shareLink(context, subject, uri);
+							break;
+						}
+						case SHARE_TEXT: {
+							String subject = postItem.getSubjectOrComment();
+							if (StringUtils.isEmptyOrWhitespace(subject)) {
+								subject = uri.toString();
+							}
+							NavigationUtils.shareText(context, subject,
+									getCopyReadyComment(postItem.getComment()), uri);
+							break;
+						}
+					}
+				}
+				break;
+			}
+		}
 	}
 
 	private String getCopyReadyComment(CharSequence text) {

@@ -1,5 +1,6 @@
 package com.mishiranu.dashchan.ui.gallery;
 
+import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -574,60 +575,53 @@ public class PagerUnit implements PagerInstance.Callback {
 		}
 	}
 
-	private static final int POPUP_MENU_SAVE = 0;
-	private static final int POPUP_MENU_REFRESH = 1;
-	private static final int POPUP_MENU_TECHNICAL_INFO = 2;
-	private static final int POPUP_MENU_SEARCH_IMAGE = 3;
-	private static final int POPUP_MENU_NAVIGATE_POST = 4;
-	private static final int POPUP_MENU_COPY_LINK = 5;
-	private static final int POPUP_MENU_SHARE_LINK = 6;
-	private static final int POPUP_MENU_SHARE_FILE = 7;
-
 	private DialogMenu currentPopupDialogMenu;
 
 	private void displayPopupMenu() {
-		DialogMenu dialogMenu = new DialogMenu(galleryInstance.callback.getWindow().getContext(), id -> {
-			GalleryItem galleryItem = pagerInstance.currentHolder.galleryItem;
-			switch (id) {
-				case POPUP_MENU_SAVE: {
-					galleryInstance.callback.downloadGalleryItem(galleryItem);
-					break;
+		GalleryItem galleryItem = pagerInstance.currentHolder.galleryItem;
+		OptionsMenuCapabilities capabilities = obtainOptionsMenuCapabilities();
+		if (capabilities != null && capabilities.available) {
+			Context context = galleryInstance.callback.getWindow().getContext();
+			DialogMenu dialogMenu = new DialogMenu(context);
+			dialogMenu.setTitle(galleryItem.originalName != null ? galleryItem.originalName
+					: galleryItem.getFileName(galleryInstance.locator), true);
+			if (!galleryInstance.callback.isSystemUiVisible()) {
+				if (capabilities.save) {
+					dialogMenu.add(R.string.action_save, () -> galleryInstance.callback
+							.downloadGalleryItem(galleryItem));
 				}
-				case POPUP_MENU_REFRESH: {
-					refreshCurrent();
-					break;
+				if (capabilities.refresh) {
+					dialogMenu.add(R.string.action_refresh, this::refreshCurrent);
 				}
-				case POPUP_MENU_TECHNICAL_INFO: {
+			}
+			if (capabilities.viewTechnicalInfo) {
+				dialogMenu.add(R.string.action_technical_info, () -> {
 					if (galleryItem.isImage(galleryInstance.locator)) {
 						imageUnit.viewTechnicalInfo();
 					} else if (galleryItem.isVideo(galleryInstance.locator)) {
 						videoUnit.viewTechnicalInfo();
 					}
-					break;
-				}
-				case POPUP_MENU_SEARCH_IMAGE: {
+				});
+			}
+			if (capabilities.searchImage) {
+				dialogMenu.add(R.string.action_search_image, () -> {
 					videoUnit.forcePause();
-					NavigationUtils.searchImage(galleryInstance.callback.getWindow().getContext(),
-							galleryInstance.callback.getConfigurationLock(), galleryInstance.chanName,
-							galleryItem.getDisplayImageUri(galleryInstance.locator));
-					break;
-				}
-				case POPUP_MENU_NAVIGATE_POST: {
-					galleryInstance.callback.navigatePost(galleryItem, true, true);
-					break;
-				}
-				case POPUP_MENU_COPY_LINK: {
-					StringUtils.copyToClipboard(galleryInstance.context,
-							galleryItem.getFileUri(galleryInstance.locator).toString());
-					break;
-				}
-				case POPUP_MENU_SHARE_LINK: {
-					videoUnit.forcePause();
-					NavigationUtils.shareLink(galleryInstance.callback.getWindow().getContext(), null,
-							galleryItem.getFileUri(galleryInstance.locator));
-					break;
-				}
-				case POPUP_MENU_SHARE_FILE: {
+					NavigationUtils.searchImage(context, galleryInstance.callback.getConfigurationLock(),
+							galleryInstance.chanName, galleryItem.getDisplayImageUri(galleryInstance.locator));
+				});
+			}
+			if (galleryInstance.callback.isAllowNavigatePostManually(true) && capabilities.navigatePost) {
+				dialogMenu.add(R.string.action_go_to_post, () -> galleryInstance.callback
+						.navigatePost(galleryItem, true, true));
+			}
+			dialogMenu.add(R.string.action_copy_link, () -> StringUtils.copyToClipboard(context,
+					galleryItem.getFileUri(galleryInstance.locator).toString()));
+			dialogMenu.add(R.string.action_share_link, () -> {
+				videoUnit.forcePause();
+				NavigationUtils.shareLink(context, null, galleryItem.getFileUri(galleryInstance.locator));
+			});
+			if (capabilities.shareFile) {
+				dialogMenu.add(R.string.action_share_file, () -> {
 					videoUnit.forcePause();
 					Uri uri = galleryItem.getFileUri(galleryInstance.locator);
 					File file = CacheManager.getInstance().getMediaFile(uri, false);
@@ -638,37 +632,7 @@ public class PagerUnit implements PagerInstance.Callback {
 						NavigationUtils.shareFile(galleryInstance.callback.getWindow().getContext(), file,
 								galleryItem.getFileName(galleryInstance.locator));
 					}
-					break;
-				}
-			}
-		});
-
-		GalleryItem galleryItem = pagerInstance.currentHolder.galleryItem;
-		OptionsMenuCapabilities capabilities = obtainOptionsMenuCapabilities();
-		if (capabilities != null && capabilities.available) {
-			dialogMenu.setTitle(galleryItem.originalName != null ? galleryItem.originalName
-					: galleryItem.getFileName(galleryInstance.locator), true);
-			if (!galleryInstance.callback.isSystemUiVisible()) {
-				if (capabilities.save) {
-					dialogMenu.addItem(POPUP_MENU_SAVE, R.string.action_save);
-				}
-				if (capabilities.refresh) {
-					dialogMenu.addItem(POPUP_MENU_REFRESH, R.string.action_refresh);
-				}
-			}
-			if (capabilities.viewTechnicalInfo) {
-				dialogMenu.addItem(POPUP_MENU_TECHNICAL_INFO, R.string.action_technical_info);
-			}
-			if (capabilities.searchImage) {
-				dialogMenu.addItem(POPUP_MENU_SEARCH_IMAGE, R.string.action_search_image);
-			}
-			if (galleryInstance.callback.isAllowNavigatePostManually(true) && capabilities.navigatePost) {
-				dialogMenu.addItem(POPUP_MENU_NAVIGATE_POST, R.string.action_go_to_post);
-			}
-			dialogMenu.addItem(POPUP_MENU_COPY_LINK, R.string.action_copy_link);
-			dialogMenu.addItem(POPUP_MENU_SHARE_LINK, R.string.action_share_link);
-			if (capabilities.shareFile) {
-				dialogMenu.addItem(POPUP_MENU_SHARE_FILE, R.string.action_share_file);
+				});
 			}
 			dialogMenu.setOnDismissListener(dialog -> {
 				if (dialogMenu == currentPopupDialogMenu) {

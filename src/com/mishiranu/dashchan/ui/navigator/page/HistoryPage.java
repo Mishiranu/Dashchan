@@ -86,43 +86,28 @@ public class HistoryPage extends ListPage implements HistoryAdapter.Callback {
 		}
 	}
 
-	private static final int CONTEXT_MENU_COPY_LINK = 0;
-	private static final int CONTEXT_MENU_ADD_FAVORITES = 1;
-	private static final int CONTEXT_MENU_REMOVE_FROM_HISTORY = 2;
-
 	@Override
 	public boolean onItemLongClick(HistoryDatabase.HistoryItem historyItem) {
 		if (historyItem != null) {
-			DialogMenu dialogMenu = new DialogMenu(getContext(), id -> {
-				switch (id) {
-					case CONTEXT_MENU_COPY_LINK: {
-						Uri uri = getChanLocator().safe(true).createThreadUri(historyItem.boardName,
-								historyItem.threadNumber);
-						if (uri != null) {
-							StringUtils.copyToClipboard(getContext(), uri.toString());
-						}
-						break;
-					}
-					case CONTEXT_MENU_ADD_FAVORITES: {
-						FavoritesStorage.getInstance().add(historyItem.chanName, historyItem.boardName,
-								historyItem.threadNumber, historyItem.title, 0);
-						break;
-					}
-					case CONTEXT_MENU_REMOVE_FROM_HISTORY: {
-						if (HistoryDatabase.getInstance().remove(historyItem.chanName, historyItem.boardName,
-								historyItem.threadNumber)) {
-							getAdapter().remove(historyItem);
-						}
-						break;
-					}
+			DialogMenu dialogMenu = new DialogMenu(getContext());
+			dialogMenu.add(R.string.action_copy_link, () -> {
+				Uri uri = getChanLocator().safe(true).createThreadUri(historyItem.boardName, historyItem.threadNumber);
+				if (uri != null) {
+					StringUtils.copyToClipboard(getContext(), uri.toString());
 				}
 			});
-			dialogMenu.addItem(CONTEXT_MENU_COPY_LINK, R.string.action_copy_link);
 			if (!FavoritesStorage.getInstance().hasFavorite(historyItem.chanName,
 					historyItem.boardName, historyItem.threadNumber)) {
-				dialogMenu.addItem(CONTEXT_MENU_ADD_FAVORITES, R.string.action_add_to_favorites);
+				dialogMenu.add(R.string.action_add_to_favorites, () -> FavoritesStorage.getInstance()
+						.add(historyItem.chanName, historyItem.boardName, historyItem.threadNumber,
+								historyItem.title, 0));
 			}
-			dialogMenu.addItem(CONTEXT_MENU_REMOVE_FROM_HISTORY, R.string.action_remove_from_history);
+			dialogMenu.add(R.string.action_remove_from_history, () -> {
+				if (HistoryDatabase.getInstance().remove(historyItem.chanName, historyItem.boardName,
+						historyItem.threadNumber)) {
+					getAdapter().remove(historyItem);
+				}
+			});
 			dialogMenu.show(getUiManager().getConfigurationLock());
 			return true;
 		}

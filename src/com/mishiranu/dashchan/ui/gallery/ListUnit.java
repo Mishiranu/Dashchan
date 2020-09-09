@@ -1,5 +1,6 @@
 package com.mishiranu.dashchan.ui.gallery;
 
+import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.graphics.Rect;
@@ -196,58 +197,28 @@ public class ListUnit implements ActionMode.Callback {
 		}
 	}
 
-	private static final int MENU_DOWNLOAD_FILE = 0;
-	private static final int MENU_SEARCH_IMAGE = 1;
-	private static final int MENU_COPY_LINK = 2;
-	private static final int MENU_GO_TO_POST = 3;
-	private static final int MENU_SHARE_LINK = 4;
-
 	private boolean onItemLongClick(int position) {
 		if (selectionMode != null) {
 			return false;
 		}
 		GalleryItem galleryItem = getAdapter().getItem(position);
-		DialogMenu dialogMenu = new DialogMenu(instance.callback.getWindow().getContext(), id -> {
-			switch (id) {
-				case MENU_DOWNLOAD_FILE: {
-					instance.callback.downloadGalleryItem(galleryItem);
-					break;
-				}
-				case MENU_SEARCH_IMAGE: {
-					NavigationUtils.searchImage(instance.callback.getWindow().getContext(),
-							instance.callback.getConfigurationLock(), instance.chanName,
-							galleryItem.getDisplayImageUri(instance.locator));
-					break;
-				}
-				case MENU_COPY_LINK: {
-					StringUtils.copyToClipboard(instance.callback.getWindow().getContext(),
-							galleryItem.getFileUri(instance.locator)
-							.toString());
-					break;
-				}
-				case MENU_GO_TO_POST: {
-					instance.callback.navigatePost(galleryItem, true, true);
-					break;
-				}
-				case MENU_SHARE_LINK: {
-					NavigationUtils.shareLink(instance.callback.getWindow().getContext(),
-							null, galleryItem.getFileUri(instance.locator));
-					break;
-				}
-			}
-		});
-
+		Context context = instance.callback.getWindow().getContext();
+		DialogMenu dialogMenu = new DialogMenu(context);
 		dialogMenu.setTitle(galleryItem.originalName != null ? galleryItem.originalName
 				: galleryItem.getFileName(instance.locator), true);
-		dialogMenu.addItem(MENU_DOWNLOAD_FILE, R.string.action_download_file);
+		dialogMenu.add(R.string.action_download_file, () -> instance.callback.downloadGalleryItem(galleryItem));
 		if (galleryItem.getDisplayImageUri(instance.locator) != null) {
-			dialogMenu.addItem(MENU_SEARCH_IMAGE, R.string.action_search_image);
+			dialogMenu.add(R.string.action_search_image, () -> NavigationUtils.searchImage(context,
+					instance.callback.getConfigurationLock(), instance.chanName,
+					galleryItem.getDisplayImageUri(instance.locator)));
 		}
-		dialogMenu.addItem(MENU_COPY_LINK, R.string.action_copy_link);
+		dialogMenu.add(R.string.action_copy_link, () -> StringUtils.copyToClipboard(context,
+				galleryItem.getFileUri(instance.locator).toString()));
 		if (instance.callback.isAllowNavigatePostManually(false) && galleryItem.postNumber != null) {
-			dialogMenu.addItem(MENU_GO_TO_POST, R.string.action_go_to_post);
+			dialogMenu.add(R.string.action_go_to_post, () -> instance.callback.navigatePost(galleryItem, true, true));
 		}
-		dialogMenu.addItem(MENU_SHARE_LINK, R.string.action_share_link);
+		dialogMenu.add(R.string.action_share_link, () -> NavigationUtils.shareLink(context, null,
+				galleryItem.getFileUri(instance.locator)));
 		dialogMenu.show(instance.callback.getConfigurationLock());
 		return true;
 	}

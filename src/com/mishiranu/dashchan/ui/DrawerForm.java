@@ -460,12 +460,6 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 		}
 	}
 
-	private static final int MENU_COPY_LINK = 0;
-	private static final int MENU_SHARE_LINK = 1;
-	private static final int MENU_ADD_TO_FAVORITES = 2;
-	private static final int MENU_REMOVE_FROM_FAVORITES = 3;
-	private static final int MENU_RENAME = 4;
-
 	private boolean onItemLongClick(ViewHolder holder) {
 		if (chanSelectMode) {
 			sortableHelper.start(holder);
@@ -480,48 +474,28 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 		switch (listItem.type) {
 			case PAGE:
 			case FAVORITE: {
-				DialogMenu dialogMenu = new DialogMenu(context, id -> {
-					switch (id) {
-						case MENU_COPY_LINK:
-						case MENU_SHARE_LINK: {
-							ChanLocator locator = ChanLocator.get(listItem.chanName);
-							Uri uri = listItem.isThreadItem() ? locator.safe(true).createThreadUri
-									(listItem.boardName, listItem.threadNumber)
-									: locator.safe(true).createBoardUri(listItem.boardName, 0);
-							if (uri != null) {
-								switch (id) {
-									case MENU_COPY_LINK: {
-										StringUtils.copyToClipboard(context, uri.toString());
-										break;
-									}
-									case MENU_SHARE_LINK: {
-										String subject = listItem.title;
-										if (StringUtils.isEmptyOrWhitespace(subject)) {
-											subject = uri.toString();
-										}
-										NavigationUtils.shareLink(context, subject, uri);
-										break;
-									}
-								}
-							}
-							break;
+				DialogMenu dialogMenu = new DialogMenu(context);
+				dialogMenu.add(R.string.action_copy_link, () -> onCopyShareLink(listItem, false));
+				if (listItem.isThreadItem()) {
+					dialogMenu.add(R.string.action_share_link, () -> onCopyShareLink(listItem, true));
+				}
+				if (listItem.type != ListItem.Type.FAVORITE && !FavoritesStorage.getInstance()
+						.hasFavorite(listItem.chanName, listItem.boardName, listItem.threadNumber)) {
+					dialogMenu.add(R.string.action_add_to_favorites, () -> {
+						if (listItem.isThreadItem()) {
+							FavoritesStorage.getInstance().add(listItem.chanName, listItem.boardName,
+									listItem.threadNumber, listItem.title, 0);
+						} else {
+							FavoritesStorage.getInstance().add(listItem.chanName, listItem.boardName);
 						}
-						case MENU_ADD_TO_FAVORITES: {
-							if (listItem.isThreadItem()) {
-								FavoritesStorage.getInstance().add(listItem.chanName, listItem.boardName,
-										listItem.threadNumber, listItem.title, 0);
-							} else {
-								FavoritesStorage.getInstance().add(listItem.chanName, listItem.boardName);
-							}
-							break;
-						}
-						case MENU_REMOVE_FROM_FAVORITES: {
-							FavoritesStorage.getInstance().remove(listItem.chanName, listItem.boardName,
-									listItem.threadNumber);
-							break;
-						}
-						case MENU_RENAME: {
-							final EditText editText = new SafePasteEditText(context);
+					});
+				}
+				if (listItem.type == ListItem.Type.FAVORITE) {
+					dialogMenu.add(R.string.action_remove_from_favorites, () -> FavoritesStorage.getInstance()
+							.remove(listItem.chanName, listItem.boardName, listItem.threadNumber));
+					if (listItem.threadNumber != null) {
+						dialogMenu.add(R.string.action_rename, () -> {
+							EditText editText = new SafePasteEditText(context);
 							editText.setSingleLine(true);
 							editText.setText(listItem.title);
 							editText.setSelection(editText.length());
@@ -544,22 +518,7 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 									.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
 							configurationLock.lockConfiguration(dialog);
 							dialog.show();
-							break;
-						}
-					}
-				});
-				dialogMenu.addItem(MENU_COPY_LINK, R.string.action_copy_link);
-				if (listItem.isThreadItem()) {
-					dialogMenu.addItem(MENU_SHARE_LINK, R.string.action_share_link);
-				}
-				if (listItem.type != ListItem.Type.FAVORITE && !FavoritesStorage.getInstance()
-						.hasFavorite(listItem.chanName, listItem.boardName, listItem.threadNumber)) {
-					dialogMenu.addItem(MENU_ADD_TO_FAVORITES, R.string.action_add_to_favorites);
-				}
-				if (listItem.type == ListItem.Type.FAVORITE) {
-					dialogMenu.addItem(MENU_REMOVE_FROM_FAVORITES, R.string.action_remove_from_favorites);
-					if (listItem.threadNumber != null) {
-						dialogMenu.addItem(MENU_RENAME, R.string.action_rename);
+						});
 					}
 				}
 				dialogMenu.show(configurationLock);
@@ -567,6 +526,24 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 			}
 		}
 		return false;
+	}
+
+	private void onCopyShareLink(ListItem listItem, boolean share) {
+		ChanLocator locator = ChanLocator.get(listItem.chanName);
+		Uri uri = listItem.isThreadItem() ? locator.safe(true).createThreadUri
+				(listItem.boardName, listItem.threadNumber)
+				: locator.safe(true).createBoardUri(listItem.boardName, 0);
+		if (uri != null) {
+			if (share) {
+				String subject = listItem.title;
+				if (StringUtils.isEmptyOrWhitespace(subject)) {
+					subject = uri.toString();
+				}
+				NavigationUtils.shareLink(context, subject, uri);
+			} else {
+				StringUtils.copyToClipboard(context, uri.toString());
+			}
+		}
 	}
 
 	@Override

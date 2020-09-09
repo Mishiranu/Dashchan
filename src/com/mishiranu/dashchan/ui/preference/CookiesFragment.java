@@ -100,8 +100,7 @@ public class CookiesFragment extends PreferenceFragment {
 		ChanConfiguration.CookieData cookieData = cookies.get(cookie);
 		if (cookieData != null) {
 			ActionDialog dialog = new ActionDialog(cookie, cookieData.blocked);
-			dialog.setTargetFragment(this, 0);
-			dialog.show(getParentFragmentManager(), ActionDialog.TAG);
+			dialog.show(getChildFragmentManager(), ActionDialog.TAG);
 		}
 	};
 
@@ -138,8 +137,8 @@ public class CookiesFragment extends PreferenceFragment {
 		}
 	}
 
-	public static class ActionDialog extends DialogFragment implements DialogMenu.SimpleCallback {
-		private static final String TAG = UpdateFragment.TargetDialog.class.getName();
+	public static class ActionDialog extends DialogFragment {
+		private static final String TAG = ActionDialog.class.getName();
 
 		private static final String EXTRA_COOKIE = "cookie";
 		private static final String EXTRA_BLOCKED = "blocked";
@@ -153,36 +152,19 @@ public class CookiesFragment extends PreferenceFragment {
 			setArguments(args);
 		}
 
-		private static final int MENU_BLOCKED = 0;
-		private static final int MENU_REMOVE = 1;
-
 		@NonNull
 		@Override
 		public AlertDialog onCreateDialog(Bundle savedInstanceState) {
 			Bundle args = requireArguments();
 			boolean blocked = args.getBoolean(EXTRA_BLOCKED);
-			DialogMenu dialogMenu = new DialogMenu(requireContext(), this);
-			dialogMenu.addCheckableItem(MENU_BLOCKED, R.string.action_block, blocked);
+			DialogMenu dialogMenu = new DialogMenu(requireContext());
+			dialogMenu.add(R.string.action_block, blocked, () -> ((CookiesFragment) getParentFragment())
+					.setBlocked(args.getString(EXTRA_COOKIE), !args.getBoolean(EXTRA_BLOCKED)));
 			if (!blocked) {
-				dialogMenu.addItem(MENU_REMOVE, R.string.action_delete);
+				dialogMenu.add(R.string.action_delete, () -> ((CookiesFragment) getParentFragment())
+						.removeCookie(args.getString(EXTRA_COOKIE), false));
 			}
 			return dialogMenu.create();
-		}
-
-		@Override
-		public void onItemClick(int id) {
-			Bundle args = requireArguments();
-			switch (id) {
-				case MENU_BLOCKED: {
-					((CookiesFragment) getTargetFragment()).setBlocked(args.getString(EXTRA_COOKIE),
-							!args.getBoolean(EXTRA_BLOCKED));
-					break;
-				}
-				case MENU_REMOVE: {
-					((CookiesFragment) getTargetFragment()).removeCookie(args.getString(EXTRA_COOKIE), false);
-					break;
-				}
-			}
 		}
 	}
 }

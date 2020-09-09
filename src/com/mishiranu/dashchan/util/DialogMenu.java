@@ -18,8 +18,6 @@ public class DialogMenu {
 	private final Context context;
 	private final AlertDialog.Builder builder;
 
-	private final Callback callback;
-
 	private final ArrayList<ListItem> listItems = new ArrayList<>();
 	private boolean longTitle;
 
@@ -30,29 +28,24 @@ public class DialogMenu {
 	private boolean dismissCalled = false;
 
 	private static class ListItem {
-		public final int id;
 		public final String title;
 		public final boolean checkable;
 		public final boolean checked;
+		public final Runnable runnable;
 
-		public ListItem(int id, String title, boolean checkable, boolean checked) {
-			this.id = id;
+		public ListItem(String title, boolean checkable, boolean checked, Runnable runnable) {
 			this.title = title;
 			this.checkable = checkable;
 			this.checked = checked;
+			this.runnable = runnable;
 		}
 	}
 
 	private boolean consumed = false;
 
-	public DialogMenu(Context context, SimpleCallback callback) {
-		this(context, (callbackContext, id) -> callback.onItemClick(id));
-	}
-
-	public DialogMenu(Context context, Callback callback) {
+	public DialogMenu(Context context) {
 		this.context = context;
 		this.builder = new AlertDialog.Builder(context);
-		this.callback = callback;
 	}
 
 	public DialogMenu setTitle(String title, boolean longTitle) {
@@ -62,26 +55,26 @@ public class DialogMenu {
 		return this;
 	}
 
-	private DialogMenu addItem(int id, String title, boolean checkable, boolean checked) {
+	private DialogMenu add(String title, boolean checkable, boolean checked, Runnable callback) {
 		checkConsumed();
-		listItems.add(new ListItem(id, title, checkable, checked));
+		listItems.add(new ListItem(title, checkable, checked, callback));
 		return this;
 	}
 
-	public DialogMenu addItem(int id, String title) {
-		return addItem(id, title, false, false);
+	public DialogMenu add(String title, Runnable runnable) {
+		return add(title, false, false, runnable);
 	}
 
-	public DialogMenu addItem(int id, int titleRes) {
-		return addItem(id, context.getString(titleRes));
+	public DialogMenu add(int titleRes, Runnable runnable) {
+		return add(context.getString(titleRes), runnable);
 	}
 
-	public DialogMenu addCheckableItem(int id, String title, boolean checked) {
-		return addItem(id, title, true, checked);
+	public DialogMenu add(String title, boolean checked, Runnable runnable) {
+		return add(title, true, checked, runnable);
 	}
 
-	public DialogMenu addCheckableItem(int id, int titleRes, boolean checked) {
-		return addCheckableItem(id, context.getString(titleRes), checked);
+	public DialogMenu add(int titleRes, boolean checked, Runnable runnable) {
+		return add(context.getString(titleRes), checked, runnable);
 	}
 
 	public AlertDialog create() {
@@ -92,7 +85,7 @@ public class DialogMenu {
 					dismissCalled = true;
 					onDismissListener.onDismiss(d);
 				}
-				callback.onItemClick(context, listItems.get(which).id);
+				listItems.get(which).runnable.run();
 			}).create();
 			if (longTitle) {
 				dialog.setOnShowListener(ViewUtils.ALERT_DIALOG_LONGER_TITLE);
@@ -137,14 +130,6 @@ public class DialogMenu {
 		if (consumed) {
 			throw new RuntimeException("DialogMenu is already consumed.");
 		}
-	}
-
-	public interface SimpleCallback {
-		void onItemClick(int id);
-	}
-
-	public interface Callback {
-		void onItemClick(Context context, int id);
 	}
 
 	private class DialogAdapter extends BaseAdapter {

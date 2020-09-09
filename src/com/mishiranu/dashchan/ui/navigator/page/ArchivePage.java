@@ -86,30 +86,19 @@ public class ArchivePage extends ListPage implements ArchiveAdapter.Callback,
 		}
 	}
 
-	private static final int CONTEXT_MENU_COPY_LINK = 0;
-	private static final int CONTEXT_MENU_ADD_FAVORITES = 1;
-
 	@Override
 	public boolean onItemLongClick(String threadNumber) {
 		Page page = getPage();
-		DialogMenu dialogMenu = new DialogMenu(getContext(), id -> {
-			switch (id) {
-				case CONTEXT_MENU_COPY_LINK: {
-					Uri uri = getChanLocator().safe(true).createThreadUri(page.boardName, threadNumber);
-					if (uri != null) {
-						StringUtils.copyToClipboard(getContext(), uri.toString());
-					}
-					break;
-				}
-				case CONTEXT_MENU_ADD_FAVORITES: {
-					FavoritesStorage.getInstance().add(page.chanName, page.boardName, threadNumber, null, 0);
-					break;
-				}
+		DialogMenu dialogMenu = new DialogMenu(getContext());
+		dialogMenu.add(R.string.action_copy_link, () -> {
+			Uri uri = getChanLocator().safe(true).createThreadUri(page.boardName, threadNumber);
+			if (uri != null) {
+				StringUtils.copyToClipboard(getContext(), uri.toString());
 			}
 		});
-		dialogMenu.addItem(CONTEXT_MENU_COPY_LINK, R.string.action_copy_link);
 		if (!FavoritesStorage.getInstance().hasFavorite(page.chanName, page.boardName, threadNumber)) {
-			dialogMenu.addItem(CONTEXT_MENU_ADD_FAVORITES, R.string.action_add_to_favorites);
+			dialogMenu.add(R.string.action_add_to_favorites, () -> FavoritesStorage.getInstance()
+					.add(page.chanName, page.boardName, threadNumber, null, 0));
 		}
 		dialogMenu.show(getUiManager().getConfigurationLock());
 		return true;

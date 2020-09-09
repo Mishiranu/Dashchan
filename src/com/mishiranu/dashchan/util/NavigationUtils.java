@@ -192,50 +192,26 @@ public class NavigationUtils {
 
 	public static void searchImage(Context context, ConfigurationLock configurationLock,
 			final String chanName, Uri uri) {
+		ChanLocator locator = ChanLocator.getDefault();
 		final String imageUriString = ChanLocator.get(chanName).convert(uri).toString();
-		new DialogMenu(context, id -> {
-			ChanLocator locator = ChanLocator.getDefault();
-			Uri searchUri;
-			switch (id) {
-				case 0: {
-					searchUri = locator.buildQueryWithHost("www.google.com", "searchbyimage",
-							"image_url", imageUriString);
-					break;
-				}
-				case 1: {
-					searchUri = locator.buildQueryWithHost("yandex.ru", "images/search", "rpt", "imageview",
-							"img_url", imageUriString);
-					break;
-				}
-				case 2: {
-					searchUri = locator.buildQueryWithHost("www.tineye.com", "search", "url", imageUriString);
-					break;
-				}
-				case 3: {
-					searchUri = locator.buildQueryWithHost("saucenao.com", "search.php", "url", imageUriString);
-					break;
-				}
-				case 4: {
-					searchUri = locator.buildQueryWithHost("iqdb.org", "/", "url", imageUriString);
-					break;
-				}
-				case 5: {
-					searchUri = locator.buildQueryWithHost("trace.moe", "/", "url", imageUriString);
-					break;
-				}
-				default: {
-					return;
-				}
-			}
-			handleUri(context, null, searchUri, BrowserType.EXTERNAL);
-		})
-		.addItem(0, "Google")
-		.addItem(1, "Yandex")
-		.addItem(2, "TinEye")
-		.addItem(3, "SauceNAO")
-		.addItem(4, "iqdb.org")
-		.addItem(5, "trace.moe")
-		.show(configurationLock);
+		new DialogMenu(context)
+				.add("Google", () -> searchImageUri(context, locator.buildQueryWithHost("www.google.com",
+						"searchbyimage", "image_url", imageUriString)))
+				.add("Yandex", () -> searchImageUri(context, locator.buildQueryWithHost("yandex.ru",
+						"images/search", "rpt", "imageview", "img_url", imageUriString)))
+				.add("TinEye", () -> searchImageUri(context, locator.buildQueryWithHost("www.tineye.com",
+						"search", "url", imageUriString)))
+				.add("SauceNAO", () -> searchImageUri(context, locator.buildQueryWithHost("saucenao.com",
+						"search.php", "url", imageUriString)))
+				.add("iqdb.org", () -> searchImageUri(context, locator.buildQueryWithHost("iqdb.org",
+						"/", "url", imageUriString)))
+				.add("trace.moe", () -> searchImageUri(context, locator.buildQueryWithHost("trace.moe",
+						"/", "url", imageUriString)))
+				.show(configurationLock);
+	}
+
+	private static void searchImageUri(Context context, Uri searchUri) {
+		handleUri(context, null, searchUri, BrowserType.EXTERNAL);
 	}
 
 	public static void shareText(Context context, String subject, String text, Uri uri) {

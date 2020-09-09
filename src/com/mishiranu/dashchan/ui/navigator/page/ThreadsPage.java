@@ -201,48 +201,33 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		}
 	}
 
-	private static final int CONTEXT_MENU_COPY_LINK = 0;
-	private static final int CONTEXT_MENU_SHARE_LINK = 1;
-	private static final int CONTEXT_MENU_HIDE = 2;
-
 	@Override
 	public boolean onItemLongClick(PostItem postItem) {
 		if (postItem != null) {
-			DialogMenu dialogMenu = new DialogMenu(getContext(), id -> {
-				Page page = getPage();
-				ThreadsAdapter adapter = getAdapter();
-				switch (id) {
-					case CONTEXT_MENU_COPY_LINK: {
-						Uri uri = getChanLocator().safe(true).createThreadUri(page.boardName,
-								postItem.getThreadNumber());
-						if (uri != null) {
-							StringUtils.copyToClipboard(getContext(), uri.toString());
-						}
-						break;
-					}
-					case CONTEXT_MENU_SHARE_LINK: {
-						Uri uri = ChanLocator.get(page.chanName).safe(true)
-								.createThreadUri(page.boardName, postItem.getThreadNumber());
-						String subject = postItem.getSubjectOrComment();
-						if (StringUtils.isEmptyOrWhitespace(subject)) {
-							subject = uri.toString();
-						}
-						NavigationUtils.shareLink(getContext(), subject, uri);
-						break;
-					}
-					case CONTEXT_MENU_HIDE: {
-						HiddenThreadsDatabase.getInstance().set(page.chanName, page.boardName,
-								postItem.getThreadNumber(), true);
-						postItem.invalidateHidden();
-						adapter.notifyDataSetChanged();
-						break;
-					}
+			Page page = getPage();
+			DialogMenu dialogMenu = new DialogMenu(getContext());
+			dialogMenu.add(R.string.action_copy_link, () -> {
+				Uri uri = getChanLocator().safe(true).createThreadUri(page.boardName, postItem.getThreadNumber());
+				if (uri != null) {
+					StringUtils.copyToClipboard(getContext(), uri.toString());
 				}
 			});
-			dialogMenu.addItem(CONTEXT_MENU_COPY_LINK, R.string.action_copy_link);
-			dialogMenu.addItem(CONTEXT_MENU_SHARE_LINK, R.string.action_share_link);
+			dialogMenu.add(R.string.action_share_link, () -> {
+				Uri uri = ChanLocator.get(page.chanName).safe(true)
+						.createThreadUri(page.boardName, postItem.getThreadNumber());
+				String subject = postItem.getSubjectOrComment();
+				if (StringUtils.isEmptyOrWhitespace(subject)) {
+					subject = uri.toString();
+				}
+				NavigationUtils.shareLink(getContext(), subject, uri);
+			});
 			if (!postItem.isHiddenUnchecked()) {
-				dialogMenu.addItem(CONTEXT_MENU_HIDE, R.string.action_hide);
+				dialogMenu.add(R.string.action_hide, () -> {
+					HiddenThreadsDatabase.getInstance().set(page.chanName, page.boardName,
+							postItem.getThreadNumber(), true);
+					postItem.invalidateHidden();
+					getAdapter().notifyDataSetChanged();
+				});
 			}
 			dialogMenu.show(getUiManager().getConfigurationLock());
 			return true;
