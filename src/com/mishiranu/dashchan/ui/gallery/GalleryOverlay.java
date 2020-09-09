@@ -349,19 +349,15 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 		return returnToGallery();
 	}
 
-	private static final int OPTIONS_MENU_SAVE = 0;
-	private static final int OPTIONS_MENU_REFRESH = 1;
-	private static final int OPTIONS_MENU_SELECT = 2;
-
 	@Override
 	public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-		menu.add(0, OPTIONS_MENU_SAVE, 0, R.string.action_save)
+		menu.add(0, R.id.menu_save, 0, R.string.action_save)
 				.setIcon(ResourceUtils.getActionBarIcon(instance.context, R.attr.iconActionSave))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-		menu.add(0, OPTIONS_MENU_REFRESH, 0, R.string.action_refresh)
+		menu.add(0, R.id.menu_refresh, 0, R.string.action_refresh)
 				.setIcon(ResourceUtils.getActionBarIcon(instance.context, R.attr.iconActionRefresh))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-		menu.add(0, OPTIONS_MENU_SELECT, 0, R.string.action_select)
+		menu.add(0, R.id.menu_select, 0, R.string.action_select)
 				.setIcon(ResourceUtils.getActionBarIcon(instance.context, R.attr.iconActionSelect))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 	}
@@ -375,14 +371,14 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 			PagerUnit.OptionsMenuCapabilities capabilities = pagerUnit != null
 					? pagerUnit.obtainOptionsMenuCapabilities() : null;
 			if (capabilities != null && capabilities.available) {
-				menu.findItem(OPTIONS_MENU_SAVE).setVisible(capabilities.save);
-				menu.findItem(OPTIONS_MENU_REFRESH).setVisible(capabilities.refresh);
+				menu.findItem(R.id.menu_save).setVisible(capabilities.save);
+				menu.findItem(R.id.menu_refresh).setVisible(capabilities.refresh);
 			}
 			if (pagerUnit != null) {
 				pagerUnit.invalidatePopupMenu();
 			}
 		} else {
-			menu.findItem(OPTIONS_MENU_SELECT).setVisible(listUnit.areItemsSelectable());
+			menu.findItem(R.id.menu_select).setVisible(listUnit.areItemsSelectable());
 		}
 	}
 
@@ -394,15 +390,15 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 				dismiss();
 				break;
 			}
-			case OPTIONS_MENU_SAVE: {
+			case R.id.menu_save: {
 				downloadGalleryItem(galleryItem);
 				break;
 			}
-			case OPTIONS_MENU_REFRESH: {
+			case R.id.menu_refresh: {
 				pagerUnit.refreshCurrent();
 				break;
 			}
-			case OPTIONS_MENU_SELECT: {
+			case R.id.menu_select: {
 				listUnit.startSelectionMode(null);
 				break;
 			}

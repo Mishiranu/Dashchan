@@ -1063,10 +1063,10 @@ public class DialogUnit {
 		boolean canDownload = attachmentItem.canDownloadToStorage();
 		String chanName = attachmentItem.getChanName();
 		Uri uri = attachmentItem.getFileUri();
-		int type = attachmentItem.getType();
-		if (canDownload && type == AttachmentItem.TYPE_AUDIO) {
+		AttachmentItem.Type type = attachmentItem.getType();
+		if (canDownload && type == AttachmentItem.Type.AUDIO) {
 			AudioPlayerService.start(context, chanName, uri, attachmentItem.getFileName());
-		} else if (canDownload && (type == AttachmentItem.TYPE_IMAGE || type == AttachmentItem.TYPE_VIDEO &&
+		} else if (canDownload && (type == AttachmentItem.Type.IMAGE || type == AttachmentItem.Type.VIDEO &&
 				NavigationUtils.isOpenableVideoExtension(attachmentItem.getExtension()))) {
 			uiManager.navigator().navigateGallery(chanName, gallerySet, imageIndex,
 					imageView, navigatePostMode, false);

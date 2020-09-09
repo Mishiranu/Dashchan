@@ -1,37 +1,18 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui.navigator.manager;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-
 import android.content.res.Resources;
-
 import chan.content.model.Posts;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.storage.AutohideStorage;
 import com.mishiranu.dashchan.text.SimilarTextEstimator;
 import com.mishiranu.dashchan.util.ToastUtils;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 
 public class HidePerformer implements PostItem.HidePerformer {
 	private static final int MAX_COMMENT_LENGTH = 1000;
@@ -161,44 +142,42 @@ public class HidePerformer implements PostItem.HidePerformer {
 		return null;
 	}
 
-	public static final int ADD_SUCCESS = 0;
-	public static final int ADD_FAIL = 1;
-	public static final int ADD_EXISTS = 2;
+	public enum AddResult {SUCCESS, FAIL, EXISTS}
 
-	public int addHideByReplies(PostItem postItem) {
+	public AddResult addHideByReplies(PostItem postItem) {
 		if (replies == null) {
 			replies = new LinkedHashSet<>();
 		}
 		String postNumber = postItem.getPostNumber();
 		if (replies.contains(postNumber)) {
-			return ADD_EXISTS;
+			return AddResult.EXISTS;
 		}
 		replies.add(postNumber);
-		return ADD_SUCCESS;
+		return AddResult.SUCCESS;
 	}
 
-	public int addHideByName(PostItem postItem) {
+	public AddResult addHideByName(PostItem postItem) {
 		if (postItem.isUseDefaultName()) {
 			ToastUtils.show(MainApplication.getInstance(), R.string.message_hide_default_name_error);
-			return ADD_FAIL;
+			return AddResult.FAIL;
 		}
 		if (names == null) {
 			names = new LinkedHashSet<>();
 		}
 		String fullName = postItem.getFullName().toString();
 		if (names.contains(fullName)) {
-			return ADD_EXISTS;
+			return AddResult.EXISTS;
 		}
 		names.add(fullName);
-		return ADD_SUCCESS;
+		return AddResult.SUCCESS;
 	}
 
-	public int addHideSimilar(PostItem postItem) {
+	public AddResult addHideSimilar(PostItem postItem) {
 		String comment = postItem.getComment().toString();
 		SimilarTextEstimator.WordsData wordsData = estimator.getWords(comment);
 		if (wordsData == null) {
 			ToastUtils.show(MainApplication.getInstance(), R.string.message_too_few_meaningful_words);
-			return ADD_FAIL;
+			return AddResult.FAIL;
 		}
 		if (words == null) {
 			words = new ArrayList<>();
@@ -212,7 +191,7 @@ public class HidePerformer implements PostItem.HidePerformer {
 			}
 		}
 		words.add(wordsData);
-		return ADD_SUCCESS;
+		return AddResult.SUCCESS;
 	}
 
 	public boolean hasLocalAutohide() {

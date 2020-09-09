@@ -6,7 +6,6 @@ import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.SparseBooleanArray;
-import android.util.SparseIntArray;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -27,24 +26,21 @@ import com.mishiranu.dashchan.ui.posting.PostingDialogCallback;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class AttachmentOptionsDialog extends DialogFragment implements AdapterView.OnItemClickListener {
 	public static final String TAG = AttachmentOptionsDialog.class.getName();
 
 	private static final String EXTRA_ATTACHMENT_INDEX = "attachmentIndex";
 
-	private static final int OPTION_TYPE_UNIQUE_HASH = 0;
-	private static final int OPTION_TYPE_REMOVE_METADATA = 1;
-	private static final int OPTION_TYPE_REENCODE_IMAGE = 2;
-	private static final int OPTION_TYPE_REMOVE_FILE_NAME = 3;
-	private static final int OPTION_TYPE_SPOILER = 4;
+	private enum Type {UNIQUE_HASH, REMOVE_METADATA, REENCODE_IMAGE, REMOVE_FILE_NAME, SPOILER}
 
 	private static class OptionItem {
 		public final String title;
-		public final int type;
+		public final Type type;
 		public final boolean checked;
 
-		public OptionItem(String title, int type, boolean checked) {
+		public OptionItem(String title, Type type, boolean checked) {
 			this.title = title;
 			this.type = type;
 			this.checked = checked;
@@ -52,7 +48,7 @@ public class AttachmentOptionsDialog extends DialogFragment implements AdapterVi
 	}
 
 	private final ArrayList<OptionItem> optionItems = new ArrayList<>();
-	private final SparseIntArray optionIndexes = new SparseIntArray();
+	private final HashMap<Type, Integer> optionIndices = new HashMap<>();
 
 	private ListView listView;
 
@@ -109,28 +105,28 @@ public class AttachmentOptionsDialog extends DialogFragment implements AdapterVi
 				.getPostingConfiguration();
 		int index = 0;
 		optionItems.clear();
-		optionIndexes.clear();
-		optionItems.add(new OptionItem(getString(R.string.text_unique_hash), OPTION_TYPE_UNIQUE_HASH,
+		optionIndices.clear();
+		optionItems.add(new OptionItem(getString(R.string.text_unique_hash), Type.UNIQUE_HASH,
 				holder.optionUniqueHash));
-		optionIndexes.append(OPTION_TYPE_UNIQUE_HASH, index++);
+		optionIndices.put(Type.UNIQUE_HASH, index++);
 		if (GraphicsUtils.canRemoveMetadata(fileHolder)) {
-			optionItems.add(new OptionItem(getString(R.string.text_remove_metadata), OPTION_TYPE_REMOVE_METADATA,
+			optionItems.add(new OptionItem(getString(R.string.text_remove_metadata), Type.REMOVE_METADATA,
 					holder.optionRemoveMetadata));
-			optionIndexes.append(OPTION_TYPE_REMOVE_METADATA, index++);
+			optionIndices.put(Type.REMOVE_METADATA, index++);
 		}
 		if (fileHolder.isImage()) {
-			optionItems.add(new OptionItem(getString(R.string.text_reencode_image), OPTION_TYPE_REENCODE_IMAGE,
+			optionItems.add(new OptionItem(getString(R.string.text_reencode_image), Type.REENCODE_IMAGE,
 					holder.reencoding != null));
-			optionIndexes.append(OPTION_TYPE_REENCODE_IMAGE, index++);
+			optionIndices.put(Type.REENCODE_IMAGE, index++);
 		}
-		optionItems.add(new OptionItem(getString(R.string.text_remove_file_name), OPTION_TYPE_REMOVE_FILE_NAME,
+		optionItems.add(new OptionItem(getString(R.string.text_remove_file_name), Type.REMOVE_FILE_NAME,
 				holder.optionRemoveFileName));
-		optionIndexes.append(OPTION_TYPE_REMOVE_FILE_NAME, index++);
+		optionIndices.put(Type.REMOVE_FILE_NAME, index++);
 		if (postingConfiguration.attachmentSpoiler) {
-			optionItems.add(new OptionItem(getString(R.string.text_spoiler), OPTION_TYPE_SPOILER,
+			optionItems.add(new OptionItem(getString(R.string.text_spoiler), Type.SPOILER,
 					holder.optionSpoiler));
 			// noinspection UnusedAssignment
-			optionIndexes.append(OPTION_TYPE_SPOILER, index++);
+			optionIndices.put(Type.SPOILER, index++);
 		}
 		ArrayList<String> items = new ArrayList<>();
 		for (OptionItem optionItem : optionItems) {
@@ -147,7 +143,7 @@ public class AttachmentOptionsDialog extends DialogFragment implements AdapterVi
 		linearLayout.addView(listView, LinearLayout.LayoutParams.MATCH_PARENT,
 				LinearLayout.LayoutParams.WRAP_CONTENT);
 		listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-		int resId = ResourceUtils.obtainAlertDialogLayoutResId(activity, ResourceUtils.DIALOG_LAYOUT_MULTI_CHOICE);
+		int resId = ResourceUtils.obtainAlertDialogLayoutResId(activity, ResourceUtils.DialogLayout.MULTI_CHOICE);
 		if (C.API_LOLLIPOP) {
 			listView.setDividerHeight(0);
 		}
@@ -164,10 +160,10 @@ public class AttachmentOptionsDialog extends DialogFragment implements AdapterVi
 	}
 
 	private void updateItemsEnabled(ItemsAdapter adapter, AttachmentHolder holder) {
-		int reencodeIndex = optionIndexes.get(OPTION_TYPE_REENCODE_IMAGE, -1);
-		boolean allowRemoveMetadata = reencodeIndex == -1 || holder.reencoding == null;
-		int removeMetadataIndex = optionIndexes.get(OPTION_TYPE_REMOVE_METADATA, -1);
-		if (removeMetadataIndex >= 0) {
+		Integer reencodeIndex = optionIndices.get(Type.REENCODE_IMAGE);
+		boolean allowRemoveMetadata = reencodeIndex == null || holder.reencoding == null;
+		Integer removeMetadataIndex = optionIndices.get(Type.REMOVE_METADATA);
+		if (removeMetadataIndex != null) {
 			adapter.setEnabled(removeMetadataIndex, allowRemoveMetadata);
 			adapter.notifyDataSetChanged();
 		}
@@ -176,18 +172,18 @@ public class AttachmentOptionsDialog extends DialogFragment implements AdapterVi
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 		AttachmentHolder holder = getAttachmentHolder();
-		int type = optionItems.get(position).type;
+		Type type = optionItems.get(position).type;
 		boolean checked = listView.isItemChecked(position);
 		switch (type) {
-			case OPTION_TYPE_UNIQUE_HASH: {
+			case UNIQUE_HASH: {
 				holder.optionUniqueHash = checked;
 				break;
 			}
-			case OPTION_TYPE_REMOVE_METADATA: {
+			case REMOVE_METADATA: {
 				holder.optionRemoveMetadata = checked;
 				break;
 			}
-			case OPTION_TYPE_REENCODE_IMAGE: {
+			case REENCODE_IMAGE: {
 				if (checked) {
 					listView.setItemChecked(position, false);
 					new ReencodingDialog().show(getChildFragmentManager(), ReencodingDialog.TAG);
@@ -196,11 +192,11 @@ public class AttachmentOptionsDialog extends DialogFragment implements AdapterVi
 				}
 				break;
 			}
-			case OPTION_TYPE_REMOVE_FILE_NAME: {
+			case REMOVE_FILE_NAME: {
 				holder.optionRemoveFileName = checked;
 				break;
 			}
-			case OPTION_TYPE_SPOILER: {
+			case SPOILER: {
 				holder.optionSpoiler = checked;
 				break;
 			}
@@ -210,8 +206,8 @@ public class AttachmentOptionsDialog extends DialogFragment implements AdapterVi
 
 	public void setReencoding(GraphicsUtils.Reencoding reencoding) {
 		AttachmentHolder holder = getAttachmentHolder();
-		int reencodeIndex = optionIndexes.get(OPTION_TYPE_REENCODE_IMAGE, -1);
-		if (reencodeIndex >= 0) {
+		Integer reencodeIndex = optionIndices.get(Type.REENCODE_IMAGE);
+		if (reencodeIndex != null) {
 			holder.reencoding = reencoding;
 			listView.setItemChecked(reencodeIndex, reencoding != null);
 			updateItemsEnabled((ItemsAdapter) listView.getAdapter(), holder);

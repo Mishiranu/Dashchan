@@ -81,15 +81,15 @@ public class CacheManager implements Runnable {
 			}
 			File file = null;
 			switch (cacheItem.type) {
-				case CacheItem.TYPE_THUMBNAILS: {
+				case THUMBNAILS: {
 					file = new File(getThumbnailsDirectory(), cacheItem.name);
 					break;
 				}
-				case CacheItem.TYPE_MEDIA: {
+				case MEDIA: {
 					file = new File(getMediaDirectory(), cacheItem.name);
 					break;
 				}
-				case CacheItem.TYPE_PAGES: {
+				case PAGES: {
 					file = new File(getPagesDirectory(), cacheItem.name);
 					break;
 				}
@@ -101,17 +101,15 @@ public class CacheManager implements Runnable {
 	private volatile CountDownLatch cacheBuildingLatch;
 
 	private static class CacheItem {
-		public static final int TYPE_THUMBNAILS = 0;
-		public static final int TYPE_MEDIA = 1;
-		public static final int TYPE_PAGES = 2;
+		public enum Type {THUMBNAILS, MEDIA, PAGES}
 
 		public final String name;
 		public final String nameLc;
 		public final long length;
 		public long lastModified;
-		public final int type;
+		public final Type type;
 
-		public CacheItem(File file, int type) {
+		public CacheItem(File file, Type type) {
 			name = file.getName();
 			nameLc = name.toLowerCase(Locale.US);
 			length = file.length();
@@ -140,7 +138,7 @@ public class CacheManager implements Runnable {
 		public int hashCode() {
 			int prime = 31;
 			int result = 1;
-			result = prime * result + type;
+			result = prime * result + type.hashCode();
 			result = prime * result + nameLc.hashCode();
 			return result;
 		}
@@ -157,7 +155,7 @@ public class CacheManager implements Runnable {
 	private long mediaCacheSize;
 	private long pagesCacheSize;
 
-	private long fillCache(LinkedHashMap<String, CacheItem> cacheItems, File directory, int type) {
+	private long fillCache(LinkedHashMap<String, CacheItem> cacheItems, File directory, CacheItem.Type type) {
 		cacheItems.clear();
 		if (directory == null) {
 			return 0L;
@@ -167,7 +165,7 @@ public class CacheManager implements Runnable {
 		if (files != null) {
 			for (File file : files) {
 				CacheItem cacheItem = new CacheItem(file, type);
-				if (type == CacheItem.TYPE_PAGES && cacheItem.name.startsWith(TEMP_PAGE_FILE_PREFIX)) {
+				if (type == CacheItem.Type.PAGES && cacheItem.name.startsWith(TEMP_PAGE_FILE_PREFIX)) {
 					if (cacheItem.lastModified < System.currentTimeMillis() - OLD_THREADS_THRESHOLD) {
 						file.delete();
 					}
@@ -192,13 +190,13 @@ public class CacheManager implements Runnable {
 			try {
 				synchronized (thumbnailsCache) {
 					thumbnailsCacheSize = fillCache(thumbnailsCache, getThumbnailsDirectory(),
-							CacheItem.TYPE_THUMBNAILS);
+							CacheItem.Type.THUMBNAILS);
 				}
 				synchronized (mediaCache) {
-					mediaCacheSize = fillCache(mediaCache, getMediaDirectory(), CacheItem.TYPE_MEDIA);
+					mediaCacheSize = fillCache(mediaCache, getMediaDirectory(), CacheItem.Type.MEDIA);
 				}
 				synchronized (pagesCache) {
-					pagesCacheSize = fillCache(pagesCache, getPagesDirectory(), CacheItem.TYPE_PAGES);
+					pagesCacheSize = fillCache(pagesCache, getPagesDirectory(), CacheItem.Type.PAGES);
 				}
 				cleanupAsync(true, true, true);
 			} finally {
@@ -307,39 +305,39 @@ public class CacheManager implements Runnable {
 		return false;
 	}
 
-	private LinkedHashMap<String, CacheItem> getCacheItems(int type) {
+	private LinkedHashMap<String, CacheItem> getCacheItems(CacheItem.Type type) {
 		switch (type) {
-			case CacheItem.TYPE_THUMBNAILS: {
+			case THUMBNAILS: {
 				return thumbnailsCache;
 			}
-			case CacheItem.TYPE_MEDIA: {
+			case MEDIA: {
 				return mediaCache;
 			}
-			case CacheItem.TYPE_PAGES: {
+			case PAGES: {
 				return pagesCache;
 			}
 		}
 		throw new RuntimeException("Unknown cache type");
 	}
 
-	private void modifyCacheSize(int type, long lengthDelta) {
+	private void modifyCacheSize(CacheItem.Type type, long lengthDelta) {
 		switch (type) {
-			case CacheItem.TYPE_THUMBNAILS: {
+			case THUMBNAILS: {
 				thumbnailsCacheSize += lengthDelta;
 				break;
 			}
-			case CacheItem.TYPE_MEDIA: {
+			case MEDIA: {
 				mediaCacheSize += lengthDelta;
 				break;
 			}
-			case CacheItem.TYPE_PAGES: {
+			case PAGES: {
 				pagesCacheSize += lengthDelta;
 				break;
 			}
 		}
 	}
 
-	private boolean isFileExistsInCache(File file, String fileName, int type) {
+	private boolean isFileExistsInCache(File file, String fileName, CacheItem.Type type) {
 		if (waitCacheSync()) {
 			return false;
 		}
@@ -355,7 +353,7 @@ public class CacheManager implements Runnable {
 		}
 	}
 
-	private void updateCachedFileLastModified(File file, String fileName, int type) {
+	private void updateCachedFileLastModified(File file, String fileName, CacheItem.Type type) {
 		if (waitCacheSync()) {
 			return;
 		}
@@ -376,7 +374,7 @@ public class CacheManager implements Runnable {
 		}
 	}
 
-	private void validateNewCachedFile(File file, String fileName, int type, boolean success) {
+	private void validateNewCachedFile(File file, String fileName, CacheItem.Type type, boolean success) {
 		if (waitCacheSync()) {
 			return;
 		}
@@ -394,8 +392,8 @@ public class CacheManager implements Runnable {
 			}
 			modifyCacheSize(type, lengthDelta);
 			if (success) {
-				cleanupAsync(type == CacheItem.TYPE_THUMBNAILS, type == CacheItem.TYPE_MEDIA,
-						type == CacheItem.TYPE_PAGES);
+				cleanupAsync(type == CacheItem.Type.THUMBNAILS, type == CacheItem.Type.MEDIA,
+						type == CacheItem.Type.PAGES);
 			}
 		}
 	}
@@ -442,7 +440,7 @@ public class CacheManager implements Runnable {
 		}
 		File file = new File(directory, fileName);
 		if (touch) {
-			updateCachedFileLastModified(file, fileName, CacheItem.TYPE_MEDIA);
+			updateCachedFileLastModified(file, fileName, CacheItem.Type.MEDIA);
 		}
 		return file;
 	}
@@ -545,7 +543,7 @@ public class CacheManager implements Runnable {
 	}
 
 	public boolean cancelCachedMediaBusy(File file) {
-		if (cacheItemsToDelete.remove(new CacheItem(file, CacheItem.TYPE_MEDIA))) {
+		if (cacheItemsToDelete.remove(new CacheItem(file, CacheItem.Type.MEDIA))) {
 			file.delete();
 			return true;
 		}
@@ -555,15 +553,15 @@ public class CacheManager implements Runnable {
 	public void handleDownloadedFile(File file, boolean success) {
 		File directory = file.getParentFile();
 		if (directory != null) {
-			int type = -1;
+			CacheItem.Type type = null;
 			if (directory.equals(getThumbnailsDirectory())) {
-				type = CacheItem.TYPE_THUMBNAILS;
+				type = CacheItem.Type.THUMBNAILS;
 			} else if (directory.equals(getMediaDirectory())) {
-				type = CacheItem.TYPE_MEDIA;
+				type = CacheItem.Type.MEDIA;
 			} else if (directory.equals(getPagesDirectory())) {
-				type = CacheItem.TYPE_PAGES;
+				type = CacheItem.Type.PAGES;
 			}
-			if (type != -1) {
+			if (type != null) {
 				validateNewCachedFile(file, file.getName(), type, success);
 			}
 		}
@@ -585,7 +583,7 @@ public class CacheManager implements Runnable {
 		if (file == null) {
 			return null;
 		}
-		if (!isFileExistsInCache(file, thumbnailKey, CacheItem.TYPE_THUMBNAILS)) {
+		if (!isFileExistsInCache(file, thumbnailKey, CacheItem.Type.THUMBNAILS)) {
 			return null;
 		}
 		Bitmap bitmap;
@@ -597,7 +595,7 @@ public class CacheManager implements Runnable {
 				file.delete();
 				return null;
 			}
-			updateCachedFileLastModified(file, thumbnailKey, CacheItem.TYPE_THUMBNAILS);
+			updateCachedFileLastModified(file, thumbnailKey, CacheItem.Type.THUMBNAILS);
 			return bitmap;
 		} catch (IOException e) {
 			return null;
@@ -625,7 +623,7 @@ public class CacheManager implements Runnable {
 			// Ignore exception
 		} finally {
 			IOUtils.close(outputStream);
-			validateNewCachedFile(file, thumbnailKey, CacheItem.TYPE_THUMBNAILS, success);
+			validateNewCachedFile(file, thumbnailKey, CacheItem.Type.THUMBNAILS, success);
 		}
 	}
 
@@ -719,7 +717,7 @@ public class CacheManager implements Runnable {
 					Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES,
 							"Can't restore backup file", tempFile.getName());
 				} else {
-					validateNewCachedFile(file, fileName, CacheItem.TYPE_PAGES, true);
+					validateNewCachedFile(file, fileName, CacheItem.Type.PAGES, true);
 				}
 			}
 			ObjectInputStream objectInputStream = null;
@@ -728,7 +726,7 @@ public class CacheManager implements Runnable {
 				holder.setCloseable(fileInputStream);
 				objectInputStream = new ObjectInputStream(fileInputStream);
 				Object result = objectInputStream.readObject();
-				updateCachedFileLastModified(file, fileName, CacheItem.TYPE_PAGES);
+				updateCachedFileLastModified(file, fileName, CacheItem.Type.PAGES);
 				return result;
 			} catch (FileNotFoundException e) {
 				// File not exist, ignore exception
@@ -801,7 +799,7 @@ public class CacheManager implements Runnable {
 							Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES,
 									"Can't delete temp file", tempFile.getName());
 						}
-						validateNewCachedFile(file, fileName, CacheItem.TYPE_PAGES, true);
+						validateNewCachedFile(file, fileName, CacheItem.Type.PAGES, true);
 					} else {
 						file.delete();
 						tempFile.renameTo(file);
@@ -839,8 +837,8 @@ public class CacheManager implements Runnable {
 					toTempFile.delete();
 					fromFile.renameTo(toFile);
 					fromTempFile.renameTo(toTempFile);
-					validateNewCachedFile(fromFile, fromFile.getName(), CacheItem.TYPE_PAGES, false);
-					validateNewCachedFile(toFile, toFile.getName(), CacheItem.TYPE_PAGES, true);
+					validateNewCachedFile(fromFile, fromFile.getName(), CacheItem.Type.PAGES, false);
+					validateNewCachedFile(toFile, toFile.getName(), CacheItem.Type.PAGES, true);
 				}
 			}
 		}

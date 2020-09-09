@@ -96,22 +96,20 @@ public class UserBoardsPage extends ListPage implements UserBoardsAdapter.Callba
 		return false;
 	}
 
-	private static final int OPTIONS_MENU_REFRESH = 0;
-
 	@Override
 	public void onCreateOptionsMenu(Menu menu) {
-		menu.add(0, OPTIONS_MENU_SEARCH, 0, R.string.action_filter)
+		menu.add(0, R.id.menu_search, 0, R.string.action_filter)
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
-		menu.add(0, OPTIONS_MENU_REFRESH, 0, R.string.action_refresh)
+		menu.add(0, R.id.menu_refresh, 0, R.string.action_refresh)
 				.setIcon(getActionBarIcon(R.attr.iconActionRefresh))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-		menu.addSubMenu(0, OPTIONS_MENU_APPEARANCE, 0, R.string.action_appearance);
+		menu.addSubMenu(0, R.id.menu_appearance, 0, R.string.action_appearance);
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-			case OPTIONS_MENU_REFRESH: {
+			case R.id.menu_refresh: {
 				refreshBoards(!getAdapter().isRealEmpty());
 				return true;
 			}

@@ -245,9 +245,9 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 	}
 
 	@Override
-	public void onFavoritesUpdate(FavoritesStorage.FavoriteItem favoriteItem, int action) {
+	public void onFavoritesUpdate(FavoritesStorage.FavoriteItem favoriteItem, FavoritesStorage.Action action) {
 		switch (action) {
-			case FavoritesStorage.ACTION_WATCHER_ENABLE: {
+			case WATCHER_ENABLE: {
 				if (favoriteItem.threadNumber == null) {
 					throw new IllegalArgumentException();
 				}
@@ -260,7 +260,7 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 				}
 				break;
 			}
-			case FavoritesStorage.ACTION_WATCHER_DISABLE: {
+			case WATCHER_DISABLE: {
 				WatcherItem watcherItem = getItem(favoriteItem);
 				if (watcherItem != null) {
 					watching.remove(watcherItem.key);
@@ -275,7 +275,7 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 				}
 				break;
 			}
-			case FavoritesStorage.ACTION_WATCHER_SYNCHRONIZE: {
+			case WATCHER_SYNCHRONIZE: {
 				WatcherItem watcherItem = getItem(favoriteItem);
 				if (watcherItem != null) {
 					watcherItem.postsCount = favoriteItem.postsCount;

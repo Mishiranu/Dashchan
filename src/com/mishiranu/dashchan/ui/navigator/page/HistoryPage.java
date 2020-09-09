@@ -114,20 +114,18 @@ public class HistoryPage extends ListPage implements HistoryAdapter.Callback {
 		return false;
 	}
 
-	private static final int OPTIONS_MENU_CLEAR_HISTORY = 0;
-
 	@Override
 	public void onCreateOptionsMenu(Menu menu) {
-		menu.add(0, OPTIONS_MENU_SEARCH, 0, R.string.action_filter)
+		menu.add(0, R.id.menu_search, 0, R.string.action_filter)
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
-		menu.add(0, OPTIONS_MENU_CLEAR_HISTORY, 0, R.string.action_clear_history);
-		menu.addSubMenu(0, OPTIONS_MENU_APPEARANCE, 0, R.string.action_appearance);
+		menu.add(0, R.id.menu_clear, 0, R.string.action_clear_history);
+		menu.addSubMenu(0, R.id.menu_appearance, 0, R.string.action_appearance);
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-			case OPTIONS_MENU_CLEAR_HISTORY: {
+			case R.id.menu_clear: {
 				AlertDialog dialog = new AlertDialog.Builder(getContext())
 						.setMessage(R.string.message_clear_history_confirm)
 						.setNegativeButton(android.R.string.cancel, null)

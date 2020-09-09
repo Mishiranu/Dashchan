@@ -248,17 +248,15 @@ public class ListUnit implements ActionMode.Callback {
 		}
 	}
 
-	private static final int ACTION_MENU_SELECT_ALL = 0;
-	private static final int ACTION_MENU_DOWNLOAD_FILES = 1;
 
 	@Override
 	public boolean onCreateActionMode(ActionMode mode, Menu menu) {
 		selected.clear();
 		mode.setTitle(instance.context.getString(R.string.text_selected_format, 0));
-		menu.add(0, ACTION_MENU_SELECT_ALL, 0, R.string.action_select_all)
+		menu.add(0, R.id.menu_select_all, 0, R.string.action_select_all)
 				.setIcon(ResourceUtils.getActionBarIcon(instance.context, R.attr.iconActionSelectAll))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-		menu.add(0, ACTION_MENU_DOWNLOAD_FILES, 0, R.string.action_download_files)
+		menu.add(0, R.id.menu_download, 0, R.string.action_download_files)
 				.setIcon(ResourceUtils.getActionBarIcon(instance.context, R.attr.iconActionDownload))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 		return true;
@@ -272,7 +270,7 @@ public class ListUnit implements ActionMode.Callback {
 	@Override
 	public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
 		switch (item.getItemId()) {
-			case ACTION_MENU_SELECT_ALL: {
+			case R.id.menu_select_all: {
 				int count = getAdapter().getItemCount();
 				for (int i = 0; i < count; i++) {
 					selected.put(i, i);
@@ -281,7 +279,7 @@ public class ListUnit implements ActionMode.Callback {
 				updateAllGalleryItemsChecked();
 				return true;
 			}
-			case ACTION_MENU_DOWNLOAD_FILES: {
+			case R.id.menu_download: {
 				ArrayList<GalleryItem> galleryItems = new ArrayList<>();
 				GridAdapter adapter = getAdapter();
 				for (int i = 0; i < adapter.getItemCount(); i++) {

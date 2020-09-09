@@ -24,9 +24,7 @@ public class CircularProgressBar extends View {
 	private static final int PROGRESS_TRANSIENT_TIME = 500;
 	private static final int VISIBILITY_TRANSIENT_TIME = 500;
 
-	private static final int TRANSIENT_NONE = 0;
-	private static final int TRANSIENT_INDETERMINATE_PROGRESS = 1;
-	private static final int TRANSIENT_PROGRESS_INDETERMINATE = 2;
+	private enum Transient {NONE, INDETERMINATE_PROGRESS, PROGRESS_INDETERMINATE}
 
 	private final Paint paint;
 	private final Path path = new Path();
@@ -40,7 +38,7 @@ public class CircularProgressBar extends View {
 
 	private final long startTime = SystemClock.elapsedRealtime();
 
-	private int transientState = TRANSIENT_NONE;
+	private Transient transientState = Transient.NONE;
 	private final float[] circularData = C.API_LOLLIPOP ? new float[2] : null;
 	private final float[] transientData = C.API_LOLLIPOP ? new float[2] : null;
 	private long timeTransientStart;
@@ -201,22 +199,22 @@ public class CircularProgressBar extends View {
 			if (C.API_LOLLIPOP) {
 				boolean visible = this.visible && time - timeVisibilitySet > 50;
 				if (indeterminate) {
-					if (transientState == TRANSIENT_INDETERMINATE_PROGRESS) {
+					if (transientState == Transient.INDETERMINATE_PROGRESS) {
 						calculateLollipopTransientIndeterminateProgress();
 					} else {
 						calculateLollipopProgress();
 					}
 					if (visible) {
-						transientState = TRANSIENT_PROGRESS_INDETERMINATE;
+						transientState = Transient.PROGRESS_INDETERMINATE;
 					}
 				} else {
-					if (transientState == TRANSIENT_PROGRESS_INDETERMINATE) {
+					if (transientState == Transient.PROGRESS_INDETERMINATE) {
 						calculateLollipopTransientProgressIndeterminate();
 					} else {
 						calculateLollipopIndeterminate(time);
 					}
 					if (visible) {
-						transientState = TRANSIENT_INDETERMINATE_PROGRESS;
+						transientState = Transient.INDETERMINATE_PROGRESS;
 					}
 					timeProgressChange = time;
 				}
@@ -290,17 +288,17 @@ public class CircularProgressBar extends View {
 		if (C.API_LOLLIPOP) {
 			float arcStart;
 			float arcLength;
-			if (transientState != TRANSIENT_NONE) {
+			if (transientState != Transient.NONE) {
 				boolean finished = true;
-				if (transientState == TRANSIENT_INDETERMINATE_PROGRESS) {
+				if (transientState == Transient.INDETERMINATE_PROGRESS) {
 					finished = calculateLollipopTransientIndeterminateProgress();
-				} else if (transientState == TRANSIENT_PROGRESS_INDETERMINATE) {
+				} else if (transientState == Transient.PROGRESS_INDETERMINATE) {
 					finished = calculateLollipopTransientProgressIndeterminate();
 				}
 				arcStart = circularData[0];
 				arcLength = circularData[1];
 				if (finished) {
-					transientState = TRANSIENT_NONE;
+					transientState = Transient.NONE;
 					transientProgress = 0f;
 					timeProgressChange = time;
 				}

@@ -56,14 +56,14 @@ public class AboutFragment extends PreferenceFragment {
 				.setOnClickListener(p -> new BackupDialog()
 						.show(getChildFragmentManager(), BackupDialog.class.getName()));
 		addButton(R.string.preference_changelog, 0)
-				.setOnClickListener(p -> new ReadDialog(ReadDialog.TYPE_CHANGELOG)
+				.setOnClickListener(p -> new ReadDialog(ReadDialog.Type.CHANGELOG)
 						.show(getChildFragmentManager(), ReadDialog.class.getName()));
 		addButton(R.string.preference_check_for_updates, 0)
-				.setOnClickListener(p -> new ReadDialog(ReadDialog.TYPE_UPDATE)
+				.setOnClickListener(p -> new ReadDialog(ReadDialog.Type.UPDATE)
 						.show(getChildFragmentManager(), ReadDialog.class.getName()));
 		addButton(R.string.preference_licenses, R.string.preference_licenses_summary)
 				.setOnClickListener(p -> ((FragmentHandler) requireActivity())
-						.pushFragment(new TextFragment(TextFragment.TYPE_LICENSES, null)));
+						.pushFragment(new TextFragment(TextFragment.Type.LICENSES, null)));
 		addButton(getString(R.string.preference_version), C.BUILD_VERSION +
 				" (" + DateFormat.getDateFormat(requireContext()).format(C.BUILD_TIMESTAMP) + ")");
 	}
@@ -166,17 +166,16 @@ public class AboutFragment extends PreferenceFragment {
 	public static class ReadDialog extends DialogFragment implements AsyncManager.Callback {
 		private static final String EXTRA_TYPE = "type";
 
-		private static final int TYPE_CHANGELOG = 0;
-		private static final int TYPE_UPDATE = 1;
+		private enum Type {CHANGELOG, UPDATE}
 
 		private static final String TASK_READ_CHANGELOG = "read_changelog";
 		private static final String TASK_READ_UPDATE = "read_update";
 
 		public ReadDialog() {}
 
-		public ReadDialog(int type) {
+		public ReadDialog(Type type) {
 			Bundle args = new Bundle();
-			args.putInt(EXTRA_TYPE, type);
+			args.putString(EXTRA_TYPE, type.name());
 			setArguments(args);
 		}
 
@@ -191,12 +190,12 @@ public class AboutFragment extends PreferenceFragment {
 		@Override
 		public void onActivityCreated(Bundle savedInstanceState) {
 			super.onActivityCreated(savedInstanceState);
-			switch (requireArguments().getInt(EXTRA_TYPE)) {
-				case TYPE_CHANGELOG: {
+			switch (Type.valueOf(requireArguments().getString(EXTRA_TYPE))) {
+				case CHANGELOG: {
 					AsyncManager.get(this).startTask(TASK_READ_CHANGELOG, this, null, false);
 					break;
 				}
-				case TYPE_UPDATE: {
+				case UPDATE: {
 					AsyncManager.get(this).startTask(TASK_READ_UPDATE, this, null, false);
 					break;
 				}
@@ -206,12 +205,12 @@ public class AboutFragment extends PreferenceFragment {
 		@Override
 		public void onCancel(@NonNull DialogInterface dialog) {
 			super.onCancel(dialog);
-			switch (requireArguments().getInt(EXTRA_TYPE)) {
-				case TYPE_CHANGELOG: {
+			switch (Type.valueOf(requireArguments().getString(EXTRA_TYPE))) {
+				case CHANGELOG: {
 					AsyncManager.get(this).cancelTask(TASK_READ_CHANGELOG, this);
 					break;
 				}
-				case TYPE_UPDATE: {
+				case UPDATE: {
 					AsyncManager.get(this).cancelTask(TASK_READ_UPDATE, this);
 					break;
 				}
@@ -252,7 +251,7 @@ public class AboutFragment extends PreferenceFragment {
 					ErrorItem errorItem = holder.nextArgument();
 					if (errorItem == null) {
 						((FragmentHandler) requireActivity())
-								.pushFragment(new TextFragment(TextFragment.TYPE_CHANGELOG, content));
+								.pushFragment(new TextFragment(TextFragment.Type.CHANGELOG, content));
 					} else {
 						ToastUtils.show(requireContext(), errorItem);
 					}

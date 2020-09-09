@@ -1,19 +1,3 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.util;
 
 import java.util.HashMap;
@@ -23,14 +7,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class SearchHelper {
-	private static final int SEARCH_NONE = 0;
-	private static final int SEARCH_INCLUDE = 1;
-	private static final int SEARCH_EXCLUDE = -1;
+	private enum Search {NONE, INCLUDE, EXCLUDE}
 
 	private static final Pattern PATTERN_LONG_QUERY_PART = Pattern.compile("(?:^| )(-)?\"(.*?)\"(?= |$)");
 
 	private final boolean advancedMode;
-	private final HashMap<String, Integer> flags = new HashMap<>();
+	private final HashMap<String, Search> flags = new HashMap<>();
 	private final HashSet<String> resultInclude = new HashSet<>();
 	private final HashSet<String> resultExclude = new HashSet<>();
 
@@ -41,7 +23,7 @@ public class SearchHelper {
 	public void setFlags(String... flags) {
 		this.flags.clear();
 		for (String flag : flags) {
-			this.flags.put(flag, SEARCH_NONE);
+			this.flags.put(flag, Search.NONE);
 		}
 	}
 
@@ -83,10 +65,10 @@ public class SearchHelper {
 				String lowQueryPart = queryPart.toLowerCase(locale);
 				for (String flag : flags.keySet()) {
 					if ((":" + flag).equals(lowQueryPart)) {
-						flags.put(flag, SEARCH_INCLUDE);
+						flags.put(flag, Search.INCLUDE);
 						continue OUTER;
 					} else if ((":-" + flag).equals(lowQueryPart)) {
-						flags.put(flag, SEARCH_EXCLUDE);
+						flags.put(flag, Search.EXCLUDE);
 						continue OUTER;
 					}
 				}
@@ -124,19 +106,19 @@ public class SearchHelper {
 		OUTER: for (HashMap.Entry<String, Boolean> flagState : flagsState.entrySet()) {
 			String flag = flagState.getKey();
 			boolean fulfilled = flagState.getValue();
-			int value = flags.get(flag);
-			if (fulfilled && value == SEARCH_EXCLUDE) {
+			Search value = flags.get(flag);
+			if (fulfilled && value == Search.EXCLUDE) {
 				return false;
 			}
-			if (!fulfilled && value == SEARCH_INCLUDE) {
+			if (!fulfilled && value == Search.INCLUDE) {
 				for (HashMap.Entry<String, Boolean> checkFlagState : flagsState.entrySet()) {
 					String checkFlag = checkFlagState.getKey();
 					if (flag.equals(checkFlag)) {
 						continue;
 					}
 					boolean checkFulfilled = checkFlagState.getValue();
-					int checkValue = flags.get(checkFlag);
-					if (checkFulfilled && checkValue == SEARCH_INCLUDE) {
+					Search checkValue = flags.get(checkFlag);
+					if (checkFulfilled && checkValue == Search.INCLUDE) {
 						continue OUTER;
 					}
 				}

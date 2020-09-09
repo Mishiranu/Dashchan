@@ -1,6 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+	<item type="id" name="menu_add_post" />
+	<item type="id" name="menu_appearance" />
+	<item type="id" name="menu_archive" />
+	<item type="id" name="menu_attach" />
+	<item type="id" name="menu_auto_refresh" />
+	<item type="id" name="menu_catalog" />
+	<item type="id" name="menu_change_theme" />
+	<item type="id" name="menu_check_on_start" />
+	<item type="id" name="menu_clear" />
+	<item type="id" name="menu_copy_link" />
+	<item type="id" name="menu_delete" />
+	<item type="id" name="menu_download" />
+	<item type="id" name="menu_drawer" />
+	<item type="id" name="menu_expanded_screen" />
+	<item type="id" name="menu_gallery" />
+	<item type="id" name="menu_group" />
+	<item type="id" name="menu_hidden_posts" />
+	<item type="id" name="menu_make_home_page" />
+	<item type="id" name="menu_make_threadshot" />
+	<item type="id" name="menu_my_posts" />
+	<item type="id" name="menu_new_rule" />
+	<item type="id" name="menu_new_thread" />
+	<item type="id" name="menu_open_original_thread" />
+	<item type="id" name="menu_pages" />
+	<item type="id" name="menu_refresh" />
+	<item type="id" name="menu_reload" />
+	<item type="id" name="menu_reply" />
+	<item type="id" name="menu_report" />
+	<item type="id" name="menu_save" />
+	<item type="id" name="menu_search" />
+	<item type="id" name="menu_select" />
+	<item type="id" name="menu_select_all" />
+	<item type="id" name="menu_sfw_mode" />
+	<item type="id" name="menu_share_link" />
+	<item type="id" name="menu_spoilers" />
+	<item type="id" name="menu_star_icon" />
+	<item type="id" name="menu_star_text" />
+	<item type="id" name="menu_summary" />
+	<item type="id" name="menu_thread_options" />
+	<item type="id" name="menu_threads_grid" />
+	<item type="id" name="menu_unstar_icon" />
+	<item type="id" name="menu_unstar_text" />
+
 	<item type="id" name="tag_async_manager" />
 	<item type="id" name="tag_image_loader" />
 	<item type="id" name="tag_theme_engine" />

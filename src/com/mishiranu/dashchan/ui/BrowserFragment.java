@@ -146,31 +146,27 @@ public class BrowserFragment extends Fragment implements ActivityHandler, Downlo
 		}
 	}
 
-	private static final int OPTIONS_MENU_RELOAD = 0;
-	private static final int OPTIONS_MENU_COPY_LINK = 1;
-	private static final int OPTIONS_MENU_SHARE_LINK = 2;
-
 	@Override
 	public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-		menu.add(0, OPTIONS_MENU_RELOAD, 0, R.string.action_reload)
+		menu.add(0, R.id.menu_reload, 0, R.string.action_reload)
 				.setIcon(((FragmentHandler) requireActivity()).getActionBarIcon(R.attr.iconActionRefresh))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-		menu.add(0, OPTIONS_MENU_COPY_LINK, 0, R.string.action_copy_link);
-		menu.add(0, OPTIONS_MENU_SHARE_LINK, 0, R.string.action_share_link);
+		menu.add(0, R.id.menu_copy_link, 0, R.string.action_copy_link);
+		menu.add(0, R.id.menu_share_link, 0, R.string.action_share_link);
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-			case OPTIONS_MENU_RELOAD: {
+			case R.id.menu_reload: {
 				webView.reload();
 				break;
 			}
-			case OPTIONS_MENU_COPY_LINK: {
+			case R.id.menu_copy_link: {
 				StringUtils.copyToClipboard(requireContext(), webView.getUrl());
 				break;
 			}
-			case OPTIONS_MENU_SHARE_LINK: {
+			case R.id.menu_share_link: {
 				String uriString = webView.getUrl();
 				if (!StringUtils.isEmpty(uriString)) {
 					NavigationUtils.shareLink(requireContext(), null, Uri.parse(uriString));

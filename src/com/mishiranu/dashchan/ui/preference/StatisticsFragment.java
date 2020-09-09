@@ -82,11 +82,9 @@ public class StatisticsFragment extends BaseListFragment {
 		getRecyclerView().setAdapter(new Adapter(listItems));
 	}
 
-	private static final int OPTIONS_MENU_CLEAR = 0;
-
 	@Override
 	public void onCreateOptionsMenu(Menu menu, @NonNull MenuInflater inflater) {
-		menu.add(0, OPTIONS_MENU_CLEAR, 0, R.string.action_clear)
+		menu.add(0, R.id.menu_clear, 0, R.string.action_clear)
 				.setIcon(((FragmentHandler) requireActivity()).getActionBarIcon(R.attr.iconActionDelete))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 		super.onCreateOptionsMenu(menu, inflater);
@@ -95,7 +93,7 @@ public class StatisticsFragment extends BaseListFragment {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-			case OPTIONS_MENU_CLEAR: {
+			case R.id.menu_clear: {
 				StatisticsStorage.getInstance().clear();
 				((FragmentHandler) requireActivity()).removeFragment();
 				break;

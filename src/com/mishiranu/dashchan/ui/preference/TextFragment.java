@@ -26,16 +26,15 @@ public class TextFragment extends Fragment implements View.OnClickListener {
 	private static final String EXTRA_TYPE = "type";
 	private static final String EXTRA_CONTENT = "content";
 
-	public static final int TYPE_LICENSES = 0;
-	public static final int TYPE_CHANGELOG = 1;
+	public enum Type {LICENSES, CHANGELOG}
 
 	private CommentTextView textView;
 
 	public TextFragment() {}
 
-	public TextFragment(int type, String content) {
+	public TextFragment(Type type, String content) {
 		Bundle args = new Bundle();
-		args.putInt(EXTRA_TYPE, type);
+		args.putString(EXTRA_TYPE, type.name());
 		args.putString(EXTRA_CONTENT, content);
 		setArguments(args);
 	}
@@ -43,10 +42,10 @@ public class TextFragment extends Fragment implements View.OnClickListener {
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		Bundle args = requireArguments();
-		int type = args.getInt(EXTRA_TYPE);
+		Type type = Type.valueOf(args.getString(EXTRA_TYPE));
 		String content = args.getString(EXTRA_CONTENT);
 		switch (type) {
-			case TYPE_LICENSES: {
+			case LICENSES: {
 				content = IOUtils.readRawResourceString(getResources(), R.raw.licenses);
 				break;
 			}
@@ -81,12 +80,12 @@ public class TextFragment extends Fragment implements View.OnClickListener {
 		if (!C.API_MARSHMALLOW) {
 			((View) getView().getParent()).setPadding(0, 0, 0, 0);
 		}
-		switch (requireArguments().getInt(EXTRA_TYPE)) {
-			case TYPE_LICENSES: {
+		switch (Type.valueOf(requireArguments().getString(EXTRA_TYPE))) {
+			case LICENSES: {
 				((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.preference_licenses), null);
 				break;
 			}
-			case TYPE_CHANGELOG: {
+			case CHANGELOG: {
 				((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.preference_changelog), null);
 				break;
 			}

@@ -5,6 +5,7 @@ import android.content.res.TypedArray;
 import android.view.CollapsibleActionView;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.SearchView;
@@ -37,6 +38,7 @@ public class CustomSearchView extends FrameLayout implements CollapsibleActionVi
 		addView(layout, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 		searchView = new SearchView(context);
 		searchView.setMaxWidth(Integer.MAX_VALUE);
+		disableSaveInstanceState(searchView);
 		layout.addView(searchView, new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f));
 		customViewLayout = new FrameLayout(context);
 		layout.addView(customViewLayout, LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT);
@@ -95,6 +97,18 @@ public class CustomSearchView extends FrameLayout implements CollapsibleActionVi
 			}
 			if (relayout) {
 				layout.requestLayout();
+			}
+		}
+	}
+
+	private static void disableSaveInstanceState(View view) {
+		view.setSaveEnabled(false);
+		if (view instanceof ViewGroup) {
+			ViewGroup viewGroup = (ViewGroup) view;
+			int childCount = viewGroup.getChildCount();
+			for (int i = 0; i < childCount; i++) {
+				View child = viewGroup.getChildAt(i);
+				disableSaveInstanceState(child);
 			}
 		}
 	}

@@ -283,9 +283,6 @@ public class UpdateFragment extends BaseListFragment {
 		dialog.show(getChildFragmentManager(), TargetDialog.TAG);
 	}
 
-	private static final int OPTIONS_MENU_DOWNLOAD = 0;
-	private static final int OPTIONS_CHECK_ON_START = 1;
-
 	@Override
 	public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
 		long length = 0;
@@ -300,21 +297,21 @@ public class UpdateFragment extends BaseListFragment {
 		if (length > 0) {
 			downloadTitle += ", " + length / 1024 + " KB";
 		}
-		menu.add(0, OPTIONS_MENU_DOWNLOAD, 0, downloadTitle)
+		menu.add(0, R.id.menu_download, 0, downloadTitle)
 				.setIcon(((FragmentHandler) requireActivity()).getActionBarIcon(R.attr.iconActionDownload))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-		menu.add(0, OPTIONS_CHECK_ON_START, 0, R.string.action_check_on_startup).setCheckable(true);
+		menu.add(0, R.id.menu_check_on_start, 0, R.string.action_check_on_startup).setCheckable(true);
 	}
 
 	@Override
 	public void onPrepareOptionsMenu(Menu menu) {
-		menu.findItem(OPTIONS_CHECK_ON_START).setChecked(Preferences.isCheckUpdatesOnStart());
+		menu.findItem(R.id.menu_check_on_start).setChecked(Preferences.isCheckUpdatesOnStart());
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-			case OPTIONS_MENU_DOWNLOAD: {
+			case R.id.menu_download: {
 				DownloadManager downloadManager = (DownloadManager) requireContext()
 						.getSystemService(Context.DOWNLOAD_SERVICE);
 				File directory = FileProvider.getUpdatesDirectory(requireContext());
@@ -372,7 +369,7 @@ public class UpdateFragment extends BaseListFragment {
 				}
 				return true;
 			}
-			case OPTIONS_CHECK_ON_START: {
+			case R.id.menu_check_on_start: {
 				Preferences.setCheckUpdatesOnStart(!item.isChecked());
 				break;
 			}

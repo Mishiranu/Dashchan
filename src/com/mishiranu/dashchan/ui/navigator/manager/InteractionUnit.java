@@ -233,13 +233,13 @@ public class InteractionUnit {
 							attachmentItem.getFileName(), attachmentItem.getOriginalName(),
 							attachmentItem.getChanName(), attachmentItem.getBoardName(),
 							attachmentItem.getThreadNumber(), threadTitle)));
-			if (attachmentItem.getType() == AttachmentItem.TYPE_IMAGE ||
+			if (attachmentItem.getType() == AttachmentItem.Type.IMAGE ||
 					attachmentItem.getThumbnailKey() != null) {
 				dialogMenu.add(R.string.action_search_image, () -> {
 					Uri fileUri = attachmentItem.getFileUri();
 					NavigationUtils.searchImage(context, uiManager.getConfigurationLock(),
 							ChanManager.getInstance().getChanNameByHost(fileUri.getAuthority()),
-							attachmentItem.getType() == AttachmentItem.TYPE_IMAGE
+							attachmentItem.getType() == AttachmentItem.Type.IMAGE
 									? fileUri : attachmentItem.getThumbnailUri());
 				});
 			}

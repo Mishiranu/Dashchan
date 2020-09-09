@@ -720,18 +720,16 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 		return null;
 	}
 
-	private static final int OPTIONS_MENU_ATTACH = 0;
-
 	@Override
 	public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-		menu.add(0, OPTIONS_MENU_ATTACH, 0, R.string.action_attach)
+		menu.add(0, R.id.menu_attach, 0, R.string.action_attach)
 				.setIcon(((FragmentHandler) requireActivity()).getActionBarIcon(R.attr.iconActionAttach))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 	}
 
 	@Override
 	public void onPrepareOptionsMenu(Menu menu) {
-		menu.findItem(OPTIONS_MENU_ATTACH).setVisible(attachments.size() < postingConfiguration.attachmentCount);
+		menu.findItem(R.id.menu_attach).setVisible(attachments.size() < postingConfiguration.attachmentCount);
 	}
 
 	private void handleMimeTypeGroup(ArrayList<String> list, Collection<String> mimeTypes, String mimeTypeGroup) {
@@ -762,7 +760,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-			case OPTIONS_MENU_ATTACH: {
+			case R.id.menu_attach: {
 				// SHOW_ADVANCED to show folder navigation
 				Intent intent = new Intent(Intent.ACTION_GET_CONTENT).addCategory(Intent.CATEGORY_OPENABLE)
 						.putExtra("android.content.extra.SHOW_ADVANCED", true);

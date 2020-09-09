@@ -1017,7 +1017,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	public void invalidateHomeUpState() {
 		Fragment currentFragment = getCurrentFragment();
 		if (currentFragment instanceof ActivityHandler && ((ActivityHandler) currentFragment).isSearchMode()) {
-			drawerToggle.setDrawerIndicatorMode(DrawerToggle.MODE_UP);
+			drawerToggle.setDrawerIndicatorMode(DrawerToggle.Mode.UP);
 		} else {
 			boolean displayUp;
 			if (currentFragment instanceof PageFragment) {
@@ -1047,8 +1047,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			} else {
 				displayUp = !stackPageItems.isEmpty() || !fragments.isEmpty();
 			}
-			drawerToggle.setDrawerIndicatorMode(displayUp ? DrawerToggle.MODE_UP : wideMode
-					? DrawerToggle.MODE_DISABLED : DrawerToggle.MODE_DRAWER);
+			drawerToggle.setDrawerIndicatorMode(displayUp ? DrawerToggle.Mode.UP : wideMode
+					? DrawerToggle.Mode.DISABLED : DrawerToggle.Mode.DRAWER);
 		}
 	}
 
@@ -1235,37 +1235,37 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		boolean result = super.onPrepareOptionsMenu(menu);
-		MenuItem appearanceOptionsItem = menu.findItem(ListPage.OPTIONS_MENU_APPEARANCE);
+		MenuItem appearanceOptionsItem = menu.findItem(R.id.menu_appearance);
 		if (appearanceOptionsItem != null) {
 			Menu appearanceOptionsMenu = appearanceOptionsItem.getSubMenu();
 			if (appearanceOptionsMenu.size() == 0) {
-				appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_CHANGE_THEME, 0,
+				appearanceOptionsMenu.add(0, R.id.menu_change_theme, 0,
 						R.string.action_change_theme);
-				appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_EXPANDED_SCREEN, 0,
+				appearanceOptionsMenu.add(0, R.id.menu_expanded_screen, 0,
 						R.string.action_expanded_screen).setCheckable(true);
-				appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_SPOILERS, 0,
+				appearanceOptionsMenu.add(0, R.id.menu_spoilers, 0,
 						R.string.action_spoilers).setCheckable(true);
-				appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_MY_POSTS, 0,
+				appearanceOptionsMenu.add(0, R.id.menu_my_posts, 0,
 						R.string.action_my_posts).setCheckable(true);
-				appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_DRAWER, 0,
+				appearanceOptionsMenu.add(0, R.id.menu_drawer, 0,
 						R.string.action_lock_drawer).setCheckable(true);
-				appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_THREADS_GRID, 0,
+				appearanceOptionsMenu.add(0, R.id.menu_threads_grid, 0,
 						R.string.action_threads_grid).setCheckable(true);
-				appearanceOptionsMenu.add(0, ListPage.APPEARANCE_MENU_SFW_MODE, 0,
+				appearanceOptionsMenu.add(0, R.id.menu_sfw_mode, 0,
 						R.string.action_sfw_mode).setCheckable(true);
 			}
-			appearanceOptionsMenu.findItem(ListPage.APPEARANCE_MENU_EXPANDED_SCREEN)
+			appearanceOptionsMenu.findItem(R.id.menu_expanded_screen)
 					.setChecked(Preferences.isExpandedScreen());
-			appearanceOptionsMenu.findItem(ListPage.APPEARANCE_MENU_SPOILERS)
+			appearanceOptionsMenu.findItem(R.id.menu_spoilers)
 					.setChecked(Preferences.isShowSpoilers());
-			appearanceOptionsMenu.findItem(ListPage.APPEARANCE_MENU_MY_POSTS)
+			appearanceOptionsMenu.findItem(R.id.menu_my_posts)
 					.setChecked(Preferences.isShowMyPosts());
-			appearanceOptionsMenu.findItem(ListPage.APPEARANCE_MENU_DRAWER)
+			appearanceOptionsMenu.findItem(R.id.menu_drawer)
 					.setVisible(ViewUtils.isDrawerLockable(getResources().getConfiguration()))
 					.setChecked(Preferences.isDrawerLocked());
-			appearanceOptionsMenu.findItem(ListPage.APPEARANCE_MENU_THREADS_GRID)
+			appearanceOptionsMenu.findItem(R.id.menu_threads_grid)
 					.setChecked(Preferences.isThreadsGridMode());
-			appearanceOptionsMenu.findItem(ListPage.APPEARANCE_MENU_SFW_MODE)
+			appearanceOptionsMenu.findItem(R.id.menu_sfw_mode)
 					.setChecked(Preferences.isSfwMode());
 		}
 		return result;
@@ -1311,42 +1311,42 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 				}
 				return true;
 			}
-			case ListPage.APPEARANCE_MENU_CHANGE_THEME:
-			case ListPage.APPEARANCE_MENU_EXPANDED_SCREEN:
-			case ListPage.APPEARANCE_MENU_SPOILERS:
-			case ListPage.APPEARANCE_MENU_MY_POSTS:
-			case ListPage.APPEARANCE_MENU_DRAWER:
-			case ListPage.APPEARANCE_MENU_THREADS_GRID:
-			case ListPage.APPEARANCE_MENU_SFW_MODE: {
+			case R.id.menu_change_theme:
+			case R.id.menu_expanded_screen:
+			case R.id.menu_spoilers:
+			case R.id.menu_my_posts:
+			case R.id.menu_drawer:
+			case R.id.menu_threads_grid:
+			case R.id.menu_sfw_mode: {
 				try {
 					switch (item.getItemId()) {
-						case ListPage.APPEARANCE_MENU_CHANGE_THEME: {
+						case R.id.menu_change_theme: {
 							showThemeDialog();
 							return true;
 						}
-						case ListPage.APPEARANCE_MENU_EXPANDED_SCREEN: {
+						case R.id.menu_expanded_screen: {
 							Preferences.setExpandedScreen(!item.isChecked());
 							recreate();
 							return true;
 						}
-						case ListPage.APPEARANCE_MENU_SPOILERS: {
+						case R.id.menu_spoilers: {
 							Preferences.setShowSpoilers(!item.isChecked());
 							return true;
 						}
-						case ListPage.APPEARANCE_MENU_MY_POSTS: {
+						case R.id.menu_my_posts: {
 							Preferences.setShowMyPosts(!item.isChecked());
 							return true;
 						}
-						case ListPage.APPEARANCE_MENU_DRAWER: {
+						case R.id.menu_drawer: {
 							Preferences.setDrawerLocked(!item.isChecked());
 							updateWideConfiguration(false);
 							return true;
 						}
-						case ListPage.APPEARANCE_MENU_THREADS_GRID: {
+						case R.id.menu_threads_grid: {
 							Preferences.setThreadsGridMode(!item.isChecked());
 							return true;
 						}
-						case ListPage.APPEARANCE_MENU_SFW_MODE: {
+						case R.id.menu_sfw_mode: {
 							Preferences.setSfwMode(!item.isChecked());
 							return true;
 						}
@@ -1891,11 +1891,11 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	}
 
 	@Override
-	public void onFavoritesUpdate(FavoritesStorage.FavoriteItem favoriteItem, int action) {
+	public void onFavoritesUpdate(FavoritesStorage.FavoriteItem favoriteItem, FavoritesStorage.Action action) {
 		switch (action) {
-			case FavoritesStorage.ACTION_ADD:
-			case FavoritesStorage.ACTION_REMOVE:
-			case FavoritesStorage.ACTION_MODIFY_TITLE: {
+			case ADD:
+			case REMOVE:
+			case MODIFY_TITLE: {
 				drawerForm.invalidateItems(false, true);
 				break;
 			}

@@ -147,32 +147,29 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback, Read
 				.handlePostContextMenu(postItem, null, false, false, false);
 	}
 
-	private static final int OPTIONS_MENU_REFRESH = 0;
-	private static final int OPTIONS_MENU_GROUP = 1;
-
 	@Override
 	public void onCreateOptionsMenu(Menu menu) {
-		menu.add(0, OPTIONS_MENU_SEARCH, 0, R.string.action_search)
+		menu.add(0, R.id.menu_search, 0, R.string.action_search)
 				.setIcon(getActionBarIcon(R.attr.iconActionSearch))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
-		menu.add(0, OPTIONS_MENU_REFRESH, 0, R.string.action_refresh);
-		menu.add(0, OPTIONS_MENU_GROUP, 0, R.string.action_group).setCheckable(true);
-		menu.addSubMenu(0, OPTIONS_MENU_APPEARANCE, 0, R.string.action_appearance);
+		menu.add(0, R.id.menu_refresh, 0, R.string.action_refresh);
+		menu.add(0, R.id.menu_group, 0, R.string.action_group).setCheckable(true);
+		menu.addSubMenu(0, R.id.menu_appearance, 0, R.string.action_appearance);
 	}
 
 	@Override
 	public void onPrepareOptionsMenu(Menu menu) {
-		menu.findItem(OPTIONS_MENU_GROUP).setChecked(getAdapter().isGroupMode());
+		menu.findItem(R.id.menu_group).setChecked(getAdapter().isGroupMode());
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-			case OPTIONS_MENU_REFRESH: {
+			case R.id.menu_refresh: {
 				refreshSearch(getAdapter().getItemCount() > 0, false);
 				return true;
 			}
-			case OPTIONS_MENU_GROUP: {
+			case R.id.menu_group: {
 				SearchAdapter adapter = getAdapter();
 				boolean groupMode = !adapter.isGroupMode();
 				adapter.setGroupMode(groupMode);
@@ -186,8 +183,8 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback, Read
 	@Override
 	public void onAppearanceOptionChanged(int what) {
 		switch (what) {
-			case APPEARANCE_MENU_SPOILERS:
-			case APPEARANCE_MENU_SFW_MODE: {
+			case R.id.menu_spoilers:
+			case R.id.menu_sfw_mode: {
 				notifyAllAdaptersChanged();
 				break;
 			}

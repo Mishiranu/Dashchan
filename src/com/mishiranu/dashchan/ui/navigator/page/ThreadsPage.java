@@ -237,38 +237,27 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 
 	private boolean allowSearch = false;
 
-	private static final int OPTIONS_MENU_REFRESH = 0;
-	private static final int OPTIONS_MENU_CATALOG = 1;
-	private static final int OPTIONS_MENU_PAGES = 2;
-	private static final int OPTIONS_MENU_ARCHIVE = 3;
-	private static final int OPTIONS_MENU_NEW_THREAD = 4;
-	private static final int OPTIONS_MENU_ADD_TO_FAVORITES_TEXT = 5;
-	private static final int OPTIONS_MENU_REMOVE_FROM_FAVORITES_TEXT = 6;
-	private static final int OPTIONS_MENU_ADD_TO_FAVORITES_ICON = 7;
-	private static final int OPTIONS_MENU_REMOVE_FROM_FAVORITES_ICON = 8;
-	private static final int OPTIONS_MENU_MAKE_HOME_PAGE = 9;
-
 	@Override
 	public void onCreateOptionsMenu(Menu menu) {
-		menu.add(0, OPTIONS_MENU_REFRESH, 0, R.string.action_refresh)
+		menu.add(0, R.id.menu_refresh, 0, R.string.action_refresh)
 				.setIcon(getActionBarIcon(R.attr.iconActionRefresh))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-		menu.add(0, OPTIONS_MENU_SEARCH, 0, R.string.action_search)
+		menu.add(0, R.id.menu_search, 0, R.string.action_search)
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
-		menu.add(0, OPTIONS_MENU_CATALOG, 0, R.string.action_catalog);
-		menu.add(0, OPTIONS_MENU_PAGES, 0, R.string.action_pages);
-		menu.add(0, OPTIONS_MENU_ARCHIVE, 0, R.string.action_archive_view);
-		menu.add(0, OPTIONS_MENU_NEW_THREAD, 0, R.string.action_new_thread);
-		menu.addSubMenu(0, OPTIONS_MENU_APPEARANCE, 0, R.string.action_appearance);
-		menu.add(0, OPTIONS_MENU_ADD_TO_FAVORITES_TEXT, 0, R.string.action_add_to_favorites);
-		menu.add(0, OPTIONS_MENU_REMOVE_FROM_FAVORITES_TEXT, 0, R.string.action_remove_from_favorites);
-		menu.add(0, OPTIONS_MENU_ADD_TO_FAVORITES_ICON, 0, R.string.action_add_to_favorites)
+		menu.add(0, R.id.menu_catalog, 0, R.string.action_catalog);
+		menu.add(0, R.id.menu_pages, 0, R.string.action_pages);
+		menu.add(0, R.id.menu_archive, 0, R.string.action_archive_view);
+		menu.add(0, R.id.menu_new_thread, 0, R.string.action_new_thread);
+		menu.addSubMenu(0, R.id.menu_appearance, 0, R.string.action_appearance);
+		menu.add(0, R.id.menu_star_text, 0, R.string.action_add_to_favorites);
+		menu.add(0, R.id.menu_unstar_text, 0, R.string.action_remove_from_favorites);
+		menu.add(0, R.id.menu_star_icon, 0, R.string.action_add_to_favorites)
 				.setIcon(getActionBarIcon(R.attr.iconActionAddToFavorites))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-		menu.add(0, OPTIONS_MENU_REMOVE_FROM_FAVORITES_ICON, 0, R.string.action_remove_from_favorites)
+		menu.add(0, R.id.menu_unstar_icon, 0, R.string.action_remove_from_favorites)
 				.setIcon(getActionBarIcon(R.attr.iconActionRemoveFromFavorites))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-		menu.add(0, OPTIONS_MENU_MAKE_HOME_PAGE, 0, R.string.action_make_home_page);
+		menu.add(0, R.id.menu_make_home_page, 0, R.string.action_make_home_page);
 	}
 
 	@Override
@@ -283,19 +272,19 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		boolean canSearch = search || catalogSearch;
 		allowSearch = canSearch;
 		boolean isCatalogOpen = retainExtra.startPageNumber == PAGE_NUMBER_CATALOG;
-		menu.findItem(OPTIONS_MENU_SEARCH).setTitle(canSearch ? R.string.action_search : R.string.action_filter);
-		menu.findItem(OPTIONS_MENU_CATALOG).setVisible(catalog && !isCatalogOpen);
-		menu.findItem(OPTIONS_MENU_PAGES).setVisible(catalog && isCatalogOpen);
-		menu.findItem(OPTIONS_MENU_ARCHIVE).setVisible(board.allowArchive);
-		menu.findItem(OPTIONS_MENU_NEW_THREAD).setVisible(board.allowPosting);
+		menu.findItem(R.id.menu_search).setTitle(canSearch ? R.string.action_search : R.string.action_filter);
+		menu.findItem(R.id.menu_catalog).setVisible(catalog && !isCatalogOpen);
+		menu.findItem(R.id.menu_pages).setVisible(catalog && isCatalogOpen);
+		menu.findItem(R.id.menu_archive).setVisible(board.allowArchive);
+		menu.findItem(R.id.menu_new_thread).setVisible(board.allowPosting);
 		boolean singleBoardMode = configuration.getOption(ChanConfiguration.OPTION_SINGLE_BOARD_MODE);
 		boolean isFavorite = FavoritesStorage.getInstance().hasFavorite(page.chanName, page.boardName, null);
 		boolean iconFavorite = ResourceUtils.isTabletOrLandscape(getResources().getConfiguration());
-		menu.findItem(OPTIONS_MENU_ADD_TO_FAVORITES_TEXT).setVisible(!iconFavorite && !isFavorite && !singleBoardMode);
-		menu.findItem(OPTIONS_MENU_REMOVE_FROM_FAVORITES_TEXT).setVisible(!iconFavorite && isFavorite);
-		menu.findItem(OPTIONS_MENU_ADD_TO_FAVORITES_ICON).setVisible(iconFavorite && !isFavorite && !singleBoardMode);
-		menu.findItem(OPTIONS_MENU_REMOVE_FROM_FAVORITES_ICON).setVisible(iconFavorite && isFavorite);
-		menu.findItem(OPTIONS_MENU_MAKE_HOME_PAGE).setVisible(!singleBoardMode &&
+		menu.findItem(R.id.menu_star_text).setVisible(!iconFavorite && !isFavorite && !singleBoardMode);
+		menu.findItem(R.id.menu_unstar_text).setVisible(!iconFavorite && isFavorite);
+		menu.findItem(R.id.menu_star_icon).setVisible(iconFavorite && !isFavorite && !singleBoardMode);
+		menu.findItem(R.id.menu_unstar_icon).setVisible(iconFavorite && isFavorite);
+		menu.findItem(R.id.menu_make_home_page).setVisible(!singleBoardMode &&
 				!StringUtils.equals(page.boardName, Preferences.getDefaultBoardName(page.chanName)));
 	}
 
@@ -303,37 +292,37 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 	public boolean onOptionsItemSelected(MenuItem item) {
 		Page page = getPage();
 		switch (item.getItemId()) {
-			case OPTIONS_MENU_REFRESH: {
+			case R.id.menu_refresh: {
 				refreshThreads(RefreshPage.CURRENT);
 				return true;
 			}
-			case OPTIONS_MENU_CATALOG: {
+			case R.id.menu_catalog: {
 				loadThreadsPage(PAGE_NUMBER_CATALOG, false);
 				return true;
 			}
-			case OPTIONS_MENU_PAGES: {
+			case R.id.menu_pages: {
 				loadThreadsPage(0, false);
 				return true;
 			}
-			case OPTIONS_MENU_ARCHIVE: {
+			case R.id.menu_archive: {
 				getUiManager().navigator().navigateArchive(page.chanName, page.boardName, 0);
 				return true;
 			}
-			case OPTIONS_MENU_NEW_THREAD: {
+			case R.id.menu_new_thread: {
 				getUiManager().navigator().navigatePosting(page.chanName, page.boardName, null);
 				return true;
 			}
-			case OPTIONS_MENU_ADD_TO_FAVORITES_TEXT:
-			case OPTIONS_MENU_ADD_TO_FAVORITES_ICON: {
+			case R.id.menu_star_text:
+			case R.id.menu_star_icon: {
 				FavoritesStorage.getInstance().add(page.chanName, page.boardName);
 				return true;
 			}
-			case OPTIONS_MENU_REMOVE_FROM_FAVORITES_TEXT:
-			case OPTIONS_MENU_REMOVE_FROM_FAVORITES_ICON: {
+			case R.id.menu_unstar_text:
+			case R.id.menu_unstar_icon: {
 				FavoritesStorage.getInstance().remove(page.chanName, page.boardName, null);
 				return true;
 			}
-			case OPTIONS_MENU_MAKE_HOME_PAGE: {
+			case R.id.menu_make_home_page: {
 				Preferences.setDefaultBoardName(page.chanName, page.boardName);
 				item.setVisible(false);
 				return true;
@@ -343,10 +332,10 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 	}
 
 	@Override
-	public void onFavoritesUpdate(FavoritesStorage.FavoriteItem favoriteItem, int action) {
+	public void onFavoritesUpdate(FavoritesStorage.FavoriteItem favoriteItem, FavoritesStorage.Action action) {
 		switch (action) {
-			case FavoritesStorage.ACTION_ADD:
-			case FavoritesStorage.ACTION_REMOVE: {
+			case ADD:
+			case REMOVE: {
 				Page page = getPage();
 				if (favoriteItem.equals(page.chanName, page.boardName, null)) {
 					updateOptionsMenu();
@@ -359,12 +348,12 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 	@Override
 	public void onAppearanceOptionChanged(int what) {
 		switch (what) {
-			case APPEARANCE_MENU_SPOILERS:
-			case APPEARANCE_MENU_SFW_MODE: {
+			case R.id.menu_spoilers:
+			case R.id.menu_sfw_mode: {
 				notifyAllAdaptersChanged();
 				break;
 			}
-			case APPEARANCE_MENU_THREADS_GRID: {
+			case R.id.menu_threads_grid: {
 				GridLayoutManager gridLayoutManager = (GridLayoutManager) getRecyclerView().getLayoutManager();
 				gridLayoutManager.setSpanCount(getAdapter().setGridMode(Preferences.isThreadsGridMode()));
 				break;

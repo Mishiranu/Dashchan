@@ -1,28 +1,13 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.text;
 
+import android.graphics.Color;
+import chan.util.StringUtils;
 import java.io.StringReader;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.ccil.cowan.tagsoup.HTMLSchema;
 import org.ccil.cowan.tagsoup.Parser;
 import org.xml.sax.Attributes;
@@ -32,24 +17,20 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 
-import android.graphics.Color;
-
-import chan.util.StringUtils;
-
 public class HtmlParser implements ContentHandler {
 	public static CharSequence spanify(String source, Markup markup, String parentPostNumber, Object extra) {
-		return parse(source, markup, MODE_SPANIFY, parentPostNumber, extra);
+		return parse(source, markup, Mode.SPANIFY, parentPostNumber, extra);
 	}
 
 	public static String clear(String source) {
-		return parse(source, null, MODE_CLEAR, null, null).toString();
+		return parse(source, null, Mode.CLEAR, null, null).toString();
 	}
 
 	public static String unmark(String source, Markup markup, Object extra) {
-		return parse(source, markup, MODE_UNMARK, null, extra).toString();
+		return parse(source, markup, Mode.UNMARK, null, extra).toString();
 	}
 
-	private static CharSequence parse(String source, Markup markup, int parsingMode, String parentPostNumber,
+	private static CharSequence parse(String source, Markup markup, Mode parsingMode, String parentPostNumber,
 			Object extra) {
 		if (StringUtils.isEmpty(source)) {
 			return "";
@@ -75,36 +56,32 @@ public class HtmlParser implements ContentHandler {
 	}
 
 	public static class TagData {
-		public static final int UNDEFINED = 0;
-		public static final int ENABLED = 1;
-		public static final int DISABLED = 2;
+		public enum Preformatted {UNDEFINED, ENABLED, DISABLED}
 
 		public boolean block;
 		public boolean spaced;
-		public int preformatted;
+		public Preformatted preformatted;
 
 		public TagData(boolean block, boolean spaced, boolean preformatted) {
 			this.block = block;
 			this.spaced = spaced;
-			this.preformatted = preformatted ? ENABLED : UNDEFINED;
+			this.preformatted = preformatted ? Preformatted.ENABLED : Preformatted.UNDEFINED;
 		}
 	}
 
-	private static final int MODE_SPANIFY = 0;
-	private static final int MODE_CLEAR = 1;
-	private static final int MODE_UNMARK = 2;
+	private enum Mode {SPANIFY, CLEAR, UNMARK}
 
 	private final String source;
 	private final StringBuilder builder = new StringBuilder();
 	private final Markup markup;
-	private final int parsingMode;
+	private final Mode parsingMode;
 	private final SpanProvider spanProvider;
 
 	private final String parentPostNumber;
 
 	private final Object extra;
 
-	private HtmlParser(String source, Markup markup, int parsingMode, String parentPostNumber, Object extra) {
+	private HtmlParser(String source, Markup markup, Mode parsingMode, String parentPostNumber, Object extra) {
 		if (markup == null) {
 			markup = IDLE_MARKUP;
 		}
@@ -177,15 +154,15 @@ public class HtmlParser implements ContentHandler {
 	}
 
 	public boolean isSpanifyMode() {
-		return parsingMode == MODE_SPANIFY;
+		return parsingMode == Mode.SPANIFY;
 	}
 
 	public boolean isClearMode() {
-		return parsingMode == MODE_CLEAR;
+		return parsingMode == Mode.CLEAR;
 	}
 
 	public boolean isUnmarkMode() {
-		return parsingMode == MODE_UNMARK;
+		return parsingMode == Mode.UNMARK;
 	}
 
 	public StringBuilder getBuilder() {
@@ -238,11 +215,11 @@ public class HtmlParser implements ContentHandler {
 		}
 
 		public boolean pop() {
-			return position >= 0 ? state[position--] : false;
+			return position >= 0 && state[position--];
 		}
 
 		public boolean check() {
-			return position >= 0 ? state[position] : false;
+			return position >= 0 && state[position];
 		}
 	}
 
@@ -288,7 +265,7 @@ public class HtmlParser implements ContentHandler {
 		} else {
 			tagData.block = false;
 			tagData.spaced = false;
-			tagData.preformatted = TagData.UNDEFINED;
+			tagData.preformatted = TagData.Preformatted.UNDEFINED;
 		}
 		return tagData;
 	}
@@ -384,8 +361,8 @@ public class HtmlParser implements ContentHandler {
 		Object object = markup.onBeforeTagStart(this, builder, tagName, attributes, tagData);
 		boolean blockTag = tagData.block;
 		boolean spacedTag = blockTag && tagData.spaced;
-		boolean preformattedTag = tagData.preformatted == TagData.ENABLED ||
-				tagData.preformatted == TagData.UNDEFINED && preformattedMode.check();
+		boolean preformattedTag = tagData.preformatted == TagData.Preformatted.ENABLED ||
+				tagData.preformatted == TagData.Preformatted.UNDEFINED && preformattedMode.check();
 		if (blockTag) {
 			appendBlockBreak(spacedTag);
 		}
@@ -455,7 +432,7 @@ public class HtmlParser implements ContentHandler {
 	}
 
 	@Override
-	public void characters(char ch[], int start, int length) {
+	public void characters(char[] ch, int start, int length) {
 		if (hidden) {
 			return;
 		}
@@ -509,7 +486,7 @@ public class HtmlParser implements ContentHandler {
 	}
 
 	@Override
-	public void ignorableWhitespace(char ch[], int start, int length) {}
+	public void ignorableWhitespace(char[] ch, int start, int length) {}
 
 	@Override
 	public void processingInstruction(String target, String data) {}

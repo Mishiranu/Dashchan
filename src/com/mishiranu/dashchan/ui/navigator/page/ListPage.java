@@ -18,17 +18,6 @@ import com.mishiranu.dashchan.widget.PullableRecyclerView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 
 public abstract class ListPage implements PullableWrapper.PullCallback {
-	public static final int OPTIONS_MENU_APPEARANCE = -1;
-	public static final int OPTIONS_MENU_SEARCH = -2;
-
-	public static final int APPEARANCE_MENU_CHANGE_THEME = 100;
-	public static final int APPEARANCE_MENU_EXPANDED_SCREEN = 101;
-	public static final int APPEARANCE_MENU_SPOILERS = 102;
-	public static final int APPEARANCE_MENU_MY_POSTS = 103;
-	public static final int APPEARANCE_MENU_DRAWER = 104;
-	public static final int APPEARANCE_MENU_THREADS_GRID = 105;
-	public static final int APPEARANCE_MENU_SFW_MODE = 106;
-
 	private enum State {INIT, LOCKED, RESUMED, PAUSED, DESTROYED}
 
 	public enum ViewType {LIST, PROGRESS, ERROR}

@@ -95,30 +95,26 @@ public class BoardsPage extends ListPage implements BoardsAdapter.Callback, Read
 		return false;
 	}
 
-	private static final int OPTIONS_MENU_REFRESH = 0;
-	private static final int OPTIONS_MENU_MAKE_HOME_PAGE = 1;
-
 	@Override
 	public void onCreateOptionsMenu(Menu menu) {
-		menu.add(0, OPTIONS_MENU_SEARCH, 0, R.string.action_filter)
+		menu.add(0, R.id.menu_search, 0, R.string.action_filter)
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
-		menu.add(0, OPTIONS_MENU_REFRESH, 0, R.string.action_refresh)
+		menu.add(0, R.id.menu_refresh, 0, R.string.action_refresh)
 				.setIcon(getActionBarIcon(R.attr.iconActionRefresh))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-		menu.addSubMenu(0, OPTIONS_MENU_APPEARANCE, 0, R.string.action_appearance);
-		menu.add(0, OPTIONS_MENU_MAKE_HOME_PAGE, 0, R.string.action_make_home_page);
-		menu.findItem(OPTIONS_MENU_MAKE_HOME_PAGE).setVisible(Preferences
-				.getDefaultBoardName(getPage().chanName) != null);
+		menu.addSubMenu(0, R.id.menu_appearance, 0, R.string.action_appearance);
+		menu.add(0, R.id.menu_make_home_page, 0, R.string.action_make_home_page)
+				.setVisible(Preferences.getDefaultBoardName(getPage().chanName) != null);
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-			case OPTIONS_MENU_REFRESH: {
+			case R.id.menu_refresh: {
 				refreshBoards(!getAdapter().isRealEmpty());
 				return true;
 			}
-			case OPTIONS_MENU_MAKE_HOME_PAGE: {
+			case R.id.menu_make_home_page: {
 				Preferences.setDefaultBoardName(getPage().chanName, null);
 				item.setVisible(false);
 				return true;

@@ -536,7 +536,7 @@ public class ForegroundManager implements Handler.Callback {
 			}
 			Collections.addAll(itemsList, items);
 			int resId = ResourceUtils.obtainAlertDialogLayoutResId(requireContext(), multiple
-					? ResourceUtils.DIALOG_LAYOUT_MULTI_CHOICE : ResourceUtils.DIALOG_LAYOUT_SINGLE_CHOICE);
+					? ResourceUtils.DialogLayout.MULTI_CHOICE : ResourceUtils.DialogLayout.SINGLE_CHOICE);
 			ItemsAdapter adapter = new ItemsAdapter(requireContext(), resId, itemsList, imageLayout);
 			AlertDialog alertDialog = new AlertDialog.Builder(requireContext())
 					.setTitle(descriptionText)

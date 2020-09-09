@@ -1,17 +1,17 @@
 package com.mishiranu.dashchan.content.storage;
 
-import com.mishiranu.dashchan.content.Preferences;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import chan.content.ChanManager;
 import chan.http.HttpValidator;
 import chan.util.StringUtils;
+import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.util.WeakObservable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class FavoritesStorage extends StorageManager.Storage {
 	private static final String KEY_DATA = "data";
@@ -110,15 +110,10 @@ public class FavoritesStorage extends StorageManager.Storage {
 
 	private final WeakObservable<Observer> observable = new WeakObservable<>();
 
-	public static final int ACTION_ADD = 0;
-	public static final int ACTION_REMOVE = 1;
-	public static final int ACTION_MODIFY_TITLE = 2;
-	public static final int ACTION_WATCHER_ENABLE = 3;
-	public static final int ACTION_WATCHER_DISABLE = 4;
-	public static final int ACTION_WATCHER_SYNCHRONIZE = 5;
+	public enum Action {ADD, REMOVE, MODIFY_TITLE, WATCHER_ENABLE, WATCHER_DISABLE, WATCHER_SYNCHRONIZE}
 
 	public interface Observer {
-		public void onFavoritesUpdate(FavoriteItem favoriteItem, int action);
+		public void onFavoritesUpdate(FavoriteItem favoriteItem, Action action);
 	}
 
 	public WeakObservable<Observer> getObservable() {
@@ -129,7 +124,7 @@ public class FavoritesStorage extends StorageManager.Storage {
 		return Preferences.getFavoritesOrder() != Preferences.FAVORITES_ORDER_BY_TITLE;
 	}
 
-	private void notifyFavoritesUpdate(FavoriteItem favoriteItem, int action) {
+	private void notifyFavoritesUpdate(FavoriteItem favoriteItem, Action action) {
 		for (Observer observer : observable) {
 			observer.onFavoritesUpdate(favoriteItem, action);
 		}
@@ -179,9 +174,9 @@ public class FavoritesStorage extends StorageManager.Storage {
 				favoriteItemsList.add(favoriteItem);
 			}
 			sortIfNeededInternal();
-			notifyFavoritesUpdate(favoriteItem, ACTION_ADD);
+			notifyFavoritesUpdate(favoriteItem, Action.ADD);
 			if (favoriteItem.threadNumber != null && favoriteItem.watcherEnabled) {
-				notifyFavoritesUpdate(favoriteItem, ACTION_WATCHER_ENABLE);
+				notifyFavoritesUpdate(favoriteItem, Action.WATCHER_ENABLE);
 			}
 			serialize();
 		}
@@ -262,7 +257,7 @@ public class FavoritesStorage extends StorageManager.Storage {
 					if (titleChanged) {
 						sortIfNeededInternal();
 					}
-					notifyFavoritesUpdate(favoriteItem, ACTION_MODIFY_TITLE);
+					notifyFavoritesUpdate(favoriteItem, Action.MODIFY_TITLE);
 					serialize();
 				}
 			}
@@ -275,7 +270,7 @@ public class FavoritesStorage extends StorageManager.Storage {
 			favoriteItem.postsCount = postsCount;
 			favoriteItem.newPostsCount = postsCount;
 			favoriteItem.hasNewPosts = false;
-			notifyFavoritesUpdate(favoriteItem, ACTION_WATCHER_SYNCHRONIZE);
+			notifyFavoritesUpdate(favoriteItem, Action.WATCHER_SYNCHRONIZE);
 			serialize();
 		}
 	}
@@ -296,7 +291,7 @@ public class FavoritesStorage extends StorageManager.Storage {
 		if (favoriteItem != null) {
 			favoriteItem.watcherEnabled = !favoriteItem.watcherEnabled;
 			notifyFavoritesUpdate(favoriteItem, favoriteItem.watcherEnabled
-					? ACTION_WATCHER_ENABLE : ACTION_WATCHER_DISABLE);
+					? Action.WATCHER_ENABLE : Action.WATCHER_DISABLE);
 			serialize();
 		}
 	}
@@ -307,9 +302,9 @@ public class FavoritesStorage extends StorageManager.Storage {
 			favoriteItemsList.remove(favoriteItem);
 			if (favoriteItem.watcherEnabled) {
 				favoriteItem.watcherEnabled = false;
-				notifyFavoritesUpdate(favoriteItem, ACTION_WATCHER_DISABLE);
+				notifyFavoritesUpdate(favoriteItem, Action.WATCHER_DISABLE);
 			}
-			notifyFavoritesUpdate(favoriteItem, ACTION_REMOVE);
+			notifyFavoritesUpdate(favoriteItem, Action.REMOVE);
 			serialize();
 		}
 	}
@@ -322,6 +317,7 @@ public class FavoritesStorage extends StorageManager.Storage {
 		return getFavorites(chanName, false, true, true);
 	}
 
+	@SuppressWarnings("ConditionCoveredByFurtherCondition")
 	private ArrayList<FavoriteItem> getFavorites(String chanName, boolean threads, boolean boards,
 			boolean orderByBoardName) {
 		ArrayList<FavoriteItem> favoriteItems = new ArrayList<>();

@@ -139,7 +139,7 @@ public class DialogMenu {
 		private final int layoutResId;
 
 		public DialogAdapter() {
-			layoutResId = ResourceUtils.obtainAlertDialogLayoutResId(context, ResourceUtils.DIALOG_LAYOUT_SIMPLE);
+			layoutResId = ResourceUtils.obtainAlertDialogLayoutResId(context, ResourceUtils.DialogLayout.SIMPLE);
 		}
 
 		@Override

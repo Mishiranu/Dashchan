@@ -141,25 +141,23 @@ public class ResourceUtils {
 		return drawable != null ? GraphicsUtils.getDrawableColor(context, drawable, Gravity.CENTER) : 0;
 	}
 
-	public static final int DIALOG_LAYOUT_SIMPLE = 0;
-	public static final int DIALOG_LAYOUT_SINGLE_CHOICE = 1;
-	public static final int DIALOG_LAYOUT_MULTI_CHOICE = 2;
+	public enum DialogLayout {SIMPLE, SINGLE_CHOICE, MULTI_CHOICE}
 
-	public static int obtainAlertDialogLayoutResId(Context context, int dialogLayout) {
+	public static int obtainAlertDialogLayoutResId(Context context, DialogLayout dialogLayout) {
 		int resId;
 		String layoutName;
 		switch (dialogLayout) {
-			case DIALOG_LAYOUT_SIMPLE: {
+			case SIMPLE: {
 				resId = android.R.layout.select_dialog_item;
 				layoutName = "listItemLayout";
 				break;
 			}
-			case DIALOG_LAYOUT_SINGLE_CHOICE: {
+			case SINGLE_CHOICE: {
 				resId = android.R.layout.select_dialog_singlechoice;
 				layoutName = "singleChoiceItemLayout";
 				break;
 			}
-			case DIALOG_LAYOUT_MULTI_CHOICE: {
+			case MULTI_CHOICE: {
 				resId = android.R.layout.select_dialog_multichoice;
 				layoutName = "multiChoiceItemLayout";
 				break;

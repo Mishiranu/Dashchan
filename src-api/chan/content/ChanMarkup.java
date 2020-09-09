@@ -1,26 +1,4 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package chan.content;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Locale;
-
-import org.xml.sax.Attributes;
 
 import android.graphics.Typeface;
 import android.net.Uri;
@@ -29,12 +7,10 @@ import android.text.style.StrikethroughSpan;
 import android.text.style.StyleSpan;
 import android.text.style.UnderlineSpan;
 import android.util.Pair;
-
 import chan.annotation.Extendable;
 import chan.annotation.Public;
 import chan.text.CommentEditor;
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.text.HtmlParser;
 import com.mishiranu.dashchan.text.style.GainedColorSpan;
 import com.mishiranu.dashchan.text.style.HeadingSpan;
@@ -47,6 +23,10 @@ import com.mishiranu.dashchan.text.style.ScriptSpan;
 import com.mishiranu.dashchan.text.style.SpoilerSpan;
 import com.mishiranu.dashchan.text.style.TabulationSpan;
 import com.mishiranu.dashchan.text.style.UnderlyingSpoilerSpan;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Locale;
+import org.xml.sax.Attributes;
 
 @Extendable
 public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup {
@@ -167,7 +147,8 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup {
 				tagData.spaced = spaced;
 			}
 			if (preformattedDefined) {
-				tagData.preformatted = preformatted ? HtmlParser.TagData.ENABLED : HtmlParser.TagData.DISABLED;
+				tagData.preformatted = preformatted ? HtmlParser.TagData.Preformatted.ENABLED
+						: HtmlParser.TagData.Preformatted.DISABLED;
 			}
 		}
 

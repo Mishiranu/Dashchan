@@ -391,75 +391,57 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				.handlePostContextMenu(postItem, replyable, true, true, false);
 	}
 
-	private static final int OPTIONS_MENU_ADD_POST = 0;
-	private static final int OPTIONS_MENU_GALLERY = 1;
-	private static final int OPTIONS_MENU_SELECT = 2;
-	private static final int OPTIONS_MENU_REFRESH = 3;
-	private static final int OPTIONS_MENU_THREAD_OPTIONS = 4;
-	private static final int OPTIONS_MENU_ADD_TO_FAVORITES_TEXT = 5;
-	private static final int OPTIONS_MENU_REMOVE_FROM_FAVORITES_TEXT = 6;
-	private static final int OPTIONS_MENU_ADD_TO_FAVORITES_ICON = 7;
-	private static final int OPTIONS_MENU_REMOVE_FROM_FAVORITES_ICON = 8;
-	private static final int OPTIONS_MENU_OPEN_ORIGINAL_THREAD = 9;
-	private static final int OPTIONS_MENU_ARCHIVE = 10;
-
-	private static final int THREAD_OPTIONS_MENU_RELOAD = 200;
-	private static final int THREAD_OPTIONS_MENU_AUTO_REFRESH = 201;
-	private static final int THREAD_OPTIONS_MENU_HIDDEN_POSTS = 202;
-	private static final int THREAD_OPTIONS_MENU_CLEAR_DELETED = 203;
-	private static final int THREAD_OPTIONS_MENU_SUMMARY = 204;
-
 	@Override
 	public void onCreateOptionsMenu(Menu menu) {
-		menu.add(0, OPTIONS_MENU_ADD_POST, 0, R.string.action_add_post)
+		menu.add(0, R.id.menu_add_post, 0, R.string.action_add_post)
 				.setIcon(getActionBarIcon(R.attr.iconActionAddPost))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-		menu.add(0, OPTIONS_MENU_SEARCH, 0, R.string.action_search)
+		menu.add(0, R.id.menu_search, 0, R.string.action_search)
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
-		menu.add(0, OPTIONS_MENU_GALLERY, 0, R.string.action_gallery);
-		menu.add(0, OPTIONS_MENU_SELECT, 0, R.string.action_select);
-		menu.add(0, OPTIONS_MENU_REFRESH, 0, R.string.action_refresh)
+		menu.add(0, R.id.menu_gallery, 0, R.string.action_gallery);
+		menu.add(0, R.id.menu_select, 0, R.string.action_select);
+		menu.add(0, R.id.menu_refresh, 0, R.string.action_refresh)
 				.setIcon(getActionBarIcon(R.attr.iconActionRefresh))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-		menu.addSubMenu(0, OPTIONS_MENU_APPEARANCE, 0, R.string.action_appearance);
-		SubMenu threadOptions = menu.addSubMenu(0, OPTIONS_MENU_THREAD_OPTIONS, 0, R.string.action_thread_options);
-		menu.add(0, OPTIONS_MENU_ADD_TO_FAVORITES_TEXT, 0, R.string.action_add_to_favorites);
-		menu.add(0, OPTIONS_MENU_REMOVE_FROM_FAVORITES_TEXT, 0, R.string.action_remove_from_favorites);
-		menu.add(0, OPTIONS_MENU_ADD_TO_FAVORITES_ICON, 0, R.string.action_add_to_favorites)
+		menu.addSubMenu(0, R.id.menu_appearance, 0, R.string.action_appearance);
+		SubMenu threadOptions = menu.addSubMenu(0, R.id.menu_thread_options, 0, R.string.action_thread_options);
+		menu.add(0, R.id.menu_star_text, 0, R.string.action_add_to_favorites);
+		menu.add(0, R.id.menu_unstar_text, 0, R.string.action_remove_from_favorites);
+		menu.add(0, R.id.menu_star_icon, 0, R.string.action_add_to_favorites)
 				.setIcon(getActionBarIcon(R.attr.iconActionAddToFavorites))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-		menu.add(0, OPTIONS_MENU_REMOVE_FROM_FAVORITES_ICON, 0, R.string.action_remove_from_favorites)
+		menu.add(0, R.id.menu_unstar_icon, 0, R.string.action_remove_from_favorites)
 				.setIcon(getActionBarIcon(R.attr.iconActionRemoveFromFavorites))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-		menu.add(0, OPTIONS_MENU_OPEN_ORIGINAL_THREAD, 0, R.string.action_open_the_original);
-		menu.add(0, OPTIONS_MENU_ARCHIVE, 0, R.string.action_archive_add);
+		menu.add(0, R.id.menu_open_original_thread, 0, R.string.action_open_the_original);
+		menu.add(0, R.id.menu_archive, 0, R.string.action_archive_add);
 
-		threadOptions.add(0, THREAD_OPTIONS_MENU_RELOAD, 0, R.string.action_reload);
-		threadOptions.add(0, THREAD_OPTIONS_MENU_AUTO_REFRESH, 0, R.string.action_auto_refresh).setCheckable(true);
-		threadOptions.add(0, THREAD_OPTIONS_MENU_HIDDEN_POSTS, 0, R.string.action_hidden_posts);
-		threadOptions.add(0, THREAD_OPTIONS_MENU_CLEAR_DELETED, 0, R.string.action_clear_deleted);
-		threadOptions.add(0, THREAD_OPTIONS_MENU_SUMMARY, 0, R.string.action_summary);
+		threadOptions.add(0, R.id.menu_reload, 0, R.string.action_reload);
+		threadOptions.add(0, R.id.menu_auto_refresh, 0, R.string.action_auto_refresh).setCheckable(true);
+		threadOptions.add(0, R.id.menu_hidden_posts, 0, R.string.action_hidden_posts);
+		threadOptions.add(0, R.id.menu_clear, 0, R.string.action_clear_deleted);
+		threadOptions.add(0, R.id.menu_summary, 0, R.string.action_summary);
 	}
 
 	@Override
 	public void onPrepareOptionsMenu(Menu menu) {
 		Page pageHolder = getPage();
-		menu.findItem(OPTIONS_MENU_ADD_POST).setVisible(replyable != null);
+		menu.findItem(R.id.menu_add_post).setVisible(replyable != null);
 		boolean isFavorite = FavoritesStorage.getInstance().hasFavorite(pageHolder.chanName, pageHolder.boardName,
 				pageHolder.threadNumber);
 		boolean iconFavorite = ResourceUtils.isTabletOrLandscape(getResources().getConfiguration());
-		menu.findItem(OPTIONS_MENU_ADD_TO_FAVORITES_TEXT).setVisible(!iconFavorite && !isFavorite);
-		menu.findItem(OPTIONS_MENU_REMOVE_FROM_FAVORITES_TEXT).setVisible(!iconFavorite && isFavorite);
-		menu.findItem(OPTIONS_MENU_ADD_TO_FAVORITES_ICON).setVisible(iconFavorite && !isFavorite);
-		menu.findItem(OPTIONS_MENU_REMOVE_FROM_FAVORITES_ICON).setVisible(iconFavorite && isFavorite);
-		menu.findItem(OPTIONS_MENU_OPEN_ORIGINAL_THREAD).setVisible(originalThreadData != null);
-		menu.findItem(OPTIONS_MENU_ARCHIVE).setVisible(ChanManager.getInstance()
+		menu.findItem(R.id.menu_star_text).setVisible(!iconFavorite && !isFavorite);
+		menu.findItem(R.id.menu_unstar_text).setVisible(!iconFavorite && isFavorite);
+		menu.findItem(R.id.menu_star_icon).setVisible(iconFavorite && !isFavorite);
+		menu.findItem(R.id.menu_unstar_icon).setVisible(iconFavorite && isFavorite);
+		menu.findItem(R.id.menu_open_original_thread).setVisible(originalThreadData != null);
+		menu.findItem(R.id.menu_archive).setVisible(ChanManager.getInstance()
 				.canBeArchived(pageHolder.chanName));
-		menu.findItem(THREAD_OPTIONS_MENU_AUTO_REFRESH).setVisible(Preferences.getAutoRefreshMode()
+		menu.findItem(R.id.menu_auto_refresh).setVisible(Preferences.getAutoRefreshMode()
 				== Preferences.AUTO_REFRESH_MODE_SEPARATE).setEnabled(getAdapter().getItemCount() > 0)
 				.setChecked(autoRefreshEnabled);
-		menu.findItem(THREAD_OPTIONS_MENU_HIDDEN_POSTS).setEnabled(hidePerformer.hasLocalAutohide());
-		menu.findItem(THREAD_OPTIONS_MENU_CLEAR_DELETED).setEnabled(getAdapter().hasDeletedPosts());
+		menu.findItem(R.id.menu_hidden_posts).setEnabled(hidePerformer.hasLocalAutohide());
+		menu.findItem(R.id.menu_clear).setEnabled(getAdapter().hasDeletedPosts());
 	}
 
 	@Override
@@ -467,12 +449,12 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		Page page = getPage();
 		PostsAdapter adapter = getAdapter();
 		switch (item.getItemId()) {
-			case OPTIONS_MENU_ADD_POST: {
+			case R.id.menu_add_post: {
 				getUiManager().navigator().navigatePosting(page.chanName, page.boardName,
 						page.threadNumber);
 				return true;
 			}
-			case OPTIONS_MENU_GALLERY: {
+			case R.id.menu_gallery: {
 				int imageIndex = -1;
 				RecyclerView recyclerView = getRecyclerView();
 				View child = recyclerView.getChildAt(0);
@@ -494,30 +476,30 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 						null, GalleryOverlay.NavigatePostMode.ENABLED, true);
 				return true;
 			}
-			case OPTIONS_MENU_SELECT: {
+			case R.id.menu_select: {
 				selectionMode = startActionMode(this);
 				return true;
 			}
-			case OPTIONS_MENU_REFRESH: {
+			case R.id.menu_refresh: {
 				refreshPosts(true, false);
 				return true;
 			}
-			case OPTIONS_MENU_ADD_TO_FAVORITES_TEXT:
-			case OPTIONS_MENU_ADD_TO_FAVORITES_ICON: {
+			case R.id.menu_star_text:
+			case R.id.menu_star_icon: {
 				FavoritesStorage.getInstance().add(page.chanName, page.boardName,
 						page.threadNumber, getParcelableExtra(ParcelableExtra.FACTORY).threadTitle,
 						adapter.getExistingPostsCount());
 				updateOptionsMenu();
 				return true;
 			}
-			case OPTIONS_MENU_REMOVE_FROM_FAVORITES_TEXT:
-			case OPTIONS_MENU_REMOVE_FROM_FAVORITES_ICON: {
+			case R.id.menu_unstar_text:
+			case R.id.menu_unstar_icon: {
 				FavoritesStorage.getInstance().remove(page.chanName, page.boardName,
 						page.threadNumber);
 				updateOptionsMenu();
 				return true;
 			}
-			case OPTIONS_MENU_OPEN_ORIGINAL_THREAD: {
+			case R.id.menu_open_original_thread: {
 				String chanName = originalThreadData.first;
 				Uri uri = originalThreadData.second;
 				ChanLocator locator = ChanLocator.get(chanName);
@@ -530,7 +512,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				}
 				return true;
 			}
-			case OPTIONS_MENU_ARCHIVE: {
+			case R.id.menu_archive: {
 				String threadTitle = null;
 				if (adapter.getItemCount() > 0) {
 					threadTitle = adapter.getItem(0).getSubjectOrComment();
@@ -539,11 +521,11 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 						page.threadNumber, threadTitle, getRetainExtra(RetainExtra.FACTORY).cachedPosts);
 				return true;
 			}
-			case THREAD_OPTIONS_MENU_RELOAD: {
+			case R.id.menu_reload: {
 				refreshPosts(true, true);
 				return true;
 			}
-			case THREAD_OPTIONS_MENU_AUTO_REFRESH: {
+			case R.id.menu_auto_refresh: {
 				SeekBarForm seekBarForm = new SeekBarForm(true);
 				seekBarForm.setConfiguration(Preferences.MIN_AUTO_REFRESH_INTERVAL,
 						Preferences.MAX_AUTO_REFRESH_INTERVAL, Preferences.STEP_AUTO_REFRESH_INTERVAL, 1f);
@@ -568,7 +550,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				getUiManager().getConfigurationLock().lockConfiguration(dialog);
 				return true;
 			}
-			case THREAD_OPTIONS_MENU_HIDDEN_POSTS: {
+			case R.id.menu_hidden_posts: {
 				ArrayList<String> localAutohide = hidePerformer.getReadableLocalAutohide();
 				final boolean[] checked = new boolean[localAutohide.size()];
 				AlertDialog dialog = new AlertDialog.Builder(getContext())
@@ -597,7 +579,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				getUiManager().getConfigurationLock().lockConfiguration(dialog);
 				return true;
 			}
-			case THREAD_OPTIONS_MENU_CLEAR_DELETED: {
+			case R.id.menu_clear: {
 				AlertDialog dialog = new AlertDialog.Builder(getContext())
 						.setMessage(R.string.message_clear_deleted_posts_warning)
 						.setPositiveButton(android.R.string.ok, (d, which) -> {
@@ -620,7 +602,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				getUiManager().getConfigurationLock().lockConfiguration(dialog);
 				return true;
 			}
-			case THREAD_OPTIONS_MENU_SUMMARY: {
+			case R.id.menu_summary: {
 				RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
 				int files = 0;
 				int postsWithFiles = 0;
@@ -630,14 +612,14 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 					if (attachmentItems != null) {
 						int itFiles = 0;
 						for (AttachmentItem attachmentItem : attachmentItems) {
-							int generalType = attachmentItem.getGeneralType();
+							AttachmentItem.GeneralType generalType = attachmentItem.getGeneralType();
 							switch (generalType) {
-								case AttachmentItem.GENERAL_TYPE_FILE:
-								case AttachmentItem.GENERAL_TYPE_EMBEDDED: {
+								case FILE:
+								case EMBEDDED: {
 									itFiles++;
 									break;
 								}
-								case AttachmentItem.GENERAL_TYPE_LINK: {
+								case LINK: {
 									links++;
 									break;
 								}
@@ -677,10 +659,10 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 	}
 
 	@Override
-	public void onFavoritesUpdate(FavoritesStorage.FavoriteItem favoriteItem, int action) {
+	public void onFavoritesUpdate(FavoritesStorage.FavoriteItem favoriteItem, FavoritesStorage.Action action) {
 		switch (action) {
-			case FavoritesStorage.ACTION_ADD:
-			case FavoritesStorage.ACTION_REMOVE: {
+			case ADD:
+			case REMOVE: {
 				Page page = getPage();
 				if (favoriteItem.equals(page.chanName, page.boardName, page.threadNumber)) {
 					updateOptionsMenu();
@@ -693,19 +675,14 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 	@Override
 	public void onAppearanceOptionChanged(int what) {
 		switch (what) {
-			case APPEARANCE_MENU_SPOILERS:
-			case APPEARANCE_MENU_MY_POSTS:
-			case APPEARANCE_MENU_SFW_MODE: {
+			case R.id.menu_spoilers:
+			case R.id.menu_my_posts:
+			case R.id.menu_sfw_mode: {
 				notifyAllAdaptersChanged();
 				break;
 			}
 		}
 	}
-
-	private static final int ACTION_MENU_MAKE_THREADSHOT = 0;
-	private static final int ACTION_MENU_REPLY = 1;
-	private static final int ACTION_MENU_DELETE_POSTS = 2;
-	private static final int ACTION_MENU_SEND_REPORT = 3;
 
 	@Override
 	public boolean onCreateActionMode(ActionMode mode, Menu menu) {
@@ -714,18 +691,18 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		getAdapter().setSelectionModeEnabled(true);
 		mode.setTitle(getString(R.string.text_selected_format, getAdapter().getSelectedCount()));
 		ChanConfiguration.Board board = configuration.safe().obtainBoard(page.boardName);
-		menu.add(0, ACTION_MENU_MAKE_THREADSHOT, 0, R.string.action_make_threadshot)
+		menu.add(0, R.id.menu_make_threadshot, 0, R.string.action_make_threadshot)
 				.setIcon(getActionBarIcon(R.attr.iconActionMakeThreadshot))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 		if (replyable != null) {
-			menu.add(0, ACTION_MENU_REPLY, 0, R.string.action_reply)
+			menu.add(0, R.id.menu_reply, 0, R.string.action_reply)
 					.setIcon(getActionBarIcon(R.attr.iconActionPaste))
 					.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 		}
 		if (board.allowDeleting) {
 			ChanConfiguration.Deleting deleting = configuration.safe().obtainDeleting(page.boardName);
 			if (deleting != null && deleting.multiplePosts) {
-				menu.add(0, ACTION_MENU_DELETE_POSTS, 0, R.string.action_delete)
+				menu.add(0, R.id.menu_delete, 0, R.string.action_delete)
 						.setIcon(getActionBarIcon(R.attr.iconActionDelete))
 						.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 			}
@@ -733,7 +710,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		if (board.allowReporting) {
 			ChanConfiguration.Reporting reporting = configuration.safe().obtainReporting(page.boardName);
 			if (reporting != null && reporting.multiplePosts) {
-				menu.add(0, ACTION_MENU_SEND_REPORT, 0, R.string.action_report)
+				menu.add(0, R.id.menu_report, 0, R.string.action_report)
 						.setIcon(getActionBarIcon(R.attr.iconActionReport))
 						.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 			}
@@ -749,7 +726,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 	@Override
 	public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
 		switch (item.getItemId()) {
-			case ACTION_MENU_MAKE_THREADSHOT: {
+			case R.id.menu_make_threadshot: {
 				ArrayList<PostItem> postItems = getAdapter().getSelectedItems();
 				if (postItems.size() > 0) {
 					Page page = getPage();
@@ -760,7 +737,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				mode.finish();
 				return true;
 			}
-			case ACTION_MENU_REPLY: {
+			case R.id.menu_reply: {
 				ArrayList<Replyable.ReplyData> data = new ArrayList<>();
 				for (PostItem postItem : getAdapter().getSelectedItems()) {
 					data.add(new Replyable.ReplyData(postItem.getPostNumber(), null));
@@ -771,7 +748,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				mode.finish();
 				return true;
 			}
-			case ACTION_MENU_DELETE_POSTS: {
+			case R.id.menu_delete: {
 				ArrayList<PostItem> postItems = getAdapter().getSelectedItems();
 				ArrayList<String> postNumbers = new ArrayList<>();
 				for (PostItem postItem : postItems) {
@@ -787,7 +764,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				mode.finish();
 				return true;
 			}
-			case ACTION_MENU_SEND_REPORT: {
+			case R.id.menu_report: {
 				ArrayList<PostItem> postItems = getAdapter().getSelectedItems();
 				ArrayList<String> postNumbers = new ArrayList<>();
 				for (PostItem postItem : postItems) {
@@ -1526,7 +1503,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 			case PERFORM_HIDE_SIMILAR: {
 				PostsAdapter adapter = getAdapter();
 				adapter.cancelPreloading();
-				int result;
+				HidePerformer.AddResult result;
 				switch (message) {
 					case PERFORM_HIDE_REPLIES: {
 						result = hidePerformer.addHideByReplies(postItem);
@@ -1544,13 +1521,13 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 						throw new RuntimeException();
 					}
 				}
-				if (result == HidePerformer.ADD_SUCCESS) {
+				if (result == HidePerformer.AddResult.SUCCESS) {
 					postItem.resetHidden();
 					adapter.invalidateHidden();
 					notifyAllAdaptersChanged();
 					hidePerformer.encodeLocalAutohide(getRetainExtra(RetainExtra.FACTORY).cachedPosts);
 					serializePosts();
-				} else if (result == HidePerformer.ADD_EXISTS && !postItem.isHiddenUnchecked()) {
+				} else if (result == HidePerformer.AddResult.EXISTS && !postItem.isHiddenUnchecked()) {
 					postItem.resetHidden();
 					notifyAllAdaptersChanged();
 					serializePosts();

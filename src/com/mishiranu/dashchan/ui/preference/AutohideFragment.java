@@ -82,6 +82,14 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 	}
 
 	@Override
+	public void onTerminate() {
+		if (searchMenuItem != null && searchMenuItem.isActionViewExpanded()) {
+			searchMenuItem.setOnActionExpandListener(null);
+			searchMenuItem.collapseActionView();
+		}
+	}
+
+	@Override
 	public boolean onBackPressed() {
 		if (searchMenuItem != null && searchMenuItem.isActionViewExpanded()) {
 			searchMenuItem.collapseActionView();
@@ -90,15 +98,12 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 		return false;
 	}
 
-	private static final int OPTIONS_MENU_NEW_RULE = 0;
-	private static final int OPTIONS_MENU_SEARCH = 1;
-
 	@Override
 	public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-		menu.add(0, OPTIONS_MENU_NEW_RULE, 0, R.string.action_new_rule)
+		menu.add(0, R.id.menu_new_rule, 0, R.string.action_new_rule)
 				.setIcon(((FragmentHandler) requireActivity()).getActionBarIcon(R.attr.iconActionAddRule))
 				.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-		searchMenuItem = menu.add(0, OPTIONS_MENU_SEARCH, 0, R.string.action_filter).setActionView(searchView)
+		searchMenuItem = menu.add(0, R.id.menu_search, 0, R.string.action_filter).setActionView(searchView)
 				.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW)
 				.setOnActionExpandListener(new MenuExpandListener((menuItem, expand) -> {
 					((Adapter) getRecyclerView().getAdapter()).setSearchQuery("");
@@ -106,19 +111,17 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 					onPrepareOptionsMenu(menu);
 					return true;
 				}));
-		super.onCreateOptionsMenu(menu, inflater);
 	}
 
 	@Override
 	public void onPrepareOptionsMenu(@NonNull Menu menu) {
-		menu.findItem(OPTIONS_MENU_NEW_RULE).setVisible(!searchExpanded);
-		super.onPrepareOptionsMenu(menu);
+		menu.findItem(R.id.menu_new_rule).setVisible(!searchExpanded);
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-			case OPTIONS_MENU_NEW_RULE: {
+			case R.id.menu_new_rule: {
 				editRule(null, -1);
 				break;
 			}

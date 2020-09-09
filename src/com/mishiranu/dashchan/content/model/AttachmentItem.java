@@ -18,24 +18,18 @@ import java.util.Collections;
 import java.util.Locale;
 
 public abstract class AttachmentItem {
+	public enum Type {IMAGE, VIDEO, AUDIO, FILE}
+	public enum GeneralType {FILE, EMBEDDED, LINK}
+
 	private final Binder binder;
-
-	public static final int TYPE_IMAGE = 0;
-	public static final int TYPE_VIDEO = 1;
-	public static final int TYPE_AUDIO = 2;
-	public static final int TYPE_FILE = 3;
-
-	public static final int GENERAL_TYPE_FILE = 0;
-	public static final int GENERAL_TYPE_EMBEDDED = 1;
-	public static final int GENERAL_TYPE_LINK = 2;
 
 	public abstract Uri getFileUri();
 	public abstract Uri getThumbnailUri();
 	public abstract String getThumbnailKey();
 	public abstract String getDialogTitle();
 	public abstract int getSize();
-	public abstract int getType();
-	public abstract int getGeneralType();
+	public abstract Type getType();
+	public abstract GeneralType getGeneralType();
 	public abstract boolean isShowInGallery();
 	public abstract boolean canDownloadToStorage();
 	public abstract GalleryItem createGalleryItem();
@@ -71,7 +65,7 @@ public abstract class AttachmentItem {
 		public int height;
 
 		private String thumbnailKey;
-		private int type = TYPE_IMAGE;
+		private Type type = Type.IMAGE;
 
 		public FileAttachmentItem(Binder binder) {
 			super(binder);
@@ -110,18 +104,18 @@ public abstract class AttachmentItem {
 		}
 
 		@Override
-		public int getType() {
+		public Type getType() {
 			return type;
 		}
 
 		@Override
-		public int getGeneralType() {
-			return GENERAL_TYPE_FILE;
+		public GeneralType getGeneralType() {
+			return GeneralType.FILE;
 		}
 
 		@Override
 		public boolean isShowInGallery() {
-			return type == TYPE_IMAGE || type == TYPE_VIDEO;
+			return type == Type.IMAGE || type == Type.VIDEO;
 		}
 
 		@Override
@@ -195,13 +189,13 @@ public abstract class AttachmentItem {
 		public void setDisplayedExtension(String displayedExtension) {
 			this.displayedExtension = displayedExtension;
 			if (C.IMAGE_EXTENSIONS.contains(displayedExtension)) {
-				type = TYPE_IMAGE;
+				type = Type.IMAGE;
 			} else if (C.VIDEO_EXTENSIONS.contains(displayedExtension)) {
-				type = TYPE_VIDEO;
+				type = Type.VIDEO;
 			} else if (C.AUDIO_EXTENSIONS.contains(displayedExtension)) {
-				type = TYPE_AUDIO;
+				type = Type.AUDIO;
 			} else {
-				type = TYPE_FILE;
+				type = Type.FILE;
 			}
 		}
 	}
@@ -254,13 +248,13 @@ public abstract class AttachmentItem {
 		}
 
 		@Override
-		public int getType() {
-			return isAudio ? TYPE_AUDIO : isVideo ? TYPE_VIDEO : TYPE_FILE;
+		public Type getType() {
+			return isAudio ? Type.AUDIO : isVideo ? Type.VIDEO : Type.FILE;
 		}
 
 		@Override
-		public int getGeneralType() {
-			return fromComment ? GENERAL_TYPE_LINK : GENERAL_TYPE_FILE;
+		public GeneralType getGeneralType() {
+			return fromComment ? GeneralType.LINK : GeneralType.FILE;
 		}
 
 		@Override
@@ -335,9 +329,9 @@ public abstract class AttachmentItem {
 			}
 		}
 		String comment = postItem.getRawComment();
-		addCommentAttachmentItems(attachmentItems, postItem, locator, comment, URI_TYPE_YOUTUBE);
-		addCommentAttachmentItems(attachmentItems, postItem, locator, comment, URI_TYPE_VIMEO);
-		addCommentAttachmentItems(attachmentItems, postItem, locator, comment, URI_TYPE_VOCAROO);
+		addCommentAttachmentItems(attachmentItems, postItem, locator, comment, UriType.YOUTUBE);
+		addCommentAttachmentItems(attachmentItems, postItem, locator, comment, UriType.VIMEO);
+		addCommentAttachmentItems(attachmentItems, postItem, locator, comment, UriType.VOCAROO);
 		if (attachmentItems.size() > 0) {
 			attachmentItems.trimToSize();
 			return attachmentItems;
@@ -412,25 +406,23 @@ public abstract class AttachmentItem {
 		return attachmentItem;
 	}
 
-	private static final int URI_TYPE_YOUTUBE = 0;
-	private static final int URI_TYPE_VIMEO = 1;
-	private static final int URI_TYPE_VOCAROO = 2;
+	private enum UriType {YOUTUBE, VIMEO, VOCAROO}
 
 	private static EmbeddedAttachmentItem obtainCommentAttachmentItem(Binder binder, ChanLocator locator,
-			String embeddedCode, int uriType) {
+			String embeddedCode, UriType uriType) {
 		EmbeddedAttachmentItem attachmentItem;
 		switch (uriType) {
-			case URI_TYPE_YOUTUBE: {
+			case YOUTUBE: {
 				attachmentItem = obtainEmbeddedAttachmentItem(binder, locator,
 						EmbeddedManager.getInstance().obtainYouTubeAttachment(locator, embeddedCode));
 				break;
 			}
-			case URI_TYPE_VIMEO: {
+			case VIMEO: {
 				attachmentItem = obtainEmbeddedAttachmentItem(binder, locator,
 						EmbeddedManager.getInstance().obtainVimeoAttachment(locator, embeddedCode));
 				break;
 			}
-			case URI_TYPE_VOCAROO: {
+			case VOCAROO: {
 				attachmentItem = obtainEmbeddedAttachmentItem(binder, locator,
 						EmbeddedManager.getInstance().obtainVocarooAttachment(locator, embeddedCode));
 				break;
@@ -444,18 +436,18 @@ public abstract class AttachmentItem {
 	}
 
 	private static void addCommentAttachmentItems(ArrayList<AttachmentItem> attachmentItems, Binder binder,
-			ChanLocator locator, String comment, int uriType) {
+			ChanLocator locator, String comment, UriType uriType) {
 		ArrayList<String> embeddedCodes;
 		switch (uriType) {
-			case URI_TYPE_YOUTUBE: {
+			case YOUTUBE: {
 				embeddedCodes = getAllCodes(locator.getYouTubeEmbeddedCodes(comment));
 				break;
 			}
-			case URI_TYPE_VIMEO: {
+			case VIMEO: {
 				embeddedCodes = getAllCodes(locator.getVimeoEmbeddedCodes(comment));
 				break;
 			}
-			case URI_TYPE_VOCAROO: {
+			case VOCAROO: {
 				embeddedCodes = getAllCodes(locator.getVocarooEmbeddedCodes(comment));
 				break;
 			}
@@ -472,28 +464,28 @@ public abstract class AttachmentItem {
 
 	public void configureAndLoad(AttachmentView view, boolean needShowMultipleIcon, boolean force) {
 		view.setCropEnabled(Preferences.isCutThumbnails());
-		int type = getType();
+		Type type = getType();
 		String key = getThumbnailKey();
 		AttachmentView.Overlay overlay = AttachmentView.Overlay.NONE;
 		if (needShowMultipleIcon) {
 			overlay = AttachmentView.Overlay.MULTIPLE;
 		} else {
 			switch (type) {
-				case TYPE_IMAGE: {
+				case IMAGE: {
 					if (StringUtils.isEmpty(key)) {
 						overlay = AttachmentView.Overlay.WARNING;
 					}
 					break;
 				}
-				case TYPE_VIDEO: {
+				case VIDEO: {
 					overlay = AttachmentView.Overlay.VIDEO;
 					break;
 				}
-				case TYPE_AUDIO: {
+				case AUDIO: {
 					overlay = AttachmentView.Overlay.AUDIO;
 					break;
 				}
-				case TYPE_FILE: {
+				case FILE: {
 					overlay = AttachmentView.Overlay.FILE;
 					break;
 				}

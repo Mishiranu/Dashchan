@@ -33,11 +33,9 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 	private final SlideDrawable slideDrawable;
 	private Drawable homeAsUpIndicator;
 
-	public static final int MODE_DISABLED = 0;
-	public static final int MODE_DRAWER = 1;
-	public static final int MODE_UP = 2;
+	public enum Mode {DISABLED, DRAWER, UP}
 
-	private int mode = MODE_DISABLED;
+	private Mode mode = Mode.DISABLED;
 
 	public DrawerToggle(Activity activity, Context toolbarContext, DrawerLayout drawerLayout) {
 		this.activity = activity;
@@ -69,11 +67,11 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 	}
 
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-	public void setDrawerIndicatorMode(int mode) {
+	public void setDrawerIndicatorMode(Mode mode) {
 		if (this.mode != mode) {
 			this.mode = mode;
 			ActionBar actionBar = activity.getActionBar();
-			if (mode == MODE_DISABLED) {
+			if (mode == Mode.DISABLED) {
 				if (C.API_JELLY_BEAN_MR2) {
 					actionBar.setHomeAsUpIndicator(null);
 				}
@@ -86,11 +84,11 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 					if (!open) {
 						ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
 						animator.setDuration(DRAWER_CLOSE_DURATION);
-						animator.addUpdateListener(new StateArrowAnimatorListener(mode == MODE_DRAWER));
+						animator.addUpdateListener(new StateArrowAnimatorListener(mode == Mode.DRAWER));
 						animator.start();
 					}
 				} else {
-					setActionBarUpIndicatorObsolete(mode == MODE_DRAWER ? slideDrawable : homeAsUpIndicator);
+					setActionBarUpIndicatorObsolete(mode == Mode.DRAWER ? slideDrawable : homeAsUpIndicator);
 				}
 			}
 		}
@@ -98,13 +96,13 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 	public void syncState() {
-		if (mode != MODE_DISABLED) {
+		if (mode != Mode.DISABLED) {
 			if (C.API_LOLLIPOP) {
-				arrowDrawable.setPosition(mode == MODE_UP || drawerLayout.isDrawerOpen(GravityCompat.START) ? 1f : 0f);
+				arrowDrawable.setPosition(mode == Mode.UP || drawerLayout.isDrawerOpen(GravityCompat.START) ? 1f : 0f);
 				activity.getActionBar().setHomeAsUpIndicator(arrowDrawable);
 			} else {
 				slideDrawable.setPosition(drawerLayout.isDrawerOpen(GravityCompat.START) ? 1f : 0f);
-				setActionBarUpIndicatorObsolete(mode == MODE_DRAWER ? slideDrawable : homeAsUpIndicator);
+				setActionBarUpIndicatorObsolete(mode == Mode.DRAWER ? slideDrawable : homeAsUpIndicator);
 			}
 		}
 	}
@@ -114,14 +112,14 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 			if (drawerLayout.getDrawerLockMode(GravityCompat.START) != DrawerLayout.LOCK_MODE_UNLOCKED) {
 				return false;
 			}
-			if (mode == MODE_DRAWER) {
+			if (mode == Mode.DRAWER) {
 				if (drawerLayout.isDrawerVisible(GravityCompat.START)) {
 					drawerLayout.closeDrawer(GravityCompat.START);
 				} else {
 					drawerLayout.openDrawer(GravityCompat.START);
 				}
 				return true;
-			} else if (mode == MODE_UP) {
+			} else if (mode == Mode.UP) {
 				if (drawerLayout.isDrawerVisible(GravityCompat.START)) {
 					drawerLayout.closeDrawer(GravityCompat.START);
 					return true;
@@ -134,7 +132,7 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 	@Override
 	public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
 		if (C.API_LOLLIPOP) {
-			if (mode == MODE_DRAWER) {
+			if (mode == Mode.DRAWER) {
 				arrowDrawable.setPosition(slideOffset);
 			}
 		} else {
@@ -151,7 +149,7 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 	@Override
 	public void onDrawerOpened(@NonNull View drawerView) {
 		if (C.API_LOLLIPOP) {
-			if (mode == MODE_DRAWER) {
+			if (mode == Mode.DRAWER) {
 				arrowDrawable.setPosition(1f);
 			}
 		} else {
@@ -162,7 +160,7 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 	@Override
 	public void onDrawerClosed(@NonNull View drawerView) {
 		if (C.API_LOLLIPOP) {
-			if (mode == MODE_DRAWER) {
+			if (mode == Mode.DRAWER) {
 				arrowDrawable.setPosition(0f);
 			}
 		} else {

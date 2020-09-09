@@ -133,7 +133,7 @@ public class ChanFragment extends PreferenceFragment {
 				captchaPassPreference.setOnAfterChangeListener(p -> {
 					String[] values = p.getValue();
 					if (Preferences.checkHasMultipleValues(values)) {
-						new AuthorizationFragment(getChanName(), AUTHORIZATION_TYPE_CAPTCHA_PASS, values).show(this);
+						new AuthorizationFragment(getChanName(), AuthorizationType.CAPTCHA_PASS, values).show(this);
 					}
 				});
 			}
@@ -148,7 +148,7 @@ public class ChanFragment extends PreferenceFragment {
 				userAuthorizationPreference.setOnAfterChangeListener(p -> {
 					String[] values = p.getValue();
 					if (Preferences.checkHasMultipleValues(values)) {
-						new AuthorizationFragment(getChanName(), AUTHORIZATION_TYPE_USER, values).show(this);
+						new AuthorizationFragment(getChanName(), AuthorizationType.USER, values).show(this);
 					}
 				});
 			}
@@ -322,8 +322,7 @@ public class ChanFragment extends PreferenceFragment {
 		super.onActivityResult(requestCode, resultCode, data);
 	}
 
-	private static final int AUTHORIZATION_TYPE_CAPTCHA_PASS = 0;
-	private static final int AUTHORIZATION_TYPE_USER = 1;
+	private enum AuthorizationType {CAPTCHA_PASS, USER}
 
 	public static class AuthorizationFragment extends DialogFragment implements AsyncManager.Callback {
 		private static final String TASK_CHECK_AUTHORIZATION = "check_authorization";
@@ -334,10 +333,11 @@ public class ChanFragment extends PreferenceFragment {
 
 		public AuthorizationFragment() {}
 
-		public AuthorizationFragment(String chanName, int authorizationType, String[] authorizationData) {
+		public AuthorizationFragment(String chanName,
+				AuthorizationType authorizationType, String[] authorizationData) {
 			Bundle args = new Bundle();
 			args.putString(EXTRA_CHAN_NAME, chanName);
-			args.putInt(EXTRA_AUTHORIZATION_TYPE, authorizationType);
+			args.putString(EXTRA_AUTHORIZATION_TYPE, authorizationType.name());
 			args.putStringArray(EXTRA_AUTHORIZATION_DATA, authorizationData);
 			setArguments(args);
 		}
@@ -370,7 +370,8 @@ public class ChanFragment extends PreferenceFragment {
 		public AsyncManager.Holder onCreateAndExecuteTask(String name, HashMap<String, Object> extra) {
 			Bundle args = requireArguments();
 			CheckAuthorizationTask task = new CheckAuthorizationTask(args.getString(EXTRA_CHAN_NAME),
-					args.getInt(EXTRA_AUTHORIZATION_TYPE), args.getStringArray(EXTRA_AUTHORIZATION_DATA));
+					AuthorizationType.valueOf(args.getString(EXTRA_AUTHORIZATION_TYPE)),
+					args.getStringArray(EXTRA_AUTHORIZATION_DATA));
 			task.executeOnExecutor(CheckAuthorizationTask.THREAD_POOL_EXECUTOR);
 			return task.getHolder();
 		}
@@ -395,12 +396,12 @@ public class ChanFragment extends PreferenceFragment {
 				if (fragment instanceof ChanFragment) {
 					ChanFragment chanFragment = ((ChanFragment) fragment);
 					Preference<?> preference = null;
-					switch (requireArguments().getInt(EXTRA_AUTHORIZATION_TYPE)) {
-						case AUTHORIZATION_TYPE_CAPTCHA_PASS: {
+					switch (AuthorizationType.valueOf(requireArguments().getString(EXTRA_AUTHORIZATION_TYPE))) {
+						case CAPTCHA_PASS: {
 							preference = chanFragment.captchaPassPreference;
 							break;
 						}
-						case AUTHORIZATION_TYPE_USER: {
+						case USER: {
 							preference = chanFragment.userAuthorizationPreference;
 							break;
 						}
@@ -422,13 +423,14 @@ public class ChanFragment extends PreferenceFragment {
 		private final HttpHolder holder = new HttpHolder();
 
 		private final String chanName;
-		private final int authorizationType;
+		private final AuthorizationType authorizationType;
 		private final String[] authorizationData;
 
 		private boolean valid;
 		private ErrorItem errorItem;
 
-		public CheckAuthorizationTask(String chanName, int authorizationType, String[] authorizationData) {
+		public CheckAuthorizationTask(String chanName,
+				AuthorizationType authorizationType, String[] authorizationData) {
 			this.chanName = chanName;
 			this.authorizationType = authorizationType;
 			this.authorizationData = authorizationData;
@@ -440,11 +442,11 @@ public class ChanFragment extends PreferenceFragment {
 				ChanPerformer performer = ChanPerformer.get(chanName);
 				int type = -1;
 				switch (authorizationType) {
-					case AUTHORIZATION_TYPE_CAPTCHA_PASS: {
+					case CAPTCHA_PASS: {
 						type = ChanPerformer.CheckAuthorizationData.TYPE_CAPTCHA_PASS;
 						break;
 					}
-					case AUTHORIZATION_TYPE_USER: {
+					case USER: {
 						type = ChanPerformer.CheckAuthorizationData.TYPE_USER_AUTHORIZATION;
 						break;
 					}

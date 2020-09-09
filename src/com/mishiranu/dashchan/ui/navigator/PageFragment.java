@@ -201,6 +201,13 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 
 	@Override
 	public void onTerminate() {
+		if (currentMenu != null) {
+			MenuItem menuItem = currentMenu.findItem(R.id.menu_search);
+			if (menuItem != null && menuItem.isActionViewExpanded()) {
+				menuItem.setOnActionExpandListener(null);
+				menuItem.collapseActionView();
+			}
+		}
 		currentMenu = null;
 	}
 
@@ -242,7 +249,7 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 
 	private boolean setSearchMode(boolean search) {
 		if (currentMenu != null) {
-			MenuItem menuItem = currentMenu.findItem(ListPage.OPTIONS_MENU_SEARCH);
+			MenuItem menuItem = currentMenu.findItem(R.id.menu_search);
 			return setSearchMode(menuItem, search, true);
 		}
 		return false;
@@ -291,7 +298,7 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 		currentMenu = menu;
 		if (listPage != null && listPage.isRunning()) {
 			listPage.onCreateOptionsMenu(menu);
-			MenuItem searchMenuItem = menu.findItem(ListPage.OPTIONS_MENU_SEARCH);
+			MenuItem searchMenuItem = menu.findItem(R.id.menu_search);
 			if (searchMenuItem != null) {
 				searchMenuItem.setActionView(getSearchView(true));
 				searchMenuItem.setOnActionExpandListener(new MenuExpandListener((menuItem, expand) -> {
@@ -310,7 +317,7 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 		if (listPage != null && listPage.isRunning()) {
 			for (int i = 0; i < menu.size(); i++) {
 				MenuItem menuItem = menu.getItem(i);
-				menuItem.setVisible(!searchMode || menuItem.getItemId() == ListPage.OPTIONS_MENU_SEARCH);
+				menuItem.setVisible(!searchMode || menuItem.getItemId() == R.id.menu_search);
 			}
 			if (searchMode) {
 				return;
@@ -321,7 +328,7 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 
 	@Override
 	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-		if (item.getItemId() == ListPage.OPTIONS_MENU_SEARCH) {
+		if (item.getItemId() == R.id.menu_search) {
 			return false;
 		}
 		if (listPage.onOptionsItemSelected(item)) {
