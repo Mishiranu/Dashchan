@@ -126,7 +126,6 @@
 	<string name="download_directory">Download directory</string>
 	<string name="download_file">Download file</string>
 	<string name="download_files">Download files</string>
-	<string name="download_manager_is_not_available">Download Manager is not available</string>
 	<string name="download_path">Download path</string>
 	<string name="downloading">Downloading</string>
 	<string name="downloading_audio">Downloading audio</string>

@@ -2,7 +2,6 @@ package com.mishiranu.dashchan.content;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.MatrixCursor;
@@ -40,17 +39,18 @@ public class FileProvider extends ContentProvider {
 		return true;
 	}
 
-	public static File getUpdatesDirectory(Context context) {
-		String dirType = "updates";
-		File directory = context.getExternalFilesDir(dirType);
-		if (directory != null) {
-			directory.mkdirs();
+	public static File getUpdatesDirectory() {
+		File directory = MainApplication.getInstance().getExternalCacheDir();
+		if (directory == null) {
+			return null;
 		}
+		directory = new File(directory, "updates");
+		directory.mkdirs();
 		return directory;
 	}
 
-	public static File getUpdatesFile(Context context, String name) {
-		File directory = getUpdatesDirectory(context);
+	public static File getUpdatesFile(String name) {
+		File directory = getUpdatesDirectory();
 		if (directory != null) {
 			File file = new File(directory, name);
 			if (file.exists()) {
@@ -60,10 +60,10 @@ public class FileProvider extends ContentProvider {
 		return null;
 	}
 
-	public static Uri convertUpdatesUri(Context context, Uri uri) {
+	public static Uri convertUpdatesUri(Uri uri) {
 		if (C.API_NOUGAT && "file".equals(uri.getScheme())) {
 			File fileParent = new File(uri.getPath()).getParentFile();
-			File directory = getUpdatesDirectory(context);
+			File directory = getUpdatesDirectory();
 			if (fileParent != null && fileParent.equals(directory)) {
 				return new Uri.Builder().scheme("content").authority(AUTHORITY)
 						.appendPath(PATH_UPDATES).appendPath(uri.getLastPathSegment()).build();
@@ -151,7 +151,7 @@ public class FileProvider extends ContentProvider {
 				if (!"r".equals(mode)) {
 					throw new FileNotFoundException();
 				}
-				File file = getUpdatesFile(getContext(), uri.getLastPathSegment());
+				File file = getUpdatesFile(uri.getLastPathSegment());
 				if (file != null) {
 					return ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
 				}
@@ -197,7 +197,7 @@ public class FileProvider extends ContentProvider {
 				File file = null;
 				switch (matchResult) {
 					case URI_UPDATES: {
-						file = getUpdatesFile(getContext(), uri.getLastPathSegment());
+						file = getUpdatesFile(uri.getLastPathSegment());
 						break;
 					}
 					case URI_DOWNLOADS: {

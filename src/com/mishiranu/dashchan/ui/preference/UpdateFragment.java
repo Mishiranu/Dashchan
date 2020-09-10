@@ -1,7 +1,6 @@
 package com.mishiranu.dashchan.ui.preference;
 
 import android.app.AlertDialog;
-import android.app.DownloadManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.net.Uri;
@@ -20,7 +19,6 @@ import chan.content.ChanManager;
 import chan.util.CommonUtils;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.content.FileProvider;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.UpdaterActivity;
 import com.mishiranu.dashchan.content.async.ReadUpdateTask;
@@ -30,7 +28,6 @@ import com.mishiranu.dashchan.util.AndroidUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -314,58 +311,18 @@ public class UpdateFragment extends BaseListFragment {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 			case R.id.menu_download: {
-				DownloadManager downloadManager = (DownloadManager) requireContext()
-						.getSystemService(Context.DOWNLOAD_SERVICE);
-				File directory = FileProvider.getUpdatesDirectory(requireContext());
-				boolean started = false;
-				boolean downloadManagerError = false;
-				long clientId = -1;
-				ArrayList<Long> ids = new ArrayList<>();
-				for (int i = 0; i < listItems.size(); i++) {
-					ListItem listItem = listItems.get(i);
+				ArrayList<UpdaterActivity.Request> requests = new ArrayList<>();
+				for (ListItem listItem : listItems) {
 					ReadUpdateTask.UpdateItem updateItem = updateDataMap.get(listItem.extensionName)
 							.get(listItem.targetIndex);
 					if (updateItem.source != null) {
-						String name = listItem.extensionName + "_" + updateItem.name;
-						String extension = ".apk";
-						File file;
-						for (int j = 0; true; j++) {
-							file = new File(directory, name + (j == 0 ? "" : "_" + j) + extension);
-							if (!file.exists()) {
-								break;
-							}
-						}
-						DownloadManager.Request request = new DownloadManager.Request(Uri.parse(updateItem.source));
-						request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-						request.setDestinationUri(Uri.fromFile(file));
-						request.setTitle(file.getName());
-						request.setDescription(i == 0 ? getString(R.string.main_application)
-								: getString(R.string.extension_name__format, listItem.title));
-						request.setMimeType("application/vnd.android.package-archive");
-						long id;
-						try {
-							id = downloadManager.enqueue(request);
-						} catch (IllegalArgumentException e) {
-							String message = e.getMessage();
-							if (message.equals("Unknown URL content://downloads/my_downloads")) {
-								downloadManagerError = true;
-								break;
-							}
-							throw e;
-						}
-						started = true;
-						if (ChanManager.EXTENSION_NAME_CLIENT.equals(listItem.extensionName)) {
-							clientId = id;
-						} else {
-							ids.add(id);
-						}
+						requests.add(new UpdaterActivity.Request(listItem.extensionName, updateItem.name,
+								Uri.parse(updateItem.source)));
 					}
 				}
-				if (started) {
+				if (!requests.isEmpty()) {
 					MessageDialog.create(this, getString(R.string.update_reminder__sentence), true);
-					UpdaterActivity.initUpdater(clientId, ids);
-				} else if (downloadManagerError) {
-					ToastUtils.show(requireContext(), R.string.download_manager_is_not_available);
+					UpdaterActivity.startUpdater(requests);
 				} else {
 					ToastUtils.show(requireContext(), R.string.no_available_updates);
 				}

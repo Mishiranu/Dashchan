@@ -11,6 +11,7 @@ import androidx.annotation.RequiresApi;
 import chan.annotation.Public;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.content.CacheManager;
+import com.mishiranu.dashchan.content.FileProvider;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.util.MimeTypes;
 import java.io.File;
@@ -29,6 +30,7 @@ import java.util.Locale;
 public abstract class DataFile {
 	public enum Target {
 		CACHE(null, CacheManager.getInstance()::getMediaDirectory),
+		UPDATES(null, FileProvider::getUpdatesDirectory),
 		DOWNLOADS(SafFile.SafTarget.DOWNLOADS, Preferences::getDownloadDirectoryLegacy);
 
 		private interface LegacyDirectory {
@@ -41,6 +43,10 @@ public abstract class DataFile {
 		Target(SafFile.SafTarget safTarget, LegacyDirectory legacyDirectory) {
 			this.safTarget = safTarget;
 			this.legacyDirectory = legacyDirectory;
+		}
+
+		public boolean isExternal() {
+			return safTarget != null;
 		}
 	}
 

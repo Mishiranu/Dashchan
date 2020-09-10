@@ -184,7 +184,7 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Void> {
 	@Override
 	protected Void doInBackground(HttpHolder holder, Void... params) {
 		long timeThreshold = System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000; // One week left
-		File directory = FileProvider.getUpdatesDirectory(context);
+		File directory = FileProvider.getUpdatesDirectory();
 		if (directory == null) {
 			errorItem = new ErrorItem(ErrorItem.Type.NO_ACCESS_TO_MEMORY);
 			return null;

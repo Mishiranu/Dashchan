@@ -199,6 +199,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 		wakeLock.release();
 		for (Callback callback : callbacks) {
 			callback.requestHandleRequest();
+			callback.onCleanup();
 		}
 	}
 
@@ -224,7 +225,16 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 	}
 
 	private boolean hasStoragePermission() {
-		if (C.USE_SAF) {
+		boolean external = primaryRequest != null;
+		if (!external) {
+			for (DirectRequest directRequest : directRequests) {
+				if (directRequest.target.isExternal()) {
+					external = true;
+					break;
+				}
+			}
+		}
+		if (external && C.USE_SAF) {
 			return Preferences.getDownloadUriTree(this) != null;
 		} else {
 			return true;
@@ -487,8 +497,10 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 	}
 
 	public interface Callback {
-		void requestHandleRequest();
-		void requestPermission();
+		default void requestHandleRequest() {}
+		default void requestPermission() {}
+		default void onFinishDownloading(boolean success, DataFile.Target target, String path, String name) {}
+		default void onCleanup() {}
 	}
 
 	public class Binder extends android.os.Binder {
@@ -1015,7 +1027,9 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 					if (!taskData.finishedFromCache) {
 						hasNotFromCache = true;
 					}
-					lastSuccessFileTaskData = taskData;
+					if (taskData.target.isExternal()) {
+						lastSuccessFileTaskData = taskData;
+					}
 				}
 				for (TaskData taskData : errorTasks.values()) {
 					if (!taskData.finishedFromCache) {
@@ -1076,13 +1090,16 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 				scanFileLegacy(file, null);
 			}
 		}
+		for (Callback callback : callbacks) {
+			callback.onFinishDownloading(success, taskData.target, taskData.path, taskData.name);
+		}
 		if (success) {
 			successTasks.put(taskData.getKey(), taskData);
 		} else {
 			errorTasks.put(taskData.getKey(), taskData);
 		}
 		if (!queuedTasks.isEmpty()) {
-			if (success) {
+			if (success && taskData.target.isExternal()) {
 				// Update image explicitly, because task type won't be changed
 				notificationsQueue.add(NotificationData.updateImageOnly(getDataFile(taskData)));
 			}

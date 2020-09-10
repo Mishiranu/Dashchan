@@ -1,40 +1,38 @@
 package com.mishiranu.dashchan.content;
 
-import android.app.DownloadManager;
-import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.database.Cursor;
+import android.content.ServiceConnection;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.IBinder;
 import androidx.annotation.NonNull;
+import chan.content.ChanManager;
+import chan.util.DataFile;
+import chan.util.StringUtils;
+import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.ui.StateActivity;
-import com.mishiranu.dashchan.util.AndroidUtils;
+import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 
 public class UpdaterActivity extends StateActivity {
-	private static final String EXTRA_URI_STRINGS = "uriStrings";
-	private static final String EXTRA_DOWNLOAD_IDS = "downloadIds";
+	private static final String EXTRA_FILES = "files";
 
 	private static final String EXTRA_INDEX = "index";
 
-	private DownloadManager downloadManager;
-
-	private ArrayList<String> uriStrings;
-	private HashMap<String, Long> downloadIds;
 	private int index = 0;
 
-	@SuppressWarnings("unchecked")
+	private List<String> getFiles() {
+		return getIntent().getStringArrayListExtra(EXTRA_FILES);
+	}
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
-		uriStrings = getIntent().getStringArrayListExtra(EXTRA_URI_STRINGS);
-		downloadIds = (HashMap<String, Long>) getIntent().getSerializableExtra(EXTRA_DOWNLOAD_IDS);
+
 		if (savedInstanceState == null) {
 			performInstallation();
 		} else {
@@ -49,15 +47,21 @@ public class UpdaterActivity extends StateActivity {
 	}
 
 	private void performInstallation() {
-		if (uriStrings != null && uriStrings.size() > index) {
-			Uri uri = Uri.parse(uriStrings.get(index));
-			uri = FileProvider.convertUpdatesUri(this, uri);
-			// noinspection deprecation
-			startActivityForResult(new Intent(Intent.ACTION_INSTALL_PACKAGE)
-					.setDataAndType(uri, "application/vnd.android.package-archive")
-					.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-					.putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true)
-					.putExtra(Intent.EXTRA_RETURN_RESULT, true), 0);
+		List<String> files = getFiles();
+		if (files != null && files.size() > index) {
+			File file = FileProvider.getUpdatesFile(files.get(index));
+			if (file == null) {
+				index++;
+				performInstallation();
+			} else {
+				Uri uri = FileProvider.convertUpdatesUri(Uri.fromFile(file));
+				// noinspection deprecation
+				startActivityForResult(new Intent(Intent.ACTION_INSTALL_PACKAGE)
+						.setDataAndType(uri, "application/vnd.android.package-archive")
+						.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+						.putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true)
+						.putExtra(Intent.EXTRA_RETURN_RESULT, true), 0);
+			}
 		} else {
 			finish();
 		}
@@ -66,10 +70,9 @@ public class UpdaterActivity extends StateActivity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
+
 		if (requestCode == 0) {
 			if (resultCode == RESULT_OK) {
-				long id = downloadIds.get(uriStrings.get(index));
-				downloadManager.remove(id);
 				index++;
 				performInstallation();
 			} else {
@@ -78,74 +81,130 @@ public class UpdaterActivity extends StateActivity {
 		}
 	}
 
-	private static BroadcastReceiver updatesReceiver;
+	private static Connection activeConnection;
 
-	public static void initUpdater(long clientId, Collection<Long> ids) {
-		Context registerContext = MainApplication.getInstance();
-		if (updatesReceiver != null) {
-			registerContext.unregisterReceiver(updatesReceiver);
+	private static class Connection implements ServiceConnection, DownloadService.Callback {
+		private final Context context;
+		private final List<DownloadService.DownloadItem> downloadItems;
+		private final HashMap<String, Boolean> status = new HashMap<>();
+
+		public Connection(Context context, List<DownloadService.DownloadItem> downloadItems) {
+			this.context = context;
+			this.downloadItems = downloadItems;
+			context.bindService(new Intent(context, DownloadService.class), this, BIND_AUTO_CREATE);
 		}
-		HashSet<Long> newIds = new HashSet<>(ids);
-		if (clientId >= 0) {
-			newIds.add(clientId);
+
+		private DownloadService.Binder binder;
+
+		@Override
+		public void onServiceConnected(ComponentName componentName, IBinder binder) {
+			this.binder = (DownloadService.Binder) binder;
+			this.binder.register(this);
+			this.binder.downloadDirect(DataFile.Target.UPDATES, null, true, downloadItems);
 		}
-		HashMap<String, Long> downloadIds = new HashMap<>();
-		ArrayList<String> uriStrings = new ArrayList<>();
-		String[] clientUriString = {null};
-		updatesReceiver = AndroidUtils.createReceiver((receiver, context, intent) -> {
-			if (receiver != updatesReceiver) {
-				return;
+
+		@Override
+		public void onServiceDisconnected(ComponentName componentName) {
+			if (this == activeConnection) {
+				activeConnection = null;
+				if (binder != null) {
+					binder.unregister(this);
+					binder = null;
+				}
 			}
-			long id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
-			if (id >= 0 && newIds.remove(id)) {
-				boolean success = false;
-				DownloadManager downloadManager = (DownloadManager) context.getSystemService(DOWNLOAD_SERVICE);
-				Cursor cursor = downloadManager.query(new DownloadManager.Query().setFilterById(id));
-				if (cursor != null) {
-					try {
-						if (cursor.moveToFirst()) {
-							int status = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS));
-							if (status == DownloadManager.STATUS_SUCCESSFUL) {
-								String uriString = cursor.getString(cursor.getColumnIndexOrThrow
-										(DownloadManager.COLUMN_LOCAL_URI));
-								if (uriString != null) {
-									if (id == clientId) {
-										clientUriString[0] = uriString;
-									} else {
-										uriStrings.add(uriString);
-									}
-									downloadIds.put(uriString, id);
-									success = true;
-								}
+		}
+
+		private boolean finish() {
+			if (this == activeConnection) {
+				activeConnection = null;
+				if (binder != null) {
+					binder.unregister(this);
+					binder = null;
+					context.unbindService(this);
+					return true;
+				}
+			}
+			return false;
+		}
+
+		@Override
+		public void onFinishDownloading(boolean success, DataFile.Target target, String path, String name) {
+			if (target == DataFile.Target.UPDATES && StringUtils.isEmpty(path)) {
+				status.put(name, success);
+			}
+			if (success) {
+				boolean successAll = true;
+				for (DownloadService.DownloadItem downloadItem : downloadItems) {
+					Boolean status = this.status.get(downloadItem.name);
+					if (status == null || !status) {
+						successAll = false;
+						break;
+					}
+				}
+				if (successAll) {
+					if (finish()) {
+						ArrayList<String> files = new ArrayList<>(downloadItems.size());
+						File directory = FileProvider.getUpdatesDirectory();
+						for (DownloadService.DownloadItem downloadItem : downloadItems) {
+							if (!new File(directory, downloadItem.name).exists()) {
+								break;
 							}
+							files.add(downloadItem.name);
 						}
-					} catch (IllegalArgumentException e) {
-						// Thrown by getColumnIndexOrThrow
-					} finally {
-						cursor.close();
-					}
-				}
-				boolean unregister = false;
-				if (success) {
-					if (newIds.isEmpty()) {
-						if (clientUriString[0] != null) {
-							uriStrings.add(clientUriString[0]);
+						if (files.size() == downloadItems.size()) {
+							context.startActivity(new Intent(context, UpdaterActivity.class)
+									.putStringArrayListExtra(EXTRA_FILES, files)
+									.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
 						}
-						context.startActivity(new Intent(context, UpdaterActivity.class)
-								.putStringArrayListExtra(EXTRA_URI_STRINGS, uriStrings)
-								.putExtra(EXTRA_DOWNLOAD_IDS, downloadIds)
-								.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-						unregister = true;
 					}
-				} else {
-					unregister = true;
-				}
-				if (unregister) {
-					MainApplication.getInstance().unregisterReceiver(updatesReceiver);
-					updatesReceiver = null;
 				}
 			}
-		});
-		registerContext.registerReceiver(updatesReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+		}
+
+		@Override
+		public void onCleanup() {
+			finish();
+		}
+
+		public void cancel() {
+			if (binder != null) {
+				binder.unregister(this);
+				binder = null;
+				context.unbindService(this);
+			}
+		}
+	}
+
+	public static class Request {
+		public final String extensionName;
+		public final String versionName;
+		public final Uri uri;
+
+		public Request(String extensionName, String versionName, Uri uri) {
+			this.extensionName = extensionName;
+			this.versionName = versionName;
+			this.uri = uri;
+		}
+	}
+
+	public static void startUpdater(List<Request> requests) {
+		DownloadService.DownloadItem clientDownloadItem = null;
+		ArrayList<DownloadService.DownloadItem> downloadItems = new ArrayList<>();
+		for (Request request : requests) {
+			String name = request.extensionName + "-" + request.versionName + ".apk";
+			DownloadService.DownloadItem downloadItem = new DownloadService.DownloadItem(null, request.uri, name);
+			if (ChanManager.EXTENSION_NAME_CLIENT.equals(request.extensionName)) {
+				clientDownloadItem = downloadItem;
+			} else {
+				downloadItems.add(downloadItem);
+			}
+		}
+		if (clientDownloadItem != null) {
+			downloadItems.add(clientDownloadItem);
+		}
+		if (activeConnection != null) {
+			activeConnection.cancel();
+		}
+		activeConnection = new Connection(MainApplication.getInstance(), downloadItems);
 	}
 }
