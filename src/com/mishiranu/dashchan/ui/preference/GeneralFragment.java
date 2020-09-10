@@ -23,10 +23,8 @@ public class GeneralFragment extends PreferenceFragment {
 		super.onViewCreated(view, savedInstanceState);
 
 		addList(Preferences.KEY_LOCALE, LocaleManager.VALUES_LOCALE, LocaleManager.DEFAULT_LOCALE,
-				R.string.language, LocaleManager.ENTRIES_LOCALE).setOnAfterChangeListener(p -> {
-					LocaleManager.getInstance().apply(requireContext(), false);
-					requireActivity().recreate();
-				});
+				R.string.language, LocaleManager.ENTRIES_LOCALE)
+				.setOnAfterChangeListener(p -> requireActivity().recreate());
 
 		addHeader(R.string.navigation);
 		addCheck(true, Preferences.KEY_CLOSE_ON_BACK, Preferences.DEFAULT_CLOSE_ON_BACK,

@@ -1,18 +1,18 @@
 package com.mishiranu.dashchan.content;
 
-import android.annotation.TargetApi;
-import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.os.Build;
 import android.os.LocaleList;
+import androidx.core.os.ConfigurationCompat;
+import androidx.core.os.LocaleListCompat;
 import chan.content.ChanManager;
-import chan.util.CommonUtils;
+import com.mishiranu.dashchan.BuildConfig;
 import com.mishiranu.dashchan.C;
-import com.mishiranu.dashchan.util.ConcurrentUtils;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 
 public class LocaleManager {
@@ -22,9 +22,21 @@ public class LocaleManager {
 	private static final HashMap<String, Locale> VALUES_LOCALE_OBJECTS;
 
 	static {
-		String[] codes = {DEFAULT_LOCALE, "ru", "en", "pt_BR"};
-		String[] names = new String[codes.length];
-		Locale[] locales = new Locale[codes.length];
+		int total = BuildConfig.LOCALES.length + 2;
+		String[] codes = new String[total];
+		String[] names = new String[total];
+		Locale[] locales = new Locale[total];
+		codes[0] = DEFAULT_LOCALE;
+		codes[1] = "en";
+		for (int i = 2; i < total; i++) {
+			String locale = BuildConfig.LOCALES[i - 2];
+			int index = locale.indexOf("-r");
+			if (index >= 0) {
+				codes[i] = locale.substring(0, index) + "_" + locale.substring(index + 2);
+			} else {
+				codes[i] = locale;
+			}
+		}
 		names[0] = "System";
 		for (int i = 1; i < names.length; i++) {
 			String[] splitted = codes[i].split("_");
@@ -51,87 +63,86 @@ public class LocaleManager {
 
 	private LocaleManager() {}
 
-	private ArrayList<Locale> systemLocales;
-	private ArrayList<Locale> previousLocales;
+	private Locale systemLocaleJellyBean;
 
 	@SuppressWarnings("deprecation")
-	@TargetApi(Build.VERSION_CODES.N)
-	public void apply(Context context, boolean configChanged) {
-		if (!ConcurrentUtils.isMain()) {
-			return;
+	public void updateConfiguration(Configuration configuration) {
+		if (!C.API_JELLY_BEAN_MR1) {
+			systemLocaleJellyBean = configuration.locale;
 		}
-		Resources resources = context.getApplicationContext().getResources();
+	}
+
+	private List<Locale> lastLocales = Collections.emptyList();
+	private Context applicationContext;
+
+	@SuppressWarnings("deprecation")
+	public Context apply(Context context) {
+		Resources resources = context.getResources();
 		Configuration configuration = resources.getConfiguration();
-		if (systemLocales == null) {
-			systemLocales = list(configuration);
-		}
-		if (configChanged) {
-			ArrayList<Locale> locales = list(configuration);
-			if (previousLocales != null) {
-				if (locales.equals(previousLocales)) {
-					return;
-				}
-				systemLocales = locales;
-			}
-		}
 		Locale locale = VALUES_LOCALE_OBJECTS.get(Preferences.getLocale());
-		boolean applySystem = false;
-		if (locale == null) {
-			locale = systemLocales.isEmpty() ? Locale.getDefault() : systemLocales.get(0);
-			applySystem = true;
-		}
-		if (C.API_NOUGAT) {
-			if (applySystem) {
-				configuration.setLocales(new LocaleList(CommonUtils.toArray(systemLocales, Locale.class)));
-				previousLocales = systemLocales;
-			} else {
-				ArrayList<Locale> locales = new ArrayList<>();
-				if (!locale.equals(Locale.US)) {
-					locales.add(locale);
-				}
-				locales.add(Locale.US);
-				configuration.setLocales(new LocaleList(CommonUtils.toArray(locales, Locale.class)));
-				previousLocales = locales;
-			}
-		} else {
-			configuration.locale = locale;
-			previousLocales = list(configuration);
-		}
-		resources.updateConfiguration(configuration, resources.getDisplayMetrics());
-		ChanManager.getInstance().updateConfiguration(configuration, resources.getDisplayMetrics());
-	}
-
-	@SuppressWarnings("deprecation")
-	@TargetApi(Build.VERSION_CODES.N)
-	public void apply(Activity activity) {
-		if (previousLocales != null && !previousLocales.isEmpty()) {
-			Resources resources = activity.getResources();
-			Configuration configuration = resources.getConfiguration();
+		if (locale != null) {
+			configuration = new Configuration(configuration);
 			if (C.API_NOUGAT) {
-				configuration.setLocales(new LocaleList(CommonUtils.toArray(previousLocales, Locale.class)));
-			} else {
-				configuration.locale = previousLocales.get(0);
+				configuration.setLocales(locale != Locale.US
+						? new LocaleList(locale, Locale.US) : new LocaleList(Locale.US));
 			}
-			resources.updateConfiguration(configuration, resources.getDisplayMetrics());
-		}
-	}
-
-	@SuppressWarnings("deprecation")
-	@TargetApi(Build.VERSION_CODES.N)
-	private ArrayList<Locale> list(Configuration configuration) {
-		ArrayList<Locale> arrayList = new ArrayList<>();
-		if (C.API_NOUGAT) {
-			LocaleList localeList = configuration.getLocales();
-			for (int i = 0; i < localeList.size(); i++) {
-				arrayList.add(localeList.get(i));
+			configuration.locale = locale;
+			Locale.setDefault(locale);
+			if (C.API_JELLY_BEAN_MR1) {
+				context = context.createConfigurationContext(configuration);
+			} else {
+				resources.updateConfiguration(configuration, resources.getDisplayMetrics());
 			}
 		} else {
-			arrayList.add(configuration.locale);
+			if (C.API_NOUGAT_MR1) {
+				LocaleList localeList = configuration.getLocales();
+				locale = localeList.size() > 0 ? localeList.get(0) : null;
+			} else if (C.API_JELLY_BEAN_MR1) {
+				locale = configuration.locale;
+			} else {
+				locale = systemLocaleJellyBean;
+			}
+			if (locale == null) {
+				locale = Locale.US;
+			}
+			Locale.setDefault(locale);
+			if (!C.API_JELLY_BEAN_MR1) {
+				configuration = new Configuration(configuration);
+				configuration.locale = locale;
+				resources.updateConfiguration(configuration, resources.getDisplayMetrics());
+			}
 		}
-		return arrayList;
+		List<Locale> lastLocales;
+		if (C.API_NOUGAT_MR1) {
+			LocaleList localeList = configuration.getLocales();
+			lastLocales = new ArrayList<>(localeList.size());
+			for (int i = 0; i < localeList.size(); i++) {
+				lastLocales.add(localeList.get(i));
+			}
+		} else {
+			lastLocales = Collections.singletonList(configuration.locale);
+		}
+		if (!this.lastLocales.equals(lastLocales)) {
+			this.lastLocales = lastLocales;
+			applicationContext = null;
+			ChanManager.getInstance().updateConfiguration(configuration, resources.getDisplayMetrics());
+		}
+		return context;
 	}
 
-	public ArrayList<Locale> list(Context context) {
-		return list(context.getApplicationContext().getResources().getConfiguration());
+	public Context applyApplication(Context context) {
+		if (applicationContext == null) {
+			applicationContext = apply(context.getApplicationContext());
+		}
+		return applicationContext;
+	}
+
+	public List<Locale> getLocales(Configuration configuration) {
+		ArrayList<Locale> locales = new ArrayList<>();
+		LocaleListCompat localeList = ConfigurationCompat.getLocales(configuration);
+		for (int i = 0; i < localeList.size(); i++) {
+			locales.add(localeList.get(i));
+		}
+		return locales;
 	}
 }

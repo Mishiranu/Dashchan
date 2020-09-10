@@ -56,6 +56,7 @@ public class MainApplication extends Application {
 			}
 		}
 
+		LocaleManager.getInstance().updateConfiguration(getResources().getConfiguration());
 		if (isMainProcess()) {
 			Log.init(this);
 			// Init
@@ -63,7 +64,6 @@ public class MainApplication extends Application {
 			HttpClient.getInstance();
 			DatabaseHelper.getInstance();
 			CacheManager.getInstance();
-			LocaleManager.getInstance().apply(this, false);
 			ChanManager.getInstance().loadLibraries();
 		}
 	}
@@ -71,14 +71,15 @@ public class MainApplication extends Application {
 	@Override
 	public void onConfigurationChanged(@NonNull Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
-
-		if (checkProcess(null)) {
-			LocaleManager.getInstance().apply(this, true);
-		}
+		LocaleManager.getInstance().updateConfiguration(newConfig);
 	}
 
 	public static MainApplication getInstance() {
 		return instance;
+	}
+
+	public Context getLocalizedContext() {
+		return LocaleManager.getInstance().applyApplication(this);
 	}
 
 	@TargetApi(Build.VERSION_CODES.KITKAT)

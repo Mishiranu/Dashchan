@@ -41,6 +41,15 @@ android {
 		jniLibs.srcDir 'libs'
 	}
 
+	def locales = sourceSets.main.res.srcDirs
+			.collectMany { (it.listFiles() ?: []) as Collection }
+			.findAll { it.getName().startsWith("values-") && new File(it, "strings.xml").exists() }
+			.collect { it.getName().with { it.substring(it.indexOf('-') + 1) } }.sort()
+	defaultConfig {
+		buildConfigField 'String[]', 'LOCALES', '{"' + locales.join('", "') + '"}'
+		resConfigs locales
+	}
+
 	externalNativeBuild {
 		ndkBuild {
 			path 'jni/Android.mk'

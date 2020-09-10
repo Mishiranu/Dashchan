@@ -193,7 +193,7 @@ public class RelayBlockResolver {
 							private String requireUserCaptcha(String captchaType, String apiKey, String referer) {
 								boolean retry = captchaRetry;
 								captchaRetry = true;
-								String description = MainApplication.getInstance().getString
+								String description = MainApplication.getInstance().getLocalizedContext().getString
 										(R.string.relay_block__format_sentence, checkHolderFinal.client.getName());
 								ChanPerformer.CaptchaData captchaData = ForegroundManager.getInstance()
 										.requireUserCaptcha(new RelayBlockCaptchaReader(apiKey, referer),

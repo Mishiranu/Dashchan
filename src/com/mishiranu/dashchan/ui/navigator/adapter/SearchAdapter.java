@@ -1,5 +1,6 @@
 package com.mishiranu.dashchan.ui.navigator.adapter;
 
+import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -7,7 +8,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.ui.navigator.manager.HidePerformer;
@@ -39,6 +39,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 		}
 	}
 
+	private final Context context;
 	private final Callback callback;
 	private final UiManager uiManager;
 	private final UiManager.DemandSet demandSet = new UiManager.DemandSet();
@@ -49,10 +50,11 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
 	private boolean groupMode = false;
 
-	public SearchAdapter(Callback callback, UiManager uiManager, String searchQuery) {
+	public SearchAdapter(Context context, Callback callback, UiManager uiManager, String searchQuery) {
+		this.context = context;
 		this.callback = callback;
 		this.uiManager = uiManager;
-		configurationSet = new UiManager.ConfigurationSet(null, null, new HidePerformer(),
+		configurationSet = new UiManager.ConfigurationSet(null, null, new HidePerformer(context),
 				new GalleryItem.GallerySet(false), uiManager.dialog().createStackInstance(), null, null,
 				true, false, false, false, false, null);
 		demandSet.highlightText = Collections.singleton(searchQuery);
@@ -160,9 +162,8 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 					} catch (NumberFormatException e) {
 						number = false;
 					}
-					groupItems.add(new ListItem(null, MainApplication.getInstance()
-							.getString(R.string.in_thread_number__format,
-									number ? "#" + threadNumber : threadNumber)));
+					groupItems.add(new ListItem(null, context.getString(R.string.in_thread_number__format,
+							number ? "#" + threadNumber : threadNumber)));
 					int ordinalIndex = 0;
 					for (ListItem listItem : entry.getValue()) {
 						groupItems.add(listItem);

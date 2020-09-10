@@ -411,7 +411,7 @@ public class DialogUnit {
 							postItem.getBoardName(), postItem.getThreadNumber(), data);
 				}
 				configurationSet = new UiManager.ConfigurationSet(replyable,
-						intermediate, new HidePerformer(), new GalleryItem.GallerySet(false),
+						intermediate, new HidePerformer(uiManager.getContext()), new GalleryItem.GallerySet(false),
 						configurationSet.stackInstance, intermediate, null, false, true, false, false, false, null);
 				return new ThreadDialogProvider(uiManager, configurationSet, intermediate, postItem);
 			}
@@ -634,7 +634,7 @@ public class DialogUnit {
 
 			@Override
 			public DialogProvider create(UiManager uiManager, UiManager.ConfigurationSet configurationSet) {
-				configurationSet = new UiManager.ConfigurationSet(null, null, new HidePerformer(),
+				configurationSet = new UiManager.ConfigurationSet(null, null, new HidePerformer(uiManager.getContext()),
 						new GalleryItem.GallerySet(false), configurationSet.stackInstance, null, null,
 						false, true, false, false, false, null);
 				return new AsyncDialogProvider(uiManager, configurationSet, this,

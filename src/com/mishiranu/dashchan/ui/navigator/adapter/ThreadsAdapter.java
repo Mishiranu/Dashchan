@@ -106,7 +106,7 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 		this.chanName = chanName;
 		this.boardName = boardName;
 		this.uiManager = uiManager;
-		configurationSet = new UiManager.ConfigurationSet(null, null, new HidePerformer(),
+		configurationSet = new UiManager.ConfigurationSet(null, null, new HidePerformer(context),
 				new GalleryItem.GallerySet(false), uiManager.dialog().createStackInstance(), null, null,
 				false, true, false, false, false, null);
 		float density = ResourceUtils.obtainDensity(context);

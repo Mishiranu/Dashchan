@@ -29,6 +29,7 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.FileProvider;
+import com.mishiranu.dashchan.content.LocaleManager;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.ReadFileTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
@@ -100,6 +101,11 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 
 	private static File getSavedDownloadRetryFile() {
 		return CacheManager.getInstance().getInternalCacheFile("saved-download-retry");
+	}
+
+	@Override
+	protected void attachBaseContext(Context newBase) {
+		super.attachBaseContext(LocaleManager.getInstance().apply(newBase));
 	}
 
 	@Override

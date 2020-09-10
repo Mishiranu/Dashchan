@@ -36,7 +36,6 @@ import chan.http.HttpException;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.AsyncManager;
 import com.mishiranu.dashchan.content.async.ReadCaptchaTask;
@@ -871,7 +870,10 @@ public class ForegroundManager implements Handler.Callback {
 				return true;
 			}
 			case MESSAGE_SHOW_CAPTCHA_INVALID: {
-				ToastUtils.show(MainApplication.getInstance(), R.string.captcha_is_not_valid);
+				FragmentActivity activity = getActivity();
+				if (activity != null) {
+					ToastUtils.show(activity, R.string.captcha_is_not_valid);
+				}
 				return true;
 			}
 		}

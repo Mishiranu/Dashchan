@@ -53,6 +53,7 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
+import com.mishiranu.dashchan.content.LocaleManager;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.ReadUpdateTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
@@ -155,7 +156,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 
 	@Override
 	protected void attachBaseContext(Context newBase) {
-		super.attachBaseContext(ThemeEngine.attach(newBase));
+		super.attachBaseContext(ThemeEngine.attach(LocaleManager.getInstance().apply(newBase)));
 	}
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)

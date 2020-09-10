@@ -174,7 +174,7 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 
 		if (rootView == null) {
 			Context context = ThemeEngine.attach(new ContextThemeWrapper
-					(MainApplication.getInstance(), R.style.Theme_Gallery));
+					(MainApplication.getInstance().getLocalizedContext(), R.style.Theme_Gallery));
 			rootView = new WindowControlFrameLayout(context) {
 				@Override
 				protected void onAttachedToWindow() {

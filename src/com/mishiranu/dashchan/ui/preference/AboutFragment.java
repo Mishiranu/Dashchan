@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -19,6 +20,7 @@ import chan.text.GroupParser;
 import chan.text.ParseException;
 import chan.util.CommonUtils;
 import chan.util.DataFile;
+import chan.util.StringUtils;
 import com.mishiranu.dashchan.BuildConfig;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
@@ -38,6 +40,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class AboutFragment extends PreferenceFragment {
 	@Override
@@ -287,30 +291,56 @@ public class AboutFragment extends PreferenceFragment {
 	}
 
 	private static class ReadChangelogTask extends AsyncManager.SimpleTask<Void, Void, Boolean> {
+		private static final Pattern PATTERN_TITLE = Pattern.compile("<h1.*?>Changelog (.*)</h1>");
+
 		private final HttpHolder holder = new HttpHolder();
 
-		private final Context context;
+		private final Configuration configuration;
 
 		private String result;
 		private ErrorItem errorItem;
 
 		public ReadChangelogTask(Context context) {
-			this.context = context.getApplicationContext();
+			configuration = context.getResources().getConfiguration();
+		}
+
+		private String downloadChangelog(String suffix) throws HttpException {
+			Uri uri = ChanLocator.getDefault().buildPathWithHost("github.com",
+					"Mishiranu", "Dashchan", "wiki", "Changelog-" + suffix);
+			try {
+				String response = new HttpRequest(uri, holder).setSuccessOnly(false).read().getString();
+				Matcher matcher = PATTERN_TITLE.matcher(StringUtils.emptyIfNull(response));
+				if (matcher.find()) {
+					String titleSuffix = matcher.group(1);
+					if (titleSuffix.replace(' ', '-').toLowerCase(Locale.US).equals(suffix.toLowerCase(Locale.US))) {
+						return response;
+					}
+				}
+				return null;
+			} finally {
+				holder.cleanup();
+			}
 		}
 
 		@Override
 		public Boolean doInBackground(Void... params) {
-			String page = "Changelog-EN";
-			for (Locale locale : LocaleManager.getInstance().list(context)) {
-				String language = locale.getLanguage();
-				if ("ru".equals(language)) {
-					page = "Changelog-RU";
-					break;
-				}
-			}
-			Uri uri = ChanLocator.getDefault().buildPathWithHost("github.com", "Mishiranu", "Dashchan", "wiki", page);
 			try {
-				String result = new HttpRequest(uri, holder).read().getString();
+				String result = null;
+				for (Locale locale : LocaleManager.getInstance().getLocales(configuration)) {
+					String language = locale.getLanguage();
+					String country = locale.getCountry();
+					if (!StringUtils.isEmpty(country)) {
+						result = downloadChangelog(language.toUpperCase(Locale.US) +
+								"-" + country.toUpperCase(Locale.US));
+						if (result != null) {
+							break;
+						}
+					}
+					result = downloadChangelog(language.toUpperCase(Locale.US));
+					if (result != null) {
+						break;
+					}
+				}
 				if (result != null) {
 					result = ChangelogGroupCallback.parse(result);
 				}

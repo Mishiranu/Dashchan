@@ -23,6 +23,7 @@ import chan.text.CommentEditor;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.content.LocaleManager;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.SendPostTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
@@ -135,6 +136,11 @@ public class PostingService extends Service implements SendPostTask.Callback<Pos
 			builder.append(", #").append(postNumber);
 		}
 		return builder.toString();
+	}
+
+	@Override
+	protected void attachBaseContext(Context newBase) {
+		super.attachBaseContext(LocaleManager.getInstance().apply(newBase));
 	}
 
 	@Override

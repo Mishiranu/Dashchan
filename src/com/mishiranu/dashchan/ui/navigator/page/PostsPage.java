@@ -191,7 +191,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		UiManager uiManager = getUiManager();
 		float density = ResourceUtils.obtainDensity(context);
 		int dividerPadding = (int) (12f * density);
-		hidePerformer = new HidePerformer();
+		hidePerformer = new HidePerformer(context);
 		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
 		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
 		ChanConfiguration.Board board = getChanConfiguration().safe().obtainBoard(page.boardName);
@@ -562,7 +562,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				return true;
 			}
 			case R.id.menu_hidden_posts: {
-				ArrayList<String> localAutohide = hidePerformer.getReadableLocalAutohide();
+				ArrayList<String> localAutohide = hidePerformer.getReadableLocalAutohide(getContext());
 				final boolean[] checked = new boolean[localAutohide.size()];
 				AlertDialog dialog = new AlertDialog.Builder(getContext())
 						.setTitle(R.string.remove_rules)
@@ -1532,11 +1532,11 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 						break;
 					}
 					case PERFORM_HIDE_NAME: {
-						result = hidePerformer.addHideByName(postItem);
+						result = hidePerformer.addHideByName(getContext(), postItem);
 						break;
 					}
 					case PERFORM_HIDE_SIMILAR: {
-						result = hidePerformer.addHideSimilar(postItem);
+						result = hidePerformer.addHideSimilar(getContext(), postItem);
 						break;
 					}
 					default: {

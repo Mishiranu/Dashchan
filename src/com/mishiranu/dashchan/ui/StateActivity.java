@@ -1,14 +1,11 @@
 package com.mishiranu.dashchan.ui;
 
-import android.annotation.SuppressLint;
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
-import com.mishiranu.dashchan.content.LocaleManager;
 
-@SuppressLint("Registered")
-public class StateActivity extends FragmentActivity {
+public abstract class StateActivity extends FragmentActivity {
 	public static class InstanceFragment extends Fragment {
 		@Override
 		public void onDetach() {
@@ -19,8 +16,8 @@ public class StateActivity extends FragmentActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		LocaleManager.getInstance().apply(this);
 		super.onCreate(savedInstanceState);
+
 		String tag = "instance";
 		FragmentManager fragmentManager = getSupportFragmentManager();
 		InstanceFragment fragment = (InstanceFragment) fragmentManager.findFragmentByTag(tag);

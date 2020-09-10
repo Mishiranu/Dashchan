@@ -14,6 +14,7 @@ import androidx.core.app.NotificationCompat;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
+import com.mishiranu.dashchan.content.LocaleManager;
 import com.mishiranu.dashchan.content.async.ReadFileTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.ui.MainActivity;
@@ -51,6 +52,11 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnComplet
 
 	private static Intent obtainIntent(Context context, String action) {
 		return new Intent(context, AudioPlayerService.class).setAction(action);
+	}
+
+	@Override
+	protected void attachBaseContext(Context newBase) {
+		super.attachBaseContext(LocaleManager.getInstance().apply(newBase));
 	}
 
 	@Override

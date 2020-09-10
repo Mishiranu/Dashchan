@@ -77,7 +77,7 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback, Read
 		UiManager uiManager = getUiManager();
 		float density = ResourceUtils.obtainDensity(getResources());
 		int dividerPadding = (int) (12f * density);
-		SearchAdapter adapter = new SearchAdapter(this, uiManager, getPage().searchQuery);
+		SearchAdapter adapter = new SearchAdapter(getContext(), this, uiManager, getPage().searchQuery);
 		recyclerView.setAdapter(adapter);
 		recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(),
 				(c, position) -> adapter.configureDivider(c, position).horizontal(dividerPadding, dividerPadding)));

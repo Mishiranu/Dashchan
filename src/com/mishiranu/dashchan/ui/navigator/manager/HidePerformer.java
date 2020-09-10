@@ -1,10 +1,9 @@
 package com.mishiranu.dashchan.ui.navigator.manager;
 
-import android.content.res.Resources;
+import android.content.Context;
 import chan.content.model.Posts;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.storage.AutohideStorage;
 import com.mishiranu.dashchan.text.SimilarTextEstimator;
@@ -26,8 +25,8 @@ public class HidePerformer implements PostItem.HidePerformer {
 	private LinkedHashSet<String> names;
 	private ArrayList<SimilarTextEstimator.WordsData> words;
 
-	public HidePerformer() {
-		autohidePrefix = MainApplication.getInstance().getString(R.string.autohide) + ": ";
+	public HidePerformer(Context context) {
+		autohidePrefix = context.getString(R.string.autohide) + ": ";
 	}
 
 	public void setPostsProvider(UiManager.PostsProvider postsProvider) {
@@ -156,9 +155,9 @@ public class HidePerformer implements PostItem.HidePerformer {
 		return AddResult.SUCCESS;
 	}
 
-	public AddResult addHideByName(PostItem postItem) {
+	public AddResult addHideByName(Context context, PostItem postItem) {
 		if (postItem.isUseDefaultName()) {
-			ToastUtils.show(MainApplication.getInstance(), R.string.default_name_cant_be_hidden);
+			ToastUtils.show(context, R.string.default_name_cant_be_hidden);
 			return AddResult.FAIL;
 		}
 		if (names == null) {
@@ -172,11 +171,11 @@ public class HidePerformer implements PostItem.HidePerformer {
 		return AddResult.SUCCESS;
 	}
 
-	public AddResult addHideSimilar(PostItem postItem) {
+	public AddResult addHideSimilar(Context context, PostItem postItem) {
 		String comment = postItem.getComment().toString();
 		SimilarTextEstimator.WordsData wordsData = estimator.getWords(comment);
 		if (wordsData == null) {
-			ToastUtils.show(MainApplication.getInstance(), R.string.too_few_meaningful_words);
+			ToastUtils.show(context, R.string.too_few_meaningful_words);
 			return AddResult.FAIL;
 		}
 		if (words == null) {
@@ -201,22 +200,21 @@ public class HidePerformer implements PostItem.HidePerformer {
 		return repliesLength + namesLength + wordsLength > 0;
 	}
 
-	public ArrayList<String> getReadableLocalAutohide() {
-		Resources resources = MainApplication.getInstance().getResources();
+	public ArrayList<String> getReadableLocalAutohide(Context context) {
 		ArrayList<String> localAutohide = new ArrayList<>();
 		if (replies != null) {
 			for (String postNumber : replies) {
-				localAutohide.add(resources.getString(R.string.replies_to_number__format, postNumber));
+				localAutohide.add(context.getString(R.string.replies_to_number__format, postNumber));
 			}
 		}
 		if (names != null) {
 			for (String name : names) {
-				localAutohide.add(resources.getString(R.string.with_name_name__format, name));
+				localAutohide.add(context.getString(R.string.with_name_name__format, name));
 			}
 		}
 		if (words != null) {
 			for (SimilarTextEstimator.WordsData wordsData : words) {
-				localAutohide.add(resources.getString(R.string.similar_to_number__format, wordsData.postNumber));
+				localAutohide.add(context.getString(R.string.similar_to_number__format, wordsData.postNumber));
 			}
 		}
 		return localAutohide;

@@ -157,7 +157,7 @@ public final class ErrorItem implements Parcelable {
 		if (resId == 0) {
 			resId = R.string.unknown_error;
 		}
-		return MainApplication.getInstance().getString(resId);
+		return MainApplication.getInstance().getLocalizedContext().getString(resId);
 	}
 
 	@Override
