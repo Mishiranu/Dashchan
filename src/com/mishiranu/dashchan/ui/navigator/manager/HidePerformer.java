@@ -27,7 +27,7 @@ public class HidePerformer implements PostItem.HidePerformer {
 	private ArrayList<SimilarTextEstimator.WordsData> words;
 
 	public HidePerformer() {
-		autohidePrefix = MainApplication.getInstance().getString(R.string.preference_header_autohide) + ": ";
+		autohidePrefix = MainApplication.getInstance().getString(R.string.autohide) + ": ";
 	}
 
 	public void setPostsProvider(UiManager.PostsProvider postsProvider) {
@@ -158,7 +158,7 @@ public class HidePerformer implements PostItem.HidePerformer {
 
 	public AddResult addHideByName(PostItem postItem) {
 		if (postItem.isUseDefaultName()) {
-			ToastUtils.show(MainApplication.getInstance(), R.string.message_hide_default_name_error);
+			ToastUtils.show(MainApplication.getInstance(), R.string.default_name_cant_be_hidden);
 			return AddResult.FAIL;
 		}
 		if (names == null) {
@@ -176,7 +176,7 @@ public class HidePerformer implements PostItem.HidePerformer {
 		String comment = postItem.getComment().toString();
 		SimilarTextEstimator.WordsData wordsData = estimator.getWords(comment);
 		if (wordsData == null) {
-			ToastUtils.show(MainApplication.getInstance(), R.string.message_too_few_meaningful_words);
+			ToastUtils.show(MainApplication.getInstance(), R.string.too_few_meaningful_words);
 			return AddResult.FAIL;
 		}
 		if (words == null) {
@@ -206,17 +206,17 @@ public class HidePerformer implements PostItem.HidePerformer {
 		ArrayList<String> localAutohide = new ArrayList<>();
 		if (replies != null) {
 			for (String postNumber : replies) {
-				localAutohide.add(resources.getString(R.string.text_replies_to_format, postNumber));
+				localAutohide.add(resources.getString(R.string.replies_to_number__format, postNumber));
 			}
 		}
 		if (names != null) {
 			for (String name : names) {
-				localAutohide.add(resources.getString(R.string.text_with_name_format, name));
+				localAutohide.add(resources.getString(R.string.with_name_name__format, name));
 			}
 		}
 		if (words != null) {
 			for (SimilarTextEstimator.WordsData wordsData : words) {
-				localAutohide.add(resources.getString(R.string.text_similar_to_format, wordsData.postNumber));
+				localAutohide.add(resources.getString(R.string.similar_to_number__format, wordsData.postNumber));
 			}
 		}
 		return localAutohide;

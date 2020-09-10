@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.format.DateFormat;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
@@ -20,6 +19,7 @@ import chan.text.GroupParser;
 import chan.text.ParseException;
 import chan.util.CommonUtils;
 import chan.util.DataFile;
+import com.mishiranu.dashchan.BuildConfig;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.BackupManager;
@@ -49,29 +49,28 @@ public class AboutFragment extends PreferenceFragment {
 	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		addButton(R.string.preference_statistics, 0)
+		addButton(R.string.statistics, 0)
 				.setOnClickListener(p -> ((FragmentHandler) requireActivity())
 						.pushFragment(new StatisticsFragment()));
-		addButton(R.string.preference_backup_data, R.string.preference_backup_data_summary)
+		addButton(R.string.backup_data, R.string.backup_data__summary)
 				.setOnClickListener(p -> new BackupDialog()
 						.show(getChildFragmentManager(), BackupDialog.class.getName()));
-		addButton(R.string.preference_changelog, 0)
+		addButton(R.string.changelog, 0)
 				.setOnClickListener(p -> new ReadDialog(ReadDialog.Type.CHANGELOG)
 						.show(getChildFragmentManager(), ReadDialog.class.getName()));
-		addButton(R.string.preference_check_for_updates, 0)
+		addButton(R.string.check_for_updates, 0)
 				.setOnClickListener(p -> new ReadDialog(ReadDialog.Type.UPDATE)
 						.show(getChildFragmentManager(), ReadDialog.class.getName()));
-		addButton(R.string.preference_licenses, R.string.preference_licenses_summary)
+		addButton(R.string.foss_licenses, R.string.foss_licenses__summary)
 				.setOnClickListener(p -> ((FragmentHandler) requireActivity())
 						.pushFragment(new TextFragment(TextFragment.Type.LICENSES, null)));
-		addButton(getString(R.string.preference_version), C.BUILD_VERSION +
-				" (" + DateFormat.getDateFormat(requireContext()).format(C.BUILD_TIMESTAMP) + ")");
+		addButton(getString(R.string.build_version), BuildConfig.VERSION_NAME);
 	}
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.preference_header_about), null);
+		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.about), null);
 	}
 
 	@Override
@@ -95,7 +94,7 @@ public class AboutFragment extends PreferenceFragment {
 			if (filesMap != null && filesMap.size() > 0) {
 				new RestoreFragment(filesMap).show(getChildFragmentManager(), RestoreFragment.class.getName());
 			} else {
-				ToastUtils.show(requireContext(), R.string.message_no_backups);
+				ToastUtils.show(requireContext(), R.string.backups_not_found);
 			}
 		}
 	}
@@ -104,8 +103,9 @@ public class AboutFragment extends PreferenceFragment {
 		@NonNull
 		@Override
 		public AlertDialog onCreateDialog(Bundle savedInstanceState) {
-			String[] items = getResources().getStringArray(R.array.preference_backup_data_choices);
-			return new AlertDialog.Builder(requireContext()).setItems(items, this)
+			String[] items = {getString(R.string.save_data), getString(R.string.restore_data)};
+			return new AlertDialog.Builder(requireContext())
+					.setItems(items, this)
 					.setNegativeButton(android.R.string.cancel, null)
 					.create();
 		}
@@ -183,7 +183,7 @@ public class AboutFragment extends PreferenceFragment {
 		@Override
 		public ProgressDialog onCreateDialog(Bundle savedInstanceState) {
 			ProgressDialog dialog = new ProgressDialog(requireContext(), null);
-			dialog.setMessage(getString(R.string.message_loading));
+			dialog.setMessage(getString(R.string.loading__ellipsis));
 			return dialog;
 		}
 

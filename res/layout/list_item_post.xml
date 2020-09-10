@@ -123,14 +123,14 @@
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			style="@style/Widget.PostButton"
-			android:text="@string/action_expand" />
+			android:text="@string/expand" />
 
 		<TextView
 			android:id="@+id/bottom_bar_open_thread"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			style="@style/Widget.PostButton"
-			android:text="@string/action_open_thread" />
+			android:text="@string/open_thread" />
 
 	</LinearLayout>
 

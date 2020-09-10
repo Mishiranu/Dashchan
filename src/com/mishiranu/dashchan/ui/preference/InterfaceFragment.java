@@ -11,6 +11,7 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
+import com.mishiranu.dashchan.util.ResourceUtils;
 
 public class InterfaceFragment extends PreferenceFragment {
 	@Override
@@ -22,48 +23,46 @@ public class InterfaceFragment extends PreferenceFragment {
 	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
+		String scaleFormat = ResourceUtils.getColonString(getResources(), R.string.scale, "%d%%");
 		addSeek(Preferences.KEY_TEXT_SCALE, Preferences.DEFAULT_TEXT_SCALE,
-				R.string.preference_text_scale, R.string.preference_text_scale_summary_format, 75, 200, 5, 1f);
+				getString(R.string.text_scale), scaleFormat, 75, 200, 5, 1f);
 		addSeek(Preferences.KEY_THUMBNAILS_SCALE, Preferences.DEFAULT_THUMBNAILS_SCALE,
-				R.string.preference_thumbnails_scale, R.string.preference_thumbnails_scale_summary_format,
-				100, 200, 10, 1f);
+				getString(R.string.thumbnail_scale), scaleFormat, 100, 200, 10, 1f);
 		addCheck(true, Preferences.KEY_CUT_THUMBNAILS, Preferences.DEFAULT_CUT_THUMBNAILS,
-				R.string.preference_cut_thumbnails, R.string.preference_cut_thumbnails_summary);
+				R.string.crop_thumbnails, R.string.crop_thumbnails__summary);
 		addCheck(true, Preferences.KEY_ACTIVE_SCROLLBAR, Preferences.DEFAULT_ACTIVE_SCROLLBAR,
-				R.string.preference_active_scrollbar, 0);
+				R.string.active_scrollbar, 0);
 		addCheck(true, Preferences.KEY_SCROLL_THREAD_GALLERY, Preferences.DEFAULT_SCROLL_THREAD_GALLERY,
-				R.string.preference_scroll_thread_gallery, 0);
+				R.string.scroll_thread_when_scrolling_gallery, 0);
 
-		addHeader(R.string.preference_category_navigation_drawer);
-		addList(Preferences.KEY_PAGES_LIST, Preferences.VALUES_PAGES_LIST,
-				Preferences.DEFAULT_PAGES_LIST, R.string.preference_pages_list, R.array.preference_pages_list_choices);
-		addList(Preferences.KEY_DRAWER_INITIAL_POSITION,
-				Preferences.VALUES_DRAWER_INITIAL_POSITION, Preferences.DEFAULT_DRAWER_INITIAL_POSITION,
-				R.string.preference_drawer_initial_position, R.array.preference_drawer_initial_position_choices);
+		addHeader(R.string.navigation_drawer);
+		addList(Preferences.KEY_PAGES_LIST, Preferences.VALUES_PAGES_LIST, Preferences.DEFAULT_PAGES_LIST,
+				R.string.headers_order, Preferences.ENTRIES_PAGES_LIST);
+		addList(Preferences.KEY_DRAWER_INITIAL_POSITION, Preferences.VALUES_DRAWER_INITIAL_POSITION,
+				Preferences.DEFAULT_DRAWER_INITIAL_POSITION, R.string.initial_position,
+				Preferences.ENTRIES_DRAWER_INITIAL_POSITION);
 
-		addHeader(R.string.preference_category_threads);
+		addHeader(R.string.threads_list);
 		addCheck(true, Preferences.KEY_PAGE_BY_PAGE, Preferences.DEFAULT_PAGE_BY_PAGE,
-				R.string.preference_page_by_page, R.string.preference_page_by_page_summary);
+				R.string.paged_board_navigation, R.string.paged_board_navigation__summary);
 		addCheck(true, Preferences.KEY_DISPLAY_HIDDEN_THREADS,
-				Preferences.DEFAULT_DISPLAY_HIDDEN_THREADS, R.string.preference_display_hidden_threads, 0);
+				Preferences.DEFAULT_DISPLAY_HIDDEN_THREADS, R.string.display_hidden_threads, 0);
 
-		addHeader(R.string.preference_category_posts);
+		addHeader(R.string.posts_list);
 		addEdit(Preferences.KEY_POST_MAX_LINES, Preferences.DEFAULT_POST_MAX_LINES,
-				R.string.preference_post_max_lines, R.string.preference_post_max_lines_summary, null,
-				InputType.TYPE_CLASS_NUMBER)
+				R.string.max_lines_count, R.string.max_lines_count__summary, null, InputType.TYPE_CLASS_NUMBER)
 				.setOnAfterChangeListener(p -> requireActivity().recreate());
 		addCheck(true, Preferences.KEY_ALL_ATTACHMENTS, Preferences.DEFAULT_ALL_ATTACHMENTS,
-				R.string.preference_all_attachments, R.string.preference_all_attachments_summary);
+				R.string.all_attachments, R.string.all_attachments__summary);
 		addList(Preferences.KEY_HIGHLIGHT_UNREAD, Preferences.VALUES_HIGHLIGHT_UNREAD,
-				Preferences.DEFAULT_HIGHLIGHT_UNREAD, R.string.preference_highlight_unread,
-				R.array.preference_highlight_unread_choices);
-		addCheck(true, Preferences.KEY_ADVANCED_SEARCH,
-				Preferences.DEFAULT_ADVANCED_SEARCH, R.string.preference_advanced_search,
-				R.string.preference_advanced_search_summary)
+				Preferences.DEFAULT_HIGHLIGHT_UNREAD, R.string.highlight_unread_posts,
+				Preferences.ENTRIES_HIGHLIGHT_UNREAD);
+		addCheck(true, Preferences.KEY_ADVANCED_SEARCH, Preferences.DEFAULT_ADVANCED_SEARCH,
+				R.string.advanced_search, R.string.advanced_search__summary)
 				.setOnAfterChangeListener(p -> {
 					if (p.getValue()) {
 						SpannableStringBuilder builder = new SpannableStringBuilder
-								(getText(R.string.preference_advanced_search_message));
+								(getText(R.string.advanced_search__sentence));
 						Object[] spans = builder.getSpans(0, builder.length(), Object.class);
 						for (Object span : spans) {
 							int start = builder.getSpanStart(span);
@@ -76,18 +75,18 @@ public class InterfaceFragment extends PreferenceFragment {
 					}
 				});
 		addCheck(true, Preferences.KEY_DISPLAY_ICONS, Preferences.DEFAULT_DISPLAY_ICONS,
-				R.string.preference_display_icons, R.string.preference_display_icons_summary);
+				R.string.display_post_icons, R.string.display_post_icons__summary);
 
-		addHeader(R.string.preference_category_submission);
+		addHeader(R.string.submission_form);
 		addCheck(true, Preferences.KEY_HIDE_PERSONAL_DATA,
-				Preferences.DEFAULT_HIDE_PERSONAL_DATA, R.string.preference_hide_personal_data, 0);
+				Preferences.DEFAULT_HIDE_PERSONAL_DATA, R.string.hide_personal_data_block, 0);
 		addCheck(true, Preferences.KEY_HUGE_CAPTCHA, Preferences.DEFAULT_HUGE_CAPTCHA,
-				R.string.preference_huge_captcha, 0);
+				R.string.huge_captcha, 0);
 	}
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.preference_header_interface), null);
+		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.user_interface), null);
 	}
 }

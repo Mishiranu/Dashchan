@@ -144,7 +144,8 @@ public class ListUnit implements ActionMode.Callback {
 				}
 			}
 			updateAllGalleryItemsChecked();
-			selectionMode.setTitle(instance.context.getString(R.string.text_selected_format, selectedCount));
+			selectionMode.setTitle(ResourceUtils.getColonString(instance.context.getResources(),
+					R.string.selected, selectedCount));
 		}
 	}
 
@@ -191,7 +192,8 @@ public class ListUnit implements ActionMode.Callback {
 				selected.put(position, position);
 			}
 			updateGalleryItemChecked(view, position);
-			selectionMode.setTitle(instance.context.getString(R.string.text_selected_format, selected.size()));
+			selectionMode.setTitle(ResourceUtils.getColonString(instance.context.getResources(),
+					R.string.selected, selected.size()));
 		} else {
 			instance.callback.navigatePageFromList(position);
 		}
@@ -206,18 +208,18 @@ public class ListUnit implements ActionMode.Callback {
 		DialogMenu dialogMenu = new DialogMenu(context);
 		dialogMenu.setTitle(galleryItem.originalName != null ? galleryItem.originalName
 				: galleryItem.getFileName(instance.locator), true);
-		dialogMenu.add(R.string.action_download_file, () -> instance.callback.downloadGalleryItem(galleryItem));
+		dialogMenu.add(R.string.download_file, () -> instance.callback.downloadGalleryItem(galleryItem));
 		if (galleryItem.getDisplayImageUri(instance.locator) != null) {
-			dialogMenu.add(R.string.action_search_image, () -> NavigationUtils.searchImage(context,
+			dialogMenu.add(R.string.search_image, () -> NavigationUtils.searchImage(context,
 					instance.callback.getConfigurationLock(), instance.chanName,
 					galleryItem.getDisplayImageUri(instance.locator)));
 		}
-		dialogMenu.add(R.string.action_copy_link, () -> StringUtils.copyToClipboard(context,
+		dialogMenu.add(R.string.copy_link, () -> StringUtils.copyToClipboard(context,
 				galleryItem.getFileUri(instance.locator).toString()));
 		if (instance.callback.isAllowNavigatePostManually(false) && galleryItem.postNumber != null) {
-			dialogMenu.add(R.string.action_go_to_post, () -> instance.callback.navigatePost(galleryItem, true, true));
+			dialogMenu.add(R.string.go_to_post, () -> instance.callback.navigatePost(galleryItem, true, true));
 		}
-		dialogMenu.add(R.string.action_share_link, () -> NavigationUtils.shareLink(context, null,
+		dialogMenu.add(R.string.share_link, () -> NavigationUtils.shareLink(context, null,
 				galleryItem.getFileUri(instance.locator)));
 		dialogMenu.show(instance.callback.getConfigurationLock());
 		return true;
@@ -248,15 +250,14 @@ public class ListUnit implements ActionMode.Callback {
 		}
 	}
 
-
 	@Override
 	public boolean onCreateActionMode(ActionMode mode, Menu menu) {
 		selected.clear();
-		mode.setTitle(instance.context.getString(R.string.text_selected_format, 0));
-		menu.add(0, R.id.menu_select_all, 0, R.string.action_select_all)
+		mode.setTitle(ResourceUtils.getColonString(instance.context.getResources(), R.string.selected, 0));
+		menu.add(0, R.id.menu_select_all, 0, R.string.select_all)
 				.setIcon(ResourceUtils.getActionBarIcon(instance.context, R.attr.iconActionSelectAll))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-		menu.add(0, R.id.menu_download, 0, R.string.action_download_files)
+		menu.add(0, R.id.menu_download, 0, R.string.download_files)
 				.setIcon(ResourceUtils.getActionBarIcon(instance.context, R.attr.iconActionDownload))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 		return true;
@@ -275,7 +276,8 @@ public class ListUnit implements ActionMode.Callback {
 				for (int i = 0; i < count; i++) {
 					selected.put(i, i);
 				}
-				selectionMode.setTitle(instance.context.getString(R.string.text_selected_format, count));
+				selectionMode.setTitle(ResourceUtils.getColonString(instance.context.getResources(),
+						R.string.selected, count));
 				updateAllGalleryItemsChecked();
 				return true;
 			}

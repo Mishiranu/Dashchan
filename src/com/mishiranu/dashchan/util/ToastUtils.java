@@ -74,7 +74,7 @@ public class ToastUtils implements Runnable {
 	}
 
 	public static void show(Context context, int resId) {
-		show(context, context.getString(resId != 0 ? resId : R.string.message_unknown_error));
+		show(context, context.getString(resId != 0 ? resId : R.string.unknown_error));
 	}
 
 	public static void show(Context context, ErrorItem errorItem) {

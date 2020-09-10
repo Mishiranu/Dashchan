@@ -74,88 +74,88 @@ public final class ErrorItem implements Parcelable {
 				break;
 			}
 			case SSL: {
-				resId = R.string.message_ssl_error;
+				resId = R.string.ssl_https_error;
 				break;
 			}
 			case DOWNLOAD: {
-				resId = R.string.message_download_error;
+				resId = R.string.unable_to_download_data;
 				break;
 			}
 			case READ_TIMEOUT: {
-				resId = R.string.message_read_timeout;
+				resId = R.string.read_timeout_expired;
 				break;
 			}
 			case CONNECT_TIMEOUT: {
-				resId = R.string.message_connect_timeout;
+				resId = R.string.connect_timeout_expired;
 				break;
 			}
 			case CONNECTION_RESET: {
-				resId = R.string.message_connection_reset;
+				resId = R.string.connection_was_reset;
 				break;
 			}
 			case INVALID_CERTIFICATE: {
-				resId = R.string.message_invalid_certificate;
+				resId = R.string.invalid_certificate;
 				break;
 			}
 			case UNSAFE_REDIRECT: {
-				resId = R.string.message_unsafe_redirect;
+				resId = R.string.unsafe_redirect;
 				break;
 			}
 			case UNSUPPORTED_SCHEME: {
-				resId = R.string.message_unsupported_scheme;
+				resId = R.string.scheme_is_not_supported;
 				break;
 			}
 			case CAPTCHA_EXPIRED: {
-				resId = R.string.message_captcha_expired;
+				resId = R.string.captcha_expired;
 				break;
 			}
 			case EMPTY_RESPONSE: {
-				resId = R.string.message_empty_response;
+				resId = R.string.empty_response;
 				break;
 			}
 			case INVALID_RESPONSE: {
-				resId = R.string.message_invalid_response;
+				resId = R.string.invalid_server_response;
 				break;
 			}
 			case INVALID_DATA_FORMAT: {
-				resId = R.string.message_invalid_data_format;
+				resId = R.string.invalid_data_format;
 				break;
 			}
 			case BOARD_NOT_EXISTS: {
-				resId = R.string.message_board_not_exist;
+				resId = R.string.board_doesnt_exist;
 				break;
 			}
 			case THREAD_NOT_EXISTS: {
-				resId = R.string.message_thread_not_exist;
+				resId = R.string.thread_doesnt_exist;
 				break;
 			}
 			case POST_NOT_FOUND: {
-				resId = R.string.message_post_not_found;
+				resId = R.string.post_is_not_found;
 				break;
 			}
 			case NO_ACCESS_TO_MEMORY: {
-				resId = R.string.message_no_access_to_memory;
+				resId = R.string.no_access_to_memory;
 				break;
 			}
 			case INSUFFICIENT_SPACE: {
-				resId = R.string.message_insufficient_space;
+				resId = R.string.insufficient_device_space;
 				break;
 			}
 			case EXTENSION: {
-				resId = R.string.message_extension_error;
+				resId = R.string.extension_error;
 				break;
 			}
 			case RELAY_BLOCK: {
-				resId = R.string.message_relay_block;
+				resId = R.string.ddos_protection_bypass_failed;
 				break;
 			}
 			case UNSUPPORTED_RECAPTCHA: {
-				resId = R.string.message_unsupported_recaptcha;
+				resId = R.string.this_recaptcha_is_not_supported;
 				break;
 			}
 		}
 		if (resId == 0) {
-			resId = R.string.message_unknown_error;
+			resId = R.string.unknown_error;
 		}
 		return MainApplication.getInstance().getString(resId);
 	}

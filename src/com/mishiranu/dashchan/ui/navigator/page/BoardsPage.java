@@ -66,7 +66,7 @@ public class BoardsPage extends ListPage implements BoardsAdapter.Callback, Read
 	@Override
 	public String obtainTitle() {
 		boolean hasUserBoards = getChanConfiguration().getOption(ChanConfiguration.OPTION_READ_USER_BOARDS);
-		return getString(hasUserBoards ? R.string.action_general_boards : R.string.action_boards);
+		return getString(hasUserBoards ? R.string.general_boards : R.string.boards);
 	}
 
 	@Override
@@ -80,14 +80,14 @@ public class BoardsPage extends ListPage implements BoardsAdapter.Callback, Read
 	public boolean onItemLongClick(String boardName) {
 		if (boardName != null) {
 			DialogMenu dialogMenu = new DialogMenu(getContext());
-			dialogMenu.add(R.string.action_copy_link, () -> {
+			dialogMenu.add(R.string.copy_link, () -> {
 				Uri uri = getChanLocator().safe(true).createBoardUri(boardName, 0);
 				if (uri != null) {
 					StringUtils.copyToClipboard(getContext(), uri.toString());
 				}
 			});
 			if (!FavoritesStorage.getInstance().hasFavorite(getPage().chanName, boardName, null)) {
-				dialogMenu.add(R.string.action_add_to_favorites, () -> FavoritesStorage.getInstance()
+				dialogMenu.add(R.string.add_to_favorites, () -> FavoritesStorage.getInstance()
 						.add(getPage().chanName, boardName));
 			}
 			dialogMenu.show(getUiManager().getConfigurationLock());
@@ -98,13 +98,13 @@ public class BoardsPage extends ListPage implements BoardsAdapter.Callback, Read
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu) {
-		menu.add(0, R.id.menu_search, 0, R.string.action_filter)
+		menu.add(0, R.id.menu_search, 0, R.string.filter)
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
-		menu.add(0, R.id.menu_refresh, 0, R.string.action_refresh)
+		menu.add(0, R.id.menu_refresh, 0, R.string.refresh)
 				.setIcon(getActionBarIcon(R.attr.iconActionRefresh))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-		menu.addSubMenu(0, R.id.menu_appearance, 0, R.string.action_appearance);
-		menu.add(0, R.id.menu_make_home_page, 0, R.string.action_make_home_page)
+		menu.addSubMenu(0, R.id.menu_appearance, 0, R.string.appearance);
+		menu.add(0, R.id.menu_make_home_page, 0, R.string.make_home_page)
 				.setVisible(Preferences.getDefaultBoardName(getPage().chanName) != null);
 	}
 

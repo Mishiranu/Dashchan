@@ -114,7 +114,7 @@ public class BackupManager {
 			binder.saveStreamStorage(input, null, null, null, null,
 					"backup-" + System.currentTimeMillis() + ".zip", false);
 		} else {
-			ToastUtils.show(context, R.string.message_no_access);
+			ToastUtils.show(context, R.string.no_access);
 		}
 	}
 
@@ -148,7 +148,7 @@ public class BackupManager {
 		if (success) {
 			NavigationUtils.restartApplication(context);
 		} else {
-			ToastUtils.show(context, R.string.message_no_access);
+			ToastUtils.show(context, R.string.no_access);
 		}
 	}
 }

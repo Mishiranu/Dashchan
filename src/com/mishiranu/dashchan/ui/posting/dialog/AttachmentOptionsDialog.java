@@ -106,24 +106,24 @@ public class AttachmentOptionsDialog extends DialogFragment implements AdapterVi
 		int index = 0;
 		optionItems.clear();
 		optionIndices.clear();
-		optionItems.add(new OptionItem(getString(R.string.text_unique_hash), Type.UNIQUE_HASH,
+		optionItems.add(new OptionItem(getString(R.string.unique_hash), Type.UNIQUE_HASH,
 				holder.optionUniqueHash));
 		optionIndices.put(Type.UNIQUE_HASH, index++);
 		if (GraphicsUtils.canRemoveMetadata(fileHolder)) {
-			optionItems.add(new OptionItem(getString(R.string.text_remove_metadata), Type.REMOVE_METADATA,
+			optionItems.add(new OptionItem(getString(R.string.remove_metadata), Type.REMOVE_METADATA,
 					holder.optionRemoveMetadata));
 			optionIndices.put(Type.REMOVE_METADATA, index++);
 		}
 		if (fileHolder.isImage()) {
-			optionItems.add(new OptionItem(getString(R.string.text_reencode_image), Type.REENCODE_IMAGE,
+			optionItems.add(new OptionItem(getString(R.string.reencode_image), Type.REENCODE_IMAGE,
 					holder.reencoding != null));
 			optionIndices.put(Type.REENCODE_IMAGE, index++);
 		}
-		optionItems.add(new OptionItem(getString(R.string.text_remove_file_name), Type.REMOVE_FILE_NAME,
+		optionItems.add(new OptionItem(getString(R.string.remove_file_name), Type.REMOVE_FILE_NAME,
 				holder.optionRemoveFileName));
 		optionIndices.put(Type.REMOVE_FILE_NAME, index++);
 		if (postingConfiguration.attachmentSpoiler) {
-			optionItems.add(new OptionItem(getString(R.string.text_spoiler), Type.SPOILER,
+			optionItems.add(new OptionItem(getString(R.string.spoiler), Type.SPOILER,
 					holder.optionSpoiler));
 			// noinspection UnusedAssignment
 			optionIndices.put(Type.SPOILER, index++);

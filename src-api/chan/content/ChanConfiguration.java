@@ -705,7 +705,7 @@ public class ChanConfiguration implements ChanManager.Linked {
 	protected Authorization obtainCaptchaPassConfiguration() {
 		Authorization authorization = new Authorization();
 		authorization.fieldsCount = 1;
-		authorization.hints = new String[] {MainApplication.getInstance().getString(R.string.text_password)};
+		authorization.hints = new String[] {MainApplication.getInstance().getString(R.string.password)};
 		return authorization;
 	}
 
@@ -713,7 +713,7 @@ public class ChanConfiguration implements ChanManager.Linked {
 	protected Authorization obtainUserAuthorizationConfiguration() {
 		Authorization authorization = new Authorization();
 		authorization.fieldsCount = 1;
-		authorization.hints = new String[] {MainApplication.getInstance().getString(R.string.text_password)};
+		authorization.hints = new String[] {MainApplication.getInstance().getString(R.string.password)};
 		return authorization;
 	}
 

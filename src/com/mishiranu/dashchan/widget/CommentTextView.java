@@ -380,20 +380,20 @@ public class CommentTextView extends TextView {
 			if (C.API_MARSHMALLOW && mode.getType() == ActionMode.TYPE_FLOATING) {
 				int order = 1; // Only "cut" menu item uses this order which doesn't present in non-editable TextView
 				if (replyable != null) {
-					menu.add(0, android.R.id.button1, order, R.string.action_quote)
+					menu.add(0, android.R.id.button1, order, R.string.quote__verb)
 							.setIcon(ResourceUtils.getDrawable(getContext(), R.attr.iconActionPaste, 0))
 							.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
 				}
-				menu.add(0, android.R.id.button2, order, R.string.action_browser)
+				menu.add(0, android.R.id.button2, order, R.string.web_browser)
 						.setIcon(ResourceUtils.getDrawable(getContext(), R.attr.iconActionForward, 0))
 						.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
 			} else {
 				if (replyable != null) {
-					menu.add(0, android.R.id.button1, 0, R.string.action_quote)
+					menu.add(0, android.R.id.button1, 0, R.string.quote__verb)
 							.setIcon(ResourceUtils.getDrawable(getContext(), R.attr.iconActionPaste, 0))
 							.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
 				}
-				menu.add(0, android.R.id.button2, 0, R.string.action_browser)
+				menu.add(0, android.R.id.button2, 0, R.string.web_browser)
 						.setIcon(ResourceUtils.getDrawable(getContext(), R.attr.iconActionForward, 0))
 						.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
 			}

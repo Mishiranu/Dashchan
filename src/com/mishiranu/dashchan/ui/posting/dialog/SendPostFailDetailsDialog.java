@@ -9,6 +9,7 @@ import chan.content.ApiException;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.util.PostDateFormatter;
+import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.StringBlockBuilder;
 import com.mishiranu.dashchan.util.ViewUtils;
 
@@ -35,38 +36,38 @@ public class SendPostFailDetailsDialog extends DialogFragment {
 			PostDateFormatter formatter = new PostDateFormatter(requireContext());
 			ApiException.BanExtra banExtra = (ApiException.BanExtra) extra;
 			if (!StringUtils.isEmpty(banExtra.id)) {
-				builder.appendLine(getString(R.string.text_ban_id_format, banExtra.id));
+				builder.appendLine(ResourceUtils.getColonString(getResources(), R.string.ban_id, banExtra.id));
 			}
 			if (banExtra.startDate > 0L) {
-				builder.appendLine(getString(R.string.text_ban_start_date_format,
-						formatter.format(banExtra.startDate)));
+				builder.appendLine(ResourceUtils.getColonString(getResources(),
+						R.string.filed_on, formatter.format(banExtra.startDate)));
 			}
 			if (banExtra.expireDate > 0L) {
-				builder.appendLine(getString(R.string.text_ban_expires_format,
-						banExtra.expireDate == Long.MAX_VALUE ? getString(R.string.text_ban_expires_never)
-								: formatter.format(banExtra.expireDate)));
+				builder.appendLine(ResourceUtils.getColonString(getResources(),
+						R.string.expires, banExtra.expireDate == Long.MAX_VALUE
+								? getString(R.string.never) : formatter.format(banExtra.expireDate)));
 			}
 			if (!StringUtils.isEmpty(banExtra.message)) {
-				builder.appendLine(getString(R.string.text_ban_reason_format, banExtra.message));
+				builder.appendLine(ResourceUtils.getColonString(getResources(),
+						R.string.reason, banExtra.message));
 			}
 			message = builder.toString();
 		} else if (extra instanceof ApiException.WordsExtra) {
-			StringBuilder builder = new StringBuilder();
 			ApiException.WordsExtra words = (ApiException.WordsExtra) extra;
-			builder.append(getString(R.string.text_rejected_words)).append(": ");
+			message = "";
 			boolean first = true;
 			for (String word : words.words) {
 				if (first) {
 					first = false;
+					message = word;
 				} else {
-					builder.append(", ");
+					message = getString(R.string.__enumeration_format, message, word);
 				}
-				builder.append(word);
 			}
-			message = builder.toString();
+			message = ResourceUtils.getColonString(getResources(), R.string.rejected_words, message);
 		}
 		AlertDialog dialog = new AlertDialog.Builder(requireContext())
-				.setTitle(R.string.action_details)
+				.setTitle(R.string.details)
 				.setMessage(message)
 				.setPositiveButton(android.R.string.ok, null)
 				.create();

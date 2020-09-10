@@ -23,13 +23,13 @@
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
 				style="?android:attr/listSeparatorTextViewStyle"
-				android:text="@string/text_personal_data" />
+				android:text="@string/personal_data" />
 
 			<com.mishiranu.dashchan.widget.SafePasteEditText
 				android:id="@+id/name"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:hint="@string/text_name"
+				android:hint="@string/name"
 				android:inputType="textPersonName"
 				android:maxLength="30"
 				android:singleLine="true" />
@@ -48,7 +48,7 @@
 				android:id="@+id/password"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:hint="@string/text_password"
+				android:hint="@string/password"
 				android:inputType="textVisiblePassword"
 				android:typeface="monospace"
 				android:maxLength="30"
@@ -71,7 +71,7 @@
 				android:paddingTop="4dp"
 				android:paddingBottom="4dp"
 				android:textColor="?attr/colorTextError"
-				android:text="@string/message_tripcode_warning"
+				android:text="@string/tripcode_disabled_warning__sentence"
 				android:visibility="gone" />
 
 		</LinearLayout>
@@ -80,13 +80,13 @@
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			style="?android:attr/listSeparatorTextViewStyle"
-			android:text="@string/text_message_data" />
+			android:text="@string/message_data" />
 
 		<com.mishiranu.dashchan.widget.SafePasteEditText
 			android:id="@+id/subject"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:hint="@string/text_subject"
+			android:hint="@string/subject"
 			android:inputType="textShortMessage|textCapSentences"
 			android:maxLength="60"
 			android:singleLine="true" />
@@ -109,7 +109,7 @@
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
 				android:gravity="top"
-				android:hint="@string/text_comment"
+				android:hint="@string/comment"
 				android:inputType="textLongMessage|textMultiLine|textCapSentences"
 				android:imeOptions="flagNoExtractUi" />
 
@@ -143,21 +143,21 @@
 				android:id="@+id/sage_checkbox"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				android:text="@string/text_sage_description_infinitive"
+				android:text="@string/dont_bring_up"
 				android:textAppearance="?android:attr/textAppearanceSmall" />
 
 			<CheckBox
 				android:id="@+id/spoiler_checkbox"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				android:text="@string/text_spoiler"
+				android:text="@string/spoiler"
 				android:textAppearance="?android:attr/textAppearanceSmall" />
 
 			<CheckBox
 				android:id="@+id/original_poster_checkbox"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				android:text="@string/text_original_poster"
+				android:text="@string/original_poster"
 				android:textAppearance="?android:attr/textAppearanceSmall" />
 
 		</com.mishiranu.dashchan.widget.CarryLayout>
@@ -172,7 +172,7 @@
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			style="?android:attr/listSeparatorTextViewStyle"
-			android:text="@string/text_confirmation" />
+			android:text="@string/confirmation" />
 
 		<FrameLayout
 			android:id="@+id/footer_container"

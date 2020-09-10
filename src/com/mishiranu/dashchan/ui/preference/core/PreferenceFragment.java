@@ -281,6 +281,15 @@ public abstract class PreferenceFragment extends Fragment {
 	}
 
 	public ListPreference addList(String key, String[] values,
+			String defaultValue, int titleResId, int[] entriesResIds) {
+		String[] entries = new String[entriesResIds.length];
+		for (int i = 0; i < entries.length; i++) {
+			entries[i] = getString(entriesResIds[i]);
+		}
+		return addList(key, values, defaultValue, titleResId, entries);
+	}
+
+	public ListPreference addList(String key, String[] values,
 			String defaultValue, int titleResId, CharSequence[] entries) {
 		ListPreference preference = new ListPreference(requireContext(), key, defaultValue, getString(titleResId),
 				entries, values);

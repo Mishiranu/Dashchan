@@ -64,10 +64,6 @@ android {
 		buildTypes.release.signingConfig signingConfigs.general
 	}
 
-	defaultConfig {
-		buildConfigField 'long', 'BUILD_TIMESTAMP', System.currentTimeMillis() + 'L'
-	}
-
 	buildTypes {
 		debug {
 			minifyEnabled false

@@ -1,588 +1,525 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources
-	xmlns:tools="http://schemas.android.com/tools"
-	tools:ignore="UnusedQuantity">
+<resources>
 
-	<!-- Text -->
-
-	<string name="text_address">Адрес</string>
-	<string name="text_app_name_update">Обновление %s</string>
-	<string name="text_all_forums">Все форумы</string>
-	<string name="text_all_posts">Все сообщения</string>
-	<string name="text_audio_player">Аудиоплеер</string>
-	<string name="text_autohide_comment">Искать в комментариях</string>
-	<string name="text_autohide_name">Искать в именах</string>
-	<string name="text_autohide_original_post">Только исходные сообщения</string>
-	<string name="text_autohide_sage">Только сообщения с sage</string>
-	<string name="text_autohide_subject">Искать в темах</string>
-	<string name="text_ban_id_format">ID блокировки: %s</string>
-	<string name="text_ban_start_date_format">Дата выдачи: %s</string>
-	<string name="text_ban_expires_format">Истекает: %s</string>
-	<string name="text_ban_expires_never">никогда</string>
-	<string name="text_ban_reason_format">Причина: %s</string>
-	<string name="text_board">Раздел</string>
-	<string name="text_board_speed_format">Скорость: %s</string>
-	<string name="text_bump_limit_format">Бамплимит: %d сообщений</string>
-	<string name="text_captcha">Капча</string>
-	<string name="text_closed_thread">Тред закрыт</string>
-	<string name="text_code_number_address">Код, номер, адрес</string>
-	<string name="text_comment">Комментарий</string>
-	<string name="text_completed_downloads">Завершённые загрузки</string>
-	<string name="text_configuration">Конфигурация</string>
-	<string name="text_confirmation">Подтверждение</string>
-	<string name="text_cyclical_thread">Цикличный тред</string>
-	<plurals name="text_deleted_count_format">
-		<item quantity="one">%d удалён</item>
-		<item quantity="few">%d удалено</item>
-		<item quantity="many">%d удалено</item>
-		<item quantity="other">%d удалено</item>
-	</plurals>
-	<string name="text_description">Описание</string>
-	<string name="text_disabled_images">Картинки отключены</string>
-	<string name="text_disabled_names">Имена отключены</string>
-	<string name="text_disabled_sage">Sage отключено</string>
-	<string name="text_disabled_subjects">Темы отключены</string>
-	<string name="text_disabled_tripcodes">Трипкоды отключены</string>
-	<string name="text_download_title">Выберите путь сохранения</string>
-	<string name="text_download_to_format">Сохранить в \"%s\"</string>
-	<string name="text_download_to_subdirectory">Сохранить в подкаталоге</string>
-	<string name="text_downloads">Загрузки</string>
-	<string name="text_enabled_flags">Флаги включены</string>
-	<string name="text_enabled_icons">Иконки включены</string>
-	<string name="text_extension_name_format">Расширение %s</string>
-	<string name="text_favorite_boards">Избранные разделы</string>
-	<string name="text_favorite_threads">Избранные треды</string>
-	<string name="text_files_format">Файлов: %s</string>
-	<plurals name="text_files_exist_format">
-		<item quantity="one">%d файл уже существует.</item>
-		<item quantity="few">%d файла уже существуют.</item>
-		<item quantity="many">%d файлов уже существуют.</item>
-		<item quantity="other">%d файлов уже существуют.</item>
-	</plurals>
-	<string name="text_no_icon">Нет иконки</string>
-	<string name="text_in_thread_format_format">В треде %s</string>
-	<string name="text_keep_current_version">Без обновления</string>
-	<string name="text_links_attachments_format">Вложений-ссылок: %s</string>
-	<string name="text_local_archive">Локальный архив</string>
-	<string name="text_main_application">Основное приложение</string>
-	<string name="text_match_found">Найдено совпадение</string>
-	<string name="text_match_found_format">Найдено совпадение: %s</string>
-	<string name="text_message_data">Данные сообщения</string>
-	<string name="text_my_post">Моё сообщение</string>
-	<string name="text_name">Имя</string>
-	<string name="text_new_post">Новое сообщение</string>
-	<plurals name="text_new_posts_count_format">
-		<item quantity="one">%d новое сообщение</item>
-		<item quantity="few">%d новых сообщения</item>
-		<item quantity="many">%d новых сообщений</item>
-		<item quantity="other">%d новых сообщений</item>
-	</plurals>
-	<plurals name="text_new_posts_count_short_format">
-		<item quantity="one">%d новое</item>
-		<item quantity="few">%d новых</item>
-		<item quantity="many">%d новых</item>
-		<item quantity="other">%d новых</item>
-	</plurals>
-	<string name="text_new_thread">Новый тред</string>
-	<string name="text_no_matches_found">Совпадений не найдено</string>
-	<string name="text_no_thread_information">Нет информации</string>
-	<string name="text_older_7_days">Старше 7 дней</string>
-	<string name="text_only_forum_format">Только %s</string>
-	<string name="text_open_pages">Страницы</string>
-	<string name="text_original_poster">Создатель треда</string>
-	<string name="text_page_format">%d страница</string>
-	<string name="text_pages_count_format">Количество страниц: %d</string>
-	<string name="text_password">Пароль</string>
-	<string name="text_personal_data">Личные данные</string>
-	<string name="text_port">Порт</string>
-	<plurals name="text_posts_per_hour_format">
-		<item quantity="one">%d сообщение в час</item>
-		<item quantity="few">%d сообщения в час</item>
-		<item quantity="many">%d сообщений в час</item>
-		<item quantity="other">%d сообщений в час</item>
-	</plurals>
-	<string name="text_post_sent">Сообщение отправлено</string>
-	<string name="text_posting">Отправка сообщений</string>
-	<string name="text_posts_with_files_format">Сообщений с файлами: %s</string>
-	<string name="text_quality_format">Качество: %d%%</string>
-	<string name="text_rating">Рейтинг</string>
-	<string name="text_read_only">Только чтение</string>
-	<string name="text_reduce_format">Уменьшить: %dx</string>
-	<string name="text_reencode_image">Перекодировать</string>
-	<string name="text_regex">Регулярное выражение</string>
-	<string name="text_rejected_words">Следующие слова отклонены</string>
-	<string name="text_remove_file_name">Удалить имя файла</string>
-	<string name="text_remove_metadata">Стереть метаданные</string>
-	<string name="text_remove_rules">Удалить правила</string>
-	<plurals name="text_replies_count_format">
-		<item quantity="one">%d ответ</item>
-		<item quantity="few">%d ответа</item>
-		<item quantity="many">%d ответов</item>
-		<item quantity="other">%d ответов</item>
-	</plurals>
-	<string name="text_replies_to_format">Ответы на %s</string>
-	<string name="text_sage_description">Не поднимает тред</string>
-	<string name="text_sage_description_infinitive">Не поднимать</string>
-	<string name="text_save_files">Сохранить файлы</string>
-	<string name="text_save_thumbnails">Сохранить миниатюры</string>
-	<string name="text_selected_format">Выделено: %d</string>
-	<string name="text_sent_posts">Отправленные сообщения</string>
-	<plurals name="text_several_files_count_format">
-		<item quantity="one">%d файл</item>
-		<item quantity="few">%d файла</item>
-		<item quantity="many">%d файлов</item>
-		<item quantity="other">%d файлов</item>
-	</plurals>
-	<string name="text_several_forums">Несколько форумов</string>
-	<string name="text_similar_to_format">Похожие на %s</string>
-	<string name="text_since_format">Начиная с %s</string>
-	<string name="text_sort_by_unsorted">Без сортировки</string>
-	<string name="text_sort_by_date">Сортировать по дате создания</string>
-	<string name="text_sort_by_replies">Сортировать по ответам</string>
-	<string name="text_sorting">Сортировка</string>
-	<string name="text_spoiler">Спойлер</string>
-	<string name="text_statistics_posts">Сообщений</string>
-	<string name="text_statistics_threads">Тредов</string>
-	<string name="text_statistics_views">Просмотров</string>
-	<string name="text_sticky_thread">Тред прикреплён</string>
-	<string name="text_subject">Тема</string>
-	<string name="text_test_string">Тестовая строка</string>
-	<string name="text_this_week">Эта неделя</string>
-	<string name="text_thread">Тред</string>
-	<string name="text_thread_files_format">%d с файлами</string>
-	<string name="text_today">Сегодня</string>
-	<string name="text_total">Всего</string>
-	<string name="text_unique_hash">Уникальный хеш</string>
-	<string name="text_unique_posters_format">Уникальных отправителей: %s</string>
-	<string name="text_unsupported_version">Неподдерживаемая версия</string>
-	<string name="text_updates">Обновления</string>
-	<string name="text_updates_format">Обновлений: %d</string>
-	<string name="text_updates_available_format">Доступно обновлений: %d</string>
-	<string name="text_user_banned">Бан</string>
-	<string name="text_user_warned">Предупреждение</string>
-	<string name="text_warning">Предупреждение</string>
-	<string name="text_with_name_format">С именем %s</string>
-	<string name="text_yesterday">Вчера</string>
-
-	<!-- Actions -->
-
-	<string name="action_add_post">Ответить</string>
-	<string name="action_add_to_favorites">Добавить в избранное</string>
-	<string name="action_appearance">Внешний вид</string>
-	<string name="action_archive_add">Архивировать</string>
-	<string name="action_archive_view">Архив</string>
-	<string name="action_attach">Прикрепить</string>
-	<string name="action_auto_refresh">Автообновление</string>
-	<string name="action_block">Блокировать</string>
-	<string name="action_boards">Разделы</string>
-	<string name="action_browser">Браузер</string>
-	<string name="action_catalog">Каталог</string>
-	<string name="action_change_theme">Сменить тему</string>
-	<string name="action_check_on_startup">Проверять при запуске</string>
-	<string name="action_choose">Выбрать</string>
-	<string name="action_clear">Очистить</string>
-	<string name="action_clear_deleted">Очистить удалённые</string>
-	<string name="action_clear_history">Очистить историю</string>
-	<string name="action_copy_email">Копировать email</string>
-	<string name="action_copy_expand">Копировать&#8230;</string>
-	<string name="action_copy_link">Копировать ссылку</string>
-	<string name="action_copy_text">Копировать текст</string>
-	<string name="action_copy_markup">Копировать разметку</string>
-	<string name="action_delete">Удалить</string>
-	<string name="action_details">Подробнее</string>
-	<string name="action_download_file">Загрузить файл</string>
-	<string name="action_download_files">Загрузить файлы</string>
-	<string name="action_expand">Развернуть</string>
-	<string name="action_expanded_screen">Расшир. экран</string>
-	<string name="action_files_only">Только файлы</string>
-	<string name="action_filter">Фильтр</string>
-	<string name="action_gallery">Галерея</string>
-	<string name="action_general_boards">Основные разделы</string>
-	<string name="action_go_to_post">Перейти к сообщению</string>
-	<string name="action_got_it">Ясно</string>
-	<string name="action_group">Группировать</string>
-	<string name="action_hidden_posts">Скрытые сообщения</string>
-	<string name="action_hide">Скрыть</string>
-	<string name="action_hide_expand">Скрыть&#8230;</string>
-	<string name="action_hide_name">Сообщения с таким же именем</string>
-	<string name="action_hide_post">Это сообщение</string>
-	<string name="action_hide_replies">Дерево ответов</string>
-	<string name="action_hide_similar">Похожие сообщения</string>
-	<string name="action_history">История</string>
-	<string name="action_keep_all">Сохранить все</string>
-	<string name="action_load_captcha">Нажмите, чтобы загрузить капчу</string>
-	<string name="action_lock_drawer">Фиксир. панель</string>
-	<string name="action_make_home_page">Сделать домашней</string>
-	<string name="action_make_threadshot">Сделать тредшот</string>
-	<string name="action_technical_info">Технич. информация</string>
-	<string name="action_minimize">Свернуть</string>
-	<string name="action_my_posts">Мои сообщения</string>
-	<string name="action_new_rule">Новое правило</string>
-	<string name="action_new_thread">Новый тред</string>
-	<string name="action_open_thread">Открыть тред</string>
-	<string name="action_open_the_original">Открыть оригинал</string>
-	<string name="action_pages">Страницы</string>
-	<string name="action_pause">Пауза</string>
-	<string name="action_play">Воспроизведение</string>
-	<string name="action_preferences">Настройки</string>
-	<string name="action_quote">Цитировать</string>
-	<string name="action_refresh">Обновить</string>
-	<string name="action_reload">Перезагрузить</string>
-	<string name="action_remove_from_favorites">Удалить из избранного</string>
-	<string name="action_remove_from_history">Удалить из истории</string>
-	<string name="action_rename">Переименовать</string>
-	<string name="action_replace">Заменить</string>
-	<string name="action_reply">Ответить</string>
-	<string name="action_report">Пожаловаться</string>
-	<string name="action_restart">Перезапуск</string>
-	<string name="action_retry">Повторить</string>
-	<string name="action_save">Сохранить</string>
-	<string name="action_search">Поиск</string>
-	<string name="action_search_image">Поиск изображения</string>
-	<string name="action_select">Выделить</string>
-	<string name="action_select_all">Выделить всё</string>
-	<string name="action_send">Отправить</string>
-	<string name="action_sfw_mode">SFW режим</string>
-	<string name="action_share_expand">Отправить&#8230;</string>
-	<string name="action_share_file">Отправить файл</string>
-	<string name="action_share_link">Отправить ссылку</string>
-	<string name="action_share_text">Отправить текст</string>
-	<string name="action_show">Показать</string>
-	<string name="action_show_on_map">Показать на карте</string>
-	<string name="action_show_thumbnail">Показать миниатюру</string>
-	<string name="action_skip">Пропустить</string>
-	<string name="action_spoilers">Спойлеры</string>
-	<string name="action_stop">Стоп</string>
-	<string name="action_summary">Информация</string>
-	<string name="action_thread_options">Опции треда</string>
-	<string name="action_threads_grid">Сетка тредов</string>
-	<string name="action_user_boards">Пользовательские разделы</string>
-	<string name="action_view">Просмотр</string>
-
-	<!-- Messages -->
-
-	<string name="message_archive_too_often_error">Нельзя архивировать так часто</string>
-	<string name="message_banned">Вы заблокированы</string>
-	<string name="message_board_not_exist">Раздел не существует</string>
-	<string name="message_cache_unavailable">Кэш недоступен</string>
-	<string name="message_can_skip_captcha">Вам не нужно вводить капчу</string>
-	<string name="message_captcha_expired">Истёк срок действия капчи</string>
-	<string name="message_captcha_not_valid">Неправильная капча</string>
-	<string name="message_captcha_pass_allowed">Доступен пропуск капчи</string>
-	<string name="message_clear_deleted_posts_warning">Удалённые сообщение будут удалены навсегда.</string>
-	<string name="message_clear_deleted_threads_warning">Будут удалены следующие треды:</string>
-	<string name="message_clear_history_confirm">Очистить историю?</string>
-	<string name="message_clearing">Очистка&#8230;</string>
-	<string name="message_comment_too_short">Комментарий слишком короткий</string>
-	<string name="message_confirm_archivation">Подтвердите архивирование.</string>
-	<string name="message_confirm_deletion">Подтвердите удаление.</string>
-	<string name="message_confirm_reporting">Подтвердите жалобу.</string>
-	<string name="message_connect_timeout">Время ожидания соединения истекло</string>
-	<string name="message_connection_reset">Соединение сброшено</string>
-	<string name="message_completed">Завершено</string>
-	<string name="message_delete_too_new_error">Нельзя удалять новые сообщения</string>
-	<string name="message_delete_too_old_error">Нельзя удалять старые сообщения</string>
-	<string name="message_delete_too_often_error">Нельзя удалять сообщения так часто</string>
-	<string name="message_download_completed">Загрузка завершена</string>
-	<string name="message_download_confirmation">Необходимо подтверждение</string>
-	<string name="message_download_count_format">Загрузка %1$d из %2$d</string>
-	<string name="message_download_audio">Загрузка аудио</string>
-	<string name="message_download_error">Ошибка при загрузке данных</string>
-	<string name="message_download_result_format">Успешно: %1$d, не загружено: %2$d</string>
-	<string name="message_download_name_format">Файл %s</string>
-	<string name="message_download_not_loaded">Не загружено</string>
-	<string name="message_download_manager_error">Диспетчер загрузки недоступен</string>
-	<string name="message_download_pending">Ожидание загрузки</string>
-	<string name="message_draft_saved">Черновик сохранён</string>
-	<string name="message_edited_posts">Есть изменённые сообщения</string>
-	<string name="message_empty_file">Необходимо прикрепить файл</string>
-	<string name="message_empty_gallery">Галерея пуста</string>
-	<string name="message_empty_history">История пуста</string>
-	<string name="message_empty_response">Пустой ответ сервера</string>
-	<string name="message_enter_valid_data">Введите корректные данные</string>
-	<string name="message_extension_error">Ошибка расширения</string>
-	<string name="message_extension_trust_request">Разрешить этому расширению управление приложением?</string>
-	<string name="message_field_too_long">Превышение лимита полей</string>
-	<plurals name="message_file_attach_error_format">
-		<item quantity="one">Не удалось прикрепить %d файл</item>
-		<item quantity="few">Не удалось прикрепить %d файла</item>
-		<item quantity="many">Не удалось прикрепить %d файлов</item>
-		<item quantity="other">Не удалось прикрепить %d файлов</item>
-	</plurals>
-	<string name="message_file_exists">Повторные файлы запрещены</string>
-	<string name="message_file_not_support">Формат файла не поддерживается</string>
-	<string name="message_file_playback">Воспроизведение файла</string>
-	<string name="message_files_limit_reached">Достигнут лимит файлов</string>
-	<string name="message_files_too_big">Вложения слишком большие</string>
-	<string name="message_files_too_many">Слишком много вложений</string>
-	<string name="message_hide_default_name_error">Нельзя скрыть имя по умолчанию</string>
-	<string name="message_image_corrupted">Изображение повреждено</string>
-	<string name="message_image_out_of_memory">Недостаточно памяти для обработки изображения</string>
-	<string name="message_image_warning">Данное изображение содержит следующие данные: %s.</string>
-	<string name="message_image_warning_exif">метаданные Exif</string>
-	<string name="message_image_warning_orientation">ориентацию</string>
-	<string name="message_image_warning_geolocation">геолокацию</string>
-	<string name="message_incorrect_password">Неправильный пароль</string>
-	<string name="message_invalid_authorization_data">Некорректные данные авторизации</string>
-	<string name="message_invalid_certificate">Недостоверный сертификат</string>
-	<string name="message_invalid_data_format">Некорректный формат данных</string>
-	<string name="message_invalid_response">Некорректный ответ сервера</string>
-	<string name="message_insufficient_space">Недостаточно места на утройстве</string>
-	<string name="message_loading">Загрузка&#8230;</string>
-	<string name="message_new_password">Сгенерирован новый пароль</string>
-	<string name="message_no_access">Нет доступа</string>
-	<string name="message_no_access_to_memory">Нет доступа к памяти</string>
-	<string name="message_no_available_updates">Нет доступных обновлений</string>
-	<string name="message_no_backups">Резервных копий не найдено</string>
-	<string name="message_no_extensions">Не установлено ни одного расширения!</string>
-	<string name="message_no_rules">Правила не заданы</string>
-	<string name="message_not_found">Не найдено</string>
-	<string name="message_open_chan_confirm_confirm">Перейти на %s?</string>
-	<string name="message_open_link_confirm">Перейти по ссылке?</string>
-	<string name="message_open_posts_confirm">Открыть тред?</string>
-	<string name="message_open_search_confirm">Перейти к поиску?</string>
-	<string name="message_open_threads_confirm">Перейти к списку тредов?</string>
-	<string name="message_packages_installed">Были установлены новые расширения. Необходим перезапуск.</string>
-	<string name="message_page_not_exist_format">%d страница не существует</string>
-	<string name="message_playback_error">Ошибка воспроизведения</string>
-	<string name="message_post_not_found">Сообщение не найдено</string>
-	<string name="message_posting_too_fast">Нельзя отправлять так часто</string>
-	<string name="message_press_again_to_exit">Нажмите ещё раз, чтобы выйти</string>
-	<string name="message_processing_data">Обработка данных&#8230;</string>
-	<string name="message_read_timeout">Время ожидания приёма истекло</string>
-	<string name="message_relay_block">Не удалось обойти DDoS-защиту</string>
-	<string name="message_relay_block_format">Ваш IP-адрес заблокирован %s. Введите капчу,
-		чтобы пройти проверку.</string>
-	<string name="message_report_sent">Жалоба успешно отправлена</string>
-	<string name="message_report_too_often_error">Нельзя жаловаться так часто</string>
-	<string name="message_request_sent">Запрос успешно отправлен</string>
-	<string name="message_save_completed">Сохранение завершено</string>
-	<string name="message_search_completed">Поиск завершён</string>
-	<string name="message_sending">Отправка&#8230;</string>
-	<string name="message_sending_index_format">Отправка %1$d из %2$d&#8230;</string>
-	<string name="message_showcase_context_menu">Контекстное меню\nИспользуйте долгое нажатие
-		для отображения контекстного меню.</string>
-	<string name="message_showcase_gallery">Галерея\nСмахните изображение вниз
-		для доступа к галерее изображений.</string>
-	<string name="message_spam_list">Сообщение отклонено</string>
-	<string name="message_ssl_error">Ошибка SSL/HTTPS</string>
-	<string name="message_subject_too_short">Тема слишком короткая</string>
-	<string name="message_thread_closed">Тред закрыт</string>
-	<string name="message_thread_not_exist">Тред не существует</string>
-	<string name="message_too_few_meaningful_words">Слишком мало значащих слов</string>
-	<string name="message_tripcode_warning">В данном разделе отключены трипкоды. Пароль будет отправлен в чистом виде
-		без преобразования в трипкод.</string>
-	<string name="message_uninstall_reminder">Изменения вступят в силу после перезапуска приложения.</string>
-	<string name="message_unknown_address">Неизвестный адрес</string>
-	<string name="message_unknown_error">Произошла неизвестная ошибка</string>
-	<string name="message_unsafe_redirect">Небезопасное перенаправление</string>
-	<string name="message_unsupported_recaptcha">Данная reCAPTCHA не поддерживается</string>
-	<string name="message_unsupported_scheme">Схема не поддерживается</string>
-	<string name="message_update_reminder">Прогресс загрузки можно отследить в панели уведомлений.\n\nВы можете
-		установить приложения после окончания загрузки.\n\nНе забудьте перезапустить клиент после
-		установки расширений!</string>
-	<string name="message_validation_completed">Проверка завершена</string>
-
-	<!-- Preferences -->
-
-	<string name="preference_header_about">О программе</string>
-	<string name="preference_header_autohide">Автоскрытие</string>
-	<string name="preference_header_contents">Содержимое</string>
-	<string name="preference_header_favorites">Избранное</string>
-	<string name="preference_header_forum">Форум</string>
-	<string name="preference_header_forums">Форумы</string>
-	<string name="preference_header_general">Общие</string>
-	<string name="preference_header_interface">Интерфейс</string>
-
-	<string name="preference_category_additional">Дополнительно</string>
-	<string name="preference_category_auto_refreshing">Автообновление тредов</string>
-	<string name="preference_category_connection">Соединение</string>
-	<string name="preference_category_downloading">Загрузка</string>
-	<string name="preference_category_images">Изображения</string>
-	<string name="preference_category_navigation">Навигация</string>
-	<string name="preference_category_navigation_drawer">Панель навигации</string>
-	<string name="preference_category_posts">Список сообщений</string>
-	<string name="preference_category_services">Сервисы</string>
-	<string name="preference_category_submission">Форма отправки</string>
-	<string name="preference_category_threads">Список тредов</string>
-	<string name="preference_category_video_player">Видеоплеер</string>
-	<string name="preference_category_watcher">Отслеживание избранного</string>
-
-	<string-array name="preference_generic_network_choices">
-		<item>Всегда</item>
-		<item>Через Wi-Fi или 3G+</item>
-		<item>Только через Wi-Fi</item>
-		<item>Никогда</item>
-	</string-array>
-
-	<string name="preference_active_scrollbar">Активная полоса прокрутки</string>
-	<string name="preference_advanced_search">Расширенный поиск</string>
-	<string name="preference_advanced_search_summary">Искать по словам и фразам в кавычках</string>
-	<string name="preference_advanced_search_message">Расширенный поиск позволяет искать по словам или фразам,
+	<string name="about">О программе</string>
+	<string name="action_on_playback_completion">Действие при завершении воспроизведения</string>
+	<string name="active_scrollbar">Активная полоса прокрутки</string>
+	<string name="add_thread_on_reply">Добавлять тред при ответе</string>
+	<string name="add_to_bottom__imperfective">Добавлять в конец</string>
+	<string name="add_to_favorites">Добавить в избранное</string>
+	<string name="add_to_top__imperfective">Добавлять в начало</string>
+	<string name="additional">Дополнительно</string>
+	<string name="address">Адрес</string>
+	<string name="advanced_search">Расширенный поиск</string>
+	<string name="advanced_search__sentence">Расширенный поиск позволяет искать по словам или фразам,
 		заключённым в кавычки.\n\nВы можете использовать символ \"-\" перед словом или фразой, чтобы исключить её.\n
 		\nВы также можете использовать флаги поиска для фильтрации результатов:\n
 		\n<b>:m</b> — ваши сообщения\n<b>:r</b> — ответы на ваши сообщения\n<b>:a</b> — сообщения с вложениями
 		\n<b>:d</b> — удалённые сообщения\n<b>:e</b> — изменённые сообщения\n<b>:n</b> — новые сообщения
 		\n<b>:op</b> — сообщения создателя треда\n\nФлаги также можно исключить используя символы \":-\".</string>
-	<string name="preference_all_attachments">Все вложения</string>
-	<string name="preference_all_attachments_summary">Показывать миниатюры всех вложений</string>
-	<string name="preference_auto_refresh_mode">Режим автообновления</string>
-	<string-array name="preference_auto_refresh_choices">
-		<item>Раздельный</item>
-		<item>Всегда выключено</item>
-		<item>Всегда включено</item>
-	</string-array>
-	<string name="preference_auto_refresh_interval">Интервал автообновления</string>
-	<string name="preference_auto_refresh_interval_summary_format">Каждые %1$d сек.</string>
-	<string name="preference_backup_data">Резервное копирование данных</string>
-	<string name="preference_backup_data_summary">Сохранение всех настроек, избранного, истории
-		и правил автоскрытия</string>
-	<string-array name="preference_backup_data_choices">
-		<item>Сохранить данные</item>
-		<item>Восстановить данные</item>
-	</string-array>
-	<string name="preference_captcha">Тип капчи</string>
-	<string name="preference_captcha_pass">Пропуск капчи</string>
-	<string name="preference_captcha_pass_summary">Код для пропуска капчи</string>
-	<string name="preference_changelog">Список изменений</string>
-	<string name="preference_check_for_updates">Проверить наличие обновлений</string>
-	<string name="preference_cache_size">Размер кэша</string>
-	<string name="preference_clear_cache">Очистить кэш</string>
-	<string-array name="preference_clear_cache_choices">
-		<item>Миниатюры</item>
-		<item>Кэшированные файлы</item>
-		<item>Старые треды</item>
-		<item>Все треды</item>
-	</string-array>
-	<string name="preference_close_on_back">Закрытие страниц</string>
-	<string name="preference_close_on_back_summary">Закрывать страницы нажатием кнопки \"Назад\"</string>
-	<string name="preference_cut_thumbnails">Обрезать миниатюры</string>
-	<string name="preference_cut_thumbnails_summary">Миниатюры будут заполнять квадрат</string>
-	<string name="preference_default_board_name">Раздел по умолчанию</string>
-	<string name="preference_display_hidden_threads">Выводить скрытые треды</string>
-	<string name="preference_display_icons">Показывать иконки сообщений</string>
-	<string name="preference_display_icons_summary">Иконки доступны в некоторых разделах</string>
-	<string name="preference_domain">Доменное имя</string>
-	<string name="preference_domain_another">Другой</string>
-	<string name="preference_download_detail_name">Подробное имя файла</string>
-	<string name="preference_download_detail_name_summary">Загружать файлы с номером треда в названии</string>
-	<string name="preference_download_directory">Директория загрузки</string>
-	<string name="preference_download_original_name">Исходное имя файла</string>
-	<string name="preference_download_original_name_summary">Загружать файлы с исходным названием, если
-		это возможно</string>
-	<string name="preference_download_path">Путь загрузки</string>
-	<string name="preference_download_subdir">Диалог конфигурации загрузки</string>
-	<string-array name="preference_download_subdir_choices">
-		<item>Никогда</item>
-		<item>При множественной загрузке</item>
-		<item>Всегда</item>
-	</string-array>
-	<string name="preference_drawer_initial_position">Начальное положение</string>
-	<string-array name="preference_drawer_initial_position_choices">
-		<item>Закрыта</item>
-		<item>Избранное</item>
-		<item>Форумы</item>
-	</string-array>
-	<string name="preference_favorite_on_reply">Добавлять тред при ответе</string>
-	<string name="preference_favorites_order">Сортировка избранных тредов</string>
-	<string-array name="preference_favorites_order_choices">
-		<item>Добавлять в начало</item>
-		<item>Добавлять в конец</item>
-		<item>Сортировать по заголовку</item>
-	</string-array>
-	<string name="preference_hide_personal_data">Скрыть блок личных данных</string>
-	<string name="preference_highlight_unread">Подсвечивать непрочитанное</string>
-	<string-array name="preference_highlight_unread_choices">
-		<item>Скрывать со временем</item>
-		<item>Скрывать при нажатии</item>
-		<item>Не подсвечивать</item>
-	</string-array>
-	<string name="preference_huge_captcha">Большая капча</string>
-	<string name="preference_internal_browser">Встроенный браузер</string>
-	<string name="preference_internal_browser_sumamry">Открывать внешние ссылки во встроенном браузере</string>
-	<string name="preference_licenses">Лицензии FOSS</string>
-	<string name="preference_licenses_summary">Сведения о лицензиях на свободное ПО и
-		ПО с открытым исходным кодом</string>
-	<string name="preference_load_catalog">Загружать каталог</string>
-	<string name="preference_load_catalog_summary">При открытии списка тредов будет загружен каталог</string>
-	<string name="preference_load_nearest_image">Загружать ближайшее изображение</string>
-	<string name="preference_load_thumbnails">Загружать миниатюры</string>
-	<string name="preference_locale">Язык</string>
-	<string name="preference_manage_cookies">Управление куки</string>
-	<string name="preference_merge_chans">Объединить страницы</string>
-	<string name="preference_merge_chans_summary">Отображать страницы для всех форумов</string>
-	<string name="preference_notify_download_complete">Уведомлять о завершении загрузки</string>
-	<string name="preference_notify_download_complete_summary">Будет показано всплывающее уведомление</string>
-	<string name="preference_page_by_page">Постраничное перелистывание раздела</string>
-	<string name="preference_page_by_page_summary">Не использовать длинный список тредов</string>
-	<string name="preference_pages_list">Порядок категорий</string>
-	<string-array name="preference_pages_list_choices">
-		<item>Сначала страницы</item>
-		<item>Сначала избранное</item>
-		<item>Скрывать страницы</item>
-	</string-array>
-	<string name="preference_partial_thread_loading">Частичная загрузка тредов</string>
-	<string name="preference_partial_thread_loading_summary">Загрузка новых сообщений вместо
-		всего треда целиком</string>
-	<string name="preference_password_for_removal">Пароль для удаления</string>
-	<string name="preference_password_for_removal_summary">Используется при отправке и удалении сообщений</string>
-	<string name="preference_post_max_lines">Максимальное число строк</string>
-	<string name="preference_post_max_lines_summary">Сообщения будут обрезаны, если число строк превышает
+	<string name="advanced_search__summary">Искать по словам и фразам в кавычках</string>
+	<string name="all_attachments">Все вложения</string>
+	<string name="all_attachments__summary">Показывать миниатюры всех вложений</string>
+	<string name="all_forums">Все форумы</string>
+	<string name="all_posts">Все сообщения</string>
+	<string name="all_threads">Все треды</string>
+	<string name="allow_this_extension__sentence">Разрешить этому расширению управление приложением?</string>
+	<string name="always">Всегда</string>
+	<string name="always_disabled">Всегда выключено</string>
+	<string name="always_enabled">Всегда включено</string>
+	<string name="another">Другой</string>
+	<string name="appearance">Внешний вид</string>
+	<string name="application_name_update__format">Обновление %s</string>
+	<string name="archive">Архив</string>
+	<string name="archive__verb">Архивировать</string>
+	<string name="attach">Прикрепить</string>
+	<string name="attachments_are_too_large">Вложения слишком большие</string>
+	<string name="audio_playback">Воспроизведение аудио</string>
+	<string name="audio_player">Аудиоплеер</string>
+	<string name="auto_disable">Отключать автоматически</string>
+	<string name="auto_disable__summary">Отключать отслеживание для удалённых тредов</string>
+	<string name="auto_refreshing">Автообновление</string>
+	<string name="auto_refreshing_mode">Режим автообновления</string>
+	<string name="autohide">Автоскрытие</string>
+	<string name="backup_data">Резервное копирование данных</string>
+	<string name="backup_data__summary">Сохранение всех настроек, избранного, истории и правил автоскрытия</string>
+	<string name="backups_not_found">Резервных копий не найдено</string>
+	<string name="ban_id">ID бана</string>
+	<string name="block">Блокировать</string>
+	<string name="board">Раздел</string>
+	<string name="board_code">Код раздела</string>
+	<string name="board_doesnt_exist">Раздел не существует</string>
+	<string name="boards">Разделы</string>
+	<string name="build_version">Версия сборки</string>
+	<string name="bump_limit_posts__colon_format">Бамплимит: %d сообщений</string>
+	<string name="cache_is_unavailable">Кэш недоступен</string>
+	<string name="cache_size">Размер кэша</string>
+	<string name="cached_files">Кэшированные файлы</string>
+	<string name="captcha">Капча</string>
+	<string name="captcha_expired">Истёк срок действия капчи</string>
+	<string name="captcha_is_not_required">Капча не требуется</string>
+	<string name="captcha_is_not_valid">Неправильная капча</string>
+	<string name="captcha_pass">Пропуск капчи</string>
+	<string name="captcha_pass__summary">Код для пропуска капчи</string>
+	<string name="captcha_pass_is_allowed">Доступен пропуск капчи</string>
+	<string name="captcha_type">Тип капчи</string>
+	<string name="catalog">Каталог</string>
+	<string name="change_theme">Сменить тему</string>
+	<string name="changelog">Список изменений</string>
+	<string name="changes_after_restart__sentence">Изменения вступят в силу после перезапуска приложения.</string>
+	<string name="check_for_updates">Проверить наличие обновлений</string>
+	<string name="check_on_startup">Проверять при запуске</string>
+	<string name="choose">Выбрать</string>
+	<string name="clear">Очистить</string>
+	<string name="clear_cache">Очистить кэш</string>
+	<string name="clear_deleted">Очистить удалённые</string>
+	<string name="clear_history">Очистить историю</string>
+	<string name="clear_history__sentence">Очистить историю?</string>
+	<string name="clearing__ellipsis">Очистка…</string>
+	<string name="close_pages">Закрытие страниц</string>
+	<string name="close_pages__summary">Закрывать страницы нажатием кнопки \"Назад\"</string>
+	<string name="closed">Закрыто</string>
+	<string name="code_number_address">Код, номер, адрес</string>
+	<string name="comment">Комментарий</string>
+	<string name="comment_is_too_short">Комментарий слишком короткий</string>
+	<string name="completed">Завершено</string>
+	<string name="completed_downloads">Завершённые загрузки</string>
+	<string name="configuration">Конфигурация</string>
+	<string name="confirm_archivation__sentence">Подтвердите архивирование.</string>
+	<string name="confirm_deleting__sentence">Подтвердите удаление.</string>
+	<string name="confirm_reporting__sentence">Подтвердите жалобу.</string>
+	<string name="confirmation">Подтверждение</string>
+	<string name="confirmation_is_required">Необходимо подтверждение</string>
+	<string name="connect_timeout_expired">Время ожидания соединения истекло</string>
+	<string name="connection">Соединение</string>
+	<string name="connection_was_reset">Соединение сброшено</string>
+	<string name="contents">Содержимое</string>
+	<string name="context_menu">Контекстное меню</string>
+	<string name="context_menu_description__sentence">Используйте долгое нажатие для отображения
+		контекстного меню.</string>
+	<string name="copy__ellipsis">Копировать…</string>
+	<string name="copy_email">Копировать email</string>
+	<string name="copy_link">Копировать ссылку</string>
+	<string name="copy_markup">Копировать разметку</string>
+	<string name="copy_text">Копировать текст</string>
+	<string name="crop_thumbnails">Обрезать миниатюры</string>
+	<string name="crop_thumbnails__summary">Миниатюры будут заполнять квадрат</string>
+	<string name="cyclical_thread">Цикличный тред</string>
+	<string name="ddos_protection_bypass_failed">Не удалось обойти DDoS-защиту</string>
+	<string name="default_name_cant_be_hidden">Нельзя скрыть имя по умолчанию</string>
+	<string name="default_starting_board">Раздел по умолчанию</string>
+	<string name="delete">Удалить</string>
+	<string name="deleted_posts_will_be_deleted__sentence">Удалённые сообщение будут удалены навсегда.</string>
+	<string name="description">Описание</string>
+	<string name="detailed_file_name">Подробное имя файла</string>
+	<string name="detailed_file_name__summary">Загружать файлы с номером треда в названии</string>
+	<string name="details">Подробнее</string>
+	<string name="display_hidden_threads">Выводить скрытые треды</string>
+	<string name="display_post_icons">Показывать иконки сообщений</string>
+	<string name="display_post_icons__summary">Иконки доступны в некоторых разделах</string>
+	<string name="do_nothing">Ничего не делать</string>
+	<string name="doesnt_bring_up_thread">Не поднимает тред</string>
+	<string name="domain_name">Доменное имя</string>
+	<string name="dont_bring_up">Не поднимать</string>
+	<string name="download_completed">Загрузка завершена</string>
+	<string name="download_directory">Директория загрузки</string>
+	<string name="download_file">Загрузить файл</string>
+	<string name="download_files">Загрузить файлы</string>
+	<string name="download_manager_is_not_available">Диспетчер загрузки недоступен</string>
+	<string name="download_path">Путь загрузки</string>
+	<string name="downloading_audio">Загрузка аудио</string>
+	<string name="downloading_number_of_number__format">Загрузка %1$d из %2$d</string>
+	<string name="downloads">Загрузки</string>
+	<string name="draft_saved">Черновик сохранён</string>
+	<string name="empty_response">Пустой ответ сервера</string>
+	<string name="enter_valid_data">Введите корректные данные</string>
+	<string name="every_number_sec__format">Каждые %d сек.</string>
+	<string name="exif_metadata">Метаданные Exif</string>
+	<string name="expand">Развернуть</string>
+	<string name="expanded_screen">Расшир. экран</string>
+	<string name="expires">Истекает</string>
+	<string name="extension_error">Ошибка расширения</string>
+	<string name="extension_name__format">Расширение %s</string>
+	<string name="favorite_boards">Избранные разделы</string>
+	<string name="favorite_threads">Избранные треды</string>
+	<string name="favorite_threads_order">Сортировка избранных тредов</string>
+	<string name="favorites">Избранное</string>
+	<string name="favorites_first">Сначала избранное</string>
+	<string name="favorites_watcher">Отслеживание избранного</string>
+	<string name="fields_limit_exceeded">Превышение лимита полей</string>
+	<string name="file_format_is_not_supported">Формат файла не поддерживается</string>
+	<string name="file_name__format">Файл %s</string>
+	<string name="filed_on">Выдан</string>
+	<string name="files__genitive">Файлов</string>
+	<string name="files_limit_reached">Достигнут лимит файлов</string>
+	<string name="files_only">Только файлы</string>
+	<string name="filter">Фильтр</string>
+	<string name="find_in_comments">Искать в комментариях</string>
+	<string name="find_in_names">Искать в именах</string>
+	<string name="find_in_subjects">Искать в темах</string>
+	<string name="flags_are_enabled">Флаги включены</string>
+	<string name="follow_the_link__sentence">Перейти по ссылке?</string>
+	<string name="forum">Форум</string>
+	<string name="forum_code">Код форума</string>
+	<string name="forum_only__format">Только %s</string>
+	<string name="forum_title">Название форума</string>
+	<string name="forums">Форумы</string>
+	<string name="foss_licenses">Лицензии FOSS</string>
+	<string name="foss_licenses__summary">Сведения о лицензиях на свободное ПО и ПО с открытым исходным кодом</string>
+	<string name="gallery">Галерея</string>
+	<string name="gallery_description__sentence">Смахните изображение вниз для доступа к галерее изображений.</string>
+	<string name="gallery_is_empty">Галерея пуста</string>
+	<string name="general">Общие</string>
+	<string name="general_boards">Основные разделы</string>
+	<string name="geolocation">Геолокация</string>
+	<string name="go_to_post">Перейти к сообщению</string>
+	<string name="go_to_search__sentence">Перейти к поиску?</string>
+	<string name="go_to_threads_list__sentence">Перейти к списку тредов?</string>
+	<string name="got_it">Ясно</string>
+	<string name="group">Группировать</string>
+	<string name="headers_order">Порядок категорий</string>
+	<string name="hidden_posts">Скрытые сообщения</string>
+	<string name="hide">Скрыть</string>
+	<string name="hide__ellipsis">Скрыть…</string>
+	<string name="hide_eventually__imperfective">Скрывать со временем</string>
+	<string name="hide_on_tap__imperfective">Скрывать при нажатии</string>
+	<string name="hide_pages">Скрывать страницы</string>
+	<string name="hide_personal_data_block">Скрыть блок личных данных</string>
+	<string name="highlight_unread_posts">Подсвечивать непрочитанное</string>
+	<string name="history">История</string>
+	<string name="history_is_empty">История пуста</string>
+	<string name="huge_captcha">Большая капча</string>
+	<string name="icons_are_enabled">Иконки включены</string>
+	<string name="image_contains_data__format_sentence">Данное изображение содержит следующие данные: %s.</string>
+	<string name="image_is_corrupted">Изображение повреждено</string>
+	<string name="images">Изображения</string>
+	<string name="images_are_disabled">Картинки отключены</string>
+	<string name="in_thread_number__format">В треде %s</string>
+	<string name="incorrect_password">Неправильный пароль</string>
+	<string name="initial_position">Начальное положение</string>
+	<string name="insufficient_device_space">Недостаточно места на утройстве</string>
+	<string name="internal_browser">Встроенный браузер</string>
+	<string name="internal_browser__sumamry">Открывать внешние ссылки во встроенном браузере</string>
+	<string name="invalid_authorization_data">Некорректные данные авторизации</string>
+	<string name="invalid_certificate">Недостоверный сертификат</string>
+	<string name="invalid_data_format">Некорректный формат данных</string>
+	<string name="invalid_server_response">Некорректный ответ сервера</string>
+	<string name="keep_all">Сохранить все</string>
+	<string name="keep_current_version">Без обновления</string>
+	<string name="language">Язык</string>
+	<string name="links_attachments__genitive">Вложений-ссылок</string>
+	<string name="load_captcha">Загрузить капчу</string>
+	<string name="load_catalog">Загружать каталог</string>
+	<string name="load_catalog__summary">При открытии списка тредов будет загружен каталог</string>
+	<string name="load_nearest_image">Загружать ближайшее изображение</string>
+	<string name="load_thumbnails">Загружать миниатюры</string>
+	<string name="loading__ellipsis">Загрузка…</string>
+	<string name="local_archive">Локальный архив</string>
+	<string name="lock_navigation">Фиксир. панель</string>
+	<string name="main_application">Основное приложение</string>
+	<string name="make_home_page">Сделать домашней</string>
+	<string name="make_threadshot">Сделать тредшот</string>
+	<string name="manage_cookies">Управление куки</string>
+	<string name="match_found">Найдено совпадение</string>
+	<string name="max_lines_count">Максимальное число строк</string>
+	<string name="max_lines_count__summary">Сообщения будут обрезаны, если число строк превышает
 		заданное значение</string>
-	<string name="preference_proxy">Прокси</string>
-	<string name="preference_remember_history">Запоминать историю</string>
-	<string name="preference_recaptcha_javascript">Использ. JavaScript для reCAPTCHA</string>
-	<string name="preference_recaptcha_javascript_summary">Упрощение капчи, предоставляемой сервисом
-		Google reCAPTCHA</string>
-	<string name="preference_scroll_thread_gallery">Прокручивать тред из галереи</string>
-	<string name="preference_statistics">Статистика</string>
-	<string name="preference_subdirectory_pattern">Шаблон подкаталога</string>
-	<string-array name="preference_subdirectory_pattern_descriptions">
-		<item>код форума</item>
-		<item>название форума</item>
-		<item>код раздела</item>
-		<item>идентификатор треда</item>
-		<item>заголовок треда</item>
-		<item>опционально</item>
-	</string-array>
-	<string name="preference_text_scale">Масштаб текста</string>
-	<string name="preference_text_scale_summary_format">Масштаб: %d%%</string>
-	<string name="preference_thumbnails_scale">Масштаб превью</string>
-	<string name="preference_thumbnails_scale_summary_format">Масштаб: %d%%</string>
-	<string name="preference_uninstall_extension">Удалить расширение</string>
-	<string name="preference_use_gms_provider">Использ. постав. безопасности GMS</string>
-	<string name="preference_use_gms_provider_summary">Необходим перезапуск</string>
-	<string name="preference_use_https">Защищённое соединение</string>
-	<string name="preference_use_https_summary">Использовать протокол HTTPS</string>
-	<string name="preference_use_https_warning">Следующая опция является частной для некоторых сервисов, таких как капчи
-		и обновление приложения. Вы можете настроить HTTPS для форумов в их собственных категориях.</string>
-	<string name="preference_use_video_player">Использовать встроенный видеоплеер</string>
-	<string name="preference_use_video_player_summary">Воспроизводить вложенные WebM видео</string>
-	<string name="preference_use_video_player_warning">Для работы видеоплеера необходимо установить
+	<string name="merge_pages">Объединить страницы</string>
+	<string name="merge_pages__summary">Отображать страницы для всех форумов</string>
+	<string name="message_data">Данные сообщения</string>
+	<string name="minimize">Свернуть</string>
+	<string name="multiple_forums">Несколько форумов</string>
+	<string name="my_post">Моё сообщение</string>
+	<string name="my_posts">Мои сообщения</string>
+	<string name="name">Имя</string>
+	<string name="names_are_disabled">Имена отключены</string>
+	<string name="navigation">Навигация</string>
+	<string name="navigation_drawer">Панель навигации</string>
+	<string name="never">Никогда</string>
+	<string name="never_highlight">Не подсвечивать</string>
+	<string name="new_extensions_installed__sentence">Были установлены новые расширения. Необходим перезапуск.</string>
+	<string name="new_password_was_generated">Сгенерирован новый пароль</string>
+	<string name="new_post">Новое сообщение</string>
+	<string name="new_rule">Новое правило</string>
+	<string name="new_thread">Новый тред</string>
+	<string name="no_access">Нет доступа</string>
+	<string name="no_access_to_memory">Нет доступа к памяти</string>
+	<string name="no_available_updates">Нет доступных обновлений</string>
+	<string name="no_enough_memory_to_handle_image">Недостаточно памяти для обработки изображения</string>
+	<string name="no_extensions_installed">Не установлено ни одного расширения</string>
+	<string name="no_icon">Нет иконки</string>
+	<string name="no_information">Нет информации</string>
+	<string name="no_matches_found">Совпадений не найдено</string>
+	<string name="no_rules_defined">Правила не заданы</string>
+	<string name="not_downloaded">Не загружено</string>
+	<string name="not_found">Не найдено</string>
+	<string name="notify_when_download_is_completed">Уведомлять о завершении загрузки</string>
+	<string name="notify_when_download_is_completed__summary">Будет показано всплывающее уведомление</string>
+	<plurals name="number_deleted__format">
+		<item quantity="one">%d удалён</item>
+		<item quantity="few">%d удалено</item>
+		<item quantity="many">%d удалено</item>
+		<item quantity="other">%d удалено</item>
+	</plurals>
+	<plurals name="number_files__format">
+		<item quantity="one">%d файл</item>
+		<item quantity="few">%d файла</item>
+		<item quantity="many">%d файлов</item>
+		<item quantity="other">%d файлов</item>
+	</plurals>
+	<plurals name="number_files_already_exist__sentence_format">
+		<item quantity="one">%d файл уже существует.</item>
+		<item quantity="few">%d файла уже существуют.</item>
+		<item quantity="many">%d файлов уже существуют.</item>
+		<item quantity="other">%d файлов уже существуют.</item>
+	</plurals>
+	<plurals name="number_files_havent_been_attached__format">
+		<item quantity="one">Не удалось прикрепить %d файл</item>
+		<item quantity="few">Не удалось прикрепить %d файла</item>
+		<item quantity="many">Не удалось прикрепить %d файлов</item>
+		<item quantity="other">Не удалось прикрепить %d файлов</item>
+	</plurals>
+	<plurals name="number_new__format">
+		<item quantity="one">%d новое</item>
+		<item quantity="few">%d новых</item>
+		<item quantity="many">%d новых</item>
+		<item quantity="other">%d новых</item>
+	</plurals>
+	<plurals name="number_new_posts__format">
+		<item quantity="one">%d новое сообщение</item>
+		<item quantity="few">%d новых сообщения</item>
+		<item quantity="many">%d новых сообщений</item>
+		<item quantity="other">%d новых сообщений</item>
+	</plurals>
+	<string name="number_page__format">%d страница</string>
+	<string name="number_page_doesnt_exist__format">%d страница не существует</string>
+	<plurals name="number_posts_per_hour__format">
+		<item quantity="one">%d сообщение в час</item>
+		<item quantity="few">%d сообщения в час</item>
+		<item quantity="many">%d сообщений в час</item>
+		<item quantity="other">%d сообщений в час</item>
+	</plurals>
+	<plurals name="number_replies__format">
+		<item quantity="one">%d ответ</item>
+		<item quantity="few">%d ответа</item>
+		<item quantity="many">%d ответов</item>
+		<item quantity="other">%d ответов</item>
+	</plurals>
+	<string name="number_with_files__format">%d с файлами</string>
+	<string name="old_threads">Старые треды</string>
+	<string name="older_than_seven_days">Старше 7 дней</string>
+	<string name="on_multiple_downloading">При множественной загрузке</string>
+	<string name="only_original_posts">Только исходные сообщения</string>
+	<string name="only_posts_with_sage">Только сообщения с sage</string>
+	<string name="open_forum__format_sentence">Перейти на %s?</string>
+	<string name="open_original">Открыть оригинал</string>
+	<string name="open_pages__noun">Страницы</string>
+	<string name="open_thread">Открыть тред</string>
+	<string name="open_thread__sentence">Открыть тред?</string>
+	<string name="optional_part">Опционально</string>
+	<string name="order_by_title">Сортировать по заголовку</string>
+	<string name="orientation">Ориентация</string>
+	<string name="original_file_name">Исходное имя файла</string>
+	<string name="original_file_name__summary">Загружать файлы с исходным названием, если возможно</string>
+	<string name="original_poster">Создатель треда</string>
+	<string name="paged_board_navigation">Постраничное перелистывание раздела</string>
+	<string name="paged_board_navigation__summary">Не использовать длинный список тредов</string>
+	<string name="pages">Страницы</string>
+	<string name="pages_count">Количество страниц</string>
+	<string name="pages_first">Сначала страницы</string>
+	<string name="partial_thread_loading">Частичная загрузка тредов</string>
+	<string name="partial_thread_loading__summary">Загрузка новых сообщений вместо всего треда целиком</string>
+	<string name="password">Пароль</string>
+	<string name="password_for_removal">Пароль для удаления</string>
+	<string name="password_for_removal__summary">Используется при отправке и удалении сообщений</string>
+	<string name="pause">Пауза</string>
+	<string name="pending_downloading">Ожидание загрузки</string>
+	<string name="personal_data">Личные данные</string>
+	<string name="play">Воспроизведение</string>
+	<string name="play_after_scroll">Воспроизвести после прокрутки</string>
+	<string name="play_after_scroll__summary">Не показывать кнопку воспроизведения перед просмотром видео</string>
+	<string name="play_again">Воспроизвести снова</string>
+	<string name="playback_error">Ошибка воспроизведения</string>
+	<string name="port">Порт</string>
+	<string name="post_is_not_found">Сообщение не найдено</string>
+	<string name="post_rejected">Сообщение отклонено</string>
+	<string name="post_sent">Сообщение отправлено</string>
+	<string name="posting">Отправка сообщений</string>
+	<string name="posts">Сообщения</string>
+	<string name="posts_list">Список сообщений</string>
+	<string name="posts_with_files__genitive">Сообщений с файлами</string>
+	<string name="posts_with_same_name">Сообщения с таким же именем</string>
+	<string name="preferences">Настройки</string>
+	<string name="press_again_to_exit">Нажмите ещё раз, чтобы выйти</string>
+	<string name="processing_data__ellipsis">Обработка данных…</string>
+	<string name="proxy">Прокси</string>
+	<string name="quality">Качество</string>
+	<string name="quote__verb">Цитировать</string>
+	<string name="rating">Рейтинг</string>
+	<string name="read_only">Только чтение</string>
+	<string name="read_timeout_expired">Время ожидания приёма истекло</string>
+	<string name="reason">Причина</string>
+	<string name="reduce">Уменьшить: %dx</string>
+	<string name="reencode_image">Перекодировать</string>
+	<string name="refresh">Обновить</string>
+	<string name="refresh_interval">Интервал обновления</string>
+	<string name="refresh_periodically">Обновлять периодически</string>
+	<string name="regular_expression">Регулярное выражение</string>
+	<string name="rejected_words">Отклонённые слова</string>
+	<string name="relay_block__format_sentence">Ваш IP-адрес заблокирован %s. Введите капчу,
+		чтобы пройти проверку.</string>
+	<string name="reload">Перезагрузить</string>
+	<string name="remember_history">Запоминать историю</string>
+	<string name="remove_file_name">Удалить имя файла</string>
+	<string name="remove_from_favorites">Удалить из избранного</string>
+	<string name="remove_from_history">Удалить из истории</string>
+	<string name="remove_metadata">Стереть метаданные</string>
+	<string name="remove_rules">Удалить правила</string>
+	<string name="rename">Переименовать</string>
+	<string name="repeated_files_are_prohibited">Повторные файлы запрещены</string>
+	<string name="replace">Заменить</string>
+	<string name="replies_to_number__format">Ответы на %s</string>
+	<string name="replies_tree">Дерево ответов</string>
+	<string name="reply">Ответить</string>
+	<string name="report">Пожаловаться</string>
+	<string name="request_has_been_sent_successfully">Запрос успешно отправлен</string>
+	<string name="requires_decoding_libraries__sentence">Для работы видеоплеера необходимо установить
 		библиотеки декодирования.</string>
-	<string name="preference_user_authorization">Авторизация пользователя</string>
-	<string name="preference_verify_certificate">Проверять сертификат</string>
-	<string name="preference_verify_certificate_summary">Соединение будет разорвано, если сертификат
-		не достоверен</string>
-	<string name="preference_version">Версия сборки</string>
-	<string name="preference_video_completion">Действие при завершении воспроизведения</string>
-	<string-array name="preference_video_completion_choices">
-		<item>Ничего не делать</item>
-		<item>Воспроизвести снова</item>
-	</string-array>
-	<string name="preference_video_play_after_scroll">Воспроизвести после прокрутки</string>
-	<string name="preference_video_play_after_scroll_summary">Не показывать кнопку воспроизведения перед
-		просмотром видео</string>
-	<string name="preference_video_seek_any_frame">Перемотка к любому кадру</string>
-	<string name="preference_video_seek_any_frame_summary">Повышенная точность при меньшей производительности</string>
-	<string name="preference_watcher_auto_disable">Отключать автоматически</string>
-	<string name="preference_watcher_auto_disable_summary">Отключать отслеживание для удалённых тредов</string>
-	<string name="preference_watcher_refresh_interval">Интервал обновления</string>
-	<string name="preference_watcher_refresh_interval_summary_format">Проверять каждые %1$d сек.</string>
-	<string name="preference_watcher_refresh_periodically">Обновлять периодически</string>
-	<string name="preference_watcher_watch_initially">Отслеживать изначально</string>
-	<string name="preference_watcher_watch_initially_summary">Включать отслеживание сразу при добавлении
-		в избранное</string>
-	<string name="preference_watcher_wifi_only">Только через Wi-Fi</string>
+	<string name="requires_restart">Необходим перезапуск</string>
+	<string name="restart">Перезапуск</string>
+	<string name="restore_data">Восстановить данные</string>
+	<string name="retry">Повторить</string>
+	<string name="sage_is_disabled">Sage отключено</string>
+	<string name="save">Сохранить</string>
+	<string name="save_completed">Сохранение завершено</string>
+	<string name="save_data">Сохранить данные</string>
+	<string name="save_files">Сохранить файлы</string>
+	<string name="save_thumbnails">Сохранить миниатюры</string>
+	<string name="save_to_directory__format">Сохранить в \"%s\"</string>
+	<string name="save_to_subdirectory">Сохранить в подкаталоге</string>
+	<string name="scale">Масштаб</string>
+	<string name="scheme_is_not_supported">Схема не поддерживается</string>
+	<string name="scroll_thread_when_scrolling_gallery">Прокручивать тред из галереи</string>
+	<string name="search">Поиск</string>
+	<string name="search_completed">Поиск завершён</string>
+	<string name="search_image">Поиск изображения</string>
+	<string name="secure_connection">Защищённое соединение</string>
+	<string name="secure_connection__summary">Использовать протокол HTTPS</string>
+	<string name="seek_any_frame">Перемотка к любому кадру</string>
+	<string name="seek_any_frame__summary">Повышенная точность при меньшей производительности</string>
+	<string name="select">Выделить</string>
+	<string name="select_all">Выделить всё</string>
+	<string name="select_where_to_save">Выберите путь сохранения</string>
+	<string name="selected">Выбрано</string>
+	<string name="send">Отправить</string>
+	<string name="sending__ellipsis">Отправка…</string>
+	<string name="sending_number_of_number__ellipsis_format">Отправка %1$d из %2$d…</string>
+	<string name="sent_posts">Отправленные сообщения</string>
+	<string name="separate__adjective">Раздельный</string>
+	<string name="services">Сервисы</string>
+	<string name="sfw_mode">SFW режим</string>
+	<string name="share__ellipsis">Отправить…</string>
+	<string name="share_file">Отправить файл</string>
+	<string name="share_link">Отправить ссылку</string>
+	<string name="share_text">Отправить текст</string>
+	<string name="show">Показать</string>
+	<string name="show_download_configuration_dialog">Диалог конфигурации загрузки</string>
+	<string name="show_on_map">Показать на карте</string>
+	<string name="show_thumbnail">Показать миниатюру</string>
+	<string name="similar_posts">Похожие сообщения</string>
+	<string name="similar_to_number__format">Похожие на %s</string>
+	<string name="since_date__format">Начиная с %s</string>
+	<string name="skip">Пропустить</string>
+	<string name="some_posts_have_been_edited">Есть изменённые сообщения</string>
+	<string name="sort_by_date_created">Сортировать по дате создания</string>
+	<string name="sort_by_replies">Сортировать по ответам</string>
+	<string name="sorting">Сортировка</string>
+	<string name="specific_to_internal_services__sentence">Следующая опция является частной для некоторых сервисов,
+		таких как капчи и обновление приложения. Вы можете настроить HTTPS для форумов в соответствующих
+		категориях настроек.</string>
+	<string name="speed">Скорость</string>
+	<string name="spoiler">Спойлер</string>
+	<string name="spoilers">Спойлеры</string>
+	<string name="ssl_https_error">Ошибка SSL/HTTPS</string>
+	<string name="statistics">Статистика</string>
+	<string name="sticky_thread">Тред прикреплён</string>
+	<string name="stop">Стоп</string>
+	<string name="subdirectory_pattern">Шаблон подкаталога</string>
+	<string name="subject">Тема</string>
+	<string name="subject_is_too_short">Тема слишком короткая</string>
+	<string name="subjects_are_disabled">Темы отключены</string>
+	<string name="submission_form">Форма отправки</string>
+	<string name="success_number_not_loaded_number__format">Успешно: %1$d, не загружено: %2$d</string>
+	<string name="summary">Информация</string>
+	<string name="technical_info">Технич. информация</string>
+	<string name="test_string">Тестовая строка</string>
+	<string name="text_scale">Масштаб текста</string>
+	<string name="this_post">Это сообщение</string>
+	<string name="this_recaptcha_is_not_supported">Данная reCAPTCHA не поддерживается</string>
+	<string name="this_week">Эта неделя</string>
+	<string name="thread">Тред</string>
+	<string name="thread_doesnt_exist">Тред не существует</string>
+	<string name="thread_is_closed">Тред закрыт</string>
+	<string name="thread_number">Номер треда</string>
+	<string name="thread_options">Опции треда</string>
+	<string name="thread_title">Заголовок треда</string>
+	<string name="threads">Треды</string>
+	<string name="threads_auto_refreshing">Автообновление тредов</string>
+	<string name="threads_grid">Сетка тредов</string>
+	<string name="threads_list">Список тредов</string>
+	<string name="threads_will_be_deleted__sentence">Будут удалены следующие треды.</string>
+	<string name="thumbnail_scale">Масштаб превью</string>
+	<string name="thumbnails">Миниатюры</string>
+	<string name="today">Сегодня</string>
+	<string name="too_few_meaningful_words">Слишком мало значащих слов</string>
+	<string name="too_many_attachments">Слишком много вложений</string>
+	<string name="total">Всего</string>
+	<string name="tripcode_disabled_warning__sentence">В данном разделе отключены трипкоды. Пароль будет отправлен
+		в чистом виде без преобразования в трипкод.</string>
+	<string name="tripcodes_are_disabled">Трипкоды отключены</string>
+	<string name="unable_to_download_data">Ошибка при загрузке данных</string>
+	<string name="uninstall_extension">Удалить расширение</string>
+	<string name="unique_hash">Уникальный хеш</string>
+	<string name="unique_posters__genitive">Уникальных отправителей</string>
+	<string name="unknown_address">Неизвестный адрес</string>
+	<string name="unknown_error">Неизвестная ошибка</string>
+	<string name="unsafe_redirect">Небезопасное перенаправление</string>
+	<string name="unsorted">Без сортировки</string>
+	<string name="unsupported_version">Неподдерживаемая версия</string>
+	<string name="update_reminder__sentence">Прогресс загрузки можно отследить в панели уведомлений.\n\nВы можете
+		установить приложения после окончания загрузки.\n\nНе забудьте перезапустить клиент после
+		установки расширений!</string>
+	<string name="updates">Обновления</string>
+	<string name="updates__genitive">Обновлений</string>
+	<string name="updates_available__genitive">Доступно обновлений</string>
+	<string name="use_built_in_video_player">Использовать встроенный видеоплеер</string>
+	<string name="use_built_in_video_player__summary">Воспроизводить вложенные WebM видео</string>
+	<string name="use_gms_security_provider">Использ. постав. безопасности GMS</string>
+	<string name="use_javascript_for_recaptcha">Использ. JavaScript для reCAPTCHA</string>
+	<string name="use_javascript_for_recaptcha__summary">Google reCAPTCHA может быть упрощена</string>
+	<string name="user_authorization">Авторизация пользователя</string>
+	<string name="user_boards">Пользовательские разделы</string>
+	<string name="user_interface">Интерфейс</string>
+	<string name="user_is_banned">Пользователь забанен</string>
+	<string name="user_is_warned">Пользователь предупреждён</string>
+	<string name="validation_completed">Проверка завершена</string>
+	<string name="verify_certificate">Проверять сертификат</string>
+	<string name="verify_certificate__summary">Соединение будет разорвано, если сертификат не достоверен</string>
+	<string name="video_player">Видеоплеер</string>
+	<string name="view__verb">Просмотреть</string>
+	<string name="views">Просмотры</string>
+	<string name="warning">Предупреждение</string>
+	<string name="watch_initially">Отслеживать изначально</string>
+	<string name="watch_initially__summary">Включать отслеживание сразу при добавлении в избранное</string>
+	<string name="web_browser">Браузер</string>
+	<string name="wifi_only">Только через Wi-Fi</string>
+	<string name="wifi_or_3g_plus">Через Wi-Fi или 3G+</string>
+	<string name="with_name_name__format">С именем %s</string>
+	<string name="yesterday">Вчера</string>
+	<string name="you_are_banned">Вы заблокированы</string>
+	<string name="you_cant_delete_too_new_posts">Нельзя удалять новые сообщения</string>
+	<string name="you_cant_delete_too_old_posts">Нельзя удалять старые сообщения</string>
+	<string name="you_cant_send_too_often">Нельзя отправлять так часто</string>
+	<string name="you_need_to_attach_a_file">Необходимо прикрепить файл</string>
 
 </resources>

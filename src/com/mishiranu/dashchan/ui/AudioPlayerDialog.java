@@ -140,7 +140,7 @@ public class AudioPlayerDialog extends DialogFragment {
 		});
 		AlertDialog dialog = new AlertDialog.Builder(context)
 				.setView(linearLayout)
-				.setPositiveButton(R.string.action_stop, (d, w) -> {
+				.setPositiveButton(R.string.stop, (d, w) -> {
 					if (audioPlayerBinder != null) {
 						audioPlayerBinder.stop();
 					}

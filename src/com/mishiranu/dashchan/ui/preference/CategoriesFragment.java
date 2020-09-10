@@ -25,31 +25,31 @@ public class CategoriesFragment extends PreferenceFragment {
 		boolean hasChan = chanNames.hasNext();
 		String singleChanName = hasChan ? chanNames.next() : null;
 		boolean hasMultipleChans = hasChan && chanNames.hasNext();
-		addCategory(R.string.preference_header_general)
+		addCategory(R.string.general)
 				.setOnClickListener(p -> ((FragmentHandler) requireActivity())
 						.pushFragment(new GeneralFragment()));
 		if (hasMultipleChans) {
-			addCategory(R.string.preference_header_forums)
+			addCategory(R.string.forums)
 					.setOnClickListener(p -> ((FragmentHandler) requireActivity())
 							.pushFragment(new ChansFragment()));
 		} else if (hasChan) {
-			addCategory(R.string.preference_header_forum)
+			addCategory(R.string.forum)
 					.setOnClickListener(p -> ((FragmentHandler) requireActivity())
 							.pushFragment(new ChanFragment(singleChanName)));
 		}
-		addCategory(R.string.preference_header_interface)
+		addCategory(R.string.user_interface)
 				.setOnClickListener(p -> ((FragmentHandler) requireActivity())
 						.pushFragment(new InterfaceFragment()));
-		addCategory(R.string.preference_header_contents)
+		addCategory(R.string.contents)
 				.setOnClickListener(p -> ((FragmentHandler) requireActivity())
 						.pushFragment(new ContentsFragment()));
-		addCategory(R.string.preference_header_favorites)
+		addCategory(R.string.favorites)
 				.setOnClickListener(p -> ((FragmentHandler) requireActivity())
 						.pushFragment(new FavoritesFragment()));
-		addCategory(R.string.preference_header_autohide)
+		addCategory(R.string.autohide)
 				.setOnClickListener(p -> ((FragmentHandler) requireActivity())
 						.pushFragment(new AutohideFragment()));
-		addCategory(R.string.preference_header_about)
+		addCategory(R.string.about)
 				.setOnClickListener(p -> ((FragmentHandler) requireActivity())
 						.pushFragment(new AboutFragment()));
 	}
@@ -57,6 +57,6 @@ public class CategoriesFragment extends PreferenceFragment {
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.action_preferences), null);
+		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.preferences), null);
 	}
 }

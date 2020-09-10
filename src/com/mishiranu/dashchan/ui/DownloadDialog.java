@@ -204,7 +204,7 @@ public class DownloadDialog {
 			}
 		});
 		view.<RadioButton>findViewById(R.id.download_common)
-				.setText(context.getString(R.string.text_download_to_format, root.getName()));
+				.setText(context.getString(R.string.save_to_directory__format, root.getName()));
 
 		Adapter adapter = new Adapter(root, () -> {
 			if (editText.isEnabled()) {
@@ -214,7 +214,7 @@ public class DownloadDialog {
 		editText.setAdapter(adapter);
 
 		AlertDialog dialog = new AlertDialog.Builder(context)
-				.setTitle(R.string.text_download_title)
+				.setTitle(R.string.select_where_to_save)
 				.setView(view)
 				.setNegativeButton(android.R.string.cancel, (d, w) -> callback.resolve(choiceRequest, null))
 				.setPositiveButton(android.R.string.ok, (d, w) -> handleChoiceResolve(choiceRequest,
@@ -273,12 +273,13 @@ public class DownloadDialog {
 		linearLayout.setOrientation(LinearLayout.VERTICAL);
 		linearLayout.setPadding(padding, padding, padding, C.API_LOLLIPOP ? (int) (8f * density) : padding);
 		TextView textView = new TextView(context, null, android.R.attr.textAppearanceListItem);
-		textView.setText(context.getResources().getQuantityString(R.plurals.text_files_exist_format, count, count));
+		textView.setText(context.getResources().getQuantityString
+				(R.plurals.number_files_already_exist__sentence_format, count, count));
 		linearLayout.addView(textView);
 
 		final RadioGroup radioGroup = new RadioGroup(context);
 		radioGroup.setOrientation(RadioGroup.VERTICAL);
-		int[] options = {R.string.action_replace, R.string.action_keep_all, R.string.action_skip};
+		int[] options = {R.string.replace, R.string.keep_all, R.string.skip};
 		int[] ids = {android.R.id.button1, android.R.id.button2, android.R.id.button3};
 		for (int i = 0; i < options.length; i++) {
 			RadioButton radioButton = new RadioButton(context);
@@ -313,7 +314,7 @@ public class DownloadDialog {
 
 		AlertDialog dialog;
 		if (replaceRequest.exists == 1) {
-			builder.setNeutralButton(R.string.action_view, null);
+			builder.setNeutralButton(R.string.view__verb, null);
 			dialog = builder.create();
 			final DataFile singleFile = replaceRequest.lastExistingFile;
 			dialog.setOnShowListener(d -> dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v -> {
@@ -333,7 +334,7 @@ public class DownloadDialog {
 						context.startActivity(new Intent(Intent.ACTION_VIEW).setDataAndType(uri, type)
 								.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION));
 					} catch (ActivityNotFoundException e) {
-						ToastUtils.show(context, R.string.message_unknown_address);
+						ToastUtils.show(context, R.string.unknown_address);
 					}
 				}
 			}));
@@ -348,7 +349,7 @@ public class DownloadDialog {
 	private ProgressDialog createPrepare(DownloadService.PrepareRequest prepareRequest,
 			ProgressDialog.OnDismissListener onDismissListener) {
 		ProgressDialog dialog = new ProgressDialog(context, null);
-		dialog.setMessage(context.getString(R.string.message_processing_data));
+		dialog.setMessage(context.getString(R.string.processing_data__ellipsis));
 		dialog.setButton(ProgressDialog.BUTTON_NEGATIVE, context.getString(android.R.string.cancel),
 				(d, w) -> callback.cancel(prepareRequest));
 		dialog.setOnCancelListener(d -> callback.cancel(prepareRequest));

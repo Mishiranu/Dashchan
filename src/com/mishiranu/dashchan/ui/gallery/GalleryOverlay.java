@@ -249,7 +249,7 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 		if (instance.galleryItems.isEmpty()) {
 			View errorView = getLayoutInflater().inflate(R.layout.widget_error, rootView, false);
 			TextView textView = errorView.findViewById(R.id.error_text);
-			textView.setText(R.string.message_empty_gallery);
+			textView.setText(R.string.gallery_is_empty);
 			rootView.addView(errorView);
 		} else {
 			if (savedInstanceState != null && savedInstanceState.containsKey(EXTRA_GALLERY_MODE)) {
@@ -351,13 +351,13 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 
 	@Override
 	public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-		menu.add(0, R.id.menu_save, 0, R.string.action_save)
+		menu.add(0, R.id.menu_save, 0, R.string.save)
 				.setIcon(ResourceUtils.getActionBarIcon(instance.context, R.attr.iconActionSave))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-		menu.add(0, R.id.menu_refresh, 0, R.string.action_refresh)
+		menu.add(0, R.id.menu_refresh, 0, R.string.refresh)
 				.setIcon(ResourceUtils.getActionBarIcon(instance.context, R.attr.iconActionRefresh))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-		menu.add(0, R.id.menu_select, 0, R.string.action_select)
+		menu.add(0, R.id.menu_select, 0, R.string.select)
 				.setIcon(ResourceUtils.getActionBarIcon(instance.context, R.attr.iconActionSelect))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 	}
@@ -478,8 +478,8 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 		listUnit.switchMode(galleryMode, duration);
 		if (galleryMode) {
 			int count = instance.galleryItems.size();
-			getDialog().setTitleSubtitle(getString(R.string.action_gallery), getResources()
-					.getQuantityString(R.plurals.text_several_files_count_format, count, count));
+			getDialog().setTitleSubtitle(getString(R.string.gallery), getResources()
+					.getQuantityString(R.plurals.number_files__format, count, count));
 			titleSubtitle = null;
 		}
 		modifySystemUiVisibility(GalleryInstance.FLAG_LOCKED_GRID, galleryMode);
@@ -743,7 +743,7 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 				FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
 
 		Button button = new Button(context, null, android.R.attr.borderlessButtonStyle);
-		button.setText(R.string.action_got_it);
+		button.setText(R.string.got_it);
 		button.setMinimumWidth(0);
 		button.setMinWidth(0);
 
@@ -752,16 +752,16 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 		int paddingTop = button.getPaddingTop();
 		int paddingBottom = Math.max(0, (int) (24f * density) - paddingTop);
 
-		int[] messages = {R.string.message_showcase_context_menu, R.string.message_showcase_gallery};
+		int[] titles = {R.string.context_menu, R.string.gallery};
+		int[] messages = {R.string.context_menu_description__sentence, R.string.gallery_description__sentence};
 
-		for (int resId : messages) {
-			String[] message = getString(resId).split("\n");
+		for (int i = 0; i < titles.length; i++) {
 			TextView textView1 = new TextView(context, null, android.R.attr.textAppearanceLarge);
-			textView1.setText(message.length > 0 ? message[0] : null);
+			textView1.setText(titles[i]);
 			textView1.setTypeface(GraphicsUtils.TYPEFACE_LIGHT);
 			textView1.setPadding(paddingLeft, paddingTop, paddingRight, (int) (4f * density));
 			TextView textView2 = new TextView(context, null, android.R.attr.textAppearanceSmall);
-			textView2.setText(message.length > 1 ? message[1] : null);
+			textView2.setText(messages[i]);
 			textView2.setPadding(paddingLeft, 0, paddingRight, paddingBottom);
 			linearLayout.addView(textView1, LinearLayout.LayoutParams.MATCH_PARENT,
 					LinearLayout.LayoutParams.WRAP_CONTENT);

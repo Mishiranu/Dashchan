@@ -115,115 +115,115 @@ public final class ApiException extends Exception {
 		int resId = 0;
 		switch (errorType) {
 			case ApiException.SEND_ERROR_NO_BOARD: {
-				resId = R.string.message_board_not_exist;
+				resId = R.string.board_doesnt_exist;
 				break;
 			}
 			case ApiException.SEND_ERROR_NO_THREAD: {
-				resId = R.string.message_thread_not_exist;
+				resId = R.string.thread_doesnt_exist;
 				break;
 			}
 			case ApiException.SEND_ERROR_NO_ACCESS: {
-				resId = R.string.message_no_access;
+				resId = R.string.no_access;
 				break;
 			}
 			case ApiException.SEND_ERROR_CAPTCHA: {
-				resId = R.string.message_captcha_not_valid;
+				resId = R.string.captcha_is_not_valid;
 				break;
 			}
 			case ApiException.SEND_ERROR_BANNED: {
-				resId = R.string.message_banned;
+				resId = R.string.you_are_banned;
 				break;
 			}
 			case ApiException.SEND_ERROR_CLOSED: {
-				resId = R.string.message_thread_closed;
+				resId = R.string.thread_is_closed;
 				break;
 			}
 			case ApiException.SEND_ERROR_TOO_FAST: {
-				resId = R.string.message_posting_too_fast;
+				resId = R.string.you_cant_send_too_often;
 				break;
 			}
 			case ApiException.SEND_ERROR_FIELD_TOO_LONG: {
-				resId = R.string.message_field_too_long;
+				resId = R.string.fields_limit_exceeded;
 				break;
 			}
 			case ApiException.SEND_ERROR_FILE_EXISTS: {
-				resId = R.string.message_file_exists;
+				resId = R.string.repeated_files_are_prohibited;
 				break;
 			}
 			case ApiException.SEND_ERROR_FILE_NOT_SUPPORTED: {
-				resId = R.string.message_file_not_support;
+				resId = R.string.file_format_is_not_supported;
 				break;
 			}
 			case ApiException.SEND_ERROR_FILE_TOO_BIG: {
-				resId = R.string.message_files_too_big;
+				resId = R.string.attachments_are_too_large;
 				break;
 			}
 			case ApiException.SEND_ERROR_FILES_TOO_MANY: {
-				resId = R.string.message_files_too_many;
+				resId = R.string.too_many_attachments;
 				break;
 			}
 			case ApiException.SEND_ERROR_SPAM_LIST: {
-				resId = R.string.message_spam_list;
+				resId = R.string.post_rejected;
 				break;
 			}
 			case ApiException.SEND_ERROR_EMPTY_FILE: {
-				resId = R.string.message_empty_file;
+				resId = R.string.you_need_to_attach_a_file;
 				break;
 			}
 			case ApiException.SEND_ERROR_EMPTY_SUBJECT: {
-				resId = R.string.message_subject_too_short;
+				resId = R.string.subject_is_too_short;
 				break;
 			}
 			case ApiException.SEND_ERROR_EMPTY_COMMENT: {
-				resId = R.string.message_comment_too_short;
+				resId = R.string.comment_is_too_short;
 				break;
 			}
 			case ApiException.SEND_ERROR_FILES_LIMIT: {
-				resId = R.string.message_files_limit_reached;
+				resId = R.string.files_limit_reached;
 				break;
 			}
 			case ApiException.DELETE_ERROR_NO_ACCESS: {
-				resId = R.string.message_no_access;
+				resId = R.string.no_access;
 				break;
 			}
 			case ApiException.DELETE_ERROR_PASSWORD: {
-				resId = R.string.message_incorrect_password;
+				resId = R.string.incorrect_password;
 				break;
 			}
 			case ApiException.DELETE_ERROR_NOT_FOUND: {
-				resId = R.string.message_not_found;
+				resId = R.string.not_found;
 				break;
 			}
 			case ApiException.DELETE_ERROR_TOO_NEW: {
-				resId = R.string.message_delete_too_new_error;
+				resId = R.string.you_cant_delete_too_new_posts;
 				break;
 			}
 			case ApiException.DELETE_ERROR_TOO_OLD: {
-				resId = R.string.message_delete_too_old_error;
+				resId = R.string.you_cant_delete_too_old_posts;
 				break;
 			}
 			case ApiException.DELETE_ERROR_TOO_OFTEN: {
-				resId = R.string.message_delete_too_often_error;
+				resId = R.string.you_cant_send_too_often;
 				break;
 			}
 			case ApiException.REPORT_ERROR_NO_ACCESS: {
-				resId = R.string.message_no_access;
+				resId = R.string.no_access;
 				break;
 			}
 			case ApiException.REPORT_ERROR_TOO_OFTEN: {
-				resId = R.string.message_report_too_often_error;
+				resId = R.string.you_cant_send_too_often;
 				break;
 			}
 			case ApiException.REPORT_ERROR_EMPTY_COMMENT: {
-				resId = R.string.message_comment_too_short;
+				resId = R.string.comment_is_too_short;
 				break;
 			}
 			case ApiException.ARCHIVE_ERROR_NO_ACCESS: {
-				resId = R.string.message_no_access;
+				resId = R.string.no_access;
 				break;
 			}
 			case ApiException.ARCHIVE_ERROR_TOO_OFTEN: {
-				resId = R.string.message_archive_too_often_error;
+				resId = R.string.you_cant_send_too_often;
 				break;
 			}
 		}

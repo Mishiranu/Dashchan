@@ -118,10 +118,10 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 		if (C.API_OREO) {
 			NotificationChannel channelDownloading =
 					new NotificationChannel(C.NOTIFICATION_CHANNEL_DOWNLOADING,
-							getString(R.string.text_downloads), NotificationManager.IMPORTANCE_LOW);
+							getString(R.string.downloads), NotificationManager.IMPORTANCE_LOW);
 			NotificationChannel channelDownloadingComplete =
 					new NotificationChannel(C.NOTIFICATION_CHANNEL_DOWNLOADING_COMPLETE,
-							getString(R.string.text_completed_downloads), NotificationManager.IMPORTANCE_HIGH);
+							getString(R.string.completed_downloads), NotificationManager.IMPORTANCE_HIGH);
 			channelDownloadingComplete.setSound(null, null);
 			channelDownloadingComplete.setVibrationPattern(new long[0]);
 			notificationManager.createNotificationChannel(channelDownloading);
@@ -563,7 +563,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 
 		public void onPermissionResult(boolean granted) {
 			if (!granted) {
-				ToastUtils.show(DownloadService.this, R.string.message_no_access_to_memory);
+				ToastUtils.show(DownloadService.this, R.string.no_access_to_memory);
 				cleanupRequests();
 			}
 			handleRequests();
@@ -620,7 +620,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 								.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION)
 								.setDataAndType(uri, type));
 					} catch (ActivityNotFoundException e) {
-						ToastUtils.show(DownloadService.this, R.string.message_unknown_address);
+						ToastUtils.show(DownloadService.this, R.string.unknown_address);
 					}
 				};
 				Pair<File, Uri> fileOrUri = file.getFileOrUri();
@@ -919,7 +919,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 				case RESULT: {
 					if (notificationData.allowRetry) {
 						builder.addAction(C.API_LOLLIPOP ? 0 : R.drawable.ic_action_refresh_dark,
-								getString(R.string.action_retry), PendingIntent.getBroadcast(this, 0,
+								getString(R.string.retry), PendingIntent.getBroadcast(this, 0,
 										new Intent(this, Receiver.class).setAction(ACTION_RETRY),
 										PendingIntent.FLAG_UPDATE_CURRENT));
 					}
@@ -945,8 +945,8 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 				int ready = notificationData.errorTasks + notificationData.successTasks;
 				int total = ready + notificationData.queuedTasks + 1;
 				ready++;
-				contentTitle = getString(R.string.message_download_count_format, ready, total);
-				contentText = getString(R.string.message_download_name_format, notificationData.activeName);
+				contentTitle = getString(R.string.downloading_number_of_number__format, ready, total);
+				contentText = getString(R.string.file_name__format, notificationData.activeName);
 				headsUp = false;
 				foreground = true;
 				builder.setProgress(notificationData.progressMax, notificationData.progress,
@@ -956,16 +956,16 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 			}
 			case RESULT: {
 				contentTitle = getString(notificationData.hasNotFromCache
-						? R.string.message_download_completed : R.string.message_save_completed);
-				contentText = getString(R.string.message_download_result_format,
+						? R.string.download_completed : R.string.save_completed);
+				contentText = getString(R.string.success_number_not_loaded_number__format,
 						notificationData.successTasks, notificationData.errorTasks);
 				headsUp = notificationData.allowHeadsUp;
 				foreground = false;
 				break;
 			}
 			case REQUEST: {
-				contentTitle = getString(R.string.message_download_pending);
-				contentText = getString(R.string.message_download_confirmation);
+				contentTitle = getString(R.string.pending_downloading);
+				contentText = getString(R.string.confirmation_is_required);
 				headsUp = false;
 				foreground = true;
 				break;

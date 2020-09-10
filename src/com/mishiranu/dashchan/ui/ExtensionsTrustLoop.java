@@ -35,7 +35,7 @@ public class ExtensionsTrustLoop {
 		ChanManager.ExtensionItem extensionItem = ChanManager.getInstance().getFirstUntrustedExtension();
 		if (extensionItem != null) {
 			SpannableStringBuilder message = new SpannableStringBuilder();
-			message.append(context.getString(R.string.message_extension_trust_request));
+			message.append(context.getString(R.string.allow_this_extension__sentence));
 			message.append("\n\n");
 			SpannableStringBuilder packageName = new SpannableStringBuilder(extensionItem.packageName);
 			int index = -1;
@@ -75,7 +75,7 @@ public class ExtensionsTrustLoop {
 						ChanManager.getInstance().changeUntrustedExtensionState(extensionItem.extensionName, false);
 						handleUntrustedExtensions(context, configurationLock);
 					})
-					.setNeutralButton(R.string.action_details, (d, w) -> {
+					.setNeutralButton(R.string.details, (d, w) -> {
 						context.startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
 								.setData(Uri.parse("package:" + extensionItem.packageName)));
 						handleUntrustedExtensions(context, configurationLock);

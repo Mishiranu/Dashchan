@@ -161,7 +161,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 						number = false;
 					}
 					groupItems.add(new ListItem(null, MainApplication.getInstance()
-							.getString(R.string.text_in_thread_format_format,
+							.getString(R.string.in_thread_number__format,
 									number ? "#" + threadNumber : threadNumber)));
 					int ordinalIndex = 0;
 					for (ListItem listItem : entry.getValue()) {

@@ -54,7 +54,7 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
 		width = parent.getWidth();
 		background = ThemeEngine.getColorScheme(parent.getContext()).windowBackgroundColor;
 		dialog = new ProgressDialog(parent.getContext(), null);
-		dialog.setMessage(parent.getContext().getString(R.string.message_processing_data));
+		dialog.setMessage(parent.getContext().getString(R.string.processing_data__ellipsis));
 		dialog.setOnCancelListener(this);
 		uiManager.getConfigurationLock().lockConfiguration(dialog);
 		dialog.show();
@@ -126,7 +126,7 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
 						chanName, boardName, threadNumber, threadTitle,
 						"threadshot-" + System.currentTimeMillis() + ".png", true));
 			} else {
-				ToastUtils.show(parent.getContext(), R.string.message_unknown_error);
+				ToastUtils.show(parent.getContext(), R.string.unknown_error);
 			}
 		}
 	};

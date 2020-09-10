@@ -1,471 +1,408 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-	<!-- Text -->
-
-	<string name="text_address">Endereço</string>
-	<string name="text_app_name_update">%s atualizações</string>
-	<string name="text_all_posts">Todos os posts</string>
-	<string name="text_autohide_comment">Encontre nas mensagens</string>
-	<string name="text_autohide_name">Encontre no nome</string>
-	<string name="text_autohide_original_post">Somente OP</string>
-	<string name="text_autohide_sage">Só posts com sage</string>
-	<string name="text_autohide_subject">Encontre nos assuntos</string>
-	<string name="text_ban_id_format">Ban ID: %s</string>
-	<string name="text_ban_start_date_format">Desde: %s</string>
-	<string name="text_ban_expires_format">Até: %s</string>
-	<string name="text_ban_expires_never">nunca</string>
-	<string name="text_ban_reason_format">Razão: %s</string>
-	<string name="text_board">Board</string>
-	<string name="text_board_speed_format">Velocidade: %s</string>
-	<string name="text_bump_limit_format">Limite de bump: %d posts</string>
-	<string name="text_captcha">Captcha</string>
-	<string name="text_closed_thread">Fio fechado</string>
-	<string name="text_code_number_address">Código, número, endereço</string>
-	<string name="text_configuration">Configuração</string>
-	<string name="text_confirmation">Confirmação</string>
-	<string name="text_cyclical_thread">Fio cíclico</string>
-	<plurals name="text_deleted_count_format">
+	<string name="about">Informações</string>
+	<string name="action_on_playback_completion">Quando terminar de reproduzir</string>
+	<string name="active_scrollbar">Barra de rolagem ativa</string>
+	<string name="add_thread_on_reply">Adcione o fio ao responder</string>
+	<string name="add_to_favorites">Adcionar ao favoritos</string>
+	<string name="additional">Adcional</string>
+	<string name="address">Endereço</string>
+	<string name="all_attachments">Todos os anexos</string>
+	<string name="all_attachments__summary">Exibir miniaturas para todos os anexos</string>
+	<string name="all_posts">Todos os posts</string>
+	<string name="all_threads">Todos of fios</string>
+	<string name="always">Sempre</string>
+	<string name="always_disabled">Sempre disabilitado</string>
+	<string name="always_enabled">Sempre habilitado</string>
+	<string name="another">Outro</string>
+	<string name="appearance">Aparência</string>
+	<string name="application_name_update__format">%s atualizações</string>
+	<string name="archive">Arquivo</string>
+	<string name="archive__verb">Arquivo</string>
+	<string name="attach">Anexar</string>
+	<string name="attachments_are_too_large">O arquivo é muito grande</string>
+	<string name="auto_refreshing">Atualizar automaticamente</string>
+	<string name="auto_refreshing_mode">Modo de auto-atualização</string>
+	<string name="autohide">Auto-Esconder</string>
+	<string name="backup_data">Fazer backup de dados</string>
+	<string name="backup_data__summary">Salve todas as suas configurações, favoritos, histórico e regras do
+		autohide</string>
+	<string name="backups_not_found">Nenhum backup encontrado</string>
+	<string name="ban_id">Ban ID</string>
+	<string name="board">Board</string>
+	<string name="board_code">Código da board</string>
+	<string name="board_doesnt_exist">Essa board não existe</string>
+	<string name="boards">Boards</string>
+	<string name="build_version">Versão</string>
+	<string name="bump_limit_posts__colon_format">Limite de bump: %d posts</string>
+	<string name="cache_is_unavailable">Cache não disponível</string>
+	<string name="cached_files">Arquivos em cache</string>
+	<string name="captcha">Captcha</string>
+	<string name="captcha_expired">Captcha expirou</string>
+	<string name="captcha_is_not_valid">Captcha está errada</string>
+	<string name="captcha_pass">Senha do captcha</string>
+	<string name="captcha_pass__summary">Permite ignorar o captcha</string>
+	<string name="captcha_pass_is_allowed">Senha de captcha permitido</string>
+	<string name="captcha_type">Tipo de captcha</string>
+	<string name="catalog">Catálogo</string>
+	<string name="change_theme">Mudar tema</string>
+	<string name="changes_after_restart__sentence">Mudanças só aconteceram quando reiniciar o aplicativo.</string>
+	<string name="check_for_updates">Checar por atualizações</string>
+	<string name="check_on_startup">Checar no startup</string>
+	<string name="choose">Escolher</string>
+	<string name="clear">Limpar</string>
+	<string name="clear_cache">Limpar cache</string>
+	<string name="clear_deleted">Limpado</string>
+	<string name="clear_history">Limpar histórico</string>
+	<string name="clear_history__sentence">Limpar histórico?</string>
+	<string name="clearing__ellipsis">Limpando…</string>
+	<string name="close_pages">Fechar páginas</string>
+	<string name="close_pages__summary">Feche as páginas ao apertar \"Voltar\"</string>
+	<string name="code_number_address">Código, número, endereço</string>
+	<string name="completed">Completo</string>
+	<string name="configuration">Configuração</string>
+	<string name="confirm_archivation__sentence">Confirme a arquivação.</string>
+	<string name="confirm_deleting__sentence">Confirme.</string>
+	<string name="confirm_reporting__sentence">Confirme.</string>
+	<string name="confirmation">Confirmação</string>
+	<string name="connect_timeout_expired">Conexão foi perdida</string>
+	<string name="connection">Conexão</string>
+	<string name="connection_was_reset">Conexão foi reiniciada</string>
+	<string name="contents">Conteúdo</string>
+	<string name="copy__ellipsis">Copiar…</string>
+	<string name="copy_email">Copiar email</string>
+	<string name="copy_link">Copiar link</string>
+	<string name="copy_markup">Copiar remarcação</string>
+	<string name="copy_text">Copiar texto</string>
+	<string name="crop_thumbnails">Cortar miniaturas</string>
+	<string name="crop_thumbnails__summary">Faça miniaturas preencher o quadrado</string>
+	<string name="cyclical_thread">Fio cíclico</string>
+	<string name="default_name_cant_be_hidden">Não pode dar hide no nome padrão</string>
+	<string name="default_starting_board">Board inicial</string>
+	<string name="delete">Deletar</string>
+	<string name="deleted_posts_will_be_deleted__sentence">Posts deletados são deletados permanentemente.</string>
+	<string name="description">Descrição</string>
+	<string name="detailed_file_name">Nome de arquivo detalhado</string>
+	<string name="detailed_file_name__summary">Baixe arquivos com o número do fio no nome</string>
+	<string name="details">Detalhes</string>
+	<string name="display_hidden_threads">Exibir fios escondidos</string>
+	<string name="display_post_icons">Exibirs ícones em algumas boards</string>
+	<string name="display_post_icons__summary">Ícones estão habilitados em algumas boards</string>
+	<string name="do_nothing">Fazer nada</string>
+	<string name="domain_name">Domínio</string>
+	<string name="download_completed">Download completo</string>
+	<string name="download_file">Baixar arquivo</string>
+	<string name="download_files">Baixar arquivos</string>
+	<string name="download_manager_is_not_available">Não carregado</string>
+	<string name="download_path">Local de download</string>
+	<string name="downloading_audio">Baixando áudio</string>
+	<string name="downloading_number_of_number__format">Baixando %1$d de %2$d</string>
+	<string name="empty_response">Resposta vazia</string>
+	<string name="enter_valid_data">Entre dados válidos</string>
+	<string name="every_number_sec__format">A cada %d seg.</string>
+	<string name="expand">Expandir</string>
+	<string name="expanded_screen">Área expandida</string>
+	<string name="expires">Até</string>
+	<string name="extension_error">Erro de extensão</string>
+	<string name="favorite_boards">Boards favoritas</string>
+	<string name="favorite_threads">Fios favoritos</string>
+	<string name="favorite_threads_order">Ordem de favoritos</string>
+	<string name="favorites">Favoritos</string>
+	<string name="favorites_first">Favoritos primeiro</string>
+	<string name="favorites_watcher">Watcher de favoritos</string>
+	<string name="file_format_is_not_supported">Formato de arquivo não suportado</string>
+	<string name="file_name__format">Arquivo %s</string>
+	<string name="files__genitive">Arquivos</string>
+	<string name="files_limit_reached">Limite de arquivos atingido</string>
+	<string name="files_only">Somente arquivos</string>
+	<string name="filter">Filtro</string>
+	<string name="find_in_comments">Encontre nas mensagens</string>
+	<string name="find_in_names">Encontre no nome</string>
+	<string name="find_in_subjects">Encontre nos assuntos</string>
+	<string name="flags_are_enabled">Flags estão habilitados</string>
+	<string name="follow_the_link__sentence">Abrir o link?</string>
+	<string name="forum_code">Código da fórum</string>
+	<string name="forum_only__format">%s somente</string>
+	<string name="forum_title">Título da fórum</string>
+	<string name="gallery">Galeria</string>
+	<string name="gallery_is_empty">Galeria está vazia</string>
+	<string name="general">Geral</string>
+	<string name="general_boards">Boards gerais</string>
+	<string name="go_to_post">Ir ao post</string>
+	<string name="go_to_search__sentence">Procurar?</string>
+	<string name="go_to_threads_list__sentence">Ir para lista de fios?</string>
+	<string name="group">Grupo</string>
+	<string name="hidden_posts">Posts ocultos</string>
+	<string name="hide">Hide</string>
+	<string name="hide__ellipsis">Hide…</string>
+	<string name="hide_eventually__imperfective">Esconder eventualmente</string>
+	<string name="hide_on_tap__imperfective">Esconder ao tocar</string>
+	<string name="hide_pages">Esconder páginas</string>
+	<string name="hide_personal_data_block">Esconder bloco de dados pessoais</string>
+	<string name="highlight_unread_posts">Destacar posts não-lidos</string>
+	<string name="history">Histórico</string>
+	<string name="history_is_empty">Histórico está vazio</string>
+	<string name="huge_captcha">Captcha enorme</string>
+	<string name="icons_are_enabled">Ícones estão habilitados</string>
+	<string name="image_is_corrupted">Imagem corrompida</string>
+	<string name="images_are_disabled">Imagens estão desabilitadas</string>
+	<string name="in_thread_number__format">No fio %s</string>
+	<string name="incorrect_password">Senha incorreta</string>
+	<string name="insufficient_device_space">Sem espaço no dispositivo</string>
+	<string name="internal_browser">Navegador interno</string>
+	<string name="internal_browser__sumamry">Abra link no navegador interno</string>
+	<string name="invalid_authorization_data">Dados de autorização inválidos</string>
+	<string name="invalid_certificate">Certificado inválido</string>
+	<string name="invalid_data_format">Formato de dados inválidos</string>
+	<string name="invalid_server_response">Resposta do servidor inválida</string>
+	<string name="keep_all">Guardar tudo</string>
+	<string name="language">Linguagem</string>
+	<string name="links_attachments__genitive">Anexo do link</string>
+	<string name="load_catalog">Carregar catálogo</string>
+	<string name="load_catalog__summary">Catálogo sempre carregará ao abrir lista de fios</string>
+	<string name="load_thumbnails">Carregar miniaturas</string>
+	<string name="loading__ellipsis">Carregando…</string>
+	<string name="local_archive">Arquivo local</string>
+	<string name="main_application">Aplicação principal</string>
+	<string name="make_home_page">Fazer como página inicial</string>
+	<string name="make_threadshot">Capturar</string>
+	<string name="max_lines_count">Máximo de linhas</string>
+	<string name="max_lines_count__summary">Corte posts longos se passar de um valor pré-determinado</string>
+	<string name="merge_pages">Fundir páginas</string>
+	<string name="message_data">Dados da mensagem</string>
+	<string name="my_post">Meu post</string>
+	<string name="my_posts">Meus posts</string>
+	<string name="name">Nome</string>
+	<string name="names_are_disabled">Nomes estão desabilitados</string>
+	<string name="navigation">Nevegação</string>
+	<string name="never">Nunca</string>
+	<string name="never_highlight">Nunca destacar</string>
+	<string name="new_extensions_installed__sentence">Novas extensões foram instaladas. Reiniciar é mandatório.</string>
+	<string name="new_password_was_generated">Uma nova senha foi gerada</string>
+	<string name="new_post">Responder</string>
+	<string name="new_rule">Nova regra</string>
+	<string name="new_thread">Criar fio</string>
+	<string name="no_access">Acesso negado</string>
+	<string name="no_access_to_memory">Sem acesso a memória</string>
+	<string name="no_available_updates">Não há atualizações</string>
+	<string name="no_enough_memory_to_handle_image">Memória insuficiente para relizar esta ação</string>
+	<string name="no_extensions_installed">Não há extensões instaladas</string>
+	<string name="no_icon">Sem ícone</string>
+	<string name="no_information">Sem informação</string>
+	<string name="no_rules_defined">Não há regras definidas</string>
+	<string name="not_found">Não encontrado</string>
+	<string name="notify_when_download_is_completed">Notificar quando o download acabar</string>
+	<string name="notify_when_download_is_completed__summary">Mostrará notificação \"Heads-Up\" quando completar o
+		download</string>
+	<plurals name="number_deleted__format">
 		<item quantity="one">%d removido</item>
 		<item quantity="other">%d removidos</item>
 	</plurals>
-	<string name="text_description">Descrição</string>
-	<string name="text_disabled_images">Imagens estão desabilitadas</string>
-	<string name="text_disabled_names">Nomes estão desabilitados</string>
-	<string name="text_disabled_sage">Sage está desabilitado</string>
-	<string name="text_disabled_subjects">Assuntos estão desabilitados</string>
-	<string name="text_disabled_tripcodes">Tripcodes estão desabilitados</string>
-	<string name="text_download_title">Salvar aonde?</string>
-	<string name="text_download_to_format">Salvar em \"%s\"</string>
-	<string name="text_download_to_subdirectory">Salve no diretório</string>
-	<string name="text_enabled_flags">Flags estão habilitados</string>
-	<string name="text_enabled_icons">Ícones estão habilitados</string>
-	<string name="text_favorite_boards">Boards favoritas</string>
-	<string name="text_favorite_threads">Fios favoritos</string>
-	<string name="text_files_format">Arquivos: %s</string>
-	<plurals name="text_files_exist_format">
-		<item quantity="one">%d arquivo já existe.</item>
-		<item quantity="other">%d arquivos já existem.</item>
-	</plurals>
-	<string name="text_no_icon">Sem ícone</string>
-	<string name="text_in_thread_format_format">No fio %s</string>
-	<string name="text_links_attachments_format">Anexo do link: %s</string>
-	<string name="text_local_archive">Arquivo local</string>
-	<string name="text_main_application">Aplicação principal</string>
-	<string name="text_message_data">Dados da mensagem</string>
-	<string name="text_my_post">Meu post</string>
-	<string name="text_name">Nome</string>
-	<string name="text_new_post">Responder</string>
-	<plurals name="text_new_posts_count_format">
-		<item quantity="one">%d nova resposta</item>
-		<item quantity="other">%d novas respostas</item>
-	</plurals>
-	<plurals name="text_new_posts_count_short_format">
-		<item quantity="one">%d novo</item>
-		<item quantity="other">%d novos</item>
-	</plurals>
-	<string name="text_new_thread">Criar fio</string>
-	<string name="text_no_thread_information">Sem informação</string>
-	<string name="text_older_7_days">Velho a mais de 7 dias</string>
-	<string name="text_only_forum_format">%s somente</string>
-	<string name="text_open_pages">Páginas abertas</string>
-	<string name="text_original_poster">OP</string>
-	<string name="text_page_format">%d página</string>
-	<string name="text_pages_count_format">Número de páginas: %d</string>
-	<string name="text_password">Senha</string>
-	<string name="text_personal_data">Dados pessoias</string>
-	<string name="text_port">Porta</string>
-	<plurals name="text_posts_per_hour_format">
-		<item quantity="one">%d post por hora</item>
-		<item quantity="other">%d posts por hora</item>
-	</plurals>
-	<string name="text_posts_with_files_format">Posts com arquivos: %s</string>
-	<string name="text_rating">Classificação</string>
-	<string name="text_read_only">Somente leitura</string>
-	<string name="text_regex">Expressão regular</string>
-	<string name="text_rejected_words">Palavras rejeitadas:</string>
-	<string name="text_remove_file_name">Remover filename</string>
-	<string name="text_remove_metadata">Remover metadata</string>
-	<string name="text_remove_rules">Remover regras</string>
-	<plurals name="text_replies_count_format">
-		<item quantity="one">%d resposta</item>
-		<item quantity="other">%d respostas</item>
-	</plurals>
-	<string name="text_sage_description">Sage</string>
-	<string name="text_sage_description_infinitive">Sage</string>
-	<string name="text_save_files">Salvar arquivo</string>
-	<string name="text_save_thumbnails">Salvar miniaturas</string>
-	<string name="text_selected_format">Selecionados: %d</string>
-	<plurals name="text_several_files_count_format">
+	<plurals name="number_files__format">
 		<item quantity="one">%d arquivo</item>
 		<item quantity="other">%d arquivos</item>
 	</plurals>
-	<string name="text_similar_to_format">Similar a %s</string>
-	<string name="text_sort_by_unsorted">Não-organizado</string>
-	<string name="text_sort_by_date">Ordenar por data de criação</string>
-	<string name="text_sort_by_replies">Ordenar por quantidade respostas</string>
-	<string name="text_sorting">Ordenar</string>
-	<string name="text_spoiler">Spoiler</string>
-	<string name="text_sticky_thread">Fio fixo</string>
-	<string name="text_subject">Assunto</string>
-	<string name="text_this_week">Essa semana</string>
-	<string name="text_thread">Fio</string>
-	<string name="text_thread_files_format">%d com imagens</string>
-	<string name="text_today">Hoje</string>
-	<string name="text_unique_hash">Hash único</string>
-	<string name="text_unique_posters_format">Postadores únicos: %s</string>
-	<string name="text_unsupported_version">Versão não suportada</string>
-	<string name="text_updates_format">Atualizações: %d</string>
-	<string name="text_updates_available_format">Atualizações disponíveis: %d</string>
-	<string name="text_user_banned">Usuário foi convidado a visitar os amiguinhosrsrs</string>
-	<string name="text_user_warned">Usuário foi avisado</string>
-	<string name="text_with_name_format">Com nome %s</string>
-	<string name="text_yesterday">Ontem</string>
-
-	<!-- Actions -->
-
-	<string name="action_add_post">Responder</string>
-	<string name="action_add_to_favorites">Adcionar ao favoritos</string>
-	<string name="action_appearance">Aparência</string>
-	<string name="action_archive_add">Arquivo</string>
-	<string name="action_archive_view">Arquivo</string>
-	<string name="action_attach">Anexar</string>
-	<string name="action_auto_refresh">Atualizar automaticamente</string>
-	<string name="action_boards">Boards</string>
-	<string name="action_browser">Navegador</string>
-	<string name="action_catalog">Catálogo</string>
-	<string name="action_change_theme">Mudar tema</string>
-	<string name="action_check_on_startup">Checar no startup</string>
-	<string name="action_choose">Escolher</string>
-	<string name="action_clear">Limpar</string>
-	<string name="action_clear_deleted">Limpado</string>
-	<string name="action_clear_history">Limpar histórico</string>
-	<string name="action_copy_email">Copiar email</string>
-	<string name="action_copy_expand">Copiar&#8230;</string>
-	<string name="action_copy_link">Copiar link</string>
-	<string name="action_copy_text">Copiar texto</string>
-	<string name="action_copy_markup">Copiar remarcação</string>
-	<string name="action_delete">Deletar</string>
-	<string name="action_details">Detalhes</string>
-	<string name="action_download_file">Baixar arquivo</string>
-	<string name="action_download_files">Baixar arquivos</string>
-	<string name="action_expand">Expandir</string>
-	<string name="action_expanded_screen">Área expandida</string>
-	<string name="action_files_only">Somente arquivos</string>
-	<string name="action_filter">Filtro</string>
-	<string name="action_gallery">Galeria</string>
-	<string name="action_general_boards">Boards gerais</string>
-	<string name="action_go_to_post">Ir ao post</string>
-	<string name="action_group">Grupo</string>
-	<string name="action_hidden_posts">Posts ocultos</string>
-	<string name="action_hide">Hide</string>
-	<string name="action_hide_expand">Hide&#8230;</string>
-	<string name="action_hide_name">Posts com o mesmo nome</string>
-	<string name="action_hide_post">Este post</string>
-	<string name="action_hide_replies">Árvore de respostas</string>
-	<string name="action_hide_similar">Posts similares</string>
-	<string name="action_history">Histórico</string>
-	<string name="action_keep_all">Guardar tudo</string>
-	<string name="action_load_captcha">Toque para carregar o captcha</string>
-	<string name="action_lock_drawer">Trancar drawer</string>
-	<string name="action_make_home_page">Fazer como página inicial</string>
-	<string name="action_make_threadshot">Capturar</string>
-	<string name="action_technical_info">Informações técnicas</string>
-	<string name="action_my_posts">Meus posts</string>
-	<string name="action_new_rule">Nova regra</string>
-	<string name="action_new_thread">Novo fio</string>
-	<string name="action_open_thread">Abrir fio</string>
-	<string name="action_open_the_original">Abrir original</string>
-	<string name="action_pages">Páginas</string>
-	<string name="action_pause">Pausar</string>
-	<string name="action_play">Retomar</string>
-	<string name="action_preferences">Preferências</string>
-	<string name="action_quote">Quotar</string>
-	<string name="action_refresh">Atualizar</string>
-	<string name="action_reload">Recarregar</string>
-	<string name="action_remove_from_favorites">Remover dos favoritos</string>
-	<string name="action_remove_from_history">Remover do histórico</string>
-	<string name="action_rename">Renomear</string>
-	<string name="action_replace">Substituir</string>
-	<string name="action_reply">Responder</string>
-	<string name="action_report">Reportar</string>
-	<string name="action_restart">Reiniciar</string>
-	<string name="action_retry">Tentar novamente</string>
-	<string name="action_save">Salvar</string>
-	<string name="action_search">Procurar</string>
-	<string name="action_search_image">Procurar imagem</string>
-	<string name="action_select">Selecionar</string>
-	<string name="action_select_all">Selecionar tudo</string>
-	<string name="action_send">Enviar</string>
-	<string name="action_sfw_mode">Modo SFW</string>
-	<string name="action_share_expand">Compartilhar&#8230;</string>
-	<string name="action_share_file">Compartilhar arquivo</string>
-	<string name="action_share_link">Compartilhar link</string>
-	<string name="action_share_text">Compartilhar texto</string>
-	<string name="action_show">Mostrar</string>
-	<string name="action_show_thumbnail">Mostrar miniatura</string>
-	<string name="action_spoilers">Spoilers</string>
-	<string name="action_stop">Parar</string>
-	<string name="action_summary">Sumário</string>
-	<string name="action_thread_options">Opções do fio</string>
-	<string name="action_threads_grid">Fios em grades</string>
-	<string name="action_user_boards">Boards de usuários</string>
-	<string name="action_view">Ver</string>
-
-	<!-- Messages -->
-
-	<string name="message_archive_too_often_error">Espere um pouco antes de fazer isso novamente</string>
-	<string name="message_banned">Voce está banido</string>
-	<string name="message_board_not_exist">Essa board não existe</string>
-	<string name="message_cache_unavailable">Cache não disponível</string>
-	<string name="message_can_skip_captcha">Sem captcha</string>
-	<string name="message_captcha_expired">Captcha expirou</string>
-	<string name="message_captcha_not_valid">Captcha está errada</string>
-	<string name="message_captcha_pass_allowed">Senha de captcha permitido</string>
-	<string name="message_clear_deleted_posts_warning">Posts deletados são deletados permanentemente.</string>
-	<string name="message_clear_history_confirm">Limpar histórico?</string>
-	<string name="message_clearing">Limpando&#8230;</string>
-	<string name="message_confirm_archivation">Confirme a arquivação.</string>
-	<string name="message_confirm_deletion">Confirme.</string>
-	<string name="message_confirm_reporting">Confirme.</string>
-	<string name="message_connect_timeout">Conexão foi perdida</string>
-	<string name="message_connection_reset">Conexão foi reiniciada</string>
-	<string name="message_completed">Completo</string>
-	<string name="message_delete_too_new_error">Espere um pouco antes de deletar</string>
-	<string name="message_delete_too_old_error">Esse post é velho demais</string>
-	<string name="message_delete_too_often_error">Espere um pouco antes de deletar novamente</string>
-	<string name="message_download_completed">Download completo</string>
-	<string name="message_download_count_format">Baixando %1$d de %2$d</string>
-	<string name="message_download_audio">Baixando áudio</string>
-	<string name="message_download_error">Não foi possível baixar</string>
-	<string name="message_download_result_format">Sucesso: %1$d, falhou: %2$d</string>
-	<string name="message_download_name_format">Arquivo %s</string>
-	<string name="message_download_not_loaded">Não carregado</string>
-	<string name="message_edited_posts">Alguns posts foram editados</string>
-	<string name="message_empty_file">Você precisa de uma imagem</string>
-	<string name="message_empty_gallery">Galeria está vazia</string>
-	<string name="message_empty_history">Histórico está vazio</string>
-	<string name="message_empty_response">Resposta vazia</string>
-	<string name="message_enter_valid_data">Entre dados válidos</string>
-	<string name="message_extension_error">Erro de extensão</string>
-	<string name="message_field_too_long">Passando dos limites de texto</string>
-	<plurals name="message_file_attach_error_format">
+	<plurals name="number_files_already_exist__sentence_format">
+		<item quantity="one">%d arquivo já existe.</item>
+		<item quantity="other">%d arquivos já existem.</item>
+	</plurals>
+	<plurals name="number_files_havent_been_attached__format">
 		<item quantity="one">%d extensão de arquivo não permitida</item>
 		<item quantity="other">%d extensão de arquivo não permitida</item>
 	</plurals>
-	<string name="message_file_exists">Arquivos já existe</string>
-	<string name="message_file_not_support">Formato de arquivo não suportado</string>
-	<string name="message_file_playback">Reprodução de arquivo</string>
-	<string name="message_files_limit_reached">Limite de arquivos atingido</string>
-	<string name="message_files_too_big">O arquivo é muito grande</string>
-	<string name="message_files_too_many">Muitos arquivos</string>
-	<string name="message_hide_default_name_error">Não pode dar hide no nome padrão</string>
-	<string name="message_image_corrupted">Imagem corrompida</string>
-	<string name="message_image_out_of_memory">Memória insuficiente para relizar esta ação</string>
-	<string name="message_incorrect_password">Senha incorreta</string>
-	<string name="message_invalid_authorization_data">Dados de autorização inválidos</string>
-	<string name="message_invalid_certificate">Certificado inválido</string>
-	<string name="message_invalid_data_format">Formato de dados inválidos</string>
-	<string name="message_invalid_response">Resposta do servidor inválida</string>
-	<string name="message_insufficient_space">Sem espaço no dispositivo</string>
-	<string name="message_loading">Carregando&#8230;</string>
-	<string name="message_new_password">Uma nova senha foi gerada</string>
-	<string name="message_no_access">Acesso negado</string>
-	<string name="message_no_access_to_memory">Sem acesso a memória</string>
-	<string name="message_no_available_updates">Não há atualizações</string>
-	<string name="message_no_backups">Nenhum backup encontrado</string>
-	<string name="message_no_extensions">Não há extensões instaladas!</string>
-	<string name="message_no_rules">Não há regras definidas</string>
-	<string name="message_not_found">Não encontrado</string>
-	<string name="message_open_link_confirm">Abrir o link?</string>
-	<string name="message_open_posts_confirm">Abrir o fio?</string>
-	<string name="message_open_search_confirm">Procurar?</string>
-	<string name="message_open_threads_confirm">Ir para lista de fios?</string>
-	<string name="message_packages_installed">Novas extensões foram instaladas. Reiniciar é mandatório.</string>
-	<string name="message_page_not_exist_format">A página %d não existe</string>
-	<string name="message_playback_error">Erro na reprodução</string>
-	<string name="message_post_not_found">O post não foi encontrado</string>
-	<string name="message_posting_too_fast">Espere antes de postar novamente</string>
-	<string name="message_press_again_to_exit">Pressione novamente para sair</string>
-	<string name="message_processing_data">Enviando&#8230;</string>
-	<string name="message_read_timeout">A conexão expirou</string>
-	<string name="message_relay_block_format">Parece que %s bloqueou seu IP. Confirme</string>
-	<string name="message_report_sent">O relato foi enviado com sucesso</string>
-	<string name="message_report_too_often_error">Espere um pouco antes de reportar novamente</string>
-	<string name="message_request_sent">A solicitação foi enviado com sucesso</string>
-	<string name="message_save_completed">Feito</string>
-	<string name="message_sending">Enviando&#8230;</string>
-	<string name="message_sending_index_format">Enviando %1$d de %2$d&#8230;</string>
-	<string name="message_spam_list">Mensagem rejeitada</string>
-	<string name="message_ssl_error">Erro de SSL/HTTPS</string>
-	<string name="message_thread_closed">Fio está fechado</string>
-	<string name="message_thread_not_exist">Esse fio não existe</string>
-	<string name="message_too_few_meaningful_words">Poucas palavras</string>
-	<string name="message_tripcode_warning">Tripcodes estão desativados nessa board. A senha será enviada na forma pura
-		sem converter a um tripcode.</string>
-	<string name="message_uninstall_reminder">Mudanças só aconteceram quando reiniciar o aplicativo.</string>
-	<string name="message_unknown_address">Endereço desconhecido</string>
-	<string name="message_unknown_error">Erro desconhecido</string>
-	<string name="message_unsafe_redirect">Redirecionamento não-seguro</string>
-	<string name="message_unsupported_scheme">Esquema não suportado</string>
-	<string name="message_update_reminder">Você pode acompanhar o progresso de download na barra de status.\n\nVocê pode
-		instalar as aplicações quando o download acabar.\n\nNão se esqueça de reiniciar o aplicativo!</string>
-	<string name="message_validation_completed">Validação completa</string>
-
-	<!-- Preferences -->
-
-	<string name="preference_header_about">Informações</string>
-	<string name="preference_header_autohide">Auto-Esconder</string>
-	<string name="preference_header_contents">Conteúdo</string>
-	<string name="preference_header_favorites">Favoritos</string>
-	<string name="preference_header_general">Geral</string>
-	<string name="preference_header_interface">Interface</string>
-
-	<string name="preference_category_additional">Adcional</string>
-	<string name="preference_category_auto_refreshing">Fios auto-atualizáveis</string>
-	<string name="preference_category_connection">Conexão</string>
-	<string name="preference_category_downloading">Downloading</string>
-	<string name="preference_category_navigation">Nevegação</string>
-	<string name="preference_category_posts">Lista de posts</string>
-	<string name="preference_category_services">Serviços</string>
-	<string name="preference_category_submission">Formulário de envio</string>
-	<string name="preference_category_threads">Lista de fios</string>
-	<string name="preference_category_video_player">Reprodutor de vídeo</string>
-	<string name="preference_category_watcher">Watcher de favoritos</string>
-
-	<string-array name="preference_generic_network_choices">
-		<item>Sempre</item>
-		<item>Wi-Fi ou 3G+</item>
-		<item>Somente Wi-Fi</item>
-		<item>Nunca</item>
-	</string-array>
-
-	<string name="preference_active_scrollbar">Barra de rolagem ativa</string>
-	<string name="preference_all_attachments">Todos os anexos</string>
-	<string name="preference_all_attachments_summary">Exibir miniaturas para todos os anexos</string>
-	<string name="preference_auto_refresh_mode">Modo de auto-atualização</string>
-	<string-array name="preference_auto_refresh_choices">
-		<item>Separado</item>
-		<item>Sempre disabilitado</item>
-		<item>Sempre habilitado</item>
-	</string-array>
-	<string name="preference_auto_refresh_interval">Intervalo de atualização</string>
-	<string name="preference_auto_refresh_interval_summary_format">A cada %1$d seg.</string>
-	<string name="preference_backup_data">Fazer backup de dados</string>
-	<string name="preference_backup_data_summary">Salve todas as suas configurações, favoritos, histórico e regras do
-		autohide</string>
-	<string-array name="preference_backup_data_choices">
-		<item>Backup</item>
-		<item>Restaurar</item>
-	</string-array>
-	<string name="preference_captcha">Tipo de captcha</string>
-	<string name="preference_captcha_pass">Senha do captcha</string>
-	<string name="preference_captcha_pass_summary">Permite ignorar o captcha</string>
-	<string name="preference_check_for_updates">Checar por atualizações</string>
-	<string name="preference_clear_cache">Limpar cache</string>
-	<string-array name="preference_clear_cache_choices">
-		<item>Miniaturas</item>
-		<item>Arquivos em cache</item>
-		<item>Fios antigos</item>
-		<item>Todos of fios</item>
-	</string-array>
-	<string name="preference_close_on_back">Fechar páginas</string>
-	<string name="preference_close_on_back_summary">Feche as páginas ao apertar \"Voltar\"</string>
-	<string name="preference_cut_thumbnails">Cortar miniaturas</string>
-	<string name="preference_cut_thumbnails_summary">Faça miniaturas preencher o quadrado</string>
-	<string name="preference_default_board_name">Board inicial</string>
-	<string name="preference_display_hidden_threads">Exibir fios escondidos</string>
-	<string name="preference_display_icons">Exibirs ícones em algumas boards</string>
-	<string name="preference_display_icons_summary">Ícones estão habilitados em algumas boards</string>
-	<string name="preference_domain">Domínio</string>
-	<string name="preference_domain_another">Outro</string>
-	<string name="preference_download_detail_name">Nome de arquivo detalhado</string>
-	<string name="preference_download_detail_name_summary">Baixe arquivos com o número do fio no nome</string>
-	<string name="preference_download_original_name">Nome original</string>
-	<string name="preference_download_original_name_summary">Baixe arquivos com nome original,
-		se possível</string>
-	<string name="preference_download_path">Local de download</string>
-	<string name="preference_download_subdir">Mostre o menu de configuração de download</string>
-	<string-array name="preference_download_subdir_choices">
-		<item>Nunca</item>
-		<item>Com mais de um</item>
-		<item>Sempre</item>
-	</string-array>
-	<string name="preference_favorite_on_reply">Adcione o fio ao responder</string>
-	<string name="preference_favorites_order">Ordem de favoritos</string>
-	<string name="preference_hide_personal_data">Esconder bloco de dados pessoais</string>
-	<string name="preference_highlight_unread">Destacar posts não-lidos</string>
-	<string-array name="preference_highlight_unread_choices">
-		<item>Esconder eventualmente</item>
-		<item>Esconder ao tocar</item>
-		<item>Nunca destacar</item>
-	</string-array>
-	<string name="preference_huge_captcha">Captcha enorme</string>
-	<string name="preference_internal_browser">Navegador interno</string>
-	<string name="preference_internal_browser_sumamry">Abra link no navegador interno</string>
-	<string name="preference_load_catalog">Carregar catálogo</string>
-	<string name="preference_load_catalog_summary">Catálogo sempre carregará ao abrir lista de fios</string>
-	<string name="preference_load_thumbnails">Carregar miniaturas</string>
-	<string name="preference_locale">Linguagem</string>
-	<string name="preference_merge_chans">Fundir páginas</string>
-	<string name="preference_notify_download_complete">Notificar quando o download acabar</string>
-	<string name="preference_notify_download_complete_summary">Mostrará notificação \"Heads-Up\" quando completar o
-		download</string>
-	<string name="preference_page_by_page">Navegação página por página</string>
-	<string name="preference_page_by_page_summary">Não mostrar lista longa</string>
-	<string-array name="preference_pages_list_choices">
-		<item>Páginas primeiro</item>
-		<item>Favoritos primeiro</item>
-		<item>Esconder páginas</item>
-	</string-array>
-	<string name="preference_partial_thread_loading">Carregamento parcial de fios</string>
-	<string name="preference_partial_thread_loading_summary">Carrege somente uma parte do fio ao invés
-		de um fio inteiro</string>
-	<string name="preference_password_for_removal">Senha para remover posts</string>
-	<string name="preference_password_for_removal_summary">Usado para enviar ou remover posts</string>
-	<string name="preference_post_max_lines">Máximo de linhas</string>
-	<string name="preference_post_max_lines_summary">Corte posts longos se passar de um valor pré-determinado</string>
-	<string name="preference_proxy">Proxy</string>
-	<string name="preference_scroll_thread_gallery">Rolar o fio enquanto navega na galeria</string>
-	<string name="preference_statistics">Estátisticas</string>
-	<string name="preference_subdirectory_pattern">Padrão de subdiretório</string>
-	<string-array name="preference_subdirectory_pattern_descriptions">
-		<item>código da fórum</item>
-		<item>título da fórum</item>
-		<item>código da board</item>
-		<item>identificador do fio</item>
-		<item>título do fio</item>
-		<item>parte opcional</item>
-	</string-array>
-	<string name="preference_text_scale">Escala do texto</string>
-	<string name="preference_text_scale_summary_format">Escala: %d%%</string>
-	<string name="preference_thumbnails_scale">Escala da miniatura</string>
-	<string name="preference_thumbnails_scale_summary_format">Escala: %d%%</string>
-	<string name="preference_uninstall_extension">Remover extensões</string>
-	<string name="preference_use_https">Conexão segura</string>
-	<string name="preference_use_https_summary">Use protocolo HTTPS</string>
-	<string name="preference_use_https_warning">A configuração a seguir só funciona no captcha ou
+	<plurals name="number_new__format">
+		<item quantity="one">%d novo</item>
+		<item quantity="other">%d novos</item>
+	</plurals>
+	<plurals name="number_new_posts__format">
+		<item quantity="one">%d nova resposta</item>
+		<item quantity="other">%d novas respostas</item>
+	</plurals>
+	<string name="number_page__format">%d página</string>
+	<string name="number_page_doesnt_exist__format">A página %d não existe</string>
+	<plurals name="number_posts_per_hour__format">
+		<item quantity="one">%d post por hora</item>
+		<item quantity="other">%d posts por hora</item>
+	</plurals>
+	<plurals name="number_replies__format">
+		<item quantity="one">%d resposta</item>
+		<item quantity="other">%d respostas</item>
+	</plurals>
+	<string name="number_with_files__format">%d com imagens</string>
+	<string name="old_threads">Fios antigos</string>
+	<string name="older_than_seven_days">Velho a mais de 7 dias</string>
+	<string name="on_multiple_downloading">Com mais de um</string>
+	<string name="only_original_posts">Somente OP</string>
+	<string name="only_posts_with_sage">Só posts com sage</string>
+	<string name="open_original">Abrir original</string>
+	<string name="open_pages__noun">Páginas abertas</string>
+	<string name="open_thread">Abrir fio</string>
+	<string name="open_thread__sentence">Abrir o fio?</string>
+	<string name="optional_part">Parte opcional</string>
+	<string name="original_file_name">Nome original</string>
+	<string name="original_file_name__summary">Baixe arquivos com nome original, se possível</string>
+	<string name="original_poster">OP</string>
+	<string name="paged_board_navigation">Navegação página por página</string>
+	<string name="paged_board_navigation__summary">Não mostrar lista longa</string>
+	<string name="pages">Páginas</string>
+	<string name="pages_count">Número de páginas</string>
+	<string name="pages_first">Páginas primeiro</string>
+	<string name="partial_thread_loading">Carregamento parcial de fios</string>
+	<string name="partial_thread_loading__summary">Carrege somente uma parte do fio ao invés de um fio inteiro</string>
+	<string name="password">Senha</string>
+	<string name="password_for_removal">Senha para remover posts</string>
+	<string name="password_for_removal__summary">Usado para enviar ou remover posts</string>
+	<string name="pause">Pausar</string>
+	<string name="personal_data">Dados pessoias</string>
+	<string name="play">Retomar</string>
+	<string name="play_again">Reproduzir novamente</string>
+	<string name="playback_error">Erro na reprodução</string>
+	<string name="port">Porta</string>
+	<string name="post_is_not_found">O post não foi encontrado</string>
+	<string name="post_rejected">Mensagem rejeitada</string>
+	<string name="posts_list">Lista de posts</string>
+	<string name="posts_with_files__genitive">Posts com arquivos</string>
+	<string name="posts_with_same_name">Posts com o mesmo nome</string>
+	<string name="preferences">Preferências</string>
+	<string name="press_again_to_exit">Pressione novamente para sair</string>
+	<string name="processing_data__ellipsis">Enviando…</string>
+	<string name="proxy">Proxy</string>
+	<string name="quote__verb">Quotar</string>
+	<string name="rating">Classificação</string>
+	<string name="read_only">Somente leitura</string>
+	<string name="read_timeout_expired">A conexão expirou</string>
+	<string name="reason">Razão</string>
+	<string name="refresh">Atualizar</string>
+	<string name="refresh_interval">Intervalo de atualização</string>
+	<string name="refresh_periodically">Atualizar periodicamente</string>
+	<string name="regular_expression">Expressão regular</string>
+	<string name="rejected_words">Palavras rejeitadas</string>
+	<string name="relay_block__format_sentence">Parece que %s bloqueou seu IP. Confirme</string>
+	<string name="reload">Recarregar</string>
+	<string name="remove_file_name">Remover filename</string>
+	<string name="remove_from_favorites">Remover dos favoritos</string>
+	<string name="remove_from_history">Remover do histórico</string>
+	<string name="remove_metadata">Remover metadata</string>
+	<string name="remove_rules">Remover regras</string>
+	<string name="rename">Renomear</string>
+	<string name="repeated_files_are_prohibited">Arquivos já existe</string>
+	<string name="replace">Substituir</string>
+	<string name="replies_tree">Árvore de respostas</string>
+	<string name="reply">Responder</string>
+	<string name="report">Reportar</string>
+	<string name="request_has_been_sent_successfully">A solicitação foi enviado com sucesso</string>
+	<string name="requires_decoding_libraries__sentence">Você deve instalar a extensão de reprodução primeiro.</string>
+	<string name="restart">Reiniciar</string>
+	<string name="restore_data">Restaurar</string>
+	<string name="retry">Tentar novamente</string>
+	<string name="sage_is_disabled">Sage está desabilitado</string>
+	<string name="save">Salvar</string>
+	<string name="save_completed">Feito</string>
+	<string name="save_data">Backup</string>
+	<string name="save_files">Salvar arquivo</string>
+	<string name="save_thumbnails">Salvar miniaturas</string>
+	<string name="save_to_directory__format">Salvar em \"%s\"</string>
+	<string name="save_to_subdirectory">Salve no diretório</string>
+	<string name="scale">Escala</string>
+	<string name="scroll_thread_when_scrolling_gallery">Rolar o fio enquanto navega na galeria</string>
+	<string name="search">Procurar</string>
+	<string name="search_image">Procurar imagem</string>
+	<string name="secure_connection">Conexão segura</string>
+	<string name="secure_connection__summary">Use protocolo HTTPS</string>
+	<string name="select">Selecionar</string>
+	<string name="select_all">Selecionar tudo</string>
+	<string name="select_where_to_save">Salvar aonde?</string>
+	<string name="selected">Selecionados</string>
+	<string name="send">Enviar</string>
+	<string name="sending__ellipsis">Enviando…</string>
+	<string name="sending_number_of_number__ellipsis_format">Enviando %1$d de %2$d…</string>
+	<string name="separate__adjective">Separado</string>
+	<string name="services">Serviços</string>
+	<string name="sfw_mode">Modo SFW</string>
+	<string name="share__ellipsis">Compartilhar…</string>
+	<string name="share_file">Compartilhar arquivo</string>
+	<string name="share_link">Compartilhar link</string>
+	<string name="share_text">Compartilhar texto</string>
+	<string name="show">Mostrar</string>
+	<string name="show_download_configuration_dialog">Mostre o menu de configuração de download</string>
+	<string name="show_thumbnail">Mostrar miniatura</string>
+	<string name="similar_posts">Posts similares</string>
+	<string name="similar_to_number__format">Similar a %s</string>
+	<string name="some_posts_have_been_edited">Alguns posts foram editados</string>
+	<string name="sort_by_date_created">Ordenar por data de criação</string>
+	<string name="sort_by_replies">Ordenar por quantidade respostas</string>
+	<string name="sorting">Ordenar</string>
+	<string name="specific_to_internal_services__sentence">A configuração a seguir só funciona no captcha ou
 		na atualização do aplicativo. Você pode configurar HTTPS para boards individuas.</string>
-	<string name="preference_use_video_player">Usar reprodutor de vídeo embutido</string>
-	<string name="preference_use_video_player_summary">Reproduzir anexos Webm</string>
-	<string name="preference_use_video_player_warning">Você deve instalar a extensão de reprodução
-		primeiro.</string>
-	<string name="preference_user_authorization">Autorização de usuário</string>
-	<string name="preference_verify_certificate">Verificar certificado</string>
-	<string name="preference_verify_certificate_summary">A conexão será encerrada se o certificado
-		for inválido</string>
-	<string name="preference_version">Versão</string>
-	<string name="preference_video_completion">Quando terminar de reproduzir</string>
-	<string-array name="preference_video_completion_choices">
-		<item>Fazer nada</item>
-		<item>Reproduzir novamente</item>
-	</string-array>
-	<string name="preference_watcher_refresh_interval">Intervalo de atualização</string>
-	<string name="preference_watcher_refresh_interval_summary_format">Checar a cada %1$d seg.</string>
-	<string name="preference_watcher_refresh_periodically">Atualizar periodicamente</string>
-	<string name="preference_watcher_watch_initially">Iniciar o watcher</string>
-	<string name="preference_watcher_watch_initially_summary">Ativa o watcher assim que um fio é adcionado
-		aos favoritos</string>
-	<string name="preference_watcher_wifi_only">Somente Wi-Fi</string>
+	<string name="speed">Velocidade</string>
+	<string name="spoiler">Spoiler</string>
+	<string name="spoilers">Spoilers</string>
+	<string name="ssl_https_error">Erro de SSL/HTTPS</string>
+	<string name="statistics">Estátisticas</string>
+	<string name="sticky_thread">Fio fixo</string>
+	<string name="stop">Parar</string>
+	<string name="subdirectory_pattern">Padrão de subdiretório</string>
+	<string name="subject">Assunto</string>
+	<string name="subjects_are_disabled">Assuntos estão desabilitados</string>
+	<string name="submission_form">Formulário de envio</string>
+	<string name="success_number_not_loaded_number__format">Sucesso: %1$d, falhou: %2$d</string>
+	<string name="summary">Sumário</string>
+	<string name="technical_info">Informações técnicas</string>
+	<string name="text_scale">Escala do texto</string>
+	<string name="this_post">Este post</string>
+	<string name="this_recaptcha_is_not_supported">Esquema não suportado</string>
+	<string name="this_week">Essa semana</string>
+	<string name="thread">Fio</string>
+	<string name="thread_doesnt_exist">Esse fio não existe</string>
+	<string name="thread_is_closed">Fio fechado</string>
+	<string name="thread_options">Opções do fio</string>
+	<string name="thread_title">Título do fio</string>
+	<string name="threads_auto_refreshing">Fios auto-atualizáveis</string>
+	<string name="threads_grid">Fios em grades</string>
+	<string name="threads_list">Lista de fios</string>
+	<string name="thumbnail_scale">Escala da miniatura</string>
+	<string name="thumbnails">Miniaturas</string>
+	<string name="today">Hoje</string>
+	<string name="too_few_meaningful_words">Poucas palavras</string>
+	<string name="too_many_attachments">Muitos arquivos</string>
+	<string name="tripcode_disabled_warning__sentence">Tripcodes estão desativados nessa board. A senha será enviada
+		na forma pura sem converter a um tripcode.</string>
+	<string name="tripcodes_are_disabled">Tripcodes estão desabilitados</string>
+	<string name="unable_to_download_data">Não foi possível baixar</string>
+	<string name="uninstall_extension">Remover extensões</string>
+	<string name="unique_hash">Hash único</string>
+	<string name="unique_posters__genitive">Postadores únicos</string>
+	<string name="unknown_address">Endereço desconhecido</string>
+	<string name="unknown_error">Erro desconhecido</string>
+	<string name="unsafe_redirect">Redirecionamento não-seguro</string>
+	<string name="unsorted">Não-organizado</string>
+	<string name="unsupported_version">Versão não suportada</string>
+	<string name="update_reminder__sentence">Você pode acompanhar o progresso de download na barra de status.\n\nVocê
+		pode instalar as aplicações quando o download acabar.\n\nNão se esqueça de reiniciar o aplicativo!</string>
+	<string name="updates__genitive">Atualizações</string>
+	<string name="updates_available__genitive">Atualizações disponíveis</string>
+	<string name="use_built_in_video_player">Usar reprodutor de vídeo embutido</string>
+	<string name="use_built_in_video_player__summary">Reproduzir anexos Webm</string>
+	<string name="user_authorization">Autorização de usuário</string>
+	<string name="user_boards">Boards de usuários</string>
+	<string name="user_is_banned">Usuário foi convidado a visitar os amiguinhosrsrs</string>
+	<string name="user_is_warned">Usuário foi avisado</string>
+	<string name="validation_completed">Validação completa</string>
+	<string name="verify_certificate">Verificar certificado</string>
+	<string name="verify_certificate__summary">A conexão será encerrada se o certificado for inválido</string>
+	<string name="video_player">Reprodutor de vídeo</string>
+	<string name="view__verb">Ver</string>
+	<string name="watch_initially">Iniciar o watcher</string>
+	<string name="watch_initially__summary">Ativa o watcher assim que um fio é adcionado aos favoritos</string>
+	<string name="wifi_only">Somente Wi-Fi</string>
+	<string name="wifi_or_3g_plus">Wi-Fi ou 3G+</string>
+	<string name="with_name_name__format">Com nome %s</string>
+	<string name="yesterday">Ontem</string>
+	<string name="you_are_banned">Voce está banido</string>
+	<string name="you_cant_delete_too_new_posts">Espere um pouco antes de deletar</string>
+	<string name="you_cant_delete_too_old_posts">Esse post é velho demais</string>
+	<string name="you_cant_send_too_often">Espere antes de postar novamente</string>
+	<string name="you_need_to_attach_a_file">Você precisa de uma imagem</string>
 
 </resources>

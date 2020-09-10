@@ -44,80 +44,72 @@ public class ContentsFragment extends PreferenceFragment {
 		super.onViewCreated(view, savedInstanceState);
 
 		addList(Preferences.KEY_LOAD_THUMBNAILS, Preferences.GENERIC_VALUES_NETWORK,
-				Preferences.DEFAULT_LOAD_THUMBNAILS, R.string.preference_load_thumbnails,
-				R.array.preference_generic_network_choices);
+				Preferences.DEFAULT_LOAD_THUMBNAILS, R.string.load_thumbnails, Preferences.GENERIC_ENTRIES_NETWORK);
 
-		addHeader(R.string.preference_category_auto_refreshing);
+		addHeader(R.string.threads_auto_refreshing);
 		addList(Preferences.KEY_AUTO_REFRESH_MODE, Preferences.VALUES_AUTO_REFRESH_MODE,
-				Preferences.DEFAULT_AUTO_REFRESH_MODE, R.string.preference_auto_refresh_mode,
-				R.array.preference_auto_refresh_choices);
-		addSeek(Preferences.KEY_AUTO_REFRESH_INTERVAL,
-				Preferences.DEFAULT_AUTO_REFRESH_INTERVAL, R.string.preference_auto_refresh_interval,
-				R.string.preference_auto_refresh_interval_summary_format, Preferences.MIN_AUTO_REFRESH_INTERVAL,
+				Preferences.DEFAULT_AUTO_REFRESH_MODE, R.string.auto_refreshing_mode,
+				Preferences.ENTRIES_AUTO_REFRESH_MODE);
+		addSeek(Preferences.KEY_AUTO_REFRESH_INTERVAL, Preferences.DEFAULT_AUTO_REFRESH_INTERVAL,
+				R.string.refresh_interval, R.string.every_number_sec__format, Preferences.MIN_AUTO_REFRESH_INTERVAL,
 				Preferences.MAX_AUTO_REFRESH_INTERVAL, Preferences.STEP_AUTO_REFRESH_INTERVAL, 1f);
 
-		addHeader(R.string.preference_category_downloading);
-		addCheck(true, Preferences.KEY_DOWNLOAD_DETAIL_NAME,
-				Preferences.DEFAULT_DOWNLOAD_DETAIL_NAME, R.string.preference_download_detail_name,
-				R.string.preference_download_detail_name_summary);
-		addCheck(true, Preferences.KEY_DOWNLOAD_ORIGINAL_NAME,
-				Preferences.DEFAULT_DOWNLOAD_ORIGINAL_NAME, R.string.preference_download_original_name,
-				R.string.preference_download_original_name_summary);
+		addHeader(R.string.downloads);
+		addCheck(true, Preferences.KEY_DOWNLOAD_DETAIL_NAME, Preferences.DEFAULT_DOWNLOAD_DETAIL_NAME,
+				R.string.detailed_file_name, R.string.detailed_file_name__summary);
+		addCheck(true, Preferences.KEY_DOWNLOAD_ORIGINAL_NAME, Preferences.DEFAULT_DOWNLOAD_ORIGINAL_NAME,
+				R.string.original_file_name, R.string.original_file_name__summary);
 		if (C.USE_SAF) {
-			downloadUriTreePreference = addButton(getString(R.string.preference_download_directory),
+			downloadUriTreePreference = addButton(getString(R.string.download_directory),
 					p -> DataFile.obtain(requireContext(), DataFile.Target.DOWNLOADS, null).getName());
 			downloadUriTreePreference.setOnClickListener(p -> startActivityForResult(Preferences
 					.getDownloadUriTreeIntent(), C.REQUEST_CODE_OPEN_URI_TREE));
 		} else {
-			addEdit(Preferences.KEY_DOWNLOAD_PATH, null,
-					R.string.preference_download_path, C.DEFAULT_DOWNLOAD_PATH, InputType.TYPE_CLASS_TEXT
-							| InputType.TYPE_TEXT_VARIATION_URI);
+			addEdit(Preferences.KEY_DOWNLOAD_PATH, null, R.string.download_path, C.DEFAULT_DOWNLOAD_PATH,
+					InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
 		}
 		addList(Preferences.KEY_DOWNLOAD_SUBDIR, Preferences.VALUES_DOWNLOAD_SUBDIR,
-				Preferences.DEFAULT_DOWNLOAD_SUBDIR, R.string.preference_download_subdir,
-				R.array.preference_download_subdir_choices);
+				Preferences.DEFAULT_DOWNLOAD_SUBDIR, R.string.show_download_configuration_dialog,
+				Preferences.ENTRIES_DOWNLOAD_SUBDIR);
 		addEdit(Preferences.KEY_SUBDIR_PATTERN, Preferences.DEFAULT_SUBDIR_PATTERN,
-				R.string.preference_subdirectory_pattern, Preferences.DEFAULT_SUBDIR_PATTERN,
+				R.string.subdirectory_pattern, Preferences.DEFAULT_SUBDIR_PATTERN,
 				InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI)
 				.setDescription(makeSubdirDescription());
 		if (C.API_LOLLIPOP) {
-			addCheck(true, Preferences.KEY_NOTIFY_DOWNLOAD_COMPLETE,
-					Preferences.DEFAULT_NOTIFY_DOWNLOAD_COMPLETE, R.string.preference_notify_download_complete,
-					R.string.preference_notify_download_complete_summary);
+			addCheck(true, Preferences.KEY_NOTIFY_DOWNLOAD_COMPLETE, Preferences.DEFAULT_NOTIFY_DOWNLOAD_COMPLETE,
+					R.string.notify_when_download_is_completed, R.string.notify_when_download_is_completed__summary);
 		}
 
-		addHeader(R.string.preference_category_images);
+		addHeader(R.string.images);
 		addList(Preferences.KEY_LOAD_NEAREST_IMAGE, Preferences.GENERIC_VALUES_NETWORK,
-				Preferences.DEFAULT_LOAD_NEAREST_IMAGE, R.string.preference_load_nearest_image,
-				R.array.preference_generic_network_choices);
+				Preferences.DEFAULT_LOAD_NEAREST_IMAGE, R.string.load_nearest_image,
+				Preferences.GENERIC_ENTRIES_NETWORK);
 
-		addHeader(R.string.preference_category_video_player);
+		addHeader(R.string.video_player);
 		boolean playerAvailable = VideoPlayer.loadLibraries(requireContext());
 		if (!playerAvailable) {
-			addButton(0, R.string.preference_use_video_player_warning).setSelectable(false);
+			addButton(0, R.string.requires_decoding_libraries__sentence).setSelectable(false);
 		}
 		addCheck(true, Preferences.KEY_USE_VIDEO_PLAYER, Preferences.DEFAULT_USE_VIDEO_PLAYER,
-				R.string.preference_use_video_player, R.string.preference_use_video_player_summary)
+				R.string.use_built_in_video_player, R.string.use_built_in_video_player__summary)
 				.setEnabled(playerAvailable);
 		addList(Preferences.KEY_VIDEO_COMPLETION, Preferences.VALUES_VIDEO_COMPLETION,
-				Preferences.DEFAULT_VIDEO_COMPLETION, R.string.preference_video_completion,
-				R.array.preference_video_completion_choices).setEnabled(playerAvailable);
-		addCheck(true, Preferences.KEY_VIDEO_PLAY_AFTER_SCROLL,
-				Preferences.DEFAULT_VIDEO_PLAY_AFTER_SCROLL, R.string.preference_video_play_after_scroll,
-				R.string.preference_video_play_after_scroll_summary).setEnabled(playerAvailable);
-		addCheck(true, Preferences.KEY_VIDEO_SEEK_ANY_FRAME,
-				Preferences.DEFAULT_VIDEO_SEEK_ANY_FRAME, R.string.preference_video_seek_any_frame,
-				R.string.preference_video_seek_any_frame_summary).setEnabled(playerAvailable);
+				Preferences.DEFAULT_VIDEO_COMPLETION, R.string.action_on_playback_completion,
+				Preferences.ENTRIES_VIDEO_COMPLETION).setEnabled(playerAvailable);
+		addCheck(true, Preferences.KEY_VIDEO_PLAY_AFTER_SCROLL, Preferences.DEFAULT_VIDEO_PLAY_AFTER_SCROLL,
+				R.string.play_after_scroll, R.string.play_after_scroll__summary).setEnabled(playerAvailable);
+		addCheck(true, Preferences.KEY_VIDEO_SEEK_ANY_FRAME, Preferences.DEFAULT_VIDEO_SEEK_ANY_FRAME,
+				R.string.seek_any_frame, R.string.seek_any_frame__summary).setEnabled(playerAvailable);
 		if (playerAvailable) {
 			addDependency(Preferences.KEY_VIDEO_COMPLETION, Preferences.KEY_USE_VIDEO_PLAYER, true);
 			addDependency(Preferences.KEY_VIDEO_PLAY_AFTER_SCROLL, Preferences.KEY_USE_VIDEO_PLAYER, true);
 			addDependency(Preferences.KEY_VIDEO_SEEK_ANY_FRAME, Preferences.KEY_USE_VIDEO_PLAYER, true);
 		}
 
-		addHeader(R.string.preference_category_additional);
+		addHeader(R.string.additional);
 		addSeek(Preferences.KEY_CACHE_SIZE, Preferences.DEFAULT_CACHE_SIZE,
-				getString(R.string.preference_cache_size), "%d MB", 50, 400, 10, Preferences.MULTIPLIER_CACHE_SIZE);
-		clearCachePreference = addButton(getString(R.string.preference_clear_cache), p -> {
+				getString(R.string.cache_size), "%d MB", 50, 400, 10, Preferences.MULTIPLIER_CACHE_SIZE);
+		clearCachePreference = addButton(getString(R.string.clear_cache), p -> {
 			long cacheSize = CacheManager.getInstance().getCacheSize();
 			return String.format(Locale.US, "%.2f", cacheSize / 1024. / 1024.) + " MB";
 		});
@@ -145,12 +137,13 @@ public class ContentsFragment extends PreferenceFragment {
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.preference_header_contents), null);
+		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.contents), null);
 	}
 
 	private CharSequence makeSubdirDescription() {
 		String[] formats = {"\\c", "\\d", "\\b", "\\t", "\\e", "<\u2026>"};
-		String[] descriptions = getResources().getStringArray(R.array.preference_subdirectory_pattern_descriptions);
+		int[] descriptions = {R.string.forum_code, R.string.forum_title, R.string.board_code, R.string.thread_number,
+				R.string.thread_title, R.string.optional_part};
 		SpannableStringBuilder builder = new SpannableStringBuilder();
 		for (int i = 0; i < formats.length; i++) {
 			if (builder.length() > 0) {
@@ -158,7 +151,7 @@ public class ContentsFragment extends PreferenceFragment {
 			}
 			StringUtils.appendSpan(builder, formats[i], new TypefaceSpan("sans-serif-medium"));
 			builder.append(" — ");
-			builder.append(descriptions[i]);
+			builder.append(getString(descriptions[i]));
 		}
 		return builder;
 	}
@@ -193,9 +186,10 @@ public class ContentsFragment extends PreferenceFragment {
 			if (checkedItems == null) {
 				checkedItems = new boolean[] {true, true, true, false};
 			}
-			String[] items = getResources().getStringArray(R.array.preference_clear_cache_choices);
+			String[] items = {getString(R.string.thumbnails), getString(R.string.cached_files),
+					getString(R.string.old_threads), getString(R.string.all_threads)};
 			AlertDialog dialog = new AlertDialog.Builder(requireContext())
-					.setTitle(getString(R.string.preference_clear_cache))
+					.setTitle(getString(R.string.clear_cache))
 					.setMultiChoiceItems(items, checkedItems, this)
 					.setNegativeButton(android.R.string.cancel, null).setPositiveButton(android.R.string.ok, this)
 					.create();
@@ -265,7 +259,7 @@ public class ContentsFragment extends PreferenceFragment {
 		@Override
 		public ProgressDialog onCreateDialog(Bundle savedInstanceState) {
 			ProgressDialog dialog = new ProgressDialog(requireContext(), null);
-			dialog.setMessage(getString(R.string.message_clearing));
+			dialog.setMessage(getString(R.string.clearing__ellipsis));
 			return dialog;
 		}
 

@@ -585,7 +585,7 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 				builder.append(AttachmentItem.formatSize(size)).append(' ');
 			}
 			builder.append(context.getResources().getQuantityString(R.plurals
-					.text_several_files_count_format, count, count));
+					.number_files__format, count, count));
 			return builder.toString();
 		}
 	}
@@ -646,7 +646,7 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 		Resources resources = context.getResources();
 		if (replies >= 0) {
 			hasInformation = true;
-			builder.append(makeNbsp(resources.getQuantityString(R.plurals.text_replies_count_format,
+			builder.append(makeNbsp(resources.getQuantityString(R.plurals.number_replies__format,
 					replies, replies)));
 		}
 		if (!repliesOnly) {
@@ -656,14 +656,14 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 				} else {
 					hasInformation = true;
 				}
-				builder.append(makeNbsp(resources.getString(R.string.text_thread_files_format, postsWithFiles)));
+				builder.append(makeNbsp(resources.getString(R.string.number_with_files__format, postsWithFiles)));
 			} else if (files >= 0) {
 				if (hasInformation) {
 					builder.append(CARD_DESCRIPTION_DIVIDER);
 				} else {
 					hasInformation = true;
 				}
-				builder.append(makeNbsp(resources.getQuantityString(R.plurals.text_several_files_count_format,
+				builder.append(makeNbsp(resources.getQuantityString(R.plurals.number_files__format,
 						files, files)));
 			}
 			if (hasAttachments()) {
@@ -682,7 +682,7 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 			}
 		}
 		if (!hasInformation) {
-			builder.append(makeNbsp(resources.getString(R.string.text_no_thread_information)));
+			builder.append(makeNbsp(resources.getString(R.string.no_information)));
 		}
 		return builder.toString();
 	}

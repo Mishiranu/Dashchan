@@ -141,7 +141,7 @@ public class NavigationUtils {
 		try {
 			context.startActivity(intent);
 		} catch (ActivityNotFoundException e) {
-			ToastUtils.show(context, R.string.message_unknown_address);
+			ToastUtils.show(context, R.string.unknown_address);
 		} catch (Exception e) {
 			ToastUtils.show(context, e.getMessage());
 		}
@@ -252,7 +252,7 @@ public class NavigationUtils {
 	public static void shareFile(Context context, File file, String fileName) {
 		Pair<Uri, String> data = CacheManager.getInstance().prepareFileForShare(file, fileName);
 		if (data == null) {
-			ToastUtils.show(context, R.string.message_cache_unavailable);
+			ToastUtils.show(context, R.string.cache_is_unavailable);
 			return;
 		}
 		context.startActivity(Intent.createChooser(new Intent(Intent.ACTION_SEND)

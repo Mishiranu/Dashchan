@@ -716,7 +716,7 @@ public class DialogUnit {
 			switchState(State.ERROR, () -> {
 				Context context = uiManager.getContext();
 				ClickableToast.show(context, errorItem.toString(),
-						context.getString(R.string.action_open_thread), () -> uiManager.navigator()
+						context.getString(R.string.open_thread), () -> uiManager.navigator()
 						.navigatePosts(chanName, boardName, threadNumber, postNumber, null, 0), false);
 			});
 		}
@@ -1137,7 +1137,7 @@ public class DialogUnit {
 		}
 		AlertDialog.Builder alertDialog = new AlertDialog.Builder(context).setPositiveButton(android.R.string.ok, null);
 		if (!StringUtils.isEmpty(emailToCopy)) {
-			alertDialog.setNeutralButton(R.string.action_copy_email,
+			alertDialog.setNeutralButton(R.string.copy_email,
 					(dialog, which) -> StringUtils.copyToClipboard(uiManager.getContext(), emailToCopy));
 		}
 		AlertDialog dialog = alertDialog.setView(container).show();
@@ -1155,7 +1155,7 @@ public class DialogUnit {
 		if (deleting.optionFilesOnly) {
 			options = new ArrayList<>();
 			options.add(new Pair<>(SendMultifunctionalTask.OPTION_FILES_ONLY,
-					context.getString(R.string.action_files_only)));
+					context.getString(R.string.files_only)));
 		}
 		SendMultifunctionalTask.State state = new SendMultifunctionalTask.State(SendMultifunctionalTask
 				.Operation.DELETE, chanName, boardName, threadNumber, null, options, deleting.password);
@@ -1188,13 +1188,13 @@ public class DialogUnit {
 		if (canArchiveLocal && archiveChanNames.size() > 0 || archiveChanNames.size() > 1) {
 			String[] items = new String[archiveChanNames.size() + (canArchiveLocal ? 1 : 0)];
 			if (canArchiveLocal) {
-				items[0] = context.getString(R.string.text_local_archive);
+				items[0] = context.getString(R.string.local_archive);
 			}
 			for (int i = 0; i < archiveChanNames.size(); i++) {
 				items[canArchiveLocal ? i + 1 : i] = ChanConfiguration.get(archiveChanNames.get(i)).getTitle();
 			}
 			AlertDialog dialog = new AlertDialog.Builder(context)
-					.setTitle(R.string.action_archive_add)
+					.setTitle(R.string.archive__verb)
 					.setItems(items, (d, which) -> performSendArchiveThreadInternal(state, canArchiveLocal
 							? which == 0 ? null : archiveChanNames.get(which - 1) : archiveChanNames.get(which), posts))
 					.show();
@@ -1213,8 +1213,8 @@ public class DialogUnit {
 		ChanConfiguration.Archivation archivation;
 		if (archiveChanName == null) {
 			archivation = new ChanConfiguration.Archivation();
-			archivation.options.add(new Pair<>(OPTION_THUMBNAILS, context.getString(R.string.text_save_thumbnails)));
-			archivation.options.add(new Pair<>(OPTION_FILES, context.getString(R.string.text_save_files)));
+			archivation.options.add(new Pair<>(OPTION_THUMBNAILS, context.getString(R.string.save_thumbnails)));
+			archivation.options.add(new Pair<>(OPTION_FILES, context.getString(R.string.save_files)));
 		} else {
 			archivation = ChanConfiguration.get(archiveChanName).safe().obtainArchivation();
 		}
@@ -1311,15 +1311,15 @@ public class DialogUnit {
 			int resId = 0;
 			switch (state.operation) {
 				case DELETE: {
-					resId = R.string.action_delete;
+					resId = R.string.delete;
 					break;
 				}
 				case REPORT: {
-					resId = R.string.action_report;
+					resId = R.string.report;
 					break;
 				}
 				case ARCHIVE: {
-					resId = R.string.action_archive_add;
+					resId = R.string.archive__verb;
 					break;
 				}
 			}
@@ -1331,16 +1331,16 @@ public class DialogUnit {
 			}
 			int resId = 0;
 			switch (state.operation) {
-				case DELETE:{
-					resId = R.string.message_confirm_deletion;
+				case DELETE: {
+					resId = R.string.confirm_deleting__sentence;
 					break;
 				}
-				case REPORT:{
-					resId = R.string.message_confirm_reporting;
+				case REPORT: {
+					resId = R.string.confirm_reporting__sentence;
 					break;
 				}
-				case ARCHIVE:{
-					resId = R.string.message_confirm_archivation;
+				case ARCHIVE: {
+					resId = R.string.confirm_archivation__sentence;
 					break;
 				}
 			}
@@ -1362,7 +1362,7 @@ public class DialogUnit {
 			}
 			if (state.operation == SendMultifunctionalTask.Operation.ARCHIVE && state.archiveChanName == null) {
 				if (posts == null || posts.length() == 0) {
-					ToastUtils.show(uiManager.getContext(), R.string.message_cache_unavailable);
+					ToastUtils.show(uiManager.getContext(), R.string.cache_is_unavailable);
 				} else {
 					SendLocalArchiveTask task = new SendLocalArchiveTask(state.chanName, state.boardName,
 							state.threadNumber, posts, options.contains(OPTION_THUMBNAILS),
@@ -1388,11 +1388,11 @@ public class DialogUnit {
 			Context context = uiManager.getContext();
 			if (localArchiveMax >= 0) {
 				dialog = new ProgressDialog(context, "%d / %d");
-				dialog.setMessage(context.getString(R.string.message_processing_data));
+				dialog.setMessage(context.getString(R.string.processing_data__ellipsis));
 				dialog.setMax(localArchiveMax);
 			} else {
 				dialog = new ProgressDialog(context, null);
-				dialog.setMessage(context.getString(R.string.message_sending));
+				dialog.setMessage(context.getString(R.string.sending__ellipsis));
 			}
 			dialog.setCanceledOnTouchOutside(false);
 			dialog.setOnCancelListener(this);
@@ -1417,24 +1417,21 @@ public class DialogUnit {
 			completeTask();
 			Context context = uiManager.getContext();
 			switch (state.operation) {
-				case DELETE: {
-					ToastUtils.show(context, R.string.message_request_sent);
-					break;
-				}
+				case DELETE:
 				case REPORT: {
-					ToastUtils.show(context, R.string.message_report_sent);
+					ToastUtils.show(context, R.string.request_has_been_sent_successfully);
 					break;
 				}
 				case ARCHIVE: {
 					if (archiveThreadNumber != null) {
 						FavoritesStorage.getInstance().add(state.archiveChanName, archiveBoardName,
 								archiveThreadNumber, state.archiveThreadTitle, 0);
-						ClickableToast.show(context, context.getString(R.string.message_completed),
-								context.getString(R.string.action_open_thread),
+						ClickableToast.show(context, context.getString(R.string.completed),
+								context.getString(R.string.open_thread),
 								() -> uiManager.navigator().navigatePosts(state.archiveChanName, archiveBoardName,
 								archiveThreadNumber, null, state.archiveThreadTitle, 0), false);
 					} else {
-						ToastUtils.show(context, R.string.message_completed);
+						ToastUtils.show(context, R.string.completed);
 					}
 					break;
 				}
@@ -1465,7 +1462,7 @@ public class DialogUnit {
 		public void onLocalArchivationComplete(boolean success) {
 			completeTask();
 			if (!success) {
-				ToastUtils.show(uiManager.getContext(), R.string.message_unknown_error);
+				ToastUtils.show(uiManager.getContext(), R.string.unknown_error);
 			}
 		}
 	}

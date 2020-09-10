@@ -250,7 +250,7 @@ public class VideoUnit {
 							}
 						}
 						instance.callback.showError(holder, instance.galleryInstance.context
-								.getString(R.string.message_playback_error));
+								.getString(R.string.playback_error));
 					}
 				}
 			}.executeOnExecutor(ConcurrentUtils.SEPARATE_EXECUTOR);
@@ -559,7 +559,7 @@ public class VideoUnit {
 			if (message.length() > 0) {
 				AlertDialog dialog = new AlertDialog
 						.Builder(instance.galleryInstance.callback.getWindow().getContext())
-						.setTitle(R.string.action_technical_info).setMessage(message)
+						.setTitle(R.string.technical_info).setMessage(message)
 						.setPositiveButton(android.R.string.ok, null)
 						.create();
 				dialog.setOnShowListener(ViewUtils.ALERT_DIALOG_MESSAGE_SELECTABLE);

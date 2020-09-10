@@ -33,13 +33,13 @@ public class StatisticsFragment extends BaseListFragment {
 
 		setHasOptionsMenu(true);
 		long startTime = StatisticsStorage.getInstance().getStartTime();
-		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.preference_statistics),
-				startTime > 0 ? getString(R.string.text_since_format,
+		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.statistics),
+				startTime > 0 ? getString(R.string.since_date__format,
 						new PostDateFormatter(requireContext()).format(startTime)) : null);
 
 		ArrayList<Adapter.ListItem> listItems = new ArrayList<>();
-		listItems.add(new Adapter.ListItem(null, getString(R.string.text_statistics_views),
-				getString(R.string.text_statistics_posts), getString(R.string.text_statistics_threads)));
+		listItems.add(new Adapter.ListItem(null, getString(R.string.views),
+				getString(R.string.posts), getString(R.string.threads)));
 
 		HashMap<String, StatisticsStorage.StatisticsItem> statisticsItems = StatisticsStorage.getInstance().getItems();
 		int totalThreadsViewed = 0;
@@ -58,7 +58,7 @@ public class StatisticsFragment extends BaseListFragment {
 				totalThreadsCreated += statisticsItem.threadsCreated;
 			}
 		}
-		listItems.add(new Adapter.ListItem(getString(R.string.text_total), Integer.toString(totalThreadsViewed),
+		listItems.add(new Adapter.ListItem(getString(R.string.total), Integer.toString(totalThreadsViewed),
 				Integer.toString(totalPostsSent), Integer.toString(totalThreadsCreated)));
 
 		for (String chanName : ChanManager.getInstance().getAvailableChanNames()) {
@@ -84,7 +84,7 @@ public class StatisticsFragment extends BaseListFragment {
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu, @NonNull MenuInflater inflater) {
-		menu.add(0, R.id.menu_clear, 0, R.string.action_clear)
+		menu.add(0, R.id.menu_clear, 0, R.string.clear)
 				.setIcon(((FragmentHandler) requireActivity()).getActionBarIcon(R.attr.iconActionDelete))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 		super.onCreateOptionsMenu(menu, inflater);

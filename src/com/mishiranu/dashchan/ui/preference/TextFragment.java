@@ -82,11 +82,11 @@ public class TextFragment extends Fragment implements View.OnClickListener {
 		}
 		switch (Type.valueOf(requireArguments().getString(EXTRA_TYPE))) {
 			case LICENSES: {
-				((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.preference_licenses), null);
+				((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.foss_licenses), null);
 				break;
 			}
 			case CHANGELOG: {
-				((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.preference_changelog), null);
+				((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.changelog), null);
 				break;
 			}
 		}

@@ -155,14 +155,13 @@ public class CaptchaForm implements View.OnClickListener, View.OnLongClickListen
 			case SKIP:
 			case NEED_LOAD: {
 				boolean needLoad = captchaState == ChanPerformer.CaptchaState.NEED_LOAD;
-				skipTextView.setText(needLoad ? R.string.action_load_captcha
-						: R.string.message_can_skip_captcha);
+				skipTextView.setText(needLoad ? R.string.load_captcha : R.string.captcha_is_not_required);
 				loadButton.setVisibility(View.GONE);
 				switchToCaptchaView(CaptchaViewType.SKIP, null, false);
 				break;
 			}
 			case PASS: {
-				skipTextView.setText(R.string.message_captcha_pass_allowed);
+				skipTextView.setText(R.string.captcha_pass_is_allowed);
 				loadButton.setVisibility(View.VISIBLE);
 				switchToCaptchaView(CaptchaViewType.SKIP, null, false);
 				break;

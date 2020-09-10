@@ -26,6 +26,7 @@ import com.mishiranu.dashchan.content.UpdaterActivity;
 import com.mishiranu.dashchan.content.async.ReadUpdateTask;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.CheckPreference;
+import com.mishiranu.dashchan.util.AndroidUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
@@ -79,7 +80,7 @@ public class UpdateFragment extends BaseListFragment {
 				}
 				this.target = target.toString();
 			} else {
-				target = context != null ? context.getString(R.string.text_keep_current_version) : null;
+				target = context != null ? context.getString(R.string.keep_current_version) : null;
 			}
 		}
 	}
@@ -101,7 +102,8 @@ public class UpdateFragment extends BaseListFragment {
 				}
 			}
 		}
-		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.text_updates_format, count), null);
+		((FragmentHandler) requireActivity()).setTitleSubtitle(ResourceUtils.getColonString(getResources(),
+				R.string.updates__genitive, count), null);
 	}
 
 	@Override
@@ -214,11 +216,11 @@ public class UpdateFragment extends BaseListFragment {
 	private static ArrayList<ListItem> buildData(Context context, ReadUpdateTask.UpdateDataMap updateDataMap,
 			Bundle savedInstanceState) {
 		ArrayList<ListItem> listItems = new ArrayList<>();
-		String warningUnsupported = context != null ? context.getString(R.string.text_unsupported_version) : null;
+		String warningUnsupported = context != null ? context.getString(R.string.unsupported_version) : null;
 		HashSet<String> handledExtensionNames = new HashSet<>();
 		List<ReadUpdateTask.UpdateItem> updateItems = updateDataMap.get(ChanManager.EXTENSION_NAME_CLIENT);
 		ListItem listItem = new ListItem(ChanManager.EXTENSION_NAME_CLIENT,
-				context != null ? context.getString(R.string.const_app_name) : null, updateItems.size() >= 2);
+				context != null ? AndroidUtils.getApplicationLabel(context) : null, updateItems.size() >= 2);
 		int targetIndex = savedInstanceState != null ? savedInstanceState.getInt(EXTRA_TARGET_PREFIX
 				+ listItem.extensionName, -1) : -1;
 		if (targetIndex == -1) {
@@ -275,7 +277,7 @@ public class UpdateFragment extends BaseListFragment {
 		ListItem listItem = listItems.get(position);
 		List<ReadUpdateTask.UpdateItem> updateItems = updateDataMap.get(listItem.extensionName);
 		ArrayList<String> targets = new ArrayList<>();
-		targets.add(getString(R.string.text_keep_current_version));
+		targets.add(getString(R.string.keep_current_version));
 		for (int i = 1; i < updateItems.size(); i++) {
 			targets.add(updateItems.get(i).title);
 		}
@@ -293,14 +295,14 @@ public class UpdateFragment extends BaseListFragment {
 				}
 			}
 		}
-		String downloadTitle = getString(R.string.action_download_files);
+		String downloadTitle = getString(R.string.download_files);
 		if (length > 0) {
 			downloadTitle += ", " + length / 1024 + " KB";
 		}
 		menu.add(0, R.id.menu_download, 0, downloadTitle)
 				.setIcon(((FragmentHandler) requireActivity()).getActionBarIcon(R.attr.iconActionDownload))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-		menu.add(0, R.id.menu_check_on_start, 0, R.string.action_check_on_startup).setCheckable(true);
+		menu.add(0, R.id.menu_check_on_start, 0, R.string.check_on_startup).setCheckable(true);
 	}
 
 	@Override
@@ -337,8 +339,8 @@ public class UpdateFragment extends BaseListFragment {
 						request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
 						request.setDestinationUri(Uri.fromFile(file));
 						request.setTitle(file.getName());
-						request.setDescription(i == 0 ? getString(R.string.text_main_application)
-								: getString(R.string.text_extension_name_format, listItem.title));
+						request.setDescription(i == 0 ? getString(R.string.main_application)
+								: getString(R.string.extension_name__format, listItem.title));
 						request.setMimeType("application/vnd.android.package-archive");
 						long id;
 						try {
@@ -360,12 +362,12 @@ public class UpdateFragment extends BaseListFragment {
 					}
 				}
 				if (started) {
-					MessageDialog.create(this, getString(R.string.message_update_reminder), true);
+					MessageDialog.create(this, getString(R.string.update_reminder__sentence), true);
 					UpdaterActivity.initUpdater(clientId, ids);
 				} else if (downloadManagerError) {
-					ToastUtils.show(requireContext(), R.string.message_download_manager_error);
+					ToastUtils.show(requireContext(), R.string.download_manager_is_not_available);
 				} else {
-					ToastUtils.show(requireContext(), R.string.message_no_available_updates);
+					ToastUtils.show(requireContext(), R.string.no_available_updates);
 				}
 				return true;
 			}
@@ -389,7 +391,7 @@ public class UpdateFragment extends BaseListFragment {
 	}
 
 	private void onTargetChanged(ListItem listItem) {
-		String warningUnsupported = getString(R.string.text_unsupported_version);
+		String warningUnsupported = getString(R.string.unsupported_version);
 		if (ChanManager.EXTENSION_NAME_CLIENT.equals(listItem.extensionName)) {
 			ReadUpdateTask.UpdateItem targetAppUpdateItem = updateDataMap.get(listItem.extensionName)
 					.get(listItem.targetIndex);

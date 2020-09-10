@@ -149,12 +149,12 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback, Read
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu) {
-		menu.add(0, R.id.menu_search, 0, R.string.action_search)
+		menu.add(0, R.id.menu_search, 0, R.string.search)
 				.setIcon(getActionBarIcon(R.attr.iconActionSearch))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
-		menu.add(0, R.id.menu_refresh, 0, R.string.action_refresh);
-		menu.add(0, R.id.menu_group, 0, R.string.action_group).setCheckable(true);
-		menu.addSubMenu(0, R.id.menu_appearance, 0, R.string.action_appearance);
+		menu.add(0, R.id.menu_refresh, 0, R.string.refresh);
+		menu.add(0, R.id.menu_group, 0, R.string.group).setCheckable(true);
+		menu.addSubMenu(0, R.id.menu_appearance, 0, R.string.appearance);
 	}
 
 	@Override
@@ -239,7 +239,7 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback, Read
 		showScaleOnSuccess = false;
 		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
 		if (pageNumber == 0 && (postItems == null || postItems.isEmpty())) {
-			switchView(ViewType.ERROR, R.string.message_not_found);
+			switchView(ViewType.ERROR, R.string.not_found);
 			adapter.setItems(null);
 			retainExtra.postItems.clear();
 		} else {
@@ -283,7 +283,7 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback, Read
 						ListViewUtils.smoothScrollToPosition(recyclerView, oldCount);
 					}
 				} else {
-					ClickableToast.show(getContext(), R.string.message_search_completed);
+					ClickableToast.show(getContext(), R.string.search_completed);
 				}
 			}
 		}

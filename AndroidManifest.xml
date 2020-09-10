@@ -17,7 +17,7 @@
 
 	<application
 		android:name=".content.MainApplication"
-		android:label="@string/const_app_name"
+		android:label="Dashchan"
 		android:icon="@mipmap/ic_launcher"
 		android:logo="@mipmap/ic_logo"
 		android:theme="@style/Theme.Launcher"

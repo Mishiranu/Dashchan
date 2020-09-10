@@ -66,7 +66,7 @@ public class HistoryPage extends ListPage implements HistoryAdapter.Callback {
 			this.mergeChans = mergeChans;
 		}
 		if (adapter.isRealEmpty()) {
-			switchView(ViewType.ERROR, R.string.message_empty_history);
+			switchView(ViewType.ERROR, R.string.history_is_empty);
 			return false;
 		} else {
 			switchView(ViewType.LIST, null);
@@ -76,7 +76,7 @@ public class HistoryPage extends ListPage implements HistoryAdapter.Callback {
 
 	@Override
 	public String obtainTitle() {
-		return getString(R.string.action_history);
+		return getString(R.string.history);
 	}
 
 	@Override
@@ -91,7 +91,7 @@ public class HistoryPage extends ListPage implements HistoryAdapter.Callback {
 	public boolean onItemLongClick(HistoryDatabase.HistoryItem historyItem) {
 		if (historyItem != null) {
 			DialogMenu dialogMenu = new DialogMenu(getContext());
-			dialogMenu.add(R.string.action_copy_link, () -> {
+			dialogMenu.add(R.string.copy_link, () -> {
 				Uri uri = getChanLocator().safe(true).createThreadUri(historyItem.boardName, historyItem.threadNumber);
 				if (uri != null) {
 					StringUtils.copyToClipboard(getContext(), uri.toString());
@@ -99,11 +99,11 @@ public class HistoryPage extends ListPage implements HistoryAdapter.Callback {
 			});
 			if (!FavoritesStorage.getInstance().hasFavorite(historyItem.chanName,
 					historyItem.boardName, historyItem.threadNumber)) {
-				dialogMenu.add(R.string.action_add_to_favorites, () -> FavoritesStorage.getInstance()
+				dialogMenu.add(R.string.add_to_favorites, () -> FavoritesStorage.getInstance()
 						.add(historyItem.chanName, historyItem.boardName, historyItem.threadNumber,
 								historyItem.title, 0));
 			}
-			dialogMenu.add(R.string.action_remove_from_history, () -> {
+			dialogMenu.add(R.string.remove_from_history, () -> {
 				if (HistoryDatabase.getInstance().remove(historyItem.chanName, historyItem.boardName,
 						historyItem.threadNumber)) {
 					getAdapter().remove(historyItem);
@@ -117,10 +117,10 @@ public class HistoryPage extends ListPage implements HistoryAdapter.Callback {
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu) {
-		menu.add(0, R.id.menu_search, 0, R.string.action_filter)
+		menu.add(0, R.id.menu_search, 0, R.string.filter)
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
-		menu.add(0, R.id.menu_clear, 0, R.string.action_clear_history);
-		menu.addSubMenu(0, R.id.menu_appearance, 0, R.string.action_appearance);
+		menu.add(0, R.id.menu_clear, 0, R.string.clear_history);
+		menu.addSubMenu(0, R.id.menu_appearance, 0, R.string.appearance);
 	}
 
 	@Override
@@ -128,12 +128,12 @@ public class HistoryPage extends ListPage implements HistoryAdapter.Callback {
 		switch (item.getItemId()) {
 			case R.id.menu_clear: {
 				AlertDialog dialog = new AlertDialog.Builder(getContext())
-						.setMessage(R.string.message_clear_history_confirm)
+						.setMessage(R.string.clear_history__sentence)
 						.setNegativeButton(android.R.string.cancel, null)
 						.setPositiveButton(android.R.string.ok, (d, which1) -> {
 							HistoryDatabase.getInstance().clearAllHistory(mergeChans ? null : chanName);
 							getAdapter().clear();
-							switchView(ViewType.ERROR, R.string.message_empty_history);
+							switchView(ViewType.ERROR, R.string.history_is_empty);
 						}).show();
 				getUiManager().getConfigurationLock().lockConfiguration(dialog);
 				return true;

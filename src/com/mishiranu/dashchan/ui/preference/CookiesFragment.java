@@ -66,7 +66,7 @@ public class CookiesFragment extends PreferenceFragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.preference_manage_cookies), null);
+		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.manage_cookies), null);
 		if (!ChanManager.getInstance().isExistingChanName(getChanName())) {
 			((FragmentHandler) requireActivity()).removeFragment();
 		}
@@ -158,10 +158,10 @@ public class CookiesFragment extends PreferenceFragment {
 			Bundle args = requireArguments();
 			boolean blocked = args.getBoolean(EXTRA_BLOCKED);
 			DialogMenu dialogMenu = new DialogMenu(requireContext());
-			dialogMenu.add(R.string.action_block, blocked, () -> ((CookiesFragment) getParentFragment())
+			dialogMenu.add(R.string.block, blocked, () -> ((CookiesFragment) getParentFragment())
 					.setBlocked(args.getString(EXTRA_COOKIE), !args.getBoolean(EXTRA_BLOCKED)));
 			if (!blocked) {
-				dialogMenu.add(R.string.action_delete, () -> ((CookiesFragment) getParentFragment())
+				dialogMenu.add(R.string.delete, () -> ((CookiesFragment) getParentFragment())
 						.removeCookie(args.getString(EXTRA_COOKIE), false));
 			}
 			return dialogMenu.create();

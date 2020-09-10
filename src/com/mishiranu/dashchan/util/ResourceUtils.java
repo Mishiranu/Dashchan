@@ -14,6 +14,7 @@ import android.view.Gravity;
 import android.view.View;
 import androidx.fragment.app.Fragment;
 import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.R;
 
 public class ResourceUtils {
 	public static float obtainDensity(View view) {
@@ -110,6 +111,10 @@ public class ResourceUtils {
 			drawable.setTint(getColor(context, android.R.attr.textColorPrimary));
 		}
 		return drawable;
+	}
+
+	public static String getColonString(Resources resources, int resId, Object formatArg) {
+		return resources.getString(R.string.__colon_format, resources.getString(resId), formatArg);
 	}
 
 	public static final int[] PRESSED_STATE = {android.R.attr.state_window_focused, android.R.attr.state_enabled,

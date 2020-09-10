@@ -206,7 +206,7 @@ public class ImageUnit {
 		String message = builder.toString();
 		AlertDialog.Builder dialogBuilder = new AlertDialog
 				.Builder(instance.galleryInstance.callback.getWindow().getContext())
-				.setTitle(R.string.action_technical_info).setMessage(message)
+				.setTitle(R.string.technical_info).setMessage(message)
 				.setPositiveButton(android.R.string.ok, null);
 		String geolocation = instance.currentHolder.jpegData.getGeolocation(false);
 		if (geolocation != null) {
@@ -216,7 +216,7 @@ public class ImageUnit {
 			final Intent intent = new Intent(Intent.ACTION_VIEW).setData(uri);
 			if (!instance.galleryInstance.context.getPackageManager().queryIntentActivities(intent,
 					PackageManager.MATCH_DEFAULT_ONLY).isEmpty()) {
-				dialogBuilder.setNeutralButton(R.string.action_show_on_map,
+				dialogBuilder.setNeutralButton(R.string.show_on_map,
 						(dialog, which) -> instance.galleryInstance.context.startActivity(intent));
 			}
 		}
@@ -251,7 +251,7 @@ public class ImageUnit {
 		@Override
 		protected Void doInBackground(Void... params) {
 			if (!fileHolder.isImage()) {
-				errorMessageId = R.string.message_image_corrupted;
+				errorMessageId = R.string.image_is_corrupted;
 				return null;
 			}
 			if (fileHolder.getImageType() == FileHolder.ImageType.IMAGE_PNG) {
@@ -273,7 +273,7 @@ public class ImageUnit {
 				int maxSize = photoView.getMaximumImageSizeAsync();
 				bitmap = fileHolder.readImageBitmap(maxSize, true, true);
 				if (bitmap == null) {
-					errorMessageId = R.string.message_image_corrupted;
+					errorMessageId = R.string.image_is_corrupted;
 				} else {
 					if (bitmap.getWidth() < fileHolder.getImageWidth() ||
 							bitmap.getHeight() < fileHolder.getImageHeight()) {
@@ -286,12 +286,12 @@ public class ImageUnit {
 					}
 				}
 			} catch (OutOfMemoryError e) {
-				errorMessageId = R.string.message_image_out_of_memory;
+				errorMessageId = R.string.no_enough_memory_to_handle_image;
 			} catch (InterruptedException e) {
-				errorMessageId = R.string.message_unknown_error;
+				errorMessageId = R.string.unknown_error;
 			} catch (Exception e) {
 				Log.persistent().stack(e);
-				errorMessageId = R.string.message_image_corrupted;
+				errorMessageId = R.string.image_is_corrupted;
 			}
 			return null;
 		}

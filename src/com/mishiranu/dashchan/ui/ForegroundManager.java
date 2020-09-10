@@ -346,7 +346,7 @@ public class ForegroundManager implements Handler.Callback {
 			EditText captchaInputView = container.findViewById(R.id.captcha_input);
 			captchaForm = new CaptchaForm(this, container, null, captchaInputView, true, captcha);
 			AlertDialog alertDialog = new AlertDialog.Builder(requireContext())
-					.setTitle(R.string.text_confirmation).setView(container)
+					.setTitle(R.string.confirmation).setView(container)
 					.setPositiveButton(android.R.string.ok, (dialog, which) -> onConfirmCaptcha())
 					.setNegativeButton(android.R.string.cancel, (dialog, which) -> cancelInternal())
 					.create();
@@ -871,7 +871,7 @@ public class ForegroundManager implements Handler.Callback {
 				return true;
 			}
 			case MESSAGE_SHOW_CAPTCHA_INVALID: {
-				ToastUtils.show(MainApplication.getInstance(), R.string.message_captcha_not_valid);
+				ToastUtils.show(MainApplication.getInstance(), R.string.captcha_is_not_valid);
 				return true;
 			}
 		}

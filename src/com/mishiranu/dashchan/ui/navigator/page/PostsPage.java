@@ -386,7 +386,8 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 	public void onItemClick(View view, PostItem postItem) {
 		if (selectionMode != null) {
 			getAdapter().toggleItemSelected(postItem);
-			selectionMode.setTitle(getString(R.string.text_selected_format, getAdapter().getSelectedCount()));
+			selectionMode.setTitle(ResourceUtils.getColonString(getResources(), R.string.selected,
+					getAdapter().getSelectedCount()));
 			return;
 		}
 		getUiManager().interaction().handlePostClick(view, postItem, getAdapter());
@@ -403,34 +404,34 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu) {
-		menu.add(0, R.id.menu_add_post, 0, R.string.action_add_post)
+		menu.add(0, R.id.menu_add_post, 0, R.string.reply)
 				.setIcon(getActionBarIcon(R.attr.iconActionAddPost))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-		menu.add(0, R.id.menu_search, 0, R.string.action_search)
+		menu.add(0, R.id.menu_search, 0, R.string.search)
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
-		menu.add(0, R.id.menu_gallery, 0, R.string.action_gallery);
-		menu.add(0, R.id.menu_select, 0, R.string.action_select);
-		menu.add(0, R.id.menu_refresh, 0, R.string.action_refresh)
+		menu.add(0, R.id.menu_gallery, 0, R.string.gallery);
+		menu.add(0, R.id.menu_select, 0, R.string.select);
+		menu.add(0, R.id.menu_refresh, 0, R.string.refresh)
 				.setIcon(getActionBarIcon(R.attr.iconActionRefresh))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-		menu.addSubMenu(0, R.id.menu_appearance, 0, R.string.action_appearance);
-		SubMenu threadOptions = menu.addSubMenu(0, R.id.menu_thread_options, 0, R.string.action_thread_options);
-		menu.add(0, R.id.menu_star_text, 0, R.string.action_add_to_favorites);
-		menu.add(0, R.id.menu_unstar_text, 0, R.string.action_remove_from_favorites);
-		menu.add(0, R.id.menu_star_icon, 0, R.string.action_add_to_favorites)
+		menu.addSubMenu(0, R.id.menu_appearance, 0, R.string.appearance);
+		SubMenu threadOptions = menu.addSubMenu(0, R.id.menu_thread_options, 0, R.string.thread_options);
+		menu.add(0, R.id.menu_star_text, 0, R.string.add_to_favorites);
+		menu.add(0, R.id.menu_unstar_text, 0, R.string.remove_from_favorites);
+		menu.add(0, R.id.menu_star_icon, 0, R.string.add_to_favorites)
 				.setIcon(getActionBarIcon(R.attr.iconActionAddToFavorites))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-		menu.add(0, R.id.menu_unstar_icon, 0, R.string.action_remove_from_favorites)
+		menu.add(0, R.id.menu_unstar_icon, 0, R.string.remove_from_favorites)
 				.setIcon(getActionBarIcon(R.attr.iconActionRemoveFromFavorites))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-		menu.add(0, R.id.menu_open_original_thread, 0, R.string.action_open_the_original);
-		menu.add(0, R.id.menu_archive, 0, R.string.action_archive_add);
+		menu.add(0, R.id.menu_open_original_thread, 0, R.string.open_original);
+		menu.add(0, R.id.menu_archive, 0, R.string.archive__verb);
 
-		threadOptions.add(0, R.id.menu_reload, 0, R.string.action_reload);
-		threadOptions.add(0, R.id.menu_auto_refresh, 0, R.string.action_auto_refresh).setCheckable(true);
-		threadOptions.add(0, R.id.menu_hidden_posts, 0, R.string.action_hidden_posts);
-		threadOptions.add(0, R.id.menu_clear, 0, R.string.action_clear_deleted);
-		threadOptions.add(0, R.id.menu_summary, 0, R.string.action_summary);
+		threadOptions.add(0, R.id.menu_reload, 0, R.string.reload);
+		threadOptions.add(0, R.id.menu_auto_refresh, 0, R.string.auto_refreshing).setCheckable(true);
+		threadOptions.add(0, R.id.menu_hidden_posts, 0, R.string.hidden_posts);
+		threadOptions.add(0, R.id.menu_clear, 0, R.string.clear_deleted);
+		threadOptions.add(0, R.id.menu_summary, 0, R.string.summary);
 	}
 
 	@Override
@@ -539,11 +540,11 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				SeekBarForm seekBarForm = new SeekBarForm(true);
 				seekBarForm.setConfiguration(Preferences.MIN_AUTO_REFRESH_INTERVAL,
 						Preferences.MAX_AUTO_REFRESH_INTERVAL, Preferences.STEP_AUTO_REFRESH_INTERVAL, 1f);
-				seekBarForm.setValueFormat(getString(R.string.preference_auto_refresh_interval_summary_format));
+				seekBarForm.setValueFormat(getString(R.string.every_number_sec__format));
 				seekBarForm.setCurrentValue(autoRefreshInterval);
 				seekBarForm.setSwitchValue(autoRefreshEnabled);
 				AlertDialog dialog = new AlertDialog.Builder(getContext())
-						.setTitle(R.string.action_auto_refresh)
+						.setTitle(R.string.auto_refreshing)
 						.setView(seekBarForm.inflate(getContext()))
 						.setPositiveButton(android.R.string.ok, (d, which) -> {
 							autoRefreshEnabled = seekBarForm.getSwitchValue();
@@ -564,7 +565,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				ArrayList<String> localAutohide = hidePerformer.getReadableLocalAutohide();
 				final boolean[] checked = new boolean[localAutohide.size()];
 				AlertDialog dialog = new AlertDialog.Builder(getContext())
-						.setTitle(R.string.text_remove_rules)
+						.setTitle(R.string.remove_rules)
 						.setMultiChoiceItems(CommonUtils.toArray(localAutohide, String.class),
 								checked, (d, which, isChecked) -> checked[which] = isChecked)
 						.setPositiveButton(android.R.string.ok, (d, which) -> {
@@ -591,7 +592,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 			}
 			case R.id.menu_clear: {
 				AlertDialog dialog = new AlertDialog.Builder(getContext())
-						.setMessage(R.string.message_clear_deleted_posts_warning)
+						.setMessage(R.string.deleted_posts_will_be_deleted__sentence)
 						.setPositiveButton(android.R.string.ok, (d, which) -> {
 							RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
 							Posts cachedPosts = retainExtra.cachedPosts;
@@ -645,19 +646,22 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				StringBuilder builder = new StringBuilder();
 				String boardName = page.boardName;
 				if (boardName != null) {
-					builder.append(getString(R.string.text_board)).append(": ");
+					builder.append(getString(R.string.board)).append(": ");
 					String title = getChanConfiguration().getBoardTitle(boardName);
 					builder.append(StringUtils.formatBoardTitle(page.chanName, boardName, title));
 					builder.append('\n');
 				}
-				builder.append(getString(R.string.text_files_format, files));
-				builder.append('\n').append(getString(R.string.text_posts_with_files_format, postsWithFiles));
-				builder.append('\n').append(getString(R.string.text_links_attachments_format, links));
+				builder.append(ResourceUtils.getColonString(getResources(), R.string.files__genitive, files));
+				builder.append('\n').append(ResourceUtils.getColonString(getResources(),
+						R.string.posts_with_files__genitive, postsWithFiles));
+				builder.append('\n').append(ResourceUtils.getColonString(getResources(),
+						R.string.links_attachments__genitive, links));
 				if (uniquePosters > 0) {
-					builder.append('\n').append(getString(R.string.text_unique_posters_format, uniquePosters));
+					builder.append('\n').append(ResourceUtils.getColonString(getResources(),
+							R.string.unique_posters__genitive, uniquePosters));
 				}
 				AlertDialog dialog = new AlertDialog.Builder(getContext())
-						.setTitle(R.string.action_summary)
+						.setTitle(R.string.summary)
 						.setMessage(builder)
 						.setPositiveButton(android.R.string.ok, null)
 						.show();
@@ -699,20 +703,21 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		Page page = getPage();
 		ChanConfiguration configuration = getChanConfiguration();
 		getAdapter().setSelectionModeEnabled(true);
-		mode.setTitle(getString(R.string.text_selected_format, getAdapter().getSelectedCount()));
+		mode.setTitle(ResourceUtils.getColonString(getResources(),
+				R.string.selected, getAdapter().getSelectedCount()));
 		ChanConfiguration.Board board = configuration.safe().obtainBoard(page.boardName);
-		menu.add(0, R.id.menu_make_threadshot, 0, R.string.action_make_threadshot)
+		menu.add(0, R.id.menu_make_threadshot, 0, R.string.make_threadshot)
 				.setIcon(getActionBarIcon(R.attr.iconActionMakeThreadshot))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 		if (replyable != null) {
-			menu.add(0, R.id.menu_reply, 0, R.string.action_reply)
+			menu.add(0, R.id.menu_reply, 0, R.string.reply)
 					.setIcon(getActionBarIcon(R.attr.iconActionPaste))
 					.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 		}
 		if (board.allowDeleting) {
 			ChanConfiguration.Deleting deleting = configuration.safe().obtainDeleting(page.boardName);
 			if (deleting != null && deleting.multiplePosts) {
-				menu.add(0, R.id.menu_delete, 0, R.string.action_delete)
+				menu.add(0, R.id.menu_delete, 0, R.string.delete)
 						.setIcon(getActionBarIcon(R.attr.iconActionDelete))
 						.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 			}
@@ -720,7 +725,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		if (board.allowReporting) {
 			ChanConfiguration.Reporting reporting = configuration.safe().obtainReporting(page.boardName);
 			if (reporting != null && reporting.multiplePosts) {
-				menu.add(0, R.id.menu_report, 0, R.string.action_report)
+				menu.add(0, R.id.menu_report, 0, R.string.report)
 						.setIcon(getActionBarIcon(R.attr.iconActionReport))
 						.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 			}
@@ -908,7 +913,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 			return SearchSubmitResult.ACCEPT;
 		} else {
 			setCustomSearchView(null);
-			ToastUtils.show(getContext(), R.string.message_not_found);
+			ToastUtils.show(getContext(), R.string.not_found);
 			retainExtra.searchLastPosition = -1;
 			updateSearchTitle();
 			return SearchSubmitResult.DISCARD;
@@ -1027,7 +1032,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 					ListViewUtils.smoothScrollToPosition(getRecyclerView(), position);
 					success = true;
 				} else {
-					ToastUtils.show(getContext(), R.string.message_post_not_found);
+					ToastUtils.show(getContext(), R.string.post_is_not_found);
 				}
 			}
 		}
@@ -1381,28 +1386,28 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				}
 			}
 			if (result.newCount > 0 || repliesCount > 0 || result.deletedCount > 0 || result.hasEdited) {
-				StringBuilder message = new StringBuilder();
+				String message;
 				if (repliesCount > 0 || result.deletedCount > 0) {
-					message.append(getQuantityString(R.plurals.text_new_posts_count_short_format,
-							result.newCount, result.newCount));
+					message = getQuantityString(R.plurals.number_new__format, result.newCount, result.newCount);
 					if (repliesCount > 0) {
-						message.append(", ").append(getQuantityString(R.plurals.text_replies_count_format,
-								repliesCount, repliesCount));
+						message = getString(R.string.__enumeration_format, message,
+								getQuantityString(R.plurals.number_replies__format, repliesCount, repliesCount));
 					}
 					if (result.deletedCount > 0) {
-						message.append(", ").append(getQuantityString(R.plurals.text_deleted_count_format,
-								result.deletedCount, result.deletedCount));
+						message = getString(R.string.__enumeration_format, message,
+								getQuantityString(R.plurals.number_deleted__format,
+										result.deletedCount, result.deletedCount));
 					}
 				} else if (result.newCount > 0) {
-					message.append(getQuantityString(R.plurals.text_new_posts_count_format,
-							result.newCount, result.newCount));
+					message = getQuantityString(R.plurals.number_new_posts__format,
+							result.newCount, result.newCount);
 				} else {
-					message.append(getString(R.string.message_edited_posts));
+					message = getString(R.string.some_posts_have_been_edited);
 				}
 				if (result.newCount > 0 && newPostPosition < adapter.getItemCount()) {
 					PostItem newPostItem = adapter.getItem(newPostPosition);
 					getParcelableExtra(ParcelableExtra.FACTORY).newPostNumber = newPostItem.getPostNumber();
-					ClickableToast.show(getContext(), message, getString(R.string.action_show), () -> {
+					ClickableToast.show(getContext(), message, getString(R.string.show), () -> {
 						if (!isDestroyed()) {
 							String newPostNumber = getParcelableExtra(ParcelableExtra.FACTORY).newPostNumber;
 							int newPostIndex = getAdapter().findPositionByPostNumber(newPostNumber);
@@ -1445,7 +1450,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		getRecyclerView().getWrapper().cancelBusyState();
 		switchView(ViewType.LIST, null);
 		if (getAdapter().getItemCount() == 0) {
-			displayDownloadError(true, getString(R.string.message_empty_response));
+			displayDownloadError(true, getString(R.string.empty_response));
 		} else {
 			onAfterPostsLoad(false);
 		}

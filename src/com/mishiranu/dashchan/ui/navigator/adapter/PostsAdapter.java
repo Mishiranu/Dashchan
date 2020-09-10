@@ -226,7 +226,7 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 			String postNumber = locator.safe(false).getPostNumber(uri);
 			int position = StringUtils.isEmpty(postNumber) ? 0 : findPositionByPostNumber(postNumber);
 			if (position == -1) {
-				ToastUtils.show(view.getContext(), R.string.message_post_not_found);
+				ToastUtils.show(view.getContext(), R.string.post_is_not_found);
 				return;
 			}
 			uiManager.dialog().displaySingle(configurationSet, getItem(position));

@@ -26,10 +26,10 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 	private enum ViewType {VIEW, HEADER}
 
 	private enum Header {
-		TODAY(R.string.text_today),
-		YESTERDAY(R.string.text_yesterday),
-		WEEK(R.string.text_this_week),
-		OLD(R.string.text_older_7_days);
+		TODAY(R.string.today),
+		YESTERDAY(R.string.yesterday),
+		WEEK(R.string.this_week),
+		OLD(R.string.older_than_seven_days);
 
 		public final int titleResId;
 

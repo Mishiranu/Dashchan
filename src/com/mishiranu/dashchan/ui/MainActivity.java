@@ -74,6 +74,7 @@ import com.mishiranu.dashchan.ui.posting.PostingFragment;
 import com.mishiranu.dashchan.ui.posting.Replyable;
 import com.mishiranu.dashchan.ui.preference.CategoriesFragment;
 import com.mishiranu.dashchan.ui.preference.UpdateFragment;
+import com.mishiranu.dashchan.util.AndroidUtils;
 import com.mishiranu.dashchan.util.ConcatIterable;
 import com.mishiranu.dashchan.util.ConfigurationLock;
 import com.mishiranu.dashchan.util.DrawerToggle;
@@ -399,7 +400,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 				navigateIntentData(chanName, Preferences.getDefaultBoardName(chanName), null, null, null, null, 0);
 			} else {
 				navigateFragment(new CategoriesFragment(), null);
-				ToastUtils.show(this, R.string.message_no_extensions);
+				ToastUtils.show(this, R.string.no_extensions_installed);
 			}
 		}
 
@@ -681,7 +682,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 				return;
 			}
 		}
-		ToastUtils.show(this, R.string.message_unknown_address);
+		ToastUtils.show(this, R.string.unknown_address);
 	}
 
 	private static boolean isSingleBoardMode(String chanName) {
@@ -1205,7 +1206,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			}
 			if (!handled) {
 				if (allowTimeout && SystemClock.elapsedRealtime() - backPressed > 2000) {
-					ClickableToast.show(this, R.string.message_press_again_to_exit);
+					ClickableToast.show(this, R.string.press_again_to_exit);
 					backPressed = SystemClock.elapsedRealtime();
 				} else {
 					super.onBackPressed();
@@ -1240,19 +1241,19 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			Menu appearanceOptionsMenu = appearanceOptionsItem.getSubMenu();
 			if (appearanceOptionsMenu.size() == 0) {
 				appearanceOptionsMenu.add(0, R.id.menu_change_theme, 0,
-						R.string.action_change_theme);
+						R.string.change_theme);
 				appearanceOptionsMenu.add(0, R.id.menu_expanded_screen, 0,
-						R.string.action_expanded_screen).setCheckable(true);
+						R.string.expanded_screen).setCheckable(true);
 				appearanceOptionsMenu.add(0, R.id.menu_spoilers, 0,
-						R.string.action_spoilers).setCheckable(true);
+						R.string.spoilers).setCheckable(true);
 				appearanceOptionsMenu.add(0, R.id.menu_my_posts, 0,
-						R.string.action_my_posts).setCheckable(true);
+						R.string.my_posts).setCheckable(true);
 				appearanceOptionsMenu.add(0, R.id.menu_drawer, 0,
-						R.string.action_lock_drawer).setCheckable(true);
+						R.string.lock_navigation).setCheckable(true);
 				appearanceOptionsMenu.add(0, R.id.menu_threads_grid, 0,
-						R.string.action_threads_grid).setCheckable(true);
+						R.string.threads_grid).setCheckable(true);
 				appearanceOptionsMenu.add(0, R.id.menu_sfw_mode, 0,
-						R.string.action_sfw_mode).setCheckable(true);
+						R.string.sfw_mode).setCheckable(true);
 			}
 			appearanceOptionsMenu.findItem(R.id.menu_expanded_screen)
 					.setChecked(Preferences.isExpandedScreen());
@@ -1373,7 +1374,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		int outerPadding = (int) (16f * density);
 		outer.setPadding(outerPadding, outerPadding, outerPadding, outerPadding);
 		scrollView.addView(outer, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-		final AlertDialog dialog = new AlertDialog.Builder(this).setTitle(R.string.action_change_theme)
+		final AlertDialog dialog = new AlertDialog.Builder(this).setTitle(R.string.change_theme)
 				.setView(scrollView).setNegativeButton(android.R.string.cancel, null).create();
 		View.OnClickListener listener = v -> {
 			ThemeEngine.Theme newTheme = themes.get((int) v.getTag());
@@ -1864,14 +1865,14 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		if (C.API_OREO) {
 			NotificationChannel channelUpdates =
 					new NotificationChannel(C.NOTIFICATION_CHANNEL_UPDATES,
-							getString(R.string.text_updates), NotificationManager.IMPORTANCE_HIGH);
+							getString(R.string.updates), NotificationManager.IMPORTANCE_HIGH);
 			channelUpdates.setSound(null, null);
 			channelUpdates.setVibrationPattern(new long[0]);
 			notificationManager.createNotificationChannel(channelUpdates);
 		}
 		NotificationCompat.Builder builder = new NotificationCompat.Builder(this, C.NOTIFICATION_CHANNEL_UPDATES);
 		builder.setSmallIcon(R.drawable.ic_new_releases_white_24dp);
-		String text = getString(R.string.text_updates_available_format, count);
+		String text = ResourceUtils.getColonString(getResources(), R.string.updates_available__genitive, count);
 		if (C.API_LOLLIPOP) {
 			builder.setColor(ThemeEngine.getTheme(this).accent);
 			builder.setPriority(NotificationCompat.PRIORITY_HIGH);
@@ -1879,7 +1880,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		} else {
 			builder.setTicker(text);
 		}
-		builder.setContentTitle(getString(R.string.text_app_name_update, getString(R.string.const_app_name)));
+		builder.setContentTitle(getString(R.string.application_name_update__format,
+				AndroidUtils.getApplicationLabel(this)));
 		builder.setContentText(text);
 		// Set action to ensure unique pending intent
 		Intent intent = new Intent(this, MainActivity.class).setAction("updates")

@@ -53,11 +53,11 @@ public class PostingShareActivity extends Activity {
 		}
 
 		if (success > 0) {
-			ToastUtils.show(this, R.string.message_draft_saved);
+			ToastUtils.show(this, R.string.draft_saved);
 		} else if (contentUri != null) {
 			startActivity(new Intent(this, MainActivity.class).setData(contentUri));
 		} else {
-			ToastUtils.show(this, R.string.message_unknown_address);
+			ToastUtils.show(this, R.string.unknown_address);
 		}
 		finish();
 	}

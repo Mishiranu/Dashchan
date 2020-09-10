@@ -67,7 +67,7 @@ public class UserBoardsPage extends ListPage implements UserBoardsAdapter.Callba
 
 	@Override
 	public String obtainTitle() {
-		return getString(R.string.action_user_boards);
+		return getString(R.string.user_boards);
 	}
 
 	@Override
@@ -81,14 +81,14 @@ public class UserBoardsPage extends ListPage implements UserBoardsAdapter.Callba
 	public boolean onItemLongClick(String boardName) {
 		if (boardName != null) {
 			DialogMenu dialogMenu = new DialogMenu(getContext());
-			dialogMenu.add(R.string.action_copy_link, () -> {
+			dialogMenu.add(R.string.copy_link, () -> {
 				Uri uri = getChanLocator().safe(true).createBoardUri(boardName, 0);
 				if (uri != null) {
 					StringUtils.copyToClipboard(getContext(), uri.toString());
 				}
 			});
 			if (!FavoritesStorage.getInstance().hasFavorite(getPage().chanName, boardName, null)) {
-				dialogMenu.add(R.string.action_add_to_favorites, () -> FavoritesStorage.getInstance()
+				dialogMenu.add(R.string.add_to_favorites, () -> FavoritesStorage.getInstance()
 						.add(getPage().chanName, boardName));
 			}
 			dialogMenu.show(getUiManager().getConfigurationLock());
@@ -99,12 +99,12 @@ public class UserBoardsPage extends ListPage implements UserBoardsAdapter.Callba
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu) {
-		menu.add(0, R.id.menu_search, 0, R.string.action_filter)
+		menu.add(0, R.id.menu_search, 0, R.string.filter)
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
-		menu.add(0, R.id.menu_refresh, 0, R.string.action_refresh)
+		menu.add(0, R.id.menu_refresh, 0, R.string.refresh)
 				.setIcon(getActionBarIcon(R.attr.iconActionRefresh))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-		menu.addSubMenu(0, R.id.menu_appearance, 0, R.string.action_appearance);
+		menu.addSubMenu(0, R.id.menu_appearance, 0, R.string.appearance);
 	}
 
 	@Override

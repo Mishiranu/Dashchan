@@ -150,10 +150,10 @@ public class PostingService extends Service implements SendPostTask.Callback<Pos
 		if (C.API_OREO) {
 			NotificationChannel channelPosting =
 					new NotificationChannel(C.NOTIFICATION_CHANNEL_POSTING,
-							getString(R.string.text_posting), NotificationManager.IMPORTANCE_LOW);
+							getString(R.string.posting), NotificationManager.IMPORTANCE_LOW);
 			NotificationChannel channelPostingComplete =
 					new NotificationChannel(C.NOTIFICATION_CHANNEL_POSTING_COMPLETE,
-							getString(R.string.text_sent_posts), NotificationManager.IMPORTANCE_HIGH);
+							getString(R.string.sent_posts), NotificationManager.IMPORTANCE_HIGH);
 			channelPostingComplete.setSound(null, null);
 			channelPostingComplete.setVibrationPattern(new long[0]);
 			notificationManager.createNotificationChannel(channelPosting);
@@ -226,16 +226,16 @@ public class PostingService extends Service implements SendPostTask.Callback<Pos
 						if (progressMode) {
 							builder.setProgress(1, 0, true);
 						}
-						builder.setContentTitle(getString(R.string.message_sending));
+						builder.setContentTitle(getString(R.string.sending__ellipsis));
 						break;
 					}
 					case SENDING: {
 						if (progressMode) {
 							builder.setProgress(taskState.progressMax, taskState.progress, taskState.progressMax <= 0);
-							builder.setContentTitle(getString(R.string.message_sending_index_format,
+							builder.setContentTitle(getString(R.string.sending_number_of_number__ellipsis_format,
 									taskState.attachmentIndex + 1, taskState.attachmentsCount));
 						} else {
-							builder.setContentTitle(getString(R.string.message_sending));
+							builder.setContentTitle(getString(R.string.sending__ellipsis));
 						}
 						break;
 					}
@@ -243,7 +243,7 @@ public class PostingService extends Service implements SendPostTask.Callback<Pos
 						if (progressMode) {
 							builder.setProgress(1, 1, false);
 						}
-						builder.setContentTitle(getString(R.string.message_processing_data));
+						builder.setContentTitle(getString(R.string.processing_data__ellipsis));
 						break;
 					}
 				}
@@ -463,9 +463,9 @@ public class PostingService extends Service implements SendPostTask.Callback<Pos
 					builder.setPriority(NotificationCompat.PRIORITY_HIGH);
 					builder.setVibrate(new long[0]);
 				} else {
-					builder.setTicker(getString(R.string.text_post_sent));
+					builder.setTicker(getString(R.string.post_sent));
 				}
-				builder.setContentTitle(getString(R.string.text_post_sent));
+				builder.setContentTitle(getString(R.string.post_sent));
 				builder.setContentText(buildNotificationText(chanName, data.boardName, targetThreadNumber, postNumber));
 				String tag = newPostData.getNotificationTag();
 				Intent intent = NavigationUtils.obtainPostsIntent(this, chanName, data.boardName, targetThreadNumber,

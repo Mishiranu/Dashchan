@@ -22,46 +22,43 @@ public class GeneralFragment extends PreferenceFragment {
 	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		addList(Preferences.KEY_LOCALE, LocaleManager.VALUES_LOCALE,
-				LocaleManager.DEFAULT_LOCALE, R.string.preference_locale, LocaleManager.ENTRIES_LOCALE)
-				.setOnAfterChangeListener(p -> {
+		addList(Preferences.KEY_LOCALE, LocaleManager.VALUES_LOCALE, LocaleManager.DEFAULT_LOCALE,
+				R.string.language, LocaleManager.ENTRIES_LOCALE).setOnAfterChangeListener(p -> {
 					LocaleManager.getInstance().apply(requireContext(), false);
 					requireActivity().recreate();
 				});
 
-		addHeader(R.string.preference_category_navigation);
+		addHeader(R.string.navigation);
 		addCheck(true, Preferences.KEY_CLOSE_ON_BACK, Preferences.DEFAULT_CLOSE_ON_BACK,
-				R.string.preference_close_on_back, R.string.preference_close_on_back_summary);
+				R.string.close_pages, R.string.close_pages__summary);
 		addCheck(true, Preferences.KEY_REMEMBER_HISTORY, Preferences.DEFAULT_REMEMBER_HISTORY,
-				R.string.preference_remember_history, 0);
+				R.string.remember_history, 0);
 		if (ChanManager.getInstance().hasMultipleAvailableChans()) {
 			addCheck(true, Preferences.KEY_MERGE_CHANS, Preferences.DEFAULT_MERGE_CHANS,
-					R.string.preference_merge_chans, R.string.preference_merge_chans_summary);
+					R.string.merge_pages, R.string.merge_pages__summary);
 		}
 		addCheck(true, Preferences.KEY_INTERNAL_BROWSER, Preferences.DEFAULT_INTERNAL_BROWSER,
-				R.string.preference_internal_browser, R.string.preference_internal_browser_sumamry);
+				R.string.internal_browser, R.string.internal_browser__sumamry);
 
 		if (C.API_KITKAT) {
-			addHeader(R.string.preference_category_services);
-			addCheck(true, Preferences.KEY_RECAPTCHA_JAVASCRIPT,
-					Preferences.DEFAULT_RECAPTCHA_JAVASCRIPT, R.string.preference_recaptcha_javascript,
-					R.string.preference_recaptcha_javascript_summary);
+			addHeader(R.string.services);
+			addCheck(true, Preferences.KEY_RECAPTCHA_JAVASCRIPT, Preferences.DEFAULT_RECAPTCHA_JAVASCRIPT,
+					R.string.use_javascript_for_recaptcha, R.string.use_javascript_for_recaptcha__summary);
 		}
 
-		addHeader(R.string.preference_category_connection);
-		addButton(0, R.string.preference_use_https_warning).setSelectable(false);
+		addHeader(R.string.connection);
+		addButton(0, R.string.specific_to_internal_services__sentence).setSelectable(false);
 		addCheck(true, Preferences.KEY_USE_HTTPS_GENERAL, Preferences.DEFAULT_USE_HTTPS,
-				R.string.preference_use_https, R.string.preference_use_https_summary);
-		addCheck(true, Preferences.KEY_VERIFY_CERTIFICATE,
-				Preferences.DEFAULT_VERIFY_CERTIFICATE, R.string.preference_verify_certificate,
-				R.string.preference_verify_certificate_summary);
+				R.string.secure_connection, R.string.secure_connection__summary);
+		addCheck(true, Preferences.KEY_VERIFY_CERTIFICATE, Preferences.DEFAULT_VERIFY_CERTIFICATE,
+				R.string.verify_certificate, R.string.verify_certificate__summary);
 		addCheck(true, Preferences.KEY_USE_GMS_PROVIDER, Preferences.DEFAULT_USE_GMS_PROVIDER,
-				R.string.preference_use_gms_provider, R.string.preference_use_gms_provider_summary);
+				R.string.use_gms_security_provider, R.string.requires_restart);
 	}
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.preference_header_general), null);
+		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.general), null);
 	}
 }

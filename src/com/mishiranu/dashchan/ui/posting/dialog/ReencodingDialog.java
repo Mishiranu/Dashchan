@@ -16,6 +16,7 @@ import androidx.fragment.app.DialogFragment;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.ui.SeekBarForm;
 import com.mishiranu.dashchan.util.GraphicsUtils;
+import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ThemeEngine;
 import java.util.Locale;
 
@@ -42,11 +43,11 @@ public class ReencodingDialog extends DialogFragment implements DialogInterface.
 		Context context = getActivity();
 		qualityForm = new SeekBarForm(false);
 		qualityForm.setConfiguration(1, 100, 1, 1);
-		qualityForm.setValueFormat(getString(R.string.text_quality_format));
+		qualityForm.setValueFormat(ResourceUtils.getColonString(getResources(), R.string.quality, "%d%%"));
 		qualityForm.setCurrentValue(savedInstanceState != null ? savedInstanceState.getInt(EXTRA_QUALITY) : 90);
 		reduceForm = new SeekBarForm(false);
 		reduceForm.setConfiguration(1, 8, 1, 1);
-		reduceForm.setValueFormat(getString(R.string.text_reduce_format));
+		reduceForm.setValueFormat(ResourceUtils.getColonString(getResources(), R.string.reduce, "%dx"));
 		reduceForm.setCurrentValue(savedInstanceState != null ? savedInstanceState.getInt(EXTRA_REDUCE) : 1);
 		int padding = getResources().getDimensionPixelSize(R.dimen.dialog_padding_view);
 		View qualityView = qualityForm.inflate(context);
@@ -85,7 +86,7 @@ public class ReencodingDialog extends DialogFragment implements DialogInterface.
 		ScrollView scrollView = new ScrollView(context);
 		scrollView.addView(linearLayout, ScrollView.LayoutParams.MATCH_PARENT,
 				ScrollView.LayoutParams.WRAP_CONTENT);
-		return new AlertDialog.Builder(context).setTitle(R.string.text_reencode_image)
+		return new AlertDialog.Builder(context).setTitle(R.string.reencode_image)
 				.setView(scrollView).setNegativeButton(android.R.string.cancel, null)
 				.setPositiveButton(android.R.string.ok, this).create();
 	}

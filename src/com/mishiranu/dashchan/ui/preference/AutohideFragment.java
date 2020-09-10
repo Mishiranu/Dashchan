@@ -69,7 +69,7 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 
 		searchView = new CustomSearchView(C.API_LOLLIPOP ? new ContextThemeWrapper(requireContext(),
 				R.style.Theme_Special_White) : requireActivity().getActionBar().getThemedContext());
-		searchView.setHint(getString(R.string.action_filter));
+		searchView.setHint(getString(R.string.filter));
 		searchView.setOnChangeListener(query -> {
 			((Adapter) getRecyclerView().getAdapter()).setSearchQuery(query);
 			if (searchQuery != null) {
@@ -83,10 +83,10 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 		super.onActivityCreated(savedInstanceState);
 
 		setHasOptionsMenu(true);
-		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.preference_header_autohide), null);
+		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.autohide), null);
 		items.addAll(AutohideStorage.getInstance().getItems());
 		if (items.isEmpty()) {
-			setEmptyText(getString(R.string.message_no_rules));
+			setEmptyText(getString(R.string.no_rules_defined));
 		}
 		getRecyclerView().setAdapter(new Adapter());
 	}
@@ -129,10 +129,10 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 
 	@Override
 	public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-		menu.add(0, R.id.menu_new_rule, 0, R.string.action_new_rule)
+		menu.add(0, R.id.menu_new_rule, 0, R.string.new_rule)
 				.setIcon(((FragmentHandler) requireActivity()).getActionBarIcon(R.attr.iconActionAddRule))
 				.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-		searchMenuItem = menu.add(0, R.id.menu_search, 0, R.string.action_filter).setActionView(searchView)
+		searchMenuItem = menu.add(0, R.id.menu_search, 0, R.string.filter).setActionView(searchView)
 				.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW)
 				.setOnActionExpandListener(new MenuExpandListener((menuItem, expand) -> {
 					if (expand) {
@@ -197,7 +197,7 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 		items.remove(index);
 		((Adapter) getRecyclerView().getAdapter()).invalidate();
 		if (items.isEmpty()) {
-			setEmptyText(getString(R.string.message_no_rules));
+			setEmptyText(getString(R.string.no_rules_defined));
 		}
 	}
 
@@ -251,7 +251,7 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 			ViewFactory.TwoLinesViewHolder viewHolder = (ViewFactory.TwoLinesViewHolder) holder.itemView.getTag();
 			AutohideStorage.AutohideItem autohideItem = getItem(position);
 			viewHolder.text1.setText(StringUtils.isEmpty(autohideItem.value)
-					? getString(R.string.text_all_posts) : autohideItem.value);
+					? getString(R.string.all_posts) : autohideItem.value);
 			StringBuilder builder = new StringBuilder();
 			boolean and = false;
 			if (!StringUtils.isEmpty(autohideItem.boardName) || autohideItem.optionOriginalPost
@@ -404,7 +404,7 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 				autohideName.setChecked(autohideItem.optionName);
 				valueEdit.setText(autohideItem.value);
 			} else {
-				chanNameSelector.setText(R.string.text_all_forums);
+				chanNameSelector.setText(R.string.all_forums);
 				boardNameEdit.setText(null);
 				threadNumberEdit.setText(null);
 				autohideOriginalPost.setChecked(false);
@@ -430,10 +430,10 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 			AlertDialog.Builder builder = new AlertDialog.Builder(requireContext())
 					.setView(scrollView)
 					.setNegativeButton(android.R.string.cancel, null)
-					.setPositiveButton(R.string.action_save, (d, which) -> ((AutohideFragment) getParentFragment())
+					.setPositiveButton(R.string.save, (d, which) -> ((AutohideFragment) getParentFragment())
 							.onEditComplete(readDialogView(), index));
 			if (index >= 0) {
-				builder.setNeutralButton(R.string.action_delete,
+				builder.setNeutralButton(R.string.delete,
 						(d, which) -> ((AutohideFragment) getParentFragment()).onDelete(index));
 			}
 			AlertDialog dialog = builder.create();
@@ -451,14 +451,14 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 			String chanNameText;
 			int size = selectedChanNames.size();
 			if (size == 0) {
-				chanNameText = getString(R.string.text_all_forums);
+				chanNameText = getString(R.string.all_forums);
 			} else if (size > 1) {
-				chanNameText = getString(R.string.text_several_forums);
+				chanNameText = getString(R.string.multiple_forums);
 			} else {
 				String chanName = selectedChanNames.iterator().next();
 				ChanConfiguration configuration = ChanConfiguration.get(chanName);
 				String title = configuration != null ? configuration.getTitle() : chanName;
-				chanNameText = getString(R.string.text_only_forum_format, title);
+				chanNameText = getString(R.string.forum_only__format, title);
 			}
 			chanNameSelector.setText(chanNameText);
 		}
@@ -542,12 +542,13 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 			}
 			if (matchedText != null) {
 				if (StringUtils.isEmptyOrWhitespace(matchedText)) {
-					matcherText.setText(R.string.text_match_found);
+					matcherText.setText(R.string.match_found);
 				} else {
-					matcherText.setText(getString(R.string.text_match_found_format, matchedText));
+					matcherText.setText(ResourceUtils.getColonString(getResources(),
+							R.string.match_found, matchedText));
 				}
 			} else {
-				matcherText.setText(R.string.text_no_matches_found);
+				matcherText.setText(R.string.no_matches_found);
 			}
 		}
 

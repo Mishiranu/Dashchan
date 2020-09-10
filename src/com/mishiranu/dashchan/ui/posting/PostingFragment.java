@@ -512,7 +512,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 
 		setHasOptionsMenu(true);
 		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(StringUtils.isEmpty(getThreadNumber())
-				? R.string.text_new_thread : R.string.text_new_post), null);
+				? R.string.new_thread : R.string.new_post), null);
 		requireActivity().bindService(new Intent(requireContext(), PostingService.class),
 				postingConnection, Context.BIND_AUTO_CREATE);
 	}
@@ -619,7 +619,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 				String lastUserIcon = getUserIcon();
 				int lastUserIconIndex = -1;
 				ArrayList<String> items = new ArrayList<>();
-				items.add(getString(R.string.text_no_icon));
+				items.add(getString(R.string.no_icon));
 				for (int i = 0; i < userIconItems.size(); i++) {
 					Pair<String, String> iconItem = userIconItems.get(i);
 					items.add(iconItem.second);
@@ -722,7 +722,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 
 	@Override
 	public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-		menu.add(0, R.id.menu_attach, 0, R.string.action_attach)
+		menu.add(0, R.id.menu_attach, 0, R.string.attach)
 				.setIcon(((FragmentHandler) requireActivity()).getActionBarIcon(R.attr.iconActionAttach))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 	}
@@ -930,7 +930,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 				progressDialog = new ProgressDialog(requireContext(), progressMode ? "%1$d / %2$d KB" : null);
 				progressDialog.setCancelable(true);
 				progressDialog.setOnCancelListener(sendPostCancelListener);
-				progressDialog.setButton(ProgressDialog.BUTTON_POSITIVE, getString(R.string.action_minimize),
+				progressDialog.setButton(ProgressDialog.BUTTON_POSITIVE, getString(R.string.minimize),
 						sendPostMinimizeListener);
 				progressDialog.show();
 			}
@@ -938,22 +938,22 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 				case CONNECTING: {
 					progressDialog.setMax(1);
 					progressDialog.setIndeterminate(true);
-					progressDialog.setMessage(getString(R.string.message_sending));
+					progressDialog.setMessage(getString(R.string.sending__ellipsis));
 					break;
 				}
 				case SENDING: {
 					progressDialog.setIndeterminate(false);
 					if (progressMode) {
-						progressDialog.setMessage(getString(R.string.message_sending_index_format, attachmentIndex + 1,
-								attachmentsCount));
+						progressDialog.setMessage(getString(R.string.sending_number_of_number__ellipsis_format,
+								attachmentIndex + 1, attachmentsCount));
 					} else {
-						progressDialog.setMessage(getString(R.string.message_sending));
+						progressDialog.setMessage(getString(R.string.sending__ellipsis));
 					}
 					break;
 				}
 				case PROCESSING: {
 					progressDialog.setIndeterminate(false);
-					progressDialog.setMessage(getString(R.string.message_processing_data));
+					progressDialog.setMessage(getString(R.string.processing_data__ellipsis));
 					break;
 				}
 			}
@@ -983,7 +983,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 		if (isResumed()) {
 			if (failResult.extra != null) {
 				ClickableToast.show(requireContext(), failResult.errorItem.toString(),
-						getString(R.string.action_details), () -> new SendPostFailDetailsDialog(failResult.extra)
+						getString(R.string.details), () -> new SendPostFailDetailsDialog(failResult.extra)
 								.show(getChildFragmentManager(), SendPostFailDetailsDialog.TAG), false);
 			} else {
 				ClickableToast.show(requireContext(), failResult.errorItem.toString());
@@ -1169,7 +1169,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 		int errorCount = addedCount - newCount;
 		if (errorCount > 0) {
 			ClickableToast.show(requireContext(), getResources().getQuantityString(R.plurals
-					.message_file_attach_error_format, errorCount, errorCount));
+					.number_files_havent_been_attached__format, errorCount, errorCount));
 		}
 	}
 

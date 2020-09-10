@@ -89,7 +89,7 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnComplet
 		if (C.API_OREO) {
 			NotificationChannel channelAudioPlayer =
 					new NotificationChannel(C.NOTIFICATION_CHANNEL_AUDIO_PLAYER,
-							getString(R.string.text_audio_player), NotificationManager.IMPORTANCE_LOW);
+							getString(R.string.audio_player), NotificationManager.IMPORTANCE_LOW);
 			notificationManager.createNotificationChannel(channelAudioPlayer);
 		}
 		PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
@@ -117,7 +117,7 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnComplet
 				cleanup(false, false);
 				CacheManager cacheManager = CacheManager.getInstance();
 				if (!cacheManager.isCacheAvailable()) {
-					ToastUtils.show(this, R.string.message_cache_unavailable);
+					ToastUtils.show(this, R.string.cache_is_unavailable);
 					cleanup(true, true);
 				} else {
 					Uri uri = intent.getData();
@@ -125,7 +125,7 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnComplet
 					fileName = intent.getStringExtra(EXTRA_FILE_NAME);
 					File cachedFile = cacheManager.getMediaFile(uri, true);
 					if (cachedFile == null) {
-						ToastUtils.show(this, R.string.message_cache_unavailable);
+						ToastUtils.show(this, R.string.cache_is_unavailable);
 						cleanup(true, true);
 					} else {
 						wakeLock.acquire();
@@ -192,7 +192,7 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnComplet
 		if (success) {
 			notifyToggle();
 		} else {
-			ToastUtils.show(this, R.string.message_playback_error);
+			ToastUtils.show(this, R.string.playback_error);
 			cleanup(true, true);
 		}
 	}
@@ -263,7 +263,7 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnComplet
 
 	@Override
 	public boolean onError(MediaPlayer mp, int what, int extra) {
-		ToastUtils.show(this, R.string.message_playback_error);
+		ToastUtils.show(this, R.string.playback_error);
 		if (audioFile != null) {
 			audioFile.delete();
 		}
@@ -302,7 +302,7 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnComplet
 		} catch (Exception e) {
 			audioFile.delete();
 			CacheManager.getInstance().handleDownloadedFile(audioFile, false);
-			ToastUtils.show(this, R.string.message_playback_error);
+			ToastUtils.show(this, R.string.playback_error);
 			cleanup(true, true);
 			return;
 		}
@@ -328,14 +328,14 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnComplet
 			boolean playing = mediaPlayer != null && mediaPlayer.isPlaying();
 			builder.addAction(C.API_LOLLIPOP ? 0 : playing
 							? R.drawable.ic_action_pause_dark : R.drawable.ic_action_play_dark,
-					getString(playing ? R.string.action_pause : R.string.action_play), toggleIntent);
+					getString(playing ? R.string.pause : R.string.play), toggleIntent);
 			PendingIntent cancelIntent = AndroidUtils.getAnyServicePendingIntent(this, 0,
 					obtainIntent(this, ACTION_CANCEL), PendingIntent.FLAG_UPDATE_CURRENT);
 			builder.addAction(C.API_LOLLIPOP ? 0 : R.drawable.ic_action_cancel_dark,
-					getString(R.string.action_stop), cancelIntent);
+					getString(R.string.stop), cancelIntent);
 			this.builder = builder;
-			builder.setContentTitle(getString(R.string.message_file_playback));
-			builder.setContentText(getString(R.string.message_download_name_format, fileName));
+			builder.setContentTitle(getString(R.string.audio_playback));
+			builder.setContentText(getString(R.string.file_name__format, fileName));
 		}
 		return builder;
 	}
@@ -353,7 +353,7 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnComplet
 						obtainIntent(this, ACTION_START).setData(uri).putExtra(EXTRA_CHAN_NAME, chanName)
 								.putExtra(EXTRA_FILE_NAME, fileName), PendingIntent.FLAG_UPDATE_CURRENT);
 				builder.addAction(C.API_LOLLIPOP ? 0 : R.drawable.ic_action_refresh_dark,
-						getString(R.string.action_retry), retryIntent);
+						getString(R.string.retry), retryIntent);
 			} else {
 				PendingIntent cancelIntent = AndroidUtils.getAnyServicePendingIntent(this, 0,
 						obtainIntent(this, ACTION_CANCEL), PendingIntent.FLAG_UPDATE_CURRENT);
@@ -366,11 +366,11 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnComplet
 			this.builder = builder;
 		}
 		if (error) {
-			builder.setContentTitle(getString(R.string.message_download_completed));
-			builder.setContentText(getString(R.string.message_download_result_format, 0, 1));
+			builder.setContentTitle(getString(R.string.download_completed));
+			builder.setContentText(getString(R.string.success_number_not_loaded_number__format, 0, 1));
 		} else {
-			builder.setContentTitle(getString(R.string.message_download_audio));
-			builder.setContentText(getString(R.string.message_download_name_format, fileName));
+			builder.setContentTitle(getString(R.string.downloading_audio));
+			builder.setContentText(getString(R.string.file_name__format, fileName));
 			builder.setProgress(progressMax, progress, progressMax == 0 ||
 					progress > progressMax || progress < 0);
 		}

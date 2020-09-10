@@ -75,7 +75,7 @@ public class ArchivePage extends ListPage implements ArchiveAdapter.Callback,
 	@Override
 	public String obtainTitle() {
 		Page page = getPage();
-		return getString(R.string.action_archive_view) + ": " +
+		return getString(R.string.archive) + ": " +
 				StringUtils.formatBoardTitle(page.chanName, page.boardName, null);
 	}
 
@@ -91,14 +91,14 @@ public class ArchivePage extends ListPage implements ArchiveAdapter.Callback,
 	public boolean onItemLongClick(String threadNumber) {
 		Page page = getPage();
 		DialogMenu dialogMenu = new DialogMenu(getContext());
-		dialogMenu.add(R.string.action_copy_link, () -> {
+		dialogMenu.add(R.string.copy_link, () -> {
 			Uri uri = getChanLocator().safe(true).createThreadUri(page.boardName, threadNumber);
 			if (uri != null) {
 				StringUtils.copyToClipboard(getContext(), uri.toString());
 			}
 		});
 		if (!FavoritesStorage.getInstance().hasFavorite(page.chanName, page.boardName, threadNumber)) {
-			dialogMenu.add(R.string.action_add_to_favorites, () -> FavoritesStorage.getInstance()
+			dialogMenu.add(R.string.add_to_favorites, () -> FavoritesStorage.getInstance()
 					.add(page.chanName, page.boardName, threadNumber, null, 0));
 		}
 		dialogMenu.show(getUiManager().getConfigurationLock());
@@ -107,12 +107,12 @@ public class ArchivePage extends ListPage implements ArchiveAdapter.Callback,
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu) {
-		menu.add(0, R.id.menu_search, 0, R.string.action_filter)
+		menu.add(0, R.id.menu_search, 0, R.string.filter)
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
-		menu.add(0, R.id.menu_refresh, 0, R.string.action_refresh)
+		menu.add(0, R.id.menu_refresh, 0, R.string.refresh)
 				.setIcon(getActionBarIcon(R.attr.iconActionRefresh))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-		menu.addSubMenu(0, R.id.menu_appearance, 0, R.string.action_appearance);
+		menu.addSubMenu(0, R.id.menu_appearance, 0, R.string.appearance);
 	}
 
 	@Override
@@ -169,9 +169,9 @@ public class ArchivePage extends ListPage implements ArchiveAdapter.Callback,
 		showScaleOnSuccess = false;
 		if (pageNumber == 0 && threadSummaries == null) {
 			if (getAdapter().isRealEmpty()) {
-				switchView(ViewType.ERROR, R.string.message_empty_response);
+				switchView(ViewType.ERROR, R.string.empty_response);
 			} else {
-				ClickableToast.show(getContext(), R.string.message_empty_response);
+				ClickableToast.show(getContext(), R.string.empty_response);
 			}
 		} else {
 			switchView(ViewType.LIST, null);

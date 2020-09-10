@@ -55,7 +55,7 @@ public class AttachmentRatingDialog extends DialogFragment implements DialogInte
 				checkedItem = i;
 			}
 		}
-		return new AlertDialog.Builder(activity).setTitle(R.string.text_rating).setSingleChoiceItems(items,
+		return new AlertDialog.Builder(activity).setTitle(R.string.rating).setSingleChoiceItems(items,
 				checkedItem, this).setNegativeButton(android.R.string.cancel, null).create();
 	}
 

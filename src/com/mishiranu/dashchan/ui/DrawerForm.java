@@ -236,7 +236,7 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 			}
 			return false;
 		});
-		searchEdit.setHint(context.getString(R.string.text_code_number_address));
+		searchEdit.setHint(context.getString(R.string.code_number_address));
 		searchEdit.setOnEditorActionListener(this);
 		searchEdit.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
 		searchEdit.setImeOptions(EditorInfo.IME_ACTION_GO | EditorInfo.IME_FLAG_NO_EXTRACT_UI);
@@ -302,7 +302,7 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 		this.restartView = restartView;
 
 		TextView restartTextView = new TextView(context, null, android.R.attr.textAppearanceSmall);
-		restartTextView.setText(R.string.message_packages_installed);
+		restartTextView.setText(R.string.new_extensions_installed__sentence);
 		restartTextView.setTextColor(ResourceUtils.getColor(context, android.R.attr.textColorPrimary));
 		if (C.API_LOLLIPOP) {
 			restartTextView.setPadding((int) (16f * density), (int) (8f * density),
@@ -315,7 +315,7 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 				LinearLayout.LayoutParams.WRAP_CONTENT);
 
 		ViewHolder restartButtonViewHolder = createItem(ViewType.ITEM, density);
-		restartButtonViewHolder.text.setText(R.string.action_restart);
+		restartButtonViewHolder.text.setText(R.string.restart);
 		restartButtonViewHolder.itemView.setOnClickListener(v -> callback.restartApplication());
 		restartView.addView(restartButtonViewHolder.itemView, LinearLayout.LayoutParams.MATCH_PARENT,
 				LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -337,18 +337,18 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 			boolean hasUserBoards = configuration.getOption(ChanConfiguration.OPTION_READ_USER_BOARDS);
 			if (chanName != null && !configuration.getOption(ChanConfiguration.OPTION_SINGLE_BOARD_MODE)) {
 				menu.add(new ListItem(ListItem.Type.MENU, MENU_ITEM_BOARDS, typedArray.getResourceId(0, 0),
-						context.getString(hasUserBoards ? R.string.action_general_boards : R.string.action_boards)));
+						context.getString(hasUserBoards ? R.string.general_boards : R.string.boards)));
 			}
 			if (chanName != null && hasUserBoards) {
 				menu.add(new ListItem(ListItem.Type.MENU, MENU_ITEM_USER_BOARDS, typedArray.getResourceId(1, 0),
-						context.getString(R.string.action_user_boards)));
+						context.getString(R.string.user_boards)));
 			}
 			if (chanName != null && Preferences.isRememberHistory()) {
 				menu.add(new ListItem(ListItem.Type.MENU, MENU_ITEM_HISTORY, typedArray.getResourceId(2, 0),
-						context.getString(R.string.action_history)));
+						context.getString(R.string.history)));
 			}
 			menu.add(new ListItem(ListItem.Type.MENU, MENU_ITEM_PREFERENCES, typedArray.getResourceId(3, 0),
-					context.getString(R.string.action_preferences)));
+					context.getString(R.string.preferences)));
 			typedArray.recycle();
 			invalidateItems(force, true);
 		}
@@ -475,13 +475,13 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 			case PAGE:
 			case FAVORITE: {
 				DialogMenu dialogMenu = new DialogMenu(context);
-				dialogMenu.add(R.string.action_copy_link, () -> onCopyShareLink(listItem, false));
+				dialogMenu.add(R.string.copy_link, () -> onCopyShareLink(listItem, false));
 				if (listItem.isThreadItem()) {
-					dialogMenu.add(R.string.action_share_link, () -> onCopyShareLink(listItem, true));
+					dialogMenu.add(R.string.share_link, () -> onCopyShareLink(listItem, true));
 				}
 				if (listItem.type != ListItem.Type.FAVORITE && !FavoritesStorage.getInstance()
 						.hasFavorite(listItem.chanName, listItem.boardName, listItem.threadNumber)) {
-					dialogMenu.add(R.string.action_add_to_favorites, () -> {
+					dialogMenu.add(R.string.add_to_favorites, () -> {
 						if (listItem.isThreadItem()) {
 							FavoritesStorage.getInstance().add(listItem.chanName, listItem.boardName,
 									listItem.threadNumber, listItem.title, 0);
@@ -491,10 +491,10 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 					});
 				}
 				if (listItem.type == ListItem.Type.FAVORITE) {
-					dialogMenu.add(R.string.action_remove_from_favorites, () -> FavoritesStorage.getInstance()
+					dialogMenu.add(R.string.remove_from_favorites, () -> FavoritesStorage.getInstance()
 							.remove(listItem.chanName, listItem.boardName, listItem.threadNumber));
 					if (listItem.threadNumber != null) {
-						dialogMenu.add(R.string.action_rename, () -> {
+						dialogMenu.add(R.string.rename, () -> {
 							EditText editText = new SafePasteEditText(context);
 							editText.setSingleLine(true);
 							editText.setText(listItem.title);
@@ -507,7 +507,7 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 									.dialog_padding_view);
 							linearLayout.setPadding(padding, padding, padding, padding);
 							AlertDialog dialog = new AlertDialog.Builder(context)
-									.setView(linearLayout).setTitle(R.string.action_rename)
+									.setView(linearLayout).setTitle(R.string.rename)
 									.setNegativeButton(android.R.string.cancel, null)
 									.setPositiveButton(android.R.string.ok, (d, which) -> {
 										String newTitle = editText.getText().toString();
@@ -657,7 +657,7 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 				}
 			}
 		}
-		ToastUtils.show(context, R.string.message_enter_valid_data);
+		ToastUtils.show(context, R.string.enter_valid_data);
 	}
 
 	@Override
@@ -714,7 +714,7 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 			Collections.sort(pages);
 			this.pages.add(new ListItem(ListItem.Type.SECTION, SECTION_ACTION_CLOSE_ALL,
 					ResourceUtils.getResourceId(context, R.attr.iconButtonCancel, 0),
-					context.getString(R.string.text_open_pages)));
+					context.getString(R.string.open_pages__noun)));
 			for (Page page : pages) {
 				if (page.threadNumber != null) {
 					this.pages.add(new ListItem(ListItem.Type.PAGE, 0, page.chanName, page.boardName,
@@ -746,10 +746,10 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 							|| mergeChans && !watcherSupportSet.isEmpty()) {
 						favorites.add(new ListItem(ListItem.Type.SECTION, SECTION_ACTION_FAVORITES_MENU,
 								ResourceUtils.getResourceId(context, R.attr.iconButtonMore, 0),
-								context.getString(R.string.text_favorite_threads)));
+								context.getString(R.string.favorite_threads)));
 					} else {
 						favorites.add(new ListItem(ListItem.Type.SECTION, null, null, null,
-								context.getString(R.string.text_favorite_threads)));
+								context.getString(R.string.favorite_threads)));
 					}
 					addSection = false;
 				}
@@ -774,7 +774,7 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 			if (mergeChans || favoriteItem.chanName.equals(chanName)) {
 				if (addSection) {
 					favorites.add(new ListItem(ListItem.Type.SECTION, null, null, null,
-							context.getString(R.string.text_favorite_boards)));
+							context.getString(R.string.favorite_boards)));
 					addSection = false;
 				}
 				favorites.add(new ListItem(ListItem.Type.FAVORITE, 0, favoriteItem.chanName, favoriteItem.boardName,
@@ -918,9 +918,9 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 						} else {
 							popupMenu = new PopupMenu(context, v);
 						}
-						popupMenu.getMenu().add(0, FAVORITES_MENU_REFRESH, 0, R.string.action_refresh)
+						popupMenu.getMenu().add(0, FAVORITES_MENU_REFRESH, 0, R.string.refresh)
 								.setEnabled(hasEnabled);
-						popupMenu.getMenu().add(0, FAVORITES_MENU_CLEAR_DELETED, 0, R.string.action_clear_deleted)
+						popupMenu.getMenu().add(0, FAVORITES_MENU_CLEAR_DELETED, 0, R.string.clear_deleted)
 								.setEnabled(!deleteFavoriteItems.isEmpty());
 						popupMenu.setOnMenuItemClickListener(item -> {
 							switch (item.getItemId()) {
@@ -930,7 +930,7 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 								}
 								case FAVORITES_MENU_CLEAR_DELETED: {
 									StringBuilder builder = new StringBuilder(context
-											.getString(R.string.message_clear_deleted_threads_warning));
+											.getString(R.string.threads_will_be_deleted__sentence));
 									builder.append("\n");
 									for (FavoritesStorage.FavoriteItem favoriteItem : deleteFavoriteItems) {
 										builder.append("\n\u2022 ").append(formatBoardThreadTitle(true,

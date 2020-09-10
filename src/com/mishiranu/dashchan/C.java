@@ -22,9 +22,6 @@ public class C {
 
 	public static final boolean USE_SAF = API_MARSHMALLOW;
 
-	public static final String BUILD_VERSION = BuildConfig.VERSION_NAME;
-	public static final long BUILD_TIMESTAMP = BuildConfig.BUILD_TIMESTAMP;
-
 	public static final Set<String> IMAGE_EXTENSIONS;
 	public static final Set<String> AUDIO_EXTENSIONS;
 	public static final Set<String> VIDEO_EXTENSIONS;

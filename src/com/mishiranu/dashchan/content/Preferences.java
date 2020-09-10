@@ -100,9 +100,18 @@ public class Preferences {
 	private static final String GENERIC_VALUE_NETWORK_WIFI_3G = "wifi_3g";
 	private static final String GENERIC_VALUE_NETWORK_WIFI = "wifi";
 	private static final String GENERIC_VALUE_NETWORK_NEVER = "never";
-
-	public static final String[] GENERIC_VALUES_NETWORK = new String[] {GENERIC_VALUE_NETWORK_ALWAYS,
-		GENERIC_VALUE_NETWORK_WIFI_3G, GENERIC_VALUE_NETWORK_WIFI, GENERIC_VALUE_NETWORK_NEVER};
+	public static final String[] GENERIC_VALUES_NETWORK = {
+			GENERIC_VALUE_NETWORK_ALWAYS,
+			GENERIC_VALUE_NETWORK_WIFI_3G,
+			GENERIC_VALUE_NETWORK_WIFI,
+			GENERIC_VALUE_NETWORK_NEVER
+	};
+	public static final int[] GENERIC_ENTRIES_NETWORK = {
+			R.string.always,
+			R.string.wifi_or_3g_plus,
+			R.string.wifi_only,
+			R.string.never
+	};
 
 	private static boolean isNetworkAvailable(String value, String defaultValue) {
 		switch (StringUtils.emptyIfNull(value)) {
@@ -147,8 +156,16 @@ public class Preferences {
 	public static final String VALUE_AUTO_REFRESH_MODE_SEPARATE = "separate";
 	public static final String VALUE_AUTO_REFRESH_MODE_DISABLED = "disabled";
 	public static final String VALUE_AUTO_REFRESH_MODE_ENABLED = "enabled";
-	public static final String[] VALUES_AUTO_REFRESH_MODE = new String[] {VALUE_AUTO_REFRESH_MODE_SEPARATE,
-		VALUE_AUTO_REFRESH_MODE_DISABLED, VALUE_AUTO_REFRESH_MODE_ENABLED};
+	public static final String[] VALUES_AUTO_REFRESH_MODE = {
+			VALUE_AUTO_REFRESH_MODE_SEPARATE,
+			VALUE_AUTO_REFRESH_MODE_DISABLED,
+			VALUE_AUTO_REFRESH_MODE_ENABLED
+	};
+	public static final int[] ENTRIES_AUTO_REFRESH_MODE = {
+			R.string.separate__adjective,
+			R.string.always_disabled,
+			R.string.always_enabled
+	};
 	public static final String DEFAULT_AUTO_REFRESH_MODE = VALUE_AUTO_REFRESH_MODE_SEPARATE;
 
 	public static final int AUTO_REFRESH_MODE_SEPARATE = 0;
@@ -523,7 +540,7 @@ public class Preferences {
 		}
 		if (uri == null || "com.android.providers.downloads.documents".equals(uri.getAuthority())) {
 			// Downloads provider fails when ".nomedia" files present
-			ToastUtils.show(context, R.string.message_no_access_to_memory);
+			ToastUtils.show(context, R.string.no_access_to_memory);
 		} else {
 			contentResolver.takePersistableUriPermission(uri, uriFlags &
 					(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION));
@@ -534,8 +551,16 @@ public class Preferences {
 	public static final String VALUE_DOWNLOAD_SUBDIR_DISABLED = "disabled";
 	public static final String VALUE_DOWNLOAD_SUBDIR_MULTIPLE = "multiple_only";
 	public static final String VALUE_DOWNLOAD_SUBDIR_ENABLED = "enabled";
-	public static final String[] VALUES_DOWNLOAD_SUBDIR = new String[] {VALUE_DOWNLOAD_SUBDIR_DISABLED,
-		VALUE_DOWNLOAD_SUBDIR_MULTIPLE, VALUE_DOWNLOAD_SUBDIR_ENABLED};
+	public static final String[] VALUES_DOWNLOAD_SUBDIR = {
+			VALUE_DOWNLOAD_SUBDIR_DISABLED,
+			VALUE_DOWNLOAD_SUBDIR_MULTIPLE,
+			VALUE_DOWNLOAD_SUBDIR_ENABLED
+	};
+	public static final int[] ENTRIES_DOWNLOAD_SUBDIR = {
+			R.string.never,
+			R.string.on_multiple_downloading,
+			R.string.always
+	};
 	public static final String DEFAULT_DOWNLOAD_SUBDIR = VALUE_DOWNLOAD_SUBDIR_DISABLED;
 
 	@SuppressWarnings("RedundantIfStatement")
@@ -557,8 +582,16 @@ public class Preferences {
 	public static final String VALUE_DRAWER_INITIAL_POSITION_CLOSED = "closed";
 	public static final String VALUE_DRAWER_INITIAL_POSITION_FAVORITES = "favorites";
 	public static final String VALUE_DRAWER_INITIAL_POSITION_FORUMS = "forums";
-	public static final String[] VALUES_DRAWER_INITIAL_POSITION = new String[] {VALUE_DRAWER_INITIAL_POSITION_CLOSED,
-			VALUE_DRAWER_INITIAL_POSITION_FAVORITES, VALUE_DRAWER_INITIAL_POSITION_FORUMS};
+	public static final String[] VALUES_DRAWER_INITIAL_POSITION = {
+			VALUE_DRAWER_INITIAL_POSITION_CLOSED,
+			VALUE_DRAWER_INITIAL_POSITION_FAVORITES,
+			VALUE_DRAWER_INITIAL_POSITION_FORUMS
+	};
+	public static final int[] ENTRIES_DRAWER_INITIAL_POSITION = {
+			R.string.closed,
+			R.string.favorites,
+			R.string.forums
+	};
 	public static final String DEFAULT_DRAWER_INITIAL_POSITION = VALUE_DRAWER_INITIAL_POSITION_CLOSED;
 
 	public static final int DRAWER_INITIAL_POSITION_CLOSED = 0;
@@ -601,8 +634,16 @@ public class Preferences {
 	public static final String VALUE_FAVORITES_ORDER_DATE_DESC = "date_desc";
 	public static final String VALUE_FAVORITES_ORDER_DATE_ASC = "date_asc";
 	public static final String VALUE_FAVORITES_ORDER_TITLE = "title";
-	public static final String[] VALUES_FAVORITES_ORDER = new String[] {VALUE_FAVORITES_ORDER_DATE_DESC,
-		VALUE_FAVORITES_ORDER_DATE_ASC, VALUE_FAVORITES_ORDER_TITLE};
+	public static final String[] VALUES_FAVORITES_ORDER = {
+			VALUE_FAVORITES_ORDER_DATE_DESC,
+			VALUE_FAVORITES_ORDER_DATE_ASC,
+			VALUE_FAVORITES_ORDER_TITLE
+	};
+	public static final int[] ENTRIES_FAVORITES_ORDER = {
+			R.string.add_to_top__imperfective,
+			R.string.add_to_bottom__imperfective,
+			R.string.order_by_title
+	};
 	public static final String DEFAULT_FAVORITES_ORDER = VALUE_FAVORITES_ORDER_DATE_DESC;
 
 	public static final int FAVORITES_ORDER_ADD_TO_THE_TOP = 0;
@@ -634,8 +675,16 @@ public class Preferences {
 	public static final String VALUE_HIGHLIGHT_UNREAD_AUTOMATICALLY = "automatically";
 	public static final String VALUE_HIGHLIGHT_UNREAD_MANUALLY = "manually";
 	public static final String VALUE_HIGHLIGHT_UNREAD_NEVER = "never";
-	public static final String[] VALUES_HIGHLIGHT_UNREAD = new String[] {VALUE_HIGHLIGHT_UNREAD_AUTOMATICALLY,
-		VALUE_HIGHLIGHT_UNREAD_MANUALLY, VALUE_HIGHLIGHT_UNREAD_NEVER};
+	public static final String[] VALUES_HIGHLIGHT_UNREAD = {
+			VALUE_HIGHLIGHT_UNREAD_AUTOMATICALLY,
+			VALUE_HIGHLIGHT_UNREAD_MANUALLY,
+			VALUE_HIGHLIGHT_UNREAD_NEVER
+	};
+	public static final int[] ENTRIES_HIGHLIGHT_UNREAD = {
+			R.string.hide_eventually__imperfective,
+			R.string.hide_on_tap__imperfective,
+			R.string.never_highlight
+	};
 	public static final String DEFAULT_HIGHLIGHT_UNREAD = VALUE_HIGHLIGHT_UNREAD_AUTOMATICALLY;
 
 	public static final int HIGHLIGHT_UNREAD_AUTOMATICALLY = 0;
@@ -749,8 +798,16 @@ public class Preferences {
 	public static final String VALUE_PAGES_LIST_PAGES_FIRST = "pages_first";
 	public static final String VALUE_PAGES_LIST_FAVORITES_FIRST = "favorites_first";
 	public static final String VALUE_PAGES_LIST_HIDE_PAGES = "hide_pages";
-	public static final String[] VALUES_PAGES_LIST = new String[] {VALUE_PAGES_LIST_PAGES_FIRST,
-		VALUE_PAGES_LIST_FAVORITES_FIRST, VALUE_PAGES_LIST_HIDE_PAGES};
+	public static final String[] VALUES_PAGES_LIST = {
+			VALUE_PAGES_LIST_PAGES_FIRST,
+			VALUE_PAGES_LIST_FAVORITES_FIRST,
+			VALUE_PAGES_LIST_HIDE_PAGES
+	};
+	public static final int[] ENTRIES_PAGES_LIST = {
+			R.string.pages_first,
+			R.string.favorites_first,
+			R.string.hide_pages
+	};
 	public static final String DEFAULT_PAGES_LIST = VALUE_PAGES_LIST_PAGES_FIRST;
 
 	public static final int PAGES_LIST_MODE_PAGES_FIRST = 0;
@@ -1016,8 +1073,14 @@ public class Preferences {
 	public static final String KEY_VIDEO_COMPLETION = "video_completion";
 	public static final String VALUE_VIDEO_COMPLETION_NOTHING = "nothing";
 	public static final String VALUE_VIDEO_COMPLETION_LOOP = "loop";
-	public static final String[] VALUES_VIDEO_COMPLETION = new String[] {VALUE_VIDEO_COMPLETION_NOTHING,
-		VALUE_VIDEO_COMPLETION_LOOP};
+	public static final String[] VALUES_VIDEO_COMPLETION = {
+			VALUE_VIDEO_COMPLETION_NOTHING,
+			VALUE_VIDEO_COMPLETION_LOOP
+	};
+	public static final int[] ENTRIES_VIDEO_COMPLETION = {
+			R.string.do_nothing,
+			R.string.play_again
+	};
 	public static final String DEFAULT_VIDEO_COMPLETION = VALUE_VIDEO_COMPLETION_NOTHING;
 
 	public static final int VIDEO_COMPLETION_MODE_NOTHING = 0;

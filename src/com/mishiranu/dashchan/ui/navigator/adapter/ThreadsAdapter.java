@@ -175,7 +175,7 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 					LinearLayout.LayoutParams.WRAP_CONTENT);
 			headerData[i + 1].setPadding(0, 0, 0, (int) (2f * density));
 		}
-		headerData[4].setText(context.getString(R.string.text_configuration));
+		headerData[4].setText(context.getString(R.string.configuration));
 		LinearLayout radioButtonsContainer = new LinearLayout(context);
 		radioButtonsContainer.setOrientation(LinearLayout.VERTICAL);
 		radioButtonsContainer.setClickable(true);
@@ -196,9 +196,9 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 				layoutParams.leftMargin = (int) (-4f * density);
 			}
 		}
-		sortingData[0].setText(context.getString(R.string.text_sort_by_unsorted));
-		sortingData[1].setText(context.getString(R.string.text_sort_by_date));
-		sortingData[2].setText(context.getString(R.string.text_sort_by_replies));
+		sortingData[0].setText(context.getString(R.string.unsorted));
+		sortingData[1].setText(context.getString(R.string.sort_by_date_created));
+		sortingData[2].setText(context.getString(R.string.sort_by_replies));
 		sortingData[0].setChecked(true);
 		headerView = frameLayout;
 		this.headerExpanded = headerExpanded;
@@ -439,7 +439,7 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
 	private void appendItemsInternal(ArrayList<PostItem> postItems, int pageNumber, int boardSpeed) {
 		if (pageNumber > 0) {
-			listItems.add(new ListItem(context.getString(R.string.text_page_format, pageNumber), pageNumber, null));
+			listItems.add(new ListItem(context.getString(R.string.number_page__format, pageNumber), pageNumber, null));
 		} else if (pageNumber == 0 || pageNumber == ChanPerformer.ReadThreadsData.PAGE_NUMBER_CATALOG) {
 			listItems.add(new ListItem(null, pageNumber, null));
 			updateHeaderView(pageNumber == ChanPerformer.ReadThreadsData.PAGE_NUMBER_CATALOG, boardSpeed);
@@ -471,8 +471,9 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 		boolean mayExpand = false;
 		if (boardSpeed > 0) {
 			headerData[1].setVisibility(View.VISIBLE);
-			headerData[1].setText(context.getString(R.string.text_board_speed_format, context.getResources()
-					.getQuantityString(R.plurals.text_posts_per_hour_format, boardSpeed, boardSpeed)));
+			headerData[1].setText(ResourceUtils.getColonString(context.getResources(),
+					R.string.speed, context.getResources().getQuantityString
+							(R.plurals.number_posts_per_hour__format, boardSpeed, boardSpeed)));
 		} else {
 			headerData[1].setVisibility(View.GONE);
 		}
@@ -481,12 +482,12 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 			for (RadioButton button : sortingData) {
 				button.setVisibility(View.VISIBLE);
 			}
-			headerData[0].setText(context.getString(R.string.action_catalog) + ": " + title);
+			headerData[0].setText(context.getString(R.string.catalog) + ": " + title);
 			headerData[2].setVisibility(View.VISIBLE);
 			headerData[3].setVisibility(View.GONE);
 			headerData[4].setVisibility(View.GONE);
 			headerData[5].setVisibility(View.GONE);
-			headerData[2].setText(context.getString(R.string.text_sorting));
+			headerData[2].setText(context.getString(R.string.sorting));
 			if (!fromCatalogOrNewAdapter) {
 				sortingData[0].setChecked(true);
 			}
@@ -500,7 +501,8 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 			StringBuilder builder = new StringBuilder();
 			int pagesCount = Math.max(configuration.getPagesCount(boardName), 1);
 			if (pagesCount != ChanConfiguration.PAGES_COUNT_INVALID) {
-				appendNewLine(builder, context.getString(R.string.text_pages_count_format, pagesCount));
+				appendNewLine(builder, ResourceUtils.getColonString(context.getResources(),
+						R.string.pages_count, pagesCount));
 			}
 			ChanConfiguration.Board board = configuration.safe().obtainBoard(boardName);
 			ChanConfiguration.Posting posting = board.allowPosting
@@ -508,34 +510,34 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 			if (posting != null) {
 				int bumpLimit = configuration.getBumpLimit(boardName);
 				if (bumpLimit != ChanConfiguration.BUMP_LIMIT_INVALID) {
-					appendNewLine(builder, context.getString(R.string.text_bump_limit_format, bumpLimit));
+					appendNewLine(builder, context.getString(R.string.bump_limit_posts__colon_format, bumpLimit));
 				}
 				if (!posting.allowSubject) {
-					appendNewLine(builder, context.getString(R.string.text_disabled_subjects));
+					appendNewLine(builder, context.getString(R.string.subjects_are_disabled));
 				}
 				if (!posting.allowName) {
-					appendNewLine(builder, context.getString(R.string.text_disabled_names));
+					appendNewLine(builder, context.getString(R.string.names_are_disabled));
 				} else if (!posting.allowTripcode) {
-					appendNewLine(builder, context.getString(R.string.text_disabled_tripcodes));
+					appendNewLine(builder, context.getString(R.string.tripcodes_are_disabled));
 				}
 				if (posting.attachmentCount <= 0) {
-					appendNewLine(builder, context.getString(R.string.text_disabled_images));
+					appendNewLine(builder, context.getString(R.string.images_are_disabled));
 				}
 				if (!posting.optionSage) {
-					appendNewLine(builder, context.getString(R.string.text_disabled_sage));
+					appendNewLine(builder, context.getString(R.string.sage_is_disabled));
 				}
 				if (posting.hasCountryFlags) {
-					appendNewLine(builder, context.getString(R.string.text_enabled_flags));
+					appendNewLine(builder, context.getString(R.string.flags_are_enabled));
 				}
 				if (posting.userIcons.size() > 0) {
-					appendNewLine(builder, context.getString(R.string.text_enabled_icons));
+					appendNewLine(builder, context.getString(R.string.icons_are_enabled));
 				}
 			} else {
-				appendNewLine(builder, context.getString(R.string.text_read_only));
+				appendNewLine(builder, context.getString(R.string.read_only));
 			}
 			if (info != null) {
 				headerData[3].setText(info);
-				headerData[2].setText(context.getString(R.string.text_description));
+				headerData[2].setText(context.getString(R.string.description));
 				headerData[2].setVisibility(View.VISIBLE);
 				headerData[3].setVisibility(View.VISIBLE);
 				mayExpand = true;

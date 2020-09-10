@@ -354,7 +354,7 @@ public class ViewUnit {
 			int replyCount = postItem.getPostReplyCount();
 			if (postItem.getPostReplyCount() > 0) {
 				holder.bottomBarReplies.setText(holder.itemView.getResources().getQuantityString
-						(R.plurals.text_replies_count_format, replyCount, replyCount));
+						(R.plurals.number_replies__format, replyCount, replyCount));
 				holder.bottomBarReplies.setVisibility(View.VISIBLE);
 			} else {
 				holder.bottomBarReplies.setVisibility(View.GONE);
@@ -863,14 +863,14 @@ public class ViewUnit {
 	private static final SparseIntArray STATE_TEXTS = new SparseIntArray();
 
 	static {
-		STATE_TEXTS.put(R.attr.iconPostUserPost, R.string.text_my_post);
-		STATE_TEXTS.put(R.attr.iconPostOriginalPoster, R.string.text_original_poster);
-		STATE_TEXTS.put(R.attr.iconPostSage, R.string.text_sage_description);
-		STATE_TEXTS.put(R.attr.iconPostSticky, R.string.text_sticky_thread);
-		STATE_TEXTS.put(R.attr.iconPostClosed, R.string.text_closed_thread);
-		STATE_TEXTS.put(R.attr.iconPostCyclical, R.string.text_cyclical_thread);
-		STATE_TEXTS.put(R.attr.iconPostWarned, R.string.text_user_warned);
-		STATE_TEXTS.put(R.attr.iconPostBanned, R.string.text_user_banned);
+		STATE_TEXTS.put(R.attr.iconPostUserPost, R.string.my_post);
+		STATE_TEXTS.put(R.attr.iconPostOriginalPoster, R.string.original_poster);
+		STATE_TEXTS.put(R.attr.iconPostSage, R.string.doesnt_bring_up_thread);
+		STATE_TEXTS.put(R.attr.iconPostSticky, R.string.sticky_thread);
+		STATE_TEXTS.put(R.attr.iconPostClosed, R.string.thread_is_closed);
+		STATE_TEXTS.put(R.attr.iconPostCyclical, R.string.cyclical_thread);
+		STATE_TEXTS.put(R.attr.iconPostWarned, R.string.user_is_warned);
+		STATE_TEXTS.put(R.attr.iconPostBanned, R.string.user_is_banned);
 	}
 
 	private class AttachmentHolder {

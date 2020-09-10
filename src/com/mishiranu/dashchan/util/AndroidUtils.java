@@ -35,4 +35,8 @@ public class AndroidUtils {
 			return PendingIntent.getService(context, requestCode, intent, flags);
 		}
 	}
+
+	public static String getApplicationLabel(Context context) {
+		return context.getApplicationInfo().loadLabel(context.getPackageManager()).toString();
+	}
 }

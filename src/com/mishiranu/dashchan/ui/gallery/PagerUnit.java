@@ -261,7 +261,7 @@ public class PagerUnit implements PagerInstance.Callback {
 		galleryInstance.callback.invalidateOptionsMenu();
 		CacheManager cacheManager = CacheManager.getInstance();
 		if (!cacheManager.isCacheAvailable()) {
-			showError(holder, galleryInstance.context.getString(R.string.message_cache_unavailable));
+			showError(holder, galleryInstance.context.getString(R.string.cache_is_unavailable));
 			return;
 		}
 		galleryInstance.callback.modifySystemUiVisibility(GalleryInstance.FLAG_LOCKED_ERROR, false);
@@ -290,7 +290,7 @@ public class PagerUnit implements PagerInstance.Callback {
 		Uri uri = galleryItem.getFileUri(galleryInstance.locator);
 		File cachedFile = cacheManager.getMediaFile(uri, true);
 		if (cachedFile == null) {
-			showError(holder, galleryInstance.context.getString(R.string.message_cache_unavailable));
+			showError(holder, galleryInstance.context.getString(R.string.cache_is_unavailable));
 		} else if (isImage) {
 			imageUnit.applyImage(uri, cachedFile, reload);
 		} else if (isVideo) {
@@ -365,7 +365,7 @@ public class PagerUnit implements PagerInstance.Callback {
 			interrupt(false);
 			holder.errorView.setVisibility(View.VISIBLE);
 			holder.errorText.setText(!StringUtils.isEmpty(message) ? message
-					: galleryInstance.context.getString(R.string.message_unknown_error));
+					: galleryInstance.context.getString(R.string.unknown_error));
 			holder.progressBar.cancelVisibilityTransient();
 		}
 	}
@@ -587,15 +587,15 @@ public class PagerUnit implements PagerInstance.Callback {
 					: galleryItem.getFileName(galleryInstance.locator), true);
 			if (!galleryInstance.callback.isSystemUiVisible()) {
 				if (capabilities.save) {
-					dialogMenu.add(R.string.action_save, () -> galleryInstance.callback
+					dialogMenu.add(R.string.save, () -> galleryInstance.callback
 							.downloadGalleryItem(galleryItem));
 				}
 				if (capabilities.refresh) {
-					dialogMenu.add(R.string.action_refresh, this::refreshCurrent);
+					dialogMenu.add(R.string.refresh, this::refreshCurrent);
 				}
 			}
 			if (capabilities.viewTechnicalInfo) {
-				dialogMenu.add(R.string.action_technical_info, () -> {
+				dialogMenu.add(R.string.technical_info, () -> {
 					if (galleryItem.isImage(galleryInstance.locator)) {
 						imageUnit.viewTechnicalInfo();
 					} else if (galleryItem.isVideo(galleryInstance.locator)) {
@@ -604,30 +604,30 @@ public class PagerUnit implements PagerInstance.Callback {
 				});
 			}
 			if (capabilities.searchImage) {
-				dialogMenu.add(R.string.action_search_image, () -> {
+				dialogMenu.add(R.string.search_image, () -> {
 					videoUnit.forcePause();
 					NavigationUtils.searchImage(context, galleryInstance.callback.getConfigurationLock(),
 							galleryInstance.chanName, galleryItem.getDisplayImageUri(galleryInstance.locator));
 				});
 			}
 			if (galleryInstance.callback.isAllowNavigatePostManually(true) && capabilities.navigatePost) {
-				dialogMenu.add(R.string.action_go_to_post, () -> galleryInstance.callback
+				dialogMenu.add(R.string.go_to_post, () -> galleryInstance.callback
 						.navigatePost(galleryItem, true, true));
 			}
-			dialogMenu.add(R.string.action_copy_link, () -> StringUtils.copyToClipboard(context,
+			dialogMenu.add(R.string.copy_link, () -> StringUtils.copyToClipboard(context,
 					galleryItem.getFileUri(galleryInstance.locator).toString()));
-			dialogMenu.add(R.string.action_share_link, () -> {
+			dialogMenu.add(R.string.share_link, () -> {
 				videoUnit.forcePause();
 				NavigationUtils.shareLink(context, null, galleryItem.getFileUri(galleryInstance.locator));
 			});
 			if (capabilities.shareFile) {
-				dialogMenu.add(R.string.action_share_file, () -> {
+				dialogMenu.add(R.string.share_file, () -> {
 					videoUnit.forcePause();
 					Uri uri = galleryItem.getFileUri(galleryInstance.locator);
 					File file = CacheManager.getInstance().getMediaFile(uri, false);
 					if (file == null) {
 						ToastUtils.show(galleryInstance.callback.getWindow().getContext(),
-								R.string.message_cache_unavailable);
+								R.string.cache_is_unavailable);
 					} else {
 						NavigationUtils.shareFile(galleryInstance.callback.getWindow().getContext(), file,
 								galleryItem.getFileName(galleryInstance.locator));

@@ -207,13 +207,13 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		if (postItem != null) {
 			Page page = getPage();
 			DialogMenu dialogMenu = new DialogMenu(getContext());
-			dialogMenu.add(R.string.action_copy_link, () -> {
+			dialogMenu.add(R.string.copy_link, () -> {
 				Uri uri = getChanLocator().safe(true).createThreadUri(page.boardName, postItem.getThreadNumber());
 				if (uri != null) {
 					StringUtils.copyToClipboard(getContext(), uri.toString());
 				}
 			});
-			dialogMenu.add(R.string.action_share_link, () -> {
+			dialogMenu.add(R.string.share_link, () -> {
 				Uri uri = ChanLocator.get(page.chanName).safe(true)
 						.createThreadUri(page.boardName, postItem.getThreadNumber());
 				String subject = postItem.getSubjectOrComment();
@@ -223,7 +223,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 				NavigationUtils.shareLink(getContext(), subject, uri);
 			});
 			if (!postItem.isHiddenUnchecked()) {
-				dialogMenu.add(R.string.action_hide, () -> {
+				dialogMenu.add(R.string.hide, () -> {
 					HiddenThreadsDatabase.getInstance().set(page.chanName, page.boardName,
 							postItem.getThreadNumber(), true);
 					postItem.invalidateHidden();
@@ -240,25 +240,25 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu) {
-		menu.add(0, R.id.menu_refresh, 0, R.string.action_refresh)
+		menu.add(0, R.id.menu_refresh, 0, R.string.refresh)
 				.setIcon(getActionBarIcon(R.attr.iconActionRefresh))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-		menu.add(0, R.id.menu_search, 0, R.string.action_search)
+		menu.add(0, R.id.menu_search, 0, R.string.search)
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
-		menu.add(0, R.id.menu_catalog, 0, R.string.action_catalog);
-		menu.add(0, R.id.menu_pages, 0, R.string.action_pages);
-		menu.add(0, R.id.menu_archive, 0, R.string.action_archive_view);
-		menu.add(0, R.id.menu_new_thread, 0, R.string.action_new_thread);
-		menu.addSubMenu(0, R.id.menu_appearance, 0, R.string.action_appearance);
-		menu.add(0, R.id.menu_star_text, 0, R.string.action_add_to_favorites);
-		menu.add(0, R.id.menu_unstar_text, 0, R.string.action_remove_from_favorites);
-		menu.add(0, R.id.menu_star_icon, 0, R.string.action_add_to_favorites)
+		menu.add(0, R.id.menu_catalog, 0, R.string.catalog);
+		menu.add(0, R.id.menu_pages, 0, R.string.pages);
+		menu.add(0, R.id.menu_archive, 0, R.string.archive);
+		menu.add(0, R.id.menu_new_thread, 0, R.string.new_thread);
+		menu.addSubMenu(0, R.id.menu_appearance, 0, R.string.appearance);
+		menu.add(0, R.id.menu_star_text, 0, R.string.add_to_favorites);
+		menu.add(0, R.id.menu_unstar_text, 0, R.string.remove_from_favorites);
+		menu.add(0, R.id.menu_star_icon, 0, R.string.add_to_favorites)
 				.setIcon(getActionBarIcon(R.attr.iconActionAddToFavorites))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-		menu.add(0, R.id.menu_unstar_icon, 0, R.string.action_remove_from_favorites)
+		menu.add(0, R.id.menu_unstar_icon, 0, R.string.remove_from_favorites)
 				.setIcon(getActionBarIcon(R.attr.iconActionRemoveFromFavorites))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-		menu.add(0, R.id.menu_make_home_page, 0, R.string.action_make_home_page);
+		menu.add(0, R.id.menu_make_home_page, 0, R.string.make_home_page);
 	}
 
 	@Override
@@ -273,7 +273,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		boolean canSearch = search || catalogSearch;
 		allowSearch = canSearch;
 		boolean isCatalogOpen = retainExtra.startPageNumber == PAGE_NUMBER_CATALOG;
-		menu.findItem(R.id.menu_search).setTitle(canSearch ? R.string.action_search : R.string.action_filter);
+		menu.findItem(R.id.menu_search).setTitle(canSearch ? R.string.search : R.string.filter);
 		menu.findItem(R.id.menu_catalog).setVisible(catalog && !isCatalogOpen);
 		menu.findItem(R.id.menu_pages).setVisible(catalog && isCatalogOpen);
 		menu.findItem(R.id.menu_archive).setVisible(board.allowArchive);
@@ -454,7 +454,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		if (pageNumber < PAGE_NUMBER_CATALOG || pageNumber >= Math.max(getChanConfiguration()
 				.getPagesCount(page.boardName), 1)) {
 			getRecyclerView().getWrapper().cancelBusyState();
-			ToastUtils.show(getContext(), getString(R.string.message_page_not_exist_format, pageNumber));
+			ToastUtils.show(getContext(), getString(R.string.number_page_doesnt_exist__format, pageNumber));
 			return false;
 		} else {
 			RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
@@ -538,9 +538,9 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 			ListViewUtils.cancelListFling(recyclerView);
 			recyclerView.scrollToPosition(0);
 		} else if (adapter.isRealEmpty()) {
-			switchView(ViewType.ERROR, R.string.message_empty_response);
+			switchView(ViewType.ERROR, R.string.empty_response);
 		} else {
-			ClickableToast.show(getContext(), R.string.message_empty_response);
+			ClickableToast.show(getContext(), R.string.empty_response);
 		}
 	}
 
@@ -550,9 +550,9 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		getRecyclerView().getWrapper().cancelBusyState();
 		if (!StringUtils.equals(target.chanName, getPage().chanName)) {
 			if (getAdapter().isRealEmpty()) {
-				switchView(ViewType.ERROR, R.string.message_empty_response);
+				switchView(ViewType.ERROR, R.string.empty_response);
 			}
-			String message = getString(R.string.message_open_chan_confirm_confirm,
+			String message = getString(R.string.open_forum__format_sentence,
 					ChanConfiguration.get(target.chanName).getTitle());
 			AlertDialog dialog = new AlertDialog.Builder(getContext())
 					.setMessage(message)
@@ -571,7 +571,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		readTask = null;
 		getRecyclerView().getWrapper().cancelBusyState();
 		String message = errorItem.type == ErrorItem.Type.BOARD_NOT_EXISTS && pageNumber >= 1
-				? getString(R.string.message_page_not_exist_format, pageNumber) : errorItem.toString();
+				? getString(R.string.number_page_doesnt_exist__format, pageNumber) : errorItem.toString();
 		if (getAdapter().isRealEmpty()) {
 			switchView(ViewType.ERROR, message);
 		} else {

@@ -434,7 +434,7 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 		progressView.setVisibility(viewType == ListPage.ViewType.PROGRESS ? View.VISIBLE : View.GONE);
 		errorView.setVisibility(viewType == ListPage.ViewType.ERROR ? View.VISIBLE : View.GONE);
 		if (viewType == ListPage.ViewType.ERROR) {
-			errorText.setText(message != null ? message : getString(R.string.message_unknown_error));
+			errorText.setText(message != null ? message : getString(R.string.unknown_error));
 		}
 	}
 

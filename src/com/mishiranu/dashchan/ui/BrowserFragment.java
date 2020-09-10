@@ -118,7 +118,7 @@ public class BrowserFragment extends Fragment implements ActivityHandler, Downlo
 		super.onActivityCreated(savedInstanceState);
 
 		setHasOptionsMenu(true);
-		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.action_browser), null);
+		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.web_browser), null);
 		if (savedInstanceState == null) {
 			WebViewUtils.clearAll(webView);
 			webView.loadUrl(requireArguments().<Uri>getParcelable(EXTRA_URI).toString());
@@ -148,11 +148,11 @@ public class BrowserFragment extends Fragment implements ActivityHandler, Downlo
 
 	@Override
 	public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-		menu.add(0, R.id.menu_reload, 0, R.string.action_reload)
+		menu.add(0, R.id.menu_reload, 0, R.string.reload)
 				.setIcon(((FragmentHandler) requireActivity()).getActionBarIcon(R.attr.iconActionRefresh))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-		menu.add(0, R.id.menu_copy_link, 0, R.string.action_copy_link);
-		menu.add(0, R.id.menu_share_link, 0, R.string.action_share_link);
+		menu.add(0, R.id.menu_copy_link, 0, R.string.copy_link);
+		menu.add(0, R.id.menu_share_link, 0, R.string.share_link);
 	}
 
 	@Override
@@ -198,7 +198,7 @@ public class BrowserFragment extends Fragment implements ActivityHandler, Downlo
 			startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse(url))
 					.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
 		} catch (ActivityNotFoundException e) {
-			ToastUtils.show(requireContext(), R.string.message_unknown_address);
+			ToastUtils.show(requireContext(), R.string.unknown_address);
 		}
 	}
 
@@ -223,7 +223,7 @@ public class BrowserFragment extends Fragment implements ActivityHandler, Downlo
 				}
 				if (navigationData != null) {
 					AlertDialog alertDialog = new AlertDialog.Builder(requireContext())
-							.setMessage(R.string.message_open_link_confirm)
+							.setMessage(R.string.follow_the_link__sentence)
 							.setNegativeButton(android.R.string.cancel, null)
 							.setPositiveButton(android.R.string.ok, (dialog, which) -> startActivity(NavigationUtils
 									.obtainTargetIntent(requireContext(), chanName, navigationData,
@@ -241,13 +241,13 @@ public class BrowserFragment extends Fragment implements ActivityHandler, Downlo
 		public void onPageFinished(WebView view, String url) {
 			String title = view.getTitle();
 			((FragmentHandler) requireActivity()).setTitleSubtitle(StringUtils.isEmptyOrWhitespace(title)
-					? getString(R.string.action_browser) : title, null);
+					? getString(R.string.web_browser) : title, null);
 		}
 
 		@Override
 		public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
 			if (Preferences.isVerifyCertificate()) {
-				ToastUtils.show(requireContext(), R.string.message_invalid_certificate);
+				ToastUtils.show(requireContext(), R.string.invalid_certificate);
 				super.onReceivedSslError(view, handler, error);
 			} else {
 				handler.proceed();

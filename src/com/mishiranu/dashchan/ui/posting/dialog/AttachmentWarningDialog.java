@@ -42,27 +42,26 @@ public class AttachmentWarningDialog extends DialogFragment {
 		boolean hasExif = jpegData != null && jpegData.hasExif;
 		int rotation = fileHolder.getRotation();
 		String geolocation = jpegData != null ? jpegData.getGeolocation(false) : null;
-		StringBuilder builder = new StringBuilder();
+		String message = "";
 		if (hasExif) {
-			if (builder.length() > 0) {
-				builder.append(", ");
-			}
-			builder.append(getString(R.string.message_image_warning_exif));
+			message = appendMessage(message, getString(R.string.exif_metadata));
 		}
 		if (rotation != 0) {
-			if (builder.length() > 0) {
-				builder.append(", ");
-			}
-			builder.append(getString(R.string.message_image_warning_orientation));
+			message = appendMessage(message, getString(R.string.orientation));
 		}
 		if (geolocation != null) {
-			if (builder.length() > 0) {
-				builder.append(", ");
-			}
-			builder.append(getString(R.string.message_image_warning_geolocation));
+			message = appendMessage(message, getString(R.string.geolocation));
 		}
-		return new AlertDialog.Builder(activity).setTitle(R.string.text_warning)
-				.setMessage(getString(R.string.message_image_warning, builder.toString()))
+		return new AlertDialog.Builder(activity).setTitle(R.string.warning)
+				.setMessage(getString(R.string.image_contains_data__format_sentence, message))
 				.setPositiveButton(android.R.string.ok, null).create();
+	}
+
+	private String appendMessage(String message, String append) {
+		if (message.isEmpty()) {
+			return append;
+		} else {
+			return getString(R.string.__enumeration_format, message, append);
+		}
 	}
 }
