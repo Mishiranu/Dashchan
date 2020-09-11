@@ -624,10 +624,34 @@ public class Preferences {
 	}
 
 	public static final String KEY_FAVORITE_ON_REPLY = "favorite_on_reply";
-	public static final boolean DEFAULT_FAVORITE_ON_REPLY = false;
+	public static final String VALUE_FAVORITE_ON_REPLY_DISABLED = "disabled";
+	public static final String VALUE_FAVORITE_ON_REPLY_ENABLED = "enabled";
+	public static final String VALUE_FAVORITE_ON_REPLY_WITHOUT_SAGE = "without_sage";
+	public static final String[] VALUES_FAVORITE_ON_REPLY = {
+			VALUE_FAVORITE_ON_REPLY_DISABLED,
+			VALUE_FAVORITE_ON_REPLY_ENABLED,
+			VALUE_FAVORITE_ON_REPLY_WITHOUT_SAGE
+	};
+	public static final int[] ENTRIES_FAVORITE_ON_REPLY = {
+			R.string.disabled,
+			R.string.enabled,
+			R.string.only_if_without_sage
+	};
+	public static final String DEFAULT_FAVORITE_ON_REPLY = VALUE_FAVORITE_ON_REPLY_DISABLED;
 
-	public static boolean isFavoriteOnReply() {
-		return PREFERENCES.getBoolean(KEY_FAVORITE_ON_REPLY, DEFAULT_FAVORITE_ON_REPLY);
+	public static boolean isFavoriteOnReply(boolean sage) {
+		String value = PREFERENCES.getString(KEY_FAVORITE_ON_REPLY, DEFAULT_FAVORITE_ON_REPLY);
+		return VALUE_FAVORITE_ON_REPLY_ENABLED.equals(value) ||
+				VALUE_FAVORITE_ON_REPLY_WITHOUT_SAGE.equals(value) && !sage;
+	}
+
+	static {
+		Object favoriteOnReply = PREFERENCES.getAll().get("favorite_on_reply");
+		if (favoriteOnReply instanceof Boolean) {
+			String value = (boolean) favoriteOnReply ? VALUE_FAVORITE_ON_REPLY_ENABLED
+					: VALUE_FAVORITE_ON_REPLY_DISABLED;
+			PREFERENCES.edit().remove("favorite_on_reply").putString(KEY_FAVORITE_ON_REPLY, value).commit();
+		}
 	}
 
 	public static final String KEY_FAVORITES_ORDER = "favorites_order";

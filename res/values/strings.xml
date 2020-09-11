@@ -115,6 +115,7 @@
 	<string name="detailed_file_name">Detailed file name</string>
 	<string name="detailed_file_name__summary">Download files with thread number in names</string>
 	<string name="details">Details</string>
+	<string name="disabled">Disabled</string>
 	<string name="display_hidden_threads">Display hidden threads</string>
 	<string name="display_post_icons">Display post icons</string>
 	<string name="display_post_icons__summary">Post icons may be available on some boards</string>
@@ -133,6 +134,7 @@
 	<string name="downloads">Downloads</string>
 	<string name="draft_saved">Draft saved</string>
 	<string name="empty_response">Empty response</string>
+	<string name="enabled">Enabled</string>
 	<string name="enter_valid_data">Enter a valid data</string>
 	<string name="every_number_sec__format">Every %d sec.</string>
 	<string name="exif_metadata">Exif metadata</string>
@@ -293,6 +295,7 @@
 	<string name="old_threads">Old threads</string>
 	<string name="older_than_seven_days">Older than 7 days</string>
 	<string name="on_multiple_downloading">On multiple downloading</string>
+	<string name="only_if_without_sage">Only if without sage</string>
 	<string name="only_original_posts">Only original posts</string>
 	<string name="only_posts_with_sage">Only posts with sage</string>
 	<string name="open_forum__format_sentence">Open %s?</string>

@@ -425,7 +425,7 @@ public class PostingService extends Service implements SendPostTask.Callback<Pos
 		if (performFinish(key, false)) {
 			String targetThreadNumber = data.threadNumber != null ? data.threadNumber
 					: StringUtils.nullIfEmpty(threadNumber);
-			if (targetThreadNumber != null && Preferences.isFavoriteOnReply()) {
+			if (targetThreadNumber != null && Preferences.isFavoriteOnReply(data.optionSage)) {
 				FavoritesStorage.getInstance().add(chanName, data.boardName, targetThreadNumber, null, 0);
 			}
 			StatisticsStorage.getInstance().incrementPostsSent(chanName, data.threadNumber == null);

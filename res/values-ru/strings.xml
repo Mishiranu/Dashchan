@@ -114,6 +114,7 @@
 	<string name="detailed_file_name">Подробное имя файла</string>
 	<string name="detailed_file_name__summary">Загружать файлы с номером треда в названии</string>
 	<string name="details">Подробнее</string>
+	<string name="disabled">Отключено</string>
 	<string name="display_hidden_threads">Выводить скрытые треды</string>
 	<string name="display_post_icons">Показывать иконки сообщений</string>
 	<string name="display_post_icons__summary">Иконки доступны в некоторых разделах</string>
@@ -131,6 +132,7 @@
 	<string name="downloads">Загрузки</string>
 	<string name="draft_saved">Черновик сохранён</string>
 	<string name="empty_response">Пустой ответ сервера</string>
+	<string name="enabled">Включено</string>
 	<string name="enter_valid_data">Введите корректные данные</string>
 	<string name="every_number_sec__format">Каждые %d сек.</string>
 	<string name="exif_metadata">Метаданные Exif</string>
@@ -308,6 +310,7 @@
 	<string name="old_threads">Старые треды</string>
 	<string name="older_than_seven_days">Старше 7 дней</string>
 	<string name="on_multiple_downloading">При множественной загрузке</string>
+	<string name="only_if_without_sage">При ответе без sage</string>
 	<string name="only_original_posts">Только исходные сообщения</string>
 	<string name="only_posts_with_sage">Только сообщения с sage</string>
 	<string name="open_forum__format_sentence">Перейти на %s?</string>

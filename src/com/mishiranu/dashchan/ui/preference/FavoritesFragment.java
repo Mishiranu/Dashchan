@@ -24,8 +24,9 @@ public class FavoritesFragment extends PreferenceFragment {
 				Preferences.DEFAULT_FAVORITES_ORDER, R.string.favorite_threads_order,
 				Preferences.ENTRIES_FAVORITES_ORDER)
 				.setOnAfterChangeListener(p -> FavoritesStorage.getInstance().sortIfNeeded());
-		addCheck(true, Preferences.KEY_FAVORITE_ON_REPLY, Preferences.DEFAULT_FAVORITE_ON_REPLY,
-				R.string.add_thread_on_reply, 0);
+		addList(Preferences.KEY_FAVORITE_ON_REPLY, Preferences.VALUES_FAVORITE_ON_REPLY,
+				Preferences.DEFAULT_FAVORITE_ON_REPLY, R.string.add_thread_on_reply,
+				Preferences.ENTRIES_FAVORITE_ON_REPLY);
 
 		addHeader(R.string.favorites_watcher);
 		addCheck(true, Preferences.KEY_WATCHER_REFRESH_PERIODICALLY,
