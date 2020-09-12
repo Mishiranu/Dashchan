@@ -25,31 +25,31 @@ public class CategoriesFragment extends PreferenceFragment {
 		boolean hasChan = chanNames.hasNext();
 		String singleChanName = hasChan ? chanNames.next() : null;
 		boolean hasMultipleChans = hasChan && chanNames.hasNext();
-		addCategory(R.string.general)
+		addCategory(R.string.general, R.drawable.ic_map)
 				.setOnClickListener(p -> ((FragmentHandler) requireActivity())
 						.pushFragment(new GeneralFragment()));
 		if (hasMultipleChans) {
-			addCategory(R.string.forums)
+			addCategory(R.string.forums, R.drawable.ic_public)
 					.setOnClickListener(p -> ((FragmentHandler) requireActivity())
 							.pushFragment(new ChansFragment()));
 		} else if (hasChan) {
-			addCategory(R.string.forum)
+			addCategory(R.string.forum, R.drawable.ic_public)
 					.setOnClickListener(p -> ((FragmentHandler) requireActivity())
 							.pushFragment(new ChanFragment(singleChanName)));
 		}
-		addCategory(R.string.user_interface)
+		addCategory(R.string.user_interface, R.drawable.ic_color_lens)
 				.setOnClickListener(p -> ((FragmentHandler) requireActivity())
 						.pushFragment(new InterfaceFragment()));
-		addCategory(R.string.contents)
+		addCategory(R.string.contents, R.drawable.ic_local_library)
 				.setOnClickListener(p -> ((FragmentHandler) requireActivity())
 						.pushFragment(new ContentsFragment()));
-		addCategory(R.string.favorites)
+		addCategory(R.string.favorites, R.drawable.ic_star)
 				.setOnClickListener(p -> ((FragmentHandler) requireActivity())
 						.pushFragment(new FavoritesFragment()));
-		addCategory(R.string.autohide)
+		addCategory(R.string.autohide, R.drawable.ic_custom_fork)
 				.setOnClickListener(p -> ((FragmentHandler) requireActivity())
 						.pushFragment(new AutohideFragment()));
-		addCategory(R.string.about)
+		addCategory(R.string.about, R.drawable.ic_info)
 				.setOnClickListener(p -> ((FragmentHandler) requireActivity())
 						.pushFragment(new AboutFragment()));
 	}

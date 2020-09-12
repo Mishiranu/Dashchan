@@ -15,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -199,6 +200,11 @@ public abstract class PreferenceFragment extends Fragment {
 
 	public Preference<Void> addCategory(int titleResId) {
 		return addCategory(getString(titleResId), null);
+	}
+
+	public Preference<Void> addCategory(int titleResId, int iconResId) {
+		return addCategory(getString(titleResId), C.API_LOLLIPOP
+				? ContextCompat.getDrawable(requireContext(), iconResId) : null);
 	}
 
 	public Preference<Void> addCategory(CharSequence title, Drawable icon) {
