@@ -174,44 +174,49 @@ public class ChanFragment extends PreferenceFragment {
 		cookiePreference.setOnClickListener(p -> ((FragmentHandler) requireActivity())
 				.pushFragment(new CookiesFragment(chanName)));
 
-		addHeader(R.string.connection);
 		ArrayList<String> domains = locator.getChanHosts(true);
-		anotherDomainMode = !domains.contains(locator.getPreferredHost()) || domains.size() == 1 ||
-				savedInstanceState != null && savedInstanceState.getBoolean(EXTRA_ANOTHER_DOMAIN_MODE);
-		if (anotherDomainMode) {
-			if (!domains.isEmpty()) {
-				addAnotherDomainPreference(domains.get(0));
-			}
-		} else {
-			String[] domainsArray = CommonUtils.toArray(domains, String.class);
-			String[] entries = new String[domainsArray.length + 1];
-			System.arraycopy(domainsArray, 0, entries, 0, domainsArray.length);
-			entries[entries.length - 1] = getString(R.string.another);
-			String[] values = new String[domainsArray.length + 1];
-			values[0] = "";
-			System.arraycopy(domainsArray, 1, values, 1, domainsArray.length - 1);
-			values[values.length - 1] = VALUE_CUSTOM_DOMAIN;
-			Preference<String> domainPreference = addList(Preferences.KEY_DOMAIN.bind(chanName), values,
-					values[0], R.string.domain_name, entries);
-			domainPreference.setOnAfterChangeListener(p -> clearSpecialCookies());
-			domainPreference.setOnBeforeChangeListener((preference, value) -> {
-				if (VALUE_CUSTOM_DOMAIN.equals(value)) {
-					anotherDomainMode = true;
-					Preference<String> newDomainPreference = addAnotherDomainPreference(domains.get(0));
-					movePreference(newDomainPreference, domainPreference);
-					removePreference(domainPreference);
-					newDomainPreference.performClick();
-					return false;
-				}
-				return true;
-			});
+		boolean localMode = configuration.getOption(ChanConfiguration.OPTION_LOCAL_MODE) || domains.isEmpty();
+		boolean httpsConfigurable = locator.isHttpsConfigurable();
+		boolean canReadThreadPartially = configuration.getOption(ChanConfiguration.OPTION_READ_THREAD_PARTIALLY);
+		if (!localMode || httpsConfigurable || canReadThreadPartially) {
+			addHeader(R.string.connection);
 		}
-		if (locator.isHttpsConfigurable()) {
+		if (!localMode) {
+			anotherDomainMode = !domains.contains(locator.getPreferredHost()) || domains.size() == 1 ||
+					savedInstanceState != null && savedInstanceState.getBoolean(EXTRA_ANOTHER_DOMAIN_MODE);
+			if (anotherDomainMode) {
+				addAnotherDomainPreference(domains.get(0));
+			} else {
+				String[] domainsArray = CommonUtils.toArray(domains, String.class);
+				String[] entries = new String[domainsArray.length + 1];
+				System.arraycopy(domainsArray, 0, entries, 0, domainsArray.length);
+				entries[entries.length - 1] = getString(R.string.another);
+				String[] values = new String[domainsArray.length + 1];
+				values[0] = "";
+				System.arraycopy(domainsArray, 1, values, 1, domainsArray.length - 1);
+				values[values.length - 1] = VALUE_CUSTOM_DOMAIN;
+				Preference<String> domainPreference = addList(Preferences.KEY_DOMAIN.bind(chanName), values,
+						values[0], R.string.domain_name, entries);
+				domainPreference.setOnAfterChangeListener(p -> clearSpecialCookies());
+				domainPreference.setOnBeforeChangeListener((preference, value) -> {
+					if (VALUE_CUSTOM_DOMAIN.equals(value)) {
+						anotherDomainMode = true;
+						Preference<String> newDomainPreference = addAnotherDomainPreference(domains.get(0));
+						movePreference(newDomainPreference, domainPreference);
+						removePreference(domainPreference);
+						newDomainPreference.performClick();
+						return false;
+					}
+					return true;
+				});
+			}
+		}
+		if (httpsConfigurable) {
 			addCheck(true, Preferences.KEY_USE_HTTPS.bind(chanName), Preferences.DEFAULT_USE_HTTPS,
 					R.string.secure_connection, R.string.secure_connection__summary)
 					.setOnAfterChangeListener(p -> clearSpecialCookies());
 		}
-		if (!configuration.getOption(ChanConfiguration.OPTION_HIDDEN_DISALLOW_PROXY)) {
+		if (!localMode) {
 			MultipleEditTextPreference proxyPreference = addMultipleEdit(Preferences.KEY_PROXY.bind(chanName),
 					R.string.proxy, "%s:%s", new String[] {getString(R.string.address),
 					getString(R.string.port), null}, new int[] {InputType.TYPE_CLASS_TEXT |
@@ -226,7 +231,7 @@ public class ChanFragment extends PreferenceFragment {
 				}
 			});
 		}
-		if (configuration.getOption(ChanConfiguration.OPTION_READ_THREAD_PARTIALLY)) {
+		if (canReadThreadPartially) {
 			addCheck(true, Preferences.KEY_PARTIAL_THREAD_LOADING.bind(chanName),
 					Preferences.DEFAULT_PARTIAL_THREAD_LOADING, R.string.partial_thread_loading,
 					R.string.partial_thread_loading__summary);

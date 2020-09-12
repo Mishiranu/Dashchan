@@ -671,7 +671,7 @@ public class ChanManager {
 
 	public boolean canBeArchived(String chanName) {
 		return archiveMap.containsKey(chanName) || !ChanConfiguration.get(chanName)
-				.getOption(ChanConfiguration.OPTION_HIDDEN_DISALLOW_ARCHIVATION);
+				.getOption(ChanConfiguration.OPTION_LOCAL_MODE);
 	}
 
 	public boolean isExistingChanName(String chanName) {

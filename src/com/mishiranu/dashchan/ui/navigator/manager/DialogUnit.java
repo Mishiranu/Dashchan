@@ -1180,7 +1180,7 @@ public class DialogUnit {
 			final Posts posts) {
 		Context context = uiManager.getContext();
 		final boolean canArchiveLocal = !ChanConfiguration.get(chanName)
-				.getOption(ChanConfiguration.OPTION_HIDDEN_DISALLOW_ARCHIVATION);
+				.getOption(ChanConfiguration.OPTION_LOCAL_MODE);
 		final List<String> archiveChanNames = ChanManager.getInstance().getArchiveChanNames(chanName);
 		final SendMultifunctionalTask.State state = new SendMultifunctionalTask.State(SendMultifunctionalTask
 				.Operation.ARCHIVE, chanName, boardName, threadNumber, null, null, false);

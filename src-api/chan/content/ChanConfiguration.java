@@ -71,10 +71,7 @@ public class ChanConfiguration implements ChanManager.Linked {
 	@Public public static final String OPTION_READ_USER_BOARDS = "read_user_boards";
 	@Public public static final String OPTION_ALLOW_CAPTCHA_PASS = "allow_captcha_pass";
 	@Public public static final String OPTION_ALLOW_USER_AUTHORIZATION = "allow_user_authorization";
-
-	public static final String OPTION_HIDDEN_DISALLOW_PROXY = "disallow_proxy";
-	public static final String OPTION_HIDDEN_DISALLOW_ARCHIVATION = "disallow_archivation";
-	public static final String OPTION_HIDDEN_DISABLE_SERIALIZATION = "disable_serialization";
+	@Public public static final String OPTION_LOCAL_MODE = "local_mode";
 
 	private static final String KEY_TITLE = "title";
 	private static final String KEY_DESCRIPTION = "description";

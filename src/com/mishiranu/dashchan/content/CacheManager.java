@@ -845,7 +845,7 @@ public class CacheManager implements Runnable {
 	}
 
 	public boolean allowPagesCache(String chanName) {
-		return !ChanConfiguration.get(chanName).getOption(ChanConfiguration.OPTION_HIDDEN_DISABLE_SERIALIZATION);
+		return !ChanConfiguration.get(chanName).getOption(ChanConfiguration.OPTION_LOCAL_MODE);
 	}
 
 	public void serializePosts(String chanName, String boardName, String threadNumber, Object posts) {

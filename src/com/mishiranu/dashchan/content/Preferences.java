@@ -911,7 +911,7 @@ public class Preferences {
 	public static final String[] VALUES_PROXY_2 = {VALUE_PROXY_2_HTTP, VALUE_PROXY_2_SOCKS};
 
 	public static String[] getProxy(String chanName) {
-		if (ChanConfiguration.get(chanName).getOption(ChanConfiguration.OPTION_HIDDEN_DISALLOW_PROXY)) {
+		if (ChanConfiguration.get(chanName).getOption(ChanConfiguration.OPTION_LOCAL_MODE)) {
 			return null;
 		}
 		String value = PREFERENCES.getString(KEY_PROXY.bind(chanName), null);
