@@ -82,6 +82,7 @@
 	<string name="code_number_address">Код, номер, адрес</string>
 	<string name="comment">Комментарий</string>
 	<string name="comment_is_too_short">Комментарий слишком короткий</string>
+	<string name="compatibility">Совместимость</string>
 	<string name="completed">Завершено</string>
 	<string name="completed_downloads">Завершённые загрузки</string>
 	<string name="configuration">Конфигурация</string>
@@ -131,6 +132,10 @@
 	<string name="downloading_number_of_number__format">Загрузка %1$d из %2$d</string>
 	<string name="downloads">Загрузки</string>
 	<string name="draft_saved">Черновик сохранён</string>
+	<string name="draw_over_other_applications">Отображать поверх других приложений</string>
+	<string name="draw_over_other_applications__summary">Данное разрешение необходимо для полноценной работы всплывающих
+		уведомлений с кнопкой, обеспечения надёжного перезапуска приложения и возможности запустить приложение при
+		неудачной отправке сообщения</string>
 	<string name="empty_response">Пустой ответ сервера</string>
 	<string name="enabled">Включено</string>
 	<string name="enter_valid_data">Введите корректные данные</string>
@@ -387,7 +392,6 @@
 	<string name="request_has_been_sent_successfully">Запрос успешно отправлен</string>
 	<string name="requires_decoding_libraries__sentence">Для работы видеоплеера необходимо установить
 		библиотеки декодирования.</string>
-	<string name="requires_restart">Необходим перезапуск</string>
 	<string name="restart">Перезапуск</string>
 	<string name="restore_data">Восстановить данные</string>
 	<string name="retry">Повторить</string>
@@ -497,6 +501,8 @@
 	<string name="use_built_in_video_player">Использовать встроенный видеоплеер</string>
 	<string name="use_built_in_video_player__summary">Воспроизводить вложенные WebM видео</string>
 	<string name="use_gms_security_provider">Использ. постав. безопасности GMS</string>
+	<string name="use_gms_security_provider__summary">Поставщик безопасности сервисов Google Play добавляет поддержку
+		более новой реализации SSL/TLS, что может быть полезно на старых Android устройствах</string>
 	<string name="use_javascript_for_recaptcha">Использ. JavaScript для reCAPTCHA</string>
 	<string name="use_javascript_for_recaptcha__summary">Google reCAPTCHA может быть упрощена</string>
 	<string name="user_authorization">Авторизация пользователя</string>

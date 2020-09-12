@@ -84,6 +84,7 @@
 	<string name="code_number_address">Code, number, address</string>
 	<string name="comment">Comment</string>
 	<string name="comment_is_too_short">Comment is too short</string>
+	<string name="compatibility">Compatibility</string>
 	<string name="completed">Completed</string>
 	<string name="completed_downloads">Completed downloads</string>
 	<string name="configuration">Configuration</string>
@@ -133,6 +134,9 @@
 	<string name="downloading_number_of_number__format">Downloading %1$d of %2$d</string>
 	<string name="downloads">Downloads</string>
 	<string name="draft_saved">Draft saved</string>
+	<string name="draw_over_other_applications">Draw over other applications</string>
+	<string name="draw_over_other_applications__summary">This permission is needed to enable all features of clickable
+		toasts, ensure reliable application restarts, and allow to launch application when posting fails</string>
 	<string name="empty_response">Empty response</string>
 	<string name="enabled">Enabled</string>
 	<string name="enter_valid_data">Enter a valid data</string>
@@ -373,7 +377,6 @@
 	<string name="request_has_been_sent_successfully">The request has been sent successfully</string>
 	<string name="requires_decoding_libraries__sentence">Decoding libraries should be installed in order to enable
 		video player.</string>
-	<string name="requires_restart">Requires restart</string>
 	<string name="restart">Restart</string>
 	<string name="restore_data">Restore data</string>
 	<string name="retry">Retry</string>
@@ -482,6 +485,8 @@
 	<string name="use_built_in_video_player">Use built-in video player</string>
 	<string name="use_built_in_video_player__summary">Play WebM video attachments</string>
 	<string name="use_gms_security_provider">Use GMS security provider</string>
+	<string name="use_gms_security_provider__summary">Google Play Services security provider adds support for newer
+		SSL/TLS implementation, which may be important for old Android devices</string>
 	<string name="use_javascript_for_recaptcha">Use JavaScript for reCAPTCHA</string>
 	<string name="use_javascript_for_recaptcha__summary">May simplify Google reCAPTCHA</string>
 	<string name="user_authorization">User authorization</string>

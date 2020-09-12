@@ -21,6 +21,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
@@ -211,6 +212,13 @@ public abstract class PreferenceFragment extends Fragment {
 		Preference<Void> preference = new CategoryPreference(requireContext(), title, icon);
 		addPreference(preference, false);
 		return preference;
+	}
+
+	public void setCategoryTint(Preference<Void> preference, ColorStateList tintList) {
+		if (!(preference instanceof CategoryPreference)) {
+			throw new IllegalArgumentException();
+		}
+		((CategoryPreference) preference).setTint(tintList);
 	}
 
 	public CheckPreference addCheck(boolean persistent, String key, boolean defaultValue,
@@ -443,6 +451,7 @@ public abstract class PreferenceFragment extends Fragment {
 
 	private static class CategoryPreference extends ButtonPreference {
 		private final Drawable icon;
+		private ColorStateList tintList;
 
 		public CategoryPreference(Context context, CharSequence title, Drawable icon) {
 			super(context, title, null);
@@ -452,6 +461,11 @@ public abstract class PreferenceFragment extends Fragment {
 		@Override
 		public ViewType getViewType() {
 			return ViewType.CATEGORY;
+		}
+
+		public void setTint(ColorStateList tintList) {
+			this.tintList = tintList;
+			invalidate();
 		}
 
 		private static class IconViewHolder extends ViewHolder {
@@ -469,8 +483,6 @@ public abstract class PreferenceFragment extends Fragment {
 			if (C.API_LOLLIPOP) {
 				float density = ResourceUtils.obtainDensity(parent);
 				ImageView icon = new ImageView(viewHolder.view.getContext());
-				icon.setImageTintList(ColorStateList.valueOf(ResourceUtils
-						.getColor(viewHolder.view.getContext(), android.R.attr.textColorSecondary)));
 				LinearLayout.LayoutParams layoutParams = new LinearLayout
 						.LayoutParams((int) (24f * density), (int) (24f * density));
 				layoutParams.setMarginEnd((int) (32f * density));
@@ -493,10 +505,19 @@ public abstract class PreferenceFragment extends Fragment {
 		public void bindViewHolder(ViewHolder viewHolder) {
 			super.bindViewHolder(viewHolder);
 
+			ColorStateList textColors = (ColorStateList) viewHolder.title.getTag(R.id.tag_text_colors);
+			if (textColors == null) {
+				textColors = viewHolder.title.getTextColors();
+				viewHolder.title.setTag(R.id.tag_text_colors, textColors);
+			}
+			viewHolder.title.setTextColor(tintList != null ? tintList : textColors);
+
 			if (viewHolder instanceof IconViewHolder) {
 				IconViewHolder iconViewHolder = (IconViewHolder) viewHolder;
 				iconViewHolder.icon.setImageDrawable(icon);
 				iconViewHolder.icon.setVisibility(icon != null ? View.VISIBLE : View.GONE);
+				iconViewHolder.icon.setImageTintList(tintList != null ? tintList : ColorStateList.valueOf(ResourceUtils
+						.getColor(viewHolder.view.getContext(), android.R.attr.textColorSecondary)));
 			}
 		}
 	}

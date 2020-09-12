@@ -50,8 +50,6 @@ public class GeneralFragment extends PreferenceFragment {
 				R.string.secure_connection, R.string.secure_connection__summary);
 		addCheck(true, Preferences.KEY_VERIFY_CERTIFICATE, Preferences.DEFAULT_VERIFY_CERTIFICATE,
 				R.string.verify_certificate, R.string.verify_certificate__summary);
-		addCheck(true, Preferences.KEY_USE_GMS_PROVIDER, Preferences.DEFAULT_USE_GMS_PROVIDER,
-				R.string.use_gms_security_provider, R.string.requires_restart);
 	}
 
 	@Override
