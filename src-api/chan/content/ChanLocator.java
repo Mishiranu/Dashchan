@@ -436,60 +436,6 @@ public class ChanLocator implements ChanManager.Linked {
 		return uri;
 	}
 
-	private static final Pattern YOUTUBE_URI = Pattern.compile("(?:https?://)(?:www\\.)?(?:m\\.)?" +
-			"youtu(?:\\.be/|be\\.com/(?:v/|embed/|(?:#/)?watch\\?(?:.*?|)v=))([\\w\\-]{11})");
-
-	private static final Pattern VIMEO_URI = Pattern.compile("(?:https?://)(?:player\\.)?vimeo.com/(?:video/)?" +
-			"(?:channels/staffpicks/)?(\\d+)");
-
-	private static final Pattern VOCAROO_URI = Pattern.compile("(?:https?://)(?:www\\.)?vocaroo\\.com" +
-			"/(?:player\\.swf\\?playMediaID=|i/|media_command\\.php\\?media=)([\\w\\-]{12})");
-
-	private boolean isMayContainEmbeddedCode(String text, String what) {
-		return !StringUtils.isEmpty(text) && text.contains(what);
-	}
-
-	public final String getYouTubeEmbeddedCode(String text) {
-		if (!isMayContainEmbeddedCode(text, "youtu")) {
-			return null;
-		}
-		return getGroupValue(text, YOUTUBE_URI, 1);
-	}
-
-	public final String[] getYouTubeEmbeddedCodes(String text) {
-		if (!isMayContainEmbeddedCode(text, "youtu")) {
-			return null;
-		}
-		return getUniqueGroupValues(text, YOUTUBE_URI, 1);
-	}
-
-	public final String getVimeoEmbeddedCode(String text) {
-		if (!isMayContainEmbeddedCode(text, "vimeo")) {
-			return null;
-		}
-		return getGroupValue(text, VIMEO_URI, 1);
-	}
-
-	public final String[] getVimeoEmbeddedCodes(String text) {
-		if (!isMayContainEmbeddedCode(text, "vimeo")) {
-			return null;
-		}
-		return getUniqueGroupValues(text, VIMEO_URI, 1);
-	}
-	public final String getVocarooEmbeddedCode(String text) {
-		if (!isMayContainEmbeddedCode(text, "vocaroo")) {
-			return null;
-		}
-		return getGroupValue(text, VOCAROO_URI, 1);
-	}
-
-	public final String[] getVocarooEmbeddedCodes(String text) {
-		if (!isMayContainEmbeddedCode(text, "vocaroo")) {
-			return null;
-		}
-		return getUniqueGroupValues(text, VOCAROO_URI, 1);
-	}
-
 	@Public
 	public final boolean isPathMatches(Uri uri, Pattern pattern) {
 		if (uri != null) {

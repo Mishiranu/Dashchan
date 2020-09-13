@@ -11,7 +11,7 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.ImageLoader;
 import com.mishiranu.dashchan.content.Preferences;
-import com.mishiranu.dashchan.content.net.EmbeddedManager;
+import com.mishiranu.dashchan.content.net.EmbeddedType;
 import com.mishiranu.dashchan.widget.AttachmentView;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -329,9 +329,9 @@ public abstract class AttachmentItem {
 			}
 		}
 		String comment = postItem.getRawComment();
-		addCommentAttachmentItems(attachmentItems, postItem, locator, comment, UriType.YOUTUBE);
-		addCommentAttachmentItems(attachmentItems, postItem, locator, comment, UriType.VIMEO);
-		addCommentAttachmentItems(attachmentItems, postItem, locator, comment, UriType.VOCAROO);
+		for (EmbeddedType embeddedType : EmbeddedType.values()) {
+			addCommentAttachmentItems(attachmentItems, postItem, locator, comment, embeddedType);
+		}
 		if (attachmentItems.size() > 0) {
 			attachmentItems.trimToSize();
 			return attachmentItems;
@@ -406,58 +406,20 @@ public abstract class AttachmentItem {
 		return attachmentItem;
 	}
 
-	private enum UriType {YOUTUBE, VIMEO, VOCAROO}
-
 	private static EmbeddedAttachmentItem obtainCommentAttachmentItem(Binder binder, ChanLocator locator,
-			String embeddedCode, UriType uriType) {
-		EmbeddedAttachmentItem attachmentItem;
-		switch (uriType) {
-			case YOUTUBE: {
-				attachmentItem = obtainEmbeddedAttachmentItem(binder, locator,
-						EmbeddedManager.getInstance().obtainYouTubeAttachment(locator, embeddedCode));
-				break;
-			}
-			case VIMEO: {
-				attachmentItem = obtainEmbeddedAttachmentItem(binder, locator,
-						EmbeddedManager.getInstance().obtainVimeoAttachment(locator, embeddedCode));
-				break;
-			}
-			case VOCAROO: {
-				attachmentItem = obtainEmbeddedAttachmentItem(binder, locator,
-						EmbeddedManager.getInstance().obtainVocarooAttachment(locator, embeddedCode));
-				break;
-			}
-			default: {
-				throw new RuntimeException();
-			}
-		}
+			EmbeddedType embeddedType, String embeddedCode) {
+		EmbeddedAttachmentItem attachmentItem = obtainEmbeddedAttachmentItem(binder, locator,
+				embeddedType.obtainAttachment(locator, embeddedCode));
 		attachmentItem.fromComment = true;
 		return attachmentItem;
 	}
 
 	private static void addCommentAttachmentItems(ArrayList<AttachmentItem> attachmentItems, Binder binder,
-			ChanLocator locator, String comment, UriType uriType) {
-		ArrayList<String> embeddedCodes;
-		switch (uriType) {
-			case YOUTUBE: {
-				embeddedCodes = getAllCodes(locator.getYouTubeEmbeddedCodes(comment));
-				break;
-			}
-			case VIMEO: {
-				embeddedCodes = getAllCodes(locator.getVimeoEmbeddedCodes(comment));
-				break;
-			}
-			case VOCAROO: {
-				embeddedCodes = getAllCodes(locator.getVocarooEmbeddedCodes(comment));
-				break;
-			}
-			default: {
-				throw new RuntimeException();
-			}
-		}
+			ChanLocator locator, String comment, EmbeddedType embeddedType) {
+		ArrayList<String> embeddedCodes = getAllCodes(embeddedType.getAll(locator, comment));
 		if (embeddedCodes != null && embeddedCodes.size() > 0) {
 			for (String embeddedCode : embeddedCodes) {
-				attachmentItems.add(obtainCommentAttachmentItem(binder, locator, embeddedCode, uriType));
+				attachmentItems.add(obtainCommentAttachmentItem(binder, locator, embeddedType, embeddedCode));
 			}
 		}
 	}
