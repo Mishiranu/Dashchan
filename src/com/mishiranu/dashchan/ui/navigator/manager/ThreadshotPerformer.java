@@ -122,9 +122,9 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
 		protected void onPostExecute(InputStream result) {
 			dialog.dismiss();
 			if (result != null) {
-				uiManager.download(binder -> binder.saveStreamStorage(result,
+				uiManager.download(binder -> binder.downloadStorage(result,
 						chanName, boardName, threadNumber, threadTitle,
-						"threadshot-" + System.currentTimeMillis() + ".png", true));
+						"threadshot-" + System.currentTimeMillis() + ".png", true, false));
 			} else {
 				ToastUtils.show(parent.getContext(), R.string.unknown_error);
 			}

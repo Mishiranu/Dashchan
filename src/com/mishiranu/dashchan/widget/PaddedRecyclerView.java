@@ -134,7 +134,7 @@ public class PaddedRecyclerView extends RecyclerView implements EdgeEffectHandle
 	}
 
 	public final int obtainEdgeEffectShift(EdgeEffectHandler.Side side) {
-		return side == EdgeEffectHandler.Side.TOP ? getPaddingTop() : getPaddingBottom();
+		return getClipToPadding() ? 0 : side == EdgeEffectHandler.Side.TOP ? getPaddingTop() : getPaddingBottom();
 	}
 
 	@Override

@@ -1,8 +1,6 @@
 package com.mishiranu.dashchan.ui;
 
 import android.animation.LayoutTransition;
-import android.annotation.TargetApi;
-import android.app.AlertDialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -12,21 +10,16 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Parcel;
 import android.os.SystemClock;
-import android.text.TextUtils;
 import android.util.Pair;
-import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.ContextThemeWrapper;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -35,9 +28,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
-import android.widget.ScrollView;
-import android.widget.TextView;
 import android.widget.Toolbar;
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
@@ -74,13 +64,13 @@ import com.mishiranu.dashchan.ui.navigator.page.ListPage;
 import com.mishiranu.dashchan.ui.posting.PostingFragment;
 import com.mishiranu.dashchan.ui.posting.Replyable;
 import com.mishiranu.dashchan.ui.preference.CategoriesFragment;
+import com.mishiranu.dashchan.ui.preference.ThemesFragment;
 import com.mishiranu.dashchan.ui.preference.UpdateFragment;
 import com.mishiranu.dashchan.util.AndroidUtils;
 import com.mishiranu.dashchan.util.ConcatIterable;
 import com.mishiranu.dashchan.util.ConfigurationLock;
 import com.mishiranu.dashchan.util.DrawerToggle;
 import com.mishiranu.dashchan.util.FlagUtils;
-import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
@@ -103,7 +93,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.UUID;
 
 public class MainActivity extends StateActivity implements DrawerForm.Callback,
@@ -159,7 +148,6 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		super.attachBaseContext(ThemeEngine.attach(LocaleManager.getInstance().apply(newBase)));
 	}
 
-	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		if (C.API_LOLLIPOP) {
@@ -1323,7 +1311,15 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 				try {
 					switch (item.getItemId()) {
 						case R.id.menu_change_theme: {
-							showThemeDialog();
+							ThemeDialog.show(this, configurationLock, theme -> {
+								if (theme != null) {
+									Preferences.setTheme(theme.name);
+									recreate();
+								} else {
+									fragments.clear();
+									navigateFragment(new ThemesFragment(), null);
+								}
+							});
 							return true;
 						}
 						case R.id.menu_expanded_screen: {
@@ -1361,79 +1357,6 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			}
 		}
 		return super.onOptionsItemSelected(item);
-	}
-
-	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
-	private void showThemeDialog() {
-		ThemeEngine.Theme theme = ThemeEngine.getTheme(this);
-		List<ThemeEngine.Theme> themes = ThemeEngine.getThemes();
-		Resources resources = getResources();
-		float density = ResourceUtils.obtainDensity(resources);
-		ScrollView scrollView = new ScrollView(this);
-		LinearLayout outer = new LinearLayout(this);
-		outer.setOrientation(LinearLayout.VERTICAL);
-		int outerPadding = (int) (16f * density);
-		outer.setPadding(outerPadding, outerPadding, outerPadding, outerPadding);
-		scrollView.addView(outer, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-		final AlertDialog dialog = new AlertDialog.Builder(this).setTitle(R.string.change_theme)
-				.setView(scrollView).setNegativeButton(android.R.string.cancel, null).create();
-		View.OnClickListener listener = v -> {
-			ThemeEngine.Theme newTheme = themes.get((int) v.getTag());
-			if (newTheme != theme) {
-				Preferences.setTheme(newTheme.name);
-				recreate();
-			}
-			dialog.dismiss();
-		};
-		int circleSize = (int) (56f * density);
-		int itemPadding = (int) (12f * density);
-		LinearLayout inner = null;
-		for (int i = 0; i < themes.size(); i++) {
-			ThemeEngine.Theme workTheme = themes.get(i);
-			if (i % 3 == 0) {
-				inner = new LinearLayout(this);
-				inner.setOrientation(LinearLayout.HORIZONTAL);
-				outer.addView(inner, LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-			}
-			LinearLayout layout = new LinearLayout(this);
-			layout.setOrientation(LinearLayout.VERTICAL);
-			layout.setGravity(Gravity.CENTER);
-			layout.setBackgroundResource(ResourceUtils.getResourceId(this, android.R.attr.selectableItemBackground, 0));
-			layout.setPadding(0, itemPadding, 0, itemPadding);
-			layout.setOnClickListener(listener);
-			layout.setTag(i);
-			inner.addView(layout, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-			View view = new View(this);
-			view.setBackground(workTheme.createThemeChoiceDrawable());
-			if (C.API_LOLLIPOP) {
-				view.setElevation(4f * density);
-			}
-			layout.addView(view, circleSize, circleSize);
-			TextView textView = new TextView(this, null, android.R.attr.textAppearanceListItem);
-			textView.setSingleLine(true);
-			textView.setEllipsize(TextUtils.TruncateAt.END);
-			textView.setText(workTheme.displayName);
-			if (C.API_LOLLIPOP) {
-				textView.setAllCaps(true);
-				textView.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
-				textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f);
-			} else {
-				textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
-			}
-			textView.setGravity(Gravity.CENTER_HORIZONTAL);
-			textView.setPadding(0, (int) (8f * density), 0, 0);
-			layout.addView(textView, LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-			if (i + 1 == themes.size() && themes.size() % 3 != 0) {
-				if (themes.size() % 3 == 1) {
-					inner.addView(new View(this), 0, new LinearLayout.LayoutParams(0,
-							LinearLayout.LayoutParams.MATCH_PARENT, 1f));
-				}
-				inner.addView(new View(this), new LinearLayout.LayoutParams(0,
-						LinearLayout.LayoutParams.MATCH_PARENT, 1f));
-			}
-		}
-		configurationLock.lockConfiguration(dialog);
-		dialog.show();
 	}
 
 	private final SharedPreferences.OnSharedPreferenceChangeListener preferencesListener = (p, key) -> {
@@ -1850,7 +1773,6 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		readUpdateTask.executeOnExecutor(ReadUpdateTask.THREAD_POOL_EXECUTOR);
 	}
 
-	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	@Override
 	public void onReadUpdateComplete(ReadUpdateTask.UpdateDataMap updateDataMap, ErrorItem errorItem) {
 		readUpdateTask = null;

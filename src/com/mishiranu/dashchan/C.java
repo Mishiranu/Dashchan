@@ -57,9 +57,6 @@ public class C {
 		EXTENSION_TRANSFORMATION = Collections.unmodifiableMap(extensionTransformation);
 	}
 
-	public static final String UPDATE_SOURCE_URI_STRING = "//raw.githubusercontent.com/Mishiranu/Dashchan/master/"
-			+ "update/data.json";
-
 	public static final String DEFAULT_DOWNLOAD_PATH = "/Download/Dashchan/";
 
 	public static final String ACTION_POSTING = "com.mishiranu.dashchan.action.POSTING";

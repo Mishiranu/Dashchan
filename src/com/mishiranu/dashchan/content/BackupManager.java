@@ -10,6 +10,7 @@ import com.mishiranu.dashchan.content.storage.AutohideStorage;
 import com.mishiranu.dashchan.content.storage.DatabaseHelper;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.content.storage.StatisticsStorage;
+import com.mishiranu.dashchan.content.storage.ThemesStorage;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.NavigationUtils;
@@ -72,6 +73,7 @@ public class BackupManager {
 		addFileToMap(files, FavoritesStorage.getInstance().getFile(), false);
 		addFileToMap(files, AutohideStorage.getInstance().getFile(), false);
 		addFileToMap(files, StatisticsStorage.getInstance().getFile(), false);
+		addFileToMap(files, ThemesStorage.getInstance().getFile(), false);
 		return files;
 	}
 
@@ -111,8 +113,8 @@ public class BackupManager {
 		// FileInputStream holds a file descriptor
 		backupFile.delete();
 		if (success) {
-			binder.saveStreamStorage(input, null, null, null, null,
-					"backup-" + System.currentTimeMillis() + ".zip", false);
+			binder.downloadStorage(input, null, null, null, null,
+					"backup-" + System.currentTimeMillis() + ".zip", false, false);
 		} else {
 			ToastUtils.show(context, R.string.no_access);
 		}

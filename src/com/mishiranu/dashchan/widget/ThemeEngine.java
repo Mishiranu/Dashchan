@@ -29,6 +29,7 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
+import com.mishiranu.dashchan.content.storage.ThemesStorage;
 import com.mishiranu.dashchan.graphics.ColorScheme;
 import com.mishiranu.dashchan.graphics.ThemeChoiceDrawable;
 import com.mishiranu.dashchan.util.GraphicsUtils;
@@ -40,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +54,7 @@ public class ThemeEngine {
 	public static final int STATUS_OVERLAY_LIGHT = 0x22000000;
 	public static final int STATUS_OVERLAY_DARK = 0x33000000;
 
-	public static class Theme {
+	public static class Theme implements Comparable<Theme> {
 		public enum Base {
 			LIGHT(R.style.Theme_Main_Light),
 			DARK(R.style.Theme_Main_Dark);
@@ -66,7 +68,8 @@ public class ThemeEngine {
 
 		public final Base base;
 		public final String name;
-		public final String displayName;
+		public final boolean builtIn;
+		private final String json;
 
 		public final int window;
 		public final int primary;
@@ -85,12 +88,14 @@ public class ThemeEngine {
 		public final int controlNormal21;
 		public final float disabledAlpha21;
 
-		public Theme(Base base, String name, String displayName, int window, int primary, int accent, int card,
-				int thread, int post, int meta, int spoiler, int link, int quote, int tripcode, int capcode,
+		public Theme(Base base, String name, boolean builtIn, String json,
+				int window, int primary, int accent, int card, int thread, int post, int meta,
+				int spoiler, int link, int quote, int tripcode, int capcode,
 				float colorGainFactor, int controlNormal21, float disabledAlpha21) {
 			this.base = base;
 			this.name = name;
-			this.displayName = displayName;
+			this.builtIn = builtIn;
+			this.json = json;
 			this.window = window;
 			this.primary = primary;
 			this.accent = accent;
@@ -119,6 +124,14 @@ public class ThemeEngine {
 			return new ThemeChoiceDrawable(window, primary, accent);
 		}
 
+		public JSONObject toJsonObject() {
+			try {
+				return new JSONObject(json);
+			} catch (JSONException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
 		private int getColor(String name) {
 			switch (name) {
 				case "window": return window;
@@ -135,6 +148,11 @@ public class ThemeEngine {
 				case "capcode": return capcode;
 				default: throw new IllegalArgumentException();
 			}
+		}
+
+		@Override
+		public int compareTo(Theme theme) {
+			return name.compareTo(theme.name);
 		}
 	}
 
@@ -383,6 +401,7 @@ public class ThemeEngine {
 		Theme theme = INSTANCE.themes.get(themeString);
 		if (theme == null) {
 			theme = INSTANCE.themes.values().iterator().next();
+			Preferences.setTheme(theme.name);
 		}
 		themeContext.theme = theme;
 		context.setTheme(theme.base.resId);
@@ -418,7 +437,7 @@ public class ThemeEngine {
 
 	private static void ensureTheme(ThemeContext themeContext) {
 		if (themeContext.theme == null) {
-			themeContext.theme = new ThemeBuilder().create(null, null, null, themeContext);
+			themeContext.theme = new ThemeBuilder().create(null, null, true, null, themeContext);
 		}
 	}
 
@@ -556,19 +575,43 @@ public class ThemeEngine {
 		requireThemeContext(context).dialogCreatedListeners.add(runnable);
 	}
 
-	private static final int[] THEME_RESOURCES = {R.raw.theme_photon, R.raw.theme_hardon, R.raw.theme_burichan,
-			R.raw.theme_tomorrow, R.raw.theme_normie, R.raw.theme_neutron, R.raw.theme_amoled};
+	private static final int[] DEFAULT_THEME_RESOURCES = {R.raw.theme_normie, R.raw.theme_tomorrow};
 
 	private LinkedHashMap<String, Theme> themes;
 
 	private void prepareThemes(Context context) {
 		if (themes == null) {
 			LinkedHashMap<String, Theme> themes = new LinkedHashMap<>();
-			for (int resId : THEME_RESOURCES) {
-				Theme theme = parseTheme(context, resId);
-				if (theme != null) {
-					themes.put(theme.name, theme);
+			for (int resId : DEFAULT_THEME_RESOURCES) {
+				Theme theme;
+				try {
+					JSONObject jsonObject = new JSONObject(IOUtils
+							.readRawResourceString(context.getResources(), resId));
+					theme = parseThemeInternal(context, jsonObject, true);
+				} catch (JSONException e) {
+					throw new RuntimeException(e);
 				}
+				themes.put(theme.name, theme);
+			}
+			boolean additionalChanged = false;
+			HashMap<String, JSONObject> additionalThemes = ThemesStorage.getInstance().getItems();
+			ArrayList<String> additionalThemeNames = new ArrayList<>(additionalThemes.keySet());
+			Collections.sort(additionalThemeNames);
+			for (String name : additionalThemeNames) {
+				Theme theme = null;
+				if (!themes.containsKey(name)) {
+					JSONObject jsonObject = additionalThemes.get(name);
+					theme = parseTheme(context, jsonObject);
+				}
+				if (theme != null) {
+					themes.put(name, theme);
+				} else if (theme == null) {
+					additionalThemes.remove(name);
+					additionalChanged = true;
+				}
+			}
+			if (additionalChanged) {
+				ThemesStorage.getInstance().serialize();
 			}
 			this.themes = themes;
 			if (themes.isEmpty()) {
@@ -577,21 +620,52 @@ public class ThemeEngine {
 		}
 	}
 
-	private static Theme parseTheme(Context context, int resId) {
-		String name = context.getResources().getResourceEntryName(resId);
-		if (name.startsWith("theme_")) {
-			name = name.substring(6);
+	public static boolean addTheme(Theme theme) {
+		Theme existingTheme = INSTANCE.themes.get(theme.name);
+		if (existingTheme != null && existingTheme.builtIn) {
+			return false;
 		}
+		ThemesStorage.getInstance().getItems().put(theme.name, theme.toJsonObject());
+		ThemesStorage.getInstance().serialize();
+		HashMap<String, Theme> installedThemesMap = new HashMap<>(INSTANCE.themes);
+		Iterator<Theme> iterator = installedThemesMap.values().iterator();
+		while (iterator.hasNext()) {
+			if (iterator.next().builtIn) {
+				iterator.remove();
+			}
+		}
+		INSTANCE.themes.keySet().removeAll(installedThemesMap.keySet());
+		installedThemesMap.put(theme.name, theme);
+		ArrayList<Theme> installedThemes = new ArrayList<>(installedThemesMap.values());
+		Collections.sort(installedThemes);
+		for (Theme installedTheme : installedThemes) {
+			INSTANCE.themes.put(installedTheme.name, installedTheme);
+		}
+		return true;
+	}
+
+	public static boolean deleteTheme(String name) {
+		Theme theme = INSTANCE.themes.get(name);
+		if (theme == null || theme.builtIn) {
+			return false;
+		}
+		ThemesStorage.getInstance().getItems().remove(name);
+		ThemesStorage.getInstance().serialize();
+		INSTANCE.themes.remove(name);
+		return true;
+	}
+
+	public static Theme parseTheme(Context context, JSONObject jsonObject) {
 		try {
-			JSONObject jsonObject = new JSONObject(IOUtils.readRawResourceString(context.getResources(), resId));
-			return parseThemeInternal(context, jsonObject, name);
+			return parseThemeInternal(context, jsonObject, false);
 		} catch (JSONException e) {
 			Log.persistent().stack(e);
 			return null;
 		}
 	}
 
-	private static Theme parseThemeInternal(Context context, JSONObject jsonObject, String name) throws JSONException {
+	private static Theme parseThemeInternal(Context context,
+			JSONObject jsonObject, boolean builtIn) throws JSONException {
 		String baseString = jsonObject.getString("base");
 		Theme.Base base;
 		if ("light".equals(baseString)) {
@@ -601,7 +675,10 @@ public class ThemeEngine {
 		} else {
 			throw new JSONException("Unknown base theme");
 		}
-		String displayName = jsonObject.getString("name");
+		String name = jsonObject.optString("name");
+		if (StringUtils.isEmpty(name)) {
+			throw new JSONException("Invalid theme name");
+		}
 		ThemeBuilder builder = new ThemeBuilder();
 		for (Map.Entry<String, ThemeBuilder.Value> entry : ThemeBuilder.MAP.entrySet()) {
 			HashSet<String> set = new HashSet<>();
@@ -611,7 +688,8 @@ public class ThemeEngine {
 				entry.getValue().setter.setColor(builder, color);
 			}
 		}
-		return builder.create(base, name, displayName, new ContextThemeWrapper(context, base.resId));
+		return builder.create(base, name, builtIn, jsonObject.toString(),
+				new ContextThemeWrapper(context, base.resId));
 	}
 
 	private static Integer resolveColor(JSONObject jsonObject,
@@ -720,7 +798,7 @@ public class ThemeEngine {
 		Integer tripcode;
 		Integer capcode;
 
-		public Theme create(Theme.Base base, String name, String displayName, Context context) {
+		public Theme create(Theme.Base base, String name, boolean builtIn, String json, Context context) {
 			while (true) {
 				boolean changed = false;
 				for (Value value : MAP.values()) {
@@ -754,7 +832,7 @@ public class ThemeEngine {
 				controlNormal21 = colorControlNormal.getColorForState(new int[] {android.R.attr.state_enabled},
 						colorControlNormal.getDefaultColor());
 			}
-			return new Theme(base, name, displayName,
+			return new Theme(base, name, builtIn, json,
 					window, primary, accent, card, thread, post, meta,
 					spoiler, link, quote, tripcode, capcode, colorGainFactor,
 					controlNormal21, disabledAlpha21);

@@ -21,11 +21,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class DraftsStorage extends StorageManager.Storage {
+public class DraftsStorage extends StorageManager.Storage<List<DraftsStorage.PostDraft>> {
 	private static final String KEY_POST_DRAFTS = "postDrafts";
 	private static final String KEY_FUTURE_ATTACHMENT_DRAFTS = "futureAttachmentDrafts";
 
@@ -88,14 +89,12 @@ public class DraftsStorage extends StorageManager.Storage {
 	}
 
 	@Override
-	public Object onClone() {
+	public List<PostDraft> onClone() {
 		return new ArrayList<>(postDrafts.values());
 	}
 
 	@Override
-	public JSONObject onSerialize(Object data) throws JSONException {
-		@SuppressWarnings("unchecked")
-		ArrayList<PostDraft> postDrafts = (ArrayList<PostDraft>) data;
+	public JSONObject onSerialize(List<PostDraft> postDrafts) throws JSONException {
 		JSONObject jsonObject = new JSONObject();
 		if (postDrafts.size() > 0) {
 			JSONArray jsonArray = new JSONArray();

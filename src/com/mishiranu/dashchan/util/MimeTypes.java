@@ -32,6 +32,7 @@ public class MimeTypes {
 	static {
 		ArrayList<Pair<String, String>> pairs = new ArrayList<>();
 
+		pairs.add(new Pair<>("json", "application/json"));
 		pairs.add(new Pair<>("ogg", "application/ogg"));
 		pairs.add(new Pair<>("pdf", "application/pdf"));
 		pairs.add(new Pair<>("apk", "application/vnd.android.package-archive"));

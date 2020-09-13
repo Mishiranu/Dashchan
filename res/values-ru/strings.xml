@@ -4,6 +4,7 @@
 	<string name="about">О программе</string>
 	<string name="action_on_playback_completion">Действие при завершении воспроизведения</string>
 	<string name="active_scrollbar">Активная полоса прокрутки</string>
+	<string name="add_theme">Добавить тему</string>
 	<string name="add_thread_on_reply">Добавлять тред при ответе</string>
 	<string name="add_to_bottom__imperfective">Добавлять в конец</string>
 	<string name="add_to_favorites">Добавить в избранное</string>
@@ -41,6 +42,7 @@
 	<string name="auto_refreshing">Автообновление</string>
 	<string name="auto_refreshing_mode">Режим автообновления</string>
 	<string name="autohide">Автоскрытие</string>
+	<string name="available__plural">Доступные</string>
 	<string name="backup_data">Резервное копирование данных</string>
 	<string name="backup_data__summary">Сохранение всех настроек, избранного, истории и правил автоскрытия</string>
 	<string name="backups_not_found">Резервных копий не найдено</string>
@@ -203,6 +205,7 @@
 	<string name="in_thread_number__format">В треде %s</string>
 	<string name="incorrect_password">Неправильный пароль</string>
 	<string name="initial_position">Начальное положение</string>
+	<string name="installed__plural">Установленные</string>
 	<string name="insufficient_device_space">Недостаточно места на утройстве</string>
 	<string name="internal_browser">Встроенный браузер</string>
 	<string name="internal_browser__sumamry">Открывать внешние ссылки во встроенном браузере</string>
@@ -234,6 +237,7 @@
 	<string name="merge_pages__summary">Отображать страницы для всех форумов</string>
 	<string name="message_data">Данные сообщения</string>
 	<string name="minimize">Свернуть</string>
+	<string name="more_themes">Больше тем</string>
 	<string name="multiple_forums">Несколько форумов</string>
 	<string name="my_post">Моё сообщение</string>
 	<string name="my_posts">Мои сообщения</string>
@@ -460,6 +464,7 @@
 	<string name="technical_info">Технич. информация</string>
 	<string name="test_string">Тестовая строка</string>
 	<string name="text_scale">Масштаб текста</string>
+	<string name="themes">Темы</string>
 	<string name="this_post">Это сообщение</string>
 	<string name="this_recaptcha_is_not_supported">Данная reCAPTCHA не поддерживается</string>
 	<string name="this_week">Эта неделя</string>

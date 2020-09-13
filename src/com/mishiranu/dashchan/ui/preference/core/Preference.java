@@ -5,9 +5,13 @@ import android.content.SharedPreferences;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import chan.util.StringUtils;
+import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.util.ResourceUtils;
 
 public abstract class Preference<T> {
 	public enum ViewType {NORMAL, CATEGORY, HEADER, CHECK}
@@ -175,6 +179,33 @@ public abstract class Preference<T> {
 		@Override
 		protected void persist(SharedPreferences preferences) {
 			throw new UnsupportedOperationException();
+		}
+
+		public static class IconViewHolder extends ViewHolder {
+			public final ImageView icon;
+
+			public IconViewHolder(ViewHolder viewHolder, ImageView icon) {
+				super(viewHolder);
+				this.icon = icon;
+			}
+		}
+
+		public IconViewHolder createIconViewHolder(ViewGroup parent) {
+			ViewHolder viewHolder = super.createViewHolder(parent);
+			float density = ResourceUtils.obtainDensity(parent);
+			ImageView icon = new ImageView(viewHolder.view.getContext());
+			LinearLayout.LayoutParams layoutParams = new LinearLayout
+					.LayoutParams((int) (24f * density), (int) (24f * density));
+			if (C.API_LOLLIPOP) {
+				layoutParams.setMarginEnd((int) (32f * density));
+			} else if (C.API_JELLY_BEAN_MR1) {
+				layoutParams.setMarginEnd((int) (8f * density));
+			} else {
+				layoutParams.setMargins(0, 0, (int) (8f * density), 0);
+			}
+			icon.setLayoutParams(layoutParams);
+			((LinearLayout) viewHolder.view).addView(icon, 0);
+			return new IconViewHolder(viewHolder, icon);
 		}
 	}
 }

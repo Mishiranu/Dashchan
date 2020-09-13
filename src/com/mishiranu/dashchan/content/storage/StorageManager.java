@@ -4,7 +4,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
-import android.util.Pair;
 import android.util.SparseArray;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.content.MainApplication;
@@ -34,33 +33,33 @@ public class StorageManager implements Handler.Callback, Runnable {
 	}
 
 	private final Handler handler = new Handler(Looper.getMainLooper(), this);
-	private final LinkedBlockingQueue<Pair<Storage, Object>> queue = new LinkedBlockingQueue<>();
+	private final LinkedBlockingQueue<Enqueued<?>> queue = new LinkedBlockingQueue<>();
 
 	private int nextIdentifier = 1;
 
 	@Override
 	public void run() {
 		while (true) {
-			Pair<Storage, Object> pair;
+			Enqueued<?> enqueued;
 			try {
-				pair = queue.take();
+				enqueued = queue.take();
 			} catch (InterruptedException e) {
 				return;
 			}
-			performSerialize(pair.first, pair.second);
+			performSerialize(enqueued);
 		}
 	}
 
-	private void performSerialize(Storage storage, Object data) {
-		synchronized (storage.lock) {
+	private <Data> void performSerialize(Enqueued<Data> enqueued) {
+		synchronized (enqueued.storage.lock) {
 			JSONObject jsonObject;
 			try {
-				jsonObject = storage.onSerialize(data);
+				jsonObject = enqueued.storage.onSerialize(enqueued.data);
 			} catch (JSONException e) {
 				throw new RuntimeException(e);
 			}
-			File file = getFile(storage);
-			File backupFile = getBackupFile(storage);
+			File file = getFile(enqueued.storage);
+			File backupFile = getBackupFile(enqueued.storage);
 			if (jsonObject != null) {
 				if (file.exists()) {
 					if (!backupFile.exists()) {
@@ -98,7 +97,17 @@ public class StorageManager implements Handler.Callback, Runnable {
 		}
 	}
 
-	public static abstract class Storage {
+	private static class Enqueued<Data> {
+		public final Storage<Data> storage;
+		public final Data data;
+
+		public Enqueued(Storage<Data> storage) {
+			this.storage = storage;
+			data = storage.onClone();
+		}
+	}
+
+	public static abstract class Storage<Data> {
 		private final String name;
 		private final int timeout;
 		private final int maxTimeout;
@@ -128,8 +137,8 @@ public class StorageManager implements Handler.Callback, Runnable {
 			INSTANCE.await(this, async);
 		}
 
-		public abstract Object onClone();
-		public abstract JSONObject onSerialize(Object data) throws JSONException;
+		public abstract Data onClone();
+		public abstract JSONObject onSerialize(Data data) throws JSONException;
 
 		public static void putJson(JSONObject jsonObject, String name, String value) throws JSONException {
 			if (!StringUtils.isEmpty(value)) {
@@ -162,7 +171,7 @@ public class StorageManager implements Handler.Callback, Runnable {
 		return file;
 	}
 
-	private File getBackupFile(Storage storage) {
+	private File getBackupFile(Storage<?> storage) {
 		return new File(storage.getFile().getAbsolutePath() + "-backup");
 	}
 
@@ -170,11 +179,11 @@ public class StorageManager implements Handler.Callback, Runnable {
 		return new File(getDirectory(), name + ".json");
 	}
 
-	private File getFile(Storage storage) {
+	private File getFile(Storage<?> storage) {
 		return getFile(storage.name);
 	}
 
-	private JSONObject read(Storage storage) {
+	private JSONObject read(Storage<?> storage) {
 		File file = getFile(storage);
 		File backupFile = getBackupFile(storage);
 		if (backupFile.exists()) {
@@ -205,7 +214,7 @@ public class StorageManager implements Handler.Callback, Runnable {
 
 	private final SparseArray<Long> serializeTimes = new SparseArray<>();
 
-	private void serialize(Storage storage) {
+	private void serialize(Storage<?> storage) {
 		if (storage.identifier == 0) {
 			storage.identifier = nextIdentifier++;
 		}
@@ -226,25 +235,25 @@ public class StorageManager implements Handler.Callback, Runnable {
 		}
 	}
 
-	public void await(Storage storage, boolean async) {
+	public void await(Storage<?> storage, boolean async) {
 		if (handler.hasMessages(storage.identifier)) {
 			serializeTimes.remove(storage.identifier);
 			handler.removeMessages(storage.identifier);
 			if (async) {
 				enqueueSerialize(storage);
 			} else {
-				performSerialize(storage, storage.onClone());
+				performSerialize(new Enqueued<>(storage));
 			}
 		}
 	}
 
-	private void enqueueSerialize(Storage storage) {
-		queue.add(new Pair<>(storage, storage.onClone()));
+	private void enqueueSerialize(Storage<?> storage) {
+		queue.add(new Enqueued<>(storage));
 	}
 
 	@Override
 	public boolean handleMessage(Message msg) {
-		Storage storage = (Storage) msg.obj;
+		Storage<?> storage = (Storage<?>) msg.obj;
 		serializeTimes.remove(storage.identifier);
 		enqueueSerialize(storage);
 		return true;

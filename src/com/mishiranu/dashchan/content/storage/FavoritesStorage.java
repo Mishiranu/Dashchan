@@ -9,11 +9,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class FavoritesStorage extends StorageManager.Storage {
+public class FavoritesStorage extends StorageManager.Storage<List<FavoritesStorage.FavoriteItem>> {
 	private static final String KEY_DATA = "data";
 	private static final String KEY_CHAN_NAME = "chanName";
 	private static final String KEY_BOARD_NAME = "boardName";
@@ -71,7 +72,7 @@ public class FavoritesStorage extends StorageManager.Storage {
 	}
 
 	@Override
-	public Object onClone() {
+	public List<FavoriteItem> onClone() {
 		ArrayList<FavoriteItem> favoriteItems = new ArrayList<>(favoriteItemsList.size());
 		for (FavoriteItem favoriteItem : favoriteItemsList) {
 			favoriteItems.add(new FavoriteItem(favoriteItem));
@@ -80,9 +81,7 @@ public class FavoritesStorage extends StorageManager.Storage {
 	}
 
 	@Override
-	public JSONObject onSerialize(Object data) throws JSONException {
-		@SuppressWarnings("unchecked")
-		ArrayList<FavoriteItem> favoriteItems = (ArrayList<FavoriteItem>) data;
+	public JSONObject onSerialize(List<FavoriteItem> favoriteItems) throws JSONException {
 		if (favoriteItems.size() > 0) {
 			JSONArray jsonArray = new JSONArray();
 			for (FavoriteItem favoriteItem : favoriteItems) {

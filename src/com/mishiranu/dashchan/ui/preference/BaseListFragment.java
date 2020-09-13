@@ -31,8 +31,7 @@ public abstract class BaseListFragment extends Fragment {
 		recyclerView.setId(android.R.id.list);
 		recyclerView.setMotionEventSplittingEnabled(false);
 		recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
-		recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(),
-				(c, position) -> c.need(true)));
+		recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(), this::configureDivider));
 		view.addView(recyclerView, 0, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
 				FrameLayout.LayoutParams.MATCH_PARENT));
 		inflater.inflate(R.layout.widget_error, view);
@@ -62,5 +61,10 @@ public abstract class BaseListFragment extends Fragment {
 	public void setEmptyText(CharSequence text) {
 		emptyText.setText(text);
 		emptyView.setVisibility(StringUtils.isEmpty(text) ? View.GONE : View.VISIBLE);
+	}
+
+	protected DividerItemDecoration.Configuration configureDivider
+			(DividerItemDecoration.Configuration configuration, int position) {
+		return configuration.need(true);
 	}
 }

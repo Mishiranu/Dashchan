@@ -11,8 +11,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -468,27 +466,11 @@ public abstract class PreferenceFragment extends Fragment {
 			invalidate();
 		}
 
-		private static class IconViewHolder extends ViewHolder {
-			public final ImageView icon;
-
-			public IconViewHolder(ViewHolder viewHolder, ImageView icon) {
-				super(viewHolder);
-				this.icon = icon;
-			}
-		}
-
 		@Override
 		public ViewHolder createViewHolder(ViewGroup parent) {
 			ViewHolder viewHolder = super.createViewHolder(parent);
 			if (C.API_LOLLIPOP) {
-				float density = ResourceUtils.obtainDensity(parent);
-				ImageView icon = new ImageView(viewHolder.view.getContext());
-				LinearLayout.LayoutParams layoutParams = new LinearLayout
-						.LayoutParams((int) (24f * density), (int) (24f * density));
-				layoutParams.setMarginEnd((int) (32f * density));
-				icon.setLayoutParams(layoutParams);
-				((LinearLayout) viewHolder.view).addView(icon, 0);
-				return new IconViewHolder(viewHolder, icon);
+				return createIconViewHolder(parent);
 			} else  {
 				TypedArray typedArray = parent.getContext()
 						.obtainStyledAttributes(new int[] {android.R.attr.listPreferredItemHeightSmall});

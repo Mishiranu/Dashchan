@@ -13,6 +13,7 @@ import chan.http.HttpHolder;
 import chan.http.HttpRequest;
 import chan.util.CommonUtils;
 import chan.util.StringUtils;
+import com.mishiranu.dashchan.BuildConfig;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.content.FileProvider;
 import com.mishiranu.dashchan.content.model.ErrorItem;
@@ -165,7 +166,7 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Void> {
 		this.callback = callback;
 	}
 
-	private static Uri normalizeUri(Uri uri, Uri base) {
+	public static Uri normalizeUri(Uri uri, Uri base) {
 		boolean noScheme = uri.getScheme() == null;
 		boolean noHost = uri.getHost() == null;
 		if (noScheme || noHost) {
@@ -200,7 +201,7 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Void> {
 		ChanLocator locator = ChanLocator.getDefault();
 		LinkedHashMap<Uri, ArrayList<String>> targets = new LinkedHashMap<>();
 		{
-			Uri appUri = locator.setScheme(Uri.parse(C.UPDATE_SOURCE_URI_STRING));
+			Uri appUri = locator.setScheme(Uri.parse(BuildConfig.URI_UPDATES));
 			ArrayList<String> extensionNames = new ArrayList<>();
 			extensionNames.add(ChanManager.EXTENSION_NAME_CLIENT);
 			targets.put(appUri, extensionNames);

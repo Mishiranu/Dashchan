@@ -1,38 +1,20 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.content.storage;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+import chan.util.CommonUtils;
+import chan.util.StringUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
-import chan.util.CommonUtils;
-import chan.util.StringUtils;
-
-public class AutohideStorage extends StorageManager.Storage {
+public class AutohideStorage extends StorageManager.Storage<List<AutohideStorage.AutohideItem>> {
 	private static final String KEY_DATA = "data";
 	private static final String KEY_CHAN_NAMES = "chanNames";
 	private static final String KEY_BOARD_NAME = "boardName";
@@ -95,7 +77,7 @@ public class AutohideStorage extends StorageManager.Storage {
 	}
 
 	@Override
-	public Object onClone() {
+	public List<AutohideItem> onClone() {
 		ArrayList<AutohideItem> autohideItems = new ArrayList<>(this.autohideItems.size());
 		for (AutohideItem autohideItem : this.autohideItems) {
 			autohideItems.add(new AutohideItem(autohideItem));
@@ -104,9 +86,7 @@ public class AutohideStorage extends StorageManager.Storage {
 	}
 
 	@Override
-	public JSONObject onSerialize(Object data) throws JSONException {
-		@SuppressWarnings("unchecked")
-		ArrayList<AutohideItem> autohideItems = (ArrayList<AutohideItem>) data;
+	public JSONObject onSerialize(List<AutohideItem> autohideItems) throws JSONException {
 		if (autohideItems.size() > 0) {
 			JSONArray jsonArray = new JSONArray();
 			for (AutohideItem autohideItem : autohideItems) {
@@ -170,6 +150,7 @@ public class AutohideStorage extends StorageManager.Storage {
 
 		public AutohideItem() {}
 
+		@SuppressWarnings("CopyConstructorMissesField")
 		public AutohideItem(AutohideItem autohideItem) {
 			this(autohideItem.chanNames, autohideItem.boardName, autohideItem.threadNumber,
 					autohideItem.optionOriginalPost, autohideItem.optionSage, autohideItem.optionSubject,

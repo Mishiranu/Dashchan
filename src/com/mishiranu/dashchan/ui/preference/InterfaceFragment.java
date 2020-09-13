@@ -34,6 +34,8 @@ public class InterfaceFragment extends PreferenceFragment {
 				R.string.active_scrollbar, 0);
 		addCheck(true, Preferences.KEY_SCROLL_THREAD_GALLERY, Preferences.DEFAULT_SCROLL_THREAD_GALLERY,
 				R.string.scroll_thread_when_scrolling_gallery, 0);
+		addButton(R.string.themes, 0).setOnClickListener(p -> ((FragmentHandler) requireActivity())
+				.pushFragment(new ThemesFragment()));
 
 		addHeader(R.string.navigation_drawer);
 		addList(Preferences.KEY_PAGES_LIST, Preferences.VALUES_PAGES_LIST, Preferences.DEFAULT_PAGES_LIST,
