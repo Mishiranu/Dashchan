@@ -31,10 +31,12 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.storage.AutohideStorage;
 import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.FragmentHandler;
+import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.CustomSearchView;
 import com.mishiranu.dashchan.widget.ErrorEditTextSetter;
 import com.mishiranu.dashchan.widget.MenuExpandListener;
+import com.mishiranu.dashchan.widget.SimpleViewHolder;
 import com.mishiranu.dashchan.widget.ViewFactory;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -201,7 +203,8 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 		}
 	}
 
-	private class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+	private class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
+			implements ListViewUtils.ClickCallback<Void, RecyclerView.ViewHolder> {
 		private final ArrayList<AutohideStorage.AutohideItem> filteredItems = new ArrayList<>();
 		private String searchQuery;
 
@@ -234,16 +237,19 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 			return !StringUtils.isEmpty(searchQuery) ? filteredItems.size() : items.size();
 		}
 
+		@Override
+		public boolean onItemClick(RecyclerView.ViewHolder holder, int position, Void nothing, boolean longClick) {
+			AutohideStorage.AutohideItem autohideItem = getItem(position);
+			editRule(autohideItem, items.indexOf(autohideItem));
+			return true;
+		}
+
 		@NonNull
 		@Override
 		public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-			return new RecyclerView.ViewHolder(ViewFactory.makeTwoLinesListItem(parent)) {{
-				((ViewFactory.TwoLinesViewHolder) itemView.getTag()).text2.setSingleLine(true);
-				itemView.setOnClickListener(v -> {
-					AutohideStorage.AutohideItem item = getItem(getAdapterPosition());
-					editRule(item, items.indexOf(item));
-				});
-			}};
+			View view = ViewFactory.makeTwoLinesListItem(parent);
+			((ViewFactory.TwoLinesViewHolder) view.getTag()).text2.setSingleLine(true);
+			return ListViewUtils.bind(new SimpleViewHolder(view), false, null, this);
 		}
 
 		@Override

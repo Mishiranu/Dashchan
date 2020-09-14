@@ -23,6 +23,7 @@ import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.ui.navigator.manager.HidePerformer;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.ui.posting.Replyable;
+import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.widget.CommentTextView;
@@ -39,9 +40,20 @@ import java.util.List;
 
 public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 		implements CommentTextView.LinkListener, UiManager.PostsProvider {
-	public interface Callback {
+	public interface Callback extends ListViewUtils.ClickCallback<PostItem, RecyclerView.ViewHolder> {
 		void onItemClick(View view, PostItem postItem);
 		boolean onItemLongClick(PostItem postItem);
+
+		@Override
+		default boolean onItemClick(RecyclerView.ViewHolder holder,
+				int position, PostItem postItem, boolean longClick) {
+			if (longClick) {
+				return onItemLongClick(postItem);
+			} else {
+				onItemClick(holder.itemView, postItem);
+				return true;
+			}
+		}
 	}
 
 	private enum ViewType {POST, POST_HIDDEN}
@@ -99,21 +111,17 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 		return (postItem.isHidden(configurationSet.hidePerformer) ? ViewType.POST_HIDDEN : ViewType.POST).ordinal();
 	}
 
-	private RecyclerView.ViewHolder configureView(RecyclerView.ViewHolder holder) {
-		holder.itemView.setOnClickListener(v -> callback.onItemClick(v, getItem(holder.getAdapterPosition())));
-		holder.itemView.setOnLongClickListener(v -> callback.onItemLongClick(getItem(holder.getAdapterPosition())));
-		return holder;
-	}
-
 	@NonNull
 	@Override
 	public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 		switch (ViewType.values()[viewType]) {
 			case POST: {
-				return configureView(uiManager.view().createPostView(parent, configurationSet));
+				return ListViewUtils.bind(uiManager.view().createPostView(parent, configurationSet),
+						true, this::getItem, callback);
 			}
 			case POST_HIDDEN: {
-				return configureView(uiManager.view().createPostHiddenView(parent, configurationSet));
+				return ListViewUtils.bind(uiManager.view().createPostHiddenView(parent, configurationSet),
+						true, this::getItem, callback);
 			}
 			default: {
 				throw new IllegalStateException();

@@ -8,6 +8,7 @@ import chan.content.ChanConfiguration;
 import chan.util.CommonUtils;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
 import com.mishiranu.dashchan.widget.SimpleViewHolder;
 import com.mishiranu.dashchan.widget.ViewFactory;
@@ -18,10 +19,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class BoardsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-	public interface Callback {
-		void onItemClick(String boardName);
-		boolean onItemLongClick(String boardName);
-	}
+	public interface Callback extends ListViewUtils.SimpleCallback<String> {}
 
 	private enum ViewType {VIEW, HEADER}
 
@@ -128,17 +126,17 @@ public class BoardsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 		return (filterText != null ? filteredListItems : listItems).get(position);
 	}
 
+	private String getBoardName(int position) {
+		return getItem(position).boardName;
+	}
+
 	@NonNull
 	@Override
 	public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 		switch (ViewType.values()[viewType]) {
 			case VIEW: {
-				return new RecyclerView.ViewHolder(ViewFactory.makeSingleLineListItem(parent)) {{
-					itemView.setOnClickListener(v -> callback
-							.onItemClick(getItem(getAdapterPosition()).boardName));
-					itemView.setOnLongClickListener(v -> callback
-							.onItemLongClick(getItem(getAdapterPosition()).boardName));
-				}};
+				return ListViewUtils.bind(new SimpleViewHolder(ViewFactory.makeSingleLineListItem(parent)),
+						true, this::getBoardName, callback);
 			}
 			case HEADER: {
 				return new SimpleViewHolder(ViewFactory.makeListTextHeader(parent));

@@ -7,17 +7,16 @@ import androidx.recyclerview.widget.RecyclerView;
 import chan.content.model.ThreadSummary;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
+import com.mishiranu.dashchan.widget.SimpleViewHolder;
 import com.mishiranu.dashchan.widget.ViewFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Locale;
 
 public class ArchiveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-	public interface Callback {
-		void onItemClick(String threadNumber);
-		boolean onItemLongClick(String threadNumber);
-	}
+	public interface Callback extends ListViewUtils.SimpleCallback<String> {}
 
 	private final Callback callback;
 
@@ -69,6 +68,10 @@ public class ArchiveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 		return (filterText != null ? filteredArchiveItems : archiveItems).get(position);
 	}
 
+	private String getThreadNumber(int position) {
+		return getItem(position).getThreadNumber();
+	}
+
 	public void setItems(ThreadSummary[] threadSummaries) {
 		archiveItems.clear();
 		if (threadSummaries != null) {
@@ -81,12 +84,8 @@ public class ArchiveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 	@NonNull
 	@Override
 	public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-		return new RecyclerView.ViewHolder(ViewFactory.makeSingleLineListItem(parent)) {{
-			itemView.setOnClickListener(v -> callback
-					.onItemClick(getItem(getAdapterPosition()).getThreadNumber()));
-			itemView.setOnLongClickListener(v -> callback
-					.onItemLongClick(getItem(getAdapterPosition()).getThreadNumber()));
-		}};
+		return ListViewUtils.bind(new SimpleViewHolder(ViewFactory.makeSingleLineListItem(parent)),
+				true, this::getThreadNumber, callback);
 	}
 
 	@Override
@@ -96,7 +95,7 @@ public class ArchiveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 	}
 
 	public DividerItemDecoration.Configuration configureDivider(DividerItemDecoration.Configuration configuration,
-			@SuppressWarnings("unused") int position) {
+			@SuppressWarnings({"unused", "RedundantSuppression"}) int position) {
 		return configuration.need(!C.API_LOLLIPOP);
 	}
 }

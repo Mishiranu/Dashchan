@@ -29,6 +29,7 @@ import com.mishiranu.dashchan.content.async.ReadUpdateTask;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.CheckPreference;
 import com.mishiranu.dashchan.util.AndroidUtils;
+import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
@@ -434,8 +435,15 @@ public class UpdateFragment extends BaseListFragment {
 	private static class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 		private enum ViewType {ITEM, HEADER}
 
-		private interface Callback {
+		private interface Callback extends ListViewUtils.ClickCallback<ListItem, RecyclerView.ViewHolder> {
 			void onItemClick(ListItem listItem);
+
+			@Override
+			default boolean onItemClick(RecyclerView.ViewHolder holder,
+					int position, ListItem listItem, boolean longClick) {
+				onItemClick(listItem);
+				return true;
+			}
 		}
 
 		private final Callback callback;
@@ -471,11 +479,9 @@ public class UpdateFragment extends BaseListFragment {
 			switch (ViewType.values()[viewType]) {
 				case ITEM: {
 					CheckPreference.CheckViewHolder viewHolder = checkPreference.createViewHolder(parent);
+					ViewUtils.setSelectableItemBackground(viewHolder.view);
 					viewHolder.view.setTag(viewHolder);
-					return new RecyclerView.ViewHolder(viewHolder.view) {{
-						ViewUtils.setSelectableItemBackground(itemView);
-						itemView.setOnClickListener(v -> callback.onItemClick(listItems.get(getAdapterPosition())));
-					}};
+					return ListViewUtils.bind(new SimpleViewHolder(viewHolder.view), false, listItems::get, callback);
 				}
 				case HEADER: {
 					return new SimpleViewHolder(ViewFactory.makeListTextHeader(parent));

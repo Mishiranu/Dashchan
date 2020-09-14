@@ -7,15 +7,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import chan.content.ChanConfiguration;
 import chan.content.model.Board;
 import chan.util.StringUtils;
+import com.mishiranu.dashchan.util.ListViewUtils;
+import com.mishiranu.dashchan.widget.SimpleViewHolder;
 import com.mishiranu.dashchan.widget.ViewFactory;
 import java.util.ArrayList;
 import java.util.Locale;
 
 public class UserBoardsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-	public interface Callback {
-		void onItemClick(String boardName);
-		boolean onItemLongClick(String boardName);
-	}
+	public interface Callback extends ListViewUtils.SimpleCallback<String> {}
 
 	private final Callback callback;
 	private final String chanName;
@@ -73,6 +72,10 @@ public class UserBoardsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 		return (filterText != null ? filteredListItems : listItems).get(position);
 	}
 
+	private String getBoardName(int position) {
+		return getItem(position).boardName;
+	}
+
 	public void setItems(Board[] boards) {
 		listItems.clear();
 		ChanConfiguration configuration = ChanConfiguration.get(chanName);
@@ -92,12 +95,8 @@ public class UserBoardsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 	@NonNull
 	@Override
 	public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-		return new RecyclerView.ViewHolder(ViewFactory.makeTwoLinesListItem(parent)) {{
-			itemView.setOnClickListener(v -> callback
-					.onItemClick(getItem(getAdapterPosition()).boardName));
-			itemView.setOnLongClickListener(v -> callback
-					.onItemLongClick(getItem(getAdapterPosition()).boardName));
-		}};
+		return ListViewUtils.bind(new SimpleViewHolder(ViewFactory.makeTwoLinesListItem(parent)),
+				true, this::getBoardName, callback);
 	}
 
 	@Override

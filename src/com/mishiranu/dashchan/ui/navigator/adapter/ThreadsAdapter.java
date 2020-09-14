@@ -29,6 +29,7 @@ import com.mishiranu.dashchan.ui.navigator.manager.HidePerformer;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
+import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.SimpleViewHolder;
@@ -42,10 +43,7 @@ import java.util.Locale;
 
 public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 		implements View.OnClickListener, CompoundButton.OnCheckedChangeListener {
-	public interface Callback {
-		void onItemClick(PostItem postItem);
-		boolean onItemLongClick(PostItem postItem);
-	}
+	public interface Callback extends ListViewUtils.SimpleCallback<PostItem> {}
 
 	private enum ViewType {THREAD, THREAD_CELL, THREAD_HIDDEN, HEADER, DIVIDER}
 
@@ -209,11 +207,7 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
 	private RecyclerView.ViewHolder configureCard(RecyclerView.ViewHolder viewHolder) {
 		View view = ((ViewGroup) viewHolder.itemView).getChildAt(0);
-		view.setOnClickListener(v -> callback
-				.onItemClick(getListItem(viewHolder.getAdapterPosition()).postItem));
-		view.setOnLongClickListener(v -> callback
-				.onItemLongClick(getListItem(viewHolder.getAdapterPosition()).postItem));
-		return viewHolder;
+		return ListViewUtils.bind(viewHolder, view, true, this::getPostItem, callback);
 	}
 
 	@NonNull
@@ -366,6 +360,10 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
 	private ListItem getListItem(int position) {
 		return getListItems().get(position);
+	}
+
+	private PostItem getPostItem(int position) {
+		return getListItem(position).postItem;
 	}
 
 	@Override

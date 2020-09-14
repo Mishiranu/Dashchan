@@ -12,6 +12,7 @@ import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.ui.navigator.manager.HidePerformer;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
+import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
@@ -22,10 +23,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 
 public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-	public interface Callback {
-		void onItemClick(PostItem postItem);
-		boolean onItemLongClick(PostItem postItem);
-	}
+	public interface Callback extends ListViewUtils.SimpleCallback<PostItem> {}
 
 	private enum ViewType {VIEW, HEADER}
 
@@ -75,16 +73,17 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 		return groupMode ? groupItems.get(position) : postItems.get(position);
 	}
 
+	private PostItem getPostItem(int position) {
+		return getItem(position).postItem;
+	}
+
 	@NonNull
 	@Override
 	public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 		switch (ViewType.values()[viewType]) {
 			case VIEW: {
 				RecyclerView.ViewHolder holder = uiManager.view().createPostView(parent, configurationSet);
-				holder.itemView.setOnClickListener(v -> callback
-						.onItemClick(getItem(holder.getAdapterPosition()).postItem));
-				holder.itemView.setOnLongClickListener(v -> callback
-						.onItemLongClick(getItem(holder.getAdapterPosition()).postItem));
+				ListViewUtils.bind(holder, true, this::getPostItem, callback);
 				return holder;
 			}
 			case HEADER: {

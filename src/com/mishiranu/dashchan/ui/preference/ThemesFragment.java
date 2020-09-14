@@ -36,6 +36,7 @@ import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.Preference;
 import com.mishiranu.dashchan.util.DialogMenu;
 import com.mishiranu.dashchan.util.IOUtils;
+import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
@@ -282,7 +283,8 @@ public class ThemesFragment extends BaseListFragment implements ActivityHandler,
 		}
 	}
 
-	private static class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+	private static class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
+			implements ListViewUtils.ClickCallback<Void, RecyclerView.ViewHolder> {
 		private enum ViewType {ITEM, HEADER}
 
 		private interface Callback {
@@ -331,7 +333,8 @@ public class ThemesFragment extends BaseListFragment implements ActivityHandler,
 			return (listItems.get(position).title != null ? ViewType.HEADER : ViewType.ITEM).ordinal();
 		}
 
-		private boolean handleClick(int position, boolean longClick) {
+		@Override
+		public boolean onItemClick(RecyclerView.ViewHolder holder, int position, Void nothing, boolean longClick) {
 			ListItem listItem = listItems.get(position);
 			return callback.onThemeClick(listItem.theme, listItem.installed, longClick);
 		}
@@ -341,10 +344,8 @@ public class ThemesFragment extends BaseListFragment implements ActivityHandler,
 		public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 			switch (ViewType.values()[viewType]) {
 				case ITEM: {
-					ItemViewHolder holder = new ItemViewHolder(iconPreference.createIconViewHolder(parent));
-					holder.itemView.setOnClickListener(v -> handleClick(holder.getAdapterPosition(), false));
-					holder.itemView.setOnLongClickListener(v -> handleClick(holder.getAdapterPosition(), true));
-					return holder;
+					return ListViewUtils.bind(new ItemViewHolder(iconPreference.createIconViewHolder(parent)),
+							true, null, this);
 				}
 				case HEADER: {
 					return new SimpleViewHolder(ViewFactory.makeListTextHeader(parent));

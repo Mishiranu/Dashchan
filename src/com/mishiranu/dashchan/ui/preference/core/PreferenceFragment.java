@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
@@ -375,19 +376,23 @@ public abstract class PreferenceFragment extends Fragment {
 	}
 
 	private class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
-		private class ViewHolder extends RecyclerView.ViewHolder {
+		private class ViewHolder extends RecyclerView.ViewHolder
+				implements ListViewUtils.ClickCallback<Void, ViewHolder> {
 			private final Preference.ViewHolder viewHolder;
 
 			public ViewHolder(View itemView, Preference.ViewHolder viewHolder) {
 				super(itemView);
 				this.viewHolder = viewHolder;
-				itemView.setOnClickListener(v -> {
-					Preference<?> preference = preferences.get(getAdapterPosition());
-					preference.performClick();
-				});
+				ListViewUtils.bind(this, false, null, this);
 				if (itemView.getBackground() == null) {
 					ViewUtils.setSelectableItemBackground(itemView);
 				}
+			}
+
+			@Override
+			public boolean onItemClick(ViewHolder holder, int position, Void nothing, boolean longClick) {
+				preferences.get(position).performClick();
+				return true;
 			}
 		}
 

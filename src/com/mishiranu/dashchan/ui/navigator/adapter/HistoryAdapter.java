@@ -1,6 +1,7 @@
 package com.mishiranu.dashchan.ui.navigator.adapter;
 
 import android.content.Context;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -10,6 +11,7 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.storage.HistoryDatabase;
+import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
 import com.mishiranu.dashchan.widget.SimpleViewHolder;
 import com.mishiranu.dashchan.widget.ViewFactory;
@@ -18,10 +20,7 @@ import java.util.Calendar;
 import java.util.Locale;
 
 public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-	public interface Callback {
-		void onItemClick(HistoryDatabase.HistoryItem historyItem);
-		boolean onItemLongClick(HistoryDatabase.HistoryItem historyItem);
-	}
+	public interface Callback extends ListViewUtils.SimpleCallback<HistoryDatabase.HistoryItem> {}
 
 	private enum ViewType {VIEW, HEADER}
 
@@ -172,18 +171,18 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 		return (filterText != null ? filteredListItems : listItems).get(position);
 	}
 
+	private HistoryDatabase.HistoryItem getHistoryItem(int position) {
+		return getItem(position).historyItem;
+	}
+
 	@NonNull
 	@Override
 	public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 		switch (ViewType.values()[viewType]) {
 			case VIEW: {
-				return new RecyclerView.ViewHolder(ViewFactory.makeTwoLinesListItem(parent)) {{
-					((ViewFactory.TwoLinesViewHolder) itemView.getTag()).text2.setSingleLine(true);
-					itemView.setOnClickListener(v -> callback
-							.onItemClick(getItem(getAdapterPosition()).historyItem));
-					itemView.setOnLongClickListener(v -> callback
-							.onItemLongClick(getItem(getAdapterPosition()).historyItem));
-				}};
+				View view = ViewFactory.makeTwoLinesListItem(parent);
+				((ViewFactory.TwoLinesViewHolder) view.getTag()).text2.setSingleLine(true);
+				return ListViewUtils.bind(new SimpleViewHolder(view), true, this::getHistoryItem, callback);
 			}
 			case HEADER: {
 				return new SimpleViewHolder(ViewFactory.makeListTextHeader(parent));

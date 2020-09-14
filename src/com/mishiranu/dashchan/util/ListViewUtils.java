@@ -16,6 +16,51 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.mishiranu.dashchan.widget.ThemeEngine;
 
 public class ListViewUtils {
+	public interface DataCallback<T> {
+		T getData(int position);
+	}
+
+	public interface ClickCallback<T, VH> {
+		boolean onItemClick(VH holder, int position, T item, boolean longClick);
+	}
+
+	public interface SimpleCallback<T> extends ClickCallback<T, RecyclerView.ViewHolder> {
+		void onItemClick(T item);
+		boolean onItemLongClick(T item);
+
+		@Override
+		default boolean onItemClick(RecyclerView.ViewHolder holder, int position, T item, boolean longClick) {
+			if (longClick) {
+				return onItemLongClick(item);
+			} else {
+				onItemClick(item);
+				return true;
+			}
+		}
+	}
+
+	private static <T, VH extends RecyclerView.ViewHolder> boolean handleClick(VH holder,
+			boolean longClick, DataCallback<T> dataCallback, ClickCallback<T, VH> callback) {
+		int position = holder.getAdapterPosition();
+		// position can be NO_POSITION if click event is fired after notifyDataSetChanged
+		return position >= 0 && callback.onItemClick(holder, position,
+				dataCallback != null ? dataCallback.getData(position) : null, longClick);
+	}
+
+	public static <T, VH extends RecyclerView.ViewHolder> VH bind(VH holder, View view,
+			boolean longClick, DataCallback<T> dataCallback, ClickCallback<T, VH> clickCallback) {
+		view.setOnClickListener(v -> handleClick(holder, false, dataCallback, clickCallback));
+		if (longClick) {
+			view.setOnLongClickListener(v -> handleClick(holder, true, dataCallback, clickCallback));
+		}
+		return holder;
+	}
+
+	public static <T, VH extends RecyclerView.ViewHolder> VH bind(VH holder,
+			boolean longClick, DataCallback<T> dataCallback, ClickCallback<T, VH> clickCallback) {
+		return bind(holder, holder.itemView, longClick, dataCallback, clickCallback);
+	}
+
 	public static View getRootViewInList(View view) {
 		while (view != null) {
 			ViewParent parent = view.getParent();

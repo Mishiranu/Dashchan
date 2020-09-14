@@ -55,6 +55,7 @@ import com.mishiranu.dashchan.ui.gallery.GalleryOverlay;
 import com.mishiranu.dashchan.ui.posting.Replyable;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
+import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
@@ -802,7 +803,8 @@ public class DialogUnit {
 		}
 	}
 
-	private static class DialogPostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+	private static class DialogPostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
+			implements ListViewUtils.ClickCallback<Void, RecyclerView.ViewHolder> {
 		private enum ViewType {POST, POST_HIDDEN}
 
 		private static final String PAYLOAD_INVALIDATE_COMMENT = "invalidateComment";
@@ -863,10 +865,17 @@ public class DialogUnit {
 			return postItems.get(position);
 		}
 
-		private RecyclerView.ViewHolder configureView(RecyclerView.ViewHolder holder) {
-			holder.itemView.setOnClickListener(v -> onItemClick(v, getItem(holder.getAdapterPosition())));
-			holder.itemView.setOnLongClickListener(v -> onItemLongClick(getItem(holder.getAdapterPosition())));
-			return holder;
+		@Override
+		public boolean onItemClick(RecyclerView.ViewHolder holder, int position, Void nothing, boolean longClick) {
+			PostItem postItem = postItems.get(position);
+			if (longClick) {
+				UiManager.ConfigurationSet configurationSet = dialogProvider.configurationSet;
+				return uiManager.interaction().handlePostContextMenu(postItem, configurationSet.replyable,
+						configurationSet.allowMyMarkEdit, configurationSet.allowHiding, configurationSet.allowGoToPost);
+			} else {
+				uiManager.interaction().handlePostClick(holder.itemView, postItem, postItems);
+				return true;
+			}
 		}
 
 		@NonNull
@@ -874,12 +883,12 @@ public class DialogUnit {
 		public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 			switch (ViewType.values()[viewType]) {
 				case POST: {
-					return configureView(uiManager.view().createPostView(parent,
-							dialogProvider.configurationSet));
+					return ListViewUtils.bind(uiManager.view().createPostView(parent,
+							dialogProvider.configurationSet), true, null, this);
 				}
 				case POST_HIDDEN: {
-					return configureView(uiManager.view().createPostHiddenView(parent,
-							dialogProvider.configurationSet));
+					return ListViewUtils.bind(uiManager.view().createPostHiddenView(parent,
+							dialogProvider.configurationSet), true, null, this);
 				}
 				default: {
 					throw new IllegalStateException();
@@ -915,16 +924,6 @@ public class DialogUnit {
 
 		public void invalidateComment(int position) {
 			notifyItemChanged(position, PAYLOAD_INVALIDATE_COMMENT);
-		}
-
-		private void onItemClick(View view, PostItem postItem) {
-			uiManager.interaction().handlePostClick(view, postItem, postItems);
-		}
-
-		private boolean onItemLongClick(PostItem postItem) {
-			UiManager.ConfigurationSet configurationSet = dialogProvider.configurationSet;
-			return uiManager.interaction().handlePostContextMenu(postItem, configurationSet.replyable,
-					configurationSet.allowMyMarkEdit, configurationSet.allowHiding, configurationSet.allowGoToPost);
 		}
 	}
 

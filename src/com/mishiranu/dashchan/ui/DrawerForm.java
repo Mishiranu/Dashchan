@@ -1272,6 +1272,15 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 		}
 	}
 
+	private final ListViewUtils.ClickCallback<Void, ViewHolder> clickCallback = (holder, position, item, longClick) -> {
+		if (longClick) {
+			return onItemLongClick(holder);
+		} else {
+			onItemClick(position);
+			return true;
+		}
+	};
+
 	@NonNull
 	@Override
 	public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -1294,10 +1303,7 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 			case WATCHER_ICON:
 			case CLOSEABLE:
 			case CLOSEABLE_ICON: {
-				ViewHolder holder = createItem(enumViewType, density);
-				holder.itemView.setOnClickListener(v -> onItemClick(holder.getAdapterPosition()));
-				holder.itemView.setOnLongClickListener(v -> onItemLongClick(holder));
-				return holder;
+				return ListViewUtils.bind(createItem(enumViewType, density), true, null, clickCallback);
 			}
 			default: {
 				throw new IllegalStateException();
@@ -1436,7 +1442,8 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 	private ListItem getItemFromChild(View child) {
 		View view = ListViewUtils.getRootViewInList(child);
 		ViewHolder holder = ListViewUtils.getViewHolder(view, ViewHolder.class);
-		return getItem(holder.getAdapterPosition());
+		int position = holder.getAdapterPosition();
+		return position >= 0 ? getItem(position) : null;
 	}
 
 	private boolean needDivider(ListItem current, ListItem next) {
@@ -1492,7 +1499,9 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 
 	private final View.OnClickListener watcherClickListener = v -> {
 		DrawerForm.ListItem listItem = getItemFromChild(v);
-		FavoritesStorage.getInstance().toggleWatcher(listItem.chanName, listItem.boardName, listItem.threadNumber);
+		if (listItem != null) {
+			FavoritesStorage.getInstance().toggleWatcher(listItem.chanName, listItem.boardName, listItem.threadNumber);
+		}
 	};
 
 	@Override

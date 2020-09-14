@@ -30,6 +30,7 @@ import com.mishiranu.dashchan.graphics.SelectorBorderDrawable;
 import com.mishiranu.dashchan.graphics.SelectorCheckDrawable;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.DialogMenu;
+import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
@@ -322,10 +323,20 @@ public class ListUnit implements ActionMode.Callback {
 	}
 
 	private static class GridAdapter extends RecyclerView.Adapter<GridAdapter.ViewHolder> {
-		public interface Callback {
+		public interface Callback extends ListViewUtils.ClickCallback<Void, ViewHolder> {
 			boolean isItemChecked(int position);
 			void onItemClick(View view, int position);
 			boolean onItemLongClick(int position);
+
+			@Override
+			default boolean onItemClick(ViewHolder holder, int position, Void nothing, boolean longClick) {
+				if (longClick) {
+					return onItemLongClick(position);
+				} else {
+					onItemClick(holder.itemView, position);
+					return true;
+				}
+			}
 		}
 
 		private static class ViewHolder extends RecyclerView.ViewHolder {
@@ -356,9 +367,7 @@ public class ListUnit implements ActionMode.Callback {
 				attachmentInfo.setBackgroundColor(0xaa111111);
 				attachmentInfo.setGravity(Gravity.CENTER);
 				attachmentInfo.setSingleLine(true);
-				View attachmentClick = itemView.findViewById(R.id.attachment_click);
-				attachmentClick.setOnClickListener(v -> callback.onItemClick(itemView, getAdapterPosition()));
-				attachmentClick.setOnLongClickListener(v -> callback.onItemLongClick(getAdapterPosition()));
+				ListViewUtils.bind(this, itemView.findViewById(R.id.attachment_click), true, null, callback);
 				if (C.API_LOLLIPOP) {
 					selectorBorderDrawable = null;
 					selectorCheckDrawable = new SelectorCheckDrawable();

@@ -11,6 +11,7 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.ui.preference.core.Preference;
 import com.mishiranu.dashchan.util.ConfigurationLock;
+import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
@@ -20,8 +21,15 @@ import java.util.Collections;
 import java.util.List;
 
 public class ThemeDialog {
-	public interface Callback {
+	public interface Callback extends ListViewUtils.ClickCallback<ThemeEngine.Theme, RecyclerView.ViewHolder> {
 		void onThemeSelected(ThemeEngine.Theme theme);
+
+		@Override
+		default boolean onItemClick(RecyclerView.ViewHolder holder,
+				int position, ThemeEngine.Theme theme, boolean longClick) {
+			onThemeSelected(theme);
+			return true;
+		}
 	}
 
 	public static void show(Context context, ConfigurationLock configurationLock, Callback callback) {
@@ -87,9 +95,8 @@ public class ThemeDialog {
 		@NonNull
 		@Override
 		public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-			ItemViewHolder holder = new ItemViewHolder(iconPreference.createIconViewHolder(parent));
-			holder.itemView.setOnClickListener(v -> callback.onThemeSelected(themes.get(holder.getAdapterPosition())));
-			return holder;
+			return ListViewUtils.bind(new ItemViewHolder(iconPreference.createIconViewHolder(parent)),
+					false, themes::get, callback);
 		}
 
 		@Override
