@@ -35,7 +35,10 @@ public class Preferences {
 	private static final String SPECIAL_CHAN_NAME_GENERAL = "general";
 	private static final String SPECIAL_CHAN_NAME_CLOUDFLARE = "cloudflare";
 
-	public static final String[] SPECIAL_EXTENSION_NAMES = {SPECIAL_CHAN_NAME_GENERAL, SPECIAL_CHAN_NAME_CLOUDFLARE};
+	public static final String[] SPECIAL_EXTENSION_NAMES = {
+			SPECIAL_CHAN_NAME_GENERAL,
+			SPECIAL_CHAN_NAME_CLOUDFLARE
+	};
 
 	public static class ChanKey {
 		private final String key;

@@ -125,6 +125,7 @@
 	<string name="doesnt_bring_up_thread">Не поднимает тред</string>
 	<string name="domain_name">Доменное имя</string>
 	<string name="dont_bring_up">Не поднимать</string>
+	<string name="dont_install">Не устанавливать</string>
 	<string name="download_completed">Загрузка завершена</string>
 	<string name="download_directory">Директория загрузки</string>
 	<string name="download_file">Загрузить файл</string>

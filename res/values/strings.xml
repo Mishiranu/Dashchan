@@ -126,6 +126,7 @@
 	<string name="doesnt_bring_up_thread">Doesn\'t bring up the thread</string>
 	<string name="domain_name">Domain name</string>
 	<string name="dont_bring_up">Don\'t bring up</string>
+	<string name="dont_install">Don\'t install</string>
 	<string name="download_completed">Download completed</string>
 	<string name="download_directory">Download directory</string>
 	<string name="download_file">Download file</string>

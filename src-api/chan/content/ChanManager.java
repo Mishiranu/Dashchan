@@ -47,6 +47,7 @@ public class ChanManager {
 	public static final int MIN_VERSION = 1;
 
 	public static final String EXTENSION_NAME_CLIENT = "client";
+	public static final String EXTENSION_NAME_META = "meta";
 	public static final String EXTENSION_NAME_LIB_WEBM = "webm";
 
 	private static final String FEATURE_CHAN_EXTENSION = "chan.extension";
@@ -239,16 +240,18 @@ public class ChanManager {
 
 	@SuppressLint("PackageManagerGetSignatures")
 	private ChanManager() {
-		ArrayList<String> busyExtensionNames = new ArrayList<>();
-		busyExtensionNames.add(EXTENSION_NAME_CLIENT);
-		Collections.addAll(busyExtensionNames, Preferences.SPECIAL_EXTENSION_NAMES);
-		ArrayList<String> busyChanNames = new ArrayList<>(busyExtensionNames);
-		busyChanNames.add(EXTENSION_NAME_LIB_WEBM);
+		ArrayList<String> reservedExtensionNames = new ArrayList<>();
+		reservedExtensionNames.add(EXTENSION_NAME_CLIENT);
+		reservedExtensionNames.add(EXTENSION_NAME_META);
+		Collections.addAll(reservedExtensionNames, Preferences.SPECIAL_EXTENSION_NAMES);
+		ArrayList<String> reservedChanNames = new ArrayList<>(reservedExtensionNames);
+		reservedChanNames.add(EXTENSION_NAME_LIB_WEBM);
 		defaultChanHolder = new ChanHolder(new ChanConfiguration(false), new ChanPerformer(false),
 				new ChanLocator(false), null, null);
 		PackageManager packageManager = MainApplication.getInstance().getPackageManager();
 		List<PackageInfo> packages;
 		if (MainApplication.getInstance().isMainProcess()) {
+			// TODO Handle deprecation
 			packages = packageManager.getInstalledPackages(PackageManager.GET_CONFIGURATIONS
 					| PackageManager.GET_SIGNATURES);
 		} else {
@@ -258,6 +261,7 @@ public class ChanManager {
 		ArrayList<Extension> extensions = new ArrayList<>();
 		HashSet<String> usedExtensionNames = new HashSet<>();
 		try {
+			// TODO Handle deprecation
 			applicationFingerprints = extractFingerprints(packageManager
 					.getPackageInfo(MainApplication.getInstance().getPackageName(), PackageManager.GET_SIGNATURES));
 		} catch (PackageManager.NameNotFoundException e) {
@@ -282,7 +286,7 @@ public class ChanManager {
 						String extensionName = data.getString(chanExtension ? META_CHAN_EXTENSION_NAME
 								: libExtension ? META_LIB_EXTENSION_NAME : null);
 						if (extensionName == null || !VALID_EXTENSION_NAME.matcher(extensionName).matches() ||
-								(chanExtension ? busyChanNames : busyExtensionNames).contains(extensionName)) {
+								(chanExtension ? reservedChanNames : reservedExtensionNames).contains(extensionName)) {
 							Log.persistent().write("Invalid extension name: " + extensionName);
 							break;
 						}
@@ -355,7 +359,9 @@ public class ChanManager {
 		updateExtensions(null);
 		updateArchiveMap();
 
-		IntentFilter filter = new IntentFilter(Intent.ACTION_PACKAGE_ADDED);
+		IntentFilter filter = new IntentFilter();
+		filter.addAction(Intent.ACTION_PACKAGE_ADDED);
+		filter.addAction(Intent.ACTION_PACKAGE_REMOVED);
 		filter.addDataScheme("package");
 		MainApplication.getInstance().registerReceiver(AndroidUtils.createReceiver((receiver, context, intent) -> {
 			Uri uri = intent.getData();
@@ -366,18 +372,30 @@ public class ChanManager {
 			if (packageName == null) {
 				return;
 			}
-			PackageInfo packageInfo;
-			try {
-				packageInfo = context.getPackageManager().getPackageInfo(packageName,
-						PackageManager.GET_CONFIGURATIONS);
-			} catch (PackageManager.NameNotFoundException e) {
-				return;
-			}
-			FeatureInfo[] features = packageInfo.reqFeatures;
-			if (features != null) {
-				for (FeatureInfo featureInfo : features) {
-					if (FEATURE_CHAN_EXTENSION.equals(featureInfo.name) ||
-							FEATURE_LIB_EXTENSION.equals(featureInfo.name)) {
+			if (Intent.ACTION_PACKAGE_ADDED.equals(intent.getAction())) {
+				PackageInfo packageInfo;
+				try {
+					packageInfo = context.getPackageManager().getPackageInfo(packageName,
+							PackageManager.GET_CONFIGURATIONS);
+				} catch (PackageManager.NameNotFoundException e) {
+					return;
+				}
+				FeatureInfo[] features = packageInfo.reqFeatures;
+				if (features != null) {
+					for (FeatureInfo featureInfo : features) {
+						if (FEATURE_CHAN_EXTENSION.equals(featureInfo.name) ||
+								FEATURE_LIB_EXTENSION.equals(featureInfo.name)) {
+							newExtensionsInstalled = true;
+							for (Callback callback : observable) {
+								callback.onExtensionInstalled();
+							}
+							break;
+						}
+					}
+				}
+			} else if (Intent.ACTION_PACKAGE_REMOVED.equals(intent.getAction())) {
+				for (Extension extension : extensions) {
+					if (packageName.equals(extension.item.packageName)) {
 						newExtensionsInstalled = true;
 						for (Callback callback : observable) {
 							callback.onExtensionInstalled();
@@ -768,6 +786,7 @@ public class ChanManager {
 
 	public static Fingerprints extractFingerprints(PackageInfo packageInfo) {
 		HashSet<String> fingerprints = new HashSet<>();
+		// TODO Handle deprecation
 		android.content.pm.Signature[] signaturesArray = packageInfo.signatures;
 		if (signaturesArray != null) {
 			for (android.content.pm.Signature signature : signaturesArray) {
