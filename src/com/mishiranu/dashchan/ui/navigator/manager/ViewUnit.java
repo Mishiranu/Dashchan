@@ -69,7 +69,6 @@ public class ViewUnit {
 
 	private final int commentMaxLines;
 	private final int commentAdditionalHeight;
-	private final int commentAdditionalLines;
 
 	private static final float ALPHA_HIDDEN_POST = 0.2f;
 	private static final float ALPHA_DELETED_POST = 0.5f;
@@ -96,7 +95,6 @@ public class ViewUnit {
 		view.measure(widthMeasureSpec, heightMeasureSpec);
 		commentMaxLines = Preferences.getPostMaxLines();
 		commentAdditionalHeight = bottomBar.getMeasuredHeight();
-		commentAdditionalLines = (int) Math.ceil(commentAdditionalHeight / comment.getTextSize());
 		thumbnailWidth = head.getMeasuredHeight();
 		int additionalAttachmentInfoWidthDp = 64; // approximately equal to thumbnail width + right padding
 		int minAttachmentInfoWidthDp = additionalAttachmentInfoWidthDp + 68;
@@ -362,16 +360,13 @@ public class ViewUnit {
 			holder.bottomBarExpand.setVisibility(View.GONE);
 			holder.bottomBarOpenThread.setVisibility(demandSet.showOpenThreadButton ? View.VISIBLE : View.GONE);
 		}
-		if (holder.configurationSet.mayCollapse) {
-			// invalidateBottomBar will be called from these following methods
-			if (commentMaxLines == 0 || postItem.isExpanded()) {
-				removeMaxHeight(holder);
-			} else {
-				setMaxHeight(holder);
-			}
+		if (holder.configurationSet.mayCollapse && commentMaxLines > 0 && !postItem.isExpanded()) {
+			holder.comment.setLinesLimit(commentMaxLines, commentAdditionalHeight);
 		} else {
-			invalidateBottomBar(holder);
+			holder.comment.setLinesLimit(0, 0);
 		}
+		holder.bottomBarExpand.setVisibility(View.GONE);
+		holder.invalidateBottomBar();
 
 		boolean viewsEnabled = demandSet.selection == UiManager.Selection.DISABLED;
 		holder.thumbnail.setEnabled(viewsEnabled);
@@ -575,76 +570,6 @@ public class ViewUnit {
 				imageView.setVisibility(View.GONE);
 			}
 		}
-	}
-
-	private void invalidateBottomBar(PostViewHolder holder) {
-		boolean repliesVisible = holder.bottomBarReplies.getVisibility() == View.VISIBLE;
-		boolean expandVisible = holder.bottomBarExpand.getVisibility() == View.VISIBLE;
-		boolean openThreadVisible = holder.bottomBarOpenThread.getVisibility() == View.VISIBLE;
-		boolean needBar = repliesVisible || expandVisible || openThreadVisible;
-		holder.bottomBarReplies.getLayoutParams().width = repliesVisible && !expandVisible && !openThreadVisible ?
-				ViewGroup.LayoutParams.MATCH_PARENT : ViewGroup.LayoutParams.WRAP_CONTENT;
-		holder.bottomBarExpand.getLayoutParams().width = expandVisible && !openThreadVisible ?
-				ViewGroup.LayoutParams.MATCH_PARENT : ViewGroup.LayoutParams.WRAP_CONTENT;
-		holder.bottomBar.setVisibility(needBar ? View.VISIBLE : View.GONE);
-		boolean hasText = holder.comment.getVisibility() == View.VISIBLE;
-		float density = ResourceUtils.obtainDensity(holder.comment);
-		holder.textBarPadding.getLayoutParams().height = (int) ((needBar ? 0f : hasText ? 10f : 6f) * density);
-	}
-
-	private void setMaxHeight(PostViewHolder holder) {
-		clearMaxHeightAnimation(holder);
-		holder.comment.setMaxHeight(Integer.MAX_VALUE);
-		int width = (int) (ResourceUtils.obtainDensity(holder.itemView) *
-				holder.itemView.getResources().getConfiguration().screenWidthDp);
-		int widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.AT_MOST);
-		int heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
-		holder.comment.measure(widthMeasureSpec, heightMeasureSpec);
-		if (holder.comment.getLineCount() >= commentMaxLines + commentAdditionalLines) {
-			holder.comment.setMaxLines(commentMaxLines);
-			holder.bottomBarExpand.setVisibility(View.VISIBLE);
-			holder.bottomBarExpand.setOnClickListener(v -> {
-				holder.postItem.setExpanded(true);
-				removeMaxHeight(holder);
-				int fromHeight = holder.comment.getHeight();
-				AnimationUtils.measureDynamicHeight(holder.comment);
-				int toHeight = holder.comment.getMeasuredHeight();
-				// When button bar becomes hidden, height of view becomes smaller, so it can cause
-				// little jumping of list; This is solution - start animation from item_height + bar_height
-				if (holder.bottomBar.getVisibility() == View.GONE) {
-					fromHeight += commentAdditionalHeight;
-				}
-				if (toHeight > fromHeight) {
-					float density = ResourceUtils.obtainDensity(holder.comment);
-					float value = (toHeight - fromHeight) / density / 400;
-					if (value > 1f) {
-						value = 1f;
-					} else if (value < 0.2f) {
-						value = 0.2f;
-					}
-					Animator heightAnimator = AnimationUtils.ofHeight(holder.comment, fromHeight,
-							ViewGroup.LayoutParams.WRAP_CONTENT, false);
-					heightAnimator.setDuration((int) (200 * value));
-					heightAnimator.start();
-				}
-			});
-		} else {
-			holder.comment.setMaxHeight(Integer.MAX_VALUE);
-			holder.bottomBarExpand.setVisibility(View.GONE);
-		}
-		invalidateBottomBar(holder);
-	}
-
-	private void removeMaxHeight(PostViewHolder holder) {
-		clearMaxHeightAnimation(holder);
-		holder.comment.setMaxHeight(Integer.MAX_VALUE);
-		holder.bottomBarExpand.setVisibility(View.GONE);
-		invalidateBottomBar(holder);
-	}
-
-	private void clearMaxHeightAnimation(PostViewHolder holder) {
-		holder.comment.clearAnimation();
-		holder.comment.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
 	}
 
 	private CharSequence makeHighlightedText(Collection<String> highlightText, CharSequence text) {
@@ -1040,7 +965,8 @@ public class ViewUnit {
 	}
 
 	private static class PostViewHolder extends RecyclerView.ViewHolder implements UiManager.Holder,
-			CommentTextView.RecyclerKeeper.Holder, PostLinearLayout.OnTemporaryDetachListener {
+			CommentTextView.RecyclerKeeper.Holder, PostLinearLayout.OnTemporaryDetachListener,
+			CommentTextView.LimitListener, View.OnClickListener {
 		public final PostLinearLayout layout;
 		public final LinebreakLayout head;
 		public final TextView number;
@@ -1069,6 +995,7 @@ public class ViewUnit {
 		public final UiManager.ThumbnailLongClickListener thumbnailLongClickListener;
 
 		public PostItem postItem;
+		public Animator expandAnimator;
 		public NewPostAnimation newPostAnimation;
 		public long lastCommentClick;
 
@@ -1115,10 +1042,12 @@ public class ViewUnit {
 			thumbnailLongClickListener = uiManager.interaction().createThumbnailLongClickListener();
 
 			head.setOnTouchListener(uiManager.view().headContentTouchListener);
+			comment.setLimitListener(this);
 			comment.setCommentListener(uiManager.view().commentListener);
 			thumbnail.setOnClickListener(thumbnailClickListener);
 			thumbnail.setOnLongClickListener(thumbnailLongClickListener);
 			bottomBarReplies.setOnClickListener(uiManager.view().repliesBlockClickListener);
+			bottomBarExpand.setOnClickListener(this);
 			bottomBarOpenThread.setOnClickListener(uiManager.view().threadLinkBlockClickListener);
 
 			index.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
@@ -1143,9 +1072,73 @@ public class ViewUnit {
 		}
 
 		public void notifyUnbind() {
+			if (expandAnimator != null) {
+				expandAnimator.cancel();
+				expandAnimator = null;
+				comment.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
+			}
 			if (newPostAnimation != null) {
 				newPostAnimation.cancel();
 				newPostAnimation = null;
+			}
+		}
+
+		public void invalidateBottomBar() {
+			boolean repliesVisible = bottomBarReplies.getVisibility() == View.VISIBLE;
+			boolean expandVisible = bottomBarExpand.getVisibility() == View.VISIBLE;
+			boolean openThreadVisible = bottomBarOpenThread.getVisibility() == View.VISIBLE;
+			boolean needBar = repliesVisible || expandVisible || openThreadVisible;
+			bottomBarReplies.getLayoutParams().width = repliesVisible && !expandVisible && !openThreadVisible ?
+					ViewGroup.LayoutParams.MATCH_PARENT : ViewGroup.LayoutParams.WRAP_CONTENT;
+			bottomBarExpand.getLayoutParams().width = expandVisible && !openThreadVisible ?
+					ViewGroup.LayoutParams.MATCH_PARENT : ViewGroup.LayoutParams.WRAP_CONTENT;
+			bottomBar.setVisibility(needBar ? View.VISIBLE : View.GONE);
+			boolean hasText = comment.getVisibility() == View.VISIBLE;
+			float density = ResourceUtils.obtainDensity(textBarPadding);
+			textBarPadding.getLayoutParams().height = (int) ((needBar ? 0f : hasText ? 10f : 6f) * density);
+		}
+
+		@Override
+		public void onApplyLimit(boolean limited) {
+			if (limited != (bottomBarExpand.getVisibility() == View.VISIBLE)) {
+				bottomBarExpand.setVisibility(limited ? View.VISIBLE : View.GONE);
+				invalidateBottomBar();
+			}
+		}
+
+		@Override
+		public void onClick(View v) {
+			if (v == bottomBarExpand && postItem != null && !postItem.isExpanded()) {
+				postItem.setExpanded(true);
+				comment.setLinesLimit(0, 0);
+				bottomBarExpand.setVisibility(View.GONE);
+				int bottomBarHeight = bottomBar.getHeight();
+				invalidateBottomBar();
+				if (expandAnimator != null) {
+					expandAnimator.cancel();
+				}
+				int fromHeight = comment.getHeight();
+				AnimationUtils.measureDynamicHeight(comment);
+				int toHeight = comment.getMeasuredHeight();
+				if (bottomBarHeight > 0 && bottomBar.getVisibility() == View.GONE) {
+					// When button bar becomes hidden, height of the view becomes smaller, so it can cause
+					// a short list jump; Solution - start the animation from fromHeight + bottomBarHeight
+					fromHeight += bottomBarHeight;
+				}
+				if (toHeight > fromHeight) {
+					float density = ResourceUtils.obtainDensity(comment);
+					float value = (toHeight - fromHeight) / density / 400;
+					if (value > 1f) {
+						value = 1f;
+					} else if (value < 0.2f) {
+						value = 0.2f;
+					}
+					Animator animator = AnimationUtils.ofHeight(comment, fromHeight,
+							ViewGroup.LayoutParams.WRAP_CONTENT, false);
+					this.expandAnimator = animator;
+					animator.setDuration((int) (200 * value));
+					animator.start();
+				}
 			}
 		}
 

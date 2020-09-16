@@ -53,14 +53,15 @@ public class CommentTextView extends TextView {
 	private float spanStartX, spanStartY;
 	private float lastX, lastY;
 	private long lastXYSet;
-	private int currentMax = Integer.MAX_VALUE, reservedMax;
-	private boolean maxModeLines;
+	private int linesLimit;
+	private int linesLimitAdditionalHeight;
 	private View selectionPaddingView;
 	private boolean useAdditionalPadding;
 
 	private ActionMode currentActionMode;
 	private Menu currentActionModeMenu;
 
+	private LimitListener limitListener;
 	private CommentListener commentListener;
 	private LinkListener linkListener;
 	private boolean spoilersEnabled;
@@ -132,14 +133,22 @@ public class CommentTextView extends TextView {
 		public void setClicked(boolean clicked);
 	}
 
+	public interface LimitListener {
+		void onApplyLimit(boolean limited);
+	}
+
 	public interface CommentListener {
-		public void onRequestSiblingsInvalidate(CommentTextView view);
-		public String onPrepareToCopy(CommentTextView view, Spannable text, int start, int end);
+		void onRequestSiblingsInvalidate(CommentTextView view);
+		String onPrepareToCopy(CommentTextView view, Spannable text, int start, int end);
 	}
 
 	public interface LinkListener {
-		public void onLinkClick(CommentTextView view, String chanName, Uri uri, boolean confirmed);
-		public void onLinkLongClick(CommentTextView view, String chanName, Uri uri);
+		void onLinkClick(CommentTextView view, String chanName, Uri uri, boolean confirmed);
+		void onLinkLongClick(CommentTextView view, String chanName, Uri uri);
+	}
+
+	public void setLimitListener(LimitListener listener) {
+		limitListener = listener;
 	}
 
 	public void setCommentListener(CommentListener listener) {
@@ -189,8 +198,32 @@ public class CommentTextView extends TextView {
 	}
 
 	@Override
+	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+		boolean limited = false;
+		if (linesLimit > 0) {
+			Layout layout = getLayout();
+			int count = layout.getLineCount();
+			if (count > linesLimit) {
+				int removeHeight = layout.getLineTop(count) - layout.getLineTop(linesLimit);
+				if (removeHeight > linesLimitAdditionalHeight) {
+					if (!selectionMode) {
+						setMeasuredDimension(getMeasuredWidth(), getMeasuredHeight() - removeHeight);
+					}
+					limited = true;
+				}
+			}
+		}
+		if (limitListener != null) {
+			limitListener.onApplyLimit(limited);
+		}
+	}
+
+	@Override
 	protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
 		super.onLayout(changed, left, top, right, bottom);
+
 		// Cause mEditor.prepareCursorControllers() call to enabled selection controllers
 		// mSelectionControllerEnabled can be set to false before view laid out
 		setCursorVisible(false);
@@ -205,8 +238,8 @@ public class CommentTextView extends TextView {
 	private void setSelectionMode(boolean selectionMode) {
 		if (this.selectionMode != selectionMode) {
 			this.selectionMode = selectionMode;
-			updateSelectablePaddings();
 			updateUseAdditionalPadding(false);
+			requestLayout();
 			if (!selectionMode && isFocused()) {
 				View rootView = ListViewUtils.getRootViewInList(this);
 				if (rootView != null) {
@@ -217,6 +250,7 @@ public class CommentTextView extends TextView {
 					}
 				}
 			}
+			requestLayout();
 		}
 	}
 
@@ -466,20 +500,20 @@ public class CommentTextView extends TextView {
 		}
 	}
 
+	public void setLinesLimit(int limit, int additionalHeight) {
+		this.linesLimit = limit;
+		this.linesLimitAdditionalHeight = additionalHeight;
+		requestLayout();
+	}
+
 	@Override
-	public void setMaxLines(int maxlines) {
-		reservedMax = 0;
-		currentMax = maxlines;
-		maxModeLines = true;
-		super.setMaxLines(maxlines);
+	public void setMaxLines(int maxLines) {
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public void setMaxHeight(int maxHeight) {
-		reservedMax = 0;
-		currentMax = maxHeight;
-		maxModeLines = false;
-		super.setMaxHeight(maxHeight);
+		throw new UnsupportedOperationException();
 	}
 
 	public void bindSelectionPaddingView(View selectionPaddingView) {
@@ -502,20 +536,6 @@ public class CommentTextView extends TextView {
 				selectionPaddingView.setVisibility(useAdditionalPadding ? View.VISIBLE : View.GONE);
 			}
 			this.useAdditionalPadding = useAdditionalPadding;
-		}
-	}
-
-	private void updateSelectablePaddings() {
-		if (selectionMode) {
-			reservedMax = currentMax;
-			super.setMaxHeight(Integer.MAX_VALUE);
-		} else if (reservedMax > 0) {
-			// Also will reset reservedMax
-			if (maxModeLines) {
-				setMaxLines(reservedMax);
-			} else {
-				setMaxHeight(reservedMax);
-			}
 		}
 	}
 
