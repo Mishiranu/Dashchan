@@ -164,7 +164,7 @@ public abstract class AttachmentItem {
 						if (builder.length() > 0) {
 							builder.append(' ');
 						}
-						builder.append(formatSize(size));
+						builder.append(StringUtils.formatFileSize(size, true));
 					}
 					break;
 				}
@@ -175,7 +175,7 @@ public abstract class AttachmentItem {
 					}
 					if (size > 0) {
 						builder.append(formatMode == FormatMode.THREE_LINES ? '\n' : ' ');
-						builder.append(formatSize(size));
+						builder.append(StringUtils.formatFileSize(size, true));
 					}
 					if (width > 0 && height > 0) {
 						builder.append('\n').append(width).append('×').append(height);
@@ -346,11 +346,6 @@ public abstract class AttachmentItem {
 			return list;
 		}
 		return null;
-	}
-
-	public static String formatSize(int size) {
-		size /= 1024;
-		return size >= 1024 ? String.format(Locale.US, "%.1f", size / 1024f) + " MB" : size + " KB";
 	}
 
 	public enum FormatMode {LONG, SIMPLE, TWO_LINES, THREE_LINES}

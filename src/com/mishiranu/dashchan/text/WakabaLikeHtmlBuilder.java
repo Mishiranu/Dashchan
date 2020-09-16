@@ -341,12 +341,12 @@ public class WakabaLikeHtmlBuilder {
 		if (fileItem.size > 0) {
 			float sizeFloat;
 			String dim;
-			if (fileItem.size >= 2 * 1024 * 1024) {
-				sizeFloat = fileItem.size / 1024f / 1024f;
+			if (fileItem.size >= 2 * 1000 * 1000) {
+				sizeFloat = fileItem.size / 1000f / 1000f;
 				dim = "MB";
-			} else if (fileItem.size >= 2 * 1024) {
-				sizeFloat = fileItem.size / 1024f;
-				dim = "KB";
+			} else if (fileItem.size >= 2 * 1000) {
+				sizeFloat = fileItem.size / 1000f;
+				dim = "kB";
 			} else {
 				sizeFloat = fileItem.size;
 				dim = "B";

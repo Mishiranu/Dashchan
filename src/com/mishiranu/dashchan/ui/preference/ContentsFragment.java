@@ -108,10 +108,10 @@ public class ContentsFragment extends PreferenceFragment {
 
 		addHeader(R.string.additional);
 		addSeek(Preferences.KEY_CACHE_SIZE, Preferences.DEFAULT_CACHE_SIZE,
-				getString(R.string.cache_size), "%d MB", 50, 400, 10, Preferences.MULTIPLIER_CACHE_SIZE);
+				getString(R.string.cache_size), "%d MB", 50, 750, 10, Preferences.MULTIPLIER_CACHE_SIZE);
 		clearCachePreference = addButton(getString(R.string.clear_cache), p -> {
 			long cacheSize = CacheManager.getInstance().getCacheSize();
-			return String.format(Locale.US, "%.2f", cacheSize / 1024. / 1024.) + " MB";
+			return String.format(Locale.US, "%.2f", cacheSize / 1000f / 1000f) + " MB";
 		});
 		clearCachePreference.setOnClickListener(p -> {
 			ClearCacheFragment fragment = new ClearCacheFragment();

@@ -24,7 +24,6 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.ImageLoader;
-import com.mishiranu.dashchan.content.model.AttachmentItem;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.graphics.SelectorBorderDrawable;
 import com.mishiranu.dashchan.graphics.SelectorCheckDrawable;
@@ -418,7 +417,7 @@ public class ListUnit implements ActionMode.Callback {
 			GalleryItem galleryItem = getItem(position);
 			holder.attachmentInfo.setText(StringUtils
 					.getFileExtension(galleryItem.getFileName(locator)).toUpperCase(Locale.getDefault()) +
-					(galleryItem.size > 0 ? " " + AttachmentItem.formatSize(galleryItem.size) : ""));
+					(galleryItem.size > 0 ? " " + StringUtils.formatFileSize(galleryItem.size, true) : ""));
 			Uri thumbnailUri = galleryItem.getThumbnailUri(locator);
 			if (thumbnailUri != null) {
 				CacheManager cacheManager = CacheManager.getInstance();

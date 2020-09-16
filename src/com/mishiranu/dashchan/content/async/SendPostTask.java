@@ -63,7 +63,7 @@ public class SendPostTask<Key> extends HttpHolderTask<Void, Long, Boolean> {
 	public interface Callback<Key> {
 		public void onSendPostChangeProgressState(Key key, ProgressState progressState,
 				int attachmentIndex, int attachmentsCount);
-		public void onSendPostChangeProgressValue(Key key, int progress, int progressMax);
+		public void onSendPostChangeProgressValue(Key key, long progress, long progressMax);
 		public void onSendPostSuccess(Key key, ChanPerformer.SendPostData data,
 				String chanName, String threadNumber, String postNumber);
 		public void onSendPostFail(Key key, ChanPerformer.SendPostData data, String chanName, ErrorItem errorItem,
@@ -108,7 +108,7 @@ public class SendPostTask<Key> extends HttpHolderTask<Void, Long, Boolean> {
 			switchProgressState(ProgressState.PROCESSING, 0, false);
 		}
 		if (progressMode && callback != null) {
-			callback.onSendPostChangeProgressValue(key, (int) (progress / 1024), (int) (progressMax / 1024));
+			callback.onSendPostChangeProgressValue(key, progress, progressMax);
 		}
 	}
 

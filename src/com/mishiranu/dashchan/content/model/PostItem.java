@@ -582,7 +582,7 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 			}
 			StringBuilder builder = new StringBuilder();
 			if (size > 0) {
-				builder.append(AttachmentItem.formatSize(size)).append(' ');
+				builder.append(StringUtils.formatFileSize(size, true)).append(' ');
 			}
 			builder.append(context.getResources().getQuantityString(R.plurals
 					.number_files__format, count, count));
@@ -677,7 +677,7 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 					} else {
 						hasInformation = true;
 					}
-					builder.append(AttachmentItem.formatSize(size).replace(' ', '\u00a0'));
+					builder.append(StringUtils.formatFileSize(size, true).replace(' ', '\u00a0'));
 				}
 			}
 		}

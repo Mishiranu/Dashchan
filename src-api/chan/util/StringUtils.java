@@ -1,35 +1,16 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package chan.util;
-
-import java.util.ArrayList;
-import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.text.SpannableStringBuilder;
-
 import chan.annotation.Extendable;
 import chan.annotation.Public;
-
 import com.mishiranu.dashchan.text.HtmlParser;
+import java.util.ArrayList;
+import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Public
 public class StringUtils {
@@ -65,7 +46,7 @@ public class StringUtils {
 		return isEmpty(string) ? null : string;
 	}
 
-	@SuppressWarnings("StringEquality")
+	@SuppressWarnings({"StringEquality", "EqualsReplaceableByObjectsCall"})
 	@Public
 	public static boolean equals(String first, String second) {
 		return first == second || first != null && first.equals(second);
@@ -151,6 +132,12 @@ public class StringUtils {
 			}
 		}
 		return string;
+	}
+
+	public static String formatFileSize(long size, boolean upperCase) {
+		size /= 1000;
+		return size >= 1000 ? String.format(Locale.US, "%.1f", size / 1000f) + " MB"
+				: size + (upperCase ? " KB" : " kB");
 	}
 
 	public static SpannableStringBuilder appendSpan(SpannableStringBuilder builder, CharSequence text,

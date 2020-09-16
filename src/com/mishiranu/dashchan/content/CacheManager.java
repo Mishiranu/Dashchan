@@ -207,11 +207,11 @@ public class CacheManager implements Runnable {
 
 	private void cleanupAsync(boolean thumbnails, boolean media, boolean pages) {
 		int maxCache = MAX_THUMBNAILS_PART + MAX_MEDIA_PART + MAX_PAGES_PART;
-		int maxCacheSizeMb = Preferences.getCacheSize();
+		long maxCacheSize = Preferences.getCacheSize() * 1000L * 1000L;
 		ArrayList<CacheItem> cleanupCacheItems = null;
 		if (thumbnails) {
 			synchronized (thumbnailsCache) {
-				long maxSize = MAX_THUMBNAILS_PART * maxCacheSizeMb * 1024L * 1024L / maxCache;
+				long maxSize = MAX_THUMBNAILS_PART * maxCacheSize / maxCache;
 				if (thumbnailsCacheSize > maxSize) {
 					if (cleanupCacheItems == null) {
 						cleanupCacheItems = new ArrayList<>();
@@ -223,7 +223,7 @@ public class CacheManager implements Runnable {
 		}
 		if (media) {
 			synchronized (mediaCache) {
-				long maxSize = MAX_MEDIA_PART * maxCacheSizeMb * 1024L * 1024L / maxCache;
+				long maxSize = MAX_MEDIA_PART * maxCacheSize / maxCache;
 				if (mediaCacheSize > maxSize) {
 					if (cleanupCacheItems == null) {
 						cleanupCacheItems = new ArrayList<>();
@@ -235,7 +235,7 @@ public class CacheManager implements Runnable {
 		}
 		if (pages) {
 			synchronized (pagesCache) {
-				long maxSize = MAX_PAGES_PART * maxCacheSizeMb * 1024L * 1024L / maxCache;
+				long maxSize = MAX_PAGES_PART * maxCacheSize / maxCache;
 				if (pagesCacheSize > maxSize) {
 					if (cleanupCacheItems == null) {
 						cleanupCacheItems = new ArrayList<>();

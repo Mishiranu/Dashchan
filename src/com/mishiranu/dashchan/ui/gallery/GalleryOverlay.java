@@ -35,7 +35,6 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.Preferences;
-import com.mishiranu.dashchan.content.model.AttachmentItem;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.graphics.GalleryBackgroundDrawable;
@@ -568,7 +567,7 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 		int count = instance.galleryItems.size();
 		StringBuilder builder = new StringBuilder().append(position + 1).append('/').append(count);
 		if (size > 0) {
-			builder.append(", ").append(AttachmentItem.formatSize(size));
+			builder.append(", ").append(StringUtils.formatFileSize(size, false));
 		}
 		titleSubtitle = new Pair<>(fileName, builder);
 		GalleryDialog dialog = getDialog();

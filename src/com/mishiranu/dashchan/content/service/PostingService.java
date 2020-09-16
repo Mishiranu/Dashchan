@@ -101,8 +101,8 @@ public class PostingService extends Service implements SendPostTask.Callback<Pos
 		private int attachmentIndex = 0;
 		private int attachmentsCount = 0;
 
-		private int progress = 0;
-		private int progressMax = 0;
+		private long progress = 0;
+		private long progressMax = 0;
 
 		public TaskState(Key key, SendPostTask<Key> task, Context context, String chanName,
 				ChanPerformer.SendPostData data) {
@@ -237,7 +237,9 @@ public class PostingService extends Service implements SendPostTask.Callback<Pos
 					}
 					case SENDING: {
 						if (progressMode) {
-							builder.setProgress(taskState.progressMax, taskState.progress, taskState.progressMax <= 0);
+							int max = 1000;
+							int progress = (int) (taskState.progress * max / taskState.progressMax);
+							builder.setProgress(max, progress, taskState.progressMax <= 0);
 							builder.setContentTitle(getString(R.string.sending_number_of_number__ellipsis_format,
 									taskState.attachmentIndex + 1, taskState.attachmentsCount));
 						} else {
@@ -270,7 +272,7 @@ public class PostingService extends Service implements SendPostTask.Callback<Pos
 	public interface Callback {
 		void onState(boolean progressMode, SendPostTask.ProgressState progressState,
 				int attachmentIndex, int attachmentsCount);
-		void onProgress(int progress, int progressMax);
+		void onProgress(long progress, long progressMax);
 		void onStop(boolean success);
 	}
 
@@ -404,7 +406,7 @@ public class PostingService extends Service implements SendPostTask.Callback<Pos
 	}
 
 	@Override
-	public void onSendPostChangeProgressValue(Key key, int progress, int progressMax) {
+	public void onSendPostChangeProgressValue(Key key, long progress, long progressMax) {
 		TaskState taskState = this.taskState;
 		if (taskState != null && taskState.key.equals(key)) {
 			taskState.progress = progress;

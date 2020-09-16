@@ -91,7 +91,7 @@ public class UpdateFragment extends BaseListFragment {
 					target = context.getString(R.string.__enumeration_format, target, updateItem.name);
 					if (updateItem.length > 0) {
 						target = context.getString(R.string.__enumeration_format, target,
-								(updateItem.length / 1024) + " KB");
+								StringUtils.formatFileSize(updateItem.length, false));
 					}
 				}
 				this.target = target;
@@ -339,7 +339,8 @@ public class UpdateFragment extends BaseListFragment {
 		}
 		String downloadTitle = getString(R.string.download_files);
 		if (length > 0) {
-			downloadTitle = getString(R.string.__enumeration_format, downloadTitle, (length / 1024) + " KB");
+			downloadTitle = getString(R.string.__enumeration_format, downloadTitle,
+					StringUtils.formatFileSize(length, false));
 		}
 		menu.findItem(R.id.menu_download).setTitle(downloadTitle);
 		menu.findItem(R.id.menu_check_on_start).setChecked(Preferences.isCheckUpdatesOnStart());

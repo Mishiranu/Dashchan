@@ -79,7 +79,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 
 public class PostingFragment extends Fragment implements ActivityHandler, CaptchaForm.Callback, AsyncManager.Callback,
 		ReadCaptchaTask.Callback, PostingDialogCallback {
@@ -927,7 +926,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 		public void onState(boolean progressMode, SendPostTask.ProgressState progressState,
 				int attachmentIndex, int attachmentsCount) {
 			if (progressDialog == null) {
-				progressDialog = new ProgressDialog(requireContext(), progressMode ? "%1$d / %2$d KB" : null);
+				progressDialog = new ProgressDialog(requireContext(), progressMode ? "%1$d / %2$d kB" : null);
 				progressDialog.setCancelable(true);
 				progressDialog.setOnCancelListener(sendPostCancelListener);
 				progressDialog.setButton(ProgressDialog.BUTTON_POSITIVE, getString(R.string.minimize),
@@ -960,10 +959,10 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 		}
 
 		@Override
-		public void onProgress(int progress, int progressMax) {
+		public void onProgress(long progress, long progressMax) {
 			if (progressDialog != null) {
-				progressDialog.setMax(progressMax);
-				progressDialog.setValue(progress);
+				progressDialog.setMax((int) (progressMax / 1000));
+				progressDialog.setValue((int) (progress / 1000));
 			}
 		}
 
@@ -1327,7 +1326,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 		holder.reencoding = reencoding;
 		holder.fileName.setText(name);
 		int size = fileHolder != null ? fileHolder.getSize() : 0;
-		String fileSize = String.format(Locale.US, "%.2f", size / 1024f) + " KB";
+		String fileSize = StringUtils.formatFileSize(size, false);
 		Bitmap bitmap = null;
 		ChanLocator locator = ChanLocator.getDefault();
 		DisplayMetrics metrics = getResources().getDisplayMetrics();
