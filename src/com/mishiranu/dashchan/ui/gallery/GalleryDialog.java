@@ -25,6 +25,9 @@ public class GalleryDialog extends Dialog {
 		super(fragment.requireContext(), R.style.Theme_Gallery);
 		this.fragment = fragment;
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
+		WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
+		layoutParams.setTitle(getContext().getPackageName() + "/" + getClass().getName());
+		getWindow().setAttributes(layoutParams);
 		setVolumeControlStream(AudioManager.STREAM_MUSIC);
 	}
 
@@ -52,7 +55,11 @@ public class GalleryDialog extends Dialog {
 		if (C.API_LOLLIPOP && toolbarHolder == null) {
 			Toolbar toolbar = (Toolbar) getActionBarView();
 			toolbarHolder = ViewFactory.addToolbarTitle(toolbar);
+			WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
+			CharSequence title = layoutParams.getTitle();
 			setTitle(null);
+			layoutParams.setTitle(title);
+			getWindow().setAttributes(layoutParams);
 		}
 		return actionBar;
 	}
@@ -89,6 +96,15 @@ public class GalleryDialog extends Dialog {
 		if (!(fragment instanceof ActivityHandler) || !((ActivityHandler) fragment).onBackPressed()) {
 			super.onBackPressed();
 		}
+	}
+
+	@Override
+	public boolean onPreparePanel(int featureId, View view, @NonNull Menu menu) {
+		super.onPreparePanel(featureId, view, menu);
+		// Dialog removes the menu completely if menu becomes once empty.
+		// This logic is different from Activity and causes unwanted behavior.
+		// Return "true" here to always keep menu existing.
+		return true;
 	}
 
 	@Override
