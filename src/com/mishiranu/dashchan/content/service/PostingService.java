@@ -237,9 +237,13 @@ public class PostingService extends Service implements SendPostTask.Callback<Pos
 					}
 					case SENDING: {
 						if (progressMode) {
-							int max = 1000;
-							int progress = (int) (taskState.progress * max / taskState.progressMax);
-							builder.setProgress(max, progress, taskState.progressMax <= 0);
+							if (taskState.progressMax > 0) {
+								int max = 1000;
+								int progress = (int) (taskState.progress * max / taskState.progressMax);
+								builder.setProgress(max, progress, false);
+							} else {
+								builder.setProgress(0, 0, true);
+							}
 							builder.setContentTitle(getString(R.string.sending_number_of_number__ellipsis_format,
 									taskState.attachmentIndex + 1, taskState.attachmentsCount));
 						} else {

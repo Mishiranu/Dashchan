@@ -371,7 +371,7 @@
 	<string name="read_only">Только чтение</string>
 	<string name="read_timeout_expired">Время ожидания приёма истекло</string>
 	<string name="reason">Причина</string>
-	<string name="reduce">Уменьшить: %dx</string>
+	<string name="reduce">Уменьшить</string>
 	<string name="reencode_image">Перекодировать</string>
 	<string name="refresh">Обновить</string>
 	<string name="refresh_interval">Интервал обновления</string>

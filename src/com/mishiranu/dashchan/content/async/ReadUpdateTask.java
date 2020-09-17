@@ -481,6 +481,7 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Void> {
 
 	@Override
 	protected void onPostExecute(Void result) {
-		callback.onReadUpdateComplete(new UpdateDataMap(updateDataMap, installDataMap), errorItem);
+		callback.onReadUpdateComplete(updateDataMap != null && installDataMap != null
+				? new UpdateDataMap(updateDataMap, installDataMap) : null, errorItem);
 	}
 }

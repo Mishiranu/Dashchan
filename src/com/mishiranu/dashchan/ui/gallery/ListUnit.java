@@ -61,15 +61,6 @@ public class ListUnit implements ActionMode.Callback {
 		recyclerView.addItemDecoration(new SpacingItemDecoration(spacing));
 		GridAdapter adapter = new GridAdapter(callback, instance.chanName, instance.locator, instance.galleryItems);
 		recyclerView.setAdapter(adapter);
-//		ScrollListenerComposite.obtain(gridView).add(new AbsListView.OnScrollListener() {
-//			@Override
-//			public void onScrollStateChanged(AbsListView view, int scrollState) {
-//				scrollStateChanged = SystemClock.elapsedRealtime();
-//			}
-//
-//			@Override
-//			public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {}
-//		});
 		updateGridMetrics(instance.context.getResources().getConfiguration());
 	}
 

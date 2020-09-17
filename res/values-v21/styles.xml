@@ -81,6 +81,7 @@
 		<item name="android:colorPrimaryDark">?attr/colorPrimarySupport</item>
 		<item name="android:colorAccent">?attr/colorAccentSupport</item>
 		<item name="android:colorEdgeEffect">?android:attr/colorAccent</item>
+		<item name="android:navigationBarColor">@android:color/black</item>
 		<item name="android:textColorHighlight">@color/color_selection_light</item>
 
 		<item name="android:enforceStatusBarContrast" tools:ignore="NewApi">false</item>
@@ -144,6 +145,7 @@
 		<item name="android:actionBarTheme">@style/Theme.Base.Main.Dark.ActionBar</item>
 		<item name="android:dialogTheme">@style/Theme.Base.Main.Dark.Dialog</item>
 		<item name="android:alertDialogTheme">@style/Theme.Base.Main.Dark.Dialog.Alert</item>
+		<item name="android:navigationBarColor">@android:color/black</item>
 		<item name="android:popupTheme">@style/Theme.Main.Dark.Popup</item>
 
 		<item name="android:colorPrimary">?attr/colorPrimarySupport</item>
