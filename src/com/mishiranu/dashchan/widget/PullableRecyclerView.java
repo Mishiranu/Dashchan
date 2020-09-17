@@ -7,6 +7,7 @@ import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.mishiranu.dashchan.R;
@@ -28,12 +29,33 @@ public class PullableRecyclerView extends PaddedRecyclerView implements Pullable
 	}
 
 	/* init */ {
+		int touchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
 		addOnItemTouchListener(new OnItemTouchListener() {
+			private boolean allowIntercept = false;
 			private boolean disallowIntercept = false;
+
+			private float downX;
+			private float downY;
 
 			@Override
 			public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
-				return !disallowIntercept && wrapper.onTouchEvent(e);
+				float x = e.getX();
+				float y = e.getY();
+				if (e.getAction() == MotionEvent.ACTION_DOWN) {
+					allowIntercept = false;
+					downX = x;
+					downY = y;
+				}
+				if (!disallowIntercept && wrapper.onTouchEvent(e)) {
+					if (!allowIntercept) {
+						float movement = (float) Math.sqrt(Math.pow(downX - x, 2) + Math.pow(downY - y, 2));
+						if (movement > touchSlop) {
+							allowIntercept = true;
+						}
+					}
+					return allowIntercept;
+				}
+				return false;
 			}
 
 			@Override
