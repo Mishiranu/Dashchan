@@ -98,7 +98,7 @@ public class CloudFlareResolver {
 		int responseCode = holder.getResponseCode();
 		if ((responseCode == HttpURLConnection.HTTP_FORBIDDEN || responseCode == HttpURLConnection.HTTP_UNAVAILABLE)
 				&& holder.getHeaderFields().containsKey("CF-RAY")) {
-			String responseText = holder.read().getString();
+			String responseText = holder.readDirect().getString();
 			switch (responseCode) {
 				case HttpURLConnection.HTTP_FORBIDDEN:
 				case HttpURLConnection.HTTP_UNAVAILABLE: {

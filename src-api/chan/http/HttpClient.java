@@ -558,7 +558,7 @@ public class HttpClient {
 		}
 	}
 
-	HttpResponse read(HttpHolder holder) throws HttpException {
+	HttpResponse read(HttpHolder holder, boolean forceDirect) throws HttpException {
 		try {
 			HttpURLConnection connection = holder.getConnection();
 			holder.checkDisconnected();
@@ -575,7 +575,7 @@ public class HttpClient {
 				commonInput = new GZIPInputStream(commonInput);
 				contentLength = -1;
 			}
-			OutputStream output = holder.outputStream;
+			OutputStream output = forceDirect ? null : holder.outputStream;
 			ClientInputStream input = new ClientInputStream(commonInput, holder, holder.inputListener, contentLength);
 			ByteArrayOutputStream writeTo = output == null ? new ByteArrayOutputStream() : null;
 			if (output == null) {

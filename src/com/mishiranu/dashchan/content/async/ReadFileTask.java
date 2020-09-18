@@ -23,6 +23,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public class ReadFileTask extends HttpHolderTask<String, Long, Boolean> {
+	private static final int CONNECT_TIMEOUT = 15000;
+	private static final int READ_TIMEOUT = 15000;
+
 	public interface Callback {
 		void onStartDownloading();
 		void onFinishDownloading(boolean success, Uri uri, DataFile file, ErrorItem errorItem);
@@ -113,7 +116,6 @@ public class ReadFileTask extends HttpHolderTask<String, Long, Boolean> {
 				}
 			} else {
 				Uri uri = fromUri;
-				final int connectTimeout = 15000, readTimeout = 15000;
 				byte[] response;
 				String chanName = this.chanName;
 				if (chanName == null) {
@@ -121,11 +123,11 @@ public class ReadFileTask extends HttpHolderTask<String, Long, Boolean> {
 				}
 				if (chanName != null) {
 					ChanPerformer.ReadContentResult result = ChanPerformer.get(chanName).safe()
-							.onReadContent(new ChanPerformer.ReadContentData (uri, connectTimeout, readTimeout,
+							.onReadContent(new ChanPerformer.ReadContentData(uri, CONNECT_TIMEOUT, READ_TIMEOUT,
 							holder, progressHandler, null));
 					response = result.response.getBytes();
 				} else {
-					response = new HttpRequest(uri, holder).setTimeouts(connectTimeout, readTimeout)
+					response = new HttpRequest(uri, holder).setTimeouts(CONNECT_TIMEOUT, READ_TIMEOUT)
 							.setInputListener(progressHandler).read().getBytes();
 				}
 				ByteArrayInputStream input = new ByteArrayInputStream(response);

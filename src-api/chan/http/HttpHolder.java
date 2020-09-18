@@ -1,21 +1,8 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package chan.http;
 
+import android.net.Uri;
+import chan.annotation.Public;
+import com.mishiranu.dashchan.util.IOUtils;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -23,12 +10,6 @@ import java.net.HttpURLConnection;
 import java.net.Proxy;
 import java.util.List;
 import java.util.Map;
-
-import android.net.Uri;
-
-import chan.annotation.Public;
-
-import com.mishiranu.dashchan.util.IOUtils;
 
 @Public
 public final class HttpHolder {
@@ -179,11 +160,19 @@ public final class HttpHolder {
 
 	@Public
 	public HttpResponse read() throws HttpException {
+		return read(false);
+	}
+
+	public HttpResponse readDirect() throws HttpException {
+		return read(true);
+	}
+
+	private HttpResponse read(boolean direct) throws HttpException {
 		HttpResponse response = this.response;
 		if (response != null) {
 			return response;
 		}
-		response = HttpClient.getInstance().read(this);
+		response = HttpClient.getInstance().read(this, direct);
 		this.response = response;
 		return response;
 	}

@@ -35,6 +35,9 @@ import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 
 public class ImageLoader {
+	private static final int CONNECT_TIMEOUT = 10000;
+	private static final int READ_TIMEOUT = 5000;
+
 	private static final ImageLoader INSTANCE = new ImageLoader();
 
 	public static ImageLoader getInstance() {
@@ -150,22 +153,20 @@ public class ImageLoader {
 						if (chanName == null) {
 							chanName = this.chanName;
 						}
-						int connectTimeout = 10000;
-						int readTimeout = 5000;
 						if (chanName != null) {
 							ChanPerformer performer = ChanPerformer.get(chanName);
 							try {
 								ChanPerformer.ReadContentResult result = performer.safe()
-										.onReadContent(new ChanPerformer.ReadContentData(uri, connectTimeout,
-										readTimeout, holder, null, null));
+										.onReadContent(new ChanPerformer.ReadContentData(uri,
+												CONNECT_TIMEOUT, READ_TIMEOUT, holder, null, null));
 								bitmap = result != null && result.response != null ? result.response.getBitmap() : null;
 							} catch (ExtensionException e) {
 								e.getErrorItemAndHandle();
 								return null;
 							}
 						} else {
-							bitmap = new HttpRequest(uri, holder).setTimeouts(connectTimeout, readTimeout)
-									.read().getBitmap();
+							bitmap = new HttpRequest(uri, holder)
+									.setTimeouts(CONNECT_TIMEOUT, READ_TIMEOUT).read().getBitmap();
 						}
 					}
 					if (isCancelled()) {

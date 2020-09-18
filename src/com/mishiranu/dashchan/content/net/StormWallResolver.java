@@ -72,7 +72,7 @@ public class StormWallResolver {
 			String chanName, HttpHolder holder) throws HttpException {
 		List<String> contentType = holder.getHeaderFields().get("Content-Type");
 		if (contentType != null && contentType.size() == 1 && contentType.get(0).startsWith("text/html")) {
-			String responseText = holder.read().getString();
+			String responseText = holder.readDirect().getString();
 			if (responseText.contains("<script src=\"https://static.stormwall.pro")) {
 				boolean success = resolver.runWebView(chanName, Client::new);
 				return new RelayBlockResolver.Result(true, success);

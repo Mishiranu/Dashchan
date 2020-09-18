@@ -15,6 +15,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 public class ReadVideoTask extends HttpHolderTask<Void, Long, Boolean> {
+	private static final int CONNECT_TIMEOUT = 15000;
+	private static final int READ_TIMEOUT = 15000;
+
 	private final String chanName;
 	private final Uri uri;
 	private final CachingInputStream inputStream;
@@ -45,9 +48,8 @@ public class ReadVideoTask extends HttpHolderTask<Void, Long, Boolean> {
 	@Override
 	protected Boolean doInBackground(HttpHolder holder, Void... params) {
 		try {
-			int connectTimeout = 15000, readTimeout = 15000;
 			ChanPerformer.ReadContentResult result = ChanPerformer.get(chanName).safe()
-					.onReadContent(new ChanPerformer.ReadContentData(uri, connectTimeout, readTimeout, holder,
+					.onReadContent(new ChanPerformer.ReadContentData(uri, CONNECT_TIMEOUT, READ_TIMEOUT, holder,
 					progressHandler, inputStream.getOutputStream()));
 			HttpResponse response = result != null ? result.response : null;
 			if (response != null) {
