@@ -95,7 +95,7 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostIte
 				Collections.sort(posts, this);
 				ArrayList<PostItem> postItems = new ArrayList<>(posts.size());
 				for (int i = 0; i < posts.size() && !Thread.interrupted(); i++) {
-					PostItem postItem = new PostItem(posts.get(i), chanName, boardName);
+					PostItem postItem = PostItem.createPost(posts.get(i), chanName, boardName);
 					postItem.setOrdinalIndex(i);
 					postItem.preload();
 					postItems.add(postItem);

@@ -1,6 +1,8 @@
 package com.mishiranu.dashchan.ui.navigator.manager;
 
 import android.content.Context;
+import android.net.Uri;
+import android.util.Pair;
 import chan.content.model.Posts;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
@@ -9,9 +11,11 @@ import com.mishiranu.dashchan.content.storage.AutohideStorage;
 import com.mishiranu.dashchan.text.SimilarTextEstimator;
 import com.mishiranu.dashchan.util.ToastUtils;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 
 public class HidePerformer implements PostItem.HidePerformer {
 	private static final int MAX_COMMENT_LENGTH = 1000;
@@ -101,11 +105,11 @@ public class HidePerformer implements PostItem.HidePerformer {
 		boolean sage = postItem.isSage();
 		String subject = null;
 		String comment = null;
-		String name = null;
+		List<String> names = null;
 		ArrayList<AutohideStorage.AutohideItem> autohideItems = autohideStorage.getItems();
 		for (int i = 0; i < autohideItems.size(); i++) {
 			AutohideStorage.AutohideItem autohideItem = autohideItems.get(i);
-			// AND selection (only if chan, board, thread, op and sage matches to rule)
+			// AND selection (only if chan, board, thread, op, and sage match the rule)
 			if (autohideItem.chanNames == null || autohideItem.chanNames.contains(chanName)) {
 				if (StringUtils.isEmpty(autohideItem.boardName) || boardName == null
 						|| autohideItem.boardName.equals(boardName)) {
@@ -114,24 +118,47 @@ public class HidePerformer implements PostItem.HidePerformer {
 						if ((!autohideItem.optionOriginalPost || autohideItem.optionOriginalPost == originalPost)
 								&& (!autohideItem.optionSage || autohideItem.optionSage == sage)) {
 							String result;
-							// OR selection (hide if subj, exp or name matches to rule)
-							if (subject == null) {
-								subject = postItem.getSubject();
+							// OR selection (hide if subject, comment, or name match the rule)
+							if (autohideItem.optionSubject) {
+								if (subject == null) {
+									subject = postItem.getSubject();
+								}
+								if ((result = autohideItem.find(subject)) != null) {
+									return autohideItem.getReason(AutohideStorage.AutohideItem
+											.ReasonSource.SUBJECT, comment, result);
+								}
 							}
-							if (autohideItem.optionSubject && (result = autohideItem.find(subject)) != null) {
-								return autohideItem.getReason(true, false, comment, result);
+							if (autohideItem.optionComment) {
+								if (comment == null) {
+									comment = postItem.getComment().toString();
+								}
+								if ((result = autohideItem.find(comment)) != null) {
+									return autohideItem.getReason(AutohideStorage.AutohideItem
+											.ReasonSource.COMMENT, comment, result);
+								}
 							}
-							if (comment == null) {
-								comment = postItem.getComment().toString();
-							}
-							if (autohideItem.optionComment && (result = autohideItem.find(comment)) != null) {
-								return autohideItem.getReason(false, false, comment, result);
-							}
-							if (name == null) {
-								name = postItem.getFullName().toString();
-							}
-							if (autohideItem.optionName && (result = autohideItem.find(name)) != null) {
-								return autohideItem.getReason(false, true, name, result);
+							if (autohideItem.optionName) {
+								if (names == null) {
+									String name = postItem.getFullName().toString();
+									List<Pair<Uri, String>> icons = postItem.getIcons();
+									if (icons != null && !icons.isEmpty()) {
+										names = new ArrayList<>(1 + icons.size());
+										names.add(name);
+										for (Pair<Uri, String> icon : icons) {
+											if (icon.second != null) {
+												names.add(icon.second);
+											}
+										}
+									} else {
+										names = Collections.singletonList(name);
+									}
+								}
+								for (String name : names) {
+									if ((result = autohideItem.find(name)) != null) {
+										return autohideItem.getReason(AutohideStorage.AutohideItem
+												.ReasonSource.NAME, name, result);
+									}
+								}
 							}
 						}
 					}

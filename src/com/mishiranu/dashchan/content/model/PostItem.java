@@ -29,12 +29,15 @@ import com.mishiranu.dashchan.util.PostDateFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 
 public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, Comparable<PostItem> {
+	private final Post post;
+	private final ThreadData threadData;
 	private final String chanName;
 	private final String boardName;
-	private ArrayList<AttachmentItem> attachmentItems;
-	private ArrayList<Pair<Uri, String>> icons;
+	private final List<AttachmentItem> attachmentItems;
+	private final List<Pair<Uri, String>> icons;
 
 	public static final int ORDINAL_INDEX_NONE = -1;
 	public static final int ORDINAL_INDEX_DELETED = -2;
@@ -56,9 +59,6 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 
 	private boolean expanded = false;
 
-	private final Post post;
-	private final ThreadData threadData;
-
 	private static class ThreadData {
 		public int postsCount;
 		public int filesCount;
@@ -75,31 +75,28 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 	private String hideReason;
 	private boolean unread = false;
 
-	public PostItem(Post post, String chanName, String boardName) {
-		this.post = post;
-		threadData = null;
-		this.chanName = chanName;
-		this.boardName = boardName;
-		init();
+	public static PostItem createPost(Post post, String chanName, String boardName) {
+		return new PostItem(post, null, chanName, boardName);
 	}
 
-	public PostItem(Posts thread, String chanName, String boardName) {
+	public static PostItem createThread(Posts thread, String chanName, String boardName) {
 		Post[] posts = thread.getPosts();
-		this.post = posts[0];
-		threadData = new ThreadData();
+		Post post = posts[0];
+		ThreadData threadData = new ThreadData();
 		threadData.postsCount = thread.getPostsCount();
 		threadData.filesCount = thread.getFilesCount();
 		threadData.postsWithFilesCount = thread.getPostsWithFilesCount();
 		threadData.firstAndLastPosts = posts;
-		this.chanName = chanName;
-		this.boardName = boardName;
-		init();
+		return new PostItem(post, threadData, chanName, boardName);
 	}
 
-	private void init() {
+	private PostItem(Post post, ThreadData threadData, String chanName, String boardName) {
+		this.post = post;
+		this.threadData = threadData;
+		this.chanName = chanName;
+		this.boardName = boardName;
 		attachmentItems = AttachmentItem.obtain(this);
 		if (isThreadItem()) {
-			ThreadData threadData = this.threadData;
 			if (attachmentItems != null) {
 				threadData.gallerySet = new GalleryItem.GallerySet(false);
 				threadData.gallerySet.setThreadTitle(getSubjectOrComment());
@@ -558,7 +555,7 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 		return linkSpans;
 	}
 
-	public ArrayList<Pair<Uri, String>> getIcons() {
+	public List<Pair<Uri, String>> getIcons() {
 		return icons;
 	}
 
@@ -566,7 +563,7 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 		return attachmentItems != null;
 	}
 
-	public ArrayList<AttachmentItem> getAttachmentItems() {
+	public List<AttachmentItem> getAttachmentItems() {
 		return attachmentItems;
 	}
 
@@ -618,7 +615,7 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 			PostItem[] postItems = new PostItem[posts.length - 1];
 			int startIndex = threadData.postsCount - posts.length + 1;
 			for (int i = 0; i < postItems.length; i++) {
-				PostItem postItem = new PostItem(posts[i + 1], chanName, boardName);
+				PostItem postItem = createPost(posts[i + 1], chanName, boardName);
 				postItem.setOrdinalIndex(startIndex > 0 ? startIndex + i : ORDINAL_INDEX_NONE);
 				postItems[i] = postItem;
 			}

@@ -210,15 +210,17 @@ public class AutohideStorage extends StorageManager.Storage<List<AutohideStorage
 			return null;
 		}
 
-		public String getReason(boolean subject, boolean name, String text, String findResult) {
+		public enum ReasonSource {NAME, SUBJECT, COMMENT}
+
+		public String getReason(ReasonSource reasonSource, String text, String findResult) {
 			StringBuilder builder = new StringBuilder();
 			if (optionSage) {
 				builder.append("sage ");
 			}
-			if (optionSubject && subject) {
+			if (optionSubject && reasonSource == ReasonSource.SUBJECT) {
 				builder.append("subject ");
 			}
-			if (optionName && name) {
+			if (optionName && reasonSource == ReasonSource.NAME) {
 				builder.append("name ");
 			}
 			if (!StringUtils.isEmpty(findResult)) {

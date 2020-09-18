@@ -22,7 +22,8 @@ import com.mishiranu.dashchan.util.DialogMenu;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.widget.AttachmentView;
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class InteractionUnit {
 	private final UiManager uiManager;
@@ -170,7 +171,7 @@ public class InteractionUnit {
 		@Override
 		public void onClick(View v) {
 			UiManager.Holder holder = ListViewUtils.getViewHolder(v, UiManager.Holder.class);
-			ArrayList<AttachmentItem> attachmentItems = holder.getPostItem().getAttachmentItems();
+			List<AttachmentItem> attachmentItems = holder.getPostItem().getAttachmentItems();
 			if (attachmentItems != null) {
 				GalleryItem.GallerySet gallerySet = holder.getGallerySet();
 				int startImageIndex = uiManager.view().findImageIndex(gallerySet.getItems(), holder.getPostItem());
@@ -329,20 +330,14 @@ public class InteractionUnit {
 			}
 			if (!postItem.isDeleted()) {
 				if (board.allowReporting) {
-					dialogMenu.add(R.string.report, () -> {
-						ArrayList<String> postNumbers = new ArrayList<>(1);
-						postNumbers.add(postItem.getPostNumber());
-						uiManager.dialog().performSendReportPosts(postItem.getChanName(), postItem.getBoardName(),
-								postItem.getThreadNumber(), postNumbers);
-					});
+					dialogMenu.add(R.string.report, () -> uiManager.dialog()
+							.performSendReportPosts(postItem.getChanName(), postItem.getBoardName(),
+									postItem.getThreadNumber(), Collections.singletonList(postItem.getPostNumber())));
 				}
 				if (board.allowDeleting) {
-					dialogMenu.add(R.string.delete, () -> {
-						ArrayList<String> postNumbers = new ArrayList<>(1);
-						postNumbers.add(postItem.getPostNumber());
-						uiManager.dialog().performSendDeletePosts(postItem.getChanName(), postItem.getBoardName(),
-								postItem.getThreadNumber(), postNumbers);
-					});
+					dialogMenu.add(R.string.delete, () -> uiManager.dialog()
+							.performSendDeletePosts(postItem.getChanName(), postItem.getBoardName(),
+									postItem.getThreadNumber(), Collections.singletonList(postItem.getPostNumber())));
 				}
 			}
 			if (allowMyMarkEdit) {

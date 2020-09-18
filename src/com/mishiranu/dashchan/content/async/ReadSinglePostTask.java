@@ -42,7 +42,7 @@ public class ReadSinglePostTask extends HttpHolderTask<Void, Void, PostItem> {
 					.ReadSinglePostData(boardName, postNumber, holder));
 			Post post = result != null ? result.post : null;
 			startTime = 0L;
-			return new PostItem(post, chanName, boardName);
+			return PostItem.createPost(post, chanName, boardName);
 		} catch (HttpException e) {
 			errorItem = e.getErrorItemAndHandle();
 			if (errorItem.httpResponseCode == HttpURLConnection.HTTP_NOT_FOUND ||

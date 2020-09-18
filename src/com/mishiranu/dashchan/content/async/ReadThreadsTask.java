@@ -83,7 +83,7 @@ public class ReadThreadsTask extends HttpHolderTask<Void, Void, Boolean> {
 						if (postItems == null) {
 							postItems = new ArrayList<>();
 						}
-						postItems.add(new PostItem(thread, chanName, boardName));
+						postItems.add(PostItem.createThread(thread, chanName, boardName));
 					}
 				}
 			}

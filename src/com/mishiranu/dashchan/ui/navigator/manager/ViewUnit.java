@@ -525,7 +525,7 @@ public class ViewUnit {
 		Context context = uiManager.getContext();
 		PostItem postItem = holder.postItem;
 		String chanName = postItem.getChanName();
-		ArrayList<Pair<Uri, String>> icons = postItem.getIcons();
+		List<Pair<Uri, String>> icons = postItem.getIcons();
 		if (icons != null && Preferences.isDisplayIcons()) {
 			if (holder.badgeImages == null) {
 				holder.badgeImages = new ArrayList<>();
@@ -738,7 +738,7 @@ public class ViewUnit {
 							String emailToCopy = null;
 							switch (type) {
 								case TYPE_BADGES: {
-									ArrayList<Pair<Uri, String>> postIcons = holder.postItem.getIcons();
+									List<Pair<Uri, String>> postIcons = holder.postItem.getIcons();
 									ChanLocator locator = ChanLocator.get(holder.postItem.getChanName());
 									for (Pair<Uri, String> postIcon : postIcons) {
 										Uri uri = postIcon.first;

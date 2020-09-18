@@ -1144,7 +1144,7 @@ public class DialogUnit {
 	}
 
 	public void performSendDeletePosts(String chanName, String boardName, String threadNumber,
-			ArrayList<String> postNumbers) {
+			List<String> postNumbers) {
 		ChanConfiguration.Deleting deleting = ChanConfiguration.get(chanName).safe().obtainDeleting(boardName);
 		if (deleting == null) {
 			return;
@@ -1163,7 +1163,7 @@ public class DialogUnit {
 	}
 
 	public void performSendReportPosts(String chanName, String boardName, String threadNumber,
-			ArrayList<String> postNumbers) {
+			List<String> postNumbers) {
 		ChanConfiguration.Reporting reporting = ChanConfiguration.get(chanName).safe().obtainReporting(boardName);
 		if (reporting == null) {
 			return;

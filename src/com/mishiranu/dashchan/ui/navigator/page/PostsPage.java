@@ -619,7 +619,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				int postsWithFiles = 0;
 				int links = 0;
 				for (PostItem postItem : getAdapter()) {
-					ArrayList<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
+					List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
 					if (attachmentItems != null) {
 						int itFiles = 0;
 						for (AttachmentItem attachmentItem : attachmentItems) {
@@ -857,7 +857,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				String subject = postItem.getSubject().toLowerCase(locale);
 				String name = postItem.getFullName().toString().toLowerCase(locale);
 				fileNames.clear();
-				ArrayList<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
+				List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
 				if (attachmentItems != null) {
 					for (AttachmentItem attachmentItem : attachmentItems) {
 						String fileName = attachmentItem.getFileName();

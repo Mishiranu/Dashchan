@@ -208,7 +208,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 					}
 				}
 				for (Patch patch : handleResult.patches) {
-					patch.postItem = new PostItem(patch.newPost, chanName, boardName);
+					patch.postItem = PostItem.createPost(patch.newPost, chanName, boardName);
 				}
 				callback.onRequestPreloadPosts(handleResult.patches, cachedPosts != null ? cachedPosts.length() : 0);
 				if (validator == null) {
