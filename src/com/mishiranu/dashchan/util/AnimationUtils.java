@@ -8,6 +8,8 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
+import com.mishiranu.dashchan.C;
+import java.lang.reflect.Field;
 
 public class AnimationUtils {
 	public static final Interpolator ACCELERATE_DECELERATE_INTERPOLATOR = new AccelerateDecelerateInterpolator();
@@ -112,5 +114,36 @@ public class AnimationUtils {
 
 	public static float lerp(float a, float b, float t) {
 		return a + (b - a) * t;
+	}
+
+	private static final Field FIELD_VALUE_ANIMATOR_DURATION_SCALE;
+
+	static {
+		Field valueAnimatorDurationScaleField = null;
+		if (!C.API_OREO) {
+			try {
+				valueAnimatorDurationScaleField = ValueAnimator.class.getDeclaredField("sDurationScale");
+				valueAnimatorDurationScaleField.setAccessible(true);
+			} catch (Exception e) {
+				valueAnimatorDurationScaleField = null;
+			}
+		}
+		FIELD_VALUE_ANIMATOR_DURATION_SCALE = valueAnimatorDurationScaleField;
+	}
+
+	public static boolean areAnimatorsEnabled() {
+		if (C.API_OREO) {
+			return ValueAnimator.areAnimatorsEnabled();
+		} else {
+			float durationScale = 1f;
+			if (FIELD_VALUE_ANIMATOR_DURATION_SCALE != null) {
+				try {
+					durationScale = FIELD_VALUE_ANIMATOR_DURATION_SCALE.getFloat(null);
+				} catch (Exception e) {
+					// Ignore
+				}
+			}
+			return durationScale > 0f;
+		}
 	}
 }

@@ -113,16 +113,20 @@ public class ListViewUtils {
 
 	public static void smoothScrollToPosition(RecyclerView recyclerView, int position) {
 		LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
-		int first = layoutManager.findFirstVisibleItemPosition();
-		if (first >= 0) {
-			int jumpThreshold = getScrollJumpThreshold(recyclerView.getContext());
-			if (position > first + jumpThreshold) {
-				layoutManager.scrollToPositionWithOffset(position - jumpThreshold, 0);
-			} else if (position < first - jumpThreshold) {
-				layoutManager.scrollToPositionWithOffset(position + jumpThreshold, 0);
+		if (AnimationUtils.areAnimatorsEnabled()) {
+			int first = layoutManager.findFirstVisibleItemPosition();
+			if (first >= 0) {
+				int jumpThreshold = getScrollJumpThreshold(recyclerView.getContext());
+				if (position > first + jumpThreshold) {
+					layoutManager.scrollToPositionWithOffset(position - jumpThreshold, 0);
+				} else if (position < first - jumpThreshold) {
+					layoutManager.scrollToPositionWithOffset(position + jumpThreshold, 0);
+				}
 			}
+			layoutManager.startSmoothScroll(new TopLinearSmoothScroller(recyclerView.getContext(), position));
+		} else {
+			layoutManager.scrollToPositionWithOffset(position, 0);
 		}
-		layoutManager.startSmoothScroll(new TopLinearSmoothScroller(recyclerView.getContext(), position));
 	}
 
 	public static Drawable colorizeListThumbDrawable4(Context context, Drawable drawable) {
