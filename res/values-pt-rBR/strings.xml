@@ -43,7 +43,6 @@
 	<string name="captcha_is_not_valid">Captcha está errada</string>
 	<string name="captcha_pass">Senha do captcha</string>
 	<string name="captcha_pass__summary">Permite ignorar o captcha</string>
-	<string name="captcha_pass_is_allowed">Senha de captcha permitido</string>
 	<string name="captcha_type">Tipo de captcha</string>
 	<string name="catalog">Catálogo</string>
 	<string name="change_theme">Mudar tema</string>

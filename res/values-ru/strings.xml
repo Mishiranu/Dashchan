@@ -63,7 +63,6 @@
 	<string name="captcha_is_not_valid">Неправильная капча</string>
 	<string name="captcha_pass">Пропуск капчи</string>
 	<string name="captcha_pass__summary">Код для пропуска капчи</string>
-	<string name="captcha_pass_is_allowed">Доступен пропуск капчи</string>
 	<string name="captcha_type">Тип капчи</string>
 	<string name="catalog">Каталог</string>
 	<string name="change_theme">Сменить тему</string>

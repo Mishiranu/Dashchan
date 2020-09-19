@@ -15,7 +15,7 @@ import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
+import android.view.ViewParent;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -731,15 +731,46 @@ public class ForegroundManager implements Handler.Callback {
 					}
 				}
 			}
-			ScrollView scrollView = new ScrollView(container.getContext());
+
+			AlertDialog[] futureAlertDialog = {null};
+			ScrollView scrollView = new ScrollView(container.getContext()) {
+				@Override
+				protected void onLayout(boolean changed, int l, int t, int r, int b) {
+					super.onLayout(changed, l, t, r, b);
+
+					// Ensure at least count=columns rows can fit
+					int cellSize = (b - t - (columns - 1) * innerPadding - 2 * outerPadding) / columns;
+					int width = Math.min((int) (480 * density),
+							columns * cellSize + (columns - 1) * innerPadding + 2 * outerPadding);
+					if (r - l > width) {
+						int totalPadding = 0;
+						View root = this;
+						while (true) {
+							totalPadding += root.getPaddingLeft() + root.getPaddingRight();
+							ViewGroup.LayoutParams layoutParams = root.getLayoutParams();
+							if (layoutParams instanceof MarginLayoutParams) {
+								MarginLayoutParams marginLayoutParams = (MarginLayoutParams) layoutParams;
+								totalPadding += marginLayoutParams.leftMargin + marginLayoutParams.rightMargin;
+							}
+							ViewParent parent = root.getParent();
+							if (parent instanceof View) {
+								root = (View) parent;
+							} else {
+								break;
+							}
+						}
+						width += totalPadding;
+						futureAlertDialog[0].getWindow().setLayout(width, LayoutParams.WRAP_CONTENT);
+					}
+				}
+			};
 			scrollView.addView(container, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 			final AlertDialog alertDialog = new AlertDialog.Builder(requireContext())
 					.setTitle(descriptionText).setView(scrollView)
 					.setPositiveButton(android.R.string.ok, this)
 					.setNegativeButton(android.R.string.cancel, this)
 					.create();
-			alertDialog.setOnShowListener(dialog -> alertDialog.getWindow()
-					.setLayout((int) (320 * density), WindowManager.LayoutParams.WRAP_CONTENT));
+			futureAlertDialog[0] = alertDialog;
 			return alertDialog;
 		}
 

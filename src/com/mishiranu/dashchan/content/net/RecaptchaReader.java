@@ -4,15 +4,14 @@ import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Pair;
-import android.view.Gravity;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.webkit.JavascriptInterface;
@@ -21,7 +20,6 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
-import android.widget.ProgressBar;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
@@ -41,12 +39,15 @@ import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.ResourceUtils;
-import com.mishiranu.dashchan.widget.ThemeEngine;
+import com.mishiranu.dashchan.widget.ScaledWebView;
+import java.util.Arrays;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class RecaptchaReader {
+	private static final float EXTRA_SCALE_FOR_SYSTEM_PADDING = 0.8f;
+
 	private static final RecaptchaReader INSTANCE = new RecaptchaReader();
 
 	public static RecaptchaReader getInstance() {
@@ -195,7 +196,7 @@ public class RecaptchaReader {
 	}
 
 	public static class WebViewHolder extends Fragment {
-		private WebView webView;
+		private ScaledWebView webView;
 
 		private float scale = 1f;
 		private float extraScale = 1f;
@@ -224,10 +225,11 @@ public class RecaptchaReader {
 			}
 		}
 
-		@SuppressLint("SetJavaScriptEnabled")
-		public WebView obtainWebView(Context context, float scale) {
+		@SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
+		public WebView obtainWebView(Context context, float minScale, float scale) {
 			if (webView == null) {
-				webView = new WebView(context.getApplicationContext());
+				webView = new ScaledWebView(context.getApplicationContext(),
+						minScale, EXTRA_SCALE_FOR_SYSTEM_PADDING);
 				webView.getSettings().setJavaScriptEnabled(true);
 				webView.getSettings().setBuiltInZoomControls(false);
 				webView.setHorizontalScrollBarEnabled(false);
@@ -244,7 +246,7 @@ public class RecaptchaReader {
 				});
 			}
 			this.scale = scale;
-			webView.setInitialScale((int) (100 * getTotalScale()));
+			webView.setScale(getTotalScale());
 			if (webView.getParent() != null) {
 				((ViewGroup) webView.getParent()).removeView(webView);
 			}
@@ -281,7 +283,7 @@ public class RecaptchaReader {
 			}
 		}
 
-		@SuppressWarnings("unused")
+		@SuppressWarnings({"unused", "RedundantSuppression"})
 		private final Object javascriptInterface = new Object() {
 			@JavascriptInterface
 			public void onResponse(String response) {
@@ -332,11 +334,10 @@ public class RecaptchaReader {
 							}
 							lastWidthUnscaled = width;
 							lastHeightUnscaled = height;
-							// "setInitialScale" doesn't work well for Android <= 4.3
-							extraScale = C.API_KITKAT ? Math.min(1f, 300f / width) : 1f;
+							extraScale = Math.min(1f, 300f / width);
 							int newWidth = (int) (getTotalScale() * width);
 							int newHeight = (int) (getTotalScale() * height);
-							webView.setInitialScale((int) (100 * getTotalScale()));
+							webView.setScale(getTotalScale());
 							ViewGroup.LayoutParams layoutParams = webView.getLayoutParams();
 							if (layoutParams.width != newWidth || layoutParams.height != newHeight) {
 								layoutParams.width = newWidth;
@@ -356,6 +357,13 @@ public class RecaptchaReader {
 		};
 
 		private final WebViewClient client = new WebViewClient() {
+			@Override
+			public void onScaleChanged(WebView view, float oldScale, float newScale) {
+				if (webView != null) {
+					webView.notifyClientScaleChanged(newScale);
+				}
+			}
+
 			@SuppressWarnings("deprecation")
 			@Override
 			public boolean shouldOverrideUrlLoading(WebView view, String url) {
@@ -418,14 +426,14 @@ public class RecaptchaReader {
 
 		private String webViewId;
 		private WebViewHolder webViewHolder;
-		private FrameLayout loading;
+
+		private boolean started = false;
+		private boolean shown = false;
 
 		private final DialogCallback dialogCallback = new DialogCallback() {
 			@Override
 			public void onLoad() {
-				if (loading != null) {
-					loading.setVisibility(View.GONE);
-				}
+				showDialog();
 				if (!requireArguments().getBoolean(EXTRA_INVISIBLE)) {
 					getDialog().getWindow().getDecorView().postDelayed(() -> {
 						if (webViewHolder != null) {
@@ -483,25 +491,29 @@ public class RecaptchaReader {
 			FrameLayout layout = new FrameLayout(dialog.getContext());
 			dialog.setContentView(layout, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
 					ViewGroup.LayoutParams.WRAP_CONTENT));
-
-			loading = new FrameLayout(layout.getContext());
-			loading.setVisibility(webViewHolder.loaded ? View.GONE : View.VISIBLE);
-			loading.setPadding((int) (16f * density), (int) (16f * density),
-					(int) (16f * density), (int) (16f * density));
-			layout.addView(loading, FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
-			((FrameLayout.LayoutParams) layout.getLayoutParams()).gravity = Gravity.CENTER;
-			ProgressBar progressBar = new ProgressBar(loading.getContext());
-			ThemeEngine.applyStyle(progressBar);
-			loading.addView(progressBar, FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
-			((FrameLayout.LayoutParams) loading.getLayoutParams()).gravity = Gravity.CENTER;
+			if (webViewHolder.loaded) {
+				showDialog();
+			}
 
 			int widthUnscaled = 300;
 			int maxHeightUnscaled = 580;
 			int minHeightUnscaled = 250;
-			float scaleMultiplier = (float) getResources().getConfiguration().screenHeightDp / maxHeightUnscaled;
-			float scale = getResources().getDisplayMetrics().density * scaleMultiplier;
+			Configuration configuration = getResources().getConfiguration();
+			int dialogPaddingDp = 16;
+			int screenWidthDp = configuration.screenWidthDp - 2 * dialogPaddingDp;
+			int screenHeightDp = configuration.screenHeightDp - 2 * dialogPaddingDp;
+			float minScaleMultiplier = Float.MAX_VALUE;
+			for (float size : Arrays.asList(screenWidthDp, screenHeightDp)) {
+				for (float max : Arrays.asList(widthUnscaled, maxHeightUnscaled)) {
+					minScaleMultiplier = Math.min(minScaleMultiplier, size / max);
+				}
+			}
+			float scaleMultiplier = Math.min((float) screenWidthDp / widthUnscaled,
+					(float) screenHeightDp / maxHeightUnscaled);
+			float minScale = density * minScaleMultiplier;
+			float scale = density * scaleMultiplier;
 			boolean load = webViewHolder.webView == null;
-			WebView webView = webViewHolder.obtainWebView(requireContext(), scale);
+			WebView webView = webViewHolder.obtainWebView(requireContext(), minScale, scale);
 			int defaultWidth = (int) ((webViewHolder.lastWidthUnscaled > 0
 					? webViewHolder.lastWidthUnscaled : widthUnscaled) * webViewHolder.getTotalScale());
 			int defaultHeight = (int) ((webViewHolder.lastHeightUnscaled > 0
@@ -523,15 +535,20 @@ public class RecaptchaReader {
 		}
 
 		@Override
-		public void onDestroyView() {
-			super.onDestroyView();
-			loading = null;
-		}
-
-		@Override
 		public void onSaveInstanceState(@NonNull Bundle outState) {
 			super.onSaveInstanceState(outState);
 			outState.putString(EXTRA_WEB_VIEW_ID, webViewId);
+		}
+
+		@Override
+		public void onStart() {
+			super.onStart();
+
+			started = true;
+			Dialog dialog = getDialog();
+			if (dialog != null && !shown) {
+				dialog.hide();
+			}
 		}
 
 		@Override
@@ -549,6 +566,21 @@ public class RecaptchaReader {
 
 			if (webViewHolder != null) {
 				webViewHolder.setDialogCallback(null);
+			}
+		}
+
+		@Override
+		public void onStop() {
+			super.onStop();
+			started = false;
+		}
+
+		private void showDialog() {
+			if (!shown) {
+				shown = true;
+				if (started) {
+					getDialog().show();
+				}
 			}
 		}
 
