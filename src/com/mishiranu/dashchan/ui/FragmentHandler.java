@@ -9,14 +9,8 @@ import com.mishiranu.dashchan.util.ConfigurationLock;
 
 public interface FragmentHandler {
 	void setTitleSubtitle(CharSequence title, CharSequence subtitle);
-
-	default ViewGroup getToolbarView() {
-		throw new IllegalStateException();
-	}
-
-	default FrameLayout getToolbarExtra() {
-		throw new IllegalStateException();
-	}
+	ViewGroup getToolbarView();
+	FrameLayout getToolbarExtra();
 
 	Drawable getActionBarIcon(int attr);
 
@@ -24,6 +18,7 @@ public interface FragmentHandler {
 	void removeFragment();
 	DownloadService.Binder getDownloadBinder();
 	ConfigurationLock getConfigurationLock();
+	boolean requestStorage();
 
-	default void scrollToPost(String chanName, String boardName, String threadNumber, String postNumber) {}
+	void scrollToPost(String chanName, String boardName, String threadNumber, String postNumber);
 }

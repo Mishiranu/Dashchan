@@ -348,6 +348,7 @@
 	<string name="posts_with_same_name">Posts with the same name</string>
 	<string name="preferences">Preferences</string>
 	<string name="press_again_to_exit">Press again to exit</string>
+	<string name="proceed">Proceed</string>
 	<string name="processing_data__ellipsis">Processing data…</string>
 	<string name="proxy">Proxy</string>
 	<string name="quality">Quality</string>
@@ -385,6 +386,11 @@
 	<string name="restart">Restart</string>
 	<string name="restore_data">Restore data</string>
 	<string name="retry">Retry</string>
+	<string name="saf_instructions__sentence">You will be directed to the system directory picker where you should pick
+		a directory for downloads.\n\n<b>Don\'t select any directories under default \"Downloads\" section!</b>\n
+		\nInstead, open the menu at the corner and choose \"Show internal storage\". After that you will be able to
+		access the storage from navigation panel.\n\nYou can pick existing directory or create a new one.\n\nAvoid
+		remote file system providers such as Nextcloud or Google Drive since their support is incomplete.</string>
 	<string name="sage_is_disabled">Sage is disabled</string>
 	<string name="save">Save</string>
 	<string name="save_completed">Save completed</string>

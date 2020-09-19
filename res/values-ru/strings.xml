@@ -363,6 +363,7 @@
 	<string name="posts_with_same_name">Сообщения с таким же именем</string>
 	<string name="preferences">Настройки</string>
 	<string name="press_again_to_exit">Нажмите ещё раз, чтобы выйти</string>
+	<string name="proceed">Продолжить</string>
 	<string name="processing_data__ellipsis">Обработка данных…</string>
 	<string name="proxy">Прокси</string>
 	<string name="quality">Качество</string>
@@ -400,6 +401,11 @@
 	<string name="restart">Перезапуск</string>
 	<string name="restore_data">Восстановить данные</string>
 	<string name="retry">Повторить</string>
+	<string name="saf_instructions__sentence">Вы будете направлены на экран выбора директории.\n\n<b>Не выбирайте
+		директорию из стандартного раздела \"Загрузки\"!</b>\n\nВместо этого, откройте меню с краю и выберите \"Показать
+		внутреннее хранилище\", после чего откройте хранилище из боковой панели.\n\nВы можете создать новую директорию
+		или выбрать уже существующую.\n\nВвиду неполной поддержки, не рекомендуется выбирать директории удалённых
+		файловых хранилищ, таких как Nextcloud или Google Drive.</string>
 	<string name="sage_is_disabled">Sage отключено</string>
 	<string name="save">Сохранить</string>
 	<string name="save_completed">Сохранение завершено</string>

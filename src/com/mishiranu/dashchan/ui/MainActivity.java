@@ -1,6 +1,7 @@
 package com.mishiranu.dashchan.ui;
 
 import android.animation.LayoutTransition;
+import android.app.AlertDialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -105,9 +106,11 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	private static final String EXTRA_CURRENT_PAGE_ITEM = "currentPageItem";
 	private static final String EXTRA_DRAWER_EXPANDED = "drawerExpanded";
 	private static final String EXTRA_DRAWER_CHAN_SELECT_MODE = "drawerChanSelectMode";
-	private static final String EXTRA_IN_STORAGE_REQUEST = "inStorageRequest";
+	private static final String EXTRA_STORAGE_REQUEST_STATE = "storageRequestState";
 
 	private static final PageFragment REFERENCE_FRAGMENT = new PageFragment();
+
+	private enum StorageRequestState {NONE, INSTRUCTIONS, PICKER}
 
 	private final ArrayList<StackItem> fragments = new ArrayList<>();
 	private final ArrayList<SavedPageItem> stackPageItems = new ArrayList<>();
@@ -136,7 +139,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 
 	private ReadUpdateTask readUpdateTask;
 	private Intent navigateIntentOnResume;
-	private boolean inStorageRequest;
+	private StorageRequestState storageRequestState;
 
 	private static final String LOCKER_DRAWER = "drawer";
 	private static final String LOCKER_NON_PAGE = "nonPage";
@@ -301,6 +304,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 					.add(retainFragment, RetainFragment.class.getName())
 					.commit();
 		}
+		storageRequestState = savedInstanceState != null ? StorageRequestState
+				.valueOf(savedInstanceState.getString(EXTRA_STORAGE_REQUEST_STATE)) : StorageRequestState.NONE;
 
 		Fragment currentFragmentFromSaved = null;
 		if (savedInstanceState == null) {
@@ -394,6 +399,9 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		}
 
 		ExtensionsTrustLoop.handleUntrustedExtensions(this, configurationLock);
+		if (storageRequestState == StorageRequestState.INSTRUCTIONS) {
+			showStorageInstructionsDialog();
+		}
 	}
 
 	@Override
@@ -408,7 +416,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		writePagesState(outState);
 		outState.putBoolean(EXTRA_DRAWER_EXPANDED, drawerLayout.isDrawerOpen(GravityCompat.START));
 		outState.putBoolean(EXTRA_DRAWER_CHAN_SELECT_MODE, drawerForm.isChanSelectMode());
-		outState.putBoolean(EXTRA_IN_STORAGE_REQUEST, inStorageRequest);
+		outState.putString(EXTRA_STORAGE_REQUEST_STATE, storageRequestState.name());
 	}
 
 	private void writePagesState(Bundle outState) {
@@ -427,13 +435,17 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		super.onActivityResult(requestCode, resultCode, data);
 
 		if (requestCode == C.REQUEST_CODE_OPEN_URI_TREE) {
-			inStorageRequest = false;
+			storageRequestState = StorageRequestState.NONE;
 			if (resultCode == RESULT_OK && data != null) {
 				Preferences.setDownloadUriTree(this, data.getData(), data.getFlags());
 			}
 			if (downloadBinder != null) {
 				Uri uri = Preferences.getDownloadUriTree(this);
 				downloadBinder.onPermissionResult(uri != null);
+			}
+			Fragment currentFragment = getCurrentFragment();
+			if (currentFragment instanceof ActivityHandler) {
+				((ActivityHandler) currentFragment).onStorageRequestResult();
 			}
 		}
 	}
@@ -1063,6 +1075,16 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		int drawerWidth = Math.min((int) (configuration.screenWidthDp * density + 0.5f) - actionBarSize,
 				(int) (320 * density + 0.5f));
 		drawerCommon.getLayoutParams().width = drawerWide.getLayoutParams().width = drawerWidth;
+	}
+
+	@Override
+	public boolean requestStorage() {
+		if (storageRequestState == StorageRequestState.NONE) {
+			storageRequestState = StorageRequestState.INSTRUCTIONS;
+			showStorageInstructionsDialog();
+			return true;
+		}
+		return false;
 	}
 
 	@Override
@@ -1730,12 +1752,12 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		@Override
 		public void requestPermission() {
 			if (C.USE_SAF) {
-				if (!inStorageRequest) {
+				if (storageRequestState == StorageRequestState.NONE) {
 					if (Preferences.getDownloadUriTree(MainActivity.this) != null) {
 						downloadBinder.onPermissionResult(true);
 					} else {
-						inStorageRequest = true;
-						startActivityForResult(Preferences.getDownloadUriTreeIntent(), C.REQUEST_CODE_OPEN_URI_TREE);
+						storageRequestState = StorageRequestState.INSTRUCTIONS;
+						showStorageInstructionsDialog();
 					}
 				}
 			} else {
@@ -1762,6 +1784,19 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			updateHandleDownloadRequests();
 		}
 	};
+
+	private void showStorageInstructionsDialog() {
+		new AlertDialog.Builder(this)
+				.setTitle(R.string.download_directory)
+				.setMessage(R.string.saf_instructions__sentence)
+				.setPositiveButton(R.string.proceed, (d, w) -> {
+					storageRequestState = StorageRequestState.PICKER;
+					startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+							.putExtra("android.content.extra.SHOW_ADVANCED", true), C.REQUEST_CODE_OPEN_URI_TREE);
+				})
+				.setCancelable(false)
+				.show();
+	}
 
 	private void startUpdateTask() {
 		if (!Preferences.isCheckUpdatesOnStart() || System.currentTimeMillis()

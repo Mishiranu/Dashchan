@@ -1,10 +1,8 @@
 package com.mishiranu.dashchan.ui.preference;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.net.Uri;
@@ -31,6 +29,7 @@ import com.mishiranu.dashchan.content.async.AsyncManager;
 import com.mishiranu.dashchan.content.async.ReadUpdateTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.service.DownloadService;
+import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
 import com.mishiranu.dashchan.util.Log;
@@ -43,10 +42,20 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class AboutFragment extends PreferenceFragment {
+public class AboutFragment extends PreferenceFragment implements ActivityHandler {
+	private static final String EXTRA_IN_STORAGE_REQUEST = "inStorageRequest";
+
+	private boolean inStorageRequest = false;
+
 	@Override
 	protected SharedPreferences getPreferences() {
 		return Preferences.PREFERENCES;
+	}
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		inStorageRequest = savedInstanceState != null && savedInstanceState.getBoolean(EXTRA_IN_STORAGE_REQUEST);
 	}
 
 	@Override
@@ -78,11 +87,15 @@ public class AboutFragment extends PreferenceFragment {
 	}
 
 	@Override
-	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
+	public void onSaveInstanceState(@NonNull Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putBoolean(EXTRA_IN_STORAGE_REQUEST, inStorageRequest);
+	}
 
-		if (requestCode == C.REQUEST_CODE_OPEN_URI_TREE && resultCode == Activity.RESULT_OK) {
-			Preferences.setDownloadUriTree(requireContext(), data.getData(), data.getFlags());
+	@Override
+	public void onStorageRequestResult() {
+		if (inStorageRequest) {
+			inStorageRequest = false;
 			if (Preferences.getDownloadUriTree(requireContext()) != null) {
 				restoreBackup();
 			}
@@ -91,8 +104,9 @@ public class AboutFragment extends PreferenceFragment {
 
 	private void restoreBackup() {
 		if (C.USE_SAF && Preferences.getDownloadUriTree(requireContext()) == null) {
-			startActivityForResult(Preferences.getDownloadUriTreeIntent(),
-					C.REQUEST_CODE_OPEN_URI_TREE);
+			if (((FragmentHandler) requireActivity()).requestStorage()) {
+				inStorageRequest = true;
+			}
 		} else {
 			LinkedHashMap<DataFile, String> filesMap = BackupManager.getAvailableBackups(requireContext());
 			if (filesMap != null && filesMap.size() > 0) {

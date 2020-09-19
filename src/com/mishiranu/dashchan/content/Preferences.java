@@ -500,12 +500,6 @@ public class Preferences {
 	}
 
 	@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-	public static Intent getDownloadUriTreeIntent() {
-		return new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-				.putExtra("android.content.extra.SHOW_ADVANCED", true);
-	}
-
-	@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 	public static Uri getDownloadUriTree(Context context) {
 		ContentResolver contentResolver = context.getContentResolver();
 		List<UriPermission> uriPermissions = contentResolver.getPersistedUriPermissions();

@@ -18,4 +18,5 @@ public interface ActivityHandler {
 	}
 
 	default void onTerminate() {}
+	default void onStorageRequestResult() {}
 }

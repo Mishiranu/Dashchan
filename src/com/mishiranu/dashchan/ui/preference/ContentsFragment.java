@@ -1,12 +1,8 @@
 package com.mishiranu.dashchan.ui.preference;
 
-import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
 import android.text.SpannableStringBuilder;
@@ -23,6 +19,7 @@ import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.AsyncManager;
 import com.mishiranu.dashchan.media.VideoPlayer;
+import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.Preference;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
@@ -30,13 +27,23 @@ import com.mishiranu.dashchan.widget.ProgressDialog;
 import java.util.HashMap;
 import java.util.Locale;
 
-public class ContentsFragment extends PreferenceFragment {
+public class ContentsFragment extends PreferenceFragment implements ActivityHandler {
+	private static final String EXTRA_IN_STORAGE_REQUEST = "inStorageRequest";
+
 	private Preference<?> downloadUriTreePreference;
 	private Preference<?> clearCachePreference;
+
+	private boolean inStorageRequest;
 
 	@Override
 	protected SharedPreferences getPreferences() {
 		return Preferences.PREFERENCES;
+	}
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		inStorageRequest = savedInstanceState != null && savedInstanceState.getBoolean(EXTRA_IN_STORAGE_REQUEST);
 	}
 
 	@Override
@@ -62,8 +69,11 @@ public class ContentsFragment extends PreferenceFragment {
 		if (C.USE_SAF) {
 			downloadUriTreePreference = addButton(getString(R.string.download_directory),
 					p -> DataFile.obtain(requireContext(), DataFile.Target.DOWNLOADS, null).getName());
-			downloadUriTreePreference.setOnClickListener(p -> startActivityForResult(Preferences
-					.getDownloadUriTreeIntent(), C.REQUEST_CODE_OPEN_URI_TREE));
+			downloadUriTreePreference.setOnClickListener(p -> {
+				if (((FragmentHandler) requireActivity()).requestStorage()) {
+					inStorageRequest = true;
+				}
+			});
 		} else {
 			addEdit(Preferences.KEY_DOWNLOAD_PATH, null, R.string.download_path, C.DEFAULT_DOWNLOAD_PATH,
 					InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
@@ -140,6 +150,20 @@ public class ContentsFragment extends PreferenceFragment {
 		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.contents), null);
 	}
 
+	@Override
+	public void onSaveInstanceState(@NonNull Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putBoolean(EXTRA_IN_STORAGE_REQUEST, inStorageRequest);
+	}
+
+	@Override
+	public void onStorageRequestResult() {
+		if (inStorageRequest) {
+			inStorageRequest = false;
+			downloadUriTreePreference.invalidate();
+		}
+	}
+
 	private CharSequence makeSubdirDescription() {
 		String[] formats = {"\\c", "\\d", "\\b", "\\t", "\\e", "<\u2026>"};
 		int[] descriptions = {R.string.forum_code, R.string.forum_title, R.string.board_code, R.string.thread_number,
@@ -160,17 +184,6 @@ public class ContentsFragment extends PreferenceFragment {
 		long cacheSize = CacheManager.getInstance().getCacheSize();
 		clearCachePreference.setEnabled(cacheSize > 0L);
 		clearCachePreference.invalidate();
-	}
-
-	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
-	@Override
-	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
-
-		if (requestCode == C.REQUEST_CODE_OPEN_URI_TREE && resultCode == Activity.RESULT_OK) {
-			Preferences.setDownloadUriTree(requireContext(), data.getData(), data.getFlags());
-			downloadUriTreePreference.invalidate();
-		}
 	}
 
 	public static class ClearCacheFragment extends DialogFragment implements DialogInterface.OnMultiChoiceClickListener,
