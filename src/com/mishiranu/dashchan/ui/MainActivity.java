@@ -4,6 +4,7 @@ import android.animation.LayoutTransition;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -441,18 +442,12 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		super.onActivityResult(requestCode, resultCode, data);
 
 		if (requestCode == C.REQUEST_CODE_OPEN_URI_TREE) {
+			boolean cancel = resultCode != RESULT_OK;
 			storageRequestState = StorageRequestState.NONE;
-			if (resultCode == RESULT_OK && data != null) {
+			if (!cancel && data != null) {
 				Preferences.setDownloadUriTree(this, data.getData(), data.getFlags());
 			}
-			if (downloadBinder != null) {
-				Uri uri = Preferences.getDownloadUriTree(this);
-				downloadBinder.onPermissionResult(uri != null);
-			}
-			Fragment currentFragment = getCurrentFragment();
-			if (currentFragment instanceof ActivityHandler) {
-				((ActivityHandler) currentFragment).onStorageRequestResult();
-			}
+			handleStorageRequestResult(cancel);
 		}
 	}
 
@@ -1760,24 +1755,30 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			if (C.USE_SAF) {
 				if (storageRequestState == StorageRequestState.NONE) {
 					if (Preferences.getDownloadUriTree(MainActivity.this) != null) {
-						downloadBinder.onPermissionResult(true);
+						downloadBinder.onPermissionResult(DownloadService.PermissionResult.SUCCESS);
 					} else {
 						storageRequestState = StorageRequestState.INSTRUCTIONS;
 						showStorageInstructionsDialog();
 					}
 				}
 			} else {
-				downloadBinder.onPermissionResult(true);
+				downloadBinder.onPermissionResult(DownloadService.PermissionResult.SUCCESS);
 			}
 		}
 	};
 
 	private DownloadService.Binder downloadBinder;
+	private Boolean lastStorageRequestResult;
 	private final ServiceConnection downloadConnection = new ServiceConnection() {
 		@Override
 		public void onServiceConnected(ComponentName componentName, IBinder binder) {
 			downloadBinder = (DownloadService.Binder) binder;
 			downloadBinder.register(downloadCallback);
+			if (lastStorageRequestResult != null) {
+				boolean cancel = lastStorageRequestResult;
+				lastStorageRequestResult = null;
+				notifyDownloadServiceStorageRequestResult(cancel);
+			}
 			downloadBinder.notifyReadyToHandleRequests();
 		}
 
@@ -1797,11 +1798,44 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 				.setMessage(R.string.saf_instructions__sentence)
 				.setPositiveButton(R.string.proceed, (d, w) -> {
 					storageRequestState = StorageRequestState.PICKER;
-					startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-							.putExtra("android.content.extra.SHOW_ADVANCED", true), C.REQUEST_CODE_OPEN_URI_TREE);
+					try {
+						startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+								.putExtra("android.provider.extra.SHOW_ADVANCED", true)
+								.putExtra("android.content.extra.SHOW_ADVANCED", true),
+								C.REQUEST_CODE_OPEN_URI_TREE);
+					} catch (ActivityNotFoundException e) {
+						ToastUtils.show(this, R.string.unknown_address);
+						storageRequestState = StorageRequestState.NONE;
+						handleStorageRequestResult(true);
+					}
 				})
-				.setCancelable(false)
+				.setNegativeButton(android.R.string.cancel, (d, w) -> {
+					storageRequestState = StorageRequestState.NONE;
+					handleStorageRequestResult(true);
+				})
+				.setOnCancelListener(d -> {
+					storageRequestState = StorageRequestState.NONE;
+					handleStorageRequestResult(true);
+				})
 				.show();
+	}
+
+	private void handleStorageRequestResult(boolean cancel) {
+		notifyDownloadServiceStorageRequestResult(cancel);
+		Fragment currentFragment = getCurrentFragment();
+		if (currentFragment instanceof ActivityHandler) {
+			((ActivityHandler) currentFragment).onStorageRequestResult();
+		}
+	}
+
+	private void notifyDownloadServiceStorageRequestResult(boolean cancel) {
+		if (downloadBinder != null) {
+			Uri uri = Preferences.getDownloadUriTree(this);
+			downloadBinder.onPermissionResult(uri != null ? DownloadService.PermissionResult.SUCCESS
+					: cancel ? DownloadService.PermissionResult.CANCEL : DownloadService.PermissionResult.FAIL);
+		} else {
+			lastStorageRequestResult = cancel;
+		}
 	}
 
 	private void startUpdateTask() {

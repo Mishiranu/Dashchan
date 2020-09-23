@@ -1,6 +1,7 @@
 package com.mishiranu.dashchan.ui.posting;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ComponentName;
 import android.content.Context;
@@ -81,6 +82,7 @@ import com.mishiranu.dashchan.ui.posting.text.QuoteEditWatcher;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
+import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.DropdownView;
@@ -935,7 +937,11 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 						intent.setType(typesBuilder.toString());
 					}
 				}
-				startActivityForResult(intent, C.REQUEST_CODE_ATTACH);
+				try {
+					startActivityForResult(intent, C.REQUEST_CODE_ATTACH);
+				} catch (ActivityNotFoundException e) {
+					ToastUtils.show(requireContext(), R.string.unknown_address);
+				}
 				break;
 			}
 		}

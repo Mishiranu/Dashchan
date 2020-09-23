@@ -507,6 +507,8 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 		default void onCleanup() {}
 	}
 
+	public enum PermissionResult {SUCCESS, FAIL, CANCEL}
+
 	public class Binder extends android.os.Binder {
 		public void register(Callback callback) {
 			callbacks.register(callback);
@@ -578,9 +580,11 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 			return hasStoragePermission() ? primaryRequest : null;
 		}
 
-		public void onPermissionResult(boolean granted) {
-			if (!granted) {
-				ToastUtils.show(DownloadService.this, R.string.no_access_to_memory);
+		public void onPermissionResult(PermissionResult result) {
+			if (result != PermissionResult.SUCCESS) {
+				if (result == PermissionResult.FAIL) {
+					ToastUtils.show(DownloadService.this, R.string.no_access_to_memory);
+				}
 				cleanupRequests();
 			}
 			handleRequests();
