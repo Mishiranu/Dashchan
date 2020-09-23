@@ -10,6 +10,7 @@ import android.text.Spanned;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
 import android.util.Pair;
+import androidx.annotation.NonNull;
 import chan.content.ChanConfiguration;
 import chan.content.ChanMarkup;
 import chan.content.model.Icon;
@@ -199,10 +200,6 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 		this.ordinalIndex = ordinalIndex;
 	}
 
-	public void preload() {
-		getComment();
-	}
-
 	public int getOrdinalIndex() {
 		return ordinalIndex;
 	}
@@ -306,19 +303,15 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 		return fullName;
 	}
 
-	// Returns spanned name and tripcode, guaranteed not null.
+	@NonNull
 	public CharSequence getFullName() {
 		if (fullName == null) {
-			synchronized (this) {
-				if (fullName == null) {
-					CharSequence fullName = makeFullName();
-					if (StringUtils.isEmpty(fullName)) {
-						fullName = "";
-					}
-					fullNameSpans = ColorScheme.getSpans(fullName);
-					this.fullName = fullName;
-				}
+			CharSequence fullName = makeFullName();
+			if (StringUtils.isEmpty(fullName)) {
+				fullName = "";
 			}
+			fullNameSpans = ColorScheme.getSpans(fullName);
+			this.fullName = fullName;
 		}
 		return fullName;
 	}
@@ -393,6 +386,7 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 		post.setUserPost(userPost);
 	}
 
+	@NonNull
 	public String getSubjectOrComment() {
 		String subject = getSubject();
 		if (!StringUtils.isEmpty(subject)) {
@@ -401,24 +395,20 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 		return StringUtils.cutIfLongerToLine(HtmlParser.clear(post.getWorkComment()), 50, true);
 	}
 
-	// Returns thread subject, guaranteed not null.
+	@NonNull
 	public String getSubject() {
 		if (subject == null) {
-			synchronized (this) {
-				if (subject == null) {
-					String subject = post.getSubject();
-					if (subject != null) {
-						subject = subject.replace("\r", "").replace("\n", " ").trim();
-						if (subject.length() == 1 && (subject.charAt(0) == '\u202d'
-								|| subject.charAt(0) == '\u202e')) {
-							subject = "";
-						}
-					} else {
-						subject = "";
-					}
-					this.subject = subject;
+			String subject = post.getSubject();
+			if (subject != null) {
+				subject = subject.replace("\r", "").replace("\n", " ").trim();
+				if (subject.length() == 1 && (subject.charAt(0) == '\u202d'
+						|| subject.charAt(0) == '\u202e')) {
+					subject = "";
 				}
+			} else {
+				subject = "";
 			}
+			this.subject = subject;
 		}
 		return subject;
 	}
@@ -449,44 +439,41 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 		return commentBuilder;
 	}
 
+	@NonNull
 	public CharSequence getComment() {
 		if (comment == null) {
-			synchronized (this) {
-				if (comment == null) {
-					CharSequence comment = obtainComment(post.getWorkComment(), getChanName(),
-							getParentPostNumber(), this);
-					// Make empty lines take less space
-					SpannableStringBuilder builder = null;
-					int linebreaks = 0;
-					for (int i = 0; i < comment.length(); i++) {
-						char c = comment.charAt(i);
-						if (c == '\n') {
-							linebreaks++;
-						} else {
-							if (linebreaks > 1) {
-								if (builder == null) {
-									builder = new SpannableStringBuilder(comment);
-									comment = builder;
-								}
-								builder.setSpan(new RelativeSizeSpan(0.75f), i - linebreaks, i,
-										SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE);
-							}
-							linebreaks = 0;
+			CharSequence comment = obtainComment(post.getWorkComment(), getChanName(),
+					getParentPostNumber(), this);
+			// Make empty lines take less space
+			SpannableStringBuilder builder = null;
+			int linebreaks = 0;
+			for (int i = 0; i < comment.length(); i++) {
+				char c = comment.charAt(i);
+				if (c == '\n') {
+					linebreaks++;
+				} else {
+					if (linebreaks > 1) {
+						if (builder == null) {
+							builder = new SpannableStringBuilder(comment);
+							comment = builder;
 						}
+						builder.setSpan(new RelativeSizeSpan(0.75f), i - linebreaks, i,
+								SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE);
 					}
-					commentSpans = ColorScheme.getSpans(comment);
-					linkSpans = comment instanceof Spanned ? ((Spanned) comment)
-							.getSpans(0, comment.length(), LinkSpan.class) : null;
-					linkSuffixSpans = comment instanceof Spanned ? ((Spanned) comment)
-							.getSpans(0, comment.length(), LinkSuffixSpan.class) : null;
-					this.comment = comment;
+					linebreaks = 0;
 				}
 			}
+			commentSpans = ColorScheme.getSpans(comment);
+			linkSpans = comment instanceof Spanned ? ((Spanned) comment)
+					.getSpans(0, comment.length(), LinkSpan.class) : null;
+			linkSuffixSpans = comment instanceof Spanned ? ((Spanned) comment)
+					.getSpans(0, comment.length(), LinkSuffixSpan.class) : null;
+			this.comment = comment;
 		}
 		return comment;
 	}
 
-	// Returns spanned comment (post), guaranteed not null.
+	@NonNull
 	public CharSequence getComment(String repliesToPost) {
 		SpannableString comment = new SpannableString(getComment());
 		LinkSpan[] spans = comment.getSpans(0, comment.length(), LinkSpan.class);
@@ -725,29 +712,25 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 	}
 
 	public boolean isHidden(HidePerformer hidePerformer) {
+		HideState hideState = this.hideState;
 		if (hideState == HideState.UNDEFINED) {
-			synchronized (this) {
-				HideState hideState = this.hideState;
-				if (hideState == HideState.UNDEFINED) {
-					String hideReason = null;
-					if (threadData == null) {
-						hideState = getHiddenStateFromModel();
-					} else {
-						hideState = HiddenThreadsDatabase.getInstance()
-								.check(getChanName(), boardName, getThreadNumber());
-					}
-					if (hideState == HideState.UNDEFINED) {
-						hideReason = hidePerformer.checkHidden(this);
-						if (hideReason != null) {
-							hideState = HideState.HIDDEN;
-						} else {
-							hideState = HideState.SHOWN;
-						}
-					}
-					this.hideState = hideState;
-					this.hideReason = hideReason;
+			String hideReason = null;
+			if (threadData == null) {
+				hideState = getHiddenStateFromModel();
+			} else {
+				hideState = HiddenThreadsDatabase.getInstance()
+						.check(getChanName(), boardName, getThreadNumber());
+			}
+			if (hideState == HideState.UNDEFINED) {
+				hideReason = hidePerformer.checkHidden(this);
+				if (hideReason != null) {
+					hideState = HideState.HIDDEN;
+				} else {
+					hideState = HideState.SHOWN;
 				}
 			}
+			this.hideState = hideState;
+			this.hideReason = hideReason;
 		}
 		return hideState == HideState.HIDDEN;
 	}

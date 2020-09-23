@@ -12,6 +12,7 @@ import chan.http.HttpHolder;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.text.HtmlParser;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -97,7 +98,8 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostIte
 				for (int i = 0; i < posts.size() && !Thread.interrupted(); i++) {
 					PostItem postItem = PostItem.createPost(posts.get(i), chanName, boardName);
 					postItem.setOrdinalIndex(i);
-					postItem.preload();
+					// Preload
+					ConcurrentUtils.mainGet(postItem::getComment);
 					postItems.add(postItem);
 				}
 				return postItems;

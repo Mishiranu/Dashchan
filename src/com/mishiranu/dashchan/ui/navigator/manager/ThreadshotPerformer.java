@@ -1,12 +1,10 @@
 package com.mishiranu.dashchan.ui.navigator.manager;
 
-import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
-import android.os.Looper;
 import android.os.SystemClock;
 import android.view.View;
 import android.view.ViewGroup;
@@ -62,10 +60,8 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
 	}
 
 	private final AsyncTask<Void, Void, InputStream> asyncTask = new AsyncTask<Void, Void, InputStream>() {
-		@SuppressLint("WrongThread")
 		@Override
 		protected InputStream doInBackground(Void... params) {
-			Looper.prepare();
 			long time = SystemClock.elapsedRealtime();
 			UiManager.DemandSet demandSet = new UiManager.DemandSet();
 			demandSet.selection = UiManager.Selection.THREADSHOT;
@@ -76,14 +72,17 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
 			int widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY);
 			int heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
 			for (PostItem postItem : postItems) {
-				uiManager.view().bindPostView(holder, postItem, demandSet);
-				holder.itemView.measure(widthMeasureSpec, heightMeasureSpec);
+				int measuredHeight = ConcurrentUtils.mainGet(() -> {
+					uiManager.view().bindPostView(holder, postItem, demandSet);
+					holder.itemView.measure(widthMeasureSpec, heightMeasureSpec);
+					return holder.itemView.getMeasuredHeight();
+				});
 				if (!first) {
 					height += dividerHeight;
 				} else {
 					first = false;
 				}
-				height += holder.itemView.getMeasuredHeight();
+				height += measuredHeight;
 			}
 			if (isCancelled()) {
 				return null;
@@ -97,17 +96,20 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
 					if (isCancelled()) {
 						return null;
 					}
-					uiManager.view().bindPostView(holder, postItem, demandSet);
-					holder.itemView.measure(widthMeasureSpec, heightMeasureSpec);
-					holder.itemView.layout(0, 0, holder.itemView.getMeasuredWidth(),
-							holder.itemView.getMeasuredHeight());
-					holder.itemView.draw(canvas);
-					canvas.translate(0, holder.itemView.getHeight());
-					if (divider != null && dividerHeight > 0) {
-						divider.setBounds(dividerPadding, 0, width - dividerPadding, dividerHeight);
-						divider.draw(canvas);
-						canvas.translate(0, dividerHeight);
-					}
+					ConcurrentUtils.mainGet(() -> {
+						uiManager.view().bindPostView(holder, postItem, demandSet);
+						holder.itemView.measure(widthMeasureSpec, heightMeasureSpec);
+						holder.itemView.layout(0, 0, holder.itemView.getMeasuredWidth(),
+								holder.itemView.getMeasuredHeight());
+						holder.itemView.draw(canvas);
+						canvas.translate(0, holder.itemView.getHeight());
+						if (divider != null && dividerHeight > 0) {
+							divider.setBounds(dividerPadding, 0, width - dividerPadding, dividerHeight);
+							divider.draw(canvas);
+							canvas.translate(0, dividerHeight);
+						}
+						return null;
+					});
 				}
 				ByteArrayOutputStream output = new ByteArrayOutputStream();
 				bitmap.compress(Bitmap.CompressFormat.PNG, 100, output);
