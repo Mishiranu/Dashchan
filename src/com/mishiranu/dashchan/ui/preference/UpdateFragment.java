@@ -9,11 +9,14 @@ import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.style.AbsoluteSizeSpan;
 import android.text.style.ForegroundColorSpan;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
@@ -25,7 +28,10 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.UpdaterActivity;
+import com.mishiranu.dashchan.content.async.AsyncManager;
 import com.mishiranu.dashchan.content.async.ReadUpdateTask;
+import com.mishiranu.dashchan.content.model.ErrorItem;
+import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.CheckPreference;
 import com.mishiranu.dashchan.util.AndroidUtils;
@@ -35,19 +41,27 @@ import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
 import com.mishiranu.dashchan.widget.SimpleViewHolder;
+import com.mishiranu.dashchan.widget.ThemeEngine;
 import com.mishiranu.dashchan.widget.ViewFactory;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-public class UpdateFragment extends BaseListFragment {
+public class UpdateFragment extends BaseListFragment implements ActivityHandler, AsyncManager.Callback {
 	private static final String VERSION_TITLE_RELEASE = "Release";
 
 	private static final String EXTRA_UPDATE_DATA_MAP = "updateDataMap";
+	private static final String EXTRA_UPDATE_DOWNLOAD_ERROR = "updateDownloadError";
 	private static final String EXTRA_TARGET_PREFIX = "target_";
 
+	private static final String TASK_READ_UPDATES = "readUpdates";
+
 	private ReadUpdateTask.UpdateDataMap updateDataMap;
+	private ErrorItem updateDownloadError;
+
+	private View progressView;
 
 	private static final class ListItem {
 		public final String extensionName;
@@ -121,8 +135,32 @@ public class UpdateFragment extends BaseListFragment {
 				}
 			}
 		}
-		((FragmentHandler) requireActivity()).setTitleSubtitle(ResourceUtils.getColonString(getResources(),
-				R.string.updates__genitive, count), null);
+		((FragmentHandler) requireActivity()).setTitleSubtitle(count <= 0 ? getString(R.string.updates__genitive)
+				: ResourceUtils.getColonString(getResources(), R.string.updates__genitive, count), null);
+	}
+
+	private boolean isUpdateDataProvided() {
+		Bundle args = getArguments();
+		return args != null && args.containsKey(EXTRA_UPDATE_DATA_MAP);
+	}
+
+	@Override
+	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+
+		FrameLayout content = getContentView();
+		ProgressBar progressBar = new ProgressBar(content.getContext());
+		ThemeEngine.applyStyle(progressBar);
+		content.addView(progressBar, FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+		((FrameLayout.LayoutParams) progressBar.getLayoutParams()).gravity = Gravity.CENTER;
+		progressBar.setVisibility(View.GONE);
+		progressView = progressBar;
+	}
+
+	@Override
+	public void onDestroyView() {
+		super.onDestroyView();
+		progressView = null;
 	}
 
 	@Override
@@ -130,11 +168,31 @@ public class UpdateFragment extends BaseListFragment {
 		super.onActivityCreated(savedInstanceState);
 
 		setHasOptionsMenu(true);
-		updateDataMap = requireArguments().getParcelable(EXTRA_UPDATE_DATA_MAP);
+		if (isUpdateDataProvided()) {
+			updateDataMap = requireArguments().getParcelable(EXTRA_UPDATE_DATA_MAP);
+		} else {
+			updateDataMap = savedInstanceState != null
+					? savedInstanceState.getParcelable(EXTRA_UPDATE_DATA_MAP) : null;
+			updateDownloadError = savedInstanceState != null
+					? savedInstanceState.getParcelable(EXTRA_UPDATE_DOWNLOAD_ERROR) : null;
+			if (updateDownloadError != null) {
+				setErrorText(updateDownloadError.toString());
+			} else if (updateDataMap == null) {
+				AsyncManager.get(this).startTask(TASK_READ_UPDATES, this, null, false);
+				progressView.setVisibility(View.VISIBLE);
+			}
+		}
 		Adapter adapter = new Adapter(getRecyclerView().getContext(), this::onItemClick);
 		getRecyclerView().setAdapter(adapter);
-		adapter.listItems = buildData(requireContext(), updateDataMap, savedInstanceState);
+		if (updateDataMap != null) {
+			adapter.listItems = buildData(requireContext(), updateDataMap, savedInstanceState);
+		}
 		updateTitle();
+	}
+
+	@Override
+	public void onTerminate() {
+		AsyncManager.get(this).cancelTask(TASK_READ_UPDATES, this);
 	}
 
 	@Override
@@ -147,6 +205,10 @@ public class UpdateFragment extends BaseListFragment {
 			for (ListItem listItem : adapter.listItems) {
 				outState.putInt(EXTRA_TARGET_PREFIX + listItem.extensionName, listItem.targetIndex);
 			}
+		}
+		if (!isUpdateDataProvided()) {
+			outState.putParcelable(EXTRA_UPDATE_DATA_MAP, updateDataMap);
+			outState.putParcelable(EXTRA_UPDATE_DOWNLOAD_ERROR, updateDownloadError);
 		}
 	}
 
@@ -351,14 +413,16 @@ public class UpdateFragment extends BaseListFragment {
 		switch (item.getItemId()) {
 			case R.id.menu_download: {
 				ArrayList<UpdaterActivity.Request> requests = new ArrayList<>();
-				Adapter adapter = (Adapter) getRecyclerView().getAdapter();
-				for (ListItem listItem : adapter.listItems) {
-					if (listItem.willBeInstalled()) {
-						ReadUpdateTask.UpdateItem updateItem = updateDataMap
-								.get(listItem.extensionName, listItem.installed).get(listItem.targetIndex);
-						if (updateItem.source != null) {
-							requests.add(new UpdaterActivity.Request(listItem.extensionName,
-									updateItem.name, Uri.parse(updateItem.source)));
+				if (updateDataMap != null) {
+					Adapter adapter = (Adapter) getRecyclerView().getAdapter();
+					for (ListItem listItem : adapter.listItems) {
+						if (listItem.willBeInstalled()) {
+							ReadUpdateTask.UpdateItem updateItem = updateDataMap
+									.get(listItem.extensionName, listItem.installed).get(listItem.targetIndex);
+							if (updateItem.source != null) {
+								requests.add(new UpdaterActivity.Request(listItem.extensionName,
+										updateItem.name, Uri.parse(updateItem.source)));
+							}
 						}
 					}
 				}
@@ -431,6 +495,46 @@ public class UpdateFragment extends BaseListFragment {
 				break;
 			}
 		}
+	}
+
+	private static class ReadUpdateHolder extends AsyncManager.Holder implements ReadUpdateTask.Callback {
+		@Override
+		public void onReadUpdateComplete(ReadUpdateTask.UpdateDataMap updateDataMap, ErrorItem errorItem) {
+			storeResult(updateDataMap, errorItem);
+		}
+	}
+
+	@Override
+	public AsyncManager.Holder onCreateAndExecuteTask(String name, HashMap<String, Object> extra) {
+		ReadUpdateHolder holder = new ReadUpdateHolder();
+		ReadUpdateTask task = new ReadUpdateTask(requireContext(), holder);
+		task.executeOnExecutor(ReadUpdateTask.THREAD_POOL_EXECUTOR);
+		return holder.attach(task);
+	}
+
+	@Override
+	public void onFinishTaskExecution(String name, AsyncManager.Holder holder) {
+		ReadUpdateTask.UpdateDataMap updateDataMap = holder.nextArgument();
+		ErrorItem errorItem = holder.nextArgument();
+		progressView.setVisibility(View.GONE);
+		if (updateDataMap != null) {
+			this.updateDataMap = updateDataMap;
+			Adapter adapter = (Adapter) getRecyclerView().getAdapter();
+			adapter.listItems = buildData(requireContext(), updateDataMap, null);
+			adapter.notifyDataSetChanged();
+			updateTitle();
+		} else {
+			if (errorItem == null) {
+				errorItem = new ErrorItem(ErrorItem.Type.UNKNOWN);
+			}
+			updateDownloadError = errorItem;
+			setErrorText(errorItem.toString());
+		}
+	}
+
+	@Override
+	public void onRequestTaskCancel(String name, Object task) {
+		((ReadUpdateTask) task).cancel();
 	}
 
 	private static class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {

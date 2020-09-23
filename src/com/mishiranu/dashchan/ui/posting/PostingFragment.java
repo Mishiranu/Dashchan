@@ -982,8 +982,8 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 		if (isResumed()) {
 			if (failResult.extra != null) {
 				ClickableToast.show(requireContext(), failResult.errorItem.toString(),
-						getString(R.string.details), () -> new SendPostFailDetailsDialog(failResult.extra)
-								.show(getChildFragmentManager(), SendPostFailDetailsDialog.TAG), false);
+						getString(R.string.details), false, () -> new SendPostFailDetailsDialog(failResult.extra)
+								.show(getChildFragmentManager(), SendPostFailDetailsDialog.TAG));
 			} else {
 				ClickableToast.show(requireContext(), failResult.errorItem.toString());
 			}

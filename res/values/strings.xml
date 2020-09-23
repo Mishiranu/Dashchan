@@ -205,6 +205,7 @@
 	<string name="images_are_disabled">Images are disabled</string>
 	<string name="in_thread_number__format">In thread %s</string>
 	<string name="incorrect_password">Incorrect password</string>
+	<string name="install">Install</string>
 	<string name="installed__plural">Installed</string>
 	<string name="initial_position">Initial position</string>
 	<string name="insufficient_device_space">Insufficient device space</string>

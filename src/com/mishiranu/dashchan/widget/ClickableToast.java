@@ -117,11 +117,11 @@ public class ClickableToast {
 	}
 
 	public static void show(Context context, CharSequence message) {
-		show(context, message, null, null, true);
+		show(context, message, null, true, null);
 	}
 
-	public static void show(Context context, CharSequence message, String button, Runnable listener,
-			boolean clickableOnlyWhenRoot) {
+	public static void show(Context context, CharSequence message, String button,
+			boolean clickableOnlyWhenRoot, Runnable listener) {
 		ClickableToast clickableToast = TOASTS.get(obtainBaseContext(context));
 		if (clickableToast != null) {
 			clickableToast.showInternal(message, button, listener, clickableOnlyWhenRoot);

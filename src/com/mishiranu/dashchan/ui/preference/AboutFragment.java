@@ -26,7 +26,6 @@ import com.mishiranu.dashchan.content.BackupManager;
 import com.mishiranu.dashchan.content.LocaleManager;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.AsyncManager;
-import com.mishiranu.dashchan.content.async.ReadUpdateTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.ui.ActivityHandler;
@@ -72,8 +71,8 @@ public class AboutFragment extends PreferenceFragment implements ActivityHandler
 				.setOnClickListener(p -> new ReadDialog(ReadDialog.Type.CHANGELOG)
 						.show(getChildFragmentManager(), ReadDialog.class.getName()));
 		addButton(R.string.check_for_updates, 0)
-				.setOnClickListener(p -> new ReadDialog(ReadDialog.Type.UPDATE)
-						.show(getChildFragmentManager(), ReadDialog.class.getName()));
+				.setOnClickListener(p -> ((FragmentHandler) requireActivity())
+						.pushFragment(new UpdateFragment()));
 		addButton(R.string.foss_licenses, R.string.foss_licenses__summary)
 				.setOnClickListener(p -> ((FragmentHandler) requireActivity())
 						.pushFragment(new TextFragment(TextFragment.Type.LICENSES, null)));
@@ -184,10 +183,9 @@ public class AboutFragment extends PreferenceFragment implements ActivityHandler
 	public static class ReadDialog extends DialogFragment implements AsyncManager.Callback {
 		private static final String EXTRA_TYPE = "type";
 
-		private enum Type {CHANGELOG, UPDATE}
+		private enum Type {CHANGELOG}
 
 		private static final String TASK_READ_CHANGELOG = "read_changelog";
-		private static final String TASK_READ_UPDATE = "read_update";
 
 		public ReadDialog() {}
 
@@ -213,10 +211,6 @@ public class AboutFragment extends PreferenceFragment implements ActivityHandler
 					AsyncManager.get(this).startTask(TASK_READ_CHANGELOG, this, null, false);
 					break;
 				}
-				case UPDATE: {
-					AsyncManager.get(this).startTask(TASK_READ_UPDATE, this, null, false);
-					break;
-				}
 			}
 		}
 
@@ -228,17 +222,6 @@ public class AboutFragment extends PreferenceFragment implements ActivityHandler
 					AsyncManager.get(this).cancelTask(TASK_READ_CHANGELOG, this);
 					break;
 				}
-				case UPDATE: {
-					AsyncManager.get(this).cancelTask(TASK_READ_UPDATE, this);
-					break;
-				}
-			}
-		}
-
-		private static class ReadUpdateHolder extends AsyncManager.Holder implements ReadUpdateTask.Callback {
-			@Override
-			public void onReadUpdateComplete(ReadUpdateTask.UpdateDataMap updateDataMap, ErrorItem errorItem) {
-				storeResult(updateDataMap, errorItem);
 			}
 		}
 
@@ -249,12 +232,6 @@ public class AboutFragment extends PreferenceFragment implements ActivityHandler
 					ReadChangelogTask task = new ReadChangelogTask(requireContext());
 					task.executeOnExecutor(ReadChangelogTask.THREAD_POOL_EXECUTOR);
 					return task.getHolder();
-				}
-				case TASK_READ_UPDATE: {
-					ReadUpdateHolder holder = new ReadUpdateHolder();
-					ReadUpdateTask task = new ReadUpdateTask(requireContext(), holder);
-					task.executeOnExecutor(ReadChangelogTask.THREAD_POOL_EXECUTOR);
-					return holder.attach(task);
 				}
 			}
 			return null;
@@ -275,17 +252,6 @@ public class AboutFragment extends PreferenceFragment implements ActivityHandler
 					}
 					break;
 				}
-				case TASK_READ_UPDATE: {
-					ReadUpdateTask.UpdateDataMap updateDataMap = holder.nextArgument();
-					ErrorItem errorItem = holder.nextArgument();
-					if (updateDataMap != null) {
-						((FragmentHandler) requireActivity())
-								.pushFragment(new UpdateFragment(updateDataMap));
-					} else {
-						ToastUtils.show(requireContext(), errorItem);
-					}
-					break;
-				}
 			}
 		}
 
@@ -294,10 +260,6 @@ public class AboutFragment extends PreferenceFragment implements ActivityHandler
 			switch (name) {
 				case TASK_READ_CHANGELOG: {
 					((ReadChangelogTask) task).cancel();
-					break;
-				}
-				case TASK_READ_UPDATE: {
-					((ReadUpdateTask) task).cancel();
 					break;
 				}
 			}

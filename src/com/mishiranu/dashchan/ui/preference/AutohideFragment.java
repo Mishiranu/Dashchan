@@ -88,7 +88,7 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.autohide), null);
 		items.addAll(AutohideStorage.getInstance().getItems());
 		if (items.isEmpty()) {
-			setEmptyText(getString(R.string.no_rules_defined));
+			setErrorText(getString(R.string.no_rules_defined));
 		}
 		getRecyclerView().setAdapter(new Adapter());
 	}
@@ -186,7 +186,7 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 		if (index == -1) {
 			AutohideStorage.getInstance().add(autohideItem);
 			items.add(autohideItem);
-			setEmptyText(null);
+			setErrorText(null);
 		} else if (index >= 0) {
 			AutohideStorage.getInstance().update(index, autohideItem);
 			items.set(index, autohideItem);
@@ -199,7 +199,7 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 		items.remove(index);
 		((Adapter) getRecyclerView().getAdapter()).invalidate();
 		if (items.isEmpty()) {
-			setEmptyText(getString(R.string.no_rules_defined));
+			setErrorText(getString(R.string.no_rules_defined));
 		}
 	}
 

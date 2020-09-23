@@ -393,7 +393,14 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 				navigateIntentData(chanName, Preferences.getDefaultBoardName(chanName), null, null, null, null, 0);
 			} else {
 				navigateFragment(new CategoriesFragment(), null);
-				ToastUtils.show(this, R.string.no_extensions_installed);
+				ClickableToast.show(this, getString(R.string.no_extensions_installed),
+						getString(R.string.install), false, () -> {
+					if (getCurrentFragment() instanceof UpdateFragment) {
+						navigateFragment(new UpdateFragment(), null);
+					} else {
+						pushFragment(new UpdateFragment());
+					}
+				});
 			}
 		}
 

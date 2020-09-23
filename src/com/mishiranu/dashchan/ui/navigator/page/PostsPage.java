@@ -1407,7 +1407,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				if (result.newCount > 0 && newPostPosition < adapter.getItemCount()) {
 					PostItem newPostItem = adapter.getItem(newPostPosition);
 					getParcelableExtra(ParcelableExtra.FACTORY).newPostNumber = newPostItem.getPostNumber();
-					ClickableToast.show(getContext(), message, getString(R.string.show), () -> {
+					ClickableToast.show(getContext(), message, getString(R.string.show), true, () -> {
 						if (!isDestroyed()) {
 							String newPostNumber = getParcelableExtra(ParcelableExtra.FACTORY).newPostNumber;
 							int newPostIndex = getAdapter().findPositionByPostNumber(newPostNumber);
@@ -1415,7 +1415,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 								ListViewUtils.smoothScrollToPosition(getRecyclerView(), newPostIndex);
 							}
 						}
-					}, true);
+					});
 				} else {
 					ClickableToast.show(getContext(), message);
 				}

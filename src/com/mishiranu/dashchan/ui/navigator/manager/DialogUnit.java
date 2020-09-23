@@ -717,8 +717,8 @@ public class DialogUnit {
 			switchState(State.ERROR, () -> {
 				Context context = uiManager.getContext();
 				ClickableToast.show(context, errorItem.toString(),
-						context.getString(R.string.open_thread), () -> uiManager.navigator()
-						.navigatePosts(chanName, boardName, threadNumber, postNumber, null, 0), false);
+						context.getString(R.string.open_thread), false, () -> uiManager.navigator()
+						.navigatePosts(chanName, boardName, threadNumber, postNumber, null, 0));
 			});
 		}
 
@@ -1426,9 +1426,9 @@ public class DialogUnit {
 						FavoritesStorage.getInstance().add(state.archiveChanName, archiveBoardName,
 								archiveThreadNumber, state.archiveThreadTitle, 0);
 						ClickableToast.show(context, context.getString(R.string.completed),
-								context.getString(R.string.open_thread),
-								() -> uiManager.navigator().navigatePosts(state.archiveChanName, archiveBoardName,
-								archiveThreadNumber, null, state.archiveThreadTitle, 0), false);
+								context.getString(R.string.open_thread), false, () -> uiManager.navigator()
+										.navigatePosts(state.archiveChanName, archiveBoardName,
+												archiveThreadNumber, null, state.archiveThreadTitle, 0));
 					} else {
 						ToastUtils.show(context, R.string.completed);
 					}

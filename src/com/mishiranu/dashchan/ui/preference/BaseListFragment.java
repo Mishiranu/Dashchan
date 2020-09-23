@@ -58,7 +58,11 @@ public abstract class BaseListFragment extends Fragment {
 		return recyclerView;
 	}
 
-	public void setEmptyText(CharSequence text) {
+	public FrameLayout getContentView() {
+		return (FrameLayout) getView();
+	}
+
+	public void setErrorText(CharSequence text) {
 		emptyText.setText(text);
 		emptyView.setVisibility(StringUtils.isEmpty(text) ? View.GONE : View.VISIBLE);
 	}
