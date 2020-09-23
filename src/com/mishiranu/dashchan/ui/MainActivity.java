@@ -2,7 +2,6 @@ package com.mishiranu.dashchan.ui;
 
 import android.animation.LayoutTransition;
 import android.app.AlertDialog;
-import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ComponentName;
@@ -1821,12 +1820,9 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		}
 		NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		if (C.API_OREO) {
-			NotificationChannel channelUpdates =
-					new NotificationChannel(C.NOTIFICATION_CHANNEL_UPDATES,
-							getString(R.string.updates), NotificationManager.IMPORTANCE_HIGH);
-			channelUpdates.setSound(null, null);
-			channelUpdates.setVibrationPattern(new long[0]);
-			notificationManager.createNotificationChannel(channelUpdates);
+			notificationManager.createNotificationChannel(AndroidUtils
+					.createHeadsUpNotificationChannel(C.NOTIFICATION_CHANNEL_UPDATES,
+							getString(R.string.updates)));
 		}
 		NotificationCompat.Builder builder = new NotificationCompat.Builder(this, C.NOTIFICATION_CHANNEL_UPDATES);
 		builder.setSmallIcon(R.drawable.ic_new_releases_white_24dp);

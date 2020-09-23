@@ -1,9 +1,13 @@
 package com.mishiranu.dashchan.util;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
+import androidx.annotation.RequiresApi;
 import com.mishiranu.dashchan.C;
 
 public class AndroidUtils {
@@ -38,5 +42,13 @@ public class AndroidUtils {
 
 	public static String getApplicationLabel(Context context) {
 		return context.getApplicationInfo().loadLabel(context.getPackageManager()).toString();
+	}
+
+	@RequiresApi(Build.VERSION_CODES.O)
+	public static NotificationChannel createHeadsUpNotificationChannel(String id, CharSequence name) {
+		NotificationChannel channel = new NotificationChannel(id, name, NotificationManager.IMPORTANCE_HIGH);
+		channel.setSound(null, null);
+		channel.setVibrationPattern(new long[] {0});
+		return channel;
 	}
 }

@@ -93,10 +93,9 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnComplet
 		}
 		this.notificationColor = notificationColor;
 		if (C.API_OREO) {
-			NotificationChannel channelAudioPlayer =
-					new NotificationChannel(C.NOTIFICATION_CHANNEL_AUDIO_PLAYER,
-							getString(R.string.audio_player), NotificationManager.IMPORTANCE_LOW);
-			notificationManager.createNotificationChannel(channelAudioPlayer);
+			notificationManager.createNotificationChannel
+					(new NotificationChannel(C.NOTIFICATION_CHANNEL_AUDIO_PLAYER,
+							getString(R.string.audio_player), NotificationManager.IMPORTANCE_LOW));
 		}
 		PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
 		wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, getPackageName() + ":AudioPlayerWakeLock");

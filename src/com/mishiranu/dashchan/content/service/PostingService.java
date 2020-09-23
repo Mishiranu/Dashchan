@@ -154,16 +154,12 @@ public class PostingService extends Service implements SendPostTask.Callback<Pos
 		}
 		this.notificationColor = notificationColor;
 		if (C.API_OREO) {
-			NotificationChannel channelPosting =
-					new NotificationChannel(C.NOTIFICATION_CHANNEL_POSTING,
-							getString(R.string.posting), NotificationManager.IMPORTANCE_LOW);
-			NotificationChannel channelPostingComplete =
-					new NotificationChannel(C.NOTIFICATION_CHANNEL_POSTING_COMPLETE,
-							getString(R.string.sent_posts), NotificationManager.IMPORTANCE_HIGH);
-			channelPostingComplete.setSound(null, null);
-			channelPostingComplete.setVibrationPattern(new long[0]);
-			notificationManager.createNotificationChannel(channelPosting);
-			notificationManager.createNotificationChannel(channelPostingComplete);
+			notificationManager.createNotificationChannel
+					(new NotificationChannel(C.NOTIFICATION_CHANNEL_POSTING,
+							getString(R.string.posting), NotificationManager.IMPORTANCE_LOW));
+			notificationManager.createNotificationChannel(AndroidUtils
+					.createHeadsUpNotificationChannel(C.NOTIFICATION_CHANNEL_POSTING_COMPLETE,
+							getString(R.string.sent_posts)));
 		}
 		PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
 		wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, getPackageName() + ":PostingWakeLock");

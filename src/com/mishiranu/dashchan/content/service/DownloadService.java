@@ -123,16 +123,12 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 		}
 		this.notificationColor = notificationColor;
 		if (C.API_OREO) {
-			NotificationChannel channelDownloading =
-					new NotificationChannel(C.NOTIFICATION_CHANNEL_DOWNLOADING,
-							getString(R.string.downloads), NotificationManager.IMPORTANCE_LOW);
-			NotificationChannel channelDownloadingComplete =
-					new NotificationChannel(C.NOTIFICATION_CHANNEL_DOWNLOADING_COMPLETE,
-							getString(R.string.completed_downloads), NotificationManager.IMPORTANCE_HIGH);
-			channelDownloadingComplete.setSound(null, null);
-			channelDownloadingComplete.setVibrationPattern(new long[0]);
-			notificationManager.createNotificationChannel(channelDownloading);
-			notificationManager.createNotificationChannel(channelDownloadingComplete);
+			notificationManager.createNotificationChannel
+					(new NotificationChannel(C.NOTIFICATION_CHANNEL_DOWNLOADING,
+							getString(R.string.downloads), NotificationManager.IMPORTANCE_LOW));
+			notificationManager.createNotificationChannel(AndroidUtils
+					.createHeadsUpNotificationChannel(C.NOTIFICATION_CHANNEL_DOWNLOADING_COMPLETE,
+							getString(R.string.completed_downloads)));
 		}
 		PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
 		wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
