@@ -490,11 +490,13 @@ public class ThemeEngine {
 							}
 						}
 					} else if (view instanceof Button) {
-						if (view instanceof Button) {
-							Button button = (Button) view;
-							if (button.getTextColors().getDefaultColor() ==
-									ResourceUtils.getColor(button.getContext(), android.R.attr.colorAccent)) {
-								button.setTextColor(themeContext.getButtonColors());
+						if (C.API_LOLLIPOP) {
+							if (view instanceof Button) {
+								Button button = (Button) view;
+								if (button.getTextColors().getDefaultColor() ==
+										ResourceUtils.getColor(button.getContext(), android.R.attr.colorAccent)) {
+									button.setTextColor(themeContext.getButtonColors());
+								}
 							}
 						}
 					}

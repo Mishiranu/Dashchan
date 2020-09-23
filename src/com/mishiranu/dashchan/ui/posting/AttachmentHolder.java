@@ -1,36 +1,19 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui.posting;
 
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import com.mishiranu.dashchan.util.GraphicsUtils;
 
 public class AttachmentHolder {
-	public View view;
-	public TextView fileName;
-	public TextView fileSize;
-	public View options;
-	public ImageView imageView;
-	public View warningButton;
-	public View ratingButton;
-	public View removeButton;
+	public final View view;
+	public final TextView fileName;
+	public final TextView fileSize;
+	public final View options;
+	public final ImageView imageView;
+	public final View warningButton;
+	public final View ratingButton;
+	public final View removeButton;
 
 	public String hash;
 	public String name;
@@ -40,4 +23,16 @@ public class AttachmentHolder {
 	public boolean optionRemoveFileName = false;
 	public boolean optionSpoiler = false;
 	public GraphicsUtils.Reencoding reencoding;
+
+	public AttachmentHolder(View view, TextView fileName, TextView fileSize, View options, ImageView imageView,
+			View warningButton, View ratingButton, View removeButton) {
+		this.view = view;
+		this.fileName = fileName;
+		this.fileSize = fileSize;
+		this.options = options;
+		this.imageView = imageView;
+		this.warningButton = warningButton;
+		this.ratingButton = ratingButton;
+		this.removeButton = removeButton;
+	}
 }

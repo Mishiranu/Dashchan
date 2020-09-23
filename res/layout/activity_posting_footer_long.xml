@@ -1,22 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
 	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
 	android:id="@+id/captcha_input_parent"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
-	android:divider="?android:attr/dividerVertical"
-	android:showDividers="@integer/show_dividers"
 	android:orientation="horizontal"
 	android:gravity="center_vertical"
-	android:paddingTop="8dp"
-	android:paddingBottom="8dp">
+	android:clipToPadding="false">
 
 	<FrameLayout
 		android:id="@+id/captcha_block_parent"
 		android:layout_width="0dp"
 		android:layout_height="wrap_content"
-		android:layout_weight="1"
-		android:background="?android:attr/selectableItemBackground">
+		android:layout_weight="2"
+		android:foreground="?android:attr/selectableItemBackground">
 
 		<FrameLayout
 			android:id="@+id/captcha_block"
@@ -28,13 +26,8 @@
 				android:layout_width="match_parent"
 				android:layout_height="match_parent"
 				android:layout_gravity="center"
-				android:scaleType="fitCenter" />
-
-			<View
-				android:id="@+id/refresh_button"
-				android:layout_width="match_parent"
-				android:layout_height="match_parent"
-				android:background="?android:attr/selectableItemBackground" />
+				android:scaleType="fitCenter"
+				tools:ignore="ContentDescription" />
 
 			<ProgressBar
 				android:id="@+id/captcha_loading"
@@ -52,22 +45,12 @@
 
 	<com.mishiranu.dashchan.widget.SafePasteEditText
 		android:id="@+id/captcha_input"
-		android:layout_width="120dp"
+		android:layout_width="0dp"
 		android:layout_height="wrap_content"
-		android:layout_marginLeft="12dp"
-		android:layout_marginRight="12dp"
+		android:layout_weight="1"
 		android:hint="@string/captcha"
 		android:gravity="center"
 		android:imeOptions="flagNoExtractUi|flagNoFullscreen"
 		android:singleLine="true" />
-
-	<Button
-		android:id="@+id/send_button"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:paddingLeft="32dp"
-		android:paddingRight="32dp"
-		style="?android:attr/borderlessButtonStyle"
-		android:text="@string/send" />
 
 </LinearLayout>

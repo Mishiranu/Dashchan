@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
 	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/captcha_input_root"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
-	android:divider="?android:attr/dividerHorizontal"
-	android:showDividers="@integer/show_dividers"
 	android:orientation="vertical">
 
 	<include layout="@layout/widget_common_captcha_block" />
@@ -14,28 +13,18 @@
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:orientation="horizontal"
-		android:divider="?android:attr/dividerVertical"
-		android:showDividers="@integer/show_dividers">
+		android:gravity="center_vertical"
+		android:clipToPadding="false">
 
 		<com.mishiranu.dashchan.widget.SafePasteEditText
 			android:id="@+id/captcha_input"
 			android:layout_width="0dp"
 			android:layout_height="wrap_content"
 			android:layout_weight="1"
-			android:layout_marginLeft="12dp"
-			android:layout_marginRight="12dp"
 			android:hint="@string/captcha"
 			android:gravity="center"
 			android:imeOptions="flagNoExtractUi|flagNoFullscreen"
 			android:singleLine="true" />
-
-		<Button
-			android:id="@+id/send_button"
-			android:layout_width="0dp"
-			android:layout_height="wrap_content"
-			android:layout_weight="1"
-			style="?android:attr/borderlessButtonStyle"
-			android:text="@string/send" />
 
 	</LinearLayout>
 

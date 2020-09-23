@@ -21,7 +21,7 @@
 		android:textAppearance="?android:attr/textAppearance" />
 
 	<ImageButton
-		android:id="@+id/captcha_load_button"
+		android:id="@+id/captcha_cancel"
 		android:layout_width="48dp"
 		android:layout_height="48dp"
 		android:layout_marginStart="-16dp"

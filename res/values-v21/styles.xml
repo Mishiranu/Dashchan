@@ -257,17 +257,6 @@
 
 	</style>
 
-	<style name="Widget.CategoryHeader" parent="@android:style/Widget.TextView">
-
-		<item name="android:minHeight">48dp</item>
-		<item name="android:gravity">left|center_vertical</item>
-		<item name="android:textColor">?android:attr/colorAccent</item>
-		<item name="android:tag">theme.textColor=accent</item>
-		<item name="android:fontFamily">sans-serif-medium</item>
-		<item name="android:textSize">14sp</item>
-
-	</style>
-
 	<style name="Widget.OverlapPopupMenu" parent="@android:style/Widget.Material.PopupMenu">
 
 		<item name="android:overlapAnchor">true</item>

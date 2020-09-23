@@ -22,9 +22,10 @@ import com.mishiranu.dashchan.util.ViewUtils;
 
 public class CaptchaForm implements View.OnClickListener, View.OnLongClickListener,
 		TextView.OnEditorActionListener {
-	public enum CaptchaViewType {LOADING, IMAGE, SKIP, ERROR}
+	public enum CaptchaViewType {LOADING, IMAGE, SKIP, SKIP_LOCK, ERROR}
 
 	private final Callback callback;
+	private final boolean hideInput;
 	private final boolean applyHeight;
 	private final View blockParentView;
 	private final View blockView;
@@ -34,8 +35,7 @@ public class CaptchaForm implements View.OnClickListener, View.OnLongClickListen
 	private final ImageView imageView;
 	private final View inputParentView;
 	private final EditText inputView;
-	private final ImageView loadButton;
-	private final View refreshButton;
+	private final View cancelView;
 
 	private ChanConfiguration.Captcha.Input captchaInput;
 
@@ -44,9 +44,10 @@ public class CaptchaForm implements View.OnClickListener, View.OnLongClickListen
 		public void onConfirmCaptcha();
 	}
 
-	public CaptchaForm(Callback callback, View container, View inputParentView, EditText inputView,
-			boolean applyHeight, ChanConfiguration.Captcha captcha) {
+	public CaptchaForm(Callback callback, boolean hideInput, boolean applyHeight,
+			View container, View inputParentView, EditText inputView, ChanConfiguration.Captcha captcha) {
 		this.callback = callback;
+		this.hideInput = hideInput;
 		this.applyHeight = applyHeight;
 		blockParentView = container.findViewById(R.id.captcha_block_parent);
 		blockView = container.findViewById(R.id.captcha_block);
@@ -56,10 +57,13 @@ public class CaptchaForm implements View.OnClickListener, View.OnLongClickListen
 		skipTextView = container.findViewById(R.id.captcha_skip_text);
 		this.inputParentView = inputParentView;
 		this.inputView = inputView;
-		loadButton = container.findViewById(R.id.captcha_load_button);
-		refreshButton = container.findViewById(R.id.refresh_button);
+		if (hideInput) {
+			inputView.setVisibility(View.GONE);
+		}
+		ImageView cancelView = container.findViewById(R.id.captcha_cancel);
+		this.cancelView = cancelView;
 		if (C.API_LOLLIPOP) {
-			loadButton.setImageTintList(ResourceUtils.getColorStateList(loadButton.getContext(),
+			cancelView.setImageTintList(ResourceUtils.getColorStateList(cancelView.getContext(),
 					android.R.attr.textColorPrimary));
 			skipTextView.setAllCaps(true);
 			skipTextView.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
@@ -73,11 +77,9 @@ public class CaptchaForm implements View.OnClickListener, View.OnLongClickListen
 		updateCaptchaInput(captchaInput);
 		inputView.setFilters(new InputFilter[] {new InputFilter.LengthFilter(50)});
 		inputView.setOnEditorActionListener(this);
-		loadButton.setOnClickListener(this);
+		cancelView.setOnClickListener(this);
 		blockParentView.setOnClickListener(this);
 		blockParentView.setOnLongClickListener(this);
-		refreshButton.setOnClickListener(this);
-		refreshButton.setOnLongClickListener(this);
 		if (inputParentView != null) {
 			inputParentView.setOnClickListener(this);
 		}
@@ -114,9 +116,9 @@ public class CaptchaForm implements View.OnClickListener, View.OnLongClickListen
 
 	@Override
 	public void onClick(View v) {
-		if (v == loadButton) {
+		if (v == cancelView) {
 			callback.onRefreshCaptcha(true);
-		} else if (v == blockParentView || v == refreshButton) {
+		} else if (v == blockParentView && v.isClickable()) {
 			callback.onRefreshCaptcha(false);
 		} else if (inputParentView != null && v == inputParentView) {
 			inputView.requestFocus();
@@ -130,7 +132,7 @@ public class CaptchaForm implements View.OnClickListener, View.OnLongClickListen
 
 	@Override
 	public boolean onLongClick(View v) {
-		if (v == blockParentView || v == refreshButton) {
+		if (v == blockParentView) {
 			callback.onRefreshCaptcha(true);
 			return true;
 		}
@@ -152,17 +154,21 @@ public class CaptchaForm implements View.OnClickListener, View.OnLongClickListen
 				switchToCaptchaView(CaptchaViewType.IMAGE, input, large);
 				break;
 			}
-			case SKIP:
 			case NEED_LOAD: {
-				boolean needLoad = captchaState == ChanPerformer.CaptchaState.NEED_LOAD;
-				skipTextView.setText(needLoad ? R.string.load_captcha : R.string.captcha_is_not_required);
-				loadButton.setVisibility(View.GONE);
+				skipTextView.setText(R.string.load_captcha);
+				cancelView.setVisibility(View.GONE);
 				switchToCaptchaView(CaptchaViewType.SKIP, null, false);
+				break;
+			}
+			case SKIP: {
+				skipTextView.setText(R.string.captcha_is_not_required);
+				cancelView.setVisibility(View.VISIBLE);
+				switchToCaptchaView(CaptchaViewType.SKIP_LOCK, null, false);
 				break;
 			}
 			case PASS: {
 				skipTextView.setText(R.string.captcha_pass);
-				loadButton.setVisibility(View.VISIBLE);
+				cancelView.setVisibility(View.VISIBLE);
 				switchToCaptchaView(CaptchaViewType.SKIP, null, false);
 				break;
 			}
@@ -171,6 +177,8 @@ public class CaptchaForm implements View.OnClickListener, View.OnLongClickListen
 
 	public void showError() {
 		imageView.setImageResource(android.R.color.transparent);
+		skipTextView.setText(R.string.load_captcha);
+		cancelView.setVisibility(View.GONE);
 		switchToCaptchaView(CaptchaViewType.ERROR, null, false);
 	}
 
@@ -179,45 +187,57 @@ public class CaptchaForm implements View.OnClickListener, View.OnLongClickListen
 		switchToCaptchaView(CaptchaViewType.LOADING, null, false);
 	}
 
-	private void switchToCaptchaView(CaptchaViewType captchaViewType, ChanConfiguration.Captcha.Input input,
-			boolean large) {
+	private void setInputEnabled(boolean enabled, boolean switchVisibility) {
+		inputView.setEnabled(enabled);
+		if (hideInput && switchVisibility) {
+			inputView.setVisibility(enabled ? View.VISIBLE : View.GONE);
+		}
+	}
+
+	private void switchToCaptchaView(CaptchaViewType captchaViewType,
+			ChanConfiguration.Captcha.Input input, boolean large) {
 		switch (captchaViewType) {
 			case LOADING: {
+				blockParentView.setClickable(true);
 				blockView.setVisibility(View.VISIBLE);
 				imageView.setVisibility(View.GONE);
 				imageView.setImageResource(android.R.color.transparent);
 				loadingView.setVisibility(View.VISIBLE);
 				skipBlockView.setVisibility(View.GONE);
-				inputView.setEnabled(true);
+				setInputEnabled(false, false);
 				updateCaptchaHeight(false);
 				break;
 			}
 			case ERROR: {
+				blockParentView.setClickable(true);
 				blockView.setVisibility(View.VISIBLE);
 				imageView.setVisibility(View.VISIBLE);
 				loadingView.setVisibility(View.GONE);
-				skipBlockView.setVisibility(View.GONE);
-				inputView.setEnabled(true);
+				skipBlockView.setVisibility(View.VISIBLE);
+				setInputEnabled(false, false);
 				updateCaptchaHeight(false);
 				break;
 			}
 			case IMAGE: {
+				blockParentView.setClickable(true);
 				blockView.setVisibility(View.VISIBLE);
 				imageView.setVisibility(View.VISIBLE);
 				loadingView.setVisibility(View.GONE);
 				skipBlockView.setVisibility(View.GONE);
-				inputView.setEnabled(true);
+				setInputEnabled(true, true);
 				updateCaptchaInput(input != null ? input : captchaInput);
 				updateCaptchaHeight(large);
 				break;
 			}
-			case SKIP: {
+			case SKIP:
+			case SKIP_LOCK: {
+				blockParentView.setClickable(captchaViewType != CaptchaViewType.SKIP_LOCK);
 				blockView.setVisibility(View.INVISIBLE);
 				imageView.setVisibility(View.VISIBLE);
 				imageView.setImageResource(android.R.color.transparent);
 				loadingView.setVisibility(View.GONE);
 				skipBlockView.setVisibility(View.VISIBLE);
-				inputView.setEnabled(false);
+				setInputEnabled(false, true);
 				updateCaptchaHeight(false);
 				break;
 			}

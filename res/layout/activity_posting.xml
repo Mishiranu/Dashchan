@@ -8,7 +8,7 @@
 	android:fillViewport="true">
 
 	<LinearLayout
-		android:id="@+id/post_main"
+		android:id="@+id/posting_layout"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:orientation="vertical">
@@ -18,12 +18,6 @@
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:orientation="vertical">
-
-			<TextView
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				style="?android:attr/listSeparatorTextViewStyle"
-				android:text="@string/personal_data" />
 
 			<com.mishiranu.dashchan.widget.SafePasteEditText
 				android:id="@+id/name"
@@ -57,30 +51,18 @@
 			<com.mishiranu.dashchan.widget.DropdownView
 				android:id="@+id/icon"
 				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:layout_marginLeft="4dp"
-				android:layout_marginRight="4dp" />
+				android:layout_height="wrap_content" />
 
 			<TextView
 				android:id="@+id/personal_tripcode_warning"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				style="?android:attr/textAppearance"
-				android:paddingLeft="12dp"
-				android:paddingRight="12dp"
-				android:paddingTop="4dp"
-				android:paddingBottom="4dp"
 				android:textColor="?attr/colorTextError"
+				android:textSize="14sp"
 				android:text="@string/tripcode_disabled_warning__sentence"
 				android:visibility="gone" />
 
 		</LinearLayout>
-
-		<TextView
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			style="?android:attr/listSeparatorTextViewStyle"
-			android:text="@string/message_data" />
 
 		<com.mishiranu.dashchan.widget.SafePasteEditText
 			android:id="@+id/subject"
@@ -92,14 +74,13 @@
 			android:singleLine="true" />
 
 		<LinearLayout
+			android:id="@+id/comment_parent"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:orientation="vertical"
-			android:divider="?android:attr/dividerHorizontal"
-			android:showDividers="middle">
+			android:orientation="vertical">
 
 			<LinearLayout
-				android:id="@+id/text_format_view"
+				android:id="@+id/comment_format"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
 				android:orientation="horizontal" />
@@ -119,25 +100,20 @@
 			android:id="@+id/remaining_characters"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			style="?android:attr/textAppearance"
 			android:paddingLeft="4dp"
 			android:paddingRight="4dp"
 			android:paddingBottom="4dp"
 			android:textSize="14sp"
-			android:gravity="right"
+			android:gravity="end"
 			android:visibility="gone" />
 
 		<com.mishiranu.dashchan.widget.CarryLayout
 			android:id="@+id/checkbox_parent"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:layout_margin="4dp"
 			android:orientation="horizontal"
 			android:gravity="center_vertical"
-			android:paddingLeft="4dp"
-			android:paddingRight="4dp"
-			android:horizontalSpacing="8dp"
-			android:verticalSpacing="-4dp">
+			android:horizontalSpacing="8dp">
 
 			<CheckBox
 				android:id="@+id/sage_checkbox"
@@ -167,12 +143,6 @@
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:orientation="vertical" />
-
-		<TextView
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			style="?android:attr/listSeparatorTextViewStyle"
-			android:text="@string/confirmation" />
 
 		<FrameLayout
 			android:id="@+id/footer_container"

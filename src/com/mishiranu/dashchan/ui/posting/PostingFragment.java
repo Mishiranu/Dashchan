@@ -7,14 +7,22 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
+import android.graphics.Outline;
+import android.graphics.Rect;
+import android.graphics.drawable.InsetDrawable;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.RoundRectShape;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Pair;
 import android.view.Gravity;
@@ -24,16 +32,20 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewOutlineProvider;
 import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.core.view.ViewCompat;
+import androidx.core.widget.TextViewCompat;
 import androidx.fragment.app.Fragment;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
@@ -73,6 +85,8 @@ import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.DropdownView;
 import com.mishiranu.dashchan.widget.ProgressDialog;
+import com.mishiranu.dashchan.widget.ThemeEngine;
+import com.mishiranu.dashchan.widget.ViewFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -154,7 +168,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 	private EditText passwordView;
 	private EditText subjectView;
 	private DropdownView iconView;
-	private View personalDataBlock;
+	private ViewGroup personalDataBlock;
 	private ViewGroup textFormatView;
 	private CommentEditWatcher commentEditWatcher;
 	private CaptchaForm captchaForm;
@@ -210,11 +224,15 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 			ChanMarkup markup = ChanMarkup.get(getChanName());
 			commentEditor = markup.safe().obtainCommentEditor(getBoardName());
 		}
+		float density = ResourceUtils.obtainDensity(view);
 		int screenWidthDp = getResources().getConfiguration().screenWidthDp;
 		boolean hugeCaptcha = Preferences.isHugeCaptcha();
 		boolean longLayout = screenWidthDp >= 480;
 
 		scrollView = view.findViewById(R.id.scroll_view);
+		ViewGroup postingLayout = view.findViewById(R.id.posting_layout);
+		LinearLayout commentParent = view.findViewById(R.id.comment_parent);
+		LinearLayout commentFormat = view.findViewById(R.id.comment_format);
 		commentView = view.findViewById(R.id.comment);
 		sageCheckBox = view.findViewById(R.id.sage_checkbox);
 		spoilerCheckBox = view.findViewById(R.id.spoiler_checkbox);
@@ -227,6 +245,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 		iconView = view.findViewById(R.id.icon);
 		personalDataBlock = view.findViewById(R.id.personal_data_block);
 		attachmentContainer = view.findViewById(R.id.attachment_container);
+		FrameLayout footerContainer = view.findViewById(R.id.footer_container);
 		int[] oldScrollViewHeight = {-1};
 		scrollView.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
 			if (scrollView != null) {
@@ -237,13 +256,31 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 				}
 			}
 		});
-		commentView.setOnFocusChangeListener((v, hasFocus) -> updateFocusButtons(hasFocus));
+		if (C.API_LOLLIPOP) {
+			postingLayout.setPadding((int) (8f * density), 0, (int) (8f * density), 0);
+		}
+		addHeader(personalDataBlock, 0, R.string.personal_data);
+		addHeader(postingLayout, postingLayout.indexOfChild(subjectView), R.string.message_data);
+		addHeader(postingLayout, postingLayout.indexOfChild(footerContainer), R.string.confirmation);
 		TextView tripcodeWarning = view.findViewById(R.id.personal_tripcode_warning);
 		TextView remainingCharacters = view.findViewById(R.id.remaining_characters);
+		if (C.API_LOLLIPOP) {
+			ViewUtils.setTextSizeScaled(tripcodeWarning, 12);
+			tripcodeWarning.setPadding((int) (4f * density), 0, (int) (4f * density), (int) (4f * density));
+			ViewUtils.setTextSizeScaled(remainingCharacters, 12);
+			ViewUtils.setNewMargin(remainingCharacters, 0, (int) (-2f * density), 0, 0);
+		} else {
+			tripcodeWarning.setPadding((int) (12f * density), (int) (4f * density),
+					(int) (12f * density), (int) (4f * density));
+		}
 		nameView.addTextChangedListener(new NameEditWatcher(postingConfiguration.allowName &&
 				!postingConfiguration.allowTripcode, nameView, tripcodeWarning, () -> resizeComment(true)));
+		if (!C.API_LOLLIPOP) {
+			ViewUtils.setNewMargin(iconView, (int) (4f * density), 0, (int) (4f * density), 0);
+		}
 		commentEditWatcher = new CommentEditWatcher(postingConfiguration, commentView, remainingCharacters,
 				() -> resizeComment(true), () -> DraftsStorage.getInstance().store(obtainPostDraft()));
+		commentView.setOnFocusChangeListener((v, hasFocus) -> updateFocusButtons(hasFocus));
 		commentView.addTextChangedListener(commentEditWatcher);
 		commentView.addTextChangedListener(new QuoteEditWatcher(requireContext()));
 		boolean addPaddingToRoot = false;
@@ -254,7 +291,6 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 			LinearLayout textFormatView = new LinearLayout(extra.getContext());
 			textFormatView.setOrientation(LinearLayout.HORIZONTAL);
 			this.textFormatView = textFormatView;
-			float density = ResourceUtils.obtainDensity(textFormatView);
 			if (landscape) {
 				boolean rtl = textFormatView.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL;
 				textFormatView.setPadding(rtl ? 0 : (int) (8f * density), 0, rtl ? (int) (8f * density) : 0, 0);
@@ -264,8 +300,17 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 			}
 			extra.addView(textFormatView, ViewGroup.LayoutParams.MATCH_PARENT,
 					ViewGroup.LayoutParams.WRAP_CONTENT);
+			commentParent.removeView(commentView);
+			postingLayout.addView(commentView, postingLayout.indexOfChild(commentParent));
+			postingLayout.removeView(commentParent);
+			ViewUtils.setNewMargin(checkBoxParent, 0, (int) (4f * density), 0, 0);
 		} else {
-			textFormatView = view.findViewById(R.id.text_format_view);
+			commentParent.setDividerDrawable(ResourceUtils.getDrawable(commentParent.getContext(),
+					android.R.attr.dividerHorizontal, 0));
+			commentParent.setShowDividers(LinearLayout.SHOW_DIVIDER_MIDDLE);
+			textFormatView = commentFormat;
+			ViewUtils.setNewMargin(checkBoxParent, (int) (4f * density), (int) (4f * density),
+					(int) (4f * density), (int) (4f * density));
 		}
 		updatePostingConfiguration(true, false, false);
 		new MarkupButtonsBuilder(addPaddingToRoot, (int) (getResources().getConfiguration().screenWidthDp *
@@ -273,15 +318,110 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 
 		boolean longFooter = longLayout && !hugeCaptcha;
 		int resId = longFooter ? R.layout.activity_posting_footer_long : R.layout.activity_posting_footer_common;
-		FrameLayout footerContainer = view.findViewById(R.id.footer_container);
 		getLayoutInflater().inflate(resId, footerContainer);
-		View captchaInputParentView = footerContainer.findViewById(R.id.captcha_input_parent);
+		LinearLayout captchaInputRootView = footerContainer.findViewById(R.id.captcha_input_root);
+		LinearLayout captchaInputParentView = footerContainer.findViewById(R.id.captcha_input_parent);
 		EditText captchaInputView = footerContainer.findViewById(R.id.captcha_input);
+		if (C.API_LOLLIPOP) {
+			captchaInputParentView.setPadding(0, longFooter ? (int) (8f * density) : 0, 0, (int) (8f * density));
+			LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) captchaInputView.getLayoutParams();
+			if (captchaInputView.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL) {
+				layoutParams.leftMargin = (int) (4f * density);
+			} else {
+				layoutParams.rightMargin = (int) (4f * density);
+			}
+		} else {
+			int[] attrs = {android.R.attr.dividerHorizontal, android.R.attr.dividerVertical};
+			TypedArray typedArray = view.getContext().obtainStyledAttributes(null, attrs);
+			if (captchaInputRootView != null) {
+				captchaInputRootView.setDividerDrawable(typedArray.getDrawable(0));
+				captchaInputRootView.setShowDividers(LinearLayout.SHOW_DIVIDER_MIDDLE);
+			}
+			captchaInputParentView.setDividerDrawable(typedArray.getDrawable(1));
+			captchaInputParentView.setShowDividers(LinearLayout.SHOW_DIVIDER_MIDDLE);
+			typedArray.recycle();
+			LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) captchaInputView.getLayoutParams();
+			layoutParams.leftMargin = (int) (8f * density);
+			layoutParams.rightMargin = (int) (8f * density);
+		}
 		ChanConfiguration.Captcha captcha = configuration.safe().obtainCaptcha(captchaType);
-		captchaForm = new CaptchaForm(this, footerContainer, captchaInputParentView, captchaInputView,
-				!longFooter, captcha);
-		sendButton = footerContainer.findViewById(R.id.send_button);
+		captchaForm = new CaptchaForm(this, true, !longFooter,
+				footerContainer, captchaInputParentView, captchaInputView, captcha);
+		if (C.API_LOLLIPOP) {
+			float maxTranslationZ = (int) (2f * density);
+			sendButton = new Button(captchaInputParentView.getContext(), null, 0, C.API_MARSHMALLOW
+					? android.R.style.Widget_Material_Button_Colored : android.R.style.Widget_Material_Button) {
+				@Override
+				public void setTranslationZ(float translationZ) {
+					super.setTranslationZ(Math.min(translationZ, maxTranslationZ));
+				}
+			};
+			if (!C.API_MARSHMALLOW) {
+				if (!C.API_LOLLIPOP_MR1) {
+					// GradientDrawable doesn't support tints
+					float radius = 2f * density;
+					float[] radiusArray = {radius, radius, radius, radius, radius, radius, radius, radius};
+					ShapeDrawable background = new ShapeDrawable() {
+						@Override
+						public void getOutline(Outline outline) {
+							// Lollipop has broken RoundRectShape.getOutline
+							Rect bounds = getBounds();
+							outline.setRoundRect(bounds.left, bounds.top, bounds.right, bounds.bottom, radius);
+						}
+					};
+					background.setShape(new RoundRectShape(radiusArray, null, null));
+					sendButton.setBackground(new InsetDrawable(background, (int) (4f * density),
+							(int) (6f * density), (int) (4f * density), (int) (6f * density)));
+				}
+				sendButton.setTextColor(ResourceUtils.getColorStateList(sendButton.getContext(),
+						android.R.attr.textColorPrimaryInverse));
+			}
+			if (C.API_LOLLIPOP_MR1) {
+				Rect rect = new Rect();
+				// Limit elevation height since the shadow looks ugly when the view is at the bottom
+				sendButton.setOutlineProvider(new ViewOutlineProvider() {
+					@Override
+					public void getOutline(View view, Outline outline) {
+						view.getBackground().getOutline(outline);
+						if (ViewUtils.getOutlineRect(outline, rect)) {
+							float radius = ViewUtils.getOutlineRadius(outline);
+							rect.bottom -= (int) (2f * density);
+							outline.setRoundRect(rect, radius);
+						}
+					}
+				});
+			}
+			ThemeEngine.Theme theme = ThemeEngine.getTheme(sendButton.getContext());
+			int colorControlDisabled = GraphicsUtils.applyAlpha(theme.controlNormal21, theme.disabledAlpha21);
+			int[][] states = {{-android.R.attr.state_enabled}, {}};
+			int[] colors = {colorControlDisabled, theme.accent};
+			sendButton.setBackgroundTintList(new ColorStateList(states, colors));
+		} else {
+			sendButton = new Button(captchaInputParentView.getContext(), null, android.R.attr.borderlessButtonStyle);
+		}
+		sendButton.setSingleLine(true);
+		if (C.API_LOLLIPOP) {
+			// setSingleLine breaks capitalization
+			sendButton.setAllCaps(true);
+		}
+		captchaInputParentView.addView(sendButton, 0, LinearLayout.LayoutParams.WRAP_CONTENT);
+		sendButton.setText(R.string.send);
 		sendButton.setOnClickListener(v -> executeSendPost());
+		if (longFooter) {
+			((LinearLayout.LayoutParams) sendButton.getLayoutParams()).weight = 2f;
+			boolean[] lastAddWeight = {true};
+			captchaInputParentView.addOnLayoutChangeListener((v, left, top, right, bottom,
+					oldLeft, oldTop, oldRight, oldBottom) -> {
+				boolean addWeight = captchaInputView.getVisibility() == View.GONE;
+				if (addWeight != lastAddWeight[0]) {
+					lastAddWeight[0] = addWeight;
+					((LinearLayout.LayoutParams) sendButton.getLayoutParams()).weight = addWeight ? 2f : 1f;
+					sendButton.requestLayout();
+				}
+			});
+		} else {
+			((LinearLayout.LayoutParams) sendButton.getLayoutParams()).weight = 1f;
+		}
 		attachmentColumnCount = screenWidthDp >= 960 ? 4 : screenWidthDp >= 480 ? 2 : 1;
 
 		StringBuilder builder = new StringBuilder();
@@ -608,6 +748,17 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 	@Override
 	public void onConfirmCaptcha() {
 		executeSendPost();
+	}
+
+	private static void addHeader(ViewGroup layout, int index, int textResId) {
+		TextView textView = ViewFactory.makeListTextHeader(layout);
+		textView.setText(textResId);
+		layout.addView(textView, index);
+		if (C.API_LOLLIPOP) {
+			float density = ResourceUtils.obtainDensity(textView);
+			textView.setPadding((int) (4f * density), 0, (int) (4f * density), 0);
+			ViewUtils.setNewMargin(textView, 0, 0, 0, (int) (-8f * density));
+		}
 	}
 
 	private void updatePostingConfiguration(boolean views, boolean attachmentOptions, boolean attachmentCount) {
@@ -1273,33 +1424,110 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 		}
 	}
 
-	private AttachmentHolder addNewAttachment() {
-		FrameLayout view = (FrameLayout) getLayoutInflater().inflate(R.layout.activity_posting_attachment,
-				attachmentContainer, false);
+	private static View addAttachmentButton(LinearLayout parent, int width,
+			int attrResId, View.OnClickListener listener) {
+		float density = ResourceUtils.obtainDensity(parent);
+		ImageView imageView;
 		if (C.API_LOLLIPOP) {
-			float density = ResourceUtils.obtainDensity(this);
+			imageView = new ImageView(parent.getContext(), null, android.R.attr.borderlessButtonStyle);
+		} else {
+			imageView = new ImageView(parent.getContext());
+			ViewUtils.setSelectableItemBackground(imageView);
+		}
+		parent.addView(imageView, width, LinearLayout.LayoutParams.MATCH_PARENT);
+		LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) imageView.getLayoutParams();
+		layoutParams.gravity = Gravity.CENTER_VERTICAL;
+		if (C.API_LOLLIPOP) {
+			int margin = (int) (-8f * density);
+			if (imageView.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL) {
+				layoutParams.rightMargin = margin;
+			} else {
+				layoutParams.leftMargin = margin;
+			}
+		}
+		imageView.setScaleType(ImageView.ScaleType.CENTER);
+		imageView.setImageDrawable(ResourceUtils.getDrawable(imageView.getContext(), attrResId, 0));
+		if (C.API_LOLLIPOP) {
+			imageView.setImageTintList(ResourceUtils.getColorStateList(imageView.getContext(),
+					android.R.attr.textColorPrimary));
+		}
+		imageView.setOnClickListener(listener);
+		return imageView;
+	}
+
+	private AttachmentHolder addNewAttachment() {
+		float density = ResourceUtils.obtainDensity(getResources());
+		int minHeight = (int) (48f * density);
+		FrameLayout view = new FrameLayout(attachmentContainer.getContext());
+		view.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, minHeight));
+		ViewUtils.setNewMargin(view, 0, (int) (4f * density), 0, 0);
+		view.setBackgroundColor(0xff000000);
+		if (C.API_LOLLIPOP) {
 			view.setForeground(new RoundedCornersDrawable((int) (2f * density),
-					ResourceUtils.getColor(requireContext(), android.R.attr.colorBackground)));
+					ThemeEngine.getTheme(view.getContext()).window));
 		}
 		addAttachmentViewToContainer(view, attachments.size());
-		AttachmentHolder holder = new AttachmentHolder();
-		holder.view = view;
-		holder.fileName = view.findViewById(R.id.attachment_name);
-		holder.fileSize = view.findViewById(R.id.attachment_size);
-		holder.options = view.findViewById(R.id.attachment_options);
-		holder.imageView = view.findViewById(R.id.attachment_preview);
-		holder.imageView.setBackground(new TransparentTileDrawable(requireContext(), true));
-		holder.warningButton = view.findViewById(R.id.attachment_warning);
-		holder.warningButton.setOnClickListener(attachmentWarningListener);
-		holder.warningButton.setTag(holder);
-		holder.ratingButton = view.findViewById(R.id.attachment_rating);
-		holder.ratingButton.setOnClickListener(attachmentRatingListener);
-		holder.ratingButton.setTag(holder);
-		holder.removeButton = view.findViewById(R.id.attachment_remove);
-		holder.removeButton.setOnClickListener(attachmentRemoveListener);
-		holder.removeButton.setTag(holder);
-		holder.options.setOnClickListener(attachmentOptionsListener);
-		holder.options.setTag(holder);
+		ImageView imageView = new ImageView(view.getContext());
+		imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+		imageView.setBackground(new TransparentTileDrawable(imageView.getContext(), true));
+		imageView.setVisibility(View.GONE);
+		view.addView(imageView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
+		View overlay = new View(view.getContext());
+		overlay.setBackgroundColor(ResourceUtils.getColor(overlay.getContext(), R.attr.colorBlockBackground));
+		view.addView(overlay, FrameLayout.LayoutParams.MATCH_PARENT, minHeight);
+		((FrameLayout.LayoutParams) overlay.getLayoutParams()).gravity = Gravity.BOTTOM;
+		View options = new View(view.getContext());
+		ViewUtils.setSelectableItemBackground(options);
+		options.setOnClickListener(attachmentOptionsListener);
+		view.addView(options, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
+
+		LinearLayout controls = new LinearLayout(view.getContext());
+		controls.setOrientation(LinearLayout.HORIZONTAL);
+		view.addView(controls, FrameLayout.LayoutParams.MATCH_PARENT, minHeight);
+		((FrameLayout.LayoutParams) controls.getLayoutParams()).gravity = Gravity.BOTTOM;
+		if (C.API_LOLLIPOP) {
+			controls.setPaddingRelative((int) (8f * density), 0, 0, 0);
+		} else {
+			controls.setPadding((int) (8f * density), 0, (int) (8f * density), 0);
+		}
+		LinearLayout textLayout = new LinearLayout(controls.getContext());
+		textLayout.setOrientation(LinearLayout.VERTICAL);
+		textLayout.setGravity(Gravity.CENTER_VERTICAL);
+		controls.addView(textLayout, 0, LinearLayout.LayoutParams.MATCH_PARENT);
+		((LinearLayout.LayoutParams) textLayout.getLayoutParams()).weight = 1f;
+		ViewCompat.setPaddingRelative(textLayout, (int) (4f * density), 0, (int) (8f * density), 0);
+		TextView fileName = new TextView(controls.getContext());
+		textLayout.addView(fileName, LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+		TextViewCompat.setTextAppearance(fileName, ResourceUtils.getResourceId(fileName.getContext(),
+				C.API_LOLLIPOP ? android.R.attr.textAppearanceListItem : android.R.attr.textAppearanceSmall, 0));
+		fileName.setSingleLine(true);
+		fileName.setEllipsize(TextUtils.TruncateAt.END);
+		if (C.API_LOLLIPOP) {
+			ViewUtils.setTextSizeScaled(fileName, 12);
+			fileName.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
+		}
+		TextView fileSize = new TextView(controls.getContext());
+		textLayout.addView(fileSize, LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+		TextViewCompat.setTextAppearance(fileSize, ResourceUtils.getResourceId(fileSize.getContext(),
+				C.API_LOLLIPOP ? android.R.attr.textAppearanceListItem : android.R.attr.textAppearanceSmall, 0));
+		fileSize.setSingleLine(true);
+		fileSize.setEllipsize(TextUtils.TruncateAt.END);
+		if (C.API_LOLLIPOP) {
+			ViewUtils.setTextSizeScaled(fileSize, 12);
+		}
+		View warningButton = addAttachmentButton(controls, minHeight,
+				R.attr.iconButtonWarning, attachmentWarningListener);
+		View ratingButton = addAttachmentButton(controls, minHeight,
+				R.attr.iconButtonRating, attachmentRatingListener);
+		View removeButton = addAttachmentButton(controls, minHeight,
+				R.attr.iconButtonCancel, attachmentRemoveListener);
+
+		AttachmentHolder holder = new AttachmentHolder(view, fileName, fileSize, options, imageView,
+				warningButton, ratingButton, removeButton);
+		warningButton.setTag(holder);
+		ratingButton.setTag(holder);
+		removeButton.setTag(holder);
+		options.setTag(holder);
 		attachments.add(holder);
 		requireActivity().invalidateOptionsMenu();
 		resizeComment(true);

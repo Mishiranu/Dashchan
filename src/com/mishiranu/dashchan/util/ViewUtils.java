@@ -271,4 +271,64 @@ public class ViewUtils {
 			view.requestLayout();
 		}
 	}
+
+	private static final Field FIELD_OUTLINE_RECT;
+	private static final Field FIELD_OUTLINE_RADIUS;
+
+	static {
+		Field outlineRectFieldField = null;
+		Field outlineRadiusFieldField = null;
+		if (C.API_LOLLIPOP && !C.API_NOUGAT) {
+			try {
+				outlineRectFieldField = Outline.class.getDeclaredField("mRect");
+				outlineRectFieldField.setAccessible(true);
+				outlineRadiusFieldField = Outline.class.getDeclaredField("mRadius");
+				outlineRadiusFieldField.setAccessible(true);
+			} catch (Exception e) {
+				outlineRectFieldField = null;
+				outlineRadiusFieldField = null;
+			}
+		}
+		FIELD_OUTLINE_RECT = outlineRectFieldField;
+		FIELD_OUTLINE_RADIUS = outlineRadiusFieldField;
+	}
+
+	public static boolean getOutlineRect(Outline outline, Rect outRect) {
+		if (C.API_NOUGAT) {
+			return outline.getRect(outRect);
+		} else {
+			Rect rect = null;
+			if (FIELD_OUTLINE_RECT != null) {
+				try {
+					rect = (Rect) FIELD_OUTLINE_RECT.get(outline);
+				} catch (Exception e) {
+					// Ignore
+				}
+			}
+			if (rect != null) {
+				outRect.set(rect);
+				return true;
+			}
+			return false;
+		}
+	}
+
+	public static float getOutlineRadius(Outline outline) {
+		if (C.API_NOUGAT) {
+			return outline.getRadius();
+		} else {
+			float radius = 0f;
+			if (FIELD_OUTLINE_RECT != null) {
+				try {
+					Object rect = FIELD_OUTLINE_RECT.get(outline);
+					if (rect != null) {
+						radius = FIELD_OUTLINE_RADIUS.getFloat(outline);
+					}
+				} catch (Exception e) {
+					// Ignore
+				}
+			}
+			return radius;
+		}
+	}
 }

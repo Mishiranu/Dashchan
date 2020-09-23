@@ -15,6 +15,7 @@ import androidx.core.widget.TextViewCompat;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 
@@ -23,12 +24,14 @@ public class ViewFactory {
 		TextView textView;
 		if (C.API_LOLLIPOP) {
 			textView = new TextView(parent.getContext());
-			TextViewCompat.setTextAppearance(textView, R.style.Widget_CategoryHeader);
 			float density = ResourceUtils.obtainDensity(parent);
 			textView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
 					ViewGroup.LayoutParams.WRAP_CONTENT));
+			textView.setMinHeight((int) (48f * density));
 			textView.setGravity(Gravity.CENTER_VERTICAL);
 			textView.setTextColor(ThemeEngine.getTheme(textView.getContext()).accent);
+			textView.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
+			ViewUtils.setTextSizeScaled(textView, 14);
 			textView.setPadding((int) (16f * density), (int) (16f * density), (int) (16f * density),
 					(int) (8f * density));
 		} else {
