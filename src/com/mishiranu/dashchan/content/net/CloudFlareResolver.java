@@ -51,6 +51,11 @@ public class CloudFlareResolver {
 
 	private class Client implements RelayBlockResolver.Client {
 		private final Extra extra = new Extra();
+		private final String title;
+
+		public Client(String title) {
+			this.title = title;
+		}
 
 		private volatile String finishUriString;
 		private volatile String cookie;
@@ -71,6 +76,9 @@ public class CloudFlareResolver {
 
 		@Override
 		public boolean onPageFinished(String uriString, Map<String, String> cookies, String title) {
+			if (title != null && title.equals(this.title)) {
+				return false;
+			}
 			for (String checkTitle : TITLES) {
 				if (checkTitle.equals(title)) {
 					return false;
@@ -103,11 +111,26 @@ public class CloudFlareResolver {
 			switch (responseCode) {
 				case HttpURLConnection.HTTP_FORBIDDEN:
 				case HttpURLConnection.HTTP_UNAVAILABLE: {
+					String title = null;
 					for (String checkTitle : TITLES) {
 						if (responseText.contains("<title>" + checkTitle + "</title>")) {
-							boolean success = resolver.runWebView(chanName, uri, Client::new);
-							return new RelayBlockResolver.Result(true, success);
+							title = checkTitle;
 						}
+					}
+					if (responseText.contains("<form class=\"challenge-form\" id=\"challenge-form\"") &&
+							responseText.contains("__cf_chl_captcha_tk__")) {
+						int start = responseText.indexOf("<title>");
+						if (start >= 0) {
+							int end = responseText.indexOf("</title>", start);
+							if (end > start) {
+								title = responseText.substring(start + 7, end);
+							}
+						}
+					}
+					if (title != null) {
+						String titleFinal = title;
+						boolean success = resolver.runWebView(chanName, uri, () -> new Client(titleFinal));
+						return new RelayBlockResolver.Result(true, success);
 					}
 				}
 			}
