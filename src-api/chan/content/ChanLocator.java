@@ -134,8 +134,8 @@ public class ChanLocator implements ChanManager.Linked {
 		return httpsMode == HttpsMode.HTTPS_ONLY;
 	}
 
-	public final ArrayList<String> getChanHosts(boolean confiruableOnly) {
-		if (confiruableOnly) {
+	public final ArrayList<String> getChanHosts(boolean configurableOnly) {
+		if (configurableOnly) {
 			ArrayList<String> hosts = new ArrayList<>();
 			for (LinkedHashMap.Entry<String, Integer> entry : this.hosts.entrySet()) {
 				if (entry.getValue() == HOST_TYPE_CONFIGURABLE) {

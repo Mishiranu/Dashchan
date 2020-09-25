@@ -58,23 +58,23 @@ public class StormWallResolver {
 		}
 
 		@Override
-		public boolean onLoad(Uri uri) {
+		public boolean onLoad(Uri initialUri, Uri uri) {
 			if ("static.stormwall.pro".equals(uri.getHost())) {
 				wasChecked = true;
 				return true;
 			}
 			String path = uri.getPath();
-			return path == null || path.isEmpty() || "/".equals(path);
+			return path == null || path.isEmpty() || "/".equals(path) || path.equals(initialUri.getPath());
 		}
 	}
 
 	public RelayBlockResolver.Result checkResponse(RelayBlockResolver resolver,
-			String chanName, HttpHolder holder) throws HttpException {
+			String chanName, Uri uri, HttpHolder holder) throws HttpException {
 		List<String> contentType = holder.getHeaderFields().get("Content-Type");
 		if (contentType != null && contentType.size() == 1 && contentType.get(0).startsWith("text/html")) {
 			String responseText = holder.readDirect().getString();
 			if (responseText.contains("<script src=\"https://static.stormwall.pro")) {
-				boolean success = resolver.runWebView(chanName, Client::new);
+				boolean success = resolver.runWebView(chanName, uri, Client::new);
 				return new RelayBlockResolver.Result(true, success);
 			}
 		}

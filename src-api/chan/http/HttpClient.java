@@ -452,9 +452,11 @@ public class HttpClient {
 			int responseCode = connection.getResponseCode();
 
 			if (chanName != null && request.checkRelayBlock) {
-				RelayBlockResolver.Result result = RelayBlockResolver.getInstance().checkResponse(chanName, holder);
+				RelayBlockResolver.Result result = RelayBlockResolver.getInstance()
+						.checkResponse(chanName, requestedUri, holder);
 				if (result.blocked) {
 					if (result.resolved && holder.nextAttempt()) {
+						request.setCheckRelayBlock(false);
 						executeInternal(request);
 						return;
 					} else {

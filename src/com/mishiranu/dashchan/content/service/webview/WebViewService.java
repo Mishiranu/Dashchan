@@ -209,7 +209,7 @@ public class WebViewService extends Service {
 		}
 	}
 
-	@SuppressWarnings("unused")
+	@SuppressWarnings({"unused", "RedundantSuppression"})
 	private final Object javascriptInterface = new Object() {
 		@JavascriptInterface
 		public void onRequestRecaptcha(String apiKey) {
@@ -302,7 +302,7 @@ public class WebViewService extends Service {
 		};
 	}
 
-	@SuppressLint("SetJavaScriptEnabled")
+	@SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
 	@Override
 	public void onCreate() {
 		super.onCreate();

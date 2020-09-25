@@ -82,9 +82,10 @@ public class CloudFlareResolver {
 		}
 
 		@Override
-		public boolean onLoad(Uri uri) {
+		public boolean onLoad(Uri initialUri, Uri uri) {
 			String path = uri.getPath();
-			return path == null || path.isEmpty() || "/".equals(path) || path.startsWith("/cdn-cgi/");
+			return path == null || path.isEmpty() || "/".equals(path) ||
+					path.equals(initialUri.getPath()) || path.startsWith("/cdn-cgi/");
 		}
 
 		@Override
@@ -94,7 +95,7 @@ public class CloudFlareResolver {
 	}
 
 	public RelayBlockResolver.Result checkResponse(RelayBlockResolver resolver,
-			String chanName, HttpHolder holder) throws HttpException {
+			String chanName, Uri uri, HttpHolder holder) throws HttpException {
 		int responseCode = holder.getResponseCode();
 		if ((responseCode == HttpURLConnection.HTTP_FORBIDDEN || responseCode == HttpURLConnection.HTTP_UNAVAILABLE)
 				&& holder.getHeaderFields().containsKey("CF-RAY")) {
@@ -104,7 +105,7 @@ public class CloudFlareResolver {
 				case HttpURLConnection.HTTP_UNAVAILABLE: {
 					for (String checkTitle : TITLES) {
 						if (responseText.contains("<title>" + checkTitle + "</title>")) {
-							boolean success = resolver.runWebView(chanName, Client::new);
+							boolean success = resolver.runWebView(chanName, uri, Client::new);
 							return new RelayBlockResolver.Result(true, success);
 						}
 					}

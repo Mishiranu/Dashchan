@@ -46,7 +46,7 @@ public class RelayBlockResolver {
 			return true;
 		}
 
-		default boolean onLoad(Uri uri) {
+		default boolean onLoad(Uri initialUri, Uri uri) {
 			return true;
 		}
 
@@ -99,10 +99,17 @@ public class RelayBlockResolver {
 	}
 
 	private final HashMap<String, CheckHolder> checkHolders = new HashMap<>();
+	private final HashMap<String, Long> lastCheckCancel = new HashMap<>();
 
-	public boolean runWebView(String chanName, ClientFactory clientFactory) {
+	public boolean runWebView(String chanName, Uri uri, ClientFactory clientFactory) {
 		CheckHolder checkHolder;
 		boolean handle = false;
+		synchronized (lastCheckCancel) {
+			Long cancel = lastCheckCancel.get(chanName);
+			if (cancel != null && cancel + 15 * 1000 > SystemClock.elapsedRealtime()) {
+				return false;
+			}
+		}
 		synchronized (checkHolders) {
 			checkHolder = checkHolders.get(chanName);
 			if (checkHolder == null) {
@@ -117,6 +124,7 @@ public class RelayBlockResolver {
 			class Status {
 				boolean established;
 				IWebViewService service;
+				boolean cancel;
 			}
 			Status status = new Status();
 			ServiceConnection connection = new ServiceConnection() {
@@ -160,6 +168,7 @@ public class RelayBlockResolver {
 				}
 				if (service != null) {
 					boolean finished = false;
+					Uri initialUri = uri.buildUpon().clearQuery().encodedFragment(null).build();
 					try {
 						CheckHolder checkHolderFinal = checkHolder;
 						IRequestCallback requestCallback = new IRequestCallback.Stub() {
@@ -185,7 +194,7 @@ public class RelayBlockResolver {
 
 							@Override
 							public boolean onLoad(String uriString) {
-								return checkHolderFinal.client.onLoad(Uri.parse(uriString));
+								return checkHolderFinal.client.onLoad(initialUri, Uri.parse(uriString));
 							}
 
 							private boolean captchaRetry = false;
@@ -198,6 +207,9 @@ public class RelayBlockResolver {
 								ChanPerformer.CaptchaData captchaData = ForegroundManager.getInstance()
 										.requireUserCaptcha(new RelayBlockCaptchaReader(apiKey, referer),
 												captchaType, null, null, null, null, description, retry);
+								if (captchaData == null) {
+									status.cancel = true;
+								}
 								return captchaData != null ? captchaData.get(ChanPerformer.CaptchaData.INPUT) : null;
 							}
 
@@ -215,7 +227,7 @@ public class RelayBlockResolver {
 						};
 						ChanLocator locator = ChanLocator.get(chanName);
 						HttpClient.ProxyData proxyData = HttpClient.getInstance().getProxyData(chanName);
-						finished = service.loadWithCookieResult(locator.buildPath().toString(),
+						finished = service.loadWithCookieResult(initialUri.toString(),
 								AdvancedPreferences.getUserAgent(chanName), proxyData != null && proxyData.socks,
 								proxyData != null ? proxyData.host : null, proxyData != null ? proxyData.port : 0,
 								locator.isUseHttps() && Preferences.isVerifyCertificate(), WEB_VIEW_TIMEOUT,
@@ -232,6 +244,11 @@ public class RelayBlockResolver {
 			synchronized (checkHolder) {
 				checkHolder.ready = true;
 				checkHolder.notifyAll();
+			}
+			if (status.cancel) {
+				synchronized (lastCheckCancel) {
+					lastCheckCancel.put(chanName, SystemClock.elapsedRealtime());
+				}
 			}
 			synchronized (checkHolders) {
 				checkHolders.remove(chanName);
@@ -251,12 +268,15 @@ public class RelayBlockResolver {
 		return checkHolder.success;
 	}
 
-	public Result checkResponse(String chanName, HttpHolder holder) throws HttpException {
-		Result result = CloudFlareResolver.getInstance().checkResponse(this, chanName, holder);
-		if (!result.blocked) {
-			result = StormWallResolver.getInstance().checkResponse(this, chanName, holder);
+	public Result checkResponse(String chanName, Uri uri, HttpHolder holder) throws HttpException {
+		if (ChanLocator.get(chanName).getChanHosts(false).contains(uri.getHost())) {
+			Result result = CloudFlareResolver.getInstance().checkResponse(this, chanName, uri, holder);
+			if (!result.blocked) {
+				result = StormWallResolver.getInstance().checkResponse(this, chanName, uri, holder);
+			}
+			return result;
 		}
-		return result;
+		return new Result(false, false);
 	}
 
 	public Map<String, String> getCookies(String chanName) {

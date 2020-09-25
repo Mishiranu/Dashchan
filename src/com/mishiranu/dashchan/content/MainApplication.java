@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class MainApplication extends Application {
+	private static final String PROCESS_WEB_VIEW = "webview";
+
 	private static MainApplication instance;
 
 	public MainApplication() {
@@ -65,6 +67,8 @@ public class MainApplication extends Application {
 			DatabaseHelper.getInstance();
 			CacheManager.getInstance();
 			ChanManager.getInstance().loadLibraries();
+		} else if (checkProcess(PROCESS_WEB_VIEW)) {
+			IOUtils.deleteRecursive(getWebViewCacheDir());
 		}
 	}
 
@@ -92,13 +96,24 @@ public class MainApplication extends Application {
 		}
 	}
 
+	private File getWebViewCacheDir() {
+		return new File(super.getCacheDir(), "webview");
+	}
+
+	@Override
+	public File getCacheDir() {
+		if (checkProcess(PROCESS_WEB_VIEW)) {
+			File dir = new File(getWebViewCacheDir(), "cache");
+			dir.mkdirs();
+			return dir;
+		}
+		return super.getCacheDir();
+	}
+
 	@Override
 	public File getDir(String name, int mode) {
-		String suffix = "webview";
-		if (checkProcess(suffix)) {
-			File dir = super.getCacheDir();
-			dir = new File(dir, suffix.equals(name) ? name : suffix + "-" + name);
-			IOUtils.deleteRecursive(dir);
+		if (checkProcess(PROCESS_WEB_VIEW)) {
+			File dir = new File(getWebViewCacheDir(), name);
 			dir.mkdirs();
 			return dir;
 		} else {
